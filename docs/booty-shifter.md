@@ -1,7 +1,7 @@
 # Booty Shifter frequency shifter
 Booty Shifter is a frequency shifter inspired by the Moog/Bode frequency shifter module.
-(./booty-shifter.png)
-The name “Booty Shifter” is a nod to the original module, as well as to a black cat named Booty.
+![boooty shifter image](./docs/booty-shifter.png)
+The name "Booty Shifter" is a nod to the original analog module, as well as to a black cat named Booty.
 
 Booty Shifter  will take an audio input and shift its frequency up or down. This is not like a pitch shift where harmonics will remain in tune, it is an absolute frequency shift in Hz, so in general harmonics will go way out of tune.
 ## Common uses
@@ -14,8 +14,11 @@ Shift drums up or down a little bit to retune them without the usual pitch shift
 Small shifts in conjunction with delays can make a chorus like effect to thicken music.
 ## Inputs and outputs
 IN is the audio input.
+
 CV is the pitch shift control voltage. -5V will give minimum shift, +5 will give maximum.
+
 DN is the downshifted output.
+
 UP is the upshifted output.
 ## controls
 Range sets the total shift range in Hz. For example, the 50 hz. Setting means that the minimum shift is 50 hz down, and the maximum is 50 hz up.
