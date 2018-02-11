@@ -1,6 +1,8 @@
 # Booty Shifter frequency shifter
 Booty Shifter is a frequency shifter inspired by the Moog/Bode frequency shifter module.
+
 ![boooty shifter image](./booty-shifter.png)
+
 The name "Booty Shifter" is a nod to the original analog module, as well as to a black cat named Booty.
 
 Booty Shifter  will take an audio input and shift its frequency up or down. This is not like a pitch shift where harmonics will remain in tune, it is an absolute frequency shift in Hz, so in general harmonics will go way out of tune.
