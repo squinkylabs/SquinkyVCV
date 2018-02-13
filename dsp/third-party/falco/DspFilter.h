@@ -1233,7 +1233,7 @@ namespace Dsp
 			memset( m_hist, 0, sizeof(m_hist) );
 		}
 
-		void Setup( const Spec &spec )
+		void Setup( const Spec &spec ) override
 		{
 			m_proto.Design( spec );
 			m_trans.Transform( spec, this, m_proto );
