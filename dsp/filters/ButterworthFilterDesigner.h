@@ -5,10 +5,11 @@ template<typename, int>
 class BiquadParams;
 
 template <typename T>
-class ButterworthFilterDesigner {
+class ButterworthFilterDesigner
+{
 
 public:
-	static void designThreePoleLowpass(BiquadParams<T, 2>& pOut, T frequency);
-	static void designTwoPoleLowpass(BiquadParams<T, 1>& pOut, T frequency);
+    static void designThreePoleLowpass(BiquadParams<T, 2>& pOut, T frequency);
+    static void designTwoPoleLowpass(BiquadParams<T, 1>& pOut, T frequency);
 
 };

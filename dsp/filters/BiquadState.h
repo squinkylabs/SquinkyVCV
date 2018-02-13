@@ -8,35 +8,39 @@
  * N is the number of stages. So N=2 could be for a three pole or four pole biquad)
  */
 template <typename T, int N>
-class BiquadState {
+class BiquadState
+{
 public:
-	BiquadState();
-	/**
-	 * accessor for delay memory 0
-	 * @param stage is the biquad stage index
-	 */
-	T& z0(int stage);
-	T& z1(int stage);
+    BiquadState();
+    /**
+     * accessor for delay memory 0
+     * @param stage is the biquad stage index
+     */
+    T& z0(int stage);
+    T& z1(int stage);
 private:
-	T _state[N * 2];
+    T _state[N*2];
 };
 
 template <typename T, int N>
-BiquadState<T, N>::BiquadState() {
-	assert(N > 0);
-	for (int i = 0; i < N * 2; ++i) {
-		_state[i] = 0;
-	}
+BiquadState<T, N>::BiquadState()
+{
+    assert(N>0);
+    for (int i = 0; i<N*2; ++i) {
+        _state[i] = 0;
+    }
 }
 
 template <typename T, int N>
-T& BiquadState<T, N>::z0(int stage) {
-	assert(stage >= 0 && stage < N);
-	return _state[stage * 2];
+T& BiquadState<T, N>::z0(int stage)
+{
+    assert(stage>=0&&stage<N);
+    return _state[stage*2];
 }
 
 template <typename T, int N>
-T& BiquadState<T, N>::z1(int stage) {
-	assert(stage >= 0 && stage < N);
-	return _state[stage * 2 + 1];
+T& BiquadState<T, N>::z1(int stage)
+{
+    assert(stage>=0&&stage<N);
+    return _state[stage*2+1];
 }
