@@ -35,9 +35,8 @@ private:
 
 };
 
-
 template<typename T>
-T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
+inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
 {
     assert(params.isValid());
     assert(input>=params.xMin && input<=params.xMax);
@@ -60,10 +59,9 @@ T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
 }
 
 template<typename T>
-void LookupTable<T>::init(LookupTableParams<T>& params,
+inline void LookupTable<T>::init(LookupTableParams<T>& params,
     int bins, T x0In, T x1In, std::function<double(double)> f)
 {
-
     params.alloc(bins);
 
     // f(x0 = ax + 0 == index
@@ -71,7 +69,6 @@ void LookupTable<T>::init(LookupTableParams<T>& params,
     // f(x1) = bins
     params.a = (T) bins/(x1In-x0In);
     params.b = -params.a * x0In;
-
 
     if (x0In==0) assert(params.b==0);
     assert((params.a * x0In+params.b)==0);

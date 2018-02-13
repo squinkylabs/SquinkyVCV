@@ -26,7 +26,7 @@ public:
 };
 
 template<typename T, bool frequencyCanBeNegative>
-void SinOscillator<T, frequencyCanBeNegative>::setFrequency(SinOscillatorParams<T>& params, T frequency)
+inline void SinOscillator<T, frequencyCanBeNegative>::setFrequency(SinOscillatorParams<T>& params, T frequency)
 {
 
     std::function<double(double)> f = AudioMath::makeFunc_Sin();
@@ -41,7 +41,7 @@ void SinOscillator<T, frequencyCanBeNegative>::setFrequency(SinOscillatorParams<
 }
 
 template<typename T, bool frequencyCanBeNegative>
-T SinOscillator<T, frequencyCanBeNegative>::run(
+inline T SinOscillator<T, frequencyCanBeNegative>::run(
     SinOscillatorState<T>& state, const SinOscillatorParams<T>& params)
 {
 
@@ -51,7 +51,7 @@ T SinOscillator<T, frequencyCanBeNegative>::run(
 }
 
 template<typename T, bool frequencyCanBeNegative>
-void SinOscillator<T, frequencyCanBeNegative>::runQuadrature(
+inline void SinOscillator<T, frequencyCanBeNegative>::runQuadrature(
     T& output, T& outputQuadrature, SinOscillatorState<T>& state, const SinOscillatorParams<T>& params)
 {
 
@@ -60,7 +60,6 @@ void SinOscillator<T, frequencyCanBeNegative>::runQuadrature(
     output = LookupTable<T>::lookup(params.lookupParams, saw);
     outputQuadrature = LookupTable<T>::lookup(params.lookupParams, quadratureSaw);
 };
-
 
 template<typename T>
 class SinOscillatorParams
@@ -80,5 +79,4 @@ class SinOscillatorState
 {
 public:
     SawOscillatorState<T> sawState;
-
 };

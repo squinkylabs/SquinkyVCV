@@ -29,10 +29,9 @@ public:
     static std::function<double(double)> makeFunc_Sin();
 
     /*
-    * Returns a function that generates an exponential defined by two points
-    * At input = xMin, output will be yMin.
-    * At input = xMax, output will be yMax.
-    */
+     * Returns a function that generates an exponential defined by two points
+     * At input = xMin, output will be yMin.
+     * At input = xMax, output will be yMax.
+     */
     static std::function<double(double)> makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
-
 };

@@ -1,6 +1,4 @@
-
 #pragma once
-
 #include <assert.h>
 
 /**
@@ -39,7 +37,7 @@ private:
 };
 
 template <typename T, int N>
-void BiquadParams<T, N>::dump() const
+inline void BiquadParams<T, N>::dump() const
 {
     for (int stage = 0; stage<N; ++stage) {
         printf("%d B0=%f\n", stage, B0(stage));
@@ -49,8 +47,9 @@ void BiquadParams<T, N>::dump() const
         printf("%d A2=%f\n\n", stage, A2(stage));
     }
 }
+
 template <typename T, int N>
-BiquadParams<T, N>::BiquadParams()
+inline BiquadParams<T, N>::BiquadParams()
 {
     assert(N>0);
     for (int i = 0; i<N*5; ++i) {
@@ -59,21 +58,21 @@ BiquadParams<T, N>::BiquadParams()
 }
 
 template <typename T, int N>
-T& BiquadParams<T, N>::B0(int stage)
+inline T& BiquadParams<T, N>::B0(int stage)
 {
     assert(stage>=0&&stage<N);
     return _taps[stage*5];
 }
 
 template <typename T, int N>
-T& BiquadParams<T, N>::B1(int stage)
+inline T& BiquadParams<T, N>::B1(int stage)
 {
     assert(stage>=0&&stage<N);
     return _taps[stage*5+1];
 }
 
 template <typename T, int N>
-T& BiquadParams<T, N>::B2(int stage)
+inline T& BiquadParams<T, N>::B2(int stage)
 {
     assert(stage>=0&&stage<N);
     return _taps[stage*5+2];

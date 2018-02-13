@@ -1,4 +1,3 @@
-
 /**
  * HilbertFilterDesigner
  * generate a pair of Hilbert filters

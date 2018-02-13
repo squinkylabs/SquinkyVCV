@@ -5,11 +5,10 @@
  *
  * Generates a saw wave from 0..1
  * Good features:
- *		frequency may be adjusted while running without glitches
- *		can generate a quadrature output
- *		can be configured to do positive and negative frequency
+ *      frequency may be adjusted while running without glitches
+ *      can generate a quadrature output
+ *      can be configured to do positive and negative frequency
  */
-
 template<typename T> class SawOscillatorParams;
 template<typename T> class SawOscillatorState;
 
@@ -27,9 +26,8 @@ public:
 };
 
 template<typename T, bool frequencyCanBeNegative>
-T SawOscillator<T, frequencyCanBeNegative>::run(SawOscillatorState<T>& state, const SawOscillatorParams<T>& params)
+inline T SawOscillator<T, frequencyCanBeNegative>::run(SawOscillatorState<T>& state, const SawOscillatorParams<T>& params)
 {
-
     T ret = state.phase;
     state.phase += params.phaseIncrement;
     if (state.phase>=1) {
@@ -44,7 +42,7 @@ T SawOscillator<T, frequencyCanBeNegative>::run(SawOscillatorState<T>& state, co
 }
 
 template<typename T, bool frequencyCanBeNegative>
-void SawOscillator<T, frequencyCanBeNegative>::runQuadrature(T& out, T& outQuad, SawOscillatorState<T>& state, const SawOscillatorParams<T>& params)
+inline void SawOscillator<T, frequencyCanBeNegative>::runQuadrature(T& out, T& outQuad, SawOscillatorState<T>& state, const SawOscillatorParams<T>& params)
 {
     out = run(state, params);
     T quad = out+T(.25);
@@ -57,7 +55,7 @@ void SawOscillator<T, frequencyCanBeNegative>::runQuadrature(T& out, T& outQuad,
 
 
 template<typename T, bool frequencyCanBeNegative>
-void SawOscillator<T, frequencyCanBeNegative>::setFrequency(SawOscillatorParams<T>& params, T freq)
+inline void SawOscillator<T, frequencyCanBeNegative>::setFrequency(SawOscillatorParams<T>& params, T freq)
 {
     if (frequencyCanBeNegative) {
         assert(freq>=-.5 && freq<.5);

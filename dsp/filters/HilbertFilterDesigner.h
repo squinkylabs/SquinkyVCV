@@ -12,6 +12,3 @@ public:
      */
     static void design(double sampleRate, BiquadParams<T, 3>& pOutSin, BiquadParams<T, 3>& pOutCos);
 };
-
-
-

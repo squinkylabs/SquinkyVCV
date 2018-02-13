@@ -1,4 +1,3 @@
-
 #pragma once
 
 template<typename T, int N> class BiquadState;
@@ -8,24 +7,24 @@ template<typename T, int N> class BiquadParams;
 #include "DspFilter.h"	 // TODO: get rid of this. we need it now because you can't forward declare Cascade::Stage
 
 /*
-*
-*                  (I call this node x in the implementation)
-*                    |
-*
-* >----- + ----------|--> b0 >-- + -------->
-*        |           |           |
-*        |          Z-1          |
-*        |           |           |
-*        |--< -a1 <--|--> b1 >----
-*        |           |           |
-*        |          Z-1          |
-*        |           |           |
-*        |           |           |
-*        |--< -a2 <--|--> b2 >----
-*
-*
-*
-*/
+ *
+ *                  (I call this node x in the implementation)
+ *                    |
+ *
+ * >----- + ----------|--> b0 >-- + -------->
+ *        |           |           |
+ *        |          Z-1          |
+ *        |           |           |
+ *        |--< -a1 <--|--> b1 >----
+ *        |           |           |
+ *        |          Z-1          |
+ *        |           |           |
+ *        |           |           |
+ *        |--< -a2 <--|--> b2 >----
+ *
+ *
+ *
+ */
 template<typename T>
 class BiquadFilter
 {
@@ -40,10 +39,9 @@ public:
     static void fillFromStages(BiquadParams<T, N>& params, Dsp::Cascade::Stage * stages, int numStages);
 };
 
-
 template <typename T>
 template<int N>
-void BiquadFilter<T>::fillFromStages(BiquadParams<T, N>& params, Dsp::Cascade::Stage * stages, int numStages)
+inline void BiquadFilter<T>::fillFromStages(BiquadParams<T, N>& params, Dsp::Cascade::Stage * stages, int numStages)
 {
     assert(numStages==N);
 
@@ -60,7 +58,7 @@ void BiquadFilter<T>::fillFromStages(BiquadParams<T, N>& params, Dsp::Cascade::S
 
 template<typename T>
 template<int N>
-T BiquadFilter<T>::run(T input, BiquadState<T, N>& state, const BiquadParams<T, N>& params)
+inline T BiquadFilter<T>::run(T input, BiquadState<T, N>& state, const BiquadParams<T, N>& params)
 {
 
     for (int stage = 0; stage<N; ++stage) {
@@ -74,5 +72,3 @@ T BiquadFilter<T>::run(T input, BiquadState<T, N>& state, const BiquadParams<T, 
     }
     return input;
 }
-
-
