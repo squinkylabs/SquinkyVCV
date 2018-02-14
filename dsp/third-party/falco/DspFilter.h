@@ -730,7 +730,7 @@ namespace Dsp
 #if 0
 		virtual ~Cascade() {
 			int x = 5;
-		}		// bgf says: you need this!
+		}		// there is something wrong with this class. dtor should be virtual, but that crashes
 #endif
 
 		// Initializes some important fields.
@@ -1121,7 +1121,7 @@ namespace Dsp
 		// Build a Cascade from poles and zeroes.
 		void Realize( Cascade *cascade );
 		void Realize_orig( Cascade *cascade );
-		void Realize_bgf( Cascade *cascade );
+		void Realize_custom( Cascade *cascade );
 		void pairRoots();
 
 	private:

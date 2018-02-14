@@ -1114,7 +1114,7 @@ void BiquadEq::SetupFast( CalcT normFreq, CalcT dB, CalcT bandWidth )
 //******************************************************************************
 
 void Layout::Realize( Cascade *cascade ) {
-	Realize_bgf(cascade);
+	Realize_custom(cascade);
 	//Realize_orig(cascade);
 }
 
@@ -1283,7 +1283,7 @@ void Layout::pairRoots() {
 	pairRoots2(Zeros());
 }
 
-void Layout::Realize_bgf( Cascade *cascade )
+void Layout::Realize_custom( Cascade *cascade )
 {
 	// Calculate number of second order sections required.
 	int poles = CountPoles();		

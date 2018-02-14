@@ -91,10 +91,11 @@ void BootyModule::fromJson(json_t *rootJ)  {
 
     json_t *driverJ = json_object_get(rootJ, "range");
     if (driverJ) {
-        int rg = json_number_value(driverJ);
-
+        const int rg = json_number_value(driverJ);
+        
+        // TODO: should we be more robust about float <> int issues?
         //need to tell the control what text to display
-        for (int i=0; i<4; ++i) {
+        for (int i=0; i<5; ++i) {
             if (rg == values[i]) {
                rangeChoice->text = ranges[i]; 
             }
