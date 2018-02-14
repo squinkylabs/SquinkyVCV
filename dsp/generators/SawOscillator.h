@@ -30,11 +30,11 @@ inline T SawOscillator<T, frequencyCanBeNegative>::run(SawOscillatorState<T>& st
 {
     T ret = state.phase;
     state.phase += params.phaseIncrement;
-    if (state.phase>=1) {
+    if (state.phase >= 1) {
         state.phase -= 1;
     }
 
-    if (frequencyCanBeNegative&&(state.phase<0)) {
+    if (frequencyCanBeNegative && (state.phase < 0)) {
         state.phase += 1;
     }
 
@@ -45,8 +45,8 @@ template<typename T, bool frequencyCanBeNegative>
 inline void SawOscillator<T, frequencyCanBeNegative>::runQuadrature(T& out, T& outQuad, SawOscillatorState<T>& state, const SawOscillatorParams<T>& params)
 {
     out = run(state, params);
-    T quad = out+T(.25);
-    if (quad>=1) {
+    T quad = out + T(.25);
+    if (quad >= 1) {
         quad -= 1;
     }
     outQuad = quad;
@@ -58,9 +58,9 @@ template<typename T, bool frequencyCanBeNegative>
 inline void SawOscillator<T, frequencyCanBeNegative>::setFrequency(SawOscillatorParams<T>& params, T freq)
 {
     if (frequencyCanBeNegative) {
-        assert(freq>=-.5 && freq<.5);
+        assert(freq >= -.5 && freq < .5);
     } else {
-        assert(freq>=0&&freq<.5);
+        assert(freq >= 0 && freq < .5);
     }
     params.phaseIncrement = freq;
 }

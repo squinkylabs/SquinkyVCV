@@ -18,7 +18,7 @@ int main(int, char *)
 {
     // While this code may work in 32 bit applications, it's not tested for that.
     // Want to be sure we are testing the case we care about.
-    assert(sizeof(size_t)==8);
+    assert(sizeof(size_t) == 8);
 
     testAudioMath();
     testBiquad();

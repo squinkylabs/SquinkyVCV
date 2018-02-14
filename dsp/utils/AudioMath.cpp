@@ -9,15 +9,15 @@ const double AudioMath::E = 2.71828182845904523536;
 std::function<double(double)> AudioMath::makeFunc_Sin()
 {
     return [](double x) {
-        return std::sin(x*2*Pi);
+        return std::sin(x * 2 * Pi);
     };
 }
 
 std::function<double(double)> AudioMath::makeFunc_Exp(double xMin, double xMax, double yMin, double yMax)
 {
-    const double a = (std::log(yMax)-log(yMin))/(xMax-xMin);
-    const double b = log(yMin)-a*xMin;
+    const double a = (std::log(yMax) - log(yMin)) / (xMax - xMin);
+    const double b = log(yMin) - a * xMin;
     return [a, b](double d) {
-        return std::exp(a * d+b);
+        return std::exp(a * d + b);
     };
 }

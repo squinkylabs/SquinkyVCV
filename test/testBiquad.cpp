@@ -18,24 +18,24 @@ template<typename T, int N>
 void testState_0()
 {
     BiquadState<T, N> p;
-    for (int i = 0; i<N; ++i) {
-        assert(p.z0(i)==0);
-        assert(p.z1(i)==0);
+    for (int i = 0; i < N; ++i) {
+        assert(p.z0(i) == 0);
+        assert(p.z1(i) == 0);
     }
     p.z0(0) = 5;
     p.z1(0) = 6;
-    assert(p.z0(0)==5);
-    assert(p.z1(0)==6);
+    assert(p.z0(0) == 5);
+    assert(p.z1(0) == 6);
 
-    if (N>1) {
-        p.z0(N-1) = 55;
-        p.z1(N-1) = 66;
-        assert(p.z0(N-1)==55);
-        assert(p.z1(N-1)==66);
+    if (N > 1) {
+        p.z0(N - 1) = 55;
+        p.z1(N - 1) = 66;
+        assert(p.z0(N - 1) == 55);
+        assert(p.z1(N - 1) == 66);
     }
 
-    assert(p.z0(0)==5);
-    assert(p.z1(0)==6);
+    assert(p.z0(0) == 5);
+    assert(p.z1(0) == 6);
 }
 
 template<typename T, int N>
@@ -43,12 +43,12 @@ void testParam_0()
 {
 
     BiquadParams<T, N> p;
-    for (int i = 0; i<N; ++i) {
-        assert(p.A2(i)==0);
-        assert(p.A1(i)==0);
-        assert(p.B0(i)==0);
-        assert(p.B1(i)==0);
-        assert(p.B2(i)==0);
+    for (int i = 0; i < N; ++i) {
+        assert(p.A2(i) == 0);
+        assert(p.A1(i) == 0);
+        assert(p.B0(i) == 0);
+        assert(p.B1(i) == 0);
+        assert(p.B2(i) == 0);
     }
 
     p.A1(0) = 1;
@@ -57,31 +57,31 @@ void testParam_0()
     p.B1(0) = 11;
     p.B2(0) = 12;
 
-    assert(p.A1(0)==1);
-    assert(p.A2(0)==2);
-    assert(p.B0(0)==10);
-    assert(p.B1(0)==11);
-    assert(p.B2(0)==12);
+    assert(p.A1(0) == 1);
+    assert(p.A2(0) == 2);
+    assert(p.B0(0) == 10);
+    assert(p.B1(0) == 11);
+    assert(p.B2(0) == 12);
 
-    if (N>1) {
-        p.A1(N-1) = 111;
-        p.A2(N-1) = 112;
-        p.B0(N-1) = 1110;
-        p.B1(N-1) = 1111;
-        p.B2(N-1) = 1112;
+    if (N > 1) {
+        p.A1(N - 1) = 111;
+        p.A2(N - 1) = 112;
+        p.B0(N - 1) = 1110;
+        p.B1(N - 1) = 1111;
+        p.B2(N - 1) = 1112;
 
-        assert(p.A1(N-1)==111);
-        assert(p.A2(N-1)==112);
-        assert(p.B0(N-1)==1110);
-        assert(p.B1(N-1)==1111);
-        assert(p.B2(N-1)==1112);
+        assert(p.A1(N - 1) == 111);
+        assert(p.A2(N - 1) == 112);
+        assert(p.B0(N - 1) == 1110);
+        assert(p.B1(N - 1) == 1111);
+        assert(p.B2(N - 1) == 1112);
     }
 
-    assert(p.A1(0)==1);
-    assert(p.A2(0)==2);
-    assert(p.B0(0)==10);
-    assert(p.B1(0)==11);
-    assert(p.B2(0)==12);
+    assert(p.A1(0) == 1);
+    assert(p.A2(0) == 2);
+    assert(p.B0(0) == 10);
+    assert(p.B1(0) == 11);
+    assert(p.B2(0) == 12);
 }
 
 template<typename T>
@@ -100,11 +100,11 @@ void testBasicDesigner2()
 {
     BiquadParams<T, 1> p;
     ButterworthFilterDesigner<T>::designTwoPoleLowpass(p, T(.1));
-    assert(p.A1(0)!=0);
-    assert(p.A2(0)!=0);
-    assert(p.B1(0)!=0);
-    assert(p.B2(0)!=0);
-    assert(p.B0(0)!=0);
+    assert(p.A1(0) != 0);
+    assert(p.A2(0) != 0);
+    assert(p.B1(0) != 0);
+    assert(p.B2(0) != 0);
+    assert(p.B0(0) != 0);
 }
 
 // test that filter designer does something (more than just generate zero
@@ -113,11 +113,11 @@ void testBasicDesigner3()
 {
     BiquadParams<T, 2> p;
     ButterworthFilterDesigner<T>::designThreePoleLowpass(p, T(.1));
-    assert(p.A1(0)!=0);
-    assert(p.A2(0)!=0);
-    assert(p.B1(0)!=0);
-    assert(p.B2(0)!=0);
-    assert(p.B0(0)!=0);
+    assert(p.A1(0) != 0);
+    assert(p.A2(0) != 0);
+    assert(p.B1(0) != 0);
+    assert(p.B2(0) != 0);
+    assert(p.B0(0) != 0);
 }
 
 // test that filter does something
@@ -131,18 +131,18 @@ void testBasicFilter2()
     T lastValue = -1;
 
     // the first five values of the step increase
-    for (int i = 0; i<100; ++i) {
+    for (int i = 0; i < 100; ++i) {
         T temp = BiquadFilter<T>::run(1, state, params);
-        if (i<5) {
+        if (i < 5) {
             // the first 5 are strictly increasing and below 1
-            assert(temp<1);
-            assert(temp>lastValue);
-        } else if (i<10) {
+            assert(temp < 1);
+            assert(temp > lastValue);
+        } else if (i < 10) {
             // the next are all overshoot
-            assert(temp>1&&temp<1.05);
-        } else if (i>50) {
+            assert(temp > 1 && temp < 1.05);
+        } else if (i > 50) {
             //settled
-            assert(temp>.999 && temp<1.001);
+            assert(temp > .999 && temp < 1.001);
         }
 
         lastValue = temp;
@@ -161,18 +161,18 @@ void testBasicFilter3()
     T lastValue = 1;
 
     //the first five values of the step decrease (to -1)
-    for (int i = 0; i<100; ++i) {
+    for (int i = 0; i < 100; ++i) {
         T temp = BiquadFilter<T>::run(1, state, params);
 
-        if (i<6) {
+        if (i < 6) {
             // the first 5 are strictly increasing and below 1
-            assert(temp>-1);
-            assert(temp<lastValue);
-        } else if (i<10) {
+            assert(temp > -1);
+            assert(temp < lastValue);
+        } else if (i < 10) {
             // the next are all overshoot
-            assert(temp<-1);
-            assert(temp>-1.1);
-        } else if (i>400) {
+            assert(temp < -1);
+            assert(temp > -1.1);
+        } else if (i > 400) {
             //settled
             assert(temp < -.999 && temp > -1.001);
         }

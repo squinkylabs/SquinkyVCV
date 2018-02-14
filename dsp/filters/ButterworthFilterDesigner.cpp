@@ -13,7 +13,7 @@ void ButterworthFilterDesigner<T>::designThreePoleLowpass(BiquadParams<T, 2>& ou
 {
     auto lp3 = new Dsp::ButterLowPass<3, 1>();
     lp3->SetupAs(frequency);
-    assert(lp3->GetStageCount()==2);
+    assert(lp3->GetStageCount() == 2);
     BiquadFilter<T>::fillFromStages(outParams, lp3->Stages(), lp3->GetStageCount());
     delete lp3;
 }
@@ -25,7 +25,7 @@ void ButterworthFilterDesigner<T>::designTwoPoleLowpass(BiquadParams<T, 1>& outP
     // TODO: use unique_ptr
     auto lp2 = new Dsp::ButterLowPass<2, 1>();
     lp2->SetupAs(frequency);
-    assert(lp2->GetStageCount()==1);
+    assert(lp2->GetStageCount() == 1);
     BiquadFilter<T>::fillFromStages(outParams, lp2->Stages(), lp2->GetStageCount());
     delete lp2;
 }

@@ -24,9 +24,9 @@ private:
 #ifdef _DEBUG
     static void checkInput(const LookupTableParams<T>& params, const T *in, int sampleFrames)
     {
-        for (int i = 0; i<sampleFrames; ++i) {
+        for (int i = 0; i < sampleFrames; ++i) {
             f_t input = in[i];
-            assert(input>=params.xMin && input<=params.xMax);
+            assert(input >= params.xMin && input <= params.xMax);
         }
     }
 #else
@@ -39,21 +39,21 @@ template<typename T>
 inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
 {
     assert(params.isValid());
-    assert(input>=params.xMin && input<=params.xMax);
+    assert(input >= params.xMin && input <= params.xMax);
 
     // need to scale by bins
-    T scaledInput = input*params.a+params.b;
-    assert(params.a!=0);
+    T scaledInput = input * params.a + params.b;
+    assert(params.a != 0);
 
     int input_int = cvtt(&scaledInput);
-    T input_float = scaledInput-input_int;
+    T input_float = scaledInput - input_int;
 
-    assert(input_float>=0&&input_float<=1);
-    assert(input_int>=0&&input_int<=params.numBins_i);
+    assert(input_float >= 0 && input_float <= 1);
+    assert(input_int >= 0 && input_int <= params.numBins_i);
 
-    T * entry = params.entries+(2*input_int);
+    T * entry = params.entries + (2 * input_int);
     T x = entry[0];
-    x += input_float*entry[1];
+    x += input_float * entry[1];
 
     return x;
 }
@@ -67,21 +67,21 @@ inline void LookupTable<T>::init(LookupTableParams<T>& params,
     // f(x0 = ax + 0 == index
     // f(x0) = 0
     // f(x1) = bins
-    params.a = (T) bins/(x1In-x0In);
+    params.a = (T) bins / (x1In - x0In);
     params.b = -params.a * x0In;
 
-    if (x0In==0) assert(params.b==0);
-    assert((params.a * x0In+params.b)==0);
-    assert((params.a * x1In+params.b)==bins);
+    if (x0In == 0) assert(params.b == 0);
+    assert((params.a * x0In + params.b) == 0);
+    assert((params.a * x1In + params.b) == bins);
 
-    for (int i = 0; i<=bins; ++i) {
-        double x0 = (i-params.b)/params.a;
-        double x1 = ((i+1)-params.b)/params.a;
+    for (int i = 0; i <= bins; ++i) {
+        double x0 = (i - params.b) / params.a;
+        double x1 = ((i + 1) - params.b) / params.a;
 
         double y0 = f(x0);
         double y1 = f(x1);
-        double slope = y1-y0;
-        T * entry = params.entries+(2*i);
+        double slope = y1 - y0;
+        T * entry = params.entries + (2 * i);
         entry[0] = (T) y0;
         entry[1] = (T) slope;
 #if 0
@@ -135,9 +135,9 @@ public:
 
     bool isValid() const
     {
-        return ((entries!=0)&&
-            (xMax>xMin)&&
-            (numBins_i>0)
+        return ((entries != 0) &&
+            (xMax > xMin) &&
+            (numBins_i > 0)
             );
     }
 
@@ -145,7 +145,7 @@ public:
     {
         if (entries) free(entries);
         // allocate one extra, so we can index all the way to the end...
-        entries = (T *) malloc((bins+1)*2*sizeof(T));
+        entries = (T *) malloc((bins + 1) * 2 * sizeof(T));
         numBins_i = bins;
         a = 0;
         b = 0;

@@ -25,7 +25,7 @@ void test1()
     HilbertFilterDesigner<T>::design(44100, paramsSin, paramsCos);
 
     const double delta = .00001;
-    for (int i = 0; i<3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         assert(!AudioMath::closeTo(0, (paramsSin.A1(i)), delta));
         assert(!AudioMath::closeTo(0, (paramsSin.A2(i)), delta));
         assert(!AudioMath::closeTo(0, (paramsSin.B0(i)), delta));

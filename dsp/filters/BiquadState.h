@@ -19,14 +19,14 @@ public:
     T& z0(int stage);
     T& z1(int stage);
 private:
-    T _state[N*2];
+    T _state[N * 2];
 };
 
 template <typename T, int N>
 inline BiquadState<T, N>::BiquadState()
 {
-    assert(N>0);
-    for (int i = 0; i<N*2; ++i) {
+    assert(N > 0);
+    for (int i = 0; i < N * 2; ++i) {
         _state[i] = 0;
     }
 }
@@ -34,13 +34,13 @@ inline BiquadState<T, N>::BiquadState()
 template <typename T, int N>
 inline T& BiquadState<T, N>::z0(int stage)
 {
-    assert(stage>=0&&stage<N);
-    return _state[stage*2];
+    assert(stage >= 0 && stage < N);
+    return _state[stage * 2];
 }
 
 template <typename T, int N>
 inline T& BiquadState<T, N>::z1(int stage)
 {
-    assert(stage>=0&&stage<N);
-    return _state[stage*2+1];
+    assert(stage >= 0 && stage < N);
+    return _state[stage * 2 + 1];
 }

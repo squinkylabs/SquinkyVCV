@@ -43,9 +43,9 @@ template <typename T>
 template<int N>
 inline void BiquadFilter<T>::fillFromStages(BiquadParams<T, N>& params, Dsp::Cascade::Stage * stages, int numStages)
 {
-    assert(numStages==N);
+    assert(numStages == N);
 
-    for (int i = 0; i<N; ++i) {
+    for (int i = 0; i < N; ++i) {
         const Dsp::Cascade::Stage& stage = stages[i];
 
         params.B0(i) = (T) stage.b[0];
@@ -61,11 +61,11 @@ template<int N>
 inline T BiquadFilter<T>::run(T input, BiquadState<T, N>& state, const BiquadParams<T, N>& params)
 {
 
-    for (int stage = 0; stage<N; ++stage) {
-        T x = input+(params.A1(stage) * state.z0(stage)+params.A2(stage) * state.z1(stage));
+    for (int stage = 0; stage < N; ++stage) {
+        T x = input + (params.A1(stage) * state.z0(stage) + params.A2(stage) * state.z1(stage));
 
-        input = params.B0(stage) * x+
-            params.B1(stage) * state.z0(stage)+
+        input = params.B0(stage) * x +
+            params.B1(stage) * state.z0(stage) +
             params.B2(stage) * state.z1(stage);
         state.z1(stage) = state.z0(stage);
         state.z0(stage) = x;

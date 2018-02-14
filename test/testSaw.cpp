@@ -21,9 +21,9 @@ template<typename T>
 void testSaw2()
 {
     SawOscillatorParams<T> params;
-    assert(params.phaseIncrement==0);
+    assert(params.phaseIncrement == 0);
     SawOscillator<T, false>::setFrequency(params, (T(.1)));
-    assert(params.phaseIncrement>0);
+    assert(params.phaseIncrement > 0);
 }
 
 /**
@@ -37,8 +37,8 @@ void testSaw3()
     SawOscillatorState<T> state;
     SawOscillator<T, true>::run(state, params);
     const T out = SawOscillator<T, true>::run(state, params);
-    assert(out>=0);
-    assert(out<1);
+    assert(out >= 0);
+    assert(out < 1);
 }
 
 
@@ -49,24 +49,24 @@ template<typename T>
 void testSaw4()
 {
     const T freq = T(.01);
-    const T freq_2 = freq/2;
-    const T delta = freq/1000;
+    const T freq_2 = freq / 2;
+    const T delta = freq / 1000;
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, (T(.01)));
     SawOscillatorState<T> state;
 
     T last = 0;
-    for (int i = 0; i<1000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         const T output = SawOscillator<T, true>::run(state, params);
 
-        assert(output>=0);
-        assert(output<1);
+        assert(output >= 0);
+        assert(output < 1);
 
-        if (output<last) {
-            assert(last>.99);
-            assert(output<.01);
+        if (output < last) {
+            assert(last > .99);
+            assert(output < .01);
         } else {
-            assert(output<(last+freq+delta));
+            assert(output < (last + freq + delta));
         }
 
         last = output;
@@ -80,22 +80,22 @@ template<typename T>
 void testSaw5()
 {
     const T freq = T(.01);
-    const T freq_2 = freq/2;
-    const T delta = freq/1000;
+    const T freq_2 = freq / 2;
+    const T delta = freq / 1000;
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, (T(.01)));
     SawOscillatorState<T> state;
 
     T output;
     T quadratureOutput;
-    for (int i = 0; i<1000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         SawOscillator<T, true>::runQuadrature(output, quadratureOutput, state, params);
 
         // normalize output (unwrap)
-        if (quadratureOutput<output) {
+        if (quadratureOutput < output) {
             quadratureOutput += 1;
         }
-        assert(quadratureOutput = (output+T(.25)));
+        assert(quadratureOutput = (output + T(.25)));
     }
 }
 
@@ -107,25 +107,25 @@ template<typename T>
 void testSaw6()
 {
     const T freq = T(-.01);
-    const T delta = freq/1000;
+    const T delta = freq / 1000;
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, freq);
     SawOscillatorState<T> state;
 
     T last = 0;
-    for (int i = 0; i<1000; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         const T output = SawOscillator<T, true>::run(state, params);
 
-        assert(output>=0);
-        assert(output<1);
+        assert(output >= 0);
+        assert(output < 1);
 
-        if (output>last) {
+        if (output > last) {
             // wrap case - did we more or less wrap?
-            assert(last<.01);
-            assert(output>.98);
+            assert(last < .01);
+            assert(output > .98);
         } else {
             // no-wrap - are we decreasing
-            assert(output>(last+freq+delta));
+            assert(output > (last + freq + delta));
         }
 
         last = output;

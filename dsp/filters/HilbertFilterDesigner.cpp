@@ -44,33 +44,33 @@ namespace Dsp {
 
         double log2(double x)
         {
-            return log(x)/log(2.0);
+            return log(x) / log(2.0);
         }
         void dump()
         {
             printf("log2(2) = %f 8=%f\n", log2(2), log2(8));
             double lastLog = 0;
-            for (int i = 0; i<6; ++i) {
-                double l = shift*leftPoles[i];
-                double r = shift*rightPoles[i];
+            for (int i = 0; i < 6; ++i) {
+                double l = shift * leftPoles[i];
+                double r = shift * rightPoles[i];
 
-                printf("i=%d left pole = %f right = %f ratio = %f\n", i, l, r, r/l);
+                printf("i=%d left pole = %f right = %f ratio = %f\n", i, l, r, r / l);
 
                 printf("  log(left)=%f, log(r)=%f\n", log2(l), log2(r));
 
-                if (i==0) {
-                    printf("  delta log(r)=%f\n", log2(r)-log2(l));
+                if (i == 0) {
+                    printf("  delta log(r)=%f\n", log2(r) - log2(l));
 
                 } else {
-                    printf("  delta log(l0=%f (r)=%f\n", log2(l)-lastLog, log2(r)-log2(l));
+                    printf("  delta log(l0=%f (r)=%f\n", log2(l) - lastLog, log2(r) - log2(l));
                 }
                 lastLog = log2(r);
 
 
-                if (i>0) {
-                    double l0 = leftPoles[i-1];
-                    double r0 = rightPoles[i-1];
-                    printf("L/Lprev = %f, R/Rprev=%f\n", l/l0, r/r0);
+                if (i > 0) {
+                    double l0 = leftPoles[i - 1];
+                    double r0 = rightPoles[i - 1];
+                    printf("L/Lprev = %f, R/Rprev=%f\n", l / l0, r / r0);
                 }
             }
         }
@@ -79,17 +79,17 @@ namespace Dsp {
         {
 
             int n = spec.order;
-            assert(n==hilbertOrder);
+            assert(n == hilbertOrder);
 
             if (dumpHilbert)
                 dump();
 
-            const bool side = spec.rollOff>.5 ? true : false;
+            const bool side = spec.rollOff > .5 ? true : false;
 
             SetPoles(n);
             SetZeros(n);
 
-            for (int i = 0; i<n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 double f = side ? leftPoles[i] : rightPoles[i];
                 Pole(i) = Complex(-f, 0);	// TODO: why do we need this negative sign?
                 Zero(i) = Complex(f, 0);
@@ -102,7 +102,7 @@ namespace Dsp {
             Roots & zeros = Zeros();
             Roots & poles = Poles();
 
-            for (int i = 0; i<n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 char buf[512];
                 sprintf(buf, "in hibdes i=%d pole = %f,%f i zero = %f,%f i\n", i,
                     poles.GetNth(i).real(),
@@ -142,15 +142,15 @@ namespace Dsp {
         void Design(const Spec &spec)
         {
             int n = spec.order;
-            assert(n==hilbertOrderTest);
+            assert(n == hilbertOrderTest);
 
-            const bool side = spec.rollOff>.5 ? true : false;
+            const bool side = spec.rollOff > .5 ? true : false;
 
 
             SetPoles(n);
             SetZeros(n);
 
-            assert(n==1);
+            assert(n == 1);
 
             double f = .25;
             Pole(0) = Complex(-f, 0);
@@ -166,7 +166,7 @@ namespace Dsp {
             Roots & zeros = Zeros();
             Roots & poles = Poles();
 
-            for (int i = 0; i<n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 char buf[512];
                 sprintf(buf, "i=%d pole = %f,%f i zero = %f,%f i\n", i,
                     poles.GetNth(i).real(),
@@ -187,7 +187,7 @@ namespace Dsp {
             Spec spec;
             spec.order = hilbertOrderTest;
 
-            spec.cutoffFreq = cutoffFreq*1;
+            spec.cutoffFreq = cutoffFreq * 1;
             spec.sampleRate = 44100;
 
             spec.rollOff = side ? 1 : 0;		// jam side parameter into this obscure member

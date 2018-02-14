@@ -109,6 +109,12 @@ void BootyModule::step() {
     // add the knob and the CV
     T freqHz;
     T cvTotal = params[PITCH_PARAM].value + inputs[CV_INPUT].value;
+    if (cvTotal > 5) {
+        cvTotal = 5;
+    }
+    if (cvTotal < -5) {
+        cvTotal = -5;
+    }
     if (freqRange > .2) {
         cvTotal *= freqRange;
         cvTotal *= 1. / 5.;

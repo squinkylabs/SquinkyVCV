@@ -6,20 +6,20 @@ class AudioMath
 {
 public:
     static const double Pi;
-    static const double Pi_2;		// Pi / 2
+    static const double Pi_2;       // Pi / 2
     static const double Ln2;
     static const double Ln10;
     static const double E;
 
     static bool closeTo(double x, double y, double tolerance)
     {
-        const bool ret = std::abs(x-y)<tolerance;
+        const bool ret = std::abs(x - y) < tolerance;
         return ret;
     }
 
     static double db(double g)
     {
-        return 20*log(g)/Ln10;
+        return 20 * log(g) / Ln10;
     }
 
     /**

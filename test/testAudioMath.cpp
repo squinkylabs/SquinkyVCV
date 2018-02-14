@@ -16,7 +16,7 @@ static void test0()
 static void test1()
 {
     assert(AudioMath::closeTo(3.145, AudioMath::Pi, .1));
-    assert(AudioMath::closeTo(3.145/2, AudioMath::Pi_2, .1));
+    assert(AudioMath::closeTo(3.145 / 2, AudioMath::Pi_2, .1));
     assert(AudioMath::closeTo(log(10), AudioMath::Ln10, .001));
 }
 
@@ -28,7 +28,7 @@ static void test2()
     assert(AudioMath::closeTo(f(.5), 0, d));
     assert(AudioMath::closeTo(f(.25), 1, d));
     assert(AudioMath::closeTo(f(.75), -1, d));
-    assert(AudioMath::closeTo(f(.125), 1.0/sqrt(2), d));
+    assert(AudioMath::closeTo(f(.125), 1.0 / sqrt(2), d));
 
 }
 
@@ -42,8 +42,8 @@ static void test3()
     assert(AudioMath::closeTo(f(2), 8, d));
     assert(AudioMath::closeTo(f(3), 16, d));
     assert(AudioMath::closeTo(f(4), 32, d));
-    assert(f(5)>33);
-    assert(f(-1)<1.5);
+    assert(f(5) > 33);
+    assert(f(-1) < 1.5);
 }
 
 void testAudioMath()

@@ -22,9 +22,9 @@ void test2()
     SinOscillatorState<T> s;
     SinOscillator<T, false>::setFrequency(p, T(.1));
     T x = SinOscillator<T, false>::run(s, p);
-    assert(x==0);
+    assert(x == 0);
     x = SinOscillator<T, false>::run(s, p);
-    assert(x>0);
+    assert(x > 0);
 }
 
 // test that sin lookup is correct
@@ -63,33 +63,33 @@ void test4()
     const int clocksPerPeriod = 64;
     SinOscillatorParams<T> params;
     SinOscillatorState<T> state;
-    SinOscillator<T, false>::setFrequency(params, T(1.0/clocksPerPeriod));
+    SinOscillator<T, false>::setFrequency(params, T(1.0 / clocksPerPeriod));
 
     const double delta = .00001;
     T output, quadrature;
-    for (int i = 0; i<=clocksPerPeriod; ++i) {
+    for (int i = 0; i <= clocksPerPeriod; ++i) {
         SinOscillator<T, false>::runQuadrature(output, quadrature, state, params);
-        if (i==0) {
+        if (i == 0) {
             // sin+cos(0) = 0 + 1
             assert(AudioMath::closeTo(output, 0, delta));
             assert(AudioMath::closeTo(quadrature, 1, delta));
         }
-        if (i==64) {
+        if (i == 64) {
             // sin+cos(0) = 0 + 1
             assert(AudioMath::closeTo(output, 0, delta));
             assert(AudioMath::closeTo(quadrature, 1, delta));
         }
-        if (i==16) {
+        if (i == 16) {
             // sin+cos(pi/2) = 1  0
             assert(AudioMath::closeTo(output, 1, delta));
             assert(AudioMath::closeTo(quadrature, 0, delta));
         }
-        if (i==32) {
+        if (i == 32) {
             // sin+cos(pi) = 0  -1
             assert(AudioMath::closeTo(output, 0, delta));
             assert(AudioMath::closeTo(quadrature, -1, delta));
         }
-        if (i==48) {
+        if (i == 48) {
             // sin+cos(3pi/2) = -1  0
             assert(AudioMath::closeTo(output, -1, delta));
             assert(AudioMath::closeTo(quadrature, 0, delta));
