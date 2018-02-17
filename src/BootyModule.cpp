@@ -206,14 +206,23 @@ struct RangeChoice : ChoiceButton {
 	}
 };
 
+////////////////////
+// module widget
+////////////////////
+
+
+struct BootyWidget : ModuleWidget {
+	BootyWidget(BootyModule *);
+};
+
 /**
  * Widget constructor will describe my implementation struct and
  * provide metadata.
  * This is not shared by all modules in the dll, just one
  */
-BootyWidget::BootyWidget() {
-    BootyModule *module = new BootyModule();
-	setModule(module);
+BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module) {
+   // BootyModule *module = new BootyModule();
+//	setModule(module);
 	box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
 	{
@@ -231,8 +240,9 @@ BootyWidget::BootyWidget() {
     static int row2 = 186;
    
     // Inputs on Row 0
-    addInput(createInput<PJ301MPort>(Vec(leftInputX, row0), module, BootyModule::AUDIO_INPUT));
-    addInput(createInput<PJ301MPort>(Vec(rightInputX, row0), module, BootyModule::CV_INPUT));
+    // addInput(Port::create<PJ301MPort>(Vec(33, 186), Port::INPUT, module, MyModule::PITCH_INPUT));
+    addInput(Port::create<PJ301MPort>(Vec(leftInputX, row0), Port::INPUT, module, BootyModule::AUDIO_INPUT));
+    addInput(Port::create<PJ301MPort>(Vec(rightInputX, row0), Port::INPUT, module, BootyModule::CV_INPUT));
     
     // shift Range on row 2
     const float margin = 16; 
@@ -244,19 +254,32 @@ BootyWidget::BootyWidget() {
 
 
     // knob on row 1
-    addParam(createParam<Rogan3PSBlue>(Vec(18, row1), module, BootyModule::PITCH_PARAM, -5.0, 5.0, 0.0));
+    //addParam(ParamWidget::create<Davies1900hBlackKnob>(Vec(28, 87), module, MyModule::PITCH_PARAM, -3.0, 3.0, 0.0));
+    addParam(ParamWidget::create<Rogan3PSBlue>(Vec(18, row1), module, BootyModule::PITCH_PARAM, -5.0, 5.0, 0.0));
 
     const float row3 = 317.5;
     
     // Outputs on row 3
     const float leftOutputX = 9.5;
     const float rightOutputX = 55.5;
-	addOutput(createOutput<PJ301MPort>(Vec(leftOutputX, row3), module, BootyModule::SIN_OUTPUT));
-    addOutput(createOutput<PJ301MPort>(Vec(rightOutputX, row3), module, BootyModule::COS_OUTPUT));
+    //addOutput(Port::create<PJ301MPort>(Vec(33, 275), Port::OUTPUT, module, MyModule::SINE_OUTPUT));
+	addOutput(Port::create<PJ301MPort>(Vec(leftOutputX, row3), Port::OUTPUT, module, BootyModule::SIN_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(rightOutputX, row3), Port::OUTPUT, module, BootyModule::COS_OUTPUT));
     
     // screws
-    addChild(createScrew<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-	addChild(createScrew<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-	addChild(createScrew<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+	addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+	addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+	addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
+
+
+
+// Specify the Module and ModuleWidget subclass, human-readable
+// manufacturer name for categorization, module slug (should never
+// change), human-readable module name, and any number of tags
+// (found in `include/tags.hpp`) separated by commas.
+Model *modelBootyModule = Model::create<BootyModule, BootyWidget>("Squinky Labs",
+                                                                  "squinkylabs-freqshifter",
+                                                                  "Booty Frequency Shifter", EFFECT_TAG , RING_MODULATOR_TAG);
+
