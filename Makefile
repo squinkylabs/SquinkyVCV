@@ -1,10 +1,13 @@
+# Must follow the format in the Naming section of https://vcvrack.com/manual/PluginDevelopmentTutorial.html
 SLUG = squinkylabs-plug1
-VERSION = 0.5.1
+
+# Must follow the format in the Versioning section of https://vcvrack.com/manual/PluginDevelopmentTutorial.html
+VERSION = 0.6.0dev
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco
-CFLAGS += 
+CFLAGS +=
 CXXFLAGS +=
 
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
@@ -20,13 +23,8 @@ SOURCES += $(wildcard dsp/third-party/falco/*.cpp)
 # The compiled plugin is automatically added.
 DISTRIBUTABLES += $(wildcard LICENSE*) res
 
-# This doesn't work yet
-# test: $(TARGET)
-#     SOURCES = $(wildcard test/src/*.cpp)
-#    TARGET = test.exe
-    
-# Include the VCV plugin Makefile framework
-include ../../plugin.mk
+# If RACK_DIR is not defined when calling the Makefile, default to two levels above
+RACK_DIR ?= ../..
 
-
-    
+# Include the VCV Rack plugin Makefile framework
+include $(RACK_DIR)/plugin.mk
