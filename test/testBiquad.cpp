@@ -86,12 +86,12 @@ void testParam_0()
 
 template<typename T>
 static void test2()
-{
+{	
     BiquadParams<T, 2> p;
     ButterworthFilterDesigner<T>::designThreePoleLowpass(p, T(.1));
-
     BiquadState<T, 2> s;
-    T d = BiquadFilter<T>::run<2>(0, s, p);
+    T d = BiquadFilter<T>::run(0, s, p);
+    (void) d;
 }
 
 // test that filter designer does something (more than just generate zero
@@ -147,7 +147,9 @@ void testBasicFilter2()
 
         lastValue = temp;
     }
-    const auto val = BiquadFilter<T>::run(1, state, params);
+    const T val = BiquadFilter<T>::run(1, state, params);
+    (void) val;
+
 }
 
 // test that filter does something

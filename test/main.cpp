@@ -14,7 +14,7 @@ extern void testAudioMath();
 
 void foo(int, int);
 
-int main(int, char *)
+int main(int, char **)
 {
     // While this code may work in 32 bit applications, it's not tested for that.
     // Want to be sure we are testing the case we care about.
@@ -26,6 +26,6 @@ int main(int, char *)
     testLookupTable();
     testSinOscillator();
     testHilbert();
-    printf("press any key to continue\n");
+    printf("press any key to continue\n"); fflush(stdout);
     getchar();
 }

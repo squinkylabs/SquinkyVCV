@@ -12,6 +12,7 @@ void test1()
     SinOscillatorState<T> s;
     SinOscillator<T, true>::setFrequency(p, T(.1));
     T x = SinOscillator<T, true>::run(s, p);
+    (void) x;
 }
 
 // test that it makes output

@@ -1,4 +1,5 @@
 **/build/
+**/build_test/
 **/dist/
 **/Debug/
 **/Release/
@@ -8,4 +9,5 @@
 *.ipch
 Squinky.suo
 *.dll
+*.exe
 *.user
