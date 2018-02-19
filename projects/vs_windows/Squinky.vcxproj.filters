@@ -46,6 +46,9 @@
     <Filter Include="Source Files\dsp\utils">
       <UniqueIdentifier>{20dd77d1-e20f-4a4f-8086-472afb19d4e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\test">
+      <UniqueIdentifier>{d358068d-664e-470d-93b2-2bb5db2b41e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -115,6 +118,9 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\filters\HilbertFilterDesigner.h">
       <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\MeasureTime.h">
+      <Filter>Header Files\test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
