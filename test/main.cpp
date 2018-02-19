@@ -11,8 +11,7 @@ extern void testLookupTable();
 extern void testSinOscillator();
 extern void testHilbert();
 extern void testAudioMath();
-
-void foo(int, int);
+extern void perfTest();
 
 int main(int, char **)
 {
@@ -26,6 +25,8 @@ int main(int, char **)
     testLookupTable();
     testSinOscillator();
     testHilbert();
+
+    perfTest();
     printf("press any key to continue\n"); fflush(stdout);
     getchar();
 }
