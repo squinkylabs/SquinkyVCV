@@ -1,6 +1,9 @@
 #pragma once
 
 template <typename T>
+class TestBuffers;
+
+template <typename T>
 class MeasureTime
 {
 
@@ -92,7 +95,7 @@ public:
     TestBuffers()
     {
         for (int i = 0; i < size; ++i) {
-            source[i] = (float) rand() / (float) RAND_MAX;
+            sourceData[i] = (float) rand() / (float) RAND_MAX;
         }
     }
 private:
