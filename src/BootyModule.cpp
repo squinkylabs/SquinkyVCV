@@ -1,10 +1,14 @@
 
 #include "Squinky.hpp"
+#include "FrequencyShifter.h"
+#include "WidgetComposite.h"
+#if 0
 #include "SinOscillator.h"
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
 #include "BiquadState.h"
 #include "HilbertFilterDesigner.h"
+#endif
 
 /**
  * Implementation class for BootyWidget
@@ -46,8 +50,14 @@ struct BootyModule : Module
     void fromJson(json_t *rootJ) override;
     void onSampleRateChange() override;
 
+    FrequencyShifter<WidgetComposite> shifter;
 private:
-    typedef float T;
+  typedef float T;
+#if 1
+  //  WidgetComposite wc;
+  //  FrequencyShifter<WidgetComposite> shifter;
+#else
+  
     SinOscillatorParams<T> oscParams;
     SinOscillatorState<T> oscState;
     BiquadParams<T, 3> hilbertFilterParamsSin;
@@ -58,38 +68,48 @@ private:
     LookupTableParams<T> exponential;
 
     float reciprocolSampleRate;
+#endif
 public:
-    float freqRange = 5;
+   // float freqRange = 5;
     ChoiceButton *rangeChoice;
 };
 
 extern float values[];
 extern const char* ranges[];
 
-BootyModule::BootyModule() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
+BootyModule::BootyModule() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS),
+    shifter(this)
 {
     // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
     onSampleRateChange();
 
+    shifter.init();
+#if 0
     // Force lazy load of lookup table with this extra call
+    
     SinOscillator<T, true>::setFrequency(oscParams, .01);
-
+   
     // Make 128 entry table to do exp x={-5..5} y={2..2000}
     std::function<double(double)> expFunc = AudioMath::makeFunc_Exp(-5, 5, 2, 2000);
     LookupTable<T>::init(exponential, 128, -5, 5, expFunc);
+#endif
 }
 
 void BootyModule::onSampleRateChange()
 {
     T rate = engineGetSampleRate();
+    #if 0
     reciprocolSampleRate = 1 / rate;
     HilbertFilterDesigner<T>::design(rate, hilbertFilterParamsSin, hilbertFilterParamsCos);
+    #endif
+    shifter.setSampleRate(rate);
 }
 
 json_t *BootyModule::toJson()
 {
     json_t *rootJ = json_object();
-    int rg = freqRange;
+  //  int rg = freqRange;
+    const int rg = shifter.freqRange;
     json_object_set_new(rootJ, "range", json_integer(rg));
     return rootJ;
 }
@@ -108,12 +128,16 @@ void BootyModule::fromJson(json_t *rootJ)
                 rangeChoice->text = ranges[i];
             }
         }
-        freqRange = rg;
+        shifter.freqRange = rg;
         fflush(stdout);
     }
 }
 
-
+void BootyModule::step()
+{
+    shifter.step();
+}
+#if 0
 void BootyModule::step()
 {
     // add the knob and the CV
@@ -152,6 +176,7 @@ void BootyModule::step()
     outputs[SIN_OUTPUT].value = x + y;
     outputs[COS_OUTPUT].value = x - y;
 }
+#endif
 
 /***********************************************************************************
  *
@@ -265,7 +290,9 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     float xPos = margin;
     float width = 6 * RACK_GRID_WIDTH - 2 * margin;
 
-    module->rangeChoice = new RangeChoice(&module->freqRange, Vec(xPos, row2), width);
+    // TODO: why do we need to reach into the module from here? I guess any
+    // time UI callbacks need to go bak..
+    module->rangeChoice = new RangeChoice(&module->shifter.freqRange, Vec(xPos, row2), width);
     addChild(module->rangeChoice);
 
     // knob on row 1

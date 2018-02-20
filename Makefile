@@ -7,6 +7,7 @@ VERSION = 0.6.0dev
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco
+FLAGS += -I./composites
 CFLAGS +=
 CXXFLAGS +=
 

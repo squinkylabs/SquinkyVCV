@@ -12,6 +12,7 @@ extern void testSinOscillator();
 extern void testHilbert();
 extern void testAudioMath();
 extern void perfTest();
+extern void testFrequencyShifter();
 
 int main(int, char **)
 {
@@ -25,6 +26,9 @@ int main(int, char **)
     testLookupTable();
     testSinOscillator();
     testHilbert();
+
+    // after testing all the components, test composites.
+    testFrequencyShifter();
 
     perfTest();
     printf("press any key to continue\n"); fflush(stdout);

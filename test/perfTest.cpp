@@ -8,16 +8,12 @@
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
 #include "BiquadState.h"
+#include "FrequencyShifter.h"
+#include "TestComposite.h"
+
+using Shifter = FrequencyShifter<TestComposite>;
 
 #include "MeasureTime.h"
-
-
-
-
-
-
-
-
 
 static void test1()
 {
@@ -67,17 +63,37 @@ static void testHilbert()
     BiquadParams<T, 3> paramsCos;
     BiquadState<T, 3> state;
     HilbertFilterDesigner<T>::design(44100, paramsSin, paramsCos);
-#if 1
+
     MeasureTime<T>::run("hilbert", [&state, &paramsSin]() {
 
         T d = BiquadFilter<T>::run(TestBuffers<T>::get(), state, paramsSin);
         return d;
         }, 1);
-#endif
+
 }
+
+
+void testShifter()
+{
+    Shifter fs;
+
+    fs.setSampleRate(44100);
+    fs.init();
+
+    fs.inputs[Shifter::AUDIO_INPUT].value = 0;
+
+    MeasureTime<float>::run("shifter", [&fs]() {
+        fs.inputs[Shifter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Shifter::SIN_OUTPUT].value;
+        }, 1);
+
+}
+
 void perfTest()
 {
     test1();
     testHilbert<float>();
     testHilbert<double>();
+    testShifter();
 }

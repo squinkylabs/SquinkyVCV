@@ -2,6 +2,8 @@
 #include "HilbertFilterDesigner.h"
 #include "AudioMath.h"
 #include "BiquadParams.h"
+#include "BiquadFilter.h"
+#include "BiquadState.h"
 
 #include <cmath>
 #include <algorithm>
@@ -40,11 +42,33 @@ void test1()
     }
 }
 
+// see if it passes audio
+template <typename T>
+void test2()
+{
+    BiquadParams<T, 3> paramsSin;
+    BiquadParams<T, 3> paramsCos;
+    BiquadState<T, 3> stateSin;
+    BiquadState<T, 3> stateCos;
+    HilbertFilterDesigner<T>::design(44100, paramsSin, paramsCos);
+
+    //  const T hilbertSin = BiquadFilter<T>::run(input, hilbertFilterStateSin, hilbertFilterParamsSin);
+    T input = 1;
+  //  T t = BiquadFilter<T>::run(input, state, paramsSin);
+    for (int i = 0; i < 10; ++i) {
+        T ts = BiquadFilter<T>::run(input, stateSin, paramsSin);
+        T tc = BiquadFilter<T>::run(input, stateCos, paramsCos);
+        assert(!AudioMath::closeTo(ts, 0, .00001));
+        assert(!AudioMath::closeTo(tc, 0, .00001));
+   }
+}
+
 template<typename T>
 void test()
 {
     test0<T>();
     test1<T>();
+    test2<T>();
 
 }
 
