@@ -1,10 +1,10 @@
 SLUG = squinkylabs-plug1
-VERSION = 0.5.1
+VERSION = 0.6.0dev
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco
-CFLAGS += 
+CFLAGS +=
 CXXFLAGS +=
 
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
@@ -24,9 +24,7 @@ DISTRIBUTABLES += $(wildcard LICENSE*) res
 # test: $(TARGET)
 #     SOURCES = $(wildcard test/src/*.cpp)
 #    TARGET = test.exe
-    
+
 # Include the VCV plugin Makefile framework
-include ../../plugin.mk
-
-
-    
+RACK_DIR ?= ../..
+include $(RACK_DIR)/plugin.mk
