@@ -1,53 +1,34 @@
 #pragma once
 
+#include <functional>
+#include "TimeStatsCollector.h"
+
 template <typename T>
 class TestBuffers;
 
+
+/**
+ * Used to estimate the amount of time a function takes to execute.
+ * Will run the function over and over in a tight loop. Return value of function
+ * is save to testBuffers. Otherwise the compiler might optimize the whole thing away.
+ * Usually ends by printing out the data.
+ */
 template <typename T>
 class MeasureTime
 {
-
 public:
-    static timespec diff(timespec start, timespec end)
-    {
-        timespec temp;
-        if ((end.tv_nsec - start.tv_nsec) < 0) {
-            temp.tv_sec = end.tv_sec - start.tv_sec - 1;
-            temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
-        } else {
-            temp.tv_sec = end.tv_sec - start.tv_sec;
-            temp.tv_nsec = end.tv_nsec - start.tv_nsec;
-        }
-        return temp;
-    }
 
-    // run test iterators time, return total seconds
-
-    static double measureTimeSub(std::function<T()> func, int64_t iterations)
-    {
-        struct timespec t0;
-        int x = clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t0);
-
-        for (int64_t i = 0; i < iterations; ++i) {
-            const T x = func();
-            TestBuffers<T>::put(x);
-        }
-
-        struct timespec t1;
-        x = clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t1);
-
-        struct timespec elapsed = diff(t0, t1);
-
-        double seconds = (double) elapsed.tv_sec + (elapsed.tv_nsec / (1000.0 * 1000.0 * 1000.0));
-        // printf("sec=%f tv_sec=%lld tv_ns=%d\n", seconds, elapsed.tv_sec, elapsed.tv_nsec);
-        return seconds;
-    }
-
-  
+    /**
+     * Executes function "func" and measures how long it takes.
+     * Will call func in a tight look lasting minTime seconds.
+     * When done, prints out statistics.
+     */
     static void run(const char * name, std::function<T()> func, float minTime)
     {
         int64_t iterations;
         bool done = false;
+
+        //keep increasing the number of iterations until we last at least minTime seconds
         for (iterations = 100; !done; iterations *= 2) {
             double elapsed = measureTimeSub(func, iterations);
             if (elapsed >= minTime) {
@@ -59,17 +40,34 @@ public:
                 printf("that's %f per sec\n", itersPerSec);
                 printf("percent CPU usage: %f\n", percent);
                 printf("best case instances: %f\n", 100 / percent);
-                printf("quoata used per 1 percent : %f\n", percent * 100);
+                printf("quota used per 1 percent : %f\n", percent * 100);
                 fflush(stdout);
                 done = true;
             }
         }
     }
+
+   /**
+    * Run test iterators time, return total seconds.
+    */
+    static double measureTimeSub(std::function<T()> func, int64_t iterations)
+    {
+        const double t0 = SqTime::seconds();
+        for (int64_t i = 0; i < iterations; ++i) {
+            const T x = func();
+            TestBuffers<T>::put(x);
+        }
+
+        const double t1 = SqTime::seconds();
+        const double elapsed = t1 - t0;
+        return elapsed;
+    }
 };
+
 
 /**
  * Simple producer / consumer for test data.
- * Serves up a pre-calculated list of random numbers.
+ * Serves up a precalculated list of random numbers.
  */
 template <typename T>
 class TestBuffers
@@ -121,26 +119,9 @@ size_t TestBuffers<T>::destIndex = 512;
 
 /**
  * Simple timer implementation for running inside Visual Studio
- *
- * Not needed Linux, where clock_gettime is available
  */
-#ifdef _MSC_VER
-#include <windows.h>
-struct timespec__
-{
-    time_t tv_sec;
-    long tv_nsec;
-};
 
-int clock_gettime(int id, struct timespec* ts)
-{
-    const int ms = ::timeGetTime();
-    ts->tv_sec = ms / 1000;
-    ts->tv_nsec = (ms % 1000) * 1000 * 1000;
 
-    return 0;
-}
-const int CLOCK_THREAD_CPUTIME_ID = 0;
-#endif
+
 
 

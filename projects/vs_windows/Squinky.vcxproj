@@ -48,6 +48,8 @@
     <ClInclude Include="..\..\dsp\utils\AudioMath.h" />
     <ClInclude Include="..\..\dsp\utils\LookupTable.h" />
     <ClInclude Include="..\..\test\MeasureTime.h" />
+    <ClInclude Include="..\..\test\SqTime.h" />
+    <ClInclude Include="..\..\test\TimeStatsCollector.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>

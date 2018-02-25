@@ -137,5 +137,11 @@
     <ClInclude Include="..\..\composites\WidgetComposite.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\test\TimeStatsCollector.h">
+      <Filter>Header Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\SqTime.h">
+      <Filter>Header Files\test</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
