@@ -32,7 +32,23 @@ private:
     static double frequency;
 };
 double SqTime::frequency = 0;
+
+#else
+#include <time.h>
+class SqTime
+{
+public:
+   static double seconds()
+    {
+	struct timespec ts;
+	int x = clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+	assert(x == 0);
+	return double(ts.tv_sec) + double(ts.tv_nsec) / (1000.0 * 1000.0 * 1000.0);
+
+    }
+};
 #endif
+
 
 
 // non-windows will probably use this
