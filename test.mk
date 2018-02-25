@@ -1,3 +1,4 @@
+# makefile fragment to make test.exe, the unit test program.
 TEST_SOURCES = $(wildcard test/*.cpp)
 TEST_SOURCES += $(wildcard dsp/**/*.cpp)
 TEST_SOURCES += $(wildcard dsp/third-party/falco/*.cpp)
@@ -11,6 +12,9 @@ build_test/%.cpp.o: %.cpp
 
 test : test.exe
 
+cleantest :
+	rm test.exe
+	rm -rf build_test
+
 test.exe : $(TEST_OBJECTS)
-	echo "about to link with " $(LDFLAGS)
 	$(CXX) -o $@ $^

@@ -18,10 +18,8 @@ extern void testFrequencyShifter();
 int main(int argc, char ** argv)
 {
     bool runPerf = false;
-    printf("argc = %d\n", argc);
     if (argc > 1) {
         std::string arg = argv[1];
-        printf("arg = %s\n", arg.c_str());
         if (arg == "--perf") {
             runPerf = true;
         }
@@ -43,6 +41,12 @@ int main(int argc, char ** argv)
     if (runPerf) {
         perfTest();
     }
-    printf("press any key to continue\n"); fflush(stdout);
+
+    // When we run inside Visual Studio, don't exit debugger immediately
+#if defined(_MSC_VER)
+    printf("Test passed. Press any key to continue...\n"); fflush(stdout);
     getchar();
+#else
+    printf("Tests passed.\n");
+#endif
 }

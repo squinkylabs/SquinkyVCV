@@ -48,6 +48,17 @@ inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
     int input_int = cvtt(&scaledInput);
     T input_float = scaledInput - input_int;
 
+    // Unfortunately, when we use float instead of doubles,
+    // numeric precision issues get us "out of range". So
+    // here we clamp to range. It would be more efficient if we didn't do this.
+    // Perhaps the calculation of a and b could be done so this can't happen?
+    if (input_float < 0) {
+        input_float = 0;
+    }
+    else if (input_float > 1) {
+        input_float = 1;
+    }
+    
     assert(input_float >= 0 && input_float <= 1);
     assert(input_int >= 0 && input_int <= params.numBins_i);
 
