@@ -32,45 +32,41 @@ class StateVariableFilter
 {
 public:
     static T run(T input, StateVariableFilterState<T>& state, const StateVariableFilterParams<T>& params);
-   // StateVariableStage();
-   // double XFormOneSample(double);
-#if 0
-    enum class Mode
-    {
-        BandPass, LowPass, HiPass, Notch
-    };
-    void setQ(double q);
-    void setFreq(double f);
-    void setMode(Mode m)
-    {
-        mode = m;
-    }
-   // void SetFormat(const AudioFormat& f);
-#endif
 
-private:
-#if 0
-    Mode mode;
-
-    double mdZ1;		// the delay line buffer
-    double mdZ2;		// the delay line buffer
-
-    double mdQGain;		// internal amp gains
-    double mdFcGain;
-    //
-    double FreqToFcGain(double);
-    //void SetTempFreq(double);
-    static double QToQGain(double);
-
-    AudioFormatHolder mFormat;
-#endif
 };
 
 template <typename T>
 inline T StateVariableFilter<T>::run(T input, StateVariableFilterState<T>& state, const StateVariableFilterParams<T>& params)
 {
-    assert(false);
-    return 0;
+    const T dLow = state.z2 + params.fcGain * state.z1;
+    const T dHi = input - (state.z1 * params.qGain + dLow);
+    const T dBand = dHi * params.fcGain + state.z1;
+
+    assert(dBand < 1000.0);
+
+    T d;
+    switch (params.mode) {
+        case StateVariableFilterParams<T>::Mode::LowPass:
+            d = dLow;
+            break;
+        case StateVariableFilterParams<T>::Mode::HiPass:
+            d = dHi;
+            break;
+        case StateVariableFilterParams<T>::Mode::BandPass:
+            d = dBand;
+            break;
+        case StateVariableFilterParams<T>::Mode::Notch:
+            d = dLow + dHi;
+            break;
+        default:
+            assert(false);
+            d = 0.0;
+    }
+
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    return d;
 }
 
 /****************************************************************/
@@ -79,6 +75,7 @@ template <typename T>
 class StateVariableFilterParams
 {
 public:
+    friend StateVariableFilter<T>;
     enum class Mode
     {
         BandPass, LowPass, HiPass, Notch
@@ -101,8 +98,8 @@ public:
     }
 private:
     Mode mode;
-    T qGain;		// internal amp gains
-    T fcGain;
+    T qGain= 1.;		// internal amp gains
+    T fcGain= T(.001);
 };
 
 template <typename T>
@@ -110,7 +107,7 @@ inline void StateVariableFilterParams<T>::setQ(T q)
 {
     if (q < .49) {
         assert(false);
-        q = .6;
+        q = T(.6);
     }
     qGain = 1 / q;
 }
@@ -120,7 +117,7 @@ inline void StateVariableFilterParams<T>::setFreq(T fc)
 {
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
-    fcGain =  T(AudioMath::Pi) * 2 * fc;
+    fcGain =  T(AudioMath::Pi) * T(2) * fc;
 }
 
 /*******************************************************************************************/
@@ -129,8 +126,8 @@ template <typename T>
 class StateVariableFilterState
 {
 public:
-    double z1;		// the delay line buffer
-    double z2;		// the delay line buffer
+    T z1=0;		// the delay line buffer
+    T z2=0;		// the delay line buffer
 };
 
 
