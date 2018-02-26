@@ -14,6 +14,7 @@ extern void testHilbert();
 extern void testAudioMath();
 extern void perfTest();
 extern void testFrequencyShifter();
+extern void testStateVariable();
 
 int main(int argc, char ** argv)
 {
@@ -34,6 +35,7 @@ int main(int argc, char ** argv)
     testLookupTable();
     testSinOscillator();
     testHilbert();
+    testStateVariable();
 
     // after testing all the components, test composites.
     testFrequencyShifter();
