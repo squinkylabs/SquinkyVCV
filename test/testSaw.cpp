@@ -6,7 +6,7 @@ using namespace std;
 
 // do objects exist?
 template<typename T>
-void testSaw1()
+static void testSaw1()
 {
     SawOscillatorParams<T> params;
     SawOscillator<T, false>::setFrequency(params, (T(.1)));
@@ -18,7 +18,7 @@ void testSaw1()
  * Does parameter calculation do anything?
  */
 template<typename T>
-void testSaw2()
+static void testSaw2()
 {
     SawOscillatorParams<T> params;
     assert(params.phaseIncrement == 0);
@@ -30,7 +30,7 @@ void testSaw2()
  * Does something come out?
  */
 template<typename T>
-void testSaw3()
+static void testSaw3()
 {
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, (T(.2)));
@@ -46,7 +46,7 @@ void testSaw3()
  * Does it look like a saw?
  */
 template<typename T>
-void testSaw4()
+static void testSaw4()
 {
     const T freq = T(.01);
     const T freq_2 = freq / 2;
@@ -77,7 +77,7 @@ void testSaw4()
 * is the quadrature really 90 out of phase?
 */
 template<typename T>
-void testSaw5()
+static void testSaw5()
 {
     const T freq = T(.01);
     const T freq_2 = freq / 2;
@@ -104,7 +104,7 @@ void testSaw5()
 * Does it look like a negative saw?
 */
 template<typename T>
-void testSaw6()
+static void testSaw6()
 {
     const T freq = T(-.01);
     const T delta = freq / 1000;
@@ -135,7 +135,7 @@ void testSaw6()
 
 
 template <typename T>
-void testSawT()
+static void testSawT()
 {
     testSaw1<T>();
     testSaw2<T>();

@@ -15,7 +15,7 @@
 
 
 template<typename T, int N>
-void testState_0()
+static void testState_0()
 {
     BiquadState<T, N> p;
     for (int i = 0; i < N; ++i) {
@@ -39,7 +39,7 @@ void testState_0()
 }
 
 template<typename T, int N>
-void testParam_0()
+static void testParam_0()
 {
 
     BiquadParams<T, N> p;
@@ -96,7 +96,7 @@ static void test2()
 
 // test that filter designer does something (more than just generate zero
 template<typename T>
-void testBasicDesigner2()
+static void testBasicDesigner2()
 {
     BiquadParams<T, 1> p;
     ButterworthFilterDesigner<T>::designTwoPoleLowpass(p, T(.1));
@@ -109,7 +109,7 @@ void testBasicDesigner2()
 
 // test that filter designer does something (more than just generate zero
 template<typename T>
-void testBasicDesigner3()
+static void testBasicDesigner3()
 {
     BiquadParams<T, 2> p;
     ButterworthFilterDesigner<T>::designThreePoleLowpass(p, T(.1));
@@ -122,7 +122,7 @@ void testBasicDesigner3()
 
 // test that filter does something
 template<typename T>
-void testBasicFilter2()
+static void testBasicFilter2()
 {
     BiquadParams<T, 1> params;
     BiquadState<T, 1> state;
@@ -154,7 +154,7 @@ void testBasicFilter2()
 
 // test that filter does something
 template<typename T>
-void testBasicFilter3()
+static void testBasicFilter3()
 {
     BiquadParams<T, 2> params;
     BiquadState<T, 2> state;

@@ -96,6 +96,9 @@
     <ClCompile Include="..\..\test\testStateVariable.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testTestSignal.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -148,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\filters\StateVariableFilter.h">
       <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\TestSignal.h">
+      <Filter>Header Files\test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

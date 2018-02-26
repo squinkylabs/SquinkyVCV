@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AudioMath.h"
+
 template <typename T> class StateVariableFilterState;
 template <typename T> class StateVariableFilterParams;
 
@@ -64,6 +66,15 @@ private:
 #endif
 };
 
+template <typename T>
+inline T StateVariableFilter<T>::run(T input, StateVariableFilterState<T>& state, const StateVariableFilterParams<T>& params)
+{
+    assert(false);
+    return 0;
+}
+
+/****************************************************************/
+
 template <typename T> 
 class StateVariableFilterParams
 {
@@ -72,8 +83,18 @@ public:
     {
         BandPass, LowPass, HiPass, Notch
     };
-    void setQ(double q);
-    void setFreq(double f);
+
+    /**
+     * Set the filter Q.
+     * Values must be > .5
+     */
+    void setQ(T q);
+
+    /**
+     * Set the center frequency.
+     * units are 1 == sample rate
+     */
+    void setFreq(T f);
     void setMode(Mode m)
     {
         mode = m;
@@ -83,6 +104,26 @@ private:
     T qGain;		// internal amp gains
     T fcGain;
 };
+
+template <typename T>
+inline void StateVariableFilterParams<T>::setQ(T q)
+{
+    if (q < .49) {
+        assert(false);
+        q = .6;
+    }
+    qGain = 1 / q;
+}
+
+template <typename T>
+inline void StateVariableFilterParams<T>::setFreq(T fc)
+{
+    // Note that we are skipping the high freq warping.
+    // Going for speed over accuracy
+    fcGain =  T(AudioMath::Pi) * 2 * fc;
+}
+
+/*******************************************************************************************/
 
 template <typename T>
 class StateVariableFilterState

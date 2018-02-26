@@ -11,7 +11,7 @@
 
 // test that we can hook it up
 template<typename T>
-void test0()
+static void test0()
 {
     BiquadParams<T, 3> paramsSin;
     BiquadParams<T, 3> paramsCos;
@@ -20,7 +20,7 @@ void test0()
 
 // test that filter designer does something (more than just generate zero
 template<typename T>
-void test1()
+static void test1()
 {
     BiquadParams<T, 3> paramsSin;
     BiquadParams<T, 3> paramsCos;
@@ -44,7 +44,7 @@ void test1()
 
 // see if it passes audio
 template <typename T>
-void test2()
+static void test2()
 {
     BiquadParams<T, 3> paramsSin;
     BiquadParams<T, 3> paramsCos;
@@ -64,7 +64,7 @@ void test2()
 }
 
 template<typename T>
-void test()
+static void test()
 {
     test0<T>();
     test1<T>();

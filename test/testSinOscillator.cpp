@@ -6,7 +6,7 @@ using namespace std;
 
 // test that it can be hooked up
 template<typename T>
-void test1()
+static void test1()
 {
     SinOscillatorParams<T> p;
     SinOscillatorState<T> s;
@@ -17,7 +17,7 @@ void test1()
 
 // test that it makes output
 template<typename T>
-void test2()
+static void test2()
 {
     SinOscillatorParams<T> p;
     SinOscillatorState<T> s;
@@ -30,7 +30,7 @@ void test2()
 
 // test that sin lookup is correct
 template<typename T>
-void test3()
+static void test3()
 {
     SinOscillatorParams<T> params;
     SinOscillatorState<T> s;
@@ -59,7 +59,7 @@ void test3()
 
 // test that output is correct freq
 template<typename T>
-void test4()
+static void test4()
 {
     const int clocksPerPeriod = 64;
     SinOscillatorParams<T> params;
@@ -100,7 +100,7 @@ void test4()
 }
 
 template<typename T>
-void test()
+static void test()
 {
     test1<T>();
     test2<T>();

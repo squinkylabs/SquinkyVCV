@@ -7,6 +7,7 @@
 #include <string>
 
 extern void testBiquad();
+extern void testTestSignal();
 extern void testSaw();
 extern void testLookupTable();
 extern void testSinOscillator();
@@ -30,6 +31,7 @@ int main(int argc, char ** argv)
     assert(sizeof(size_t) == 8);
 
     testAudioMath();
+    testTestSignal();
     testBiquad();
     testSaw();
     testLookupTable();
