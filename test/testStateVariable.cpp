@@ -57,29 +57,45 @@ static void test2()
         return input;
         });
 
-    printf("gl = %f\n", gl);
     assert(gl == 1);
-   
-
 }
 
+/**
+ * Measure freq response at some points
+ */
 template <typename T>
 static void test3()
 {
-  
+    const T fc = T(.001);// was .05
+    const T q = T(1.0 /  std::sqrt(2));// butterworth
     StateVariableFilterParams<T> params;
     StateVariableFilterState<T> state;
     params.setMode(StateVariableFilterParams<T>::Mode::LowPass);
-    params.setFreq(T(.05));                   // TODO: make an even fraction
-    params.setQ(T(.7));
+    params.setFreq(fc);                   // TODO: make an even fraction
+    params.setQ(q);   // tried .7
 
-
-    const T gl = measureGain<T>(T(.001), [&state, &params](T input) {
+    double g = measureGain<T>(fc/4, [&state, &params](T input) {
         return StateVariableFilter<T>::run(input, state, params);
         });
+    g = AudioMath::db(g);
+    assert(AudioMath::closeTo(g, 0, .05));
 
-    printf("gl = %f\n", gl);
-    assert(gl == 1);
+    g = measureGain<T>(fc, [&state, &params](T input) {
+        return StateVariableFilter<T>::run(input, state, params);
+        });
+    g = AudioMath::db(g);
+    assert(AudioMath::closeTo(g, -3, .05));
+
+    double g2 = measureGain<T>(fc*4, [&state, &params](T input) {
+        return StateVariableFilter<T>::run(input, state, params);
+        });
+    g2 = AudioMath::db(g2);
+
+    double g3 = measureGain<T>(fc * 8, [&state, &params](T input) {
+        return StateVariableFilter<T>::run(input, state, params);
+        });
+    g3 = AudioMath::db(g3);
+    assert(AudioMath::closeTo(g2-g3, 12, 2));
 
 
 }
