@@ -14,6 +14,7 @@ public:
     // freq is normalized f / sr
     static void generateSin(T * output, int numSamples, T freq);
     static double getRMS(const T * signal, int numSamples);
+    static T TestSignal<T>::measureGain(T freq, std::function<T(T)> func);
 };
 
 
@@ -42,4 +43,21 @@ inline double TestSignal<T>::getRMS(const T * signal, int numSamples)
         sumSq += double(signal[i]) * signal[i];
     }
     return std::sqrt(sumSq / numSamples);
+}
+
+template <typename T>
+inline T TestSignal<T>::measureGain(T freq, std::function<T(T)> func)
+{
+    const int size = 60000;
+    T input[size];
+    T output[size];
+
+    //generateSin(T * output, int numSamples, T freq);
+    TestSignal<T>::generateSin(input, size, freq);
+    for (int i = 0; i < size; ++i) {
+        output[i] = func(input[i]);
+    }
+    T vo = T(TestSignal<T>::getRMS(output, size));
+    T vi = T(TestSignal<T>::getRMS(input, size));
+    return vo / vi;
 }
