@@ -18,8 +18,8 @@ static void testSaw1()
     SawOscillator<T, false>::runSaw(state, params);
 
     using osc = MultiModOsc<T, 4, 3>;
-    osc::State mstate;
-    osc::Params mparams;
+    typename osc::State mstate;
+    typename osc::Params mparams;
     T output[3];
     osc::run(output, mstate, mparams);
 }
@@ -73,8 +73,8 @@ template<typename T>
 static void testMulti3()
 {
     using osc = MultiModOsc<T, 4, 3>;
-    osc::State state;
-    osc::Params params;
+    typename osc::State state;
+    typename osc::Params params;
     T output[3] = {0, 0, 0};
     T output2[3] = {0, 0, 0};
 
@@ -90,14 +90,13 @@ static void testMulti3()
             assert(output[i] != output[i - 1]);
             assert(output2[i] != output2[i - 1]);
         }
-        
     }
-    
 }
 
 /**
- * Does it look like a saw?
+ * Does it look like a triangle?
  */
+
 template<typename T>
 static void testTri4()
 {
@@ -119,7 +118,7 @@ static void testTri4()
                 // still increasing
             } else {
                 // started decreasing
-               
+
                 assert(AudioMath::closeTo(output, 1, delta));
                 increasing = false;
             }
@@ -138,7 +137,7 @@ static void testTri4()
 }
 
 /**
-* Does it look like a triangle?
+* Does it look like a saw?
 */
 template<typename T>
 static void testSaw4()
@@ -228,16 +227,34 @@ static void testSaw6()
 template <typename T>
 static void testTri7()
 {
-    const T freq = T(.001);
+    const int div = 1024;
+    const T freq = T(1.0/T(div));
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, freq);
     SawOscillatorState<T> state;
-
-    double amplitude = TestSignal<T>::measureOutput(1000, [&state, &params]() {
-        return SawOscillator<T, true>::runSaw(state, params);
+    double amplitude = TestSignal<T>::measureOutput(div, [&state, &params]() {
+        return SawOscillator<T, true>::runTri(state, params);
         });
-    printf("ampl = %f\n", amplitude);   
-    assert(false);
+   
+    // RMS of tri wave is 1 / cube root 3
+    assert(AudioMath::closeTo(amplitude, 0.57735, .0001));
+}
+
+template <typename T>
+static void testSaw7()
+{
+    const int div = 1024;
+    const T freq = T(1.0 / T(div));
+    SawOscillatorParams<T> params;
+    SawOscillator<T, true>::setFrequency(params, freq);
+    SawOscillatorState<T> state;
+    double amplitude = TestSignal<T>::measureOutput(div * 16, [&state, &params]() {
+        return 2 * SawOscillator<T, true>::runSaw(state, params) - 1;
+        });
+
+    printf("ampl = %f\n", amplitude);
+    // RMS of saw wave is 1 / cube root 3
+    assert(AudioMath::closeTo(amplitude, 0.57735, .0001));
 }
 
 template <typename T>
@@ -252,7 +269,8 @@ static void testSawT()
     testTri4<T>();
     testSaw5<T>();
     testSaw6<T>();
-    //testTri7<T>();
+    testTri7<T>();
+    testSaw7<T>();
 }
 
 void testSaw()

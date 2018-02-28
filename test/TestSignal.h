@@ -52,6 +52,7 @@ inline double TestSignal<T>::getRMS(const T * signal, int numSamples)
     assert(numSamples > 0);
     double sumSq = 0;
     for (int i = 0; i < numSamples; ++i) {
+        //printf("getRMS, i=%d, samp=%d\n")
         sumSq += double(signal[i]) * signal[i];
     }
     return std::sqrt(sumSq / numSamples);

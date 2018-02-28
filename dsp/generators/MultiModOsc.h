@@ -1,6 +1,9 @@
 #pragma once
 
+#include <cmath>
+
 #include "SawOscillator.h"
+
 
 /**
  * A bunch of LFOs at slightly different frequencies added together in different ways.
