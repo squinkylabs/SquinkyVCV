@@ -29,6 +29,7 @@ template<typename T>
 class BiquadFilter
 {
 public:
+    BiquadFilter() = delete;       // we are only static
     template<int N>
     static T run(T input, BiquadState<T, N>& state, const BiquadParams<T, N>& params);
 

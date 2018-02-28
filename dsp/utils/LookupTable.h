@@ -15,6 +15,7 @@ class LookupTable
 {
 
 public:
+    LookupTable() = delete;       // we are only static
     static void init(LookupTableParams<T>& params, int bins, T xMin, T xMax, std::function<double(double)> f);
     static T lookup(const LookupTableParams<T>& params, T input);
 

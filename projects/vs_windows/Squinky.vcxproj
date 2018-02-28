@@ -45,6 +45,7 @@
     <ClInclude Include="..\..\dsp\filters\ButterworthFilterDesigner.h" />
     <ClInclude Include="..\..\dsp\filters\HilbertFilterDesigner.h" />
     <ClInclude Include="..\..\dsp\filters\StateVariableFilter.h" />
+    <ClInclude Include="..\..\dsp\generators\MultiModOsc.h" />
     <ClInclude Include="..\..\dsp\generators\SawOscillator.h" />
     <ClInclude Include="..\..\dsp\generators\SinOscillator.h" />
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h" />

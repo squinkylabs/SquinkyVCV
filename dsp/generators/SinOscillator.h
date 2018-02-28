@@ -20,6 +20,7 @@ template<typename T, bool frequencyCanBeNegative>
 class SinOscillator
 {
 public:
+    SinOscillator() = delete;       // we are only static
     static void setFrequency(SinOscillatorParams<T>&, T frequency);
     static T run(SinOscillatorState<T>&, const SinOscillatorParams<T>&);
     static void runQuadrature(T& output, T& outputQuadrature, SinOscillatorState<T>&, const SinOscillatorParams<T>&);
@@ -45,7 +46,7 @@ inline T SinOscillator<T, frequencyCanBeNegative>::run(
     SinOscillatorState<T>& state, const SinOscillatorParams<T>& params)
 {
 
-    const T temp = SawOscillator<T, frequencyCanBeNegative>::run(state.sawState, params.sawParams);
+    const T temp = SawOscillator<T, frequencyCanBeNegative>::runSaw(state.sawState, params.sawParams);
     const T ret = LookupTable<T>::lookup(params.lookupParams, temp);
     return ret;
 }

@@ -7,6 +7,7 @@ template<typename T>
 class HilbertFilterDesigner
 {
 public:
+    HilbertFilterDesigner() = delete;       // we are only static
     /**
      * generates a pair of biquads, on will be 90 degrees shifter from the other
      */

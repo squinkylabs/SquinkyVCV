@@ -5,6 +5,7 @@
 class AudioMath
 {
 public:
+    AudioMath() = delete;       // we are only static
     static const double Pi;
     static const double Pi_2;       // Pi / 2
     static const double Ln2;

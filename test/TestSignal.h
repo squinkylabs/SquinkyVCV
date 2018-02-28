@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <vector>
+
 /**
  * Utilities for generating and analyzing test signals.
  *
@@ -11,10 +13,20 @@ template <typename T>
 class TestSignal
 {
 public:
+    TestSignal() = delete;       // we are only static
     // freq is normalized f / sr
     static void generateSin(T * output, int numSamples, T freq);
     static double getRMS(const T * signal, int numSamples);
-    static T TestSignal<T>::measureGain(T freq, std::function<T(T)> func);
+
+    /**
+     * Measure the gain of a processing lambda at a specificed frequency
+     */
+    static T measureGain(T freq, std::function<T(T)> func);
+
+    /**
+     * Measure the RMS output of a generator lambda
+     */
+    static double measureOutput(int samples, std::function<T()> func);
 };
 
 
@@ -60,4 +72,17 @@ inline T TestSignal<T>::measureGain(T freq, std::function<T(T)> func)
     T vo = T(TestSignal<T>::getRMS(output, size));
     T vi = T(TestSignal<T>::getRMS(input, size));
     return vo / vi;
+}
+
+template <typename T>
+inline double TestSignal<T>::measureOutput(int numSamples, std::function<T()> func)
+{
+    //std::unique_ptr<T> buffer(new T[numSamples]);
+    std::vector<T> buffer(numSamples);
+    for (int i = 0; i < numSamples; ++i) {
+        buffer[i] = func();
+    }
+   
+    return getRMS(buffer.data(), numSamples);
+
 }

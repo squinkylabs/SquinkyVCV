@@ -96,12 +96,21 @@ static void testUnityGain()
 }
 
 template <typename T>
+static void test4()
+{
+    double amp = TestSignal<T>::measureOutput(5, []() {
+        return T(-3);
+        });
+    assert(amp == 3);
+}
+template <typename T>
 static void test()
 {
     test1<T>();
     test2<T>();
     test3<T>();
     testUnityGain<T>();
+    test4<T>();
 }
 
 void testTestSignal()

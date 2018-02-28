@@ -1,6 +1,10 @@
 #include <assert.h>
 #include <iostream>
+
+#include "MultiModOsc.h"
+#include "AudioMath.h"
 #include "SawOscillator.h"
+#include "TestSignal.h"
 
 using namespace std;
 
@@ -11,7 +15,12 @@ static void testSaw1()
     SawOscillatorParams<T> params;
     SawOscillator<T, false>::setFrequency(params, (T(.1)));
     SawOscillatorState<T> state;
-    SawOscillator<T, false>::run(state, params);
+    SawOscillator<T, false>::runSaw(state, params);
+
+    using osc = MultiModOsc<T, 4, 3>;
+    osc::State mstate;
+    osc::Params mparams;
+    osc::run(mstate, mparams);
 }
 
 /**
@@ -35,21 +44,76 @@ static void testSaw3()
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, (T(.2)));
     SawOscillatorState<T> state;
-    SawOscillator<T, true>::run(state, params);
-    const T out = SawOscillator<T, true>::run(state, params);
-    assert(out >= 0);
+    SawOscillator<T, true>::runSaw(state, params);
+    const T out = SawOscillator<T, true>::runSaw(state, params);
+    assert(out > 0);
     assert(out < 1);
 }
 
+/**
+* Does something come out?
+*/
+template<typename T>
+static void testTri3()
+{
+    SawOscillatorParams<T> params;
+    SawOscillator<T, true>::setFrequency(params, (T(.2)));
+    SawOscillatorState<T> state;
+    SawOscillator<T, true>::runSaw(state, params);
+    const T out = SawOscillator<T, true>::runTri(state, params);
+    assert(out > 0);
+    assert(out < 1);
+}
 
 /**
  * Does it look like a saw?
  */
 template<typename T>
+static void testTri4()
+{
+    const T freq = T(.1);     // was .01
+    const T delta = 2 * freq;
+    SawOscillatorParams<T> params;
+    SawOscillator<T, true>::setFrequency(params, (T(.01)));
+    SawOscillatorState<T> state;
+
+    T last = -freq;
+    bool increasing = true;
+    for (int i = 0; i < 1000; ++i) {
+        const T output = SawOscillator<T, true>::runTri(state, params);
+
+        assert(output >= -1);
+        assert(output <= 1);
+        if (increasing) {
+            if (output > last) {
+                // still increasing
+            } else {
+                // started decreasing
+               
+                assert(AudioMath::closeTo(output, 1, delta));
+                increasing = false;
+            }
+        } else {
+            if (output < last) {
+                // still decreasing
+            } else {
+                // started increasing
+                assert(AudioMath::closeTo(output, -1, delta));
+                increasing = true;
+            }
+        }
+
+        last = output;
+    }
+}
+
+/**
+* Does it look like a triangle?
+*/
+template<typename T>
 static void testSaw4()
 {
     const T freq = T(.01);
-    const T freq_2 = freq / 2;
     const T delta = freq / 1000;
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, (T(.01)));
@@ -57,7 +121,7 @@ static void testSaw4()
 
     T last = 0;
     for (int i = 0; i < 1000; ++i) {
-        const T output = SawOscillator<T, true>::run(state, params);
+        const T output = SawOscillator<T, true>::runSaw(state, params);
 
         assert(output >= 0);
         assert(output < 1);
@@ -74,14 +138,11 @@ static void testSaw4()
 }
 
 /**
-* is the quadrature really 90 out of phase?
+* Is the quadrature really 90 out of phase?
 */
 template<typename T>
 static void testSaw5()
 {
-    const T freq = T(.01);
-    const T freq_2 = freq / 2;
-    const T delta = freq / 1000;
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, (T(.01)));
     SawOscillatorState<T> state;
@@ -114,7 +175,7 @@ static void testSaw6()
 
     T last = 0;
     for (int i = 0; i < 1000; ++i) {
-        const T output = SawOscillator<T, true>::run(state, params);
+        const T output = SawOscillator<T, true>::runSaw(state, params);
 
         assert(output >= 0);
         assert(output < 1);
@@ -127,12 +188,27 @@ static void testSaw6()
             // no-wrap - are we decreasing
             assert(output > (last + freq + delta));
         }
-
         last = output;
     }
 }
 
+/** 
+ * IS the RMS for triangle as expected?
+ */
+template <typename T>
+static void testTri7()
+{
+    const T freq = T(.001);
+    SawOscillatorParams<T> params;
+    SawOscillator<T, true>::setFrequency(params, freq);
+    SawOscillatorState<T> state;
 
+    double amplitude = TestSignal<T>::measureOutput(1000, [&state, &params]() {
+        return SawOscillator<T, true>::runSaw(state, params);
+        });
+    printf("ampl = %f\n", amplitude);   
+    assert(false);
+}
 
 template <typename T>
 static void testSawT()
@@ -140,9 +216,12 @@ static void testSawT()
     testSaw1<T>();
     testSaw2<T>();
     testSaw3<T>();
+    testTri3<T>();
     testSaw4<T>();
+    testTri4<T>();
     testSaw5<T>();
     testSaw6<T>();
+    //testTri7<T>();
 }
 
 void testSaw()

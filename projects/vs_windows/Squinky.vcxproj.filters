@@ -155,5 +155,8 @@
     <ClInclude Include="..\..\test\TestSignal.h">
       <Filter>Header Files\test</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\dsp\generators\MultiModOsc.h">
+      <Filter>Header Files\dsp\generators</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
