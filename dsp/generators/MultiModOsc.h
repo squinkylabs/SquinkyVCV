@@ -74,18 +74,13 @@ inline void MultiModOsc<T, NOsc, NOut>::Params::setRateAndSpread(T rate, T sprea
             default:
                 assert(false);
         }
-        //const double y = pow(3, mdSpread);
-        //dMult *= y;
         dMult -= 1.0;	// norm to 0
         dMult *= dNormSpread;
         dMult += 1.0;
 
         const T x = BaseRate * dMult;
-      //  mVCOs[i].SetFreq(x);
         const T actual = x * inverseSampleRate;
-        printf("setting LFO %d to %f, %f\n", i, x, actual);
         SawOscillator<T, false>::setFrequency(params[i], actual);
-
     }
 }
 
@@ -96,5 +91,14 @@ inline void MultiModOsc<T, NOsc, NOut>::run(T* output, State& state, const Param
     for (int i = 0; i < NOsc; ++i) {
         modulators[i] = SawOscillator<T, false>::runTri(state.states[i], params.params[i]);
     }
-    assert(false);  // need to return something
+    // The old implementation had a smarter algorithm, but
+    // for now hard-wiring it for 4/3 is ok
+    if ((NOsc == 4) && (NOut == 3)) {
+        output[0] = modulators[0] + modulators[1] + modulators[2];  // not 3
+        output[1] = modulators[0] + modulators[1] + modulators[3];  // not 2
+        output[2] = modulators[0] + modulators[2] + modulators[3];  // not 1
+    } else {
+        printf("not imp: %d, %d\n", NOsc, NOut);
+        assert(false);  // need to return something
+    }
 }
