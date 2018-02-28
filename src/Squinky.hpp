@@ -3,3 +3,4 @@
 using namespace rack;
 extern Plugin *plugin;
 extern Model *modelBootyModule;
+extern Model *modelVocalModule;

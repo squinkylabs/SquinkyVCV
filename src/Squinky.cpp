@@ -18,4 +18,6 @@ void init(rack::Plugin *p)
 
     assert(modelBootyModule);
     p->addModel(modelBootyModule);
+    assert(modelVocalModule);
+    p->addModel(modelVocalModule);
 }
