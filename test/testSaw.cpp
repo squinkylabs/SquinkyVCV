@@ -20,7 +20,8 @@ static void testSaw1()
     using osc = MultiModOsc<T, 4, 3>;
     osc::State mstate;
     osc::Params mparams;
-    osc::run(mstate, mparams);
+    T output[3];
+    osc::run(output, mstate, mparams);
 }
 
 /**
@@ -63,6 +64,35 @@ static void testTri3()
     const T out = SawOscillator<T, true>::runTri(state, params);
     assert(out > 0);
     assert(out < 1);
+}
+
+/**
+* Does something come out?
+*/
+template<typename T>
+static void testMulti3()
+{
+    using osc = MultiModOsc<T, 4, 3>;
+    osc::State state;
+    osc::Params params;
+    T output[3] = {0, 0, 0};
+    T output2[3] = {0, 0, 0};
+
+    osc::run(output, state, params);
+    osc::run(output, state, params);
+    osc::run(output2, state, params);
+    for (int i = 0; i < 3; ++i) {
+        assert(output[i] != 0);
+        assert(output2[i] != 0);
+        assert(output[i] != output2[i]);
+
+        if (i > 0) {
+            assert(output[i] != output[i - 1]);
+            assert(output2[i] != output2[i - 1]);
+        }
+        
+    }
+    
 }
 
 /**
@@ -217,6 +247,7 @@ static void testSawT()
     testSaw2<T>();
     testSaw3<T>();
     testTri3<T>();
+    testMulti3<T>();
     testSaw4<T>();
     testTri4<T>();
     testSaw5<T>();

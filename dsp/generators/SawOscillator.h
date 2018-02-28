@@ -16,7 +16,7 @@ class SawOscillator
 {
 public:
     SawOscillator() = delete;       // we are only static
-    static void setFrequency(SawOscillatorParams<T>& params, T freq);
+    static void setFrequency(SawOscillatorParams<T>& params, T freq);   // TODO: so we want setters on params?
 
     //  Generates a saw wave from 0..1
     static T runSaw(SawOscillatorState<T>& state, const SawOscillatorParams<T>& params);
