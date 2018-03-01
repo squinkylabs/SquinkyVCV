@@ -158,5 +158,8 @@
     <ClInclude Include="..\..\dsp\generators\MultiModOsc.h">
       <Filter>Header Files\dsp\generators</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\VocalAnimator.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

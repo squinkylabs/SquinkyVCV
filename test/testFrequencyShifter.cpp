@@ -1,10 +1,12 @@
 #include <assert.h>
 #include <vector>
 
+#include "VocalAnimator.h"
 #include "FrequencyShifter.h"
 #include "TestComposite.h"
 
 using Shifter = FrequencyShifter<TestComposite>;
+using Animator = VocalAnimator<TestComposite>;
 
 // just test the can compile, etc..
 static void test0()
@@ -40,9 +42,15 @@ static void test1()
     }
 }
 
+static void test2()
+{
+    Animator anim;
+}
+
 
 void testFrequencyShifter()
 {
     test0();
     test1();
+    test2();
 }
