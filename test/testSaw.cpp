@@ -249,10 +249,11 @@ static void testSaw7()
     SawOscillator<T, true>::setFrequency(params, freq);
     SawOscillatorState<T> state;
     double amplitude = TestSignal<T>::measureOutput(div * 16, [&state, &params]() {
+        // normalize to 1V pp
         return 2 * SawOscillator<T, true>::runSaw(state, params) - 1;
         });
 
-    printf("ampl = %f\n", amplitude);
+
     // RMS of saw wave is 1 / cube root 3
     assert(AudioMath::closeTo(amplitude, 0.57735, .0001));
 }

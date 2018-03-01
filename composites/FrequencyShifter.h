@@ -11,7 +11,7 @@
  * Complete Frequency Shifter
  *
  * if TBase is WidgetComposite, used as the implementation part of the Booty Shifter module.
- * If TBase is TestComposite build stand alone for unit tests, 
+ * If TBase is TestComposite build stand alone for unit tests,
  */
 template <class TBase>
 class FrequencyShifter : public TBase
@@ -42,7 +42,7 @@ public:
         LookupTable<T>::init(exponential, 128, -5, 5, expFunc);
     }
 
-    // DO these belong here?
+    // Define all the enums here. This will let the tests and the widget access them.
     enum ParamIds
     {
         PITCH_PARAM,      // the big pitch knob
@@ -67,6 +67,7 @@ public:
     {
         NUM_LIGHTS
     };
+
     /**
      * Main processing entry point. Called every sample
      */
@@ -91,7 +92,7 @@ template <class TBase>
 inline void FrequencyShifter<TBase>::step()
 {
     assert(exponential.isValid());
-   
+
     // add the knob and the CV
     T freqHz;
     T cvTotal = TBase::params[PITCH_PARAM].value + TBase::inputs[CV_INPUT].value;

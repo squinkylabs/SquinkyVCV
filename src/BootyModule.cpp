@@ -15,31 +15,6 @@
  */
 struct BootyModule : Module
 {
-    enum ParamIds
-    {
-        PITCH_PARAM,      // the big pitch knob
-        NUM_PARAMS
-    };
-
-    enum InputIds
-    {
-        AUDIO_INPUT,
-        CV_INPUT,
-        NUM_INPUTS
-    };
-
-    enum OutputIds
-    {
-        SIN_OUTPUT,
-        COS_OUTPUT,
-        NUM_OUTPUTS
-    };
-
-    enum LightIds
-    {
-        NUM_LIGHTS
-    };
-
     BootyModule();
 
     /**
@@ -53,22 +28,6 @@ struct BootyModule : Module
     FrequencyShifter<WidgetComposite> shifter;
 private:
   typedef float T;
-#if 1
-  //  WidgetComposite wc;
-  //  FrequencyShifter<WidgetComposite> shifter;
-#else
-  
-    SinOscillatorParams<T> oscParams;
-    SinOscillatorState<T> oscState;
-    BiquadParams<T, 3> hilbertFilterParamsSin;
-    BiquadParams<T, 3> hilbertFilterParamsCos;
-    BiquadState<T, 3> hilbertFilterStateSin;
-    BiquadState<T, 3> hilbertFilterStateCos;
-
-    LookupTableParams<T> exponential;
-
-    float reciprocolSampleRate;
-#endif
 public:
    // float freqRange = 5;
     ChoiceButton *rangeChoice;
@@ -77,7 +36,7 @@ public:
 extern float values[];
 extern const char* ranges[];
 
-BootyModule::BootyModule() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS),
+BootyModule::BootyModule() : Module(shifter.NUM_PARAMS, shifter.NUM_INPUTS, shifter.NUM_OUTPUTS, shifter.NUM_LIGHTS),
     shifter(this)
 {
     // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
@@ -282,8 +241,8 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     static int row2 = 186;
 
     // Inputs on Row 0
-    addInput(Port::create<PJ301MPort>(Vec(leftInputX, row0), Port::INPUT, module, BootyModule::AUDIO_INPUT));
-    addInput(Port::create<PJ301MPort>(Vec(rightInputX, row0), Port::INPUT, module, BootyModule::CV_INPUT));
+    addInput(Port::create<PJ301MPort>(Vec(leftInputX, row0), Port::INPUT, module, module->shifter.AUDIO_INPUT));
+    addInput(Port::create<PJ301MPort>(Vec(rightInputX, row0), Port::INPUT, module, module->shifter.CV_INPUT));
 
     // shift Range on row 2
     const float margin = 16;
@@ -296,7 +255,7 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     addChild(module->rangeChoice);
 
     // knob on row 1
-    addParam(ParamWidget::create<Rogan3PSBlue>(Vec(18, row1), module, BootyModule::PITCH_PARAM, -5.0, 5.0, 0.0));
+    addParam(ParamWidget::create<Rogan3PSBlue>(Vec(18, row1), module, module->shifter.PITCH_PARAM, -5.0, 5.0, 0.0));
 
     const float row3 = 317.5;
 
@@ -304,8 +263,8 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     const float leftOutputX = 9.5;
     const float rightOutputX = 55.5;
 
-    addOutput(Port::create<PJ301MPort>(Vec(leftOutputX, row3), Port::OUTPUT, module, BootyModule::SIN_OUTPUT));
-    addOutput(Port::create<PJ301MPort>(Vec(rightOutputX, row3), Port::OUTPUT, module, BootyModule::COS_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(leftOutputX, row3), Port::OUTPUT, module, module->shifter.SIN_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(rightOutputX, row3), Port::OUTPUT, module, module->shifter.COS_OUTPUT));
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
