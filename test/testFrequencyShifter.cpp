@@ -26,6 +26,7 @@ static void test1()
     fs.init();
 
     fs.inputs[Shifter::AUDIO_INPUT].value = 0;
+    fs.outputs[Shifter::SIN_OUTPUT].value = 0;
 
     // with no input, should have no output
     for (int i = 0; i < 50; ++i) {
@@ -45,6 +46,17 @@ static void test1()
 static void test2()
 {
     Animator anim;
+    anim.setSampleRate(44100);
+    anim.init();
+
+    anim.outputs[Animator::MAIN_OUTPUT].value = 1;
+    anim.step();                // prime it
+
+    // with no input, should have output (for now)
+    for (int i = 0; i < 50; ++i) {
+        anim.step();
+        assert(anim.outputs[Animator::MAIN_OUTPUT].value != 0);
+    }
 }
 
 
