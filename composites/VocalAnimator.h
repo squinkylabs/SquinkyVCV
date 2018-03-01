@@ -1,7 +1,21 @@
 #pragma once
 
 #include "MultiModOsc.h"
+#include "StateVariableFilter.h"
 
+/*
+mdInitFreq[0] = 522.0;
+mdModSens[0] = .8;
+
+mdInitFreq[1] = 1340.0;
+mdModSens[1] = .75;
+
+mdInitFreq[2] = 2570.0;
+mdModSens[2] = .25;
+
+mdInitFreq[3] = 3700.0;
+mdModSens[3] = 0;
+*/
 template <class TBase>
 class VocalAnimator : public TBase
 {
@@ -9,6 +23,7 @@ public:
     typedef float T;
     static const int numTriangle = 4;
     static const int numModOutputs = 3;
+    static const int numFilters = 4;
 
     VocalAnimator(struct Module * module) : TBase(module)
     {
@@ -48,7 +63,10 @@ public:
 
     void init()
     {
-
+        for (int i = 0; i < numFilters; ++i) {
+            filterParams[i].setQ(15);
+            filterParams[i].setFreq(nominalFilterCenters[i] * reciprocolSampleRate);
+        }
     }
     void step()
     {
@@ -59,7 +77,13 @@ public:
     }
 private:
     float reciprocolSampleRate;
+
     using osc = MultiModOsc<T, numTriangle, numModOutputs>;
     typename osc::State modulatorState;
     typename osc::Params modulatorParams;
+
+    StateVariableFilterState<T> filterStates[numFilters];
+    StateVariableFilterParams<T> filterParams[numFilters];
+
+    T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
 };
