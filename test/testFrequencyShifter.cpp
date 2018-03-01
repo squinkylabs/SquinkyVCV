@@ -49,7 +49,7 @@ static void test2()
     anim.setSampleRate(44100);
     anim.init();
 
-    anim.outputs[Animator::MAIN_OUTPUT].value = 1;
+    anim.outputs[Animator::MAIN_OUTPUT].value = 0;
     anim.step();                // prime it
 
     // with no input, should have output (for now)

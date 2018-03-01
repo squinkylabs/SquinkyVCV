@@ -1,14 +1,14 @@
 #pragma once
 
-#include "SawOscillator.h"
+#include "MultiModOsc.h"
 
 template <class TBase>
 class VocalAnimator : public TBase
 {
 public:
     typedef float T;
-
-    //using Animator = VocalAnima
+    static const int numTriangle = 4;
+    static const int numModOutputs = 3;
 
     VocalAnimator(struct Module * module) : TBase(module)
     {
@@ -20,7 +20,7 @@ public:
     void setSampleRate(float rate)
     {
         reciprocolSampleRate = 1 / rate;
-        SawOscillator<T, false>::setFrequency(lfoParams, reciprocolSampleRate);
+        modulatorParams.setRateAndSpread(.5, .5, reciprocolSampleRate);
     }
 
     enum ParamIds
@@ -52,11 +52,14 @@ public:
     }
     void step()
     {
-        TBase::outputs[MAIN_OUTPUT].value = SawOscillator<T, false>::runTri(lfoState, lfoParams);
+        T output[numModOutputs] = {0, 0, 0};
+
+        osc::run(output, modulatorState , modulatorParams);
+        TBase::outputs[MAIN_OUTPUT].value = output[0];
     }
 private:
     float reciprocolSampleRate;
-    SawOscillatorParams<T> lfoParams;
-    SawOscillatorState<T> lfoState;
-
+    using osc = MultiModOsc<T, numTriangle, numModOutputs>;
+    typename osc::State modulatorState;
+    typename osc::Params modulatorParams;
 };
