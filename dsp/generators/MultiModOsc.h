@@ -101,7 +101,6 @@ inline void MultiModOsc<T, NOsc, NOut>::run(T* output, State& state, const Param
         output[1] = modulators[0] + modulators[1] + modulators[3];  // not 2
         output[2] = modulators[0] + modulators[2] + modulators[3];  // not 1
     } else {
-        printf("not imp: %d, %d\n", NOsc, NOut);
         assert(false);  // need to return something
     }
 }

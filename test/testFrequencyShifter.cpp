@@ -49,20 +49,36 @@ static void test2()
     anim.setSampleRate(44100);
     anim.init();
 
-    anim.outputs[Animator::MAIN_OUTPUT].value = 0;
+    anim.outputs[Animator::AUDIO_OUTPUT].value = 0;
     anim.step();                // prime it
 
-    // with no input, should have output (for now)
+    // with no input, should have no output
     for (int i = 0; i < 50; ++i) {
         anim.step();
-        assert(anim.outputs[Animator::MAIN_OUTPUT].value != 0);
+        assert(anim.outputs[Animator::AUDIO_OUTPUT].value == 0);
     }
 }
 
+static void test3()
+{
+    Animator anim;
+    anim.setSampleRate(44100);
+    anim.init();
 
+    anim.outputs[Animator::AUDIO_OUTPUT].value = 0;
+    anim.inputs[Animator::AUDIO_INPUT].value = 1;
+    anim.step();                // prime it
+
+                                // with  input, should have  output
+    for (int i = 0; i < 50; ++i) {
+        anim.step();
+        assert(anim.outputs[Animator::AUDIO_OUTPUT].value != 0);
+    }
+}
 void testFrequencyShifter()
 {
     test0();
     test1();
     test2();
+    test3();
 }

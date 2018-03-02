@@ -10,30 +10,6 @@
  */
 struct VocalModule : Module
 {
-#if 0
-    enum ParamIds
-    {
-        PITCH_PARAM,      // the big pitch knob
-        NUM_PARAMS
-    };
-
-    enum InputIds
-    {
-        AUDIO_INPUT,
-        NUM_INPUTS
-    };
-
-    enum OutputIds
-    {
-        MAIN_OUTPUT,
-        NUM_OUTPUTS
-    };
-
-    enum LightIds
-    {
-        NUM_LIGHTS
-    };
-#endif
 
     VocalModule();
 
@@ -101,11 +77,48 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/booty_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
         addChild(panel);
     }
+    // Let's add some LED's for fun
+    const float ledY = 24;
+    const float ledSpace = 30;
+    const float ledX = 10;
+    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
+    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX + ledSpace, ledY), module, module->animator.LFO1_LIGHT));
+    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX + ledSpace * 2, ledY), module, module->animator.LFO2_LIGHT));
+    
+    /*
+      LFO_RATE_PARAM,
+        LFO_SPREAD_PARAM,
+        FILTER_Q_PARAM,
+        FILTER_FC_PARAM,
+        FILTER_MOD_DEPTH_PARAM,
+        */
+    
+    const float knobX = 26;
+    const float knoby = 50;
+    const float space = 50;
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 1 * space), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 2 * space), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
+     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 3 * space), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
+     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 4 * space), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
 
-    addOutput(Port::create<PJ301MPort>(Vec(45, 100), Port::OUTPUT, module, VocalModule::Animator::MAIN_OUTPUT));
+     const float row3 = 317.5;
+
+    // I.O on row 3
+    const float inputX = 9.5;
+    const float outputX = 55.5;
+ 
+    addOutput(Port::create<PJ301MPort>(Vec(inputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(outputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
+    
+        // screws
+    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable

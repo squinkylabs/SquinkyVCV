@@ -13,7 +13,8 @@ public:
     TestComposite() :
         inputs(8),
         outputs(8),
-        params(8)
+        params(8),
+        lights(8)
     {
        
     }
@@ -57,8 +58,10 @@ public:
         Light plugLights[2];
     };
 
+
     std::vector<Input> inputs;
     std::vector<Output> outputs;
     std::vector<Param> params;
+    std::vector<Light> lights;
 
 };

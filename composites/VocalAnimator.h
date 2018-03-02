@@ -40,7 +40,11 @@ public:
 
     enum ParamIds
     {
-        PITCH_PARAM,      // the big pitch knob
+        LFO_RATE_PARAM,
+        LFO_SPREAD_PARAM,
+        FILTER_Q_PARAM,
+        FILTER_FC_PARAM,
+        FILTER_MOD_DEPTH_PARAM,
         NUM_PARAMS
     };
 
@@ -52,29 +56,21 @@ public:
 
     enum OutputIds
     {
-        MAIN_OUTPUT,
+        AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
     enum LightIds
     {
+        LFO0_LIGHT,
+        LFO1_LIGHT,
+        LFO2_LIGHT,
         NUM_LIGHTS
     };
 
-    void init()
-    {
-        for (int i = 0; i < numFilters; ++i) {
-            filterParams[i].setQ(15);
-            filterParams[i].setFreq(nominalFilterCenters[i] * reciprocolSampleRate);
-        }
-    }
-    void step()
-    {
-        T output[numModOutputs] = {0, 0, 0};
-
-        osc::run(output, modulatorState , modulatorParams);
-        TBase::outputs[MAIN_OUTPUT].value = output[0];
-    }
+    void init();
+    void step();
+    T modulatorOutputs[numModOutputs];
 private:
     float reciprocolSampleRate;
 
@@ -87,3 +83,31 @@ private:
 
     T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
 };
+
+template <class TBase>
+inline void VocalAnimator<TBase>::init()
+{
+    for (int i = 0; i < numFilters; ++i) {
+        filterParams[i].setMode(StateVariableFilterParams<T>::Mode::BandPass);
+        filterParams[i].setQ(15);
+        filterParams[i].setFreq(nominalFilterCenters[i] * reciprocolSampleRate);
+    }
+}
+
+template <class TBase>
+inline void VocalAnimator<TBase>::step()
+{
+    // Run the modulators, hold onto their output
+    osc::run(modulatorOutputs, modulatorState, modulatorParams);
+    for (int i = 0; i < NUM_LIGHTS; ++i) {
+        TBase::lights[i].value = modulatorOutputs[i] > 0 ? T(1.0) : 0;
+    }
+
+    const T input = TBase::inputs[AUDIO_INPUT].value;
+    T filterMix = 0;
+    for (int i = 0; i < numFilters; ++i) {
+        filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
+    }
+    // Now should filter
+    TBase::outputs[AUDIO_OUTPUT].value = filterMix;
+}
