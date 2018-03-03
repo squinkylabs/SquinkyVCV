@@ -89,7 +89,7 @@ inline void VocalAnimator<TBase>::init()
 {
     for (int i = 0; i < numFilters; ++i) {
         filterParams[i].setMode(StateVariableFilterParams<T>::Mode::BandPass);
-        filterParams[i].setQ(15);
+        filterParams[i].setQ(15);           // or should it be 5?
         filterParams[i].setFreq(nominalFilterCenters[i] * reciprocolSampleRate);
     }
 }
