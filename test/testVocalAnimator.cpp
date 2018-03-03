@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <iostream>
 
 #include "VocalAnimator.h"
 #include "TestComposite.h"
@@ -88,10 +89,99 @@ static void test3()
     }
 }
 
+static void dump(const char * msg, const Animator& anim)
+{
+    std::cout << "dumping " << msg << "\nfiltFreq"
+        << " " << anim.filterFrequency[0]
+        << " " << anim.filterFrequency[1]
+        << " " << anim.filterFrequency[2]
+        << " " << anim.filterFrequency[3]
+        << std::endl;
+}
+static void x()
+{
+    Animator anim;
+    anim.setSampleRate(44100);
+    anim.init();
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
+    anim.step();
+
+    dump("init", anim);
+    
+    // TODO: assert here
+    anim.params[anim.FILTER_FC_PARAM].value = 5;
+    anim.step();
+    dump("fc 5", anim);
+   
+    anim.params[anim.FILTER_FC_PARAM].value = -5;
+    anim.step();
+    dump("fc -5", anim);
+
+    std::cout << "\nabout to modulate up. maxLFO, def depth\n";
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
+    anim.params[anim.FILTER_MOD_DEPTH_PARAM].value = 0;
+    anim.jamModForTest = true;
+    anim.modValueForTest = 5;
+    anim.step();
+    dump("max up def", anim);
+
+    std::cout << "\nabout to modulate up. minLFO, def depth\n";
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
+    anim.params[anim.FILTER_MOD_DEPTH_PARAM].value = 0;
+    anim.jamModForTest = true;
+    anim.modValueForTest = -5;
+    anim.step();
+    dump("max down def", anim);
+
+    std::cout << "\nabout to modulate up. maxLFO, max depth\n";
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
+    anim.params[anim.FILTER_MOD_DEPTH_PARAM].value = 5;
+    anim.jamModForTest = true;
+    anim.modValueForTest = 5;
+    anim.step();
+    dump(" modulate up. maxLFO, max depthf", anim);
+
+
+    std::cout << "\nabout to modulate down. minLFO, max depth\n";
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
+    anim.params[anim.FILTER_MOD_DEPTH_PARAM].value = 5;
+    anim.jamModForTest = true;
+    anim.modValueForTest = -5;
+    anim.step();
+    dump(" modulate up. maxLFO, max depthf", anim);
+
+
+#if 0
+    // TODO: would be nice to be able to inject an LFO voltage
+    anim.params[anim.FILTER_FC_PARAM].value = 0;  
+    anim.params[anim.FILTER_MOD_DEPTH_PARAM].value = 5;
+    for (int i = 0; i < 40000; ++i) {
+        anim.step();
+    }
+    dump("fc 0 depth 1", anim);
+
+    std::cout << "about to to depth -\n";
+    // TODO: would be nice to be able to inject an LFO voltage
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
+    anim.params[anim.FILTER_MOD_DEPTH_PARAM].value = -5;
+    for (int i = 0; i < 4000; ++i) {
+        anim.step();
+    }
+    dump("fc 0 depth -5", anim);
+#endif
+  
+   
+ 
+}
+
+
 void testVocalAnimator()
 {
+#if 0
     test0();
     test1();
     test2();
     test3();
+#endif
+    x();
 }

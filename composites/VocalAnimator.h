@@ -77,6 +77,8 @@ public:
     T filterFrequency[numFilters];
     const T nominalFilterCenter[numFilters] = {522, 1340, 2570, 3700};
     const T nominalModSensitivity[numFilters] = {T(.8), T(.75), T(.25), 0};
+    bool jamModForTest = false;
+    T   modValueForTest = 0;
 private:
     float reciprocalSampleRate;
 
@@ -112,9 +114,10 @@ inline void VocalAnimator<TBase>::step()
         TBase::lights[i].value = modulatorOutputs[i] > 0 ? T(1.0) : 0;
     }
 
-    // Compute the base filter frequency.
-    // Filter cutoff parameter is the variable input.
-    // After this filterFrequencies will hold the base frequencies.
+    /** Compute the base filter frequency.
+     * Filter cutoff parameter is the variable input.
+     * After this filterFrequencies will hold the base frequencies.
+     */
     const T fcInput = TBase::params[FILTER_FC_PARAM].value * T(.2); // normalize to +/-1
     for (int i = 0; i < numFilters; ++i) {
         // shift will multiply base freq to apply the FC parameter
@@ -122,30 +125,40 @@ inline void VocalAnimator<TBase>::step()
         filterFrequency[i] = shift * nominalFilterCenter[i];
     }
 
-    // Compute the modulation depths.
-    // Mod Depth parameter is the variable input.
+    /** Compute the modulation depths.
+     * Mod Depth parameter is the variable input.
+     * normalize it to 0..1 (for now)
+    */
+    T depthParam = (TBase::params[FILTER_MOD_DEPTH_PARAM].value + 5) / 10;
+    //printf("depth param raw %f, normalized %f\n", TBase::params[FILTER_MOD_DEPTH_PARAM].value, depthParam);
     T modDepth[numFilters];
     for (int i = 0; i < numFilters; ++i) {
-        modDepth[i] = T(TBase::params[FILTER_MOD_DEPTH_PARAM].value * (3. / 25.)
+        modDepth[i] = T(depthParam * (3. / 25.)
             * nominalModSensitivity[i]);
     }
 
     // Compute the filter frequencies, using all input parameters.
     // The last one does not get modulated
     for (int i = 0; i < numFilters-1; ++i) {
-        const T mod = modulatorOutputs[i];
-        filterFrequency[i] *= T(std::pow(2, modDepth[i] * mod * 5));
-        //printf("i=%d mod=%f finalf=%f\n", i, mod, filterFrequency[i]);
+        const T mod = jamModForTest ? modValueForTest : modulatorOutputs[i];
+       // const T mod = modulatorOutputs[i];
+        const T mod2 = T(std::pow(2, modDepth[i] * mod ));
+        //printf("i=%d lfo=%f scaled2=%f origfc=%f ", i, mod, mod2, filterFrequency[i]);
+        filterFrequency[i] *= mod2;
+       // printf("finalf=%f\n", filterFrequency[i]);
     }
 
     // TODO: Q
-    //T q = TBase::params[FILTER_Q_PARAM].value + 5;
+    T q = TBase::params[FILTER_Q_PARAM].value + 5;          // 0..10
+    q *= 2;                                                // 0..20
+    q += T(.7);                                            // minimum Q
 
     // Update the filters
     for (int i = 0; i < numFilters; ++i) {
         assert(filterFrequency[i] > 10);
         assert(filterFrequency[i] < 22000);
         filterParams[i].setFreq(filterFrequency[i] * reciprocalSampleRate);
+        filterParams[i].setQ(q);
     }
 
 
@@ -155,6 +168,7 @@ inline void VocalAnimator<TBase>::step()
     for (int i = 0; i < numFilters; ++i) {
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
+    filterMix *= T(.3);            // attenuate to avoid clip
 
 
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
