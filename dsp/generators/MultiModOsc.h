@@ -37,6 +37,7 @@ public:
     private:
         SawOscillatorParams<T> params[NOsc];
     };
+
     static void run(T * output, State&, const Params&);
 };
 

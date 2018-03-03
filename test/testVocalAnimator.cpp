@@ -43,8 +43,22 @@ static void test1()
     }
 }
 
+/**
+ * Verify filter settings with no mod.
+ */
+static void test2()
+{
+    Animator anim;
+    anim.setSampleRate(44100);
+    anim.init();
+    for (int i = 0; i < 4; ++i) {
+        assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+    }
+}
+
 void testVocalAnimator()
 {
     test0();
     test1();
+    test2();
 }

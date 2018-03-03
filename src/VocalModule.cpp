@@ -25,18 +25,12 @@ struct VocalModule : Module
     Animator animator;
 private:
     typedef float T;
-
-#if 0
-    SawOscillatorParams<T> lfoParams;
-    SawOscillatorState<T> lfoState;
-    T reciprocolSampleRate;
-#endif
 };
 
 
 
 VocalModule::VocalModule() : Module(animator.NUM_PARAMS, animator.NUM_INPUTS, animator.NUM_OUTPUTS, animator.NUM_LIGHTS),
-animator(this)
+    animator(this)
 {
     // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
     onSampleRateChange();
@@ -49,12 +43,11 @@ void VocalModule::onSampleRateChange()
     animator.setSampleRate(rate);
 }
 
-
 void VocalModule::step()
 {
     animator.step();
-   
 }
+
 ////////////////////
 // module widget
 ////////////////////
@@ -102,8 +95,8 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 1 * space), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 2 * space), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
-     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 3 * space), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
-     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 4 * space), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 3 * space), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 4 * space), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
 
      const float row3 = 317.5;
 
@@ -111,7 +104,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float inputX = 9.5;
     const float outputX = 55.5;
  
-    addOutput(Port::create<PJ301MPort>(Vec(inputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, row3), Port::INPUT, module, VocalModule::Animator::AUDIO_INPUT));
     addOutput(Port::create<PJ301MPort>(Vec(outputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
     
         // screws

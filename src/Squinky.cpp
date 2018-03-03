@@ -13,14 +13,9 @@ void init(rack::Plugin *p)
     plugin = p;
     p->slug = "squinkylabs-plug1";
     p->version = TOSTRING(VERSION);
-    //p->website = "https://github.com/VCVRack/Tutorial";
-    //p->manual = "https://github.com/VCVRack/Tutorial/blob/master/README.md";
 
     assert(modelBootyModule);
     p->addModel(modelBootyModule);
-<<<<<<< HEAD
     assert(modelVocalModule);
     p->addModel(modelVocalModule);
-=======
->>>>>>> master
 }

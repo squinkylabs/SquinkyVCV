@@ -11,11 +11,7 @@
  * Complete Frequency Shifter
  *
  * if TBase is WidgetComposite, used as the implementation part of the Booty Shifter module.
-<<<<<<< HEAD
  * If TBase is TestComposite build stand alone for unit tests,
-=======
- * If TBase is TestComposite build stand alone for unit tests, 
->>>>>>> master
  */
 template <class TBase>
 class FrequencyShifter : public TBase

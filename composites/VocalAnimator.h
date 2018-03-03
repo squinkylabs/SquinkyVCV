@@ -75,6 +75,7 @@ public:
     // The frequency inputs to the filters, exposed for testing.
     // Units here are Hz.
     T filterFrequencies[numFilters];
+    const T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
 private:
     float reciprocolSampleRate;
 
@@ -84,8 +85,6 @@ private:
 
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
-
-    const T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
 };
 
 template <class TBase>
