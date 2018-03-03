@@ -18,6 +18,9 @@ void init(rack::Plugin *p)
 
     assert(modelBootyModule);
     p->addModel(modelBootyModule);
+<<<<<<< HEAD
     assert(modelVocalModule);
     p->addModel(modelVocalModule);
+=======
+>>>>>>> master
 }

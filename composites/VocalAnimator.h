@@ -71,6 +71,10 @@ public:
     void init();
     void step();
     T modulatorOutputs[numModOutputs];
+
+    // The frequency inputs to the filters, exposed for testing.
+    // Units here are Hz.
+    T filterFrequencies[numFilters];
 private:
     float reciprocolSampleRate;
 
@@ -81,7 +85,7 @@ private:
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
 
-    T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
+    const T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
 };
 
 template <class TBase>
@@ -90,24 +94,31 @@ inline void VocalAnimator<TBase>::init()
     for (int i = 0; i < numFilters; ++i) {
         filterParams[i].setMode(StateVariableFilterParams<T>::Mode::BandPass);
         filterParams[i].setQ(15);           // or should it be 5?
+ 
         filterParams[i].setFreq(nominalFilterCenters[i] * reciprocolSampleRate);
+        filterFrequencies[i] = nominalFilterCenters[i];
     }
 }
 
 template <class TBase>
 inline void VocalAnimator<TBase>::step()
 {
-    // Run the modulators, hold onto their output
+    // Run the modulators, hold onto their output.
+    // Raw MOdulator outputs put in modulatorOutputs[].
     osc::run(modulatorOutputs, modulatorState, modulatorParams);
+
+    // Light up the LEDs with the unscaled Modulator outputs.
     for (int i = 0; i < NUM_LIGHTS; ++i) {
         TBase::lights[i].value = modulatorOutputs[i] > 0 ? T(1.0) : 0;
     }
 
+    // Run the filters. Output summed to filterMix.
     const T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;
     for (int i = 0; i < numFilters; ++i) {
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
-    // Now should filter
+
+
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
 }

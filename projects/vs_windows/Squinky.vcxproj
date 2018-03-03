@@ -34,6 +34,7 @@
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
     <ClCompile Include="..\..\test\testStateVariable.cpp" />
     <ClCompile Include="..\..\test\testTestSignal.cpp" />
+    <ClCompile Include="..\..\test\testVocalAnimator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\composites\FrequencyShifter.h" />

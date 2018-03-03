@@ -16,6 +16,7 @@ extern void testAudioMath();
 extern void perfTest();
 extern void testFrequencyShifter();
 extern void testStateVariable();
+extern void testVocalAnimator();
 
 int main(int argc, char ** argv)
 {
@@ -41,6 +42,7 @@ int main(int argc, char ** argv)
 
     // after testing all the components, test composites.
     testFrequencyShifter();
+    testVocalAnimator();
 
     if (runPerf) {
         perfTest();

@@ -18,6 +18,7 @@ class MeasureTime
 {
 public:
     MeasureTime() = delete;       // we are only static
+
     /**
      * Executes function "func" and measures how long it takes.
      * Will call func in a tight look lasting minTime seconds.

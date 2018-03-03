@@ -58,10 +58,8 @@ public:
         Light plugLights[2];
     };
 
-
     std::vector<Input> inputs;
     std::vector<Output> outputs;
     std::vector<Param> params;
     std::vector<Light> lights;
-
 };
