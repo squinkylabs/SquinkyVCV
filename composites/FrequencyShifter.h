@@ -25,7 +25,7 @@ public:
     }
     void setSampleRate(float rate)
     {
-        reciprocolSampleRate = 1 / rate;
+        reciprocalSampleRate = 1 / rate;
         HilbertFilterDesigner<T>::design(rate, hilbertFilterParamsSin, hilbertFilterParamsCos);
     }
 
@@ -85,7 +85,7 @@ private:
 
     LookupTableParams<T> exponential;
 
-    float reciprocolSampleRate;
+    float reciprocalSampleRate;
 };
 
 template <class TBase>
@@ -110,7 +110,7 @@ inline void FrequencyShifter<TBase>::step()
         freqHz = LookupTable<T>::lookup(exponential, cvTotal);
     }
 
-    SinOscillator<float, true>::setFrequency(oscParams, freqHz * reciprocolSampleRate);
+    SinOscillator<float, true>::setFrequency(oscParams, freqHz * reciprocalSampleRate);
 
     // Generate the quadrature sin oscillators.
     T x, y;

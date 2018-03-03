@@ -34,8 +34,8 @@ public:
 
     void setSampleRate(float rate)
     {
-        reciprocolSampleRate = 1 / rate;
-        modulatorParams.setRateAndSpread(.5, .5, reciprocolSampleRate);
+        reciprocalSampleRate = 1 / rate;
+        modulatorParams.setRateAndSpread(.5, .5, reciprocalSampleRate);
     }
 
     enum ParamIds
@@ -74,11 +74,11 @@ public:
 
     // The frequency inputs to the filters, exposed for testing.
     // Units here are Hz.
-    T filterFrequencies[numFilters];
-    const T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
+    T filterFrequency[numFilters];
+    const T nominalFilterCenter[numFilters] = {522, 1340, 2570, 3700};
     const T nominalModSensitivity[numFilters] = {T(.8), T(.75), T(.25), 0};
 private:
-    float reciprocolSampleRate;
+    float reciprocalSampleRate;
 
     using osc = MultiModOsc<T, numTriangle, numModOutputs>;
     typename osc::State modulatorState;
@@ -95,8 +95,8 @@ inline void VocalAnimator<TBase>::init()
         filterParams[i].setMode(StateVariableFilterParams<T>::Mode::BandPass);
         filterParams[i].setQ(15);           // or should it be 5?
  
-        filterParams[i].setFreq(nominalFilterCenters[i] * reciprocolSampleRate);
-        filterFrequencies[i] = nominalFilterCenters[i];
+        filterParams[i].setFreq(nominalFilterCenter[i] * reciprocalSampleRate);
+        filterFrequency[i] = nominalFilterCenter[i];
     }
 }
 
@@ -115,20 +115,38 @@ inline void VocalAnimator<TBase>::step()
     // Compute the base filter frequency.
     // Filter cutoff parameter is the variable input.
     // After this filterFrequencies will hold the base frequencies.
-    const T fcInput = params[FILTER_FC_PARAM].value * T(.2); // normalize to +/-1
+    const T fcInput = TBase::params[FILTER_FC_PARAM].value * T(.2); // normalize to +/-1
     for (int i = 0; i < numFilters; ++i) {
         // shift will multiply base freq to apply the FC parameter
         const T shift = (T) std::pow( 2, nominalModSensitivity[i] * 2.5 * fcInput);
-        filterFrequencies[i] = shift * nominalFilterCenters[i];
+        filterFrequency[i] = shift * nominalFilterCenter[i];
     }
 
     // Compute the modulation depths.
     // Mod Depth parameter is the variable input.
+    T modDepth[numFilters];
+    for (int i = 0; i < numFilters; ++i) {
+        modDepth[i] = T(TBase::params[FILTER_MOD_DEPTH_PARAM].value * (3. / 25.)
+            * nominalModSensitivity[i]);
+    }
 
     // Compute the filter frequencies, using all input parameters.
+    // The last one does not get modulated
+    for (int i = 0; i < numFilters-1; ++i) {
+        const T mod = modulatorOutputs[i];
+        filterFrequency[i] *= T(std::pow(2, modDepth[i] * mod * 5));
+        //printf("i=%d mod=%f finalf=%f\n", i, mod, filterFrequency[i]);
+    }
+
+    // TODO: Q
+    //T q = TBase::params[FILTER_Q_PARAM].value + 5;
 
     // Update the filters
-
+    for (int i = 0; i < numFilters; ++i) {
+        assert(filterFrequency[i] > 10);
+        assert(filterFrequency[i] < 22000);
+        filterParams[i].setFreq(filterFrequency[i] * reciprocalSampleRate);
+    }
 
 
     // Run the filters. Output summed to filterMix.

@@ -52,7 +52,7 @@ static void test2()
     anim.setSampleRate(44100);
     anim.init();
     for (int i = 0; i < 4; ++i) {
-        assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+        assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
     }
 }
 
@@ -67,24 +67,24 @@ static void test3()
     anim.params[anim.FILTER_FC_PARAM].value = 0;
     anim.step();
     for (int i = 0; i < 4; ++i) {
-        assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+        assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
     }
 
     anim.params[anim.FILTER_FC_PARAM].value = 1;
     anim.step();
     for (int i = 0; i < 4; ++i) {
         if (i == 3)
-            assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+            assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
         else
-            assert(anim.filterFrequencies[i] > anim.nominalFilterCenters[i]);
+            assert(anim.filterFrequency[i] > anim.nominalFilterCenter[i]);
     }
     anim.params[anim.FILTER_FC_PARAM].value = -1;
     anim.step();
     for (int i = 0; i < 4; ++i) {
         if (i == 3)
-            assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+            assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
         else
-            assert(anim.filterFrequencies[i] < anim.nominalFilterCenters[i]);
+            assert(anim.filterFrequency[i] < anim.nominalFilterCenter[i]);
     }
 }
 
