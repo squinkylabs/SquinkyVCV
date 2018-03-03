@@ -76,6 +76,7 @@ public:
     // Units here are Hz.
     T filterFrequencies[numFilters];
     const T nominalFilterCenters[numFilters] = {522, 1340, 2570, 3700};
+    const T nominalModSensitivity[numFilters] = {T(.8), T(.75), T(.25), 0};
 private:
     float reciprocolSampleRate;
 
@@ -110,6 +111,25 @@ inline void VocalAnimator<TBase>::step()
     for (int i = 0; i < NUM_LIGHTS; ++i) {
         TBase::lights[i].value = modulatorOutputs[i] > 0 ? T(1.0) : 0;
     }
+
+    // Compute the base filter frequency.
+    // Filter cutoff parameter is the variable input.
+    // After this filterFrequencies will hold the base frequencies.
+    const T fcInput = params[FILTER_FC_PARAM].value * T(.2); // normalize to +/-1
+    for (int i = 0; i < numFilters; ++i) {
+        // shift will multiply base freq to apply the FC parameter
+        const T shift = (T) std::pow( 2, nominalModSensitivity[i] * 2.5 * fcInput);
+        filterFrequencies[i] = shift;
+    }
+
+    // Compute the modulation depths.
+    // Mod Depth parameter is the variable input.
+
+    // Compute the filter frequencies, using all input parameters.
+
+    // Update the filters
+
+
 
     // Run the filters. Output summed to filterMix.
     const T input = TBase::inputs[AUDIO_INPUT].value;

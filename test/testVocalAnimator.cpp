@@ -56,6 +56,31 @@ static void test2()
     }
 }
 
+/**
+* Verify filter settings respond to Fc.
+*/
+static void test3()
+{
+    Animator anim;
+    anim.setSampleRate(44100);
+    anim.init();
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
+    anim.step();
+    for (int i = 0; i < 4; ++i) {
+        assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+    }
+
+    anim.params[anim.FILTER_FC_PARAM].value = 1;
+    anim.step();
+    for (int i = 0; i < 4; ++i) {
+        assert(anim.filterFrequencies[i] > anim.nominalFilterCenters[i]);
+    }
+    anim.params[anim.FILTER_FC_PARAM].value = -1;
+    anim.step();
+    for (int i = 0; i < 4; ++i) {
+        assert(anim.filterFrequencies[i] < anim.nominalFilterCenters[i]);
+    }
+}
 void testVocalAnimator()
 {
     test0();
