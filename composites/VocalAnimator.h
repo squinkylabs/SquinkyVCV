@@ -119,7 +119,7 @@ inline void VocalAnimator<TBase>::step()
     for (int i = 0; i < numFilters; ++i) {
         // shift will multiply base freq to apply the FC parameter
         const T shift = (T) std::pow( 2, nominalModSensitivity[i] * 2.5 * fcInput);
-        filterFrequencies[i] = shift;
+        filterFrequencies[i] = shift * nominalFilterCenters[i];
     }
 
     // Compute the modulation depths.

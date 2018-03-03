@@ -73,17 +73,25 @@ static void test3()
     anim.params[anim.FILTER_FC_PARAM].value = 1;
     anim.step();
     for (int i = 0; i < 4; ++i) {
-        assert(anim.filterFrequencies[i] > anim.nominalFilterCenters[i]);
+        if (i == 3)
+            assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+        else
+            assert(anim.filterFrequencies[i] > anim.nominalFilterCenters[i]);
     }
     anim.params[anim.FILTER_FC_PARAM].value = -1;
     anim.step();
     for (int i = 0; i < 4; ++i) {
-        assert(anim.filterFrequencies[i] < anim.nominalFilterCenters[i]);
+        if (i == 3)
+            assert(anim.filterFrequencies[i] == anim.nominalFilterCenters[i]);
+        else
+            assert(anim.filterFrequencies[i] < anim.nominalFilterCenters[i]);
     }
 }
+
 void testVocalAnimator()
 {
     test0();
     test1();
     test2();
+    test3();
 }
