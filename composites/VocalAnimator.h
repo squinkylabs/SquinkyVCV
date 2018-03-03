@@ -88,6 +88,18 @@ private:
 
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
+
+    /**
+     * Normalize =-5..5 => 0..maxY
+     * Clip values outside
+     */
+    T norm0_maxY(T x, T maxY)
+    {
+        x += 5;
+        if (x < 0) x = -0;
+        if (x > 10) x = 10;
+        return x * maxY / 10;
+    }
 };
 
 template <class TBase>
@@ -169,7 +181,15 @@ inline void VocalAnimator<TBase>::step()
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
     filterMix *= T(.3);            // attenuate to avoid clip
-
-
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
+
+
+    /*
+        LFO_RATE_PARAM,
+        LFO_SPREAD_PARAM,
+        */
+    modulatorParams.setRateAndSpread(
+        norm0_maxY(TBase::params[LFO_RATE_PARAM].value, 1),
+        norm0_maxY(TBase::params[LFO_SPREAD_PARAM].value, 1),
+             reciprocalSampleRate);
 }

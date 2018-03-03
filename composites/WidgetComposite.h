@@ -13,7 +13,6 @@ public:
         params(parent->params),
         lights(parent->lights)
     {
-        printf("In widget init, #Lights=%lld\n", lights.size());
     }
 protected:
     std::vector<Input>& inputs;
