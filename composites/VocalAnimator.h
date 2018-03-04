@@ -183,11 +183,6 @@ inline void VocalAnimator<TBase>::step()
     filterMix *= T(.3);            // attenuate to avoid clip
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
 
-
-    /*
-        LFO_RATE_PARAM,
-        LFO_SPREAD_PARAM,
-        */
     modulatorParams.setRateAndSpread(
         norm0_maxY(TBase::params[LFO_RATE_PARAM].value, 1),
         norm0_maxY(TBase::params[LFO_SPREAD_PARAM].value, 1),

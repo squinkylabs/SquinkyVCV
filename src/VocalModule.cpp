@@ -65,7 +65,7 @@ struct VocalWidget : ModuleWidget
  */
 VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 {
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(9 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
     {
         SVGPanel *panel = new SVGPanel();
@@ -89,23 +89,64 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
         FILTER_MOD_DEPTH_PARAM,
         */
     
-    const float knobX = 26;
-    const float knoby = 50;
+    const float knobX = 75;
+    float knobY = 50;
     const float space = 50;
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 1 * space), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 2 * space), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 3 * space), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knoby + 4 * space), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
+    const float labelX = 0;
+    const float labelOffset = 0;
+    
+    Label *label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Rate";
+    addChild(label);  
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    knobY += space;
+    
+    label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Mod Spread";
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
+    knobY += space;
+    
+    label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Q";
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
+    knobY += space;
+    
+      label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Fc filter";
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
+    knobY += space;
+    
+    label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Mod Depth";
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
+    
 
      const float row3 = 317.5;
 
     // I.O on row 3
-    const float inputX = 9.5;
-    const float outputX = 55.5;
+    const float inputX = 10.0;
+    const float outputX = 57.0;
  
     addInput(Port::create<PJ301MPort>(Vec(inputX, row3), Port::INPUT, module, VocalModule::Animator::AUDIO_INPUT));
     addOutput(Port::create<PJ301MPort>(Vec(outputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
+    
+    label = new Label();
+    label->box.pos = Vec(inputX, row3 - 20);
+    label->text = "In";
+    addChild(label);  
+    label = new Label();
+    label->box.pos = Vec(outputX, row3 - 20);
+    label->text = "Out";
+    addChild(label);  
     
         // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
