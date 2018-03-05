@@ -50,7 +50,7 @@ inline MultiModOsc<T, NOsc, NOut>::Params::Params()
 template <typename T, int NOsc, int NOut>
 inline void MultiModOsc<T, NOsc, NOut>::Params::setRateAndSpread(T rate, T spread, T inverseSampleRate)
 {
-    assert(rate >= -1 && rate <= 1);        // just a sanity check
+    assert(rate >= -10 && rate <= 10);        // just a sanity check
     assert(inverseSampleRate > (1.0 / 200000));
     assert(inverseSampleRate < (1.0 / 2000)); // same
 

@@ -53,7 +53,8 @@ static void test2()
     anim.setSampleRate(44100);
     anim.init();
     for (int i = 0; i < 4; ++i) {
-        assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
+       // assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
+        assert(false);
     }
 }
 
@@ -67,12 +68,15 @@ static void test3()
     anim.init();
     anim.params[anim.FILTER_FC_PARAM].value = 0;
     anim.step();
+#if 0
     for (int i = 0; i < 4; ++i) {
         assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
     }
 
     anim.params[anim.FILTER_FC_PARAM].value = 1;
     anim.step();
+    assert(false);
+
     for (int i = 0; i < 4; ++i) {
         if (i == 3)
             assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
@@ -87,15 +91,16 @@ static void test3()
         else
             assert(anim.filterFrequency[i] < anim.nominalFilterCenter[i]);
     }
+#endif
 }
 
 static void dump(const char * msg, const Animator& anim)
 {
     std::cout << "dumping " << msg << "\nfiltFreq"
-        << " " << anim.filterFrequency[0]
-        << " " << anim.filterFrequency[1]
-        << " " << anim.filterFrequency[2]
-        << " " << anim.filterFrequency[3]
+        << " " << std::pow(2, anim.filterFrequencyLog[0])
+        << " " << std::pow(2, anim.filterFrequencyLog[1])
+        << " " << std::pow(2, anim.filterFrequencyLog[2])
+        << " " << std::pow(2, anim.filterFrequencyLog[3])
         << std::endl;
 }
 static void x()
@@ -177,11 +182,11 @@ static void x()
 
 void testVocalAnimator()
 {
-#if 0
+
     test0();
     test1();
     test2();
     test3();
-#endif
     x();
+
 }

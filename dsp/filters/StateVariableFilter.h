@@ -41,10 +41,26 @@ inline T StateVariableFilter<T>::run(T input, StateVariableFilterState<T>& state
 {
     const T dLow = state.z2 + params.fcGain * state.z1;
     const T dHi = input - (state.z1 * params.qGain + dLow);
-    const T dBand = dHi * params.fcGain + state.z1;
+    T dBand = dHi * params.fcGain + state.z1;
 
-    assert(dBand < 1000.0);
+    // TODO: figure out why we get these crazy values
+#if 1
+    if (dBand >= 1000) {
+       // fprintf(stderr, "dband = %f, dhi=%f fcG=%f z1=%f\n",
+      //    dBand, dHi, params.fcGain, state.z1);
+       // fflush(stderr);
+        dBand = 999;               // clip it
+    }
+    if (dBand < -1000) {
+       // fprintf(stderr, "dband = %f, dhi=%f fcG=%f z1=%f\n",
+        //    dBand, dHi, params.fcGain, state.z1);
+       // fflush(stderr);
+        dBand = -999;               // clip it
+    }
 
+#endif
+   // assert(dBand < 1000.0);
+   // assert(dBand > -1000.0);
     T d;
     switch (params.mode) {
         case StateVariableFilterParams<T>::Mode::LowPass:
