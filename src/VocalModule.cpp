@@ -148,6 +148,17 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->text = "Out";
     addChild(label);  
     
+    // temp test switches
+  
+        const float switchX = 120;      
+    // 2 pos bass_exp
+    addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP, 0.0f, 1.0f, 0.0f));
+    
+      // 3 pos track_exp
+   
+    addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->animator.TRACK_EXP, 0.0f, 2.0f, 0.0f));
+    
+    
         // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));

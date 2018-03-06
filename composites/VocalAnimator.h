@@ -37,6 +37,8 @@ public:
         FILTER_Q_PARAM,
         FILTER_FC_PARAM,
         FILTER_MOD_DEPTH_PARAM,
+        BASS_EXP,
+        TRACK_EXP,
         NUM_PARAMS
     };
 
