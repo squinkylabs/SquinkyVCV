@@ -11,10 +11,10 @@ class TestComposite
 {
 public:
     TestComposite() :
-        inputs(8),
-        outputs(8),
-        params(8),
-        lights(8)
+        inputs(20),
+        outputs(20),
+        params(20),
+        lights(20)
     {
        
     }

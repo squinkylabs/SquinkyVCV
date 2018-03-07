@@ -111,7 +111,8 @@ public:
     T normalizedFilterFreq[numFilters];     
     bool jamModForTest = false;
     T   modValueForTest = 0;
-private:
+
+
     float reciprocalSampleRate;
 
     using osc = MultiModOsc<T, numTriangle, numModOutputs>;
@@ -125,7 +126,7 @@ private:
     * Normalize =-5..5 => 0..maxY
     * Clip values outside
     */
-#if 1
+#if 0
     T norm0_maxY(T x, T maxY)
     {
         x += 5;
@@ -143,34 +144,28 @@ private:
     }
 #endif
     
-    T getAddAndScale(
-        InputIds,
-        ParamIds,
-        ParamIds,
-        T minRange, T maxRange);
+    using ScaleFun = std::function<T(T cv, T knob, T trim)>;
+    ScaleFun makeScaler(T x0, T y0, T x1, T y1);
+
+    ScaleFun scale0_1;
+    ScaleFun scale0_2;
+    ScaleFun scaleQ;
+    ScaleFun scalen5_5;
 };
 
+
+
 template <class TBase>
-inline float VocalAnimator<TBase>::getAddAndScale(
-    InputIds inputId,
-    ParamIds trimId,
-    ParamIds paramId,
-    T minRange, T maxRange)
+inline typename VocalAnimator<TBase>::ScaleFun VocalAnimator<TBase>::makeScaler(T x0, T y0, T x1, T y1)
 {
-    // results = knob + VC * trim;
-    T result = TBase::inputs[inputId].value * TBase::params[trimId].value;
-    result += TBase::params[paramId].value;
-    result = std::max(-5.0f, result);
-    result = std::min(5.0f, result);
-    // not it's -5 to 5
-    // TODO: precalculate A, b (use my old interp)
-    const float a = (maxRange - minRange) / 10.0f;
-    const float b = maxRange - 5 * a;
-    
-    const T scaled = a * result + b;
-    assert(scaled >= minRange);
-    assert(scaled <= maxRange);
-    return scaled;
+    const float a = (y1 - y0) / (x1 - x0);
+    const float b = y0 - a * x0;
+    return [a, b](T cv, T knob, T trim) {
+        T x = cv * trim + knob;
+        x = std::max(-5.0f, x);
+        x = std::min(5.0f, x);
+        return a * x + b;
+    };
 }
 
 template <class TBase>
@@ -185,6 +180,11 @@ inline void VocalAnimator<TBase>::init()
 
         normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
+    scale0_1 = makeScaler(-5, 0, 5, 1); // full CV range -> 0..1
+    scale0_2 = makeScaler(-5, 0, 5, 2); // full CV range -> 0..2
+    scaleQ = makeScaler(-5, .71f, 5, 21);
+    scalen5_5 = makeScaler(-5, -5, 5, 5);
+  
 }
 
 template <class TBase>
@@ -207,6 +207,7 @@ inline void VocalAnimator<TBase>::step()
     }
 
     // norm all the params out here
+#if 0
     T q = TBase::params[FILTER_Q_PARAM].value + 5;          // 0..10
     q *= 2;                                                // 0..20
     q += T(.71);
@@ -215,16 +216,25 @@ inline void VocalAnimator<TBase>::step()
         fprintf(stderr, "q = %f, param = %f\n", q, TBase::params[FILTER_Q_PARAM].value);
         q = 1;
     }
-    assert(q >= .7);
+#endif
+
+    const T q = scaleQ(inputs[FILTER_Q_CV_INPUT].value, 
+        params[FILTER_Q_PARAM].value, params[FILTER_Q_TRIM_PARAM].value);
+
+    const T fc = scalen5_5(inputs[FILTER_FC_CV_INPUT].value,
+        params[FILTER_FC_PARAM].value, params[FILTER_FC_TRIM_PARAM].value);
+
+     //   cv, knob, trim);
 
 
     // put together a mod depth param from all the inputs
     // range is 0..1
-    const T baseModDepth = getAddAndScale(
-        FILTER_MOD_DEPTH_CV_INPUT,
-        FILTER_MOD_DEPTH_TRIM_PARAM,
-        FILTER_MOD_DEPTH_PARAM,
-        0, 1);
+
+    // cv, knob, trim
+    const T baseModDepth = scale0_1(
+        inputs[FILTER_MOD_DEPTH_CV_INPUT].value,
+        params[FILTER_MOD_DEPTH_PARAM].value,
+        params[FILTER_MOD_DEPTH_TRIM_PARAM].value);
 
     const T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;                // Sum the folder outputs here
@@ -267,9 +277,16 @@ inline void VocalAnimator<TBase>::step()
     filterMix *= T(.3);            // attenuate to avoid clip
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
 
+    //scale0_2(cv, knob, trim)
     modulatorParams.setRateAndSpread(
-        norm_pmY(TBase::params[LFO_RATE_PARAM].value, 2),
-        norm_pmY(TBase::params[LFO_SPREAD_PARAM].value, 1),
+        scale0_2(
+            TBase::inputs[LFO_RATE_CV_INPUT].value,
+            TBase::params[LFO_RATE_PARAM].value,
+            TBase::params[LFO_RATE_TRIM_PARAM].value),
+        scale0_2(
+            0,
+            TBase::params[LFO_SPREAD_PARAM].value,
+            0),
         reciprocalSampleRate);
 
 }

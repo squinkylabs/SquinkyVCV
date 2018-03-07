@@ -82,7 +82,7 @@ static void test3()
     // assert that when we shift up, the expected values shift up
     for (int i = 0; i < 4; ++i) {
         float freq = anim.normalizedFilterFreq[i] * 44100;
-        printf("i=%d, freq=%f, nominal=%f\n", i, freq, anim.nominalFilterCenterHz[i]);
+        //printf("i=%d, freq=%f, nominal=%f\n", i, freq, anim.nominalFilterCenterHz[i]);
         if (i == 3) {
             assertClose(freq, anim.nominalFilterCenterHz[i], .01);
         }
@@ -100,6 +100,32 @@ static void test3()
             assert(anim.filterFrequency[i] < anim.nominalFilterCenter[i]);
     }
 #endif
+}
+
+static void testScalers()
+{
+    Animator anim;
+    anim.setSampleRate(44100);
+    anim.init();
+
+    // cv/knob, trim
+
+
+    // cases with no CV
+    assertClose(.5, anim.scale0_1(0, 0, 1), .001);              // knob half, full trim
+    assertClose(.5, anim.scale0_1(0, 0, -1), .001);             // knob half, full neg trim
+    assertClose(1, anim.scale0_1(0, 5, 0), .001);               // knob full
+    assertClose(0, anim.scale0_1(0, -5, 0), .001);              // knob down full
+    assertClose(.75, anim.scale0_1(0, (5.0f * .5f), 0), .001); // knob 3/4
+
+    // CV, no knob
+    assertClose(1, anim.scale0_1(5, 0, 1), .001);              // full cv, untrimmed
+    assertClose(0, anim.scale0_1(-5, 0, 1), .001);              // full cv, untrimmed
+    assertClose(.25, anim.scale0_1((-5.0f * .5f), 0, 1), .001);              // 3/4 cv, untrimmed
+
+    assertClose(.75, anim.scale0_1(5, 0, .5f), .001);              // full cv, half trim
+    assertClose(0, anim.scale0_1(5, 0, -1), .001);              // full cv, full neg trim
+
 }
 
 static void dump(const char * msg, const Animator& anim)
@@ -195,6 +221,7 @@ void testVocalAnimator()
     test1();
     test2();
     test3();
+    testScalers();
    // x();
 
 }
