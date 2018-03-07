@@ -82,7 +82,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float lfoOutX = 20;
     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX + ledSpace, ledY), module, module->animator.LFO1_LIGHT));
-    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX + ledSpace * 2, ledY), module, module->animator.LFO2_LIGHT));
+    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX + 2*ledSpace, ledY), module, module->animator.LFO2_LIGHT));
     
     addOutput(Port::create<PJ301MPort>(Vec(lfoOutX, ledY), Port::OUTPUT, module, VocalModule::Animator::LFO0_OUTPUT));
     addOutput(Port::create<PJ301MPort>(Vec(lfoOutX+ledSpace, ledY), Port::OUTPUT, module, VocalModule::Animator::LFO1_OUTPUT));
@@ -143,8 +143,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_MOD_DEPTH_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 0.0));
   
-
-     const float row3 = 317.5;
+    const float row3 = 317.5;
 
     // I.O on row 3
     const float AudioInputX = 10.0;
@@ -164,14 +163,12 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     
     // temp test switches
   
-        const float switchX = 120;      
+    const float switchX = 120;      
     // 2 pos bass_exp
     addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
     
     // 3 pos track_exp
     addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->animator.TRACK_EXP_PARAM, 0.0f, 2.0f, 0.0f));
-    
-    
         // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
