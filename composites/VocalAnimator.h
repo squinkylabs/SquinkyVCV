@@ -1,7 +1,9 @@
 #pragma once
+#include <algorithm>
 
 #include "MultiModOsc.h"
 #include "StateVariableFilter.h"
+
 
 
 
@@ -123,6 +125,7 @@ private:
     * Normalize =-5..5 => 0..maxY
     * Clip values outside
     */
+#if 1
     T norm0_maxY(T x, T maxY)
     {
         x += 5;
@@ -136,10 +139,39 @@ private:
     {
         if (x < -5) x = -5;
         if (x > 5) x = 5;
-       
         return x * maxY / 5;
     }
+#endif
+    
+    T getAddAndScale(
+        InputIds,
+        ParamIds,
+        ParamIds,
+        T minRange, T maxRange);
 };
+
+template <class TBase>
+inline float VocalAnimator<TBase>::getAddAndScale(
+    InputIds inputId,
+    ParamIds trimId,
+    ParamIds paramId,
+    T minRange, T maxRange)
+{
+    // results = knob + VC * trim;
+    T result = TBase::inputs[inputId].value * TBase::params[trimId].value;
+    result += TBase::params[paramId].value;
+    result = std::max(-5.0f, result);
+    result = std::min(5.0f, result);
+    // not it's -5 to 5
+    // TODO: precalculate A, b (use my old interp)
+    const float a = (maxRange - minRange) / 10.0f;
+    const float b = maxRange - 5 * a;
+    
+    const T scaled = a * result + b;
+    assert(scaled >= minRange);
+    assert(scaled <= maxRange);
+    return scaled;
+}
 
 template <class TBase>
 inline void VocalAnimator<TBase>::init()
@@ -186,8 +218,16 @@ inline void VocalAnimator<TBase>::step()
     assert(q >= .7);
 
 
+    // put together a mod depth param from all the inputs
+    // range is 0..1
+    const T baseModDepth = getAddAndScale(
+        FILTER_MOD_DEPTH_CV_INPUT,
+        FILTER_MOD_DEPTH_TRIM_PARAM,
+        FILTER_MOD_DEPTH_PARAM,
+        0, 1);
+
     const T input = TBase::inputs[AUDIO_INPUT].value;
-    T filterMix = 0;
+    T filterMix = 0;                // Sum the folder outputs here
 
     for (int i = 0; i < numFilters; ++i) {
         T logFreq = nominalFilterCenterLog2[i];
@@ -197,10 +237,11 @@ inline void VocalAnimator<TBase>::step()
 #if 0
         logFreq += TBase::params[FILTER_FC_PARAM].value;    // add without attenuation for 1V/octave
 #else
+        // classic version - respect the mod depth scaling
         logFreq += TBase::params[FILTER_FC_PARAM].value * nominalModSensitivity[i];
 #endif
         logFreq += ((i < 3) ? modulatorOutput[i] : 0) *
-            norm0_maxY(TBase::params[FILTER_MOD_DEPTH_PARAM].value, 1) *
+            baseModDepth *
             nominalModSensitivity[i];
 
        // fprintf(stderr, "logFreq = %f\n", logFreq); fflush(stderr);

@@ -107,7 +107,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addChild(label);  
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 0.0));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 1.0));
 
     knobY += space;
     label = new Label();
@@ -124,7 +124,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_Q_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 0.0));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 1.0));
    
     knobY += space;
     label = new Label();
@@ -133,7 +133,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_FC_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_FC_TRIM_PARAM, -1.0, 1.0, 0.0));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_FC_TRIM_PARAM, -1.0, 1.0, 1.0));
       
     knobY += space;
     label = new Label();
@@ -142,7 +142,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_MOD_DEPTH_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 0.0));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 1.0));
   
     const float row3 = 317.5;
 
