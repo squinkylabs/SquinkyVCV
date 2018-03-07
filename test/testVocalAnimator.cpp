@@ -1,5 +1,5 @@
-#include <assert.h>
-#include <iostream>
+#include "asserts.h"
+
 
 #include "VocalAnimator.h"
 #include "TestComposite.h"
@@ -53,8 +53,8 @@ static void test2()
     anim.setSampleRate(44100);
     anim.init();
     for (int i = 0; i < 4; ++i) {
-       // assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
-        assert(false);
+        float freq = anim.normalizedFilterFreq[i] * 44100;
+        assertEq(freq, anim.nominalFilterCenterHz[i]);
     }
 }
 
@@ -68,21 +68,29 @@ static void test3()
     anim.init();
     anim.params[anim.FILTER_FC_PARAM].value = 0;
     anim.step();
-#if 0
+
     for (int i = 0; i < 4; ++i) {
-        assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
+       // assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
+        float freq = anim.normalizedFilterFreq[i] * 44100;
+        assertClose(freq, anim.nominalFilterCenterHz[i], .01);
     }
 
     anim.params[anim.FILTER_FC_PARAM].value = 1;
     anim.step();
-    assert(false);
 
+
+    // assert that when we shift up, the expected values shift up
     for (int i = 0; i < 4; ++i) {
-        if (i == 3)
-            assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
+        float freq = anim.normalizedFilterFreq[i] * 44100;
+        printf("i=%d, freq=%f, nominal=%f\n", i, freq, anim.nominalFilterCenterHz[i]);
+        if (i == 3) {
+            assertClose(freq, anim.nominalFilterCenterHz[i], .01);
+        }
         else
-            assert(anim.filterFrequency[i] > anim.nominalFilterCenter[i]);
+            assert(freq > anim.nominalFilterCenterHz[i]);
     }
+
+#if 0
     anim.params[anim.FILTER_FC_PARAM].value = -1;
     anim.step();
     for (int i = 0; i < 4; ++i) {
@@ -187,6 +195,6 @@ void testVocalAnimator()
     test1();
     test2();
     test3();
-    x();
+   // x();
 
 }

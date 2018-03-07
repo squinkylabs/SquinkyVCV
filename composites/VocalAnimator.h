@@ -19,6 +19,7 @@ public:
 
     VocalAnimator(struct Module * module) : TBase(module)
     {
+        
     }
     VocalAnimator() : TBase()
     {
@@ -79,6 +80,9 @@ public:
     };
             // 1, .937 .3125
     const T nominalModSensitivity[numFilters] = {T(1), T(.937), T(.3125), 0};
+
+    // Following are for unit tests.
+    T normalizedFilterFreq[numFilters];     
     bool jamModForTest = false;
     T   modValueForTest = 0;
 private:
@@ -122,6 +126,8 @@ inline void VocalAnimator<TBase>::init()
 
         filterParams[i].setFreq(nominalFilterCenterHz[i] * reciprocalSampleRate);
         filterFrequencyLog[i] = nominalFilterCenterLog2[i];
+
+        normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
 }
 
@@ -129,7 +135,7 @@ template <class TBase>
 inline void VocalAnimator<TBase>::step()
 {
     // Run the modulators, hold onto their output.
-    // Raw MOdulator outputs put in modulatorOutputs[].
+    // Raw Modulator outputs put in modulatorOutputs[].
     osc::run(modulatorOutput, modulatorState, modulatorParams);
 
     // Light up the LEDs with the unscaled Modulator outputs.
@@ -154,10 +160,17 @@ inline void VocalAnimator<TBase>::step()
 
     for (int i = 0; i < numFilters; ++i) {
         T logFreq = nominalFilterCenterLog2[i];
+
+        // first version - everyone track straight
+#if 0
         logFreq += TBase::params[FILTER_FC_PARAM].value;    // add without attenuation for 1V/octave
+#else
+        logFreq += TBase::params[FILTER_FC_PARAM].value * nominalModSensitivity[i];
+#endif
         logFreq += ((i < 3) ? modulatorOutput[i] : 0) *
             norm0_maxY(TBase::params[FILTER_MOD_DEPTH_PARAM].value, 1) *
             nominalModSensitivity[i];
+
        // fprintf(stderr, "logFreq = %f\n", logFreq); fflush(stderr);
 
         filterFrequencyLog[i] = logFreq;
@@ -168,6 +181,7 @@ inline void VocalAnimator<TBase>::step()
             normFreq = T(.2);
         }
       
+        normalizedFilterFreq[i] = normFreq;
        // fprintf(stderr, "nromFreq2 = %f\n", normFreq); fflush(stderr);
         filterParams[i].setFreq(normFreq);
         filterParams[i].setQ(q);

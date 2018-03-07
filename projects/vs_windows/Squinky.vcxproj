@@ -53,6 +53,7 @@
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h" />
     <ClInclude Include="..\..\dsp\utils\AudioMath.h" />
     <ClInclude Include="..\..\dsp\utils\LookupTable.h" />
+    <ClInclude Include="..\..\test\asserts.h" />
     <ClInclude Include="..\..\test\MeasureTime.h" />
     <ClInclude Include="..\..\test\SqTime.h" />
     <ClInclude Include="..\..\test\TestSignal.h" />
