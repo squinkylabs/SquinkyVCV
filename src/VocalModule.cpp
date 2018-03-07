@@ -115,7 +115,8 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->text = "Mod Spread";
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
-    
+    const float matrixY = knobY;
+
     knobY += space;
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
@@ -161,15 +162,34 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->text = "Out";
     addChild(label);  
     
-    // temp test switches
-  
+    /*******************************************
+     *  temp test switches
+     */
     const float switchX = 120;      
     // 2 pos bass_exp
-    addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
-    
+    addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));     
+    label = new Label();
+    label->box.pos = Vec(switchX -8, 225);
+    label->text = "B";
+    addChild(label); 
+   
     // 3 pos track_exp
     addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->animator.TRACK_EXP_PARAM, 0.0f, 2.0f, 0.0f));
-        // screws
+    label = new Label();
+    label->box.pos = Vec(switchX -12, 284);
+    label->text = "Scl";
+    addChild(label);  
+
+    // 3 pos LFO matrix
+    addParam(ParamWidget::create<CKSSThree>( Vec(switchX,matrixY), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
+    label = new Label();
+    label->box.pos = Vec(switchX -15, matrixY+28);
+    label->text = "Mtx";
+    addChild(label);  
+
+    /*************************************************
+     *  screws
+     */
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));

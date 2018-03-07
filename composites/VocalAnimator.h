@@ -52,7 +52,10 @@ public:
         // LFO mixing options
         // 0 = classic
         // 1 = option
+        // 2 = lf sub
         LFO_MIX_PARAM,
+
+
 
         NUM_PARAMS
     };
