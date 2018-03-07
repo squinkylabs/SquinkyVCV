@@ -73,74 +73,88 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
         addChild(panel);
     }
-    // Let's add some LED's for fun
-    const float ledY = 24;
-    const float ledSpace = 30;
-    const float ledX = 10;
+    /**
+     *  LEDs and LFO outputs
+     */
+    const float ledY = 28;
+    const float ledSpace = 43;
+    const float ledX = 7;
+    const float lfoOutX = 20;
     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX + ledSpace, ledY), module, module->animator.LFO1_LIGHT));
     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(Vec(ledX + ledSpace * 2, ledY), module, module->animator.LFO2_LIGHT));
     
-    /*
-      LFO_RATE_PARAM,
-        LFO_SPREAD_PARAM,
-        FILTER_Q_PARAM,
-        FILTER_FC_PARAM,
-        FILTER_MOD_DEPTH_PARAM,
-        */
-    
+    addOutput(Port::create<PJ301MPort>(Vec(lfoOutX, ledY), Port::OUTPUT, module, VocalModule::Animator::LFO0_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(lfoOutX+ledSpace, ledY), Port::OUTPUT, module, VocalModule::Animator::LFO1_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(lfoOutX+2*ledSpace, ledY), Port::OUTPUT, module, VocalModule::Animator::LFO2_OUTPUT));
+
+    /**
+     * Parameters and CV
+     */ 
     const float knobX = 75;
-    float knobY = 50;
-    const float space = 50;
+    const float trimX = 46;
+    const float inputX = 8;
+    float knobY = 60;
+    const float space = 46;
     const float labelX = 0;
     const float labelOffset = 0;
+    const float inputYOffset = 16;
+    const float trimYOffset = 18;
     
     Label *label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Rate";
     addChild(label);  
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 0.0));
+
     knobY += space;
-    
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Mod Spread";
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
-    knobY += space;
     
+    knobY += space;
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Q";
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_Q_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 0.0));
+   
     knobY += space;
-    
-      label = new Label();
+    label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Fc filter";
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_FC_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_FC_TRIM_PARAM, -1.0, 1.0, 0.0));
+      
     knobY += space;
-    
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Mod Depth";
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
-    
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_MOD_DEPTH_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.FILTER_MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 0.0));
+  
 
      const float row3 = 317.5;
 
     // I.O on row 3
-    const float inputX = 10.0;
+    const float AudioInputX = 10.0;
     const float outputX = 57.0;
  
-    addInput(Port::create<PJ301MPort>(Vec(inputX, row3), Port::INPUT, module, VocalModule::Animator::AUDIO_INPUT));
+    addInput(Port::create<PJ301MPort>(Vec(AudioInputX, row3), Port::INPUT, module, VocalModule::Animator::AUDIO_INPUT));
     addOutput(Port::create<PJ301MPort>(Vec(outputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
     
     label = new Label();
-    label->box.pos = Vec(inputX, row3 - 20);
+    label->box.pos = Vec(AudioInputX, row3 - 20);
     label->text = "In";
     addChild(label);  
     label = new Label();
@@ -152,11 +166,10 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
   
         const float switchX = 120;      
     // 2 pos bass_exp
-    addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP, 0.0f, 1.0f, 0.0f));
+    addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
     
-      // 3 pos track_exp
-   
-    addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->animator.TRACK_EXP, 0.0f, 2.0f, 0.0f));
+    // 3 pos track_exp
+    addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->animator.TRACK_EXP_PARAM, 0.0f, 2.0f, 0.0f));
     
     
         // screws

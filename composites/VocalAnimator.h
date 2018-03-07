@@ -18,8 +18,7 @@ public:
     static const int numFilters = 4;
 
     VocalAnimator(struct Module * module) : TBase(module)
-    {
-        
+    {   
     }
     VocalAnimator() : TBase()
     {
@@ -38,20 +37,42 @@ public:
         FILTER_Q_PARAM,
         FILTER_FC_PARAM,
         FILTER_MOD_DEPTH_PARAM,
-        BASS_EXP,
-        TRACK_EXP,
+        LFO_RATE_TRIM_PARAM,
+        FILTER_Q_TRIM_PARAM,
+        FILTER_FC_TRIM_PARAM,
+        FILTER_MOD_DEPTH_TRIM_PARAM,
+        BASS_EXP_PARAM,
+
+        // tracking:
+        //  0 = all 1v/oct, mod scaled, no on top
+        //  1 = mod and cv scaled
+        //  2 = 1, + top filter gets some mod
+        TRACK_EXP_PARAM,
+
+        // LFO mixing options
+        // 0 = classic
+        // 1 = option
+        LFO_MIX_PARAM,
+
         NUM_PARAMS
     };
 
     enum InputIds
     {
         AUDIO_INPUT,
+        LFO_RATE_CV_INPUT,
+        FILTER_Q_CV_INPUT,
+        FILTER_FC_CV_INPUT,
+        FILTER_MOD_DEPTH_CV_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
         AUDIO_OUTPUT,
+        LFO0_OUTPUT,
+        LFO1_OUTPUT,
+        LFO2_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -162,6 +183,7 @@ inline void VocalAnimator<TBase>::step()
         T logFreq = nominalFilterCenterLog2[i];
 
         // first version - everyone track straight
+        // replace this with switch
 #if 0
         logFreq += TBase::params[FILTER_FC_PARAM].value;    // add without attenuation for 1V/octave
 #else
