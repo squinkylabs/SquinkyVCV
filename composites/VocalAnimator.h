@@ -20,7 +20,7 @@ public:
     static const int numFilters = 4;
 
     VocalAnimator(struct Module * module) : TBase(module)
-    {   
+    {
     }
     VocalAnimator() : TBase()
     {
@@ -94,7 +94,7 @@ public:
     T modulatorOutput[numModOutputs];
 
     // The frequency inputs to the filters, exposed for testing.
- 
+
     T filterFrequencyLog[numFilters];
 
     const T nominalFilterCenterHz[numFilters] = {522, 1340, 2570, 3700};
@@ -108,7 +108,7 @@ public:
     const T nominalModSensitivity[numFilters] = {T(1), T(.937), T(.3125), 0};
 
     // Following are for unit tests.
-    T normalizedFilterFreq[numFilters];     
+    T normalizedFilterFreq[numFilters];
     bool jamModForTest = false;
     T   modValueForTest = 0;
 
@@ -143,7 +143,7 @@ public:
         return x * maxY / 5;
     }
 #endif
-    
+
     using ScaleFun = std::function<T(T cv, T knob, T trim)>;
     ScaleFun makeScaler(T x0, T y0, T x1, T y1);
 
@@ -184,7 +184,7 @@ inline void VocalAnimator<TBase>::init()
     scale0_2 = makeScaler(-5, 0, 5, 2); // full CV range -> 0..2
     scaleQ = makeScaler(-5, .71f, 5, 21);
     scalen5_5 = makeScaler(-5, -5, 5, 5);
-  
+
 }
 
 template <class TBase>
@@ -218,11 +218,15 @@ inline void VocalAnimator<TBase>::step()
     }
 #endif
 
-    const T q = scaleQ(inputs[FILTER_Q_CV_INPUT].value, 
-        params[FILTER_Q_PARAM].value, params[FILTER_Q_TRIM_PARAM].value);
+    const T q = scaleQ(
+        TBase::inputs[FILTER_Q_CV_INPUT].value,
+        TBase::params[FILTER_Q_PARAM].value,
+        TBase::params[FILTER_Q_TRIM_PARAM].value);
 
-    const T fc = scalen5_5(inputs[FILTER_FC_CV_INPUT].value,
-        params[FILTER_FC_PARAM].value, params[FILTER_FC_TRIM_PARAM].value);
+    const T fc = scalen5_5(
+        TBase::inputs[FILTER_FC_CV_INPUT].value,
+        TBase::params[FILTER_FC_PARAM].value,
+        TBase::params[FILTER_FC_TRIM_PARAM].value);
 
      //   cv, knob, trim);
 
@@ -232,9 +236,9 @@ inline void VocalAnimator<TBase>::step()
 
     // cv, knob, trim
     const T baseModDepth = scale0_1(
-        inputs[FILTER_MOD_DEPTH_CV_INPUT].value,
-        params[FILTER_MOD_DEPTH_PARAM].value,
-        params[FILTER_MOD_DEPTH_TRIM_PARAM].value);
+        TBase::inputs[FILTER_MOD_DEPTH_CV_INPUT].value,
+        TBase::params[FILTER_MOD_DEPTH_PARAM].value,
+        TBase::params[FILTER_MOD_DEPTH_TRIM_PARAM].value);
 
     const T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;                // Sum the folder outputs here
@@ -244,11 +248,11 @@ inline void VocalAnimator<TBase>::step()
 
         // first version - everyone track straight
         // replace this with switch
-#if 0
-        logFreq += TBase::params[FILTER_FC_PARAM].value;    // add without attenuation for 1V/octave
+#if 1
+        logFreq += fc;    // add without attenuation for 1V/octave
 #else
         // classic version - respect the mod depth scaling
-        logFreq += TBase::params[FILTER_FC_PARAM].value * nominalModSensitivity[i];
+        logFreq += fc * nominalModSensitivity[i];
 #endif
         logFreq += ((i < 3) ? modulatorOutput[i] : 0) *
             baseModDepth *
@@ -263,7 +267,7 @@ inline void VocalAnimator<TBase>::step()
         if (normFreq > .2) {
             normFreq = T(.2);
         }
-      
+
         normalizedFilterFreq[i] = normFreq;
        // fprintf(stderr, "nromFreq2 = %f\n", normFreq); fflush(stderr);
         filterParams[i].setFreq(normFreq);
@@ -280,13 +284,13 @@ inline void VocalAnimator<TBase>::step()
     //scale0_2(cv, knob, trim)
     modulatorParams.setRateAndSpread(
         scale0_2(
-            TBase::inputs[LFO_RATE_CV_INPUT].value,
-            TBase::params[LFO_RATE_PARAM].value,
-            TBase::params[LFO_RATE_TRIM_PARAM].value),
+        TBase::inputs[LFO_RATE_CV_INPUT].value,
+        TBase::params[LFO_RATE_PARAM].value,
+        TBase::params[LFO_RATE_TRIM_PARAM].value),
         scale0_2(
-            0,
-            TBase::params[LFO_SPREAD_PARAM].value,
-            0),
+        0,
+        TBase::params[LFO_SPREAD_PARAM].value,
+        0),
         reciprocalSampleRate);
 
 }
