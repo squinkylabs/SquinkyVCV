@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <functional>
+#include <algorithm>
 
 class AudioMath
 {
@@ -61,7 +62,7 @@ public:
         const T b = y0 - a * x0;
         return [a, b](T cv, T knob, T trim) {
             T x = cv * trim + knob;
-            x = std::max(-5.0f, x);
+            x = std::max<T>(-5.0f, x);
             x = std::min(5.0f, x);
             return a * x + b;
         };

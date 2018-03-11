@@ -15,7 +15,7 @@ class VocalFilter : public TBase
 {
 public:
     typedef float T;
-    static const int numFilters = 4;
+    static const int numFilters = 3;
 
     VocalFilter(struct Module * module) : TBase(module)
     {
@@ -32,8 +32,12 @@ public:
     enum ParamIds
     {
         FILTER_Q_PARAM,
+        FILTER_Q_TRIM_PARAM,
         FILTER_FC_PARAM,
+        FILTER_FC_TRIM_PARAM,
         FILTER_VOWEL_PARAM,
+        FILTER_VOWEL_TRIM_PARAM,
+
         NUM_PARAMS
     };
 
@@ -100,59 +104,66 @@ public:
     AudioMath::ScaleFun<T> scaleQ;
     AudioMath::ScaleFun<T> scalen5_5;
 #endif
-    T maleF1Formants[6] = {270, 530, 660, 730, 570, 300};
-    T maleF2Formants[6] = {2290,
+    static const int numFormants = 6;
+    const T maleF1Formants[numFormants] = {270, 530, 660, 730, 570, 300};
+    const T maleF2Formants[6] = {2290,
         1840,
         1720,
         1090,
         840,
         870};
-    T maleF3Formants[6] = {3010,
+    const T maleF3Formants[6] = {3010,
         2480,
         2410,
         2440,
         2410,
         2240};
-    T femaleF1Formants[6] = {310,
+    const T femaleF1Formants[6] = {310,
         610,
         860,
         850,
         590,
         370};
-    T femaleF2Formants[6] = {2790,
+    const T femaleF2Formants[6] = {2790,
         2330,
         2050,
         1220,
         920,
         950};
-    T femaleF3Formants[6] = {3310,
+    const T femaleF3Formants[6] = {3310,
         2990,
         2850,
         2810,
         2710,
         2670};
 
-    T childF1Formants[6] = {370,
+    const T childF1Formants[6] = {370,
         690,
         1010,
         1030,
         680,
         430};
-    T childF2Formants[6] = {3200,
+    const T childF2Formants[6] = {3200,
         2610,
         2320,
         1370,
         1060,
         1170};
 
-    T childF3Formants[6] = {3730,
+    const T childF3Formants[6] = {3730,
         3570,
         3320,
         3170,
         3180,
         3260};
 
+    const T* maleFormants[3] = {maleF1Formants, maleF2Formants, maleF3Formants};
+    const T* femaleFormants[3] = {femaleF1Formants, femaleF2Formants, femaleF3Formants};
+    const T* childFormants[3] = {childF1Formants, childF2Formants, childF3Formants};
 
+    const T** allFormants[3] = {maleFormants, femaleFormants, childFormants};
+
+    AudioMath::ScaleFun<T> scaleCV_to_formant;
 };
 
 template <class TBase>
@@ -169,12 +180,26 @@ inline void VocalFilter<TBase>::init()
 
        // normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
+    scaleCV_to_formant = AudioMath::makeScaler<T>(0, 7);
 
 }
 
 template <class TBase>
 inline void VocalFilter<TBase>::step()
 {
+    const T fFormant = scaleCV_to_formant(
+        inputs[FILTER_VOWEL_INPUT].value,
+        params[FILTER_VOWEL_PARAM].value,
+        params[FILTER_VOWEL_TRIM_PARAM].value);
+    const int iFormant = int(fFormant);
+    assert(iFormant >= 0);
+    assert(iFormant < numFormants);
+
+    for (int i = 0; i < numFilters; ++i) {
+        T fc = maleF1Formants[iFormant];
+    }
+
+
     T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;
     for (int i = 0; i < numFilters; ++i) {
