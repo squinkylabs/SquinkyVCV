@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 
+#include "AudioMath.h"
 #include "MultiModOsc.h"
 #include "StateVariableFilter.h"
 
@@ -112,7 +113,6 @@ public:
     bool jamModForTest = false;
     T   modValueForTest = 0;
 
-
     float reciprocalSampleRate;
 
     using osc = MultiModOsc<T, numTriangle, numModOutputs>;
@@ -122,31 +122,13 @@ public:
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
 
-
-    // Ww need a bunch of scalers to convert knob, cv, trim into the voltaage 
+    // We need a bunch of scalers to convert knob, CV, trim into the voltage 
     // range each parameter needs.
-    using ScaleFun = std::function<T(T cv, T knob, T trim)>;
-    ScaleFun makeScaler(T x0, T y0, T x1, T y1);
-    ScaleFun scale0_1;
-    ScaleFun scale0_2;
-    ScaleFun scaleQ;
-    ScaleFun scalen5_5;
+    AudioMath::ScaleFun<T> scale0_1;
+    AudioMath::ScaleFun<T> scale0_2;
+    AudioMath::ScaleFun<T> scaleQ;
+    AudioMath::ScaleFun<T> scalen5_5;
 };
-
-
-
-template <class TBase>
-inline typename VocalAnimator<TBase>::ScaleFun VocalAnimator<TBase>::makeScaler(T x0, T y0, T x1, T y1)
-{
-    const float a = (y1 - y0) / (x1 - x0);
-    const float b = y0 - a * x0;
-    return [a, b](T cv, T knob, T trim) {
-        T x = cv * trim + knob;
-        x = std::max(-5.0f, x);
-        x = std::min(5.0f, x);
-        return a * x + b;
-    };
-}
 
 template <class TBase>
 inline void VocalAnimator<TBase>::init()
@@ -160,11 +142,10 @@ inline void VocalAnimator<TBase>::init()
 
         normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
-    scale0_1 = makeScaler(-5, 0, 5, 1); // full CV range -> 0..1
-    scale0_2 = makeScaler(-5, 0, 5, 2); // full CV range -> 0..2
-    scaleQ = makeScaler(-5, .71f, 5, 21);
-    scalen5_5 = makeScaler(-5, -5, 5, 5);
-
+    scale0_1 = AudioMath::makeScaler<T>(0, 1); // full CV range -> 0..1
+    scale0_2 = AudioMath::makeScaler<T>(0, 2); // full CV range -> 0..2
+    scaleQ = AudioMath::makeScaler<T>(.71f, 21);
+    scalen5_5 = AudioMath::makeScaler<T>(-5, 5);
 }
 
 template <class TBase>
@@ -175,10 +156,10 @@ inline void VocalAnimator<TBase>::step()
         StateVariableFilterParams<T>::Mode::LowPass :
         StateVariableFilterParams<T>::Mode::BandPass;
 
-    for (int i = 0; i < numFilters-1; ++i) {
+    for (int i = 0; i < numFilters - 1; ++i) {
         filterParams[0].setMode(mode);
     }
-   
+
     // Run the modulators, hold onto their output.
     // Raw Modulator outputs put in modulatorOutputs[].
     osc::run(modulatorOutput, modulatorState, modulatorParams);
@@ -226,7 +207,7 @@ inline void VocalAnimator<TBase>::step()
         cvScaleMode = 0;
     } else if (cvScaleParam < 1.5) {
         cvScaleMode = 1;
-    } else{
+    } else {
         cvScaleMode = 2;
         assert(cvScaleParam < 2.5);
     }
@@ -258,7 +239,7 @@ inline void VocalAnimator<TBase>::step()
                     // above nominal, they all track the high one (so they don't cross)
                     logFreq += fc * nominalModSensitivity[2];
                 }
-                
+
                 break;
             default:
                 assert(false);
@@ -272,7 +253,6 @@ inline void VocalAnimator<TBase>::step()
                 baseModDepth *
                 nominalModSensitivity[i];
         }
-
 
         logFreq += ((i < 3) ? modulatorOutput[i] : 0) *
             baseModDepth *
@@ -301,7 +281,7 @@ inline void VocalAnimator<TBase>::step()
     filterMix *= T(.3);            // attenuate to avoid clip
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
 
- 
+
     int matrixMode;
     float mmParam = TBase::params[LFO_MIX_PARAM].value;
    // printf("-- mmParam = %f\n", mmParam);
@@ -324,5 +304,4 @@ inline void VocalAnimator<TBase>::step()
         0),
         matrixMode,
         reciprocalSampleRate);
-
 }
