@@ -107,7 +107,18 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_VOWEL_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_VOWEL_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->vocalFilter.FILTER_VOWEL_TRIM_PARAM, -1.0, 1.0, 1.0));
-      
+
+   //Q  
+    knobY += space;
+    label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Q";
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_Q_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->vocalFilter.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 1.0));
+   
+
     // 3 pos vocal model
     addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->vocalFilter.FILTER_MODEL_SELECT_PARAM, 0.0f, 2.0f, 0.0f));
     label = new Label();

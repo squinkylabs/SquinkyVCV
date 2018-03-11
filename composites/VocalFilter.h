@@ -1,9 +1,10 @@
 #pragma once
 #include <algorithm>
-
+#include <cmath>
 #include "AudioMath.h"
 #include "StateVariableFilter.h"
 #include "LookupTable.h"
+
 
 
 /**
@@ -166,6 +167,8 @@ public:
     FormantTables<T> formantTables;
 
     AudioMath::ScaleFun<T> scaleCV_to_formant;
+    AudioMath::ScaleFun<T> scaleQ;
+    AudioMath::ScaleFun<T> scaleFc;
 };
 
 template <class TBase>
@@ -183,6 +186,8 @@ inline void VocalFilter<TBase>::init()
        // normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
     scaleCV_to_formant = AudioMath::makeScaler<T>(0, formantTables.numFormants - 1);
+    scaleQ = AudioMath::makeScaler<T>(.71f, 21);
+    scaleFc = AudioMath::makeScaler<T>(-2, 2);
 
 }
 
@@ -212,14 +217,26 @@ inline void VocalFilter<TBase>::step()
         iFormant = formantTables.numFormants - 1;
     }
 
-    // phase 1: hard coded for "male", no interpolation between formants.
-    for (int i = 0; i < numFilters; ++i) {
-      //  T fc = formantTables.maleFormants[i][iFormant];
-        T fc = formantTables.getFrequency(sex, i, fFormant);
-       // T fc = maleF1Formants[iFormant];        // base freq of formant
-        filterParams[i].setFreq(fc * reciprocalSampleRate);
-    }
 
+
+    const T q = scaleQ(
+        TBase::inputs[FILTER_Q_CV_INPUT].value,
+        TBase::params[FILTER_Q_PARAM].value,
+        TBase::params[FILTER_Q_TRIM_PARAM].value);
+
+    const T fPara = scaleFc(
+        TBase::inputs[FILTER_FC_CV_INPUT].value,
+        TBase::params[FILTER_FC_PARAM].value,
+        TBase::params[FILTER_FC_TRIM_PARAM].value);
+    // fNow -5..5, log
+
+    for (int i = 0; i < numFilters; ++i) {
+        T fc = formantTables.getFrequency(sex, i, fFormant);
+        T fcFinalLog = std::log2(fc) + fPara;
+        T fcFinal = T(std::pow(2, fcFinalLog));
+        filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
+        filterParams[i].setQ(q);
+    }
 
     T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;
