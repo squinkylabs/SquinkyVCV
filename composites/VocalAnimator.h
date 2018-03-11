@@ -29,7 +29,7 @@ public:
     void setSampleRate(float rate)
     {
         reciprocalSampleRate = 1 / rate;
-        modulatorParams.setRateAndSpread(.5, .5, reciprocalSampleRate);
+        modulatorParams.setRateAndSpread(.5, .5, 0, reciprocalSampleRate);
     }
 
     enum ParamIds
@@ -122,31 +122,11 @@ public:
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
 
-    /**
-    * Normalize =-5..5 => 0..maxY
-    * Clip values outside
-    */
-#if 0
-    T norm0_maxY(T x, T maxY)
-    {
-        x += 5;
-        if (x < 0) x = -0;
-        if (x > 10) x = 10;
-        return x * maxY / 10;
-    }
 
-    // -5 .. 5 -> -y...y
-    T norm_pmY(T x, T maxY)
-    {
-        if (x < -5) x = -5;
-        if (x > 5) x = 5;
-        return x * maxY / 5;
-    }
-#endif
-
+    // Ww need a bunch of scalers to convert knob, cv, trim into the voltaage 
+    // range each parameter needs.
     using ScaleFun = std::function<T(T cv, T knob, T trim)>;
     ScaleFun makeScaler(T x0, T y0, T x1, T y1);
-
     ScaleFun scale0_1;
     ScaleFun scale0_2;
     ScaleFun scaleQ;
@@ -190,6 +170,15 @@ inline void VocalAnimator<TBase>::init()
 template <class TBase>
 inline void VocalAnimator<TBase>::step()
 {
+    const bool bass = TBase::params[BASS_EXP_PARAM].value > .5;
+    const auto mode = bass ?
+        StateVariableFilterParams<T>::Mode::LowPass :
+        StateVariableFilterParams<T>::Mode::BandPass;
+
+    for (int i = 0; i < numFilters-1; ++i) {
+        filterParams[0].setMode(mode);
+    }
+   
     // Run the modulators, hold onto their output.
     // Raw Modulator outputs put in modulatorOutputs[].
     osc::run(modulatorOutput, modulatorState, modulatorParams);
@@ -207,17 +196,6 @@ inline void VocalAnimator<TBase>::step()
     }
 
     // norm all the params out here
-#if 0
-    T q = TBase::params[FILTER_Q_PARAM].value + 5;          // 0..10
-    q *= 2;                                                // 0..20
-    q += T(.71);
-
-    if (q < .7) {
-        fprintf(stderr, "q = %f, param = %f\n", q, TBase::params[FILTER_Q_PARAM].value);
-        q = 1;
-    }
-#endif
-
     const T q = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
@@ -227,8 +205,6 @@ inline void VocalAnimator<TBase>::step()
         TBase::inputs[FILTER_FC_CV_INPUT].value,
         TBase::params[FILTER_FC_PARAM].value,
         TBase::params[FILTER_FC_TRIM_PARAM].value);
-
-     //   cv, knob, trim);
 
 
     // put together a mod depth param from all the inputs
@@ -240,20 +216,64 @@ inline void VocalAnimator<TBase>::step()
         TBase::params[FILTER_MOD_DEPTH_PARAM].value,
         TBase::params[FILTER_MOD_DEPTH_TRIM_PARAM].value);
 
+    // tracking:
+    //  0 = all 1v/oct, mod scaled, no on top
+    //  1 = mod and cv scaled
+    //  2 = 1, + top filter gets some mod
+    int cvScaleMode = 0;
+    const float cvScaleParam = TBase::params[TRACK_EXP_PARAM].value;
+    if (cvScaleParam < .5) {
+        cvScaleMode = 0;
+    } else if (cvScaleParam < 1.5) {
+        cvScaleMode = 1;
+    } else{
+        cvScaleMode = 2;
+        assert(cvScaleParam < 2.5);
+    }
+    //printf("cvscale mode = %d\n", cvScaleMode);
+
+
     const T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;                // Sum the folder outputs here
 
     for (int i = 0; i < numFilters; ++i) {
         T logFreq = nominalFilterCenterLog2[i];
 
-        // first version - everyone track straight
-        // replace this with switch
-#if 1
-        logFreq += fc;    // add without attenuation for 1V/octave
-#else
-        // classic version - respect the mod depth scaling
-        logFreq += fc * nominalModSensitivity[i];
-#endif
+        switch (cvScaleMode) {
+            case 1:
+                // In this mode (1) CV comes straight through at 1V/8
+                // Even on the top (fixed) filter
+                logFreq += fc;    // add without attenuation for 1V/octave
+                break;
+            case 0:
+                // In mode (0) CV gets scaled per filter, as in the original design.
+                // Since nominalModSensitivity[3] == 0, top doesn't track
+                logFreq += fc * nominalModSensitivity[i];
+                break;
+            case 2:
+                if (fc < 0) {
+                    // Normal scaling for Fc less than nominal
+                    logFreq += fc * nominalModSensitivity[i];
+                } else {
+                    // above nominal, they all track the high one (so they don't cross)
+                    logFreq += fc * nominalModSensitivity[2];
+                }
+                
+                break;
+            default:
+                assert(false);
+        }
+
+        // First three filters always modulated,
+        // (wanted to try modulating 4, but don't have an LFO (yet
+        const bool modulateThisFilter = (i < 3);
+        if (modulateThisFilter) {
+            logFreq += modulatorOutput[i] *
+                baseModDepth *
+                nominalModSensitivity[i];
+        }
+
+
         logFreq += ((i < 3) ? modulatorOutput[i] : 0) *
             baseModDepth *
             nominalModSensitivity[i];
@@ -281,7 +301,18 @@ inline void VocalAnimator<TBase>::step()
     filterMix *= T(.3);            // attenuate to avoid clip
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
 
-    //scale0_2(cv, knob, trim)
+ 
+    int matrixMode;
+    float mmParam = TBase::params[LFO_MIX_PARAM].value;
+   // printf("-- mmParam = %f\n", mmParam);
+    if (mmParam < .5) {
+        matrixMode = 0;
+    } else if (mmParam < 1.5) {
+        matrixMode = 1;
+    } else {
+        matrixMode = 2;
+        assert(mmParam < 2.5);
+    }
     modulatorParams.setRateAndSpread(
         scale0_2(
         TBase::inputs[LFO_RATE_CV_INPUT].value,
@@ -291,6 +322,7 @@ inline void VocalAnimator<TBase>::step()
         0,
         TBase::params[LFO_SPREAD_PARAM].value,
         0),
+        matrixMode,
         reciprocalSampleRate);
 
 }
