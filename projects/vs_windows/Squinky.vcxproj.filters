@@ -167,5 +167,8 @@
     <ClInclude Include="..\..\test\asserts.h">
       <Filter>Source Files\test</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\VocalFilter.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

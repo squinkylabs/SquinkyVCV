@@ -11,9 +11,11 @@
 #include "FrequencyShifter.h"
 #include "TestComposite.h"
 #include "VocalAnimator.h"
+#include "VocalFilter.h"
 
 using Shifter = FrequencyShifter<TestComposite>;
 using Animator = VocalAnimator<TestComposite>;
+using VocFilter = VocalFilter<TestComposite>;
 
 #include "MeasureTime.h"
 
@@ -105,11 +107,31 @@ void testAnimator()
         return an.outputs[Shifter::SIN_OUTPUT].value;
         }, 1);
 }
+
+
+void testVocalFilter()
+{
+    VocFilter an;
+
+    an.setSampleRate(44100);
+    an.init();
+
+    an.inputs[Shifter::AUDIO_INPUT].value = 0;
+
+    MeasureTime<float>::run("vocal filter", [&an]() {
+        an.inputs[Shifter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        an.step();
+        return an.outputs[Shifter::SIN_OUTPUT].value;
+        }, 1);
+}
+
 void perfTest()
 {
+    testVocalFilter();
+    testShifter();
+    testAnimator();
+
     test1();
     testHilbert<float>();
     testHilbert<double>();
-    testShifter();
-    testAnimator();
 }
