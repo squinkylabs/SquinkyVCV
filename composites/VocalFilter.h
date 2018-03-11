@@ -33,7 +33,7 @@ public:
     {
         FILTER_Q_PARAM,
         FILTER_FC_PARAM,
-        FILTER_VOWEL_PARAM,      
+        FILTER_VOWEL_PARAM,
         NUM_PARAMS
     };
 
@@ -100,6 +100,59 @@ public:
     AudioMath::ScaleFun<T> scaleQ;
     AudioMath::ScaleFun<T> scalen5_5;
 #endif
+    T maleF1Formants[6] = {270, 530, 660, 730, 570, 300};
+    T maleF2Formants[6] = {2290,
+        1840,
+        1720,
+        1090,
+        840,
+        870};
+    T maleF3Formants[6] = {3010,
+        2480,
+        2410,
+        2440,
+        2410,
+        2240};
+    T femaleF1Formants[6] = {310,
+        610,
+        860,
+        850,
+        590,
+        370};
+    T femaleF2Formants[6] = {2790,
+        2330,
+        2050,
+        1220,
+        920,
+        950};
+    T femaleF3Formants[6] = {3310,
+        2990,
+        2850,
+        2810,
+        2710,
+        2670};
+
+    T childF1Formants[6] = {370,
+        690,
+        1010,
+        1030,
+        680,
+        430};
+    T childF2Formants[6] = {3200,
+        2610,
+        2320,
+        1370,
+        1060,
+        1170};
+
+    T childF3Formants[6] = {3730,
+        3570,
+        3320,
+        3170,
+        3180,
+        3260};
+
+
 };
 
 template <class TBase>
