@@ -76,7 +76,7 @@ static void testHilbert()
 
 }
 
-void testShifter()
+static void testShifter()
 {
     Shifter fs;
 
@@ -92,7 +92,7 @@ void testShifter()
         }, 1);
 }
 
-void testAnimator()
+static void testAnimator()
 {
     Animator an;
 
@@ -109,7 +109,7 @@ void testAnimator()
 }
 
 
-void testVocalFilter()
+static void testVocalFilter()
 {
     VocFilter an;
 

@@ -191,7 +191,7 @@ public:
     {
         free(entries);
     }
-
+    
     bool isValid() const
     {
         return ((entries != 0) &&

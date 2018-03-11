@@ -86,6 +86,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     const float labelOffset = 0;
     const float inputYOffset = 16;
     const float trimYOffset = 18;
+    const float switchX = 120;  
 
     // Filter FC
     knobY += space;
@@ -107,6 +108,13 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_VOWEL_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->vocalFilter.FILTER_VOWEL_TRIM_PARAM, -1.0, 1.0, 1.0));
       
+    // 3 pos vocal model
+    addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->vocalFilter.FILTER_MODEL_SELECT_PARAM, 0.0f, 2.0f, 0.0f));
+    label = new Label();
+    label->box.pos = Vec(switchX -50, 284);
+    label->text = "Model";
+    addChild(label);  
+
     // I.O on row 3
     const float AudioInputX = 10.0;
     const float outputX = 57.0;

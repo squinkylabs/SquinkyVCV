@@ -3,6 +3,7 @@
 
 #include "VocalAnimator.h"
 #include "TestComposite.h"
+#include "VocalFilter.h"
 
 using Animator = VocalAnimator<TestComposite>;
 
@@ -213,6 +214,22 @@ static void x()
  
 }
 
+static void testVocalFilter()
+{
+    VocalFilter<TestComposite> vf;
+    vf.setSampleRate(44100);
+    vf.init();
+
+    vf.outputs[VocalFilter<TestComposite>::AUDIO_OUTPUT].value = 0;
+    vf.inputs[VocalFilter<TestComposite>::AUDIO_INPUT].value = 1;
+    vf.step();                // prime it
+                                // with  input, should have  output
+    for (int i = 0; i < 50; ++i) {
+        vf.step();
+        assert(vf.outputs[VocalFilter<TestComposite>::AUDIO_OUTPUT].value != 0);
+    }
+}
+
 
 void testVocalAnimator()
 {
@@ -222,6 +239,7 @@ void testVocalAnimator()
     test2();
     test3();
     testScalers();
+    testVocalFilter();
    // x();
 
 }
