@@ -22,8 +22,8 @@ struct VocalFilterModule : Module
    // void fromJson(json_t *rootJ) override;
     void onSampleRateChange() override;
 
-    using VocalFilter = VocalFilter<WidgetComposite>;
-    VocalFilter vocalFilter;
+    //using VocalFilter = VocalFilter<WidgetComposite>;
+    VocalFilter<WidgetComposite> vocalFilter;
 private:
     typedef float T;
 };
