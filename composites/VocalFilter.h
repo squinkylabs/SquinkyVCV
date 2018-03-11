@@ -188,9 +188,9 @@ template <class TBase>
 inline void VocalFilter<TBase>::step()
 {
     const T fFormant = scaleCV_to_formant(
-        inputs[FILTER_VOWEL_INPUT].value,
-        params[FILTER_VOWEL_PARAM].value,
-        params[FILTER_VOWEL_TRIM_PARAM].value);
+        TBase::inputs[FILTER_VOWEL_INPUT].value,
+        TBase::params[FILTER_VOWEL_PARAM].value,
+        TBase::params[FILTER_VOWEL_TRIM_PARAM].value);
     const int iFormant = int(fFormant);
     assert(iFormant >= 0);
     assert(iFormant < numFormants);
