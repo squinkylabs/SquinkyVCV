@@ -16,9 +16,33 @@ class LookupTable
 
 public:
     LookupTable() = delete;       // we are only static
-    static void init(LookupTableParams<T>& params, int bins, T xMin, T xMax, std::function<double(double)> f);
+
+    /**
+     * lookup does the table lookup.
+     * input must be in the range specified at table creation time.
+     */
     static T lookup(const LookupTableParams<T>& params, T input);
 
+    /**
+     * init will create the entries in the lookup table
+     * bins is the number of entries desired in the lookup table.
+     *      more bins means greater accuracy, but greater memory usage also.
+     * xMin is the minimum input that will be passed to lookup()
+     * xMax is the maximum input that will be passed to lookup().
+     *      xMin..xMax is the domain of the function.
+     * f is a continuous function that the lookup table will approximate.
+     */
+    static void init(LookupTableParams<T>& params, int bins, T xMin, T xMax, std::function<double(double)> f);
+
+    /**
+     * initDiscrete will make a table that interpolates between discrete values.
+     * numEntries is the number of "points" that will be interpolated.
+     * entries are the discrete y values to be interpolated.
+     * Very important: x values are assumed to be 0..numEntries-1. That's because
+     * this lookup table only works with uniform x value.
+     */
+    static void initDiscrete(LookupTableParams<T>& params, int numEntries, const T * yEntries);
+    
 private:
     static int cvtt(T *);
 
@@ -108,6 +132,29 @@ inline void LookupTable<T>::init(LookupTableParams<T>& params,
     params.xMax = x1In;
 }
 
+template<typename T>
+inline void LookupTable<T>::initDiscrete(LookupTableParams<T>& params, int numEntries, const T * entries)
+{
+    params.alloc(numEntries);
+    // Since this version assumes x = 0, 1, 2 ....
+    // We don't need an interpolation to find which bin we are in
+    params.a = 1;
+    params.b = 0;
+
+    for (int i = 0; i <= numEntries; ++i) {
+        int x0 = i;
+        int x1 = i + 1;
+
+        double y0 = entries[x0];
+        double y1 = entries[x1];
+        double slope = y1 - y0;
+        T * entry = params.entries + (2 * i);
+        entry[0] = (T) y0;
+        entry[1] = (T) slope;
+    }
+    params.xMin = 0;
+    params.xMax = T(numEntries - 1);
+}
 
 template<>
 inline int LookupTable<double>::cvtt(double* input)

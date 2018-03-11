@@ -46,7 +46,7 @@ public:
         AUDIO_INPUT,
         FILTER_Q_CV_INPUT,
         FILTER_FC_CV_INPUT,
-        FILTER_VOWEL_INPUT,
+        FILTER_VOWEL_CV_INPUT,
         NUM_INPUTS
     };
 
@@ -180,7 +180,7 @@ inline void VocalFilter<TBase>::init()
 
        // normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
-    scaleCV_to_formant = AudioMath::makeScaler<T>(0, 7);
+    scaleCV_to_formant = AudioMath::makeScaler<T>(0, numFormants - 1);
 
 }
 
@@ -188,15 +188,21 @@ template <class TBase>
 inline void VocalFilter<TBase>::step()
 {
     const T fFormant = scaleCV_to_formant(
-        TBase::inputs[FILTER_VOWEL_INPUT].value,
+        TBase::inputs[FILTER_VOWEL_CV_INPUT].value,
         TBase::params[FILTER_VOWEL_PARAM].value,
         TBase::params[FILTER_VOWEL_TRIM_PARAM].value);
-    const int iFormant = int(fFormant);
+    int iFormant = int(fFormant);
     assert(iFormant >= 0);
-    assert(iFormant < numFormants);
+    if (iFormant >= numFormants) {
+        printf("formant overflow %f\n", fFormant);
+        iFormant = numFormants - 1;
+    }
 
+    // phase 1: hard coded for "male", no interpolation between formants.
     for (int i = 0; i < numFilters; ++i) {
-        T fc = maleF1Formants[iFormant];
+        T fc = maleFormants[i][iFormant];
+       // T fc = maleF1Formants[iFormant];        // base freq of formant
+        filterParams[i].setFreq(fc * reciprocalSampleRate);
     }
 
 
@@ -205,5 +211,5 @@ inline void VocalFilter<TBase>::step()
     for (int i = 0; i < numFilters; ++i) {
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
-    TBase::outputs[AUDIO_OUTPUT].value = filterMix;
+    TBase::outputs[AUDIO_OUTPUT].value = T(.3) * filterMix;
 }

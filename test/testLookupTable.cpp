@@ -1,6 +1,8 @@
 
 #include <assert.h>
 #include <iostream>
+
+#include "asserts.h"
 #include "LookupTable.h"
 #include "AudioMath.h"
 
@@ -125,6 +127,38 @@ static void test4()
 }
 
 template<typename T>
+static void testDiscrete1()
+{
+    LookupTableParams<T> lookup;
+
+    T y[] = {0, 10};
+    LookupTable<T>::initDiscrete(lookup, 2, y);
+    
+    assertEq(LookupTable<T>::lookup(lookup, 0), 0);
+    assertEq(LookupTable<T>::lookup(lookup, .5), 5);
+    assertEq(LookupTable<T>::lookup(lookup, 1), 10);
+
+   assertEq(LookupTable<T>::lookup(lookup, T(.1)), 1);
+   assertClose(LookupTable<T>::lookup(lookup, T(.01)), T(.1), .00001);
+}
+
+template<typename T>
+static void testDiscrete2()
+{
+    LookupTableParams<T> lookup;
+
+    T y[] = {100, 100.5, 2000, -10 };
+    LookupTable<T>::initDiscrete(lookup, 4, y);
+
+    assertEq(LookupTable<T>::lookup(lookup, 0), 100);
+    assertEq(LookupTable<T>::lookup(lookup, 1), 100.5);
+    assertEq(LookupTable<T>::lookup(lookup, 2), 2000);
+    assertEq(LookupTable<T>::lookup(lookup, 3), -10);
+
+    assertEq(LookupTable<T>::lookup(lookup, 2.5), 1000-5);
+}
+
+template<typename T>
 static void test()
 {
     test0<T>();
@@ -132,6 +166,8 @@ static void test()
     test2<T>();
     test3<T>();
     test4<T>();
+    testDiscrete1<T>();
+    testDiscrete2<T>();
 }
 
 void testLookupTable()

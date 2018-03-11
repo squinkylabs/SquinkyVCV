@@ -75,6 +75,46 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
         addChild(panel);
     }
+
+
+    const float knobX = 75;
+    const float trimX = 46;
+    const float inputX = 8;
+    float knobY = 60;
+    const float space = 46;
+    const float labelX = 0;
+    const float labelOffset = 0;
+    const float inputYOffset = 16;
+    const float trimYOffset = 18;
+
+    // Filter FC
+    knobY += space;
+    Label *label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Fc filter";
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_FC_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->vocalFilter.FILTER_FC_TRIM_PARAM, -1.0, 1.0, 1.0));
+      
+    //Vowels
+    knobY += space;
+    label = new Label();
+    label->box.pos = Vec(labelX, knobY+labelOffset);
+    label->text = "Vowel";
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_VOWEL_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_VOWEL_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->vocalFilter.FILTER_VOWEL_TRIM_PARAM, -1.0, 1.0, 1.0));
+      
+    // I.O on row 3
+    const float AudioInputX = 10.0;
+    const float outputX = 57.0;
+    const float row3 = 317.5;
+ 
+    addInput(Port::create<PJ301MPort>(Vec(AudioInputX, row3), Port::INPUT, module, module->vocalFilter.AUDIO_INPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(outputX, row3), Port::OUTPUT, module, module->vocalFilter.AUDIO_OUTPUT));
+    
 }
 
 
