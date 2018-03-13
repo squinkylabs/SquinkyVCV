@@ -20,7 +20,8 @@ static const float freqLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     //1(tenor)
     {
-        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
+        // F1
+        //0=a,1=e,2=i, 3=o 4=u
         {},
         // F2
         {},
@@ -33,16 +34,17 @@ static const float freqLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     //2(countertenor)
     {
-        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        // F1
+        //0=a,1=e,2=i, 3=o 4=u
+        {660, 440, 270, 430, 370},
         // F2
-        {},
+        {1120, 1800, 1850, 820, 630},
         // F3
-        {},
+        {2750, 2700, 2900, 2700, 2750},
         // F4
-        {},
+        {3000, 3000, 3350, 3000,  3000},
         //F5
-        {}
+        {3350, 3300, 3590, 3300, 3400}
     },
     //3(alto)
     {
@@ -60,16 +62,17 @@ static const float freqLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     // 4(soprano)
     {
-        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        // F1
+        //0=a,1=e,2=i, 3=o 4=u
+        {800, 350, 270, 450,  325},
         // F2
-        {},
+        {1150, 2000,  2140, 800, 700},
         // F3
-        {},
+        {2900, 2800, 2950, 2830, 2700},
         // F4
-        {},
+        {3900, 3600, 3900, 3800, 3800},
         //F5
-        {}
+        {4950, 4950, 4950, 4950, 4950}
     }
 };
 
