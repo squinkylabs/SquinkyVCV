@@ -215,16 +215,47 @@ static void x()
  
 }
 
+/**
+*Interpolates the frequency using lookups
+* @param model = 0(bass) 1(tenor) 2(countertenor) 3(alto) 4(soprano)
+* @param index = 0..4 (formant F1..F5)
+* @param vowel is the continuous index into the per / vowel lookup tables(0..4)
+* 0 = a, 1 = e, 2 = i, 3 = o 4 = u
+*/
+//float getLogFrequency(int model, int index, float vowel)
 static void testFormantTables()
 {
     FormantTables2 ff;
     float x = ff.getLogFrequency(0, 0, 0);
     assert(x > 0);
+#if 0
     x = ff.getNormalizedBandwidth(0, 0, 0);
     assert(x > 0);
     x = ff.getGain(0, 0, 0);
     assert(x > 0);
+#endif
+    // formant F2 of alto, 'u' 
+    x = ff.getLogFrequency(3, 1, 4);
+    assertEq(x, 700);
+    // formant F3 of soprano, 'o' 
+    x = ff.getLogFrequency(4, 2, 3);
+    assertEq(x, 2830);
 }
+
+static void testFormantTables2()
+{
+    FormantTables2 ff;
+    for (int model = 0; model < FormantTables2::numModels; ++model) {
+        for (int formantBand = 0; formantBand < FormantTables2::numFormantBands; ++formantBand) {
+            for (int vowel = 0; vowel < FormantTables2::numVowels; ++vowel) {
+                const float f = ff.getLogFrequency(model, formantBand, float(vowel));
+
+                assert(f > float(100));
+            }
+        }
+    }
+}
+
 
 static void testVocalFilter()
 {
@@ -252,6 +283,7 @@ void testVocalAnimator()
     test3();
     testScalers();
     testFormantTables();
+    testFormantTables2();
     testVocalFilter();
    // x();
 
