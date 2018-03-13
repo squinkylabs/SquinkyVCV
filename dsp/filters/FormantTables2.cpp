@@ -6,20 +6,21 @@
 static const float freqLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels] = {
    // model = 0(bass)
     {
-        // F1
-        {},
-        // F2
-        {},
-        // F3
-        {},
-        // F4
-        {},
-        //F5
-        {}
+        // F1 a
+        //0=a,1=e,2=i, 3=o 4=u
+        {600, 400, 250, 400, 350},
+        // F2 
+        {1040, 1620, 1750, 750, 600},
+        // F3 
+        {2250, 2400, 2600, 2400, 2400},
+        // F4 
+        {2450, 2800, 3050, 2600, 2675},
+        //F5 
+        {2750, 3100, 3340, 2900, 2950}
     },
     //1(tenor)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -32,7 +33,7 @@ static const float freqLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     //2(countertenor)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -45,19 +46,21 @@ static const float freqLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     //3(alto)
     {
-        // F1
-        {},
+        // F1     
+        //0=a,1=e,2=i, 3=o 4=u
+        {800, 400, 350, 450, 325},
         // F2
-        {},
+        {1150, 1600, 1700, 800, 700},
         // F3
-        {},
+        {2800, 2700, 2700, 2830, 2530},
         // F4
-        {},
+        {3500, 3300, 3700, 3500, 3500},
         //F5
-        {}},
+        {4950, 4950, 4950, 4950, 4950}
+    },
     // 4(soprano)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -73,7 +76,7 @@ static const float freqLookup[FormantTables2::numModels][FormantTables2::numForm
 static const float bwLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels] = {
     // model = 0(bass)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -86,7 +89,7 @@ static const float bwLookup[FormantTables2::numModels][FormantTables2::numForman
     },
     //1(tenor)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -97,9 +100,9 @@ static const float bwLookup[FormantTables2::numModels][FormantTables2::numForman
         // F5
         {}
     },
-    //2(countertennor)
+    //2(countertenor)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -112,7 +115,7 @@ static const float bwLookup[FormantTables2::numModels][FormantTables2::numForman
     },
     //3(alto)
     {
-        // F1
+        // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -125,7 +128,7 @@ static const float bwLookup[FormantTables2::numModels][FormantTables2::numForman
     },
 // 4(soprano)
     {
-        // F1
+        // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -141,7 +144,7 @@ static const float bwLookup[FormantTables2::numModels][FormantTables2::numForman
 static const float gainLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels] = {
     // model = 0(bass)
     {
-        // F1
+        // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -154,7 +157,7 @@ static const float gainLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     //1(tenor)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -165,11 +168,11 @@ static const float gainLookup[FormantTables2::numModels][FormantTables2::numForm
         //F5
         {}
     },
-    //2(countertennor)
+    //2(countertenor)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
-                // F2
+        // F2
         {},
         // F3
         {},
@@ -180,7 +183,7 @@ static const float gainLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     //3(alto)
     {
-        // F1
+        // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
@@ -193,7 +196,7 @@ static const float gainLookup[FormantTables2::numModels][FormantTables2::numForm
     },
     // 4(soprano)
     {
-        // F1
+        // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
         {},
         // F2
         {},
