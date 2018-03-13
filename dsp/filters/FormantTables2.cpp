@@ -3,9 +3,208 @@
 #include "FormantTables2.h"
 
 
-static const float freqLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels];
-static const float bwLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels];
-static const float gainLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels];
+static const float freqLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels] = {
+   // model = 0(bass)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //1(tenor)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //2(countertenor)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //3(alto)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}},
+    // 4(soprano)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    }
+};
+
+static const float bwLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels] = {
+    // model = 0(bass)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //1(tenor)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        // F5
+        {}
+    },
+    //2(countertennor)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //3(alto)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+// 4(soprano)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    }
+};
+
+static const float gainLookup[FormantTables2::numModels][FormantTables2::numFormantBands][FormantTables2::numVowels] = {
+    // model = 0(bass)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //1(tenor)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //2(countertennor)
+    {
+        // F1
+        {},
+                // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    //3(alto)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    },
+    // 4(soprano)
+    {
+        // F1
+        {},
+        // F2
+        {},
+        // F3
+        {},
+        // F4
+        {},
+        //F5
+        {}
+    }
+};
 
 FormantTables2::FormantTables2()
 {

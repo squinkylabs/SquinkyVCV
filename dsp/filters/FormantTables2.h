@@ -9,7 +9,7 @@ public:
     static const int numFormantBands = 5;
     /**
     * Interpolates the frequency using lookups
-    * @param model =  0(bass)  1(tenor) 2(countertennor) 3(alto)  4(soprano)
+    * @param model =  0(bass)  1(tenor) 2(countertenor) 3(alto)  4(soprano)
     * @param index = 0..4 (formant F1..F5)
     * @param vowel is the continuous index into the per/vowel lookup tables (0..4)
     */
