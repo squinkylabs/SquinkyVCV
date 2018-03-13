@@ -102,6 +102,9 @@
     <ClCompile Include="..\..\test\testVocalAnimator.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp">
+      <Filter>Source Files\dsp\filters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\VocalFilter.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\FormantTables2.h">
+      <Filter>Header Files\dsp\filters</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

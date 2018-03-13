@@ -4,6 +4,7 @@
 #include "VocalAnimator.h"
 #include "TestComposite.h"
 #include "VocalFilter.h"
+#include "FormantTables2.h"
 
 using Animator = VocalAnimator<TestComposite>;
 
@@ -214,6 +215,17 @@ static void x()
  
 }
 
+static void testFormantTables()
+{
+    FormantTables2 ff;
+    float x = ff.getLogFrequency(0, 0, 0);
+    assert(x > 0);
+    x = ff.getNormalizedBandwidth(0, 0, 0);
+    assert(x > 0);
+    x = ff.getGain(0, 0, 0);
+    assert(x > 0);
+}
+
 static void testVocalFilter()
 {
     VocalFilter<TestComposite> vf;
@@ -239,6 +251,7 @@ void testVocalAnimator()
     test2();
     test3();
     testScalers();
+    testFormantTables();
     testVocalFilter();
    // x();
 
