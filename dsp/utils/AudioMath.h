@@ -24,6 +24,11 @@ public:
         return 20 * log(g) / Ln10;
     }
 
+    static double gainFromDb(double db)
+    {
+        return std::exp(Ln10 * db / 20.0);
+    }
+
     /**
      * Returns a function that generates one period of sin for x = {0..1}.
      * Range (output) is -1 to 1.

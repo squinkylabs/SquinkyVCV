@@ -1,6 +1,8 @@
 
 #include <assert.h>
 #include <cmath>
+
+#include "AudioMath.h"
 #include "FormantTables2.h"
 
 
@@ -149,67 +151,67 @@ static const float gainLookup[FormantTables2::numModels][FormantTables2::numForm
     // model = 0(bass)
     {
         // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {0, 0, 0, 0, 0, },
         // F2
-        {},
+        {-7, -12, -30, -11, -20},
         // F3
-        {},
+        {-9, -9, -16, -21, -32},
         // F4
-        {},
+        {-12, -12, -22, -20, -28},
         //F5
-        {}
+        {-18, -18, -28, -40, -36}
     },
     //1(tenor)
     {
         // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {0, 0, 0, 0, 0},
         // F2
-        {},
+        {-6, -14, -15, -10, -20},
         // F3
-        {},
+        {-7, -12, -18, -12, -17},
         // F4
-        {},
+        {-8, -14, -20, -12, -14},
         //F5
-        {}
+        {-22, -20, -30, -26, -26}
     },
     //2(countertenor)
     {
         // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {0, 0, 0, 0, 0},
         // F2
-        {},
+        {-6, -14, -24, -10, -20},
         // F3
-        {},
+        {-23, -18, -24, -26, -23},
         // F4
-        {},
+        {-24, -20, -36, -22, -30},
         //F5
-        {}
+        {-38, -20, -36, -34, -34}
     },
     //3(alto)
     {
         // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {0, 0, 0, 0, 0},
         // F2
-        {},
+        {-4, -24, -30, -9, -12},
         // F3
-        {},
+        {-20, -30, -30, -16, -30},
         // F4
-        {},
+        {-36, -35, -36, -28, -40},
         //F5
-        {}
+        {-60, -60, -60, -55, -64}
     },
     // 4(soprano)
     {
         // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {0, 0, 0, 0, 0},
         // F2
-        {},
+        {-6, -20, -12, -11, -16},
         // F3
-        {},
+        {-32, -15, -26, -22, -35},
         // F4
-        {},
+        {-20, -40, -26, -22, -40},
         //F5
-        {}
+        {-50, -56, -44, -50, -60}
     }
 };
 
@@ -241,8 +243,10 @@ FormantTables2::FormantTables2()
 
             LookupTableParams<float>& gparams = gainInterpolators[model][formantBand];
             const float* gainValues = gainLookup[model][formantBand];
-  
-            LookupTable<float>::initDiscrete(gparams, numVowels, gainValues);
+            for (int vowel = 0; vowel < numVowels; ++vowel) {
+                temp[vowel] = (float) AudioMath::gainFromDb(gainValues[vowel]);
+            }
+            LookupTable<float>::initDiscrete(gparams, numVowels, temp);
         }
     }
 }

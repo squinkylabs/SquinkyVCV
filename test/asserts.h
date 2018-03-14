@@ -19,4 +19,16 @@
     std::cout << "assertClose failed actual value =" << \
     actual << " expected=" << expected << std::endl; \
     assert(false); }
-    
+
+
+// assert less than
+#define assertLt(actual, expected) if ( actual >= expected) { \
+    std::cout << "assertLt " << expected << " actual value = " << \
+    actual << std::endl ; \
+    assert(false); }
+  
+// assert less than or equal to
+#define assertLE(actual, expected) if ( actual > expected) { \
+    std::cout << "assertLt " << expected << " actual value = " << \
+    actual << std::endl ; \
+    assert(false); }

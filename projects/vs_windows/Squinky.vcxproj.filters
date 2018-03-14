@@ -167,14 +167,14 @@
     <ClInclude Include="..\..\composites\VocalAnimator.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\test\asserts.h">
-      <Filter>Source Files\test</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\composites\VocalFilter.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\filters\FormantTables2.h">
       <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\asserts.h">
+      <Filter>Header Files\test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

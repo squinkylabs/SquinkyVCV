@@ -231,10 +231,10 @@ static void testFormantTables()
 
     x = ff.getNormalizedBandwidth(0, 0, 0);
     assert(x > 0);
-#if 0
+
     x = ff.getGain(0, 0, 0);
     assert(x > 0);
-#endif
+
     // spot check a few freq
     // formant F2 of alto, 'u' 
     x = ff.getLogFrequency(3, 1, 4);
@@ -259,6 +259,10 @@ static void testFormantTables2()
                 const float nBw = ff.getNormalizedBandwidth(model, formantBand, float(vowel));
                 assert(nBw < .5);
                 assert(nBw > .01);
+
+                const float gain = ff.getGain(model, formantBand, float(vowel));
+                assertLE(gain, 1);
+                assert(gain > 0);
             }
         }
     }
