@@ -1,5 +1,6 @@
 
 #include <assert.h>
+#include <cmath>
 #include "FormantTables2.h"
 
 
@@ -220,8 +221,15 @@ FormantTables2::FormantTables2()
 
             LookupTableParams<float>& fparams = freqInterpolators[model][formantBand];
             const float  *values = freqLookup[model][formantBand];
+
+            // It would be more efficient to init the tables with logs, but this
+            // on the fly conversion is fine.
+            float temp[numVowels];
+            for (int vowel = 0; vowel < numVowels; ++vowel) {
+                temp[vowel] = std::log2(values[vowel]);
+            }
             // todo: take log
-            LookupTable<float>::initDiscrete(fparams, numVowels, values);
+            LookupTable<float>::initDiscrete(fparams, numVowels, temp);
 
             LookupTableParams<float>& bwparams = bwInterpolators[model][formantBand];
             values = bwLookup[model][formantBand];

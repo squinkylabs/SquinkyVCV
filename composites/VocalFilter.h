@@ -4,9 +4,10 @@
 #include "AudioMath.h"
 #include "StateVariableFilter.h"
 #include "LookupTable.h"
+#include "FormantTables2.h"
 
 
-
+#if 0
 /**
  * Helper class to hold all the formant data
  * (lookup tables, interpolators)
@@ -94,6 +95,7 @@ T FormantTables<T>::getFrequency(int model, int index, T vowel)
     LookupTableParams<T>* params = allLookups[model][index];
     return LookupTable<T>::lookup(*params, vowel);
 }
+#endif
 
 /**
  *
@@ -103,7 +105,7 @@ class VocalFilter : public TBase
 {
 public:
     typedef float T;
-    static const int numFilters = 3;
+    static const int numFilters = FormantTables2::numFormantBands;
 
     VocalFilter(struct Module * module) : TBase(module)
     {
@@ -164,7 +166,7 @@ public:
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
 
-    FormantTables<T> formantTables;
+    FormantTables2 formantTables;
 
     AudioMath::ScaleFun<T> scaleCV_to_formant;
     AudioMath::ScaleFun<T> scaleQ;
@@ -185,7 +187,7 @@ inline void VocalFilter<TBase>::init()
 
        // normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
-    scaleCV_to_formant = AudioMath::makeScaler<T>(0, formantTables.numFormants - 1);
+    scaleCV_to_formant = AudioMath::makeScaler<T>(0, formantTables.numVowels - 1);
     scaleQ = AudioMath::makeScaler<T>(.71f, 21);
     scaleFc = AudioMath::makeScaler<T>(-2, 2);
 
@@ -194,27 +196,28 @@ inline void VocalFilter<TBase>::init()
 template <class TBase>
 inline void VocalFilter<TBase>::step()
 {
-    int sex = 0;
+    // todo - need 4 pos switch for all models
+    int model = 0;
     const T switchVal = TBase::params[FILTER_MODEL_SELECT_PARAM].value;
     if (switchVal < .5) {
-        sex = 0;
+        model = 0;
         assert(switchVal > -.5);
     } else if (switchVal < 1.5) {
-        sex = 1;
+        model = 1;
     } else {
-        sex = 2;
+        model = 2;
         assert(switchVal < 2.5);
     }
 
-    const T fFormant = scaleCV_to_formant(
+    const T fVowel = scaleCV_to_formant(
         TBase::inputs[FILTER_VOWEL_CV_INPUT].value,
         TBase::params[FILTER_VOWEL_PARAM].value,
         TBase::params[FILTER_VOWEL_TRIM_PARAM].value);
-    int iFormant = int(fFormant);
-    assert(iFormant >= 0);
-    if (iFormant >= formantTables.numFormants) {
-        printf("formant overflow %f\n", fFormant);
-        iFormant = formantTables.numFormants - 1;
+    int iVowel = int(fVowel);
+    assert(iVowel >= 0);
+    if (iVowel >= formantTables.numVowels) {
+        printf("formant overflow %f\n", fVowel);
+        iVowel = formantTables.numVowels - 1;
     }
 
 
@@ -231,8 +234,8 @@ inline void VocalFilter<TBase>::step()
     // fNow -5..5, log
 
     for (int i = 0; i < numFilters; ++i) {
-        T fc = formantTables.getFrequency(sex, i, fFormant);
-        T fcFinalLog = std::log2(fc) + fPara;
+        T fcLog = formantTables.getLogFrequency(model, i, fVowel);
+        T fcFinalLog = fcLog + fPara;
         T fcFinal = T(std::pow(2, fcFinalLog));
         filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
         filterParams[i].setQ(q);

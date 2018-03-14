@@ -234,12 +234,13 @@ static void testFormantTables()
     x = ff.getGain(0, 0, 0);
     assert(x > 0);
 #endif
+    // spot check a few freq
     // formant F2 of alto, 'u' 
     x = ff.getLogFrequency(3, 1, 4);
-    assertEq(x, 700);
+    assertClose(x, std::log2(700), .0001);
     // formant F3 of soprano, 'o' 
     x = ff.getLogFrequency(4, 2, 3);
-    assertEq(x, 2830);
+    assertClose(x, std::log2(2830), .0001);
 }
 
 static void testFormantTables2()
@@ -250,7 +251,9 @@ static void testFormantTables2()
             for (int vowel = 0; vowel < FormantTables2::numVowels; ++vowel) {
                 const float f = ff.getLogFrequency(model, formantBand, float(vowel));
 
-                assert(f > float(100));
+                // check that the frequencies are possible formants
+                assert(std::pow(2, f) > 100);
+                assert(std::pow(2, f) < 5500);
             }
         }
     }
