@@ -221,11 +221,12 @@ inline void VocalFilter<TBase>::step()
     }
 
 
-
+    /* TODO: put Q back
     const T q = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
+        */
 
     const T fPara = scaleFc(
         TBase::inputs[FILTER_FC_CV_INPUT].value,
@@ -234,11 +235,13 @@ inline void VocalFilter<TBase>::step()
     // fNow -5..5, log
 
     for (int i = 0; i < numFilters; ++i) {
-        T fcLog = formantTables.getLogFrequency(model, i, fVowel);
+        const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
+        const T normalizedBw = formantTables.getNormalizedBandwidth(model, i, fVowel);
+
         T fcFinalLog = fcLog + fPara;
         T fcFinal = T(std::pow(2, fcFinalLog));
         filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
-        filterParams[i].setQ(q);
+        filterParams[i].setNormalizedBandwidth(normalizedBw);
     }
 
     T input = TBase::inputs[AUDIO_INPUT].value;

@@ -228,9 +228,10 @@ static void testFormantTables()
     FormantTables2 ff;
     float x = ff.getLogFrequency(0, 0, 0);
     assert(x > 0);
-#if 0
+
     x = ff.getNormalizedBandwidth(0, 0, 0);
     assert(x > 0);
+#if 0
     x = ff.getGain(0, 0, 0);
     assert(x > 0);
 #endif
@@ -254,6 +255,10 @@ static void testFormantTables2()
                 // check that the frequencies are possible formants
                 assert(std::pow(2, f) > 100);
                 assert(std::pow(2, f) < 5500);
+
+                const float nBw = ff.getNormalizedBandwidth(model, formantBand, float(vowel));
+                assert(nBw < .5);
+                assert(nBw > .01);
             }
         }
     }

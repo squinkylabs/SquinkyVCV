@@ -81,67 +81,67 @@ static const float bwLookup[FormantTables2::numModels][FormantTables2::numForman
     // model = 0(bass)
     {
         // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {60, 40, 60, 40, 40},
         // F2
-        {},
+        {70, 80, 90, 80, 80},
         // F3
-        {},
+        {110, 100, 100, 100, 100},
         // F4
-        {},
+        {120, 120, 120, 120, 120},
         //F5
-        {}
+        {130, 120, 120, 120, 120}
     },
     //1(tenor)
     {
         // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {80, 70, 40, 70, 40},
         // F2
-        {},
+        {90, 80, 90, 80, 60},
         // F3
-        {},
+        {120, 100, 100, 100, 100},
         // F4
-        {},
+        {130, 120, 120, 130, 120},
         // F5
-        {}
+        {140, 120, 120, 135, 120}
     },
     //2(countertenor)
     {
         // F1     0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {80, 70, 40, 40, 40},
         // F2
-        {},
+        {90, 80, 90, 80, 60},
         // F3
-        {},
+        {120, 100, 100, 100, 100},
         // F4
-        {},
+        {130, 120, 120, 120, 120},
         //F5
-        {}
+        {140, 120, 120, 120, 120}
     },
     //3(alto)
     {
         // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {80, 60, 50, 70, 50 },
         // F2
-        {},
+        {90, 80, 100, 80, 60},
         // F3
-        {},
+        {120, 120, 120, 100, 170},
         // F4
-        {},
+        {130, 150, 150, 130, 180},
         //F5
-        {}
+        {140, 200, 200, 135, 200}
     },
 // 4(soprano)
     {
         // F1      0 = a, 1 = e, 2 = i, 3 = o 4 = u
-        {},
+        {80, 60, 60, 40, 50},
         // F2
-        {},
+        {90, 100, 90, 80, 60},
         // F3
-        {},
+        {120, 120, 100, 100, 170},
         // F4
-        {},
+        {130, 150, 120, 120, 180},
         //F5
-        {}
+        {140, 200, 120, 120, 200}
     }
 };
 
@@ -220,26 +220,29 @@ FormantTables2::FormantTables2()
         for (int formantBand = 0; formantBand < numFormantBands; ++formantBand) {
 
             LookupTableParams<float>& fparams = freqInterpolators[model][formantBand];
-            const float  *values = freqLookup[model][formantBand];
+            const float  *freqValues = freqLookup[model][formantBand];
 
             // It would be more efficient to init the tables with logs, but this
             // on the fly conversion is fine.
             float temp[numVowels];
             for (int vowel = 0; vowel < numVowels; ++vowel) {
-                temp[vowel] = std::log2(values[vowel]);
+                temp[vowel] = std::log2(freqValues[vowel]);
             }
-            // todo: take log
             LookupTable<float>::initDiscrete(fparams, numVowels, temp);
 
+            // Init Wb lookups with normalized bw ( f2-f1 / fc)
             LookupTableParams<float>& bwparams = bwInterpolators[model][formantBand];
-            values = bwLookup[model][formantBand];
-            // todo: take log
-            LookupTable<float>::initDiscrete(bwparams, numVowels, values);
+            const float *bwValues = bwLookup[model][formantBand];
+            for (int vowel = 0; vowel < numVowels; ++vowel) {
+                temp[vowel] = bwValues[vowel] / freqValues[vowel];
+            }
+
+            LookupTable<float>::initDiscrete(bwparams, numVowels, temp);
 
             LookupTableParams<float>& gparams = gainInterpolators[model][formantBand];
-            values = gainLookup[model][formantBand];
-            // todo: take log
-            LookupTable<float>::initDiscrete(gparams, numVowels, values);
+            const float* gainValues = gainLookup[model][formantBand];
+  
+            LookupTable<float>::initDiscrete(gparams, numVowels, gainValues);
         }
     }
 }

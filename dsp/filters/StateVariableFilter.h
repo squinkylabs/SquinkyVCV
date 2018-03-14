@@ -105,6 +105,12 @@ public:
     void setQ(T q);
 
     /**
+     * Normalized bandwidth is bw / fc
+     * Also is 1 / Q
+     */
+    void setNormalizedBandwidth(T bw);
+
+    /**
      * Set the center frequency.
      * units are 1 == sample rate
      */
@@ -127,6 +133,13 @@ inline void StateVariableFilterParams<T>::setQ(T q)
         q = T(.6);
     }
     qGain = 1 / q;
+}
+
+
+template <typename T>
+inline void StateVariableFilterParams<T>::setNormalizedBandwidth(T bw)
+{
+    qGain = bw;
 }
 
 template <typename T>
