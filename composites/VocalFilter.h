@@ -196,7 +196,7 @@ inline void VocalFilter<TBase>::init()
 template <class TBase>
 inline void VocalFilter<TBase>::step()
 {
-    // todo - need 4 pos switch for all models
+    // todo - need 4 position switch for all models
     int model = 0;
     const T switchVal = TBase::params[FILTER_MODEL_SELECT_PARAM].value;
     if (switchVal < .5) {
@@ -239,7 +239,10 @@ inline void VocalFilter<TBase>::step()
     for (int i = 0; i < numFilters; ++i) {
         const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
         const T normalizedBw = formantTables.getNormalizedBandwidth(model, i, fVowel);
-        const T gain = formantTables.getGain(model, i, fVowel);
+
+        // Get the filter gain from the table, but scale by BW to counteract the filters 
+        // gain that tracks Q
+        const T gain = formantTables.getGain(model, i, fVowel) * normalizedBw;
 
         T fcFinalLog = fcLog + fPara;
         T fcFinal = T(std::pow(2, fcFinalLog));
@@ -247,5 +250,5 @@ inline void VocalFilter<TBase>::step()
         filterParams[i].setNormalizedBandwidth(normalizedBw);
         filterMix += gain * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
-    TBase::outputs[AUDIO_OUTPUT].value = T(.5) * filterMix;
+    TBase::outputs[AUDIO_OUTPUT].value = 3 * filterMix;
 }
