@@ -234,20 +234,18 @@ inline void VocalFilter<TBase>::step()
         TBase::params[FILTER_FC_TRIM_PARAM].value);
     // fNow -5..5, log
 
+    T input = TBase::inputs[AUDIO_INPUT].value;
+    T filterMix = 0;
     for (int i = 0; i < numFilters; ++i) {
         const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
         const T normalizedBw = formantTables.getNormalizedBandwidth(model, i, fVowel);
+        const T gain = formantTables.getGain(model, i, fVowel);
 
         T fcFinalLog = fcLog + fPara;
         T fcFinal = T(std::pow(2, fcFinalLog));
         filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
         filterParams[i].setNormalizedBandwidth(normalizedBw);
+        filterMix += gain * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
-
-    T input = TBase::inputs[AUDIO_INPUT].value;
-    T filterMix = 0;
-    for (int i = 0; i < numFilters; ++i) {
-        filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
-    }
-    TBase::outputs[AUDIO_OUTPUT].value = T(.3) * filterMix;
+    TBase::outputs[AUDIO_OUTPUT].value = T(.5) * filterMix;
 }
