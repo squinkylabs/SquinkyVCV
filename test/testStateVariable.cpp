@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "asserts.h"
 #include "StateVariableFilter.h"
 #include "TestSignal.h"
 
@@ -30,13 +31,13 @@ static void test1()
 template <typename T>
 static void testLowpass()
 {
-    const T fc = T(.001);// was .05
-    const T q = T(1.0 / std::sqrt(2));// butterworth
+    const T fc = T(.001);
+    const T q = T(1.0 / std::sqrt(2));      // butterworth
     StateVariableFilterParams<T> params;
     StateVariableFilterState<T> state;
     params.setMode(StateVariableFilterParams<T>::Mode::LowPass);
-    params.setFreq(fc);                   // TODO: make an even fraction
-    params.setQ(q);   // tried .7
+    params.setFreq(fc);                     // TODO: make an even fraction
+    params.setQ(q); 
 
     double g = TestSignal<T>::measureGain(fc / 4, [&state, &params](T input) {
         return StateVariableFilter<T>::run(input, state, params);
@@ -62,6 +63,41 @@ static void testLowpass()
     assert(AudioMath::closeTo(g2 - g3, 12, 2));
 }
 
+/**
+ * Verify that passband gain tracks Q
+ */
+static void testBandpass()
+{
+    const float fc = .01f;
+    const float q = (1.0f / float(std::sqrt(2)));      // butterworth
+    StateVariableFilterParams<float> params;
+    StateVariableFilterState<float> state;
+    params.setMode(StateVariableFilterParams<float>::Mode::BandPass);
+    params.setFreq(fc);                     // TODO: make an even fraction
+    params.setQ(q);
+
+    double g0 = TestSignal<float>::measureGain(fc , [&state, &params](float input) {
+        return StateVariableFilter<float>::run(input, state, params);
+        });
+    g0 = AudioMath::db(g0);
+
+    for (int i = 2; i < 100; i *= 2) {
+        const float q = float(i);
+        params.setQ(q);
+
+        double g = TestSignal<float>::measureGain(fc, [&state, &params](float input) {
+            return StateVariableFilter<float>::run(input, state, params);
+            });
+        g = AudioMath::db(g);
+       // printf("q = %f, gain db = %f qdb=%f\n", q, g, AudioMath::db(q));
+
+        assertClose(g, AudioMath::db(q), .5);
+    }
+   
+
+
+}
+
 template <typename T>
 static void test()
 {
@@ -73,4 +109,5 @@ void testStateVariable()
 {
     test<float>();
     test<double>();
+    testBandpass();
 }
