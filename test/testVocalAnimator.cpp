@@ -130,6 +130,8 @@ static void testScalers()
 
 }
 
+
+#if 0
 static void dump(const char * msg, const Animator& anim)
 {
     std::cout << "dumping " << msg << "\nfiltFreq"
@@ -140,7 +142,6 @@ static void dump(const char * msg, const Animator& anim)
         << std::endl;
 }
 
-#if 0
 static void x()
 {
     Animator anim;
