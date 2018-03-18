@@ -93,6 +93,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     Label *label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Fc filter";
+    label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_FC_CV_INPUT));
@@ -103,6 +104,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Vowel";
+    label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_VOWEL_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_VOWEL_CV_INPUT));
@@ -113,6 +115,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Q";
+    label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_Q_CV_INPUT));
@@ -124,6 +127,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     label = new Label();
     label->box.pos = Vec(switchX -50, 284);
     label->text = "Model";
+    label->color = COLOR_BLACK;
     addChild(label);  
 
     // I.O on row 3

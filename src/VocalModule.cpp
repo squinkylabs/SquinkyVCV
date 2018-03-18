@@ -104,6 +104,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     Label *label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Rate";
+    label->color = COLOR_BLACK;
     addChild(label);  
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
@@ -113,6 +114,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Mod Spread";
+    label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
     const float matrixY = knobY;
@@ -121,6 +123,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Q";
+    label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_Q_CV_INPUT));
@@ -130,6 +133,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Fc filter";
+    label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_FC_CV_INPUT));
@@ -139,6 +143,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
     label->text = "Mod Depth";
+    label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::FILTER_MOD_DEPTH_CV_INPUT));
@@ -156,10 +161,12 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(AudioInputX, row3 - 20);
     label->text = "In";
+    label->color = COLOR_BLACK;
     addChild(label);  
     label = new Label();
     label->box.pos = Vec(outputX, row3 - 20);
     label->text = "Out";
+    label->color = COLOR_BLACK;
     addChild(label);  
     
     /*******************************************
@@ -171,6 +178,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(switchX -8, 225);
     label->text = "B";
+    label->color = COLOR_BLACK;;
     addChild(label); 
    
     // 3 pos track_exp
@@ -178,6 +186,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(switchX -12, 284);
     label->text = "Scl";
+    label->color = COLOR_BLACK;
     addChild(label);  
 
     // 3 pos LFO matrix
@@ -185,6 +194,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label = new Label();
     label->box.pos = Vec(switchX -15, matrixY+28);
     label->text = "Mtx";
+    label->color = COLOR_BLACK;
     addChild(label);  
 
     /*************************************************
