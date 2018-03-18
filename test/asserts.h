@@ -32,3 +32,4 @@
     std::cout << "assertLt " << expected << " actual value = " << \
     actual << std::endl ; \
     assert(false); }
+// leave space after macro

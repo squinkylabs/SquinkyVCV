@@ -86,11 +86,10 @@ inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
     
     assert(input_float >= 0 && input_float <= 1);
     assert(input_int >= 0 && input_int <= params.numBins_i);
-
+  
     T * entry = params.entries + (2 * input_int);
     T x = entry[0];
     x += input_float * entry[1];
-
     return x;
 }
 
@@ -141,13 +140,22 @@ inline void LookupTable<T>::initDiscrete(LookupTableParams<T>& params, int numEn
     params.a = 1;
     params.b = 0;
 
-    for (int i = 0; i <= numEntries; ++i) {
+    for (int i = 0; i < numEntries; ++i) {
         int x0 = i;
         int x1 = i + 1;
+
+        // Ugh - this will need to get resolved when we "officially" make
+        // all table support x values outside their range. But for now we 
+        // have a problem: if x == Xmax (numEntries), we need an extra "bin"
+        // at the end to look up that value, so here we make a flat bit of xMax.
+        if (i == (numEntries - 1)) {
+            --x1;
+        }
 
         double y0 = entries[x0];
         double y1 = entries[x1];
         double slope = y1 - y0;
+
         T * entry = params.entries + (2 * i);
         entry[0] = (T) y0;
         entry[1] = (T) slope;
