@@ -139,6 +139,8 @@ static void dump(const char * msg, const Animator& anim)
         << " " << std::pow(2, anim.filterFrequencyLog[3])
         << std::endl;
 }
+
+#if 0
 static void x()
 {
     Animator anim;
@@ -210,10 +212,8 @@ static void x()
     }
     dump("fc 0 depth -5", anim);
 #endif
-  
-   
- 
 }
+#endif
 
 /**
 *Interpolates the frequency using lookups

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include "TimeStatsCollector.h"
 
 template <typename T>
@@ -37,7 +39,8 @@ public:
                 double full = 44100;
                 double percent = full * 100 / itersPerSec;
                 printf("\nmeasure %s over time %f\n", name, minTime);
-                printf("did %lld iterations in %f seconds\n", iterations, elapsed);
+                //const char * p = PRId64;
+                printf("did %" PRId64 " iterations in %f seconds\n", iterations, elapsed);
                 printf("that's %f per sec\n", itersPerSec);
                 printf("percent CPU usage: %f\n", percent);
                 printf("best case instances: %f\n", 100 / percent);
