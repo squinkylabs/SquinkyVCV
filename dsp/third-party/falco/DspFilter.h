@@ -727,11 +727,14 @@ namespace Dsp
 	struct Cascade
 	{
 		struct Stage;
-#if 0
-		virtual ~Cascade() {
-			int x = 5;
-		}		// there is something wrong with this class. dtor should be virtual, but that crashes
-#endif
+
+        // Original source had no virtual destructor.
+        // I tried to put one in years ago, and had crashes.
+        // Seems ok now.
+        virtual ~Cascade()
+        {
+        }
+
 
 		// Initializes some important fields.
 		Cascade();
