@@ -1,9 +1,9 @@
 
-#include "Squinky.hpp"
+#ifdef _EXP // experimental module
 
+#include "Squinky.hpp"
 #include "WidgetComposite.h"
 #include "VocalAnimator.h"
-
 
 /**
  * Implementation class for VocalWidget
@@ -214,3 +214,4 @@ Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs"
     "squinkylabs-vocalanimator",
     "Vocal Animator", EFFECT_TAG, FILTER_TAG);
 
+#endif

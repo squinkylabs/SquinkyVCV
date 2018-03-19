@@ -11,6 +11,11 @@ FLAGS += -I./composites
 CFLAGS +=
 CXXFLAGS +=
 
+# Command line variable to turn on "experimental" modules
+ifdef _EXP
+	FLAGS += -D _EXP
+endif
+
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
 # Static libraries are fine.
 LDFLAGS +=
