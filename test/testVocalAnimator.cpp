@@ -1,6 +1,7 @@
 #include "asserts.h"
 
 
+#include "ExtremeTester.h"
 #include "VocalAnimator.h"
 #include "TestComposite.h"
 #include "VocalFilter.h"
@@ -286,7 +287,14 @@ static void testVocalFilter()
     }
 }
 
-
+static void testInputExtremes()
+{
+    VocalAnimator<TestComposite> va;
+    va.setSampleRate(44100);
+    va.init();
+    ExtremeTester< VocalAnimator<TestComposite>> te(va);
+    te.test();
+}
 void testVocalAnimator()
 {
 
@@ -297,6 +305,7 @@ void testVocalAnimator()
     testScalers();
     testFormantTables();
     testFormantTables2();
+    testInputExtremes();
     testVocalFilter();
    // x();
 

@@ -176,5 +176,8 @@
     <ClInclude Include="..\..\test\asserts.h">
       <Filter>Header Files\test</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\test\ExtremeTester.h">
+      <Filter>Header Files\test</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
