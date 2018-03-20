@@ -74,20 +74,35 @@ public:
     }
     void test()
     {
-       // const int numInputs = (int) dut.inputs.size();
+      
         const int numInputs = dut.NUM_INPUTS;
+        const int numParams = dut.NUM_PARAMS;
+        const int numOutputs = dut.NUM_OUTPUTS;
         assert(numInputs < 20);
        
-
+        BitCounter inputState;
+        BitCounter paramsState;
         for (inputState.reset(numInputs); !inputState.isDone(); inputState.next()) {
-            inputState.dump();
             inputState.setState(dut.inputs);
+            inputState.dump();
+            for (paramsState.reset(numInputs); !paramsState.isDone(); paramsState.next()) {
+                paramsState.setState(dut.params);
+                for (int i=0; i < 100; ++i) {
+                    dut.step();
+                    for (int j = 0; j < numOutputs; ++j) {
+                        const float out = dut.outputs[j].value;
+                        assert(out > -10);
+                        assert(out < 10);
+                    }
+                }
+            }
+
         }
       
 
     }
 private:
     T & dut;
-    BitCounter inputState;
+   
 
 };

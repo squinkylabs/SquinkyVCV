@@ -295,6 +295,16 @@ static void testInputExtremes()
     ExtremeTester< VocalAnimator<TestComposite>> te(va);
     te.test();
 }
+
+
+static void testVocalExtremes()
+{
+    VocalFilter<TestComposite> va;
+    va.setSampleRate(44100);
+    va.init();
+    ExtremeTester< VocalFilter<TestComposite>> te(va);
+    te.test();
+}
 void testVocalAnimator()
 {
 
@@ -307,6 +317,7 @@ void testVocalAnimator()
     testFormantTables2();
     testInputExtremes();
     testVocalFilter();
+    testVocalExtremes();
    // x();
 
 }
