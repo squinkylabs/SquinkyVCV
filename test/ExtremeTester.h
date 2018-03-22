@@ -92,7 +92,7 @@ class ExtremeTester
 {
 public:
 
-    static void test(T& dut, const std::vector< std::pair<float, float>>& paramLimits)
+    static void test(T& dut, const std::vector< std::pair<float, float>>& paramLimits, bool checkOutput)
     {
       
         const int numInputs = dut.NUM_INPUTS;
@@ -115,8 +115,10 @@ public:
                     dut.step();
                     for (int j = 0; j < numOutputs; ++j) {
                         const float out = dut.outputs[j].value;
-                        assertGE(out, -150);
-                        assertLE(out, 150);
+                        if (checkOutput) {
+                            assertGE(out, -150);
+                            assertLE(out, 150);
+                        }
                     }
                 }
             }

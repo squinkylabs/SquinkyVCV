@@ -204,9 +204,11 @@ inline void VocalFilter<TBase>::step()
         assert(switchVal > -.5);
     } else if (switchVal < 1.5) {
         model = 1;
-    } else {
+    } else if (switchVal < 2.5){
         model = 2;
-        assert(switchVal < 2.5);
+    } else {
+        model = 3;
+        assert(switchVal < 3.5);
     }
 
     const T fVowel = scaleCV_to_formant(

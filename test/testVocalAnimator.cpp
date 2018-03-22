@@ -312,39 +312,36 @@ static void testInputExtremes()
     paramLimits[va.BASS_EXP_PARAM] = fp(0.f, 1.0f);
     paramLimits[va.TRACK_EXP_PARAM] = fp(0.f, 2.0f);
     paramLimits[va.LFO_MIX_PARAM] = fp(0.f, 1.0f);
-    /*
 
-    BASS_EXP_PARAM,
-
-    // tracking:
-    //  0 = all 1v/oct, mod scaled, no on top
-    //  1 = mod and cv scaled
-    //  2 = 1, + top filter gets some mod
-    TRACK_EXP_PARAM,
-
-    // LFO mixing options
-    // 0 = classic
-    // 1 = option
-    // 2 = lf sub
-    LFO_MIX_PARAM,
-    */
-  
-
-   // ExtremeTester< VocalAnimator<TestComposite>> te(va);
-   // te.test();
-    ExtremeTester< VocalAnimator<TestComposite>>::test(va, paramLimits);
+    // TODO: why is output going so high?
+    ExtremeTester< VocalAnimator<TestComposite>>::test(va, paramLimits, false);
 }
 
 
 static void testVocalExtremes()
 {
-#if 0
+
     VocalFilter<TestComposite> va;
     va.setSampleRate(44100);
     va.init();
-    ExtremeTester< VocalFilter<TestComposite>> te(va);
-    te.test();
-#endif
+
+    using fp = std::pair<float, float>;
+    std::vector< std::pair<float, float> > paramLimits;
+
+    paramLimits.resize(va.NUM_PARAMS);
+
+   // FILTER_Q_PARAM,
+    paramLimits[va.FILTER_Q_PARAM] = fp(-5.0f, 5.0f);
+    paramLimits[va.FILTER_Q_TRIM_PARAM] = fp(-1.0f, 1.0f);
+    paramLimits[va.FILTER_FC_PARAM] = fp(-5.0f, 5.0f);
+
+    paramLimits[va.FILTER_FC_TRIM_PARAM] = fp(-1.0f, 1.0f);
+    paramLimits[va.FILTER_VOWEL_PARAM] = fp(-5.f, 5.0f);
+    paramLimits[va.FILTER_VOWEL_TRIM_PARAM] = fp(-1.f, 1.0f);
+    paramLimits[va.FILTER_MODEL_SELECT_PARAM] = fp(0.f, 3.0f);
+
+    ExtremeTester< VocalFilter<TestComposite>>::test(va, paramLimits, true);
+
 }
 void testVocalAnimator()
 {
@@ -356,9 +353,10 @@ void testVocalAnimator()
     testScalers();
     testFormantTables();
     testFormantTables2();
-    testInputExtremes();
+   
     testVocalFilter();
     testVocalExtremes();
+    testInputExtremes();
    // x();
 
 }

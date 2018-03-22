@@ -44,13 +44,19 @@ static void test1()
 
 static void testExtreme()
 {
-#if 0
+
+    using fp = std::pair<float, float>;
+    std::vector< std::pair<float, float> > paramLimits;
    Shifter va;
     va.setSampleRate(44100);
     va.init();
-    ExtremeTester<Shifter> te(va);
-    te.test();
-#endif
+
+    paramLimits.resize(va.NUM_PARAMS);
+    paramLimits[va.PITCH_PARAM] = fp(-5.f, 5.f);
+
+    ExtremeTester<Shifter>::test(va, paramLimits, true);
+
+
 }
 
 void testFrequencyShifter()
