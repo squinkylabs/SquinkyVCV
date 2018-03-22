@@ -134,11 +134,11 @@ static void testDiscrete1()
     T y[] = {0, 10};
     LookupTable<T>::initDiscrete(lookup, 2, y);
     
-    assertEq(LookupTable<T>::lookup(lookup, 0), 0);
-    assertEq(LookupTable<T>::lookup(lookup, .5), 5);
-    assertEq(LookupTable<T>::lookup(lookup, 1), 10);
+    assertEQ(LookupTable<T>::lookup(lookup, 0), 0);
+    assertEQ(LookupTable<T>::lookup(lookup, .5), 5);
+    assertEQ(LookupTable<T>::lookup(lookup, 1), 10);
 
-   assertEq(LookupTable<T>::lookup(lookup, T(.1)), 1);
+   assertEQ(LookupTable<T>::lookup(lookup, T(.1)), 1);
    assertClose(LookupTable<T>::lookup(lookup, T(.01)), T(.1), .00001);
 }
 
@@ -150,12 +150,12 @@ static void testDiscrete2()
     T y[] = {100, 100.5, 2000, -10 };
     LookupTable<T>::initDiscrete(lookup, 4, y);
 
-    assertEq(LookupTable<T>::lookup(lookup, 0), 100);
-    assertEq(LookupTable<T>::lookup(lookup, 1), 100.5);
-    assertEq(LookupTable<T>::lookup(lookup, 2), 2000);
-    assertEq(LookupTable<T>::lookup(lookup, 3), -10);
+    assertEQ(LookupTable<T>::lookup(lookup, 0), 100);
+    assertEQ(LookupTable<T>::lookup(lookup, 1), 100.5);
+    assertEQ(LookupTable<T>::lookup(lookup, 2), 2000);
+    assertEQ(LookupTable<T>::lookup(lookup, 3), -10);
 
-    assertEq(LookupTable<T>::lookup(lookup, 2.5), 1000-5);
+    assertEQ(LookupTable<T>::lookup(lookup, 2.5), 1000-5);
 }
 
 template<typename T>

@@ -1,10 +1,9 @@
 
+#ifdef _EXP // experimental module
 #include "Squinky.hpp"
-
 
 #include "WidgetComposite.h"
 #include "VocalFilter.h"
-
 
 /**
  * Implementation class for VocalWidget
@@ -28,8 +27,6 @@ private:
     typedef float T;
 };
 
-
-
 VocalFilterModule::VocalFilterModule() : Module(vocalFilter.NUM_PARAMS, vocalFilter.NUM_INPUTS, vocalFilter.NUM_OUTPUTS, vocalFilter.NUM_LIGHTS),
     vocalFilter(this)
 {
@@ -37,7 +34,6 @@ VocalFilterModule::VocalFilterModule() : Module(vocalFilter.NUM_PARAMS, vocalFil
     onSampleRateChange();
     vocalFilter.init();
 }
-
 
 void VocalFilterModule::onSampleRateChange()
 {
@@ -53,7 +49,6 @@ void VocalFilterModule::step()
 ////////////////////
 // module widget
 ////////////////////
-
 
 struct VocalFilterWidget : ModuleWidget
 {
@@ -75,7 +70,6 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
         addChild(panel);
     }
-
 
     const float knobX = 75;
     const float trimX = 46;
@@ -110,7 +104,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_VOWEL_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->vocalFilter.FILTER_VOWEL_TRIM_PARAM, -1.0, 1.0, 1.0));
 
-   //Q  
+    // Q  
     knobY += space;
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
@@ -121,7 +115,6 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_Q_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->vocalFilter.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 1.0));
    
-
     // 3 pos vocal model
     addParam(ParamWidget::create<CKSSThree>( Vec(switchX,255), module, module->vocalFilter.FILTER_MODEL_SELECT_PARAM, 0.0f, 2.0f, 0.0f));
     label = new Label();
@@ -137,7 +130,6 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
  
     addInput(Port::create<PJ301MPort>(Vec(AudioInputX, row3), Port::INPUT, module, module->vocalFilter.AUDIO_INPUT));
     addOutput(Port::create<PJ301MPort>(Vec(outputX, row3), Port::OUTPUT, module, module->vocalFilter.AUDIO_OUTPUT));
-    
 }
 
 
@@ -149,3 +141,4 @@ Model *modelVocalFilterModule = Model::create<VocalFilterModule, VocalFilterWidg
     "squinkylabs-vocalfilter",
     "Vocal Filter", EFFECT_TAG, FILTER_TAG);
 
+#endif

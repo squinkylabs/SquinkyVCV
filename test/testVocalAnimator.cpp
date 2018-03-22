@@ -57,7 +57,7 @@ static void test2()
     anim.init();
     for (int i = 0; i < 4; ++i) {
         float freq = anim.normalizedFilterFreq[i] * 44100;
-        assertEq(freq, anim.nominalFilterCenterHz[i]);
+        assertEQ(freq, anim.nominalFilterCenterHz[i]);
     }
 }
 
@@ -292,18 +292,59 @@ static void testInputExtremes()
     VocalAnimator<TestComposite> va;
     va.setSampleRate(44100);
     va.init();
-    ExtremeTester< VocalAnimator<TestComposite>> te(va);
-    te.test();
+
+    using fp = std::pair<float, float>;
+    std::vector< std::pair<float, float> > paramLimits;
+
+    paramLimits.resize(va.NUM_PARAMS);
+    paramLimits[va.LFO_RATE_PARAM] = fp(-5.0f, 5.0f);
+    paramLimits[va.LFO_SPREAD_PARAM] = fp(-5.0f, 5.0f);
+    paramLimits[va.FILTER_FC_PARAM] = fp(-5.0f, 5.0f);
+    paramLimits[va.FILTER_Q_PARAM] = fp(-5.0f, 5.0f);
+    paramLimits[va.FILTER_MOD_DEPTH_PARAM] = fp(-5.0f, 5.0f);
+    
+
+    paramLimits[va.LFO_RATE_TRIM_PARAM] = fp(-1.0f, 1.0f);
+    paramLimits[va.FILTER_Q_TRIM_PARAM] = fp(-1.0f, 1.0f);
+    paramLimits[va.FILTER_FC_TRIM_PARAM] = fp(-1.0f, 1.0f);
+    paramLimits[va.FILTER_MOD_DEPTH_TRIM_PARAM] = fp(-1.0f, 1.0f);
+
+    paramLimits[va.BASS_EXP_PARAM] = fp(0.f, 1.0f);
+    paramLimits[va.TRACK_EXP_PARAM] = fp(0.f, 2.0f);
+    paramLimits[va.LFO_MIX_PARAM] = fp(0.f, 1.0f);
+    /*
+
+    BASS_EXP_PARAM,
+
+    // tracking:
+    //  0 = all 1v/oct, mod scaled, no on top
+    //  1 = mod and cv scaled
+    //  2 = 1, + top filter gets some mod
+    TRACK_EXP_PARAM,
+
+    // LFO mixing options
+    // 0 = classic
+    // 1 = option
+    // 2 = lf sub
+    LFO_MIX_PARAM,
+    */
+  
+
+   // ExtremeTester< VocalAnimator<TestComposite>> te(va);
+   // te.test();
+    ExtremeTester< VocalAnimator<TestComposite>>::test(va, paramLimits);
 }
 
 
 static void testVocalExtremes()
 {
+#if 0
     VocalFilter<TestComposite> va;
     va.setSampleRate(44100);
     va.init();
     ExtremeTester< VocalFilter<TestComposite>> te(va);
     te.test();
+#endif
 }
 void testVocalAnimator()
 {

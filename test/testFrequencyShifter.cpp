@@ -3,6 +3,7 @@
 
 #include "FrequencyShifter.h"
 #include "TestComposite.h"
+#include "ExtremeTester.h"
 
 using Shifter = FrequencyShifter<TestComposite>;
 
@@ -41,9 +42,20 @@ static void test1()
     }
 }
 
+static void testExtreme()
+{
+#if 0
+   Shifter va;
+    va.setSampleRate(44100);
+    va.init();
+    ExtremeTester<Shifter> te(va);
+    te.test();
+#endif
+}
 
 void testFrequencyShifter()
 {
     test0();
     test1();
+    testExtreme();
 }

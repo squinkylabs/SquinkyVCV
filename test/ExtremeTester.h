@@ -1,7 +1,12 @@
 #pragma once
 
+#include "asserts.h"
 #include <vector>
 
+/**
+ * Utility class that counts up in binary using an array of ints to hold the bits.
+ *
+ */
 class BitCounter
 {
 public:
@@ -41,22 +46,34 @@ public:
         }
        
     }
-    void dump()
+
+    template <typename Q>
+    void setState(std::vector<Q>& testSignal, const std::vector< std::pair<float, float>>* signalLimits)
     {
-        printf("State: ");
-        for (int i = (int)state.size() - 1; i >= 0; --i) {
+        for (int i = (int) state.size() - 1; i >= 0; --i) {
+            float min = -10.f;
+            float max = 10.f;
+            if (signalLimits) { // here we want to clip these to the possible values of params
+                min = (*signalLimits)[i].first;
+                max = (*signalLimits)[i].second;
+
+                char buf[256];
+                sprintf_s(buf, " param index %d", i);
+                assertNEEx( min, max, buf );
+                assertGT(max, min);
+            }
+            testSignal[i].value = state[i] > 0 ? max : min; 
+        }
+    }
+
+
+    void dump(const char * label)
+    {
+        printf("State (%s): ", label);
+        for (int i = (int) state.size() - 1; i >= 0; --i) {
             printf("%d ", state[i]);
         }
         printf("\n");
-    }
-
-    template <typename Q>
-    void setState(std::vector<Q> testSignal)
-    {
-        for (int i = (int) state.size() - 1; i >= 0; --i) {
-            testSignal[i].value = state[i] > 0 ? 10.f : -10.f;
-           
-        }
     }
 private:
     std::vector<int> state;
@@ -64,42 +81,46 @@ private:
 
 };
 
+
+/**
+* Tests a composite by feeding all the inputs and parameters (in every possible permutation)
+* with extreme inputs. Asserts that the output stays in a semi-sane range.
+* Typically this test will fail by triggering an assert in some distant code.
+*/
 template <typename T>
 class ExtremeTester
 {
 public:
-    ExtremeTester(T& t) : dut(t)
-    {
 
-    }
-    void test()
+    static void test(T& dut, const std::vector< std::pair<float, float>>& paramLimits)
     {
       
         const int numInputs = dut.NUM_INPUTS;
         const int numParams = dut.NUM_PARAMS;
         const int numOutputs = dut.NUM_OUTPUTS;
         assert(numInputs < 20);
+        assertEQ(paramLimits.size(), numParams);
        
+        const std::vector< std::pair<float, float>> * nullLimits= nullptr;
         BitCounter inputState;
         BitCounter paramsState;
         for (inputState.reset(numInputs); !inputState.isDone(); inputState.next()) {
-            inputState.setState(dut.inputs);
-            inputState.dump();
-            for (paramsState.reset(numInputs); !paramsState.isDone(); paramsState.next()) {
-                paramsState.setState(dut.params);
+            inputState.setState(dut.inputs, nullLimits);
+            inputState.dump("input");
+            for (paramsState.reset(numParams); !paramsState.isDone(); paramsState.next()) {
+                paramsState.setState(dut.params, &paramLimits);
+                paramsState.dump("param");
+                //dut.step();                     // Give it a warmup (prime). TODO: this shouldn't be necessary
                 for (int i=0; i < 100; ++i) {
                     dut.step();
                     for (int j = 0; j < numOutputs; ++j) {
                         const float out = dut.outputs[j].value;
-                        assert(out > -10);
-                        assert(out < 10);
+                        assertGE(out, -150);
+                        assertLE(out, 150);
                     }
                 }
             }
-
         }
-      
-
     }
 private:
     T & dut;

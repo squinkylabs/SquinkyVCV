@@ -10,24 +10,18 @@
  */
 struct VocalModule : Module
 {
-
     VocalModule();
 
     /**
      * Overrides of Module functions
      */
     void step() override;
-   // json_t *toJson() override;
-   // void fromJson(json_t *rootJ) override;
     void onSampleRateChange() override;
-
     using Animator = VocalAnimator<WidgetComposite>;
     Animator animator;
 private:
     typedef float T;
 };
-
-
 
 VocalModule::VocalModule() : Module(animator.NUM_PARAMS, animator.NUM_INPUTS, animator.NUM_OUTPUTS, animator.NUM_LIGHTS),
     animator(this)
@@ -52,7 +46,6 @@ void VocalModule::step()
 // module widget
 ////////////////////
 
-
 struct VocalWidget : ModuleWidget
 {
     VocalWidget(VocalModule *);
@@ -66,7 +59,6 @@ struct VocalWidget : ModuleWidget
 VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 {
     box.size = Vec(9 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
@@ -172,7 +164,8 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     /*******************************************
      *  temp test switches
      */
-    const float switchX = 120;      
+    const float switchX = 120; 
+         
     // 2 pos bass_exp
     addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));     
     label = new Label();

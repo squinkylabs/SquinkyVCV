@@ -4,7 +4,7 @@
 #include "WidgetComposite.h"
 
 /**
- * Implementation class for BootyWidget
+ * Implementation class for BootyModule
  */
 struct BootyModule : Module
 {
@@ -22,13 +22,11 @@ struct BootyModule : Module
 private:
     typedef float T;
 public:
-   // float freqRange = 5;
     ChoiceButton * rangeChoice;
 };
 
 extern float values[];
 extern const char* ranges[];
-
 
 BootyModule::BootyModule() : Module(shifter.NUM_PARAMS, shifter.NUM_INPUTS, shifter.NUM_OUTPUTS, shifter.NUM_LIGHTS),
 shifter(this)
@@ -199,7 +197,6 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
 
     addOutput(Port::create<PJ301MPort>(Vec(leftOutputX, row3), Port::OUTPUT, module, module->shifter.SIN_OUTPUT));
     addOutput(Port::create<PJ301MPort>(Vec(rightOutputX, row3), Port::OUTPUT, module, module->shifter.COS_OUTPUT));
-
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

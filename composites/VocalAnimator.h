@@ -269,10 +269,10 @@ inline void VocalAnimator<TBase>::step()
         }
 
         normalizedFilterFreq[i] = normFreq;
-       // fprintf(stderr, "nromFreq2 = %f\n", normFreq); fflush(stderr);
+        // fprintf(stderr, "nromFreq2 = %f\n", normFreq); fflush(stderr);
         filterParams[i].setFreq(normFreq);
         filterParams[i].setQ(q);
-       // fprintf(stderr, "setFreq = %f\n", normFreq); fflush(stderr);
+        //fprintf(stderr, "setFreq = %f q=%f\n", normFreq, q); fflush(stderr);
 
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
        // fprintf(stderr, "fran filter = %f\n", normFreq); fflush(stderr);
