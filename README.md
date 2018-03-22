@@ -28,20 +28,17 @@ plugins/
             <possibly other resources
 ```
     
-## Building source
-As with all third-party modules for VCV, you must:
-* Clone the VCV Rack repo.
-* Build Rack from source.
-* Clone SquinkyVCV in Rack’s plugins folder.
-* `CD SquinkyVCV`
-* `make`
+## More information for programmers, builders, and experimenters
+
+There are "secret" modules, extra code and other things scattered around this repo. Pointers to some of it can be found [in the docs folder](./docs/README.md).
 
 ## VCV Rack version 0.6.0
 The next version of VCV Rack is coming soon. Version 0.5.x plugins will not work with version 0.6.0.
 
-We have ported our code to VCV 0.6.0. Our "master" branch is now 0.6.0dev compatible. Pulugins built from master will run in VCV Rack 0.6.0dev, and will not run in any 0.5.x versions of VCV Rack.
+We have ported our code to VCV 0.6.0. Our "master" branch is now 0.6.0 compatible. Plugins built from master will run in VCV Rack 0.6.0dev, and will not run in any 0.5.x versions of VCV Rack.
 
-Please report any issues running in VCV Rack 0.6.0dev on our GitHub issues page.
+Please report any issues running in VCV Rack 0.6.0 on our GitHub issues page.
 
 Like most plugin developers, we will update our releases and post in the Plugin Manager once 0.6 ships.
+
 
