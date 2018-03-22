@@ -88,8 +88,7 @@ static void test3()
         //printf("i=%d, freq=%f, nominal=%f\n", i, freq, anim.nominalFilterCenterHz[i]);
         if (i == 3) {
             assertClose(freq, anim.nominalFilterCenterHz[i], .01);
-        }
-        else
+        } else
             assert(freq > anim.nominalFilterCenterHz[i]);
     }
 
@@ -152,12 +151,12 @@ static void x()
     anim.step();
 
     dump("init", anim);
-    
+
     // TODO: assert here
     anim.params[anim.FILTER_FC_PARAM].value = 5;
     anim.step();
     dump("fc 5", anim);
-   
+
     anim.params[anim.FILTER_FC_PARAM].value = -5;
     anim.step();
     dump("fc -5", anim);
@@ -198,7 +197,7 @@ static void x()
 
 #if 0
     // TODO: would be nice to be able to inject an LFO voltage
-    anim.params[anim.FILTER_FC_PARAM].value = 0;  
+    anim.params[anim.FILTER_FC_PARAM].value = 0;
     anim.params[anim.FILTER_MOD_DEPTH_PARAM].value = 5;
     for (int i = 0; i < 40000; ++i) {
         anim.step();
@@ -302,7 +301,7 @@ static void testInputExtremes()
     paramLimits[va.FILTER_FC_PARAM] = fp(-5.0f, 5.0f);
     paramLimits[va.FILTER_Q_PARAM] = fp(-5.0f, 5.0f);
     paramLimits[va.FILTER_MOD_DEPTH_PARAM] = fp(-5.0f, 5.0f);
-    
+
 
     paramLimits[va.LFO_RATE_TRIM_PARAM] = fp(-1.0f, 1.0f);
     paramLimits[va.FILTER_Q_TRIM_PARAM] = fp(-1.0f, 1.0f);
@@ -345,7 +344,6 @@ static void testVocalExtremes()
 }
 void testVocalAnimator()
 {
-
     test0();
     test1();
     test2();
@@ -353,7 +351,7 @@ void testVocalAnimator()
     testScalers();
     testFormantTables();
     testFormantTables2();
-   
+
     testVocalFilter();
     testVocalExtremes();
     testInputExtremes();

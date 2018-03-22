@@ -44,7 +44,7 @@ public:
                 ++state[i + 1];
             }
         }
-       
+
     }
 
     template <typename Q>
@@ -59,10 +59,10 @@ public:
 
                 char buf[256];
                 sprintf_s(buf, " param index %d", i);
-                assertNEEx( min, max, buf );
+                assertNEEx(min, max, buf);
                 assertGT(max, min);
             }
-            testSignal[i].value = state[i] > 0 ? max : min; 
+            testSignal[i].value = state[i] > 0 ? max : min;
         }
     }
 
@@ -94,14 +94,14 @@ public:
 
     static void test(T& dut, const std::vector< std::pair<float, float>>& paramLimits, bool checkOutput)
     {
-      
+
         const int numInputs = dut.NUM_INPUTS;
         const int numParams = dut.NUM_PARAMS;
         const int numOutputs = dut.NUM_OUTPUTS;
         assert(numInputs < 20);
         assertEQ(paramLimits.size(), numParams);
-       
-        const std::vector< std::pair<float, float>> * nullLimits= nullptr;
+
+        const std::vector< std::pair<float, float>> * nullLimits = nullptr;
         BitCounter inputState;
         BitCounter paramsState;
         for (inputState.reset(numInputs); !inputState.isDone(); inputState.next()) {
@@ -111,7 +111,7 @@ public:
                 paramsState.setState(dut.params, &paramLimits);
                 paramsState.dump("param");
                 //dut.step();                     // Give it a warmup (prime). TODO: this shouldn't be necessary
-                for (int i=0; i < 100; ++i) {
+                for (int i = 0; i < 100; ++i) {
                     dut.step();
                     for (int j = 0; j < numOutputs; ++j) {
                         const float out = dut.outputs[j].value;
@@ -126,6 +126,6 @@ public:
     }
 private:
     T & dut;
-   
+
 
 };
