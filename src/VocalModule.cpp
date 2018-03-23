@@ -70,17 +70,27 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
      *  LEDs and LFO outputs
      */
 
+    const float lfoBlockY = 22;
+
     const float ledX = width - 46;
-    const float ledY = 30;
+    const float ledY = lfoBlockY + 8;
     const float ledSpacingY = 30;
 
-    const float lfoOutY = ledY-8;
+    const float lfoOutY = lfoBlockY;
     const float lfoOutX = width - 30;
 
-    //const float ledY = 28;
-    //const float ledSpace = 43;
-    //const float ledX = 7;
-    //const float lfoOutX = 20;
+   
+    const float lfoInputX  = 24;
+    const float lfoInputY = lfoBlockY + 20;
+    const float lfoTrimX = 50; 
+    const float lfoTrimY = lfoBlockY + 40;
+
+    const float lfoRateKnobX = 100;
+    const float lfoRateKnobY = lfoBlockY + 40;
+
+    const float lfoLabelX = 100;
+    const float lfoLabelY = lfoRateKnobY + 40;
+
     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
         Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
@@ -95,38 +105,34 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addOutput(Port::create<PJ301MPort>(
         Vec(lfoOutX, lfoOutY + 2*ledSpacingY), Port::OUTPUT, module, VocalModule::Animator::LFO2_OUTPUT));
 
+
+    Label *label = new Label();
+    label->box.pos = Vec(lfoLabelX, lfoLabelY);
+    label->text = "Rate";
+    label->color = COLOR_BLACK;
+    addChild(label);  
+    addParam(ParamWidget::create<Rogan1PSBlue>(
+        Vec(lfoRateKnobX, lfoRateKnobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(
+        Vec(lfoInputX, lfoInputY), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
+    addParam(ParamWidget::create<Trimpot>(
+        Vec(lfoTrimX, lfoTrimY), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 1.0));
+
     /**
      * Parameters and CV
      */ 
     const float knobX = 75;
     const float trimX = 46;
     const float inputX = 8;
-    float knobY = 60;
+    float knobY = 100;
     const float space = 46;
     const float labelX = 0;
     const float labelOffset = 0;
     const float inputYOffset = 16;
     const float trimYOffset = 18;
     
-    Label *label = new Label();
-    label->box.pos = Vec(labelX, knobY+labelOffset);
-    label->text = "Rate";
-    label->color = COLOR_BLACK;
-    addChild(label);  
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
-    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 1.0));
 
-#if 0 // take out this param
-    knobY += space;
-    label = new Label();
-    label->box.pos = Vec(labelX, knobY+labelOffset);
-    label->text = "Mod Spread";
-    label->color = COLOR_BLACK;
-    addChild(label);
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
-  #endif
-    const float matrixY = knobY;
+    const float matrixY = knobY + 40;
 
     knobY += space;
     label = new Label();
@@ -181,7 +187,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     /*******************************************
      *  temp test switches
      */
-    const float switchX = 120; 
+    const float switchX = width-20; 
          
     // 2 pos bass_exp
     addParam(ParamWidget::create<CKSS>( Vec(switchX, 205), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));     
