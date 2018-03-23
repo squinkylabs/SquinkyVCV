@@ -9,7 +9,7 @@ This is a recreation of a circuit invented by Bernie Hutchins, and published in 
 
 There are four bandpass filters, roughly tuned to some typical vocal formant frequencies: 522, 1340, 2570, and 3700 Hz. The filters are run in parallel, with their outputs summed together.
 
-The first three filters are modulated ed by an LFO comprised of 4 triangle wave LFOs running at different frequencies. They are summed together in various combinations to drive each of the filters.
+The first three filters are modulated by an LFO comprised of 4 triangle wave LFOs running at different frequencies. They are summed together in various combinations to drive each of the filters.
 
 The Mod Rate control shifts the speed of all 4 LFOs while maintaining the ratio of the frequencies.
 

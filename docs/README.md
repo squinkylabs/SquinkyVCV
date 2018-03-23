@@ -17,4 +17,4 @@ At any given time, there may partially finished "experimental" modules in this r
 
 If there are any experimental modules, they will tend to have very ugly panels, may not work very well etc... That said if you build and test these, please feel free to log a GitHub issue. Any suggestions for making out modules better is always appreciated.
 
-Most of the time there will be an up to date list of the experimental modules in the [src folder](../src/README.md)
+Most of the time there will be an up to date list of the experimental modules in the [src folder](../src/README.md).

@@ -36,7 +36,7 @@ public:
     enum ParamIds
     {
         LFO_RATE_PARAM,
-        LFO_SPREAD_PARAM,
+      //  LFO_SPREAD_PARAM,
         FILTER_Q_PARAM,
         FILTER_FC_PARAM,
         FILTER_MOD_DEPTH_PARAM,
@@ -293,6 +293,8 @@ inline void VocalAnimator<TBase>::step()
         matrixMode = 2;
         assert(mmParam < 2.5);
     }
+
+    const float lfoSpread = 1;
     modulatorParams.setRateAndSpread(
         scale0_2(
         TBase::inputs[LFO_RATE_CV_INPUT].value,
@@ -300,7 +302,7 @@ inline void VocalAnimator<TBase>::step()
         TBase::params[LFO_RATE_TRIM_PARAM].value),
         scale0_2(
         0,
-        TBase::params[LFO_SPREAD_PARAM].value,
+        lfoSpread,
         0),
         matrixMode,
         reciprocalSampleRate);

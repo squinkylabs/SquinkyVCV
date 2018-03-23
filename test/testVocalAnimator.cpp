@@ -297,7 +297,7 @@ static void testInputExtremes()
 
     paramLimits.resize(va.NUM_PARAMS);
     paramLimits[va.LFO_RATE_PARAM] = fp(-5.0f, 5.0f);
-    paramLimits[va.LFO_SPREAD_PARAM] = fp(-5.0f, 5.0f);
+  //  paramLimits[va.LFO_SPREAD_PARAM] = fp(-5.0f, 5.0f);
     paramLimits[va.FILTER_FC_PARAM] = fp(-5.0f, 5.0f);
     paramLimits[va.FILTER_Q_PARAM] = fp(-5.0f, 5.0f);
     paramLimits[va.FILTER_MOD_DEPTH_PARAM] = fp(-5.0f, 5.0f);

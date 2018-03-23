@@ -58,7 +58,7 @@ struct VocalWidget : ModuleWidget
  */
 VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 {
-    box.size = Vec(9 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(14 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
@@ -102,6 +102,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addInput(Port::create<PJ301MPort>(Vec(inputX, knobY+inputYOffset), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY+trimYOffset), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 1.0));
 
+#if 0 // take out this param
     knobY += space;
     label = new Label();
     label->box.pos = Vec(labelX, knobY+labelOffset);
@@ -109,6 +110,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->animator.LFO_SPREAD_PARAM, -5.0, 5.0, 0.0));
+  #endif
     const float matrixY = knobY;
 
     knobY += space;
