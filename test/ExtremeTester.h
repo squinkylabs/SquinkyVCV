@@ -50,7 +50,7 @@ public:
     template <typename Q>
     void setState(std::vector<Q>& testSignal, const std::vector< std::pair<float, float>>* signalLimits)
     {
-        for (size_t i = state.size() - 1; i >= 0; --i) {
+        for (int i = (int) state.size() - 1; i >= 0; --i) {
             float min = -10.f;
             float max = 10.f;
             if (signalLimits) { // here we want to clip these to the possible values of params
