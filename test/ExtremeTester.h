@@ -68,7 +68,7 @@ public:
     void dump(const char * label)
     {
         printf("State (%s): ", label);
-        for (size_t i = state.size() - 1; i >= 0; --i) {
+        for (int i = (int) state.size() - 1; i >= 0; --i) {
             printf("%d ", state[i]);
         }
         printf("\n");
@@ -122,8 +122,4 @@ public:
             }
         }
     }
-private:
-    T & dut;
-
-
 };
