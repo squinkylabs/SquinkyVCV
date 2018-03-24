@@ -20,7 +20,7 @@ public:
     }
     bool atMax() const
     {
-        for (int i = 0; i < state.size(); ++i) {
+        for (size_t i = 0; i < state.size(); ++i) {
             if (state[i] == 0) {
                 return false;
             }
@@ -38,7 +38,7 @@ public:
             return;
         }
         state[0]++;
-        for (int i = 0; i < state.size(); ++i) {
+        for (size_t i = 0; i < state.size(); ++i) {
             if (state[i] > 1) {
                 state[i] = 0;
                 ++state[i + 1];
@@ -50,16 +50,14 @@ public:
     template <typename Q>
     void setState(std::vector<Q>& testSignal, const std::vector< std::pair<float, float>>* signalLimits)
     {
-        for (int i = (int) state.size() - 1; i >= 0; --i) {
+        for (size_t i = state.size() - 1; i >= 0; --i) {
             float min = -10.f;
             float max = 10.f;
             if (signalLimits) { // here we want to clip these to the possible values of params
                 min = (*signalLimits)[i].first;
                 max = (*signalLimits)[i].second;
 
-                char buf[256];
-                sprintf_s(buf, " param index %d", i);
-                assertNEEx(min, max, buf);
+                assertNE(min, max);
                 assertGT(max, min);
             }
             testSignal[i].value = state[i] > 0 ? max : min;
@@ -70,7 +68,7 @@ public:
     void dump(const char * label)
     {
         printf("State (%s): ", label);
-        for (int i = (int) state.size() - 1; i >= 0; --i) {
+        for (size_t i = state.size() - 1; i >= 0; --i) {
             printf("%d ", state[i]);
         }
         printf("\n");
