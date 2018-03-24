@@ -70,7 +70,7 @@ public:
         printf("State (%s): ", label);
         for (int i = (int) state.size() - 1; i >= 0; --i) {
             printf("%d ", state[i]);
-        }
+        } 
         printf("\n");
     }
 private:
