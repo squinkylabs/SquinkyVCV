@@ -16,7 +16,7 @@ public:
         params(20),
         lights(20)
     {
-       
+
     }
     struct Param
     {

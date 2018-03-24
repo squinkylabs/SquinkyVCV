@@ -14,9 +14,9 @@ template <typename T> class StateVariableFilterParams;
  *          |(-1) | (-1)               |              |          |         |  |
  *          |     |                    |-<--------<---|          |-<Z**-1<-|  |
  *          |     |                                   |                       |
- *          |     -<-------------------------< Qc <----                       | 
+ *          |     -<-------------------------< Qc <----                       |
  *          |                                                                 |
- *			|---<-----------------------------------------------------------<--           
+ *			|---<-----------------------------------------------------------<--
  *
  *
  *
@@ -25,7 +25,6 @@ template <typename T> class StateVariableFilterParams;
  *
  *
  */
-
 
 template <typename T>
 class StateVariableFilter
@@ -46,21 +45,14 @@ inline T StateVariableFilter<T>::run(T input, StateVariableFilterState<T>& state
     // TODO: figure out why we get these crazy values
 #if 1
     if (dBand >= 1000) {
-       // fprintf(stderr, "dband = %f, dhi=%f fcG=%f z1=%f\n",
-      //    dBand, dHi, params.fcGain, state.z1);
-       // fflush(stderr);
         dBand = 999;               // clip it
     }
     if (dBand < -1000) {
-       // fprintf(stderr, "dband = %f, dhi=%f fcG=%f z1=%f\n",
-        //    dBand, dHi, params.fcGain, state.z1);
-       // fflush(stderr);
         dBand = -999;               // clip it
     }
 
 #endif
-   // assert(dBand < 1000.0);
-   // assert(dBand > -1000.0);
+
     T d;
     switch (params.mode) {
         case StateVariableFilterParams<T>::Mode::LowPass:
@@ -88,7 +80,7 @@ inline T StateVariableFilter<T>::run(T input, StateVariableFilterState<T>& state
 
 /****************************************************************/
 
-template <typename T> 
+template <typename T>
 class StateVariableFilterParams
 {
 public:
@@ -121,8 +113,8 @@ public:
     }
 private:
     Mode mode = Mode::BandPass;
-    T qGain= 1.;		// internal amp gains
-    T fcGain= T(.001);
+    T qGain = 1.;		// internal amp gains
+    T fcGain = T(.001);
 };
 
 template <typename T>
@@ -135,7 +127,6 @@ inline void StateVariableFilterParams<T>::setQ(T q)
     qGain = 1 / q;
 }
 
-
 template <typename T>
 inline void StateVariableFilterParams<T>::setNormalizedBandwidth(T bw)
 {
@@ -147,7 +138,7 @@ inline void StateVariableFilterParams<T>::setFreq(T fc)
 {
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
-    fcGain =  T(AudioMath::Pi) * T(2) * fc;
+    fcGain = T(AudioMath::Pi) * T(2) * fc;
 }
 
 /*******************************************************************************************/
@@ -156,47 +147,6 @@ template <typename T>
 class StateVariableFilterState
 {
 public:
-    T z1=0;		// the delay line buffer
-    T z2=0;		// the delay line buffer
+    T z1 = 0;		// the delay line buffer
+    T z2 = 0;		// the delay line buffer
 };
-
-
-/*
-#if 0
-inline double StateVariableStage::XFormOneSample(double dIn)
-{
-    const double dLow = mdZ2 + mdFcGain * mdZ1;
-    const double dHi = dIn - (mdZ1 * mdQGain + dLow);
-    const double dBand = dHi * mdFcGain + mdZ1;
-
-    ASSERT(dBand < 1000.0);
-
-    double d;
-    switch (meMode) {
-        case LowPass:
-            d = dLow;
-            break;
-        case HiPass:
-            d = dHi;
-            break;
-        case BandPass:
-            d = dBand;
-            break;
-        case Notch:
-            d = dLow + dHi;
-            break;
-        default:
-            ASSERT(0);
-            d = 0.0;
-    }
-
-    mdZ1 = dBand;
-    mdZ2 = dLow;
-    return d;
-}
-
-#endif
-
-*/
-
-

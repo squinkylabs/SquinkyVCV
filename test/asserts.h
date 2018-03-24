@@ -4,7 +4,9 @@
 #include <iostream>
 
 /**
- * Our own little assert library
+ * Our own little assert library, loosely inspired by Chai Assert.
+ *
+ * Will print information on failure, then generate a "real" assertion
  */
 
 
@@ -33,7 +35,7 @@
     std::cout << "assertLt " << expected << " actual value = " << \
     actual << std::endl ; \
     assert(false); }
-  
+
 // assert less than or equal to
 #define assertLE(actual, expected) if ( actual > expected) { \
     std::cout << "assertLE " << expected << " actual value = " << \

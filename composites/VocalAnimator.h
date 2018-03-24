@@ -37,30 +37,30 @@ public:
     {
         LFO_RATE_PARAM,
       //  LFO_SPREAD_PARAM,
-        FILTER_Q_PARAM,
-        FILTER_FC_PARAM,
-        FILTER_MOD_DEPTH_PARAM,
-        LFO_RATE_TRIM_PARAM,
-        FILTER_Q_TRIM_PARAM,
-        FILTER_FC_TRIM_PARAM,
-        FILTER_MOD_DEPTH_TRIM_PARAM,
-        BASS_EXP_PARAM,
+      FILTER_Q_PARAM,
+      FILTER_FC_PARAM,
+      FILTER_MOD_DEPTH_PARAM,
+      LFO_RATE_TRIM_PARAM,
+      FILTER_Q_TRIM_PARAM,
+      FILTER_FC_TRIM_PARAM,
+      FILTER_MOD_DEPTH_TRIM_PARAM,
+      BASS_EXP_PARAM,
 
-        // tracking:
-        //  0 = all 1v/oct, mod scaled, no on top
-        //  1 = mod and cv scaled
-        //  2 = 1, + top filter gets some mod
-        TRACK_EXP_PARAM,
+      // tracking:
+      //  0 = all 1v/octave, mod scaled, no on top
+      //  1 = mod and cv scaled
+      //  2 = 1, + top filter gets some mod
+      TRACK_EXP_PARAM,
 
-        // LFO mixing options
-        // 0 = classic
-        // 1 = option
-        // 2 = lf sub
-        LFO_MIX_PARAM,
+      // LFO mixing options
+      // 0 = classic
+      // 1 = option
+      // 2 = lf sub
+      LFO_MIX_PARAM,
 
 
 
-        NUM_PARAMS
+      NUM_PARAMS
     };
 
     enum InputIds
@@ -176,7 +176,7 @@ inline void VocalAnimator<TBase>::step()
         TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
     }
 
-    // norm all the params out here
+    // Normalize all the parameters out here
     const T q = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
@@ -188,7 +188,7 @@ inline void VocalAnimator<TBase>::step()
         TBase::params[FILTER_FC_TRIM_PARAM].value);
 
 
-    // put together a mod depth param from all the inputs
+    // put together a mod depth parameter from all the inputs
     // range is 0..1
 
     // cv, knob, trim
@@ -198,7 +198,7 @@ inline void VocalAnimator<TBase>::step()
         TBase::params[FILTER_MOD_DEPTH_TRIM_PARAM].value);
 
     // tracking:
-    //  0 = all 1v/oct, mod scaled, no on top
+    //  0 = all 1v/octave, mod scaled, no on top
     //  1 = mod and cv scaled
     //  2 = 1, + top filter gets some mod
     int cvScaleMode = 0;
@@ -211,8 +211,6 @@ inline void VocalAnimator<TBase>::step()
         cvScaleMode = 2;
         assert(cvScaleParam < 2.5);
     }
-    //printf("cvscale mode = %d\n", cvScaleMode);
-
 
     const T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;                // Sum the folder outputs here
@@ -258,24 +256,18 @@ inline void VocalAnimator<TBase>::step()
             baseModDepth *
             nominalModSensitivity[i];
 
-       // fprintf(stderr, "logFreq = %f\n", logFreq); fflush(stderr);
-
         filterFrequencyLog[i] = logFreq;
 
         T normFreq = std::pow(T(2), logFreq) * reciprocalSampleRate;
-       // fprintf(stderr, "nromFreq = %f\n", normFreq); fflush(stderr);
         if (normFreq > .2) {
             normFreq = T(.2);
         }
 
         normalizedFilterFreq[i] = normFreq;
-        // fprintf(stderr, "nromFreq2 = %f\n", normFreq); fflush(stderr);
         filterParams[i].setFreq(normFreq);
         filterParams[i].setQ(q);
-        //fprintf(stderr, "setFreq = %f q=%f\n", normFreq, q); fflush(stderr);
 
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
-       // fprintf(stderr, "fran filter = %f\n", normFreq); fflush(stderr);
     }
 
     filterMix *= T(.3);            // attenuate to avoid clip
@@ -284,7 +276,6 @@ inline void VocalAnimator<TBase>::step()
 
     int matrixMode;
     float mmParam = TBase::params[LFO_MIX_PARAM].value;
-   // printf("-- mmParam = %f\n", mmParam);
     if (mmParam < .5) {
         matrixMode = 0;
     } else if (mmParam < 1.5) {

@@ -4,13 +4,12 @@
 
 #include "SawOscillator.h"
 
-
 /**
  * A bunch of LFOs at slightly different frequencies added together in different ways.
  * Taken from Bernie Hutchins' ElectroNotes.
  */
 template <typename T, int NOsc, int NOut>
-class MultiModOsc 
+class MultiModOsc
 {
 public:
     MultiModOsc() = delete;
@@ -36,7 +35,7 @@ public:
         void setRateAndSpread(T rate, T spread, int matrixMode, T inverseSampleRate);
     private:
         SawOscillatorParams<T> params[NOsc];
-        int matrixMode=0;
+        int matrixMode = 0;
     };
 
     static void run(T * output, State&, const Params&);
@@ -56,7 +55,7 @@ inline void MultiModOsc<T, NOsc, NOut>::Params::setRateAndSpread(T rate, T sprea
     assert(inverseSampleRate < (1.0 / 2000)); // same
 
     T BaseRate = 1.0;
-    BaseRate *= std::pow<T>(3, rate);       
+    BaseRate *= std::pow<T>(3, rate);
     const T dNormSpread = spread * T((3.0 / 2.0) + .5);
     for (int i = 0; i < NOsc; i++) {
         T dMult;
@@ -99,7 +98,7 @@ inline void MultiModOsc<T, NOsc, NOut>::run(T* output, State& state, const Param
         modulators[i] = SawOscillator<T, false>::runTri(state.states[i], params.params[i]);
     }
     // The old implementation had a smarter algorithm, but
-    // for now hard-wiring it for 4/3 is ok
+    // for now hard-wiring it for 4/3 is OK
     if ((NOsc == 4) && (NOut == 3)) {
         switch (params.matrixMode) {
             case 0:     // classic mix
@@ -119,8 +118,8 @@ inline void MultiModOsc<T, NOsc, NOut>::run(T* output, State& state, const Param
                 output[1] = -modulators[0] + modulators[2] + modulators[3];  // not 0
                 output[2] = -modulators[1] - modulators[2] - modulators[3];  // not 1
                 break;
-             default:
-                 assert(false);
+            default:
+                assert(false);
 
         }
     } else {

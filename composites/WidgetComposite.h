@@ -7,7 +7,7 @@
 class WidgetComposite
 {
 public:
-    WidgetComposite(Module * parent) : 
+    WidgetComposite(Module * parent) :
         inputs(parent->inputs),
         outputs(parent->outputs),
         params(parent->params),
