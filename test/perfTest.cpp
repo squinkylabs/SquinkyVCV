@@ -76,6 +76,20 @@ static void testHilbert()
 
 }
 
+
+static void testExpRange()
+{
+    using T = float;
+    LookupTableParams<T> table;
+    LookupTable<T>::makeExp2(table);
+
+    MeasureTime<T>::run("exp lookup", [&table]() {
+
+        T d = LookupTable<T>::lookup(table, TestBuffers<T>::get());
+        return d;
+        }, 1);
+}
+
 static void testShifter()
 {
     Shifter fs;
@@ -127,6 +141,7 @@ static void testVocalFilter()
 
 void perfTest()
 {
+    testExpRange();
     testVocalFilter();
     testAnimator();
     testShifter();

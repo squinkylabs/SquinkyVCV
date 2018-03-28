@@ -159,12 +159,29 @@ static void testDiscrete2()
 }
 
 template<typename T>
-static void testExp0()
+static void testExpSimpleLookup()
 {
     LookupTableParams<T> lookup;
     LookupTable<T>::makeExp2(lookup);
     assertEQ(LookupTable<T>::lookup(lookup, 0), 1*20); // 2**0 = 1
     assertClose(LookupTable<T>::lookup(lookup, 10), 1024*20, .2);
+}
+
+
+
+// test that extreme inputs is clamped
+template<typename T>
+static void testExpRange()
+{
+    LookupTableParams<T> lookup;
+    LookupTable<T>::makeExp2(lookup);
+    auto k1 = LookupTable<T>::lookup(lookup, -1);
+    auto k2 = LookupTable<T>::lookup(lookup, 11);
+
+    assertClose(LookupTable<T>::lookup(lookup, -1), LookupTable<T>::lookup(lookup, 0), .01);
+    assertClose(LookupTable<T>::lookup(lookup, 11), LookupTable<T>::lookup(lookup, 10), .01);
+    assertClose(LookupTable<T>::lookup(lookup, -100), LookupTable<T>::lookup(lookup, 0), .01);
+    assertClose(LookupTable<T>::lookup(lookup, 1100), LookupTable<T>::lookup(lookup, 10), .01);
 }
 
 // lets test 0 to 10 (volts, for now)
@@ -202,10 +219,11 @@ static void test()
     test4<T>();
     testDiscrete1<T>();
     testDiscrete2<T>();
-    testExp0<T>();
+    testExpSimpleLookup<T>();
     testExpTolerance<T>(100);   // 1 semitone
     testExpTolerance<T>(10);
     testExpTolerance<T>(1);
+    testExpRange<T>();
 }
 
 void testLookupTable()

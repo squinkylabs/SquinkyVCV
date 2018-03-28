@@ -72,6 +72,8 @@ private:
 template<typename T>
 inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
 {
+    input = std::min(input, params.xMax);
+    input = std::max(input, params.xMin);
     assert(params.isValid());
     assert(input >= params.xMin && input <= params.xMax);
 
