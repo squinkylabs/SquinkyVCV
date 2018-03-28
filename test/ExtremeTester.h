@@ -92,7 +92,7 @@ public:
 
     static void test(T& dut, const std::vector< std::pair<float, float>>& paramLimits, bool checkOutput)
     {
-
+        printf("extreme test starting....\n");
         const int numInputs = dut.NUM_INPUTS;
         const int numParams = dut.NUM_PARAMS;
         const int numOutputs = dut.NUM_OUTPUTS;
@@ -104,11 +104,8 @@ public:
         BitCounter paramsState;
         for (inputState.reset(numInputs); !inputState.isDone(); inputState.next()) {
             inputState.setState(dut.inputs, nullLimits);
-            inputState.dump("input");
             for (paramsState.reset(numParams); !paramsState.isDone(); paramsState.next()) {
                 paramsState.setState(dut.params, &paramLimits);
-                paramsState.dump("param");
-                //dut.step();                     // Give it a warmup (prime). TODO: this shouldn't be necessary
                 for (int i = 0; i < 100; ++i) {
                     dut.step();
                     for (int j = 0; j < numOutputs; ++j) {
@@ -121,5 +118,6 @@ public:
                 }
             }
         }
+        printf("extreme test done\n");
     }
 };

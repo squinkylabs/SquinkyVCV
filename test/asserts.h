@@ -26,7 +26,7 @@
 
 #define assertClose(actual, expected, diff) if (!AudioMath::closeTo(actual, expected, diff)) { \
     std::cout << "assertClose failed actual value =" << \
-    actual << " expected=" << expected << std::endl; \
+    actual << " expected=" << expected << std::endl << std::flush; \
     assert(false); }
 
 

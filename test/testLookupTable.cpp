@@ -159,6 +159,40 @@ static void testDiscrete2()
 }
 
 template<typename T>
+static void testExp0()
+{
+    LookupTableParams<T> lookup;
+    LookupTable<T>::makeExp2(lookup);
+    assertEQ(LookupTable<T>::lookup(lookup, 0), 1*20); // 2**0 = 1
+    assertClose(LookupTable<T>::lookup(lookup, 10), 1024*20, .2);
+}
+
+// lets test 0 to 10 (volts, for now)
+// mapped to 20..
+template<typename T>
+static void testExpTolerance(T centsTolerance)
+{
+    LookupTableParams<T> table;
+    LookupTable<T>::makeExp2(table);
+    for (T x = 0; x <= 10; x += T(.0001)) {
+        T y = LookupTable<T>::lookup(table, x);            // and back
+        double accurate = 20 * pow<T>(2, x);
+        double errorCents = std::abs(1200.0 * std::log2(y / accurate));
+        assertClose(errorCents, 0, centsTolerance);
+    }
+}
+
+template<typename T>
+static void testLog0()
+{
+    LookupTableParams<T> lookup;
+    LookupTable<T>::makeLog2(lookup);
+    assertEQ(LookupTable<T>::lookup(lookup , 1), 0);
+    assertClose(LookupTable<T>::lookup(lookup, 1024), 10, .1);
+    assertEQ(LookupTable<T>::lookup(lookup, 32*1024), 15);
+}
+
+template<typename T>
 static void test()
 {
     test0<T>();
@@ -168,6 +202,10 @@ static void test()
     test4<T>();
     testDiscrete1<T>();
     testDiscrete2<T>();
+    testExp0<T>();
+    testExpTolerance<T>(100);   // 1 semitone
+    testExpTolerance<T>(10);
+    testExpTolerance<T>(1);
 }
 
 void testLookupTable()

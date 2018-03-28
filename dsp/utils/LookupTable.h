@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <memory>
 #include <emmintrin.h>
 #include <functional>
@@ -42,7 +43,15 @@ public:
      * this lookup table only works with uniform x value.
      */
     static void initDiscrete(LookupTableParams<T>& params, int numEntries, const T * yEntries);
-    
+
+
+    /**
+     * Factory methods for exp base 2
+     * domain = 0..10
+     * range = 20..20k (for now). but should be .001 to 1.0?
+     */
+    static void makeExp2(LookupTableParams<T>& params);
+
 private:
     static int cvtt(T *);
 
@@ -79,14 +88,13 @@ inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
     // Perhaps the calculation of a and b could be done so this can't happen?
     if (input_float < 0) {
         input_float = 0;
-    }
-    else if (input_float > 1) {
+    } else if (input_float > 1) {
         input_float = 1;
     }
-    
+
     assert(input_float >= 0 && input_float <= 1);
     assert(input_int >= 0 && input_int <= params.numBins_i);
-  
+
     T * entry = params.entries + (2 * input_int);
     T x = entry[0];
     x += input_float * entry[1];
@@ -178,6 +186,25 @@ inline int LookupTable<float>::cvtt(float* input)
     return _mm_cvttss_si32(x);
 }
 
+      
+
+
+
+template<typename T>
+void LookupTable<T>::makeExp2(LookupTableParams<T>& params)
+{
+    // 16 good enough for semi
+    // 128 enough for one cent
+    int bins = 128;
+    T xMin = 0;
+    T xMax = 10;
+    init(params, bins, xMin, xMax, [](double x) {
+        return 20.0 * std::pow(2, x);
+        });
+}
+
+/***************************************************************************/
+
 template <typename T>
 class LookupTableParams
 {
@@ -199,7 +226,7 @@ public:
     {
         free(entries);
     }
-    
+
     bool isValid() const
     {
         return ((entries != 0) &&

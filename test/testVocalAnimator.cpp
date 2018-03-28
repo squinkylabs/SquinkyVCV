@@ -353,8 +353,11 @@ void testVocalAnimator()
     testFormantTables2();
 
     testVocalFilter();
+#ifdef _DEBUG
+    printf("skipping extremes\n");
+#else
     testVocalExtremes();
     testInputExtremes();
-   // x();
+#endif
 
 }

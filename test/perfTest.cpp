@@ -128,10 +128,11 @@ static void testVocalFilter()
 void perfTest()
 {
     testVocalFilter();
-    testShifter();
     testAnimator();
-
+    testShifter();
+#if 0
     test1();
     testHilbert<float>();
     testHilbert<double>();
+#endif
 }
