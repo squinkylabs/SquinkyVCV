@@ -37,7 +37,8 @@ public:
         FILTER_VOWEL_PARAM,
         FILTER_VOWEL_TRIM_PARAM,
         FILTER_MODEL_SELECT_PARAM,
-
+        FILTER_BRIGHTNESS_PARAM,
+        FILTER_BRIGHTNESS_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -47,6 +48,7 @@ public:
         FILTER_Q_CV_INPUT,
         FILTER_FC_CV_INPUT,
         FILTER_VOWEL_CV_INPUT,
+        FILTER_BRIGHTNESS_INPUT,
         NUM_INPUTS
     };
 
@@ -58,6 +60,11 @@ public:
 
     enum LightIds
     {
+        LED_A,
+        LED_E,
+        LED_I,
+        LED_O,
+        LED_U,
         NUM_LIGHTS
     };
 

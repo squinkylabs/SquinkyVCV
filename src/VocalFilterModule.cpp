@@ -71,20 +71,79 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
         addChild(panel);
     }
 
+   
+    // LEDS
+
+    const float ledX = 20;
+    const float ledDx = 20;
+    const float ledY = 24;
+    const float vOffsetX = -8;
+    const float vOffsetY = 14;
+
+    for (int i=0; i<5; ++i) {
+        VocalFilter<WidgetComposite>::LightIds id = (VocalFilter<WidgetComposite>::LightIds) i;
+        std::string ltext;
+        switch (id) {
+            case VocalFilter<WidgetComposite>::LED_A:
+                ltext = "A";
+                break;
+            case VocalFilter<WidgetComposite>::LED_E:
+                ltext = "E";
+                break;
+            case VocalFilter<WidgetComposite>::LED_I:
+                ltext = "I";
+                break;
+            case VocalFilter<WidgetComposite>::LED_O:
+                ltext = "O";
+                break;
+            case VocalFilter<WidgetComposite>::LED_U:
+                ltext = "U";
+                break;
+            default:
+                assert(false);
+
+        }
+        Label * label = nullptr;label = new Label();
+        label->text = ltext;
+        label->color = COLOR_BLACK;
+        label->box.pos = Vec(ledX + vOffsetX + i * ledDx, ledY + vOffsetY);
+         
+        addChild(label);
+
+         addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
+            Vec(ledX + i * ledDx, ledY), module, id));
+    }
+
+
     const float knobX = 75;
     const float trimX = 46;
     const float inputX = 8;
-    float knobY = 60;
+    float knobY = 30;
     const float space = 46;
     const float labelX = 0;
     const float labelOffset = 0;
     const float inputYOffset = 16;
     const float trimYOffset = 18;
     const float switchX = 120;
+    Label * label=nullptr;
+  
+
+    // Brightness knob
+       // Filter FC
+    knobY += space;
+    label = new Label();
+    label->box.pos = Vec(labelX, knobY + labelOffset);
+    label->text = "Brightness";
+    label->color = COLOR_BLACK;
+    addChild(label);
+    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(knobX, knobY), module, module->vocalFilter.FILTER_BRIGHTNESS_PARAM, -5.0, 5.0, 0.0));
+    addInput(Port::create<PJ301MPort>(Vec(inputX, knobY + inputYOffset), Port::INPUT, module, module->vocalFilter.FILTER_BRIGHTNESS_INPUT));
+    addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY + trimYOffset), module, module->vocalFilter.FILTER_BRIGHTNESS_TRIM_PARAM, -1.0, 1.0, 1.0));
+
 
     // Filter FC
     knobY += space;
-    Label *label = new Label();
+    label = new Label();
     label->box.pos = Vec(labelX, knobY + labelOffset);
     label->text = "Fc filter";
     label->color = COLOR_BLACK;
@@ -130,6 +189,16 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
 
     addInput(Port::create<PJ301MPort>(Vec(AudioInputX, row3), Port::INPUT, module, module->vocalFilter.AUDIO_INPUT));
     addOutput(Port::create<PJ301MPort>(Vec(outputX, row3), Port::OUTPUT, module, module->vocalFilter.AUDIO_OUTPUT));
+
+
+ /*************************************************
+     *  screws
+     */
+    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
 }
 
 
