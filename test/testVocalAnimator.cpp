@@ -75,7 +75,7 @@ static void test3()
     for (int i = 0; i < 4; ++i) {
        // assert(anim.filterFrequency[i] == anim.nominalFilterCenter[i]);
         float freq = anim.normalizedFilterFreq[i] * 44100;
-        assertClose(freq, anim.nominalFilterCenterHz[i], .01);
+        assertClose(freq, anim.nominalFilterCenterHz[i], 1);
     }
 
     anim.params[anim.FILTER_FC_PARAM].value = 1;
@@ -87,7 +87,7 @@ static void test3()
         float freq = anim.normalizedFilterFreq[i] * 44100;
         //printf("i=%d, freq=%f, nominal=%f\n", i, freq, anim.nominalFilterCenterHz[i]);
         if (i == 3) {
-            assertClose(freq, anim.nominalFilterCenterHz[i], .01);
+            assertClose(freq, anim.nominalFilterCenterHz[i], 1);
         } else
             assert(freq > anim.nominalFilterCenterHz[i]);
     }

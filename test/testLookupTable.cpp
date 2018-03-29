@@ -35,7 +35,6 @@ static void test1()
     };
 
     LookupTable<T>::init(p, tableSize, 0, 1, f);
-
     assert(LookupTable<T>::lookup(p, 0) == 100);
     assert(LookupTable<T>::lookup(p, 1) == 100);
     assert(LookupTable<T>::lookup(p, T(.342)) == 100);
@@ -163,8 +162,13 @@ static void testExpSimpleLookup()
 {
     LookupTableParams<T> lookup;
     LookupTable<T>::makeExp2(lookup);
-    assertEQ(LookupTable<T>::lookup(lookup, 0), 1*20); // 2**0 = 1
-    assertClose(LookupTable<T>::lookup(lookup, 10), 1024*20, .2);
+
+    const double xMin = LookupTable<T>::expXMin();
+    const double xMax = LookupTable<T>::expXMax();
+    assert(5 > xMin);
+    assert(11 < xMax);
+    assertClose(LookupTable<T>::lookup(lookup, 5), std::pow(2, 5), .01); 
+    assertClose(LookupTable<T>::lookup(lookup, 11), std::pow(2, 11), 2);        // TODO: tighten
 }
 
 
@@ -184,16 +188,18 @@ static void testExpRange()
     assertClose(LookupTable<T>::lookup(lookup, 1100), LookupTable<T>::lookup(lookup, 10), .01);
 }
 
-// lets test 0 to 10 (volts, for now)
-// mapped to 20..
+
 template<typename T>
 static void testExpTolerance(T centsTolerance)
 {
+    const T xMin = (T) LookupTable<T>::expXMin();
+    const T xMax = (T) LookupTable<T>::expXMax();
+
     LookupTableParams<T> table;
     LookupTable<T>::makeExp2(table);
-    for (T x = 0; x <= 10; x += T(.0001)) {
+    for (T x = xMin; x <= xMax; x += T(.0001)) {
         T y = LookupTable<T>::lookup(table, x);            // and back
-        double accurate = 20 * pow<T>(2, x);
+        double accurate = std::pow(2.0, x);
         double errorCents = std::abs(1200.0 * std::log2(y / accurate));
         assertClose(errorCents, 0, centsTolerance);
     }
@@ -223,7 +229,6 @@ static void test()
     testExpTolerance<T>(100);   // 1 semitone
     testExpTolerance<T>(10);
     testExpTolerance<T>(1);
-    testExpRange<T>();
 }
 
 void testLookupTable()

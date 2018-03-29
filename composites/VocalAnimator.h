@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "AudioMath.h"
+#include "LookupTable.h"
 #include "MultiModOsc.h"
 #include "StateVariableFilter.h"
 
@@ -122,6 +123,8 @@ public:
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
 
+    LookupTableParams<T> expLookup;
+
     // We need a bunch of scalers to convert knob, CV, trim into the voltage 
     // range each parameter needs.
     AudioMath::ScaleFun<T> scale0_1;
@@ -146,6 +149,9 @@ inline void VocalAnimator<TBase>::init()
     scale0_2 = AudioMath::makeScaler<T>(0, 2); // full CV range -> 0..2
     scaleQ = AudioMath::makeScaler<T>(.71f, 21);
     scalen5_5 = AudioMath::makeScaler<T>(-5, 5);
+
+    // make table of 2 ** x
+    LookupTable<T>::makeExp2(expLookup);
 }
 
 template <class TBase>
@@ -257,8 +263,9 @@ inline void VocalAnimator<TBase>::step()
             nominalModSensitivity[i];
 
         filterFrequencyLog[i] = logFreq;
+       
+        T normFreq = LookupTable<T>::lookup(expLookup, logFreq) * reciprocalSampleRate;
 
-        T normFreq = std::pow(T(2), logFreq) * reciprocalSampleRate;
         if (normFreq > .2) {
             normFreq = T(.2);
         }
