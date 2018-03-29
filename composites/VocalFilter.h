@@ -71,12 +71,12 @@ public:
 
     T filterFrequencyLog[numFilters];
 
-
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
 
     FormantTables2 formantTables;
-
+    LookupTableParams<T> expLookup;
+ 
     AudioMath::ScaleFun<T> scaleCV_to_formant;
     AudioMath::ScaleFun<T> scaleQ;
     AudioMath::ScaleFun<T> scaleFc;
@@ -89,7 +89,6 @@ inline void VocalFilter<TBase>::init()
         filterParams[i].setMode(StateVariableFilterParams<T>::Mode::BandPass);
         filterParams[i].setQ(15);           // or should it be 5?
 
-        // TODO
         filterParams[i].setFreq(T(.1));
         //filterParams[i].setFreq(nominalFilterCenterHz[i] * reciprocalSampleRate);
         //filterFrequencyLog[i] = nominalFilterCenterLog2[i];
@@ -100,6 +99,8 @@ inline void VocalFilter<TBase>::init()
     scaleQ = AudioMath::makeScaler<T>(.71f, 21);
     scaleFc = AudioMath::makeScaler<T>(-2, 2);
 
+    // make table of 2 ** x
+    LookupTable<T>::makeExp2(expLookup);
 }
 
 template <class TBase>
@@ -156,7 +157,10 @@ inline void VocalFilter<TBase>::step()
         const T gain = formantTables.getGain(model, i, fVowel) * normalizedBw;
 
         T fcFinalLog = fcLog + fPara;
-        T fcFinal = T(std::pow(2, fcFinalLog));
+       // T fcFinal = T(std::pow(2, fcFinalLog));
+        T fcFinal = LookupTable<T>::lookup(expLookup, fcFinalLog);
+        //printf("fcFinal=%f, look=%f\n", fcFinal, fcFinalLook);
+
         filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
         filterParams[i].setNormalizedBandwidth(normalizedBw);
         filterMix += gain * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
