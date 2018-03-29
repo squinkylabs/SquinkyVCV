@@ -60,7 +60,7 @@
                 "${workspaceRoot}/dsp/third-party/falco"
             ],
             "defines": [
-				"_EXP",
+                "_EXP",
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
@@ -78,7 +78,9 @@
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            }
+            },
+            "cStandard": "c11",
+            "cppStandard": "c++17"
         }
     ],
     "version": 3

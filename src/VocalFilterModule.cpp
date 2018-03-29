@@ -119,9 +119,9 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     const float trimX = 46;
     const float inputX = 8;
     float knobY = 30;
-    const float space = 46;
+    const float space = 50;
     const float labelX = 0;
-    const float labelOffset = 0;
+    const float labelOffset = -4;
     const float inputYOffset = 16;
     const float trimYOffset = 18;
     const float switchX = 120;
@@ -175,12 +175,15 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     addParam(ParamWidget::create<Trimpot>(Vec(trimX, knobY + trimYOffset), module, module->vocalFilter.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 1.0));
 
     // 3 pos vocal model
-    addParam(ParamWidget::create<CKSSThree>(Vec(switchX, 255), module, module->vocalFilter.FILTER_MODEL_SELECT_PARAM, 0.0f, 2.0f, 0.0f));
+    //addParam(ParamWidget::create<CKSSThree>(Vec(switchX, 255), module, module->vocalFilter.FILTER_MODEL_SELECT_PARAM, 0.0f, 2.0f, 0.0f));
     label = new Label();
-    label->box.pos = Vec(switchX - 50, 284);
+    label->box.pos = Vec(10, 282);
     label->text = "Model";
     label->color = COLOR_BLACK;
     addChild(label);
+
+    addParam(ParamWidget::create<RoundBlackSnapKnob>(Vec(60, 276), module, module->vocalFilter.FILTER_MODEL_SELECT_PARAM, 0.0f, 3.0f, 3.0f));
+	
 
     // I.O on row 3
     const float AudioInputX = 10.0;
