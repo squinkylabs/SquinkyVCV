@@ -99,8 +99,16 @@ inline void VocalFilter<TBase>::init()
         filterParams[i].setFreq(T(.1));
     }
     scaleCV_to_formant = AudioMath::makeScaler<T>(0, formantTables.numVowels - 1);
-    scaleQ = AudioMath::makeScaler<T>(.71f, 21);
+  //  scaleQ = AudioMath::makeScaler<T>(.71f, 21);
     scaleFc = AudioMath::makeScaler<T>(-2, 2);
+
+    AudioMath::ScaleFun<T> rawQKnob = AudioMath::makeScaler<T>(-1, 1);
+    scaleQ = [rawQKnob](T cv, T param, T trim) {
+        T temp = rawQKnob(cv, param, trim);
+        return (temp >= 0) ?
+            1 - 3 * temp / 4 :
+            1 - temp;
+    };
 
     // make table of 2 ** x
     LookupTable<T>::makeExp2(expLookup);
@@ -143,12 +151,13 @@ inline void VocalFilter<TBase>::step()
 
 
 
-    /* TODO: put Q back
-    const T q = scaleQ(
+  
+    const T bwMultiplier = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
-        */
+   // printf("bwMultiplier = %f\n", bwMultiplier);
+        
 
     const T fPara = scaleFc(
         TBase::inputs[FILTER_FC_CV_INPUT].value,
@@ -160,7 +169,7 @@ inline void VocalFilter<TBase>::step()
     T filterMix = 0;
     for (int i = 0; i < numFilters; ++i) {
         const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
-        const T normalizedBw = formantTables.getNormalizedBandwidth(model, i, fVowel);
+        const T normalizedBw = bwMultiplier * formantTables.getNormalizedBandwidth(model, i, fVowel);
 
         // Get the filter gain from the table, but scale by BW to counteract the filters 
         // gain that tracks Q

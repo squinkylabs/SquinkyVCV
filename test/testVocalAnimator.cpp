@@ -329,7 +329,6 @@ static void testVocalExtremes()
 
     paramLimits.resize(va.NUM_PARAMS);
 
-   // FILTER_Q_PARAM,
     paramLimits[va.FILTER_Q_PARAM] = fp(-5.0f, 5.0f);
     paramLimits[va.FILTER_Q_TRIM_PARAM] = fp(-1.0f, 1.0f);
     paramLimits[va.FILTER_FC_PARAM] = fp(-5.0f, 5.0f);
@@ -338,6 +337,9 @@ static void testVocalExtremes()
     paramLimits[va.FILTER_VOWEL_PARAM] = fp(-5.f, 5.0f);
     paramLimits[va.FILTER_VOWEL_TRIM_PARAM] = fp(-1.f, 1.0f);
     paramLimits[va.FILTER_MODEL_SELECT_PARAM] = fp(0.f, 3.0f);
+
+    paramLimits[va.FILTER_BRIGHTNESS_PARAM] = fp(-5.f, 5.0f);
+    paramLimits[va.FILTER_BRIGHTNESS_TRIM_PARAM] = fp(-1.0f, 1.0f);
 
     ExtremeTester< VocalFilter<TestComposite>>::test(va, paramLimits, true);
 
@@ -353,7 +355,7 @@ void testVocalAnimator()
     testFormantTables2();
 
     testVocalFilter();
-#ifdef _DEBUG
+#if defined(_DEBUG) && true
     printf("skipping extremes\n");
 #else
     testVocalExtremes();
