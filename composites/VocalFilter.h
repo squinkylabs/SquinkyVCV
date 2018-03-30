@@ -97,10 +97,6 @@ inline void VocalFilter<TBase>::init()
         filterParams[i].setQ(15);           // or should it be 5?
 
         filterParams[i].setFreq(T(.1));
-        //filterParams[i].setFreq(nominalFilterCenterHz[i] * reciprocalSampleRate);
-        //filterFrequencyLog[i] = nominalFilterCenterLog2[i];
-
-       // normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
     scaleCV_to_formant = AudioMath::makeScaler<T>(0, formantTables.numVowels - 1);
     scaleQ = AudioMath::makeScaler<T>(.71f, 21);
@@ -132,12 +128,19 @@ inline void VocalFilter<TBase>::step()
         TBase::inputs[FILTER_VOWEL_CV_INPUT].value,
         TBase::params[FILTER_VOWEL_PARAM].value,
         TBase::params[FILTER_VOWEL_TRIM_PARAM].value);
+
+
     int iVowel = int(fVowel);
+
     assert(iVowel >= 0);
     if (iVowel >= formantTables.numVowels) {
         printf("formant overflow %f\n", fVowel);
         iVowel = formantTables.numVowels - 1;
     }
+    for (int i = LED_A; i <= LED_U; ++i) {
+        TBase::lights[i].value = (i == iVowel) ? T(10) : T(0);
+    }
+
 
 
     /* TODO: put Q back
