@@ -234,7 +234,12 @@ static void testFormantTables()
     assert(x > 0);
 
     x = ff.getGain(0, 0, 0);
-    assert(x > 0);
+#if 1 // store DB, not gain
+    assert(x <= 0);
+    assert(x >= -62);
+#else
+    assert(x > 0)
+#endif;
 
     // spot check a few freq
     // formant F2 of alto, 'u' 
@@ -261,9 +266,12 @@ static void testFormantTables2()
                 assert(nBw < .5);
                 assert(nBw > .01);
 
+                // db now
                 const float gain = ff.getGain(model, formantBand, float(vowel));
-                assertLE(gain, 1);
-                assert(gain > 0);
+                assertLE(gain, 0);
+                assertGT(gain, -70);
+               // assertLE(gain, 1);
+              //  assert(gain > 0);
             }
         }
     }

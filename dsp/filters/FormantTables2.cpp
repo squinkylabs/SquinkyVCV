@@ -244,7 +244,9 @@ FormantTables2::FormantTables2()
             LookupTableParams<float>& gparams = gainInterpolators[model][formantBand];
             const float* gainValues = gainLookup[model][formantBand];
             for (int vowel = 0; vowel < numVowels; ++vowel) {
-                temp[vowel] = (float) AudioMath::gainFromDb(gainValues[vowel]);
+              //  temp[vowel] = (float) AudioMath::gainFromDb(gainValues[vowel]);
+                // let's leave these as db
+                temp[vowel] = gainValues[vowel];
             }
             LookupTable<float>::initDiscrete(gparams, numVowels, temp);
         }
