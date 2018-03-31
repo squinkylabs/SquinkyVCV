@@ -40,6 +40,11 @@ void VocalModule::onSampleRateChange()
 void VocalModule::step()
 {
     animator.step();
+
+    const float bass =  params[animator.BASS_EXP_PARAM].value > .5 ? 9. : 0.;
+    lights[animator.BASS_LIGHT].value = bass;
+    if (bass > 0)
+        printf("bass param = %f\n", bass);
 }
 
 ////////////////////
@@ -51,6 +56,13 @@ struct VocalWidget : ModuleWidget
     VocalWidget(VocalModule *);
 };
 
+
+template <typename BASE>
+struct MuteLight : BASE {
+	MuteLight() {
+		this->box.size = mm2px(Vec(6.0f, 6.0f));
+	}
+};
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -86,7 +98,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float lfoTrimY = lfoBlockY + 40;
 
     const float lfoRateKnobX = 100;
-    const float lfoRateKnobY = lfoBlockY + 40;
+    const float lfoRateKnobY = lfoBlockY + 24;
 
     const float lfoLabelX = 100;
     const float lfoLabelY = lfoRateKnobY + 40;
@@ -117,7 +129,11 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
         Vec(lfoInputX, lfoInputY), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(
         Vec(lfoTrimX, lfoTrimY), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 1.0));
-
+    
+    // the matrix switch
+    addParam(ParamWidget::create<NKK>(
+       Vec(20, 65), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
+  
     /**
      * Parameters and CV
      */
@@ -184,6 +200,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float AudioInputX = 28.0;
     const float outputX = 80.0;
 
+
     addInput(Port::create<PJ301MPort>(
         Vec(AudioInputX, row3), Port::INPUT, module, VocalModule::Animator::AUDIO_INPUT));
     addOutput(Port::create<PJ301MPort>(
@@ -200,24 +217,39 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
+    const float bassX = 120;
+    const float bassY = row3 - 30;
+    const float bassLedInsetX = 2;
+    const float bassLedInsetY = 2;
+
+    // bass switch row 3 also
+    addParam(ParamWidget::create<LEDBezel>(
+        Vec(bassX, bassY),
+        module,module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
+	addChild(ModuleLightWidget::create<MuteLight<GreenLight>>(
+        Vec(bassX+bassLedInsetX, bassY+bassLedInsetY),
+        module, module->animator.BASS_LIGHT));
+
+
 
 
     /*******************************************
      *  temp test switches
      */
+    /*
     const float switchY = 306;
     const float switchX = 124;
     const float switchSpacingX = 22;
     const float switchLabelY = switchY - 20;
+    */
+
 
      // 3 pos LFO matrix
 
    // addParam(ParamWidget::create<CKSSThree>(
    //    Vec(switchX, switchY), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
-    addParam(ParamWidget::create<NKK>(
-       Vec(20, 65), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
-  
 
+#if 0
     label = new Label();
     label->box.pos = Vec(switchX - 15, switchLabelY);
     label->text = "Mtx";
@@ -242,7 +274,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
-
+#endif
 
 
     /*************************************************

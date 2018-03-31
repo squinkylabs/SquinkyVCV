@@ -57,8 +57,6 @@ public:
       // 2 = lf sub
       LFO_MIX_PARAM,
 
-
-
       NUM_PARAMS
     };
 
@@ -86,6 +84,7 @@ public:
         LFO0_LIGHT,
         LFO1_LIGHT,
         LFO2_LIGHT,
+        BASS_LIGHT,
         NUM_LIGHTS
     };
 
@@ -174,7 +173,7 @@ inline void VocalAnimator<TBase>::step()
         LFO2_OUTPUT,
     };
     // Light up the LEDs with the unscaled Modulator outputs.
-    for (int i = 0; i < NUM_LIGHTS; ++i) {
+    for (int i = LFO0_LIGHT; i <= LFO2_LIGHT; ++i) {
         TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
         TBase::lights[i].value = modulatorOutput[i] > 0 ? T(1.0) : 0;
         TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
