@@ -179,5 +179,8 @@
     <ClInclude Include="..\..\test\ExtremeTester.h">
       <Filter>Header Files\test</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\LookupTableFactory.h">
+      <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

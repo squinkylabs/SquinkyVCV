@@ -1,10 +1,12 @@
 #pragma once
 #include <algorithm>
 #include <cmath>
+
 #include "AudioMath.h"
-#include "StateVariableFilter.h"
-#include "LookupTable.h"
 #include "FormantTables2.h"
+#include "LookupTable.h"
+#include "LookupTableFActory.h"
+#include "StateVariableFilter.h"
 
 /**
  *
@@ -112,7 +114,7 @@ inline void VocalFilter<TBase>::init()
     };
 
     // make table of 2 ** x
-    LookupTable<T>::makeExp2(expLookup);
+    LookupTableFactory<T>::makeExp2(expLookup);
 }
 
 template <class TBase>

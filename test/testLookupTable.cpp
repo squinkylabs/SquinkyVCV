@@ -3,8 +3,9 @@
 #include <iostream>
 
 #include "asserts.h"
-#include "LookupTable.h"
 #include "AudioMath.h"
+#include "LookupTable.h"
+#include "LookupTableFactory.h"
 
 using namespace std;
 
@@ -161,10 +162,10 @@ template<typename T>
 static void testExpSimpleLookup()
 {
     LookupTableParams<T> lookup;
-    LookupTable<T>::makeExp2(lookup);
+    LookupTableFactory<T>::makeExp2(lookup);
 
-    const double xMin = LookupTable<T>::expXMin();
-    const double xMax = LookupTable<T>::expXMax();
+    const double xMin = LookupTableFactory<T>::expXMin();
+    const double xMax = LookupTableFactory<T>::expXMax();
     assert(5 > xMin);
     assert(11 < xMax);
     assertClose(LookupTable<T>::lookup(lookup, 5), std::pow(2, 5), .01); 
@@ -192,11 +193,11 @@ static void testExpRange()
 template<typename T>
 static void testExpTolerance(T centsTolerance)
 {
-    const T xMin = (T) LookupTable<T>::expXMin();
-    const T xMax = (T) LookupTable<T>::expXMax();
+    const T xMin = (T) LookupTableFactory<T>::expXMin();
+    const T xMax = (T) LookupTableFactory<T>::expXMax();
 
     LookupTableParams<T> table;
-    LookupTable<T>::makeExp2(table);
+    LookupTableFactory<T>::makeExp2(table);
     for (T x = xMin; x <= xMax; x += T(.0001)) {
         T y = LookupTable<T>::lookup(table, x);            // and back
         double accurate = std::pow(2.0, x);

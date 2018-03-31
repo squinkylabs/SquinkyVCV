@@ -3,11 +3,9 @@
 
 #include "AudioMath.h"
 #include "LookupTable.h"
+#include "LookupTableFActory.h"
 #include "MultiModOsc.h"
 #include "StateVariableFilter.h"
-
-
-
 
 /**
  * Version 2 - make the math sane.
@@ -151,7 +149,7 @@ inline void VocalAnimator<TBase>::init()
     scalen5_5 = AudioMath::makeScaler<T>(-5, 5);
 
     // make table of 2 ** x
-    LookupTable<T>::makeExp2(expLookup);
+    LookupTableFactory<T>::makeExp2(expLookup);
 }
 
 template <class TBase>

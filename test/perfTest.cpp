@@ -3,12 +3,13 @@
 #include <cmath>
 #include <limits>
 
-#include "HilbertFilterDesigner.h"
 #include "AudioMath.h"
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
 #include "BiquadState.h"
 #include "FrequencyShifter.h"
+#include "HilbertFilterDesigner.h"
+#include "LookupTableFactory.h"
 #include "TestComposite.h"
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
@@ -81,7 +82,7 @@ static void testExpRange()
 {
     using T = float;
     LookupTableParams<T> table;
-    LookupTable<T>::makeExp2(table);
+    LookupTableFactory<T>::makeExp2(table);
 
     MeasureTime<T>::run("exp lookup", [&table]() {
 
