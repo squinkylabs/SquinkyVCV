@@ -43,8 +43,6 @@ void VocalModule::step()
 
     const float bass =  params[animator.BASS_EXP_PARAM].value > .5 ? 9. : 0.;
     lights[animator.BASS_LIGHT].value = bass;
-    if (bass > 0)
-        printf("bass param = %f\n", bass);
 }
 
 ////////////////////
@@ -91,11 +89,10 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float lfoOutY = lfoBlockY;
     const float lfoOutX = width - 30;
 
-
     const float lfoInputX = 24;
-    const float lfoInputY = lfoBlockY + 20;
-    const float lfoTrimX = 50;
-    const float lfoTrimY = lfoBlockY + 40;
+    const float lfoInputY = lfoBlockY + 0;
+    const float lfoTrimX = 60;
+    const float lfoTrimY = lfoInputY + 4;
 
     const float lfoRateKnobX = 100;
     const float lfoRateKnobY = lfoBlockY + 24;
@@ -103,11 +100,11 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float lfoLabelX = 100;
     const float lfoLabelY = lfoRateKnobY + 40;
 
-    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
+    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
         Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
-    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
+    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
         Vec(ledX, ledY + ledSpacingY), module, module->animator.LFO1_LIGHT));
-    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
+    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
         Vec(ledX, ledY + 2 * ledSpacingY), module, module->animator.LFO2_LIGHT));
 
     addOutput(Port::create<PJ301MPort>(
@@ -125,6 +122,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addChild(label);
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(lfoRateKnobX, lfoRateKnobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    
     addInput(Port::create<PJ301MPort>(
         Vec(lfoInputX, lfoInputY), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(
@@ -132,7 +130,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     
     // the matrix switch
     addParam(ParamWidget::create<NKK>(
-       Vec(20, 65), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
+       Vec(42, 65), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
   
     /**
      * Parameters and CV
@@ -149,14 +147,14 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float trimX = mainBlockX + 12;
     const float trimY = mainBlockY + 78;
 
-    const float labelX = mainBlockX + 0;
+    const float labelX = mainBlockX + -2;
     const float labelY = mainBlockY + 0;        // was 80
 
     const float inputX = mainBlockX + 8;
     const float inputY = mainBlockY + 108;
 
     label = new Label();
-    label->box.pos = Vec(labelX, labelY);
+    label->box.pos = Vec(labelX+4, labelY);
     label->text = "Fc";
     label->color = COLOR_BLACK;
     addChild(label);
@@ -170,7 +168,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 
 
     label = new Label();
-    label->box.pos = Vec(labelX + colSpacingX + 2, labelY);
+    label->box.pos = Vec(labelX + colSpacingX + 6, labelY);
     label->text = "Q";
     label->color = COLOR_BLACK;
     addChild(label);
@@ -197,8 +195,8 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float row3 = 317.5;
 
     // I.O on row 3
-    const float AudioInputX = 28.0;
-    const float outputX = 80.0;
+    const float AudioInputX = inputX ;
+    const float outputX = inputX + 2 * colSpacingX;
 
 
     addInput(Port::create<PJ301MPort>(
@@ -217,12 +215,19 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
-    const float bassX = 120;
-    const float bassY = row3 - 30;
+    const float bassX = inputX  + colSpacingX;;
+    const float bassY = row3 + 0;
     const float bassLedInsetX = 2;
     const float bassLedInsetY = 2;
 
     // bass switch row 3 also
+
+    label = new Label();
+    label->box.pos = Vec(bassX-12, bassY - 20);
+    label->text = "Bass";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
     addParam(ParamWidget::create<LEDBezel>(
         Vec(bassX, bassY),
         module,module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
