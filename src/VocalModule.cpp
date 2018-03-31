@@ -121,37 +121,23 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     /**
      * Parameters and CV
      */
-    /*
-    const float knobX = 75;
-    const float trimX = 46;
-    const float inputX = 8;
-    float knobY = 100;
-    const float space = 46;
-    const float labelX = 0;
-    const float labelOffset = 0;
-    const float inputYOffset = 16;
-    const float trimYOffset = 18;
-
-
-    const float matrixY = knobY + 40;
-    */
 
     const float mainBlockY = 140;
-    const float mainBlockX = 28;
+    const float mainBlockX = 20;
 
-    const float colSpacingX = 60;
+    const float colSpacingX = 64;
 
     const float knobX = mainBlockX + 0;
-    const float knobY = mainBlockY + 0;
+    const float knobY = mainBlockY + 24;
 
-    const float trimX = mainBlockX + 11;
-    const float trimY = mainBlockY + 50;
+    const float trimX = mainBlockX + 12;
+    const float trimY = mainBlockY + 78;
 
     const float labelX = mainBlockX + 0;
-    const float labelY = mainBlockY + 80;
+    const float labelY = mainBlockY + 0;        // was 80
 
-    const float inputX = mainBlockX + 5;
-    const float inputY = mainBlockY + 100;
+    const float inputX = mainBlockX + 8;
+    const float inputY = mainBlockY + 108;
 
     label = new Label();
     label->box.pos = Vec(labelX, labelY);
@@ -225,8 +211,13 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float switchLabelY = switchY - 20;
 
      // 3 pos LFO matrix
-    addParam(ParamWidget::create<CKSSThree>(
-        Vec(switchX, switchY), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
+
+   // addParam(ParamWidget::create<CKSSThree>(
+   //    Vec(switchX, switchY), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
+    addParam(ParamWidget::create<NKK>(
+       Vec(20, 65), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
+  
+
     label = new Label();
     label->box.pos = Vec(switchX - 15, switchLabelY);
     label->text = "Mtx";
