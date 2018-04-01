@@ -2,6 +2,7 @@
 
 #include "LookupTable.h"
 
+// TODO: this class should not be tempatized. the functions should
 template<typename T>
 class LookupTableFactory
 {

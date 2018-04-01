@@ -81,4 +81,9 @@ public:
             return a * x + b;
         };
     }
+
+
+    static ScaleFun<float> makeBipolarAudioScaler(float y0, float y1);
+   
+
 };

@@ -17,6 +17,7 @@ extern void perfTest();
 extern void testFrequencyShifter();
 extern void testStateVariable();
 extern void testVocalAnimator();
+extern void testObjectCache();
 
 int main(int argc, char ** argv)
 {
@@ -32,10 +33,13 @@ int main(int argc, char ** argv)
     assert(sizeof(size_t) == 8);
 
     testAudioMath();
+    testLookupTable();
+    testObjectCache();
+
     testTestSignal();
     testBiquad();
     testSaw();
-    testLookupTable();
+    
     testSinOscillator();
     testHilbert();
     testStateVariable();

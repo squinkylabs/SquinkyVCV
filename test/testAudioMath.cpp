@@ -59,6 +59,64 @@ static void testAudioTaper()
     assertClose(f(0), 0, .001);
 }
 
+static void testScaler()
+{
+    AudioMath::ScaleFun<float> f = AudioMath::makeScaler<float>(3, 4);
+    // scale(cv, knob, trim
+
+    // knob comes through only shifted
+    assertEQ(f(0, -5, 0), 3.);
+    assertEQ(f(0, 5, 0), 4.);
+    assertEQ(f(0, 0, 0), 3.5);
+
+    // cv also come through, it trim up
+    assertEQ(f(-5, 0, 1), 3.);
+    assertEQ(f(5, 0, 1), 4.);
+    assertEQ(f(0, 0, 1), 3.5);
+
+    // no cv if trim 0
+    assertEQ(f(-5, 0, 0), 3.5);
+
+    // neg trim inverts cv
+    assertEQ(f(-5, 0, -1), 4.);
+
+
+    // trim half way
+    assertEQ(f(5, 0, .5), 3.75);
+
+}
+
+
+
+static void testBipolarAudioScaler()
+{
+    AudioMath::ScaleFun<float> f = AudioMath::makeBipolarAudioScaler(3, 4);
+    // scale(cv, knob, trim
+
+    // knob comes through only shifted
+    assertEQ(f(0, -5, 0), 3.);
+    assertEQ(f(0, 5, 0), 4.);
+    assertEQ(f(0, 0, 0), 3.5);
+
+    // cv also come through, it trim up
+    assertEQ(f(-5, 0, 1), 3.);
+    assertEQ(f(5, 0, 1), 4.);
+    assertEQ(f(0, 0, 1), 3.5);
+
+    // no cv if trim 0
+    assertEQ(f(-5, 0, 0), 3.5);
+
+    // neg trim inverts cv
+    assertEQ(f(-5, 0, -1), 4.);
+
+    // trim quarter  - should be -18db
+    auto f2 = AudioMath::makeBipolarAudioScaler(-1, 1);
+    float x = f2(5, 0, .25);
+    float y = (float) AudioMath::gainFromDb(-18);
+    assertClose(x, y, .001);
+
+}
+
 void testAudioMath()
 {
     test0();
@@ -66,4 +124,6 @@ void testAudioMath()
     test2();
     test3();
     testAudioTaper();
+    testScaler();
+    testBipolarAudioScaler();
 }

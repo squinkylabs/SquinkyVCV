@@ -191,6 +191,7 @@ inline int LookupTable<float>::cvtt(float* input)
 }
 
 /***************************************************************************/
+extern int  _numLookupParams;
 
 template <typename T>
 class LookupTableParams
@@ -205,6 +206,7 @@ public:
 
     LookupTableParams()
     {
+        ++_numLookupParams;
     }
     LookupTableParams(const LookupTableParams&) = delete;
     LookupTableParams& operator=(const LookupTableParams&) = delete;
@@ -212,6 +214,7 @@ public:
     ~LookupTableParams()
     {
         free(entries);
+        --_numLookupParams;
     }
 
     bool isValid() const

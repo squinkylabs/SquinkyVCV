@@ -105,6 +105,12 @@
     <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp">
       <Filter>Source Files\dsp\filters</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp">
+      <Filter>Source Files\dsp\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testObjectCache.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -180,6 +186,9 @@
       <Filter>Header Files\test</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\utils\LookupTableFactory.h">
+      <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\ObjectCache.h">
       <Filter>Header Files\dsp\utils</Filter>
     </ClInclude>
   </ItemGroup>

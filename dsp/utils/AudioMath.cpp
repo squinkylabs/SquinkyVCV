@@ -1,5 +1,11 @@
-#include "AudioMath.h"
 #include <assert.h>
+#include <memory>
+
+#include "AudioMath.h"
+#include "LookupTable.h"
+#include "ObjectCache.h"
+
+
 
 const double AudioMath::Pi = 3.1415926535897932384626433832795028841971;
 const double AudioMath::Pi_2 = 1.5707963267948966192313216916397514420986;
@@ -57,3 +63,29 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
         return (d <= .25) ? linearFunc(d) : expFunc(d);
     };
 }
+
+
+
+ AudioMath::ScaleFun<float> AudioMath::makeBipolarAudioScaler(float y0, float y1)
+{
+    // Use a cached singleton for the lookup table - don't need to have unique copies
+    std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache::getBipolarAudioTaper();
+    const float x0 = -5;
+    const float x1 = 5;
+    const float a = (y1 - y0) / (x1 - x0);
+    const float b = y0 - a * x0;
+
+    // Notice how lambda captures the smart pointer. Now
+    // lambda owns a reference to it.
+    return [a, b, lookup](float cv, float knob, float trim) {
+        auto mappedTrim = LookupTable<float>::lookup(*lookup, trim);
+        float x = cv * mappedTrim + knob;
+        x = std::max<float>(-5.0f, x);
+        x = std::min(5.0f, x);
+        return a * x + b;
+    };
+}
+
+
+ // declare some test variables here
+ int _numLookupParams=0;
