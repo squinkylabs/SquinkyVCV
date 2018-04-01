@@ -6,6 +6,11 @@ template<typename T>
 class LookupTableFactory
 {
 public:
+    static void makeBipolarAudioTaper(LookupTableParams<T>& params);
+    static double audioTaperKnee()
+    {
+        return -18;
+    }
     /**
     * Factory methods for exp base 2
     * domain = 0..10
@@ -42,4 +47,17 @@ inline void LookupTableFactory<T>::makeExp2(LookupTableParams<T>& params)
     LookupTable<T>::init(params, bins, xMin, xMax, [](double x) {
         return std::pow(2, x);
         });
+}
+
+template<typename T>
+inline void LookupTableFactory<T>::makeBipolarAudioTaper(LookupTableParams<T>& params)
+{
+    const int bins = 32;
+    std::function<double(double)> audioTaper = AudioMath::makeFunc_AudioTaper(audioTaperKnee());
+    const T xMin = -1;
+    const T xMax = 1;
+    LookupTable<T>::init(params, bins, xMin, xMax, [audioTaper](double x) {
+        return (x >= 0) ? audioTaper(x) : -audioTaper(-x);
+        });
+
 }

@@ -140,9 +140,49 @@ static void testVocalFilter()
         }, 1);
 }
 
+static void testAttenuverters()
+{
+    auto scaler = AudioMath::makeScaler<float>(-2, 2);
+    MeasureTime<float>::run("linear scaler", [&scaler]() {
+        float cv = TestBuffers<float>::get();
+        float knob = TestBuffers<float>::get();
+        float trim = TestBuffers<float>::get();
+        return scaler(cv, knob, trim);
+        }, 1);
+
+    LookupTableParams<float> lookup;
+    LookupTableFactory<float>::makeBipolarAudioTaper(lookup);
+    MeasureTime<float>::run("bipolar lookup", [&lookup]() {
+        float x = TestBuffers<float>::get();
+        return LookupTable<float>::lookup(lookup, x);
+        }, 1);
+
+
+   // auto refFuncPos = AudioMath::makeFunc_AudioTaper(LookupTableFactory<T>::audioTaperKnee());
+
+    {
+
+        auto bipolarScaler = [&lookup, &scaler](float cv, float knob, float trim) {
+            float scaledTrim = LookupTable<float>::lookup(lookup, cv);
+            return scaler(cv, knob, scaledTrim);
+        };
+
+        MeasureTime<float>::run("bipolar scaler", [&bipolarScaler]() {
+            float cv = TestBuffers<float>::get();
+            float knob = TestBuffers<float>::get();
+            float trim = TestBuffers<float>::get();
+            return bipolarScaler(cv, knob, trim);
+            }, 1);
+    }
+}
+
+
+
+
 void perfTest()
 {
-    testExpRange();
+    testAttenuverters();
+  //  testExpRange();
     testVocalFilter();
     testAnimator();
     testShifter();

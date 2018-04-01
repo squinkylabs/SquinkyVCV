@@ -70,7 +70,7 @@ public:
         printf("State (%s): ", label);
         for (int i = (int) state.size() - 1; i >= 0; --i) {
             printf("%d ", state[i]);
-        } 
+        }
         printf("\n");
     }
 private:
@@ -90,9 +90,12 @@ class ExtremeTester
 {
 public:
 
-    static void test(T& dut, const std::vector< std::pair<float, float>>& paramLimits, bool checkOutput)
+    static void test(T& dut,
+        const std::vector< std::pair<float, float>>& paramLimits,
+        bool checkOutput,
+        const char * testName)
     {
-        printf("extreme test starting....\n");
+        printf("extreme test starting for %s. %s ....\n", testName, checkOutput ? "test output" : "");
         const int numInputs = dut.NUM_INPUTS;
         const int numParams = dut.NUM_PARAMS;
         const int numOutputs = dut.NUM_OUTPUTS;

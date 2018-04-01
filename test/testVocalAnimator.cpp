@@ -239,7 +239,7 @@ static void testFormantTables()
     assert(x >= -62);
 #else
     assert(x > 0)
-#endif;
+#endif
 
     // spot check a few freq
     // formant F2 of alto, 'u' 
@@ -321,7 +321,7 @@ static void testInputExtremes()
     paramLimits[va.LFO_MIX_PARAM] = fp(0.f, 1.0f);
 
     // TODO: why is output going so high?
-    ExtremeTester< VocalAnimator<TestComposite>>::test(va, paramLimits, false);
+    ExtremeTester< VocalAnimator<TestComposite>>::test(va, paramLimits, false, "vocal animator");
 }
 
 
@@ -349,7 +349,7 @@ static void testVocalExtremes()
     paramLimits[va.FILTER_BRIGHTNESS_PARAM] = fp(-5.f, 5.0f);
     paramLimits[va.FILTER_BRIGHTNESS_TRIM_PARAM] = fp(-1.0f, 1.0f);
 
-    ExtremeTester< VocalFilter<TestComposite>>::test(va, paramLimits, true);
+    ExtremeTester< VocalFilter<TestComposite>>::test(va, paramLimits, false, "vocal filter");
 
 }
 void testVocalAnimator()
