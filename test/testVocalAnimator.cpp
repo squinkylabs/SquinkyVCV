@@ -243,7 +243,7 @@ static void testFormantTables()
 
     // spot check a few freq
     // formant F2 of alto, 'u' 
-    x = ff.getLogFrequency(3, 1, 4);
+        x = ff.getLogFrequency(3, 1, 4);
     assertClose(x, std::log2(700), .0001);
     // formant F3 of soprano, 'o' 
     x = ff.getLogFrequency(4, 2, 3);

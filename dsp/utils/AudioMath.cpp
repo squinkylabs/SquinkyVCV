@@ -56,7 +56,7 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
         const double yMin = gainAtQuarter;
         const double xMax = 1;
         const double yMax = 1;
-        expFunc =  makeFunc_Exp(xMin, xMax, yMin, yMax);
+        expFunc = makeFunc_Exp(xMin, xMax, yMin, yMax);
     }
 
     return [linearFunc, expFunc](double d) {
@@ -66,7 +66,7 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
 
 
 
- AudioMath::ScaleFun<float> AudioMath::makeBipolarAudioScaler(float y0, float y1)
+AudioMath::ScaleFun<float> AudioMath::makeBipolarAudioScaler(float y0, float y1)
 {
     // Use a cached singleton for the lookup table - don't need to have unique copies
     std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache::getBipolarAudioTaper();
@@ -88,4 +88,4 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
 
 
  // declare some test variables here
- int _numLookupParams=0;
+int _numLookupParams = 0;

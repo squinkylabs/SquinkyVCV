@@ -86,7 +86,7 @@ static void testParam_0()
 
 template<typename T>
 static void test2()
-{	
+{
     BiquadParams<T, 2> p;
     ButterworthFilterDesigner<T>::designThreePoleLowpass(p, T(.1));
     BiquadState<T, 2> s;

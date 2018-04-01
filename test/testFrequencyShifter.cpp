@@ -36,7 +36,7 @@ static void test1()
     fs.inputs[Shifter::AUDIO_INPUT].value = 1;
     // this should produce output
     for (int i = 0; i < 50; ++i) {
-        fs.step(); 
+        fs.step();
         assert(!AudioMath::closeTo(fs.outputs[Shifter::SIN_OUTPUT].value, 0, .00001));
         assert(!AudioMath::closeTo(fs.outputs[Shifter::COS_OUTPUT].value, 0, .00001));
     }
@@ -47,7 +47,7 @@ static void testExtreme()
 
     using fp = std::pair<float, float>;
     std::vector< std::pair<float, float> > paramLimits;
-   Shifter va;
+    Shifter va;
     va.setSampleRate(44100);
     va.init();
 

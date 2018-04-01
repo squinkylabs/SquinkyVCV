@@ -68,7 +68,7 @@ public:
      * and CV range is -5..5.
      */
     template <typename T>
-    static ScaleFun<T> makeScaler(T y0, T y1)
+    static ScaleFun<T> makeLinearScaler(T y0, T y1)
     {
         const T x0 = -5;
         const T x1 = 5;

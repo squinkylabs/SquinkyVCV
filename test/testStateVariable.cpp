@@ -37,7 +37,7 @@ static void testLowpass()
     StateVariableFilterState<T> state;
     params.setMode(StateVariableFilterParams<T>::Mode::LowPass);
     params.setFreq(fc);                     // TODO: make an even fraction
-    params.setQ(q); 
+    params.setQ(q);
 
     double g = TestSignal<T>::measureGain(fc / 4, [&state, &params](T input) {
         return StateVariableFilter<T>::run(input, state, params);
@@ -76,7 +76,7 @@ static void testBandpass()
     params.setFreq(fc);                     // TODO: make an even fraction
     params.setQ(q);
 
-    double g0 = TestSignal<float>::measureGain(fc , [&state, &params](float input) {
+    double g0 = TestSignal<float>::measureGain(fc, [&state, &params](float input) {
         return StateVariableFilter<float>::run(input, state, params);
         });
     g0 = AudioMath::db(g0);
@@ -93,7 +93,7 @@ static void testBandpass()
 
         assertClose(g, AudioMath::db(q), .5);
     }
-   
+
 
 
 }

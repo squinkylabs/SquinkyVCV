@@ -61,7 +61,7 @@ static void testAudioTaper()
 
 static void testScaler()
 {
-    AudioMath::ScaleFun<float> f = AudioMath::makeScaler<float>(3, 4);
+    AudioMath::ScaleFun<float> f = AudioMath::makeLinearScaler<float>(3, 4);
     // scale(cv, knob, trim
 
     // knob comes through only shifted

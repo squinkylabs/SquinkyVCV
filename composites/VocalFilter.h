@@ -85,7 +85,7 @@ public:
 
     FormantTables2 formantTables;
     LookupTableParams<T> expLookup;
- 
+
     AudioMath::ScaleFun<T> scaleCV_to_formant;
     AudioMath::ScaleFun<T> scaleQ;
     AudioMath::ScaleFun<T> scaleFc;
@@ -101,11 +101,11 @@ inline void VocalFilter<TBase>::init()
 
         filterParams[i].setFreq(T(.1));
     }
-    scaleCV_to_formant = AudioMath::makeScaler<T>(0, formantTables.numVowels - 1);
-    scaleFc = AudioMath::makeScaler<T>(-2, 2);
-    scaleBrightness = AudioMath::makeScaler<T>(0, 1);
+    scaleCV_to_formant = AudioMath::makeLinearScaler<T>(0, formantTables.numVowels - 1);
+    scaleFc = AudioMath::makeLinearScaler<T>(-2, 2);
+    scaleBrightness = AudioMath::makeLinearScaler<T>(0, 1);
 
-    AudioMath::ScaleFun<T> rawQKnob = AudioMath::makeScaler<T>(-1, 1);
+    AudioMath::ScaleFun<T> rawQKnob = AudioMath::makeLinearScaler<T>(-1, 1);
     scaleQ = [rawQKnob](T cv, T param, T trim) {
         T temp = rawQKnob(cv, param, trim);
         return (temp >= 0) ?
@@ -154,13 +154,13 @@ inline void VocalFilter<TBase>::step()
 
 
 
-  
+
     const T bwMultiplier = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
    // printf("bwMultiplier = %f\n", bwMultiplier);
-        
+
 
     const T fPara = scaleFc(
         TBase::inputs[FILTER_FC_CV_INPUT].value,
@@ -172,7 +172,7 @@ inline void VocalFilter<TBase>::step()
         TBase::inputs[FILTER_BRIGHTNESS_INPUT].value,
         TBase::params[FILTER_BRIGHTNESS_PARAM].value,
         TBase::params[FILTER_BRIGHTNESS_TRIM_PARAM].value);
-    
+
 
 
     T input = TBase::inputs[AUDIO_INPUT].value;
@@ -186,12 +186,12 @@ inline void VocalFilter<TBase>::step()
         //const T gain = formantTables.getGain(model, i, fVowel) * normalizedBw;
         //AudioMath::gainFromDb(gainValues[vowel]);
         T gainDB = formantTables.getGain(model, i, fVowel);
-        
+
         // blend the table with full gain depending on brightness
         T modifiedGainDB = (1 - gainDB) * brightness + gainDB;
         // TODO: use lookup
       //  printf("raw db=%f, modified = %f, bright = %f\n", gainDB, modifiedGainDB, brightness);
-        const T gain = (T)AudioMath::gainFromDb(modifiedGainDB) * normalizedBw;
+        const T gain = (T) AudioMath::gainFromDb(modifiedGainDB) * normalizedBw;
 
 
 

@@ -221,21 +221,21 @@ static void testSaw6()
     }
 }
 
-/** 
+/**
  * IS the RMS for triangle as expected?
  */
 template <typename T>
 static void testTri7()
 {
     const int div = 1024;
-    const T freq = T(1.0/T(div));
+    const T freq = T(1.0 / T(div));
     SawOscillatorParams<T> params;
     SawOscillator<T, true>::setFrequency(params, freq);
     SawOscillatorState<T> state;
     double amplitude = TestSignal<T>::measureOutput(div, [&state, &params]() {
         return SawOscillator<T, true>::runTri(state, params);
         });
-   
+
     // RMS of tri wave is 1 / cube root 3
     assert(AudioMath::closeTo(amplitude, 0.57735, .0001));
 }

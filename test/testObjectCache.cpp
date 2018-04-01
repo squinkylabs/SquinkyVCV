@@ -2,13 +2,11 @@
 #include "asserts.h"
 #include "ObjectCache.h"
 
-
 extern int _numLookupParams;
 
 
 static void testBipolar()
 {
-
     assertEQ(_numLookupParams, 0);
 
     auto test = ObjectCache::getBipolarAudioTaper();
@@ -29,15 +27,6 @@ static void testBipolar()
     }
     assertEQ(_numLookupParams, 0);
 }
-
-
-
-
-
-
-
-
-
 
 void testObjectCache()
 {

@@ -142,10 +142,10 @@ inline void VocalAnimator<TBase>::init()
 
         normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
-    scale0_1 = AudioMath::makeScaler<T>(0, 1); // full CV range -> 0..1
-    scale0_2 = AudioMath::makeScaler<T>(0, 2); // full CV range -> 0..2
-    scaleQ = AudioMath::makeScaler<T>(.71f, 21);
-    scalen5_5 = AudioMath::makeScaler<T>(-5, 5);
+    scale0_1 = AudioMath::makeLinearScaler<T>(0, 1); // full CV range -> 0..1
+    scale0_2 = AudioMath::makeLinearScaler<T>(0, 2); // full CV range -> 0..2
+    scaleQ = AudioMath::makeLinearScaler<T>(.71f, 21);
+    scalen5_5 = AudioMath::makeLinearScaler<T>(-5, 5);
 
     // make table of 2 ** x
     LookupTableFactory<T>::makeExp2(expLookup);
@@ -260,7 +260,7 @@ inline void VocalAnimator<TBase>::step()
             nominalModSensitivity[i];
 
         filterFrequencyLog[i] = logFreq;
-       
+
         T normFreq = LookupTable<T>::lookup(expLookup, logFreq) * reciprocalSampleRate;
 
         if (normFreq > .2) {

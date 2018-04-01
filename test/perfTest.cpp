@@ -28,7 +28,7 @@ static void test1()
 
     MeasureTime<float>::run("test1 null", [&d, scale]() {
         return TestBuffers<float>::get();
-     }, 1);
+        }, 1);
 
     MeasureTime<float>::run("test1 sin", []() {
         float x = std::sin(TestBuffers<float>::get());
@@ -47,7 +47,7 @@ static void test1()
         }, 1);
 
     MeasureTime<float>::run("mult", []() {
-        float x = TestBuffers<float>::get(); 
+        float x = TestBuffers<float>::get();
         float y = TestBuffers<float>::get();
         return x * y;
         }, 1);
@@ -142,7 +142,7 @@ static void testVocalFilter()
 
 static void testAttenuverters()
 {
-    auto scaler = AudioMath::makeScaler<float>(-2, 2);
+    auto scaler = AudioMath::makeLinearScaler<float>(-2, 2);
     MeasureTime<float>::run("linear scaler", [&scaler]() {
         float cv = TestBuffers<float>::get();
         float knob = TestBuffers<float>::get();
