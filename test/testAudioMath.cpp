@@ -1,7 +1,9 @@
 
 #include <assert.h>
 #include <iostream>
+
 #include "AudioMath.h"
+#include "asserts.h"
 
 using namespace std;
 
@@ -46,10 +48,22 @@ static void test3()
     assert(f(-1) < 1.5);
 }
 
+static void testAudioTaper()
+{
+    double db = -18;
+    std::function<double(double)> f = AudioMath::makeFunc_AudioTaper(db);
+    assertClose(f(1), 1, .001);
+    assertClose(f(.25), .125, .001);
+    assertClose(f(.251), .126, .001);
+    assertClose(f(.249), 1.0 / 8.0, .001);
+    assertClose(f(0), 0, .001);
+}
+
 void testAudioMath()
 {
     test0();
     test1();
     test2();
     test3();
+    testAudioTaper();
 }

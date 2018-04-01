@@ -206,6 +206,7 @@ static void testExpTolerance(T centsTolerance)
     }
 }
 
+#if 0
 template<typename T>
 static void testLog0()
 {
@@ -215,6 +216,7 @@ static void testLog0()
     assertClose(LookupTable<T>::lookup(lookup, 1024), 10, .1);
     assertEQ(LookupTable<T>::lookup(lookup, 32*1024), 15);
 }
+#endif
 
 template<typename T>
 static void test()
