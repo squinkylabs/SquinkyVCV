@@ -2,8 +2,9 @@
 #include <assert.h>
 #include <iostream>
 
-#include "AudioMath.h"
 #include "asserts.h"
+#include "AudioMath.h"
+#include "LookupTableFactory.h"
 
 using namespace std;
 
@@ -31,7 +32,6 @@ static void test2()
     assert(AudioMath::closeTo(f(.25), 1, d));
     assert(AudioMath::closeTo(f(.75), -1, d));
     assert(AudioMath::closeTo(f(.125), 1.0 / sqrt(2), d));
-
 }
 
 static void test3()
@@ -83,10 +83,7 @@ static void testScaler()
 
     // trim half way
     assertEQ(f(5, 0, .5), 3.75);
-
 }
-
-
 
 static void testBipolarAudioScaler()
 {
@@ -109,12 +106,11 @@ static void testBipolarAudioScaler()
     // neg trim inverts cv
     assertEQ(f(-5, 0, -1), 4.);
 
-    // trim quarter  - should be -18db
+    // trim quarter  - should be audio knee
     auto f2 = AudioMath::makeBipolarAudioScaler(-1, 1);
     float x = f2(5, 0, .25);
-    float y = (float) AudioMath::gainFromDb(-18);
+    float y = (float) AudioMath::gainFromDb(LookupTableFactory<float>::audioTaperKnee());
     assertClose(x, y, .001);
-
 }
 
 void testAudioMath()

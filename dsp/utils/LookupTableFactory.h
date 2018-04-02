@@ -2,7 +2,7 @@
 
 #include "LookupTable.h"
 
-// TODO: this class should not be tempatized. the functions should
+// TODO: this class should not be templatized. the functions should
 template<typename T>
 class LookupTableFactory
 {
@@ -10,7 +10,7 @@ public:
     static void makeBipolarAudioTaper(LookupTableParams<T>& params);
     static double audioTaperKnee()
     {
-        return -18;
+        return -24;
     }
     /**
     * Factory methods for exp base 2

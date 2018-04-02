@@ -26,9 +26,15 @@ static void testBipolar()
         assertEQ(_numLookupParams, 1);
     }
     assertEQ(_numLookupParams, 0);
+
+    // make again
+    test = ObjectCache::getBipolarAudioTaper();
+    assertEQ(_numLookupParams, 1);
 }
 
 void testObjectCache()
 {
+    assertEQ(_numLookupParams, 0);
     testBipolar();
+    assertEQ(_numLookupParams, 0);
 }
