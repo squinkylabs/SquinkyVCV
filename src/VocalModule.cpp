@@ -235,7 +235,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 
      // the matrix switch
     addParam(ParamWidget::create<NKK2>(
-       Vec(bassX, bassY), module, module->animator.BASS_EXP_PARAM, 0.0f, 2.0f, 0.0f));
+       Vec(bassX, bassY), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
 
 
     /*************************************************

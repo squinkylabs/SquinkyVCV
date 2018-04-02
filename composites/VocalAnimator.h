@@ -162,8 +162,8 @@ inline void VocalAnimator<TBase>::step()
         StateVariableFilterParams<T>::Mode::LowPass :
         StateVariableFilterParams<T>::Mode::BandPass;
 
-    for (int i = 0; i < numFilters - 1; ++i) {
-        filterParams[0].setMode(mode);
+    for (int i = 0; i < numFilters +1 - 1; ++i) {
+        filterParams[i].setMode(mode);
     }
 
     // Run the modulators, hold onto their output.
