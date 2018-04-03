@@ -1,8 +1,9 @@
 #pragma once
 
-#include "SawOscillator.h"
-#include "LookupTable.h"
 #include "AudioMath.h"
+#include "LookupTable.h"
+#include "ObjectCache.h"
+#include "SawOscillator.h"
 
 template<typename T> class SinOscillatorParams;
 template<typename T> class SinOscillatorState;
@@ -34,9 +35,11 @@ inline void SinOscillator<T, frequencyCanBeNegative>::setFrequency(SinOscillator
 
     // TODO: figure out a better initialization strategy
     // and a better strategy for table size
-    if (!params.lookupParams.isValid()) {
-        LookupTable<T>::init(params.lookupParams, 4096, 0, 1, f);
-    }
+    // with 4096 thd was -130 db. let's use less memory!
+  // if (!params.lookupParams.isValid()) {
+ //       LookupTable<T>::init(params.lookupParams, 256, 0, 1, f);
+  //  }
+    assert(params.lookupParams->isValid());
 
     SawOscillator<T, true>::setFrequency(params.sawParams, frequency);
 }
@@ -47,7 +50,7 @@ inline T SinOscillator<T, frequencyCanBeNegative>::run(
 {
 
     const T temp = SawOscillator<T, frequencyCanBeNegative>::runSaw(state.sawState, params.sawParams);
-    const T ret = LookupTable<T>::lookup(params.lookupParams, temp);
+    const T ret = LookupTable<T>::lookup(*params.lookupParams, temp);
     return ret;
 }
 
@@ -58,8 +61,8 @@ inline void SinOscillator<T, frequencyCanBeNegative>::runQuadrature(
 
     T saw, quadratureSaw;
     SawOscillator<T, frequencyCanBeNegative>::runQuadrature(saw, quadratureSaw, state.sawState, params.sawParams);
-    output = LookupTable<T>::lookup(params.lookupParams, saw);
-    outputQuadrature = LookupTable<T>::lookup(params.lookupParams, quadratureSaw);
+    output = LookupTable<T>::lookup(*params.lookupParams, saw);
+    outputQuadrature = LookupTable<T>::lookup(*params.lookupParams, quadratureSaw);
 };
 
 template<typename T>
@@ -67,10 +70,11 @@ class SinOscillatorParams
 {
 public:
     SawOscillatorParams<T> sawParams;
-    LookupTableParams<T> lookupParams;
-
+   // LookupTableParams<T> lookupParams;
+    std::shared_ptr<LookupTableParams<T>> lookupParams;
     SinOscillatorParams()
     {
+        lookupParams = ObjectCache<T>::getSinLookup();
     }
     SinOscillatorParams(const SinOscillatorParams&) = delete;
 };

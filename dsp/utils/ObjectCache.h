@@ -13,11 +13,20 @@
  * as long as the client holds onto the reference.
  */
 
+template <typename T>
 class ObjectCache
 {
 public:
-    static std::shared_ptr<LookupTableParams<float>> getBipolarAudioTaper();
+    static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper();
+    static std::shared_ptr<LookupTableParams<T>> getSinLookup();
+    static std::shared_ptr<LookupTableParams<T>> getExp2();
 
 private:
-    static std::weak_ptr<LookupTableParams<float>> bipolarAudioTaper;
+    /**
+     * Cache uses weak pointers. This allows the cached objects to be 
+     * freed when the last client reference goes away.
+     */
+    static std::weak_ptr<LookupTableParams<T>> bipolarAudioTaper;
+    static std::weak_ptr<LookupTableParams<T>> sinLookupTable;
+    static std::weak_ptr<LookupTableParams<T>> exp2;
 };

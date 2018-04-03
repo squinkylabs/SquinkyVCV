@@ -69,7 +69,7 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
 AudioMath::ScaleFun<float> AudioMath::makeBipolarAudioScaler(float y0, float y1)
 {
     // Use a cached singleton for the lookup table - don't need to have unique copies
-    std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache::getBipolarAudioTaper();
+    std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache<float>::getBipolarAudioTaper();
     const float x0 = -5;
     const float x1 = 5;
     const float a = (y1 - y0) / (x1 - x0);

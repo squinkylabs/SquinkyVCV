@@ -6,6 +6,7 @@
 #include "FormantTables2.h"
 #include "LookupTable.h"
 #include "LookupTableFActory.h"
+#include "ObjectCache.h"
 #include "StateVariableFilter.h"
 
 /**
@@ -73,7 +74,6 @@ public:
     void init();
     void step();
 
-
     float reciprocalSampleRate;
 
     // The frequency inputs to the filters, exposed for testing.
@@ -84,7 +84,7 @@ public:
     StateVariableFilterParams<T> filterParams[numFilters];
 
     FormantTables2 formantTables;
-    LookupTableParams<T> expLookup;
+    std::shared_ptr<LookupTableParams<T>> expLookup;
 
     AudioMath::ScaleFun<T> scaleCV_to_formant;
     AudioMath::ScaleFun<T> scaleQ;
@@ -113,14 +113,13 @@ inline void VocalFilter<TBase>::init()
             1 - temp;
     };
 
-    // make table of 2 ** x
-    LookupTableFactory<T>::makeExp2(expLookup);
+    // get reference to table of 2 ** x
+    expLookup = ObjectCache<T>::getExp2();
 }
 
 template <class TBase>
 inline void VocalFilter<TBase>::step()
 {
-    // TODO - need 4 position switch for all models
     int model = 0;
     const T switchVal = TBase::params[FILTER_MODEL_SELECT_PARAM].value;
     if (switchVal < .5) {
@@ -152,9 +151,6 @@ inline void VocalFilter<TBase>::step()
         TBase::lights[i].value = (i == iVowel) ? T(10) : T(0);
     }
 
-
-
-
     const T bwMultiplier = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
@@ -173,8 +169,6 @@ inline void VocalFilter<TBase>::step()
         TBase::params[FILTER_BRIGHTNESS_PARAM].value,
         TBase::params[FILTER_BRIGHTNESS_TRIM_PARAM].value);
 
-
-
     T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;
     for (int i = 0; i < numFilters; ++i) {
@@ -183,22 +177,15 @@ inline void VocalFilter<TBase>::step()
 
         // Get the filter gain from the table, but scale by BW to counteract the filters 
         // gain that tracks Q
-        //const T gain = formantTables.getGain(model, i, fVowel) * normalizedBw;
-        //AudioMath::gainFromDb(gainValues[vowel]);
         T gainDB = formantTables.getGain(model, i, fVowel);
 
         // blend the table with full gain depending on brightness
         T modifiedGainDB = (1 - gainDB) * brightness + gainDB;
         // TODO: use lookup
-      //  printf("raw db=%f, modified = %f, bright = %f\n", gainDB, modifiedGainDB, brightness);
         const T gain = (T) AudioMath::gainFromDb(modifiedGainDB) * normalizedBw;
 
-
-
         T fcFinalLog = fcLog + fPara;
-       // T fcFinal = T(std::pow(2, fcFinalLog));
-        T fcFinal = LookupTable<T>::lookup(expLookup, fcFinalLog);
-        //printf("fcFinal=%f, look=%f\n", fcFinal, fcFinalLook);
+        T fcFinal = LookupTable<T>::lookup(*expLookup, fcFinalLog);
 
         filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
         filterParams[i].setNormalizedBandwidth(normalizedBw);

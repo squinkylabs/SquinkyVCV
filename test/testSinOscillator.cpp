@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <iostream>
 
+#include "asserts.h"
 #include "SinOscillator.h"
 using namespace std;
 
@@ -41,19 +42,19 @@ static void test3()
     const double delta = .00001;
 
     // sin(0) == 0;
-    T y = LookupTable<T>::lookup(lookup, 0);
+    T y = LookupTable<T>::lookup(*lookup, 0);
     assert(AudioMath::closeTo(y, 0, delta));
 
     // sin(2pi) == 0
-    y = LookupTable<T>::lookup(lookup, 1);
+    y = LookupTable<T>::lookup(*lookup, 1);
     assert(AudioMath::closeTo(y, 0, delta));
 
     // sin(pi/2) == 1
-    y = LookupTable<T>::lookup(lookup, .25);
+    y = LookupTable<T>::lookup(*lookup, .25);
     assert(AudioMath::closeTo(y, 1, delta));
 
     // sin(pi) == 0
-    y = LookupTable<T>::lookup(lookup, .5);
+    y = LookupTable<T>::lookup(*lookup, .5);
     assert(AudioMath::closeTo(y, 0, delta));
 }
 
@@ -96,7 +97,29 @@ static void test4()
             assert(AudioMath::closeTo(quadrature, 0, delta));
         }
     }
+}
 
+template<typename T>
+static void testDistortion()
+{
+    SinOscillatorParams<T> params;
+    SinOscillatorState<T> s;
+    SinOscillator<T, true>::setFrequency(params, T(.0423781));
+    auto& lookup = params.lookupParams;
+
+    double err = 0;
+    for (double d = 0; d < 1; d += .00123) {
+        double x = LookupTable<T>::lookup(*lookup,(T) d);
+        double y = sin(d * AudioMath::Pi * 2);
+      //  printf("d=%f sin=%f look=%f\n", d, y, x);
+        assertClose(x, y, .01);
+
+        const double e = std::abs(x - y);
+        err = std::max(err, e);
+    }
+    double errDb = AudioMath::db(err);
+   // printf("THD = %f\n", errDb);
+    assertLT(errDb, -80);
 }
 
 template<typename T>
@@ -106,6 +129,7 @@ static void test()
     test2<T>();
     test3<T>();
     test4<T>();
+    testDistortion<T>();
 }
 
 void testSinOscillator()

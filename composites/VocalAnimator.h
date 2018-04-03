@@ -5,6 +5,7 @@
 #include "LookupTable.h"
 #include "LookupTableFActory.h"
 #include "MultiModOsc.h"
+#include "ObjectCache.h"
 #include "StateVariableFilter.h"
 
 //#define makeSc makeLinearScaler<T>
@@ -38,29 +39,28 @@ public:
     enum ParamIds
     {
         LFO_RATE_PARAM,
-      //  LFO_SPREAD_PARAM,
-      FILTER_Q_PARAM,
-      FILTER_FC_PARAM,
-      FILTER_MOD_DEPTH_PARAM,
-      LFO_RATE_TRIM_PARAM,
-      FILTER_Q_TRIM_PARAM,
-      FILTER_FC_TRIM_PARAM,
-      FILTER_MOD_DEPTH_TRIM_PARAM,
-      BASS_EXP_PARAM,
+        FILTER_Q_PARAM,
+        FILTER_FC_PARAM,
+        FILTER_MOD_DEPTH_PARAM,
+        LFO_RATE_TRIM_PARAM,
+        FILTER_Q_TRIM_PARAM,
+        FILTER_FC_TRIM_PARAM,
+        FILTER_MOD_DEPTH_TRIM_PARAM,
+        BASS_EXP_PARAM,
 
-      // tracking:
-      //  0 = all 1v/octave, mod scaled, no on top
-      //  1 = mod and cv scaled
-      //  2 = 1, + top filter gets some mod
-      TRACK_EXP_PARAM,
+        // tracking:
+        //  0 = all 1v/octave, mod scaled, no on top
+        //  1 = mod and cv scaled
+        //  2 = 1, + top filter gets some mod
+        TRACK_EXP_PARAM,
 
-      // LFO mixing options
-      // 0 = classic
-      // 1 = option
-      // 2 = lf sub
-      LFO_MIX_PARAM,
+        // LFO mixing options
+        // 0 = classic
+        // 1 = option
+        // 2 = lf sub
+        LFO_MIX_PARAM,
 
-      NUM_PARAMS
+        NUM_PARAMS
     };
 
     enum InputIds
@@ -123,7 +123,7 @@ public:
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
 
-    LookupTableParams<T> expLookup;
+    std::shared_ptr<LookupTableParams<T>> expLookup;
 
     // We need a bunch of scalers to convert knob, CV, trim into the voltage 
     // range each parameter needs.
@@ -151,7 +151,8 @@ inline void VocalAnimator<TBase>::init()
     scalen5_5 = AudioMath::makeSc(-5, 5);
 
     // make table of 2 ** x
-    LookupTableFactory<T>::makeExp2(expLookup);
+   // LookupTableFactory<T>::makeExp2(expLookup);
+    expLookup = ObjectCache<T>::getExp2();
 }
 
 template <class TBase>
@@ -264,7 +265,7 @@ inline void VocalAnimator<TBase>::step()
 
         filterFrequencyLog[i] = logFreq;
 
-        T normFreq = LookupTable<T>::lookup(expLookup, logFreq) * reciprocalSampleRate;
+        T normFreq = LookupTable<T>::lookup(*expLookup, logFreq) * reciprocalSampleRate;
 
         if (normFreq > .2) {
             normFreq = T(.2);
