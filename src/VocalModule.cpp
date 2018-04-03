@@ -89,7 +89,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float lfoBlockY = 22;
 
     const float ledX = width - 46;
-    const float ledY = lfoBlockY + 8;
+    const float ledY = lfoBlockY + 7.5;
     const float ledSpacingY = 30;
 
     const float lfoOutY = lfoBlockY;
@@ -97,8 +97,8 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 
     const float lfoInputX = 24;
     const float lfoInputY = lfoBlockY + 0;
-    const float lfoTrimX = 60;
-    const float lfoTrimY = lfoInputY + 4;
+    const float lfoTrimX = 68;
+    const float lfoTrimY = lfoInputY + 3;
 
     const float lfoRateKnobX = 100;
     const float lfoRateKnobY = lfoBlockY + 24;
@@ -150,7 +150,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float knobX = mainBlockX + 0;
     const float knobY = mainBlockY + 24;
 
-    const float trimX = mainBlockX + 12;
+    const float trimX = mainBlockX + 11;
     const float trimY = mainBlockY + 78;
 
     const float labelX = mainBlockX + -2;
@@ -233,7 +233,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
-     // the matrix switch
+     // the bass boost switch
     addParam(ParamWidget::create<NKK2>(
        Vec(bassX, bassY), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
 
