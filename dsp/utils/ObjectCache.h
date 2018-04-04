@@ -20,6 +20,7 @@ public:
     static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper();
     static std::shared_ptr<LookupTableParams<T>> getSinLookup();
     static std::shared_ptr<LookupTableParams<T>> getExp2();
+    static std::shared_ptr<LookupTableParams<T>> getDb2Gain();
 
 private:
     /**
@@ -29,4 +30,5 @@ private:
     static std::weak_ptr<LookupTableParams<T>> bipolarAudioTaper;
     static std::weak_ptr<LookupTableParams<T>> sinLookupTable;
     static std::weak_ptr<LookupTableParams<T>> exp2;
+    static std::weak_ptr<LookupTableParams<T>> db2Gain;
 };

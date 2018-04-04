@@ -1,6 +1,7 @@
 
 #include <assert.h>
 
+#include "AudioMath.h"
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
 
@@ -41,6 +42,23 @@ std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getExp2()
     }
     return ret;
 }
+
+
+
+template <typename T>
+std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getDb2Gain()
+{
+    std::shared_ptr< LookupTableParams<T>> ret = db2Gain.lock();
+    if (!ret) {
+        ret = std::make_shared<LookupTableParams<T>>();
+        LookupTable<T>::init(*ret, 32, -80, 20, [](double x) {
+            return AudioMath::gainFromDb(x);
+        });
+        db2Gain = ret;
+    }
+    return ret;
+}
+
 // The weak pointer that hold our singletons.
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::bipolarAudioTaper;
@@ -48,6 +66,8 @@ template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::sinLookupTable;
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::exp2;
+template <typename T>
+std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::db2Gain;
 
 // Explicit instantiation, so we can put implementation into .cpp file
 template class ObjectCache<double>;
