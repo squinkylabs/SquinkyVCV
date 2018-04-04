@@ -85,6 +85,7 @@ public:
 
     FormantTables2 formantTables;
     std::shared_ptr<LookupTableParams<T>> expLookup;
+    std::shared_ptr<LookupTableParams<T>> db2GainLookup;
 
     AudioMath::ScaleFun<T> scaleCV_to_formant;
     AudioMath::ScaleFun<T> scaleQ;
@@ -115,6 +116,7 @@ inline void VocalFilter<TBase>::init()
 
     // get reference to table of 2 ** x
     expLookup = ObjectCache<T>::getExp2();
+    db2GainLookup = ObjectCache<T>::getDb2Gain();
 }
 
 template <class TBase>
@@ -181,8 +183,9 @@ inline void VocalFilter<TBase>::step()
 
         // blend the table with full gain depending on brightness
         T modifiedGainDB = (1 - gainDB) * brightness + gainDB;
-        // TODO: use lookup
-        const T gain = (T) AudioMath::gainFromDb(modifiedGainDB) * normalizedBw;
+
+        // TODO: why is normalizedBW in this equation?
+        const T gain =LookupTable<T>::lookup(*db2GainLookup, modifiedGainDB) * normalizedBw;
 
         T fcFinalLog = fcLog + fPara;
         T fcFinal = LookupTable<T>::lookup(*expLookup, fcFinalLog);
