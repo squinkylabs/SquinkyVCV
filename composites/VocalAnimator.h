@@ -8,9 +8,6 @@
 #include "ObjectCache.h"
 #include "StateVariableFilter.h"
 
-//#define makeSc makeLinearScaler<T>
-#define makeSc makeBipolarAudioScaler
-
 /**
  * Version 2 - make the math sane.
  */
@@ -145,13 +142,12 @@ inline void VocalAnimator<TBase>::init()
 
         normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
-    scale0_1 = AudioMath::makeSc(0, 1); // full CV range -> 0..1
-    scale0_2 = AudioMath::makeSc(0, 2); // full CV range -> 0..2
-    scaleQ = AudioMath::makeSc(.71f, 21);
-    scalen5_5 = AudioMath::makeSc(-5, 5);
+    scale0_1 = AudioMath::makeBipolarAudioScaler(0, 1); // full CV range -> 0..1
+    scale0_2 = AudioMath::makeBipolarAudioScaler(0, 2); // full CV range -> 0..2
+    scaleQ = AudioMath::makeBipolarAudioScaler(.71f, 21);
+    scalen5_5 = AudioMath::makeBipolarAudioScaler(-5, 5);
 
     // make table of 2 ** x
-   // LookupTableFactory<T>::makeExp2(expLookup);
     expLookup = ObjectCache<T>::getExp2();
 }
 
