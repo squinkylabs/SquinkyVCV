@@ -3,7 +3,7 @@
 
 #include "AudioMath.h"
 #include "LookupTable.h"
-#include "LookupTableFActory.h"
+#include "LookupTableFactory.h"
 #include "MultiModOsc.h"
 #include "ObjectCache.h"
 #include "StateVariableFilter.h"

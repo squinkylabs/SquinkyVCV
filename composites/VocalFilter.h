@@ -5,7 +5,7 @@
 #include "AudioMath.h"
 #include "FormantTables2.h"
 #include "LookupTable.h"
-#include "LookupTableFActory.h"
+#include "LookupTableFactory.h"
 #include "ObjectCache.h"
 #include "StateVariableFilter.h"
 
