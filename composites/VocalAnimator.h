@@ -8,6 +8,8 @@
 #include "ObjectCache.h"
 #include "StateVariableFilter.h"
 
+#define _ANORM
+
 /**
  * Version 2 - make the math sane.
  */
@@ -180,10 +182,11 @@ inline void VocalAnimator<TBase>::step()
     }
 
     // Normalize all the parameters out here
-    const T q = scaleQ(
+    const T qFinal = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
+   
 
     const T fc = scalen5_5(
         TBase::inputs[FILTER_FC_CV_INPUT].value,
@@ -215,6 +218,8 @@ inline void VocalAnimator<TBase>::step()
         assert(cvScaleParam < 2.5);
     }
 
+    // Just do the Q division once, in the outer loop
+    const T filterNormalizedBandwidth = T(1) / qFinal;
     const T input = TBase::inputs[AUDIO_INPUT].value;
     T filterMix = 0;                // Sum the folder outputs here
 
@@ -269,12 +274,15 @@ inline void VocalAnimator<TBase>::step()
 
         normalizedFilterFreq[i] = normFreq;
         filterParams[i].setFreq(normFreq);
-        filterParams[i].setQ(q);
 
+        filterParams[i].setNormalizedBandwidth(filterNormalizedBandwidth);
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
-
+#ifdef _ANORM
+    filterMix *= filterNormalizedBandwidth * 2;
+#else
     filterMix *= T(.3);            // attenuate to avoid clip
+#endif
     TBase::outputs[AUDIO_OUTPUT].value = filterMix;
 
 
