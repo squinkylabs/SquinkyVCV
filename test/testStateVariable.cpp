@@ -93,9 +93,20 @@ static void testBandpass()
 
         assertClose(g, AudioMath::db(q), .5);
     }
+}
 
+template <typename T>
+static void testSetBandwidth()
+{
+    StateVariableFilterParams<T> params;
+    params.setNormalizedBandwidth(T(.1));
+    assertEQ(params.getNormalizedBandwidth(), T(.1));
 
+    params.setNormalizedBandwidth(T(.5));
+    assertEQ(params.getNormalizedBandwidth(), T(.5));
 
+    params.setQ(10);
+    assertEQ(params.getNormalizedBandwidth(), T(.1))
 }
 
 template <typename T>
@@ -103,6 +114,7 @@ static void test()
 {
     test1<T>();
     testLowpass<T>();
+    testSetBandwidth<T>();
 }
 
 void testStateVariable()

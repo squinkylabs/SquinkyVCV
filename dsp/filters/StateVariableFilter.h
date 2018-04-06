@@ -101,6 +101,10 @@ public:
      * Also is 1 / Q
      */
     void setNormalizedBandwidth(T bw);
+    T getNormalizedBandwidth() const
+    {
+        return qGain;
+    }
 
     /**
      * Set the center frequency.

@@ -19,13 +19,14 @@ The Q control does just what it says - controls the Q (resonance) of the filters
 
 The Modulation Depth controls how much of the summed LFOs get to each filter. Again, the lower filters move farther, and the top filter is fixed.
 
+The smaller knobs next to the main knobs are attenuverters. They scale and/or invert the control voltage inputs next to them. All the way up and the full CV comes through. As they are turned down less CV comes through. Straight up none passes. As they are turned down further the CV comes back, but inverted.
+
 There are three LFO outputs next to the blinking LFOs. 
 
-Experimental bass boost switch, labeled “B”. When it’s up there should be more bass. This is done by switching some or all of the filters from bandpass to lowpass.
+Bass boost switch. When it’s on there should be more bass. This is done by switching some or all of the filters from bandpass to lowpass.
 
-Experimental Scale switch, labeled “Scl”. controls how the filters tracks the CV. When it’s down, all filters track the CV equally. In the middle the lowest filter tracks, and the higher ones progressively track less and less.
 
-Experimental Matrix switch. When it’s down the LFOs are closely correlated. In the middle we try to make them a little bit more independent. When it’s up they will often go in different directions.
+LFO Matrix switch. When it’s up the LFOs are closely correlated. In the middle we try to make them a little bit more independent. When it’s down they will often go in different directions.
 
 Other than the ugly panel, we believe this module is close to being ready for release.
 ### Singing Filter
@@ -35,8 +36,8 @@ The Fc VC/control moves all the filters up and down.
 
 The vowel control smoothly interpolates between 'a', 'e', 'i', 'o', and 'u'.
 
-The model control selects different models: bass, tenor, contertenor, alto, and soprano.
+The model control selects different models: bass, tenor, countertenor, alto, and soprano.
 
-Bugs: The Q control does nothing. The model switch only has three position, so you can't get to soprano.
+The brightness control gradually boosts the level of the higher formants. When it is all the way down, the filer gains are set by the singing models in the module, which typically fall off with increasing frequency. As this control is increased the gain of the high formant filters is brought up to match the F1 formant filter.
 
-In general we are underwhelmed by this filter. But feel free to try it yourself.
+
