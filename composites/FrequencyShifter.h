@@ -33,13 +33,8 @@ public:
     // TODO: can't we combine these?
     void init()
     {
-        // Force lazy load of lookup table with this extra call
-
         SinOscillator<T, true>::setFrequency(oscParams, T(.01));
-
-        // Make 128 entry table to do exp x={-5..5} y={2..2000}
-        std::function<double(double)> expFunc = AudioMath::makeFunc_Exp(-5, 5, 2, 2000);
-        LookupTable<T>::init(exponential, 128, -5, 5, expFunc);
+        exponential2 = ObjectCache<T>::getExp2();
     }
 
     // Define all the enums here. This will let the tests and the widget access them.
@@ -83,7 +78,8 @@ private:
     BiquadState<T, 3> hilbertFilterStateSin;
     BiquadState<T, 3> hilbertFilterStateCos;
 
-    LookupTableParams<T> exponential;
+    //Let's use 1v per octave.
+    std::shared_ptr<LookupTableParams<T>> exponential2;
 
     float reciprocalSampleRate;
 };
@@ -91,7 +87,7 @@ private:
 template <class TBase>
 inline void FrequencyShifter<TBase>::step()
 {
-    assert(exponential.isValid());
+    assert(exponential2->isValid());
 
     // add the knob and the CV
     T freqHz;
@@ -107,7 +103,9 @@ inline void FrequencyShifter<TBase>::step()
         cvTotal *= T(1. / 5.);
         freqHz = cvTotal;
     } else {
-        freqHz = LookupTable<T>::lookup(exponential, cvTotal);
+        cvTotal += 7;           // shift up to GE 2 (min value for out 1v/oct lookup)
+        freqHz = LookupTable<T>::lookup(*exponential2, cvTotal);
+        freqHz /= 2;            // down to 2..2k range that we want.
     }
 
     SinOscillator<float, true>::setFrequency(oscParams, freqHz * reciprocalSampleRate);

@@ -19,6 +19,16 @@ class ObjectCache
 public:
     static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper();
     static std::shared_ptr<LookupTableParams<T>> getSinLookup();
+
+    /**
+     * 2 ** x, not scaled or shifted in any manner, but tables
+     * selected to span a "reasonable" range when used as frequencies
+     (4 Hz to 40kHz)
+     * Exp2 lookup is 2 ** x.
+     * Domain = {2 .. 15(+)}
+     * Range = {4 .. 40000}
+     * accuracy = 1 cent (1V/octave)
+     */
     static std::shared_ptr<LookupTableParams<T>> getExp2();
     static std::shared_ptr<LookupTableParams<T>> getDb2Gain();
 

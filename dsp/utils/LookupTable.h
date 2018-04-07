@@ -69,6 +69,8 @@ private:
 template<typename T>
 inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input)
 {
+    assert(input >= params.xMin && input <= params.xMax);   // won't happen in the field,
+                                                            // as assertions are disabled for release.
     input = std::min(input, params.xMax);
     input = std::max(input, params.xMin);
     assert(params.isValid());

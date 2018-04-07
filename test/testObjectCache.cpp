@@ -90,6 +90,18 @@ static void testExp2()
     assertEQ(_numLookupParams, 1);
 }
 
+template <typename T>
+static void testExp2b()
+{
+    {
+    // make sure exp2 is really 1V/octave
+        auto ex2 = ObjectCache<T>::getExp2();
+        const T a = LookupTable<T>::lookup(*ex2, 5);
+        const T b = LookupTable<T>::lookup(*ex2, 6);
+        assertClose(b / a, 2, .001);
+    }
+}
+
 
 template <typename T>
 static void testDb2Gain()
@@ -143,6 +155,7 @@ static void test()
     testBipolar<T>();
     testSin<T>();
     testExp2<T>();
+    testExp2b<T>();
     testDb2Gain<T>();
     testDb2Gain2<T>();
 }
