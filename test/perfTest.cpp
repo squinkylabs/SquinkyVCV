@@ -20,6 +20,10 @@ using VocFilter = VocalFilter<TestComposite>;
 
 #include "MeasureTime.h"
 
+// There are many tests that are disabled with #if 0.
+// In most cases they still work, but don't need to be run regularly
+
+#if 0
 static void test1()
 {
     double d = .1;
@@ -57,9 +61,8 @@ static void test1()
         float y = TestBuffers<float>::get();
         return x / y;
         }, 1);
-
-
 }
+#endif
 
 template <typename T>
 static void testHilbert()
@@ -77,7 +80,7 @@ static void testHilbert()
 
 }
 
-
+#if 0
 static void testExpRange()
 {
     using T = float;
@@ -90,6 +93,7 @@ static void testExpRange()
         return d;
         }, 1);
 }
+#endif
 
 static void testShifter()
 {
@@ -140,6 +144,7 @@ static void testVocalFilter()
         }, 1);
 }
 
+#if 0
 static void testAttenuverters()
 {
     auto scaler = AudioMath::makeLinearScaler<float>(-2, 2);
@@ -175,14 +180,17 @@ static void testAttenuverters()
             }, 1);
     }
 }
+#endif
 
 
 
 
 void perfTest()
 {
+#if 0
     testAttenuverters();
-  //  testExpRange();
+    testExpRange();
+#endif
     testVocalFilter();
     testAnimator();
     testShifter();

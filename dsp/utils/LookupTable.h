@@ -117,10 +117,8 @@ inline void LookupTable<T>::init(LookupTableParams<T>& params,
     if (x0In == 0) assert(params.b == 0);
 
     {
-        double w0 = (params.a * x0In + params.b);
-        double w1 = (params.a * x1In + params.b);
-        assert(AudioMath::closeTo(w0, 0, .0001));
-        assert(AudioMath::closeTo(w1, bins, .0001));
+        assert(AudioMath::closeTo((params.a * x0In + params.b), 0, .0001));
+        assert(AudioMath::closeTo((params.a * x1In + params.b), bins, .0001));
     }
 
     for (int i = 0; i <= bins; ++i) {
@@ -133,13 +131,6 @@ inline void LookupTable<T>::init(LookupTableParams<T>& params,
         T * entry = params.entries + (2 * i);
         entry[0] = (T) y0;
         entry[1] = (T) slope;
-#if 0
-        {
-            char buf[512];
-            sprintf(buf, "fill index[%d], x=%f value=%f slope=%f\n", i, x0, params.values[i], slope);
-            DebugUtil::trace(buf);
-        }
-#endif
     }
     params.xMin = x0In;
     params.xMax = x1In;

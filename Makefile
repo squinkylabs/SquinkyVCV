@@ -16,6 +16,14 @@ ifdef _EXP
 	FLAGS += -D _EXP
 endif
 
+# Macro to use on any target where we don't normally want asserts
+ASSERTOFF = -D NDEBUG
+
+# Make _ASSERT=true will nullify our ASSERTOFF flag, thus allowing them
+ifdef _ASSERT
+	ASSERTOFF =
+endif
+
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
 # Static libraries are fine.
 LDFLAGS +=
@@ -32,12 +40,11 @@ DISTRIBUTABLES += $(wildcard LICENSE*) res
 # If RACK_DIR is not defined when calling the Makefile, default to two levels above
 RACK_DIR ?= ../..
 
-
-
 # Include the VCV Rack plugin Makefile framework
 include $(RACK_DIR)/plugin.mk
 
+# This turns asserts off for make (plugin), not for test or perf
+$(TARGET) :  FLAGS += $(ASSERTOFF)
+
 include test.mk
 
-
-    
