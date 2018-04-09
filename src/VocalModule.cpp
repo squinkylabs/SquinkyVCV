@@ -79,14 +79,14 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/vocal_animator_panel.svg")));
         addChild(panel);
     }
     /**
      *  LEDs and LFO outputs
      */
 
-    const float lfoBlockY = 22;
+    const float lfoBlockY = 38;     // was 22. move down to make space
 
     const float ledX = width - 46;
     const float ledY = lfoBlockY + 7.5;
@@ -103,8 +103,8 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float lfoRateKnobX = 100;
     const float lfoRateKnobY = lfoBlockY + 24;
 
-    const float lfoLabelX = 100;
-    const float lfoLabelY = lfoRateKnobY + 40;
+    //const float lfoLabelX = 100;
+    //const float lfoLabelY = lfoRateKnobY + 40;
 
     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
         Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
@@ -120,12 +120,13 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addOutput(Port::create<PJ301MPort>(
         Vec(lfoOutX, lfoOutY + 2 * ledSpacingY), Port::OUTPUT, module, VocalModule::Animator::LFO2_OUTPUT));
 
-
+#if 0
     Label *label = new Label();
     label->box.pos = Vec(lfoLabelX, lfoLabelY);
     label->text = "LFO";
     label->color = COLOR_BLACK;
     addChild(label);
+#endif
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(lfoRateKnobX, lfoRateKnobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
     
@@ -153,17 +154,19 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float trimX = mainBlockX + 11;
     const float trimY = mainBlockY + 78;
 
-    const float labelX = mainBlockX + -2;
-    const float labelY = mainBlockY + 0;        // was 80
+//    const float labelX = mainBlockX + -2;
+  //  const float labelY = mainBlockY + 0;        // was 80
 
     const float inputX = mainBlockX + 8;
     const float inputY = mainBlockY + 108;
 
+#if 0
     label = new Label();
     label->box.pos = Vec(labelX+4, labelY);
     label->text = "Fc";
     label->color = COLOR_BLACK;
     addChild(label);
+#endif
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(
@@ -172,12 +175,13 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
         Vec(trimX, trimY), module, module->animator.FILTER_FC_TRIM_PARAM, -1.0, 1.0, 1.0));
 
 
-
+#if 0
     label = new Label();
     label->box.pos = Vec(labelX + colSpacingX + 6, labelY);
     label->text = "Q";
     label->color = COLOR_BLACK;
     addChild(label);
+    #endif
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX + colSpacingX, knobY), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
@@ -185,12 +189,13 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
         Vec(inputX + colSpacingX, inputY), Port::INPUT, module, VocalModule::Animator::FILTER_Q_CV_INPUT));
     addParam(ParamWidget::create<Trimpot>(
         Vec(trimX + colSpacingX, trimY), module, module->animator.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 1.0));
-
+#if 0
     label = new Label();
     label->box.pos = Vec(labelX + 2 * colSpacingX - 6, labelY);
     label->text = "Depth";
     label->color = COLOR_BLACK;
     addChild(label);
+    #endif
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX + 2 * colSpacingX, knobY), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(
@@ -198,7 +203,9 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addParam(ParamWidget::create<Trimpot>(
         Vec(trimX + 2 * colSpacingX, trimY), module, module->animator.FILTER_MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 1.0));
 
-    const float row3 = 317.5;
+
+    // was 317.5, let's move up to make room for label
+    const float row3 = 310;
 
     // I.O on row 3
     const float AudioInputX = inputX ;
@@ -210,6 +217,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addOutput(Port::create<PJ301MPort>(
         Vec(outputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
 
+#if 0
     label = new Label();
     label->box.pos = Vec(AudioInputX - 2, row3 - 20);
     label->text = "In";
@@ -220,18 +228,20 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     label->text = "Out";
     label->color = COLOR_BLACK;
     addChild(label);
+    #endif
 
     const float bassX = inputX  + colSpacingX-4;
     const float bassY = row3 -8;
  
 
     // bass switch row 3 also
-
+#if 0
     label = new Label();
     label->box.pos = Vec(bassX-12, bassY - 20);
     label->text = "Bass";
     label->color = COLOR_BLACK;
     addChild(label);
+    #endif
 
      // the bass boost switch
     addParam(ParamWidget::create<NKK2>(
