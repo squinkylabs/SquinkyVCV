@@ -77,7 +77,6 @@ static void testHilbert()
         T d = BiquadFilter<T>::run(TestBuffers<T>::get(), state, paramsSin);
         return d;
         }, 1);
-
 }
 
 #if 0
