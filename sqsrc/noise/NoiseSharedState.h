@@ -41,6 +41,12 @@ public:
      */
     std::shared_ptr<NoiseMessage> waitForMessage();
 private:
+    /** The message in the mailbox.
+     * This is an object that is owned by the client. We may not
+     * modify it or delete it.
+     *
+     * Only the client writes to the mailbox. 
+     */
     std::atomic<const NoiseMessage*> mailbox=nullptr;
     std::mutex mailboxMutex;
     std::condition_variable mailboxCondition;
