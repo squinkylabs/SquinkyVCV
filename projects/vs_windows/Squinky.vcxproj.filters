@@ -52,6 +52,18 @@
     <Filter Include="Header Files\composites">
       <UniqueIdentifier>{6f955dd1-2a2c-4506-bfc2-4bb55734eb72}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\sqsrc">
+      <UniqueIdentifier>{69f82fd1-904a-40e1-8a26-c2cd63f1e979}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sqsrc\noise">
+      <UniqueIdentifier>{19f721d6-97d9-4952-a547-52e6e418fbf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sqsrc">
+      <UniqueIdentifier>{dde575bc-41ce-4770-9fd3-411c945a262b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\sqsrc\noise">
+      <UniqueIdentifier>{98bc8bb8-3835-46b9-be11-d534f001cac5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -110,6 +122,15 @@
     </ClCompile>
     <ClCompile Include="..\..\test\testObjectCache.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testNoise.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\noise\NoiseServer.cpp">
+      <Filter>Source Files\sqsrc\noise</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\noise\NoiseClient.cpp">
+      <Filter>Source Files\sqsrc\noise</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -190,6 +211,15 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\utils\ObjectCache.h">
       <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\noise\NoiseSharedState.h">
+      <Filter>Header Files\sqsrc\noise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\noise\NoiseServer.h">
+      <Filter>Header Files\sqsrc\noise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\noise\NoiseClient.h">
+      <Filter>Header Files\sqsrc\noise</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
