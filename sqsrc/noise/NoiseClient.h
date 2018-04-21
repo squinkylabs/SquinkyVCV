@@ -7,10 +7,7 @@ class NoiseServer;
 class NoiseClient
 {
 public:
-    NoiseClient(std::shared_ptr<NoiseSharedState> state,
-        NoiseServer&& server) : sharedState(state), _server(&server)
-    {
-    }
+    NoiseClient(std::shared_ptr<NoiseSharedState> state, std::unique_ptr<NoiseServer> server);
     ~NoiseClient();
 
     const NoiseClient& operator= (const NoiseClient&) = delete;

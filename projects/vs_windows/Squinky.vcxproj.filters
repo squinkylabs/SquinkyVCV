@@ -132,6 +132,9 @@
     <ClCompile Include="..\..\sqsrc\noise\NoiseClient.cpp">
       <Filter>Source Files\sqsrc\noise</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sqsrc\noise\NoiseSharedState.cpp">
+      <Filter>Source Files\sqsrc\noise</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

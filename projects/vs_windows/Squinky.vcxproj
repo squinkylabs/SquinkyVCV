@@ -27,6 +27,7 @@
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseClient.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseServer.cpp" />
+    <ClCompile Include="..\..\sqsrc\noise\NoiseSharedState.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
