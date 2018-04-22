@@ -2,38 +2,57 @@
 #include <assert.h>
 #include "NoiseSharedState.h"
 
-std::atomic<int> NoiseSharedState::_dbgCount = 0;
+std::atomic<int> NoiseSharedState::_dbgCount;
 
+#include <iostream>
+#include <chrono>
+#include <thread>
 
 std::shared_ptr<NoiseMessage>  NoiseSharedState::waitForMessage()
 {
-    std::unique_lock<std::mutex> guard(mailboxMutex);        // grab the mutex that protects condition
-    mailboxCondition.wait(guard);                            // wait for client to send a message
-    if (!mailbox) {
-        return std::shared_ptr<NoiseMessage>();             // spurious wakeup - return nothing
-    } else {
-        // make a copy of the one in the mailbox. We can own this copy
-        std::shared_ptr<NoiseMessage> theMessage = std::make_shared<NoiseMessage>(*mailbox);
-        mailbox = nullptr;
-        return theMessage;
+   // printf("wait\n"); fflush(stdout);
+
+    std::unique_lock<std::mutex> guard(mailboxMutex);       // grab the mutex that protects condition
+    const NoiseMessage* returnMessage = nullptr;
+    while (!returnMessage) {
+        returnMessage = mailbox.load();                     // don't wait on condition if we already have it.
+        if (!returnMessage) {
+            mailboxCondition.wait(guard);                            // wait for client to send a message
+            returnMessage = mailbox.load();
+        }
     }
+    // This simple method of cloning won't work for message with data
+    return std::make_shared<NoiseMessage>(returnMessage->type);
 }
 
+// signal in lock
 bool NoiseSharedState::trySendMessage(const NoiseMessage* msg)
 {
+    //printf("snd\n"); fflush(stdout);
+
+    assert(serverRunning.load());
     // If the client tries to send a message before the previous one is read, the
     // call will fail and the client must try again.
-    if (mailbox) {
+    if (mailbox.load()) {
         return false;
     }
-    std::unique_lock<std::mutex> guard(mailboxMutex, std::defer_lock);
 
+    // Write to mailbox (condition) in lock
+
+    std::unique_lock<std::mutex> guard(mailboxMutex, std::defer_lock);
     // We must use a try_lock here, as calling regular lock() could cause a priority inversion.
     bool didLock = guard.try_lock();
-    if (didLock) {
-        assert(!mailbox);               // if there is still a message there we are out of sync
-        mailbox = msg;
-        mailboxCondition.notify_one();
+    if (!didLock) {
+        return false;
     }
-    return didLock;
+    assert(guard.owns_lock());
+
+    assert(!mailbox.load());               // if there is still a message there we are out of sync
+    mailbox.store(msg);
+
+    mailboxCondition.notify_all();
+    //printf("sx\n"); fflush(stdout);
+    return true;
 }
+
+

@@ -27,9 +27,11 @@ void NoiseServer::threadFunction()
     sharedState->serverRunning = true;
     for (bool done = false; !done; ) {
         auto msg = sharedState->waitForMessage();
+        assert(msg);
         done = procMessage(*msg);
     }
 
+    //printf("noiseserer shut down\n"); fflush(stdout);
     thread->detach();
     sharedState->serverRunning = false;
 }

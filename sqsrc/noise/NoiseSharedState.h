@@ -22,6 +22,8 @@ public:
     NoiseSharedState()
     {
         ++_dbgCount;
+        serverRunning.store(false);
+        mailbox.store(nullptr);
     }
     ~NoiseSharedState()
     {
@@ -47,7 +49,7 @@ private:
      *
      * Only the client writes to the mailbox. 
      */
-    std::atomic<const NoiseMessage*> mailbox=nullptr;
+    std::atomic<const NoiseMessage*> mailbox;
     std::mutex mailboxMutex;
     std::condition_variable mailboxCondition;
 };

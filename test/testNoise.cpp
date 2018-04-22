@@ -21,12 +21,12 @@ static void test0()
 
 static void test1()
 {
-    for (int i = 0; i < 50; ++i)
+    for (int i = 0; i < 200; ++i)
         test0();
 }
 
 void testNoise()
 {
-    test0();
-    test1();
+   test0();
+   test1();
 }
