@@ -64,6 +64,12 @@
     <Filter Include="Source Files\sqsrc\noise">
       <UniqueIdentifier>{98bc8bb8-3835-46b9-be11-d534f001cac5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\dsp\fft">
+      <UniqueIdentifier>{09a864b6-3479-4e18-b9de-499c30b220a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dsp\fft">
+      <UniqueIdentifier>{53848339-2c75-4ddc-8933-607d2353adee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -134,6 +140,12 @@
     </ClCompile>
     <ClCompile Include="..\..\sqsrc\noise\NoiseSharedState.cpp">
       <Filter>Source Files\sqsrc\noise</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testFFT.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\fft\FFTData.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -223,6 +235,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\noise\NoiseClient.h">
       <Filter>Header Files\sqsrc\noise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\fft\FFTData.h">
+      <Filter>Header Files\dsp\fft</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

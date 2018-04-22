@@ -25,6 +25,7 @@
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
+    <ClCompile Include="..\..\sqsrc\fft\FFTData.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseClient.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseServer.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseSharedState.cpp" />
@@ -32,6 +33,7 @@
     <ClCompile Include="..\..\test\perfTest.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
     <ClCompile Include="..\..\test\testBiquad.cpp" />
+    <ClCompile Include="..\..\test\testFFT.cpp" />
     <ClCompile Include="..\..\test\testFrequencyShifter.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
     <ClCompile Include="..\..\test\testLookupTable.cpp" />
@@ -49,6 +51,7 @@
     <ClInclude Include="..\..\composites\VocalAnimator.h" />
     <ClInclude Include="..\..\composites\VocalFilter.h" />
     <ClInclude Include="..\..\composites\WidgetComposite.h" />
+    <ClInclude Include="..\..\dsp\fft\FFTData.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadFilter.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadParams.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadState.h" />
@@ -151,7 +154,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\noise;..\..\dsp\utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\noise;..\..\dsp\utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
@@ -181,7 +184,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\noise;..\..\dsp\utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\noise;..\..\dsp\utils;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

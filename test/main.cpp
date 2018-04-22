@@ -19,6 +19,7 @@ extern void testStateVariable();
 extern void testVocalAnimator();
 extern void testObjectCache();
 extern void testNoise();
+extern void testFFT();
 
 int main(int argc, char ** argv)
 {
@@ -52,7 +53,9 @@ int main(int argc, char ** argv)
     testHilbert();
     testStateVariable();
 
+    testFFT();
     testNoise();
+
 
     // after testing all the components, test composites.
     testFrequencyShifter();
