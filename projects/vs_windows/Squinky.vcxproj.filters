@@ -144,7 +144,10 @@
     <ClCompile Include="..\..\test\testFFT.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sqsrc\fft\FFTData.cpp">
+    <ClCompile Include="..\..\dsp\fft\FFTData.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\fft\FFT.cpp">
       <Filter>Source Files\dsp\fft</Filter>
     </ClCompile>
   </ItemGroup>
@@ -237,6 +240,9 @@
       <Filter>Header Files\sqsrc\noise</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\fft\FFTData.h">
+      <Filter>Header Files\dsp\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\fft\FFT.h">
       <Filter>Header Files\dsp\fft</Filter>
     </ClInclude>
   </ItemGroup>

@@ -19,13 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\dsp\fft\FFTData.cpp" />
     <ClCompile Include="..\..\dsp\filters\ButterworthFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp" />
     <ClCompile Include="..\..\dsp\filters\HilbertFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
-    <ClCompile Include="..\..\sqsrc\fft\FFTData.cpp" />
+    <ClCompile Include="..\..\sqsrc\fft\FFT.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseClient.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseServer.cpp" />
     <ClCompile Include="..\..\sqsrc\noise\NoiseSharedState.cpp" />
@@ -51,6 +52,7 @@
     <ClInclude Include="..\..\composites\VocalAnimator.h" />
     <ClInclude Include="..\..\composites\VocalFilter.h" />
     <ClInclude Include="..\..\composites\WidgetComposite.h" />
+    <ClInclude Include="..\..\dsp\fft\FFT.h" />
     <ClInclude Include="..\..\dsp\fft\FFTData.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadFilter.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadParams.h" />

@@ -1,6 +1,7 @@
 
 #include "asserts.h"
 #include "FFTData.h"
+#include "FFT.h"
 
 
 static void test0()
@@ -17,7 +18,15 @@ static void test0()
     assertEQ(dc.get(5), x);
 }
 
+static void test1()
+{
+    FFTDataReal real(16);
+    FFTDataCpx cpx(15);
+    const bool b = FFT::forward(&cpx, real);
+    assert(!b);          // should error if size mismatch
+}
 void testFFT()
 {
     test0();
+    test1();
 }
