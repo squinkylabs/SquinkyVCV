@@ -1,14 +1,19 @@
 
 #include "FFTData.h"
+#include "kiss_fft.h"
+#include "kiss_fftr.h"
 
 #include <assert.h>
 
 FFTDataCpx::FFTDataCpx(int numBins) :
     buffer(numBins)
 {
-
 }
 
+FFTDataCpx::~FFTDataCpx()
+{
+
+}
 
 cpx FFTDataCpx::get(int index) const
 {
@@ -23,12 +28,21 @@ void FFTDataCpx::set(int index, cpx value)
     buffer[index] = value;
 }
 
+/******************************************************************/
+
 FFTDataReal::FFTDataReal(int numBins) :
     buffer(numBins)
 {
-
 }
 
+FFTDataReal::~FFTDataReal()
+{
+    // We need to manually delete the cfg, since only "we" know
+    // what type it is.
+    if (kiss_cfg) {
+        kiss_fftr_cfg theCfg = reinterpret_cast<kiss_fftr_cfg>(kiss_cfg);
+    }
+}
 float FFTDataReal::get(int index) const
 {
     assert(index < buffer.size());

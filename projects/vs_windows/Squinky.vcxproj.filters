@@ -73,6 +73,9 @@
     <Filter Include="Source Files\dsp\third-party\kiss_fft">
       <UniqueIdentifier>{80fd0025-498b-4fd2-98ac-cdae460339fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\dsp\third-party\kiss_fft">
+      <UniqueIdentifier>{ea30d980-17c6-4bf8-91a7-847e331330c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -253,6 +256,12 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\fft\FFT.h">
       <Filter>Header Files\dsp\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.h">
+      <Filter>Header Files\dsp\third-party\kiss_fft</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.h">
+      <Filter>Header Files\dsp\third-party\kiss_fft</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

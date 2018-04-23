@@ -42,7 +42,7 @@ static void test2()
        cpx v = complex.get(i);
        float magSq = v.imag() *v.imag() + v.real() * v.real();
        magSq = std::abs(v);
-        float expect = (i == 0) ? 1.f : 0.f;
+        float expect = (i == 0) ? 16.f : 0.f;
         assertEQ(magSq, expect);
         //real.set(i, 1.0);
     }

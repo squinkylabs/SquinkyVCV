@@ -17,16 +17,26 @@ bool FFT::forward(FFTDataCpx* out, const FFTDataReal& in)
     if (in.kiss_cfg == 0) {
         bool inverse_fft = false;
         size_t memsize = sizeof(in.kiss_cfg);
-        kiss_fftr_cfg ret=  kiss_fftr_alloc((int)in.buffer.size(),
+        kiss_fftr_cfg newCfg=  kiss_fftr_alloc((int)in.buffer.size(),
             inverse_fft,
-            &in.kiss_cfg, &memsize);
+           nullptr, nullptr);
 
-        auto cfgsize = sizeof(kiss_fftr_cfg);
-        assert (ret);
-        assert(false);
+        
+        assert (newCfg);
+        if (!newCfg) {
+            return false;
+        }
+
+        // now save off in our typeless pointer.
+        assert(sizeof(newCfg) == sizeof(in.kiss_cfg));
+        in.kiss_cfg = newCfg;
     }
 
     // step 2: do the fft
-    assert(false);
+    kiss_fftr_cfg theCfg = reinterpret_cast<kiss_fftr_cfg>(in.kiss_cfg);
+
+    // TODO: need a test that this assumption is correct (that we kiss_fft_cpx == std::complex.
+    kiss_fft_cpx * outBuffer = reinterpret_cast<kiss_fft_cpx *>(out->buffer.data());
+    kiss_fftr(theCfg, in.buffer.data(), outBuffer);
     return true;
 }
