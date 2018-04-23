@@ -27,4 +27,5 @@ public:
     void set(int numBin, float value);
 private:
     std::vector<float> buffer;
+    mutable size_t kiss_cfg=0;
 };
