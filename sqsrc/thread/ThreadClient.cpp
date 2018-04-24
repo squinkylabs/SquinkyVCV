@@ -1,13 +1,13 @@
 
-#include "NoiseClient.h"
-#include "NoiseServer.h"
-#include "NoiseSharedState.h"
+#include "ThreadClient.h"
+#include "ThreadServer.h"
+#include "ThreadSharedState.h"
 
 #include <assert.h>
 
 
-NoiseClient::NoiseClient(std::shared_ptr<NoiseSharedState> state,
-    std::unique_ptr<NoiseServer> server) : sharedState(state), _server(std::move(server))
+ThreadClient::ThreadClient(std::shared_ptr<ThreadSharedState> state,
+    std::unique_ptr<ThreadServer> server) : sharedState(state), _server(std::move(server))
 {
     assert(!sharedState->serverRunning);
     //printf("noise client starting server\n"); fflush(stdout);
@@ -19,10 +19,10 @@ NoiseClient::NoiseClient(std::shared_ptr<NoiseSharedState> state,
     //printf("noise client started\n"); fflush(stdout);
 }
 
-NoiseClient::~NoiseClient()
+ThreadClient::~ThreadClient()
 {
     //printf("noise client dtor\n"); fflush(stdout);
-    std::unique_ptr<NoiseMessage> msg(new NoiseMessage(NoiseMessage::Type::EXIT));
+    std::unique_ptr<ThreadMessage> msg(new ThreadMessage(ThreadMessage::Type::EXIT));
 
     for (bool busy = true; busy; ) {
         if (sharedState->trySendMessage(msg.get())) {

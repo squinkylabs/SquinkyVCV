@@ -1,18 +1,18 @@
 
 #include <assert.h>
-#include "NoiseServer.h"
-#include "NoiseSharedState.h"
+#include "ThreadServer.h"
+#include "ThreadSharedState.h"
 
-NoiseServer::NoiseServer(std::shared_ptr<NoiseSharedState> state) : 
+ThreadServer::ThreadServer(std::shared_ptr<ThreadSharedState> state) : 
     sharedState(state)
 {
 }
 
-NoiseServer::~NoiseServer()
+ThreadServer::~ThreadServer()
 {
 }
 
-void NoiseServer::start()
+void ThreadServer::start()
 {
    // printf("starting thread\n"); fflush(stdout);
     auto startupFunc = [this]() {
@@ -22,7 +22,7 @@ void NoiseServer::start()
     thread = std::move(th);
 }
 
-void NoiseServer::threadFunction()
+void ThreadServer::threadFunction()
 {
     sharedState->serverRunning = true;
     for (bool done = false; !done; ) {
@@ -36,11 +36,11 @@ void NoiseServer::threadFunction()
     sharedState->serverRunning = false;
 }
 
-bool NoiseServer::procMessage(const NoiseMessage& msg)
+bool ThreadServer::procMessage(const ThreadMessage& msg)
 {
     bool exit = false;
     switch (msg.type) {
-        case NoiseMessage::Type::EXIT:
+        case ThreadMessage::Type::EXIT:
             exit = true;
             break;
         default:

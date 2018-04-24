@@ -23,6 +23,15 @@ public:
     void set(int bit, cpx value);
 private:
     std::vector<cpx> buffer;
+
+    /**
+    * we store this without type so that clients don't need
+    * to pull in the kiss_fft headers. It's mutable so it can
+    * be lazy created by FFT functions.
+    * Note that the cfg has a "direction" baked into it. For
+    * now we assume that all FFT with complex input will be inverse FFTs.
+    */
+    mutable void * kiss_cfg = 0;
 };
 
 /**

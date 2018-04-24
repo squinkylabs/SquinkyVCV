@@ -12,7 +12,11 @@ FFTDataCpx::FFTDataCpx(int numBins) :
 
 FFTDataCpx::~FFTDataCpx()
 {
-
+    // We need to manually delete the cfg, since only "we" know
+    // what type it is.
+    if (kiss_cfg) {
+        free(kiss_cfg);
+    }
 }
 
 cpx FFTDataCpx::get(int index) const
@@ -40,9 +44,10 @@ FFTDataReal::~FFTDataReal()
     // We need to manually delete the cfg, since only "we" know
     // what type it is.
     if (kiss_cfg) {
-        kiss_fftr_cfg theCfg = reinterpret_cast<kiss_fftr_cfg>(kiss_cfg);
+        free(kiss_cfg);
     }
 }
+
 float FFTDataReal::get(int index) const
 {
     assert(index < buffer.size());

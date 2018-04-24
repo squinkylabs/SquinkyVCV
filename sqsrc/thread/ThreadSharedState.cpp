@@ -1,19 +1,19 @@
 
 #include <assert.h>
-#include "NoiseSharedState.h"
+#include "ThreadSharedState.h"
 
-std::atomic<int> NoiseSharedState::_dbgCount;
+std::atomic<int> ThreadSharedState::_dbgCount;
 
 #include <iostream>
 #include <chrono>
 #include <thread>
 
-std::shared_ptr<NoiseMessage>  NoiseSharedState::waitForMessage()
+const ThreadMessage*  ThreadSharedState::waitForMessage()
 {
    // printf("wait\n"); fflush(stdout);
 
     std::unique_lock<std::mutex> guard(mailboxMutex);       // grab the mutex that protects condition
-    const NoiseMessage* returnMessage = nullptr;
+    const ThreadMessage* returnMessage = nullptr;
     while (!returnMessage) {
         returnMessage = mailbox.load();                     // don't wait on condition if we already have it.
         if (!returnMessage) {
@@ -22,11 +22,11 @@ std::shared_ptr<NoiseMessage>  NoiseSharedState::waitForMessage()
         }
     }
     // This simple method of cloning won't work for message with data
-    return std::make_shared<NoiseMessage>(returnMessage->type);
+    return returnMessage;
 }
 
 // signal in lock
-bool NoiseSharedState::trySendMessage(const NoiseMessage* msg)
+bool ThreadSharedState::trySendMessage(const ThreadMessage* msg)
 {
     //printf("snd\n"); fflush(stdout);
 
