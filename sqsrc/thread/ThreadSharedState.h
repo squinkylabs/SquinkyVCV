@@ -13,7 +13,10 @@
 class ThreadMessage
 {
 public:
-    enum class Type { EXIT };
+    enum class Type { EXIT,     // Request for Thread to quit
+                      TEST1,
+                      TEST2
+    };
     ThreadMessage(Type t) : type(t)
     {
         ++_dbgCount;
