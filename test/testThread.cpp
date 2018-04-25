@@ -27,6 +27,10 @@ static void test1()
 
 void testThread()
 {
+   assertEQ(ThreadSharedState::_dbgCount, 0);
+   assertEQ(ThreadMessage::_dbgCount, 0);
    test0();
    test1();
+   assertEQ(ThreadSharedState::_dbgCount, 0);
+   assertEQ(ThreadMessage::_dbgCount, 0);
 }

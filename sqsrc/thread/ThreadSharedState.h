@@ -16,13 +16,15 @@ public:
     enum class Type { EXIT };
     ThreadMessage(Type t) : type(t)
     {
+        ++_dbgCount;
     }
     virtual ~ThreadMessage()
     {
-
+        --_dbgCount;
     }
 
     const Type type;
+    static std::atomic<int> _dbgCount;
 };
 
 /**

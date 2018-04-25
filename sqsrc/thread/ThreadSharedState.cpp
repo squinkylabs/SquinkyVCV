@@ -3,6 +3,7 @@
 #include "ThreadSharedState.h"
 
 std::atomic<int> ThreadSharedState::_dbgCount;
+std::atomic<int> ThreadMessage::_dbgCount;
 
 #include <iostream>
 #include <chrono>
