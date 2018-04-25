@@ -141,9 +141,6 @@
     <ClCompile Include="..\..\dsp\fft\FFTData.cpp">
       <Filter>Source Files\dsp\fft</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\sqsrc\fft\FFT.cpp">
-      <Filter>Source Files\dsp\fft</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.c">
       <Filter>Source Files\dsp\third-party\kiss_fft</Filter>
     </ClCompile>
@@ -161,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="..\..\test\testThread.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\fft\FFT.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
