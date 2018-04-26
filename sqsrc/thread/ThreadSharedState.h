@@ -4,6 +4,24 @@
 #include <mutex>
 #include <condition_variable>
 
+/**
+ * Messaging protocol between client and server.
+ *
+ * This protocol has the following goals:
+ *      It is easy to implement.
+ *      It is easy to understand.
+ *      It is thread safe.
+ *      The client's thread will never block.
+ *
+ * Basics of the protocol:
+ *      Client initiates all communication.
+ *      For every message sent client -> server, the server will send once back.
+ *          The message objects are owned by whoever created them. Passing
+ *          a message does not transfer ownership.
+ *      Only one message may be "in play" at a time. Until the client
+ *          receives a reply from the server, it may not send another message. 
+ */
+
 
 /**
  * Base class for messages passed between client and server threads.
@@ -42,7 +60,8 @@ public:
     {
         ++_dbgCount;
         serverRunning.store(false);
-        mailbox.store(nullptr);
+        mailboxClient2Server.store(nullptr);
+        mailboxServer2Client.store(nullptr);
     }
     ~ThreadSharedState()
     {
@@ -64,13 +83,18 @@ public:
     const ThreadMessage* waitForMessage();
 private:
 
+    /**
+     * This mutex protects all the private state
+     */
+    std::mutex mailboxMutex;
+
     /** The message in the mailbox.
      * This is an object by whoever created it. Ownership of message
      * is not passed.
-     *
-     * Only the client writes to the mailbox. 
+     * TODO: given that a mutex protects us, we have no reason to use atomics here
      */
-    std::atomic<const ThreadMessage*> mailbox;
-    std::mutex mailboxMutex;
+    std::atomic<const ThreadMessage*> mailboxClient2Server;
+    std::atomic<const ThreadMessage*> mailboxServer2Client;
+  
     std::condition_variable mailboxCondition;
 };

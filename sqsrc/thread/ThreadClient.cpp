@@ -41,3 +41,14 @@ ThreadClient::~ThreadClient()
     }
    // printf("noise client dtor exiting\n"); fflush(stdout);
 }
+
+ThreadMessage * ThreadClient::getMessage()
+{
+    return nullptr;
+}
+
+
+bool ThreadClient::sendMessage(ThreadMessage * message)
+{
+    return sharedState->trySendMessage(message);
+}

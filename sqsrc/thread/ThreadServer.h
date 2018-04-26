@@ -16,6 +16,9 @@ public:
     const ThreadServer& operator= (const ThreadServer&) = delete;
     ThreadServer(const ThreadServer&) = delete;
 
+protected:
+    virtual void handleMessage(const ThreadMessage&);
+
 private:
     std::shared_ptr<ThreadSharedState> sharedState;
     std::unique_ptr<std::thread> thread;

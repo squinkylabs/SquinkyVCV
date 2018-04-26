@@ -13,13 +13,13 @@ const ThreadMessage*  ThreadSharedState::waitForMessage()
 {
    // printf("wait\n"); fflush(stdout);
 
-    std::unique_lock<std::mutex> guard(mailboxMutex);       // grab the mutex that protects condition
+    std::unique_lock<std::mutex> guard(mailboxMutex);           // grab the mutex that protects condition
     const ThreadMessage* returnMessage = nullptr;
     while (!returnMessage) {
-        returnMessage = mailbox.load();                     // don't wait on condition if we already have it.
+        returnMessage = mailboxClient2Server.load();            // don't wait on condition if we already have it.
         if (!returnMessage) {
-            mailboxCondition.wait(guard);                            // wait for client to send a message
-            returnMessage = mailbox.load();
+            mailboxCondition.wait(guard);                       // wait for client to send a message
+            returnMessage = mailboxClient2Server.load();
         }
     }
     // This simple method of cloning won't work for message with data
@@ -34,7 +34,7 @@ bool ThreadSharedState::trySendMessage(const ThreadMessage* msg)
     assert(serverRunning.load());
     // If the client tries to send a message before the previous one is read, the
     // call will fail and the client must try again.
-    if (mailbox.load()) {
+    if (mailboxClient2Server.load()) {
         return false;
     }
 
@@ -48,8 +48,8 @@ bool ThreadSharedState::trySendMessage(const ThreadMessage* msg)
     }
     assert(guard.owns_lock());
 
-    assert(!mailbox.load());               // if there is still a message there we are out of sync
-    mailbox.store(msg);
+    assert(!mailboxClient2Server.load());               // if there is still a message there we are out of sync
+    mailboxClient2Server.store(msg);
 
     mailboxCondition.notify_all();
     //printf("sx\n"); fflush(stdout);

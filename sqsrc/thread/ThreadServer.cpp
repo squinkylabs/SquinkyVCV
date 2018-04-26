@@ -44,7 +44,12 @@ bool ThreadServer::procMessage(const ThreadMessage& msg)
             exit = true;
             break;
         default:
-            assert(false);
+            handleMessage(msg);
     }
     return exit;
+}
+
+void ThreadServer::handleMessage(const ThreadMessage&)
+{
+    assert(false);          // derived must override.
 }

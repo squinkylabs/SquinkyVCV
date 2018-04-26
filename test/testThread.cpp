@@ -3,6 +3,8 @@
 #include "ThreadSharedState.h"
 #include "ThreadServer.h"
 #include "ThreadClient.h"
+
+#include <assert.h>
 #include <memory>
 
 
@@ -34,6 +36,7 @@ public:
     Test1Message() : ThreadMessage(Type::TEST1)
     {
     }
+    int payload = 0;
 };
 
 // client will send to server
@@ -51,17 +54,43 @@ public:
     TestServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state)
     {
     }
+    void handleMessage(const ThreadMessage& msg)
+    {
+        assert(false);
+    }
 };
 
 static void test2()
 {
     // Set up all the objects
-    Test1Message msg;
-    std::shared_ptr<ThreadSharedState> noise = std::make_shared<ThreadSharedState>();
-    std::unique_ptr<TestServer> server(new TestServer(noise));
-    std::unique_ptr<ThreadClient> client(new ThreadClient(noise, std::move(server)));
+    std::unique_ptr<Test1Message> msg(new Test1Message());
+    std::shared_ptr<ThreadSharedState> state = std::make_shared<ThreadSharedState>();
+    std::unique_ptr<TestServer> server(new TestServer(state));
+    std::unique_ptr<ThreadClient> client(new ThreadClient(state, std::move(server)));
 
     // now pump some message through.
+    msg->payload = 100;
+    
+    printf("will send\n");
+    // poll until can send, then send
+    for (bool done = false; !done; ) {
+        bool b = client->sendMessage(msg.get());
+        if (b) {
+            done = true;
+        }
+    }
+
+    printf("will wait ack\n");
+
+    for (bool done = false; !done; ) {
+        auto rxmsg = client->getMessage();
+        if (rxmsg) {
+            done = true;
+            assert(rxmsg->type == ThreadMessage::Type::TEST1);
+            Test1Message* tmsg = reinterpret_cast<Test1Message *>(rxmsg);
+            assert(tmsg->payload == 1100);
+        }
+    }
 }
 
 /*****************************************************************/
