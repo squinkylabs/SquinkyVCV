@@ -21,8 +21,7 @@ void init(rack::Plugin *p)
     assert(modelVocalModule);
     p->addModel(modelVocalModule);
     
-#ifdef _EXP
+
     assert(modelVocalFilterModule);
     p->addModel(modelVocalFilterModule);
-#endif
 }

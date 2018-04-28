@@ -266,11 +266,9 @@ inline void VocalAnimator<TBase>::step()
 
         filterFrequencyLog[i] = logFreq;
 
-        T normFreq = LookupTable<T>::lookup(*expLookup, logFreq) * reciprocalSampleRate;
-
-        if (normFreq > .2) {
-            normFreq = T(.2);
-        }
+        // tell lookup not to assert - we know we can go slightly out of range.
+        T normFreq = LookupTable<T>::lookup(*expLookup, logFreq, true) * reciprocalSampleRate;
+        normFreq = std::min(normFreq, T(.2));
 
         normalizedFilterFreq[i] = normFreq;
         filterParams[i].setFreq(normFreq);

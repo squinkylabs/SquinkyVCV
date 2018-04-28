@@ -131,9 +131,11 @@ inline void VocalFilter<TBase>::step()
         model = 1;
     } else if (switchVal < 2.5) {
         model = 2;
-    } else {
+    } else if (switchVal < 3.5) {
         model = 3;
-        assert(switchVal < 3.5);
+    } else {
+        model = 4;
+        assert(switchVal < 4.5);
     }
 
     const T fVowel = scaleCV_to_formant(
@@ -142,16 +144,28 @@ inline void VocalFilter<TBase>::step()
         TBase::params[FILTER_VOWEL_TRIM_PARAM].value);
 
 
-    int iVowel = int(fVowel);
+    int iVowel = (int) std::floor(fVowel);
 
     assert(iVowel >= 0);
     if (iVowel >= formantTables.numVowels) {
         printf("formant overflow %f\n", fVowel);
         iVowel = formantTables.numVowels - 1;
     }
+
+#if 1
+    for (int i = LED_A; i <= LED_U; ++i) {
+        if (i == iVowel) {
+            TBase::lights[i].value = ((i + 1) - fVowel) * 1;
+            TBase::lights[i+1].value = (fVowel - i) * 1;
+        } else if (i != (iVowel + 1)) {
+            TBase::lights[i].value = 0;
+        }
+    }
+#else
     for (int i = LED_A; i <= LED_U; ++i) {
         TBase::lights[i].value = (i == iVowel) ? T(10) : T(0);
     }
+#endif
 
     const T bwMultiplier = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,

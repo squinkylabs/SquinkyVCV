@@ -5,8 +5,6 @@
 #include "LookupTable.h"
 #include "ObjectCache.h"
 
-
-
 const double AudioMath::Pi = 3.1415926535897932384626433832795028841971;
 const double AudioMath::Pi_2 = 1.5707963267948966192313216916397514420986;
 const double AudioMath::Ln2 = 0.693147180559945309417;
@@ -45,7 +43,7 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
         const double y1 = gainAtQuarter;
         const double a = (y1 - y0) / (x1 - x0);
         const double b = y0 - a * x0;
-        linearFunc = [&linearFunc, a, b](double d) {
+        linearFunc = [a, b](double d) {
             return a * d + b;
         };
     }
@@ -63,8 +61,6 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
         return (d <= .25) ? linearFunc(d) : expFunc(d);
     };
 }
-
-
 
 AudioMath::ScaleFun<float> AudioMath::makeBipolarAudioScaler(float y0, float y1)
 {
@@ -85,7 +81,6 @@ AudioMath::ScaleFun<float> AudioMath::makeBipolarAudioScaler(float y0, float y1)
         return a * x + b;
     };
 }
-
 
  // declare some test variables here
 int _numLookupParams = 0;

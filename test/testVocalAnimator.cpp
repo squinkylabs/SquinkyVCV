@@ -344,7 +344,7 @@ static void testVocalExtremes()
     paramLimits[va.FILTER_FC_TRIM_PARAM] = fp(-1.0f, 1.0f);
     paramLimits[va.FILTER_VOWEL_PARAM] = fp(-5.f, 5.0f);
     paramLimits[va.FILTER_VOWEL_TRIM_PARAM] = fp(-1.f, 1.0f);
-    paramLimits[va.FILTER_MODEL_SELECT_PARAM] = fp(0.f, 3.0f);
+    paramLimits[va.FILTER_MODEL_SELECT_PARAM] = fp(0.f, 4.0f);
 
     paramLimits[va.FILTER_BRIGHTNESS_PARAM] = fp(-5.f, 5.0f);
     paramLimits[va.FILTER_BRIGHTNESS_TRIM_PARAM] = fp(-1.0f, 1.0f);

@@ -8,10 +8,10 @@
 #include "HilbertFilterDesigner.h"
 
 /**
- * Complete Frequency Shifter
+ * Complete Frequency Shifter composite
  *
- * if TBase is WidgetComposite, used as the implementation part of the Booty Shifter module.
- * If TBase is TestComposite build stand alone for unit tests,
+ * If TBase is WidgetComposite, this class is used as the implementation part of the Booty Shifter module.
+ * If TBase is TestComposite, this class may stand alone for unit tests.
  */
 template <class TBase>
 class FrequencyShifter : public TBase
@@ -30,11 +30,12 @@ public:
     }
 
     // must be called after setSampleRate
-    // TODO: can't we combine these?
     void init()
     {
         SinOscillator<T, true>::setFrequency(oscParams, T(.01));
-        exponential2 = ObjectCache<T>::getExp2();
+        exponential2 = ObjectCache<T>::getExp2();   // Get a shared copy of the 2**x lookup.
+                                                    // This will enable exp mode to track at
+                                                    // 1V/ octave.
     }
 
     // Define all the enums here. This will let the tests and the widget access them.
@@ -68,8 +69,8 @@ public:
      */
     void step();
 
-    typedef float T;
-    T freqRange = 5; // the freq range switch
+    typedef float T;        // use floats for all signals
+    T freqRange = 5;        // the freq range switch
 private:
     SinOscillatorParams<T> oscParams;
     SinOscillatorState<T> oscState;
@@ -78,7 +79,6 @@ private:
     BiquadState<T, 3> hilbertFilterStateSin;
     BiquadState<T, 3> hilbertFilterStateCos;
 
-    //Let's use 1v per octave.
     std::shared_ptr<LookupTableParams<T>> exponential2;
 
     float reciprocalSampleRate;
@@ -89,7 +89,7 @@ inline void FrequencyShifter<TBase>::step()
 {
     assert(exponential2->isValid());
 
-    // add the knob and the CV
+    // Add the knob and the CV value.
     T freqHz;
     T cvTotal = TBase::params[PITCH_PARAM].value + TBase::inputs[CV_INPUT].value;
     if (cvTotal > 5) {
