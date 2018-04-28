@@ -26,9 +26,7 @@ void ThreadServer::threadFunction()
 {
     sharedState->serverRunning = true;
     for (bool done = false; !done; ) {
-        printf("server about to block wait message\n");
         ThreadMessage* msg = sharedState->server_waitForMessage();
-        printf("server woke with message\n");
         assert(msg);
         done = procMessage(msg);
     }
@@ -40,7 +38,6 @@ void ThreadServer::threadFunction()
 
 bool ThreadServer::procMessage(ThreadMessage* msg)
 {
-    printf("server proc message\n");
     bool exit = false;
     switch (msg->type) {
         case ThreadMessage::Type::EXIT:

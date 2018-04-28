@@ -56,7 +56,6 @@ public:
     }
     void handleMessage(ThreadMessage* msg) override
     {
-        printf("derived Server Handle messag\n");
         switch (msg->type) {
             case ThreadMessage::Type::TEST1: 
             {
@@ -64,8 +63,6 @@ public:
                 assertEQ(tstMsg->payload, nextExpectedPayload);
                 ++nextExpectedPayload;
                 tstMsg->payload += 1000;
-
-                printf("derived server sending ack back\n");
                 sendMessageToClient(tstMsg);        // send back the modified one
             }
                 break;
@@ -84,25 +81,16 @@ static void test2()
     std::unique_ptr<TestServer> server(new TestServer(state));
     std::unique_ptr<ThreadClient> client(new ThreadClient(state, std::move(server)));
 
-    // now pump some message through.
-  
-    
- //   printf("will send %d\n", msg->payload);
-    // poll until can send, then send
-
-
-    for (int count = 0; count < 5; ++count) {
+    for (int count = 0; count < 50; ++count) {
         msg->payload = 100+count;
         const int expectedPayload = msg->payload + 1000;
-        printf("test loop iter: %d\n", count);
+       // printf("test loop iter: %d\n", count);
         for (bool done = false; !done; ) {
             bool b = client->sendMessage(msg.get());
             if (b) {
                 done = true;
             }
         }
-        printf("test send %d\n", msg->payload);
-        printf("test will wait ack\n");
 
         for (bool done = false; !done; ) {
             auto rxmsg = client->getMessage();
@@ -110,12 +98,12 @@ static void test2()
                 done = true;
                 assert(rxmsg->type == ThreadMessage::Type::TEST1);
                 Test1Message* tmsg = reinterpret_cast<Test1Message *>(rxmsg);
-                printf("test client reading from server %d\n", tmsg->payload);
+                //printf("test client reading from server %d\n", tmsg->payload);
                 assertEQ(tmsg->payload, expectedPayload);
             }
         }
     }
-    printf("test leaving");
+   // printf("test leaving");
 }
 
 /*****************************************************************/

@@ -75,14 +75,9 @@ bool ThreadSharedState::client_trySendMessage(ThreadMessage* msg)
 
 void ThreadSharedState::server_sendMessage(ThreadMessage* msg)
 {
-    printf("in server send message\n");
-    // (is mutex already locked? we will find out I guess!
     std::unique_lock<std::mutex> guard(mailboxMutex);
     assert(mailboxServer2Client.load() == nullptr);
-    mailboxServer2Client.store(msg);
-    printf("server just sent message\n");
-
-   
+    mailboxServer2Client.store(msg);  
 }
 
 
