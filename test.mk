@@ -3,11 +3,17 @@ TEST_SOURCES = $(wildcard test/*.cpp)
 TEST_SOURCES += $(wildcard dsp/**/*.cpp)
 TEST_SOURCES += $(wildcard dsp/third-party/falco/*.cpp)
 TEST_SOURCES += $(wildcard sqsrc/**/*.cpp)
+TEST_SOURCES += dsp/third-party/kiss_fft130/tools/kiss_fftr.c
+TEST_SOURCES += dsp/third-party/kiss_fft130/kiss_fft.c
 
 ## This is a list of full paths to the .o files we want to build
 TEST_OBJECTS = $(patsubst %, build_test/%.o, $(TEST_SOURCES))
 
 build_test/%.cpp.o: %.cpp
+	mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+build_test/%.c.o: %.c
 	mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 

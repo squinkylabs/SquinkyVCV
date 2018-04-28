@@ -6,7 +6,8 @@ VERSION = 0.6.2
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
-FLAGS += -I./dsp/third-party/falco
+FLAGS += -I./dsp/third-party/falco -I./dsp/third-party/kiss_fft130  -I./dsp/third-party/kiss_fft130/tools
+FLAGS += -I./sqsrc/thread -I./dsp/fft
 FLAGS += -I./composites -I./sqsrc/noise
 CFLAGS +=
 CXXFLAGS +=
@@ -32,8 +33,9 @@ LDFLAGS +=
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard dsp/**/*.cpp)
 SOURCES += $(wildcard dsp/third-party/falco/*.cpp)
+SOURCES += dsp/third-party/kiss_fft130/kiss_fft.c
+SOURCES += dsp/third-party/kiss_fft130/tools/kiss_fftr.c
 SOURCES += $(wildcard sqsrc/**/*.cpp)
-SOURCES += $(wildcard sqsrc/noise/*.cpp)
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin is automatically added.
