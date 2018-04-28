@@ -54,10 +54,26 @@ public:
     TestServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state)
     {
     }
-    void handleMessage(const ThreadMessage& msg)
+    void handleMessage(ThreadMessage* msg) override
     {
-        assert(false);
+        printf("derived Server Handle messag\n");
+        switch (msg->type) {
+            case ThreadMessage::Type::TEST1: 
+            {
+                Test1Message * tstMsg = static_cast<Test1Message *>(msg);
+                assertEQ(tstMsg->payload, nextExpectedPayload);
+                ++nextExpectedPayload;
+                tstMsg->payload += 1000;
+
+                printf("derived server sending ack back\n");
+                sendMessageToClient(tstMsg);        // send back the modified one
+            }
+                break;
+            default:
+                assert(false);
+        }
     }
+    int nextExpectedPayload = 100;
 };
 
 static void test2()
@@ -69,28 +85,37 @@ static void test2()
     std::unique_ptr<ThreadClient> client(new ThreadClient(state, std::move(server)));
 
     // now pump some message through.
-    msg->payload = 100;
+  
     
-    printf("will send\n");
+ //   printf("will send %d\n", msg->payload);
     // poll until can send, then send
-    for (bool done = false; !done; ) {
-        bool b = client->sendMessage(msg.get());
-        if (b) {
-            done = true;
+
+
+    for (int count = 0; count < 5; ++count) {
+        msg->payload = 100+count;
+        const int expectedPayload = msg->payload + 1000;
+        printf("test loop iter: %d\n", count);
+        for (bool done = false; !done; ) {
+            bool b = client->sendMessage(msg.get());
+            if (b) {
+                done = true;
+            }
+        }
+        printf("test send %d\n", msg->payload);
+        printf("test will wait ack\n");
+
+        for (bool done = false; !done; ) {
+            auto rxmsg = client->getMessage();
+            if (rxmsg) {
+                done = true;
+                assert(rxmsg->type == ThreadMessage::Type::TEST1);
+                Test1Message* tmsg = reinterpret_cast<Test1Message *>(rxmsg);
+                printf("test client reading from server %d\n", tmsg->payload);
+                assertEQ(tmsg->payload, expectedPayload);
+            }
         }
     }
-
-    printf("will wait ack\n");
-
-    for (bool done = false; !done; ) {
-        auto rxmsg = client->getMessage();
-        if (rxmsg) {
-            done = true;
-            assert(rxmsg->type == ThreadMessage::Type::TEST1);
-            Test1Message* tmsg = reinterpret_cast<Test1Message *>(rxmsg);
-            assert(tmsg->payload == 1100);
-        }
-    }
+    printf("test leaving");
 }
 
 /*****************************************************************/
@@ -99,8 +124,8 @@ void testThread()
 {
    assertEQ(ThreadSharedState::_dbgCount, 0);
    assertEQ(ThreadMessage::_dbgCount, 0);
-   test0();
-   test1();
+  // test0();
+  // test1();
    test2();
    assertEQ(ThreadSharedState::_dbgCount, 0);
    assertEQ(ThreadMessage::_dbgCount, 0);

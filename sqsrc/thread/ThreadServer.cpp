@@ -26,9 +26,11 @@ void ThreadServer::threadFunction()
 {
     sharedState->serverRunning = true;
     for (bool done = false; !done; ) {
-        auto msg = sharedState->waitForMessage();
+        printf("server about to block wait message\n");
+        ThreadMessage* msg = sharedState->server_waitForMessage();
+        printf("server woke with message\n");
         assert(msg);
-        done = procMessage(*msg);
+        done = procMessage(msg);
     }
 
     //printf("noiseserer shut down\n"); fflush(stdout);
@@ -36,10 +38,11 @@ void ThreadServer::threadFunction()
     sharedState->serverRunning = false;
 }
 
-bool ThreadServer::procMessage(const ThreadMessage& msg)
+bool ThreadServer::procMessage(ThreadMessage* msg)
 {
+    printf("server proc message\n");
     bool exit = false;
-    switch (msg.type) {
+    switch (msg->type) {
         case ThreadMessage::Type::EXIT:
             exit = true;
             break;
@@ -49,7 +52,12 @@ bool ThreadServer::procMessage(const ThreadMessage& msg)
     return exit;
 }
 
-void ThreadServer::handleMessage(const ThreadMessage&)
+void ThreadServer::handleMessage(ThreadMessage* )
 {
     assert(false);          // derived must override.
+}
+
+void ThreadServer::sendMessageToClient(ThreadMessage* msg)
+{
+    sharedState->server_sendMessage(msg);
 }

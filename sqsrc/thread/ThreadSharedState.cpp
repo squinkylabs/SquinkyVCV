@@ -9,12 +9,12 @@ std::atomic<int> ThreadMessage::_dbgCount;
 #include <chrono>
 #include <thread>
 
-const ThreadMessage*  ThreadSharedState::waitForMessage()
+ThreadMessage*  ThreadSharedState::server_waitForMessage()
 {
    // printf("wait\n"); fflush(stdout);
 
     std::unique_lock<std::mutex> guard(mailboxMutex);           // grab the mutex that protects condition
-    const ThreadMessage* returnMessage = nullptr;
+    ThreadMessage* returnMessage = nullptr;
     while (!returnMessage) {
         returnMessage = mailboxClient2Server.load();            // don't wait on condition if we already have it.
         if (!returnMessage) {
@@ -22,12 +22,29 @@ const ThreadMessage*  ThreadSharedState::waitForMessage()
             returnMessage = mailboxClient2Server.load();
         }
     }
-    // This simple method of cloning won't work for message with data
+    mailboxClient2Server.store(nullptr);                    // remove the message from the mailbox
+                                                            // (should we lock here?) (no, we will have lock)
+
+
     return returnMessage;
 }
 
+ThreadMessage* ThreadSharedState::client_pollMessage()
+{
+    ThreadMessage* msg = nullptr;
+
+    // grab lock
+    std::unique_lock<std::mutex> guard(mailboxMutex);
+    msg = mailboxServer2Client.load();
+    if (msg) {
+        mailboxServer2Client.store(nullptr);
+    }
+   // printf("client poss message ret %p\n", msg);
+    return msg;
+}
+
 // signal in lock
-bool ThreadSharedState::trySendMessage(const ThreadMessage* msg)
+bool ThreadSharedState::client_trySendMessage(ThreadMessage* msg)
 {
     //printf("snd\n"); fflush(stdout);
 
@@ -54,6 +71,18 @@ bool ThreadSharedState::trySendMessage(const ThreadMessage* msg)
     mailboxCondition.notify_all();
     //printf("sx\n"); fflush(stdout);
     return true;
+}
+
+void ThreadSharedState::server_sendMessage(ThreadMessage* msg)
+{
+    printf("in server send message\n");
+    // (is mutex already locked? we will find out I guess!
+    std::unique_lock<std::mutex> guard(mailboxMutex);
+    assert(mailboxServer2Client.load() == nullptr);
+    mailboxServer2Client.store(msg);
+    printf("server just sent message\n");
+
+   
 }
 
 

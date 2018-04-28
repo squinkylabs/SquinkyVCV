@@ -71,16 +71,22 @@ public:
     static std::atomic<int> _dbgCount;
 
     /**
-     * if return false, message not sent.
+     * If return false, message not sent.
      * otherwise message send, and msg may be reused.
      */
-    bool trySendMessage(const ThreadMessage* msg);
+    bool client_trySendMessage(ThreadMessage* msg);
+
+    ThreadMessage* client_pollMessage();
+
+    void server_sendMessage(ThreadMessage* msg);
 
     /**
      * returned message is a pointer to a message that we "own"
-     * temporarily (sender wont modify it
+     * temporarily (sender may modify it, but won't delete it).
      */
-    const ThreadMessage* waitForMessage();
+    ThreadMessage* server_waitForMessage();
+
+   
 private:
 
     /**
@@ -93,8 +99,8 @@ private:
      * is not passed.
      * TODO: given that a mutex protects us, we have no reason to use atomics here
      */
-    std::atomic<const ThreadMessage*> mailboxClient2Server;
-    std::atomic<const ThreadMessage*> mailboxServer2Client;
+    std::atomic<ThreadMessage*> mailboxClient2Server;
+    std::atomic<ThreadMessage*> mailboxServer2Client;
   
     std::condition_variable mailboxCondition;
 };

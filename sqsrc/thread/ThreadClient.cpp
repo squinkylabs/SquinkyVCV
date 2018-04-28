@@ -25,7 +25,7 @@ ThreadClient::~ThreadClient()
     std::unique_ptr<ThreadMessage> msg(new ThreadMessage(ThreadMessage::Type::EXIT));
 
     for (bool busy = true; busy; ) {
-        if (sharedState->trySendMessage(msg.get())) {
+        if (sharedState->client_trySendMessage(msg.get())) {
             busy = false;
         }
     }
@@ -44,11 +44,13 @@ ThreadClient::~ThreadClient()
 
 ThreadMessage * ThreadClient::getMessage()
 {
-    return nullptr;
+    //return nullptr;
+
+    return sharedState->client_pollMessage();
 }
 
 
 bool ThreadClient::sendMessage(ThreadMessage * message)
 {
-    return sharedState->trySendMessage(message);
+    return sharedState->client_trySendMessage(message);
 }
