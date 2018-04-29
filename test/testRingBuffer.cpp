@@ -153,10 +153,25 @@ public:
 
 static void testMP_mem()
 {
+    assertEQ(count, 0);
     {
         assertEQ(count, 0);
         ManagedPool<SimpleObj, 4> mp;
         assertEQ(count, 4);
+    }
+    assertEQ(count, 0);
+}
+
+
+static void testMP_mem2()
+{
+    assertEQ(count, 0);
+    {
+        assertEQ(count, 0);
+        ManagedPool<SimpleObj, 4> mp;
+        assertEQ(count, 4);
+        mp.pop();
+        mp.pop();           // make sure the ones we remove still get destroyed
     }
     assertEQ(count, 0);
 }
@@ -166,4 +181,5 @@ void testManagedPool()
     testMP0();
     testMP_access();
     testMP_mem();
+    testMP_mem2();
 }

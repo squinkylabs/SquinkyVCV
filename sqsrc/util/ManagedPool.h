@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+#include <memory>
 
 /**
  * A very specialized container. Made for holding one free 
@@ -11,7 +13,10 @@
  * Destructor will delete all the objects, even if they are not in the pool
  * at the time.
  *
- * Note that unlike RingBuffer, ManagePool manages T*, not T
+ * Note that unlike RingBuffer, ManagePool manages T*, not T.
+ *
+ * All public functions are no-blocking, so may be called from the audio thread 
+ * without danger. Of course the constructor and destructor are exceptions - they may block.
  */
 template <typename T, int SIZE>
 class ManagedPool
@@ -27,16 +32,24 @@ public:
     bool full() const;
     bool empty() const;
 private:
-
+    /**
+     * this ring buffer is where the raw T* are kept.
+     * client pops and pushes here
+     */
     RingBuffer<T*, SIZE> ringBuffer;
-
+    std::vector< std::unique_ptr<T>> lifetimeManager;
 };
 
 template <typename T, int SIZE>
 inline ManagedPool<T, SIZE>::ManagedPool()
 {
+    // Manufacture the items here
     for (int i = 0; i < SIZE; ++i) {
-        ringBuffer.push(new T());
+        T * item = new T();
+        ringBuffer.push(item);          // put the raw pointer in ring buffer for client to use.
+
+        // Also add managed pointers to delete the objects on destroy.
+        lifetimeManager.push_back(std::unique_ptr<T>(item));
     }
 }
 

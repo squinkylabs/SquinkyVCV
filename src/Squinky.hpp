@@ -5,5 +5,6 @@ extern Plugin *plugin;
 extern Model *modelBootyModule;
 extern Model *modelVocalModule;
 extern Model *modelVocalFilterModule;
+extern Model *modelColoredNoiseModule;
 
 
