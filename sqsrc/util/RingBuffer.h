@@ -1,10 +1,3 @@
-/* 
- * File:   DelayLine.h
- * Author: bruce
- *
- * Created on March 21, 2015, 11:35 AM
- */
-
 #pragma once
 #include <assert.h>
 
@@ -36,13 +29,10 @@ private:
     int inIndex = 0;
 	int outIndex = 0;
 
-	// move up 'p' (the delay index), wrap around if we hit the end
-	// (this is the core of the circular ring buffer
-	void advance(int &p)
-	{
-		if (++p >= SIZE) p =0;
-	}
-
+	/** Move up 'p' (a buffer index), wrap around if we hit the end
+	 * (this is the core of the circular ring buffer).
+     */
+    void advance(int &p);
 };
 
 template <typename T, int SIZE>
@@ -76,16 +66,12 @@ inline bool RingBuffer<T, SIZE>::empty() const
 {
     return (inIndex == outIndex) && !couldBeFull;
 }
-/**
-T pop();
-bool full() const
+
+template <typename T, int SIZE>
+inline void RingBuffer<T, SIZE>::advance(int &p)
 {
-    return (inIndex == outIndex) && couldBeFull;
+    if (++p >= SIZE) p = 0;
 }
-bool empty() const
-{
-    return (inIndex == outIndex) && !couldBeFull;
-}
-*/
+
 
 

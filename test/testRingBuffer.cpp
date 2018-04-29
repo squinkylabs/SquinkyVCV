@@ -26,82 +26,90 @@ static void testSimpleAccess()
 
     assert(rb.empty());
     assert(!rb.full());
-
 }
 
-
-#if 0
-// is the intial output correct
-static void dt2()
+static void testMultiAccess()
 {
-	DelayLine<int, 4> dl(1);
-	assertEQ (dl.get(), 0);
+    RingBuffer<int, 4> rb;
+    rb.push(1234);
+    rb.push(5678);
+    assert(!rb.empty());
+    assert(!rb.full());
+
+    int x = rb.pop();
+    assertEQ(x, 1234);
+
+    assert(!rb.empty());
+    assert(!rb.full());
+
+    x = rb.pop();
+    assertEQ(x, 5678);
+
+    assert(rb.empty());
+    assert(!rb.full());
 }
 
-
-// is the intial output correct (non default)
-static void dt3()
+static void testWrap()
 {
-	DelayLine<int, 4> dl(1, 123);
-	assert (dl.get() == 123);
+    RingBuffer<int, 4> rb;
+    rb.push(1234);
+    rb.push(5678);
+    rb.pop();
+    rb.pop();
+    rb.push(1);
+    rb.push(2);
+    rb.push(3);
+
+    assertEQ(rb.pop(), 1);
+    assertEQ(rb.pop(), 2);
+    assertEQ(rb.pop(), 3);
+   
+    assert(rb.empty());
 }
 
-
-//clock it and check results
-static void dt4()
+static void testFull()
 {
+    RingBuffer<int, 4> rb;
+    rb.push(1234);
+    rb.push(5678);
+    rb.pop();
+    rb.pop();
+    rb.push(1);
+    rb.push(2);
+    rb.push(3);
+    rb.push(4);
+    assert(rb.full());
+    assert(!rb.empty());
 
-	printf("starting dt4\n");
-	DelayLine<int, 4> dl(1);
-	assert (dl.get() == 0);
+    assertEQ(rb.pop(), 1);
+    assertEQ(rb.pop(), 2);
+    assertEQ(rb.pop(), 3);
+    assertEQ(rb.pop(), 4);
 
-	
-	dl.clock(100);
-	assert (dl.get() == 0);
-
-	dl.clock(200);
-	assert (dl.get() == 100);
+    assert(rb.empty());
+    assert(!rb.full());
 }
 
-
-//clock all the way around 2 delay
-static void dt5()
+static void testOne()
 {
+    char * p = "foo";
+    RingBuffer<const char*, 1> rb;
+    rb.push(p);
+    assert(!rb.empty());
+    assert(rb.full());
 
-	printf("starting dt4\n");
-	DelayLine<int, 4> dl(2);
-	assert (dl.get() == 0);
-
-	dl.clock(100); 
-	assert (dl.get() == 0);
-
-	dl.clock(200);
-	assert (dl.get() == 0);
-
-	dl.clock(300);
-	assert (dl.get() == 100);
-
-	
-	dl.clock(400);
-	assert (dl.get() == 200);
-
-	
-	dl.clock(500);
-	assert (dl.get() == 300);
-
-	
-	dl.clock(600);
-	assert (dl.get() == 400);
-
+    assertEQ(rb.pop(), p);
+    assert(rb.empty());
+    assert(!rb.full());
 }
-#endif
-
-
-
 
 
 void testRingBuffer()
 {
 	testConstruct();
     testSimpleAccess();
+    testMultiAccess();
+    testWrap();
+    testFull();
+    testOne();
 }
