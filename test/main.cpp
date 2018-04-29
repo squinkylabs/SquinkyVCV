@@ -20,6 +20,7 @@ extern void testVocalAnimator();
 extern void testObjectCache();
 extern void testThread();
 extern void testFFT();
+extern void testRingBuffer();
 
 int main(int argc, char ** argv)
 {
@@ -42,6 +43,7 @@ int main(int argc, char ** argv)
     assert(sizeof(size_t) == 8);
 
     testAudioMath();
+    testRingBuffer();
     testLookupTable();
     testObjectCache();
 

@@ -76,6 +76,9 @@
     <Filter Include="Source Files\sqsrc\thread">
       <UniqueIdentifier>{98bc8bb8-3835-46b9-be11-d534f001cac5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\sqsrc\util">
+      <UniqueIdentifier>{d88fef08-3b09-4979-98d0-41863e55201d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -161,6 +164,9 @@
     </ClCompile>
     <ClCompile Include="..\..\dsp\fft\FFT.cpp">
       <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testRingBuffer.cpp">
+      <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -262,6 +268,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h">
       <Filter>Header Files\sqsrc\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\RingBuffer.h">
+      <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

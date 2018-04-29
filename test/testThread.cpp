@@ -112,8 +112,8 @@ void testThread()
 {
    assertEQ(ThreadSharedState::_dbgCount, 0);
    assertEQ(ThreadMessage::_dbgCount, 0);
-  // test0();
-  // test1();
+   test0();
+   test1();
    test2();
    assertEQ(ThreadSharedState::_dbgCount, 0);
    assertEQ(ThreadMessage::_dbgCount, 0);
