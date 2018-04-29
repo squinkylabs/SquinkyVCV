@@ -20,7 +20,12 @@ public:
     FFTDataCpx(int numBins);
     ~FFTDataCpx();
     cpx get(int bin) const;
-    void set(int bit, cpx value);
+    void set(int bin, cpx value);
+
+    size_t size() const
+    {
+        return buffer.size();
+    }
 private:
     std::vector<cpx> buffer;
 

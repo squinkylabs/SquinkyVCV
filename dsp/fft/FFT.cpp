@@ -6,6 +6,8 @@
 #include "kiss_fft.h"
 #include "kiss_fftr.h"
 
+#include "AudioMath.h"
+
 
 bool FFT::forward(FFTDataCpx* out, const FFTDataReal& in)
 {
@@ -78,4 +80,20 @@ bool FFT::inverse(FFTDataReal* out, const FFTDataCpx& in)
 
     kiss_fftri(theCfg, inBuffer, out->buffer.data());
     return true;
+}
+
+
+FFTDataCpx* FFT::makeNoiseFormula(float slope, float highFreqCorner, int frameSize)
+{
+    FFTDataCpx* data = new FFTDataCpx(frameSize);
+    for (int i = 0; i < frameSize; ++i) {
+        float mag = 1;
+        float phase = (float) rand(); 
+        phase = phase / (float) RAND_MAX;   // 0..1
+        phase = (float)(phase * (2*AudioMath::Pi));
+
+        cpx x = std::polar(mag, phase);
+        data->set(i, x);
+    }
+    return data;
 }
