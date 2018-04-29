@@ -5,7 +5,8 @@
 #include "FFT.h"
 
 
-static void test0()
+
+static void testAccessors()
 {
     FFTDataReal d0(16);
 
@@ -19,7 +20,7 @@ static void test0()
     assertEQ(dc.get(5), x);
 }
 
-static void test1()
+static void testFFTErrors()
 {
     FFTDataReal real(16);
     FFTDataCpx cpx(15);
@@ -27,7 +28,7 @@ static void test1()
     assert(!b);          // should error if size mismatch
 }
 
-static void test2()
+static void testForwardFFT_DC()
 {
     FFTDataReal real(16);
     FFTDataCpx complex(16);
@@ -40,12 +41,10 @@ static void test2()
     assert(b);
 
     for (int i = 0; i < 16; ++i) {
-       cpx v = complex.get(i);
-       float magSq = v.imag() *v.imag() + v.real() * v.real();
-       magSq = std::abs(v);
-        float expect = (i == 0) ? 16.f : 0.f;
-        assertEQ(magSq, expect);
-        //real.set(i, 1.0);
+        cpx v = complex.get(i);
+        float mag = std::abs(v);
+        float expect = (i == 0) ? 1.f : 0.f;
+        assertEQ(mag, expect);
     }
 }
 
@@ -54,9 +53,10 @@ static void test3()
     FFTDataReal real(16);
     FFTDataCpx complex(16);
 
-    // set real for fundamental sin
+    // set real for fundamental sin.
+    // make peak 2.0 so fft will come out to one
     for (int i = 0; i < 16; ++i) {
-        auto x = sin(AudioMath::Pi * 2.0 * i / 16.0);
+        auto x = 2.0 *sin(AudioMath::Pi * 2.0 * i / 16.0);
         real.set(i, float(x));
     }
     const bool b = FFT::forward(&complex, real);
@@ -64,11 +64,9 @@ static void test3()
 
     for (int i = 0; i < 16; ++i) {
         cpx v = complex.get(i);
-        float magSq = v.imag() *v.imag() + v.real() * v.real();
-        magSq = std::abs(v);
-        float expect = (i == 1) ? 8.f : 0.f;
-        assertClose(magSq, expect, .0001);
-        //real.set(i, 1.0);
+        float mag = std::abs(v);
+        float expect = (i == 1) ? 1.f : 0.f;
+        assertClose(mag, expect, .0001);;
     }
 }
 
@@ -90,17 +88,16 @@ static void test4()
 
     for (int i = 0; i < 16; ++i) {
       
-        float expect = 16.f; // scaled DC (TODO: fix scaling) 
+        float expect = 1.f; // scaled DC (TODO: fix scaling) 
         assertEQ(realOut.get(i) , expect);
-        //real.set(i, 1.0);
     }
 }
 
 void testFFT()
 {
-    test0();
-    test1();
-    test2();
+    testAccessors();
+    testFFTErrors();
+    testForwardFFT_DC();
     test3();
     test4();
 
