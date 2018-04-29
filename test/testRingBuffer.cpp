@@ -113,3 +113,57 @@ void testRingBuffer()
     testFull();
     testOne();
 }
+
+/***********************************************************************************************/
+#include "ManagedPool.h"
+
+static void testMP0()
+{
+    ManagedPool<int, 4> mp;
+    assert(mp.full());
+    assert(!mp.empty());
+}
+
+static void testMP_access()
+{
+    ManagedPool<int, 1> mp;
+    
+    int* p = mp.pop();
+    *p = 77;
+    mp.push(p);
+    assert(mp.full());
+
+    p = mp.pop();
+    assertEQ(*p, 77);
+}
+
+static int count = 0;
+class SimpleObj
+{
+public:
+    SimpleObj()
+    {
+        ++count;
+    }
+    ~SimpleObj()
+    {
+        --count;
+    }
+};
+
+static void testMP_mem()
+{
+    {
+        assertEQ(count, 0);
+        ManagedPool<SimpleObj, 4> mp;
+        assertEQ(count, 4);
+    }
+    assertEQ(count, 0);
+}
+
+void testManagedPool()
+{
+    testMP0();
+    testMP_access();
+    testMP_mem();
+}

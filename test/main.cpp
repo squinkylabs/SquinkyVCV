@@ -21,6 +21,7 @@ extern void testObjectCache();
 extern void testThread();
 extern void testFFT();
 extern void testRingBuffer();
+extern void testManagedPool();
 
 int main(int argc, char ** argv)
 {
@@ -44,6 +45,7 @@ int main(int argc, char ** argv)
 
     testAudioMath();
     testRingBuffer();
+    testManagedPool();
     testLookupTable();
     testObjectCache();
 

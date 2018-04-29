@@ -272,5 +272,8 @@
     <ClInclude Include="..\..\sqsrc\util\RingBuffer.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\ManagedPool.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

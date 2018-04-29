@@ -4,7 +4,10 @@
 /**
  * A simple ring buffer.
  * Template arguments are for numeric type stored, and for size.
- * Not thread safe
+ * Not thread safe.
+ * Guaranteed to be non-blocking. Adding or removing items will never
+ * allocate or free memory.
+ * Objects in RingBuffer are not owned by RingBuffer - they will not be destroyed.
  */
 template <typename T, int SIZE>
 class RingBuffer
