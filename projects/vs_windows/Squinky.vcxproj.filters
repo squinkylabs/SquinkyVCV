@@ -168,6 +168,9 @@
     <ClCompile Include="..\..\test\testRingBuffer.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testColoredNoise.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -274,6 +277,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\ManagedPool.h">
       <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\ColoredNoise.h">
+      <Filter>Header Files\composites</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

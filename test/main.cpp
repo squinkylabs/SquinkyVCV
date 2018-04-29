@@ -22,6 +22,7 @@ extern void testThread();
 extern void testFFT();
 extern void testRingBuffer();
 extern void testManagedPool();
+extern void testColoredNoise();
 
 int main(int argc, char ** argv)
 {
@@ -62,6 +63,7 @@ int main(int argc, char ** argv)
 
 
     // after testing all the components, test composites.
+    testColoredNoise();
     testFrequencyShifter();
     testVocalAnimator();
 
