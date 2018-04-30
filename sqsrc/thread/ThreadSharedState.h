@@ -33,7 +33,8 @@ class ThreadMessage
 public:
     enum class Type { EXIT,     // Request for Thread to quit
                       TEST1,
-                      TEST2
+                      TEST2,
+                      NOISE     // used by ColoredNoise
     };
     ThreadMessage(Type t) : type(t)
     {

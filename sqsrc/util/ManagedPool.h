@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 
+#include "RingBuffer.h"
+
 /**
  * A very specialized container. Made for holding one free 
  * work buffers, and making sure they are destroyed.
