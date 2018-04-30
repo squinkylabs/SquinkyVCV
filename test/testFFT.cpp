@@ -100,9 +100,9 @@ static void testRoundTrip()
 static void testNoiseFormula()
 {
     const int bins = 1024 * 64;
-    std::unique_ptr<FFTDataCpx> data(FFT::makeNoiseFormula(0, 0, bins));
-    assert(data);
+    std::unique_ptr<FFTDataCpx> data(new FFTDataCpx(bins));
     assertEQ(data->size(), bins);
+    FFT::makeNoiseFormula(data.get(), 0, 0, 44100);
 
     std::set<float> phases;
 

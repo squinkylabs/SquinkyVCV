@@ -83,9 +83,10 @@ bool FFT::inverse(FFTDataReal* out, const FFTDataCpx& in)
 }
 
 
-FFTDataCpx* FFT::makeNoiseFormula(float slope, float highFreqCorner, int frameSize)
+//FFTDataCpx* FFT::makeNoiseFormula(float slope, float highFreqCorner, int frameSize)
+void FFT::makeNoiseFormula(FFTDataCpx* output, float slope, float highFreqCorner, float sampleRate)
 {
-    FFTDataCpx* data = new FFTDataCpx(frameSize);
+    const int frameSize = (int) output->size();
     for (int i = 0; i < frameSize; ++i) {
         float mag = 1;
         float phase = (float) rand(); 
@@ -93,7 +94,6 @@ FFTDataCpx* FFT::makeNoiseFormula(float slope, float highFreqCorner, int frameSi
         phase = (float)(phase * (2*AudioMath::Pi));
 
         cpx x = std::polar(mag, phase);
-        data->set(i, x);
+        output->set(i, x);
     }
-    return data;
 }

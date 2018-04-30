@@ -21,7 +21,7 @@ ThreadClient::ThreadClient(std::shared_ptr<ThreadSharedState> state,
 
 ThreadClient::~ThreadClient()
 {
-    //printf("noise client dtor\n"); fflush(stdout);
+    printf("noise client dtor\n"); fflush(stdout);
     std::unique_ptr<ThreadMessage> msg(new ThreadMessage(ThreadMessage::Type::EXIT));
 
     for (bool busy = true; busy; ) {
@@ -29,17 +29,17 @@ ThreadClient::~ThreadClient()
             busy = false;
         }
     }
-    //printf("noise client dtor2\n"); fflush(stdout);
-    //const bool running = sharedState->serverRunning;
-    //printf("noise client dtor will wait server running=%d\n", running ); fflush(stdout);
+    printf("noise client dtor2\n"); fflush(stdout);
+    const bool running = sharedState->serverRunning;
+    printf("noise client dtor will wait server running=%d\n", running ); fflush(stdout);
     while (sharedState->serverRunning) {
         static bool did = false;
         if (!did) {
-            //printf("noise client dtor waiting\n"); fflush(stdout);
+            printf("noise client dtor waiting\n"); fflush(stdout);
             did = true;
         }
     }
-   // printf("noise client dtor exiting\n"); fflush(stdout);
+    printf("noise client dtor exiting\n"); fflush(stdout);
 }
 
 ThreadMessage * ThreadClient::getMessage()
