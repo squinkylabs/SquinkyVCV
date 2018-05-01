@@ -42,6 +42,7 @@ public:
     // Define all the enums here. This will let the tests and the widget access them.
     enum ParamIds
     {
+        SLOPE_PARAM,
         NUM_PARAMS
     };
 
@@ -52,6 +53,7 @@ public:
 
     enum OutputIds
     {
+        AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -146,7 +148,7 @@ private:
     // may delete the old buffer and make a new one.
     void reallocRecipe(const NoiseMessage* msg)
     {
-        if (noiseRecipe && (noiseRecipe->size() == msg->numBins)) {
+        if (noiseRecipe && ((int)noiseRecipe->size() == msg->numBins)) {
             return;
         }
 

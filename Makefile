@@ -8,7 +8,7 @@ VERSION = 0.6.3
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco -I./dsp/third-party/kiss_fft130  -I./dsp/third-party/kiss_fft130/tools
 FLAGS += -I./sqsrc/thread -I./dsp/fft
-FLAGS += -I./composites -I./sqsrc/noise
+FLAGS += -I./composites -I./sqsrc/noise -I./sqsrc/util
 CFLAGS +=
 CXXFLAGS +=
 

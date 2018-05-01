@@ -78,6 +78,17 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
     label->text = "Noise";
     label->color = COLOR_BLACK;
     addChild(label);
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(20, 200),
+        Port::OUTPUT,
+        module,
+        module->noiseSource.AUDIO_OUTPUT));
+
+    addParam(ParamWidget::create<Davies1900hBlackKnob>(
+        Vec(28, 100), module, module->noiseSource.SLOPE_PARAM, -8.0, 8.0, 0.0));
+
+
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable
