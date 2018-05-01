@@ -71,15 +71,27 @@ public:
 
     typedef float T;        // use floats for all signals
 private:
-    bool requestPending = false;
+
+    bool isRequestPending = false;
+
+    /**
+     * The FFT frame we are playing from.
+     */
     NoiseMessage* curData = nullptr;
-    int messageCount = 0;
+
+    /**
+     * The "play head" in curData where we will get next sample
+     */
+    int curDataOffset = 0;
+
+    int messageCount = 0; 
 
     std::unique_ptr<ThreadClient> thread;
-    void commonConstruct();
-
- 
     ManagedPool<NoiseMessage, 2> messagePool;
+
+    void serviceFFTServer();
+    void serviceAudio();
+    void commonConstruct();
 };
 
 
@@ -172,22 +184,23 @@ int ColoredNoise<TBase>::_msgCount() const
     return messageCount;
 }
 
+
 template <class TBase>
-void ColoredNoise<TBase>::step()
+void ColoredNoise<TBase>::serviceFFTServer()
 {
     // do we need to ask for more data?
    // bool requestPending = false;
    // NoiseMessage* curData = nullptr;
 
     // see if we need to request first frame of sample data
-    if (!requestPending && !curData) {
+    if (!isRequestPending && !curData) {
         printf("try making first request\n");
         NoiseMessage* msg = messagePool.pop();
        
         bool sent = thread->sendMessage(msg);
         if (sent) {
             printf("made first request\n");
-            requestPending = true;
+            isRequestPending = true;
         }
     }
 
@@ -203,5 +216,28 @@ void ColoredNoise<TBase>::step()
             messagePool.push(curData);
         }
         curData = noise;
+        curDataOffset = 0;
     }
+}
+
+template <class TBase>
+void ColoredNoise<TBase>::serviceAudio()
+{
+    float output = 0;
+    if (curData) {
+        output = curData->dataBuffer->get(curDataOffset++);
+        if (curDataOffset >= (int)curData->dataBuffer->size())
+        {
+            curDataOffset = 0;
+        }
+    }
+
+    TBase::outputs[AUDIO_OUTPUT].value = output;
+}
+
+template <class TBase>
+void ColoredNoise<TBase>::step()
+{
+    serviceFFTServer();
+    serviceAudio();
 }

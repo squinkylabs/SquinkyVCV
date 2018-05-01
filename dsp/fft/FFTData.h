@@ -50,6 +50,10 @@ public:
     ~FFTDataReal();
     float get(int numBin) const;
     void set(int numBin, float value);
+    size_t size() const
+    {
+        return buffer.size();
+    }
 private:
     std::vector<float> buffer;
 
