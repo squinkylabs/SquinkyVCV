@@ -27,7 +27,6 @@ public:
     }
     ~ColoredNoise()
     {
-        printf("colored noise dtor");
         thread.reset();     // kill the threads before deleting other things
     }
 
@@ -103,7 +102,7 @@ public:
 
     /** Server is going to fill this buffer up with time-domain data
      */
-    FFTDataReal* const dataBuffer;  // TODO:delete
+    FFTDataReal* const dataBuffer=nullptr;  // TODO:delete
 };
 
 class NoiseServer : public ThreadServer
@@ -155,8 +154,6 @@ private:
     }
 };
 
-
-
 template <class TBase>
 void ColoredNoise<TBase>::commonConstruct()
 {
@@ -195,7 +192,14 @@ void ColoredNoise<TBase>::step()
     // see if any messages came back for us
     ThreadMessage* newMsg = thread->getMessage();
     if (newMsg) {
-        assert(false);      // finish me
         ++messageCount;
+        assert(newMsg->type == ThreadMessage::Type::NOISE);
+        NoiseMessage* noise = static_cast<NoiseMessage*>(newMsg);
+        
+        // give the last one back
+        if (curData) {
+            messagePool.push(curData);
+        }
+        curData = noise;
     }
 }

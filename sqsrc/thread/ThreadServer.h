@@ -37,8 +37,8 @@ private:
     void threadFunction();
 
     /**
-     * returns true to exit thread.
-     * TODO: does it really?
+     *
+     * TODO: get rid of proc and handle, if possible
      */
-    bool procMessage(ThreadMessage*);
+    void procMessage(ThreadMessage*);
 };

@@ -6,6 +6,7 @@ using Noise = ColoredNoise<TestComposite>;
 
 static void test0()
 {
+    printf("--- testColoredNoise 0\n");
     {
         Noise cn;
         cn.init();
@@ -13,7 +14,7 @@ static void test0()
         while (cn._msgCount() < 1) {
             cn.step();
         }
-        printf("leaving test, will destroy cn\n");
+        printf("leaving testColoredNoise 0, will destroy cn\n");
     }
 
 }

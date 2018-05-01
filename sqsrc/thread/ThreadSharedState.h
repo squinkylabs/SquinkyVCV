@@ -31,8 +31,7 @@
 class ThreadMessage
 {
 public:
-    enum class Type { EXIT,     // Request for Thread to quit
-                      TEST1,
+    enum class Type { TEST1,
                       TEST2,
                       NOISE     // used by ColoredNoise
     };
@@ -61,6 +60,7 @@ public:
     {
         ++_dbgCount;
         serverRunning.store(false);
+        serverStopRequested.store(false);
         mailboxClient2Server.store(nullptr);
         mailboxServer2Client.store(nullptr);
     }
@@ -69,6 +69,7 @@ public:
         --_dbgCount;
     }
     std::atomic<bool> serverRunning;
+    std::atomic<bool> serverStopRequested;
     static std::atomic<int> _dbgCount;
 
     /**
@@ -78,14 +79,17 @@ public:
     bool client_trySendMessage(ThreadMessage* msg);
 
     ThreadMessage* client_pollMessage();
+    void client_askServerToStop();
 
     void server_sendMessage(ThreadMessage* msg);
 
     /**
      * returned message is a pointer to a message that we "own"
      * temporarily (sender may modify it, but won't delete it).
+     *
+     * if null returned, a shutdown has been requested
      */
-    ThreadMessage* server_waitForMessage();
+    ThreadMessage* server_waitForMessageOrShutdown();
 
    
 private:

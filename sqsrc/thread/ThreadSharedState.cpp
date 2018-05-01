@@ -9,24 +9,67 @@ std::atomic<int> ThreadMessage::_dbgCount;
 #include <chrono>
 #include <thread>
 
-ThreadMessage*  ThreadSharedState::server_waitForMessage()
+ThreadMessage*  ThreadSharedState::server_waitForMessageOrShutdown()
 {
-   // printf("wait\n"); fflush(stdout);
+    // printf("wait\n"); fflush(stdout);
 
     std::unique_lock<std::mutex> guard(mailboxMutex);           // grab the mutex that protects condition
     ThreadMessage* returnMessage = nullptr;
-    while (!returnMessage) {
-        returnMessage = mailboxClient2Server.load();            // don't wait on condition if we already have it.
-        if (!returnMessage) {
-            mailboxCondition.wait(guard);                       // wait for client to send a message
+    for (bool done = false; !done; ) {
+        if (serverStopRequested.load()) {
+            done = true;
+        } else {
             returnMessage = mailboxClient2Server.load();
+            if (returnMessage) {
+                done = true;
+            }
+        }
+        if (!done) {
+            mailboxCondition.wait(guard);
+        }
+    }
+    mailboxClient2Server.store(nullptr);
+    return returnMessage;
+}
+
+#if 0
+ThreadMessage*  ThreadSharedState::server_waitForMessageOrShutdown()
+{
+    // printf("wait\n"); fflush(stdout);
+
+    std::unique_lock<std::mutex> guard(mailboxMutex);           // grab the mutex that protects condition
+   
+    // First check for done before waiting for condition var -
+    // it might already have happened
+    if (serverStopRequested.load()) {
+        return nullptr;
+    }
+    ThreadMessage* returnMessage = mailboxClient2Server.load();
+    if (returnMessage) {
+        return returnMessage;
+    }
+    for (bool done=false; !done; ) {
+        mailboxCondition.wait(guard);                       // wait for client to send a message
+        if (serverStopRequested.load()) {
+            done = true;
+        } else {
+            returnMessage = mailboxClient2Server.load();
+            if (returnMessage) {
+                done = true;
+            }
         }
     }
     mailboxClient2Server.store(nullptr);                    // remove the message from the mailbox
                                                             // (should we lock here?) (no, we will have lock)
-
-
     return returnMessage;
+}
+#endif
+
+void ThreadSharedState::client_askServerToStop()
+{
+    serverStopRequested.store(true);                        // ask server to stop
+    std::unique_lock<std::mutex> guard(mailboxMutex);       // grab the mutex
+    mailboxCondition.notify_all();                          // wake up server
 }
 
 ThreadMessage* ThreadSharedState::client_pollMessage()
