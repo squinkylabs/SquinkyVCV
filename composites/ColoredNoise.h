@@ -66,10 +66,13 @@ public:
     */
     void step();
 
+    int _msgCount() const;  // just for debugging
+
     typedef float T;        // use floats for all signals
 private:
     bool requestPending = false;
     NoiseMessage* curData = nullptr;
+    int messageCount = 0;
 
     std::unique_ptr<ThreadClient> thread;
     void commonConstruct();
@@ -165,6 +168,12 @@ void ColoredNoise<TBase>::commonConstruct()
 }
 
 template <class TBase>
+int ColoredNoise<TBase>::_msgCount() const
+{
+    return messageCount;
+}
+
+template <class TBase>
 void ColoredNoise<TBase>::step()
 {
     // do we need to ask for more data?
@@ -187,5 +196,6 @@ void ColoredNoise<TBase>::step()
     ThreadMessage* newMsg = thread->getMessage();
     if (newMsg) {
         assert(false);      // finish me
+        ++messageCount;
     }
 }
