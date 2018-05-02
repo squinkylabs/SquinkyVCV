@@ -112,7 +112,9 @@ static void testNoiseFormula()
         const cpx x = data->get(i);
         float mag = std::abs(x);
         float phase = std::arg(x);
-        assertClose(mag, 1.0, .0001);
+
+        const float expectedMag = (i == 0) ? 0.f : 1.f;
+        assertClose(mag, expectedMag, .0001);
         //assert(phases.find(phase) == phases.end());
         //printf("adding phase %f\n", phase);
         phases.insert(phase);
@@ -153,6 +155,59 @@ static void testNoiseRT()
     testNoiseRTSub(1024 * 64);
 }
 
+
+static void testPinkNoise()
+{
+    const int bins = 1024*4;
+    std::unique_ptr<FFTDataCpx> data(new FFTDataCpx(bins));
+    assertEQ(data->size(), bins);
+
+    ColoredNoiseSpec spec;
+    spec.highFreqCorner = 22100;        // makes no difference for - slope;
+    spec.slope = -3;
+    spec.sampleRate = 44100;
+
+    FFT::makeNoiseSpectrum(data.get(), spec);
+
+
+    // pick a starting bin above our 40 hz low freq corner
+    const int baseBin = 16;
+    float freqBase = 44100 * baseBin / (float) bins;
+    assertGT (freqBase, 80);
+
+    // mid-band, quadruple freq should reduce amp by 6db
+    float mag16 = std::abs(data->get(baseBin));
+    float mag64 = std::abs(data->get(4 * baseBin));
+
+    // TODO: compare in db
+    assertClose(mag16, 2 * mag64, .01);
+}
+
+static void testBlueNoise()
+{
+    const int bins = 1024 * 4;
+    std::unique_ptr<FFTDataCpx> data(new FFTDataCpx(bins));
+    assertEQ(data->size(), bins);
+
+    ColoredNoiseSpec spec;
+    spec.highFreqCorner = 8000;       
+    spec.slope = 3;
+    spec.sampleRate = 44100;
+
+    FFT::makeNoiseSpectrum(data.get(), spec);
+
+
+    assert(false);      // this is for pink - port it
+    float freq16 = 44100 * 16 / (float) bins;
+    assertGT(freq16, 20);
+
+    // mid-band, quadruple freq should reduce amp by 6db
+    float mag16 = std::abs(data->get(16));
+    float mag64 = std::abs(data->get(64));
+
+    assertClose(mag16, 2 * mag64, .001);
+}
+
 void testFFT()
 {
     testAccessors();
@@ -162,4 +217,6 @@ void testFFT()
     testRoundTrip();
     testNoiseFormula();
     testNoiseRT();
+    testPinkNoise();
+    testBlueNoise();
 }
