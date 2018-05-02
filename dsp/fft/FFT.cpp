@@ -84,7 +84,8 @@ bool FFT::inverse(FFTDataReal* out, const FFTDataCpx& in)
 
 
 //FFTDataCpx* FFT::makeNoiseFormula(float slope, float highFreqCorner, int frameSize)
-void FFT::makeNoiseFormula(FFTDataCpx* output, float slope, float highFreqCorner, float sampleRate)
+//void FFT::makeNoiseFormula(FFTDataCpx* output, float slope, float highFreqCorner, float sampleRate)
+void FFT::makeNoiseSpectrum(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 {
     const int frameSize = (int) output->size();
     for (int i = 0; i < frameSize; ++i) {

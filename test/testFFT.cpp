@@ -103,7 +103,8 @@ static void testNoiseFormula()
     const int bins = 1024 * 64;
     std::unique_ptr<FFTDataCpx> data(new FFTDataCpx(bins));
     assertEQ(data->size(), bins);
-    FFT::makeNoiseFormula(data.get(), 0, 0, 44100);
+
+    FFT::makeNoiseSpectrum(data.get(), ColoredNoiseSpec());
 
     std::set<float> phases;
 
@@ -134,7 +135,7 @@ static void testNoiseRTSub(int bins)
     std::unique_ptr<FFTDataCpx> dataCpx(new FFTDataCpx(bins));
     std::unique_ptr<FFTDataReal> dataReal(new FFTDataReal(bins));
     assertEQ(dataCpx->size(), bins);
-    FFT::makeNoiseFormula(dataCpx.get(), 0, 0, 44100);
+    FFT::makeNoiseSpectrum(dataCpx.get(), ColoredNoiseSpec());
 
     FFT::inverse(dataReal.get(), *dataCpx);
     FFT::normalize(dataReal.get());

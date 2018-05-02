@@ -108,9 +108,7 @@ public:
     }
     const int numBins = 64 * 1024;
 
-    float noiseSlope=0;
-    float highFrequencyCorner=0;
-    float sampleRate=44100;
+    ColoredNoiseSpec noiseSpec;
 
     /** Server is going to fill this buffer up with time-domain data
      */
@@ -131,7 +129,7 @@ protected:
      */
     virtual void handleMessage(ThreadMessage* msg) override
     {
-        printf("server got message\n");
+        //printf("server got message\n");
         if (msg->type != ThreadMessage::Type::NOISE) {
             assert(false);
             return;
@@ -139,31 +137,29 @@ protected:
 
         // Unpack the parameters, convert to frequency domain "noise" recipe
         NoiseMessage* noiseMessage = static_cast<NoiseMessage*>(msg);
-        reallocRecipe(noiseMessage);
-        FFT::makeNoiseFormula(noiseRecipe.get(),
-                              noiseMessage->noiseSlope,
-                              noiseMessage->highFrequencyCorner,
-                              noiseMessage->sampleRate);
+        reallocSpectrum(noiseMessage);
+        FFT::makeNoiseSpectrum(noiseSpectrum.get(),
+                              noiseMessage->noiseSpec);
 
         // Now inverse FFT to time domain noise in client's buffer
-        FFT::inverse(noiseMessage->dataBuffer, *noiseRecipe.get());
+        FFT::inverse(noiseMessage->dataBuffer, *noiseSpectrum.get());
         FFT::normalize(noiseMessage->dataBuffer);
-        printf("server sending message back to client\n");
+       // printf("server sending message back to client\n");
         sendMessageToClient(noiseMessage);
-        printf("sent\n");
+      //  printf("sent\n");
     }
 private:
-    std::unique_ptr<FFTDataCpx> noiseRecipe;
+    std::unique_ptr<FFTDataCpx> noiseSpectrum;
 
     // may do nothing, may create the first buffer,
     // may delete the old buffer and make a new one.
-    void reallocRecipe(const NoiseMessage* msg)
+    void reallocSpectrum(const NoiseMessage* msg)
     {
-        if (noiseRecipe && ((int)noiseRecipe->size() == msg->numBins)) {
+        if (noiseSpectrum && ((int)noiseSpectrum->size() == msg->numBins)) {
             return;
         }
 
-        noiseRecipe.reset(new FFTDataCpx(msg->numBins));
+        noiseSpectrum.reset(new FFTDataCpx(msg->numBins));
     }
 };
 
@@ -193,12 +189,12 @@ void ColoredNoise<TBase>::serviceFFTServer()
 
     // see if we need to request first frame of sample data
     if (!isRequestPending && !curData) {
-        printf("try making first request\n");
+       // printf("try making first request\n");
         NoiseMessage* msg = messagePool.pop();
        
         bool sent = thread->sendMessage(msg);
         if (sent) {
-            printf("made first request\n");
+          //  printf("made first request\n");
             isRequestPending = true;
         }
     }

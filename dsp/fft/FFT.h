@@ -3,6 +3,16 @@
 class FFTDataCpx;
 class FFTDataReal;
 
+
+class ColoredNoiseSpec
+{
+public:
+    float slope = 0;
+    float highFreqCorner = 4000;
+    float sampleRate = 44100;
+    bool operator != (const ColoredNoiseSpec&) const;
+};
+
 class FFT
 {
 public:
@@ -16,7 +26,7 @@ public:
     /**
      * Fills a complex FFT frame with frequency domain data describing noise
      */
-    static void makeNoiseFormula(FFTDataCpx* output, float slope, float highFreqCorner, float sampleRate);
+    static void makeNoiseSpectrum(FFTDataCpx* output, const ColoredNoiseSpec&);
 
     static void normalize(FFTDataReal*);
 };
