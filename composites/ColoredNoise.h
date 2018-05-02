@@ -102,11 +102,9 @@ public:
     NoiseMessage() : ThreadMessage(Type::NOISE),
         dataBuffer(new FFTDataReal(numBins))
     {
-       
     }
     ~NoiseMessage()
     {
-      //  assert(false);  // we are getting destroyed while thread still running
     }
     const int numBins = 64 * 1024;
 
@@ -149,6 +147,7 @@ protected:
 
         // Now inverse FFT to time domain noise in client's buffer
         FFT::inverse(noiseMessage->dataBuffer, *noiseRecipe.get());
+        FFT::normalize(noiseMessage->dataBuffer);
         printf("server sending message back to client\n");
         sendMessageToClient(noiseMessage);
         printf("sent\n");
