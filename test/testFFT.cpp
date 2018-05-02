@@ -97,6 +97,7 @@ static void testRoundTrip()
     }
 }
 
+
 static void testNoiseFormula()
 {
     const int bins = 1024 * 64;
@@ -116,7 +117,39 @@ static void testNoiseFormula()
         phases.insert(phase);
     }
     printf("end of test, max=%d have%zd\n", bins, phases.size());
+}
 
+static float getPeak(const FFTDataReal& data)
+{
+    float peak = 0;
+    for (int i = 0; i < data.size(); ++i) {
+        peak = std::max(peak, std::abs(data.get(i)));
+    }
+    return peak;
+}
+
+
+static void testNoiseRTSub(int bins)
+{
+    std::unique_ptr<FFTDataCpx> dataCpx(new FFTDataCpx(bins));
+    std::unique_ptr<FFTDataReal> dataReal(new FFTDataReal(bins));
+    assertEQ(dataCpx->size(), bins);
+    FFT::makeNoiseFormula(dataCpx.get(), 0, 0, 44100);
+
+    FFT::inverse(dataReal.get(), *dataCpx);
+    FFT::normalize(dataReal.get());
+
+    const float peak = getPeak(*dataReal);
+    assertClose( peak, 1.0f , .001);
+}
+
+static void testNoiseRT()
+{
+    testNoiseRTSub(4);
+    testNoiseRTSub(8);
+    testNoiseRTSub(16);
+    testNoiseRTSub(1024);
+    testNoiseRTSub(1024 * 64);
 }
 
 void testFFT()
@@ -127,5 +160,5 @@ void testFFT()
     test3();
     testRoundTrip();
     testNoiseFormula();
-
+    testNoiseRT();
 }

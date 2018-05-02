@@ -12,7 +12,7 @@
 // test that we can build and tear down.
 static void test0()
 {
-    printf("testthread 0\n");
+   // printf("testthread 0\n");
     assertEQ(ThreadSharedState::_dbgCount, 0);
     {
         std::shared_ptr<ThreadSharedState> noise = std::make_shared<ThreadSharedState>();
@@ -20,7 +20,7 @@ static void test0()
         std::unique_ptr<ThreadClient> client(new ThreadClient(noise, std::move(server)));
     }
     assertEQ(ThreadSharedState::_dbgCount, 0);
-    printf("testthread 0 done\n");
+  //  printf("testthread 0 done\n");
 }
 
 static void test1()

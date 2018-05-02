@@ -17,4 +17,6 @@ public:
      * Fills a complex FFT frame with frequency domain data describing noise
      */
     static void makeNoiseFormula(FFTDataCpx* output, float slope, float highFreqCorner, float sampleRate);
+
+    static void normalize(FFTDataReal*);
 };

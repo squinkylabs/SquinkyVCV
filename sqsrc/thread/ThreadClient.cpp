@@ -21,22 +21,22 @@ ThreadClient::ThreadClient(std::shared_ptr<ThreadSharedState> state,
 
 ThreadClient::~ThreadClient()
 {
-    printf("Thread client dtor\n"); fflush(stdout);
+   // printf("Thread client dtor\n"); fflush(stdout);
 
     sharedState->client_askServerToStop();
     sharedState->serverStopRequested.store(true);               // ask server to stop
 
-    printf("thread client dtor2\n"); fflush(stdout);
+   // printf("thread client dtor2\n"); fflush(stdout);
     const bool running = sharedState->serverRunning;
-    printf("thread client dtor will wait server running=%d\n", running ); fflush(stdout);
+   // printf("thread client dtor will wait server running=%d\n", running ); fflush(stdout);
     while (sharedState->serverRunning) {
         static bool did = false;
         if (!did) {
-            printf("thread client dtor waiting\n"); fflush(stdout);
+           // printf("thread client dtor waiting\n"); fflush(stdout);
             did = true;
         }
     }
-    printf("thread client dtor exiting\n"); fflush(stdout);
+  //  printf("thread client dtor exiting\n"); fflush(stdout);
 }
 
 ThreadMessage * ThreadClient::getMessage()

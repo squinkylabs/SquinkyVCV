@@ -97,3 +97,26 @@ void FFT::makeNoiseFormula(FFTDataCpx* output, float slope, float highFreqCorner
         output->set(i, x);
     }
 }
+
+
+
+
+static float getPeak(const FFTDataReal& data)
+{
+    float peak = 0;
+    for (int i = 0; i < data.size(); ++i) {
+        peak = std::max(peak, std::abs(data.get(i)));
+    }
+    return peak;
+}
+
+void FFT::normalize(FFTDataReal* data)
+{
+    const float peak = getPeak(*data);
+    const float correction = 1.0f / peak;
+    for (int i = 0; i < data->size(); ++i) {
+        float x = data->get(i);
+        x *= correction;
+        data->set(i, x);
+    }
+}
