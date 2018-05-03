@@ -197,7 +197,7 @@ static void testBlueNoise()
     FFT::makeNoiseSpectrum(data.get(), spec);
 
 
-    assert(false);      // this is for pink - port it
+  
     float freq16 = 44100 * 16 / (float) bins;
     assertGT(freq16, 20);
 
@@ -205,7 +205,7 @@ static void testBlueNoise()
     float mag16 = std::abs(data->get(16));
     float mag64 = std::abs(data->get(64));
 
-    assertClose(mag16, 2 * mag64, .001);
+    assertClose(2 * mag16, mag64, .1);
 }
 
 void testFFT()
