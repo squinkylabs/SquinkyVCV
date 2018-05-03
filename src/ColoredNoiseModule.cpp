@@ -54,6 +54,29 @@ struct ColoredNoiseWidget : ModuleWidget
     ColoredNoiseWidget(ColoredNoiseModule *);
 };
 
+
+struct ColorDisplay : OpaqueWidget {
+    ColoredNoiseModule *module;
+
+    void draw(NVGcontext *vg) override 
+    {
+        const float slope = module->noiseSource.getSlope();
+
+        float red = (slope > 0) ? slope * 25 : 0;
+        float blue = (slope < 0) ? slope * -25 : 0;
+        // draw some squares for fun
+       // nvgScale(vg, 2, 2);
+        nvgFillColor(vg, nvgRGBA(red, 0x00, blue, 0xff));
+        nvgBeginPath(vg);
+        // todo: pass in ctor
+        nvgRect(vg, 0, 0, 6 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+		nvgFill(vg);
+
+    }
+
+
+};
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -64,6 +87,16 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
  
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
+    #if 1
+	{
+		ColorDisplay *display = new ColorDisplay();
+		display->module = module;
+		display->box.pos = Vec( 0, 0);
+		display->box.size = Vec(6 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+		addChild(display);
+        display->module = module;
+	}
+ #else
 
     {
         SVGPanel *panel = new SVGPanel();
@@ -72,6 +105,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
         addChild(panel);
     }
 
+#endif
     
     Label * label = new Label();
     label->box.pos = Vec(23, 24);
@@ -87,6 +121,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
 
     addParam(ParamWidget::create<Davies1900hBlackKnob>(
         Vec(28, 100), module, module->noiseSource.SLOPE_PARAM, -8.0, 8.0, 0.0));
+
 
 
 }

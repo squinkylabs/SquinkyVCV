@@ -67,6 +67,8 @@ public:
     */
     void step();
 
+    float getSlope() const;
+
     int _msgCount() const;  // just for debugging
 
     typedef float T;        // use floats for all signals
@@ -163,6 +165,13 @@ private:
         noiseSpectrum.reset(new FFTDataCpx(msg->numBins));
     }
 };
+
+template <class TBase>
+float ColoredNoise<TBase>::getSlope() const
+ { 
+     // TODO: atomic?
+     return curData ? curData->noiseSpec.slope : 0;
+}
 
 template <class TBase>
 void ColoredNoise<TBase>::commonConstruct()
