@@ -10,7 +10,12 @@ public:
     float slope = 0;
     float highFreqCorner = 4000;
     float sampleRate = 44100;
-    bool operator != (const ColoredNoiseSpec&) const;
+    bool operator != (const ColoredNoiseSpec& other) const
+    {
+        return (slope != other.slope) ||
+            (highFreqCorner != other.highFreqCorner) ||
+            (sampleRate != other.sampleRate);
+    }
 };
 
 class FFT

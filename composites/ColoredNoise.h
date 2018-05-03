@@ -91,6 +91,7 @@ private:
 
     void serviceFFTServer();
     void serviceAudio();
+    void serviceInputs();
     void commonConstruct();
 };
 
@@ -212,6 +213,7 @@ void ColoredNoise<TBase>::serviceFFTServer()
         }
         curData = noise;
         curDataOffset = 0;
+        isRequestPending = false;
     }
 }
 
@@ -230,9 +232,50 @@ void ColoredNoise<TBase>::serviceAudio()
     TBase::outputs[AUDIO_OUTPUT].value = output;
 }
 
+
+template <class TBase>
+void ColoredNoise<TBase>::serviceInputs()
+{
+
+    if (isRequestPending) {
+        return;     // can't do anything until server is free.
+    }
+    if (!curData) {
+        return;     // if we don't have data, we will be asking anyway
+    }
+   
+    // get slope input to one decimal place
+    float x = TBase::params[SLOPE_PARAM].value;
+    int i = int(x * 10);
+    x = i / 10.f;
+    ColoredNoiseSpec sp;
+    sp.slope = x;
+    if (!(sp != curData->noiseSpec)) {
+        return;
+    }
+    printf("new noise spec\n");
+
+    NoiseMessage* msg = messagePool.pop();
+    assert(msg);
+    if (!msg) {
+        return;
+    }
+    msg->noiseSpec = sp;
+    // TODO: put this logic in one place
+    bool sent = thread->sendMessage(msg);
+    if (sent) {
+          printf("made additional request\n");
+        isRequestPending = true;
+    } else {
+        printf("send failed\n");
+    }
+
+}
+
 template <class TBase>
 void ColoredNoise<TBase>::step()
 {
     serviceFFTServer();
     serviceAudio();
+    serviceInputs();
 }
