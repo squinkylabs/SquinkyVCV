@@ -33,10 +33,11 @@ void FFTDataCpx::set(int index, cpx value)
 }
 
 /******************************************************************/
-
+int FFTDataReal::_count = 0;
 FFTDataReal::FFTDataReal(int numBins) :
     buffer(numBins)
 {
+    ++_count;
 }
 
 FFTDataReal::~FFTDataReal()
@@ -46,6 +47,7 @@ FFTDataReal::~FFTDataReal()
     if (kiss_cfg) {
         free(kiss_cfg);
     }
+    --_count;
 }
 
 float FFTDataReal::get(int index) const
@@ -60,14 +62,3 @@ void FFTDataReal::set(int index, float value)
     assert(index < buffer.size());
     buffer[index] = value;
 }
-#if 0
-class FFTDataReal
-{
-public:
-    FFTDataReal(int numBins);
-    float get(int numBin);
-    void set(int numBin, float value);
-private:
-    std::unique_ptr<float> buffer;
-};
-#endif

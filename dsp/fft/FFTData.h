@@ -22,9 +22,9 @@ public:
     cpx get(int bin) const;
     void set(int bin, cpx value);
 
-    size_t size() const
+    int size() const
     {
-        return buffer.size();
+        return (int) buffer.size();
     }
 private:
     std::vector<cpx> buffer;
@@ -50,10 +50,11 @@ public:
     ~FFTDataReal();
     float get(int numBin) const;
     void set(int numBin, float value);
-    size_t size() const
+    int size() const
     {
-        return buffer.size();
+        return (int) buffer.size();
     }
+    static int _count;
 private:
     std::vector<float> buffer;
 

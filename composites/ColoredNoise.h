@@ -102,14 +102,20 @@ private:
 class NoiseMessage : public ThreadMessage
 {
 public:
+
     NoiseMessage() : ThreadMessage(Type::NOISE),
+        dataBuffer(new FFTDataReal(defaultNumBins))
+    {
+    }
+
+    NoiseMessage(int numBins) : ThreadMessage(Type::NOISE),
         dataBuffer(new FFTDataReal(numBins))
     {
     }
     ~NoiseMessage()
     {
     }
-    const int numBins = 64 * 1024;
+    const int defaultNumBins = 64 * 1024;
 
     ColoredNoiseSpec noiseSpec;
 
@@ -158,11 +164,11 @@ private:
     // may delete the old buffer and make a new one.
     void reallocSpectrum(const NoiseMessage* msg)
     {
-        if (noiseSpectrum && ((int)noiseSpectrum->size() == msg->numBins)) {
+        if (noiseSpectrum && ((int)noiseSpectrum->size() == msg->dataBuffer->size())) {
             return;
         }
 
-        noiseSpectrum.reset(new FFTDataCpx(msg->numBins));
+        noiseSpectrum.reset(new FFTDataCpx(msg->dataBuffer->size()));
     }
 };
 

@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\fft\FFT.cpp" />
+    <ClCompile Include="..\..\dsp\fft\FFTCrossFader.cpp" />
     <ClCompile Include="..\..\dsp\fft\FFTData.cpp" />
     <ClCompile Include="..\..\dsp\filters\ButterworthFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp" />
@@ -38,6 +39,7 @@
     <ClCompile Include="..\..\test\testBiquad.cpp" />
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
     <ClCompile Include="..\..\test\testFFT.cpp" />
+    <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
     <ClCompile Include="..\..\test\testFrequencyShifter.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
     <ClCompile Include="..\..\test\testLookupTable.cpp" />
@@ -58,6 +60,7 @@
     <ClInclude Include="..\..\composites\VocalFilter.h" />
     <ClInclude Include="..\..\composites\WidgetComposite.h" />
     <ClInclude Include="..\..\dsp\fft\FFT.h" />
+    <ClInclude Include="..\..\dsp\fft\FFTCrossFader.h" />
     <ClInclude Include="..\..\dsp\fft\FFTData.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadFilter.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadParams.h" />

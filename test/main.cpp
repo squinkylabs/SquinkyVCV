@@ -23,6 +23,7 @@ extern void testFFT();
 extern void testRingBuffer();
 extern void testManagedPool();
 extern void testColoredNoise();
+extern void testFFTCrossFader();
 
 int main(int argc, char ** argv)
 {
@@ -59,6 +60,7 @@ int main(int argc, char ** argv)
     testStateVariable();
 
     testFFT();
+    testFFTCrossFader();
     testThread();
 
 

@@ -171,6 +171,12 @@
     <ClCompile Include="..\..\test\testColoredNoise.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testFFTCrossFader.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\fft\FFTCrossFader.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -280,6 +286,9 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\ColoredNoise.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\fft\FFTCrossFader.h">
+      <Filter>Header Files\dsp\fft</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
