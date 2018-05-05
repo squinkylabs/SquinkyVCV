@@ -24,6 +24,7 @@ extern void testRingBuffer();
 extern void testManagedPool();
 extern void testColoredNoise();
 extern void testFFTCrossFader();
+extern void testFinalLeaks();
 
 int main(int argc, char ** argv)
 {
@@ -73,6 +74,8 @@ int main(int argc, char ** argv)
         perfTest();
     }
 
+
+    testFinalLeaks();
     // When we run inside Visual Studio, don't exit debugger immediately
 #if defined(_MSC_VER)
     printf("Test passed. Press any key to continue...\n"); fflush(stdout);

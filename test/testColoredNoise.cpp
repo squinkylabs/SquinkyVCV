@@ -1,19 +1,26 @@
 
 #include "ColoredNoise.h"
 #include "TestComposite.h"
+#include "asserts.h"
 
 using Noise = ColoredNoise<TestComposite>;
 
 static void test0()
 {
+    assertEQ(ThreadServer::_count, 0);
+    assertEQ(FFTDataCpx::_count, 0);
     {
         Noise cn;
         cn.init();
         // calling step should get client to request an FFT frame
+
         while (cn._msgCount() < 1) {
             cn.step();
+
         }
     }
+    assertEQ(ThreadServer::_count, 0);
+    assertEQ(FFTDataCpx::_count, 0);
 }
 
 static void test1()
@@ -43,6 +50,12 @@ static void test1()
 }
 void testColoredNoise()
 {
+    assertEQ(FFTDataReal::_count, 0);
+    assertEQ(FFTDataCpx::_count, 0);
     test0();
+    assertEQ(FFTDataReal::_count, 0);
+    assertEQ(FFTDataCpx::_count, 0);
     test1();
+    assertEQ(FFTDataReal::_count, 0);
+    assertEQ(FFTDataCpx::_count, 0);
 }

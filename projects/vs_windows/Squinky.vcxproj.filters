@@ -177,6 +177,9 @@
     <ClCompile Include="..\..\dsp\fft\FFTCrossFader.cpp">
       <Filter>Source Files\dsp\fft</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testFinalLeaks.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

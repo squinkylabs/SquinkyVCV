@@ -5,9 +5,11 @@
 
 #include <assert.h>
 
+int FFTDataCpx::_count = 0;
 FFTDataCpx::FFTDataCpx(int numBins) :
     buffer(numBins)
 {
+    ++_count;
 }
 
 FFTDataCpx::~FFTDataCpx()
@@ -17,6 +19,7 @@ FFTDataCpx::~FFTDataCpx()
     if (kiss_cfg) {
         free(kiss_cfg);
     }
+    --_count;
 }
 
 cpx FFTDataCpx::get(int index) const

@@ -210,6 +210,8 @@ static void testBlueNoise()
 
 void testFFT()
 {
+    assertEQ(FFTDataReal::_count, 0);
+    assertEQ(FFTDataCpx::_count, 0);
     testAccessors();
     testFFTErrors();
     testForwardFFT_DC();
@@ -219,4 +221,6 @@ void testFFT()
     testNoiseRT();
     testPinkNoise();
     testBlueNoise();
+    assertEQ(FFTDataReal::_count, 0);
+    assertEQ(FFTDataCpx::_count, 0);
 }

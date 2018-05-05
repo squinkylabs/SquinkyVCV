@@ -26,6 +26,7 @@ public:
     {
         return (int) buffer.size();
     }
+    static int _count;
 private:
     std::vector<cpx> buffer;
 

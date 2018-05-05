@@ -10,12 +10,12 @@ class ThreadServer
 {
 public:
     ThreadServer(std::shared_ptr<ThreadSharedState> state);
-    ~ThreadServer();
+    virtual ~ThreadServer();
     void start();
 
     const ThreadServer& operator= (const ThreadServer&) = delete;
     ThreadServer(const ThreadServer&) = delete;
-
+    static int _count;
 protected:
     /**
      * Derived thread servers must override this to get messages.

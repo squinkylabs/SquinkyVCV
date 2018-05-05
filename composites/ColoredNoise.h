@@ -104,7 +104,7 @@ class NoiseMessage : public ThreadMessage
 public:
 
     NoiseMessage() : ThreadMessage(Type::NOISE),
-        dataBuffer(new FFTDataReal(defaultNumBins))
+        dataBuffer( new FFTDataReal(defaultNumBins))
     {
     }
 
@@ -121,7 +121,8 @@ public:
 
     /** Server is going to fill this buffer up with time-domain data
      */
-    FFTDataReal* const dataBuffer=nullptr;  // TODO:delete
+    //FFTDataReal* const dataBuffer=nullptr;  // TODO:delete
+    std::unique_ptr<FFTDataReal> dataBuffer;
 };
 
 class NoiseServer : public ThreadServer
@@ -151,8 +152,8 @@ protected:
                               noiseMessage->noiseSpec);
 
         // Now inverse FFT to time domain noise in client's buffer
-        FFT::inverse(noiseMessage->dataBuffer, *noiseSpectrum.get());
-        FFT::normalize(noiseMessage->dataBuffer);
+        FFT::inverse(noiseMessage->dataBuffer.get(), *noiseSpectrum.get());
+        FFT::normalize(noiseMessage->dataBuffer.get());
        // printf("server sending message back to client\n");
         sendMessageToClient(noiseMessage);
       //  printf("sent\n");
