@@ -70,12 +70,14 @@ static void test2()
 
 
 // two buff, should crossfade
-static void test3()
+static void test3(bool testBuff0)
 {
     Tester test(4, 10);
+
+    // fill the buff to test with data, other one with zeros
     for (int i = 0; i < 10; ++i) {
-        test.messages[0]->dataBuffer->set(i, 9);    
-        test.messages[1]->dataBuffer->set(i, 0);     
+        test.messages[0]->dataBuffer->set(i, testBuff0 ? 9.f : 0.f);
+        test.messages[1]->dataBuffer->set(i, testBuff0 ? 0.f : 18.f);     
     }
 
     // put both in, to cross fade
@@ -87,15 +89,16 @@ static void test3()
     int emptyCount = 0;
 
     // play buffer once
-    float expected[] = {9, 6, 3, 0, 0, 0, 0, 0, 0, 0};
+    float expected0[] = {9, 6, 3, 0, 0, 0, 0, 0, 0, 0};
+    float expected1[] = {18, 12, 6, 0, 0, 0, 0, 0, 0, 0};
     for (int i = 0; i < 10; ++i) {
         float x = 5;
         t = test.f.step(&x);
         if (t) {
             ++emptyCount;
         }
-        printf("i=%d, x = %f\n", i, x);
-        assertEQ(x, expected[i]);
+        const float expected = testBuff0 ? expected0[i] : expected1[i];
+        assertEQ(x, expected);
     }
 
     //play it again.
@@ -111,6 +114,17 @@ static void test3()
     assertEQ(emptyCount, 1);
 }
 
+static void test4()
+{
+    Tester test(4, 10);
+    NoiseMessage* t = test.f.acceptData(test.messages[0].get());
+    assertEQ(t, 0);
+    t = test.f.acceptData(test.messages[1].get());
+    assertEQ(t, 0);
+    t = test.f.acceptData(test.messages[2].get());
+    assertNE(t, 0);
+}
+
 
 
 void testFFTCrossFader()
@@ -119,6 +133,7 @@ void testFFTCrossFader()
     test0();
     test1();
     test2();
-    test3();
+    test3(true);
+    test4();
     assertEQ(FFTDataReal::_count, 0);
 }

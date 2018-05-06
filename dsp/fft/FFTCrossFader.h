@@ -23,10 +23,10 @@ private:
     /**
      * current playhead, relative to start of each buffer
      */
-    int curPlayOffset[3] = {0, 0, 0};
+    int curPlayOffset[2] = {0, 0};
 
 
-    NoiseMessage* dataFrames[3] = {nullptr, nullptr, nullptr};
+    NoiseMessage* dataFrames[2] = {nullptr, nullptr};
 
     /** Advance the play offset,
      * wrap on overflow.

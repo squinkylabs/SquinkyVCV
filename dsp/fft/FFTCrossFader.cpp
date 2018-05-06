@@ -53,6 +53,7 @@ void FFTCrossFader::advance(int index)
 
 NoiseMessage * FFTCrossFader::acceptData(NoiseMessage* msg)
 {
+    NoiseMessage* returnedBuffer = nullptr;
     if (dataFrames[0] == nullptr) {
         dataFrames[0] = msg;
         curPlayOffset[0] = 0;
@@ -61,7 +62,8 @@ NoiseMessage * FFTCrossFader::acceptData(NoiseMessage* msg)
         dataFrames[1] = msg;
         curPlayOffset[1] = 0;
     } else {
-        assert(false);
+        // we are full, just ignroe this one.
+        returnedBuffer = msg;
     }
-    return nullptr;
+    return returnedBuffer;
 }
