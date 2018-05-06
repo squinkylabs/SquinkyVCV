@@ -21,11 +21,15 @@ private:
     const int crossfadeSamples;
 
     /**
-     * current playhead, relative to start of buffer
+     * current playhead, relative to start of each buffer
      */
-    int curPlayOffset0 = 0;
-    int curPlayOffset1 = 0;
+    int curPlayOffset[3] = {0, 0, 0};
 
 
     NoiseMessage* dataFrames[3] = {nullptr, nullptr, nullptr};
+
+    /** Advance the play offset,
+     * wrap on overflow.
+     */
+    void advance(int index);
 };

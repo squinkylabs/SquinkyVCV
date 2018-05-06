@@ -69,6 +69,39 @@ static void test2()
 }
 
 
+// two buff, should crossfade
+static void test3()
+{
+    Tester test(4, 10);
+    for (int i = 0; i < 10; ++i) {
+        test.messages[0]->dataBuffer->set(i, 9);    
+        test.messages[1]->dataBuffer->set(i, 0);     
+    }
+
+    // put both in, to cross fade
+    NoiseMessage* t = test.f.acceptData(test.messages[0].get());
+    assertEQ(t, 0);
+    t = test.f.acceptData(test.messages[1].get());
+    assertEQ(t, 0);
+
+    // play buffer once
+    float expected[] = {9, 6, 3, 0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < 10; ++i) {
+        float x = 5;
+        test.f.step(&x);
+        printf("i=%d, x = %f\n", i, x);
+        assertEQ(x, expected[i]);
+    }
+
+    //play it again.
+    for (int i = 0; i < 10; ++i) {
+        float x = 5;
+        test.f.step(&x);
+        assertEQ(x, 0);
+    }
+}
+
+
 
 void testFFTCrossFader()
 {
@@ -76,5 +109,6 @@ void testFFTCrossFader()
     test0();
     test1();
     test2();
+    test3();
     assertEQ(FFTDataReal::_count, 0);
 }
