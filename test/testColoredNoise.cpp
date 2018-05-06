@@ -53,8 +53,6 @@ void testColoredNoise()
     assertEQ(FFTDataReal::_count, 0);
     assertEQ(FFTDataCpx::_count, 0);
     test0();
-    assertEQ(FFTDataReal::_count, 0);
-    assertEQ(FFTDataCpx::_count, 0);
     test1();
     assertEQ(FFTDataReal::_count, 0);
     assertEQ(FFTDataCpx::_count, 0);

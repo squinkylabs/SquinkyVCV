@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 
+extern int _numBiquads;
 /**
  * Structure to hold the input parameter of a biquad filter: in this case the tap weights.
  *
@@ -12,6 +13,7 @@ class BiquadParams
 {
 public:
     BiquadParams();
+    ~BiquadParams();
 
     // TODO2: make N be unsigned
 
@@ -55,6 +57,13 @@ inline BiquadParams<T, N>::BiquadParams()
     for (int i = 0; i < N * 5; ++i) {
         _taps[i] = 0;
     }
+    ++_numBiquads;
+}
+
+template <typename T, int N>
+inline BiquadParams<T, N>::~BiquadParams()
+{
+    --_numBiquads;
 }
 
 template <typename T, int N>

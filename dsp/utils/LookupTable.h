@@ -47,10 +47,6 @@ public:
      * this lookup table only works with uniform x value.
      */
     static void initDiscrete(LookupTableParams<T>& params, int numEntries, const T * yEntries);
-
-
-
-
 private:
     static int cvtt(T *);
 
@@ -230,6 +226,7 @@ public:
         a = 0;
         b = 0;
     }
+
 };
 
 

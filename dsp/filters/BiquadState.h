@@ -12,6 +12,7 @@ class BiquadState
 {
 public:
     BiquadState();
+    ~BiquadState();
     /**
      * accessor for delay memory 0
      * @param stage is the biquad stage index
@@ -29,6 +30,13 @@ inline BiquadState<T, N>::BiquadState()
     for (int i = 0; i < N * 2; ++i) {
         _state[i] = 0;
     }
+    _numBiquads++;
+}
+
+template <typename T, int N>
+inline BiquadState<T, N>::~BiquadState()
+{
+    _numBiquads--;
 }
 
 template <typename T, int N>

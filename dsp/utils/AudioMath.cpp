@@ -84,3 +84,4 @@ AudioMath::ScaleFun<float> AudioMath::makeBipolarAudioScaler(float y0, float y1)
 
  // declare some test variables here
 int _numLookupParams = 0;
+int _numBiquads = 0;
