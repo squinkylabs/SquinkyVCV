@@ -84,11 +84,16 @@ static void test3()
     t = test.f.acceptData(test.messages[1].get());
     assertEQ(t, 0);
 
+    int emptyCount = 0;
+
     // play buffer once
-    float expected[] = {9, 6, 3, 0, 0, 0, 0, 0, 0};
+    float expected[] = {9, 6, 3, 0, 0, 0, 0, 0, 0, 0};
     for (int i = 0; i < 10; ++i) {
         float x = 5;
-        test.f.step(&x);
+        t = test.f.step(&x);
+        if (t) {
+            ++emptyCount;
+        }
         printf("i=%d, x = %f\n", i, x);
         assertEQ(x, expected[i]);
     }
@@ -97,8 +102,13 @@ static void test3()
     for (int i = 0; i < 10; ++i) {
         float x = 5;
         test.f.step(&x);
+        t = test.f.step(&x);
+        if (t) {
+            ++emptyCount;
+        }
         assertEQ(x, 0);
     }
+    assertEQ(emptyCount, 1);
 }
 
 

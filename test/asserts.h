@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AudioMath.h"
+
 #include <assert.h>
 #include <iostream>
 

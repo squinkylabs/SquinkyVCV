@@ -5,6 +5,7 @@
 
 NoiseMessage* FFTCrossFader::step(float* out)
 {
+    NoiseMessage* usedMessage = nullptr;
     if (dataFrames[0] && !dataFrames[1]) {
         // just one frame - play it;
         *out = dataFrames[0]->dataBuffer->get(curPlayOffset[0]);
@@ -27,11 +28,19 @@ NoiseMessage* FFTCrossFader::step(float* out)
         *out = (buffer1Value + buffer0Value) / (crossfadeSamples-1);
         advance(0);
         advance(1);
+        if (curPlayOffset[1] == crossfadeSamples) {
+            // finished fade, can get rid of 0
+            usedMessage = dataFrames[0];
+            dataFrames[0] = dataFrames[1];
+            curPlayOffset[0] = curPlayOffset[1];
+            dataFrames[1] = nullptr;
+            curPlayOffset[1] = 0;
+        }
 
     } else {
         *out = 0;
     }
-    return nullptr;
+    return usedMessage;;
 }
 
 void FFTCrossFader::advance(int index)
