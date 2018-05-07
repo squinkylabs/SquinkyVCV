@@ -209,13 +209,13 @@ void ColoredNoise<TBase>::serviceFFTServer()
 
     // see if we need to request first frame of sample data
     if (!isRequestPending && crossFader.empty()) {
-       // printf("try making first request\n");
+       printf("try making first request\n");
         assert(!messagePool.empty());
         NoiseMessage* msg = messagePool.pop();
        
         bool sent = thread->sendMessage(msg);
         if (sent) {
-          //  printf("made first request\n");
+           printf("made first request\n");
             isRequestPending = true;
         }
     }
@@ -223,13 +223,14 @@ void ColoredNoise<TBase>::serviceFFTServer()
     // see if any messages came back for us
     ThreadMessage* newMsg = thread->getMessage();
     if (newMsg) {
+        printf("got back a message\n");
         ++messageCount;
         assert(newMsg->type == ThreadMessage::Type::NOISE);
         NoiseMessage* noise = static_cast<NoiseMessage*>(newMsg);
        
         isRequestPending = false;
 
-        // put it in the corss fader for playback
+        // put it in the cross fader for playback
         // give the last one back
         NoiseMessage* oldMsg = crossFader.acceptData(noise);
         if (oldMsg) {
@@ -247,17 +248,9 @@ void ColoredNoise<TBase>::serviceAudio()
     float output = 0;
     NoiseMessage* oldMessage = crossFader.step(&output);
     if (oldMessage) {
+        // one frame may be done fading - we can take it back
         messagePool.push(oldMessage);
     }
-#if 0
-    if (curData) {
-        output = curData->dataBuffer->get(curDataOffset++);
-        if (curDataOffset >= (int)curData->dataBuffer->size())
-        {
-            curDataOffset = 0;
-        }
-    }
-#endif
 
     TBase::outputs[AUDIO_OUTPUT].value = output;
 }
@@ -273,6 +266,9 @@ void ColoredNoise<TBase>::serviceInputs()
     if (crossFader.empty()) {
         return;     // if we don't have data, we will be asking anyway
     }
+    if (messagePool.empty()) {
+        return;     // all our buffers are in use
+    }
    
     // get slope input to one decimal place
     float x = TBase::params[SLOPE_PARAM].value;
@@ -282,12 +278,16 @@ void ColoredNoise<TBase>::serviceInputs()
     sp.slope = x;
     const NoiseMessage* playingData = crossFader.playingMessage();
     if (!playingData || !(sp != playingData->noiseSpec)) {
+        // If we aren't playing yet, or no change in slope,
+        // the don't do anything
         return;
     }
-    printf("new noise spec\n");
+    printf("new noise spec, so make fresh request slope %f\n", x);
 
     assert(!messagePool.empty());
     NoiseMessage* msg = messagePool.pop();
+
+    // TODO: too late - already asserted. early exit abve
     assert(msg);
     if (!msg) {
         return;
