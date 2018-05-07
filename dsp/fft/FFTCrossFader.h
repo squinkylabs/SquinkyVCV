@@ -14,6 +14,15 @@ public:
     }
     NoiseMessage * step(float* out);
     NoiseMessage * acceptData(NoiseMessage*);
+    bool empty() const
+    {
+        return !dataFrames[0];
+    }
+    const NoiseMessage* playingMessage() const
+    {
+        // TODO: should return second, it exists?
+        return dataFrames[0];
+    }
 private:
     /**
      * The size of the crossfade, in samples

@@ -10,6 +10,7 @@
 
 #include "FFTData.h"
 #include "FFT.h"
+#include "FFTCrossFader.h"
 
 class NoiseMessage;
 
@@ -17,11 +18,11 @@ template <class TBase>
 class ColoredNoise : public TBase
 {
 public:
-    ColoredNoise(struct Module * module) : TBase(module)
+    ColoredNoise(struct Module * module) : TBase(module), crossFader(8 * 1024)
     {
         commonConstruct();
     }
-    ColoredNoise() : TBase()
+    ColoredNoise() : TBase(), crossFader(8 * 1024)
     {
         commonConstruct();
     }
@@ -79,12 +80,13 @@ private:
     /**
      * The FFT frame we are playing from.
      */
-    NoiseMessage* curData = nullptr;
+   // NoiseMessage* curData = nullptr;
+    FFTCrossFader   crossFader;
 
     /**
      * The "play head" in curData where we will get next sample
      */
-    int curDataOffset = 0;
+   // int curDataOffset = 0;
 
     int messageCount = 0; 
 
@@ -176,8 +178,9 @@ private:
 template <class TBase>
 float ColoredNoise<TBase>::getSlope() const
  { 
-     // TODO: atomic?
-     return curData ? curData->noiseSpec.slope : 0;
+     // TODO: atomic? other data?
+    const NoiseMessage* curMsg = crossFader.playingMessage();
+    return curMsg ? curMsg->noiseSpec.slope : 0;
 }
 
 template <class TBase>
@@ -205,8 +208,9 @@ void ColoredNoise<TBase>::serviceFFTServer()
    // NoiseMessage* curData = nullptr;
 
     // see if we need to request first frame of sample data
-    if (!isRequestPending && !curData) {
+    if (!isRequestPending && crossFader.empty()) {
        // printf("try making first request\n");
+        assert(!messagePool.empty());
         NoiseMessage* msg = messagePool.pop();
        
         bool sent = thread->sendMessage(msg);
@@ -222,14 +226,18 @@ void ColoredNoise<TBase>::serviceFFTServer()
         ++messageCount;
         assert(newMsg->type == ThreadMessage::Type::NOISE);
         NoiseMessage* noise = static_cast<NoiseMessage*>(newMsg);
-        
-        // give the last one back
-        if (curData) {
-            messagePool.push(curData);
-        }
-        curData = noise;
-        curDataOffset = 0;
+       
         isRequestPending = false;
+
+        // put it in the corss fader for playback
+        // give the last one back
+        NoiseMessage* oldMsg = crossFader.acceptData(noise);
+        if (oldMsg) {
+            messagePool.push(oldMsg);
+        }
+       // curData = noise;
+       // curDataOffset = 0;
+       
     }
 }
 
@@ -237,6 +245,11 @@ template <class TBase>
 void ColoredNoise<TBase>::serviceAudio()
 {
     float output = 0;
+    NoiseMessage* oldMessage = crossFader.step(&output);
+    if (oldMessage) {
+        messagePool.push(oldMessage);
+    }
+#if 0
     if (curData) {
         output = curData->dataBuffer->get(curDataOffset++);
         if (curDataOffset >= (int)curData->dataBuffer->size())
@@ -244,6 +257,7 @@ void ColoredNoise<TBase>::serviceAudio()
             curDataOffset = 0;
         }
     }
+#endif
 
     TBase::outputs[AUDIO_OUTPUT].value = output;
 }
@@ -256,7 +270,7 @@ void ColoredNoise<TBase>::serviceInputs()
     if (isRequestPending) {
         return;     // can't do anything until server is free.
     }
-    if (!curData) {
+    if (crossFader.empty()) {
         return;     // if we don't have data, we will be asking anyway
     }
    
@@ -266,11 +280,13 @@ void ColoredNoise<TBase>::serviceInputs()
     x = i / 10.f;
     ColoredNoiseSpec sp;
     sp.slope = x;
-    if (!(sp != curData->noiseSpec)) {
+    const NoiseMessage* playingData = crossFader.playingMessage();
+    if (!playingData || !(sp != playingData->noiseSpec)) {
         return;
     }
     printf("new noise spec\n");
 
+    assert(!messagePool.empty());
     NoiseMessage* msg = messagePool.pop();
     assert(msg);
     if (!msg) {
