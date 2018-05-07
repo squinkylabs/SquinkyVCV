@@ -12,7 +12,6 @@
 // test that we can build and tear down.
 static void test0()
 {
-   // printf("testthread 0\n");
     assertEQ(ThreadSharedState::_dbgCount, 0);
     {
         std::shared_ptr<ThreadSharedState> noise = std::make_shared<ThreadSharedState>();
@@ -20,7 +19,6 @@ static void test0()
         std::unique_ptr<ThreadClient> client(new ThreadClient(noise, std::move(server)));
     }
     assertEQ(ThreadSharedState::_dbgCount, 0);
-  //  printf("testthread 0 done\n");
 }
 
 static void test1()
@@ -77,7 +75,6 @@ public:
 
 static void test2()
 {
-    printf("Enter testThread2\n");
     // Set up all the objects
     std::unique_ptr<Test1Message> msg(new Test1Message());
     std::shared_ptr<ThreadSharedState> state = std::make_shared<ThreadSharedState>();
@@ -87,7 +84,6 @@ static void test2()
     for (int count = 0; count < 50; ++count) {
         msg->payload = 100+count;
         const int expectedPayload = msg->payload + 1000;
-        //printf("test loop iter: %d expect %d\n", count, expectedPayload);
         for (bool done = false; !done; ) {
             bool b = client->sendMessage(msg.get());
             if (b) {
@@ -101,12 +97,10 @@ static void test2()
                 done = true;
                 assert(rxmsg->type == ThreadMessage::Type::TEST1);
                 Test1Message* tmsg = reinterpret_cast<Test1Message *>(rxmsg);
-                //printf("test client reading from server %d\n", tmsg->payload);
                 assertEQ(tmsg->payload, expectedPayload);
             }
         }
     }
-    printf("test leaving testthread2");
 }
 
 /*****************************************************************/

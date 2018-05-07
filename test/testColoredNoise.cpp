@@ -29,7 +29,6 @@ static void test0()
 // porcess until audio comes out
 static void test1()
 {
-    printf("test1\n");
     Noise cn;
     cn.init();
     // calling step should get client to request an FFT frame

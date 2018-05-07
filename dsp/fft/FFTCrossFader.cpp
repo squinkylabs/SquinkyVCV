@@ -15,13 +15,6 @@ NoiseMessage* FFTCrossFader::step(float* out)
         // curPlayOffset1 is the index into buffer 1, but also the crossfade index
         assert(curPlayOffset[1] < crossfadeSamples);
 
-        printf("in step, cpo=%d,%d k0=%d k1= %d\n",
-            curPlayOffset[0], curPlayOffset[1],
-            (crossfadeSamples - (curPlayOffset[1] + 1)),
-            curPlayOffset[1]
-
-        );
-
         float buffer0Value = dataFrames[0]->dataBuffer->get(curPlayOffset[0]) * 
             (crossfadeSamples - (curPlayOffset[1]+1));
         float buffer1Value = dataFrames[1]->dataBuffer->get(curPlayOffset[1]) * curPlayOffset[1];

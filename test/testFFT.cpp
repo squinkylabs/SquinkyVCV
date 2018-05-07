@@ -115,11 +115,8 @@ static void testNoiseFormula()
 
         const float expectedMag = (i == 0) ? 0.f : 1.f;
         assertClose(mag, expectedMag, .0001);
-        //assert(phases.find(phase) == phases.end());
-        //printf("adding phase %f\n", phase);
         phases.insert(phase);
     }
-    printf("end of test, max=%d have%zd\n", bins, phases.size());
 }
 
 static float getPeak(const FFTDataReal& data)

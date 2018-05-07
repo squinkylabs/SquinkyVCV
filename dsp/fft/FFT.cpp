@@ -106,20 +106,13 @@ static float randomPhase()
 
 static void makeNegSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 {
-    printf("makeNex, slope=%f, bins=%d\n", spec.slope, (int)output->size());
-    // octave = log2(freq)
-    // find octave for 40hz;
-
     const int numBins = int(output->size());
     const float lowFreqCorner = 40;
     const float octave40 = float(std::log2(lowFreqCorner));
-    printf("octave 40 = %f\n", octave40);
 
     // find bin for 40 hz
     const int bin40 = freqToBin(lowFreqCorner, spec.sampleRate, numBins);
-   
-    printf("bin40 = %d\n", bin40);
-
+ 
     // fill bottom bins with 1.0 mag
     for (int i = 0; i <= bin40; ++i) {
         output->set(i, std::polar(1.f, randomPhase()));
@@ -139,19 +132,13 @@ static void makeNegSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 
 static void makePosSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 {
-    printf("makePos, slope=%f, bins=%d\n", spec.slope, (int) output->size());
-    // octave = log2(freq)
-    // find octave for 40hz;
 
     const int numBins = int(output->size());
   
     const float octaveHighCorner = float(std::log2(spec.highFreqCorner));
-    printf("octave hi = %f\n", octaveHighCorner);
 
     // find bin for high corner
     const int binHigh = freqToBin(spec.highFreqCorner, spec.sampleRate, numBins);
-
-    printf("binhigh = %d\n", binHigh);
 
     // fill top bins with 1.0 mag
     for (int i = numBins-1; i >= binHigh; --i) {
@@ -174,21 +161,6 @@ static void makePosSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 
 void FFT::makeNoiseSpectrum(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 {
-    // old stuff
-#if 0
-    const int frameSize = (int) output->size();
-    for (int i = 0; i < frameSize; ++i) {
-        float mag = 1;
-        float phase = (float) rand(); 
-        phase = phase / (float) RAND_MAX;   // 0..1
-        phase = (float)(phase * (2*AudioMath::Pi));
-
-        cpx x = std::polar(mag, phase);
-        output->set(i, x);
-    }
-#endif
-
-
     // for now, zero all first.
     const int frameSize = (int) output->size();
     for (int i = 0; i < frameSize; ++i) {
