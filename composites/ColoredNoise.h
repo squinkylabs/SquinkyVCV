@@ -14,15 +14,16 @@
 
 class NoiseMessage;
 
+const int crossfadeSamples = 32*1024;
 template <class TBase>
 class ColoredNoise : public TBase
 {
 public:
-    ColoredNoise(struct Module * module) : TBase(module), crossFader(8 * 1024)
+    ColoredNoise(struct Module * module) : TBase(module), crossFader(crossfadeSamples)
     {
         commonConstruct();
     }
-    ColoredNoise() : TBase(), crossFader(8 * 1024)
+    ColoredNoise() : TBase(), crossFader(crossfadeSamples)
     {
         commonConstruct();
     }

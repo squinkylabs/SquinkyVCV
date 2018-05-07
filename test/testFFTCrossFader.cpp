@@ -89,8 +89,12 @@ static void test3(bool testBuff0)
     int emptyCount = 0;
 
     // play buffer once
+
+    // buffer 0 full of 9, so should see fade 9..0
     float expected0[] = {9, 6, 3, 0, 0, 0, 0, 0, 0, 0};
-    float expected1[] = {18, 12, 6, 0, 0, 0, 0, 0, 0, 0};
+
+    // buffer 0 all zero, 1 all 18, so should see 0..18
+    float expected1[] = {0, 6, 12, 18, 18, 18, 18, 18, 18, 18};
     for (int i = 0; i < 10; ++i) {
         float x = 5;
         t = test.f.step(&x);
@@ -104,16 +108,19 @@ static void test3(bool testBuff0)
     //play it again.
     for (int i = 0; i < 10; ++i) {
         float x = 5;
-        test.f.step(&x);
+       // test.f.step(&x);
         t = test.f.step(&x);
         if (t) {
             ++emptyCount;
         }
-        assertEQ(x, 0);
+        const float expectedTail = testBuff0 ? 0.f : 18.f;
+        assertEQ(x, expectedTail);
     }
+    
     assertEQ(emptyCount, 1);
 }
 
+// extra buffer rejected
 static void test4()
 {
     Tester test(4, 10);
@@ -126,6 +133,76 @@ static void test4()
 }
 
 
+// test wrap-around case
+static void test5()
+{
+    // fade of 4, buffer of 8
+    Tester test(4, 8);
+
+    // fill the buff to test with data, other one with zeros
+    for (int i = 0; i < 8; ++i) {
+        test.messages[0]->dataBuffer->set(i, 0.f);
+        test.messages[1]->dataBuffer->set(i, float(i));
+    }
+
+    // put zero 0
+    NoiseMessage* t = test.f.acceptData(test.messages[0].get());
+    
+    float x;
+    // clock 6
+    for (int i = 0; i < 6; ++i) {
+        x = 5;
+        t = test.f.step(&x);
+        assertEQ(x, 0);         // 0
+        assertEQ(t, 0);
+    }
+
+    // now start crossfade
+
+    t = test.f.acceptData(test.messages[1].get());
+    assertEQ(t, 0);
+    
+    // sample #6. start fade
+    t = test.f.step(&x);
+    assertEQ(x, 0);         // 0
+    assertEQ(t, 0);
+
+    // sample #7.  fade #2
+    t = test.f.step(&x);
+    assertClose(x, .3333333f, .0001);         // 0
+    assertEQ(t, 0);
+
+    // sample#8, fade #3
+    t = test.f.step(&x);
+    assertClose(x, 1.3333333f, .0001);         // 0
+    assertEQ(t, 0);
+
+    // sample#8, fade #4 (last), buff 0 (?) gets returned
+    t = test.f.step(&x);
+    assertClose(x, 3.f, .0001);         // 0
+    assertNE(t, 0);
+
+    // done fading
+    t = test.f.step(&x);
+    assertClose(x, 4.f, .0001);         // 0
+    assertEQ(t, 0);
+
+    t = test.f.step(&x);
+    assertClose(x, 5.f, .0001);         // 0
+    assertEQ(t, 0);
+
+    t = test.f.step(&x);
+    assertClose(x, 6.f, .0001);         // 0
+    assertEQ(t, 0);
+
+    t = test.f.step(&x);
+    assertClose(x, 7.f, .0001);         // 0
+    assertEQ(t, 0);
+
+    t = test.f.step(&x);
+    assertClose(x, 0.f, .0001);         // 0
+    assertEQ(t, 0);
+}
 
 void testFFTCrossFader()
 {
@@ -134,6 +211,8 @@ void testFFTCrossFader()
     test1();
     test2();
     test3(true);
+    test3(false);
     test4();
+    test5();
     assertEQ(FFTDataReal::_count, 0);
 }
