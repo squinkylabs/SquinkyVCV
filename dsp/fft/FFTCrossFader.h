@@ -23,11 +23,17 @@ public:
         // TODO: should return second, it exists?
         return dataFrames[0];
     }
+    void enableMakeupGain(bool enable)
+    {
+        makeupGain = enable;
+    }
 private:
     /**
      * The size of the crossfade, in samples
      */
     const int crossfadeSamples;
+
+    bool makeupGain = false;
 
     /**
      * current playhead, relative to start of each buffer

@@ -120,6 +120,56 @@ static void test3(bool testBuff0)
     assertEQ(emptyCount, 1);
 }
 
+
+// two buff, should crossfade. odd size crossfade
+static void test7(bool testBuff0)
+{
+    Tester test(5, 10);
+
+    // fill the buff to test with data, other one with zeros
+    for (int i = 0; i < 10; ++i) {
+        test.messages[0]->dataBuffer->set(i, testBuff0 ? 12.f : 0.f);
+        test.messages[1]->dataBuffer->set(i, testBuff0 ? 0.f : 24.f);
+    }
+
+    // put both in, to cross fade
+    NoiseMessage* t = test.f.acceptData(test.messages[0].get());
+    assertEQ(t, 0);
+    t = test.f.acceptData(test.messages[1].get());
+    assertEQ(t, 0);
+
+    int emptyCount = 0;
+
+    // play buffer once
+
+    float expected0[] = {12, 9, 6, 3, 0, 0, 0, 0, 0, 0};
+
+    float expected1[] = {0, 6, 12, 18, 24, 24, 24, 24, 24, 24};
+    for (int i = 0; i < 10; ++i) {
+        float x = 5;
+        t = test.f.step(&x);
+        if (t) {
+            ++emptyCount;
+        }
+        const float expected = testBuff0 ? expected0[i] : expected1[i];
+        assertEQ(x, expected);
+    }
+
+    //play it again.
+    for (int i = 0; i < 10; ++i) {
+        float x = 5;
+        // test.f.step(&x);
+        t = test.f.step(&x);
+        if (t) {
+            ++emptyCount;
+        }
+        const float expectedTail = testBuff0 ? 0.f : 24.f;
+        assertEQ(x, expectedTail);
+    }
+
+    assertEQ(emptyCount, 1);
+}
+
 // extra buffer rejected
 static void test4()
 {
@@ -204,6 +254,49 @@ static void test5()
     assertEQ(t, 0);
 }
 
+// test makeup gain
+static void test6(bool makeup)
+{
+    printf("---- test6 sq2=%f\n", std::sqrt(2.f));
+    // fade of 5, buffer of 8
+    Tester test(5, 8);
+    test.f.enableMakeupGain(makeup);
+
+    // fill the buffers with 1
+    for (int i = 0; i < 8; ++i) {
+        test.messages[0]->dataBuffer->set(i, 1.f);
+        test.messages[1]->dataBuffer->set(i, 1.f);
+    }
+
+    // put messages
+    test.f.acceptData(test.messages[0].get());
+    test.f.acceptData(test.messages[1].get());
+
+    float x;
+    for (int i = 0; i < 5; ++i) {
+        x = 5;
+        test.f.step(&x);
+        printf("i=%d x=%f\n", i, x);
+        float expected = 1;
+        if (makeup) switch (i) {
+            case 0:
+            case 4:
+                expected = 1;
+                break;
+            case 2:
+                expected = std::sqrt(2.f);
+                break;
+            case 1:
+            case 3:
+                expected = (1.f + std::sqrt(2.f)) / 2.f;
+                break;
+            default: assert(false);
+        }
+        assertClose(x, expected, .0001);
+      
+    }
+}
+
 void testFFTCrossFader()
 {
     assertEQ(FFTDataReal::_count, 0);
@@ -212,7 +305,12 @@ void testFFTCrossFader()
     test2();
     test3(true);
     test3(false);
+    test7(true);
+    test7(false);
     test4();
     test5();
+    test6(false);
+    test6(true);
+    
     assertEQ(FFTDataReal::_count, 0);
 }
