@@ -257,7 +257,6 @@ static void test5()
 // test makeup gain
 static void test6(bool makeup)
 {
-    printf("---- test6 sq2=%f\n", std::sqrt(2.f));
     // fade of 5, buffer of 8
     Tester test(5, 8);
     test.f.enableMakeupGain(makeup);
@@ -276,7 +275,6 @@ static void test6(bool makeup)
     for (int i = 0; i < 5; ++i) {
         x = 5;
         test.f.step(&x);
-        printf("i=%d x=%f\n", i, x);
         float expected = 1;
         if (makeup) switch (i) {
             case 0:
@@ -293,7 +291,6 @@ static void test6(bool makeup)
             default: assert(false);
         }
         assertClose(x, expected, .0001);
-      
     }
 }
 
