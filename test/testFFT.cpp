@@ -7,7 +7,7 @@
 #include "FFTData.h"
 #include "FFT.h"
 
-
+extern void testFinalLeaks();
 
 static void testAccessors()
 {
@@ -100,7 +100,8 @@ static void testRoundTrip()
 
 static void testNoiseFormula()
 {
-    const int bins = 1024 * 64;
+
+    const int bins = 64 * 1024 ;
     std::unique_ptr<FFTDataCpx> data(new FFTDataCpx(bins));
     assertEQ(data->size(), bins);
 
@@ -113,8 +114,10 @@ static void testNoiseFormula()
         float mag = std::abs(x);
         float phase = std::arg(x);
 
-        const float expectedMag = (i == 0) ? 0.f : 1.f;
+        const float expectedMag = (i == 0) ? 0.f : (i < (bins / 2)) ? 1.f : 0.f;
+        
         assertClose(mag, expectedMag, .0001);
+       // printf("%d %f\n", i, mag);
         phases.insert(phase);
     }
 }
@@ -129,6 +132,44 @@ static float getPeak(const FFTDataReal& data)
 }
 
 
+static void testWhiteNoiseRT()
+{
+    const int bins = 2048;
+    std::unique_ptr<FFTDataCpx> noiseSpectrum(new FFTDataCpx(bins));
+    std::unique_ptr<FFTDataReal> noiseRealSignal(new FFTDataReal(bins));
+    std::unique_ptr<FFTDataCpx> noiseSpectrum2(new FFTDataCpx(bins));
+
+    for (int i = 0; i < bins; ++i) {
+        cpx x(0,0);
+        noiseSpectrum2->set(i, x);
+    }
+
+    FFT::makeNoiseSpectrum(noiseSpectrum.get(), ColoredNoiseSpec());
+
+    FFT::inverse(noiseRealSignal.get(), *noiseSpectrum);
+
+    FFT::forward(noiseSpectrum2.get(), *noiseRealSignal);
+    
+    float totalPhase = 0;
+    float minPhase = 0;
+    float maxPhase = 0;
+    for (int i = 0; i < bins/2; ++i) {
+        float expected = (i == 0) ? 0.f : 1.f;
+        cpx data = noiseSpectrum2->get(i);
+      
+        assertClose(std::abs(data), expected, .0001);
+        const float phase = std::arg(data);
+        totalPhase += phase;
+        minPhase = std::min(phase, minPhase);
+        maxPhase = std::max(phase, maxPhase);
+
+        //printf("phase[%d] = %f\n", i, std::arg(data));
+    }
+    printf("TODO: assert on phase\n");
+    printf("total phase=%f, average=%f\n", totalPhase, totalPhase / (bins / 2));
+    printf("maxPhase %f min %f\n", maxPhase, minPhase);
+}
+
 static void testNoiseRTSub(int bins)
 {
     std::unique_ptr<FFTDataCpx> dataCpx(new FFTDataCpx(bins));
@@ -141,10 +182,24 @@ static void testNoiseRTSub(int bins)
 
     const float peak = getPeak(*dataReal);
     assertClose( peak, 1.0f , .001);
+
 }
 
+#include <complex>
+static void test0()
+{
+    
+    for (float theta = -6; theta < 6; theta += 1) {
+
+        std::complex<float> x = std::polar(1.f, theta);
+        printf("theta=%f, comes back as %f\n", theta, std::arg(x));
+    }
+    
+
+}
 static void testNoiseRT()
 {
+    test0();
     testNoiseRTSub(4);
     testNoiseRTSub(8);
     testNoiseRTSub(16);
@@ -178,6 +233,9 @@ static void testPinkNoise()
 
     // TODO: compare in db
     assertClose(mag16, 2 * mag64, .01);
+    for (int i = bins / 2; i < bins; ++i) {
+        assertClose(std::abs(data->get(i)), 0, .00001);
+    }
 }
 
 static void testBlueNoise()
@@ -193,8 +251,6 @@ static void testBlueNoise()
 
     FFT::makeNoiseSpectrum(data.get(), spec);
 
-
-  
     float freq16 = 44100 * 16 / (float) bins;
     assertGT(freq16, 20);
 
@@ -203,6 +259,10 @@ static void testBlueNoise()
     float mag64 = std::abs(data->get(64));
 
     assertClose(2 * mag16, mag64, .1);
+
+    for (int i = bins / 2; i < bins; ++i) {
+        assertClose(std::abs(data->get(i)), 0, .00001);
+    }
 }
 
 void testFFT()
@@ -218,6 +278,6 @@ void testFFT()
     testNoiseRT();
     testPinkNoise();
     testBlueNoise();
-    assertEQ(FFTDataReal::_count, 0);
-    assertEQ(FFTDataCpx::_count, 0);
+    testWhiteNoiseRT();
+    testFinalLeaks();
 }

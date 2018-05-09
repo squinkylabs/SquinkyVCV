@@ -14,7 +14,7 @@
 
 class NoiseMessage;
 
-const int crossfadeSamples = 32*1024;
+const int crossfadeSamples = 4*1024;
 template <class TBase>
 class ColoredNoise : public TBase
 {
@@ -187,6 +187,7 @@ float ColoredNoise<TBase>::getSlope() const
 template <class TBase>
 void ColoredNoise<TBase>::commonConstruct()
 {
+    crossFader.enableMakeupGain(true);
     std::shared_ptr<ThreadSharedState> threadState = std::make_shared<ThreadSharedState>();
     std::unique_ptr<ThreadServer> server(new NoiseServer(threadState));
 

@@ -120,15 +120,17 @@ static void makeNegSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
     // now go to the end and at slope
     static float k = -spec.slope * log2(lowFreqCorner);
     for (int i = bin40 + 1; i < numBins; ++i) {
-        const float f = bin2Freq(i, spec.sampleRate, numBins);
-        const float gainDb = std::log2(f) * spec.slope + k;
-        const float gain = float(AudioMath::gainFromDb(gainDb));
-        output->set(i, std::polar(gain, randomPhase()));
+        if (i < numBins / 2) {
+            const float f = bin2Freq(i, spec.sampleRate, numBins);
+            const float gainDb = std::log2(f) * spec.slope + k;
+            const float gain = float(AudioMath::gainFromDb(gainDb));
+            output->set(i, std::polar(gain, randomPhase()));
+        } else {
+            output->set(i, cpx(0, 0));
+        }
     }
     output->set(0, 0);          // make sure dc bin zero
 }
-
-
 
 static void makePosSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 {
@@ -142,19 +144,24 @@ static void makePosSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 
     // fill top bins with 1.0 mag
     for (int i = numBins-1; i >= binHigh; --i) {
-        output->set(i, std::polar(1.f, randomPhase()));
+        if (i < numBins / 2) {
+            output->set(i, std::polar(1.f, randomPhase()));
+        } else {
+            output->set(i, cpx(0.0));
+        }
     }
     // now go to the end and at slope
     static float k = -spec.slope * log2(spec.highFreqCorner);
     for (int i = binHigh - 1; i > 0; --i) {
-        const float f = bin2Freq(i, spec.sampleRate, numBins);
-        const float gainDb = std::log2(f) * spec.slope + k;
-        const float gain = float(AudioMath::gainFromDb(gainDb));
-        output->set(i, std::polar(gain, randomPhase()));
-      //  printf("bin %d db=%f\n", i, gainDb);
-        if (i < (binHigh - 40)) {
-        //   printf("break here\n");
+        if (i < numBins / 2) {
+            const float f = bin2Freq(i, spec.sampleRate, numBins);
+            const float gainDb = std::log2(f) * spec.slope + k;
+            const float gain = float(AudioMath::gainFromDb(gainDb));
+            output->set(i, std::polar(gain, randomPhase()));
+        } else {
+            output->set(i, cpx(0, 0));
         }
+
     }
     output->set(0, 0);          // make sure dc bin zero
 }
@@ -164,7 +171,7 @@ void FFT::makeNoiseSpectrum(FFTDataCpx* output, const ColoredNoiseSpec& spec)
     // for now, zero all first.
     const int frameSize = (int) output->size();
     for (int i = 0; i < frameSize; ++i) {
-        cpx x(0);
+        cpx x(0,0);
         output->set(i, x);
     }
     if (spec.slope < 0) {
@@ -173,9 +180,6 @@ void FFT::makeNoiseSpectrum(FFTDataCpx* output, const ColoredNoiseSpec& spec)
         makePosSlope(output, spec);
     }
 }
-
-
-
 
 static float getPeak(const FFTDataReal& data)
 {
