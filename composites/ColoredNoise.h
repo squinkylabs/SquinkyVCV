@@ -45,11 +45,13 @@ public:
     enum ParamIds
     {
         SLOPE_PARAM,
+        SLOPE_TRIM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
+        SLOPE_CV,
         NUM_INPUTS
     };
 

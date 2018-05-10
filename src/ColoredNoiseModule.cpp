@@ -179,7 +179,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
     addChild(label);
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(20, 200),
+        Vec(20, 300),
         Port::OUTPUT,
         module,
         module->noiseSource.AUDIO_OUTPUT));
@@ -187,7 +187,15 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
     addParam(ParamWidget::create<Davies1900hBlackKnob>(
         Vec(28, 100), module, module->noiseSource.SLOPE_PARAM, -8.0, 8.0, 0.0));
 
+    addParam(ParamWidget::create<Trimpot>(
+        Vec(28, 140),
+        module, module->noiseSource.SLOPE_TRIM, -1.0, 1.0, 1.0));
 
+    addInput(Port::create<PJ301MPort>(
+        Vec(20, 160),
+        Port::INPUT,
+        module,
+        module->noiseSource.SLOPE_CV));
 
 }
 
