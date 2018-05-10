@@ -25,6 +25,10 @@ perf.exe : FLAGS += $(ASSERTOFF)
 
 FLAGS += $(PERFFLAG)
 
+# this probably goes away with 0.6.1
+# but for now our execs need to dynlink to pthread
+test.exe : LDFLAGS += -lpthread
+
 test : test.exe
 
 ## Note that perf and test targets both used build_test for object files,
