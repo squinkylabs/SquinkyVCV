@@ -39,7 +39,7 @@ cleantest :
 	rm -fv perf.exe
 
 test.exe : $(TEST_OBJECTS)
-	$(CXX) -o $@ $^
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 perf.exe : $(TEST_OBJECTS)
-	$(CXX) -o $@ $^
+	$(CXX) -o $@ $^ $(LDFLAGS)
