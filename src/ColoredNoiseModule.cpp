@@ -52,6 +52,7 @@ void ColoredNoiseModule::step()
 struct ColoredNoiseWidget : ModuleWidget
 {
     ColoredNoiseWidget(ColoredNoiseModule *);
+    Label * slopeLabel;
 };
 
 
@@ -113,33 +114,28 @@ static void getColor(unsigned char * out,  float x)
 
 struct ColorDisplay : OpaqueWidget {
     ColoredNoiseModule *module;
+    ColorDisplay(Label *l) : theLabel(l) {}
 
+    Label* theLabel=0;
     void draw(NVGcontext *vg) override 
     {
         const float slope = module->noiseSource.getSlope();
-#if 1
         unsigned char color[3];
         getColor(color, slope);
         nvgFillColor(vg, nvgRGBA(color[0], color[1], color[2], 0xff));
-
-#else
-        float red = (slope > 0) ? slope * 25 : 0;
-        float blue = (slope < 0) ? slope * -25 : 0;
-        // draw some squares for fun
-       // nvgScale(vg, 2, 2);
-        nvgFillColor(vg, nvgRGBA(red, 0x00, blue, 0xff));
-#endif
-
-
 
         nvgBeginPath(vg);
         // todo: pass in ctor
         nvgRect(vg, 0, 0, 6 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
 		nvgFill(vg);
 
+        std::stringstream s;
+        s.precision(1);
+        s.setf( std::ios::fixed, std::ios::floatfield );
+        s << slope << " db/oct";
+        theLabel->text = s.str();
+
     }
-
-
 };
 
 /**
@@ -152,25 +148,16 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
  
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
-    #if 1
+    slopeLabel = new Label();
 	{
-		ColorDisplay *display = new ColorDisplay();
+		ColorDisplay *display = new ColorDisplay(slopeLabel);
 		display->module = module;
 		display->box.pos = Vec( 0, 0);
 		display->box.size = Vec(6 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
 		addChild(display);
         display->module = module;
 	}
- #else
 
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
-        addChild(panel);
-    }
-
-#endif
     
     Label * label = new Label();
     label->box.pos = Vec(23, 24);
@@ -185,7 +172,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
         module->noiseSource.AUDIO_OUTPUT));
 
     addParam(ParamWidget::create<Davies1900hBlackKnob>(
-        Vec(28, 100), module, module->noiseSource.SLOPE_PARAM, -8.0, 8.0, 0.0));
+        Vec(28, 100), module, module->noiseSource.SLOPE_PARAM, -5.0, 5.0, 0.0));
 
     addParam(ParamWidget::create<Trimpot>(
         Vec(28, 140),
@@ -196,6 +183,12 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
         Port::INPUT,
         module,
         module->noiseSource.SLOPE_CV));
+
+    
+    slopeLabel->box.pos = Vec(6, 50);
+    slopeLabel->text = "slope";
+    slopeLabel->color = COLOR_BLACK;
+    addChild(slopeLabel);
 
 }
 

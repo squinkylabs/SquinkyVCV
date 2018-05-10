@@ -3,6 +3,7 @@
 #include <memory>
 #include "assert.h"
 
+#include "AudioMath.h"
 #include "ManagedPool.h"
 #include "ThreadClient.h"
 #include "ThreadServer.h"
@@ -39,6 +40,7 @@ public:
     // must be called after setSampleRate
     void init()
     {
+        cv_scaler = AudioMath::makeBipolarAudioScaler(-8, 8);
     }
 
     // Define all the enums here. This will let the tests and the widget access them.
@@ -78,6 +80,7 @@ public:
     typedef float T;        // use floats for all signals
 private:
 
+    AudioMath::ScaleFun<T> cv_scaler;
     bool isRequestPending = false;
 
     /**
@@ -273,13 +276,17 @@ void ColoredNoise<TBase>::serviceInputs()
     if (messagePool.empty()) {
         return;     // all our buffers are in use
     }
+
+    T combinedSlope = cv_scaler(
+        TBase::inputs[SLOPE_CV].value,
+        TBase::params[SLOPE_PARAM].value,
+        TBase::params[SLOPE_TRIM].value);
    
     // get slope input to one decimal place
-    float x = TBase::params[SLOPE_PARAM].value;
-    int i = int(x * 10);
-    x = i / 10.f;
+    int i = int(combinedSlope * 10);
+    combinedSlope = i / 10.f;
     ColoredNoiseSpec sp;
-    sp.slope = x;
+    sp.slope = combinedSlope;
     const NoiseMessage* playingData = crossFader.playingMessage();
     if (!playingData || !(sp != playingData->noiseSpec)) {
         // If we aren't playing yet, or no change in slope,
