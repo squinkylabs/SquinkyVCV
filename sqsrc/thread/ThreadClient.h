@@ -9,6 +9,7 @@ class ThreadMessage;
  * This class is meant to be used directly (not sub-classed)
  * All APIs are non-blocking (polled), so that they may be called
  * from an audio render thread without fear of priority inversion.
+ * See ThreadSharedState and ThreadSerever for more info.
  */
 class ThreadClient
 {

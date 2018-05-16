@@ -6,6 +6,15 @@
 class ThreadSharedState;
 class ThreadMessage;
 
+/**
+ * ThreadServer implements a worker thread that can do work
+ * off of the audio thread in a plugin.
+ * To do useful work with Thread server:
+ *      Derive a class from ThreadServer, and override handleMessage.
+ *      Define at least one message by deriving from ThreadMessage.
+ *      Control ThreadServer with ThreadClient.
+ * For more info, refer to ThreadSharedState
+ */
 class ThreadServer
 {
 public:

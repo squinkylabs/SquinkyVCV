@@ -57,15 +57,21 @@ struct ColoredNoiseWidget : ModuleWidget
 
 
 // F44336
-static const unsigned char red[3] = {0xf4, 0x43, 0x36 };
+//static const unsigned char red[3] = {0xf4, 0x43, 0x36 };
+static const unsigned char red[3] = {0xff, 0x04, 0x14 };
 // EC407A
-static const unsigned char pink[3] = {0xec, 0x40, 0x7a };
+//static const unsigned char pink[3] = {0xec, 0x40, 0x7a };
+static const unsigned char pink[3] = {0xff, 0x3a, 0x6d };
 
 static const unsigned char white[3] = {0xe0, 0xe0, 0xe0 };
+
 // #3F51B5
-static const unsigned char blue[3] = {0x3f, 0x51, 0xb5 };
+//static const unsigned char blue[3] = {0x3f, 0x51, 0xb5 };
+static const unsigned char blue[3] = {0x54, 0x43, 0xc1 };
+
 // 9C27B0
-static const unsigned char violet[3] = {0x9c, 0x27, 0xb0 };
+//static const unsigned char violet[3] = {0x9c, 0x27, 0xb0 };
+static const unsigned char violet[3] = {0x9d, 0x3c, 0xe6 };
 
 // 0 <= x <= 1
 static float interp(float x, int x0, int x1) 

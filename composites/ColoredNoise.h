@@ -15,8 +15,12 @@
 
 class NoiseMessage;
 
-const int crossfadeSamples = 4*1024;
+const int crossfadeSamples = 4 * 1024;
 template <class TBase>
+
+/**
+ * Implementation of the "Colors" noises generator
+ */
 class ColoredNoise : public TBase
 {
 public:
@@ -84,19 +88,20 @@ private:
     bool isRequestPending = false;
 
     /**
-     * The FFT frame we are playing from.
+     * crossFader generates the audio, but we must
+     * feed it with NoiseMessage data from the ThreadServer
      */
-   // NoiseMessage* curData = nullptr;
     FFTCrossFader   crossFader;
 
-    /**
-     * The "play head" in curData where we will get next sample
-     */
-   // int curDataOffset = 0;
-
-    int messageCount = 0; 
+    // just for debugging
+    int messageCount = 0;
 
     std::unique_ptr<ThreadClient> thread;
+
+    /**
+     * Messages moved between thread, messagePool, and crossFader
+     * as new noise slopes are requested in response to CV/knob changes.
+     */
     ManagedPool<NoiseMessage, 2> messagePool;
 
     void serviceFFTServer();
@@ -105,14 +110,12 @@ private:
     void commonConstruct();
 };
 
-
-// TODO: may not be possible to have a zero arg ctor for managed Pool to use...
 class NoiseMessage : public ThreadMessage
 {
 public:
 
     NoiseMessage() : ThreadMessage(Type::NOISE),
-        dataBuffer( new FFTDataReal(defaultNumBins))
+        dataBuffer(new FFTDataReal(defaultNumBins))
     {
     }
 
@@ -129,7 +132,6 @@ public:
 
     /** Server is going to fill this buffer up with time-domain data
      */
-    //FFTDataReal* const dataBuffer=nullptr;  // TODO:delete
     std::unique_ptr<FFTDataReal> dataBuffer;
 };
 
@@ -138,7 +140,6 @@ class NoiseServer : public ThreadServer
 public:
     NoiseServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state)
     {
-
     }
 protected:
     /**
@@ -147,7 +148,6 @@ protected:
      */
     virtual void handleMessage(ThreadMessage* msg) override
     {
-        //printf("server got message\n");
         if (msg->type != ThreadMessage::Type::NOISE) {
             assert(false);
             return;
@@ -157,14 +157,12 @@ protected:
         NoiseMessage* noiseMessage = static_cast<NoiseMessage*>(msg);
         reallocSpectrum(noiseMessage);
         FFT::makeNoiseSpectrum(noiseSpectrum.get(),
-                              noiseMessage->noiseSpec);
+            noiseMessage->noiseSpec);
 
-        // Now inverse FFT to time domain noise in client's buffer
+// Now inverse FFT to time domain noise in client's buffer
         FFT::inverse(noiseMessage->dataBuffer.get(), *noiseSpectrum.get());
         FFT::normalize(noiseMessage->dataBuffer.get());
-       // printf("server sending message back to client\n");
         sendMessageToClient(noiseMessage);
-      //  printf("sent\n");
     }
 private:
     std::unique_ptr<FFTDataCpx> noiseSpectrum;
@@ -173,7 +171,7 @@ private:
     // may delete the old buffer and make a new one.
     void reallocSpectrum(const NoiseMessage* msg)
     {
-        if (noiseSpectrum && ((int)noiseSpectrum->size() == msg->dataBuffer->size())) {
+        if (noiseSpectrum && ((int) noiseSpectrum->size() == msg->dataBuffer->size())) {
             return;
         }
 
@@ -183,8 +181,7 @@ private:
 
 template <class TBase>
 float ColoredNoise<TBase>::getSlope() const
- { 
-     // TODO: atomic? other data?
+{
     const NoiseMessage* curMsg = crossFader.playingMessage();
     return curMsg ? curMsg->noiseSpec.slope : 0;
 }
@@ -210,19 +207,13 @@ int ColoredNoise<TBase>::_msgCount() const
 template <class TBase>
 void ColoredNoise<TBase>::serviceFFTServer()
 {
-    // do we need to ask for more data?
-   // bool requestPending = false;
-   // NoiseMessage* curData = nullptr;
-
     // see if we need to request first frame of sample data
     if (!isRequestPending && crossFader.empty()) {
-        // printf("try making first request\n");
         assert(!messagePool.empty());
         NoiseMessage* msg = messagePool.pop();
-       
+
         bool sent = thread->sendMessage(msg);
         if (sent) {
-            // printf("made first request\n");
             isRequestPending = true;
         }
     }
@@ -230,11 +221,10 @@ void ColoredNoise<TBase>::serviceFFTServer()
     // see if any messages came back for us
     ThreadMessage* newMsg = thread->getMessage();
     if (newMsg) {
-        // printf("got back a message\n");
         ++messageCount;
         assert(newMsg->type == ThreadMessage::Type::NOISE);
         NoiseMessage* noise = static_cast<NoiseMessage*>(newMsg);
-       
+
         isRequestPending = false;
 
         // put it in the cross fader for playback
@@ -243,9 +233,6 @@ void ColoredNoise<TBase>::serviceFFTServer()
         if (oldMsg) {
             messagePool.push(oldMsg);
         }
-       // curData = noise;
-       // curDataOffset = 0;
-       
     }
 }
 
@@ -255,7 +242,7 @@ void ColoredNoise<TBase>::serviceAudio()
     float output = 0;
     NoiseMessage* oldMessage = crossFader.step(&output);
     if (oldMessage) {
-        // one frame may be done fading - we can take it back
+        // One frame may be done fading - we can take it back.
         messagePool.push(oldMessage);
     }
 
@@ -281,7 +268,7 @@ void ColoredNoise<TBase>::serviceInputs()
         TBase::inputs[SLOPE_CV].value,
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM].value);
-   
+
     // get slope input to one decimal place
     int i = int(combinedSlope * 10);
     combinedSlope = i / 10.f;
@@ -293,12 +280,10 @@ void ColoredNoise<TBase>::serviceInputs()
         // the don't do anything
         return;
     }
-   // printf("new noise spec, so make fresh request slope %f\n", x);
 
     assert(!messagePool.empty());
     NoiseMessage* msg = messagePool.pop();
 
-    // TODO: too late - already asserted. early exit abve
     assert(msg);
     if (!msg) {
         return;
@@ -307,12 +292,8 @@ void ColoredNoise<TBase>::serviceInputs()
     // TODO: put this logic in one place
     bool sent = thread->sendMessage(msg);
     if (sent) {
-        // printf("made additional request\n");
         isRequestPending = true;
-    } else {
-        // printf("send failed\n");
     }
-
 }
 
 template <class TBase>
