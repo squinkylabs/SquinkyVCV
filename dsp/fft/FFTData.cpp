@@ -24,14 +24,14 @@ FFTDataCpx::~FFTDataCpx()
 
 cpx FFTDataCpx::get(int index) const
 {
-    assert(index < buffer.size());
+    assert(index < (int)buffer.size());
     return buffer[index];
 }
 
 
 void FFTDataCpx::set(int index, cpx value)
 {
-    assert(index < buffer.size());
+    assert(index < (int)buffer.size());
     buffer[index] = value;
 }
 
@@ -55,13 +55,13 @@ FFTDataReal::~FFTDataReal()
 
 float FFTDataReal::get(int index) const
 {
-    assert(index < buffer.size());
+    assert(index < (int)buffer.size());
     return buffer[index];
 }
 
 
 void FFTDataReal::set(int index, float value)
 {
-    assert(index < buffer.size());
+    assert(index < (int)buffer.size());
     buffer[index] = value;
 }

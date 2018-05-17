@@ -108,7 +108,7 @@ static void makeNegSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 {
     const int numBins = int(output->size());
     const float lowFreqCorner = 40;
-    const float octave40 = float(std::log2(lowFreqCorner));
+   // const float octave40 = float(std::log2(lowFreqCorner));
 
     // find bin for 40 hz
     const int bin40 = freqToBin(lowFreqCorner, spec.sampleRate, numBins);
@@ -137,7 +137,7 @@ static void makePosSlope(FFTDataCpx* output, const ColoredNoiseSpec& spec)
 
     const int numBins = int(output->size());
   
-    const float octaveHighCorner = float(std::log2(spec.highFreqCorner));
+   // const float octaveHighCorner = float(std::log2(spec.highFreqCorner));
 
     // find bin for high corner
     const int binHigh = freqToBin(spec.highFreqCorner, spec.sampleRate, numBins);

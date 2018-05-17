@@ -92,7 +92,7 @@ static void testFull()
 
 static void testOne()
 {
-    char * p = "foo";
+    const char * p = "foo";
     RingBuffer<const char*, 1> rb;
     rb.push(p);
     assert(!rb.empty());
