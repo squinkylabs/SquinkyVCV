@@ -3,7 +3,6 @@
 
 
 // The plugin-wide instance of the Plugin class
-// i cadkkf spell sdofidifof 
 Plugin *plugin;
 
 /**
