@@ -32,39 +32,6 @@ ThreadMessage*  ThreadSharedState::server_waitForMessageOrShutdown()
     return returnMessage;
 }
 
-#if 0
-ThreadMessage*  ThreadSharedState::server_waitForMessageOrShutdown()
-{
-    // printf("wait\n"); fflush(stdout);
-
-    std::unique_lock<std::mutex> guard(mailboxMutex);           // grab the mutex that protects condition
-   
-    // First check for done before waiting for condition var -
-    // it might already have happened
-    if (serverStopRequested.load()) {
-        return nullptr;
-    }
-    ThreadMessage* returnMessage = mailboxClient2Server.load();
-    if (returnMessage) {
-        return returnMessage;
-    }
-    for (bool done=false; !done; ) {
-        mailboxCondition.wait(guard);                       // wait for client to send a message
-        if (serverStopRequested.load()) {
-            done = true;
-        } else {
-            returnMessage = mailboxClient2Server.load();
-            if (returnMessage) {
-                done = true;
-            }
-        }
-    }
-    mailboxClient2Server.store(nullptr);                    // remove the message from the mailbox
-                                                            // (should we lock here?) (no, we will have lock)
-    return returnMessage;
-}
-#endif
-
 void ThreadSharedState::client_askServerToStop()
 {
     serverStopRequested.store(true);                        // ask server to stop
@@ -82,15 +49,12 @@ ThreadMessage* ThreadSharedState::client_pollMessage()
     if (msg) {
         mailboxServer2Client.store(nullptr);
     }
-   // printf("client poss message ret %p\n", msg);
     return msg;
 }
 
 // signal in lock
 bool ThreadSharedState::client_trySendMessage(ThreadMessage* msg)
 {
-    //printf("snd\n"); fflush(stdout);
-
     assert(serverRunning.load());
     // If the client tries to send a message before the previous one is read, the
     // call will fail and the client must try again.
@@ -112,7 +76,6 @@ bool ThreadSharedState::client_trySendMessage(ThreadMessage* msg)
     mailboxClient2Server.store(msg);
 
     mailboxCondition.notify_all();
-    //printf("sx\n"); fflush(stdout);
     return true;
 }
 

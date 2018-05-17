@@ -17,7 +17,6 @@ ThreadServer::~ThreadServer()
 
 void ThreadServer::start()
 {
-   // printf("starting thread\n"); fflush(stdout);
     auto startupFunc = [this]() {
         this->threadFunction();
     };
@@ -40,7 +39,6 @@ void ThreadServer::threadFunction()
         }
     }
 
-    //printf("noiseserer shut down\n"); fflush(stdout);
     thread->detach();
     sharedState->serverRunning = false;
 }
