@@ -27,4 +27,9 @@ void init(rack::Plugin *p)
     assert(modelColoredNoiseModule);
     p->addModel(modelColoredNoiseModule);
 #endif
+
+    assert(modelPModule);
+    p->addModel(modelPModule);
+    assert(modelBModule);
+    p->addModel(modelBModule);
 }
