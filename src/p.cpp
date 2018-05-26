@@ -2,12 +2,17 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#include "ThreadClient.h"
+#include "ThreadServer.h"
+#include "ThreadSharedState.h"
+
 /**
  * Implementation class for BootyModule
  */
 struct pModule : Module
 {
     pModule();
+    ~pModule();
 
     /**
      * Overrides of Module functions
@@ -17,16 +22,71 @@ struct pModule : Module
 private:
     typedef float T;
 
+    std::vector< std::shared_ptr<ThreadClient> > threads;
+
 };
 
-extern float values[];
-extern const char* ranges[];
+class PServer : public ThreadServer
+{
+public:
+    PServer(std::shared_ptr<ThreadSharedState> state) 
+      : ThreadServer(state)
+    {
+
+    }
+    virtual void threadFunction () override;
+
+    ~PServer() {
+        printf("dtor PServer\n");
+    }
+private:
+    bool didRun = false;
+    double dummy = 0;
+};
+
+ void PServer::threadFunction() 
+ {
+    printf("oh, no, got the thread func\n"); fflush(stdout);
+    sharedState->serverRunning = true;
+    for (bool done = false; !done; ) {
+        if (sharedState->serverStopRequested.load()) {
+            done = true;
+        } else {
+          // now kill a lot of time
+            for (int i=0; i< 10000; ++i) {
+                dummy += std::log(rand()) * std::sin(rand());
+            }
+
+        }
+    }
+
+    thread->detach();
+    sharedState->serverRunning = false;
+ }
+
 
 pModule::pModule() : Module(0,0,0,0)
 {
+    for (int i=0; i<2; ++i) {
+        printf("starting a thread\n");
+        std::shared_ptr<ThreadSharedState> state = std::make_shared<ThreadSharedState>();
+        std::unique_ptr<ThreadServer> server(new PServer(state));
+        threads.push_back( 
+            std::make_shared<ThreadClient>(
+                state,
+                std::move(server)));
+    }
+    
     // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
     onSampleRateChange();
     //shifter.init();
+}
+
+pModule::~pModule()
+{
+    printf("about to ditch\n");
+    threads.resize(0);
+     printf("about to ditched\n");
 }
 
 
