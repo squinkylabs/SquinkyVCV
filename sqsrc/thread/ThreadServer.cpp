@@ -31,7 +31,7 @@ void ThreadServer::threadFunction()
         if (sharedState->serverStopRequested.load()) {
             done = true;
         } else {
-            // if msg is null, stop was requested
+            // if msg is null, stop was requested (that's not true anyh more, is it?)
             ThreadMessage* msg = sharedState->server_waitForMessageOrShutdown();
             if (msg) {
                 procMessage(msg);
@@ -46,7 +46,6 @@ void ThreadServer::threadFunction()
 //TODO: get rid of this function
 void ThreadServer::procMessage(ThreadMessage* msg)
 {
-
     handleMessage(msg);
 }
 

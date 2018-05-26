@@ -65,11 +65,23 @@ static void test2()
         cn.step();
     }
     cn.params[Noise::SLOPE_PARAM].value = 3;
-    while (cn._msgCount() < 2) {
+    while (cn._msgCount() < 3) {
         cn.step();
     }
     cn.params[Noise::SLOPE_PARAM].value = 2;
-    while (cn._msgCount() < 2) {
+    while (cn._msgCount() < 4) {
+        cn.step();
+    }
+    cn.params[Noise::SLOPE_PARAM].value = 2.3;
+    while (cn._msgCount() < 5) {
+        cn.step();
+    }
+    cn.params[Noise::SLOPE_PARAM].value = 2.5;
+    while (cn._msgCount() < 6) {
+        cn.step();
+    }
+      cn.params[Noise::SLOPE_PARAM].value = -1.2;
+    while (cn._msgCount() < 7) {
         cn.step();
     }
 }

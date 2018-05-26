@@ -1,5 +1,4 @@
 
-#ifdef _EXP
 #include "Squinky.hpp"
 
 #include "WidgetComposite.h"
@@ -219,6 +218,8 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
         module,
         module->noiseSource.SLOPE_CV));
 
+    // Create the labels for slope. They will get
+    // text content later.
     const float labelY = 146;
     slopeLabel->box.pos = Vec(12, labelY);
     slopeLabel->text = "";
@@ -241,6 +242,5 @@ Model *modelColoredNoiseModule = Model::create<ColoredNoiseModule, ColoredNoiseW
     "squinkylabs-coloredNoise",
     "Colored Noise", NOISE_TAG);
 
-#endif
 
 

@@ -208,6 +208,7 @@ template <class TBase>
 void ColoredNoise<TBase>::serviceFFTServer()
 {
     // see if we need to request first frame of sample data
+    // first request will be white noise. Is that ok?
     if (!isRequestPending && crossFader.empty()) {
         assert(!messagePool.empty());
         NoiseMessage* msg = messagePool.pop();
@@ -215,6 +216,8 @@ void ColoredNoise<TBase>::serviceFFTServer()
         bool sent = thread->sendMessage(msg);
         if (sent) {
             isRequestPending = true;
+        } else {
+            messagePool.push(msg);
         }
     }
 
@@ -253,7 +256,6 @@ void ColoredNoise<TBase>::serviceAudio()
 template <class TBase>
 void ColoredNoise<TBase>::serviceInputs()
 {
-
     if (isRequestPending) {
         return;     // can't do anything until server is free.
     }
@@ -284,7 +286,6 @@ void ColoredNoise<TBase>::serviceInputs()
 
     assert(!messagePool.empty());
     NoiseMessage* msg = messagePool.pop();
-
     assert(msg);
     if (!msg) {
         return;
@@ -294,6 +295,8 @@ void ColoredNoise<TBase>::serviceInputs()
     bool sent = thread->sendMessage(msg);
     if (sent) {
         isRequestPending = true;
+    } else {
+        messagePool.push(msg);
     }
 }
 

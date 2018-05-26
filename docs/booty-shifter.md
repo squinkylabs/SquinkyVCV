@@ -1,5 +1,7 @@
 # Table of contents
 
+[Colors](#colors)
+
 [Growler](#growler)
 
 [Booty Shifter](#shifter)
@@ -9,6 +11,23 @@
 [Attenuverters](#atten)
 
 [CV ranges](#cv)
+
+
+# Colors variable slope noise generator<a name="colors"></a>
+
+![noise image](../docs/colors.png)
+
+Colors is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. It can also produce all the colors in-between, as it has a **continuously variable slope**.
+
+Colors has a single control, “slope”. This is the slope of the noise spectrum, from -8 dB/octave to +8 dB/octave.
+
+The slope of the noise is quite accurate in the mid-band, but at the extremes we flatten the slope to keep from boosting  super-low frequencies too much, and to avoid putting out enormous amounts of highs. So the slope is flat below 40hz, and above 6kHz.
+
+## Things to be aware of
+
+When the **slope** changes, Color needs to do a lot of calculations. While this is normally not a problem, it’s possible that quickly changing the slope of many instances of Colors could cause pops and dropouts.
+
+The slope control does not respond instantly. If you turn the knob, you will hear the change, but if you were to modulate the CV very quickly you might notice the slowness.
 
 # Growler
 
@@ -120,6 +139,8 @@ The **LEDs across the top** indicate which formant is currently being "sung".
 ## About Attenuverters <a name="atten"></a>
 
 The small knobs next to the bigger knobs are **attenuverters**.  They scale and/or invert the control voltage inputs next to them. When they are turned all the way up the full CV comes through. As they are turned down less CV comes through. Straight up none passes. As they are turned down further the CV comes back, but inverted.
+
+Sometimes we use attenuverters with a *linear taper*, and sometimes we use an *audio taper*. If you find that on a particular module you do not like the response of the attenuverters, please log a github issue.
 
 ## Control voltage ranges <a name="cv"></a>
 

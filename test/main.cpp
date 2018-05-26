@@ -51,7 +51,6 @@ int main(int argc, char ** argv)
     testManagedPool();
     testLookupTable();
     testObjectCache();
-
     testTestSignal();
     testBiquad();
     testSaw();
@@ -63,8 +62,7 @@ int main(int argc, char ** argv)
     testFFT();
     testFFTCrossFader();
     testThread();
-
-
+    
     // after testing all the components, test composites.
     testColoredNoise();
     testFrequencyShifter();
@@ -74,8 +72,8 @@ int main(int argc, char ** argv)
         perfTest();
     }
 
-
     testFinalLeaks();
+
     // When we run inside Visual Studio, don't exit debugger immediately
 #if defined(_MSC_VER)
     printf("Test passed. Press any key to continue...\n"); fflush(stdout);
