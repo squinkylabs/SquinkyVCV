@@ -1,10 +1,17 @@
 
+#include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
+
+
+static const int numLoadThreads = 1;
+static const int drawMillisecondSleep = 10;
+
+static std::atomic<bool> drawIsSleeping;
 
 /**
  * Implementation class for BootyModule
@@ -19,10 +26,13 @@ struct pModule : Module
      */
     void step() override;
 
+
+   int stepsWhileDrawing=0;
 private:
     typedef float T;
-
     std::vector< std::shared_ptr<ThreadClient> > threads;
+    bool boosted = false;
+ 
 
 };
 
@@ -67,7 +77,7 @@ private:
 
 pModule::pModule() : Module(0,0,0,0)
 {
-    for (int i=0; i<2; ++i) {
+    for (int i=0; i<numLoadThreads; ++i) {
         printf("starting a thread\n");
         std::shared_ptr<ThreadSharedState> state = std::make_shared<ThreadSharedState>();
         std::unique_ptr<ThreadServer> server(new PServer(state));
@@ -84,15 +94,44 @@ pModule::pModule() : Module(0,0,0,0)
 
 pModule::~pModule()
 {
-    printf("about to ditch\n");
     threads.resize(0);
-     printf("about to ditched\n");
 }
 
 
 void pModule::step()
 {
- 
+    if (drawIsSleeping) {
+        stepsWhileDrawing++;
+    }
+    if (!boosted) {
+        boosted = true;
+
+
+
+        pthread_t threadHandle = pthread_self();
+
+        struct sched_param params;
+        int policy=55;
+        pthread_getschedparam(threadHandle, &policy, &params);
+        printf("default was policy %d priority %d\n", policy, params.sched_priority);
+
+        printf("FIFO=%d OTHER=%d\n", SCHED_FIFO, SCHED_OTHER);
+        // first, let's go for max. only works if root
+        policy = SCHED_FIFO;
+        int maxFifo =  sched_get_priority_max(policy);
+
+        params.sched_priority = maxFifo;
+        int x = pthread_setschedparam (threadHandle, policy, &params);
+        printf("set realtime ret %d. 0 is success. pri=%d\n", x, maxFifo);
+        if (x != 0) {
+            int policy = SCHED_OTHER;
+            int maxOther =  sched_get_priority_max(policy);
+             x = pthread_setschedparam (threadHandle, policy, &params);
+            printf("set realtime ret %d. 0 is success. pri=%d\n", x, maxOther);
+
+        }
+        printf(" ESRCH: %d, EINVAL %d, EPERM %d ENOTSUP %d\n", ESRCH, EINVAL, EPERM, ENOTSUP );
+    }
 }
 
 ////////////////////
@@ -102,6 +141,21 @@ void pModule::step()
 struct pWidget : ModuleWidget
 {
     pWidget(pModule *);
+    void draw(NVGcontext *vg) override
+    {
+        const pModule* pMod = static_cast<const pModule*>(module);
+        std::stringstream s;
+        s << pMod->stepsWhileDrawing;
+        steps->text = s.str();
+ 
+        ModuleWidget::draw(vg);
+        if (drawMillisecondSleep) {
+            drawIsSleeping = true;
+            std::this_thread::sleep_for(std::chrono::milliseconds(drawMillisecondSleep));
+            drawIsSleeping = false;
+        }
+    }
+    Label* steps;
 };
 
 /**
@@ -120,7 +174,18 @@ pWidget::pWidget(pModule *module) : ModuleWidget(module)
         addChild(panel);
     }
 
-   
+    Label* label=new Label();
+    label->box.pos = Vec(10, 100);
+    label->text = "SleepSteps";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+    steps=new Label();
+    steps->box.pos = Vec(10, 140);
+    steps->text = "";
+    steps->color = COLOR_BLACK;
+    addChild(steps);
+
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));

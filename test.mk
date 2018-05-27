@@ -31,19 +31,19 @@ FLAGS += $(PERFFLAG)
 ifeq ($(ARCH), win)
 	# don't need these yet
 	#  -lcomdlg32 -lole32 -ldsound -lwinmm
-test.exe : LDFLAGS = -static \
+test.exe perf.exe : LDFLAGS = -static \
 		-mwindows \
 		-lpthread -lopengl32 -lgdi32 -lws2_32
 endif
 
 ifeq ($(ARCH), lin)
-test.exe : LDFLAGS = -rdynamic \
+test.exe perf.exe : LDFLAGS = -rdynamic \
 		-lpthread -lGL -ldl \
 		$(shell pkg-config --libs gtk+-2.0)
 endif
 
 ifeq ($(ARCH), mac)
-test.exe : LDFLAGS = -stdlib=libc++ -lpthread -ldl \
+test.exe perf.exe : LDFLAGS = -stdlib=libc++ -lpthread -ldl \
 		-framework Cocoa -framework OpenGL -framework IOKit -framework CoreVideo
 endif
 
