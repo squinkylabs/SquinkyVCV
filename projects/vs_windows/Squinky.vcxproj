@@ -81,6 +81,7 @@
     <ClInclude Include="..\..\dsp\utils\LookupTableFactory.h" />
     <ClInclude Include="..\..\dsp\utils\ObjectCache.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadClient.h" />
+    <ClInclude Include="..\..\sqsrc\thread\ThreadPriority.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadServer.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h" />
     <ClInclude Include="..\..\sqsrc\util\ManagedPool.h" />

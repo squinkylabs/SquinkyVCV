@@ -293,5 +293,8 @@
     <ClInclude Include="..\..\dsp\fft\FFTCrossFader.h">
       <Filter>Header Files\dsp\fft</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqsrc\thread\ThreadPriority.h">
+      <Filter>Header Files\sqsrc\thread</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

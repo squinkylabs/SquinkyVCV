@@ -26,7 +26,9 @@ extern void testColoredNoise();
 extern void testFFTCrossFader();
 extern void testFinalLeaks();
 
-
+/* On Win, I can't set any realtimes, even as admin.
+* but I can
+*/
 #if !defined(_MSC_VER)
 
 // temporary
@@ -41,8 +43,10 @@ void tryThread()
 
         printf("FIFO=%d OTHER=%d\n", SCHED_FIFO, SCHED_OTHER);
         // first, let's go for max. only works if root
-        policy = SCHED_FIFO;
+        policy = SCHED_RR;
         int maxFifo =  sched_get_priority_max(policy);
+        int y = sched_get_priority_min(policy);
+        printf("for rr, max=%d min=%d\n", maxFifo, y);
 
         params.sched_priority = maxFifo;
         int x = pthread_setschedparam (threadHandle, policy, &params);
@@ -50,6 +54,9 @@ void tryThread()
         if (x != 0) {
             int policy = SCHED_OTHER;
             int maxOther =  sched_get_priority_max(policy);
+            y = sched_get_priority_min(policy);
+            printf("for sched_other, max=%d min=%d\n", maxOther, y);
+            params.sched_priority = maxOther;
              x = pthread_setschedparam (threadHandle, policy, &params);
             printf("set realtime ret %d. 0 is success. pri=%d\n", x, maxOther);
 
