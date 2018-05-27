@@ -6,10 +6,16 @@
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
+#include "ThreadPriority.h"
 
 
-static const int numLoadThreads = 1;
-static const int drawMillisecondSleep = 10;
+/** The following block of constants control what
+ * this plugin does. Change them and re-build
+ */
+static const int numLoadThreads = 3;
+static const int drawMillisecondSleep = 100;
+static bool doNormalBoost = true;
+
 
 static std::atomic<bool> drawIsSleeping;
 
@@ -26,14 +32,11 @@ struct pModule : Module
      */
     void step() override;
 
-
-   int stepsWhileDrawing=0;
+    int stepsWhileDrawing=0;
 private:
     typedef float T;
     std::vector< std::shared_ptr<ThreadClient> > threads;
     bool boosted = false;
- 
-
 };
 
 class PServer : public ThreadServer
@@ -74,7 +77,6 @@ private:
     sharedState->serverRunning = false;
  }
 
-
 pModule::pModule() : Module(0,0,0,0)
 {
     for (int i=0; i<numLoadThreads; ++i) {
@@ -103,34 +105,10 @@ void pModule::step()
     if (drawIsSleeping) {
         stepsWhileDrawing++;
     }
-    if (!boosted) {
+    
+    if (doNormalBoost && !boosted) {
         boosted = true;
-
-
-
-        pthread_t threadHandle = pthread_self();
-
-        struct sched_param params;
-        int policy=55;
-        pthread_getschedparam(threadHandle, &policy, &params);
-        printf("default was policy %d priority %d\n", policy, params.sched_priority);
-
-        printf("FIFO=%d OTHER=%d\n", SCHED_FIFO, SCHED_OTHER);
-        // first, let's go for max. only works if root
-        policy = SCHED_FIFO;
-        int maxFifo =  sched_get_priority_max(policy);
-
-        params.sched_priority = maxFifo;
-        int x = pthread_setschedparam (threadHandle, policy, &params);
-        printf("set realtime ret %d. 0 is success. pri=%d\n", x, maxFifo);
-        if (x != 0) {
-            int policy = SCHED_OTHER;
-            int maxOther =  sched_get_priority_max(policy);
-             x = pthread_setschedparam (threadHandle, policy, &params);
-            printf("set realtime ret %d. 0 is success. pri=%d\n", x, maxOther);
-
-        }
-        printf(" ESRCH: %d, EINVAL %d, EPERM %d ENOTSUP %d\n", ESRCH, EINVAL, EPERM, ENOTSUP );
+        ThreadPriority::boostNormal();
     }
 }
 
