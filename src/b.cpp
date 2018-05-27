@@ -7,6 +7,26 @@
  */
 struct bModule : Module
 {
+	enum ParamIds {
+		THREAD_BOOST_PARAM,
+		NUM_PARAMS
+	};
+	enum InputIds {
+
+		NUM_INPUTS
+	};
+	enum OutputIds {
+
+		NUM_OUTPUTS
+	};
+	enum LightIds {
+        NORMAL_LIGHT,
+        BOOST_LIGHT,
+        REALTIME_LIGHT,
+        ERROR_LIGHT,
+		NUM_LIGHTS
+	};
+
     bModule();
 
     /**
@@ -19,10 +39,10 @@ private:
 
 };
 
-extern float values[];
-extern const char* ranges[];
+//extern float values[];
+//extern const char* ranges[];
 
-bModule::bModule() : Module(0,0,0,0)
+bModule::bModule() : Module(NUM_PARAMS,NUM_INPUTS,NUM_OUTPUTS,NUM_LIGHTS)
 {
     // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
     onSampleRateChange();
@@ -60,6 +80,48 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
         addChild(panel);
     }
 
+    addParam(ParamWidget::create<NKK>(
+        Vec(30, 140), module, bModule::THREAD_BOOST_PARAM, 0.0f, 2.0f, 0.0f));
+
+    const int ledX = 10;
+    const int labelX = 16;
+    const int ledY = 200;
+    const int labelY = ledY - 5;
+    const int deltaY = 30;
+    Label* label;
+    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+        Vec(ledX, ledY), module, bModule::NORMAL_LIGHT));
+    label = new Label();
+    label->box.pos = Vec(labelX, labelY);
+    label->text = "Normal";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+        Vec(ledX, ledY+deltaY), module, bModule::BOOST_LIGHT));
+    label = new Label();
+    label->box.pos = Vec(labelX, labelY+deltaY);
+    label->text = "Boost";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+        Vec(ledX, ledY+2*deltaY), module, bModule::REALTIME_LIGHT));
+    label = new Label();
+    label->box.pos = Vec(labelX, labelY+2*deltaY);
+    label->text = "Real-time";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
+        Vec(ledX, ledY+3*deltaY), module, bModule::ERROR_LIGHT));
+    label = new Label();
+    label->box.pos = Vec(labelX, labelY+3*deltaY);
+    label->text = "Normal";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+
    
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -73,6 +135,6 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
 Model *modelBModule = Model::create<bModule, bWidget>("Squinky Labs",
-    "squinkylabs-p",
+    "squinkylabs-b",
     "b", EFFECT_TAG);
 
