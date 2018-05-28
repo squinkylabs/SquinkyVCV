@@ -1,6 +1,7 @@
 
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
+#include "ThreadPriority.h"
 
 /**
  * Implementation class for BootyModule
@@ -21,7 +22,7 @@ struct bModule : Module
 	};
 	enum LightIds {
         NORMAL_LIGHT,
-        BOOST_LIGHT,
+        BOOSTED_LIGHT,
         REALTIME_LIGHT,
         ERROR_LIGHT,
 		NUM_LIGHTS
@@ -35,24 +36,53 @@ struct bModule : Module
     void step() override;
 
 private:
-    typedef float T;
+    int boostState=0;
+    void lightOnly(LightIds l) {
+        for (int i= NORMAL_LIGHT; i<NUM_LIGHTS; ++i ) {
+            bool b = (i == l);
+            lights[i].value = b;
+        }
+    }
 
 };
 
-//extern float values[];
-//extern const char* ranges[];
-
 bModule::bModule() : Module(NUM_PARAMS,NUM_INPUTS,NUM_OUTPUTS,NUM_LIGHTS)
 {
-    // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
-    onSampleRateChange();
-    //shifter.init();
 }
-
 
 void bModule::step()
 {
- 
+    float x = params[THREAD_BOOST_PARAM].value + .5f;
+    int i = std::floor(x);
+    if (i != boostState) {
+        switch(i) {
+            case 0:
+                ThreadPriority::restore();
+                lightOnly(NORMAL_LIGHT);
+                break;
+            case 1: 
+                {
+                    bool b = ThreadPriority::boostNormal();
+                    if (b) {
+                        lightOnly(BOOSTED_LIGHT);
+                    } else {
+                        lightOnly(ERROR_LIGHT);
+                    }
+                    break;
+                }
+            case 2:
+                {
+                    bool b = ThreadPriority::boostRealtime();
+                    if (b) {
+                        lightOnly(REALTIME_LIGHT);
+                    } else {
+                        lightOnly(ERROR_LIGHT);
+                    }
+                    break;
+                }
+        }
+        boostState = i;
+    }
 }
 
 ////////////////////
@@ -98,7 +128,7 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
     addChild(label);
 
     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY+deltaY), module, bModule::BOOST_LIGHT));
+        Vec(ledX, ledY+deltaY), module, bModule::BOOSTED_LIGHT));
     label = new Label();
     label->box.pos = Vec(labelX, labelY+deltaY);
     label->text = "Boost";
@@ -117,7 +147,7 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
         Vec(ledX, ledY+3*deltaY), module, bModule::ERROR_LIGHT));
     label = new Label();
     label->box.pos = Vec(labelX, labelY+3*deltaY);
-    label->text = "Normal";
+    label->text = "Error";
     label->color = COLOR_BLACK;
     addChild(label);
 

@@ -6,7 +6,6 @@
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
-#include "ThreadPriority.h"
 
 
 /** The following block of constants control what
@@ -36,7 +35,6 @@ struct pModule : Module
 private:
     typedef float T;
     std::vector< std::shared_ptr<ThreadClient> > threads;
-    bool boosted = false;
 };
 
 class PServer : public ThreadServer
@@ -50,7 +48,6 @@ public:
     virtual void threadFunction () override;
 
     ~PServer() {
-        printf("dtor PServer\n");
     }
 private:
     bool didRun = false;
@@ -59,7 +56,6 @@ private:
 
  void PServer::threadFunction() 
  {
-    printf("oh, no, got the thread func\n"); fflush(stdout);
     sharedState->serverRunning = true;
     for (bool done = false; !done; ) {
         if (sharedState->serverStopRequested.load()) {
@@ -80,7 +76,6 @@ private:
 pModule::pModule() : Module(0,0,0,0)
 {
     for (int i=0; i<numLoadThreads; ++i) {
-        printf("starting a thread\n");
         std::shared_ptr<ThreadSharedState> state = std::make_shared<ThreadSharedState>();
         std::unique_ptr<ThreadServer> server(new PServer(state));
         threads.push_back( 
@@ -91,7 +86,6 @@ pModule::pModule() : Module(0,0,0,0)
     
     // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
     onSampleRateChange();
-    //shifter.init();
 }
 
 pModule::~pModule()
@@ -104,11 +98,6 @@ void pModule::step()
 {
     if (drawIsSleeping) {
         stepsWhileDrawing++;
-    }
-    
-    if (doNormalBoost && !boosted) {
-        boosted = true;
-        ThreadPriority::boostNormal();
     }
 }
 
