@@ -165,6 +165,6 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
 Model *modelBModule = Model::create<bModule, bWidget>("Squinky Labs",
-    "squinkylabs-b",
-    "b", EFFECT_TAG);
+    "squinkylabs-booster",
+    "Thread Booster", EFFECT_TAG);
 

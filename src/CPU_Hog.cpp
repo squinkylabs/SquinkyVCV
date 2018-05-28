@@ -11,10 +11,8 @@
 /** The following block of constants control what
  * this plugin does. Change them and re-build
  */
-static const int numLoadThreads = 3;
-static const int drawMillisecondSleep = 100;
-static bool doNormalBoost = true;
-
+static const int numLoadThreads = 1;
+static const int drawMillisecondSleep = 0;
 
 static std::atomic<bool> drawIsSleeping;
 
@@ -165,6 +163,6 @@ pWidget::pWidget(pModule *module) : ModuleWidget(module)
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
 Model *modelPModule = Model::create<pModule, pWidget>("Squinky Labs",
-    "squinkylabs-p",
-    "p", EFFECT_TAG);
+    "squinkylabs-cpuhog",
+    "CPU Hog", EFFECT_TAG);
 
