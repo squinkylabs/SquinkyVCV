@@ -82,6 +82,15 @@ static void test1()
         float x = std::pow(2, TestBuffers<float>::get());
         return x;
         }, 1);
+     MeasureTime<float>::run("test1 pow rnd float", []() {
+        float x = std::pow( TestBuffers<float>::get(), TestBuffers<float>::get());
+        return x;
+        }, 1);
+
+    MeasureTime<float>::run("test1 exp float", []() {
+        float x = std::exp(TestBuffers<float>::get());
+        return x;
+        }, 1);
 }
 #endif
 
