@@ -1,11 +1,25 @@
 
+#include <assert.h>
 #include "ClockMult.h"
+#include <stdio.h>
 
 
 
 int ClockMult::sampleClock()
 {
-    return 1;
+    int clocks = 0;
+    switch (state) {
+        case State::INIT:
+            clocks = 1;
+            break;
+        case State::TRAINING:
+            clocks = 1;
+            ++trainingCounter;
+            break;
+        default: 
+            assert(false);
+    }
+    return clocks;
 }
 
 /**
@@ -13,7 +27,19 @@ int ClockMult::sampleClock()
 */
 void ClockMult::refClock()
 {
-
+    switch (state) {
+        case State::INIT:
+            state = State::TRAINING;
+            trainingCounter = 0;
+            break;
+        case State::TRAINING:
+            printf("got end train with ctr = %d\n", trainingCounter);
+            learnedPeriod = trainingCounter;
+            state = State::RUNNING;
+            break;
+        default:
+            assert(0);
+    }
 }
 
 /**

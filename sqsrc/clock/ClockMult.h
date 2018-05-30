@@ -24,5 +24,15 @@ public:
     bool getMultipliedClock();
 
     void setDivisor(int);
+private:
+    enum class State
+    {
+        INIT,
+        TRAINING,
+        RUNNING
+    };
+    int trainingCounter = 12345;
+    int learnedPeriod = 999;
+    State state = State::INIT;
 
 };
