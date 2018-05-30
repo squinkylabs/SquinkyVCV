@@ -25,6 +25,7 @@ extern void testManagedPool();
 extern void testColoredNoise();
 extern void testFFTCrossFader();
 extern void testFinalLeaks();
+extern void testClockMult();
 
 int main(int argc, char ** argv)
 {
@@ -54,6 +55,7 @@ int main(int argc, char ** argv)
     testTestSignal();
     testBiquad();
     testSaw();
+    testClockMult();
     
     testSinOscillator();
     testHilbert();
