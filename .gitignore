@@ -4,10 +4,13 @@
 **/Debug/
 **/Release/
 **/.vs/
+.vscode/
 *.opensdf
 *.sdf
 *.ipch
 Squinky.suo
 *.dll
+*.so
+*.dylib
 *.exe
 *.user

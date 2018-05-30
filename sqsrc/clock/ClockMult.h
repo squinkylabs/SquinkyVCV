@@ -8,22 +8,33 @@ public:
      * Clocks the multiplier by one sample.
      * Returns 0 or more high speed clocks.
      */
-    int sampleClock();
+    void sampleClock();
 
     /**
-     * Sends one reference tick to the multiplier
+     * Sends one reference tick to the multiplier. This is
+     * the "input" to the multiplier.
      */
     void refClock();
 
     /** 
-     * When a ref count comes in early, instead of puking out a ton of
-     * sample clocks to keep up, we instead reset. Will immediately clear after call.	
+     * 0..1 saw at the same rate as multiplier output.	
      */
-    bool getReset();
+    float getSaw() const
+    {
+        return sawPhase;
+    }
 
-    bool getMultipliedClock();
+    bool getMultipliedClock() const
+    {
+        return clockOutValue;
+    }
 
     void setDivisor(int);
+
+    float _getFreq() const
+    {
+        return learnedFrequency;
+    }
 private:
     enum class State
     {
@@ -33,6 +44,14 @@ private:
     };
     int trainingCounter = 12345;
     int learnedPeriod = 999;
+    float learnedFrequency = 0;
     State state = State::INIT;
+
+    bool clockOutValue = 0;
+    int clockOutTimer = 0;
+
+    float sawPhase = 0;
+
+    void startNewClock();
 
 };

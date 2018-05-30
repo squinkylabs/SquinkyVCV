@@ -5,21 +5,30 @@
 
 
 
-int ClockMult::sampleClock()
+void ClockMult::sampleClock()
 {
-    int clocks = 0;
+    printf("sampleClock: state=%d saw=%f\n", state, sawPhase);
     switch (state) {
         case State::INIT:
-            clocks = 1;
             break;
         case State::TRAINING:
-            clocks = 1;
             ++trainingCounter;
             break;
+        case State::RUNNING: 
+            sawPhase += learnedFrequency;
+            if (clockOutTimer > 0) {
+                clockOutTimer--;
+            } else {
+                clockOutValue = false;
+                printf("clock out one-shot timed out, going low\n");
+            }
+
+            break;
+
         default: 
             assert(false);
     }
-    return clocks;
+    printf("leave sampleClock: state=%d saw=%f\n", state, sawPhase);
 }
 
 /**
@@ -27,34 +36,35 @@ int ClockMult::sampleClock()
 */
 void ClockMult::refClock()
 {
+    printf("refClock: state=%d\n", state);
     switch (state) {
         case State::INIT:
             state = State::TRAINING;
             trainingCounter = 0;
+            printf("refClock moved from INIT to TRAINIG\n");
             break;
         case State::TRAINING:
             printf("got end train with ctr = %d\n", trainingCounter);
             learnedPeriod = trainingCounter;
+            learnedFrequency = 1.0f / learnedPeriod;
             state = State::RUNNING;
+            
+            startNewClock();
+            printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",
+                learnedPeriod, learnedFrequency, clockOutValue);
             break;
         default:
             assert(0);
     }
+    printf("leave refClock: state=%d\n", state);
 }
 
-/**
-* When a ref count comes in early, instead of puking out a ton of
-* sample clocks to keep up, we instead reset. Will immediately clear after call.
-*/
-bool ClockMult::getReset()
+void ClockMult::startNewClock()
 {
-    return false;
+    clockOutValue = true;
+    clockOutTimer = 10;         // TODO: constants
 }
 
-bool ClockMult::getMultipliedClock()
-{
-    return false;
-}
 
 void ClockMult::setDivisor(int)
 {
