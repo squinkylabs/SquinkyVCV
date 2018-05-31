@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ClockMult.h"
 
 /**
  */
@@ -19,9 +20,8 @@ public:
     }
 
     // must be called after setSampleRate
-    void init()
-    {
-    }
+    void init();
+
 
    /* from vst
    		ControlValues() {
@@ -67,10 +67,30 @@ public:
 
 private:
 
-    float reciprocalSampleRate;
+    ClockMult clock;
+
+    float reciprocalSampleRate = 0;;
 };
+
+
+
+template <class TBase>
+inline void Tremelo<TBase>::init()
+{
+    clock.setDivisor(0);
+}
 
 template <class TBase>
 inline void Tremelo<TBase>::step()
 {
+
+    float r = TBase::params[LFO_RATE_PARAM].value;
+    // scale crudely, for now.
+    r += 5;
+    r *= .2;
+    r += .1;
+    clock.setFreeRunFreq(r * reciprocalSampleRate);
+    clock.sampleClock();
+
+    TBase::outputs[AUDIO_OUTPUT].value = clock.getSaw();   // just for now
 }

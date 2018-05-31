@@ -308,5 +308,8 @@
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h">
       <Filter>Header Files\sqsrc\clock</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\Tremelo.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

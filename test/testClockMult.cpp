@@ -3,6 +3,8 @@
 #include "asserts.h"
 
 #include "ClockMult.h"
+#include "TestComposite.h"
+#include "Tremelo.h"
 
 
 /**
@@ -92,6 +94,10 @@ static void test2()
         cm.sampleClock();
         assertClose(cm.getSaw(), (i + 1) * .1f, .0001);
     }
+
+    // just for now, to force VS compilation
+    Tremelo<TestComposite> t;
+
 }
 void testClockMult()
 {

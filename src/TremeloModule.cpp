@@ -16,12 +16,17 @@ public:
      * Overrides of Module functions
      */
     void step() override;
+    void onSampleRateChange() override;
    Tremelo<WidgetComposite> tremelo;
 private:
  
 };
 
-
+void TremeloModule::onSampleRateChange()
+{
+    float rate = engineGetSampleRate();
+    tremelo.setSampleRate(rate);
+}
 
 TremeloModule::TremeloModule()
  : Module(tremelo.NUM_PARAMS,
@@ -31,9 +36,8 @@ TremeloModule::TremeloModule()
     tremelo(this)
 {
     onSampleRateChange();
+    tremelo.init();
 }
-
-
 
 void TremeloModule::step()
 {

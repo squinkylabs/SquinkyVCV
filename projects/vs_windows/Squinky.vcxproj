@@ -59,6 +59,7 @@
     <ClInclude Include="..\..\composites\ColoredNoise.h" />
     <ClInclude Include="..\..\composites\FrequencyShifter.h" />
     <ClInclude Include="..\..\composites\TestComposite.h" />
+    <ClInclude Include="..\..\composites\Tremelo.h" />
     <ClInclude Include="..\..\composites\VocalAnimator.h" />
     <ClInclude Include="..\..\composites\VocalFilter.h" />
     <ClInclude Include="..\..\composites\WidgetComposite.h" />
