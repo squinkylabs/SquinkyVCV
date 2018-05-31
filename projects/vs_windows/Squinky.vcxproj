@@ -79,6 +79,7 @@
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.h" />
+    <ClInclude Include="..\..\dsp\utils\AsymRampShaper.h" />
     <ClInclude Include="..\..\dsp\utils\AudioMath.h" />
     <ClInclude Include="..\..\dsp\utils\LookupTable.h" />
     <ClInclude Include="..\..\dsp\utils\LookupTableFactory.h" />

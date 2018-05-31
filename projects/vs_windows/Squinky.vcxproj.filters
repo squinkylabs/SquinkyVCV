@@ -311,5 +311,8 @@
     <ClInclude Include="..\..\composites\Tremelo.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\AsymRampShaper.h">
+      <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

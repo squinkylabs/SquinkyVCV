@@ -2,7 +2,7 @@
 
 #include "ClockMult.h"
 #include "ObjectCache.h"
-
+#include "AsymRampShaper.h"
 
 /*
 
@@ -100,7 +100,9 @@ private:
     ClockMult clock;
     std::shared_ptr<LookupTableParams<float>> sinLookup;
   //  getSinLookup();
-    float reciprocalSampleRate = 0;;
+    float reciprocalSampleRate = 0;
+
+    AsymRampShaperParams rampShaper;
 };
 
 
