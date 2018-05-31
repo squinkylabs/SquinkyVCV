@@ -35,6 +35,11 @@ public:
     {
         return learnedFrequency;
     }
+
+    void setFreeRunFreq(float f)
+    {
+        freeRunFreq = f;
+    }
 private:
     enum class State
     {
@@ -45,13 +50,21 @@ private:
     int trainingCounter = 12345;
     int learnedPeriod = 999;
     float learnedFrequency = 0;
+    int freqMultFactor = 0;         // if 0, free run, else mult by n.
     State state = State::INIT;
 
     bool clockOutValue = 0;
     int clockOutTimer = 0;
 
     float sawPhase = 0;
+    float freeRunFreq = 0;
 
     void startNewClock();
+    bool isFreeRun() const
+    {
+        return freqMultFactor == 0;
+    }
+    void sampleClockFreeRun();
+    void sampleClockLocked();
 
 };

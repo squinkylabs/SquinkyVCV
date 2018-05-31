@@ -72,8 +72,30 @@ static void test1()
     }
 }
 
+/**
+ * Test free running
+ */
+static void test2()
+{
+    ClockMult cm;
+    cm.setDivisor(0);
+    cm.setFreeRunFreq(.1f);
+
+    assertEQ(cm.getSaw(), 0);
+    for (int i = 0; i < 9; ++i) {
+        cm.sampleClock();
+        assertClose(cm.getSaw(), (i+1) * .1f, .0001);
+    }
+    cm.sampleClock();
+    assertClose(cm.getSaw(), 0, .0001);
+    for (int i = 0; i < 9; ++i) {
+        cm.sampleClock();
+        assertClose(cm.getSaw(), (i + 1) * .1f, .0001);
+    }
+}
 void testClockMult()
 {
     test0();
     test1();
+    test2();
 }

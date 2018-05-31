@@ -4,8 +4,26 @@
 #include <stdio.h>
 
 
-
 void ClockMult::sampleClock()
+{
+    if (isFreeRun()) {
+        sampleClockFreeRun();
+    } else {
+        sampleClockLocked();
+    }
+}
+
+void ClockMult::sampleClockFreeRun()
+{
+    sawPhase += freeRunFreq;
+    if (sawPhase >= 1) {
+        sawPhase -= 1;
+        // TODO: do we care about clock out? probably...
+    }
+}
+
+
+void ClockMult::sampleClockLocked()
 {
     printf("sampleClock: state=%d saw=%f\n", state, sawPhase);
     switch (state) {
@@ -66,7 +84,7 @@ void ClockMult::startNewClock()
 }
 
 
-void ClockMult::setDivisor(int)
+void ClockMult::setDivisor(int x)
 {
-    
+    freqMultFactor = x;
 }
