@@ -23,9 +23,22 @@ public:
     {
     }
 
-    // Define all the enums here. This will let the tests and the widget access them.
+   /* from vst
+   		ControlValues() {
+			lfoRate=3;		
+			lfoShape=.5;
+			lfoSkew=0;
+			modDepth=0;
+			lfoPhase=0;
+			beatSync=0;
+		}
+        */
     enum ParamIds
     {
+        LFO_RATE_PARAM,
+        LFO_SHAPE_PARAM,
+        LFO_SKEW_PARAM,
+        MOD_DEPTH_PARAM,
         NUM_PARAMS
     };
 

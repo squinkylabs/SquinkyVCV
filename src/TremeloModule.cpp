@@ -16,9 +16,9 @@ public:
      * Overrides of Module functions
      */
     void step() override;
-
+   Tremelo<WidgetComposite> tremelo;
 private:
-    Tremelo<WidgetComposite> tremelo;
+ 
 };
 
 
@@ -65,6 +65,11 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
         addChild(panel);
     }
 
+    const float rowIO = 330;
+    addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremelo.AUDIO_INPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremelo.AUDIO_OUTPUT));
+
+
    
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -77,7 +82,7 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
-Model *modelPModule = Model::create<TremeloModule, TremeloWidget>("Squinky Labs",
+Model *modelTremeloModule = Model::create<TremeloModule, TremeloWidget>("Squinky Labs",
     "squinkylabs-tremelo",
     "Tremelo", EFFECT_TAG);
 
