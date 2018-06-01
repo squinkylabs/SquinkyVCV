@@ -73,6 +73,58 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
     addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremelo.AUDIO_INPUT));
     addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremelo.AUDIO_OUTPUT));
 
+    // main params
+    const float knobX = 10;
+    const float knobY = 50;
+    const float textX = 45;
+    const float knobDy = 55;
+
+    addParam(ParamWidget::create<Rogan1PSBlue>(
+        Vec(knobX, knobY), module, module->tremelo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    Label* label = new Label();
+    label->box.pos = Vec(textX, knobY);
+    label->text = "Rate";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+   addParam(ParamWidget::create<Rogan1PSBlue>(
+        Vec(knobX, knobY + 1*knobDy), module, module->tremelo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
+    label = new Label();
+    label->box.pos = Vec(textX, knobY+1*knobDy);
+    label->text = "Shape";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+    addParam(ParamWidget::create<Rogan1PSBlue>(
+        Vec(knobX, knobY + 2*knobDy), module, module->tremelo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
+    label = new Label();
+    label->box.pos = Vec(textX, knobY+2*knobDy);
+    label->text = "Skew";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+    addParam(ParamWidget::create<Rogan1PSBlue>(
+        Vec(knobX, knobY + 3*knobDy), module, module->tremelo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
+    label = new Label();
+    label->box.pos = Vec(textX, knobY+3*knobDy);
+    label->text = "Phase";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+    addParam(ParamWidget::create<Rogan1PSBlue>(
+        Vec(knobX, knobY + 4*knobDy), module, module->tremelo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
+    label = new Label();
+    label->box.pos = Vec(textX, knobY+4*knobDy);
+    label->text = "Depth";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+ /*
+         LFO_RATE_PARAM,
+        LFO_SHAPE_PARAM,
+        LFO_SKEW_PARAM,
+        MOD_DEPTH_PARAM,
+        */
 
    
     // screws

@@ -6,6 +6,53 @@
 
 /*
 
+
+ControlValues() {
+lfoRate=3;
+lfoShape=.5;
+lfoSkew=0;
+modDepth=0;
+lfoPhase=0;
+beatSync=0;
+}
+
+{
+IEffectParameter * p = new LogParam("freq", "hz",
+.1, 10, 3);
+effectParameterList.params.push_back(p);
+}
+{
+IEffectParameter * p = new LinearParam("shape", " ",
+0, 1, 0);
+effectParameterList.params.push_back(p);
+}
+{
+IEffectParameter * p = new LinearParam("skew", " ",
+-.99, .99, 0);
+effectParameterList.params.push_back(p);
+}
+{
+IEffectParameter * p = new LinearParam("phase", " ",
+-1, 1, 0);
+effectParameterList.params.push_back(p);
+}
+{
+IEffectParameter * p = new LinearParam("depth", " ",
+0, 1, 0);
+effectParameterList.params.push_back(p);
+}
+{
+//IEffectParameter * p = new ComboBoxParam("depth", " ",
+//	0, 1, 0);
+std::vector< std::string > values;
+for (int i=0; bsettings[i].label; ++i) {
+values.push_back( bsettings[i].label);
+}
+IEffectParameter * p = new ComboBoxParam("Beat", values, 0);
+effectParameterList.params.push_back(p);
+}
+}
+
 old plug proc loop.
 
 // Step 1: generate a saw
@@ -68,6 +115,7 @@ public:
         LFO_RATE_PARAM,
         LFO_SHAPE_PARAM,
         LFO_SKEW_PARAM,
+        LFO_PHASE_PARAM,
         MOD_DEPTH_PARAM,
         NUM_PARAMS
     };
@@ -99,10 +147,16 @@ private:
 
     ClockMult clock;
     std::shared_ptr<LookupTableParams<float>> sinLookup;
-  //  getSinLookup();
     float reciprocalSampleRate = 0;
 
     AsymRampShaperParams rampShaper;
+
+    // make some bootstrap scalers
+    AudioMath::ScaleFun<float> scale_rate;
+    AudioMath::ScaleFun<float> scale_skew;
+    AudioMath::ScaleFun<float> scale_shape;
+    AudioMath::ScaleFun<float> scale_depth;
+    AudioMath::ScaleFun<float> scale_phase;
 };
 
 
@@ -112,6 +166,12 @@ inline void Tremelo<TBase>::init()
 {
     sinLookup = ObjectCache<float>::getSinLookup();
     clock.setDivisor(0);
+
+    scale_rate = AudioMath::makeBipolarAudioScaler(.1, 10); // full CV range -> 0..1
+    scale_skew = AudioMath::makeBipolarAudioScaler(-.99, .99);
+    scale_shape = AudioMath::makeBipolarAudioScaler(0, 1);
+    scale_depth = AudioMath::makeBipolarAudioScaler(0, 1);
+    scale_phase = AudioMath::makeBipolarAudioScaler(-1, 1);
 }
 
 static float mx = -10;
@@ -133,7 +193,7 @@ inline void Tremelo<TBase>::step()
     float mod = clock.getSaw();
     mod = LookupTable<float>::lookup(*sinLookup.get(), mod);
 
- 
+ #if 0
     mn = std::min(mod, mn);
     mx = std::max(mod, mx);
 
@@ -141,6 +201,7 @@ inline void Tremelo<TBase>::step()
         printf("mod = %f, %f\n", mn, mx);
         ct = 0;
     }
+    #endif
 
     TBase::outputs[AUDIO_OUTPUT].value = mod;   // just for now
 }
