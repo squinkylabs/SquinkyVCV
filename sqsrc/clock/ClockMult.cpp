@@ -25,7 +25,7 @@ void ClockMult::sampleClockFreeRun()
 
 void ClockMult::sampleClockLocked()
 {
-    printf("sampleClock: state=%d saw=%f\n", state, sawPhase);
+  //  printf("sampleClock: state=%d saw=%f\n", state, sawPhase);
     switch (state) {
         case State::INIT:
             break;
@@ -38,7 +38,7 @@ void ClockMult::sampleClockLocked()
                 clockOutTimer--;
             } else {
                 clockOutValue = false;
-                printf("clock out one-shot timed out, going low\n");
+             //   printf("clock out one-shot timed out, going low\n");
             }
 
             break;
@@ -46,7 +46,7 @@ void ClockMult::sampleClockLocked()
         default: 
             assert(false);
     }
-    printf("leave sampleClock: state=%d saw=%f\n", state, sawPhase);
+ //   printf("leave sampleClock: state=%d saw=%f\n", state, sawPhase);
 }
 
 /**
@@ -54,27 +54,26 @@ void ClockMult::sampleClockLocked()
 */
 void ClockMult::refClock()
 {
-    printf("refClock: state=%d\n", state);
+  //  printf("refClock: state=%d\n", state);
     switch (state) {
         case State::INIT:
             state = State::TRAINING;
             trainingCounter = 0;
-            printf("refClock moved from INIT to TRAINIG\n");
+       //     printf("refClock moved from INIT to TRAINIG\n");
             break;
         case State::TRAINING:
-            printf("got end train with ctr = %d\n", trainingCounter);
+        //    printf("got end train with ctr = %d\n", trainingCounter);
             learnedPeriod = trainingCounter;
             learnedFrequency = 1.0f / learnedPeriod;
             state = State::RUNNING;
             
             startNewClock();
-            printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",
-                learnedPeriod, learnedFrequency, clockOutValue);
+          //  printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",  learnedPeriod, learnedFrequency, clockOutValue);
             break;
         default:
             assert(0);
     }
-    printf("leave refClock: state=%d\n", state);
+    //printf("leave refClock: state=%d\n", state);
 }
 
 void ClockMult::startNewClock()

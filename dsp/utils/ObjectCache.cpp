@@ -59,15 +59,36 @@ std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getDb2Gain()
     return ret;
 }
 
+
+template <typename T>
+std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getTanh5()
+{
+    std::shared_ptr< LookupTableParams<T>> ret = tanh5.lock();
+    if (!ret) {
+        ret = std::make_shared<LookupTableParams<T>>();
+        LookupTable<T>::init(*ret, 256, -5, 5,  [](double x) {
+            return std::tanh(x);
+            });
+        tanh5 = ret;
+    }
+    return ret;
+}
+
 // The weak pointer that hold our singletons.
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::bipolarAudioTaper;
+
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::sinLookupTable;
+
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::exp2;
+
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::db2Gain;
+
+template <typename T>
+std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::tanh5;
 
 // Explicit instantiation, so we can put implementation into .cpp file
 template class ObjectCache<double>;

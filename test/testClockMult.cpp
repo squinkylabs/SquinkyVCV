@@ -17,16 +17,16 @@ static void test0()
     cm.setDivisor(1);
     const int period = 4;
 
-    printf("test0, 0\n");
+   // printf("test0, 0\n");
     cm.refClock();  // give it an external clock
 
-    printf("test0, 1\n");
+  //  printf("test0, 1\n");
     // train with 4 ref clocks()
     for (int i = 0; i < period; ++i) {
         cm.sampleClock();
         assertEQ(cm.getSaw(), 0);
         assertEQ(cm.getMultipliedClock(), false);
-        printf("test0, 2\n");
+       // printf("test0, 2\n");
 
     }
 
@@ -47,16 +47,16 @@ static void test1()
     cm.setDivisor(1);
     const int period = 4;
 
-    printf("test0, 0\n");
+  //  printf("test0, 0\n");
     cm.refClock();  // give it an external clock
 
-    printf("test0, 1\n");
+   // printf("test0, 1\n");
     // train with 4 ref clocks()
     for (int i = 0; i < period; ++i) {
         cm.sampleClock();
         assertEQ(cm.getSaw(), 0);
         assertEQ(cm.getMultipliedClock(), false);
-        printf("test0, 2\n");
+       // printf("test0, 2\n");
 
     }
 
@@ -68,7 +68,7 @@ static void test1()
 
     for (int i = 0; i < period-1; ++i) {
         cm.sampleClock();
-        printf("in loop, i=%d, saw=%f\n", i, cm.getSaw());
+    //    printf("in loop, i=%d, saw=%f\n", i, cm.getSaw());
         assertEQ(cm.getSaw(), .25 * (i + 1));
         assertEQ(cm.getMultipliedClock(), true);
     }

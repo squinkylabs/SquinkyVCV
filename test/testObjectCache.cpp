@@ -149,6 +149,23 @@ static void testDb2Gain2()
         assertClose(x, y, .2);
     }
 }
+
+
+template <typename T>
+static void testTanh5()
+{
+    auto test = ObjectCache<T>::getTanh5();
+    auto test2 = ObjectCache<T>::getTanh5();
+    assertEQ(_numLookupParams, 1);
+
+    for (double x = -5; x <= 5; x += .1) {
+        const double y = LookupTable<T>::lookup(*test, (T) x);
+        const double y0 = std::tanh(x);
+
+        assertClose(y, y0, .01);
+    }  
+}
+
 template <typename T>
 static void test()
 {
@@ -158,6 +175,7 @@ static void test()
     testExp2b<T>();
     testDb2Gain<T>();
     testDb2Gain2<T>();
+    testTanh5<T>();
 }
 
 void testObjectCache()
