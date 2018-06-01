@@ -181,13 +181,32 @@ static int ct = 0;
 template <class TBase>
 inline void Tremelo<TBase>::step()
 {
+    // .1...10
+    const float rate = scale_rate(0, 
+        TBase::params[LFO_RATE_PARAM].value,
+        1);
+    const float shape = scale_shape(0,
+        TBase::params[LFO_SHAPE_PARAM].value,
+        1);
 
-    float r = TBase::params[LFO_RATE_PARAM].value;
+    const float skew = scale_skew(0,
+        TBase::params[LFO_SKEW_PARAM].value,
+        1);
+    const float phase = scale_phase(0,
+        TBase::params[LFO_PHASE_PARAM].value,
+        1);
+    const float modDepth = scale_depth(0,
+        TBase::params[MOD_DEPTH_PARAM].value,
+        1);
+   
+
+#if 0
     // scale crudely, for now.
     r += 5;
     r *= .2;
     r += .1;
-    clock.setFreeRunFreq(r * reciprocalSampleRate);
+#endif
+    clock.setFreeRunFreq(rate * reciprocalSampleRate);
     clock.sampleClock();
 
     float mod = clock.getSaw();
