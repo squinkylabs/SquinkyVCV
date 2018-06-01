@@ -118,6 +118,7 @@ public:
     enum OutputIds
     {
         AUDIO_OUTPUT,
+        SAW_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -199,6 +200,7 @@ inline void Tremolo<TBase>::step()
     mod = AsymRampShaper::proc_1(rampShaper, mod);
     mod -= 0.5f;
     // now we have a skewed saw -.5 to .5
+    TBase::outputs[SAW_OUTPUT].value = mod;
 
     // TODO: don't scale twice - just get it right the first tme
     const float shapeMul = std::max(.25f, 10 * shape);
