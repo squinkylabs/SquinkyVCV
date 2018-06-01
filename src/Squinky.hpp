@@ -6,6 +6,6 @@ extern Model *modelBootyModule;
 extern Model *modelVocalModule;
 extern Model *modelVocalFilterModule;
 extern Model *modelColoredNoiseModule;
-extern Model *modelTremeloModule;
+extern Model *modelTremoloModule;
 
 

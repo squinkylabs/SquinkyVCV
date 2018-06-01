@@ -1,8 +1,7 @@
 #pragma once
 
+#include <assert.h>
 
-#ifndef __asymerampshaper__
-#define __asymerampshaper__
 
 /** For Tremelo: lets you smootly adjust phase and skew
 * turns a ramp into a continuously variable dual slope ramp:
@@ -76,15 +75,6 @@ public:
         return ret;
     }
 
-#if 0
-    static void proc_v(AsymRampShaperParams& params, float * output, const float * input, int sampleFrames)
-    {
-        while (sampleFrames--) {
-            *output++ = proc_1(params, *input++);
-        }
-    }
-#endif
-
 };
-#endif
+
 

@@ -26,6 +26,7 @@ extern void testColoredNoise();
 extern void testFFTCrossFader();
 extern void testFinalLeaks();
 extern void testClockMult();
+extern void testTremolo();
 
 int main(int argc, char ** argv)
 {
@@ -66,6 +67,7 @@ int main(int argc, char ** argv)
     testThread();
     
     // after testing all the components, test composites.
+    testTremolo();
     testColoredNoise();
     testFrequencyShifter();
     testVocalAnimator();

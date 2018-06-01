@@ -82,13 +82,13 @@ LookupUniform<vec_t>::lookup_clip_v(*tanhParams, tempBuffer, tempBuffer, sampleF
 /**
  */
 template <class TBase>
-class Tremelo : public TBase
+class Tremolo : public TBase
 {
 public:
-    Tremelo(struct Module * module) : TBase(module)
+    Tremolo(struct Module * module) : TBase(module)
     {
     }
-    Tremelo() : TBase()
+    Tremolo() : TBase()
     {
     }
     void setSampleRate(float rate)
@@ -151,20 +151,20 @@ private:
 
 
 template <class TBase>
-inline void Tremelo<TBase>::init()
+inline void Tremolo<TBase>::init()
 {
     sinLookup = ObjectCache<float>::getSinLookup();
     clock.setDivisor(0);
 
-    scale_rate = AudioMath::makeBipolarAudioScaler(.1, 10); // full CV range -> 0..1
-    scale_skew = AudioMath::makeBipolarAudioScaler(-.99, .99);
+    scale_rate = AudioMath::makeBipolarAudioScaler(.1f, 10.f); // full CV range -> 0..1
+    scale_skew = AudioMath::makeBipolarAudioScaler(-.99f, .99f);
     scale_shape = AudioMath::makeBipolarAudioScaler(0, 1);
     scale_depth = AudioMath::makeBipolarAudioScaler(0, 1);
     scale_phase = AudioMath::makeBipolarAudioScaler(-1, 1);
 }
 
 template <class TBase>
-inline void Tremelo<TBase>::step()
+inline void Tremolo<TBase>::step()
 {
     // .1...10
     const float rate = scale_rate(0, 

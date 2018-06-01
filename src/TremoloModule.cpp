@@ -2,14 +2,14 @@
 #include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
-#include "Tremelo.h"
+#include "Tremolo.h"
 
 /**
  */
-struct TremeloModule : Module
+struct TremoloModule : Module
 {
 public:
-    TremeloModule();
+    TremoloModule();
 
 
     /**
@@ -17,40 +17,40 @@ public:
      */
     void step() override;
     void onSampleRateChange() override;
-   Tremelo<WidgetComposite> tremelo;
+   Tremolo<WidgetComposite> tremolo;
 private:
  
 };
 
-void TremeloModule::onSampleRateChange()
+void TremoloModule::onSampleRateChange()
 {
     float rate = engineGetSampleRate();
-    tremelo.setSampleRate(rate);
+    tremolo.setSampleRate(rate);
 }
 
-TremeloModule::TremeloModule()
- : Module(tremelo.NUM_PARAMS,
-    tremelo.NUM_INPUTS,
-    tremelo.NUM_OUTPUTS,
-    tremelo.NUM_LIGHTS),
-    tremelo(this)
+TremoloModule::TremoloModule()
+ : Module(tremolo.NUM_PARAMS,
+    tremolo.NUM_INPUTS,
+    tremolo.NUM_OUTPUTS,
+    tremolo.NUM_LIGHTS),
+    tremolo(this)
 {
     onSampleRateChange();
-    tremelo.init();
+    tremolo.init();
 }
 
-void TremeloModule::step()
+void TremoloModule::step()
 {
-    tremelo.step();
+    tremolo.step();
 }
 
 ////////////////////
 // module widget
 ////////////////////
 
-struct TremeloWidget : ModuleWidget
+struct TremoloWidget : ModuleWidget
 {
-    TremeloWidget(TremeloModule *);
+    TremoloWidget(TremoloModule *);
 };
 
 /**
@@ -58,7 +58,7 @@ struct TremeloWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
+TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 {
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
@@ -70,8 +70,8 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
     }
 
     const float rowIO = 330;
-    addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremelo.AUDIO_INPUT));
-    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremelo.AUDIO_OUTPUT));
+    addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
 
     // main params
     const float knobX = 10;
@@ -80,7 +80,7 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
     const float knobDy = 55;
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY), module, module->tremelo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+        Vec(knobX, knobY), module, module->tremolo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
     Label* label = new Label();
     label->box.pos = Vec(textX, knobY);
     label->text = "Rate";
@@ -88,7 +88,7 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
     addChild(label);
 
    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 1*knobDy), module, module->tremelo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
+        Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+1*knobDy);
     label->text = "Shape";
@@ -96,7 +96,7 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
     addChild(label);
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 2*knobDy), module, module->tremelo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
+        Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+2*knobDy);
     label->text = "Skew";
@@ -104,7 +104,7 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
     addChild(label);
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 3*knobDy), module, module->tremelo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
+        Vec(knobX, knobY + 3*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+3*knobDy);
     label->text = "Phase";
@@ -112,7 +112,7 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
     addChild(label);
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 4*knobDy), module, module->tremelo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
+        Vec(knobX, knobY + 4*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+4*knobDy);
     label->text = "Depth";
@@ -138,7 +138,8 @@ TremeloWidget::TremeloWidget(TremeloModule *module) : ModuleWidget(module)
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
-Model *modelTremeloModule = Model::create<TremeloModule, TremeloWidget>("Squinky Labs",
-    "squinkylabs-tremelo",
-    "Tremelo", EFFECT_TAG);
+Model *modelTremoloModule = Model::create<TremoloModule,
+     TremoloWidget>("Squinky Labs",
+    "squinkylabs-tremolo",
+    "Tremolo", EFFECT_TAG);
 

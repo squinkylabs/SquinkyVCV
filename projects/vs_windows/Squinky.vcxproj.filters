@@ -192,6 +192,9 @@
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp">
       <Filter>Source Files\sqsrc\clock</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testTremolo.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -308,11 +311,11 @@
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h">
       <Filter>Header Files\sqsrc\clock</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\composites\Tremelo.h">
-      <Filter>Header Files\composites</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\dsp\utils\AsymRampShaper.h">
       <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Tremolo.h">
+      <Filter>Header Files\composites</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
