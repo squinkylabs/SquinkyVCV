@@ -99,17 +99,6 @@ public:
     // must be called after setSampleRate
     void init();
 
-
-   /* from vst
-   		ControlValues() {
-			lfoRate=3;		
-			lfoShape=.5;
-			lfoSkew=0;
-			modDepth=0;
-			lfoPhase=0;
-			beatSync=0;
-		}
-        */
     enum ParamIds
     {
         LFO_RATE_PARAM,
@@ -174,10 +163,6 @@ inline void Tremelo<TBase>::init()
     scale_phase = AudioMath::makeBipolarAudioScaler(-1, 1);
 }
 
-static float mx = -10;
-static float mn = 10;
-static int ct = 0;
-
 template <class TBase>
 inline void Tremelo<TBase>::step()
 {
@@ -200,27 +185,56 @@ inline void Tremelo<TBase>::step()
         1);
    
 
-#if 0
-    // scale crudely, for now.
-    r += 5;
-    r *= .2;
-    r += .1;
-#endif
     clock.setFreeRunFreq(rate * reciprocalSampleRate);
+
+
+    // For now, call setup every sample. will eat a lot of cpu
+    AsymRampShaper::setup(rampShaper, skew, phase);
+
+
+
+    // ------------ now generate the lfo waveform
     clock.sampleClock();
-
     float mod = clock.getSaw();
-    mod = LookupTable<float>::lookup(*sinLookup.get(), mod);
+    mod = AsymRampShaper::proc_1(rampShaper, mod);
+    mod -= 0.5f;
+    // now we have a skewed saw -.5 to .5
 
- #if 0
-    mn = std::min(mod, mn);
-    mx = std::max(mod, mx);
+    // TODO: don't scale twice - just get it right the first tme
+    const float shapeMul = std::max(.25f, 10 * shape);
+    mod *= shapeMul;
 
-    if (ct++ > 1000) {
-        printf("mod = %f, %f\n", mn, mx);
-        ct = 0;
-    }
-    #endif
+    //mod = LookupTable<float>::lookup(*sinLookup.get(), mod);
+
 
     TBase::outputs[AUDIO_OUTPUT].value = mod;   // just for now
 }
+
+/*
+
+
+old plug proc loop.
+
+// Step 1: generate a saw
+// range is 0..1
+SawOsc<vec_t>::gen_v(*sawState, *sawParams, tempBuffer, sampleFrames);
+
+// step 2: apply skew and phase shift
+// range still 0..1
+AsymRampShaper<vec_t>::proc_v(*shaperParams, tempBuffer, tempBuffer, sampleFrames);
+
+// step 3: shift down to be centered at zero,
+// max excursion +-5 at shape "most square"
+// min is +/- .25  TODO: put the .25 into the control range itself
+
+// range = +/- (5 * shape)
+//
+f_t shapeMul = std::max(.25, 10 * controlValues.lfoShape);
+VecBasic<vec_t>::add_mul_c_imp(tempBuffer, sampleFrames, shapeMul, -.5f);
+
+// now tanh,
+// output contered around zero,
+// max is tanh(.25) to tanh(5), depending on shape value
+// rang = +/- tanh(5 * shape)
+LookupUniform<vec_t>::lookup_clip_v(*tanhParams, tempBuffer, tempBuffer, sampleFrames);
+*/
