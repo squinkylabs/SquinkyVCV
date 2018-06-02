@@ -1,14 +1,26 @@
 # Thread Booster
 
-**Updates in Progress - these instructions not correct any more**
+Thread booster is an experiment to determine if boosting the priority of VCV Rack's audio rendering thread will decrease the annoying pops, ticks, and dropouts that many users are experiencing.
 
-Check back later in master branch.
+While we have seen this work in some concocted test cases, we do not currently know if this will help in the real world. If you try this, please report back to us on our GitHub issues page.
 
-We have two plugins, “Thread Booster” and “CPU hog”. These are experiments to determine if boosting the priority of the audio thread in VCV Rack will help mitigate the pops and clicks that users frequently report. We have found that this works in concocted test cases on Windows – more to be done.
-
-Thread Booster has a UI that lets you boost the priority of the audio thread. There are three arbitrary settings: normal, boosted, and real time. When the switch is in the bottom position, the plugin does nothing; the audio thread keeps its default priority. In the boost (middle) position, it sets the thread priority to the highest priority non-real-time setting. In the real-time position it attempts to set if to the middle priority in the real-time policy.
+Thread Booster has a UI that lets you boost the priority of the audio thread. There are three arbitrary settings: normal, boosted, and real time. When the switch is in the bottom position, the plugin does nothing; the audio thread keeps its default priority. In the boost (middle) position, it sets the thread priority to the highest priority non-real-time setting. In the real-time position it attempts to set it to the middle priority in the real-time policy.
 
 If setting the priority fails, the red error light lights up, and the priority stays where it was last.
+
+If you are not up on your operating system thread scheduling, just think of it as "do nothing", "boost a little", and "boost a whole bunch".
+
+## Installing Thread Booster
+
+We have binaries for Mac and Windows posted on our [releases page](https://github.com/squinkylabs/SquinkyVCV/releases).
+
+These release must be unizipped and copied to VCV plugins folder. More info [here](installing-binaries.md).
+
+## Building Thread Booster
+
+Of course you can build the plugins from source for all platforms. But by default the experimental plugins are not build. see [experimental plugins](experimental.md)
+
+## Caveats and limitations
 
 This is all quite platform specific; here’s what we have observed so far:
 
@@ -16,8 +28,19 @@ This is all quite platform specific; here’s what we have observed so far:
 * On mac, both settings work, and neither requires running as root.
 * On Linux (Ubuntu 16) there is only a single non-real-time priority, so the boosted setting fails. The real-time setting does work if you sudo rack.
 
-If you try this plugin, be aware that changing Rack’s thread priority behind its back may case some things to misbehave. We have not seen this, but it’s a real possibility. Running in the real-time policy could lock your computer up, although this seems unlikely since there will only be one audio thread running at this elevated policy.
-For those willing to test Thread Booster we ask:
+If you try this plugin, be aware that changing Rack’s thread priority behind its back may cause some things to misbehave. We have not seen this, but it’s a real possibility. Running in the real-time policy could lock your computer up, although this seems unlikely since there will only be one audio thread running at this elevated policy.
+
+Note that Thread Booster has no effect on the main VCV Rack process, or its UI thread - it only affects the audio thread.
+
+## CPU hog
+
+We have two plugins, “Thread Booster” and “CPU hog”. These are experiments to determine if boosting the priority of the audio thread in VCV Rack will help mitigate the pops and clicks that users frequently report. We have found that this works in concocted test cases on Windows – more to be done.
+
+
+
+
+
+
 
 * With a fully loaded session that starts to make pops and clicks, does thread booster fix it?
 * If you are able to run realtime, is there any noticeable difference between boosted and real-time?

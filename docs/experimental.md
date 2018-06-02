@@ -6,4 +6,4 @@ Usually all of the code the actually generates and processes audio is elsewhere.
 
 ## Experimental Modules
 
-There are no experimental modules at the moment.
+The Thread Booster is quite experimental. It is described [here](thread-booster.md).
