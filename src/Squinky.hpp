@@ -1,7 +1,5 @@
 #include "rack.hpp"
 
-#define _CPU_HOG
-
 using namespace rack;
 extern Plugin *plugin;
 extern Model *modelBootyModule;
