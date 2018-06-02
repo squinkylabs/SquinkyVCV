@@ -10,7 +10,7 @@ It is also quite easy to clone this repo and build them yourself. In order to do
 
 There are various test modules, test code, and other good things hidden away in this repo. We will try to point you to some that may be of interest.
 
-Most of the documentation may be found in the [docs folder](../docs).
+Most of the documentation may be found in the [docs folder](../docs/.).
 
 ## Building source
 
