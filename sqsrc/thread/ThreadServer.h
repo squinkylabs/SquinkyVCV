@@ -38,12 +38,15 @@ protected:
      * Will causes an error if there is a message in the mailbox already.
      */
     void sendMessageToClient(ThreadMessage*);
-
-private:
+    
     std::shared_ptr<ThreadSharedState> sharedState;
     std::unique_ptr<std::thread> thread;
+private:
+   
+   
 
-    void threadFunction();
+    // Message based clients should not override this
+    virtual void threadFunction();
 
     /**
      *

@@ -29,4 +29,12 @@ void init(rack::Plugin *p)
     assert(modelTremoloModule);
     p->addModel(modelTremoloModule);
 
+#ifdef _CPU_HOG
+    assert(modelCPU_HogModule);
+    p->addModel(modelCPU_HogModule);
+#endif
+#ifdef _EXP
+    assert(modelThreadBoostModule);
+    p->addModel(modelThreadBoostModule);
+#endif
 }

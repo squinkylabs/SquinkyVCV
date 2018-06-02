@@ -3,6 +3,7 @@
 #include "ThreadSharedState.h"
 #include "ThreadServer.h"
 #include "ThreadClient.h"
+#include "ThreadPriority.h"
 
 #include <assert.h>
 #include <memory>
@@ -103,6 +104,19 @@ static void test2()
     }
 }
 
+static void test3()
+{
+    printf("calling boostNormal\n");
+    bool b = ThreadPriority::boostNormal();
+    printf("calling boostRealtime\n");
+    bool b2 = ThreadPriority::boostRealtime();
+  //  assert(b);
+ //   printf("boostRealtime ret %d\n", b2);
+
+    ThreadPriority::restore();
+
+}
+
 /*****************************************************************/
 
 void testThread()
@@ -112,6 +126,7 @@ void testThread()
    test0();
    test1();
    test2();
+   test3();
    assertEQ(ThreadSharedState::_dbgCount, 0);
    assertEQ(ThreadMessage::_dbgCount, 0);
 }

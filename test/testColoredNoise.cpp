@@ -72,15 +72,15 @@ static void test2()
     while (cn._msgCount() < 4) {
         cn.step();
     }
-    cn.params[Noise::SLOPE_PARAM].value = 2.3;
+    cn.params[Noise::SLOPE_PARAM].value = 2.3f;
     while (cn._msgCount() < 5) {
         cn.step();
     }
-    cn.params[Noise::SLOPE_PARAM].value = 2.5;
+    cn.params[Noise::SLOPE_PARAM].value = 2.5f;
     while (cn._msgCount() < 6) {
         cn.step();
     }
-      cn.params[Noise::SLOPE_PARAM].value = -1.2;
+      cn.params[Noise::SLOPE_PARAM].value = -1.2f;
     while (cn._msgCount() < 7) {
         cn.step();
     }

@@ -30,6 +30,7 @@ extern void testTremolo();
 
 int main(int argc, char ** argv)
 {
+    printf("--- test2 ----\n"); fflush(stdout);
     bool runPerf = false;
     if (argc > 1) {
         std::string arg = argv[1];
@@ -42,7 +43,6 @@ int main(int argc, char ** argv)
 #ifndef NDEBUG
 #error asserts should be off for perf test
 #endif
-
 #endif
     // While this code may work in 32 bit applications, it's not tested for that.
     // Want to be sure we are testing the case we care about.

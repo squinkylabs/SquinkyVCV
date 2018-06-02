@@ -16,7 +16,9 @@ CXXFLAGS +=
 ifdef _EXP
 	FLAGS += -D _EXP
 endif
-
+ifdef _CPU_HOG
+	FLAGS += -D _CPU_HOG
+endif
 # Macro to use on any target where we don't normally want asserts
 ASSERTOFF = -D NDEBUG
 

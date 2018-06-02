@@ -23,14 +23,14 @@ using VocFilter = VocalFilter<TestComposite>;
 // There are many tests that are disabled with #if 0.
 // In most cases they still work, but don't need to be run regularly
 
-#if 0
+#if 1
 static void test1()
 {
     double d = .1;
     srand(57);
     const double scale = 1.0 / RAND_MAX;
 
-    MeasureTime<float>::run("test1 null", [&d, scale]() {
+    MeasureTime<float>::run("test1 (do nothing)", [&d, scale]() {
         return TestBuffers<float>::get();
         }, 1);
 
@@ -44,22 +44,52 @@ static void test1()
         return x;
         }, 1);
 
-    MeasureTime<float>::run("test1 sinx2", []() {
+    MeasureTime<float>::run("test1 sinx2 float", []() {
         float x = std::sin(TestBuffers<float>::get());
         x = std::sin(x);
         return x;
         }, 1);
 
-    MeasureTime<float>::run("mult", []() {
+    MeasureTime<float>::run("mult float-10", []() {
         float x = TestBuffers<float>::get();
         float y = TestBuffers<float>::get();
         return x * y;
+        }, 10);
+
+    MeasureTime<double>::run("mult dbl", []() {
+        double x = TestBuffers<double>::get();
+        double y = TestBuffers<double>::get();
+        return x * y;
         }, 1);
 
-    MeasureTime<float>::run("div", []() {
+    MeasureTime<float>::run("div float", []() {
         float x = TestBuffers<float>::get();
         float y = TestBuffers<float>::get();
         return x / y;
+        }, 1);
+
+    MeasureTime<double>::run("div dbl", []() {
+        double x = TestBuffers<double>::get();
+        double y = TestBuffers<double>::get();
+        return x / y;
+        }, 1);
+
+     MeasureTime<float>::run("test1 (do nothing)", [&d, scale]() {
+        return TestBuffers<float>::get();
+        }, 1);
+
+    MeasureTime<float>::run("test1 pow2 float", []() {
+        float x = std::pow(2, TestBuffers<float>::get());
+        return x;
+        }, 1);
+     MeasureTime<float>::run("test1 pow rnd float", []() {
+        float x = std::pow( TestBuffers<float>::get(), TestBuffers<float>::get());
+        return x;
+        }, 1);
+
+    MeasureTime<float>::run("test1 exp float", []() {
+        float x = std::exp(TestBuffers<float>::get());
+        return x;
         }, 1);
 }
 #endif
@@ -190,8 +220,9 @@ void perfTest()
     testVocalFilter();
     testAnimator();
     testShifter();
-#if 0
+
     test1();
+#if 0
     testHilbert<float>();
     testHilbert<double>();
 #endif
