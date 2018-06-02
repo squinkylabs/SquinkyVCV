@@ -119,6 +119,7 @@ public:
     {
         AUDIO_OUTPUT,
         SAW_OUTPUT,
+        LFO_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -132,11 +133,10 @@ public:
      */
     void step();
 
-
 private:
 
     ClockMult clock;
-    std::shared_ptr<LookupTableParams<float>> sinLookup;
+    std::shared_ptr<LookupTableParams<float>> tanhLookup;
     float reciprocalSampleRate = 0;
 
     AsymRampShaperParams rampShaper;
@@ -154,7 +154,7 @@ private:
 template <class TBase>
 inline void Tremolo<TBase>::init()
 {
-    sinLookup = ObjectCache<float>::getSinLookup();
+    tanhLookup = ObjectCache<float>::getTanh5();
     clock.setDivisor(0);
 
     scale_rate = AudioMath::makeBipolarAudioScaler(.1f, 10.f); // full CV range -> 0..1
@@ -206,10 +206,10 @@ inline void Tremolo<TBase>::step()
     const float shapeMul = std::max(.25f, 10 * shape);
     mod *= shapeMul;
 
-    //mod = LookupTable<float>::lookup(*sinLookup.get(), mod);
+    mod = LookupTable<float>::lookup(*tanhLookup.get(), mod);
 
 
-    TBase::outputs[AUDIO_OUTPUT].value = mod;   // just for now
+    TBase::outputs[LFO_OUTPUT].value = mod;   // just for now
 }
 
 /*
