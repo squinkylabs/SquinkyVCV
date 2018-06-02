@@ -1,6 +1,6 @@
 # Thread Booster
 
-**Updates in Progress - these instructions no correct any more**
+**Updates in Progress - these instructions not correct any more**
 
 Check back later in master branch.
 
