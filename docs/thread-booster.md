@@ -28,32 +28,35 @@ This is all quite platform specific; here’s what we have observed so far:
 * On mac, both settings work, and neither requires running as root.
 * On Linux (Ubuntu 16) there is only a single non-real-time priority, so the boosted setting fails. The real-time setting does work if you sudo rack.
 
-If you try this plugin, be aware that changing Rack’s thread priority behind its back may cause some things to misbehave. We have not seen this, but it’s a real possibility. Running in the real-time policy could lock your computer up, although this seems unlikely since there will only be one audio thread running at this elevated policy.
+If you try this plugin, be aware that changing Rack’s thread priority behind its back may cause some things to misbehave. We have not seen this happen, but it’s a real possibility. Running in the real-time policy could lock your computer up, although this seems unlikely since there will only be one audio thread running at this elevated policy. Running at any elevated priority could make something in VCV or the plugins misbehave or glitch.
 
 Note that Thread Booster has no effect on the main VCV Rack process, or its UI thread - it only affects the audio thread.
 
-## CPU hog
+## Questions for testers
 
-We have two plugins, “Thread Booster” and “CPU hog”. These are experiments to determine if boosting the priority of the audio thread in VCV Rack will help mitigate the pops and clicks that users frequently report. We have found that this works in concocted test cases on Windows – more to be done.
-
-
-
-
-
-
+Please use our [GitHub issues](https://github.com/squinkylabs/SquinkyVCV/issues) to send us feedback. Some things we are curious about:
 
 * With a fully loaded session that starts to make pops and clicks, does thread booster fix it?
 * If you are able to run realtime, is there any noticeable difference between boosted and real-time?
-* After examining the code in ThreadBoost.h, do you have any suggestions for better ways to set the thread priority?
+* Programmers: after examining the code in ThreadBoost.h, do you have any suggestions for better ways to set the thread priority?
+
+## CPU hog
 
 There is also a plugin called “CPU Hog”, which does what it says. This is our concocted test case. This plugin can:
 
-* Spin up worker thread, each of which will saturate a single CPU core at default priority.
+* Spin up worker threads, each of which will saturate a single CPU core at default priority.
 * Simulate a very slow graphics drawing call by sleeping in the draw function.
+
+We do not provide binaries for this plugin, as it is only of use to hackers, who may easily build it. To build it, pass `_CPU_HOG=1` on the command line to `make`. 
 
 The only “UI” is a display of numbers called “SleepStep”. This is shows the number of time an audio step() call occurred while the plugin was already in the draw() call. We wanted to verify that long drawing time may be interrupted by audio.
 
-Since it has no UI to speak of, you need to edit the source code to do anything. At the top of CPU_Hog.cpp, there are two variables:
+Since it has no UI to speak of, you need to do one of two possible actions to use the CPU hog:
+
+* You may load down one CPU core for each instance you  inserts.
+* You may change the source code to spin up more threads.
+
+ At the top of CPU_Hog.cpp, there are two variables:
 
 ```c++
 static const int numLoadThreads=1;
@@ -67,11 +70,8 @@ Here is what we did in our test:
 * Kept increasing the number of threads until pops were plainly audible.
 * Added an instance of Thread Boost to see if we could make the pops go away.
 
-On Windows, we found pop started to happen when we used three cpus. Or, if the draw time was really long, it would only take two cpus of hogging.
+On our four code Windows box, we found pops started to happen when we used three cpus. Or, if the draw time was really long, it would only take two cpus of hogging.
 
 Using Thread Booster in the “boost” setting fixed it.
 
 As we said, this test case is artificial. In the real world are pops and clicks ever caused by other threads (outside of VCV) running and competing for CPU cores? We don’t know. But we suspect that running the audio thread at a higher priority will lessen them.
-Btw: rather than continuing to add one to numLoadThreads and re-build, we imagine that just running additional instances, all set to 1, might do the same thing and be easier.
-
-If you try this, and want to report any results feel free to use our GitHub issues. Or a comment on our Facebook page if you prefer.
