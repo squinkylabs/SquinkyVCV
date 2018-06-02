@@ -3,10 +3,8 @@
 #include "WidgetComposite.h"
 #include "ThreadPriority.h"
 
-/**
- * Implementation class for BootyModule
- */
-struct bModule : Module
+
+struct ThreadBoostModule : Module
 {
 	enum ParamIds {
 		THREAD_BOOST_PARAM,
@@ -28,7 +26,7 @@ struct bModule : Module
 		NUM_LIGHTS
 	};
 
-    bModule();
+    ThreadBoostModule();
 
     /**
      * Overrides of Module functions
@@ -46,11 +44,11 @@ private:
 
 };
 
-bModule::bModule() : Module(NUM_PARAMS,NUM_INPUTS,NUM_OUTPUTS,NUM_LIGHTS)
+ThreadBoostModule::ThreadBoostModule() : Module(NUM_PARAMS,NUM_INPUTS,NUM_OUTPUTS,NUM_LIGHTS)
 {
 }
 
-void bModule::step()
+void ThreadBoostModule::step()
 {
     float x = params[THREAD_BOOST_PARAM].value + .5f;
     int i = std::floor(x);
@@ -89,9 +87,9 @@ void bModule::step()
 // module widget
 ////////////////////
 
-struct bWidget : ModuleWidget
+struct ThreadBoostWidget : ModuleWidget
 {
-    bWidget(bModule *);
+    ThreadBoostWidget(ThreadBoostModule *);
 };
 
 /**
@@ -99,7 +97,8 @@ struct bWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-bWidget::bWidget(bModule *module) : ModuleWidget(module)
+ThreadBoostWidget::ThreadBoostWidget(ThreadBoostModule *module) 
+  : ModuleWidget(module)
 {
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
@@ -111,7 +110,7 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
     }
 
     addParam(ParamWidget::create<NKK>(
-        Vec(30, 140), module, bModule::THREAD_BOOST_PARAM, 0.0f, 2.0f, 0.0f));
+        Vec(30, 140), module, ThreadBoostModule::THREAD_BOOST_PARAM, 0.0f, 2.0f, 0.0f));
 
     const int ledX = 10;
     const int labelX = 16;
@@ -120,7 +119,7 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
     const int deltaY = 30;
     Label* label;
     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY), module, bModule::NORMAL_LIGHT));
+        Vec(ledX, ledY), module, ThreadBoostModule::NORMAL_LIGHT));
     label = new Label();
     label->box.pos = Vec(labelX, labelY);
     label->text = "Normal";
@@ -128,7 +127,7 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
     addChild(label);
 
     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY+deltaY), module, bModule::BOOSTED_LIGHT));
+        Vec(ledX, ledY+deltaY), module, ThreadBoostModule::BOOSTED_LIGHT));
     label = new Label();
     label->box.pos = Vec(labelX, labelY+deltaY);
     label->text = "Boost";
@@ -136,7 +135,7 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
     addChild(label);
 
      addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY+2*deltaY), module, bModule::REALTIME_LIGHT));
+        Vec(ledX, ledY+2*deltaY), module, ThreadBoostModule::REALTIME_LIGHT));
     label = new Label();
     label->box.pos = Vec(labelX, labelY+2*deltaY);
     label->text = "Real-time";
@@ -144,15 +143,13 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
     addChild(label);
 
      addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
-        Vec(ledX, ledY+3*deltaY), module, bModule::ERROR_LIGHT));
+        Vec(ledX, ledY+3*deltaY), module, ThreadBoostModule::ERROR_LIGHT));
     label = new Label();
     label->box.pos = Vec(labelX, labelY+3*deltaY);
     label->text = "Error";
     label->color = COLOR_BLACK;
     addChild(label);
 
-
-   
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -164,7 +161,7 @@ bWidget::bWidget(bModule *module) : ModuleWidget(module)
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
-Model *modelBModule = Model::create<bModule, bWidget>("Squinky Labs",
+Model *modelThreadBoostModule = Model::create<ThreadBoostModule, ThreadBoostWidget>("Squinky Labs",
     "squinkylabs-booster",
     "Thread Booster", EFFECT_TAG);
 

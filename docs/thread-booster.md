@@ -1,5 +1,9 @@
 # Thread Booster
 
+**Updates in Progress - these instructions no correct any more**
+
+Check back later in master branch.
+
 We have two plugins, “Thread Booster” and “CPU hog”. These are experiments to determine if boosting the priority of the audio thread in VCV Rack will help mitigate the pops and clicks that users frequently report. We have found that this works in concocted test cases on Windows – more to be done.
 
 Thread Booster has a UI that lets you boost the priority of the audio thread. There are three arbitrary settings: normal, boosted, and real time. When the switch is in the bottom position, the plugin does nothing; the audio thread keeps its default priority. In the boost (middle) position, it sets the thread priority to the highest priority non-real-time setting. In the real-time position it attempts to set if to the middle priority in the real-time policy.

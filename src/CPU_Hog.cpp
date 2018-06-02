@@ -1,6 +1,8 @@
 
 #include <sstream>
 #include "Squinky.hpp"
+#ifdef _CPU_HOG
+
 #include "WidgetComposite.h"
 
 #include "ThreadClient.h"
@@ -19,10 +21,10 @@ static std::atomic<bool> drawIsSleeping;
 /**
  * Implementation class for BootyModule
  */
-struct pModule : Module
+struct CPU_HogModule : Module
 {
-    pModule();
-    ~pModule();
+    CPU_HogModule();
+    ~CPU_HogModule();
 
     /**
      * Overrides of Module functions
@@ -71,7 +73,7 @@ private:
     sharedState->serverRunning = false;
  }
 
-pModule::pModule() : Module(0,0,0,0)
+CPU_HogModule::CPU_HogModule() : Module(0,0,0,0)
 {
     for (int i=0; i<numLoadThreads; ++i) {
         std::shared_ptr<ThreadSharedState> state = std::make_shared<ThreadSharedState>();
@@ -86,13 +88,13 @@ pModule::pModule() : Module(0,0,0,0)
     onSampleRateChange();
 }
 
-pModule::~pModule()
+CPU_HogModule::~CPU_HogModule()
 {
     threads.resize(0);
 }
 
 
-void pModule::step()
+void CPU_HogModule::step()
 {
     if (drawIsSleeping) {
         stepsWhileDrawing++;
@@ -103,12 +105,12 @@ void pModule::step()
 // module widget
 ////////////////////
 
-struct pWidget : ModuleWidget
+struct CPU_HogWidget : ModuleWidget
 {
-    pWidget(pModule *);
+    CPU_HogWidget(CPU_HogModule *);
     void draw(NVGcontext *vg) override
     {
-        const pModule* pMod = static_cast<const pModule*>(module);
+        const CPU_HogModule* pMod = static_cast<const CPU_HogModule*>(module);
         std::stringstream s;
         s << pMod->stepsWhileDrawing;
         steps->text = s.str();
@@ -128,7 +130,7 @@ struct pWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-pWidget::pWidget(pModule *module) : ModuleWidget(module)
+CPU_HogWidget::CPU_HogWidget(CPU_HogModule *module) : ModuleWidget(module)
 {
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
@@ -162,7 +164,8 @@ pWidget::pWidget(pModule *module) : ModuleWidget(module)
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
-Model *modelPModule = Model::create<pModule, pWidget>("Squinky Labs",
+Model *modelCPU_HogModule = Model::create<CPU_HogModule, CPU_HogWidget>("Squinky Labs",
     "squinkylabs-cpuhog",
     "CPU Hog", EFFECT_TAG);
+#endif
 
