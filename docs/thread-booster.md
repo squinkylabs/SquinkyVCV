@@ -38,6 +38,7 @@ Please use our [GitHub issues](https://github.com/squinkylabs/SquinkyVCV/issues)
 
 * With a fully loaded session that starts to make pops and clicks, does thread booster fix it?
 * If you are able to run realtime, is there any noticeable difference between boosted and real-time?
+* For all reports, please list operating system and version (i.e. Windows-10, OSX 10.12, Ubuntu 16.04).
 * Programmers: after examining the code in ThreadBoost.h, do you have any suggestions for better ways to set the thread priority?
 
 ## CPU hog
@@ -70,14 +71,14 @@ Here is what we did in our test:
 * Kept increasing the number of threads until pops were plainly audible.
 * Added an instance of Thread Boost to see if we could make the pops go away.
 
-On our four code Windows box, we found pops started to happen when we used three cpus. Or, if the draw time was really long, it would only take two cpus of hogging.
+On our four core Windows box, we found pops started to happen when we used three CPUs. Or, if the draw time was really long, it would only take two CPUs of hogging.
 
-Using Thread Booster in the “boost” setting fixed it.
+Using Thread Booster in the "boost" setting fixed it.
 
 As we said, this test case is artificial. In the real world are pops and clicks ever caused by other threads (outside of VCV) running and competing for CPU cores? We don’t know. But we suspect that running the audio thread at a higher priority will lessen them.
 
 ## Known issues
 
-On the mac, Boosting and the switching back to normal will not restore the original priority. It will actually be running at a lower priority.
+On the Mac, Boosting and the switching back to normal will not restore the original priority. It will actually be running at a lower priority.
 
 When the Thread Booster comes up initially, no LEDs are illuminated - normal should be.
