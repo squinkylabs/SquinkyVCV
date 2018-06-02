@@ -75,3 +75,9 @@ On our four code Windows box, we found pops started to happen when we used three
 Using Thread Booster in the “boost” setting fixed it.
 
 As we said, this test case is artificial. In the real world are pops and clicks ever caused by other threads (outside of VCV) running and competing for CPU cores? We don’t know. But we suspect that running the audio thread at a higher priority will lessen them.
+
+## Known issues
+
+On the mac, Boosting and the switching back to normal will not restore the original priority. It will actually be running at a lower priority.
+
+When the Thread Booster comes up initially, no LEDs are illuminated - normal should be.

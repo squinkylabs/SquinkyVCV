@@ -47,7 +47,8 @@ inline void ThreadPriority::restorePthread()
 {
     const pthread_t threadHandle = pthread_self();
     struct sched_param params;
-    params.sched_priority = 0;
+    params.sched_priority = 0;      // Note that on mac, this is not the default.
+                                    // fix this.
     const int newPolicy = SCHED_OTHER;
     int x = pthread_setschedparam(threadHandle, newPolicy, &params);
     if (x != 0) {
@@ -61,6 +62,8 @@ inline bool ThreadPriority::boostNormalPthread()
     const pthread_t threadHandle = pthread_self();
     int initPolicy = -10;
     pthread_getschedparam(threadHandle, &initPolicy, &params);
+    printf("in boost, policy was %d, pri was %d otherp=%d\n", initPolicy, params.sched_priority, SCHED_OTHER);
+
     const int initPriority = params.sched_priority;
    
     const int newPolicy = SCHED_OTHER;
@@ -103,8 +106,12 @@ inline bool ThreadPriority::boostRealtimePthread()
     }
 #endif
 
-    // user the mean of min and max. These should all be higher than "non realtime" policies.
-    const int newPriority = (maxPriority + minPriority) / 2;
+    // use the mean of min and max. These should all be higher than "non realtime" 
+    // on mac the mean was not as good as elevating as other, to let's try max/
+    //const int newPriority = (maxPriority + minPriority) / 2;
+    const int newPriority = maxPriority; 
+    
+    printf("realtime min = %d max = %d will use %d\n", minPriority, maxPriority, newPriority);
     params.sched_priority = newPriority;
     int x = pthread_setschedparam(threadHandle, newPolicy, &params);
     if (x != 0) {

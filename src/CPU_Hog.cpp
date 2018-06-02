@@ -137,18 +137,18 @@ CPU_HogWidget::CPU_HogWidget(CPU_HogModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/cpu_hog_panel.svg")));
         addChild(panel);
     }
 
     Label* label=new Label();
-    label->box.pos = Vec(10, 100);
+    label->box.pos = Vec(10, 140);
     label->text = "SleepSteps";
     label->color = COLOR_BLACK;
     addChild(label);
 
     steps=new Label();
-    steps->box.pos = Vec(10, 140);
+    steps->box.pos = Vec(10, 180);
     steps->text = "";
     steps->color = COLOR_BLACK;
     addChild(steps);

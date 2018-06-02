@@ -105,7 +105,7 @@ ThreadBoostWidget::ThreadBoostWidget(ThreadBoostModule *module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/thread_booster_panel.svg")));
         addChild(panel);
     }
 

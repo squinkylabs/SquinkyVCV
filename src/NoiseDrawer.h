@@ -87,7 +87,7 @@ inline void NoiseDrawer::makeImage(NVGcontext *vg)
         memImage);
 
     assert(_image != 0);
-    delete memImage;
+    delete[] memImage;
 }
 
 
