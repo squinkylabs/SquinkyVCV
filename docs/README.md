@@ -1,6 +1,6 @@
 # Squinky Labs modules for VCV Rack
 
-All of our plugins are free and open source.
+All of our plugins are free and open source. The [instruction manual](booty-shifter.md) describes all of the released modules.
 
 All of our released modules may be found in the [VCV Rack plugin manager] (https://vcvrack.com/plugins.html). This is by far the easiest way for most users to install our modules and keep them up to date.
 

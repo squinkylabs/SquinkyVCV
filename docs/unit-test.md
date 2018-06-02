@@ -14,13 +14,13 @@ This last point is very important, as one of the basic rules of code optimizatio
 
 As stated above, much of the test code is unremarkable, other than its existence. There are a couple of modules however that might be useful to others.
 
-[MeasureTime](test/MeasureTime.h) is used to measure the CPU usage of any arbitrary code. It takes a simple lambda and profiles it.
+[MeasureTime](../test/MeasureTime.h) is used to measure the CPU usage of any arbitrary code. It takes a simple lambda and profiles it.
 
 [Composite pattern](composites.md) allows us to run our plugin code inside a test application as well as inside a VCV Track plugin module.
 
-[Assert Library](test/asserts.h) is a very basic collection of assertion macros loosely based on the Chai Assert framework.
+[Assert Library](../test/asserts.h) is a very basic collection of assertion macros loosely based on the Chai Assert framework.
 
-We have enhanced [Makefile](Makefile) in several useful ways with the addition of [test.mk](test.mk):
+We have enhanced [Makefile](../Makefile) in several useful ways with the addition of [test.mk](../test.mk):
 
 * Default `make` will generate a plugin with assertions disabled.
 * `make test` will generate test.exe, our unit test application, with asserts enabled.

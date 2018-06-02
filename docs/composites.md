@@ -2,9 +2,13 @@
 
 This is a somewhat ugly "architecture" that lets the same module "guts" run inside a VCV plugin, and also turn inside our unit test framework (which does not link against VCV Rack).
 
-You may look at the FrequencyShifter composite as an example.
+While this is slightly ugly, it is incredibly useful to us to be able to test and benchmark our plugins from a simple command line program.
 
-## To make a composite.
+You may look at the [FrequencyShifter composite](../composites/FrequencyShifter.h) as an example.
+
+Here is [more on our tests](unit-test.md).
+
+## To make a composite
 
 Make a new class in the composites folder. This class is your composite class. This class must work in the test environment and the VCV Widget environment.
 
@@ -18,7 +22,9 @@ class FrequencyShifter : public TBase
 ```
 Follow the link to look at [FrequencyShifter](composites/FrequencyShifter.h)
 
-Put all the Input, Output, Param, Led enums into the composite class, rather than the normal Widget class.
+Create two constructors. One with no arguments for the tests to use, and the other with a `Module *` to use in the VCV plugin.
+
+Put all the Input, Output, Param, Light enums into the composite class, rather than the normal Widget class.
 
 To use this composite in a test, derive concrete class from TestComposite
 ```c++
