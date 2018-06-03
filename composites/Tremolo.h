@@ -113,6 +113,7 @@ public:
     enum InputIds
     {
         AUDIO_INPUT,
+        CLOCK_INPUT,
         NUM_INPUTS
     };
 
@@ -182,9 +183,11 @@ inline void Tremolo<TBase>::step()
     const float phase = scale_phase(0,
         TBase::params[LFO_PHASE_PARAM].value,
         1);
+        #if 0
     const float modDepth = scale_depth(0,
         TBase::params[MOD_DEPTH_PARAM].value,
         1);
+        #endif
    
 
     clock.setFreeRunFreq(rate * reciprocalSampleRate);

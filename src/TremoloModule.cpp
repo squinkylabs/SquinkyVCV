@@ -71,6 +71,8 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 
     const float rowIO = 330;
     addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+    addInput(Port::create<PJ301MPort>(Vec(10, rowIO-30), Port::INPUT, module, module->tremolo.CLOCK_INPUT));
+  
     addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
     addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-40), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
     addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-20), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
