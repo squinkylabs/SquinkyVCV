@@ -106,6 +106,7 @@ public:
         LFO_SKEW_PARAM,
         LFO_PHASE_PARAM,
         MOD_DEPTH_PARAM,
+        CLOCK_MULT_PARAM,
         NUM_PARAMS
     };
 

@@ -78,11 +78,12 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 
     // main params
     const float knobX = 10;
-    const float knobY = 50;
-    const float textX = 45;
-    const float knobDy = 55;
+    const float knobY = 40;
+    const float textX = 40;
+    const float knobDy = 45;
+// RoundLargeBlackKnob
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
+    addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY), module, module->tremolo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
     Label* label = new Label();
     label->box.pos = Vec(textX, knobY);
@@ -90,7 +91,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
-   addParam(ParamWidget::create<Rogan1PSBlue>(
+   addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+1*knobDy);
@@ -98,7 +99,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
+    addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+2*knobDy);
@@ -106,7 +107,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
+    addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 3*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+3*knobDy);
@@ -114,11 +115,19 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
+    addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 4*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
     label = new Label();
     label->box.pos = Vec(textX, knobY+4*knobDy);
     label->text = "Depth";
+    label->color = COLOR_BLACK;
+    addChild(label);
+
+    addParam(ParamWidget::create<RoundBlackSnapKnob>(
+        Vec(knobX, knobY + 5*knobDy), module, module->tremolo.CLOCK_MULT_PARAM, 0.0f, 4.0f, 0.0f));
+    label = new Label();
+    label->box.pos = Vec(textX, knobY+5*knobDy);
+    label->text = "Clock";
     label->color = COLOR_BLACK;
     addChild(label);
 
