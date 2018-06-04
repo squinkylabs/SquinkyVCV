@@ -7,23 +7,27 @@
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
 #include "BiquadState.h"
+#include "ColoredNoise.h"
 #include "FrequencyShifter.h"
 #include "HilbertFilterDesigner.h"
 #include "LookupTableFactory.h"
 #include "TestComposite.h"
+#include "Tremolo.h"
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
 
 using Shifter = FrequencyShifter<TestComposite>;
 using Animator = VocalAnimator<TestComposite>;
 using VocFilter = VocalFilter<TestComposite>;
+using Colors = ColoredNoise<TestComposite>;
+using Trem = Tremolo<TestComposite>;
 
 #include "MeasureTime.h"
 
 // There are many tests that are disabled with #if 0.
 // In most cases they still work, but don't need to be run regularly
 
-#if 1
+#if 0
 static void test1()
 {
     double d = .1;
@@ -173,6 +177,37 @@ static void testVocalFilter()
         }, 1);
 }
 
+
+
+static void testColors()
+{
+    Colors co;
+
+    co.setSampleRate(44100);
+    co.init();
+
+
+    MeasureTime<float>::run("colors", [&co]() {
+        co.step();
+        return co.outputs[Colors::AUDIO_OUTPUT].value;
+        }, 1);
+}
+
+static void testTremolo()
+{
+    Trem tr;
+
+    tr.setSampleRate(44100);
+    tr.init();
+
+
+    MeasureTime<float>::run("trem", [&tr]() {
+        tr.inputs[Trem::AUDIO_INPUT].value = TestBuffers<float>::get();
+        tr.step();
+        return tr.outputs[Trem::AUDIO_OUTPUT].value;
+        }, 1);
+}
+
 #if 0
 static void testAttenuverters()
 {
@@ -221,7 +256,10 @@ void perfTest()
     testAnimator();
     testShifter();
 
-    test1();
+    testColors();
+    testTremolo();
+
+   // test1();
 #if 0
     testHilbert<float>();
     testHilbert<double>();

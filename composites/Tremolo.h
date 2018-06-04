@@ -1,8 +1,11 @@
 #pragma once
 
+#include <vector>
+
 #include "ClockMult.h"
 #include "ObjectCache.h"
 #include "AsymRampShaper.h"
+
 
 
 class Stats
@@ -146,7 +149,7 @@ public:
     Tremolo(struct Module * module) : TBase(module), stats("saw", "mid", "final" )
     {
     }
-    Tremolo() : TBase()
+    Tremolo() : TBase(), stats("saw", "mid", "final")
     {
     }
     void setSampleRate(float rate)
