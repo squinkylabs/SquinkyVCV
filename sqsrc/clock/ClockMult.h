@@ -64,7 +64,7 @@ private:
     {
         return freqMultFactor == 0;
     }
-    void sampleClockFreeRun();
-    void sampleClockLocked();
+    void sampleClockFreeRunMode();
+    void sampleClockLockedMode();
 
 };

@@ -7,13 +7,13 @@
 void ClockMult::sampleClock()
 {
     if (isFreeRun()) {
-        sampleClockFreeRun();
+        sampleClockFreeRunMode();
     } else {
-        sampleClockLocked();
+        sampleClockLockedMode();
     }
 }
 
-void ClockMult::sampleClockFreeRun()
+void ClockMult::sampleClockFreeRunMode()
 {
     sawPhase += freeRunFreq;
     if (sawPhase >= 1) {
@@ -23,7 +23,7 @@ void ClockMult::sampleClockFreeRun()
 }
 
 
-void ClockMult::sampleClockLocked()
+void ClockMult::sampleClockLockedMode()
 {
   //  printf("sampleClock: state=%d saw=%f\n", state, sawPhase);
     switch (state) {
@@ -56,7 +56,7 @@ void ClockMult::refClock()
 {
   //  printf("refClock: state=%d\n", state);
     switch (state) {
-        case State::INIT:
+        case State::INIT://
             state = State::TRAINING;
             trainingCounter = 0;
        //     printf("refClock moved from INIT to TRAINIG\n");
@@ -70,8 +70,12 @@ void ClockMult::refClock()
             startNewClock();
           //  printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",  learnedPeriod, learnedFrequency, clockOutValue);
             break;
+        case State::RUNNING:
+            printf("ignoring ref clock while running");
+            break;
         default:
             assert(0);
+            
     }
     //printf("leave refClock: state=%d\n", state);
 }
