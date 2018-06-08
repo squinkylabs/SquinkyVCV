@@ -98,6 +98,29 @@ static void test2()
 
 
 /**
+* Test free running, no interference from ref clock
+*/
+static void test4()
+{
+    ClockMult cm;
+    cm.setMultiplier(0);
+    cm.setFreeRunFreq(.1f);
+
+    assertEQ(cm.getSaw(), 0);
+    for (int i = 0; i < 9; ++i) {
+        cm.sampleClock();
+        cm.refClock();
+        assertClose(cm.getSaw(), (i + 1) * .1f, .0001);
+    }
+    cm.sampleClock();
+    assertClose(cm.getSaw(), 0, .0001);
+    for (int i = 0; i < 9; ++i) {
+        cm.refClock();
+        cm.sampleClock();
+        assertClose(cm.getSaw(), (i + 1) * .1f, .0001);
+    }
+}
+/**
 * Test synched saw output long term, no jitter
 */
 static void test3()
@@ -106,24 +129,20 @@ static void test3()
     cm.setMultiplier(1);
     const int period = 4;
 
-    //  printf("test0, 0\n");
+
     cm.refClock();  // give it an external clock
 
-                    // printf("test0, 1\n");
-                    // train with 4 ref clocks()
+     // train with 4 ref clocks()
     for (int i = 0; i < period; ++i) {
         cm.sampleClock();
         assertEQ(cm.getSaw(), 0);
         assertEQ(cm.getMultipliedClock(), false);
-        // printf("test0, 2\n");
-
     }
 
     for (int j = 0; j < 2; ++j) {
     // send ref-clock now to set period at 4 and start clocking
         cm.refClock();
 
-        printf("in top loop, j=%d, saw=%f\n", j, cm.getSaw());
         assertEQ(cm.getSaw(), 0);
 
         assertEQ(cm.getMultipliedClock(), true);
@@ -131,7 +150,6 @@ static void test3()
 
         for (int i = 0; i < period; ++i) {
             cm.sampleClock();
-            printf("in loop, i=%d j=%d, saw=%f\n", i, j, cm.getSaw());
             assertClose(cm.getSaw(), .25 * (i + 1), .00001);
             assertEQ(cm.getMultipliedClock(), true);
         }
@@ -144,5 +162,5 @@ void testClockMult()
     test1();
     test2();
     test3();
-   // test4();
+    test4();
 }

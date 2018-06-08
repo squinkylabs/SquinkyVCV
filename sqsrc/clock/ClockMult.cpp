@@ -55,6 +55,9 @@ void ClockMult::sampleClockLockedMode()
 */
 void ClockMult::refClock()
 {
+    if (isFreeRun()) {
+        return;
+    }
   //  printf("refClock: state=%d\n", state);
     switch (state) {
         case State::INIT://
@@ -71,7 +74,7 @@ void ClockMult::refClock()
             state = State::RUNNING;
             
             startNewClock();
-          printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",  learnedPeriod, learnedFrequency, clockOutValue);
+         // printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",  learnedPeriod, learnedFrequency, clockOutValue);
             break;
        
         default:
