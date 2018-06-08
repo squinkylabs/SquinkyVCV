@@ -71,7 +71,7 @@ void ClockMult::refClock()
             state = State::RUNNING;
             
             startNewClock();
-          //  printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",  learnedPeriod, learnedFrequency, clockOutValue);
+          printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",  learnedPeriod, learnedFrequency, clockOutValue);
             break;
        
         default:

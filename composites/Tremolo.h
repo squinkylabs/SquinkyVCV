@@ -138,6 +138,7 @@ private:
     AudioMath::ScaleFun<float> scale_phase;
 
     Stats stats;
+    bool lastClock = false; // TODO: input conditioning
 };
 
 
@@ -158,7 +159,16 @@ inline void Tremolo<TBase>::init()
 template <class TBase>
 inline void Tremolo<TBase>::step()
 {
-    const int clockMul = round(TBase::params[CLOCK_MULT_PARAM].value);
+
+    const bool clockIn = TBase::inputs[CLOCK_INPUT].value > 2;
+    if (clockIn != lastClock) {
+        lastClock = clockIn;
+        if (clockIn) {
+            clock.refClock();
+        }
+    }
+
+    const int clockMul = (int)round(TBase::params[CLOCK_MULT_PARAM].value);
     clock.setMultiplier(clockMul);
     // .1...10
     const float rate = scale_rate(0, 
