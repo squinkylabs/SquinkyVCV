@@ -89,7 +89,7 @@ void ClockMult::startNewClock()
 }
 
 
-void ClockMult::setDivisor(int x)
+void ClockMult::setMultiplier(int x)
 {
     freqMultFactor = x;
 }

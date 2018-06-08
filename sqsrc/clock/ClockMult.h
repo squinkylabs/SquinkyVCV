@@ -24,12 +24,20 @@ public:
         return sawPhase;
     }
 
+    /**
+     * The binary pulse output of the clock multiplier
+     * (note: doesn't work yet)
+     */
     bool getMultipliedClock() const
     {
         return clockOutValue;
     }
 
-    void setDivisor(int);
+    /**
+     * @param x >= 1 is the multiplier factor
+     *      x == 0 : free run
+     */
+    void setMultiplier(int x);
 
     float _getFreq() const
     {

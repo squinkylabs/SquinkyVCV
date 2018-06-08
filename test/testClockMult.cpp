@@ -14,7 +14,7 @@
 static void test0()
 {
     ClockMult cm;
-    cm.setDivisor(1);
+    cm.setMultiplier(1);
     const int period = 4;
 
    // printf("test0, 0\n");
@@ -44,7 +44,7 @@ static void test0()
 static void test1()
 {
     ClockMult cm;
-    cm.setDivisor(1);
+    cm.setMultiplier(1);
     const int period = 4;
 
   //  printf("test0, 0\n");
@@ -80,7 +80,7 @@ static void test1()
 static void test2()
 {
     ClockMult cm;
-    cm.setDivisor(0);
+    cm.setMultiplier(0);
     cm.setFreeRunFreq(.1f);
 
     assertEQ(cm.getSaw(), 0);
@@ -103,7 +103,7 @@ static void test2()
 static void test3()
 {
     ClockMult cm;
-    cm.setDivisor(1);
+    cm.setMultiplier(1);
     const int period = 4;
 
     //  printf("test0, 0\n");
