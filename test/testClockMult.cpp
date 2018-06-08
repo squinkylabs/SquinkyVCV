@@ -122,14 +122,17 @@ static void test3()
     for (int j = 0; j < 2; ++j) {
     // send ref-clock now to set period at 4 and start clocking
         cm.refClock();
+
+        printf("in top loop, j=%d, saw=%f\n", j, cm.getSaw());
         assertEQ(cm.getSaw(), 0);
+
         assertEQ(cm.getMultipliedClock(), true);
         assertClose(cm._getFreq(), .25f, .000001);
 
-        for (int i = 0; i < period - 1; ++i) {
+        for (int i = 0; i < period; ++i) {
             cm.sampleClock();
-            //    printf("in loop, i=%d, saw=%f\n", i, cm.getSaw());
-            assertEQ(cm.getSaw(), .25 * (i + 1));
+            printf("in loop, i=%d j=%d, saw=%f\n", i, j, cm.getSaw());
+            assertClose(cm.getSaw(), .25 * (i + 1), .00001);
             assertEQ(cm.getMultipliedClock(), true);
         }
     }
@@ -141,4 +144,5 @@ void testClockMult()
     test1();
     test2();
     test3();
+   // test4();
 }

@@ -33,6 +33,7 @@ void ClockMult::sampleClockLockedMode()
             ++trainingCounter;
             break;
         case State::RUNNING: 
+            ++trainingCounter;          // we are still training, even while running
             sawPhase += learnedFrequency;
             if (clockOutTimer > 0) {
                 clockOutTimer--;
@@ -62,17 +63,17 @@ void ClockMult::refClock()
        //     printf("refClock moved from INIT to TRAINIG\n");
             break;
         case State::TRAINING:
+        case State::RUNNING:
         //    printf("got end train with ctr = %d\n", trainingCounter);
             learnedPeriod = trainingCounter;
+            trainingCounter = 0;
             learnedFrequency = 1.0f / learnedPeriod;
             state = State::RUNNING;
             
             startNewClock();
           //  printf("refClock moved from TRAINING to RUNNING. period = %d freq=%f clockOut=%d\n",  learnedPeriod, learnedFrequency, clockOutValue);
             break;
-        case State::RUNNING:
-            printf("ignoring ref clock while running");
-            break;
+       
         default:
             assert(0);
             
@@ -82,6 +83,7 @@ void ClockMult::refClock()
 
 void ClockMult::startNewClock()
 {
+    sawPhase = 0;
     clockOutValue = true;
     clockOutTimer = 10;         // TODO: constants
 }

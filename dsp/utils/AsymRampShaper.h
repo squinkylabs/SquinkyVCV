@@ -3,10 +3,10 @@
 #include <assert.h>
 
 
-/** For Tremelo: lets you smootly adjust phase and skew
+/** For Tremolo: lets you smoothly adjust phase and skew
 * turns a ramp into a continuously variable dual slope ramp:
 *		at one extreme it is increasing ramp
-*		at other extremem it is decreasing
+*		at other extreme it is decreasing
 *		in between it it triangle
 */
 
