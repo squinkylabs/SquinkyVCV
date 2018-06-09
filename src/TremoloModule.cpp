@@ -51,7 +51,18 @@ void TremoloModule::step()
 struct TremoloWidget : ModuleWidget
 {
     TremoloWidget(TremoloModule *);
+       
+    void addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK) {
+        Label* label = new Label();
+        label->box.pos = v;
+        label->text = str;
+        label->color = color;
+        addChild(label);
+    }
+
 };
+
+
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -71,18 +82,25 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 
     const float rowIO = 330;
     addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
-    addInput(Port::create<PJ301MPort>(Vec(10, rowIO-30), Port::INPUT, module, module->tremolo.CLOCK_INPUT));
-  
+    addLabel(Vec(8, rowIO-20), "in");
+    
+    addInput(Port::create<PJ301MPort>(Vec(10, rowIO-50), Port::INPUT, module, module->tremolo.CLOCK_INPUT));
+    addLabel(Vec(5, rowIO-70), "ckin");
+   
     addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
-    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-40), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
-    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-20), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
+    addLabel(Vec(40, rowIO+10), "out");
+    
+    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-70), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
+    addLabel(Vec(50, rowIO-90), "saw");
 
+    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-40), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
+    addLabel(Vec(35, rowIO-40), "lfo");
 
     // main params
     const float knobX = 10;
     const float knobY = 40;
     const float textX = 40;
-    const float knobDy = 45;
+    const float knobDy = 35;
 // RoundLargeBlackKnob
 
     addParam(ParamWidget::create<RoundBlackKnob>(
@@ -133,14 +151,6 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     label->color = COLOR_BLACK;
     addChild(label);
 
- /*
-         LFO_RATE_PARAM,
-        LFO_SHAPE_PARAM,
-        LFO_SKEW_PARAM,
-        MOD_DEPTH_PARAM,
-        */
-
-   
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
