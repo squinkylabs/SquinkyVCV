@@ -35,6 +35,9 @@ void ClockMult::sampleClockLockedMode()
         case State::RUNNING: 
             ++trainingCounter;          // we are still training, even while running
             sawPhase += learnedFrequency;
+            if (sawPhase >= 1) {
+                sawPhase -= 1.f;
+            }
             if (clockOutTimer > 0) {
                 clockOutTimer--;
             } else {
@@ -70,7 +73,7 @@ void ClockMult::refClock()
         //    printf("got end train with ctr = %d\n", trainingCounter);
             learnedPeriod = trainingCounter;
             trainingCounter = 0;
-            learnedFrequency = 1.0f / learnedPeriod;
+            learnedFrequency = (float) freqMultFactor / learnedPeriod;
             state = State::RUNNING;
             
             startNewClock();
