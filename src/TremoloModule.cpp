@@ -58,7 +58,10 @@ struct TremoloWidget : ModuleWidget
         addChild(label);
     }
     void addClockSection(TremoloModule *module);
+    void addIOSection(TremoloModule *module);
+    void addMainSection(TremoloModule *module);
 };
+
 
 void TremoloWidget::addClockSection(TremoloModule *module)
 {
@@ -84,6 +87,60 @@ void TremoloWidget::addClockSection(TremoloModule *module)
     addLabel(Vec(cmx, cmy-12), "x3");
 }
 
+void TremoloWidget::addIOSection(TremoloModule *module)
+{
+     const float rowIO = 316;
+     const float label = rowIO - 20;
+     const float deltaX = 35;
+     const float x = 10;
+     #if 1
+
+    addInput(Port::create<PJ301MPort>(Vec(x, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+    addLabel(Vec(8, label), "in");
+    
+  
+    addOutput(Port::create<PJ301MPort>(Vec(x+deltaX, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
+    addLabel(Vec(x+deltaX -6, label), "out");
+    
+    addOutput(Port::create<PJ301MPort>(Vec(x+2*deltaX, rowIO), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
+    addLabel(Vec(x+2*deltaX -6, label), "saw");
+
+    addOutput(Port::create<PJ301MPort>(Vec(x+3*deltaX, rowIO), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
+    addLabel(Vec(x+3*deltaX -6, label), "lfo");
+    #endif
+}
+
+void TremoloWidget::addMainSection(TremoloModule *module)
+{
+    #if 0
+    const float rowIO = 330;
+
+
+    // main params
+    const float knobX = 10;
+    const float knobY = 40+150;     // show down temp
+    const float textX = 40;
+    const float knobDy = 35;
+    addParam(ParamWidget::create<RoundBlackKnob>(
+        Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
+    addLabel(Vec(textX, knobY+1*knobDy), "Shape");
+
+    addParam(ParamWidget::create<RoundBlackKnob>(
+        Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
+    addLabel(Vec(textX, knobY+2*knobDy), "Skew");
+    
+    addParam(ParamWidget::create<RoundBlackKnob>(
+        Vec(knobX, knobY + 3*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
+    addLabel(Vec(textX, knobY+3*knobDy), "Phase");
+
+
+    addParam(ParamWidget::create<RoundBlackKnob>(
+        Vec(knobX, knobY + 4*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
+    addLabel(Vec(textX, knobY+4*knobDy), "Depth");
+    #endif
+
+}
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -101,46 +158,8 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     }
 
     addClockSection(module);
-
-    const float rowIO = 330;
-    addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
-    addLabel(Vec(8, rowIO-20), "in");
-    
-  
-    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
-    addLabel(Vec(40, rowIO+10), "out");
-    
-    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-70), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
-    addLabel(Vec(50, rowIO-90), "saw");
-
-    addOutput(Port::create<PJ301MPort>(Vec(60, rowIO-40), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
-    addLabel(Vec(35, rowIO-40), "lfo");
-
-    // main params
-    const float knobX = 10;
-    const float knobY = 40+150;     // show down temp
-    const float textX = 40;
-    const float knobDy = 35;
-// RoundLargeBlackKnob
-
- 
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+1*knobDy), "Shape");
-
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+2*knobDy), "Skew");
-    
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 3*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+3*knobDy), "Phase");
-
-
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 4*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+4*knobDy), "Depth");
-
+    addMainSection(module);
+    addIOSection(module);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
