@@ -57,9 +57,32 @@ struct TremoloWidget : ModuleWidget
         label->color = color;
         addChild(label);
     }
+    void addClockSection(TremoloModule *module);
 };
 
+void TremoloWidget::addClockSection(TremoloModule *module)
+{
+    const float y = 40;        // global offset for clock block
+    const float labelY = y+36;
 
+    addInput(Port::create<PJ301MPort>(Vec(5, y+7), Port::INPUT, module, module->tremolo.CLOCK_INPUT));
+    addLabel(Vec(5, labelY), "ckin");
+
+    addParam(ParamWidget::create<RoundBlackKnob>(
+        Vec(110,y), module, module->tremolo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    addLabel(Vec(102, labelY), "Rate");
+
+    const float cmy = y;
+    const float cmx = 60;
+    addParam(ParamWidget::create<RoundBlackSnapKnob>(
+        Vec(cmx, cmy), module, module->tremolo.CLOCK_MULT_PARAM, 0.0f, 4.0f, 0.0f));
+    addLabel(Vec(cmx-10, labelY), "Clock");
+    addLabel(Vec(cmx-17, cmy+20), "x1");
+    addLabel(Vec(cmx+15, cmy+20), "int");
+    addLabel(Vec(cmx-23, cmy+0), "x2");
+    addLabel(Vec(cmx+22, cmy+0), "x4");
+    addLabel(Vec(cmx, cmy-12), "x3");
+}
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -68,22 +91,22 @@ struct TremoloWidget : ModuleWidget
  */
 TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 {
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/trem_panel.svg")));
         addChild(panel);
     }
+
+    addClockSection(module);
 
     const float rowIO = 330;
     addInput(Port::create<PJ301MPort>(Vec(10, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
     addLabel(Vec(8, rowIO-20), "in");
     
-    addInput(Port::create<PJ301MPort>(Vec(10, rowIO-50), Port::INPUT, module, module->tremolo.CLOCK_INPUT));
-    addLabel(Vec(5, rowIO-70), "ckin");
-   
+  
     addOutput(Port::create<PJ301MPort>(Vec(60, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
     addLabel(Vec(40, rowIO+10), "out");
     
@@ -95,15 +118,12 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 
     // main params
     const float knobX = 10;
-    const float knobY = 40;
+    const float knobY = 40+150;     // show down temp
     const float textX = 40;
     const float knobDy = 35;
 // RoundLargeBlackKnob
 
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY), module, module->tremolo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY), "Rate");
-
+ 
     addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
     addLabel(Vec(textX, knobY+1*knobDy), "Shape");
@@ -121,9 +141,6 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
         Vec(knobX, knobY + 4*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
     addLabel(Vec(textX, knobY+4*knobDy), "Depth");
 
-    addParam(ParamWidget::create<RoundBlackSnapKnob>(
-        Vec(knobX, knobY + 5*knobDy), module, module->tremolo.CLOCK_MULT_PARAM, 0.0f, 4.0f, 0.0f));
-    addLabel(Vec(textX, knobY+5*knobDy), "Clock");
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
