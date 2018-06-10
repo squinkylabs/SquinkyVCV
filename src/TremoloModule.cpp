@@ -10,8 +10,6 @@ struct TremoloModule : Module
 {
 public:
     TremoloModule();
-
-
     /**
      * Overrides of Module functions
      */
@@ -59,7 +57,6 @@ struct TremoloWidget : ModuleWidget
         label->color = color;
         addChild(label);
     }
-
 };
 
 
@@ -105,51 +102,28 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 
     addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY), module, module->tremolo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
-    Label* label = new Label();
-    label->box.pos = Vec(textX, knobY);
-    label->text = "Rate";
-    label->color = COLOR_BLACK;
-    addChild(label);
+    addLabel(Vec(textX, knobY), "Rate");
 
-   addParam(ParamWidget::create<RoundBlackKnob>(
+    addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
-    label = new Label();
-    label->box.pos = Vec(textX, knobY+1*knobDy);
-    label->text = "Shape";
-    label->color = COLOR_BLACK;
-    addChild(label);
+    addLabel(Vec(textX, knobY+1*knobDy), "Shape");
 
     addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
-    label = new Label();
-    label->box.pos = Vec(textX, knobY+2*knobDy);
-    label->text = "Skew";
-    label->color = COLOR_BLACK;
-    addChild(label);
-
+    addLabel(Vec(textX, knobY+2*knobDy), "Skew");
+    
     addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 3*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
-    label = new Label();
-    label->box.pos = Vec(textX, knobY+3*knobDy);
-    label->text = "Phase";
-    label->color = COLOR_BLACK;
-    addChild(label);
+    addLabel(Vec(textX, knobY+3*knobDy), "Phase");
+
 
     addParam(ParamWidget::create<RoundBlackKnob>(
         Vec(knobX, knobY + 4*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
-    label = new Label();
-    label->box.pos = Vec(textX, knobY+4*knobDy);
-    label->text = "Depth";
-    label->color = COLOR_BLACK;
-    addChild(label);
+    addLabel(Vec(textX, knobY+4*knobDy), "Depth");
 
     addParam(ParamWidget::create<RoundBlackSnapKnob>(
         Vec(knobX, knobY + 5*knobDy), module, module->tremolo.CLOCK_MULT_PARAM, 0.0f, 4.0f, 0.0f));
-    label = new Label();
-    label->box.pos = Vec(textX, knobY+5*knobDy);
-    label->text = "Clock";
-    label->color = COLOR_BLACK;
-    addChild(label);
+    addLabel(Vec(textX, knobY+5*knobDy), "Clock");
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
