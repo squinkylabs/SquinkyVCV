@@ -180,23 +180,30 @@ inline void Tremolo<TBase>::step()
     const int clockMul = (int)round(TBase::params[CLOCK_MULT_PARAM].value);
     clock.setMultiplier(clockMul);
     // .1...10
-    const float rate = scale_rate(0, 
+    const float rate = scale_rate(
+        0, 
         TBase::params[LFO_RATE_PARAM].value,
         1);
-    const float shape = scale_shape(0,
+
+    const float shape = scale_shape(
+        TBase::inputs[LFO_SHAPE_INPUT].value,
         TBase::params[LFO_SHAPE_PARAM].value,
-        1);
+        TBase::params[LFO_SHAPE_TRIM_PARAM].value);
 
-    const float skew = scale_skew(0,
+    const float skew = scale_skew(
+        TBase::inputs[LFO_SKEW_INPUT].value,
         TBase::params[LFO_SKEW_PARAM].value,
-        1);
-    const float phase = scale_phase(0,
-        TBase::params[LFO_PHASE_PARAM].value,
-        1);
+        TBase::params[LFO_SKEW_TRIM_PARAM].value);
 
-    const float modDepth = scale_depth(0,
+    const float phase = scale_phase(
+        TBase::inputs[LFO_PHASE_INPUT].value,
+        TBase::params[LFO_PHASE_PARAM].value,
+        TBase::params[LFO_PHASE_TRIM_PARAM].value);
+
+    const float modDepth = scale_depth(
+        TBase::inputs[MOD_DEPTH_INPUT].value,
         TBase::params[MOD_DEPTH_PARAM].value,
-        1);
+        TBase::params[MOD_DEPTH_TRIM_PARAM].value);
 
    
 
