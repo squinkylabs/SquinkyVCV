@@ -93,7 +93,7 @@ void TremoloWidget::addIOSection(TremoloModule *module)
      const float label = rowIO - 20;
      const float deltaX = 35;
      const float x = 10;
-     #if 1
+
 
     addInput(Port::create<PJ301MPort>(Vec(x, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
     addLabel(Vec(8, label), "in");
@@ -107,7 +107,6 @@ void TremoloWidget::addIOSection(TremoloModule *module)
 
     addOutput(Port::create<PJ301MPort>(Vec(x+3*deltaX, rowIO), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
     addLabel(Vec(x+3*deltaX -6, label), "lfo");
-    #endif
 }
 
 void TremoloWidget::addMainSection(TremoloModule *module)
@@ -125,27 +124,27 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 0*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
     addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 0*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
+        Vec(trimX, trimY + 0*knobDy), module, module->tremolo.LFO_SHAPE_TRIM_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(
-        Vec(inX, inY + 0*knobDy), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+        Vec(inX, inY + 0*knobDy), Port::INPUT, module, module->tremolo.LFO_SHAPE_INPUT));
     addLabel(
         Vec(labelX, labelY+0*knobDy), "Shape");
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
     addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
+        Vec(trimX, trimY + 1*knobDy), module, module->tremolo.LFO_SKEW_TRIM_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(
-        Vec(inX, labelY+ 1*knobDy+6), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+        Vec(inX, labelY+ 1*knobDy+6), Port::INPUT, module, module->tremolo.LFO_SKEW_INPUT));
     addLabel(
         Vec(labelX, labelY+1*knobDy), "Skew");
     
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
      addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 2*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
+        Vec(trimX, trimY + 2*knobDy), module, module->tremolo.LFO_PHASE_TRIM_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(
-        Vec(inX, labelY+ 2*knobDy+6), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+        Vec(inX, labelY+ 2*knobDy+6), Port::INPUT, module, module->tremolo.LFO_PHASE_INPUT));
     addLabel(
         Vec(labelX, labelY+2*knobDy), "Phase");
 
@@ -153,9 +152,9 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 3*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
      addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 3*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
+        Vec(trimX, trimY + 3*knobDy), module, module->tremolo.MOD_DEPTH_TRIM_PARAM, -5.0, 5.0, 0.0));
     addInput(Port::create<PJ301MPort>(
-        Vec(inX, labelY+ 3*knobDy+6), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+        Vec(inX, labelY+ 3*knobDy+6), Port::INPUT, module, module->tremolo.MOD_DEPTH_INPUT));
     addLabel(
         Vec(labelX, labelY+3*knobDy), "Depth");
     #if 0

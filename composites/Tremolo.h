@@ -94,6 +94,11 @@ public:
         LFO_PHASE_PARAM,
         MOD_DEPTH_PARAM,
         CLOCK_MULT_PARAM,
+
+        LFO_SHAPE_TRIM_PARAM,
+        LFO_SKEW_TRIM_PARAM,
+        LFO_PHASE_TRIM_PARAM,
+        MOD_DEPTH_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -101,6 +106,10 @@ public:
     {
         AUDIO_INPUT,
         CLOCK_INPUT,
+        LFO_SHAPE_INPUT,
+        LFO_SKEW_INPUT,
+        LFO_PHASE_INPUT,
+        MOD_DEPTH_INPUT,
         NUM_INPUTS
     };
 
