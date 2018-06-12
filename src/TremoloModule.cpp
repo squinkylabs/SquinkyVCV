@@ -133,7 +133,7 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
     addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 1*knobDy), module, module->tremolo.LFO_SKEW_TRIM_PARAM, -5.0, 5.0, 0.0));
+        Vec(trimX, trimY + 1*knobDy), module, module->tremolo.LFO_SKEW_TRIM_PARAM, -1.0, 1.0, 1.0));
     addInput(Port::create<PJ301MPort>(
         Vec(inX, labelY+ 1*knobDy+6), Port::INPUT, module, module->tremolo.LFO_SKEW_INPUT));
     addLabel(
@@ -142,48 +142,20 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
      addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 2*knobDy), module, module->tremolo.LFO_PHASE_TRIM_PARAM, -5.0, 5.0, 0.0));
+        Vec(trimX, trimY + 2*knobDy), module, module->tremolo.LFO_PHASE_TRIM_PARAM, -1.0, 1.0, 1.0));
     addInput(Port::create<PJ301MPort>(
         Vec(inX, labelY+ 2*knobDy+6), Port::INPUT, module, module->tremolo.LFO_PHASE_INPUT));
     addLabel(
         Vec(labelX, labelY+2*knobDy), "Phase");
 
-
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 3*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
      addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 3*knobDy), module, module->tremolo.MOD_DEPTH_TRIM_PARAM, -5.0, 5.0, 0.0));
+        Vec(trimX, trimY + 3*knobDy), module, module->tremolo.MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 1.0));
     addInput(Port::create<PJ301MPort>(
         Vec(inX, labelY+ 3*knobDy+6), Port::INPUT, module, module->tremolo.MOD_DEPTH_INPUT));
     addLabel(
         Vec(labelX, labelY+3*knobDy), "Depth");
-    #if 0
-    const float rowIO = 330;
-
-
-    // main params
-    const float knobX = 10;
-    const float knobY = 40+150;     // show down temp
-    const float textX = 40;
-    const float knobDy = 35;
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 1*knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+1*knobDy), "Shape");
-
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 2*knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+2*knobDy), "Skew");
-    
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 3*knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+3*knobDy), "Phase");
-
-
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(knobX, knobY + 4*knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
-    addLabel(Vec(textX, knobY+4*knobDy), "Depth");
-    #endif
-
 }
 
 /**

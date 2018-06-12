@@ -199,13 +199,19 @@ inline void Tremolo<TBase>::step()
         TBase::inputs[LFO_PHASE_INPUT].value,
         TBase::params[LFO_PHASE_PARAM].value,
         TBase::params[LFO_PHASE_TRIM_PARAM].value);
+#if 0
+    printf("phase knob = %f, cv = %f trim=%f total=%f\n",
+        TBase::params[LFO_PHASE_PARAM].value,
+        TBase::inputs[LFO_PHASE_INPUT].value,
+        TBase::params[LFO_PHASE_TRIM_PARAM].value,
+        phase);
+#endif
+
 
     const float modDepth = scale_depth(
         TBase::inputs[MOD_DEPTH_INPUT].value,
         TBase::params[MOD_DEPTH_PARAM].value,
         TBase::params[MOD_DEPTH_TRIM_PARAM].value);
-
-   
 
     clock.setFreeRunFreq(rate * reciprocalSampleRate);
 
