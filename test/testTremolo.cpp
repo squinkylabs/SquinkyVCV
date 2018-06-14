@@ -20,7 +20,8 @@ static void test1Sub(float skew)
     Trem t;
     t.setSampleRate(44100);
     t.init();
-   
+    
+    t.params[Trem::CLOCK_MULT_PARAM].value = 4;        // 4 is free run for Trem
     t.params[Trem::LFO_RATE_PARAM].value = 5;       // max speed
     t.params[Trem::LFO_SKEW_PARAM].value = skew;
     float max = -100;

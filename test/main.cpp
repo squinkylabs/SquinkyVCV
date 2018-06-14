@@ -27,10 +27,10 @@ extern void testFFTCrossFader();
 extern void testFinalLeaks();
 extern void testClockMult();
 extern void testTremolo();
+extern void testGateTrigger();
 
 int main(int argc, char ** argv)
 {
-    printf("--- test2 ----\n"); fflush(stdout);
     bool runPerf = false;
     if (argc > 1) {
         std::string arg = argv[1];
@@ -50,6 +50,7 @@ int main(int argc, char ** argv)
 
     testAudioMath();
     testRingBuffer();
+    testGateTrigger();
     testManagedPool();
     testLookupTable();
     testObjectCache();

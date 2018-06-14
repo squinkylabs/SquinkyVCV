@@ -44,6 +44,7 @@
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
     <ClCompile Include="..\..\test\testFinalLeaks.cpp" />
     <ClCompile Include="..\..\test\testFrequencyShifter.cpp" />
+    <ClCompile Include="..\..\test\testGateTrigger.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
     <ClCompile Include="..\..\test\testLookupTable.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
@@ -90,8 +91,11 @@
     <ClInclude Include="..\..\sqsrc\thread\ThreadPriority.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadServer.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h" />
+    <ClInclude Include="..\..\sqsrc\util\Constants.h" />
+    <ClInclude Include="..\..\sqsrc\util\GateTrigger.h" />
     <ClInclude Include="..\..\sqsrc\util\ManagedPool.h" />
     <ClInclude Include="..\..\sqsrc\util\RingBuffer.h" />
+    <ClInclude Include="..\..\sqsrc\util\SchmidtTrigger.h" />
     <ClInclude Include="..\..\test\asserts.h" />
     <ClInclude Include="..\..\test\ExtremeTester.h" />
     <ClInclude Include="..\..\test\MeasureTime.h" />

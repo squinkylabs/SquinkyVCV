@@ -195,6 +195,9 @@
     <ClCompile Include="..\..\test\testTremolo.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testGateTrigger.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -316,6 +319,18 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\Tremolo.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\thread\ThreadPriority.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\GateTrigger.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\SchmidtTrigger.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\Constants.h">
+      <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

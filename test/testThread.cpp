@@ -106,15 +106,9 @@ static void test2()
 
 static void test3()
 {
-    printf("calling boostNormal\n");
     bool b = ThreadPriority::boostNormal();
-    printf("calling boostRealtime\n");
     bool b2 = ThreadPriority::boostRealtime();
-  //  assert(b);
- //   printf("boostRealtime ret %d\n", b2);
-
     ThreadPriority::restore();
-
 }
 
 /*****************************************************************/

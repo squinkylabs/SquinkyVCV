@@ -6,6 +6,7 @@
 #include "ClockMult.h"
 #include "ObjectCache.h"
 #include "AsymRampShaper.h"
+#include "GateTrigger.h"
 
 
 
@@ -147,7 +148,8 @@ private:
     AudioMath::ScaleFun<float> scale_phase;
 
     Stats stats;
-    bool lastClock = false; // TODO: input conditioning
+    //bool lastClock = false; // TODO: input conditioning
+    GateTrigger gateTrigger;
 };
 
 
@@ -158,17 +160,18 @@ inline void Tremolo<TBase>::init()
     tanhLookup = ObjectCache<float>::getTanh5();
     clock.setMultiplier(0);
 
-    scale_rate = AudioMath::makeBipolarAudioScaler(.1f, 10.f); // full CV range -> 0..1
-    scale_skew = AudioMath::makeBipolarAudioScaler(-.99f, .99f);
-    scale_shape = AudioMath::makeBipolarAudioScaler(0, 1);
-    scale_depth = AudioMath::makeBipolarAudioScaler(0, 1);
-    scale_phase = AudioMath::makeBipolarAudioScaler(-1, 1);
+    scale_rate = AudioMath::makeLinearScaler(.1f, 10.f); // full CV range -> 0..1
+    scale_skew = AudioMath::makeLinearScaler(-.99f, .99f);
+    scale_shape = AudioMath::makeLinearScaler(0.f, 1.f);
+    scale_depth = AudioMath::makeLinearScaler(0.f, 1.f);
+    scale_phase = AudioMath::makeLinearScaler(-1.f, 1.f);
 }
 
 template <class TBase>
 inline void Tremolo<TBase>::step()
 {
-
+    // TODO: schmidt
+#if 0
     const bool clockIn = TBase::inputs[CLOCK_INPUT].value > 2;
     if (clockIn != lastClock) {
         lastClock = clockIn;
@@ -176,8 +179,22 @@ inline void Tremolo<TBase>::step()
             clock.refClock();
         }
     }
+#endif
+    gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
+    if (gateTrigger.trigger()) {
+        clock.refClock();
+    }
 
-    const int clockMul = (int)round(TBase::params[CLOCK_MULT_PARAM].value);
+    int clockMul = (int)round(TBase::params[CLOCK_MULT_PARAM].value);
+
+    // UI is shifted
+    clockMul++;
+    if (clockMul > 4) {
+        clockMul = 0;
+    }
+    
+   
+
     clock.setMultiplier(clockMul);
     // .1...10
     const float rate = scale_rate(
