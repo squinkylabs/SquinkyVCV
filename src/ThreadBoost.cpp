@@ -163,5 +163,5 @@ ThreadBoostWidget::ThreadBoostWidget(ThreadBoostModule *module)
 // (found in `include/tags.hpp`) separated by commas.
 Model *modelThreadBoostModule = Model::create<ThreadBoostModule, ThreadBoostWidget>("Squinky Labs",
     "squinkylabs-booster",
-    "Thread Booster", EFFECT_TAG);
+    "Thread Booster", UTILITY_TAG);
 

@@ -8,75 +8,16 @@
 #include "AsymRampShaper.h"
 #include "GateTrigger.h"
 
-
-
-class Stats
-{
-public:
-    Stats(std::string s1, std::string s2, std::string s3)
-    {
-        labels.push_back(s1);
-        labels.push_back(s2);
-        labels.push_back(s3);
-        data.resize(3);
-        sum.resize(3);
-        for (int i=0; i<3; ++i) {
-            data[i].first = 100;
-            data[i].second = -100;
-            sum[i] = 0;
-        }
-    }
-    void log1(float x) { log(0, x); }
-    void log2(float x) { log(1, x); }
-    void log3(float x) { log(2, x); }
-private:
-    std::vector<std::pair<float, float>> data;
-    std::vector<std::string> labels;
-    std::vector<double> sum;
-    int dump_ct=0;
-    int total_ct=0;
-
-    void log(int index, float x)
-    {
-        #if 0
-        data[index].first = std::min(data[index].first, x);
-        data[index].second = std::max(data[index].second, x);
-        if (++dump_ct > 1000) {
-            dump();
-            dump_ct = 0;
-        }
-        sum[index] += x;
-        if (index == 0) {
-            ++total_ct;
-        }
-        #endif
-    }
-
-    void dump()
-    {
-        printf("\n");
-        for (int i=0; i<3; ++i) {
-            printf("%s: %f, %f avg=%f\n",
-                labels[i].c_str(),
-                data[i].first,
-                data[i].second,
-                sum[i] / total_ct);
-        }
-        fflush(stdout);
-    }
-
-};
-
 /**
  */
 template <class TBase>
 class Tremolo : public TBase
 {
 public:
-    Tremolo(struct Module * module) : TBase(module), stats("saw", "mid", "final" )
+    Tremolo(struct Module * module) : TBase(module)
     {
     }
-    Tremolo() : TBase(), stats("saw", "mid", "final")
+    Tremolo() : TBase()
     {
     }
     void setSampleRate(float rate)
@@ -147,8 +88,6 @@ private:
     AudioMath::ScaleFun<float> scale_depth;
     AudioMath::ScaleFun<float> scale_phase;
 
-    Stats stats;
-    //bool lastClock = false; // TODO: input conditioning
     GateTrigger gateTrigger;
 };
 
@@ -170,16 +109,6 @@ inline void Tremolo<TBase>::init()
 template <class TBase>
 inline void Tremolo<TBase>::step()
 {
-    // TODO: schmidt
-#if 0
-    const bool clockIn = TBase::inputs[CLOCK_INPUT].value > 2;
-    if (clockIn != lastClock) {
-        lastClock = clockIn;
-        if (clockIn) {
-            clock.refClock();
-        }
-    }
-#endif
     gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
     if (gateTrigger.trigger()) {
         clock.refClock();
@@ -216,14 +145,6 @@ inline void Tremolo<TBase>::step()
         TBase::inputs[LFO_PHASE_INPUT].value,
         TBase::params[LFO_PHASE_PARAM].value,
         TBase::params[LFO_PHASE_TRIM_PARAM].value);
-#if 0
-    printf("phase knob = %f, cv = %f trim=%f total=%f\n",
-        TBase::params[LFO_PHASE_PARAM].value,
-        TBase::inputs[LFO_PHASE_INPUT].value,
-        TBase::params[LFO_PHASE_TRIM_PARAM].value,
-        phase);
-#endif
-
 
     const float modDepth = scale_depth(
         TBase::inputs[MOD_DEPTH_INPUT].value,
@@ -243,27 +164,19 @@ inline void Tremolo<TBase>::step()
     // now we have a skewed saw -.5 to .5
     TBase::outputs[SAW_OUTPUT].value = mod;
 
-    stats.log1(mod);
-
     // TODO: don't scale twice - just get it right the first tme
     const float shapeMul = std::max(.25f, 10 * shape);
     mod *= shapeMul;
-    stats.log2(mod);
 
     mod = LookupTable<float>::lookup(*tanhLookup.get(), mod);
     TBase::outputs[LFO_OUTPUT].value = mod;   
 
-    const float gain = modDepth / tanh(shapeMul/2);
-  //  const float finalMul = gain + 1;    // TODO: offset control?
+    const float gain = modDepth / 
+        LookupTable<float>::lookup(*tanhLookup.get(), (shapeMul/2));
     const float finalMod = gain * mod + 1;      // TODO: this offset by 1 is pretty good, but we 
-                                                // could add an offset control
+                                                // could add an offset control to make it really "chop" off
     
-    stats.log3(finalMod);
     TBase::outputs[AUDIO_OUTPUT].value = TBase::inputs[AUDIO_INPUT].value * finalMod;
-
-// for test
-   // TBase::outputs[AUDIO_OUTPUT].value = finalMod;
-
 }
 
 /*

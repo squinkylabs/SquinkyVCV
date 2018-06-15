@@ -194,4 +194,4 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 
 Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs",
     "squinkylabs-vocalanimator",
-    "Vocal Animator", EFFECT_TAG, FILTER_TAG);
+    "Vocal Animator", EFFECT_TAG, FILTER_TAG, LFO_TAG, RANDOM_TAG);

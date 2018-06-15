@@ -17,7 +17,6 @@ public:
     void onSampleRateChange() override;
    Tremolo<WidgetComposite> tremolo;
 private:
- 
 };
 
 void TremoloModule::onSampleRateChange()
@@ -94,11 +93,9 @@ void TremoloWidget::addIOSection(TremoloModule *module)
      const float deltaX = 35;
      const float x = 10;
 
-
     addInput(Port::create<PJ301MPort>(Vec(x, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
     addLabel(Vec(8, label), "in");
     
-  
     addOutput(Port::create<PJ301MPort>(Vec(x+deltaX, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
     addLabel(Vec(x+deltaX -6, label), "out");
     
@@ -166,7 +163,6 @@ void TremoloWidget::addMainSection(TremoloModule *module)
 TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 {
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
@@ -185,12 +181,8 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-// Specify the Module and ModuleWidget subclass, human-readable
-// manufacturer name for categorization, module slug (should never
-// change), human-readable module name, and any number of tags
-// (found in `include/tags.hpp`) separated by commas.
 Model *modelTremoloModule = Model::create<TremoloModule,
      TremoloWidget>("Squinky Labs",
     "squinkylabs-tremolo",
-    "Tremolo", EFFECT_TAG);
+    "Tremolo", EFFECT_TAG, LFO_TAG);
 
