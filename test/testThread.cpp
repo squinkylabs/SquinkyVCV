@@ -123,11 +123,12 @@ std::atomic<int> slow;
 std::atomic<int> fast;
 
 
-void t4(bool iAmIt)
+//thread func
+static void t4(bool iAmIt, bool boosted)
 {
    // printf("t4 called with %d\n", iAmIt);
 
-    if (iAmIt && true) {
+    if (iAmIt && boosted) {
         printf("boosting\n"); fflush(stdout);
         ThreadPriority::boostNormal();
     }
@@ -144,7 +145,9 @@ void t4(bool iAmIt)
     }
 }
 
-static void test4()
+// runs all the test treads, returns ratio of work done in the default theads
+// and work done in test thread.
+static double test4sub(bool boosted)
 {
     stopNow = false;
     count = 0;
@@ -155,9 +158,9 @@ static void test4()
     int numSlow = 0;
     std::vector< std::shared_ptr<std::thread>> threads;
 
-    threads.push_back(std::make_shared<std::thread>(t4, true));
+    threads.push_back(std::make_shared<std::thread>(t4, true, boosted));
     for (int i = 0; i < 9; ++i) {
-        threads.push_back(std::make_shared<std::thread>(t4, false));
+        threads.push_back(std::make_shared<std::thread>(t4, false, false));
         ++numSlow;
     }
 
@@ -172,8 +175,20 @@ static void test4()
         thread->join();
     }
 
-    printf("slow/fast was %f (%d) ratio=%d\n", (double) slow / (double) fast, (int) slow, numSlow);
+    const double ret = (double) slow / (double) fast;
+    printf("slow/fast was %f (%d) ratio=%d\n", ret, (int) slow, numSlow);
+    return ret;
 }
+
+static void test4()
+{
+    printf("testing thread priorities, part1. will take a while\n"); fflush(stdout);
+    const double ref = test4sub(false);
+    printf("testing thread priorities, part2. will take a while\n"); fflush(stdout);
+    const double boosted = test4sub(true);
+    printf("ref = %f, boosted = %f\n", ref, boosted); fflush(stdout);
+}
+
 /*****************************************************************/
 
 void testThread(bool extended)

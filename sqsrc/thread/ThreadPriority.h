@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sys/resource.h>
+
 class ThreadPriority
 {
 public:
@@ -22,6 +24,7 @@ private:
     static bool boostNormalPthread();
     static bool boostRealtimePthread();
     static void restorePthread();
+    static bool boostNormalLinux();
 };
 
 // Inside Visual Studio test we don't try to link in PThreads, 
@@ -30,7 +33,11 @@ private:
 #if !defined(_MSC_VER)
 inline bool ThreadPriority::boostNormal()
 {
+#if ARCH_LIN
+    return boostNormalLinux();
+#else
     return boostNormalPthread();
+#endif
 }
 
 inline bool ThreadPriority::boostRealtime()
@@ -54,6 +61,13 @@ inline void ThreadPriority::restorePthread()
     if (x != 0) {
         printf("failed to set reset sched %d\n", x);
     }
+}
+
+inline bool  ThreadPriority::boostNormalLinux()
+{
+    pid_t tid = syscall(SYS_gettid);
+    int ret = setpriority(PRIO_PROCESS, tid, -10);
+    return ret == 0;
 }
 
 inline bool ThreadPriority::boostNormalPthread()
@@ -119,6 +133,7 @@ inline bool ThreadPriority::boostRealtimePthread()
     }
     return x == 0;
 }
+
 #else
 inline bool ThreadPriority::boostNormal()
 {
