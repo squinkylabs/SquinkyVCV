@@ -110,18 +110,16 @@ static void test3()
 {
     bool b = ThreadPriority::boostNormal();
     bool b2 = ThreadPriority::boostRealtime();
+    printf("\nnormal boost: %d\n", b);
+    printf("realtime boost: %d\n", b2);
     ThreadPriority::restore();
 }
 
-std::atomic<bool> stopNow;
-std::atomic<int> count;
-
-double xxx, yyy;
-
-std::atomic<int> slow;
-
-std::atomic<int> fast;
-
+static std::atomic<bool> stopNow;
+static std::atomic<int> count;
+static double xxx, yyy;
+static std::atomic<int> slow;
+static std::atomic<int> fast;
 
 //thread func
 static void t4(bool iAmIt, bool boosted)
@@ -198,8 +196,8 @@ void testThread(bool extended)
     test0();
     test1();
     test2();
+    test3();
     if (extended) {
-        test3();
         test4();
     }
     assertEQ(ThreadSharedState::_dbgCount, 0);

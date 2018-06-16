@@ -1,6 +1,13 @@
 #pragma once
 
+#ifdef ARCH_LIN
 #include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <errno.h>
+#endif
 
 class ThreadPriority
 {
@@ -24,17 +31,19 @@ private:
     static bool boostNormalPthread();
     static bool boostRealtimePthread();
     static void restorePthread();
+#ifdef ARCH_LIN
     static bool boostNormalLinux();
+#endif
 };
 
 // Inside Visual Studio test we don't try to link in PThreads, 
 // So they can't be used here. But they will work on all command line
 // test builds, including Windows.
-#if !defined(_MSC_VER)
+#if !defined(_MSC_VER) || defined(_VSCODE)
 inline bool ThreadPriority::boostNormal()
 {
-#if ARCH_LIN
-    return boostNormalLinux();
+#ifdef ARCH_LIN
+    return  boostNormalLinux();
 #else
     return boostNormalPthread();
 #endif
@@ -63,12 +72,25 @@ inline void ThreadPriority::restorePthread()
     }
 }
 
+
+/**
+ * Linux doesn't support pthread priorities, so
+ * we use the common hack of setting niceness.
+ */
+#ifdef ARCH_LIN
 inline bool  ThreadPriority::boostNormalLinux()
 {
     pid_t tid = syscall(SYS_gettid);
-    int ret = setpriority(PRIO_PROCESS, tid, -10);
+    const int priority = -20;
+    int ret = setpriority(PRIO_PROCESS, tid, priority);
+    if (ret != 0) {
+        printf("set pri failed, errno = %d\n", errno);
+        printf("EACCESS=%d\n", EACCES);
+    }
+    printf("priority now %d\n", getpriority(PRIO_PROCESS, tid));
     return ret == 0;
 }
+#endif
 
 inline bool ThreadPriority::boostNormalPthread()
 {
@@ -79,9 +101,9 @@ inline bool ThreadPriority::boostNormalPthread()
     printf("in boost, policy was %d, pri was %d otherp=%d\n", initPolicy, params.sched_priority, SCHED_OTHER);
 
     const int initPriority = params.sched_priority;
-   
+
     const int newPolicy = SCHED_OTHER;
-    const int maxPriority = sched_get_priority_max(newPolicy); 
+    const int maxPriority = sched_get_priority_max(newPolicy);
 #if 1
     {
         printf("for OTHER, pri range = %d,%d\n",
@@ -116,15 +138,15 @@ inline bool ThreadPriority::boostRealtimePthread()
 #if 0
     if ((maxPriority <= 0) || (minPriority < 0)) {
         printf("algorithm doesn't work with rt %d, %d\n", minPriority, maxPriority);
-          return false;
+        return false;
     }
 #endif
 
     // use the mean of min and max. These should all be higher than "non realtime" 
     // on mac the mean was not as good as elevating as other, to let's try max/
     //const int newPriority = (maxPriority + minPriority) / 2;
-    const int newPriority = maxPriority; 
-    
+    const int newPriority = maxPriority;
+
     printf("realtime min = %d max = %d will use %d\n", minPriority, maxPriority, newPriority);
     params.sched_priority = newPriority;
     int x = pthread_setschedparam(threadHandle, newPolicy, &params);

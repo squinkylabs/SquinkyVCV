@@ -67,7 +67,8 @@
                 "_EXP",
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "_VSCODE"
             ],
             "intelliSenseMode": "msvc-x64",
             "browse": {
