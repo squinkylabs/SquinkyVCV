@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <memory>
+#include <vector>
 
 
 
@@ -58,7 +59,7 @@ public:
     void handleMessage(ThreadMessage* msg) override
     {
         switch (msg->type) {
-            case ThreadMessage::Type::TEST1: 
+            case ThreadMessage::Type::TEST1:
             {
                 Test1Message * tstMsg = static_cast<Test1Message *>(msg);
                 assertEQ(tstMsg->payload, nextExpectedPayload);
@@ -66,7 +67,7 @@ public:
                 tstMsg->payload += 1000;
                 sendMessageToClient(tstMsg);        // send back the modified one
             }
-                break;
+            break;
             default:
                 assert(false);
         }
@@ -83,7 +84,7 @@ static void test2()
     std::unique_ptr<ThreadClient> client(new ThreadClient(state, std::move(server)));
 
     for (int count = 0; count < 50; ++count) {
-        msg->payload = 100+count;
+        msg->payload = 100 + count;
         const int expectedPayload = msg->payload + 1000;
         for (bool done = false; !done; ) {
             bool b = client->sendMessage(msg.get());
@@ -104,6 +105,7 @@ static void test2()
     }
 }
 
+// not a real test
 static void test3()
 {
     bool b = ThreadPriority::boostNormal();
@@ -111,16 +113,80 @@ static void test3()
     ThreadPriority::restore();
 }
 
+std::atomic<bool> stopNow;
+std::atomic<int> count;
+
+double xxx, yyy;
+
+std::atomic<int> slow;
+
+std::atomic<int> fast;
+
+
+void t4(bool iAmIt)
+{
+   // printf("t4 called with %d\n", iAmIt);
+
+    if (iAmIt && true) {
+        printf("boosting\n"); fflush(stdout);
+        ThreadPriority::boostNormal();
+    }
+    while (!stopNow) {
+        for (int i = 0; i < 100000; ++i) {
+            yyy = yyy + (double) rand();
+        }
+
+        if (iAmIt) {
+            ++fast;
+        } else {
+            ++slow;
+        }
+    }
+}
+
+static void test4()
+{
+    stopNow = false;
+    count = 0;
+    xxx = 0;
+    yyy = 0;
+    slow = 0;
+    fast = 0;
+    int numSlow = 0;
+    std::vector< std::shared_ptr<std::thread>> threads;
+
+    threads.push_back(std::make_shared<std::thread>(t4, true));
+    for (int i = 0; i < 9; ++i) {
+        threads.push_back(std::make_shared<std::thread>(t4, false));
+        ++numSlow;
+    }
+
+    printf("started all\n");
+    xxx = 0;
+    yyy = 0;
+
+    std::this_thread::sleep_for(std::chrono::seconds(20));
+    stopNow = true;
+
+    for (auto thread : threads) {
+        thread->join();
+    }
+
+    printf("slow/fast was %f (%d) ratio=%d\n", (double) slow / (double) fast, (int) slow, numSlow);
+}
 /*****************************************************************/
 
-void testThread()
+void testThread(bool extended)
 {
-   assertEQ(ThreadSharedState::_dbgCount, 0);
-   assertEQ(ThreadMessage::_dbgCount, 0);
-   test0();
-   test1();
-   test2();
-   test3();
-   assertEQ(ThreadSharedState::_dbgCount, 0);
-   assertEQ(ThreadMessage::_dbgCount, 0);
+    assertEQ(ThreadSharedState::_dbgCount, 0);
+    assertEQ(ThreadMessage::_dbgCount, 0);
+    test0();
+    test1();
+    test2();
+    if (extended) {
+        test3();
+        test4();
+    }
+    assertEQ(ThreadSharedState::_dbgCount, 0);
+    assertEQ(ThreadMessage::_dbgCount, 0);
 }

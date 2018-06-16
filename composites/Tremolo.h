@@ -114,20 +114,20 @@ inline void Tremolo<TBase>::step()
         clock.refClock();
     }
 
-    int clockMul = (int)round(TBase::params[CLOCK_MULT_PARAM].value);
+    int clockMul = (int) round(TBase::params[CLOCK_MULT_PARAM].value);
 
     // UI is shifted
     clockMul++;
     if (clockMul > 4) {
         clockMul = 0;
     }
-    
-   
+
+
 
     clock.setMultiplier(clockMul);
     // .1...10
     const float rate = scale_rate(
-        0, 
+        0,
         TBase::params[LFO_RATE_PARAM].value,
         1);
 
@@ -169,13 +169,13 @@ inline void Tremolo<TBase>::step()
     mod *= shapeMul;
 
     mod = LookupTable<float>::lookup(*tanhLookup.get(), mod);
-    TBase::outputs[LFO_OUTPUT].value = mod;   
+    TBase::outputs[LFO_OUTPUT].value = mod;
 
-    const float gain = modDepth / 
-        LookupTable<float>::lookup(*tanhLookup.get(), (shapeMul/2));
+    const float gain = modDepth /
+        LookupTable<float>::lookup(*tanhLookup.get(), (shapeMul / 2));
     const float finalMod = gain * mod + 1;      // TODO: this offset by 1 is pretty good, but we 
                                                 // could add an offset control to make it really "chop" off
-    
+
     TBase::outputs[AUDIO_OUTPUT].value = TBase::inputs[AUDIO_INPUT].value * finalMod;
 }
 
@@ -207,15 +207,15 @@ VecBasic<vec_t>::add_mul_c_imp(tempBuffer, sampleFrames, shapeMul, -.5f);
 // rang = +/- tanh(5 * shape)
 LookupUniform<vec_t>::lookup_clip_v(*tanhParams, tempBuffer, tempBuffer, sampleFrames);
 
-	// so: makeup gain of 1/tanh(shapeMul) will get us to +1/-1 
-	// then multiply by depth to get contered around zero with correct depth
-	// the add one to get back to trem range!
-	f_t gain = controlValues.modDepth / tanh(shapeMul/2);
-	VecBasic<vec_t>::mul_add_c_imp(tempBuffer, sampleFrames, gain, 1);
+    // so: makeup gain of 1/tanh(shapeMul) will get us to +1/-1
+    // then multiply by depth to get contered around zero with correct depth
+    // the add one to get back to trem range!
+    f_t gain = controlValues.modDepth / tanh(shapeMul/2);
+    VecBasic<vec_t>::mul_add_c_imp(tempBuffer, sampleFrames, gain, 1);
 // scale then add constant
-	// input = a * input + b
-	static void mul_add_c_imp(f_t * inout, int size, f_t a, f_t b) {
-		assert_size(size);
+    // input = a * input + b
+    static void mul_add_c_imp(f_t * inout, int size, f_t a, f_t b) {
+        assert_size(size);
 
-	// now range = +/- tanh(5*shape) * depth / tanh(10 * shape)
+    // now range = +/- tanh(5*shape) * depth / tanh(10 * shape)
 */

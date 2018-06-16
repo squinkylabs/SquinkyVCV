@@ -6,25 +6,29 @@
 
 struct ThreadBoostModule : Module
 {
-	enum ParamIds {
-		THREAD_BOOST_PARAM,
-		NUM_PARAMS
-	};
-	enum InputIds {
+    enum ParamIds
+    {
+        THREAD_BOOST_PARAM,
+        NUM_PARAMS
+    };
+    enum InputIds
+    {
 
-		NUM_INPUTS
-	};
-	enum OutputIds {
+        NUM_INPUTS
+    };
+    enum OutputIds
+    {
 
-		NUM_OUTPUTS
-	};
-	enum LightIds {
+        NUM_OUTPUTS
+    };
+    enum LightIds
+    {
         NORMAL_LIGHT,
         BOOSTED_LIGHT,
         REALTIME_LIGHT,
         ERROR_LIGHT,
-		NUM_LIGHTS
-	};
+        NUM_LIGHTS
+    };
 
     ThreadBoostModule();
 
@@ -34,9 +38,10 @@ struct ThreadBoostModule : Module
     void step() override;
 
 private:
-    int boostState=0;
-    void lightOnly(LightIds l) {
-        for (int i= NORMAL_LIGHT; i<NUM_LIGHTS; ++i ) {
+    int boostState = 0;
+    void lightOnly(LightIds l)
+    {
+        for (int i = NORMAL_LIGHT; i < NUM_LIGHTS; ++i) {
             bool b = (i == l);
             lights[i].value = b;
         }
@@ -44,7 +49,7 @@ private:
 
 };
 
-ThreadBoostModule::ThreadBoostModule() : Module(NUM_PARAMS,NUM_INPUTS,NUM_OUTPUTS,NUM_LIGHTS)
+ThreadBoostModule::ThreadBoostModule() : Module(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS)
 {
 }
 
@@ -53,31 +58,31 @@ void ThreadBoostModule::step()
     float x = params[THREAD_BOOST_PARAM].value + .5f;
     int i = std::floor(x);
     if (i != boostState) {
-        switch(i) {
+        switch (i) {
             case 0:
                 ThreadPriority::restore();
                 lightOnly(NORMAL_LIGHT);
                 break;
-            case 1: 
-                {
-                    bool b = ThreadPriority::boostNormal();
-                    if (b) {
-                        lightOnly(BOOSTED_LIGHT);
-                    } else {
-                        lightOnly(ERROR_LIGHT);
-                    }
-                    break;
+            case 1:
+            {
+                bool b = ThreadPriority::boostNormal();
+                if (b) {
+                    lightOnly(BOOSTED_LIGHT);
+                } else {
+                    lightOnly(ERROR_LIGHT);
                 }
+                break;
+            }
             case 2:
-                {
-                    bool b = ThreadPriority::boostRealtime();
-                    if (b) {
-                        lightOnly(REALTIME_LIGHT);
-                    } else {
-                        lightOnly(ERROR_LIGHT);
-                    }
-                    break;
+            {
+                bool b = ThreadPriority::boostRealtime();
+                if (b) {
+                    lightOnly(REALTIME_LIGHT);
+                } else {
+                    lightOnly(ERROR_LIGHT);
                 }
+                break;
+            }
         }
         boostState = i;
     }
@@ -97,8 +102,8 @@ struct ThreadBoostWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-ThreadBoostWidget::ThreadBoostWidget(ThreadBoostModule *module) 
-  : ModuleWidget(module)
+ThreadBoostWidget::ThreadBoostWidget(ThreadBoostModule *module)
+    : ModuleWidget(module)
 {
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
@@ -127,25 +132,25 @@ ThreadBoostWidget::ThreadBoostWidget(ThreadBoostModule *module)
     addChild(label);
 
     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY+deltaY), module, ThreadBoostModule::BOOSTED_LIGHT));
+        Vec(ledX, ledY + deltaY), module, ThreadBoostModule::BOOSTED_LIGHT));
     label = new Label();
-    label->box.pos = Vec(labelX, labelY+deltaY);
+    label->box.pos = Vec(labelX, labelY + deltaY);
     label->text = "Boost";
     label->color = COLOR_BLACK;
     addChild(label);
 
-     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY+2*deltaY), module, ThreadBoostModule::REALTIME_LIGHT));
+    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+        Vec(ledX, ledY + 2 * deltaY), module, ThreadBoostModule::REALTIME_LIGHT));
     label = new Label();
-    label->box.pos = Vec(labelX, labelY+2*deltaY);
+    label->box.pos = Vec(labelX, labelY + 2 * deltaY);
     label->text = "Real-time";
     label->color = COLOR_BLACK;
     addChild(label);
 
-     addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
-        Vec(ledX, ledY+3*deltaY), module, ThreadBoostModule::ERROR_LIGHT));
+    addChild(ModuleLightWidget::create<MediumLight<RedLight>>(
+        Vec(ledX, ledY + 3 * deltaY), module, ThreadBoostModule::ERROR_LIGHT));
     label = new Label();
-    label->box.pos = Vec(labelX, labelY+3*deltaY);
+    label->box.pos = Vec(labelX, labelY + 3 * deltaY);
     label->text = "Error";
     label->color = COLOR_BLACK;
     addChild(label);
