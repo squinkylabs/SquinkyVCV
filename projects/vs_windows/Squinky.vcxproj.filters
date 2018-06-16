@@ -320,9 +320,6 @@
     <ClInclude Include="..\..\composites\Tremolo.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\sqsrc\thread\ThreadPriority.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\GateTrigger.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
@@ -331,6 +328,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\Constants.h">
       <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\thread\ThreadPriority.h">
+      <Filter>Header Files\sqsrc\thread</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

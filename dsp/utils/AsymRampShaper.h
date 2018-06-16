@@ -22,7 +22,7 @@ public:
     bool valid()
     {
         bool ret = true;
-        ret &= (k>0 && k<1);
+        ret &= (k > 0 && k < 1);
         ret &= (phaseOffset >= 0 && phaseOffset <= 1);
         return ret;
     }
@@ -46,7 +46,7 @@ public:
         params.phaseOffset = phase;
 
         // now skew
-        assert(skew>-1 && skew < 1);
+        assert(skew > -1 && skew < 1);
         params.k = (skew + 1) / (float) 2;		// between 0 and 1
 
         params.a1 = float(1.0 / params.k);					// as x goes 0..k, f(x) 0..1
@@ -63,7 +63,7 @@ public:
     {
         assert(params.valid());
         input += params.phaseOffset;
-        if (input >1) input -= 1;
+        if (input > 1) input -= 1;
 
         float ret = 0;
         if (input < params.k) {

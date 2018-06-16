@@ -39,7 +39,7 @@ public:
 
 private:
     /**
-     * Cache uses weak pointers. This allows the cached objects to be 
+     * Cache uses weak pointers. This allows the cached objects to be
      * freed when the last client reference goes away.
      */
     static std::weak_ptr<LookupTableParams<T>> bipolarAudioTaper;

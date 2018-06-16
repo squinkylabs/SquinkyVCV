@@ -60,7 +60,7 @@ static void test2()
         T tc = BiquadFilter<T>::run(input, stateCos, paramsCos);
         assert(!AudioMath::closeTo(ts, 0, .00001));
         assert(!AudioMath::closeTo(tc, 0, .00001));
-   }
+    }
 }
 
 template<typename T>

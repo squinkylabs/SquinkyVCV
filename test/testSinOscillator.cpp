@@ -109,7 +109,7 @@ static void testDistortion()
 
     double err = 0;
     for (double d = 0; d < 1; d += .00123) {
-        double x = LookupTable<T>::lookup(*lookup,(T) d);
+        double x = LookupTable<T>::lookup(*lookup, (T) d);
         double y = sin(d * AudioMath::Pi * 2);
       //  printf("d=%f sin=%f look=%f\n", d, y, x);
         assertClose(x, y, .01);

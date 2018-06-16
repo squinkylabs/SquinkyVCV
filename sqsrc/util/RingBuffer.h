@@ -14,12 +14,11 @@ class RingBuffer
 {
 public:
     RingBuffer()
-	{
-		for (int i=0; i< SIZE ; ++i)
-		{
-			memory[i] = 0;
-		}
-	}
+    {
+        for (int i = 0; i < SIZE; ++i) {
+            memory[i] = 0;
+        }
+    }
 
     void push(T);
     T pop();
@@ -27,19 +26,19 @@ public:
     bool empty() const;
 
 private:
-	T memory[SIZE]; 
+    T memory[SIZE];
     bool couldBeFull = false;           // full and empty are ambiguous, both are in--out
     int inIndex = 0;
-	int outIndex = 0;
+    int outIndex = 0;
 
-	/** Move up 'p' (a buffer index), wrap around if we hit the end
-	 * (this is the core of the circular ring buffer).
+    /** Move up 'p' (a buffer index), wrap around if we hit the end
+     * (this is the core of the circular ring buffer).
      */
     void advance(int &p);
 };
 
 template <typename T, int SIZE>
-inline void RingBuffer<T,SIZE>::push(T value)
+inline void RingBuffer<T, SIZE>::push(T value)
 {
     assert(!full());
     memory[inIndex] = value;

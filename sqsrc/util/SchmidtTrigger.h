@@ -6,7 +6,7 @@
 class SchmidtTrigger
 {
 public:
-    SchmidtTrigger(float thLo = cGateLow, float thHi = cGateHi) : 
+    SchmidtTrigger(float thLo = cGateLow, float thHi = cGateHi) :
         _thLo(thLo), _thHi(thHi), _lastOut(false)
     {
     }

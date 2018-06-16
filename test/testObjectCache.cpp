@@ -120,9 +120,9 @@ static void testDb2Gain()
 
     {
         auto test3 = ObjectCache<T>::getDb2Gain();
-        const double x = LookupTable<T>::lookup(*test3, (T)-12);
+        const double x = LookupTable<T>::lookup(*test3, (T) -12);
         const double y = AudioMath::gainFromDb(-12);
-      
+
 
         assertClose(x, y, .1);
         assertEQ(_numLookupParams, 1);
@@ -163,7 +163,7 @@ static void testTanh5()
         const double y0 = std::tanh(x);
 
         assertClose(y, y0, .01);
-    }  
+    }
 }
 
 template <typename T>

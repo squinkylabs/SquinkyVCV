@@ -26,7 +26,7 @@ public:
      * it will be limited to the range.
      * If allowOutsideDomain, will assert when input must be limited.
      */
-    static T lookup(const LookupTableParams<T>& params, T input, bool allowOutsideDomain=false);
+    static T lookup(const LookupTableParams<T>& params, T input, bool allowOutsideDomain = false);
 
     /**
      * init will create the entries in the lookup table

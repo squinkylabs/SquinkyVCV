@@ -8,7 +8,7 @@
 
 
 /**
- * During training, we should get no output. 
+ * During training, we should get no output.
  * On first ref-clock after training, should go high
  */
 static void test0()
@@ -31,7 +31,7 @@ static void test0()
     }
 
     // send ref-clock now to set period at 4 and start clocking
-    cm.refClock();     
+    cm.refClock();
     assertEQ(cm.getSaw(), 0);
     assertEQ(cm.getMultipliedClock(), true);
     assertClose(cm._getFreq(), .25f, .000001);
@@ -66,7 +66,7 @@ static void test1()
     assertEQ(cm.getMultipliedClock(), true);
     assertClose(cm._getFreq(), .25f, .000001);
 
-    for (int i = 0; i < period-1; ++i) {
+    for (int i = 0; i < period - 1; ++i) {
         cm.sampleClock();
     //    printf("in loop, i=%d, saw=%f\n", i, cm.getSaw());
         assertEQ(cm.getSaw(), .25 * (i + 1));
@@ -86,7 +86,7 @@ static void test2()
     assertEQ(cm.getSaw(), 0);
     for (int i = 0; i < 9; ++i) {
         cm.sampleClock();
-        assertClose(cm.getSaw(), (i+1) * .1f, .0001);
+        assertClose(cm.getSaw(), (i + 1) * .1f, .0001);
     }
     cm.sampleClock();
     assertClose(cm.getSaw(), 0, .0001);

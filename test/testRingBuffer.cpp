@@ -6,7 +6,7 @@
 
 static void testConstruct()
 {
-	RingBuffer<int, 4> rb;
+    RingBuffer<int, 4> rb;
     assert(rb.empty());
     assert(!rb.full());
 
@@ -63,7 +63,7 @@ static void testWrap()
     assertEQ(rb.pop(), 1);
     assertEQ(rb.pop(), 2);
     assertEQ(rb.pop(), 3);
-   
+
     assert(rb.empty());
 }
 
@@ -106,7 +106,7 @@ static void testOne()
 
 void testRingBuffer()
 {
-	testConstruct();
+    testConstruct();
     testSimpleAccess();
     testMultiAccess();
     testWrap();
@@ -127,7 +127,7 @@ static void testMP0()
 static void testMP_access()
 {
     ManagedPool<int, 1> mp;
-    
+
     int* p = mp.pop();
     *p = 77;
     mp.push(p);

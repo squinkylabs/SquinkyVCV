@@ -77,7 +77,7 @@ static void test3(bool testBuff0)
     // fill the buff to test with data, other one with zeros
     for (int i = 0; i < 10; ++i) {
         test.messages[0]->dataBuffer->set(i, testBuff0 ? 9.f : 0.f);
-        test.messages[1]->dataBuffer->set(i, testBuff0 ? 0.f : 18.f);     
+        test.messages[1]->dataBuffer->set(i, testBuff0 ? 0.f : 18.f);
     }
 
     // put both in, to cross fade
@@ -116,7 +116,7 @@ static void test3(bool testBuff0)
         const float expectedTail = testBuff0 ? 0.f : 18.f;
         assertEQ(x, expectedTail);
     }
-    
+
     assertEQ(emptyCount, 1);
 }
 
@@ -197,7 +197,7 @@ static void test5()
 
     // put zero 0
     NoiseMessage* t = test.f.acceptData(test.messages[0].get());
-    
+
     float x;
     // clock 6
     for (int i = 0; i < 6; ++i) {
@@ -211,7 +211,7 @@ static void test5()
 
     t = test.f.acceptData(test.messages[1].get());
     assertEQ(t, 0);
-    
+
     // sample #6. start fade
     t = test.f.step(&x);
     assertEQ(x, 0);         // 0
@@ -308,6 +308,6 @@ void testFFTCrossFader()
     test5();
     test6(false);
     test6(true);
-    
+
     assertEQ(FFTDataReal::_count, 0);
 }

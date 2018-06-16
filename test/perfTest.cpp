@@ -78,7 +78,7 @@ static void test1()
         return x / y;
         }, 1);
 
-     MeasureTime<float>::run("test1 (do nothing)", [&d, scale]() {
+    MeasureTime<float>::run("test1 (do nothing)", [&d, scale]() {
         return TestBuffers<float>::get();
         }, 1);
 
@@ -86,8 +86,8 @@ static void test1()
         float x = std::pow(2, TestBuffers<float>::get());
         return x;
         }, 1);
-     MeasureTime<float>::run("test1 pow rnd float", []() {
-        float x = std::pow( TestBuffers<float>::get(), TestBuffers<float>::get());
+    MeasureTime<float>::run("test1 pow rnd float", []() {
+        float x = std::pow(TestBuffers<float>::get(), TestBuffers<float>::get());
         return x;
         }, 1);
 

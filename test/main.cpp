@@ -59,7 +59,7 @@ int main(int argc, char ** argv)
     testBiquad();
     testSaw();
     testClockMult();
-    
+
     testSinOscillator();
     testHilbert();
     testStateVariable();
@@ -67,7 +67,7 @@ int main(int argc, char ** argv)
     testFFT();
     testFFTCrossFader();
     testThread(extended);
-    
+
     // after testing all the components, test composites.
     testTremolo();
     testColoredNoise();

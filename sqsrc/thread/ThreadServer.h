@@ -28,7 +28,7 @@ public:
 protected:
     /**
      * Derived thread servers must override this to get messages.
-     * Message is not const, as server is allowed to modify it and 
+     * Message is not const, as server is allowed to modify it and
      * send it back.
      */
     virtual void handleMessage(ThreadMessage*);
@@ -38,12 +38,10 @@ protected:
      * Will causes an error if there is a message in the mailbox already.
      */
     void sendMessageToClient(ThreadMessage*);
-    
+
     std::shared_ptr<ThreadSharedState> sharedState;
     std::unique_ptr<std::thread> thread;
 private:
-   
-   
 
     // Message based clients should not override this
     virtual void threadFunction();

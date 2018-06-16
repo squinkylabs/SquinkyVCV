@@ -3,7 +3,7 @@
 /**
  * Gate inputs will be considered "low" if they are below this
  */
-const float cGateLow = .8f; 
+const float cGateLow = .8f;
 
 /**
 * Gate inputs will be considered "high" if they are above this

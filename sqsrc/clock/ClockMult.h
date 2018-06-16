@@ -16,8 +16,8 @@ public:
      */
     void refClock();
 
-    /** 
-     * 0..1 saw at the same rate as multiplier output.	
+    /**
+     * 0..1 saw at the same rate as multiplier output.
      */
     float getSaw() const
     {

@@ -66,5 +66,5 @@ private:
      * Note that the cfg has a "direction" baked into it. For
      * now we assume that all FFT with real input will be forward FFTs.
      */
-    mutable void * kiss_cfg=0;
+    mutable void * kiss_cfg = 0;
 };

@@ -19,7 +19,7 @@
  *          The message objects are owned by whoever created them. Passing
  *          a message does not transfer ownership.
  *      Only one message may be "in play" at a time. Until the client
- *          receives a reply from the server, it may not send another message. 
+ *          receives a reply from the server, it may not send another message.
  */
 
 
@@ -31,9 +31,11 @@
 class ThreadMessage
 {
 public:
-    enum class Type { TEST1,
-                      TEST2,
-                      NOISE     // used by ColoredNoise
+    enum class Type
+    {
+        TEST1,
+        TEST2,
+        NOISE     // used by ColoredNoise
     };
     ThreadMessage(Type t) : type(t)
     {
@@ -91,7 +93,7 @@ public:
      */
     ThreadMessage* server_waitForMessageOrShutdown();
 
-   
+
 private:
 
     /**
@@ -106,6 +108,6 @@ private:
      */
     std::atomic<ThreadMessage*> mailboxClient2Server;
     std::atomic<ThreadMessage*> mailboxServer2Client;
-  
+
     std::condition_variable mailboxCondition;
 };

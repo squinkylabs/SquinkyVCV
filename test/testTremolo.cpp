@@ -12,7 +12,7 @@ static void test0()
     t.init();
     assertEQ(t.outputs[Trem::SAW_OUTPUT].value, 0);
     assertEQ(t.outputs[Trem::AUDIO_OUTPUT].value, 0);
-    t.step();    
+    t.step();
 }
 
 static void test1Sub(float skew)
@@ -20,7 +20,7 @@ static void test1Sub(float skew)
     Trem t;
     t.setSampleRate(44100);
     t.init();
-    
+
     t.params[Trem::CLOCK_MULT_PARAM].value = 4;        // 4 is free run for Trem
     t.params[Trem::LFO_RATE_PARAM].value = 5;       // max speed
     t.params[Trem::LFO_SKEW_PARAM].value = skew;
