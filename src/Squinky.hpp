@@ -11,8 +11,7 @@ extern Model *modelTremoloModule;
 #ifdef _CPU_HOG
 extern Model *modelCPU_HogModule;
 #endif
-#ifdef _EXP
+
 extern Model *modelThreadBoostModule;
-#endif
 
 

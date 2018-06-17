@@ -122,13 +122,29 @@ static std::atomic<int> slow;
 static std::atomic<int> fast;
 
 //thread func
-static void t4(bool iAmIt, bool boosted)
+static void t4(bool iAmIt,int boost)
 {
    // printf("t4 called with %d\n", iAmIt);
 
-    if (iAmIt && boosted) {
-        printf("boosting\n"); fflush(stdout);
-        ThreadPriority::boostNormal();
+    if (iAmIt) {
+        switch (boost) {
+            case 0:
+                printf("no boost\n");
+                break;
+            case 1:
+                printf("boosting\n");
+                ThreadPriority::boostNormal();
+                break;
+            case 2:
+                printf("boosting RT\n");
+                ThreadPriority::boostRealtime();
+                break;
+            default:
+                assert(false);
+        }
+            
+        fflush(stdout);
+           
     }
     while (!stopNow) {
         for (int i = 0; i < 100000; ++i) {
@@ -145,7 +161,7 @@ static void t4(bool iAmIt, bool boosted)
 
 // runs all the test treads, returns ratio of work done in the default theads
 // and work done in test thread.
-static double test4sub(bool boosted)
+static double test4sub(int boost)
 {
     stopNow = false;
     count = 0;
@@ -156,9 +172,9 @@ static double test4sub(bool boosted)
     int numSlow = 0;
     std::vector< std::shared_ptr<std::thread>> threads;
 
-    threads.push_back(std::make_shared<std::thread>(t4, true, boosted));
+    threads.push_back(std::make_shared<std::thread>(t4, true, boost));
     for (int i = 0; i < 9; ++i) {
-        threads.push_back(std::make_shared<std::thread>(t4, false, false));
+        threads.push_back(std::make_shared<std::thread>(t4, false, 0));
         ++numSlow;
     }
 
@@ -173,6 +189,7 @@ static double test4sub(bool boosted)
         thread->join();
     }
 
+    ThreadPriority::restore();
     const double ret = (double) slow / (double) fast;
     printf("slow/fast was %f (%d) ratio=%d\n", ret, (int) slow, numSlow);
     return ret;
@@ -181,10 +198,12 @@ static double test4sub(bool boosted)
 static void test4()
 {
     printf("testing thread priorities, part1. will take a while\n"); fflush(stdout);
-    const double ref = test4sub(false);
+    const double ref = test4sub(0);
     printf("testing thread priorities, part2. will take a while\n"); fflush(stdout);
-    const double boosted = test4sub(true);
-    printf("ref = %f, boosted = %f\n", ref, boosted); fflush(stdout);
+    const double boosted = test4sub(1);
+    printf("testing thread priorities, part3. will take a while\n"); fflush(stdout);
+    const double boostedRT = test4sub(2);
+    printf("ref = %f, boosted = %f rt=%f\n", ref, boosted, boostedRT); fflush(stdout);
 }
 
 /*****************************************************************/

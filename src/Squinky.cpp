@@ -33,8 +33,6 @@ void init(rack::Plugin *p)
     assert(modelCPU_HogModule);
     p->addModel(modelCPU_HogModule);
 #endif
-#ifdef _EXP
     assert(modelThreadBoostModule);
     p->addModel(modelThreadBoostModule);
-#endif
 }
