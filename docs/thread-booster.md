@@ -1,24 +1,40 @@
 # Thread Booster
 
-Thread booster is an experiment to determine if boosting the priority of VCV Rack's audio rendering thread will decrease the annoying pops, ticks, and dropouts that many users are experiencing.
+Thread booster boosts the thread priority of the audio streaming thread in VCV Rack. The intention it to make sure that if your computer strains to produce all that audio, audio will get priority in the competition for the CPU over other things like drawing the screen, or showing ads in your web browser.
 
-While we have seen this work in some concocted test cases, we do not currently know if this will help in the real world. If you try this, please report back to us on our GitHub issues page.
+If you aren't a computer programmer, this may sound like some hocus-pocus. But it is a very basic technique used in many audio applications. Google "audio thread priority" for some random instances.
 
-Thread Booster has a UI that lets you boost the priority of the audio thread. There are three arbitrary settings: normal, boosted, and real time. When the switch is in the bottom position, the plugin does nothing; the audio thread keeps its default priority. In the boost (middle) position, it sets the thread priority to the highest priority non-real-time setting. In the real-time position it attempts to set it to the middle priority in the real-time policy.
+If some other task is competing for CPU and the audio loses out, it may be unable to keep up with the audio interface. This will cause occasional data underruns, which often sound like pops a and clicks.
 
-If setting the priority fails, the red error light lights up, and the priority stays where it was last.
+Now, while raising the audio thread priority is a fundamentally sound thing to do, it is not going to solve all audio problems. Some user report that Thread Booster does not help at all. Others report significant improvement.
 
-If you are not up on your operating system thread scheduling, just think of it as "do nothing", "boost a little", and "boost a whole bunch".
+On all three operating systems we have been able to get the "real-time" setting to work (although read below - it's not always technically "real time").
 
-## Installing Thread Booster
+## Notes for Linux
 
-We have binaries for Mac and Windows posted on our [releases page](https://github.com/squinkylabs/SquinkyVCV/releases).
+Linux has two challenges for thread booster:
+* The non-realtime settings set by the POSIX Pthread API doesn't work.
+* Raising thread priority to real-time in Linux is a privileged operation.
 
-These release must be unizipped and copied to VCV plugins folder. More info [here](installing-binaries.md).
+The impact of the first challenge is that the middle "boosted" setting might not do much in Linux. We recommend the real-time setting.
 
-## Building Thread Booster
+You can always set the real time priority of you run as root, but we do not recommend that. instead you may use `setcap` to give VCV Rack permission to use real-time priority.
 
-Of course you can build the plugins from source for all platforms. But by default the experimental plugins are not build. see [experimental plugins](experimental.md)
+```bash
+sudo setcap cap_sys_nice=ep <path to Rack>
+```
+
+After giving Rack this ability, it will stay set until the Rack executable file is changed, either by downloading a new one, or build a new one on top of it.
+
+## Notes on Windows
+
+Unlike Linux, the middle boost setting works well on Windows. The realtime setting works well also, although it is not the very highest setting that windows calls realtime. Instead it sets the Rack process as a whole to HIGH_PRIORITY_CLASS, and the sets the audio thread to THREAD_PRIORITY_TIME_CRITICAL. We have found this to give a very good boost without require that you run Rack as administrator (which is not recommended).
+
+We only test on Windows 7. If you have issues with other versions of Windows, please let us know.
+
+## Notes on OS X
+
+As usual, it just works on OS X.
 
 ## Caveats and limitations
 
@@ -41,43 +57,6 @@ Please use our [GitHub issues](https://github.com/squinkylabs/SquinkyVCV/issues)
 * With a fully loaded session that starts to make pops and clicks, does thread booster fix it?
 * If you are able to run realtime, is there any noticeable difference between boosted and real-time?
 * For all reports, please list operating system and version (i.e. Windows-10, OSX 10.12, Ubuntu 16.04).
-* Programmers: after examining the code in ThreadBoost.h, do you have any suggestions for better ways to set the thread priority?
-
-## CPU hog
-
-There is also a plugin called “CPU Hog”, which does what it says. This is our concocted test case. This plugin can:
-
-* Spin up worker threads, each of which will saturate a single CPU core at default priority.
-* Simulate a very slow graphics drawing call by sleeping in the draw function.
-
-We do not provide binaries for this plugin, as it is only of use to hackers, who may easily build it. To build it, pass `_CPU_HOG=1` on the command line to `make`. 
-
-The only “UI” is a display of numbers called “SleepStep”. This is shows the number of time an audio step() call occurred while the plugin was already in the draw() call. We wanted to verify that long drawing time may be interrupted by audio.
-
-Since it has no UI to speak of, you need to do one of two possible actions to use the CPU hog:
-
-* You may load down one CPU core for each instance you  inserts.
-* You may change the source code to spin up more threads.
-
- At the top of CPU_Hog.cpp, there are two variables:
-
-```c++
-static const int numLoadThreads=1;
-static const int drawMillisecondSleep=0;
-```
-
-Here is what we did in our test:
-
-* Created a simple patch of a low frequency triangle wave going to the audio interface.
-* Added one instance of CPU_Hog set to hog one CPU.
-* Kept increasing the number of threads until pops were plainly audible.
-* Added an instance of Thread Boost to see if we could make the pops go away.
-
-On our four core Windows box, we found pops started to happen when we used three CPUs. Or, if the draw time was really long, it would only take two CPUs of hogging.
-
-Using Thread Booster in the "boost" setting fixed it.
-
-As we said, this test case is artificial. In the real world are pops and clicks ever caused by other threads (outside of VCV) running and competing for CPU cores? We don’t know. But we suspect that running the audio thread at a higher priority will lessen them.
 
 ## Known issues
 

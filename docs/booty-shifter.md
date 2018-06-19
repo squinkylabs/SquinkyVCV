@@ -1,17 +1,42 @@
 # Table of contents
 
-[Colors](#colors)
+[Chopper](#chopper) Is a tremelo powered by a clock-synchable LFO. The LFO is highly programmable to give a range of waveforms.
 
-[Growler](#growler)
+[Thread Booster](#booster) reduces pops and clicks in VCV Rack by reprogramming VCV's audio engine.
 
-[Booty Shifter](#shifter)
+[Colors](#colors) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet.
 
-[Formants](#formants)
+[Growler](#growler) is a "vocal animator". It imparts random vocal timbres on anything played through it. The psedo-random LFOs all have discrete outputs. 
+
+[Booty Shifter](#shifter) is an emulation of the legendary Moog/Bode frequency shifter.
+
+[Formants](#formants) is a programable bank of filters that can synthesize various vowel sounds and morph between them.
 
 [Attenuverters](#atten)
 
 [CV ranges](#cv)
 
+# Chopper tremolo / programmable LFO <a name="chopper"></a>
+
+# Thread Booster<a name="booster"></a>
+
+Thread booster began as an experiment to determine if boosting the priority of VCV Rack's audio rendering thread will decrease the annoying pops, ticks, and dropouts that many users are experiencing.
+
+Many users have reported that Thread Booster helps significantly. Others have reported that it didn't help at all. No one has reported a detrimental effect.
+
+For a deeper dive the Thead Booster, you should read [this document](./thread-booster.md).
+
+Thread Booster has a UI that lets you boost the priority of the audio thread. There are three arbitrary settings: normal, boosted, and real time. When the switch is in the bottom position, the plugin does nothing; the audio thread keeps its default priority. In the boost (middle) position, it sets the thread priority to the highest priority non-real-time setting. In the real-time position it attempts to set it to the highest possible priority, or near it.
+
+If setting the priority fails, the red error light lights up, and the priority stays where it was last.
+
+To use Thread Booster, just insert an instance into VCV Rack, then adjust the boost switch. In general we recommend the "real time" setting, if it is available on your computer.
+
+Once Thread booster is in your session, it will boost all the audio processing - it doesn't matter of other modules are added before or after - they all get boosted.
+
+Linux users - you must read [the detailed document](./thread-booster.md) to use this module.
+
+Note to users who downloaded the original version of Thead Booster: we've improved it a bit since then, especially on Linux and Windows.
 
 # Colors variable slope noise generator<a name="colors"></a>
 
