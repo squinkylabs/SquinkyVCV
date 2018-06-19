@@ -18,6 +18,25 @@
 
 # Chopper tremolo / programmable LFO <a name="chopper"></a>
 
+## Chopper LFO
+To understand all the LFO settings, it helps to watch the outputs on a scope.
+
+The LFO starts as **skewed** sawtooth. In the middle position it is a symetric triangle wave, at one end a positive sawtooth and at the other a negative sawtooth. The signal it sent to the **saw** output.
+
+The skewed saw then goes to a **waveshaper**. As the shape control is increased the LFO is gradually rounded and then flattened.
+
+LFO Controls:
+* **Shape** Flattens the LFO waveform.
+* **Skew** Dials in the amount of asymetry in the LFO.
+* **Depth** Shifts and scales the LFO.
+
+When used as a tremolo effect, you will heard **more tremolo** when these controls are turned up.
+
+## Chopper clock
+The clock in Chopper may be synchronized with the ckin signal. There is a built in **clock multiplier**. To use the synchronization patch a clock to the ckin, and select x1 from the **clock** knob. To run at a multiple of the input clock, select x2, x3, or x4.
+
+There is also an internal LFO that is controlled by the **Rate** control. Set the clock control to *int* to use the internal clock.
+
 # Thread Booster<a name="booster"></a>
 
 Thread booster began as an experiment to determine if boosting the priority of VCV Rack's audio rendering thread will decrease the annoying pops, ticks, and dropouts that many users are experiencing.
