@@ -206,10 +206,12 @@ static void test4()
     printf("ref = %f, boosted = %f rt=%f\n", ref, boosted, boostedRT); fflush(stdout);
 }
 
+#ifdef ARCH_WIN
 static void test5()
 {
     ThreadPriority::boostRealtimeWindows();
 }
+#endif
 /*****************************************************************/
 
 void testThread(bool extended)
@@ -224,7 +226,9 @@ void testThread(bool extended)
    if (extended) {
        test4();
    }
+#ifdef ARCH_WIN
    test5();
+#endif
    assertEQ(ThreadSharedState::_dbgCount, 0);
    assertEQ(ThreadMessage::_dbgCount, 0);
 }
