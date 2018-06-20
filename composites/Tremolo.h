@@ -80,6 +80,7 @@ private:
     float reciprocalSampleRate = 0;
 
     AsymRampShaperParams rampShaper;
+    std::shared_ptr<LookupTableParams<float>> exp2 =  ObjectCache<float>::getExp2();
 
     // make some bootstrap scalers
     AudioMath::ScaleFun<float> scale_rate;
@@ -99,7 +100,7 @@ inline void Tremolo<TBase>::init()
     tanhLookup = ObjectCache<float>::getTanh5();
     clock.setMultiplier(0);
 
-    scale_rate = AudioMath::makeLinearScaler(.1f, 10.f); // full CV range -> 0..1
+    scale_rate = AudioMath::makeLinearScaler(4.f, 9.f);        // log domain, 16 range
     scale_skew = AudioMath::makeLinearScaler(-.99f, .99f);
     scale_shape = AudioMath::makeLinearScaler(0.f, 1.f);
     scale_depth = AudioMath::makeLinearScaler(0.f, 1.f);
@@ -125,11 +126,7 @@ inline void Tremolo<TBase>::step()
 
 
     clock.setMultiplier(clockMul);
-    // .1...10
-    const float rate = scale_rate(
-        0,
-        TBase::params[LFO_RATE_PARAM].value,
-        1);
+ 
 
     const float shape = scale_shape(
         TBase::inputs[LFO_SHAPE_INPUT].value,
@@ -151,7 +148,19 @@ inline void Tremolo<TBase>::step()
         TBase::params[MOD_DEPTH_PARAM].value,
         TBase::params[MOD_DEPTH_TRIM_PARAM].value);
 
-    clock.setFreeRunFreq(rate * reciprocalSampleRate);
+    if (clockMul == 0)          // only calc rate for internal
+    {
+        const float logRate = scale_rate(
+            0,
+            TBase::params[LFO_RATE_PARAM].value,
+            1);
+
+        float rate = LookupTable<float>::lookup(*exp2, logRate);
+        float scaledRate = rate * .06f;
+        clock.setFreeRunFreq(scaledRate * reciprocalSampleRate);
+    }
+
+   
 
     // For now, call setup every sample. will eat a lot of cpu
     AsymRampShaper::setup(rampShaper, skew, phase);

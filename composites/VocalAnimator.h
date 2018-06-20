@@ -177,7 +177,7 @@ inline void VocalAnimator<TBase>::step()
     // Light up the LEDs with the unscaled Modulator outputs.
     for (int i = LFO0_LIGHT; i <= LFO2_LIGHT; ++i) {
         TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
-        TBase::lights[i].value = modulatorOutput[i] > 0 ? T(1.0) : 0;
+        TBase::lights[i].value = (modulatorOutput[i]  ) * .3f;
         TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
     }
 
