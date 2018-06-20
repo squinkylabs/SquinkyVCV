@@ -185,5 +185,5 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 Model *modelTremoloModule = Model::create<TremoloModule,
     TremoloWidget>("Squinky Labs",
     "squinkylabs-tremolo",
-    "Tremolo", EFFECT_TAG, LFO_TAG);
+    "Chopper Tremolo", EFFECT_TAG, LFO_TAG);
 
