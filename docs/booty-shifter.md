@@ -103,12 +103,13 @@ The controls do pretty much what you would expect:
 * **Depth** controls how much of the modulation LFOs are applied to the filters.
 
 ## How Growler works
-
-Each **CV input stage** is the same: a knob that supplies a fixed  offset and a CV input that is processed by an attenuverter. The processed CV is added to the knob voltage. See below for more on [Attenuverters](#atten) and [CV ranges](#cv).
+![growler scope](./growler.png)
 
 There are four **bandpass filters**, roughly tuned to some typical vocal formant frequencies: 522, 1340, 2570, and 3700 Hz. The filters are run in parallel, with their outputs summed together.
 
 The first three filters are modulated by an LFO comprised of **4 triangle wave LFOs** running at different frequencies. They are summed together in various combinations to drive each of the filters.
+
+Each **CV input stage** is the same: a knob that supplies a fixed  offset and a CV input that is processed by an attenuverter. The processed CV is added to the knob voltage. See below for more on [Attenuverters](#atten) and [CV ranges](#cv).
 
 The **LFO** Rate control shifts the speed of all 4 LFOs while maintaining the ratio of their frequencies.
 
