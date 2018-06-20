@@ -27,6 +27,9 @@ There is also a **clock synchronizer** and multiplier.
 To use Chopper as a tremolo, send a signal to the *in* jack, and listen to the *out* jack. Leave the *clock* control at the default *int* setting. Most of the knob settings will know affect the tremolo.
 
 ## Chopper LFO
+
+![chopper image](../docs/lfo-waveforms.png)
+
 To understand all the LFO settings, it helps to watch the outputs on a scope.
 
 The LFO starts as **skewed** sawtooth. In the middle position it is a symetric triangle wave, at one end a positive sawtooth and at the other a negative sawtooth. The signal it sent to the **saw** output.
@@ -41,15 +44,16 @@ LFO Controls:
 When used as a tremolo effect, you will heard **more tremolo** when these controls are turned up.
 
 ## Chopper clock
-The clock in Chopper may be synchronized with the ckin signal. There is a built in **clock multiplier**. To use the synchronization patch a clock to the ckin, and select x1 from the **clock** knob. To run at a multiple of the input clock, select x2, x3, or x4.
 
-When Copper is being synched, the **Phase** control sets the phase difference between the external clock, and the synchronized LFO. This may be use to "dial in" the tremolo so that it sounds exactly on the beat (or off the beat).
+The LFO in Chopper may be synchronized with the ckin signal. There is a built in **clock multiplier**. To use the synchronization, patch a clock to the ckin, and select x1 from the **clock** knob. To run at a multiple of the input clock, select x2, x3, or x4.
+
+When Chopper is being synched, the **Phase** control sets the phase difference between the external clock, and the synchronized LFO. This may be use to "dial in" the tremolo so that it sounds exactly on the beat (or off the beat).
 
 There is also an internal LFO that is controlled by the **Rate** control. Set the clock control to *int* to use the internal clock.
 
 # Thread Booster<a name="booster"></a>
 
-Thread booster began as an experiment to determine if boosting the priority of VCV Rack's audio rendering thread will decrease the annoying pops, ticks, and dropouts that many users are experiencing.
+Thread booster raises the priority of VCV Rack's audio rendering thread. In many cases this decreases the annoying pops, ticks, and dropouts that many users are experiencing.
 
 Many users have reported that Thread Booster helps significantly. Others have reported that it didn't help at all. No one has reported a detrimental effect.
 
@@ -61,7 +65,7 @@ If setting the priority fails, the red error light lights up, and the priority s
 
 To use Thread Booster, just insert an instance into VCV Rack, then adjust the boost switch. In general we recommend the "real time" setting, if it is available on your computer.
 
-Once Thread booster is in your session, it will boost all the audio processing - it doesn't matter of other modules are added before or after - they all get boosted.
+Once Thread booster is in your session, it will boost all the audio processing - it doesn't matter if other modules are added before or after - they all get boosted.
 
 Linux users - you must read [the detailed document](./thread-booster.md) to use this module.
 
