@@ -1,6 +1,5 @@
 #pragma once
 
-
 #ifdef ARCH_WIN
 #include <windows.h>
 #endif

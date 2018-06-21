@@ -1,3 +1,10 @@
+/**
+ * This is an unfinished experiment. 
+ * It's a windows only command line program that
+ * find the Rack process in memory, and sets its 
+ * priority class to realtime.
+ */
+
 #include <stdio.h>
 #include <windows.h>
 #include <psapi.h>
