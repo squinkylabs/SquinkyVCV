@@ -1,12 +1,12 @@
 # Table of contents
 
-[Chopper](#chopper) Is a tremelo powered by a clock-synchable LFO. The LFO is highly programmable to give a range of waveforms.
+[Chopper](#chopper) Is a tremolo powered by a clock-synchable LFO. The LFO is highly programmable to give a range of waveforms.
 
 [Thread Booster](#booster) reduces pops and clicks in VCV Rack by reprogramming VCV's audio engine.
 
 [Colors](#colors) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet.
 
-[Growler](#growler) is a "vocal animator". It imparts random vocal timbres on anything played through it. The psedo-random LFOs all have discrete outputs. 
+[Growler](#growler) is a "vocal animator". It imparts random vocal timbres on anything played through it. The pseudo-random LFOs all have discrete outputs. 
 
 [Booty Shifter](#shifter) is an emulation of the legendary Moog/Bode frequency shifter.
 
@@ -20,11 +20,11 @@
 
 In its simplest use, Chopper produces a very wide range of **tremolo** effects. The built-in LFO can produce a wide range of waveforms that cover many of the waveforms produced by the tremolo circuits built into **vintage guitar amplifiers**.
 
-The LFO is also sent to an ouput so that it may modulate other modules.
+The LFO is sent to an output so that it may modulate other modules.
 
 There is also a **clock synchronizer** and multiplier.
 
-To use Chopper as a tremolo, send a signal to the *in* jack, and listen to the *out* jack. Leave the *clock* control at the default *int* setting. Most of the knob settings will know affect the tremolo.
+To use Chopper as a tremolo, send a signal to the *in* jack, and listen to the *out* jack. Leave the *clock* control at the default *int* setting. Most of the knob settings will now affect the tremolo effect.
 
 ## Chopper LFO
 
@@ -32,22 +32,23 @@ To use Chopper as a tremolo, send a signal to the *in* jack, and listen to the *
 
 To understand all the LFO settings, it helps to watch the outputs on a scope.
 
-The LFO starts as **skewed** sawtooth. In the middle position it is a symetric triangle wave, at one end a positive sawtooth and at the other a negative sawtooth. The signal it sent to the **saw** output.
+The LFO starts as **skewed** sawtooth. In the middle position it is a symmetric triangle wave, at one end a positive sawtooth and at the other a negative sawtooth. The signal is sent to the **saw** output.
 
 The skewed saw then goes to a **waveshaper**. As the shape control is increased the LFO is gradually rounded and then flattened. The shaped LFO is send to the *lfo* output, and used internally to modulate the audio input.
 
 LFO Controls:
+
 * **Shape** Flattens the LFO waveform.
-* **Skew** Dials in the amount of asymetry in the LFO.
+* **Skew** Dials in the amount of asymmetry in the LFO.
 * **Depth** Shifts and scales the LFO.
 
-When used as a tremolo effect, you will heard **more tremolo** when these controls are turned up.
+When used as a tremolo effect, you will hear **more tremolo** when these controls are turned up.
 
 ## Chopper clock
 
 The LFO in Chopper may be synchronized with the ckin signal. There is a built in **clock multiplier**. To use the synchronization, patch a clock to the ckin, and select x1 from the **clock** knob. To run at a multiple of the input clock, select x2, x3, or x4.
 
-When Chopper is being synched, the **Phase** control sets the phase difference between the external clock, and the synchronized LFO. This may be use to "dial in" the tremolo so that it sounds exactly on the beat (or off the beat).
+When Chopper is being synched, the **Phase** control sets the phase difference between the external clock and the synchronized LFO. This may be used to "dial in" the tremolo so that it sounds exactly on the beat (or off the beat).
 
 There is also an internal LFO that is controlled by the **Rate** control. Set the clock control to *int* to use the internal clock.
 
@@ -55,7 +56,7 @@ There is also an internal LFO that is controlled by the **Rate** control. Set th
 
 Thread booster raises the priority of VCV Rack's audio rendering thread. In many cases this decreases the annoying pops, ticks, and dropouts that many users are experiencing.
 
-Many users have reported that Thread Booster helps significantly. Others have reported that it didn't help at all. No one has reported a detrimental effect.
+Many users have reported that Thread Booster helps significantly. Others have reported that it does not help at all. No one has reported a detrimental effect.
 
 For a deeper dive the Thead Booster, you should read [this document](./thread-booster.md).
 
@@ -79,7 +80,7 @@ Colors is a colored noise generator. It can generate all the common **"colors"**
 
 Colors has a single control, “slope”. This is the slope of the noise spectrum, from -8 dB/octave to +8 dB/octave.
 
-The slope of the noise is quite accurate in the mid-band, but at the extremes we flatten the slope to keep from boosting  super-low frequencies too much, and to avoid putting out enormous amounts of highs. So the slope is flat below 40hz, and above 6kHz.
+The slope of the noise is quite accurate in the mid-band, but at the extremes we flatten the slope to keep from boosting super-low frequencies too much, and to avoid putting out enormous amounts of highs. So the slope is flat below 40hz, and above 6kHz.
 
 ## Things to be aware of
 
@@ -91,7 +92,7 @@ The slope control does not respond instantly. If you turn the knob, you will hea
 
 ![vocal formant filter image](./growler.jpg)
 
-**Growler** is a recreation of the Vocal Animator circuit invented by Bernie Hutchins, and published in Electronotes magazine in the late 70's. It continuously morphs between different vaguely "voice like" tones.
+**Growler** is a re-creation of the Vocal Animator circuit invented by Bernie Hutchins, and published in Electronotes magazine in the late 70's. It continuously morphs between different vaguely "voice like" tones.
 
 **To get a good sound:** run any harmonically rich signal into the input, and something good will come out. Low frequency pulse waves and distorted sounds make great input.
 
@@ -107,7 +108,7 @@ The controls do pretty much what you would expect:
 
 There are four **bandpass filters**, roughly tuned to some typical vocal formant frequencies: 522, 1340, 2570, and 3700 Hz. The filters are run in parallel, with their outputs summed together.
 
-The first three filters are modulated by an LFO comprised of **4 triangle wave LFOs** running at different frequencies. They are summed together in various combinations to drive each of the filters.
+The first three filter frequencies are modulated by an LFO comprised of **4 triangle wave LFOs** running at different frequencies. They are summed together in various combinations to drive each of the filters.
 
 Each **CV input stage** is the same: a knob that supplies a fixed  offset and a CV input that is processed by an attenuverter. The processed CV is added to the knob voltage. See below for more on [Attenuverters](#atten) and [CV ranges](#cv).
 
@@ -131,11 +132,11 @@ LFO **Matrix** switch. This is the unlabeled switch in the LFO section. When it�
 
 **Booty Shifter** is a frequency shifter inspired by the Moog/Bode frequency shifter module.
 
-![boooty shifter image](./booty-shifter.png)
+![booty shifter image](./booty-shifter.png)
 
 The name "Booty Shifter" is a nod to the classic analog module, as well as to a black cat named Booty.
 
-Booty Shifter  will take an audio input and shift the frequencies up or down. This is not like a pitch shift where harmonics will remain in tune; it is an absolute frequency shift in Hz, so in general **harmonics will go way out of tune.**
+Booty Shifter  will take an audio input and shift the frequencies up or down. This is not like a pitch shift where harmonics will remain in tune; it is an absolute frequency shift in Hz, so in general **harmonics will go way out of tune.** It is similar to a ring-modulator, but less extreme and more versatile.
 
 ## Getting good sounds from Booty Shifter
 

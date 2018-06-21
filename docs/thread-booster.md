@@ -13,6 +13,7 @@ On all three operating systems we have been able to get the "real-time" setting 
 ## Notes for Linux
 
 Linux has two challenges for thread booster:
+
 * The non-realtime settings set by the POSIX Pthread API doesn't work.
 * Raising thread priority to real-time in Linux is a privileged operation.
 
@@ -50,6 +51,14 @@ Note that Thread Booster has no effect on the main VCV Rack process, or its UI t
 
 Another limitation is that Thread Booster does not boost the thread(s) that move data between Rack's audio engine and the Audio (sound card) Module(s).
 
+## Is it dangerous to run at "realtime" priority?
+
+If you scour the Internet you fill find some warnings about boosting thread priorities to super high thread priorities, saying that there is a danger your computer will become unresponsive, possibly even needing to be re-booted.
+
+While in general this is true, it is not true that raising the priority of a single thread will do this, as a single thread can at worst use all the cycles of a single core. For the last 10 years or so all CPUs have more than one core, so there will always be plenty of CPU left over.
+
+Most audio program in fact do raise the priority of their audio threads, and of course work fine. So, while we don't guarantee that Thread Booster will fix all clicks and pops, we do believe that it is very unlikely to do any harm.
+
 ## Questions for testers
 
 Please use our [GitHub issues](https://github.com/squinkylabs/SquinkyVCV/issues) to send us feedback. Some things we are curious about:
@@ -62,7 +71,7 @@ Please use our [GitHub issues](https://github.com/squinkylabs/SquinkyVCV/issues)
 
 On the Mac, Boosting and the switching back to normal will not restore the original priority. It will actually be running at a lower priority.
 
-When the Thread Booster comes up initially, no LEDs are illuminated - normal should be.
+When the Thread Booster comes up initially, no LEDs are illuminated - the normal LED should be.
 
 ## Notes from the field
 
