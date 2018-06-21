@@ -79,18 +79,18 @@ void TremoloWidget::addClockSection(TremoloModule *module)
     const float cmx = 60;
     addParam(ParamWidget::create<RoundBlackSnapKnob>(
         Vec(cmx, cmy), module, module->tremolo.CLOCK_MULT_PARAM, 0.0f, 4.0f, 4.0f));
-    addLabel(Vec(cmx - 10, labelY), "Clock");
-    addLabel(Vec(cmx - 17, cmy + 20), "x1");
-    addLabel(Vec(cmx + 19, cmy + 20), "int");
-    addLabel(Vec(cmx - 23, cmy + 0), "x2");
+    addLabel(Vec(cmx - 8, labelY), "Clock");
+    addLabel(Vec(cmx - 19, cmy + 20), "x1");
+    addLabel(Vec(cmx + 21, cmy + 20), "int");
+    addLabel(Vec(cmx - 24, cmy + 0), "x2");
     addLabel(Vec(cmx + 24, cmy + 0), "x4");
     addLabel(Vec(cmx, cmy - 16), "x3");
 }
 
 void TremoloWidget::addIOSection(TremoloModule *module)
 {
-    const float rowIO = 316;
-    const float label = rowIO - 20;
+    const float rowIO = 317;
+    const float label = rowIO - 17;
     const float deltaX = 35;
     const float x = 10;
 
@@ -98,13 +98,13 @@ void TremoloWidget::addIOSection(TremoloModule *module)
     addLabel(Vec(8, label), "in");
 
     addOutput(Port::create<PJ301MPort>(Vec(x + deltaX, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
-    addLabel(Vec(x + deltaX - 4, label), "out");
+    addLabel(Vec(x + deltaX - 6, label), "out", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(Vec(x + 2 * deltaX, rowIO), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
-    addLabel(Vec(x + 2 * deltaX - 6, label), "saw");
+    addLabel(Vec(x + 2 * deltaX - 7, label), "saw", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(Vec(x + 3 * deltaX, rowIO), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
-    addLabel(Vec(x + 3 * deltaX - 2, label), "lfo");
+    addLabel(Vec(x + 3 * deltaX - 2, label), "lfo", COLOR_WHITE);
 }
 
 void TremoloWidget::addMainSection(TremoloModule *module)
