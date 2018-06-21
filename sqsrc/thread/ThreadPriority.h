@@ -158,6 +158,7 @@ inline bool ThreadPriority::boostNormalPthread()
     if (x != 0) {
         printf("failed to set pri %d for SCHED_OTHER. error= %d\n", maxPriority, x);
     }
+    fflush(stdout);
     return x == 0;
 }
 
