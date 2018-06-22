@@ -6,11 +6,11 @@
 
 [Colors](#colors) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet.
 
-[Growler](#growler) is a "vocal animator". It imparts random vocal timbres on anything played through it. The pseudo-random LFOs all have discrete outputs. 
+[Growler](#growler) is a "vocal animator." It imparts random vocal timbres on anything played through it. The pseudo-random LFOs all have discrete outputs. 
 
 [Booty Shifter](#shifter) is an emulation of the legendary Moog/Bode frequency shifter.
 
-[Formants](#formants) is a programable bank of filters that can synthesize various vowel sounds and morph between them.
+[Formants](#formants) is a programmable bank of filters that can synthesize various vowel sounds and morph between them.
 
 [Attenuverters](#atten)
 
@@ -46,7 +46,7 @@ When used as a tremolo effect, you will hear **more tremolo** when these control
 
 ## Chopper clock
 
-The LFO in Chopper may be synchronized with the ckin signal. There is a built in **clock multiplier**. To use the synchronization, patch a clock to the ckin, and select x1 from the **clock** knob. To run at a multiple of the input clock, select x2, x3, or x4.
+The LFO in Chopper may be synchronized with the ckin signal. There is a built-in **clock multiplier**. To use the synchronization, patch a clock to the ckin, and select x1 from the **clock** knob. To run at a multiple of the input clock, select x2, x3, or x4.
 
 When Chopper is being synched, the **Phase** control sets the phase difference between the external clock and the synchronized LFO. This may be used to "dial in" the tremolo so that it sounds exactly on the beat (or off the beat).
 
@@ -58,7 +58,7 @@ Thread booster raises the priority of VCV Rack's audio rendering thread. In many
 
 Many users have reported that Thread Booster helps significantly. Others have reported that it does not help at all. No one has reported a detrimental effect.
 
-For a deeper dive the Thead Booster, you should read [this document](./thread-booster.md).
+For a deeper dive into the Thread Booster, you should read [this document](./thread-booster.md).
 
 Thread Booster has a UI that lets you boost the priority of the audio thread. There are three arbitrary settings: normal, boosted, and real time. When the switch is in the bottom position, the plugin does nothing; the audio thread keeps its default priority. In the boost (middle) position, it sets the thread priority to the highest priority non-real-time setting. In the real-time position it attempts to set it to the highest possible priority, or near it.
 
@@ -70,15 +70,15 @@ Once Thread booster is in your session, it will boost all the audio processing -
 
 Linux users - you must read [the detailed document](./thread-booster.md) to use this module.
 
-Note to users who downloaded the original version of Thead Booster: we've improved it a bit since then, especially on Linux and Windows.
+Note to users who downloaded the original version of Thread Booster: we've improved it a bit since then, especially on Linux and Windows.
 
 # Colors variable slope noise generator<a name="colors"></a>
 
 ![noise image](../docs/colors.png)
 
-Colors is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. It can also produce all the colors in-between, as it has a **continuously variable slope**.
+Colors is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. It can also produce all the colors in between, as it has a **continuously variable slope**.
 
-Colors has a single control, “slope”. This is the slope of the noise spectrum, from -8 dB/octave to +8 dB/octave.
+Colors has a single control, "slope." This is the slope of the noise spectrum, from -8 dB/octave to +8 dB/octave.
 
 The slope of the noise is quite accurate in the mid-band, but at the extremes we flatten the slope to keep from boosting super-low frequencies too much, and to avoid putting out enormous amounts of highs. So the slope is flat below 40hz, and above 6kHz.
 
@@ -92,7 +92,7 @@ The slope control does not respond instantly. If you turn the knob, you will hea
 
 ![vocal formant filter image](./growler.jpg)
 
-**Growler** is a re-creation of the Vocal Animator circuit invented by Bernie Hutchins, and published in Electronotes magazine in the late 70's. It continuously morphs between different vaguely "voice like" tones.
+**Growler** is a re-creation of the Vocal Animator circuit invented by Bernie Hutchins, and published in Electronotes magazine in the late 70's. It continuously morphs between different vaguely voice like tones.
 
 **To get a good sound:** run any harmonically rich signal into the input, and something good will come out. Low frequency pulse waves and distorted sounds make great input.
 
@@ -159,15 +159,15 @@ Small shifts in conjunction with delays can make a chorus-like effect to thicken
 
 ## Controls
 
-**RANGE** sets the total shift range in Hz. For example, the 50 hz. Setting means that the minimum shift is 50 Hz down, and the maximum is 50 hz up.
+**RANGE** sets the total shift range in Hz. For example, the 50 Hz setting means that the minimum shift is 50 Hz down, and the maximum is 50 Hz up.
 
-Range value **Exp is different**, here minimum shift is 2 hz, maximum is 2 kHz, with an exponential response. As of version 0.6.2 the response is an accurate 1 Volt per Octave.
+Range value **Exp is different**. Here minimum shift is 2 Hz, maximum is 2 kHz, with an exponential response. As of version 0.6.2 the response is an accurate 1 Volt per Octave.
 
-Shift **AMT** is added to the control voltage, with a range or -5..5.
+Shift **AMT** is added to the control voltage, with a range of -5..5.
 
 ## Oddities and limitations
 
-If you shift the frequency up too far, it will alias. There is no anti-aliasing, so if the highest input frequency + shift amount > sample_rate / 2, you will get aliasing. The Bode original of course did not alias.
+If you shift the frequency up too far, it will alias. There is no anti-aliasing, so if the highest input frequency + shift amount > sample_rate / 2, you will get aliasing. Of course the Bode analog original did not alias.
 
 If you shift the input down a lot, frequencies will go **below zero and wrap around**. Taken far enough this will completely **reverse the spectrum** of the input. This was a prized feature of the Bode original.
 
@@ -181,11 +181,11 @@ The down shift **frequency fold-over**, while true to the original, does cause p
 
 Like the **Vocal Animator**, this is a filter bank tuned to the formant frequencies of typical **singing voices**. Unlike Growler, however, the filters do not animate on their own. In addition, the filters are preset to frequencies, bandwidths, and gains that are taken from **measurements of human singers**.
 
-One of the easiest ways to **to get a good sound** from Formants is to use if like a regular VCF. For example, control Fc with an ADSR. Then put a second modulation source into the vowel CV - something as simple as a slow LFO will add interest.
+One of the easiest ways to **get a good sound** from Formants is to use it like a regular VCF. For example, control Fc with an ADSR. Then put a second modulation source into the vowel CV - something as simple as a slow LFO will add interest.
 
 Use it as a **filter bank**. Just set the knobs for a good sound and leave it fixed to add vocal tones to a pad. Again, modulating the vowel CV can easily give great results.
 
-Try to synthesize something like **singing** by sequencing the vowel CV of several Formants. Leave the Fc in place, or move it slightly as the input pitches move.
+Try to synthesize something like **singing** by sequencing the vowel CV of several formants. Leave the Fc in place, or move it slightly as the input pitches move.
 
 Controls:
 
