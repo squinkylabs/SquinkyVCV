@@ -17,6 +17,7 @@
 [CV ranges](#cv)
 
 # Chopper tremolo / programmable LFO <a name="chopper"></a>
+![chopper image](./chopper.png)
 
 In its simplest use, Chopper produces a very wide range of **tremolo** effects. The built-in LFO can produce a wide range of waveforms that cover many of the waveforms produced by the tremolo circuits built into **vintage guitar amplifiers**.
 
@@ -28,7 +29,7 @@ To use Chopper as a tremolo, send a signal to the *in* jack, and listen to the *
 
 ## Chopper LFO
 
-![chopper image](../docs/lfo-waveforms.png)
+![chopper LFO image](../docs/lfo-waveforms.png)
 
 To understand all the LFO settings, it helps to watch the outputs on a scope.
 
@@ -53,6 +54,8 @@ When Chopper is being synched, the **Phase** control sets the phase difference b
 There is also an internal LFO that is controlled by the **Rate** control. Set the clock control to *int* to use the internal clock.
 
 # Thread Booster<a name="booster"></a>
+
+![thread booster image](./thread-booster.png)
 
 Thread booster raises the priority of VCV Rack's audio rendering thread. In many cases this decreases the annoying pops, ticks, and dropouts that many users are experiencing.
 
