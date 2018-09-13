@@ -2,6 +2,8 @@
 
 All of our plugins are free and open source. The [instruction manual](booty-shifter.md) describes all of the released modules.
 
+The [release notes](release-notes.md) describe recent changes.
+
 All of our released modules may be found in the [VCV Rack plugin manager] (https://vcvrack.com/plugins.html). This is by far the easiest way for most users to install our modules and keep them up to date.
 
 It is also quite easy to clone this repo and build them yourself. In order to do this, however, you must first download and build [VCV Rack itself](https://github.com/VCVRack/Rack).
