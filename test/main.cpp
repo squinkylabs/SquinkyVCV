@@ -40,6 +40,7 @@ extern void testVCOAlias();
 extern void testSin();
 extern void testMinBLEPVCO();
 extern void testRateConversion();
+extern void testDelay();
 
 int main(int argc, char ** argv)
 {
@@ -73,6 +74,8 @@ int main(int argc, char ** argv)
     testBiquad();
     testSaw();
     testClockMult();
+
+    testDelay();
 
 
     testPoly();

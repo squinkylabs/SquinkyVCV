@@ -97,6 +97,9 @@
     <Filter Include="Source Files\dsp\third-party\src">
       <UniqueIdentifier>{bcce7e7a-2123-42c9-8557-a31f6444e05e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\sqsrc\delay">
+      <UniqueIdentifier>{fc621d2c-8726-4e99-a6dd-bbc7135bee28}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -253,6 +256,9 @@
       <Filter>Source Files\test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\test\testRateConversion.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testDelay.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>
@@ -448,6 +454,9 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\utils\IIRUpsampler.h">
       <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\delay\FractionalDelay.h">
+      <Filter>Header Files\sqsrc\delay</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
