@@ -5,7 +5,9 @@
 
 float FractionalDelay::getOutput()
 {
-  
+#ifdef _LOG
+    printf("\n");
+#endif
     int delayTimeSamples = (int) delayTime;
     const double x = delayTime - delayTimeSamples;
 
@@ -13,7 +15,11 @@ float FractionalDelay::getOutput()
     const double y1 = getDelayedOutput(delayTimeSamples);
     const double y2 = getDelayedOutput(delayTimeSamples + 1);
     const double y3 = getDelayedOutput(delayTimeSamples + 2);
-
+#ifdef _LOG
+    printf("dt=%.2f, dts=%d x=%.2f ", delayTime, delayTimeSamples, x);
+    printf("y0=%.2f y1=%.2f y2=%.2f y3=%.2f\n", y0, y1, y2, y3);
+#endif
+ 
     const double x0 = -1.0;
     const double x1 = 0.0;
     const double x2 = 1.0;
@@ -56,12 +62,17 @@ float FractionalDelay::getDelayedOutput(int delaySamples)
 
         assert(index >= 0 && index < numSamples);
     }
+#ifdef _LOG
+    printf("getting output from area of %d\n", index);
+#endif
+
     return delayMemory[index];
 
 }
 
 void FractionalDelay::setInput(float input)
 {
+    printf("setting input at %d\n", inputPointerIndex);
     delayMemory[inputPointerIndex++] = input;
     if (inputPointerIndex >= numSamples) {
         inputPointerIndex = 0;

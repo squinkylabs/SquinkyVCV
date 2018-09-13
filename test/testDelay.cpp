@@ -4,6 +4,7 @@
 #include "asserts.h"
 
 
+// test that we can set up and get zero output
 static void test0()
 {
     FractionalDelay f(100);
@@ -12,9 +13,10 @@ static void test0()
     assertEQ(x, 0);
 }
 
+// test that the output is perhaps a delayed version of the input
 static void test1()
 {
-
+    printf("test1\n\n");
     FractionalDelay f(100);
     f.setDelay(10);
     float x = 0;
@@ -24,7 +26,67 @@ static void test1()
     assertEQ(x, 1);
 }
 
+static void testTime(float delayTime, float expectedValue, float tolerance)
+{
+    int iTime = int(delayTime);
+    if ((delayTime - iTime) > .0000000001) {
+        iTime++;
+    }
+
+    FractionalDelay f(100);
+    f.setDelay(delayTime);
+    float x = 0;
+    float lastX = 0;
+    for (int i = 0; i < 20; ++i) {
+        x = f.run(1);
+       // printf("in loop i=%d, x=%f\n", i, x);
+        if (x > .99f) {
+            assertEQ(i, iTime);    // delay amount should be >= 10 < 11;
+            assertClose(lastX, expectedValue, tolerance);
+            return;
+        }
+
+        lastX = x;
+    }
+    assert(false);      // we should have exited already
+}
+
+static void test2()
+{
+    testTime(10.0f, 0, .0001f);
+}
+
+
+static void test3()
+{
+    testTime(10.5f, 0.5f, .0001f);
+}
+
+static void test4()
+{
+    testTime(10.25f, 0.75f, .1f);
+}
+
+
+static void test5()
+{
+    // MAKE THIS WORK
+ //   testTime(10.05f, 0, .1f);
+}
+
+
+static void test6()
+{
+    testTime(10.75f, .25, .05f);
+}
+
 void testDelay()
 {
     test0();
+    test1();
+    test2();
+    test3();
+    test4();
+    test5();
+    test6();
 }

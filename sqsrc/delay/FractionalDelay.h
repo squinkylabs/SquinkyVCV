@@ -2,6 +2,11 @@
 
 #include <memory>
 
+/**
+ * When ignoring wrap, inputIndex > outputIndex.
+ * so output "pull up the rear", reading the samples that were written
+ * delayTime samples ago.
+ */
 class FractionalDelay
 {
 public:
@@ -18,7 +23,7 @@ public:
 
     void setDelay(float samples)
     {
-
+        delayTime = samples;
     }
     float run(float input)
     {
