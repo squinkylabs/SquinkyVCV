@@ -100,6 +100,9 @@
     <Filter Include="Header Files\sqsrc\delay">
       <UniqueIdentifier>{fc621d2c-8726-4e99-a6dd-bbc7135bee28}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\sqsrc\delay">
+      <UniqueIdentifier>{2b1546d2-0426-4a86-9aa8-0d5448be9ad0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -260,6 +263,9 @@
     </ClCompile>
     <ClCompile Include="..\..\test\testDelay.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\delay\FractionalDelay.cpp">
+      <Filter>Source Files\sqsrc\delay</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

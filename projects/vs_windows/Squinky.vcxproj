@@ -32,6 +32,7 @@
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp" />
+    <ClCompile Include="..\..\sqsrc\delay\FractionalDelay.cpp" />
     <ClCompile Include="..\..\sqsrc\grammar\StochasticGrammar.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadClient.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadServer.cpp" />
