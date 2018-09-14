@@ -80,7 +80,18 @@ void FractionalDelay::setInput(float input)
 }
 
 
+/*
+float run(float input)
+{
+float ret = getOutput();
+setInput(input);
+return ret;
+}
+*/
 float RecirculatingFractionalDelay::run(float input)
 {
-    return delay.run(input);
+    float output = getOutput();
+    input += (output * feedback);
+    setInput(input);
+    return output;
 }

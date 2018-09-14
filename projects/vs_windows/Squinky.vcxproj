@@ -77,11 +77,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\composites\CHB.h" />
     <ClInclude Include="..\..\composites\ColoredNoise.h" />
+    <ClInclude Include="..\..\composites\daveguide.h" />
     <ClInclude Include="..\..\composites\EV3.h" />
     <ClInclude Include="..\..\composites\FrequencyShifter.h" />
     <ClInclude Include="..\..\composites\FunVCOComposite.h" />
     <ClInclude Include="..\..\composites\GMR.h" />
+    <ClInclude Include="..\..\composites\Gray.h" />
     <ClInclude Include="..\..\composites\LFN.h" />
+    <ClInclude Include="..\..\composites\Shaper.h" />
     <ClInclude Include="..\..\composites\TestComposite.h" />
     <ClInclude Include="..\..\composites\Tremolo.h" />
     <ClInclude Include="..\..\composites\VocalAnimator.h" />

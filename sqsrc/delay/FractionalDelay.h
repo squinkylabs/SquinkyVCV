@@ -33,7 +33,7 @@ public:
         setInput(input);
         return ret;
     }
-private:
+protected:
   
     /**
      * get the fractional delayed output, based in delayTime
@@ -44,7 +44,7 @@ private:
      * send the next input to the delay line
      */
     void setInput(float);
-
+private:
     /**
      * get delay output with integer (non-fractional) delay time
      */
@@ -61,16 +61,18 @@ private:
     float* delayMemory;
 };
 
-class RecirculatingFractionalDelay
+class RecirculatingFractionalDelay : public FractionalDelay
 {
 public:
-    RecirculatingFractionalDelay(int numSamples) : delay(numSamples)
+    RecirculatingFractionalDelay(int numSamples) : FractionalDelay(numSamples)
     {
     }
+#if 0
     void setDelay(float samples)
     {
         delay.setDelay(samples);
     }
+#endif
     void setFeedback(float in_feedback)
     {
         assert(feedback < 1);
@@ -80,7 +82,7 @@ public:
 
     float run(float);
 private:
-    FractionalDelay delay;
+  //  FractionalDelay delay;
     float feedback = 0;
 };
 

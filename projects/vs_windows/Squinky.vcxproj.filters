@@ -464,5 +464,14 @@
     <ClInclude Include="..\..\sqsrc\delay\FractionalDelay.h">
       <Filter>Header Files\sqsrc\delay</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\daveguide.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Gray.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Shaper.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
