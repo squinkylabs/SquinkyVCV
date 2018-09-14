@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <memory>
 
 /**
@@ -23,6 +24,7 @@ public:
 
     void setDelay(float samples)
     {
+        assert(samples < numSamples);
         delayTime = samples;
     }
     float run(float input)
@@ -57,7 +59,28 @@ private:
     const int numSamples;
 
     float* delayMemory;
-
 };
 
+class RecirculatingFractionalDelay
+{
+public:
+    RecirculatingFractionalDelay(int numSamples) : delay(numSamples)
+    {
+    }
+    void setDelay(float samples)
+    {
+        delay.setDelay(samples);
+    }
+    void setFeedback(float in_feedback)
+    {
+        assert(feedback < 1);
+        assert(feedback > -1);
+        feedback = in_feedback;
+    }
+
+    float run(float);
+private:
+    FractionalDelay delay;
+    float feedback = 0;
+};
 

@@ -72,9 +72,15 @@ float FractionalDelay::getDelayedOutput(int delaySamples)
 
 void FractionalDelay::setInput(float input)
 {
-    printf("setting input at %d\n", inputPointerIndex);
+    //printf("setting input at %d\n", inputPointerIndex);
     delayMemory[inputPointerIndex++] = input;
     if (inputPointerIndex >= numSamples) {
         inputPointerIndex = 0;
     }
+}
+
+
+float RecirculatingFractionalDelay::run(float input)
+{
+    return delay.run(input);
 }

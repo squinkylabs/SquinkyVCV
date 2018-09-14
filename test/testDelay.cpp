@@ -80,6 +80,77 @@ static void test6()
     testTime(10.75f, .25, .05f);
 }
 
+static void test10()
+{
+    RecirculatingFractionalDelay d(1000);
+    d.setDelay(100);
+    assertEQ(d.run(0), 0);
+}
+
+
+
+static void test11()
+{
+    RecirculatingFractionalDelay d(1000);
+    d.setDelay(100);
+    for (int i = 0; ; ++i) {
+        assertLT(i, 110);           // too far with no sound
+        float x = d.run(1);
+        if (x > .5) {
+            return;                 //we found sound!
+        }
+
+    }
+}
+
+static void testRecirc(float delayTime, float feedback, float expectedDuration, bool expectDurationLonger)
+{
+    RecirculatingFractionalDelay d(1000);
+    d.setDelay(delayTime);
+    d.setFeedback(feedback);
+
+    const int maxDur = 10000;
+    assert(expectedDuration < maxDur);
+
+    // feed a blast into it
+    for (int i = 0; i < 10; ++i) {
+        d.run(1);
+    }
+
+    int lastSound = 0;
+    for (int i = 0; ; ++i) {
+        if (i > maxDur) {
+            // we have hit end of test
+            // If we expect infinit, that's ok
+            if (!expectDurationLonger) {
+                assertLT(lastSound, expectedDuration);
+            } else {
+                assertGT(lastSound, expectedDuration);
+            }
+            break;
+        }
+        float x = d.run(0);
+        if (x > .1) {
+            lastSound = i;
+        }
+        if (lastSound > expectedDuration && !expectDurationLonger) {
+            assert(false);
+        }
+
+    }
+}
+
+static void test12()
+{
+    testRecirc(20, 0, 22, false);
+}
+
+
+static void test13()
+{
+    testRecirc(20, .9f, 100, true);
+}
+
 void testDelay()
 {
     test0();
@@ -89,4 +160,10 @@ void testDelay()
     test4();
     test5();
     test6();
+
+    test10();
+    test11();
+    test12();
+
+    test13();
 }
