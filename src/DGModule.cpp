@@ -87,29 +87,40 @@ DGWidget::DGWidget(DGModule *module) :
     addInput(createInputCentered<PJ301MPort>(
             Vec(40,340),
             module,
-            Daveguide<WidgetComposite>::INPUT_AUDIO));
+            Daveguide<WidgetComposite>::AUDIO_INPUT));
 
     addOutput(createOutputCentered<PJ301MPort>(
             Vec(120,340),
             module,
-            Daveguide<WidgetComposite>::OUTPUT_AUDIO));
+            Daveguide<WidgetComposite>::AUDIO_OUTPUT));
 
 
     const float labelDeltaY = 25;
     const float gainX = 40;
-    const float offsetX = 120;
+    const float offsetX = 114;
     const float labelDeltaX = -20;
-    const float y = 170;
+    const float y = 100;
+    const float y2 = y + 70;
 
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(gainX, y),
-        module, Daveguide<WidgetComposite>::PARAM_DELAY, -5, 5, 0));
-    addLabel(Vec(gainX+labelDeltaX, y + labelDeltaY), "delay");
+        module, Daveguide<WidgetComposite>::OCTAVE_PARAM, -5, 5, 0));
+    addLabel(Vec(gainX+labelDeltaX, y + labelDeltaY), "octave");
 
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(offsetX, y),
-        module, Daveguide<WidgetComposite>::PARAM_FEEDBACK, -5, 5, 0));
-    addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "offset");
+        module, Daveguide<WidgetComposite>::TUNE_PARAM, -5, 5, 0));
+    addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "tune");
+
+     addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(gainX, y2),
+        module, Daveguide<WidgetComposite>::DECAY_PARAM, -5, 5, 0));
+    addLabel(Vec(gainX+labelDeltaX, y2 + labelDeltaY), "decay");
+
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(offsetX, y2),
+        module, Daveguide<WidgetComposite>::FC_PARAM, -5, 5, 0));
+    addLabel(Vec(offsetX+labelDeltaX,  y2 + labelDeltaY), "filter");
 
 
 
