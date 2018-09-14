@@ -82,6 +82,36 @@ DGWidget::DGWidget(DGModule *module) :
         addChild(panel);
     }
 
+     addLabel(Vec(35, 20), "Daveguide");
+
+    addInput(createInputCentered<PJ301MPort>(
+            Vec(40,340),
+            module,
+            Daveguide<WidgetComposite>::INPUT_AUDIO));
+
+    addOutput(createOutputCentered<PJ301MPort>(
+            Vec(120,340),
+            module,
+            Daveguide<WidgetComposite>::OUTPUT_AUDIO));
+
+
+    const float labelDeltaY = 25;
+    const float gainX = 40;
+    const float offsetX = 120;
+    const float labelDeltaX = -20;
+    const float y = 170;
+
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(gainX, y),
+        module, Daveguide<WidgetComposite>::PARAM_DELAY, -5, 5, 0));
+    addLabel(Vec(gainX+labelDeltaX, y + labelDeltaY), "delay");
+
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(offsetX, y),
+        module, Daveguide<WidgetComposite>::PARAM_FEEDBACK, -5, 5, 0));
+    addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "offset");
+
+
 
  
     // screws
