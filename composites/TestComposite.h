@@ -70,6 +70,11 @@ public:
         return 1.0f / 44100.0f;
     }
 
+    float engineGetSampleRate()
+    {
+        return 44100.f;
+    }
+
     virtual void step()
     {
     }
