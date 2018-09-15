@@ -41,9 +41,13 @@ extern void testSin();
 extern void testMinBLEPVCO();
 extern void testRateConversion();
 extern void testDelay();
+extern void testSpline();
 
 int main(int argc, char ** argv)
 {
+    testSpline();
+    getchar();
+    return 0;
     bool runPerf = false;
     bool extended = false;
     if (argc > 1) {
