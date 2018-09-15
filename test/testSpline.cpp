@@ -46,15 +46,24 @@ private:
 class AsymGenerator
 {
 public:
+    const static int iNumPoints = 256;
+    const static int iSymmetryTables = 16;
+
+    AsymGenerator(float symmetry)
+    {
+
+    }
+    float lookup(float);
+
     static void genTableValues(const Spline& spline, int numPoints)
     {
         const double x0 = spline[0].first;
-        
+
         // first build non-uniform lookup
         NonUniformLookup nu;
         const double delta = 1.0 / (numPoints * 8);     // let's oversample in t space
         for (double t = 0; t <= 1; t += delta) {
-            auto pt =calcPoint(spline, t);
+            auto pt = calcPoint(spline, t);
             //printf("adding point to table:%f, %f\n", pt.first, pt.second);
             nu.add(pt.first, pt.second);
         }
@@ -72,19 +81,17 @@ public:
                 }
             }
         }
-      
     }
-    static void genTable(const char* name, double symetry, int numPoints)
+    
+    static void genTable(int index, double symetry)
     {
-        printf("static float %s[%d] = {\n", name, numPoints);
-  // todo: make this work
-        // left x = -1..1
-        genTableValues(makeSplineLeft(symetry), numPoints / 2);
+        printf("static float symmetry_table_%d[%d] = {\n", index, iNumPoints);
+
+        genTableValues(makeSplineLeft(symetry), iNumPoints / 2);
         printf(",\n");
-        genTableValues(makeSplineRight(symetry), numPoints / 2);
+        genTableValues(makeSplineRight(symetry), iNumPoints / 2);
         printf("\n}\n");
-        fflush(stdout);
-        
+        fflush(stdout); 
     }
 
 
@@ -123,14 +130,15 @@ public:
             3 * pow(t, 2) * (1 - t) * spline[2].second
             + pow(t, 3) * spline[3].second;
         return ret;
-//
-      //  printf("%f, %f\n", ret.first, ret.second);
     }
 };
 
 static void gen()
 {
-    AsymGenerator::genTable("pt_1", .1, 32);
+    for (int i = 0; i < AsymGenerator::iSymmetryTables; ++i) {
+        float symmetry = float(i) / float(AsymGenerator::iSymmetryTables - 1);
+        AsymGenerator::genTable(i, symmetry);
+    }
 }
 
 static void testLook0()
@@ -193,6 +201,7 @@ static void testLook4()
     assertClose(x, 0, .0001);
 }
 
+#if 0
 static void renderPt(const Spline& spline, double t)
 {
     std::pair<double, double> ret;
@@ -210,6 +219,7 @@ static void renderPt(const Spline& spline, double t)
     printf("%f, %f\n", ret.first, ret.second);
 }
 
+
 static void render(const Spline& spline)
 {
     double t;
@@ -218,17 +228,9 @@ static void render(const Spline& spline)
         renderPt(spline, t);
     }
 }
+#endif
 
-static void test0()
-{
-    Spline x = {
-        {0.0, 0.0},
-        {.5, 1.0},
-        {.5, 1.0},
-        {1.0, 1.0}
-    };
-    render(x);
-}
+
 
 
 void testSpline()
