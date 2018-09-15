@@ -46,6 +46,8 @@ extern void testSpline();
 int main(int argc, char ** argv)
 {
     testSpline();
+    printf("anykey\n");
+    fflush(stdout);
     getchar();
     return 0;
     bool runPerf = false;
