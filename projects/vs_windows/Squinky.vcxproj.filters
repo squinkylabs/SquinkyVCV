@@ -270,6 +270,9 @@
     <ClCompile Include="..\..\test\testSpline.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp">
+      <Filter>Source Files\dsp\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -475,6 +478,9 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\Shaper.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\AsymWaveShaper.h">
+      <Filter>Header Files\dsp\utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

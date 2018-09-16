@@ -29,6 +29,7 @@
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.c" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.c" />
     <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp" />
+    <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="..\..\dsp\third-party\src\EvenVCO_orig.h" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO.h" />
     <ClInclude Include="..\..\dsp\utils\AsymRampShaper.h" />
+    <ClInclude Include="..\..\dsp\utils\AsymWaveShaper.h" />
     <ClInclude Include="..\..\dsp\utils\AudioMath.h" />
     <ClInclude Include="..\..\dsp\utils\Decimator.h" />
     <ClInclude Include="..\..\dsp\utils\IIRDecimator.h" />
