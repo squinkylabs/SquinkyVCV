@@ -57,12 +57,26 @@ struct ShaperWidget : ModuleWidget
         return label;
     }
 
-
+    void step() override;
 private:
-
+    Label* shapeLabel=nullptr;
+    ParamWidget* shapeParam = nullptr;
+    Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
     ShaperModule* const module;
     void addSelector(ShaperModule* module);
 };
+
+void ShaperWidget::step()
+{
+    ModuleWidget::step();
+    const int iShape = (int) std::round(shapeParam->value);
+    const Shaper<WidgetComposite>::Shapes shape = Shaper<WidgetComposite>::Shapes(iShape);
+    if (shape != curShape) {
+        curShape = shape;
+        const char* shapeString = Shaper<WidgetComposite>::getString(shape);
+        shapeLabel->text = shapeString;
+    }
+}
 
 void ShaperWidget::addSelector(ShaperModule* module)
 {
@@ -74,12 +88,8 @@ void ShaperWidget::addSelector(ShaperModule* module)
     p->snap = true;
 	p->smooth = false;
     addParam(p);
-    addLabel(Vec(x-45, y+15), "clip");
-    addLabel(Vec(x-60, y-10), "soft");
-    addLabel(Vec(x-16, y-40), "fw");
-    addLabel(Vec(x+20, y-10), "hw");
-    addLabel(Vec(x+10, y + 5), "fold");
-     addLabel(Vec(x+10, y + 15), "asym");
+    shapeLabel = addLabel(Vec(x-30, y-40), "");
+    shapeParam = p;
 }
 
 

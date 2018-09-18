@@ -19,6 +19,18 @@ public:
        init();
     }
 
+    enum class Shapes {
+        AsymSpline,
+        Clip,
+        EmitterCoupled,
+        FullWave,
+        HalfWave,
+        Fold,
+        Invalid
+    };
+
+    static const char* getString(Shapes);
+
     enum ParamIds
     {
         PARAM_SHAPE,
@@ -64,6 +76,36 @@ private:
     AsymWaveShaper asymShaper;
 };
 
+template <class TBase>
+const char* Shaper<TBase>::getString(Shapes shape)
+{
+    const char* ret = "";
+    switch (shape)
+    {
+        case Shapes::Clip:
+            ret = "Clip";
+            break;
+        case Shapes::EmitterCoupled:
+            ret = "Emitter Coupled";
+            break;
+        case Shapes::FullWave:
+            ret = "Full Wave";
+            break;
+        case Shapes::HalfWave:
+            ret = "Half Wave";
+            break;
+        case Shapes::Fold:
+            ret = "Folder";
+            break;
+        case Shapes::AsymSpline:
+            ret = "Asymetric";
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
 
 template <class TBase>
 void  Shaper<TBase>::init()
@@ -84,36 +126,47 @@ void  Shaper<TBase>::step()
     input += TBase::params[PARAM_OFFSET].value;
     input *= TBase::params[PARAM_GAIN].value;
 
-    const int shape = (int) std::round(TBase::params[PARAM_SHAPE].value);
+    const int iShape = (int) std::round(TBase::params[PARAM_SHAPE].value);
+    const Shapes shape = Shapes(iShape);
 
     up.process(buffer, input);
     for (int i=0; i<oversample; ++i) {
         float x = buffer[i];
+      
         switch (shape)
         {
-            case 0:   
+            /*
+              AsymSpline,
+        Clip,
+        EmitterCoupled,
+        FullWave,
+        HalfWave,
+        Fold*/
+            case Shapes::Clip:   
                 x = std::min(1.f, x);
                 x = std::max(-1.f, x);
                 break;
-            case 1:
+            case Shapes::EmitterCoupled:
                 x = LookupTable<float>::lookup(*tanhLookup.get(), x);
                 break;
-            case 2:
+            case Shapes::FullWave:
                 x = std::abs(x);
                 break;
-            case 3:
+            case Shapes::HalfWave:
                 x = std::max(0.f, x);
                 break;
-            case 4:
+            case Shapes::Fold:
                 x = AudioMath::fold(x);
                 break;
-            case 5:
+            case Shapes::AsymSpline:
                 {
                 const float sym = TBase::params[PARAM_SYMMETRY].value;    // 0..1
                 int index = (int) round(sym * 15.1);           // This match belongs in the shaper
                 x = asymShaper.lookup(x, index);
                 }
                 break;
+            default:
+                assert(false);
 
         }
         buffer[i] = x;
