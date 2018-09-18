@@ -110,7 +110,7 @@ void  Shaper<TBase>::step()
             case 5:
                 {
                 const float sym = TBase::params[PARAM_SYMMETRY].value;    // 0..1
-                int index = (int) round(sym * 16);           // This match belongs in the shaper
+                int index = (int) round(sym * 15.1);           // This match belongs in the shaper
                 x = asymShaper.lookup(x, index);
                 }
                 break;

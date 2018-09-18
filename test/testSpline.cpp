@@ -4,6 +4,8 @@
 #include "asserts.h"
 #include "LookupTable.h"
 #include "AsymWaveShaper.h"
+#include "Shaper.h"
+#include "TestComposite.h"
 
 
 using Spline = std::vector< std::pair<double, double> >;
@@ -106,18 +108,33 @@ static void testDerivativeSub(int index, float delta)
     const float slopeLeft = -ya / delta;
     const float slopeRight = yb / delta;
 
-    printf("[%d] y0 = %f, slope left = %f, right =%f\n", index, y0, slopeLeft, slopeRight);
+  // printf("[%d] y0 = %f, slope left = %f, right =%f\n", index, y0, slopeLeft, slopeRight);
 
    
     assertClose(y0, 0, .00001);
-    //  assertClose(slopeRight, 2, .01);
-   // assertClose(slopeLEft, 2, .01);
+    assertClose(slopeRight, 2, .01);
+    if (index != 0) {
+        assertClose(slopeLeft, 2, .3
+        );
+    }
+   
 }
 static void testDerivative()
 {
+    // 6 with .1
     for (int i = AsymWaveShaper::iSymmetryTables - 1; i >= 0; --i) {
-        testDerivativeSub(i, .01f);
+        testDerivativeSub(i, .0001f);
     }
+}
+
+static void testShaper0()
+{
+    Shaper<TestComposite> gmr;
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = 5;
+    gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 0;
+    for (int i = 0; i < 50; ++i) gmr.step();
+    gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 1;
+    for (int i = 0; i < 50; ++i) gmr.step();
 }
 
 void testSpline(bool doEmit)
@@ -133,5 +150,6 @@ void testSpline(bool doEmit)
     testLook4();
     testGen0();
     testDerivative();
+    testShaper0();
 }
 
