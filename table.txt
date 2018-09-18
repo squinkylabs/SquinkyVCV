@@ -1,129 +1,4 @@
-
-#include "AsymWaveShaper.h"
-
-
-extern float symmetry_table_0[];
-extern float symmetry_table_1[];
-extern float symmetry_table_2[];
-extern float symmetry_table_3[];
-extern float symmetry_table_4[];
-extern float symmetry_table_5[];
-extern float symmetry_table_6[];
-extern float symmetry_table_7[];
-extern float symmetry_table_8[];
-extern float symmetry_table_9[];
-extern float symmetry_table_10[];
-extern float symmetry_table_11[];
-extern float symmetry_table_12[];
-extern float symmetry_table_13[];
-extern float symmetry_table_14[];
-extern float symmetry_table_15[];
-
-float * lookup_tables[16] = {
-    symmetry_table_0,
-    symmetry_table_1,
-    symmetry_table_2,
-    symmetry_table_3,
-    symmetry_table_4,
-    symmetry_table_5,
-    symmetry_table_6,
-    symmetry_table_7,
-    symmetry_table_8,
-    symmetry_table_9,
-    symmetry_table_10,
-    symmetry_table_11,
-    symmetry_table_12,
-    symmetry_table_13,
-    symmetry_table_14,
-    symmetry_table_15,
-};
-
-
-AsymWaveShaper::AsymWaveShaper()
-{
-    for (int i = 0; i < iSymmetryTables; ++i) {
-        const float* entries = lookup_tables[i];
-        LookupTable<float>::initDiscrete(tables[i], iNumPoints, entries);
-    }
-}
-
-void AsymWaveShaper::genTableValues(const Spline& spline, int numPoints)
-{
-    const double x0 = spline[0].first;
-
-    // first build non-uniform lookup
-    NonUniformLookup nu;
-    const double delta = 1.0 / (numPoints * 8);     // let's oversample in t space
-    for (double t = 0; t <= 1; t += delta) {
-        auto pt = calcPoint(spline, t);
-        //printf("adding point to table:%f, %f\n", pt.first, pt.second);
-        nu.add(pt.first, pt.second);
-    }
-
-    // next output uniform
-    for (int i = 0; i < numPoints; ++i) {
-        double x = x0 + (double(i) / numPoints);
-        double y = nu.lookup(x);
-        printf("%ff", y);
-        if (i != numPoints - 1) {
-            printf(", ");
-
-            if ((i % 8) == 7) {
-                printf("\n");
-            }
-        }
-    }
-}
-
-
-void AsymWaveShaper::genTable(int index, double symmetry)
-{
-    printf("float symmetry_table_%d[%d] = {\n", index, iNumPoints);
-
-    genTableValues(makeSplineLeft(symmetry), iNumPoints / 2);
-    printf(",\n");
-    genTableValues(makeSplineRight(symmetry), iNumPoints / 2);
-    printf("\n};\n");
-    fflush(stdout);
-}
-
-Spline AsymWaveShaper::makeSplineRight(double symmetry)
-{
-    Spline ret;
-    ret.push_back(std::pair<double, double>(0.0, 0.0));
-    ret.push_back(std::pair<double, double>(0.5, 1.0));
-    ret.push_back(std::pair<double, double>(0.5, 1.0));
-    ret.push_back(std::pair<double, double>(1.0, 1.0));
-    return ret;
-}
-
-Spline AsymWaveShaper::makeSplineLeft(double symmetry)
-{
-    // symmetry from 0..1
-    Spline ret;
-    ret.push_back(std::pair<double, double>(-1, -symmetry));
-    ret.push_back(std::pair<double, double>(-symmetry/2.f, -symmetry));
-    ret.push_back(std::pair<double, double>(-symmetry/2.f, -symmetry));
-    ret.push_back(std::pair<double, double>(0, 0));
-    return ret;
-}
-
-std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double t)
-{
-    std::pair<double, double> ret;
-
-    ret.first = pow(1 - t, 3) * spline[0].first +
-        3 * t * pow(1 - t, 2) * spline[1].first +
-        3 * pow(t, 2) * (1 - t) * spline[2].first
-        + pow(t, 3) * spline[3].first;
-
-    ret.second = pow(1 - t, 3) * spline[0].second +
-        3 * t * pow(1 - t, 2) * spline[1].second +
-        3 * pow(t, 2) * (1 - t) * spline[2].second
-        + pow(t, 3) * spline[3].second;
-    return ret;
-}
- float symmetry_table_0[256] = {
+static float symmetry_table_0[256] = {
 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 
 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 
 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 
@@ -157,7 +32,7 @@ std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
- float symmetry_table_1[256] = {
+static float symmetry_table_1[256] = {
 -0.066667f, -0.066667f, -0.066667f, -0.066667f, -0.066667f, -0.066666f, -0.066666f, -0.066666f, 
 -0.066666f, -0.066666f, -0.066665f, -0.066665f, -0.066664f, -0.066663f, -0.066662f, -0.066661f, 
 -0.066660f, -0.066658f, -0.066657f, -0.066655f, -0.066653f, -0.066650f, -0.066648f, -0.066645f, 
@@ -191,7 +66,7 @@ std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
- float symmetry_table_2[256] = {
+static float symmetry_table_2[256] = {
 -0.133333f, -0.133333f, -0.133333f, -0.133333f, -0.133333f, -0.133333f, -0.133333f, -0.133332f, 
 -0.133331f, -0.133330f, -0.133329f, -0.133328f, -0.133326f, -0.133324f, -0.133322f, -0.133319f, 
 -0.133316f, -0.133312f, -0.133308f, -0.133304f, -0.133298f, -0.133292f, -0.133286f, -0.133278f, 
@@ -225,7 +100,7 @@ std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
- float symmetry_table_3[256] = {
+static float symmetry_table_3[256] = {
 -0.200000f, -0.200000f, -0.200000f, -0.200000f, -0.200000f, -0.199999f, -0.199998f, -0.199997f, 
 -0.199996f, -0.199995f, -0.199992f, -0.199990f, -0.199987f, -0.199983f, -0.199978f, -0.199973f, 
 -0.199967f, -0.199960f, -0.199951f, -0.199942f, -0.199932f, -0.199920f, -0.199907f, -0.199893f, 
@@ -259,7 +134,7 @@ std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
- float symmetry_table_4[256] = {
+static float symmetry_table_4[256] = {
 -0.266667f, -0.266667f, -0.266667f, -0.266666f, -0.266666f, -0.266665f, -0.266664f, -0.266662f, 
 -0.266660f, -0.266657f, -0.266653f, -0.266649f, -0.266643f, -0.266636f, -0.266628f, -0.266619f, 
 -0.266608f, -0.266595f, -0.266581f, -0.266565f, -0.266546f, -0.266526f, -0.266502f, -0.266477f, 
@@ -293,7 +168,7 @@ std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
- float symmetry_table_5[256] = {
+static float symmetry_table_5[256] = {
 -0.333333f, -0.333333f, -0.333333f, -0.333333f, -0.333332f, -0.333331f, -0.333329f, -0.333326f, 
 -0.333322f, -0.333317f, -0.333311f, -0.333303f, -0.333294f, -0.333282f, -0.333268f, -0.333252f, 
 -0.333234f, -0.333212f, -0.333188f, -0.333160f, -0.333128f, -0.333093f, -0.333053f, -0.333008f, 
@@ -327,7 +202,7 @@ std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
- float symmetry_table_6[256] = {
+static float symmetry_table_6[256] = {
 -0.400000f, -0.400000f, -0.400000f, -0.399999f, -0.399998f, -0.399996f, -0.399992f, -0.399988f, 
 -0.399981f, -0.399973f, -0.399963f, -0.399949f, -0.399933f, -0.399914f, -0.399891f, -0.399864f, 
 -0.399833f, -0.399796f, -0.399754f, -0.399707f, -0.399652f, -0.399591f, -0.399523f, -0.399446f, 
@@ -361,7 +236,7 @@ std::pair<double, double> AsymWaveShaper::calcPoint(const Spline& spline, double
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_7[256] = {
+static float symmetry_table_7[256] = {
 -0.466667f, -0.466667f, -0.466666f, -0.466665f, -0.466663f, -0.466659f, -0.466654f, -0.466646f, 
 -0.466635f, -0.466621f, -0.466603f, -0.466581f, -0.466554f, -0.466521f, -0.466481f, -0.466435f, 
 -0.466381f, -0.466318f, -0.466245f, -0.466162f, -0.466068f, -0.465961f, -0.465841f, -0.465706f, 
@@ -395,7 +270,7 @@ float symmetry_table_7[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_8[256] = {
+static float symmetry_table_8[256] = {
 -0.533333f, -0.533333f, -0.533333f, -0.533331f, -0.533327f, -0.533321f, -0.533311f, -0.533297f, 
 -0.533279f, -0.533254f, -0.533223f, -0.533184f, -0.533135f, -0.533077f, -0.533007f, -0.532924f, 
 -0.532827f, -0.532715f, -0.532584f, -0.532435f, -0.532265f, -0.532071f, -0.531853f, -0.531607f, 
@@ -429,7 +304,7 @@ float symmetry_table_8[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_9[256] = {
+static float symmetry_table_9[256] = {
 -0.600000f, -0.600000f, -0.599999f, -0.599995f, -0.599989f, -0.599977f, -0.599960f, -0.599935f, 
 -0.599900f, -0.599855f, -0.599797f, -0.599724f, -0.599634f, -0.599525f, -0.599393f, -0.599237f, 
 -0.599054f, -0.598840f, -0.598592f, -0.598307f, -0.597981f, -0.597609f, -0.597189f, -0.596716f, 
@@ -463,7 +338,7 @@ float symmetry_table_9[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_10[256] = {
+static float symmetry_table_10[256] = {
 -0.666667f, -0.666666f, -0.666664f, -0.666657f, -0.666644f, -0.666622f, -0.666587f, -0.666538f, 
 -0.666469f, -0.666379f, -0.666262f, -0.666114f, -0.665931f, -0.665708f, -0.665439f, -0.665119f, 
 -0.664742f, -0.664301f, -0.663789f, -0.663200f, -0.662525f, -0.661758f, -0.660890f, -0.659913f, 
@@ -497,7 +372,7 @@ float symmetry_table_10[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_11[256] = {
+static float symmetry_table_11[256] = {
 -0.733333f, -0.733333f, -0.733328f, -0.733313f, -0.733284f, -0.733234f, -0.733157f, -0.733045f, 
 -0.732891f, -0.732684f, -0.732417f, -0.732079f, -0.731659f, -0.731146f, -0.730528f, -0.729793f, 
 -0.728928f, -0.727921f, -0.726760f, -0.725433f, -0.723929f, -0.722237f, -0.720348f, -0.718254f, 
@@ -531,7 +406,7 @@ float symmetry_table_11[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_12[256] = {
+static float symmetry_table_12[256] = {
 -0.800000f, -0.799998f, -0.799985f, -0.799947f, -0.799868f, -0.799733f, -0.799522f, -0.799215f, 
 -0.798789f, -0.798221f, -0.797489f, -0.796568f, -0.795437f, -0.794075f, -0.792464f, -0.790589f, 
 -0.788439f, -0.786006f, -0.783288f, -0.780285f, -0.776999f, -0.773439f, -0.769613f, -0.765532f, 
@@ -565,7 +440,7 @@ float symmetry_table_12[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_13[256] = {
+static float symmetry_table_13[256] = {
 -0.866667f, -0.866660f, -0.866609f, -0.866462f, -0.866159f, -0.865637f, -0.864833f, -0.863689f, 
 -0.862158f, -0.860211f, -0.857830f, -0.855016f, -0.851782f, -0.848149f, -0.844144f, -0.839797f, 
 -0.835139f, -0.830200f, -0.825008f, -0.819589f, -0.813965f, -0.808159f, -0.802189f, -0.796071f, 
@@ -599,7 +474,7 @@ float symmetry_table_13[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_14[256] = {
+static float symmetry_table_14[256] = {
 -0.933333f, -0.933272f, -0.932817f, -0.931596f, -0.929418f, -0.926298f, -0.922370f, -0.917788f, 
 -0.912690f, -0.907184f, -0.901353f, -0.895262f, -0.888959f, -0.882480f, -0.875855f, -0.869106f, 
 -0.862252f, -0.855307f, -0.848283f, -0.841191f, -0.834039f, -0.826833f, -0.819580f, -0.812285f, 
@@ -633,7 +508,7 @@ float symmetry_table_14[256] = {
 0.999243f, 0.999387f, 0.999511f, 0.999615f, 0.999702f, 0.999775f, 0.999834f, 0.999881f, 
 0.999918f, 0.999946f, 0.999966f, 0.999981f, 0.999990f, 0.999996f, 0.999999f, 1.000000f
 };
-float symmetry_table_15[256] = {
+static float symmetry_table_15[256] = {
 -1.000000f, -0.992188f, -0.984375f, -0.976562f, -0.968750f, -0.960938f, -0.953125f, -0.945312f, 
 -0.937500f, -0.929688f, -0.921875f, -0.914062f, -0.906250f, -0.898438f, -0.890625f, -0.882812f, 
 -0.875000f, -0.867188f, -0.859375f, -0.851562f, -0.843750f, -0.835938f, -0.828125f, -0.820312f, 

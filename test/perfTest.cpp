@@ -24,6 +24,7 @@
 #include "FunVCOComposite.h"
 #include "EV3.h"
 #include "daveguide.h"
+#include "Shaper.h"
 
 
 using Shifter = FrequencyShifter<TestComposite>;
@@ -547,6 +548,19 @@ static void testDG()
         return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].value;
         }, 1);
 }
+
+static void testShaper()
+{
+    Shaper<TestComposite> gmr;
+
+    // gmr.setSampleRate(44100);
+    // gmr.init();
+
+    MeasureTime<float>::run(overheadOutOnly, "gmr", [&gmr]() {
+        gmr.step();
+        return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].value;
+        }, 1);
+}
 #if 0
 static void testAttenuverters()
 {
@@ -670,6 +684,7 @@ void perfTest()
 #endif
 
     testDG();
+    testShaper();
    
     testEV3();
     testCHB(false);

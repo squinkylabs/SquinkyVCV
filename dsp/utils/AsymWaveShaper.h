@@ -71,58 +71,14 @@ public:
         LookupTableParams<float>& table = tables[index];
         // TODO: we are going outside of domain!.
         const float y = LookupTable<float>::lookup(table, x_scaled);
-        printf("lookup %f -> %f ret %f\n", x, x_scaled, y);
+       // printf("lookup %f -> %f ret %f\n", x, x_scaled, y);
         return y;
     }
 
     static void genTableValues(const Spline& spline, int numPoints);
-
-    static void genTable(int index, double symetry)
-    {
-        printf("static float symmetry_table_%d[%d] = {\n", index, iNumPoints);
-
-        genTableValues(makeSplineLeft(symetry), iNumPoints / 2);
-        printf(",\n");
-        genTableValues(makeSplineRight(symetry), iNumPoints / 2);
-        printf("\n};\n");
-        fflush(stdout);
-    }
-
-    static Spline makeSplineRight(double symmetry)
-    {
-        Spline ret;
-        ret.push_back(std::pair<double, double>(0.0, 0.0));
-        ret.push_back(std::pair<double, double>(0.5, 1.0));
-        ret.push_back(std::pair<double, double>(0.5, 1.0));
-        ret.push_back(std::pair<double, double>(1.0, 1.0));
-        return ret;
-    }
-
-    static Spline makeSplineLeft(double symmetry)
-    {
-        // symmetry from 0..1
-        Spline ret;
-        ret.push_back(std::pair<double, double>(-1, -symmetry));
-        ret.push_back(std::pair<double, double>(-.5, -symmetry));
-        ret.push_back(std::pair<double, double>(-.5, -symmetry));
-        ret.push_back(std::pair<double, double>(0, 0));
-        return ret;
-    }
-
-    static std::pair<double, double> calcPoint(const Spline& spline, double t)
-    {
-        std::pair<double, double> ret;
-
-        ret.first = pow(1 - t, 3) * spline[0].first +
-            3 * t * pow(1 - t, 2) * spline[1].first +
-            3 * pow(t, 2) * (1 - t) * spline[2].first
-            + pow(t, 3) * spline[3].first;
-
-        ret.second = pow(1 - t, 3) * spline[0].second +
-            3 * t * pow(1 - t, 2) * spline[1].second +
-            3 * pow(t, 2) * (1 - t) * spline[2].second
-            + pow(t, 3) * spline[3].second;
-        return ret;
-    }
+    static void genTable(int index, double symmetry);
+    static Spline makeSplineRight(double symmetry);
+    static Spline makeSplineLeft(double symmetry);
+    static std::pair<double, double> calcPoint(const Spline& spline, double t);
 };
 

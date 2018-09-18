@@ -70,7 +70,7 @@ void ShaperWidget::addSelector(ShaperModule* module)
     const float y = 100;
     auto p = createParamCentered<Rogan1PSBlue>(
         Vec(x, y),
-        module, Shaper<WidgetComposite>::PARAM_SHAPE, 0, 4, 0);
+        module, Shaper<WidgetComposite>::PARAM_SHAPE, 0, 5, 0);
     p->snap = true;
 	p->smooth = false;
     addParam(p);
@@ -78,7 +78,8 @@ void ShaperWidget::addSelector(ShaperModule* module)
     addLabel(Vec(x-60, y-10), "soft");
     addLabel(Vec(x-16, y-40), "fw");
     addLabel(Vec(x+20, y-10), "hw");
-    addLabel(Vec(x+10, y + 15), "fold");
+    addLabel(Vec(x+10, y + 5), "fold");
+     addLabel(Vec(x+10, y + 15), "asym");
 }
 
 
@@ -95,7 +96,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     ModuleWidget(module),
     module(module)
 {
-    box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
@@ -119,9 +120,10 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     
     const float labelDeltaY = 25;
     const float gainX = 40;
-    const float offsetX = 120;
+    const float offsetX = 95;
     const float labelDeltaX = -20;
     const float y = 170;
+    const float symmetryX = 150;
 
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(gainX, y),
@@ -132,6 +134,11 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
         Vec(offsetX, y),
         module, Shaper<WidgetComposite>::PARAM_OFFSET, -10, 10, 0));
     addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "offset");
+
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(symmetryX, y),
+        module, Shaper<WidgetComposite>::PARAM_SYMMETRY, 0, 1, 0));
+    addLabel(Vec(symmetryX+labelDeltaX,  y + labelDeltaY), "sym");
 
     const float deltaYTrim = 60;
     const float deltaYInput = 90;

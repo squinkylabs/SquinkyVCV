@@ -3,6 +3,7 @@
 #include "IIRUpsampler.h"
 #include "IIRDecimator.h"
 #include "LookupTable.h"
+#include "AsymWaveShaper.h"
 #include "ObjectCache.h"
 
 template <class TBase>
@@ -25,6 +26,7 @@ public:
         PARAM_GAIN_TRIM,
         PARAM_OFFSET,
         PARAM_OFFSET_TRIM,
+        PARAM_SYMMETRY,
         NUM_PARAMS
     };
   
@@ -44,7 +46,6 @@ public:
 
     enum LightIds
     {
-
         NUM_LIGHTS
     };
 
@@ -60,7 +61,7 @@ private:
     IIRUpsampler<oversample> up;
     IIRDecimator<oversample> dec;
     std::shared_ptr<LookupTableParams<float>> tanhLookup;
-  
+    AsymWaveShaper asymShaper;
 };
 
 
@@ -83,7 +84,7 @@ void  Shaper<TBase>::step()
     input += TBase::params[PARAM_OFFSET].value;
     input *= TBase::params[PARAM_GAIN].value;
 
-    const int shape = std::round(TBase::params[PARAM_SHAPE].value);
+    const int shape = (int) std::round(TBase::params[PARAM_SHAPE].value);
 
     up.process(buffer, input);
     for (int i=0; i<oversample; ++i) {
@@ -105,6 +106,13 @@ void  Shaper<TBase>::step()
                 break;
             case 4:
                 x = AudioMath::fold(x);
+                break;
+            case 5:
+                {
+                const float sym = TBase::params[PARAM_SYMMETRY].value;    // 0..1
+                int index = (int) round(sym * 16);           // This match belongs in the shaper
+                x = asymShaper.lookup(x, index);
+                }
                 break;
 
         }
