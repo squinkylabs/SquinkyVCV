@@ -73,6 +73,8 @@ public:
 private:
     std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
     std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
+    AudioMath::ScaleFun<float> scaleGain =  AudioMath::makeLinearScaler<float>(0, 1);
+    AudioMath::ScaleFun<float> scaleOffset = AudioMath::makeLinearScaler<float>(-5, 5);
 
     const static int oversample = 16;
     void init();
@@ -132,11 +134,25 @@ void  Shaper<TBase>::step()
 {
     float buffer[oversample];
     float input = TBase::inputs[INPUT_AUDIO].value;
-   
-    _gain = 5 *  LookupTable<float>::lookup(*audioTaper, TBase::params[PARAM_GAIN].value, false);
-    
-    _offset = TBase::params[PARAM_OFFSET].value;
 
+
+    // 0..1
+    const float gainInput = scaleGain(
+        TBase::inputs[INPUT_GAIN].value,
+        TBase::params[PARAM_GAIN].value,
+        TBase::params[PARAM_GAIN_TRIM].value);
+   
+    _gain = 5 *  LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    
+    // -5 .. 5
+    const float offsetInput = scaleOffset(
+        TBase::inputs[INPUT_OFFSET].value,
+        TBase::params[PARAM_OFFSET].value,
+        TBase::params[PARAM_OFFSET_TRIM].value);
+   
+    _offset = offsetInput;
+ 
+    // TODO: maybe add offset after gain.
     input += _offset;
     input *= _gain;
 

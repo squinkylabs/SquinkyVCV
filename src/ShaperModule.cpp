@@ -140,12 +140,12 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
 
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(gainX, y),
-        module, Shaper<WidgetComposite>::PARAM_GAIN, 0, 1, .5));
+        module, Shaper<WidgetComposite>::PARAM_GAIN, -5, 5, 0));
     addLabel(Vec(gainX+labelDeltaX, y + labelDeltaY), "gain");
 
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(offsetX, y),
-        module, Shaper<WidgetComposite>::PARAM_OFFSET, -10, 10, 0));
+        module, Shaper<WidgetComposite>::PARAM_OFFSET, -5, 5, 0));
     addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "offset");
 
     addParam(createParamCentered<Rogan1PSBlue>(
