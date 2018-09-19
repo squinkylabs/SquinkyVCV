@@ -26,6 +26,7 @@ public:
         FullWave,
         HalfWave,
         Fold,
+        Fold2,
         Invalid
     };
 
@@ -66,7 +67,12 @@ public:
      */
     void step() override;
 
+    float _gain=0;
+    float _offset=0;
+
 private:
+    std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
+    std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
 
     const static int oversample = 16;
     void init();
@@ -97,6 +103,9 @@ const char* Shaper<TBase>::getString(Shapes shape)
         case Shapes::Fold:
             ret = "Folder";
             break;
+        case Shapes::Fold2:
+            ret = "Folder II";
+            break;
         case Shapes::AsymSpline:
             ret = "Asymetric";
             break;
@@ -123,8 +132,13 @@ void  Shaper<TBase>::step()
 {
     float buffer[oversample];
     float input = TBase::inputs[INPUT_AUDIO].value;
-    input += TBase::params[PARAM_OFFSET].value;
-    input *= TBase::params[PARAM_GAIN].value;
+   
+    _gain = 5 *  LookupTable<float>::lookup(*audioTaper, TBase::params[PARAM_GAIN].value, false);
+    
+    _offset = TBase::params[PARAM_OFFSET].value;
+
+    input += _offset;
+    input *= _gain;
 
     const int iShape = (int) std::round(TBase::params[PARAM_SHAPE].value);
     const Shapes shape = Shapes(iShape);
@@ -157,6 +171,16 @@ void  Shaper<TBase>::step()
                 break;
             case Shapes::Fold:
                 x = AudioMath::fold(x);
+                break;
+            case Shapes::Fold2:
+                x = .3f * AudioMath::fold(x);
+                if (x > 0) {
+                    x =  LookupTable<float>::lookup(*sinLookup,  1.3f * x, false);
+                } else {
+                    x = -LookupTable<float>::lookup(*sinLookup,-x, false);
+                }
+                if (x > 0) x = std::sqrt(x);
+
                 break;
             case Shapes::AsymSpline:
                 {

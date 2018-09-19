@@ -84,7 +84,10 @@ void ShaperWidget::addSelector(ShaperModule* module)
     const float y = 100;
     auto p = createParamCentered<Rogan1PSBlue>(
         Vec(x, y),
-        module, Shaper<WidgetComposite>::PARAM_SHAPE, 0, 5, 0);
+        module, Shaper<WidgetComposite>::PARAM_SHAPE,
+        0,
+        float(Shaper<WidgetComposite>::Shapes::Invalid),
+        0);
     p->snap = true;
 	p->smooth = false;
     addParam(p);
@@ -137,7 +140,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
 
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(gainX, y),
-        module, Shaper<WidgetComposite>::PARAM_GAIN, 0, 10, 1));
+        module, Shaper<WidgetComposite>::PARAM_GAIN, 0, 1, .5));
     addLabel(Vec(gainX+labelDeltaX, y + labelDeltaY), "gain");
 
     addParam(createParamCentered<Rogan1PSBlue>(
