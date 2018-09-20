@@ -109,7 +109,7 @@ const char* Shaper<TBase>::getString(Shapes shape)
             ret = "Folder II";
             break;
         case Shapes::AsymSpline:
-            ret = "Asymetric";
+            ret = "Asymmetric";
             break;
         default:
             assert(false);
