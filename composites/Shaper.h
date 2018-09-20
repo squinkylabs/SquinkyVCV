@@ -12,14 +12,15 @@ class Shaper : public TBase
 public:
     Shaper(struct Module * module) : TBase(module)
     {
-       init();
+        init();
     }
     Shaper() : TBase()
     {
-       init();
+        init();
     }
 
-    enum class Shapes {
+    enum class Shapes
+    {
         AsymSpline,
         Clip,
         EmitterCoupled,
@@ -42,7 +43,7 @@ public:
         PARAM_SYMMETRY,
         NUM_PARAMS
     };
-  
+
     enum InputIds
     {
         INPUT_AUDIO,
@@ -67,13 +68,13 @@ public:
      */
     void step() override;
 
-    float _gain=0;
-    float _offset=0;
+    float _gain = 0;
+    float _offset = 0;
 
 private:
     std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
     std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
-    AudioMath::ScaleFun<float> scaleGain =  AudioMath::makeLinearScaler<float>(0, 1);
+    AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     AudioMath::ScaleFun<float> scaleOffset = AudioMath::makeLinearScaler<float>(-5, 5);
 
     const static int oversample = 16;
@@ -88,8 +89,7 @@ template <class TBase>
 const char* Shaper<TBase>::getString(Shapes shape)
 {
     const char* ret = "";
-    switch (shape)
-    {
+    switch (shape) {
         case Shapes::Clip:
             ret = "Clip";
             break;
@@ -113,6 +113,7 @@ const char* Shaper<TBase>::getString(Shapes shape)
             break;
         default:
             assert(false);
+            ret = "error";
     }
     return ret;
 }
@@ -122,9 +123,9 @@ template <class TBase>
 void  Shaper<TBase>::init()
 {
    // clock.setMultiplier(1); // no mult
-   float fc = .25 / float(oversample);
-   up.setCutoff(fc);
-   dec.setCutoff(fc);
+    float fc = .25 / float(oversample);
+    up.setCutoff(fc);
+    dec.setCutoff(fc);
 
     tanhLookup = ObjectCache<float>::getTanh5();
 }
@@ -141,17 +142,17 @@ void  Shaper<TBase>::step()
         TBase::inputs[INPUT_GAIN].value,
         TBase::params[PARAM_GAIN].value,
         TBase::params[PARAM_GAIN_TRIM].value);
-   
-    _gain = 5 *  LookupTable<float>::lookup(*audioTaper, gainInput, false);
-    
+
+    _gain = 5 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+
     // -5 .. 5
     const float offsetInput = scaleOffset(
         TBase::inputs[INPUT_OFFSET].value,
         TBase::params[PARAM_OFFSET].value,
         TBase::params[PARAM_OFFSET_TRIM].value);
-   
+
     _offset = offsetInput;
- 
+
     // TODO: maybe add offset after gain.
     input += _offset;
     input *= _gain;
@@ -160,11 +161,10 @@ void  Shaper<TBase>::step()
     const Shapes shape = Shapes(iShape);
 
     up.process(buffer, input);
-    for (int i=0; i<oversample; ++i) {
+    for (int i = 0; i < oversample; ++i) {
         float x = buffer[i];
-      
-        switch (shape)
-        {
+
+        switch (shape) {
             /*
               AsymSpline,
         Clip,
@@ -172,39 +172,45 @@ void  Shaper<TBase>::step()
         FullWave,
         HalfWave,
         Fold*/
-            case Shapes::Clip:   
+            case Shapes::Clip:
                 x = std::min(1.f, x);
                 x = std::max(-1.f, x);
+                x *= 3.7f;
                 break;
             case Shapes::EmitterCoupled:
-                x = LookupTable<float>::lookup(*tanhLookup.get(), x);
+                x = LookupTable<float>::lookup(*tanhLookup.get(), x, true);
+                x *= 3.8f;
                 break;
             case Shapes::FullWave:
                 x = std::abs(x);
                 break;
             case Shapes::HalfWave:
                 x = std::max(0.f, x);
+                x *= 1.4f;
                 break;
             case Shapes::Fold:
                 x = AudioMath::fold(x);
+                x *= 5.6f;
                 break;
             case Shapes::Fold2:
                 x = .3f * AudioMath::fold(x);
                 if (x > 0) {
-                    x =  LookupTable<float>::lookup(*sinLookup,  1.3f * x, false);
+                    x = LookupTable<float>::lookup(*sinLookup, 1.3f * x, false);
                 } else {
-                    x = -LookupTable<float>::lookup(*sinLookup,-x, false);
+                    x = -LookupTable<float>::lookup(*sinLookup, -x, false);
                 }
                 if (x > 0) x = std::sqrt(x);
+                x *= 4.4f;
 
                 break;
             case Shapes::AsymSpline:
-                {
+            {
                 const float sym = TBase::params[PARAM_SYMMETRY].value;    // 0..1
                 int index = (int) round(sym * 15.1);           // This match belongs in the shaper
                 x = asymShaper.lookup(x, index);
-                }
-                break;
+                x *= 5.14f;
+            }
+            break;
             default:
                 assert(false);
 
@@ -214,4 +220,4 @@ void  Shaper<TBase>::step()
 
     const float output = dec.process(buffer);
     TBase::outputs[OUTPUT_AUDIO].value = output;
-} 
+}

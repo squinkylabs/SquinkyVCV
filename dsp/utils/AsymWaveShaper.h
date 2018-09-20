@@ -70,7 +70,7 @@ public:
         assert(index >= 0 && index < iSymmetryTables);
         LookupTableParams<float>& table = tables[index];
         // TODO: we are going outside of domain!.
-        const float y = LookupTable<float>::lookup(table, x_scaled);
+        const float y = LookupTable<float>::lookup(table, x_scaled, true);
        // printf("lookup %f -> %f ret %f\n", x, x_scaled, y);
         return y;
     }

@@ -6,6 +6,7 @@
 #include "AsymWaveShaper.h"
 #include "Shaper.h"
 #include "TestComposite.h"
+#include "TestSignal.h"
 
 
 using Spline = std::vector< std::pair<double, double> >;
@@ -110,14 +111,14 @@ static void testDerivativeSub(int index, float delta)
 
   // printf("[%d] y0 = %f, slope left = %f, right =%f\n", index, y0, slopeLeft, slopeRight);
 
-   
+   // since I changed AsymWaveShaper to be points-1 this is worse
     assertClose(y0, 0, .00001);
     assertClose(slopeRight, 2, .01);
     if (index != 0) {
         assertClose(slopeLeft, 2, .3
         );
     }
-   
+
 }
 static void testDerivative()
 {
@@ -127,14 +128,56 @@ static void testDerivative()
     }
 }
 
+
+
 static void testShaper0()
 {
     Shaper<TestComposite> gmr;
-    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = 5;
-    gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 0;
-    for (int i = 0; i < 50; ++i) gmr.step();
-    gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 1;
-    for (int i = 0; i < 50; ++i) gmr.step();
+
+    int shapeMax = (int) Shaper<TestComposite>::Shapes::Invalid;
+    for (int i = 0; i < shapeMax; ++i) {
+        gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) i;
+        std::string s = gmr.getString(Shaper<TestComposite>::Shapes(i));
+        assertGT(s.length(), 0);
+        assertLT(s.length(), 20);
+        gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 0;
+        for (int i = 0; i < 50; ++i) gmr.step();
+        gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 1;
+        for (int i = 0; i < 50; ++i) gmr.step();
+    }
+}
+
+static void testShaper1Sub(int shape)
+{
+    Shaper<TestComposite> gmr;
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
+    gmr.params[Shaper<TestComposite>::PARAM_GAIN].value = 5;        // max gain
+    const int buffSize = 1 * 1024;
+    float buffer[buffSize];
+
+    TestSignal<float>::generateSin(buffer, buffSize, 1.f / 40);
+    double rms = TestSignal<float>::getRMS(buffer, buffSize);
+    //printf("signal=%f\n", rms);
+    for (int i = 0; i < buffSize; ++i) {
+        const float x = buffer[i];
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = buffer[i];
+        gmr.step();
+        buffer[i] = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+    }
+    rms = TestSignal<float>::getRMS(buffer, buffSize);
+    const float targetRMS = 5 * .707f;
+
+    const char* p = gmr.getString(Shaper<TestComposite>::Shapes(shape));
+   // printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
+    assertClose(rms, targetRMS, .5);
+
+}
+static void testShaper1()
+{
+    int shapeMax = (int) Shaper<TestComposite>::Shapes::Invalid;
+    for (int i = 0; i < shapeMax; ++i) {
+        testShaper1Sub(i);
+    }
 }
 
 void testSpline(bool doEmit)
@@ -151,5 +194,6 @@ void testSpline(bool doEmit)
     testGen0();
     testDerivative();
     testShaper0();
+    testShaper1();
 }
 
