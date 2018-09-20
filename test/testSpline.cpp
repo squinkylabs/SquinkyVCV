@@ -147,11 +147,11 @@ static void testShaper0()
     }
 }
 
-static void testShaper1Sub(int shape)
+static void testShaper1Sub(int shape, float gain, float targetRMS)
 {
     Shaper<TestComposite> gmr;
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
-    gmr.params[Shaper<TestComposite>::PARAM_GAIN].value = 5;        // max gain
+    gmr.params[Shaper<TestComposite>::PARAM_GAIN].value = gain;        // max gain
     const int buffSize = 1 * 1024;
     float buffer[buffSize];
 
@@ -165,18 +165,24 @@ static void testShaper1Sub(int shape)
         buffer[i] = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
     }
     rms = TestSignal<float>::getRMS(buffer, buffSize);
-    const float targetRMS = 5 * .707f;
+  //  const float targetRMS = 5 * .707f;
 
     const char* p = gmr.getString(Shaper<TestComposite>::Shapes(shape));
-   // printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
-    assertClose(rms, targetRMS, .5);
+   printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
+
+   if (targetRMS > .01) {
+       assertClose(rms, targetRMS, .5);
+   }
 
 }
+
 static void testShaper1()
 {
     int shapeMax = (int) Shaper<TestComposite>::Shapes::Invalid;
     for (int i = 0; i < shapeMax; ++i) {
-        testShaper1Sub(i);
+        testShaper1Sub(i, 5, 5 * .707f);
+        testShaper1Sub(i, 0, 0);
+
     }
 }
 

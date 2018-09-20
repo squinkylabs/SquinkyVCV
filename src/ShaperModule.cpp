@@ -86,7 +86,7 @@ void ShaperWidget::addSelector(ShaperModule* module)
         Vec(x, y),
         module, Shaper<WidgetComposite>::PARAM_SHAPE,
         0,
-        float(Shaper<WidgetComposite>::Shapes::Invalid),
+        float(Shaper<WidgetComposite>::Shapes::Invalid)-1,
         0);
     p->snap = true;
 	p->smooth = false;

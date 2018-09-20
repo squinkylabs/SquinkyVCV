@@ -165,21 +165,16 @@ void  Shaper<TBase>::step()
         float x = buffer[i];
 
         switch (shape) {
-            /*
-              AsymSpline,
-        Clip,
-        EmitterCoupled,
-        FullWave,
-        HalfWave,
-        Fold*/
             case Shapes::Clip:
-                x = std::min(1.f, x);
-                x = std::max(-1.f, x);
-                x *= 3.7f;
+                x *= 3;
+                x = std::min(3.f, x);
+                x = std::max(-3.f, x);
+                x *= 1.2f;
                 break;
             case Shapes::EmitterCoupled:
+                x *= .25;
                 x = LookupTable<float>::lookup(*tanhLookup.get(), x, true);
-                x *= 3.8f;
+                x *= 5.4f;
                 break;
             case Shapes::FullWave:
                 x = std::abs(x);
@@ -205,10 +200,11 @@ void  Shaper<TBase>::step()
                 break;
             case Shapes::AsymSpline:
             {
+                x *= .15f;
                 const float sym = TBase::params[PARAM_SYMMETRY].value;    // 0..1
                 int index = (int) round(sym * 15.1);           // This match belongs in the shaper
                 x = asymShaper.lookup(x, index);
-                x *= 5.14f;
+                x *= 6.1f;
             }
             break;
             default:
