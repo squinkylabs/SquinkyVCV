@@ -4,6 +4,7 @@
 #include "asserts.h"
 #include "LookupTable.h"
 #include "AsymWaveShaper.h"
+#include "ExtremeTester.h"
 #include "Shaper.h"
 #include "TestComposite.h"
 #include "TestSignal.h"
@@ -140,9 +141,9 @@ static void testShaper0()
         std::string s = gmr.getString(Shaper<TestComposite>::Shapes(i));
         assertGT(s.length(), 0);
         assertLT(s.length(), 20);
-        gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 0;
+        gmr.params[Shaper<TestComposite>::PARAM_OFFSET].value = -5;
         for (int i = 0; i < 50; ++i) gmr.step();
-        gmr.params[Shaper<TestComposite>::PARAM_SYMMETRY].value = 1;
+        gmr.params[Shaper<TestComposite>::PARAM_OFFSET].value = 5;
         for (int i = 0; i < 50; ++i) gmr.step();
     }
 }
@@ -182,10 +183,37 @@ static void testShaper1()
     for (int i = 0; i < shapeMax; ++i) {
         testShaper1Sub(i, 5, 5 * .707f);
         testShaper1Sub(i, 0, 0);
-
     }
 }
 
+
+
+
+
+
+static void testSplineExtremes()
+{
+    printf("running testSplineExtremes\n"); fflush(stdout);
+
+    Shaper<TestComposite> sp;
+
+
+    using fp = std::pair<float, float>;
+    std::vector< std::pair<float, float> > paramLimits;
+
+    paramLimits.resize(sp.NUM_PARAMS);
+
+    paramLimits[sp.PARAM_SHAPE] = fp(0.f, float(Shaper<TestComposite>::Shapes::Invalid) - 1);
+    paramLimits[sp.PARAM_GAIN] = fp(-5.0f, 5.0f);
+    paramLimits[sp.PARAM_GAIN_TRIM] = fp(-1.f, 1.f);
+    paramLimits[sp.PARAM_OFFSET] = fp(-5.f, 5.f);
+    paramLimits[sp.PARAM_OFFSET_TRIM] = fp(-1.f, 1.f);
+
+
+
+    ExtremeTester< Shaper<TestComposite>>::test(sp, paramLimits, true, "shaper");
+
+}
 void testSpline(bool doEmit)
 {
     if (doEmit) {
@@ -200,6 +228,10 @@ void testSpline(bool doEmit)
     testGen0();
     testDerivative();
     testShaper0();
-    testShaper1();
+
+    printf("!! skipping testShaper1\n");
+   // testShaper1();
+
+    testSplineExtremes();
 }
 

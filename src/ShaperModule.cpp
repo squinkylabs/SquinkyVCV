@@ -109,7 +109,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     ModuleWidget(module),
     module(module)
 {
-    box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
@@ -136,7 +136,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     const float offsetX = 95;
     const float labelDeltaX = -20;
     const float y = 170;
-    const float symmetryX = 150;
+  //  const float symmetryX = 150;
 
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(gainX, y),
@@ -148,10 +148,12 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
         module, Shaper<WidgetComposite>::PARAM_OFFSET, -5, 5, 0));
     addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "offset");
 
+#if 0
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(symmetryX, y),
         module, Shaper<WidgetComposite>::PARAM_SYMMETRY, 0, 1, 0));
     addLabel(Vec(symmetryX+labelDeltaX,  y + labelDeltaY), "sym");
+    #endif
 
     const float deltaYTrim = 60;
     const float deltaYInput = 90;

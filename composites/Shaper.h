@@ -28,6 +28,7 @@ public:
         HalfWave,
         Fold,
         Fold2,
+        Crush,
         Invalid
     };
 
@@ -40,7 +41,6 @@ public:
         PARAM_GAIN_TRIM,
         PARAM_OFFSET,
         PARAM_OFFSET_TRIM,
-        PARAM_SYMMETRY,
         NUM_PARAMS
     };
 
@@ -111,6 +111,9 @@ const char* Shaper<TBase>::getString(Shapes shape)
         case Shapes::AsymSpline:
             ret = "Asymmetric";
             break;
+        case Shapes::Crush:
+            ret = "Crush";
+            break;
         default:
             assert(false);
             ret = "error";
@@ -135,6 +138,7 @@ void  Shaper<TBase>::step()
 {
     float buffer[oversample];
     float input = TBase::inputs[INPUT_AUDIO].value;
+    const float rawInput = input;
 
 
     // 0..1
@@ -200,11 +204,36 @@ void  Shaper<TBase>::step()
                 break;
             case Shapes::AsymSpline:
             {
+                x = rawInput * _gain;           // we use the offset for something else
                 x *= .15f;
-                const float sym = TBase::params[PARAM_SYMMETRY].value;    // 0..1
+             //   const float sym = TBase::params[PARAM_SYMMETRY].value;    // 0..1
+                const float sym = .1f * (5 - offsetInput);
                 int index = (int) round(sym * 15.1);           // This match belongs in the shaper
                 x = asymShaper.lookup(x, index);
                 x *= 6.1f;
+            }
+            break;
+            case Shapes::Crush:
+            {
+                x = rawInput;          // remove the gain
+                float invGain = 1 + (1-gainInput) * 100; //0..10
+                invGain *= .01f;
+#if 0
+                if (invGain < 1) {
+                    printf("invg gain = %f\n", invGain);
+                    fflush(stdout);
+                    invGain = 1;
+
+                }
+#endif
+              //  printf("crush, x=%.2f, gi=%.2f invGain = %.2f", x, gainInput, invGain);
+
+                x *= invGain;
+                x = std::round(x);
+              //  printf(" mult=%.2f", x);
+                x /= invGain;
+             //   printf(" dv=%.2f\n", x);
+                fflush(stdout);
             }
             break;
             default:
