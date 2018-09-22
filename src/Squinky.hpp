@@ -30,7 +30,9 @@ extern Model *modelEV3Module;
 #endif
 extern Model *modelGrayModule;
 extern Model *modelShaperModule;
+#ifdef _DG
 extern Model *modelDGModule;
+#endif
 
 
 

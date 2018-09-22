@@ -44,5 +44,7 @@ void init(rack::Plugin *p)
 #endif
     p->addModel(modelGrayModule);
     p->addModel(modelShaperModule);
+#ifdef _DG
     p->addModel(modelDGModule);
+#endif
 }

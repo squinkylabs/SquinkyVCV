@@ -2,7 +2,7 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
-
+#ifdef _DG
 #include "daveguide.h"
 
 /**
@@ -136,4 +136,5 @@ Model *modelDGModule = Model::create<DGModule,
     DGWidget>("Squinky Labs",
     "squinkylabs-dvg",
     "dg", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+#endif
 

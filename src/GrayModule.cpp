@@ -144,5 +144,5 @@ GrayWidget::GrayWidget(GrayModule *module) :
 Model *modelGrayModule = Model::create<GrayModule,
     GrayWidget>("Squinky Labs",
     "squinkylabs-gry",
-    "gry", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+    "Gray Code", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
 

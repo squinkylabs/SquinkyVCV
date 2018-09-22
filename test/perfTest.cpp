@@ -543,22 +543,58 @@ static void testDG()
    // gmr.setSampleRate(44100);
    // gmr.init();
 
-    MeasureTime<float>::run(overheadOutOnly, "gmr", [&gmr]() {
+    MeasureTime<float>::run(overheadOutOnly, "dg", [&gmr]() {
         gmr.step();
         return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].value;
         }, 1);
 }
 
-static void testShaper()
+// 95
+// down to 67 for just the oversampler.
+static void testShaper1()
 {
     Shaper<TestComposite> gmr;
 
     // gmr.setSampleRate(44100);
     // gmr.init();
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
 
-    MeasureTime<float>::run(overheadOutOnly, "gmr", [&gmr]() {
+    MeasureTime<float>::run(overheadOutOnly, "shaper fw", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
         gmr.step();
-        return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        }, 1);
+}
+
+// 284
+static void testShaper2()
+{
+    Shaper<TestComposite> gmr;
+
+    // gmr.setSampleRate(44100);
+    // gmr.init();
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::Crush;
+
+    MeasureTime<float>::run(overheadOutOnly, "shaper crush", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        }, 1);
+}
+
+// 143
+static void testShaper3()
+{
+    Shaper<TestComposite> gmr;
+
+    // gmr.setSampleRate(44100);
+    // gmr.init();
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::AsymSpline;
+
+    MeasureTime<float>::run(overheadOutOnly, "shaper asy", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
         }, 1);
 }
 #if 0
@@ -684,11 +720,11 @@ void perfTest()
 #endif
 
     testDG();
-    testShaper();
+    testShaper1();
+    testShaper2();
+    testShaper3();
    
     testEV3();
-    testCHB(false);
-    testCHB(true);
     testCHBdef();
     testFunSaw(true);
 #if 0

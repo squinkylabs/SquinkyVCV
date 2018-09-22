@@ -183,5 +183,5 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
 Model *modelShaperModule = Model::create<ShaperModule,
     ShaperWidget>("Squinky Labs",
     "squinkylabs-shp",
-    "shap", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+    "Shaper", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
 
