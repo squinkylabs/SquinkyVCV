@@ -133,7 +133,7 @@ void  Shaper<TBase>::init()
     tanhLookup = ObjectCache<float>::getTanh5();
 }
 
-#if 0
+#if 1
 template <class TBase>
 void  Shaper<TBase>::step()
 {
@@ -248,6 +248,7 @@ void  Shaper<TBase>::step()
 
     const float output = dec.process(buffer);
     TBase::outputs[OUTPUT_AUDIO].value = output;
+}
 #else
 template <class TBase>
 void  Shaper<TBase>::step()
