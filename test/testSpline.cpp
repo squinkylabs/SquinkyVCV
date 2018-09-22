@@ -166,29 +166,26 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
         buffer[i] = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
     }
     rms = TestSignal<float>::getRMS(buffer, buffSize);
-  //  const float targetRMS = 5 * .707f;
+    //  const float targetRMS = 5 * .707f;
 
     const char* p = gmr.getString(Shaper<TestComposite>::Shapes(shape));
-   printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
+    printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
 
-   if (targetRMS > .01) {
-       assertClose(rms, targetRMS, .5);
-   }
-
+    if (targetRMS > .01) {
+        assertClose(rms, targetRMS, .5);
+    }
 }
 
 static void testShaper1()
 {
     int shapeMax = (int) Shaper<TestComposite>::Shapes::Invalid;
     for (int i = 0; i < shapeMax; ++i) {
-        testShaper1Sub(i, 5, 5 * .707f);
+        const float targetOutput = (i == (int) Shaper<TestComposite>::Shapes::Crush) ? 0 : 5 * .707f;
+
+        testShaper1Sub(i, 5, targetOutput);
         testShaper1Sub(i, 0, 0);
     }
 }
-
-
-
-
 
 
 static void testSplineExtremes()
@@ -196,7 +193,6 @@ static void testSplineExtremes()
     printf("running testSplineExtremes\n"); fflush(stdout);
 
     Shaper<TestComposite> sp;
-
 
     using fp = std::pair<float, float>;
     std::vector< std::pair<float, float> > paramLimits;
@@ -209,11 +205,57 @@ static void testSplineExtremes()
     paramLimits[sp.PARAM_OFFSET] = fp(-5.f, 5.f);
     paramLimits[sp.PARAM_OFFSET_TRIM] = fp(-1.f, 1.f);
 
-
-
     ExtremeTester< Shaper<TestComposite>>::test(sp, paramLimits, true, "shaper");
-
 }
+
+
+
+
+static void testShaper2d(Shaper<TestComposite>::Shapes shape, float gain, float offset, float input)
+{
+    Shaper<TestComposite> sh;
+    sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
+    sh.params[Shaper<TestComposite>::PARAM_GAIN].value = gain; 
+    sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = offset;
+    for (int i = 0; i < 100; ++i) {
+        sh.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = input;
+        sh.step();
+        const float out = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+
+        // brief ringing goes > 10
+        assert(out < 20 && out > -10);
+    }
+    
+}
+static void testShaper2c(Shaper<TestComposite>::Shapes shape, float gain, float offset)
+{
+    testShaper2d(shape, gain, offset, 0);
+    testShaper2d(shape, gain, offset, 5);
+    testShaper2d(shape, gain, offset, -5);
+}
+
+static void testShaper2b(Shaper<TestComposite>::Shapes shape, float gain)
+{
+    testShaper2c(shape, gain, 0.f);
+    testShaper2c(shape, gain, 5.f);
+    testShaper2c(shape, gain, -5.f);
+}
+static void testShaper2a(Shaper<TestComposite>::Shapes shape)
+{
+    testShaper2b(shape, 0);
+    testShaper2b(shape, -5);
+    testShaper2b(shape, 5);
+}
+
+static void testShaper2()
+{
+    int shapeMax = (int) Shaper<TestComposite>::Shapes::Invalid;
+    for (int i = 0; i < shapeMax; ++i) {
+        testShaper2a(Shaper<TestComposite>::Shapes(i));
+    }
+}
+
+
 void testSpline(bool doEmit)
 {
     if (doEmit) {
@@ -229,8 +271,9 @@ void testSpline(bool doEmit)
     testDerivative();
     testShaper0();
 
-    printf("!! skipping testShaper1\n");
-   // testShaper1();
+    //printf("!! skipping testShaper1\n");
+    testShaper1();
+    testShaper2();
 
     testSplineExtremes();
 }

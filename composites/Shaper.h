@@ -182,10 +182,12 @@ void  Shaper<TBase>::step()
                 break;
             case Shapes::FullWave:
                 x = std::abs(x);
+                x = std::min(x, 10.f);
                 break;
             case Shapes::HalfWave:
                 x = std::max(0.f, x);
                 x *= 1.4f;
+                x = std::min(x, 10.f);
                 break;
             case Shapes::Fold:
                 x = AudioMath::fold(x);
