@@ -169,7 +169,7 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
     //  const float targetRMS = 5 * .707f;
 
     const char* p = gmr.getString(Shaper<TestComposite>::Shapes(shape));
-    printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
+   // printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
 
     if (targetRMS > .01) {
         assertClose(rms, targetRMS, .5);

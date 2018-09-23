@@ -14,6 +14,7 @@ public:
     //static void  setAllWaveforms(MinBLEPVCO* vco);
    // static void test1();
     static void testSync2();
+    static void testSync3();
     static void setPitch(EV3<TestComposite>& ev3);
 };
 
@@ -141,6 +142,11 @@ void TestMB::setPitch(EV3<TestComposite>& ev3)
     ev3.vcos[1].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
     ev3.vcos[2].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
 
+    ev3.params[EV3<TestComposite>::SYNC2_PARAM].value = 1;
+
+    ev3.vcos[0].name = "VCO1";
+    ev3.vcos[1].name = "VCO2";
+    ev3.vcos[2].name = "VCO3";
 
 }
 
@@ -180,6 +186,59 @@ void TestMB::testSync2()
     // TODO: test the sync on/off
   
 }
+
+
+
+void TestMB::testSync3()
+{
+    printf("***** testSync3*****\n");
+    EV3<TestComposite> ev3;
+    setPitch(ev3);
+
+    ev3.step();
+    const float f0 = ev3._freq[0];
+    const float f1 = ev3._freq[1];
+
+    assertClose(f0, 2093.02, .01);
+    assertClose(f1, 4434.95, .01);
+
+    float last0 = -10;
+    float last1 = -10;
+    for (int i = 0; i < 100; ++i) {
+        printf("-------- sample %d -----------\n", i);
+        ev3.step();
+    }
+
+    // TODO: test the sync on/off
+
+}
+
+
+static void testBlepx(float crossing, float jump)
+{
+    printf("BLEP crossing = %.2f, jump =%.2f\n", crossing, jump);
+    rack::MinBLEP<16> syncMinBLEP;
+
+    syncMinBLEP.minblep = rack::minblep_16_32;
+    syncMinBLEP.oversample = 32;
+
+   // syncMinBLEP.jump(-.5, -2);
+    syncMinBLEP.jump(crossing, jump);
+    for (int i = 0; i < 32; ++i) {
+    //float saw = -1.0 + 2.0*phase;
+        float x = syncMinBLEP.shift();
+        printf("blep[%d] = %.2f\n", i, x);
+    }
+
+}
+
+static void testBlep()
+{
+    testBlepx(-.5, -2);
+    testBlepx(-.5, 1);
+    testBlepx(-.9f, .2f);
+}
+
 void testMinBLEPVCO()
 {
     // A lot of these tests are from old API
@@ -189,8 +248,10 @@ void testMinBLEPVCO()
 
 
     testSaw1();
-    testSync1();
+    //testSync1();
 
     // this one doesn't work, either.
     //TestMB::testSync2();
+    TestMB::testSync3();
+  //  testBlep();
 }

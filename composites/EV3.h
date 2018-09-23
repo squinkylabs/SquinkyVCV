@@ -87,7 +87,7 @@ inline void EV3<TBase>::init()
     }
 
     vcos[0].setSyncCallback([this](float f, float dx) {
-     
+    
         if (TBase::params[SYNC2_PARAM].value > .5) {
             vcos[1].onMasterSync(f, dx);
         }
