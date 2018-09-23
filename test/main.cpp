@@ -90,11 +90,12 @@ int main(int argc, char ** argv)
 
 
     testSinOscillator();
+    testMinBLEPVCO();
     testHilbert();
     testSpline(false);
     testVCO();
    // testSin();
-    testMinBLEPVCO();
+
 
 
     testFFT();

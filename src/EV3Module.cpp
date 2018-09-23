@@ -1,4 +1,5 @@
 #include "Squinky.hpp"
+#include "SQWidgets.h"
 #include "WidgetComposite.h"
 
 #ifdef _EV3
@@ -66,6 +67,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         -1.0f, 1.0f, 0));
     addLabel(Vec(pos.x, pos.y + 100), "Fine");
 
+    // sync switches
     if (index != 0) {    
         addParam(ParamWidget::create<CKSS>(
             Vec(pos.x, pos.y + 160), module, module->ev3.SYNC1_PARAM + delta * index,
@@ -73,6 +75,12 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addLabel(Vec(pos.x-6, pos.y + 138), "on");
         addLabel(Vec(pos.x-6, pos.y + 190), "off");
     }
+
+    addParam(ParamWidget::create<BlueToggle>(
+        Vec(pos.x, pos.y + 220),
+        module,
+        EV3<WidgetComposite>::SAW1_PARAM + delta * index, 0.0f, 1.0f, 0.0f));
+	
 
 }
 

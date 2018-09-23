@@ -10,6 +10,7 @@ template <class TBase>
 class EV3 : public TBase
 {
 public:
+    friend class TestMB;
     EV3(struct Module * module) : TBase(module)
     {
         init();
@@ -26,16 +27,19 @@ public:
         SEMI1_PARAM,
         FINE1_PARAM,
         SYNC1_PARAM,
+        SAW1_PARAM,
 
         OCTAVE2_PARAM,
         SEMI2_PARAM,
         FINE2_PARAM,
         SYNC2_PARAM,
+        SAW2_PARAM,
 
         OCTAVE3_PARAM,
         SEMI3_PARAM,
         FINE3_PARAM,
         SYNC3_PARAM,
+        SAW3_PARAM,
 
         NUM_PARAMS
     };
@@ -66,8 +70,32 @@ private:
     void init();
 
     MinBLEPVCO vcos[3];
+    float _freq[3];
+    float _out[3];
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 };
+
+template <class TBase>
+inline void EV3<TBase>::init()
+{
+    for (int i = 0; i < 3; ++i) {
+        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
+        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Tri, false);
+        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Sin, false);
+        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Square, false);
+        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Even, false);
+    }
+
+    vcos[0].setSyncCallback([this](float f, float dx) {
+     
+        if (TBase::params[SYNC2_PARAM].value > .5) {
+            vcos[1].onMasterSync(f, dx);
+        }
+        if (TBase::params[SYNC3_PARAM].value > .5) {
+            vcos[2].onMasterSync(f, dx);
+        }
+     });
+}
 
 template <class TBase>
 inline void EV3<TBase>::step()
@@ -75,9 +103,21 @@ inline void EV3<TBase>::step()
     processPitchInputs();
     stepVCOs();
     float mix = 0;
+
     for (int i = 0; i < 3; ++i) {
-        mix += vcos[i].getWaveform();
+        const float wf = vcos[i].getWaveform();
+        if (i == 0 && TBase::params[SAW1_PARAM].value > .5) {
+            mix += wf;
+        }
+        if (i == 1 && TBase::params[SAW2_PARAM].value > .5) {
+            mix += wf;
+        }
+        if (i == 2 && TBase::params[SAW3_PARAM].value > .5) {
+            mix += wf;
+        }
+        _out[i] = wf;
     }
+
     TBase::outputs[MIX_OUTPUT].value = mix;
 }
 
@@ -101,6 +141,7 @@ inline void EV3<TBase>::processPitchInputs()
 template <class TBase>
 inline void EV3<TBase>::processPitchInputs(int osc)
 {
+    assert(osc >= 0 && osc <= 2);
     const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
 
     float pitch = 1.0f + roundf(TBase::params[OCTAVE1_PARAM + delta].value) +
@@ -116,18 +157,9 @@ inline void EV3<TBase>::processPitchInputs(int osc)
     const float q = float(log2(261.626));       // move up to pitch range of even vco
     pitch += q;
     const float freq = expLookup(pitch);
+    _freq[osc] = freq;
     vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq);
 }
 
-template <class TBase>
-inline void EV3<TBase>::init()
-{
-    for (int i = 0; i < 3; ++i) {
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Tri, false);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Sin, false);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Square, false);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Even, false);
-    }
-}
+
 

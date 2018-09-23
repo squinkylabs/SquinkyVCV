@@ -12,6 +12,8 @@
 #include "dsp/minblep.hpp"
 #include "dsp/filter.hpp"
 
+#include <functional>
+
 
 // until c++17
 
@@ -35,6 +37,7 @@ class MinBLEPVCO
 {
 public:
     friend class TestMB;
+    using SyncCallback = std::function<void(float p, float dx)>;
 
     MinBLEPVCO();
     enum class Waveform {Sin, Square, Saw, Tri, Even, END };
@@ -57,7 +60,10 @@ public:
     /**
      * Send the sync waveform to VCO
      */
-    void syncInput(float value);
+   // void syncInput(float value);
+    void onMasterSync(float phase, float dx);
+
+    void setSyncCallback(SyncCallback);
 
 
 private:
@@ -71,10 +77,8 @@ private:
     bool doSin = false;
 
     float phase = 0.0;
-
-
-   // float sampleTime = 0;
     float normalizedFreq = 0;
+    SyncCallback syncCallback = nullptr;
 
     /**
      * It's merely a convenience that we use the waveforms enum for dispatcher.
@@ -120,9 +124,10 @@ inline MinBLEPVCO::MinBLEPVCO()
     squareMinBLEP.oversample = 32;
 }
 
-inline void MinBLEPVCO::syncInput(float value)
+inline void MinBLEPVCO::setSyncCallback(SyncCallback cb)
 {
-
+    assert(!syncCallback);
+    syncCallback = cb;
 }
 
 inline void MinBLEPVCO::enableWaveform(Waveform wf, bool flag)
@@ -134,7 +139,6 @@ inline void MinBLEPVCO::enableWaveform(Waveform wf, bool flag)
         default:
             assert(flag == false);
     }
-   
 }
 
 #if 0
@@ -244,17 +248,57 @@ inline void MinBLEPVCO::step()
     }
 }
 
+// callback from master sync when it rolls over
+inline void MinBLEPVCO::onMasterSync(float masterPhase, float dx)
+{
 
+    static float cMax = -100;
+    static float cMin = 100;
+    cMin = std::min(masterPhase, cMin);
+    cMax = std::max(masterPhase, cMax);
+
+   // printf("sawSync ph=%.2f, delta=%.2f cross=%.2f (%.2f, %.2f)\n", phase, normalizedFreq, masterPhase, cMin, cMax);
+
+
+   // printf("on master sync callback\n");
+    // pretty sure this calc is wrong
+  //  float crossing = -masterPhase / normalizedFreq;
+    float crossing = masterPhase;
+    float jump = -2.f * phase;
+
+
+   // sawMinBLEP.jump(crossing, jump);
+
+    phase = 0;
+   // printf("set phase to zero in slave\n");
+
+    // I don't think we need to do this???
+    float saw = -1.0 + 2.0*phase;
+    saw += sawMinBLEP.shift();
+}
 
 inline void MinBLEPVCO::step_saw()
 {
     phase += normalizedFreq;
-
+   // printf("stepsaw %p, phase=%.2f normFreq=%.2f\n", this, phase, normalizedFreq);
     // Reset phase if at end of cycle
     if (phase >= 1.0) {
         phase -= 1.0;
         float crossing = -phase / normalizedFreq;
+
+        static float cMax = -100;
+        static float cMin = 100;
+        cMin = std::min(crossing, cMin);
+        cMax = std::max(crossing, cMax);
+
+        //printf("sawJump ph=%.2f, delta=%.2f cross=%.2f (%.2f, %.2f)\n", phase, normalizedFreq, crossing, cMin, cMax);
+
         sawMinBLEP.jump(crossing, -2.0);
+        if (syncCallback) {
+           // printf("about to make sync callback\n"); fflush(stdout);
+            syncCallback(crossing, -2.0f);
+
+        }
     }
 
     float saw = -1.0 + 2.0*phase;
