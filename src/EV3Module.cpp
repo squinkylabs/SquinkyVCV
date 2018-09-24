@@ -1,10 +1,12 @@
 #include "Squinky.hpp"
+#include "WaveformSelector.h"
 #include "SQWidgets.h"
 #include "WidgetComposite.h"
 
 #ifdef _EV3
 
 #include "EV3.h"
+
 
 
 struct EV3Module : Module
@@ -116,6 +118,9 @@ EV3Widget::EV3Widget(EV3Module *module) :
     addInput(Port::create<PJ301MPort>(
         Vec(20, 330), Port::INPUT, module, module->ev3.CV1_INPUT));
     addLabel(Vec(20, 310), "CV");
+
+    WaveformSelector* p = new WaveformSelector();
+    addChild(p);
 }
 
 
