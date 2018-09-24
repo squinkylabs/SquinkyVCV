@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Widgets.hpp"
+#include "widgets.hpp"
 
 struct WaveformSelector  : OpaqueWidget
 {
