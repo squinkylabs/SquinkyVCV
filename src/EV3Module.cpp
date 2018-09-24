@@ -119,7 +119,9 @@ EV3Widget::EV3Widget(EV3Module *module) :
         Vec(20, 330), Port::INPUT, module, module->ev3.CV1_INPUT));
     addLabel(Vec(20, 310), "CV");
 
+    // TODO: suport create
     WaveformSelector* p = new WaveformSelector();
+    p->box.pos = Vec(20, 280);
     addChild(p);
 }
 
