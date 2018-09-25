@@ -121,7 +121,7 @@ EV3Widget::EV3Widget(EV3Module *module) :
 
     // TODO: suport create
     WaveformSelector* p = new WaveformSelector();
-    p->box.pos = Vec(20, 280);
+    p->box.pos = Vec(20, 295);
     addChild(p);
 }
 
