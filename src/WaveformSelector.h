@@ -38,6 +38,7 @@ inline void ButtonCell::dump(const char* label)
         box.pos.x,
         box.pos.y); 
 }
+
 using CellPtr = std::shared_ptr<ButtonCell>;
 
 struct WaveformSelector  : OpaqueWidget
@@ -96,23 +97,31 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
     }
     cell->box.pos.y = y;
 
-    if (svgs[row].size() == 1) {
+    const int cellsInRow = (int) svgs[row].size();
+    if (cellsInRow == 1) {
         // If we are the first cell in this row, we are at 0
         cell->box.pos.x = 0;
-        printf("just set x to 0 val=%f\n", cell->value);
+        //printf("just set x to 0 val=%f\n", cell->value);
     } else {
+        cell->box.pos.x =
+            svgs[row][cellsInRow-2]->box.pos.x + 
+            svgs[row][cellsInRow-2]->box.size.x;
+        #if 0
         cell->box.pos.x = 
             svgs[row].back()->box.pos.x +
             svgs[row].back()->box.size.x;
-        printf("just set x to %f value=%f\n", cell->box.pos.x, cell->value);
+        #endif
+       // printf("just set x to %f value=%f\n", cell->box.pos.x, cell->value);
     }
-    cell->dump("after load");
+   // cell->dump("after load");
 }
 
 inline WaveformSelector::WaveformSelector()
 {
     addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg" );
     addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
+    addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
+    addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
 }
 
 inline WaveformSelector::~WaveformSelector()
@@ -122,11 +131,13 @@ inline WaveformSelector::~WaveformSelector()
 
 inline void WaveformSelector::drawSVG(NVGcontext *vg, SVGWidget& svg, float x, float y)
 {
+    nvgSave(vg);
     float transform[6];
     nvgTransformIdentity(transform);
     nvgTransformTranslate(transform, x, y);
     nvgTransform(vg, transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
     svg.draw(vg);
+    nvgRestore(vg);
 }
 
 void inline WaveformSelector::draw(NVGcontext *vg)
@@ -135,7 +146,6 @@ void inline WaveformSelector::draw(NVGcontext *vg)
         for (auto& s : r) {
             const bool on = (curValue == s->value);
             drawSVG(vg, on ? s->svgOn : s->svg, s->box.pos.x, s->box.pos.y);
-
         }
     }
 }
@@ -143,20 +153,20 @@ void inline WaveformSelector::draw(NVGcontext *vg)
 inline void WaveformSelector::onMouseDown( EventMouseDown &e )
 {
     e.consumed = false;
-    printf("mouse down %f, %f\n", e.pos.x, e.pos.y); fflush(stdout);
+    //printf("mouse down %f, %f\n", e.pos.x, e.pos.y); fflush(stdout);
  
     CellPtr hit = hitTest(e.pos.x, e.pos.y);
     if (hit) {
         e.consumed = true;
-        printf("hit test found cell\n"); fflush(stdout);
+        //printf("hit test found cell\n"); fflush(stdout);
         if (hit->value == curValue) {
             printf("value same\n"); fflush(stdout);
             return;
         }
         curValue = hit->value;
-        printf("set curValue=%f\n", curValue); fflush(stdout);
+       // printf("set curValue=%f\n", curValue); fflush(stdout);
     } else {
-        printf("hit test failed\n"); fflush(stdout);
+       // printf("hit test failed\n"); fflush(stdout);
     }
 
 }
