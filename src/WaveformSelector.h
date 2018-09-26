@@ -67,20 +67,11 @@ struct WaveformSelector  : OpaqueWidget
     const Vec pos(x, y);
     for (auto& r : svgs) {
         for (auto& s : r) {
-            #if 0
-            printf("  v=%f svg = x-%f, y-%f, w-%f, h-%f\n",
-                s.value,
-                s.svg->box.pos.x,
-                s.svg->box.pos.y,
-                s.svg->box.size.x,
-                s.svg->box.size.y);
-            #endif
             if (s->box.contains(pos)) {
                 return s;
             }
         }
     }
-     //return svg.box.contains();
      return nullptr;
  }
 
@@ -95,7 +86,6 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
     cell->loadSVG(res, resOn);
     svgs[row].push_back(cell);
 
- 
     // now set the box for cell
     float y = 0;
     if (row > 0) {
@@ -117,22 +107,12 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
         printf("just set x to %f value=%f\n", cell->box.pos.x, cell->value);
     }
     cell->dump("after load");
-
 }
 
 inline WaveformSelector::WaveformSelector()
 {
-
     addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg" );
     addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
-
-    for (int i=0; i<2; ++i) {
-        printf("col %d. %p,%p\n",
-            i,
-            &svgs[0][i]->svg,
-            &svgs[0][i]->svgOn);
-        fflush(stdout);
-    }
 }
 
 inline WaveformSelector::~WaveformSelector()
