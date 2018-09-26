@@ -14,10 +14,11 @@ public:
 
     const float value;
     rack::Rect box;
+
+    void dump(const char*);
 private:
     SVGWidget svg;
     SVGWidget svgOn;
-
 };
 
 inline void ButtonCell::loadSVG(const char* res, const char* resOn)
@@ -27,6 +28,16 @@ inline void ButtonCell::loadSVG(const char* res, const char* resOn)
     this->box.size = svg.box.size;
 }
 
+inline void ButtonCell::dump(const char* label)
+{
+    printf("cell(%.2f) {%s} box size=%f, %f po %f, %f\n",
+        value,
+        label,
+        box.size.x,
+        box.size.y,
+        box.pos.x,
+        box.pos.y); 
+}
 using CellPtr = std::shared_ptr<ButtonCell>;
 
 struct WaveformSelector  : OpaqueWidget
@@ -37,7 +48,7 @@ struct WaveformSelector  : OpaqueWidget
 
     std::vector< std::vector< CellPtr>> svgs;
     void addSvg(int row, const char* res, const char* resOn);
-    void drawSVG(NVGcontext *vg, SVGWidget&);
+    void drawSVG(NVGcontext *vg, SVGWidget&, float x, float y);
     void onMouseDown( EventMouseDown &e ) override;
     CellPtr hitTest(float x, float y);
     //
@@ -53,8 +64,6 @@ struct WaveformSelector  : OpaqueWidget
 
  CellPtr WaveformSelector::hitTest(float x, float y)
  {
-     assert(false);
-
     const Vec pos(x, y);
     for (auto& r : svgs) {
         for (auto& s : r) {
@@ -81,7 +90,6 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
         svgs.resize(row+1);
     }
    
-
     // make a new cell, put the SVGs in it
     CellPtr cell = std::make_shared<ButtonCell>(nextValue++);
     cell->loadSVG(res, resOn);
@@ -108,19 +116,8 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
             svgs[row].back()->box.size.x;
         printf("just set x to %f value=%f\n", cell->box.pos.x, cell->value);
     }
-#if 0
-    // Now load SVG for the on state
-    std::shared_ptr<SVGWidget> p2(new SVGWidget());
-    p2->setSVG( SVG::load(assetPlugin(plugin, resOn)));
-    cell.svgOn = p2;
-    cell.svgOn->box.pos = cell.svg->box.pos; 
-#endif
+    cell->dump("after load");
 
-    printf("cell box size=%f, %f po %f, %f\n",
-        cell->box.size.x,
-        cell->box.size.y,
-        cell->box.pos.x,
-        cell->box.pos.y); 
 }
 
 inline WaveformSelector::WaveformSelector()
@@ -133,7 +130,7 @@ inline WaveformSelector::WaveformSelector()
         printf("col %d. %p,%p\n",
             i,
             &svgs[0][i]->svg,
-            &svgs[0][2]->svgOn);
+            &svgs[0][i]->svgOn);
         fflush(stdout);
     }
 }
@@ -143,11 +140,11 @@ inline WaveformSelector::~WaveformSelector()
     printf("in dtor of waveform selector");
 }
 
-inline void WaveformSelector::drawSVG(NVGcontext *vg, SVGWidget& svg)
+inline void WaveformSelector::drawSVG(NVGcontext *vg, SVGWidget& svg, float x, float y)
 {
     float transform[6];
     nvgTransformIdentity(transform);
-    nvgTransformTranslate(transform, svg.box.size.x, 0);
+    nvgTransformTranslate(transform, x, y);
     nvgTransform(vg, transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
     svg.draw(vg);
 }
@@ -157,7 +154,7 @@ void inline WaveformSelector::draw(NVGcontext *vg)
     for (auto& r : svgs) {
         for (auto& s : r) {
             const bool on = (curValue == s->value);
-            drawSVG(vg, on ? s->svgOn : s->svg);
+            drawSVG(vg, on ? s->svgOn : s->svg, s->box.pos.x, s->box.pos.y);
 
         }
     }
