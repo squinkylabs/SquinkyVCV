@@ -28,18 +28,21 @@ public:
         FINE1_PARAM,
         SYNC1_PARAM,
         SAW1_PARAM,
+        WAVE1_PARAM,
 
         OCTAVE2_PARAM,
         SEMI2_PARAM,
         FINE2_PARAM,
         SYNC2_PARAM,
         SAW2_PARAM,
+        WAVE2_PARAM,
 
         OCTAVE3_PARAM,
         SEMI3_PARAM,
         FINE3_PARAM,
         SYNC3_PARAM,
         SAW3_PARAM,
+        WAVE3_PARAM,
 
         NUM_PARAMS
     };
@@ -136,6 +139,13 @@ inline void EV3<TBase>::processPitchInputs()
     processPitchInputs(0);
     processPitchInputs(1);
     processPitchInputs(2);
+
+    static float last = 0;
+    auto p = TBase::params[WAVE1_PARAM].value;
+    if (p != last) {
+        printf("wavform param = %f\n", TBase::params[WAVE1_PARAM].value);
+        last = p;
+    }
 }
 
 template <class TBase>

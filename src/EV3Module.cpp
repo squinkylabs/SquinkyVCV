@@ -120,9 +120,21 @@ EV3Widget::EV3Widget(EV3Module *module) :
     addLabel(Vec(20, 310), "CV");
 
     // TODO: suport create
-    WaveformSelector* p = new WaveformSelector();
-    p->box.pos = Vec(20, 295);
-    addChild(p);
+   // WaveformSelector* p = new WaveformSelector();
+   // p->box.pos = Vec(20, 295);
+   // addChild(p);
+   addParam(ParamWidget::create<WaveformSelector>(
+       Vec(20, 295),
+       module,
+       EV3<WidgetComposite>::WAVE1_PARAM, 0.0f, 5.0f, 0.0f));
+
+/*
+    addParam(ParamWidget::create<BlueToggle>(
+        Vec(pos.x, pos.y + 220),
+        module,
+        EV3<WidgetComposite>::SAW1_PARAM + delta * index, 0.0f, 1.0f, 0.0f));
+*/	
+
 }
 
 

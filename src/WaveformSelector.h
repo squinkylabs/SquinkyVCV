@@ -41,7 +41,8 @@ inline void ButtonCell::dump(const char* label)
 
 using CellPtr = std::shared_ptr<ButtonCell>;
 
-struct WaveformSelector  : OpaqueWidget
+//struct WaveformSelector  : OpaqueWidget
+struct WaveformSelector  : ParamWidget
 {
     WaveformSelector();
     void draw(NVGcontext *vg) override;
@@ -53,14 +54,14 @@ struct WaveformSelector  : OpaqueWidget
     void onMouseDown( EventMouseDown &e ) override;
     CellPtr hitTest(float x, float y);
     //
-    float nextValue = 1;
+    float nextValue = 0;
 
     /**
      * Internal control value.
      * 0 = off
      * 1..n = cell on
      */
-    float curValue=0;
+    //float curValue=0;
 };
 
  CellPtr WaveformSelector::hitTest(float x, float y)
@@ -144,7 +145,7 @@ void inline WaveformSelector::draw(NVGcontext *vg)
 {
     for (auto& r : svgs) {
         for (auto& s : r) {
-            const bool on = (curValue == s->value);
+            const bool on = (this->value == s->value);
             drawSVG(vg, on ? s->svgOn : s->svg, s->box.pos.x, s->box.pos.y);
         }
     }
@@ -159,12 +160,12 @@ inline void WaveformSelector::onMouseDown( EventMouseDown &e )
     if (hit) {
         e.consumed = true;
         //printf("hit test found cell\n"); fflush(stdout);
-        if (hit->value == curValue) {
+        if (hit->value == this->value) {
             printf("value same\n"); fflush(stdout);
             return;
         }
-        curValue = hit->value;
-       // printf("set curValue=%f\n", curValue); fflush(stdout);
+        setValue(hit->value);
+        printf("set curValue=%f\n", this->value); fflush(stdout);
     } else {
        // printf("hit test failed\n"); fflush(stdout);
     }
