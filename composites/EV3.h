@@ -20,6 +20,17 @@ public:
     {
         init();
     }
+
+    enum class Waves
+    {
+        SIN,
+        TRI,
+        SAW,
+        SQUARE,
+        EVEN,
+        NONE,
+        END     // just a marker
+    };
     
     enum ParamIds
     {
@@ -27,21 +38,18 @@ public:
         SEMI1_PARAM,
         FINE1_PARAM,
         SYNC1_PARAM,
-        SAW1_PARAM,
         WAVE1_PARAM,
 
         OCTAVE2_PARAM,
         SEMI2_PARAM,
         FINE2_PARAM,
         SYNC2_PARAM,
-        SAW2_PARAM,
         WAVE2_PARAM,
 
         OCTAVE3_PARAM,
         SEMI3_PARAM,
         FINE3_PARAM,
         SYNC3_PARAM,
-        SAW3_PARAM,
         WAVE3_PARAM,
 
         NUM_PARAMS
@@ -109,13 +117,13 @@ inline void EV3<TBase>::step()
 
     for (int i = 0; i < 3; ++i) {
         const float wf = vcos[i].getWaveform();
-        if (i == 0 && TBase::params[SAW1_PARAM].value > .5) {
+        if (i == 0 && TBase::params[WAVE1_PARAM].value == (float) Waves::SAW) {
             mix += wf;
         }
-        if (i == 1 && TBase::params[SAW2_PARAM].value > .5) {
+        if (i == 1 && TBase::params[WAVE2_PARAM].value == (float)Waves::SAW) {
             mix += wf;
         }
-        if (i == 2 && TBase::params[SAW3_PARAM].value > .5) {
+        if (i == 2 && TBase::params[WAVE3_PARAM].value == (float)Waves::SAW) {
             mix += wf;
         }
         _out[i] = wf;

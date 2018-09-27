@@ -40,7 +40,7 @@ public:
     using SyncCallback = std::function<void(float p, float dx)>;
 
     MinBLEPVCO();
-    enum class Waveform {Sin, Square, Saw, Tri, Even, END };
+    enum class Waveform {Sin, Tri, Saw, Square, Even, END };
 
     void step();
 

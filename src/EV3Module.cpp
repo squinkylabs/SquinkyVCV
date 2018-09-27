@@ -49,7 +49,7 @@ struct EV3Widget : ModuleWidget
 void EV3Widget::makeSection(EV3Module *module, int index)
 {
     Vec pos;
-    pos.x = 10 + index * 40;
+    pos.x = 10 + index * 50;
     pos.y = 50;
 
     const int delta = module->ev3.OCTAVE2_PARAM - module->ev3.OCTAVE1_PARAM;
@@ -78,12 +78,13 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addLabel(Vec(pos.x-6, pos.y + 190), "off");
     }
 
-    addParam(ParamWidget::create<BlueToggle>(
+    const float numWaves = (float) EV3<WidgetComposite>::Waves::END;
+    const float defWave =  (float) EV3<WidgetComposite>::Waves::SAW;
+    addParam(ParamWidget::create<WaveformSelector>(
         Vec(pos.x, pos.y + 220),
         module,
-        EV3<WidgetComposite>::SAW1_PARAM + delta * index, 0.0f, 1.0f, 0.0f));
-	
-
+        EV3<WidgetComposite>::WAVE1_PARAM + delta * index,
+        0.0f, numWaves-1, defWave));
 }
 
 void EV3Widget::makeSections(EV3Module *module)
@@ -118,23 +119,6 @@ EV3Widget::EV3Widget(EV3Module *module) :
     addInput(Port::create<PJ301MPort>(
         Vec(20, 330), Port::INPUT, module, module->ev3.CV1_INPUT));
     addLabel(Vec(20, 310), "CV");
-
-    // TODO: suport create
-   // WaveformSelector* p = new WaveformSelector();
-   // p->box.pos = Vec(20, 295);
-   // addChild(p);
-   addParam(ParamWidget::create<WaveformSelector>(
-       Vec(20, 295),
-       module,
-       EV3<WidgetComposite>::WAVE1_PARAM, 0.0f, 5.0f, 0.0f));
-
-/*
-    addParam(ParamWidget::create<BlueToggle>(
-        Vec(pos.x, pos.y + 220),
-        module,
-        EV3<WidgetComposite>::SAW1_PARAM + delta * index, 0.0f, 1.0f, 0.0f));
-*/	
-
 }
 
 

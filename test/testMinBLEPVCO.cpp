@@ -205,7 +205,7 @@ void TestMB::testSync3()
     float last0 = -10;
     float last1 = -10;
     for (int i = 0; i < 100; ++i) {
-        printf("-------- sample %d -----------\n", i);
+      //  printf("-------- sample %d -----------\n", i);
         ev3.step();
     }
 
@@ -232,6 +232,43 @@ static void testBlepx(float crossing, float jump)
 
 }
 
+static void testEnums()
+{
+    assertEQ((int) EV3<TestComposite>::Waves::SIN, (int) MinBLEPVCO::Waveform::Sin);
+    assertEQ((int) EV3<TestComposite>::Waves::TRI, (int) MinBLEPVCO::Waveform::Tri);
+    assertEQ((int) EV3<TestComposite>::Waves::SAW, (int) MinBLEPVCO::Waveform::Saw);
+    assertEQ((int) EV3<TestComposite>::Waves::SQUARE, (int) MinBLEPVCO::Waveform::Square);
+    assertEQ((int) EV3<TestComposite>::Waves::EVEN, (int) MinBLEPVCO::Waveform::Even);
+}
+
+static void testOutput(MinBLEPVCO::Waveform wf)
+{
+    MinBLEPVCO osc;
+
+    osc.enableWaveform(MinBLEPVCO::Waveform::Saw, false);
+    osc.enableWaveform(MinBLEPVCO::Waveform::Tri, false);
+    osc.enableWaveform(MinBLEPVCO::Waveform::Sin, false);
+    osc.enableWaveform(MinBLEPVCO::Waveform::Square, false);
+    osc.enableWaveform(MinBLEPVCO::Waveform::Even, false);
+
+    osc.enableWaveform(wf, true);
+    osc.setNormalizedFreq(.1f);      // high freq
+
+    float last = -100;
+    for (int i = 0; i < 100; ++i) {
+        osc.step();
+        float x = osc.getWaveform();
+        assertNE(x, last);
+        last = x;
+    }
+}
+
+static void testOutputs()
+{
+    testOutput(MinBLEPVCO::Waveform::Saw);
+    testOutput(MinBLEPVCO::Waveform::Square);
+}
+
 static void testBlep()
 {
     testBlepx(-.5, -2);
@@ -254,4 +291,6 @@ void testMinBLEPVCO()
     //TestMB::testSync2();
     TestMB::testSync3();
   //  testBlep();
+    testEnums();
+    testOutputs();
 }
