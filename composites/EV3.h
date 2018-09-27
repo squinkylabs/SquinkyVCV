@@ -90,11 +90,14 @@ template <class TBase>
 inline void EV3<TBase>::init()
 {
     for (int i = 0; i < 3; ++i) {
+#if 0
         vcos[i].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
         vcos[i].enableWaveform(MinBLEPVCO::Waveform::Tri, false);
         vcos[i].enableWaveform(MinBLEPVCO::Waveform::Sin, false);
         vcos[i].enableWaveform(MinBLEPVCO::Waveform::Square, false);
         vcos[i].enableWaveform(MinBLEPVCO::Waveform::Even, false);
+#endif
+        vcos[i].setWaveform(MinBLEPVCO::Waveform::Saw);
     }
 
     vcos[0].setSyncCallback([this](float f, float dx) {
@@ -116,7 +119,7 @@ inline void EV3<TBase>::step()
     float mix = 0;
 
     for (int i = 0; i < 3; ++i) {
-        const float wf = vcos[i].getWaveform();
+        const float wf = vcos[i].getOutput();
         if (i == 0 && TBase::params[WAVE1_PARAM].value == (float) Waves::SAW) {
             mix += wf;
         }

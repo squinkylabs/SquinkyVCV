@@ -9,8 +9,24 @@
 #pragma warning ( disable: 4244 4267 )
 #endif
 
+#ifndef _CLAMP
+#define _CLAMP
+namespace std {
+    inline float clamp(float v, float lo, float hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+}
+#endif
+
+//#include "math.hpp"
+
+
 #include "dsp/minblep.hpp"
 #include "dsp/filter.hpp"
+#include "AudioMath.h"
+#include "ObjectCache.h"
 
 #include <functional>
 
@@ -48,9 +64,10 @@ public:
     {
         normalizedFreq = std::clamp(f, 1e-6f, 0.5f);
     }
-    void enableWaveform(Waveform wf, bool flag);
+   // void enableWaveform(Waveform wf, bool flag);
+    void setWaveform(Waveform);
    
-    float getWaveform() const
+    float getOutput() const
     {
        // printf("vco.getWave will ret %f\n", waveformOutputs[(int) wf]);
       //  return waveformOutputs[(int) wf];
@@ -69,12 +86,17 @@ public:
 private:
    // bool waveformEnabled[Waveforms::END] = {false};
   //  float waveformOutputs[(int)Waveform::END] = {0};
-    float output = 0;
+#if 0
+  
     bool doSaw = false;
     bool doEven = false;
     bool doTri = false;
     bool doSquare = false;
     bool doSin = false;
+#endif
+
+    float output = 0;
+    Waveform waveform = Waveform::Saw;
 
     float phase = 0.0;
     float normalizedFreq = 0;
@@ -83,11 +105,14 @@ private:
     bool gotSyncCallback = false;
     float syncCallbackCrossing = 0;
 
+    /** Whether we are past the pulse width already */
+    bool halfPhase = false;
+
     /**
      * It's merely a convenience that we use the waveforms enum for dispatcher.
      * Could use anything.
      */
-    Waveform dispatcher = Waveform::Saw;
+ //   Waveform dispatcher = Waveform::Saw;
     int loopCounter = 0;
 
     rack::MinBLEP<16> triSquareMinBLEP;
@@ -137,6 +162,12 @@ inline void MinBLEPVCO::setSyncCallback(SyncCallback cb)
     syncCallback = cb;
 }
 
+inline void MinBLEPVCO::setWaveform(Waveform wf)
+{
+    waveform = wf;
+}
+
+#if 0
 inline void MinBLEPVCO::enableWaveform(Waveform wf, bool flag)
 {
     switch (wf) {
@@ -147,6 +178,7 @@ inline void MinBLEPVCO::enableWaveform(Waveform wf, bool flag)
             assert(flag == false);
     }
 }
+#endif
 
 #if 0
 inline void MinBLEPVCO::zeroOutputsExcept(Waveform  except)
@@ -184,7 +216,7 @@ inline void MinBLEPVCO::step()
 #endif
 
 
-
+#if 0
         /**
          * Figure out which specialized processing function to run
          */
@@ -206,6 +238,8 @@ inline void MinBLEPVCO::step()
         } else {
             dispatcher = Waveform::END;
         }
+   
+#endif
     }
 
 #if 0   // Move to composite
@@ -227,9 +261,12 @@ inline void MinBLEPVCO::step()
   //  float deltaPhase = clamp(normalizedFreq)
 
     // call the dedicated dispatch routines for the special case waveforms.
-    switch (dispatcher) {
+    switch (waveform) {
         case  Waveform::Saw:
             step_saw();
+            break;
+        case  Waveform::Square:
+            step_sq();
             break;
 #if 0
         case EVEN_OUTPUT:
@@ -262,31 +299,6 @@ inline void MinBLEPVCO::onMasterSync(float masterPhase, float dx)
     gotSyncCallback = true;
     syncCallbackCrossing = masterPhase;
    // printf("%s get master sync callback\n", name.c_str());
-#if 0
-    static float cMax = -100;
-    static float cMin = 100;
-    cMin = std::min(masterPhase, cMin);
-    cMax = std::max(masterPhase, cMax);
-
-   // printf("sawSync ph=%.2f, delta=%.2f cross=%.2f (%.2f, %.2f)\n", phase, normalizedFreq, masterPhase, cMin, cMax);
-
-
-   // printf("on master sync callback\n");
-    // pretty sure this calc is wrong
-  //  float crossing = -masterPhase / normalizedFreq;
-    float crossing = masterPhase;
-    float jump = -2.f * phase;
-
-
-    sawMinBLEP.jump(crossing, jump);
-
-    phase = 0;
-   // printf("set phase to zero in slave\n");
-
-    // I don't think we need to do this???
-    float saw = -1.0 + 2.0*phase;
-    saw += sawMinBLEP.shift();
-#endif
 }
 
 inline void MinBLEPVCO::step_saw()
@@ -345,6 +357,42 @@ inline void MinBLEPVCO::step_saw()
 
   //  TBase::outputs[SAW_OUTPUT].value = 5.0*saw;
     output = 5.0*saw;
+}
+
+inline void MinBLEPVCO::step_sq()
+{
+    phase += normalizedFreq;
+    if (gotSyncCallback) {
+        gotSyncCallback = false;
+        assert(false);  // TODO
+    }
+
+    // Pulse width
+    float pw;
+
+    pw = .5;        // TODO: figure out pw,
+   // pw = TBase::params[PWM_PARAM].value + TBase::inputs[PWM_INPUT].value / 5.0;
+    const float minPw = 0.05f;
+    pw = rack::rescale(std::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
+
+    if (!halfPhase && phase >= pw) {
+        float crossing = -(phase - pw) / normalizedFreq;
+        squareMinBLEP.jump(crossing, 2.0);
+        halfPhase = true;
+    }
+
+
+    // Reset phase if at end of cycle
+    if (phase >= 1.0) {
+        phase -= 1.0;
+        float crossing = -phase / normalizedFreq;
+        squareMinBLEP.jump(crossing, -2.0);
+        halfPhase = false;
+    }
+
+    float square = (phase < pw) ? -1.0 : 1.0;
+    square += squareMinBLEP.shift();
+    output = 5.0*square;
 }
 
 #if defined(_MSC_VER)

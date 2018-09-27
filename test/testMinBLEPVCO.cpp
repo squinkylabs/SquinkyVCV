@@ -91,7 +91,7 @@ static void testSaw1()
     MinBLEPVCO vco;
 
     vco.setNormalizedFreq(1000 * sampleTime);
-    vco.enableWaveform(MinBLEPVCO::Waveform::Saw, true);
+    vco.setWaveform(MinBLEPVCO::Waveform::Saw);
     vco.step();
 
     // should get saw out.
@@ -100,7 +100,7 @@ static void testSaw1()
   //  assertNE(vco.getWaveform(MinBLEPVCO::Waveform::Saw), 0);
    // assertEQ(vco.getWaveform(MinBLEPVCO::Waveform::Tri), 0);
    // assertEQ(vco.getWaveform(MinBLEPVCO::Waveform::Even), 0);
-    assertNE(vco.getWaveform(), 0);
+    assertNE(vco.getOutput(), 0);
 
 }
 
@@ -109,21 +109,21 @@ static void testSync1()
     MinBLEPVCO vco;
 
     vco.setNormalizedFreq(1000 * sampleTime);
-    vco.enableWaveform(MinBLEPVCO::Waveform::Saw, true);
+    vco.setWaveform(MinBLEPVCO::Waveform::Saw);
     float lastOut = -1000;
     vco.step();
 
     // first make sure it's going up.
     for (int i = 0; i < 10; ++i) {
         vco.step();
-        const float x = vco.getWaveform();
+        const float x = vco.getOutput();
         assertGT(x, lastOut);
         lastOut = x;
     }
 
     vco.onMasterSync(10, -2);       // set a reset to VCO
     vco.step();
-    const float x = vco.getWaveform();
+    const float x = vco.getOutput();
     assertLT(x, lastOut);
 }
 
@@ -138,9 +138,9 @@ void TestMB::setPitch(EV3<TestComposite>& ev3)
     ev3.params[EV3<TestComposite>::SEMI2_PARAM].value = 1;
     ev3.params[EV3<TestComposite>::SEMI3_PARAM].value = 1;
 
-    ev3.vcos[0].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
-    ev3.vcos[1].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
-    ev3.vcos[2].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
+    ev3.vcos[0].setWaveform(MinBLEPVCO::Waveform::Saw);
+    ev3.vcos[1].setWaveform(MinBLEPVCO::Waveform::Saw);
+    ev3.vcos[2].setWaveform(MinBLEPVCO::Waveform::Saw);
 
     ev3.params[EV3<TestComposite>::SYNC2_PARAM].value = 1;
 
@@ -241,32 +241,30 @@ static void testEnums()
     assertEQ((int) EV3<TestComposite>::Waves::EVEN, (int) MinBLEPVCO::Waveform::Even);
 }
 
-static void testOutput(MinBLEPVCO::Waveform wf)
+static void testOutput(MinBLEPVCO::Waveform wf, bool expectFlat)
 {
     MinBLEPVCO osc;
 
-    osc.enableWaveform(MinBLEPVCO::Waveform::Saw, false);
-    osc.enableWaveform(MinBLEPVCO::Waveform::Tri, false);
-    osc.enableWaveform(MinBLEPVCO::Waveform::Sin, false);
-    osc.enableWaveform(MinBLEPVCO::Waveform::Square, false);
-    osc.enableWaveform(MinBLEPVCO::Waveform::Even, false);
 
-    osc.enableWaveform(wf, true);
+    osc.setWaveform(wf);
     osc.setNormalizedFreq(.1f);      // high freq
 
+    bool hasChanged = false;
     float last = -100;
     for (int i = 0; i < 100; ++i) {
         osc.step();
-        float x = osc.getWaveform();
-        assertNE(x, last);
+        float x = osc.getOutput();
+        if (!expectFlat) assertNE(x, last);
+        if (last != x) hasChanged = true;
         last = x;
     }
+    assert(hasChanged);
 }
 
 static void testOutputs()
 {
-    testOutput(MinBLEPVCO::Waveform::Saw);
-    testOutput(MinBLEPVCO::Waveform::Square);
+    testOutput(MinBLEPVCO::Waveform::Saw, false);
+    testOutput(MinBLEPVCO::Waveform::Square, true);
 }
 
 static void testBlep()
