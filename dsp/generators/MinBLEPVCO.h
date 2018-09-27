@@ -30,9 +30,7 @@ namespace std {
 
 #include <functional>
 
-
 // until c++17
-
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
@@ -43,7 +41,6 @@ namespace std {
     }
 }
 #endif
-
 
 /* VCO core using MinBLEP to reduce aliasing.
  * Originally based on Befaco EvenVCO
@@ -70,31 +67,16 @@ public:
    
     float getOutput() const
     {
-       // printf("vco.getWave will ret %f\n", waveformOutputs[(int) wf]);
-      //  return waveformOutputs[(int) wf];
         return output;
     }
 
     /**
      * Send the sync waveform to VCO
      */
-   // void syncInput(float value);
     void onMasterSync(float phase, float dx);
-
     void setSyncCallback(SyncCallback);
 
-
 private:
-   // bool waveformEnabled[Waveforms::END] = {false};
-  //  float waveformOutputs[(int)Waveform::END] = {0};
-#if 0
-  
-    bool doSaw = false;
-    bool doEven = false;
-    bool doTri = false;
-    bool doSquare = false;
-    bool doSin = false;
-#endif
 
     float output = 0;
     Waveform waveform = Waveform::Saw;
@@ -114,15 +96,10 @@ private:
     */
 
     std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
-    //std::function<float(float)> expLookup;
+
     /** Whether we are past the pulse width already */
     bool halfPhase = false;
 
-    /**
-     * It's merely a convenience that we use the waveforms enum for dispatcher.
-     * Could use anything.
-     */
- //   Waveform dispatcher = Waveform::Saw;
     int loopCounter = 0;
 
     rack::MinBLEP<16> triSquareMinBLEP;
@@ -141,9 +118,6 @@ private:
     void step_sq();
     void step_sin();
     void step_tri();
-    void step_all();
-
-   // void zeroOutputsExcept(Waveform);
 
     std::string name;  
 };
@@ -177,99 +151,9 @@ inline void MinBLEPVCO::setWaveform(Waveform wf)
     waveform = wf;
 }
 
-#if 0
-inline void MinBLEPVCO::enableWaveform(Waveform wf, bool flag)
-{
-    switch (wf) {
-        case Waveform::Saw:
-            doSaw = flag;
-            break;
-        default:
-            assert(flag == false);
-    }
-}
-#endif
-
-#if 0
-inline void MinBLEPVCO::zeroOutputsExcept(Waveform  except)
-{
-    for (int i = 0; i < (int) Waveform::END; ++i) {
-        const Waveform wf = Waveform(i);
-        if (wf != except) {
-            // if we do even, we do sin at same time
-            if ((wf == Waveform::Sin) && (except == Waveform::Even)) {
-            } else {
-                waveformOutputs[i] = 0;
-            }
-        }
-    }
-}
-#endif
-
-
 
 inline void MinBLEPVCO::step()
 {
-  //  assert(sampleTime > 0);
-   // assert(normalizedFreq > 0);
-    // We don't need to look for connected outputs every cycle.
-    // do it less often, and store results.
-    if (--loopCounter < 0) {
-        loopCounter = 16;
-
-#if 0
-        doSaw = TBase::outputs[SAW_OUTPUT].active;
-        doEven = TBase::outputs[EVEN_OUTPUT].active;
-        doTri = TBase::outputs[TRI_OUTPUT].active;
-        doSq = TBase::outputs[SQUARE_OUTPUT].active;
-        doSin = TBase::outputs[SINE_OUTPUT].active;
-#endif
-
-
-#if 0
-        /**
-         * Figure out which specialized processing function to run
-         */
-        if (doSaw && !doEven && !doTri && !doSquare && !doSin) {
-            dispatcher = Waveform::Saw;
-     //       zeroOutputsExcept(dispatcher);
-        } else if (!doSaw && doEven && !doTri && !doSquare) {
-            dispatcher = Waveform::Even;
-      //      zeroOutputsExcept(dispatcher);
-        } else if (!doSaw && !doEven && !doTri && !doSquare && doSin) {
-            dispatcher = Waveform::Sin;
-       //     zeroOutputsExcept(dispatcher);
-        } else if (!doSaw && !doEven && doTri && !doSquare && !doSin) {
-            dispatcher = Waveform::Tri;
-       //     zeroOutputsExcept(dispatcher);
-        } else if (!doSaw && !doEven && !doTri && doSquare && !doSin) {
-            dispatcher = Waveform::Square;
-         //   zeroOutputsExcept(dispatcher);
-        } else {
-            dispatcher = Waveform::END;
-        }
-   
-#endif
-    }
-
-#if 0   // Move to composite
-    // Compute frequency, pitch is 1V/oct
-    float pitch = 1.0 + roundf(TBase::params[OCTAVE_PARAM].value) + TBase::params[TUNE_PARAM].value / 12.0;
-    pitch += TBase::inputs[PITCH1_INPUT].value + TBase::inputs[PITCH2_INPUT].value;
-    pitch += TBase::inputs[FM_INPUT].value / 4.0;
-
-    // Use lookup table for pitch lookup
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
-    pitch += q;
-    _freq = expLookup(pitch);
-#endif
-
-
-    // Advance phase
-  //  float f = (_testFreq) ? _testFreq : _freq;
- //   float deltaPhase = clamp(f * TBase::engineGetSampleTime(), 1e-6f, 0.5f);
-  //  float deltaPhase = clamp(normalizedFreq)
-
     // call the dedicated dispatch routines for the special case waveforms.
     switch (waveform) {
         case  Waveform::Saw:
@@ -356,8 +240,6 @@ inline void MinBLEPVCO::step_saw()
         saw, mb, smb, saw+mb+smb);
 #endif
     saw += (mb + smb);
-
-  //  TBase::outputs[SAW_OUTPUT].value = 5.0*saw;
     output = 5.0*saw;
 }
 
@@ -382,7 +264,6 @@ inline void MinBLEPVCO::step_sq()
         squareMinBLEP.jump(crossing, 2.0);
         halfPhase = true;
     }
-
 
     // Reset phase if at end of cycle
     if (phase >= 1.0) {
@@ -416,7 +297,6 @@ inline void MinBLEPVCO::step_sin()
     output = 5.0*sine;
 }
 
-
 inline void MinBLEPVCO::step_tri()
 {
     float oldPhase = phase;
@@ -440,15 +320,12 @@ inline void MinBLEPVCO::step_tri()
     triSquare += triSquareMinBLEP.shift();
 
     // Integrate square for triangle
-#if 1 // TODO
     tri += 4.0 * triSquare * normalizedFreq;
     tri *= (1.0 - 40.0 * sampleTime);
-#endif
 
     // Set output
     output = 5.0*tri;
 }
-
 
 inline void MinBLEPVCO::step_even()
 {
@@ -483,7 +360,6 @@ inline void MinBLEPVCO::step_even()
     //TBase::outputs[SINE_OUTPUT].value = 5.0*sine;
     output = 5.0*even;
 }
-
 
 #if defined(_MSC_VER)
 #pragma warning (pop)
