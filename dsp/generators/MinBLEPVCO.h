@@ -101,10 +101,18 @@ private:
     float phase = 0.0;
     float normalizedFreq = 0;
     SyncCallback syncCallback = nullptr;
+    float tri = 0;
 
     bool gotSyncCallback = false;
     float syncCallbackCrossing = 0;
 
+    /**
+    * References to shared lookup tables.
+    * Destructor will free them automatically.
+    */
+
+    std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
+    //std::function<float(float)> expLookup;
     /** Whether we are past the pulse width already */
     bool halfPhase = false;
 
@@ -268,23 +276,15 @@ inline void MinBLEPVCO::step()
         case  Waveform::Square:
             step_sq();
             break;
-#if 0
-        case EVEN_OUTPUT:
-            step_even(deltaPhase);
+        case  Waveform::Sin:
+            step_sin();
             break;
-        case SINE_OUTPUT:
-            step_sin(deltaPhase);
+        case  Waveform::Tri:
+            step_tri();
             break;
-        case TRI_OUTPUT:
-            step_tri(deltaPhase);
+        case  Waveform::Even:
+            step_even();
             break;
-        case SQUARE_OUTPUT:
-            step_sq(deltaPhase);
-            break;
-        case NUM_OUTPUTS:
-            step_all(deltaPhase);
-            break;
-#endif
         case Waveform::END:
             break;                  // don't do anything if no outputs
         default:
@@ -394,6 +394,94 @@ inline void MinBLEPVCO::step_sq()
     square += squareMinBLEP.shift();
     output = 5.0*square;
 }
+
+inline void MinBLEPVCO::step_sin()
+{
+    phase += normalizedFreq;
+
+    // Reset phase if at end of cycle
+    if (phase >= 1.0) {
+        phase -= 1.0;
+    }
+
+    // want cosine, but only have sine lookup
+    float adjPhase = phase + .25f;
+    if (adjPhase >= 1) {
+        adjPhase -= 1;
+    }
+
+    const float sine = -LookupTable<float>::lookup(*sinLookup, adjPhase, true);
+    output = 5.0*sine;
+}
+
+
+inline void MinBLEPVCO::step_tri()
+{
+    float oldPhase = phase;
+    phase += normalizedFreq;
+
+    if (oldPhase < 0.5 && phase >= 0.5) {
+        const float crossing = -(phase - 0.5) / normalizedFreq;
+        triSquareMinBLEP.jump(crossing, 2.0);
+    }
+
+    // Reset phase if at end of cycle
+    if (phase >= 1.0) {
+        phase -= 1.0;
+        float crossing = -phase / normalizedFreq;
+        triSquareMinBLEP.jump(crossing, -2.0);
+        halfPhase = false;
+    }
+
+    // Outputs
+    float triSquare = (phase < 0.5) ? -1.0 : 1.0;
+    triSquare += triSquareMinBLEP.shift();
+
+    // Integrate square for triangle
+#if 0 // TODO
+    tri += 4.0 * triSquare * _freq * TBase::engineGetSampleTime();
+    tri *= (1.0 - 40.0 * TBase::engineGetSampleTime());
+#endif
+
+    // Set output
+    output = 5.0*tri;
+}
+
+
+inline void MinBLEPVCO::step_even()
+{
+    float oldPhase = phase;
+    phase += normalizedFreq;
+
+    if (oldPhase < 0.5 && phase >= 0.5) {
+        float crossing = -(phase - 0.5) / normalizedFreq;
+        doubleSawMinBLEP.jump(crossing, -2.0);
+    }
+
+    // Reset phase if at end of cycle
+    if (phase >= 1.0) {
+        phase -= 1.0;
+        float crossing = -phase / normalizedFreq;
+        doubleSawMinBLEP.jump(crossing, -2.0);
+    }
+
+
+    //sine = -cosf(2*AudioMath::Pi * phase);
+    // want cosine, but only have sine lookup
+    float adjPhase = phase + .25f;
+    if (adjPhase >= 1) {
+        adjPhase -= 1;
+    }
+    const float sine = -LookupTable<float>::lookup(*sinLookup, adjPhase, true);
+
+    float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
+    doubleSaw += doubleSawMinBLEP.shift();
+    const float even = 0.55 * (doubleSaw + 1.27 * sine);
+
+    //TBase::outputs[SINE_OUTPUT].value = 5.0*sine;
+    output = 5.0*even;
+}
+
 
 #if defined(_MSC_VER)
 #pragma warning (pop)

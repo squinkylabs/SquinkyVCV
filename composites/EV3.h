@@ -77,6 +77,7 @@ public:
 private:
     void processPitchInputs();
     void processPitchInputs(int osc);
+    void processWaveforms();
     void stepVCOs();
     void init();
 
@@ -112,14 +113,24 @@ inline void EV3<TBase>::init()
 }
 
 template <class TBase>
+inline void EV3<TBase>::processWaveforms()
+{
+    vcos[0].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE1_PARAM].value);
+    vcos[1].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE2_PARAM].value);
+    vcos[2].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE3_PARAM].value);
+}
+
+template <class TBase>
 inline void EV3<TBase>::step()
 {
     processPitchInputs();
+    processWaveforms();
     stepVCOs();
     float mix = 0;
 
     for (int i = 0; i < 3; ++i) {
         const float wf = vcos[i].getOutput();
+#if 0
         if (i == 0 && TBase::params[WAVE1_PARAM].value == (float) Waves::SAW) {
             mix += wf;
         }
@@ -129,6 +140,8 @@ inline void EV3<TBase>::step()
         if (i == 2 && TBase::params[WAVE3_PARAM].value == (float)Waves::SAW) {
             mix += wf;
         }
+#endif
+        mix += wf;
         _out[i] = wf;
     }
 

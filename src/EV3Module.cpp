@@ -78,13 +78,14 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addLabel(Vec(pos.x-6, pos.y + 190), "off");
     }
 
+    // include one extra wf - none
     const float numWaves = (float) EV3<WidgetComposite>::Waves::END;
     const float defWave =  (float) EV3<WidgetComposite>::Waves::SAW;
     addParam(ParamWidget::create<WaveformSelector>(
         Vec(pos.x, pos.y + 220),
         module,
         EV3<WidgetComposite>::WAVE1_PARAM + delta * index,
-        0.0f, numWaves-1, defWave));
+        0.0f, numWaves, defWave));
 }
 
 void EV3Widget::makeSections(EV3Module *module)

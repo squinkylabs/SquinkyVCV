@@ -265,6 +265,12 @@ static void testOutputs()
 {
     testOutput(MinBLEPVCO::Waveform::Saw, false);
     testOutput(MinBLEPVCO::Waveform::Square, true);
+    testOutput(MinBLEPVCO::Waveform::Sin, false);
+
+    printf("Make TRiangle work\n");
+   // testOutput(MinBLEPVCO::Waveform::Tri, false);
+    testOutput(MinBLEPVCO::Waveform::Even, false);
+   
 }
 
 static void testBlep()

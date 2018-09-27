@@ -123,6 +123,8 @@ inline WaveformSelector::WaveformSelector()
     addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
     addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
     addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
+    addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
+    addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
 }
 
 inline WaveformSelector::~WaveformSelector()
