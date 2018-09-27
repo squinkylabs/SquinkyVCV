@@ -37,18 +37,21 @@ public:
         OCTAVE1_PARAM,
         SEMI1_PARAM,
         FINE1_PARAM,
+        FM1_PARAM,
         SYNC1_PARAM,
         WAVE1_PARAM,
 
         OCTAVE2_PARAM,
         SEMI2_PARAM,
         FINE2_PARAM,
+        FM2_PARAM,
         SYNC2_PARAM,
         WAVE2_PARAM,
 
         OCTAVE3_PARAM,
         SEMI3_PARAM,
         FINE3_PARAM,
+        FM3_PARAM,
         SYNC3_PARAM,
         WAVE3_PARAM,
 

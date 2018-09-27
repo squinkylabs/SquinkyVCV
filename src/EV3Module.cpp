@@ -46,6 +46,83 @@ struct EV3Widget : ModuleWidget
     }
 };
 
+#if 1
+void EV3Widget::makeSection(EV3Module *module, int index)
+{
+
+    const float x = 30 + index * 86;
+    const float x2 = x + 36;
+    const float y = 50;
+    const float y2 = y + 56;
+    const float y3 = y2 + 40;
+
+    const int delta = module->ev3.OCTAVE2_PARAM - module->ev3.OCTAVE1_PARAM;
+
+    addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(x, y), module, module->ev3.OCTAVE1_PARAM + delta * index,
+        -5.0f, 4.0f, 0.f));
+    addLabel(Vec(x-20, y-36), "Oct");
+
+    addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(x2, y), module, module->ev3.SEMI1_PARAM + delta * index,
+        0.f, 11.0f, 0.f));
+    addLabel(Vec(x2-20, y-36), "Semi");
+
+    
+    addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(x, y2), module, module->ev3.FINE1_PARAM + delta * index,
+        -1.0f, 1.0f, 0));
+    addLabel(Vec(x-20, y2-36), "Fine");
+
+    addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(x2, y2), module, module->ev3.FM1_PARAM + delta * index,
+        -1.0f, 1.0f, 0));
+    addLabel(Vec(x2-20, y2-36), "Mod");
+
+  
+    const float dx = 24;
+    const float dy = 30;
+    const float x0 = x-6;
+    addParam(createParamCentered<Trimpot>(
+        Vec(x0, y3), module, module->ev3.FINE1_PARAM + delta * index,
+        -1.0f, 1.0f, 0));
+    if (index == 0)
+        addLabel(Vec(x0+10, y3-12), "p1");
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(x0, y3+dy), module, module->ev3.FINE1_PARAM + delta * index,
+        -1.0f, 1.0f, 0));
+    if (index == 0)
+        addLabel(Vec(x0+10, y3+dy-12), "p2");
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(x0, y3+2*dy), module, module->ev3.FINE1_PARAM + delta * index,
+        -1.0f, 1.0f, 0));
+    if (index == 0)
+        addLabel(Vec(x0+10, y3+2*dy-12), "p3");
+
+          // sync switches
+    if (index != 0) {    
+        addParam(ParamWidget::create<CKSS>(
+            Vec(x+30,y3), module, module->ev3.SYNC1_PARAM + delta * index,
+            0.0f, 1.0f, 1.0f));
+        addLabel(Vec(x+22, y3-20), "on");
+        addLabel(Vec(x+22, y3+20), "off");
+    }
+
+    const float y4 = y3+ 80;
+        // include one extra wf - none
+    const float numWaves = (float) EV3<WidgetComposite>::Waves::END;
+    const float defWave =  (float) EV3<WidgetComposite>::Waves::SAW;
+    addParam(ParamWidget::create<WaveformSelector>(
+        Vec(x, y4),
+        module,
+        EV3<WidgetComposite>::WAVE1_PARAM + delta * index,
+        0.0f, numWaves, defWave));
+
+
+}
+#else
 void EV3Widget::makeSection(EV3Module *module, int index)
 {
     Vec pos;
@@ -87,6 +164,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         EV3<WidgetComposite>::WAVE1_PARAM + delta * index,
         0.0f, numWaves, defWave));
 }
+#endif
 
 void EV3Widget::makeSections(EV3Module *module)
 {
@@ -103,13 +181,13 @@ void EV3Widget::makeSections(EV3Module *module)
 EV3Widget::EV3Widget(EV3Module *module) : 
     ModuleWidget(module)
 {
-    box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(18 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
         addChild(panel);
-    }
+    } 
 
     makeSections(module);
 
