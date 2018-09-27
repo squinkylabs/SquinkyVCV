@@ -192,7 +192,7 @@ inline void EV3<TBase>::processPitchInputs(int osc)
     pitch += q;
     const float freq = expLookup(pitch);
     _freq[osc] = freq;
-    vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq);
+    vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq, TBase::engineGetSampleTime());
 }
 
 

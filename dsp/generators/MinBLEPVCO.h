@@ -60,11 +60,12 @@ public:
 
     void step();
 
-    void setNormalizedFreq(float f)
+    void setNormalizedFreq(float f, float st)
     {
         normalizedFreq = std::clamp(f, 1e-6f, 0.5f);
+        sampleTime = st;
     }
-   // void enableWaveform(Waveform wf, bool flag);
+
     void setWaveform(Waveform);
    
     float getOutput() const
@@ -100,6 +101,7 @@ private:
 
     float phase = 0.0;
     float normalizedFreq = 0;
+    float sampleTime = 0;
     SyncCallback syncCallback = nullptr;
     float tri = 0;
 
@@ -438,9 +440,9 @@ inline void MinBLEPVCO::step_tri()
     triSquare += triSquareMinBLEP.shift();
 
     // Integrate square for triangle
-#if 0 // TODO
-    tri += 4.0 * triSquare * _freq * TBase::engineGetSampleTime();
-    tri *= (1.0 - 40.0 * TBase::engineGetSampleTime());
+#if 1 // TODO
+    tri += 4.0 * triSquare * normalizedFreq;
+    tri *= (1.0 - 40.0 * sampleTime);
 #endif
 
     // Set output

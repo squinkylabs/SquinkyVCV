@@ -90,7 +90,7 @@ static void testSaw1()
 {
     MinBLEPVCO vco;
 
-    vco.setNormalizedFreq(1000 * sampleTime);
+    vco.setNormalizedFreq(1000 * sampleTime, sampleTime);
     vco.setWaveform(MinBLEPVCO::Waveform::Saw);
     vco.step();
 
@@ -108,7 +108,7 @@ static void testSync1()
 {
     MinBLEPVCO vco;
 
-    vco.setNormalizedFreq(1000 * sampleTime);
+    vco.setNormalizedFreq(1000 * sampleTime, sampleTime);
     vco.setWaveform(MinBLEPVCO::Waveform::Saw);
     float lastOut = -1000;
     vco.step();
@@ -247,7 +247,7 @@ static void testOutput(MinBLEPVCO::Waveform wf, bool expectFlat)
 
 
     osc.setWaveform(wf);
-    osc.setNormalizedFreq(.1f);      // high freq
+    osc.setNormalizedFreq(.1f, 1.0f / 44100);      // high freq
 
     bool hasChanged = false;
     float last = -100;
