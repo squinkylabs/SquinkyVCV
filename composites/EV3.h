@@ -219,15 +219,7 @@ inline void EV3<TBase>::processPitchInputs()
     processPitchInputs(0);
     processPitchInputs(1);
     processPitchInputs(2);
-
-    static float last = 0;
-    auto p = TBase::params[WAVE1_PARAM].value;
-    if (p != last) {
-        printf("wavform param = %f\n", TBase::params[WAVE1_PARAM].value);
-        last = p;
-    }
 }
-
 
 template <class TBase>
 inline void EV3<TBase>::processPitchInputs(int osc)
@@ -247,9 +239,10 @@ inline void EV3<TBase>::processPitchInputs(int osc)
 
     // for now, let's use Fundamental VCO-1 mod scaling.
     // Will probably replace with attenuverter.
-#if 0
-    pitch += rack::quadraticBipolar(TBase::params[FM1_PARAM + delta].value) *
-        fm * 12;
+#if 1
+    const float fmDepth = rack::quadraticBipolar(
+        TBase::params[FM1_PARAM + delta].value);
+    pitch += (fmDepth * fm * 12);
 #endif
 
 

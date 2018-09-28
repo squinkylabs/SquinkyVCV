@@ -7,8 +7,6 @@
 
 #include "EV3.h"
 
-
-
 struct EV3Module : Module
 {
     EV3Module();
@@ -79,7 +77,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     addParam(createParamCentered<Blue30Knob>(
         Vec(x2, y2), module,
         EV3<WidgetComposite>::FM1_PARAM + delta * index,
-        -5.0f, 5.0f, 0));
+        0.f, 1.f, 0));
     addLabel(Vec(x2 - 20, y2 - 36), "Mod");
 
     const float dy = 30;
@@ -145,9 +143,9 @@ void EV3Widget::makeInput(EV3Module* module, int row, int col,
 void EV3Widget::makeInputs(EV3Module* module)
 {
     for (int row = 0; row < 3; ++row) {
-        makeInput(module, row, 0, (EV3<WidgetComposite>::CV1_INPUT) + row, "V/oct");
-        makeInput(module, row, 1, (int) EV3<WidgetComposite>::FM1_INPUT + row, "Fm");
-        makeInput(module, row, 2, (int) EV3<WidgetComposite>::PWM1_INPUT + row, "Pwm");
+        makeInput(module, row, 0, EV3<WidgetComposite>::CV1_INPUT + row, "V/oct");
+        makeInput(module, row, 1, EV3<WidgetComposite>::FM1_INPUT + row, "Fm");
+        makeInput(module, row, 2, EV3<WidgetComposite>::PWM1_INPUT + row, "Pwm");
     }
 }
 
