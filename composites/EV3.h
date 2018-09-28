@@ -3,6 +3,8 @@
 #include "MinBLEPVCO.h"
 #include "ObjectCache.h"
 
+#include "dsp/functions.hpp"        // rack math
+
 /**
  *
  */
@@ -15,7 +17,7 @@ public:
     {
         init();
     }
-    
+
     EV3() : TBase()
     {
         init();
@@ -31,7 +33,7 @@ public:
         NONE,
         END     // just a marker
     };
-    
+
     enum ParamIds
     {
         MIX1_PARAM,
@@ -66,7 +68,7 @@ public:
 
         NUM_PARAMS
     };
- 
+
     enum InputIds
     {
         CV1_INPUT,
@@ -96,7 +98,7 @@ public:
     };
 
     void step() override;
- 
+
 private:
     void processPitchInputs();
     void processPitchInputs(int osc);
@@ -112,7 +114,7 @@ private:
     float _out[3];
     std::function<float(float)> expLookup =
         ObjectCache<float>::getExp2Ex();
-    std::shared_ptr<LookupTableParams<float>> audioTaper= 
+    std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
 };
 
@@ -124,14 +126,14 @@ inline void EV3<TBase>::init()
     }
 
     vcos[0].setSyncCallback([this](float f, float dx) {
-    
+
         if (TBase::params[SYNC2_PARAM].value > .5) {
             vcos[1].onMasterSync(f, dx);
         }
         if (TBase::params[SYNC3_PARAM].value > .5) {
             vcos[2].onMasterSync(f, dx);
         }
-     });
+        });
 }
 
 template <class TBase>
@@ -146,10 +148,10 @@ template <class TBase>
 float EV3<TBase>::getInput(int osc, InputIds in1, InputIds in2, InputIds in3)
 {
     const bool in2Connected = TBase::inputs[in2].active;
-    const bool in3Connected = TBase::inputs[in3].active; 
+    const bool in3Connected = TBase::inputs[in3].active;
     InputIds id = in1;
     if ((osc == 1) && in2Connected) {
-      id = in2;
+        id = in2;
     }
     if (osc == 2) {
         if (in3Connected) id = in3;
@@ -161,7 +163,7 @@ float EV3<TBase>::getInput(int osc, InputIds in1, InputIds in2, InputIds in3)
 template <class TBase>
 void EV3<TBase>::processPWInput(int osc)
 {
-    const float pwmInput = getInput(osc, PWM1_INPUT,  PWM2_INPUT,  PWM3_INPUT) / 5.f;
+    const float pwmInput = getInput(osc, PWM1_INPUT, PWM2_INPUT, PWM3_INPUT) / 5.f;
 
     const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
     const float pwmTrim = TBase::params[PWM1_PARAM + delta].value;
@@ -191,14 +193,14 @@ inline void EV3<TBase>::step()
     float mix = 0;
 
     for (int i = 0; i < 3; ++i) {
-       
-        const float knob = TBase::params[MIX1_PARAM+i].value;
-        const float gain = LookupTable<float>::lookup(*audioTaper, knob, false );
+
+        const float knob = TBase::params[MIX1_PARAM + i].value;
+        const float gain = LookupTable<float>::lookup(*audioTaper, knob, false);
         const float rawWaveform = vcos[i].getOutput();
         const float scaledWaveform = rawWaveform * gain;
         mix += scaledWaveform;
         _out[i] = scaledWaveform;
-        TBase::outputs[VCO1_OUTPUT+i].value = rawWaveform;
+        TBase::outputs[VCO1_OUTPUT + i].value = rawWaveform;
     }
     TBase::outputs[MIX_OUTPUT].value = mix;
 }
@@ -226,27 +228,37 @@ inline void EV3<TBase>::processPitchInputs()
     }
 }
 
+
 template <class TBase>
 inline void EV3<TBase>::processPitchInputs(int osc)
 {
     assert(osc >= 0 && osc <= 2);
     const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
 
+    const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
+    const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
+    const float semiPitch = TBase::params[SEMI1_PARAM + delta].value / 12.0f;
+    const float fm = getInput(osc, FM1_INPUT, FM2_INPUT, FM3_INPUT);
+
     float pitch = 1.0f + roundf(TBase::params[OCTAVE1_PARAM + delta].value) +
-        TBase::params[SEMI1_PARAM + delta].value / 12.0f +
-        TBase::params[FINE1_PARAM + delta].value / 12.0f;
-    pitch += TBase::inputs[CV1_INPUT].value;
+        semiPitch +
+        finePitch;
+    pitch += cv;
+
+    // for now, let's use Fundamental VCO-1 mod scaling.
+    // Will probably replace with attenuverter.
 #if 0
-    pitch += TBase::inputs[CV_INPUT].value;
-    pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
-        taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
+    pitch += rack::quadraticBipolar(TBase::params[FM1_PARAM + delta].value) *
+        fm * 12;
 #endif
+
 
     const float q = float(log2(261.626));       // move up to pitch range of even vco
     pitch += q;
     const float freq = expLookup(pitch);
     _freq[osc] = freq;
-    vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq, TBase::engineGetSampleTime());
+    vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq,
+        TBase::engineGetSampleTime());
 }
 
 
