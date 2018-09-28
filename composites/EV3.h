@@ -40,6 +40,8 @@ public:
         FM1_PARAM,
         SYNC1_PARAM,
         WAVE1_PARAM,
+        PW1_PARAM,
+        PWM1_PARAM,
 
         OCTAVE2_PARAM,
         SEMI2_PARAM,
@@ -47,6 +49,8 @@ public:
         FM2_PARAM,
         SYNC2_PARAM,
         WAVE2_PARAM,
+        PW2_PARAM,
+        PWM2_PARAM,
 
         OCTAVE3_PARAM,
         SEMI3_PARAM,
@@ -54,6 +58,8 @@ public:
         FM3_PARAM,
         SYNC3_PARAM,
         WAVE3_PARAM,
+        PW3_PARAM,
+        PWM3_PARAM,
 
         NUM_PARAMS
     };

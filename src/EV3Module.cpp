@@ -35,7 +35,9 @@ struct EV3Widget : ModuleWidget
     EV3Widget(EV3Module *);
     void makeSections(EV3Module *);
     void makeSection(EV3Module *, int index);
-
+    void makeInputs(EV3Module *);
+    void makeInput(EV3Module* module, int row, int col, EV3<WidgetComposite>::InputIds input, const char* name);
+    void makeOututs(EV3Module *);
     void addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
     {
         Label* label = new Label();
@@ -46,7 +48,6 @@ struct EV3Widget : ModuleWidget
     }
 };
 
-#if 1
 void EV3Widget::makeSection(EV3Module *module, int index)
 {
 
@@ -80,26 +81,20 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     addLabel(Vec(x2-20, y2-36), "Mod");
 
   
-    const float dx = 24;
+ //   const float dx = 24;
     const float dy = 30;
     const float x0 = x-6;
     addParam(createParamCentered<Trimpot>(
-        Vec(x0, y3), module, module->ev3.FINE1_PARAM + delta * index,
+        Vec(x0, y3), module, module->ev3.PW1_PARAM + delta * index,
         -1.0f, 1.0f, 0));
     if (index == 0)
-        addLabel(Vec(x0+10, y3-12), "p1");
+        addLabel(Vec(x0+10, y3-12), "PW");
 
     addParam(createParamCentered<Trimpot>(
-        Vec(x0, y3+dy), module, module->ev3.FINE1_PARAM + delta * index,
+        Vec(x0, y3+dy), module, module->ev3.PWM1_PARAM + delta * index,
         -1.0f, 1.0f, 0));
     if (index == 0)
-        addLabel(Vec(x0+10, y3+dy-12), "p2");
-
-    addParam(createParamCentered<Trimpot>(
-        Vec(x0, y3+2*dy), module, module->ev3.FINE1_PARAM + delta * index,
-        -1.0f, 1.0f, 0));
-    if (index == 0)
-        addLabel(Vec(x0+10, y3+2*dy-12), "p3");
+        addLabel(Vec(x0+10, y3+dy-12), "PWM");
 
           // sync switches
     if (index != 0) {    
@@ -110,67 +105,43 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addLabel(Vec(x+22, y3+20), "off");
     }
 
-    const float y4 = y3+ 80;
+    const float y4 = y3+ 50;
+    const float xx = x - 8;
         // include one extra wf - none
     const float numWaves = (float) EV3<WidgetComposite>::Waves::END;
     const float defWave =  (float) EV3<WidgetComposite>::Waves::SAW;
     addParam(ParamWidget::create<WaveformSelector>(
-        Vec(x, y4),
-        module,
-        EV3<WidgetComposite>::WAVE1_PARAM + delta * index,
-        0.0f, numWaves, defWave));
-
-
-}
-#else
-void EV3Widget::makeSection(EV3Module *module, int index)
-{
-    Vec pos;
-    pos.x = 10 + index * 50;
-    pos.y = 50;
-
-    const int delta = module->ev3.OCTAVE2_PARAM - module->ev3.OCTAVE1_PARAM;
-
-    addParam(ParamWidget::create<RoundBlackSnapKnob>(
-        Vec(pos.x, pos.y + 20), module, module->ev3.OCTAVE1_PARAM + delta * index,
-        -5.0f, 4.0f, 0.f));
-    addLabel(Vec(pos.x, pos.y), "Oct");
-
-    addParam(ParamWidget::create<RoundBlackSnapKnob>(
-        Vec(pos.x, pos.y + 70), module, module->ev3.SEMI1_PARAM + delta * index,
-        0.f, 11.0f, 0.f));
-    addLabel(Vec(pos.x, pos.y +50), "Semi");
-
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(pos.x, pos.y+120), module, module->ev3.FINE1_PARAM + delta * index,
-        -1.0f, 1.0f, 0));
-    addLabel(Vec(pos.x, pos.y + 100), "Fine");
-
-    // sync switches
-    if (index != 0) {    
-        addParam(ParamWidget::create<CKSS>(
-            Vec(pos.x, pos.y + 160), module, module->ev3.SYNC1_PARAM + delta * index,
-            0.0f, 1.0f, 1.0f));
-        addLabel(Vec(pos.x-6, pos.y + 138), "on");
-        addLabel(Vec(pos.x-6, pos.y + 190), "off");
-    }
-
-    // include one extra wf - none
-    const float numWaves = (float) EV3<WidgetComposite>::Waves::END;
-    const float defWave =  (float) EV3<WidgetComposite>::Waves::SAW;
-    addParam(ParamWidget::create<WaveformSelector>(
-        Vec(pos.x, pos.y + 220),
+        Vec(xx, y4),
         module,
         EV3<WidgetComposite>::WAVE1_PARAM + delta * index,
         0.0f, numWaves, defWave));
 }
-#endif
 
-void EV3Widget::makeSections(EV3Module *module)
+void EV3Widget::makeSections(EV3Module* module)
 {
     makeSection(module, 0);
     makeSection(module, 1);
     makeSection(module, 2);
+}
+
+void EV3Widget::makeInput(EV3Module* module, int row, int col,  EV3<WidgetComposite>::InputIds input, const char* name)
+{
+    const float y = 280 + row * 30;
+    const float x = 20 + col * 40;
+    addInput(Port::create<PJ301MPort>(
+        Vec(x, y), Port::INPUT, module, input));
+    if (row == 0)
+        addLabel(Vec(x, y-20), name);
+}
+
+
+void EV3Widget::makeInputs(EV3Module* module)
+{
+    for (int row=0; row<3; ++row) {
+        makeInput(module, row, 0,  EV3<WidgetComposite>::CV1_INPUT, "V/oct");  
+        makeInput(module, row, 1,  EV3<WidgetComposite>::CV1_INPUT, "Fm");  
+        makeInput(module, row, 2,  EV3<WidgetComposite>::CV1_INPUT, "Pwm");  
+    }
 }
 
 /**
@@ -190,14 +161,16 @@ EV3Widget::EV3Widget(EV3Module *module) :
     } 
 
     makeSections(module);
+    makeInputs(module);
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(140, 330), Port::OUTPUT, module, module->ev3.MIX_OUTPUT));
-    addLabel(Vec(130, 310), "Out");
-
+        Vec(180, 280), Port::OUTPUT, module, module->ev3.MIX_OUTPUT));
+    addLabel(Vec(170, 260), "Out");
+#if 0
     addInput(Port::create<PJ301MPort>(
         Vec(20, 330), Port::INPUT, module, module->ev3.CV1_INPUT));
     addLabel(Vec(20, 310), "CV");
+#endif
 }
 
 
