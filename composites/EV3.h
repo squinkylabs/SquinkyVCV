@@ -105,6 +105,7 @@ private:
     void init();
     void processPWInputs();
     void processPWInput(int osc);
+    float getInput(int osc, InputIds in0, InputIds in1, InputIds in2);
 
     MinBLEPVCO vcos[3];
     float _freq[3];
@@ -141,24 +142,28 @@ inline void EV3<TBase>::processWaveforms()
     vcos[2].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE3_PARAM].value);
 }
 
-
+template <class TBase>
+float EV3<TBase>::getInput(int osc, InputIds in1, InputIds in2, InputIds in3)
+{
+    const bool in2Connected = TBase::inputs[in2].active;
+    const bool in3Connected = TBase::inputs[in3].active; 
+    InputIds id = in1;
+    if ((osc == 1) && in2Connected) {
+      id = in2;
+    }
+    if (osc == 2) {
+        if (in3Connected) id = in3;
+        else if (in2Connected)  id = in2;
+    }
+    return TBase::inputs[id].value;
+}
 
 template <class TBase>
 void EV3<TBase>::processPWInput(int osc)
 {
-    const bool pwm2Connected = TBase::inputs[PWM2_INPUT].active;
-    const bool pwm3Connected = TBase::inputs[PWM3_INPUT].active;
-    InputIds pwmId = PWM1_INPUT;
-    if ((osc == 1) && pwm2Connected) {
-      pwmId = PWM2_INPUT;
-    }
-    if (osc == 2) {
-        if (pwm3Connected) pwmId = PWM3_INPUT;
-        else if (pwm2Connected)  pwmId = PWM2_INPUT;
-    }
+    const float pwmInput = getInput(osc, PWM1_INPUT,  PWM2_INPUT,  PWM3_INPUT) / 5.f;
 
     const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
-    const float pwmInput = TBase::inputs[pwmId].value / 5.0;
     const float pwmTrim = TBase::params[PWM1_PARAM + delta].value;
     const float pwInit = TBase::params[PW1_PARAM + delta].value;
 
