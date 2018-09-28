@@ -72,6 +72,9 @@ public:
         CV1_INPUT,
         CV2_INPUT,
         CV3_INPUT,
+        FM1_INPUT,
+        FM2_INPUT,
+        FM3_INPUT,
         PWM1_INPUT,
         PWM2_INPUT,
         PWM3_INPUT,
@@ -154,15 +157,13 @@ void EV3<TBase>::processPWInput(int osc)
         else if (pwm2Connected)  pwmId = PWM2_INPUT;
     }
 
-    const int delta = OCTAVE2_PARAM - OCTAVE1_PARAM;
+    const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
     const float pwmInput = TBase::inputs[pwmId].value / 5.0;
     const float pwmTrim = TBase::params[PWM1_PARAM + delta].value;
     const float pwInit = TBase::params[PW1_PARAM + delta].value;
 
     float pw = pwInit + pwmInput * pwmTrim;
-  //  float pw = TBase::params[PWM_PARAM].value + TBase::inputs[PWM_INPUT].value / 5.0;
     const float minPw = 0.05f;
-    // move all this out to module
     pw = rack::rescale(std::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
     vcos[osc].setPulseWidth(pw);
 }

@@ -36,7 +36,7 @@ struct EV3Widget : ModuleWidget
     void makeSections(EV3Module *);
     void makeSection(EV3Module *, int index);
     void makeInputs(EV3Module *);
-    void makeInput(EV3Module* module, int row, int col, EV3<WidgetComposite>::InputIds input, const char* name);
+    void makeInput(EV3Module* module, int row, int col, int input, const char* name);
     void makeOutputs(EV3Module *);
     void addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
     {
@@ -57,41 +57,45 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     const float y2 = y + 56;
     const float y3 = y2 + 40;
 
-    const int delta = module->ev3.OCTAVE2_PARAM - module->ev3.OCTAVE1_PARAM;
+    const int delta =EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
 
     addParam(createParamCentered<Blue30SnapKnob>(
-        Vec(x, y), module, module->ev3.OCTAVE1_PARAM + delta * index,
+        Vec(x, y), module,
+        EV3<WidgetComposite>::OCTAVE1_PARAM + delta * index,
         -5.0f, 4.0f, 0.f));
     addLabel(Vec(x-20, y-36), "Oct");
 
     addParam(createParamCentered<Blue30SnapKnob>(
-        Vec(x2, y), module, module->ev3.SEMI1_PARAM + delta * index,
+        Vec(x2, y), module,
+        EV3<WidgetComposite>::SEMI1_PARAM + delta * index,
         0.f, 11.0f, 0.f));
     addLabel(Vec(x2-20, y-36), "Semi");
 
     
     addParam(createParamCentered<Blue30SnapKnob>(
-        Vec(x, y2), module, module->ev3.FINE1_PARAM + delta * index,
+        Vec(x, y2), module,
+       EV3<WidgetComposite>::FINE1_PARAM + delta * index,
         -1.0f, 1.0f, 0));
     addLabel(Vec(x-20, y2-36), "Fine");
 
     addParam(createParamCentered<Blue30SnapKnob>(
-        Vec(x2, y2), module, module->ev3.FM1_PARAM + delta * index,
+        Vec(x2, y2), module,
+        EV3<WidgetComposite>::FM1_PARAM + delta * index,
         -1.0f, 1.0f, 0));
     addLabel(Vec(x2-20, y2-36), "Mod");
 
   
- //   const float dx = 24;
     const float dy = 30;
     const float x0 = x-6;
     addParam(createParamCentered<Trimpot>(
-        Vec(x0, y3), module, module->ev3.PW1_PARAM + delta * index,
-        -1.0f, 1.0f, 0));
+        Vec(x0, y3), module, EV3<WidgetComposite>::PW1_PARAM + delta * index,
+        -1.f, 1.f, 0));
     if (index == 0)
         addLabel(Vec(x0+10, y3-12), "PW");
 
     addParam(createParamCentered<Trimpot>(
-        Vec(x0, y3+dy), module, module->ev3.PWM1_PARAM + delta * index,
+        Vec(x0, y3+dy), module,
+        EV3<WidgetComposite>::PWM1_PARAM + delta * index,
         -1.0f, 1.0f, 0));
     if (index == 0)
         addLabel(Vec(x0+10, y3+dy-12), "PWM");
@@ -99,7 +103,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
           // sync switches
     if (index != 0) {    
         addParam(ParamWidget::create<CKSS>(
-            Vec(x+30,y3), module, module->ev3.SYNC1_PARAM + delta * index,
+            Vec(x+30,y3), module, EV3<WidgetComposite>::SYNC1_PARAM + delta * index,
             0.0f, 1.0f, 1.0f));
         addLabel(Vec(x+22, y3-20), "on");
         addLabel(Vec(x+22, y3+20), "off");
@@ -128,8 +132,10 @@ const float row1Y = 280;
 const float rowDY = 30;
 const float colDX = 40;
 
-void EV3Widget::makeInput(EV3Module* module, int row, int col,  EV3<WidgetComposite>::InputIds input, const char* name)
+void EV3Widget::makeInput(EV3Module* module, int row, int col, 
+     int inputNum, const char* name)
 {
+    EV3<WidgetComposite>::InputIds input = EV3<WidgetComposite>::InputIds(inputNum);
     const float y = row1Y + row * rowDY;
     const float x = 20 + col * colDX;
     const float labelX = x - 6;
@@ -142,9 +148,9 @@ void EV3Widget::makeInput(EV3Module* module, int row, int col,  EV3<WidgetCompos
 void EV3Widget::makeInputs(EV3Module* module)
 {
     for (int row=0; row<3; ++row) {
-        makeInput(module, row, 0,  EV3<WidgetComposite>::CV1_INPUT, "V/oct");  
-        makeInput(module, row, 1,  EV3<WidgetComposite>::CV1_INPUT, "Fm");  
-        makeInput(module, row, 2,  EV3<WidgetComposite>::CV1_INPUT, "Pwm");  
+        makeInput(module, row, 0,  (EV3<WidgetComposite>::CV1_INPUT) + row, "V/oct");  
+        makeInput(module, row, 1,  (int) EV3<WidgetComposite>::FM1_INPUT + row, "Fm");  
+        makeInput(module, row, 2,  (int) EV3<WidgetComposite>::PWM1_INPUT + row, "Pwm");  
     }
 }
 
@@ -156,7 +162,6 @@ void EV3Widget::makeOutputs(EV3Module *)
 
     addLabel(Vec(x, trimY-30), ".... outputs ....");
 
- 
     addParam(createParamCentered<Trimpot>(
         Vec(x, trimY), module, EV3<WidgetComposite>::MIX1_PARAM,
         0.0f, 1.0f, 0));
