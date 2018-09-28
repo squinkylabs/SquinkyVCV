@@ -37,7 +37,7 @@ struct EV3Widget : ModuleWidget
     void makeSection(EV3Module *, int index);
     void makeInputs(EV3Module *);
     void makeInput(EV3Module* module, int row, int col, EV3<WidgetComposite>::InputIds input, const char* name);
-    void makeOututs(EV3Module *);
+    void makeOutputs(EV3Module *);
     void addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
     {
         Label* label = new Label();
@@ -124,16 +124,20 @@ void EV3Widget::makeSections(EV3Module* module)
     makeSection(module, 2);
 }
 
+const float row1Y = 280;
+const float rowDY = 30;
+const float colDX = 40;
+
 void EV3Widget::makeInput(EV3Module* module, int row, int col,  EV3<WidgetComposite>::InputIds input, const char* name)
 {
-    const float y = 280 + row * 30;
-    const float x = 20 + col * 40;
+    const float y = row1Y + row * rowDY;
+    const float x = 20 + col * colDX;
+    const float labelX = x - 6;
     addInput(Port::create<PJ301MPort>(
         Vec(x, y), Port::INPUT, module, input));
     if (row == 0)
-        addLabel(Vec(x, y-20), name);
+        addLabel(Vec(labelX, y-20), name);
 }
-
 
 void EV3Widget::makeInputs(EV3Module* module)
 {
@@ -142,6 +146,41 @@ void EV3Widget::makeInputs(EV3Module* module)
         makeInput(module, row, 1,  EV3<WidgetComposite>::CV1_INPUT, "Fm");  
         makeInput(module, row, 2,  EV3<WidgetComposite>::CV1_INPUT, "Pwm");  
     }
+}
+
+void EV3Widget::makeOutputs(EV3Module *)
+{
+    const float x = 160;
+    const float trimY = row1Y+11;
+    const float outX = x + 30;
+
+     addLabel(Vec(x, trimY-30), ".... outputs ....");
+
+ 
+    addParam(createParamCentered<Trimpot>(
+        Vec(x, trimY), module, EV3<WidgetComposite>::MIX1_PARAM,
+        0.0f, 1.0f, 0));
+     addParam(createParamCentered<Trimpot>(
+        Vec(x, trimY + rowDY), module, EV3<WidgetComposite>::MIX2_PARAM,
+        0.0f, 1.0f, 0));
+     addParam(createParamCentered<Trimpot>(
+        Vec(x, trimY + 2 * rowDY), module, EV3<WidgetComposite>::MIX3_PARAM,
+        0.0f, 1.0f, 0));
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(outX, row1Y),
+        Port::OUTPUT, module, EV3<WidgetComposite>::VCO1_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(
+        Vec(outX, row1Y + rowDY),
+        Port::OUTPUT, module, EV3<WidgetComposite>::VCO2_OUTPUT));
+    addOutput(Port::create<PJ301MPort>(
+        Vec(outX, row1Y + 2 * rowDY),
+        Port::OUTPUT, module, EV3<WidgetComposite>::VCO3_OUTPUT));
+
+      addOutput(Port::create<PJ301MPort>(
+        Vec(outX + colDX, row1Y + rowDY),
+        Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
+    
 }
 
 /**
@@ -162,11 +201,12 @@ EV3Widget::EV3Widget(EV3Module *module) :
 
     makeSections(module);
     makeInputs(module);
-
+    makeOutputs(module);
+#if 0
     addOutput(Port::create<PJ301MPort>(
         Vec(180, 280), Port::OUTPUT, module, module->ev3.MIX_OUTPUT));
     addLabel(Vec(170, 260), "Out");
-#if 0
+
     addInput(Port::create<PJ301MPort>(
         Vec(20, 330), Port::INPUT, module, module->ev3.CV1_INPUT));
     addLabel(Vec(20, 310), "CV");

@@ -34,6 +34,9 @@ public:
     
     enum ParamIds
     {
+        MIX1_PARAM,
+        MIX2_PARAM,
+        MIX3_PARAM,
         OCTAVE1_PARAM,
         SEMI1_PARAM,
         FINE1_PARAM,
@@ -73,6 +76,9 @@ public:
     enum OutputIds
     {
         MIX_OUTPUT,
+        VCO1_OUTPUT,
+        VCO2_OUTPUT,
+        VCO3_OUTPUT,
         NUM_OUTPUTS
     };
 
