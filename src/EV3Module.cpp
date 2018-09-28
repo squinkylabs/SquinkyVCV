@@ -154,7 +154,7 @@ void EV3Widget::makeOutputs(EV3Module *)
     const float trimY = row1Y+11;
     const float outX = x + 30;
 
-     addLabel(Vec(x, trimY-30), ".... outputs ....");
+    addLabel(Vec(x, trimY-30), ".... outputs ....");
 
  
     addParam(createParamCentered<Trimpot>(

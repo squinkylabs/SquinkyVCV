@@ -75,6 +75,7 @@ public:
      */
     void onMasterSync(float phase, float dx);
     void setSyncCallback(SyncCallback);
+    void setPulseWidth(float);
 
 private:
 
@@ -100,7 +101,8 @@ private:
     /** Whether we are past the pulse width already */
     bool halfPhase = false;
 
-    int loopCounter = 0;
+    int loopCounter = 0;        // still used?
+    float pulseWidth = .5;
 
     rack::MinBLEP<16> triSquareMinBLEP;
     rack::MinBLEP<16> triMinBLEP;
@@ -151,6 +153,10 @@ inline void MinBLEPVCO::setWaveform(Waveform wf)
     waveform = wf;
 }
 
+inline void MinBLEPVCO::setPulseWidth(float pw)
+{
+    pulseWidth = pw;
+}
 
 inline void MinBLEPVCO::step()
 {
@@ -250,17 +256,18 @@ inline void MinBLEPVCO::step_sq()
         gotSyncCallback = false;
         assert(false);  // TODO
     }
-
+#if 0
     // Pulse width
     float pw;
 
     pw = .5;        // TODO: figure out pw,
    // pw = TBase::params[PWM_PARAM].value + TBase::inputs[PWM_INPUT].value / 5.0;
     const float minPw = 0.05f;
+    // move all this out to module
     pw = rack::rescale(std::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
-
-    if (!halfPhase && phase >= pw) {
-        float crossing = -(phase - pw) / normalizedFreq;
+#endif
+    if (!halfPhase && phase >= pulseWidth) {
+        float crossing = -(phase - pulseWidth) / normalizedFreq;
         squareMinBLEP.jump(crossing, 2.0);
         halfPhase = true;
     }
@@ -273,7 +280,7 @@ inline void MinBLEPVCO::step_sq()
         halfPhase = false;
     }
 
-    float square = (phase < pw) ? -1.0 : 1.0;
+    float square = (phase < pulseWidth) ? -1.0 : 1.0;
     square += squareMinBLEP.shift();
     output = 5.0*square;
 }

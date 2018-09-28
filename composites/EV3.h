@@ -70,6 +70,11 @@ public:
     enum InputIds
     {
         CV1_INPUT,
+        CV2_INPUT,
+        CV3_INPUT,
+        PWM1_INPUT,
+        PWM2_INPUT,
+        PWM3_INPUT,
         NUM_INPUTS
     };
 
@@ -95,24 +100,22 @@ private:
     void processWaveforms();
     void stepVCOs();
     void init();
+    void processPWInputs();
+    void processPWInput(int osc);
 
     MinBLEPVCO vcos[3];
     float _freq[3];
     float _out[3];
-    std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
+    std::function<float(float)> expLookup =
+        ObjectCache<float>::getExp2Ex();
+    std::shared_ptr<LookupTableParams<float>> audioTaper= 
+        ObjectCache<float>::getAudioTaper();
 };
 
 template <class TBase>
 inline void EV3<TBase>::init()
 {
     for (int i = 0; i < 3; ++i) {
-#if 0
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Saw, true);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Tri, false);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Sin, false);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Square, false);
-        vcos[i].enableWaveform(MinBLEPVCO::Waveform::Even, false);
-#endif
         vcos[i].setWaveform(MinBLEPVCO::Waveform::Saw);
     }
 
@@ -135,31 +138,62 @@ inline void EV3<TBase>::processWaveforms()
     vcos[2].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE3_PARAM].value);
 }
 
+
+
+template <class TBase>
+void EV3<TBase>::processPWInput(int osc)
+{
+    const bool pwm2Connected = TBase::inputs[PWM2_INPUT].active;
+    const bool pwm3Connected = TBase::inputs[PWM3_INPUT].active;
+    InputIds pwmId = PWM1_INPUT;
+    if ((osc == 1) && pwm2Connected) {
+      pwmId = PWM2_INPUT;
+    }
+    if (osc == 2) {
+        if (pwm3Connected) pwmId = PWM3_INPUT;
+        else if (pwm2Connected)  pwmId = PWM2_INPUT;
+    }
+
+    const int delta = OCTAVE2_PARAM - OCTAVE1_PARAM;
+    const float pwmInput = TBase::inputs[pwmId].value / 5.0;
+    const float pwmTrim = TBase::params[PWM1_PARAM + delta].value;
+    const float pwInit = TBase::params[PW1_PARAM + delta].value;
+
+    float pw = pwInit + pwmInput * pwmTrim;
+  //  float pw = TBase::params[PWM_PARAM].value + TBase::inputs[PWM_INPUT].value / 5.0;
+    const float minPw = 0.05f;
+    // move all this out to module
+    pw = rack::rescale(std::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
+    vcos[osc].setPulseWidth(pw);
+}
+
+template <class TBase>
+inline void EV3<TBase>::processPWInputs()
+{
+    processPWInput(0);
+    processPWInput(1);
+    processPWInput(2);
+}
+
 template <class TBase>
 inline void EV3<TBase>::step()
 {
     processPitchInputs();
     processWaveforms();
+    processPWInputs();
     stepVCOs();
     float mix = 0;
 
     for (int i = 0; i < 3; ++i) {
-        const float wf = vcos[i].getOutput();
-#if 0
-        if (i == 0 && TBase::params[WAVE1_PARAM].value == (float) Waves::SAW) {
-            mix += wf;
-        }
-        if (i == 1 && TBase::params[WAVE2_PARAM].value == (float)Waves::SAW) {
-            mix += wf;
-        }
-        if (i == 2 && TBase::params[WAVE3_PARAM].value == (float)Waves::SAW) {
-            mix += wf;
-        }
-#endif
-        mix += wf;
-        _out[i] = wf;
+       
+        const float knob = TBase::params[MIX1_PARAM+i].value;
+        const float gain = LookupTable<float>::lookup(*audioTaper, knob, false );
+        const float rawWaveform = vcos[i].getOutput();
+        const float scaledWaveform = rawWaveform * gain;
+        mix += scaledWaveform;
+        _out[i] = scaledWaveform;
+        TBase::outputs[VCO1_OUTPUT+i].value = rawWaveform;
     }
-
     TBase::outputs[MIX_OUTPUT].value = mix;
 }
 
@@ -169,7 +203,6 @@ inline void EV3<TBase>::stepVCOs()
     for (int i = 0; i < 3; ++i) {
         vcos[i].step();
     }
-    // route waveform outputs?
 }
 
 template <class TBase>
