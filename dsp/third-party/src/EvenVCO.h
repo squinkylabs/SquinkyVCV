@@ -206,7 +206,7 @@ inline void EvenVCO<TBase>::step_saw(float deltaPhase)
         cMin = std::min(crossing, cMin);
         cMax = std::max(crossing, cMax);
 
-        printf("sawJump ph=%.2f, delta=%.2f cross=%.2f (%.2f, %.2f)\n", phase, deltaPhase, crossing, cMin, cMax);
+       // printf("sawJump ph=%.2f, delta=%.2f cross=%.2f (%.2f, %.2f)\n", phase, deltaPhase, crossing, cMin, cMax);
         sawMinBLEP.jump(crossing, -2.0);
     }
 

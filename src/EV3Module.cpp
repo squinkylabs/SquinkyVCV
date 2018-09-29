@@ -6,6 +6,7 @@
 #ifdef _EV3
 
 #include "EV3.h"
+#include <sstream>
 
 struct EV3Module : Module
 {
@@ -28,6 +29,95 @@ void EV3Module::step()
     ev3.step();
 }
 
+/************************************************************/
+
+class PitchDisplay
+{
+public:
+    PitchDisplay(EV3Module * mod) : module(mod) {}
+    void step();
+
+    /**
+     * Labels must be added in order
+     */
+    void addLabel(Label*);
+private:
+    EV3Module * const module;
+    std::vector<Label*> labels;
+    int lastOctave[3] = {100, 100, 100};
+    int lastSemi[3] = {100, 100, 100};
+
+    void update(int);
+};
+
+void PitchDisplay::step()
+{
+    const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
+
+    if (labels.size() != 3) {
+        printf("display not init\n"); fflush(stdout);
+    }
+
+    for (int i=0; i<3; ++i) {
+        const int octaveParam = EV3<WidgetComposite>::OCTAVE1_PARAM + delta * i;
+        const int semiParam = EV3<WidgetComposite>::SEMI1_PARAM + delta * i;
+        const int oct = module->params[octaveParam].value;
+        const int semi = module->params[semiParam].value;
+        if (semi != lastSemi[i] || oct != lastOctave[i]) {
+            lastSemi[i] = semi;
+            lastOctave[i] = oct;
+            update(i);
+        }
+    }
+}
+
+static const char* names[] = {
+    "-",
+    "m2nd",
+    "2nd",
+    "m3rd",
+    "M3rd",
+    "4th",
+    "Dim5th",
+    "5th",
+    "m6th",
+    "M6th",
+    "m7th",
+    "M7th",
+    "oct"
+};
+
+void PitchDisplay::update(int osc) {
+    std::stringstream s;
+    int oct = 5 + lastOctave[osc];
+    int semi = lastSemi[osc];
+    switch(osc) {
+        case 0:
+            s << oct << ":" << semi;
+            break;
+        case 1:
+        if (semi < 0) {
+                --oct;
+                semi += 12;
+            }
+            s << oct << ":" << semi;
+            break;
+        case 2:
+            if (semi < 0) {
+                --oct;
+                semi += 12;
+            }
+            s << oct << ":" << names[semi];
+            break;
+    }
+    labels[osc]->text = s.str();
+}
+
+void PitchDisplay::addLabel(Label* l)
+{
+    labels.push_back(l);
+}
+
 struct EV3Widget : ModuleWidget
 {
     EV3Widget(EV3Module *);
@@ -36,26 +126,40 @@ struct EV3Widget : ModuleWidget
     void makeInputs(EV3Module *);
     void makeInput(EV3Module* module, int row, int col, int input, const char* name);
     void makeOutputs(EV3Module *);
-    void addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
         label->text = str;
         label->color = color;
         addChild(label);
+        return label;
     }
+
+    void step() override;
+
+    PitchDisplay pitchDisplay;
 };
+
+void EV3Widget::step()
+{
+    ModuleWidget::step();
+    pitchDisplay.step();
+}
 
 void EV3Widget::makeSection(EV3Module *module, int index)
 {
     const float x = 30 + index * 86;
     const float x2 = x + 36;
-    const float y = 50;
+    const float y = 80;
     const float y2 = y + 56;
     const float y3 = y2 + 40;
 
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
 
+    pitchDisplay.addLabel( addLabel(
+        Vec(x, y-58), "foo"
+    ));
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x, y), module,
         EV3<WidgetComposite>::OCTAVE1_PARAM + delta * index,
@@ -65,7 +169,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x2, y), module,
         EV3<WidgetComposite>::SEMI1_PARAM + delta * index,
-        0.f, 11.0f, 0.f));
+        -11.f, 11.0f, 0.f));
     addLabel(Vec(x2 - 20, y - 36), "Semi");
 
     addParam(createParamCentered<Blue30Knob>(
@@ -180,7 +284,6 @@ void EV3Widget::makeOutputs(EV3Module *)
     addOutput(Port::create<PJ301MPort>(
         Vec(outX + colDX, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
-
 }
 
 /**
@@ -189,7 +292,8 @@ void EV3Widget::makeOutputs(EV3Module *)
  * This is not shared by all modules in the DLL, just one
  */
 EV3Widget::EV3Widget(EV3Module *module) :
-    ModuleWidget(module)
+    ModuleWidget(module),
+    pitchDisplay(module)
 {
     box.size = Vec(18 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
