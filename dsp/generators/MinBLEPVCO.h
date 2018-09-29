@@ -266,12 +266,7 @@ inline void MinBLEPVCO::step_sq()
         // Figure out where our sub-sample phase should be after reset
         const float newPhase = .5 + excess;
         const float jump = -2.f * (phase - newPhase);
-#ifdef _LOG 
-        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
-            phase, newPhase,
-            excess,
-            syncCallbackCrossing, jump);
-#endif
+
         syncMinBLEP.jump(syncCallbackCrossing, jump);
         this->phase = newPhase;
         return;
@@ -296,6 +291,7 @@ inline void MinBLEPVCO::step_sq()
 
     float square = (phase < pulseWidth) ? -1.0 : 1.0;
     square += squareMinBLEP.shift();
+    square += syncMinBLEP.shift();
     output = 5.0*square;
 }
 
@@ -313,12 +309,7 @@ inline void MinBLEPVCO::step_sin()
         // Figure out where our sub-sample phase should be after reset
         const float newPhase = .5 + excess;
         const float jump = -2.f * (phase - newPhase);
-#ifdef _LOG 
-        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
-            phase, newPhase,
-            excess,
-            syncCallbackCrossing, jump);
-#endif
+
         syncMinBLEP.jump(syncCallbackCrossing, jump);
         this->phase = newPhase;
         return;
@@ -341,7 +332,8 @@ inline void MinBLEPVCO::step_sin()
         adjPhase -= 1;
     }
 
-    const float sine = -LookupTable<float>::lookup(*sinLookup, adjPhase, true);
+    float sine = -LookupTable<float>::lookup(*sinLookup, adjPhase, true);
+    sine += syncMinBLEP.shift();
     output = 5.0*sine;
 }
 
@@ -391,6 +383,7 @@ inline void MinBLEPVCO::step_tri()
     // Outputs
     float triSquare = (phase < 0.5) ? -1.0 : 1.0;
     triSquare += triSquareMinBLEP.shift();
+    triSquare += syncMinBLEP.shift();
 
     // Integrate square for triangle
     tri += 4.0 * triSquare * normalizedFreq;
@@ -442,7 +435,6 @@ inline void MinBLEPVCO::step_even()
         }
     }
 
-
     //sine = -cosf(2*AudioMath::Pi * phase);
     // want cosine, but only have sine lookup
     float adjPhase = phase + .25f;
@@ -453,6 +445,7 @@ inline void MinBLEPVCO::step_even()
 
     float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
     doubleSaw += doubleSawMinBLEP.shift();
+    doubleSaw += syncMinBLEP.shift();
     const float even = 0.55 * (doubleSaw + 1.27 * sine);
 
     //TBase::outputs[SINE_OUTPUT].value = 5.0*sine;
