@@ -313,8 +313,8 @@ static void testSyncOut(MinBLEPVCO::Waveform wf)
         osc.step();
        
     }
-   // assertEQ(callbackCount, 1);
-    assertGE(callbackCount, 1);     // TODO: why does square do 3??
+    assertEQ(callbackCount, 1);
+  //  assertGE(callbackCount, 1);     // TODO: why does square do 3??
 
 }
 
@@ -325,6 +325,38 @@ static void testSyncOut()
     testSyncOut(MinBLEPVCO::Waveform::Sin);
     testSyncOut(MinBLEPVCO::Waveform::Tri);
     testSyncOut(MinBLEPVCO::Waveform::Even);
+}
+
+
+static void testSyncIn(MinBLEPVCO::Waveform wf)
+{
+    MinBLEPVCO osc;
+
+    osc.setWaveform(wf);
+    osc.setNormalizedFreq(.1f, 1.0f / 44100);      // high freq
+
+    for (int i = 0; i < 4; ++i) {
+        osc.step();
+    }
+    osc.step();
+    float x = osc.getOutput();
+    osc.onMasterSync(0);
+    osc.step();                 // this one catches the callback
+    osc.step();                 // this one generates new sample (TODO: is this extra required?)
+    float y = osc.getOutput();
+    assert(!AudioMath::closeTo(x, y, .1));
+
+    // TODO: pick freq that will make this more robust
+
+}
+
+static void testSyncIn()
+{
+    testSyncIn(MinBLEPVCO::Waveform::Saw);
+    testSyncIn(MinBLEPVCO::Waveform::Sin);
+    testSyncIn(MinBLEPVCO::Waveform::Tri);
+    testSyncIn(MinBLEPVCO::Waveform::Square);
+    testSyncIn(MinBLEPVCO::Waveform::Even);
 }
 
 void testMinBLEPVCO()
@@ -345,4 +377,5 @@ void testMinBLEPVCO()
     testOutputs();
     testZero();
     testSyncOut();
+    testSyncIn();
 }

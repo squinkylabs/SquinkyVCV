@@ -201,10 +201,6 @@ inline void MinBLEPVCO::onMasterSync(float masterPhase)
 
 inline void MinBLEPVCO::step_saw()
 {
-#ifdef _LOG
-    printf("\n%s: step  \n", name.c_str());
-#endif
-
     phase += normalizedFreq;
     if (gotSyncCallback) {
         gotSyncCallback = false;
@@ -260,16 +256,31 @@ inline void MinBLEPVCO::step_sq()
     phase += normalizedFreq;
     if (gotSyncCallback) {
         gotSyncCallback = false;
-        assert(false);  // TODO
+
+        // All calculations based on slave sync discontinuity happening at 
+        // the same sub-sample as the mater discontinuity.
+
+        // First, figure out how much excess phase we are going to have after reset
+        const float excess = -syncCallbackCrossing * normalizedFreq;
+
+        // Figure out where our sub-sample phase should be after reset
+        const float newPhase = .5 + excess;
+        const float jump = -2.f * (phase - newPhase);
+#ifdef _LOG 
+        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
+            phase, newPhase,
+            excess,
+            syncCallbackCrossing, jump);
+#endif
+        syncMinBLEP.jump(syncCallbackCrossing, jump);
+        this->phase = newPhase;
+        return;
     }
 
     if (!halfPhase && phase >= pulseWidth) {
         float crossing = -(phase - pulseWidth) / normalizedFreq;
         squareMinBLEP.jump(crossing, 2.0);
         halfPhase = true;
-        if (syncCallback) {
-            syncCallback(crossing);
-        }
     }
 
     // Reset phase if at end of cycle
@@ -290,6 +301,29 @@ inline void MinBLEPVCO::step_sq()
 
 inline void MinBLEPVCO::step_sin()
 {
+    if (gotSyncCallback) {
+        gotSyncCallback = false;
+
+        // All calculations based on slave sync discontinuity happening at 
+        // the same sub-sample as the mater discontinuity.
+
+        // First, figure out how much excess phase we are going to have after reset
+        const float excess = -syncCallbackCrossing * normalizedFreq;
+
+        // Figure out where our sub-sample phase should be after reset
+        const float newPhase = .5 + excess;
+        const float jump = -2.f * (phase - newPhase);
+#ifdef _LOG 
+        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
+            phase, newPhase,
+            excess,
+            syncCallbackCrossing, jump);
+#endif
+        syncMinBLEP.jump(syncCallbackCrossing, jump);
+        this->phase = newPhase;
+        return;
+    }
+
     phase += normalizedFreq;
 
     // Reset phase if at end of cycle
@@ -313,15 +347,34 @@ inline void MinBLEPVCO::step_sin()
 
 inline void MinBLEPVCO::step_tri()
 {
+    if (gotSyncCallback) {
+        gotSyncCallback = false;
+
+        // All calculations based on slave sync discontinuity happening at 
+        // the same sub-sample as the mater discontinuity.
+
+        // First, figure out how much excess phase we are going to have after reset
+        const float excess = -syncCallbackCrossing * normalizedFreq;
+
+        // Figure out where our sub-sample phase should be after reset
+        const float newPhase = .5 + excess;
+        const float jump = -2.f * (phase - newPhase);
+#ifdef _LOG 
+        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
+            phase, newPhase,
+            excess,
+            syncCallbackCrossing, jump);
+#endif
+        syncMinBLEP.jump(syncCallbackCrossing, jump);
+        this->phase = newPhase;
+        return;
+    }
     float oldPhase = phase;
     phase += normalizedFreq;
 
     if (oldPhase < 0.5 && phase >= 0.5) {
         const float crossing = -(phase - 0.5) / normalizedFreq;
         triSquareMinBLEP.jump(crossing, 2.0);
-        if (syncCallback) {
-            syncCallback(crossing);
-        }
     }
 
     // Reset phase if at end of cycle
@@ -349,15 +402,34 @@ inline void MinBLEPVCO::step_tri()
 
 inline void MinBLEPVCO::step_even()
 {
+    if (gotSyncCallback) {
+        gotSyncCallback = false;
+
+        // All calculations based on slave sync discontinuity happening at 
+        // the same sub-sample as the mater discontinuity.
+
+        // First, figure out how much excess phase we are going to have after reset
+        const float excess = -syncCallbackCrossing * normalizedFreq;
+
+        // Figure out where our sub-sample phase should be after reset
+        const float newPhase = .5 + excess;
+        const float jump = -2.f * (phase - newPhase);
+#ifdef _LOG 
+        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
+            phase, newPhase,
+            excess,
+            syncCallbackCrossing, jump);
+#endif
+        syncMinBLEP.jump(syncCallbackCrossing, jump);
+        this->phase = newPhase;
+        return;
+    }
     float oldPhase = phase;
     phase += normalizedFreq;
 
     if (oldPhase < 0.5 && phase >= 0.5) {
         float crossing = -(phase - 0.5) / normalizedFreq;
         doubleSawMinBLEP.jump(crossing, -2.0);
-        if (syncCallback) {
-            syncCallback(crossing);
-        }
     }
 
     // Reset phase if at end of cycle
