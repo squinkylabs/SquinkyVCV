@@ -125,13 +125,13 @@ inline void EV3<TBase>::init()
         vcos[i].setWaveform(MinBLEPVCO::Waveform::Saw);
     }
 
-    vcos[0].setSyncCallback([this](float f, float dx) {
+    vcos[0].setSyncCallback([this](float f) {
 
         if (TBase::params[SYNC2_PARAM].value > .5) {
-            vcos[1].onMasterSync(f, dx);
+            vcos[1].onMasterSync(f);
         }
         if (TBase::params[SYNC3_PARAM].value > .5) {
-            vcos[2].onMasterSync(f, dx);
+            vcos[2].onMasterSync(f);
         }
         });
 }

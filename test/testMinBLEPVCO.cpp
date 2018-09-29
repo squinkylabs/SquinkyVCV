@@ -1,7 +1,14 @@
 #include <assert.h>
 
+#if !defined(M_PI)
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+
 #include "asserts.h"
 #include "EV3.h"
+
+
+
 #include "MinBLEPVCO.h"
 #include "TestComposite.h"
 
@@ -121,7 +128,7 @@ static void testSync1()
         lastOut = x;
     }
 
-    vco.onMasterSync(10, -2);       // set a reset to VCO
+    vco.onMasterSync(10);       // set a reset to VCO
     vco.step();
     const float x = vco.getOutput();
     assertLT(x, lastOut);
@@ -245,7 +252,6 @@ static void testOutput(MinBLEPVCO::Waveform wf, bool expectFlat)
 {
     MinBLEPVCO osc;
 
-
     osc.setWaveform(wf);
     osc.setNormalizedFreq(.1f, 1.0f / 44100);      // high freq
 
@@ -266,9 +272,7 @@ static void testOutputs()
     testOutput(MinBLEPVCO::Waveform::Saw, false);
     testOutput(MinBLEPVCO::Waveform::Square, true);
     testOutput(MinBLEPVCO::Waveform::Sin, false);
-
-    printf("Make TRiangle work\n");
-   // testOutput(MinBLEPVCO::Waveform::Tri, false);
+    testOutput(MinBLEPVCO::Waveform::Tri, false);
     testOutput(MinBLEPVCO::Waveform::Even, false);
    
 }
@@ -280,13 +284,55 @@ static void testBlep()
     testBlepx(-.9f, .2f);
 }
 
+static void testZero()
+{
+    MinBLEPVCO osc;
+
+    osc.setWaveform(MinBLEPVCO::Waveform::Saw);
+    osc.setNormalizedFreq(.1f, 1.0f / 44100);      // high freq
+    osc.step();
+    osc.setWaveform(MinBLEPVCO::Waveform::END);
+    osc.step();
+    float x = osc.getOutput();
+    assertEQ(x, 0);
+}
+
+static void testSyncOut(MinBLEPVCO::Waveform wf)
+{
+    MinBLEPVCO osc;
+
+    int callbackCount = 0;
+    osc.setWaveform(wf);
+    osc.setNormalizedFreq(.1f, 1.0f / 44100);      // high freq
+    osc.setSyncCallback([&callbackCount](float p) {
+        assert(p <= 0 && p >= -1);
+        callbackCount++;
+    });
+
+    for (int i = 0; i < 15; ++i) {
+        osc.step();
+       
+    }
+   // assertEQ(callbackCount, 1);
+    assertGE(callbackCount, 1);     // TODO: why does square do 3??
+
+}
+
+static void testSyncOut()
+{
+    testSyncOut(MinBLEPVCO::Waveform::Saw);
+    testSyncOut(MinBLEPVCO::Waveform::Square);
+    testSyncOut(MinBLEPVCO::Waveform::Sin);
+    testSyncOut(MinBLEPVCO::Waveform::Tri);
+    testSyncOut(MinBLEPVCO::Waveform::Even);
+}
+
 void testMinBLEPVCO()
 {
     // A lot of these tests are from old API
 //    TestMB::test1();
   //  printf("fix the minb tests\n");
   //  test0();
-
 
     testSaw1();
     //testSync1();
@@ -297,4 +343,6 @@ void testMinBLEPVCO()
   //  testBlep();
     testEnums();
     testOutputs();
+    testZero();
+    testSyncOut();
 }

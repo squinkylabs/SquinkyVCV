@@ -50,7 +50,11 @@ class MinBLEPVCO
 {
 public:
     friend class TestMB;
-    using SyncCallback = std::function<void(float p, float dx)>;
+
+    /**
+     * ph is the "phase (-1..0)"
+     */
+    using SyncCallback = std::function<void(float p)>;
 
     MinBLEPVCO();
     enum class Waveform {Sin, Tri, Saw, Square, Even, END };
@@ -71,9 +75,10 @@ public:
     }
 
     /**
-     * Send the sync waveform to VCO
+     * Send the sync waveform to VCO.
+     * usually called from outside.
      */
-    void onMasterSync(float phase, float dx);
+    void onMasterSync(float phase);
     void setSyncCallback(SyncCallback);
     void setPulseWidth(float);
 
@@ -178,6 +183,7 @@ inline void MinBLEPVCO::step()
             step_even();
             break;
         case Waveform::END:
+            output = 0;
             break;                  // don't do anything if no outputs
         default:
             assert(false);
@@ -185,7 +191,7 @@ inline void MinBLEPVCO::step()
 }
 
 // callback from master sync when it rolls over
-inline void MinBLEPVCO::onMasterSync(float masterPhase, float dx)
+inline void MinBLEPVCO::onMasterSync(float masterPhase)
 {
 
     gotSyncCallback = true;
@@ -233,7 +239,7 @@ inline void MinBLEPVCO::step_saw()
 
         sawMinBLEP.jump(crossing, -2.0);
         if (syncCallback) {
-            syncCallback(crossing, -2.0f);
+            syncCallback(crossing);
         }
     }
 
@@ -256,20 +262,14 @@ inline void MinBLEPVCO::step_sq()
         gotSyncCallback = false;
         assert(false);  // TODO
     }
-#if 0
-    // Pulse width
-    float pw;
 
-    pw = .5;        // TODO: figure out pw,
-   // pw = TBase::params[PWM_PARAM].value + TBase::inputs[PWM_INPUT].value / 5.0;
-    const float minPw = 0.05f;
-    // move all this out to module
-    pw = rack::rescale(std::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
-#endif
     if (!halfPhase && phase >= pulseWidth) {
         float crossing = -(phase - pulseWidth) / normalizedFreq;
         squareMinBLEP.jump(crossing, 2.0);
         halfPhase = true;
+        if (syncCallback) {
+            syncCallback(crossing);
+        }
     }
 
     // Reset phase if at end of cycle
@@ -278,6 +278,9 @@ inline void MinBLEPVCO::step_sq()
         float crossing = -phase / normalizedFreq;
         squareMinBLEP.jump(crossing, -2.0);
         halfPhase = false;
+        if (syncCallback) {
+            syncCallback(crossing);
+        }
     }
 
     float square = (phase < pulseWidth) ? -1.0 : 1.0;
@@ -292,6 +295,10 @@ inline void MinBLEPVCO::step_sin()
     // Reset phase if at end of cycle
     if (phase >= 1.0) {
         phase -= 1.0;
+        if (syncCallback) {
+            float crossing = -phase / normalizedFreq;
+            syncCallback(crossing);
+        }
     }
 
     // want cosine, but only have sine lookup
@@ -312,6 +319,9 @@ inline void MinBLEPVCO::step_tri()
     if (oldPhase < 0.5 && phase >= 0.5) {
         const float crossing = -(phase - 0.5) / normalizedFreq;
         triSquareMinBLEP.jump(crossing, 2.0);
+        if (syncCallback) {
+            syncCallback(crossing);
+        }
     }
 
     // Reset phase if at end of cycle
@@ -320,6 +330,9 @@ inline void MinBLEPVCO::step_tri()
         float crossing = -phase / normalizedFreq;
         triSquareMinBLEP.jump(crossing, -2.0);
         halfPhase = false;
+        if (syncCallback) {
+            syncCallback(crossing);
+        }
     }
 
     // Outputs
@@ -342,6 +355,9 @@ inline void MinBLEPVCO::step_even()
     if (oldPhase < 0.5 && phase >= 0.5) {
         float crossing = -(phase - 0.5) / normalizedFreq;
         doubleSawMinBLEP.jump(crossing, -2.0);
+        if (syncCallback) {
+            syncCallback(crossing);
+        }
     }
 
     // Reset phase if at end of cycle
@@ -349,6 +365,9 @@ inline void MinBLEPVCO::step_even()
         phase -= 1.0;
         float crossing = -phase / normalizedFreq;
         doubleSawMinBLEP.jump(crossing, -2.0);
+        if (syncCallback) {
+            syncCallback(crossing);
+        }
     }
 
 
