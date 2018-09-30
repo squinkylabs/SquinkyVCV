@@ -203,7 +203,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     if (index != 0) {
         addParam(ParamWidget::create<CKSS>(
             Vec(x + 30, y3), module, EV3<WidgetComposite>::SYNC1_PARAM + delta * index,
-            0.0f, 1.0f, 1.0f));
+            0.0f, 1.0f, 0.0f));
         addLabel(Vec(x + 22, y3 - 20), "on");
         addLabel(Vec(x + 22, y3 + 20), "off");
     }
@@ -212,7 +212,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     const float xx = x - 8;
         // include one extra wf - none
     const float numWaves = (float) EV3<WidgetComposite>::Waves::END;
-    const float defWave = (float) EV3<WidgetComposite>::Waves::SAW;
+    const float defWave = (float) EV3<WidgetComposite>::Waves::SIN;
     addParam(ParamWidget::create<WaveformSelector>(
         Vec(xx, y4),
         module,
