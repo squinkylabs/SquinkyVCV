@@ -116,6 +116,7 @@ private:
 
     void processCV();
     void setOversample();
+    void processBuffer(float *) const;
 };
 
 template <class TBase>
@@ -213,8 +214,6 @@ void Shaper<TBase>::processCV()
     asymCurveindex = (int) round(sym * 15.1);           // This math belongs in the shaper
 }
 
-
-#if 1
 template <class TBase>
 void  Shaper<TBase>::step()
 {
@@ -225,7 +224,7 @@ void  Shaper<TBase>::step()
 
     float buffer[maxOversample];
     float input = TBase::inputs[INPUT_AUDIO].value;
-   // const float rawInput = input;
+    // const float rawInput = input;
 
     // TODO: maybe add offset after gain?
     if (shape != Shapes::AsymSpline) {
@@ -235,8 +234,26 @@ void  Shaper<TBase>::step()
         input *= _gain;
     }
 
-    up.process(buffer, input);
+    if (curOversample != 1) {
+        up.process(buffer, input);
+    } else {
+        buffer[0] = input;
+    }
 
+    processBuffer(buffer);
+    float output;
+    if (curOversample != 1) {
+        output = dec.process(buffer);
+    } else {
+        output = buffer[0];
+    }
+    TBase::outputs[OUTPUT_AUDIO].value = output;
+}
+
+#if 1
+template <class TBase>
+void  Shaper<TBase>::processBuffer(float* buffer) const
+{
     switch (shape) {
         case Shapes::FullWave:
             for (int i = 0; i < curOversample; ++i) {
@@ -338,74 +355,6 @@ void  Shaper<TBase>::step()
             assert(false);
     }
 
-
-/*
-    else
-
-        for (int i = 0; i < oversample; ++i) {
-        float x = buffer[i];
-
-
-
-            case Shapes::Fold:
-                x = AudioMath::fold(x);
-                x *= 5.6f;
-                break;
-            case Shapes::Fold2:
-                x = .3f * AudioMath::fold(x);
-                if (x > 0) {
-                    x = LookupTable<float>::lookup(*sinLookup, 1.3f * x, false);
-                } else {
-                    x = -LookupTable<float>::lookup(*sinLookup, -x, false);
-                }
-                if (x > 0) x = std::sqrt(x);
-                x *= 4.4f;
-
-                break;
-            case Shapes::AsymSpline:
-            {
-                x = rawInput * _gain;           // we use the offset for something else
-                x *= .15f;
-                const float sym = .1f * (5 - _offset);
-                int index = (int) round(sym * 15.1);           // This math belongs in the shaper
-                x = asymShaper.lookup(x, index);
-                x *= 6.1f;
-            }
-            break;
-            case Shapes::Crush:
-            {
-                x = rawInput;          // remove the gain
-                float invGain = 1 + (1 - _gainInput) * 100; //0..10
-                invGain *= .01f;
-#if 0
-                if (invGain < 1) {
-                    printf("invg gain = %f\n", invGain);
-                    fflush(stdout);
-                    invGain = 1;
-
-                }
-#endif
-                //  printf("crush, x=%.2f, gi=%.2f invGain = %.2f", x, gainInput, invGain);
-
-                x *= invGain;
-                x = std::round(x);
-                //  printf(" mult=%.2f", x);
-                x /= invGain;
-                //   printf(" dv=%.2f\n", x);
-                fflush(stdout);
-            }
-            break;
-            default:
-                assert(false);
-
-        }
-        buffer[i] = x;
-    }
-#endif
-*/
-
-    const float output = dec.process(buffer);
-    TBase::outputs[OUTPUT_AUDIO].value = output;
 }
 #else
 template <class TBase>

@@ -551,15 +551,47 @@ static void testDG()
 
 // 95
 // down to 67 for just the oversampler.
-static void testShaper1()
+static void testShaper1a()
+{
+    Shaper<TestComposite> gmr;
+
+    // gmr.setSampleRate(44100);
+    // gmr.init();
+    gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 0;
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
+
+    MeasureTime<float>::run(overheadOutOnly, "shaper fw 16X", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        }, 1);
+}
+
+static void testShaper1b()
 {
     Shaper<TestComposite> gmr;
 
     // gmr.setSampleRate(44100);
     // gmr.init();
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
+    gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 1;
 
-    MeasureTime<float>::run(overheadOutOnly, "shaper fw", [&gmr]() {
+    MeasureTime<float>::run(overheadOutOnly, "shaper fw 4X", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        }, 1);
+}
+static void testShaper1c()
+{
+    Shaper<TestComposite> gmr;
+
+    // gmr.setSampleRate(44100);
+    // gmr.init();
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
+    gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;
+
+    MeasureTime<float>::run(overheadOutOnly, "shaper fw 1X", [&gmr]() {
         gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
         gmr.step();
         return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
@@ -749,8 +781,10 @@ void perfTest()
     testNormal();
 #endif
 
-    testDG();
-    testShaper1();
+
+    testShaper1a();
+    testShaper1b();
+    testShaper1c();
     testShaper2();
     testShaper3();
     testShaper4();

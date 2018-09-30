@@ -56,7 +56,7 @@ public:
 
     AsymWaveShaper();
   
-    float lookup(float x, int index)
+    float lookup(float x, int index) const
     {
         float x_scaled = 0;
         if (x >= 1) {
@@ -68,7 +68,7 @@ public:
         }
 
         assert(index >= 0 && index < iSymmetryTables);
-        LookupTableParams<float>& table = tables[index];
+        const LookupTableParams<float>& table = tables[index];
         // TODO: we are going outside of domain!.
         const float y = LookupTable<float>::lookup(table, x_scaled, true);
        // printf("lookup %f -> %f ret %f\n", x, x_scaled, y);
