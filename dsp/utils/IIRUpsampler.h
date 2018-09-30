@@ -2,8 +2,9 @@
 
 #include "BiquadParams.h"
 #include "BiquadState.h"
-#include "ButterworthFilterDesigner.h"
+//#include "ButterworthFilterDesigner.h"
 #include "BiquadFilter.h"
+#include "ObjectCache.h"
 
 template <int FACTOR>
 class IIRUpsampler
@@ -13,7 +14,7 @@ public:
     {
         input *= FACTOR;
         for (int i = 0; i < FACTOR; ++i) {
-            outputBuffer[i] = BiquadFilter<float>::run(input, state, params);
+            outputBuffer[i] = BiquadFilter<float>::run(input, state, *params);
             input = 0;      // just filter a delta - don't average the whole signal
         }
     }
@@ -25,9 +26,10 @@ public:
     void setCutoff(float cutoff)
     {
         assert(cutoff > 0 && cutoff < .5f);
-        ButterworthFilterDesigner<float>::designSixPoleLowpass(params, cutoff);
+       // ButterworthFilterDesigner<float>::designSixPoleLowpass(params, cutoff);
+        params = ObjectCache<float>::get6PLPParams(cutoff);
     }
 private:
-    BiquadParams<float, 3> params;
+    std::shared_ptr<BiquadParams<float, 3>> params;
     BiquadState<float, 3> state;
 };

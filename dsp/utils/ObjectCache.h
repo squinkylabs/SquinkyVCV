@@ -2,6 +2,7 @@
 
 
 #include "LookupTable.h"
+#include "BiquadParams.h"
 
 /**
  * This class creates objects and caches them.
@@ -46,6 +47,8 @@ public:
      */
     static std::shared_ptr<LookupTableParams<T>> getTanh5();
 
+    static std::shared_ptr<BiquadParams<float, 3>> get6PLPParams(float normalizedFc);
+
 private:
     /**
      * Cache uses weak pointers. This allows the cached objects to be
@@ -59,4 +62,6 @@ private:
     static std::weak_ptr<LookupTableParams<T>> exp2ExLow;
     static std::weak_ptr<LookupTableParams<T>> db2Gain;
     static std::weak_ptr<LookupTableParams<T>> tanh5;
+
+    static std::weak_ptr< BiquadParams<float, 3>> lowpass64;
 };

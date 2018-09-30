@@ -2,6 +2,7 @@
 #include <assert.h>
 
 #include "AudioMath.h"
+#include "ButterworthFilterDesigner.h"
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
 
@@ -129,7 +130,25 @@ std::function<T(T)> ObjectCache<T>::getExp2Ex()
     };
 }
 
+template <typename T>
+std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float normalizedFc)
+{
+    const int div = (int) std::round(1.0 / normalizedFc);
+    assert(div == 64);
+    std::shared_ptr < BiquadParams<float, 3>> ret = lowpass64.lock();
+    if (!ret) {
+        ret = std::make_shared<BiquadParams<float, 3>>();
+        ButterworthFilterDesigner<float>::designSixPoleLowpass(*ret, normalizedFc);
+        lowpass64 = ret;
+    }
+    return ret;
+
+}
+
 // The weak pointers that hold our singletons.
+template <typename T>
+std::weak_ptr< BiquadParams<float, 3> >  ObjectCache<T>::lowpass64;
+
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::bipolarAudioTaper;
 

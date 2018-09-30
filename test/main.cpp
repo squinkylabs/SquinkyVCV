@@ -128,6 +128,7 @@ int main(int argc, char ** argv)
     }
 
 
+    testFilterDesign();
     testFinalLeaks();
 
     // When we run inside Visual Studio, don't exit debugger immediately

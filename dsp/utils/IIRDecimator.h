@@ -2,7 +2,6 @@
 
 #include "BiquadParams.h"
 #include "BiquadState.h"
-#include "ButterworthFilterDesigner.h"
 #include "BiquadFilter.h"
 
 /**
@@ -19,7 +18,7 @@ public:
     {
         float x = 0;
         for (int i = 0; i < OVERSAMPLE; ++i) {
-            x = BiquadFilter<float>::run(input[i], state, params);
+            x = BiquadFilter<float>::run(input[i], state, *params);
         }
         return x;
     }
@@ -32,9 +31,9 @@ public:
     void setCutoff(float cutoff)
     {
         assert(cutoff > 0 && cutoff < .5f);
-        ButterworthFilterDesigner<float>::designSixPoleLowpass(params, cutoff);
+        params = ObjectCache<float>::get6PLPParams(cutoff);
     }
 private:
-    BiquadParams<float, 3> params;
+    std::shared_ptr<BiquadParams<float, 3>> params;
     BiquadState<float, 3> state;
 };
