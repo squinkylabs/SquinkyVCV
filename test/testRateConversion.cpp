@@ -4,11 +4,11 @@
 
 #include "asserts.h"
 
-static void setup(IIRUpsampler<16>& up, IIRDecimator<16>& dec)
+static void setup(IIRUpsampler& up, IIRDecimator& dec)
 {
-    float cutoff = .25 / 16;
-    up.setCutoff(cutoff);
-    dec.setCutoff(cutoff);
+   // float cutoff = .25 / 16;
+    up.setup(16);
+    dec.setup(16);
 }
 
 // test that the functions can be called
@@ -16,8 +16,8 @@ static void test0()
 {
     float buffer[16];
 
-    IIRUpsampler<16> up;
-    IIRDecimator<16> dec;
+    IIRUpsampler up;
+    IIRDecimator dec;
     setup(up, dec);
   
     up.process(buffer, 0);
@@ -29,8 +29,8 @@ static void test1()
 {
     float buffer[16];
 
-    IIRUpsampler<16> up;
-    IIRDecimator<16> dec;
+    IIRUpsampler up;
+    IIRDecimator dec;
     setup(up, dec);
 
     up.process(buffer, 0);
@@ -43,8 +43,8 @@ static void test2()
 {
     float buffer[16];
 
-    IIRUpsampler<16> up;
-    IIRDecimator<16> dec;
+    IIRUpsampler up;
+    IIRDecimator dec;
     setup(up, dec);
 
     float x;

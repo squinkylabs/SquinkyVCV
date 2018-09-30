@@ -206,6 +206,16 @@ static void testExp2Ex()
     assertEQ(_numLookupParams, 2);
 }
 
+template <typename T>
+static void testLPF()
+{
+    //  make sure we can get the two supported cutoffs
+
+    auto f16 = ObjectCache<T>::get6PLPParams(.25f / 16);
+    assert(f16);
+    auto f4 = ObjectCache<T>::get6PLPParams(.25f / 4);
+    assert(f4);
+}
 
 
 template <typename T>
@@ -220,6 +230,7 @@ static void test()
     testDb2Gain2<T>();
     testTanh5<T>();
     testExp2Ex<T>();
+    testLPF<T>();
 }
 
 void testObjectCache()

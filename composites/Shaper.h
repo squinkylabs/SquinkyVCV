@@ -103,10 +103,11 @@ private:
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     AudioMath::ScaleFun<float> scaleOffset = AudioMath::makeLinearScaler<float>(-5, 5);
 
-    const static int oversample = 16;
+    const static int maxOversample = 16;
+    int curOversample = 16;
     void init();
-    IIRUpsampler<oversample> up;
-    IIRDecimator<oversample> dec;
+    IIRUpsampler up;
+    IIRDecimator dec;
     std::shared_ptr<LookupTableParams<float>> tanhLookup;
     AsymWaveShaper asymShaper;
     int cycleCount = 1;
@@ -114,6 +115,7 @@ private:
     int asymCurveindex = 0;
 
     void processCV();
+    void setOversample();
 };
 
 template <class TBase>
@@ -156,16 +158,38 @@ const char* Shaper<TBase>::getString(Shapes shape)
 template <class TBase>
 void  Shaper<TBase>::init()
 {
-    float fc = .25 / float(oversample);
-    up.setCutoff(fc);
-    dec.setCutoff(fc);
-
+    setOversample();
     tanhLookup = ObjectCache<float>::getTanh5();
+}
+
+template <class TBase>
+void  Shaper<TBase>::setOversample()
+{
+    //   float fc = .25 / float(oversample);
+    up.setup(curOversample);
+    dec.setup(curOversample);
 }
 
 template <class TBase>
 void Shaper<TBase>::processCV()
 {
+    int oversampleCode = (int) std::round(TBase::params[PARAM_OVERSAMPLE].value);
+    switch (oversampleCode) {
+        case 0:
+            curOversample = 16;
+            setOversample();
+            break;
+        case 1:
+            curOversample = 4;
+            setOversample();
+            break;
+        case 2:
+            curOversample = 1;
+            break;
+        default:
+            assert(false);
+    }
+
     // 0..1
     _gainInput = scaleGain(
         TBase::inputs[INPUT_GAIN].value,
@@ -199,7 +223,7 @@ void  Shaper<TBase>::step()
         processCV();
     }
 
-    float buffer[oversample];
+    float buffer[maxOversample];
     float input = TBase::inputs[INPUT_AUDIO].value;
    // const float rawInput = input;
 
@@ -215,7 +239,7 @@ void  Shaper<TBase>::step()
 
     switch (shape) {
         case Shapes::FullWave:
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x = std::abs(x);
                 x = std::min(x, 10.f);
@@ -223,7 +247,7 @@ void  Shaper<TBase>::step()
             }
             break;
         case  Shapes::AsymSpline:
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x *= .15f;
                 x = asymShaper.lookup(x, asymCurveindex);
@@ -232,7 +256,7 @@ void  Shaper<TBase>::step()
             }
             break;
         case Shapes::Clip:
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x *= 3;
                 x = std::min(3.f, x);
@@ -242,7 +266,7 @@ void  Shaper<TBase>::step()
             }
             break;
         case Shapes::EmitterCoupled:
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x *= .25;
                 x = LookupTable<float>::lookup(*tanhLookup.get(), x, true);
@@ -252,7 +276,7 @@ void  Shaper<TBase>::step()
             break;
 
         case Shapes::HalfWave:
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x = std::max(0.f, x);
                 x *= 1.4f;
@@ -261,7 +285,7 @@ void  Shaper<TBase>::step()
             }
             break;
         case Shapes::Fold:
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x = AudioMath::fold(x);
                 x *= 5.6f;
@@ -269,7 +293,7 @@ void  Shaper<TBase>::step()
             }
             break;
         case Shapes::Fold2:
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x = .3f * AudioMath::fold(x);
                 if (x > 0) {
@@ -286,7 +310,7 @@ void  Shaper<TBase>::step()
         {
             float invGain = 1 + (1 - _gainInput) * 100; //0..10
             invGain *= .01f;
-            for (int i = 0; i < oversample; ++i) {
+            for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];            // for crush, no gain has been applied
 
 #if 0
@@ -297,7 +321,7 @@ void  Shaper<TBase>::step()
 
                 }
 #endif
-            //  printf("crush, x=%.2f, gi=%.2f invGain = %.2f", x, gainInput, invGain);
+             // printf("crush, x=%.2f, gi=%.2f invGain = %.2f", x, _gainInput, invGain);
 
                 x *= invGain;
                 x = std::round(x);

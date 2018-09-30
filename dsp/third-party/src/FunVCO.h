@@ -60,10 +60,10 @@ struct VoltageControlledOscillator
     bool triEnabled = false;
 
 #ifdef _USEIIR
-    IIRDecimator<OVERSAMPLE> sinDecimator;
-    IIRDecimator<OVERSAMPLE> triDecimator;
-    IIRDecimator<OVERSAMPLE> sawDecimator;
-    IIRDecimator<OVERSAMPLE> sqrDecimator;
+    IIRDecimator sinDecimator;
+    IIRDecimator triDecimator;
+    IIRDecimator sawDecimator;
+    IIRDecimator sqrDecimator;
 #else
     rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
     rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;
@@ -91,12 +91,13 @@ struct VoltageControlledOscillator
         expLookup = ObjectCache<float>::getExp2Ex();
 
         // Set anti-alias 3-db down point an octave below nyquist: .25   
-        float cutoff = .25f / float(OVERSAMPLE);
+        //float cutoff = .25f / float(OVERSAMPLE);
 
-        sinDecimator.setCutoff(cutoff);
-        sawDecimator.setCutoff(cutoff);
-        sqrDecimator.setCutoff(cutoff);
-        triDecimator.setCutoff(cutoff);
+        sinDecimator.setup(16);
+        sinDecimator.setup(16);
+        sawDecimator.setup(16);
+        sqrDecimator.setup(16);
+        triDecimator.setup(16);
     }
 
     // Use the standard c++ library for random generation

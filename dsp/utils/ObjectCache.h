@@ -64,4 +64,5 @@ private:
     static std::weak_ptr<LookupTableParams<T>> tanh5;
 
     static std::weak_ptr< BiquadParams<float, 3>> lowpass64;
+    static std::weak_ptr< BiquadParams<float, 3>> lowpass16;
 };
