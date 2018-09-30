@@ -117,8 +117,6 @@ GrayWidget::GrayWidget(GrayModule *module) :
     }
 
     addBits(module);
-
-   
     addInput(createInputCentered<PJ301MPort>(
             Vec(100,20),
             module,
@@ -131,6 +129,11 @@ GrayWidget::GrayWidget(GrayModule *module) :
         0.0f, 1.0f, 0.0f));
     addLabel(Vec(85, 70), "Balanced");
     addLabel(Vec(85, 110), "Norm");
+
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(100, 340),
+        module,
+        Gray<WidgetComposite>::OUTPUT_MIXED));
    
 
  

@@ -129,7 +129,7 @@ inline WaveformSelector::WaveformSelector()
 
 inline WaveformSelector::~WaveformSelector()
 {
-    printf("in dtor of waveform selector");
+   // printf("in dtor of waveform selector");
 }
 
 inline void WaveformSelector::drawSVG(NVGcontext *vg, SVGWidget& svg, float x, float y)

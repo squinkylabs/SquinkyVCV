@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GateTrigger.h"
-#include "ClockMult.h"
 
 static const uint8_t gtable[256] =
 {
@@ -43,9 +42,6 @@ static const uint8_t bgtable[256] =
 0x4E, 0x46, 0xC6, 0x86, 0x82, 0xC2, 0x42, 0x43, 0xC3, 0x83, 0x81, 0xC1, 0x41, 0x40, 0xC0, 0x80
 };
 
-
-
-
 template <class TBase>
 class Gray : public TBase
 {
@@ -73,6 +69,7 @@ public:
 
     enum OutputIds
     {
+        OUTPUT_MIXED,
         OUTPUT_0,
         OUTPUT_1,
         OUTPUT_2,
@@ -81,7 +78,6 @@ public:
         OUTPUT_5,
         OUTPUT_6,
         OUTPUT_7,
-
         NUM_OUTPUTS
     };
 
@@ -105,20 +101,20 @@ public:
 
 private:
     uint8_t counterValue = 0;
-    //ClockMult clock;
-    GateTrigger gateTrigger;
-    
+    GateTrigger gateTrigger; 
     int c = 0;
-
     void init();
-  
 };
 
 
 template <class TBase>
 void  Gray<TBase>::init()
 {
-   // clock.setMultiplier(1); // no mult
+   // Init all the outputs to zero,
+   // since they don't all get update until a clock.
+   for (int i=0; i<NUM_OUTPUTS; ++i) {
+       TBase::outputs[i].value = 0;
+   }
 }
 
 
@@ -133,11 +129,13 @@ void  Gray<TBase>::step()
 
     const uint8_t* table = TBase::params[PARAM_CODE].value > .5 ? bgtable : gtable;
 
-    auto g = table[counterValue];
+    const auto g0 = table[counterValue];
+    auto g = g0;
     for (int i=0; i<8; ++i) {
         bool b = g & 1;
         TBase::lights[i + LIGHT_0].value = b ? 10 : 0;
         TBase::outputs[i + OUTPUT_0].value = b ? 10 : 0;
         g >>= 1;
     }
+    TBase::outputs[OUTPUT_MIXED].value = (float) g0/25.f;
 } 
