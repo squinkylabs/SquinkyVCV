@@ -64,6 +64,7 @@ private:
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
     ShaperModule* const module;
     void addSelector(ShaperModule* module);
+    int xOrig = 0;
 };
 
 void ShaperWidget::step()
@@ -75,6 +76,9 @@ void ShaperWidget::step()
         curShape = shape;
         const char* shapeString = Shaper<WidgetComposite>::getString(shape);
         shapeLabel->text = shapeString;
+        const int len = shapeLabel->text.length();
+        shapeLabel->box.pos.x = xOrig - len * 2;
+
     }
 }
 
@@ -91,11 +95,10 @@ void ShaperWidget::addSelector(ShaperModule* module)
     p->snap = true;
 	p->smooth = false;
     addParam(p);
-    shapeLabel = addLabel(Vec(x-30, y-40), "");
+    shapeLabel = addLabel(Vec(x-12, y-40), "");
     shapeParam = p;
+    xOrig = shapeLabel->box.pos.x;
 }
-
-
 
 /**
  * Global coordinate constants
@@ -148,13 +151,6 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
         module, Shaper<WidgetComposite>::PARAM_OFFSET, -5, 5, 0));
     addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "offset");
 
-#if 0
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(symmetryX, y),
-        module, Shaper<WidgetComposite>::PARAM_SYMMETRY, 0, 1, 0));
-    addLabel(Vec(symmetryX+labelDeltaX,  y + labelDeltaY), "sym");
-    #endif
-
     const float deltaYTrim = 60;
     const float deltaYInput = 90;
     addParam(createParamCentered<Trimpot>(
@@ -171,6 +167,14 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
             Vec(offsetX,y + deltaYInput),
             module,
             Shaper<WidgetComposite>::INPUT_OFFSET));
+
+    const float swX = 90;
+    const float swY = 300;
+    addParam(createParamCentered<NKK>(
+        Vec(swX, swY+4), module, Shaper<WidgetComposite>::PARAM_OVERSAMPLE, 0.0f, 2.0f, 0.0f));
+    addLabel(Vec(swX-44, swY-20), "1X");
+    addLabel(Vec(swX-44, swY-4), "4X");
+    addLabel(Vec(swX-44, swY+12), "16X");
 
     
     // screws

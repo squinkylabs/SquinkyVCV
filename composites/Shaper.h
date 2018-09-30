@@ -65,6 +65,7 @@ public:
         PARAM_GAIN_TRIM,
         PARAM_OFFSET,
         PARAM_OFFSET_TRIM,
+        PARAM_OVERSAMPLE,
         NUM_PARAMS
     };
 
@@ -200,7 +201,7 @@ void  Shaper<TBase>::step()
 
     float buffer[oversample];
     float input = TBase::inputs[INPUT_AUDIO].value;
-    const float rawInput = input;
+   // const float rawInput = input;
 
     // TODO: maybe add offset after gain?
     if (shape != Shapes::AsymSpline) {

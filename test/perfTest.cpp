@@ -4,7 +4,7 @@
 #include <limits>
 
 #include "EvenVCO.h"
-//#include "EvenVCO_orig.h"
+#include "EvenVCO_orig.h"
 
 #include "AudioMath.h"
 #include "BiquadParams.h"
@@ -254,7 +254,7 @@ static void testLFN()
         }, 1);
 }
 
-#if 0
+#if 1
 static void testEvenOrig()
 {
     EvenVCO_orig<TestComposite> lfn;
@@ -768,7 +768,7 @@ void perfTest()
     testFunNone();
 #endif
 
-//    testEvenOrig();
+    testEvenOrig();
     testEvenSaw();
 #if 0
     testEven();
