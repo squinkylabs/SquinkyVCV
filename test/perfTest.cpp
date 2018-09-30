@@ -597,6 +597,36 @@ static void testShaper3()
         return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
         }, 1);
 }
+
+static void testShaper4()
+{
+    Shaper<TestComposite> gmr;
+
+    // gmr.setSampleRate(44100);
+    // gmr.init();
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::Fold;
+
+    MeasureTime<float>::run(overheadOutOnly, "folder", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        }, 1);
+}
+
+static void testShaper5()
+{
+    Shaper<TestComposite> gmr;
+
+    // gmr.setSampleRate(44100);
+    // gmr.init();
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::Fold2;
+
+    MeasureTime<float>::run(overheadOutOnly, "folder II", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        }, 1);
+}
 #if 0
 static void testAttenuverters()
 {
@@ -723,7 +753,9 @@ void perfTest()
     testShaper1();
     testShaper2();
     testShaper3();
-   
+    testShaper4();
+    testShaper5();
+
     testEV3();
     testCHBdef();
     testFunSaw(true);

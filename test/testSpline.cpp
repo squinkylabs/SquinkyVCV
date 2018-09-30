@@ -143,8 +143,15 @@ static void testShaper0()
         assertLT(s.length(), 20);
         gmr.params[Shaper<TestComposite>::PARAM_OFFSET].value = -5;
         for (int i = 0; i < 50; ++i) gmr.step();
+        const float x = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
         gmr.params[Shaper<TestComposite>::PARAM_OFFSET].value = 5;
         for (int i = 0; i < 50; ++i) gmr.step();
+        const float y = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+
+        assertLT(x, 10);
+        assertLT(y, 10);
+        assertGT(x, -10);
+        assertGT(y, -10);
     }
 }
 
@@ -223,7 +230,7 @@ static void testShaper2d(Shaper<TestComposite>::Shapes shape, float gain, float 
         const float out = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
 
         // brief ringing goes > 10
-        assert(out < 20 && out > -10);
+        assert(out < 20 && out > -20);
     }
     
 }
