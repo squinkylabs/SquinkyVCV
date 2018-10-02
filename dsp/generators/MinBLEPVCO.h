@@ -126,6 +126,8 @@ private:
     void step_sin();
     void step_tri();
 
+    float sineLook(float input) const;
+
     std::string name;  
 };
 
@@ -193,10 +195,8 @@ inline void MinBLEPVCO::step()
 // callback from master sync when it rolls over
 inline void MinBLEPVCO::onMasterSync(float masterPhase)
 {
-
     gotSyncCallback = true;
     syncCallbackCrossing = masterPhase;
-   // printf("%s get master sync callback\n", name.c_str());
 }
 
 inline void MinBLEPVCO::step_saw()
@@ -295,6 +295,17 @@ inline void MinBLEPVCO::step_sq()
     output = 5.0*square;
 }
 
+inline float MinBLEPVCO::sineLook(float input) const
+{
+    // want cosine, but only have sine lookup
+    float adjPhase = input + .25f;
+    if (adjPhase >= 1) {
+        adjPhase -= 1;
+    }
+
+    return -LookupTable<float>::lookup(*sinLookup, adjPhase, true);
+}
+
 inline void MinBLEPVCO::step_sin()
 {
     if (gotSyncCallback) {
@@ -308,7 +319,10 @@ inline void MinBLEPVCO::step_sin()
 
         // Figure out where our sub-sample phase should be after reset
         const float newPhase = .5 + excess;
-        const float jump = -2.f * (phase - newPhase);
+
+        const float oldOutput = sineLook(phase);
+        const float newOutput = sineLook(newPhase);
+        const float jump = newOutput - oldOutput;
 
         syncMinBLEP.jump(syncCallbackCrossing, jump);
         this->phase = newPhase;
@@ -326,13 +340,7 @@ inline void MinBLEPVCO::step_sin()
         }
     }
 
-    // want cosine, but only have sine lookup
-    float adjPhase = phase + .25f;
-    if (adjPhase >= 1) {
-        adjPhase -= 1;
-    }
-
-    float sine = -LookupTable<float>::lookup(*sinLookup, adjPhase, true);
+    float sine = sineLook(phase);
     sine += syncMinBLEP.shift();
     output = 5.0*sine;
 }
