@@ -57,7 +57,10 @@ public:
     using SyncCallback = std::function<void(float p)>;
 
     MinBLEPVCO();
-    enum class Waveform {Sin, Tri, Saw, Square, Even, END };
+    enum class Waveform
+    {
+        Sin, Tri, Saw, Square, Even, END
+    };
 
     void step();
 
@@ -68,7 +71,7 @@ public:
     }
 
     void setWaveform(Waveform);
-   
+
     float getOutput() const
     {
         return output;
@@ -128,7 +131,7 @@ private:
 
     float sineLook(float input) const;
 
-    std::string name;  
+    std::string name;
 };
 
 inline MinBLEPVCO::MinBLEPVCO()
@@ -199,6 +202,13 @@ inline void MinBLEPVCO::onMasterSync(float masterPhase)
     syncCallbackCrossing = masterPhase;
 }
 
+#if 0
+static inline float sawFromPhase(float phase)
+{
+    return -1.0 + 2.0 * phase;
+}
+#endif
+
 inline void MinBLEPVCO::step_saw()
 {
     phase += normalizedFreq;
@@ -209,11 +219,19 @@ inline void MinBLEPVCO::step_saw()
         // the same sub-sample as the mater discontinuity.
 
         // First, figure out how much excess phase we are going to have after reset
-        const float excess = - syncCallbackCrossing * normalizedFreq;
+        const float excess = -syncCallbackCrossing * normalizedFreq;
 
         // Figure out where our sub-sample phase should be after reset
         const float newPhase = .5 + excess;
+
         const float jump = -2.f * (phase - newPhase);
+
+       // const float oldSaw = sawFromPhase(phase);
+      //  const float newSaw = sawFromPhase(newPhase);
+       // const float jump = newSaw - oldSaw;
+       // printf("jump0= %.2f new=%.2f\n", jump0, jump); fflush(stdout);
+
+
 #ifdef _LOG 
         printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
             phase, newPhase,
@@ -222,10 +240,10 @@ inline void MinBLEPVCO::step_saw()
 #endif
         syncMinBLEP.jump(syncCallbackCrossing, jump);
         this->phase = newPhase;
-        return;
+        //return;
     } else if (phase >= 1.0) {
 
-        // Not sync case, regular overfloat
+        // Not sync case, regular overflow
         phase -= 1.0;
         float crossing = -phase / normalizedFreq;
 #ifdef _LOG
@@ -240,16 +258,24 @@ inline void MinBLEPVCO::step_saw()
     }
 
     float saw = -1.0 + 2.0*phase;
+   // float saw = sawFromPhase(phase);
     const float mb = sawMinBLEP.shift();
     const float smb = syncMinBLEP.shift();
 #ifdef _LOG
     printf("%s: final out saw=%.2f mb=%.2f smb = %.2f tot=%.2f\n",
         name.c_str(),
-        saw, mb, smb, saw+mb+smb);
+        saw, mb, smb, saw + mb + smb);
 #endif
     saw += (mb + smb);
     output = 5.0*saw;
 }
+
+#if 0
+inline float squareFromPhase(float phase)
+{
+    return (phase < pulseWidth) ? -1.0f : 1.0f;
+}
+#endif
 
 inline void MinBLEPVCO::step_sq()
 {
@@ -265,13 +291,21 @@ inline void MinBLEPVCO::step_sq()
 
         // Figure out where our sub-sample phase should be after reset
         const float newPhase = .5 + excess;
-        const float jump = -2.f * (phase - newPhase);
 
-        syncMinBLEP.jump(syncCallbackCrossing, jump);
+       // const float jump = -2.f * (phase - newPhase); 
+        const float oldOutput = phase < pulseWidth ? -1.0 : 1.0;
+        const float newOutput = newPhase < pulseWidth ? -1.0 : 1.0;
+        if (newOutput != oldOutput) {
+            const float jump = newOutput - oldOutput;
+            syncMinBLEP.jump(syncCallbackCrossing, jump);
+        }
+        halfPhase = newPhase < pulseWidth;
         this->phase = newPhase;
         return;
     }
 
+    // when phase first goes above pulse width,
+    // generate a blep
     if (!halfPhase && phase >= pulseWidth) {
         float crossing = -(phase - pulseWidth) / normalizedFreq;
         squareMinBLEP.jump(crossing, 2.0);
@@ -326,17 +360,18 @@ inline void MinBLEPVCO::step_sin()
 
         syncMinBLEP.jump(syncCallbackCrossing, jump);
         this->phase = newPhase;
-        return;
-    }
+       // return;
+    } else {
 
-    phase += normalizedFreq;
+        phase += normalizedFreq;
 
-    // Reset phase if at end of cycle
-    if (phase >= 1.0) {
-        phase -= 1.0;
-        if (syncCallback) {
-            float crossing = -phase / normalizedFreq;
-            syncCallback(crossing);
+        // Reset phase if at end of cycle
+        if (phase >= 1.0) {
+            phase -= 1.0;
+            if (syncCallback) {
+                float crossing = -phase / normalizedFreq;
+                syncCallback(crossing);
+            }
         }
     }
 
