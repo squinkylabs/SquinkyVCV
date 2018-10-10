@@ -24,16 +24,24 @@ public:
 
     enum ParamIds
     {
+        OCTAVE_PARAM,
+        SEMI_PARAM,
+        FINE_PARAM,
+        DETUNE_PARAM,
+        MIX_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
+        CV_INPUT,
+        GATE_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 
