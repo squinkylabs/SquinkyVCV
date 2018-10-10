@@ -81,14 +81,19 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     }
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(50, 330), Port::OUTPUT, module,  Super<WidgetComposite>::MAIN_OUTPUT));
+        Vec(60, 330), Port::OUTPUT, module,  Super<WidgetComposite>::MAIN_OUTPUT));
     addLabel(
-        Vec(50 , 300), "out");
+        Vec(60 , 310), "out");
 
     addInput(Port::create<PJ301MPort>(
-        Vec(10, 330), Port::INPUT, module,  Super<WidgetComposite>::CV_INPUT));
+        Vec(6, 330), Port::INPUT, module,  Super<WidgetComposite>::CV_INPUT));
     addLabel(
-        Vec(10 , 300), "V/Oct");
+        Vec(2 , 310), "V/8");
+
+    addInput(Port::create<PJ301MPort>(
+        Vec(34, 330), Port::INPUT, module,  Super<WidgetComposite>::GATE_INPUT));
+    addLabel(
+        Vec(34 , 310), "Trig");
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(10, 30), module, Super<WidgetComposite>::OCTAVE_PARAM, -5, 5, 0));
