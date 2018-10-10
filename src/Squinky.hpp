@@ -34,6 +34,7 @@ extern Model *modelShaperModule;
 #ifdef _DG
 extern Model *modelDGModule;
 #endif
+extern Model *modelBlankModule;
 
 
 

@@ -47,4 +47,6 @@ void init(rack::Plugin *p)
 #ifdef _DG
     p->addModel(modelDGModule);
 #endif
+    p->addModel(modelBlankModule);
+
 }
