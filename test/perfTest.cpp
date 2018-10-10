@@ -25,6 +25,7 @@
 #include "EV3.h"
 #include "daveguide.h"
 #include "Shaper.h"
+#include "Super.h"
 
 
 using Shifter = FrequencyShifter<TestComposite>;
@@ -582,6 +583,22 @@ static void testShaper1b()
         return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
         }, 1);
 }
+
+static void testSuper()
+{
+    Super<TestComposite> gmr;
+
+
+    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
+    gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;
+
+    MeasureTime<float>::run(overheadOutOnly, "super", [&gmr]() {
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        }, 1);
+}
+
 static void testShaper1c()
 {
     Shaper<TestComposite> gmr;
@@ -781,7 +798,7 @@ void perfTest()
     testNormal();
 #endif
 
-
+    testSuper();
     testShaper1a();
     testShaper1b();
     testShaper1c();

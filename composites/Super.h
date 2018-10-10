@@ -113,7 +113,7 @@ inline void Super<TBase>::updatePhaseInc()
     globalPhaseInc = TBase::engineGetSampleTime() * freq;
 
     for (int i=0; i<numSaws; ++i) {
-        float detune = (detuneFactors[i] - 1) * .1;
+        float detune = (detuneFactors[i] - 1) * .1f;
         detune += 1;
         phaseInc[i] = globalPhaseInc * detune;
        // printf("phaseINc[%d] = %f\n", i, phaseInc[i]); fflush(stdout);
