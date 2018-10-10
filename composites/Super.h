@@ -72,6 +72,17 @@ private:
     void updatePhaseInc();
     void updateAudio();
 
+// TODO: make static
+    float const detuneFactors[numSaws] = {
+        .89f,
+        .94f,
+        .98f,
+        1.f,
+        1.02f,
+        1.06f,
+        1.107f
+    };
+
 };
 
 
@@ -100,12 +111,34 @@ inline void Super<TBase>::updatePhaseInc()
     pitch += q;
     const float freq = expLookup(pitch);
     globalPhaseInc = TBase::engineGetSampleTime() * freq;
+
+    for (int i=0; i<numSaws; ++i) {
+        float detune = (detuneFactors[i] - 1) * .1;
+        detune += 1;
+        phaseInc[i] = globalPhaseInc * detune;
+       // printf("phaseINc[%d] = %f\n", i, phaseInc[i]); fflush(stdout);
+    }
 }
 
 template <class TBase>
 inline void Super<TBase>::updateAudio()
 {
+    float mix = 0;
+    for (int i=0; i<numSaws; ++i) {
+        phase[i] += phaseInc[i];
+        if (phase[i] > 1) {
+            phase[i] -= 1;
+        }
+        if (phase[i] > 1) {
+             printf("hey, phase too big %f\n", phase[i]); fflush(stdout);
+        }
+        if (phase[i] < 0) {
 
+             printf("hey, phase too bismallg %f\n", phase[i]); fflush(stdout);
+        }
+        mix += phase[i];
+    }
+    TBase::outputs[MAIN_OUTPUT].value = mix * 2;
 }
 
 
