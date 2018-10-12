@@ -133,6 +133,8 @@ private:
     float sineLook(float input) const;
 
     std::string name;
+    bool lastSq = false;
+    bool isSqHigh() const;
 };
 
 inline MinBLEPVCO::MinBLEPVCO()
@@ -269,67 +271,60 @@ inline void MinBLEPVCO::step_saw()
     output = 5.0*saw;
 }
 
-#if 0
-inline float squareFromPhase(float phase)
+
+inline bool MinBLEPVCO::isSqHigh() const
 {
-    return (phase < pulseWidth) ? -1.0f : 1.0f;
+    return phase >= pulseWidth;
 }
-#endif
 
 inline void MinBLEPVCO::step_sq()
 {
+    bool phaseDidOverflow = false;
     phase += normalizedFreq;
     if (gotSyncCallback) {
-        gotSyncCallback = false;
-
-        // All calculations based on slave sync discontinuity happening at 
-        // the same sub-sample as the mater discontinuity.
-
-        // First, figure out how much excess phase we are going to have after reset
+      //  gotSyncCallback = false;
         const float excess = -syncCallbackCrossing * normalizedFreq;
 
-        // Figure out where our sub-sample phase should be after reset
-        const float newPhase = .5 + excess;
-       // const float newPhase = excess;
-
-       // const float jump = -2.f * (phase - newPhase); 
-        const float oldOutput = phase < pulseWidth ? -1.0 : 1.0;
-        const float newOutput = newPhase < pulseWidth ? -1.0 : 1.0;
-        if (newOutput != oldOutput) {
-            const float jump = newOutput - oldOutput;
-            syncMinBLEP.jump(syncCallbackCrossing, jump);
-        }
-        halfPhase = newPhase < pulseWidth;
-        this->phase = newPhase;
-       // return;
+        // reset phase to near zero on sync
+        phase = excess;
+    }
+    if (phase > 1.0f) {
+        phase -= 1.0f;
+        phaseDidOverflow = true;
     }
 
-    // when phase first goes above pulse width,
-    // generate a blep
-    if (!halfPhase && phase >= pulseWidth) {
-        float crossing = -(phase - pulseWidth) / normalizedFreq;
-       // aMinBLEP.jump(crossing, 2.0);
-        getNextMinBLEP()->jump(crossing, 2.0);
-        halfPhase = true;
-    }
+    bool newSq = isSqHigh();
+    if (newSq != lastSq) {
+        lastSq = newSq;
+        const float jump = newSq ? 2 : -2;
+        if (gotSyncCallback) {
+            float crossing = syncCallbackCrossing;
+            syncMinBLEP.jump(crossing, jump);
+            if (syncCallback) {
+                syncCallback(crossing);
+            }
 
-    // Reset phase if at end of cycle
-    if (phase >= 1.0) {
-        phase -= 1.0;
-        float crossing = -phase / normalizedFreq;
-        //aMinBLEP.jump(crossing, -2.0);
-        getNextMinBLEP()->jump(crossing, -2.0);
-        halfPhase = false;
-        if (syncCallback) {
-            syncCallback(crossing);
+        } else if (phaseDidOverflow) {
+            float crossing = -phase / normalizedFreq;
+            aMinBLEP.jump(crossing, jump);
+            if (syncCallback) {
+                syncCallback(crossing);
+            }
+        } else {
+            // crossed PW boundary
+            float crossing = -(phase - pulseWidth) / normalizedFreq;
+            bMinBLEP.jump(crossing, jump);
         }
     }
 
-    float square = (phase < pulseWidth) ? -1.0 : 1.0;
+    float square = newSq ? 1.0f : -1.0f;
     square += aMinBLEP.shift();
     square += bMinBLEP.shift();
     square += syncMinBLEP.shift();
+
     output = 5.0*square;
+
+    gotSyncCallback = false;
 }
 
 inline float MinBLEPVCO::sineLook(float input) const
