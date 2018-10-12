@@ -210,6 +210,9 @@ static inline float sawFromPhase(float phase)
 }
 #endif
 
+
+#if 0 // old way
+
 inline void MinBLEPVCO::step_saw()
 {
     phase += normalizedFreq;
@@ -270,7 +273,58 @@ inline void MinBLEPVCO::step_saw()
     saw += (mb + smb);
     output = 5.0*saw;
 }
+#endif
 
+
+inline void MinBLEPVCO::step_saw()
+{
+    phase += normalizedFreq;
+    const float predictedPhase = phase;
+    if (gotSyncCallback) {
+        gotSyncCallback = false;
+        const float excess = -syncCallbackCrossing * normalizedFreq;
+
+        // Figure out where our sub-sample phase should be after reset
+        //const float newPhase = .5 + excess;
+        // reset to zero
+        const float newPhase = excess;
+        phase = newPhase;
+    }
+    if (phase >= 1.0) {
+        phase -= 1.0;
+        float crossing = -phase / normalizedFreq;
+#ifdef _LOG
+        printf("%s: phase wrap %.2f->%.2f cross=%.2f jump=%.2f  \n", name.c_str(),
+            phase + 1, phase, crossing, -2.0);
+#endif
+
+        aMinBLEP.jump(crossing, -2.0);
+        if (syncCallback) {
+            syncCallback(crossing);
+        }
+    }
+
+    // see if we jumped
+    if (phase != predictedPhase) {
+        const float jump = phase - predictedPhase;
+        if (gotSyncCallback) {
+            const float crossing = syncCallbackCrossing;
+            syncMinBLEP.jump(crossing, jump);
+            if (syncCallback) {
+                syncCallback(crossing);
+            }
+        } else {
+            // phase overflowed
+          
+            const float crossing = -phase / normalizedFreq;
+            bMinBLEP.jump(crossing, jump);
+        }
+    }
+
+    float totalPhase = phase;
+    float saw = -1.0 + 2.0 * totalPhase;
+    output = 5.0*saw;
+}
 
 inline bool MinBLEPVCO::isSqHigh() const
 {
