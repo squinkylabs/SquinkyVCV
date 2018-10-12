@@ -282,9 +282,7 @@ inline void MinBLEPVCO::step_sq()
     bool phaseDidOverflow = false;
     phase += normalizedFreq;
     if (gotSyncCallback) {
-      //  gotSyncCallback = false;
         const float excess = -syncCallbackCrossing * normalizedFreq;
-
         // reset phase to near zero on sync
         phase = excess;
     }
@@ -293,26 +291,28 @@ inline void MinBLEPVCO::step_sq()
         phaseDidOverflow = true;
     }
 
+    // now examine for any pending edges,
+    // and if found apply minBLEP and
+    // send sync signal
     bool newSq = isSqHigh();
     if (newSq != lastSq) {
         lastSq = newSq;
         const float jump = newSq ? 2 : -2;
         if (gotSyncCallback) {
-            float crossing = syncCallbackCrossing;
+            const float crossing = syncCallbackCrossing;
             syncMinBLEP.jump(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
             }
-
         } else if (phaseDidOverflow) {
-            float crossing = -phase / normalizedFreq;
+            const float crossing = -phase / normalizedFreq;
             aMinBLEP.jump(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
             }
         } else {
             // crossed PW boundary
-            float crossing = -(phase - pulseWidth) / normalizedFreq;
+            const float crossing = -(phase - pulseWidth) / normalizedFreq;
             bMinBLEP.jump(crossing, jump);
         }
     }
