@@ -444,7 +444,6 @@ inline void MinBLEPVCO::step_even()
 {
     float oldPhase = phase;
     phase += normalizedFreq;
-    float expectedPhase = phase;
     float syncJump = 0;
     if (gotSyncCallback) {
        
