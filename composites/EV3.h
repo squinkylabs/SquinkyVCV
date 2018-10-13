@@ -100,6 +100,7 @@ public:
     void step() override;
 
 private:
+    void setSync();
     void processPitchInputs();
     void processPitchInputs(int osc);
     void processWaveforms();
@@ -134,6 +135,14 @@ inline void EV3<TBase>::init()
             vcos[2].onMasterSync(f);
         }
         });
+}
+
+template <class TBase>
+inline void EV3<TBase>::setSync()
+{
+    vcos[0].setSyncEnabled(false);
+    vcos[1].setSyncEnabled(TBase::params[SYNC2_PARAM].value > .5);
+    vcos[2].setSyncEnabled(TBase::params[SYNC3_PARAM].value > .5);
 }
 
 template <class TBase>
@@ -186,6 +195,7 @@ inline void EV3<TBase>::processPWInputs()
 template <class TBase>
 inline void EV3<TBase>::step()
 {
+    setSync();
     processPitchInputs();
     processWaveforms();
     processPWInputs();
@@ -213,15 +223,6 @@ inline void EV3<TBase>::stepVCOs()
     }
 }
 
-#if 0
-template <class TBase>
-inline void EV3<TBase>::processPitchInputs()
-{
-    processPitchInputs(0);
-    processPitchInputs(1);
-    processPitchInputs(2);
-}
-#else
 template <class TBase>
 inline void EV3<TBase>::processPitchInputs()
 {
@@ -273,45 +274,6 @@ inline void EV3<TBase>::processPitchInputs()
             TBase::engineGetSampleTime());
     }
 }
-#endif
 
-#if 0
-template <class TBase>
-inline bool EV3<TBase>::processPitchInputs(int osc)
-{
-    assert(osc >= 0 && osc <= 2);
-    const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
-
-    const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
-    const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
-    const float semiPitch = TBase::params[SEMI1_PARAM + delta].value / 12.0f;
-    const float fm = getInput(osc, FM1_INPUT, FM2_INPUT, FM3_INPUT);
-
-    float pitch = 1.0f + roundf(TBase::params[OCTAVE1_PARAM + delta].value) +
-        semiPitch +
-        finePitch;
-    pitch += cv;
-
-    // for now, let's use Fundamental VCO-1 mod scaling.
-    // Will probably replace with attenuverter.
-#if 0
-    const float fmDepth = rack::quadraticBipolar(
-        TBase::params[FM1_PARAM + delta].value);
-
-#else
-    const float fmKnob = TBase::params[FM1_PARAM + delta].value;
-    const float fmDepth = LookupTable<float>::lookup(*audioTaper, fmKnob, false);
-#endif
-    pitch += (fmDepth * fm * 12);
-
-
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
-    pitch += q;
-    const float freq = expLookup(pitch);
-    _freq[osc] = freq;
-    vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq,
-        TBase::engineGetSampleTime());
-}
-#endif
 
 

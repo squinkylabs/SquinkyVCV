@@ -84,6 +84,10 @@ public:
     void onMasterSync(float phase);
     void setSyncCallback(SyncCallback);
     void setPulseWidth(float);
+    void setSyncEnabled(bool f)
+    {
+        syncEnabled = f;
+    }
 
 private:
 
@@ -95,6 +99,7 @@ private:
     float sampleTime = 0;
     SyncCallback syncCallback = nullptr;
     float tri = 0;
+    bool syncEnabled = false;
 
     bool gotSyncCallback = false;
     float syncCallbackCrossing = 0;
@@ -135,6 +140,8 @@ private:
      * output = sin(2pi * input)
      */
     float sineLook(float input) const;
+
+    float evenLook(float input) const;
 
     std::string name;
     bool lastSq = false;
@@ -187,7 +194,12 @@ inline void MinBLEPVCO::step()
             step_sin();
             break;
         case  Waveform::Tri:
-            step_tri();
+            // Tri sync doesn't work -> use sin
+            if (syncEnabled) {
+                step_sin();
+            } else {
+                step_tri();
+            }
             break;
         case  Waveform::Even:
             step_even();
@@ -419,11 +431,21 @@ inline float calcDoubleSaw(float phase)
     return (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
 }
 
+
+inline float MinBLEPVCO::evenLook(float input) const
+{
+    float doubleSaw = calcDoubleSaw(input);
+    const float sine = sineLook(input);
+    const float even = 0.55 * (doubleSaw + 1.27 * sine);
+    return even;
+}
+
 inline void MinBLEPVCO::step_even()
 {
     float oldPhase = phase;
     phase += normalizedFreq;
     float expectedPhase = phase;
+    float syncJump = 0;
     if (gotSyncCallback) {
        
 
@@ -443,43 +465,27 @@ inline void MinBLEPVCO::step_even()
             syncCallbackCrossing, jump);
 #endif
       //  syncMinBLEP.jump(syncCallbackCrossing, jump);
+        syncJump = evenLook(newPhase) - evenLook(this->phase);
         this->phase = newPhase;
-       // return;
     }
-    /*
-    float oldPhase = phase;
-    phase += normalizedFreq;
 
-    if (oldPhase < 0.5 && phase >= 0.5) {
-        float crossing = -(phase - 0.5) / normalizedFreq;
-        aMinBLEP.jump(crossing, -2.0);
-    }
-    */
     bool jump5 = false;
     bool jump1 = false;
     if (oldPhase < 0.5 && phase >= 0.5) {
         jump5 = true;
     }
 
-
     // Reset phase if at end of cycle
     if (phase >= 1.0) {
         phase -= 1.0;
         jump1 = true;
-        /*
-        float crossing = -phase / normalizedFreq;
-        aMinBLEP.jump(crossing, -2.0);
-        if (syncCallback) {
-            syncCallback(crossing);
-        }
-        */
     }
 
     if (gotSyncCallback) {
         const float crossing = syncCallbackCrossing;
 
         // FIXME!!
-        float jump = 1;
+        float jump = syncJump;
         syncMinBLEP.jump(crossing, jump);
         if (syncCallback) {
             syncCallback(crossing);
@@ -500,43 +506,14 @@ inline void MinBLEPVCO::step_even()
     }
 
     
-
-    /*
-    float doubleSaw = calcDoubleSaw(phase);
-    const float expectedDoubleSaw = calcDoubleSaw(expectedPhase);
-    if (doubleSaw != expectedDoubleSaw) {
-        const float jump = doubleSaw - expectedDoubleSaw;
-        // printf("%s jump = %f\n", name.c_str(), jump); fflush(stdout);
-        if (gotSyncCallback) {
-            const float crossing = syncCallbackCrossing;
-            syncMinBLEP.jump(crossing, jump);
-            if (syncCallback) {
-                syncCallback(crossing);
-            }
-        } else {
-            // phase overflowed
-        //    const float crossing = -(phase - 0.5) / normalizedFreq;
-            const float crossing = - phase / normalizedFreq;
-            printf("phase = %f, normFreq = %f ph-.5=%f cross=%f\n", phase, normalizedFreq, (phase -.5),crossing);
-            printf("jump = %f crossing=%f phase=%f\n", jump, crossing, phase); fflush(stdout);
-            aMinBLEP.jump(crossing, jump);
-            if (syncCallback) {
-                syncCallback(crossing);
-            }
-        }
-
-    }
-    */
-
-
+    // note that non-sync minBLEP is added to double saw,
+    // but for sync it's added to even. 
     const float sine = sineLook(phase);
-
     float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
     doubleSaw += aMinBLEP.shift();
-    doubleSaw += syncMinBLEP.shift();
-    const float even = 0.55 * (doubleSaw + 1.27 * sine);
+    float even = 0.55 * (doubleSaw + 1.27 * sine);
+    even += syncMinBLEP.shift();
 
-    //TBase::outputs[SINE_OUTPUT].value = 5.0*sine;
     output = 5.0*even;
     gotSyncCallback = false;
 }
