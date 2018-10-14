@@ -89,13 +89,13 @@ int main(int argc, char ** argv)
     testDelay();
     testPoly();
 
-
     testSinOscillator();
     testMinBLEPVCO();
     testHilbert();
+    testButterLookup();
     testSpline(false);
     testVCO();
-    testButterLookup();
+   
    // testSin();
 
 

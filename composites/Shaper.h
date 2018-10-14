@@ -327,27 +327,13 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
                 buffer[i] = x;
             }
             break;
-#if 0 // try new
-        case Shapes::Crush:
-        {
-            // _gain = 0..5 with exp at the high end
-            printf("_gain = %f\n", _gain); fflush(stdout);
-            float invGain = 5 - gain;       // 5...0, high slope at 0
-            float k = invGain * 256;
-            printf("_gain = %f, k=%f\n", _gain, k); fflush(stdout);
 
-            for (int i = 0; i < curOversample; ++i) {
-                float x = buffer[i];            // for crush, no gain has been applied
-            }
-
-        }
-        break;
-#endif
-#if 1 // old one
         case Shapes::Crush:
         {
             float invGain = 1 + (1 - _gainInput) * 100; //0..10
-            invGain *= .01f;
+            invGain *= .01f;   
+            invGain = std::max(invGain, .09f);
+            assert(invGain >=  .09);
             for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];            // for crush, no gain has been applied
 
@@ -363,14 +349,17 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
 
                 x *= invGain;
                 x = std::round(x + .5f) - .5f;
+
+            // printf("invGain = %f, x = %f\n", invGain, x);
                 //  printf(" mult=%.2f", x);
                 x /= invGain;
+             // printf("after div back %f\n", x); fflush(stdout);
                 //   printf(" dv=%.2f\n", x);    fflush(stdout);
                 buffer[i] = x;
             }
         }
         break;
-#endif
+
 
 
         default:
