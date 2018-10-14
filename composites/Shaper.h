@@ -103,6 +103,9 @@ private:
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     AudioMath::ScaleFun<float> scaleOffset = AudioMath::makeLinearScaler<float>(-5, 5);
 
+    // domain starts at 2.
+   // std::shared_ptr<LookupTableParams<float>> exp2Lookup = {ObjectCache<float>::getExp2()};
+
     const static int maxOversample = 16;
     int curOversample = 16;
     void init();
@@ -198,6 +201,7 @@ void Shaper<TBase>::processCV()
         TBase::params[PARAM_GAIN_TRIM].value);
 
     _gain = 5 * LookupTable<float>::lookup(*audioTaper, _gainInput, false);
+  
 
     // -5 .. 5
     const float offsetInput = scaleOffset(
@@ -323,6 +327,23 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
                 buffer[i] = x;
             }
             break;
+#if 0 // try new
+        case Shapes::Crush:
+        {
+            // _gain = 0..5 with exp at the high end
+            printf("_gain = %f\n", _gain); fflush(stdout);
+            float invGain = 5 - gain;       // 5...0, high slope at 0
+            float k = invGain * 256;
+            printf("_gain = %f, k=%f\n", _gain, k); fflush(stdout);
+
+            for (int i = 0; i < curOversample; ++i) {
+                float x = buffer[i];            // for crush, no gain has been applied
+            }
+
+        }
+        break;
+#endif
+#if 1 // old one
         case Shapes::Crush:
         {
             float invGain = 1 + (1 - _gainInput) * 100; //0..10
@@ -341,7 +362,7 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
              // printf("crush, x=%.2f, gi=%.2f invGain = %.2f", x, _gainInput, invGain);
 
                 x *= invGain;
-                x = std::round(x);
+                x = std::round(x + .5f) - .5f;
                 //  printf(" mult=%.2f", x);
                 x /= invGain;
                 //   printf(" dv=%.2f\n", x);    fflush(stdout);
@@ -349,6 +370,7 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
             }
         }
         break;
+#endif
 
 
         default:
