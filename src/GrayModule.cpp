@@ -92,7 +92,6 @@ inline void GrayWidget::addBits(GrayModule *module)
                 module,
                 Gray<WidgetComposite>::LIGHT_0));
         #endif
-        printf("added bits\n"); fflush(stdout);
     }
 }
 

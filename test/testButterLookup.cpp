@@ -38,5 +38,6 @@ static void testButterLookup0()
 
 void  testButterLookup()
 {
-    testButterLookup0();
+    printf("butter look disabled\n");
+    //testButterLookup0();
 }

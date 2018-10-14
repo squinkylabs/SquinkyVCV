@@ -53,6 +53,7 @@ struct ShaperWidget : ModuleWidget
         label->box.pos = v;
         label->text = str;
         label->color = color;
+        label->fontSize = 16;
         addChild(label);
         return label;
     }
@@ -60,11 +61,14 @@ struct ShaperWidget : ModuleWidget
     void step() override;
 private:
     Label* shapeLabel=nullptr;
+    Label* shapeLabel2=nullptr;
+    Label* oversampleLabel=nullptr;
     ParamWidget* shapeParam = nullptr;
+    ParamWidget* oversampleParam = nullptr;
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
-    ShaperModule* const module;
+   // ShaperModule* const module;
     void addSelector(ShaperModule* module);
-    int xOrig = 0;
+    int curOversample =-1;
 };
 
 void ShaperWidget::step()
@@ -74,19 +78,47 @@ void ShaperWidget::step()
     const Shaper<WidgetComposite>::Shapes shape = Shaper<WidgetComposite>::Shapes(iShape);
     if (shape != curShape) {
         curShape = shape;
-        const char* shapeString = Shaper<WidgetComposite>::getString(shape);
-        shapeLabel->text = shapeString;
-        const int len = shapeLabel->text.length();
-        shapeLabel->box.pos.x = xOrig - len * 2;
+        std::string shapeString = Shaper<WidgetComposite>::getString(shape);
+        if (shapeString.length() > 8) {
+            auto pos = shapeString.find(' ');
+            if (pos != std::string::npos) {
+                shapeLabel->text = shapeString.substr(0, pos);
+                shapeLabel2->text = shapeString.substr(pos+1);
+            } else {
+                shapeLabel->text = "too";
+                shapeLabel2->text = "big";
+            }
+        } else {
+            shapeLabel->text = shapeString;
+            shapeLabel2->text = "";
+        }
+    }
+    const int overS =  (int) std::round(oversampleParam->value);
+    if (overS != curOversample) {
+        curOversample = overS;
+        const char * str = "";
+        switch (curOversample) {
+            case 0:
+                str = "16X";
+                break;
+            case 1:
+                str = "4X";
+                break;
+            case 2:
+                str = "1X";
+                break;
+        }
+        oversampleLabel->text = str;
 
     }
+    
 }
 
 void ShaperWidget::addSelector(ShaperModule* module)
 {
-    const float x = 80;
-    const float y = 100;
-    auto p = createParamCentered<Rogan1PSBlue>(
+    const float x = 37;
+    const float y = 80;
+    auto p = createParamCentered<Rogan3PSBlue>(
         Vec(x, y),
         module, Shaper<WidgetComposite>::PARAM_SHAPE,
         0,
@@ -95,9 +127,10 @@ void ShaperWidget::addSelector(ShaperModule* module)
     p->snap = true;
 	p->smooth = false;
     addParam(p);
-    shapeLabel = addLabel(Vec(x-12, y-40), "");
+    shapeLabel = addLabel(Vec(70, 60), "");
+    shapeLabel2 = addLabel(Vec(70, 60+18), "");
     shapeParam = p;
-    xOrig = shapeLabel->box.pos.x;
+    shapeLabel->fontSize = 18;
 }
 
 /**
@@ -109,74 +142,75 @@ void ShaperWidget::addSelector(ShaperModule* module)
  * This is not shared by all modules in the DLL, just one
  */
 ShaperWidget::ShaperWidget(ShaperModule *module) :
-    ModuleWidget(module),
-    module(module)
+    ModuleWidget(module)
 {
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/shaper.svg")));
         addChild(panel);
     }
-    addLabel(Vec(30, 20), "Wave Shaper");
 
     addSelector(module);
 
+
+    const float gainX = 35;
+    const float offsetX = 108;
+    const float gainY = 232;
+    const float offsetY = 147;
+
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(gainX, gainY),
+        module, Shaper<WidgetComposite>::PARAM_GAIN, -5, 5, 0));
+    addLabel(Vec(8, 191), "Gain");
+
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(offsetX, offsetY),
+        module, Shaper<WidgetComposite>::PARAM_OFFSET, -5, 5, 0));
+    addLabel(Vec(34, 135), "Offset");
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(56, 275),
+        module, Shaper<WidgetComposite>::PARAM_GAIN_TRIM, -1, 1, 0));
+    addParam(createParamCentered<Trimpot>(
+        Vec(81, 199),
+        module, Shaper<WidgetComposite>::PARAM_OFFSET_TRIM, -1, 1, 0));
+
+    const float jackY = 327;
     addInput(createInputCentered<PJ301MPort>(
-            Vec(40,340),
+            Vec(30,jackY),
             module,
             Shaper<WidgetComposite>::INPUT_AUDIO));
 
     addOutput(createOutputCentered<PJ301MPort>(
-            Vec(120,340),
+            Vec(127,jackY),
             module,
             Shaper<WidgetComposite>::OUTPUT_AUDIO));
 
-    
-    const float labelDeltaY = 25;
-    const float gainX = 40;
-    const float offsetX = 95;
-    const float labelDeltaX = -20;
-    const float y = 170;
-  //  const float symmetryX = 150;
-
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(gainX, y),
-        module, Shaper<WidgetComposite>::PARAM_GAIN, -5, 5, 0));
-    addLabel(Vec(gainX+labelDeltaX, y + labelDeltaY), "gain");
-
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(offsetX, y),
-        module, Shaper<WidgetComposite>::PARAM_OFFSET, -5, 5, 0));
-    addLabel(Vec(offsetX+labelDeltaX,  y + labelDeltaY), "offset");
-
-    const float deltaYTrim = 60;
-    const float deltaYInput = 90;
-    addParam(createParamCentered<Trimpot>(
-        Vec(gainX, y + deltaYTrim),
-        module, Shaper<WidgetComposite>::PARAM_GAIN_TRIM, -1, 1, 0));
-    addParam(createParamCentered<Trimpot>(
-        Vec(offsetX, y + deltaYTrim),
-        module, Shaper<WidgetComposite>::PARAM_OFFSET_TRIM, -1, 1, 0));
     addInput(createInputCentered<PJ301MPort>(
-            Vec(gainX,y + deltaYInput),
+            Vec(62, jackY),
             module,
             Shaper<WidgetComposite>::INPUT_GAIN));
     addInput(createInputCentered<PJ301MPort>(
-            Vec(offsetX,y + deltaYInput),
+            Vec(95,jackY),
             module,
             Shaper<WidgetComposite>::INPUT_OFFSET));
-
-    const float swX = 90;
-    const float swY = 300;
-    addParam(createParamCentered<NKK>(
-        Vec(swX, swY+4), module, Shaper<WidgetComposite>::PARAM_OVERSAMPLE, 0.0f, 2.0f, 0.0f));
-    addLabel(Vec(swX-44, swY-20), "1X");
-    addLabel(Vec(swX-44, swY-4), "4X");
-    addLabel(Vec(swX-44, swY+12), "16X");
-
+            
+    const float swX = 127;
+    const float swY = 235;
+    oversampleParam = createParamCentered<NKK>(
+        Vec(swX, swY+4),
+        module, 
+        Shaper<WidgetComposite>::PARAM_OVERSAMPLE,
+        0.0f, 2.0f, 0.0f
+        );
     
+    addParam(oversampleParam);
+    oversampleLabel = addLabel(Vec(swX-32, swY+30), "x");
+    oversampleLabel->box.size.x = 60;
+    oversampleLabel->alignment = Label::Alignment::CENTER_ALIGNMENT;
+
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));

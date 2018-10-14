@@ -146,7 +146,7 @@ const char* Shaper<TBase>::getString(Shapes shape)
             ret = "Folder II";
             break;
         case Shapes::AsymSpline:
-            ret = "Asymmetric";
+            ret = "Smooth";
             break;
         case Shapes::Crush:
             ret = "Crush";
