@@ -42,6 +42,7 @@ extern void testMinBLEPVCO();
 extern void testRateConversion();
 extern void testDelay();
 extern void testSpline(bool emit);
+extern void testButterLookup();
 
 int main(int argc, char ** argv)
 {
@@ -94,6 +95,7 @@ int main(int argc, char ** argv)
     testHilbert();
     testSpline(false);
     testVCO();
+    testButterLookup();
    // testSin();
 
 
