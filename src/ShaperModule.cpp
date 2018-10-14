@@ -178,15 +178,19 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
         module, Shaper<WidgetComposite>::PARAM_OFFSET_TRIM, -1, 1, 0));
 
     const float jackY = 327;
+    const float jackLabelY = jackY - 29;
     addInput(createInputCentered<PJ301MPort>(
             Vec(30,jackY),
             module,
             Shaper<WidgetComposite>::INPUT_AUDIO));
+    addLabel(Vec(17, jackLabelY), "In")->fontSize = 12;
 
     addOutput(createOutputCentered<PJ301MPort>(
             Vec(127,jackY),
             module,
             Shaper<WidgetComposite>::OUTPUT_AUDIO));
+     addLabel(Vec(109, jackLabelY), "Out", COLOR_WHITE)->fontSize = 12;
+
 
     addInput(createInputCentered<PJ301MPort>(
             Vec(62, jackY),
