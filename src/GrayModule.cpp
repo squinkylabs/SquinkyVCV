@@ -64,10 +64,10 @@ private:
     GrayModule* const module;
 };
 
-const float jackCol = 40;
-const float ledCol = jackCol + 20;
-const float vertSpace = 32;
-const float firstBitY = 80;
+const float jackCol = 100;
+const float ledCol = 69;
+const float vertSpace = 31;  // 31.4
+const float firstBitY = 64;
 
 inline void GrayWidget::addBits(GrayModule *module)
 {
@@ -107,30 +107,30 @@ GrayWidget::GrayWidget(GrayModule *module) :
     ModuleWidget(module),
     module(module)
 {
-    box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/gray.svg")));
         addChild(panel);
     }
 
     addBits(module);
     addInput(createInputCentered<PJ301MPort>(
-            Vec(100,20),
+            Vec(22, 339),
             module,
             Gray<WidgetComposite>::INPUT_CLOCK));
 
      addParam(createParamCentered<CKSS>(
-        Vec(100, 100),
+        Vec(71,33),
         module,
         Gray<WidgetComposite>::PARAM_CODE,
         0.0f, 1.0f, 0.0f));
-    addLabel(Vec(85, 70), "Balanced");
-    addLabel(Vec(85, 110), "Norm");
+    addLabel(Vec(2, 27), "Balanced");
+   // addLabel(Vec(85, 110), "Norm");
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(100, 340),
+        Vec(100, 339),
         module,
         Gray<WidgetComposite>::OUTPUT_MIXED));
    
