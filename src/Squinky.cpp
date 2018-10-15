@@ -20,12 +20,13 @@ void init(rack::Plugin *p)
 #endif
     p->addModel(modelTremoloModule);
     p->addModel(modelColoredNoiseModule);
+    p->addModel(modelEV3Module);
     p->addModel(modelVocalFilterModule);
     p->addModel(modelFunVModule);
+    p->addModel(modelGrayModule);
     p->addModel(modelVocalModule);
-
-  
     p->addModel(modelLFNModule); 
+    p->addModel(modelShaperModule);
     p->addModel(modelThreadBoostModule);
 
 
@@ -39,11 +40,6 @@ void init(rack::Plugin *p)
 #ifdef _EV
     p->addModel(modelEVModule);
 #endif
-#ifdef _EV3
-    p->addModel(modelEV3Module);
-#endif
-    p->addModel(modelGrayModule);
-    p->addModel(modelShaperModule);
 #ifdef _DG
     p->addModel(modelDGModule);
 #endif

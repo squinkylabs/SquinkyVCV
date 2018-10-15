@@ -427,7 +427,7 @@ EV3Widget::EV3Widget(EV3Module *module) :
 Model *modelEV3Module = Model::create<EV3Module,
     EV3Widget>("Squinky Labs",
     "squinkylabs-ev3",
-    "EV3", EFFECT_TAG, OSCILLATOR_TAG);
+    "EV3: Triple VCO with even waveform", OSCILLATOR_TAG);
 
 #endif
 

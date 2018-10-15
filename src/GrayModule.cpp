@@ -2,7 +2,6 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
-
 #include "Gray.h"
 
 /**
@@ -57,14 +56,13 @@ struct GrayWidget : ModuleWidget
         return label;
     }
 
-
 private:
     void addBits(GrayModule *module);
 
     GrayModule* const module;
 };
 
-const float jackCol = 100;
+const float jackCol = 99.5;
 const float ledCol = 69;
 const float vertSpace = 31;  // 31.4
 const float firstBitY = 64;
@@ -78,26 +76,13 @@ inline void GrayWidget::addBits(GrayModule *module)
             v,
             module,
             Gray<WidgetComposite>::OUTPUT_0 + i));
-        #if 1
         addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
             Vec(ledCol, firstBitY + i * vertSpace - 6),
             module,
             Gray<WidgetComposite>::LIGHT_0+i));
-        #else
-
-        const Vec vl(ledCol, firstBitY + i * vertSpace);
-        addChild(
-            createLightCentered<GreenLight>(
-                vl, 
-                module,
-                Gray<WidgetComposite>::LIGHT_0));
-        #endif
     }
 }
 
-/**
- * Global coordinate contstants
- */
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -120,6 +105,7 @@ GrayWidget::GrayWidget(GrayModule *module) :
             Vec(22, 339),
             module,
             Gray<WidgetComposite>::INPUT_CLOCK));
+         addLabel(Vec(0, 310), "Clock");
 
      addParam(createParamCentered<CKSS>(
         Vec(71,33),
@@ -127,15 +113,13 @@ GrayWidget::GrayWidget(GrayModule *module) :
         Gray<WidgetComposite>::PARAM_CODE,
         0.0f, 1.0f, 0.0f));
     addLabel(Vec(2, 27), "Balanced");
-   // addLabel(Vec(85, 110), "Norm");
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(100, 339),
         module,
         Gray<WidgetComposite>::OUTPUT_MIXED));
+    addLabel(Vec(81, 310), "Mix", COLOR_WHITE);
    
-
- 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -146,5 +130,5 @@ GrayWidget::GrayWidget(GrayModule *module) :
 Model *modelGrayModule = Model::create<GrayModule,
     GrayWidget>("Squinky Labs",
     "squinkylabs-gry",
-    "Gray Code", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+    "Gray Code: Eclectic clock divider", CLOCK_MODULATOR_TAG, RANDOM_TAG);
 
