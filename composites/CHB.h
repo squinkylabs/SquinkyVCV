@@ -43,6 +43,7 @@ public:
         PARAM_EXTGAIN,
         PARAM_PITCH_MOD_TRIM,
         PARAM_LINEAR_FM_TRIM,
+        PARAM_EXTGAIN_TRIM,
         PARAM_FOLD,
         PARAM_SLOPE,
         PARAM_MAG_EVEN,
@@ -240,7 +241,8 @@ inline float CHB<TBase>::getInput()
 
         const float gainKnobValue = TBase::params[PARAM_EXTGAIN].value;
         const float gainCVValue = TBase::inputs[GAIN_INPUT].value;
-        const float combinedGain = gainCombiner(gainCVValue, gainKnobValue, 1.f);
+        const float gainTrimValue = TBase::params[PARAM_EXTGAIN_TRIM].value;
+        const float combinedGain = gainCombiner(gainCVValue, gainKnobValue, gainTrimValue);
 
         // tapered gain {0 .. 0.5}
         const float taperedGain = .5f * taper(combinedGain);

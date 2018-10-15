@@ -194,7 +194,6 @@ static void testShaper1()
     }
 }
 
-
 static void testSplineExtremes()
 {
     printf("running testSplineExtremes\n"); fflush(stdout);
@@ -214,9 +213,6 @@ static void testSplineExtremes()
 
     ExtremeTester< Shaper<TestComposite>>::test(sp, paramLimits, true, "shaper");
 }
-
-
-
 
 static void testShaper2d(Shaper<TestComposite>::Shapes shape, float gain, float offset, float input)
 {
@@ -247,6 +243,7 @@ static void testShaper2b(Shaper<TestComposite>::Shapes shape, float gain)
     testShaper2c(shape, gain, 5.f);
     testShaper2c(shape, gain, -5.f);
 }
+
 static void testShaper2a(Shaper<TestComposite>::Shapes shape)
 {
     testShaper2b(shape, 0);
@@ -254,11 +251,46 @@ static void testShaper2a(Shaper<TestComposite>::Shapes shape)
     testShaper2b(shape, 5);
 }
 
+const int shapeMax = (int) Shaper<TestComposite>::Shapes::Invalid;
+
 static void testShaper2()
 {
-    int shapeMax = (int) Shaper<TestComposite>::Shapes::Invalid;
+   
     for (int i = 0; i < shapeMax; ++i) {
         testShaper2a(Shaper<TestComposite>::Shapes(i));
+    }
+}
+
+// test for DC shift
+static void testShaper3Sub(Shaper<TestComposite>::Shapes shape)
+{
+    Shaper<TestComposite> sh;
+  
+    sh.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;       // turn off oversampling
+    sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
+    sh.params[Shaper<TestComposite>::PARAM_GAIN].value = -3;            // gain up a bit
+    sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = 0;  // no offset
+
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = 0;
+    for (int i = 0; i < 100; ++i) {
+
+        sh.step();
+    }
+    const float out = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+    if (shape != Shaper<TestComposite>::Shapes::Crush) {
+        assertEQ(out, 0);
+    } else {
+        // crash had a dc offset issue
+        assertLT(out, 1);
+        assertGT(out, -1);
+    }
+}
+
+static void testShaper3()
+{
+   // testShaper3Sub(Shaper<TestComposite>::Shapes::Crush);
+    for (int i = 0; i < shapeMax; ++i) {
+        testShaper3Sub(Shaper<TestComposite>::Shapes(i));
     }
 }
 
@@ -281,6 +313,8 @@ void testSpline(bool doEmit)
     //printf("!! skipping testShaper1\n");
     testShaper1();
     testShaper2();
+    testShaper3();
+
 
     //testSplineExtremes();
     printf("skipping shaper extremems becuase of bug in crush");

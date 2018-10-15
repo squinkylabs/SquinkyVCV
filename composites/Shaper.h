@@ -113,7 +113,7 @@ private:
     IIRDecimator dec;
     std::shared_ptr<LookupTableParams<float>> tanhLookup;
     AsymWaveShaper asymShaper;
-    int cycleCount = 1;
+    int cycleCount = 0;
     Shapes shape = Shapes::Clip;
     int asymCurveindex = 0;
 
@@ -252,6 +252,7 @@ void  Shaper<TBase>::step()
         output = buffer[0];
     }
     TBase::outputs[OUTPUT_AUDIO].value = output;
+   // printf("in step input = %f, output = %f\n", input, output);
 }
 
 #if 1

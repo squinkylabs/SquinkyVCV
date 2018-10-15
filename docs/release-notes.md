@@ -1,5 +1,10 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.9
+
+Introduced three new modules: EV3, Gray Code, and Shaper.
+
+Added a trim control for external gain CV in Chebyshev.
 ## 0.6.8
 
 Introduced Chebyshev waveshaper VCO.
