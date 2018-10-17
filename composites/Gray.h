@@ -127,7 +127,7 @@ void  Gray<TBase>::step()
     }
     ++counterValue;
 
-    const uint8_t* table = TBase::params[PARAM_CODE].value > .5 ? bgtable : gtable;
+    const uint8_t* table = TBase::params[PARAM_CODE].value > .5 ? gtable : bgtable;
 
     const auto g0 = table[counterValue];
     auto g = g0;
