@@ -41,7 +41,6 @@ inline void ButtonCell::dump(const char* label)
 
 using CellPtr = std::shared_ptr<ButtonCell>;
 
-//struct WaveformSelector  : OpaqueWidget
 struct WaveformSelector  : ParamWidget
 {
     WaveformSelector();
@@ -55,13 +54,6 @@ struct WaveformSelector  : ParamWidget
     CellPtr hitTest(float x, float y);
     //
     float nextValue = 0;
-
-    /**
-     * Internal control value.
-     * 0 = off
-     * 1..n = cell on
-     */
-    //float curValue=0;
 };
 
  CellPtr WaveformSelector::hitTest(float x, float y)

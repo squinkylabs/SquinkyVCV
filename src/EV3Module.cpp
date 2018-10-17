@@ -181,8 +181,6 @@ void PitchDisplay::addLabel(Label* l)
 }
 #endif
 
-
-
 struct EV3Widget : ModuleWidget
 {
     EV3Widget(EV3Module *);
@@ -214,13 +212,15 @@ void EV3Widget::step()
 }
 
 #define _ALIGN
+const int dy = -6;      // apply to everything
+
 void EV3Widget::makeSection(EV3Module *module, int index)
 {
-    const float x = 30 + index * 86;
-    const float x2 = x + 36;
-    const float y = 80;
-    const float y2 = y + 56;
-    const float y3 = y2 + 40;
+    const float x = (30-4) + index * (86+4);
+    const float x2 = x + (36+2);
+    const float y = 80+dy;
+    const float y2 = y + 56+dy;
+    const float y3 = y2 + 40 + dy;
 
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
 #ifndef _DISC
@@ -231,9 +231,9 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     addLabel(Vec(x2 - 20, y - 36), "Semi");
 #else
     pitchDisplay.addOctLabel(
-        addLabel(Vec(x - 10, y - 36), "Oct"));
+        addLabel(Vec(x - 10, y - 32), "Oct"));
     pitchDisplay.addSemiLabel( 
-        addLabel(Vec(x2 - 22, y - 36), "Semi"));
+        addLabel(Vec(x2 - 22, y - 32), "Semi"));
 #endif
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x, y), module,
@@ -251,13 +251,13 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         Vec(x, y2), module,
         EV3<WidgetComposite>::FINE1_PARAM + delta * index,
         -1.0f, 1.0f, 0));
-    addLabel(Vec(x - 20, y2 - 36), "Fine");
+    addLabel(Vec(x - 20, y2 - 34), "Fine");
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(x2, y2), module,
         EV3<WidgetComposite>::FM1_PARAM + delta * index,
         0.f, 1.f, 0));
-    addLabel(Vec(x2 - 20, y2 - 36), "Mod");
+    addLabel(Vec(x2 - 20, y2 - 34), "Mod");
 
     const float dy = 27;
     #ifdef _ALIGN
@@ -294,8 +294,8 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addLabel(Vec(lbx+1, y3 + 20), "off");
     }
 
-    const float y4 = y3 + 50;
-    const float xx = x - 8;
+    const float y4 = y3 + 43;
+    const float xx = x - 12;
         // include one extra wf - none
     const float numWaves = (float) EV3<WidgetComposite>::Waves::END;
     const float defWave = (float) EV3<WidgetComposite>::Waves::SIN;
@@ -313,11 +313,11 @@ void EV3Widget::makeSections(EV3Module* module)
     makeSection(module, 2);
 }
 
-const float row1Y = 280;
+const float row1Y = 280+dy-4;       // -4 = move the last section up
 const float rowDY = 30;
 
 #ifdef _ALIGN
-const float colDX = 42;
+const float colDX = 45;
 #else
 const float colDX = 40;
 #endif
@@ -328,7 +328,7 @@ void EV3Widget::makeInput(EV3Module* module, int row, int col,
     EV3<WidgetComposite>::InputIds input = EV3<WidgetComposite>::InputIds(inputNum);
     const float y = row1Y + row * rowDY;
     #ifdef _ALIGN
-     const float x = 18 + col * colDX;
+     const float x = 14 + col * colDX;
     #else
         const float x = 20 + col * colDX;
     #endif
@@ -354,7 +354,7 @@ void EV3Widget::makeOutputs(EV3Module *)
     const float trimY = row1Y + 11;
     const float outX = x + 30;
 
-    addLabel(Vec(x, trimY - 30), ".... outputs ....");
+  //  addLabel(Vec(x, trimY - 30), ".... outputs ....");
 
     addParam(createParamCentered<Trimpot>(
         Vec(x, trimY), module, EV3<WidgetComposite>::MIX1_PARAM,
@@ -377,7 +377,7 @@ void EV3Widget::makeOutputs(EV3Module *)
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO3_OUTPUT));
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(outX + colDX, row1Y + rowDY),
+        Vec(outX + 41, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
 }
 
@@ -394,25 +394,16 @@ EV3Widget::EV3Widget(EV3Module *module) :
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/ev3_panel.svg")));
         addChild(panel);
     }
 
-    auto l = addLabel( Vec(110, 10), "EV3");
-    l->fontSize = 18;
+   // auto l = addLabel( Vec(110, 10), "EV3");
+  //  l->fontSize = 18;
 
     makeSections(module);
     makeInputs(module);
     makeOutputs(module);
-#if 0
-    addOutput(Port::create<PJ301MPort>(
-        Vec(180, 280), Port::OUTPUT, module, module->ev3.MIX_OUTPUT));
-    addLabel(Vec(170, 260), "Out");
-
-    addInput(Port::create<PJ301MPort>(
-        Vec(20, 330), Port::INPUT, module, module->ev3.CV1_INPUT));
-    addLabel(Vec(20, 310), "CV");
-#endif
 
   // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
