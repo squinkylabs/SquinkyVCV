@@ -198,7 +198,6 @@ void TestMB::testSync2()
 
 void TestMB::testSync3()
 {
-    printf("***** testSync3*****\n");
     EV3<TestComposite> ev3;
     setPitch(ev3);
 

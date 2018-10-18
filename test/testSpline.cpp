@@ -86,18 +86,11 @@ static void testLook4()
 
 static void testGen0()
 {
-//    AsymGenerator g(0, .001f);
     AsymWaveShaper g;
     const int index = 3;// symmetry
     float x = g.lookup(0, index);
-    printf("0 ret = %f\n", x);
-
     x = g.lookup(1, index);
-    printf("1 ret = %f\n", x);
-
     x = g.lookup(-1, index);
-    printf("-1 ret = %f\n", x);
-
 }
 
 static void testDerivativeSub(int index, float delta)

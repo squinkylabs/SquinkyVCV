@@ -37,7 +37,7 @@ static LowpassStats characterizeFilter(bool isLowpass, std::function<float(float
     const float gain0 = std::abs(response.get(passbandBin));
 
     const double _3DbDown = AudioMath::db(gain0) - 3;
-    printf("bin=%d gain=%f\n", passbandBin, gain0);
+    //printf("bin=%d gain=%f\n", passbandBin, gain0);
 
     assert(gain0 > .1);     // sanity check
 
