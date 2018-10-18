@@ -369,16 +369,25 @@ void EV3Widget::makeOutputs(EV3Module *)
     addOutput(Port::create<PJ301MPort>(
         Vec(outX, row1Y),
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO1_OUTPUT));
+    addLabel(Vec(outX + 20, row1Y + 0 * rowDY+2), "1", COLOR_WHITE);
+
     addOutput(Port::create<PJ301MPort>(
         Vec(outX, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO2_OUTPUT));
+    addLabel(Vec(outX + 20, row1Y + 1 * rowDY+2), "2", COLOR_WHITE);
+
     addOutput(Port::create<PJ301MPort>(
         Vec(outX, row1Y + 2 * rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO3_OUTPUT));
+     addLabel(Vec(outX + 20, row1Y + 2 * rowDY+2), "3", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(
         Vec(outX + 41, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
+  //  addLabel(Vec(outX + 36, row1Y + rowDY - 16), "Mix", COLOR_WHITE);
+   addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
+   addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
+
 }
 
 /**
