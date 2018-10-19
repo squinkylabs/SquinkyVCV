@@ -1,19 +1,3 @@
-# The Squinky Labs modules for VCV Rack
-
-Below are short descriptions of our modules with links to more detailed manuals.
-
-The [release notes](release-notes.md) describe recent changes to our modules.
-
-# Things that make sound
-
-[EV3](./ev3.md) three VCOs in a single module. Each of the three VCOs is a clone of Befaco's EvenVCO, with oscillator sync added. Like EvenVCO, it sounds good, uses little CPU, and has very little aliasing distortion.
-
-[Colors](#colors) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. And all the colors in between.
-
-[Chebyshev Waveshaper VCO](../docs/chebyshev.md) can make sounds like no other VCO. It contains a VCO, ten polynomial wave-shapers, and one clipper/folder.
-
-[Functional VCO-1](#fun) Is an improved version of the Fundamental VCO-1. Like Fundamental VCO-1, it will never alias, not matter what you throw at it. It is one of the few VCOs that can to sync, FM, PWM without aliasing. Functional VCO-1 improves on Fundamental by lowering the CPU usage dramatically.
-
 # Table of contents
 
 [Chebyshev Waveshaper VCO](../docs/chebyshev.md) Click on link to go to Chbeyshev manual.
