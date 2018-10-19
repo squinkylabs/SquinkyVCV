@@ -14,7 +14,30 @@ The [release notes](release-notes.md) describe recent changes to our modules.
 
 [Functional VCO-1](#fun) Is an improved version of the Fundamental VCO-1. Like Fundamental VCO-1, it will never alias, not matter what you throw at it. It is one of the few VCOs that can to sync, FM, PWM without aliasing. Functional VCO-1 improves on Fundamental by lowering the CPU usage dramatically.
 
+# Things that process sound
+![Intro1 image](./intro-1-110.png)
+
+[Shaper]()
+
+[Chopper](#chopper) Is a tremolo powered by a clock-synchable LFO. The LFO is highly programmable to give a range of waveforms. A built-in clock multiplier enables easy rhythmic effects.
+
+[Growler](#growler) is a "vocal animator." It imparts random vocal timbres on anything played through it. The pseudo-random LFOs all have discrete outputs.
+
+[Booty Shifter](#shifter) is an emulation of the legendary Moog/Bode frequency shifter. It is great for "warping" sounds run through it.
+
+[Formants](#formants) is a programmable bank of filters that can synthesize various vowel sounds and morph between them easily.
+
+# Other things
+
+[Gray Code]()
+
+[LFN](#lfn) Is a random voltage generator made by running low frequency noise through a graphic equalizer.
+
+[Thread Booster](#booster) reduces pops and clicks in VCV Rack by reprogramming VCV's audio engine.
+
+
 # Table of contents
+
 
 [Chebyshev Waveshaper VCO](../docs/chebyshev.md) Click on link to go to Chbeyshev manual.
 
