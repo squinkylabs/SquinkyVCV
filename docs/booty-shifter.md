@@ -5,6 +5,7 @@ Below are short descriptions of our modules with links to more detailed manuals.
 The [release notes](release-notes.md) describe recent changes to our modules.
 
 # Things that make sound
+![Intro 1 image](./intro-1-110.png)
 
 [EV3](./ev3.md) three VCOs in a single module. Each of the three VCOs is a clone of Befaco's EvenVCO, with oscillator sync added. Like EvenVCO, it sounds good, uses little CPU, and has very little aliasing distortion.
 
@@ -15,7 +16,7 @@ The [release notes](release-notes.md) describe recent changes to our modules.
 [Functional VCO-1](#fun) Is an improved version of the Fundamental VCO-1. Like Fundamental VCO-1, it will never alias, not matter what you throw at it. It is one of the few VCOs that can to sync, FM, PWM without aliasing. Functional VCO-1 improves on Fundamental by lowering the CPU usage dramatically.
 
 # Things that process sound
-![Intro1 image](./intro-1-110.png)
+![Intro 2 image](./intro-2-110.png)
 
 [Shaper]()
 
