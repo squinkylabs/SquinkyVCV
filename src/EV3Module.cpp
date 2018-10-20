@@ -30,7 +30,7 @@ void EV3Module::step()
 }
 
 /************************************************************/
-#define _DISC
+
 class PitchDisplay
 {
 public:
@@ -40,37 +40,23 @@ public:
     /**
      * Labels must be added in order
      */
-    #ifdef _DISC
     void addOctLabel(Label*);
     void addSemiLabel(Label*);
-    #else
-    void addLabel(Label*);
-    #endif
+
 private:
     EV3Module * const module;
-    #ifdef _DISC
+
     std::vector<Label*> octLabels;
     std::vector<Label*> semiLabels;
     std::vector<float> semiX;
-    #else
-    std::vector<Label*> labels;
-    #endif
     int lastOctave[3] = {100, 100, 100};
     int lastSemi[3] = {100, 100, 100};
-
     void update(int);
 };
 
 void PitchDisplay::step()
 {
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
-
-#ifndef _DISC
-    if (labels.size() != 3) {
-        printf("display not init\n"); fflush(stdout);
-    }
-#endif
-
     for (int i=0; i<3; ++i) {
         const int octaveParam = EV3<WidgetComposite>::OCTAVE1_PARAM + delta * i;
         const int semiParam = EV3<WidgetComposite>::SEMI1_PARAM + delta * i;
@@ -85,11 +71,7 @@ void PitchDisplay::step()
 }
 
 static const char* names[] = {
-    #ifdef _DISC
     "0",
-    #else
-    "-",
-    #endif
     "m2nd",
     "2nd",
     "m3rd",
@@ -119,7 +101,6 @@ static int offsets[] = {
     2,
     2       // M7
 };
-#ifdef _DISC
 
 void PitchDisplay::addOctLabel(Label* l)
 {
@@ -131,7 +112,6 @@ void PitchDisplay::addSemiLabel(Label* l)
     semiLabels.push_back(l);
     semiX.push_back(l->box.pos.x);
 }
-
 
 void PitchDisplay::update(int osc) {
     std::stringstream so;
@@ -148,38 +128,6 @@ void PitchDisplay::update(int osc) {
     semiLabels[osc]->text = names[semi];
     semiLabels[osc]->box.pos.x = semiX[osc] + offsets[semi];
 }
-
-#else
-void PitchDisplay::update(int osc) {
-    std::stringstream s;
-    int oct = 5 + lastOctave[osc];
-    int semi = lastSemi[osc];
-    switch(osc) {
-        case 0:
-            s << oct << ":" << semi;
-            break;
-        case 1:
-        if (semi < 0) {
-                --oct;
-                semi += 12;
-            }
-            s << oct << ":" << semi;
-            break;
-        case 2:
-            if (semi < 0) {
-                --oct;
-                semi += 12;
-            }
-            s << oct << ":" << names[semi];
-            break;
-    }
-    labels[osc]->text = s.str();
-}
-void PitchDisplay::addLabel(Label* l)
-{
-    labels.push_back(l);
-}
-#endif
 
 struct EV3Widget : ModuleWidget
 {
@@ -211,7 +159,6 @@ void EV3Widget::step()
     pitchDisplay.step();
 }
 
-#define _ALIGN
 const int dy = -6;      // apply to everything
 
 void EV3Widget::makeSection(EV3Module *module, int index)
@@ -223,18 +170,12 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     const float y3 = y2 + 40 + dy;
 
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
-#ifndef _DISC
-    pitchDisplay.addLabel( addLabel(
-        Vec(x, y-58), "foo"
-    ));
-    addLabel(Vec(x - 20, y - 36), "Oct");
-    addLabel(Vec(x2 - 20, y - 36), "Semi");
-#else
+
     pitchDisplay.addOctLabel(
         addLabel(Vec(x - 10, y - 32), "Oct"));
     pitchDisplay.addSemiLabel( 
         addLabel(Vec(x2 - 22, y - 32), "Semi"));
-#endif
+
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x, y), module,
         EV3<WidgetComposite>::OCTAVE1_PARAM + delta * index,
@@ -260,11 +201,8 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     addLabel(Vec(x2 - 20, y2 - 34), "Mod");
 
     const float dy = 27;
-    #ifdef _ALIGN
     const float x0 = x;
-    #else
-    const float x0 = x - 6;
-    #endif
+
     addParam(createParamCentered<Trimpot>(
         Vec(x0, y3), module, EV3<WidgetComposite>::PW1_PARAM + delta * index,
         -1.f, 1.f, 0));
@@ -279,13 +217,9 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addLabel(Vec(x0 + 10, y3 + dy - 12), "pwm");
 
           // sync switches
-    #ifdef _ALIGN
-        const float swx = x + 29;
-        const float lbx = x + 19;
-    #else
-        const float swx = x + 30;
-        const float lbx = x + 22;
-    #endif
+    const float swx = x + 29;
+    const float lbx = x + 19;
+
     if (index != 0) {
         addParam(ParamWidget::create<CKSS>(
             Vec(swx, y3), module, EV3<WidgetComposite>::SYNC1_PARAM + delta * index,
@@ -315,23 +249,14 @@ void EV3Widget::makeSections(EV3Module* module)
 
 const float row1Y = 280+dy-4;       // -4 = move the last section up
 const float rowDY = 30;
-
-#ifdef _ALIGN
 const float colDX = 45;
-#else
-const float colDX = 40;
-#endif
 
 void EV3Widget::makeInput(EV3Module* module, int row, int col,
     int inputNum, const char* name, float labelXDelta)
 {
     EV3<WidgetComposite>::InputIds input = EV3<WidgetComposite>::InputIds(inputNum);
     const float y = row1Y + row * rowDY;
-    #ifdef _ALIGN
      const float x = 14 + col * colDX;
-    #else
-        const float x = 20 + col * colDX;
-    #endif
     const float labelX = labelXDelta + x - 6;
     addInput(Port::create<PJ301MPort>(
         Vec(x, y), Port::INPUT, module, input));
