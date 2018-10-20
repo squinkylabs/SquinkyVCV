@@ -181,12 +181,10 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         EV3<WidgetComposite>::OCTAVE1_PARAM + delta * index,
         -5.0f, 4.0f, 0.f));
    
-
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x2, y), module,
         EV3<WidgetComposite>::SEMI1_PARAM + delta * index,
         -11.f, 11.0f, 0.f));
-
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(x, y2), module,
@@ -216,7 +214,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
     if (index == 0)
         addLabel(Vec(x0 + 10, y3 + dy - 12), "pwm");
 
-          // sync switches
+    // sync switches
     const float swx = x + 29;
     const float lbx = x + 19;
 
@@ -256,7 +254,7 @@ void EV3Widget::makeInput(EV3Module* module, int row, int col,
 {
     EV3<WidgetComposite>::InputIds input = EV3<WidgetComposite>::InputIds(inputNum);
     const float y = row1Y + row * rowDY;
-     const float x = 14 + col * colDX;
+    const float x = 14 + col * colDX;
     const float labelX = labelXDelta + x - 6;
     addInput(Port::create<PJ301MPort>(
         Vec(x, y), Port::INPUT, module, input));
@@ -264,22 +262,87 @@ void EV3Widget::makeInput(EV3Module* module, int row, int col,
         addLabel(Vec(labelX, y - 20), name);
 }
 
+#define _FLIPROWS
+
 void EV3Widget::makeInputs(EV3Module* module)
 {
+#ifdef _FLIPROWS
+   auto row2Input = [](int row, EV3<WidgetComposite>::InputIds baseInput) {
+        // map inputs directly to rows
+        return baseInput + (2 - row);
+    };
+#else
+    // Row 0 = top row, 2 = bottom row
+    auto row2Input = [](int row, EV3<WidgetComposite>::InputIds baseInput) {
+        // map inputs directly to rows
+        return baseInput + row;
+    };
+#endif
+
     for (int row = 0; row < 3; ++row) {
-        makeInput(module, row, 0, EV3<WidgetComposite>::CV1_INPUT + row, "V/oct", -3);
-        makeInput(module, row, 1, EV3<WidgetComposite>::FM1_INPUT + row, "Fm", 3);
-        makeInput(module, row, 2, EV3<WidgetComposite>::PWM1_INPUT + row, "Pwm", -2);
+        makeInput(module, row, 0, 
+            row2Input(row, EV3<WidgetComposite>::CV1_INPUT),
+            "V/oct", -3);
+        makeInput(module, row, 1,
+            row2Input(row, EV3<WidgetComposite>::FM1_INPUT),
+             "Fm", 3);
+        makeInput(module, row, 2,
+            row2Input(row, EV3<WidgetComposite>::PWM1_INPUT),
+            "Pwm", -2);
     }
 }
 
+
+#ifdef _FLIPROWS
 void EV3Widget::makeOutputs(EV3Module *)
 {
     const float x = 160;
     const float trimY = row1Y + 11;
     const float outX = x + 30;
 
-  //  addLabel(Vec(x, trimY - 30), ".... outputs ....");
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(x, trimY), module, EV3<WidgetComposite>::MIX3_PARAM,
+        0.0f, 1.0f, 0));
+    addParam(createParamCentered<Trimpot>(
+        Vec(x, trimY + rowDY), module, EV3<WidgetComposite>::MIX2_PARAM,
+        0.0f, 1.0f, 0));
+    addParam(createParamCentered<Trimpot>(
+        Vec(x, trimY + 2 * rowDY), module, EV3<WidgetComposite>::MIX1_PARAM,
+        0.0f, 1.0f, 0));
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(outX, row1Y),
+        Port::OUTPUT, module, EV3<WidgetComposite>::VCO3_OUTPUT));
+    addLabel(Vec(outX + 20, row1Y + 0 * rowDY+2), "3", COLOR_WHITE);
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(outX, row1Y + rowDY),
+        Port::OUTPUT, module, EV3<WidgetComposite>::VCO2_OUTPUT));
+    addLabel(Vec(outX + 20, row1Y + 1 * rowDY+2), "2", COLOR_WHITE);
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(outX, row1Y + 2 * rowDY),
+        Port::OUTPUT, module, EV3<WidgetComposite>::VCO1_OUTPUT));
+    addLabel(Vec(outX + 20, row1Y + 2 * rowDY+2), "1", COLOR_WHITE);
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(outX + 41, row1Y + rowDY),
+        Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
+   addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
+   addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
+
+}
+#endif
+
+
+#ifndef _FLIPROWS
+void EV3Widget::makeOutputs(EV3Module *)
+{
+    const float x = 160;
+    const float trimY = row1Y + 11;
+    const float outX = x + 30;
+
 
     addParam(createParamCentered<Trimpot>(
         Vec(x, trimY), module, EV3<WidgetComposite>::MIX1_PARAM,
@@ -304,16 +367,16 @@ void EV3Widget::makeOutputs(EV3Module *)
     addOutput(Port::create<PJ301MPort>(
         Vec(outX, row1Y + 2 * rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO3_OUTPUT));
-     addLabel(Vec(outX + 20, row1Y + 2 * rowDY+2), "3", COLOR_WHITE);
+    addLabel(Vec(outX + 20, row1Y + 2 * rowDY+2), "3", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(
         Vec(outX + 41, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
-  //  addLabel(Vec(outX + 36, row1Y + rowDY - 16), "Mix", COLOR_WHITE);
    addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
    addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
 
 }
+#endif
 
 /**
  * Widget constructor will describe my implementation structure and
