@@ -111,12 +111,19 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
 
 inline WaveformSelector::WaveformSelector()
 {
-    addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg" );
-    addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
-    addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
-    addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
-    addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
-    addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
+    addSvg(0, "res/waveforms-6-08.svg","res/waveforms-6-07.svg");   
+    addSvg(0, "res/waveforms-6-06.svg","res/waveforms-6-05.svg");   
+    addSvg(0, "res/waveforms-6-02.svg","res/waveforms-6-01.svg");   
+   // addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg" );
+    //addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
+    //addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
+    addSvg(1, "res/waveforms-6-04.svg","res/waveforms-6-03.svg");   
+    addSvg(1, "res/waveforms-6-12.svg","res/waveforms-6-11.svg");   
+    addSvg(1, "res/waveforms-6-10.svg","res/waveforms-6-09.svg");   
+
+   // addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
+   // addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
+   // addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
 }
 
 inline WaveformSelector::~WaveformSelector()

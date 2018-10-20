@@ -1,6 +1,9 @@
 <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="120" height="380" viewBox="0 0 120 380">
   <title>gray-narrow-ghost</title>
-  <rect x="1" y="1" width="119" height="379" style="fill: #e6e6e6;stroke: #707070;stroke-miterlimit: 10"/>
+  <g id="background_fill" data-name="background fill">
+    <rect width="120" height="380" style="fill: #e6e6e6"/>
+    <rect x="0.5" y="0.5" width="1199" height="379" style="fill: none;stroke: #707070"/>
+  </g>
   <rect x="85" y="45.5" width="29" height="254" rx="3.5" ry="3.5"/>
   <g>
     <path d="M8,287l5.42,8.09,10.21-6,3.82,12.64-.19.06-5.38-8-10.18,6.07L7.82,287.09Z"/>

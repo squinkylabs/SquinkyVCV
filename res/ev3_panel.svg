@@ -1,6 +1,9 @@
 <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="270" height="380" viewBox="0 0 270 380">
   <title>ev3-3-ghost</title>
-  <rect x="1" y="1" width="269" height="379" style="fill: #e6e6e6"/>
+  <g id="background_fill" data-name="background fill">
+    <rect width="270" height="380" style="fill: #e6e6e6"/>
+    <rect x="0.5" y="0.5" width="269" height="379" style="fill: none;stroke: #707070"/>
+  </g>
   <line x1="90" y1="49" x2="90" y2="245" style="fill: none;stroke: #b3b3b3;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 2px"/>
   <line x1="180.25" y1="49" x2="179.75" y2="245" style="fill: none;stroke: #b3b3b3;stroke-linecap: round;stroke-miterlimit: 10;stroke-width: 2px"/>
   <rect x="185" y="267" width="75" height="93" rx="3" style="stroke: #000;stroke-miterlimit: 10"/>

@@ -1,6 +1,9 @@
 <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="150" height="380" viewBox="0 0 150 380">
   <title>shaper2-ghost-01</title>
-  <rect x="0.5" y="0.5" width="149" height="379" style="fill: #e6e6e6;stroke: #000;stroke-miterlimit: 10"/>
+  <g id="background_fill" data-name="background fill">
+    <rect width="150" height="380" style="fill: #e6e6e6"/>
+    <rect x="0.5" y="0.5" width="149" height="379" style="fill: none;stroke: #707070"/>
+  </g>
   <g>
     <path d="M46.09,348.12l-5.39,3.61,4,6.8-8.43,2.55,0-.13,5.35-3.58-4.05-6.79,8.5-2.56Z"/>
     <path d="M53.54,361.76H50.36l.58-3.41a6,6,0,0,1-2.72.64,3.26,3.26,0,0,1-1.82-.46,1.43,1.43,0,0,1-.7-1.23,2.71,2.71,0,0,1,1.14-2A6.43,6.43,0,0,1,49.58,354a5.33,5.33,0,0,1,2.13-.08l.17-1.05H52Zm-1.93-7.33a3.94,3.94,0,0,0-.94-.11A2.45,2.45,0,0,0,49,355a2.13,2.13,0,0,0-.67,1.71,1.53,1.53,0,0,0,.38,1,1.2,1.2,0,0,0,1,.42,2.91,2.91,0,0,0,1.44-.48Z"/>
