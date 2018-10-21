@@ -4,7 +4,10 @@
 
 Introduced three new modules: EV3, Gray Code, and Shaper.
 
-Added a trim control for external gain CV in Chebyshev.
+Added a trim control for external gain CV in Chebyshev. Previously save patches may be require that the gain trim be increased.
+
+Minor graphic tweaks to module panels.
+
 ## 0.6.8
 
 Introduced Chebyshev waveshaper VCO.
