@@ -485,5 +485,8 @@
     <ClInclude Include="..\..\dsp\utils\AsymWaveShaper.h">
       <Filter>Header Files\dsp\utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\ButterworthLookup.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -39,10 +39,8 @@ static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSl
 
     assertClose(cutoff, Fc, 3);    // 3db down at Fc
 
-
     double slope = Analyzer::getSlope(response, (float) Fc * 2, sampleRate);
     assertClose(slope, expectedSlope, 1);          // to get accurate we need to go to higher freq, etc... this is fine
-
 }
 
 
