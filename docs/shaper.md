@@ -30,7 +30,7 @@ The offset is bidirectional, so there is no offset when the knob is straight up 
 
 *Shape* – this is the big unlabeled button. It selects from the different shapes that Shaper can produce. The name of the selected shape is to the right of the knob.
 
-## Some notes on the different shapes:
+## Some notes on the different shapes
 
 ### Smooth
 
@@ -97,3 +97,9 @@ Whereas “Fold” is a standard wavefolder, Fold2 is a little bit different. It
 ![crush image](./crush.png)
 
 Crush simulates bit reduction by using a continuous voltage quantizer. As the gain is turned up it will pass 16 bits, down to 8 bits, and finally one bit.
+
+## More Info
+
+We have an informational article that talks more about aliasing. It goes into some specifics about Shaper, but also has some useful general information.
+
+[Aliasing Story](./aliasing.md).

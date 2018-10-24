@@ -58,4 +58,6 @@ V/Oct is where the main pitch CV is patched, and sets the overall pitch of the V
 
 The output section has a column of three output level controls, one for each VCO. Then there are the three jack, one for each VCO output, and a mixed output.
 
-If you would like some information on how we reduced the CPU usage of EvenVCO, you can [find them here](../docs/vco-optimization.md).
+We have an informational article that talks more about aliasing. It shows you how to compare different modules using a spectrum analyzer. [Aliasing Story](./aliasing.md).
+
+If you would like some information on how we reduced the CPU usage of EvenVCO, you can [find it here](../docs/vco-optimization.md).

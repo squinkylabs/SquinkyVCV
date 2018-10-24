@@ -8,4 +8,6 @@ We believe VCV's Fundamental VCO is an unsung hero. It's one of the few VCOs tha
 
 We "forked" the code to Fundamental VCO-1 and modified it a little bit to make it much more CPU efficient. Now you may use a lot more of them without pops, clicks, and dropouts.
 
-If you would like the details of how we did this, you can [find them here](../docs/vco-optimization.md).
+If you would like the details of how we did this optimization, you can [find them here](../docs/vco-optimization.md).
+
+We have an informational article that talks more about aliasing. It shows you how to compare different modules using a spectrum analyzer. [Aliasing Story](./aliasing.md).
