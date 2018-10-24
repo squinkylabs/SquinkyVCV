@@ -62,3 +62,11 @@ Before and after:
 * Fundamental VCO-1, all outputs patched, digital: 798 -> 187.8 (X4.2)
 * Fundamental VCO-1, saw only, digital: 489 -> 83.7 (X5.8)
 * Fundamental VCO-1, saw only, analog: 270 -> 83 (X2.3)
+
+## Addendum for EV3 VCO
+
+When we looked at EvenVCO, we found many of the same issues as we found in Fundamental VCO-1. The same extremely slow trig and exponential functions that we replaced with lookup tables. Work was being done for waveforms that weren't patched.
+
+But some other things were different. Since EvenVCO is a MinBLEP VCO, it does not need anti-alias filters (as such). The existing MinBLEP code is quite efficient. But in the VCO we did achieve significant speedup by getting rid of the one routine that generates all the waves, and instead have dedicated routines for each waveform. This eliminated a lot of conditional branching.
+
+While EvenVCO is already quite efficient, it was still worthwhile to make it faster. We believe out triple version uses about the same CPU as a single instance of EvenVCO.

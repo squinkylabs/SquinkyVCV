@@ -219,7 +219,7 @@ inline float CHB<TBase>::getInput()
     pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
         taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
 
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
+    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     _freq = expLookup(pitch);
 

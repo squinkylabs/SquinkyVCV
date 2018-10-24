@@ -62,7 +62,16 @@ struct superWidget : ModuleWidget
         addChild(label);
         return label;
     }
+    void addDebug(SuperModule*);
 };
+
+void superWidget::addDebug(SuperModule*)
+{
+    addInput(Port::create<PJ301MPort>(
+        Vec(60, 10), Port::INPUT, module,  Super<WidgetComposite>::DEBUG_INPUT));  
+    addOutput(Port::create<PJ301MPort>(
+        Vec(60, 40), Port::OUTPUT, module,  Super<WidgetComposite>::DEBUG_OUTPUT));  
+}
 
 
 /**
@@ -99,6 +108,8 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
         Vec(10, 30), module, Super<WidgetComposite>::OCTAVE_PARAM, -5, 5, 0));
     addLabel(
         Vec(10, 10), "Oct");
+
+    addDebug(module);
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(10, 95), module, Super<WidgetComposite>::SEMI_PARAM, -5, 5, 0));

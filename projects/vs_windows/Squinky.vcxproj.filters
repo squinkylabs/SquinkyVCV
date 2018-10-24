@@ -488,5 +488,8 @@
     <ClInclude Include="..\..\dsp\filters\ButterworthLookup.h">
       <Filter>Header Files\dsp\filters</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\Super.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

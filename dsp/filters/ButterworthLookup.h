@@ -34,7 +34,7 @@ inline ButterworthLookup4PHP::ButterworthLookup4PHP()
 inline void ButterworthLookup4PHP::get(BiquadParams<float, 2>& params, float normalizedCutoff)
 {
     for (int i = 0; i < numTables; ++i) {
-        const int stage = i < numTables / 2;
+       // const int stage = i < numTables / 2;
         float p = LookupTable<float>::lookup(tables[i], normalizedCutoff, true);
         params.setAtIndex(p, i);
     }

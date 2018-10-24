@@ -1,6 +1,10 @@
 
 #pragma once
 
+#include "ButterworthLookup.h"
+#include "BiquadState.h"
+#include "BiquadFilter.h"
+
 #include "ObjectCache.h"
 
 
@@ -38,12 +42,14 @@ public:
     {
         CV_INPUT,
         GATE_INPUT,
+        DEBUG_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
         MAIN_OUTPUT,
+        DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -82,6 +88,12 @@ private:
         1.06f,
         1.107f
     };
+
+    // For debugging filters
+    BiquadState<float, 2> filterState;
+    BiquadParams<float, 2> filterParams;
+    void updateHPFilters();
+    ButterworthLookup4PHP filterLookup;
 
 };
 
@@ -138,14 +150,31 @@ inline void Super<TBase>::updateAudio()
         }
         mix += phase[i];
     }
-    TBase::outputs[MAIN_OUTPUT].value = mix * 2;
+
+   // mix = phase[3];     // just for test
+
+    mix *= 2;
+    const float output = BiquadFilter<float>::run(mix, filterState, filterParams);
+    TBase::outputs[MAIN_OUTPUT].value = output;
 }
 
+template <class TBase>
+inline void Super<TBase>::updateHPFilters()
+{
+    filterLookup.get(filterParams, globalPhaseInc);
+#if 0
+    const float input = TBase::inputs[DEBUG_INPUT].value;
+   filterLookup.get(filterParams, globalPhaseInc);
+    const float output = BiquadFilter<float>::run(input, filterState, filterParams);
+    TBase::outputs[DEBUG_OUTPUT].value = output * 10;
+#endif
+}
 
 template <class TBase>
 inline void Super<TBase>::step()
 {
     updatePhaseInc();
+    updateHPFilters();
     updateAudio();
 }
 

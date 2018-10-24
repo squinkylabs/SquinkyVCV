@@ -88,6 +88,7 @@
     <ClInclude Include="..\..\composites\Gray.h" />
     <ClInclude Include="..\..\composites\LFN.h" />
     <ClInclude Include="..\..\composites\Shaper.h" />
+    <ClInclude Include="..\..\composites\Super.h" />
     <ClInclude Include="..\..\composites\TestComposite.h" />
     <ClInclude Include="..\..\composites\Tremolo.h" />
     <ClInclude Include="..\..\composites\VocalAnimator.h" />

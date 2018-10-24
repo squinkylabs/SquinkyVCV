@@ -262,8 +262,6 @@ void EV3Widget::makeInput(EV3Module* module, int row, int col,
         addLabel(Vec(labelX, y - 20), name);
 }
 
-#define _FLIPROWS
-
 void EV3Widget::makeInputs(EV3Module* module)
 {
 #ifdef _FLIPROWS

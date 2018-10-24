@@ -266,7 +266,7 @@ inline void EV3<TBase>::processPitchInputs()
         lastFM = fmCombined;
 
 
-        const float q = float(log2(261.626));       // move up to pitch range of even vco
+        const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
         pitch += q;
         const float freq = expLookup(pitch);
         _freq[osc] = freq;

@@ -339,7 +339,7 @@ inline void EvenVCO<TBase>::step()
     pitch += TBase::inputs[FM_INPUT].value / 4.0;
 
 #if 1 // Use lookup table for pitch lookup
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
+    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     _freq = expLookup(pitch);
 #else
