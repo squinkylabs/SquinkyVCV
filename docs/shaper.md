@@ -39,7 +39,7 @@ The offset is bidirectional, so there is no offset when the knob is straight up 
 Smooth is inspired by the asymmetrical distortion curve of a vacuum tube triode. It is by no means a model of a tube at all, but the shape is similar.
 Smooth uses gentle curves, and wants to be used more as a distortion or thickener  that a full on mangler.
 
-With the Smooth setting, the offset control doesn’t actually control the offset; it controls the amount of asymmetry in the output. So, like a normal offset it will bring in even harmonics as it’s turned up, but the way the even harmonics come in at different levels us unique.
+With the Smooth setting, the offset control doesn’t actually control the offset; it controls the amount of asymmetry in the output. So, like a normal offset it will bring in even harmonics, but the way the even harmonics come in at different levels is unique.
 
 Where normally there are the least even harmonics when the knob is in the middle, with Smooth there are no even harmonics when it’s all the way down.
 
