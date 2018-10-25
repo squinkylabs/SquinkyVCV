@@ -13,7 +13,7 @@ public:
     TestComposite() :
         inputs(20),
         outputs(20),
-        params(20),
+        params(40),
         lights(20)
     {
 
@@ -68,6 +68,11 @@ public:
     float engineGetSampleTime()
     {
         return 1.0f / 44100.0f;
+    }
+
+    float engineGetSampleRate()
+    {
+        return 44100.f;
     }
 
     virtual void step()

@@ -42,10 +42,10 @@ When everything is set in a typical manner, each of the Chebyshev waveshapers wi
 The controls in the upper right are all for the sine wave VCO.
 Octave transposes the pitch in even octaves.
 
-* *Tune* raises or lowers the pitch by up to a perfect fifth.
-* *Mod* controls the modulation (exponential FM) depth of the signal patched to the Mod jack.
-* *LFM* controls the linear FM depth of the signal patched to the LFM jack.
-* *V/Oct* input is where the main control voltage is patched.
+* **Tune** raises or lowers the pitch by up to a perfect fifth.
+* **Mod** controls the modulation (exponential FM) depth of the signal patched to the Mod jack.
+* **LFM** controls the linear FM depth of the signal patched to the LFM jack.
+* **V/Oct** input is where the main control voltage is patched.
 
 Mod and LFM perform different functions. Mod, like the CV input, is an exponential control. If an LFO is patched into the Mod input and the Mod depth is adjusted for a vibrato of one semitone, that vibrato will be one semitone regardless of the base pitch. But if an audio rate signal is patched into the Mod input you will tend to get “clangorous” sounds with inharmonic overtones.
 
@@ -57,11 +57,12 @@ Chebyshev polynomials are poorly behaved if they see more than one (volt) at the
 
 The controls and CV of the Folder/Clipper:
 
-* *Fold/Clip* switch. In clip mode, it is a simple hard clipper. In fold mode it’s a waveform folder.
-* *Clip LED*. The LED will be green when there is signal, and red when the folder/clipper engages.
+* **Fold/Clip** switch. In clip mode, it is a simple hard clipper. In fold mode it’s a waveform folder.
+* **Clip LED**. The LED will be green when there is signal, and red when the folder/clipper engages.
 * *Gain*. Controls how hard the folder/clipper is driven. Gain knob and CV are combined.
-* *EG*. Also combines with the gains.
-* *Ext In.* When a signal is patched here it replaces the internal VCO, allowing any signal to be run through the waveshaper.
+* **Gain trim**. The small knob below the **gain** knob is an attenuator for the **gain** CV. New in 0.6.9.
+* **EG**. Also combines with the gains.
+* **Ext In.** When a signal is patched here it replaces the internal VCO, allowing any signal to be run through the waveshaper.
 
 Note that while you can get some cool effects with clipping and folding, they will tend to cause audible aliasing at higher frequencies. Use with care.
 
@@ -73,23 +74,23 @@ The output of the folder/clipper drives the Chebyshev waveshapers. The last grou
 
 There are a lot of controls that work together to determine how the waveshapers are mixed. When configured normally, that means these controls determine the ratios of all the harmonics of the VCO.
 
-The *small knobs* running up the left side individually control each waveshaper/harmonic, with fundamental on top, and harmonic 10 on the bottom.
+The **small knobs** running up the left side individually control each waveshaper/harmonic, with fundamental on top, and harmonic 10 on the bottom.
 
 The input jacks next to them allow the levels of each harmonic to be voltage controlled.
 
-The *Preset* button toggles all ten harmonics between some good starting points, and also resets the Gain to be exactly 1.
+The **Preset** button toggles all ten harmonics between some good starting points, and also resets the Gain to be exactly 1.
 
-The *Even* control increases/decreases the level of all the even harmonics together.
+The **Even** control increases/decreases the level of all the even harmonics together.
 
-The *Odd* control increases/decreases the level of all the odd harmonics together.
+The **Odd** control increases/decreases the level of all the odd harmonics together.
 
-The *Slope* control will apply a gradual roll-off of the upper harmonics. When it is all the way down the roll-off is 18 decibels per octave. When it is all the way up it’s flat.
+The **Slope** control will apply a gradual roll-off of the upper harmonics. When it is all the way down the roll-off is 18 decibels per octave. When it is all the way up it’s flat.
 
 Note that the level of the fundamental is not affected by either the Even or Odd control.
 
 The Odd, Even, and Slope controls may be thought of as subtractive. When they are all the way up, they have no effect, and you get the mix you would expect from the individual harmonic levels. When you turn these controls down they will reduce the levels of the corresponding harmonics.
 
-The *Preset* button toggles between two or three settings. It will always have a setting where the fundamental is full and all other harmonics off, and a setting where all harmonics are up full. In addition, if you started with your own setting of the harmonics, the preset button will eventually take you back there, but with the master gain set back to one.
+The **Preset** button toggles between two or three settings. It will always have a setting where the fundamental is full and all other harmonics off, and a setting where all harmonics are up full. In addition, if you started with your own setting of the harmonics, the preset button will eventually take you back there, but with the master gain set back to one.
 
 ## Several patching ideas
 
@@ -140,3 +141,5 @@ Run something other than a sine wave into Ext In, then process your signal with 
 In the standard configuration there will be little, if any, aliasing. Since the highest harmonic is 10X the fundamental, the Chebyshev module can’t even start to alias until the fundamental gets to 2kHz.
 
 That said, there is no anti-aliasing in this module. The wavefolder can easily alias. Normally the LFM will not alias very much, but with high modulation depth and high pitches it will alias quite a lot.
+
+We have an informational article that talks more about aliasing [here](./aliasing.md).

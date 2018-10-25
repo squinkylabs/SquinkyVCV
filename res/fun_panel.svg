@@ -7,10 +7,9 @@
   <title>fun-panel</title>
   <g style="clip-path: url(#clip-path)">
     <g id="Custom_Size_1" data-name="Custom Size 1">
-      <rect width="150" height="380" style="fill: #fff"/>
-      <g id="background_rect" data-name="background rect">
-        <rect x="0.5" y="0.5" width="149" height="379" style="fill: #e6e6e6"/>
-        <rect x="1" y="1" width="148" height="378" style="fill: none;stroke: silver"/>
+      <g id="background_fill" data-name="background fill">
+        <rect width="150" height="380" style="fill: #e6e6e6"/>
+        <rect x="0.5" y="0.5" width="149" height="379" style="fill: none;stroke: #707070"/>
       </g>
       <g id="Functional_VC0" data-name="Functional VC0" style="isolation: isolate">
         <g style="isolation: isolate">

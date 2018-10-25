@@ -39,17 +39,26 @@ extern void testFilterDesign();
 extern void testVCOAlias();
 extern void testSin();
 extern void testMinBLEPVCO();
+extern void testRateConversion();
+extern void testDelay();
+extern void testSpline(bool emit);
+extern void testButterLookup();
 
 int main(int argc, char ** argv)
 {
     bool runPerf = false;
     bool extended = false;
+    bool runShaperGen = false;
     if (argc > 1) {
         std::string arg = argv[1];
         if (arg == "--ext") {
             extended = true;
         } else if (arg == "--perf") {
             runPerf = true;
+        } else if (arg == "--shaper") {
+            runShaperGen = true;
+        } else {
+            printf("%s is not a valid command line argument\n", arg.c_str());
         }
     }
 #ifdef _PERF
@@ -62,6 +71,11 @@ int main(int argc, char ** argv)
     // Want to be sure we are testing the case we care about.
     assert(sizeof(size_t) == 8);
 
+    if (runShaperGen) {
+        testSpline(true);
+        return 0;
+    }
+
     testAudioMath();
     testRingBuffer();
     testGateTrigger();
@@ -72,20 +86,24 @@ int main(int argc, char ** argv)
     testBiquad();
     testSaw();
     testClockMult();
-
-
+    testDelay();
     testPoly();
 
-
     testSinOscillator();
-    testHilbert();
-    testVCO();
-   // testSin();
     testMinBLEPVCO();
+    testHilbert();
+    testButterLookup();
+    testSpline(false);
+    testVCO();
+   
+   // testSin();
+
 
 
     testFFT();
     testAnalyzer();
+    testRateConversion();
+ 
 
    // printf("skipping lots of tests\n");
 #if 1
@@ -112,6 +130,7 @@ int main(int argc, char ** argv)
     }
 
 
+    testFilterDesign();
     testFinalLeaks();
 
     // When we run inside Visual Studio, don't exit debugger immediately

@@ -200,6 +200,13 @@ inline void EvenVCO<TBase>::step_saw(float deltaPhase)
     if (phase >= 1.0) {
         phase -= 1.0;
         float crossing = -phase / deltaPhase;
+      
+        static float cMin = 100;
+        static float cMax = -100;
+        cMin = std::min(crossing, cMin);
+        cMax = std::max(crossing, cMax);
+
+       // printf("sawJump ph=%.2f, delta=%.2f cross=%.2f (%.2f, %.2f)\n", phase, deltaPhase, crossing, cMin, cMax);
         sawMinBLEP.jump(crossing, -2.0);
     }
 
@@ -332,7 +339,7 @@ inline void EvenVCO<TBase>::step()
     pitch += TBase::inputs[FM_INPUT].value / 4.0;
 
 #if 1 // Use lookup table for pitch lookup
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
+    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     _freq = expLookup(pitch);
 #else

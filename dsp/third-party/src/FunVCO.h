@@ -26,6 +26,7 @@
 #include "BiquadState.h"
 #include "ButterworthFilterDesigner.h"
 #include "ObjectCache.h"
+#include "IIRDecimator.h"
 
 extern float sawTable[2048];
 extern float triTable[2048];
@@ -34,31 +35,7 @@ extern float triTable[2048];
 // rather than  rack::Decimator<>
 #define _USEIIR
 
-template <int OVERSAMPLE>
-class IIRDecimator
-{
-public:
-    float process(const float * input)
-    {
-        float x = 0;
-        for (int i = 0; i < OVERSAMPLE; ++i) {
-            x = BiquadFilter<float>::run(input[i], state, params);
-        }
-        return x;
-    }
 
-    /**
-     * cutoff is normalized freq (.5 = nyquist)
-     */
-    void setCutoff(float cutoff)
-    {
-        assert(cutoff > 0 && cutoff < .5f);
-        ButterworthFilterDesigner<float>::designSixPoleLowpass(params, cutoff);
-    }
-private:
-    BiquadParams<float, 3> params;
-    BiquadState<float, 3> state;
-};
 
 template <int OVERSAMPLE, int QUALITY>
 struct VoltageControlledOscillator
@@ -83,10 +60,10 @@ struct VoltageControlledOscillator
     bool triEnabled = false;
 
 #ifdef _USEIIR
-    IIRDecimator<OVERSAMPLE> sinDecimator;
-    IIRDecimator<OVERSAMPLE> triDecimator;
-    IIRDecimator<OVERSAMPLE> sawDecimator;
-    IIRDecimator<OVERSAMPLE> sqrDecimator;
+    IIRDecimator sinDecimator;
+    IIRDecimator triDecimator;
+    IIRDecimator sawDecimator;
+    IIRDecimator sqrDecimator;
 #else
     rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
     rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;
@@ -114,12 +91,13 @@ struct VoltageControlledOscillator
         expLookup = ObjectCache<float>::getExp2Ex();
 
         // Set anti-alias 3-db down point an octave below nyquist: .25   
-        float cutoff = .25f / float(OVERSAMPLE);
+        //float cutoff = .25f / float(OVERSAMPLE);
 
-        sinDecimator.setCutoff(cutoff);
-        sawDecimator.setCutoff(cutoff);
-        sqrDecimator.setCutoff(cutoff);
-        triDecimator.setCutoff(cutoff);
+        sinDecimator.setup(16);
+        sinDecimator.setup(16);
+        sawDecimator.setup(16);
+        sqrDecimator.setup(16);
+        triDecimator.setup(16);
     }
 
     // Use the standard c++ library for random generation

@@ -44,6 +44,18 @@ struct NKKSmall : SVGSwitch, ToggleSwitch {
 	}
 };
 
+struct BlueToggle : public SVGSwitch, ToggleSwitch {
+    BlueToggle() {
+        addFrame(SVG::load(assetPlugin(plugin, "res/BluePush_1.svg")));
+		addFrame(SVG::load(assetPlugin(plugin, "res/BluePush_0.svg")));
+        #if 0
+        setSVGs(
+            SVG::load(assetPlugin(plugin, "res/BluePush_0.svg")),
+            SVG::load(assetPlugin(plugin, "res/BluePush_1.svg"))
+        );
+        #endif
+    }
+};
 
 /**
  * A very basic momentary push button.

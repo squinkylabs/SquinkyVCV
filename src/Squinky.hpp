@@ -2,6 +2,8 @@
 
 //#define _GMR
 #define _CHB
+#define _EV3
+//#define _SUPER
 
 using namespace rack;
 extern Plugin *plugin;
@@ -28,7 +30,15 @@ extern Model *modelFunVModule;
 #ifdef _EV3
 extern Model *modelEV3Module;
 #endif
-
+extern Model *modelGrayModule;
+extern Model *modelShaperModule;
+#ifdef _DG
+extern Model *modelDGModule;
+#endif
+extern Model *modelBlankModule;
+#ifdef _SUPER
+extern Model *modelSuperModule;
+#endif
 
 
 

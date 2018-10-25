@@ -9,8 +9,8 @@
     <g id="Custom_Size_1" data-name="Custom Size 1">
       <rect width="90" height="380" style="fill: #fff"/>
       <g id="background">
-        <rect x="0.5" y="0.5" width="89" height="379" style="fill: #e6e6e6"/>
-        <rect x="1" y="1" width="88" height="378" style="fill: none;stroke: silver"/>
+        <rect width="90" height="380" style="fill: #e6e6e6"/>
+        <rect x="0.5" y="0.5" width="89" height="379" style="fill: none; stroke #707070"/>
       </g>
       <g id="Rectangle_2" data-name="Rectangle 2">
         <rect x="58" y="52" width="27" height="41" rx="4" ry="4"/>

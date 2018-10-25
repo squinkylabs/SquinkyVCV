@@ -24,10 +24,6 @@ As with all third-party modules for VCV, you must:
 * `CD SquinkyVCV`
 * `make`
 
-## Experimental modules
-
-At any given time, there may partially finished "experimental" modules in this repo. You can find up to date information on them [here](experimental.md).
-
 ## Unit testing framework
 
 We have reasonably thorough tests for our code. Some of this might be of interest - it's [here](unit-test.md).

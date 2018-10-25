@@ -144,7 +144,7 @@ inline void CHBWidget::addVCOKnobs(CHBModule *module)
         module,
         module->chb.PARAM_PITCH_MOD_TRIM,
         0, 1.0f, 0.0f));
-    addLabel(Vec(col2 - 21, row2 - labelAboveKnob), "Mod");
+    addLabel(Vec(col2 - 20, row2 - labelAboveKnob), "Mod");
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(col3, row2),
@@ -159,13 +159,20 @@ inline void CHBWidget::addOtherKnobs(CHBModule *module)
     // gain
 
     gainParam = createParamCentered<Blue30Knob>(
-        Vec(col1, 165),
+        Vec(col1, row2),
         module,
         module->chb.PARAM_EXTGAIN,
         -5.0f, 5.0f, defaultGainParam);
     addParam(gainParam);
 
-    addLabel(Vec(col1 - 22, 165 - labelAboveKnob), "Gain");
+    addLabel(Vec(col1 - 22, row2 - labelAboveKnob), "Gain");
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(col1, row2+30),
+        module,
+        module->chb.PARAM_EXTGAIN_TRIM,
+        0, 1, 0));
+
 
     // slope
     addParam(createParamCentered<Blue30Knob>(
@@ -195,14 +202,14 @@ inline void CHBWidget::addOtherKnobs(CHBModule *module)
 void CHBWidget::addMisc(CHBModule *module)
 {
     auto sw = new SQPush();
-    Vec pos(col1, 104);
+    Vec pos(col1, row1);
     sw->center(pos);
     sw->onClick([this, module]() {
         this->resetMe(module);
     });
 
     addChild(sw);
-    addLabel(Vec(col1 - 25, 104 - labelAboveKnob), "Preset");
+    addLabel(Vec(col1 - 25, row1 - labelAboveKnob), "Preset");
 
     const float switchY = 219;
     addParam(createParamCentered<CKSS>(
@@ -234,8 +241,8 @@ static const char* labels[] = {
 };
 static const int offsets[] = {
     -1,
+    1,
     2,
-    3,
     -1,
     -1,
     1,
