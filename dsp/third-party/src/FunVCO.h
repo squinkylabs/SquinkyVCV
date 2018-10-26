@@ -17,8 +17,8 @@
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
+#include "dsp/functions.hpp"
 #include "dsp/filter.hpp"
-#include "dsp/decimator.hpp"
 #include <random>
 
 #include "BiquadFilter.h"
@@ -268,6 +268,7 @@ struct VoltageControlledOscillator
 };
 
 
+#if 0       // let's remove from regular builds
 template <int OVERSAMPLE, int QUALITY>
 struct VoltageControlledOscillatorOrig
 {
@@ -439,6 +440,7 @@ struct VoltageControlledOscillatorOrig
         return sinf(2 * M_PI * phase);
     }
 };
+#endif
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
