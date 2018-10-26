@@ -491,5 +491,11 @@
     <ClInclude Include="..\..\composites\Super.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\KSComposite.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h">
+      <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

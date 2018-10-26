@@ -6,6 +6,7 @@
 #include "AudioMath.h"
 #include "LookupTable.h"
 #include "LookupTableFactory.h"
+#include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
 
 using namespace std;
@@ -365,6 +366,23 @@ static void testAudioTaperTolerance()
     }
 }
 
+/**
+ * Tests for non-uniform lookup
+ */
+
+template <typename T>
+static void testNonUniform1()
+{
+    NonUniformLookupTableParams<T> params;
+    NonUniformLookupTable<T>::addPoint(params, 0, 0);
+    NonUniformLookupTable<T>::addPoint(params, 1, 1);
+    NonUniformLookupTable<T>::addPoint(params, 2, 2);
+    NonUniformLookupTable<T>::finalize(params);
+
+    const T result = NonUniformLookupTable<T>::lookup(params, 1);
+    assertClose(result, 1, .000001);
+}
+
 template<typename T>
 static void test()
 {
@@ -387,11 +405,11 @@ static void test()
     testBipolarTolerance<T>();
     testAudioTaperSimpleLookup<T>();
     testAudioTaperTolerance<T>();
+    testNonUniform1<T>();
 }
 
 void testLookupTable()
 {
-
     test<double>();
     test<float>();
 }

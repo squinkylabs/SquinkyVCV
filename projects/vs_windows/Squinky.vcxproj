@@ -86,6 +86,7 @@
     <ClInclude Include="..\..\composites\FunVCOComposite.h" />
     <ClInclude Include="..\..\composites\GMR.h" />
     <ClInclude Include="..\..\composites\Gray.h" />
+    <ClInclude Include="..\..\composites\KSComposite.h" />
     <ClInclude Include="..\..\composites\LFN.h" />
     <ClInclude Include="..\..\composites\Shaper.h" />
     <ClInclude Include="..\..\composites\Super.h" />
@@ -125,6 +126,7 @@
     <ClInclude Include="..\..\dsp\utils\IIRUpsampler.h" />
     <ClInclude Include="..\..\dsp\utils\LookupTable.h" />
     <ClInclude Include="..\..\dsp\utils\LookupTableFactory.h" />
+    <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h" />
     <ClInclude Include="..\..\dsp\utils\ObjectCache.h" />
     <ClInclude Include="..\..\dsp\utils\poly.h" />
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h" />
