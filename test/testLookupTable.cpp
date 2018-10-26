@@ -1,13 +1,14 @@
 
-#include <assert.h>
-#include <iostream>
-
+#include "NonUniformLookupTable.h"
 #include "asserts.h"
 #include "AudioMath.h"
 #include "LookupTable.h"
 #include "LookupTableFactory.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
+
+#include <assert.h>
+#include <iostream>
 
 using namespace std;
 
