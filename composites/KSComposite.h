@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "FunVCO.h"
-//#define _ORIGVCO
+#include "FunVCO3.h"
+
 
 template <class TBase>
 class KSComposite : public TBase
@@ -61,11 +61,7 @@ public:
     }
 
 private:
-#ifdef _ORIGVCO
-    VoltageControlledOscillatorOrig<16, 16> oscillator;
-#else
-    VoltageControlledOscillator<16, 16> oscillator;
-#endif
+    KSOscillator <16, 16> oscillator;
 };
 
 template <class TBase>
