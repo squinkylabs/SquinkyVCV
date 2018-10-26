@@ -92,21 +92,12 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
 
     const int cellsInRow = (int) svgs[row].size();
     if (cellsInRow == 1) {
-        // If we are the first cell in this row, we are at 0
         cell->box.pos.x = 0;
-        //printf("just set x to 0 val=%f\n", cell->value);
     } else {
         cell->box.pos.x =
             svgs[row][cellsInRow-2]->box.pos.x + 
             svgs[row][cellsInRow-2]->box.size.x;
-        #if 0
-        cell->box.pos.x = 
-            svgs[row].back()->box.pos.x +
-            svgs[row].back()->box.size.x;
-        #endif
-       // printf("just set x to %f value=%f\n", cell->box.pos.x, cell->value);
     }
-   // cell->dump("after load");
 }
 
 inline WaveformSelector::WaveformSelector()
@@ -114,21 +105,13 @@ inline WaveformSelector::WaveformSelector()
     addSvg(0, "res/waveforms-6-08.svg","res/waveforms-6-07.svg");   
     addSvg(0, "res/waveforms-6-06.svg","res/waveforms-6-05.svg");   
     addSvg(0, "res/waveforms-6-02.svg","res/waveforms-6-01.svg");   
-   // addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg" );
-    //addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
-    //addSvg(0, "res/saw_wave.svg", "res/saw_wave_on.svg");
     addSvg(1, "res/waveforms-6-04.svg","res/waveforms-6-03.svg");   
     addSvg(1, "res/waveforms-6-12.svg","res/waveforms-6-11.svg");   
     addSvg(1, "res/waveforms-6-10.svg","res/waveforms-6-09.svg");   
-
-   // addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
-   // addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
-   // addSvg(1, "res/saw_wave.svg", "res/saw_wave_on.svg");
 }
 
 inline WaveformSelector::~WaveformSelector()
 {
-   // printf("in dtor of waveform selector");
 }
 
 inline void WaveformSelector::drawSVG(NVGcontext *vg, SVGWidget& svg, float x, float y)
@@ -155,20 +138,14 @@ void inline WaveformSelector::draw(NVGcontext *vg)
 inline void WaveformSelector::onMouseDown( EventMouseDown &e )
 {
     e.consumed = false;
-    //printf("mouse down %f, %f\n", e.pos.x, e.pos.y); fflush(stdout);
  
     CellPtr hit = hitTest(e.pos.x, e.pos.y);
     if (hit) {
         e.consumed = true;
-        //printf("hit test found cell\n"); fflush(stdout);
         if (hit->value == this->value) {
             printf("value same\n"); fflush(stdout);
             return;
         }
         setValue(hit->value);
-        printf("set curValue=%f\n", this->value); fflush(stdout);
-    } else {
-       // printf("hit test failed\n"); fflush(stdout);
     }
-
 }
