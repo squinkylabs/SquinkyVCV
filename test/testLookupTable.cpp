@@ -384,6 +384,53 @@ static void testNonUniform1()
     assertClose(result, 1, .000001);
 }
 
+template <typename T>
+static void testNonUniform2()
+{
+    NonUniformLookupTableParams<T> params;
+    NonUniformLookupTable<T>::addPoint(params, 0, 0);
+    NonUniformLookupTable<T>::addPoint(params, 1, 1);
+    NonUniformLookupTable<T>::addPoint(params, 2, 2);
+    NonUniformLookupTable<T>::finalize(params);
+
+    const T result = NonUniformLookupTable<T>::lookup(params, 1.1f);
+    assertClose(result, 1.1f, .000001);
+}
+
+template <typename T>
+static void testNonUniform3()
+{
+    NonUniformLookupTableParams<T> params;
+    NonUniformLookupTable<T>::addPoint(params, 0, 0);
+    NonUniformLookupTable<T>::addPoint(params, 1, 1);
+    NonUniformLookupTable<T>::addPoint(params, 2, 2);
+    NonUniformLookupTable<T>::finalize(params);
+
+    T result = NonUniformLookupTable<T>::lookup(params, -100);
+    assertClose(result, 0, .000001);
+    result = NonUniformLookupTable<T>::lookup(params, 100);
+    assertClose(result, 2, .000001);
+
+    result = NonUniformLookupTable<T>::lookup(params, 2);
+    assertClose(result, 2, .000001);
+
+    result = NonUniformLookupTable<T>::lookup(params, 0);
+    assertClose(result, 0, .000001);
+}
+
+template <typename T>
+static void testNonUniform4()
+{
+    NonUniformLookupTableParams<T> params;
+    NonUniformLookupTable<T>::addPoint(params, 0, 0);
+    NonUniformLookupTable<T>::addPoint(params, 1, 1);
+    NonUniformLookupTable<T>::addPoint(params, 2, 21);
+    NonUniformLookupTable<T>::finalize(params);
+
+    const T result = NonUniformLookupTable<T>::lookup(params, 1.5f);
+    assertClose(result, 11.f, .000001);
+}
+
 template<typename T>
 static void test()
 {
@@ -407,6 +454,9 @@ static void test()
     testAudioTaperSimpleLookup<T>();
     testAudioTaperTolerance<T>();
     testNonUniform1<T>();
+    testNonUniform2<T>();
+    testNonUniform3<T>();
+    testNonUniform4<T>();
 }
 
 void testLookupTable()
