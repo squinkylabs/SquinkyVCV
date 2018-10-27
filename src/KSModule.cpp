@@ -48,9 +48,9 @@ void KSModule::step()
 // module widget
 ////////////////////
 
-struct compositeWidget : ModuleWidget
+struct KCCompositeWidget : ModuleWidget
 {
-    compositeWidget(KSModule *);
+    KCCompositeWidget(KSModule *);
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
     {
@@ -61,15 +61,91 @@ struct compositeWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addJacks(KSModule*);
+    void addKnobs(KSModule*);
 };
 
+void KCCompositeWidget::addJacks(KSModule*)
+{
+    const float verticalShift = 0;
+    const float col1 = 12;
+    const float col2 = 46;
+    const float col3 = 81;
+    const float col4 = 115;
+    const float outputLabelY = 300;
 
+    using CCOMP = KSComposite<WidgetComposite>;
+
+    addInput(Port::create<PJ301MPort>(
+        Vec(col1, 273+verticalShift),
+        Port::INPUT,
+        module,
+        CCOMP::PITCH_INPUT));
+    addLabel(Vec(9, 255+verticalShift), "cv");
+
+    addInput(Port::create<PJ301MPort>(
+        Vec(col2, 273+verticalShift),
+        Port::INPUT,
+        module,
+        CCOMP::FM_INPUT));
+
+    addLabel(Vec(43, 255+verticalShift), "fm");
+
+    addInput(Port::create<PJ301MPort>(
+        Vec(col3, 273+verticalShift),
+        Port::INPUT,
+        module,
+        CCOMP::SYNC_INPUT));
+    addLabel(Vec(72, 255+verticalShift), "sync");
+
+    addInput(Port::create<PJ301MPort>(
+        Vec(col4, 273+verticalShift),
+        Port::INPUT,
+        module,
+        CCOMP::PW_INPUT));
+    addLabel(Vec(107, 255+verticalShift), "pwm");
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(col1, 317+verticalShift),
+        Port::OUTPUT,
+        module,
+        CCOMP::SIN_OUTPUT));
+    addLabel(Vec(8, outputLabelY+verticalShift), "sin", COLOR_WHITE);
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(col2, 317+verticalShift),
+        Port::OUTPUT,
+        module,
+        CCOMP::TRI_OUTPUT));
+    addLabel(Vec(44, outputLabelY+verticalShift), "tri", COLOR_WHITE);
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(col3, 317+verticalShift),
+        Port::OUTPUT, 
+        module, 
+        CCOMP::SAW_OUTPUT));
+    addLabel(Vec(75, outputLabelY+verticalShift), "saw", COLOR_WHITE);
+
+    addOutput(Port::create<PJ301MPort>(
+        Vec(col4, 317+verticalShift),
+        Port::OUTPUT,
+        module,
+        CCOMP::SQR_OUTPUT));
+    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", COLOR_WHITE);
+}
+
+
+void KCCompositeWidget::addKnobs(KSModule*)
+{
+    
+}
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-compositeWidget::compositeWidget(KSModule *module) : ModuleWidget(module)
+KCCompositeWidget::KCCompositeWidget(KSModule *module) : ModuleWidget(module)
 {
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
@@ -79,6 +155,8 @@ compositeWidget::compositeWidget(KSModule *module) : ModuleWidget(module)
         addChild(panel);
     }
 
+    addJacks(module);
+    addKnobs(module);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -89,7 +167,7 @@ compositeWidget::compositeWidget(KSModule *module) : ModuleWidget(module)
 
 
 Model *modelKSModule = Model::create<KSModule,
-    compositeWidget>("Squinky Labs",
+    KCCompositeWidget>("Squinky Labs",
     "squinkylabs-ks",
     "kitchen sink", RANDOM_TAG);
 
