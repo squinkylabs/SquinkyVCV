@@ -22,6 +22,9 @@ namespace std {
 #endif
 
 /**
+ * Composite for Chebyshev module.
+ *
+ * Performance measure for 1.0 = 42.44
  */
 template <class TBase>
 class CHB : public TBase
@@ -103,9 +106,6 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
-
-    void setEconomy(bool);
-   bool isEconomy() const;
 
     float _freq = 0;
 
@@ -193,20 +193,6 @@ inline float  CHB<TBase>::getOctave(int i) const
     assert(i >= 0 && i < 11);
     return _octave[i];
 }
-
-#if 1
-template <class TBase>
-inline  void CHB<TBase>::setEconomy(bool b)
-{
-    economyMode = b;
-}
-
-template <class TBase>
-inline bool CHB<TBase>::isEconomy() const
-{
-    return economyMode;
-}
-#endif
 
 template <class TBase>
 inline float CHB<TBase>::getInput()
