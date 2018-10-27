@@ -111,28 +111,28 @@ void KCCompositeWidget::addJacks(KSModule*)
         Port::OUTPUT,
         module,
         CCOMP::SIN_OUTPUT));
-    addLabel(Vec(8, outputLabelY+verticalShift), "sin", COLOR_WHITE);
+    addLabel(Vec(8, outputLabelY+verticalShift), "sin");
 
     addOutput(Port::create<PJ301MPort>(
         Vec(col2, 317+verticalShift),
         Port::OUTPUT,
         module,
         CCOMP::TRI_OUTPUT));
-    addLabel(Vec(44, outputLabelY+verticalShift), "tri", COLOR_WHITE);
+    addLabel(Vec(44, outputLabelY+verticalShift), "tri");
 
     addOutput(Port::create<PJ301MPort>(
         Vec(col3, 317+verticalShift),
         Port::OUTPUT, 
         module, 
         CCOMP::SAW_OUTPUT));
-    addLabel(Vec(75, outputLabelY+verticalShift), "saw", COLOR_WHITE);
+    addLabel(Vec(75, outputLabelY+verticalShift), "saw");
 
     addOutput(Port::create<PJ301MPort>(
         Vec(col4, 317+verticalShift),
         Port::OUTPUT,
         module,
         CCOMP::SQR_OUTPUT));
-    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", COLOR_WHITE);
+    addLabel(Vec(111, outputLabelY+verticalShift), "sqr");
 }
 
 
@@ -147,11 +147,11 @@ void KCCompositeWidget::addKnobs(KSModule*)
  */
 KCCompositeWidget::KCCompositeWidget(KSModule *module) : ModuleWidget(module)
 {
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(15 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/ks_panel.svg")));
         addChild(panel);
     }
 
