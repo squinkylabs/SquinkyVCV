@@ -73,7 +73,9 @@ public:
         SEMI_PARAM,
         FINE_PARAM,
         DETUNE_PARAM,
+        DETUNE_TRIM_PARAM,
         MIX_PARAM,
+        MIX_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -82,6 +84,8 @@ public:
         CV_INPUT,
         GATE_INPUT,
         DEBUG_INPUT,
+        DETUNE_INPUT,
+        MIX_INPUT,
         NUM_INPUTS
     };
 
