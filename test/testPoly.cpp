@@ -2,7 +2,9 @@
 #include "asserts.h"
 #include "poly.h"
 #include "Analyzer.h"
+#include "Shaper.h"
 #include "SinOscillator.h"
+#include "TestComposite.h"
 #include "TestSignal.h"
 
 static void test0()
@@ -59,20 +61,6 @@ static void testTerms()
     }
 }
 
-
-static void temp()
-{
-    Poly<double, 10> poly;
-    poly.run(0, 1);
-    poly._dumpDC();
-    
-    assertEQ(poly.getDC(0), 1);
-    assertEQ(poly.getDC(1), -1);
-    assertEQ(poly.getDC(2), 1);
-    assertEQ(poly.getDC(3), -1);
-    assertEQ(poly.getDC(4), 1);
-}
-
 static void _testDC(int term, float gain)
 {
     Poly<double, 10> poly;
@@ -96,18 +84,11 @@ static void _testDC(int term, float gain)
         buffer[i] = func();
     }
     double dc = TestSignal<float>::getDC(buffer, bufferSize);
-   
-    printf("in test gain = %f term = %d, dc=%f\n", gain, term, dc);
-    poly._dumpDC();
     assertClose(dc, 0, .001);
 }
 
 static void testDC()
 {
-  //  _testDC(1, 1);
-   // _testDC(2, 1);
-  //  _testDC(1, .5);
-  //  _testDC(2, .5);
     for (int i = 0; i < 10; ++i) {
         _testDC(i, 1);
     }
@@ -118,11 +99,41 @@ static void testDC()
     }
 }
 
+
+static void testCompositeDC()
+{
+    using Sh = Shaper<TestComposite>;
+ 
+    Sh sh;
+    sh.params[Sh::PARAM_SHAPE].value = float(Sh::Shapes::FullWave);
+
+    // Will generate sine at fs * .01 (around 400 Hz).
+    SinOscillatorParams<float> sinp;
+    SinOscillatorState<float> sins;
+    SinOscillator<float, false>::setFrequency(sinp, .01f);
+
+    // Run sin through Chebyshevs at specified gain
+    auto func = [&sins, &sinp, &sh]() {
+        const float sin = SinOscillator<float, false>::run(sins, sinp);
+        sh.inputs[Sh::INPUT_AUDIO].value = sin;
+        sh.step();    
+        return sh.outputs[Sh::OUTPUT_AUDIO].value;
+    };
+
+    const int bufferSize = 16 * 1024;
+    float buffer[bufferSize];
+    for (int i = 0; i < bufferSize; ++i) {
+        buffer[i] = func();
+    }
+    double dc = TestSignal<float>::getDC(buffer, bufferSize);
+    assertClose(dc, 0, .001);
+}
+
 void testPoly()
 {
-    temp();
     test0();
     test1();
     testDC();
     testTerms();
+    testCompositeDC();
 }
