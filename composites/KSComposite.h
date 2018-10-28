@@ -76,7 +76,7 @@ inline void KSComposite<TBase>::step()
         pitchCv += quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
     }
     */
-   
+
    // const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
     const float cv = TBase::inputs[PITCH_INPUT].value;
     const float finePitch = TBase::params[FINE_PARAM].value / 12.0f;

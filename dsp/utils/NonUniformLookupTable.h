@@ -11,7 +11,7 @@ class NonUniformLookupTableParams
 public:
     friend NonUniformLookupTable<T>;
 private:
-  
+
     class Entry
     {
     public:
@@ -20,9 +20,6 @@ private:
         T a;
     };
     using container = std::map<T, Entry>;
-  //  using iterator = container::iterator;
-  //  typedef container::iterator iterator;
-   // using iterator = std::map<T, NonUniformLookupTableParams::Entry>::iterator;
     bool isFinalized = false;
     container entries;
 };
@@ -40,11 +37,11 @@ public:
 template <typename T>
 inline void NonUniformLookupTable<T>::addPoint(NonUniformLookupTableParams<T>& params, T x, T y)
 {
-    typename NonUniformLookupTableParams<T>::Entry e;
+    using Entry = typename NonUniformLookupTableParams<T>::Entry;
+    Entry e;
     e.x = x;
     e.y = y;
-    params.entries.insert(std::pair<T, typename NonUniformLookupTableParams<T>::Entry>(x, e));
-  //  params.entries.insert({x, e});
+    params.entries.insert(std::pair<T, Entry>(x, e));
 }
 
 template <typename T>
@@ -52,18 +49,18 @@ inline void NonUniformLookupTable<T>::finalize(NonUniformLookupTableParams<T>& p
 {
     assert(!params.isFinalized);
 
-    typename std::map<T, typename NonUniformLookupTableParams<T>::Entry>::iterator it;
+    using iterator = typename std::map<T, typename NonUniformLookupTableParams<T>::Entry>::iterator;
+    iterator it;
+    //typename std::map<T, typename NonUniformLookupTableParams<T>::Entry>::iterator it;
     for (it = params.entries.begin(); it != params.entries.end(); ++it) {
-        typename std::map<T, typename NonUniformLookupTableParams<T>::Entry>::iterator it_next = it;
+        iterator it_next = it;
         ++it_next;
 
         // Will now generate a line segment from this entry to the next
         if (it_next == params.entries.end()) {
-            //printf("in last segment, will set a == 0");
             it->second.a = 0;
         } else {
             T a = (it_next->second.y - it->second.y) / (it_next->second.x - it->second.x);
-            //printf("for segment will use a = %f and b = %f\n", a, it->second.y);
             it->second.a = a;
         }
     }
@@ -75,7 +72,6 @@ inline void NonUniformLookupTable<T>::finalize(NonUniformLookupTableParams<T>& p
 template <typename T>
 inline T NonUniformLookupTable<T>::lookup(NonUniformLookupTableParams<T>& params, T x)
 {
-    //printf("lookup x=%f\n", x);
     assert(params.isFinalized);
     assert(!params.entries.empty());
 
@@ -85,24 +81,17 @@ inline T NonUniformLookupTable<T>::lookup(NonUniformLookupTableParams<T>& params
     if (lb == params.entries.end()) {
         return params.entries.rbegin()->second.y;
     }
-   // assert(lb);
-   // printf("lower bound x=%f y=%f\n", lb->second.x, lb->second.y);
     if (x >= lb->second.x) {
         // this could only happen if we hit equal
-        //printf("Lb is in case 1\n");
     } else {
         --lb;
         if (lb == params.entries.end()) {
-           // printf("needed prev, bit didn't find");
             return lb_init->second.y;
         }
     }
-   // printf("after adjust, lb x=%f\n", lb->second.x);
 
+    // Now that we have the right entry, interpolate.
     T ret = lb->second.a * (x - lb->second.x) + lb->second.y;
-    //printf("not doint interp\n");
-   // T ret = lb->second.y;           // no interpolation
-   
     return ret;
 }
 

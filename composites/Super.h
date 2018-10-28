@@ -60,7 +60,7 @@ public:
     }
 
     /**
-    * re-calc everything that changes with sample
+    * re-calculate everything that changes with sample
     * rate. Also everything that depends on baseFrequency.
     *
     * Only needs to be called once.
@@ -110,7 +110,7 @@ private:
     static const int numSaws = 7;
 
     float phase[numSaws] = {0};
-    float phaseInc[numSaws] =  {0};
+    float phaseInc[numSaws] = {0};
     float globalPhaseInc = 0;
 
     std::function<float(float)> expLookup =
@@ -151,27 +151,26 @@ inline void Super<TBase>::updatePhaseInc()
 {
 
     const float cv = TBase::inputs[CV_INPUT].value;
-    
+
     const float finePitch = TBase::params[FINE_PARAM].value / 12.0f;
     const float semiPitch = TBase::params[SEMI_PARAM].value / 12.0f;
 
 
     float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value) +
-            semiPitch +
-            finePitch;
-    
+        semiPitch +
+        finePitch;
+
     pitch += cv;
 
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
+    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     const float freq = expLookup(pitch);
     globalPhaseInc = TBase::engineGetSampleTime() * freq;
 
-    for (int i=0; i<numSaws; ++i) {
+    for (int i = 0; i < numSaws; ++i) {
         float detune = (detuneFactors[i] - 1) * .1f;
         detune += 1;
         phaseInc[i] = globalPhaseInc * detune;
-       // printf("phaseINc[%d] = %f\n", i, phaseInc[i]); fflush(stdout);
     }
 }
 
@@ -179,17 +178,16 @@ template <class TBase>
 inline void Super<TBase>::updateAudio()
 {
     float mix = 0;
-    for (int i=0; i<numSaws; ++i) {
+    for (int i = 0; i < numSaws; ++i) {
         phase[i] += phaseInc[i];
         if (phase[i] > 1) {
             phase[i] -= 1;
         }
         if (phase[i] > 1) {
-             printf("hey, phase too big %f\n", phase[i]); fflush(stdout);
+            printf("hey, phase too big %f\n", phase[i]); fflush(stdout);
         }
         if (phase[i] < 0) {
-
-             printf("hey, phase too bismallg %f\n", phase[i]); fflush(stdout);
+            printf("hey, phase too small %f\n", phase[i]); fflush(stdout);
         }
         mix += phase[i];
     }
@@ -207,7 +205,7 @@ inline void Super<TBase>::updateHPFilters()
     filterLookup.get(filterParams, globalPhaseInc);
 #if 0
     const float input = TBase::inputs[DEBUG_INPUT].value;
-   filterLookup.get(filterParams, globalPhaseInc);
+    filterLookup.get(filterParams, globalPhaseInc);
     const float output = BiquadFilter<float>::run(input, filterState, filterParams);
     TBase::outputs[DEBUG_OUTPUT].value = output * 10;
 #endif
