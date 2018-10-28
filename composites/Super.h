@@ -4,8 +4,47 @@
 #include "ButterworthLookup.h"
 #include "BiquadState.h"
 #include "BiquadFilter.h"
-
+#include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
+
+class SawtoothDetuneCurve
+{
+public:
+    /**
+    * @param depth is "detune" knob. 0..1
+    * returns a number such that freq = detuneFactor * initialFreq
+    */
+    float getDetuneFactor(float depth)
+    {
+        return NonUniformLookupTable<float>::lookup(table, depth);
+    }
+
+    SawtoothDetuneCurve()
+    {
+        // this data is pretty regular - could use uniform table
+        using T = NonUniformLookupTable<float>;
+        T::addPoint(table, 0, 0);
+        T::addPoint(table, .0551f, .00967f);
+        T::addPoint(table, .118f, .022f);
+        T::addPoint(table, .181f, .04f);
+        T::addPoint(table, .244f, .0467f);
+        T::addPoint(table, .307f, .059f);
+
+        T::addPoint(table, .37f, .0714f);
+        T::addPoint(table, .433f, .0838f);
+        T::addPoint(table, .496f, .0967f);
+        T::addPoint(table, .559f, .121f);
+        T::addPoint(table, .622f, .147f);
+        T::addPoint(table, .748f, .243f);
+        T::addPoint(table, .811f, .293f);
+        T::addPoint(table, .874f, .343f);
+        T::addPoint(table, .937f, .392f);
+        T::addPoint(table, 1, 1);
+        NonUniformLookupTable<float>::finalize(table);
+    }
+private:
+    NonUniformLookupTableParams<float> table;
+};
 
 
 template <class TBase>

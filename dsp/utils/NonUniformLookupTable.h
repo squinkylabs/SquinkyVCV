@@ -31,6 +31,7 @@ template <typename T>
 class NonUniformLookupTable
 {
 public:
+    NonUniformLookupTable() = delete;
     static void addPoint(NonUniformLookupTableParams<T>& params, T x, T y);
     static void finalize(NonUniformLookupTableParams<T>& params);
     static T lookup(NonUniformLookupTableParams<T>& params, T x);

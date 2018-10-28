@@ -6,6 +6,7 @@
 #include "LookupTableFactory.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
+#include "Super.h"
 
 #include <assert.h>
 #include <iostream>
@@ -431,6 +432,29 @@ static void testNonUniform4()
     assertClose(result, 11.f, .000001);
 }
 
+
+static void testDetune()
+{
+    SawtoothDetuneCurve curve;
+
+    float x = curve.getDetuneFactor(0);
+    assertEQ(x, 0);
+    x = curve.getDetuneFactor(1);
+    assertEQ(x, 1);
+
+    x = curve.getDetuneFactor(.5);
+    assertLT(x, .1);
+
+    float last =  - .00001f;
+    for (float f = 0; f <= 1; f += .05f) {
+        x = curve.getDetuneFactor(f);
+        assertGT(x, last);
+        last = x;
+    }
+}
+
+
+
 template<typename T>
 static void test()
 {
@@ -456,11 +480,12 @@ static void test()
     testNonUniform1<T>();
     testNonUniform2<T>();
     testNonUniform3<T>();
-    testNonUniform4<T>();
+    testNonUniform4<T>();   
 }
 
 void testLookupTable()
 {
     test<double>();
     test<float>();
+    testDetune();
 }
