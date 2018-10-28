@@ -780,7 +780,7 @@ void perfTest()
     testNoise(true);
     testNormal();
 #endif
-
+    testCHBdef();
     testSuper();
     testShaper1a();
     testShaper1b();
@@ -791,7 +791,7 @@ void perfTest()
     testShaper5();
 
     testEV3();
-    testCHBdef();
+   
     testFunSaw(true);
 #if 0
     testFunSaw(false);

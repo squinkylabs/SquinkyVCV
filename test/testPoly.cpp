@@ -7,23 +7,23 @@
 
 static void test0()
 {
-    Poly<float, 11> poly;
-    float x = poly.run(0);
+    Poly<float, 10> poly;
+    float x = poly.run(0, 1);
     assertEQ(x, 0);
 
-    x = poly.run(1);
+    x = poly.run(1, 1);
     assertEQ(x, 0);
 
     poly.setGain(0, 1);
-    x = poly.run(0);
+    x = poly.run(0, 1);
     assertEQ(x, 0);
 }
 
 static void test1()
 {
-    Poly<float, 11> poly;
+    Poly<float, 10> poly;
     poly.setGain(0, 1);
-    float x = poly.run(1);
+    float x = poly.run(1, 0);
     assertNE(x, 0);
 }
 
@@ -38,13 +38,13 @@ static void testPureTerm(int term)
     SinOscillatorState<float> sinState;
     SinOscillator<float, false>::setFrequency(sinParams, float(actualFreq / sampleRate));
 
-    Poly<double, 11> poly;
+    Poly<double, 10> poly;
     poly.setGain(term, 1);
 
     FFTDataCpx spectrum(numSamples);
     Analyzer::getSpectrum(spectrum, false, [&sinState, &sinParams, &poly]() {
         float sin = SinOscillator<float, false>::run(sinState, sinParams);
-        const float x = poly.run(sin);
+        const float x = poly.run(sin, 1);
         return x;
         });
 
@@ -60,9 +60,22 @@ static void testTerms()
 }
 
 
+static void temp()
+{
+    Poly<double, 10> poly;
+    poly.run(0, 1);
+    poly._dumpDC();
+    
+    assertEQ(poly.getDC(0), 1);
+    assertEQ(poly.getDC(1), -1);
+    assertEQ(poly.getDC(2), 1);
+    assertEQ(poly.getDC(3), -1);
+    assertEQ(poly.getDC(4), 1);
+}
+
 static void _testDC(int term, float gain)
 {
-    Poly<double, 11> poly;
+    Poly<double, 10> poly;
     poly.setGain(term, 1);
 
     // Will generate sine at fs * .01 (around 400 Hz).
@@ -73,7 +86,7 @@ static void _testDC(int term, float gain)
     // Run sin through Chebyshevs at specified gain
     auto func = [&sins, &sinp, &poly, gain]() {
         const float sin = gain * SinOscillator<float, false>::run(sins, sinp);
-        const float x = poly.run(sin);
+        const float x = poly.run(sin, gain);
         return x;
     };
 
@@ -83,10 +96,10 @@ static void _testDC(int term, float gain)
         buffer[i] = func();
     }
     double dc = TestSignal<float>::getDC(buffer, bufferSize);
-    assertLT(dc, .001);
-
-
-    printf("gain = %f term = %d, dc=%f\n", gain, term, dc);
+   
+    printf("in test gain = %f term = %d, dc=%f\n", gain, term, dc);
+    poly._dumpDC();
+    assertClose(dc, 0, .001);
 }
 
 static void testDC()
@@ -96,6 +109,9 @@ static void testDC()
   //  _testDC(1, .5);
   //  _testDC(2, .5);
     for (int i = 0; i < 10; ++i) {
+        _testDC(i, 1);
+    }
+    for (int i = 0; i < 10; ++i) {
         _testDC(i, .56f);
         _testDC(i, .83f);
         _testDC(i, .17f);
@@ -104,9 +120,9 @@ static void testDC()
 
 void testPoly()
 {
+    temp();
     test0();
     test1();
-    testTerms();
     testDC();
-
+    testTerms();
 }
