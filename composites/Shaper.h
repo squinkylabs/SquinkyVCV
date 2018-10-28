@@ -124,6 +124,7 @@ private:
     BiquadParams<float, 2> dcBlockParams;
     BiquadState<float, 2> dcBlockState;
 
+
     void processCV();
     void setOversample();
     void processBuffer(float *) const;
@@ -283,6 +284,7 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
             for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x = std::abs(x);
+                x *= 1.94f;
                 x = std::min(x, 10.f);
                 buffer[i] = x;
             }
@@ -320,7 +322,7 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
             for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x = std::max(0.f, x);
-                x *= 1.4f;
+                x *= 1.4f * 1.26f;
                 x = std::min(x, 10.f);
                 buffer[i] = x;
             }

@@ -170,7 +170,8 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
     //  const float targetRMS = 5 * .707f;
 
     const char* p = gmr.getString(Shaper<TestComposite>::Shapes(shape));
-   // printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
+
+    printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
 
     if (targetRMS > .01) {
         assertClose(rms, targetRMS, .5);
@@ -288,8 +289,6 @@ static void testShaper3()
     }
 }
 
-
-
 static void testDC()
 {
     using Sh = Shaper<TestComposite>;
@@ -314,10 +313,11 @@ static void testDC()
     float buffer[bufferSize];
     for (int i = 0; i < bufferSize; ++i) {
         buffer[i] = func();
-
+#if 0
         if ((i % 100) == 0) {
             printf("sample %d output = %f\n", i, buffer[i]);
         }
+#endif
     }
     double dc = TestSignal<float>::getDC(buffer, bufferSize);
     assertClose(dc, 0, .001);
