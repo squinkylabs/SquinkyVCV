@@ -100,40 +100,10 @@ static void testDC()
 }
 
 
-static void testCompositeDC()
-{
-    using Sh = Shaper<TestComposite>;
- 
-    Sh sh;
-    sh.params[Sh::PARAM_SHAPE].value = float(Sh::Shapes::FullWave);
-
-    // Will generate sine at fs * .01 (around 400 Hz).
-    SinOscillatorParams<float> sinp;
-    SinOscillatorState<float> sins;
-    SinOscillator<float, false>::setFrequency(sinp, .01f);
-
-    // Run sin through Chebyshevs at specified gain
-    auto func = [&sins, &sinp, &sh]() {
-        const float sin = SinOscillator<float, false>::run(sins, sinp);
-        sh.inputs[Sh::INPUT_AUDIO].value = sin;
-        sh.step();    
-        return sh.outputs[Sh::OUTPUT_AUDIO].value;
-    };
-
-    const int bufferSize = 16 * 1024;
-    float buffer[bufferSize];
-    for (int i = 0; i < bufferSize; ++i) {
-        buffer[i] = func();
-    }
-    double dc = TestSignal<float>::getDC(buffer, bufferSize);
-    assertClose(dc, 0, .001);
-}
-
 void testPoly()
 {
     test0();
     test1();
     testDC();
     testTerms();
-    testCompositeDC();
 }

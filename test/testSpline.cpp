@@ -6,6 +6,7 @@
 #include "AsymWaveShaper.h"
 #include "ExtremeTester.h"
 #include "Shaper.h"
+#include "SinOscillator.h"
 #include "TestComposite.h"
 #include "TestSignal.h"
 
@@ -288,6 +289,42 @@ static void testShaper3()
 }
 
 
+
+static void testDC()
+{
+    using Sh = Shaper<TestComposite>;
+
+    Sh sh;
+    sh.params[Sh::PARAM_SHAPE].value = float(Sh::Shapes::FullWave);
+
+    // Will generate sine at fs * .01 (around 400 Hz).
+    SinOscillatorParams<float> sinp;
+    SinOscillatorState<float> sins;
+    SinOscillator<float, false>::setFrequency(sinp, .01f);
+
+    // Run sin through Chebyshevs at specified gain
+    auto func = [&sins, &sinp, &sh]() {
+        const float sin = SinOscillator<float, false>::run(sins, sinp);
+        sh.inputs[Sh::INPUT_AUDIO].value = sin;
+        sh.step();
+        return sh.outputs[Sh::OUTPUT_AUDIO].value;
+    };
+
+    const int bufferSize = 16 * 1024;
+    float buffer[bufferSize];
+    for (int i = 0; i < bufferSize; ++i) {
+        buffer[i] = func();
+
+        if ((i % 100) == 0) {
+            printf("sample %d output = %f\n", i, buffer[i]);
+        }
+    }
+    double dc = TestSignal<float>::getDC(buffer, bufferSize);
+    assertClose(dc, 0, .001);
+}
+
+
+
 void testSpline(bool doEmit)
 {
     if (doEmit) {
@@ -301,6 +338,7 @@ void testSpline(bool doEmit)
     testLook4();
     testGen0();
     testDerivative();
+    testDC();
     testShaper0();
 
     //printf("!! skipping testShaper1\n");

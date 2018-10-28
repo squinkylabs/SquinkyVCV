@@ -1,9 +1,11 @@
 #pragma once
 
+
+#include "AsymWaveShaper.h"
+#include "ButterworthFilterDesigner.h"
 #include "IIRUpsampler.h"
 #include "IIRDecimator.h"
 #include "LookupTable.h"
-#include "AsymWaveShaper.h"
 #include "ObjectCache.h"
 
 /**
@@ -42,6 +44,8 @@ public:
     {
         init();
     }
+
+    void onSampleRateChange();
 
     enum class Shapes
     {
@@ -103,9 +107,6 @@ private:
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     AudioMath::ScaleFun<float> scaleOffset = AudioMath::makeLinearScaler<float>(-5, 5);
 
-    // domain starts at 2.
-   // std::shared_ptr<LookupTableParams<float>> exp2Lookup = {ObjectCache<float>::getExp2()};
-
     const static int maxOversample = 16;
     int curOversample = 16;
     void init();
@@ -116,6 +117,12 @@ private:
     int cycleCount = 0;
     Shapes shape = Shapes::Clip;
     int asymCurveindex = 0;
+
+    /**
+     * 4 pole butterworth HP
+     */
+    BiquadParams<float, 2> dcBlockParams;
+    BiquadState<float, 2> dcBlockState;
 
     void processCV();
     void setOversample();
@@ -162,6 +169,7 @@ const char* Shaper<TBase>::getString(Shapes shape)
 template <class TBase>
 void  Shaper<TBase>::init()
 {
+    onSampleRateChange();
     setOversample();
     tanhLookup = ObjectCache<float>::getTanh5();
 }
@@ -172,6 +180,15 @@ void  Shaper<TBase>::setOversample()
     //   float fc = .25 / float(oversample);
     up.setup(curOversample);
     dec.setup(curOversample);
+}
+
+template <class TBase>
+void  Shaper<TBase>::onSampleRateChange()
+{
+    const float cutoffHz = 20.f;
+    float fcNormalized = cutoffHz * engineGetSampleTime();
+    assert((fcNormalized > 0) && (fcNormalized < .1));
+    ButterworthFilterDesigner<float>::designFourPoleHighpass(dcBlockParams, fcNormalized);
 }
 
 template <class TBase>
@@ -201,7 +218,7 @@ void Shaper<TBase>::processCV()
         TBase::params[PARAM_GAIN_TRIM].value);
 
     _gain = 5 * LookupTable<float>::lookup(*audioTaper, _gainInput, false);
-  
+
 
     // -5 .. 5
     const float offsetInput = scaleOffset(
@@ -251,6 +268,8 @@ void  Shaper<TBase>::step()
     } else {
         output = buffer[0];
     }
+
+    output = BiquadFilter<float>::run(output, dcBlockState, dcBlockParams);
     TBase::outputs[OUTPUT_AUDIO].value = output;
    // printf("in step input = %f, output = %f\n", input, output);
 }
@@ -332,9 +351,9 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
         case Shapes::Crush:
         {
             float invGain = 1 + (1 - _gainInput) * 100; //0..10
-            invGain *= .01f;   
+            invGain *= .01f;
             invGain = std::max(invGain, .09f);
-            assert(invGain >=  .09);
+            assert(invGain >= .09);
             for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];            // for crush, no gain has been applied
 
