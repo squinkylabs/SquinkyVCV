@@ -3,7 +3,7 @@
 ## 0.6.10
 
 Just bug fixes:
-* Some Chebyshev patches put out a lot of DC voltage. Issue #38
+* Some Chebyshev patches put out a lot of DC voltage. Issue GH-38
 
 ## 0.6.9
 
