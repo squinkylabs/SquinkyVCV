@@ -1,5 +1,10 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.10
+
+Just bug fixes:
+* Some Chebyshev patches put out a lot of DC voltage. Issue #38
+
 ## 0.6.9
 
 Introduced three new modules: EV3, Gray Code, and Shaper.
