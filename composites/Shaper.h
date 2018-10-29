@@ -187,7 +187,7 @@ template <class TBase>
 void  Shaper<TBase>::onSampleRateChange()
 {
     const float cutoffHz = 20.f;
-    float fcNormalized = cutoffHz * engineGetSampleTime();
+    float fcNormalized = cutoffHz * this->engineGetSampleTime();
     assert((fcNormalized > 0) && (fcNormalized < .1));
     ButterworthFilterDesigner<float>::designFourPoleHighpass(dcBlockParams, fcNormalized);
 }
@@ -272,7 +272,6 @@ void  Shaper<TBase>::step()
 
     output = BiquadFilter<float>::run(output, dcBlockState, dcBlockParams);
     TBase::outputs[OUTPUT_AUDIO].value = output;
-   // printf("in step input = %f, output = %f\n", input, output);
 }
 
 #if 1

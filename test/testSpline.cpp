@@ -104,8 +104,6 @@ static void testDerivativeSub(int index, float delta)
     const float slopeLeft = -ya / delta;
     const float slopeRight = yb / delta;
 
-  // printf("[%d] y0 = %f, slope left = %f, right =%f\n", index, y0, slopeLeft, slopeRight);
-
    // since I changed AsymWaveShaper to be points-1 this is worse
     assertClose(y0, 0, .00001);
     assertClose(slopeRight, 2, .01);
@@ -159,7 +157,6 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
 
     TestSignal<float>::generateSin(buffer, buffSize, 1.f / 40);
     double rms = TestSignal<float>::getRMS(buffer, buffSize);
-    //printf("signal=%f\n", rms);
     for (int i = 0; i < buffSize; ++i) {
         const float x = buffer[i];
         gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = buffer[i];
@@ -167,11 +164,10 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
         buffer[i] = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
     }
     rms = TestSignal<float>::getRMS(buffer, buffSize);
-    //  const float targetRMS = 5 * .707f;
 
     const char* p = gmr.getString(Shaper<TestComposite>::Shapes(shape));
 
-    printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
+    //printf("rms[%s] = %f target = %f ratio=%f\n", p, rms, targetRMS, targetRMS / rms);
 
     if (targetRMS > .01) {
         assertClose(rms, targetRMS, .5);
@@ -191,8 +187,6 @@ static void testShaper1()
 
 static void testSplineExtremes()
 {
-    printf("running testSplineExtremes\n"); fflush(stdout);
-
     Shaper<TestComposite> sp;
 
     using fp = std::pair<float, float>;
@@ -205,6 +199,7 @@ static void testSplineExtremes()
     paramLimits[sp.PARAM_GAIN_TRIM] = fp(-1.f, 1.f);
     paramLimits[sp.PARAM_OFFSET] = fp(-5.f, 5.f);
     paramLimits[sp.PARAM_OFFSET_TRIM] = fp(-1.f, 1.f);
+    paramLimits[sp.PARAM_OVERSAMPLE] = fp(0.f, 2.f);
 
     ExtremeTester< Shaper<TestComposite>>::test(sp, paramLimits, true, "shaper");
 }
@@ -313,11 +308,6 @@ static void testDC()
     float buffer[bufferSize];
     for (int i = 0; i < bufferSize; ++i) {
         buffer[i] = func();
-#if 0
-        if ((i % 100) == 0) {
-            printf("sample %d output = %f\n", i, buffer[i]);
-        }
-#endif
     }
     double dc = TestSignal<float>::getDC(buffer, bufferSize);
     assertClose(dc, 0, .001);
@@ -341,13 +331,10 @@ void testSpline(bool doEmit)
     testDC();
     testShaper0();
 
-    //printf("!! skipping testShaper1\n");
     testShaper1();
     testShaper2();
     testShaper3();
 
-
-    //testSplineExtremes();
-    printf("skipping shaper extremems becuase of bug in crush");
+    testSplineExtremes();
 }
 
