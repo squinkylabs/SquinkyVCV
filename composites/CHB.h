@@ -122,7 +122,8 @@ private:
     static const int polyOrder = 10;
 
     /**
-     * The waveshaper that is the heart of this module
+     * The waveshaper that is the heart of this module.
+     * Let's use doubles.
      */
     Poly<double, polyOrder> poly;
 

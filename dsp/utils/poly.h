@@ -11,19 +11,6 @@ public:
         gains[index] = value;
     }
 
-    // TODO: remove this
-    void _dumpDC()
-    {
-        for (int i = 0; i < numEvenHarmonics; ++i) {
-            printf("dc[%d] = %f\n", i, dcComponent[i]);
-        }
-    }
-
-    T getDC(int index)
-    {
-        assert(index < order / 2);
-        return dcComponent[index];
-    }
 private:
     T gains[order];
 
@@ -90,6 +77,7 @@ inline T Poly<T, order>::doSum()
 template <typename T, int order>
 void Poly<T, order>::calcDC(T gain)
 {
+    // first calculate "sinEnergy", which is the integral of sin^n(gain * x) over a period
     const double W2 = 2.0 / 4.0;
     const double W4 = W2 * 3.0 / 4.0;
     const double W6 = W4 * 5.0 / 6.0;
