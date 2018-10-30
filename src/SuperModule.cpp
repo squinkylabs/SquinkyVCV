@@ -103,7 +103,7 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
         Vec(2, 310), "V/8");
 
     addInput(Port::create<PJ301MPort>(
-        Vec(34, 330), Port::INPUT, module, Super<WidgetComposite>::GATE_INPUT));
+        Vec(34, 330), Port::INPUT, module, Super<WidgetComposite>::TRIGGER_INPUT));
     addLabel(
         Vec(34, 310), "Trig");
 

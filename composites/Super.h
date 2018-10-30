@@ -4,6 +4,7 @@
 #include "ButterworthLookup.h"
 #include "BiquadState.h"
 #include "BiquadFilter.h"
+#include "GateTrigger.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
 
@@ -52,10 +53,10 @@ class Super : public TBase
 {
 public:
 
-    Super(struct Module * module) : TBase(module)
+    Super(struct Module * module) : TBase(module),  gateTrigger(true)
     {
     }
-    Super() : TBase()
+    Super() : TBase(),  gateTrigger(true)
     {
     }
 
@@ -82,7 +83,7 @@ public:
     enum InputIds
     {
         CV_INPUT,
-        GATE_INPUT,
+        TRIGGER_INPUT,
         DEBUG_INPUT,
         DETUNE_INPUT,
         MIX_INPUT,
@@ -118,8 +119,14 @@ private:
     std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
 
+    // knob, cv, trim -> 0..1
+    AudioMath::ScaleFun<float> scaleDetune;
+
     void updatePhaseInc();
     void updateAudio();
+    void updateTrigger();
+
+    AudioMath::RandomUniformFunc random =  AudioMath::random();
 
 // TODO: make static
     float const detuneFactors[numSaws] = {
@@ -137,6 +144,8 @@ private:
     BiquadParams<float, 2> filterParams;
     void updateHPFilters();
     ButterworthLookup4PHP filterLookup;
+    SawtoothDetuneCurve detuneCurve;
+    GateTrigger gateTrigger; 
 
 };
 
@@ -144,17 +153,16 @@ private:
 template <class TBase>
 inline void Super<TBase>::init()
 {
+    scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
 }
 
 template <class TBase>
 inline void Super<TBase>::updatePhaseInc()
 {
-
     const float cv = TBase::inputs[CV_INPUT].value;
 
     const float finePitch = TBase::params[FINE_PARAM].value / 12.0f;
     const float semiPitch = TBase::params[SEMI_PARAM].value / 12.0f;
-
 
     float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value) +
         semiPitch +
@@ -167,8 +175,15 @@ inline void Super<TBase>::updatePhaseInc()
     const float freq = expLookup(pitch);
     globalPhaseInc = TBase::engineGetSampleTime() * freq;
 
+    const float rawDetuneValue = scaleDetune(
+        TBase::inputs[DETUNE_INPUT].value,
+        TBase::params[DETUNE_PARAM].value,
+        TBase::params[DETUNE_TRIM_PARAM].value);
+
+    const float detuneInput = detuneCurve.getDetuneFactor(rawDetuneValue);
+
     for (int i = 0; i < numSaws; ++i) {
-        float detune = (detuneFactors[i] - 1) * .1f;
+        float detune = (detuneFactors[i] - 1) * detuneInput;
         detune += 1;
         phaseInc[i] = globalPhaseInc * detune;
     }
@@ -214,8 +229,19 @@ inline void Super<TBase>::updateHPFilters()
 template <class TBase>
 inline void Super<TBase>::step()
 {
+    updateTrigger();
     updatePhaseInc();
     updateHPFilters();
     updateAudio();
 }
 
+template <class TBase>
+inline void Super<TBase>::updateTrigger()
+{
+    gateTrigger.go(TBase::inputs[TRIGGER_INPUT].value);
+    if (gateTrigger.trigger()) {
+        for (int i = 0; i < numSaws; ++i) {
+            phase[i] = this->random();
+        }
+    }
+}
