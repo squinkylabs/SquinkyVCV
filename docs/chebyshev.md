@@ -9,6 +9,8 @@ Chebyshev polynomials have been used to generate complex tones since the early d
 
 Eventually, this form of synthesis fell out of favor, as FM could provide a wider variety of timbres with acceptable CPU usage. Now, however, the distinctive sound of this form of synthesis provides another unique source of sounds for VCV Rack users.
 
+Lately they ability to control individual harmonic levels under volage control has come back in the form of synthesizer modules called **Harmonic Oscillators**.
+
 The magic of the Chebyshev polynomials is that if a sine wave with amplitude one is put into a Chebyshev polynomial, the output will still be a sine wave, but multiplied in pitch by an integer.
 
 In our implementation we include the first ten Chebyshev polynomials to generate the first ten harmonics of the harmonic series. These are then mixed together based on knob settings and control voltages to give an output tone with complete control over ten harmonics.
@@ -29,13 +31,13 @@ And - each waveshaper is a perfect harmonic only when driven by a pure sine at e
 
 ## Signal Flow
 
-First there is a sine wave VCO. It has the controls you would expect, as well as a through-zero linear FM input, which allows a minimal  DX7-style FM.
+First there is a sine wave VCO. It has the controls you would expect, as well as a **through-zero linear FM** input, which allows a minimal  DX7-style FM.
 
 The VCO output then goes to a wave folder/clipper with gain controls. This allows for some distortion effects, and keeps the signal in a range that will keep the next stage happy.
 
 The output of the folder/clipper then goes to ten parallel Chebyshev waveshapers. The outputs of these are then mixed together through a specialized mixer.
 
-When everything is set in a typical manner, each of the Chebyshev waveshapers will be  outputting a pure sine wave at an integer multiple of the fundamental frequency. Thus, each one will be a discrete harmonic.
+When everything is set in a typical manner, each of the Chebyshev waveshapers will be outputting a pure sine wave at an integer multiple of the fundamental frequency.Thus, each one will be a discrete harmonic.
 
 ## Description of the controls
 

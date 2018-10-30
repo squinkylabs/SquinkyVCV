@@ -12,7 +12,7 @@ The [release notes](release-notes.md) describe recent changes to our modules.
 
 [Colors](./colors.md) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. And all the colors in between.
 
-[Chebyshev Waveshaper VCO](../docs/chebyshev.md) can make sounds like no other VCO. It contains a VCO, ten polynomial wave-shapers, and one clipper/folder. Among other things, it is a harmonic oscillator.
+[Chebyshev Waveshaper VCO](../docs/chebyshev.md) can make sounds like no other VCO. It contains a VCO, ten polynomial wave-shapers, and one clipper/folder. Among other things, it is a **harmonic oscillator**.
 
 [Functional VCO-1](./functional-vco-1.md) Is an improved version of the Fundamental VCO-1. Like Fundamental VCO-1, it will never alias, no matter what you throw at it. It is one of the few VCOs that can do sync, FM, and PWM without aliasing. Functional VCO-1 improves on Fundamental by lowering the CPU usage dramatically.
 
