@@ -71,7 +71,10 @@ struct CHBWidget : ModuleWidget
     void resetMe(CHBModule *module);
 private:
     bool fake;
-    const float defaultGainParam = .63;
+
+    // This is the gain which when run throught all the lookup tables
+    // gives a gain of 1.
+    const float defaultGainParam = .63108f;
 
     const int numHarmonics;
     CHBModule* const module;
