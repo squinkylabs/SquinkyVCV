@@ -114,7 +114,6 @@ AudioMath::SimpleScaleFun<float> AudioMath::makeSimpleScalerAudioTaper(float y0,
 AudioMath::RandomUniformFunc AudioMath::random()
 {
     return []() {
-       // printf("in rand lambda ");
         static std::default_random_engine generator{57};
         static std::uniform_real_distribution<float> distribution{0, 1.0};
         return  distribution(generator);

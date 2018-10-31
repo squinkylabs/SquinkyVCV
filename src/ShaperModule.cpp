@@ -2,7 +2,6 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
-
 #include "Shaper.h"
 
 /**
@@ -17,6 +16,7 @@ public:
      * Overrides of Module functions
      */
     void step() override;
+    void onSampleRateChange() override;
 
     Shaper<WidgetComposite> shaper;
 private:
@@ -34,6 +34,11 @@ ShaperModule::ShaperModule()
 void ShaperModule::step()
 {
     shaper.step();
+}
+
+void ShaperModule::onSampleRateChange()
+{
+    shaper.onSampleRateChange();
 }
 
 ////////////////////
@@ -66,7 +71,6 @@ private:
     ParamWidget* shapeParam = nullptr;
     ParamWidget* oversampleParam = nullptr;
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
-   // ShaperModule* const module;
     void addSelector(ShaperModule* module);
     int curOversample =-1;
 };
@@ -109,9 +113,7 @@ void ShaperWidget::step()
                 break;
         }
         oversampleLabel->text = str;
-
     }
-    
 }
 
 void ShaperWidget::addSelector(ShaperModule* module)
@@ -154,7 +156,6 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
 
     addSelector(module);
 
-
     const float gainX = 35;
     const float offsetX = 108;
     const float gainY = 232;
@@ -189,8 +190,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
             Vec(127,jackY),
             module,
             Shaper<WidgetComposite>::OUTPUT_AUDIO));
-     addLabel(Vec(109, jackLabelY), "Out", COLOR_WHITE)->fontSize = 12;
-
+    addLabel(Vec(109, jackLabelY), "Out", COLOR_WHITE)->fontSize = 12;
 
     addInput(createInputCentered<PJ301MPort>(
             Vec(62, jackY),

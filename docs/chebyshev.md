@@ -9,6 +9,8 @@ Chebyshev polynomials have been used to generate complex tones since the early d
 
 Eventually, this form of synthesis fell out of favor, as FM could provide a wider variety of timbres with acceptable CPU usage. Now, however, the distinctive sound of this form of synthesis provides another unique source of sounds for VCV Rack users.
 
+Lately they ability to control individual harmonic levels under volage control has come back in the form of synthesizer modules called **Harmonic Oscillators**.
+
 The magic of the Chebyshev polynomials is that if a sine wave with amplitude one is put into a Chebyshev polynomial, the output will still be a sine wave, but multiplied in pitch by an integer.
 
 In our implementation we include the first ten Chebyshev polynomials to generate the first ten harmonics of the harmonic series. These are then mixed together based on knob settings and control voltages to give an output tone with complete control over ten harmonics.
@@ -17,23 +19,25 @@ Many of the controls in this module allow different ways of mixing together thes
 
 Like all our modules, Chebyshev's CPU usage is quite low.
 
+While there are many, many different ways to use Chebyshev, its use as a *harmonic VCO* will be familiar to some. It is very easy to use Chebyshev as a harmonic VCO, but unless set up deliberately, you may find that Chebyshev is functioning as some other kind of VCO.
+
 ## Some tips
 
 It can be a great help learning this module if you patch the output to a Scope module and a frequency analyzer. As you adjust the controls it will be clearer what is going on.
 
 Also, note that we will repeat that when set up normally, each Chebyshev waveshaper is producing a different harmonic of the VCO output. Because of this, we will refer to these as "harmonic levels" and "waveshaper levels" interchangeably.
 
-And - each waveshaper is a perfect harmonic only when driven by a pure sine at exactly 1Vp-p.
+And - each waveshaper is a perfect harmonic only when driven by a pure sine at exactly 1Vp-p. This is very important, and we will mention this again later.
 
 ## Signal Flow
 
-First there is a sine wave VCO. It has the controls you would expect, as well as a through-zero linear FM input, which allows a minimal  DX7-style FM.
+First there is a sine wave VCO. It has the controls you would expect, as well as a **through-zero linear FM** input, which allows a minimal  DX7-style FM.
 
 The VCO output then goes to a wave folder/clipper with gain controls. This allows for some distortion effects, and keeps the signal in a range that will keep the next stage happy.
 
 The output of the folder/clipper then goes to ten parallel Chebyshev waveshapers. The outputs of these are then mixed together through a specialized mixer.
 
-When everything is set in a typical manner, each of the Chebyshev waveshapers will be  outputting a pure sine wave at an integer multiple of the fundamental frequency. Thus, each one will be a discrete harmonic.
+When everything is set in a typical manner, each of the Chebyshev waveshapers will be outputting a pure sine wave at an integer multiple of the fundamental frequency.Thus, each one will be a discrete harmonic.
 
 ## Description of the controls
 
@@ -59,7 +63,7 @@ The controls and CV of the Folder/Clipper:
 
 * **Fold/Clip** switch. In clip mode, it is a simple hard clipper. In fold mode it’s a waveform folder.
 * **Clip LED**. The LED will be green when there is signal, and red when the folder/clipper engages.
-* *Gain*. Controls how hard the folder/clipper is driven. Gain knob and CV are combined.
+* **Gain**. Controls how hard the folder/clipper is driven. Gain knob and CV are combined.
 * **Gain trim**. The small knob below the **gain** knob is an attenuator for the **gain** CV. New in 0.6.9.
 * **EG**. Also combines with the gains.
 * **Ext In.** When a signal is patched here it replaces the internal VCO, allowing any signal to be run through the waveshaper.
@@ -70,7 +74,13 @@ In classic waveshaping synthesis an ADSR or similar would be connected to the EG
 
 The output of the folder/clipper drives the Chebyshev waveshapers. The last group of controls all work together to determine how the waveshapers are mixed together.
 
-### Waveshaper controls
+While it may be counter-intuitive, keep in mind that while the EG input does control the gain of a VCA, that VCA is not on the output of Chebyshev; it is after the VCO/external input, and before the clipper, folder, and Chebyshev waveshapers. As such an envelope applied to the EG input will cause dramatic shifts in timbre.
+
+To get a normal volume envelope applied to the output of Chebyshev, you will need to use an external VCA. But to get dynamic waveshape timbres, the EG input if your friend.
+
+Driving the EG input above 10, either with a hot ADSR, or by dialing up the gain knob, will make the red LED come on, indicating clipping or folding is occurring. Which will sound very nice in some situations.
+
+### Waveshaper mix controls
 
 There are a lot of controls that work together to determine how the waveshapers are mixed. When configured normally, that means these controls determine the ratios of all the harmonics of the VCO.
 
@@ -92,19 +102,36 @@ The Odd, Even, and Slope controls may be thought of as subtractive. When they ar
 
 The **Preset** button toggles between two or three settings. It will always have a setting where the fundamental is full and all other harmonics off, and a setting where all harmonics are up full. In addition, if you started with your own setting of the harmonics, the preset button will eventually take you back there, but with the master gain set back to one.
 
+## Chebyshev as a harmonic VCO
+
+When set up correctly, Chebyshev will give you independent control of the levels of the first ten harmonics in the harmonic series. Each the the ten controls / CVs on the left will control the level of the corresponding harmonic.
+
+But this is only true if Chebyshev is driven with a pure sine wave at one volt peak to peak. By far the easiest way to accomplish this is:
+
+* Use the internal sine oscillator. If, instead, you patch something into the Ext In jack, it will be difficult to impossible to precisely control the individual harmonics.
+* Use the default gain. If you turn the *Gain* knob it will be almost impossible to get it back to 1. In this case, pressing the the *Preset* button three times will get you back exactly where you are, but with the gain at exactly one.
+
+If the gain is more than one the red indicator comes on. If the gain is much lower than one the green light will go off. But there is a range of gains where the green light will be one. So, again, resetting the patch, or using the preset button, is the only practical way to set the gain exactly.
+
+But of course there is a world of other sounds in Chebyshev if don't set it this way, and many will be pleasing. They just won't be exactly a harmonic oscillator.
+
 ## Several patching ideas
 
-### Arbitrary waveform VCO
+### Harmonic VCO
+
+Aka arbitrary waveform generator.
 
 Turn the Odd, Even, and Slope controls all the way up. Then the level of each harmonic is controller its own volume control. Mix the harmonics to get a pleasing sound, then use as a static timbre, or run it into a VCO.
 
 Or start with the individual harmonics all the way up, manipulate Even/Odd/Slope to start sculpting the harmonics.
 
-Don’t forget the Preset button - it’s your friend here.
+Don’t forget the Preset button - it’s your friend here. And don't forget that you need to use the internal sine VCO and the default gain to control the harmonics precisely and independently.
 
 ### Dynamic Waveshaping
 
-Use the built-in VCO. Adjust the harmonic mix to something nice and bright. Then connect an ADSR to the EG input. The ADSR will more or less control the brightness. Make sure the the clip LED is just on the edge of clipping when the EG input is at max.
+Use the built-in VCO. Adjust the harmonic mix to something nice and bright. Then connect an ADSR to the EG input. Like the harmonic VCO patch, the dynamic waveshaper is most predictable when driven by a one volt p-p sine, and the gain set to default. And the ADSR should go from zero to ten.
+
+The ADSR will more or less control the brightness. Make sure the the clip LED is just on the edge of clipping when the EG input is at max (which will be the 10 volts mentioned above).
 
 At very low levels the output will be primarily fundamental. At max level it will be determined by the waveshaper mix controls. The timbre will go from dull to bright as the EG input increases, but the evolution of the timbre will not be completely even, and definitely will be different than what you would get modulating a VCF with an ADSR.
 
@@ -140,6 +167,6 @@ Run something other than a sine wave into Ext In, then process your signal with 
 
 In the standard configuration there will be little, if any, aliasing. Since the highest harmonic is 10X the fundamental, the Chebyshev module can’t even start to alias until the fundamental gets to 2kHz.
 
-That said, there is no anti-aliasing in this module. The wavefolder can easily alias. Normally the LFM will not alias very much, but with high modulation depth and high pitches it will alias quite a lot.
+That said, there is no anti-aliasing in this module. The wavefolder and clipper will alias. Normally the LFM will not alias very much, but with high modulation depth and high pitches it will alias quite a lot.
 
 We have an informational article that talks more about aliasing [here](./aliasing.md).

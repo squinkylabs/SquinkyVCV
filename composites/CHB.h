@@ -22,6 +22,10 @@ namespace std {
 #endif
 
 /**
+ * Composite for Chebyshev module.
+ *
+ * Performance measure for 1.0 = 42.44
+ * reduced polynomial order to what we actually use (10), perf = 39.5
  */
 template <class TBase>
 class CHB : public TBase
@@ -104,9 +108,6 @@ public:
      */
     void step() override;
 
-    void setEconomy(bool);
-   bool isEconomy() const;
-
     float _freq = 0;
 
 private:
@@ -118,20 +119,23 @@ private:
     float finalGain = 0;
     bool isExternalAudio = false;
 
+    static const int polyOrder = 10;
+
     /**
-     * The waveshaper that is the heart of this module
+     * The waveshaper that is the heart of this module.
+     * Let's use doubles.
      */
-    Poly<double, 11> poly;
+    Poly<double, polyOrder> poly;
 
     /*
      * maps freq multiple to "octave".
      * In other words, log base 12.
      */
-    float _octave[11];
+    float _octave[polyOrder];
     float getOctave(int mult) const ;
     void init();
 
-    float _volume[11] = {0};
+    float _volume[polyOrder] = {0};
 
     /**
      * Internal sine wave oscillator to drive the waveshaper
@@ -182,7 +186,7 @@ private:
 template <class TBase>
 inline void  CHB<TBase>::init()
 {
-    for (int i = 0; i < 11; ++i) {
+    for (int i = 0; i < polyOrder; ++i) {
         _octave[i] = log2(float(i + 1));
     }
 }
@@ -190,23 +194,9 @@ inline void  CHB<TBase>::init()
 template <class TBase>
 inline float  CHB<TBase>::getOctave(int i) const
 {
-    assert(i >= 0 && i < 11);
+    assert(i >= 0 && i < polyOrder);
     return _octave[i];
 }
-
-#if 1
-template <class TBase>
-inline  void CHB<TBase>::setEconomy(bool b)
-{
-    economyMode = b;
-}
-
-template <class TBase>
-inline bool CHB<TBase>::isEconomy() const
-{
-    return economyMode;
-}
-#endif
 
 template <class TBase>
 inline float CHB<TBase>::getInput()
@@ -322,7 +312,7 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
     {
         const float even = taper(TBase::params[PARAM_MAG_EVEN].value);
         const float odd = taper(TBase::params[PARAM_MAG_ODD].value);
-        for (int i = 1; i < 11; ++i) {
+        for (int i = 1; i < polyOrder; ++i) {
             const float mul = (i & 1) ? even : odd;     // 0 = fundamental, 1=even, 2=odd....
             volumes[i] *= mul;
         }
@@ -332,7 +322,7 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
     {
         const float slope = slopeScale(TBase::params[PARAM_SLOPE].value, TBase::inputs[SLOPE_INPUT].value, 1);
 
-        for (int i = 0; i < 11; ++i) {
+        for (int i = 0; i < polyOrder; ++i) {
             float slopeAttenDb = slope * getOctave(i);
             float slopeAtten = LookupTable<float>::lookup(*db2gain, slopeAttenDb);
             volumes[i] *= slopeAtten;
@@ -354,29 +344,16 @@ inline void CHB<TBase>::step()
     // do all the processing to get the carrier signal
     const float input = getInput();
 
-#if 0
-    {
-        static float high=0;
-        static float low=0;
-        if (input<low || input > high) {
-            high = std::max(high, input);
-            low = std::min(low, input);
-            printf("%f, %f\n", high, low);
-            fflush(stdout);
-        }
-    }
-    #endif
-
-   // float volume[11];
     if (cycleCount == 0) {
         calcVolumes(_volume);
 
-        for (int i = 0; i < 11; ++i) {
+        for (int i = 0; i < polyOrder; ++i) {
             poly.setGain(i, _volume[i]);
         }
     }
 
-    float output = poly.run(input);
+
+    float output = poly.run(input, std::min(finalGain, 1.f));
     TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
 }
 

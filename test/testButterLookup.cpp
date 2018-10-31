@@ -98,5 +98,5 @@ static void testButterLookup1()
 void  testButterLookup()
 {
     testButterLookup0();
-    testButterLookup1();
+    //testButterLookup1();
 }
