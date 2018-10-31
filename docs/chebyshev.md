@@ -74,7 +74,13 @@ In classic waveshaping synthesis an ADSR or similar would be connected to the EG
 
 The output of the folder/clipper drives the Chebyshev waveshapers. The last group of controls all work together to determine how the waveshapers are mixed together.
 
-### Waveshaper controls
+While it may be counter-intuitive, keep in mind that while the EG input does control the gain of a VCA, that VCA is not on the output of Chebyshev; it is after the VCO/external input, and before the clipper, folder, and Chebyshev waveshapers. As such an envelope applied to the EG input will cause dramatic shifts in timbre.
+
+To get a normal volume envelope applied to the output of Chebyshev, you will need to use an external VCA. But to get dynamic waveshape timbres, the EG input if your friend.
+
+Driving the EG input above 10, either with a hot ADSR, or by dialing up the gain knob, will make the red LED come on, indicating clipping or folding is occurring. Which will sound very nice in some situations.
+
+### Waveshaper mix controls
 
 There are a lot of controls that work together to determine how the waveshapers are mixed. When configured normally, that means these controls determine the ratios of all the harmonics of the VCO.
 
