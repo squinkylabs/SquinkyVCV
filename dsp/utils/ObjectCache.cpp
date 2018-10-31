@@ -133,8 +133,11 @@ std::function<T(T)> ObjectCache<T>::getExp2Ex()
 template <typename T>
 std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float normalizedFc)
 {
+  
     const int div = (int) std::round(1.0 / normalizedFc);
+    printf("obj, get LP fc=%f div=%d\n", normalizedFc, div);
     if (div == 64) {
+        printf("got 64\n");
         std::shared_ptr < BiquadParams<float, 3>> ret = lowpass64.lock();
         if (!ret) {
             ret = std::make_shared<BiquadParams<float, 3>>();
@@ -143,6 +146,7 @@ std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float norm
         }
         return ret;
     } else if (div == 16) {
+        printf("got 64\n");
         std::shared_ptr < BiquadParams<float, 3>> ret = lowpass16.lock();
         if (!ret) {
             ret = std::make_shared<BiquadParams<float, 3>>();
@@ -151,7 +155,12 @@ std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float norm
         }
         return ret;
     }
-    else assert(false);
+    else {
+        fprintf(stderr, "Obj got bad div %d\n", div);
+        fflush(stderr);
+        assert(false);
+    }
+    fflush(stdout);
     return nullptr;
 }
 
