@@ -7,6 +7,8 @@ Shaper is a waveshaper offering many different shape options. Some of these shap
 
 A unique feature of Shaper is that it has very little aliasing, whereas most we have seen have a lot of aliasing. The other special thing about Shaper is that it has a few shapes that are good for "soft overdrive".
 
+Shaper also has high-pass filters on the outputs, to prevent accumulation of DC. Asymmetric wave-shapes frequently contain DC, which should be removed. The filters in Shaper are four-pole butterworth filters at 20 Hz.
+
 Although there are many creative ways to use a wave shaper, the two most common are as a mangled waveform shaper, and as a distortion/overdrive effect.
 
 In the first use case, the waveshaper is often connected directly to the output of a VCO. This gives a large number of different sounds from the VCO. In this use, typically extreme settings are used, with folding being a classic example.
@@ -31,6 +33,10 @@ The offset is bidirectional, so there is no offset when the knob is straight up 
 *Shape* – this is the big unlabeled button. It selects from the different shapes that Shaper can produce. The name of the selected shape is to the right of the knob.
 
 ## Some notes on the different shapes
+
+**Update**: Since we added dc-blocking high pass filters to Shaper, the outputs will not look exactly like the images below. For example, the hard clipper now looks like this:
+
+![new clip image](./clip2.png)
 
 ### Smooth
 
