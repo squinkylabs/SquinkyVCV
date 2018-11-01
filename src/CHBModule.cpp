@@ -176,14 +176,14 @@ inline void CHBWidget::addOtherKnobs(CHBModule *module)
         module->chb.PARAM_EXTGAIN_TRIM,
         0, 1, 0));
 
-
     // slope
+    const float col2p5 = (col2 + col3) / 2;
     addParam(createParamCentered<Blue30Knob>(
-        Vec(185, 188),
+        Vec(col2p5, 188),
         module,
         module->chb.PARAM_SLOPE,
         -5, 5, 5));
-    addLabel(Vec(185 - 23, 188 - labelAboveKnob), "Slope");
+    addLabel(Vec(col2p5 - 23, 188 - labelAboveKnob), "Slope");
 
     //even
     addParam(createParamCentered<Blue30Knob>(
