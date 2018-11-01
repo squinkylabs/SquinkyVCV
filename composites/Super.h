@@ -125,6 +125,7 @@ private:
     void updatePhaseInc();
     void updateAudio();
     void updateTrigger();
+    void updateMix();
 
     AudioMath::RandomUniformFunc random =  AudioMath::random();
 
@@ -146,6 +147,8 @@ private:
     ButterworthLookup4PHP filterLookup;
     SawtoothDetuneCurve detuneCurve;
     GateTrigger gateTrigger; 
+    float gainCenter = 0;
+    float gainSides = 0;
 
 };
 
@@ -204,7 +207,8 @@ inline void Super<TBase>::updateAudio()
         if (phase[i] < 0) {
             printf("hey, phase too small %f\n", phase[i]); fflush(stdout);
         }
-        mix += phase[i];
+        const float gain = (i == numSaws/2) ? gainCenter : gainSides;
+        mix += phase[i] * gain;
     }
 
    // mix = phase[3];     // just for test
@@ -232,6 +236,7 @@ inline void Super<TBase>::step()
     updateTrigger();
     updatePhaseInc();
     updateHPFilters();
+    updateMix();
     updateAudio();
 }
 
@@ -244,4 +249,18 @@ inline void Super<TBase>::updateTrigger()
             phase[i] = this->random();
         }
     }
+}
+
+template <class TBase>
+inline void Super<TBase>::updateMix()
+{
+    const float rawMixValue = scaleDetune(
+        TBase::inputs[MIX_INPUT].value,
+        TBase::params[MIX_PARAM].value,
+        TBase::params[MIX_TRIM_PARAM].value);
+
+    gainCenter = -0.55366*rawMixValue + 0.99785;
+
+    gainSides = -0.73764*rawMixValue*rawMixValue +
+        1.2841*rawMixValue + 0.044372;
 }
