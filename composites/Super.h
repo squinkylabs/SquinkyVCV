@@ -259,8 +259,8 @@ inline void Super<TBase>::updateMix()
         TBase::params[MIX_PARAM].value,
         TBase::params[MIX_TRIM_PARAM].value);
 
-    gainCenter = -0.55366*rawMixValue + 0.99785;
+    gainCenter = -0.55366f * rawMixValue + 0.99785f;
 
-    gainSides = -0.73764*rawMixValue*rawMixValue +
-        1.2841*rawMixValue + 0.044372;
+    gainSides = -0.73764f * rawMixValue * rawMixValue +
+        1.2841f * rawMixValue + 0.044372f;
 }
