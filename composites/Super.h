@@ -55,9 +55,11 @@ public:
 
     Super(struct Module * module) : TBase(module),  gateTrigger(true)
     {
+        init();
     }
     Super() : TBase(),  gateTrigger(true)
     {
+        init();
     }
 
     /**

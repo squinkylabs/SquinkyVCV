@@ -10,7 +10,8 @@
 #include "StateVariableFilter.h"
 
 /**
- *
+ * original version CPU usage = 84
+ * update filters less often => 28.4
  */
 template <class TBase>
 class VocalFilter : public TBase
@@ -73,6 +74,7 @@ public:
 
     void init();
     void step() override;
+    void stepFilters();
 
     float reciprocalSampleRate;
 
@@ -82,6 +84,7 @@ public:
 
     StateVariableFilterState<T> filterStates[numFilters];
     StateVariableFilterParams<T> filterParams[numFilters];
+    float m_gain[numFilters] = {0};
 
     FormantTables2 formantTables;
     std::shared_ptr<LookupTableParams<T>> expLookup;
@@ -91,6 +94,8 @@ public:
     AudioMath::ScaleFun<T> scaleQ;
     AudioMath::ScaleFun<T> scaleFc;
     AudioMath::ScaleFun<T> scaleBrightness;
+
+    int cycleCount = 1;
 };
 
 template <class TBase>
@@ -120,7 +125,7 @@ inline void VocalFilter<TBase>::init()
 }
 
 template <class TBase>
-inline void VocalFilter<TBase>::step()
+inline void VocalFilter<TBase>::stepFilters()
 {
     int model = 0;
     const T switchVal = TBase::params[FILTER_MODEL_SELECT_PARAM].value;
@@ -152,7 +157,6 @@ inline void VocalFilter<TBase>::step()
         iVowel = formantTables.numVowels - 1;
     }
 
-#if 1
     for (int i = LED_A; i <= LED_U; ++i) {
         if (i == iVowel) {
             TBase::lights[i].value = ((i + 1) - fVowel) * 1;
@@ -161,18 +165,11 @@ inline void VocalFilter<TBase>::step()
             TBase::lights[i].value = 0;
         }
     }
-#else
-    for (int i = LED_A; i <= LED_U; ++i) {
-        TBase::lights[i].value = (i == iVowel) ? T(10) : T(0);
-    }
-#endif
 
     const T bwMultiplier = scaleQ(
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
-   // printf("bwMultiplier = %f\n", bwMultiplier);
-
 
     const T fPara = scaleFc(
         TBase::inputs[FILTER_FC_CV_INPUT].value,
@@ -185,8 +182,8 @@ inline void VocalFilter<TBase>::step()
         TBase::params[FILTER_BRIGHTNESS_PARAM].value,
         TBase::params[FILTER_BRIGHTNESS_TRIM_PARAM].value);
 
-    T input = TBase::inputs[AUDIO_INPUT].value;
-    T filterMix = 0;
+
+ //   T filterMix = 0;
     for (int i = 0; i < numFilters; ++i) {
         const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
         const T normalizedBw = bwMultiplier * formantTables.getNormalizedBandwidth(model, i, fVowel);
@@ -199,14 +196,55 @@ inline void VocalFilter<TBase>::step()
         T modifiedGainDB = (1 - gainDB) * brightness + gainDB;
 
         // TODO: why is normalizedBW in this equation?
-        const T gain = LookupTable<T>::lookup(*db2GainLookup, modifiedGainDB) * normalizedBw;
+        m_gain[i] = LookupTable<T>::lookup(*db2GainLookup, modifiedGainDB) * normalizedBw;
 
         T fcFinalLog = fcLog + fPara;
         T fcFinal = LookupTable<T>::lookup(*expLookup, fcFinalLog);
 
         filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
         filterParams[i].setNormalizedBandwidth(normalizedBw);
-        filterMix += gain * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
+      //  filterMix += gain * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
+    }
+   // TBase::outputs[AUDIO_OUTPUT].value = 3 * filterMix;
+}
+
+
+template <class TBase>
+inline void VocalFilter<TBase>::step()
+{
+
+    if (--cycleCount < 0) {
+        cycleCount = 3;
+    }
+
+    if (cycleCount == 0) {
+        stepFilters();
+    }
+
+
+    T filterMix = 0;
+    const T input = TBase::inputs[AUDIO_INPUT].value;
+    for (int i = 0; i < numFilters; ++i) {
+     //   const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
+     //   const T normalizedBw = bwMultiplier * formantTables.getNormalizedBandwidth(model, i, fVowel);
+
+        // Get the filter gain from the table, but scale by BW to counteract the filters 
+        // gain that tracks Q
+
+        //T gainDB = formantTables.getGain(model, i, fVowel);
+
+        // blend the table with full gain depending on brightness
+        //T modifiedGainDB = (1 - gainDB) * brightness + gainDB;
+
+        // TODO: why is normalizedBW in this equation?
+    //    const T gain = LookupTable<T>::lookup(*db2GainLookup, modifiedGainDB) * normalizedBw;
+
+    //    T fcFinalLog = fcLog + fPara;
+   //     T fcFinal = LookupTable<T>::lookup(*expLookup, fcFinalLog);
+
+     //   filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
+     //   filterParams[i].setNormalizedBandwidth(normalizedBw);
+        filterMix += m_gain[i] * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
     TBase::outputs[AUDIO_OUTPUT].value = 3 * filterMix;
 }

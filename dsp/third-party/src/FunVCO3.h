@@ -38,7 +38,7 @@ extern float triTable[2048];
 template <int OVERSAMPLE, int QUALITY>
 struct KSOscillator
 {
-    float sampleTime = 0;
+   // float sampleTime = 0;
     bool soft = false;
     float lastSyncValue = 0.0f;
     float phase = 0.0f;
@@ -122,7 +122,7 @@ struct KSOscillator
         pw = clamp(pulseWidth, pwMin, 1.0f - pwMin);
     }
 
-    void process(float deltaTime, float syncValue)
+    void process(float deltaTime, float syncValue, float sampleTime)
     {
         assert(sinLookup);
         assert(sampleTime > 0);

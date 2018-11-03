@@ -778,26 +778,29 @@ void perfTest()
     printf("starting perf test\n");
     fflush(stdout);
     setup();
-#if 0
-    testAttenuverters();
-    testExpRange();
+
+#if 1
+    testColors();
+    testVocalFilter();
+    testAnimator();
+    testTremolo();
+    testLFN();
+    testShifter();
+    testGMR();
 #endif
 
-#if 0
-    testNoise(false);
-    testNoise(true);
-    testNormal();
-#endif
     testCHBdef();
     testSuper();
     testKS();
     testShaper1a();
+#if 0
     testShaper1b();
     testShaper1c();
     testShaper2();
     testShaper3();
     testShaper4();
     testShaper5();
+#endif
 
     testEV3();
    
@@ -823,18 +826,7 @@ void perfTest()
     testEvenSqSaw();
 #endif
 
-#if 0
 
-    testVocalFilter();
-    testAnimator();
-    testShifter();
-
-    testColors();
-    testTremolo();
-   
-    testLFN();
-    testGMR();
-#endif
    
 
    // test1();
