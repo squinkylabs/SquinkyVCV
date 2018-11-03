@@ -121,8 +121,9 @@ private:
     /**
      * 4 pole butterworth HP
      */
-    BiquadParams<float, 2> dcBlockParams;
-    BiquadState<float, 2> dcBlockState;
+    using Thpf = double;
+    BiquadParams<Thpf, 2> dcBlockParams;
+    BiquadState<Thpf, 2> dcBlockState;
 
 
     void processCV();
@@ -189,7 +190,7 @@ void  Shaper<TBase>::onSampleRateChange()
     const float cutoffHz = 20.f;
     float fcNormalized = cutoffHz * this->engineGetSampleTime();
     assert((fcNormalized > 0) && (fcNormalized < .1));
-    ButterworthFilterDesigner<float>::designFourPoleHighpass(dcBlockParams, fcNormalized);
+    ButterworthFilterDesigner<Thpf>::designFourPoleHighpass(dcBlockParams, fcNormalized);
 }
 
 template <class TBase>
@@ -270,7 +271,7 @@ void  Shaper<TBase>::step()
         output = buffer[0];
     }
 
-    output = BiquadFilter<float>::run(output, dcBlockState, dcBlockParams);
+    output = float(BiquadFilter<Thpf>::run(output, dcBlockState, dcBlockParams));
     TBase::outputs[OUTPUT_AUDIO].value = output;
 }
 

@@ -583,7 +583,7 @@ static void testKS()
 {
     KSComposite<TestComposite> gmr;
 
-    MeasureTime<float>::run(overheadOutOnly, "super", [&gmr]() {
+    MeasureTime<float>::run(overheadOutOnly, "ks", [&gmr]() {
        // gmr.inputs[KSComposite<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
         gmr.step();
         return gmr.outputs[KSComposite<TestComposite>::SQR_OUTPUT].value;
