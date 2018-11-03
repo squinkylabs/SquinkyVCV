@@ -7,7 +7,6 @@
 
 #include <sstream>
 
-#ifdef _CHB
 #include "CHB.h"
 
 /**
@@ -388,5 +387,3 @@ Model *modelCHBModule = Model::create<CHBModule,
     CHBWidget>("Squinky Labs",
     "squinkylabs-CHB",
     "Chebyshev: Waveshaper VCO", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
-
-#endif
