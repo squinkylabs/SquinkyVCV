@@ -3,7 +3,7 @@
 //#define _GMR
 #define _CHB
 #define _EV3
-#define _SUPER
+//#define _SUPER
 
 using namespace rack;
 extern Plugin *plugin;
