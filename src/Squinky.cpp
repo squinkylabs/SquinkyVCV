@@ -37,10 +37,6 @@ void init(rack::Plugin *p)
     p->addModel(modelGMRModule);
    
 #endif
-#ifdef _CPU_HOG
-    assert(modelCPU_HogModule);
-    p->addModel(modelCPU_HogModule);
-#endif
 #ifdef _EV
     p->addModel(modelEVModule);
 #endif
