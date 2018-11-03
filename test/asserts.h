@@ -54,4 +54,10 @@
     std::cout << "assertGE " << expected << " actual value = " << \
     actual << std::endl ; \
     assert(false); }
+
+#ifdef _DEBUG
+#define assertEvCount(x) assertEQ(MidiEvent::_count, x)
+#else
+#define assertEvCount(x)  ((void)0)
+#endif
 // leave space after macro

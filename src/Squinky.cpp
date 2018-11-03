@@ -29,13 +29,13 @@ void init(rack::Plugin *p)
     p->addModel(modelShaperModule);
     p->addModel(modelThreadBoostModule);
 
-
+#ifdef _SEQ
+    assert(modelSequencerModule);
+    p->addModel(modelSequencerModule);
+#endif
 #ifdef _GMR
     p->addModel(modelGMRModule);
-#endif
-#ifdef _CPU_HOG
-    assert(modelCPU_HogModule);
-    p->addModel(modelCPU_HogModule);
+   
 #endif
 #ifdef _EV
     p->addModel(modelEVModule);
