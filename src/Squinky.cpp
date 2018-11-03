@@ -32,6 +32,8 @@ void init(rack::Plugin *p)
 
 #ifdef _GMR
     p->addModel(modelGMRModule);
+    assert(modelSequencerModule);
+    p->addModel(modelSequencerModule);
 #endif
 #ifdef _CPU_HOG
     assert(modelCPU_HogModule);

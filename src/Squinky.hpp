@@ -3,7 +3,7 @@
 //#define _GMR
 #define _CHB
 #define _EV3
-//#define _SUPER
+#define _SUPER
 
 using namespace rack;
 extern Plugin *plugin;
@@ -25,6 +25,7 @@ extern Model *modelCPU_HogModule;
 #endif
 #ifdef _EV
 extern Model *modelEVModule;
+extern Model *modelSequencerModule;
 #endif
 extern Model *modelFunVModule;
 #ifdef _EV3

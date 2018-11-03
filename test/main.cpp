@@ -16,6 +16,8 @@ extern void testAudioMath();
 extern void perfTest();
 extern void testFrequencyShifter();
 extern void testStateVariable();
+
+
 extern void testVocalAnimator();
 extern void testObjectCache();
 extern void testThread(bool exended);
@@ -43,6 +45,12 @@ extern void testRateConversion();
 extern void testDelay();
 extern void testSpline(bool emit);
 extern void testButterLookup();
+extern void testMidiDataModel();
+extern void testReplaceCommand();
+extern void testUndoRedo();
+extern void testMidiViewport();
+extern void testFilteredIterator();
+
 
 int main(int argc, char ** argv)
 {
@@ -75,6 +83,11 @@ int main(int argc, char ** argv)
         testSpline(true);
         return 0;
     }
+    testFilteredIterator();
+    testMidiDataModel();
+    testReplaceCommand();
+    testUndoRedo();
+    testMidiViewport();
 
     testAudioMath();
     testRingBuffer();
@@ -122,9 +135,10 @@ int main(int argc, char ** argv)
     // after testing all the components, test composites.
     testTremolo();
     testColoredNoise();
+#endif
     testFrequencyShifter();
     testVocalAnimator();
-#endif
+
     if (runPerf) {
         perfTest();
     }
