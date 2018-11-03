@@ -4,6 +4,7 @@
 #define _CHB
 #define _EV3
 #define _SUPER
+#define _SEQ
 
 using namespace rack;
 extern Plugin *plugin;
@@ -25,7 +26,6 @@ extern Model *modelCPU_HogModule;
 #endif
 #ifdef _EV
 extern Model *modelEVModule;
-extern Model *modelSequencerModule;
 #endif
 extern Model *modelFunVModule;
 #ifdef _EV3
@@ -39,6 +39,9 @@ extern Model *modelDGModule;
 extern Model *modelBlankModule;
 #ifdef _SUPER
 extern Model *modelSuperModule;
+#endif
+#ifdef _SEQ
+extern Model *modelSequencerModule;
 #endif
 
 

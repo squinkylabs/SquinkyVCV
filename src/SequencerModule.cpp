@@ -1,7 +1,8 @@
-#ifdef _EXP
+
 #include <iostream>
 #include "Squinky.hpp"
 
+#ifdef _SEQ
 #include "WidgetComposite.h"
 //#include "VocalFilter.h"
 #include "Widgets.hpp"
