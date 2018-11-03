@@ -26,6 +26,7 @@
 #include "daveguide.h"
 #include "Shaper.h"
 #include "Super.h"
+#include "KSComposite.h"
 
 
 using Shifter = FrequencyShifter<TestComposite>;
@@ -571,14 +572,21 @@ static void testSuper()
 {
     Super<TestComposite> gmr;
 
+    MeasureTime<float>::run(overheadOutOnly, "super", [&gmr]() {
+     //   gmr.inputs[Super<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        gmr.step();
+        return gmr.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        }, 1);
+}
 
-    gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
-    gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;
+static void testKS()
+{
+    KSComposite<TestComposite> gmr;
 
     MeasureTime<float>::run(overheadOutOnly, "super", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+       // gmr.inputs[KSComposite<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO].value;
+        return gmr.outputs[KSComposite<TestComposite>::SQR_OUTPUT].value;
         }, 1);
 }
 
@@ -782,6 +790,7 @@ void perfTest()
 #endif
     testCHBdef();
     testSuper();
+    testKS();
     testShaper1a();
     testShaper1b();
     testShaper1c();

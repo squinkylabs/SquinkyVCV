@@ -1,11 +1,9 @@
-
 #include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 #include "SQWidgets.h"
 
 #include "Super.h"
-
 
 /**
  */
@@ -68,11 +66,10 @@ struct superWidget : ModuleWidget
 void superWidget::addDebug(SuperModule*)
 {
     addInput(Port::create<PJ301MPort>(
-        Vec(60, 10), Port::INPUT, module,  Super<WidgetComposite>::DEBUG_INPUT));  
+        Vec(100, 10), Port::INPUT, module, Super<WidgetComposite>::DEBUG_INPUT));
     addOutput(Port::create<PJ301MPort>(
-        Vec(60, 40), Port::OUTPUT, module,  Super<WidgetComposite>::DEBUG_OUTPUT));  
+        Vec(100, 40), Port::OUTPUT, module, Super<WidgetComposite>::DEBUG_OUTPUT));
 }
-
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -81,55 +78,81 @@ void superWidget::addDebug(SuperModule*)
  */
 superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
 {
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/super_panel.svg")));
         addChild(panel);
     }
 
-    addOutput(Port::create<PJ301MPort>(
-        Vec(60, 330), Port::OUTPUT, module,  Super<WidgetComposite>::MAIN_OUTPUT));
-    addLabel(
-        Vec(60 , 310), "out");
-
-    addInput(Port::create<PJ301MPort>(
-        Vec(6, 330), Port::INPUT, module,  Super<WidgetComposite>::CV_INPUT));
-    addLabel(
-        Vec(2 , 310), "V/8");
-
-    addInput(Port::create<PJ301MPort>(
-        Vec(34, 330), Port::INPUT, module,  Super<WidgetComposite>::GATE_INPUT));
-    addLabel(
-        Vec(34 , 310), "Trig");
-
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(10, 30), module, Super<WidgetComposite>::OCTAVE_PARAM, -5, 5, 0));
-    addLabel(
-        Vec(10, 10), "Oct");
+    const float col1 = 40;
+    const float col2 = 80;
+    const float col3 = 120;
 
     addDebug(module);
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(10, 95), module, Super<WidgetComposite>::SEMI_PARAM, -5, 5, 0));
+    addOutput(Port::create<PJ301MPort>(
+        Vec(60, 330), Port::OUTPUT, module, Super<WidgetComposite>::MAIN_OUTPUT));
     addLabel(
-        Vec(10, 75), "Semi");
+        Vec(60, 310), "out");
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(10, 160), module, Super<WidgetComposite>::FINE_PARAM, -5, 5, 0));
+    addInput(Port::create<PJ301MPort>(
+        Vec(6, 330), Port::INPUT, module, Super<WidgetComposite>::CV_INPUT));
     addLabel(
-        Vec(10, 140), "Fine");
+        Vec(2, 310), "V/8");
 
-    addParam(ParamWidget::create<Blue30Knob>(
-        Vec(10, 220), module, Super<WidgetComposite>::DETUNE_PARAM, -5, 5, 0));
+    addInput(Port::create<PJ301MPort>(
+        Vec(34, 330), Port::INPUT, module, Super<WidgetComposite>::TRIGGER_INPUT));
     addLabel(
-        Vec(10, 200), "Detune");
+        Vec(34, 310), "Trig");
 
-    addParam(ParamWidget::create<Blue30Knob>(
-        Vec(10, 270), module, Super<WidgetComposite>::MIX_PARAM, -5, 5, 0));
+    float labelOffset = -40;
+    // Octave
+    const float octaveY = 60;
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(col1, octaveY), module, Super<WidgetComposite>::OCTAVE_PARAM, -5, 4, 0));
     addLabel(
-        Vec(10, 250), "Mix");
+        Vec(10, octaveY + labelOffset), "Oct");
+
+    // Semi
+    const float semiY = 120;
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(col1, semiY), module, Super<WidgetComposite>::SEMI_PARAM, -5, 5, 0));
+    addLabel(
+        Vec(10, semiY + labelOffset), "Semi");
+
+    // Fine
+    const float fineY = 180;
+    addParam(createParamCentered<Rogan1PSBlue>(
+        Vec(col1, fineY), module, Super<WidgetComposite>::FINE_PARAM, -5, 5, 0));
+    addLabel(
+        Vec(10, fineY + labelOffset), "Fine");
+
+
+    // Detune
+    const float detuneY = 240;
+    labelOffset += 5;
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col1, detuneY), module, Super<WidgetComposite>::DETUNE_PARAM, -5, 5, 0));
+    addLabel(
+        Vec(10, detuneY + labelOffset), "Detune");
+    addParam(createParamCentered<Trimpot>(
+        Vec(col2, detuneY), module, Super<WidgetComposite>::DETUNE_TRIM_PARAM, -1, 1, 0));
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(col3, detuneY), module, Super<WidgetComposite>::DETUNE_INPUT));
+
+    // Waveform Mix
+    const float mixY = 290;
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col1, mixY), module, Super<WidgetComposite>::MIX_PARAM, -5, 5, 0));
+    addLabel(
+        Vec(10, mixY + labelOffset), "Mix");
+    addParam(createParamCentered<Trimpot>(
+        Vec(col2, mixY), module, Super<WidgetComposite>::MIX_TRIM_PARAM, -1, 1, 0));
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(col3, mixY), module, Super<WidgetComposite>::MIX_INPUT));
+
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

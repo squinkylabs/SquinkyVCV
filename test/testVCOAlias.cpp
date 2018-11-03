@@ -378,7 +378,7 @@ static void testEven(double normalizedFreq)
     fflush(stdout);
 }
 
-#if 0
+#if 0 // most builds don't have orig
 static void testAliasFunOrig(double normalizedFreq)
 {
     // adjust the freq to even

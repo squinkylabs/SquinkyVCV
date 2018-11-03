@@ -91,7 +91,8 @@ static void doHighTest(float fC)
 
 static void testButterLookup1()
 {
-    doHighTest(100);
+    printf("remove hi test\n");
+    //doHighTest(100);
 }
 
 void  testButterLookup()
