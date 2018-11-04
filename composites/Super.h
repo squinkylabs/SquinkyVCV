@@ -48,6 +48,10 @@ private:
 };
 
 
+/**
+ * orig CPU = 39
+ * sub sample => 16
+ */
 template <class TBase>
 class Super : public TBase
 {
@@ -131,6 +135,9 @@ private:
 
     AudioMath::RandomUniformFunc random =  AudioMath::random();
 
+    int inputSubSampleCounter = 1;
+    const static int inputSubSample = 4;    // only look at knob/cv every 4
+
 // TODO: make static
     float const detuneFactors[numSaws] = {
         .89f,
@@ -151,9 +158,7 @@ private:
     GateTrigger gateTrigger; 
     float gainCenter = 0;
     float gainSides = 0;
-
 };
-
 
 template <class TBase>
 inline void Super<TBase>::init()
@@ -213,8 +218,6 @@ inline void Super<TBase>::updateAudio()
         mix += phase[i] * gain;
     }
 
-   // mix = phase[3];     // just for test
-
     mix *= 2;
     const float output = BiquadFilter<float>::run(mix, filterState, filterParams);
     TBase::outputs[MAIN_OUTPUT].value = output;
@@ -224,21 +227,18 @@ template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
     filterLookup.get(filterParams, globalPhaseInc);
-#if 0
-    const float input = TBase::inputs[DEBUG_INPUT].value;
-    filterLookup.get(filterParams, globalPhaseInc);
-    const float output = BiquadFilter<float>::run(input, filterState, filterParams);
-    TBase::outputs[DEBUG_OUTPUT].value = output * 10;
-#endif
 }
 
 template <class TBase>
 inline void Super<TBase>::step()
 {
     updateTrigger();
-    updatePhaseInc();
-    updateHPFilters();
-    updateMix();
+    if (--inputSubSampleCounter <= 0) {
+        inputSubSampleCounter = inputSubSample;
+        updatePhaseInc();
+        updateHPFilters();
+        updateMix();
+    }
     updateAudio();
 }
 
