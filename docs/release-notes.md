@@ -1,5 +1,9 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.11
+
+Bug fix. High pass filters added to Shaper in 0.6.10 generate hiss. This release quiets them.
+
 ## 0.6.10
 
 Bug fixes:
