@@ -63,3 +63,8 @@ MidiTrack::iterator_pair MidiTrack::timeRange(MidiEvent::time_t start, MidiEvent
 {
     return iterator_pair(events.lower_bound(start), events.upper_bound(end));
 }
+
+MidiTrackPtr MidiTrack::makeTest1()
+{
+    return std::make_shared<MidiTrack>();
+}

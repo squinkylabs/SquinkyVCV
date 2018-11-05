@@ -7,6 +7,9 @@
 
 #include "MidiEvent.h"
 
+class MidiTrack;
+using MidiTrackPtr = std::shared_ptr<MidiTrack>;
+using MidiTrackConstPtr = std::shared_ptr<const MidiTrack>;
 
 class MidiTrack
 {
@@ -54,10 +57,13 @@ public:
         return events.end();
     }
 
+    /**
+     * factory method to generate test content.
+     */
+    static MidiTrackPtr makeTest1();
+
 
 private:
     container events;
 };
 
-using MidiTrackPtr = std::shared_ptr<MidiTrack>;
-using MidiTrackConstPtr = std::shared_ptr<const MidiTrack>;

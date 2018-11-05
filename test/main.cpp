@@ -46,6 +46,7 @@ extern void testDelay();
 extern void testSpline(bool emit);
 extern void testButterLookup();
 extern void testMidiDataModel();
+extern void testMidiSong();
 extern void testReplaceCommand();
 extern void testUndoRedo();
 extern void testMidiViewport();
@@ -85,6 +86,7 @@ int main(int argc, char ** argv)
     }
     testFilteredIterator();
     testMidiDataModel();
+    testMidiSong();
     testReplaceCommand();
     testUndoRedo();
     testMidiViewport();
