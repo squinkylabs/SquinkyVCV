@@ -4,6 +4,13 @@
 #include "MidiTrack.h"
 
 
+int MidiSong::getHighestTrackNumber() const
+{
+    int numTracks = int(tracks.size());
+    return numTracks - 1;
+}
+
+
 void MidiSong::addTrack(int index, std::shared_ptr<MidiTrack> track)
 {
     if (index >= (int) tracks.size()) {

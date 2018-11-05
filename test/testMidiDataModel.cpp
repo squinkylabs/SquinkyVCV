@@ -138,6 +138,11 @@ static void testTimeRange1()
     assertEQ(count, 2);
 }
 
+static void testSameTime()
+{
+    printf("ADD A TEST FOR SAME TIME\n");
+}
+
 
 
 void testMidiDataModel()
@@ -150,5 +155,6 @@ void testMidiDataModel()
     testDelete3();
     testTimeRange0();
     testTimeRange1();
+    testSameTime();
     assertEvCount(0);
 }

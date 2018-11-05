@@ -66,5 +66,20 @@ MidiTrack::iterator_pair MidiTrack::timeRange(MidiEvent::time_t start, MidiEvent
 
 MidiTrackPtr MidiTrack::makeTest1()
 {
-    return std::make_shared<MidiTrack>();
+    auto track =  std::make_shared<MidiTrack>();
+    MidiEvent ev;
+    ev.startTime = 0;
+    ev.pitch = 50;
+    track->insertEvent(ev);
+    ev.startTime = 100;
+    ev.pitch = 51;
+    track->insertEvent(ev);
+    ev.startTime = 200;
+    ev.pitch = 52;
+    track->insertEvent(ev);
+    ev.startTime = 400;
+    ev.pitch = 53;
+    track->insertEvent(ev);
+
+    return track;
 }

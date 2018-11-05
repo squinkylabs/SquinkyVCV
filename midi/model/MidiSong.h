@@ -15,6 +15,13 @@ public:
     std::shared_ptr<const MidiTrack> getTrack(int index) const;
     void createTrack(int index);
 
+    //bool doesTrackExist(int index) const;
+
+    /**
+     * returns -1 if no tracks exist
+     */
+    int getHighestTrackNumber() const;
+
     /**
      * factory method to generate test content
      */
