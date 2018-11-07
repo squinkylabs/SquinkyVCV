@@ -8,15 +8,15 @@
 static void testCanInsert()
 {
     MidiTrack mt;
-    MidiEvent ev;
-    ev.pitch = 33;
-    ev.startTime = 55;
+    MidiEventPtr ev = std::make_shared<MidiEvent>();
+    ev->pitch = 33;
+    ev->startTime = 55;
     assert(mt.size() == 0);
     mt.insertEvent(ev);
     assert(mt.size() == 1);
 
-    MidiEvent ev2 = mt._testGetVector()[0];
-    assert(ev2 == ev);
+    MidiEventPtr ev2 = mt._testGetVector()[0];
+    assert(*ev2 == *ev);
 
     assert(mt.isValid());
 }
@@ -24,19 +24,19 @@ static void testCanInsert()
 static void testInsertSorted()
 {
     MidiTrack mt;
-    MidiEvent ev;
-    ev.pitch = 33;
-    ev.startTime = 11;
+    MidiEventPtr ev = std::make_shared<MidiEvent>();
+    ev->pitch = 33;
+    ev->startTime = 11;
 
-    MidiEvent ev2;
-    ev2.pitch = 44;
-    ev2.startTime = 1;
+    MidiEventPtr ev2 = std::make_shared<MidiEvent>();
+    ev2->pitch = 44;
+    ev2->startTime = 1;
 
     mt.insertEvent(ev);
     mt.insertEvent(ev2);
 
     auto mv = mt._testGetVector();
-    MidiEvent& ev3 = mv.at(0);
+    MidiEventPtr ev3 = mv.at(0);
     assert(ev3 == ev2);
 
     ev3 = mv.at(1);
@@ -48,62 +48,65 @@ static void testInsertSorted()
 static void testDelete()
 {
     MidiTrack mt;
-    MidiEvent ev;
-    ev.pitch = 33;
-    ev.startTime = 11;
+    MidiEventPtr ev = std::make_shared<MidiEvent>();
+    ev->pitch = 33;
+    ev->startTime = 11;
 
     mt.insertEvent(ev);
-    mt.deleteEvent(ev);
+    mt.deleteEvent(*ev);
     assert(mt.size() == 0);
 }
 
 static void testDelete2()
 {
     MidiTrack mt;
-    MidiEvent ev;
+    MidiEventPtr ev = std::make_shared<MidiEvent>();
 
-    ev.pitch = 33;
-    ev.startTime = 11;
+    ev->pitch = 33;
+    ev->startTime = 11;
     mt.insertEvent(ev);
 
-    ev.pitch = 44;
-    mt.insertEvent(ev);
+    MidiEventPtr ev2 = std::make_shared<MidiEvent>();
+    ev2->pitch = 44;
+    mt.insertEvent(ev2);
 
-    mt.deleteEvent(ev);     // delete the second one, with pitch 44
+    mt.deleteEvent(*ev2);     // delete the second one, with pitch 44
     auto mv = mt._testGetVector();
 
     assert(mt.size() == 1);
-    assert(mv[0].pitch == 33);
+    assert(mv[0]->pitch == 33);
 }
 
 static void testDelete3()
 {
     MidiTrack mt;
-    MidiEvent ev;
+    MidiEventPtr ev = std::make_shared<MidiEvent>();
 
 #ifdef _DEBUG
     assert(MidiEvent::_count > 0);
 #endif
-    ev.pitch = 44;
-    ev.startTime = 11;
+    ev->pitch = 44;
+    ev->startTime = 11;
     mt.insertEvent(ev);
 
-    ev.pitch = 33;
-    mt.insertEvent(ev);
+    MidiEventPtr ev2 = std::make_shared<MidiEvent>();
+    ev2->pitch = 33;
+    mt.insertEvent(ev2);
 
-    ev.pitch = 44;
-    mt.deleteEvent(ev);     // delete the first one, with pitch 44
+    MidiEventPtr ev3 = std::make_shared<MidiEvent>();
+    ev3->pitch = 44;
+    mt.deleteEvent(*ev);     // delete the first one, with pitch 44
     auto mv = mt._testGetVector();
 
     assert(mt.size() == 1);
-    assert(mv[0].pitch == 33);
+    assert(mv[0]->pitch == 33);
 }
 
 static void testTimeRange0()
 {
     MidiTrack mt;
-    MidiEvent ev;
-    ev.startTime = 100;
+    MidiEventPtr ev = std::make_shared<MidiEvent>();
+    ev->startTime = 100;
 
     mt.insertEvent(ev);
     
@@ -121,15 +124,16 @@ static void testTimeRange0()
 static void testTimeRange1()
 {
     MidiTrack mt;
-    MidiEvent ev;
+    MidiEventPtr ev = std::make_shared<MidiEvent>();
 
-    ev.startTime = 100;
+    // TOOD: don't use same event! (unique ptr?)
+    ev->startTime = 100;
     mt.insertEvent(ev);
-    ev.startTime = 110;
+    ev->startTime = 110;
     mt.insertEvent(ev);
-    ev.startTime = 120;
+    ev->startTime = 120;
     mt.insertEvent(ev);
-    ev.startTime = 130;
+    ev->startTime = 130;
     mt.insertEvent(ev);
 
     MidiTrack::iterator_pair its = mt.timeRange(110, 120);

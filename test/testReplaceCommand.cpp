@@ -13,8 +13,8 @@ static void test0()
     UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
     MidiSongPtr ms(std::make_shared<MidiSong>());
 
-    std::vector<MidiEvent> toRem;
-    std::vector<MidiEvent> toAdd;
+    std::vector<MidiEventPtr> toRem;
+    std::vector<MidiEventPtr> toAdd;
 
     ms->createTrack(0);
 
@@ -29,11 +29,11 @@ static void test1()
     MidiSongPtr ms(std::make_shared<MidiSong>());
 
     ms->createTrack(0);
-    std::vector<MidiEvent> toRem;
-    std::vector<MidiEvent> toAdd;
+    std::vector<MidiEventPtr> toRem;
+    std::vector<MidiEventPtr> toAdd;
 
-    MidiEvent newEvent;
-    newEvent.pitch = 12;
+    MidiEventPtr newEvent =  std::make_shared<MidiEvent>();;
+    newEvent->pitch = 12;
     toAdd.push_back(newEvent);
 
     CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, 0, toRem, toAdd);
@@ -43,7 +43,7 @@ static void test1()
     assert(ur->canUndo());
 
     auto tv = ms->getTrack(0)->_testGetVector();
-    assert(tv[0] == newEvent);
+    assert(*tv[0] == *newEvent);
 
     ur->undo();
     assert(ms->getTrack(0)->size() == 0);     // we added an event

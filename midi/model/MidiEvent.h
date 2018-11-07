@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <memory>
 
 class MidiEvent
 {
@@ -35,3 +36,5 @@ inline bool MidiEvent::isValid() const
     return pitch <= 0x7f &&
         startTime >= 0;
 }
+
+using MidiEventPtr = std::shared_ptr<MidiEvent>;

@@ -4,13 +4,11 @@
 #include "MidiTrack.h"
 #include "MidiSong.h"
 
-
-
 ReplaceDataCommand::ReplaceDataCommand(
     std::shared_ptr<MidiSong> song,
     int trackNumber,
-    const std::vector<MidiEvent>& inRemove,
-    const std::vector<MidiEvent>& inAdd)
+    const std::vector<MidiEventPtr>& inRemove,
+    const std::vector<MidiEventPtr>& inAdd)
     : song(song), trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
 {
     assert(song->getTrack(trackNumber));
@@ -34,7 +32,7 @@ void ReplaceDataCommand::undo()
 
     // to undo the insertion, delete all of them
     for (auto it = addData.begin(); it < addData.end(); ++it) {
-        mt->deleteEvent(*it);
+        mt->deleteEvent(**it);
     }
     assert(removeData.empty());
 }

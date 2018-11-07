@@ -17,19 +17,21 @@ public:
     int size() const;
     bool isValid() const;
 
-    void insertEvent(const MidiEvent& ev);
+    void insertEvent(MidiEventPtr ev);
+
+    // TODO: does this still make sense with polymorphic types?
     void deleteEvent(const MidiEvent&);
 
     /**
      * Returns all events as a vector, so that they may be indexed.
      * Obviously this is rather slow (O(n)), so don't use it for editing.
      */
-    std::vector<MidiEvent> _testGetVector() const;
+    std::vector<MidiEventPtr> _testGetVector() const;
 
 
     //
 
-    using container = std::multimap<uint32_t, MidiEvent>;
+    using container = std::multimap<uint32_t, MidiEventPtr>;
 
     using iterator = container::iterator;
     using const_iterator = container::const_iterator;
