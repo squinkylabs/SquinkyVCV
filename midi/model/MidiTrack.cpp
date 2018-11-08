@@ -68,7 +68,7 @@ MidiTrackPtr MidiTrack::makeTest1()
 {
     // TODO: don't add the same element multipled times
     auto track =  std::make_shared<MidiTrack>();
-    MidiEventPtr ev = std::make_shared<MidiEvent>();
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 0;
     ev->pitch = 50;
     track->insertEvent(ev);

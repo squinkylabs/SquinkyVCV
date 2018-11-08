@@ -16,7 +16,11 @@ MidiViewport::iterator_pair MidiViewport::getEvents() const
 
     iterator::filter_func lambda = [this](MidiTrack::const_iterator ii) {
         const MidiEventPtr me = ii->second;
-        const bool ret = me->pitch >= pitchLow && me->pitch <= pitchHi;
+        bool ret = false;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);
+        if (note) {
+            ret = note->pitch >= pitchLow && note->pitch <= pitchHi;
+        }
         return ret;
     };
 
