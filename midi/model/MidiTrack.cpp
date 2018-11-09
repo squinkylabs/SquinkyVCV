@@ -20,6 +20,12 @@ void MidiTrack::assertValid() const
         assertGE(it->second->startTime, startTime);
         startTime = it->second->startTime;
     }
+    // track should end with End event;
+    auto it_back = events.rbegin();
+    assert(it_back != events.rend());
+    if (it_back != events.rend()) {
+        assert(it_back->second->type == MidiEvent::Type::End );
+    }
 }
 
 void MidiTrack::insertEvent(MidiEventPtr evIn)
@@ -59,6 +65,13 @@ MidiTrack::iterator_pair MidiTrack::timeRange(MidiEvent::time_t start, MidiEvent
     return iterator_pair(events.lower_bound(start), events.upper_bound(end));
 }
 
+void MidiTrack::insertEnd(MidiEvent::time_t time)
+{
+    MidiEndEventPtr end = std::make_shared<MidiEndEvent>();
+    end->startTime = time;
+    insertEvent(end);
+}
+
 MidiTrackPtr MidiTrack::makeTest1()
 {
     // TODO: don't add the same element multipled times
@@ -76,6 +89,7 @@ MidiTrackPtr MidiTrack::makeTest1()
     ev->startTime = 400;
     ev->pitch = 53;
     track->insertEvent(ev);
+    track->insertEnd(500);
 
     return track;
 }

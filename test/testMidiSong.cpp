@@ -16,6 +16,7 @@ static void test1()
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
     song->createTrack(10);
+    song->getTrack(10)->insertEnd(0);
     assertEQ(song->getHighestTrackNumber(), 10);
     song->assertValid();
 }
@@ -45,10 +46,17 @@ static void testDefSong()
     track->assertValid();
 
     int notes = 0;
+    int events = 0;
     for (auto ev : *track) {
-        ++notes;
+        ++events;
+        auto notep = safe_cast<MidiNoteEvent>(ev.second);
+        if (notep) {
+            ++notes;
+        }
     }
     assertEQ(notes, 4);
+    assertEQ(events, 5);
+
     song->assertValid();
 }
 

@@ -22,6 +22,8 @@ public:
     // TODO: does this still make sense with polymorphic types?
     void deleteEvent(const MidiEvent&);
 
+    void insertEnd(MidiEvent::time_t time);
+
     /**
      * Returns all events as a vector, so that they may be indexed.
      * Obviously this is rather slow (O(n)), so don't use it for editing.

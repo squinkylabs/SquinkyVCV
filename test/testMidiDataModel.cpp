@@ -15,6 +15,11 @@ static void testCanInsert()
     mt.insertEvent(ev);
     assert(mt.size() == 1);
 
+    mt.insertEnd(100);
+   // MidiEndEventPtr end = std::make_shared<MidiEndEvent>();
+   // end->startTime = 100;
+   // mt.insertEvent(end);
+
     MidiEventPtr ev2 = mt._testGetVector()[0];
     assert(*ev2 == *ev);
 
@@ -34,6 +39,8 @@ static void testInsertSorted()
 
     mt.insertEvent(ev);
     mt.insertEvent(ev2);
+
+    mt.insertEnd(100);
 
     auto mv = mt._testGetVector();
     MidiEventPtr ev3 = mv.at(0);
