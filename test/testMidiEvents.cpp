@@ -32,10 +32,37 @@ static void testCast()
     assert(safe_cast<MidiEvent>(end));
 }
 
+static void testEqual()
+{
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
+    MidiEventPtr evn(note);
+
+    MidiEndEventPtr end = std::make_shared<MidiEndEvent>();
+    MidiEventPtr eve(end);
+
+    assertEQ(note, evn);
+    assertEQ(end, eve);
+    assert (*note == *note2);
+
+    assert(!(*note == *end));
+    assert(*note != *end);
+    assert(*note != *eve);
+    assert(*evn != *end);
+    assert(*note != *end);
+
+    note2->pitch = 50;
+    assert(*note != *note2);
+
+
+}
+
 void  testMidiEvents()
 {
     testType();
     testCast();
+
+    testEqual();
 
     printf("*** hey! need == test\n");
  //   assert(false);  // next: operator ==

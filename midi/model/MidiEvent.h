@@ -22,6 +22,7 @@ public:
     time_t startTime;
 
     bool operator == (const MidiEvent&) const;
+    bool operator != (const MidiEvent&) const;
 
     virtual void assertValid() const;
 
@@ -57,6 +58,11 @@ inline bool MidiEvent::operator == (const MidiEvent& other) const
         return false;
     }
     return isEqual(other);
+}
+
+inline bool MidiEvent::operator != (const MidiEvent& other) const
+{
+    return !(*this == other);
 }
 
 inline void MidiEvent::assertValid() const
