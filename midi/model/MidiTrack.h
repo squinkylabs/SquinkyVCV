@@ -15,7 +15,7 @@ class MidiTrack
 {
 public:
     int size() const;
-    bool isValid() const;
+    void assertValid() const;
 
     void insertEvent(MidiEventPtr ev);
 

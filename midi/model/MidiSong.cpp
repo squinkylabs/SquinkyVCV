@@ -51,3 +51,12 @@ MidiSongPtr MidiSong::makeTest1()
     song->addTrack(0, track);
     return song;
 }
+
+void MidiSong::assertValid() const
+{
+    for (auto track : tracks) {
+        if (track) {
+            track->assertValid();
+        }
+    }
+}

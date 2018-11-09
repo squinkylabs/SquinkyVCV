@@ -66,6 +66,7 @@
     <ClCompile Include="..\..\test\testLookupTable.cpp" />
     <ClCompile Include="..\..\test\testLowpassFilter.cpp" />
     <ClCompile Include="..\..\test\testMidiDataModel.cpp" />
+    <ClCompile Include="..\..\test\testMidiEvents.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="..\..\sqsrc\thread\ThreadPriority.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadServer.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h" />
+    <ClInclude Include="..\..\sqsrc\util\asserts.h" />
     <ClInclude Include="..\..\sqsrc\util\Constants.h" />
     <ClInclude Include="..\..\sqsrc\util\GateTrigger.h" />
     <ClInclude Include="..\..\sqsrc\util\ManagedPool.h" />

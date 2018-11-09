@@ -18,7 +18,7 @@ static void testCanInsert()
     MidiEventPtr ev2 = mt._testGetVector()[0];
     assert(*ev2 == *ev);
 
-    assert(mt.isValid());
+    mt.assertValid();
 }
 
 static void testInsertSorted()
@@ -43,7 +43,7 @@ static void testInsertSorted()
     ev3 = mv.at(1);
     assert(ev3 == ev);
 
-    assert(mt.isValid());
+    mt.assertValid();
 }
 
 static void testDelete()

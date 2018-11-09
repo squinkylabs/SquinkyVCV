@@ -51,6 +51,7 @@ extern void testReplaceCommand();
 extern void testUndoRedo();
 extern void testMidiViewport();
 extern void testFilteredIterator();
+extern void  testMidiEvents();
 
 
 int main(int argc, char ** argv)
@@ -84,6 +85,7 @@ int main(int argc, char ** argv)
         testSpline(true);
         return 0;
     }
+    testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();
     testMidiSong();

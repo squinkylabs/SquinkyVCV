@@ -12,19 +12,14 @@ int MidiTrack::size() const
 }
 
 
-bool MidiTrack::isValid() const
+void MidiTrack::assertValid() const
 {
     int32_t startTime = 0;
     for (const_iterator it = begin(); it != end(); ++it) {
-        if (!it->second->isValid()) {
-            return false;
-        }
-        if (it->second->startTime < startTime) {
-            return false;
-        }
+        it->second->assertValid();
+        assertGE(it->second->startTime, startTime);
         startTime = it->second->startTime;
     }
-    return true;
 }
 
 void MidiTrack::insertEvent(MidiEventPtr evIn)

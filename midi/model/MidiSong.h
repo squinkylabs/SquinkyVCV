@@ -15,7 +15,7 @@ public:
     std::shared_ptr<const MidiTrack> getTrack(int index) const;
     void createTrack(int index);
 
-    //bool doesTrackExist(int index) const;
+    void assertValid() const;
 
     /**
      * returns -1 if no tracks exist
