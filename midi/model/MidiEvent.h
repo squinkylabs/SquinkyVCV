@@ -117,13 +117,11 @@ protected:
 inline std::pair<int, int> MidiNoteEvent::getPitch() const
 {
     // VCV 0 is C4
- //   int octave = int(std::round(pitch));
     int octave = int(std::floor(pitch));
     float remainder = pitch - octave;
     octave += 4;
     float s =  remainder * 12;
     int semi = int(std::round(s));
-    printf("float=%f oct = %d, rem = %f, s=%f, semi=%d\n", pitch, octave, remainder, s, semi);
     return std::pair<int, int>(octave, semi);
 }
 

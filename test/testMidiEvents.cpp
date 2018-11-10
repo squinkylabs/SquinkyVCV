@@ -55,8 +55,6 @@ static void testEqual()
 
     note2->pitch = 50;
     assert(*note != *note2);
-
-
 }
 
 static void testPitch()
@@ -111,12 +109,43 @@ static void testPitch()
     assertClose(n.pitch,3 +  7.f / 12.f, .0001);
 }
 
+static void testPitch2()
+{
+    MidiNoteEvent n;
+    n.pitch = -1;            // C3 in VCV
+    auto pitch = n.getPitch();
+    assert(pitch.first == 3);
+    assert(pitch.second == 0);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertClose(n.pitch, -1, .0001);
+
+    //******************************************************************************
+   
+    n.pitch = 0 + 1.f / 12.f + 1.f / 25.f;      // D4 plus less than half semi
+    pitch = n.getPitch();
+    assertEQ(pitch.first, 4);
+    assertEQ(pitch.second, 1);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertClose(n.pitch, 1.f / 12.f, .0001);
+
+    //**********************************************************
+    n.pitch = 0 + 1.f / 12.f + 1.f / 23.f;      // D4 plus less than half semi
+    pitch = n.getPitch();
+    assertEQ(pitch.first, 4);
+    assertEQ(pitch.second, 2);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertClose(n.pitch, 2.f / 12.f, .0001);
+
+}
+
 void  testMidiEvents()
 {
     testType();
     testCast();
     testEqual();
     testPitch();
-    printf("*** hey! need == test\n");
- //   assert(false);  // next: operator ==
+    testPitch2();
 }
