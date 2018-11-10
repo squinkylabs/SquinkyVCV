@@ -11,15 +11,19 @@
 class MidiEvent
 {
 public:
-    typedef int32_t time_t;
+    typedef float time_t;
     enum class Type
     {
         Note,
         End
     };
 
-    Type type;
-    time_t startTime;
+    Type type=Type::End;
+
+    /**
+     * time units are floats, 1.0 == quarter note
+     */
+    time_t startTime=0;
 
     bool operator == (const MidiEvent&) const;
     bool operator != (const MidiEvent&) const;
@@ -84,8 +88,6 @@ inline std::shared_ptr<T> safe_cast(std::shared_ptr<Q>)
 
 using MidiEventPtr = std::shared_ptr<MidiEvent>;
 
-
-
 /********************************************************************
 **           MidiNoteEvent
 ********************************************************************/
@@ -97,7 +99,11 @@ public:
     {
         type = Type::Note;
     }
-    uint8_t pitch=0;      // TODO: why limit us to MIDI range?
+    /**
+     * Pitch is VCV standard 1V/8
+     */
+    float pitch=0;    
+    float duration = 1;
     void assertValid() const override;
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
@@ -106,7 +112,9 @@ protected:
 inline void MidiNoteEvent::assertValid() const
 {
     MidiEvent::assertValid();
-    assertLE(pitch, 0x7f);
+    assertLE(pitch, 10);
+    assertGE(pitch, -10);
+    assertGT(duration, 0);
 }
 
 inline  bool MidiNoteEvent::isEqual(const MidiEvent& other) const

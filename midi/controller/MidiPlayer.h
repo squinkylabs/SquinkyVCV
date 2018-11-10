@@ -3,6 +3,13 @@
 
 class MidiSong;
 
+/**
+ * Need to decide on some units:
+ *
+ * Pitch = float volts (VCV standard).
+ * Metric Time = float, quarter notes.
+ * Tempo = float, BPM
+ */
 class MidiPlayer
 {
 public:
@@ -18,6 +25,8 @@ public:
     {
 
     }
+
+    void timeElapsed(float seconds);
 private:
     std::shared_ptr<IPlayerHost> host;
     std::shared_ptr<MidiSong> song;

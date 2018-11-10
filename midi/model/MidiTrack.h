@@ -33,7 +33,7 @@ public:
 
     //
 
-    using container = std::multimap<uint32_t, MidiEventPtr>;
+    using container = std::multimap<MidiEvent::time_t, MidiEventPtr>;
 
     using iterator = container::iterator;
     using const_iterator = container::const_iterator;

@@ -9,8 +9,8 @@ static void testCanInsert()
 {
     MidiTrack mt;
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
-    ev->pitch = 33;
-    ev->startTime = 55;
+    ev->pitch = 3.3f;
+    ev->startTime = 55.f;
     assert(mt.size() == 0);
     mt.insertEvent(ev);
     assert(mt.size() == 1);
@@ -30,11 +30,11 @@ static void testInsertSorted()
 {
     MidiTrack mt;
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
-    ev->pitch = 33;
+    ev->pitch = 3.3f;
     ev->startTime = 11;
 
     MidiNoteEventPtr ev2 = std::make_shared<MidiNoteEvent>();
-    ev2->pitch = 44;
+    ev2->pitch = 4.4f;
     ev2->startTime = 1;
 
     mt.insertEvent(ev);

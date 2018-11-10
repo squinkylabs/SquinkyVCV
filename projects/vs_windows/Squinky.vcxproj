@@ -32,6 +32,7 @@
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp" />
     <ClCompile Include="..\..\midi\controller\ReplaceDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />

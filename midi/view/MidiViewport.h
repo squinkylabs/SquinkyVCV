@@ -17,10 +17,10 @@ public:
     iterator_pair getEvents() const;
 
     // This is all pretty note specific
-    int32_t startTime = 0;
-    int32_t endTime = 0;
-    int pitchLow = 0;
-    int pitchHi = 0;
+    MidiEvent::time_t startTime = 0;
+    MidiEvent::time_t endTime = 0;
+    float pitchLow = 0;
+    float pitchHi = 0;
     int track = 0;
     std::shared_ptr<const MidiSong> getSong() const;
 

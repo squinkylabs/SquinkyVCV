@@ -342,6 +342,9 @@
     <ClCompile Include="..\..\test\testMidiPlayer.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
