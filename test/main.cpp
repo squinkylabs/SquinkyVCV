@@ -52,6 +52,7 @@ extern void testUndoRedo();
 extern void testMidiViewport();
 extern void testFilteredIterator();
 extern void  testMidiEvents();
+extern void testMidiPlayer();
 
 
 int main(int argc, char ** argv)
@@ -92,6 +93,7 @@ int main(int argc, char ** argv)
     testReplaceCommand();
     testUndoRedo();
     testMidiViewport();
+    testMidiPlayer();
 
     testAudioMath();
     testRingBuffer();

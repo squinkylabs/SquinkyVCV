@@ -339,6 +339,9 @@
     <ClCompile Include="..\..\test\testMidiEvents.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testMidiPlayer.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -583,6 +586,9 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\asserts.h">
       <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiPlayer.h">
+      <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

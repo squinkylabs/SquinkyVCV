@@ -67,6 +67,7 @@
     <ClCompile Include="..\..\test\testLowpassFilter.cpp" />
     <ClCompile Include="..\..\test\testMidiDataModel.cpp" />
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
+    <ClCompile Include="..\..\test\testMidiPlayer.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h" />
     <ClInclude Include="..\..\dsp\utils\ObjectCache.h" />
     <ClInclude Include="..\..\dsp\utils\poly.h" />
+    <ClInclude Include="..\..\midi\controller\MidiPlayer.h" />
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
