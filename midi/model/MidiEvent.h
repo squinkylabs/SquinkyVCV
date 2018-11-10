@@ -89,7 +89,9 @@ inline std::shared_ptr<T> safe_cast(std::shared_ptr<Q>)
 using MidiEventPtr = std::shared_ptr<MidiEvent>;
 
 /********************************************************************
+**
 **           MidiNoteEvent
+**
 ********************************************************************/
 
 class MidiNoteEvent : public MidiEvent
@@ -105,9 +107,30 @@ public:
     float pitch=0;    
     float duration = 1;
     void assertValid() const override;
+
+    void setPitch(int octave, int semi);
+    std::pair<int, int> getPitch() const;
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };
+
+inline std::pair<int, int> MidiNoteEvent::getPitch() const
+{
+    // VCV 0 is C4
+ //   int octave = int(std::round(pitch));
+    int octave = int(std::floor(pitch));
+    float remainder = pitch - octave;
+    octave += 4;
+    float s =  remainder * 12;
+    int semi = int(std::round(s));
+    printf("float=%f oct = %d, rem = %f, s=%f, semi=%d\n", pitch, octave, remainder, s, semi);
+    return std::pair<int, int>(octave, semi);
+}
+
+inline void MidiNoteEvent::setPitch(int octave, int semi)
+{
+    pitch = float(octave - 4) + semi * (1.0f / 12.0f);
+}
 
 inline void MidiNoteEvent::assertValid() const
 {
@@ -143,7 +166,9 @@ inline std::shared_ptr<MidiEvent> safe_cast(std::shared_ptr<MidiNoteEvent> ev)
 }
 
 /********************************************************************
+**
 **           MidiEndEvent
+**
 ********************************************************************/
 
 class MidiEndEvent : public MidiEvent

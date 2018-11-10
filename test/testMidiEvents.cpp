@@ -2,6 +2,8 @@
 
 #include "MidiEvent.h"
 
+#include "asserts.h"
+
 
 static void testType()
 {
@@ -57,13 +59,64 @@ static void testEqual()
 
 }
 
+static void testPitch()
+{
+    MidiNoteEvent n;
+    n.pitch = 0;            // C4 in VCV
+    auto pitch = n.getPitch();
+    assert(pitch.first == 4);
+    assert(pitch.second == 0);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertEQ(n.pitch, 0);
+
+    //************************************************
+
+    n.pitch = 1.f / 12.f;
+    pitch = n.getPitch();
+    assert(pitch.first == 4);
+    assert(pitch.second == 1);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertClose(n.pitch, 1.f / 12.f, .0001);
+
+    //********************************************************
+
+    n.pitch = 3 + 1.f / 12.f;
+    pitch = n.getPitch();
+    assertEQ(pitch.first, 4.0f + 3);
+    assertEQ(pitch.second, 1);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertClose(n.pitch, 3 + 1.f / 12.f, .0001);
+
+    //********************************************************
+
+    n.pitch = 7.f / 12.f;
+    pitch = n.getPitch();
+    assertEQ(pitch.first, 4.0f);
+    assertEQ(pitch.second, 7);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertClose(n.pitch, 7.f / 12.f, .0001);
+
+    //********************************************************
+
+    n.pitch = 3 + 7.f / 12.f;
+    pitch = n.getPitch();
+    assertEQ(pitch.first, 4.0f+3);
+    assertEQ(pitch.second, 7);
+
+    n.setPitch(pitch.first, pitch.second);
+    assertClose(n.pitch,3 +  7.f / 12.f, .0001);
+}
+
 void  testMidiEvents()
 {
     testType();
     testCast();
-
     testEqual();
-
+    testPitch();
     printf("*** hey! need == test\n");
  //   assert(false);  // next: operator ==
 }
