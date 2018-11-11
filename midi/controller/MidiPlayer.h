@@ -1,4 +1,8 @@
 #pragma once
+
+#include "MidiEvent.h"
+#include "MidiSong.h"
+#include "MidiTrack.h"
 #include <memory>
 
 class MidiSong;
@@ -23,11 +27,15 @@ public:
     MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSong> song) :
             host(host), song(song)
     {
-
+        curEvent = song->getTrack(0)->begin();
     }
 
     void timeElapsed(float seconds);
 private:
     std::shared_ptr<IPlayerHost> host;
     std::shared_ptr<MidiSong> song;
+
+    float curMetricTime = 0;
+    float noteOffTime = 0;
+    MidiTrack::const_iterator curEvent;
 };
