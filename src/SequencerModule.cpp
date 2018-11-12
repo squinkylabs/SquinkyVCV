@@ -5,7 +5,7 @@
 #ifdef _SEQ
 #include "WidgetComposite.h"
 //#include "VocalFilter.h"
-#include "Widgets.hpp"
+#include "widgets.hpp"
 
 
 struct SequencerModule : Module
