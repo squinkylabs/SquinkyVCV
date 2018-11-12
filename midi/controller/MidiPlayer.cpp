@@ -25,23 +25,25 @@ bool MidiPlayer::playOnce()
         MidiEventPtr event = curEvent->second;
         switch (event->type) {
             case MidiEvent::Type::Note:
-            {
-                MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
-                // should now output the note.
-                host->setCV(note->pitch);
-                host->setGate(true);
-                // and save off the note-off time.
-                noteOffTime = note->duration + note->startTime;
-            }
-            break;
+                {
+                    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+                    // should now output the note.
+                    host->setCV(note->pitch);
+                    host->setGate(true);
+                    // and save off the note-off time.
+                    noteOffTime = note->duration + note->startTime;
+                    ++curEvent;
+                }
+                break;
             case MidiEvent::Type::End:
                 // for now, should loop.
-                assert(false);
+                curMetricTime = 0;
+                curEvent = song->getTrack(0)->begin();
                 break;
             default:
                 assert(false);
         }
-        ++curEvent;
+       
         didSomething = true;
     }
     return didSomething;

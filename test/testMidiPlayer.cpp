@@ -93,9 +93,21 @@ static void test2()
     assertEQ(host->cvState, 2);
 }
 
+// loop around to first note on second time
+static void test3()
+{
+    std::shared_ptr<TestHost> host = makeSongOneQandRun(.51f);
+
+    assertEQ(host->gateCount, 3);
+    assertEQ(host->gateState, true);
+    assertEQ(host->cvCount, 2);
+    assertEQ(host->cvState, 2);
+}
+
 void testMidiPlayer()
 {
     test0();
     test1();
     test2();
+    test3();
 }
