@@ -35,6 +35,15 @@ static void test0()
     pl.timeElapsed(.01f);
 }
 
+
+/**
+ * Makes a one-track song. 
+ * Track has one quarter note at t=0, duration = eigth.
+ * End event at quater note end.
+ *
+ * noteOnTime = 0 * .5;
+ * noteOffTime = .5 * .5;
+ */
 static MidiSongPtr makeSongOneQ()
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
@@ -51,22 +60,42 @@ static MidiSongPtr makeSongOneQ()
     return song;
 }
 
-static void test1()
+
+std::shared_ptr<TestHost> makeSongOneQandRun(float time)
 {
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
-    pl.timeElapsed(.1f);
+    pl.timeElapsed(time);
+    return host;
+}
+
+
+// just play the first note on
+static void test1()
+{
+    std::shared_ptr<TestHost> host = makeSongOneQandRun(.24f);
+
     assertEQ(host->gateCount, 1);
     assertEQ(host->gateState, true);
     assertEQ(host->cvCount, 1);
     assertEQ(host->cvState, 2);
-
 }
 
+// play the first note on and off
+static void test2()
+{
+    std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
+
+    assertEQ(host->gateCount, 2);
+    assertEQ(host->gateState, false);
+    assertEQ(host->cvCount, 1);
+    assertEQ(host->cvState, 2);
+}
 
 void testMidiPlayer()
 {
     test0();
     test1();
+    test2();
 }

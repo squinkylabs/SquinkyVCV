@@ -112,7 +112,7 @@ int main(int argc, char ** argv)
     testMinBLEPVCO();
     testHilbert();
     testButterLookup();
-    testSpline(false);
+   
     testVCO();
    
    // testSin();
@@ -124,8 +124,9 @@ int main(int argc, char ** argv)
     testRateConversion();
  
 
-   // printf("skipping lots of tests\n");
-#if 1
+    printf("skipping lots of tests\n");
+#if 0
+    testSpline(false);
     testStateVariable();
     testFFTCrossFader();
     if (extended) {
@@ -141,9 +142,10 @@ int main(int argc, char ** argv)
     // after testing all the components, test composites.
     testTremolo();
     testColoredNoise();
-#endif
+
     testFrequencyShifter();
     testVocalAnimator();
+#endif
 
     if (runPerf) {
         perfTest();

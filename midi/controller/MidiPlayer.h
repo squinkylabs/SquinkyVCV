@@ -36,6 +36,12 @@ private:
     std::shared_ptr<MidiSong> song;
 
     float curMetricTime = 0;
-    float noteOffTime = 0;
+    float noteOffTime = -1;
     MidiTrack::const_iterator curEvent;
+
+    /**
+     * process the next ready event that is after curMetricTime
+     * returns true is something was found
+     */
+    bool playOnce();
 };
