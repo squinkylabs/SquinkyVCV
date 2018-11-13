@@ -27,6 +27,7 @@
 #include "Shaper.h"
 #include "Super.h"
 #include "KSComposite.h"
+#include "Seq.h"
 
 
 using Shifter = FrequencyShifter<TestComposite>;
@@ -772,6 +773,11 @@ static void testNormal()
         }, 1);
 }
 #endif
+
+void dummy()
+{
+    Seq<TestComposite> s;
+}
 
 void perfTest()
 {
