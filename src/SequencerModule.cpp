@@ -27,6 +27,19 @@ SequencerModule::SequencerModule()
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
+
+        /**
+     * Helper to add a text label to this widget
+     */
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    {
+        Label* label = new Label();
+        label->box.pos = v;
+        label->text = str;
+        label->color = color;
+        addChild(label);
+        return label;
+    }
 };
 
 
@@ -113,9 +126,17 @@ struct NoteDisplay : OpaqueWidget {
 	}
     #endif
 
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(50, 339),
+        module,
+        Seq<WidgetComposite>::CV_OUTPUT));
+    addLabel(Vec(35, 310), "CV");
 
-
-
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(90, 339),
+        module,
+        Seq<WidgetComposite>::GATE_OUTPUT));
+    addLabel(Vec(75, 310), "G");
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable
@@ -125,5 +146,4 @@ struct NoteDisplay : OpaqueWidget {
 Model *modelSequencerModule = Model::create<SequencerModule, SequencerWidget>("Squinky Labs",
     "squinkylabs-sequencer",
     "S", SEQUENCER_TAG);
-
 #endif
