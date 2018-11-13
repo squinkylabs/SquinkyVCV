@@ -4,13 +4,24 @@
 
 #ifdef _SEQ
 #include "WidgetComposite.h"
-//#include "VocalFilter.h"
+#include "Seq.h"
 #include "widgets.hpp"
 
 
 struct SequencerModule : Module
 {
+    SequencerModule();
+    Seq<WidgetComposite> seq;
 };
+
+SequencerModule::SequencerModule()
+    : Module(seq.NUM_PARAMS,
+    seq.NUM_INPUTS,
+    seq.NUM_OUTPUTS,
+    seq.NUM_LIGHTS),
+    seq(this)
+{
+}
 
 
 struct SequencerWidget : ModuleWidget
@@ -83,7 +94,7 @@ struct NoteDisplay : OpaqueWidget {
                                   //SequencerModule
  SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 {
-    const int width = (14 + 14) * RACK_GRID_WIDTH;      // 14 for panel, 14 for notes
+    const int width = (14 + 0) * RACK_GRID_WIDTH;      // 14 for panel, 14 for notes
     box.size = Vec(width, RACK_GRID_HEIGHT);
 
     {
@@ -92,7 +103,7 @@ struct NoteDisplay : OpaqueWidget {
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
         addChild(panel);
     }
-    #if 1
+    #if 0
 	{
 		NoteDisplay *display = new NoteDisplay();
 		display->module = module;
@@ -101,6 +112,10 @@ struct NoteDisplay : OpaqueWidget {
 		addChild(display);
 	}
     #endif
+
+
+
+
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable
