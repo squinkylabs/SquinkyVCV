@@ -1,5 +1,6 @@
 
 #include <assert.h>
+#include "MidiSong.h"
 #include "MidiTrack.h"
 #include "asserts.h"
 
@@ -159,7 +160,11 @@ static void testSameTime()
     printf("ADD A TEST FOR SAME TIME\n");
 }
 
-
+static void testSong()
+{
+    auto p = MidiSong::makeTest1();
+    p->assertValid();
+}
 
 void testMidiDataModel()
 {
@@ -172,5 +177,6 @@ void testMidiDataModel()
     testTimeRange0();
     testTimeRange1();
     testSameTime();
+    testSong();
     assertEvCount(0);
 }

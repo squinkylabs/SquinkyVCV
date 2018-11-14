@@ -54,8 +54,8 @@ static void testDefSong()
             ++notes;
         }
     }
-    assertEQ(notes, 4);
-    assertEQ(events, 5);
+    assertEQ(notes, 8);
+    assertEQ(events, 9);
 
     song->assertValid();
 }

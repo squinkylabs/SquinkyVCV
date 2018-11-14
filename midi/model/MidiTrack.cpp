@@ -16,18 +16,33 @@ int MidiTrack::size() const
 
 void MidiTrack::assertValid() const
 {
+
+    int numEnds = 0;
+    bool lastIsEnd = false;
+    float lastEnd = 0;
     MidiEvent::time_t startTime = 0;
+    MidiEvent::time_t totalDur = 0;
     for (const_iterator it = begin(); it != end(); ++it) {
         it->second->assertValid();
         assertGE(it->second->startTime, startTime);
         startTime = it->second->startTime;
+        if (it->second->type == MidiEvent::Type::End) {
+            numEnds++;
+            lastIsEnd = true;
+            totalDur = startTime;
+        } else {
+            lastIsEnd = false;
+        }
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note) {
+            lastEnd = std::max(lastEnd, startTime + note->duration);
+        } else {
+            lastEnd = startTime;
+        }
     }
-    // track should end with End event;
-    auto it_back = events.rbegin();
-    assert(it_back != events.rend());
-    if (it_back != events.rend()) {
-        assert(it_back->second->type == MidiEvent::Type::End );
-    }
+    assert(lastIsEnd);
+    assertEQ(numEnds, 1);
+    assertLE(lastEnd, totalDur);
 }
 
 void MidiTrack::insertEvent(MidiEventPtr evIn)
@@ -76,6 +91,27 @@ void MidiTrack::insertEnd(MidiEvent::time_t time)
 
 MidiTrackPtr MidiTrack::makeTest1()
 {
+    auto track = std::make_shared<MidiTrack>();
+    int semi = 0;
+    MidiEvent::time_t time = 0;
+    for (int i = 0; i < 8; ++i) {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        ev->startTime = time;
+        ev->setPitch(3, semi);
+        ev->duration = .5;
+        track->insertEvent(ev);
+
+        ++semi;
+        time += 1;
+    }
+
+    track->insertEnd(time);
+    return track;
+}
+
+#if 0
+MidiTrackPtr MidiTrack::makeTest1()
+{
     // TODO: don't add the same element multiple times
     auto track =  std::make_shared<MidiTrack>();
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
@@ -101,3 +137,4 @@ MidiTrackPtr MidiTrack::makeTest1()
 
     return track;
 }
+#endif

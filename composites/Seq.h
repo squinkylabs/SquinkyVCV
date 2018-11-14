@@ -9,6 +9,9 @@ template <class TBase>
 class Seq : public TBase
 {
 public:
+    template <class Tx>
+    friend class SeqHost;
+
     Seq(struct Module * module) : TBase(module),  gateTrigger(true)
     {
         init();
@@ -38,6 +41,7 @@ public:
 
     enum LightIds
     {
+        GATE_LIGHT,
         NUM_LIGHTS
     };
 
@@ -59,12 +63,13 @@ public:
     }
     void setGate(bool gate) override
     {
-        fprintf(stderr, "setGate %d\n", gate); fflush(stderr);
-
+        //fprintf(stderr, "setGate %d\n", gate); fflush(stderr);
+        seq->outputs[Seq<TBase>::GATE_OUTPUT].value = gate ? 10.f : 0.f;
     }
     void setCV(float cv) override
     {
-        fprintf(stderr, "setCV %f\n", cv); fflush(stderr);
+       // fprintf(stderr, "setCV %f\n", cv); fflush(stderr);
+        seq->outputs[Seq<TBase>::CV_OUTPUT].value = cv;
     }
 private:
     Seq<TBase>* const seq;
