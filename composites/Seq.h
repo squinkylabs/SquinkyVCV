@@ -12,11 +12,11 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(struct Module * module) : TBase(module),  gateTrigger(true)
+    Seq(struct Module * module) : TBase(module), gateTrigger(true)
     {
         init();
     }
-    Seq() : TBase(),  gateTrigger(true)
+    Seq() : TBase(), gateTrigger(true)
     {
         init();
     }
@@ -47,7 +47,7 @@ public:
 
     void step() override;
 private:
-    GateTrigger gateTrigger; 
+    GateTrigger gateTrigger;
     void init();
 
     std::shared_ptr<MidiPlayer> player;
@@ -81,7 +81,7 @@ void  Seq<TBase>::init()
 {
     //  MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSong> song) 
     std::shared_ptr<MidiPlayer::IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
-    
+
    //std::shared_ptr<MidiPlayer::IPlayerHost> host;
     std::shared_ptr<MidiSong> song = MidiSong::makeTest1();
     player = std::make_shared<MidiPlayer>(host, song);
@@ -90,7 +90,7 @@ void  Seq<TBase>::init()
 template <class TBase>
 void  Seq<TBase>::step()
 {
-    player->timeElapsed( engineGetSampleTime());
+    player->timeElapsed(engineGetSampleTime());
 }
 
 

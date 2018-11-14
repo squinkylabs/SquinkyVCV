@@ -3,13 +3,10 @@
 
 void MidiPlayer::timeElapsed(float seconds)
 {
-  //  curAbsTime += seconds;
     curMetricTime += seconds * 120.0f / 60.0f;        // fixed at 120 bpm for now
 
     while (playOnce()) {
     }
-
-  
 }
 
 bool MidiPlayer::playOnce()
@@ -25,16 +22,17 @@ bool MidiPlayer::playOnce()
         MidiEventPtr event = curEvent->second;
         switch (event->type) {
             case MidiEvent::Type::Note:
-                {
-                    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
-                    // should now output the note.
-                    host->setCV(note->pitch);
-                    host->setGate(true);
-                    // and save off the note-off time.
-                    noteOffTime = note->duration + note->startTime;
-                    ++curEvent;
-                }
-                break;
+            {
+                MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+                // should now output the note.
+                host->setGate(true);
+                host->setCV(note->pitch);
+
+                // and save off the note-off time.
+                noteOffTime = note->duration + note->startTime;
+                ++curEvent;
+            }
+            break;
             case MidiEvent::Type::End:
                 // for now, should loop.
                 curMetricTime = 0;
@@ -43,7 +41,7 @@ bool MidiPlayer::playOnce()
             default:
                 assert(false);
         }
-       
+
         didSomething = true;
     }
     return didSomething;

@@ -79,6 +79,9 @@ struct SequencerWidget : ModuleWidget
         module,
         Seq<WidgetComposite>::GATE_OUTPUT));
     addLabel(Vec(75, 310), "G");
+
+    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+        Vec(120, 310), module,  Seq<WidgetComposite>::GATE_LIGHT));
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable
