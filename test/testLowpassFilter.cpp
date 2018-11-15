@@ -1,11 +1,12 @@
 
+#include "MultiLag.h"
 #include "LowpassFilter.h"
 #include "Decimator.h"
 #include "Analyzer.h"
 #include "asserts.h"
 #include "LFN.h"
 #include "TestComposite.h"
-#include "MultiLag.h"
+
 
 template<typename T>
 static void test0()
@@ -265,27 +266,50 @@ void testLowpassFilter()
 **
 **********************************************************************************/
 
-static void testMultiLag0()
+template <class T>
+static void _testMultiLag0(int size)
 {
-    MultiLag<8> l;
-    for (int i = 0; i < 8; ++i) {
+    T l;
+    for (int i = 0; i < size; ++i) {
         assertClose(l.get(i), 0, .0001);
     }
 }
 
+static void testMultiLag0()
+{
+    _testMultiLag0<MultiLPF<8>>(8);
+    _testMultiLag0<MultiLag<8>>(8);
+}
+
+
+template <class T>
+static void _testMultiLag1(int size, T& dut)
+{
+    assert(size < 100);
+    float input[100];
+    for (int i = 0; i < size; ++i) {
+        input[i] = 1;
+    }
+    for (int i = 0; i < 10; ++i) {
+        dut.step(input);
+    }
+    for (int i = 0; i < 8; ++i) {
+        assertClose(dut.get(i), 1, .0001);
+    }
+}
 
 static void testMultiLag1()
 {
+    MultiLPF<8> f;
+    f.setCutoff(.4f);
+    _testMultiLag1(8, f);
+
+#if 0
     MultiLag<8> l;
-    l.setAttack(.5);
-    l.setRelease(.5);
-    float input[8] = {1};
-    for (int i = 0; i < 10; ++i) {
-        l.step(input);
-    }
-    for (int i = 0; i < 8; ++i) {
-        assertClose(l.get(i), 1, .0001);
-    }
+    l.setAttack(.4f);
+    l.setRelease(.4f);
+    _testMultiLag1(8, l);
+#endif
 }
 
 void testMultiLag()

@@ -158,7 +158,7 @@ int main(int argc, char ** argv)
     testFinalLeaks();
 
     // When we run inside Visual Studio, don't exit debugger immediately
-#if defined(_MSC_VER)
+#if defined(_MSC_VER_not)
     printf("Test passed. Press any key to continue...\n"); fflush(stdout);
     getchar();
 #else
