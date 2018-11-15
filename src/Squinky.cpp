@@ -46,7 +46,10 @@ void init(rack::Plugin *p)
    // p->addModel(modelBlankModule);
 #ifdef _SUPER
     p->addModel(modelSuperModule);
-    p->addModel(modelKSModule);
+   
 #endif
 
+#ifdef _SINK
+    p->addModel(modelKSModule);
+#endif
 }

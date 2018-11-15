@@ -3,6 +3,7 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#ifdef _SINK
 #include "KSComposite.h"
 
 
@@ -170,4 +171,4 @@ Model *modelKSModule = Model::create<KSModule,
     KCCompositeWidget>("Squinky Labs",
     "squinkylabs-ks",
     "kitchen sink", RANDOM_TAG);
-
+#endif
