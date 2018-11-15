@@ -53,6 +53,7 @@ extern void testMidiViewport();
 extern void testFilteredIterator();
 extern void  testMidiEvents();
 extern void testMidiPlayer();
+extern void testMultiLag();
 
 
 int main(int argc, char ** argv)
@@ -86,6 +87,7 @@ int main(int argc, char ** argv)
         testSpline(true);
         return 0;
     }
+
     testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();
@@ -117,7 +119,7 @@ int main(int argc, char ** argv)
    
    // testSin();
 
-
+    testMultiLag();
 
     testFFT();
     testAnalyzer();

@@ -593,5 +593,8 @@
     <ClInclude Include="..\..\midi\controller\MidiPlayer.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\MultiLag.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

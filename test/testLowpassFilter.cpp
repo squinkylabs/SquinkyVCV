@@ -5,6 +5,7 @@
 #include "asserts.h"
 #include "LFN.h"
 #include "TestComposite.h"
+#include "MultiLag.h"
 
 template<typename T>
 static void test0()
@@ -214,8 +215,12 @@ void _testLowpassFilter()
     test6<T>();
 }
 
-/************ also test decimator here
- */
+
+/*********************************************************************************
+**
+**              also test decimator here
+**
+**********************************************************************************/
 
 static void decimate0()
 {
@@ -250,4 +255,42 @@ void testLowpassFilter()
     _testLowpassFilter<double>();
     decimate0();
     decimate1();
+}
+
+
+
+/*********************************************************************************
+**
+**              also test MultiLag here
+**
+**********************************************************************************/
+
+static void testMultiLag0()
+{
+    MultiLag<8> l;
+    for (int i = 0; i < 8; ++i) {
+        assertClose(l.get(i), 0, .0001);
+    }
+}
+
+
+static void testMultiLag1()
+{
+    MultiLag<8> l;
+    l.setAttack(.5);
+    l.setRelease(.5);
+    float input[8] = {1};
+    for (int i = 0; i < 10; ++i) {
+        l.step(input);
+    }
+    for (int i = 0; i < 8; ++i) {
+        assertClose(l.get(i), 1, .0001);
+    }
+}
+
+void testMultiLag()
+{
+    testMultiLag0();
+    testMultiLag1();
+
 }
