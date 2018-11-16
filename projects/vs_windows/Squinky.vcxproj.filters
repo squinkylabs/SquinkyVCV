@@ -587,9 +587,6 @@
     <ClInclude Include="..\..\composites\KSComposite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\asserts.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
@@ -598,6 +595,9 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\filters\MultiLag.h">
       <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h">
+      <Filter>Header Files\dsp\utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

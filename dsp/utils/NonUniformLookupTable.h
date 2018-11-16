@@ -10,6 +10,10 @@ class NonUniformLookupTableParams
 {
 public:
     friend NonUniformLookupTable<T>;
+    int size() const
+    {
+        return (int) entries.size();
+    }
 private:
 
     class Entry

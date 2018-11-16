@@ -353,10 +353,25 @@ static void testMultiLag2()
 }
 
 
+template <typename T>
+static void tlp()
+{
+    auto params = makeLPFilterLookup<T>();
+    assert(params->size() == 6);
+}
+
+static void testLowpassLookup()
+{
+    tlp<float>();
+    tlp<double>();
+}
+
 void testMultiLag()
 {
     testMultiLag0();
     testMultiLag1();
     testMultiLag2();
+
+    testLowpassLookup();
 
 }

@@ -1,7 +1,11 @@
 #pragma once
 
-#include <assert.h>
+
 #include "AudioMath.h"
+#include "NonUniformLookupTable.h"
+
+#include <assert.h>
+#include <memory>
 
 template <typename T>
 class LowpassFilterState
@@ -27,8 +31,24 @@ public:
      */
     static void setCutoff(LowpassFilterParams<T>& params, T fs);
 
+    static T computeK(T fs);
+    static T computeL(T k);
+
     static T run(T input, LowpassFilterState<T>& state, const LowpassFilterParams<T>& params);
 };
+
+template <typename T>
+inline  T LowpassFilter<T>::computeK(T fs)
+{
+    return  T(1.0 - (std::exp(-2.0 * AudioMath::Pi * fs)));
+}
+
+template <typename T>
+inline  T LowpassFilter<T>::computeL(T k)
+{
+    return T(1.0 - k);
+}
+
 
 template <typename T>
 inline  void LowpassFilter<T>::setCutoff(LowpassFilterParams<T>& params, T fs)
@@ -50,4 +70,26 @@ inline T LowpassFilter<T>::run(T input, LowpassFilterState<T>& state, const Lowp
 {
     state.z = state.z * params.l + params.k * input;
     return state.z;
+}
+
+/**
+ * factory for fast lookup for LPF 'k' param.
+ * This version is not particularly accurate, and is mostly
+ * accurate in the low freq.
+ */
+template <typename T>
+inline std::shared_ptr<NonUniformLookupTableParams<T>> makeLPFilterLookup()
+{
+    std::shared_ptr<NonUniformLookupTableParams<T>> ret = std::make_shared<NonUniformLookupTableParams<T>>();
+
+    T freqs[] = {22000, 1000, 100, 10, 1, .1f};
+    int numFreqs = sizeof(freqs) / sizeof(T);
+    
+    for (int i = 0; i < numFreqs; ++i) {
+        T fs = freqs[i] / 44100.f;
+        T k = LowpassFilter<T>::computeK(fs);
+        NonUniformLookupTable<T>::addPoint(*ret, fs, k);
+    }
+    NonUniformLookupTable<T>::finalize(*ret);
+    return ret;
 }
