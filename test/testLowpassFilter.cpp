@@ -366,6 +366,22 @@ static void testLowpassLookup()
     tlp<double>();
 }
 
+static void testLowpassLookup2()
+{
+    auto params = makeLPFilterLookup<float>();
+
+    for (float f = .1f; f < 100; f *= 1.1f) {
+        float fs = f / 44100;
+        float k = LowpassFilter<float>::computeK(fs);
+        float k1 = NonUniformLookupTable<float>::lookup(*params, fs);
+
+        float r = k1 / k;
+        assertClose(r, 1, .01); 
+    }
+    
+    assert(true);
+}
+
 void testMultiLag()
 {
     testMultiLag0();
@@ -373,5 +389,6 @@ void testMultiLag()
     testMultiLag2();
 
     testLowpassLookup();
+    testLowpassLookup2();
 
 }

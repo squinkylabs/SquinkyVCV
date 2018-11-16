@@ -4,6 +4,9 @@
 #include <assert.h>
 #include <cmath>
 
+/**
+ * initial CPU = 3.0, 54.1 change freq every sample
+ */
 template <int N>
 class MultiLag
 {
@@ -61,6 +64,9 @@ inline void MultiLag<N>::step(const float * input)
 
 /******************************************************************************************************/
 
+/**
+ * initial CPU = 2.3, 28.1 change freq every sample
+ */
 template <int N>
 class MultiLPF
 {
