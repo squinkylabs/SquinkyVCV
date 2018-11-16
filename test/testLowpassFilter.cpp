@@ -344,12 +344,12 @@ static void testMultiLag2()
     f.setCutoff(fC / sampleRate);;
     _testMultiLag2(8, f, fC);
 
-#if 0
+
     MultiLag<8> l;
-    l.setAttack(.4f);
-    l.setRelease(.4f);
-    _testMultiLag1(8, l);
-#endif
+    l.setAttack(fC / sampleRate);
+    l.setRelease(fC / sampleRate);
+    _testMultiLag2(8, l, fC);
+
 }
 
 
