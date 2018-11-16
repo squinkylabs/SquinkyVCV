@@ -1,6 +1,8 @@
 #pragma once
 
+#include "AudioMath.h"
 #include <assert.h>
+#include <cmath>
 
 template <int N>
 class MultiLag

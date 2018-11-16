@@ -90,7 +90,7 @@ void  Seq<TBase>::init()
 template <class TBase>
 void  Seq<TBase>::step()
 {
-    player->timeElapsed(engineGetSampleTime());
+    player->timeElapsed(TBase::engineGetSampleTime());
 }
 
 

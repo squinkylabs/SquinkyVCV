@@ -282,19 +282,24 @@ static void testMultiLag0()
 }
 
 
+// test that output eventually matches input
 template <class T>
 static void _testMultiLag1(int size, T& dut)
 {
-    assert(size < 100);
+  
     float input[100];
-    for (int i = 0; i < size; ++i) {
-        input[i] = 1;
-    }
-    for (int i = 0; i < 10; ++i) {
-        dut.step(input);
-    }
-    for (int i = 0; i < 8; ++i) {
-        assertClose(dut.get(i), 1, .0001);
+    for (int n = 0; n < size; ++n) {
+        assert(n < 100);
+        for (int i = 0; i < size; ++i) {
+            input[i] = (i == n) ? 1.f : 0.f;
+        }
+        for (int i = 0; i < 10; ++i) {
+            dut.step(input);
+        }
+        for (int i = 0; i < 8; ++i) {
+            const float expected = (i == n) ? 1.f : 0.f;
+            assertClose(dut.get(i), expected, .0001);
+        }
     }
 }
 
@@ -312,9 +317,46 @@ static void testMultiLag1()
 #endif
 }
 
+
+// test response
+template <class T>
+static void _testMultiLag2(int size, T& dut, float f)
+{
+
+   
+    for (int n = 0; n < size; ++n) {
+        float input[100] = {0};
+        std::function<float(float)> filter = [&input, n, &dut](float x) {
+    
+            input[n] = x;
+            dut.step(input);
+            auto y = dut.get(n);
+            return float(y);
+        };
+        doLowpassTest<float>(filter, f, -6);
+    }
+}
+
+static void testMultiLag2()
+{
+    MultiLPF<8> f;
+    float fC = 10.f;
+    f.setCutoff(fC / sampleRate);;
+    _testMultiLag2(8, f, fC);
+
+#if 0
+    MultiLag<8> l;
+    l.setAttack(.4f);
+    l.setRelease(.4f);
+    _testMultiLag1(8, l);
+#endif
+}
+
+
 void testMultiLag()
 {
     testMultiLag0();
     testMultiLag1();
+    testMultiLag2();
 
 }
