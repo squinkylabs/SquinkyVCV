@@ -15,9 +15,7 @@ void init(rack::Plugin *p)
     p->version = TOSTRING(VERSION);
 
     p->addModel(modelBootyModule);
-#ifdef _CHB
     p->addModel(modelCHBModule);
-#endif
     p->addModel(modelTremoloModule);
     p->addModel(modelColoredNoiseModule);
     p->addModel(modelEV3Module);

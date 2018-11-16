@@ -47,6 +47,7 @@
     <ClCompile Include="..\..\test\Analyzer.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
+    <ClCompile Include="..\..\test\perfTest2.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
     <ClCompile Include="..\..\test\testBiquad.cpp" />
     <ClCompile Include="..\..\test\testButterLookup.cpp" />

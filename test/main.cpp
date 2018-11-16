@@ -14,6 +14,7 @@ extern void testSinOscillator();
 extern void testHilbert();
 extern void testAudioMath();
 extern void perfTest();
+extern void perfTest2();
 extern void testFrequencyShifter();
 extern void testStateVariable();
 
@@ -151,6 +152,7 @@ int main(int argc, char ** argv)
 
     if (runPerf) {
         perfTest();
+        perfTest2();
     }
 
 

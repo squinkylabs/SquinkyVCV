@@ -785,7 +785,7 @@ void perfTest()
     fflush(stdout);
     setup();
 
-#if 1
+#if 0
     testColors();
     testVocalFilter();
     testAnimator();
