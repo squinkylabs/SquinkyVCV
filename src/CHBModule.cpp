@@ -63,7 +63,9 @@ struct CHBWidget : ModuleWidget
         return label;
     }
 
+#ifdef _P
      Menu* createContextMenu() override;
+#endif
 
 
     void addHarmonics(CHBModule *module);
@@ -84,11 +86,13 @@ private:
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
     ParamWidget* gainParam=nullptr;
-
+#ifdef _p
     std::unique_ptr<CHBPanelManager> panelManager;
+#endif
 };
 
 
+#ifdef _P
  Menu* CHBWidget::createContextMenu()
  {
   Menu* theMenu = ModuleWidget::createContextMenu();
@@ -98,6 +102,7 @@ private:
     theMenu->addChild( panelManager->createMenuItem( actionCB));
     return theMenu;
  }
+ #endif
 
 /**
  * Global coordinate contstants
@@ -377,8 +382,10 @@ void CHBWidget::resetMe(CHBModule *module)
 CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
-    module(module),
-    panelManager(new CHBPanelManager())
+    module(module)
+#ifdef _P
+    ,panelManager(new CHBPanelManager())
+#endif
 {
     box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
