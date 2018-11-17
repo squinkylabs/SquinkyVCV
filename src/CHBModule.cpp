@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "CHB.h"
+#include "CHBPanelManager.h"
 
 /**
  */
@@ -62,6 +63,9 @@ struct CHBWidget : ModuleWidget
         return label;
     }
 
+     Menu* createContextMenu() override;
+
+
     void addHarmonics(CHBModule *module);
     void addVCOKnobs(CHBModule *module);
     void addOtherKnobs(CHBModule *module);
@@ -80,7 +84,20 @@ private:
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
     ParamWidget* gainParam=nullptr;
+
+    std::unique_ptr<CHBPanelManager> panelManager;
 };
+
+
+ Menu* CHBWidget::createContextMenu()
+ {
+  Menu* theMenu = ModuleWidget::createContextMenu();
+    auto actionCB = []() {
+
+    };
+    theMenu->addChild( panelManager->createMenuItem( actionCB));
+    return theMenu;
+ }
 
 /**
  * Global coordinate contstants
@@ -360,7 +377,8 @@ void CHBWidget::resetMe(CHBModule *module)
 CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
-    module(module)
+    module(module),
+    panelManager(new CHBPanelManager())
 {
     box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
