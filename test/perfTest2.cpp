@@ -1,5 +1,7 @@
 
+#include "LookupTable.h"
 #include "MultiLag.h"
+#include "ObjectCache.h"
 
 #include "MeasureTime.h"
 
@@ -103,8 +105,30 @@ static void testMultiLagMod()
         }, 1);
 }
 
+static void testUniformLookup()
+{
+    std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache<float>::getSinLookup();
+    MeasureTime<float>::run(overheadInOut, "uniform", [lookup]() {
+        float x = TestBuffers<float>::get();
+        return LookupTable<float>::lookup(*lookup, x, true);
+
+    }, 1);
+}
+static void testNonUniform()
+{
+    std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterLookup<float>();
+
+    MeasureTime<float>::run(overheadInOut, "non-uniform", [lookup]() {
+        float x = TestBuffers<float>::get();
+        return  NonUniformLookupTable<float>::lookup(*lookup, x);
+     
+    }, 1);
+}
+
 void perfTest2()
 {
+    testUniformLookup();
+    testNonUniform();
     testMultiLPF();
     testMultiLPFMod();
     testMultiLag();
