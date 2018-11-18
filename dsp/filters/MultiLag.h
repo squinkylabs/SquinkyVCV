@@ -13,7 +13,7 @@
 
 /**
  * initial CPU = 3.0, 54.1 change freq every sample
- * 2.1, 9.1 with lookup and SSE
+ * 2.1, 8.6 with lookup and SSE
  */
 template <int N>
 class MultiLag
@@ -39,12 +39,9 @@ private:
     float memory[N] = {0};
 
 #ifdef _LPSSE
-  //  __m128 lAttack = {0};
     __m128 kAttack = {0};
-  //  __m128 lRelease = {0};
     __m128 kRelease = {0};
     __m128 kOne = {1};
-
 #else
     float lAttack = 0;
     float kAttack = 0;
@@ -64,10 +61,7 @@ inline void MultiLag<N>::setAttack(float fs)
 {
     assert(fs > 00 && fs < .5);
     float ks = NonUniformLookupTable<float>::lookup(*lookup, fs);
- //   float ls = float(1.0 - ks);
     kAttack = _mm_set_ps1(ks);
-  //  lAttack = _mm_set_ps1(ls);
-
 }
 
 
@@ -76,9 +70,7 @@ inline void MultiLag<N>::setRelease(float fs)
 {
     assert(fs > 00 && fs < .5);
     float ks = NonUniformLookupTable<float>::lookup(*lookup, fs);
-  //  float ls = float(1.0 - ks);
     kRelease = _mm_set_ps1(ks);
-  //  lRelease = _mm_set_ps1(ls);
 }
 
 /**
@@ -87,47 +79,26 @@ inline void MultiLag<N>::setRelease(float fs)
 template <int N>
 inline void MultiLag<N>::step(const float * input)
 {
-#if 0
-    for (int i = 0; i < N; ++i) {
-        if (input[i] > memory[i]) {
-            memory[i] = memory[i] * lAttack + kAttack * input[i];
-        } else {
-            memory[i] = memory[i] * lRelease + kRelease * input[i];
-        }
-    }
 
     assert((N % 4) == 0);
     for (int i = 0; i < N; i += 4) {
         __m128 input4 = _mm_loadu_ps(input + i);  // load 4 input samples
         __m128 memory4 = _mm_loadu_ps(memory + i);
+        __m128 cmp = _mm_cmpge_ps(input4, memory4);     //cmp has 11111 where >=, 0000 others
+
+        __m128 ka = _mm_and_ps(cmp, kAttack);
+        __m128 kr = _mm_andnot_ps(cmp, kRelease);
+        __m128 k = _mm_or_ps(ka, kr);
+
+        __m128 l = _mm_sub_ps(kOne, k);
+
+        // now k and l have the correct a/r time constants
 
         __m128 temp = _mm_mul_ps(input4, k);
         memory4 = _mm_mul_ps(memory4, l);
         memory4 = _mm_add_ps(memory4, temp);
         _mm_storeu_ps(memory + i, memory4);
-
-#endif
-        assert((N % 4) == 0);
-        for (int i = 0; i < N; i += 4) {
-            __m128 input4 = _mm_loadu_ps(input + i);  // load 4 input samples
-            __m128 memory4 = _mm_loadu_ps(memory + i);
-            __m128 cmp = _mm_cmpge_ps(input4, memory4);     //cmp has 11111 where >=, 0000 others
-
-            __m128 ka = _mm_and_ps(cmp, kAttack);
-            __m128 kr = _mm_andnot_ps(cmp, kRelease);
-            __m128 k = _mm_or_ps(ka, kr);
-
-         //   const float onef = 1.f;
-         //   __m128 one = _mm_load1_ps(&onef);
-            __m128 l = _mm_sub_ps(kOne, k);
-
-            // now k and l have the correct a/r time constants
-
-            __m128 temp = _mm_mul_ps(input4, k);
-            memory4 = _mm_mul_ps(memory4, l);
-            memory4 = _mm_add_ps(memory4, temp);
-            _mm_storeu_ps(memory + i, memory4);
-        }
+    }
 }
 #endif
 
@@ -253,9 +224,6 @@ inline void MultiLag<N>::step(const float * input)
             memory4 = _mm_mul_ps(memory4, l);
             memory4 = _mm_add_ps(memory4, temp);
             _mm_storeu_ps(memory + i, memory4);
-
-
-            //memory[i] = memory[i] * l + k * input[i];
         }
     }
 #endif
