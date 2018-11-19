@@ -155,10 +155,12 @@ private:
 
     std::default_random_engine generator{57};
     std::normal_distribution<double> distribution{-1.0, 1.0};
+    
     float noise()
     {
         return  (float) distribution(generator);
     }
+    int controlUpdateCount=0;
 
     /**
      * Must be called after baseFrequency is updated.
@@ -220,9 +222,8 @@ inline void LFN<TBase>::step()
 {
     // Let's only check the inputs every 4 samples. Still plenty fast, but
     // get the CPU usage down really far.
-    static int count = 0;
-    if (count++ > 4) {
-        count = 0;
+    if (controlUpdateCount++ > 4) {
+        controlUpdateCount = 0;
         const int numEqStages = geq.getNumStages();
         for (int i = 0; i < numEqStages; ++i) {
             auto paramNum = i + EQ0_PARAM;
