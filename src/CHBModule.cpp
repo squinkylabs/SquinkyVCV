@@ -9,6 +9,7 @@
 
 #include "CHB.h"
 #include "CHBPanelManager.h"
+#include "IMWidgets.hpp"
 
 /**
  */

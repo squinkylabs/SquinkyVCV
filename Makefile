@@ -11,6 +11,7 @@ FLAGS += -I./dsp/third-party/kiss_fft130/tools -I./dsp/third-party/src
 FLAGS += -I./sqsrc/thread -I./dsp/fft -I./composites
 FLAGS += -I./sqsrc/noise -I./sqsrc/util -I./sqsrc/clock -I./sqsrc/grammar -I./sqsrc/delay
 FLAGS += -I./midi/model -I./midi/view -I./midi/controller -I./util
+FLAGS += -I./src/third-party
 CFLAGS +=
 CXXFLAGS +=
 
@@ -39,6 +40,7 @@ SOURCES += dsp/third-party/kiss_fft130/kiss_fft.c
 SOURCES += dsp/third-party/kiss_fft130/tools/kiss_fftr.c
 SOURCES += $(wildcard sqsrc/**/*.cpp)
 SOURCES += $(wildcard midi/**/*.cpp)
+SOURCES += $(wildcard src/third-party/*.cpp)
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin is automatically added.

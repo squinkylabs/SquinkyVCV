@@ -111,7 +111,6 @@ public:
     float _freq = 0;
 
 private:
-    bool economyMode = true;        // let's default to economy mode
     int cycleCount = 1;
     int clipCount = 0;
     int signalCount = 0;
@@ -333,14 +332,11 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 template <class TBase>
 inline void CHB<TBase>::step()
 {
-    if (economyMode) {
-        if (--cycleCount < 0) {
-            cycleCount = 3;
-        }
-    } else {
-        cycleCount = 0;
+
+    if (--cycleCount < 0) {
+        cycleCount = 3;
     }
-   
+
     // do all the processing to get the carrier signal
     const float input = getInput();
 
