@@ -571,15 +571,31 @@ static void testShaper1b()
 
 static void testSuper()
 {
-    Super<TestComposite> gmr;
+    Super<TestComposite> super;
 
-    MeasureTime<float>::run(overheadOutOnly, "super", [&gmr]() {
+    MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
      //   gmr.inputs[Super<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
-        gmr.step();
-        return gmr.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
         }, 1);
 }
 
+static void testSuper2()
+{
+    Super<TestComposite> super;
+
+    MeasureTime<float>::run(overheadOutOnly, "super pitch change", [&super]() {
+        int counter = 1;
+        float cv = 0;
+     //   gmr.inputs[Super<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+        if (--counter == 0) {
+            cv = (cv == 0) ? 2.f : 0.f;
+            super.inputs[Super<TestComposite>::CV_INPUT].value = cv;
+        }
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        }, 1);
+}
 static void testKS()
 {
     KSComposite<TestComposite> gmr;
@@ -797,6 +813,7 @@ void perfTest()
 
     testCHBdef();
     testSuper();
+    testSuper2();
     testKS();
     testShaper1a();
 #if 0

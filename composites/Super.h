@@ -51,6 +51,8 @@ private:
 /**
  * orig CPU = 39
  * sub sample => 16
+ * beta1 => 16.1
+        17.7 if change pitch every 16 samples.
  */
 template <class TBase>
 class Super : public TBase
