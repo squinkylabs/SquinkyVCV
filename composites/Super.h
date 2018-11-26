@@ -3,10 +3,10 @@
 
 
 // Enable the smoothed HPF to reduce pops
-#define _SMH
+#define _SV
 
-#ifdef _SMH
-#include "SmoothedHPF.h"
+#ifdef _SV
+#include "StateVariable4PHP.h"
 #else
 #include "ButterworthLookup.h"
 #include "BiquadState.h"
@@ -176,8 +176,8 @@ private:
     float gainCenter = 0;
     float gainSides = 0;
 
-#ifdef _SMH
-    SmoothedHPF hpf;
+#ifdef _SV
+    StateVariable4PHP hpf;
 #else
     ButterworthLookup4PHP filterLookup;
     BiquadState<float, 2> filterState;
@@ -248,7 +248,7 @@ inline void Super<TBase>::updateAudio()
 
     mix *= 2;
 
-#ifdef _SMH
+#ifdef _SV
     const float output = hpf.run(mix);
 #else
    const float output = BiquadFilter<float>::run(mix, filterState, filterParams);
@@ -285,7 +285,7 @@ inline void Super<TBase>::updateAudio()
 template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
-#ifdef _SMH
+#ifdef _SV
     hpf.setCutoff(globalPhaseInc);
 #else
     filterLookup.get(filterParams, globalPhaseInc);

@@ -597,7 +597,6 @@ static void testSuper2()
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
         }, 1);
-    //abort();
 }
 
 static void testKS()
@@ -814,7 +813,7 @@ void perfTest()
 #endif
 
     testCHBdef();
-   // testSuper();
+    testSuper();
     testSuper2();
   //  testKS();
   //  testShaper1a();
