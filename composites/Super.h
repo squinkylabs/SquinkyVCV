@@ -102,6 +102,7 @@ public:
         DETUNE_TRIM_PARAM,
         MIX_PARAM,
         MIX_TRIM_PARAM,
+        FM_PARAM,
         NUM_PARAMS
     };
 
@@ -109,16 +110,15 @@ public:
     {
         CV_INPUT,
         TRIGGER_INPUT,
-       // DEBUG_INPUT,
         DETUNE_INPUT,
         MIX_INPUT,
+        FM_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
         MAIN_OUTPUT,
-       // DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
