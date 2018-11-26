@@ -88,6 +88,7 @@
     <ClCompile Include="..\..\test\testThread.cpp" />
     <ClCompile Include="..\..\test\testTremolo.cpp" />
     <ClCompile Include="..\..\test\testUndoRedo.cpp" />
+    <ClCompile Include="..\..\test\testUtils.cpp" />
     <ClCompile Include="..\..\test\testVCO.cpp" />
     <ClCompile Include="..\..\test\testVCOAlias.cpp" />
     <ClCompile Include="..\..\test\testVocalAnimator.cpp" />
@@ -123,6 +124,7 @@
     <ClInclude Include="..\..\dsp\filters\HilbertFilterDesigner.h" />
     <ClInclude Include="..\..\dsp\filters\LowPassFilter.h" />
     <ClInclude Include="..\..\dsp\filters\MultiLag.h" />
+    <ClInclude Include="..\..\dsp\filters\SmoothedHPF.h" />
     <ClInclude Include="..\..\dsp\filters\StateVariableFilter.h" />
     <ClInclude Include="..\..\dsp\generators\MinBLEPVCO.h" />
     <ClInclude Include="..\..\dsp\generators\MultiModOsc.h" />
@@ -164,6 +166,7 @@
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h" />
     <ClInclude Include="..\..\sqsrc\util\asserts.h" />
     <ClInclude Include="..\..\sqsrc\util\Constants.h" />
+    <ClInclude Include="..\..\sqsrc\util\Divider.h" />
     <ClInclude Include="..\..\sqsrc\util\GateTrigger.h" />
     <ClInclude Include="..\..\sqsrc\util\ManagedPool.h" />
     <ClInclude Include="..\..\sqsrc\util\RingBuffer.h" />

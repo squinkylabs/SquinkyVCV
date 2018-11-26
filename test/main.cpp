@@ -55,6 +55,7 @@ extern void testFilteredIterator();
 extern void  testMidiEvents();
 extern void testMidiPlayer();
 extern void testMultiLag();
+extern void testUtils();
 
 
 int main(int argc, char ** argv)
@@ -125,6 +126,7 @@ int main(int argc, char ** argv)
     testFFT();
     testAnalyzer();
     testRateConversion();
+    testUtils();
  
 
     printf("skipping lots of tests\n");

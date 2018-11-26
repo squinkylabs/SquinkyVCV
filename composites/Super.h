@@ -1,12 +1,24 @@
 
 #pragma once
 
+
+// Enable the smoothed HPF to reduce pops
+#define _SMH
+
+#ifdef _SMH
+#include "SmoothedHPF.h"
+#else
 #include "ButterworthLookup.h"
 #include "BiquadState.h"
 #include "BiquadFilter.h"
+#endif
+
 #include "GateTrigger.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
+
+
+
 
 class SawtoothDetuneCurve
 {
@@ -53,6 +65,11 @@ private:
  * sub sample => 16
  * beta1 => 16.1
         17.7 if change pitch every 16 samples.
+
+
+ * glitching: old way, filters popped a ton.
+                turning off filters made it go away
+ * new lag: .001 : less popping, but still some
  */
 template <class TBase>
 class Super : public TBase
@@ -151,15 +168,21 @@ private:
         1.107f
     };
 
-    // For debugging filters
-    BiquadState<float, 2> filterState;
-    BiquadParams<float, 2> filterParams;
+  
     void updateHPFilters();
-    ButterworthLookup4PHP filterLookup;
+   
     SawtoothDetuneCurve detuneCurve;
     GateTrigger gateTrigger; 
     float gainCenter = 0;
     float gainSides = 0;
+
+#ifdef _SMH
+    SmoothedHPF hpf;
+#else
+    ButterworthLookup4PHP filterLookup;
+    BiquadState<float, 2> filterState;
+    BiquadParams<float, 2> filterParams;
+#endif
 };
 
 template <class TBase>
@@ -198,6 +221,7 @@ inline void Super<TBase>::updatePhaseInc()
         float detune = (detuneFactors[i] - 1) * detuneInput;
         detune += 1;
         phaseInc[i] = globalPhaseInc * detune;
+        //phaseInc[i] = globalPhaseInc;       // JUST FOR TEST. DON"T CHCKE IN
     }
 }
 
@@ -216,19 +240,56 @@ inline void Super<TBase>::updateAudio()
         if (phase[i] < 0) {
             printf("hey, phase too small %f\n", phase[i]); fflush(stdout);
         }
+       // gainSides = 0;  // JUST TO FIND GLITCH. DON"T CHECK IN.
         const float gain = (i == numSaws/2) ? gainCenter : gainSides;
-        mix += phase[i] * gain;
+      //  mix += phase[i] * gain;
+        mix += (phase[i] - .5f) * gain;        // experiment
     }
 
     mix *= 2;
-    const float output = BiquadFilter<float>::run(mix, filterState, filterParams);
+
+#ifdef _SMH
+    const float output = hpf.run(mix);
+#else
+   const float output = BiquadFilter<float>::run(mix, filterState, filterParams);
+   //const float output = mix;     // try without filters. don't check in.
+#endif
+
+#ifdef _LOG
+   static float lastOutput = -100;
+   static float maxDelta = 0;
+
+   if (lastOutput < -90) {
+       lastOutput = output;
+   }
+   const float delta = std::abs(output - lastOutput);
+   if ((delta > maxDelta) || 0) {
+       maxDelta = delta;
+       printf("** MAX POP %.2f\n", maxDelta);
+   }
+
+  printf("mix = %.2f output=%.2f delta = %.2f\n", mix, output, delta);
+
+  // if (delta > 4) printf("** POP %.2f **\n", delta);
+   lastOutput = output;
+   fflush(stdout);
+   if (maxDelta > 4) abort();
+#endif
+
+
     TBase::outputs[MAIN_OUTPUT].value = output;
+ 
+
 }
 
 template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
+#ifdef _SMH
+    hpf.setCutoff(globalPhaseInc);
+#else
     filterLookup.get(filterParams, globalPhaseInc);
+#endif
 }
 
 template <class TBase>

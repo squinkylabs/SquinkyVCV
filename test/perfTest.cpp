@@ -574,7 +574,7 @@ static void testSuper()
     Super<TestComposite> super;
 
     MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
-     //   gmr.inputs[Super<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
         }, 1);
@@ -583,19 +583,23 @@ static void testSuper()
 static void testSuper2()
 {
     Super<TestComposite> super;
+    int counter = 1;
+    bool flip = false;
+    float cv = 0;
 
-    MeasureTime<float>::run(overheadOutOnly, "super pitch change", [&super]() {
-        int counter = 1;
-        float cv = 0;
-     //   gmr.inputs[Super<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
+    MeasureTime<float>::run(overheadOutOnly, "super pitch change", [&]() {
         if (--counter == 0) {
-            cv = (cv == 0) ? 2.f : 0.f;
+            cv = flip ? 1.f : -1.f;
             super.inputs[Super<TestComposite>::CV_INPUT].value = cv;
+            counter = 64;
+            flip = !flip;
         }
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
         }, 1);
+    //abort();
 }
+
 static void testKS()
 {
     KSComposite<TestComposite> gmr;
@@ -611,8 +615,6 @@ static void testShaper1c()
 {
     Shaper<TestComposite> gmr;
 
-    // gmr.setSampleRate(44100);
-    // gmr.init();
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
     gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;
 
@@ -812,10 +814,10 @@ void perfTest()
 #endif
 
     testCHBdef();
-    testSuper();
+   // testSuper();
     testSuper2();
-    testKS();
-    testShaper1a();
+  //  testKS();
+  //  testShaper1a();
 #if 0
     testShaper1b();
     testShaper1c();

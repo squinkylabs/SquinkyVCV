@@ -348,6 +348,9 @@
     <ClCompile Include="..\..\test\perfTest2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testUtils.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -598,6 +601,12 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h">
       <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\SmoothedHPF.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\Divider.h">
+      <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
