@@ -60,16 +60,8 @@ struct superWidget : ModuleWidget
         addChild(label);
         return label;
     }
-    void addDebug(SuperModule*);
-};
 
-void superWidget::addDebug(SuperModule*)
-{
-    addInput(Port::create<PJ301MPort>(
-        Vec(100, 10), Port::INPUT, module, Super<WidgetComposite>::DEBUG_INPUT));
-    addOutput(Port::create<PJ301MPort>(
-        Vec(100, 40), Port::OUTPUT, module, Super<WidgetComposite>::DEBUG_OUTPUT));
-}
+};
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -90,8 +82,6 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     const float col2 = 80;
     const float col3 = 120;
 
-    addDebug(module);
-
     addOutput(Port::create<PJ301MPort>(
         Vec(60, 330), Port::OUTPUT, module, Super<WidgetComposite>::MAIN_OUTPUT));
     addLabel(
@@ -110,15 +100,22 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     float labelOffset = -40;
     // Octave
     const float octaveY = 60;
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(col1, octaveY), module, Super<WidgetComposite>::OCTAVE_PARAM, -5, 4, 0));
+    auto oct = createParamCentered<Rogan1PSBlue>(
+        Vec(col1, octaveY), module, Super<WidgetComposite>::OCTAVE_PARAM, -5, 4, 0);
+    oct->snap = true;
+    oct->smooth = false;
+    addParam(oct);
     addLabel(
         Vec(10, octaveY + labelOffset), "Oct");
 
     // Semi
     const float semiY = 120;
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(col1, semiY), module, Super<WidgetComposite>::SEMI_PARAM, -5, 5, 0));
+
+    auto semi = createParamCentered<Rogan1PSBlue>(
+        Vec(col1, semiY), module, Super<WidgetComposite>::SEMI_PARAM, -5, 5, 0); 
+    semi->snap = true;
+    semi->smooth = false;
+    addParam(semi);
     addLabel(
         Vec(10, semiY + labelOffset), "Semi");
 

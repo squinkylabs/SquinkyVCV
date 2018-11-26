@@ -109,7 +109,7 @@ public:
     {
         CV_INPUT,
         TRIGGER_INPUT,
-        DEBUG_INPUT,
+       // DEBUG_INPUT,
         DETUNE_INPUT,
         MIX_INPUT,
         NUM_INPUTS
@@ -118,7 +118,7 @@ public:
     enum OutputIds
     {
         MAIN_OUTPUT,
-        DEBUG_OUTPUT,
+       // DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
