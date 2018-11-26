@@ -20,6 +20,10 @@
 
 
 
+
+
+
+
 class SawtoothDetuneCurve
 {
 public:
@@ -204,6 +208,11 @@ inline void Super<TBase>::updatePhaseInc()
         finePitch;
 
     pitch += cv;
+
+    const float fm = TBase::inputs[FM_INPUT].value;
+    const float fmDepth = AudioMath::quadraticBipolar(TBase::params[FM_PARAM].value);
+
+    pitch += (fmDepth * fm);
 
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;

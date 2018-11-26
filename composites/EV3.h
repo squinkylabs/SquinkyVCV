@@ -3,8 +3,6 @@
 #include "MinBLEPVCO.h"
 #include "ObjectCache.h"
 
-#include "dsp/functions.hpp"        // rack math
-
 /**
  *
  */
@@ -234,7 +232,6 @@ inline void EV3<TBase>::processPitchInputs()
         const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
         const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
         const float semiPitch = TBase::params[SEMI1_PARAM + delta].value / 12.0f;
-       // const float fm = getInput(osc, FM1_INPUT, FM2_INPUT, FM3_INPUT);
 
         float pitch = 1.0f + roundf(TBase::params[OCTAVE1_PARAM + delta].value) +
             semiPitch +
@@ -244,22 +241,9 @@ inline void EV3<TBase>::processPitchInputs()
         float fmCombined = 0;       // The final, scaled, value (post knob
         if (TBase::inputs[FM1_INPUT + osc].active) {
             const float fm = TBase::inputs[FM1_INPUT + osc].value;
-           // const float fmKnob = TBase::params[FM1_PARAM + delta].value;
-            //const float fmDepth = LookupTable<float>::lookup(*audioTaper, fmKnob, false);
-            const float fmDepth = rack::quadraticBipolar(TBase::params[FM1_PARAM + delta].value);
-
+            const float fmDepth = AudioMath::quadraticBipolar(TBase::params[FM1_PARAM + delta].value);
             fmCombined = (fmDepth * fm);
-#if 0
-            static float biggest = 0;
-            if (fmCombined > biggest) {
-                printf("CV =%f knob = %f depth=%f combined=%f\n", fm, fmKnob, fmDepth, fmCombined);
-                fflush(stdout);
-                biggest = fmCombined;
-            }
-#endif
-
-           // pitch += (fmDepth * fm * 12);
-            } else {
+        } else {
             fmCombined = lastFM;
         }
         pitch += fmCombined;
