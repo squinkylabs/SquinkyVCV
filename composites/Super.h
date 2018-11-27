@@ -1,28 +1,10 @@
 
 #pragma once
 
-
-// Enable the smoothed HPF to reduce pops
-#define _SV
-
-#ifdef _SV
-#include "StateVariable4PHP.h"
-#else
-#include "ButterworthLookup.h"
-#include "BiquadState.h"
-#include "BiquadFilter.h"
-#endif
-
 #include "GateTrigger.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
-
-
-
-
-
-
-
+#include "StateVariable4PHP.h"
 
 class SawtoothDetuneCurve
 {
@@ -172,7 +154,7 @@ private:
         1.107f
     };
 
-  
+
     void updateHPFilters();
    
     SawtoothDetuneCurve detuneCurve;
@@ -180,13 +162,7 @@ private:
     float gainCenter = 0;
     float gainSides = 0;
 
-#ifdef _SV
     StateVariable4PHP hpf;
-#else
-    ButterworthLookup4PHP filterLookup;
-    BiquadState<float, 2> filterState;
-    BiquadParams<float, 2> filterParams;
-#endif
 };
 
 template <class TBase>
@@ -229,8 +205,9 @@ inline void Super<TBase>::updatePhaseInc()
     for (int i = 0; i < numSaws; ++i) {
         float detune = (detuneFactors[i] - 1) * detuneInput;
         detune += 1;
-        phaseInc[i] = globalPhaseInc * detune;
-        //phaseInc[i] = globalPhaseInc;       // JUST FOR TEST. DON"T CHCKE IN
+        float phaseIncI = globalPhaseInc * detune;
+        phaseIncI = std::min(phaseIncI, .4f);         // limit so saws don't go crazy
+        phaseInc[i] = phaseIncI;
     }
 }
 
@@ -243,26 +220,17 @@ inline void Super<TBase>::updateAudio()
         if (phase[i] > 1) {
             phase[i] -= 1;
         }
-        if (phase[i] > 1) {
-            printf("hey, phase too big %f\n", phase[i]); fflush(stdout);
-        }
-        if (phase[i] < 0) {
-            printf("hey, phase too small %f\n", phase[i]); fflush(stdout);
-        }
-       // gainSides = 0;  // JUST TO FIND GLITCH. DON"T CHECK IN.
+        assert(phase[i] <= 1);
+        assert(phase[i] >= 0);
+
         const float gain = (i == numSaws/2) ? gainCenter : gainSides;
       //  mix += phase[i] * gain;
-        mix += (phase[i] - .5f) * gain;        // experiment
+        mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
     }
 
     mix *= 2;
 
-#ifdef _SV
     const float output = hpf.run(mix);
-#else
-   const float output = BiquadFilter<float>::run(mix, filterState, filterParams);
-   //const float output = mix;     // try without filters. don't check in.
-#endif
 
 #ifdef _LOG
    static float lastOutput = -100;
@@ -285,20 +253,14 @@ inline void Super<TBase>::updateAudio()
    if (maxDelta > 4) abort();
 #endif
 
-
     TBase::outputs[MAIN_OUTPUT].value = output;
- 
-
 }
 
 template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
-#ifdef _SV
-    hpf.setCutoff(globalPhaseInc);
-#else
-    filterLookup.get(filterParams, globalPhaseInc);
-#endif
+    const float filterCutoff = std::min(globalPhaseInc, .1f);
+    hpf.setCutoff(filterCutoff);
 }
 
 template <class TBase>
