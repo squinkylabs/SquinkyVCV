@@ -52,10 +52,8 @@ private:
  * beta1 => 16.1
         17.7 if change pitch every 16 samples.
 
-
- * glitching: old way, filters popped a ton.
-                turning off filters made it go away
- * new lag: .001 : less popping, but still some
+ * beta 3: fix instablility
+ * made semitone and fine ranges sane.
  */
 template <class TBase>
 class Super : public TBase
@@ -183,6 +181,7 @@ inline void Super<TBase>::updatePhaseInc()
         semiPitch +
         finePitch;
 
+
     pitch += cv;
 
     const float fm = TBase::inputs[FM_INPUT].value;
@@ -207,6 +206,7 @@ inline void Super<TBase>::updatePhaseInc()
         detune += 1;
         float phaseIncI = globalPhaseInc * detune;
         phaseIncI = std::min(phaseIncI, .4f);         // limit so saws don't go crazy
+      //  printf("[%d]=%.2f ", i, phaseIncI);
         phaseInc[i] = phaseIncI;
     }
 }
@@ -214,6 +214,7 @@ inline void Super<TBase>::updatePhaseInc()
 template <class TBase>
 inline void Super<TBase>::updateAudio()
 {
+  //  printf("global phase inc = %f\n", globalPhaseInc);
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
         phase[i] += phaseInc[i];

@@ -119,7 +119,7 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     const float semiY = 120;
 
     auto semi = createParamCentered<Rogan1PSBlue>(
-        Vec(col1, semiY), module, Super<WidgetComposite>::SEMI_PARAM, -5, 5, 0); 
+        Vec(col1, semiY), module, Super<WidgetComposite>::SEMI_PARAM, -11, 11, 0); 
     semi->snap = true;
     semi->smooth = false;
     addParam(semi);
@@ -129,7 +129,7 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     // Fine
     const float fineY = 180;
     addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(col1, fineY), module, Super<WidgetComposite>::FINE_PARAM, -5, 5, 0));
+        Vec(col1, fineY), module, Super<WidgetComposite>::FINE_PARAM, -1, 1, 0));
     addLabel(
         Vec(10, fineY + labelOffset), "Fine");
 
