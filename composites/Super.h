@@ -2,6 +2,7 @@
 #pragma once
 
 #include "GateTrigger.h"
+#include "IIRDecimator.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
 #include "StateVariable4PHP.h"
@@ -52,7 +53,7 @@ private:
  * beta1 => 16.1
         17.7 if change pitch every 16 samples.
 
- * beta 3: fix instablility
+ * beta 3: fix instability
  * made semitone and fine ranges sane.
  */
 template <class TBase>
@@ -87,6 +88,7 @@ public:
         MIX_PARAM,
         MIX_TRIM_PARAM,
         FM_PARAM,
+        CLEAN_PARAM,
         NUM_PARAMS
     };
 
@@ -117,6 +119,7 @@ public:
     void step() override;
 
 private:
+    static const unsigned int OVERSAMPLE = 4;
     static const int numSaws = 7;
 
     float phase[numSaws] = {0};
@@ -131,8 +134,10 @@ private:
     // knob, cv, trim -> 0..1
     AudioMath::ScaleFun<float> scaleDetune;
 
+    float runSaws();
     void updatePhaseInc();
-    void updateAudio();
+    void updateAudioClassic();
+    void updateAudioClean();
     void updateTrigger();
     void updateMix();
 
@@ -141,7 +146,7 @@ private:
     int inputSubSampleCounter = 1;
     const static int inputSubSample = 4;    // only look at knob/cv every 4
 
-// TODO: make static
+    // TODO: make static
     float const detuneFactors[numSaws] = {
         .89f,
         .94f,
@@ -152,7 +157,6 @@ private:
         1.107f
     };
 
-
     void updateHPFilters();
    
     SawtoothDetuneCurve detuneCurve;
@@ -161,12 +165,16 @@ private:
     float gainSides = 0;
 
     StateVariable4PHP hpf;
+
+    float buffer[OVERSAMPLE] = {};
+    IIRDecimator decimator;
 };
 
 template <class TBase>
 inline void Super<TBase>::init()
 {
     scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
+    decimator.setup(OVERSAMPLE);
 }
 
 template <class TBase>
@@ -180,7 +188,6 @@ inline void Super<TBase>::updatePhaseInc()
     float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value) +
         semiPitch +
         finePitch;
-
 
     pitch += cv;
 
@@ -200,21 +207,24 @@ inline void Super<TBase>::updatePhaseInc()
         TBase::params[DETUNE_TRIM_PARAM].value);
 
     const float detuneInput = detuneCurve.getDetuneFactor(rawDetuneValue);
+    const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
 
     for (int i = 0; i < numSaws; ++i) {
         float detune = (detuneFactors[i] - 1) * detuneInput;
         detune += 1;
         float phaseIncI = globalPhaseInc * detune;
         phaseIncI = std::min(phaseIncI, .4f);         // limit so saws don't go crazy
-      //  printf("[%d]=%.2f ", i, phaseIncI);
+        if (!classic) {
+            phaseIncI /= 4.f;
+        }
         phaseInc[i] = phaseIncI;
     }
 }
 
+
 template <class TBase>
-inline void Super<TBase>::updateAudio()
+inline float Super<TBase>::runSaws()
 {
-  //  printf("global phase inc = %f\n", globalPhaseInc);
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
         phase[i] += phaseInc[i];
@@ -224,39 +234,34 @@ inline void Super<TBase>::updateAudio()
         assert(phase[i] <= 1);
         assert(phase[i] >= 0);
 
-        const float gain = (i == numSaws/2) ? gainCenter : gainSides;
+        const float gain = (i == numSaws / 2) ? gainCenter : gainSides;
       //  mix += phase[i] * gain;
         mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
     }
 
     mix *= 2;
+    return mix;
+}
 
+template <class TBase>
+inline void Super<TBase>::updateAudioClassic()
+{
+    const float mix = runSaws();
     const float output = hpf.run(mix);
-
-#ifdef _LOG
-   static float lastOutput = -100;
-   static float maxDelta = 0;
-
-   if (lastOutput < -90) {
-       lastOutput = output;
-   }
-   const float delta = std::abs(output - lastOutput);
-   if ((delta > maxDelta) || 0) {
-       maxDelta = delta;
-       printf("** MAX POP %.2f\n", maxDelta);
-   }
-
-  printf("mix = %.2f output=%.2f delta = %.2f\n", mix, output, delta);
-
-  // if (delta > 4) printf("** POP %.2f **\n", delta);
-   lastOutput = output;
-   fflush(stdout);
-   if (maxDelta > 4) abort();
-#endif
-
     TBase::outputs[MAIN_OUTPUT].value = output;
 }
 
+template <class TBase>
+inline void Super<TBase>::updateAudioClean()
+{
+    for (int i = 0; i < OVERSAMPLE; ++i) {
+        const float mix = runSaws();
+        buffer[i] = mix;
+    }
+    //const float output = hpf.run(mix);
+    const float output = decimator.process(buffer);
+    TBase::outputs[MAIN_OUTPUT].value = output;
+}
 template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
@@ -274,7 +279,12 @@ inline void Super<TBase>::step()
         updateHPFilters();
         updateMix();
     }
-    updateAudio();
+    const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
+    if (classic) {
+        updateAudioClassic();
+    } else {
+        updateAudioClean();
+    }
 }
 
 template <class TBase>

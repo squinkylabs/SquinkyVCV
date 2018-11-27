@@ -3,6 +3,7 @@
 #include "BiquadParams.h"
 #include "BiquadState.h"
 #include "BiquadFilter.h"
+#include "ObjectCache.h"
 
 /**
  * A traditional decimator, using IIR filters for interpolation

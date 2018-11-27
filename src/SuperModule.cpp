@@ -109,12 +109,19 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
         Vec(10, octaveY + labelOffset), "Oct");
 
     addParam(createParamCentered<Blue30Knob>(
-        Vec(100, 100), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
-    addLabel(Vec(col2+6, 65), "FM");
+        Vec(100, 60), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
+    addLabel(Vec(col2+6, 25), "FM");
     addInput(createInputCentered<PJ301MPort>(
-        Vec(col3-20, 140), module, Super<WidgetComposite>::FM_INPUT));
+        Vec(col3-20, 100), module, Super<WidgetComposite>::FM_INPUT));
 
 
+    addLabel(Vec(col2, 140), "clean");
+    addLabel(Vec(col2, 180), "classic");
+    addParam(createParamCentered<CKSS>(
+        Vec(col2+ 10,170),
+        module,
+        Super<WidgetComposite>::CLEAN_PARAM,
+        0.0f, 1.0f, 0.0f));
     // Semi
     const float semiY = 120;
 

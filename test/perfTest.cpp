@@ -574,12 +574,23 @@ static void testSuper()
     Super<TestComposite> super;
 
     MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
-
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
-        }, 1);
+    }, 1);
 }
 
+static void testSuper2()
+{
+    Super<TestComposite> super;
+
+    super.params[Super<TestComposite>::CLEAN_PARAM].value = 1;
+    MeasureTime<float>::run(overheadOutOnly, "super clean", [&super]() {
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+    }, 1);
+}
+
+#if 0
 static void testSuper2()
 {
     Super<TestComposite> super;
@@ -598,6 +609,7 @@ static void testSuper2()
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
         }, 1);
 }
+#endif
 
 static void testKS()
 {
@@ -827,7 +839,7 @@ void perfTest()
 #endif
 
     testEV3();
-   
+
     testFunSaw(true);
 #if 0
     testFunSaw(false);
@@ -851,7 +863,7 @@ void perfTest()
 #endif
 
 
-   
+
 
    // test1();
 #if 0
