@@ -27,6 +27,7 @@ public:
     MenuItem*  createMenuItem();
     void makePanel(ModuleWidget* widget);
     void addMenuItems(Menu*);
+    void poll();
 
 private:
   //  bool expanded= false;
@@ -56,6 +57,11 @@ inline void CHBPanelManager::setPanelSize()
     widget->box.size.x += expansionWidth;
 }
 
+inline void CHBPanelManager::poll()
+{
+    setPanelSize();     // TODO: only do on change?
+}
+
 inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
 {
     widget = wdg;
@@ -73,7 +79,7 @@ inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
     widget->box.size = panel->box.size;
     // printf("widget box a = %f exp=%f\n", widget->box.size.x, expWidth);
 	
-    
+    // TODO: use setPanelSize
     const int expansionWidth = panelHost->isExpanded() ? 0 : -expWidth;
     widget->box.size.x += expansionWidth;
     printf("in ctor, exp = %d, exw = %d\n", panelHost->isExpanded(), expansionWidth);

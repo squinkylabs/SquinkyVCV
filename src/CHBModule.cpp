@@ -61,6 +61,7 @@ struct CHBWidget : ModuleWidget
     #ifdef _P
     void setExpanded(bool) override;
     bool isExpanded() override;
+    void step() override;
     #endif
 
     /**
@@ -79,7 +80,6 @@ struct CHBWidget : ModuleWidget
 #ifdef _P
      Menu* createContextMenu() override;
 #endif
-
 
     void addHarmonics(CHBModule *module);
     void addVCOKnobs(CHBModule *module);
@@ -101,16 +101,31 @@ private:
     ParamWidget* gainParam=nullptr;
 #ifdef _P
     std::unique_ptr<CHBPanelManager> panelManager;
+    rack::QuantityWidget* expandSerializationWidget = nullptr;
 #endif
 };
 
 
 #ifdef _P
 
+void CHBWidget::step() 
+{
+    panelManager->poll();
+}
+
 void CHBWidget::setExpanded(bool expanded) 
 {
-    printf("setExpanded %d\n", expanded); fflush(stdout);
+    
     module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value = expanded ? 1.f : 0.f;
+  //  module->params[ CHB<WidgetComposite>::PARAM_EXPAND].setDefaultValue();
+    if (expandSerializationWidget) {
+        expandSerializationWidget->setValue( expanded ? 1.f : 0.f);
+    }
+    printf("setExpanded %d, param#=%d, val=%f\n"
+        ,expanded,
+        CHB<WidgetComposite>::PARAM_EXPAND,
+        module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value); 
+    fflush(stdout);
 }
 bool CHBWidget::isExpanded()
 {
@@ -202,13 +217,6 @@ inline void CHBWidget::addVCOKnobs(CHBModule *module)
         module->chb.PARAM_PITCH_MOD_TRIM,
         0, 1.0f, 0.0f));
     addLabel(Vec(col2 - 20, row2 - labelAboveKnob), "Mod");
-
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col3, row2),
-        module,
-        module->chb.PARAM_LINEAR_FM_TRIM,
-        0, 1.0f, 0.0f));
-    addLabel(Vec(col3 - 18, row2 - labelAboveKnob), "LFM");
 }
 
 inline void CHBWidget::addOtherKnobs(CHBModule *module)
@@ -443,6 +451,17 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
+  
+  // make this hidden one to allow serialization
+#ifdef _P
+    auto p = createParamCentered<Blue30Knob>(
+        Vec(-100, -100),
+        module,
+        module->chb.PARAM_EXPAND,
+        0, 1, 0);
+    expandSerializationWidget = p;
+    addParam(p);        // TODO: is necessary?
+#endif
 }
 
 Model *modelCHBModule = Model::create<CHBModule,
