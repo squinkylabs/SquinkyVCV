@@ -9,7 +9,10 @@
 
 #include "CHB.h"
 #include "CHBPanelManager.h"
-#include "IMWidgets.hpp"
+
+//#define _P
+//
+
 
 /**
  */
@@ -87,7 +90,7 @@ private:
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
     ParamWidget* gainParam=nullptr;
-#ifdef _p
+#ifdef _P
     std::unique_ptr<CHBPanelManager> panelManager;
 #endif
 };
@@ -98,9 +101,9 @@ private:
  {
   Menu* theMenu = ModuleWidget::createContextMenu();
     auto actionCB = []() {
-
+        printf("Hey, hook up the context menu\n"); fflush(stdout);
     };
-    theMenu->addChild( panelManager->createMenuItem( actionCB));
+    theMenu->addChild(panelManager->createMenuItem(actionCB));
     return theMenu;
  }
  #endif
@@ -388,6 +391,9 @@ CHBWidget::CHBWidget(CHBModule *module) :
     ,panelManager(new CHBPanelManager())
 #endif
 {
+#ifdef _P
+    panelManager->makePanel(this);
+#else
     box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
@@ -395,6 +401,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/chb_panel.svg")));
         addChild(panel);
     }
+#endif
 
     addHarmonics(module);
     addVCOKnobs(module);
