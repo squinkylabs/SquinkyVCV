@@ -62,7 +62,7 @@ public:
         PARAM_H7,
         PARAM_H8,
         PARAM_H9,
-
+        PARAM_EXPAND,
         NUM_PARAMS
     };
     const int numHarmonics = 1 + PARAM_H9 - PARAM_H0;

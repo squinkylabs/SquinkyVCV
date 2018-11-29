@@ -107,14 +107,16 @@ private:
 
 #ifdef _P
 
-void CHBWidget::setExpanded(bool) 
+void CHBWidget::setExpanded(bool expanded) 
 {
-    printf("setExpanded nimp\n"); fflush(stdout);
+    printf("setExpanded %d\n", expanded); fflush(stdout);
+    module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value = expanded ? 1.f : 0.f;
 }
 bool CHBWidget::isExpanded()
 {
-    printf("getExpanded nimp\n"); fflush(stdout);
-    return false;
+    float x = module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value;
+   // printf("getExpanded %f\n", x); fflush(stdout);
+    return x > .5;
 }
 
 // TODO: move to manager

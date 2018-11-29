@@ -24,9 +24,7 @@ class CHBPanelManager
 {
 public:
     CHBPanelManager(IPanelHost* );
-    MenuItem*  createMenuItem(CHBActionCAllback);
-  //  bool isExpanded() const;
- //   void toggleExpanded();
+    MenuItem*  createMenuItem();
     void makePanel(ModuleWidget* widget);
     void addMenuItems(Menu*);
 
@@ -35,6 +33,9 @@ private:
     DynamicSVGPanel* panel;
     int expWidth = 60;
     IPanelHost* const panelHost;
+    ModuleWidget* widget = nullptr;
+
+    void setPanelSize();
 };
 
  CHBPanelManager::CHBPanelManager(IPanelHost* host) : panelHost(host)
@@ -42,26 +43,22 @@ private:
 
  }
 
-inline  void CHBPanelManager::addMenuItems(Menu*)
+inline  void CHBPanelManager::addMenuItems(Menu* menu)
 {
-    printf("addMenuItems nimp\n"); fflush(stdout);
+    printf("addMenuItems\n"); fflush(stdout);
+    menu->addChild(createMenuItem());
 }
 
-#if 0
-inline bool CHBPanelManager::isExpanded() const
+inline void CHBPanelManager::setPanelSize()
 {
-    return expanded;
+     widget->box.size = panel->box.size;
+    const int expansionWidth = panelHost->isExpanded() ? 0 : -expWidth;
+    widget->box.size.x += expansionWidth;
 }
 
-
-inline void CHBPanelManager::toggleExpanded()
+inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
 {
-    expanded = !expanded;
-}
-#endif
-
-inline void CHBPanelManager::makePanel(ModuleWidget* widget)
-{
+    widget = wdg;
     panel = new DynamicSVGPanel();
 
     panel->box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
@@ -77,8 +74,9 @@ inline void CHBPanelManager::makePanel(ModuleWidget* widget)
     // printf("widget box a = %f exp=%f\n", widget->box.size.x, expWidth);
 	
     
-    const int expansionWidth = panelHost->isExpanded() ? expWidth : 0;
+    const int expansionWidth = panelHost->isExpanded() ? 0 : -expWidth;
     widget->box.size.x += expansionWidth;
+    printf("in ctor, exp = %d, exw = %d\n", panelHost->isExpanded(), expansionWidth);
 
     widget->addChild(panel);
 }
@@ -86,7 +84,8 @@ inline void CHBPanelManager::makePanel(ModuleWidget* widget)
 
 /**************************************************************************
  **
- **
+ ** CHBPanelItem
+ ** let's abstract this!
  **
  ************************************************************************/
 
@@ -115,17 +114,16 @@ inline CHBPanelItem::CHBPanelItem(CHBStatusCallback s, CHBActionCAllback a) :
     text = "Expanded Panel";
 }
 
-// TODO: we don't need action callback
-inline MenuItem*  CHBPanelManager::createMenuItem(CHBActionCAllback a)
+inline MenuItem*  CHBPanelManager::createMenuItem()
 {
     auto statusCB = [this]() {
         return panelHost->isExpanded();
     };
-    auto actionCB = [this, a]() {
-       // toggleExpanded();
-       // a();
+    auto actionCB = [this]() {
+       printf("panel setting ex from 133. will do something\n"); fflush(stdout);
        bool b = !panelHost->isExpanded();
        panelHost->setExpanded(b);
+       setPanelSize();
 
     };
     return new CHBPanelItem(statusCB, actionCB);
