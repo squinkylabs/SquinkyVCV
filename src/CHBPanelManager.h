@@ -4,32 +4,61 @@
 
 #include "IMWidgets.hpp"
 
+// TODO: are these still used?
 using CHBStatusCallback = std::function<bool()>;
 using CHBActionCAllback =  std::function<void()>;
 
+class IPanelHost
+{
+public:
+    virtual void setExpanded(bool) =0;
+    virtual bool isExpanded()=0;
+};
+
+/**
+ * Bundles up all the handling of expanding and contracting
+ * the panel. Relies on IPanelHost to talk back to the 
+ * main widget. 
+ */
 class CHBPanelManager
 {
 public:
+    CHBPanelManager(IPanelHost* );
     MenuItem*  createMenuItem(CHBActionCAllback);
-    bool isExpanded() const;
-    void toggleExpanded();
+  //  bool isExpanded() const;
+ //   void toggleExpanded();
     void makePanel(ModuleWidget* widget);
+    void addMenuItems(Menu*);
 
 private:
-    bool expanded= false;
+  //  bool expanded= false;
     DynamicSVGPanel* panel;
     int expWidth = 60;
+    IPanelHost* const panelHost;
 };
 
+ CHBPanelManager::CHBPanelManager(IPanelHost* host) : panelHost(host)
+ {
+
+ }
+
+inline  void CHBPanelManager::addMenuItems(Menu*)
+{
+    printf("addMenuItems nimp\n"); fflush(stdout);
+}
+
+#if 0
 inline bool CHBPanelManager::isExpanded() const
 {
     return expanded;
 }
 
+
 inline void CHBPanelManager::toggleExpanded()
 {
     expanded = !expanded;
 }
+#endif
 
 inline void CHBPanelManager::makePanel(ModuleWidget* widget)
 {
@@ -41,14 +70,16 @@ inline void CHBPanelManager::makePanel(ModuleWidget* widget)
 	panel->expWidth = &expWidth;
 
     // I think this dynamically adds the real size. can get rid of the other stuff.
-    panel->addPanel(SVG::load(assetPlugin(plugin, "res/chb_panel.svg")));
+    panel->addPanel(SVG::load(assetPlugin(plugin, "res/cheby-wide-ghost.svg")));
 
 
     widget->box.size = panel->box.size;
     // printf("widget box a = %f exp=%f\n", widget->box.size.x, expWidth);
-	widget->box.size.x = widget->box.size.x - (1 - expanded) * expWidth;
-    // printf("widget box witth = %f\n", widget->box.size.x);
-    // fflush(stdout);
+	
+    
+    const int expansionWidth = panelHost->isExpanded() ? expWidth : 0;
+    widget->box.size.x += expansionWidth;
+
     widget->addChild(panel);
 }
 
@@ -84,14 +115,18 @@ inline CHBPanelItem::CHBPanelItem(CHBStatusCallback s, CHBActionCAllback a) :
     text = "Expanded Panel";
 }
 
+// TODO: we don't need action callback
 inline MenuItem*  CHBPanelManager::createMenuItem(CHBActionCAllback a)
 {
     auto statusCB = [this]() {
-        return isExpanded();
+        return panelHost->isExpanded();
     };
     auto actionCB = [this, a]() {
-        toggleExpanded();
-        a();
+       // toggleExpanded();
+       // a();
+       bool b = !panelHost->isExpanded();
+       panelHost->setExpanded(b);
+
     };
     return new CHBPanelItem(statusCB, actionCB);
 }

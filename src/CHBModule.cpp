@@ -50,9 +50,18 @@ void CHBModule::step()
 ////////////////////
 
 struct CHBWidget : ModuleWidget
+#ifdef _P
+, public IPanelHost
+#endif
 {
     friend struct CHBEconomyItem;
     CHBWidget(CHBModule *);
+
+    // IPanelHost
+    #ifdef _P
+    void setExpanded(bool) override;
+    bool isExpanded() override;
+    #endif
 
     /**
      * Helper to add a text label to this widget
@@ -97,14 +106,32 @@ private:
 
 
 #ifdef _P
+
+void CHBWidget::setExpanded(bool) 
+{
+    printf("setExpanded nimp\n"); fflush(stdout);
+}
+bool CHBWidget::isExpanded()
+{
+    printf("getExpanded nimp\n"); fflush(stdout);
+    return false;
+}
+
+// TODO: move to manager
  Menu* CHBWidget::createContextMenu()
  {
+#if 1
+     Menu* theMenu = ModuleWidget::createContextMenu();
+     panelManager->addMenuItems(theMenu);
+     return theMenu;
+#else
   Menu* theMenu = ModuleWidget::createContextMenu();
     auto actionCB = []() {
         printf("Hey, hook up the context menu\n"); fflush(stdout);
     };
     theMenu->addChild(panelManager->createMenuItem(actionCB));
     return theMenu;
+#endif
  }
  #endif
 
@@ -388,7 +415,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
     numHarmonics(module->chb.numHarmonics),
     module(module)
 #ifdef _P
-    ,panelManager(new CHBPanelManager())
+    ,panelManager(new CHBPanelManager(this))
 #endif
 {
 #ifdef _P
