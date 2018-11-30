@@ -92,3 +92,41 @@ struct SQPush : SVGButton
 
     std::function<void(void)> clickHandler;
 };
+
+
+
+/**************************************************************************
+ **
+ ** SQPanelItem
+ ** generic menu item
+ **
+ ************************************************************************/
+
+// TODO: are these still used?
+using SQStatusCallback = std::function<bool()>;
+using SQActionCAllback = std::function<void()>;
+
+struct SQPanelItem : MenuItem {
+
+    SQPanelItem(SQStatusCallback, SQActionCAllback);
+    void onAction(EventAction &e) override {
+        printf("ON ACTION\n");
+        fflush(stdout);
+        actionCallback();
+	}
+
+	void step() override {
+        const bool b = statusCallback();
+        rightText = CHECKMARK(b);
+    }
+
+    SQStatusCallback statusCallback;
+    SQActionCAllback actionCallback;
+};
+
+inline SQPanelItem::SQPanelItem(SQStatusCallback s, SQActionCAllback a) :
+    statusCallback(s),
+    actionCallback(a)
+{
+    text = "Expanded Panel";
+}

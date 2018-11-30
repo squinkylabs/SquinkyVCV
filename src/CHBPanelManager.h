@@ -4,9 +4,7 @@
 
 #include "IMWidgets.hpp"
 
-// TODO: are these still used?
-using CHBStatusCallback = std::function<bool()>;
-using CHBActionCAllback =  std::function<void()>;
+
 
 class IPanelHost
 {
@@ -87,39 +85,6 @@ inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
     widget->addChild(panel);
 }
 
-
-/**************************************************************************
- **
- ** CHBPanelItem
- ** let's abstract this!
- **
- ************************************************************************/
-
-struct CHBPanelItem : MenuItem {
-
-    CHBPanelItem(CHBStatusCallback, CHBActionCAllback);
-    void onAction(EventAction &e) override {
-         printf("ON ACTION\n");
-        fflush(stdout);
-        actionCallback();
-	}
-
-	void step() override {
-        const bool b = statusCallback();
-        rightText = CHECKMARK(b);
-    }
-
-    CHBStatusCallback statusCallback;
-    CHBActionCAllback actionCallback;
-};
-
-inline CHBPanelItem::CHBPanelItem(CHBStatusCallback s, CHBActionCAllback a) :
-    statusCallback(s),
-    actionCallback(a)
-{
-    text = "Expanded Panel";
-}
-
 inline MenuItem*  CHBPanelManager::createMenuItem()
 {
     auto statusCB = [this]() {
@@ -132,5 +97,5 @@ inline MenuItem*  CHBPanelManager::createMenuItem()
        setPanelSize();
 
     };
-    return new CHBPanelItem(statusCB, actionCB);
+    return new SQPanelItem(statusCB, actionCB);
 }
