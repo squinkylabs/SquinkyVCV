@@ -4,8 +4,9 @@
 #include <algorithm>
 
 #include "AudioMath.h"
-#include "poly.h"
+#include "MultiLag.h"
 #include "ObjectCache.h"
+#include "poly.h"
 #include "SinOscillator.h"
 
 using Osc = SinOscillator<float, true>;
@@ -130,6 +131,8 @@ private:
      */
     Poly<double, polyOrder> poly;
 
+    MultiLag<12> lag;
+
     /*
      * maps freq multiple to "octave".
      * In other words, log base 12.
@@ -138,7 +141,8 @@ private:
     float getOctave(int mult) const ;
     void init();
 
-    float _volume[polyOrder] = {0};
+    // round up to 12, so multi-lag is happy
+    float _volume[12] = {0};
 
     /**
      * Internal sine wave oscillator to drive the waveshaper
@@ -192,6 +196,8 @@ inline void  CHB<TBase>::init()
     for (int i = 0; i < polyOrder; ++i) {
         _octave[i] = log2(float(i + 1));
     }
+    lag.setAttack(.1f);
+    lag.setRelease(.0001f);
 }
 
 template <class TBase>
@@ -333,6 +339,35 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
     }
 }
 
+
+
+template <class TBase>
+inline void CHB<TBase>::step()
+{
+
+    if (--cycleCount < 0) {
+        cycleCount = 3;
+    }
+
+    // do all the processing to get the carrier signal
+    // Does the pitch every cycle, vol every 4
+    const float input = getInput();
+
+    if (cycleCount == 0) {
+        calcVolumes(_volume);       // now _volume has all 10 harmonic volumes
+        lag.step(_volume);          // TODO: we could run lag at full rate.
+
+        for (int i = 0; i < polyOrder; ++i) {
+            //poly.setGain(i, _volume[i]);
+            poly.setGain(i, lag.get(i));
+        }
+    }
+
+
+    float output = poly.run(input, std::min(finalGain, 1.f));
+    TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
+}
+#if 0 // this is 1.0 version. No lag
 template <class TBase>
 inline void CHB<TBase>::step()
 {
@@ -356,4 +391,5 @@ inline void CHB<TBase>::step()
     float output = poly.run(input, std::min(finalGain, 1.f));
     TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
 }
+#endif
 
