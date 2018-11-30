@@ -61,8 +61,10 @@ public:
         PARAM_H6,
         PARAM_H7,
         PARAM_H8,
-        PARAM_H9,
+        PARAM_H9,       // up to here is Ver 1.0
         PARAM_EXPAND,
+        PARAM_HATTACK,
+        PARAM_HRELEASE,
         NUM_PARAMS
     };
     const int numHarmonics = 1 + PARAM_H9 - PARAM_H0;
@@ -86,7 +88,9 @@ public:
         H7_INPUT,
         H8_INPUT,
         H9_INPUT,
-        H10_INPUT,
+        H10_INPUT,      // up to here V1.0
+        HATTACK_INPUT,
+        HRELEASE_INPUT,
         NUM_INPUTS
     };
 

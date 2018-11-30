@@ -4,8 +4,6 @@
 
 #include "IMWidgets.hpp"
 
-
-
 class IPanelHost
 {
 public:
@@ -28,7 +26,6 @@ public:
     void poll();
 
 private:
-  //  bool expanded= false;
     DynamicSVGPanel* panel;
     int expWidth = 60;
     IPanelHost* const panelHost;
@@ -39,25 +36,23 @@ private:
 
  CHBPanelManager::CHBPanelManager(IPanelHost* host) : panelHost(host)
  {
-
  }
 
 inline  void CHBPanelManager::addMenuItems(Menu* menu)
 {
-    printf("addMenuItems\n"); fflush(stdout);
     menu->addChild(createMenuItem());
 }
 
 inline void CHBPanelManager::setPanelSize()
 {
-     widget->box.size = panel->box.size;
+    widget->box.size = panel->box.size;
     const int expansionWidth = panelHost->isExpanded() ? 0 : -expWidth;
     widget->box.size.x += expansionWidth;
 }
 
 inline void CHBPanelManager::poll()
 {
-    setPanelSize();     // TODO: only do on change?
+    setPanelSize();     // TODO: only do on change? (possible optimization)
 }
 
 inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
@@ -80,8 +75,6 @@ inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
     // TODO: use setPanelSize
     const int expansionWidth = panelHost->isExpanded() ? 0 : -expWidth;
     widget->box.size.x += expansionWidth;
-    printf("in ctor, exp = %d, exw = %d\n", panelHost->isExpanded(), expansionWidth);
-
     widget->addChild(panel);
 }
 
@@ -91,11 +84,9 @@ inline MenuItem*  CHBPanelManager::createMenuItem()
         return panelHost->isExpanded();
     };
     auto actionCB = [this]() {
-       printf("panel setting ex from 133. will do something\n"); fflush(stdout);
        bool b = !panelHost->isExpanded();
        panelHost->setExpanded(b);
        setPanelSize();
-
     };
     return new SQPanelItem(statusCB, actionCB);
 }

@@ -10,10 +10,6 @@
 #include "CHB.h"
 #include "CHBPanelManager.h"
 
-//#define _P
-//
-
-
 /**
  */
 struct CHBModule : Module
@@ -49,20 +45,15 @@ void CHBModule::step()
 // module widget
 ////////////////////
 
-struct CHBWidget : ModuleWidget
-#ifdef _P
-, public IPanelHost
-#endif
+struct CHBWidget : ModuleWidget, public IPanelHost
 {
     friend struct CHBEconomyItem;
     CHBWidget(CHBModule *);
 
     // IPanelHost
-    #ifdef _P
     void setExpanded(bool) override;
     bool isExpanded() override;
     void step() override;
-    #endif
 
     /**
      * Helper to add a text label to this widget
@@ -77,15 +68,14 @@ struct CHBWidget : ModuleWidget
         return label;
     }
 
-#ifdef _P
-     Menu* createContextMenu() override;
-#endif
+    Menu* createContextMenu() override;
 
     void addHarmonics(CHBModule *module);
     void addVCOKnobs(CHBModule *module);
     void addOtherKnobs(CHBModule *module);
     void addMisc(CHBModule *module);
     void addBottomJacks(CHBModule *module);
+    void addExtra(CHBModule *module);
     void resetMe(CHBModule *module);
 private:
     bool fake;
@@ -99,14 +89,9 @@ private:
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
     ParamWidget* gainParam=nullptr;
-#ifdef _P
     std::unique_ptr<CHBPanelManager> panelManager;
     rack::QuantityWidget* expandSerializationWidget = nullptr;
-#endif
 };
-
-
-#ifdef _P
 
 void CHBWidget::step() 
 {
@@ -114,46 +99,29 @@ void CHBWidget::step()
 }
 
 void CHBWidget::setExpanded(bool expanded) 
-{
-    
+{   
     module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value = expanded ? 1.f : 0.f;
-  //  module->params[ CHB<WidgetComposite>::PARAM_EXPAND].setDefaultValue();
+
     if (expandSerializationWidget) {
         expandSerializationWidget->setValue( expanded ? 1.f : 0.f);
     }
-    printf("setExpanded %d, param#=%d, val=%f\n"
-        ,expanded,
-        CHB<WidgetComposite>::PARAM_EXPAND,
-        module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value); 
-    fflush(stdout);
 }
+
 bool CHBWidget::isExpanded()
 {
     float x = module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value;
-   // printf("getExpanded %f\n", x); fflush(stdout);
     return x > .5;
 }
 
-// TODO: move to manager
  Menu* CHBWidget::createContextMenu()
  {
-#if 1
-     Menu* theMenu = ModuleWidget::createContextMenu();
-     panelManager->addMenuItems(theMenu);
-     return theMenu;
-#else
-  Menu* theMenu = ModuleWidget::createContextMenu();
-    auto actionCB = []() {
-        printf("Hey, hook up the context menu\n"); fflush(stdout);
-    };
-    theMenu->addChild(panelManager->createMenuItem(actionCB));
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    panelManager->addMenuItems(theMenu);
     return theMenu;
-#endif
  }
- #endif
 
 /**
- * Global coordinate contstants
+ * Global coordinate constants
  */
 const float colHarmonicsJacks = 21;
 const float rowFirstHarmonicJackY = 47;
@@ -222,7 +190,6 @@ inline void CHBWidget::addVCOKnobs(CHBModule *module)
 inline void CHBWidget::addOtherKnobs(CHBModule *module)
 {
     // gain
-
     gainParam = createParamCentered<Blue30Knob>(
         Vec(col1, row2),
         module,
@@ -415,6 +382,40 @@ void CHBWidget::resetMe(CHBModule *module)
     gainParam->setValue(defaultGainParam);
 }
 
+static const float exCol1 = 285;
+static const float exColJx1 = 270;
+static const float exColJx2 = 300;
+
+static const float exRowHa = 250;
+static const float exRowHr = 300;
+static const float exRowJacks = row5;
+
+void CHBWidget::addExtra(CHBModule *module)
+{
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(exCol1, exRowHa),
+        module,
+        CHB<WidgetComposite>::PARAM_HATTACK,
+        0.f, 1.f, 0.f));
+    addLabel(Vec(exCol1 - 20, exRowHa - labelAboveKnob), "HA");
+
+     addParam(createParamCentered<Blue30Knob>(
+        Vec(exCol1, exRowHr),
+        module,
+        CHB<WidgetComposite>::PARAM_HRELEASE,
+        0.f, 1.f, 0.f));
+    addLabel(Vec(exCol1 - 20, exRowHr - labelAboveKnob), "HR");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(exColJx1, exRowJacks),
+        module,
+        CHB<WidgetComposite>::HATTACK_INPUT));
+     addInput(createInputCentered<PJ301MPort>(
+        Vec(exColJx2, exRowJacks),
+        module,
+        CHB<WidgetComposite>::HRELEASE_INPUT));
+}
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -423,27 +424,16 @@ void CHBWidget::resetMe(CHBModule *module)
 CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
-    module(module)
-#ifdef _P
-    ,panelManager(new CHBPanelManager(this))
-#endif
+    module(module),
+    panelManager(new CHBPanelManager(this))
 {
-#ifdef _P
     panelManager->makePanel(this);
-#else
-    box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/chb_panel.svg")));
-        addChild(panel);
-    }
-#endif
 
     addHarmonics(module);
     addVCOKnobs(module);
     addOtherKnobs(module);
     addMisc(module);
+    addExtra(module);
     addBottomJacks(module);
 
     // screws
@@ -453,7 +443,6 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
   
   // make this hidden one to allow serialization
-#ifdef _P
     auto p = createParamCentered<Blue30Knob>(
         Vec(-100, -100),
         module,
@@ -461,7 +450,6 @@ CHBWidget::CHBWidget(CHBModule *module) :
         0, 1, 0);
     expandSerializationWidget = p;
     addParam(p);        // TODO: is necessary?
-#endif
 }
 
 Model *modelCHBModule = Model::create<CHBModule,
