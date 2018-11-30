@@ -96,6 +96,7 @@ private:
 void CHBWidget::step() 
 {
     panelManager->poll();
+    Widget::step();
 }
 
 void CHBWidget::setExpanded(bool expanded) 
