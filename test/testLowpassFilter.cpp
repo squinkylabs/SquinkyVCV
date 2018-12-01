@@ -1,4 +1,5 @@
 
+#include "asserts.h"
 #include "MultiLag.h"
 #include "LowpassFilter.h"
 #include "Decimator.h"
@@ -341,14 +342,34 @@ static void testMultiLag2()
 {
     MultiLPF<8> f;
     float fC = 10.f;
-    f.setCutoff(fC / sampleRate);;
+    f.setCutoff(fC / sampleRate);
     _testMultiLag2(8, f, fC);
-
 
     MultiLag<8> l;
     l.setAttack(fC / sampleRate);
     l.setRelease(fC / sampleRate);
     _testMultiLag2(8, l, fC);
+}
+
+static void testMultiLagDisable()
+{
+    MultiLag<8> f;
+    float fC = 10.f;
+    f.setAttack(fC / sampleRate);
+    f.setRelease(fC / sampleRate);
+
+    // when enabled, should lag
+    const float buffer[8] = {1,1,1,1,1,1,1,1};
+    f.step(buffer);
+    for (int i = 0; i < 8; ++i) {
+        assertNE(f.get(0), 1);
+    }
+
+    f.setEnable(false);
+    f.step(buffer);
+    for (int i = 0; i < 8; ++i) {
+        assertEQ(f.get(0), 1);
+    }
 
 }
 
@@ -382,13 +403,37 @@ static void testLowpassLookup2()
     assert(true);
 }
 
+static void testDirectLookup()
+{
+    auto p = makeLPFDirectFilterLookup<float>();
+    assert(p->numBins_i > 0);
+    makeLPFDirectFilterLookup<double>();
+}
+
+static void testDirectLookup2()
+{
+    auto p = makeLPFDirectFilterLookup<float>();
+    
+    float y = LookupTable<float>::lookup(*p, 0);
+    assertEQ(y, .4f);
+
+    y = LookupTable<float>::lookup(*p, 1);
+    assertEQ(y, .00002f);
+}
+
 void testMultiLag()
 {
     testMultiLag0();
     testMultiLag1();
     testMultiLag2();
+    testMultiLagDisable();
 
     testLowpassLookup();
     testLowpassLookup2();
+    testDirectLookup();
+    testDirectLookup2();
+
+
+
 
 }

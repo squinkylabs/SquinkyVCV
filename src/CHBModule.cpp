@@ -397,14 +397,14 @@ void CHBWidget::addExtra(CHBModule *module)
         Vec(exCol1, exRowHa),
         module,
         CHB<WidgetComposite>::PARAM_HATTACK,
-        0.f, 1.f, 0.f));
+        -5.f, 5.f, 0.f));
     addLabel(Vec(exCol1 - 20, exRowHa - labelAboveKnob), "HA");
 
      addParam(createParamCentered<Blue30Knob>(
         Vec(exCol1, exRowHr),
         module,
         CHB<WidgetComposite>::PARAM_HRELEASE,
-        0.f, 1.f, 0.f));
+        -5.f, 5.f, 0.f));
     addLabel(Vec(exCol1 - 20, exRowHr - labelAboveKnob), "HR");
 
     addInput(createInputCentered<PJ301MPort>(

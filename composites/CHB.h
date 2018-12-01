@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "AudioMath.h"
+#include "LookupTableFactory.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "poly.h"
@@ -21,6 +22,8 @@ namespace std {
     }
 }
 #endif
+
+
 
 /**
  * Composite for Chebyshev module.
@@ -179,6 +182,8 @@ private:
 
     void checkClipping(float sample);
 
+    void updateLagTC();
+
     /**
      * Does audio taper
      * @param raw = 0..1
@@ -188,7 +193,33 @@ private:
     {
         return LookupTable<float>::lookup(*audioTaper, raw, false);
     }
+
+    AudioMath::ScaleFun<float> lin = AudioMath::makeLinearScaler<float>(0, 1);
+    float lagCVTaper(float cv, float knob)
+    {
+        float combined = lin(cv, knob, 1.f);
+        const float k = .4f;
+        const float alpha = -10;
+
+        float fc = k * std::exp(-10.f * combined);
+
+        //printf("cv=%.2f knob=%.2f comb=%.2f fc=%f\n", cv, knob, combined, fc);
+
+        return fc;
+    }
+#if 0
+    float lagCVTaper(float cv, float knob)
+    {
+        float combined = lin(cv, knob, 1.f);
+        float audioCombined = .4f * taper(combined);
+       // printf("cv=%.2f knob=%.2f comb=%.2f auc=%.2f\n",
+       //     cv, knob, combined, audioCombined);
+       // return 1 / audioCombined;
+        return audioCombined;
+    }
+#endif
 };
+
 
 template <class TBase>
 inline void  CHB<TBase>::init()
@@ -205,6 +236,25 @@ inline float  CHB<TBase>::getOctave(int i) const
 {
     assert(i >= 0 && i < polyOrder);
     return _octave[i];
+}
+
+template <class TBase>
+inline void CHB<TBase>::updateLagTC()
+{
+    float a = lagCVTaper(
+        TBase::inputs[HATTACK_INPUT].value,
+        TBase::params[PARAM_HATTACK].value);
+   // printf("atin = %.2f atp = %.2f a = %f\n",
+   //     TBase::inputs[HATTACK_INPUT].value,
+   //     TBase::params[PARAM_HATTACK].value,
+ //       a);
+    assert(a < .4);
+    lag.setAttack(a);
+    float r = lagCVTaper(
+        TBase::inputs[HRELEASE_INPUT].value,
+        TBase::params[PARAM_HRELEASE].value);
+    assert(r < .4);
+    lag.setRelease(r);
 }
 
 template <class TBase>
@@ -344,7 +394,6 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 template <class TBase>
 inline void CHB<TBase>::step()
 {
-
     if (--cycleCount < 0) {
         cycleCount = 3;
     }
@@ -354,6 +403,7 @@ inline void CHB<TBase>::step()
     const float input = getInput();
 
     if (cycleCount == 0) {
+        updateLagTC();              // TODO: could do at reduced rate
         calcVolumes(_volume);       // now _volume has all 10 harmonic volumes
         lag.step(_volume);          // TODO: we could run lag at full rate.
 

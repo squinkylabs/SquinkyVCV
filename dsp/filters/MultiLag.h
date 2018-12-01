@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioMath.h"
+#include "LookupTable.h"
 #include "LowpassFilter.h"
 
 #include <assert.h>
@@ -29,12 +30,18 @@ public:
      */
     void setAttack(float);
     void setRelease(float);
+    void setEnable(bool b)
+    {
+        enabled = b;
+    }
+
     void step(const float * buffer);
     float get(int index) const
     {
         assert(index < N);
         return memory[index];
     }
+
 private:
     float memory[N] = {0};
 
@@ -48,6 +55,7 @@ private:
     float lRelease = 0;
     float kRelease = 0;
 #endif
+    bool enabled = true;
 
 #ifdef _LLOOK
     std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterLookup<float>();
@@ -61,6 +69,7 @@ inline void MultiLag<N>::setAttack(float fs)
 {
     assert(fs > 00 && fs < .5);
     float ks = NonUniformLookupTable<float>::lookup(*lookup, fs);
+  //  printf("ks attack set to %f\n", ks);
     kAttack = _mm_set_ps1(ks);
 }
 
@@ -70,6 +79,7 @@ inline void MultiLag<N>::setRelease(float fs)
 {
     assert(fs > 00 && fs < .5);
     float ks = NonUniformLookupTable<float>::lookup(*lookup, fs);
+  //  printf("ks release set to %f\n", ks); fflush(stdout);
     kRelease = _mm_set_ps1(ks);
 }
 
@@ -79,7 +89,13 @@ inline void MultiLag<N>::setRelease(float fs)
 template <int N>
 inline void MultiLag<N>::step(const float * input)
 {
-
+    if (!enabled) {
+        for (int i = 0; i < N; i += 4) {
+            __m128 input4 = _mm_loadu_ps(input + i);  // load 4 input samples
+            _mm_storeu_ps(memory + i, input4);
+        }
+        return;
+    }
     assert((N % 4) == 0);
     for (int i = 0; i < N; i += 4) {
         __m128 input4 = _mm_loadu_ps(input + i);  // load 4 input samples
@@ -227,3 +243,46 @@ inline void MultiLag<N>::step(const float * input)
         }
     }
 #endif
+
+
+template <typename T>
+inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup()
+{
+    std::shared_ptr <LookupTableParams<T>> params = std::make_shared< LookupTableParams<T>>();
+
+    // Fill the table with values go found by trial and error.
+    // Interpolate most of the odd values
+
+    LookupTable<T>::init(*params, 10, 0, 1, [](double x) {
+        T y = 0;
+        if (AudioMath::closeTo(x, 0, .001)) {
+            y = T(.4);
+        } else if (AudioMath::closeTo(x, .1, .001)) {
+            y = T(.4);
+        } else if (AudioMath::closeTo(x, .2, .001)) {
+            y = T(.044);
+        } else if (AudioMath::closeTo(x, .3, .001)) {
+            y = T(.044 + .016)/2;
+        } else if (AudioMath::closeTo(x, .4, .001)) {
+            y = T(.019);
+        } else if (AudioMath::closeTo(x, .5, .001)) {
+            y = T(.019 + .0019) / 2;
+        } else if (AudioMath::closeTo(x, .6, .001)) {
+            y = T(.0019);
+        } else if (AudioMath::closeTo(x, .7, .001)) {
+            y = T(.0019 + .00011) / 2;
+        } else if (AudioMath::closeTo(x, .8, .001)) {
+            y = T(.00011);
+        } else if (AudioMath::closeTo(x, .9, .001)) {
+            y = T(.00005);
+        } else if (AudioMath::closeTo(x, 1, .001)) {
+            y = T(.00002);
+        } else if (AudioMath::closeTo(x, 1.1, .001)) {
+            y = T(.00002);
+        } else {
+            assert(false);
+        }
+        return y;
+    });
+    return params;
+}
