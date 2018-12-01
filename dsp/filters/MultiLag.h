@@ -262,6 +262,38 @@ inline void MultiLPF<N>::step(const float * input)
 #endif
 
 
+/**
+ * lookup table that goes from knob position (0..1) to
+ * lowpass filter 'L' values.
+ */
+
+// derived by trial and error, at 44k
+static float sampledKValues[] = {
+    .4f,     // 0
+    .4f,     // .1
+    .044f,   // .2
+    .03f,      // .3 guess
+    .019f,   //4
+    .004f,
+    .0019f,  //6
+    .0004f,
+    .00011f,       // 8
+    .00004f,
+    .00002f,         // 10
+    .00002f
+};
+
+template <typename T>
+inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup(float sampleTime)
+{
+    std::shared_ptr <LookupTableParams<T>> params = std::make_shared< LookupTableParams<T>>();
+    LookupTable<T>::init(*params, 10, 0, 1, [](double x) {
+        return double(0);
+        });
+    return params;
+}
+
+#if 0
 template <typename T>
 inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup()
 {
@@ -303,3 +335,5 @@ inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup()
         });
     return params;
 }
+#endif
+

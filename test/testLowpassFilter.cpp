@@ -401,14 +401,14 @@ static void testLowpassLookup2()
 
 static void testDirectLookup()
 {
-    auto p = makeLPFDirectFilterLookup<float>();
+    auto p = makeLPFDirectFilterLookup<float>(1.f / 44100.f);
     assert(p->numBins_i > 0);
-    makeLPFDirectFilterLookup<double>();
+    makeLPFDirectFilterLookup<double>(1.f / 44100.f);
 }
 
 static void testDirectLookup2()
 {
-    auto p = makeLPFDirectFilterLookup<float>();
+    auto p = makeLPFDirectFilterLookup<float>(1.f / 44100.f);
 
     float y = LookupTable<float>::lookup(*p, 0);
     assertEQ(y, .4f);

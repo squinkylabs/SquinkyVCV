@@ -31,30 +31,11 @@ public:
      */
     static void setCutoff(LowpassFilterParams<T>& params, T fs);
 
-    // old way (remove)
-    //static T computeKfromFs(T fs);
-   //static T computeLfromK(T k);
-
     static T computeLfromFs(T fs);
     static T computeKfromL(T l);
 
     static T run(T input, LowpassFilterState<T>& state, const LowpassFilterParams<T>& params);
 };
-
-#if 0
-template <typename T>
-inline  T LowpassFilter<T>::computeKfromFs(T fs)
-{
-    return  T(1.0 - (std::exp(-2.0 * AudioMath::Pi * fs)));
-}
-
-template <typename T>
-inline  T LowpassFilter<T>::computeLfromK(T k)
-{
-    return T(1.0 - k);
-}
-
-#endif
 
 template <typename T>
 inline  T LowpassFilter<T>::computeLfromFs(T fs)
@@ -72,8 +53,6 @@ template <typename T>
 inline  void LowpassFilter<T>::setCutoff(LowpassFilterParams<T>& params, T fs)
 {
     assert(fs > 00 && fs < .5);
-  //  params.k = computeKfromFs(fs);
-  //  params.l = computeLfromK(params.k);
     params.l = computeLfromFs(fs);
     params.k = computeKfromL(params.l);
 }
