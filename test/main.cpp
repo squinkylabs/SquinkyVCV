@@ -121,16 +121,16 @@ int main(int argc, char ** argv)
    
    // testSin();
 
-    testMultiLag();
+   
 
     testFFT();
     testAnalyzer();
     testRateConversion();
     testUtils();
  
-
-    printf("skipping lots of tests\n");
 #if 0
+    printf("skipping lots of tests\n");
+#else
     testSpline(false);
     testStateVariable();
     testFFTCrossFader();
@@ -140,7 +140,7 @@ int main(int argc, char ** argv)
 
     testLowpassFilter();
     testFilter();
-
+    testMultiLag();
     testStochasticGrammar();
     testGMR();
 

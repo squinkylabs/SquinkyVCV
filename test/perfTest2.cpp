@@ -116,7 +116,7 @@ static void testUniformLookup()
 }
 static void testNonUniform()
 {
-    std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterLookup<float>();
+    std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterL_Lookup<float>();
 
     MeasureTime<float>::run(overheadInOut, "non-uniform", [lookup]() {
         float x = TestBuffers<float>::get();

@@ -287,7 +287,7 @@ static void testMultiLag0()
 template <class T>
 static void _testMultiLag1(int size, T& dut)
 {
-  
+
     float input[100];
     for (int n = 0; n < size; ++n) {
         assert(n < 100);
@@ -310,12 +310,10 @@ static void testMultiLag1()
     f.setCutoff(.4f);
     _testMultiLag1(8, f);
 
-#if 0
     MultiLag<8> l;
     l.setAttack(.4f);
     l.setRelease(.4f);
     _testMultiLag1(8, l);
-#endif
 }
 
 
@@ -323,12 +321,10 @@ static void testMultiLag1()
 template <class T>
 static void _testMultiLag2(int size, T& dut, float f)
 {
-
-   
     for (int n = 0; n < size; ++n) {
         float input[100] = {0};
         std::function<float(float)> filter = [&input, n, &dut](float x) {
-    
+
             input[n] = x;
             dut.step(input);
             auto y = dut.get(n);
@@ -377,7 +373,7 @@ static void testMultiLagDisable()
 template <typename T>
 static void tlp()
 {
-    auto params = makeLPFilterLookup<T>();
+    auto params = makeLPFilterL_Lookup<T>();
     assert(params->size() == 6);
 }
 
@@ -389,17 +385,17 @@ static void testLowpassLookup()
 
 static void testLowpassLookup2()
 {
-    auto params = makeLPFilterLookup<float>();
+    auto params = makeLPFilterL_Lookup<float>();
 
     for (float f = .1f; f < 100; f *= 1.1f) {
         float fs = f / 44100;
-        float k = LowpassFilter<float>::computeK(fs);
-        float k1 = NonUniformLookupTable<float>::lookup(*params, fs);
+        float l = LowpassFilter<float>::computeLfromFs(fs);
+        float l1 = NonUniformLookupTable<float>::lookup(*params, fs);
 
-        float r = k1 / k;
-        assertClose(r, 1, .01); 
+        float r = l1 / l;
+        assertClose(r, 1, .01);
     }
-    
+
     assert(true);
 }
 
@@ -413,7 +409,7 @@ static void testDirectLookup()
 static void testDirectLookup2()
 {
     auto p = makeLPFDirectFilterLookup<float>();
-    
+
     float y = LookupTable<float>::lookup(*p, 0);
     assertEQ(y, .4f);
 
@@ -423,17 +419,13 @@ static void testDirectLookup2()
 
 void testMultiLag()
 {
-    testMultiLag0();
-    testMultiLag1();
-    testMultiLag2();
-    testMultiLagDisable();
-
     testLowpassLookup();
     testLowpassLookup2();
     testDirectLookup();
     testDirectLookup2();
 
-
-
-
+    testMultiLag0();
+    testMultiLag1();
+    testMultiLag2();
+    testMultiLagDisable();
 }
