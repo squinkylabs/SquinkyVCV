@@ -24,6 +24,9 @@ void init(rack::Plugin *p)
     p->addModel(modelGrayModule);
     p->addModel(modelVocalModule);
     p->addModel(modelLFNModule); 
+#ifdef _SUPER
+    p->addModel(modelSuperModule);
+#endif
     p->addModel(modelShaperModule);
     p->addModel(modelThreadBoostModule);
 
@@ -42,10 +45,7 @@ void init(rack::Plugin *p)
     p->addModel(modelDGModule);
 #endif
    // p->addModel(modelBlankModule);
-#ifdef _SUPER
-    p->addModel(modelSuperModule);
-   
-#endif
+
 
 #ifdef _SINK
     p->addModel(modelKSModule);

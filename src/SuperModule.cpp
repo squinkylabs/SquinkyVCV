@@ -176,5 +176,5 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
 Model *modelSuperModule = Model::create<SuperModule,
     superWidget>("Squinky Labs",
     "squinkylabs-super",
-    "-- super --", RANDOM_TAG);
+    "Saws: super saw VCO emulation", RANDOM_TAG);
 

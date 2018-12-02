@@ -393,12 +393,15 @@ static const float exCol1 = 285;
 static const float exColJx1 = 270;
 static const float exColJx2 = 300;
 
-static const float exRowHa = 250;
-static const float exRowHr = 300;
+static const float exRowHa = 80;
+static const float exRowHr = 130;
+
 static const float exRowJacks = row5;
+static const float exRowJacks2 = row4;
 
 void CHBWidget::addExtra(CHBModule *module)
 {
+    //HA nad HR knobs
     addParam(createParamCentered<Blue30Knob>(
         Vec(exCol1, exRowHa),
         module,
@@ -406,21 +409,61 @@ void CHBWidget::addExtra(CHBModule *module)
         -5.f, 5.f, 0.f));
     addLabel(Vec(exCol1 - 20, exRowHa - labelAboveKnob), "HA");
 
-     addParam(createParamCentered<Blue30Knob>(
+    addParam(createParamCentered<Blue30Knob>(
         Vec(exCol1, exRowHr),
         module,
         CHB<WidgetComposite>::PARAM_HRELEASE,
         -5.f, 5.f, 0.f));
     addLabel(Vec(exCol1 - 20, exRowHr - labelAboveKnob), "HR");
 
+    //  bottom row of inputs.
     addInput(createInputCentered<PJ301MPort>(
         Vec(exColJx1, exRowJacks),
         module,
         CHB<WidgetComposite>::HATTACK_INPUT));
-     addInput(createInputCentered<PJ301MPort>(
+    addLabel(Vec(exColJx1-20, exRowJacks - labelAboveKnob), "ha");
+
+    addInput(createInputCentered<PJ301MPort>(
         Vec(exColJx2, exRowJacks),
         module,
         CHB<WidgetComposite>::HRELEASE_INPUT));
+    addLabel(Vec(exColJx2-20, exRowJacks - labelAboveKnob), "hr");
+
+    // second from the bottom row of inputs
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(exColJx1, exRowJacks2),
+        module,
+        CHB<WidgetComposite>::EVEN_INPUT));
+    addLabel(Vec(exColJx1-20, exRowJacks2 - labelAboveKnob), "even");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(exColJx2, exRowJacks2),
+        module,
+        CHB<WidgetComposite>::ODD_INPUT));
+    addLabel(Vec(exColJx2-20, exRowJacks2 - labelAboveKnob), "odd");
+
+    // three attenuverters
+  addParam(createParamCentered<Trimpot>(
+            Vec(exColJx1, 180),
+            module,
+            CHB<WidgetComposite>::PARAM_SLOPE_TRIM,
+            -1.0f, 1.0f, 0));
+    addLabel(Vec(exColJx1+6, 180-10), "slope");
+
+    addParam(createParamCentered<Trimpot>(
+            Vec(exColJx1, 210),
+            module,
+            CHB<WidgetComposite>::PARAM_EVEN_TRIM,
+            -1.0f, 1.0f, 0));
+    addLabel(Vec(exColJx1+6, 210-10), "even");
+
+    addParam(createParamCentered<Trimpot>(
+            Vec(exColJx1, 240),
+            module,
+            CHB<WidgetComposite>::PARAM_ODD_TRIM,
+            -1.0f, 1.0f, 0));
+    addLabel(Vec(exColJx1+6, 240-10), "odd");
+
 }
 
 /**

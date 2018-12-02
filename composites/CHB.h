@@ -69,6 +69,9 @@ public:
         PARAM_EXPAND,
         PARAM_HATTACK,
         PARAM_HRELEASE,
+        PARAM_EVEN_TRIM,
+        PARAM_ODD_TRIM,
+        PARAM_SLOPE_TRIM,
         NUM_PARAMS
     };
     const int numHarmonics = 1 + PARAM_H9 - PARAM_H0;
@@ -95,6 +98,8 @@ public:
         H10_INPUT,      // up to here V1.0
         HATTACK_INPUT,
         HRELEASE_INPUT,
+        EVEN_INPUT,
+        ODD_INPUT,
         NUM_INPUTS
     };
 
@@ -367,7 +372,10 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 
     // Third: slope
     {
-        const float slope = slopeScale(TBase::params[PARAM_SLOPE].value, TBase::inputs[SLOPE_INPUT].value, 1);
+        const float slope = slopeScale(
+            TBase::params[PARAM_SLOPE].value,
+            TBase::inputs[SLOPE_INPUT].value,
+            TBase::params[PARAM_SLOPE_TRIM].value);
 
         for (int i = 0; i < polyOrder; ++i) {
             float slopeAttenDb = slope * getOctave(i);
