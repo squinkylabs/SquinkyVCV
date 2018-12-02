@@ -116,6 +116,11 @@ public:
      */
     void step() override;
 
+    void onSampleRateChange()
+    {
+        knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime());
+    }
+
     float _freq = 0;
 
 private:
@@ -141,7 +146,7 @@ private:
      * In other words, log base 12.
      */
     float _octave[polyOrder];
-    float getOctave(int mult) const ;
+    float getOctave(int mult) const;
     void init();
 
     // round up to 12, so multi-lag is happy
@@ -160,6 +165,7 @@ private:
 
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> db2gain = ObjectCache<float>::getDb2Gain();
+    std::shared_ptr <LookupTableParams<float>> knobToFilterL;
 
     /**
      * Audio taper for the slope.
@@ -195,31 +201,7 @@ private:
     }
 
     AudioMath::ScaleFun<float> lin = AudioMath::makeLinearScaler<float>(0, 1);
-    float lagCVTaper(float cv, float knob)
-    {
-        float combined = lin(cv, knob, 1.f);
-        const float k = .4f;
-        const float alpha = -10;
-
-        float fc = k * std::exp(-10.f * combined);
-
-        //printf("cv=%.2f knob=%.2f comb=%.2f fc=%f\n", cv, knob, combined, fc);
-
-        return fc;
-    }
-#if 0
-    float lagCVTaper(float cv, float knob)
-    {
-        float combined = lin(cv, knob, 1.f);
-        float audioCombined = .4f * taper(combined);
-       // printf("cv=%.2f knob=%.2f comb=%.2f auc=%.2f\n",
-       //     cv, knob, combined, audioCombined);
-       // return 1 / audioCombined;
-        return audioCombined;
-    }
-#endif
 };
-
 
 template <class TBase>
 inline void  CHB<TBase>::init()
@@ -227,6 +209,7 @@ inline void  CHB<TBase>::init()
     for (int i = 0; i < polyOrder; ++i) {
         _octave[i] = log2(float(i + 1));
     }
+    onSampleRateChange();
     lag.setAttack(.1f);
     lag.setRelease(.0001f);
 }
@@ -241,20 +224,25 @@ inline float  CHB<TBase>::getOctave(int i) const
 template <class TBase>
 inline void CHB<TBase>::updateLagTC()
 {
-    float a = lagCVTaper(
+    const float combinedA = lin(
         TBase::inputs[HATTACK_INPUT].value,
-        TBase::params[PARAM_HATTACK].value);
-   // printf("atin = %.2f atp = %.2f a = %f\n",
-   //     TBase::inputs[HATTACK_INPUT].value,
-   //     TBase::params[PARAM_HATTACK].value,
- //       a);
-    assert(a < .4);
-    lag.setAttack(a);
-    float r = lagCVTaper(
+        TBase::params[PARAM_HATTACK].value,
+        1);
+
+    const float combinedR = lin(
         TBase::inputs[HRELEASE_INPUT].value,
-        TBase::params[PARAM_HRELEASE].value);
-    assert(r < .4);
-    lag.setRelease(r);
+        TBase::params[PARAM_HRELEASE].value,
+        1);
+    if (combinedA < .1 && combinedR < .1) {
+        lag.setEnable(false);
+    } else {
+        lag.setEnable(true);
+
+        const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
+        lag.setAttackL(lA);
+        const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
+        lag.setReleaseL(lR);
+    }
 }
 
 template <class TBase>

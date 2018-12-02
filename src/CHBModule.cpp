@@ -22,6 +22,7 @@ public:
      * Overrides of Module functions
      */
     void step() override;
+    void onSampleRateChange() override;
 
     CHB<WidgetComposite> chb;
 private:
@@ -39,6 +40,11 @@ CHBModule::CHBModule()
 void CHBModule::step()
 {
     chb.step();
+}
+
+void CHBModule::onSampleRateChange()
+{
+    chb.onSampleRateChange();
 }
 
 ////////////////////

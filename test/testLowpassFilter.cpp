@@ -411,10 +411,10 @@ static void testDirectLookup2()
     auto p = makeLPFDirectFilterLookup<float>(1.f / 44100.f);
 
     float y = LookupTable<float>::lookup(*p, 0);
-    assertEQ(y, .4f);
+    assertEQ(y, 1 - .4f);
 
     y = LookupTable<float>::lookup(*p, 1);
-    assertEQ(y, .00002f);
+    assertEQ(y, 1 - .00002f);
 }
 
 void testMultiLag()

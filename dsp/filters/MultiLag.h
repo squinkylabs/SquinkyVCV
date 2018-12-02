@@ -32,6 +32,18 @@ public:
      */
     void setAttack(float);
     void setRelease(float);
+
+    /**
+     * attack and release, using direct filter L values
+     */
+    void setAttackL(float l)
+    {
+        lAttack = _mm_set_ps1(l);
+    }
+    void setReleaseL(float l)
+    {
+        lRelease = _mm_set_ps1(l);
+    }
     void setEnable(bool b)
     {
         enabled = b;
@@ -48,8 +60,6 @@ private:
     float memory[N] = {0};
 
 #ifdef _LPSSE
-   // __m128 kAttack = {0};
-   // __m128 kRelease = {0};
     __m128 lAttack = {0};
     __m128 lRelease = {0};
     __m128 kOne = {1};
@@ -73,7 +83,6 @@ inline void MultiLag<N>::setAttack(float fs)
 {
     assert(fs > 00 && fs < .5);
     float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
-  //  printf("ks attack set to %f\n", ks);
     lAttack = _mm_set_ps1(ls);
 }
 
@@ -83,7 +92,6 @@ inline void MultiLag<N>::setRelease(float fs)
 {
     assert(fs > 00 && fs < .5);
     float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
-  //  printf("ks release set to %f\n", ks); fflush(stdout);
     lRelease = _mm_set_ps1(ls);
 }
 
@@ -272,68 +280,42 @@ static float sampledKValues[] = {
     .4f,     // 0
     .4f,     // .1
     .044f,   // .2
-    .03f,      // .3 guess
+    .03f,    // .3 guess
     .019f,   //4
     .004f,
     .0019f,  //6
     .0004f,
-    .00011f,       // 8
+    .00011f, // 8
     .00004f,
-    .00002f,         // 10
+    .00002f, // 10
     .00002f
 };
+
+// Computes filter "l" value for lookup table entries.
+// Input comes from sampledKValuesk
+static float getLValue(int index, float sampleTime)
+{
+    assert(index >= 0);
+    assert(index <= 11);
+    float _k = sampledKValues[index];
+    float l = 1.0f - _k;
+    float fs = (float) std::log(l) / (-2.0f *  (float) AudioMath::Pi);
+    float  fTarget = fs * 44100;
+    float fsAdjusted = fTarget * sampleTime;
+    float ret = LowpassFilter<float>::computeLfromFs(fsAdjusted);
+  //  printf("index = %i k=%f l=%f\n  fs=%f f=%f ret=%f\n", index, _k, l, fs, fTarget, ret);
+    return ret;
+}
 
 template <typename T>
 inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup(float sampleTime)
 {
     std::shared_ptr <LookupTableParams<T>> params = std::make_shared< LookupTableParams<T>>();
-    LookupTable<T>::init(*params, 10, 0, 1, [](double x) {
-        return double(0);
+    LookupTable<T>::init(*params, 10, 0, 1, [sampleTime](double x) {
+        int index = (int) std::round(x * 10);
+        return getLValue(index, sampleTime);
         });
     return params;
 }
 
-#if 0
-template <typename T>
-inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup()
-{
-    std::shared_ptr <LookupTableParams<T>> params = std::make_shared< LookupTableParams<T>>();
-
-    // Fill the table with values go found by trial and error.
-    // Interpolate most of the odd values
-
-    LookupTable<T>::init(*params, 10, 0, 1, [](double x) {
-        T y = 0;
-        if (AudioMath::closeTo(x, 0, .001)) {
-            y = T(.4);
-        } else if (AudioMath::closeTo(x, .1, .001)) {
-            y = T(.4);
-        } else if (AudioMath::closeTo(x, .2, .001)) {
-            y = T(.044);
-        } else if (AudioMath::closeTo(x, .3, .001)) {
-            y = T(.044 + .016) / 2;
-        } else if (AudioMath::closeTo(x, .4, .001)) {
-            y = T(.019);
-        } else if (AudioMath::closeTo(x, .5, .001)) {
-            y = T(.019 + .0019) / 2;
-        } else if (AudioMath::closeTo(x, .6, .001)) {
-            y = T(.0019);
-        } else if (AudioMath::closeTo(x, .7, .001)) {
-            y = T(.0019 + .00011) / 2;
-        } else if (AudioMath::closeTo(x, .8, .001)) {
-            y = T(.00011);
-        } else if (AudioMath::closeTo(x, .9, .001)) {
-            y = T(.00005);
-        } else if (AudioMath::closeTo(x, 1, .001)) {
-            y = T(.00002);
-        } else if (AudioMath::closeTo(x, 1.1, .001)) {
-            y = T(.00002);
-        } else {
-            assert(false);
-        }
-        return y;
-        });
-    return params;
-}
-#endif
 
