@@ -362,8 +362,18 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 
     // Second: apply the even and odd knobs
     {
-        const float even = taper(TBase::params[PARAM_MAG_EVEN].value);
-        const float odd = taper(TBase::params[PARAM_MAG_ODD].value);
+        const float evenCombined = gainCombiner(
+            TBase::inputs[EVEN_INPUT].value,
+            TBase::params[PARAM_MAG_EVEN].value,
+            TBase::params[PARAM_EVEN_TRIM].value);
+
+        const float oddCombined = gainCombiner(
+            TBase::inputs[ODD_INPUT].value,
+            TBase::params[PARAM_MAG_ODD].value,
+            TBase::params[PARAM_ODD_TRIM].value);
+      
+        const float even = taper(evenCombined);
+        const float odd = taper(oddCombined);
         for (int i = 1; i < polyOrder; ++i) {
             const float mul = (i & 1) ? even : odd;     // 0 = fundamental, 1=even, 2=odd....
             volumes[i] *= mul;
@@ -373,8 +383,8 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
     // Third: slope
     {
         const float slope = slopeScale(
-            TBase::params[PARAM_SLOPE].value,
             TBase::inputs[SLOPE_INPUT].value,
+            TBase::params[PARAM_SLOPE].value,
             TBase::params[PARAM_SLOPE_TRIM].value);
 
         for (int i = 0; i < polyOrder; ++i) {

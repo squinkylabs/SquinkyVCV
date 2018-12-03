@@ -226,7 +226,7 @@ inline void CHBWidget::addOtherKnobs(CHBModule *module)
         Vec(col2, row3),
         module,
         module->chb.PARAM_MAG_EVEN,
-        0, 1, 1));
+        -5, 5, 5));
     addLabel(Vec(col2 - 21.5, row3 - labelAboveKnob), "Even");
 
     //odd
@@ -234,7 +234,7 @@ inline void CHBWidget::addOtherKnobs(CHBModule *module)
         Vec(col3, row3),
         module,
         module->chb.PARAM_MAG_ODD,
-        0, 1, 1));
+        -5, 5, 5));
     addLabel(Vec(col3 - 20, row3 - labelAboveKnob), "Odd");
 }
 
