@@ -1,5 +1,21 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.11
+
+New Module: Saws
+
+EV3 enhancement: mixed waveform output now normalized to it stays within 10-V p-p VCV standard.
+
+Chebyshev enhancements:
+
+* Expanding panel holds new features. Accessed from the context menu.
+
+* 10 Lag units added to the harmonic volumes. Rise and fall time controlled from knobs and CVs in the expanded panel.
+
+* CV inputs for Odd and Even mix level.
+
+* Attenuverters for Slope, odd, and even CV.
+
 ## 0.6.10
 
 Bug fixes:
