@@ -4,7 +4,8 @@
 #include "ObjectCache.h"
 
 /**
- *
+ * perf test 1.0 44.5
+ * 44.7 with normalization
  */
 template <class TBase>
 class EV3 : public TBase
@@ -97,6 +98,11 @@ public:
 
     void step() override;
 
+    bool isLoweringVolume() const
+    {
+        return volumeScale < 1;
+    }
+
 private:
     void setSync();
     void processPitchInputs();
@@ -111,6 +117,7 @@ private:
     MinBLEPVCO vcos[3];
     float _freq[3];
     float _out[3];
+    float volumeScale = 1;
     std::function<float(float)> expLookup =
         ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaper =
@@ -198,7 +205,9 @@ inline void EV3<TBase>::step()
     processWaveforms();
     processPWInputs();
     stepVCOs();
+
     float mix = 0;
+    float totalGain = 0;
 
     for (int i = 0; i < 3; ++i) {
 
@@ -206,10 +215,17 @@ inline void EV3<TBase>::step()
         const float gain = LookupTable<float>::lookup(*audioTaper, knob, false);
         const float rawWaveform = vcos[i].getOutput();
         const float scaledWaveform = rawWaveform * gain;
+        totalGain += gain;
         mix += scaledWaveform;
         _out[i] = scaledWaveform;
         TBase::outputs[VCO1_OUTPUT + i].value = rawWaveform;
     }
+    if (totalGain <= 1) {
+        volumeScale = 1;
+    } else {
+        volumeScale = 1.0f / totalGain;
+    }
+    mix *= volumeScale;
     TBase::outputs[MIX_OUTPUT].value = mix;
 }
 

@@ -149,12 +149,25 @@ struct EV3Widget : ModuleWidget
     void step() override;
 
     PitchDisplay pitchDisplay;
+    EV3Module* const module;
+    Label* plusOne = nullptr;
+    Label* plusTwo = nullptr;
+    bool wasNormalizing = false;
 };
 
+static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);
 void EV3Widget::step()
 {
     ModuleWidget::step();
     pitchDisplay.step();
+    bool norm = module->ev3.isLoweringVolume();
+    if (norm != wasNormalizing) {
+        wasNormalizing = norm;
+        auto color = norm ?  COLOR_GREEN2 : COLOR_WHITE;
+        fflush(stdout);
+        plusOne->color = color;
+        plusTwo->color = color;
+    }
 }
 
 const int dy = -6;      // apply to everything
@@ -325,9 +338,10 @@ void EV3Widget::makeOutputs(EV3Module *)
     addOutput(Port::create<PJ301MPort>(
         Vec(outX + 41, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
-   addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
-   addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
-
+    plusOne = addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
+    plusTwo = addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
+    plusOne->fontSize = 24;
+    plusTwo->fontSize = 24;
 }
 #endif
 
@@ -338,7 +352,6 @@ void EV3Widget::makeOutputs(EV3Module *)
     const float x = 160;
     const float trimY = row1Y + 11;
     const float outX = x + 30;
-
 
     addParam(createParamCentered<Trimpot>(
         Vec(x, trimY), module, EV3<WidgetComposite>::MIX1_PARAM,
@@ -368,9 +381,8 @@ void EV3Widget::makeOutputs(EV3Module *)
     addOutput(Port::create<PJ301MPort>(
         Vec(outX + 41, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
-   addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
-   addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
-
+   plusOne = addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
+   plusTwo = addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
 }
 #endif
 
@@ -381,7 +393,8 @@ void EV3Widget::makeOutputs(EV3Module *)
  */
 EV3Widget::EV3Widget(EV3Module *module) :
     ModuleWidget(module),
-    pitchDisplay(module)
+    pitchDisplay(module),
+    module(module)
 {
     box.size = Vec(18 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {

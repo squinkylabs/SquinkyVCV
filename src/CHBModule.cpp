@@ -330,7 +330,6 @@ void CHBWidget::addBottomJacks(CHBModule *module)
                 labels[index],
                 color);
             l->fontSize = 11;
-           // printf("def font size %f\n", l->fontSize);
         }
     }
 }
