@@ -1,6 +1,6 @@
 # Release notes for Squinky Labs modules
 
-## 0.6.11
+## 0.6.13
 
 New Module: Saws
 
@@ -15,6 +15,14 @@ Chebyshev enhancements:
 * CV inputs for Odd and Even mix level.
 
 * Attenuverters for Slope, odd, and even CV.
+
+## 0.6.12
+
+Fix bug in LFN when using more than one instance.
+
+## 0.6.11
+
+Bug fix. High pass filters added to Shaper in 0.6.10 generate hiss. This release quiets them.
 
 ## 0.6.10
 
