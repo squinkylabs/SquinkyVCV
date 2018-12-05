@@ -219,7 +219,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     ToggleButton* tog = ParamWidget::create<ToggleButton>(
         Vec(100, 100),
         module,
-        Shaper<WidgetComposite>::PARAM_OVERSAMPLE,
+        Shaper<WidgetComposite>::PARAM_ACDC,
         0.0f, 1, 0);
     tog->addSvg("res/waveforms-6-07.svg");
     tog->addSvg("res/waveforms-6-09.svg");

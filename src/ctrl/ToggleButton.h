@@ -24,7 +24,6 @@ inline void ToggleButton::addSvg(const char* resourcePath)
 
 inline void ToggleButton:: draw(NVGcontext *vg)
 {
-    auto cur = value;
     int index = int( std::round(value));
     auto svg = svgs[index];
     svg->draw(vg);
@@ -32,6 +31,12 @@ inline void ToggleButton:: draw(NVGcontext *vg)
 
 inline void ToggleButton::onMouseDown( EventMouseDown &e )
 {
+    e.consumed = false;
+    const int index = int( std::round(value));
+    const Vec pos(e.pos.x, e.pos.y);
+    if (!svgs[index]->box.contains(pos)) {
+        return;
+    }
     e.consumed = true;
     auto v = this->value;
     if (++v >= svgs.size()) {

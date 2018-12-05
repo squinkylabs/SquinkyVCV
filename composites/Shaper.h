@@ -70,6 +70,7 @@ public:
         PARAM_OFFSET,
         PARAM_OFFSET_TRIM,
         PARAM_OVERSAMPLE,
+        PARAM_ACDC,
         NUM_PARAMS
     };
 
@@ -271,7 +272,9 @@ void  Shaper<TBase>::step()
         output = buffer[0];
     }
 
-    output = float(BiquadFilter<Thpf>::run(output, dcBlockState, dcBlockParams));
+    if (TBase::params[PARAM_ACDC].value < .5) {
+        output = float(BiquadFilter<Thpf>::run(output, dcBlockState, dcBlockParams));
+    }
     TBase::outputs[OUTPUT_AUDIO].value = output;
 }
 
