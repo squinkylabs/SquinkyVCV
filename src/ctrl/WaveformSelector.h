@@ -143,7 +143,6 @@ inline void WaveformSelector::onMouseDown( EventMouseDown &e )
     if (hit) {
         e.consumed = true;
         if (hit->value == this->value) {
-            printf("value same\n"); fflush(stdout);
             return;
         }
         setValue(hit->value);

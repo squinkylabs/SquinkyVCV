@@ -1,5 +1,5 @@
 #include "Squinky.hpp"
-#include "WaveformSelector.h"
+#include "ctrl/WaveformSelector.h"
 #include "SQWidgets.h"
 #include "WidgetComposite.h"
 

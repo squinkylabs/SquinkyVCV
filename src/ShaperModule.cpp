@@ -1,8 +1,7 @@
 
 #include "Squinky.hpp"
-#include "WidgetComposite.h"
-
 #include "ctrl/ToggleButton.h"
+#include "WidgetComposite.h"
 #include "Shaper.h"
 
 
@@ -217,11 +216,14 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     oversampleLabel->box.size.x = 60;
     oversampleLabel->alignment = Label::Alignment::CENTER_ALIGNMENT;
 
-    addParam(ParamWidget::create<ToggleButton>(
+    ToggleButton* tog = ParamWidget::create<ToggleButton>(
         Vec(100, 100),
         module,
         Shaper<WidgetComposite>::PARAM_OVERSAMPLE,
-        0.0f, 1, 0));
+        0.0f, 1, 0);
+    tog->addSvg("res/waveforms-6-07.svg");
+    tog->addSvg("res/waveforms-6-09.svg");
+    addParam(tog);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
