@@ -11,7 +11,7 @@ FLAGS += -I./dsp/third-party/kiss_fft130/tools -I./dsp/third-party/src
 FLAGS += -I./sqsrc/thread -I./dsp/fft -I./composites
 FLAGS += -I./sqsrc/noise -I./sqsrc/util -I./sqsrc/clock -I./sqsrc/grammar -I./sqsrc/delay
 FLAGS += -I./midi/model -I./midi/view -I./midi/controller -I./util
-FLAGS += -I./src/third-party
+FLAGS += -I./src/third-party -I.src/ctrl
 CFLAGS +=
 CXXFLAGS +=
 
