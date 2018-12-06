@@ -217,12 +217,12 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     oversampleLabel->alignment = Label::Alignment::CENTER_ALIGNMENT;
 
     ToggleButton* tog = ParamWidget::create<ToggleButton>(
-        Vec(100, 100),
+        Vec(swX-12, swY-40),
         module,
         Shaper<WidgetComposite>::PARAM_ACDC,
         0.0f, 1, 0);
-    tog->addSvg("res/waveforms-6-07.svg");
-    tog->addSvg("res/waveforms-6-09.svg");
+    tog->addSvg("res/AC.svg");
+    tog->addSvg("res/DC.svg");
     addParam(tog);
 
     // screws

@@ -86,6 +86,7 @@ public:
         EQ3_PARAM,
         EQ4_PARAM,
         FREQ_RANGE_PARAM,
+        XLFN_PARAM,
         NUM_PARAMS
     };
 

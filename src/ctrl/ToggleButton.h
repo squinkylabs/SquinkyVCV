@@ -41,6 +41,7 @@ inline void ToggleButton::onMouseDown( EventMouseDown &e )
     auto v = this->value;
     if (++v >= svgs.size()) {
         v = 0;
+       
     }
     setValue(v);
 }

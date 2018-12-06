@@ -3,6 +3,7 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#include "ctrl/ToggleButton.h"
 #include "LFN.h"
 
 
@@ -141,6 +142,15 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     for (int i = 0; i < 5; ++i) {
         addStage(i);
     }
+
+    ToggleButton* tog = ParamWidget::create<ToggleButton>(
+        Vec(3, 16),
+        module,
+        LFN<WidgetComposite>::XLFN_PARAM,
+        0.0f, 1, 0);
+    tog->addSvg("res/LFN.svg");
+    tog->addSvg("res/XLFN.svg");
+    addParam(tog);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
