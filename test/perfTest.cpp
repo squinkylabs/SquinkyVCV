@@ -590,6 +590,16 @@ static void testSuper2()
     }, 1);
 }
 
+static void testSuper3()
+{
+    Super<TestComposite> super;
+
+    super.params[Super<TestComposite>::CLEAN_PARAM].value = 2;
+    MeasureTime<float>::run(overheadOutOnly, "super clean 2", [&super]() {
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        }, 1);
+}
 #if 0
 static void testSuper2()
 {
@@ -827,6 +837,7 @@ void perfTest()
     testCHBdef();
     testSuper();
     testSuper2();
+    testSuper3();
   //  testKS();
   //  testShaper1a();
 #if 0

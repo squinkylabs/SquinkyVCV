@@ -119,7 +119,7 @@ public:
     void step() override;
 
 private:
-    static const unsigned int OVERSAMPLE = 4;
+    static const unsigned int MAX_OVERSAMPLE = 8;
     static const int numSaws = 7;
 
     float phase[numSaws] = {0};
@@ -140,6 +140,8 @@ private:
     void updateAudioClean();
     void updateTrigger();
     void updateMix();
+
+    int getOversampleRate();
 
     AudioMath::RandomUniformFunc random =  AudioMath::random();
 
@@ -166,7 +168,7 @@ private:
 
     StateVariable4PHP hpf;
 
-    float buffer[OVERSAMPLE] = {};
+    float buffer[MAX_OVERSAMPLE] = {};
     IIRDecimator decimator;
 };
 
@@ -174,7 +176,32 @@ template <class TBase>
 inline void Super<TBase>::init()
 {
     scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
-    decimator.setup(OVERSAMPLE);
+
+    const int rate = getOversampleRate();
+    const int decimateDiv = std::max(rate, 4);
+    decimator.setup(decimateDiv);
+}
+
+template <class TBase>
+inline int Super<TBase>::getOversampleRate()
+{
+    int rate = 1;
+    const int setting = (int) std::round(TBase::params[CLEAN_PARAM].value);
+    switch (setting) {
+        case 0:
+            rate = 1;
+            break;
+        case 1:
+            rate = 4;
+            break;
+        case 2:
+            rate = 8;
+            break;
+        default:
+            assert(false);
+    }
+    assert(rate <= MAX_OVERSAMPLE);
+    return rate;
 }
 
 template <class TBase>
@@ -207,15 +234,18 @@ inline void Super<TBase>::updatePhaseInc()
         TBase::params[DETUNE_TRIM_PARAM].value);
 
     const float detuneInput = detuneCurve.getDetuneFactor(rawDetuneValue);
-    const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
+
+
+   // const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
+    const int oversampleRate = getOversampleRate();
 
     for (int i = 0; i < numSaws; ++i) {
         float detune = (detuneFactors[i] - 1) * detuneInput;
         detune += 1;
         float phaseIncI = globalPhaseInc * detune;
         phaseIncI = std::min(phaseIncI, .4f);         // limit so saws don't go crazy
-        if (!classic) {
-            phaseIncI /= 4.f;
+        if (oversampleRate > 1) {
+            phaseIncI /= oversampleRate;
         }
         phaseInc[i] = phaseIncI;
     }
@@ -254,7 +284,9 @@ inline void Super<TBase>::updateAudioClassic()
 template <class TBase>
 inline void Super<TBase>::updateAudioClean()
 {
-    for (int i = 0; i < OVERSAMPLE; ++i) {
+    const int bufferSize = getOversampleRate();
+    decimator.setup(bufferSize);
+    for (int i = 0; i < bufferSize; ++i) {
         const float mix = runSaws();
         buffer[i] = mix;
     }
@@ -279,8 +311,9 @@ inline void Super<TBase>::step()
         updateHPFilters();
         updateMix();
     }
-    const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
-    if (classic) {
+   // const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
+    int rate = getOversampleRate();
+    if (rate == 1) {
         updateAudioClassic();
     } else {
         updateAudioClean();

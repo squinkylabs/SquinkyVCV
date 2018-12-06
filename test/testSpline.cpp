@@ -200,6 +200,7 @@ static void testSplineExtremes()
     paramLimits[sp.PARAM_OFFSET] = fp(-5.f, 5.f);
     paramLimits[sp.PARAM_OFFSET_TRIM] = fp(-1.f, 1.f);
     paramLimits[sp.PARAM_OVERSAMPLE] = fp(0.f, 2.f);
+    paramLimits[sp.PARAM_ACDC] = fp(0.f, 1.f);
 
     ExtremeTester< Shaper<TestComposite>>::test(sp, paramLimits, true, "shaper");
 }

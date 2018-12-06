@@ -20,10 +20,12 @@ public:
      */
     void setup(int oversampleFactor)
     {
-        oversample = oversampleFactor;
+        if (oversampleFactor != oversample) {
+            oversample = oversampleFactor;
 
-        // Set out IIR filter to be a six pole butterworth lowpass and the magic frequency.
-        params = ObjectCache<float>::get6PLPParams(1.f / (4.0f * oversample));
+            // Set out IIR filter to be a six pole butterworth lowpass and the magic frequency.
+            params = ObjectCache<float>::get6PLPParams(1.f / (4.0f * oversample));
+        }
     }
 
     /**
@@ -52,7 +54,7 @@ private:
      * This is the oversampling factor. For example,
      * for 4x oversample, 'oversample' will be set to 4.
      */
-    int oversample = 16;
+    int oversample = -1;
 
     /**
      * "standard" Squinky Labs Biquad filter data.

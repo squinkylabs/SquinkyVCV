@@ -2,7 +2,9 @@
 
 ## 0.6.13
 
-New Module: Saws
+New Module: Saws (Super Saw VCO emulation).
+
+Reduced CPU usage of Formants, Growler, Colors, and Chopper.
 
 EV3 enhancement: mixed waveform output now normalized to it stays within 10-V p-p VCV standard.
 
@@ -15,6 +17,10 @@ Chebyshev enhancements:
 * CV inputs for Odd and Even mix level.
 
 * Attenuverters for Slope, odd, and even CV.
+
+Shaper enhancement: added AC/DC selector.
+
+LFN enhancement: added XLFN mode, which is 10 times slower.
 
 ## 0.6.12
 

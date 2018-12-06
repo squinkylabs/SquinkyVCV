@@ -114,7 +114,7 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     addInput(createInputCentered<PJ301MPort>(
         Vec(col3-20, 100), module, Super<WidgetComposite>::FM_INPUT));
 
-
+#if 0   // two choices
     addLabel(Vec(col2, 140), "clean");
     addLabel(Vec(col2, 180), "classic");
     addParam(createParamCentered<CKSS>(
@@ -122,6 +122,18 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
         module,
         Super<WidgetComposite>::CLEAN_PARAM,
         0.0f, 1.0f, 0.0f));
+
+#else
+    addParam(createParamCentered<NKK>(
+        Vec(col2+ 25,170),
+        module, 
+        Super<WidgetComposite>::CLEAN_PARAM,
+        0.0f, 2.0f, 0.0f
+        ));
+        addLabel(Vec(col2, 190), "classic");
+        addLabel(Vec(col2+10, 130), "8X");
+#endif
+
     // Semi
     const float semiY = 120;
 
@@ -139,7 +151,6 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
         Vec(col1, fineY), module, Super<WidgetComposite>::FINE_PARAM, -1, 1, 0));
     addLabel(
         Vec(10, fineY + labelOffset), "Fine");
-
 
     // Detune
     const float detuneY = 240;

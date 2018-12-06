@@ -121,6 +121,11 @@ public:
         return baseFrequency;
     }
 
+    bool isXLFN() const
+    {
+        return  TBase::params[XLFN_PARAM].value > .5;
+    }
+
     /**
      * This lets the butterworth get re-calculated on the UI thread.
      * We can't do it on the audio thread, because it calls malloc.
@@ -153,6 +158,7 @@ private:
     * done on the UI thread.
     */
     float lastBaseFrequencyParamValue = -100;
+    float lastXLFMParamValue = -1;
 
     std::default_random_engine generator{57};
     std::normal_distribution<double> distribution{-1.0, 1.0};
@@ -188,9 +194,16 @@ private:
 template <class TBase>
 inline void LFN<TBase>::pollForChangeOnUIThread()
 {
-    if (lastBaseFrequencyParamValue != TBase::params[FREQ_RANGE_PARAM].value) {
+    if ((lastBaseFrequencyParamValue != TBase::params[FREQ_RANGE_PARAM].value) ||
+        (lastXLFMParamValue != TBase::params[XLFN_PARAM].value)) {
+
         lastBaseFrequencyParamValue = TBase::params[FREQ_RANGE_PARAM].value;
+        lastXLFMParamValue = TBase::params[XLFN_PARAM].value;
+
         baseFrequency = float(rangeFunc(lastBaseFrequencyParamValue));
+        if (TBase::params[XLFN_PARAM].value > .5f) {
+            baseFrequency /= 10.f;
+        }
 
         updateLPF();         // now get the filters updated
     }
@@ -208,7 +221,8 @@ inline void LFN<TBase>::updateLPF()
     assert(reciprocalSampleRate > 0);
     // decimation must be 100hz (what our EQ is designed at)
     // divided by base.
-    const float decimationDivider = float(100.0 / baseFrequency);
+    float decimationDivider = float(100.0 / baseFrequency);
+
     decimator.setDecimationRate(decimationDivider);
 
     // calculate lpFc ( Fc / sr)

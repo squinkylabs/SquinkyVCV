@@ -167,14 +167,18 @@ void LFNLabelUpdater::makeLabel(struct LFNWidget& widget, int index, float x, fl
 void LFNLabelUpdater::update(struct LFNWidget& widget)
 {
     float baseFreq = widget.module.lfn.getBaseFrequency();
+    const bool isXLFN = widget.module.lfn.isXLFN();
+    const float moveLeft = isXLFN ? 3 : 0;  
+    const int digits = isXLFN ? 2 : 1;
     if (baseFreq != baseFrequency) {
         baseFrequency = baseFreq;
         for (int i = 0; i < 5; ++i) {
             std::stringstream str;
-            str.precision(1);
+            str.precision(digits);
             str.setf(std::ios::fixed, std::ios::floatfield);
             str << baseFreq;
             labels[i]->text = str.str();
+            labels[i]->box.pos.x = labelX - moveLeft;
             baseFreq *= 2.0f;
         }
     }

@@ -406,27 +406,27 @@ void CHBWidget::addExtra(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_HATTACK,
         -5.f, 5.f, 0.f));
-    addLabel(Vec(exCol1 - 20, exRowHa - labelAboveKnob), "HA");
+    addLabel(Vec(exCol1 - 20, exRowHa - labelAboveKnob), "Rise");
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(exCol1, exRowHr),
         module,
         CHB<WidgetComposite>::PARAM_HRELEASE,
         -5.f, 5.f, 0.f));
-    addLabel(Vec(exCol1 - 20, exRowHr - labelAboveKnob), "HR");
+    addLabel(Vec(exCol1 - 20, exRowHr - labelAboveKnob), "Fall");
 
     //  bottom row of inputs.
     addInput(createInputCentered<PJ301MPort>(
         Vec(exColJx1, exRowJacks),
         module,
         CHB<WidgetComposite>::HATTACK_INPUT));
-    addLabel(Vec(exColJx1-20, exRowJacks - labelAboveKnob), "ha");
+    addLabel(Vec(exColJx1-20, exRowJacks - labelAboveKnob), "rise");
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(exColJx2, exRowJacks),
         module,
         CHB<WidgetComposite>::HRELEASE_INPUT));
-    addLabel(Vec(exColJx2-20, exRowJacks - labelAboveKnob), "hr");
+    addLabel(Vec(exColJx2-20, exRowJacks - labelAboveKnob), "fall");
 
     // second from the bottom row of inputs
     addInput(createInputCentered<PJ301MPort>(
