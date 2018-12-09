@@ -3,7 +3,7 @@
 //#define _GMR
 #define _SUPER
 //#define _SEQ
-// #define _CH10
+#define _CH10
 
 using namespace rack;
 extern Plugin *plugin;

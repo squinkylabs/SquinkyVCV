@@ -1,9 +1,8 @@
-
 #include <sstream>
 #include "Squinky.hpp"
+#include "SQWidgets.h"
 #include "WidgetComposite.h"
 
-//#include "Blank.h"
 #ifdef _CH10
 
 #include "CH10.h"
@@ -69,17 +68,18 @@ struct CH10Widget : ModuleWidget
     void makeB(CH10Module *);
     void makeAB(CH10Module *);
     void addSwitch(float x, float y, int id);
+    void makeVCO(CH10Module* , int whichOne);
 };
 
-const static float size = 28;
-const static float col1 = 20;
-const static float row1 = 300;
+const static float gridSize = 28;
+const static float gridCol1 = 140;
+const static float gridRow1 = 300;
 
 inline void CH10Widget::makeA(CH10Module *)
 {
     for (int i=0; i<10; ++i) {
-        const float x = col1;
-        const float y = row1 - i* size;
+        const float x = gridCol1;
+        const float y = gridRow1 - i* gridSize;
         addSwitch(x, y, CH10<Widget>::A0_PARAM + i);
     }
 }
@@ -87,33 +87,23 @@ inline void CH10Widget::makeA(CH10Module *)
 inline void CH10Widget::makeB(CH10Module *)
 {
     for (int i=0; i<10; ++i) {
-        const float x = col1 + size * (i+1);
-        const float y = row1 + size;
+        const float x = gridCol1 + gridSize * (i+1);
+        const float y = gridRow1 + gridSize;
         addSwitch(x, y, CH10<Widget>::B0_PARAM + i);
     }
 }
 
 inline void CH10Widget::makeAB(CH10Module *)
 {
-    #if 0
-    for (int i=0; i<10; ++i) {
-        for (int j=0; j<10; ++j) {
-            const float x = col1 + size * (i+1);
-            const float y = row1 - (j) * size;
-            addSwitch(x, y, CH10<Widget>::A0_PARAM + i);
-        }
-    }
-    #endif
     for (int row=0; row<10; ++row) {
         for (int col=0; col<10; ++col) {
-            float x = col1 + size * (col+1);
-            float y = row1 - row * size;
+            float x = gridCol1 + gridSize * (col+1);
+            float y = gridRow1 - row * gridSize;
             int id = CH10<Widget>::A0B0_PARAM +
                 col + row * 10;
             addSwitch(x, y, id);
         }
     }
-
 }
 
 inline void CH10Widget::addSwitch(float x, float y, int id)
@@ -129,6 +119,35 @@ inline void CH10Widget::addSwitch(float x, float y, int id)
     addParam(tog);
 }
 
+const float rowSpacing = 40;
+const float vcoACol = 50;
+const float vcoBCol = 90;
+const float vcoOctRow = 60;
+const float vcoSemiRow = vcoOctRow + rowSpacing;
+const float vcoCVRow = vcoSemiRow + rowSpacing; 
+
+inline void CH10Widget::makeVCO(CH10Module* module, int whichVCO)
+{
+    const float x = whichVCO ? vcoBCol : vcoACol; 
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(x, vcoOctRow),
+        module,
+        CH10<WidgetComposite>::AOCTAVE_PARAM + whichVCO,
+        -5.f, 4.f, 0.f));
+
+     addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(x, vcoSemiRow), module,
+        CH10<WidgetComposite>::ASEMI_PARAM + whichVCO,
+        -11.f, 11.0f, 0.f));
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, vcoCVRow),
+        module,
+        CH10<WidgetComposite>::ACV_INPUT + whichVCO));
+ 
+
+}
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -136,7 +155,7 @@ inline void CH10Widget::addSwitch(float x, float y, int id)
  */
 CH10Widget::CH10Widget(CH10Module *module) : ModuleWidget(module)
 {
-    box.size = Vec(25 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(35 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
@@ -147,6 +166,13 @@ CH10Widget::CH10Widget(CH10Module *module) : ModuleWidget(module)
     makeA(module);
     makeB(module);
     makeAB(module);
+    makeVCO(module, 0);
+    makeVCO(module, 1);
+
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(70, 300),
+        module,
+        CH10<WidgetComposite>::MIXED_OUTPUT));
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

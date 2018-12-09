@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "ObjectCache.h"
+#include "SinOscillator.h"
+
 
 template <class TBase>
 class CH10 : public TBase
@@ -144,16 +147,25 @@ public:
         A9B7_PARAM,
         A9B8_PARAM,
         A9B9_PARAM,
+        AOCTAVE_PARAM,
+        BOCTAVE_PARAM,
+        ASEMI_PARAM,
+        BSEMI_PARAM,
+        ATUNE_PARAM,
+        BTUNE_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
+        ACV_INPUT,
+        BCV_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        MIXED_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -168,6 +180,19 @@ public:
     void step() override;
 
 private:
+    std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
+
+    class VCOState
+    {
+    private:
+        SinOscillatorParams<float> sinParams;
+        SinOscillatorState<float> sinState;
+    };
+
+    VCOState vcoState[2];
+
+    void updatePitch();
+    void updateAudio();
 
 };
 
@@ -181,5 +206,16 @@ inline void CH10<TBase>::init()
 template <class TBase>
 inline void CH10<TBase>::step()
 {
+    updatePitch();
+    updateAudio();
 }
 
+template <class TBase>
+inline void CH10<TBase>::updatePitch()
+{
+}
+
+template <class TBase>
+inline void CH10<TBase>::updateAudio()
+{
+}
