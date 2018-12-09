@@ -114,8 +114,8 @@ inline void CH10Widget::addSwitch(float x, float y, int id)
         id,
         0.0f, 1, 0);
 
-    tog->addSvg("res/BluePush_1.svg");
-    tog->addSvg("res/BluePush_0.svg");
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 }
 

@@ -282,5 +282,20 @@ inline void CH10<TBase>::doOutput()
             ++num;
         }
     }
+
+    for (int row=0; row<10; ++row) {
+        for (int col=0; col<10; ++col) {
+            //float x = gridCol1 + gridSize * (col+1);
+            //float y = gridRow1 - row * gridSize;
+            int id = CH10<Widget>::A0B0_PARAM + col + row * 10;
+            if (TBase::params[id].value > .5f) {
+                const float ring = vcoState[0].poly.getOutput(col) *
+                     vcoState[1].poly.getOutput(row); 
+                sum += ring;
+                ++num;
+            }
+        }
+    }
+
     TBase::outputs[MIXED_OUTPUT].value = sum / num;
 }
