@@ -3,6 +3,7 @@
 //#define _GMR
 #define _SUPER
 //#define _SEQ
+// #define _CH10
 
 using namespace rack;
 extern Plugin *plugin;
@@ -34,6 +35,9 @@ extern Model *modelDGModule;
 extern Model *modelBlankModule;
 #ifdef _SUPER
 extern Model *modelSuperModule;
+#endif
+#ifdef _CH10
+extern Model *modelCH10Module;
 #endif
 
 #ifdef _SINK

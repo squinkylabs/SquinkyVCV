@@ -57,9 +57,32 @@ extern void testMidiPlayer();
 extern void testMultiLag();
 extern void testUtils();
 
+#if 0
+#include <sstream>
+#include <iostream>
+static void xx()
+{
+    std::stringstream s;
+    for (int i = 0; i < 10; ++i) {
+        s << "A" << i << "_PARAM," << std::endl;
+    }
+    for (int i = 0; i < 10; ++i) {
+        s << "B" << i << "_PARAM," << std::endl;
+    }
+
+
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            s << "A" << i << "B" << j << "_PARAM," << std::endl;
+        }
+    }
+    std::cout << s.str();
+}
+#endif
 
 int main(int argc, char ** argv)
 {
+   // xx();
     bool runPerf = false;
     bool extended = false;
     bool runShaperGen = false;

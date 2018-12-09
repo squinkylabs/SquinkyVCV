@@ -50,4 +50,7 @@ void init(rack::Plugin *p)
 #ifdef _SINK
     p->addModel(modelKSModule);
 #endif
+#ifdef _CH10
+    p->addModel(modelCH10Module);
+#endif
 }

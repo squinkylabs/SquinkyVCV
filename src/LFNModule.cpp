@@ -129,6 +129,15 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         addChild(panel);
     }
 
+    ToggleButton* tog = ParamWidget::create<ToggleButton>(
+        Vec(3, 16),
+        module,
+        LFN<WidgetComposite>::XLFN_PARAM,
+        0.0f, 1, 0);
+    tog->addSvg("res/LFN.svg");
+    tog->addSvg("res/XLFN.svg");
+    addParam(tog);
+
     addOutput(Port::create<PJ301MPort>(
         Vec(59, inputY - knobDy -1), Port::OUTPUT, module, module->lfn.OUTPUT));
     addLabel(
@@ -143,14 +152,6 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         addStage(i);
     }
 
-    ToggleButton* tog = ParamWidget::create<ToggleButton>(
-        Vec(3, 16),
-        module,
-        LFN<WidgetComposite>::XLFN_PARAM,
-        0.0f, 1, 0);
-    tog->addSvg("res/LFN.svg");
-    tog->addSvg("res/XLFN.svg");
-    addParam(tog);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

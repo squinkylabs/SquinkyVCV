@@ -611,5 +611,8 @@
     <ClInclude Include="..\..\dsp\filters\StateVariable4PHP.h">
       <Filter>Header Files\dsp\filters</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\CH10.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
