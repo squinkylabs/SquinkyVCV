@@ -395,8 +395,6 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
     }
 }
 
-
-
 template <class TBase>
 inline void CHB<TBase>::step()
 {

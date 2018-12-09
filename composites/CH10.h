@@ -2,6 +2,7 @@
 #pragma once
 
 #include "ObjectCache.h"
+#include "Poly.h"
 #include "SinOscillator.h"
 
 
@@ -180,20 +181,24 @@ public:
     void step() override;
 
 private:
+    using Osc = SinOscillator<float, true>;
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
-
+    static const int polyOrder = 10;
     class VCOState
     {
-    private:
+    public:
         SinOscillatorParams<float> sinParams;
         SinOscillatorState<float> sinState;
+        Poly<double, polyOrder> poly;
     };
 
     VCOState vcoState[2];
 
     void updatePitch();
+    void updateVCOs(int which);
     void updateAudio();
-
+    void runVCOs(int which);
+    void doOutput();
 };
 
 
@@ -213,9 +218,69 @@ inline void CH10<TBase>::step()
 template <class TBase>
 inline void CH10<TBase>::updatePitch()
 {
+    updateVCOs(0);
+    updateVCOs(1);
+}
+
+
+template <class TBase>
+inline void CH10<TBase>::updateVCOs(int which)
+{
+    const float cv = TBase::inputs[ACV_INPUT + which].value;
+   // const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
+    const float finePitch = 0;
+    const float semiPitch = TBase::params[ASEMI_PARAM + which].value / 12.0f;
+    float pitch = 1.0f + roundf(TBase::params[AOCTAVE_PARAM + which].value) +
+        semiPitch +
+        finePitch;
+    pitch += cv;
+    //
+    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
+    pitch += q;
+    const float freq = expLookup(pitch);
+ 
+
+    float time = freq * TBase::engineGetSampleTime();
+
+    Osc::setFrequency(vcoState[which].sinParams, time);
+       // vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq,
+        //    TBase::engineGetSampleTime());
+}
+
+template <class TBase>
+inline void CH10<TBase>::runVCOs(int which)
+{
+    CH10<TBase>::VCOState& vco = vcoState[which];
+    float sinOsc = Osc::run(vco.sinState, vco.sinParams);
+
+    vco.poly.run(sinOsc, 1);
 }
 
 template <class TBase>
 inline void CH10<TBase>::updateAudio()
 {
+     runVCOs(0);
+     runVCOs(1);
+     doOutput();
+}
+
+template <class TBase>
+inline void CH10<TBase>::doOutput()
+{
+    float sum=0;
+    int num=0;
+    for (int i=0; i<polyOrder; ++i) {
+        if (TBase::params[A0_PARAM + i].value > .5f) {
+            sum += vcoState[0].poly.getOutput(i);
+            ++num;
+        }
+    }
+
+    for (int i=0; i<polyOrder; ++i) {
+        if (TBase::params[B0_PARAM + i].value > .5f) {
+            sum += vcoState[1].poly.getOutput(i);
+            ++num;
+        }
+    }
+    TBase::outputs[MIXED_OUTPUT].value = sum / num;
 }
