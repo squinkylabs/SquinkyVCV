@@ -269,7 +269,7 @@ inline float Super<TBase>::runSaws()
         mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
     }
 
-    mix *= 2;
+    mix *= 4.5;       // too low 2 too high 10
     return mix;
 }
 
