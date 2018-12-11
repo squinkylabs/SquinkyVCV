@@ -1,5 +1,9 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.13
+
+Restore Chebyshev module that disappeared from 0.6.12.
+
 ## 0.6.12
 
 Fix bug in LFN when using more than one instance.
