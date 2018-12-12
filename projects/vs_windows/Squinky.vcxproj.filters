@@ -614,5 +614,8 @@
     <ClInclude Include="..\..\composites\CH10.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\CHBg.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -30,6 +30,8 @@ void init(rack::Plugin *p)
     p->addModel(modelShaperModule);
     p->addModel(modelThreadBoostModule);
 
+    p->addModel(modelCHBgModule);
+
 #ifdef _SEQ
     assert(modelSequencerModule);
     p->addModel(modelSequencerModule);
@@ -46,11 +48,11 @@ void init(rack::Plugin *p)
 #endif
    // p->addModel(modelBlankModule);
 
-
 #ifdef _SINK
     p->addModel(modelKSModule);
 #endif
 #ifdef _CH10
     p->addModel(modelCH10Module);
 #endif
+
 }

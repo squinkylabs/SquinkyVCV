@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\composites\CH10.h" />
     <ClInclude Include="..\..\composites\CHB.h" />
+    <ClInclude Include="..\..\composites\CHBg.h" />
     <ClInclude Include="..\..\composites\ColoredNoise.h" />
     <ClInclude Include="..\..\composites\daveguide.h" />
     <ClInclude Include="..\..\composites\EV3.h" />

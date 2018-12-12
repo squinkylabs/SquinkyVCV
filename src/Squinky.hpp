@@ -15,6 +15,7 @@ extern Model *modelTremoloModule;
 extern Model *modelThreadBoostModule;
 extern Model *modelLFNModule;
 extern Model *modelCHBModule;
+extern Model *modelCHBgModule;
 
 #ifdef _GMR
 extern Model *modelGMRModule;
