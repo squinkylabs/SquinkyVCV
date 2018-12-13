@@ -8,7 +8,8 @@
 #include <sstream>
 
 #include "CHB.h"
-#include "CHBPanelManager.h"
+#include "IMWidgets.hpp"
+//#include "CHBPanelManager.h"
 
 /**
  */
@@ -51,15 +52,17 @@ void CHBModule::onSampleRateChange()
 // module widget
 ////////////////////
 
-struct CHBWidget : ModuleWidget, public IPanelHost
+struct CHBWidget : ModuleWidget
 {
     friend struct CHBEconomyItem;
     CHBWidget(CHBModule *);
 
     // IPanelHost
+    #if 0
     void setExpanded(bool) override;
     bool isExpanded() override;
     void step() override;
+    #endif
 
     /**
      * Helper to add a text label to this widget
@@ -74,7 +77,7 @@ struct CHBWidget : ModuleWidget, public IPanelHost
         return label;
     }
 
-    Menu* createContextMenu() override;
+  //  Menu* createContextMenu() override;
 
     void addHarmonics(CHBModule *module);
     void addVCOKnobs(CHBModule *module);
@@ -95,10 +98,10 @@ private:
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
     ParamWidget* gainParam=nullptr;
-    std::unique_ptr<CHBPanelManager> panelManager;
-    rack::QuantityWidget* expandSerializationWidget = nullptr;
+   // rack::QuantityWidget* expandSerializationWidget = nullptr;
 };
 
+#if 0
 void CHBWidget::step() 
 {
     panelManager->poll();
@@ -126,6 +129,7 @@ bool CHBWidget::isExpanded()
     panelManager->addMenuItems(theMenu);
     return theMenu;
  }
+#endif
 
 /**
  * Global coordinate constants
@@ -473,10 +477,19 @@ void CHBWidget::addExtra(CHBModule *module)
 CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
-    module(module),
-    panelManager(new CHBPanelManager(this))
+    module(module)
 {
-    panelManager->makePanel(this);
+    box.size = Vec(21 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    {
+        SVGPanel *panel = new SVGPanel();
+        panel->box.size = box.size;
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/cheby-wide-ghost.svg")));
+        addChild(panel);
+ 
+        auto border = new PanelBorderWidget();
+        border->box = box;
+        addChild(border);
+    }
 
     addHarmonics(module);
     addVCOKnobs(module);
@@ -492,6 +505,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
   
   // make this hidden one to allow serialization
+  #if 0
     auto p = createParamCentered<Blue30Knob>(
         Vec(-100, -100),
         module,
@@ -499,6 +513,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
         0, 1, 0);
     expandSerializationWidget = p;
     addParam(p);        // TODO: is necessary?
+    #endif
 }
 
 Model *modelCHBModule = Model::create<CHBModule,
