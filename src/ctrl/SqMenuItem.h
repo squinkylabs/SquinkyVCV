@@ -26,3 +26,29 @@ private:
     std::function<bool()> _isCheckedFn;
     std::function<void()> _onActionFn;
 };
+
+#include "engine.hpp"
+struct  SqMenuItem_BooleanParam : rack::MenuItem {
+
+  
+    SqMenuItem_BooleanParam(rack::Module* module, int paramId) :
+        paramId(paramId),
+        module(module) {
+    }
+    void onAction(rack::EventAction &e) override {
+        const float newValue = isOn() ? 0 : 1;
+        engineSetParam(module, paramId, newValue);
+    }
+
+    void step() override {
+        rightText = CHECKMARK(isOn());
+    }
+
+private:
+    bool isOn()
+    {
+        return module->params[paramId].value > .5f;
+    }
+    const int paramId;
+    rack::Module* const  module;
+};

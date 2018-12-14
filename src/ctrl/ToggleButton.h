@@ -53,8 +53,9 @@ inline void ToggleButton::onMouseDown( EventMouseDown &e )
         this->box.pos.x, this->box.pos.y,
         this->box.size.x, this->box.size.y
         );
+     fflush(stdout);
 #endif
-    fflush(stdout);
+   
     if (!svgs[index]->box.contains(pos)) {
         return;
     }

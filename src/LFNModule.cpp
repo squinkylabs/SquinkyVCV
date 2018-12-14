@@ -115,6 +115,16 @@ void LFNWidget::addStage(int index)
 
 inline Menu* LFNWidget::createContextMenu()
 {
+     int paramId = LFN<WidgetComposite>::XLFN_PARAM;
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(&module, paramId);
+	item->text = "Extra Low Frequency";
+	theMenu->addChild(item);
+    return theMenu;
+}
+#if 0 // first way
+inline Menu* LFNWidget::createContextMenu()
+{
     Menu* theMenu = ModuleWidget::createContextMenu();
 
     auto clickFunction = [this] {
@@ -137,6 +147,8 @@ inline Menu* LFNWidget::createContextMenu()
 
     return theMenu;
  }
+ #endif
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
