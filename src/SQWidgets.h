@@ -69,6 +69,14 @@ struct SQPush : SVGButton
             SVG::load(assetPlugin(plugin, "res/BluePush_1.svg"))
         );
     }
+
+    SQPush(const char* upSVG, const char* dnSVG)
+    {
+         setSVGs(
+            SVG::load(assetPlugin(plugin, upSVG)),
+            SVG::load(assetPlugin(plugin, dnSVG))
+         );
+    }
     void center(Vec& pos)
     {
         this->box.pos = pos.minus(this->box.size.div(2));

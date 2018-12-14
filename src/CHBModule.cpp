@@ -115,7 +115,7 @@ const float col4 = 268;
 const float row1 = 75;
 const float row2 = 131;
 const float row3 = 201;
-const float row4 = 250;
+const float row4 = 237;
 const float row5 = 287;
 const float row6 = 332;
 
@@ -200,6 +200,23 @@ void CHBWidget::addRow2(CHBModule *module)
         CHB<WidgetComposite>::PARAM_LINEAR_FM_TRIM,
         0, 1.0f, 0.0f));
     addLabel(Vec(col4 - 20, row - labelAboveKnob), "LFM");
+
+   // const float deltaX = 4;
+    addParam(createParamCentered<CKSS>(
+        Vec(col2, row),
+        module,
+        CHB<WidgetComposite>::PARAM_FOLD,
+        0.0f, 1.0f, 0.0f));
+    auto l = addLabel(Vec(col2 - 18, row - 30), "Fold");
+    l->fontSize = 11;
+    l = addLabel(Vec(col2 - 17, row + 10), "Clip");
+    l->fontSize = 11;
+
+ //  Vec(col1, 165),
+    addChild(createLightCentered<SmallLight<GreenRedLight>>(
+        Vec(col2-16, row),
+        module,
+        CHB<WidgetComposite>::GAIN_GREEN_LIGHT));
 }
 
 void CHBWidget::addRow3(CHBModule *module)
@@ -417,11 +434,13 @@ static const int ids[] = {
 
 void CHBWidget::addBottomJacks(CHBModule *module)
 {
+    const float jackCol1 = 93;
     const int numCol = 6;
-    const int deltaX = .5f + ((col3 - col1) / 3.0);
+  //  const int deltaX = .5f + ((col3 - col1) / 3.0);
+  const float deltaX = 36;
     for (int jackRow = 0; jackRow < 2; ++jackRow) {
         for (int jackCol = 0; jackCol < numCol; ++jackCol) {
-            const Vec pos(col1 + deltaX * jackCol,
+            const Vec pos(jackCol1 + deltaX * jackCol,
                 jackRow == 0 ? row5 : row6);
             const int index = jackCol + numCol * jackRow;
 
@@ -611,6 +630,15 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addRow2(module);
     addRow3(module);
     addRow4(module);
+
+    auto sw = new SQPush("res/preset-button-up.svg", "res/preset-button-down.svg");
+    Vec pos(72, 360);
+    sw->center(pos);
+    sw->onClick([this, module]() {
+        this->resetMe(module);
+    });
+
+    addChild(sw);
 
     //addVCOKnobs(module);
    // addOtherKnobs(module);
