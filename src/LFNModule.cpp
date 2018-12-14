@@ -1,4 +1,5 @@
 
+#include "ctrl/SqMenuItem.h"
 #include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
@@ -9,12 +10,11 @@
 
 /**
  */
-struct LFNModule : Module
+struct LFNModule : public Module
 {
 public:
     LFNModule();
     /**
-     *
      * Overrides of Module functions
      */
     void step() override;
@@ -27,9 +27,6 @@ private:
 
 void LFNModule::onSampleRateChange()
 {
-   // engineGetSampleTime();
-   // float rate = Module::engineGetSampleRate();
-   // float rate = 1.0f / engineGetSampleTime();      // TODO: what's up with this? this used to work!
     lfn.setSampleTime(engineGetSampleTime());
 }
 
@@ -64,8 +61,6 @@ private:
     float baseFrequency = -1;
 };
 
-
-
 struct LFNWidget : ModuleWidget
 {
     LFNWidget(LFNModule *);
@@ -80,12 +75,15 @@ struct LFNWidget : ModuleWidget
         return label;
     }
 
+    // why not on step()?
     void draw(NVGcontext *vg) override
     {
         updater.update(*this);
         module.lfn.pollForChangeOnUIThread();
         ModuleWidget::draw(vg);
     }
+
+    Menu* createContextMenu() override;
 
     void addStage(int i);
 
@@ -114,6 +112,31 @@ void LFNWidget::addStage(int index)
     addInput(Port::create<PJ301MPort>(Vec(inputX, inputY + index * knobDy),
         Port::INPUT, &module, module.lfn.EQ0_INPUT + index));
 }
+
+inline Menu* LFNWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+
+    auto clickFunction = [this] {
+        int paramId = LFN<WidgetComposite>::XLFN_PARAM;
+        bool bLow = params[LFN<WidgetComposite>::XLFN_PARAM]->value > .5f;
+        bLow = !bLow;
+
+        const float value = bLow ? 1.f : 0;
+        params[LFN<WidgetComposite>::XLFN_PARAM]->setValue(value);
+       // rack::Module* mod = &module;
+        engineSetParam(&module, paramId, value);
+    };
+
+    auto checkFunction = [this] {
+        return params[LFN<WidgetComposite>::XLFN_PARAM]->value > .5f;
+    };
+    SqMenuItem * item = new SqMenuItem(checkFunction, clickFunction);
+	item->text = "Extra Low Frequency";
+	theMenu->addChild(item);
+
+    return theMenu;
+ }
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -151,7 +174,6 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     for (int i = 0; i < 5; ++i) {
         addStage(i);
     }
-
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
