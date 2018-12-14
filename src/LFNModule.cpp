@@ -117,37 +117,13 @@ inline Menu* LFNWidget::createContextMenu()
 {
      int paramId = LFN<WidgetComposite>::XLFN_PARAM;
     Menu* theMenu = ModuleWidget::createContextMenu();
+    MenuLabel *spacerLabel = new MenuLabel();
+	theMenu->addChild(spacerLabel);
     SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(&module, paramId);
 	item->text = "Extra Low Frequency";
 	theMenu->addChild(item);
     return theMenu;
 }
-#if 0 // first way
-inline Menu* LFNWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-
-    auto clickFunction = [this] {
-        int paramId = LFN<WidgetComposite>::XLFN_PARAM;
-        bool bLow = params[LFN<WidgetComposite>::XLFN_PARAM]->value > .5f;
-        bLow = !bLow;
-
-        const float value = bLow ? 1.f : 0;
-        params[LFN<WidgetComposite>::XLFN_PARAM]->setValue(value);
-       // rack::Module* mod = &module;
-        engineSetParam(&module, paramId, value);
-    };
-
-    auto checkFunction = [this] {
-        return params[LFN<WidgetComposite>::XLFN_PARAM]->value > .5f;
-    };
-    SqMenuItem * item = new SqMenuItem(checkFunction, clickFunction);
-	item->text = "Extra Low Frequency";
-	theMenu->addChild(item);
-
-    return theMenu;
- }
- #endif
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -163,7 +139,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/lfn_panel.svg")));
         addChild(panel);
     }
-
+#if 0
     ToggleButton* tog = ParamWidget::create<ToggleButton>(
         Vec(3, 16),
         module,
@@ -172,6 +148,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     tog->addSvg("res/LFN.svg");
     tog->addSvg("res/XLFN.svg");
     addParam(tog);
+#endif
 
     addOutput(Port::create<PJ301MPort>(
         Vec(59, inputY - knobDy -1), Port::OUTPUT, module, module->lfn.OUTPUT));

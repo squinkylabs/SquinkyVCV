@@ -57,13 +57,6 @@ struct CHBWidget : ModuleWidget
     friend struct CHBEconomyItem;
     CHBWidget(CHBModule *);
 
-    // IPanelHost
-    #if 0
-    void setExpanded(bool) override;
-    bool isExpanded() override;
-    void step() override;
-    #endif
-
     /**
      * Helper to add a text label to this widget
      */
@@ -77,14 +70,17 @@ struct CHBWidget : ModuleWidget
         return label;
     }
 
-  //  Menu* createContextMenu() override;
-
     void addHarmonics(CHBModule *module);
-    void addVCOKnobs(CHBModule *module);
-    void addOtherKnobs(CHBModule *module);
-    void addMisc(CHBModule *module);
+    void addRow1(CHBModule *module);
+    void addRow2(CHBModule *module);
+    void addRow3(CHBModule *module);
+    void addRow4(CHBModule *module);
+
+   // void addVCOKnobs(CHBModule *module);
+   // void addOtherKnobs(CHBModule *module);
+   // void addMisc(CHBModule *module);
     void addBottomJacks(CHBModule *module);
-    void addExtra(CHBModule *module);
+  //  void addExtra(CHBModule *module);
     void resetMe(CHBModule *module);
 private:
     bool fake;
@@ -101,36 +97,6 @@ private:
    // rack::QuantityWidget* expandSerializationWidget = nullptr;
 };
 
-#if 0
-void CHBWidget::step() 
-{
-    panelManager->poll();
-    Widget::step();
-}
-
-void CHBWidget::setExpanded(bool expanded) 
-{   
-    module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value = expanded ? 1.f : 0.f;
-
-    if (expandSerializationWidget) {
-        expandSerializationWidget->setValue( expanded ? 1.f : 0.f);
-    }
-}
-
-bool CHBWidget::isExpanded()
-{
-    float x = module->params[ CHB<WidgetComposite>::PARAM_EXPAND].value;
-    return x > .5;
-}
-
- Menu* CHBWidget::createContextMenu()
- {
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    panelManager->addMenuItems(theMenu);
-    return theMenu;
- }
-#endif
-
 /**
  * Global coordinate constants
  */
@@ -143,13 +109,15 @@ const float harmonicTrimDeltax = 27.5;
 const float col1 = 95;
 const float col2 = 150;
 const float col3 = 214;
+const float col4 = 268;
 
 // rows of knobs
 const float row1 = 75;
 const float row2 = 131;
-const float row3 = 228;
-const float row4 = 287;
-const float row5 = 332;
+const float row3 = 201;
+const float row4 = 250;
+const float row5 = 287;
+const float row6 = 332;
 
 const float labelAboveKnob = 33;
 const float labelAboveJack = 30;
@@ -174,6 +142,132 @@ inline void CHBWidget::addHarmonics(CHBModule *module)
     }
 }
 
+void CHBWidget::addRow1(CHBModule *module)
+{
+    const float row = row1;
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col1, row),
+        module,
+        CHB<WidgetComposite>::PARAM_RISE,
+        -5.f, 5.f, 0.f));
+    addLabel(Vec(col1 - 20, row - labelAboveKnob), "Rise");   
+
+    addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(col2, row),
+        module,
+        CHB<WidgetComposite>::PARAM_OCTAVE,
+        -5.0f, 4.0f, 0.f));
+    addLabel(Vec(col2 - 27, row1 - labelAboveKnob), "Octave");
+
+    addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_SEMIS,
+        -11.0f, 11.0f, 0.f));
+    addLabel(Vec(col3 - 27, row - labelAboveKnob), "Semi");
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col4, row1),
+        module,
+        CHB<WidgetComposite>::PARAM_TUNE,
+        -7.0f, 7.0f, 0));
+    addLabel(Vec(col4 - 22, row1 - labelAboveKnob), "Tune");
+}
+
+void CHBWidget::addRow2(CHBModule *module)
+{
+    const float row = row2;
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col1, row),
+        module,
+        CHB<WidgetComposite>::PARAM_FALL,
+        -5.f, 5.f, 0.f));
+    addLabel(Vec(col1 - 20, row - labelAboveKnob), "Fall");
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_PITCH_MOD_TRIM,
+        0, 1.0f, 0.0f));
+    addLabel(Vec(col3 - 20, row - labelAboveKnob), "Mod");
+
+    // todo: what was the old range for this? I lost it.
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col4, row),
+        module,
+        CHB<WidgetComposite>::PARAM_LINEAR_FM_TRIM,
+        0, 1.0f, 0.0f));
+    addLabel(Vec(col4 - 20, row - labelAboveKnob), "LFM");
+}
+
+void CHBWidget::addRow3(CHBModule *module)
+{
+    const float row = row3;
+
+    gainParam = createParamCentered<Blue30Knob>(
+        Vec(col1, row),
+        module,
+        CHB<WidgetComposite>::PARAM_EXTGAIN,
+        -5.0f, 5.0f, defaultGainParam);
+    addParam(gainParam);
+    addLabel(Vec(col1 - 22, row - labelAboveKnob), "Gain");
+
+    //even
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col2, row),
+        module,
+        CHB<WidgetComposite>::PARAM_MAG_EVEN,
+        -5, 5, 5));
+    addLabel(Vec(col2 - 21.5, row - labelAboveKnob), "Even");
+
+    // slope
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_SLOPE,
+        -5, 5, 5));
+    addLabel(Vec(col3 - 23, row - labelAboveKnob), "Slope");
+
+    //odd
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col4, row),
+        module,
+        CHB<WidgetComposite>::PARAM_MAG_ODD,
+        -5, 5, 5));
+    addLabel(Vec(col4 - 20, row - labelAboveKnob), "Odd");
+
+}
+void CHBWidget::addRow4(CHBModule *module)
+{
+    float row = row4;
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(col1, row),
+        module,
+        CHB<WidgetComposite>::PARAM_EXTGAIN_TRIM,
+        0, 1, 0));
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(col2, row),
+        module,
+        CHB<WidgetComposite>::PARAM_EVEN_TRIM,
+        -1.0f, 1.0f, 0));
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_SLOPE_TRIM,
+        -1.0f, 1.0f, 0));
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(col4, row),
+        module,
+        CHB<WidgetComposite>::PARAM_ODD_TRIM,
+        -1.0f, 1.0f, 0));
+}
+#if 0
 inline void CHBWidget::addVCOKnobs(CHBModule *module)
 {
     addParam(createParamCentered<Blue30SnapKnob>(
@@ -197,6 +291,7 @@ inline void CHBWidget::addVCOKnobs(CHBModule *module)
         0, 1.0f, 0.0f));
     addLabel(Vec(col2 - 20, row2 - labelAboveKnob), "Mod");
 }
+
 
 inline void CHBWidget::addOtherKnobs(CHBModule *module)
 {
@@ -271,55 +366,72 @@ void CHBWidget::addMisc(CHBModule *module)
         module,
         module->chb.GAIN_GREEN_LIGHT));
 }
+#endif
 
 static const char* labels[] = {
     "V/Oct",
     "Mod",
     "LFM",
+    "Even",
     "Slope",
+    "Odd",
     "Ext In",
     "Gain",
     "EG",
+    "Rise",
+    "Fall",
     "Out",
+    nullptr,
 };
 static const int offsets[] = {
     -1,
     1,
     2,
+    0,
     -1,
+    0,
     -1,
     1,
     5,
+    0,
+    0,
     2
 };
 
 static const int ids[] = {
+    // top row
     CHB<WidgetComposite>::CV_INPUT,
     CHB<WidgetComposite>::PITCH_MOD_INPUT,
     CHB<WidgetComposite>::LINEAR_FM_INPUT,
+    CHB<WidgetComposite>::EVEN_INPUT,
     CHB<WidgetComposite>::SLOPE_INPUT,
+    CHB<WidgetComposite>::ODD_INPUT,
+    //bottom row
     CHB<WidgetComposite>::AUDIO_INPUT,
     CHB<WidgetComposite>::GAIN_INPUT,
     CHB<WidgetComposite>::ENV_INPUT,
+    CHB<WidgetComposite>::RISE_INPUT,
+    CHB<WidgetComposite>::FALL_INPUT,
     CHB<WidgetComposite>::MIX_OUTPUT
 };
 
 void CHBWidget::addBottomJacks(CHBModule *module)
 {
+    const int numCol = 6;
     const int deltaX = .5f + ((col3 - col1) / 3.0);
     for (int jackRow = 0; jackRow < 2; ++jackRow) {
-        for (int jackCol = 0; jackCol < 4; ++jackCol) {
+        for (int jackCol = 0; jackCol < numCol; ++jackCol) {
             const Vec pos(col1 + deltaX * jackCol,
-                jackRow == 0 ? row4 : row5);
-            const int index = jackCol + 4 * jackRow;
+                jackRow == 0 ? row5 : row6);
+            const int index = jackCol + numCol * jackRow;
 
             auto color = COLOR_BLACK;
-            if (index == 7) {
+            if (index == 11) {
                 color = COLOR_WHITE;
             }
 
             const int id = ids[index];
-            if (index == 7) {
+            if (index == 11) {
                 addOutput(createOutputCentered<PJ301MPort>(
                     pos,
                     module,
@@ -330,6 +442,7 @@ void CHBWidget::addBottomJacks(CHBModule *module)
                     module,
                     id));
             }
+
             auto l = addLabel(Vec(pos.x - 20 + offsets[index], pos.y - labelAboveJack),
                 labels[index],
                 color);
@@ -392,6 +505,7 @@ void CHBWidget::resetMe(CHBModule *module)
     gainParam->setValue(defaultGainParam);
 }
 
+#if 0
 static const float exCol1 = 285;
 static const float exColJx1 = 270;
 static const float exColJx2 = 300;
@@ -468,6 +582,7 @@ void CHBWidget::addExtra(CHBModule *module)
     addLabel(Vec(exColJx1+6, 240-10), "odd");
 
 }
+#endif
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -479,7 +594,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
     numHarmonics(module->chb.numHarmonics),
     module(module)
 {
-    box.size = Vec(21 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
@@ -492,10 +607,15 @@ CHBWidget::CHBWidget(CHBModule *module) :
     }
 
     addHarmonics(module);
-    addVCOKnobs(module);
-    addOtherKnobs(module);
-    addMisc(module);
-    addExtra(module);
+    addRow1(module);
+    addRow2(module);
+    addRow3(module);
+    addRow4(module);
+
+    //addVCOKnobs(module);
+   // addOtherKnobs(module);
+   // addMisc(module);
+  //  addExtra(module);
     addBottomJacks(module);
 
     // screws
@@ -503,17 +623,6 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
-  
-  // make this hidden one to allow serialization
-  #if 0
-    auto p = createParamCentered<Blue30Knob>(
-        Vec(-100, -100),
-        module,
-        module->chb.PARAM_EXPAND,
-        0, 1, 0);
-    expandSerializationWidget = p;
-    addParam(p);        // TODO: is necessary?
-    #endif
 }
 
 Model *modelCHBModule = Model::create<CHBModule,

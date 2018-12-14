@@ -67,11 +67,12 @@ public:
         PARAM_H8,
         PARAM_H9,       // up to here is Ver 1.0
         PARAM_EXPAND,
-        PARAM_HATTACK,
-        PARAM_HRELEASE,
+        PARAM_RISE,
+        PARAM_FALL,
         PARAM_EVEN_TRIM,
         PARAM_ODD_TRIM,
         PARAM_SLOPE_TRIM,
+        PARAM_SEMIS,
         NUM_PARAMS
     };
     const int numHarmonics = 1 + PARAM_H9 - PARAM_H0;
@@ -96,8 +97,8 @@ public:
         H8_INPUT,
         H9_INPUT,
         H10_INPUT,      // up to here V1.0
-        HATTACK_INPUT,
-        HRELEASE_INPUT,
+        RISE_INPUT,
+        FALL_INPUT,
         EVEN_INPUT,
         ODD_INPUT,
         NUM_INPUTS
@@ -230,13 +231,13 @@ template <class TBase>
 inline void CHB<TBase>::updateLagTC()
 {
     const float combinedA = lin(
-        TBase::inputs[HATTACK_INPUT].value,
-        TBase::params[PARAM_HATTACK].value,
+        TBase::inputs[RISE_INPUT].value,
+        TBase::params[PARAM_RISE].value,
         1);
 
     const float combinedR = lin(
-        TBase::inputs[HRELEASE_INPUT].value,
-        TBase::params[PARAM_HRELEASE].value,
+        TBase::inputs[FALL_INPUT].value,
+        TBase::params[PARAM_FALL].value,
         1);
     if (combinedA < .1 && combinedR < .1) {
         lag.setEnable(false);
