@@ -257,7 +257,9 @@ inline float CHB<TBase>::getInput()
     assert(TBase::engineGetSampleTime() > 0);
 
     // Get the frequency from the inputs.
-    float pitch = 1.0f + roundf(TBase::params[PARAM_OCTAVE].value) + TBase::params[PARAM_TUNE].value / 12.0f;
+    float pitch = 1.0f + roundf(TBase::params[PARAM_OCTAVE].value) +
+        TBase::params[PARAM_SEMIS].value / 12.0f+
+        TBase::params[PARAM_TUNE].value / 12.0f;
     pitch += TBase::inputs[CV_INPUT].value;
     pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
         taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);

@@ -1,6 +1,3 @@
-
-
-
 #include "Squinky.hpp"
 #include "SQWidgets.h"
 #include "WidgetComposite.h"
@@ -9,7 +6,67 @@
 
 #include "CHB.h"
 #include "IMWidgets.hpp"
-//#include "CHBPanelManager.h"
+
+struct CHBModule;
+
+class CHBPitchDisplay
+{
+public:
+    CHBPitchDisplay(CHBModule * mod) : module(mod) {}
+    void step();
+   
+
+
+    void addSemiLabel(Label*);
+
+private:
+    CHBModule * const module;
+
+
+    Label* semiLabel=nullptr;
+    float semiX=0;
+ 
+    float lastSemi = 100;
+    void update(int);
+};
+
+void CHBPitchDisplay::addSemiLabel(Label* l)
+{
+    semiLabel = l;
+    semiX = l->box.pos.x;
+}
+
+static const char* names[] = {
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "D"
+};
+
+static int semi_offsets[] = {
+    0,
+ 0,
+ 0,
+ 0,
+ 0,
+  0,
+  0,
+ 0,
+ 0,
+ 0,
+ 0,
+ 0
+};
+
+
 
 /**
  */
@@ -17,9 +74,8 @@ struct CHBModule : Module
 {
 public:
     CHBModule();
+
     /**
-     *
-     *
      * Overrides of Module functions
      */
     void step() override;
@@ -48,6 +104,27 @@ void CHBModule::onSampleRateChange()
     chb.onSampleRateChange();
 }
 
+void CHBPitchDisplay::step()
+{
+
+    const int semiParam = CHB<WidgetComposite>::PARAM_SEMIS;
+    const int semi = module->params[semiParam].value;
+    if (semi != lastSemi) {
+        lastSemi = semi;
+        std::stringstream so;
+        int semi = lastSemi;
+        if (semi < 0) {
+            semi += 12;
+        }
+
+        so << "Semi: " << names[semi];
+       // semiLabel->text = names[semi];
+        semiLabel->text = so.str();
+        semiLabel->box.pos.x = semiX + semi_offsets[semi];
+    }
+
+}
+
 ////////////////////
 // module widget
 ////////////////////
@@ -70,20 +147,20 @@ struct CHBWidget : ModuleWidget
         return label;
     }
 
+     void step() override
+     {
+         ModuleWidget::step();
+         pitchDisplay.step();
+     }
+private:
     void addHarmonics(CHBModule *module);
     void addRow1(CHBModule *module);
     void addRow2(CHBModule *module);
     void addRow3(CHBModule *module);
     void addRow4(CHBModule *module);
 
-   // void addVCOKnobs(CHBModule *module);
-   // void addOtherKnobs(CHBModule *module);
-   // void addMisc(CHBModule *module);
     void addBottomJacks(CHBModule *module);
-  //  void addExtra(CHBModule *module);
     void resetMe(CHBModule *module);
-private:
-    bool fake;
 
     // This is the gain which when run throught all the lookup tables
     // gives a gain of 1.
@@ -94,8 +171,10 @@ private:
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
     ParamWidget* gainParam=nullptr;
-   // rack::QuantityWidget* expandSerializationWidget = nullptr;
+
+     CHBPitchDisplay pitchDisplay;
 };
+
 
 /**
  * Global coordinate constants
@@ -165,7 +244,8 @@ void CHBWidget::addRow1(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_SEMIS,
         -11.0f, 11.0f, 0.f));
-    addLabel(Vec(col3 - 27, row - labelAboveKnob), "Semi");
+    pitchDisplay.addSemiLabel( 
+        addLabel(Vec(col3 - 30, row - labelAboveKnob), "Semi"));
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(col4, row1),
@@ -193,7 +273,6 @@ void CHBWidget::addRow2(CHBModule *module)
         0, 1.0f, 0.0f));
     addLabel(Vec(col3 - 20, row - labelAboveKnob), "Mod");
 
-    // todo: what was the old range for this? I lost it.
     addParam(createParamCentered<Blue30Knob>(
         Vec(col4, row),
         module,
@@ -201,7 +280,6 @@ void CHBWidget::addRow2(CHBModule *module)
         0, 1.0f, 0.0f));
     addLabel(Vec(col4 - 20, row - labelAboveKnob), "LFM");
 
-   // const float deltaX = 4;
     addParam(createParamCentered<CKSS>(
         Vec(col2, row),
         module,
@@ -212,7 +290,6 @@ void CHBWidget::addRow2(CHBModule *module)
     l = addLabel(Vec(col2 - 17, row + 10), "Clip");
     l->fontSize = 11;
 
- //  Vec(col1, 165),
     addChild(createLightCentered<SmallLight<GreenRedLight>>(
         Vec(col2-16, row),
         module,
@@ -256,6 +333,7 @@ void CHBWidget::addRow3(CHBModule *module)
     addLabel(Vec(col4 - 20, row - labelAboveKnob), "Odd");
 
 }
+
 void CHBWidget::addRow4(CHBModule *module)
 {
     float row = row4;
@@ -284,106 +362,6 @@ void CHBWidget::addRow4(CHBModule *module)
         CHB<WidgetComposite>::PARAM_ODD_TRIM,
         -1.0f, 1.0f, 0));
 }
-#if 0
-inline void CHBWidget::addVCOKnobs(CHBModule *module)
-{
-    addParam(createParamCentered<Blue30SnapKnob>(
-        Vec(col2, row1),
-        module,
-        module->chb.PARAM_OCTAVE,
-        -5.0f, 4.0f, 0.f));
-    addLabel(Vec(col2 - 27, row1 - labelAboveKnob), "Octave");
-
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col3, row1),
-        module,
-        module->chb.PARAM_TUNE,
-        -7.0f, 7.0f, 0));
-    addLabel(Vec(col3 - 22, row1 - labelAboveKnob), "Tune");
-
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col2, row2),
-        module,
-        module->chb.PARAM_PITCH_MOD_TRIM,
-        0, 1.0f, 0.0f));
-    addLabel(Vec(col2 - 20, row2 - labelAboveKnob), "Mod");
-}
-
-
-inline void CHBWidget::addOtherKnobs(CHBModule *module)
-{
-    // gain
-    gainParam = createParamCentered<Blue30Knob>(
-        Vec(col1, row2),
-        module,
-        module->chb.PARAM_EXTGAIN,
-        -5.0f, 5.0f, defaultGainParam);
-    addParam(gainParam);
-
-    addLabel(Vec(col1 - 22, row2 - labelAboveKnob), "Gain");
-
-    addParam(createParamCentered<Trimpot>(
-        Vec(col1, row2+30),
-        module,
-        module->chb.PARAM_EXTGAIN_TRIM,
-        0, 1, 0));
-
-    // slope
-    const float col2p5 = (col2 + col3) / 2;
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col2p5, 188),
-        module,
-        module->chb.PARAM_SLOPE,
-        -5, 5, 5));
-    addLabel(Vec(col2p5 - 23, 188 - labelAboveKnob), "Slope");
-
-    //even
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col2, row3),
-        module,
-        module->chb.PARAM_MAG_EVEN,
-        -5, 5, 5));
-    addLabel(Vec(col2 - 21.5, row3 - labelAboveKnob), "Even");
-
-    //odd
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col3, row3),
-        module,
-        module->chb.PARAM_MAG_ODD,
-        -5, 5, 5));
-    addLabel(Vec(col3 - 20, row3 - labelAboveKnob), "Odd");
-}
-
-void CHBWidget::addMisc(CHBModule *module)
-{
-    auto sw = new SQPush();
-    Vec pos(col1, row1);
-    sw->center(pos);
-    sw->onClick([this, module]() {
-        this->resetMe(module);
-    });
-
-    addChild(sw);
-    addLabel(Vec(col1 - 25, row1 - labelAboveKnob), "Preset");
-
-    const float switchY = 219;
-    addParam(createParamCentered<CKSS>(
-        Vec(col1, switchY),
-        module,
-        module->chb.PARAM_FOLD,
-        0.0f, 1.0f, 0.0f));
-    auto l = addLabel(Vec(col1 - 18, 219 - 30), "Fold");
-    l->fontSize = 11;
-    l = addLabel(Vec(col1 - 17, 219 + 10), "Clip");
-    l->fontSize = 11;
-
- //  Vec(col1, 165),
-    addChild(createLightCentered<SmallLight<GreenRedLight>>(
-        Vec(col1-16, switchY),
-        module,
-        module->chb.GAIN_GREEN_LIGHT));
-}
-#endif
 
 static const char* labels[] = {
     "V/Oct",
@@ -436,8 +414,7 @@ void CHBWidget::addBottomJacks(CHBModule *module)
 {
     const float jackCol1 = 93;
     const int numCol = 6;
-  //  const int deltaX = .5f + ((col3 - col1) / 3.0);
-  const float deltaX = 36;
+    const float deltaX = 36;
     for (int jackRow = 0; jackRow < 2; ++jackRow) {
         for (int jackCol = 0; jackCol < numCol; ++jackCol) {
             const Vec pos(jackCol1 + deltaX * jackCol,
@@ -524,85 +501,6 @@ void CHBWidget::resetMe(CHBModule *module)
     gainParam->setValue(defaultGainParam);
 }
 
-#if 0
-static const float exCol1 = 285;
-static const float exColJx1 = 270;
-static const float exColJx2 = 300;
-
-static const float exRowHa = 80;
-static const float exRowHr = 130;
-
-static const float exRowJacks = row5;
-static const float exRowJacks2 = row4;
-
-void CHBWidget::addExtra(CHBModule *module)
-{
-    //HA nad HR knobs
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(exCol1, exRowHa),
-        module,
-        CHB<WidgetComposite>::PARAM_HATTACK,
-        -5.f, 5.f, 0.f));
-    addLabel(Vec(exCol1 - 20, exRowHa - labelAboveKnob), "Rise");
-
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(exCol1, exRowHr),
-        module,
-        CHB<WidgetComposite>::PARAM_HRELEASE,
-        -5.f, 5.f, 0.f));
-    addLabel(Vec(exCol1 - 20, exRowHr - labelAboveKnob), "Fall");
-
-    //  bottom row of inputs.
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(exColJx1, exRowJacks),
-        module,
-        CHB<WidgetComposite>::HATTACK_INPUT));
-    addLabel(Vec(exColJx1-20, exRowJacks - labelAboveKnob), "rise");
-
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(exColJx2, exRowJacks),
-        module,
-        CHB<WidgetComposite>::HRELEASE_INPUT));
-    addLabel(Vec(exColJx2-20, exRowJacks - labelAboveKnob), "fall");
-
-    // second from the bottom row of inputs
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(exColJx1, exRowJacks2),
-        module,
-        CHB<WidgetComposite>::EVEN_INPUT));
-    addLabel(Vec(exColJx1-20, exRowJacks2 - labelAboveKnob), "even");
-
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(exColJx2, exRowJacks2),
-        module,
-        CHB<WidgetComposite>::ODD_INPUT));
-    addLabel(Vec(exColJx2-20, exRowJacks2 - labelAboveKnob), "odd");
-
-    // three attenuverters
-  addParam(createParamCentered<Trimpot>(
-            Vec(exColJx1, 180),
-            module,
-            CHB<WidgetComposite>::PARAM_SLOPE_TRIM,
-            -1.0f, 1.0f, 0));
-    addLabel(Vec(exColJx1+6, 180-10), "slope");
-
-    addParam(createParamCentered<Trimpot>(
-            Vec(exColJx1, 210),
-            module,
-            CHB<WidgetComposite>::PARAM_EVEN_TRIM,
-            -1.0f, 1.0f, 0));
-    addLabel(Vec(exColJx1+6, 210-10), "even");
-
-    addParam(createParamCentered<Trimpot>(
-            Vec(exColJx1, 240),
-            module,
-            CHB<WidgetComposite>::PARAM_ODD_TRIM,
-            -1.0f, 1.0f, 0));
-    addLabel(Vec(exColJx1+6, 240-10), "odd");
-
-}
-#endif
-
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -611,13 +509,14 @@ void CHBWidget::addExtra(CHBModule *module)
 CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
-    module(module)
+    module(module),
+    pitchDisplay(module)
 {
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/cheby-wide-ghost.svg")));
+        panel->setBackground(SVG::load(assetPlugin(plugin, "res/chb_panel.svg")));
         addChild(panel);
  
         auto border = new PanelBorderWidget();
@@ -631,19 +530,16 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addRow3(module);
     addRow4(module);
 
-    auto sw = new SQPush("res/preset-button-up.svg", "res/preset-button-down.svg");
-    Vec pos(72, 360);
+    auto sw = new SQPush(
+        "res/preset-button-up.svg",
+        "res/preset-button-down.svg");
+    Vec pos(64, 360);
     sw->center(pos);
     sw->onClick([this, module]() {
         this->resetMe(module);
     });
 
     addChild(sw);
-
-    //addVCOKnobs(module);
-   // addOtherKnobs(module);
-   // addMisc(module);
-  //  addExtra(module);
     addBottomJacks(module);
 
     // screws

@@ -29,10 +29,10 @@ void EV3Module::step()
 
 /************************************************************/
 
-class PitchDisplay
+class EV3PitchDisplay
 {
 public:
-    PitchDisplay(EV3Module * mod) : module(mod) {}
+    EV3PitchDisplay(EV3Module * mod) : module(mod) {}
     void step();
 
     /**
@@ -52,7 +52,7 @@ private:
     void update(int);
 };
 
-void PitchDisplay::step()
+void EV3PitchDisplay::step()
 {
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
     for (int i=0; i<3; ++i) {
@@ -100,18 +100,18 @@ static int offsets[] = {
     2       // M7
 };
 
-void PitchDisplay::addOctLabel(Label* l)
+void EV3PitchDisplay::addOctLabel(Label* l)
 {
     octLabels.push_back(l);
 }
 
-void PitchDisplay::addSemiLabel(Label* l)
+void EV3PitchDisplay::addSemiLabel(Label* l)
 {
     semiLabels.push_back(l);
     semiX.push_back(l->box.pos.x);
 }
 
-void PitchDisplay::update(int osc) {
+void EV3PitchDisplay::update(int osc) {
     std::stringstream so;
     int oct = 5 + lastOctave[osc];
     int semi = lastSemi[osc];
@@ -148,7 +148,7 @@ struct EV3Widget : ModuleWidget
 
     void step() override;
 
-    PitchDisplay pitchDisplay;
+    EV3PitchDisplay pitchDisplay;
     EV3Module* const module;
     Label* plusOne = nullptr;
     Label* plusTwo = nullptr;
