@@ -51,19 +51,20 @@ static const char* names[] = {
     "D"
 };
 
+// we can get rid of this
 static int semi_offsets[] = {
     0,
- 0,
- 0,
- 0,
- 0,
-  0,
-  0,
- 0,
- 0,
- 0,
- 0,
- 0
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
 };
 
 
@@ -106,7 +107,6 @@ void CHBModule::onSampleRateChange()
 
 void CHBPitchDisplay::step()
 {
-
     const int semiParam = CHB<WidgetComposite>::PARAM_SEMIS;
     const int semi = module->params[semiParam].value;
     if (semi != lastSemi) {
@@ -118,11 +118,9 @@ void CHBPitchDisplay::step()
         }
 
         so << "Semi: " << names[semi];
-       // semiLabel->text = names[semi];
         semiLabel->text = so.str();
         semiLabel->box.pos.x = semiX + semi_offsets[semi];
     }
-
 }
 
 ////////////////////

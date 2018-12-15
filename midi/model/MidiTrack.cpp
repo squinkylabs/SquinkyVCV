@@ -19,6 +19,8 @@ void MidiTrack::assertValid() const
 
     int numEnds = 0;
     bool lastIsEnd = false;
+    (void) lastIsEnd;
+    
     float lastEnd = 0;
     MidiEvent::time_t startTime = 0;
     MidiEvent::time_t totalDur = 0;
