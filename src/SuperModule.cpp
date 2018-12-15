@@ -4,6 +4,7 @@
 #include "SQWidgets.h"
 
 #include "Super.h"
+#include "ctrl/ToggleButton.h"
 
 /**
  */
@@ -19,8 +20,6 @@ public:
     void onSampleRateChange() override;
 
     Super<WidgetComposite> super;
-private:
-
 };
 
 void SuperModule::onSampleRateChange()
@@ -38,7 +37,7 @@ SuperModule::SuperModule()
     super.init();
 }
 
-void SuperModule::step()
+inline void SuperModule::step()
 {
     super.step();
 }
@@ -83,7 +82,7 @@ const float jackRow2 = 332;
 const float labelOffsetBig = -40;
 const float labelOffsetSmall = -32;
 
-void superWidget::addPitchKnobs(SuperModule *)
+inline void superWidget::addPitchKnobs(SuperModule *)
 {
     // Octave
     auto oct = createParamCentered<Rogan1PSBlue>(
@@ -92,7 +91,7 @@ void superWidget::addPitchKnobs(SuperModule *)
     oct->smooth = false;
     addParam(oct);
     addLabel(
-        Vec(col1 - 20, row1 + labelOffsetBig), "Oct");
+        Vec(col1 - 16, row1 + labelOffsetBig), "Oct");
 
     // Semi
     auto semi = createParamCentered<Rogan1PSBlue>(
@@ -107,29 +106,29 @@ void superWidget::addPitchKnobs(SuperModule *)
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(col1, row2), module, Super<WidgetComposite>::FINE_PARAM, -1, 1, 0));
     addLabel(
-        Vec(col1 - 20, row2 + labelOffsetBig), "Fine");
+        Vec(col1 - 18, row2 + labelOffsetBig), "Fine");
     
     // FM
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(col2, row2), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
-    addLabel(Vec(col2 - 20, row2 + labelOffsetBig), "FM");
+    addLabel(Vec(col2 - 17, row2 + labelOffsetBig), "FM");
 
 }
 
-void superWidget::addOtherKnobs(SuperModule *)
+inline void superWidget::addOtherKnobs(SuperModule *)
 {
     // Detune
     addParam(createParamCentered<Blue30Knob>(
         Vec(col1, row3), module, Super<WidgetComposite>::DETUNE_PARAM, -5, 5, 0));
     addLabel(
-        Vec(col1 - 26, row3 + labelOffsetSmall), "Detune");
+        Vec(col1 - 28, row3 + labelOffsetSmall), "Detune");
     addParam(createParamCentered<Trimpot>(
         Vec(col1, row4), module, Super<WidgetComposite>::DETUNE_TRIM_PARAM, -1, 1, 0));
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(col2, row3), module, Super<WidgetComposite>::MIX_PARAM, -5, 5, 0));
     addLabel(
-        Vec(col2 - 20, row3 + labelOffsetSmall), "Mix");
+        Vec(col2 - 19, row3 + labelOffsetSmall), "Mix");
     addParam(createParamCentered<Trimpot>(
         Vec(col2, row4), module, Super<WidgetComposite>::MIX_TRIM_PARAM, -1, 1, 0));
 
@@ -140,8 +139,7 @@ const float jackDx = 33;
 const float jackOffsetLabel = -30;
 const float jackLabelPoints = 11;
 
-
-void superWidget::addJacks(SuperModule *)
+inline void superWidget::addJacks(SuperModule *)
 {
     Label* l = nullptr;
     // first row
@@ -198,7 +196,7 @@ void superWidget::addJacks(SuperModule *)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
+inline superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
 {
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
@@ -212,14 +210,20 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     addOtherKnobs(module);
     addJacks(module);
 
-#if 0
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(100, 60), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
-    addLabel(Vec(col2+6, 25), "FM");
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(col3-20, 100), module, Super<WidgetComposite>::FM_INPUT));
-#endif
+    // the "classic" switch
+    
+    printf("\n**** about to create\n");
+    ToggleButton* tog = createParamCentered<ToggleButton>(
+        Vec(82, 164),
+        module,
+        Super<WidgetComposite>::CLEAN_PARAM,
+        0.0f, 2, 0);
+    tog->addSvg("res/clean-switch-01.svg");
+    tog->addSvg("res/clean-switch-02.svg");
+    tog->addSvg("res/clean-switch-03.svg");
+    addParam(tog);
 
+     printf("\n**** created\n"); fflush(stdout);
 #if 0
     addParam(createParamCentered<NKK>(
         Vec(col2+ 25,170),
@@ -229,49 +233,6 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
         ));
         addLabel(Vec(col2, 190), "classic");
         addLabel(Vec(col2+10, 130), "8X");
-        #endif
-
-#if 0
-    // Semi
-    const float semiY = 120;
-
-    auto semi = createParamCentered<Rogan1PSBlue>(
-        Vec(col1, semiY), module, Super<WidgetComposite>::SEMI_PARAM, -11, 11, 0); 
-    semi->snap = true;
-    semi->smooth = false;
-    addParam(semi);
-    addLabel(
-        Vec(10, semiY + labelOffset), "Semi");
-
-    // Fine
-    const float fineY = 180;
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(col1, fineY), module, Super<WidgetComposite>::FINE_PARAM, -1, 1, 0));
-    addLabel(
-        Vec(10, fineY + labelOffset), "Fine");
-
-    // Detune
-    const float detuneY = 240;
-    labelOffset += 5;
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col1, detuneY), module, Super<WidgetComposite>::DETUNE_PARAM, -5, 5, 0));
-    addLabel(
-        Vec(10, detuneY + labelOffset), "Detune");
-    addParam(createParamCentered<Trimpot>(
-        Vec(col2, detuneY), module, Super<WidgetComposite>::DETUNE_TRIM_PARAM, -1, 1, 0));
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(col3, detuneY), module, Super<WidgetComposite>::DETUNE_INPUT));
-
-    // Waveform Mix
-    const float mixY = 290;
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col1, mixY), module, Super<WidgetComposite>::MIX_PARAM, -5, 5, 0));
-    addLabel(
-        Vec(10, mixY + labelOffset), "Mix");
-    addParam(createParamCentered<Trimpot>(
-        Vec(col2, mixY), module, Super<WidgetComposite>::MIX_TRIM_PARAM, -1, 1, 0));
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(col3, mixY), module, Super<WidgetComposite>::MIX_INPUT));
 #endif
 
     // screws
@@ -280,7 +241,6 @@ superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
-
 
 Model *modelSuperModule = Model::create<SuperModule,
     superWidget>("Squinky Labs",
