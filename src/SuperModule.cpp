@@ -6,6 +6,7 @@
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SemitoneDisplay.h"
+#include "IMWidgets.hpp"
 
 /**
  */
@@ -195,7 +196,7 @@ void superWidget::addJacks(SuperModule *)
          module,
         Super<WidgetComposite>::MAIN_OUTPUT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 16,  jackRow2 + jackOffsetLabel), "out");  
+        Vec(jackX + 3 * jackDx - 16,  jackRow2 + jackOffsetLabel), "Out", COLOR_WHITE);  
     l->fontSize = jackLabelPoints;
 }
 
@@ -214,6 +215,11 @@ superWidget::superWidget(SuperModule *module) :
         panel->box.size = box.size;
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/super_panel.svg")));
         addChild(panel);
+
+        // Is this really needed?
+        auto border = new PanelBorderWidget();
+        border->box = box;
+        addChild(border);
     }
 
     addPitchKnobs(module);
@@ -221,8 +227,6 @@ superWidget::superWidget(SuperModule *module) :
     addJacks(module);
 
     // the "classic" switch
-    
-    printf("\n**** about to create\n");
     ToggleButton* tog = createParamCentered<ToggleButton>(
         Vec(82, 164),
         module,
@@ -232,18 +236,6 @@ superWidget::superWidget(SuperModule *module) :
     tog->addSvg("res/clean-switch-02.svg");
     tog->addSvg("res/clean-switch-03.svg");
     addParam(tog);
-
-     printf("\n**** created\n"); fflush(stdout);
-#if 0
-    addParam(createParamCentered<NKK>(
-        Vec(col2+ 25,170),
-        module, 
-        Super<WidgetComposite>::CLEAN_PARAM,
-        0.0f, 2.0f, 0.0f
-        ));
-        addLabel(Vec(col2, 190), "classic");
-        addLabel(Vec(col2+10, 130), "8X");
-#endif
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

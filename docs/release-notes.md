@@ -1,26 +1,30 @@
 # Release notes for Squinky Labs modules
 
-## 0.6.13
+## 0.6.14
 
 New Module: Saws (Super Saw VCO emulation).
 
 Reduced CPU usage of Formants, Growler, Colors, and Chopper.
 
-EV3 enhancement: mixed waveform output now normalized to it stays within 10-V p-p VCV standard.
+EV3 enhancement: mixed waveform output now normalized so it stays within 10-V p-p VCV standard.
 
 Chebyshev enhancements:
 
-* Expanding panel holds new features. Accessed from the context menu.
-
-* 10 Lag units added to the harmonic volumes. Rise and fall time controlled from knobs and CVs in the expanded panel.
+* 10 Lag units added to the harmonic volumes. Rise and fall time controlled from knobs and CVs.
 
 * CV inputs for Odd and Even mix level.
 
 * Attenuverters for Slope, odd, and even CV.
 
+* Semitone pitch control knob.
+
 Shaper enhancement: added AC/DC selector.
 
-LFN enhancement: added XLFN mode, which is 10 times slower.
+LFN enhancement: added XLFN mode, which is 10 times slower. Accessed via context menu.
+
+## 0.6.13
+
+Fixed bug where Chebyshev went missing.
 
 ## 0.6.12
 
