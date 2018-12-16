@@ -119,7 +119,7 @@ public:
     void step() override;
 
 private:
-    static const unsigned int MAX_OVERSAMPLE = 8;
+    static const unsigned int MAX_OVERSAMPLE = 16;
     static const int numSaws = 7;
 
     float phase[numSaws] = {0};
@@ -178,7 +178,7 @@ inline void Super<TBase>::init()
     scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
 
     const int rate = getOversampleRate();
-    const int decimateDiv = std::max(rate, 4);
+    const int decimateDiv = std::max(rate, (int)MAX_OVERSAMPLE);
     decimator.setup(decimateDiv);
 }
 
@@ -195,12 +195,12 @@ inline int Super<TBase>::getOversampleRate()
             rate = 4;
             break;
         case 2:
-            rate = 8;
+            rate = 16;
             break;
         default:
             assert(false);
     }
-    assert(rate <= MAX_OVERSAMPLE);
+    assert(rate <= (int)MAX_OVERSAMPLE);
     return rate;
 }
 
