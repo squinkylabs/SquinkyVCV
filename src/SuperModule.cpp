@@ -5,6 +5,7 @@
 
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
+#include "ctrl/SemitoneDisplay.h"
 
 /**
  */
@@ -37,7 +38,7 @@ SuperModule::SuperModule()
     super.init();
 }
 
-inline void SuperModule::step()
+void SuperModule::step()
 {
     super.step();
 }
@@ -59,10 +60,17 @@ struct superWidget : ModuleWidget
         addChild(label);
         return label;
     }
+    void step() override
+    {
+        semitoneDisplay.step();
+        ModuleWidget::step();
+    }
 
     void addPitchKnobs(SuperModule *);
     void addOtherKnobs(SuperModule *);
     void addJacks(SuperModule *);
+
+    SemitoneDisplay semitoneDisplay;
 
 };
 
@@ -82,7 +90,7 @@ const float jackRow2 = 332;
 const float labelOffsetBig = -40;
 const float labelOffsetSmall = -32;
 
-inline void superWidget::addPitchKnobs(SuperModule *)
+void superWidget::addPitchKnobs(SuperModule *)
 {
     // Octave
     auto oct = createParamCentered<Rogan1PSBlue>(
@@ -99,8 +107,9 @@ inline void superWidget::addPitchKnobs(SuperModule *)
     semi->snap = true;
     semi->smooth = false;
     addParam(semi);
-    addLabel(
-        Vec(col2 - 20, row1 + labelOffsetBig), "Semi");
+    Label* l = addLabel(
+        Vec(col2 - 30, row1 + labelOffsetBig), "Semi");
+    semitoneDisplay.setLabel(l);
 
     // Fine
     addParam(createParamCentered<Rogan1PSBlue>(
@@ -112,10 +121,9 @@ inline void superWidget::addPitchKnobs(SuperModule *)
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(col2, row2), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
     addLabel(Vec(col2 - 17, row2 + labelOffsetBig), "FM");
-
 }
 
-inline void superWidget::addOtherKnobs(SuperModule *)
+void superWidget::addOtherKnobs(SuperModule *)
 {
     // Detune
     addParam(createParamCentered<Blue30Knob>(
@@ -139,7 +147,7 @@ const float jackDx = 33;
 const float jackOffsetLabel = -30;
 const float jackLabelPoints = 11;
 
-inline void superWidget::addJacks(SuperModule *)
+void superWidget::addJacks(SuperModule *)
 {
     Label* l = nullptr;
     // first row
@@ -196,7 +204,9 @@ inline void superWidget::addJacks(SuperModule *)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-inline superWidget::superWidget(SuperModule *module) : ModuleWidget(module)
+superWidget::superWidget(SuperModule *module) :
+    ModuleWidget(module),
+    semitoneDisplay(module, Super<WidgetComposite>::SEMI_PARAM)
 {
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {

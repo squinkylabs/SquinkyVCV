@@ -1,73 +1,10 @@
+#include "ctrl/SemitoneDisplay.h"
 #include "Squinky.hpp"
 #include "SQWidgets.h"
 #include "WidgetComposite.h"
 
-#include <sstream>
-
 #include "CHB.h"
 #include "IMWidgets.hpp"
-
-struct CHBModule;
-
-class CHBPitchDisplay
-{
-public:
-    CHBPitchDisplay(CHBModule * mod) : module(mod) {}
-    void step();
-   
-
-
-    void addSemiLabel(Label*);
-
-private:
-    CHBModule * const module;
-
-
-    Label* semiLabel=nullptr;
-    float semiX=0;
- 
-    float lastSemi = 100;
-    void update(int);
-};
-
-void CHBPitchDisplay::addSemiLabel(Label* l)
-{
-    semiLabel = l;
-    semiX = l->box.pos.x;
-}
-
-static const char* names[] = {
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "D"
-};
-
-// we can get rid of this
-static int semi_offsets[] = {
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0
-};
-
-
 
 /**
  */
@@ -105,24 +42,6 @@ void CHBModule::onSampleRateChange()
     chb.onSampleRateChange();
 }
 
-void CHBPitchDisplay::step()
-{
-    const int semiParam = CHB<WidgetComposite>::PARAM_SEMIS;
-    const int semi = module->params[semiParam].value;
-    if (semi != lastSemi) {
-        lastSemi = semi;
-        std::stringstream so;
-        int semi = lastSemi;
-        if (semi < 0) {
-            semi += 12;
-        }
-
-        so << "Semi: " << names[semi];
-        semiLabel->text = so.str();
-        semiLabel->box.pos.x = semiX + semi_offsets[semi];
-    }
-}
-
 ////////////////////
 // module widget
 ////////////////////
@@ -148,7 +67,7 @@ struct CHBWidget : ModuleWidget
      void step() override
      {
          ModuleWidget::step();
-         pitchDisplay.step();
+         semitoneDisplay.step();
      }
 private:
     void addHarmonics(CHBModule *module);
@@ -170,7 +89,7 @@ private:
     std::vector<float> harmonicParamMemory;
     ParamWidget* gainParam=nullptr;
 
-     CHBPitchDisplay pitchDisplay;
+     SemitoneDisplay semitoneDisplay;
 };
 
 
@@ -242,7 +161,7 @@ void CHBWidget::addRow1(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_SEMIS,
         -11.0f, 11.0f, 0.f));
-    pitchDisplay.addSemiLabel( 
+    semitoneDisplay.setLabel( 
         addLabel(Vec(col3 - 30, row - labelAboveKnob), "Semi"));
 
     addParam(createParamCentered<Blue30Knob>(
@@ -508,7 +427,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
     module(module),
-    pitchDisplay(module)
+    semitoneDisplay(module,  CHB<WidgetComposite>::PARAM_SEMIS)
 {
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
