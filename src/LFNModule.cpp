@@ -5,6 +5,7 @@
 #include "WidgetComposite.h"
 
 #include "ctrl/ToggleButton.h"
+#include "SqWidgets.h"
 #include "LFN.h"
 
 
@@ -50,6 +51,10 @@ void LFNModule::step()
 // module widget
 ////////////////////
 
+/**
+ * This class updates the base frequencies of
+ * all the labels when the master changes
+ */
 class LFNLabelUpdater
 {
 public:
@@ -89,6 +94,7 @@ struct LFNWidget : ModuleWidget
 
     LFNLabelUpdater updater;
     LFNModule&     module;
+    ParamWidget* xlfnWidget = nullptr;
 };
 
 static const float knobX = 42;
@@ -115,11 +121,12 @@ void LFNWidget::addStage(int index)
 
 inline Menu* LFNWidget::createContextMenu()
 {
-     int paramId = LFN<WidgetComposite>::XLFN_PARAM;
+    int paramId = LFN<WidgetComposite>::XLFN_PARAM;
     Menu* theMenu = ModuleWidget::createContextMenu();
     MenuLabel *spacerLabel = new MenuLabel();
 	theMenu->addChild(spacerLabel);
-    SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(&module, paramId);
+    SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
+        &module, paramId, xlfnWidget);
 	item->text = "Extra Low Frequency";
 	theMenu->addChild(item);
     return theMenu;
@@ -139,16 +146,6 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/lfn_panel.svg")));
         addChild(panel);
     }
-#if 0
-    ToggleButton* tog = ParamWidget::create<ToggleButton>(
-        Vec(3, 16),
-        module,
-        LFN<WidgetComposite>::XLFN_PARAM,
-        0.0f, 1, 0);
-    tog->addSvg("res/LFN.svg");
-    tog->addSvg("res/XLFN.svg");
-    addParam(tog);
-#endif
 
     addOutput(Port::create<PJ301MPort>(
         Vec(59, inputY - knobDy -1), Port::OUTPUT, module, module->lfn.OUTPUT));
@@ -163,6 +160,25 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     for (int i = 0; i < 5; ++i) {
         addStage(i);
     }
+
+#if 0
+    addParam(ParamWidget::create<NullWidget>(
+        Vec(0, 0), module,  module->lfn.XLFN_PARAM, 0, 1, 0)
+    );
+#endif
+
+#if 1
+// this works, but the serialized value is 0
+    auto param = ParamWidget::create<ParamWidget>(
+        Vec(0, 0), module,  module->lfn.XLFN_PARAM, 0, 1, 0);
+   
+    param->box.size.x = 0;
+    param->box.size.y = 0;
+    addParam(param);
+    xlfnWidget = param;
+   
+#endif
+
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

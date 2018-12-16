@@ -28,16 +28,24 @@ private:
 };
 
 #include "engine.hpp"
+#include "rack.hpp"
+
 struct  SqMenuItem_BooleanParam : rack::MenuItem {
 
   
-    SqMenuItem_BooleanParam(rack::Module* module, int paramId) :
+    SqMenuItem_BooleanParam(rack::Module* module, int paramId, rack::ParamWidget* widget) :
         paramId(paramId),
-        module(module) {
+        module(module),
+        widget(widget) {
     }
     void onAction(rack::EventAction &e) override {
         const float newValue = isOn() ? 0 : 1;
         engineSetParam(module, paramId, newValue);
+        // need to tell the widget to change.
+        widget->value = newValue;
+
+        // TODO: if we called onChange, would we not need to deal 
+        // with the engine stuff??
     }
 
     void step() override {
@@ -47,8 +55,10 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem {
 private:
     bool isOn()
     {
-        return module->params[paramId].value > .5f;
+        bool ret =  module->params[paramId].value > .5f;
+        return ret;
     }
     const int paramId;
     rack::Module* const  module;
+    rack::ParamWidget* const widget;
 };

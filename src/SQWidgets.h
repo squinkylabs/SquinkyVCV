@@ -118,8 +118,6 @@ struct SQPanelItem : MenuItem {
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
     void onAction(EventAction &e) override {
-        printf("ON ACTION\n");
-        fflush(stdout);
         actionCallback();
 	}
 
@@ -138,3 +136,35 @@ inline SQPanelItem::SQPanelItem(SQStatusCallback s, SQActionCAllback a) :
 {
     text = "Expanded Panel";
 }
+
+/**
+ * A Widget that holds values and will serialize,
+ * But doesn't interacts with mouse
+ */
+class NullWidget : public ParamWidget
+{
+public:
+#if 0
+    NullWidget(Module *, int id)
+    {
+        box.pos.x=0;
+        box.pos.y=0;
+        box.size.x=0;
+        box.size.y = 0;
+        this->module = module;
+        this->paramId = id;
+       
+    }
+#endif
+	void onMouseDown(EventMouseDown &e) override
+    {
+        e.consumed = false;
+    }
+
+    #if 0
+	void onChange(EventChange &e) override
+    {
+
+    }
+    #endif
+};
