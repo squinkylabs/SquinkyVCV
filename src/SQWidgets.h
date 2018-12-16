@@ -11,7 +11,6 @@
  */
 struct BlueTrimmer : SVGKnob {
 	BlueTrimmer() {
-      //  printf("ctrol of blue trimmer\n"); fflush(stdout);
 		minAngle = -0.75*M_PI;
 		maxAngle = 0.75*M_PI;
 		setSVG(SVG::load(assetPlugin(plugin, "res/BlueTrimmer.svg")));
@@ -48,12 +47,6 @@ struct BlueToggle : public SVGSwitch, ToggleSwitch {
     BlueToggle() {
         addFrame(SVG::load(assetPlugin(plugin, "res/BluePush_1.svg")));
 		addFrame(SVG::load(assetPlugin(plugin, "res/BluePush_0.svg")));
-        #if 0
-        setSVGs(
-            SVG::load(assetPlugin(plugin, "res/BluePush_0.svg")),
-            SVG::load(assetPlugin(plugin, "res/BluePush_1.svg"))
-        );
-        #endif
     }
 };
 
@@ -110,7 +103,6 @@ struct SQPush : SVGButton
  **
  ************************************************************************/
 
-// TODO: are these still used?
 using SQStatusCallback = std::function<bool()>;
 using SQActionCAllback = std::function<void()>;
 
@@ -139,32 +131,26 @@ inline SQPanelItem::SQPanelItem(SQStatusCallback s, SQActionCAllback a) :
 
 /**
  * A Widget that holds values and will serialize,
- * But doesn't interacts with mouse
+ * But doesn't interacts with mouse.
  */
 class NullWidget : public ParamWidget
 {
 public:
-#if 0
-    NullWidget(Module *, int id)
+
+    NullWidget() : ParamWidget()
     {
+        // Make sure we have no dimensions to fool 
+        // hit testing in VCV.
         box.pos.x=0;
         box.pos.y=0;
         box.size.x=0;
         box.size.y = 0;
-        this->module = module;
-        this->paramId = id;
-       
     }
-#endif
+
+    // Swallow mouse commands
 	void onMouseDown(EventMouseDown &e) override
     {
         e.consumed = false;
     }
 
-    #if 0
-	void onChange(EventChange &e) override
-    {
-
-    }
-    #endif
 };

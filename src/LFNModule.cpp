@@ -121,12 +121,11 @@ void LFNWidget::addStage(int index)
 
 inline Menu* LFNWidget::createContextMenu()
 {
-    int paramId = LFN<WidgetComposite>::XLFN_PARAM;
     Menu* theMenu = ModuleWidget::createContextMenu();
     MenuLabel *spacerLabel = new MenuLabel();
 	theMenu->addChild(spacerLabel);
     SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
-        &module, paramId, xlfnWidget);
+        xlfnWidget);
 	item->text = "Extra Low Frequency";
 	theMenu->addChild(item);
     return theMenu;
@@ -161,24 +160,11 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         addStage(i);
     }
 
-#if 0
-    addParam(ParamWidget::create<NullWidget>(
-        Vec(0, 0), module,  module->lfn.XLFN_PARAM, 0, 1, 0)
-    );
-#endif
-
-#if 1
-// this works, but the serialized value is 0
-    auto param = ParamWidget::create<ParamWidget>(
+    xlfnWidget = ParamWidget::create<NullWidget>(
         Vec(0, 0), module,  module->lfn.XLFN_PARAM, 0, 1, 0);
-   
-    param->box.size.x = 0;
-    param->box.size.y = 0;
-    addParam(param);
-    xlfnWidget = param;
-   
-#endif
-
+    xlfnWidget->box.size.x = 0;
+    xlfnWidget->box.size.y = 0;
+    addParam(xlfnWidget);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
