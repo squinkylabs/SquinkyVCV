@@ -111,20 +111,23 @@ static const char* intervalNames[] = {
     "oct"
 };
 
+const static int offsetNatural = 10;
+const static int offsetAccidental = 7;
+
 static const int pitchOffsets[] = {
-    0,
-    0,
-    0,      // 2nd
-    0,
-    0,
-    0,      // 4th
-    0,
-    0,      // 5th
-    0,
-    0,
-    0,
-    0,
-    0       // M7
+    offsetNatural,
+    offsetAccidental,
+    offsetNatural,      // D
+    offsetAccidental,
+    offsetNatural,      // E
+    offsetNatural,      // F
+    offsetAccidental,
+    offsetNatural,      // g
+    offsetAccidental,
+    offsetNatural,
+    offsetAccidental,
+    offsetNatural,         //b
+  
 };
 
 static const char* pitchNames[] = {
@@ -139,18 +142,18 @@ static const char* pitchNames[] = {
     "G#",
     "A",
     "A#",
-    "D"
+    "B"
     };
 
 static const int intervalOffsets[] = {
     11,
-    0,
-    5,      // 2nd
+    -3,
+    3,      // 2nd
     0,
     0,
     4,      // 4th
-    -2,
-    3,      // 5th
+    -5,
+    4,      // 5th
     0,
     0,
     0,
