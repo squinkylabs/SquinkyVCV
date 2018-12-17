@@ -69,7 +69,6 @@ const float firstBitY = 64;
 
 inline void GrayWidget::addBits(GrayModule *module)
 {
-    printf("add bits\n"); fflush(stdout);
     for (int i=0; i<8; ++i) {
         const Vec v(jackCol, firstBitY + i * vertSpace);
         addOutput(createOutputCentered<PJ301MPort>(

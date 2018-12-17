@@ -64,7 +64,6 @@ void BootyModule::fromJson(json_t *rootJ)
             }
         }
         shifter.freqRange = rg;
-        fflush(stdout);
     }
 }
 

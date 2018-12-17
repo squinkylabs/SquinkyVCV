@@ -27,10 +27,6 @@ private:
 
 void EVModule::onSampleRateChange()
 {
-    // TODO
-   // float rate = engineGetSampleRate();
-    //vco.setSampleRate(rate);
-    printf("on sample rate change\n"); fflush(stdout);
 }
 
 EVModule::EVModule()
@@ -41,8 +37,6 @@ EVModule::EVModule()
     vco(this)
 {
     onSampleRateChange();
-   // vco.init();
-    printf("ctor\n"); fflush(stdout);
 }
 
 void EVModule::step()

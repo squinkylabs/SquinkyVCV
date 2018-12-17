@@ -49,26 +49,53 @@ private:
     std::vector<float> semiX;
     int lastOctave[3] = {100, 100, 100};
     int lastSemi[3] = {100, 100, 100};
-    void update(int);
+    bool lastPatched[3] = {false, false, false};
+    void updateAbsolute(int);
+    void updateInterval(int);
+    bool shouldUseInterval(int osc);
 };
 
 void EV3PitchDisplay::step()
 {
+    bool atLeastOneChanged = false;
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
     for (int i=0; i<3; ++i) {
         const int octaveParam = EV3<WidgetComposite>::OCTAVE1_PARAM + delta * i;
         const int semiParam = EV3<WidgetComposite>::SEMI1_PARAM + delta * i;
+        const int inputId = EV3<WidgetComposite>::CV1_INPUT + i;
         const int oct = module->params[octaveParam].value;
         const int semi = module->params[semiParam].value;
-        if (semi != lastSemi[i] || oct != lastOctave[i]) {
+        const bool patched =  module->inputs[inputId].active;
+        if (i == 0) {
+            
+        }
+        if (semi != lastSemi[i] ||
+            oct != lastOctave[i] ||
+            patched != lastPatched[i]) {
+
+            atLeastOneChanged = true;
             lastSemi[i] = semi;
+           // printf("just set lastSemi[%d] to %d\n", i, semi);
             lastOctave[i] = oct;
-            update(i);
+            lastPatched[i] = patched;
+          //  printf("just set last patched [%d] to %d\n", i, patched);
+
+           // fflush(stdout);
+        }
+    }
+    if (atLeastOneChanged) {
+        for (int i=0; i<3; ++i) {
+            
+            if (shouldUseInterval(i)) {
+                updateInterval(i);
+            } else {
+                updateAbsolute(i);
+            }
         }
     }
 }
 
-static const char* names[] = {
+static const char* intervalNames[] = {
     "0",
     "m2nd",
     "2nd",
@@ -84,7 +111,38 @@ static const char* names[] = {
     "oct"
 };
 
-static int offsets[] = {
+static const int pitchOffsets[] = {
+    0,
+    0,
+    0,      // 2nd
+    0,
+    0,
+    0,      // 4th
+    0,
+    0,      // 5th
+    0,
+    0,
+    0,
+    0,
+    0       // M7
+};
+
+static const char* pitchNames[] = {
+    "C",
+    "C#",
+    "D",
+    "D#",
+    "E",
+    "F",
+    "F#",
+    "G",
+    "G#",
+    "A",
+    "A#",
+    "D"
+    };
+
+static const int intervalOffsets[] = {
     11,
     0,
     5,      // 2nd
@@ -111,7 +169,78 @@ void EV3PitchDisplay::addSemiLabel(Label* l)
     semiX.push_back(l->box.pos.x);
 }
 
-void EV3PitchDisplay::update(int osc) {
+bool EV3PitchDisplay::shouldUseInterval(int osc)
+{
+    bool ret = false;       // always safe to use abolute
+
+    if (lastPatched[osc]) {
+        ret = false;            // if current one is patched, use absolute
+                    
+    } else if ((osc > 0) && lastPatched[osc-1]) {
+        ret = true;             // if prev patched and we are not, go for it
+    }  else if ((osc > 1) && lastPatched[osc-2]) {
+        ret = true;             // if prev-prev patched and we are not, go for it
+    }  
+
+    //printf("should use interval (%d) ret %d", osc, ret);
+    return ret;
+}
+
+void EV3PitchDisplay::updateInterval(int osc) {
+
+    int refSemi = 0;
+    int refOctave = 0;
+    int oct = 5 + lastOctave[osc];
+    int semi = lastSemi[osc];
+
+    assert(osc > 0);
+    const bool prevPatched = lastPatched[osc - 1];
+    if (prevPatched) {
+        refOctave = 5 + lastOctave[osc -1];
+        refSemi = lastSemi[osc -1];
+       // printf("got from prev %d (%d, %d)\n", osc-1, refOctave, refSemi);
+    } else {
+        assert(osc > 1);
+        refOctave = 5 + lastOctave[osc -2];
+        refSemi = lastSemi[osc - 2];
+       //  printf("got from prev %d (%d, %d)\n", osc-2, refOctave, refSemi);
+    }
+
+    const int currentPitch = oct * 12 + semi;
+    const int refPitch = refOctave * 12 + refSemi;
+    const int relativePitch = currentPitch - refPitch;
+
+    int adjustedOctave = 0;
+    int adjustedSemi = 0;
+
+    adjustedOctave = relativePitch / 12;
+    adjustedSemi = relativePitch - (adjustedOctave * 12);
+    if (adjustedSemi < 0) {
+        adjustedOctave--;
+        adjustedSemi += 12;
+    }
+
+#if 0
+    if (osc == 1) {
+        printf("curentPitch = %d ref = %d, rel=%d\n", currentPitch, refPitch, relativePitch);
+        printf(" adjOct=%d semi = %d\n", adjustedOctave, adjustedSemi);
+        printf(" refOctave=%d, oct=%d\n", refOctave, oct);
+         printf(" refSemi=%d, semi=%d\n", refSemi, semi);
+        fflush(stdout);
+    }
+#endif
+    assert(adjustedSemi >= 0);
+    assert(adjustedSemi < 12);
+
+    std::stringstream so;
+    so << adjustedOctave;
+    octLabels[osc]->text = so.str();
+
+   semiLabels[osc]->text = intervalNames[adjustedSemi];
+   semiLabels[osc]->box.pos.x = semiX[osc] + intervalOffsets[adjustedSemi];
+}
+
+void EV3PitchDisplay::updateAbsolute(int osc) {
     std::stringstream so;
     int oct = 5 + lastOctave[osc];
     int semi = lastSemi[osc];
@@ -121,10 +250,10 @@ void EV3PitchDisplay::update(int osc) {
         semi += 12;
     }
     so << oct;
-
     octLabels[osc]->text = so.str();
-    semiLabels[osc]->text = names[semi];
-    semiLabels[osc]->box.pos.x = semiX[osc] + offsets[semi];
+
+    semiLabels[osc]->text = pitchNames[semi];
+    semiLabels[osc]->box.pos.x = semiX[osc] + pitchOffsets[semi];
 }
 
 struct EV3Widget : ModuleWidget
@@ -164,7 +293,6 @@ void EV3Widget::step()
     if (norm != wasNormalizing) {
         wasNormalizing = norm;
         auto color = norm ?  COLOR_GREEN2 : COLOR_WHITE;
-        fflush(stdout);
         plusOne->color = color;
         plusTwo->color = color;
     }

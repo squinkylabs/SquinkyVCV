@@ -159,7 +159,6 @@ std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float norm
         }
         return ret;
     } else {
-        fflush(stderr);
         assert(false);
     }
     return nullptr;

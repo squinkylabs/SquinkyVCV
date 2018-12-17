@@ -81,11 +81,13 @@ struct LFNWidget : ModuleWidget
     }
 
     // why not on step()?
-    void draw(NVGcontext *vg) override
+   // void draw(NVGcontext *vg) override
+    void step() override
     {
         updater.update(*this);
         module.lfn.pollForChangeOnUIThread();
-        ModuleWidget::draw(vg);
+       // ModuleWidget::draw(vg);
+       ModuleWidget::step();
     }
 
     Menu* createContextMenu() override;
