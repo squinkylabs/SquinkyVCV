@@ -4,16 +4,14 @@
 #include "WidgetComposite.h"
 #include "Shaper.h"
 
-
 /**
  */
 struct ShaperModule : Module
 {
 public:
     ShaperModule();
+
     /**
-     *
-     *
      * Overrides of Module functions
      */
     void step() override;
@@ -68,12 +66,10 @@ struct ShaperWidget : ModuleWidget
 private:
     Label* shapeLabel=nullptr;
     Label* shapeLabel2=nullptr;
-    Label* oversampleLabel=nullptr;
     ParamWidget* shapeParam = nullptr;
     ParamWidget* oversampleParam = nullptr;
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
     void addSelector(ShaperModule* module);
-    int curOversample =-1;
 };
 
 void ShaperWidget::step()
@@ -98,23 +94,6 @@ void ShaperWidget::step()
             shapeLabel2->text = "";
         }
     }
-    const int overS =  (int) std::round(oversampleParam->value);
-    if (overS != curOversample) {
-        curOversample = overS;
-        const char * str = "";
-        switch (curOversample) {
-            case 0:
-                str = "16X";
-                break;
-            case 1:
-                str = "4X";
-                break;
-            case 2:
-                str = "1X";
-                break;
-        }
-        oversampleLabel->text = str;
-    }
 }
 
 void ShaperWidget::addSelector(ShaperModule* module)
@@ -136,9 +115,6 @@ void ShaperWidget::addSelector(ShaperModule* module)
     shapeLabel->fontSize = 18;
 }
 
-/**
- * Global coordinate constants
- */
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -201,28 +177,24 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
             Vec(95,jackY),
             module,
             Shaper<WidgetComposite>::INPUT_OFFSET));
-            
-    const float swX = 127;
-    const float swY = 235;
-    oversampleParam = createParamCentered<NKK>(
-        Vec(swX, swY+4),
-        module, 
-        Shaper<WidgetComposite>::PARAM_OVERSAMPLE,
-        0.0f, 2.0f, 0.0f
-        );
-    
-    addParam(oversampleParam);
-    oversampleLabel = addLabel(Vec(swX-32, swY+30), "x");
-    oversampleLabel->box.size.x = 60;
-    oversampleLabel->alignment = Label::Alignment::CENTER_ALIGNMENT;
 
     ToggleButton* tog = ParamWidget::create<ToggleButton>(
-        Vec(swX-12, swY-40),
+        Vec(125-16, 265 - 13),
         module,
         Shaper<WidgetComposite>::PARAM_ACDC,
         0.0f, 1, 0);
     tog->addSvg("res/AC.svg");
     tog->addSvg("res/DC.svg");
+    addParam(tog);
+
+    tog = ParamWidget::create<ToggleButton>(
+        Vec(123-20, 226 - 13),
+        module,
+        Shaper<WidgetComposite>::PARAM_OVERSAMPLE,
+        0.0f, 2, 0);
+    tog->addSvg("res/16X-03.svg");
+    tog->addSvg("res/16X-02.svg");
+    tog->addSvg("res/16X-01.svg");
     addParam(tog);
 
     // screws
