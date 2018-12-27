@@ -64,11 +64,11 @@ struct CHBWidget : ModuleWidget
         return label;
     }
 
-     void step() override
-     {
-         ModuleWidget::step();
-         semitoneDisplay.step();
-     }
+    void step() override
+    {
+        ModuleWidget::step();
+        semitoneDisplay.step();
+    }
 private:
     void addHarmonics(CHBModule *module);
     void addRow1(CHBModule *module);
@@ -87,9 +87,9 @@ private:
     CHBModule* const module;
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
-    ParamWidget* gainParam=nullptr;
+    ParamWidget* gainParam = nullptr;
 
-     SemitoneDisplay semitoneDisplay;
+    SemitoneDisplay semitoneDisplay;
 };
 
 
@@ -147,7 +147,7 @@ void CHBWidget::addRow1(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_RISE,
         -5.f, 5.f, 0.f));
-    addLabel(Vec(col1 - 20, row - labelAboveKnob), "Rise");   
+    addLabel(Vec(col1 - 20, row - labelAboveKnob), "Rise");
 
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(col2, row),
@@ -161,7 +161,7 @@ void CHBWidget::addRow1(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_SEMIS,
         -11.0f, 11.0f, 0.f));
-    semitoneDisplay.setSemiLabel( 
+    semitoneDisplay.setSemiLabel(
         addLabel(Vec(col3 - 30, row - labelAboveKnob), "Semi"),
         CHB<WidgetComposite>::PARAM_SEMIS);
 
@@ -209,7 +209,7 @@ void CHBWidget::addRow2(CHBModule *module)
     l->fontSize = 11;
 
     addChild(createLightCentered<SmallLight<GreenRedLight>>(
-        Vec(col2-16, row),
+        Vec(col2 - 16, row),
         module,
         CHB<WidgetComposite>::GAIN_GREEN_LIGHT));
 }
@@ -436,7 +436,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
         panel->box.size = box.size;
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/chb_panel.svg")));
         addChild(panel);
- 
+
         auto border = new PanelBorderWidget();
         border->box = box;
         addChild(border);
@@ -464,7 +464,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelCHBModule = Model::create<CHBModule,

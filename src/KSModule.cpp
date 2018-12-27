@@ -79,67 +79,67 @@ void KCCompositeWidget::addJacks(KSModule*)
     using CCOMP = KSComposite<WidgetComposite>;
 
     addInput(Port::create<PJ301MPort>(
-        Vec(col1, 273+verticalShift),
+        Vec(col1, 273 + verticalShift),
         Port::INPUT,
         module,
         CCOMP::PITCH_INPUT));
-    addLabel(Vec(9, 255+verticalShift), "cv");
+    addLabel(Vec(9, 255 + verticalShift), "cv");
 
     addInput(Port::create<PJ301MPort>(
-        Vec(col2, 273+verticalShift),
+        Vec(col2, 273 + verticalShift),
         Port::INPUT,
         module,
         CCOMP::FM_INPUT));
 
-    addLabel(Vec(43, 255+verticalShift), "fm");
+    addLabel(Vec(43, 255 + verticalShift), "fm");
 
     addInput(Port::create<PJ301MPort>(
-        Vec(col3, 273+verticalShift),
+        Vec(col3, 273 + verticalShift),
         Port::INPUT,
         module,
         CCOMP::SYNC_INPUT));
-    addLabel(Vec(72, 255+verticalShift), "sync");
+    addLabel(Vec(72, 255 + verticalShift), "sync");
 
     addInput(Port::create<PJ301MPort>(
-        Vec(col4, 273+verticalShift),
+        Vec(col4, 273 + verticalShift),
         Port::INPUT,
         module,
         CCOMP::PW_INPUT));
-    addLabel(Vec(107, 255+verticalShift), "pwm");
+    addLabel(Vec(107, 255 + verticalShift), "pwm");
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(col1, 317+verticalShift),
+        Vec(col1, 317 + verticalShift),
         Port::OUTPUT,
         module,
         CCOMP::SIN_OUTPUT));
-    addLabel(Vec(8, outputLabelY+verticalShift), "sin");
+    addLabel(Vec(8, outputLabelY + verticalShift), "sin");
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(col2, 317+verticalShift),
+        Vec(col2, 317 + verticalShift),
         Port::OUTPUT,
         module,
         CCOMP::TRI_OUTPUT));
-    addLabel(Vec(44, outputLabelY+verticalShift), "tri");
+    addLabel(Vec(44, outputLabelY + verticalShift), "tri");
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(col3, 317+verticalShift),
-        Port::OUTPUT, 
-        module, 
+        Vec(col3, 317 + verticalShift),
+        Port::OUTPUT,
+        module,
         CCOMP::SAW_OUTPUT));
-    addLabel(Vec(75, outputLabelY+verticalShift), "saw");
+    addLabel(Vec(75, outputLabelY + verticalShift), "saw");
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(col4, 317+verticalShift),
+        Vec(col4, 317 + verticalShift),
         Port::OUTPUT,
         module,
         CCOMP::SQR_OUTPUT));
-    addLabel(Vec(111, outputLabelY+verticalShift), "sqr");
+    addLabel(Vec(111, outputLabelY + verticalShift), "sqr");
 }
 
 
 void KCCompositeWidget::addKnobs(KSModule*)
 {
-    
+
 }
 /**
  * Widget constructor will describe my implementation structure and

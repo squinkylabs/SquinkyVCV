@@ -258,7 +258,7 @@ inline float CHB<TBase>::getInput()
 
     // Get the frequency from the inputs.
     float pitch = 1.0f + roundf(TBase::params[PARAM_OCTAVE].value) +
-        TBase::params[PARAM_SEMIS].value / 12.0f+
+        TBase::params[PARAM_SEMIS].value / 12.0f +
         TBase::params[PARAM_TUNE].value / 12.0f;
     pitch += TBase::inputs[CV_INPUT].value;
     pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
@@ -374,7 +374,7 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
             TBase::inputs[ODD_INPUT].value,
             TBase::params[PARAM_MAG_ODD].value,
             TBase::params[PARAM_ODD_TRIM].value);
-      
+
         const float even = taper(evenCombined);
         const float odd = taper(oddCombined);
         for (int i = 1; i < polyOrder; ++i) {

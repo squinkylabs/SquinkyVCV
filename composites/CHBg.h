@@ -132,7 +132,7 @@ private:
      * In other words, log base 12.
      */
     float _octave[polyOrder];
-    float getOctave(int mult) const ;
+    float getOctave(int mult) const;
     void init();
 
     float _volume[polyOrder] = {0};
@@ -340,7 +340,7 @@ inline void CHBg<TBase>::step()
     } else {
         cycleCount = 0;
     }
-   
+
     // do all the processing to get the carrier signal
     const float input = getInput();
 

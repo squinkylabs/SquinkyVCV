@@ -162,13 +162,13 @@ private:
 
     std::default_random_engine generator{57};
     std::normal_distribution<double> distribution{-1.0, 1.0};
-    
+
     float noise()
     {
         return  (float) distribution(generator);
     }
-    
-    int controlUpdateCount=0;
+
+    int controlUpdateCount = 0;
 
     /**
      * Must be called after baseFrequency is updated.
@@ -181,14 +181,14 @@ private:
      * map knob range from .1 Hz to 2.0 Hz
      */
     std::function<double(double)> rangeFunc =
-        {AudioMath::makeFunc_Exp(-5, 5, .1, 2)};
+    {AudioMath::makeFunc_Exp(-5, 5, .1, 2)};
 
-    /**
-     * Audio taper for the EQ gains. Arbitrary max value selected
-     * to give "good" output level.
-     */
+/**
+ * Audio taper for the EQ gains. Arbitrary max value selected
+ * to give "good" output level.
+ */
     AudioMath::SimpleScaleFun<float> gainScale =
-        {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
+    {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
 };
 
 template <class TBase>

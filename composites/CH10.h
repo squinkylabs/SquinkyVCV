@@ -238,7 +238,7 @@ inline void CH10<TBase>::updateVCOs(int which)
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     const float freq = expLookup(pitch);
- 
+
 
     float time = freq * TBase::engineGetSampleTime();
 
@@ -259,38 +259,38 @@ inline void CH10<TBase>::runVCOs(int which)
 template <class TBase>
 inline void CH10<TBase>::updateAudio()
 {
-     runVCOs(0);
-     runVCOs(1);
-     doOutput();
+    runVCOs(0);
+    runVCOs(1);
+    doOutput();
 }
 
 template <class TBase>
 inline void CH10<TBase>::doOutput()
 {
-    float sum=0;
-    int num=0;
-    for (int i=0; i<polyOrder; ++i) {
+    float sum = 0;
+    int num = 0;
+    for (int i = 0; i < polyOrder; ++i) {
         if (TBase::params[A0_PARAM + i].value > .5f) {
             sum += vcoState[0].poly.getOutput(i);
             ++num;
         }
     }
 
-    for (int i=0; i<polyOrder; ++i) {
+    for (int i = 0; i < polyOrder; ++i) {
         if (TBase::params[B0_PARAM + i].value > .5f) {
             sum += vcoState[1].poly.getOutput(i);
             ++num;
         }
     }
 
-    for (int row=0; row<10; ++row) {
-        for (int col=0; col<10; ++col) {
+    for (int row = 0; row < 10; ++row) {
+        for (int col = 0; col < 10; ++col) {
             //float x = gridCol1 + gridSize * (col+1);
             //float y = gridRow1 - row * gridSize;
             int id = CH10<Widget>::A0B0_PARAM + col + row * 10;
             if (TBase::params[id].value > .5f) {
                 const float ring = vcoState[0].poly.getOutput(col) *
-                     vcoState[1].poly.getOutput(row); 
+                    vcoState[1].poly.getOutput(row);
                 sum += ring;
                 ++num;
             }

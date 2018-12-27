@@ -135,7 +135,7 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addInput(Port::create<PJ301MPort>(
         Vec(inX, labelY + 1 * knobDy + 6), Port::INPUT, module, module->tremolo.LFO_SKEW_INPUT));
     addLabel(
-        Vec(labelX+1, labelY + 1 * knobDy), "Skew");
+        Vec(labelX + 1, labelY + 1 * knobDy), "Skew");
 
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(knobX, knobY + 2 * knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));

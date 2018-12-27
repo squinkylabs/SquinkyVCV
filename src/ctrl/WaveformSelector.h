@@ -9,7 +9,9 @@ public:
     ButtonCell(const ButtonCell&) = delete;
     ButtonCell& operator = (const ButtonCell&) = delete;
 
-    ButtonCell(float x) : value(x) {}
+    ButtonCell(float x) : value(x)
+    {
+    }
     void loadSVG(const char* res, const char* resOn);
 
     const float value;
@@ -23,8 +25,8 @@ private:
 
 inline void ButtonCell::loadSVG(const char* res, const char* resOn)
 {
-    svg.setSVG(SVG::load (assetPlugin(plugin, res)));
-    svgOn.setSVG(SVG::load (assetPlugin(plugin, resOn)));
+    svg.setSVG(SVG::load(assetPlugin(plugin, res)));
+    svgOn.setSVG(SVG::load(assetPlugin(plugin, resOn)));
     this->box.size = svg.box.size;
 }
 
@@ -36,12 +38,12 @@ inline void ButtonCell::dump(const char* label)
         box.size.x,
         box.size.y,
         box.pos.x,
-        box.pos.y); 
+        box.pos.y);
 }
 
 using CellPtr = std::shared_ptr<ButtonCell>;
 
-struct WaveformSelector  : ParamWidget
+struct WaveformSelector : ParamWidget
 {
     WaveformSelector();
     void draw(NVGcontext *vg) override;
@@ -50,14 +52,14 @@ struct WaveformSelector  : ParamWidget
     std::vector< std::vector< CellPtr>> svgs;
     void addSvg(int row, const char* res, const char* resOn);
     void drawSVG(NVGcontext *vg, SVGWidget&, float x, float y);
-    void onMouseDown( EventMouseDown &e ) override;
+    void onMouseDown(EventMouseDown &e) override;
     CellPtr hitTest(float x, float y);
     //
     float nextValue = 0;
 };
 
- CellPtr WaveformSelector::hitTest(float x, float y)
- {
+CellPtr WaveformSelector::hitTest(float x, float y)
+{
     const Vec pos(x, y);
     for (auto& r : svgs) {
         for (auto& s : r) {
@@ -66,15 +68,15 @@ struct WaveformSelector  : ParamWidget
             }
         }
     }
-     return nullptr;
- }
+    return nullptr;
+}
 
 inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn)
 {
-    if ((int)svgs.size() < row+1) {
-        svgs.resize(row+1);
+    if ((int) svgs.size() < row + 1) {
+        svgs.resize(row + 1);
     }
-   
+
     // make a new cell, put the SVGs in it
     CellPtr cell = std::make_shared<ButtonCell>(nextValue++);
     cell->loadSVG(res, resOn);
@@ -84,8 +86,8 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
     float y = 0;
     if (row > 0) {
         // if we are going in the second row, y = height of first
-        assert(!svgs[row-1].empty());
-        CellPtr otherCell = svgs[row-1][0];
+        assert(!svgs[row - 1].empty());
+        CellPtr otherCell = svgs[row - 1][0];
         y = otherCell->box.pos.y + otherCell->box.size.y;
     }
     cell->box.pos.y = y;
@@ -95,19 +97,19 @@ inline void WaveformSelector::addSvg(int row, const char* res, const char* resOn
         cell->box.pos.x = 0;
     } else {
         cell->box.pos.x =
-            svgs[row][cellsInRow-2]->box.pos.x + 
-            svgs[row][cellsInRow-2]->box.size.x;
+            svgs[row][cellsInRow - 2]->box.pos.x +
+            svgs[row][cellsInRow - 2]->box.size.x;
     }
 }
 
 inline WaveformSelector::WaveformSelector()
 {
-    addSvg(0, "res/waveforms-6-08.svg","res/waveforms-6-07.svg");   
-    addSvg(0, "res/waveforms-6-06.svg","res/waveforms-6-05.svg");   
-    addSvg(0, "res/waveforms-6-02.svg","res/waveforms-6-01.svg");   
-    addSvg(1, "res/waveforms-6-04.svg","res/waveforms-6-03.svg");   
-    addSvg(1, "res/waveforms-6-12.svg","res/waveforms-6-11.svg");   
-    addSvg(1, "res/waveforms-6-10.svg","res/waveforms-6-09.svg");   
+    addSvg(0, "res/waveforms-6-08.svg", "res/waveforms-6-07.svg");
+    addSvg(0, "res/waveforms-6-06.svg", "res/waveforms-6-05.svg");
+    addSvg(0, "res/waveforms-6-02.svg", "res/waveforms-6-01.svg");
+    addSvg(1, "res/waveforms-6-04.svg", "res/waveforms-6-03.svg");
+    addSvg(1, "res/waveforms-6-12.svg", "res/waveforms-6-11.svg");
+    addSvg(1, "res/waveforms-6-10.svg", "res/waveforms-6-09.svg");
 }
 
 inline WaveformSelector::~WaveformSelector()
@@ -135,10 +137,10 @@ void inline WaveformSelector::draw(NVGcontext *vg)
     }
 }
 
-inline void WaveformSelector::onMouseDown( EventMouseDown &e )
+inline void WaveformSelector::onMouseDown(EventMouseDown &e)
 {
     e.consumed = false;
- 
+
     CellPtr hit = hitTest(e.pos.x, e.pos.y);
     if (hit) {
         e.consumed = true;

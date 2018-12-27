@@ -316,6 +316,6 @@ void ColoredNoise<TBase>::step()
         serviceFFTServer();
         serviceInputs();
     }
-    
+
     serviceAudio();
 }

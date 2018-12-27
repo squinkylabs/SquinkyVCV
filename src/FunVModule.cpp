@@ -75,37 +75,37 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
 
     addParam(ParamWidget::create<NKK>(Vec(left, 66 + verticalShift),
         module, module->vco.MODE_PARAM, 0.0f, 1.0f, 1.0f));
-    addLabel(Vec(left -4, 48+ verticalShift), "anlg");
-    addLabel(Vec(left -3, 108+ verticalShift), "dgtl");
+    addLabel(Vec(left - 4, 48 + verticalShift), "anlg");
+    addLabel(Vec(left - 3, 108 + verticalShift), "dgtl");
 
     addParam(ParamWidget::create<Rogan3PSBlue>(Vec(center, 61 + verticalShift),
         module, module->vco.FREQ_PARAM, -54.0f, 54.0f, 0.0f));
-    auto label = addLabel(Vec(center + 3, 40+ verticalShift), "pitch");
+    auto label = addLabel(Vec(center + 3, 40 + verticalShift), "pitch");
     label->fontSize = 16;
 
     addParam(ParamWidget::create<NKK>(Vec(right, 66 + verticalShift),
         module, module->vco.SYNC_PARAM, 0.0f, 1.0f, 1.0f));
-    addLabel(Vec(right-5, 48+ verticalShift), "hard");
-    addLabel(Vec(right-2, 108+ verticalShift), "soft");
+    addLabel(Vec(right - 5, 48 + verticalShift), "hard");
+    addLabel(Vec(right - 2, 108 + verticalShift), "soft");
 }
 
 void FunVWidget::addMiddle4(FunVModule * module, float verticalShift)
 {
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(23, 143 + verticalShift),
         module, module->vco.FINE_PARAM, -1.0f, 1.0f, 0.0f));
-    addLabel(Vec(25, 124 +verticalShift), "fine");
+    addLabel(Vec(25, 124 + verticalShift), "fine");
 
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(91, 143 + verticalShift),
         module, module->vco.PW_PARAM, 0.0f, 1.0f, 0.5f));
-    addLabel(Vec(84, 124 +verticalShift), "p width");
+    addLabel(Vec(84, 124 + verticalShift), "p width");
 
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(23, 208 + verticalShift),
         module, module->vco.FM_PARAM, 0.0f, 1.0f, 0.0f));
-    addLabel(Vec(19, 188 +verticalShift), "fm cv");
+    addLabel(Vec(19, 188 + verticalShift), "fm cv");
 
     addParam(ParamWidget::create<Rogan1PSBlue>(Vec(91, 208 + verticalShift),
         module, module->vco.PWM_PARAM, 0.0f, 1.0f, 0.0f));
-    addLabel(Vec(82, 188 +verticalShift), "pwm cv");
+    addLabel(Vec(82, 188 + verticalShift), "pwm cv");
 }
 
 void FunVWidget::addJacks(FunVModule * module, float verticalShift)
@@ -116,29 +116,29 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
     const float col4 = 115;
     const float outputLabelY = 300;
 
-    addInput(Port::create<PJ301MPort>(Vec(col1, 273+verticalShift), Port::INPUT, module, module->vco.PITCH_INPUT));
-    addLabel(Vec(9, 255+verticalShift), "cv");
+    addInput(Port::create<PJ301MPort>(Vec(col1, 273 + verticalShift), Port::INPUT, module, module->vco.PITCH_INPUT));
+    addLabel(Vec(9, 255 + verticalShift), "cv");
 
-    addInput(Port::create<PJ301MPort>(Vec(col2, 273+verticalShift), Port::INPUT, module, module->vco.FM_INPUT));
-    addLabel(Vec(43, 255+verticalShift), "fm");
+    addInput(Port::create<PJ301MPort>(Vec(col2, 273 + verticalShift), Port::INPUT, module, module->vco.FM_INPUT));
+    addLabel(Vec(43, 255 + verticalShift), "fm");
 
-    addInput(Port::create<PJ301MPort>(Vec(col3, 273+verticalShift), Port::INPUT, module, module->vco.SYNC_INPUT));
-    addLabel(Vec(72, 255+verticalShift), "sync");
+    addInput(Port::create<PJ301MPort>(Vec(col3, 273 + verticalShift), Port::INPUT, module, module->vco.SYNC_INPUT));
+    addLabel(Vec(72, 255 + verticalShift), "sync");
 
-    addInput(Port::create<PJ301MPort>(Vec(col4, 273+verticalShift), Port::INPUT, module, module->vco.PW_INPUT));
-    addLabel(Vec(107, 255+verticalShift), "pwm");
+    addInput(Port::create<PJ301MPort>(Vec(col4, 273 + verticalShift), Port::INPUT, module, module->vco.PW_INPUT));
+    addLabel(Vec(107, 255 + verticalShift), "pwm");
 
-    addOutput(Port::create<PJ301MPort>(Vec(col1, 317+verticalShift), Port::OUTPUT, module, module->vco.SIN_OUTPUT));
-    addLabel(Vec(8, outputLabelY+verticalShift), "sin", COLOR_WHITE);
+    addOutput(Port::create<PJ301MPort>(Vec(col1, 317 + verticalShift), Port::OUTPUT, module, module->vco.SIN_OUTPUT));
+    addLabel(Vec(8, outputLabelY + verticalShift), "sin", COLOR_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(col2, 317+verticalShift), Port::OUTPUT, module, module->vco.TRI_OUTPUT));
-    addLabel(Vec(44, outputLabelY+verticalShift), "tri", COLOR_WHITE);
+    addOutput(Port::create<PJ301MPort>(Vec(col2, 317 + verticalShift), Port::OUTPUT, module, module->vco.TRI_OUTPUT));
+    addLabel(Vec(44, outputLabelY + verticalShift), "tri", COLOR_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(col3, 317+verticalShift), Port::OUTPUT, module, module->vco.SAW_OUTPUT));
-    addLabel(Vec(75, outputLabelY+verticalShift), "saw", COLOR_WHITE);
+    addOutput(Port::create<PJ301MPort>(Vec(col3, 317 + verticalShift), Port::OUTPUT, module, module->vco.SAW_OUTPUT));
+    addLabel(Vec(75, outputLabelY + verticalShift), "saw", COLOR_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(col4, 317+verticalShift), Port::OUTPUT, module, module->vco.SQR_OUTPUT));
-    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", COLOR_WHITE);
+    addOutput(Port::create<PJ301MPort>(Vec(col4, 317 + verticalShift), Port::OUTPUT, module, module->vco.SQR_OUTPUT));
+    addLabel(Vec(111, outputLabelY + verticalShift), "sqr", COLOR_WHITE);
 }
 
 /**

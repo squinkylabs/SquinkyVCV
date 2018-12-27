@@ -79,7 +79,7 @@ private:
     CHBgModule* const module;
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
-    ParamWidget* gainParam=nullptr;
+    ParamWidget* gainParam = nullptr;
 };
 
 /**
@@ -170,7 +170,7 @@ inline void CHBgWidget::addOtherKnobs(CHBgModule *module)
     addLabel(Vec(col1 - 22, row2 - labelAboveKnob), "Gain");
 
     addParam(createParamCentered<Trimpot>(
-        Vec(col1, row2+30),
+        Vec(col1, row2 + 30),
         module,
         module->chb.PARAM_EXTGAIN_TRIM,
         0, 1, 0));
@@ -226,7 +226,7 @@ void CHBgWidget::addMisc(CHBgModule *module)
 
  //  Vec(col1, 165),
     addChild(createLightCentered<SmallLight<GreenRedLight>>(
-        Vec(col1-16, switchY),
+        Vec(col1 - 16, switchY),
         module,
         module->chb.GAIN_GREEN_LIGHT));
 }
@@ -380,7 +380,7 @@ CHBgWidget::CHBgWidget(CHBgModule *module) :
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelCHBgModule = Model::create<CHBgModule,

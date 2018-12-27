@@ -87,7 +87,7 @@ struct LFNWidget : ModuleWidget
         updater.update(*this);
         module.lfn.pollForChangeOnUIThread();
        // ModuleWidget::draw(vg);
-       ModuleWidget::step();
+        ModuleWidget::step();
     }
 
     Menu* createContextMenu() override;
@@ -125,11 +125,11 @@ inline Menu* LFNWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
     MenuLabel *spacerLabel = new MenuLabel();
-	theMenu->addChild(spacerLabel);
+    theMenu->addChild(spacerLabel);
     SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
         xlfnWidget);
-	item->text = "Extra Low Frequency";
-	theMenu->addChild(item);
+    item->text = "Extra Low Frequency";
+    theMenu->addChild(item);
     return theMenu;
 }
 
@@ -149,13 +149,13 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     }
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(59, inputY - knobDy -1), Port::OUTPUT, module, module->lfn.OUTPUT));
+        Vec(59, inputY - knobDy - 1), Port::OUTPUT, module, module->lfn.OUTPUT));
     addLabel(
-        Vec(54 , inputY - knobDy - 18), "out", COLOR_WHITE);
- 
+        Vec(54, inputY - knobDy - 18), "out", COLOR_WHITE);
+
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(10, knobY - 1 * knobDy), module, module->lfn.FREQ_RANGE_PARAM, -5, 5, 0));
-    
+
    // addLabel(Vec(59, knobY - 1 * knobDy), "R");
 
     for (int i = 0; i < 5; ++i) {
@@ -163,7 +163,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     }
 
     xlfnWidget = ParamWidget::create<NullWidget>(
-        Vec(0, 0), module,  module->lfn.XLFN_PARAM, 0, 1, 0);
+        Vec(0, 0), module, module->lfn.XLFN_PARAM, 0, 1, 0);
     xlfnWidget->box.size.x = 0;
     xlfnWidget->box.size.y = 0;
     addParam(xlfnWidget);
@@ -184,7 +184,7 @@ void LFNLabelUpdater::update(struct LFNWidget& widget)
 {
     float baseFreq = widget.module.lfn.getBaseFrequency();
     const bool isXLFN = widget.module.lfn.isXLFN();
-    const float moveLeft = isXLFN ? 3 : 0;  
+    const float moveLeft = isXLFN ? 3 : 0;
     const int digits = isXLFN ? 2 : 1;
     if (baseFreq != baseFrequency) {
         baseFrequency = baseFreq;

@@ -190,7 +190,7 @@ inline void Tremolo<TBase>::step()
         clock.refClock();
     }
 
- 
+
     // ------------ now generate the lfo waveform
     clock.sampleClock();
     float mod = clock.getSaw();

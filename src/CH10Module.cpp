@@ -68,7 +68,7 @@ struct CH10Widget : ModuleWidget
     void makeB(CH10Module *);
     void makeAB(CH10Module *);
     void addSwitch(float x, float y, int id);
-    void makeVCO(CH10Module* , int whichOne);
+    void makeVCO(CH10Module*, int whichOne);
 };
 
 const static float gridSize = 28;
@@ -77,17 +77,17 @@ const static float gridRow1 = 300;
 
 inline void CH10Widget::makeA(CH10Module *)
 {
-    for (int i=0; i<10; ++i) {
+    for (int i = 0; i < 10; ++i) {
         const float x = gridCol1;
-        const float y = gridRow1 - i* gridSize;
+        const float y = gridRow1 - i * gridSize;
         addSwitch(x, y, CH10<Widget>::A0_PARAM + i);
     }
 }
 
 inline void CH10Widget::makeB(CH10Module *)
 {
-    for (int i=0; i<10; ++i) {
-        const float x = gridCol1 + gridSize * (i+1);
+    for (int i = 0; i < 10; ++i) {
+        const float x = gridCol1 + gridSize * (i + 1);
         const float y = gridRow1 + gridSize;
         addSwitch(x, y, CH10<Widget>::B0_PARAM + i);
     }
@@ -95,9 +95,9 @@ inline void CH10Widget::makeB(CH10Module *)
 
 inline void CH10Widget::makeAB(CH10Module *)
 {
-    for (int row=0; row<10; ++row) {
-        for (int col=0; col<10; ++col) {
-            float x = gridCol1 + gridSize * (col+1);
+    for (int row = 0; row < 10; ++row) {
+        for (int col = 0; col < 10; ++col) {
+            float x = gridCol1 + gridSize * (col + 1);
             float y = gridRow1 - row * gridSize;
             int id = CH10<Widget>::A0B0_PARAM +
                 col + row * 10;
@@ -107,7 +107,7 @@ inline void CH10Widget::makeAB(CH10Module *)
 }
 
 inline void CH10Widget::addSwitch(float x, float y, int id)
-{ 
+{
     ToggleButton* tog = ParamWidget::create<ToggleButton>(
         Vec(x, y),
         module,
@@ -124,18 +124,18 @@ const float vcoACol = 50;
 const float vcoBCol = 90;
 const float vcoOctRow = 60;
 const float vcoSemiRow = vcoOctRow + rowSpacing;
-const float vcoCVRow = vcoSemiRow + rowSpacing; 
+const float vcoCVRow = vcoSemiRow + rowSpacing;
 
 inline void CH10Widget::makeVCO(CH10Module* module, int whichVCO)
 {
-    const float x = whichVCO ? vcoBCol : vcoACol; 
+    const float x = whichVCO ? vcoBCol : vcoACol;
     addParam(createParamCentered<Blue30Knob>(
         Vec(x, vcoOctRow),
         module,
         CH10<WidgetComposite>::AOCTAVE_PARAM + whichVCO,
         -5.f, 4.f, 0.f));
 
-     addParam(createParamCentered<Blue30SnapKnob>(
+    addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x, vcoSemiRow), module,
         CH10<WidgetComposite>::ASEMI_PARAM + whichVCO,
         -11.f, 11.0f, 0.f));
@@ -144,7 +144,7 @@ inline void CH10Widget::makeVCO(CH10Module* module, int whichVCO)
         Vec(x, vcoCVRow),
         module,
         CH10<WidgetComposite>::ACV_INPUT + whichVCO));
- 
+
 
 }
 

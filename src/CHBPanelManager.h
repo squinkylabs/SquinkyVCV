@@ -7,19 +7,19 @@
 class IPanelHost
 {
 public:
-    virtual void setExpanded(bool) =0;
-    virtual bool isExpanded()=0;
+    virtual void setExpanded(bool) = 0;
+    virtual bool isExpanded() = 0;
 };
 
 /**
  * Bundles up all the handling of expanding and contracting
- * the panel. Relies on IPanelHost to talk back to the 
- * main widget. 
+ * the panel. Relies on IPanelHost to talk back to the
+ * main widget.
  */
 class CHBPanelManager
 {
 public:
-    CHBPanelManager(IPanelHost* );
+    CHBPanelManager(IPanelHost*);
     MenuItem*  createMenuItem();
     void makePanel(ModuleWidget* widget);
     void addMenuItems(Menu*);
@@ -34,9 +34,9 @@ private:
     void setPanelSize();
 };
 
- CHBPanelManager::CHBPanelManager(IPanelHost* host) : panelHost(host)
- {
- }
+CHBPanelManager::CHBPanelManager(IPanelHost* host) : panelHost(host)
+{
+}
 
 inline  void CHBPanelManager::addMenuItems(Menu* menu)
 {
@@ -62,8 +62,8 @@ inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
 
     panel->box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     panel->box.size.x += expWidth;
- 
-	panel->expWidth = &expWidth;
+
+    panel->expWidth = &expWidth;
 
     // I think this dynamically adds the real size. can get rid of the other stuff.
     panel->addPanel(SVG::load(assetPlugin(plugin, "res/cheby-wide-ghost.svg")));
@@ -71,7 +71,7 @@ inline void CHBPanelManager::makePanel(ModuleWidget* wdg)
 
     widget->box.size = panel->box.size;
     // printf("widget box a = %f exp=%f\n", widget->box.size.x, expWidth);
-	
+
     // TODO: use setPanelSize
     const int expansionWidth = panelHost->isExpanded() ? 0 : -expWidth;
     widget->box.size.x += expansionWidth;
@@ -84,9 +84,9 @@ inline MenuItem*  CHBPanelManager::createMenuItem()
         return panelHost->isExpanded();
     };
     auto actionCB = [this]() {
-       bool b = !panelHost->isExpanded();
-       panelHost->setExpanded(b);
-       setPanelSize();
+        bool b = !panelHost->isExpanded();
+        panelHost->setExpanded(b);
+        setPanelSize();
     };
     return new SQPanelItem(statusCB, actionCB);
 }

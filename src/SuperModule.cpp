@@ -104,7 +104,7 @@ void superWidget::addPitchKnobs(SuperModule *)
 
     // Semi
     auto semi = createParamCentered<Rogan1PSBlue>(
-        Vec(col2, row1), module, Super<WidgetComposite>::SEMI_PARAM, -11, 11, 0); 
+        Vec(col2, row1), module, Super<WidgetComposite>::SEMI_PARAM, -11, 11, 0);
     semi->snap = true;
     semi->smooth = false;
     addParam(semi);
@@ -117,7 +117,7 @@ void superWidget::addPitchKnobs(SuperModule *)
         Vec(col1, row2), module, Super<WidgetComposite>::FINE_PARAM, -1, 1, 0));
     addLabel(
         Vec(col1 - 18, row2 + labelOffsetBig), "Fine");
-    
+
     // FM
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(col2, row2), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
@@ -180,23 +180,23 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::TRIGGER_INPUT));
     l = addLabel(
-        Vec(jackX + 1 * jackDx - 16,  jackRow2 + jackOffsetLabel), "Trig");
+        Vec(jackX + 1 * jackDx - 16, jackRow2 + jackOffsetLabel), "Trig");
     l->fontSize = jackLabelPoints;
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jackX + 2 * jackDx,  jackRow2),
+        Vec(jackX + 2 * jackDx, jackRow2),
         module,
         Super<WidgetComposite>::FM_INPUT));
     l = addLabel(
-        Vec(jackX + 2 * jackDx - 13,  jackRow2 + jackOffsetLabel), "FM");
+        Vec(jackX + 2 * jackDx - 13, jackRow2 + jackOffsetLabel), "FM");
     l->fontSize = jackLabelPoints;
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jackX + 3 * jackDx,  jackRow2), 
-         module,
+        Vec(jackX + 3 * jackDx, jackRow2),
+        module,
         Super<WidgetComposite>::MAIN_OUTPUT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 16,  jackRow2 + jackOffsetLabel), "Out", COLOR_WHITE);  
+        Vec(jackX + 3 * jackDx - 16, jackRow2 + jackOffsetLabel), "Out", COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 }
 

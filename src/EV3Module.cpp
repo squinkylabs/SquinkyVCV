@@ -32,7 +32,9 @@ void EV3Module::step()
 class EV3PitchDisplay
 {
 public:
-    EV3PitchDisplay(EV3Module * mod) : module(mod) {}
+    EV3PitchDisplay(EV3Module * mod) : module(mod)
+    {
+    }
     void step();
 
     /**
@@ -59,15 +61,15 @@ void EV3PitchDisplay::step()
 {
     bool atLeastOneChanged = false;
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
-    for (int i=0; i<3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         const int octaveParam = EV3<WidgetComposite>::OCTAVE1_PARAM + delta * i;
         const int semiParam = EV3<WidgetComposite>::SEMI1_PARAM + delta * i;
         const int inputId = EV3<WidgetComposite>::CV1_INPUT + i;
         const int oct = module->params[octaveParam].value;
         const int semi = module->params[semiParam].value;
-        const bool patched =  module->inputs[inputId].active;
+        const bool patched = module->inputs[inputId].active;
         if (i == 0) {
-            
+
         }
         if (semi != lastSemi[i] ||
             oct != lastOctave[i] ||
@@ -84,8 +86,8 @@ void EV3PitchDisplay::step()
         }
     }
     if (atLeastOneChanged) {
-        for (int i=0; i<3; ++i) {
-            
+        for (int i = 0; i < 3; ++i) {
+
             if (shouldUseInterval(i)) {
                 updateInterval(i);
             } else {
@@ -127,7 +129,7 @@ static const int pitchOffsets[] = {
     offsetNatural,
     offsetAccidental,
     offsetNatural,         //b
-  
+
 };
 
 static const char* pitchNames[] = {
@@ -143,7 +145,7 @@ static const char* pitchNames[] = {
     "A",
     "A#",
     "B"
-    };
+};
 
 static const int intervalOffsets[] = {
     11,
@@ -178,18 +180,19 @@ bool EV3PitchDisplay::shouldUseInterval(int osc)
 
     if (lastPatched[osc]) {
         ret = false;            // if current one is patched, use absolute
-                    
-    } else if ((osc > 0) && lastPatched[osc-1]) {
+
+    } else if ((osc > 0) && lastPatched[osc - 1]) {
         ret = true;             // if prev patched and we are not, go for it
-    }  else if ((osc > 1) && lastPatched[osc-2]) {
+    } else if ((osc > 1) && lastPatched[osc - 2]) {
         ret = true;             // if prev-prev patched and we are not, go for it
-    }  
+    }
 
     //printf("should use interval (%d) ret %d", osc, ret);
     return ret;
 }
 
-void EV3PitchDisplay::updateInterval(int osc) {
+void EV3PitchDisplay::updateInterval(int osc)
+{
 
     int refSemi = 0;
     int refOctave = 0;
@@ -199,12 +202,12 @@ void EV3PitchDisplay::updateInterval(int osc) {
     assert(osc > 0);
     const bool prevPatched = lastPatched[osc - 1];
     if (prevPatched) {
-        refOctave = 5 + lastOctave[osc -1];
-        refSemi = lastSemi[osc -1];
+        refOctave = 5 + lastOctave[osc - 1];
+        refSemi = lastSemi[osc - 1];
        // printf("got from prev %d (%d, %d)\n", osc-1, refOctave, refSemi);
     } else {
         assert(osc > 1);
-        refOctave = 5 + lastOctave[osc -2];
+        refOctave = 5 + lastOctave[osc - 2];
         refSemi = lastSemi[osc - 2];
        //  printf("got from prev %d (%d, %d)\n", osc-2, refOctave, refSemi);
     }
@@ -228,7 +231,7 @@ void EV3PitchDisplay::updateInterval(int osc) {
         printf("curentPitch = %d ref = %d, rel=%d\n", currentPitch, refPitch, relativePitch);
         printf(" adjOct=%d semi = %d\n", adjustedOctave, adjustedSemi);
         printf(" refOctave=%d, oct=%d\n", refOctave, oct);
-         printf(" refSemi=%d, semi=%d\n", refSemi, semi);
+        printf(" refSemi=%d, semi=%d\n", refSemi, semi);
         fflush(stdout);
     }
 #endif
@@ -239,11 +242,12 @@ void EV3PitchDisplay::updateInterval(int osc) {
     so << adjustedOctave;
     octLabels[osc]->text = so.str();
 
-   semiLabels[osc]->text = intervalNames[adjustedSemi];
-   semiLabels[osc]->box.pos.x = semiX[osc] + intervalOffsets[adjustedSemi];
+    semiLabels[osc]->text = intervalNames[adjustedSemi];
+    semiLabels[osc]->box.pos.x = semiX[osc] + intervalOffsets[adjustedSemi];
 }
 
-void EV3PitchDisplay::updateAbsolute(int osc) {
+void EV3PitchDisplay::updateAbsolute(int osc)
+{
     std::stringstream so;
     int oct = 5 + lastOctave[osc];
     int semi = lastSemi[osc];
@@ -295,7 +299,7 @@ void EV3Widget::step()
     bool norm = module->ev3.isLoweringVolume();
     if (norm != wasNormalizing) {
         wasNormalizing = norm;
-        auto color = norm ?  COLOR_GREEN2 : COLOR_WHITE;
+        auto color = norm ? COLOR_GREEN2 : COLOR_WHITE;
         plusOne->color = color;
         plusTwo->color = color;
     }
@@ -305,24 +309,24 @@ const int dy = -6;      // apply to everything
 
 void EV3Widget::makeSection(EV3Module *module, int index)
 {
-    const float x = (30-4) + index * (86+4);
-    const float x2 = x + (36+2);
-    const float y = 80+dy;
-    const float y2 = y + 56+dy;
+    const float x = (30 - 4) + index * (86 + 4);
+    const float x2 = x + (36 + 2);
+    const float y = 80 + dy;
+    const float y2 = y + 56 + dy;
     const float y3 = y2 + 40 + dy;
 
     const int delta = EV3<WidgetComposite>::OCTAVE2_PARAM - EV3<WidgetComposite>::OCTAVE1_PARAM;
 
     pitchDisplay.addOctLabel(
         addLabel(Vec(x - 10, y - 32), "Oct"));
-    pitchDisplay.addSemiLabel( 
+    pitchDisplay.addSemiLabel(
         addLabel(Vec(x2 - 22, y - 32), "Semi"));
 
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x, y), module,
         EV3<WidgetComposite>::OCTAVE1_PARAM + delta * index,
         -5.0f, 4.0f, 0.f));
-   
+
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(x2, y), module,
         EV3<WidgetComposite>::SEMI1_PARAM + delta * index,
@@ -364,8 +368,8 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addParam(ParamWidget::create<CKSS>(
             Vec(swx, y3), module, EV3<WidgetComposite>::SYNC1_PARAM + delta * index,
             0.0f, 1.0f, 0.0f));
-        addLabel(Vec(lbx-2, y3 - 20), "sync");
-        addLabel(Vec(lbx+1, y3 + 20), "off");
+        addLabel(Vec(lbx - 2, y3 - 20), "sync");
+        addLabel(Vec(lbx + 1, y3 + 20), "off");
     }
 
     const float y4 = y3 + 43;
@@ -387,7 +391,7 @@ void EV3Widget::makeSections(EV3Module* module)
     makeSection(module, 2);
 }
 
-const float row1Y = 280+dy-4;       // -4 = move the last section up
+const float row1Y = 280 + dy - 4;       // -4 = move the last section up
 const float rowDY = 30;
 const float colDX = 45;
 
@@ -413,12 +417,12 @@ void EV3Widget::makeInputs(EV3Module* module)
     };
 
     for (int row = 0; row < 3; ++row) {
-        makeInput(module, row, 0, 
+        makeInput(module, row, 0,
             row2Input(row, EV3<WidgetComposite>::CV1_INPUT),
             "V/oct", -3);
         makeInput(module, row, 1,
             row2Input(row, EV3<WidgetComposite>::FM1_INPUT),
-             "Fm", 3);
+            "Fm", 3);
         makeInput(module, row, 2,
             row2Input(row, EV3<WidgetComposite>::PWM1_INPUT),
             "Pwm", -2);
@@ -444,23 +448,23 @@ void EV3Widget::makeOutputs(EV3Module *)
     addOutput(Port::create<PJ301MPort>(
         Vec(outX, row1Y),
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO1_OUTPUT));
-    addLabel(Vec(outX + 20, row1Y + 0 * rowDY+2), "1", COLOR_WHITE);
+    addLabel(Vec(outX + 20, row1Y + 0 * rowDY + 2), "1", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(
         Vec(outX, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO2_OUTPUT));
-    addLabel(Vec(outX + 20, row1Y + 1 * rowDY+2), "2", COLOR_WHITE);
+    addLabel(Vec(outX + 20, row1Y + 1 * rowDY + 2), "2", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(
         Vec(outX, row1Y + 2 * rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::VCO3_OUTPUT));
-    addLabel(Vec(outX + 20, row1Y + 2 * rowDY+2), "3", COLOR_WHITE);
+    addLabel(Vec(outX + 20, row1Y + 2 * rowDY + 2), "3", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(
         Vec(outX + 41, row1Y + rowDY),
         Port::OUTPUT, module, EV3<WidgetComposite>::MIX_OUTPUT));
-   plusOne = addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
-   plusTwo = addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
+    plusOne = addLabel(Vec(outX + 41, row1Y + rowDY - 17), "+", COLOR_WHITE);
+    plusTwo = addLabel(Vec(outX + 41, row1Y + rowDY + 20), "+", COLOR_WHITE);
 }
 
 /**
@@ -496,5 +500,5 @@ Model *modelEV3Module = Model::create<EV3Module,
     EV3Widget>("Squinky Labs",
     "squinkylabs-ev3",
     "EV3: Triple VCO with even waveform", OSCILLATOR_TAG);
-    
+
 

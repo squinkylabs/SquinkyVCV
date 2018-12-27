@@ -9,44 +9,54 @@
 /**
  * Like Trimpot, but with blue stripe
  */
-struct BlueTrimmer : SVGKnob {
-	BlueTrimmer() {
-		minAngle = -0.75*M_PI;
-		maxAngle = 0.75*M_PI;
-		setSVG(SVG::load(assetPlugin(plugin, "res/BlueTrimmer.svg")));
-	}
+struct BlueTrimmer : SVGKnob
+{
+    BlueTrimmer()
+    {
+        minAngle = -0.75*M_PI;
+        maxAngle = 0.75*M_PI;
+        setSVG(SVG::load(assetPlugin(plugin, "res/BlueTrimmer.svg")));
+    }
 };
 
 /**
  * Like Rogan1PSBlue, but smaller.
  */
-struct Blue30Knob : SVGKnob {
-	Blue30Knob() {    
-		minAngle = -0.83*M_PI;
-		maxAngle = 0.83*M_PI;
-		setSVG(SVG::load(assetPlugin(plugin, "res/Blue30.svg")));
-	}
+struct Blue30Knob : SVGKnob
+{
+    Blue30Knob()
+    {
+        minAngle = -0.83*M_PI;
+        maxAngle = 0.83*M_PI;
+        setSVG(SVG::load(assetPlugin(plugin, "res/Blue30.svg")));
+    }
 };
 
-struct Blue30SnapKnob : Blue30Knob {
-	Blue30SnapKnob() {
-		snap = true;
-		smooth = false;
-	}
+struct Blue30SnapKnob : Blue30Knob
+{
+    Blue30SnapKnob()
+    {
+        snap = true;
+        smooth = false;
+    }
 };
 
-struct NKKSmall : SVGSwitch, ToggleSwitch {
-	NKKSmall() {
-		addFrame(SVG::load(assetPlugin(plugin, "res/NKKSmall_0.svg")));
-		addFrame(SVG::load(assetPlugin(plugin, "res/NKKSmall_1.svg")));
-		addFrame(SVG::load(assetPlugin(plugin, "res/NKKSmall_2.svg")));
-	}
+struct NKKSmall : SVGSwitch, ToggleSwitch
+{
+    NKKSmall()
+    {
+        addFrame(SVG::load(assetPlugin(plugin, "res/NKKSmall_0.svg")));
+        addFrame(SVG::load(assetPlugin(plugin, "res/NKKSmall_1.svg")));
+        addFrame(SVG::load(assetPlugin(plugin, "res/NKKSmall_2.svg")));
+    }
 };
 
-struct BlueToggle : public SVGSwitch, ToggleSwitch {
-    BlueToggle() {
+struct BlueToggle : public SVGSwitch, ToggleSwitch
+{
+    BlueToggle()
+    {
         addFrame(SVG::load(assetPlugin(plugin, "res/BluePush_1.svg")));
-		addFrame(SVG::load(assetPlugin(plugin, "res/BluePush_0.svg")));
+        addFrame(SVG::load(assetPlugin(plugin, "res/BluePush_0.svg")));
     }
 };
 
@@ -65,10 +75,10 @@ struct SQPush : SVGButton
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
-         setSVGs(
+        setSVGs(
             SVG::load(assetPlugin(plugin, upSVG)),
             SVG::load(assetPlugin(plugin, dnSVG))
-         );
+        );
     }
     void center(Vec& pos)
     {
@@ -106,14 +116,17 @@ struct SQPush : SVGButton
 using SQStatusCallback = std::function<bool()>;
 using SQActionCAllback = std::function<void()>;
 
-struct SQPanelItem : MenuItem {
+struct SQPanelItem : MenuItem
+{
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
-    void onAction(EventAction &e) override {
+    void onAction(EventAction &e) override
+    {
         actionCallback();
-	}
+    }
 
-	void step() override {
+    void step() override
+    {
         const bool b = statusCallback();
         rightText = CHECKMARK(b);
     }
@@ -141,14 +154,14 @@ public:
     {
         // Make sure we have no dimensions to fool 
         // hit testing in VCV.
-        box.pos.x=0;
-        box.pos.y=0;
-        box.size.x=0;
+        box.pos.x = 0;
+        box.pos.y = 0;
+        box.size.x = 0;
         box.size.y = 0;
     }
 
     // Swallow mouse commands
-	void onMouseDown(EventMouseDown &e) override
+    void onMouseDown(EventMouseDown &e) override
     {
         e.consumed = false;
     }

@@ -61,11 +61,11 @@ class Super : public TBase
 {
 public:
 
-    Super(struct Module * module) : TBase(module),  gateTrigger(true)
+    Super(struct Module * module) : TBase(module), gateTrigger(true)
     {
         init();
     }
-    Super() : TBase(),  gateTrigger(true)
+    Super() : TBase(), gateTrigger(true)
     {
         init();
     }
@@ -143,7 +143,7 @@ private:
 
     int getOversampleRate();
 
-    AudioMath::RandomUniformFunc random =  AudioMath::random();
+    AudioMath::RandomUniformFunc random = AudioMath::random();
 
     int inputSubSampleCounter = 1;
     const static int inputSubSample = 4;    // only look at knob/cv every 4
@@ -160,9 +160,9 @@ private:
     };
 
     void updateHPFilters();
-   
+
     SawtoothDetuneCurve detuneCurve;
-    GateTrigger gateTrigger; 
+    GateTrigger gateTrigger;
     float gainCenter = 0;
     float gainSides = 0;
 
@@ -178,7 +178,7 @@ inline void Super<TBase>::init()
     scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
 
     const int rate = getOversampleRate();
-    const int decimateDiv = std::max(rate, (int)MAX_OVERSAMPLE);
+    const int decimateDiv = std::max(rate, (int) MAX_OVERSAMPLE);
     decimator.setup(decimateDiv);
 }
 
@@ -200,7 +200,7 @@ inline int Super<TBase>::getOversampleRate()
         default:
             assert(false);
     }
-    assert(rate <= (int)MAX_OVERSAMPLE);
+    assert(rate <= (int) MAX_OVERSAMPLE);
     return rate;
 }
 

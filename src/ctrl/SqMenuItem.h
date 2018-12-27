@@ -5,18 +5,21 @@
 
 struct SqMenuItem : rack::MenuItem
 {
-    void onAction(rack::EventAction &e) override {
+    void onAction(rack::EventAction &e) override
+    {
         _onActionFn();
-	}
+    }
 
-	void step() override {
+    void step() override
+    {
         rightText = CHECKMARK(_isCheckedFn());
     }
 
     SqMenuItem(std::function<bool()> isCheckedFn,
         std::function<void()> clickFn) :
-            _isCheckedFn(isCheckedFn),
-            _onActionFn(clickFn) {
+        _isCheckedFn(isCheckedFn),
+        _onActionFn(clickFn)
+    {
     }
 
 private:
@@ -27,9 +30,11 @@ private:
 struct  SqMenuItem_BooleanParam : rack::MenuItem
 {
     SqMenuItem_BooleanParam(rack::ParamWidget* widget) :
-        widget(widget) {
+        widget(widget)
+    {
     }
-    void onAction(rack::EventAction &e) override {
+    void onAction(rack::EventAction &e) override
+    {
         const float newValue = isOn() ? 0 : 1;
         widget->value = newValue;
         rack::EventChange ec;
@@ -37,7 +42,8 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
         e.consumed = true;
     }
 
-    void step() override {
+    void step() override
+    {
         rightText = CHECKMARK(isOn());
     }
 

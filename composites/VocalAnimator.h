@@ -194,7 +194,7 @@ inline void VocalAnimator<TBase>::stepModulation()
         StateVariableFilterParams<T>::Mode::LowPass :
         StateVariableFilterParams<T>::Mode::BandPass;
 
-    for (int i = 0; i < numFilters +1 - 1; ++i) {
+    for (int i = 0; i < numFilters + 1 - 1; ++i) {
         filterParams[i].setMode(mode);
     }
 
@@ -210,7 +210,7 @@ inline void VocalAnimator<TBase>::stepModulation()
     // Light up the LEDs with the unscaled Modulator outputs.
     for (int i = LFO0_LIGHT; i <= LFO2_LIGHT; ++i) {
         TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
-        TBase::lights[i].value = (modulatorOutput[i]  ) * .3f;
+        TBase::lights[i].value = (modulatorOutput[i]) * .3f;
         TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
     }
 
@@ -219,7 +219,7 @@ inline void VocalAnimator<TBase>::stepModulation()
         TBase::inputs[FILTER_Q_CV_INPUT].value,
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
-   
+
     const T fc = scalen5_5(
         TBase::inputs[FILTER_FC_CV_INPUT].value,
         TBase::params[FILTER_FC_PARAM].value,

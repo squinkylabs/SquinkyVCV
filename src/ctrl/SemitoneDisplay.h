@@ -13,13 +13,13 @@
 class SemitoneDisplay
 {
 public:
-    SemitoneDisplay(rack::Module* module) : 
+    SemitoneDisplay(rack::Module* module) :
         module(module)
     {
 
     }
     void step();
-   
+
 
     /**
      * pass in the label component that will be displaying semitones
@@ -44,27 +44,27 @@ private:
     rack::Module* module;
     rack::Label* semiLabel = nullptr;
     rack::Label* octLabel = nullptr;
-    float semiXPosition=0;
-    float octXPosition=0;
-    int semiParameterId=-1;
-    int octParameterId=-1;
+    float semiXPosition = 0;
+    float octXPosition = 0;
+    int semiParameterId = -1;
+    int octParameterId = -1;
 
     int lastSemi = 100;
     int lastOct = 100;
 
-const std::vector<std::string> names = {
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "D"
+    const std::vector<std::string> names = {
+        "C",
+        "C#",
+        "D",
+        "D#",
+        "E",
+        "F",
+        "F#",
+        "G",
+        "G#",
+        "A",
+        "A#",
+        "D"
     };
 };
 
@@ -78,11 +78,11 @@ inline void SemitoneDisplay::step()
     if (octParameterId >= 0) {
         curOct = (int) std::round(module->params[octParameterId].value);
     }
-  
+
     if (curSemi != lastSemi || curOct != lastOct) {
         lastSemi = curSemi;
         lastOct = curOct;
-        
+
         std::stringstream so;
         int semi = lastSemi;
         if (semi < 0) {
