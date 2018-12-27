@@ -302,7 +302,6 @@ inline float CHB<TBase>::getInput()
 
     checkClipping(input);
 
-
     // Now clip or fold to keep in -1...+1
     if (TBase::params[PARAM_FOLD].value > .5) {
         input = AudioMath::fold(input);
