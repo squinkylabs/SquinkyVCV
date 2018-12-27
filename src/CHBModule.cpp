@@ -262,7 +262,7 @@ void CHBWidget::addRow4(CHBModule *module)
         Vec(col1, row),
         module,
         CHB<WidgetComposite>::PARAM_EXTGAIN_TRIM,
-        0, 1, 0));
+        -1, 1, 0));
 
     addParam(createParamCentered<Trimpot>(
         Vec(col2, row),

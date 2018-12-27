@@ -279,8 +279,8 @@ inline float CHB<TBase>::getInput()
     Osc::setFrequency(sinParams, time);
 
     if (cycleCount == 0) {
-    // Get the gain from the envelope generator in
-    // eGain = {0 .. 10.0f }
+        // Get the gain from the envelope generator in
+        // eGain = {0 .. 10.0f }
         float eGain = TBase::inputs[ENV_INPUT].active ? TBase::inputs[ENV_INPUT].value : 10.f;
         isExternalAudio = TBase::inputs[AUDIO_INPUT].active;
 
