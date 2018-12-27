@@ -5,6 +5,7 @@ SLUG = squinkylabs-plug1
 VERSION = 0.6.13
 
 # FLAGS will be passed to both the C and C++ compiler
+FLAGS += -fmax-errors=5
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco -I./dsp/third-party/kiss_fft130 
 FLAGS += -I./dsp/third-party/kiss_fft130/tools -I./dsp/third-party/src

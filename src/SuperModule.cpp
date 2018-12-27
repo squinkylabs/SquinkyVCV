@@ -110,7 +110,7 @@ void superWidget::addPitchKnobs(SuperModule *)
     addParam(semi);
     Label* l = addLabel(
         Vec(col2 - 30, row1 + labelOffsetBig), "Semi");
-    semitoneDisplay.setLabel(l);
+    semitoneDisplay.setSemiLabel(l, Super<WidgetComposite>::SEMI_PARAM);
 
     // Fine
     addParam(createParamCentered<Rogan1PSBlue>(
@@ -207,7 +207,7 @@ void superWidget::addJacks(SuperModule *)
  */
 superWidget::superWidget(SuperModule *module) :
     ModuleWidget(module),
-    semitoneDisplay(module, Super<WidgetComposite>::SEMI_PARAM)
+    semitoneDisplay(module)
 {
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {

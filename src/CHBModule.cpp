@@ -161,8 +161,9 @@ void CHBWidget::addRow1(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_SEMIS,
         -11.0f, 11.0f, 0.f));
-    semitoneDisplay.setLabel( 
-        addLabel(Vec(col3 - 30, row - labelAboveKnob), "Semi"));
+    semitoneDisplay.setSemiLabel( 
+        addLabel(Vec(col3 - 30, row - labelAboveKnob), "Semi"),
+        CHB<WidgetComposite>::PARAM_SEMIS);
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(col4, row1),
@@ -427,7 +428,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
     module(module),
-    semitoneDisplay(module,  CHB<WidgetComposite>::PARAM_SEMIS)
+    semitoneDisplay(module)
 {
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
