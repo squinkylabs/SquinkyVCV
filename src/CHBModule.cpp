@@ -154,7 +154,9 @@ void CHBWidget::addRow1(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_OCTAVE,
         -5.0f, 4.0f, 0.f));
-    addLabel(Vec(col2 - 27, row1 - labelAboveKnob), "Octave");
+    semitoneDisplay.setOctLabel(
+        addLabel(Vec(col2 - 27, row1 - labelAboveKnob), "Octave"),
+        CHB<WidgetComposite>::PARAM_OCTAVE);
 
     addParam(createParamCentered<Blue30SnapKnob>(
         Vec(col3, row),

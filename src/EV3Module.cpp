@@ -68,26 +68,19 @@ void EV3PitchDisplay::step()
         const int oct = module->params[octaveParam].value;
         const int semi = module->params[semiParam].value;
         const bool patched = module->inputs[inputId].active;
-        if (i == 0) {
-
-        }
         if (semi != lastSemi[i] ||
             oct != lastOctave[i] ||
             patched != lastPatched[i]) {
 
             atLeastOneChanged = true;
             lastSemi[i] = semi;
-           // printf("just set lastSemi[%d] to %d\n", i, semi);
+
             lastOctave[i] = oct;
             lastPatched[i] = patched;
-          //  printf("just set last patched [%d] to %d\n", i, patched);
-
-           // fflush(stdout);
         }
     }
     if (atLeastOneChanged) {
         for (int i = 0; i < 3; ++i) {
-
             if (shouldUseInterval(i)) {
                 updateInterval(i);
             } else {

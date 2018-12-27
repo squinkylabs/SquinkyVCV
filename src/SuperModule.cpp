@@ -99,8 +99,10 @@ void superWidget::addPitchKnobs(SuperModule *)
     oct->snap = true;
     oct->smooth = false;
     addParam(oct);
-    addLabel(
-        Vec(col1 - 16, row1 + labelOffsetBig), "Oct");
+    Label* l = addLabel(
+        Vec(col1 - 16, row1 + labelOffsetBig),
+        "Oct");
+    semitoneDisplay.setOctLabel(l, Super<WidgetComposite>::OCTAVE_PARAM);
 
     // Semi
     auto semi = createParamCentered<Rogan1PSBlue>(
@@ -108,8 +110,8 @@ void superWidget::addPitchKnobs(SuperModule *)
     semi->snap = true;
     semi->smooth = false;
     addParam(semi);
-    Label* l = addLabel(
-        Vec(col2 - 30, row1 + labelOffsetBig), "Semi");
+    l = addLabel(Vec(col2 - 30, row1 + labelOffsetBig),
+        "Semi");
     semitoneDisplay.setSemiLabel(l, Super<WidgetComposite>::SEMI_PARAM);
 
     // Fine

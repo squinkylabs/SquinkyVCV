@@ -64,7 +64,7 @@ private:
         "G#",
         "A",
         "A#",
-        "D"
+        "B"
     };
 };
 
@@ -83,14 +83,23 @@ inline void SemitoneDisplay::step()
         lastSemi = curSemi;
         lastOct = curOct;
 
-        std::stringstream so;
+       
         int semi = lastSemi;
+        int oct = lastOct;
         if (semi < 0) {
             semi += 12;
+            --oct;
         }
 
-        so << "Semi: " << names[semi];
-        semiLabel->text = so.str();
-        //label->box.pos.x = x + semi_offsets[semi];
+        if (semiLabel) {
+            std::stringstream so;
+            so << "Semi: " << names[semi];
+            semiLabel->text = so.str();
+        }
+        if (octLabel) {
+            std::stringstream so;
+            so << "Oct: " << (5 + oct);
+            octLabel->text = so.str();
+        }
     }
 }
