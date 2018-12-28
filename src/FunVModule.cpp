@@ -148,6 +148,27 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
     addLabel(Vec(111, outputLabelY+verticalShift), "sqr", COLOR_WHITE);
 }
 
+/** Wrap up all the .6/1.0 dependencies here
+ */
+#ifdef _V1
+class SQHelper
+{
+public:
+    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
+    {
+        return asset::plugin(plugin, filename);
+    } 
+};
+#else
+class SQHelper
+{
+public:
+    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
+    {
+        return assetPlugin(plugin, filename);
+    } 
+};
+#endif
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -160,8 +181,8 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
         
-        //panel->setBackground(SVG::load(assetPlugin(plugin, "res/fun_panel.svg")));
-       panel->setBackground(SVG::load(asset::plugin(plugin, "res/fun_panel.svg")));
+        panel->setBackground(SVG::load(SQHelper::assetPlugin(plugin, "res/fun_panel.svg")));
+       //panel->setBackground(SVG::load(asset::plugin(plugin, "res/fun_panel.svg")));
         
         addChild(panel);
     }
