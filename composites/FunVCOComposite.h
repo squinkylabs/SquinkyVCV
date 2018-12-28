@@ -89,12 +89,40 @@ private:
 #endif
 };
 
+/*
+        MODE_PARAM,
+        SYNC_PARAM,
+        FREQ_PARAM,
+        FINE_PARAM,
+        FM_PARAM,
+        PW_PARAM,
+        PWM_PARAM,
+        NUM_PARAMS
+        */
 template <class TBase>
 inline typename FunVCOComposite<TBase>::Config
     FunVCOComposite<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0);
     switch(i) {
+        case MODE_PARAM:
+            ret = {0.0f, 1.0f, 1.0f};
+            break;
+        case SYNC_PARAM:
+            ret = {0.0f, 1.0f, 1.0f};
+            break;
+        case FREQ_PARAM:
+            ret = {-54.0f, 54.0f, 0.0f};
+            break;
+        case FINE_PARAM:
+            ret = {-1.0f, 1.0f, 0.0f};
+            break;
+        case FM_PARAM:
+            ret = {0.0f, 1.0f, 0.0f};
+            break;
+        case PW_PARAM:
+            ret = {0.0f, 1.0f, 0.5f};
+            break;
         case PWM_PARAM:
             ret = {0.0f, 1.0f, 0.0f};
             break;

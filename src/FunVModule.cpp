@@ -18,12 +18,23 @@ public:
     {
         return asset::plugin(plugin, filename);
     } 
-    static float engineGetSampleRate();
+    static float engineGetSampleRate()
+    {
+        return context()->engine->getSampleRate();
+    }
     template <typename T>
-    static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int ctrlId );
+
+    static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int paramId )
+    {
+        return rack::createParam<T>(pos, module, paramId);
+    }
     
     static NVGcolor COLOR_WHITE() {
         return nvgRGB(0xff, 0xff, 0xff);
+    }
+
+     static NVGcolor COLOR_BLACK() {
+        return nvgRGB(0, 0, 0);
     }
 };
 #else
@@ -46,6 +57,9 @@ public:
  //   static const NVGcolor COLOR_BLACK = nvgRGB(0x00, 0x00, 0x00);
     static NVGcolor COLOR_WHITE() {
         return nvgRGB(0xff, 0xff, 0xff);
+    }
+     static NVGcolor COLOR_BLACK() {
+        return nvgRGB(0, 0, 0);
     }
 
 //v 1 stype
@@ -121,7 +135,7 @@ struct FunVWidget : ModuleWidget
     void addMiddle4(FunVModule *, float verticalShift);
     void addJacks(FunVModule *, float verticalShift);
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -129,6 +143,10 @@ struct FunVWidget : ModuleWidget
         label->color = color;
         addChild(label);
         return label;
+    }
+    Label* addLabel(const Vec& v, const char* str) 
+    {
+        return addLabel(v, str, SQHelper::COLOR_BLACK());
     }
 };
 
@@ -138,40 +156,53 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
     const float right = 112;
     const float center = 49;
 
-    addParam(ParamWidget::create<NKK>(Vec(left, 66 + verticalShift),
-        module, module->vco.MODE_PARAM, 0.0f, 1.0f, 1.0f));
+    addParam(SQHelper::createParam<NKK>(
+        module->vco,
+        Vec(left, 66 + verticalShift),
+        module,
+        module->vco.MODE_PARAM));
     addLabel(Vec(left -4, 48+ verticalShift), "anlg");
     addLabel(Vec(left -3, 108+ verticalShift), "dgtl");
 
-    addParam(ParamWidget::create<Rogan3PSBlue>(Vec(center, 61 + verticalShift),
-        module, module->vco.FREQ_PARAM, -54.0f, 54.0f, 0.0f));
+    addParam(SQHelper::createParam<Rogan3PSBlue>(
+        module->vco,
+        Vec(center, 61 + verticalShift),
+        module, 
+        module->vco.FREQ_PARAM));
     auto label = addLabel(Vec(center + 3, 40+ verticalShift), "pitch");
     label->fontSize = 16;
 
-    addParam(ParamWidget::create<NKK>(Vec(right, 66 + verticalShift),
-        module, module->vco.SYNC_PARAM, 0.0f, 1.0f, 1.0f));
+    addParam(SQHelper::createParam<NKK>(
+        module->vco,
+        Vec(right, 66 + verticalShift),
+        module,
+        module->vco.SYNC_PARAM));
     addLabel(Vec(right-5, 48+ verticalShift), "hard");
     addLabel(Vec(right-2, 108+ verticalShift), "soft");
 }
 
 void FunVWidget::addMiddle4(FunVModule * module, float verticalShift)
 {
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(23, 143 + verticalShift),
-        module, module->vco.FINE_PARAM, -1.0f, 1.0f, 0.0f));
+    addParam(SQHelper::createParam<Rogan1PSBlue>(
+        module->vco,
+        Vec(23, 143 + verticalShift),
+        module, module->vco.FINE_PARAM));
     addLabel(Vec(25, 124 +verticalShift), "fine");
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(91, 143 + verticalShift),
-        module, module->vco.PW_PARAM, 0.0f, 1.0f, 0.5f));
+    addParam(SQHelper::createParam<Rogan1PSBlue>(
+        module->vco,
+        Vec(91, 143 + verticalShift),
+        module, module->vco.PW_PARAM));
     addLabel(Vec(84, 124 +verticalShift), "p width");
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(23, 208 + verticalShift),
-        module, module->vco.FM_PARAM, 0.0f, 1.0f, 0.0f));
+
+    addParam(SQHelper::createParam<Rogan1PSBlue>(
+        module->vco,
+        Vec(23, 208 + verticalShift),
+        module,
+        module->vco.FM_PARAM));
     addLabel(Vec(19, 188 +verticalShift), "fm cv");
 
-// 	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, MyModule::PITCH_PARAM));
-
-  //  addParam(createParam<Rogan1PSBlue>(Vec(91, 208 + verticalShift),
-   //     module, module->vco.PWM_PARAM, 0.0f, 1.0f, 0.0f));
     addParam(SQHelper::createParam<Rogan1PSBlue>(
         module->vco,
         Vec(91, 208 + verticalShift),
