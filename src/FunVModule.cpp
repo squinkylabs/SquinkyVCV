@@ -62,11 +62,6 @@ public:
         return nvgRGB(0, 0, 0);
     }
 
-//v 1 stype
-    // 	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87),
-    // module, MyModule::PITCH_PARAM));
-
-
    template <typename T>
    static T* createParam(IComposite& composite, const Vec& pos, Module* module, int paramId )
    {
@@ -108,6 +103,15 @@ void FunVModule::onSampleRateChange()
     vco.setSampleRate(rate);
 }
 
+#ifdef _V1
+FunVModule::FunVModule() : vco(this)
+{
+    		// Set the number of components
+	//setup(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+    setup(vco.NUM_PARAMS, vco.NUM_INPUTS, vco.NUM_OUTPUTS, vco.NUM_LIGHTS);
+    onSampleRateChange();
+}
+#else
 FunVModule::FunVModule()
     : Module(vco.NUM_PARAMS,
     vco.NUM_INPUTS,
@@ -117,6 +121,7 @@ FunVModule::FunVModule()
 {
     onSampleRateChange();
 }
+#endif
 
 void FunVModule::step()
 {
@@ -310,7 +315,7 @@ Model *modelFunVModule = Model::create<FunVModule,
     "Functional VCO-1", OSCILLATOR_TAG);
 #else
 Model *modelFunVModule = createModel<FunVModule, FunVWidget>(
-    "squinkylabs-funv");
+    "fun1");
 #endif
 
 
