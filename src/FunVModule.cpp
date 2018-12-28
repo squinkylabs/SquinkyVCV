@@ -19,8 +19,12 @@ public:
         return asset::plugin(plugin, filename);
     } 
     static float engineGetSampleRate();
-     template <typename T>
+    template <typename T>
     static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int ctrlId );
+    
+    static NVGcolor COLOR_WHITE() {
+        return nvgRGB(0xff, 0xff, 0xff);
+    }
 };
 #else
 class SQHelper
@@ -28,16 +32,42 @@ class SQHelper
 public:
     static std::string assetPlugin(Plugin *plugin, const std::string& filename)
     {
-        return assetPlugin(plugin, filename);
+        printf("calling assetPlugin with %p, %s\n",
+            plugin, filename.c_str());
+        fflush(stdout);
+        return rack::assetPlugin(plugin, filename);
     } 
-    static float engineGetSampleRate();
+    static float engineGetSampleRate()
+    {
+        return rack::engineGetSampleRate();
+    }
 
-    // 	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, MyModule::PITCH_PARAM));
+   // TODO: use a const.
+ //   static const NVGcolor COLOR_BLACK = nvgRGB(0x00, 0x00, 0x00);
+    static NVGcolor COLOR_WHITE() {
+        return nvgRGB(0xff, 0xff, 0xff);
+    }
 
-  //  addParam(createParam<Rogan1PSBlue>(Vec(91, 208 + verticalShift),
-   //     module, module->vco.PWM_PARAM, 0.0f, 1.0f, 0.0f));
+//v 1 stype
+    // 	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87),
+    // module, MyModule::PITCH_PARAM));
+
+
    template <typename T>
-   static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int ctrlId );
+   static T* createParam(IComposite& composite, const Vec& pos, Module* module, int paramId )
+   {
+       const auto data = composite.getParam(paramId);
+       printf("helper got param\n"); fflush(stdout);
+       assert(data.min < data.max);
+       assert(data.def >= data.min);
+       assert(data.def <= data.max);
+       return rack::createParam<T>(
+           pos,
+           module, 
+           paramId,
+           data.min, data.max, data.def
+       );
+   }
 };
 #endif
 
@@ -60,7 +90,7 @@ private:
 
 void FunVModule::onSampleRateChange()
 {
-    float rate = SqHelper::engineGetSampleRate();
+    float rate = SQHelper::engineGetSampleRate();
     vco.setSampleRate(rate);
 }
 
@@ -188,19 +218,21 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
         Vec(col1, 317+verticalShift),
         module,
         module->vco.SIN_OUTPUT));
-    addLabel(Vec(8, outputLabelY+verticalShift), "sin", SCHEME_WHITE);
+    addLabel(Vec(8, outputLabelY+verticalShift), "sin", SQHelper::COLOR_WHITE());
 
     addOutput(createOutput<PJ301MPort>(
         Vec(col2, 317+verticalShift),
         module,
         module->vco.TRI_OUTPUT));
-    addLabel(Vec(44, outputLabelY+verticalShift), "tri", SCHEME_WHITE);
+    addLabel(Vec(44, outputLabelY+verticalShift), "tri", SQHelper::COLOR_WHITE());
 
     addOutput(createOutput<PJ301MPort>(
         Vec(col3, 317+verticalShift),
         module,
         module->vco.SAW_OUTPUT));
-    addLabel(Vec(75, outputLabelY+verticalShift), "saw", SCHEME_WHITE);
+    addLabel(Vec(75, outputLabelY+verticalShift),
+        "saw",
+        SQHelper::COLOR_WHITE());
 
 // seems to work for both
   //  addOutput(Port::create<PJ301MPort>(Vec(col4, 317+verticalShift), Port::OUTPUT, module, module->vco.SQR_OUTPUT));
@@ -209,7 +241,7 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
         module,
         module->vco.SQR_OUTPUT));
  
-    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", SCHEME_WHITE);
+    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", SQHelper::COLOR_WHITE());
 }
 
 /**

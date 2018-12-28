@@ -8,7 +8,16 @@ class IComposite
 public:
     class Config
     {
-
+    public:
+        Config(float a, float b, float c)
+        {
+            min=a;
+            max=b;
+            def=c;
+        }
+        float min=0;
+        float max=0;
+        float def=0;
     };
     virtual Config getParam(int i)=0;
 };
@@ -79,6 +88,24 @@ private:
     VoltageControlledOscillator<16, 16> oscillator;
 #endif
 };
+
+template <class TBase>
+inline typename FunVCOComposite<TBase>::Config
+    FunVCOComposite<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0);
+    switch(i) {
+        case PWM_PARAM:
+            ret = {0.0f, 1.0f, 0.0f};
+            break;
+        default:
+            printf("fun has no param %d\n", i);
+            fflush(stdout);
+            assert(false);
+    }
+    printf("return from getParam\n"); fflush(stdout);
+    return ret;
+}
 
 template <class TBase>
 inline void FunVCOComposite<TBase>::step()
