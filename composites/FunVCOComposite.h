@@ -20,6 +20,7 @@ public:
         float def=0;
     };
     virtual Config getParam(int i)=0;
+    virtual int getNumParams()=0;
 };
 //#define _ORIGVCO
 
@@ -67,7 +68,13 @@ public:
         NUM_LIGHTS
     };
 
+    /** Implement IComposite
+     */
      Config getParam(int i) override;
+     int getNumParams() override
+     {
+         return NUM_PARAMS;
+     }
 
 
     void step() override;

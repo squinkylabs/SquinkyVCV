@@ -36,6 +36,17 @@ public:
      static NVGcolor COLOR_BLACK() {
         return nvgRGB(0, 0, 0);
     }
+
+    // TODO: finish this (support other params);
+    static void setupParams(IComposite& comp, Module* module)
+    {
+        const int n = comp.getNumParams();
+        for (int i=0; i<n; ++i) {
+            auto param = comp.getParam(i);
+            module->params[i].setup(param.min, param.max, param.def, "fakename", "fake unit");
+            //params[PITCH_PARAM].setup(-3.f, 3.f, 0.f, "Pitch", " semi", 0.f, 12.f);
+        }
+    }
 };
 #else
 class SQHelper
@@ -110,6 +121,7 @@ FunVModule::FunVModule() : vco(this)
 	//setup(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     setup(vco.NUM_PARAMS, vco.NUM_INPUTS, vco.NUM_OUTPUTS, vco.NUM_LIGHTS);
     onSampleRateChange();
+    SQHelper::setupParams(vco, this);
 }
 #else
 FunVModule::FunVModule()

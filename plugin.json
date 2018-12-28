@@ -8,7 +8,7 @@
 	"sourceUrl": "https://github.com/squinkylabs/SquinkyVCV",
 	"version": "1.0.0",
 	"modules": {
-		"MyModule": {
+		"fun1": {
 			"name": "fun1",
 			"description": "A multi-function VCO with low aliasing",
 			"tags": ["VCO"]
