@@ -8,6 +8,39 @@
 
 #include "FunVCOComposite.h"
 
+/** Wrap up all the .6/1.0 dependencies here
+ */
+#ifdef _V1
+class SQHelper
+{
+public:
+    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
+    {
+        return asset::plugin(plugin, filename);
+    } 
+    static float engineGetSampleRate();
+     template <typename T>
+    static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int ctrlId );
+};
+#else
+class SQHelper
+{
+public:
+    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
+    {
+        return assetPlugin(plugin, filename);
+    } 
+    static float engineGetSampleRate();
+
+    // 	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, MyModule::PITCH_PARAM));
+
+  //  addParam(createParam<Rogan1PSBlue>(Vec(91, 208 + verticalShift),
+   //     module, module->vco.PWM_PARAM, 0.0f, 1.0f, 0.0f));
+   template <typename T>
+   static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int ctrlId );
+};
+#endif
+
 /**
  */
 struct FunVModule : Module
@@ -27,7 +60,7 @@ private:
 
 void FunVModule::onSampleRateChange()
 {
-    float rate = engineGetSampleRate();
+    float rate = SqHelper::engineGetSampleRate();
     vco.setSampleRate(rate);
 }
 
@@ -105,8 +138,17 @@ void FunVWidget::addMiddle4(FunVModule * module, float verticalShift)
         module, module->vco.FM_PARAM, 0.0f, 1.0f, 0.0f));
     addLabel(Vec(19, 188 +verticalShift), "fm cv");
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(Vec(91, 208 + verticalShift),
-        module, module->vco.PWM_PARAM, 0.0f, 1.0f, 0.0f));
+// 	addParam(createParam<Davies1900hBlackKnob>(Vec(28, 87), module, MyModule::PITCH_PARAM));
+
+  //  addParam(createParam<Rogan1PSBlue>(Vec(91, 208 + verticalShift),
+   //     module, module->vco.PWM_PARAM, 0.0f, 1.0f, 0.0f));
+    addParam(SQHelper::createParam<Rogan1PSBlue>(
+        module->vco,
+        Vec(91, 208 + verticalShift),
+        module, 
+        module->vco.PWM_PARAM
+    ));
+   //  T* createParam(IComposite* dummy, const Vec& pos, Module* module, int ctrlId );
     addLabel(Vec(82, 188 +verticalShift), "pwm cv");
 }
 
@@ -118,57 +160,58 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
     const float col4 = 115;
     const float outputLabelY = 300;
 
-    addInput(Port::create<PJ301MPort>(Vec(col1, 273+verticalShift), Port::INPUT, module, module->vco.PITCH_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(col1, 273+verticalShift),
+        module,
+        module->vco.PITCH_INPUT));
     addLabel(Vec(9, 255+verticalShift), "cv");
 
-    addInput(Port::create<PJ301MPort>(Vec(col2, 273+verticalShift), Port::INPUT, module, module->vco.FM_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(col2, 273+verticalShift),
+        module,
+        module->vco.FM_INPUT));
     addLabel(Vec(43, 255+verticalShift), "fm");
 
-    addInput(Port::create<PJ301MPort>(Vec(col3, 273+verticalShift), Port::INPUT, module, module->vco.SYNC_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(col3, 273+verticalShift),
+        module,
+        module->vco.SYNC_INPUT));
     addLabel(Vec(72, 255+verticalShift), "sync");
 
-    addInput(Port::create<PJ301MPort>(Vec(col4, 273+verticalShift), Port::INPUT, module, module->vco.PW_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(col4, 273+verticalShift),
+        module,
+        module->vco.PW_INPUT));
     addLabel(Vec(107, 255+verticalShift), "pwm");
 
-    addOutput(Port::create<PJ301MPort>(Vec(col1, 317+verticalShift), Port::OUTPUT, module, module->vco.SIN_OUTPUT));
-    addLabel(Vec(8, outputLabelY+verticalShift), "sin", COLOR_WHITE);
+    addOutput(createOutput<PJ301MPort>(
+        Vec(col1, 317+verticalShift),
+        module,
+        module->vco.SIN_OUTPUT));
+    addLabel(Vec(8, outputLabelY+verticalShift), "sin", SCHEME_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(col2, 317+verticalShift), Port::OUTPUT, module, module->vco.TRI_OUTPUT));
-    addLabel(Vec(44, outputLabelY+verticalShift), "tri", COLOR_WHITE);
+    addOutput(createOutput<PJ301MPort>(
+        Vec(col2, 317+verticalShift),
+        module,
+        module->vco.TRI_OUTPUT));
+    addLabel(Vec(44, outputLabelY+verticalShift), "tri", SCHEME_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(col3, 317+verticalShift), Port::OUTPUT, module, module->vco.SAW_OUTPUT));
-    addLabel(Vec(75, outputLabelY+verticalShift), "saw", COLOR_WHITE);
+    addOutput(createOutput<PJ301MPort>(
+        Vec(col3, 317+verticalShift),
+        module,
+        module->vco.SAW_OUTPUT));
+    addLabel(Vec(75, outputLabelY+verticalShift), "saw", SCHEME_WHITE);
 
+// seems to work for both
   //  addOutput(Port::create<PJ301MPort>(Vec(col4, 317+verticalShift), Port::OUTPUT, module, module->vco.SQR_OUTPUT));
     addOutput(createOutput<PJ301MPort>(
         Vec(col4, 317+verticalShift),
         module,
         module->vco.SQR_OUTPUT));
  
-    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", COLOR_WHITE);
+    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", SCHEME_WHITE);
 }
 
-/** Wrap up all the .6/1.0 dependencies here
- */
-#ifdef _V1
-class SQHelper
-{
-public:
-    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
-    {
-        return asset::plugin(plugin, filename);
-    } 
-};
-#else
-class SQHelper
-{
-public:
-    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
-    {
-        return assetPlugin(plugin, filename);
-    } 
-};
-#endif
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.

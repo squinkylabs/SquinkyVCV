@@ -2,10 +2,20 @@
 
 
 #include "FunVCO.h"
+
+class IComposite
+{
+public:
+    class Config
+    {
+
+    };
+    virtual Config getParam(int i)=0;
+};
 //#define _ORIGVCO
 
 template <class TBase>
-class FunVCOComposite : public TBase
+class FunVCOComposite : public TBase, public IComposite
 {
 public:
     FunVCOComposite()
@@ -47,6 +57,8 @@ public:
     {
         NUM_LIGHTS
     };
+
+     Config getParam(int i) override;
 
 
     void step() override;
