@@ -23,33 +23,33 @@ void init(rack::Plugin *p)
 #ifdef _TREM
     p->addModel(modelTremoloModule);
 #endif
-#ifdef _FUN
+#ifdef _COLORS
     p->addModel(modelColoredNoiseModule);
  #endif
-#ifdef _FUN   
+#ifdef _EV3 
     p->addModel(modelEV3Module);
     #endif
-#ifdef _FUN
+#ifdef _GROWLER
     p->addModel(modelVocalFilterModule);
-    #endif
+#endif
 #ifdef _FUN
     p->addModel(modelFunVModule);
     #endif
-#ifdef _FUN
+#ifdef _GRAY
     p->addModel(modelGrayModule);
     #endif
-#ifdef _FUN
+#ifdef _FORMANTS
     p->addModel(modelVocalModule);
     #endif
-#ifdef _FUN
+#ifdef _LFN
     p->addModel(modelLFNModule); 
     #endif
-#ifdef _FUN
+#ifdef _SHAPER
     p->addModel(modelShaperModule);
     #endif
-#ifdef _FUN
+#ifdef _TBOOST
     p->addModel(modelThreadBoostModule);
-    #endif
+#endif
 
 #ifdef _SEQ
     assert(modelSequencerModule);
