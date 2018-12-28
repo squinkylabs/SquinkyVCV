@@ -1,6 +1,8 @@
 
 #include <sstream>
 #include "Squinky.hpp"
+
+#ifdef _TREM
 #include "WidgetComposite.h"
 #include "Tremolo.h"
 
@@ -186,4 +188,5 @@ Model *modelTremoloModule = Model::create<TremoloModule,
     TremoloWidget>("Squinky Labs",
     "squinkylabs-tremolo",
     "Chopper: Tremolo", EFFECT_TAG, LFO_TAG, CLOCK_MODULATOR_TAG);
+#endif
 

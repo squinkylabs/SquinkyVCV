@@ -2,6 +2,7 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#ifdef _SHAPER
 #include "Shaper.h"
 
 /**
@@ -226,4 +227,5 @@ Model *modelShaperModule = Model::create<ShaperModule,
     ShaperWidget>("Squinky Labs",
     "squinkylabs-shp",
     "Shaper: Precision Wave Shaper", WAVESHAPER_TAG, DISTORTION_TAG);
+#endif
 

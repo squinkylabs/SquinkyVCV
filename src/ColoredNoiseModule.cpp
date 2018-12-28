@@ -1,6 +1,7 @@
 
 #include "Squinky.hpp"
 
+#ifdef _COLORS
 #include "WidgetComposite.h"
 #include "ColoredNoise.h"
 #include "NoiseDrawer.h"
@@ -241,6 +242,7 @@ Model *modelColoredNoiseModule = Model::create<ColoredNoiseModule, ColoredNoiseW
     "Squinky Labs",
     "squinkylabs-coloredNoise",
     "Colors: Colored Noise", NOISE_TAG);
+#endif
 
 
 

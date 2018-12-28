@@ -14,6 +14,9 @@ FLAGS += -I./midi/model -I./midi/view -I./midi/controller -I./util
 CFLAGS +=
 CXXFLAGS +=
 
+# For now, this branch is always V1
+FLAGS += -D _V1
+
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
 	FLAGS += -D _EXP

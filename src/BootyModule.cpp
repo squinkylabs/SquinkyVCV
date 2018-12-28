@@ -3,6 +3,8 @@
 #include "FrequencyShifter.h"
 #include "WidgetComposite.h"
 
+#ifdef _BOOTY
+
 /**
  * Implementation class for BootyModule
  */
@@ -213,3 +215,4 @@ Model *modelBootyModule = Model::create<BootyModule, BootyWidget>("Squinky Labs"
     "squinkylabs-freqshifter",
     "Booty Shifter: Frequency Shifter", EFFECT_TAG, RING_MODULATOR_TAG);
 
+#endif

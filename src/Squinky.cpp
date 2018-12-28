@@ -14,18 +14,42 @@ void init(rack::Plugin *p)
     p->slug = "squinkylabs-plug1";
     p->version = TOSTRING(VERSION);
 
+#ifdef _BOOTY
     p->addModel(modelBootyModule);
+#endif
+#ifdef _CHB
     p->addModel(modelCHBModule);
+#endif
+#ifdef _TREM
     p->addModel(modelTremoloModule);
+#endif
+#ifdef _FUN
     p->addModel(modelColoredNoiseModule);
+ #endif
+#ifdef _FUN   
     p->addModel(modelEV3Module);
+    #endif
+#ifdef _FUN
     p->addModel(modelVocalFilterModule);
+    #endif
+#ifdef _FUN
     p->addModel(modelFunVModule);
+    #endif
+#ifdef _FUN
     p->addModel(modelGrayModule);
+    #endif
+#ifdef _FUN
     p->addModel(modelVocalModule);
+    #endif
+#ifdef _FUN
     p->addModel(modelLFNModule); 
+    #endif
+#ifdef _FUN
     p->addModel(modelShaperModule);
+    #endif
+#ifdef _FUN
     p->addModel(modelThreadBoostModule);
+    #endif
 
 #ifdef _SEQ
     assert(modelSequencerModule);
@@ -33,7 +57,6 @@ void init(rack::Plugin *p)
 #endif
 #ifdef _GMR
     p->addModel(modelGMRModule);
-   
 #endif
 #ifdef _EV
     p->addModel(modelEVModule);

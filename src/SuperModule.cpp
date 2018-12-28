@@ -1,8 +1,10 @@
 #include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
-#include "SQWidgets.h"
 
+#ifdef _SUPER
+
+#include "SQWidgets.h"
 #include "Super.h"
 
 /**
@@ -166,4 +168,5 @@ Model *modelSuperModule = Model::create<SuperModule,
     superWidget>("Squinky Labs",
     "squinkylabs-super",
     "-- super --", RANDOM_TAG);
+#endif
 

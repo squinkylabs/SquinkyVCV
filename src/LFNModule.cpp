@@ -3,6 +3,7 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#ifdef _LFN
 #include "LFN.h"
 
 
@@ -175,3 +176,4 @@ Model *modelLFNModule = Model::create<LFNModule,
     "squinkylabs-lfn",
     "LFN: Random Voltages", NOISE_TAG, RANDOM_TAG, LFO_TAG);
 
+#endif

@@ -1,9 +1,11 @@
 
 #include <sstream>
 #include "Squinky.hpp"
+
+#ifdef _FUN
 #include "WidgetComposite.h"
 
-#if 1
+
 #include "FunVCOComposite.h"
 
 /**
@@ -137,7 +139,12 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
     addOutput(Port::create<PJ301MPort>(Vec(col3, 317+verticalShift), Port::OUTPUT, module, module->vco.SAW_OUTPUT));
     addLabel(Vec(75, outputLabelY+verticalShift), "saw", COLOR_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(col4, 317+verticalShift), Port::OUTPUT, module, module->vco.SQR_OUTPUT));
+  //  addOutput(Port::create<PJ301MPort>(Vec(col4, 317+verticalShift), Port::OUTPUT, module, module->vco.SQR_OUTPUT));
+    addOutput(createOutput<PJ301MPort>(
+        Vec(col4, 317+verticalShift),
+        module,
+        module->vco.SQR_OUTPUT));
+ 
     addLabel(Vec(111, outputLabelY+verticalShift), "sqr", COLOR_WHITE);
 }
 
@@ -152,7 +159,10 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/fun_panel.svg")));
+        
+        //panel->setBackground(SVG::load(assetPlugin(plugin, "res/fun_panel.svg")));
+       panel->setBackground(SVG::load(asset::plugin(plugin, "res/fun_panel.svg")));
+        
         addChild(panel);
     }
 
@@ -161,16 +171,21 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
     addJacks(module, 0);
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
-
+#ifndef _V1
 Model *modelFunVModule = Model::create<FunVModule,
     FunVWidget>("Squinky Labs",
     "squinkylabs-funv",
     "Functional VCO-1", OSCILLATOR_TAG);
+#else
+Model *modelFunVModule = createModel<FunVModule, FunVWidget>(
+    "squinkylabs-funv");
+#endif
+
 
 #endif
 

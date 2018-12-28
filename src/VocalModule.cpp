@@ -1,4 +1,6 @@
 #include "Squinky.hpp"
+
+#ifdef _GROWLER
 #include "WidgetComposite.h"
 #include "VocalAnimator.h"
 
@@ -195,3 +197,4 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs",
     "squinkylabs-vocalanimator",
     "Growler: Vocal Animator", EFFECT_TAG, FILTER_TAG, LFO_TAG, RANDOM_TAG);
+#endif

@@ -1,5 +1,7 @@
 
 #include "Squinky.hpp"
+
+#ifdef _TBOOST
 #include "WidgetComposite.h"
 #include "ThreadPriority.h"
 
@@ -170,3 +172,4 @@ Model *modelThreadBoostModule = Model::create<ThreadBoostModule, ThreadBoostWidg
     "squinkylabs-booster",
     "Thread Booster", UTILITY_TAG);
 
+#endif

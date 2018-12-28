@@ -1,6 +1,7 @@
 
 #include "Squinky.hpp"
 
+#ifdef _FORMANTS
 #include "WidgetComposite.h"
 #include "VocalFilter.h"
 
@@ -260,3 +261,4 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
 Model *modelVocalFilterModule = Model::create<VocalFilterModule, VocalFilterWidget>("Squinky Labs",
     "squinkylabs-vocalfilter",
     "Formants: Vocal Filter", EFFECT_TAG, FILTER_TAG);
+#endif

@@ -2,6 +2,7 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#ifdef _GRAY
 #include "Gray.h"
 
 /**
@@ -132,3 +133,4 @@ Model *modelGrayModule = Model::create<GrayModule,
     "squinkylabs-gry",
     "Gray Code: Eclectic clock divider", CLOCK_MODULATOR_TAG, RANDOM_TAG);
 
+#endif

@@ -1,4 +1,6 @@
 #include "Squinky.hpp"
+
+#ifdef _EV3
 #include "WaveformSelector.h"
 #include "SQWidgets.h"
 #include "WidgetComposite.h"
@@ -412,5 +414,7 @@ Model *modelEV3Module = Model::create<EV3Module,
     EV3Widget>("Squinky Labs",
     "squinkylabs-ev3",
     "EV3: Triple VCO with even waveform", OSCILLATOR_TAG);
+
+#endif
     
 
