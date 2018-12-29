@@ -100,7 +100,7 @@ void superWidget::addPitchKnobs(SuperModule *)
     oct->smooth = false;
     addParam(oct);
     Label* l = addLabel(
-        Vec(col1 - 26, row1 + labelOffsetBig),
+        Vec(col1 - 24, row1 + labelOffsetBig),
         "Oct");
     semitoneDisplay.setOctLabel(l, Super<WidgetComposite>::OCTAVE_PARAM);
 
@@ -110,7 +110,8 @@ void superWidget::addPitchKnobs(SuperModule *)
     semi->snap = true;
     semi->smooth = false;
     addParam(semi);
-    l = addLabel(Vec(col2 - 27, row1 + labelOffsetBig),
+    l = addLabel(
+        Vec(col2 - 29, row1 + labelOffsetBig),
         "Semi");
     semitoneDisplay.setSemiLabel(l, Super<WidgetComposite>::SEMI_PARAM);
 
@@ -118,12 +119,16 @@ void superWidget::addPitchKnobs(SuperModule *)
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(col1, row2), module, Super<WidgetComposite>::FINE_PARAM, -1, 1, 0));
     addLabel(
-        Vec(col1 - 20, row2 + labelOffsetBig), "Fine");
+        Vec(col1 - 19,
+        row2 + labelOffsetBig),
+        "Fine");
 
     // FM
     addParam(createParamCentered<Rogan1PSBlue>(
         Vec(col2, row2), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
-    addLabel(Vec(col2 - 15, row2 + labelOffsetBig), "FM");
+    addLabel(
+        Vec(col2 - 15, row2 + labelOffsetBig),
+        "FM");
 }
 
 void superWidget::addOtherKnobs(SuperModule *)
@@ -132,7 +137,8 @@ void superWidget::addOtherKnobs(SuperModule *)
     addParam(createParamCentered<Blue30Knob>(
         Vec(col1, row3), module, Super<WidgetComposite>::DETUNE_PARAM, -5, 5, 0));
     addLabel(
-        Vec(col1 - 27, row3 + labelOffsetSmall), "Detune");
+        Vec(col1 - 27, row3 + labelOffsetSmall),
+        "Detune");
 
     addParam(createParamCentered<Trimpot>(
         Vec(col1, row4), module, Super<WidgetComposite>::DETUNE_TRIM_PARAM, -1, 1, 0));
@@ -140,7 +146,7 @@ void superWidget::addOtherKnobs(SuperModule *)
     addParam(createParamCentered<Blue30Knob>(
         Vec(col2, row3), module, Super<WidgetComposite>::MIX_PARAM, -5, 5, 0));
     addLabel(
-        Vec(col2 - 17, row3 + labelOffsetSmall),
+        Vec(col2 - 18, row3 + labelOffsetSmall),
         "Mix");
     addParam(createParamCentered<Trimpot>(
         Vec(col2, row4), module, Super<WidgetComposite>::MIX_TRIM_PARAM, -1, 1, 0));
@@ -159,7 +165,9 @@ void superWidget::addJacks(SuperModule *)
         Vec(jackX, jackRow1),
         module,
         Super<WidgetComposite>::DETUNE_INPUT));
-    l = addLabel(Vec(jackX - 24, jackRow1 + jackOffsetLabel), "Detune");
+    l = addLabel(
+        Vec(jackX - 25, jackRow1 + jackOffsetLabel),
+        "Detune");
     l->fontSize = jackLabelPoints;
 
     addInput(createInputCentered<PJ301MPort>(
@@ -177,7 +185,8 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::CV_INPUT));
     l = addLabel(
-        Vec(jackX - 16, jackRow2 + jackOffsetLabel), "V/8");
+        Vec(jackX - 16, jackRow2 + jackOffsetLabel),
+        "V/8");
     l->fontSize = jackLabelPoints;
 
     addInput(createInputCentered<PJ301MPort>(
@@ -185,7 +194,8 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::TRIGGER_INPUT));
     l = addLabel(
-        Vec(jackX + 1 * jackDx - 16, jackRow2 + jackOffsetLabel), "Trig");
+        Vec(jackX + 1 * jackDx - 17, jackRow2 + jackOffsetLabel),
+        "Trig");
     l->fontSize = jackLabelPoints;
 
     addInput(createInputCentered<PJ301MPort>(
@@ -201,7 +211,8 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::MAIN_OUTPUT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 17, jackRow2 + jackOffsetLabel), "Out", COLOR_WHITE);
+        Vec(jackX + 3 * jackDx - 18, jackRow2 + jackOffsetLabel),
+        "Out", COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 }
 
@@ -233,7 +244,7 @@ superWidget::superWidget(SuperModule *module) :
 
     // the "classic" switch
     ToggleButton* tog = createParamCentered<ToggleButton>(
-        Vec(82, 164),
+        Vec(83, 164),
         module,
         Super<WidgetComposite>::CLEAN_PARAM,
         0.0f, 2, 0);
