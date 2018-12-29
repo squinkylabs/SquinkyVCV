@@ -117,7 +117,7 @@ GrayWidget::GrayWidget(GrayModule *module) :
         Vec(100, 339),
         module,
         Gray<WidgetComposite>::OUTPUT_MIXED));
-    addLabel(Vec(81, 310), "Mix", COLOR_WHITE);
+    addLabel(Vec(82, 310), "Mix", COLOR_WHITE);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

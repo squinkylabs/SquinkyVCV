@@ -95,10 +95,10 @@ void TremoloWidget::addIOSection(TremoloModule *module)
     const float x = 10;
 
     addInput(Port::create<PJ301MPort>(Vec(x, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
-    addLabel(Vec(8, label), "in");
+    addLabel(Vec(9, label), "in");
 
     addOutput(Port::create<PJ301MPort>(Vec(x + deltaX, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
-    addLabel(Vec(x + deltaX - 6, label), "out", COLOR_WHITE);
+    addLabel(Vec(x + deltaX - 5, label), "out", COLOR_WHITE);
 
     addOutput(Port::create<PJ301MPort>(Vec(x + 2 * deltaX, rowIO), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
     addLabel(Vec(x + 2 * deltaX - 7, label), "saw", COLOR_WHITE);
@@ -109,8 +109,9 @@ void TremoloWidget::addIOSection(TremoloModule *module)
 
 void TremoloWidget::addMainSection(TremoloModule *module)
 {
+    const float dn = 3;
     const float knobX = 64;
-    const float knobY = 100;
+    const float knobY = 100+dn;
     const float knobDy = 50;
     const float labelX = 100;
     const float labelY = knobY;

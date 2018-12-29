@@ -161,13 +161,13 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
             Vec(30,jackY),
             module,
             Shaper<WidgetComposite>::INPUT_AUDIO));
-    addLabel(Vec(17, jackLabelY), "In")->fontSize = 12;
+    addLabel(Vec(18, jackLabelY), "In")->fontSize = 12;
 
     addOutput(createOutputCentered<PJ301MPort>(
             Vec(127,jackY),
             module,
             Shaper<WidgetComposite>::OUTPUT_AUDIO));
-    addLabel(Vec(109, jackLabelY), "Out", COLOR_WHITE)->fontSize = 12;
+    addLabel(Vec(109+1, jackLabelY+1), "Out", COLOR_WHITE)->fontSize = 12;
 
     addInput(createInputCentered<PJ301MPort>(
             Vec(62, jackY),

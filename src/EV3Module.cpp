@@ -335,7 +335,7 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         Vec(x2, y2), module,
         EV3<WidgetComposite>::FM1_PARAM + delta * index,
         0.f, 1.f, 0));
-    addLabel(Vec(x2 - 20, y2 - 34), "Mod");
+    addLabel(Vec(x2 - 19, y2 - 34), "Mod");
 
     const float dy = 27;
     const float x0 = x;
@@ -344,14 +344,14 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         Vec(x0, y3), module, EV3<WidgetComposite>::PW1_PARAM + delta * index,
         -1.f, 1.f, 0));
     if (index == 0)
-        addLabel(Vec(x0 + 10, y3 - 12), "pw");
+        addLabel(Vec(x0 + 10, y3 - 8), "pw");
 
     addParam(createParamCentered<Trimpot>(
         Vec(x0, y3 + dy), module,
         EV3<WidgetComposite>::PWM1_PARAM + delta * index,
         -1.0f, 1.0f, 0));
     if (index == 0)
-        addLabel(Vec(x0 + 10, y3 + dy - 12), "pwm");
+        addLabel(Vec(x0 + 10, y3 + dy - 8), "pwm");
 
     // sync switches
     const float swx = x + 29;
@@ -361,8 +361,8 @@ void EV3Widget::makeSection(EV3Module *module, int index)
         addParam(ParamWidget::create<CKSS>(
             Vec(swx, y3), module, EV3<WidgetComposite>::SYNC1_PARAM + delta * index,
             0.0f, 1.0f, 0.0f));
-        addLabel(Vec(lbx - 2, y3 - 20), "sync");
-        addLabel(Vec(lbx + 1, y3 + 20), "off");
+        addLabel(Vec(lbx - 3, y3 - 20), "sync");
+        addLabel(Vec(lbx + 2, y3 + 20), "off");
     }
 
     const float y4 = y3 + 43;

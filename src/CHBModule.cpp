@@ -155,7 +155,7 @@ void CHBWidget::addRow1(CHBModule *module)
         CHB<WidgetComposite>::PARAM_OCTAVE,
         -5.0f, 4.0f, 0.f));
     semitoneDisplay.setOctLabel(
-        addLabel(Vec(col2 - 27, row1 - labelAboveKnob), "Octave"),
+        addLabel(Vec(col2 - 22, row1 - labelAboveKnob), "Octave"),
         CHB<WidgetComposite>::PARAM_OCTAVE);
 
     addParam(createParamCentered<Blue30SnapKnob>(
@@ -164,7 +164,7 @@ void CHBWidget::addRow1(CHBModule *module)
         CHB<WidgetComposite>::PARAM_SEMIS,
         -11.0f, 11.0f, 0.f));
     semitoneDisplay.setSemiLabel(
-        addLabel(Vec(col3 - 30, row - labelAboveKnob), "Semi"),
+        addLabel(Vec(col3 - 26, row - labelAboveKnob), "Semi"),
         CHB<WidgetComposite>::PARAM_SEMIS);
 
     addParam(createParamCentered<Blue30Knob>(
@@ -184,7 +184,7 @@ void CHBWidget::addRow2(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_FALL,
         -5.f, 5.f, 0.f));
-    addLabel(Vec(col1 - 20, row - labelAboveKnob), "Fall");
+    addLabel(Vec(col1 - 18, row - labelAboveKnob), "Fall");
 
     addParam(createParamCentered<Blue30Knob>(
         Vec(col3, row),
@@ -226,7 +226,7 @@ void CHBWidget::addRow3(CHBModule *module)
         CHB<WidgetComposite>::PARAM_EXTGAIN,
         -5.0f, 5.0f, defaultGainParam);
     addParam(gainParam);
-    addLabel(Vec(col1 - 22, row - labelAboveKnob), "Gain");
+    addLabel(Vec(col1 - 21, row - labelAboveKnob), "Gain");
 
     //even
     addParam(createParamCentered<Blue30Knob>(
@@ -250,7 +250,7 @@ void CHBWidget::addRow3(CHBModule *module)
         module,
         CHB<WidgetComposite>::PARAM_MAG_ODD,
         -5, 5, 5));
-    addLabel(Vec(col4 - 20, row - labelAboveKnob), "Odd");
+    addLabel(Vec(col4 - 19, row - labelAboveKnob), "Odd");
 
 }
 
@@ -300,17 +300,17 @@ static const char* labels[] = {
 };
 static const int offsets[] = {
     -1,
-    1,
+    2,
     2,
     0,
-    -1,
-    0,
-    -1,
-    1,
+    0,      // slope
+    2,      // odd
+    -2,     // ext gain
+    1,          // gain
     5,
-    0,
-    0,
-    2
+    2,          // rise
+    4,
+    3
 };
 
 static const int ids[] = {

@@ -93,12 +93,12 @@ inline void SemitoneDisplay::step()
 
         if (semiLabel) {
             std::stringstream so;
-            so << "Semi: " << names[semi];
+            so << "Semi " << names[semi];
             semiLabel->text = so.str();
         }
         if (octLabel) {
             std::stringstream so;
-            so << "Oct: " << (5 + oct);
+            so << "Oct " << (5 + oct);
             octLabel->text = so.str();
         }
     }

@@ -100,7 +100,7 @@ void superWidget::addPitchKnobs(SuperModule *)
     oct->smooth = false;
     addParam(oct);
     Label* l = addLabel(
-        Vec(col1 - 24, row1 + labelOffsetBig),
+        Vec(col1 - 23, row1 + labelOffsetBig),
         "Oct");
     semitoneDisplay.setOctLabel(l, Super<WidgetComposite>::OCTAVE_PARAM);
 
@@ -111,7 +111,7 @@ void superWidget::addPitchKnobs(SuperModule *)
     semi->smooth = false;
     addParam(semi);
     l = addLabel(
-        Vec(col2 - 29, row1 + labelOffsetBig),
+        Vec(col2 - 27, row1 + labelOffsetBig),
         "Semi");
     semitoneDisplay.setSemiLabel(l, Super<WidgetComposite>::SEMI_PARAM);
 
@@ -175,7 +175,7 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::MIX_INPUT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 16, jackRow1 + jackOffsetLabel),
+        Vec(jackX + 3 * jackDx - 15, jackRow1 + jackOffsetLabel),
         "Mix");
     l->fontSize = jackLabelPoints;
 
