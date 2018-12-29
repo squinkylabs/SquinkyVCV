@@ -7,13 +7,15 @@ Shaper is a waveshaper offering many different shape options. Some of these shap
 
 A unique feature of Shaper is that it has very little aliasing, whereas most we have seen have a lot of aliasing. The other special thing about Shaper is that it has a few shapes that are good for "soft overdrive".
 
-Shaper also has high-pass filters on the outputs, to prevent accumulation of DC. Asymmetric wave-shapes frequently contain DC, which should be removed. The filters in Shaper are four-pole butterworth filters at 20 Hz.
+Shaper also has switchable high-pass filters on the outputs, to prevent accumulation of DC. Asymmetric wave-shapes frequently contain DC, which should be removed. If not removed there will likely be loud thumps when the results are run through a VCA. The filters in Shaper are four-pole butterworth filters at 20 Hz.
 
 Although there are many creative ways to use a wave shaper, the two most common are as a mangled waveform shaper, and as a distortion/overdrive effect.
 
-In the first use case, the waveshaper is often connected directly to the output of a VCO. This gives a large number of different sounds from the VCO. In this use, typically extreme settings are used, with folding being a classic example.
+In the first use case, the waveshaper is often connected directly to the output of a VCO. This gives a large number of different sounds from the VCO. Extreme settings are often used, with folding being a classic example. The DC filter should be left on in this case.
 
-In the second use case, as a distortion/overdrive effect, often less extreme settings are used. For example, it would be unusual to run a recording of singing through a wavefolder, but a gentle overdrive is pretty common.
+In the second use case, as a distortion/overdrive effect, often less extreme settings are used. For example, it would be unusual to run a recording of singing through a wavefolder, but a gentle overdrive is pretty common. Again, it's best to leave the DC blocking filters on when used like this.
+
+In the third common use case, the waveshaper is used to modify low-frequency control voltage. These CVs might then control any number of parameters. When using Shaper to modify control voltages the DC blocking filters must be turned off.
 
 The switch with the labels 16X, 4X, and 1X controls the amount of oversampling. This is how Shaper keeps aliasing under control. Waveshapers by their nature generate a lot of harmonics at high frequencies, and these tend to “fold back” into the audio range as aliasing. Oversampling reduces this effect by doing all the processing at a higher sample rate, then removing the frequencies that are too high, and reducing the sample rate back down. The more oversampling, the less aliasing.
 
@@ -23,20 +25,25 @@ In general we recommend 16X, but there are several reasons you might want to set
 
 If you are using one of the gentler settings of Shaper, 4X may have completely inaudible alisasing also. With some settings, however, we can measure significant aliasing at 4X. If you have plenty of CPU, just leave it at 16X or 1X. But if you are running out of CPU 4X can be a very workable and smooth sounding alternative.
 
+Lastly, when using Shaper for control voltages aliasing won't be a problem, so the 1X setting is the most common setting for shaping low frequency control voltage.
+
 Aside from the Oversampling selector, there are three controls:
 
 *Gain* – boosts the input signal, which tends to cause more shaping, distorting, and mangling. Controlled by the gain knob, and the gain CV. There is an attenuator on the gain CV.
 
-*Offset* – shifts the signal before it hits the waveshaper. In general that will increase the level of even harmonics in the output. Many of the shapes will output no even harmonics at all if the offset is zero. Like the gain, the offset is controlled by a knob, and a CV with attenuator.
-The offset is bidirectional, so there is no offset when the knob is straight up and the CV is zero.
+*Offset* – shifts the signal before it hits the waveshaper. In general that will increase the level of even harmonics in the output. Many of the shapes will output no even harmonics at all if the offset is zero. Like the gain, the offset is controlled by a knob, and a CV with attenuator. The offset is bidirectional, so there is no offset when the knob is straight up and the CV is zero.
 
 *Shape* – this is the big unlabeled button. It selects from the different shapes that Shaper can produce. The name of the selected shape is to the right of the knob.
 
+*AC/DC* - clicking on this button switches between AC coupled and DC coupled outputs. When the switch is in the AC setting, highpass filters are engaged on the output to remove DC. In the DC setting, the filters are bypassed.
+
 ## Some notes on the different shapes
 
-**Update**: Since we added dc-blocking high pass filters to Shaper, the outputs will not look exactly like the images below. For example, the hard clipper now looks like this:
+**Update**: Since we added dc-blocking high pass filters to Shaper, the outputs may not look exactly like the images below. For example, the hard clipper now looks like this:
 
 ![new clip image](./clip2.png)
+
+To see the shapes best it can be instructive to switch to DC coupled.
 
 ### Smooth
 
