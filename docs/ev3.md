@@ -78,7 +78,9 @@ Note that if all three VCOs were mixed at full volume, the output would go well 
 
 When the normalization is in effect, the '+' (plus signs) on the panel turn green.
 
-## Further reading
+## Further information
+
+Here is a nice video on VCO sync. While it is not for VCV, the principles are the same: [Roland SE-02 - Hard Sync Lead Tutorial](https://www.youtube.com/watch?v=l1lqAcZg2sY)
 
 We have an informational article that talks more about aliasing. It shows you how to compare different modules using a spectrum analyzer. [Aliasing Story](./aliasing.md).
 
