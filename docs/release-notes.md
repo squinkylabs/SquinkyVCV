@@ -6,7 +6,13 @@ New Module: Saws (Super Saw VCO emulation).
 
 Reduced CPU usage of Formants, Growler, Colors, and Chopper.
 
-EV3 enhancement: mixed waveform output now normalized so it stays within 10-V p-p VCV standard.
+EV3 enhancements:
+
+* mixed waveform output now normalized so it stays within 10-V p-p VCV standard.
+
+* Semitone pitch display is now absolute pitch if VCO has a CV connection.
+
+* Pitch intervals now displayed relative to base VCO, rather than relative to C.
 
 Chebyshev enhancements:
 
@@ -17,6 +23,8 @@ Chebyshev enhancements:
 * Attenuverters for Slope, odd, and even CV.
 
 * Semitone pitch control knob.
+
+* Semitone and Octave pitch displays.
 
 Shaper enhancement: added AC/DC selector.
 
