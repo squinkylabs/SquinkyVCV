@@ -10,6 +10,15 @@ Here is the user's manual for our modules: [instruction manual](./docs/booty-shi
 
 The [release notes](./docs/release-notes.md) describe recent changes.
 
+## Credits
+
+Beta testing by:
+
+* [Artem Leonov](https://www.youtube.com/vcvrackideas)
+* [Norbert Denninger](https://www.youtube.com/c/Wavesunlimited)
+
+All third party software copyright information is in [LICENSE-dist.txt](./LICENSE-dist.txt)
+
 ## Contributing
 
 Please use our GitHub issues page to report problems, request features, etc. If you don’t already have a GitHub account you will need to create one, as you must be logged in to post to GitHub.
