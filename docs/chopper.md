@@ -34,3 +34,7 @@ The LFO in Chopper may be synchronized with the ckin signal. There is a built-in
 When Chopper is being synched, the **Phase** control sets the phase difference between the external clock and the synchronized LFO. This may be used to "dial in" the tremolo so that it sounds exactly on the beat (or off the beat).
 
 There is also an internal LFO that is controlled by the **Rate** control. Set the clock control to *int* to use the internal clock.
+
+## More information
+
+Here is a video by Artem Leonov on some non-obvious uses of Chopper: [7 REASONS to use a Tremolo in Modular Environment [VCV RACK]](https://www.youtube.com/watch?v=UYeEKPMYDoA)

@@ -44,3 +44,12 @@ If you shift the input down a lot, frequencies will go **below zero and wrap aro
 As you shift the input down, you may start to generate a lot of subsonic energy. A **High Pass filter** may clean this up.
 
 The down shift **frequency fold-over**, while true to the original, does cause problems when trying to pitch drum tracks down a lot. High pass filtering the input before it is down-shifted can control this.
+
+## More information
+
+Here is a video by Dave Phillips using Booty Shifter to process FM radio: [Topographical Radio](https://www.youtube.com/watch?v=bDmFuiaf_YQ)
+
+Here is a video by Artem Leonov with some unusual uses of Booty Shifter: [Using Frequency Shifter in Modular Synth [Booty Shifter in VCV Rack]](https://www.youtube.com/watch?v=F1SPYgkXkfg)
+
+Here is a real Moog frequency shifter processing a drum loop: 
+[Moog 1630 Bode Frequency Shifter test](https://www.youtube.com/watch?v=12wCo0GeApg)

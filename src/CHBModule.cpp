@@ -171,7 +171,7 @@ void CHBWidget::addRow1(CHBModule *module)
         Vec(col4, row1),
         module,
         CHB<WidgetComposite>::PARAM_TUNE,
-        -7.0f, 7.0f, 0));
+        -1.0f, 1.0f, 0));
     addLabel(Vec(col4 - 22, row1 - labelAboveKnob), "Tune");
 }
 

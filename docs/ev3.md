@@ -54,7 +54,7 @@ Notes are always "spelled" with sharps, so the semitone between C and D is displ
 
 The octave knob is at the top left. It is unlabeled, but does have the octave number displayed on top of it. It has a 10 octave range, just like EvenVCO.
 
-The semitone knob just to the right will add or subtract up to 12 semitones.  The label above the knob displays the semitone offset as an interval in diatonic harmony (if the VCO is un-patched, as explained above). For example, 7 semitones up is labeled "5th". Note that the intervals displayed are always an octave plus a transposition up. So lowering 5:0 by two semitones will give you 4:m7th – it’s displayed as one octave down and a minor 7th up. Note that some of these intervals have more than one spelling. In these cases we made some arbitrary decisions:
+The semitone knob just to the right will add or subtract up to 12 semitones. The label above the knob displays the semitone offset as an interval in diatonic harmony (if the VCO is un-patched, as explained above). For example, 7 semitones up is labeled "5th". Note that the intervals displayed are always an octave plus a transposition up. So lowering 5:0 by two semitones will give you 4:m7th – it’s displayed as one octave down and a minor 7th up. Note that some of these intervals have more than one spelling. In these cases we made some arbitrary decisions:
 
 * One semitone up is called minor second, although some would call it a flat second.
 * Six semitones up is called Diminished fifth, although it could be called an augmented fourth or a tritone.
@@ -78,7 +78,19 @@ Note that if all three VCOs were mixed at full volume, the output would go well 
 
 When the normalization is in effect, the '+' (plus signs) on the panel turn green.
 
+## More on VCO sync
+
+Oscillator sync requires two VCOs. The master sets the pitch of the slave. Adjusting the pitch offset of the slave does not change its pitch, but it changes the timbre quite a lot.
+
+In EV3, VCO 1 is always the master. Turning on the sync switch for VCO 3 will slave VCO 3 to VCO1.
+
+All of then fun involves the relationship between the pitch settings of the master and the slave. Usually the slave needs to be set higher. Often some changing CV is used to move the slave pitch offset to create dynamic timbres. ADSR is always a good modulation source, although anything can be used.
+
+There is more information on sync below.
+
 ## Further information
+
+Wikipedia article on VCO Sync: [Oscillator sync](https://en.wikipedia.org/wiki/Oscillator_sync)
 
 Here is a nice video on VCO sync. While it is not for VCV, the principles are the same: [Roland SE-02 - Hard Sync Lead Tutorial](https://www.youtube.com/watch?v=l1lqAcZg2sY)
 
