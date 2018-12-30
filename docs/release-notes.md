@@ -32,7 +32,7 @@ LFN enhancement: added XLFN mode, which is 10 times slower. Accessed via context
 
 ## 0.6.13
 
-Fixed bug where Chebyshev went missing.
+Restore Chebyshev module that disappeared from 0.6.12.
 
 ## 0.6.12
 
