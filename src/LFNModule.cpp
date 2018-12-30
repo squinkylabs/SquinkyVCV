@@ -5,7 +5,7 @@
 #include "WidgetComposite.h"
 
 #include "ctrl/ToggleButton.h"
-#include "SqWidgets.h"
+#include "SQWidgets.h"
 #include "LFN.h"
 
 

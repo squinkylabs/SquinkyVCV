@@ -56,3 +56,9 @@ To give a subtle sense of rhythmic pulsing, you may of course run a clock or LFO
 ## Additional information
 
 Szabo's thesis, which we used to make Saws, can be found [here](https://www.nada.kth.se/utbildning/grukth/exjobb/rapportlistor/2010/rapporter10/szabo_adam_10131.pdf).
+
+The [WikiPedia article on the JP-8000](https://en.wikipedia.org/wiki/Roland_JP-8000) is informative.
+
+There are many demo videos for the JP-8000 Super Saw, like [this one](https://www.youtube.com/watch?v=D0eTgyRkdDU)
+
+
