@@ -1,4 +1,5 @@
 # Chebyshev
+
 Our waveshaper VCO.
 
 ![Functional image](../docs/chebyshev.png)
@@ -56,7 +57,7 @@ The controls in the upper right are all for the sine wave VCO.
 
 Mod and LFM perform different functions. Mod, like the CV input, is an exponential control. If an LFO is patched into the Mod input and the Mod depth is adjusted for a vibrato of one semitone, that vibrato will be one semitone regardless of the base pitch. But if an audio rate signal is patched into the Mod input you will tend to get “clangorous” sounds with inharmonic overtones.
 
-LFM, on the other hand, allows through-zero linear FM. While this is not very good for vibrato it does create complex timbres where the harmonics are in tune, and that "in tuneness" will remain as the mod depth is changed. Exponential FM at audio rates can also be tuned, but the tuning will disappear  as the mod depth changes, making it impossible to to generate dynamic harmonic sounds.
+LFM, on the other hand, allows through-zero linear FM. While this is not very good for vibrato it does create complex timbres where the harmonics are in tune, and that consonance will remain as the mod depth is changed. Exponential FM at audio rates can also be tuned, but the tuning will disappear  as the mod depth changes, making it impossible to to generate dynamic harmonic sounds.
 
 ### Folder/Clipper
 
@@ -105,7 +106,7 @@ The Odd, Even, and Slope controls may be thought of as subtractive. When they ar
 
 The **Preset** button toggles between two or three settings. It will always have a setting where the fundamental is full and all other harmonics off, and a setting where all harmonics are up full. In addition, if you started with your own setting of the harmonics, the preset button will eventually take you back there, but with the master gain set back to one.
 
-### Lag generator controls.
+### Lag generator controls
 
 There is a lag generator on the control voltage input for each of the 10 harmonics. They all have the same rise and fall time. They all have exponential slopes.
 

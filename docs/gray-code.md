@@ -3,9 +3,10 @@
 ![gray code image](./gray-code.png)
 
 ## About Gray Code
+
 A cool feature of gray codes is that only one bit changes at a time. Having only one “thing” change at a time can be interesting for music, so we are hoping you will find some good things to do with it.
 
-WikiPedia has a very good article on gray codes: https://en.wikipedia.org/wiki/Gray_code
+WikiPedia has a very good [article on gray codes](https://en.wikipedia.org/wiki/Gray_code)
 
 Our Gray Code module has only one control. It selects between standard gray code and balanced gray codes. With a standard gray code, the lower bits change much more often than the high bits. You can see it counting up. With the balanced gray codes, all the bits change more or less the same amount, but of course no two ever change at the same time.
 
