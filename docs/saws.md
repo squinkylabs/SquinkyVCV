@@ -1,7 +1,7 @@
 # Saws
 Emulation of Roland Super-Saw.
 
-[add image here]()
+![Saws Panel](./saws-panel.png)
 
 ## Description of Saws
 
