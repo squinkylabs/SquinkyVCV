@@ -3,7 +3,7 @@
 ![shaper image](./shaper-panel.png)
 
 ## Overview
-Shaper is a waveshaper offering many different shape options. Some of these shapes are commonly found in other wave shapers, and some are unique to Shaper. It can be used to modify the waveforms from a VCO, or to add distortion to some other sound. And, as usual, the creative user may use it to process control voltages, or other "left field" uses, such as shaping control voltages.
+Shaper is a waveshaper offering many different shape options. Some of these shapes are commonly found in other wave shapers, and some are unique to Shaper. It can be used to modify the waveforms from a VCO, or to add distortion to some other sound. And, as usual, the creative user may use for "left field" uses, such as shaping control voltages.
 
 A unique feature of Shaper is that it has very little aliasing, whereas most we have seen have a lot of aliasing. The other special thing about Shaper is that it has a few shapes that are good for "soft overdrive".
 
@@ -23,7 +23,7 @@ Shaper also has switchable high-pass filters on the outputs, to prevent accumula
 
 ## About Oversampling
 
-The switch with the labels 16X, 4X, and 1X controls the amount of oversampling. This is how Shaper keeps aliasing under control. Waveshapers by their nature generate a lot of harmonics at high frequencies, and these tend to "fold back" into the audio range as aliasing. Oversampling reduces this effect by doing all the processing at a higher sample rate, then removing the frequencies that are too high, and reducing the sample rate back down. The more oversampling, the less aliasing.
+The switch with the labels 16X, 4X, and 1X controls the amount of oversampling which determines how much aliasing Shaper will introduce. Waveshapers by their nature generate a lot of harmonics at high frequencies, and these tend to "fold back" into the audio range as aliasing. Oversampling reduces this effect by doing all the processing at a higher sample rate, then removing the frequencies that are too high, and reducing the sample rate back down. The more oversampling, the less aliasing.
 
 At 16X, Shaper is oversampling by a factor of 16. So for a 44,100 sampling rate, Shaper would be working at 705kHz! This is the oversampling rate used by Fundamental VCO-1 and Functional VCO-1. At this setting it is very difficult to hear or measure any aliasing at all, although it is present in tiny amounts.
 
@@ -49,13 +49,13 @@ Like most waveshapers, the first version of Shaper did not have highpass filters
 
 ### Classic wave shaping
 
-In the most common use case, the waveshaper is often connected directly to the output of a VCO. This gives a large number of different sounds from the VCO. Extreme settings are often used, with folding being a classic example.
+In the most common use case, the waveshaper is connected directly to the output of a VCO. This gives a large number of different sounds from the VCO. Extreme settings are often used, with folding being a classic example.
 
 Is the Folder shape is selected, modulating the gain or offset inputs will cause dramatic timbre shifts, so often a patch will modulate the gain with an ADSR or map it to a MIDI control.
 
-When using Shaper this way, the DC filter should be left off. The 4X oversampling is a good setting to start with, as 1X will generate a huge amount of aliasing. If your ears are sensitive to aliasing you might prefer the 16X setting.
+When using Shaper this way DC should be removed, so leave the switch in the AC position. 16X and 4X oversampling are both good setting to start with, as 1X will generate a huge amount of aliasing. If your ears are sensitive to aliasing you might prefer the 16X setting.
 
-Make sure to check out the relevant videos, below, to learn how to do this.
+Make sure to check out the relevant videos, below, to learn more about this patch.
 
 ### Distortion
 
@@ -63,13 +63,13 @@ In the second use case, as a distortion/overdrive effect, often less extreme set
 
 It's best to avoid the "crazy" shapes like folding, and use shapes like "Soft", "Emitter Coupled", or even "Clip".
 
-When using Shaper this way, he DC filter should be left off. The 4X oversampling is a good setting to start with, as the more gentle distortions don't tend to generate enough aliasing to require 16X. 1X might even be fine in many cases. Let your ears and your CPU meter be your guide here.
+When using Shaper this way DC should be removed, so leave the switch in the AC position. The 4X oversampling is a good setting to start with, as the more gentle distortions don't tend to generate enough aliasing to require 16X. 1X might even be fine in many cases. Let your ears and your CPU meter be your guide here.
 
 ### Shaping control voltages
 
 In the third common use case, the wave-shaper is used to modify a low-frequency control voltage like an LFO or ADSR. These CVs might then control any number of parameters.
 
-When using Shaper to modify control voltages the DC blocking filters must be turned off. Oversampling is also unnecessary here, so set it to 1X to save CPU.
+When using Shaper to modify control voltages the DC blocking filters must be turned off, so switch them to the DC setting. Oversampling is also unnecessary here, so set it to 1X to save CPU.
 
 If you have never tried processing a CV with a waveshaper, be sure to watch the video on that, below.
 
@@ -103,7 +103,7 @@ Clip is not very useful for shaping a VCO output, since most VCOs already put ou
 
 ![ec image](./emitter-coupled.png)
 
-Models the saturation of an emitter coupled pair amplifier input, as was commonly found in the classic 3080 “OTA” chip that was used in many analog synthesizers and some phase shifters. Even when driven hard, Emitter Coupled will not distort as much as some of the other shapes, and definitely won’t mangle a sound.
+Models the saturation of an emitter coupled pair amplifier input, as was found in the classic 3080 “OTA” chip that was used in many analog synthesizers and some phase shifters. Even when driven hard, Emitter Coupled will not distort as much as some of the other shapes, and definitely won’t mangle a sound.
 
 ### Full Wave
 
@@ -131,7 +131,7 @@ The "wavefolder" is a legendary and classic synthesizer module. Both Buchla and 
 
 One thing all wavefolders have in common is that the sound changes quite a bit as the gain increases, sounding something like a filter sweep, or even more like the sweep of a synched VCO. So one of the first things to try is modulating the gain input with an envelope or other modulation source.
 
-One thing our wavefolder has in common with the analog classics is that it has little or no aliasing. Wavefolding generates a huge amount of high harmonics, so a digital implementation that does not deal with the aliasing is going to sound different from Shaper (or an analog module).
+Like the analog classics that inspired it, Shaper's wavefolder has little or no aliasing. Wavefolding generates a huge amount of high harmonics, so a digital implementation that does not deal with the aliasing is going to sound different from Shaper (or an analog module).
 
 That said, musicians can undoubtedly find uses for the fully aliased version. We encourage you to try at 16X and at 1X.
 

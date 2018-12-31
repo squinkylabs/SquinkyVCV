@@ -23,7 +23,7 @@ The pitch is controller by the signal patched into the **V/8 input**.
 
 The **Octave** knob will transpose the VCO in even octaves. The setting is displayed above the knob.
 
-The **Semi** knob will transpose the VCO in semitone intervals. It has a range of 11 semitones up or down. The semitone setting is displayed above the knob as a pitch, such as "G" or "C#".
+The **Semi** knob will transpose the VCO in semitone intervals. It has a range of 11 semitones up or down. The semitone setting is displayed above the knob as note name, such as "G" or "C#".
 
 The **fine** knob tunes the VCO by a semitone up or down.
 
@@ -37,7 +37,7 @@ The **Mix** knob controls the mixing of the de-tuned saws against the in-tune sa
 
 Both the Mix and Detune controls were designed to respond just like the controls in the JP-8000.
 
-The **Trigger** input is used implement the phase randomization on new notes that was mentioned above. Any time the Trigger input goes from low to high it will randomize the phase of all the saws.
+The **Trigger** input is used implement the phase randomization on new notes that was mentioned above. Any time the Trigger input goes from low to high it will randomize the phase of all the saws. Ofter a gate from MIDI or a sequencer would be patched into the trigger input.
 
 There is a button in the middle of the panel, which by default is labeled "Classic". This button controls the alias reduction. In the Classic setting we emulate the original - lots of high frequency aliasing and a high pass filter to remove the low frequency aliasing. In the "Clean 1" setting we remove the high-pass filters, and use 4X oversampling to reduce all the aliasing to low levels. "Clean 2" is similar, but increases the oversampling to 16X.
 

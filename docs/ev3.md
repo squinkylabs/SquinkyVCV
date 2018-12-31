@@ -40,25 +40,31 @@ This patch "normalization" makes for much less patching when stacking two or thr
 
 ## Pitch display
 
-When a VCO has a signal patched to its V/Oct input, it will always display pitch as octave and named pitch. For example:
+When a VCO has a signal patched to its V/Oct input, it will always display pitch as octave and named pitch, like "4 A" for the note A in the fourth octave.
+
+If the VCO does not have a patch cable connected to its V/Oct, then it will use the previously patch VC input, and will display its pitch as a diatonic interval offset from the patched VCO.
+
+For example:
 
 ![ev3 pitch image](./ev3-pitch.png)
 
 In this illustration VCO-1 is patched to a CV, so it displays absolute pitch. It's tuned up two semitones to D, at the default octave (5).
 
-VCO-2 is has no patch to its V/Oct input, so it will track VCO-1. It is set up five semitones from the default C, so it is tuned to F. Since VCO-2 does not have its own CV path, and is therefore tracking VCO-1, its pitch is displayed relative to VCO-1. Since VCO-1 is tuned to 5:D, and VCO-2 is tuned to 5:F, VCO-1 displays 0:m3rd, since 5:F is a minor third higher than 5:D.
+VCO-2 is has no patch to its V/Oct input, so it will track VCO-1. It is set up five semitones from the default C, so it is tuned to F. Since VCO-2 is tracking VCO-1, its pitch is displayed relative to VCO-1. Since VCO-1 is tuned to 5:D, and VCO-2 is tuned to 5:F, VCO-1 displays 0:m3rd, since 5:F is a minor third higher than 5:D.
 
 Notes are always "spelled" with sharps, so the semitone between C and D is displayed as C#, never D flat.
+
+When displaying intervals, EV3 also has some fixed spellings:
+
+* One semitone up is called minor second, although some would call it a flat second.
+* Six semitones up is called Diminished fifth, although it could be called an augmented fourth or a tritone.
+* No transposition is displayed as zero, although it would be more correct to call it P1, or perhaps unison.
 
 ## The controls in depth
 
 The octave knob is at the top left. It is unlabeled, but does have the octave number displayed on top of it. It has a 10 octave range, just like EvenVCO.
 
-The semitone knob just to the right will add or subtract up to 12 semitones. The label above the knob displays the semitone offset as an interval in diatonic harmony (if the VCO is un-patched, as explained above). For example, 7 semitones up is labeled "5th". Note that the intervals displayed are always an octave plus a transposition up. So lowering 5:0 by two semitones will give you 4:m7th – it’s displayed as one octave down and a minor 7th up. Note that some of these intervals have more than one spelling. In these cases we made some arbitrary decisions:
-
-* One semitone up is called minor second, although some would call it a flat second.
-* Six semitones up is called Diminished fifth, although it could be called an augmented fourth or a tritone.
-* No transposition is displayed as zero, although it would be more correct to call it P1, or perhaps unison.
+The semitone knob just to the right will add or subtract up to 12 semitones.
 
 The fine control transposes the VCO pitch up and down up to a semitone.
 
@@ -84,7 +90,7 @@ Oscillator sync requires two VCOs. The master sets the pitch of the slave. Adjus
 
 In EV3, VCO 1 is always the master. Turning on the sync switch for VCO 3 will slave VCO 3 to VCO1.
 
-All of then fun involves the relationship between the pitch settings of the master and the slave. Usually the slave needs to be set higher. Often some changing CV is used to move the slave pitch offset to create dynamic timbres. ADSR is always a good modulation source, although anything can be used.
+All of then fun involves the relationship between the pitch settings of the master and the slave. Usually the slave needs to be set higher than the master. Often some changing CV is used to move the slave pitch offset to create dynamic timbres. ADSR is always a good modulation source, although anything can be used.
 
 There is more information on sync below.
 
