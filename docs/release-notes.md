@@ -30,6 +30,8 @@ Shaper enhancement: added AC/DC selector.
 
 LFN enhancement: added XLFN mode, which is 10 times slower. Accessed via context menu.
 
+Colors: changed white knob to Squinky blue.
+
 ## 0.6.13
 
 Restore Chebyshev module that disappeared from 0.6.12.
