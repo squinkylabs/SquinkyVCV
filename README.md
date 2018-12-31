@@ -1,6 +1,6 @@
 # About SquinkyVCV
 
-This project is a growing collection of modules for the VCV Rack vritual modular synthesizer. You can find more information about VCV Rack [here](https://vcvrack.com/).
+This project is a growing collection of modules for the VCV Rack virtual modular synthesizer. You can find more information about VCV Rack [here](https://vcvrack.com/).
 
 You can find us on Facebook [here](https://www.facebook.com/SquinkyLabs).
 

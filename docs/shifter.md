@@ -8,6 +8,8 @@ The name "Booty Shifter" is a nod to the classic analog module, as well as to a 
 
 Booty Shifter  will take an audio input and shift the frequencies up or down. This is not like a pitch shift where harmonics will remain in tune; it is an absolute frequency shift in Hz, so in general **harmonics will go way out of tune.** It is similar to a ring-modulator, but less extreme and more versatile.
 
+When the original module was released long ago it cost around $1000. More recent Eurorack frequency shifters are still very expensive, because the frequency shifter requires a large number of components, and must be carefully calibrated.
+
 ## Getting good sounds from Booty Shifter
 
 Feed in music and shift the frequency a good amount.
@@ -31,7 +33,7 @@ Small shifts in conjunction with delays can make a chorus-like effect to thicken
 
 **RANGE** sets the total shift range in Hz. For example, the 50 Hz setting means that the minimum shift is 50 Hz down, and the maximum is 50 Hz up.
 
-Range value **Exp is different**. Here minimum shift is 2 Hz, maximum is 2 kHz, with an exponential response. As of version 0.6.2 the response is an accurate 1 Volt per Octave.
+Range value **Exp is different**. Here minimum shift is 2 Hz, maximum is 2 kHz, with an exponential response of one volt per octave.
 
 Shift **AMT** is added to the control voltage, with a range of -5..5.
 

@@ -17,3 +17,13 @@ There is an additional output that adds up all the bits with a binary weighting,
 The external clock input must be driven with a clock - there is no internal clock.
 
 Now let your imagination run wild!
+
+## Extra info
+
+While the output of this module can seem random, especially in balanced mode, it is not random at all. This can sometimes make it difficult to get multiple Gray Codes running at the same time and have them counting independently.
+
+For example, If you connect two instances to the same clock source, they will be independent, as the second instance was connect a little later than the first. But if you save the patch and reload it, both will start at the same time and have the same output.
+
+While the outputs of Gray Code can be used to modulate almost anything, there are times when thee sharp rise and fall times can make pops and clicks. In this case using a lag generator in between will make these go away. And when set to a long enough time the lag units can make the outputs almost triangular, opening up another world of modulation possibilities.
+
+Since Gray Code will generate a lot of independent modulation sources, it can save a lot of panel space in patches that require a lot of  modulation.
