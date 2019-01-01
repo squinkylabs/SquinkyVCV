@@ -18,6 +18,7 @@ Beta testing by:
 * [Dave Phillips](https://www.youtube.com/channel/UC4Kw67XwyKACygelcd-D2-g)
 * [Artem Leonov](https://www.youtube.com/vcvrackideas)
 * [Norbert Denninger](https://www.youtube.com/c/Wavesunlimited)
+* [Omri Cohen](https://www.youtube.com/channel/UCuWKHSHTHMV_nVSeNH4gYAg)
 * Lars Bjerregaard
 
 All third party software copyright information is in [LICENSE-dist.txt](./LICENSE-dist.txt)
