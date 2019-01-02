@@ -88,8 +88,14 @@ inline T NonUniformLookupTable<T>::lookup(NonUniformLookupTableParams<T>& params
     if (x >= lb->second.x) {
         // this could only happen if we hit equal
     } else {
+        // added this case to keep mac from crashing, as we were trying to decrement begin()
+        if (lb == params.entries.begin()) {
+            return lb_init->second.y;
+        }
         --lb;
         if (lb == params.entries.end()) {
+            // I thing now that above is fixed this won't happen?
+            assert(false);
             return lb_init->second.y;
         }
     }
