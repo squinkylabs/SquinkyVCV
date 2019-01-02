@@ -75,7 +75,6 @@ struct superWidget : ModuleWidget
 
 };
 
-const float width = 150;
 const float col1 = 40;
 const float col2 = 110;
 

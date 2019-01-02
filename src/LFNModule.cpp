@@ -61,7 +61,6 @@ public:
     void update(struct LFNWidget& widget);
     void makeLabel(struct LFNWidget& widget, int index, float x, float y);
 private:
-    LFNModule * module;
     Label*  labels[5] = {0,0,0,0,0};
     float baseFrequency = -1;
 };

@@ -67,7 +67,7 @@ private:
     Label* shapeLabel=nullptr;
     Label* shapeLabel2=nullptr;
     ParamWidget* shapeParam = nullptr;
-    ParamWidget* oversampleParam = nullptr;
+    //ParamWidget* oversampleParam = nullptr;
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
     void addSelector(ShaperModule* module);
 };
