@@ -58,8 +58,6 @@ struct GrayWidget : ModuleWidget
 
 private:
     void addBits(GrayModule *module);
-
-    GrayModule* const module;
 };
 
 const float jackCol = 99.5;
@@ -88,8 +86,7 @@ inline void GrayWidget::addBits(GrayModule *module)
  * This is not shared by all modules in the DLL, just one
  */
 GrayWidget::GrayWidget(GrayModule *module) :
-    ModuleWidget(module),
-    module(module)
+    ModuleWidget(module)
 {
     box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
