@@ -5,7 +5,7 @@
 class ButtonCell
 {
 public:
-    friend class WaveformSelector;
+    friend struct WaveformSelector;
     ButtonCell(const ButtonCell&) = delete;
     ButtonCell& operator = (const ButtonCell&) = delete;
 

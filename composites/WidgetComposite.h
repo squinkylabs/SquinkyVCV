@@ -11,8 +11,7 @@ public:
         inputs(parent->inputs),
         outputs(parent->outputs),
         params(parent->params),
-        lights(parent->lights),
-        module(parent)
+        lights(parent->lights)
     {
     }
     virtual void step()
@@ -32,5 +31,4 @@ protected:
     std::vector<Param>& params;
     std::vector<Light>& lights;
 private:
-    Module * const module;
 };
