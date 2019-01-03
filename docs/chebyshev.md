@@ -4,6 +4,10 @@ Our waveshaper VCO.
 
 ![Functional image](../docs/chebyshev.png)
 
+## There are two Chebychevs
+
+In release 16.4 we added a lot of features, breaking patch compatibility, so now there are two versions. The old one is still available, and will load when old patches are loaded. It has been renamed *[old] Chebyshev*. These instructions are for the new one.
+
 ## Description of the module
 
 Chebyshev polynomials have been used to generate complex tones since the early days of computer music. This special math discovered by Mr. Chebyshev enables digital generation of waveforms with any overtone structure using very little computer power. In addition, it is easy and computationally inexpensive to vary the spectrum over time.
