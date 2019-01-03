@@ -192,9 +192,9 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
         module,
         Shaper<WidgetComposite>::PARAM_OVERSAMPLE,
         0.0f, 2, 0);
-    tog->addSvg("res/16X-03.svg");
-    tog->addSvg("res/16X-02.svg");
-    tog->addSvg("res/16X-01.svg");
+    tog->addSvg("res/16x-03.svg");
+    tog->addSvg("res/16x-02.svg");
+    tog->addSvg("res/16x-01.svg");
     addParam(tog);
 
     // screws
