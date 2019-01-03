@@ -409,7 +409,12 @@ static void testNonUniform3()
 
     T result = NonUniformLookupTable<T>::lookup(params, -100);
     assertClose(result, 0, .000001);
+    result = NonUniformLookupTable<T>::lookup(params, -.1f);
+    assertClose(result, 0, .000001);
+
     result = NonUniformLookupTable<T>::lookup(params, 100);
+    assertClose(result, 2, .000001);
+    result = NonUniformLookupTable<T>::lookup(params, 2.1f);
     assertClose(result, 2, .000001);
 
     result = NonUniformLookupTable<T>::lookup(params, 2);
@@ -417,6 +422,15 @@ static void testNonUniform3()
 
     result = NonUniformLookupTable<T>::lookup(params, 0);
     assertClose(result, 0, .000001);
+
+    result = NonUniformLookupTable<T>::lookup(params, .1f);
+    assertClose(result, .1f, .000001);
+
+    result = NonUniformLookupTable<T>::lookup(params, 1);
+    assertClose(result, 1, .000001);
+
+    result = NonUniformLookupTable<T>::lookup(params, 1.9f);
+    assertClose(result, 1.9f, .000001);
 }
 
 template <typename T>

@@ -18,13 +18,13 @@ public:
     ReplaceDataCommand(
         std::shared_ptr<MidiSong> song,
         int trackNumber,
-        const std::vector<MidiEvent>& inRemove,
-        const std::vector<MidiEvent>& inAdd);
+        const std::vector<MidiEventPtr>& inRemove,
+        const std::vector<MidiEventPtr>& inAdd);
 
 private:
     std::shared_ptr<MidiSong> song;
     int trackNumber;
-    std::vector<MidiEvent> removeData;
-    std::vector<MidiEvent> addData;
+    std::vector<MidiEventPtr> removeData;
+    std::vector<MidiEventPtr> addData;
 
 };

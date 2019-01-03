@@ -27,6 +27,7 @@
 #include "Shaper.h"
 #include "Super.h"
 #include "KSComposite.h"
+#include "Seq.h"
 
 
 using Shifter = FrequencyShifter<TestComposite>;
@@ -570,20 +571,61 @@ static void testShaper1b()
 
 static void testSuper()
 {
-    Super<TestComposite> gmr;
+    Super<TestComposite> super;
 
-    MeasureTime<float>::run(overheadOutOnly, "super", [&gmr]() {
-     //   gmr.inputs[Super<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
-        gmr.step();
-        return gmr.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+    MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+    }, 1);
+}
+
+static void testSuper2()
+{
+    Super<TestComposite> super;
+
+    super.params[Super<TestComposite>::CLEAN_PARAM].value = 1;
+    MeasureTime<float>::run(overheadOutOnly, "super clean", [&super]() {
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+    }, 1);
+}
+
+static void testSuper3()
+{
+    Super<TestComposite> super;
+
+    super.params[Super<TestComposite>::CLEAN_PARAM].value = 2;
+    MeasureTime<float>::run(overheadOutOnly, "super clean 2", [&super]() {
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
         }, 1);
 }
+#if 0
+static void testSuper2()
+{
+    Super<TestComposite> super;
+    int counter = 1;
+    bool flip = false;
+    float cv = 0;
+
+    MeasureTime<float>::run(overheadOutOnly, "super pitch change", [&]() {
+        if (--counter == 0) {
+            cv = flip ? 1.f : -1.f;
+            super.inputs[Super<TestComposite>::CV_INPUT].value = cv;
+            counter = 64;
+            flip = !flip;
+        }
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        }, 1);
+}
+#endif
 
 static void testKS()
 {
     KSComposite<TestComposite> gmr;
 
-    MeasureTime<float>::run(overheadOutOnly, "super", [&gmr]() {
+    MeasureTime<float>::run(overheadOutOnly, "ks", [&gmr]() {
        // gmr.inputs[KSComposite<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
         gmr.step();
         return gmr.outputs[KSComposite<TestComposite>::SQR_OUTPUT].value;
@@ -594,8 +636,6 @@ static void testShaper1c()
 {
     Shaper<TestComposite> gmr;
 
-    // gmr.setSampleRate(44100);
-    // gmr.init();
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
     gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;
 
@@ -773,34 +813,44 @@ static void testNormal()
 }
 #endif
 
+void dummy()
+{
+    Seq<TestComposite> s;
+}
+
 void perfTest()
 {
     printf("starting perf test\n");
     fflush(stdout);
     setup();
-#if 0
-    testAttenuverters();
-    testExpRange();
-#endif
 
 #if 0
-    testNoise(false);
-    testNoise(true);
-    testNormal();
+    testColors();
+    testVocalFilter();
+    testAnimator();
+    testTremolo();
+    testLFN();
+    testShifter();
+    testGMR();
 #endif
+
     testCHBdef();
     testSuper();
-    testKS();
-    testShaper1a();
+    testSuper2();
+    testSuper3();
+  //  testKS();
+  //  testShaper1a();
+#if 0
     testShaper1b();
     testShaper1c();
     testShaper2();
     testShaper3();
     testShaper4();
     testShaper5();
+#endif
 
     testEV3();
-   
+
     testFunSaw(true);
 #if 0
     testFunSaw(false);
@@ -823,19 +873,8 @@ void perfTest()
     testEvenSqSaw();
 #endif
 
-#if 0
 
-    testVocalFilter();
-    testAnimator();
-    testShifter();
 
-    testColors();
-    testTremolo();
-   
-    testLFN();
-    testGMR();
-#endif
-   
 
    // test1();
 #if 0

@@ -1,19 +1,21 @@
 
+#include "ctrl/SqMenuItem.h"
 #include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#include "ctrl/ToggleButton.h"
+#include "SQWidgets.h"
 #include "LFN.h"
 
 
 /**
  */
-struct LFNModule : Module
+struct LFNModule : public Module
 {
 public:
     LFNModule();
     /**
-     *
      * Overrides of Module functions
      */
     void step() override;
@@ -26,9 +28,6 @@ private:
 
 void LFNModule::onSampleRateChange()
 {
-   // engineGetSampleTime();
-   // float rate = Module::engineGetSampleRate();
-   // float rate = 1.0f / engineGetSampleTime();      // TODO: what's up with this? this used to work!
     lfn.setSampleTime(engineGetSampleTime());
 }
 
@@ -52,18 +51,19 @@ void LFNModule::step()
 // module widget
 ////////////////////
 
+/**
+ * This class updates the base frequencies of
+ * all the labels when the master changes
+ */
 class LFNLabelUpdater
 {
 public:
     void update(struct LFNWidget& widget);
     void makeLabel(struct LFNWidget& widget, int index, float x, float y);
 private:
-    LFNModule * module;
     Label*  labels[5] = {0,0,0,0,0};
     float baseFrequency = -1;
 };
-
-
 
 struct LFNWidget : ModuleWidget
 {
@@ -79,17 +79,23 @@ struct LFNWidget : ModuleWidget
         return label;
     }
 
-    void draw(NVGcontext *vg) override
+    // why not on step()?
+   // void draw(NVGcontext *vg) override
+    void step() override
     {
         updater.update(*this);
         module.lfn.pollForChangeOnUIThread();
-        ModuleWidget::draw(vg);
+       // ModuleWidget::draw(vg);
+        ModuleWidget::step();
     }
+
+    Menu* createContextMenu() override;
 
     void addStage(int i);
 
     LFNLabelUpdater updater;
     LFNModule&     module;
+    ParamWidget* xlfnWidget = nullptr;
 };
 
 static const float knobX = 42;
@@ -113,6 +119,19 @@ void LFNWidget::addStage(int index)
     addInput(Port::create<PJ301MPort>(Vec(inputX, inputY + index * knobDy),
         Port::INPUT, &module, module.lfn.EQ0_INPUT + index));
 }
+
+inline Menu* LFNWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    MenuLabel *spacerLabel = new MenuLabel();
+    theMenu->addChild(spacerLabel);
+    SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
+        xlfnWidget);
+    item->text = "Extra Low Frequency";
+    theMenu->addChild(item);
+    return theMenu;
+}
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -129,18 +148,24 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     }
 
     addOutput(Port::create<PJ301MPort>(
-        Vec(59, inputY - knobDy -1), Port::OUTPUT, module, module->lfn.OUTPUT));
+        Vec(59, inputY - knobDy - 1), Port::OUTPUT, module, module->lfn.OUTPUT));
     addLabel(
-        Vec(54 , inputY - knobDy - 18), "out", COLOR_WHITE);
- 
+        Vec(54, inputY - knobDy - 18), "out", COLOR_WHITE);
+
     addParam(ParamWidget::create<Rogan1PSBlue>(
         Vec(10, knobY - 1 * knobDy), module, module->lfn.FREQ_RANGE_PARAM, -5, 5, 0));
-    
+
    // addLabel(Vec(59, knobY - 1 * knobDy), "R");
 
     for (int i = 0; i < 5; ++i) {
         addStage(i);
     }
+
+    xlfnWidget = ParamWidget::create<NullWidget>(
+        Vec(0, 0), module, module->lfn.XLFN_PARAM, 0, 1, 0);
+    xlfnWidget->box.size.x = 0;
+    xlfnWidget->box.size.y = 0;
+    addParam(xlfnWidget);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -157,14 +182,18 @@ void LFNLabelUpdater::makeLabel(struct LFNWidget& widget, int index, float x, fl
 void LFNLabelUpdater::update(struct LFNWidget& widget)
 {
     float baseFreq = widget.module.lfn.getBaseFrequency();
+    const bool isXLFN = widget.module.lfn.isXLFN();
+    const float moveLeft = isXLFN ? 3 : 0;
+    const int digits = isXLFN ? 2 : 1;
     if (baseFreq != baseFrequency) {
         baseFrequency = baseFreq;
         for (int i = 0; i < 5; ++i) {
             std::stringstream str;
-            str.precision(1);
+            str.precision(digits);
             str.setf(std::ios::fixed, std::ios::floatfield);
             str << baseFreq;
             labels[i]->text = str.str();
+            labels[i]->box.pos.x = labelX - moveLeft;
             baseFreq *= 2.0f;
         }
     }

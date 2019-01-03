@@ -70,6 +70,7 @@ public:
         PARAM_OFFSET,
         PARAM_OFFSET_TRIM,
         PARAM_OVERSAMPLE,
+        PARAM_ACDC,
         NUM_PARAMS
     };
 
@@ -271,7 +272,9 @@ void  Shaper<TBase>::step()
         output = buffer[0];
     }
 
-    output = float(BiquadFilter<Thpf>::run(output, dcBlockState, dcBlockParams));
+    if (TBase::params[PARAM_ACDC].value < .5) {
+        output = float(BiquadFilter<Thpf>::run(output, dcBlockState, dcBlockParams));
+    }
     TBase::outputs[OUTPUT_AUDIO].value = output;
 }
 
@@ -359,24 +362,9 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
             for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];            // for crush, no gain has been applied
 
-#if 0
-                if (invGain < 1) {
-                    printf("invg gain = %f\n", invGain);
-                    fflush(stdout);
-                    invGain = 1;
-
-                }
-#endif
-             // printf("crush, x=%.2f, gi=%.2f invGain = %.2f", x, _gainInput, invGain);
-
                 x *= invGain;
                 x = std::round(x + .5f) - .5f;
-
-            // printf("invGain = %f, x = %f\n", invGain, x);
-                //  printf(" mult=%.2f", x);
                 x /= invGain;
-             // printf("after div back %f\n", x); fflush(stdout);
-                //   printf(" dv=%.2f\n", x);    fflush(stdout);
                 buffer[i] = x;
             }
         }

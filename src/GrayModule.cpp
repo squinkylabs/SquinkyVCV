@@ -58,8 +58,6 @@ struct GrayWidget : ModuleWidget
 
 private:
     void addBits(GrayModule *module);
-
-    GrayModule* const module;
 };
 
 const float jackCol = 99.5;
@@ -69,8 +67,7 @@ const float firstBitY = 64;
 
 inline void GrayWidget::addBits(GrayModule *module)
 {
-    printf("add bits\n"); fflush(stdout);
-    for (int i=0; i<8; ++i) {
+    for (int i = 0; i < 8; ++i) {
         const Vec v(jackCol, firstBitY + i * vertSpace);
         addOutput(createOutputCentered<PJ301MPort>(
             v,
@@ -79,7 +76,7 @@ inline void GrayWidget::addBits(GrayModule *module)
         addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
             Vec(ledCol, firstBitY + i * vertSpace - 6),
             module,
-            Gray<WidgetComposite>::LIGHT_0+i));
+            Gray<WidgetComposite>::LIGHT_0 + i));
     }
 }
 
@@ -89,8 +86,7 @@ inline void GrayWidget::addBits(GrayModule *module)
  * This is not shared by all modules in the DLL, just one
  */
 GrayWidget::GrayWidget(GrayModule *module) :
-    ModuleWidget(module),
-    module(module)
+    ModuleWidget(module)
 {
     box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
@@ -102,13 +98,13 @@ GrayWidget::GrayWidget(GrayModule *module) :
 
     addBits(module);
     addInput(createInputCentered<PJ301MPort>(
-            Vec(22, 339),
-            module,
-            Gray<WidgetComposite>::INPUT_CLOCK));
-         addLabel(Vec(0, 310), "Clock");
+        Vec(22, 339),
+        module,
+        Gray<WidgetComposite>::INPUT_CLOCK));
+    addLabel(Vec(0, 310), "Clock");
 
-     addParam(createParamCentered<CKSS>(
-        Vec(71,33),
+    addParam(createParamCentered<CKSS>(
+        Vec(71, 33),
         module,
         Gray<WidgetComposite>::PARAM_CODE,
         0.0f, 1.0f, 0.0f));
@@ -118,13 +114,13 @@ GrayWidget::GrayWidget(GrayModule *module) :
         Vec(100, 339),
         module,
         Gray<WidgetComposite>::OUTPUT_MIXED));
-    addLabel(Vec(81, 310), "Mix", COLOR_WHITE);
-   
+    addLabel(Vec(82, 310), "Mix", COLOR_WHITE);
+
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelGrayModule = Model::create<GrayModule,

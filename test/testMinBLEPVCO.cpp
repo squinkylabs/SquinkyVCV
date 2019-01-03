@@ -358,6 +358,23 @@ static void testSyncIn()
     testSyncIn(MinBLEPVCO::Waveform::Even);
 }
 
+static void testNormal()
+{
+    EV3<TestComposite> ev3;
+    ev3.params[EV3<TestComposite>::MIX1_PARAM].value = 0; 
+    ev3.params[EV3<TestComposite>::MIX2_PARAM].value = 0;
+    ev3.params[EV3<TestComposite>::MIX3_PARAM].value = 0;
+    for (int i = 0; i < 4; ++i) ev3.step();
+    assert(!ev3.isLoweringVolume());
+
+    ev3.params[EV3<TestComposite>::MIX1_PARAM].value = 1;
+    ev3.params[EV3<TestComposite>::MIX2_PARAM].value = 1;
+    ev3.params[EV3<TestComposite>::MIX3_PARAM].value = 1;
+    for (int i = 0; i < 4; ++i) ev3.step();
+    assert(ev3.isLoweringVolume());
+
+}
+
 void testMinBLEPVCO()
 {
     // A lot of these tests are from old API
@@ -377,4 +394,5 @@ void testMinBLEPVCO()
     testZero();
     testSyncOut();
     testSyncIn();
+    testNormal();
 }

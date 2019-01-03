@@ -4,8 +4,10 @@
 #include <algorithm>
 
 #include "AudioMath.h"
-#include "poly.h"
+#include "LookupTableFactory.h"
+#include "MultiLag.h"
 #include "ObjectCache.h"
+#include "poly.h"
 #include "SinOscillator.h"
 
 using Osc = SinOscillator<float, true>;
@@ -20,6 +22,8 @@ namespace std {
     }
 }
 #endif
+
+
 
 /**
  * Composite for Chebyshev module.
@@ -61,8 +65,14 @@ public:
         PARAM_H6,
         PARAM_H7,
         PARAM_H8,
-        PARAM_H9,
-
+        PARAM_H9,       // up to here is Ver 1.0
+        PARAM_EXPAND,
+        PARAM_RISE,
+        PARAM_FALL,
+        PARAM_EVEN_TRIM,
+        PARAM_ODD_TRIM,
+        PARAM_SLOPE_TRIM,
+        PARAM_SEMIS,
         NUM_PARAMS
     };
     const int numHarmonics = 1 + PARAM_H9 - PARAM_H0;
@@ -86,7 +96,11 @@ public:
         H7_INPUT,
         H8_INPUT,
         H9_INPUT,
-        H10_INPUT,
+        H10_INPUT,      // up to here V1.0
+        RISE_INPUT,
+        FALL_INPUT,
+        EVEN_INPUT,
+        ODD_INPUT,
         NUM_INPUTS
     };
 
@@ -108,10 +122,14 @@ public:
      */
     void step() override;
 
+    void onSampleRateChange()
+    {
+        knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime());
+    }
+
     float _freq = 0;
 
 private:
-    bool economyMode = true;        // let's default to economy mode
     int cycleCount = 1;
     int clipCount = 0;
     int signalCount = 0;
@@ -127,15 +145,18 @@ private:
      */
     Poly<double, polyOrder> poly;
 
+    MultiLag<12> lag;
+
     /*
      * maps freq multiple to "octave".
      * In other words, log base 12.
      */
     float _octave[polyOrder];
-    float getOctave(int mult) const ;
+    float getOctave(int mult) const;
     void init();
 
-    float _volume[polyOrder] = {0};
+    // round up to 12, so multi-lag is happy
+    float _volume[12] = {0};
 
     /**
      * Internal sine wave oscillator to drive the waveshaper
@@ -150,6 +171,7 @@ private:
 
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> db2gain = ObjectCache<float>::getDb2Gain();
+    std::shared_ptr <LookupTableParams<float>> knobToFilterL;
 
     /**
      * Audio taper for the slope.
@@ -172,6 +194,8 @@ private:
 
     void checkClipping(float sample);
 
+    void updateLagTC();
+
     /**
      * Does audio taper
      * @param raw = 0..1
@@ -181,6 +205,8 @@ private:
     {
         return LookupTable<float>::lookup(*audioTaper, raw, false);
     }
+
+    AudioMath::ScaleFun<float> lin = AudioMath::makeLinearScaler<float>(0, 1);
 };
 
 template <class TBase>
@@ -189,6 +215,9 @@ inline void  CHB<TBase>::init()
     for (int i = 0; i < polyOrder; ++i) {
         _octave[i] = log2(float(i + 1));
     }
+    onSampleRateChange();
+    lag.setAttack(.1f);
+    lag.setRelease(.0001f);
 }
 
 template <class TBase>
@@ -199,12 +228,38 @@ inline float  CHB<TBase>::getOctave(int i) const
 }
 
 template <class TBase>
+inline void CHB<TBase>::updateLagTC()
+{
+    const float combinedA = lin(
+        TBase::inputs[RISE_INPUT].value,
+        TBase::params[PARAM_RISE].value,
+        1);
+
+    const float combinedR = lin(
+        TBase::inputs[FALL_INPUT].value,
+        TBase::params[PARAM_FALL].value,
+        1);
+    if (combinedA < .1 && combinedR < .1) {
+        lag.setEnable(false);
+    } else {
+        lag.setEnable(true);
+
+        const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
+        lag.setAttackL(lA);
+        const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
+        lag.setReleaseL(lR);
+    }
+}
+
+template <class TBase>
 inline float CHB<TBase>::getInput()
 {
     assert(TBase::engineGetSampleTime() > 0);
 
     // Get the frequency from the inputs.
-    float pitch = 1.0f + roundf(TBase::params[PARAM_OCTAVE].value) + TBase::params[PARAM_TUNE].value / 12.0f;
+    float pitch = 1.0f + roundf(TBase::params[PARAM_OCTAVE].value) +
+        TBase::params[PARAM_SEMIS].value / 12.0f +
+        TBase::params[PARAM_TUNE].value / 12.0f;
     pitch += TBase::inputs[CV_INPUT].value;
     pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
         taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
@@ -224,8 +279,8 @@ inline float CHB<TBase>::getInput()
     Osc::setFrequency(sinParams, time);
 
     if (cycleCount == 0) {
-    // Get the gain from the envelope generator in
-    // eGain = {0 .. 10.0f }
+        // Get the gain from the envelope generator in
+        // eGain = {0 .. 10.0f }
         float eGain = TBase::inputs[ENV_INPUT].active ? TBase::inputs[ENV_INPUT].value : 10.f;
         isExternalAudio = TBase::inputs[AUDIO_INPUT].active;
 
@@ -246,7 +301,6 @@ inline float CHB<TBase>::getInput()
         Osc::run(sinState, sinParams));
 
     checkClipping(input);
-
 
     // Now clip or fold to keep in -1...+1
     if (TBase::params[PARAM_FOLD].value > .5) {
@@ -310,8 +364,18 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 
     // Second: apply the even and odd knobs
     {
-        const float even = taper(TBase::params[PARAM_MAG_EVEN].value);
-        const float odd = taper(TBase::params[PARAM_MAG_ODD].value);
+        const float evenCombined = gainCombiner(
+            TBase::inputs[EVEN_INPUT].value,
+            TBase::params[PARAM_MAG_EVEN].value,
+            TBase::params[PARAM_EVEN_TRIM].value);
+
+        const float oddCombined = gainCombiner(
+            TBase::inputs[ODD_INPUT].value,
+            TBase::params[PARAM_MAG_ODD].value,
+            TBase::params[PARAM_ODD_TRIM].value);
+
+        const float even = taper(evenCombined);
+        const float odd = taper(oddCombined);
         for (int i = 1; i < polyOrder; ++i) {
             const float mul = (i & 1) ? even : odd;     // 0 = fundamental, 1=even, 2=odd....
             volumes[i] *= mul;
@@ -320,7 +384,10 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 
     // Third: slope
     {
-        const float slope = slopeScale(TBase::params[PARAM_SLOPE].value, TBase::inputs[SLOPE_INPUT].value, 1);
+        const float slope = slopeScale(
+            TBase::inputs[SLOPE_INPUT].value,
+            TBase::params[PARAM_SLOPE].value,
+            TBase::params[PARAM_SLOPE_TRIM].value);
 
         for (int i = 0; i < polyOrder; ++i) {
             float slopeAttenDb = slope * getOctave(i);
@@ -333,14 +400,38 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 template <class TBase>
 inline void CHB<TBase>::step()
 {
-    if (economyMode) {
-        if (--cycleCount < 0) {
-            cycleCount = 3;
-        }
-    } else {
-        cycleCount = 0;
+    if (--cycleCount < 0) {
+        cycleCount = 3;
     }
-   
+
+    // do all the processing to get the carrier signal
+    // Does the pitch every cycle, vol every 4
+    const float input = getInput();
+
+    if (cycleCount == 0) {
+        updateLagTC();              // TODO: could do at reduced rate
+        calcVolumes(_volume);       // now _volume has all 10 harmonic volumes
+        lag.step(_volume);          // TODO: we could run lag at full rate.
+
+        for (int i = 0; i < polyOrder; ++i) {
+            //poly.setGain(i, _volume[i]);
+            poly.setGain(i, lag.get(i));
+        }
+    }
+
+
+    float output = poly.run(input, std::min(finalGain, 1.f));
+    TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
+}
+#if 0 // this is 1.0 version. No lag
+template <class TBase>
+inline void CHB<TBase>::step()
+{
+
+    if (--cycleCount < 0) {
+        cycleCount = 3;
+    }
+
     // do all the processing to get the carrier signal
     const float input = getInput();
 
@@ -356,4 +447,5 @@ inline void CHB<TBase>::step()
     float output = poly.run(input, std::min(finalGain, 1.f));
     TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
 }
+#endif
 

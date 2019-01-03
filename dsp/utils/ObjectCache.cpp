@@ -133,7 +133,6 @@ std::function<T(T)> ObjectCache<T>::getExp2Ex()
 template <typename T>
 std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float normalizedFc)
 {
-  
     const int div = (int) std::round(1.0 / normalizedFc);
     if (div == 64) {
         std::shared_ptr < BiquadParams<float, 3>> ret = lowpass64.lock();
@@ -151,18 +150,25 @@ std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float norm
             lowpass16 = ret;
         }
         return ret;
-    }
-    else {
-        fprintf(stderr, "Obj got bad div %d\n", div);
-        fflush(stderr);
+    } else if (div == 32) {
+        std::shared_ptr < BiquadParams<float, 3>> ret = lowpass32.lock();
+        if (!ret) {
+            ret = std::make_shared<BiquadParams<float, 3>>();
+            ButterworthFilterDesigner<float>::designSixPoleLowpass(*ret, normalizedFc);
+            lowpass32 = ret;
+        }
+        return ret;
+    } else {
         assert(false);
     }
     return nullptr;
-}
+};
 
 // The weak pointers that hold our singletons.
 template <typename T>
 std::weak_ptr< BiquadParams<float, 3> >  ObjectCache<T>::lowpass64;
+template <typename T>
+std::weak_ptr< BiquadParams<float, 3> >  ObjectCache<T>::lowpass32;
 template <typename T>
 std::weak_ptr< BiquadParams<float, 3> >  ObjectCache<T>::lowpass16;
 

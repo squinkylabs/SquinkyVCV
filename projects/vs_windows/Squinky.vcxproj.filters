@@ -333,6 +333,24 @@
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp">
       <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testMidiSong.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiEvents.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiPlayer.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\perfTest2.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testUtils.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -568,6 +586,36 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\model\MidiTrack.h">
       <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\KSComposite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\asserts.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiPlayer.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\MultiLag.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h">
+      <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\SmoothedHPF.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\Divider.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\StateVariable4PHP.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\CH10.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\CHBg.h">
+      <Filter>Header Files\composites</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

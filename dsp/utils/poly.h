@@ -11,11 +11,18 @@ public:
         gains[index] = value;
     }
 
+    T getOutput(int index) const
+    {
+        return outputs[index];
+    }
+
 private:
     T gains[order];
 
     // powers[0] = x, powers[1] = x**2
     T powers[order];
+
+    T outputs[order];
 
     // since DC offset changes with gain, we need to compute it.
     static const int numEvenHarmonics = order / 2;
@@ -33,6 +40,7 @@ inline Poly<T, order>::Poly()
     for (int i = 0; i < order; ++i) {
         gains[i] = 0;
         powers[i] = 0;
+        outputs[i] = 0;
     }
 
     for (int i = 0; i < numEvenHarmonics; ++i) {
@@ -61,6 +69,42 @@ inline void Poly<T, order>::fillPowers(T x)
 template <typename T, int order>
 inline T Poly<T, order>::doSum()
 {
+    outputs[0] =  powers[0];
+    T sum = outputs[0] * gains[0];
+
+    outputs[1] = (2 * powers[1] - dcComponent[0]);
+    sum += outputs[1] * gains[1];
+
+    outputs[2] =  (4 * powers[2] - 3 * powers[0]);
+    sum += outputs[2] * gains[2];
+
+    outputs[3] =  (8 * powers[3] - 8 * powers[1] - dcComponent[1]);
+    sum += outputs[3] * gains[3];
+
+    outputs[4] =  (16 * powers[4] - 20 * powers[2] + 5 * powers[0]);
+    sum += outputs[4] * gains[4];
+
+    outputs[5] =  (32 * powers[5] - 48 * powers[3] + 18 * powers[1] - dcComponent[2]);
+    sum += outputs[5] * gains[5];
+
+    outputs[6] =  (64 * powers[6] - 112 * powers[4] + 56 * powers[2] - 7 * powers[0]);
+    sum += outputs[6] * gains[6];
+
+    outputs[7] =  (128 * powers[7] - 256 * powers[5] + 160 * powers[3] - 32 * powers[1] - dcComponent[3]);
+    sum += outputs[7] * gains[7];
+
+    outputs[8] =  (256 * powers[8] - 576 * powers[6] + 432 * powers[4] - 120 * powers[2] + 9 * powers[0]);
+    sum += outputs[8] * gains[8];
+
+    outputs[9] =  (512 * powers[9] - 1280 * powers[7] + 1120 * powers[5] - 400 * powers[3] + 50 * powers[1] - dcComponent[4]);
+    sum += outputs[9] * gains[9];
+
+    return sum;
+}
+#if 0 // old way
+template <typename T, int order>
+inline T Poly<T, order>::doSum()
+{
     T ret = gains[0] * powers[0];
     ret += gains[1] * (2 * powers[1] - dcComponent[0]);
     ret += gains[2] * (4 * powers[2] - 3 * powers[0]);
@@ -73,6 +117,7 @@ inline T Poly<T, order>::doSum()
     ret += gains[9] * (512 * powers[9] - 1280 * powers[7] + 1120 * powers[5] - 400 * powers[3] + 50 * powers[1] - dcComponent[4]);
     return ret;
 }
+#endif
 
 template <typename T, int order>
 void Poly<T, order>::calcDC(T gain)

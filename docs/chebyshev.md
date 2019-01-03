@@ -1,4 +1,5 @@
 # Chebyshev
+
 Our waveshaper VCO.
 
 ![Functional image](../docs/chebyshev.png)
@@ -9,11 +10,13 @@ Chebyshev polynomials have been used to generate complex tones since the early d
 
 Eventually, this form of synthesis fell out of favor, as FM could provide a wider variety of timbres with acceptable CPU usage. Now, however, the distinctive sound of this form of synthesis provides another unique source of sounds for VCV Rack users.
 
-Lately they ability to control individual harmonic levels under volage control has come back in the form of synthesizer modules called **Harmonic Oscillators**.
+Lately they ability to control individual harmonic levels under voltage control has come back in the form of synthesizer modules called **Harmonic Oscillators**.
 
 The magic of the Chebyshev polynomials is that if a sine wave with amplitude one is put into a Chebyshev polynomial, the output will still be a sine wave, but multiplied in pitch by an integer.
 
 In our implementation we include the first ten Chebyshev polynomials to generate the first ten harmonics of the harmonic series. These are then mixed together based on knob settings and control voltages to give an output tone with complete control over ten harmonics.
+
+In addition, FM synthesis may be added to the mix via the *LFM* input.
 
 Many of the controls in this module allow different ways of mixing together these ten harmonics. In addition external signals may be shaped by the waveshaper, with folding or clipping applied.
 
@@ -33,7 +36,7 @@ And - each waveshaper is a perfect harmonic only when driven by a pure sine at e
 
 First there is a sine wave VCO. It has the controls you would expect, as well as a **through-zero linear FM** input, which allows a minimal  DX7-style FM.
 
-The VCO output then goes to a wave folder/clipper with gain controls. This allows for some distortion effects, and keeps the signal in a range that will keep the next stage happy.
+The VCO output then goes to a wave folder/clipper with gain controls. This allows for some distortion effects, and keeps the signal in a range that will make the next stage happy. An LED will go red when either of these kick it.
 
 The output of the folder/clipper then goes to ten parallel Chebyshev waveshapers. The outputs of these are then mixed together through a specialized mixer.
 
@@ -44,16 +47,17 @@ When everything is set in a typical manner, each of the Chebyshev waveshapers wi
 ### VCO
 
 The controls in the upper right are all for the sine wave VCO.
-Octave transposes the pitch in even octaves.
 
-* **Tune** raises or lowers the pitch by up to a perfect fifth.
+* **Oct** raises and lowers the pitch by an octave. It has a ten octave range. The octave is indicted with a label above this knob.
+* **Semi** raises and lowers the pitch in semitone intervals, with a range of 11 semitones up or down. The semitone is indicted with a label above this knob showing the pitch "name".
+* **Tune** raises or lowers the pitch by up to a semitone.
 * **Mod** controls the modulation (exponential FM) depth of the signal patched to the Mod jack.
 * **LFM** controls the linear FM depth of the signal patched to the LFM jack.
 * **V/Oct** input is where the main control voltage is patched.
 
 Mod and LFM perform different functions. Mod, like the CV input, is an exponential control. If an LFO is patched into the Mod input and the Mod depth is adjusted for a vibrato of one semitone, that vibrato will be one semitone regardless of the base pitch. But if an audio rate signal is patched into the Mod input you will tend to get “clangorous” sounds with inharmonic overtones.
 
-LFM, on the other hand, allows through-zero linear FM. While this is not very good for vibrato it does create complex timbres where the harmonics are in tune, and that "in tuneness" will remain as the mod depth is changed. Exponential FM at audio rates can also be tuned, but the tuning will disappear  as the mod depth changes, making it impossible to to generate dynamic harmonic sounds.
+LFM, on the other hand, allows through-zero linear FM. While this is not very good for vibrato it does create complex timbres where the harmonics are in tune, and that consonance will remain as the mod depth is changed. Exponential FM at audio rates can also be tuned, but the tuning will disappear  as the mod depth changes, making it impossible to to generate dynamic harmonic sounds.
 
 ### Folder/Clipper
 
@@ -64,8 +68,8 @@ The controls and CV of the Folder/Clipper:
 * **Fold/Clip** switch. In clip mode, it is a simple hard clipper. In fold mode it’s a waveform folder.
 * **Clip LED**. The LED will be green when there is signal, and red when the folder/clipper engages.
 * **Gain**. Controls how hard the folder/clipper is driven. Gain knob and CV are combined.
-* **Gain trim**. The small knob below the **gain** knob is an attenuator for the **gain** CV. New in 0.6.9.
-* **EG**. Also combines with the gains.
+* **Gain trim**. The small knob below the **gain** knob is an attenuverter for the **gain** CV.
+* **EG**. Also combines with the gains, allowing an external ADSR to control the harmonic balance.
 * **Ext In.** When a signal is patched here it replaces the internal VCO, allowing any signal to be run through the waveshaper.
 
 Note that while you can get some cool effects with clipping and folding, they will tend to cause audible aliasing at higher frequencies. Use with care.
@@ -102,6 +106,14 @@ The Odd, Even, and Slope controls may be thought of as subtractive. When they ar
 
 The **Preset** button toggles between two or three settings. It will always have a setting where the fundamental is full and all other harmonics off, and a setting where all harmonics are up full. In addition, if you started with your own setting of the harmonics, the preset button will eventually take you back there, but with the master gain set back to one.
 
+### Lag generator controls
+
+There is a lag generator on the control voltage input for each of the 10 harmonics. They all have the same rise and fall time. They all have exponential slopes.
+
+The **Rise** control sets the rise time of all the lag units. There is also a Rise CV input.
+
+The **Fall** control sets the fall time of all the lag units. There is also a Fall CV input.
+
 ## Chebyshev as a harmonic VCO
 
 When set up correctly, Chebyshev will give you independent control of the levels of the first ten harmonics in the harmonic series. Each the the ten controls / CVs on the left will control the level of the corresponding harmonic.
@@ -127,13 +139,25 @@ Or start with the individual harmonics all the way up, manipulate Even/Odd/Slope
 
 Don’t forget the Preset button - it’s your friend here. And don't forget that you need to use the internal sine VCO and the default gain to control the harmonics precisely and independently.
 
+### Voltage control of spectrum
+
+The possibilities for timbral variation seem limitless if you take the time to patch controls signals into the harmonic level CV inputs. Use all the usual suspects here - clocks, LFOs, shift registers, sequencers.
+
+If a very sharp edge is patched the harmonic level input, pops will be generated at the harmonics are abruptly turned on and off. If this occurs, just increase the rise and fall times of the lag units until the pops go away.
+
+Setting the rise and fall times to be longer can round a square LFO until it sounds more like a smooth triangle wave.
+
+An easy way to get dramatic timbral changes is to patch independent modulation sources to each harmonic input. While this can be done with any collection of modules, a module that provides a lot of independent outputs makes this easy. Some particularly good ones are our own Gray Code generator, and Bogaudio's 8FO.
+
+If you try modulating the volumes with clocks, make sure to adjust the Rise and Fall times to keep the pops down, and to provide dramatic variations in the sound.
+
 ### Dynamic Waveshaping
 
 Use the built-in VCO. Adjust the harmonic mix to something nice and bright. Then connect an ADSR to the EG input. Like the harmonic VCO patch, the dynamic waveshaper is most predictable when driven by a one volt p-p sine, and the gain set to default. And the ADSR should go from zero to ten.
 
 The ADSR will more or less control the brightness. Make sure the the clip LED is just on the edge of clipping when the EG input is at max (which will be the 10 volts mentioned above).
 
-At very low levels the output will be primarily fundamental. At max level it will be determined by the waveshaper mix controls. The timbre will go from dull to bright as the EG input increases, but the evolution of the timbre will not be completely even, and definitely will be different than what you would get modulating a VCF with an ADSR.
+At very low levels the output will be primarily fundamental. At max level it will be determined by the waveshaper mix controls. The timbre will go from dull to bright as the EG input increases, but the evolution of the timbre will not be completely smooth or predictable, and definitely will be different than what you would get modulating a VCF with an ADSR.
 
 The evolution of timbres often sounds "brassy," like a brass instrument. Brass synthesis was indeed a common use of waveshaping synthesis before the era of affordable sampling and physical modelling.
 
@@ -143,13 +167,11 @@ Most conventional VCFs allow a filter of a specific shape to be modulated up and
 
 In the case of Chebyshev we don’t have a filter, but by controlling the harmonic levels directly we can mimic one. Set up a nice bright sound, patch an ADSR into the Slope input, and try out a simulated variable slope filter.
 
-### Voltage control of spectrum
+This is certainly no substitute for a Serge variable slope VCO, but can produce subtle timbres unlike any other.
 
-The possibilities for timbral variation seem limitless if you take the time to patch controls signals into the harmonic level CV inputs. Use all the usual suspects here - clocks, LFOs, shift registers, sequencers.
+### FM harmonic oscillator
 
-### FM oscillator
-
-The inclusion of the LFM input allows a simple form of FM synthesis - one operator FM.
+The inclusion of the LFM input allows a simple form of FM synthesis - two operator FM. But with Chebyshev the two operator FM is then run through the Chebyshev waveshaper. There is a universe of sound in this intersection of FM and waveshaping.
 
 Use an external sine VCO, and patch it into the LFM input on Chebyshev. Turn up the LFM knob. Use the Preset button to turn up the fundamental and turn off the other waveshaper outputs.
 
@@ -157,7 +179,9 @@ In FM speak, the external VCO is the modulator and the VCO in Chebyshev is the c
 
 Once again, as the modulation is increased more harmonics will be present, so use an external ADSR and VCA to modulate the level of the modulator sine before it’s patched into Chebyshev.
 
-Of course FM will work alongside the waveshapers, so feel free to go crazy with all the knobs. But don’t be disappointed if the results are harsh and strange.
+Now start adjusting the Chebyshev mixer controls. For something dramatic, press the preset button until all the harmonics are on. Then adjust slope, even, and odd to tame all the harmonics that will come out.
+
+Try tuning the VCOs so they are a fifth or a fourth apart. Go crazy!
 
 ### Process external signals
 

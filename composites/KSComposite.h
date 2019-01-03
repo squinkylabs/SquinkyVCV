@@ -53,11 +53,12 @@ public:
     {
         oscillator.init();
     }
-
+#if 0
     void setSampleRate(float rate)
     {
         oscillator.sampleTime = 1.f / rate;
     }
+#endif
 
 private:
     KSOscillator <16, 16> oscillator;
@@ -99,7 +100,7 @@ inline void KSComposite<TBase>::step()
     oscillator.sqEnabled = TBase::outputs[SQR_OUTPUT].active;
     oscillator.triEnabled = TBase::outputs[TRI_OUTPUT].active;
 
-    oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].value);
+    oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].value, TBase::engineGetSampleTime());
     // Set output
     if (TBase::outputs[SIN_OUTPUT].active)
         TBase::outputs[SIN_OUTPUT].value = 5.0f * oscillator.sin();

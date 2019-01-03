@@ -22,7 +22,7 @@ static const uint8_t gtable[256] =
 136, 137, 139, 138, 142, 143, 141, 140, 132, 133, 135, 134, 130, 131, 129, 128
 };
 
-static const uint8_t bgtable[256] = 
+static const uint8_t bgtable[256] =
 {
 0x00, 0x01, 0x03, 0x02, 0x06, 0x0E, 0x0A, 0x0B, 0x09, 0x0D, 0x0F, 0x07, 0x05, 0x04, 0x0C, 0x08,
 0x18, 0x1C, 0x14, 0x15, 0x17, 0x1F, 0x3F, 0x37, 0x35, 0x34, 0x3C, 0x38, 0x28, 0x2C, 0x24, 0x25,
@@ -48,11 +48,11 @@ class Gray : public TBase
 public:
     Gray(struct Module * module) : TBase(module), gateTrigger(true)
     {
-       init();
+        init();
     }
     Gray() : TBase(), gateTrigger(true)
     {
-       init();
+        init();
     }
 
     enum ParamIds
@@ -60,7 +60,7 @@ public:
         PARAM_CODE,
         NUM_PARAMS
     };
-  
+
     enum InputIds
     {
         INPUT_CLOCK,
@@ -101,7 +101,7 @@ public:
 
 private:
     uint8_t counterValue = 0;
-    GateTrigger gateTrigger; 
+    GateTrigger gateTrigger;
     int c = 0;
     void init();
 };
@@ -112,9 +112,9 @@ void  Gray<TBase>::init()
 {
    // Init all the outputs to zero,
    // since they don't all get update until a clock.
-   for (int i=0; i<NUM_OUTPUTS; ++i) {
-       TBase::outputs[i].value = 0;
-   }
+    for (int i = 0; i < NUM_OUTPUTS; ++i) {
+        TBase::outputs[i].value = 0;
+    }
 }
 
 
@@ -131,11 +131,11 @@ void  Gray<TBase>::step()
 
     const auto g0 = table[counterValue];
     auto g = g0;
-    for (int i=0; i<8; ++i) {
+    for (int i = 0; i < 8; ++i) {
         bool b = g & 1;
         TBase::lights[i + LIGHT_0].value = b ? 10 : 0;
         TBase::outputs[i + OUTPUT_0].value = b ? 10 : 0;
         g >>= 1;
     }
-    TBase::outputs[OUTPUT_MIXED].value = (float) g0/25.f;
-} 
+    TBase::outputs[OUTPUT_MIXED].value = (float) g0 / 25.f;
+}

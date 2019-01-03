@@ -205,7 +205,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
     label->color = COLOR_WHITE;
     addChild(label);
 
-    addParam(ParamWidget::create<Rogan2PSWhite>(
+    addParam(ParamWidget::create<Rogan2PSBlue>(
         Vec(22, 80), module, module->noiseSource.SLOPE_PARAM, -5.0, 5.0, 0.0));
 
     addParam(ParamWidget::create<Trimpot>(
