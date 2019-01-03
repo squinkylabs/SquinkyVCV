@@ -183,8 +183,8 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::CV_INPUT));
     l = addLabel(
-        Vec(jackX - 16, jackRow2 + jackOffsetLabel),
-        "V/8");
+        Vec(jackX - 20, jackRow2 + jackOffsetLabel),
+        "V/Oct");
     l->fontSize = jackLabelPoints;
 
     addInput(createInputCentered<PJ301MPort>(
