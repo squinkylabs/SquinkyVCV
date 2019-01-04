@@ -3,25 +3,8 @@
 
 #include "FunVCO.h"
 
-class IComposite
-{
-public:
-    class Config
-    {
-    public:
-        Config(float a, float b, float c)
-        {
-            min=a;
-            max=b;
-            def=c;
-        }
-        float min=0;
-        float max=0;
-        float def=0;
-    };
-    virtual Config getParam(int i)=0;
-    virtual int getNumParams()=0;
-};
+#include "IComposite.h"
+
 //#define _ORIGVCO
 
 template <class TBase>
@@ -96,16 +79,6 @@ private:
 #endif
 };
 
-/*
-        MODE_PARAM,
-        SYNC_PARAM,
-        FREQ_PARAM,
-        FINE_PARAM,
-        FM_PARAM,
-        PW_PARAM,
-        PWM_PARAM,
-        NUM_PARAMS
-        */
 template <class TBase>
 inline typename FunVCOComposite<TBase>::Config
     FunVCOComposite<TBase>::getParam(int i)
