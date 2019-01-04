@@ -2,7 +2,7 @@
 #include "Squinky.hpp"
 
 #ifdef _CHB
-#include "SQWidgets.h"
+#include "ctrl/SQWidgets.h"
 #include "WidgetComposite.h"
 #include <sstream>
 

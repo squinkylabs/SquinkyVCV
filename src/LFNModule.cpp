@@ -5,7 +5,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
 #include "ctrl/ToggleButton.h"
-#include "SQWidgets.h"
+#include "ctrl/SQWidgets.h"
 #include "LFN.h"
 
 #include <sstream>

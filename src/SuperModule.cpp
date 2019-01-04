@@ -2,7 +2,7 @@
 
 #ifdef _SUPER
 #include "WidgetComposite.h"
-#include "SQWidgets.h"
+#include "ctrl/SQWidgets.h"
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SemitoneDisplay.h"
