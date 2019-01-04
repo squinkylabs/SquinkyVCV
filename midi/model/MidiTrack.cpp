@@ -1,6 +1,8 @@
+
+#include "MidiTrack.h"
 #include <assert.h>
 #include <algorithm>
-#include "MidiTrack.h"
+
 
 #ifdef _DEBUG
 int MidiEvent::_count = 0;
@@ -12,24 +14,42 @@ int MidiTrack::size() const
 }
 
 
-bool MidiTrack::isValid() const
+void MidiTrack::assertValid() const
 {
-    int32_t startTime = 0;
+
+    int numEnds = 0;
+    bool lastIsEnd = false;
+    (void) lastIsEnd;
+    
+    float lastEnd = 0;
+    MidiEvent::time_t startTime = 0;
+    MidiEvent::time_t totalDur = 0;
     for (const_iterator it = begin(); it != end(); ++it) {
-        if (!it->second.isValid()) {
-            return false;
+        it->second->assertValid();
+        assertGE(it->second->startTime, startTime);
+        startTime = it->second->startTime;
+        if (it->second->type == MidiEvent::Type::End) {
+            numEnds++;
+            lastIsEnd = true;
+            totalDur = startTime;
+        } else {
+            lastIsEnd = false;
         }
-        if (it->second.startTime < startTime) {
-            return false;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note) {
+            lastEnd = std::max(lastEnd, startTime + note->duration);
+        } else {
+            lastEnd = startTime;
         }
-        startTime = it->second.startTime;
     }
-    return true;
+    assert(lastIsEnd);
+    assertEQ(numEnds, 1);
+    assertLE(lastEnd, totalDur);
 }
 
-void MidiTrack::insertEvent(const MidiEvent& evIn)
+void MidiTrack::insertEvent(MidiEventPtr evIn)
 {
-    events.insert( std::pair<uint32_t, MidiEvent>(evIn.startTime, evIn));
+    events.insert( std::pair<MidiEvent::time_t, MidiEventPtr>(evIn->startTime, evIn));
 }
 
 
@@ -38,20 +58,20 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
     auto candidateRange = events.equal_range(evIn.startTime);
     for (auto it = candidateRange.first; it != candidateRange.second; it++) {
       
-        if (it->second == evIn) {
+        if (*it->second == evIn) {
             events.erase(it);
             return;
         }
     }
     assert(false);
-    //  events.insert(insertPoint, std::pair<uint32_t, MidiEvent>(evIn.startTime, evIn));
+    //  events.insert(insertPoint, std::pair<MidiEvent::time_t, MidiEvent>(evIn.startTime, evIn));
    // events.erase(insertPoint);      // will never work in the real world
 }
 
-std::vector<MidiEvent> MidiTrack::_testGetVector() const
+std::vector<MidiEventPtr> MidiTrack::_testGetVector() const
 {
-    std::vector<MidiEvent> ret;
-    std::for_each(events.begin(), events.end(), [&](std::pair<uint32_t, const MidiEvent&> event) {
+    std::vector<MidiEventPtr> ret;
+    std::for_each(events.begin(), events.end(), [&](std::pair<MidiEvent::time_t, const MidiEventPtr&> event) {
         ret.push_back(event.second);
         });
     assert(ret.size() == events.size());
@@ -63,3 +83,60 @@ MidiTrack::iterator_pair MidiTrack::timeRange(MidiEvent::time_t start, MidiEvent
 {
     return iterator_pair(events.lower_bound(start), events.upper_bound(end));
 }
+
+void MidiTrack::insertEnd(MidiEvent::time_t time)
+{
+    MidiEndEventPtr end = std::make_shared<MidiEndEvent>();
+    end->startTime = time;
+    insertEvent(end);
+}
+
+MidiTrackPtr MidiTrack::makeTest1()
+{
+    auto track = std::make_shared<MidiTrack>();
+    int semi = 0;
+    MidiEvent::time_t time = 0;
+    for (int i = 0; i < 8; ++i) {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        ev->startTime = time;
+        ev->setPitch(3, semi);
+        ev->duration = .5;
+        track->insertEvent(ev);
+
+        ++semi;
+        time += 1;
+    }
+
+    track->insertEnd(time);
+    return track;
+}
+
+#if 0
+MidiTrackPtr MidiTrack::makeTest1()
+{
+    // TODO: don't add the same element multiple times
+    auto track =  std::make_shared<MidiTrack>();
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 0;
+    ev->pitch = 5.0f;
+    track->insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 100;
+    ev->pitch = 5.1f;
+    track->insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 200;
+    ev->pitch = 5.2f;
+    track->insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 400;
+    ev->pitch = 5.3f;
+    track->insertEvent(ev);
+    track->insertEnd(500);
+
+    return track;
+}
+#endif

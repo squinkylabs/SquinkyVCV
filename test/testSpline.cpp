@@ -200,6 +200,7 @@ static void testSplineExtremes()
     paramLimits[sp.PARAM_OFFSET] = fp(-5.f, 5.f);
     paramLimits[sp.PARAM_OFFSET_TRIM] = fp(-1.f, 1.f);
     paramLimits[sp.PARAM_OVERSAMPLE] = fp(0.f, 2.f);
+    paramLimits[sp.PARAM_ACDC] = fp(0.f, 1.f);
 
     ExtremeTester< Shaper<TestComposite>>::test(sp, paramLimits, true, "shaper");
 }
@@ -314,9 +315,49 @@ static void testDC()
 }
 
 
+float cf(float x, float fold_gain)
+{
+   // x = inputs[IN_INPUT].value*5.0f*gain_gain;
+    x *= 5;
 
+ //   if (abs(x) > 5) y = clamp((abs(x) - 5) / 2.2f, 0.0f, 58.0f); else y = 0;
+
+    for (int i = 0; i < 100; i++) {
+        if (x < -5.0f) x = -5.0f + (-x - 5.0f)*fold_gain / 5.0f;
+        if (x > 5.0f) x = 5.0f - (x - 5.0f)*fold_gain / 5.0f;
+        if ((x >= -5.0) & (x <= 5.0)) i = 1000; if (i == 99) x = 0;
+    }
+
+
+   // return clamp(x, -5.0f, 5.0f);
+    return x;
+}
+
+float sq(float x)
+{
+   
+    return 5 * AudioMath::fold(x);
+}
+
+
+static void testCf()
+{
+    printf("HWY IS testCf failing now?\n");
+#if 0
+    const float fold_gain = 1;
+    for (float x = 0; x < 2; x += .05f) {
+        const float c = cf(x, fold_gain);
+        const float s = sq(x);
+        printf("x=%.2f c=%.2f s=%.2f\n", x, c, s);
+        assertClose(s, c, .01);
+
+    }
+#endif
+
+}
 void testSpline(bool doEmit)
 {
+    testCf();
     if (doEmit) {
         gen();
         return;

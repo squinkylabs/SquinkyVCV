@@ -14,6 +14,7 @@ extern void testSinOscillator();
 extern void testHilbert();
 extern void testAudioMath();
 extern void perfTest();
+extern void perfTest2();
 extern void testFrequencyShifter();
 extern void testStateVariable();
 
@@ -46,14 +47,42 @@ extern void testDelay();
 extern void testSpline(bool emit);
 extern void testButterLookup();
 extern void testMidiDataModel();
+extern void testMidiSong();
 extern void testReplaceCommand();
 extern void testUndoRedo();
 extern void testMidiViewport();
 extern void testFilteredIterator();
+extern void  testMidiEvents();
+extern void testMidiPlayer();
+extern void testMultiLag();
+extern void testUtils();
 
+#if 0
+#include <sstream>
+#include <iostream>
+static void xx()
+{
+    std::stringstream s;
+    for (int i = 0; i < 10; ++i) {
+        s << "A" << i << "_PARAM," << std::endl;
+    }
+    for (int i = 0; i < 10; ++i) {
+        s << "B" << i << "_PARAM," << std::endl;
+    }
+
+
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            s << "A" << i << "B" << j << "_PARAM," << std::endl;
+        }
+    }
+    std::cout << s.str();
+}
+#endif
 
 int main(int argc, char ** argv)
 {
+   // xx();
     bool runPerf = false;
     bool extended = false;
     bool runShaperGen = false;
@@ -83,11 +112,15 @@ int main(int argc, char ** argv)
         testSpline(true);
         return 0;
     }
+
+    testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();
+    testMidiSong();
     testReplaceCommand();
     testUndoRedo();
     testMidiViewport();
+    testMidiPlayer();
 
     testAudioMath();
     testRingBuffer();
@@ -106,20 +139,22 @@ int main(int argc, char ** argv)
     testMinBLEPVCO();
     testHilbert();
     testButterLookup();
-    testSpline(false);
+   
     testVCO();
    
    // testSin();
 
-
+   
 
     testFFT();
     testAnalyzer();
     testRateConversion();
+    testUtils();
  
-
-   // printf("skipping lots of tests\n");
-#if 1
+#if 0
+    printf("skipping lots of tests\n");
+#else
+    testSpline(false);
     testStateVariable();
     testFFTCrossFader();
     if (extended) {
@@ -128,19 +163,21 @@ int main(int argc, char ** argv)
 
     testLowpassFilter();
     testFilter();
-
+    testMultiLag();
     testStochasticGrammar();
     testGMR();
 
     // after testing all the components, test composites.
     testTremolo();
     testColoredNoise();
-#endif
+
     testFrequencyShifter();
     testVocalAnimator();
+#endif
 
     if (runPerf) {
         perfTest();
+        perfTest2();
     }
 
 
@@ -148,7 +185,7 @@ int main(int argc, char ** argv)
     testFinalLeaks();
 
     // When we run inside Visual Studio, don't exit debugger immediately
-#if defined(_MSC_VER)
+#if defined(_MSC_VER_not)
     printf("Test passed. Press any key to continue...\n"); fflush(stdout);
     getchar();
 #else

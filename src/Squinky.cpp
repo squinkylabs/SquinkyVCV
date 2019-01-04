@@ -43,13 +43,21 @@ void init(rack::Plugin *p)
     #endif
 #ifdef _LFN
     p->addModel(modelLFNModule); 
+<<<<<<< HEAD
     #endif
 #ifdef _SHAPER
+=======
+#ifdef _SUPER
+    p->addModel(modelSuperModule);
+#endif
+>>>>>>> master
     p->addModel(modelShaperModule);
     #endif
 #ifdef _TBOOST
     p->addModel(modelThreadBoostModule);
 #endif
+
+    p->addModel(modelCHBgModule);
 
 #ifdef _SEQ
     assert(modelSequencerModule);
@@ -65,9 +73,12 @@ void init(rack::Plugin *p)
     p->addModel(modelDGModule);
 #endif
    // p->addModel(modelBlankModule);
-#ifdef _SUPER
-    p->addModel(modelSuperModule);
+
+#ifdef _SINK
     p->addModel(modelKSModule);
+#endif
+#ifdef _CH10
+    p->addModel(modelCH10Module);
 #endif
 
 }

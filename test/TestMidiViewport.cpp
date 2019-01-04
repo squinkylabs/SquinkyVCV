@@ -15,9 +15,9 @@ static void testReleaseSong()
         song->createTrack(0);
         auto track = song->getTrack(0);
 
-        MidiEvent ev;
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         track->insertEvent(ev);
-        assertEvCount(2);
+        assertEvCount(1);       // one obj with two refs
     }
     assertEvCount(0);
 }
@@ -30,9 +30,9 @@ static void testEventAccess()
     song->createTrack(0);
     auto track = song->getTrack(0);
 
-    MidiEvent ev;
-    ev.startTime = 100;
-    ev.pitch = 40;
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 100;
+    ev->pitch = 40;
     track->insertEvent(ev);
 
     MidiViewport vp;
@@ -48,9 +48,8 @@ static void testEventAccess()
     assert(its.first != its.second);
 
     auto i = its.first;
-    auto x = i->second.startTime;
+    auto x = i->second->startTime;
     its.first++;
-
 }
 
 
@@ -62,13 +61,16 @@ static void testEventFilter()
     song->createTrack(0);
     auto track = song->getTrack(0);
 
-    MidiEvent ev;
-    ev.startTime = 100;
-    ev.pitch = 40;
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 100;
+    ev->pitch = 40;
     track->insertEvent(ev);
-    ev.startTime = 102;
-    ev.pitch = 50;
-    track->insertEvent(ev);
+
+    MidiNoteEventPtr ev2 = std::make_shared<MidiNoteEvent>();
+    ev2->startTime = 102;
+    ev2->pitch = 50;
+    ev2->startTime = 100;
+    track->insertEvent(ev2);
     assertEQ(track->size(), 2);
 
     MidiViewport vp;

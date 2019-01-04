@@ -1,5 +1,37 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.14
+
+New Module: Saws (Super Saw VCO emulation).
+
+Reduced CPU usage of Formants, Growler, Colors, and Chopper.
+
+EV3 enhancements:
+
+* mixed waveform output now normalized so it stays within 10-V p-p VCV standard.
+
+* Semitone pitch display is now absolute pitch if VCO has a CV connection.
+
+* Pitch intervals now displayed relative to base VCO, rather than relative to C.
+
+Chebyshev enhancements:
+
+* 10 Lag units added to the harmonic volumes. Rise and fall time controlled from knobs and CVs.
+
+* CV inputs for Odd and Even mix level.
+
+* Attenuverters for Slope, odd, and even CV.
+
+* Semitone pitch control knob.
+
+* Semitone and Octave pitch displays.
+
+Shaper enhancement: added AC/DC selector.
+
+LFN enhancement: added XLFN mode, which is 10 times slower. Accessed via context menu.
+
+Colors: changed white knob to Squinky blue.
+
 ## 0.6.13
 
 Restore Chebyshev module that disappeared from 0.6.12.

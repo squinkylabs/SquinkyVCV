@@ -1,13 +1,13 @@
-
-
-
+#include "ctrl/SemitoneDisplay.h"
 #include "Squinky.hpp"
 
 #ifdef _CHB
 #include "SQWidgets.h"
 #include "WidgetComposite.h"
 #include <sstream>
+
 #include "CHB.h"
+#include "IMWidgets.hpp"
 
 /**
  */
@@ -15,12 +15,12 @@ struct CHBModule : Module
 {
 public:
     CHBModule();
+
     /**
-     *
-     *
      * Overrides of Module functions
      */
     void step() override;
+    void onSampleRateChange() override;
 
     CHB<WidgetComposite> chb;
 private:
@@ -38,6 +38,11 @@ CHBModule::CHBModule()
 void CHBModule::step()
 {
     chb.step();
+}
+
+void CHBModule::onSampleRateChange()
+{
+    chb.onSampleRateChange();
 }
 
 ////////////////////
@@ -62,14 +67,20 @@ struct CHBWidget : ModuleWidget
         return label;
     }
 
+    void step() override
+    {
+        ModuleWidget::step();
+        semitoneDisplay.step();
+    }
+private:
     void addHarmonics(CHBModule *module);
-    void addVCOKnobs(CHBModule *module);
-    void addOtherKnobs(CHBModule *module);
-    void addMisc(CHBModule *module);
+    void addRow1(CHBModule *module);
+    void addRow2(CHBModule *module);
+    void addRow3(CHBModule *module);
+    void addRow4(CHBModule *module);
+
     void addBottomJacks(CHBModule *module);
     void resetMe(CHBModule *module);
-private:
-    bool fake;
 
     // This is the gain which when run throught all the lookup tables
     // gives a gain of 1.
@@ -79,11 +90,14 @@ private:
     CHBModule* const module;
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
-    ParamWidget* gainParam=nullptr;
+    ParamWidget* gainParam = nullptr;
+
+    SemitoneDisplay semitoneDisplay;
 };
 
+
 /**
- * Global coordinate contstants
+ * Global coordinate constants
  */
 const float colHarmonicsJacks = 21;
 const float rowFirstHarmonicJackY = 47;
@@ -94,13 +108,15 @@ const float harmonicTrimDeltax = 27.5;
 const float col1 = 95;
 const float col2 = 150;
 const float col3 = 214;
+const float col4 = 268;
 
 // rows of knobs
 const float row1 = 75;
 const float row2 = 131;
-const float row3 = 228;
-const float row4 = 287;
-const float row5 = 332;
+const float row3 = 201;
+const float row4 = 237;
+const float row5 = 287;
+const float row6 = 332;
 
 const float labelAboveKnob = 33;
 const float labelAboveJack = 30;
@@ -125,160 +141,216 @@ inline void CHBWidget::addHarmonics(CHBModule *module)
     }
 }
 
-inline void CHBWidget::addVCOKnobs(CHBModule *module)
+void CHBWidget::addRow1(CHBModule *module)
 {
+    const float row = row1;
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col1, row),
+        module,
+        CHB<WidgetComposite>::PARAM_RISE,
+        -5.f, 5.f, 0.f));
+    addLabel(Vec(col1 - 20, row - labelAboveKnob), "Rise");
+
     addParam(createParamCentered<Blue30SnapKnob>(
-        Vec(col2, row1),
+        Vec(col2, row),
         module,
-        module->chb.PARAM_OCTAVE,
+        CHB<WidgetComposite>::PARAM_OCTAVE,
         -5.0f, 4.0f, 0.f));
-    addLabel(Vec(col2 - 27, row1 - labelAboveKnob), "Octave");
+    semitoneDisplay.setOctLabel(
+        addLabel(Vec(col2 - 22, row1 - labelAboveKnob), "Octave"),
+        CHB<WidgetComposite>::PARAM_OCTAVE);
+
+    addParam(createParamCentered<Blue30SnapKnob>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_SEMIS,
+        -11.0f, 11.0f, 0.f));
+    semitoneDisplay.setSemiLabel(
+        addLabel(Vec(col3 - 26, row - labelAboveKnob), "Semi"),
+        CHB<WidgetComposite>::PARAM_SEMIS);
 
     addParam(createParamCentered<Blue30Knob>(
-        Vec(col3, row1),
+        Vec(col4, row1),
         module,
-        module->chb.PARAM_TUNE,
-        -7.0f, 7.0f, 0));
-    addLabel(Vec(col3 - 22, row1 - labelAboveKnob), "Tune");
-
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col2, row2),
-        module,
-        module->chb.PARAM_PITCH_MOD_TRIM,
-        0, 1.0f, 0.0f));
-    addLabel(Vec(col2 - 20, row2 - labelAboveKnob), "Mod");
-
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col3, row2),
-        module,
-        module->chb.PARAM_LINEAR_FM_TRIM,
-        0, 1.0f, 0.0f));
-    addLabel(Vec(col3 - 18, row2 - labelAboveKnob), "LFM");
+        CHB<WidgetComposite>::PARAM_TUNE,
+        -1.0f, 1.0f, 0));
+    addLabel(Vec(col4 - 22, row1 - labelAboveKnob), "Tune");
 }
 
-inline void CHBWidget::addOtherKnobs(CHBModule *module)
+void CHBWidget::addRow2(CHBModule *module)
 {
-    // gain
+    const float row = row2;
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col1, row),
+        module,
+        CHB<WidgetComposite>::PARAM_FALL,
+        -5.f, 5.f, 0.f));
+    addLabel(Vec(col1 - 18, row - labelAboveKnob), "Fall");
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_PITCH_MOD_TRIM,
+        0, 1.0f, 0.0f));
+    addLabel(Vec(col3 - 20, row - labelAboveKnob), "Mod");
+
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col4, row),
+        module,
+        CHB<WidgetComposite>::PARAM_LINEAR_FM_TRIM,
+        0, 1.0f, 0.0f));
+    addLabel(Vec(col4 - 20, row - labelAboveKnob), "LFM");
+
+    addParam(createParamCentered<CKSS>(
+        Vec(col2, row),
+        module,
+        CHB<WidgetComposite>::PARAM_FOLD,
+        0.0f, 1.0f, 0.0f));
+    auto l = addLabel(Vec(col2 - 18, row - 30), "Fold");
+    l->fontSize = 11;
+    l = addLabel(Vec(col2 - 17, row + 10), "Clip");
+    l->fontSize = 11;
+
+    addChild(createLightCentered<SmallLight<GreenRedLight>>(
+        Vec(col2 - 16, row),
+        module,
+        CHB<WidgetComposite>::GAIN_GREEN_LIGHT));
+}
+
+void CHBWidget::addRow3(CHBModule *module)
+{
+    const float row = row3;
 
     gainParam = createParamCentered<Blue30Knob>(
-        Vec(col1, row2),
+        Vec(col1, row),
         module,
-        module->chb.PARAM_EXTGAIN,
+        CHB<WidgetComposite>::PARAM_EXTGAIN,
         -5.0f, 5.0f, defaultGainParam);
     addParam(gainParam);
-
-    addLabel(Vec(col1 - 22, row2 - labelAboveKnob), "Gain");
-
-    addParam(createParamCentered<Trimpot>(
-        Vec(col1, row2+30),
-        module,
-        module->chb.PARAM_EXTGAIN_TRIM,
-        0, 1, 0));
-
-    // slope
-    const float col2p5 = (col2 + col3) / 2;
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col2p5, 188),
-        module,
-        module->chb.PARAM_SLOPE,
-        -5, 5, 5));
-    addLabel(Vec(col2p5 - 23, 188 - labelAboveKnob), "Slope");
+    addLabel(Vec(col1 - 21, row - labelAboveKnob), "Gain");
 
     //even
     addParam(createParamCentered<Blue30Knob>(
-        Vec(col2, row3),
+        Vec(col2, row),
         module,
-        module->chb.PARAM_MAG_EVEN,
-        0, 1, 1));
-    addLabel(Vec(col2 - 21.5, row3 - labelAboveKnob), "Even");
+        CHB<WidgetComposite>::PARAM_MAG_EVEN,
+        -5, 5, 5));
+    addLabel(Vec(col2 - 21.5, row - labelAboveKnob), "Even");
+
+    // slope
+    addParam(createParamCentered<Blue30Knob>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_SLOPE,
+        -5, 5, 5));
+    addLabel(Vec(col3 - 23, row - labelAboveKnob), "Slope");
 
     //odd
     addParam(createParamCentered<Blue30Knob>(
-        Vec(col3, row3),
+        Vec(col4, row),
         module,
-        module->chb.PARAM_MAG_ODD,
-        0, 1, 1));
-    addLabel(Vec(col3 - 20, row3 - labelAboveKnob), "Odd");
+        CHB<WidgetComposite>::PARAM_MAG_ODD,
+        -5, 5, 5));
+    addLabel(Vec(col4 - 19, row - labelAboveKnob), "Odd");
+
 }
 
-void CHBWidget::addMisc(CHBModule *module)
+void CHBWidget::addRow4(CHBModule *module)
 {
-    auto sw = new SQPush();
-    Vec pos(col1, row1);
-    sw->center(pos);
-    sw->onClick([this, module]() {
-        this->resetMe(module);
-    });
+    float row = row4;
 
-    addChild(sw);
-    addLabel(Vec(col1 - 25, row1 - labelAboveKnob), "Preset");
-
-    const float switchY = 219;
-    addParam(createParamCentered<CKSS>(
-        Vec(col1, switchY),
+    addParam(createParamCentered<Trimpot>(
+        Vec(col1, row),
         module,
-        module->chb.PARAM_FOLD,
-        0.0f, 1.0f, 0.0f));
-    auto l = addLabel(Vec(col1 - 18, 219 - 30), "Fold");
-    l->fontSize = 11;
-    l = addLabel(Vec(col1 - 17, 219 + 10), "Clip");
-    l->fontSize = 11;
+        CHB<WidgetComposite>::PARAM_EXTGAIN_TRIM,
+        -1, 1, 0));
 
- //  Vec(col1, 165),
-    addChild(createLightCentered<SmallLight<GreenRedLight>>(
-        Vec(col1-16, switchY),
+    addParam(createParamCentered<Trimpot>(
+        Vec(col2, row),
         module,
-        module->chb.GAIN_GREEN_LIGHT));
+        CHB<WidgetComposite>::PARAM_EVEN_TRIM,
+        -1.0f, 1.0f, 0));
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(col3, row),
+        module,
+        CHB<WidgetComposite>::PARAM_SLOPE_TRIM,
+        -1.0f, 1.0f, 0));
+
+    addParam(createParamCentered<Trimpot>(
+        Vec(col4, row),
+        module,
+        CHB<WidgetComposite>::PARAM_ODD_TRIM,
+        -1.0f, 1.0f, 0));
 }
 
 static const char* labels[] = {
     "V/Oct",
     "Mod",
     "LFM",
+    "Even",
     "Slope",
+    "Odd",
     "Ext In",
     "Gain",
     "EG",
+    "Rise",
+    "Fall",
     "Out",
+    nullptr,
 };
 static const int offsets[] = {
     -1,
-    1,
     2,
-    -1,
-    -1,
-    1,
+    2,
+    0,
+    0,      // slope
+    2,      // odd
+    -2,     // ext gain
+    1,          // gain
     5,
-    2
+    2,          // rise
+    4,
+    3
 };
 
 static const int ids[] = {
+    // top row
     CHB<WidgetComposite>::CV_INPUT,
     CHB<WidgetComposite>::PITCH_MOD_INPUT,
     CHB<WidgetComposite>::LINEAR_FM_INPUT,
+    CHB<WidgetComposite>::EVEN_INPUT,
     CHB<WidgetComposite>::SLOPE_INPUT,
+    CHB<WidgetComposite>::ODD_INPUT,
+    //bottom row
     CHB<WidgetComposite>::AUDIO_INPUT,
     CHB<WidgetComposite>::GAIN_INPUT,
     CHB<WidgetComposite>::ENV_INPUT,
+    CHB<WidgetComposite>::RISE_INPUT,
+    CHB<WidgetComposite>::FALL_INPUT,
     CHB<WidgetComposite>::MIX_OUTPUT
 };
 
 void CHBWidget::addBottomJacks(CHBModule *module)
 {
-    const int deltaX = .5f + ((col3 - col1) / 3.0);
+    const float jackCol1 = 93;
+    const int numCol = 6;
+    const float deltaX = 36;
     for (int jackRow = 0; jackRow < 2; ++jackRow) {
-        for (int jackCol = 0; jackCol < 4; ++jackCol) {
-            const Vec pos(col1 + deltaX * jackCol,
-                jackRow == 0 ? row4 : row5);
-            const int index = jackCol + 4 * jackRow;
+        for (int jackCol = 0; jackCol < numCol; ++jackCol) {
+            const Vec pos(jackCol1 + deltaX * jackCol,
+                jackRow == 0 ? row5 : row6);
+            const int index = jackCol + numCol * jackRow;
 
             auto color = COLOR_BLACK;
-            if (index == 7) {
+            if (index == 11) {
                 color = COLOR_WHITE;
             }
 
             const int id = ids[index];
-            if (index == 7) {
+            if (index == 11) {
                 addOutput(createOutputCentered<PJ301MPort>(
                     pos,
                     module,
@@ -289,11 +361,11 @@ void CHBWidget::addBottomJacks(CHBModule *module)
                     module,
                     id));
             }
+
             auto l = addLabel(Vec(pos.x - 20 + offsets[index], pos.y - labelAboveJack),
                 labels[index],
                 color);
             l->fontSize = 11;
-           // printf("def font size %f\n", l->fontSize);
         }
     }
 }
@@ -360,31 +432,49 @@ void CHBWidget::resetMe(CHBModule *module)
 CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
-    module(module)
+    module(module),
+    semitoneDisplay(module)
 {
-    box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/chb_panel.svg")));
         addChild(panel);
+
+        auto border = new PanelBorderWidget();
+        border->box = box;
+        addChild(border);
     }
 
     addHarmonics(module);
-    addVCOKnobs(module);
-    addOtherKnobs(module);
-    addMisc(module);
+    addRow1(module);
+    addRow2(module);
+    addRow3(module);
+    addRow4(module);
+
+    auto sw = new SQPush(
+        "res/preset-button-up.svg",
+        "res/preset-button-down.svg");
+    Vec pos(64, 360);
+    sw->center(pos);
+    sw->onClick([this, module]() {
+        this->resetMe(module);
+    });
+
+    addChild(sw);
     addBottomJacks(module);
 
     // screws
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
+    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelCHBModule = Model::create<CHBModule,
     CHBWidget>("Squinky Labs",
-    "squinkylabs-CHB",
-    "Chebyshev: Waveshaper VCO", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+    "squinkylabs-CHB2",
+    "Chebyshev II: Waveshaper VCO", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+
 #endif

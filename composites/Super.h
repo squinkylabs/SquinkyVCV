@@ -1,12 +1,11 @@
 
 #pragma once
 
-#include "ButterworthLookup.h"
-#include "BiquadState.h"
-#include "BiquadFilter.h"
 #include "GateTrigger.h"
+#include "IIRDecimator.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
+#include "StateVariable4PHP.h"
 
 class SawtoothDetuneCurve
 {
@@ -48,16 +47,27 @@ private:
 };
 
 
+/**
+ * orig CPU = 39
+ * sub sample => 16
+ * beta1 => 16.1
+        17.7 if change pitch every 16 samples.
+
+ * beta 3: fix instability
+ * made semitone and fine ranges sane.
+ */
 template <class TBase>
 class Super : public TBase
 {
 public:
 
-    Super(struct Module * module) : TBase(module),  gateTrigger(true)
+    Super(struct Module * module) : TBase(module), gateTrigger(true)
     {
+        init();
     }
-    Super() : TBase(),  gateTrigger(true)
+    Super() : TBase(), gateTrigger(true)
     {
+        init();
     }
 
     /**
@@ -77,6 +87,8 @@ public:
         DETUNE_TRIM_PARAM,
         MIX_PARAM,
         MIX_TRIM_PARAM,
+        FM_PARAM,
+        CLEAN_PARAM,
         NUM_PARAMS
     };
 
@@ -84,16 +96,15 @@ public:
     {
         CV_INPUT,
         TRIGGER_INPUT,
-        DEBUG_INPUT,
         DETUNE_INPUT,
         MIX_INPUT,
+        FM_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
         MAIN_OUTPUT,
-        DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -108,6 +119,7 @@ public:
     void step() override;
 
 private:
+    static const unsigned int MAX_OVERSAMPLE = 16;
     static const int numSaws = 7;
 
     float phase[numSaws] = {0};
@@ -122,14 +134,21 @@ private:
     // knob, cv, trim -> 0..1
     AudioMath::ScaleFun<float> scaleDetune;
 
+    float runSaws();
     void updatePhaseInc();
-    void updateAudio();
+    void updateAudioClassic();
+    void updateAudioClean();
     void updateTrigger();
     void updateMix();
 
-    AudioMath::RandomUniformFunc random =  AudioMath::random();
+    int getOversampleRate();
 
-// TODO: make static
+    AudioMath::RandomUniformFunc random = AudioMath::random();
+
+    int inputSubSampleCounter = 1;
+    const static int inputSubSample = 4;    // only look at knob/cv every 4
+
+    // TODO: make static
     float const detuneFactors[numSaws] = {
         .89f,
         .94f,
@@ -140,23 +159,49 @@ private:
         1.107f
     };
 
-    // For debugging filters
-    BiquadState<float, 2> filterState;
-    BiquadParams<float, 2> filterParams;
     void updateHPFilters();
-    ButterworthLookup4PHP filterLookup;
+
     SawtoothDetuneCurve detuneCurve;
-    GateTrigger gateTrigger; 
+    GateTrigger gateTrigger;
     float gainCenter = 0;
     float gainSides = 0;
 
-};
+    StateVariable4PHP hpf;
 
+    float buffer[MAX_OVERSAMPLE] = {};
+    IIRDecimator decimator;
+};
 
 template <class TBase>
 inline void Super<TBase>::init()
 {
     scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
+
+    const int rate = getOversampleRate();
+    const int decimateDiv = std::max(rate, (int) MAX_OVERSAMPLE);
+    decimator.setup(decimateDiv);
+}
+
+template <class TBase>
+inline int Super<TBase>::getOversampleRate()
+{
+    int rate = 1;
+    const int setting = (int) std::round(TBase::params[CLEAN_PARAM].value);
+    switch (setting) {
+        case 0:
+            rate = 1;
+            break;
+        case 1:
+            rate = 4;
+            break;
+        case 2:
+            rate = 16;
+            break;
+        default:
+            assert(false);
+    }
+    assert(rate <= (int) MAX_OVERSAMPLE);
+    return rate;
 }
 
 template <class TBase>
@@ -173,6 +218,11 @@ inline void Super<TBase>::updatePhaseInc()
 
     pitch += cv;
 
+    const float fm = TBase::inputs[FM_INPUT].value;
+    const float fmDepth = AudioMath::quadraticBipolar(TBase::params[FM_PARAM].value);
+
+    pitch += (fmDepth * fm);
+
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     const float freq = expLookup(pitch);
@@ -185,15 +235,25 @@ inline void Super<TBase>::updatePhaseInc()
 
     const float detuneInput = detuneCurve.getDetuneFactor(rawDetuneValue);
 
+
+   // const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
+    const int oversampleRate = getOversampleRate();
+
     for (int i = 0; i < numSaws; ++i) {
         float detune = (detuneFactors[i] - 1) * detuneInput;
         detune += 1;
-        phaseInc[i] = globalPhaseInc * detune;
+        float phaseIncI = globalPhaseInc * detune;
+        phaseIncI = std::min(phaseIncI, .4f);         // limit so saws don't go crazy
+        if (oversampleRate > 1) {
+            phaseIncI /= oversampleRate;
+        }
+        phaseInc[i] = phaseIncI;
     }
 }
 
+
 template <class TBase>
-inline void Super<TBase>::updateAudio()
+inline float Super<TBase>::runSaws()
 {
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
@@ -201,43 +261,63 @@ inline void Super<TBase>::updateAudio()
         if (phase[i] > 1) {
             phase[i] -= 1;
         }
-        if (phase[i] > 1) {
-            printf("hey, phase too big %f\n", phase[i]); fflush(stdout);
-        }
-        if (phase[i] < 0) {
-            printf("hey, phase too small %f\n", phase[i]); fflush(stdout);
-        }
-        const float gain = (i == numSaws/2) ? gainCenter : gainSides;
-        mix += phase[i] * gain;
+        assert(phase[i] <= 1);
+        assert(phase[i] >= 0);
+
+        const float gain = (i == numSaws / 2) ? gainCenter : gainSides;
+      //  mix += phase[i] * gain;
+        mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
     }
 
-   // mix = phase[3];     // just for test
+    mix *= 4.5;       // too low 2 too high 10
+    return mix;
+}
 
-    mix *= 2;
-    const float output = BiquadFilter<float>::run(mix, filterState, filterParams);
+template <class TBase>
+inline void Super<TBase>::updateAudioClassic()
+{
+    const float mix = runSaws();
+    const float output = hpf.run(mix);
     TBase::outputs[MAIN_OUTPUT].value = output;
 }
 
 template <class TBase>
+inline void Super<TBase>::updateAudioClean()
+{
+    const int bufferSize = getOversampleRate();
+    decimator.setup(bufferSize);
+    for (int i = 0; i < bufferSize; ++i) {
+        const float mix = runSaws();
+        buffer[i] = mix;
+    }
+    //const float output = hpf.run(mix);
+    const float output = decimator.process(buffer);
+    TBase::outputs[MAIN_OUTPUT].value = output;
+}
+template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
-    filterLookup.get(filterParams, globalPhaseInc);
-#if 0
-    const float input = TBase::inputs[DEBUG_INPUT].value;
-    filterLookup.get(filterParams, globalPhaseInc);
-    const float output = BiquadFilter<float>::run(input, filterState, filterParams);
-    TBase::outputs[DEBUG_OUTPUT].value = output * 10;
-#endif
+    const float filterCutoff = std::min(globalPhaseInc, .1f);
+    hpf.setCutoff(filterCutoff);
 }
 
 template <class TBase>
 inline void Super<TBase>::step()
 {
     updateTrigger();
-    updatePhaseInc();
-    updateHPFilters();
-    updateMix();
-    updateAudio();
+    if (--inputSubSampleCounter <= 0) {
+        inputSubSampleCounter = inputSubSample;
+        updatePhaseInc();
+        updateHPFilters();
+        updateMix();
+    }
+   // const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
+    int rate = getOversampleRate();
+    if (rate == 1) {
+        updateAudioClassic();
+    } else {
+        updateAudioClean();
+    }
 }
 
 template <class TBase>
