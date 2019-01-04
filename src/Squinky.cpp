@@ -43,22 +43,21 @@ void init(rack::Plugin *p)
     #endif
 #ifdef _LFN
     p->addModel(modelLFNModule); 
-<<<<<<< HEAD
-    #endif
-#ifdef _SHAPER
-=======
+#endif
+
 #ifdef _SUPER
     p->addModel(modelSuperModule);
 #endif
->>>>>>> master
+#ifdef _SHAPER
     p->addModel(modelShaperModule);
-    #endif
+#endif
 #ifdef _TBOOST
     p->addModel(modelThreadBoostModule);
 #endif
 
+#ifdef _CHBG
     p->addModel(modelCHBgModule);
-
+#endif
 #ifdef _SEQ
     assert(modelSequencerModule);
     p->addModel(modelSequencerModule);

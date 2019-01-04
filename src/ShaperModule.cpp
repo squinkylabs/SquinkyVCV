@@ -1,9 +1,10 @@
-
 #include "Squinky.hpp"
+
+#ifdef _SHAPER
 #include "ctrl/ToggleButton.h"
 #include "WidgetComposite.h"
 
-#ifdef _SHAPER
+
 #include "Shaper.h"
 
 /**

@@ -13,7 +13,7 @@
 
 using namespace rack;
 
-
+#ifndef _V1
 
 // Dynamic SVGScrew
 
@@ -182,4 +182,5 @@ struct DynamicIMTactile : ParamWidget, FramebufferWidget {
 };
 
 
+#endif
 #endif

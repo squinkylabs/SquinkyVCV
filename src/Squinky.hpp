@@ -2,7 +2,7 @@
 #include "componentlibrary.hpp"
 
 //#define _GMR
-#define _SUPER
+//#define _SUPER
 //#define _SEQ
 #define _FUN
 //#define _CH10

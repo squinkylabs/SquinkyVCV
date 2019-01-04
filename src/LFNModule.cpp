@@ -1,13 +1,14 @@
 
-#include "ctrl/SqMenuItem.h"
-#include <sstream>
-#include "Squinky.hpp"
-#include "WidgetComposite.h"
 
+#include "Squinky.hpp"
 #ifdef _LFN
+#include "ctrl/SqMenuItem.h"
+#include "WidgetComposite.h"
 #include "ctrl/ToggleButton.h"
 #include "SQWidgets.h"
 #include "LFN.h"
+
+#include <sstream>
 
 
 /**

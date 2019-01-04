@@ -1,14 +1,15 @@
-#include <sstream>
 #include "Squinky.hpp"
-#include "WidgetComposite.h"
 
 #ifdef _SUPER
-
+#include "WidgetComposite.h"
 #include "SQWidgets.h"
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SemitoneDisplay.h"
 #include "IMWidgets.hpp"
+
+#include <sstream>
+
 
 /**
  */

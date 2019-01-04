@@ -9,7 +9,7 @@
 #include "IMWidgets.hpp"
 
 
-
+#ifndef _V1
 // Dynamic SVGScrew
 
 
@@ -322,4 +322,5 @@ void DynamicIMTactile::onMouseDown(EventMouseDown &e) {
 //	setValue(newVal);
 //}
 
+#endif
 
