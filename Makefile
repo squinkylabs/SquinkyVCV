@@ -16,8 +16,7 @@ CFLAGS +=
 CXXFLAGS +=
 
 # For now, this branch is always V1
-#don't check in this way
-#FLAGS += -D _V1
+FLAGS += -D _V1
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
