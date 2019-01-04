@@ -7,6 +7,24 @@
 #define _FUN
 //#define _CH10
 
+
+#ifndef _V1
+    #define _EV3
+    #define _CHB
+    #define _CHBG
+    #define _LFN
+    #define _COLORS
+    #define _GRAY
+    #define _SHAPER
+    #define _SUPER
+    #define _GROWLER
+    #define _FORMANTS
+    #define _TBOOST
+    #define _BOOTY
+    #define _TREM
+#endif
+
+
 using namespace rack;
 extern Plugin *plugin;
 extern Model *modelBootyModule;

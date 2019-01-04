@@ -1,7 +1,6 @@
 #include "Squinky.hpp"
 
 #ifdef _EV3
-#include "WaveformSelector.h"
 #include "ctrl/WaveformSelector.h"
 #include "SQWidgets.h"
 #include "WidgetComposite.h"
