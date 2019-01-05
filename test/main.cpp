@@ -56,6 +56,7 @@ extern void  testMidiEvents();
 extern void testMidiPlayer();
 extern void testMultiLag();
 extern void testUtils();
+extern void testIComposite();
 
 #if 0
 #include <sstream>
@@ -113,6 +114,7 @@ int main(int argc, char ** argv)
         return 0;
     }
 
+    testIComposite();
     testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();

@@ -107,11 +107,8 @@ inline typename FunVCOComposite<TBase>::Config
             ret = {0.0f, 1.0f, 0.0f};
             break;
         default:
-            printf("fun has no param %d\n", i);
-            fflush(stdout);
             assert(false);
     }
-    printf("return from getParam\n"); fflush(stdout);
     return ret;
 }
 
@@ -121,10 +118,10 @@ inline void FunVCOComposite<TBase>::step()
     oscillator.analog = TBase::params[MODE_PARAM].value > 0.0f;
     oscillator.soft = TBase::params[SYNC_PARAM].value <= 0.0f;
 
-    float pitchFine = 3.0f * quadraticBipolar(TBase::params[FINE_PARAM].value);
+    float pitchFine = 3.0f * rack::quadraticBipolar(TBase::params[FINE_PARAM].value);
     float pitchCv = 12.0f * TBase::inputs[PITCH_INPUT].value;
     if (TBase::inputs[FM_INPUT].active) {
-        pitchCv += quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
+        pitchCv += rack::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
     }
 
     oscillator.setPitch(TBase::params[FREQ_PARAM].value, pitchFine + pitchCv);
