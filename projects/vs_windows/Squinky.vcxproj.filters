@@ -620,5 +620,11 @@
     <ClInclude Include="..\..\composites\CHBg.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\src\FunVCO3.h">
+      <Filter>Header Files\dsp\third-party\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\src\SQMath.h">
+      <Filter>Header Files\dsp\third-party\src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

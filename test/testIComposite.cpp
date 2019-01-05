@@ -4,8 +4,6 @@
 //#include <limits>
 
 
-
-
 #include "asserts.h"
 #include "FunVCOComposite.h"
 #include "TestComposite.h"
