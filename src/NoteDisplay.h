@@ -1,25 +1,41 @@
 
 #pragma once
+#include "nanovg.h"
 
-// not used at the moment.
+/**
+ * Experiments:
+ * 
+ * refactor to remove redundant code
+ * draw stroked rectangle
+ * figure out how to normalize the coordinates.
+ */
 struct NoteDisplay : OpaqueWidget
 {
-    SequencerModule *module;
+   // SequencerModule *module;
 
     void draw(NVGcontext *vg) override
     {
         // draw some squares for fun
        // nvgScale(vg, 2, 2);
-        nvgFillColor(vg, nvgRGBA(0xff, 0x00, 0x00, 0xff));
-        nvgBeginPath(vg);
-        nvgRect(vg, 50, 50, 30, 30);
-        nvgFill(vg);
 
-        nvgFillColor(vg, nvgRGBA(0x00, 0x00, 0xff, 0xff));
+        filledRect(vg, nvgRGBA(0xff, 0x00, 0x00, 0xff), 50, 50, 30, 30); 
+        filledRect(vg, nvgRGBA(0x00, 0x00, 0xff, 0xff), 0, 0, 30, 30); 
+
+        nvgStrokeColor(vg,  nvgRGBA(0x00, 0xff, 0x00, 0xff));
         nvgBeginPath(vg);
-        nvgRect(vg, 0, 0, 30, 30);
+        nvgRect(vg, 100, 100, 40, 10);
+        nvgStroke(vg);
+    }
+
+    void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
+    {
+        nvgFillColor(vg, color);
+        nvgBeginPath(vg);
+        nvgRect(vg, x, y, w, h);
         nvgFill(vg);
     }
+  
+
     void onMouseDown(EventMouseDown &e) override
     {
         OpaqueWidget::onMouseDown(e);

@@ -3,8 +3,11 @@
 
 //#define _GMR
 //#define _SUPER
-//#define _SEQ
-#define _FUN
+#ifndef _V1
+#define _SEQ        // just for test
+#endif
+
+#define _FUN        // works with 1.0
 //#define _CH10
 
 
