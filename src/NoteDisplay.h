@@ -19,12 +19,8 @@ struct NoteDisplay : OpaqueWidget
         viewport.startTime = startTime;
         viewport.endTime = startTime + totalDuration;
 
-        MidiNoteEvent note;
-        note.setPitch(4, 0);
-
-        viewport.pitchLow = pitchLow = note.pitch;
-        note.setPitch(6, 0);
-        viewport.pitchHi = pitchHigh = note.pitch;
+        viewport.pitchLow = MidiNoteEvent::pitchToCV(3, 0);
+        viewport.pitchHi = MidiNoteEvent::pitchToCV(5, 0);
     }
 
 
@@ -52,18 +48,17 @@ struct NoteDisplay : OpaqueWidget
         for ( ; it.first != it.second; ++it.first) {
             if (!did) {
                // const MidiEvent& evn = *(it.first);
-               auto temp = *(it.first);
-               MidiEventPtr evn = temp.second;
-               MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
+                auto temp = *(it.first);
+                MidiEventPtr evn = temp.second;
+                MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
                 
-                printf("iter note, pitch = %d\n",ev->getPitch().second);
+                printf("iter note, pitch semi = %d\n",ev->getPitch().second);
                 fflush(stdout);
-
             }
         }
         if (!did) {
-                printf("draw notes done\n");
-             fflush(stdout);
+            printf("draw notes done\n");
+            fflush(stdout);
         }
         did = true;
     }
