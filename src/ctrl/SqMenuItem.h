@@ -3,6 +3,10 @@
 #include "rack.hpp"
 #include <functional>
 
+/**
+ * This menu item takes generic lambdas,
+ * so can be used for anything
+ **/
 struct SqMenuItem : rack::MenuItem
 {
     void onAction(rack::EventAction &e) override
@@ -26,6 +30,19 @@ private:
     std::function<bool()> _isCheckedFn;
     std::function<void()> _onActionFn;
 };
+
+
+struct ManualMenuItem : SqMenuItem
+{
+    ManualMenuItem(const char* url) : SqMenuItem(
+        []() { return false; },
+        [url]() { rack::systemOpenBrowser(url); })
+    {
+        this->text = "Manual";
+    }
+
+};
+
 
 struct  SqMenuItem_BooleanParam : rack::MenuItem
 {

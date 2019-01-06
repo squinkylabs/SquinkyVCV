@@ -125,6 +125,10 @@ void LFNWidget::addStage(int index)
 inline Menu* LFNWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
+
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
+    theMenu->addChild(manual);
+    
     MenuLabel *spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
     SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(

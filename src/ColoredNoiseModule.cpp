@@ -5,6 +5,7 @@
 #include "WidgetComposite.h"
 #include "ColoredNoise.h"
 #include "NoiseDrawer.h"
+#include "ctrl/SqMenuItem.h"
 
 /**
  * Implementation class for VocalWidget
@@ -55,7 +56,17 @@ struct ColoredNoiseWidget : ModuleWidget
     ColoredNoiseWidget(ColoredNoiseModule *);
     Label * slopeLabel;
     Label * signLabel;
+    Menu* createContextMenu() override;
 };
+
+inline Menu* ColoredNoiseWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 // The colors of noise (UI colors)
 static const unsigned char red[3] = {0xff, 0x04, 0x14};

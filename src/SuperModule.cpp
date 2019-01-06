@@ -3,6 +3,7 @@
 #ifdef _SUPER
 #include "WidgetComposite.h"
 #include "ctrl/SQWidgets.h"
+#include "ctrl/SqMenuItem.h"
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SemitoneDisplay.h"
@@ -73,10 +74,20 @@ struct superWidget : ModuleWidget
     void addPitchKnobs(SuperModule *);
     void addOtherKnobs(SuperModule *);
     void addJacks(SuperModule *);
+    Menu* createContextMenu() override;
 
     SemitoneDisplay semitoneDisplay;
-
 };
+
+
+inline Menu* superWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 const float col1 = 40;
 const float col2 = 110;

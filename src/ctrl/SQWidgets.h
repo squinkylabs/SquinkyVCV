@@ -109,7 +109,7 @@ struct SQPush : SVGButton
 /**************************************************************************
  **
  ** SQPanelItem
- ** generic menu item
+ ** a menu item made for expaning panels.
  **
  ************************************************************************/
 

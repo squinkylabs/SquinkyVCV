@@ -3,6 +3,7 @@
 
 #ifdef _CHB
 #include "ctrl/SQWidgets.h"
+#include "ctrl/SQMenuItem.h"
 #include "WidgetComposite.h"
 #include <sstream>
 
@@ -81,6 +82,7 @@ private:
 
     void addBottomJacks(CHBModule *module);
     void resetMe(CHBModule *module);
+    Menu* createContextMenu() override;
 
     // This is the gain which when run throught all the lookup tables
     // gives a gain of 1.
@@ -94,6 +96,15 @@ private:
 
     SemitoneDisplay semitoneDisplay;
 };
+
+inline Menu* CHBWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 
 /**

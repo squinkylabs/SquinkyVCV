@@ -5,6 +5,7 @@
 #ifdef _FUN
 #include "WidgetComposite.h"
 #include "ctrl/SQHelper.h"
+#include "ctrl/SqMenuItem.h"
 #include "FunVCOComposite.h"
 
 /**
@@ -67,6 +68,7 @@ struct FunVWidget : ModuleWidget
     void addTop3(FunVModule *, float verticalShift);
     void addMiddle4(FunVModule *, float verticalShift);
     void addJacks(FunVModule *, float verticalShift);
+    Menu* createContextMenu() override;
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color)
     {
@@ -82,6 +84,15 @@ struct FunVWidget : ModuleWidget
         return addLabel(v, str, SQHelper::COLOR_BLACK);
     }
 };
+
+inline Menu* FunVWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 void FunVWidget::addTop3(FunVModule * module, float verticalShift)
 {
