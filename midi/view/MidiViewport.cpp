@@ -21,6 +21,9 @@ MidiViewport::iterator_pair MidiViewport::getEvents() const
         if (note) {
             ret = note->pitchCV >= pitchLow && note->pitchCV <= pitchHi;
         }
+        if (ret) {
+            ret = me->startTime < this->endTime;
+        }
         return ret;
     };
 

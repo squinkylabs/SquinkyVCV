@@ -131,14 +131,13 @@ static void testPitch2()
     assertClose(n.pitchCV, 1.f / 12.f, .0001);
 
     //**********************************************************
-    n.pitchCV = 0 + 1.f / 12.f + 1.f / 23.f;      // D4 plus less than half semi
+    n.pitchCV = 0 + 1.f / 12.f + 1.f / 23.f;      // D4 plus more than half semi
     pitch = n.getPitch();
     assertEQ(pitch.first, 4);
     assertEQ(pitch.second, 2);
 
     n.setPitch(pitch.first, pitch.second);
     assertClose(n.pitchCV, 2.f / 12.f, .0001);
-
 }
 
 void  testMidiEvents()

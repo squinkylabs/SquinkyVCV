@@ -13,10 +13,8 @@ int MidiTrack::size() const
     return (int) events.size();
 }
 
-
 void MidiTrack::assertValid() const
 {
-
     int numEnds = 0;
     bool lastIsEnd = false;
     (void) lastIsEnd;
@@ -110,33 +108,3 @@ MidiTrackPtr MidiTrack::makeTest1()
     track->insertEnd(time);
     return track;
 }
-
-#if 0
-MidiTrackPtr MidiTrack::makeTest1()
-{
-    // TODO: don't add the same element multiple times
-    auto track =  std::make_shared<MidiTrack>();
-    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
-    ev->startTime = 0;
-    ev->pitch = 5.0f;
-    track->insertEvent(ev);
-
-    ev = std::make_shared<MidiNoteEvent>();
-    ev->startTime = 100;
-    ev->pitch = 5.1f;
-    track->insertEvent(ev);
-
-    ev = std::make_shared<MidiNoteEvent>();
-    ev->startTime = 200;
-    ev->pitch = 5.2f;
-    track->insertEvent(ev);
-
-    ev = std::make_shared<MidiNoteEvent>();
-    ev->startTime = 400;
-    ev->pitch = 5.3f;
-    track->insertEvent(ev);
-    track->insertEnd(500);
-
-    return track;
-}
-#endif
