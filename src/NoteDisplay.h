@@ -1,6 +1,7 @@
 
 #pragma once
 #include "nanovg.h"
+#include "MidiViewport.h"
 
 /**
  * Experiments:
@@ -11,19 +12,89 @@
  */
 struct NoteDisplay : OpaqueWidget
 {
-   // SequencerModule *module;
+    NoteDisplay()
+    {
+        song = MidiSong::makeTest1();
+        viewport._song = song;
+        viewport.startTime = startTime;
+        viewport.endTime = startTime + totalDuration;
+
+        MidiNoteEvent note;
+        note.setPitch(4, 0);
+
+        viewport.pitchLow = pitchLow = note.pitch;
+        note.setPitch(6, 0);
+        viewport.pitchHi = pitchHigh = note.pitch;
+    }
+
+
+    // put in something to define the range we
+    // want to display
+    const float startTime = 0;
+    const float totalDuration = 8;
+    float pitchLow=0;
+    float pitchHigh=0;
+
+    float midiTimeToX(const MidiEvent& ev);
+    float midiPitchToY(const MidiNoteEvent& note);
+
+    MidiViewport viewport;
+    MidiSongPtr song;
+
+    bool did = false;
+    void drawNotes(NVGcontext *vg)
+    {
+        if (!did) {
+            printf("draw notes called\n");
+             fflush(stdout);
+        }
+        MidiViewport::iterator_pair it = viewport.getEvents();
+        for ( ; it.first != it.second; ++it.first) {
+            if (!did) {
+               // const MidiEvent& evn = *(it.first);
+               auto temp = *(it.first);
+               MidiEventPtr evn = temp.second;
+               MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
+                
+                printf("iter note, pitch = %d\n",ev->getPitch().second);
+                fflush(stdout);
+
+            }
+        }
+        if (!did) {
+ printf("draw notes done\n");
+             fflush(stdout);
+        }
+        did = true;
+    }
 
     void draw(NVGcontext *vg) override
     {
         // draw some squares for fun
        // nvgScale(vg, 2, 2);
 
-        filledRect(vg, nvgRGBA(0xff, 0x00, 0x00, 0xff), 50, 50, 30, 30); 
-        filledRect(vg, nvgRGBA(0x00, 0x00, 0xff, 0xff), 0, 0, 30, 30); 
+        const auto red =  nvgRGBA(0xff, 0x00, 0x00, 0xff); 
+        const auto green =  nvgRGBA(0x00, 0xff, 0x00, 0xff); 
+        const auto blue =  nvgRGBA(0x00, 0x00, 0xff, 0xff); 
 
-        nvgStrokeColor(vg,  nvgRGBA(0x00, 0xff, 0x00, 0xff));
+        filledRect(vg, red, 50, 50, 30, 30); 
+        filledRect(vg, blue, 0, 0, 30, 30); 
+
+        strokedRect(vg,  nvgRGBA(0x00, 0xff, 0x00, 0xff), 100, 100, 40, 10);
+
+        strokedRect(vg, green, 0, 0, this->box.size.x, this->box.size.y);
+
+        // this oun goes out of the bounds
+        filledRect(vg, blue, this->box.size.x - 10, 100, 100, 10);
+    
+        drawNotes(vg);
+    }
+
+   void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
+    {
+        nvgStrokeColor(vg, color);
         nvgBeginPath(vg);
-        nvgRect(vg, 100, 100, 40, 10);
+        nvgRect(vg, x, y, w, h);
         nvgStroke(vg);
     }
 
@@ -35,7 +106,7 @@ struct NoteDisplay : OpaqueWidget
         nvgFill(vg);
     }
   
-
+  //************************** These overrides are just to test even handling
     void onMouseDown(EventMouseDown &e) override
     {
         OpaqueWidget::onMouseDown(e);
