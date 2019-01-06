@@ -32,7 +32,6 @@ public:
         for (int i=0; i<n; ++i) {
             auto param = comp.getParam(i);
             module->params[i].setup(param.min, param.max, param.def, "fakename", "fake unit");
-            //params[PITCH_PARAM].setup(-3.f, 3.f, 0.f, "Pitch", " semi", 0.f, 12.f);
         }
     }
 };
@@ -42,9 +41,6 @@ class SQHelper
 public:
     static std::string assetPlugin(Plugin *plugin, const std::string& filename)
     {
-        printf("calling assetPlugin with %p, %s\n",
-            plugin, filename.c_str());
-        fflush(stdout);
         return rack::assetPlugin(plugin, filename);
     } 
     static float engineGetSampleRate()
@@ -59,7 +55,6 @@ public:
    static T* createParam(IComposite& composite, const Vec& pos, Module* module, int paramId )
    {
        const auto data = composite.getParam(paramId);
-       printf("helper got param\n"); fflush(stdout);
        assert(data.min < data.max);
        assert(data.def >= data.min);
        assert(data.def <= data.max);

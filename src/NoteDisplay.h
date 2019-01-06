@@ -12,8 +12,10 @@
  */
 struct NoteDisplay : OpaqueWidget
 {
-    NoteDisplay()
+    NoteDisplay(const Vec& pos, const Vec& size)
     {
+        this->box.pos = pos;
+		box.size = size;
         song = MidiSong::makeTest1();
         viewport._song = song;
         viewport.startTime = startTime;
@@ -21,6 +23,8 @@ struct NoteDisplay : OpaqueWidget
 
         viewport.pitchLow = MidiNoteEvent::pitchToCV(3, 0);
         viewport.pitchHi = MidiNoteEvent::pitchToCV(5, 0);
+
+        initScaleFuncs();
     }
 
 
@@ -28,11 +32,33 @@ struct NoteDisplay : OpaqueWidget
     // want to display
     const float startTime = 0;
     const float totalDuration = 8;
-    float pitchLow=0;
-    float pitchHigh=0;
+   // float pitchLow=0;
+  //  float pitchHigh=0;
 
-    float midiTimeToX(const MidiEvent& ev);
-    float midiPitchToY(const MidiNoteEvent& note);
+
+    float ax =0;
+    float ay=0;
+    void initScaleFuncs()
+    {
+        printf("in initscal tot=%f, p=%f, %f\n",
+            totalDuration, viewport.pitchHi, viewport.pitchLow);
+        printf("box size = %f, %f\n", this->box.size.x, this->box.size.y);
+        ax = this->box.size.x / totalDuration;
+        ay = this->box.size.y / (viewport.pitchHi - viewport.pitchLow);
+    }
+    float midiTimeToX(const MidiEvent& ev)
+    {
+        return (ev.startTime - startTime) * ax;  
+    }
+
+    float midiTimeTodX(MidiEvent::time_t dt)
+    {
+        return  dt * ax;
+    }
+    float midiPitchToY(const MidiNoteEvent& note)
+    {
+        return (note.pitchCV - viewport.pitchLow) * ay;
+    }
 
     MidiViewport viewport;
     MidiSongPtr song;
@@ -41,7 +67,7 @@ struct NoteDisplay : OpaqueWidget
     void drawNotes(NVGcontext *vg)
     {
         if (!did) {
-            printf("draw notes called\n");
+            printf("draw notes called ax=%f ay=%f\n", ax, ay);
              fflush(stdout);
         }
         MidiViewport::iterator_pair it = viewport.getEvents();
@@ -51,14 +77,19 @@ struct NoteDisplay : OpaqueWidget
                 auto temp = *(it.first);
                 MidiEventPtr evn = temp.second;
                 MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
+
+                const float x = midiTimeToX(*ev);
+                const float y = midiPitchToY(*ev);
+                const float width = midiTimeTodX(ev->duration);
                 
-                printf("iter note, pitch semi = %d\n",ev->getPitch().second);
-                fflush(stdout);
+               printf("iter note, pitch semi = %d\n",ev->getPitch().second);
+               printf("x=%f y=%f w=%f\n", x, y, width);
+              fflush(stdout);
             }
         }
         if (!did) {
             printf("draw notes done\n");
-            fflush(stdout);
+           fflush(stdout);
         }
         did = true;
     }

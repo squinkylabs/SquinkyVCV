@@ -61,10 +61,12 @@ struct SequencerWidget : ModuleWidget
     }
     #if 1
 	{
-		NoteDisplay *display = new NoteDisplay();
+        const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
+        const Vec noteSize =Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+		NoteDisplay *display = new NoteDisplay(notePos, noteSize);
 	//	display->module = module;
-		display->box.pos = Vec( 14 * RACK_GRID_WIDTH, 0);
-		display->box.size = Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+	//	display->box.pos = Vec( 14 * RACK_GRID_WIDTH, 0);
+	//	display->box.size = Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
 		addChild(display);
 	}
     #endif
