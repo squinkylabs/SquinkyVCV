@@ -53,91 +53,91 @@ static void testEqual()
     assert(*evn != *end);
     assert(*note != *end);
 
-    note2->pitch = 50;
+    note2->pitchCV = 50;
     assert(*note != *note2);
 }
 
 static void testPitch()
 {
     MidiNoteEvent n;
-    n.pitch = 0;            // C4 in VCV
+    n.pitchCV = 0;            // C4 in VCV
     auto pitch = n.getPitch();
     assert(pitch.first == 4);
     assert(pitch.second == 0);
 
     n.setPitch(pitch.first, pitch.second);
-    assertEQ(n.pitch, 0);
+    assertEQ(n.pitchCV, 0);
 
     //************************************************
 
-    n.pitch = 1.f / 12.f;
+    n.pitchCV = 1.f / 12.f;
     pitch = n.getPitch();
     assert(pitch.first == 4);
     assert(pitch.second == 1);
 
     n.setPitch(pitch.first, pitch.second);
-    assertClose(n.pitch, 1.f / 12.f, .0001);
+    assertClose(n.pitchCV, 1.f / 12.f, .0001);
 
     //********************************************************
 
-    n.pitch = 3 + 1.f / 12.f;
+    n.pitchCV = 3 + 1.f / 12.f;
     pitch = n.getPitch();
     assertEQ(pitch.first, 4.0f + 3);
     assertEQ(pitch.second, 1);
 
     n.setPitch(pitch.first, pitch.second);
-    assertClose(n.pitch, 3 + 1.f / 12.f, .0001);
+    assertClose(n.pitchCV, 3 + 1.f / 12.f, .0001);
 
     //********************************************************
 
-    n.pitch = 7.f / 12.f;
+    n.pitchCV = 7.f / 12.f;
     pitch = n.getPitch();
     assertEQ(pitch.first, 4.0f);
     assertEQ(pitch.second, 7);
 
     n.setPitch(pitch.first, pitch.second);
-    assertClose(n.pitch, 7.f / 12.f, .0001);
+    assertClose(n.pitchCV, 7.f / 12.f, .0001);
 
     //********************************************************
 
-    n.pitch = 3 + 7.f / 12.f;
+    n.pitchCV = 3 + 7.f / 12.f;
     pitch = n.getPitch();
     assertEQ(pitch.first, 4.0f+3);
     assertEQ(pitch.second, 7);
 
     n.setPitch(pitch.first, pitch.second);
-    assertClose(n.pitch,3 +  7.f / 12.f, .0001);
+    assertClose(n.pitchCV,3 +  7.f / 12.f, .0001);
 }
 
 static void testPitch2()
 {
     MidiNoteEvent n;
-    n.pitch = -1;            // C3 in VCV
+    n.pitchCV = -1;            // C3 in VCV
     auto pitch = n.getPitch();
     assert(pitch.first == 3);
     assert(pitch.second == 0);
 
     n.setPitch(pitch.first, pitch.second);
-    assertClose(n.pitch, -1, .0001);
+    assertClose(n.pitchCV, -1, .0001);
 
     //******************************************************************************
    
-    n.pitch = 0 + 1.f / 12.f + 1.f / 25.f;      // D4 plus less than half semi
+    n.pitchCV = 0 + 1.f / 12.f + 1.f / 25.f;      // D4 plus less than half semi
     pitch = n.getPitch();
     assertEQ(pitch.first, 4);
     assertEQ(pitch.second, 1);
 
     n.setPitch(pitch.first, pitch.second);
-    assertClose(n.pitch, 1.f / 12.f, .0001);
+    assertClose(n.pitchCV, 1.f / 12.f, .0001);
 
     //**********************************************************
-    n.pitch = 0 + 1.f / 12.f + 1.f / 23.f;      // D4 plus less than half semi
+    n.pitchCV = 0 + 1.f / 12.f + 1.f / 23.f;      // D4 plus less than half semi
     pitch = n.getPitch();
     assertEQ(pitch.first, 4);
     assertEQ(pitch.second, 2);
 
     n.setPitch(pitch.first, pitch.second);
-    assertClose(n.pitch, 2.f / 12.f, .0001);
+    assertClose(n.pitchCV, 2.f / 12.f, .0001);
 
 }
 

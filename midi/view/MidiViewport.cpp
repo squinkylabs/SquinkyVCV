@@ -19,7 +19,7 @@ MidiViewport::iterator_pair MidiViewport::getEvents() const
         bool ret = false;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);
         if (note) {
-            ret = note->pitch >= pitchLow && note->pitch <= pitchHi;
+            ret = note->pitchCV >= pitchLow && note->pitchCV <= pitchHi;
         }
         return ret;
     };

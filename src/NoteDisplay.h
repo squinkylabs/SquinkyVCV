@@ -62,7 +62,7 @@ struct NoteDisplay : OpaqueWidget
             }
         }
         if (!did) {
- printf("draw notes done\n");
+                printf("draw notes done\n");
              fflush(stdout);
         }
         did = true;

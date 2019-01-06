@@ -26,7 +26,7 @@ bool MidiPlayer::playOnce()
                 MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
                 // should now output the note.
                 host->setGate(true);
-                host->setCV(note->pitch);
+                host->setCV(note->pitchCV);
 
                 // and save off the note-off time.
                 noteOffTime = note->duration + note->startTime;

@@ -104,7 +104,7 @@ public:
     /**
      * Pitch is VCV standard 1V/8
      */
-    float pitch=0;    
+    float pitchCV=0;    
     float duration = 1;
     void assertValid() const override;
 
@@ -117,8 +117,8 @@ protected:
 inline std::pair<int, int> MidiNoteEvent::getPitch() const
 {
     // VCV 0 is C4
-    int octave = int(std::floor(pitch));
-    float remainder = pitch - octave;
+    int octave = int(std::floor(pitchCV));
+    float remainder = pitchCV - octave;
     octave += 4;
     float s =  remainder * 12;
     int semi = int(std::round(s));
@@ -127,21 +127,21 @@ inline std::pair<int, int> MidiNoteEvent::getPitch() const
 
 inline void MidiNoteEvent::setPitch(int octave, int semi)
 {
-    pitch = float(octave - 4) + semi * (1.0f / 12.0f);
+    pitchCV = float(octave - 4) + semi * (1.0f / 12.0f);
 }
 
 inline void MidiNoteEvent::assertValid() const
 {
     MidiEvent::assertValid();
-    assertLE(pitch, 10);
-    assertGE(pitch, -10);
+    assertLE(pitchCV, 10);
+    assertGE(pitchCV, -10);
     assertGT(duration, 0);
 }
 
 inline  bool MidiNoteEvent::isEqual(const MidiEvent& other) const
 {
     const MidiNoteEvent* otherNote = static_cast<const MidiNoteEvent*>(&other);
-    return other.isEqualBase(*this) && this->pitch == otherNote->pitch;
+    return other.isEqualBase(*this) && this->pitchCV == otherNote->pitchCV;
 }
 
 
