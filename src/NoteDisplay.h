@@ -32,9 +32,6 @@ struct NoteDisplay : OpaqueWidget
     // want to display
     const float startTime = 0;
     const float totalDuration = 8;
-   // float pitchLow=0;
-  //  float pitchHigh=0;
-
 
     float ax =0;
     float ay=0;
@@ -44,9 +41,6 @@ struct NoteDisplay : OpaqueWidget
 
     void initScaleFuncs()
     {
-        printf("in initscal tot=%f, p=%f, %f\n",
-            totalDuration, viewport.pitchHi, viewport.pitchLow);
-        printf("box size = %f, %f\n", this->box.size.x, this->box.size.y);
         ax = this->box.size.x / totalDuration;
         ay = this->box.size.y / (viewport.pitchHi - viewport.pitchLow);
     }
@@ -91,7 +85,7 @@ struct NoteDisplay : OpaqueWidget
        // nvgScale(vg, 2, 2);
 
      
-
+#if 0
         filledRect(vg, red, 50, 50, 30, 30); 
         filledRect(vg, blue, 0, 0, 30, 30); 
 
@@ -101,6 +95,7 @@ struct NoteDisplay : OpaqueWidget
 
         // this oun goes out of the bounds
         filledRect(vg, blue, this->box.size.x - 10, 100, 100, 10);
+        #endif
     
         drawNotes(vg);
     }
