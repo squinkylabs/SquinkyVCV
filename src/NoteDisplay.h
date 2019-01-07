@@ -38,6 +38,10 @@ struct NoteDisplay : OpaqueWidget
 
     float ax =0;
     float ay=0;
+    const NVGcolor red =  nvgRGBA(0xff, 0x00, 0x00, 0xff); 
+    const NVGcolor green =  nvgRGBA(0x00, 0xff, 0x00, 0xff); 
+    const NVGcolor blue =  nvgRGBA(0x00, 0x00, 0xff, 0xff); 
+
     void initScaleFuncs()
     {
         printf("in initscal tot=%f, p=%f, %f\n",
@@ -63,35 +67,22 @@ struct NoteDisplay : OpaqueWidget
     MidiViewport viewport;
     MidiSongPtr song;
 
-    bool did = false;
+
     void drawNotes(NVGcontext *vg)
     {
-        if (!did) {
-            printf("draw notes called ax=%f ay=%f\n", ax, ay);
-             fflush(stdout);
-        }
         MidiViewport::iterator_pair it = viewport.getEvents();
         for ( ; it.first != it.second; ++it.first) {
-            if (!did) {
-               // const MidiEvent& evn = *(it.first);
-                auto temp = *(it.first);
-                MidiEventPtr evn = temp.second;
-                MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
+            auto temp = *(it.first);
+            MidiEventPtr evn = temp.second;
+            MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
 
-                const float x = midiTimeToX(*ev);
-                const float y = midiPitchToY(*ev);
-                const float width = midiTimeTodX(ev->duration);
-                
-               printf("iter note, pitch semi = %d\n",ev->getPitch().second);
-               printf("x=%f y=%f w=%f\n", x, y, width);
-              fflush(stdout);
-            }
+            const float x = midiTimeToX(*ev);
+            const float y = midiPitchToY(*ev);
+            const float width = midiTimeTodX(ev->duration);
+
+
+            filledRect(vg, red, x, y, width, 10);
         }
-        if (!did) {
-            printf("draw notes done\n");
-           fflush(stdout);
-        }
-        did = true;
     }
 
     void draw(NVGcontext *vg) override
@@ -99,9 +90,7 @@ struct NoteDisplay : OpaqueWidget
         // draw some squares for fun
        // nvgScale(vg, 2, 2);
 
-        const auto red =  nvgRGBA(0xff, 0x00, 0x00, 0xff); 
-        const auto green =  nvgRGBA(0x00, 0xff, 0x00, 0xff); 
-        const auto blue =  nvgRGBA(0x00, 0x00, 0xff, 0xff); 
+     
 
         filledRect(vg, red, 50, 50, 30, 30); 
         filledRect(vg, blue, 0, 0, 30, 30); 
