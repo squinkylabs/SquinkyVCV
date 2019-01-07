@@ -7,6 +7,11 @@
 class SQHelper
 {
 public:
+
+    static void openBrowser(const char* url)
+    {
+        system::openBrowser(url);
+    }
     static std::string assetPlugin(Plugin *plugin, const std::string& filename)
     {
         return asset::plugin(plugin, filename);
@@ -46,6 +51,11 @@ public:
     static float engineGetSampleRate()
     {
         return rack::engineGetSampleRate();
+    }
+
+    static void openBrowser(const char* url)
+    {
+        rack::systemOpenBrowser(url);
     }
 
    static const NVGcolor COLOR_WHITE;
