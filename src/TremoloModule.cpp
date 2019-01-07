@@ -5,6 +5,7 @@
 #ifdef _TREM
 #include "WidgetComposite.h"
 #include "Tremolo.h"
+#include "ctrl/SqMenuItem.h"
 
 /**
  */
@@ -50,6 +51,7 @@ void TremoloModule::step()
 struct TremoloWidget : ModuleWidget
 {
     TremoloWidget(TremoloModule *);
+    Menu* createContextMenu() override;
 
     void addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
     {
@@ -64,6 +66,14 @@ struct TremoloWidget : ModuleWidget
     void addMainSection(TremoloModule *module);
 };
 
+inline Menu* TremoloWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 void TremoloWidget::addClockSection(TremoloModule *module)
 {

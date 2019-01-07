@@ -3,6 +3,37 @@
 #include "nanovg.h"
 #include "MidiViewport.h"
 
+
+class NoteScreenScale
+{
+public:
+    NoteScreenScale(MidiViewport& vp, const Vec& screenSize) : viewport(vp)
+    {
+        ax =screenSize.x / (viewport.endTime - viewport.startTime);
+        ay = screenSize.y / (viewport.pitchHi - viewport.pitchLow);
+
+        printf("in init ax=%f ay=%f screenx=%f screeny=%f\n", ax, ay, screenSize.x, screenSize.y);
+        fflush(stdout);
+    }
+    float midiTimeToX(const MidiEvent& ev)
+    {
+        return (ev.startTime - viewport.startTime) * ax;  
+    }
+     float midiTimeTodX(MidiEvent::time_t dt)
+    {
+        return  dt * ax;
+    }
+    float midiPitchToY(const MidiNoteEvent& note)
+    {
+       // return (note.pitchCV - viewport.pitchLow) * ay;
+        return ( -1.f/12.f + viewport.pitchHi - note.pitchCV) * ay;
+    }
+private:
+    float ax = 0;
+    float ay = 0;
+    MidiViewport& viewport;
+};
+
 /**
  * Experiments:
  * 
@@ -18,20 +49,18 @@ struct NoteDisplay : OpaqueWidget
 		box.size = size;
         song = MidiSong::makeTest1();
         viewport._song = song;
-        viewport.startTime = startTime;
-        viewport.endTime = startTime + totalDuration;
 
+        // hard code view range to our demo song
+        viewport.startTime = 0;
+        viewport.endTime = viewport.startTime + 8;
         viewport.pitchLow = MidiNoteEvent::pitchToCV(3, 0);
         viewport.pitchHi = MidiNoteEvent::pitchToCV(5, 0);
 
-        initScaleFuncs();
+        //initScaleFuncs();
+        scaler = std::make_shared<NoteScreenScale>(viewport, size);
     }
 
-
-    // put in something to define the range we
-    // want to display
-    const float startTime = 0;
-    const float totalDuration = 8;
+    std::shared_ptr<NoteScreenScale> scaler;
 
     float ax =0;
     float ay=0;
@@ -39,27 +68,6 @@ struct NoteDisplay : OpaqueWidget
     const NVGcolor green =  nvgRGBA(0x00, 0xff, 0x00, 0xff); 
     const NVGcolor blue =  nvgRGBA(0x00, 0x00, 0xff, 0xff); 
     const NVGcolor bkgnd =  nvgRGBA(0xdd, 0xdd, 0xdd, 0xff); 
-
-
-    void initScaleFuncs()
-    {
-        ax = this->box.size.x / totalDuration;
-        ay = this->box.size.y / (viewport.pitchHi - viewport.pitchLow);
-    }
-    float midiTimeToX(const MidiEvent& ev)
-    {
-        return (ev.startTime - startTime) * ax;  
-    }
-
-    float midiTimeTodX(MidiEvent::time_t dt)
-    {
-        return  dt * ax;
-    }
-    float midiPitchToY(const MidiNoteEvent& note)
-    {
-       // return (note.pitchCV - viewport.pitchLow) * ay;
-        return ( -1.f/12.f + viewport.pitchHi - note.pitchCV) * ay;
-    }
 
     MidiViewport viewport;
     MidiSongPtr song;
@@ -72,9 +80,9 @@ struct NoteDisplay : OpaqueWidget
             MidiEventPtr evn = temp.second;
             MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
 
-            const float x = midiTimeToX(*ev);
-            const float y = midiPitchToY(*ev);
-            const float width = midiTimeTodX(ev->duration);
+            const float x = scaler->midiTimeToX(*ev);
+            const float y = scaler->midiPitchToY(*ev);
+            const float width = scaler->midiTimeTodX(ev->duration);
 
             filledRect(vg, red, x, y, width, 10);
         }

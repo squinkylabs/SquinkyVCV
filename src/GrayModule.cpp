@@ -4,6 +4,7 @@
 
 #ifdef _GRAY
 #include "Gray.h"
+#include "ctrl/SqMenuItem.h"
 
 /**
  */
@@ -43,6 +44,7 @@ void GrayModule::step()
 struct GrayWidget : ModuleWidget
 {
     GrayWidget(GrayModule *);
+    Menu* createContextMenu() override;
 
     /**
      * Helper to add a text label to this widget
@@ -122,6 +124,15 @@ GrayWidget::GrayWidget(GrayModule *module) :
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+}
+
+inline Menu* GrayWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md");
+    theMenu->addChild(manual);
+    return theMenu;
 }
 
 Model *modelGrayModule = Model::create<GrayModule,

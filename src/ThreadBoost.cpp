@@ -4,6 +4,7 @@
 #ifdef _TBOOST
 #include "WidgetComposite.h"
 #include "ThreadPriority.h"
+#include "ctrl/SqMenuItem.h"
 
 
 struct ThreadBoostModule : Module
@@ -97,6 +98,7 @@ void ThreadBoostModule::step()
 struct ThreadBoostWidget : ModuleWidget
 {
     ThreadBoostWidget(ThreadBoostModule *);
+    Menu* createContextMenu() override;
 };
 
 /**
@@ -164,6 +166,14 @@ ThreadBoostWidget::ThreadBoostWidget(ThreadBoostModule *module)
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+inline Menu* ThreadBoostWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booster.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 // Specify the Module and ModuleWidget subclass, human-readable
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags

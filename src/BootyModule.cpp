@@ -2,6 +2,7 @@
 #include "Squinky.hpp"
 #include "FrequencyShifter.h"
 #include "WidgetComposite.h"
+#include "ctrl/SqMenuItem.h"
 
 #ifdef _BOOTY
 
@@ -148,6 +149,7 @@ struct RangeChoice : ChoiceButton
 struct BootyWidget : ModuleWidget
 {
     BootyWidget(BootyModule *);
+    Menu* createContextMenu() override;
 };
 
 /**
@@ -204,6 +206,15 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+}
+
+inline Menu* BootyWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shifter.md");
+    theMenu->addChild(manual);
+    return theMenu;
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable

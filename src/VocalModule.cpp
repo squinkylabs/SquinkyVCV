@@ -3,6 +3,7 @@
 #ifdef _GROWLER
 #include "WidgetComposite.h"
 #include "VocalAnimator.h"
+#include "ctrl/SqMenuItem.h"
 
 /**
  * Implementation class for VocalWidget
@@ -47,7 +48,17 @@ void VocalModule::step()
 struct VocalWidget : ModuleWidget
 {
     VocalWidget(VocalModule *);
+    Menu* createContextMenu() override;
 };
+
+inline Menu* VocalWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/growler.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 template <typename BASE>
 struct MuteLight : BASE
