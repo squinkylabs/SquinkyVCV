@@ -38,6 +38,8 @@ struct NoteDisplay : OpaqueWidget
     const NVGcolor red =  nvgRGBA(0xff, 0x00, 0x00, 0xff); 
     const NVGcolor green =  nvgRGBA(0x00, 0xff, 0x00, 0xff); 
     const NVGcolor blue =  nvgRGBA(0x00, 0x00, 0xff, 0xff); 
+    const NVGcolor bkgnd =  nvgRGBA(0xdd, 0xdd, 0xdd, 0xff); 
+
 
     void initScaleFuncs()
     {
@@ -55,12 +57,12 @@ struct NoteDisplay : OpaqueWidget
     }
     float midiPitchToY(const MidiNoteEvent& note)
     {
-        return (note.pitchCV - viewport.pitchLow) * ay;
+       // return (note.pitchCV - viewport.pitchLow) * ay;
+        return ( -1.f/12.f + viewport.pitchHi - note.pitchCV) * ay;
     }
 
     MidiViewport viewport;
     MidiSongPtr song;
-
 
     void drawNotes(NVGcontext *vg)
     {
@@ -74,28 +76,20 @@ struct NoteDisplay : OpaqueWidget
             const float y = midiPitchToY(*ev);
             const float width = midiTimeTodX(ev->duration);
 
-
             filledRect(vg, red, x, y, width, 10);
         }
     }
 
     void draw(NVGcontext *vg) override
-    {
-        // draw some squares for fun
-       // nvgScale(vg, 2, 2);
-
-     
+    {   
 #if 0
         filledRect(vg, red, 50, 50, 30, 30); 
         filledRect(vg, blue, 0, 0, 30, 30); 
-
         strokedRect(vg,  nvgRGBA(0x00, 0xff, 0x00, 0xff), 100, 100, 40, 10);
-
         strokedRect(vg, green, 0, 0, this->box.size.x, this->box.size.y);
-
-        // this oun goes out of the bounds
         filledRect(vg, blue, this->box.size.x - 10, 100, 100, 10);
-        #endif
+#endif
+        filledRect(vg, bkgnd, 0, 0, box.size.x, box.size.y);
     
         drawNotes(vg);
     }
@@ -148,7 +142,7 @@ struct NoteDisplay : OpaqueWidget
     }
     void onMouseEnter(EventMouseEnter &e) override
     {
-        std::cout << "nmouseenger " << std::flush << std::endl;
+        //std::cout << "nmouseenger " << std::flush << std::endl;
     }
    /** Called when another widget begins responding to `onMouseMove` events */
 //	virtual void onMouseLeave(EventMouseLeave &e) {}
@@ -156,7 +150,7 @@ struct NoteDisplay : OpaqueWidget
     void onDefocus(EventDefocus &e) override
 
     {
-        std::cout << "defoucs " << std::flush << std::endl;
+       // std::cout << "defoucs " << std::flush << std::endl;
         e.consumed = true;
     }
 };
