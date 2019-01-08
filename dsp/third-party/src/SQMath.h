@@ -13,6 +13,15 @@
  */
 namespace sq 
 {
+#ifdef _V1
+    using RCFilter = rack::dsp::RCFilter;
+#else
+#endif
+
+inline float quadraticBipolar(float x)
+{
+    return rack::dsp::quadraticBipolar(x);
+}
 
 inline float clamp(float a, float b, float c)
 {

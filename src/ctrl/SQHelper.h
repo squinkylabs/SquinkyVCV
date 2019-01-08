@@ -18,7 +18,7 @@ public:
     } 
     static float engineGetSampleRate()
     {
-        return context()->engine->getSampleRate();
+        return app()->engine->getSampleRate();
     }
     template <typename T>
 

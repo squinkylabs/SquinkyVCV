@@ -18,7 +18,7 @@
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
-#include "dsp/functions.hpp"
+#include "SQMath.h"
 #include "dsp/filter.hpp"
 #include <random>
 
@@ -70,7 +70,8 @@ struct VoltageControlledOscillator
     rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
     rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
 #endif
-    rack::RCFilter sqrFilter;
+    //rack::RCFilter sqrFilter;
+    sq::RCFilter sqrFilter;
 
     // For analog detuning effect
     float pitchSlew = 0.0f;
