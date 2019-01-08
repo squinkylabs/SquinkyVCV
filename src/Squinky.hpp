@@ -1,10 +1,9 @@
 #include "rack.hpp"
 #include "componentlibrary.hpp"
 
-//#define _GMR
-//#define _SUPER
+
 #ifndef _V1
-#define _SEQ        // just for test
+//#define _SEQ        // just for test
 #endif
 
 #define _FUN        // works with 1.0
