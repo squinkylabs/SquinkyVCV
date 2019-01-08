@@ -4,6 +4,8 @@
     #include "math.hpp"
 #else
     #include "util/math.hpp"
+    #include "dsp/functions.hpp"
+    #include "dsp/filter.hpp"
 #endif
 
 
@@ -16,11 +18,16 @@ namespace sq
 #ifdef _V1
     using RCFilter = rack::dsp::RCFilter;
 #else
+    using RCFilter = rack::RCFilter;
 #endif
 
 inline float quadraticBipolar(float x)
 {
+#ifdef _V1
     return rack::dsp::quadraticBipolar(x);
+#else
+    return rack::quadraticBipolar(x);
+#endif
 }
 
 inline float clamp(float a, float b, float c)

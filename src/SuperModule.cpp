@@ -11,7 +11,6 @@
 
 #include <sstream>
 
-
 /**
  */
 struct SuperModule : Module
