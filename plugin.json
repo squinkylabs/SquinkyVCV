@@ -1,0 +1,17 @@
+{
+	"slug": "squinkylabs-plug1",
+	"name": "Squinky Labs",
+	"author": "Squinky Labs",
+	"license": "CC0-1.0",
+	"authorEmail": "contact@vcvrack.com",
+	"authorUrl": "https://github.com/squinkylabs/SquinkyVCV/README.md",
+	"sourceUrl": "https://github.com/squinkylabs/SquinkyVCV",
+	"version": "1.0.0",
+	"modules": {
+		"fun1": {
+			"name": "fun1",
+			"description": "A multi-function VCO with low aliasing",
+			"tags": ["VCO"]
+		}
+	}
+}

@@ -2,6 +2,7 @@
 
 #include "MinBLEPVCO.h"
 #include "ObjectCache.h"
+#include "SQMath.h"
 
 /**
  * perf test 1.0 44.5
@@ -185,7 +186,7 @@ void EV3<TBase>::processPWInput(int osc)
 
     float pw = pwInit + pwmInput * pwmTrim;
     const float minPw = 0.05f;
-    pw = rack::rescale(std::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
+    pw = sq::rescale(std::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
     vcos[osc].setPulseWidth(pw);
 }
 

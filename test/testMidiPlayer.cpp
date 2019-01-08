@@ -53,7 +53,7 @@ static MidiSongPtr makeSongOneQ()
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = 0;
     note->duration = .5;
-    note->pitch = 2.f;
+    note->pitchCV = 2.f;
     track->insertEvent(note);
     track->insertEnd(1);
 

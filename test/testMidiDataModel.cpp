@@ -10,7 +10,7 @@ static void testCanInsert()
 {
     MidiTrack mt;
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
-    ev->pitch = 3.3f;
+    ev->pitchCV = 3.3f;
     ev->startTime = 55.f;
     assert(mt.size() == 0);
     mt.insertEvent(ev);
@@ -31,11 +31,11 @@ static void testInsertSorted()
 {
     MidiTrack mt;
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
-    ev->pitch = 3.3f;
+    ev->pitchCV = 3.3f;
     ev->startTime = 11;
 
     MidiNoteEventPtr ev2 = std::make_shared<MidiNoteEvent>();
-    ev2->pitch = 4.4f;
+    ev2->pitchCV = 4.4f;
     ev2->startTime = 1;
 
     mt.insertEvent(ev);
@@ -58,7 +58,7 @@ static void testDelete()
 {
     MidiTrack mt;
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
-    ev->pitch = 33;
+    ev->pitchCV = 33;
     ev->startTime = 11;
 
     mt.insertEvent(ev);
@@ -71,12 +71,12 @@ static void testDelete2()
     MidiTrack mt;
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
 
-    ev->pitch = 33;
+    ev->pitchCV = 33;
     ev->startTime = 11;
     mt.insertEvent(ev);
 
     MidiNoteEventPtr ev2 = std::make_shared<MidiNoteEvent>();
-    ev2->pitch = 44;
+    ev2->pitchCV = 44;
     mt.insertEvent(ev2);
 
     mt.deleteEvent(*ev2);     // delete the second one, with pitch 44
@@ -85,7 +85,7 @@ static void testDelete2()
     assert(mt.size() == 1);
 
     MidiNoteEventPtr no = safe_cast<MidiNoteEvent>(mv[0]);
-    assert(no->pitch == 33);
+    assert(no->pitchCV == 33);
 }
 
 static void testDelete3()
@@ -96,23 +96,23 @@ static void testDelete3()
 #ifdef _DEBUG
     assert(MidiEvent::_count > 0);
 #endif
-    ev->pitch = 44;
+    ev->pitchCV = 44;
     ev->startTime = 11;
     mt.insertEvent(ev);
 
     MidiNoteEventPtr ev2 = std::make_shared<MidiNoteEvent>();
-    ev2->pitch = 33;
+    ev2->pitchCV = 33;
     mt.insertEvent(ev2);
 
     MidiNoteEventPtr ev3 = std::make_shared<MidiNoteEvent>();
-    ev3->pitch = 44;
+    ev3->pitchCV = 44;
     mt.deleteEvent(*ev);     // delete the first one, with pitch 44
     auto mv = mt._testGetVector();
 
     assert(mt.size() == 1);
 
     MidiNoteEventPtr no = safe_cast<MidiNoteEvent>(mv[0]);
-    assert(no->pitch == 33);
+    assert(no->pitchCV == 33);
 }
 
 static void testTimeRange0()

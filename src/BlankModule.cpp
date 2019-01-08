@@ -3,6 +3,7 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
+#if 0
 #include "Blank.h"
 
 
@@ -92,4 +93,5 @@ Model *modelBlankModule = Model::create<BlankModule,
     BlankWidget>("Squinky Labs",
     "squinkylabs-blank",
     "-- Blank --", RANDOM_TAG);
+#endif
 

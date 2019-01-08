@@ -18,19 +18,20 @@ public:
         End
     };
 
-    Type type=Type::End;
+    Type type = Type::End;
 
     /**
      * time units are floats, 1.0 == quarter note
      */
-    time_t startTime=0;
+    time_t startTime = 0;
 
     bool operator == (const MidiEvent&) const;
     bool operator != (const MidiEvent&) const;
 
     virtual void assertValid() const;
 
-    virtual ~MidiEvent() {
+    virtual ~MidiEvent()
+    {
 #ifdef _DEBUG
         --_count;
 #endif
@@ -104,44 +105,58 @@ public:
     /**
      * Pitch is VCV standard 1V/8
      */
-    float pitch=0;    
+    float pitchCV = 0;
     float duration = 1;
     void assertValid() const override;
 
     void setPitch(int octave, int semi);
     std::pair<int, int> getPitch() const;
+
+    static std::pair<int, int> cvToPitch(float cv);
+    static float pitchToCV(int octave, int semi);
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };
 
-inline std::pair<int, int> MidiNoteEvent::getPitch() const
+inline std::pair<int, int> MidiNoteEvent::cvToPitch(float cv)
 {
-    // VCV 0 is C4
-    int octave = int(std::floor(pitch));
-    float remainder = pitch - octave;
+     // VCV 0 is C4
+    int octave = int(std::floor(cv));
+    float remainder = cv - octave;
     octave += 4;
-    float s =  remainder * 12;
+    float s = remainder * 12;
     int semi = int(std::round(s));
     return std::pair<int, int>(octave, semi);
 }
 
+inline std::pair<int, int> MidiNoteEvent::getPitch() const
+{
+    return cvToPitch(pitchCV);
+}
+
+
+inline float MidiNoteEvent::pitchToCV(int octave, int semi)
+{
+    return float(octave - 4) + semi * (1.0f / 12.0f);
+}
+
 inline void MidiNoteEvent::setPitch(int octave, int semi)
 {
-    pitch = float(octave - 4) + semi * (1.0f / 12.0f);
+    pitchCV = pitchToCV(octave, semi);
 }
 
 inline void MidiNoteEvent::assertValid() const
 {
     MidiEvent::assertValid();
-    assertLE(pitch, 10);
-    assertGE(pitch, -10);
+    assertLE(pitchCV, 10);
+    assertGE(pitchCV, -10);
     assertGT(duration, 0);
 }
 
 inline  bool MidiNoteEvent::isEqual(const MidiEvent& other) const
 {
     const MidiNoteEvent* otherNote = static_cast<const MidiNoteEvent*>(&other);
-    return other.isEqualBase(*this) && this->pitch == otherNote->pitch;
+    return other.isEqualBase(*this) && this->pitchCV == otherNote->pitchCV;
 }
 
 

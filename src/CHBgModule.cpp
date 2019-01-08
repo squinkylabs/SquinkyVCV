@@ -1,13 +1,12 @@
-
-
-
 #include "Squinky.hpp"
-#include "SQWidgets.h"
+
+#ifdef _CHBG
+#include "ctrl/SQWidgets.h"
 #include "WidgetComposite.h"
+#include "CHBg.h"
+
 
 #include <sstream>
-
-#include "CHBg.h"
 
 /**
  */
@@ -387,3 +386,5 @@ Model *modelCHBgModule = Model::create<CHBgModule,
     CHBgWidget>("Squinky Labs",
     "squinkylabs-CHB",
     "[old] Chebyshev: Waveshaper VCO", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+
+#endif

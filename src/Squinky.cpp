@@ -1,5 +1,6 @@
 // plugin main
 #include "Squinky.hpp"
+#include "ctrl/SQHelper.h"
 
 
 // The plugin-wide instance of the Plugin class
@@ -14,31 +15,56 @@ void init(rack::Plugin *p)
     p->slug = "squinkylabs-plug1";
     p->version = TOSTRING(VERSION);
 
+#ifdef _BOOTY
     p->addModel(modelBootyModule);
+#endif
+#ifdef _CHB
     p->addModel(modelCHBModule);
+#endif
+#ifdef _TREM
     p->addModel(modelTremoloModule);
+#endif
+#ifdef _COLORS
     p->addModel(modelColoredNoiseModule);
+ #endif
+#ifdef _EV3 
     p->addModel(modelEV3Module);
+    #endif
+#ifdef _GROWLER
     p->addModel(modelVocalFilterModule);
+#endif
+#ifdef _FUN
     p->addModel(modelFunVModule);
+    #endif
+#ifdef _GRAY
     p->addModel(modelGrayModule);
+    #endif
+#ifdef _FORMANTS
     p->addModel(modelVocalModule);
+    #endif
+#ifdef _LFN
     p->addModel(modelLFNModule); 
+#endif
+
 #ifdef _SUPER
     p->addModel(modelSuperModule);
 #endif
+#ifdef _SHAPER
     p->addModel(modelShaperModule);
+#endif
+#ifdef _TBOOST
     p->addModel(modelThreadBoostModule);
+#endif
 
+#ifdef _CHBG
     p->addModel(modelCHBgModule);
-
+#endif
 #ifdef _SEQ
     assert(modelSequencerModule);
     p->addModel(modelSequencerModule);
 #endif
 #ifdef _GMR
     p->addModel(modelGMRModule);
-   
 #endif
 #ifdef _EV
     p->addModel(modelEVModule);
@@ -56,3 +82,6 @@ void init(rack::Plugin *p)
 #endif
 
 }
+
+const NVGcolor SQHelper::COLOR_WHITE = nvgRGB(0xff, 0xff, 0xff);
+const NVGcolor SQHelper::COLOR_BLACK = nvgRGB(0,0,0);

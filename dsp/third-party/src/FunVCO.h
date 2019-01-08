@@ -11,6 +11,7 @@
 #if defined(_MSC_VER)
 #pragma warning (push)
 #pragma warning (disable: 4305 4244 4267)
+#define __attribute__(x)
 #endif
 
 #if !defined(M_PI)
@@ -27,6 +28,7 @@
 #include "ButterworthFilterDesigner.h"
 #include "ObjectCache.h"
 #include "IIRDecimator.h"
+#include "SQMath.h"
 
 extern float sawTable[2048];
 extern float triTable[2048];
@@ -34,8 +36,6 @@ extern float triTable[2048];
 // When this is defined, will use Squinky Labs anti-aliasing decimators,
 // rather than  rack::Decimator<>
 #define _USEIIR
-
-
 
 template <int OVERSAMPLE, int QUALITY>
 struct VoltageControlledOscillator
@@ -70,7 +70,7 @@ struct VoltageControlledOscillator
     rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
     rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
 #endif
-    RCFilter sqrFilter;
+    rack::RCFilter sqrFilter;
 
     // For analog detuning effect
     float pitchSlew = 0.0f;
@@ -132,7 +132,7 @@ struct VoltageControlledOscillator
     void setPulseWidth(float pulseWidth)
     {
         const float pwMin = 0.01f;
-        pw = clamp(pulseWidth, pwMin, 1.0f - pwMin);
+        pw = sq::clamp(pulseWidth, pwMin, 1.0f - pwMin);
     }
 
     void process(float deltaTime, float syncValue)
@@ -149,7 +149,7 @@ struct VoltageControlledOscillator
         }
 
         // Advance phase
-        float deltaPhaseOver = clamp(freq * deltaTime, 1e-6, 0.5f) * (1.0f / OVERSAMPLE);
+        float deltaPhaseOver = sq::clamp(freq * deltaTime, 1e-6, 0.5f) * (1.0f / OVERSAMPLE);
 
         // Detect sync
         int syncIndex = -1; // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
@@ -200,7 +200,7 @@ struct VoltageControlledOscillator
 
             if (triEnabled) {
                 if (analog) {
-                    triBuffer[i] = 1.25f * interpolateLinear(triTable, phase * 2047.f);
+                    triBuffer[i] = 1.25f * sq::interpolateLinear(triTable, phase * 2047.f);
                 } else {
                     if (phase < 0.25f)
                         triBuffer[i] = 4.f * phase;
@@ -213,7 +213,7 @@ struct VoltageControlledOscillator
 
             if (sawEnabled) {
                 if (analog) {
-                    sawBuffer[i] = 1.66f * interpolateLinear(sawTable, phase * 2047.f);
+                    sawBuffer[i] = 1.66f * sq::interpolateLinear(sawTable, phase * 2047.f);
                 } else {
                     if (phase < 0.5f)
                         sawBuffer[i] = 2.f * phase;

@@ -6,6 +6,7 @@
 #include "WidgetComposite.h"
 #include "Seq.h"
 #include "widgets.hpp"
+#include "NoteDisplay.h"
 
 
 struct SequencerModule : Module
@@ -49,7 +50,7 @@ struct SequencerWidget : ModuleWidget
 
  SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 {
-    const int width = (14 + 0) * RACK_GRID_WIDTH;      // 14 for panel, 14 for notes
+    const int width = (14 + 14) * RACK_GRID_WIDTH;      // 14 for panel, 14 for notes
     box.size = Vec(width, RACK_GRID_HEIGHT);
 
     {
@@ -58,12 +59,11 @@ struct SequencerWidget : ModuleWidget
         panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
         addChild(panel);
     }
-    #if 0
+    #if 1
 	{
-		NoteDisplay *display = new NoteDisplay();
-		display->module = module;
-		display->box.pos = Vec( 14 * RACK_GRID_WIDTH, 0);
-		display->box.size = Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+        const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
+        const Vec noteSize =Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+		NoteDisplay *display = new NoteDisplay(notePos, noteSize);
 		addChild(display);
 	}
     #endif

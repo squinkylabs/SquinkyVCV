@@ -1,12 +1,12 @@
-#include <sstream>
 #include "Squinky.hpp"
-#include "SQWidgets.h"
-#include "WidgetComposite.h"
 
 #ifdef _CH10
-
+#include "ctrl/SQWidgets.h"
+#include "WidgetComposite.h"
 #include "CH10.h"
 #include "ctrl/ToggleButton.h"
+
+#include <sstream>
 
 /**
  */

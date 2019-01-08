@@ -1,6 +1,9 @@
 #include "Squinky.hpp"
+
+#ifdef _EV3
 #include "ctrl/WaveformSelector.h"
-#include "SQWidgets.h"
+#include "ctrl/SQWidgets.h"
+#include "ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
 
 #include "EV3.h"
@@ -219,15 +222,6 @@ void EV3PitchDisplay::updateInterval(int osc)
         adjustedSemi += 12;
     }
 
-#if 0
-    if (osc == 1) {
-        printf("curentPitch = %d ref = %d, rel=%d\n", currentPitch, refPitch, relativePitch);
-        printf(" adjOct=%d semi = %d\n", adjustedOctave, adjustedSemi);
-        printf(" refOctave=%d, oct=%d\n", refOctave, oct);
-        printf(" refSemi=%d, semi=%d\n", refSemi, semi);
-        fflush(stdout);
-    }
-#endif
     assert(adjustedSemi >= 0);
     assert(adjustedSemi < 12);
 
@@ -276,6 +270,7 @@ struct EV3Widget : ModuleWidget
     }
 
     void step() override;
+    Menu* createContextMenu() override;
 
     EV3PitchDisplay pitchDisplay;
     EV3Module* const module;
@@ -283,6 +278,15 @@ struct EV3Widget : ModuleWidget
     Label* plusTwo = nullptr;
     bool wasNormalizing = false;
 };
+
+inline Menu* EV3Widget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/ev3.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);
 void EV3Widget::step()
@@ -494,4 +498,6 @@ Model *modelEV3Module = Model::create<EV3Module,
     "squinkylabs-ev3",
     "EV3: Triple VCO with even waveform", OSCILLATOR_TAG);
 
+#endif
+    
 

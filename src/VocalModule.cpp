@@ -1,6 +1,9 @@
 #include "Squinky.hpp"
+
+#ifdef _GROWLER
 #include "WidgetComposite.h"
 #include "VocalAnimator.h"
+#include "ctrl/SqMenuItem.h"
 
 /**
  * Implementation class for VocalWidget
@@ -45,7 +48,17 @@ void VocalModule::step()
 struct VocalWidget : ModuleWidget
 {
     VocalWidget(VocalModule *);
+    Menu* createContextMenu() override;
 };
+
+inline Menu* VocalWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/growler.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 template <typename BASE>
 struct MuteLight : BASE
@@ -195,3 +208,4 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs",
     "squinkylabs-vocalanimator",
     "Growler: Vocal Animator", EFFECT_TAG, FILTER_TAG, LFO_TAG, RANDOM_TAG);
+#endif

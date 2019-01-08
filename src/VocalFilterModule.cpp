@@ -1,15 +1,16 @@
 
 #include "Squinky.hpp"
 
+#ifdef _FORMANTS
 #include "WidgetComposite.h"
 #include "VocalFilter.h"
+#include "ctrl/SqMenuItem.h"
 
 /**
  * Implementation class for VocalWidget
  */
 struct VocalFilterModule : Module
 {
-
     VocalFilterModule();
 
     /**
@@ -48,9 +49,19 @@ void VocalFilterModule::step()
 struct VocalFilterWidget : ModuleWidget
 {
     VocalFilterWidget(VocalFilterModule *);
+    Menu* createContextMenu() override;
     void addVowelLabels();
     void addModelKnob(VocalFilterModule *module, float x, float y);
 };
+
+inline Menu* VocalFilterWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/formants.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 void VocalFilterWidget::addVowelLabels()
 {
@@ -260,3 +271,4 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
 Model *modelVocalFilterModule = Model::create<VocalFilterModule, VocalFilterWidget>("Squinky Labs",
     "squinkylabs-vocalfilter",
     "Formants: Vocal Filter", EFFECT_TAG, FILTER_TAG);
+#endif

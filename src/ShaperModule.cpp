@@ -1,7 +1,10 @@
-
 #include "Squinky.hpp"
+
+#ifdef _SHAPER
 #include "ctrl/ToggleButton.h"
 #include "WidgetComposite.h"
+#include "ctrl/SqMenuItem.h"
+
 #include "Shaper.h"
 
 /**
@@ -47,6 +50,7 @@ void ShaperModule::onSampleRateChange()
 struct ShaperWidget : ModuleWidget
 {
     ShaperWidget(ShaperModule *);
+    Menu* createContextMenu() override;
 
     /**
      * Helper to add a text label to this widget
@@ -71,6 +75,15 @@ private:
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
     void addSelector(ShaperModule* module);
 };
+
+inline Menu* ShaperWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
 
 void ShaperWidget::step()
 {
@@ -208,4 +221,5 @@ Model *modelShaperModule = Model::create<ShaperModule,
     ShaperWidget>("Squinky Labs",
     "squinkylabs-shp",
     "Shaper: Precision Wave Shaper", WAVESHAPER_TAG, DISTORTION_TAG);
+#endif
 

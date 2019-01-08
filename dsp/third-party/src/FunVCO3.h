@@ -119,7 +119,7 @@ struct KSOscillator
     void setPulseWidth(float pulseWidth)
     {
         const float pwMin = 0.01f;
-        pw = clamp(pulseWidth, pwMin, 1.0f - pwMin);
+        pw = sq::clamp(pulseWidth, pwMin, 1.0f - pwMin);
     }
 
     void process(float deltaTime, float syncValue, float sampleTime)
@@ -129,7 +129,7 @@ struct KSOscillator
        
 
         // Advance phase
-        float deltaPhaseOver = clamp(freq * deltaTime, 1e-6, 0.5f) * (1.0f / OVERSAMPLE);
+        float deltaPhaseOver = sq::clamp(freq * deltaTime, 1e-6, 0.5f) * (1.0f / OVERSAMPLE);
 
         // Detect sync
         int syncIndex = -1; // Index in the oversample loop where sync occurs [0, OVERSAMPLE)

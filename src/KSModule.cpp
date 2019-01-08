@@ -1,11 +1,10 @@
 
 #include <sstream>
 #include "Squinky.hpp"
+
+#ifdef _KS
 #include "WidgetComposite.h"
-
-#ifdef _SINK
 #include "KSComposite.h"
-
 
 /**
  */

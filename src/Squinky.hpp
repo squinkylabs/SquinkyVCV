@@ -1,9 +1,31 @@
 #include "rack.hpp"
+#include "componentlibrary.hpp"
 
-//#define _GMR
-#define _SUPER
-//#define _SEQ
+
+#ifndef _V1
+//#define _SEQ        // just for test
+#endif
+
+#define _FUN        // works with 1.0
 //#define _CH10
+
+
+#ifndef _V1
+    #define _EV3
+    #define _CHB
+    #define _CHBG
+    #define _LFN
+    #define _COLORS
+    #define _GRAY
+    #define _SHAPER
+    #define _SUPER
+    #define _GROWLER
+    #define _FORMANTS
+    #define _TBOOST
+    #define _BOOTY
+    #define _TREM
+#endif
+
 
 using namespace rack;
 extern Plugin *plugin;
@@ -26,14 +48,24 @@ extern Model *modelCPU_HogModule;
 #ifdef _EV
 extern Model *modelEVModule;
 #endif
+#ifdef _FUN
 extern Model *modelFunVModule;
+#endif
+#ifdef _EV3
 extern Model *modelEV3Module;
+#endif
+#ifdef _GRAY
 extern Model *modelGrayModule;
+#endif
+#ifdef _SHAPER
 extern Model *modelShaperModule;
+#endif
 #ifdef _DG
 extern Model *modelDGModule;
 #endif
+#ifdef _BLANK
 extern Model *modelBlankModule;
+#endif
 #ifdef _SUPER
 extern Model *modelSuperModule;
 #endif

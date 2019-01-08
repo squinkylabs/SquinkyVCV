@@ -351,6 +351,9 @@
     <ClCompile Include="..\..\test\testUtils.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testIComposite.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -616,6 +619,12 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\CHBg.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\src\FunVCO3.h">
+      <Filter>Header Files\dsp\third-party\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\src\SQMath.h">
+      <Filter>Header Files\dsp\third-party\src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

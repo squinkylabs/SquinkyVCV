@@ -21,6 +21,7 @@
 #include "AudioMath.h"
 #include "ObjectCache.h"
 
+#include "SQMath.h"
 
 using namespace rack;
 
@@ -277,7 +278,7 @@ inline void EvenVCO<TBase>::step_sq(float deltaPhase)
     if (doSq) {
         pw = TBase::params[PWM_PARAM].value + TBase::inputs[PWM_INPUT].value / 5.0;
         const float minPw = 0.05f;
-        pw = rescale(clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
+        pw = sq::rescale(sq::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
 
         if (!halfPhase && phase >= pw) {
             float crossing = -(phase - pw) / deltaPhase;
@@ -349,7 +350,7 @@ inline void EvenVCO<TBase>::step()
 
     // Advance phase
     float f = (_testFreq) ? _testFreq : _freq;
-    float deltaPhase = clamp(f * TBase::engineGetSampleTime(), 1e-6f, 0.5f);
+    float deltaPhase = sq::clamp(f * TBase::engineGetSampleTime(), 1e-6f, 0.5f);
 
     // call the dedicated dispatch routines for the special case waveforms.
     switch (dispatcher) {
@@ -401,7 +402,7 @@ inline void EvenVCO<TBase>::step_all(float deltaPhase)
     if (doSq) {
         pw = TBase::params[PWM_PARAM].value + TBase::inputs[PWM_INPUT].value / 5.0;
         const float minPw = 0.05f;
-        pw = rescale(clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
+        pw = sq::rescale(sq::clamp(pw, -1.0f, 1.0f), -1.0f, 1.0f, minPw, 1.0f - minPw);
 
         if (!halfPhase && phase >= pw) {
             const float crossing = -(phase - pw) / deltaPhase;

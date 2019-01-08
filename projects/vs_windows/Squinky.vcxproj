@@ -65,6 +65,7 @@
     <ClCompile Include="..\..\test\testGateTrigger.cpp" />
     <ClCompile Include="..\..\test\testGMR.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
+    <ClCompile Include="..\..\test\testIComposite.cpp" />
     <ClCompile Include="..\..\test\testLookupTable.cpp" />
     <ClCompile Include="..\..\test\testLowpassFilter.cpp" />
     <ClCompile Include="..\..\test\testMidiDataModel.cpp" />
@@ -139,6 +140,8 @@
     <ClInclude Include="..\..\dsp\third-party\src\EvenVCO.h" />
     <ClInclude Include="..\..\dsp\third-party\src\EvenVCO_orig.h" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO.h" />
+    <ClInclude Include="..\..\dsp\third-party\src\FunVCO3.h" />
+    <ClInclude Include="..\..\dsp\third-party\src\SQMath.h" />
     <ClInclude Include="..\..\dsp\utils\AsymRampShaper.h" />
     <ClInclude Include="..\..\dsp\utils\AsymWaveShaper.h" />
     <ClInclude Include="..\..\dsp\utils\AudioMath.h" />
@@ -244,7 +247,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dsp\utils;..\..\dsp\fft;..\..\dsp\filters;..\..\dsp\generators;..\..\dsp\third-party\src;..\..\dsp\third-party\falco;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\composites;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\sqsrc\grammar;..\..\sqsrc\clock;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;D:\VCVRack\x6\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\util;..\..\dsp\utils;..\..\dsp\fft;..\..\dsp\filters;..\..\dsp\generators;..\..\dsp\third-party\src;..\..\dsp\third-party\falco;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\composites;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\sqsrc\grammar;..\..\sqsrc\delay;..\..\sqsrc\clock;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\model;..\..\midi\view;..\..\midi\controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
@@ -277,7 +280,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\dsp\utils;..\..\dsp\fft;..\..\dsp\filters;..\..\dsp\generators;..\..\dsp\third-party\src;..\..\dsp\third-party\falco;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\composites;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\sqsrc\grammar;..\..\sqsrc\clock;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;D:\VCVRack\x6\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\util;..\..\dsp\utils;..\..\dsp\fft;..\..\dsp\filters;..\..\dsp\generators;..\..\dsp\third-party\src;..\..\dsp\third-party\falco;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\composites;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\sqsrc\grammar;..\..\sqsrc\delay;..\..\sqsrc\clock;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\model;..\..\midi\view;..\..\midi\controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>

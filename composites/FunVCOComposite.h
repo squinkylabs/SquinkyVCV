@@ -2,10 +2,13 @@
 
 
 #include "FunVCO.h"
+
+#include "IComposite.h"
+
 //#define _ORIGVCO
 
 template <class TBase>
-class FunVCOComposite : public TBase
+class FunVCOComposite : public TBase, public IComposite
 {
 public:
     FunVCOComposite()
@@ -48,6 +51,14 @@ public:
         NUM_LIGHTS
     };
 
+    /** Implement IComposite
+     */
+     Config getParam(int i) override;
+     int getNumParams() override
+     {
+         return NUM_PARAMS;
+     }
+
 
     void step() override;
     void init()
@@ -69,15 +80,48 @@ private:
 };
 
 template <class TBase>
+inline typename FunVCOComposite<TBase>::Config
+    FunVCOComposite<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0);
+    switch(i) {
+        case MODE_PARAM:
+            ret = {0.0f, 1.0f, 1.0f};
+            break;
+        case SYNC_PARAM:
+            ret = {0.0f, 1.0f, 1.0f};
+            break;
+        case FREQ_PARAM:
+            ret = {-54.0f, 54.0f, 0.0f};
+            break;
+        case FINE_PARAM:
+            ret = {-1.0f, 1.0f, 0.0f};
+            break;
+        case FM_PARAM:
+            ret = {0.0f, 1.0f, 0.0f};
+            break;
+        case PW_PARAM:
+            ret = {0.0f, 1.0f, 0.5f};
+            break;
+        case PWM_PARAM:
+            ret = {0.0f, 1.0f, 0.0f};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+template <class TBase>
 inline void FunVCOComposite<TBase>::step()
 {
     oscillator.analog = TBase::params[MODE_PARAM].value > 0.0f;
     oscillator.soft = TBase::params[SYNC_PARAM].value <= 0.0f;
 
-    float pitchFine = 3.0f * quadraticBipolar(TBase::params[FINE_PARAM].value);
+    float pitchFine = 3.0f * rack::quadraticBipolar(TBase::params[FINE_PARAM].value);
     float pitchCv = 12.0f * TBase::inputs[PITCH_INPUT].value;
     if (TBase::inputs[FM_INPUT].active) {
-        pitchCv += quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
+        pitchCv += rack::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
     }
 
     oscillator.setPitch(TBase::params[FREQ_PARAM].value, pitchFine + pitchCv);

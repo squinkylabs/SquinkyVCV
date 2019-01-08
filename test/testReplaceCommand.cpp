@@ -35,7 +35,7 @@ static void test1()
    // MidiEventPtr newEvent =  std::make_shared<MidiEvent>();
     MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
     assert(newNote);
-    newNote->pitch = 12;
+    newNote->pitchCV = 12;
     toAdd.push_back(newNote);
 
     CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, 0, toRem, toAdd);
