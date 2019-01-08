@@ -11,7 +11,6 @@
  */
 struct VocalFilterModule : Module
 {
-
     VocalFilterModule();
 
     /**
