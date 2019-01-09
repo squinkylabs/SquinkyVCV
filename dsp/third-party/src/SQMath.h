@@ -1,14 +1,23 @@
 #pragma once
 
+#if defined(_MSC_VER) && !defined(DEPRECATED)
+//#define DEPRECATED
+#endif
+
+#if !defined(M_PI)
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+
 #ifdef _V1
     #include "math.hpp"
+    #include "dsp/filter.hpp"
 #else
     #include "util/math.hpp"
     #include "dsp/functions.hpp"
     #include "dsp/filter.hpp"
 #endif
 
-
+#if 0
 /**
  * A wrapper around rack's math functions.
  * Mitigates some V1 vs V06 issues.
@@ -57,5 +66,6 @@ inline float rescale(float a, float b, float c, float d, float e)
         return rack::rescale(a, b, c, d, e);
     #endif
 }
-
 }
+#endif
+

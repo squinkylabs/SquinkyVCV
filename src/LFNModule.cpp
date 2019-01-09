@@ -4,9 +4,10 @@
 #ifdef _LFN
 #include "ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
-#include "ctrl/ToggleButton.h"
-#include "ctrl/SQWidgets.h"
+//#include "ctrl/ToggleButton.h"
+//#include "ctrl/SQWidgets.h"
 #include "LFN.h"
+#include "ctrl/SQHelper.h"
 
 #include <sstream>
 
@@ -30,9 +31,23 @@ private:
 
 void LFNModule::onSampleRateChange()
 {
-    lfn.setSampleTime(engineGetSampleTime());
+    lfn.setSampleTime(SQHelper::engineGetSampleTime());
 }
 
+#ifdef _V1
+LFNModule::LFNModule()
+    : Module(lfn.NUM_PARAMS,
+    lfn.NUM_INPUTS,
+    lfn.NUM_OUTPUTS,
+    lfn.NUM_LIGHTS),
+    lfn(this)
+{
+    setup(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
+    onSampleRateChange();
+    lfn.init();
+    SQHelper::setupParams(lfn, this);
+}
+#else
 LFNModule::LFNModule()
     : Module(lfn.NUM_PARAMS,
     lfn.NUM_INPUTS,
@@ -43,6 +58,7 @@ LFNModule::LFNModule()
     onSampleRateChange();
     lfn.init();
 }
+#endif
 
 void LFNModule::step()
 {
@@ -71,7 +87,7 @@ struct LFNWidget : ModuleWidget
 {
     LFNWidget(LFNModule *);
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SQHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -109,17 +125,16 @@ static const float labelX = 2;
 
 void LFNWidget::addStage(int index)
 {
-    const float gmin = -5;
-    const float gmax = 5;
-    const float gdef = 0;
-    addParam(ParamWidget::create<Rogan1PSBlue>(
+    addParam(SQHelper::createParam<Rogan1PSBlue>(
+        module.lfn,
         Vec(knobX, knobY + index * knobDy),
-        &module, module.lfn.EQ0_PARAM + index, gmin, gmax, gdef));
+        &module, module.lfn.EQ0_PARAM + index));
 
     updater.makeLabel((*this), index, labelX, knobY - 2 + index * knobDy);
 
-    addInput(Port::create<PJ301MPort>(Vec(inputX, inputY + index * knobDy),
-        Port::INPUT, &module, module.lfn.EQ0_INPUT + index));
+    addInput(createInput<PJ301MPort>(
+        Vec(inputX, inputY + index * knobDy),
+        &module, module.lfn.EQ0_INPUT + index));
 }
 
 inline Menu* LFNWidget::createContextMenu()
@@ -158,7 +173,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     addLabel(
         Vec(54, inputY - knobDy - 18), "out", COLOR_WHITE);
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
+    addParamSQHelper::createParam<Rogan1PSBlue>(
         Vec(10, knobY - 1 * knobDy), module, module->lfn.FREQ_RANGE_PARAM, -5, 5, 0));
 
    // addLabel(Vec(59, knobY - 1 * knobDy), "R");

@@ -7,6 +7,7 @@
 #endif
 
 #define _FUN        // works with 1.0
+#define _LFN
 //#define _CH10
 
 

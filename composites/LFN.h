@@ -9,6 +9,7 @@
 #include "BiquadState.h"
 #include "BiquadFilter.h"
 #include "ObjectCache.h"
+#include "IComposite.h"
 #include <random>
 
 /**
@@ -53,7 +54,7 @@
  */
 
 template <class TBase>
-class LFN : public TBase
+class LFN : public TBase, public IComposite
 {
 public:
 
@@ -64,6 +65,13 @@ public:
     {
     }
 
+    /** Implement IComposite
+     */
+     Config getParam(int i) override;
+     int getNumParams() override
+     {
+         return NUM_PARAMS;
+     }
     void setSampleTime(float time)
     {
         reciprocalSampleRate = time;
@@ -190,6 +198,47 @@ private:
     AudioMath::SimpleScaleFun<float> gainScale =
     {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
 };
+
+template <class TBase>
+inline typename LFN<TBase>::Config
+    LFN<TBase>::getParam(int i)
+{
+    const float gmin = -5;
+    const float gmax = 5;
+    const float gdef = 0;
+    Config ret(0, 1, 0, "");
+    switch(i) {
+        /*
+        case MODE_PARAM:
+            ret = {0.0f, 1.0f, 1.0f, "Analog/digital mode"};
+            break;
+*/
+        case EQ0_PARAM:
+            ret = { gmin, gmax, gdef, "Low freq mix"};
+            break;
+        case EQ1_PARAM:
+            ret = { gmin, gmax, gdef, "Mid-low freq fix"};
+            break;
+        case EQ2_PARAM:
+            ret = { gmin, gmax, gdef, "Mid freq mix"};
+            break;
+        case EQ3_PARAM:
+            ret = { gmin, gmax, gdef, "Mid-high freq mix"};
+            break;
+        case EQ4_PARAM:
+            ret = { gmin, gmax, gdef, "High freq mix"};
+            break;
+        case FREQ_RANGE_PARAM:
+            ret = {  -5, 5, 0, "Base frequency"};
+            break;
+        case XLFN_PARAM:
+            ret = { 0, 1, 0, "Extra low frequency"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
 
 template <class TBase>
 inline void LFN<TBase>::pollForChangeOnUIThread()

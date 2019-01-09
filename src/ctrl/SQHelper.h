@@ -20,6 +20,10 @@ public:
     {
         return app()->engine->getSampleRate();
     }
+      static float engineGetSampleTime()
+    {
+        return app()->engine->getSampleTime();
+    }
     template <typename T>
 
     static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int paramId )
