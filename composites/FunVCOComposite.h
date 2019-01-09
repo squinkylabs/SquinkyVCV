@@ -83,28 +83,28 @@ template <class TBase>
 inline typename FunVCOComposite<TBase>::Config
     FunVCOComposite<TBase>::getParam(int i)
 {
-    Config ret(0, 1, 0);
+    Config ret(0, 1, 0, "");
     switch(i) {
         case MODE_PARAM:
-            ret = {0.0f, 1.0f, 1.0f};
+            ret = {0.0f, 1.0f, 1.0f, "Analog/digital mode"};
             break;
         case SYNC_PARAM:
-            ret = {0.0f, 1.0f, 1.0f};
+            ret = {0.0f, 1.0f, 1.0f, "Sync hard/soft"};
             break;
         case FREQ_PARAM:
-            ret = {-54.0f, 54.0f, 0.0f};
+            ret = {-54.0f, 54.0f, 0.0f, "Frequency"};
             break;
         case FINE_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f};
+            ret = {-1.0f, 1.0f, 0.0f, "Fine frequency"};
             break;
         case FM_PARAM:
-            ret = {0.0f, 1.0f, 0.0f};
+            ret = {0.0f, 1.0f, 0.0f, "Pitch modulation depth"};
             break;
         case PW_PARAM:
-            ret = {0.0f, 1.0f, 0.5f};
+            ret = {0.0f, 1.0f, 0.5f, "Pulse width"};
             break;
         case PWM_PARAM:
-            ret = {0.0f, 1.0f, 0.0f};
+            ret = {0.0f, 1.0f, 0.0f, "Pulse width modulation depth"};
             break;
         default:
             assert(false);

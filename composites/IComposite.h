@@ -10,15 +10,17 @@ public:
     class Config
     {
     public:
-        Config(float a, float b, float c)
+        Config(float a, float b, float c, const char* n)
         {
             min=a;
             max=b;
             def=c;
+            name=n;
         }
         float min=0;
         float max=0;
         float def=0;
+        const char* name; 
         // When you add more fields here, make sure 
         // to add them to testIComposite.cpp
     };

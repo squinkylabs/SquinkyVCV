@@ -3,6 +3,7 @@
 #include "rack.hpp"
 #include <functional>
 #include "SQHelper.h"
+#include "SqUI.h"
 
 /**
  * This menu item takes generic lambdas,
@@ -10,12 +11,13 @@
  **/
 struct SqMenuItem : rack::MenuItem
 {
-    #ifndef _V1 // need to port the mouse stuff
-    void onAction(rack::EventAction &e) override
+
+   // void onAction(rack::EventAction &e) override
+    void onAction(const sq::EventAction &e) override
     {
         _onActionFn();
     }
-    #endif
+
 
     void step() override
     {
@@ -53,16 +55,27 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
         widget(widget)
     {
     }
-    #ifndef _V1
-    void onAction(rack::EventAction &e) override
+
+    void onAction(const sq::EventAction &e) override
     {
         const float newValue = isOn() ? 0 : 1;
+#ifdef _V1
+       //widget->dirtyValue = newValue;
+       if (widget->quantity) {
+            widget->quantity->setValue(newValue);
+       }
+#else
         widget->value = newValue;
-        rack::EventChange ec;
+#endif
+        sq::EventChange ec;
         widget->onChange(ec);
+#ifdef _V1
+        e.consume(this);
+#else
         e.consumed = true;
+#endif
     }
-    #endif
+
 
     void step() override
     {
@@ -72,12 +85,16 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
 private:
     bool isOn()
     {
-        #ifdef _V1
-        return false;
-        #else
+#ifdef _V1
+        //return false;
+        bool ret = false;
+        if (widget->quantity) {
+            ret = widget->quantity->getValue() > .5f;
+        }
+#else
         bool ret = widget->value > .5f;
+#endif
         return ret;
-        #endif
     }
     rack::ParamWidget* const widget;
 };

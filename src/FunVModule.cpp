@@ -68,7 +68,10 @@ struct FunVWidget : ModuleWidget
     void addTop3(FunVModule *, float verticalShift);
     void addMiddle4(FunVModule *, float verticalShift);
     void addJacks(FunVModule *, float verticalShift);
+#if 1
+//#ifndef _V1
     Menu* createContextMenu() override;
+#endif
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color)
     {
@@ -85,6 +88,8 @@ struct FunVWidget : ModuleWidget
     }
 };
 
+#if 1
+//#ifndef _V1 // should be built in
 inline Menu* FunVWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -93,6 +98,7 @@ inline Menu* FunVWidget::createContextMenu()
     theMenu->addChild(manual);
     return theMenu;
 }
+#endif
 
 void FunVWidget::addTop3(FunVModule * module, float verticalShift)
 {

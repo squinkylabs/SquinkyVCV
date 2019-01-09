@@ -36,7 +36,7 @@ public:
         const int n = comp.getNumParams();
         for (int i=0; i<n; ++i) {
             auto param = comp.getParam(i);
-            module->params[i].setup(param.min, param.max, param.def, "fakename", "fake unit");
+            module->params[i].setup(param.min, param.max, param.def, param.name);
         }
     }
 };
