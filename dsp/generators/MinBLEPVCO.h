@@ -22,8 +22,8 @@ namespace std {
 
 //#include "math.hpp"
 
-
-#include "dsp/minblep.hpp"
+#include "SQMath.h"
+//#include "dsp/minblep.hpp"
 #include "dsp/filter.hpp"
 #include "AudioMath.h"
 #include "ObjectCache.h"
@@ -118,11 +118,11 @@ private:
     float pulseWidth = .5;
 
 
-    rack::MinBLEP<16> syncMinBLEP;
-    rack::MinBLEP<16> aMinBLEP;
-    rack::MinBLEP<16> bMinBLEP;
+    sq::MinBLEP syncMinBLEP;
+    sq::MinBLEP aMinBLEP;
+    sq::MinBLEP bMinBLEP;
     bool aIsNext = false;
-    rack::MinBLEP<16>* getNextMinBLEP();
+    sq::MinBLEP* getNextMinBLEP();
 
 
 
@@ -148,17 +148,19 @@ private:
     bool isSqHigh() const;
 };
 
+using namespace rack::dsp;
 inline MinBLEPVCO::MinBLEPVCO()
 {
-    syncMinBLEP.minblep = rack::minblep_16_32;
+    syncMinBLEP.minblep = minblep_16_32;
+    aMinBLEP.minblep = minblep_16_32;
+    bMinBLEP.minblep = minblep_16_32;
+
     syncMinBLEP.oversample = 32;
-    aMinBLEP.minblep = rack::minblep_16_32;
     aMinBLEP.oversample = 32;
-    bMinBLEP.minblep = rack::minblep_16_32;
     bMinBLEP.oversample = 32;
 }
 
-inline  rack::MinBLEP<16>* MinBLEPVCO::getNextMinBLEP()
+inline  sq::MinBLEP* MinBLEPVCO::getNextMinBLEP()
 {
     aIsNext = !aIsNext;
     return aIsNext ? &aMinBLEP : &bMinBLEP;

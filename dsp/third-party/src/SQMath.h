@@ -11,13 +11,14 @@
 #ifdef _V1
     #include "math.hpp"
     #include "dsp/filter.hpp"
+    #include "dsp/minblep.hpp"
 #else
     #include "util/math.hpp"
     #include "dsp/functions.hpp"
     #include "dsp/filter.hpp"
 #endif
 
-#if 0
+#if 1
 /**
  * A wrapper around rack's math functions.
  * Mitigates some V1 vs V06 issues.
@@ -26,6 +27,11 @@ namespace sq
 {
 #ifdef _V1
     using RCFilter = rack::dsp::RCFilter;
+    using MinBLEP = rack::dsp::MinBLEP<16>;
+    // minblep_16_32 =  rack::dsp::minblep_16_32;
+    // extern const float minblep_16_32[];
+    //#define minblep_16_32 rack::dsp::minblep_16_32
+  
 #else
     using RCFilter = rack::RCFilter;
 #endif

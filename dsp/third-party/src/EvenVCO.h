@@ -73,12 +73,12 @@ struct EvenVCO : TBase
     /** Whether we are past the pulse width already */
     bool halfPhase = false;
 
-    MinBLEP<16> triSquareMinBLEP;
-    MinBLEP<16> triMinBLEP;
-    MinBLEP<16> sineMinBLEP;
-    MinBLEP<16> doubleSawMinBLEP;
-    MinBLEP<16> sawMinBLEP;
-    MinBLEP<16> squareMinBLEP;
+    sq::MinBLEP triSquareMinBLEP;
+    sq::MinBLEP triMinBLEP;
+    sq::MinBLEP sineMinBLEP;
+    sq::MinBLEP doubleSawMinBLEP;
+    sq::MinBLEP sawMinBLEP;
+    sq::MinBLEP squareMinBLEP;
 
     void step() override;
     void step_even(float deltaPhase);
@@ -123,10 +123,11 @@ inline EvenVCO<TBase>::EvenVCO(struct Module * module) : TBase(module)
     initialize();
 }
 
+using namespace rack::dsp;
 template <class TBase>
 inline void EvenVCO<TBase>::initialize()
 {
-    triSquareMinBLEP.minblep = rack::minblep_16_32;
+    triSquareMinBLEP.minblep = minblep_16_32;
     triSquareMinBLEP.oversample = 32;
     triMinBLEP.minblep = minblep_16_32;
     triMinBLEP.oversample = 32;

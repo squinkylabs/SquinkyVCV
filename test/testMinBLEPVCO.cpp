@@ -223,9 +223,9 @@ void TestMB::testSync3()
 static void testBlepx(float crossing, float jump)
 {
     printf("BLEP crossing = %.2f, jump =%.2f\n", crossing, jump);
-    rack::MinBLEP<16> syncMinBLEP;
+    sq::MinBLEP syncMinBLEP;
 
-    syncMinBLEP.minblep = rack::minblep_16_32;
+    syncMinBLEP.minblep = minblep_16_32;
     syncMinBLEP.oversample = 32;
 
    // syncMinBLEP.jump(-.5, -2);

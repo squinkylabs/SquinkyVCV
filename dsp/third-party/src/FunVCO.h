@@ -70,7 +70,6 @@ struct VoltageControlledOscillator
     rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
     rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
 #endif
-    //rack::RCFilter sqrFilter;
     sq::RCFilter sqrFilter;
 
     // For analog detuning effect
