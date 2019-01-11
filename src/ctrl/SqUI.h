@@ -3,7 +3,7 @@
 
 namespace sq {
    // event::Action
-#ifdef _V1
+#ifdef __V1
     using EventAction = event::Action;
     using EventChange = event::Change;
 #else

@@ -31,7 +31,7 @@ void FunVModule::onSampleRateChange()
     vco.setSampleRate(rate);
 }
 
-#ifdef _V1
+#ifdef __V1
 FunVModule::FunVModule() : vco(this)
 {
     		// Set the number of components

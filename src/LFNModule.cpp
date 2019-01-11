@@ -36,7 +36,7 @@ void LFNModule::onSampleRateChange()
     lfn.setSampleTime(SQHelper::engineGetSampleTime());
 }
 
-#ifdef _V1
+#ifdef __V1
 LFNModule::LFNModule()
     : Module(lfn.NUM_PARAMS,
     lfn.NUM_INPUTS,
@@ -230,7 +230,7 @@ void LFNLabelUpdater::update(struct LFNWidget& widget)
     }
 }
 
-#ifndef _V1
+#ifndef __V1
 Model *modelLFNModule = Model::create<LFNModule,
     LFNWidget>("Squinky Labs",
     "squinkylabs-lfn",

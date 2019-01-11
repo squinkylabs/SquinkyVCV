@@ -3,7 +3,7 @@
 #include "IComposite.h"
 /** Wrap up all the .6/1.0 dependencies here
  */
-#ifdef _V1
+#ifdef __V1
 class SQHelper
 {
 public:

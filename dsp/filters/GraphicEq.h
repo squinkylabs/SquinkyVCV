@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StateVariableFilter.h"
+#include <assert.h>
 
 // Unfinished single stage eq
 class GraphicEq

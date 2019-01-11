@@ -13,7 +13,7 @@
 
 using namespace rack;
 
-#ifndef _V1
+#ifndef __V1
 
 // Dynamic SVGScrew
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <random>
 #if defined(_MSC_VER) && !defined(DEPRECATED)
 //#define DEPRECATED
 #endif
@@ -8,7 +9,7 @@
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
-#ifdef _V1
+#ifdef __V1
     #include "math.hpp"
     #include "dsp/filter.hpp"
     #include "dsp/minblep.hpp"
@@ -25,7 +26,7 @@
  */
 namespace sq 
 {
-#ifdef _V1
+#ifdef __V1
     using RCFilter = rack::dsp::RCFilter;
     using MinBLEP = rack::dsp::MinBLEP<16>;
     // minblep_16_32 =  rack::dsp::minblep_16_32;
@@ -38,7 +39,7 @@ namespace sq
 
 inline float quadraticBipolar(float x)
 {
-#ifdef _V1
+#ifdef __V1
     return rack::dsp::quadraticBipolar(x);
 #else
     return rack::quadraticBipolar(x);
@@ -47,7 +48,7 @@ inline float quadraticBipolar(float x)
 
 inline float clamp(float a, float b, float c)
 {
-    #ifdef _V1 
+    #ifdef __V1 
         return rack::math::clamp(a, b, c);
     #else
         return rack::clamp(a, b, c);
@@ -56,7 +57,7 @@ inline float clamp(float a, float b, float c)
 
 inline float interpolateLinear(float* a, float b)
 {
-    #ifdef _V1
+    #ifdef __V1
         return rack::math::interpolateLinear(a, b);
     #else
         return rack::interpolateLinear(a, b);
@@ -66,7 +67,7 @@ inline float interpolateLinear(float* a, float b)
 
 inline float rescale(float a, float b, float c, float d, float e)
 {
-    #ifdef _V1
+    #ifdef __V1
         return rack::math::rescale(a, b, c, d, e);
     #else
         return rack::rescale(a, b, c, d, e);

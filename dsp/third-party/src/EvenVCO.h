@@ -16,12 +16,13 @@
 #pragma warning ( disable: 4244 4267 )
 #endif
 
-#include "dsp/minblep.hpp"
-#include "dsp/filter.hpp"
+#include "SQMath.h"
+//#include "dsp/minblep.hpp"
+//#include "dsp/filter.hpp"
 #include "AudioMath.h"
 #include "ObjectCache.h"
 
-#include "SQMath.h"
+
 
 using namespace rack;
 

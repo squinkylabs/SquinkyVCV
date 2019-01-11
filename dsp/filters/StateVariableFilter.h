@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioMath.h"
+#include <assert.h>
 
 template <typename T> class StateVariableFilterState;
 template <typename T> class StateVariableFilterParams;

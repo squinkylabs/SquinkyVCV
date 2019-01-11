@@ -37,7 +37,7 @@ struct Blue30SnapKnob : Blue30Knob
     Blue30SnapKnob()
     {
         // TODO: snap for V1
-#ifndef _V1
+#ifndef __V1
         snap = true;
         smooth = false;
 #endif
@@ -88,7 +88,7 @@ struct SQPush : SVGButton
         this->box.pos = pos.minus(this->box.size.div(2));
     }
     // TODO: we just need to port
-#ifndef _V1
+#ifndef __V1
     void onDragEnd(EventDragEnd &e) override
     {
         SVGButton::onDragEnd(e);
