@@ -2,7 +2,7 @@
 
 #include "rack.hpp"
 #include <functional>
-#include "SQHelper.h"
+#include "SqHelper.h"
 #include "SqUI.h"
 
 /**
@@ -41,7 +41,7 @@ struct ManualMenuItem : SqMenuItem
 {
     ManualMenuItem(const char* url) : SqMenuItem(
         []() { return false; },
-        [url]() { SQHelper::openBrowser(url); })
+        [url]() { SqHelper::openBrowser(url); })
     {
         this->text = "Manual";
     }

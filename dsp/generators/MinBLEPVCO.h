@@ -22,7 +22,7 @@ namespace std {
 
 //#include "math.hpp"
 
-#include "SQMath.h"
+#include "SqMath.h"
 //#include "dsp/minblep.hpp"
 #include "dsp/filter.hpp"
 #include "AudioMath.h"

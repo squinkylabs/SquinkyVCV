@@ -4,7 +4,7 @@
 /** Wrap up all the .6/1.0 dependencies here
  */
 #ifdef __V1
-class SQHelper
+class SqHelper
 {
 public:
 
@@ -45,7 +45,7 @@ public:
     }
 };
 #else
-class SQHelper
+class SqHelper
 {
 public:
     static std::string assetPlugin(Plugin *plugin, const std::string& filename)

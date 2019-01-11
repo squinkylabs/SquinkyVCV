@@ -4,7 +4,7 @@
 
 #ifdef _FUN
 #include "WidgetComposite.h"
-#include "ctrl/SQHelper.h"
+#include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "FunVCOComposite.h"
 
@@ -27,7 +27,7 @@ private:
 
 void FunVModule::onSampleRateChange()
 {
-    float rate = SQHelper::engineGetSampleRate();
+    float rate = SqHelper::engineGetSampleRate();
     vco.setSampleRate(rate);
 }
 
@@ -38,7 +38,7 @@ FunVModule::FunVModule() : vco(this)
 	//setup(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
     setup(vco.NUM_PARAMS, vco.NUM_INPUTS, vco.NUM_OUTPUTS, vco.NUM_LIGHTS);
     onSampleRateChange();
-    SQHelper::setupParams(vco, this);
+    SqHelper::setupParams(vco, this);
 }
 #else
 FunVModule::FunVModule()
@@ -84,7 +84,7 @@ struct FunVWidget : ModuleWidget
     }
     Label* addLabel(const Vec& v, const char* str) 
     {
-        return addLabel(v, str, SQHelper::COLOR_BLACK);
+        return addLabel(v, str, SqHelper::COLOR_BLACK);
     }
 };
 
@@ -106,7 +106,7 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
     const float right = 112;
     const float center = 49;
 
-    addParam(SQHelper::createParam<NKK>(
+    addParam(SqHelper::createParam<NKK>(
         module->vco,
         Vec(left, 66 + verticalShift),
         module,
@@ -114,7 +114,7 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
     addLabel(Vec(left -4, 48+ verticalShift), "anlg");
     addLabel(Vec(left -3, 108+ verticalShift), "dgtl");
 
-    addParam(SQHelper::createParam<Rogan3PSBlue>(
+    addParam(SqHelper::createParam<Rogan3PSBlue>(
         module->vco,
         Vec(center, 61 + verticalShift),
         module, 
@@ -122,7 +122,7 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
     auto label = addLabel(Vec(center + 3, 40+ verticalShift), "pitch");
     label->fontSize = 16;
 
-    addParam(SQHelper::createParam<NKK>(
+    addParam(SqHelper::createParam<NKK>(
         module->vco,
         Vec(right, 66 + verticalShift),
         module,
@@ -133,26 +133,26 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
 
 void FunVWidget::addMiddle4(FunVModule * module, float verticalShift)
 {
-    addParam(SQHelper::createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
         module->vco,
         Vec(23, 143 + verticalShift),
         module, module->vco.FINE_PARAM));
     addLabel(Vec(25, 124 +verticalShift), "fine");
 
-    addParam(SQHelper::createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
         module->vco,
         Vec(91, 143 + verticalShift),
         module, module->vco.PW_PARAM));
     addLabel(Vec(84, 124 +verticalShift), "p width");
 
-    addParam(SQHelper::createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
         module->vco,
         Vec(23, 208 + verticalShift),
         module,
         module->vco.FM_PARAM));
     addLabel(Vec(19, 188 +verticalShift), "fm cv");
 
-    addParam(SQHelper::createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
         module->vco,
         Vec(91, 208 + verticalShift),
         module, 
@@ -198,13 +198,13 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
         Vec(col1, 317+verticalShift),
         module,
         module->vco.SIN_OUTPUT));
-    addLabel(Vec(8, outputLabelY+verticalShift), "sin", SQHelper::COLOR_WHITE);
+    addLabel(Vec(8, outputLabelY+verticalShift), "sin", SqHelper::COLOR_WHITE);
 
     addOutput(createOutput<PJ301MPort>(
         Vec(col2, 317+verticalShift),
         module,
         module->vco.TRI_OUTPUT));
-    addLabel(Vec(44, outputLabelY+verticalShift), "tri", SQHelper::COLOR_WHITE);
+    addLabel(Vec(44, outputLabelY+verticalShift), "tri", SqHelper::COLOR_WHITE);
 
     addOutput(createOutput<PJ301MPort>(
         Vec(col3, 317+verticalShift),
@@ -212,14 +212,14 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
         module->vco.SAW_OUTPUT));
     addLabel(Vec(75, outputLabelY+verticalShift),
         "saw",
-        SQHelper::COLOR_WHITE);
+        SqHelper::COLOR_WHITE);
 
     addOutput(createOutput<PJ301MPort>(
         Vec(col4, 317+verticalShift),
         module,
         module->vco.SQR_OUTPUT));
  
-    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", SQHelper::COLOR_WHITE);
+    addLabel(Vec(111, outputLabelY+verticalShift), "sqr", SqHelper::COLOR_WHITE);
 }
 
 /**
@@ -233,7 +233,7 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;   
-        panel->setBackground(SVG::load(SQHelper::assetPlugin(plugin, "res/fun_panel.svg")));        
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(plugin, "res/fun_panel.svg")));        
         addChild(panel);
     }
 

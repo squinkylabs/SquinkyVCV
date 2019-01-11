@@ -16,7 +16,7 @@
 #pragma warning ( disable: 4244 4267 )
 #endif
 
-#include "SQMath.h"
+#include "SqMath.h"
 //#include "dsp/minblep.hpp"
 //#include "dsp/filter.hpp"
 #include "AudioMath.h"
