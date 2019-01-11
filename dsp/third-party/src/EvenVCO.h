@@ -124,7 +124,12 @@ inline EvenVCO<TBase>::EvenVCO(struct Module * module) : TBase(module)
     initialize();
 }
 
+#ifdef __V1
 using namespace rack::dsp;
+#else
+using namespace rack;
+#endif
+
 template <class TBase>
 inline void EvenVCO<TBase>::initialize()
 {

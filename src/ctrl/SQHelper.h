@@ -57,6 +57,10 @@ public:
         return rack::engineGetSampleRate();
     }
 
+    static float engineGetSampleTime()
+    {
+        return rack::engineGetSampleTime();
+    }
     static void openBrowser(const char* url)
     {
         rack::systemOpenBrowser(url);

@@ -2,7 +2,8 @@
 
 #include "rack.hpp"
 #include "WidgetComposite.h"
-
+#include "SQHelper.h"
+#include "SqUI.h"
 #include <functional>
 
 
@@ -125,7 +126,8 @@ struct SQPanelItem : MenuItem
 {
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
-    void onAction(const sq::EventAction &e) override
+
+    void onAction(sq::EventAction &e) override
     {
         actionCallback();
     }
