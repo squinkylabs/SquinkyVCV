@@ -2,7 +2,7 @@
 
 #ifdef _EV3
 #include "ctrl/WaveformSelector.h"
-#include "ctrl/SQWidgets.h"
+#include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
 
