@@ -360,6 +360,9 @@
     <ClCompile Include="..\..\midi\model\MidiSequencer.cpp">
       <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testMidiControllers.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -636,6 +639,9 @@
       <Filter>Header Files\midi\model</Filter>
     </ClInclude>
     <ClInclude Include="..\..\midi\model\MidiSequencer.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiEditor.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
   </ItemGroup>
