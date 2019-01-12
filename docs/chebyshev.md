@@ -10,6 +10,8 @@ In release 16.4 we added a lot of features, breaking patch compatibility, so now
 
 ## Description of the module
 
+Here is a tutorial video by Omri Cohen: [Squinky Labs Chebyshev - VCV Rack Tutorial](https://www.youtube.com/watch?v=cv4N_6qRAK8)
+
 Chebyshev polynomials have been used to generate complex tones since the early days of computer music. This special math discovered by Mr. Chebyshev enables digital generation of waveforms with any overtone structure using very little computer power. In addition, it is easy and computationally inexpensive to vary the spectrum over time.
 
 Eventually, this form of synthesis fell out of favor, as FM could provide a wider variety of timbres with acceptable CPU usage. Now, however, the distinctive sound of this form of synthesis provides another unique source of sounds for VCV Rack users.
