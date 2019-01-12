@@ -80,7 +80,7 @@ private:
 };
 
 template <class TBase>
-inline typename FunVCOComposite<TBase>::Config
+inline IComposite::Config
     FunVCOComposite<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
