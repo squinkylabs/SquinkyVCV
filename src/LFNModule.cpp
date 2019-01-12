@@ -3,16 +3,12 @@
 #include "Squinky.hpp"
 #ifdef _LFN
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/SQHelper.h"
-#include "ctrl/SQWidgets.h"
+#include "ctrl/SqHelper.h"
+#include "ctrl/SqWidgets.h"
 #include "WidgetComposite.h"
-//#include "ctrl/ToggleButton.h"
-//#include "ctrl/SQWidgets.h"
 #include "LFN.h"
 
-
 #include <sstream>
-
 
 /**
  */
@@ -33,7 +29,7 @@ private:
 
 void LFNModule::onSampleRateChange()
 {
-    lfn.setSampleTime(SQHelper::engineGetSampleTime());
+    lfn.setSampleTime(SqHelper::engineGetSampleTime());
 }
 
 #ifdef __V1
@@ -42,7 +38,7 @@ LFNModule::LFNModule() : lfn(this)
     config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
     onSampleRateChange();
     lfn.init();
-    SQHelper::setupParams(lfn, this);
+    SqHelper::setupParams(lfn, this);
 }
 #else
 LFNModule::LFNModule()
@@ -84,7 +80,7 @@ struct LFNWidget : ModuleWidget
 {
     LFNWidget(LFNModule *);
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SQHelper::COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -122,7 +118,7 @@ static const float labelX = 2;
 
 void LFNWidget::addStage(int index)
 {
-    addParam(SQHelper::createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
         module.lfn,
         Vec(knobX, knobY + index * knobDy),
         &module, module.lfn.EQ0_PARAM + index));
@@ -161,7 +157,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(SQHelper::assetPlugin(plugin, "res/lfn_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(plugin, "res/lfn_panel.svg")));
         addChild(panel);
     }
 
@@ -170,9 +166,9 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         module,
         module->lfn.OUTPUT));
     addLabel(
-        Vec(54, inputY - knobDy - 18), "out", SQHelper::COLOR_WHITE);
+        Vec(54, inputY - knobDy - 18), "out", SqHelper::COLOR_WHITE);
 
-    addParam(SQHelper::createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
         module->lfn,
         Vec(10, knobY - 1 * knobDy),
         module,
@@ -184,7 +180,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         addStage(i);
     }
 
-    xlfnWidget = SQHelper::createParam<NullWidget>(
+    xlfnWidget = SqHelper::createParam<NullWidget>(
         module->lfn,
         Vec(0, 0),
         module,

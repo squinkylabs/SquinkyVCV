@@ -22,7 +22,7 @@ namespace std {
 
 //#include "math.hpp"
 
-#include "SQMath.h"
+#include "SqMath.h"
 //#include "dsp/minblep.hpp"
 #include "dsp/filter.hpp"
 #include "AudioMath.h"
@@ -148,7 +148,13 @@ private:
     bool isSqHigh() const;
 };
 
+// Let's by lazy and use "using" to solve some v1/v6 issues/
+#ifdef __V1
 using namespace rack::dsp;
+#else
+using namespace rack;
+#endif
+
 inline MinBLEPVCO::MinBLEPVCO()
 {
     syncMinBLEP.minblep = minblep_16_32;

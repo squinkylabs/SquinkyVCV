@@ -16,7 +16,7 @@
 #pragma warning ( disable: 4244 4267 )
 #endif
 
-#include "SQMath.h"
+#include "SqMath.h"
 //#include "dsp/minblep.hpp"
 //#include "dsp/filter.hpp"
 #include "AudioMath.h"
@@ -124,7 +124,12 @@ inline EvenVCO<TBase>::EvenVCO(struct Module * module) : TBase(module)
     initialize();
 }
 
+#ifdef __V1
 using namespace rack::dsp;
+#else
+using namespace rack;
+#endif
+
 template <class TBase>
 inline void EvenVCO<TBase>::initialize()
 {

@@ -2,7 +2,7 @@
 
 #include "rack.hpp"
 #include <functional>
-#include "SQHelper.h"
+#include "SqHelper.h"
 #include "SqUI.h"
 
 /**
@@ -13,7 +13,7 @@ struct SqMenuItem : rack::MenuItem
 {
 
    // void onAction(rack::EventAction &e) override
-    void onAction(const sq::EventAction &e) override
+    void onAction(sq::EventAction &e) override
     {
         _onActionFn();
     }
@@ -41,7 +41,7 @@ struct ManualMenuItem : SqMenuItem
 {
     ManualMenuItem(const char* url) : SqMenuItem(
         []() { return false; },
-        [url]() { SQHelper::openBrowser(url); })
+        [url]() { SqHelper::openBrowser(url); })
     {
         this->text = "Manual";
     }
@@ -56,7 +56,7 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
     {
     }
 
-    void onAction(const sq::EventAction &e) override
+    void onAction(sq::EventAction &e) override
     {
         const float newValue = isOn() ? 0 : 1;
 #ifdef __V1

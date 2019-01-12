@@ -17,6 +17,7 @@
     #include "util/math.hpp"
     #include "dsp/functions.hpp"
     #include "dsp/filter.hpp"
+    #include "dsp/minblep.hpp"
 #endif
 
 #if 1
@@ -35,6 +36,7 @@ namespace sq
   
 #else
     using RCFilter = rack::RCFilter;
+    using MinBLEP = rack::MinBLEP<16>;
 #endif
 
 inline float quadraticBipolar(float x)

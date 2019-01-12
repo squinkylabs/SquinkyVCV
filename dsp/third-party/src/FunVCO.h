@@ -18,7 +18,7 @@
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
-#include "SQMath.h"
+#include "SqMath.h"
 #include "dsp/filter.hpp"
 //#include <random>
 
@@ -28,7 +28,6 @@
 #include "ButterworthFilterDesigner.h"
 #include "ObjectCache.h"
 #include "IIRDecimator.h"
-#include "SQMath.h"
 
 extern float sawTable[2048];
 extern float triTable[2048];

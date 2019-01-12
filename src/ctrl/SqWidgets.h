@@ -2,7 +2,8 @@
 
 #include "rack.hpp"
 #include "WidgetComposite.h"
-
+#include "SqHelper.h"
+#include "SqUI.h"
 #include <functional>
 
 
@@ -15,7 +16,7 @@ struct BlueTrimmer : SVGKnob
     {
         minAngle = -0.75*M_PI;
         maxAngle = 0.75*M_PI;
-        setSVG(SVG::load(SQHelper::assetPlugin(plugin, "res/BlueTrimmer.svg")));
+        setSVG(SVG::load(SqHelper::assetPlugin(plugin, "res/BlueTrimmer.svg")));
     }
 };
 
@@ -28,7 +29,7 @@ struct Blue30Knob : SVGKnob
     {
         minAngle = -0.83*M_PI;
         maxAngle = 0.83*M_PI;
-        setSVG(SVG::load(SQHelper::assetPlugin(plugin, "res/Blue30.svg")));
+        setSVG(SVG::load(SqHelper::assetPlugin(plugin, "res/Blue30.svg")));
     }
 };
 
@@ -48,9 +49,9 @@ struct NKKSmall : SVGSwitch, ToggleSwitch
 {
     NKKSmall()
     {
-        addFrame(SVG::load(SQHelper::assetPlugin(plugin, "res/NKKSmall_0.svg")));
-        addFrame(SVG::load(SQHelper::assetPlugin(plugin, "res/NKKSmall_1.svg")));
-        addFrame(SVG::load(SQHelper::assetPlugin(plugin, "res/NKKSmall_2.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/NKKSmall_0.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/NKKSmall_1.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/NKKSmall_2.svg")));
     }
 };
 
@@ -58,8 +59,8 @@ struct BlueToggle : public SVGSwitch, ToggleSwitch
 {
     BlueToggle()
     {
-        addFrame(SVG::load(SQHelper::assetPlugin(plugin, "res/BluePush_1.svg")));
-        addFrame(SVG::load(SQHelper::assetPlugin(plugin, "res/BluePush_0.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_1.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_0.svg")));
     }
 };
 
@@ -71,16 +72,16 @@ struct SQPush : SVGButton
     SQPush()
     {
         setSVGs(
-            SVG::load(SQHelper::assetPlugin(plugin, "res/BluePush_0.svg")),
-            SVG::load(SQHelper::assetPlugin(plugin, "res/BluePush_1.svg"))
+            SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_0.svg")),
+            SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_1.svg"))
         );
     }
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
         setSVGs(
-            SVG::load(SQHelper::assetPlugin(plugin, upSVG)),
-            SVG::load(SQHelper::assetPlugin(plugin, dnSVG))
+            SVG::load(SqHelper::assetPlugin(plugin, upSVG)),
+            SVG::load(SqHelper::assetPlugin(plugin, dnSVG))
         );
     }
     void center(Vec& pos)
@@ -125,7 +126,8 @@ struct SQPanelItem : MenuItem
 {
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
-    void onAction(const sq::EventAction &e) override
+
+    void onAction(sq::EventAction &e) override
     {
         actionCallback();
     }

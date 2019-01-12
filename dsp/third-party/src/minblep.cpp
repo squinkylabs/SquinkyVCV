@@ -11,9 +11,7 @@
 #pragma warning(disable: 4244 4838 4305)
 #endif
 
-#include "SQMath.h"
-//#include "dsp/minblep.hpp"
-
+#include "SqMath.h"
 
 namespace rack {
 

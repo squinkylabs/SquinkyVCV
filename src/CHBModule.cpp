@@ -2,8 +2,8 @@
 #include "Squinky.hpp"
 
 #ifdef _CHB
-#include "ctrl/SQWidgets.h"
-#include "ctrl/SQMenuItem.h"
+#include "ctrl/SqWidgets.h"
+#include "ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
 #include <sstream>
 
