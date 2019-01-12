@@ -2,15 +2,16 @@
 #include "componentlibrary.hpp"
 
 
-#ifndef _V1
+#ifndef __V1
 //#define _SEQ        // just for test
 #endif
 
 #define _FUN        // works with 1.0
+#define _LFN
 //#define _CH10
 
 
-#ifndef _V1
+#ifndef __V1
     #define _EV3
     #define _CHB
     #define _CHBG

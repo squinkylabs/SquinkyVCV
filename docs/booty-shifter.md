@@ -40,3 +40,7 @@ The [release notes](release-notes.md) describe recent changes to our modules.
 [LFN](./lfn.md) is a random voltage generator made by running low frequency noise through a graphic equalizer. The equalizer gives a lot of easy control over the shape of the randomness.
 
 [Thread Booster](./booster.md) reduces pops and clicks in VCV Rack by reprogramming VCV's audio engine.
+
+# More resources
+
+Here is a video by Dave Phillips that uses a lot of EV3 VCOs, and some other Squinky Labs modules: [A Machine Dream](https://www.youtube.com/watch?v=c2fzgobYjbk).

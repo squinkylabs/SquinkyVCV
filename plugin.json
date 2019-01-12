@@ -11,7 +11,13 @@
 		"fun1": {
 			"name": "fun1",
 			"description": "A multi-function VCO with low aliasing",
-			"tags": ["VCO"]
+			"tags": ["VCO"],
+			"manualUrl":  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md"
+		},
+		"lfn": {
+			"name": "lfn",
+			"description": "Low frequency random voltage generator",
+			"tags": ["NOISE", "RANDOM", "LFO"]
 		}
 	}
 }

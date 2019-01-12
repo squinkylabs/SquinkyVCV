@@ -19,8 +19,8 @@ public:
     };
     float engineGetSampleRate()
     {
-#ifdef _V1
-        return context()->engine->getSampleRate();
+#ifdef __V1
+        return app()->engine->getSampleRate();
 #else  
         return ::engineGetSampleRate();
 #endif
@@ -28,8 +28,8 @@ public:
     
     float engineGetSampleTime()
     {
-#ifdef _V1
-        return context()->engine->getSampleTime();
+#ifdef __V1
+        return app()->engine->getSampleTime();
 #else  
         return ::engineGetSampleTime();
 #endif

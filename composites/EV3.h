@@ -2,7 +2,7 @@
 
 #include "MinBLEPVCO.h"
 #include "ObjectCache.h"
-#include "SQMath.h"
+#include "SqMath.h"
 
 /**
  * perf test 1.0 44.5

@@ -1,7 +1,7 @@
 #include "Squinky.hpp"
 
 #ifdef _CH10
-#include "ctrl/SQWidgets.h"
+#include "ctrl/SqWidgets.h"
 #include "WidgetComposite.h"
 #include "CH10.h"
 #include "ctrl/ToggleButton.h"

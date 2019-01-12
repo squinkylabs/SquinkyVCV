@@ -1,7 +1,7 @@
 #include "Squinky.hpp"
 
 #ifdef _CHBG
-#include "ctrl/SQWidgets.h"
+#include "ctrl/SqWidgets.h"
 #include "WidgetComposite.h"
 #include "CHBg.h"
 

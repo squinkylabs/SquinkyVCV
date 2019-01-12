@@ -3,13 +3,12 @@
 #include "Squinky.hpp"
 #ifdef _LFN
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqHelper.h"
+#include "ctrl/SqWidgets.h"
 #include "WidgetComposite.h"
-#include "ctrl/ToggleButton.h"
-#include "ctrl/SQWidgets.h"
 #include "LFN.h"
 
 #include <sstream>
-
 
 /**
  */
@@ -30,9 +29,18 @@ private:
 
 void LFNModule::onSampleRateChange()
 {
-    lfn.setSampleTime(engineGetSampleTime());
+    lfn.setSampleTime(SqHelper::engineGetSampleTime());
 }
 
+#ifdef __V1
+LFNModule::LFNModule() : lfn(this)
+{
+    config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
+    onSampleRateChange();
+    lfn.init();
+    SqHelper::setupParams(lfn, this);
+}
+#else
 LFNModule::LFNModule()
     : Module(lfn.NUM_PARAMS,
     lfn.NUM_INPUTS,
@@ -43,6 +51,7 @@ LFNModule::LFNModule()
     onSampleRateChange();
     lfn.init();
 }
+#endif
 
 void LFNModule::step()
 {
@@ -71,7 +80,7 @@ struct LFNWidget : ModuleWidget
 {
     LFNWidget(LFNModule *);
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -109,17 +118,16 @@ static const float labelX = 2;
 
 void LFNWidget::addStage(int index)
 {
-    const float gmin = -5;
-    const float gmax = 5;
-    const float gdef = 0;
-    addParam(ParamWidget::create<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        module.lfn,
         Vec(knobX, knobY + index * knobDy),
-        &module, module.lfn.EQ0_PARAM + index, gmin, gmax, gdef));
+        &module, module.lfn.EQ0_PARAM + index));
 
     updater.makeLabel((*this), index, labelX, knobY - 2 + index * knobDy);
 
-    addInput(Port::create<PJ301MPort>(Vec(inputX, inputY + index * knobDy),
-        Port::INPUT, &module, module.lfn.EQ0_INPUT + index));
+    addInput(createInput<PJ301MPort>(
+        Vec(inputX, inputY + index * knobDy),
+        &module, module.lfn.EQ0_INPUT + index));
 }
 
 inline Menu* LFNWidget::createContextMenu()
@@ -149,17 +157,22 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/lfn_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(plugin, "res/lfn_panel.svg")));
         addChild(panel);
     }
 
-    addOutput(Port::create<PJ301MPort>(
-        Vec(59, inputY - knobDy - 1), Port::OUTPUT, module, module->lfn.OUTPUT));
+    addOutput(createOutput<PJ301MPort>(
+        Vec(59, inputY - knobDy - 1),
+        module,
+        module->lfn.OUTPUT));
     addLabel(
-        Vec(54, inputY - knobDy - 18), "out", COLOR_WHITE);
+        Vec(54, inputY - knobDy - 18), "out", SqHelper::COLOR_WHITE);
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(10, knobY - 1 * knobDy), module, module->lfn.FREQ_RANGE_PARAM, -5, 5, 0));
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        module->lfn,
+        Vec(10, knobY - 1 * knobDy),
+        module,
+        module->lfn.FREQ_RANGE_PARAM));
 
    // addLabel(Vec(59, knobY - 1 * knobDy), "R");
 
@@ -167,17 +180,20 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         addStage(i);
     }
 
-    xlfnWidget = ParamWidget::create<NullWidget>(
-        Vec(0, 0), module, module->lfn.XLFN_PARAM, 0, 1, 0);
+    xlfnWidget = SqHelper::createParam<NullWidget>(
+        module->lfn,
+        Vec(0, 0),
+        module,
+        module->lfn.XLFN_PARAM);
     xlfnWidget->box.size.x = 0;
     xlfnWidget->box.size.y = 0;
     addParam(xlfnWidget);
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 void LFNLabelUpdater::makeLabel(struct LFNWidget& widget, int index, float x, float y)
@@ -205,9 +221,14 @@ void LFNLabelUpdater::update(struct LFNWidget& widget)
     }
 }
 
+#ifndef __V1
 Model *modelLFNModule = Model::create<LFNModule,
     LFNWidget>("Squinky Labs",
     "squinkylabs-lfn",
     "LFN: Random Voltages", NOISE_TAG, RANDOM_TAG, LFO_TAG);
+#else
+Model *modelLFNModule = createModel<LFNModule, LFNWidget>(
+    "lfn");
+#endif
 
 #endif

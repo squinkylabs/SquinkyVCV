@@ -3,8 +3,8 @@
 #include "IComposite.h"
 /** Wrap up all the .6/1.0 dependencies here
  */
-#ifdef _V1
-class SQHelper
+#ifdef __V1
+class SqHelper
 {
 public:
 
@@ -18,7 +18,11 @@ public:
     } 
     static float engineGetSampleRate()
     {
-        return context()->engine->getSampleRate();
+        return app()->engine->getSampleRate();
+    }
+      static float engineGetSampleTime()
+    {
+        return app()->engine->getSampleTime();
     }
     template <typename T>
 
@@ -30,18 +34,20 @@ public:
     static const NVGcolor COLOR_WHITE;
     static const NVGcolor COLOR_BLACK;
 
-    // TODO: finish this (support other params);
     static void setupParams(IComposite& comp, Module* module)
     {
         const int n = comp.getNumParams();
         for (int i=0; i<n; ++i) {
             auto param = comp.getParam(i);
-            module->params[i].setup(param.min, param.max, param.def, "fakename", "fake unit");
+            module->params[i].config(param.min, param.max, param.def, param.name);
         }
     }
 };
+
 #else
-class SQHelper
+
+
+class SqHelper
 {
 public:
     static std::string assetPlugin(Plugin *plugin, const std::string& filename)
@@ -53,6 +59,10 @@ public:
         return rack::engineGetSampleRate();
     }
 
+    static float engineGetSampleTime()
+    {
+        return rack::engineGetSampleTime();
+    }
     static void openBrowser(const char* url)
     {
         rack::systemOpenBrowser(url);

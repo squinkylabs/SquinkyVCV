@@ -4,8 +4,6 @@
 #include "MidiTrack.h"
 #include "asserts.h"
 
-
-
 static void testCanInsert()
 {
     MidiTrack mt;
@@ -163,12 +161,13 @@ static void testSameTime()
 static void testSong()
 {
     auto p = MidiSong::makeTest1();
+    assert(_mdb > 0);
     p->assertValid();
 }
 
 void testMidiDataModel()
 {
-    assertEvCount(0);
+    assertNoMidi();     // check for leaks
     testCanInsert();
     testInsertSorted();
     testDelete();
@@ -178,5 +177,5 @@ void testMidiDataModel()
     testTimeRange1();
     testSameTime();
     testSong();
-    assertEvCount(0);
+    assertNoMidi();     // check for leaks
 }

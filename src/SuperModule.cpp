@@ -2,7 +2,7 @@
 
 #ifdef _SUPER
 #include "WidgetComposite.h"
-#include "ctrl/SQWidgets.h"
+#include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
@@ -10,7 +10,6 @@
 #include "IMWidgets.hpp"
 
 #include <sstream>
-
 
 /**
  */

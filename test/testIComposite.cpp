@@ -1,9 +1,5 @@
-//#include <functional>
-//#include <time.h>
-//#include <cmath>
-//#include <limits>
 
-
+#include "LFN.h"
 #include "asserts.h"
 #include "FunVCOComposite.h"
 #include "TestComposite.h"
@@ -21,11 +17,11 @@ inline static void test()
         assertLT(config.min, config.max);
         assertLE(config.def, config.max);
         assertGE(config.def, config.min);
-    
     }
 }
 
 void testIComposite()
 {
     test<FunVCOComposite<TestComposite>>();
+    test<LFN<TestComposite>>();
 }

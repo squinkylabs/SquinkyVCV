@@ -9,7 +9,7 @@
 #include "IMWidgets.hpp"
 
 
-#ifndef _V1
+#ifndef __V1
 // Dynamic SVGScrew
 
 

@@ -14,13 +14,8 @@
 #define __attribute__(x)
 #endif
 
-#if !defined(M_PI)
-#define M_PI 3.14159265358979323846264338327950288
-#endif
-
-#include "dsp/functions.hpp"
+#include "SqMath.h"
 #include "dsp/filter.hpp"
-#include <random>
 
 #include "BiquadFilter.h"
 #include "BiquadParams.h"
@@ -28,7 +23,6 @@
 #include "ButterworthFilterDesigner.h"
 #include "ObjectCache.h"
 #include "IIRDecimator.h"
-#include "SQMath.h"
 
 extern float sawTable[2048];
 extern float triTable[2048];
@@ -70,7 +64,7 @@ struct VoltageControlledOscillator
     rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
     rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
 #endif
-    rack::RCFilter sqrFilter;
+    sq::RCFilter sqrFilter;
 
     // For analog detuning effect
     float pitchSlew = 0.0f;

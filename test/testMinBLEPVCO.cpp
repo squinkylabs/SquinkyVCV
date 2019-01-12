@@ -1,19 +1,12 @@
 #include <assert.h>
 
-#if !defined(M_PI)
-#define M_PI 3.14159265358979323846264338327950288
-#endif
-
 #include "asserts.h"
 #include "EV3.h"
-
-
 
 #include "MinBLEPVCO.h"
 #include "TestComposite.h"
 
 static float sampleTime = 1.0f / 44100.0f;
-
 
 class TestMB
 {
@@ -223,9 +216,9 @@ void TestMB::testSync3()
 static void testBlepx(float crossing, float jump)
 {
     printf("BLEP crossing = %.2f, jump =%.2f\n", crossing, jump);
-    rack::MinBLEP<16> syncMinBLEP;
+    sq::MinBLEP syncMinBLEP;
 
-    syncMinBLEP.minblep = rack::minblep_16_32;
+    syncMinBLEP.minblep = minblep_16_32;
     syncMinBLEP.oversample = 32;
 
    // syncMinBLEP.jump(-.5, -2);

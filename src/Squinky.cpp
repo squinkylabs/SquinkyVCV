@@ -1,6 +1,6 @@
 // plugin main
 #include "Squinky.hpp"
-#include "ctrl/SQHelper.h"
+#include "ctrl/SqHelper.h"
 
 
 // The plugin-wide instance of the Plugin class
@@ -83,5 +83,5 @@ void init(rack::Plugin *p)
 
 }
 
-const NVGcolor SQHelper::COLOR_WHITE = nvgRGB(0xff, 0xff, 0xff);
-const NVGcolor SQHelper::COLOR_BLACK = nvgRGB(0,0,0);
+const NVGcolor SqHelper::COLOR_WHITE = nvgRGB(0xff, 0xff, 0xff);
+const NVGcolor SqHelper::COLOR_BLACK = nvgRGB(0,0,0);

@@ -11,6 +11,8 @@ using MidiSongPtr = std::shared_ptr<MidiSong>;
 class MidiSong
 {
 public:
+    MidiSong();
+    ~MidiSong();
     std::shared_ptr<MidiTrack> getTrack(int index);
     std::shared_ptr<const MidiTrack> getTrack(int index) const;
     void createTrack(int index);

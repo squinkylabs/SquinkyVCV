@@ -80,31 +80,31 @@ private:
 };
 
 template <class TBase>
-inline typename FunVCOComposite<TBase>::Config
+inline IComposite::Config
     FunVCOComposite<TBase>::getParam(int i)
 {
-    Config ret(0, 1, 0);
+    Config ret(0, 1, 0, "");
     switch(i) {
         case MODE_PARAM:
-            ret = {0.0f, 1.0f, 1.0f};
+            ret = {0.0f, 1.0f, 1.0f, "Analog/digital mode"};
             break;
         case SYNC_PARAM:
-            ret = {0.0f, 1.0f, 1.0f};
+            ret = {0.0f, 1.0f, 1.0f, "Sync hard/soft"};
             break;
         case FREQ_PARAM:
-            ret = {-54.0f, 54.0f, 0.0f};
+            ret = {-54.0f, 54.0f, 0.0f, "Frequency"};
             break;
         case FINE_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f};
+            ret = {-1.0f, 1.0f, 0.0f, "Fine frequency"};
             break;
         case FM_PARAM:
-            ret = {0.0f, 1.0f, 0.0f};
+            ret = {0.0f, 1.0f, 0.0f, "Pitch modulation depth"};
             break;
         case PW_PARAM:
-            ret = {0.0f, 1.0f, 0.5f};
+            ret = {0.0f, 1.0f, 0.5f, "Pulse width"};
             break;
         case PWM_PARAM:
-            ret = {0.0f, 1.0f, 0.0f};
+            ret = {0.0f, 1.0f, 0.0f, "Pulse width modulation depth"};
             break;
         default:
             assert(false);
@@ -118,10 +118,10 @@ inline void FunVCOComposite<TBase>::step()
     oscillator.analog = TBase::params[MODE_PARAM].value > 0.0f;
     oscillator.soft = TBase::params[SYNC_PARAM].value <= 0.0f;
 
-    float pitchFine = 3.0f * rack::quadraticBipolar(TBase::params[FINE_PARAM].value);
+    float pitchFine = 3.0f * sq::quadraticBipolar(TBase::params[FINE_PARAM].value);
     float pitchCv = 12.0f * TBase::inputs[PITCH_INPUT].value;
     if (TBase::inputs[FM_INPUT].active) {
-        pitchCv += rack::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
+        pitchCv += sq::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
     }
 
     oscillator.setPitch(TBase::params[FREQ_PARAM].value, pitchFine + pitchCv);
