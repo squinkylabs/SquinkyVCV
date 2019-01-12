@@ -35,6 +35,7 @@
     <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp" />
     <ClCompile Include="..\..\midi\controller\ReplaceDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
+    <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
     <ClCompile Include="..\..\midi\view\MidiViewport.cpp" />
@@ -160,6 +161,7 @@
     <ClInclude Include="..\..\midi\model\MidiEvent.h" />
     <ClInclude Include="..\..\midi\model\MidiSong.h" />
     <ClInclude Include="..\..\midi\model\MidiTrack.h" />
+    <ClInclude Include="..\..\midi\model\MidiSelectionModel.h" />
     <ClInclude Include="..\..\midi\view\MidiViewport.h" />
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h" />
     <ClInclude Include="..\..\sqsrc\clock\GenerativeTriggerGenerator.h" />
@@ -258,7 +260,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;ARCH_WIN;_DEBUG;_CONSOLE;__V1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;ARCH_WIN;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
