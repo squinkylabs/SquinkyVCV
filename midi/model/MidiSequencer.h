@@ -18,6 +18,7 @@ public:
     /** constructor takes a song to edit
     */
     MidiSequencer(std::shared_ptr<MidiSong>);
+    ~MidiSequencer();
 
     /** The various classes we collect
      */

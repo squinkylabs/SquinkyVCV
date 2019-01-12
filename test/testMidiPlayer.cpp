@@ -110,4 +110,5 @@ void testMidiPlayer()
     test1();
     test2();
     test3();
+    assertNoMidi();     // check for leaks
 }

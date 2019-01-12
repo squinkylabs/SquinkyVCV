@@ -21,6 +21,7 @@ static void testSelectionModel1()
         assert(note);
     }
     assertEQ(ct, 1);
+    assert(_mdb > 1);
 }
 
 
@@ -32,13 +33,15 @@ static void testMidiSequencer1()
     assert(seq->selection);
     auto sel = seq->selection;
     assert(sel->begin() == sel->end());
-
+    assert(_mdb > 1);
     assert( seq->editor);
 }
 
 
 void testMidiControllers()
 {
+    assertNoMidi();     // check for leaks
     testSelectionModel1();
     testMidiSequencer1();
+    assertNoMidi();     // check for leaks
 }

@@ -3,6 +3,14 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 
+MidiSong::MidiSong()
+{
+    ++_mdb;
+}
+MidiSong::~MidiSong()
+{
+    --_mdb;
+}
 
 int MidiSong::getHighestTrackNumber() const
 {

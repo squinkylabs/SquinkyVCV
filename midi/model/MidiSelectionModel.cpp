@@ -2,6 +2,16 @@
 #include "MidiSelectionModel.h"
 
 #include <assert.h>
+extern int _mdb;
+MidiSelectionModel::MidiSelectionModel()
+{
+    ++_mdb;
+}
+
+MidiSelectionModel::~MidiSelectionModel()
+{
+    --_mdb;
+}
 
 void MidiSelectionModel::select(std::shared_ptr<MidiEvent> event)
 {

@@ -147,4 +147,5 @@ void  testMidiEvents()
     testEqual();
     testPitch();
     testPitch2();
+    assertNoMidi();     // check for leaks
 }

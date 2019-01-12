@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <iostream>
+extern int _mdb;        // MIDI reverence count
 
 /**
  * Our own little assert library, loosely inspired by Chai Assert.
@@ -57,7 +58,9 @@
 
 #ifdef _DEBUG
 #define assertEvCount(x) assertEQ(MidiEvent::_count, x)
+#define assertNoMidi() assertEvCount(0); assertEQ(_mdb, 0)
 #else
 #define assertEvCount(x)  ((void)0)
+#define assertNoMidi()  ((void)0)
 #endif
 // leave space after macro

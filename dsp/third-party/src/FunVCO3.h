@@ -10,16 +10,6 @@
 #pragma warning (disable: 4305 4244 4267)
 #endif
 
-#if !defined(M_PI)
-#define M_PI 3.14159265358979323846264338327950288
-#endif
-
-// TODO: let's get rid of this
-//#include "dsp/functions.hpp"
-//#include "dsp/filter.hpp"
-
-//#include <random>
-
 #include "BiquadFilter.h"
 #include "BiquadParams.h"
 #include "BiquadState.h"

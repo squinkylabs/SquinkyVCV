@@ -1,12 +1,8 @@
 #pragma once
 
 #include <random>
-#if defined(_MSC_VER) && !defined(DEPRECATED)
-//#define DEPRECATED
-#endif
-
 #if !defined(M_PI)
-#define M_PI 3.14159265358979323846264338327950288
+#define M_PI 3.141592653589793238462643383279502880
 #endif
 
 #ifdef __V1

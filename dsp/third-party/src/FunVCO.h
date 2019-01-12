@@ -14,13 +14,8 @@
 #define __attribute__(x)
 #endif
 
-#if !defined(M_PI)
-#define M_PI 3.14159265358979323846264338327950288
-#endif
-
 #include "SqMath.h"
 #include "dsp/filter.hpp"
-//#include <random>
 
 #include "BiquadFilter.h"
 #include "BiquadParams.h"

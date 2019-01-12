@@ -27,7 +27,12 @@ public:
     MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSong> song) :
         host(host), song(song)
     {
+        ++_mdb;
         curEvent = song->getTrack(0)->begin();
+    }
+    ~MidiPlayer()
+    {
+        --_mdb;
     }
 
     void timeElapsed(float seconds);

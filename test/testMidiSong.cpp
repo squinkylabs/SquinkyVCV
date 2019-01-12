@@ -65,4 +65,5 @@ void testMidiSong()
     test0();
     test1();
     testDefSong();
+    assertNoMidi();     // check for leaks
 }

@@ -1,19 +1,12 @@
 #include <assert.h>
 
-#if !defined(M_PI)
-#define M_PI 3.14159265358979323846264338327950288
-#endif
-
 #include "asserts.h"
 #include "EV3.h"
-
-
 
 #include "MinBLEPVCO.h"
 #include "TestComposite.h"
 
 static float sampleTime = 1.0f / 44100.0f;
-
 
 class TestMB
 {

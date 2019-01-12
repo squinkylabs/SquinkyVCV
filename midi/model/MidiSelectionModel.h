@@ -10,6 +10,8 @@ class MidiEvent;
 class MidiSelectionModel
 {
 public:
+    MidiSelectionModel();
+    ~MidiSelectionModel();
     /** 
      * replace the current selection with a single event
      */
