@@ -34,17 +34,18 @@ public:
     static const NVGcolor COLOR_WHITE;
     static const NVGcolor COLOR_BLACK;
 
-    // TODO: finish this (support other params);
     static void setupParams(IComposite& comp, Module* module)
     {
         const int n = comp.getNumParams();
         for (int i=0; i<n; ++i) {
             auto param = comp.getParam(i);
-            module->params[i].setup(param.min, param.max, param.def, param.name);
+            module->params[i].config(param.min, param.max, param.def, param.name);
         }
     }
 };
+
 #else
+
 class SQHelper
 {
 public:

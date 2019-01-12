@@ -37,14 +37,9 @@ void LFNModule::onSampleRateChange()
 }
 
 #ifdef __V1
-LFNModule::LFNModule()
-    : Module(lfn.NUM_PARAMS,
-    lfn.NUM_INPUTS,
-    lfn.NUM_OUTPUTS,
-    lfn.NUM_LIGHTS),
-    lfn(this)
+LFNModule::LFNModule() : lfn(this)
 {
-    setup(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
+    config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
     onSampleRateChange();
     lfn.init();
     SQHelper::setupParams(lfn, this);

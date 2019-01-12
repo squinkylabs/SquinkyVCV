@@ -61,8 +61,8 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
         const float newValue = isOn() ? 0 : 1;
 #ifdef __V1
        //widget->dirtyValue = newValue;
-       if (widget->quantity) {
-            widget->quantity->setValue(newValue);
+       if (widget->paramQuantity) {
+            widget->paramQuantity->setValue(newValue);
        }
 #else
         widget->value = newValue;
@@ -88,8 +88,8 @@ private:
 #ifdef __V1
         //return false;
         bool ret = false;
-        if (widget->quantity) {
-            ret = widget->quantity->getValue() > .5f;
+        if (widget->paramQuantity) {
+            ret = widget->paramQuantity->getValue() > .5f;
         }
 #else
         bool ret = widget->value > .5f;

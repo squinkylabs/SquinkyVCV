@@ -34,9 +34,8 @@ void FunVModule::onSampleRateChange()
 #ifdef __V1
 FunVModule::FunVModule() : vco(this)
 {
-    		// Set the number of components
-	//setup(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-    setup(vco.NUM_PARAMS, vco.NUM_INPUTS, vco.NUM_OUTPUTS, vco.NUM_LIGHTS);
+    // Set the number of components
+    config(vco.NUM_PARAMS, vco.NUM_INPUTS, vco.NUM_OUTPUTS, vco.NUM_LIGHTS);
     onSampleRateChange();
     SQHelper::setupParams(vco, this);
 }
@@ -247,7 +246,7 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
-#ifndef _V1
+#ifndef __V1
 Model *modelFunVModule = Model::create<FunVModule,
     FunVWidget>("Squinky Labs",
     "squinkylabs-funv",
