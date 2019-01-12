@@ -1,6 +1,7 @@
 
 #include <assert.h>
 #include "MidiSelectionModel.h"
+#include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "asserts.h"
@@ -169,20 +170,31 @@ static void testSong()
 
 static void testSelectionModel1()
 {
-    MidiSelectionPtr sel = std::make_shared<MidiSelectionModel>();
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>();
     MidiSongPtr song = MidiSong::makeTest1();
     MidiEventPtr evt = song->getTrack(0)->begin()->second;
     assert(evt);
     sel->select(evt);
 
-    auto p = sel->get();
     int ct = 0;
-    for (auto i = p.first; i != p.second; ++i)         {
+
+    for (auto it = sel->begin(); it != sel->end(); ++it) {
         ++ct;
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(*i);
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(*it);
         assert(note);
     }
     assertEQ(ct, 1);
+}
+
+
+static void testMidiSequencer1()
+{
+    MidiSongPtr song = MidiSong::makeTest1();
+    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
+
+    assert(seq->selection);
+    auto sel = seq->selection;
+    assert(sel->begin() == sel->end());
 }
 
 void testMidiDataModel()
@@ -198,5 +210,6 @@ void testMidiDataModel()
     testSameTime();
     testSong();
     testSelectionModel1();
+    testMidiSequencer1();
     assertEvCount(0);
 }

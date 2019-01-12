@@ -4,6 +4,9 @@
 
 class MidiEvent;
 
+/**
+ * Central manager for tracking selections in the MidiSong being edited.
+ */
 class MidiSelectionModel
 {
 public:
@@ -14,13 +17,15 @@ public:
 
     using container = std::set<std::shared_ptr<MidiEvent>>;
     using const_iterator = container::const_iterator;
-    using iterator_pair = std::pair<const_iterator, const_iterator>;
+   // using iterator_pair = std::pair<const_iterator, const_iterator>;
 
-    iterator_pair get() const;
+ 
+    const_iterator begin() const;
+    const_iterator end() const;
 private:
 
     
     container selection;
 };
 
-using MidiSelectionPtr = std::shared_ptr<MidiSelectionModel>;
+using MidiSelectionModelPtr = std::shared_ptr<MidiSelectionModel>;

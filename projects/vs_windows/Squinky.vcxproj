@@ -36,6 +36,7 @@
     <ClCompile Include="..\..\midi\controller\ReplaceDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
+    <ClCompile Include="..\..\midi\model\MidiSequencer.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
     <ClCompile Include="..\..\midi\view\MidiViewport.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
     <ClInclude Include="..\..\midi\model\MidiEvent.h" />
+    <ClInclude Include="..\..\midi\model\MidiSequencer.h" />
     <ClInclude Include="..\..\midi\model\MidiSong.h" />
     <ClInclude Include="..\..\midi\model\MidiTrack.h" />
     <ClInclude Include="..\..\midi\model\MidiSelectionModel.h" />
