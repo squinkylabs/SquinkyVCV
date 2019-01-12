@@ -200,7 +200,7 @@ private:
 };
 
 template <class TBase>
-inline typename LFN<TBase>::Config
+inline  IComposite::Config
     LFN<TBase>::getParam(int i)
 {
     const float gmin = -5;
@@ -208,11 +208,6 @@ inline typename LFN<TBase>::Config
     const float gdef = 0;
     Config ret(0, 1, 0, "");
     switch(i) {
-        /*
-        case MODE_PARAM:
-            ret = {0.0f, 1.0f, 1.0f, "Analog/digital mode"};
-            break;
-*/
         case EQ0_PARAM:
             ret = { gmin, gmax, gdef, "Low freq mix"};
             break;
