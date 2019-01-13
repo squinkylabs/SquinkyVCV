@@ -17,10 +17,13 @@ public:
      */
     void select(std::shared_ptr<MidiEvent>);
 
+    /**
+     * selection nothing
+     */
+    void clear();
+
     using container = std::set<std::shared_ptr<MidiEvent>>;
     using const_iterator = container::const_iterator;
-   // using iterator_pair = std::pair<const_iterator, const_iterator>;
-
  
     const_iterator begin() const;
     const_iterator end() const;

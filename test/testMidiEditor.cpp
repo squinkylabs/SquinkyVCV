@@ -7,9 +7,12 @@
 #include "MidiTrack.h"
 #include "MidiSong.h"
 
-MidiSequencerPtr makeTest()
+MidiSequencerPtr makeTest(bool empty = false)
 {
-    MidiSongPtr song = MidiSong::makeTest1();
+   
+    MidiSongPtr song = empty ?
+        MidiSong::makeTestEmpty() :
+        MidiSong::makeTest1();
     MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
     return seq;
 }
@@ -48,8 +51,37 @@ static void test2()
 
 }
 
+
+// from a null selection, select next in null track
+static void test3()
+{
+    MidiSequencerPtr seq = makeTest(true);
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 0);     // should be nothing selected
+    assert(seq->selection->empty());
+}
+
+// select one after another until end
+static void test4()
+{
+    MidiSequencerPtr seq = makeTest();
+    int notes = 0;
+    for (bool done = false; !done; ) {
+        seq->editor->selectNextNote();
+        if (seq->selection->empty()) {
+            done = true;
+        } else {
+            ++notes;
+        }
+
+    }
+    assertEQ(notes, 8);
+}
+
 void testMidiEditor()
 {
     test1();
     test2();
+    test3();
+    test4();
 }

@@ -27,7 +27,8 @@ public:
     /**
      * factory method to generate test content
      */
-    static MidiSongPtr makeTest1();
+    static MidiSongPtr makeTest1();     // 8 quarter notes ascending in track 0
+    static MidiSongPtr makeTestEmpty(); // track 0 is empty
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
 

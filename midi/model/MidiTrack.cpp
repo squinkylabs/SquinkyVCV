@@ -121,3 +121,10 @@ MidiTrackPtr MidiTrack::makeTest1()
     track->insertEnd(time);
     return track;
 }
+
+MidiTrackPtr MidiTrack::makeTestEmpty()
+{
+    auto track = std::make_shared<MidiTrack>();
+    track->insertEnd(1);
+    return track;
+}

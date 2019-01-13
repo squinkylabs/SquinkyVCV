@@ -31,6 +31,10 @@ MidiSelectionModel::const_iterator MidiSelectionModel::end() const
     return selection.end();
 }
 
+void MidiSelectionModel::clear()
+{
+    selection.clear();
+}
 bool MidiSelectionModel::isSelected(MidiEventPtr evt) const
 {
     auto it = selection.find(evt);

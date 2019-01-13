@@ -24,6 +24,35 @@ MidiTrackPtr MidiEditor::getTrack()
     return song->getTrack(0);
 }
 
+/**
+ * If iterator already points to a note, return it.
+ * Otherwise search for next one
+ */
+static MidiTrack::const_iterator findNextNoteOrCurrent(
+    MidiTrackPtr track,
+    MidiTrack::const_iterator it)
+{
+    if (it == track->end()) {
+        return it;
+    }
+    for (bool done = false; !done; ) {
+       
+        if (it == track->end()) {
+            done = true;
+        }
+        MidiEventPtr evt = it->second;
+        if (evt->type == MidiEvent::Type::Note) {
+            done = true;
+        } else if (evt->type == MidiEvent::Type::End) {
+            done = true;
+        } else {
+            assert(false);
+            ++it;
+        }
+    }
+    return it;
+}
+
 void MidiEditor::selectNextNote()
 {
     assert(song);
@@ -32,15 +61,38 @@ void MidiEditor::selectNextNote()
     MidiTrackPtr track = getTrack();
     assert(track);
     if (selection->empty()) {
-        
-
         // track should always have something in it, even if it's an end event
-        MidiEventPtr first = track->begin()->second;
-        assert(first->type == MidiEvent::Type::Note);
+        auto it = findNextNoteOrCurrent(track, track->begin());
+        if (it == track->end()) {
+            selection->clear();
+        } else {
+            MidiEventPtr evt = it->second;
+            if (evt->type == MidiEvent::Type::End) {
+                selection->clear();
+            } else {
+                selection->select(evt);
+            }
+        }
 
-        selection->select(first);
+#if 0
+        auto it = track->begin();
+        for (bool done = false; !done; ) {
+            assert(it != track->end());
+            MidiEventPtr evt = it->second;
+            if (evt->type == MidiEvent::Type::Note) {
+                selection->select(evt);
+                done = true;
+            } else if (evt->type == MidiEvent::Type::End) {
+                done = true;
+                selection->clear();
+            } else {
+                assert(false);
+                ++it;
+            }
+        }
+#endif
     } else {
-        assert(selection->size() == 1);
+        assert(selection->size() == 1);         // can't handle multi select yet
         MidiEventPtr evt = *selection->begin();
         assert(evt->type == MidiEvent::Type::Note);
 
@@ -51,10 +103,24 @@ void MidiEditor::selectNextNote()
         }
 
         // now iterate up from there
+        it = findNextNoteOrCurrent(track, ++it);
+        if (it == track->end()) {
+            selection->clear();
+        } else {
+            MidiEventPtr evt = it->second;
+            if (evt->type == MidiEvent::Type::End) {
+                selection->clear();
+            } else {
+                selection->select(evt);
+            }
+        }
+        /*
         ++it;
         evt = it->second;
         assert(evt->type == MidiEvent::Type::Note);
+        
 
         selection->select(evt);
+        */
     }
 }

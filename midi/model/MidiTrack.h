@@ -71,6 +71,7 @@ public:
      * factory method to generate test content.
      */
     static MidiTrackPtr makeTest1();
+    static MidiTrackPtr makeTestEmpty();
 
 
 private:
