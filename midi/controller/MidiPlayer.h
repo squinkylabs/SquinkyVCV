@@ -36,9 +36,15 @@ public:
     }
 
     void timeElapsed(float seconds);
+
+    MidiSongPtr getSong()
+    {
+        return song;
+    }
+
 private:
     std::shared_ptr<IPlayerHost> host;
-    std::shared_ptr<MidiSong> song;
+    MidiSongPtr song;
 
     float curMetricTime = 0;
     float noteOffTime = -1;

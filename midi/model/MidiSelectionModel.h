@@ -24,6 +24,17 @@ public:
  
     const_iterator begin() const;
     const_iterator end() const;
+
+    int size() const
+    {
+        return (int) selection.size();
+    }
+    bool empty() const
+    {
+        return selection.empty();
+    }
+
+    bool isSelected(std::shared_ptr<MidiEvent>) const;
 private:
 
     

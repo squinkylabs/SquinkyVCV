@@ -71,3 +71,5 @@ private:
     container events;
 };
 
+using MidiTrackPtr = std::shared_ptr<MidiTrack>;
+

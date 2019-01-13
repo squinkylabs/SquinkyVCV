@@ -46,6 +46,7 @@ static void testEqual()
     assertEQ(note, evn);
     assertEQ(end, eve);
     assert (*note == *note2);
+    assert(note != note2);
 
     assert(!(*note == *end));
     assert(*note != *end);
@@ -147,5 +148,6 @@ void  testMidiEvents()
     testEqual();
     testPitch();
     testPitch2();
+
     assertNoMidi();     // check for leaks
 }

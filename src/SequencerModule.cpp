@@ -63,7 +63,7 @@ struct SequencerWidget : ModuleWidget
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
         const Vec noteSize =Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
-		NoteDisplay *display = new NoteDisplay(notePos, noteSize);
+		NoteDisplay *display = new NoteDisplay(notePos, noteSize, module->seq.getSong());
 		addChild(display);
 	}
     #endif

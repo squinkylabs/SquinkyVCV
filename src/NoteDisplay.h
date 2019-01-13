@@ -2,6 +2,8 @@
 #pragma once
 #include "nanovg.h"
 #include "MidiViewport.h"
+#include "MidiSequencer.h"
+#include <GLFW/glfw3.h>
 
 
 class NoteScreenScale
@@ -43,11 +45,12 @@ private:
  */
 struct NoteDisplay : OpaqueWidget
 {
-    NoteDisplay(const Vec& pos, const Vec& size)
+    NoteDisplay(const Vec& pos, const Vec& size, MidiSongPtr song)
     {
         this->box.pos = pos;
 		box.size = size;
-        song = MidiSong::makeTest1();
+        //song = MidiSong::makeTest1();
+        sequencer = std::make_shared<MidiSequencer>(song);
         viewport._song = song;
 
         // hard code view range to our demo song
@@ -70,7 +73,7 @@ struct NoteDisplay : OpaqueWidget
     const NVGcolor bkgnd =  nvgRGBA(0xdd, 0xdd, 0xdd, 0xff); 
 
     MidiViewport viewport;
-    MidiSongPtr song;
+    MidiSequencerPtr sequencer;
 
     void drawNotes(NVGcontext *vg)
     {
@@ -144,6 +147,10 @@ struct NoteDisplay : OpaqueWidget
     void onKey(EventKey &e) override
     {
         std::cout << "onKey " << e.key << std::flush << std::endl;
+        if (e.key == GLFW_KEY_TAB) {
+             std::cout << "It is tab key" << std::endl;
+             sequencer->editor->selectNext();
+        }
         if (!e.consumed) {
             OpaqueWidget::onKey(e);
         }

@@ -1,4 +1,5 @@
 
+#include "MidiEvent.h"
 #include "MidiSelectionModel.h"
 
 #include <assert.h>
@@ -29,6 +30,13 @@ MidiSelectionModel::const_iterator MidiSelectionModel::end() const
 {
     return selection.end();
 }
+
+bool MidiSelectionModel::isSelected(MidiEventPtr evt) const
+{
+    auto it = selection.find(evt);
+    return it != selection.end();
+}
+
 #if 0
 MidiSelectionModel::iterator_pair MidiSelectionModel::get() const
 {

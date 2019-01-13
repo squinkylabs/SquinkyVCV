@@ -58,6 +58,7 @@ extern void testMidiPlayer();
 extern void testMultiLag();
 extern void testUtils();
 extern void testIComposite();
+extern void testMidiEditor();
 
 #if 0
 #include <sstream>
@@ -125,6 +126,7 @@ int main(int argc, char ** argv)
     testMidiViewport();
     testMidiPlayer();
     testMidiControllers();
+    testMidiEditor();
 
     testAudioMath();
     testRingBuffer();

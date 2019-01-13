@@ -46,6 +46,10 @@ public:
     };
 
     void step() override;
+    MidiSongPtr getSong()
+    {
+        return player->getSong();
+    }
 private:
     GateTrigger gateTrigger;
     void init();
