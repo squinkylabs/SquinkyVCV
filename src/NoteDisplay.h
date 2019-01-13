@@ -4,6 +4,7 @@
 #include "MidiViewport.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
+#include "UIPrefs.h"
 
 
 class NoteScreenScale
@@ -67,10 +68,12 @@ struct NoteDisplay : OpaqueWidget
 
     float ax =0;
     float ay=0;
+    /*
     const NVGcolor red =  nvgRGBA(0xff, 0x00, 0x00, 0xff); 
     const NVGcolor green =  nvgRGBA(0x00, 0xff, 0x00, 0xff); 
     const NVGcolor blue =  nvgRGBA(0x00, 0x00, 0xff, 0xff); 
     const NVGcolor bkgnd =  nvgRGBA(0xdd, 0xdd, 0xdd, 0xff); 
+    */
 
     MidiViewport viewport;
     MidiSequencerPtr sequencer;
@@ -87,7 +90,7 @@ struct NoteDisplay : OpaqueWidget
             const float y = scaler->midiPitchToY(*ev);
             const float width = scaler->midiTimeTodX(ev->duration);
 
-            filledRect(vg, red, x, y, width, 10);
+            filledRect(vg, UIPrefs::NOTE_COLOR, x, y, width, 10);
         }
     }
 
@@ -100,7 +103,7 @@ struct NoteDisplay : OpaqueWidget
         strokedRect(vg, green, 0, 0, this->box.size.x, this->box.size.y);
         filledRect(vg, blue, this->box.size.x - 10, 100, 100, 10);
 #endif
-        filledRect(vg, bkgnd, 0, 0, box.size.x, box.size.y);
+        filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
     
         drawNotes(vg);
     }
@@ -149,7 +152,7 @@ struct NoteDisplay : OpaqueWidget
         std::cout << "onKey " << e.key << std::flush << std::endl;
         if (e.key == GLFW_KEY_TAB) {
              std::cout << "It is tab key" << std::endl;
-             sequencer->editor->selectNext();
+             sequencer->editor->selectNextNote();
         }
         if (!e.consumed) {
             OpaqueWidget::onKey(e);
