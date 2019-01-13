@@ -24,18 +24,37 @@ MidiTrackPtr MidiEditor::getTrack()
     return song->getTrack(0);
 }
 
-void MidiEditor::selectNext()
+void MidiEditor::selectNextNote()
 {
     assert(song);
     assert(selection);
 
-    assert(selection->empty());     // can only handle this case for now
     MidiTrackPtr track = getTrack();
     assert(track);
+    if (selection->empty()) {
+        
 
-    // track should always have something in it, even if it's an end event
-    MidiEventPtr first = track->begin()->second;
-    assert(first->type == MidiEvent::Type::Note);
+        // track should always have something in it, even if it's an end event
+        MidiEventPtr first = track->begin()->second;
+        assert(first->type == MidiEvent::Type::Note);
 
-    selection->select(first);
+        selection->select(first);
+    } else {
+        assert(selection->size() == 1);
+        MidiEventPtr evt = *selection->begin();
+        assert(evt->type == MidiEvent::Type::Note);
+
+        // find the event in the track
+        auto it = track->findEvent(*evt);
+        if (it == track->end()) {
+            assert(false);
+        }
+
+        // now iterate up from there
+        ++it;
+        evt = it->second;
+        assert(evt->type == MidiEvent::Type::Note);
+
+        selection->select(evt);
+    }
 }

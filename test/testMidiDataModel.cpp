@@ -113,6 +113,17 @@ static void testDelete3()
     assert(no->pitchCV == 33);
 }
 
+static void testFind1()
+{
+    MidiTrack mt;
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    ev->pitchCV = 5;
+    mt.insertEvent(ev);
+    auto found = mt.findEvent(*ev);
+    assert(found->second == ev);
+}
+
+
 static void testTimeRange0()
 {
     MidiTrack mt;
@@ -173,6 +184,7 @@ void testMidiDataModel()
     testDelete();
     testDelete2();
     testDelete3();
+    testFind1();
     testTimeRange0();
     testTimeRange1();
     testSameTime();

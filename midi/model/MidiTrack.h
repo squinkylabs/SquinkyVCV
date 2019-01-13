@@ -21,8 +21,8 @@ public:
 
     // TODO: does this still make sense with polymorphic types?
     void deleteEvent(const MidiEvent&);
-
     void insertEnd(MidiEvent::time_t time);
+
 
     /**
      * Returns all events as a vector, so that they may be indexed.
@@ -38,6 +38,12 @@ public:
     using iterator = container::iterator;
     using const_iterator = container::const_iterator;
     using iterator_pair = std::pair<const_iterator, const_iterator>;
+
+    /**
+     * finds an event that satisfies == and returns a pointer to it
+     */
+   // MidiEventPtr findEvent(const MidiEvent&);
+    const_iterator findEvent(const MidiEvent&);
 
     /**
      * Returns pair of iterators for all events  start <= t <= end

@@ -89,6 +89,19 @@ void MidiTrack::insertEnd(MidiEvent::time_t time)
     insertEvent(end);
 }
 
+MidiTrack::const_iterator MidiTrack::findEvent(const MidiEvent& ev)
+{
+    iterator_pair range = timeRange(ev.startTime, ev.startTime);
+    for (const_iterator it = range.first; it != range.second; ++it) {
+        const MidiEventPtr p = it->second;
+        if (*p == ev) {
+            return it;
+        }
+    }
+    // didn't find it, return nullptr
+    return events.end();
+}
+
 MidiTrackPtr MidiTrack::makeTest1()
 {
     auto track = std::make_shared<MidiTrack>();

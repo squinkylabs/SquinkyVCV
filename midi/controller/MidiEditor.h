@@ -10,7 +10,7 @@ class MidiEditor
 public:
     MidiEditor(std::shared_ptr<MidiSong>, std::shared_ptr<MidiSelectionModel> selection);
     ~ MidiEditor();
-    void selectNext();
+    void selectNextNote();
 private:
     /**
      * The selection model we will act on
