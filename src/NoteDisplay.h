@@ -1,10 +1,12 @@
 
 #pragma once
 #include "nanovg.h"
+#include "window.hpp"
 #include "MidiViewport.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
+
 
 
 class NoteScreenScale
@@ -30,7 +32,7 @@ public:
     {
        // return (note.pitchCV - viewport.pitchLow) * ay;
         return ( -1.f/12.f + viewport.pitchHi - note.pitchCV) * ay;
-    }
+}
 private:
     float ax = 0;
     float ay = 0;
@@ -50,7 +52,6 @@ struct NoteDisplay : OpaqueWidget
     {
         this->box.pos = pos;
 		box.size = size;
-        //song = MidiSong::makeTest1();
         sequencer = std::make_shared<MidiSequencer>(song);
         viewport._song = song;
 
@@ -68,13 +69,8 @@ struct NoteDisplay : OpaqueWidget
 
     float ax =0;
     float ay=0;
-    /*
-    const NVGcolor red =  nvgRGBA(0xff, 0x00, 0x00, 0xff); 
-    const NVGcolor green =  nvgRGBA(0x00, 0xff, 0x00, 0xff); 
-    const NVGcolor blue =  nvgRGBA(0x00, 0x00, 0xff, 0xff); 
-    const NVGcolor bkgnd =  nvgRGBA(0xdd, 0xdd, 0xdd, 0xff); 
-    */
 
+   // TODO: move viewport into sequencer?
     MidiViewport viewport;
     MidiSequencerPtr sequencer;
 
@@ -90,7 +86,11 @@ struct NoteDisplay : OpaqueWidget
             const float y = scaler->midiPitchToY(*ev);
             const float width = scaler->midiTimeTodX(ev->duration);
 
-            filledRect(vg, UIPrefs::NOTE_COLOR, x, y, width, 10);
+            const bool selected = sequencer->selection->isSelected(ev);
+            filledRect(
+                vg,
+                selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
+                x, y, width, 10);
         }
     }
 
@@ -149,10 +149,16 @@ struct NoteDisplay : OpaqueWidget
 
     void onKey(EventKey &e) override
     {
-        std::cout << "onKey " << e.key << std::flush << std::endl;
+       // std::cout << "onKey " << e.key << std::flush << std::endl;
         if (e.key == GLFW_KEY_TAB) {
-             std::cout << "It is tab key" << std::endl;
-             sequencer->editor->selectNextNote();
+             //std::cout << "It is tab key" << std::endl;
+             //sequencer->editor->selectNextNote();
+             if (rack::windowIsShiftPressed()) {
+                sequencer->editor->selectPrevNote();
+             } else {
+                 sequencer->editor->selectNextNote();
+             }
+             
         }
         if (!e.consumed) {
             OpaqueWidget::onKey(e);

@@ -11,6 +11,7 @@ public:
     MidiEditor(std::shared_ptr<MidiSong>, std::shared_ptr<MidiSelectionModel> selection);
     ~ MidiEditor();
     void selectNextNote();
+    void selectPrevNote();
 private:
     /**
      * The selection model we will act on

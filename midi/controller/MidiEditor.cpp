@@ -33,7 +33,7 @@ static MidiTrack::const_iterator findNextNoteOrCurrent(
     MidiTrack::const_iterator it)
 {
     if (it == track->end()) {
-        return it;
+        return it;                  // if we are at the end, give up
     }
     for (bool done = false; !done; ) {
        
@@ -53,6 +53,42 @@ static MidiTrack::const_iterator findNextNoteOrCurrent(
     return it;
 }
 
+/**
+ * returns track.end if can't find a note
+ */
+static MidiTrack::const_iterator findPrevNoteOrCurrent(
+    MidiTrackPtr track,
+    MidiTrack::const_iterator it)
+{
+
+    for (bool done = false; !done; ) {
+
+        MidiEventPtr evt = it->second;
+        switch (evt->type) {
+            case  MidiEvent::Type::Note:
+                done = true;                    // if we are on a note, then we can accept that
+                break;
+            case MidiEvent::Type::End:
+                if (it == track->begin()) {
+                    return track->end();            // Empty track, can't dec end ptr, so return "fail"
+                } else {
+                    --it;                           // try prev
+                }
+                break;
+            default:
+                assert(false);
+                if (it == track->begin()) {
+                    return track->end();            // Empty track, can't dec end ptr, so return "fail"
+                } else {
+                    --it;                           // try prev
+                }
+                
+        }
+
+    }
+    return it;
+}
+
 static void selectNextNoteOrCurrent(
     MidiTrackPtr track,
     MidiTrack::const_iterator it,
@@ -60,6 +96,25 @@ static void selectNextNoteOrCurrent(
 {
     it = findNextNoteOrCurrent(track, it);
     if (it == track->end()) {
+        selection->clear();
+    } else {
+        MidiEventPtr evt = it->second;
+        if (evt->type == MidiEvent::Type::End) {
+            selection->clear();
+        } else {
+            selection->select(evt);
+        }
+    }
+}
+
+static void selectPrevNoteOrCurrent(
+    MidiTrackPtr track,
+    MidiTrack::const_iterator it,
+    MidiSelectionModelPtr selection)
+{
+    it = findPrevNoteOrCurrent(track, it);
+    if (it == track->end()) {
+        // If we can't find a good one, give up
         selection->clear();
     } else {
         MidiEventPtr evt = it->second;
@@ -92,5 +147,32 @@ void MidiEditor::selectNextNote()
         }
         ++it;
         selectNextNoteOrCurrent(track, it, selection);
+    }
+}
+
+void MidiEditor::selectPrevNote()
+{
+    assert(song);
+    assert(selection);
+
+    MidiTrackPtr track = getTrack();
+    assert(track);
+    if (selection->empty()) {
+        // for prev, let's do same as next - if nothing selected, select first
+        selectPrevNoteOrCurrent(track, --track->end(), selection);
+    } else {
+        // taken from next..
+        assert(selection->size() == 1);         // can't handle multi select yet
+        MidiEventPtr evt = *selection->begin();
+        assert(evt->type == MidiEvent::Type::Note);
+
+        // find the event in the track
+        auto it = track->findEvent(*evt);
+        if (it == track->begin()) {
+            selection->clear();         // if we are at start, can't dec.unselect
+            return;
+        }
+        --it;
+        selectPrevNoteOrCurrent(track, it, selection);
     }
 }

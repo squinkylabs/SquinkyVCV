@@ -9,7 +9,6 @@
 
 MidiSequencerPtr makeTest(bool empty = false)
 {
-   
     MidiSongPtr song = empty ?
         MidiSong::makeTestEmpty() :
         MidiSong::makeTest1();
@@ -24,9 +23,28 @@ static void test1()
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected
 
-
+    // note should be first one
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     assert(seq->selection->isSelected(firstEvent));
+}
+
+// from a null selection, select prev. should select last note
+static void test1b()
+{
+    MidiSequencerPtr seq = makeTest();
+    seq->editor->selectPrevNote();
+    assertEQ(seq->selection->size(), 1);     // should be one note selected
+
+    // note should be last one
+    auto it = seq->song->getTrack(0)->end();
+    it--;
+    it--;
+    MidiEventPtr lastEvent = it->second;
+  
+    assert(lastEvent->type == MidiEvent::Type::Note);
+
+
+    assert(seq->selection->isSelected(lastEvent));
 }
 
 // from a non-null selection, select next
@@ -35,7 +53,6 @@ static void test2()
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected
-
 
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     assert(seq->selection->isSelected(firstEvent));
@@ -48,15 +65,47 @@ static void test2()
     ++iter;
     MidiEventPtr secondEvent = iter->second;
     assert(seq->selection->isSelected(secondEvent));
-
 }
 
+// from a non-null selection, select prev
+static void test2b()
+{
+    MidiSequencerPtr seq = makeTest();
+
+    // Select the second note in the Seq
+    seq->editor->selectNextNote();
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);     
+         
+    // Verify that second note is selected
+    auto iter = seq->song->getTrack(0)->begin();
+    ++iter;
+    MidiEventPtr secondEvent = iter->second;
+    assert(seq->selection->isSelected(secondEvent));
+
+    // Above is just test1, so now second event selected
+    seq->editor->selectPrevNote();
+    assertEQ(seq->selection->size(), 1);     // should be one note selected
+
+    iter = seq->song->getTrack(0)->begin();
+    MidiEventPtr firstEvent = iter->second;
+    assert(seq->selection->isSelected(firstEvent));
+}
 
 // from a null selection, select next in null track
 static void test3()
 {
     MidiSequencerPtr seq = makeTest(true);
     seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 0);     // should be nothing selected
+    assert(seq->selection->empty());
+}
+
+// from a null selection, select prev in null track
+static void test3b()
+{
+    MidiSequencerPtr seq = makeTest(true);
+    seq->editor->selectPrevNote();
     assertEQ(seq->selection->size(), 0);     // should be nothing selected
     assert(seq->selection->empty());
 }
@@ -78,10 +127,24 @@ static void test4()
     assertEQ(notes, 8);
 }
 
+static void testPrev1()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+    assert(!seq->selection->empty());
+
+    seq->editor->selectPrevNote();
+    assert(seq->selection->empty());
+}
+
 void testMidiEditor()
 {
     test1();
+    test1b();
     test2();
+    test2b();
     test3();
+    test3b();
+    testPrev1();
     test4();
 }
