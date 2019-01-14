@@ -137,6 +137,34 @@ static void testPrev1()
     assert(seq->selection->empty());
 }
 
+static void testTrans1()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+    const float p0 = firstNote->pitchCV;
+    seq->editor->transpose(1.0f/12.f);
+    const float p1 = firstNote->pitchCV;
+    assertClose(p1 - p0, 1.f / 12.f, .000001);
+}
+
+// transpose multi
+static void testTrans2()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+    const float p0 = firstNote->pitchCV;
+    seq->editor->transpose(1.0f / 12.f);
+    const float p1 = firstNote->pitchCV;
+    assertClose(p1 - p0, 1.f / 12.f, .000001);
+    assertEQ(seq->selection->size(), 2);
+}
+
 void testMidiEditor()
 {
     test1();
@@ -147,4 +175,7 @@ void testMidiEditor()
     test3b();
     testPrev1();
     test4();
+
+    testTrans1();
+    testTrans2();
 }

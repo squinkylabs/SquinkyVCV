@@ -12,6 +12,7 @@ public:
     ~ MidiEditor();
     void selectNextNote();
     void selectPrevNote();
+    void transpose(float amount);
 private:
     /**
      * The selection model we will act on

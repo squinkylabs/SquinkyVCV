@@ -17,8 +17,10 @@ public:
      */
     void select(std::shared_ptr<MidiEvent>);
 
+    void extendSelection(std::shared_ptr<MidiEvent>);
+
     /**
-     * selection nothing
+     * select nothing
      */
     void clear();
 

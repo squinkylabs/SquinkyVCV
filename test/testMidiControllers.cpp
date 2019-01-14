@@ -53,6 +53,25 @@ static void testSelectionModel3()
     assert(!sel->isSelected(note2));
 }
 
+// selects two notes and verifies that it is selected
+static void testSelectionModel4()
+{
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>();
+    MidiSongPtr song = MidiSong::makeTest1();
+
+    auto it = song->getTrack(0)->begin();
+    MidiEventPtr evt = it->second;
+    assert(evt);
+    sel->select(evt);
+
+    ++it;
+    MidiEventPtr evt2 = it->second;
+    sel->extendSelection(evt2);
+
+    assertEQ(sel->size(), 2);
+    assert(sel->isSelected(evt));
+    assert(sel->isSelected(evt2));
+}
 
 static void testMidiSequencer1()
 {
@@ -83,6 +102,7 @@ void testMidiControllers()
     testSelectionModel1();
     testSelectionModel2();
     testSelectionModel3();
+    testSelectionModel4();
     testMidiSequencer1();
     testMidiSequencer2();
     assertNoMidi();     // check for leaks

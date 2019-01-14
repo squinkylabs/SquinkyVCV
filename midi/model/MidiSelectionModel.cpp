@@ -21,6 +21,11 @@ void MidiSelectionModel::select(std::shared_ptr<MidiEvent> event)
     selection.insert(event);
 }
 
+void MidiSelectionModel::extendSelection(std::shared_ptr<MidiEvent> event)
+{
+    selection.insert(event);
+}
+
 MidiSelectionModel::const_iterator MidiSelectionModel::begin() const
 {
     return selection.begin();

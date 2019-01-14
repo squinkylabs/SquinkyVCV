@@ -176,3 +176,11 @@ void MidiEditor::selectPrevNote()
         selectPrevNoteOrCurrent(track, it, selection);
     }
 }
+
+void MidiEditor::transpose(float amount)
+{
+    for (auto ev : *selection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
+        note->pitchCV += amount;
+    }
+}

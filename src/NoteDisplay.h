@@ -149,7 +149,7 @@ struct NoteDisplay : OpaqueWidget
 
     void onKey(EventKey &e) override
     {
-       // std::cout << "onKey " << e.key << std::flush << std::endl;
+        std::cout << "onKey " << e.key << "add is " << GLFW_KEY_KP_ADD << std::flush << std::endl;
         if (e.key == GLFW_KEY_TAB) {
              //std::cout << "It is tab key" << std::endl;
              //sequencer->editor->selectNextNote();
@@ -158,7 +158,17 @@ struct NoteDisplay : OpaqueWidget
              } else {
                  sequencer->editor->selectNextNote();
              }
-             
+             e.consumed = true;
+        } else if ((e.key == GLFW_KEY_KP_ADD) ||
+                (e.key == GLFW_KEY_EQUAL && rack::windowIsShiftPressed())) {
+
+            sequencer->editor->transpose( 1 / 12.f);
+            e.consumed = true;
+        }  else if ((e.key == GLFW_KEY_KP_SUBTRACT) ||
+                (e.key == GLFW_KEY_MINUS && !rack::windowIsShiftPressed())) {
+                    
+            sequencer->editor->transpose( -1.f / 12.f);
+            e.consumed = true;
         }
         if (!e.consumed) {
             OpaqueWidget::onKey(e);
