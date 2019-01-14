@@ -45,7 +45,11 @@ struct Blue30SnapKnob : Blue30Knob
     }
 };
 
-struct NKKSmall : SVGSwitch, ToggleSwitch
+
+struct NKKSmall : SVGSwitch
+#ifndef __V1
+, ToggleSwitch
+#endif
 {
     NKKSmall()
     {
@@ -55,7 +59,10 @@ struct NKKSmall : SVGSwitch, ToggleSwitch
     }
 };
 
-struct BlueToggle : public SVGSwitch, ToggleSwitch
+struct BlueToggle : public SVGSwitch
+#ifndef __V1
+, ToggleSwitch
+#endif
 {
     BlueToggle()
     {
