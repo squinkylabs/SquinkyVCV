@@ -22,8 +22,9 @@ namespace std {
 
 //#include "math.hpp"
 
+#include "SqBlep.h"
 #include "SqMath.h"
-//#include "dsp/minblep.hpp"
+
 #include "dsp/filter.hpp"
 #include "AudioMath.h"
 #include "ObjectCache.h"
@@ -117,14 +118,12 @@ private:
     int loopCounter = 0;        // still used?
     float pulseWidth = .5;
 
+    SqBlep syncMinBLEP;
+    SqBlep aMinBLEP;
+    SqBlep bMinBLEP;
 
-    sq::MinBLEP syncMinBLEP;
-    sq::MinBLEP aMinBLEP;
-    sq::MinBLEP bMinBLEP;
     bool aIsNext = false;
-    sq::MinBLEP* getNextMinBLEP();
-
-
+    SqBlep* getNextMinBLEP();
 
     /**
      * Waveform generation helper
@@ -157,16 +156,9 @@ using namespace rack;
 
 inline MinBLEPVCO::MinBLEPVCO()
 {
-    syncMinBLEP.minblep = minblep_16_32;
-    aMinBLEP.minblep = minblep_16_32;
-    bMinBLEP.minblep = minblep_16_32;
-
-    syncMinBLEP.oversample = 32;
-    aMinBLEP.oversample = 32;
-    bMinBLEP.oversample = 32;
 }
 
-inline  sq::MinBLEP* MinBLEPVCO::getNextMinBLEP()
+inline  SqBlep* MinBLEPVCO::getNextMinBLEP()
 {
     aIsNext = !aIsNext;
     return aIsNext ? &aMinBLEP : &bMinBLEP;

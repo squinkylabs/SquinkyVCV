@@ -21,7 +21,7 @@ static void testSelectionModel1()
         assert(note);
     }
     assertEQ(ct, 1);
-    assert(_mdb > 1);
+    assertGT(_mdb, 1);
 }
 
 
@@ -40,6 +40,7 @@ static void testMidiSequencer1()
 
 void testMidiControllers()
 {
+    printf("at 0, _mdb=%d\n", _mdb);
     assertNoMidi();     // check for leaks
     testSelectionModel1();
     testMidiSequencer1();

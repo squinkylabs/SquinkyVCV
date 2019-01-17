@@ -90,22 +90,23 @@ struct LFNWidget : ModuleWidget
         return label;
     }
 
-    // why not on step()?
-   // void draw(NVGcontext *vg) override
     void step() override
     {
         updater.update(*this);
-        module.lfn.pollForChangeOnUIThread();
-       // ModuleWidget::draw(vg);
+        if (module) {
+            module->lfn.pollForChangeOnUIThread();
+        } 
         ModuleWidget::step();
     }
 
     Menu* createContextMenu() override;
 
-    void addStage(int i);
+    void addStage(std::shared_ptr<IComposite> composite, int i);
 
     LFNLabelUpdater updater;
-    LFNModule&     module;
+    // note that module will be null in some cases
+    LFNModule* module;
+
     ParamWidget* xlfnWidget = nullptr;
 };
 
@@ -116,18 +117,22 @@ static const float inputY = knobY + 16;
 static const float inputX = 6;
 static const float labelX = 2;
 
-void LFNWidget::addStage(int index)
+void LFNWidget::addStage(std::shared_ptr<IComposite> composite, int index)
 {
+    // make a temporary one for instantiation controls,
+    // in case module is null.
+
+
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module.lfn,
+        *composite,
         Vec(knobX, knobY + index * knobDy),
-        &module, module.lfn.EQ0_PARAM + index));
+        module, LFN<WidgetComposite>::EQ0_PARAM + index));
 
     updater.makeLabel((*this), index, labelX, knobY - 2 + index * knobDy);
 
     addInput(createInput<PJ301MPort>(
         Vec(inputX, inputY + index * knobDy),
-        &module, module.lfn.EQ0_INPUT + index));
+        module, LFN<WidgetComposite>::EQ0_INPUT + index));
 }
 
 inline Menu* LFNWidget::createContextMenu()
@@ -151,7 +156,7 @@ inline Menu* LFNWidget::createContextMenu()
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
+LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
 {
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
@@ -161,30 +166,31 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
         addChild(panel);
     }
 
+    std::shared_ptr<IComposite> composite = 
+        std::make_shared<LFN<WidgetComposite>>(module);
+
     addOutput(createOutput<PJ301MPort>(
         Vec(59, inputY - knobDy - 1),
         module,
-        module->lfn.OUTPUT));
+        LFN<WidgetComposite>::OUTPUT));
     addLabel(
         Vec(54, inputY - knobDy - 18), "out", SqHelper::COLOR_WHITE);
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module->lfn,
+        *composite,
         Vec(10, knobY - 1 * knobDy),
         module,
-        module->lfn.FREQ_RANGE_PARAM));
-
-   // addLabel(Vec(59, knobY - 1 * knobDy), "R");
+        LFN<WidgetComposite>::FREQ_RANGE_PARAM));
 
     for (int i = 0; i < 5; ++i) {
-        addStage(i);
+        addStage(composite, i);
     }
 
     xlfnWidget = SqHelper::createParam<NullWidget>(
         module->lfn,
         Vec(0, 0),
         module,
-        module->lfn.XLFN_PARAM);
+         LFN<WidgetComposite>::XLFN_PARAM);
     xlfnWidget->box.size.x = 0;
     xlfnWidget->box.size.y = 0;
     addParam(xlfnWidget);
@@ -203,8 +209,12 @@ void LFNLabelUpdater::makeLabel(struct LFNWidget& widget, int index, float x, fl
 
 void LFNLabelUpdater::update(struct LFNWidget& widget)
 {
-    float baseFreq = widget.module.lfn.getBaseFrequency();
-    const bool isXLFN = widget.module.lfn.isXLFN();
+    // This will happen often
+    if (!widget.module) {
+        return;
+    }
+    float baseFreq = widget.module->lfn.getBaseFrequency();
+    const bool isXLFN = widget.module->lfn.isXLFN();
     const float moveLeft = isXLFN ? 3 : 0;
     const int digits = isXLFN ? 2 : 1;
     if (baseFreq != baseFrequency) {
