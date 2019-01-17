@@ -21,9 +21,24 @@ public:
 
 #ifndef __V1
 
+#include "dsp/minblep.hpp"
 class SqBlep
 {
-    this->minblep = minblep_16_32;
-    this->oversample = 32;
+public:
+    SqBlep()
+    {
+        this->minBLEP.minblep = rack::minblep_16_32;
+        this->minBLEP.oversample = 32;
+    }
+    void jump(float crossing, float jump)
+    {
+        minBLEP.jump(crossing, jump);
+    }
+    float shift()
+    {
+        return minBLEP.shift();
+    }
+private:
+    rack::MinBLEP<16> minBLEP;
 };
 #endif
