@@ -650,5 +650,8 @@
     <ClInclude Include="..\..\midi\controller\MidiEditor.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

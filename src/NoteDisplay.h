@@ -6,6 +6,7 @@
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
+#include "MidiKeyboardHandler.h"
 
 
 
@@ -149,28 +150,17 @@ struct NoteDisplay : OpaqueWidget
 
     void onKey(EventKey &e) override
     {
-        std::cout << "onKey " << e.key << "add is " << GLFW_KEY_KP_ADD << std::flush << std::endl;
-        if (e.key == GLFW_KEY_TAB) {
-             //std::cout << "It is tab key" << std::endl;
-             //sequencer->editor->selectNextNote();
-             if (rack::windowIsShiftPressed()) {
-                sequencer->editor->selectPrevNote();
-             } else {
-                 sequencer->editor->selectNextNote();
-             }
-             e.consumed = true;
-        } else if ((e.key == GLFW_KEY_KP_ADD) ||
-                (e.key == GLFW_KEY_EQUAL && rack::windowIsShiftPressed())) {
-
-            sequencer->editor->transpose( 1 / 12.f);
-            e.consumed = true;
-        }  else if ((e.key == GLFW_KEY_KP_SUBTRACT) ||
-                (e.key == GLFW_KEY_MINUS && !rack::windowIsShiftPressed())) {
-                    
-            sequencer->editor->transpose( -1.f / 12.f);
-            e.consumed = true;
+        const unsigned key = e.key;
+        unsigned mods = 0;
+        if (rack::windowIsShiftPressed()) {
+            mods |= GLFW_MOD_SHIFT;
         }
-        if (!e.consumed) {
+        if ( windowIsModPressed()) {
+            mods |= GLFW_MOD_CONTROL;
+        }
+
+        bool handled =MidiKeyboardHandler::handle(sequencer.get(), key, mods);
+        if (!handled) {
             OpaqueWidget::onKey(e);
         }
     }

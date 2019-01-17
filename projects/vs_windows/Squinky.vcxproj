@@ -159,6 +159,7 @@
     <ClInclude Include="..\..\dsp\utils\ObjectCache.h" />
     <ClInclude Include="..\..\dsp\utils\poly.h" />
     <ClInclude Include="..\..\midi\controller\MidiEditor.h" />
+    <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h" />
     <ClInclude Include="..\..\midi\controller\MidiPlayer.h" />
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
