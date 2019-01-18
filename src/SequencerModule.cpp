@@ -6,7 +6,7 @@
 #include "WidgetComposite.h"
 #include "Seq.h"
 #include "widgets.hpp"
-#include "NoteDisplay.h"
+#include "seq/NoteDisplay.h"
 
 
 struct SequencerModule : Module

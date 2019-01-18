@@ -9,7 +9,9 @@
 #include "MidiKeyboardHandler.h"
 
 
-
+/**
+ * This class know how to map between pitch, time, and screen coordinates
+ */
 class NoteScreenScale
 {
 public:
@@ -41,11 +43,10 @@ private:
 };
 
 /**
- * Experiments:
+ * This class needs some refactoring and renaming.
+ * It is really the entire sequencer UI, including the notes.
  * 
- * refactor to remove redundant code
- * draw stroked rectangle
- * figure out how to normalize the coordinates.
+ * Pretty soon we should sepparate out the NoteEditor.
  */
 struct NoteDisplay : OpaqueWidget
 {
