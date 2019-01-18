@@ -3,6 +3,8 @@
 
 NoteScreenScale::NoteScreenScale(MidiViewport& vp, float screenWidth, float screenHeight) : viewport(vp)
 {
+    assert(screenWidth > 0);
+    assert(screenHeight > 0);
     ax =screenWidth / (viewport.endTime - viewport.startTime);
     ay = screenHeight / (viewport.pitchHi - viewport.pitchLow);
 
@@ -14,10 +16,12 @@ float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
 {
     return (ev.startTime - viewport.startTime) * ax;  
 }
-    float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
+
+float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
 {
     return  dt * ax;
 }
+
 float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note)
 {
     // return (note.pitchCV - viewport.pitchLow) * ay;
