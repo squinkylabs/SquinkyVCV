@@ -369,6 +369,12 @@
     <ClCompile Include="..\..\test\testMidiEditor.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testNoteScreenScale.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp">
+      <Filter>Source Files\midi\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -652,6 +658,9 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h">
       <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\view\NoteScreenScale.h">
+      <Filter>Header Files\midi\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

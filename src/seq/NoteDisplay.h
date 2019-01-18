@@ -1,5 +1,6 @@
 
 #pragma once
+#include "util/math.hpp"
 #include "nanovg.h"
 #include "window.hpp"
 #include "MidiViewport.h"
@@ -7,11 +8,14 @@
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
 #include "MidiKeyboardHandler.h"
+#include "NoteScreenScale.h"
+
 
 
 /**
  * This class know how to map between pitch, time, and screen coordinates
  */
+#if 0
 class NoteScreenScale
 {
 public:
@@ -41,6 +45,7 @@ private:
     float ay = 0;
     MidiViewport& viewport;
 };
+#endif
 
 /**
  * This class needs some refactoring and renaming.
@@ -64,7 +69,7 @@ struct NoteDisplay : OpaqueWidget
         viewport.pitchHi = MidiNoteEvent::pitchToCV(5, 0);
 
         //initScaleFuncs();
-        scaler = std::make_shared<NoteScreenScale>(viewport, size);
+        scaler = std::make_shared<NoteScreenScale>(viewport, size.x, size.y);
     }
 
     std::shared_ptr<NoteScreenScale> scaler;

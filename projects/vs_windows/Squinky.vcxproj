@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
     <ClCompile Include="..\..\midi\view\MidiViewport.cpp" />
+    <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp" />
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp" />
     <ClCompile Include="..\..\sqsrc\delay\FractionalDelay.cpp" />
     <ClCompile Include="..\..\sqsrc\grammar\StochasticGrammar.cpp" />
@@ -79,6 +80,7 @@
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />
+    <ClCompile Include="..\..\test\testNoteScreenScale.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
     <ClCompile Include="..\..\test\testRateConversion.cpp" />
@@ -170,6 +172,7 @@
     <ClInclude Include="..\..\midi\model\MidiTrack.h" />
     <ClInclude Include="..\..\midi\model\MidiSelectionModel.h" />
     <ClInclude Include="..\..\midi\view\MidiViewport.h" />
+    <ClInclude Include="..\..\midi\view\NoteScreenScale.h" />
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h" />
     <ClInclude Include="..\..\sqsrc\clock\GenerativeTriggerGenerator.h" />
     <ClInclude Include="..\..\sqsrc\clock\TriggerSequencer.h" />

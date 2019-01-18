@@ -59,6 +59,7 @@ extern void testMultiLag();
 extern void testUtils();
 extern void testIComposite();
 extern void testMidiEditor();
+extern void testNoteScreenScale();
 
 #if 0
 #include <sstream>
@@ -127,6 +128,7 @@ int main(int argc, char ** argv)
     testMidiPlayer();
     testMidiControllers();
     testMidiEditor();
+    testNoteScreenScale();
 
     testAudioMath();
     testRingBuffer();
