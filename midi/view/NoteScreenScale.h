@@ -6,8 +6,18 @@ class MidiViewport;
 
 #include "MidiEvent.h"
 /**
- * This class know how to map between pitch, time, and screen coordinates
+ * This class know how to map between pitch, time, and screen coordinates.
+ * notes on the screen have:
+ *      height in pixels - determined by vertical zoom
+ *      width in pixels - determined by duration and horizontal zoom
+ *      x position where the note starts.
+ *      y position of the upper edge of the notes.
+ *
+ * Coordinate conventions:
+ *      if viewport hi and low pitches are the same, it maps a note of that pitch to full screen.
+ *      y==0 it the top edge, increasing y goes down the screen
  */
+ 
 class NoteScreenScale
 {
 public:
@@ -18,13 +28,10 @@ public:
     std::pair<float, float> midiTimeToHBounds(const MidiNoteEvent& note);
 
 
-    /** notes on the screen have:
-     *      height in pixels - determined by vertial zoom
-     *      width in pixels - determined by duration and horizontal zoom
-     *      x position where the note starts.
-     *      y position of the upper edge of the notes
-     */
+
      float midiPitchToY(const MidiNoteEvent& note);
+
+     float noteHeight();
 private:
     float ax = 0;
     float ay = 0;
