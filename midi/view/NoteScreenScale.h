@@ -21,7 +21,7 @@ class MidiViewport;
 class NoteScreenScale
 {
 public:
-    NoteScreenScale(MidiViewport& vp, float screenWidth, float screenHeight);
+    NoteScreenScale(std::shared_ptr<MidiViewport> vp, float screenWidth, float screenHeight);
     float midiTimeToX(const MidiEvent& ev);
     float midiTimeTodX(MidiEvent::time_t dt);
 
@@ -36,5 +36,5 @@ public:
 private:
     float ax = 0;
     float ay = 0;
-    MidiViewport& viewport;
+    std::shared_ptr<MidiViewport> viewport;
 };

@@ -5,6 +5,16 @@
 #include "MidiSong.h"
 #include "FilteredIterator.h"
 
+extern int _mdb;
+MidiViewport::MidiViewport()
+{
+    ++_mdb;
+}
+
+MidiViewport::~MidiViewport()
+{
+    --_mdb;
+}
 std::shared_ptr<const MidiSong> MidiViewport::getSong() const
 {
     return _song.lock();

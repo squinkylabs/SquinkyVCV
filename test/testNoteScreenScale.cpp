@@ -7,15 +7,15 @@
 static void test0()
 {
     // viewport holds single quarter note
-    MidiViewport vp;
-    vp.startTime = 0;
-    vp.endTime = 1;
+    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    vp->startTime = 0;
+    vp->endTime = 1;
   
     // let's make one quarter note fill the whole screen
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    vp.pitchLow = note.pitchCV;
-    vp.pitchHi = note.pitchCV;
+    vp->pitchLow = note.pitchCV;
+    vp->pitchHi = note.pitchCV;
 
     NoteScreenScale n(vp, 100, 100);
     float left = n.midiTimeToX(note);
@@ -32,15 +32,15 @@ static void test0()
 static void test1()
 {
     // viewport holds single quarter note
-    MidiViewport vp;
-    vp.startTime = 0;
-    vp.endTime = 1;
+    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    vp->startTime = 0;
+    vp->endTime = 1;
 
     // let's make one quarter note fill the whole screen
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    vp.pitchLow = note.pitchCV;
-    vp.pitchHi = note.pitchCV;
+    vp->pitchLow = note.pitchCV;
+    vp->pitchHi = note.pitchCV;
 
     NoteScreenScale n(vp, 100, 100);
     auto y = n.midiPitchToY(note);
@@ -54,17 +54,17 @@ static void test1()
 static void test2()
 {
     // viewport holds one bar of 4/4
-    MidiViewport vp;
-    vp.startTime = 0;
-    vp.endTime = 4;
+    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    vp->startTime = 0;
+    vp->endTime = 4;
 
     // let's make one eight note
     MidiNoteEvent note;
     note.startTime = 3.f;
     note.duration = .5f;
     note.setPitch(3, 0);
-    vp.pitchLow = note.pitchCV;
-    vp.pitchHi = note.pitchCV;
+    vp->pitchLow = note.pitchCV;
+    vp->pitchHi = note.pitchCV;
 
     NoteScreenScale n(vp, 100, 100);
 
@@ -77,15 +77,15 @@ static void test2()
 static void test3()
 {
     // viewport holds two pitches
-    MidiViewport vp;
-    vp.startTime = 0;
-    vp.endTime = 1;
+    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    vp->startTime = 0;
+    vp->endTime = 1;
 
     MidiNoteEvent note1, note2;
     note1.setPitch(3, 0);
     note2.setPitch(3, 1);
-    vp.pitchLow = note1.pitchCV;
-    vp.pitchHi = note2.pitchCV;
+    vp->pitchLow = note1.pitchCV;
+    vp->pitchHi = note2.pitchCV;
 
     NoteScreenScale n(vp, 100, 100);
     auto h = n.noteHeight();
@@ -94,7 +94,7 @@ static void test3()
     // hight pitch should be at top
     auto y = n.midiPitchToY(note2);
     assertClose(y, 0, .001);
-   
+
 }
 
 

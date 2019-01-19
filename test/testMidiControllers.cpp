@@ -92,6 +92,7 @@ static void testMidiSequencer2()
     assert(seq->editor);
     assert(seq->selection);
     assert(seq->song);
+    assert(seq->context);
 
     assert(seq->song->getTrack(0));
 }

@@ -145,8 +145,6 @@ int main(int argc, char ** argv)
     testDelay();
     testPoly();
 
-
-    a b
     testSinOscillator();
     testMinBLEPVCO();
     testHilbert();

@@ -25,16 +25,19 @@ struct NoteDisplay : OpaqueWidget
         this->box.pos = pos;
 		box.size = size;
         sequencer = std::make_shared<MidiSequencer>(song);
-        viewport._song = song;
+        
+        assert(sequencer->context->vieport._song == song);
+        //viewport._song = song;
 
         // hard code view range to our demo song
-        viewport.startTime = 0;
-        viewport.endTime = viewport.startTime + 8;
-        viewport.pitchLow = PitchUtils::pitchToCV(3, 0);
-        viewport.pitchHi = PitchUtils::pitchToCV(5, 0);
+        sequencer->context->viewport->startTime = 0;
+        sequencer->context->viewport->endTime =
+            sequencer->context->viewport->startTime + 8;
+        sequencer->context->viewport->pitchLow = PitchUtils::pitchToCV(3, 0);
+        sequencer->context->viewport->pitchHi = PitchUtils::pitchToCV(5, 0);
 
         //initScaleFuncs();
-        scaler = std::make_shared<NoteScreenScale>(viewport, size.x, size.y);
+        scaler = std::make_shared<NoteScreenScale>(sequencer->context->viewport, size.x, size.y);
     }
 
     std::shared_ptr<NoteScreenScale> scaler;
@@ -42,13 +45,11 @@ struct NoteDisplay : OpaqueWidget
     float ax =0;
     float ay=0;
 
-   // TODO: move viewport into sequencer?
-    MidiViewport viewport;
     MidiSequencerPtr sequencer;
 
     void drawNotes(NVGcontext *vg)
     {
-        MidiViewport::iterator_pair it = viewport.getEvents();
+        MidiViewport::iterator_pair it = sequencer->context->viewport->getEvents();
         const int noteHeight = scaler->noteHeight();
         for ( ; it.first != it.second; ++it.first) {
             auto temp = *(it.first);
@@ -83,8 +84,8 @@ struct NoteDisplay : OpaqueWidget
     void drawBackground(NVGcontext *vg) {
         filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
         const int noteHeight = scaler->noteHeight();
-        for (float cv = viewport.pitchLow;
-            cv <= viewport.pitchHi;
+        for (float cv = sequencer->context->viewport->pitchLow;
+            cv <= sequencer->context->viewport->pitchHi;
             cv += PitchUtils::semitone) {
                 const float y = scaler->midiCvToY(cv);
                 const float width = box.size.x;

@@ -3,6 +3,7 @@
 #include "MidiEditor.h"
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
+#include "MidiEditorContext.h"
 #include <memory>
 
 class MidiSong;
@@ -25,6 +26,7 @@ public:
     MidiSelectionModelPtr const selection;
     MidiSongPtr const song;
     MidiEditorPtr const editor;
+    MidiEditorContextPtr context;
 };
 
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;

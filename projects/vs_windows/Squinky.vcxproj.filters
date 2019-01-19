@@ -375,6 +375,9 @@
     <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp">
       <Filter>Source Files\midi\view</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\midi\view\MidiEditorContext.cpp">
+      <Filter>Source Files\midi\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -650,9 +653,6 @@
     <ClInclude Include="..\..\midi\model\MidiSelectionModel.h">
       <Filter>Header Files\midi\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\midi\model\MidiSequencer.h">
-      <Filter>Header Files\midi\controller</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\midi\controller\MidiEditor.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
@@ -663,6 +663,12 @@
       <Filter>Header Files\midi\view</Filter>
     </ClInclude>
     <ClInclude Include="..\..\midi\model\PitchUtils.h">
+      <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\view\MidiEditorContext.h">
+      <Filter>Header Files\midi\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\model\MidiSequencer.h">
       <Filter>Header Files\midi\model</Filter>
     </ClInclude>
   </ItemGroup>
