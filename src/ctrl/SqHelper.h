@@ -26,7 +26,7 @@ public:
     }
     template <typename T>
 
-    static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int paramId )
+    static T* createParam(std::shared_ptr<IComposite> dummy, const Vec& pos, Module* module, int paramId )
     {
         return rack::createParam<T>(pos, module, paramId);
     }
@@ -34,11 +34,11 @@ public:
     static const NVGcolor COLOR_WHITE;
     static const NVGcolor COLOR_BLACK;
 
-    static void setupParams(IComposite& comp, Module* module)
+    static void setupParams(std::shared_ptr<IComposite> comp, Module* module)
     {
-        const int n = comp.getNumParams();
+        const int n = comp->getNumParams();
         for (int i=0; i<n; ++i) {
-            auto param = comp.getParam(i);
+            auto param = comp->getParam(i);
             module->params[i].config(param.min, param.max, param.def, param.name);
         }
     }
@@ -72,7 +72,7 @@ public:
    static const NVGcolor COLOR_BLACK;
 
    template <typename T>
-   static T* createParam(IComposite& composite, const Vec& pos, Module* module, int paramId )
+   static T* createParam(std::shared_ptr<IComposite> composite, const Vec& pos, Module* module, int paramId )
    {
        const auto data = composite.getParam(paramId);
        assert(data.min < data.max);

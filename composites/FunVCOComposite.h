@@ -5,10 +5,16 @@
 
 #include "IComposite.h"
 
-//#define _ORIGVCO
+template <class TBase>
+class FunDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 template <class TBase>
-class FunVCOComposite : public TBase, public IComposite
+class FunVCOComposite : public TBase
 {
 public:
     FunVCOComposite()
@@ -53,12 +59,10 @@ public:
 
     /** Implement IComposite
      */
-     Config getParam(int i) override;
-     int getNumParams() override
-     {
-         return NUM_PARAMS;
-     }
-
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<FunDescription<TBase>>();
+    }
 
     void step() override;
     void init()
@@ -79,31 +83,37 @@ private:
 #endif
 };
 
+
 template <class TBase>
-inline IComposite::Config
-    FunVCOComposite<TBase>::getParam(int i)
+int FunDescription<TBase>::getNumParams()
+{
+    return FunVCOComposite<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config FunDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch(i) {
-        case MODE_PARAM:
+        case FunVCOComposite<TBase>::MODE_PARAM:
             ret = {0.0f, 1.0f, 1.0f, "Analog/digital mode"};
             break;
-        case SYNC_PARAM:
+        case FunVCOComposite<TBase>::SYNC_PARAM:
             ret = {0.0f, 1.0f, 1.0f, "Sync hard/soft"};
             break;
-        case FREQ_PARAM:
+        case FunVCOComposite<TBase>::FREQ_PARAM:
             ret = {-54.0f, 54.0f, 0.0f, "Frequency"};
             break;
-        case FINE_PARAM:
+        case FunVCOComposite<TBase>::FINE_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Fine frequency"};
             break;
-        case FM_PARAM:
+        case FunVCOComposite<TBase>::FM_PARAM:
             ret = {0.0f, 1.0f, 0.0f, "Pitch modulation depth"};
             break;
-        case PW_PARAM:
+        case FunVCOComposite<TBase>::PW_PARAM:
             ret = {0.0f, 1.0f, 0.5f, "Pulse width"};
             break;
-        case PWM_PARAM:
+        case FunVCOComposite<TBase>::PWM_PARAM:
             ret = {0.0f, 1.0f, 0.0f, "Pulse width modulation depth"};
             break;
         default:
@@ -111,6 +121,7 @@ inline IComposite::Config
     }
     return ret;
 }
+
 
 template <class TBase>
 inline void FunVCOComposite<TBase>::step()

@@ -10,6 +10,8 @@
 
 #include <sstream>
 
+using Comp = LFN<WidgetComposite>;
+
 /**
  */
 struct LFNModule : public Module
@@ -22,7 +24,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    LFN<WidgetComposite> lfn;
+    Comp lfn;
 private:
 
 };
@@ -38,7 +40,8 @@ LFNModule::LFNModule() : lfn(this)
     config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
     onSampleRateChange();
     lfn.init();
-    SqHelper::setupParams(lfn, this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
 }
 #else
 LFNModule::LFNModule()
@@ -79,6 +82,8 @@ private:
 struct LFNWidget : ModuleWidget
 {
     LFNWidget(LFNModule *);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -101,7 +106,7 @@ struct LFNWidget : ModuleWidget
 
     Menu* createContextMenu() override;
 
-    void addStage(std::shared_ptr<IComposite> composite, int i);
+    void addStage(int i);
 
     LFNLabelUpdater updater;
     // note that module will be null in some cases
@@ -117,22 +122,22 @@ static const float inputY = knobY + 16;
 static const float inputX = 6;
 static const float labelX = 2;
 
-void LFNWidget::addStage(std::shared_ptr<IComposite> composite, int index)
+void LFNWidget::addStage(int index)
 {
     // make a temporary one for instantiation controls,
     // in case module is null.
 
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        *composite,
+        icomp,
         Vec(knobX, knobY + index * knobDy),
-        module, LFN<WidgetComposite>::EQ0_PARAM + index));
+        module, Comp::EQ0_PARAM + index));
 
     updater.makeLabel((*this), index, labelX, knobY - 2 + index * knobDy);
 
     addInput(createInput<PJ301MPort>(
         Vec(inputX, inputY + index * knobDy),
-        module, LFN<WidgetComposite>::EQ0_INPUT + index));
+        module, Comp::EQ0_INPUT + index));
 }
 
 inline Menu* LFNWidget::createContextMenu()
@@ -166,9 +171,6 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
         addChild(panel);
     }
 
-    std::shared_ptr<IComposite> composite = 
-        std::make_shared<LFN<WidgetComposite>>(module);
-
     addOutput(createOutput<PJ301MPort>(
         Vec(59, inputY - knobDy - 1),
         module,
@@ -177,20 +179,20 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
         Vec(54, inputY - knobDy - 18), "out", SqHelper::COLOR_WHITE);
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        *composite,
+        icomp,
         Vec(10, knobY - 1 * knobDy),
         module,
-        LFN<WidgetComposite>::FREQ_RANGE_PARAM));
+        Comp::FREQ_RANGE_PARAM));
 
     for (int i = 0; i < 5; ++i) {
-        addStage(composite, i);
+        addStage(i);
     }
 
     xlfnWidget = SqHelper::createParam<NullWidget>(
-        module->lfn,
+        icomp,
         Vec(0, 0),
         module,
-         LFN<WidgetComposite>::XLFN_PARAM);
+        Comp::XLFN_PARAM);
     xlfnWidget->box.size.x = 0;
     xlfnWidget->box.size.y = 0;
     addParam(xlfnWidget);

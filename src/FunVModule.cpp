@@ -8,6 +8,8 @@
 #include "ctrl/SqMenuItem.h"
 #include "FunVCOComposite.h"
 
+using Comp = FunVCOComposite<WidgetComposite>;
+
 /**
  */
 struct FunVModule : Module
@@ -21,7 +23,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    FunVCOComposite<WidgetComposite> vco;
+    Comp vco;
 private:
 };
 
@@ -37,7 +39,8 @@ FunVModule::FunVModule() : vco(this)
     // Set the number of components
     config(vco.NUM_PARAMS, vco.NUM_INPUTS, vco.NUM_OUTPUTS, vco.NUM_LIGHTS);
     onSampleRateChange();
-    SqHelper::setupParams(vco, this);
+    std::shared_ptr<IComposite> icomp = FunVCOComposite<WidgetComposite>::getDescription();
+    SqHelper::setupParams(icomp, this);
 }
 #else
 FunVModule::FunVModule()
@@ -63,6 +66,8 @@ void FunVModule::step()
 struct FunVWidget : ModuleWidget
 {
     FunVWidget(FunVModule *);
+     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
 
     void addTop3(FunVModule *, float verticalShift);
     void addMiddle4(FunVModule *, float verticalShift);
@@ -106,26 +111,26 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
     const float center = 49;
 
     addParam(SqHelper::createParam<NKK>(
-        module->vco,
+        icomp,
         Vec(left, 66 + verticalShift),
         module,
-        module->vco.MODE_PARAM));
+        Comp::MODE_PARAM));
     addLabel(Vec(left -4, 48+ verticalShift), "anlg");
     addLabel(Vec(left -3, 108+ verticalShift), "dgtl");
 
     addParam(SqHelper::createParam<Rogan3PSBlue>(
-        module->vco,
+        icomp,
         Vec(center, 61 + verticalShift),
         module, 
-        module->vco.FREQ_PARAM));
+        Comp::FREQ_PARAM));
     auto label = addLabel(Vec(center + 3, 40+ verticalShift), "pitch");
     label->fontSize = 16;
 
     addParam(SqHelper::createParam<NKK>(
-        module->vco,
+        icomp,
         Vec(right, 66 + verticalShift),
         module,
-        module->vco.SYNC_PARAM));
+        Comp::SYNC_PARAM));
     addLabel(Vec(right-5, 48+ verticalShift), "hard");
     addLabel(Vec(right-2, 108+ verticalShift), "soft");
 }
@@ -133,29 +138,29 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
 void FunVWidget::addMiddle4(FunVModule * module, float verticalShift)
 {
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module->vco,
+        icomp,
         Vec(23, 143 + verticalShift),
-        module, module->vco.FINE_PARAM));
+        module, Comp::FINE_PARAM));
     addLabel(Vec(25, 124 +verticalShift), "fine");
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module->vco,
+        icomp,
         Vec(91, 143 + verticalShift),
-        module, module->vco.PW_PARAM));
+        module, Comp::PW_PARAM));
     addLabel(Vec(84, 124 +verticalShift), "p width");
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module->vco,
+        icomp,
         Vec(23, 208 + verticalShift),
         module,
-        module->vco.FM_PARAM));
+        Comp::FM_PARAM));
     addLabel(Vec(19, 188 +verticalShift), "fm cv");
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module->vco,
+        icomp,
         Vec(91, 208 + verticalShift),
         module, 
-        module->vco.PWM_PARAM
+        Comp::PWM_PARAM
     ));
     addLabel(Vec(82, 188 +verticalShift), "pwm cv");
 }

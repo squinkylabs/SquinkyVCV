@@ -644,5 +644,8 @@
     <ClInclude Include="..\..\midi\controller\MidiEditor.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\IComposite.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
