@@ -118,6 +118,7 @@ protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };
 
+// TODO user the ones in PitchUtils.
 inline std::pair<int, int> MidiNoteEvent::cvToPitch(float cv)
 {
      // VCV 0 is C4

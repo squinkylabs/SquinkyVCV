@@ -171,6 +171,7 @@
     <ClInclude Include="..\..\midi\model\MidiSong.h" />
     <ClInclude Include="..\..\midi\model\MidiTrack.h" />
     <ClInclude Include="..\..\midi\model\MidiSelectionModel.h" />
+    <ClInclude Include="..\..\midi\model\PitchUtils.h" />
     <ClInclude Include="..\..\midi\view\MidiViewport.h" />
     <ClInclude Include="..\..\midi\view\NoteScreenScale.h" />
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h" />

@@ -50,7 +50,7 @@ struct SequencerWidget : ModuleWidget
 
  SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 {
-    const int width = (14 + 14) * RACK_GRID_WIDTH;      // 14 for panel, 14 for notes
+    const int width = (14 + 28) * RACK_GRID_WIDTH;      // 14 for panel, other for notes
     box.size = Vec(width, RACK_GRID_HEIGHT);
 
     {
@@ -62,7 +62,7 @@ struct SequencerWidget : ModuleWidget
     #if 1
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
-        const Vec noteSize =Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+        const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
 		NoteDisplay *display = new NoteDisplay(notePos, noteSize, module->seq.getSong());
 		addChild(display);
 	}

@@ -9,43 +9,8 @@
 #include "UIPrefs.h"
 #include "MidiKeyboardHandler.h"
 #include "NoteScreenScale.h"
+#include "PitchUtils.h"
 
-
-
-/**
- * This class know how to map between pitch, time, and screen coordinates
- */
-#if 0
-class NoteScreenScale
-{
-public:
-    NoteScreenScale(MidiViewport& vp, const Vec& screenSize) : viewport(vp)
-    {
-        ax =screenSize.x / (viewport.endTime - viewport.startTime);
-        ay = screenSize.y / (viewport.pitchHi - viewport.pitchLow);
-
-        printf("in init ax=%f ay=%f screenx=%f screeny=%f\n", ax, ay, screenSize.x, screenSize.y);
-        fflush(stdout);
-    }
-    float midiTimeToX(const MidiEvent& ev)
-    {
-        return (ev.startTime - viewport.startTime) * ax;  
-    }
-     float midiTimeTodX(MidiEvent::time_t dt)
-    {
-        return  dt * ax;
-    }
-    float midiPitchToY(const MidiNoteEvent& note)
-    {
-       // return (note.pitchCV - viewport.pitchLow) * ay;
-        return ( -1.f/12.f + viewport.pitchHi - note.pitchCV) * ay;
-}
-private:
-    float ax = 0;
-    float ay = 0;
-    MidiViewport& viewport;
-};
-#endif
 
 /**
  * This class needs some refactoring and renaming.
@@ -84,6 +49,7 @@ struct NoteDisplay : OpaqueWidget
     void drawNotes(NVGcontext *vg)
     {
         MidiViewport::iterator_pair it = viewport.getEvents();
+        const int noteHeight = scaler->noteHeight();
         for ( ; it.first != it.second; ++it.first) {
             auto temp = *(it.first);
             MidiEventPtr evn = temp.second;
@@ -97,7 +63,7 @@ struct NoteDisplay : OpaqueWidget
             filledRect(
                 vg,
                 selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
-                x, y, width, 10);
+                x, y, width, noteHeight);
         }
     }
 
@@ -110,9 +76,31 @@ struct NoteDisplay : OpaqueWidget
         strokedRect(vg, green, 0, 0, this->box.size.x, this->box.size.y);
         filledRect(vg, blue, this->box.size.x - 10, 100, 100, 10);
 #endif
-        filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
-    
+        drawBackground(vg);
         drawNotes(vg);
+    }
+
+    void drawBackground(NVGcontext *vg) {
+        static bool first = true;
+        filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
+        const int noteHeight = scaler->noteHeight();
+        for (float cv = viewport.pitchLow;
+            cv <= viewport.pitchHi;
+            cv += PitchUtils::semitone) {
+                const float y = scaler->midiCvToY(cv);
+                const float width = box.size.x;
+                bool accidental = PitchUtils::isAccidental(cv);
+                if (accidental) {
+                    filledRect(
+                        vg,
+                        UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
+                        0, y, width, noteHeight);
+               // if (first) {
+               //     printf("x=%f y=%f w=%f, h=%f")
+               // }
+                }
+
+        }
     }
 
    void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)

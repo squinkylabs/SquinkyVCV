@@ -28,9 +28,12 @@ float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
 
 float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note)
 {
-    // return (note.pitchCV - viewport.pitchLow) * ay;
-  //  return ( -1.f/12.f + viewport.pitchHi - note.pitchCV) * ay;
     return (viewport.pitchHi - note.pitchCV) * ay;
+}
+
+float NoteScreenScale::midiCvToY(float cv)
+{
+    return (viewport.pitchHi - cv) * ay;
 }
 
 float NoteScreenScale::noteHeight()

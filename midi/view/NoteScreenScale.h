@@ -30,6 +30,7 @@ public:
 
 
      float midiPitchToY(const MidiNoteEvent& note);
+     float midiCvToY(float cv);
 
      float noteHeight();
 private:
