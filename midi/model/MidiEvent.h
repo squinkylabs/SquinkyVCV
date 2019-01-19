@@ -5,6 +5,8 @@
 #include <assert.h>
 #include "asserts.h"
 
+#include "PitchUtils.h"
+
 /**
  * Abstract base class for all events
  */
@@ -112,13 +114,14 @@ public:
     void setPitch(int octave, int semi);
     std::pair<int, int> getPitch() const;
 
-    static std::pair<int, int> cvToPitch(float cv);
-    static float pitchToCV(int octave, int semi);
+  //  static std::pair<int, int> cvToPitch(float cv);
+  //  static float pitchToCV(int octave, int semi);
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };
 
 // TODO user the ones in PitchUtils.
+#if 0
 inline std::pair<int, int> MidiNoteEvent::cvToPitch(float cv)
 {
      // VCV 0 is C4
@@ -129,21 +132,23 @@ inline std::pair<int, int> MidiNoteEvent::cvToPitch(float cv)
     int semi = int(std::round(s));
     return std::pair<int, int>(octave, semi);
 }
+#endif
 
 inline std::pair<int, int> MidiNoteEvent::getPitch() const
 {
-    return cvToPitch(pitchCV);
+    return PitchUtils::cvToPitch(pitchCV);
 }
 
-
+#if 0
 inline float MidiNoteEvent::pitchToCV(int octave, int semi)
 {
     return float(octave - 4) + semi * (1.0f / 12.0f);
 }
+#endif
 
 inline void MidiNoteEvent::setPitch(int octave, int semi)
 {
-    pitchCV = pitchToCV(octave, semi);
+    pitchCV = PitchUtils::pitchToCV(octave, semi);
 }
 
 inline void MidiNoteEvent::assertValid() const

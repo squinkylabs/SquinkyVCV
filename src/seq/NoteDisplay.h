@@ -30,8 +30,8 @@ struct NoteDisplay : OpaqueWidget
         // hard code view range to our demo song
         viewport.startTime = 0;
         viewport.endTime = viewport.startTime + 8;
-        viewport.pitchLow = MidiNoteEvent::pitchToCV(3, 0);
-        viewport.pitchHi = MidiNoteEvent::pitchToCV(5, 0);
+        viewport.pitchLow = PitchUtils::pitchToCV(3, 0);
+        viewport.pitchHi = PitchUtils::pitchToCV(5, 0);
 
         //initScaleFuncs();
         scaler = std::make_shared<NoteScreenScale>(viewport, size.x, size.y);
@@ -81,7 +81,6 @@ struct NoteDisplay : OpaqueWidget
     }
 
     void drawBackground(NVGcontext *vg) {
-        static bool first = true;
         filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
         const int noteHeight = scaler->noteHeight();
         for (float cv = viewport.pitchLow;
@@ -95,11 +94,7 @@ struct NoteDisplay : OpaqueWidget
                         vg,
                         UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
                         0, y, width, noteHeight);
-               // if (first) {
-               //     printf("x=%f y=%f w=%f, h=%f")
-               // }
                 }
-
         }
     }
 

@@ -24,7 +24,7 @@ inline std::pair<int, int> PitchUtils::cvToPitch(float cv)
 
 inline float PitchUtils::pitchToCV(int octave, int semi)
 {
-    return float(octave - 4) + semi * (1.0f / semitone);
+    return float(octave - 4) + semi * semitone;
 }
 
 inline bool PitchUtils::isAccidental(float cv)
