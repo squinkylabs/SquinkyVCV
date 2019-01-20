@@ -7,8 +7,10 @@
 
 extern int _mdb;
 
-MidiEditor::MidiEditor(std::shared_ptr<MidiSong> sng, std::shared_ptr<MidiSelectionModel> sel) :
-    song(sng), selection(sel)
+MidiEditor::MidiEditor(std::shared_ptr<MidiSong> sng,
+    std::shared_ptr<MidiSelectionModel> sel,
+    std::shared_ptr<MidiEditorContext> ctx) :
+    song(sng), selection(sel), context(ctx)
 {
     _mdb++;
 

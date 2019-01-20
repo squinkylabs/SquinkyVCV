@@ -25,8 +25,8 @@ public:
      */
     MidiSelectionModelPtr const selection;
     MidiSongPtr const song;
-    MidiEditorPtr const editor;
     MidiEditorContextPtr context;
+    MidiEditorPtr const editor;
 };
 
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
