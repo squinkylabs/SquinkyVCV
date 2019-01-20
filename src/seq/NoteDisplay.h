@@ -82,10 +82,15 @@ struct NoteDisplay : OpaqueWidget
             cursorState = !cursorState;
         }
 
-        if (cursorState) {
-            float x = 0;
-            float y = 50;
-            filledRect(vg, nvgRGB(0xff, 0xff, 0xff), x, y, 10, 3);
+        if (true) {
+            auto color = cursorState ? 
+                nvgRGB(0xff, 0xff, 0xff) :
+                nvgRGB(0, 0, 0);
+            const float x = scaler->midiTimeTodX(sequencer->context->cursorTime);
+                       
+            const float y = scaler->midiCvToY(sequencer->context->cursorPitch) + 
+                 scaler->noteHeight() / 2.f;  
+            filledRect(vg, color, x, y, 10, 3);
         }
 
     }

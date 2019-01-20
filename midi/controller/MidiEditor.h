@@ -28,6 +28,9 @@ private:
 
     std::shared_ptr<MidiTrack> getTrack();
 
+    // move the cursor, if necessary.
+    void updateCursor();
+
 
 };
 

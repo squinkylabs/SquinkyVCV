@@ -11,9 +11,10 @@ public:
     MidiEditorContext(std::shared_ptr<MidiSong>);
     ~MidiEditorContext();
 
-    // TODO: don't allow direct access
+    // TODO: don't allow direct access?
     std::shared_ptr<MidiViewport> viewport;
-private:
+    float cursorTime = 0;
+    float cursorPitch = 0;
 };
 
 using MidiEditorContextPtr = std::shared_ptr<MidiEditorContext>;

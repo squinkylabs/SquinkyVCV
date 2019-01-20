@@ -1,6 +1,7 @@
 
 #include <assert.h>
 #include "MidiEditor.h"
+#include "MidiEditorContext.h"
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
@@ -150,6 +151,32 @@ void MidiEditor::selectNextNote()
         ++it;
         selectNextNoteOrCurrent(track, it, selection);
     }
+    updateCursor();
+}
+
+void MidiEditor::updateCursor()
+{
+    if (selection->empty()) {
+        return;
+    }
+
+    MidiNoteEventPtr firstNote;
+    // If cursor is already in selection, leave it there.
+    for (auto it : *selection) {
+        MidiEventPtr ev = it;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+        if (note) {
+            if (!firstNote) {
+                firstNote = note;
+            }
+            if ((note->startTime == context->cursorTime) &&
+                (note->pitchCV == context->cursorPitch)) {
+                return;
+            }
+        }
+    }
+    context->cursorTime = firstNote->startTime;
+    context->cursorPitch = firstNote->pitchCV;
 }
 
 void MidiEditor::selectPrevNote()
@@ -177,6 +204,7 @@ void MidiEditor::selectPrevNote()
         --it;
         selectPrevNoteOrCurrent(track, it, selection);
     }
+    updateCursor();
 }
 
 void MidiEditor::transpose(float amount)

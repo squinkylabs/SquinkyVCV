@@ -97,10 +97,6 @@ static void testMidiSequencer2()
     assert(seq->context);
     assert(seq->context->viewport);
 
-  //  MidiSongPtr s = seq->context->viewport->getSong().lock();
-  //  assert (s);
-  //  assert (s == song);
-
     assert(seq->song->getTrack(0));
 }
 

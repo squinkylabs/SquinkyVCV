@@ -7,6 +7,7 @@
 #include "MidiTrack.h"
 #include "MidiSong.h"
 
+// sequencer factory - helper function
 MidiSequencerPtr makeTest(bool empty = false)
 {
     MidiSongPtr song = empty ?
@@ -14,6 +15,25 @@ MidiSequencerPtr makeTest(bool empty = false)
         MidiSong::makeTest1();
     MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
     return seq;
+}
+
+static bool cursorOnSelection(MidiSequencerPtr seq)
+{
+    if (seq->selection->empty()) {
+        return true;
+    }
+
+    assert(seq->selection->size() == 1);    // haven't done multi yet
+    MidiEventPtr sel = *seq->selection->begin();
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(sel);
+    assert(note);
+
+    // for now, do exact match
+    if ((note->startTime == seq->context->cursorTime) &&
+        (note->pitchCV == seq->context->cursorPitch)) {
+        return true;
+    }
+    return false;
 }
 
 // from a null selection, select next
@@ -26,6 +46,7 @@ static void test1()
     // note should be first one
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     assert(seq->selection->isSelected(firstEvent));
+    assert(cursorOnSelection(seq));
 }
 
 // from a null selection, select prev. should select last note
@@ -42,9 +63,8 @@ static void test1b()
     MidiEventPtr lastEvent = it->second;
   
     assert(lastEvent->type == MidiEvent::Type::Note);
-
-
     assert(seq->selection->isSelected(lastEvent));
+    assert(cursorOnSelection(seq));
 }
 
 // from a non-null selection, select next
