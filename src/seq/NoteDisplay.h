@@ -32,8 +32,8 @@ struct NoteDisplay : OpaqueWidget
         
         printf("in ctor, seqvp = %p\n", sequencer->context->viewport.get()); fflush(stdout);
         
-        auto s = sequencer->context->viewport->_song.lock();
-        printf("in ctor, seq vp song s = %p\n", s.get()); fflush(stdout);
+       // auto s = sequencer->context->viewport->_song.lock();
+      //  printf("in ctor, seq vp song s = %p\n", s.get()); fflush(stdout);
         
         //viewport._song = song;
 

@@ -31,6 +31,7 @@ public:
     int track = 0;
     std::shared_ptr<const MidiSong> getSong() const;
 
+private:
     // Below is not for clients to call. TODO: use private or something.
     // Definitely need some architecture here.
     std::weak_ptr<MidiSong> _song;
