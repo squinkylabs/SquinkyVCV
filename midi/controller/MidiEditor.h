@@ -14,15 +14,15 @@ public:
         std::shared_ptr<MidiSelectionModel> selection,
         std::shared_ptr<MidiEditorContext> context);
     MidiEditor(const MidiEditor&) = delete;
-    ~ MidiEditor();
+    ~MidiEditor();
 
-    
+
     void selectNextNote();
     void selectPrevNote();
     void transpose(float amount);
     /**
      * If ticks is false, will move by "units" (like 1/16 note)
-     * amount is a multiplier, and may be negative 
+     * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
 private:
@@ -37,6 +37,9 @@ private:
 
     // move the cursor, if necessary.
     void updateCursor();
+
+    // select any note that is under the cursor
+    void updateSelectionForCursor();
 
 
 };

@@ -6,11 +6,11 @@ NoteScreenScale::NoteScreenScale(MidiViewportPtr vp, float screenWidth, float sc
     assert(screenWidth > 0);
     assert(screenHeight > 0);
     assert(viewport->pitchHi >= viewport->pitchLow);
-    ax =screenWidth / (viewport->endTime - viewport->startTime);
+    ax = screenWidth / (viewport->endTime - viewport->startTime);
 
     // min and max the same is fine - it's just one note bar full screen
     float dbg = ((viewport->pitchHi + 1 / 12.f) - viewport->pitchLow);
-    ay = screenHeight / ((viewport->pitchHi + 1/12.f) - viewport->pitchLow);
+    ay = screenHeight / ((viewport->pitchHi + 1 / 12.f) - viewport->pitchLow);
 
     //printf("in init ax=%f ay=%f screenx=%f screeny=%f\n", ax, ay, screenWidth, screenHeight);
     //fflush(stdout);
@@ -18,7 +18,7 @@ NoteScreenScale::NoteScreenScale(MidiViewportPtr vp, float screenWidth, float sc
 
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
 {
-    return (ev.startTime - viewport->startTime) * ax;  
+    return (ev.startTime - viewport->startTime) * ax;
 }
 
 float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
@@ -38,7 +38,7 @@ float NoteScreenScale::midiCvToY(float cv)
 
 float NoteScreenScale::noteHeight()
 {
-    return (1/12.f) * ay;
+    return (1 / 12.f) * ay;
 }
 
 std::pair<float, float> NoteScreenScale::midiTimeToHBounds(const MidiNoteEvent& note)

@@ -5,6 +5,7 @@
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "MidiViewport.h"
 
 extern int _mdb;
 
@@ -39,7 +40,7 @@ static MidiTrack::const_iterator findNextNoteOrCurrent(
         return it;                  // if we are at the end, give up
     }
     for (bool done = false; !done; ) {
-       
+
         if (it == track->end()) {
             done = true;
         }
@@ -85,7 +86,7 @@ static MidiTrack::const_iterator findPrevNoteOrCurrent(
                 } else {
                     --it;                           // try prev
                 }
-                
+
         }
 
     }
@@ -219,8 +220,28 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 {
     assert(!ticks);         // not implemented yet
     assert(amount != 0);
-    
+
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
     context->cursorTime += advanceAmount;
     context->cursorTime = std::max(0.f, advanceAmount);
+    updateSelectionForCursor();
+}
+
+void MidiEditor::updateSelectionForCursor()
+{
+    selection->clear();
+    auto start = context->viewport->startTime;
+    auto end = context->viewport->endTime;
+    MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);
+    for (auto it = notes.first; it != notes.second; ++it) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        const auto startTime = note->startTime;
+        const auto endTime = note->startTime + note->duration;
+        if ((note->pitchCV == context->cursorPitch) &&
+            (startTime <= context->cursorTime) &&
+            (endTime >= context->cursorTime)) {
+            selection->select(note);
+            return;
+        }
+    }
 }

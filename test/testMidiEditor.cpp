@@ -49,7 +49,7 @@ static void test1()
     assert(cursorOnSelection(seq));
 }
 
-// from a null selection, select prev. should select last note
+// from a null selection, select previous. should select last note
 static void test1b()
 {
     MidiSequencerPtr seq = makeTest();
@@ -61,7 +61,7 @@ static void test1b()
     it--;
     it--;
     MidiEventPtr lastEvent = it->second;
-  
+
     assert(lastEvent->type == MidiEvent::Type::Note);
     assert(seq->selection->isSelected(lastEvent));
     assert(cursorOnSelection(seq));
@@ -80,14 +80,14 @@ static void test2()
     // Above is just test1, so now first event selected
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected
-    
+
     auto iter = seq->song->getTrack(0)->begin();
     ++iter;
     MidiEventPtr secondEvent = iter->second;
     assert(seq->selection->isSelected(secondEvent));
 }
 
-// from a non-null selection, select prev
+// from a non-null selection, select previous
 static void test2b()
 {
     MidiSequencerPtr seq = makeTest();
@@ -95,8 +95,8 @@ static void test2b()
     // Select the second note in the Seq
     seq->editor->selectNextNote();
     seq->editor->selectNextNote();
-    assertEQ(seq->selection->size(), 1);     
-         
+    assertEQ(seq->selection->size(), 1);
+
     // Verify that second note is selected
     auto iter = seq->song->getTrack(0)->begin();
     ++iter;
@@ -121,7 +121,7 @@ static void test3()
     assert(seq->selection->empty());
 }
 
-// from a null selection, select prev in null track
+// from a null selection, select previous in null track
 static void test3b()
 {
     MidiSequencerPtr seq = makeTest(true);
@@ -165,7 +165,7 @@ static void testTrans1()
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
-    seq->editor->transpose(1.0f/12.f);
+    seq->editor->transpose(1.0f / 12.f);
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
 }
@@ -207,7 +207,7 @@ static void testCursor3()
 {
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();
-   
+
     // Select first note to put cursor in it
     assertEQ(seq->context->cursorTime, 0);
     MidiNoteEvent note;
@@ -216,7 +216,7 @@ static void testCursor3()
 
     // Now advance a 1/4 note
     seq->editor->advanceCursor(false, 4);
-    assertEQ(seq->context->cursorTime, 1.f);  
+    assertEQ(seq->context->cursorTime, 1.f);
     assert(seq->selection->empty());
 }
 

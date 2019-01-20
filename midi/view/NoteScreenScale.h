@@ -17,7 +17,7 @@ class MidiViewport;
  *      if viewport hi and low pitches are the same, it maps a note of that pitch to full screen.
  *      y==0 it the top edge, increasing y goes down the screen
  */
- 
+
 class NoteScreenScale
 {
 public:
@@ -29,10 +29,10 @@ public:
 
 
 
-     float midiPitchToY(const MidiNoteEvent& note);
-     float midiCvToY(float cv);
+    float midiPitchToY(const MidiNoteEvent& note);
+    float midiCvToY(float cv);
 
-     float noteHeight();
+    float noteHeight();
 private:
     float ax = 0;
     float ay = 0;

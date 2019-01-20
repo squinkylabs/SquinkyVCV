@@ -38,8 +38,8 @@ public:
     using iterator_pair = std::pair<const_iterator, const_iterator>;
 
     using note_iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
-    using note_iterator_pair = std::pair<iterator, iterator>;
-    note_iterator_pair getNotesRange(MidiEvent::time_t start, MidiEvent::time_t end) const;
+    using note_iterator_pair = std::pair<note_iterator, note_iterator>;
+    note_iterator_pair timeRangeNotes(MidiEvent::time_t start, MidiEvent::time_t end) const;
 
     /**
      * finds an event that satisfies == and returns a pointer to it

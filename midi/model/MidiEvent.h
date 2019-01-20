@@ -17,7 +17,8 @@ public:
     enum class Type
     {
         Note,
-        End
+        End,
+        Test
     };
 
     Type type = Type::End;
@@ -114,37 +115,14 @@ public:
     void setPitch(int octave, int semi);
     std::pair<int, int> getPitch() const;
 
-  //  static std::pair<int, int> cvToPitch(float cv);
-  //  static float pitchToCV(int octave, int semi);
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };
-
-// TODO user the ones in PitchUtils.
-#if 0
-inline std::pair<int, int> MidiNoteEvent::cvToPitch(float cv)
-{
-     // VCV 0 is C4
-    int octave = int(std::floor(cv));
-    float remainder = cv - octave;
-    octave += 4;
-    float s = remainder * 12;
-    int semi = int(std::round(s));
-    return std::pair<int, int>(octave, semi);
-}
-#endif
 
 inline std::pair<int, int> MidiNoteEvent::getPitch() const
 {
     return PitchUtils::cvToPitch(pitchCV);
 }
-
-#if 0
-inline float MidiNoteEvent::pitchToCV(int octave, int semi)
-{
-    return float(octave - 4) + semi * (1.0f / 12.0f);
-}
-#endif
 
 inline void MidiNoteEvent::setPitch(int octave, int semi)
 {
@@ -219,15 +197,63 @@ using MidiEndEventPtr = std::shared_ptr<MidiEndEvent>;
 template<>
 inline std::shared_ptr<MidiEndEvent> safe_cast(std::shared_ptr<MidiEvent> ev)
 {
-    std::shared_ptr<MidiEndEvent> note;
+    std::shared_ptr<MidiEndEvent> endev;
     if (ev->type == MidiEvent::Type::End) {
-        note = std::static_pointer_cast<MidiEndEvent>(ev);
+        endev = std::static_pointer_cast<MidiEndEvent>(ev);
     }
-    return note;
+    return endev;
 }
 
 template<>
 inline std::shared_ptr<MidiEvent> safe_cast(std::shared_ptr<MidiEndEvent> ev)
+{
+    return ev;
+}
+
+
+/********************************************************************
+**
+**           MidiTestEvent
+** (just for unit tests)
+********************************************************************/
+
+class MidiTestEvent : public MidiEvent
+{
+public:
+    void assertValid() const override;
+    MidiTestEvent()
+    {
+        type = Type::Test;
+    }
+protected:
+    virtual bool isEqual(const MidiEvent&) const override;
+};
+
+inline void MidiTestEvent::assertValid() const
+{
+    MidiEvent::assertValid();
+}
+
+inline  bool MidiTestEvent::isEqual(const MidiEvent& other) const
+{
+    return other.isEqualBase(*this);
+}
+
+
+using MidiTestEventPtr = std::shared_ptr<MidiTestEvent>;
+
+template<>
+inline std::shared_ptr<MidiTestEvent> safe_cast(std::shared_ptr<MidiEvent> ev)
+{
+    std::shared_ptr<MidiTestEvent> test;
+    if (ev->type == MidiEvent::Type::Test) {
+        test = std::static_pointer_cast<MidiTestEvent>(ev);
+    }
+    return test;
+}
+
+template<>
+inline std::shared_ptr<MidiEvent> safe_cast(std::shared_ptr<MidiTestEvent> ev)
 {
     return ev;
 }

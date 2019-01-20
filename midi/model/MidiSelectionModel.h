@@ -12,7 +12,7 @@ class MidiSelectionModel
 public:
     MidiSelectionModel();
     ~MidiSelectionModel();
-    /** 
+    /**
      * replace the current selection with a single event
      */
     void select(std::shared_ptr<MidiEvent>);
@@ -26,7 +26,7 @@ public:
 
     using container = std::set<std::shared_ptr<MidiEvent>>;
     using const_iterator = container::const_iterator;
- 
+
     const_iterator begin() const;
     const_iterator end() const;
 
@@ -42,7 +42,7 @@ public:
     bool isSelected(std::shared_ptr<MidiEvent>) const;
 private:
 
-    
+
     container selection;
 };
 

@@ -123,7 +123,6 @@ static void testFind1()
     assert(found->second == ev);
 }
 
-
 static void testTimeRange0()
 {
     MidiTrack mt;
@@ -143,22 +142,104 @@ static void testTimeRange0()
     assertEQ(count, 0);
 }
 
+static void testNoteTimeRange0()
+{
+    MidiTrack mt;
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 100;
+
+    mt.insertEvent(ev);
+
+    MidiTrack::note_iterator_pair its = mt.timeRangeNotes(99, 101);
+    assert(its.first != its.second);
+    auto count = std::distance(its.first, its.second);
+    assertEQ(count, 1);
+
+    its = mt.timeRangeNotes(101, 1000);
+    assert(its.first == its.second);
+    count = std::distance(its.first, its.second);
+    assertEQ(count, 0);
+}
+
+//should skip over non-note events
+static void testNoteTimeRange0Mixed()
+{
+    MidiTrack mt;
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 100;
+    mt.insertEvent(ev);
+
+    MidiTestEventPtr tev = std::make_shared<MidiTestEvent>();
+    tev->startTime = 100.1f;
+    mt.insertEvent(tev);
+
+    MidiTrack::note_iterator_pair its = mt.timeRangeNotes(99, 101);
+    assert(its.first != its.second);
+    auto count = std::distance(its.first, its.second);
+    assertEQ(count, 1);
+
+    its = mt.timeRangeNotes(101, 1000);
+    assert(its.first == its.second);
+    count = std::distance(its.first, its.second);
+    assertEQ(count, 0);
+}
+
 static void testTimeRange1()
 {
     MidiTrack mt;
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
 
-    // TOOD: don't use same event! (unique ptr?)
+
     ev->startTime = 100;
     mt.insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 110;
     mt.insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 120;
     mt.insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 130;
     mt.insertEvent(ev);
 
     MidiTrack::iterator_pair its = mt.timeRange(110, 120);
+    assert(its.first != its.second);
+    auto count = std::distance(its.first, its.second);
+    assertEQ(count, 2);
+}
+
+
+static void testNoteTimeRange1()
+{
+    MidiTrack mt;
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
+
+    // This is a terrible hack putting the "same" event in multiple time.
+    ev->startTime = 100;
+    mt.insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 110;
+    mt.insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 120;
+    mt.insertEvent(ev);
+
+    ev = std::make_shared<MidiNoteEvent>();
+    ev->startTime = 130;
+    mt.insertEvent(ev);
+
+
+    evt->startTime = 111;
+    mt.insertEvent(evt);
+
+
+    MidiTrack::note_iterator_pair its = mt.timeRangeNotes(110, 120);
     assert(its.first != its.second);
     auto count = std::distance(its.first, its.second);
     assertEQ(count, 2);
@@ -186,7 +267,10 @@ void testMidiDataModel()
     testDelete3();
     testFind1();
     testTimeRange0();
+    testNoteTimeRange0();
+    testNoteTimeRange0Mixed();
     testTimeRange1();
+    testNoteTimeRange1();
     testSameTime();
     testSong();
     assertNoMidi();     // check for leaks

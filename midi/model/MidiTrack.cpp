@@ -82,13 +82,41 @@ MidiTrack::iterator_pair MidiTrack::timeRange(MidiEvent::time_t start, MidiEvent
     return iterator_pair(events.lower_bound(start), events.upper_bound(end));
 }
 
+
+MidiTrack::note_iterator_pair MidiTrack::timeRangeNotes(MidiEvent::time_t start, MidiEvent::time_t end) const
+{
+
+    note_iterator::filter_func lambda = [this](MidiTrack::const_iterator ii) {
+        const MidiEventPtr me = ii->second;
+        bool ret = false;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);
+        if (note) {
+            ret = true;         // accept all notes
+        }
+#if 0
+        if (ret) {
+            ret = me->startTime < this->endTime;
+        }
+#endif
+        return ret;
+    };
+
+  //  const auto song = getSong();
+  //  const auto track = song->getTrack(this->track);
+
+    // raw will be pair of track::const_iterator
+    const auto rawIterators = this->timeRange(start, end);
+
+    return note_iterator_pair(note_iterator(rawIterators.first, rawIterators.second, lambda),
+        note_iterator(rawIterators.second, rawIterators.second, lambda));
+}
+
 void MidiTrack::insertEnd(MidiEvent::time_t time)
 {
     MidiEndEventPtr end = std::make_shared<MidiEndEvent>();
     end->startTime = time;
     insertEvent(end);
 }
-
 MidiTrack::const_iterator MidiTrack::findEvent(const MidiEvent& ev)
 {
     iterator_pair range = timeRange(ev.startTime, ev.startTime);
