@@ -200,6 +200,7 @@
     <ClInclude Include="..\..\test\SqTime.h" />
     <ClInclude Include="..\..\test\TestSignal.h" />
     <ClInclude Include="..\..\test\TimeStatsCollector.h" />
+    <ClInclude Include="..\..\util\FilteredIterator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>

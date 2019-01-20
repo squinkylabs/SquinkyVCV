@@ -130,6 +130,9 @@
     <Filter Include="Source Files\midi\controller">
       <UniqueIdentifier>{212cabf3-1fa1-4921-911d-bbd64a09d552}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\util">
+      <UniqueIdentifier>{2783a1b8-2a42-4f69-87bc-391a5bc4288e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -670,6 +673,9 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\model\MidiSequencer.h">
       <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\util\FilteredIterator.h">
+      <Filter>Header Files\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

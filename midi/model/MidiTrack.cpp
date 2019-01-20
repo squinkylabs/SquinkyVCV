@@ -102,6 +102,10 @@ MidiTrack::const_iterator MidiTrack::findEvent(const MidiEvent& ev)
     return events.end();
 }
 
+/**
+ * makes a track of 8 1/4 notes, each of 1/8 note duration (50%).
+ * pitch is ascending in semitones from 3:0 (c)
+ */
 MidiTrackPtr MidiTrack::makeTest1()
 {
     auto track = std::make_shared<MidiTrack>();

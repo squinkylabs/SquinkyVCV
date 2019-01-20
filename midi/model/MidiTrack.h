@@ -3,6 +3,8 @@
 #include <vector>
 #include <map>
 #include <memory>
+
+#include "FilteredIterator.h"
 #include "SqCommand.h"
 
 #include "MidiEvent.h"
@@ -30,19 +32,18 @@ public:
      */
     std::vector<MidiEventPtr> _testGetVector() const;
 
-
-    //
-
     using container = std::multimap<MidiEvent::time_t, MidiEventPtr>;
-
     using iterator = container::iterator;
     using const_iterator = container::const_iterator;
     using iterator_pair = std::pair<const_iterator, const_iterator>;
 
+    using note_iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
+    using note_iterator_pair = std::pair<iterator, iterator>;
+    note_iterator_pair getNotesRange(MidiEvent::time_t start, MidiEvent::time_t end) const;
+
     /**
      * finds an event that satisfies == and returns a pointer to it
      */
-   // MidiEventPtr findEvent(const MidiEvent&);
     const_iterator findEvent(const MidiEvent&);
 
     /**

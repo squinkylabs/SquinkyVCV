@@ -214,3 +214,13 @@ void MidiEditor::transpose(float amount)
         note->pitchCV += amount;
     }
 }
+
+void MidiEditor::advanceCursor(bool ticks, int amount)
+{
+    assert(!ticks);         // not implemented yet
+    assert(amount != 0);
+    
+    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+    context->cursorTime += advanceAmount;
+    context->cursorTime = std::max(0.f, advanceAmount);
+}

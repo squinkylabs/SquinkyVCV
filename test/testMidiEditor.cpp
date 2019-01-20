@@ -173,20 +173,53 @@ static void testTrans1()
 // transpose multi
 static void testTrans2()
 {
-    printf("had to remove testTrans2. TODO: fix it\n");
-#if 0
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
+
     seq->editor->transpose(1.0f / 12.f);
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
-    assertEQ(seq->selection->size(), 2);
-#endif
 }
+
+static void testCursor1()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    assertEQ(seq->context->cursorTime, 0);
+    assertEQ(seq->context->cursorPitch, 0)
+}
+
+static void testCursor2()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->advanceCursor(false, 1);
+    assertEQ(seq->context->cursorTime, 1.f / 4.f);
+
+    seq->editor->advanceCursor(false, -4);
+    assertEQ(seq->context->cursorTime, 0);
+}
+
+
+static void testCursor3()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();
+   
+    // Select first note to put cursor in it
+    assertEQ(seq->context->cursorTime, 0);
+    MidiNoteEvent note;
+    note.setPitch(3, 0);
+    assertEQ(seq->context->cursorPitch, note.pitchCV);
+
+    // Now advance a 1/4 note
+    seq->editor->advanceCursor(false, 4);
+    assertEQ(seq->context->cursorTime, 1.f);  
+    assert(seq->selection->empty());
+}
+
 
 void testMidiEditor()
 {
@@ -201,4 +234,8 @@ void testMidiEditor()
 
     testTrans1();
     testTrans2();
+
+    testCursor1();
+    testCursor2();
+    testCursor3();
 }
