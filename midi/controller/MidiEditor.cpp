@@ -223,7 +223,7 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
     context->cursorTime += advanceAmount;
-    context->cursorTime = std::max(0.f, advanceAmount);
+    context->cursorTime = std::max(0.f, context->cursorTime);
     updateSelectionForCursor();
 }
 
@@ -244,4 +244,14 @@ void MidiEditor::updateSelectionForCursor()
             return;
         }
     }
+}
+
+void MidiEditor::changeCursorPitch(int semitones)
+{
+    float pitch = context->cursorPitch + (semitones * PitchUtils::semitone);
+    pitch = std::max(pitch, -5.f);
+    pitch = std::min(pitch, 5.f);
+    context->cursorPitch = pitch;
+    updateSelectionForCursor();
+
 }

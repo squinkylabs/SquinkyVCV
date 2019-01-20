@@ -25,6 +25,7 @@ public:
      * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
+    void changeCursorPitch(int semitones);
 private:
     /**
      * The selection model we will act on
