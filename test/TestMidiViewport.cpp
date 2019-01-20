@@ -7,10 +7,11 @@
 
 static void testReleaseSong()
 {
-    MidiViewport vp;
+    MidiSongPtr song(std::make_shared<MidiSong>());
+    MidiViewport vp(song);
     {
-        MidiSongPtr song(std::make_shared<MidiSong>());
-        vp._song = song;
+       
+       // vp._song = song;
 
         song->createTrack(0);
         auto track = song->getTrack(0);
@@ -19,13 +20,13 @@ static void testReleaseSong()
         track->insertEvent(ev);
         assertEvCount(1);       // one obj with two refs
     }
+    song.reset();       // give up the one strong ref
     assertEvCount(0);
 }
 
 static void testEventAccess()
 {
     MidiSongPtr song(std::make_shared<MidiSong>());
-
 
     song->createTrack(0);
     auto track = song->getTrack(0);
@@ -35,8 +36,7 @@ static void testEventAccess()
     ev->pitchCV = 40;
     track->insertEvent(ev);
 
-    MidiViewport vp;
-    vp._song = song;
+    MidiViewport vp(song);
     vp.startTime = 90;
     vp.endTime = 110;
     vp.pitchLow = 0;
@@ -73,8 +73,7 @@ static void testEventFilter()
     track->insertEvent(ev2);
     assertEQ(track->size(), 2);
 
-    MidiViewport vp;
-    vp._song = song;
+    MidiViewport vp(song);
     vp.startTime = 90;
     vp.endTime = 110;
     vp.pitchLow = 3;
@@ -93,8 +92,7 @@ static void testDemoSong()
     assertEQ(std::distance(track->begin(), track->end()), numEvents);
 
 
-    MidiViewport viewport;
-    viewport._song = song;
+    MidiViewport viewport(song);
     viewport.startTime = 0;
     viewport.endTime = viewport.startTime + 8;   // two measures
 

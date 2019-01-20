@@ -10,7 +10,7 @@ class MidiSong;
 class MidiViewport
 {
 public:
-    MidiViewport();
+    MidiViewport(std::shared_ptr<MidiSong>);
     ~MidiViewport();
     // TODO: change to const_iterator
     using iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;

@@ -7,7 +7,7 @@
 static void test0()
 {
     // viewport holds single quarter note
-    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
     vp->startTime = 0;
     vp->endTime = 1;
   
@@ -32,7 +32,7 @@ static void test0()
 static void test1()
 {
     // viewport holds single quarter note
-    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
     vp->startTime = 0;
     vp->endTime = 1;
 
@@ -54,7 +54,7 @@ static void test1()
 static void test2()
 {
     // viewport holds one bar of 4/4
-    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
     vp->startTime = 0;
     vp->endTime = 4;
 
@@ -77,7 +77,7 @@ static void test2()
 static void test3()
 {
     // viewport holds two pitches
-    MidiViewportPtr vp = std::make_shared<MidiViewport>();
+    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
     vp->startTime = 0;
     vp->endTime = 1;
 

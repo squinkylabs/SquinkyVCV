@@ -7,7 +7,7 @@ MidiSequencer::MidiSequencer(std::shared_ptr<MidiSong> sng) :
     selection(std::make_shared<MidiSelectionModel>()),
     song(sng),
     editor(std::make_shared<MidiEditor>(sng, selection)),
-    context(std::make_shared<MidiEditorContext>())
+    context(std::make_shared<MidiEditorContext>(sng))
 {
     ++_mdb;
 }

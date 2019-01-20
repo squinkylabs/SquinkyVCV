@@ -3,11 +3,12 @@
 #include <memory>
 
 class MidiViewport;
+class MidiSong;
 
 class MidiEditorContext
 {
 public:
-    MidiEditorContext();
+    MidiEditorContext(std::shared_ptr<MidiSong>);
     ~MidiEditorContext();
 
     // TODO: don't allow direct access

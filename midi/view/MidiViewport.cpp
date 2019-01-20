@@ -6,7 +6,7 @@
 #include "FilteredIterator.h"
 
 extern int _mdb;
-MidiViewport::MidiViewport()
+MidiViewport::MidiViewport(MidiSongPtr song) : _song(song)
 {
     ++_mdb;
 }

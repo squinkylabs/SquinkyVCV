@@ -4,6 +4,7 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "MidiViewport.h"
 
 // selects a note and verifies that one event is selected
 static void testSelectionModel1()
@@ -83,6 +84,7 @@ static void testMidiSequencer1()
     assert(sel->begin() == sel->end());
     assert(_mdb > 1);
     assert( seq->editor);
+   
 }
 
 static void testMidiSequencer2()
@@ -93,6 +95,11 @@ static void testMidiSequencer2()
     assert(seq->selection);
     assert(seq->song);
     assert(seq->context);
+    assert(seq->context->viewport);
+
+    MidiSongPtr s = seq->context->viewport->_song.lock();
+    assert (s);
+    assert (s == song);
 
     assert(seq->song->getTrack(0));
 }
