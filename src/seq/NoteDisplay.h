@@ -49,11 +49,9 @@ struct NoteDisplay : OpaqueWidget
     }
 
     std::shared_ptr<NoteScreenScale> scaler;
-
-    float ax =0;
-    float ay=0;
-
     MidiSequencerPtr sequencer;
+    bool cursorState = false;
+    int cursorFrameCount = 0;
 
     void drawNotes(NVGcontext *vg)
     {
@@ -76,17 +74,26 @@ struct NoteDisplay : OpaqueWidget
         }
     }
 
+
+    void drawCursor(NVGcontext *vg) {
+        cursorFrameCount--;
+        if (cursorFrameCount < 0) {
+            cursorFrameCount = 10;
+            cursorState = !cursorState;
+        }
+
+        if (cursorState) {
+            float x = 0;
+            float y = 50;
+            filledRect(vg, nvgRGB(0xff, 0xff, 0xff), x, y, 10, 3);
+        }
+
+    }
     void draw(NVGcontext *vg) override
     {   
-#if 0
-        filledRect(vg, red, 50, 50, 30, 30); 
-        filledRect(vg, blue, 0, 0, 30, 30); 
-        strokedRect(vg,  nvgRGBA(0x00, 0xff, 0x00, 0xff), 100, 100, 40, 10);
-        strokedRect(vg, green, 0, 0, this->box.size.x, this->box.size.y);
-        filledRect(vg, blue, this->box.size.x - 10, 100, 100, 10);
-#endif
         drawBackground(vg);
         drawNotes(vg);
+        drawCursor(vg);
     }
 
     void drawBackground(NVGcontext *vg) {
