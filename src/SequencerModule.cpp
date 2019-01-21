@@ -48,6 +48,15 @@ struct SequencerWidget : ModuleWidget
     }
 };
 
+inline Menu* SequencerWidget::::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
+
  SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 {
     const int width = (14 + 28) * RACK_GRID_WIDTH;      // 14 for panel, other for notes
