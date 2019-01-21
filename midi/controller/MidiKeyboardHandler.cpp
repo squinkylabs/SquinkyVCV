@@ -3,8 +3,54 @@
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 
-bool MidiKeyboardHandler::handle(MidiSequencer* sequencer,
-    unsigned key, unsigned mods)
+#include <assert.h>
+
+void MidiKeyboardHandler::handleNoteEditorChange(
+    MidiSequencer* sequencer,
+    ChangeType type,
+    bool increase)
+{
+    assert(type != ChangeType::lessThan); // can't handle
+    switch(sequencer->context->noteAttribute) {
+        case MidiEditorContext::NoteAttribute::Pitch:
+            {
+                int semitones = (type == ChangeType::bracket) ? 12 : 1;
+                if (!increase) {
+                    semitones = -semitones;
+                }
+                sequencer->editor->changePitch(semitones);
+            }
+            break;
+
+         case MidiEditorContext::NoteAttribute::Duration:
+            {
+                int units = (type == ChangeType::bracket) ? 4 : 1;
+                if (!increase) {
+                    units = -units;
+                }
+                sequencer->editor->changeDuration(false, units);
+            }
+            break;
+
+        case MidiEditorContext::NoteAttribute::StartTime:
+            {
+                int units = (type == ChangeType::bracket) ? 4 : 1;
+                if (!increase) {
+                    units = -units;
+                }
+                sequencer->editor->changeStartTime(false, units);
+            }
+            break;
+            
+
+
+    }
+}
+
+bool MidiKeyboardHandler::handle(
+    MidiSequencer* sequencer,
+    unsigned key,
+    unsigned mods)
 {
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);
@@ -20,22 +66,30 @@ bool MidiKeyboardHandler::handle(MidiSequencer* sequencer,
             handled = true;
             break;
         case GLFW_KEY_KP_ADD:
-            sequencer->editor->transpose( 1 / 12.f);
+            handleNoteEditorChange(sequencer, ChangeType::plus, true);
             handled = true;
             break;
         case GLFW_KEY_EQUAL:
             if (shift) {
-                sequencer->editor->transpose( 1 / 12.f);
+                handleNoteEditorChange(sequencer, ChangeType::plus, true);
                 handled = true;
             }
             break;
         case GLFW_KEY_KP_SUBTRACT:
-            sequencer->editor->transpose( -1 / 12.f);
+             handleNoteEditorChange(sequencer, ChangeType::plus, false);
+            handled = true;
+            break;
+        case GLFW_KEY_LEFT_BRACKET:
+             handleNoteEditorChange(sequencer, ChangeType::bracket, false);
+            handled = true;
+            break;
+         case GLFW_KEY_RIGHT_BRACKET:
+             handleNoteEditorChange(sequencer, ChangeType::bracket, true);
             handled = true;
             break;
         case GLFW_KEY_MINUS:
             if (!shift) {
-                sequencer->editor->transpose( -1 / 12.f);
+                 handleNoteEditorChange(sequencer, ChangeType::plus, false);
                 handled = true;
             }
             break;

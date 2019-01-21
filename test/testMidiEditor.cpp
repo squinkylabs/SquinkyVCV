@@ -167,6 +167,7 @@ static void testPrev1()
     assert(seq->selection->empty());
 }
 
+
 static void testTrans1()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -175,9 +176,44 @@ static void testTrans1()
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
-    seq->editor->transpose(1.0f / 12.f);
+    seq->editor->changePitch(1);
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
+}
+
+static void testShiftTime1()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+    const float s0 = firstNote->startTime;
+    seq->editor->changeStartTime(false, 1);     // delay one unit
+    const float s1 = firstNote->startTime;
+    assertClose(s1 - s0, 1.f / 4.f, .000001);
+
+    seq->editor->changeStartTime(false, -50);
+    const float s2 = firstNote->startTime;
+    assertEQ(s2, 0);
+}
+
+
+static void testChangeDuration1()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+    const float d0 = firstNote->duration;
+    seq->editor->changeDuration(false, 1);     // lengthen one unit
+    const float d1 = firstNote->duration;
+    assertClose(d1 - d0, 1.f / 4.f, .000001);
+
+    seq->editor->changeDuration(false, -50);
+    const float d2 = firstNote->duration;
+    assertEQ(d2, 0);
 }
 
 // transpose multi
@@ -190,7 +226,7 @@ static void testTrans2()
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
 
-    seq->editor->transpose(1.0f / 12.f);
+    seq->editor->changePitch(1);
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
 }
@@ -285,7 +321,11 @@ void testMidiEditor()
     test4();
 
     testTrans1();
+    testShiftTime1();
+    testChangeDuration1();
+
     testTrans2();
+   
 
     testCursor1();
     testCursor2();

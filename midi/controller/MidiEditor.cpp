@@ -208,11 +208,37 @@ void MidiEditor::selectPrevNote()
     updateCursor();
 }
 
-void MidiEditor::transpose(float amount)
+void MidiEditor::changePitch(int semitones)
 {
+    float deltaCV = PitchUtils::semitone * semitones;
     for (auto ev : *selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
-        note->pitchCV += amount;
+        note->pitchCV += deltaCV;
+    }
+}
+
+void MidiEditor::changeStartTime(bool ticks, int amount)
+{
+    assert(!ticks);         // not implemented yet
+    assert(amount != 0);
+
+    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+    for (auto ev : *selection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
+        note->startTime += advanceAmount;
+        note->startTime = std::max(0.f, note->startTime);
+    }
+}
+void MidiEditor::changeDuration(bool ticks, int amount)
+{
+    assert(!ticks);         // not implemented yet
+    assert(amount != 0);
+
+    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+    for (auto ev : *selection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
+        note->duration += advanceAmount;
+        note->duration = std::max(0.f, note->duration);
     }
 }
 

@@ -10,7 +10,6 @@ public:
     static int cvToSemitone(float cv);
     static float pitchToCV(int octave, int semi);
     static bool isAccidental(float cv);
-
 };
 
 inline std::pair<int, int> PitchUtils::cvToPitch(float cv)

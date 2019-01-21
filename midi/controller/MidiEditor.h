@@ -21,7 +21,7 @@ public:
 
     void selectNextNote();
     void selectPrevNote();
-    void transpose(float amount);
+   // void transpose(float amount);
     /**
      * If ticks is false, will move by "units" (like 1/16 note)
      * amount is a multiplier, and may be negative
@@ -29,6 +29,11 @@ public:
     void advanceCursor(bool ticks, int amount);
     void changeCursorPitch(int semitones);
 
+    void changePitch(int semitones);
+    void changeStartTime(bool ticks, int amount);
+    void changeDuration(bool ticks, int amount);
+
+    // Editing start time / duration / pitch
     void setNoteEditorAttribute(MidiEditorContext::NoteAttribute);
 private:
     /**
