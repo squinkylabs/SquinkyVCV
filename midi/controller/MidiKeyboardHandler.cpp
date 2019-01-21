@@ -41,9 +41,6 @@ void MidiKeyboardHandler::handleNoteEditorChange(
                 sequencer->editor->changeStartTime(false, units);
             }
             break;
-            
-
-
     }
 }
 

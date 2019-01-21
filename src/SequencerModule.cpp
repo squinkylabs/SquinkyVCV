@@ -7,6 +7,7 @@
 #include "Seq.h"
 #include "widgets.hpp"
 #include "seq/NoteDisplay.h"
+#include "ctrl/SqMenuItem.h"
 
 
 struct SequencerModule : Module
@@ -29,10 +30,10 @@ SequencerModule::SequencerModule()
 {
 }
 
-
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
+    Menu* createContextMenu() override;
 
         /**
      * Helper to add a text label to this widget
@@ -48,11 +49,11 @@ struct SequencerWidget : ModuleWidget
     }
 };
 
-inline Menu* SequencerWidget::::createContextMenu()
+inline Menu* SequencerWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
     ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/sq2/docs/sq.md");
     theMenu->addChild(manual);
     return theMenu;
 }

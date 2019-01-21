@@ -1,4 +1,12 @@
 # S 
 Work in progress
 
-Keyboad mappings [here](./keymap.md)
+Keyboard mappings [here](./keymap.md)
+
+## What works now
+
+Plays sequence looped all the time.s
+
+Edit note attributes (pitch, start time, duration)
+
+Draw Piano roll.
