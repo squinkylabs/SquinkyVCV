@@ -10,6 +10,7 @@
 #include "MidiKeyboardHandler.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
+#include "../ctrl/SqHelper.h"
 
 
 /**
@@ -37,12 +38,28 @@ struct NoteDisplay : OpaqueWidget
 
         //initScaleFuncs();
         scaler = std::make_shared<NoteScreenScale>(sequencer->context->viewport, size.x, size.y);
+        
+        infoLabel = new Label();
+        infoLabel->box.pos = Vec(10, 10);
+        infoLabel->text = "";
+        infoLabel->color = SqHelper::COLOR_WHITE;
+        addChild(infoLabel);
+        updateFocus(false);
     }
 
+    Label* infoLabel;
     std::shared_ptr<NoteScreenScale> scaler;
     MidiSequencerPtr sequencer;
     bool cursorState = false;
     int cursorFrameCount = 0;
+    bool haveFocus = true;
+
+    void updateFocus(bool focus) {
+        if (focus != haveFocus) {
+            haveFocus = focus;
+            infoLabel->text = focus ? "" : "Click in editor to get focus";
+        }
+    }
 
     void drawNotes(NVGcontext *vg)
     {
@@ -90,6 +107,7 @@ struct NoteDisplay : OpaqueWidget
         drawBackground(vg);
         drawNotes(vg);
         drawCursor(vg);
+        OpaqueWidget::draw(vg);
     }
 
     void drawBackground(NVGcontext *vg) {
@@ -130,7 +148,7 @@ struct NoteDisplay : OpaqueWidget
     void onMouseDown(EventMouseDown &e) override
     {
         OpaqueWidget::onMouseDown(e);
-        std::cout << "onMouseDown " << e.button << std::flush << std::endl;
+      //  std::cout << "onMouseDown " << e.button << std::flush << std::endl;
     }
     void onMouseMove(EventMouseMove &e) override
     {
@@ -139,8 +157,12 @@ struct NoteDisplay : OpaqueWidget
     }
     void onFocus(EventFocus &e) override
     {
-        std::cout << "onFocus " << std::flush << std::endl;
-      // OpaqueWidget::onFocus(e);
+        updateFocus(true);
+        e.consumed = true;
+    }
+    void onDefocus(EventDefocus &e) override
+    {
+        updateFocus(false);
         e.consumed = true;
     }
     void onText(EventText &e) override
@@ -171,11 +193,5 @@ struct NoteDisplay : OpaqueWidget
     }
    /** Called when another widget begins responding to `onMouseMove` events */
 //	virtual void onMouseLeave(EventMouseLeave &e) {}
-    //virtual void onFocus(EventFocus &e) {}
-    void onDefocus(EventDefocus &e) override
 
-    {
-       // std::cout << "defoucs " << std::flush << std::endl;
-        e.consumed = true;
-    }
 };
