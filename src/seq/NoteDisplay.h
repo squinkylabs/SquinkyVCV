@@ -27,16 +27,7 @@ struct NoteDisplay : OpaqueWidget
         sequencer = std::make_shared<MidiSequencer>(song);
         
         assert(sequencer->context->vieport._song == song);
-        printf("in ctor, seq = %p\n", sequencer.get()); fflush(stdout);
-        printf("in ctor, seq-<context = %p\n", sequencer->context.get()); fflush(stdout);
-        
-        printf("in ctor, seqvp = %p\n", sequencer->context->viewport.get()); fflush(stdout);
-        
-       // auto s = sequencer->context->viewport->_song.lock();
-      //  printf("in ctor, seq vp song s = %p\n", s.get()); fflush(stdout);
-        
-        //viewport._song = song;
-
+   
         // hard code view range to our demo song
         sequencer->context->viewport->startTime = 0;
         sequencer->context->viewport->endTime =

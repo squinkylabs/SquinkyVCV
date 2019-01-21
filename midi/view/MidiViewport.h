@@ -31,6 +31,8 @@ public:
     int track = 0;
     std::shared_ptr<const MidiSong> getSong() const;
 
+    void assertValid();
+
 private:
     // Below is not for clients to call. TODO: use private or something.
     // Definitely need some architecture here.

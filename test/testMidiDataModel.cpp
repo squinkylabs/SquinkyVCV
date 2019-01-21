@@ -257,6 +257,25 @@ static void testSong()
     p->assertValid();
 }
 
+static void testQuant()
+{
+    float pitchCV = 0;
+    const float quarterStep = PitchUtils::semitone / 2.f;
+    const float eighthStep = PitchUtils::semitone / 4.f;
+    const int  x = PitchUtils::cvToSemitone(pitchCV);
+
+    assertEQ(PitchUtils::cvToSemitone(pitchCV + eighthStep), x);     // round to middle
+    assertEQ(PitchUtils::cvToSemitone(pitchCV - eighthStep), x);     // round to middle
+    assertEQ(PitchUtils::cvToSemitone(pitchCV + (quarterStep * .99f)), x);     // round to middle
+    assertEQ(PitchUtils::cvToSemitone(pitchCV - (quarterStep * .99f)), x);     // round to middle
+
+    assertEQ(PitchUtils::cvToSemitone(pitchCV + (quarterStep * 1.01f)), x+1);     // round to middle
+    assertEQ(PitchUtils::cvToSemitone(pitchCV - (quarterStep * 1.01f)), x-1);     // round to middle
+ 
+    // TODO: why isn't this 64 - looks at specs for VCV and MIDI
+    //assertEQ(x, 64);
+}
+
 void testMidiDataModel()
 {
     assertNoMidi();     // check for leaks
@@ -273,5 +292,6 @@ void testMidiDataModel()
     testNoteTimeRange1();
     testSameTime();
     testSong();
+    testQuant();
     assertNoMidi();     // check for leaks
 }

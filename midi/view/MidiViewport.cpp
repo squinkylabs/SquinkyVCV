@@ -46,3 +46,10 @@ MidiViewport::iterator_pair MidiViewport::getEvents() const
     return iterator_pair(iterator(rawIterators.first, rawIterators.second, lambda),
         iterator(rawIterators.second, rawIterators.second, lambda));
 }
+
+void MidiViewport::assertValid()
+{
+    assert(endTime > startTime);
+    assert(pitchHi > pitchLow);
+    assert(getSong());
+}

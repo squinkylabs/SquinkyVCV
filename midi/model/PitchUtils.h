@@ -7,8 +7,10 @@ class PitchUtils
 public:
     static constexpr float semitone = 1.f / 12.f;    // one semitone is a 1/12 volt
     static std::pair<int, int> cvToPitch(float cv);
+    static int cvToSemitone(float cv);
     static float pitchToCV(int octave, int semi);
     static bool isAccidental(float cv);
+
 };
 
 inline std::pair<int, int> PitchUtils::cvToPitch(float cv)
@@ -20,6 +22,12 @@ inline std::pair<int, int> PitchUtils::cvToPitch(float cv)
     float s = remainder * 12;
     int semi = int(std::round(s));
     return std::pair<int, int>(octave, semi);
+}
+
+inline  int PitchUtils::cvToSemitone(float cv)
+{
+    auto p = cvToPitch(cv);
+    return p.first * 12 + p.second;
 }
 
 inline float PitchUtils::pitchToCV(int octave, int semi)

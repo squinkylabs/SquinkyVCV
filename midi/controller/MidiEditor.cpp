@@ -229,15 +229,26 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 
 void MidiEditor::updateSelectionForCursor()
 {
+    context->viewport->assertValid();
     selection->clear();
     auto start = context->viewport->startTime;
     auto end = context->viewport->endTime;
+
+    const int cursorSemi = PitchUtils::cvToSemitone(context->cursorPitch);
     MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);
+
     for (auto it = notes.first; it != notes.second; ++it) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
         const auto startTime = note->startTime;
         const auto endTime = note->startTime + note->duration;
-        if ((note->pitchCV == context->cursorPitch) &&
+       // printf("in update note start = %f end = %f cursor=%f\n", startTime, endTime, context->cursorTime);
+      //  printf("note pitch = %f cursor = %f\n", note->pitchCV, context->cursorPitch);
+      //  printf("pitch== %d, start <= %d, end >= %d\n",
+       //     (PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi),
+       //     (startTime <= context->cursorTime),
+       //     (endTime >= context->cursorTime));
+        
+        if ( (PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
             (startTime <= context->cursorTime) &&
             (endTime >= context->cursorTime)) {
             selection->select(note);
@@ -253,5 +264,4 @@ void MidiEditor::changeCursorPitch(int semitones)
     pitch = std::min(pitch, 5.f);
     context->cursorPitch = pitch;
     updateSelectionForCursor();
-
 }

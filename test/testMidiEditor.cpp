@@ -5,6 +5,7 @@
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
 #include "MidiTrack.h"
+#include "MidiViewport.h"
 #include "MidiSong.h"
 
 // sequencer factory - helper function
@@ -13,8 +14,17 @@ MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::makeTestEmpty() :
         MidiSong::makeTest1();
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
-    return seq;
+    MidiSequencerPtr sequencer = std::make_shared<MidiSequencer>(song);
+
+
+    sequencer->context->viewport->startTime = 0;
+    sequencer->context->viewport->endTime =
+    sequencer->context->viewport->startTime + 8;
+    sequencer->context->viewport->pitchLow = PitchUtils::pitchToCV(3, 0);
+    sequencer->context->viewport->pitchHi = PitchUtils::pitchToCV(5, 0);
+
+    sequencer->context->viewport->assertValid();
+    return sequencer;
 }
 
 static bool cursorOnSelection(MidiSequencerPtr seq)
@@ -202,7 +212,6 @@ static void testCursor2()
     assertEQ(seq->context->cursorTime, 0);
 }
 
-
 static void testCursor3()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -221,6 +230,30 @@ static void testCursor3()
 }
 
 
+// move multiple times in two directions
+static void testCursor4()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();
+
+    // Select first note to put cursor in it
+    assertEQ(seq->context->cursorTime, 0);
+    MidiNoteEvent note;
+    note.setPitch(3, 0);
+    assertEQ(seq->context->cursorPitch, note.pitchCV);
+
+    // Now advance up 3
+    seq->editor->changeCursorPitch(1);
+    seq->editor->changeCursorPitch(1);
+    seq->editor->changeCursorPitch(1);
+
+    for (int i = 0; i < 12; ++i) {
+        seq->editor->advanceCursor(false, 1);
+    }
+
+    assert(!seq->selection->empty());
+}
+
 void testMidiEditor()
 {
     test1();
@@ -238,4 +271,5 @@ void testMidiEditor()
     testCursor1();
     testCursor2();
     testCursor3();
+    testCursor4();
 }
