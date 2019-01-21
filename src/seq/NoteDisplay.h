@@ -39,25 +39,52 @@ struct NoteDisplay : OpaqueWidget
         //initScaleFuncs();
         scaler = std::make_shared<NoteScreenScale>(sequencer->context->viewport, size.x, size.y);
         
-        infoLabel = new Label();
-        infoLabel->box.pos = Vec(10, 10);
-        infoLabel->text = "";
-        infoLabel->color = SqHelper::COLOR_WHITE;
-        addChild(infoLabel);
+        focusLabel = new Label();
+        focusLabel->box.pos = Vec(40, 40);
+        focusLabel->text = "";
+        focusLabel->color = SqHelper::COLOR_WHITE;
+        addChild(focusLabel);
         updateFocus(false);
+
+          
+        editAttributeLabel = new Label();
+        editAttributeLabel->box.pos = Vec(10, 10);
+        editAttributeLabel->text = "";
+        editAttributeLabel->color = SqHelper::COLOR_WHITE;
+        addChild(editAttributeLabel);
     }
 
-    Label* infoLabel;
+    Label* focusLabel=nullptr;
+    Label* editAttributeLabel = nullptr;
     std::shared_ptr<NoteScreenScale> scaler;
     MidiSequencerPtr sequencer;
     bool cursorState = false;
     int cursorFrameCount = 0;
     bool haveFocus = true;
+    MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
+
+    void step() override {
+        auto attr = sequencer->context->noteAttribute;
+        if (curAttribute != attr) {
+            curAttribute = attr;
+            switch (attr) {
+                case MidiEditorContext::NoteAttribute::Pitch:
+                    editAttributeLabel->text = "Pitch";
+                    break;
+                 case MidiEditorContext::NoteAttribute::Duration:
+                    editAttributeLabel->text = "Duration";
+                    break;
+                 case MidiEditorContext::NoteAttribute::StartTime:
+                    editAttributeLabel->text = "Start Time";
+                    break;
+            }
+        }
+    }
 
     void updateFocus(bool focus) {
         if (focus != haveFocus) {
             haveFocus = focus;
-            infoLabel->text = focus ? "" : "Click in editor to get focus";
+            focusLabel->text = focus ? "" : "Click in editor to get focus";
         }
     }
 
@@ -165,12 +192,6 @@ struct NoteDisplay : OpaqueWidget
         updateFocus(false);
         e.consumed = true;
     }
-    void onText(EventText &e) override
-    {
-        std::cout << "onText " << std::flush << std::endl;
-        OpaqueWidget::onText(e);
-    }
-
     void onKey(EventKey &e) override
     {
         const unsigned key = e.key;

@@ -1,4 +1,6 @@
 #pragma once
+
+#include "MidiEditorContext.h"
 #include <memory>
 
 class MidiEditorContext;
@@ -26,6 +28,8 @@ public:
      */
     void advanceCursor(bool ticks, int amount);
     void changeCursorPitch(int semitones);
+
+    void setNoteEditorAttribute(MidiEditorContext::NoteAttribute);
 private:
     /**
      * The selection model we will act on

@@ -65,6 +65,21 @@ bool MidiKeyboardHandler::handle(MidiSequencer* sequencer,
                 handled = true;
             }
             break;
+        case GLFW_KEY_P:
+            {
+                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
+            }
+            break;
+        case GLFW_KEY_D:
+            {
+                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Duration);
+            }
+            break;
+        case GLFW_KEY_S:
+            {
+                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+            }
+            break;
     }
     return handled;
 }

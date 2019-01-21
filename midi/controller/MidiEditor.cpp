@@ -265,3 +265,8 @@ void MidiEditor::changeCursorPitch(int semitones)
     context->cursorPitch = pitch;
     updateSelectionForCursor();
 }
+
+void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
+{
+    context->noteAttribute = attr;
+}
