@@ -241,16 +241,10 @@ void MidiEditor::updateSelectionForCursor()
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
         const auto startTime = note->startTime;
         const auto endTime = note->startTime + note->duration;
-       // printf("in update note start = %f end = %f cursor=%f\n", startTime, endTime, context->cursorTime);
-      //  printf("note pitch = %f cursor = %f\n", note->pitchCV, context->cursorPitch);
-      //  printf("pitch== %d, start <= %d, end >= %d\n",
-       //     (PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi),
-       //     (startTime <= context->cursorTime),
-       //     (endTime >= context->cursorTime));
-        
+
         if ( (PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
             (startTime <= context->cursorTime) &&
-            (endTime >= context->cursorTime)) {
+            (endTime > context->cursorTime)) {
             selection->select(note);
             return;
         }

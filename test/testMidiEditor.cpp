@@ -254,6 +254,25 @@ static void testCursor4()
     assert(!seq->selection->empty());
 }
 
+// just past end
+static void testCursor5()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();
+
+    // Select first note to put cursor in it
+    assertEQ(seq->context->cursorTime, 0);
+    MidiNoteEvent note;
+    note.setPitch(3, 0);
+    assertEQ(seq->context->cursorPitch, note.pitchCV);
+
+    // Now advance two units right, to end of note
+    seq->editor->advanceCursor(false, 1);
+    seq->editor->advanceCursor(false, 1);
+
+    assert(seq->selection->empty());
+}
+
 void testMidiEditor()
 {
     test1();
@@ -272,4 +291,5 @@ void testMidiEditor()
     testCursor2();
     testCursor3();
     testCursor4();
+    testCursor5();
 }
