@@ -18,3 +18,7 @@ When note is selected and Pitch is current edit attribute:
 
 * plus/minus changes by one semitone.
 * ], [ changes by an octave.
+
+**Ins** inserts a note at the current cursor.
+
+**Del** deletes the currently selected note.

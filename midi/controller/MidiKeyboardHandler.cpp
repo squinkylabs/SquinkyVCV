@@ -119,17 +119,29 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_P:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
+                handled = true;
             }
             break;
         case GLFW_KEY_D:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Duration);
+                 handled = true;
             }
             break;
         case GLFW_KEY_S:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
             }
+            break;
+        case GLFW_KEY_KP_0:
+        case GLFW_KEY_INSERT:
+            sequencer->editor->insertNote();
+            handled = true;
+            break;
+        case GLFW_KEY_KP_DECIMAL:
+        case GLFW_KEY_DELETE:
+            sequencer->editor->deleteNote();
+            handled = true;
             break;
     }
     return handled;

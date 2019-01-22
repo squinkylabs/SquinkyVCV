@@ -253,6 +253,31 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     updateSelectionForCursor();
 }
 
+void MidiEditor::insertNote()
+{
+    // for now, assume no note there
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = context->cursorPitch;
+    note->startTime = context->cursorTime;
+    note->duration = 1.0f;          // for now, fixed to quarter
+    song->getTrack(0)->insertEvent(note);
+    updateSelectionForCursor();
+}
+
+void MidiEditor::deleteNote()
+{
+    if (selection->empty()) {
+        return;
+    }
+
+    auto track = song->getTrack(0);
+    for (auto it : *selection) {
+        MidiEventPtr ev = it;
+        track->deleteEvent(*ev);
+    }
+    selection->clear();
+    
+}
 void MidiEditor::updateSelectionForCursor()
 {
     context->viewport->assertValid();

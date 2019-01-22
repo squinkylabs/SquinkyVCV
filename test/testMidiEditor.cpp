@@ -309,6 +309,52 @@ static void testCursor5()
     assert(seq->selection->empty());
 }
 
+static void testInsert()
+{
+    MidiSequencerPtr seq = makeTest(true);
+    assert(seq->selection->empty());
+
+    seq->editor->advanceCursor(false, 8);       // move up a half note
+    float pitch = seq->context->cursorPitch;
+
+    seq->editor->insertNote();
+
+    auto it = seq->song->getTrack(0)->begin();
+    assert(it != seq->song->getTrack(0)->end());
+    MidiEventPtr ev = it->second;
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+    assert(note);
+
+    assertEQ(note->pitchCV, pitch);
+    assertEQ(seq->selection->size(), 1);
+
+    assert(seq->selection->isSelected(note));
+}
+
+static void testDelete()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();
+
+    auto it = seq->song->getTrack(0)->begin();
+    assert(it != seq->song->getTrack(0)->end());
+    MidiEventPtr ev = it->second;
+    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(ev);
+    assert(firstNote);
+    assertEQ(firstNote->startTime, 0);
+
+    assertEQ(seq->selection->size(), 1);
+    seq->editor->deleteNote();
+    assert(seq->selection->empty());
+
+    it = seq->song->getTrack(0)->begin();
+    assert(it != seq->song->getTrack(0)->end());
+    ev = it->second;
+    MidiNoteEventPtr secondNote = safe_cast<MidiNoteEvent>(ev);
+    assert(secondNote);
+    assertEQ(secondNote->startTime, 1.f);
+}
+
 void testMidiEditor()
 {
     test1();
@@ -326,10 +372,12 @@ void testMidiEditor()
 
     testTrans2();
    
-
     testCursor1();
     testCursor2();
     testCursor3();
     testCursor4();
     testCursor5();
+
+    testInsert();
+    testDelete();
 }

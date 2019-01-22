@@ -157,6 +157,6 @@ MidiTrackPtr MidiTrack::makeTest1()
 MidiTrackPtr MidiTrack::makeTestEmpty()
 {
     auto track = std::make_shared<MidiTrack>();
-    track->insertEnd(1);
+    track->insertEnd(8.f);                  // make two empty bars
     return track;
 }

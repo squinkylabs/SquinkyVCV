@@ -20,7 +20,6 @@ Note editor things that don't work:
 * Viewport doesn't scroll, either in pitch or in time.
 * Song ends at bar three - can't change length.
 * While you can edit and play at the same time, it's just by luck.
-* You can't insert or delete notes.
 
 ## Piano roll
 
