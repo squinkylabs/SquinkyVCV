@@ -104,7 +104,11 @@ struct LFNWidget : ModuleWidget
         ModuleWidget::step();
     }
 
+#ifdef __V1
+    void appendContextMenu(Menu *menu) override;
+#else
     Menu* createContextMenu() override;
+#endif
 
     void addStage(int i);
 
@@ -126,8 +130,6 @@ void LFNWidget::addStage(int index)
 {
     // make a temporary one for instantiation controls,
     // in case module is null.
-
-
     addParam(SqHelper::createParam<Rogan1PSBlue>(
         icomp,
         Vec(knobX, knobY + index * knobDy),
@@ -140,6 +142,20 @@ void LFNWidget::addStage(int index)
         module, Comp::EQ0_INPUT + index));
 }
 
+#ifdef __V1
+void LFNWidget::appendContextMenu(Menu* theMenu) 
+{
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
+    theMenu->addChild(manual);
+    
+    MenuLabel *spacerLabel = new MenuLabel();
+    theMenu->addChild(spacerLabel);
+    SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
+        xlfnWidget);
+    item->text = "Extra Low Frequency";
+    theMenu->addChild(item);
+}
+#else
 inline Menu* LFNWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -155,6 +171,7 @@ inline Menu* LFNWidget::createContextMenu()
     theMenu->addChild(item);
     return theMenu;
 }
+#endif
 
 /**
  * Widget constructor will describe my implementation structure and

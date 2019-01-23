@@ -78,18 +78,28 @@ struct SQPush : SVGButton
 {
     SQPush()
     {
+#ifdef __V1
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_0.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_1.svg")));
+#else
         setSVGs(
             SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_0.svg")),
             SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_1.svg"))
         );
+#endif
     }
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
+#ifdef __V1
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, upSVG)));
+        addFrame(SVG::load(SqHelper::assetPlugin(plugin, dnSVG)));
+#else
         setSVGs(
             SVG::load(SqHelper::assetPlugin(plugin, upSVG)),
             SVG::load(SqHelper::assetPlugin(plugin, dnSVG))
         );
+#endif
     }
     void center(Vec& pos)
     {

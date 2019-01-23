@@ -66,14 +66,15 @@ void FunVModule::step()
 struct FunVWidget : ModuleWidget
 {
     FunVWidget(FunVModule *);
-     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
 
     void addTop3(FunVModule *, float verticalShift);
     void addMiddle4(FunVModule *, float verticalShift);
     void addJacks(FunVModule *, float verticalShift);
-#if 1
-//#ifndef _V1
+#ifdef __V1
+    void appendContextMenu(Menu *menu) override;
+#else
     Menu* createContextMenu() override;
 #endif
 
@@ -92,7 +93,14 @@ struct FunVWidget : ModuleWidget
     }
 };
 
-#if 1
+#ifdef __V1
+inline void FunVWidget::appendContextMenu(Menu* theMenu)
+{
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md");
+    theMenu->addChild(manual);
+}
+#else
 //#ifndef _V1 // should be built in
 inline Menu* FunVWidget::createContextMenu()
 {
