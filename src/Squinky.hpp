@@ -8,6 +8,7 @@
 
 #define _FUN        // works with 1.0
 #define _LFN
+#define _FORMANTS
 //#define _CH10
 
 
@@ -31,8 +32,6 @@
 using namespace rack;
 extern Plugin *plugin;
 extern Model *modelBootyModule;
-extern Model *modelVocalModule;
-extern Model *modelVocalFilterModule;
 extern Model *modelColoredNoiseModule;
 extern Model *modelTremoloModule;
 extern Model *modelThreadBoostModule;
@@ -40,6 +39,12 @@ extern Model *modelLFNModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 
+#ifdef _FORMANTS
+    extern Model *modelVocalFilterModule;
+#endif
+#ifdef _GROWLER
+    extern Model *modelVocalModule;
+#endif
 #ifdef _GMR
 extern Model *modelGMRModule;
 #endif

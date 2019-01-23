@@ -18,6 +18,11 @@
 			"name": "lfn",
 			"description": "Low frequency random voltage generator",
 			"tags": ["NOISE", "RANDOM", "LFO"]
+		},
+		"growler": {
+			"name": "growler",
+			"description": "Formants: Vocal Filter",
+			"tags":  ["EFFECT", "FILTER"]
 		}
 	}
 }

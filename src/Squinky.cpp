@@ -30,7 +30,7 @@ void init(rack::Plugin *p)
 #ifdef _EV3 
     p->addModel(modelEV3Module);
     #endif
-#ifdef _GROWLER
+#ifdef _FORMANTS
     p->addModel(modelVocalFilterModule);
 #endif
 #ifdef _FUN
@@ -39,7 +39,7 @@ void init(rack::Plugin *p)
 #ifdef _GRAY
     p->addModel(modelGrayModule);
     #endif
-#ifdef _FORMANTS
+#ifdef _GROWLER
     p->addModel(modelVocalModule);
     #endif
 #ifdef _LFN
