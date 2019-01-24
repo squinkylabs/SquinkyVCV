@@ -11,6 +11,9 @@
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
+#include "TimeUtils.h"
+
+#include <sstream>
 
 
 /**
@@ -52,16 +55,24 @@ struct NoteDisplay : OpaqueWidget
         editAttributeLabel->text = "";
         editAttributeLabel->color = SqHelper::COLOR_WHITE;
         addChild(editAttributeLabel);
+
+        barRangeLabel = new Label();
+        barRangeLabel->box.pos = Vec(100, 10);
+        barRangeLabel->text = "";
+        barRangeLabel->color = SqHelper::COLOR_WHITE;
+        addChild(barRangeLabel);
     }
 
     Label* focusLabel=nullptr;
     Label* editAttributeLabel = nullptr;
+    Label* barRangeLabel = nullptr;
     std::shared_ptr<NoteScreenScale> scaler;
     MidiSequencerPtr sequencer;
     bool cursorState = false;
     int cursorFrameCount = 0;
     bool haveFocus = true;
     MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
+    int curFirstBar = -1;
 
     void step() override {
         auto attr = sequencer->context->noteAttribute;
@@ -78,6 +89,14 @@ struct NoteDisplay : OpaqueWidget
                     editAttributeLabel->text = "Start Time";
                     break;
             }
+        }
+
+        int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->viewport->startTime);
+        if (firstBar != curFirstBar) {
+            curFirstBar = firstBar;
+            std::stringstream str;
+            str << "First Bar: " << curFirstBar << " Last Bar: " << curFirstBar + 1;
+            barRangeLabel->text = str.str();
         }
     }
 
@@ -109,7 +128,6 @@ struct NoteDisplay : OpaqueWidget
         }
     }
 
-
     void drawCursor(NVGcontext *vg) {
         cursorFrameCount--;
         if (cursorFrameCount < 0) {
@@ -127,8 +145,8 @@ struct NoteDisplay : OpaqueWidget
                  scaler->noteHeight() / 2.f;  
             filledRect(vg, color, x, y, 10, 3);
         }
-
     }
+
     void draw(NVGcontext *vg) override
     {   
         drawBackground(vg);

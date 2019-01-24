@@ -7,5 +7,8 @@ public:
     {
         return bar * 4.f;     // for now, 4 q in one bar
     }
-    static int timeToBar(float time);
+    static int timeToBar(float time)
+    {
+        return (int) std::round(time / 4.f);
+    }
 };
