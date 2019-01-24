@@ -6,6 +6,7 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "MidiViewport.h"
+#include "TimeUtils.h"
 
 extern int _mdb;
 
@@ -229,6 +230,7 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
         note->startTime = std::max(0.f, note->startTime);
     }
 }
+
 void MidiEditor::changeDuration(bool ticks, int amount)
 {
     assert(!ticks);         // not implemented yet
@@ -242,15 +244,57 @@ void MidiEditor::changeDuration(bool ticks, int amount)
     }
 }
 
+bool MidiEditor::cursorInViewport() const
+{
+    if (context->cursorTime < context->viewport->startTime) {
+        return false;
+    }
+    if (context->cursorTime >= context->viewport->endTime) {
+        return false;
+    }
+
+    return true;
+}
+
+void MidiEditor::adjustViewportForCursor()
+{
+    if (cursorInViewport()) {
+        return;
+    }
+
+    float minimumAdvance = 0;
+    if (context->cursorTime >= context->viewport->endTime) {
+        minimumAdvance = context->cursorTime - context->viewport->endTime;
+    }  else if (context->cursorTime < context->viewport->startTime) {
+        minimumAdvance = context->cursorTime - context->viewport->startTime;
+    }
+
+    // figure what fraction of 2 bars this is
+    float advanceBars = minimumAdvance / TimeUtils::barToTime(2);
+    advanceBars += (minimumAdvance < 0) ? -2 : 2;
+
+
+    float x = std::round(advanceBars / 2.f);
+    float finalAdvanceTime = x * TimeUtils::barToTime(2);
+
+    context->viewport->startTime += finalAdvanceTime;
+    context->viewport->endTime = context->viewport->startTime + TimeUtils::barToTime(2);
+    assert(context->viewport->startTime >= 0);
+}
+
 void MidiEditor::advanceCursor(bool ticks, int amount)
 {
     assert(!ticks);         // not implemented yet
     assert(amount != 0);
 
+    assert(cursorInViewport());
+
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
     context->cursorTime += advanceAmount;
     context->cursorTime = std::max(0.f, context->cursorTime);
     updateSelectionForCursor();
+    adjustViewportForCursor();
+    assert(cursorInViewport());
 }
 
 void MidiEditor::insertNote()

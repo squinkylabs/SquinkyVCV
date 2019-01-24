@@ -236,6 +236,7 @@ static void testCursor1()
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime, 0);
     assertEQ(seq->context->cursorPitch, 0)
+    assertEQ(seq->context->viewport->startTime, 0);
 }
 
 static void testCursor2()
@@ -246,6 +247,7 @@ static void testCursor2()
 
     seq->editor->advanceCursor(false, -4);
     assertEQ(seq->context->cursorTime, 0);
+    assertEQ(seq->context->viewport->startTime, 0);
 }
 
 static void testCursor3()
@@ -263,6 +265,7 @@ static void testCursor3()
     seq->editor->advanceCursor(false, 4);
     assertEQ(seq->context->cursorTime, 1.f);
     assert(seq->selection->empty());
+    assertEQ(seq->context->viewport->startTime, 0);
 }
 
 
@@ -288,9 +291,10 @@ static void testCursor4()
     }
 
     assert(!seq->selection->empty());
+    assertEQ(seq->context->viewport->startTime, 0);
 }
 
-// just past end
+// just past end of note
 static void testCursor5()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -307,6 +311,22 @@ static void testCursor5()
     seq->editor->advanceCursor(false, 1);
 
     assert(seq->selection->empty());
+    assertEQ(seq->context->viewport->startTime, 0);
+}
+
+// move past the end of the second bar
+static void testCursor6()
+{
+    MidiSequencerPtr seq = makeTest(false);
+
+    assertEQ(seq->context->viewport->startTime, 0);
+
+    // go up two bars and 1/16
+    seq->editor->advanceCursor(false, 16 * 2 + 1);
+
+    // bar 2 should be new start time
+    assertEQ(seq->context->viewport->startTime, 2 * 4);
+
 }
 
 static void testInsert()
@@ -377,6 +397,7 @@ void testMidiEditor()
     testCursor3();
     testCursor4();
     testCursor5();
+    testCursor6();
 
     testInsert();
     testDelete();

@@ -677,5 +677,8 @@
     <ClInclude Include="..\..\util\FilteredIterator.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\midi\model\TimeUtils.h">
+      <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

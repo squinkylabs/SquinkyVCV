@@ -56,6 +56,9 @@ private:
     // select any note that is under the cursor
     void updateSelectionForCursor();
 
+    bool cursorInViewport() const;
+    void adjustViewportForCursor();
+
 
 };
 
