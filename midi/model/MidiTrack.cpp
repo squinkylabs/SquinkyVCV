@@ -39,6 +39,9 @@ void MidiTrack::assertValid() const
         } else {
             lastEnd = startTime;
         }
+
+        // Check for indexing errors
+        assertEQ(it->first, it->second->startTime);
     }
     assert(lastIsEnd);
     assertEQ(numEnds, 1);
@@ -50,6 +53,20 @@ void MidiTrack::insertEvent(MidiEventPtr evIn)
     events.insert( std::pair<MidiEvent::time_t, MidiEventPtr>(evIn->startTime, evIn));
 }
 
+float MidiTrack::getLength() const
+{
+    const_reverse_iterator it = events.rbegin();
+    MidiEventPtr end = it->second;
+    MidiEndEventPtr ret = safe_cast<MidiEndEvent>(end);
+    return ret->startTime;
+}
+std::shared_ptr<MidiEndEvent> MidiTrack::getEndEvent()
+{
+    const_reverse_iterator it = events.rbegin();
+    MidiEventPtr end = it->second;
+    MidiEndEventPtr ret = safe_cast<MidiEndEvent>(end);
+    return ret;
+}
 
 void MidiTrack::deleteEvent(const MidiEvent& evIn)
 {
@@ -62,8 +79,27 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
         }
     }
     assert(false);
-    //  events.insert(insertPoint, std::pair<MidiEvent::time_t, MidiEvent>(evIn.startTime, evIn));
-   // events.erase(insertPoint);      // will never work in the real world
+}
+
+void MidiTrack::_dump() const
+{
+    const_iterator it;
+    for (it = events.cbegin(); it != events.cend(); ++it ) {
+        float ti = it->first;
+        std::shared_ptr<const MidiEvent> evt = it->second;
+        std::string type = "Note";
+        switch (evt->type) {
+            case MidiEvent::Type::End:
+                type = "End";
+                break;
+            case MidiEvent::Type::Note:
+                type = "Note";
+                break;
+
+        }
+        printf("time = %f, type=%s\n", ti, type.c_str());
+    }
+    fflush(stdout);
 }
 
 std::vector<MidiEventPtr> MidiTrack::_testGetVector() const
@@ -93,16 +129,9 @@ MidiTrack::note_iterator_pair MidiTrack::timeRangeNotes(MidiEvent::time_t start,
         if (note) {
             ret = true;         // accept all notes
         }
-#if 0
-        if (ret) {
-            ret = me->startTime < this->endTime;
-        }
-#endif
+
         return ret;
     };
-
-  //  const auto song = getSong();
-  //  const auto track = song->getTrack(this->track);
 
     // raw will be pair of track::const_iterator
     const auto rawIterators = this->timeRange(start, end);

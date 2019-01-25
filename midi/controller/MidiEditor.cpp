@@ -216,6 +216,9 @@ void MidiEditor::changePitch(int semitones)
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
         note->pitchCV += deltaCV;
     }
+    context->cursorPitch += deltaCV;
+    adjustViewportForCursor();
+    assert(cursorInViewport());
 }
 
 void MidiEditor::changeStartTime(bool ticks, int amount)
@@ -240,7 +243,9 @@ void MidiEditor::changeDuration(bool ticks, int amount)
     for (auto ev : *selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
         note->duration += advanceAmount;
-        note->duration = std::max(0.f, note->duration);
+
+        // arbitrary min limit.
+        note->duration = std::max(.001f, note->duration);
     }
 }
 
@@ -299,13 +304,30 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 
 void MidiEditor::insertNote()
 {
+    auto track = song->getTrack(0);
+    float curLength = track->getLength();
+
+      // for now, fixed to quarter
+    float neededLength = context->cursorTime + 1.f;
+    if (neededLength > curLength) {
+        float need = neededLength;
+        float needBars = need / 4.f;
+        float roundedBars = std::round(needBars + 1.f);
+        float duration = roundedBars * 4;
+        std::shared_ptr<MidiEndEvent> end = track->getEndEvent();
+        track->deleteEvent(*end);
+       // end->startTime = duration;
+        track->insertEnd(duration);
+    }
+
     // for now, assume no note there
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->pitchCV = context->cursorPitch;
     note->startTime = context->cursorTime;
     note->duration = 1.0f;          // for now, fixed to quarter
-    song->getTrack(0)->insertEvent(note);
+    track->insertEvent(note);
     updateSelectionForCursor();
+    song->assertValid();
 }
 
 void MidiEditor::deleteNote()

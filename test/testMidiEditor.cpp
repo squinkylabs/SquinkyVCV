@@ -173,12 +173,18 @@ static void testTrans1()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
+    const float firstNotePitch = PitchUtils::pitchToCV(3, 0);
+    assertClose(seq->context->cursorPitch, firstNotePitch, .0001);
+
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
     seq->editor->changePitch(1);
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
+    const float transposedPitch = PitchUtils::pitchToCV(3, 1);
+    assertClose(seq->context->cursorPitch, transposedPitch, .0001);
+    seq->song->assertValid();
 }
 
 static void testShiftTime1()
@@ -196,6 +202,7 @@ static void testShiftTime1()
     seq->editor->changeStartTime(false, -50);
     const float s2 = firstNote->startTime;
     assertEQ(s2, 0);
+    seq->song->assertValid();
 }
 
 
@@ -210,10 +217,13 @@ static void testChangeDuration1()
     seq->editor->changeDuration(false, 1);     // lengthen one unit
     const float d1 = firstNote->duration;
     assertClose(d1 - d0, 1.f / 4.f, .000001);
+    seq->song->assertValid();
 
+    // try to make negative, should not go below 1
     seq->editor->changeDuration(false, -50);
     const float d2 = firstNote->duration;
-    assertEQ(d2, 0);
+    assertGT(d2, 0);
+    seq->song->assertValid();
 }
 
 // transpose multi
@@ -229,6 +239,7 @@ static void testTrans2()
     seq->editor->changePitch(1);
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
+    seq->song->assertValid();
 }
 
 static void testCursor1()
@@ -266,6 +277,7 @@ static void testCursor3()
     assertEQ(seq->context->cursorTime, 1.f);
     assert(seq->selection->empty());
     assertEQ(seq->context->viewport->startTime, 0);
+
 }
 
 
@@ -329,12 +341,12 @@ static void testCursor6()
 
 }
 
-static void testInsert()
+static void testInsertSub(int advancUnits)
 {
     MidiSequencerPtr seq = makeTest(true);
     assert(seq->selection->empty());
 
-    seq->editor->advanceCursor(false, 8);       // move up a half note
+    seq->editor->advanceCursor(false, advancUnits);       // move up a half note
     float pitch = seq->context->cursorPitch;
 
     seq->editor->insertNote();
@@ -349,6 +361,19 @@ static void testInsert()
     assertEQ(seq->selection->size(), 1);
 
     assert(seq->selection->isSelected(note));
+    seq->song->assertValid();
+}
+
+static void testInsert()
+{
+    printf("\ntestInsert\n");
+    testInsertSub(8);
+}
+
+static void testInsert2()
+{
+    printf("\ntestInsert2\n");
+    testInsertSub(34);      //middle of second bar
 }
 
 static void testDelete()
@@ -373,6 +398,7 @@ static void testDelete()
     MidiNoteEventPtr secondNote = safe_cast<MidiNoteEvent>(ev);
     assert(secondNote);
     assertEQ(secondNote->startTime, 1.f);
+    seq->song->assertValid();
 }
 
 void testMidiEditor()
@@ -400,5 +426,6 @@ void testMidiEditor()
     testCursor6();
 
     testInsert();
+    testInsert2();
     testDelete();
 }

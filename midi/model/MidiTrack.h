@@ -34,7 +34,9 @@ public:
 
     using container = std::multimap<MidiEvent::time_t, MidiEventPtr>;
     using iterator = container::iterator;
+    using reverse_iterator = container::reverse_iterator;
     using const_iterator = container::const_iterator;
+    using const_reverse_iterator = container::const_reverse_iterator;
     using iterator_pair = std::pair<const_iterator, const_iterator>;
 
     using note_iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
@@ -67,6 +69,10 @@ public:
     {
         return events.end();
     }
+
+    float getLength() const;
+    std::shared_ptr<MidiEndEvent> getEndEvent();
+    void _dump() const;
 
     /**
      * factory method to generate test content.
