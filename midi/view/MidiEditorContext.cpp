@@ -15,3 +15,22 @@ MidiEditorContext::~MidiEditorContext()
 {
     --_mdb;
 }
+
+void MidiEditorContext::assertCursorInViewport() const
+{
+    assertGE(cursorTime, viewport->startTime);
+    assertLT(cursorTime, viewport->endTime);
+    assertGE(cursorPitch, viewport->pitchLow);
+    assertLE(cursorPitch, viewport->pitchHi);
+}
+
+void MidiEditorContext::assertValid() const
+{
+    assert(viewport);
+    viewport->assertValid();
+    assertGE(cursorTime, 0);
+    assertLT(cursorPitch, 10);      // just for now
+    assertGT(cursorPitch, -10);
+
+    assertCursorInViewport();
+}

@@ -21,6 +21,8 @@ public:
     MidiSequencer(std::shared_ptr<MidiSong>);
     ~MidiSequencer();
 
+    void assertValid() const;
+
     /** The various classes we collect
      */
     MidiSelectionModelPtr const selection;

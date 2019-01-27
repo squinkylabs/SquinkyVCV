@@ -18,7 +18,12 @@ NoteScreenScale::NoteScreenScale(MidiViewportPtr vp, float screenWidth, float sc
 
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
 {
-    return (ev.startTime - viewport->startTime) * ax;
+    return midiTimeToX(ev.startTime);
+}
+
+float NoteScreenScale::midiTimeToX(MidiEvent::time_t t)
+{
+    return  (t - viewport->startTime) * ax;
 }
 
 float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)

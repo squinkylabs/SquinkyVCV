@@ -23,6 +23,9 @@ static void test0()
     assertEQ(left, 0);
     assertEQ(right, 100);
 
+    float l2 = n.midiTimeToX(note.startTime);
+    assertEQ(left, l2);
+
     auto bounds = n.midiTimeToHBounds(note);
     assertEQ(bounds.first, 0);
     assertEQ(bounds.second, 100);
@@ -53,6 +56,7 @@ static void test1()
 // viewport = 1 bar, have an eight not on beat 4
 static void test2()
 {
+    printf("test2\n");
     // viewport holds one bar of 4/4
     MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
     vp->startTime = 0;
@@ -71,6 +75,10 @@ static void test2()
     auto bounds = n.midiTimeToHBounds(note);
     assertEQ(bounds.first, 75.f);
     assertEQ(bounds.second, 75.f +  (100.0 /8));
+
+    float x = n.midiTimeToX(note);
+    float x2 = n.midiTimeToX(note.startTime);
+    assertEQ(x, x2);
 }
 
 // basic test of y coordinates

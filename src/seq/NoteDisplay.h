@@ -120,6 +120,9 @@ struct NoteDisplay : OpaqueWidget
             const float y = scaler->midiPitchToY(*ev);
             const float width = scaler->midiTimeTodX(ev->duration);
 
+          //  printf("draw note x=%f y=%f vs =%f\n", x, y, sequencer->context->viewport->startTime);
+            fflush(stdout);
+
             const bool selected = sequencer->selection->isSelected(ev);
             filledRect(
                 vg,
@@ -139,8 +142,8 @@ struct NoteDisplay : OpaqueWidget
             auto color = cursorState ? 
                 nvgRGB(0xff, 0xff, 0xff) :
                 nvgRGB(0, 0, 0);
-            const float x = scaler->midiTimeTodX(sequencer->context->cursorTime);
-                       
+               
+            const float x = scaler->midiTimeToX(sequencer->context->cursorTime);        
             const float y = scaler->midiCvToY(sequencer->context->cursorPitch) + 
                  scaler->noteHeight() / 2.f;  
             filledRect(vg, color, x, y, 10, 3);

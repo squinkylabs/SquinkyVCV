@@ -23,7 +23,7 @@ MidiSequencerPtr makeTest(bool empty = false)
     sequencer->context->viewport->pitchLow = PitchUtils::pitchToCV(3, 0);
     sequencer->context->viewport->pitchHi = PitchUtils::pitchToCV(5, 0);
 
-    sequencer->context->viewport->assertValid();
+    sequencer->assertValid();
     return sequencer;
 }
 
@@ -184,7 +184,7 @@ static void testTrans1()
     assertClose(p1 - p0, 1.f / 12.f, .000001);
     const float transposedPitch = PitchUtils::pitchToCV(3, 1);
     assertClose(seq->context->cursorPitch, transposedPitch, .0001);
-    seq->song->assertValid();
+    seq->assertValid();
 }
 
 static void testShiftTime1()
@@ -202,7 +202,7 @@ static void testShiftTime1()
     seq->editor->changeStartTime(false, -50);
     const float s2 = firstNote->startTime;
     assertEQ(s2, 0);
-    seq->song->assertValid();
+    seq->assertValid();
 }
 
 
@@ -217,13 +217,13 @@ static void testChangeDuration1()
     seq->editor->changeDuration(false, 1);     // lengthen one unit
     const float d1 = firstNote->duration;
     assertClose(d1 - d0, 1.f / 4.f, .000001);
-    seq->song->assertValid();
+    seq->assertValid();
 
     // try to make negative, should not go below 1
     seq->editor->changeDuration(false, -50);
     const float d2 = firstNote->duration;
     assertGT(d2, 0);
-    seq->song->assertValid();
+    seq->assertValid();
 }
 
 // transpose multi
@@ -239,7 +239,7 @@ static void testTrans2()
     seq->editor->changePitch(1);
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
-    seq->song->assertValid();
+    seq->assertValid();
 }
 
 static void testCursor1()
@@ -361,7 +361,7 @@ static void testInsertSub(int advancUnits)
     assertEQ(seq->selection->size(), 1);
 
     assert(seq->selection->isSelected(note));
-    seq->song->assertValid();
+    seq->assertValid();
 }
 
 static void testInsert()
@@ -398,7 +398,7 @@ static void testDelete()
     MidiNoteEventPtr secondNote = safe_cast<MidiNoteEvent>(ev);
     assert(secondNote);
     assertEQ(secondNote->startTime, 1.f);
-    seq->song->assertValid();
+    seq->assertValid();
 }
 
 void testMidiEditor()

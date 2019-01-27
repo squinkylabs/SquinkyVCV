@@ -1,6 +1,7 @@
 
 #include "MidiSequencer.h"
 #include "MidiEditor.h"
+#include "MidiViewport.h"
 
 int _mdb = 0;       // global instance counter
 
@@ -17,4 +18,13 @@ MidiSequencer::MidiSequencer(std::shared_ptr<MidiSong> sng) :
 MidiSequencer::~MidiSequencer()
 {
     --_mdb;
+}
+
+
+void MidiSequencer::assertValid() const
+{
+    // this should be part of context->assertValid
+    context->viewport->assertValid();
+    context->assertValid();
+    song->assertValid();
 }

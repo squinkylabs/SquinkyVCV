@@ -5,7 +5,7 @@ Keyboard mappings [here](./keymap.md)
 
 ## What works now
 
-Plays sequence looped all the time.s
+Plays sequence looped all the time.
 
 Edit note attributes (pitch, start time, duration)
 
@@ -17,9 +17,10 @@ There are obviously many missing features (clocking, start/stop, undo, saving se
 
 Note editor things that don't work:
 
-* Viewport doesn't scroll, either in pitch or in time.
-* Song ends at bar three - can't change length.
+* Viewport doesn't scroll in pitch, although time works.
 * While you can edit and play at the same time, it's just by luck.
+* Time units are always 1/16 notes.
+* Insert note is always 1/4 (I think)l
 
 ## Piano roll
 

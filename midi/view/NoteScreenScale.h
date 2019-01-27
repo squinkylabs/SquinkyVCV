@@ -23,6 +23,7 @@ class NoteScreenScale
 public:
     NoteScreenScale(std::shared_ptr<MidiViewport> vp, float screenWidth, float screenHeight);
     float midiTimeToX(const MidiEvent& ev);
+    float midiTimeToX(MidiEvent::time_t ev);
     float midiTimeTodX(MidiEvent::time_t dt);
 
     std::pair<float, float> midiTimeToHBounds(const MidiNoteEvent& note);

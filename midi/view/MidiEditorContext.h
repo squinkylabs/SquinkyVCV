@@ -26,6 +26,9 @@ public:
 
     NoteAttribute noteAttribute;
 
+    void assertValid() const;
+    void assertCursorInViewport() const;
+
 
 };
 
