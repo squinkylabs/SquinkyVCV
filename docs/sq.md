@@ -20,7 +20,11 @@ Note editor things that don't work:
 * Viewport doesn't scroll in pitch, although time works.
 * While you can edit and play at the same time, it's just by luck.
 * Time units are always 1/16 notes.
-* Insert note is always 1/4 (I think)l
+* Insert note is always 1/4 (I think).
+
+## Extending the length
+
+There is a temporary hack to make it possible to lengthen a track. You may move the cursor past the end of the track. If you insert a note there, the track will be extended in units of 4/4 bars to accommodate the new note.
 
 ## Piano roll
 
