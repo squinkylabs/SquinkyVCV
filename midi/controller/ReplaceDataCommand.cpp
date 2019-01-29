@@ -22,7 +22,7 @@ void ReplaceDataCommand::execute()
     for (auto it = addData.begin(); it < addData.end(); ++it) {
         mt->insertEvent(*it);
     }
-    assert(removeData.empty());
+    assert(removeData.empty()); // not imp yet
 }
 
 void ReplaceDataCommand::undo()

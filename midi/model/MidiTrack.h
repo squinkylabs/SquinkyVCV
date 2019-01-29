@@ -20,11 +20,11 @@ public:
     void assertValid() const;
 
     void insertEvent(MidiEventPtr ev);
-
-    // TODO: does this still make sense with polymorphic types?
     void deleteEvent(const MidiEvent&);
     void insertEnd(MidiEvent::time_t time);
 
+    float getLength() const;
+    std::shared_ptr<MidiEndEvent> getEndEvent();
 
     /**
      * Returns all events as a vector, so that they may be indexed.
@@ -70,8 +70,6 @@ public:
         return events.end();
     }
 
-    float getLength() const;
-    std::shared_ptr<MidiEndEvent> getEndEvent();
     void _dump() const;
 
     /**
