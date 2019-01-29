@@ -1,6 +1,7 @@
 #include "rack.hpp"
-#include "componentlibrary.hpp"
+#include "component.hpp"
 
+//extern rack::Plugin* plugin;
 
 #ifndef __V1
 //#define _SEQ        // just for test
@@ -30,7 +31,7 @@
 
 
 using namespace rack;
-extern Plugin *plugin;
+extern Plugin *pluginInstance;
 extern Model *modelBootyModule;
 extern Model *modelColoredNoiseModule;
 extern Model *modelTremoloModule;

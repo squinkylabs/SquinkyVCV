@@ -184,7 +184,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(plugin, "res/lfn_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/lfn_panel.svg")));
         addChild(panel);
     }
 

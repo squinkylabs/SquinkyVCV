@@ -20,7 +20,7 @@ public:
     float engineGetSampleRate()
     {
 #ifdef __V1
-        return app()->engine->getSampleRate();
+        return APP->engine->getSampleRate();
 #else  
         return ::engineGetSampleRate();
 #endif
@@ -29,7 +29,7 @@ public:
     float engineGetSampleTime()
     {
 #ifdef __V1
-        return app()->engine->getSampleTime();
+        return APP->engine->getSampleTime();
 #else  
         return ::engineGetSampleTime();
 #endif

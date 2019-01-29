@@ -1,5 +1,6 @@
 #pragma once
 
+#include "app.hpp"
 #include "IComposite.h"
 /** Wrap up all the .6/1.0 dependencies here
  */
@@ -18,11 +19,11 @@ public:
     } 
     static float engineGetSampleRate()
     {
-        return app()->engine->getSampleRate();
+        return APP->engine->getSampleRate();
     }
       static float engineGetSampleTime()
     {
-        return app()->engine->getSampleTime();
+        return APP->engine->getSampleTime();
     }
     template <typename T>
 

@@ -245,7 +245,7 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;   
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(plugin, "res/fun_panel.svg")));        
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/fun_panel.svg")));        
         addChild(panel);
     }
 
