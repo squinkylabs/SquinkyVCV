@@ -180,7 +180,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/trem_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/trem_panel.svg")));
         addChild(panel);
     }
 

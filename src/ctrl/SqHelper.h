@@ -75,7 +75,7 @@ public:
    template <typename T>
    static T* createParam(std::shared_ptr<IComposite> composite, const Vec& pos, Module* module, int paramId )
    {
-       const auto data = composite.getParam(paramId);
+       const auto data = composite->getParam(paramId);
        assert(data.min < data.max);
        assert(data.def >= data.min);
        assert(data.def <= data.max);

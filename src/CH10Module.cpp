@@ -159,7 +159,7 @@ CH10Widget::CH10Widget(CH10Module *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/ch10_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/ch10_panel.svg")));
         addChild(panel);
     }
 

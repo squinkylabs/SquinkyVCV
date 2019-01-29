@@ -1,6 +1,10 @@
 #include "rack.hpp"
-#include "component.hpp"
 
+#ifdef __V1
+#include "component.hpp"
+#else
+#include "componentlibrary.hpp"
+#endif
 //extern rack::Plugin* plugin;
 
 #ifndef __V1

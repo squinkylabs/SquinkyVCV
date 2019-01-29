@@ -140,7 +140,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/shaper.svg")));
+        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/shaper.svg")));
         addChild(panel);
     }
 

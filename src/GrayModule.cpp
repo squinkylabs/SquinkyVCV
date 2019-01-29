@@ -95,7 +95,7 @@ GrayWidget::GrayWidget(GrayModule *module) :
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/gray.svg")));
+        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/gray.svg")));
         addChild(panel);
     }
 

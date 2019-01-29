@@ -24,7 +24,7 @@ inline ToggleButton::ToggleButton()
 inline void ToggleButton::addSvg(const char* resourcePath)
 {
     auto svg = std::make_shared<SVGWidget>();
-    svg->setSVG(SVG::load(assetPlugin(plugin, resourcePath)));
+    svg->setSVG(SVG::load(assetPlugin(pluginInstance, resourcePath)));
     svgs.push_back(svg);
     this->box.size.x = std::max(this->box.size.x, svg->box.size.x);
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
