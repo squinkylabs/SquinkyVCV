@@ -84,11 +84,9 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
         return;
     }
 
-    const sq::Event* evp = &e;
-    sq::consumeEvent(evp, this);
+    sq::consumeEvent(&e, this);
 
-   // todo: round to int?
-    int v = (int) std::round(SqHelper::getValue(this));
+    unsigned int v = (unsigned int) std::round(SqHelper::getValue(this));
     if (++v >= svgs.size()) {
         v = 0;
 
