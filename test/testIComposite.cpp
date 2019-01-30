@@ -2,6 +2,7 @@
 #include "LFN.h"
 #include "asserts.h"
 #include "FunVCOComposite.h"
+#include "Shaper.h"
 #include "TestComposite.h"
 #include "VocalFilter.h"
 
@@ -38,4 +39,5 @@ void testIComposite()
     test<FunVCOComposite<TestComposite>>();
     test<LFN<TestComposite>>();
     test<VocalFilter<TestComposite>>();
+    test<Shaper<TestComposite>>();
 }

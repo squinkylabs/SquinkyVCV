@@ -1,5 +1,8 @@
 #pragma once
 
+#include "SqUI.h"
+#include "SqHelper.h"
+
 class ToggleButton : public ParamWidget
 {
 public:
@@ -9,8 +12,16 @@ public:
      */
     void addSvg(const char* resourcePath);
 
-    void draw(NVGcontext *vg) override;
+    
+
+#ifdef __V1
+    void onButton(const event::Button &e) override;
+    void draw(const DrawContext& ) override;
+#else
     void onMouseDown(EventMouseDown &e) override;
+    void draw(NVGcontext *vg) override;
+#endif
+    
 private:
     using SvgPtr = std::shared_ptr<SVGWidget>;
     std::vector<SvgPtr> svgs;
@@ -24,46 +35,66 @@ inline ToggleButton::ToggleButton()
 inline void ToggleButton::addSvg(const char* resourcePath)
 {
     auto svg = std::make_shared<SVGWidget>();
-    svg->setSVG(SVG::load(assetPlugin(pluginInstance, resourcePath)));
+    svg->setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, resourcePath)));
     svgs.push_back(svg);
     this->box.size.x = std::max(this->box.size.x, svg->box.size.x);
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
 }
 
+#ifdef __V1
+inline void ToggleButton::draw(const DrawContext& ctx)
+{
+    const float _value = SqHelper::getValue(this);
+    int index = int(std::round(_value));
+    auto svg = svgs[index];
+    svg->draw(ctx);
+}
+#else
 inline void ToggleButton::draw(NVGcontext *vg)
 {
-    int index = int(std::round(value));
+    const float _value = SqHelper::getValue(this);
+    int index = int(std::round(_value));
     auto svg = svgs[index];
     svg->draw(vg);
 }
-
-inline void ToggleButton::onMouseDown(EventMouseDown &e)
-{
-   // printf("mouse down at %.2f,%.2f\n", e.pos.x, e.pos.y);
-
-    e.consumed = false;
-    const int index = int(std::round(value));
-    const Vec pos(e.pos.x, e.pos.y);
-#if 0
-    printf(" -- svg x=%.2f, y=%.2f width=%.2f height = %.2f\n",
-        svgs[index]->box.pos.x, svgs[index]->box.pos.y,
-        svgs[index]->box.size.x, svgs[index]->box.size.y
-    );
-    printf(" -- button x=%.2f, y=%.2f width=%.2f height = %.2f\n",
-        this->box.pos.x, this->box.pos.y,
-        this->box.size.x, this->box.size.y
-    );
-    fflush(stdout);
 #endif
+
+
+
+#ifdef __V1
+inline void ToggleButton::onButton(const event::Button &e)
+#else
+inline void ToggleButton::onMouseDown(EventMouseDown &e)
+#endif
+{
+    #ifdef __V1
+        //only pick the mouse events we care about.
+        // TODO: should our buttons be on release, like normal buttons?
+        if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
+            e.action != GLFW_RELEASE) {
+                return;
+            }
+    #endif
+
+    float _value = SqHelper::getValue(this);
+    const int index = int(std::round(_value));
+    const Vec pos(e.pos.x, e.pos.y);
 
     if (!svgs[index]->box.contains(pos)) {
         return;
     }
-    e.consumed = true;
-    auto v = this->value;
+
+    const sq::Event* evp = &e;
+    sq::consumeEvent(evp, this);
+
+   // todo: round to int?
+    int v = (int) std::round(SqHelper::getValue(this));
     if (++v >= svgs.size()) {
         v = 0;
 
     }
-    setValue(v);
+
+    SqHelper::setValue(this, v);
 }
+
+

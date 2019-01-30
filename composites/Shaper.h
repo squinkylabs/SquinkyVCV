@@ -3,10 +3,20 @@
 
 #include "AsymWaveShaper.h"
 #include "ButterworthFilterDesigner.h"
+#include "IComposite.h"
 #include "IIRUpsampler.h"
 #include "IIRDecimator.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
+
+
+template <class TBase>
+class ShaperDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
 Version 1, cpu usage:
@@ -92,6 +102,13 @@ public:
     {
         NUM_LIGHTS
     };
+
+        /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<ShaperDescription<TBase>>();
+    }
 
     /**
      * Main processing entry point. Called every sample
@@ -278,7 +295,7 @@ void  Shaper<TBase>::step()
     TBase::outputs[OUTPUT_AUDIO].value = output;
 }
 
-#if 1
+
 template <class TBase>
 void  Shaper<TBase>::processBuffer(float* buffer) const
 {
@@ -370,23 +387,52 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
         }
         break;
 
-
-
         default:
             assert(false);
     }
 
 }
-#else
+
 template <class TBase>
-void  Shaper<TBase>::step()
+int ShaperDescription<TBase>::getNumParams()
 {
-    float buffer[oversample];
-    float input = TBase::inputs[INPUT_AUDIO].value;
-
-    up.process(buffer, input);
-
-    const float output = dec.process(buffer);
-    TBase::outputs[OUTPUT_AUDIO].value = output;
+    return Shaper<TBase>::NUM_PARAMS;
 }
-#endif
+
+template <class TBase>
+IComposite::Config ShaperDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+
+    switch (i) {
+        case Shaper<TBase>::PARAM_SHAPE:
+            ret = {0,
+                float(Shaper<TBase>::Shapes::Invalid) - 1,
+                0,
+                "Shape"};
+            break;
+
+        case Shaper<TBase>::PARAM_GAIN:
+            ret = {-5, 5, 0, "Gain"};
+            break;
+        case Shaper<TBase>::PARAM_GAIN_TRIM:
+            ret = {-1, 1, 0, "Gain trim"};
+            break;
+        case Shaper<TBase>::PARAM_OFFSET:
+            ret = {-5, 5, 0, "Offset/Bias"};
+            break;
+        case Shaper<TBase>::PARAM_OFFSET_TRIM:
+            ret = {-1, 1, 0, "Offset trim"};
+            break;
+        case Shaper<TBase>::PARAM_OVERSAMPLE:
+            ret = {0.0f, 2.f, 0, "Oversample"};
+            break;
+        case Shaper<TBase>::PARAM_ACDC:
+            ret = {0.0f, 1.f, 0, "AC/DC"};
+            break;
+        default:
+            assert(false);
+    }
+
+    return ret;
+}

@@ -25,11 +25,17 @@ public:
     {
         return APP->engine->getSampleTime();
     }
-    template <typename T>
 
+    template <typename T>
     static T* createParam(std::shared_ptr<IComposite> dummy, const Vec& pos, Module* module, int paramId )
     {
         return rack::createParam<T>(pos, module, paramId);
+    }
+
+    template <typename T>
+    static T* createParamCentered(std::shared_ptr<IComposite> dummy, const Vec& pos, Module* module, int paramId )
+    {
+        return rack::createParamCentered<T>(pos, module, paramId);
     }
 
     static const NVGcolor COLOR_WHITE;
@@ -42,6 +48,14 @@ public:
             auto param = comp->getParam(i);
             module->params[i].config(param.min, param.max, param.def, param.name);
         }
+    }
+
+    static float getValue(ParamWidget* widget) {
+        return widget->paramQuantity->getValue();
+    }
+
+    static void setValue(ParamWidget* widget, float v) {
+        widget->paramQuantity->setValue(v);
     }
 };
 

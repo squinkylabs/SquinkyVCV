@@ -178,8 +178,9 @@ inline Menu* LFNWidget::createContextMenu()
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
+LFNWidget::LFNWidget(LFNModule *module) : module(module)
 {
+    setModule(module);
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();

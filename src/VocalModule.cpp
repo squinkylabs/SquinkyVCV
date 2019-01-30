@@ -83,8 +83,9 @@ struct NKK2 : SVGSwitch, ToggleSwitch
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
+VocalWidget::VocalWidget(VocalModule *module)
 {
+    setModule(module);
     const float width = 14 * RACK_GRID_WIDTH;
     box.size = Vec(width, RACK_GRID_HEIGHT);
     {

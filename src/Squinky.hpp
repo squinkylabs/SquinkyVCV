@@ -14,6 +14,7 @@
 #define _FUN        // works with 1.0
 #define _LFN
 #define _FORMANTS
+#define _SHAPER
 //#define _CH10
 
 
@@ -24,7 +25,6 @@
     #define _LFN
     #define _COLORS
     #define _GRAY
-    #define _SHAPER
     #define _SUPER
     #define _GROWLER
     #define _FORMANTS
