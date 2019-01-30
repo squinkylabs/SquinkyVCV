@@ -231,16 +231,6 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
     tog->addSvg("res/AC.svg");
     tog->addSvg("res/DC.svg");
     addParam(tog);
-#if 0
-    ToggleButton* tog = ParamWidget::create<ToggleButton>(
-        Vec(125-16, 265 - 13),
-        module,
-        Shaper<WidgetComposite>::PARAM_ACDC,
-        0.0f, 1, 0);
-    tog->addSvg("res/AC.svg");
-    tog->addSvg("res/DC.svg");
-    addParam(tog);
-    #endif
 
     tog = SqHelper::createParam<ToggleButton>(
         icomp,

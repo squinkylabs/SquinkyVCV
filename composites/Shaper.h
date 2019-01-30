@@ -103,7 +103,7 @@ public:
         NUM_LIGHTS
     };
 
-        /** Implement IComposite
+    /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()
     {

@@ -51,11 +51,15 @@ public:
     }
 
     static float getValue(ParamWidget* widget) {
-        return widget->paramQuantity->getValue();
+        return (widget->paramQuantity) ?
+            widget->paramQuantity->getValue() :
+            0;
     }
 
     static void setValue(ParamWidget* widget, float v) {
-        widget->paramQuantity->setValue(v);
+        if (widget->paramQuantity) {
+            widget->paramQuantity->setValue(v);
+        }
     }
 };
 

@@ -2,6 +2,7 @@
 #include "Squinky.hpp"
 
 #ifdef _CHB
+a b
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
@@ -83,7 +84,8 @@ private:
     void addBottomJacks(CHBModule *module);
     void resetMe(CHBModule *module);
     Menu* createContextMenu() override;
-
+    
+    // TODO: stil used?
     // This is the gain which when run throught all the lookup tables
     // gives a gain of 1.
     const float defaultGainParam = .63108f;

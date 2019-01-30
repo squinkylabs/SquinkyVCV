@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "AudioMath.h"
+#include "IComposite.h"
 #include "LookupTableFactory.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
@@ -24,6 +25,14 @@ namespace std {
 #endif
 
 
+
+template <class TBase>
+class CHBDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
  * Composite for Chebyshev module.
@@ -116,6 +125,12 @@ public:
         GAIN_RED_LIGHT,
         NUM_LIGHTS
     };
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<CHBDescription<TBase>>();
+    }
 
     /**
      * Main processing entry point. Called every sample
@@ -423,29 +438,105 @@ inline void CHB<TBase>::step()
     float output = poly.run(input, std::min(finalGain, 1.f));
     TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
 }
-#if 0 // this is 1.0 version. No lag
+
+
 template <class TBase>
-inline void CHB<TBase>::step()
+int CHBDescription<TBase>::getNumParams()
 {
-
-    if (--cycleCount < 0) {
-        cycleCount = 3;
-    }
-
-    // do all the processing to get the carrier signal
-    const float input = getInput();
-
-    if (cycleCount == 0) {
-        calcVolumes(_volume);
-
-        for (int i = 0; i < polyOrder; ++i) {
-            poly.setGain(i, _volume[i]);
-        }
-    }
-
-
-    float output = poly.run(input, std::min(finalGain, 1.f));
-    TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
+    return CHB<TBase>::NUM_PARAMS;
 }
-#endif
+
+template <class TBase>
+inline IComposite::Config CHBDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    const float defaultGainParam = .63108f;
+
+    switch (i) {
+        case CHB<TBase>::PARAM_TUNE:
+            ret = {-1.0f, 1.0f, 0, "Fine Tune"};
+            break;
+        case CHB<TBase>::PARAM_OCTAVE:
+            ret = {-5.0f, 4.0f, 0.f, "Octave"};
+            break;
+        case CHB<TBase>::PARAM_EXTGAIN:
+            ret = {-5.0f, 5.0f, defaultGainParam, "External Gain"};
+            break;
+        case CHB<TBase>::PARAM_PITCH_MOD_TRIM:
+            ret = {0, 1.0f, 0.0f, "Pitch mod trim"};
+            break;
+        case CHB<TBase>::PARAM_LINEAR_FM_TRIM:
+            ret = {0, 1.0f, 0.0f, "Linear FM trim"};
+            break;
+        case CHB<TBase>::PARAM_EXTGAIN_TRIM:
+            ret = {-1, 1, 0, "External gain trim"};
+            break;
+        case CHB<TBase>::PARAM_FOLD:
+            ret = {0.0f, 1.0f, 0.0f, "Fold/Clip"};
+            break;
+        case CHB<TBase>::PARAM_SLOPE:
+            ret = {-5, 5, 5, "Harmonic slope"};
+            break;
+        case CHB<TBase>::PARAM_MAG_EVEN:
+            ret = {-5, 5, 5, "Even harmonic volume"};
+            break;
+        case CHB<TBase>::PARAM_MAG_ODD:
+            ret = {-5, 5, 5, "Odd harmonic volume"};
+            break;
+        case CHB<TBase>::PARAM_H0:
+            ret = {0.0f, 1.0f, 1, "Fundamental level"};
+            break;
+        case CHB<TBase>::PARAM_H1:
+            ret = {0.0f, 1.0f, 0, "Harmonic 1 level"};
+            break;
+        case CHB<TBase>::PARAM_H2:
+            ret = {0.0f, 1.0f, 0, "Harmonic 2 level"};
+            break;
+        case CHB<TBase>::PARAM_H3:
+            ret = {0.0f, 1.0f, 0, "Harmonic 3 level"};
+            break;
+        case CHB<TBase>::PARAM_H4:
+            ret = {0.0f, 1.0f, 0, "Harmonic 4 level"};
+            break;
+        case CHB<TBase>::PARAM_H5:
+            ret = {0.0f, 1.0f, 0, "Harmonic 5 level"};
+            break;
+        case CHB<TBase>::PARAM_H6:
+            ret = {0.0f, 1.0f, 0, "Harmonic 6 level"};
+            break;
+        case CHB<TBase>::PARAM_H7:
+            ret = {0.0f, 1.0f, 0, "Harmonic 7 level"};
+            break;
+        case CHB<TBase>::PARAM_H8:
+            ret = {0.0f, 1.0f, 0, "Harmonic 8 level"};
+            break;
+        case CHB<TBase>::PARAM_H9:       // up to here is Ver 1.0
+            ret = {0.0f, 1.0f, 0, "Harmonic 9 level"};
+            break;
+        case CHB<TBase>::PARAM_EXPAND:
+            ret = {0, 1, 0, "unused"};
+            break;
+        case CHB<TBase>::PARAM_RISE:
+            ret = {-5.f, 5.f, 0.f, "Rise time (harmonic volume CV)"};
+            break;
+        case CHB<TBase>::PARAM_FALL:
+            ret = {-5.f, 5.f, 0.f, "Fall time (harmonic volume CV)"};
+            break;
+        case CHB<TBase>::PARAM_EVEN_TRIM:
+            ret = {-1.0f, 1.0f, 0, "Even Harmonic CV trim"};
+            break;
+        case CHB<TBase>::PARAM_ODD_TRIM:
+            ret = {-1.0f, 1.0f, 0, "Odd Harmonic CV trim"};
+            break;
+        case CHB<TBase>::PARAM_SLOPE_TRIM:
+            ret = {-1.0f, 1.0f, 0, "Harmonic slope CV trim"};
+            break;
+        case CHB<TBase>::PARAM_SEMIS:
+            ret = {-11.0f, 11.0f, 0.f, "Semitone offset"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+ }
 

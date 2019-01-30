@@ -1,6 +1,7 @@
 
 #include "LFN.h"
 #include "asserts.h"
+#include "CHB.h"
 #include "FunVCOComposite.h"
 #include "Shaper.h"
 #include "TestComposite.h"
@@ -40,4 +41,5 @@ void testIComposite()
     test<LFN<TestComposite>>();
     test<VocalFilter<TestComposite>>();
     test<Shaper<TestComposite>>();
+    test<CHB<TestComposite>>();
 }
