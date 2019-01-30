@@ -103,6 +103,29 @@ public:
            paramId,
            data.min, data.max, data.def
        );
-   }
+    }
+
+    template <typename T>
+    static T* createParamCentered(std::shared_ptr<IComposite> composite, const Vec& pos, Module* module, int paramId )
+    {
+        const auto data = composite->getParam(paramId);
+        assert(data.min < data.max);
+        assert(data.def >= data.min);
+        assert(data.def <= data.max);
+        return rack::createParamCentered<T>(
+            pos,
+            module, 
+            paramId,
+            data.min, data.max, data.def
+        );
+    }
+
+    static float getValue(ParamWidget* widget) {
+        return widget->value;
+    }
+
+    static void setValue(ParamWidget* widget, float v) {
+        widget->setValue(v);
+    }
 };
 #endif
