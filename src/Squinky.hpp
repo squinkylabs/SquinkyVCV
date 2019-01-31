@@ -15,7 +15,7 @@
 #define _LFN
 #define _FORMANTS
 #define _SHAPER
-//#define _CHB
+#define _CHB
 //#define _CH10
 
 

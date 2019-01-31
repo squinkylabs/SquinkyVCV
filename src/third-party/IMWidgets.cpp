@@ -95,7 +95,7 @@ void DynamicSVGScrew::step() { // all code except middle if() from SVGPanel::ste
     }
 	FramebufferWidget::step();
 }
-
+#endif
 
 
 // Dynamic SVGPanel
@@ -116,6 +116,8 @@ void PanelBorderWidget::draw(NVGcontext *vg) {  // carbon copy from SVGPanel.cpp
 		nvgStroke(vg);
 	}
 }
+
+#ifndef __V1
 
 DynamicSVGPanel::DynamicSVGPanel() {
     mode = nullptr;

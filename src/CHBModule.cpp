@@ -2,7 +2,7 @@
 #include "Squinky.hpp"
 
 #ifdef _CHB
-a b
+#include "IComposite.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
@@ -10,6 +10,8 @@ a b
 
 #include "CHB.h"
 #include "IMWidgets.hpp"
+
+using Comp = CHB<WidgetComposite>;
 
 /**
  */
@@ -28,6 +30,14 @@ public:
 private:
 };
 
+#ifdef __V1
+CHBModule::CHBModule() : chb(this)
+{
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+}
+#else
 CHBModule::CHBModule()
     : Module(chb.NUM_PARAMS,
     chb.NUM_INPUTS,
@@ -36,6 +46,7 @@ CHBModule::CHBModule()
     chb(this)
 {
 }
+#endif
 
 void CHBModule::step()
 {
@@ -59,7 +70,7 @@ struct CHBWidget : ModuleWidget
     /**
      * Helper to add a text label to this widget
      */
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -75,15 +86,19 @@ struct CHBWidget : ModuleWidget
         semitoneDisplay.step();
     }
 private:
-    void addHarmonics(CHBModule *module);
-    void addRow1(CHBModule *module);
-    void addRow2(CHBModule *module);
-    void addRow3(CHBModule *module);
-    void addRow4(CHBModule *module);
+    void addHarmonics(CHBModule *module,  std::shared_ptr<IComposite>);
+    void addRow1(CHBModule *module, std::shared_ptr<IComposite>);
+    void addRow2(CHBModule *module, std::shared_ptr<IComposite>);
+    void addRow3(CHBModule *module, std::shared_ptr<IComposite>);
+    void addRow4(CHBModule *module, std::shared_ptr<IComposite>);
 
     void addBottomJacks(CHBModule *module);
     void resetMe(CHBModule *module);
+#ifdef __V1
+    void appendContextMenu(Menu *menu) override;
+#else
     Menu* createContextMenu() override;
+#endif
     
     // TODO: stil used?
     // This is the gain which when run throught all the lookup tables
@@ -99,6 +114,14 @@ private:
     SemitoneDisplay semitoneDisplay;
 };
 
+#ifdef __V1
+inline void CHBWidget::appendContextMenu(Menu *menu) 
+{
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
+    menu->addChild(manual);
+}
+#else
 inline Menu* CHBWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -107,6 +130,7 @@ inline Menu* CHBWidget::createContextMenu()
     theMenu->addChild(manual);
     return theMenu;
 }
+#endif
 
 
 /**
@@ -134,7 +158,7 @@ const float row6 = 332;
 const float labelAboveKnob = 33;
 const float labelAboveJack = 30;
 
-inline void CHBWidget::addHarmonics(CHBModule *module)
+inline void CHBWidget::addHarmonics(CHBModule *module, std::shared_ptr<IComposite> icomp)
 {
     for (int i = 0; i < numHarmonics; ++i) {
         const float row = rowFirstHarmonicJackY + i * harmonicJackSpacing;
@@ -144,83 +168,83 @@ inline void CHBWidget::addHarmonics(CHBModule *module)
             module->chb.H0_INPUT + i));
 
         const float defaultValue = (i == 0) ? 1 : 0;
-        auto p = createParamCentered<Trimpot>(
+        auto p = SqHelper::createParamCentered<Trimpot>(
+            icomp,
             Vec(colHarmonicsJacks + harmonicTrimDeltax, row),
             module,
-            module->chb.PARAM_H0 + i,
-            0.0f, 1.0f, defaultValue);
+            Comp::PARAM_H0 + i);
         addParam(p);
         harmonicParams.push_back(p);
     }
 }
 
-void CHBWidget::addRow1(CHBModule *module)
+void CHBWidget::addRow1(CHBModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float row = row1;
 
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col1, row),
         module,
-        CHB<WidgetComposite>::PARAM_RISE,
-        -5.f, 5.f, 0.f));
+        CHB<WidgetComposite>::PARAM_RISE));
     addLabel(Vec(col1 - 20, row - labelAboveKnob), "Rise");
 
-    addParam(createParamCentered<Blue30SnapKnob>(
+    addParam(SqHelper::createParamCentered<Blue30SnapKnob>(
+        icomp,
         Vec(col2, row),
         module,
-        CHB<WidgetComposite>::PARAM_OCTAVE,
-        -5.0f, 4.0f, 0.f));
+        CHB<WidgetComposite>::PARAM_OCTAVE));
     semitoneDisplay.setOctLabel(
         addLabel(Vec(col2 - 22, row1 - labelAboveKnob), "Octave"),
         CHB<WidgetComposite>::PARAM_OCTAVE);
 
-    addParam(createParamCentered<Blue30SnapKnob>(
+    addParam(SqHelper::createParamCentered<Blue30SnapKnob>(
+        icomp,
         Vec(col3, row),
         module,
-        CHB<WidgetComposite>::PARAM_SEMIS,
-        -11.0f, 11.0f, 0.f));
+        CHB<WidgetComposite>::PARAM_SEMIS));
     semitoneDisplay.setSemiLabel(
         addLabel(Vec(col3 - 26, row - labelAboveKnob), "Semi"),
         CHB<WidgetComposite>::PARAM_SEMIS);
 
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col4, row1),
         module,
-        CHB<WidgetComposite>::PARAM_TUNE,
-        -1.0f, 1.0f, 0));
+        CHB<WidgetComposite>::PARAM_TUNE));
     addLabel(Vec(col4 - 22, row1 - labelAboveKnob), "Tune");
 }
 
-void CHBWidget::addRow2(CHBModule *module)
+void CHBWidget::addRow2(CHBModule *module,  std::shared_ptr<IComposite> icomp)
 {
     const float row = row2;
 
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col1, row),
         module,
-        CHB<WidgetComposite>::PARAM_FALL,
-        -5.f, 5.f, 0.f));
+        CHB<WidgetComposite>::PARAM_FALL));
     addLabel(Vec(col1 - 18, row - labelAboveKnob), "Fall");
 
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col3, row),
         module,
-        CHB<WidgetComposite>::PARAM_PITCH_MOD_TRIM,
-        0, 1.0f, 0.0f));
+        CHB<WidgetComposite>::PARAM_PITCH_MOD_TRIM));
     addLabel(Vec(col3 - 20, row - labelAboveKnob), "Mod");
 
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col4, row),
         module,
-        CHB<WidgetComposite>::PARAM_LINEAR_FM_TRIM,
-        0, 1.0f, 0.0f));
+        CHB<WidgetComposite>::PARAM_LINEAR_FM_TRIM));
     addLabel(Vec(col4 - 20, row - labelAboveKnob), "LFM");
 
-    addParam(createParamCentered<CKSS>(
+    addParam(SqHelper::createParamCentered<CKSS>(
+        icomp,
         Vec(col2, row),
         module,
-        CHB<WidgetComposite>::PARAM_FOLD,
-        0.0f, 1.0f, 0.0f));
+        CHB<WidgetComposite>::PARAM_FOLD));
     auto l = addLabel(Vec(col2 - 18, row - 30), "Fold");
     l->fontSize = 11;
     l = addLabel(Vec(col2 - 17, row + 10), "Clip");
@@ -232,71 +256,71 @@ void CHBWidget::addRow2(CHBModule *module)
         CHB<WidgetComposite>::GAIN_GREEN_LIGHT));
 }
 
-void CHBWidget::addRow3(CHBModule *module)
+void CHBWidget::addRow3(CHBModule *module,  std::shared_ptr<IComposite> icomp)
 {
     const float row = row3;
 
-    gainParam = createParamCentered<Blue30Knob>(
+    gainParam = SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col1, row),
         module,
-        CHB<WidgetComposite>::PARAM_EXTGAIN,
-        -5.0f, 5.0f, defaultGainParam);
+        CHB<WidgetComposite>::PARAM_EXTGAIN);
     addParam(gainParam);
     addLabel(Vec(col1 - 21, row - labelAboveKnob), "Gain");
 
     //even
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col2, row),
         module,
-        CHB<WidgetComposite>::PARAM_MAG_EVEN,
-        -5, 5, 5));
+        CHB<WidgetComposite>::PARAM_MAG_EVEN));
     addLabel(Vec(col2 - 21.5, row - labelAboveKnob), "Even");
 
     // slope
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col3, row),
         module,
-        CHB<WidgetComposite>::PARAM_SLOPE,
-        -5, 5, 5));
+        CHB<WidgetComposite>::PARAM_SLOPE));
     addLabel(Vec(col3 - 23, row - labelAboveKnob), "Slope");
 
     //odd
-    addParam(createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
         Vec(col4, row),
         module,
-        CHB<WidgetComposite>::PARAM_MAG_ODD,
-        -5, 5, 5));
+        CHB<WidgetComposite>::PARAM_MAG_ODD));
     addLabel(Vec(col4 - 19, row - labelAboveKnob), "Odd");
 
 }
 
-void CHBWidget::addRow4(CHBModule *module)
+void CHBWidget::addRow4(CHBModule *module,  std::shared_ptr<IComposite> icomp)
 {
     float row = row4;
 
-    addParam(createParamCentered<Trimpot>(
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
         Vec(col1, row),
         module,
-        CHB<WidgetComposite>::PARAM_EXTGAIN_TRIM,
-        -1, 1, 0));
+        CHB<WidgetComposite>::PARAM_EXTGAIN_TRIM));
 
-    addParam(createParamCentered<Trimpot>(
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
         Vec(col2, row),
         module,
-        CHB<WidgetComposite>::PARAM_EVEN_TRIM,
-        -1.0f, 1.0f, 0));
+        CHB<WidgetComposite>::PARAM_EVEN_TRIM));
 
-    addParam(createParamCentered<Trimpot>(
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
         Vec(col3, row),
         module,
-        CHB<WidgetComposite>::PARAM_SLOPE_TRIM,
-        -1.0f, 1.0f, 0));
+        CHB<WidgetComposite>::PARAM_SLOPE_TRIM));
 
-    addParam(createParamCentered<Trimpot>(
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
         Vec(col4, row),
         module,
-        CHB<WidgetComposite>::PARAM_ODD_TRIM,
-        -1.0f, 1.0f, 0));
+        CHB<WidgetComposite>::PARAM_ODD_TRIM));
 }
 
 static const char* labels[] = {
@@ -357,9 +381,9 @@ void CHBWidget::addBottomJacks(CHBModule *module)
                 jackRow == 0 ? row5 : row6);
             const int index = jackCol + numCol * jackRow;
 
-            auto color = COLOR_BLACK;
+            auto color = SqHelper::COLOR_BLACK;
             if (index == 11) {
-                color = COLOR_WHITE;
+                color = SqHelper::COLOR_WHITE;
             }
 
             const int id = ids[index];
@@ -388,14 +412,15 @@ void CHBWidget::resetMe(CHBModule *module)
     bool isOnlyFundamental = true;
     bool isAll = true;
     bool havePreset = !harmonicParamMemory.empty();
-    const float val0 = harmonicParams[0]->value;
+//    const float val0 = harmonicParams[0]->value;
+    const float val0 = SqHelper::getValue(harmonicParams[0]);
     if (val0 < .99) {
         isOnlyFundamental = false;
         isAll = false;
     }
 
     for (int i = 1; i < numHarmonics; ++i) {
-        const float value = harmonicParams[i]->value;
+        const float value = SqHelper::getValue(harmonicParams[i]);
         if (value < .9) {
             isAll = false;
         }
@@ -411,30 +436,31 @@ void CHBWidget::resetMe(CHBModule *module)
             harmonicParamMemory.resize(numHarmonics);
         }
         for (int i = 0; i < numHarmonics; ++i) {
-            harmonicParamMemory[i] = harmonicParams[i]->value;
+            harmonicParamMemory[i] = SqHelper::getValue(harmonicParams[i]);
         }
     }
 
     // fundamental -> all
     if (isOnlyFundamental) {
         for (int i = 0; i < numHarmonics; ++i) {
-            harmonicParams[i]->setValue(1);
+            //harmonicParams[i]->setValue(1);
+            SqHelper::setValue(harmonicParams[i], 1.f);
         }
     }
     // all -> preset, if any
     else if (isAll && havePreset) {
         for (int i = 0; i < numHarmonics; ++i) {
-            harmonicParams[i]->setValue(harmonicParamMemory[i]);
+            SqHelper::setValue(harmonicParams[i], harmonicParamMemory[i]);
         }
     }
     // preset -> fund. if no preset all -> fund
     else {
         for (int i = 0; i < numHarmonics; ++i) {
-            harmonicParams[i]->setValue((i == 0) ? 1 : 0);
+            SqHelper::setValue(harmonicParams[i], (i == 0) ? 1 : 0);
         }
     }
 
-    gainParam->setValue(defaultGainParam);
+    SqHelper::setValue(gainParam, defaultGainParam);
 }
 
 /**
@@ -448,11 +474,12 @@ CHBWidget::CHBWidget(CHBModule *module) :
     module(module),
     semitoneDisplay(module)
 {
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/chb_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/chb_panel.svg")));
         addChild(panel);
 
         auto border = new PanelBorderWidget();
@@ -460,11 +487,11 @@ CHBWidget::CHBWidget(CHBModule *module) :
         addChild(border);
     }
 
-    addHarmonics(module);
-    addRow1(module);
-    addRow2(module);
-    addRow3(module);
-    addRow4(module);
+    addHarmonics(module, icomp);
+    addRow1(module, icomp);
+    addRow2(module, icomp);
+    addRow3(module, icomp);
+    addRow4(module, icomp);
 
     auto sw = new SQPush(
         "res/preset-button-up.svg",
@@ -479,15 +506,20 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addBottomJacks(module);
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+#ifdef __V1
+Model *modelCHBModule = createModel<CHBModule, CHBWidget>(
+    "cheby");
+#else
 Model *modelCHBModule = Model::create<CHBModule,
     CHBWidget>("Squinky Labs",
     "squinkylabs-CHB2",
     "Chebyshev II: Waveshaper VCO", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
+#endif
 
 #endif

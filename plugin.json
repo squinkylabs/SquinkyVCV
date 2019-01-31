@@ -23,6 +23,16 @@
 			"name": "growler",
 			"description": "Formants: Vocal Filter",
 			"tags":  ["EFFECT", "FILTER"]
+		},
+		"cheby": {
+			"name": "cheby",
+			"description": "Chebyshev II: Waveshaper VCO",
+			"tags": ["VCO"]
+		},
+		"shaper": {
+			"name": "shaper",
+			"description": "Shaper: Precision Wave Shaper",
+			"tags": ["EFFECT", "OSCILLATOR", "WAVESHAPER"]
 		}
 	}
 }
