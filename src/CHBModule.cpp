@@ -105,7 +105,7 @@ private:
     // gives a gain of 1.
     const float defaultGainParam = .63108f;
 
-    const int numHarmonics;
+    int numHarmonics = 10;
     CHBModule* const module;
     std::vector<ParamWidget* > harmonicParams;
     std::vector<float> harmonicParamMemory;
@@ -167,7 +167,7 @@ inline void CHBWidget::addHarmonics(CHBModule *module, std::shared_ptr<IComposit
             module,
             module->chb.H0_INPUT + i));
 
-        const float defaultValue = (i == 0) ? 1 : 0;
+       // const float defaultValue = (i == 0) ? 1 : 0;
         auto p = SqHelper::createParamCentered<Trimpot>(
             icomp,
             Vec(colHarmonicsJacks + harmonicTrimDeltax, row),
@@ -468,12 +468,25 @@ void CHBWidget::resetMe(CHBModule *module)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+CHBWidget::CHBWidget(CHBModule *module) :
+  //  numHarmonics(module->chb.numHarmonics),
+    module(module),
+    semitoneDisplay(module)
+{
+    printf("entering ctor of chb\n"); fflush(stdout);
+    if (module) {
+        numHarmonics = module->chb.numHarmonics;
+    }
+    setModule(module);
+#else
 CHBWidget::CHBWidget(CHBModule *module) :
     ModuleWidget(module),
     numHarmonics(module->chb.numHarmonics),
     module(module),
     semitoneDisplay(module)
 {
+#endif
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
