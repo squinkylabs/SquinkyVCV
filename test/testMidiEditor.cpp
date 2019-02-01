@@ -47,7 +47,7 @@ static bool cursorOnSelection(MidiSequencerPtr seq)
 }
 
 // from a null selection, select next
-static void test1()
+static void testNext1()
 {
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
@@ -60,7 +60,7 @@ static void test1()
 }
 
 // from a null selection, select previous. should select last note
-static void test1b()
+static void testNext1b()
 {
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectPrevNote();
@@ -78,7 +78,7 @@ static void test1b()
 }
 
 // from a non-null selection, select next
-static void test2()
+static void testNext2()
 {
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
@@ -98,7 +98,7 @@ static void test2()
 }
 
 // from a non-null selection, select previous
-static void test2b()
+static void testNext2b()
 {
     MidiSequencerPtr seq = makeTest();
 
@@ -123,7 +123,7 @@ static void test2b()
 }
 
 // from a null selection, select next in null track
-static void test3()
+static void testNext3()
 {
     MidiSequencerPtr seq = makeTest(true);
     seq->editor->selectNextNote();
@@ -132,7 +132,7 @@ static void test3()
 }
 
 // from a null selection, select previous in null track
-static void test3b()
+static void testNext3b()
 {
     MidiSequencerPtr seq = makeTest(true);
     seq->editor->selectPrevNote();
@@ -141,7 +141,7 @@ static void test3b()
 }
 
 // select one after another until end
-static void test4()
+static void testNext4()
 {
     MidiSequencerPtr seq = makeTest();
     int notes = 0;
@@ -154,6 +154,30 @@ static void test4()
         }
     }
     assertEQ(notes, 8);
+}
+
+// select next that off way out of viewport
+static void testNext5()
+{
+    MidiSequencerPtr seq = makeTest();
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);
+    seq->editor->changePitch(50);
+    seq->editor->changeStartTime(false, 50);
+    assertEQ(seq->selection->size(), 1);
+    seq->assertValid();
+    seq->editor->assertCursorInSelection();
+
+    seq->editor->selectPrevNote();
+    assertEQ(seq->selection->size(), 1);
+    seq->assertValid();
+    seq->editor->assertCursorInSelection();
+
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);
+    seq->assertValid();
+    seq->editor->assertCursorInSelection();
+
 }
 
 static void testPrev1()
@@ -223,8 +247,6 @@ static void testShiftTime1()
     seq->assertValid();
     seq->editor->assertCursorInSelection();
 }
-
-
 
 static void testShiftTimex(int units)
 {
@@ -471,14 +493,15 @@ static void testDelete()
 
 void testMidiEditor()
 {
-    test1();
-    test1b();
-    test2();
-    test2b();
-    test3();
-    test3b();
+    testNext1();
+    testNext1b();
+    testNext2();
+    testNext2b();
+    testNext3();
+    testNext3b();
     testPrev1();
-    test4();
+    testNext4();
+    testNext5();
 
     testTrans1();
     testShiftTime1();

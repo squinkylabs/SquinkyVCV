@@ -154,6 +154,7 @@ void MidiEditor::selectNextNote()
         selectNextNoteOrCurrent(track, it, selection);
     }
     updateCursor();
+    adjustViewportForCursor();
 }
 
 void MidiEditor::updateCursor()
@@ -207,6 +208,7 @@ void MidiEditor::selectPrevNote()
         selectPrevNoteOrCurrent(track, it, selection);
     }
     updateCursor();
+    adjustViewportForCursor();
 }
 
 void MidiEditor::changePitch(int semitones)
