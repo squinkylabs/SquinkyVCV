@@ -225,13 +225,29 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
 {
     assert(!ticks);         // not implemented yet
     assert(amount != 0);
-
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+
+    MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(selection->getLast());
+    float lastTime = lastNote->startTime + lastNote->duration;
+    lastTime += advanceAmount;
+    extendTrackToMinDuration(lastTime);
+
+    bool setCursor = false;
+    MidiTrackPtr track = song->getTrack(0);
+   
     for (auto ev : *selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
+        track->deleteEvent(*note);
         note->startTime += advanceAmount;
         note->startTime = std::max(0.f, note->startTime);
+        track->insertEvent(note);
+        if (!setCursor) {
+            context->cursorTime = note->startTime;
+            setCursor = true;
+        }
     }
+    adjustViewportForCursor();
+    assert(cursorInViewport());
 }
 
 void MidiEditor::changeDuration(bool ticks, int amount)
@@ -247,6 +263,18 @@ void MidiEditor::changeDuration(bool ticks, int amount)
         // arbitrary min limit.
         note->duration = std::max(.001f, note->duration);
     }
+}
+
+void MidiEditor::assertCursorInSelection()
+{
+    bool foundIt = false;
+    assert(!selection->empty());
+    for (auto it : *selection) {
+        if (context->cursorTime == it->startTime) {
+            foundIt = true;
+        }
+    }
+    assert(foundIt);
 }
 
 bool MidiEditor::cursorInViewport() const
@@ -323,12 +351,32 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     assert(cursorInViewport());
 }
 
-void MidiEditor::insertNote()
+void MidiEditor::extendTrackToMinDuration(float neededLength)
 {
     auto track = song->getTrack(0);
     float curLength = track->getLength();
 
-      // for now, fixed to quarter
+    if (neededLength > curLength) {
+        float need = neededLength;
+        float needBars = need / 4.f;
+        float roundedBars = std::round(needBars + 1.f);
+        float duration = roundedBars * 4;
+        std::shared_ptr<MidiEndEvent> end = track->getEndEvent();
+        track->deleteEvent(*end);
+       // end->startTime = duration;
+        track->insertEnd(duration);
+    }
+}
+
+void MidiEditor::insertNote()
+{
+     // for now, fixed to quarter
+    extendTrackToMinDuration(context->cursorTime + 1.f);
+#if 0
+    auto track = song->getTrack(0);
+    float curLength = track->getLength();
+
+     
     float neededLength = context->cursorTime + 1.f;
     if (neededLength > curLength) {
         float need = neededLength;
@@ -340,7 +388,9 @@ void MidiEditor::insertNote()
        // end->startTime = duration;
         track->insertEnd(duration);
     }
+#endif
 
+    auto track = song->getTrack(0);
     // for now, assume no note there
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->pitchCV = context->cursorPitch;

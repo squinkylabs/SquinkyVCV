@@ -40,6 +40,8 @@ public:
     /*************                                   ***************/
     // Editing start time / duration / pitch
     void setNoteEditorAttribute(MidiEditorContext::NoteAttribute);
+
+    void assertCursorInSelection();
 private:
     /**
      * The selection model we will act on
@@ -59,6 +61,8 @@ private:
     bool cursorInViewport() const;
     bool cursorInViewportTime() const;
     void adjustViewportForCursor();
+    void extendTrackToMinDuration(float time);
+   
 
 
 };

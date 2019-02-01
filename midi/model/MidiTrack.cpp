@@ -84,9 +84,10 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
 void MidiTrack::_dump() const
 {
     const_iterator it;
-    for (it = events.cbegin(); it != events.cend(); ++it ) {
-        float ti = it->first;
-        std::shared_ptr<const MidiEvent> evt = it->second;
+ //   for (it = events.cbegin(); it != events.cend(); ++it ) {
+    for (auto it : events) {
+        float ti = it.first;
+        std::shared_ptr<const MidiEvent> evt = it.second;
         std::string type = "Note";
         switch (evt->type) {
             case MidiEvent::Type::End:

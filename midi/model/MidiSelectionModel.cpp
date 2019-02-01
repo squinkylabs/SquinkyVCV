@@ -46,6 +46,29 @@ bool MidiSelectionModel::isSelected(MidiEventPtr evt) const
     return it != selection.end();
 }
 
+MidiEventPtr MidiSelectionModel::getLast()
+{
+    MidiEventPtr ret;
+    float lastTime = 0;
+    for (auto it : selection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
+        if (note) {
+            float noteEnd = note->startTime + note->duration;
+            if (noteEnd > lastTime) {
+                ret = note;
+                lastTime = noteEnd;
+            }
+        } else {
+            float end = it->startTime;
+            if (end > lastTime) {
+                ret = it;
+                lastTime = end;
+            }
+        }
+    }
+    return ret;
+}
+
 #if 0
 MidiSelectionModel::iterator_pair MidiSelectionModel::get() const
 {

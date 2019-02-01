@@ -39,6 +39,8 @@ public:
         return selection.empty();
     }
 
+    std::shared_ptr<MidiEvent> getLast();
+
     bool isSelected(std::shared_ptr<MidiEvent>) const;
 private:
 

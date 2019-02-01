@@ -152,7 +152,6 @@ static void test4()
         } else {
             ++notes;
         }
-
     }
     assertEQ(notes, 8);
 }
@@ -162,6 +161,7 @@ static void testPrev1()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
     assert(!seq->selection->empty());
+    seq->editor->assertCursorInSelection();
 
     seq->editor->selectPrevNote();
     assert(seq->selection->empty());
@@ -186,6 +186,7 @@ static void testTrans1()
     const float transposedPitch = PitchUtils::pitchToCV(3, 1);
     assertClose(seq->context->cursorPitch, transposedPitch, .0001);
     seq->assertValid();
+    seq->editor->assertCursorInSelection();
 }
 
 static void testTrans3()
@@ -201,6 +202,7 @@ static void testTrans3()
     const float p0 = firstNote->pitchCV;
     seq->editor->changePitch(50);       // transpose off screen
     seq->assertValid();
+    seq->editor->assertCursorInSelection();
 }
 
 static void testShiftTime1()
@@ -219,8 +221,37 @@ static void testShiftTime1()
     const float s2 = firstNote->startTime;
     assertEQ(s2, 0);
     seq->assertValid();
+    seq->editor->assertCursorInSelection();
 }
 
+
+
+static void testShiftTimex(int units)
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+    const float s0 = firstNote->startTime;
+    seq->editor->changeStartTime(false, units);     // delay n units
+    seq->song->getTrack(0)->_dump();
+    seq->assertValid();
+   
+    assertEQ(seq->selection->size(), 1);
+    seq->editor->assertCursorInSelection();
+}
+
+static void testShiftTime2()
+{
+    testShiftTimex(20);
+}
+
+
+static void testShiftTime3()
+{
+    testShiftTimex(50);
+}
 
 static void testChangeDuration1()
 {
@@ -451,6 +482,8 @@ void testMidiEditor()
 
     testTrans1();
     testShiftTime1();
+    testShiftTime2();
+    testShiftTime3();
     testChangeDuration1();
 
     testTrans2();
