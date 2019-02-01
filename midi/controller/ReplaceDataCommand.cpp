@@ -19,10 +19,13 @@ void ReplaceDataCommand::execute()
     MidiTrackPtr mt = song->getTrack(trackNumber);
     assert(mt);
 
-    for (auto it = addData.begin(); it < addData.end(); ++it) {
-        mt->insertEvent(*it);
+    for (auto it : addData) {
+        mt->insertEvent(it);
     }
-    assert(removeData.empty()); // not imp yet
+
+    for (auto it : removeData) {
+        mt->deleteEvent(*it);
+    }
 }
 
 void ReplaceDataCommand::undo()
@@ -31,8 +34,10 @@ void ReplaceDataCommand::undo()
     assert(mt);
 
     // to undo the insertion, delete all of them
-    for (auto it = addData.begin(); it < addData.end(); ++it) {
-        mt->deleteEvent(**it);
+    for (auto it : addData) {
+        mt->deleteEvent(*it);
     }
-    assert(removeData.empty());
+    for (auto it : removeData) {
+        mt->insertEvent(it);
+    }
 }

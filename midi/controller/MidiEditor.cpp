@@ -374,6 +374,7 @@ void MidiEditor::changeCursorPitch(int semitones)
     pitch = std::max(pitch, -5.f);
     pitch = std::min(pitch, 5.f);
     context->cursorPitch = pitch;
+    context->scrollViewportToCursorPitch();
     updateSelectionForCursor();
 }
 

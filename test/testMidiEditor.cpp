@@ -306,6 +306,27 @@ static void testCursor4()
     assertEQ(seq->context->viewport->startTime, 0);
 }
 
+
+// move up to scroll viewport
+static void testCursor4b()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();
+
+    // Select first note to put cursor in it
+    assertEQ(seq->context->cursorTime, 0);
+    MidiNoteEvent note;
+    note.setPitch(3, 0);
+    assertEQ(seq->context->cursorPitch, note.pitchCV);
+
+    // Now advance up 3 octaves
+    seq->editor->changeCursorPitch(3 * 12);
+
+    assert(seq->selection->empty());
+    seq->assertValid();
+}
+
+
 // just past end of note
 static void testCursor5()
 {
@@ -422,6 +443,7 @@ void testMidiEditor()
     testCursor2();
     testCursor3();
     testCursor4();
+    testCursor4b();
     testCursor5();
     testCursor6();
 

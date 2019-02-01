@@ -32,7 +32,6 @@ static void test1()
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
 
-   // MidiEventPtr newEvent =  std::make_shared<MidiEvent>();
     MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
     assert(newNote);
     newNote->pitchCV = 12;
@@ -50,14 +49,18 @@ static void test1()
     ur->undo();
     assert(ms->getTrack(0)->size() == 0);     // we added an event
     assert(!ur->canUndo());
+    assert(ur->canRedo());
+    ur->redo();
+    assert(ms->getTrack(0)->size() == 1);
+
 }
 
 
 // Test simple remove note command
 static void test2()
 {
+
     UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
-  //  MidiSongPtr ms(std::make_shared<MidiSong>());
     MidiSongPtr ms = MidiSong::makeTest1();
 
 
@@ -67,27 +70,19 @@ static void test2()
     MidiTrackPtr track = ms->getTrack(0);
     const int origSize = track->size();
     MidiEventPtr noteToDelete = track->begin()->second;
-   // MidiEventPtr newEvent =  std::make_shared<MidiEvent>();
- //   MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
     assert(noteToDelete);
     toRem.push_back(noteToDelete);
     
-  //  newNote->pitchCV = 12;
-   // toAdd.push_back(newNote);
-
     CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, 0, toRem, toAdd);
     ur->execute(cmd);
 
-    assertEQ(ms->getTrack(0)->size(), (origSize -1));     // we added an event
+    assertEQ(ms->getTrack(0)->size(), (origSize -1));     // we removed an event
     assert(ur->canUndo());
-#if 0
-    auto tv = ms->getTrack(0)->_testGetVector();
-    assert(*tv[0] == *newNote);
 
     ur->undo();
-    assert(ms->getTrack(0)->size() == 0);     // we added an event
+    assert(ms->getTrack(0)->size() == origSize);     // we added an event
     assert(!ur->canUndo());
-#endif
+
 }
 
 

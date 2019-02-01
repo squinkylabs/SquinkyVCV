@@ -28,6 +28,7 @@ public:
 
     void assertValid() const;
     void assertCursorInViewport() const;
+    void scrollViewportToCursorPitch();
 
 
 };

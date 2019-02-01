@@ -32,6 +32,7 @@ public:
     std::shared_ptr<const MidiSong> getSong() const;
 
     void assertValid();
+    void scrollVertically(float pitchCV);
 
 private:
     // Below is not for clients to call. TODO: use private or something.

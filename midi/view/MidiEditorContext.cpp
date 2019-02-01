@@ -16,6 +16,16 @@ MidiEditorContext::~MidiEditorContext()
     --_mdb;
 }
 
+void MidiEditorContext::scrollViewportToCursorPitch()
+{
+    while ( cursorPitch < viewport->pitchLow ) {
+        viewport->scrollVertically(-1 * PitchUtils::octave);         
+    }
+    while(cursorPitch > viewport->pitchHi) {
+        viewport->scrollVertically(1 * PitchUtils::octave);
+    }
+}
+
 void MidiEditorContext::assertCursorInViewport() const
 {
     assertGE(cursorTime, viewport->startTime);

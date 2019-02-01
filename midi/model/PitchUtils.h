@@ -6,6 +6,7 @@ class PitchUtils
 {
 public:
     static constexpr float semitone = 1.f / 12.f;    // one semitone is a 1/12 volt
+    static constexpr float octave = 1.f;
     static std::pair<int, int> cvToPitch(float cv);
     static int cvToSemitone(float cv);
     static float pitchToCV(int octave, int semi);

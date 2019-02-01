@@ -20,6 +20,12 @@ std::shared_ptr<const MidiSong> MidiViewport::getSong() const
     return _song.lock();
 }
 
+void MidiViewport::scrollVertically(float pitchCV)
+{
+    pitchHi += pitchCV;
+    pitchLow += pitchCV;
+}
+
 
 MidiViewport::iterator_pair MidiViewport::getEvents() const
 {
