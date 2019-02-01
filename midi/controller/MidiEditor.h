@@ -57,6 +57,7 @@ private:
     void updateSelectionForCursor();
 
     bool cursorInViewport() const;
+    bool cursorInViewportTime() const;
     void adjustViewportForCursor();
 
 

@@ -257,34 +257,55 @@ bool MidiEditor::cursorInViewport() const
     if (context->cursorTime >= context->viewport->endTime) {
         return false;
     }
+    if (context->cursorPitch > context->viewport->pitchHi) {
+        return false;
+    }
+    if (context->cursorPitch < context->viewport->pitchLow) {
+        return false;
+    }
 
     return true;
 }
 
+
+bool MidiEditor::cursorInViewportTime() const
+{
+    if (context->cursorTime < context->viewport->startTime) {
+        return false;
+    }
+    if (context->cursorTime >= context->viewport->endTime) {
+        return false;
+    }
+
+    return true;
+}
+
+// TODO: should this be in edit context? (Yes)
 void MidiEditor::adjustViewportForCursor()
 {
-    if (cursorInViewport()) {
-        return;
+    if (!cursorInViewportTime()) {
+
+        float minimumAdvance = 0;
+        if (context->cursorTime >= context->viewport->endTime) {
+            minimumAdvance = context->cursorTime - context->viewport->endTime;
+        } else if (context->cursorTime < context->viewport->startTime) {
+            minimumAdvance = context->cursorTime - context->viewport->startTime;
+        }
+
+        // figure what fraction of 2 bars this is
+        float advanceBars = minimumAdvance / TimeUtils::barToTime(2);
+        advanceBars += (minimumAdvance < 0) ? -2 : 2;
+
+        float x = std::round(advanceBars / 2.f);
+        float finalAdvanceTime = x * TimeUtils::barToTime(2);
+
+        context->viewport->startTime += finalAdvanceTime;
+        context->viewport->endTime = context->viewport->startTime + TimeUtils::barToTime(2);
+        assert(context->viewport->startTime >= 0);
     }
 
-    float minimumAdvance = 0;
-    if (context->cursorTime >= context->viewport->endTime) {
-        minimumAdvance = context->cursorTime - context->viewport->endTime;
-    }  else if (context->cursorTime < context->viewport->startTime) {
-        minimumAdvance = context->cursorTime - context->viewport->startTime;
-    }
-
-    // figure what fraction of 2 bars this is
-    float advanceBars = minimumAdvance / TimeUtils::barToTime(2);
-    advanceBars += (minimumAdvance < 0) ? -2 : 2;
-
-
-    float x = std::round(advanceBars / 2.f);
-    float finalAdvanceTime = x * TimeUtils::barToTime(2);
-
-    context->viewport->startTime += finalAdvanceTime;
-    context->viewport->endTime = context->viewport->startTime + TimeUtils::barToTime(2);
-    assert(context->viewport->startTime >= 0);
+    // and to the pitch
+    context->scrollViewportToCursorPitch();
 }
 
 void MidiEditor::advanceCursor(bool ticks, int amount)

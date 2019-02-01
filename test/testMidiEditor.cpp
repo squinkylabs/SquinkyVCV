@@ -168,6 +168,7 @@ static void testPrev1()
 }
 
 
+// transpose one semi
 static void testTrans1()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -184,6 +185,21 @@ static void testTrans1()
     assertClose(p1 - p0, 1.f / 12.f, .000001);
     const float transposedPitch = PitchUtils::pitchToCV(3, 1);
     assertClose(seq->context->cursorPitch, transposedPitch, .0001);
+    seq->assertValid();
+}
+
+static void testTrans3()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    const float firstNotePitch = PitchUtils::pitchToCV(3, 0);
+    assertClose(seq->context->cursorPitch, firstNotePitch, .0001);
+
+    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+    const float p0 = firstNote->pitchCV;
+    seq->editor->changePitch(50);       // transpose off screen
     seq->assertValid();
 }
 
@@ -438,6 +454,7 @@ void testMidiEditor()
     testChangeDuration1();
 
     testTrans2();
+    testTrans3();
    
     testCursor1();
     testCursor2();
