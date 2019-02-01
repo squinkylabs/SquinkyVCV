@@ -37,11 +37,11 @@ GrayModule::GrayModule()
 }
 #else
 GrayModule::GrayModule()
-    : Module(gray.NUM_PARAMS,
-    gray.NUM_INPUTS,
-    gray.NUM_OUTPUTS,
-    gray.NUM_LIGHTS),
-    gray(this)
+    : Module(Comp::NUM_PARAMS,
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
+    gray(std::make_shared<Comp>(this))
 {
 }
 #endif
