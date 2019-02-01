@@ -18,7 +18,7 @@ void MidiTrack::assertValid() const
     int numEnds = 0;
     bool lastIsEnd = false;
     (void) lastIsEnd;
-    
+
     float lastEnd = 0;
     MidiEvent::time_t startTime = 0;
     MidiEvent::time_t totalDur = 0;
@@ -50,7 +50,7 @@ void MidiTrack::assertValid() const
 
 void MidiTrack::insertEvent(MidiEventPtr evIn)
 {
-    events.insert( std::pair<MidiEvent::time_t, MidiEventPtr>(evIn->startTime, evIn));
+    events.insert(std::pair<MidiEvent::time_t, MidiEventPtr>(evIn->startTime, evIn));
 }
 
 float MidiTrack::getLength() const
@@ -72,7 +72,7 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
 {
     auto candidateRange = events.equal_range(evIn.startTime);
     for (auto it = candidateRange.first; it != candidateRange.second; it++) {
-      
+
         if (*it->second == evIn) {
             events.erase(it);
             return;

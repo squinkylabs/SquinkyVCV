@@ -19,7 +19,7 @@ MidiSequencerPtr makeTest(bool empty = false)
 
     sequencer->context->viewport->startTime = 0;
     sequencer->context->viewport->endTime =
-    sequencer->context->viewport->startTime + 8;
+        sequencer->context->viewport->startTime + 8;
     sequencer->context->viewport->pitchLow = PitchUtils::pitchToCV(3, 0);
     sequencer->context->viewport->pitchHi = PitchUtils::pitchToCV(5, 0);
 
@@ -237,7 +237,7 @@ static void testShiftTimex(int units)
     seq->editor->changeStartTime(false, units);     // delay n units
     seq->song->getTrack(0)->_dump();
     seq->assertValid();
-   
+
     assertEQ(seq->selection->size(), 1);
     seq->editor->assertCursorInSelection();
 }
@@ -294,7 +294,7 @@ static void testCursor1()
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime, 0);
     assertEQ(seq->context->cursorPitch, 0)
-    assertEQ(seq->context->viewport->startTime, 0);
+        assertEQ(seq->context->viewport->startTime, 0);
 }
 
 static void testCursor2()
@@ -488,7 +488,7 @@ void testMidiEditor()
 
     testTrans2();
     testTrans3();
-   
+
     testCursor1();
     testCursor2();
     testCursor3();

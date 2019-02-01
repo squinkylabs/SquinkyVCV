@@ -68,10 +68,3 @@ MidiEventPtr MidiSelectionModel::getLast()
     }
     return ret;
 }
-
-#if 0
-MidiSelectionModel::iterator_pair MidiSelectionModel::get() const
-{
-    return iterator_pair(selection.begin(), selection.end());
-}
-#endif

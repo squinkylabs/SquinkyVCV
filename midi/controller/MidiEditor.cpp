@@ -234,7 +234,7 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
 
     bool setCursor = false;
     MidiTrackPtr track = song->getTrack(0);
-   
+
     for (auto ev : *selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
         track->deleteEvent(*note);
@@ -376,7 +376,7 @@ void MidiEditor::insertNote()
     auto track = song->getTrack(0);
     float curLength = track->getLength();
 
-     
+
     float neededLength = context->cursorTime + 1.f;
     if (neededLength > curLength) {
         float need = neededLength;
@@ -413,7 +413,7 @@ void MidiEditor::deleteNote()
         track->deleteEvent(*ev);
     }
     selection->clear();
-    
+
 }
 void MidiEditor::updateSelectionForCursor()
 {
@@ -430,7 +430,7 @@ void MidiEditor::updateSelectionForCursor()
         const auto startTime = note->startTime;
         const auto endTime = note->startTime + note->duration;
 
-        if ( (PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
+        if ((PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
             (startTime <= context->cursorTime) &&
             (endTime > context->cursorTime)) {
             selection->select(note);
