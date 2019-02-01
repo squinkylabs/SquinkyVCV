@@ -3,6 +3,7 @@
 #include "asserts.h"
 #include "CHB.h"
 #include "FunVCOComposite.h"
+#include "Gray.h"
 #include "Shaper.h"
 #include "TestComposite.h"
 #include "VocalFilter.h"
@@ -42,4 +43,5 @@ void testIComposite()
     test<VocalFilter<TestComposite>>();
     test<Shaper<TestComposite>>();
     test<CHB<TestComposite>>();
+    test<Gray<TestComposite>>();
 }

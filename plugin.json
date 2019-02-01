@@ -33,6 +33,11 @@
 			"name": "shaper",
 			"description": "Shaper: Precision Wave Shaper",
 			"tags": ["EFFECT", "OSCILLATOR", "WAVESHAPER"]
+		},
+		"gray": {
+			"name": "gray",
+			"description": "Gray Code: Eclectic clock divider",
+			"tags": [ "CLOCK_MODULATOR", "RANDOM"]
 		}
 	}
 }

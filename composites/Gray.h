@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GateTrigger.h"
+#include "IComposite.h"
 
 static const uint8_t gtable[256] =
 {
@@ -40,6 +41,14 @@ static const uint8_t bgtable[256] =
 0x88, 0xC8, 0x48, 0x4C, 0xCC, 0x8C, 0x84, 0xC4, 0x44, 0x45, 0xC5, 0x85, 0x87, 0xC7, 0x47, 0x4F,
 0xCF, 0x8F, 0x8D, 0xCD, 0x4D, 0x49, 0xC9, 0x89, 0x8B, 0xCB, 0x4B, 0x4A, 0xCA, 0x8A, 0x8E, 0xCE,
 0x4E, 0x46, 0xC6, 0x86, 0x82, 0xC2, 0x42, 0x43, 0xC3, 0x83, 0x81, 0xC1, 0x41, 0x40, 0xC0, 0x80
+};
+
+template <class TBase>
+class GrayDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
 };
 
 template <class TBase>
@@ -94,6 +103,13 @@ public:
         NUM_LIGHTS
     };
 
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<GrayDescription<TBase>>();
+    }
+
     /**
      * Main processing entry point. Called every sample
      */
@@ -110,8 +126,8 @@ private:
 template <class TBase>
 void  Gray<TBase>::init()
 {
-   // Init all the outputs to zero,
-   // since they don't all get update until a clock.
+    // Init all the outputs to zero,
+    // since they don't all get update until a clock.
     for (int i = 0; i < NUM_OUTPUTS; ++i) {
         TBase::outputs[i].value = 0;
     }
@@ -133,9 +149,22 @@ void  Gray<TBase>::step()
     auto g = g0;
     for (int i = 0; i < 8; ++i) {
         bool b = g & 1;
-        TBase::lights[i + LIGHT_0].value = b ? 10 : 0;
-        TBase::outputs[i + OUTPUT_0].value = b ? 10 : 0;
+        TBase::lights[i + LIGHT_0].value = b ? 10.f : 0.f;
+        TBase::outputs[i + OUTPUT_0].value = b ? 10.f : 0.f;
         g >>= 1;
     }
     TBase::outputs[OUTPUT_MIXED].value = (float) g0 / 25.f;
+}
+
+template <class TBase>
+int GrayDescription<TBase>::getNumParams()
+{
+    return Gray<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+IComposite::Config GrayDescription<TBase>::getParam(int i)
+{
+    assert(i == Gray<TBase>::PARAM_CODE);
+    return {0.0f, 1.0f, 0.0f, "Code type"};
 }

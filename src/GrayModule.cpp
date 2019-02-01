@@ -6,6 +6,8 @@
 #include "Gray.h"
 #include "ctrl/SqMenuItem.h"
 
+using Comp = Gray<WidgetComposite>;
+
 /**
  */
 struct GrayModule : Module
@@ -19,10 +21,21 @@ public:
      */
     void step() override;
 
-    Gray<WidgetComposite> gray;
+    std::shared_ptr<Comp> gray;
 private:
 };
 
+#ifdef __V1
+GrayModule::GrayModule()
+{
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+
+    //wait until after config to allocate this guy.
+    gray = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+}
+#else
 GrayModule::GrayModule()
     : Module(gray.NUM_PARAMS,
     gray.NUM_INPUTS,
@@ -31,10 +44,11 @@ GrayModule::GrayModule()
     gray(this)
 {
 }
+#endif
 
 void GrayModule::step()
 {
-    gray.step();
+    gray->step();
 }
 
 ////////////////////
@@ -44,12 +58,17 @@ void GrayModule::step()
 struct GrayWidget : ModuleWidget
 {
     GrayWidget(GrayModule *);
+
+#ifdef __V1
+    void appendContextMenu(Menu *menu) override;
+#else
     Menu* createContextMenu() override;
+#endif
 
     /**
      * Helper to add a text label to this widget
      */
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -76,7 +95,7 @@ inline void GrayWidget::addBits(GrayModule *module)
             v,
             module,
             Gray<WidgetComposite>::OUTPUT_0 + i));
-        addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+        addChild(createLight<MediumLight<GreenLight>>(
             Vec(ledCol, firstBitY + i * vertSpace - 6),
             module,
             Gray<WidgetComposite>::LIGHT_0 + i));
@@ -88,14 +107,21 @@ inline void GrayWidget::addBits(GrayModule *module)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+GrayWidget::GrayWidget(GrayModule *module)
+{
+    setModule(module);
+#else
 GrayWidget::GrayWidget(GrayModule *module) :
     ModuleWidget(module)
 {
+#endif
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/gray.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/gray.svg")));
         addChild(panel);
     }
 
@@ -106,26 +132,33 @@ GrayWidget::GrayWidget(GrayModule *module) :
         Gray<WidgetComposite>::INPUT_CLOCK));
     addLabel(Vec(0, 310), "Clock");
 
-    addParam(createParamCentered<CKSS>(
+    addParam(SqHelper::createParamCentered<CKSS>(
+        icomp,
         Vec(71, 33),
         module,
-        Gray<WidgetComposite>::PARAM_CODE,
-        0.0f, 1.0f, 0.0f));
+        Gray<WidgetComposite>::PARAM_CODE));
     addLabel(Vec(2, 27), "Balanced");
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(100, 339),
         module,
         Gray<WidgetComposite>::OUTPUT_MIXED));
-    addLabel(Vec(82, 310), "Mix", COLOR_WHITE);
+    addLabel(Vec(82, 310), "Mix", SqHelper::COLOR_WHITE);
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+#ifdef __V1
+void GrayWidget::appendContextMenu(Menu* theMenu) 
+{
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md");
+    theMenu->addChild(manual);   
+}
+#else
 inline Menu* GrayWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -134,10 +167,16 @@ inline Menu* GrayWidget::createContextMenu()
     theMenu->addChild(manual);
     return theMenu;
 }
+#endif
 
+
+#ifdef __V1
+Model *modelGrayModule = createModel<GrayModule,
+    GrayWidget>("gray");
+#else
 Model *modelGrayModule = Model::create<GrayModule,
     GrayWidget>("Squinky Labs",
     "squinkylabs-gry",
     "Gray Code: Eclectic clock divider", CLOCK_MODULATOR_TAG, RANDOM_TAG);
-
+#endif
 #endif
