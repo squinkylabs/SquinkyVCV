@@ -33,11 +33,10 @@ struct NoteDisplay : OpaqueWidget
         assert(sequencer->context->vieport._song == song);
    
         // hard code view range to our demo song
-        sequencer->context->startTime = 0;
-        sequencer->context->endTime =
-        sequencer->context->startTime + 8;
-        sequencer->context->pitchLow = PitchUtils::pitchToCV(3, 0);
-        sequencer->context->pitchHi = PitchUtils::pitchToCV(5, 0);
+        sequencer->context->setStartTime(0);
+        sequencer->context->setEndTime(8);
+        sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
+        sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
 
         //initScaleFuncs();
         scaler = std::make_shared<NoteScreenScale>(sequencer->context, size.x, size.y);
@@ -91,7 +90,7 @@ struct NoteDisplay : OpaqueWidget
             }
         }
 
-        int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime);
+        int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime());
         if (firstBar != curFirstBar) {
             curFirstBar = firstBar;
             std::stringstream str;
@@ -143,8 +142,8 @@ struct NoteDisplay : OpaqueWidget
                 nvgRGB(0xff, 0xff, 0xff) :
                 nvgRGB(0, 0, 0);
                
-            const float x = scaler->midiTimeToX(sequencer->context->cursorTime);        
-            const float y = scaler->midiCvToY(sequencer->context->cursorPitch) + 
+            const float x = scaler->midiTimeToX(sequencer->context->cursorTime());        
+            const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) + 
                  scaler->noteHeight() / 2.f;  
             filledRect(vg, color, x, y, 10, 3);
         }
@@ -161,8 +160,8 @@ struct NoteDisplay : OpaqueWidget
     void drawBackground(NVGcontext *vg) {
         filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
         const int noteHeight = scaler->noteHeight();
-        for (float cv = sequencer->context->pitchLow;
-            cv <= sequencer->context->pitchHi;
+        for (float cv = sequencer->context->pitchLow();
+            cv <= sequencer->context->pitchHi();
             cv += PitchUtils::semitone) {
                 const float y = scaler->midiCvToY(cv);
                 const float width = box.size.x;
