@@ -41,7 +41,6 @@
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
     <ClCompile Include="..\..\midi\view\MidiEditorContext.cpp" />
-    <ClCompile Include="..\..\midi\view\MidiViewport.cpp" />
     <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp" />
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp" />
     <ClCompile Include="..\..\sqsrc\delay\FractionalDelay.cpp" />
@@ -175,7 +174,6 @@
     <ClInclude Include="..\..\midi\model\PitchUtils.h" />
     <ClInclude Include="..\..\midi\model\TimeUtils.h" />
     <ClInclude Include="..\..\midi\view\MidiEditorContext.h" />
-    <ClInclude Include="..\..\midi\view\MidiViewport.h" />
     <ClInclude Include="..\..\midi\view\NoteScreenScale.h" />
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h" />
     <ClInclude Include="..\..\sqsrc\clock\GenerativeTriggerGenerator.h" />

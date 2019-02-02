@@ -1,7 +1,7 @@
 
 #include "MidiSequencer.h"
 #include "MidiEditor.h"
-#include "MidiViewport.h"
+//#include "MidiViewport.h"
 
 int _mdb = 0;       // global instance counter
 
@@ -23,8 +23,6 @@ MidiSequencer::~MidiSequencer()
 
 void MidiSequencer::assertValid() const
 {
-    // this should be part of context->assertValid
-    context->viewport->assertValid();
     context->assertValid();
     song->assertValid();
 }

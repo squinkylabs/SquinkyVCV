@@ -312,9 +312,6 @@
     <ClCompile Include="..\..\test\TestMidiViewport.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\midi\view\MidiViewport.cpp">
-      <Filter>Source Files\midi\view</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\midi\model\MidiSong.cpp">
       <Filter>Source Files\midi\model</Filter>
     </ClCompile>
@@ -595,9 +592,6 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\Super.h">
       <Filter>Header Files\composites</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\midi\view\MidiViewport.h">
-      <Filter>Header Files\midi\view</Filter>
     </ClInclude>
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h">
       <Filter>Header Files\midi\controller</Filter>

@@ -5,7 +5,7 @@
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
-#include "MidiViewport.h"
+//#include "MidiViewport.h"
 #include "TimeUtils.h"
 
 extern int _mdb;
@@ -281,16 +281,16 @@ void MidiEditor::assertCursorInSelection()
 
 bool MidiEditor::cursorInViewport() const
 {
-    if (context->cursorTime < context->viewport->startTime) {
+    if (context->cursorTime < context->startTime) {
         return false;
     }
-    if (context->cursorTime >= context->viewport->endTime) {
+    if (context->cursorTime >= context->endTime) {
         return false;
     }
-    if (context->cursorPitch > context->viewport->pitchHi) {
+    if (context->cursorPitch > context->pitchHi) {
         return false;
     }
-    if (context->cursorPitch < context->viewport->pitchLow) {
+    if (context->cursorPitch < context->pitchLow) {
         return false;
     }
 
@@ -300,10 +300,10 @@ bool MidiEditor::cursorInViewport() const
 
 bool MidiEditor::cursorInViewportTime() const
 {
-    if (context->cursorTime < context->viewport->startTime) {
+    if (context->cursorTime < context->startTime) {
         return false;
     }
-    if (context->cursorTime >= context->viewport->endTime) {
+    if (context->cursorTime >= context->endTime) {
         return false;
     }
 
@@ -316,10 +316,10 @@ void MidiEditor::adjustViewportForCursor()
     if (!cursorInViewportTime()) {
 
         float minimumAdvance = 0;
-        if (context->cursorTime >= context->viewport->endTime) {
-            minimumAdvance = context->cursorTime - context->viewport->endTime;
-        } else if (context->cursorTime < context->viewport->startTime) {
-            minimumAdvance = context->cursorTime - context->viewport->startTime;
+        if (context->cursorTime >= context->endTime) {
+            minimumAdvance = context->cursorTime - context->endTime;
+        } else if (context->cursorTime < context->startTime) {
+            minimumAdvance = context->cursorTime - context->startTime;
         }
 
         // figure what fraction of 2 bars this is
@@ -329,9 +329,9 @@ void MidiEditor::adjustViewportForCursor()
         float x = std::round(advanceBars / 2.f);
         float finalAdvanceTime = x * TimeUtils::barToTime(2);
 
-        context->viewport->startTime += finalAdvanceTime;
-        context->viewport->endTime = context->viewport->startTime + TimeUtils::barToTime(2);
-        assert(context->viewport->startTime >= 0);
+        context->startTime += finalAdvanceTime;
+        context->endTime = context->startTime + TimeUtils::barToTime(2);
+        assert(context->startTime >= 0);
     }
 
     // and to the pitch
@@ -351,6 +351,7 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     updateSelectionForCursor();
     adjustViewportForCursor();
     assert(cursorInViewport());
+    song->assertValid();
 }
 
 void MidiEditor::extendTrackToMinDuration(float neededLength)
@@ -419,10 +420,9 @@ void MidiEditor::deleteNote()
 }
 void MidiEditor::updateSelectionForCursor()
 {
-    context->viewport->assertValid();
     selection->clear();
-    auto start = context->viewport->startTime;
-    auto end = context->viewport->endTime;
+    auto start = context->startTime;
+    auto end = context->endTime;
 
     const int cursorSemi = PitchUtils::cvToSemitone(context->cursorPitch);
     MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);

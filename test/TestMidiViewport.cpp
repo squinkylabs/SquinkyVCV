@@ -1,6 +1,6 @@
 
 #include "asserts.h"
-#include "MidiViewport.h"
+#include "MidiEditorContext.h"
 
 #include "MidiSong.h"
 
@@ -8,7 +8,7 @@
 static void testReleaseSong()
 {
     MidiSongPtr song(std::make_shared<MidiSong>());
-    MidiViewport vp(song);
+    MidiEditorContext vp(song);
     {
        
        // vp._song = song;
@@ -36,7 +36,7 @@ static void testEventAccess()
     ev->pitchCV = 40;
     track->insertEvent(ev);
 
-    MidiViewport vp(song);
+    MidiEditorContext vp(song);
     vp.startTime = 90;
     vp.endTime = 110;
     vp.pitchLow = 0;
@@ -73,7 +73,7 @@ static void testEventFilter()
     track->insertEvent(ev2);
     assertEQ(track->size(), 2);
 
-    MidiViewport vp(song);
+    MidiEditorContext vp(song);
     vp.startTime = 90;
     vp.endTime = 110;
     vp.pitchLow = 3;
@@ -92,7 +92,7 @@ static void testDemoSong()
     assertEQ(std::distance(track->begin(), track->end()), numEvents);
 
 
-    MidiViewport viewport(song);
+    MidiEditorContext viewport(song);
     viewport.startTime = 0;
     viewport.endTime = viewport.startTime + 8;   // two measures
 
@@ -104,7 +104,7 @@ static void testDemoSong()
     note.setPitch(10, 0);
     viewport.pitchHi =  note.pitchCV;
  
-    MidiViewport::iterator_pair it = viewport.getEvents();
+    MidiEditorContext::iterator_pair it = viewport.getEvents();
     assertEQ(std::distance(it.first, it.second), numNotes);
 
     // try inclusive pitch range

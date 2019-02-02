@@ -5,7 +5,7 @@
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
 #include "MidiTrack.h"
-#include "MidiViewport.h"
+//#include "MidiViewport.h"
 #include "MidiSong.h"
 
 // sequencer factory - helper function
@@ -17,11 +17,11 @@ MidiSequencerPtr makeTest(bool empty = false)
     MidiSequencerPtr sequencer = std::make_shared<MidiSequencer>(song);
 
 
-    sequencer->context->viewport->startTime = 0;
-    sequencer->context->viewport->endTime =
-        sequencer->context->viewport->startTime + 8;
-    sequencer->context->viewport->pitchLow = PitchUtils::pitchToCV(3, 0);
-    sequencer->context->viewport->pitchHi = PitchUtils::pitchToCV(5, 0);
+    sequencer->context->startTime = 0;
+    sequencer->context->endTime =
+        sequencer->context->startTime + 8;
+    sequencer->context->pitchLow = PitchUtils::pitchToCV(3, 0);
+    sequencer->context->pitchHi = PitchUtils::pitchToCV(5, 0);
 
     sequencer->assertValid();
     return sequencer;
@@ -257,7 +257,6 @@ static void testShiftTimex(int units)
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float s0 = firstNote->startTime;
     seq->editor->changeStartTime(false, units);     // delay n units
-    seq->song->getTrack(0)->_dump();
     seq->assertValid();
 
     assertEQ(seq->selection->size(), 1);
@@ -316,7 +315,7 @@ static void testCursor1()
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime, 0);
     assertEQ(seq->context->cursorPitch, 0)
-        assertEQ(seq->context->viewport->startTime, 0);
+        assertEQ(seq->context->startTime, 0);
 }
 
 static void testCursor2()
@@ -327,7 +326,7 @@ static void testCursor2()
 
     seq->editor->advanceCursor(false, -4);
     assertEQ(seq->context->cursorTime, 0);
-    assertEQ(seq->context->viewport->startTime, 0);
+    assertEQ(seq->context->startTime, 0);
 }
 
 static void testCursor3()
@@ -345,7 +344,7 @@ static void testCursor3()
     seq->editor->advanceCursor(false, 4);
     assertEQ(seq->context->cursorTime, 1.f);
     assert(seq->selection->empty());
-    assertEQ(seq->context->viewport->startTime, 0);
+    assertEQ(seq->context->startTime, 0);
 
 }
 
@@ -372,7 +371,7 @@ static void testCursor4()
     }
 
     assert(!seq->selection->empty());
-    assertEQ(seq->context->viewport->startTime, 0);
+    assertEQ(seq->context->startTime, 0);
 }
 
 
@@ -413,7 +412,7 @@ static void testCursor5()
     seq->editor->advanceCursor(false, 1);
 
     assert(seq->selection->empty());
-    assertEQ(seq->context->viewport->startTime, 0);
+    assertEQ(seq->context->startTime, 0);
 }
 
 // move past the end of the second bar
@@ -421,13 +420,14 @@ static void testCursor6()
 {
     MidiSequencerPtr seq = makeTest(false);
 
-    assertEQ(seq->context->viewport->startTime, 0);
+    assertEQ(seq->context->startTime, 0);
+    seq->assertValid();
 
     // go up two bars and 1/16
     seq->editor->advanceCursor(false, 16 * 2 + 1);
 
     // bar 2 should be new start time
-    assertEQ(seq->context->viewport->startTime, 2 * 4);
+    assertEQ(seq->context->startTime, 2 * 4);
 
 }
 

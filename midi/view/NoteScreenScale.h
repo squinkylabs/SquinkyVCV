@@ -1,6 +1,6 @@
 #pragma once
 
-class MidiViewport;
+class MidiEditorContext;
 
 
 
@@ -21,7 +21,7 @@ class MidiViewport;
 class NoteScreenScale
 {
 public:
-    NoteScreenScale(std::shared_ptr<MidiViewport> vp, float screenWidth, float screenHeight);
+    NoteScreenScale(std::shared_ptr<MidiEditorContext> vp, float screenWidth, float screenHeight);
     float midiTimeToX(const MidiEvent& ev);
     float midiTimeToX(MidiEvent::time_t ev);
     float midiTimeTodX(MidiEvent::time_t dt);
@@ -37,5 +37,5 @@ public:
 private:
     float ax = 0;
     float ay = 0;
-    std::shared_ptr<MidiViewport> viewport;
+    std::shared_ptr<MidiEditorContext> viewport;
 };

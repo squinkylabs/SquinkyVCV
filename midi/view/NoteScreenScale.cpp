@@ -1,7 +1,7 @@
 #include "NoteScreenScale.h"
-#include "MidiViewport.h"
+#include "MidiEditorContext.h"
 
-NoteScreenScale::NoteScreenScale(MidiViewportPtr vp, float screenWidth, float screenHeight) : viewport(vp)
+NoteScreenScale::NoteScreenScale(MidiEditorContextPtr vp, float screenWidth, float screenHeight) : viewport(vp)
 {
     assert(screenWidth > 0);
     assert(screenHeight > 0);

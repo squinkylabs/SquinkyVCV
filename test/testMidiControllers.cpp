@@ -4,7 +4,7 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
-#include "MidiViewport.h"
+//#include "MidiViewport.h"
 
 // selects a note and verifies that one event is selected
 static void testSelectionModel1()
@@ -95,8 +95,6 @@ static void testMidiSequencer2()
     assert(seq->selection);
     assert(seq->song);
     assert(seq->context);
-    assert(seq->context->viewport);
-
     assert(seq->song->getTrack(0));
 }
 

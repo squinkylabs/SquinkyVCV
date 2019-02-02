@@ -1,13 +1,13 @@
 #include "asserts.h"
 
-#include "MidiViewport.h"
+#include "MidiEditorContext.h"
 #include "NoteScreenScale.h"
 
 // basic test of x coordinates
 static void test0()
 {
     // viewport holds single quarter note
-    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
     vp->startTime = 0;
     vp->endTime = 1;
   
@@ -35,7 +35,7 @@ static void test0()
 static void test1()
 {
     // viewport holds single quarter note
-    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
     vp->startTime = 0;
     vp->endTime = 1;
 
@@ -58,7 +58,7 @@ static void test2()
 {
     printf("test2\n");
     // viewport holds one bar of 4/4
-    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
     vp->startTime = 0;
     vp->endTime = 4;
 
@@ -85,7 +85,7 @@ static void test2()
 static void test3()
 {
     // viewport holds two pitches
-    MidiViewportPtr vp = std::make_shared<MidiViewport>(nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
     vp->startTime = 0;
     vp->endTime = 1;
 
