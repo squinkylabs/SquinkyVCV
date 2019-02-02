@@ -1,7 +1,7 @@
 
 #include "MidiEditorContext.h"
-//#include "MidiViewport.h"
 #include "MidiSong.h"
+#include "TimeUtils.h"
 
 
 extern int _mdb;
@@ -18,20 +18,20 @@ MidiEditorContext::~MidiEditorContext()
 
 void MidiEditorContext::scrollViewportToCursorPitch()
 {
-    while (cursorPitch < pitchLow) {
+    while (m_cursorPitch < pitchLow) {
         scrollVertically(-1 * PitchUtils::octave);
     }
-    while (cursorPitch > pitchHi) {
+    while (m_cursorPitch > pitchHi) {
         scrollVertically(1 * PitchUtils::octave);
     }
 }
 
 void MidiEditorContext::assertCursorInViewport() const
 {
-    assertGE(cursorTime, startTime);
-    assertLT(cursorTime, endTime);
-    assertGE(cursorPitch, pitchLow);
-    assertLE(cursorPitch, pitchHi);
+    assertGE(m_cursorTime, startTime);
+    assertLT(m_cursorTime, endTime);
+    assertGE(m_cursorPitch, pitchLow);
+    assertLE(m_cursorPitch, pitchHi);
 }
  
 void MidiEditorContext::assertValid() const
@@ -40,9 +40,9 @@ void MidiEditorContext::assertValid() const
     assert(pitchHi > pitchLow);
     assert(getSong());
 
-    assertGE(cursorTime, 0);
-    assertLT(cursorPitch, 10);      // just for now
-    assertGT(cursorPitch, -10);
+    assertGE(m_cursorTime, 0);
+    assertLT(m_cursorPitch, 10);      // just for now
+    assertGT(m_cursorPitch, -10);
 
     assertCursorInViewport();
 }
@@ -82,4 +82,61 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
 
     return iterator_pair(iterator(rawIterators.first, rawIterators.second, lambda),
         iterator(rawIterators.second, rawIterators.second, lambda));
+}
+
+bool MidiEditorContext::cursorInViewport() const
+{
+    if (cursorTime() < startTime) {
+        return false;
+    }
+    if (cursorTime() >= endTime) {
+        return false;
+    }
+    if (cursorPitch() > pitchHi) {
+        return false;
+    }
+    if (cursorPitch() < pitchLow) {
+        return false;
+    }
+
+    return true;
+}
+
+bool MidiEditorContext::cursorInViewportTime() const
+{
+    if (cursorTime() < startTime) {
+        return false;
+    }
+    if (cursorTime() >= endTime) {
+        return false;
+    }
+
+    return true;
+}
+
+void MidiEditorContext::adjustViewportForCursor()
+{
+    if (!cursorInViewportTime()) {
+
+        float minimumAdvance = 0;
+        if (cursorTime() >= endTime) {
+            minimumAdvance = cursorTime() - endTime;
+        } else if (cursorTime() < startTime) {
+            minimumAdvance = cursorTime() - startTime;
+        }
+
+        // figure what fraction of 2 bars this is
+        float advanceBars = minimumAdvance / TimeUtils::barToTime(2);
+        advanceBars += (minimumAdvance < 0) ? -2 : 2;
+
+        float x = std::round(advanceBars / 2.f);
+        float finalAdvanceTime = x * TimeUtils::barToTime(2);
+
+        startTime += finalAdvanceTime;
+        endTime = startTime + TimeUtils::barToTime(2);
+        assert(startTime >= 0);
+    }
+
+    // and to the pitch
+    scrollViewportToCursorPitch();
 }

@@ -3,7 +3,7 @@
 #include "util/math.hpp"
 #include "nanovg.h"
 #include "window.hpp"
-#include "MidiViewport.h"
+#include "MidiEditorContext.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
@@ -33,14 +33,14 @@ struct NoteDisplay : OpaqueWidget
         assert(sequencer->context->vieport._song == song);
    
         // hard code view range to our demo song
-        sequencer->context->viewport->startTime = 0;
-        sequencer->context->viewport->endTime =
-        sequencer->context->viewport->startTime + 8;
-        sequencer->context->viewport->pitchLow = PitchUtils::pitchToCV(3, 0);
-        sequencer->context->viewport->pitchHi = PitchUtils::pitchToCV(5, 0);
+        sequencer->context->startTime = 0;
+        sequencer->context->endTime =
+        sequencer->context->startTime + 8;
+        sequencer->context->pitchLow = PitchUtils::pitchToCV(3, 0);
+        sequencer->context->pitchHi = PitchUtils::pitchToCV(5, 0);
 
         //initScaleFuncs();
-        scaler = std::make_shared<NoteScreenScale>(sequencer->context->viewport, size.x, size.y);
+        scaler = std::make_shared<NoteScreenScale>(sequencer->context, size.x, size.y);
         
         focusLabel = new Label();
         focusLabel->box.pos = Vec(40, 40);
@@ -91,7 +91,7 @@ struct NoteDisplay : OpaqueWidget
             }
         }
 
-        int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->viewport->startTime);
+        int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime);
         if (firstBar != curFirstBar) {
             curFirstBar = firstBar;
             std::stringstream str;
@@ -109,7 +109,7 @@ struct NoteDisplay : OpaqueWidget
 
     void drawNotes(NVGcontext *vg)
     {
-        MidiViewport::iterator_pair it = sequencer->context->viewport->getEvents();
+        MidiEditorContext::iterator_pair it = sequencer->context->getEvents();
         const int noteHeight = scaler->noteHeight();
         for ( ; it.first != it.second; ++it.first) {
             auto temp = *(it.first);
@@ -161,8 +161,8 @@ struct NoteDisplay : OpaqueWidget
     void drawBackground(NVGcontext *vg) {
         filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
         const int noteHeight = scaler->noteHeight();
-        for (float cv = sequencer->context->viewport->pitchLow;
-            cv <= sequencer->context->viewport->pitchHi;
+        for (float cv = sequencer->context->pitchLow;
+            cv <= sequencer->context->pitchHi;
             cv += PitchUtils::semitone) {
                 const float y = scaler->midiCvToY(cv);
                 const float width = box.size.x;

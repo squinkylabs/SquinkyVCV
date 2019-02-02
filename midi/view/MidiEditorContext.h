@@ -13,11 +13,25 @@ public:
     MidiEditorContext(std::shared_ptr<MidiSong>);
     ~MidiEditorContext();
 
-    // TODO: don't allow direct access?
-    float cursorTime = 0;
-    float cursorPitch = 0;
+    float cursorPitch() const
+    {
+        return m_cursorPitch;
+    }
+    void setCursorPitch(float pitch)
+    {
+        m_cursorPitch = pitch;
+    }
+    float cursorTime() const
+    {
+        return m_cursorTime;
+    }
+    void setCursorTime(float time)
+    {
+        m_cursorTime = time;
+    }
 
-       // TODO: change to const_iterator
+ 
+    // TODO: change to const_iterator
     using iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
     using iterator_pair = std::pair<iterator, iterator>;
     iterator_pair getEvents() const;
@@ -36,7 +50,6 @@ public:
     int track = 0;
     std::shared_ptr<const MidiSong> getSong() const;
 
-  //  void assertValid();
     void scrollVertically(float pitchCV);
 
     // Which field of note is being edited?
@@ -51,9 +64,16 @@ public:
 
     void assertValid() const;
 
+    bool cursorInViewport() const;
     void assertCursorInViewport() const;
     void scrollViewportToCursorPitch();
+    bool cursorInViewportTime() const;
+    void adjustViewportForCursor();
 private:
+       // TODO: don't allow direct access?
+    float m_cursorTime = 0;
+    float m_cursorPitch = 0;
+
      // Below is not for clients to call. TODO: use private or something.
     // Definitely need some architecture here.
     std::weak_ptr<MidiSong> _song;

@@ -154,9 +154,10 @@ void MidiEditor::selectNextNote()
         selectNextNoteOrCurrent(track, it, selection);
     }
     updateCursor();
-    adjustViewportForCursor();
+    context->adjustViewportForCursor();
 }
 
+// Move to edit context?
 void MidiEditor::updateCursor()
 {
     if (selection->empty()) {
@@ -172,14 +173,14 @@ void MidiEditor::updateCursor()
             if (!firstNote) {
                 firstNote = note;
             }
-            if ((note->startTime == context->cursorTime) &&
-                (note->pitchCV == context->cursorPitch)) {
+            if ((note->startTime == context->cursorTime()) &&
+                (note->pitchCV == context->cursorPitch())) {
                 return;
             }
         }
     }
-    context->cursorTime = firstNote->startTime;
-    context->cursorPitch = firstNote->pitchCV;
+    context->setCursorTime(firstNote->startTime);
+    context->setCursorPitch(firstNote->pitchCV);
 }
 
 void MidiEditor::selectPrevNote()
@@ -208,7 +209,7 @@ void MidiEditor::selectPrevNote()
         selectPrevNoteOrCurrent(track, it, selection);
     }
     updateCursor();
-    adjustViewportForCursor();
+    context->adjustViewportForCursor();
 }
 
 void MidiEditor::changePitch(int semitones)
@@ -218,9 +219,9 @@ void MidiEditor::changePitch(int semitones)
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
         note->pitchCV += deltaCV;
     }
-    context->cursorPitch += deltaCV;
-    adjustViewportForCursor();
-    assert(cursorInViewport());
+    context->setCursorPitch(context->cursorPitch() + deltaCV);
+    context->adjustViewportForCursor();
+    context->assertCursorInViewport();
 }
 
 void MidiEditor::changeStartTime(bool ticks, int amount)
@@ -244,12 +245,12 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
         note->startTime = std::max(0.f, note->startTime);
         track->insertEvent(note);
         if (!setCursor) {
-            context->cursorTime = note->startTime;
+            context->setCursorTime(note->startTime);
             setCursor = true;
         }
     }
-    adjustViewportForCursor();
-    assert(cursorInViewport());
+    context->adjustViewportForCursor();
+    context->assertCursorInViewport();
 }
 
 void MidiEditor::changeDuration(bool ticks, int amount)
@@ -272,54 +273,25 @@ void MidiEditor::assertCursorInSelection()
     bool foundIt = false;
     assert(!selection->empty());
     for (auto it : *selection) {
-        if (context->cursorTime == it->startTime) {
+        if (context->cursorTime() == it->startTime) {
             foundIt = true;
         }
     }
     assert(foundIt);
 }
 
-bool MidiEditor::cursorInViewport() const
-{
-    if (context->cursorTime < context->startTime) {
-        return false;
-    }
-    if (context->cursorTime >= context->endTime) {
-        return false;
-    }
-    if (context->cursorPitch > context->pitchHi) {
-        return false;
-    }
-    if (context->cursorPitch < context->pitchLow) {
-        return false;
-    }
 
-    return true;
-}
-
-
-bool MidiEditor::cursorInViewportTime() const
-{
-    if (context->cursorTime < context->startTime) {
-        return false;
-    }
-    if (context->cursorTime >= context->endTime) {
-        return false;
-    }
-
-    return true;
-}
-
+#if 0
 // TODO: should this be in edit context? (Yes)
 void MidiEditor::adjustViewportForCursor()
 {
-    if (!cursorInViewportTime()) {
+    if (!context->cursorInViewportTime()) {
 
         float minimumAdvance = 0;
-        if (context->cursorTime >= context->endTime) {
-            minimumAdvance = context->cursorTime - context->endTime;
-        } else if (context->cursorTime < context->startTime) {
-            minimumAdvance = context->cursorTime - context->startTime;
+        if (context->cursorTime() >= context->endTime) {
+            minimumAdvance = context->cursorTime() - context->endTime;
+        } else if (context->cursorTime() < context->startTime) {
+            minimumAdvance = context->cursorTime() - context->startTime;
         }
 
         // figure what fraction of 2 bars this is
@@ -337,20 +309,23 @@ void MidiEditor::adjustViewportForCursor()
     // and to the pitch
     context->scrollViewportToCursorPitch();
 }
+#endif
 
 void MidiEditor::advanceCursor(bool ticks, int amount)
 {
     assert(!ticks);         // not implemented yet
     assert(amount != 0);
 
-    assert(cursorInViewport());
+    //assert(cursorInViewport());
+    context->assertCursorInViewport();
 
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
-    context->cursorTime += advanceAmount;
-    context->cursorTime = std::max(0.f, context->cursorTime);
+    context->setCursorTime(context->cursorTime() + advanceAmount);
+    context->setCursorTime(std::max(0.f, context->cursorTime()));
     updateSelectionForCursor();
-    adjustViewportForCursor();
-    assert(cursorInViewport());
+    context->adjustViewportForCursor();
+    //assert(cursorInViewport());
+    context->assertCursorInViewport();
     song->assertValid();
 }
 
@@ -374,30 +349,13 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
 void MidiEditor::insertNote()
 {
      // for now, fixed to quarter
-    extendTrackToMinDuration(context->cursorTime + 1.f);
-#if 0
-    auto track = song->getTrack(0);
-    float curLength = track->getLength();
-
-
-    float neededLength = context->cursorTime + 1.f;
-    if (neededLength > curLength) {
-        float need = neededLength;
-        float needBars = need / 4.f;
-        float roundedBars = std::round(needBars + 1.f);
-        float duration = roundedBars * 4;
-        std::shared_ptr<MidiEndEvent> end = track->getEndEvent();
-        track->deleteEvent(*end);
-       // end->startTime = duration;
-        track->insertEnd(duration);
-    }
-#endif
+    extendTrackToMinDuration(context->cursorTime() + 1.f);
 
     auto track = song->getTrack(0);
     // for now, assume no note there
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-    note->pitchCV = context->cursorPitch;
-    note->startTime = context->cursorTime;
+    note->pitchCV = context->cursorPitch();
+    note->startTime = context->cursorTime();
     note->duration = 1.0f;          // for now, fixed to quarter
     track->insertEvent(note);
     updateSelectionForCursor();
@@ -424,7 +382,7 @@ void MidiEditor::updateSelectionForCursor()
     auto start = context->startTime;
     auto end = context->endTime;
 
-    const int cursorSemi = PitchUtils::cvToSemitone(context->cursorPitch);
+    const int cursorSemi = PitchUtils::cvToSemitone(context->cursorPitch());
     MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);
 
     for (auto it = notes.first; it != notes.second; ++it) {
@@ -433,8 +391,8 @@ void MidiEditor::updateSelectionForCursor()
         const auto endTime = note->startTime + note->duration;
 
         if ((PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
-            (startTime <= context->cursorTime) &&
-            (endTime > context->cursorTime)) {
+            (startTime <= context->cursorTime()) &&
+            (endTime > context->cursorTime())) {
             selection->select(note);
             return;
         }
@@ -443,10 +401,10 @@ void MidiEditor::updateSelectionForCursor()
 
 void MidiEditor::changeCursorPitch(int semitones)
 {
-    float pitch = context->cursorPitch + (semitones * PitchUtils::semitone);
+    float pitch = context->cursorPitch() + (semitones * PitchUtils::semitone);
     pitch = std::max(pitch, -5.f);
     pitch = std::min(pitch, 5.f);
-    context->cursorPitch = pitch;
+    context->setCursorPitch(pitch);
     context->scrollViewportToCursorPitch();
     updateSelectionForCursor();
 }

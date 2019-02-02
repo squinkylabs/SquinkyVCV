@@ -39,8 +39,8 @@ static bool cursorOnSelection(MidiSequencerPtr seq)
     assert(note);
 
     // for now, do exact match
-    if ((note->startTime == seq->context->cursorTime) &&
-        (note->pitchCV == seq->context->cursorPitch)) {
+    if ((note->startTime == seq->context->cursorTime()) &&
+        (note->pitchCV == seq->context->cursorPitch())) {
         return true;
     }
     return false;
@@ -199,7 +199,7 @@ static void testTrans1()
     seq->editor->selectNextNote();          // now first is selected
 
     const float firstNotePitch = PitchUtils::pitchToCV(3, 0);
-    assertClose(seq->context->cursorPitch, firstNotePitch, .0001);
+    assertClose(seq->context->cursorPitch(), firstNotePitch, .0001);
 
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
@@ -208,7 +208,7 @@ static void testTrans1()
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
     const float transposedPitch = PitchUtils::pitchToCV(3, 1);
-    assertClose(seq->context->cursorPitch, transposedPitch, .0001);
+    assertClose(seq->context->cursorPitch(), transposedPitch, .0001);
     seq->assertValid();
     seq->editor->assertCursorInSelection();
 }
@@ -219,7 +219,7 @@ static void testTrans3()
     seq->editor->selectNextNote();          // now first is selected
 
     const float firstNotePitch = PitchUtils::pitchToCV(3, 0);
-    assertClose(seq->context->cursorPitch, firstNotePitch, .0001);
+    assertClose(seq->context->cursorPitch(), firstNotePitch, .0001);
 
     MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
@@ -313,8 +313,8 @@ static void testTrans2()
 static void testCursor1()
 {
     MidiSequencerPtr seq = makeTest(false);
-    assertEQ(seq->context->cursorTime, 0);
-    assertEQ(seq->context->cursorPitch, 0)
+    assertEQ(seq->context->cursorTime(), 0);
+    assertEQ(seq->context->cursorPitch(), 0)
         assertEQ(seq->context->startTime, 0);
 }
 
@@ -322,10 +322,10 @@ static void testCursor2()
 {
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->advanceCursor(false, 1);
-    assertEQ(seq->context->cursorTime, 1.f / 4.f);
+    assertEQ(seq->context->cursorTime(), 1.f / 4.f);
 
     seq->editor->advanceCursor(false, -4);
-    assertEQ(seq->context->cursorTime, 0);
+    assertEQ(seq->context->cursorTime(), 0);
     assertEQ(seq->context->startTime, 0);
 }
 
@@ -335,14 +335,14 @@ static void testCursor3()
     seq->editor->selectNextNote();
 
     // Select first note to put cursor in it
-    assertEQ(seq->context->cursorTime, 0);
+    assertEQ(seq->context->cursorTime(), 0);
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    assertEQ(seq->context->cursorPitch, note.pitchCV);
+    assertEQ(seq->context->cursorPitch(), note.pitchCV);
 
     // Now advance a 1/4 note
     seq->editor->advanceCursor(false, 4);
-    assertEQ(seq->context->cursorTime, 1.f);
+    assertEQ(seq->context->cursorTime(), 1.f);
     assert(seq->selection->empty());
     assertEQ(seq->context->startTime, 0);
 
@@ -356,10 +356,10 @@ static void testCursor4()
     seq->editor->selectNextNote();
 
     // Select first note to put cursor in it
-    assertEQ(seq->context->cursorTime, 0);
+    assertEQ(seq->context->cursorTime(), 0);
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    assertEQ(seq->context->cursorPitch, note.pitchCV);
+    assertEQ(seq->context->cursorPitch(), note.pitchCV);
 
     // Now advance up 3
     seq->editor->changeCursorPitch(1);
@@ -382,10 +382,10 @@ static void testCursor4b()
     seq->editor->selectNextNote();
 
     // Select first note to put cursor in it
-    assertEQ(seq->context->cursorTime, 0);
+    assertEQ(seq->context->cursorTime(), 0);
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    assertEQ(seq->context->cursorPitch, note.pitchCV);
+    assertEQ(seq->context->cursorPitch(), note.pitchCV);
 
     // Now advance up 3 octaves
     seq->editor->changeCursorPitch(3 * 12);
@@ -402,10 +402,10 @@ static void testCursor5()
     seq->editor->selectNextNote();
 
     // Select first note to put cursor in it
-    assertEQ(seq->context->cursorTime, 0);
+    assertEQ(seq->context->cursorTime(), 0);
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    assertEQ(seq->context->cursorPitch, note.pitchCV);
+    assertEQ(seq->context->cursorPitch(), note.pitchCV);
 
     // Now advance two units right, to end of note
     seq->editor->advanceCursor(false, 1);
@@ -437,7 +437,7 @@ static void testInsertSub(int advancUnits)
     assert(seq->selection->empty());
 
     seq->editor->advanceCursor(false, advancUnits);       // move up a half note
-    float pitch = seq->context->cursorPitch;
+    float pitch = seq->context->cursorPitch();
 
     seq->editor->insertNote();
 
