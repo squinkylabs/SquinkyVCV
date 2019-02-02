@@ -4,7 +4,6 @@
 #include "FilteredIterator.h"
 #include <memory>
 
-///class MidiViewport;
 class MidiSong;
 
 class MidiEditorContext

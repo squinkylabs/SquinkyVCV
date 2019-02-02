@@ -3,7 +3,6 @@
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
-
 extern int _mdb;
 
 MidiEditorContext::MidiEditorContext(MidiSongPtr song) : _song(song)

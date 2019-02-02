@@ -1,7 +1,6 @@
 
 #include "MidiSequencer.h"
 #include "MidiEditor.h"
-//#include "MidiViewport.h"
 
 int _mdb = 0;       // global instance counter
 

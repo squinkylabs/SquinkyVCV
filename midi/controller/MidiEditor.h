@@ -58,13 +58,7 @@ private:
     // select any note that is under the cursor
     void updateSelectionForCursor();
 
- //   bool cursorInViewport() const;
- //   bool cursorInViewportTime() const;
- //   void adjustViewportForCursor();
     void extendTrackToMinDuration(float time);
-   
-
-
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;
