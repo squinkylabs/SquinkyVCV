@@ -75,12 +75,18 @@ public:
     /**
      * factory method to generate test content.
      */
-    static MidiTrackPtr makeTest1();
-    static MidiTrackPtr makeTestEmpty();
-
+    enum class TestContent
+    {
+        eightQNotes,
+        empty
+    };
+    static MidiTrackPtr makeTest(TestContent);
 
 private:
     container events;
+
+    static MidiTrackPtr makeTest1();
+    static MidiTrackPtr makeTestEmpty();
 };
 
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;

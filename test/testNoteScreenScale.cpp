@@ -8,14 +8,15 @@ static void test0()
 {
     // viewport holds single quarter note
     MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
-    vp->startTime = 0;
-    vp->endTime = 1;
-  
+    vp->setStartTime(0);
+    vp->setEndTime(1);
+
     // let's make one quarter note fill the whole screen
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    vp->pitchLow = note.pitchCV;
-    vp->pitchHi = note.pitchCV;
+    vp->setPitchRange(note.pitchCV, note.pitchCV);
+
+    vp->setCursorPitch(note.pitchCV);
 
     NoteScreenScale n(vp, 100, 100);
     float left = n.midiTimeToX(note);
@@ -36,20 +37,19 @@ static void test1()
 {
     // viewport holds single quarter note
     MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
-    vp->startTime = 0;
-    vp->endTime = 1;
+    vp->setTimeRange(0, 1);
 
     // let's make one quarter note fill the whole screen
     MidiNoteEvent note;
     note.setPitch(3, 0);
-    vp->pitchLow = note.pitchCV;
-    vp->pitchHi = note.pitchCV;
+    vp->setPitchRange(note.pitchCV, note.pitchCV);
+    vp->setCursorPitch(note.pitchCV);
 
     NoteScreenScale n(vp, 100, 100);
     auto y = n.midiPitchToY(note);
     auto h = n.noteHeight();
     assertClose(y, 0, .001);
-    assertClose(h, 100, .001); 
+    assertClose(h, 100, .001);
 }
 
 // test of offset x coordinates
@@ -59,22 +59,21 @@ static void test2()
     printf("test2\n");
     // viewport holds one bar of 4/4
     MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
-    vp->startTime = 0;
-    vp->endTime = 4;
+    vp->setTimeRange(0, 4);
 
     // let's make one eight note
     MidiNoteEvent note;
     note.startTime = 3.f;
     note.duration = .5f;
     note.setPitch(3, 0);
-    vp->pitchLow = note.pitchCV;
-    vp->pitchHi = note.pitchCV;
+    vp->setPitchRange(note.pitchCV, note.pitchCV);
+    vp->setCursorPitch(note.pitchCV);
 
     NoteScreenScale n(vp, 100, 100);
 
     auto bounds = n.midiTimeToHBounds(note);
     assertEQ(bounds.first, 75.f);
-    assertEQ(bounds.second, 75.f +  (100.0 /8));
+    assertEQ(bounds.second, 75.f + (100.0 / 8));
 
     float x = n.midiTimeToX(note);
     float x2 = n.midiTimeToX(note.startTime);
@@ -86,14 +85,13 @@ static void test3()
 {
     // viewport holds two pitches
     MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
-    vp->startTime = 0;
-    vp->endTime = 1;
+    vp->setTimeRange(0, 1);
 
     MidiNoteEvent note1, note2;
     note1.setPitch(3, 0);
     note2.setPitch(3, 1);
-    vp->pitchLow = note1.pitchCV;
-    vp->pitchHi = note2.pitchCV;
+    vp->setPitchRange(note1.pitchCV, note2.pitchCV);
+    vp->setCursorPitch(note1.pitchCV);
 
     NoteScreenScale n(vp, 100, 100);
     auto h = n.noteHeight();

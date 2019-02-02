@@ -252,7 +252,7 @@ static void testSameTime()
 
 static void testSong()
 {
-    auto p = MidiSong::makeTest1();
+    auto p = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     assert(_mdb > 0);
     p->assertValid();
 }

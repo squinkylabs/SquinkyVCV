@@ -12,16 +12,16 @@
 MidiSequencerPtr makeTest(bool empty = false)
 {
     MidiSongPtr song = empty ?
-        MidiSong::makeTestEmpty() :
-        MidiSong::makeTest1();
+        MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, 0) :
+        MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     MidiSequencerPtr sequencer = std::make_shared<MidiSequencer>(song);
 
 
-    sequencer->context->startTime = 0;
-    sequencer->context->endTime =
-        sequencer->context->startTime + 8;
-    sequencer->context->pitchLow = PitchUtils::pitchToCV(3, 0);
-    sequencer->context->pitchHi = PitchUtils::pitchToCV(5, 0);
+    sequencer->context->setStartTime(0);
+    sequencer->context->setEndTime(
+        sequencer->context->startTime() + 8);
+    sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
+    sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
 
     sequencer->assertValid();
     return sequencer;
@@ -315,7 +315,7 @@ static void testCursor1()
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime(), 0);
     assertEQ(seq->context->cursorPitch(), 0)
-        assertEQ(seq->context->startTime, 0);
+    assertEQ(seq->context->startTime(), 0);
 }
 
 static void testCursor2()
@@ -326,7 +326,7 @@ static void testCursor2()
 
     seq->editor->advanceCursor(false, -4);
     assertEQ(seq->context->cursorTime(), 0);
-    assertEQ(seq->context->startTime, 0);
+    assertEQ(seq->context->startTime(), 0);
 }
 
 static void testCursor3()
@@ -344,7 +344,7 @@ static void testCursor3()
     seq->editor->advanceCursor(false, 4);
     assertEQ(seq->context->cursorTime(), 1.f);
     assert(seq->selection->empty());
-    assertEQ(seq->context->startTime, 0);
+    assertEQ(seq->context->startTime(), 0);
 
 }
 
@@ -371,7 +371,7 @@ static void testCursor4()
     }
 
     assert(!seq->selection->empty());
-    assertEQ(seq->context->startTime, 0);
+    assertEQ(seq->context->startTime(), 0);
 }
 
 
@@ -412,7 +412,7 @@ static void testCursor5()
     seq->editor->advanceCursor(false, 1);
 
     assert(seq->selection->empty());
-    assertEQ(seq->context->startTime, 0);
+    assertEQ(seq->context->startTime(), 0);
 }
 
 // move past the end of the second bar
@@ -420,14 +420,14 @@ static void testCursor6()
 {
     MidiSequencerPtr seq = makeTest(false);
 
-    assertEQ(seq->context->startTime, 0);
+    assertEQ(seq->context->startTime(), 0);
     seq->assertValid();
 
     // go up two bars and 1/16
     seq->editor->advanceCursor(false, 16 * 2 + 1);
 
     // bar 2 should be new start time
-    assertEQ(seq->context->startTime, 2 * 4);
+    assertEQ(seq->context->startTime(), 2 * 4);
 
 }
 

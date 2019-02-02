@@ -40,7 +40,7 @@ static void test2()
 static void testDefSong()
 {
     // TODO: move to song::assertValid()
-    MidiSongPtr song = MidiSong::makeTest1();
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     assertEQ(song->getHighestTrackNumber(), 0);         // there should be one track - 0
     auto track = song->getTrack(0);
     track->assertValid();

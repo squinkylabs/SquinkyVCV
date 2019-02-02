@@ -160,10 +160,26 @@ MidiTrack::const_iterator MidiTrack::findEvent(const MidiEvent& ev)
     return events.end();
 }
 
+MidiTrackPtr MidiTrack::makeTest(TestContent content)
+{
+    MidiTrackPtr ret;
+    switch (content) {
+        case TestContent::eightQNotes:
+            ret = makeTest1();
+            break;
+        case TestContent::empty:
+            ret = makeTestEmpty();
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
 /**
  * makes a track of 8 1/4 notes, each of 1/8 note duration (50%).
  * pitch is ascending in semitones from 3:0 (c)
  */
+
 MidiTrackPtr MidiTrack::makeTest1()
 {
     auto track = std::make_shared<MidiTrack>();
@@ -190,3 +206,4 @@ MidiTrackPtr MidiTrack::makeTestEmpty()
     track->insertEnd(8.f);                  // make two empty bars
     return track;
 }
+

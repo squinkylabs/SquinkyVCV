@@ -52,6 +52,16 @@ MidiTrackConstPtr MidiSong::getTrack(int index) const
     return tracks[index];
 }
 
+
+MidiSongPtr MidiSong::makeTest(MidiTrack::TestContent content, int trackNumber)
+{
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    auto track = MidiTrack::makeTest(content);
+    song->addTrack(trackNumber, track);
+    song->assertValid();
+    return song;
+}
+#if 0
 MidiSongPtr MidiSong::makeTest1()
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
@@ -69,6 +79,7 @@ MidiSongPtr MidiSong::makeTestEmpty()
     song->assertValid();
     return song;
 }
+#endif
 void MidiSong::assertValid() const
 {
     for (auto track : tracks) {

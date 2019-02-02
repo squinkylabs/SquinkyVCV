@@ -5,12 +5,12 @@ NoteScreenScale::NoteScreenScale(MidiEditorContextPtr vp, float screenWidth, flo
 {
     assert(screenWidth > 0);
     assert(screenHeight > 0);
-    assert(viewport->pitchHi >= viewport->pitchLow);
-    ax = screenWidth / (viewport->endTime - viewport->startTime);
+    viewport->assertValid();
+    ax = screenWidth / (viewport->endTime() - viewport->startTime());
 
     // min and max the same is fine - it's just one note bar full screen
-    float dbg = ((viewport->pitchHi + 1 / 12.f) - viewport->pitchLow);
-    ay = screenHeight / ((viewport->pitchHi + 1 / 12.f) - viewport->pitchLow);
+    float dbg = ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
+    ay = screenHeight / ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
 
     //printf("in init ax=%f ay=%f screenx=%f screeny=%f\n", ax, ay, screenWidth, screenHeight);
     //fflush(stdout);
@@ -23,7 +23,7 @@ float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
 
 float NoteScreenScale::midiTimeToX(MidiEvent::time_t t)
 {
-    return  (t - viewport->startTime) * ax;
+    return  (t - viewport->startTime()) * ax;
 }
 
 float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
@@ -33,12 +33,12 @@ float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
 
 float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note)
 {
-    return (viewport->pitchHi - note.pitchCV) * ay;
+    return (viewport->pitchHi() - note.pitchCV) * ay;
 }
 
 float NoteScreenScale::midiCvToY(float cv)
 {
-    return (viewport->pitchHi - cv) * ay;
+    return (viewport->pitchHi() - cv) * ay;
 }
 
 float NoteScreenScale::noteHeight()
@@ -48,7 +48,7 @@ float NoteScreenScale::noteHeight()
 
 std::pair<float, float> NoteScreenScale::midiTimeToHBounds(const MidiNoteEvent& note)
 {
-    float x = (note.startTime - viewport->startTime) * ax;
-    float y = (note.startTime + note.duration - viewport->startTime) * ax;
+    float x = (note.startTime - viewport->startTime()) * ax;
+    float y = (note.startTime + note.duration - viewport->startTime()) * ax;
     return std::pair<float, float>(x, y);
 }

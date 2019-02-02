@@ -346,8 +346,8 @@ void MidiEditor::updateSelectionForCursor()
     const int cursorSemi = PitchUtils::cvToSemitone(context->cursorPitch());
 
     // iterator over all the notes that are in the edit context
-    auto start = context->startTime;
-    auto end = context->endTime;
+    auto start = context->startTime();
+    auto end = context->endTime();
     MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);
     for (auto it = notes.first; it != notes.second; ++it) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);

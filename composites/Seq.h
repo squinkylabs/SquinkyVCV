@@ -82,12 +82,9 @@ private:
 
 template <class TBase>
 void  Seq<TBase>::init()
-{
-    //  MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSong> song) 
+{ 
     std::shared_ptr<MidiPlayer::IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
-
-   //std::shared_ptr<MidiPlayer::IPlayerHost> host;
-    std::shared_ptr<MidiSong> song = MidiSong::makeTest1();
+    std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     player = std::make_shared<MidiPlayer>(host, song);
 }
 

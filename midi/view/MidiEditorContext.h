@@ -29,23 +29,58 @@ public:
         m_cursorTime = time;
     }
 
+    MidiEvent::time_t startTime()
+    {
+        return m_startTime;
+    }
+    void setStartTime(MidiEvent::time_t t)
+    {
+        m_startTime = t;
+    }
+    void setEndTime(MidiEvent::time_t t)
+    {
+        m_endTime = t;
+    }
+    void setTimeRange(MidiEvent::time_t start, MidiEvent::time_t end)
+    {
+        m_startTime = start;
+        m_endTime = end;
+        assert(end > start);
+    }
+
+    MidiEvent::time_t endTime()
+    {
+        return m_endTime;
+    }
+    float pitchHi()
+    {
+        return m_pitchHi;
+    }
+    float pitchLow()
+    {
+        return m_pitchLow;
+    }
+    void setPitchLow(float p)
+    {
+        m_pitchLow = p;
+    }
+    void setPitchHi(float p)
+    {
+        m_pitchHi = p;
+    }
+    void setPitchRange(float l, float h)
+    {
+        assert(h >= l);
+        m_pitchHi = h;
+        m_pitchLow = l;
+    }
+
  
     // TODO: change to const_iterator
     using iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
     using iterator_pair = std::pair<iterator, iterator>;
     iterator_pair getEvents() const;
 
-    // Properties to filter on
-    // This is all pretty note specific
-
-    // range will include t == start time, but will not
-    // include t == endTime
-    MidiEvent::time_t startTime = 0;
-    MidiEvent::time_t endTime = 0;
-
-    // pitch is inclusive: Low and Hi will be included
-    float pitchLow = 0;
-    float pitchHi = 0;
     int track = 0;
     std::shared_ptr<const MidiSong> getSong() const;
 
@@ -72,6 +107,15 @@ private:
        // TODO: don't allow direct access?
     float m_cursorTime = 0;
     float m_cursorPitch = 0;
+
+    // range will include t == start time, but will not
+    // include t == endTime
+    MidiEvent::time_t m_startTime = 0;
+    MidiEvent::time_t m_endTime = 0;
+
+    // pitch is inclusive: Low and Hi will be included
+    float m_pitchLow = 0;
+    float m_pitchHi = 0;
 
      // Below is not for clients to call. TODO: use private or something.
     // Definitely need some architecture here.

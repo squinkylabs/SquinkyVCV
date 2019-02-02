@@ -61,7 +61,7 @@ static void test2()
 {
 
     UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
-    MidiSongPtr ms = MidiSong::makeTest1();
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
 
 
     std::vector<MidiEventPtr> toRem;

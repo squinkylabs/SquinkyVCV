@@ -17,27 +17,27 @@ MidiEditorContext::~MidiEditorContext()
 
 void MidiEditorContext::scrollViewportToCursorPitch()
 {
-    while (m_cursorPitch < pitchLow) {
+    while (m_cursorPitch < pitchLow()) {
         scrollVertically(-1 * PitchUtils::octave);
     }
-    while (m_cursorPitch > pitchHi) {
+    while (m_cursorPitch > pitchHi()) {
         scrollVertically(1 * PitchUtils::octave);
     }
 }
 
 void MidiEditorContext::assertCursorInViewport() const
 {
-    assertGE(m_cursorTime, startTime);
-    assertLT(m_cursorTime, endTime);
-    assertGE(m_cursorPitch, pitchLow);
-    assertLE(m_cursorPitch, pitchHi);
+    assertGE(m_cursorTime, m_startTime);
+    assertLT(m_cursorTime, m_endTime);
+    assertGE(m_cursorPitch, m_pitchLow);
+    assertLE(m_cursorPitch, m_pitchHi);
 }
  
 void MidiEditorContext::assertValid() const
 {
-    assert(endTime > startTime);
-    assert(pitchHi > pitchLow);
-    assert(getSong());
+    assert(m_endTime > m_startTime);
+    assert(m_pitchHi >= m_pitchLow);
+    //assert(getSong());
 
     assertGE(m_cursorTime, 0);
     assertLT(m_cursorPitch, 10);      // just for now
@@ -48,8 +48,8 @@ void MidiEditorContext::assertValid() const
 
 void MidiEditorContext::scrollVertically(float pitchCV)
 {
-    pitchHi += pitchCV;
-    pitchLow += pitchCV;
+    m_pitchHi += pitchCV;
+    m_pitchLow += pitchCV;
 }
 
 std::shared_ptr<const MidiSong> MidiEditorContext::getSong() const
@@ -65,10 +65,10 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
         bool ret = false;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);
         if (note) {
-            ret = note->pitchCV >= pitchLow && note->pitchCV <= pitchHi;
+            ret = note->pitchCV >= m_pitchLow && note->pitchCV <= m_pitchHi;
         }
         if (ret) {
-            ret = me->startTime < this->endTime;
+            ret = me->startTime < this->m_endTime;
         }
         return ret;
     };
@@ -77,7 +77,7 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
     const auto track = song->getTrack(this->track);
 
     // raw will be pair of track::const_iterator
-    const auto rawIterators = track->timeRange(this->startTime, this->endTime);
+    const auto rawIterators = track->timeRange(this->m_startTime, this->m_endTime);
 
     return iterator_pair(iterator(rawIterators.first, rawIterators.second, lambda),
         iterator(rawIterators.second, rawIterators.second, lambda));
@@ -85,16 +85,16 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
 
 bool MidiEditorContext::cursorInViewport() const
 {
-    if (cursorTime() < startTime) {
+    if (m_cursorTime < m_startTime) {
         return false;
     }
-    if (cursorTime() >= endTime) {
+    if (m_cursorTime >= m_endTime) {
         return false;
     }
-    if (cursorPitch() > pitchHi) {
+    if (m_cursorPitch > m_pitchHi) {
         return false;
     }
-    if (cursorPitch() < pitchLow) {
+    if (m_cursorPitch < m_pitchLow) {
         return false;
     }
 
@@ -103,10 +103,10 @@ bool MidiEditorContext::cursorInViewport() const
 
 bool MidiEditorContext::cursorInViewportTime() const
 {
-    if (cursorTime() < startTime) {
+    if (m_cursorTime < m_startTime) {
         return false;
     }
-    if (cursorTime() >= endTime) {
+    if (m_cursorTime >= m_endTime) {
         return false;
     }
 
@@ -118,10 +118,10 @@ void MidiEditorContext::adjustViewportForCursor()
     if (!cursorInViewportTime()) {
 
         float minimumAdvance = 0;
-        if (cursorTime() >= endTime) {
-            minimumAdvance = cursorTime() - endTime;
-        } else if (cursorTime() < startTime) {
-            minimumAdvance = cursorTime() - startTime;
+        if (m_cursorTime >= m_endTime) {
+            minimumAdvance = m_cursorTime - m_endTime;
+        } else if (m_cursorTime < m_startTime) {
+            minimumAdvance = m_cursorTime - m_startTime;
         }
 
         // figure what fraction of 2 bars this is
@@ -131,9 +131,9 @@ void MidiEditorContext::adjustViewportForCursor()
         float x = std::round(advanceBars / 2.f);
         float finalAdvanceTime = x * TimeUtils::barToTime(2);
 
-        startTime += finalAdvanceTime;
-        endTime = startTime + TimeUtils::barToTime(2);
-        assert(startTime >= 0);
+        m_startTime += finalAdvanceTime;
+        m_endTime = m_startTime + TimeUtils::barToTime(2);
+        assert(m_startTime >= 0);
     }
 
     // and to the pitch

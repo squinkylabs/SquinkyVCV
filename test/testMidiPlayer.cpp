@@ -29,7 +29,7 @@ public:
 
 static void test0()
 {
-    MidiSongPtr song = MidiSong::makeTest1();
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
     pl.timeElapsed(.01f);

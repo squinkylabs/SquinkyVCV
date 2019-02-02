@@ -1,9 +1,10 @@
 #pragma once
 
+#include "MidiTrack.h"
 #include <vector>
 #include <memory>
 
-class MidiTrack;
+
 class MidiSong;
 
 using MidiSongPtr = std::shared_ptr<MidiSong>;
@@ -27,8 +28,9 @@ public:
     /**
      * factory method to generate test content
      */
-    static MidiSongPtr makeTest1();     // 8 quarter notes ascending in track 0
-    static MidiSongPtr makeTestEmpty(); // track 0 is empty
+    static MidiSongPtr makeTest(MidiTrack::TestContent, int trackNumber);
+  //  static MidiSongPtr makeTest1();     // 8 quarter notes ascending in track 0
+  //  static MidiSongPtr makeTestEmpty(); // track 0 is empty
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
 
