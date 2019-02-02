@@ -52,7 +52,7 @@ void MidiEditorContext::scrollVertically(float pitchCV)
     m_pitchLow += pitchCV;
 }
 
-std::shared_ptr<const MidiSong> MidiEditorContext::getSong() const
+MidiSongPtr MidiEditorContext::getSong() const
 {
     return _song.lock();
 }
@@ -138,4 +138,11 @@ void MidiEditorContext::adjustViewportForCursor()
 
     // and to the pitch
     scrollViewportToCursorPitch();
+}
+
+MidiTrackPtr MidiEditorContext::getTrack()
+{
+    MidiSongPtr song = getSong();
+    assert(song);
+    return song->getTrack(trackNumber);
 }

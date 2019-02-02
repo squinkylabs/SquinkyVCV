@@ -15,7 +15,7 @@ public:
     MidiSong();
     ~MidiSong();
     std::shared_ptr<MidiTrack> getTrack(int index);
-    std::shared_ptr<const MidiTrack> getTrack(int index) const;
+    std::shared_ptr<const MidiTrack> getTrackConst(int index) const;
     void createTrack(int index);
 
     void assertValid() const;
@@ -29,8 +29,6 @@ public:
      * factory method to generate test content
      */
     static MidiSongPtr makeTest(MidiTrack::TestContent, int trackNumber);
-  //  static MidiSongPtr makeTest1();     // 8 quarter notes ascending in track 0
-  //  static MidiSongPtr makeTestEmpty(); // track 0 is empty
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
 

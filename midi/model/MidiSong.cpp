@@ -44,7 +44,7 @@ MidiTrackPtr MidiSong::getTrack(int index)
 }
 
 
-MidiTrackConstPtr MidiSong::getTrack(int index) const
+MidiTrackConstPtr MidiSong::getTrackConst(int index) const
 {
     assert(index < (int) tracks.size());
     assert(index >= 0);

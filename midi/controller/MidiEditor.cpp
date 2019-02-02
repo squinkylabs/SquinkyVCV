@@ -24,8 +24,7 @@ MidiEditor::~MidiEditor()
 
 MidiTrackPtr MidiEditor::getTrack()
 {
-    //hard code to track 0 for now
-    return song->getTrack(0);
+    return song->getTrack(context->getTrackNumber());
 }
 
 /**
@@ -234,7 +233,7 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
     extendTrackToMinDuration(lastTime);
 
     bool setCursor = false;
-    MidiTrackPtr track = song->getTrack(0);
+    MidiTrackPtr track = context->getTrack();
 
     for (auto ev : *selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
@@ -296,7 +295,7 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 
 void MidiEditor::extendTrackToMinDuration(float neededLength)
 {
-    auto track = song->getTrack(0);
+    auto track = context->getTrack();
     float curLength = track->getLength();
 
     if (neededLength > curLength) {
@@ -315,7 +314,7 @@ void MidiEditor::insertNote()
      // for now, fixed to quarter
     extendTrackToMinDuration(context->cursorTime() + 1.f);
 
-    auto track = song->getTrack(0);
+    auto track = context->getTrack();
     // for now, assume no note there
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->pitchCV = context->cursorPitch();
@@ -332,7 +331,7 @@ void MidiEditor::deleteNote()
         return;
     }
 
-    auto track = song->getTrack(0);
+    auto track = context->getTrack();
     for (auto it : *selection) {
         MidiEventPtr ev = it;
         track->deleteEvent(*ev);

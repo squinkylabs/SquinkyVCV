@@ -74,6 +74,16 @@ public:
         m_pitchHi = h;
         m_pitchLow = l;
     }
+    int getTrackNumber()
+    {
+        return trackNumber;
+    }
+    void setTrackNumber(int n)
+    {
+        trackNumber = n;
+    }
+
+    MidiTrackPtr getTrack();
 
  
     // TODO: change to const_iterator
@@ -82,7 +92,7 @@ public:
     iterator_pair getEvents() const;
 
     int track = 0;
-    std::shared_ptr<const MidiSong> getSong() const;
+    std::shared_ptr<MidiSong> getSong() const;
 
     void scrollVertically(float pitchCV);
 
@@ -116,6 +126,8 @@ private:
     // pitch is inclusive: Low and Hi will be included
     float m_pitchLow = 0;
     float m_pitchHi = 0;
+
+    int trackNumber = 0;
 
      // Below is not for clients to call. TODO: use private or something.
     // Definitely need some architecture here.

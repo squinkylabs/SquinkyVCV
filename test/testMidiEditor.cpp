@@ -5,18 +5,19 @@
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
 #include "MidiTrack.h"
-//#include "MidiViewport.h"
 #include "MidiSong.h"
+
+static int _trackNumber = 0;
 
 // sequencer factory - helper function
 MidiSequencerPtr makeTest(bool empty = false)
 {
     MidiSongPtr song = empty ?
-        MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, 0) :
-        MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+        MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
+        MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
     MidiSequencerPtr sequencer = std::make_shared<MidiSequencer>(song);
 
-
+    sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(
         sequencer->context->startTime() + 8);
@@ -54,7 +55,7 @@ static void testNext1()
     assertEQ(seq->selection->size(), 1);     // should be one note selected
 
     // note should be first one
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     assert(seq->selection->isSelected(firstEvent));
     assert(cursorOnSelection(seq));
 }
@@ -67,7 +68,7 @@ static void testNext1b()
     assertEQ(seq->selection->size(), 1);     // should be one note selected
 
     // note should be last one
-    auto it = seq->song->getTrack(0)->end();
+    auto it = seq->context->getTrack()->end();
     it--;
     it--;
     MidiEventPtr lastEvent = it->second;
@@ -84,14 +85,14 @@ static void testNext2()
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected
 
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     assert(seq->selection->isSelected(firstEvent));
 
     // Above is just test1, so now first event selected
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected
 
-    auto iter = seq->song->getTrack(0)->begin();
+    auto iter = seq->context->getTrack()->begin();
     ++iter;
     MidiEventPtr secondEvent = iter->second;
     assert(seq->selection->isSelected(secondEvent));
@@ -108,7 +109,7 @@ static void testNext2b()
     assertEQ(seq->selection->size(), 1);
 
     // Verify that second note is selected
-    auto iter = seq->song->getTrack(0)->begin();
+    auto iter = seq->context->getTrack()->begin();
     ++iter;
     MidiEventPtr secondEvent = iter->second;
     assert(seq->selection->isSelected(secondEvent));
@@ -117,7 +118,7 @@ static void testNext2b()
     seq->editor->selectPrevNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected
 
-    iter = seq->song->getTrack(0)->begin();
+    iter = seq->context->getTrack()->begin();
     MidiEventPtr firstEvent = iter->second;
     assert(seq->selection->isSelected(firstEvent));
 }
@@ -201,7 +202,7 @@ static void testTrans1()
     const float firstNotePitch = PitchUtils::pitchToCV(3, 0);
     assertClose(seq->context->cursorPitch(), firstNotePitch, .0001);
 
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
     seq->editor->changePitch(1);
@@ -221,7 +222,7 @@ static void testTrans3()
     const float firstNotePitch = PitchUtils::pitchToCV(3, 0);
     assertClose(seq->context->cursorPitch(), firstNotePitch, .0001);
 
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
     seq->editor->changePitch(50);       // transpose off screen
@@ -234,7 +235,7 @@ static void testShiftTime1()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float s0 = firstNote->startTime;
     seq->editor->changeStartTime(false, 1);     // delay one unit
@@ -253,7 +254,7 @@ static void testShiftTimex(int units)
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float s0 = firstNote->startTime;
     seq->editor->changeStartTime(false, units);     // delay n units
@@ -279,7 +280,7 @@ static void testChangeDuration1()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float d0 = firstNote->duration;
     seq->editor->changeDuration(false, 1);     // lengthen one unit
@@ -300,7 +301,7 @@ static void testTrans2()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
-    MidiEventPtr firstEvent = seq->song->getTrack(0)->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
 
@@ -441,8 +442,8 @@ static void testInsertSub(int advancUnits)
 
     seq->editor->insertNote();
 
-    auto it = seq->song->getTrack(0)->begin();
-    assert(it != seq->song->getTrack(0)->end());
+    auto it = seq->context->getTrack()->begin();
+    assert(it != seq->context->getTrack()->end());
     MidiEventPtr ev = it->second;
     MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
     assert(note);
@@ -471,8 +472,8 @@ static void testDelete()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();
 
-    auto it = seq->song->getTrack(0)->begin();
-    assert(it != seq->song->getTrack(0)->end());
+    auto it = seq->context->getTrack()->begin();
+    assert(it != seq->context->getTrack()->end());
     MidiEventPtr ev = it->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(ev);
     assert(firstNote);
@@ -482,8 +483,8 @@ static void testDelete()
     seq->editor->deleteNote();
     assert(seq->selection->empty());
 
-    it = seq->song->getTrack(0)->begin();
-    assert(it != seq->song->getTrack(0)->end());
+    it = seq->context->getTrack()->begin();
+    assert(it != seq->context->getTrack()->end());
     ev = it->second;
     MidiNoteEventPtr secondNote = safe_cast<MidiNoteEvent>(ev);
     assert(secondNote);
@@ -491,8 +492,9 @@ static void testDelete()
     seq->assertValid();
 }
 
-void testMidiEditor()
+void testMidiEditorSub(int trackNumber)
 {
+    _trackNumber = trackNumber;
     testNext1();
     testNext1b();
     testNext2();
@@ -523,4 +525,10 @@ void testMidiEditor()
     testInsert();
     testInsert2();
     testDelete();
+}
+
+void testMidiEditor()
+{
+    testMidiEditorSub(0);
+    testMidiEditorSub(2);
 }
