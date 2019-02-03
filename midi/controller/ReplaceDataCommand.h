@@ -5,8 +5,14 @@
 #include "MidiEvent.h"
 #include "SqCommand.h"
 
+class MidiEditorContext;
 class MidiEvent;
 class MidiSong;
+class MidiSequencer;
+class MidiSelectionModel;
+class ReplaceDataCommand;
+
+using ReplaceDataCommandPtr = std::shared_ptr<ReplaceDataCommand>;
 
 class ReplaceDataCommand : public SqCommand
 {
@@ -21,6 +27,14 @@ public:
         const std::vector<MidiEventPtr>& inRemove,
         const std::vector<MidiEventPtr>& inAdd);
 
+    /**
+     * static factories for replace commands
+     */
+    static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq);
+    static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq);
+    static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
+
+
 private:
     std::shared_ptr<MidiSong> song;
     int trackNumber;
@@ -28,3 +42,4 @@ private:
     std::vector<MidiEventPtr> addData;
 
 };
+

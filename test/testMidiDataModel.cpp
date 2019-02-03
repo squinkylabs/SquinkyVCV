@@ -276,6 +276,7 @@ static void testQuant()
     //assertEQ(x, 64);
 }
 
+
 void testMidiDataModel()
 {
     assertNoMidi();     // check for leaks

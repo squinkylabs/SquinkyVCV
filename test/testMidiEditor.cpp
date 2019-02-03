@@ -16,6 +16,7 @@ MidiSequencerPtr makeTest(bool empty = false)
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
     MidiSequencerPtr sequencer = std::make_shared<MidiSequencer>(song);
+    sequencer->makeEditor();
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -24,6 +25,7 @@ MidiSequencerPtr makeTest(bool empty = false)
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
 
+    
     sequencer->assertValid();
     return sequencer;
 }
@@ -309,6 +311,18 @@ static void testTrans2()
     const float p1 = firstNote->pitchCV;
     assertClose(p1 - p0, 1.f / 12.f, .000001);
     seq->assertValid();
+
+    assert(seq->undo->canUndo());
+    seq->undo->undo();
+    MidiNoteEventPtr firstNoteAfterUndo = safe_cast<MidiNoteEvent>(seq->context->getTrack()->begin()->second);
+    const float p3 = firstNoteAfterUndo->pitchCV;
+    assertClose(p3, p0, .000001);
+    seq->undo->redo();
+    MidiNoteEventPtr firstNoteAfterRedo = safe_cast<MidiNoteEvent>(seq->context->getTrack()->begin()->second);
+    const float p4 = firstNoteAfterRedo->pitchCV;
+    assertClose(p4, p1, .000001);
+
+
 }
 
 static void testCursor1()
@@ -348,7 +362,6 @@ static void testCursor3()
     assertEQ(seq->context->startTime(), 0);
 
 }
-
 
 // move multiple times in two directions
 static void testCursor4()
@@ -436,6 +449,7 @@ static void testInsertSub(int advancUnits)
 {
     MidiSequencerPtr seq = makeTest(true);
     assert(seq->selection->empty());
+    const int initialSize = seq->context->getTrack()->size();
 
     seq->editor->advanceCursor(false, advancUnits);       // move up a half note
     float pitch = seq->context->cursorPitch();
@@ -453,17 +467,25 @@ static void testInsertSub(int advancUnits)
 
     assert(seq->selection->isSelected(note));
     seq->assertValid();
+    const int insertSize = seq->context->getTrack()->size();
+    assertGT(insertSize, initialSize);
+
+    printf("finish undo for insert note\n");
+#if 0
+    assert(seq->undo->canUndo());
+    seq->undo->undo();
+    const int undoSize = seq->context->getTrack()->size();
+    assert(undoSize == initialSize);
+#endif
 }
 
 static void testInsert()
 {
-    printf("\ntestInsert\n");
     testInsertSub(8);
 }
 
 static void testInsert2()
 {
-    printf("\ntestInsert2\n");
     testInsertSub(34);      //middle of second bar
 }
 
@@ -490,6 +512,22 @@ static void testDelete()
     assert(secondNote);
     assertEQ(secondNote->startTime, 1.f);
     seq->assertValid();
+}
+
+// delete a note with undo/redo
+static void testDelete2()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();
+    const int trackSizeBefore = seq->context->getTrack()->size();
+    seq->editor->deleteNote();
+    const int trackSizeAfter = seq->context->getTrack()->size();
+    assertLT(trackSizeAfter, trackSizeBefore);
+
+    assert(seq->undo->canUndo());
+    seq->undo->undo();
+    const int trackSizeAfterUndo = seq->context->getTrack()->size();
+    assertEQ(trackSizeAfterUndo, trackSizeBefore);
 }
 
 void testMidiEditorSub(int trackNumber)
@@ -525,6 +563,7 @@ void testMidiEditorSub(int trackNumber)
     testInsert();
     testInsert2();
     testDelete();
+    testDelete2();
 }
 
 void testMidiEditor()

@@ -5,16 +5,14 @@
 
 class MidiEditorContext;
 class MidiSelectionModel;
+class MidiSequencer;
 class MidiSong;
 class MidiTrack;
 
 class MidiEditor
 {
 public:
-    MidiEditor(
-        std::shared_ptr<MidiSong>,
-        std::shared_ptr<MidiSelectionModel> selection,
-        std::shared_ptr<MidiEditorContext> context);
+    MidiEditor(std::shared_ptr<MidiSequencer>);
     MidiEditor(const MidiEditor&) = delete;
     ~MidiEditor();
 
@@ -44,11 +42,17 @@ public:
     void assertCursorInSelection();
 private:
     /**
-     * The selection model we will act on
+     * The sequencer we will act on.
+     * use wek ptr to break ref circle
      */
-    std::shared_ptr<MidiSelectionModel> selection;
-    std::shared_ptr<MidiSong> song;
-    std::shared_ptr<MidiEditorContext> context;
+    std::weak_ptr<MidiSequencer> m_seq;
+    std::shared_ptr< MidiSequencer> seq()
+    {
+        // This assumes of course that m_seq still exists
+        auto ret = m_seq.lock();
+        assert(ret);
+        return ret;
+    }
 
     std::shared_ptr<MidiTrack> getTrack();
 

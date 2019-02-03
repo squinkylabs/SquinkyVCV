@@ -4,6 +4,7 @@
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "MidiEditorContext.h"
+#include "UndoRedoStack.h"
 #include <memory>
 
 class MidiSong;
@@ -13,12 +14,19 @@ class MidiSong;
  * It holds all the other modules that make up a sequencer.
  * It knows how to create all the objects and hook them up.
  */
-class MidiSequencer
+class MidiSequencer : public std::enable_shared_from_this<MidiSequencer>
 {
 public:
     /** constructor takes a song to edit
     */
     MidiSequencer(std::shared_ptr<MidiSong>);
+
+    /**
+     * must be called to make constructor
+     * todo: memory leak for circular ref
+     */
+    void makeEditor();
+
     ~MidiSequencer();
 
     void assertValid() const;
@@ -28,7 +36,9 @@ public:
     MidiSelectionModelPtr const selection;
     MidiSongPtr const song;
     MidiEditorContextPtr context;
-    MidiEditorPtr const editor;
+    MidiEditorPtr editor;
+    UndoRedoStackPtr undo;
+
 };
 
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
