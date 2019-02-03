@@ -153,10 +153,16 @@ static void testCopyCtor()
         MidiNoteEvent note2(note);
         assert(note == note2);
 
+        MidiNoteEvent note3 = note;
+        assert(note == note3);
+
         MidiEndEvent end;
         end.startTime = 234.5f;
         MidiEndEvent end2(end);
         assert(end == end2);
+
+        MidiEndEvent end3 = end;
+        assert(end == end3);
     }
     assertNoMidi();     // check for leaks
 

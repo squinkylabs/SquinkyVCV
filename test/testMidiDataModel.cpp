@@ -1,5 +1,7 @@
 
 #include <assert.h>
+#include <memory>
+#include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "asserts.h"
@@ -276,6 +278,38 @@ static void testQuant()
     //assertEQ(x, 64);
 }
 
+static void testSelection()
+{
+    MidiSelectionModel sel;
+    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
+    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
+    note1->startTime = 1;
+    note1->pitchCV = 1.1f;
+    note2->startTime = 2;
+    note2->pitchCV = 2.1f;
+
+    assert(sel.empty());
+    assertEQ(sel.size(), 0);
+
+    sel.select(note2);
+    sel.extendSelection(note1);
+
+    assert(!sel.empty());
+    assertEQ(sel.size(), 2);
+
+    MidiSelectionModel::const_iterator it = sel.begin();
+    assert(it != sel.end());
+    MidiEventPtr ev = *it;
+    assert(*ev == *note1);
+    ++it;
+    assert(it != sel.end());
+    ev = *it;
+    assert(*ev == *note2);
+    ++it;
+    assert(it == sel.end());
+
+
+}
 
 void testMidiDataModel()
 {
@@ -294,5 +328,7 @@ void testMidiDataModel()
     testSameTime();
     testSong();
     testQuant();
+
+    testSelection();
     assertNoMidi();     // check for leaks
 }
