@@ -121,7 +121,7 @@ static void testFind1()
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->pitchCV = 5;
     mt.insertEvent(ev);
-    auto found = mt.findEvent(*ev);
+    auto found = mt.findEventDeep(*ev);
     assert(found->second == ev);
 }
 
@@ -307,8 +307,37 @@ static void testSelection()
     assert(*ev == *note2);
     ++it;
     assert(it == sel.end());
+}
 
 
+static void testSelection2()
+{
+    MidiSelectionModel selOrig;
+    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
+    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
+    MidiNoteEventPtr note3 = std::make_shared<MidiNoteEvent>();
+    note1->startTime = 1;
+    note1->pitchCV = 1.1f;
+    note2->startTime = 2;
+    note2->pitchCV = 2.1f;
+    note3->startTime = 3;
+
+    assert(selOrig.empty());
+    assertEQ(selOrig.size(), 0);
+
+    selOrig.select(note2);
+    selOrig.extendSelection(note1);
+
+    assert(!selOrig.empty());
+    assertEQ(selOrig.size(), 2);
+
+    MidiSelectionModelPtr sel = selOrig.clone();
+    assert(sel);
+    assert(sel->size() == selOrig.size());
+
+    assert(sel->isSelectedDeep(note1));
+    assert(sel->isSelectedDeep(note2));
+    assert(!sel->isSelectedDeep(note3));
 }
 
 void testMidiDataModel()
@@ -330,5 +359,6 @@ void testMidiDataModel()
     testQuant();
 
     testSelection();
+    testSelection2();
     assertNoMidi();     // check for leaks
 }

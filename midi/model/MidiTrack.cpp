@@ -78,7 +78,10 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
             return;
         }
     }
-    assert(false);
+    printf("could not delete event %p\n", &evIn);
+    this->_dump();
+    fflush(stdout);
+    assert(false);          // If you get here it means the event to be deleted was not in the track
 }
 
 void MidiTrack::_dump() const
@@ -98,7 +101,8 @@ void MidiTrack::_dump() const
                 break;
 
         }
-        printf("time = %f, type=%s\n", ti, type.c_str());
+        const void* addr = evt.get();
+        printf("time = %f, type=%s addr=%p\n", ti, type.c_str(), addr);
     }
     fflush(stdout);
 }
@@ -147,7 +151,8 @@ void MidiTrack::insertEnd(MidiEvent::time_t time)
     end->startTime = time;
     insertEvent(end);
 }
-MidiTrack::const_iterator MidiTrack::findEvent(const MidiEvent& ev)
+
+MidiTrack::const_iterator MidiTrack::findEventDeep(const MidiEvent& ev)
 {
     iterator_pair range = timeRange(ev.startTime, ev.startTime);
     for (const_iterator it = range.first; it != range.second; ++it) {
@@ -156,7 +161,20 @@ MidiTrack::const_iterator MidiTrack::findEvent(const MidiEvent& ev)
             return it;
         }
     }
-    // didn't find it, return nullptr
+    // didn't find it, return end iterator
+    return events.end();
+}
+
+MidiTrack::const_iterator MidiTrack::findEventPointer(MidiEventPtrC ev)
+{
+    iterator_pair range = timeRange(ev->startTime, ev->startTime);
+    for (const_iterator it = range.first; it != range.second; ++it) {
+        const MidiEventPtr p = it->second;
+        if (p == ev) {
+            return it;
+        }
+    }
+    // didn't find it, return end iterator
     return events.end();
 }
 

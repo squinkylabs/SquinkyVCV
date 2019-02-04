@@ -40,6 +40,7 @@ void MidiSelectionModel::clear()
 {
     selection.clear();
 }
+
 bool MidiSelectionModel::isSelected(MidiEventPtr evt) const
 {
     auto it = selection.find(evt);
@@ -67,4 +68,23 @@ MidiEventPtr MidiSelectionModel::getLast()
         }
     }
     return ret;
+}
+
+MidiSelectionModelPtr MidiSelectionModel::clone() const
+{
+    MidiSelectionModelPtr ret = std::make_shared<MidiSelectionModel>();
+    for (auto it : selection) {
+        MidiEventPtr clonedEvent = it->clone();
+        ret->selection.insert(clonedEvent);
+    }
+    return ret;
+}
+
+bool MidiSelectionModel::isSelectedDeep(MidiEventPtr evt) const
+{
+    auto it = std::find_if(begin(), end(), [evt](MidiEventPtr ev) {
+        return *ev == *evt;
+    });
+
+    return it != end();
 }

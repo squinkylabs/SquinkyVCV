@@ -130,8 +130,6 @@ static void selectPrevNoteOrCurrent(
 
 void MidiEditor::selectNextNote()
 {
-   // assert(song);
-  //  assert(selection);
     seq()->assertValid();
 
     MidiTrackPtr track = getTrack();
@@ -144,7 +142,7 @@ void MidiEditor::selectNextNote()
         assert(evt->type == MidiEvent::Type::Note);
 
         // find the event in the track
-        auto it = track->findEvent(*evt);
+        auto it = track->findEventDeep(*evt);
         if (it == track->end()) {
             assert(false);
         }
@@ -199,7 +197,7 @@ void MidiEditor::selectPrevNote()
         assert(evt->type == MidiEvent::Type::Note);
 
         // find the event in the track
-        auto it = track->findEvent(*evt);
+        auto it = track->findEventDeep(*evt);
         if (it == track->begin()) {
             seq()->selection->clear();         // if we are at start, can't dec.unselect
             return;
@@ -216,6 +214,7 @@ void MidiEditor::changePitch(int semitones)
 #if 1
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangePitchCommand(seq(), semitones);
     seq()->undo->execute(cmd);
+    seq()->assertValid();
     float deltaCV = PitchUtils::semitone * semitones;
 #else
     float deltaCV = PitchUtils::semitone * semitones;

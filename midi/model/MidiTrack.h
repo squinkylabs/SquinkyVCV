@@ -46,7 +46,9 @@ public:
     /**
      * finds an event that satisfies == and returns a pointer to it
      */
-    const_iterator findEvent(const MidiEvent&);
+    const_iterator findEventDeep(const MidiEvent&);
+
+    const_iterator findEventPointer(MidiEventPtrC);
 
     /**
      * Returns pair of iterators for all events  start <= t <= end

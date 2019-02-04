@@ -17,6 +17,7 @@ class MidiEndEvent;
 using MidiEndEventPtr = std::shared_ptr<MidiEndEvent>;
 using MidiTestEventPtr = std::shared_ptr<MidiTestEvent>;
 using MidiEventPtr = std::shared_ptr<MidiEvent>;
+using MidiEventPtrC = std::shared_ptr<const MidiEvent>;
 using MidiNoteEventPtr = std::shared_ptr<MidiNoteEvent>;
 
 

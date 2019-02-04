@@ -63,14 +63,27 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPtr seq, int semitones)
 {
-    assert(false);      // doesn't do anything.
+    const float deltaCV = PitchUtils::semitone * semitones;
+    MidiSelectionModelPtr clonedSelection = seq->selection->clone();
 
     // will remove existing selection
     std::vector<MidiEventPtr> toRemove;
+    for (auto it : *seq->selection) {
+        auto note = safe_cast<MidiNoteEvent>(it);
+        if (note) {
+            toRemove.push_back(note);
+        }
+    }
 
-    // and add back the tranposed notes
+    // and add back the transposed notes
     std::vector<MidiEventPtr> toAdd;
-    auto track = seq->context->getTrack();
+    for (auto it : *clonedSelection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
+        if (note) {
+            note->pitchCV += deltaCV;
+            toAdd.push_back(note);
+        }
+    }
 
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
@@ -85,7 +98,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
     assert(false);      // doesn't do anything.
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
-    auto track = seq->context->getTrack();
 
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,

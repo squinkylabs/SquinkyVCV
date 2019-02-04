@@ -8,6 +8,8 @@
 #include <memory>
 
 class MidiSong;
+class MidiSequencer;
+using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
 /**
  * Despite the fancy name, this class doesn't do much.
@@ -39,6 +41,7 @@ public:
     MidiEditorPtr editor;
     UndoRedoStackPtr undo;
 
+private:
+    void assertSelectionInTrack() const;
 };
 
-using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
