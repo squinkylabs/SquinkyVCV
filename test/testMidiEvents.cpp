@@ -173,7 +173,6 @@ static void testEqualNote()
 {
     MidiNoteEvent note1;
     MidiNoteEvent note2;
-    int i = MidiEvent::_count;
     assert(note1 == note2);
     note2.pitchCV = .5;
     assert(note1 != note2);
@@ -181,12 +180,8 @@ static void testEqualNote()
     assert(note1 == note2);
     note2.duration = 5;
     assert(note1 != note2);
-
-    i = MidiEvent::_count;
     MidiNoteEvent note3(note2);
-    i = MidiEvent::_count;
     assert(note3 == note2);
-    i = MidiEvent::_count;
 }
 
 static void testEqualEnd()

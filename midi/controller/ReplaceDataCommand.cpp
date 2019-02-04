@@ -6,11 +6,12 @@
 #include "MidiSong.h"
 
 ReplaceDataCommand::ReplaceDataCommand(
-    std::shared_ptr<MidiSong> song,
+    MidiSongPtr song,
+    MidiSelectionModelPtr selection,
     int trackNumber,
     const std::vector<MidiEventPtr>& inRemove,
     const std::vector<MidiEventPtr>& inAdd)
-    : song(song), trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
+    : song(song), trackNumber(trackNumber), selection(selection), removeData(inRemove), addData(inAdd)
 {
     assert(song->getTrack(trackNumber));
 }
@@ -27,6 +28,26 @@ void ReplaceDataCommand::execute()
     for (auto it : removeData) {
         mt->deleteEvent(*it);
     }
+
+    // clone the selection, clear real selection, add stuff back correctly
+    // at the very least we must clear the selection, as those notes are no
+    // longer in the track.
+    MidiSelectionModelPtr reference = selection->clone();
+    selection->clear();
+    for (auto it : addData) {
+        auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
+        assert(foundIter != mt->end());
+        MidiEventPtr evt = foundIter->second;
+        selection->extendSelection(evt);
+    }
+#if 0 // first try, failed
+    for (auto it : *reference) {
+        auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the old one
+        assert(foundIter != mt->end());
+        MidiEventPtr evt = foundIter->second;
+        selection->extendSelection(evt);
+    }
+#endif
 }
 
 void ReplaceDataCommand::undo()
@@ -40,6 +61,14 @@ void ReplaceDataCommand::undo()
     }
     for (auto it : removeData) {
         mt->insertEvent(it);
+    }
+
+    selection->clear();
+    for (auto it : removeData) {
+        auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
+        assert(foundIter != mt->end());
+        MidiEventPtr evt = foundIter->second;
+        selection->extendSelection(evt);
     }
 }
 
@@ -55,6 +84,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
     }
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
+        seq->selection,
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
@@ -87,6 +117,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
 
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
+        seq->selection,
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
@@ -101,6 +132,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
 
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
+        seq->selection,
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);

@@ -23,6 +23,7 @@ public:
     // TODO: rvalue
     ReplaceDataCommand(
         std::shared_ptr<MidiSong> song,
+        std::shared_ptr<MidiSelectionModel>,
         int trackNumber,
         const std::vector<MidiEventPtr>& inRemove,
         const std::vector<MidiEventPtr>& inAdd);
@@ -38,8 +39,9 @@ public:
 private:
     std::shared_ptr<MidiSong> song;
     int trackNumber;
+    std::shared_ptr<MidiSelectionModel> selection;
+
     std::vector<MidiEventPtr> removeData;
     std::vector<MidiEventPtr> addData;
-
 };
 

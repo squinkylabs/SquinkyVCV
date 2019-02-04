@@ -121,7 +121,7 @@ private:
     // range will include t == start time, but will not
     // include t == endTime
     MidiEvent::time_t m_startTime = 0;
-    MidiEvent::time_t m_endTime = 0;
+    MidiEvent::time_t m_endTime = 1;
 
     // pitch is inclusive: Low and Hi will be included
     float m_pitchLow = 0;
