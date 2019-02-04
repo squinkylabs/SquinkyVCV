@@ -81,7 +81,7 @@ bool MidiKeyboardHandler::handle(
             handled = true;
             break;
          case GLFW_KEY_RIGHT_BRACKET:
-             handleNoteEditorChange(sequencer, ChangeType::bracket, true);
+            handleNoteEditorChange(sequencer, ChangeType::bracket, true);
             handled = true;
             break;
         case GLFW_KEY_MINUS:
@@ -142,6 +142,22 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_DELETE:
             sequencer->editor->deleteNote();
             handled = true;
+            break;
+        case GLFW_KEY_Z:
+            if (ctrl) {
+                handled = true;
+                if (sequencer->undo->canUndo()) {
+                    sequencer->undo->undo();
+                } 
+            }
+            break;
+         case GLFW_KEY_Y:
+            if (ctrl) {
+                handled = true;
+                if (sequencer->undo->canRedo()) {
+                    sequencer->undo->redo();
+                } 
+            }
             break;
     }
     return handled;

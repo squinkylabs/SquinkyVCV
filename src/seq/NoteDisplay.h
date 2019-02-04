@@ -29,6 +29,8 @@ struct NoteDisplay : OpaqueWidget
         this->box.pos = pos;
 		box.size = size;
         sequencer = std::make_shared<MidiSequencer>(song);
+        sequencer->makeEditor();
+        
         
         assert(sequencer->context->vieport._song == song);
    
