@@ -1,5 +1,9 @@
 # Keyboard commands
 
+**ctrl-z**: undo
+
+**ctrl-y, shift-ctrl-z**: redo
+
 **S, P, D**: sets note attribute to be edited.
 
 **cursor keypad**: moves cursor in two dimensions. Up and down by semitone, left and right by one time unit.

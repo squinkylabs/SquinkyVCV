@@ -11,6 +11,8 @@ Edit note attributes (pitch, start time, duration)
 
 Draw Piano roll.
 
+Undo / Redo
+
 ## What doesn't work.
 
 There are obviously many missing features (clocking, start/stop, undo, saving sequences). There is no mouse interface. It looks horrible. There is no screen area top or bottom like you might expect to show where you are and what your are doing.
