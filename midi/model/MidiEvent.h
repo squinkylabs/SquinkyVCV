@@ -19,6 +19,7 @@ using MidiTestEventPtr = std::shared_ptr<MidiTestEvent>;
 using MidiEventPtr = std::shared_ptr<MidiEvent>;
 using MidiEventPtrC = std::shared_ptr<const MidiEvent>;
 using MidiNoteEventPtr = std::shared_ptr<MidiNoteEvent>;
+using MidiNoteEventPtrC = std::shared_ptr<const MidiNoteEvent>;
 
 
 /**
@@ -143,7 +144,7 @@ public:
     void setPitch(int octave, int semi);
     std::pair<int, int> getPitch() const;
 
-    virtual MidiEventPtr clone() const;
+    virtual MidiEventPtr clone() const override;
     MidiNoteEventPtr clonen() const;
 
 protected:
@@ -221,7 +222,7 @@ public:
         type = Type::End;
     }
 
-    virtual MidiEventPtr clone() const;
+    virtual MidiEventPtr clone() const override;
     MidiEndEventPtr clonee() const;
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
@@ -274,7 +275,7 @@ public:
     {
         type = Type::Test;
     }
-    virtual MidiEventPtr clone() const;
+    virtual MidiEventPtr clone() const override;
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };

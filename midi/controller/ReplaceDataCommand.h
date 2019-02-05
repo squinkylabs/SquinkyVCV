@@ -7,6 +7,7 @@
 
 class MidiEditorContext;
 class MidiEvent;
+class MidiNoteEvent;
 class MidiSong;
 class MidiSequencer;
 class MidiSelectionModel;
@@ -32,7 +33,7 @@ public:
      * static factories for replace commands
      */
     static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq);
-    static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq);
+    static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq, std::shared_ptr<const MidiNoteEvent>);
     static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
 
 
@@ -43,5 +44,11 @@ private:
 
     std::vector<MidiEventPtr> removeData;
     std::vector<MidiEventPtr> addData;
+
+    static void extendTrackToMinDuration(
+        std::shared_ptr<MidiSequencer> seq,
+        float neededLength,
+        std::vector<MidiEventPtr>& toAdd,
+        std::vector<MidiEventPtr>& toDelete);
 };
 

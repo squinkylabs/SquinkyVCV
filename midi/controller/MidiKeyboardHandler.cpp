@@ -152,8 +152,10 @@ bool MidiKeyboardHandler::handle(
             } else if (ctrl & shift) {
                 if (sequencer->undo->canRedo()) {
                     sequencer->undo->redo();  
+                }
             }
             break;
+     
          case GLFW_KEY_Y:
             if (ctrl) {
                 handled = true;

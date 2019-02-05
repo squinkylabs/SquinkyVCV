@@ -320,8 +320,12 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
 
 void MidiEditor::insertNote()
 {
-#if 0
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq());
+#if 1
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = seq()->context->cursorTime();
+    note->pitchCV = seq()->context->cursorPitch();
+    note->duration = 1;  // for now, fixed to quarter
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
 
     seq()->undo->execute(cmd);
 #else
