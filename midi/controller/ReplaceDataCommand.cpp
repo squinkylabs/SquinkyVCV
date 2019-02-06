@@ -91,6 +91,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
     return ret;
 }
 
+#if 0
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPtr seq, int semitones)
 {
     const float deltaCV = PitchUtils::semitone * semitones;
@@ -123,6 +124,109 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
         toAdd);
     return ret;
 }
+#endif
+
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
+    Ops op,
+    std::shared_ptr<MidiSequencer> seq,
+    Xform xform,
+    bool canChangeLength)
+{
+    std::vector<MidiEventPtr> toAdd;
+    std::vector<MidiEventPtr> toRemove;
+
+    printf("makeChangeNoteCommand\n");
+    if (canChangeLength) {
+        // Figure out the duration of the track after xforming the notes
+        MidiSelectionModelPtr clonedSelection = seq->selection->clone();
+        // find required length
+        MidiEndEventPtr end = seq->context->getTrack()->getEndEvent();
+        float endTime = end->startTime;
+
+        for (auto it : *clonedSelection) {
+            MidiEventPtr ev = it;
+            xform(ev);
+            float t = ev->startTime;
+            printf("event start time = %f\n", t);
+            MidiNoteEventPtrC note = safe_cast<MidiNoteEvent>(ev);
+            if (note) {
+                t += note->duration;
+                printf("note extends to %f\n", t);
+            }
+            endTime = std::max(endTime, t);
+        }
+        printf("when done, end Time = %f\n", endTime);
+        // set up events to extend to that length
+        if (endTime > end->startTime) {
+            extendTrackToMinDuration(seq, endTime, toAdd, toRemove);
+        }
+    }
+
+    MidiSelectionModelPtr clonedSelection = seq->selection->clone();
+
+    // will remove existing selection
+    for (auto it : *seq->selection) {
+        auto note = safe_cast<MidiNoteEvent>(it);
+        if (note) {
+            toRemove.push_back(note);
+        }
+    }
+
+    // and add back the transformed notes
+    for (auto it : *clonedSelection) {
+        MidiEventPtr event = it;
+        xform(event);
+        toAdd.push_back(event);
+    }
+
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    return ret;
+}
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPtr seq, int semitones)
+{
+    const float deltaCV = PitchUtils::semitone * semitones;
+    Xform xform = [deltaCV](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->pitchCV += deltaCV;
+        }
+
+    };
+    return makeChangeNoteCommand(Ops::Pitch, seq, xform, false);
+}
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
+{
+    Xform xform = [delta](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->startTime += delta;
+            note->startTime = std::max(0.f, note->startTime);
+        }
+    };
+    return makeChangeNoteCommand(Ops::Start, seq, xform, true);
+}
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
+{
+    Xform xform = [delta](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->duration += delta;
+             // arbitrary min limit.
+            note->duration = std::max(.001f, note->duration);
+        }
+    };
+    return makeChangeNoteCommand(Ops::Duration, seq, xform, true);
+}
+
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr seq, MidiNoteEventPtrC origNote)
 {

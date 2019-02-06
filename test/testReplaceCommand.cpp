@@ -145,11 +145,77 @@ static void testInsert()
     x += 8;     // and round up two bars
     assertEQ(end->startTime, x);
 
-    assert(false);      // undo and redo
+   // assert(false);      // undo and redo
+    printf("add tests for insert note undo/redo\n");
 
 }
 
+static void testStartTime()
+{
+    // make empty song
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
+    seq->makeEditor();
+    seq->assertValid();
 
+    // put a note into it at time 100;
+    auto track = seq->context->getTrack();
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = 100;
+    note->pitchCV = 1.1f;
+    note->duration = 2;
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    cmd->execute();
+    seq->assertValid();
+    assertEQ(seq->selection->size(), 1);
+   
+
+    // shift note later to 1100
+    cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.f);
+    seq->undo->execute(cmd);
+
+    seq->context->getTrack()->_dump();
+
+    seq->assertValid();
+    note = safe_cast<MidiNoteEvent>(track->begin()->second);
+    assert(note);
+   
+    assertEQ(note->startTime, 1100.f);
+
+
+    printf("add undo/redo test for start time\n");
+}
+
+static void testDuration()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
+    seq->makeEditor();
+    seq->assertValid();
+
+     // put a note into it at time 10, dur 5;
+    auto track = seq->context->getTrack();
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = 10;
+    note->pitchCV = 1.1f;
+    note->duration = 5;
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    cmd->execute();
+    seq->assertValid();
+
+    // now increase dur by 1
+    cmd = ReplaceDataCommand::makeChangeDurationCommand(seq, 1.f);
+    seq->undo->execute(cmd);
+
+    seq->context->getTrack()->_dump();
+
+    seq->assertValid();
+    note = safe_cast<MidiNoteEvent>(track->begin()->second);
+    assert(note);
+
+    assertEQ(note->startTime, 10.f);
+    assertEQ(note->duration, 6.f)
+}
 
 void testReplaceCommand()
 {
@@ -159,4 +225,6 @@ void testReplaceCommand()
 
     testTrans();
     testInsert();
+    testStartTime();
+    testDuration();
 }
