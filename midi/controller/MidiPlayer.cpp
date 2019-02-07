@@ -11,6 +11,9 @@ void MidiPlayer::timeElapsed(float seconds)
 
 bool MidiPlayer::playOnce()
 {
+    if (!isPlaying) {
+        return false;
+    }
     bool didSomething = false;
     if (noteOffTime >= 0 && noteOffTime <= curMetricTime) {
         host->setGate(false);

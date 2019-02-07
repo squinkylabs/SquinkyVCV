@@ -1,5 +1,6 @@
 
 #include "MidiEditorContext.h"
+#include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
@@ -149,9 +150,20 @@ MidiTrackPtr MidiEditorContext::getTrack()
 
 void MidiEditorContext::setCursorToNote(MidiNoteEventPtrC note)
 {
-    // TOOD: scroll viewport
-  //  assert(false);
     m_cursorTime = note->startTime;
     m_cursorPitch = note->pitchCV;
     adjustViewportForCursor();
+}
+
+void MidiEditorContext::setCursorToSelection(MidiSelectionModelPtr selection)
+{
+    // could be wrong for multi-select
+    if (!selection->empty()) {
+        MidiEventPtr ev = *selection->begin();
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+        assert(note);
+        if (note) {
+            setCursorToNote(note);
+        }
+    }
 }

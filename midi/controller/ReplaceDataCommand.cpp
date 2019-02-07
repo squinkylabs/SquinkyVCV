@@ -8,11 +8,11 @@
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
     MidiSelectionModelPtr selection,
-    std::shared_ptr<MidiEditorContext> context,
+    std::shared_ptr<MidiEditorContext> unused,
     int trackNumber,
     const std::vector<MidiEventPtr>& inRemove,
     const std::vector<MidiEventPtr>& inAdd)
-    : song(song), trackNumber(trackNumber), selection(selection), context(context), removeData(inRemove), addData(inAdd)
+    : song(song), trackNumber(trackNumber), selection(selection), removeData(inRemove), addData(inAdd)
 {
     assert(song->getTrack(trackNumber));
 }
@@ -41,19 +41,6 @@ void ReplaceDataCommand::execute()
         MidiEventPtr evt = foundIter->second;
         selection->extendSelection(evt);
     }
-
-    // TODO: move cursor. or do we need to
-    printf("maybe move cursor here\n");
-#if 0
-    if (!selection->empty()) {
-        MidiEventPtr ev = *selection->begin();
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
-        assert(note);
-        if (note) {
-            context->setCursorToNote(note);
-        }
-    }
-#endif
 }
 
 void ReplaceDataCommand::undo()
@@ -145,7 +132,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
 
-    printf("makeChangeNoteCommand\n");
     if (canChangeLength) {
         // Figure out the duration of the track after xforming the notes
         MidiSelectionModelPtr clonedSelection = seq->selection->clone();
@@ -157,15 +143,14 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
             MidiEventPtr ev = it;
             xform(ev);
             float t = ev->startTime;
-            printf("event start time = %f\n", t);
             MidiNoteEventPtrC note = safe_cast<MidiNoteEvent>(ev);
             if (note) {
                 t += note->duration;
-                printf("note extends to %f\n", t);
+                //printf("note extends to %f\n", t);
             }
             endTime = std::max(endTime, t);
         }
-        printf("when done, end Time = %f\n", endTime);
+       // printf("when done, end Time = %f\n", endTime);
         // set up events to extend to that length
         if (endTime > end->startTime) {
             extendTrackToMinDuration(seq, endTime, toAdd, toRemove);
@@ -214,7 +199,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
 {
-    printf("make start time command %f\n", delta);
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
@@ -227,7 +211,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
 {
-    printf("make change duration command %f\n", delta);
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {

@@ -240,6 +240,9 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount);
     seq()->undo->execute(cmd);
     seq()->assertValid();
+
+    // after we change start times, we need to put the cursor on the moved notes
+    seq()->context->setCursorToSelection(seq()->selection);
 #else
 
     MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(seq()->selection->getLast());

@@ -42,6 +42,11 @@ public:
         return song;
     }
 
+    void stop()
+    {
+        isPlaying = false;
+    }
+
 private:
     std::shared_ptr<IPlayerHost> host;
     MidiSongPtr song;
@@ -49,6 +54,7 @@ private:
     float curMetricTime = 0;
     float noteOffTime = -1;
     MidiTrack::const_iterator curEvent;
+    bool isPlaying = true;
 
     /**
      * process the next ready event that is after curMetricTime

@@ -5,6 +5,7 @@
 #include <memory>
 
 class MidiSong;
+class MidiSelectionModel;
 
 class MidiEditorContext
 {
@@ -86,6 +87,7 @@ public:
     MidiTrackPtr getTrack();
 
     void setCursorToNote(MidiNoteEventPtrC note);
+    void setCursorToSelection(std::shared_ptr<MidiSelectionModel> selection);
 
  
     // TODO: change to const_iterator

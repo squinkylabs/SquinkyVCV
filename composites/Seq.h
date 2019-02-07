@@ -50,6 +50,11 @@ public:
     {
         return player->getSong();
     }
+
+    void stop()
+    {
+        player->stop();
+    }
 private:
     GateTrigger gateTrigger;
     void init();

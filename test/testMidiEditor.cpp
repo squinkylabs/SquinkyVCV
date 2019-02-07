@@ -162,12 +162,12 @@ static void testNext4()
 // select next that off way out of viewport
 static void testNext5()
 {
-    printf("testNext5\n");
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);
 
-    // Give the note a pitch and start time that are way outside viewport
+    // Give the (first) note a pitch and start time that are
+    // way outside viewport
     seq->editor->changePitch(50);
 
     //temporary kludge, because change pitch has a bug.
@@ -194,7 +194,6 @@ static void testNext5()
     assertEQ(seq->selection->size(), 1);
     seq->assertValid();
     seq->editor->assertCursorInSelection();
-
 }
 
 static void testPrev1()
@@ -256,14 +255,18 @@ static void testShiftTime1()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
-    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
-    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+
+    MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
+
     const float s0 = firstNote->startTime;
-    seq->editor->changeStartTime(false, 1);     // delay one unit
+    seq->editor->changeStartTime(false, 1);     // delay one unit (1/16 6h)
+
+    firstNote = seq->context->getTrack()->getFirstNote();
     const float s1 = firstNote->startTime;
     assertClose(s1 - s0, 1.f / 4.f, .000001);
-
+    
     seq->editor->changeStartTime(false, -50);
+    firstNote = seq->context->getTrack()->getFirstNote();
     const float s2 = firstNote->startTime;
     assertEQ(s2, 0);
     seq->assertValid();
@@ -301,16 +304,18 @@ static void testChangeDuration1()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
 
-    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
-    MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
+    MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
     const float d0 = firstNote->duration;
     seq->editor->changeDuration(false, 1);     // lengthen one unit
+
+    firstNote = seq->context->getTrack()->getFirstNote();
     const float d1 = firstNote->duration;
     assertClose(d1 - d0, 1.f / 4.f, .000001);
     seq->assertValid();
 
     // try to make negative, should not go below 1
     seq->editor->changeDuration(false, -50);
+    firstNote = seq->context->getTrack()->getFirstNote();
     const float d2 = firstNote->duration;
     assertGT(d2, 0);
     seq->assertValid();
@@ -564,7 +569,7 @@ void testMidiEditorSub(int trackNumber)
     testNext3b();
     testPrev1();
     testNext4();
-    testNext5();
+  
 
     testTrans1();
     testShiftTime1();
@@ -587,6 +592,8 @@ void testMidiEditorSub(int trackNumber)
     testInsert2();
     testDelete();
     testDelete2();
+
+    testNext5();
 }
 
 void testMidiEditor()

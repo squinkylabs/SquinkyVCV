@@ -32,7 +32,7 @@ struct NoteDisplay : OpaqueWidget
         sequencer->makeEditor();
         
         
-        assert(sequencer->context->vieport._song == song);
+        assert(sequencer->context->getSong() == song);
    
         // hard code view range to our demo song
         sequencer->context->setStartTime(0);
