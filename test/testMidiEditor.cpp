@@ -162,6 +162,7 @@ static void testNext4()
 // select next that off way out of viewport
 static void testNext5()
 {
+    printf("testNext5\n");
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);
@@ -169,7 +170,7 @@ static void testNext5()
     // Give the note a pitch and start time that are way outside viewport
     seq->editor->changePitch(50);
 
-    //temporary kluge, becuase change pitch has a bug.
+    //temporary kludge, because change pitch has a bug.
     // We need to re-select the note in question
     {
         printf("remove this hack\n");

@@ -13,13 +13,14 @@ static void test0()
     UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
     MidiSongPtr song(std::make_shared<MidiSong>());
     MidiSelectionModelPtr selection = std::make_shared<MidiSelectionModel>();
+    MidiEditorContextPtr context = std::make_shared<MidiEditorContext>(song);
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
 
     song->createTrack(0);
 
-    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(song, selection, 0, toRem, toAdd);
+    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(song, selection, context, 0, toRem, toAdd);
     ur->execute(cmd);
 }
 
@@ -29,6 +30,7 @@ static void test1()
     UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
     MidiSongPtr ms(std::make_shared<MidiSong>());
     MidiSelectionModelPtr selection = std::make_shared<MidiSelectionModel>();
+    MidiEditorContextPtr context = std::make_shared<MidiEditorContext>(ms);
 
     ms->createTrack(0);
     std::vector<MidiEventPtr> toRem;
@@ -39,7 +41,7 @@ static void test1()
     newNote->pitchCV = 12;
     toAdd.push_back(newNote);
 
-    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, selection, 0, toRem, toAdd);
+    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, selection, context, 0, toRem, toAdd);
     ur->execute(cmd);
 
     assert(ms->getTrack(0)->size() == 1);     // we added an event
@@ -63,17 +65,19 @@ static void test2()
     UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     MidiSelectionModelPtr selection = std::make_shared<MidiSelectionModel>();
+    MidiEditorContextPtr context = std::make_shared<MidiEditorContext>(ms);
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
 
     MidiTrackPtr track = ms->getTrack(0);
     const int origSize = track->size();
-    MidiEventPtr noteToDelete = track->begin()->second;
-    assert(noteToDelete);
+  //  MidiEventPtr noteToDelete = track->begin()->second;
+  //  assert(noteToDelete);
+    auto noteToDelete = track->getFirstNote();
     toRem.push_back(noteToDelete);
 
-    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, selection, 0, toRem, toAdd);
+    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, selection, context, 0, toRem, toAdd);
     ur->execute(cmd);
 
     assertEQ(ms->getTrack(0)->size(), (origSize - 1));     // we removed an event
@@ -91,7 +95,8 @@ static void testTrans()
     seq->makeEditor();
     seq->assertValid();
 
-    MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
+  //  MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
+    MidiEventPtr firstEvent = seq->context->getTrack()->getFirstNote();
     assert(firstEvent);
     seq->selection->select(firstEvent);
     auto cmd = ReplaceDataCommand::makeChangePitchCommand(seq, 1);
@@ -174,16 +179,19 @@ static void testStartTime()
     cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.f);
     seq->undo->execute(cmd);
 
-    seq->context->getTrack()->_dump();
-
     seq->assertValid();
-    note = safe_cast<MidiNoteEvent>(track->begin()->second);
-    assert(note);
-   
+    note = track->getFirstNote();   
     assertEQ(note->startTime, 1100.f);
 
+    seq->undo->undo();
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->startTime, 100.f);
 
-    printf("add undo/redo test for start time\n");
+    seq->undo->redo();
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->startTime, 1100.f);
 }
 
 static void testDuration()
@@ -206,15 +214,22 @@ static void testDuration()
     // now increase dur by 1
     cmd = ReplaceDataCommand::makeChangeDurationCommand(seq, 1.f);
     seq->undo->execute(cmd);
-
-    seq->context->getTrack()->_dump();
-
     seq->assertValid();
-    note = safe_cast<MidiNoteEvent>(track->begin()->second);
+    note = track->getFirstNote();
     assert(note);
 
     assertEQ(note->startTime, 10.f);
     assertEQ(note->duration, 6.f)
+
+    seq->undo->undo();
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->duration, 5.f);
+
+    seq->undo->redo();
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->duration, 6.f);
 }
 
 void testReplaceCommand()

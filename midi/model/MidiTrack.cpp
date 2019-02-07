@@ -178,6 +178,18 @@ MidiTrack::const_iterator MidiTrack::findEventPointer(MidiEventPtrC ev)
     return events.end();
 }
 
+MidiNoteEventPtr MidiTrack::getFirstNote()
+{
+    for (auto it : events) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it.second);
+        if (note) {
+            return note;
+        }
+    }
+    return nullptr;
+}
+
+
 MidiTrackPtr MidiTrack::makeTest(TestContent content)
 {
     MidiTrackPtr ret;

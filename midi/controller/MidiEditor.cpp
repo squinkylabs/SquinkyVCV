@@ -236,6 +236,12 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
     assert(amount != 0);
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
 
+#if 1
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount);
+    seq()->undo->execute(cmd);
+    seq()->assertValid();
+#else
+
     MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(seq()->selection->getLast());
     float lastTime = lastNote->startTime + lastNote->duration;
     lastTime += advanceAmount;
@@ -255,6 +261,7 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
             setCursor = true;
         }
     }
+#endif
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
 }
@@ -265,6 +272,13 @@ void MidiEditor::changeDuration(bool ticks, int amount)
     assert(amount != 0);
 
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+
+#if 1
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
+    seq()->undo->execute(cmd);
+    seq()->assertValid();
+#else
+
     for (auto ev : *seq()->selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
         note->duration += advanceAmount;
@@ -272,6 +286,7 @@ void MidiEditor::changeDuration(bool ticks, int amount)
         // arbitrary min limit.
         note->duration = std::max(.001f, note->duration);
     }
+#endif
 }
 
 void MidiEditor::assertCursorInSelection()

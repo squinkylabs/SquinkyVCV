@@ -146,3 +146,12 @@ MidiTrackPtr MidiEditorContext::getTrack()
     assert(song);
     return song->getTrack(trackNumber);
 }
+
+void MidiEditorContext::setCursorToNote(MidiNoteEventPtrC note)
+{
+    // TOOD: scroll viewport
+  //  assert(false);
+    m_cursorTime = note->startTime;
+    m_cursorPitch = note->pitchCV;
+    adjustViewportForCursor();
+}

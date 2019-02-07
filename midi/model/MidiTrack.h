@@ -25,6 +25,7 @@ public:
 
     float getLength() const;
     std::shared_ptr<MidiEndEvent> getEndEvent();
+    std::shared_ptr<MidiNoteEvent> getFirstNote();
 
     /**
      * Returns all events as a vector, so that they may be indexed.

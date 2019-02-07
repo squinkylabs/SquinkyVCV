@@ -25,6 +25,7 @@ public:
     ReplaceDataCommand(
         std::shared_ptr<MidiSong> song,
         std::shared_ptr<MidiSelectionModel>,
+        std::shared_ptr<MidiEditorContext>,
         int trackNumber,
         const std::vector<MidiEventPtr>& inRemove,
         const std::vector<MidiEventPtr>& inAdd);
@@ -43,6 +44,7 @@ private:
     std::shared_ptr<MidiSong> song;
     int trackNumber;
     std::shared_ptr<MidiSelectionModel> selection;
+    std::shared_ptr<MidiEditorContext> context;
 
     std::vector<MidiEventPtr> removeData;
     std::vector<MidiEventPtr> addData;

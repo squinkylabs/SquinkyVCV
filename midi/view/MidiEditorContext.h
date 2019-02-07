@@ -85,6 +85,8 @@ public:
 
     MidiTrackPtr getTrack();
 
+    void setCursorToNote(MidiNoteEventPtrC note);
+
  
     // TODO: change to const_iterator
     using iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;

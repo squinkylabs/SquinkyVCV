@@ -8,10 +8,11 @@
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
     MidiSelectionModelPtr selection,
+    std::shared_ptr<MidiEditorContext> context,
     int trackNumber,
     const std::vector<MidiEventPtr>& inRemove,
     const std::vector<MidiEventPtr>& inAdd)
-    : song(song), trackNumber(trackNumber), selection(selection), removeData(inRemove), addData(inAdd)
+    : song(song), trackNumber(trackNumber), selection(selection), context(context), removeData(inRemove), addData(inAdd)
 {
     assert(song->getTrack(trackNumber));
 }
@@ -40,12 +41,17 @@ void ReplaceDataCommand::execute()
         MidiEventPtr evt = foundIter->second;
         selection->extendSelection(evt);
     }
-#if 0 // first try, failed
-    for (auto it : *reference) {
-        auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the old one
-        assert(foundIter != mt->end());
-        MidiEventPtr evt = foundIter->second;
-        selection->extendSelection(evt);
+
+    // TODO: move cursor. or do we need to
+    printf("maybe move cursor here\n");
+#if 0
+    if (!selection->empty()) {
+        MidiEventPtr ev = *selection->begin();
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+        assert(note);
+        if (note) {
+            context->setCursorToNote(note);
+        }
     }
 #endif
 }
@@ -70,6 +76,8 @@ void ReplaceDataCommand::undo()
         MidiEventPtr evt = foundIter->second;
         selection->extendSelection(evt);
     }
+
+    // TODO: move cursor
 }
 
 
@@ -85,6 +93,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
+        seq->context,
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
@@ -183,6 +192,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
+        seq->context,
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
@@ -204,6 +214,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
 {
+    printf("make start time command %f\n", delta);
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
@@ -216,6 +227,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
 {
+    printf("make change duration command %f\n", delta);
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
@@ -243,6 +255,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
+        seq->context,
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
