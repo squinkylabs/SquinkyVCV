@@ -33,6 +33,7 @@
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiLock.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp" />
     <ClCompile Include="..\..\midi\controller\ReplaceDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="..\..\dsp\utils\poly.h" />
     <ClInclude Include="..\..\midi\controller\MidiEditor.h" />
     <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h" />
+    <ClInclude Include="..\..\midi\controller\MidiLock.h" />
     <ClInclude Include="..\..\midi\controller\MidiPlayer.h" />
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />

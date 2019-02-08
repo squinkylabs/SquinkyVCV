@@ -378,6 +378,9 @@
     <ClCompile Include="..\..\midi\view\MidiEditorContext.cpp">
       <Filter>Source Files\midi\view</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiLock.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -673,6 +676,9 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\model\TimeUtils.h">
       <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiLock.h">
+      <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

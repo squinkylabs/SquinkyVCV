@@ -1,9 +1,35 @@
 #include "MidiEvent.h"
+#include "MidiLock.h"
 #include "MidiPlayer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
 
 #include "asserts.h"
+
+static void testLock()
+{
+    MidiLock l;
+    assert(!l.locked());
+    bool b = l.playerTryLock();
+    assert(b);
+    assert(l.locked());
+
+    l.playerUnlock();
+    assert(!l.locked());
+    l.editorLock();
+    assert(l.locked());
+    
+    b = l.playerTryLock();
+    assert(!b);
+    l.editorUnlock();
+    assert(!l.locked());
+    b = l.playerTryLock();
+    assert(b);
+    assert(l.locked());
+
+    l.playerUnlock();
+    assert(!l.locked());
+}
 
 
 class TestHost : public MidiPlayer::IPlayerHost
@@ -106,6 +132,7 @@ static void test3()
 
 void testMidiPlayer()
 {
+    testLock();
     test0();
     test1();
     test2();
