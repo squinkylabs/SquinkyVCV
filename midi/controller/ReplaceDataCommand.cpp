@@ -1,10 +1,13 @@
 
-#include <assert.h>
+
 #include "ReplaceDataCommand.h"
-#include "MidiTrack.h"
+#include "MidiLock.h"
 #include "MidiSequencer.h"
 #include "MidiSong.h"
+#include "MidiTrack.h"
 
+
+#include <assert.h>
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
     MidiSelectionModelPtr selection,
@@ -21,6 +24,7 @@ void ReplaceDataCommand::execute()
 {
     MidiTrackPtr mt = song->getTrack(trackNumber);
     assert(mt);
+    MidiLocker l(mt->lock);
 
     for (auto it : addData) {
         mt->insertEvent(it);
@@ -47,6 +51,7 @@ void ReplaceDataCommand::undo()
 {
     MidiTrackPtr mt = song->getTrack(trackNumber);
     assert(mt);
+    MidiLocker l(mt->lock);
 
     // to undo the insertion, delete all of them
     for (auto it : addData) {

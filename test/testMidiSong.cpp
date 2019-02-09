@@ -1,4 +1,4 @@
-
+#include "MidiLock.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
 
@@ -15,6 +15,7 @@ static void test0()
 static void test1()
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
     song->createTrack(10);
     song->getTrack(10)->insertEnd(0);
     assertEQ(song->getHighestTrackNumber(), 10);

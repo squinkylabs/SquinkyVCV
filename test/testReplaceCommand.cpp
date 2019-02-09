@@ -1,6 +1,7 @@
 #include "asserts.h"
 
 #include "MidiEvent.h"
+#include "MidiLock.h"
 #include "MidiTrack.h"
 #include "MidiSequencer.h"
 #include "MidiSong.h"
@@ -118,6 +119,7 @@ static void testTrans()
 static void testInsert()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
     MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
     seq->makeEditor();
     seq->assertValid();
@@ -159,6 +161,7 @@ static void testStartTime()
 {
     // make empty song
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
     MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
     seq->makeEditor();
     seq->assertValid();
@@ -197,6 +200,7 @@ static void testStartTime()
 static void testDuration()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
     MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
     seq->makeEditor();
     seq->assertValid();

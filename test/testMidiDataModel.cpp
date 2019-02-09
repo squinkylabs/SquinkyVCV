@@ -1,6 +1,7 @@
 
 #include <assert.h>
 #include <memory>
+#include "MidiLock.h"
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
@@ -8,7 +9,9 @@
 
 static void testCanInsert()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->pitchCV = 3.3f;
     ev->startTime = 55.f;
@@ -29,7 +32,9 @@ static void testCanInsert()
 
 static void testInsertSorted()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->pitchCV = 3.3f;
     ev->startTime = 11;
@@ -56,7 +61,10 @@ static void testInsertSorted()
 
 static void testDelete()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
+
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->pitchCV = 33;
     ev->startTime = 11;
@@ -68,7 +76,9 @@ static void testDelete()
 
 static void testDelete2()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
 
     ev->pitchCV = 33;
@@ -90,7 +100,9 @@ static void testDelete2()
 
 static void testDelete3()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
 
 #ifdef _DEBUG
@@ -117,7 +129,9 @@ static void testDelete3()
 
 static void testFind1()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->pitchCV = 5;
     mt.insertEvent(ev);
@@ -127,7 +141,9 @@ static void testFind1()
 
 static void testTimeRange0()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 100;
 
@@ -146,7 +162,9 @@ static void testTimeRange0()
 
 static void testNoteTimeRange0()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 100;
 
@@ -166,7 +184,10 @@ static void testNoteTimeRange0()
 //should skip over non-note events
 static void testNoteTimeRange0Mixed()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
+
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 100;
     mt.insertEvent(ev);
@@ -188,7 +209,9 @@ static void testNoteTimeRange0Mixed()
 
 static void testTimeRange1()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
 
 
@@ -216,7 +239,9 @@ static void testTimeRange1()
 
 static void testNoteTimeRange1()
 {
-    MidiTrack mt;
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
 

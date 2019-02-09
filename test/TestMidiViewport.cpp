@@ -1,13 +1,14 @@
 
 #include "asserts.h"
 #include "MidiEditorContext.h"
-
+#include "MidiLock.h"
 #include "MidiSong.h"
 
 
 static void testReleaseSong()
 {
     MidiSongPtr song(std::make_shared<MidiSong>());
+    MidiLocker l(song->lock);
     MidiEditorContext vp(song);
     {
        
@@ -27,7 +28,7 @@ static void testReleaseSong()
 static void testEventAccess()
 {
     MidiSongPtr song(std::make_shared<MidiSong>());
-
+    MidiLocker l(song->lock);
     song->createTrack(0);
     auto track = song->getTrack(0);
 
@@ -56,7 +57,7 @@ static void testEventAccess()
 static void testEventFilter()
 {
     MidiSongPtr song(std::make_shared<MidiSong>());
-
+    MidiLocker l(song->lock);
 
     song->createTrack(0);
     auto track = song->getTrack(0);

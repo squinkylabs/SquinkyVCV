@@ -122,10 +122,11 @@ int main(int argc, char ** argv)
     testFilteredIterator();
     testMidiDataModel();
     testMidiSong();
+    testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();
     testMidiViewport();
-    testMidiPlayer();
+ 
     testMidiControllers();
     testMidiEditor();
     testNoteScreenScale();

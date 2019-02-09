@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "MidiEditor.h"
 #include "MidiEditorContext.h"
+#include "MidiLock.h"
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
 #include "MidiSong.h"
@@ -232,6 +233,7 @@ void MidiEditor::changePitch(int semitones)
 
 void MidiEditor::changeStartTime(bool ticks, int amount)
 {
+    MidiLocker l(seq()->song->lock);
     assert(!ticks);         // not implemented yet
     assert(amount != 0);
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
@@ -338,6 +340,7 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
 
 void MidiEditor::insertNote()
 {
+    MidiLocker l(seq()->song->lock);
 #if 1
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = seq()->context->cursorTime();

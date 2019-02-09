@@ -9,13 +9,17 @@
 
 #include "MidiEvent.h"
 
+class MidiLock;
 class MidiTrack;
+class MidiLock;
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;
 using MidiTrackConstPtr = std::shared_ptr<const MidiTrack>;
 
 class MidiTrack
 {
 public:
+    MidiTrack(std::shared_ptr<MidiLock>);
+
     int size() const;
     void assertValid() const;
 
@@ -83,13 +87,14 @@ public:
         eightQNotes,
         empty
     };
-    static MidiTrackPtr makeTest(TestContent);
-
+    static MidiTrackPtr makeTest(TestContent, std::shared_ptr<MidiLock>);
+    std::shared_ptr<MidiLock> lock;
 private:
     container events;
 
-    static MidiTrackPtr makeTest1();
-    static MidiTrackPtr makeTestEmpty();
+
+    static MidiTrackPtr makeTest1(std::shared_ptr<MidiLock>);
+    static MidiTrackPtr makeTestEmpty(std::shared_ptr<MidiLock>);
 };
 
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;

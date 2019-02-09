@@ -1,9 +1,10 @@
-#include <assert.h>
-
+#include "MidiLock.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
 
-MidiSong::MidiSong()
+#include <assert.h>
+
+MidiSong::MidiSong() : lock(std::make_shared<MidiLock>())
 {
     ++_mdb;
 }
@@ -31,7 +32,8 @@ void MidiSong::addTrack(int index, std::shared_ptr<MidiTrack> track)
 
 void MidiSong::createTrack(int index)
 {
-    addTrack(index, std::make_shared<MidiTrack>());
+    assert(lock);
+    addTrack(index, std::make_shared<MidiTrack>(lock));
 }
 
 
@@ -56,7 +58,8 @@ MidiTrackConstPtr MidiSong::getTrackConst(int index) const
 MidiSongPtr MidiSong::makeTest(MidiTrack::TestContent content, int trackNumber)
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
-    auto track = MidiTrack::makeTest(content);
+    MidiLocker l(song->lock);
+    auto track = MidiTrack::makeTest(content, song->lock);
     song->addTrack(trackNumber, track);
     song->assertValid();
     return song;

@@ -32,6 +32,46 @@ static void testLock()
 }
 
 
+static void testLock2()
+{
+    MidiLockPtr l = MidiLock::make();
+    assert(!l->locked());
+    bool b = l->playerTryLock();
+    assert(b);
+    assert(l->locked());
+
+    l->playerUnlock();
+    assert(!l->locked());
+
+    {
+        MidiLocker _(l);
+        assert(l->locked());
+        b = l->playerTryLock();
+        assert(!b);
+    }
+    assert(!l->locked());
+    b = l->playerTryLock();
+    assert(b);
+    assert(l->locked());
+
+    l->playerUnlock();
+    assert(!l->locked());
+}
+
+static void testLock3()
+{
+    MidiLockPtr l = MidiLock::make();
+    l->editorLock();
+    l->editorLock();
+    assert(l->locked());
+
+    l->editorUnlock();
+    assert(l->locked());
+
+    l->editorUnlock();
+    assert(!l->locked());
+}
+
 class TestHost : public MidiPlayer::IPlayerHost
 {
 public:
@@ -73,6 +113,7 @@ static void test0()
 static MidiSongPtr makeSongOneQ()
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
     song->createTrack(0);
     MidiTrackPtr track = song->getTrack(0);
 
@@ -90,6 +131,7 @@ static MidiSongPtr makeSongOneQ()
 std::shared_ptr<TestHost> makeSongOneQandRun(float time)
 {
     MidiSongPtr song = makeSongOneQ();
+    MidiLocker l(song->lock);
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
     pl.timeElapsed(time);
@@ -133,6 +175,8 @@ static void test3()
 void testMidiPlayer()
 {
     testLock();
+    testLock2();
+    testLock3();
     test0();
     test1();
     test2();

@@ -1,4 +1,4 @@
-
+#include "MidiLock.h"
 #include "MidiTrack.h"
 #include <assert.h>
 #include <algorithm>
@@ -7,6 +7,11 @@
 #ifdef _DEBUG
 int MidiEvent::_count = 0;
 #endif
+
+MidiTrack::MidiTrack(std::shared_ptr<MidiLock> l) : lock(l)
+{
+
+}
 
 int MidiTrack::size() const
 {
@@ -50,6 +55,8 @@ void MidiTrack::assertValid() const
 
 void MidiTrack::insertEvent(MidiEventPtr evIn)
 {
+    assert(lock);
+    assert(lock->locked());
     events.insert(std::pair<MidiEvent::time_t, MidiEventPtr>(evIn->startTime, evIn));
 }
 
@@ -70,6 +77,8 @@ std::shared_ptr<MidiEndEvent> MidiTrack::getEndEvent()
 
 void MidiTrack::deleteEvent(const MidiEvent& evIn)
 {
+    assert(lock);
+    assert(lock->locked());
     auto candidateRange = events.equal_range(evIn.startTime);
     for (auto it = candidateRange.first; it != candidateRange.second; it++) {
 
@@ -87,7 +96,6 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
 void MidiTrack::_dump() const
 {
     const_iterator it;
- //   for (it = events.cbegin(); it != events.cend(); ++it ) {
     for (auto it : events) {
         float ti = it.first;
         std::shared_ptr<const MidiEvent> evt = it.second;
@@ -147,6 +155,8 @@ MidiTrack::note_iterator_pair MidiTrack::timeRangeNotes(MidiEvent::time_t start,
 
 void MidiTrack::insertEnd(MidiEvent::time_t time)
 {
+    assert(lock);
+    assert(lock->locked());
     MidiEndEventPtr end = std::make_shared<MidiEndEvent>();
     end->startTime = time;
     insertEvent(end);
@@ -190,15 +200,15 @@ MidiNoteEventPtr MidiTrack::getFirstNote()
 }
 
 
-MidiTrackPtr MidiTrack::makeTest(TestContent content)
+MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> lock)
 {
     MidiTrackPtr ret;
     switch (content) {
         case TestContent::eightQNotes:
-            ret = makeTest1();
+            ret = makeTest1(lock);
             break;
         case TestContent::empty:
-            ret = makeTestEmpty();
+            ret = makeTestEmpty(lock);
             break;
         default:
             assert(false);
@@ -210,9 +220,9 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content)
  * pitch is ascending in semitones from 3:0 (c)
  */
 
-MidiTrackPtr MidiTrack::makeTest1()
+MidiTrackPtr MidiTrack::makeTest1(std::shared_ptr<MidiLock> lock)
 {
-    auto track = std::make_shared<MidiTrack>();
+    auto track = std::make_shared<MidiTrack>(lock);
     int semi = 0;
     MidiEvent::time_t time = 0;
     for (int i = 0; i < 8; ++i) {
@@ -230,9 +240,9 @@ MidiTrackPtr MidiTrack::makeTest1()
     return track;
 }
 
-MidiTrackPtr MidiTrack::makeTestEmpty()
+MidiTrackPtr MidiTrack::makeTestEmpty(std::shared_ptr<MidiLock> lock)
 {
-    auto track = std::make_shared<MidiTrack>();
+    auto track = std::make_shared<MidiTrack>(lock);
     track->insertEnd(8.f);                  // make two empty bars
     return track;
 }
