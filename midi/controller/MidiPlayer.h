@@ -8,6 +8,19 @@
 class MidiSong;
 
 /**
+ * Abstract out the player host so that we can more
+ * easily test the player.
+ */
+class IPlayerHost
+{
+public:
+    virtual void setGate(bool) = 0;
+    virtual void setCV(float) = 0;
+    virtual void onLockFailed() = 0;
+};
+
+
+/**
  * Need to decide on some units:
  *
  * Pitch = float volts (VCV standard).
@@ -17,12 +30,7 @@ class MidiSong;
 class MidiPlayer
 {
 public:
-    class IPlayerHost
-    {
-    public:
-        virtual void setGate(bool) = 0;
-        virtual void setCV(float) = 0;
-    };
+
 
     MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSong> song) :
         host(host), song(song)

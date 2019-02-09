@@ -72,7 +72,7 @@ static void testLock3()
     assert(!l->locked());
 }
 
-class TestHost : public MidiPlayer::IPlayerHost
+class TestHost : public IPlayerHost
 {
 public:
     void setGate(bool g) override
@@ -85,11 +85,17 @@ public:
         ++cvCount;
         cvState = cv;
     }
+    void onLockFailed() override
+    {
+        ++lockConflicts;
+    }
 
     int gateCount = 0;
     bool gateState = false;
     int cvCount = 0;
     float cvState = 0;
+
+    int lockConflicts = 0;
 };
 
 
@@ -104,8 +110,8 @@ static void test0()
 
 /**
  * Makes a one-track song. 
- * Track has one quarter note at t=0, duration = eigth.
- * End event at quater note end.
+ * Track has one quarter note at t=0, duration = eighth.
+ * End event at quarter note end.
  *
  * noteOnTime = 0 * .5;
  * noteOffTime = .5 * .5;
@@ -131,10 +137,27 @@ static MidiSongPtr makeSongOneQ()
 std::shared_ptr<TestHost> makeSongOneQandRun(float time)
 {
     MidiSongPtr song = makeSongOneQ();
-    MidiLocker l(song->lock);
+  //  MidiLocker l(song->lock);
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
     pl.timeElapsed(time);
+    return host;
+}
+
+std::shared_ptr<TestHost> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
+{
+   
+    MidiSongPtr song = makeSongOneQ();
+ //   MidiLocker l(song->lock);
+    std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
+    MidiPlayer pl(host, song);
+    pl.timeElapsed(timeBeforeLock);
+    {
+        MidiLocker l(song->lock);
+        pl.timeElapsed(timeDuringLock);
+    }
+
+    pl.timeElapsed(timeAfterLock);
     return host;
 }
 
@@ -144,23 +167,50 @@ static void test1()
 {
     std::shared_ptr<TestHost> host = makeSongOneQandRun(.24f);
 
+    assertEQ(host->lockConflicts, 0);
     assertEQ(host->gateCount, 1);
     assertEQ(host->gateState, true);
     assertEQ(host->cvCount, 1);
     assertEQ(host->cvState, 2);
+    assertEQ(host->lockConflicts, 0);
 }
+
+// same as test1, but with a lock contention
+static void test1L()
+{
+    std::shared_ptr<TestHost> host = makeSongOneQandRun2(.20f, .01f, .03f);
+
+    assertEQ(host->gateCount, 1);
+    assertEQ(host->gateState, true);
+    assertEQ(host->cvCount, 1);
+    assertEQ(host->cvState, 2);
+    assertEQ(host->lockConflicts, 1);
+}
+
 
 // play the first note on and off
 static void test2()
 {
     std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
 
+    assertEQ(host->lockConflicts, 0);
     assertEQ(host->gateCount, 2);
     assertEQ(host->gateState, false);
     assertEQ(host->cvCount, 1);
     assertEQ(host->cvState, 2);
 }
 
+// play the first note on and off
+static void test2L()
+{
+    std::shared_ptr<TestHost> host = makeSongOneQandRun2(.20f, .01f, .04f);
+
+    assertEQ(host->lockConflicts, 1);
+    assertEQ(host->gateCount, 2);
+    assertEQ(host->gateState, false);
+    assertEQ(host->cvCount, 1);
+    assertEQ(host->cvState, 2);
+}
 // loop around to first note on second time
 static void test3()
 {
@@ -179,7 +229,10 @@ void testMidiPlayer()
     testLock3();
     test0();
     test1();
+    
     test2();
     test3();
+    test1L();
+    test2L();
     assertNoMidi();     // check for leaks
 }

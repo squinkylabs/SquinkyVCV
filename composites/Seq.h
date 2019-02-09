@@ -64,7 +64,7 @@ private:
 
 #if 1
 template <class TBase>
-class SeqHost : public MidiPlayer::IPlayerHost
+class SeqHost : public IPlayerHost
 {
 public:
     SeqHost(Seq<TBase>* s) : seq(s)
@@ -80,6 +80,10 @@ public:
        // fprintf(stderr, "setCV %f\n", cv); fflush(stderr);
         seq->outputs[Seq<TBase>::CV_OUTPUT].value = cv;
     }
+    void onLockFailed() override
+    {
+
+    }
 private:
     Seq<TBase>* const seq;
 };
@@ -88,7 +92,7 @@ private:
 template <class TBase>
 void  Seq<TBase>::init()
 { 
-    std::shared_ptr<MidiPlayer::IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
+    std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
     std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     player = std::make_shared<MidiPlayer>(host, song);
 }

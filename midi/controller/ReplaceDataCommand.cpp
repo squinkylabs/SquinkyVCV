@@ -1,13 +1,11 @@
-
-
 #include "ReplaceDataCommand.h"
 #include "MidiLock.h"
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
 
-
 #include <assert.h>
+
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
     MidiSelectionModelPtr selection,
@@ -91,42 +89,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
         toAdd);
     return ret;
 }
-
-#if 0
-ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPtr seq, int semitones)
-{
-    const float deltaCV = PitchUtils::semitone * semitones;
-    MidiSelectionModelPtr clonedSelection = seq->selection->clone();
-
-    // will remove existing selection
-    std::vector<MidiEventPtr> toRemove;
-    for (auto it : *seq->selection) {
-        auto note = safe_cast<MidiNoteEvent>(it);
-        if (note) {
-            toRemove.push_back(note);
-        }
-    }
-
-    // and add back the transposed notes
-    std::vector<MidiEventPtr> toAdd;
-    for (auto it : *clonedSelection) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
-        if (note) {
-            note->pitchCV += deltaCV;
-            toAdd.push_back(note);
-        }
-    }
-
-    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
-        seq->song,
-        seq->selection,
-        seq->context->getTrackNumber(),
-        toRemove,
-        toAdd);
-    return ret;
-}
-#endif
-
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     Ops op,
@@ -239,7 +201,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
     extendTrackToMinDuration(seq, note->startTime + note->duration, toAdd, toRemove);
 
     toAdd.push_back(note);
-    
+
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,

@@ -1,11 +1,17 @@
 
+#include "MidiLock.h"
 #include "MidiPlayer.h"
 
 void MidiPlayer::timeElapsed(float seconds)
 {
     curMetricTime += seconds * 120.0f / 60.0f;        // fixed at 120 bpm for now
-
-    while (playOnce()) {
+    bool locked = song->lock->playerTryLock();
+    if (locked) {
+        while (playOnce()) {
+        }
+        song->lock->playerUnlock();
+    } else {
+        host->onLockFailed();
     }
 }
 
