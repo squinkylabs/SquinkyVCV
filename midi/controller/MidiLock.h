@@ -18,12 +18,18 @@ public:
 
     bool playerTryLock();
     void playerUnlock();
-
     bool locked() const;
+
+    /** 
+     * Returns true is an editor lock has occurred since last query.
+     * Will clear flag after calling
+     */
+    bool dataModelDirty();
+
 private:
     std::atomic<bool> theLock;
     std::atomic<int> editorLockLevel;
-    bool editorDidLock = false;
+    std::atomic<bool> editorDidLock;
 
     bool tryLock();
 };

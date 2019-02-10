@@ -2,7 +2,7 @@
 
 #include "GateTrigger.h"
 #include "MidiPlayer.h"
-
+#include "MidiSong.h"
 
 
 template <class TBase>
@@ -46,10 +46,12 @@ public:
     };
 
     void step() override;
+
     MidiSongPtr getSong()
     {
         return player->getSong();
     }
+
 
     void stop()
     {

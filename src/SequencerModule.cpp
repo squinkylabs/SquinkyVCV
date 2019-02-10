@@ -78,7 +78,7 @@ inline Menu* SequencerWidget::createContextMenu()
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
         const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
-        module->stop();         // don't start playback immediately
+       // module->stop();         // don't start playback immediately
 		NoteDisplay *display = new NoteDisplay(notePos, noteSize, module->seq.getSong());
 		addChild(display);
 	}

@@ -680,5 +680,8 @@
     <ClInclude Include="..\..\midi\controller\MidiLock.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\Seq.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

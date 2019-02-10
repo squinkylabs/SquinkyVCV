@@ -72,33 +72,49 @@ static void testLock3()
     assert(!l->locked());
 }
 
+static void testLock4()
+{
+    MidiLockPtr l = MidiLock::make();
+    assert(!l->dataModelDirty());
+    l->editorLock();
+    l->editorUnlock();
+    assert(l->dataModelDirty());
+    assert(!l->dataModelDirty());
+}
+
 class TestHost : public IPlayerHost
 {
 public:
     void setGate(bool g) override
     {
-        ++gateCount;
-        gateState = g;
+        if (g != gateState) {
+            ++gateChangeCount;
+            gateState = g;
+        }
     }
     void setCV(float cv) override
     {
-        ++cvCount;
-        cvState = cv;
+        if (cv != cvState) {
+            ++cvChangeCount;
+            cvState = cv;
+        }
     }
     void onLockFailed() override
     {
         ++lockConflicts;
     }
 
-    int gateCount = 0;
+    int cvChangeCount = 0;
+    int gateChangeCount = 0;
     bool gateState = false;
-    int cvCount = 0;
-    float cvState = 0;
+
+    float cvState = -100;
 
     int lockConflicts = 0;
 };
 
 
+// test that apis can be called
 static void test0()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
@@ -137,7 +153,6 @@ static MidiSongPtr makeSongOneQ()
 std::shared_ptr<TestHost> makeSongOneQandRun(float time)
 {
     MidiSongPtr song = makeSongOneQ();
-  //  MidiLocker l(song->lock);
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
     pl.timeElapsed(time);
@@ -148,7 +163,6 @@ std::shared_ptr<TestHost> makeSongOneQandRun2(float timeBeforeLock, float timeDu
 {
    
     MidiSongPtr song = makeSongOneQ();
- //   MidiLocker l(song->lock);
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
     pl.timeElapsed(timeBeforeLock);
@@ -161,16 +175,15 @@ std::shared_ptr<TestHost> makeSongOneQandRun2(float timeBeforeLock, float timeDu
     return host;
 }
 
-
 // just play the first note on
 static void test1()
 {
     std::shared_ptr<TestHost> host = makeSongOneQandRun(.24f);
 
     assertEQ(host->lockConflicts, 0);
-    assertEQ(host->gateCount, 1);
+    assertEQ(host->gateChangeCount, 1);
     assertEQ(host->gateState, true);
-    assertEQ(host->cvCount, 1);
+    assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvState, 2);
     assertEQ(host->lockConflicts, 0);
 }
@@ -180,12 +193,13 @@ static void test1L()
 {
     std::shared_ptr<TestHost> host = makeSongOneQandRun2(.20f, .01f, .03f);
 
-    assertEQ(host->gateCount, 1);
+    assertEQ(host->gateChangeCount, 1);
     assertEQ(host->gateState, true);
-    assertEQ(host->cvCount, 1);
+    assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvState, 2);
     assertEQ(host->lockConflicts, 1);
 }
+
 
 
 // play the first note on and off
@@ -194,9 +208,9 @@ static void test2()
     std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
 
     assertEQ(host->lockConflicts, 0);
-    assertEQ(host->gateCount, 2);
+    assertEQ(host->gateChangeCount, 2);
     assertEQ(host->gateState, false);
-    assertEQ(host->cvCount, 1);
+    assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvState, 2);
 }
 
@@ -206,9 +220,9 @@ static void test2L()
     std::shared_ptr<TestHost> host = makeSongOneQandRun2(.20f, .01f, .04f);
 
     assertEQ(host->lockConflicts, 1);
-    assertEQ(host->gateCount, 2);
+    assertEQ(host->gateChangeCount, 2);
     assertEQ(host->gateState, false);
-    assertEQ(host->cvCount, 1);
+    assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvState, 2);
 }
 // loop around to first note on second time
@@ -216,23 +230,38 @@ static void test3()
 {
     std::shared_ptr<TestHost> host = makeSongOneQandRun(.51f);
 
-    assertEQ(host->gateCount, 3);
+    assertEQ(host->gateChangeCount, 3);
     assertEQ(host->gateState, true);
-    assertEQ(host->cvCount, 2);
+    assertEQ(host->cvChangeCount, 1);       // only changes once because it's one note loop
+    assertEQ(host->cvState, 2);
+}
+
+// loop around to first note on second time
+static void test3L()
+{
+    std::shared_ptr<TestHost> host = makeSongOneQandRun2(.4f, .7f, .4f );
+
+    assertGE(host->gateChangeCount, 3);
+    assertEQ(host->gateState, true);
+    assertGE(host->cvChangeCount, 1);       // only changes once because it's one note loop
     assertEQ(host->cvState, 2);
 }
 
 void testMidiPlayer()
 {
+    assertNoMidi();
     testLock();
     testLock2();
     testLock3();
+    testLock4();
+
     test0();
     test1();
-    
     test2();
     test3();
+
     test1L();
     test2L();
+    test3L();
     assertNoMidi();     // check for leaks
 }

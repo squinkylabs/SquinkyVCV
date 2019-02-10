@@ -367,6 +367,7 @@ void MidiEditor::insertNote()
 
 void MidiEditor::deleteNote()
 {
+
     if (seq()->selection->empty()) {
         return;
     }
@@ -374,14 +375,6 @@ void MidiEditor::deleteNote()
     auto cmd = ReplaceDataCommand::makeDeleteCommand(seq());
 
     seq()->undo->execute(cmd);
-   //assert(false);      // now execute it
-#if 0
-    auto track = context->getTrack();
-    for (auto it : *selection) {
-        MidiEventPtr ev = it;
-        track->deleteEvent(*ev);
-    }
-#endif
     // TODO: move selection into undo
     seq()->selection->clear();
 }

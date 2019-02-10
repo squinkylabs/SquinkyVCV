@@ -1,14 +1,13 @@
-#pragma once
 
 #include "MidiLock.h"
 
 #include <assert.h>
 
-
 MidiLock::MidiLock()
 {
     theLock = false;
     editorLockLevel = 0;
+    editorDidLock = false;
 }
 
 MidiLockPtr MidiLock::make()
@@ -26,9 +25,12 @@ void MidiLock::editorLock()
         }
     }
     ++editorLockLevel;
+    editorDidLock = true;
+    const int l = editorLockLevel;
 }
 void MidiLock::editorUnlock()
 {
+    const int l = editorLockLevel;
     if (--editorLockLevel == 0) {
         theLock = false;
     }
@@ -57,6 +59,13 @@ bool MidiLock::tryLock()
 bool MidiLock::locked() const
 {
     return theLock;
+}
+
+bool MidiLock::dataModelDirty() 
+{
+    bool ret = editorDidLock;
+    editorDidLock = false;
+    return ret;
 }
 
 /***********************************************************************/
