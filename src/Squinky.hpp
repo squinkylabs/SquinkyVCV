@@ -3,7 +3,7 @@
 
 
 #ifndef __V1
-#define _SEQ        // just for test
+//#define _SEQ        // just for test
 #endif
 
 #define _FUN        // works with 1.0
