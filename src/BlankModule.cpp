@@ -76,7 +76,7 @@ BlankWidget::BlankWidget(BlankModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/blank_panel.svg")));
         addChild(panel);
     }
 

@@ -240,7 +240,7 @@ superWidget::superWidget(SuperModule *module) :
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/super_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/super_panel.svg")));
         addChild(panel);
 
         // Is this really needed?
