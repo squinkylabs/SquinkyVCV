@@ -13,15 +13,12 @@
 
 
 #define _FUN        // works with 1.0
-#if 0  // turn off while merging
 #define _LFN
 #define _FORMANTS
 #define _SHAPER
 #define _CHB
 #define _GRAY
 //#define _CH10
-#endif
-
 
 #ifndef __V1
     #define _EV3

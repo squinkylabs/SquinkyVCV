@@ -10,6 +10,8 @@
 
 #include <sstream>
 
+using Comp = LFN<WidgetComposite>;
+
 /**
  */
 struct LFNModule : public Module
@@ -22,7 +24,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    LFN<WidgetComposite> lfn;
+    Comp lfn;
 private:
 
 };
@@ -38,7 +40,8 @@ LFNModule::LFNModule() : lfn(this)
     config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
     onSampleRateChange();
     lfn.init();
-    SqHelper::setupParams(lfn, this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
 }
 #else
 LFNModule::LFNModule()
@@ -79,6 +82,8 @@ private:
 struct LFNWidget : ModuleWidget
 {
     LFNWidget(LFNModule *);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -90,22 +95,27 @@ struct LFNWidget : ModuleWidget
         return label;
     }
 
-    // why not on step()?
-   // void draw(NVGcontext *vg) override
     void step() override
     {
         updater.update(*this);
-        module.lfn.pollForChangeOnUIThread();
-       // ModuleWidget::draw(vg);
+        if (module) {
+            module->lfn.pollForChangeOnUIThread();
+        } 
         ModuleWidget::step();
     }
 
+#ifdef __V1
+    void appendContextMenu(Menu *menu) override;
+#else
     Menu* createContextMenu() override;
+#endif
 
     void addStage(int i);
 
     LFNLabelUpdater updater;
-    LFNModule&     module;
+    // note that module will be null in some cases
+    LFNModule* module;
+
     ParamWidget* xlfnWidget = nullptr;
 };
 
@@ -118,18 +128,34 @@ static const float labelX = 2;
 
 void LFNWidget::addStage(int index)
 {
+    // make a temporary one for instantiation controls,
+    // in case module is null.
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module.lfn,
+        icomp,
         Vec(knobX, knobY + index * knobDy),
-        &module, module.lfn.EQ0_PARAM + index));
+        module, Comp::EQ0_PARAM + index));
 
     updater.makeLabel((*this), index, labelX, knobY - 2 + index * knobDy);
 
     addInput(createInput<PJ301MPort>(
         Vec(inputX, inputY + index * knobDy),
-        &module, module.lfn.EQ0_INPUT + index));
+        module, Comp::EQ0_INPUT + index));
 }
 
+#ifdef __V1
+void LFNWidget::appendContextMenu(Menu* theMenu) 
+{
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
+    theMenu->addChild(manual);
+    
+    MenuLabel *spacerLabel = new MenuLabel();
+    theMenu->addChild(spacerLabel);
+    SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
+        xlfnWidget);
+    item->text = "Extra Low Frequency";
+    theMenu->addChild(item);
+}
+#else
 inline Menu* LFNWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -145,46 +171,51 @@ inline Menu* LFNWidget::createContextMenu()
     theMenu->addChild(item);
     return theMenu;
 }
+#endif
 
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(*module)
+#ifdef __V1
+LFNWidget::LFNWidget(LFNModule *module) : module(module)
 {
+    setModule(module);
+#else
+LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
+{
+#endif
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(plugin, "res/lfn_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/lfn_panel.svg")));
         addChild(panel);
     }
 
     addOutput(createOutput<PJ301MPort>(
         Vec(59, inputY - knobDy - 1),
         module,
-        module->lfn.OUTPUT));
+        LFN<WidgetComposite>::OUTPUT));
     addLabel(
         Vec(54, inputY - knobDy - 18), "out", SqHelper::COLOR_WHITE);
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
-        module->lfn,
+        icomp,
         Vec(10, knobY - 1 * knobDy),
         module,
-        module->lfn.FREQ_RANGE_PARAM));
-
-   // addLabel(Vec(59, knobY - 1 * knobDy), "R");
+        Comp::FREQ_RANGE_PARAM));
 
     for (int i = 0; i < 5; ++i) {
         addStage(i);
     }
 
     xlfnWidget = SqHelper::createParam<NullWidget>(
-        module->lfn,
+        icomp,
         Vec(0, 0),
         module,
-        module->lfn.XLFN_PARAM);
+        Comp::XLFN_PARAM);
     xlfnWidget->box.size.x = 0;
     xlfnWidget->box.size.y = 0;
     addParam(xlfnWidget);
@@ -203,8 +234,12 @@ void LFNLabelUpdater::makeLabel(struct LFNWidget& widget, int index, float x, fl
 
 void LFNLabelUpdater::update(struct LFNWidget& widget)
 {
-    float baseFreq = widget.module.lfn.getBaseFrequency();
-    const bool isXLFN = widget.module.lfn.isXLFN();
+    // This will happen often
+    if (!widget.module) {
+        return;
+    }
+    float baseFreq = widget.module->lfn.getBaseFrequency();
+    const bool isXLFN = widget.module->lfn.isXLFN();
     const float moveLeft = isXLFN ? 3 : 0;
     const int digits = isXLFN ? 2 : 1;
     if (baseFreq != baseFrequency) {
