@@ -8,6 +8,15 @@
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
 #include "StateVariableFilter.h"
+#include "IComposite.h"
+
+template <class TBase>
+class VocalDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
  * original version CPU usage = 84
@@ -25,6 +34,13 @@ public:
     }
     VocalFilter() : TBase()
     {
+    }
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<VocalDescription<TBase>>();
     }
 
     void setSampleRate(float rate)
@@ -247,4 +263,48 @@ inline void VocalFilter<TBase>::step()
         filterMix += m_gain[i] * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
     TBase::outputs[AUDIO_OUTPUT].value = 3 * filterMix;
+}
+
+template <class TBase>
+int VocalDescription<TBase>::getNumParams()
+{
+    return VocalFilter<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config VocalDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    switch(i) {
+        case VocalFilter<TBase>::FILTER_VOWEL_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Vowel"};
+            break;
+        case VocalFilter<TBase>::FILTER_VOWEL_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "Vowel Trim"};
+            break;
+        case VocalFilter<TBase>::FILTER_FC_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Filter Cutoff"};
+            break;
+        case VocalFilter<TBase>::FILTER_FC_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "CV Trim"};
+            break;
+        case VocalFilter<TBase>::FILTER_Q_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Q / Resonance"};
+            break;
+        case VocalFilter<TBase>::FILTER_Q_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "Q CV Trim"};
+            break;
+        case VocalFilter<TBase>::FILTER_BRIGHTNESS_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Brightness"};
+            break;
+        case VocalFilter<TBase>::FILTER_BRIGHTNESS_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "Brightness CV Trim"};
+            break;
+        case VocalFilter<TBase>::FILTER_MODEL_SELECT_PARAM:
+            ret = {0.0f, 4.0f, 2.0f, "Filter Model"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
 }

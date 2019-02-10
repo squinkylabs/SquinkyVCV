@@ -4,14 +4,14 @@
 
 
 // The plugin-wide instance of the Plugin class
-Plugin *plugin;
+Plugin *pluginInstance = nullptr;
 
 /**
  * Here we register the whole plugin, which may have more than one module in it.
  */
 void init(rack::Plugin *p)
 {
-    plugin = p;
+    pluginInstance = p;
     p->slug = "squinkylabs-plug1";
     p->version = TOSTRING(VERSION);
 
@@ -30,7 +30,7 @@ void init(rack::Plugin *p)
 #ifdef _EV3 
     p->addModel(modelEV3Module);
     #endif
-#ifdef _GROWLER
+#ifdef _FORMANTS
     p->addModel(modelVocalFilterModule);
 #endif
 #ifdef _FUN
@@ -39,7 +39,7 @@ void init(rack::Plugin *p)
 #ifdef _GRAY
     p->addModel(modelGrayModule);
     #endif
-#ifdef _FORMANTS
+#ifdef _GROWLER
     p->addModel(modelVocalModule);
     #endif
 #ifdef _LFN

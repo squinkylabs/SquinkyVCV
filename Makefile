@@ -16,7 +16,7 @@ CFLAGS +=
 CXXFLAGS +=
 
 # For now, this branch is always V1
-# FLAGS += -D __V1
+FLAGS += -D __V1
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
@@ -36,7 +36,6 @@ LDFLAGS += -lpthread
 
 # Add .cpp and .c files to the build
 SOURCES += $(wildcard src/*.cpp)
-SOURCES += $(wildcard src/seq/*.cpp)
 SOURCES += $(wildcard dsp/**/*.cpp)
 SOURCES += $(wildcard dsp/third-party/falco/*.cpp)
 xxSOURCES += dsp/third-party/src/minblep.cpp
