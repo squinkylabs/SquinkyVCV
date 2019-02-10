@@ -11,8 +11,9 @@
 //#define _SEQ        // just for test
 #endif
 
-#if 0   // turn off while merging
+
 #define _FUN        // works with 1.0
+#if 0  // turn off while merging
 #define _LFN
 #define _FORMANTS
 #define _SHAPER
