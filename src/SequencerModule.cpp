@@ -6,7 +6,8 @@
 #include "WidgetComposite.h"
 #include "Seq.h"
 #include "widgets.hpp"
-#include "NoteDisplay.h"
+#include "seq/NoteDisplay.h"
+#include "ctrl/SqMenuItem.h"
 
 
 struct SequencerModule : Module
@@ -17,6 +18,11 @@ struct SequencerModule : Module
     void step() override
     {
         seq.step();
+    }
+
+    void stop()
+    {
+        seq.stop();
     }
 };
 
@@ -29,10 +35,10 @@ SequencerModule::SequencerModule()
 {
 }
 
-
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
+    Menu* createContextMenu() override;
 
         /**
      * Helper to add a text label to this widget
@@ -48,9 +54,18 @@ struct SequencerWidget : ModuleWidget
     }
 };
 
+inline Menu* SequencerWidget::createContextMenu()
+{
+    Menu* theMenu = ModuleWidget::createContextMenu();
+    ManualMenuItem* manual = new ManualMenuItem(
+        "https://github.com/squinkylabs/SquinkyVCV/blob/sq2/docs/sq.md");
+    theMenu->addChild(manual);
+    return theMenu;
+}
+
  SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 {
-    const int width = (14 + 14) * RACK_GRID_WIDTH;      // 14 for panel, 14 for notes
+    const int width = (14 + 28) * RACK_GRID_WIDTH;      // 14 for panel, other for notes
     box.size = Vec(width, RACK_GRID_HEIGHT);
 
     {
@@ -62,8 +77,9 @@ struct SequencerWidget : ModuleWidget
     #if 1
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
-        const Vec noteSize =Vec(14 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
-		NoteDisplay *display = new NoteDisplay(notePos, noteSize);
+        const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
+       // module->stop();         // don't start playback immediately
+		NoteDisplay *display = new NoteDisplay(notePos, noteSize, module->seq.getSong());
 		addChild(display);
 	}
     #endif

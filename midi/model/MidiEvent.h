@@ -5,6 +5,23 @@
 #include <assert.h>
 #include "asserts.h"
 
+#include "PitchUtils.h"
+
+
+// forward declare smart pointers
+class MidiEvent;
+class MidiEndEvent;
+class MidiNoteEvent;
+class MidiTestEvent;
+class MidiEndEvent;
+using MidiEndEventPtr = std::shared_ptr<MidiEndEvent>;
+using MidiTestEventPtr = std::shared_ptr<MidiTestEvent>;
+using MidiEventPtr = std::shared_ptr<MidiEvent>;
+using MidiEventPtrC = std::shared_ptr<const MidiEvent>;
+using MidiNoteEventPtr = std::shared_ptr<MidiNoteEvent>;
+using MidiNoteEventPtrC = std::shared_ptr<const MidiNoteEvent>;
+
+
 /**
  * Abstract base class for all events
  */
@@ -15,10 +32,11 @@ public:
     enum class Type
     {
         Note,
-        End
+        End,
+        Test
     };
 
-    Type type = Type::End;
+    Type type = Type::Test;
 
     /**
      * time units are floats, 1.0 == quarter note
@@ -27,6 +45,8 @@ public:
 
     bool operator == (const MidiEvent&) const;
     bool operator != (const MidiEvent&) const;
+
+    virtual MidiEventPtr clone() const = 0;
 
     virtual void assertValid() const;
 
@@ -46,6 +66,13 @@ protected:
 #ifdef _DEBUG
         ++_count;
 #endif
+    }
+    MidiEvent(const MidiEvent& e)
+    {
+#ifdef _DEBUG
+        ++_count;
+#endif
+        this->startTime = e.startTime;
     }
 
 public:
@@ -87,8 +114,6 @@ inline std::shared_ptr<T> safe_cast(std::shared_ptr<Q>)
     return nullptr;
 }
 
-using MidiEventPtr = std::shared_ptr<MidiEvent>;
-
 /********************************************************************
 **
 **           MidiNoteEvent
@@ -102,6 +127,13 @@ public:
     {
         type = Type::Note;
     }
+    MidiNoteEvent(const MidiNoteEvent& n) : MidiEvent(n)
+    {
+        type = Type::Note;
+        this->pitchCV = n.pitchCV;
+        this->duration = n.duration;
+    }
+
     /**
      * Pitch is VCV standard 1V/8
      */
@@ -112,37 +144,21 @@ public:
     void setPitch(int octave, int semi);
     std::pair<int, int> getPitch() const;
 
-    static std::pair<int, int> cvToPitch(float cv);
-    static float pitchToCV(int octave, int semi);
+    virtual MidiEventPtr clone() const override;
+    MidiNoteEventPtr clonen() const;
+
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };
 
-inline std::pair<int, int> MidiNoteEvent::cvToPitch(float cv)
-{
-     // VCV 0 is C4
-    int octave = int(std::floor(cv));
-    float remainder = cv - octave;
-    octave += 4;
-    float s = remainder * 12;
-    int semi = int(std::round(s));
-    return std::pair<int, int>(octave, semi);
-}
-
 inline std::pair<int, int> MidiNoteEvent::getPitch() const
 {
-    return cvToPitch(pitchCV);
-}
-
-
-inline float MidiNoteEvent::pitchToCV(int octave, int semi)
-{
-    return float(octave - 4) + semi * (1.0f / 12.0f);
+    return PitchUtils::cvToPitch(pitchCV);
 }
 
 inline void MidiNoteEvent::setPitch(int octave, int semi)
 {
-    pitchCV = pitchToCV(octave, semi);
+    pitchCV = PitchUtils::pitchToCV(octave, semi);
 }
 
 inline void MidiNoteEvent::assertValid() const
@@ -156,16 +172,15 @@ inline void MidiNoteEvent::assertValid() const
 inline  bool MidiNoteEvent::isEqual(const MidiEvent& other) const
 {
     const MidiNoteEvent* otherNote = static_cast<const MidiNoteEvent*>(&other);
-    return other.isEqualBase(*this) && this->pitchCV == otherNote->pitchCV;
+    return other.isEqualBase(*this) &&
+        this->pitchCV == otherNote->pitchCV &&
+        this->duration == otherNote->duration;
 }
 
-
-using MidiNoteEventPtr = std::shared_ptr<MidiNoteEvent>;
-
 template<>
-inline std::shared_ptr<MidiNoteEvent> safe_cast(std::shared_ptr<MidiEvent> ev)
+inline MidiNoteEventPtr safe_cast(std::shared_ptr<MidiEvent> ev)
 {
-    std::shared_ptr<MidiNoteEvent> note;
+    MidiNoteEventPtr note;
     if (ev->type == MidiEvent::Type::Note) {
         note = std::static_pointer_cast<MidiNoteEvent>(ev);
     }
@@ -178,6 +193,15 @@ inline std::shared_ptr<MidiEvent> safe_cast(std::shared_ptr<MidiNoteEvent> ev)
     return ev;
 }
 
+inline MidiNoteEventPtr MidiNoteEvent::clonen() const
+{
+    return std::make_shared<MidiNoteEvent>(*this);
+}
+
+inline MidiEventPtr MidiNoteEvent::clone() const
+{
+    return this->clonen();
+}
 /********************************************************************
 **
 **           MidiEndEvent
@@ -192,6 +216,14 @@ public:
     {
         type = Type::End;
     }
+
+    MidiEndEvent(const MidiEndEvent& e) : MidiEvent(e)
+    {
+        type = Type::End;
+    }
+
+    virtual MidiEventPtr clone() const override;
+    MidiEndEventPtr clonee() const;
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
 };
@@ -207,17 +239,14 @@ inline  bool MidiEndEvent::isEqual(const MidiEvent& other) const
     return other.isEqualBase(*this);
 }
 
-
-using MidiEndEventPtr = std::shared_ptr<MidiEndEvent>;
-
 template<>
 inline std::shared_ptr<MidiEndEvent> safe_cast(std::shared_ptr<MidiEvent> ev)
 {
-    std::shared_ptr<MidiEndEvent> note;
+    std::shared_ptr<MidiEndEvent> endev;
     if (ev->type == MidiEvent::Type::End) {
-        note = std::static_pointer_cast<MidiEndEvent>(ev);
+        endev = std::static_pointer_cast<MidiEndEvent>(ev);
     }
-    return note;
+    return endev;
 }
 
 template<>
@@ -226,3 +255,58 @@ inline std::shared_ptr<MidiEvent> safe_cast(std::shared_ptr<MidiEndEvent> ev)
     return ev;
 }
 
+inline MidiEventPtr MidiEndEvent::clone() const
+{
+    return std::make_shared<MidiEndEvent>(*this);
+}
+
+
+/********************************************************************
+**
+**           MidiTestEvent
+** (just for unit tests)
+********************************************************************/
+
+class MidiTestEvent : public MidiEvent
+{
+public:
+    void assertValid() const override;
+    MidiTestEvent()
+    {
+        type = Type::Test;
+    }
+    virtual MidiEventPtr clone() const override;
+protected:
+    virtual bool isEqual(const MidiEvent&) const override;
+};
+
+inline void MidiTestEvent::assertValid() const
+{
+    MidiEvent::assertValid();
+}
+
+inline  bool MidiTestEvent::isEqual(const MidiEvent& other) const
+{
+    return other.isEqualBase(*this);
+}
+
+template<>
+inline std::shared_ptr<MidiTestEvent> safe_cast(std::shared_ptr<MidiEvent> ev)
+{
+    std::shared_ptr<MidiTestEvent> test;
+    if (ev->type == MidiEvent::Type::Test) {
+        test = std::static_pointer_cast<MidiTestEvent>(ev);
+    }
+    return test;
+}
+
+template<>
+inline std::shared_ptr<MidiEvent> safe_cast(std::shared_ptr<MidiTestEvent> ev)
+{
+    return ev;
+}
+
+inline MidiEventPtr MidiTestEvent::clone() const
+{
+    return std::make_shared<MidiTestEvent>(*this);
+}

@@ -2,7 +2,7 @@
 
 #include "GateTrigger.h"
 #include "MidiPlayer.h"
-
+#include "MidiSong.h"
 
 
 template <class TBase>
@@ -46,6 +46,17 @@ public:
     };
 
     void step() override;
+
+    MidiSongPtr getSong()
+    {
+        return player->getSong();
+    }
+
+
+    void stop()
+    {
+        player->stop();
+    }
 private:
     GateTrigger gateTrigger;
     void init();
@@ -55,7 +66,7 @@ private:
 
 #if 1
 template <class TBase>
-class SeqHost : public MidiPlayer::IPlayerHost
+class SeqHost : public IPlayerHost
 {
 public:
     SeqHost(Seq<TBase>* s) : seq(s)
@@ -71,6 +82,10 @@ public:
        // fprintf(stderr, "setCV %f\n", cv); fflush(stderr);
         seq->outputs[Seq<TBase>::CV_OUTPUT].value = cv;
     }
+    void onLockFailed() override
+    {
+
+    }
 private:
     Seq<TBase>* const seq;
 };
@@ -78,12 +93,9 @@ private:
 
 template <class TBase>
 void  Seq<TBase>::init()
-{
-    //  MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSong> song) 
-    std::shared_ptr<MidiPlayer::IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
-
-   //std::shared_ptr<MidiPlayer::IPlayerHost> host;
-    std::shared_ptr<MidiSong> song = MidiSong::makeTest1();
+{ 
+    std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
+    std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     player = std::make_shared<MidiPlayer>(host, song);
 }
 

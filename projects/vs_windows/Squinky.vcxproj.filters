@@ -130,6 +130,9 @@
     <Filter Include="Source Files\midi\controller">
       <UniqueIdentifier>{212cabf3-1fa1-4921-911d-bbd64a09d552}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\util">
+      <UniqueIdentifier>{2783a1b8-2a42-4f69-87bc-391a5bc4288e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -309,9 +312,6 @@
     <ClCompile Include="..\..\test\TestMidiViewport.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\midi\view\MidiViewport.cpp">
-      <Filter>Source Files\midi\view</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\midi\model\MidiSong.cpp">
       <Filter>Source Files\midi\model</Filter>
     </ClCompile>
@@ -362,6 +362,24 @@
     </ClCompile>
     <ClCompile Include="..\..\test\testMidiControllers.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiEditor.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiEditor.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testNoteScreenScale.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp">
+      <Filter>Source Files\midi\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\view\MidiEditorContext.cpp">
+      <Filter>Source Files\midi\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiLock.cpp">
+      <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -578,9 +596,6 @@
     <ClInclude Include="..\..\composites\Super.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\midi\view\MidiViewport.h">
-      <Filter>Header Files\midi\view</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
@@ -638,11 +653,35 @@
     <ClInclude Include="..\..\midi\model\MidiSelectionModel.h">
       <Filter>Header Files\midi\model</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\midi\model\MidiSequencer.h">
-      <Filter>Header Files\midi\controller</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\midi\controller\MidiEditor.h">
       <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\view\NoteScreenScale.h">
+      <Filter>Header Files\midi\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\model\PitchUtils.h">
+      <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\view\MidiEditorContext.h">
+      <Filter>Header Files\midi\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\model\MidiSequencer.h">
+      <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\util\FilteredIterator.h">
+      <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\model\TimeUtils.h">
+      <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiLock.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Seq.h">
+      <Filter>Header Files\composites</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

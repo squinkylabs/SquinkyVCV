@@ -1,4 +1,4 @@
-
+#include "MidiLock.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
 
@@ -15,6 +15,7 @@ static void test0()
 static void test1()
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
     song->createTrack(10);
     song->getTrack(10)->insertEnd(0);
     assertEQ(song->getHighestTrackNumber(), 10);
@@ -40,7 +41,7 @@ static void test2()
 static void testDefSong()
 {
     // TODO: move to song::assertValid()
-    MidiSongPtr song = MidiSong::makeTest1();
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     assertEQ(song->getHighestTrackNumber(), 0);         // there should be one track - 0
     auto track = song->getTrack(0);
     track->assertValid();

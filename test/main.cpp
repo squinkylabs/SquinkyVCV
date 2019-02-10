@@ -58,6 +58,8 @@ extern void testMidiPlayer();
 extern void testMultiLag();
 extern void testUtils();
 extern void testIComposite();
+extern void testMidiEditor();
+extern void testNoteScreenScale();
 
 #if 0
 #include <sstream>
@@ -120,11 +122,14 @@ int main(int argc, char ** argv)
     testFilteredIterator();
     testMidiDataModel();
     testMidiSong();
+    testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();
     testMidiViewport();
-    testMidiPlayer();
+ 
     testMidiControllers();
+    testMidiEditor();
+    testNoteScreenScale();
 
     testAudioMath();
     testRingBuffer();
@@ -132,6 +137,8 @@ int main(int argc, char ** argv)
     testManagedPool();
     testLookupTable();
     testObjectCache();
+
+#ifndef _MSC_VER
     testTestSignal();
     testBiquad();
     testSaw();
@@ -186,6 +193,9 @@ int main(int argc, char ** argv)
 
 
     testFilterDesign();
+#else
+    printf("disabled lots of tests for MS\n");
+#endif
     testFinalLeaks();
 
     // When we run inside Visual Studio, don't exit debugger immediately

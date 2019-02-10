@@ -46,6 +46,7 @@ static void testEqual()
     assertEQ(note, evn);
     assertEQ(end, eve);
     assert (*note == *note2);
+    assert(note != note2);
 
     assert(!(*note == *end));
     assert(*note != *end);
@@ -111,6 +112,7 @@ static void testPitch()
 
 static void testPitch2()
 {
+    assertNoMidi();     // check for leaks
     MidiNoteEvent n;
     n.pitchCV = -1;            // C3 in VCV
     auto pitch = n.getPitch();
@@ -140,12 +142,91 @@ static void testPitch2()
     assertClose(n.pitchCV, 2.f / 12.f, .0001);
 }
 
+static void testCopyCtor()
+{
+    assertNoMidi();     // check for leaks
+    {
+        MidiNoteEvent note;
+        note.pitchCV = 1.12f;
+        note.duration = 33.45f;
+        note.startTime = 15.3f;
+        MidiNoteEvent note2(note);
+        assert(note == note2);
+
+        MidiNoteEvent note3 = note;
+        assert(note == note3);
+
+        MidiEndEvent end;
+        end.startTime = 234.5f;
+        MidiEndEvent end2(end);
+        assert(end == end2);
+
+        MidiEndEvent end3 = end;
+        assert(end == end3);
+    }
+    assertNoMidi();     // check for leaks
+
+}
+
+
+static void testEqualNote()
+{
+    MidiNoteEvent note1;
+    MidiNoteEvent note2;
+    assert(note1 == note2);
+    note2.pitchCV = .5;
+    assert(note1 != note2);
+    note2 = note1;
+    assert(note1 == note2);
+    note2.duration = 5;
+    assert(note1 != note2);
+    MidiNoteEvent note3(note2);
+    assert(note3 == note2);
+}
+
+static void testEqualEnd()
+{
+    MidiEndEvent end1;
+    MidiEndEvent end2;
+    assert(end1 == end2);
+    end2.startTime = 55;
+    assert(end1 != end2);
+}
+
+
+static void testClone()
+{
+    MidiNoteEvent note;
+    note.pitchCV = 4.1f;
+    note.duration = .6f;
+    note.startTime = .22f;
+
+    MidiEventPtr evt = note.clone();
+    MidiNoteEventPtr note2 = note.clonen();
+    assert(note == *evt);
+    assert(note == *note2);
+
+    MidiEndEvent end;
+    end.startTime = 102345;
+    MidiEventPtr end2 = end.clone();
+    assert(end == *end2);
+}
+
+
 void  testMidiEvents()
 {
+    assertNoMidi();     // check for leaks
     testType();
     testCast();
     testEqual();
     testPitch();
     testPitch2();
+    testCopyCtor();
+
+    testEqualNote();
+    testEqualEnd();
+    testClone();
+    
+
     assertNoMidi();     // check for leaks
 }

@@ -1,10 +1,12 @@
 #pragma once
 
+#include "MidiTrack.h"
 #include <vector>
 #include <memory>
 
-class MidiTrack;
+
 class MidiSong;
+class MidiLock;
 
 using MidiSongPtr = std::shared_ptr<MidiSong>;
 
@@ -14,7 +16,7 @@ public:
     MidiSong();
     ~MidiSong();
     std::shared_ptr<MidiTrack> getTrack(int index);
-    std::shared_ptr<const MidiTrack> getTrack(int index) const;
+    std::shared_ptr<const MidiTrack> getTrackConst(int index) const;
     void createTrack(int index);
 
     void assertValid() const;
@@ -27,12 +29,16 @@ public:
     /**
      * factory method to generate test content
      */
-    static MidiSongPtr makeTest1();
+    static MidiSongPtr makeTest(MidiTrack::TestContent, int trackNumber);
+
+    std::shared_ptr<MidiLock> lock;
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
 
     /** like create track, but passes in the track
      */
     void addTrack(int index, std::shared_ptr<MidiTrack>);
+
+   
 };
 
