@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <set>
+#include <vector>
 
 class MidiEvent;
 class MidiSelectionModel;
@@ -27,7 +27,7 @@ public:
      */
     void clear();
 
-    using container = std::set<std::shared_ptr<MidiEvent>>;
+    using container = std::vector<std::shared_ptr<MidiEvent>>;
     using const_iterator = container::const_iterator;
 
     const_iterator begin() const;
@@ -60,6 +60,7 @@ public:
     bool isSelectedDeep(std::shared_ptr<MidiEvent> event) const;
 private:
 
+    void add(std::shared_ptr<MidiEvent>);
 
     container selection;
 };

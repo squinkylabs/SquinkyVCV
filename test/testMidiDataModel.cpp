@@ -325,11 +325,11 @@ static void testSelection()
     MidiSelectionModel::const_iterator it = sel.begin();
     assert(it != sel.end());
     MidiEventPtr ev = *it;
-    assert(*ev == *note1);
+    assert(*ev == *note2);
     ++it;
     assert(it != sel.end());
     ev = *it;
-    assert(*ev == *note2);
+    assert(*ev == *note1);
     ++it;
     assert(it == sel.end());
 }

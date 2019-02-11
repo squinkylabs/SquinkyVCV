@@ -84,6 +84,8 @@ static void xx()
 }
 #endif
 
+#define _MIDIONLY
+
 int main(int argc, char ** argv)
 {
    // xx();

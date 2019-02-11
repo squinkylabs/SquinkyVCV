@@ -18,12 +18,12 @@ void MidiSelectionModel::select(std::shared_ptr<MidiEvent> event)
 {
     selection.clear();
     assert(selection.empty());
-    selection.insert(event);
+    add(event);
 }
 
 void MidiSelectionModel::extendSelection(std::shared_ptr<MidiEvent> event)
 {
-    selection.insert(event);
+    add(event);
 }
 
 MidiSelectionModel::const_iterator MidiSelectionModel::begin() const
@@ -41,9 +41,14 @@ void MidiSelectionModel::clear()
     selection.clear();
 }
 
+void MidiSelectionModel::add(MidiEventPtr evt)
+{
+    selection.push_back(evt);
+}
+
 bool MidiSelectionModel::isSelected(MidiEventPtr evt) const
 {
-    auto it = selection.find(evt);
+    auto it = std::find(selection.begin(), selection.end(), evt);
     return it != selection.end();
 }
 
@@ -75,7 +80,7 @@ MidiSelectionModelPtr MidiSelectionModel::clone() const
     MidiSelectionModelPtr ret = std::make_shared<MidiSelectionModel>();
     for (auto it : selection) {
         MidiEventPtr clonedEvent = it->clone();
-        ret->selection.insert(clonedEvent);
+        ret->add(clonedEvent);
     }
     return ret;
 }
