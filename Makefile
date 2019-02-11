@@ -16,7 +16,7 @@ CFLAGS +=
 CXXFLAGS +=
 
 # For now, this branch is always V1
-FLAGS += -D __V1
+# FLAGS += -D __V1
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
@@ -44,6 +44,7 @@ SOURCES += dsp/third-party/kiss_fft130/tools/kiss_fftr.c
 SOURCES += $(wildcard sqsrc/**/*.cpp)
 SOURCES += $(wildcard midi/**/*.cpp)
 SOURCES += $(wildcard src/third-party/*.cpp)
+SOURCES += $(wildcard src/seq/*.cpp)
 
 # Add files to the ZIP package when running `make dist`
 # The compiled plugin is automatically added.
