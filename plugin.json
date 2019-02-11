@@ -18,6 +18,26 @@
 			"name": "lfn",
 			"description": "Low frequency random voltage generator",
 			"tags": ["NOISE", "RANDOM", "LFO"]
+		},
+		"growler": {
+			"name": "growler",
+			"description": "Formants: Vocal Filter",
+			"tags":  ["EFFECT", "FILTER"]
+		},
+		"cheby": {
+			"name": "cheby",
+			"description": "Chebyshev II: Waveshaper VCO",
+			"tags": ["VCO"]
+		},
+		"shaper": {
+			"name": "shaper",
+			"description": "Shaper: Precision Wave Shaper",
+			"tags": ["EFFECT", "OSCILLATOR", "WAVESHAPER"]
+		},
+		"gray": {
+			"name": "gray",
+			"description": "Gray Code: Eclectic clock divider",
+			"tags": [ "CLOCK_MODULATOR", "RANDOM"]
 		}
 	}
 }
