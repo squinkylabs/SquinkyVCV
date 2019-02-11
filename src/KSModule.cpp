@@ -151,7 +151,7 @@ KCCompositeWidget::KCCompositeWidget(KSModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(plugin, "res/ks_panel.svg")));
+        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/ks_panel.svg")));
         addChild(panel);
     }
 

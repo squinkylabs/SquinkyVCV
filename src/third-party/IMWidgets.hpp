@@ -45,6 +45,7 @@ struct DynamicSVGScrew : FramebufferWidget {
     void addSVGalt(std::shared_ptr<SVG> svg);
     void step() override;
 };
+#endif
 
 
 
@@ -55,6 +56,8 @@ struct PanelBorderWidget : TransparentWidget { // from SVGPanel.cpp
 	void draw(NVGcontext *vg) override;
 };
 
+
+#ifndef __V1
 struct DynamicSVGPanel : FramebufferWidget { // like SVGPanel (in app.hpp and SVGPanel.cpp) but with dynmically assignable panel
     int* mode;
     int oldMode;

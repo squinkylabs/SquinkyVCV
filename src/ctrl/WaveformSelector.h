@@ -25,8 +25,8 @@ private:
 
 inline void ButtonCell::loadSVG(const char* res, const char* resOn)
 {
-    svg.setSVG(SVG::load(assetPlugin(plugin, res)));
-    svgOn.setSVG(SVG::load(assetPlugin(plugin, resOn)));
+    svg.setSVG(SVG::load(assetPlugin(pluginInstance, res)));
+    svgOn.setSVG(SVG::load(assetPlugin(pluginInstance, resOn)));
     this->box.size = svg.box.size;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "app.hpp"
 #include "IComposite.h"
 /** Wrap up all the .6/1.0 dependencies here
  */
@@ -18,28 +19,46 @@ public:
     } 
     static float engineGetSampleRate()
     {
-        return app()->engine->getSampleRate();
+        return APP->engine->getSampleRate();
     }
       static float engineGetSampleTime()
     {
-        return app()->engine->getSampleTime();
+        return APP->engine->getSampleTime();
     }
-    template <typename T>
 
-    static T* createParam(IComposite& dummy, const Vec& pos, Module* module, int paramId )
+    template <typename T>
+    static T* createParam(std::shared_ptr<IComposite> dummy, const Vec& pos, Module* module, int paramId )
     {
         return rack::createParam<T>(pos, module, paramId);
+    }
+
+    template <typename T>
+    static T* createParamCentered(std::shared_ptr<IComposite> dummy, const Vec& pos, Module* module, int paramId )
+    {
+        return rack::createParamCentered<T>(pos, module, paramId);
     }
 
     static const NVGcolor COLOR_WHITE;
     static const NVGcolor COLOR_BLACK;
 
-    static void setupParams(IComposite& comp, Module* module)
+    static void setupParams(std::shared_ptr<IComposite> comp, Module* module)
     {
-        const int n = comp.getNumParams();
+        const int n = comp->getNumParams();
         for (int i=0; i<n; ++i) {
-            auto param = comp.getParam(i);
+            auto param = comp->getParam(i);
             module->params[i].config(param.min, param.max, param.def, param.name);
+        }
+    }
+
+    static float getValue(ParamWidget* widget) {
+        return (widget->paramQuantity) ?
+            widget->paramQuantity->getValue() :
+            0;
+    }
+
+    static void setValue(ParamWidget* widget, float v) {
+        if (widget->paramQuantity) {
+            widget->paramQuantity->setValue(v);
         }
     }
 };
@@ -72,9 +91,9 @@ public:
    static const NVGcolor COLOR_BLACK;
 
    template <typename T>
-   static T* createParam(IComposite& composite, const Vec& pos, Module* module, int paramId )
+   static T* createParam(std::shared_ptr<IComposite> composite, const Vec& pos, Module* module, int paramId )
    {
-       const auto data = composite.getParam(paramId);
+       const auto data = composite->getParam(paramId);
        assert(data.min < data.max);
        assert(data.def >= data.min);
        assert(data.def <= data.max);
@@ -84,6 +103,29 @@ public:
            paramId,
            data.min, data.max, data.def
        );
-   }
+    }
+
+    template <typename T>
+    static T* createParamCentered(std::shared_ptr<IComposite> composite, const Vec& pos, Module* module, int paramId )
+    {
+        const auto data = composite->getParam(paramId);
+        assert(data.min < data.max);
+        assert(data.def >= data.min);
+        assert(data.def <= data.max);
+        return rack::createParamCentered<T>(
+            pos,
+            module, 
+            paramId,
+            data.min, data.max, data.def
+        );
+    }
+
+    static float getValue(ParamWidget* widget) {
+        return widget->value;
+    }
+
+    static void setValue(ParamWidget* widget, float v) {
+        widget->setValue(v);
+    }
 };
 #endif

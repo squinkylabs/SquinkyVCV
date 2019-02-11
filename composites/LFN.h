@@ -54,7 +54,15 @@
  */
 
 template <class TBase>
-class LFN : public TBase, public IComposite
+class LFNDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
+
+template <class TBase>
+class LFN : public TBase
 {
 public:
 
@@ -67,11 +75,11 @@ public:
 
     /** Implement IComposite
      */
-     Config getParam(int i) override;
-     int getNumParams() override
-     {
-         return NUM_PARAMS;
-     }
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<LFNDescription<TBase>>();
+    }
+
     void setSampleTime(float time)
     {
         reciprocalSampleRate = time;
@@ -199,34 +207,41 @@ private:
     {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
 };
 
+
+
 template <class TBase>
-inline  IComposite::Config
-    LFN<TBase>::getParam(int i)
+int LFNDescription<TBase>::getNumParams()
+{
+    return LFN<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config LFNDescription<TBase>::getParam(int i)
 {
     const float gmin = -5;
     const float gmax = 5;
     const float gdef = 0;
     Config ret(0, 1, 0, "");
     switch(i) {
-        case EQ0_PARAM:
+        case LFN<TBase>::EQ0_PARAM:
             ret = { gmin, gmax, gdef, "Low freq mix"};
             break;
-        case EQ1_PARAM:
+        case LFN<TBase>::EQ1_PARAM:
             ret = { gmin, gmax, gdef, "Mid-low freq fix"};
             break;
-        case EQ2_PARAM:
+        case LFN<TBase>::EQ2_PARAM:
             ret = { gmin, gmax, gdef, "Mid freq mix"};
             break;
-        case EQ3_PARAM:
+        case LFN<TBase>::EQ3_PARAM:
             ret = { gmin, gmax, gdef, "Mid-high freq mix"};
             break;
-        case EQ4_PARAM:
+        case LFN<TBase>::EQ4_PARAM:
             ret = { gmin, gmax, gdef, "High freq mix"};
             break;
-        case FREQ_RANGE_PARAM:
+        case LFN<TBase>::FREQ_RANGE_PARAM:
             ret = {  -5, 5, 0, "Base frequency"};
             break;
-        case XLFN_PARAM:
+        case LFN<TBase>::XLFN_PARAM:
             ret = { 0, 1, 0, "Extra low frequency"};
             break;
         default:

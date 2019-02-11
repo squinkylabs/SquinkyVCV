@@ -187,8 +187,6 @@ void TestMB::testSync2()
   
 }
 
-
-
 void TestMB::testSync3()
 {
     EV3<TestComposite> ev3;
@@ -213,15 +211,12 @@ void TestMB::testSync3()
 }
 
 
+// TODO: what is this??
 static void testBlepx(float crossing, float jump)
 {
     printf("BLEP crossing = %.2f, jump =%.2f\n", crossing, jump);
-    sq::MinBLEP syncMinBLEP;
-
-    syncMinBLEP.minblep = minblep_16_32;
-    syncMinBLEP.oversample = 32;
-
-   // syncMinBLEP.jump(-.5, -2);
+    SqBlep syncMinBLEP;
+    syncMinBLEP.jump(-.5, -2);
     syncMinBLEP.jump(crossing, jump);
     for (int i = 0; i < 32; ++i) {
     //float saw = -1.0 + 2.0*phase;
@@ -266,7 +261,6 @@ static void testOutputs()
     testOutput(MinBLEPVCO::Waveform::Sin, false);
     testOutput(MinBLEPVCO::Waveform::Tri, false);
     testOutput(MinBLEPVCO::Waveform::Even, false);
-   
 }
 
 static void testBlep()
@@ -339,7 +333,6 @@ static void testSyncIn(MinBLEPVCO::Waveform wf)
     assert(!AudioMath::closeTo(x, y, .1));
 
     // TODO: pick freq that will make this more robust
-
 }
 
 static void testSyncIn()

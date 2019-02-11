@@ -17,8 +17,7 @@
 #endif
 
 #include "SqMath.h"
-//#include "dsp/minblep.hpp"
-//#include "dsp/filter.hpp"
+#include "SqBlep.h"
 #include "AudioMath.h"
 #include "ObjectCache.h"
 
@@ -74,12 +73,12 @@ struct EvenVCO : TBase
     /** Whether we are past the pulse width already */
     bool halfPhase = false;
 
-    sq::MinBLEP triSquareMinBLEP;
-    sq::MinBLEP triMinBLEP;
-    sq::MinBLEP sineMinBLEP;
-    sq::MinBLEP doubleSawMinBLEP;
-    sq::MinBLEP sawMinBLEP;
-    sq::MinBLEP squareMinBLEP;
+    SqBlep triSquareMinBLEP;
+    SqBlep  triMinBLEP;
+    SqBlep  sineMinBLEP;
+    SqBlep  doubleSawMinBLEP;
+    SqBlep  sawMinBLEP;
+    SqBlep  squareMinBLEP;
 
     void step() override;
     void step_even(float deltaPhase);
@@ -133,6 +132,7 @@ using namespace rack;
 template <class TBase>
 inline void EvenVCO<TBase>::initialize()
 {
+#if 0
     triSquareMinBLEP.minblep = minblep_16_32;
     triSquareMinBLEP.oversample = 32;
     triMinBLEP.minblep = minblep_16_32;
@@ -145,6 +145,7 @@ inline void EvenVCO<TBase>::initialize()
     sawMinBLEP.oversample = 32;
     squareMinBLEP.minblep = minblep_16_32;
     squareMinBLEP.oversample = 32;
+#endif
 
     sinLookup = ObjectCache<float>::getSinLookup();
     expLookup = ObjectCache<float>::getExp2Ex();

@@ -138,7 +138,8 @@ int main(int argc, char ** argv)
     testLookupTable();
     testObjectCache();
 
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
+#if !defined(_MSC_VER) || !defined(_MIDIONLY)
     testTestSignal();
     testBiquad();
     testSaw();

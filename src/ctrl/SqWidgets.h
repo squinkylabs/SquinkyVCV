@@ -16,7 +16,7 @@ struct BlueTrimmer : SVGKnob
     {
         minAngle = -0.75*M_PI;
         maxAngle = 0.75*M_PI;
-        setSVG(SVG::load(SqHelper::assetPlugin(plugin, "res/BlueTrimmer.svg")));
+        setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BlueTrimmer.svg")));
     }
 };
 
@@ -29,7 +29,7 @@ struct Blue30Knob : SVGKnob
     {
         minAngle = -0.83*M_PI;
         maxAngle = 0.83*M_PI;
-        setSVG(SVG::load(SqHelper::assetPlugin(plugin, "res/Blue30.svg")));
+        setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/Blue30.svg")));
     }
 };
 
@@ -45,22 +45,29 @@ struct Blue30SnapKnob : Blue30Knob
     }
 };
 
-struct NKKSmall : SVGSwitch, ToggleSwitch
+
+struct NKKSmall : SVGSwitch
+#ifndef __V1
+, ToggleSwitch
+#endif
 {
     NKKSmall()
     {
-        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/NKKSmall_0.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/NKKSmall_1.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/NKKSmall_2.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_0.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_1.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_2.svg")));
     }
 };
 
-struct BlueToggle : public SVGSwitch, ToggleSwitch
+struct BlueToggle : public SVGSwitch
+#ifndef __V1
+, ToggleSwitch
+#endif
 {
     BlueToggle()
     {
-        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_1.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_0.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")));
     }
 };
 
@@ -71,18 +78,28 @@ struct SQPush : SVGButton
 {
     SQPush()
     {
+#ifdef __V1
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")));
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg")));
+#else
         setSVGs(
-            SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_0.svg")),
-            SVG::load(SqHelper::assetPlugin(plugin, "res/BluePush_1.svg"))
+            SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")),
+            SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg"))
         );
+#endif
     }
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
+#ifdef __V1
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)));
+        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, dnSVG)));
+#else
         setSVGs(
-            SVG::load(SqHelper::assetPlugin(plugin, upSVG)),
-            SVG::load(SqHelper::assetPlugin(plugin, dnSVG))
+            SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)),
+            SVG::load(SqHelper::assetPlugin(pluginInstance, dnSVG))
         );
+#endif
     }
     void center(Vec& pos)
     {

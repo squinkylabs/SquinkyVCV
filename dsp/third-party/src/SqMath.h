@@ -25,14 +25,8 @@ namespace sq
 {
 #ifdef __V1
     using RCFilter = rack::dsp::RCFilter;
-    using MinBLEP = rack::dsp::MinBLEP<16>;
-    // minblep_16_32 =  rack::dsp::minblep_16_32;
-    // extern const float minblep_16_32[];
-    //#define minblep_16_32 rack::dsp::minblep_16_32
-  
 #else
     using RCFilter = rack::RCFilter;
-    using MinBLEP = rack::MinBLEP<16>;
 #endif
 
 inline float quadraticBipolar(float x)

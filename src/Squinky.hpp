@@ -1,15 +1,24 @@
 #include "rack.hpp"
-#include "componentlibrary.hpp"
 
+#ifdef __V1
+#include "component.hpp"
+#else
+#include "componentlibrary.hpp"
+#endif
+//extern rack::Plugin* plugin;
 
 #ifndef __V1
 //#define _SEQ        // just for test
 #endif
 
+
 #define _FUN        // works with 1.0
 #define _LFN
+#define _FORMANTS
+#define _SHAPER
+#define _CHB
+#define _GRAY
 //#define _CH10
-
 
 #ifndef __V1
     #define _EV3
@@ -18,7 +27,6 @@
     #define _LFN
     #define _COLORS
     #define _GRAY
-    #define _SHAPER
     #define _SUPER
     #define _GROWLER
     #define _FORMANTS
@@ -29,10 +37,8 @@
 
 
 using namespace rack;
-extern Plugin *plugin;
+extern Plugin *pluginInstance;
 extern Model *modelBootyModule;
-extern Model *modelVocalModule;
-extern Model *modelVocalFilterModule;
 extern Model *modelColoredNoiseModule;
 extern Model *modelTremoloModule;
 extern Model *modelThreadBoostModule;
@@ -40,6 +46,12 @@ extern Model *modelLFNModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 
+#ifdef _FORMANTS
+    extern Model *modelVocalFilterModule;
+#endif
+#ifdef _GROWLER
+    extern Model *modelVocalModule;
+#endif
 #ifdef _GMR
 extern Model *modelGMRModule;
 #endif
