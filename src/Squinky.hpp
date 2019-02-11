@@ -8,7 +8,7 @@
 //extern rack::Plugin* plugin;
 
 #ifndef __V1
-//#define _SEQ        // just for test
+#define _SEQ        // just for test
 #endif
 
 
