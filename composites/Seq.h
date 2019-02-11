@@ -127,7 +127,12 @@ template <class TBase>
 inline std::vector<std::string> Seq<TBase>::getClockRates()
 {
     return {
-        "foo"
+        "Internal",
+        "64th note",
+        "32nd note",
+        "16th note",
+        "8th note",
+        "Quarter"
     };
 }
 
