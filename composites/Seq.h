@@ -1,9 +1,18 @@
 #pragma once
 
 #include "GateTrigger.h"
+#include "IComposite.h"
 #include "MidiPlayer.h"
 #include "MidiSong.h"
 
+
+template <class TBase>
+class SeqDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 template <class TBase>
 class Seq : public TBase
@@ -23,6 +32,7 @@ public:
 
     enum ParamIds
     {
+        CLOCK_INPUT_PARAM,
         NUM_PARAMS
     };
 
@@ -46,6 +56,12 @@ public:
     };
 
     void step() override;
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<SeqDescription<TBase>>();
+    }
 
     MidiSongPtr getSong()
     {
@@ -57,6 +73,8 @@ public:
     {
         player->stop();
     }
+
+    static std::vector<std::string> getClockRates();
 private:
     GateTrigger gateTrigger;
     void init();
@@ -105,5 +123,32 @@ void  Seq<TBase>::step()
     player->timeElapsed(TBase::engineGetSampleTime());
 }
 
+template <class TBase>
+inline std::vector<std::string> Seq<TBase>::getClockRates()
+{
+    return {
+        "foo"
+    };
+}
+
+template <class TBase>
+int SeqDescription<TBase>::getNumParams()
+{
+    return Seq<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config SeqDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case Seq<TBase>::CLOCK_INPUT_PARAM:
+            ret = {0, 1, 0, "Clock Rate"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
 
 

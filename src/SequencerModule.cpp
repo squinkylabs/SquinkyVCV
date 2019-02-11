@@ -8,7 +8,9 @@
 #include "widgets.hpp"
 #include "seq/NoteDisplay.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/PopupMenuParamWidget.h"
 
+using Comp = Seq<WidgetComposite>;
 
 struct SequencerModule : Module
 {
@@ -67,6 +69,7 @@ inline Menu* SequencerWidget::createContextMenu()
 {
     const int width = (14 + 28) * RACK_GRID_WIDTH;      // 14 for panel, other for notes
     box.size = Vec(width, RACK_GRID_HEIGHT);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     {
         SVGPanel *panel = new SVGPanel();
@@ -83,6 +86,26 @@ inline Menu* SequencerWidget::createContextMenu()
 		addChild(display);
 	}
     #endif
+
+    /* this is how params are usually added.
+      addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(col1 + trimDx, row2L + trimDyL),
+        module,Comp::FILTER_VOWEL_TRIM_PARAM));
+    */
+// PopupMenuParamWidget(int param, const Vec& pos, float width);
+    auto p = new PopupMenuParamWidget(
+        Comp::CLOCK_INPUT_PARAM,
+        Vec(40, 40),
+        100,
+        Comp::getClockRates());
+    addChild(p);
+#if 0
+    addParam(SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(40, 40),
+        module, Comp::CLOCK_INPUT_PARAM));
+#endif
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(50, 339),

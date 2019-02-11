@@ -1,13 +1,14 @@
 
-#include "LFN.h"
-#include "asserts.h"
 #include "CHB.h"
 #include "FunVCOComposite.h"
+#include "LFN.h"
 #include "Gray.h"
+#include "Seq.h"
 #include "Shaper.h"
 #include "TestComposite.h"
 #include "VocalFilter.h"
 
+#include "asserts.h"
 #include <set>
 
 
@@ -44,4 +45,5 @@ void testIComposite()
     test<Shaper<TestComposite>>();
     test<CHB<TestComposite>>();
     test<Gray<TestComposite>>();
+    test<Seq<TestComposite>>();
 }
