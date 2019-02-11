@@ -9,11 +9,7 @@ NoteScreenScale::NoteScreenScale(MidiEditorContextPtr vp, float screenWidth, flo
     ax = screenWidth / (viewport->endTime() - viewport->startTime());
 
     // min and max the same is fine - it's just one note bar full screen
-    float dbg = ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
     ay = screenHeight / ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
-
-    //printf("in init ax=%f ay=%f screenx=%f screeny=%f\n", ax, ay, screenWidth, screenHeight);
-    //fflush(stdout);
 }
 
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev)

@@ -26,11 +26,10 @@ void MidiLock::editorLock()
     }
     ++editorLockLevel;
     editorDidLock = true;
-    const int l = editorLockLevel;
 }
+
 void MidiLock::editorUnlock()
 {
-    const int l = editorLockLevel;
     if (--editorLockLevel == 0) {
         theLock = false;
     }

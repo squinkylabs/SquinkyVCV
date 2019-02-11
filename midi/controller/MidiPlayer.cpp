@@ -45,7 +45,7 @@ void TrackPlayer::updateToMetricTime(double time, IPlayerHost* host)
     // If we had a conflict and needed to reset, then
     // start all over from beginning
     if (isReset) {
-        curEvent = curEvent = track->begin();
+        curEvent = track->begin();
         noteOffTime = -1;
         isReset = false;
         loopStart = 0;

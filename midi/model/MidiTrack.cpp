@@ -107,6 +107,9 @@ void MidiTrack::_dump() const
             case MidiEvent::Type::Note:
                 type = "Note";
                 break;
+            case MidiEvent::Type::Test:
+            default:
+                assert(false);
 
         }
         const void* addr = evt.get();

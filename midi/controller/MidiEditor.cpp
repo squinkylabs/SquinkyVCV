@@ -297,6 +297,7 @@ void MidiEditor::changeDuration(bool ticks, int amount)
 void MidiEditor::assertCursorInSelection()
 {
     bool foundIt = false;
+    (void) foundIt;
     assert(!seq()->selection->empty());
     for (auto it : *seq()->selection) {
         if (seq()->context->cursorTime() == it->startTime) {
