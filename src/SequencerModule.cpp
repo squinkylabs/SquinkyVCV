@@ -60,7 +60,7 @@ inline Menu* SequencerWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
     ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/sq2/docs/sq.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/sq3/docs/sq.md");
     theMenu->addChild(manual);
     return theMenu;
 }
@@ -93,19 +93,50 @@ inline Menu* SequencerWidget::createContextMenu()
         Vec(col1 + trimDx, row2L + trimDyL),
         module,Comp::FILTER_VOWEL_TRIM_PARAM));
     */
-// PopupMenuParamWidget(int param, const Vec& pos, float width);
+
+
+#if 0   // this works
     auto p = new PopupMenuParamWidget(
+        module,
         Comp::CLOCK_INPUT_PARAM,
         Vec(40, 40),
         100,
         Comp::getClockRates());
     addChild(p);
+#endif
+
+    printf("in seq module, module = %p\n", module);
+    PopupMenuParamWidget* p = PopupMenuParamWidget::create<PopupMenuParamWidget>(
+        Vec (40, 40),
+        module, 
+        Comp::CLOCK_INPUT_PARAM,
+        0, 5, 2);
+    p->box.size.x  = 100;    // width
+    p->test();
+    p->labels = Comp::getClockRates();
+    addChild(p);
+
+
 #if 0
     addParam(SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(40, 40),
         module, Comp::CLOCK_INPUT_PARAM));
+
+addParam(ParamWidget::create<Rogan3PSBlue>(Vec(18, row1), module, module->shifter.PITCH_PARAM, -5.0, 5.0, 0.0));
+
+
+	template <typename T = ParamWidget>
+	static T *create(Vec pos, Module *module, int paramId, float minValue, float maxValue, float defaultValue) {
+		T *o = Component::create<T>(pos, module);
+		o->paramId = paramId;
+		o->setLimits(minValue, maxValue);
+		o->setDefaultValue(defaultValue);
+		return o;
+	}
+
 #endif
+
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(50, 339),

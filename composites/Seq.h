@@ -120,6 +120,13 @@ void  Seq<TBase>::init()
 template <class TBase>
 void  Seq<TBase>::step()
 {
+    static float last = -100;
+    float rate =  TBase::params[CLOCK_INPUT_PARAM].value;
+    if (rate != last) {
+        printf("new rate %f\n", rate);
+        fflush(stdout);
+        last = rate;
+    }
     player->timeElapsed(TBase::engineGetSampleTime());
 }
 
@@ -148,7 +155,7 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Seq<TBase>::CLOCK_INPUT_PARAM:
-            ret = {0, 1, 0, "Clock Rate"};
+            ret = {0, 5, 2, "Clock Rate"};
             break;
         default:
             assert(false);
