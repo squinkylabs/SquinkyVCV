@@ -248,9 +248,34 @@ static void test3L()
     assertEQ(host->cvState, 2);
 }
 
+/*
+  double update(int samplesElapsed, bool externalClock);
+    void setup(int inputSetting, float tempoSetting);
+    */
+
+// test internal clock
 static void testClock0()
 {
+    const int sampleRateI = 44100;
+    const float sampleRate = float(sampleRateI);
+    const float sampleTime = 1.f / sampleRate;
     SeqClock ck;
+    ck.setup(0, 120, sampleTime);       // internal clock
+
+    // now clock by one second
+    double elapsed = ck.update(sampleRateI, false);
+
+    // quarter note = half second at 120,
+    // so one second = 2q
+    assertEQ(elapsed, 2.0);
+
+    elapsed = ck.update(sampleRateI, false);
+    assertEQ(elapsed, 4.0);
+
+    ck.reset();
+    ck.setup(0, 240, sampleTime);       // internal clock
+    elapsed = ck.update(sampleRateI * 10, false);
+    assertEQ(elapsed, 40);
 }
 
 void testMidiPlayer()
