@@ -33,6 +33,7 @@ public:
     enum ParamIds
     {
         CLOCK_INPUT_PARAM,
+        TEMPO_PARAM,
         NUM_PARAMS
     };
 
@@ -123,8 +124,8 @@ void  Seq<TBase>::step()
     static float last = -100;
     float rate =  TBase::params[CLOCK_INPUT_PARAM].value;
     if (rate != last) {
-        printf("new rate %f\n", rate);
-        fflush(stdout);
+      //  printf("new rate %f\n", rate);
+      //  fflush(stdout);
         last = rate;
     }
     player->timeElapsed(TBase::engineGetSampleTime());

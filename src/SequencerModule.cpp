@@ -87,14 +87,28 @@ inline Menu* SequencerWidget::createContextMenu()
 	}
     #endif
 
+     addInput(createInputCentered<PJ301MPort>(
+        Vec(50, 40),
+        module,
+        Comp::CLOCK_INPUT));
+    addLabel(Vec(35, 56), "Clk");
+
     PopupMenuParamWidget* p = PopupMenuParamWidget::create<PopupMenuParamWidget>(
-        Vec (40, 40),
+        Vec (40, 90),
         module, 
         Comp::CLOCK_INPUT_PARAM,
         0, 5, 2);
     p->box.size.x  = 100;    // width
     p->setLabels(Comp::getClockRates());
     addParam(p);
+
+
+    addParam(ParamWidget::create<Rogan2PSBlue>(
+        Vec(60, 150),
+        module,
+        Comp::TEMPO_PARAM,
+        40, 200, 120));
+    addLabel(Vec(60, 200), "Tempo");
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(50, 339),
@@ -110,6 +124,13 @@ inline Menu* SequencerWidget::createContextMenu()
 
     addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
         Vec(120, 310), module,  Seq<WidgetComposite>::GATE_LIGHT));
+
+      // screws
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
+
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable
