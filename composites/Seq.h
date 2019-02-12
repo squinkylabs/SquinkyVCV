@@ -4,6 +4,7 @@
 #include "IComposite.h"
 #include "MidiPlayer.h"
 #include "MidiSong.h"
+#include "SeqClock.h"
 
 
 template <class TBase>
@@ -81,6 +82,7 @@ private:
     void init();
 
     std::shared_ptr<MidiPlayer> player;
+    SeqClock clock;
 };
 
 #if 1
@@ -134,14 +136,7 @@ void  Seq<TBase>::step()
 template <class TBase>
 inline std::vector<std::string> Seq<TBase>::getClockRates()
 {
-    return {
-        "Internal",
-        "64th note",
-        "32nd note",
-        "16th note",
-        "8th note",
-        "Quarter"
-    };
+    return SeqClock::getClockRates();
 }
 
 template <class TBase>
@@ -157,6 +152,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
     switch (i) {
         case Seq<TBase>::CLOCK_INPUT_PARAM:
             ret = {0, 5, 2, "Clock Rate"};
+            break;
+        case Seq<TBase>::TEMPO_PARAM:
+            ret = {40, 200, 120, "Tempo"};
             break;
         default:
             assert(false);

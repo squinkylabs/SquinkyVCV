@@ -3,6 +3,7 @@
 #include "MidiPlayer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "SeqClock.h"
 
 #include "asserts.h"
 
@@ -114,7 +115,7 @@ public:
 };
 
 
-// test that apis can be called
+// test that APIs can be called
 static void test0()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
@@ -247,6 +248,11 @@ static void test3L()
     assertEQ(host->cvState, 2);
 }
 
+static void testClock0()
+{
+    SeqClock ck;
+}
+
 void testMidiPlayer()
 {
     assertNoMidi();
@@ -263,5 +269,7 @@ void testMidiPlayer()
     test1L();
     test2L();
     test3L();
+
+    testClock0();
     assertNoMidi();     // check for leaks
 }

@@ -167,6 +167,7 @@
     <ClInclude Include="..\..\midi\controller\MidiLock.h" />
     <ClInclude Include="..\..\midi\controller\MidiPlayer.h" />
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h" />
+    <ClInclude Include="..\..\midi\controller\SeqClock.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
     <ClInclude Include="..\..\midi\model\MidiEvent.h" />
