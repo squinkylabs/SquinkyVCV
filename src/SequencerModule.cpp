@@ -87,56 +87,14 @@ inline Menu* SequencerWidget::createContextMenu()
 	}
     #endif
 
-    /* this is how params are usually added.
-      addParam(SqHelper::createParam<Trimpot>(
-        icomp,
-        Vec(col1 + trimDx, row2L + trimDyL),
-        module,Comp::FILTER_VOWEL_TRIM_PARAM));
-    */
-
-
-#if 0   // this works
-    auto p = new PopupMenuParamWidget(
-        module,
-        Comp::CLOCK_INPUT_PARAM,
-        Vec(40, 40),
-        100,
-        Comp::getClockRates());
-    addChild(p);
-#endif
-
-    printf("in seq module, module = %p\n", module);
     PopupMenuParamWidget* p = PopupMenuParamWidget::create<PopupMenuParamWidget>(
         Vec (40, 40),
         module, 
         Comp::CLOCK_INPUT_PARAM,
         0, 5, 2);
     p->box.size.x  = 100;    // width
-    p->test();
-    p->labels = Comp::getClockRates();
-    addChild(p);
-
-
-#if 0
-    addParam(SqHelper::createParam<PopupMenuParamWidget>(
-        icomp,
-        Vec(40, 40),
-        module, Comp::CLOCK_INPUT_PARAM));
-
-addParam(ParamWidget::create<Rogan3PSBlue>(Vec(18, row1), module, module->shifter.PITCH_PARAM, -5.0, 5.0, 0.0));
-
-
-	template <typename T = ParamWidget>
-	static T *create(Vec pos, Module *module, int paramId, float minValue, float maxValue, float defaultValue) {
-		T *o = Component::create<T>(pos, module);
-		o->paramId = paramId;
-		o->setLimits(minValue, maxValue);
-		o->setDefaultValue(defaultValue);
-		return o;
-	}
-
-#endif
-
+    p->setLabels(Comp::getClockRates());
+    addParam(p);
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(50, 339),

@@ -6,32 +6,33 @@
  *  pops up a menu of discrete choices.
  *  displays the current choice
  */
-class PopupMenuParamWidget : public ParamWidget, public ChoiceButton
+class PopupMenuParamWidget : virtual public ParamWidget, virtual public ChoiceButton
 {
 public:
-    PopupMenuParamWidget() {
-        printf("in default ctor mod = %p width = %f\n",
-            module, this->box.size.x );
-    }
-    PopupMenuParamWidget(
-        Module* module,
-        int paramId,
-        const Vec& pos,
-        float width,
-        std::vector<std::string> labels);
+    std::vector<std::string> labels;
 
-    void test() {
-        printf("here I am, in test width = %f mod=%p\n",
-            this->box.size.x, module ); 
-        fflush(stdout);
+    void setLabels(std::vector<std::string> l) {
+        labels = l;
+        EventChange e;
+        onChange(e);
     }
 
     // override on change to init my text?
+    void onChange(EventChange& e) override {
+        
+        const int index = (int) std::round( this->value);
+        if (!labels.empty()) {
+        this->text = labels[index];
+        }
+    }
 
     void onAction(EventAction &e) override;
-    std::vector<std::string> labels;
+    
 
-    // overrides for base classes
+    /** overrides for base classes
+     * TODO: should we call both base methods? 
+     * Only the one we think does something?
+     */
     void onMouseDown(EventMouseDown &e) override {
         ParamWidget::onMouseDown(e);
         ChoiceButton::onMouseDown(e);
@@ -45,10 +46,7 @@ public:
     }
     void onScroll(EventScroll &e) override {
         ParamWidget::onScroll(e);
-    }
-private:
-
-      
+    }   
 };
 
 
@@ -81,10 +79,8 @@ public:
     }
 };
 
-
 inline  void PopupMenuParamWidget::onAction(EventAction &e)
 {
-    printf("on action\n");
     Menu* menu = gScene->createMenu();
 
     menu->box.pos = getAbsoluteOffset(Vec(0, this->box.size.y)).round();
@@ -96,19 +92,3 @@ inline  void PopupMenuParamWidget::onAction(EventAction &e)
     }
 }
 
-inline PopupMenuParamWidget::PopupMenuParamWidget(
-    Module* module,
-    int paramId, 
-    const Vec& pos, 
-    float width,
-    std::vector<std::string> l)
-{
-    printf("In CTOR of PopupMenuParamWidget\n"); fflush(stdout);
-    this->text = "fix me";
-    this->box.pos = pos;
-    this->box.size.x = width;
-    this->labels = l;
-  //  this->box.size.y = 50;          // just for debugging;
-    this->module = module;
-    this->paramId = paramId;
-}
