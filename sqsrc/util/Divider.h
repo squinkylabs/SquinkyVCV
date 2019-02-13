@@ -3,7 +3,7 @@
 #include <functional>
 
 /**
- * Calls a lambda ever 'n' calls
+ * Calls a lambda every 'n' calls
  * Purpose is to make it simple do run a subset of a plugin every 
  * 'n' cycles.
  *
@@ -26,6 +26,10 @@ public:
         }
     }
 
+    int div() const
+    {
+        return divisor;
+    }
 private:
     std::function<void()> lambda = nullptr;
     int divisor = 0;

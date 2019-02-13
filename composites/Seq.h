@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Divider.h"
 #include "GateTrigger.h"
 #include "IComposite.h"
 #include "MidiPlayer.h"
@@ -58,6 +59,8 @@ public:
     };
 
     void step() override;
+
+
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()
@@ -83,6 +86,12 @@ private:
 
     std::shared_ptr<MidiPlayer> player;
     SeqClock clock;
+    Divider div;
+
+    /**
+     * called by the divider every 'n' step calls
+     */
+    void stepn(int n);
 };
 
 #if 1
@@ -118,19 +127,33 @@ void  Seq<TBase>::init()
     std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
     std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     player = std::make_shared<MidiPlayer>(host, song);
+    div.setup(4, [this] {
+        this->stepn(div.div());
+     });
 }
 
 template <class TBase>
 void  Seq<TBase>::step()
 {
-    static float last = -100;
-    float rate =  TBase::params[CLOCK_INPUT_PARAM].value;
-    if (rate != last) {
-      //  printf("new rate %f\n", rate);
-      //  fflush(stdout);
-        last = rate;
-    }
-    player->timeElapsed(TBase::engineGetSampleTime());
+    div.step();
+}
+
+template <class TBase>
+void  Seq<TBase>::stepn(int n)
+{
+    // first process all the clock input params
+    const int clockRate = (int) std::round(TBase::params[CLOCK_INPUT_PARAM].value);
+    const float tempo = TBase::params[TEMPO_PARAM].value;
+    clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
+
+    // now call the clock (internal only, for now
+    const bool externalClock = false;
+    int samplesElapsed = n;
+    double t = clock.update(samplesElapsed, externalClock);
+    player->updateToMetricTime(t);
+
+    //assert(false);
+    //player->timeElapsed(TBase::engineGetSampleTime());
 }
 
 template <class TBase>

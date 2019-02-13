@@ -10,6 +10,24 @@ MidiPlayer::MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSo
     ++_mdb;
 }
 
+void MidiPlayer::updateToMetricTime(double metricTime)
+{
+    if (!isPlaying) {
+        return;
+    }
+    bool locked = song->lock->playerTryLock();
+    if (locked) {
+        if (song->lock->dataModelDirty()) {
+            trackPlayer.reset();
+        }
+        trackPlayer.updateToMetricTime(metricTime, host.get());
+        song->lock->playerUnlock();
+    } else {
+        trackPlayer.reset();
+        host->onLockFailed();
+    }
+}
+#if 0
 void MidiPlayer::timeElapsed(float seconds)
 {
    
@@ -29,6 +47,7 @@ void MidiPlayer::timeElapsed(float seconds)
         host->onLockFailed();
     }
 }
+#endif
 
 TrackPlayer::TrackPlayer(MidiTrackPtr track) : track(track)
 {

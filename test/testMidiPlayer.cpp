@@ -121,7 +121,7 @@ static void test0()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
-    pl.timeElapsed(.01f);
+    pl.updateToMetricTime(.01f);
 }
 
 
@@ -156,30 +156,32 @@ std::shared_ptr<TestHost> makeSongOneQandRun(float time)
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
-    pl.timeElapsed(time);
+    pl.updateToMetricTime(time);
     return host;
 }
 
+#if 1
 std::shared_ptr<TestHost> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
 {
    
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
     MidiPlayer pl(host, song);
-    pl.timeElapsed(timeBeforeLock);
+    pl.updateToMetricTime(timeBeforeLock);
     {
         MidiLocker l(song->lock);
-        pl.timeElapsed(timeDuringLock);
+        pl.updateToMetricTime(timeBeforeLock + timeDuringLock);
     }
 
-    pl.timeElapsed(timeAfterLock);
+    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock);
     return host;
 }
+#endif
 
 // just play the first note on
 static void test1()
 {
-    std::shared_ptr<TestHost> host = makeSongOneQandRun(.24f);
+    std::shared_ptr<TestHost> host = makeSongOneQandRun(2*.24f);
 
     assertEQ(host->lockConflicts, 0);
     assertEQ(host->gateChangeCount, 1);
@@ -192,7 +194,7 @@ static void test1()
 // same as test1, but with a lock contention
 static void test1L()
 {
-    std::shared_ptr<TestHost> host = makeSongOneQandRun2(.20f, .01f, .03f);
+    std::shared_ptr<TestHost> host = makeSongOneQandRun2(2*.20f, 2*.01f, 2*.03f);
 
     assertEQ(host->gateChangeCount, 1);
     assertEQ(host->gateState, true);
@@ -201,12 +203,12 @@ static void test1L()
     assertEQ(host->lockConflicts, 1);
 }
 
-
-
 // play the first note on and off
 static void test2()
 {
-    std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
+    // this was wall time (1/4 sec)
+    //std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
+    std::shared_ptr<TestHost> host = makeSongOneQandRun(.5f);
 
     assertEQ(host->lockConflicts, 0);
     assertEQ(host->gateChangeCount, 2);
@@ -215,10 +217,10 @@ static void test2()
     assertEQ(host->cvState, 2);
 }
 
-// play the first note on and off
+// play the first note on and off with lock contention
 static void test2L()
 {
-    std::shared_ptr<TestHost> host = makeSongOneQandRun2(.20f, .01f, .04f);
+    std::shared_ptr<TestHost> host = makeSongOneQandRun2(2*.20f, 2*.01f, 2*.04f);
 
     assertEQ(host->lockConflicts, 1);
     assertEQ(host->gateChangeCount, 2);
@@ -226,10 +228,12 @@ static void test2L()
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvState, 2);
 }
+
+
 // loop around to first note on second time
 static void test3()
 {
-    std::shared_ptr<TestHost> host = makeSongOneQandRun(.51f);
+    std::shared_ptr<TestHost> host = makeSongOneQandRun(2 * .51f);
 
     assertEQ(host->gateChangeCount, 3);
     assertEQ(host->gateState, true);
@@ -240,18 +244,13 @@ static void test3()
 // loop around to first note on second time
 static void test3L()
 {
-    std::shared_ptr<TestHost> host = makeSongOneQandRun2(.4f, .7f, .4f );
+    std::shared_ptr<TestHost> host = makeSongOneQandRun2(2*.4f, 2*.7f, 2*.4f );
 
     assertGE(host->gateChangeCount, 3);
     assertEQ(host->gateState, true);
     assertGE(host->cvChangeCount, 1);       // only changes once because it's one note loop
     assertEQ(host->cvState, 2);
 }
-
-/*
-  double update(int samplesElapsed, bool externalClock);
-    void setup(int inputSetting, float tempoSetting);
-    */
 
 // test internal clock
 static void testClock0()
@@ -321,6 +320,7 @@ void testMidiPlayer()
     test1();
     test2();
     test3();
+
 
     test1L();
     test2L();
