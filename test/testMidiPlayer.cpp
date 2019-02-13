@@ -278,6 +278,37 @@ static void testClock0()
     assertEQ(elapsed, 40);
 }
 
+//  double update(int samplesElapsed, bool externalClock);
+
+static void testClockExt(int rate, double metricTimePerClock)
+{
+    assertGT(rate, 0);
+    assertLE(rate, 5);
+
+    SeqClock ck;
+    ck.setup(rate, 120, 100);       // internal clock
+    
+    // send one clock
+    for (int i = 0; i < 10; ++i) {
+        double x = ck.update(55, false);        // low clock
+        assertEQ(x, 0);
+    }
+
+    // count home much metric time comes back
+    double x = ck.update(55, true);
+    assertEQ(x, metricTimePerClock);
+    
+}
+
+static void testClock1()
+{
+    testClockExt(5, 1.0);
+    testClockExt(4, 1.0 / 2.0);
+    testClockExt(3, 1.0 / 4.0);
+    testClockExt(2, 1.0 / 8.0);
+    testClockExt(1, 1.0 / 16.0);
+}
+
 void testMidiPlayer()
 {
     assertNoMidi();
@@ -296,5 +327,7 @@ void testMidiPlayer()
     test3L();
 
     testClock0();
+    testClock1();
+
     assertNoMidi();     // check for leaks
 }
