@@ -94,7 +94,6 @@ private:
     void stepn(int n);
 };
 
-#if 1
 template <class TBase>
 class SeqHost : public IPlayerHost
 {
@@ -119,7 +118,7 @@ public:
 private:
     Seq<TBase>* const seq;
 };
-#endif
+
 
 template <class TBase>
 void  Seq<TBase>::init()
@@ -146,14 +145,16 @@ void  Seq<TBase>::stepn(int n)
     const float tempo = TBase::params[TEMPO_PARAM].value;
     clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
 
+    // and the clock input
+    gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
+
     // now call the clock (internal only, for now
-    const bool externalClock = false;
+    const bool externalClock = gateTrigger.trigger();
     int samplesElapsed = n;
     double t = clock.update(samplesElapsed, externalClock);
     player->updateToMetricTime(t);
 
-    //assert(false);
-    //player->timeElapsed(TBase::engineGetSampleTime());
+    TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 }
 
 template <class TBase>

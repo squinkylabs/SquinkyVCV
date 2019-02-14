@@ -17,13 +17,15 @@ public:
         onChange(e);
     }
 
-    // override on change to init my text?
     void onChange(EventChange& e) override {
-        
+        // process ourself to update the text label
         const int index = (int) std::round( this->value);
         if (!labels.empty()) {
-        this->text = labels[index];
+            this->text = labels[index];
         }
+
+        // Delegate to base class to change param value
+        ParamWidget::onChange(e);
     }
 
     void onAction(EventAction &e) override;
