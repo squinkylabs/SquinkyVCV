@@ -20,7 +20,7 @@ struct SequencerModule : Module
     std::shared_ptr<Seq<WidgetComposite>> seq;
     MidiSequencerPtr sequencer;
 
-#if 0
+#if 1
     json_t *toJson() override
     {
         printf("too json\n");
@@ -30,7 +30,7 @@ struct SequencerModule : Module
             fflush(stdout);
         }
         assert(sequencer);
-        return SequencerSerializer::toJson();
+        return SequencerSerializer::toJson(sequencer);
     }
     #endif
 
