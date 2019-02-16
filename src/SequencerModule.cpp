@@ -9,32 +9,53 @@
 #include "seq/NoteDisplay.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidget.h"
+#include "seq/SequencerSerializer.h"
+#include "MidiSong.h"
 
 using Comp = Seq<WidgetComposite>;
 
 struct SequencerModule : Module
 {
     SequencerModule();
-    Seq<WidgetComposite> seq;
+    std::shared_ptr<Seq<WidgetComposite>> seq;
+    MidiSequencerPtr sequencer;
+
+#if 0
+    json_t *toJson() override
+    {
+        printf("too json\n");
+        fflush(stdout);
+        if (!sequencer) {
+            printf("no seq, will crash\n");
+            fflush(stdout);
+        }
+        assert(sequencer);
+        return SequencerSerializer::toJson();
+    }
+    #endif
 
     void step() override
     {
-        seq.step();
+        seq->step();
     }
 
     void stop()
     {
-        seq.stop();
+        seq->stop();
     }
 };
 
 SequencerModule::SequencerModule()
-    : Module(seq.NUM_PARAMS,
-    seq.NUM_INPUTS,
-    seq.NUM_OUTPUTS,
-    seq.NUM_LIGHTS),
-    seq(this)
+    : Module(Comp::NUM_PARAMS,
+        Comp::NUM_INPUTS,
+        Comp::NUM_OUTPUTS,
+        Comp::NUM_LIGHTS)
 {
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    sequencer = std::make_shared<MidiSequencer>(song);
+    sequencer->makeEditor();
+   // seq.setSong(song);
+   seq = std::make_shared<Comp>(this, song);
 }
 
 struct SequencerWidget : ModuleWidget
@@ -54,6 +75,8 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+
 };
 
 inline Menu* SequencerWidget::createContextMenu()
@@ -82,7 +105,7 @@ inline Menu* SequencerWidget::createContextMenu()
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
         const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
        // module->stop();         // don't start playback immediately
-		NoteDisplay *display = new NoteDisplay(notePos, noteSize, module->seq.getSong());
+		NoteDisplay *display = new NoteDisplay(notePos, noteSize, module->sequencer);
 		addChild(display);
 	}
     #endif

@@ -23,13 +23,13 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(struct Module * module) : TBase(module), gateTrigger(true)
+    Seq(struct Module * module, MidiSongPtr song) : TBase(module), gateTrigger(true)
     {
-        init();
+        init(song);
     }
-    Seq() : TBase(), gateTrigger(true)
+    Seq(MidiSongPtr song) : TBase(), gateTrigger(true)
     {
-        init();
+        init(song);
     }
 
     enum ParamIds
@@ -68,10 +68,18 @@ public:
         return std::make_shared<SeqDescription<TBase>>();
     }
 
+#if 0
     MidiSongPtr getSong()
     {
         return player->getSong();
     }
+
+
+    MidiSongPtr setSong(MidiSongPtr song)
+    {
+        return player->setSong(song);
+    }
+    #endif
 
 
     void stop()
@@ -82,7 +90,7 @@ public:
     static std::vector<std::string> getClockRates();
 private:
     GateTrigger gateTrigger;
-    void init();
+    void init(MidiSongPtr);
 
     std::shared_ptr<MidiPlayer> player;
     SeqClock clock;
@@ -121,10 +129,10 @@ private:
 
 
 template <class TBase>
-void  Seq<TBase>::init()
+void  Seq<TBase>::init(MidiSongPtr song)
 { 
     std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
-    std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+   // std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     player = std::make_shared<MidiPlayer>(host, song);
     div.setup(4, [this] {
         this->stepn(div.div());

@@ -21,15 +21,11 @@
 #include "NoteDisplay.h"
 
 
-NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSongPtr song)
+NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 {
     this->box.pos = pos;
     box.size = size;
-    sequencer = std::make_shared<MidiSequencer>(song);
-    sequencer->makeEditor();
-    
-    
-    assert(sequencer->context->getSong() == song);
+    sequencer = seq;
 
     // hard code view range to our demo song
     sequencer->context->setStartTime(0);

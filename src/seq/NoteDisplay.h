@@ -25,7 +25,7 @@ private:
     int curFirstBar = -1;
 
 public:
-    NoteDisplay(const Vec& pos, const Vec& size, MidiSongPtr song);
+    NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq);
 
     void step() override;
 
