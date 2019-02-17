@@ -23,16 +23,15 @@ struct SequencerModule : Module
 #if 1
     json_t *toJson() override
     {
-        printf("too json\n");
-        fflush(stdout);
-        if (!sequencer) {
-            printf("no seq, will crash\n");
-            fflush(stdout);
-        }
         assert(sequencer);
         return SequencerSerializer::toJson(sequencer);
     }
-    #endif
+    void fromJson(json_t* data) override
+    {
+        MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
+        sequencer = newSeq;
+    }
+#endif
 
     void step() override
     {
@@ -54,8 +53,7 @@ SequencerModule::SequencerModule()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     sequencer = std::make_shared<MidiSequencer>(song);
     sequencer->makeEditor();
-   // seq.setSong(song);
-   seq = std::make_shared<Comp>(this, song);
+    seq = std::make_shared<Comp>(this, song);
 }
 
 struct SequencerWidget : ModuleWidget
