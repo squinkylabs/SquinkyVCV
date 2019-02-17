@@ -28,23 +28,21 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong> sng)
 
 json_t *SequencerSerializer::toJson(std::shared_ptr<MidiTrack> tk)
 {
-     printf("tk2j\n"); fflush(stdout);
+    printf("tk2j tk size=%d\n", (int)tk->size()); fflush(stdout);
     json_t* track = json_array();
 
     for (auto ev_iter : *tk) {
         MidiEventPtr ev = ev_iter.second;
-        auto jsonEvent = toJson(ev);
-        json_array_append_new(track, jsonEvent);
+        json_array_append_new(track, toJson(ev));
     }
-    //char *p = json_dumps(track, 0);
-    //printf("%s\n", p);
-
+    size_t s = json_array_size(track);
+    printf("saved %d elements in array\n", int(s)); fflush(stdout);
     return track;
 }
 
 json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEvent> evt)
 {
-    // printf("evt2j\n"); fflush(stdout);
+    printf("evt2j\n"); fflush(stdout);
     MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
     if (note) {
         return toJson(note);
@@ -61,6 +59,7 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEvent> evt)
 
 json_t *SequencerSerializer::toJson(std::shared_ptr<MidiNoteEvent> n)
 {
+    printf("note2j\n"); fflush(stdout);
     // We could save a little space by omitting type for notes
     json_t* note = json_object();
     json_object_set_new(note, "t", json_integer(typeNote));
@@ -72,6 +71,7 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiNoteEvent> n)
 
 json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEndEvent> e)
 {
+    printf("end2j\n"); fflush(stdout);
     json_t* end = json_object();
     json_object_set_new(end, "t", json_integer(typeEnd));
     json_object_set_new(end, "s", json_real(e->startTime));
@@ -107,7 +107,7 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEndEvent> e)
 
 MidiSequencerPtr SequencerSerializer::fromJson(json_t *data)
 {
-    printf("in fom json\n");
+    printf("in from json\n");
     json_t* songJson = json_object_get(data, "song");
     MidiSongPtr song = fromJsonSong(songJson);
     MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
@@ -116,14 +116,17 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data)
 
 MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)
 {
-     printf("in fom json song\n");
+    printf("in fom json song\n");
     MidiSongPtr song = std::make_shared<MidiSong>();
     MidiLockPtr lock = song->lock;
     if (data) {
         json_t* trackJson = json_object_get(data, "tk0");
         MidiTrackPtr track = fromJsonTrack(trackJson, 0, lock);
+        printf("in fromJsonSong just read in a track with size %d\n", track->size());
+        fflush(stdout);
         song->addTrack(0, track);
     }
+    printf("returning fromJsonSong\n"); fflush(stdout);
     return song;
 }
 
@@ -132,23 +135,22 @@ MidiTrackPtr SequencerSerializer::fromJsonTrack(json_t *data, int index, MidiLoc
     // data here is the track array
     MidiTrackPtr track = std::make_shared<MidiTrack>(lock);
     printf("now we need to read in this track\n");
+    char *p = json_dumps(data, 0);
+    printf("%s\n", p);
 
     size_t eventCount = json_array_size(data);
-    if (!eventCount) {
-        printf("bad track\n");
-        return track;
-    }
-
+    printf("the array has %d events in it\n", eventCount); fflush(stdout);
+  
     for (int i=0; i< int(eventCount); ++i )
     {
         json_t *eventJson = json_array_get(data, i);
         MidiEventPtr event = fromJsonEvent(eventJson);
-
-        // Now need to add to track
+        track->insertEvent(event);
     }
-    // json_t *track = json_object_get(data, "tk0");
-  //  MidiTrackPtr track = fromJsonTrack(data, 0);
-  //  song->addTrack(0, track);
+    if (0 == track->size()) {
+        printf("bad track\n");
+        track->insertEnd(4);            // make a legit blank trac
+    }
     return track;
 }
 
