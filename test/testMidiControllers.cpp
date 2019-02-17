@@ -76,8 +76,8 @@ static void testSelectionModel4()
 static void testMidiSequencer1()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
-    seq->makeEditor();
+    MidiSequencerPtr seq = MidiSequencer::make(song);
+    //seq->makeEditor();
 
     assert(seq->selection);
     auto sel = seq->selection;
@@ -90,8 +90,8 @@ static void testMidiSequencer1()
 static void testMidiSequencer2()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0); 
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
-    seq->makeEditor();
+    MidiSequencerPtr seq = MidiSequencer::make(song);
+    //seq->makeEditor();
 
     assert(seq->editor);
     assert(seq->selection);

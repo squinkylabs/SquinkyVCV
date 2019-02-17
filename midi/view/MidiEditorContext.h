@@ -95,7 +95,8 @@ public:
     using iterator_pair = std::pair<iterator, iterator>;
     iterator_pair getEvents() const;
 
-    int track = 0;
+    // what is this?
+   // int track = 0;
     std::shared_ptr<MidiSong> getSong() const;
 
     void scrollVertically(float pitchCV);

@@ -5,7 +5,7 @@
 
 int _mdb = 0;       // global instance counter
 
-MidiSequencer::MidiSequencer(std::shared_ptr<MidiSong> sng) :
+MidiSequencer::MidiSequencer(MidiSongPtr sng) :
     selection(std::make_shared<MidiSelectionModel>()),
     song(sng),
     context(std::make_shared<MidiEditorContext>(sng)
@@ -14,6 +14,28 @@ MidiSequencer::MidiSequencer(std::shared_ptr<MidiSong> sng) :
     undo = std::make_shared<UndoRedoStack>();
     ++_mdb;
 }
+
+MidiSequencerPtr MidiSequencer::make(MidiSongPtr song)
+{
+    MidiSequencerPtr seq(new MidiSequencer(song));
+    seq->makeEditor();
+
+    // Find a track to point the edit context at
+    bool found = false;
+    int maxTk = song->getHighestTrackNumber();
+    for (int i = 0; i <= maxTk; ++i) {
+        if (song->trackExists(i)) {
+            seq->context->setTrackNumber(i);
+            found = true;
+            break;
+        }
+    }
+    assert(found);
+    song->_e();
+    seq->assertValid();
+    return seq;
+}
+ 
 
 void MidiSequencer::makeEditor()
 {
@@ -41,7 +63,9 @@ void MidiSequencer::assertValid() const
 
 void MidiSequencer::assertSelectionInTrack() const
 {
+    song->_e();
     MidiTrackPtr track = context->getTrack();
+    
     for (auto it : *selection) {
 #if 1
         

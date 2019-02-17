@@ -25,10 +25,11 @@ MidiEditor::~MidiEditor()
 
 MidiTrackPtr MidiEditor::getTrack()
 {
-    printf("MidiEditor::getTrack, using seq %p, song %p, pk0 %p\n",
+    printf("MidiEditor::getTrack, using seq %p, song %p, tk[n] %p\n",
             seq().get(),
             seq()->song.get(),
-            seq()->song->getTrack(0).get());
+            seq()->song->getTrack(seq()->context->getTrackNumber()).get());
+    printf("context tk = %d\n", seq()->context->getTrackNumber());
     fflush(stdout);
     return seq()->song->getTrack(seq()->context->getTrackNumber());
 }

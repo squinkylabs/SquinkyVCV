@@ -110,7 +110,8 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data)
     printf("in from json\n");
     json_t* songJson = json_object_get(data, "song");
     MidiSongPtr song = fromJsonSong(songJson);
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
+   // MidiSequencerPtr seq = std::make_shared<MidiSequencer>(song);
+    MidiSequencerPtr seq = MidiSequencer::make(song);
     return seq;
 }
 
@@ -146,7 +147,7 @@ MidiTrackPtr SequencerSerializer::fromJsonTrack(json_t *data, int index, MidiLoc
     printf("%s\n", p);
 
     size_t eventCount = json_array_size(data);
-    printf("the array has %d events in it\n", eventCount); fflush(stdout);
+    printf("the array has %d events in it\n", int(eventCount)); fflush(stdout);
   
     for (int i=0; i< int(eventCount); ++i )
     {

@@ -31,13 +31,19 @@ public:
      */
     int getHighestTrackNumber() const;
 
+    bool trackExists(int tkNum) const;
+
     /**
      * factory method to generate test content
      */
     static MidiSongPtr makeTest(MidiTrack::TestContent, int trackNumber);
 
     std::shared_ptr<MidiLock> lock;
+
+    void _e() const;
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
+
+   
 };
 

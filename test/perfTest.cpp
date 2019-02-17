@@ -815,7 +815,8 @@ static void testNormal()
 
 void dummy()
 {
-    Seq<TestComposite> s;
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    Seq<TestComposite> s(ms);
 }
 
 void perfTest()

@@ -19,16 +19,8 @@ using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 class MidiSequencer : public std::enable_shared_from_this<MidiSequencer>
 {
 public:
-    /** constructor takes a song to edit
-    */
-    MidiSequencer(std::shared_ptr<MidiSong>);
-
-    /**
-     * must be called to make constructor
-     * todo: memory leak for circular ref
-     */
-    void makeEditor();
-
+    
+    static MidiSequencerPtr make(std::shared_ptr<MidiSong>);
     ~MidiSequencer();
 
     void assertValid() const;
@@ -40,8 +32,24 @@ public:
     MidiEditorContextPtr context;
     MidiEditorPtr editor;
     UndoRedoStackPtr undo;
+protected:
 
 private:
     void assertSelectionInTrack() const;
+
+    /** constructor takes a song to edit
+    */
+    MidiSequencer(std::shared_ptr<MidiSong>);
+    MidiSequencer() = delete;
+    MidiSequencer(const MidiSequencer&) = delete;
+
+    
+
+    /**
+     * must be called to make constructor
+     * todo: memory leak for circular ref
+     */
+    void makeEditor();
+
 };
 

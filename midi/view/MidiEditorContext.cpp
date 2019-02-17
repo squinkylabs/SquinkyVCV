@@ -75,7 +75,7 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
     };
 
     const auto song = getSong();
-    const auto track = song->getTrack(this->track);
+    const auto track = song->getTrack(this->trackNumber);
 
     // raw will be pair of track::const_iterator
     const auto rawIterators = track->timeRange(this->m_startTime, this->m_endTime);

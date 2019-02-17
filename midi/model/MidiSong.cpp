@@ -13,10 +13,29 @@ MidiSong::~MidiSong()
     --_mdb;
 }
 
+void MidiSong::_e() const
+{
+    int s = (int) tracks.size();
+    printf("in _e, song has %d track\n", s);
+    for (int i = 0; i < s; ++i) {
+        printf("track %d = %p\n", i, tracks[i].get());
+    }
+    fflush(stdout);
+}
+
 int MidiSong::getHighestTrackNumber() const
 {
     int numTracks = int(tracks.size());
     return numTracks - 1;
+}
+
+bool MidiSong::trackExists(int tkNum) const
+{
+    if (tkNum >= int(tracks.size())) {
+        return false;
+    }
+
+    return bool(tracks[tkNum]);
 }
 
 

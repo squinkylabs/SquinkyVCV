@@ -92,9 +92,9 @@ static void test2()
 static void testTrans()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
-    seq->makeEditor();
-    seq->assertValid();
+    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    //seq->makeEditor();
+   // seq->assertValid();
 
   //  MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiEventPtr firstEvent = seq->context->getTrack()->getFirstNote();
@@ -120,9 +120,9 @@ static void testInsert()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
-    seq->makeEditor();
-    seq->assertValid();
+    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    //seq->makeEditor()
+    //seq->assertValid();
 
     assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
 
@@ -162,9 +162,9 @@ static void testStartTime()
     // make empty song
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
-    seq->makeEditor();
-    seq->assertValid();
+    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    //seq->makeEditor();
+    //seq->assertValid();
 
     // put a note into it at time 100;
     auto track = seq->context->getTrack();
@@ -201,9 +201,9 @@ static void testDuration()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = std::make_shared<MidiSequencer>(ms);
-    seq->makeEditor();
-    seq->assertValid();
+    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    //seq->makeEditor();
+    //seq->assertValid();
 
      // put a note into it at time 10, dur 5;
     auto track = seq->context->getTrack();

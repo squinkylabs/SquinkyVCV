@@ -15,8 +15,8 @@ MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = std::make_shared<MidiSequencer>(song);
-    sequencer->makeEditor();
+    MidiSequencerPtr sequencer = MidiSequencer::make(song);
+   // sequencer->makeEditor();
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -52,6 +52,8 @@ static bool cursorOnSelection(MidiSequencerPtr seq)
 // from a null selection, select next
 static void testNext1()
 {
+    printf("in testNext1, will use track %d\n", _trackNumber);
+    fflush(stdout);
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected

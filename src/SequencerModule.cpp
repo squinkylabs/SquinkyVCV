@@ -69,8 +69,9 @@ SequencerModule::SequencerModule()
         Comp::NUM_LIGHTS)
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    sequencer = std::make_shared<MidiSequencer>(song);
-    sequencer->makeEditor();
+    //sequencer = std::make_shared<MidiSequencer>(song);
+    //sequencer->makeEditor();
+    sequencer = MidiSequencer::make(song);
     seq = std::make_shared<Comp>(this, song);
 }
 
