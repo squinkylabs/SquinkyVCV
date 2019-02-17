@@ -27,11 +27,7 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     box.size = size;
     sequencer = seq;
 
-    // hard code view range to our demo song
-    sequencer->context->setStartTime(0);
-    sequencer->context->setEndTime(8);
-    sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
-    sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
+    initEditContext();
 
     //initScaleFuncs();
     scaler = std::make_shared<NoteScreenScale>(sequencer->context, size.x, size.y);
@@ -55,6 +51,22 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     barRangeLabel->text = "";
     barRangeLabel->color = SqHelper::COLOR_WHITE;
     addChild(barRangeLabel);
+}
+
+void NoteDisplay::setSequencer(MidiSequencerPtr seq) {
+    sequencer = seq;
+    printf("set seq, editor = %p\n", sequencer->editor.get()); fflush(stdout);
+    sequencer->assertValid();
+    initEditContext();
+}
+
+void NoteDisplay::initEditContext()
+{
+    // hard code view range (ofr now?)
+    sequencer->context->setStartTime(0);
+    sequencer->context->setEndTime(8);
+    sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
+    sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
 }
 
  void NoteDisplay::step() 

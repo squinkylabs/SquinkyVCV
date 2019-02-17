@@ -185,13 +185,13 @@ void SequencerModule::fromJson(json_t* data)
         widget->noteDisplay->setSequencer(newSeq);
     }
 
-    printf("after desrialze, using seq %p, song %p, pk0 %p\n",
+    printf("after deserialze, using seq %p, song %p, pk0 %p\n",
         sequencer.get(),
         sequencer->song.get(),
         sequencer->song->getTrack(0).get());
     printf("midi context = %p\n", sequencer->context.get());
     fflush(stdout);
-     printf("midi context cursor = %f\n", sequencer->context->cursorPitch());
+    printf("midi context cursor = %f\n", sequencer->context->cursorPitch());
     fflush(stdout);
 }
 
