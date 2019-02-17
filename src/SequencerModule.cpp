@@ -13,12 +13,15 @@
 #include "MidiSong.h"
 
 using Comp = Seq<WidgetComposite>;
+class SequencerWidget;
 
 struct SequencerModule : Module
 {
     SequencerModule();
     std::shared_ptr<Seq<WidgetComposite>> seq;
+
     MidiSequencerPtr sequencer;
+    SequencerWidget* widget = nullptr;
 
 #if 1
     json_t *toJson() override
@@ -26,12 +29,27 @@ struct SequencerModule : Module
         assert(sequencer);
         return SequencerSerializer::toJson(sequencer);
     }
+    void fromJson(json_t* data) override;
+#endif
+
+#if 0
     void fromJson(json_t* data) override
     {
         MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
         sequencer = newSeq;
+        if (widget) {
+            widget->noteDisplay->setSequencer(newSeq);
+        }
+        sendSequencer
+        printf("after desrialze, using seq %p, song %p, pk0 %p\n",
+            sequencer.get(),
+            sequencer->song.get(),
+            sequencer->song->getTrack(0).get());
+        fflush(stdout);
     }
 #endif
+
+
 
     void step() override
     {
@@ -74,7 +92,7 @@ struct SequencerWidget : ModuleWidget
         return label;
     }
 
-
+    NoteDisplay* noteDisplay = nullptr;
 };
 
 inline Menu* SequencerWidget::createContextMenu()
@@ -88,6 +106,9 @@ inline Menu* SequencerWidget::createContextMenu()
 
  SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 {
+    if (module) {
+        module->widget = this;
+    }
     const int width = (14 + 28) * RACK_GRID_WIDTH;      // 14 for panel, other for notes
     box.size = Vec(width, RACK_GRID_HEIGHT);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
@@ -98,17 +119,16 @@ inline Menu* SequencerWidget::createContextMenu()
         panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/blank_panel.svg")));
         addChild(panel);
     }
-    #if 1
+
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
         const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
        // module->stop();         // don't start playback immediately
-		NoteDisplay *display = new NoteDisplay(notePos, noteSize, module->sequencer);
-		addChild(display);
+		noteDisplay = new NoteDisplay(notePos, noteSize, module->sequencer);
+		addChild(noteDisplay);
 	}
-    #endif
 
-     addInput(createInputCentered<PJ301MPort>(
+    addInput(createInputCentered<PJ301MPort>(
         Vec(50, 40),
         module,
         Comp::CLOCK_INPUT));
@@ -152,6 +172,26 @@ inline Menu* SequencerWidget::createContextMenu()
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
 
+}
+
+
+void SequencerModule::fromJson(json_t* data) 
+{
+    MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
+    sequencer = newSeq;
+    if (widget) {
+        printf("sending to note display\n");
+        widget->noteDisplay->setSequencer(newSeq);
+    }
+
+    printf("after desrialze, using seq %p, song %p, pk0 %p\n",
+        sequencer.get(),
+        sequencer->song.get(),
+        sequencer->song->getTrack(0).get());
+    printf("midi context = %p\n", sequencer->context.get());
+    fflush(stdout);
+     printf("midi context cursor = %f\n", sequencer->context->cursorPitch());
+    fflush(stdout);
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable

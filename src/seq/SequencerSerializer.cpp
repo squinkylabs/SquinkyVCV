@@ -119,12 +119,19 @@ MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)
     printf("in fom json song\n");
     MidiSongPtr song = std::make_shared<MidiSong>();
     MidiLockPtr lock = song->lock;
-    if (data) {
-        json_t* trackJson = json_object_get(data, "tk0");
-        MidiTrackPtr track = fromJsonTrack(trackJson, 0, lock);
-        printf("in fromJsonSong just read in a track with size %d\n", track->size());
-        fflush(stdout);
-        song->addTrack(0, track);
+    {
+        // We must keep song locked to avoid asserts.
+        // Must always have lock when changing a track.
+        MidiLocker _(lock);
+    
+        if (data) {
+            json_t* trackJson = json_object_get(data, "tk0");
+            MidiTrackPtr track = fromJsonTrack(trackJson, 0, lock);
+            printf("in fromJsonSong just read in a track with size %d\n", track->size());
+            printf("new track is track %p\n", track.get()); fflush(stdout);
+            fflush(stdout);
+            song->addTrack(0, track);
+        }
     }
     printf("returning fromJsonSong\n"); fflush(stdout);
     return song;
@@ -143,12 +150,16 @@ MidiTrackPtr SequencerSerializer::fromJsonTrack(json_t *data, int index, MidiLoc
   
     for (int i=0; i< int(eventCount); ++i )
     {
+        printf("about to get object %d\n", i); fflush(stdout);
         json_t *eventJson = json_array_get(data, i);
+        printf("got object\n"); fflush(stdout);
         MidiEventPtr event = fromJsonEvent(eventJson);
+         printf("read event, start =%f\n", event->startTime); fflush(stdout);
         track->insertEvent(event);
+        printf("inserted the event\n"); fflush(stdout);
     }
     if (0 == track->size()) {
-        printf("bad track\n");
+        printf("bad track\n"); fflush(stdout);
         track->insertEnd(4);            // make a legit blank trac
     }
     return track;

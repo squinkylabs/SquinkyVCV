@@ -57,6 +57,7 @@ void MidiTrack::insertEvent(MidiEventPtr evIn)
 {
     assert(lock);
     assert(lock->locked());
+    printf("insert event in track %p\n", this); fflush(stdout);
     events.insert(std::pair<MidiEvent::time_t, MidiEventPtr>(evIn->startTime, evIn));
 }
 

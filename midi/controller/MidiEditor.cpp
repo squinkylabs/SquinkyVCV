@@ -25,6 +25,11 @@ MidiEditor::~MidiEditor()
 
 MidiTrackPtr MidiEditor::getTrack()
 {
+    printf("MidiEditor::getTrack, using seq %p, song %p, pk0 %p\n",
+            seq().get(),
+            seq()->song.get(),
+            seq()->song->getTrack(0).get());
+    fflush(stdout);
     return seq()->song->getTrack(seq()->context->getTrackNumber());
 }
 
@@ -341,6 +346,10 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
 
 void MidiEditor::insertNote()
 {
+    printf("MidiEditor::insertNote this=%p\n", this); fflush(stdout);
+    printf("MidiEditor::insertNote seq=%p\n", seq().get()); fflush(stdout);
+    printf("MidiEditor::insertNote song=%p\n", seq()->song.get()); fflush(stdout);
+    printf("MidiEditor::insertNote context=%p\n", seq()->context.get()); fflush(stdout);
     MidiLocker l(seq()->song->lock);
 #if 1
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
