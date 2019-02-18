@@ -10,6 +10,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidget.h"
 #include "seq/SequencerSerializer.h"
+#include "MidiLock.h"
 #include "MidiSong.h"
 
 using Comp = Seq<WidgetComposite>;
@@ -18,47 +19,26 @@ class SequencerWidget;
 struct SequencerModule : Module
 {
     SequencerModule();
-    std::shared_ptr<Seq<WidgetComposite>> seq;
+    std::shared_ptr<Seq<WidgetComposite>> seqComp;
 
     MidiSequencerPtr sequencer;
     SequencerWidget* widget = nullptr;
 
-#if 1
     json_t *toJson() override
     {
         assert(sequencer);
         return SequencerSerializer::toJson(sequencer);
     }
     void fromJson(json_t* data) override;
-#endif
-
-#if 0
-    void fromJson(json_t* data) override
-    {
-        MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
-        sequencer = newSeq;
-        if (widget) {
-            widget->noteDisplay->setSequencer(newSeq);
-        }
-        sendSequencer
-        printf("after desrialze, using seq %p, song %p, pk0 %p\n",
-            sequencer.get(),
-            sequencer->song.get(),
-            sequencer->song->getTrack(0).get());
-        fflush(stdout);
-    }
-#endif
-
-
 
     void step() override
     {
-        seq->step();
+        seqComp->step();
     }
 
     void stop()
     {
-        seq->stop();
+        seqComp->stop();
     }
 };
 
@@ -72,7 +52,7 @@ SequencerModule::SequencerModule()
     //sequencer = std::make_shared<MidiSequencer>(song);
     //sequencer->makeEditor();
     sequencer = MidiSequencer::make(song);
-    seq = std::make_shared<Comp>(this, song);
+    seqComp = std::make_shared<Comp>(this, song);
 }
 
 struct SequencerWidget : ModuleWidget
@@ -178,6 +158,8 @@ inline Menu* SequencerWidget::createContextMenu()
 
 void SequencerModule::fromJson(json_t* data) 
 {
+    MidiSongPtr oldSong = sequencer->song;
+
     MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
     sequencer = newSeq;
     if (widget) {
@@ -185,6 +167,7 @@ void SequencerModule::fromJson(json_t* data)
         widget->noteDisplay->setSequencer(newSeq);
     }
 
+#if 0
     printf("after deserialze, using seq %p, song %p, pk0 %p\n",
         sequencer.get(),
         sequencer->song.get(),
@@ -193,6 +176,15 @@ void SequencerModule::fromJson(json_t* data)
     fflush(stdout);
     printf("midi context cursor = %f\n", sequencer->context->cursorPitch());
     fflush(stdout);
+#endif
+
+    {
+        // Must lock the songs when swapping them or player 
+        // might glitch (or crash).
+        MidiLocker oldL(oldSong->lock);
+        MidiLocker newL(sequencer->song->lock);
+        seqComp->setSong(sequencer->song);
+    }
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable

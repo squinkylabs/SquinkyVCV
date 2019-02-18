@@ -32,6 +32,11 @@ public:
         init(song);
     }
 
+    /**
+     * Set new song, perhaps after loading a new patch
+     */
+    void setSong(MidiSongPtr);
+
     enum ParamIds
     {
         CLOCK_INPUT_PARAM,
@@ -67,19 +72,6 @@ public:
     {
         return std::make_shared<SeqDescription<TBase>>();
     }
-
-#if 0
-    MidiSongPtr getSong()
-    {
-        return player->getSong();
-    }
-
-
-    MidiSongPtr setSong(MidiSongPtr song)
-    {
-        return player->setSong(song);
-    }
-    #endif
 
 
     void stop()
@@ -137,6 +129,12 @@ void  Seq<TBase>::init(MidiSongPtr song)
     div.setup(4, [this] {
         this->stepn(div.div());
      });
+}
+
+template <class TBase>
+void  Seq<TBase>::setSong(MidiSongPtr newSong)
+{
+    player->setSong(newSong);
 }
 
 template <class TBase>

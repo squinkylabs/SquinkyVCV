@@ -66,6 +66,7 @@ public:
     {
         --_mdb;
     }
+    void setSong(std::shared_ptr<MidiSong>);
 
     //void timeElapsed(float seconds);
     void updateToMetricTime(double metricTime);
