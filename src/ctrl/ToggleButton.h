@@ -12,11 +12,9 @@ public:
      */
     void addSvg(const char* resourcePath);
 
-    
-
 #ifdef __V1
     void onButton(const event::Button &e) override;
-    void draw(const DrawContext& ) override;
+    void draw(const DrawArgs &args) override;
 #else
     void onMouseDown(EventMouseDown &e) override;
     void draw(NVGcontext *vg) override;
@@ -42,12 +40,12 @@ inline void ToggleButton::addSvg(const char* resourcePath)
 }
 
 #ifdef __V1
-inline void ToggleButton::draw(const DrawContext& ctx)
+inline void ToggleButton::draw(const DrawArgs &args)
 {
     const float _value = SqHelper::getValue(this);
     int index = int(std::round(_value));
     auto svg = svgs[index];
-    svg->draw(ctx);
+    svg->draw(args);
 }
 #else
 inline void ToggleButton::draw(NVGcontext *vg)

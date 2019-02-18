@@ -70,6 +70,10 @@ private:
 
 inline void SemitoneDisplay::step()
 {
+    if (!module) {
+        return;
+    }
+    
     int curSemi = 0;
     int curOct = 0;
     if (semiParameterId >= 0) {
