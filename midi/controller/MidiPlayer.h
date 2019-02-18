@@ -28,12 +28,14 @@ public:
 
     void reset()
     {
+        printf("track play reset\n"); fflush(stdout);
         isReset = true;
     }
-  // void timeElapsed(float seconds);
+    void setTrack(std::shared_ptr<MidiTrack> newTrack)
+    {
+        track = newTrack;
+    }
     void updateToMetricTime(double seconds, IPlayerHost*);
-
-   // void seekTo(MidiSong*, float time, IPlayerHost* host);
 private:
   
     double noteOffTime = -1;

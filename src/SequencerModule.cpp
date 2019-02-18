@@ -179,12 +179,16 @@ void SequencerModule::fromJson(json_t* data)
 #endif
 
     {
+        printf("about to lock songs new is %d\n", sequencer->song->lock->locked());
         // Must lock the songs when swapping them or player 
         // might glitch (or crash).
         MidiLocker oldL(oldSong->lock);
         MidiLocker newL(sequencer->song->lock);
         seqComp->setSong(sequencer->song);
+        printf("falling out of lock block\n");
     }
+      printf("now out lock songs new is %d\n", sequencer->song->lock->locked());
+      fflush(stdout);
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable

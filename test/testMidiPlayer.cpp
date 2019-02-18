@@ -114,6 +114,8 @@ public:
     int lockConflicts = 0;
 };
 
+using TestHostPtr = std::shared_ptr<TestHost>;
+
 
 // test that APIs can be called
 static void test0()
@@ -160,7 +162,7 @@ std::shared_ptr<TestHost> makeSongOneQandRun(float time)
     return host;
 }
 
-#if 1
+
 std::shared_ptr<TestHost> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
 {
    
@@ -176,7 +178,7 @@ std::shared_ptr<TestHost> makeSongOneQandRun2(float timeBeforeLock, float timeDu
     pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock);
     return host;
 }
-#endif
+
 
 // just play the first note on
 static void test1()
@@ -299,6 +301,56 @@ static void testClockExt(int rate, double metricTimePerClock)
     
 }
 
+
+#if 0
+std::shared_ptr<TestHost> makeSongEmptyRun(float time)
+{
+
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
+    MidiPlayer pl(host, song);
+    pl.updateToMetricTime(time);
+    return host;
+}
+#endif
+
+
+static void testReset()
+{
+    printf("\n TEST RESET\n");
+    // make empty song, player ets.
+    // play it a long time
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    std::shared_ptr<TestHost> host = std::make_shared<TestHost>();
+    MidiPlayer pl(host, song);
+    pl.updateToMetricTime(100);
+
+    assertEQ(host->gateChangeCount, 0);
+    assertEQ(host->gateState, false);
+    assertEQ(host->cvChangeCount, 0);
+
+    // Now set new real song
+    MidiSongPtr newSong = makeSongOneQ();
+    {
+        MidiLocker l1(newSong->lock);
+        MidiLocker l2(song->lock);
+        pl.setSong(newSong);
+    }
+
+    // Should play just like it does in test1
+    pl.updateToMetricTime(2 * .24f);
+#if 1
+    //host = makeSongOneQandRun(2 * .24f);
+
+    assertEQ(host->lockConflicts, 0);
+    assertEQ(host->gateChangeCount, 1);
+    assertEQ(host->gateState, true);
+    assertEQ(host->cvChangeCount, 1);
+    assertEQ(host->cvState, 2);
+    assertEQ(host->lockConflicts, 0);
+#endif
+}
+
 static void testClock1()
 {
     testClockExt(5, 1.0);
@@ -328,6 +380,8 @@ void testMidiPlayer()
 
     testClock0();
     testClock1();
+
+    testReset();
 
     assertNoMidi();     // check for leaks
 }
