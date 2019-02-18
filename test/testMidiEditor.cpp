@@ -52,8 +52,6 @@ static bool cursorOnSelection(MidiSequencerPtr seq)
 // from a null selection, select next
 static void testNext1()
 {
-    printf("in testNext1, will use track %d\n", _trackNumber);
-    fflush(stdout);
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);     // should be one note selected

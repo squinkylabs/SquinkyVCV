@@ -31,7 +31,6 @@ MidiSequencerPtr MidiSequencer::make(MidiSongPtr song)
         }
     }
     assert(found);
-    song->_e();
     seq->assertValid();
     return seq;
 }
@@ -63,23 +62,12 @@ void MidiSequencer::assertValid() const
 
 void MidiSequencer::assertSelectionInTrack() const
 {
-    song->_e();
     MidiTrackPtr track = context->getTrack();
     
     for (auto it : *selection) {
-#if 1
-        
         auto foundPtr = track->findEventPointer(it);
         assert(foundPtr != track->end());
         auto x = *foundPtr;
         MidiEventPtrC y = x.second;
-
-       // MidiEventPtrC x = track->findEventPointer(it);;
-#else
-       MidiEventPtrC foundPtr = track->findEventPointer(it)->second;
-       assert(foundPtr);
-#endif
-       
-       
     }
 }

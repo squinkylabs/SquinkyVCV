@@ -28,7 +28,6 @@ public:
 
     void reset()
     {
-        printf("track play reset\n"); fflush(stdout);
         isReset = true;
     }
     void setTrack(std::shared_ptr<MidiTrack> newTrack)

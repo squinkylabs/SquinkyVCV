@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 
-
 class MidiSong;
 class MidiLock;
 
@@ -39,11 +38,7 @@ public:
     static MidiSongPtr makeTest(MidiTrack::TestContent, int trackNumber);
 
     std::shared_ptr<MidiLock> lock;
-
-    void _e() const;
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
-
-   
 };
 

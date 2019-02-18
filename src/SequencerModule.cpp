@@ -163,32 +163,16 @@ void SequencerModule::fromJson(json_t* data)
     MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
     sequencer = newSeq;
     if (widget) {
-        printf("sending to note display\n");
         widget->noteDisplay->setSequencer(newSeq);
     }
 
-#if 0
-    printf("after deserialze, using seq %p, song %p, pk0 %p\n",
-        sequencer.get(),
-        sequencer->song.get(),
-        sequencer->song->getTrack(0).get());
-    printf("midi context = %p\n", sequencer->context.get());
-    fflush(stdout);
-    printf("midi context cursor = %f\n", sequencer->context->cursorPitch());
-    fflush(stdout);
-#endif
-
     {
-        printf("about to lock songs new is %d\n", sequencer->song->lock->locked());
         // Must lock the songs when swapping them or player 
         // might glitch (or crash).
         MidiLocker oldL(oldSong->lock);
         MidiLocker newL(sequencer->song->lock);
         seqComp->setSong(sequencer->song);
-        printf("falling out of lock block\n");
     }
-      printf("now out lock songs new is %d\n", sequencer->song->lock->locked());
-      fflush(stdout);
 }
 
 // Specify the Module and ModuleWidget subclass, human-readable
