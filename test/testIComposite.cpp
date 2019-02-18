@@ -6,6 +6,8 @@
 #include "Seq.h"
 #include "Shaper.h"
 #include "TestComposite.h"
+#include "Tremolo.h"
+#include "VocalAnimator.h"
 #include "VocalFilter.h"
 
 #include "asserts.h"
@@ -46,4 +48,6 @@ void testIComposite()
     test<CHB<TestComposite>>();
     test<Gray<TestComposite>>();
     test<Seq<TestComposite>>();
+    test<VocalAnimator<TestComposite>>();
+    test<Tremolo<TestComposite>>();
 }
