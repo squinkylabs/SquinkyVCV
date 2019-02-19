@@ -40,10 +40,10 @@ TremoloModule::TremoloModule()
     SqHelper::setupParams(icomp, this);
 #else
 TremoloModule::TremoloModule()
-    : Module(tremolo.NUM_PARAMS,
-    tremolo.NUM_INPUTS,
-    tremolo.NUM_OUTPUTS,
-    tremolo.NUM_LIGHTS),
+    : Module(Comp::NUM_PARAMS,
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
     tremolo(std::make_shared<Comp>(this))
 {
 #endif
