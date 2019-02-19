@@ -20,30 +20,41 @@ public:
      */
     void step() override;
     void onSampleRateChange() override;
-    Tremolo<WidgetComposite> tremolo;
+    //Tremolo<WidgetComposite> tremolo;
+    std::shared_ptr<Tremolo<WidgetComposite>> tremolo;
 private:
 };
 
 void TremoloModule::onSampleRateChange()
 {
     float rate = SqHelper::engineGetSampleRate();
-    tremolo.setSampleRate(rate);
+    tremolo->setSampleRate(rate);
 }
 
+#ifdef __V1
+TremoloModule::TremoloModule()
+{
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    tremolo = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+#else
 TremoloModule::TremoloModule()
     : Module(tremolo.NUM_PARAMS,
     tremolo.NUM_INPUTS,
     tremolo.NUM_OUTPUTS,
     tremolo.NUM_LIGHTS),
-    tremolo(this)
+    tremolo(std::make_shared<Comp>(this))
 {
+#endif
+
     onSampleRateChange();
-    tremolo.init();
+    tremolo->init();
 }
 
 void TremoloModule::step()
 {
-    tremolo.step();
+    tremolo->step();
 }
 
 ////////////////////
@@ -68,9 +79,9 @@ struct TremoloWidget : ModuleWidget
         label->color = color;
         addChild(label);
     }
-    void addClockSection(TremoloModule *module);
-    void addIOSection(TremoloModule *module);
-    void addMainSection(TremoloModule *module);
+    void addClockSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
+    void addIOSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
+    void addMainSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 #ifdef __V1
@@ -90,7 +101,7 @@ inline Menu* TremoloWidget::createContextMenu()
 }
 #endif
 
-void TremoloWidget::addClockSection(TremoloModule *module)
+void TremoloWidget::addClockSection(TremoloModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float y = 40;        // global offset for clock block
     const float labelY = y + 36;
@@ -103,14 +114,16 @@ void TremoloWidget::addClockSection(TremoloModule *module)
     
     addLabel(Vec(2, labelY), "ckin");
 
-    addParam(createParam<RoundBlackKnob>(
+    addParam(SqHelper::createParam<RoundBlackKnob>(
+        icomp,
         Vec(110, y),
         module, Comp::LFO_RATE_PARAM));
     addLabel(Vec(104, labelY), "Rate");
 
     const float cmy = y;
     const float cmx = 60;
-    addParam(createParam<RoundBlackSnapKnob>(
+    addParam(SqHelper::createParam<RoundBlackSnapKnob>(
+        icomp,
         Vec(cmx, cmy),
         module,
         Comp::CLOCK_MULT_PARAM));
@@ -123,7 +136,7 @@ void TremoloWidget::addClockSection(TremoloModule *module)
     addLabel(Vec(cmx, cmy - 16), "x3");
 }
 
-void TremoloWidget::addIOSection(TremoloModule *module)
+void TremoloWidget::addIOSection(TremoloModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float rowIO = 317;
     const float label = rowIO - 17;
@@ -155,7 +168,7 @@ void TremoloWidget::addIOSection(TremoloModule *module)
     addLabel(Vec(x + 3 * deltaX - 2, label), "lfo", SqHelper::COLOR_WHITE);
 }
 
-void TremoloWidget::addMainSection(TremoloModule *module)
+void TremoloWidget::addMainSection(TremoloModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float dn = 3;
     const float knobX = 64;
@@ -168,12 +181,14 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     const float inY = knobY + 6;
     const float inX = 8;
 
-    addParam(createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
         Vec(knobX, knobY + 0 * knobDy),
         module,
         Comp::LFO_SHAPE_PARAM));
     
-    addParam(createParam<Trimpot>(
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
         Vec(trimX, trimY + 0 * knobDy),
         module,
         Comp::LFO_SHAPE_TRIM_PARAM));
@@ -185,12 +200,14 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addLabel(
         Vec(labelX, labelY + 0 * knobDy), "Shape");
 
-    addParam(createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
         Vec(knobX, knobY + 1 * knobDy),
         module,
         Comp::LFO_SKEW_PARAM));
 
-    addParam(createParam<Trimpot>(
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
         Vec(trimX, trimY + 1 * knobDy),
         module,
         Comp::LFO_SKEW_TRIM_PARAM));
@@ -202,12 +219,14 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addLabel(
         Vec(labelX + 1, labelY + 1 * knobDy), "Skew");
 
-    addParam(createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
         Vec(knobX, knobY + 2 * knobDy),
         module,
         Comp::LFO_PHASE_PARAM));
 
-    addParam(createParam<Trimpot>(
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
         Vec(trimX, trimY + 2 * knobDy),
         module,
         Comp::LFO_PHASE_TRIM_PARAM));
@@ -219,11 +238,14 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     addLabel(
         Vec(labelX, labelY + 2 * knobDy), "Phase");
 
-    addParam(createParam<Rogan1PSBlue>(
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
         Vec(knobX, knobY + 3 * knobDy),
         module,
         Comp::MOD_DEPTH_PARAM));
-    addParam(createParam<Trimpot>(
+
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
         Vec(trimX, trimY + 3 * knobDy),
         module,
         Comp::MOD_DEPTH_TRIM_PARAM));
@@ -241,8 +263,15 @@ void TremoloWidget::addMainSection(TremoloModule *module)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+TremoloWidget::TremoloWidget(TremoloModule *module)
+{   
+    setModule(module);
+#else
 TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 {
+#endif
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
         SVGPanel *panel = new SVGPanel();
@@ -251,9 +280,9 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
         addChild(panel);
     }
 
-    addClockSection(module);
-    addMainSection(module);
-    addIOSection(module);
+    addClockSection(module, icomp);
+    addMainSection(module, icomp);
+    addIOSection(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
