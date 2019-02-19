@@ -9,6 +9,11 @@ class SqHelper
 {
 public:
 
+    static void setPanel(ModuleWidget* widget, const char* path)
+    {
+         widget->setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, path)));
+    }
+
     static void openBrowser(const char* url)
     {
         system::openBrowser(url);
@@ -69,6 +74,7 @@ public:
 class SqHelper
 {
 public:
+
     static std::string assetPlugin(Plugin *plugin, const std::string& filename)
     {
         return rack::assetPlugin(plugin, filename);
@@ -126,6 +132,14 @@ public:
 
     static void setValue(ParamWidget* widget, float v) {
         widget->setValue(v);
+    }
+
+    static void setPanel(ModuleWidget* widget, const char* path)
+    {
+        SVGPanel *panel = new SVGPanel();
+        panel->box.size = box.size;
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, path)));
+        widget->addChild(panel);
     }
 };
 #endif

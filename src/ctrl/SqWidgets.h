@@ -10,6 +10,7 @@
 /**
  * Like Trimpot, but with blue stripe
  */
+#if 0
 struct BlueTrimmer : SVGKnob
 {
     BlueTrimmer()
@@ -19,6 +20,7 @@ struct BlueTrimmer : SVGKnob
         setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BlueTrimmer.svg")));
     }
 };
+#endif
 
 /**
  * Like Rogan1PSBlue, but smaller.

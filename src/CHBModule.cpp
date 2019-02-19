@@ -474,7 +474,6 @@ CHBWidget::CHBWidget(CHBModule *module) :
     module(module),
     semitoneDisplay(module)
 {
-    printf("entering ctor of chb\n"); fflush(stdout);
     if (module) {
         numHarmonics = module->chb.numHarmonics;
     }
@@ -487,19 +486,16 @@ CHBWidget::CHBWidget(CHBModule *module) :
     semitoneDisplay(module)
 {
 #endif
-    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/chb_panel.svg")));
-        addChild(panel);
-
+        SqHelper::setPanel(this, "res/chb_panel.svg");
         auto border = new PanelBorderWidget();
         border->box = box;
         addChild(border);
     }
 
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addHarmonics(module, icomp);
     addRow1(module, icomp);
     addRow2(module, icomp);
