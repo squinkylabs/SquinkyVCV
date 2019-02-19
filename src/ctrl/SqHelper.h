@@ -1,7 +1,6 @@
 #pragma once
 
 #include "app.hpp"
-#include "math.hpp"
 #include "IComposite.h"
 /** Wrap up all the .6/1.0 dependencies here
  */
