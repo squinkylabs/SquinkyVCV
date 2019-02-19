@@ -167,5 +167,21 @@ public:
         return SVG::load(
             SqHelper::assetPlugin(pluginInstance, path));
     }
+
+
+    using SvgWidget = SVGWidget;
+    static void setSvg(SvgWidget* widget, std::shared_ptr<SVG> svg)
+    {
+        widget->setSVG(svg);
+    }
+    static void setSvg(SVGKnob* knob, std::shared_ptr<SVG> svg)
+    {
+        knob->setSVG(svg);
+    }
+
+    static bool contains(struct Rect& r, const Vec& pos)
+    {
+        return r.contains(pos);
+    }
 };
 #endif
