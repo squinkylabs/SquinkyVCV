@@ -35,11 +35,11 @@ ColoredNoiseModule::ColoredNoiseModule()
     SqHelper::setupParams(icomp, this);
 #else
 ColoredNoiseModule::ColoredNoiseModule()
-    : Module(noiseSource.NUM_PARAMS,
+    : Module(Comp::NUM_PARAMS,
     Comp::NUM_INPUTS,
     Comp::NUM_OUTPUTS,
     Comp::NUM_LIGHTS),
-    noiseSource(this)
+    noiseSource(std::make_shared<Comp>(this))
 {
 #endif
     onSampleRateChange();
