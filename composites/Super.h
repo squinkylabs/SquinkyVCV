@@ -2,6 +2,7 @@
 #pragma once
 
 #include "GateTrigger.h"
+#include "IComposite.h"
 #include "IIRDecimator.h"
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
@@ -47,6 +48,14 @@ private:
 };
 
 
+template <class TBase>
+class SuperDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
+
 /**
  * orig CPU = 39
  * sub sample => 16
@@ -77,6 +86,13 @@ public:
     * Only needs to be called once.
     */
     void init();
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<SuperDescription<TBase>>();
+    }
 
     enum ParamIds
     {
@@ -344,3 +360,60 @@ inline void Super<TBase>::updateMix()
     gainSides = -0.73764f * rawMixValue * rawMixValue +
         1.2841f * rawMixValue + 0.044372f;
 }
+
+
+template <class TBase>
+int SuperDescription<TBase>::getNumParams()
+{
+    return Super<TBase>::NUM_PARAMS;
+}
+
+/*
+        OCTAVE_PARAM,
+        SEMI_PARAM,
+        FINE_PARAM,
+        DETUNE_PARAM,
+        DETUNE_TRIM_PARAM,
+        MIX_PARAM,
+        MIX_TRIM_PARAM,
+        FM_PARAM,
+        CLEAN_PARAM,
+  */
+template <class TBase>
+inline IComposite::Config SuperDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case Super<TBase>::OCTAVE_PARAM:
+            ret = {-5, 4, 0, "Octave transpose"};
+            break;
+        case Super<TBase>::SEMI_PARAM:
+            ret = {-11, 11, 0, "Semitone transpose"};
+            break;
+        case Super<TBase>::FINE_PARAM:
+            ret = {-1, 1, 0, "Fine tune"};
+            break;
+        case Super<TBase>::DETUNE_PARAM:
+            ret = {-5, 5, 0, "Detune"};
+            break;
+        case Super<TBase>::DETUNE_TRIM_PARAM:
+            ret = {-1, 1, 0, "Detune CV trim"};
+            break;
+        case Super<TBase>::MIX_PARAM:
+            ret = {-5, 5, 0, "Detuned saw level"};
+            break;
+        case Super<TBase>::MIX_TRIM_PARAM:
+            ret = {-1, 1, 0, "Detuned saw CV trim"};
+            break;
+        case Super<TBase>::FM_PARAM:
+            ret = {0, 1, 0, "Pitch modulation depth"};
+            break;
+        case Super<TBase>::CLEAN_PARAM:
+            ret = {0.0f, 2, 0, "Alias suppression amount"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+

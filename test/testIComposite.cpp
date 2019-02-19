@@ -1,10 +1,13 @@
 
 #include "CHB.h"
+#include "ColoredNoise.h"
+#include "EV3.h"
 #include "FunVCOComposite.h"
 #include "LFN.h"
 #include "Gray.h"
 #include "Seq.h"
 #include "Shaper.h"
+#include "Super.h"
 #include "TestComposite.h"
 #include "Tremolo.h"
 #include "VocalAnimator.h"
@@ -50,4 +53,9 @@ void testIComposite()
     test<Seq<TestComposite>>();
     test<VocalAnimator<TestComposite>>();
     test<Tremolo<TestComposite>>();
+    test<Super<TestComposite>>();
+    test<ColoredNoise<TestComposite>>();
+    test<EV3<TestComposite>>();
+
+    
 }

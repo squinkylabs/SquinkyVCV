@@ -4,6 +4,7 @@
 #include "assert.h"
 
 #include "AudioMath.h"
+#include "IComposite.h"
 #include "ManagedPool.h"
 #include "ThreadClient.h"
 #include "ThreadServer.h"
@@ -14,6 +15,15 @@
 #include "FFTCrossFader.h"
 
 class NoiseMessage;
+
+
+template <class TBase>
+class ColoredNoiseDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 const int crossfadeSamples = 4 * 1024;
 template <class TBase>
@@ -31,13 +41,22 @@ public:
     {
         commonConstruct();
     }
+
     ColoredNoise() : TBase(), crossFader(crossfadeSamples)
     {
         commonConstruct();
     }
+
     ~ColoredNoise()
     {
         thread.reset();     // kill the threads before deleting other things
+    }
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<ColoredNoiseDescription<TBase>>();
     }
 
     void setSampleRate(float rate)
@@ -319,3 +338,28 @@ void ColoredNoise<TBase>::step()
 
     serviceAudio();
 }
+
+
+template <class TBase>
+int ColoredNoiseDescription<TBase>::getNumParams()
+{
+    return ColoredNoise<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config ColoredNoiseDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case ColoredNoise<TBase>::SLOPE_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Frequency slope"};
+            break;
+        case ColoredNoise<TBase>::SLOPE_TRIM:
+            ret = {-1.0, 1.0, 1.0, "Freq slope CV trim"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+

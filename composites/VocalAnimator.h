@@ -415,6 +415,7 @@ inline IComposite::Config VocalAnimatorDescription<TBase>::getParam(int i)
             break;
         case VocalAnimator<TBase>::TRACK_EXP_PARAM:
             ret = {0, 2, 0, "Track ExP"};           // TODO: we don't use this - what is the default?
+            ret.active = false;
             break;
         case VocalAnimator<TBase>::LFO_MIX_PARAM:
             ret = {0.0f, 2.0f, 0.0f, "LFO mix select"};

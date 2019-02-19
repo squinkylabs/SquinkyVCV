@@ -1,8 +1,17 @@
 #pragma once
 
+#include "IComposite.h"
 #include "MinBLEPVCO.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
+
+template <class TBase>
+class EV3Description : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
  * perf test 1.0 44.5
@@ -21,6 +30,13 @@ public:
     EV3() : TBase()
     {
         init();
+    }
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<EV3Description<TBase>>();
     }
 
     enum class Waves
@@ -275,6 +291,111 @@ inline void EV3<TBase>::processPitchInputs()
             TBase::engineGetSampleTime());
     }
 }
+
+template <class TBase>
+int EV3Description<TBase>::getNumParams()
+{
+    return EV3<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config EV3Description<TBase>::getParam(int i)
+{
+    const float numWaves = (float) EV3<TBase>::Waves::END;
+    const float defWave = (float) EV3<TBase>::Waves::SIN;
+
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case EV3<TBase>::MIX1_PARAM:
+            ret = {0.0f, 1.0f, 0, "VCO 1 level"};
+            break;
+        case EV3<TBase>::MIX2_PARAM:
+            ret = {0.0f, 1.0f, 0, "VCO 2 level"};
+            break;
+        case EV3<TBase>::MIX3_PARAM:
+            ret = {0.0f, 1.0f, 0, "VCO 3 level"};
+            break;    
+        case EV3<TBase>::OCTAVE1_PARAM:
+            ret = {-5.0f, 4.0f, 0.f, "Octave transpose (VCO 1)"};
+            break;
+        case EV3<TBase>::SEMI1_PARAM:
+            ret = {-11.f, 11.0f, 0.f, "Semitone transpose (VCO 1)"};
+            break;
+        case EV3<TBase>::FINE1_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Fine tune (VCO 1)"};
+            break;
+        case EV3<TBase>::FM1_PARAM:
+            ret = {0.f, 1.f, 0, "Pitch modulation depth (VCO 1)"};
+            break;
+        case EV3<TBase>::SYNC1_PARAM:
+            ret = {0.0f, 1.0f, 0.0f, "unused"};
+            ret.active = false;                 // this one is unused
+            break;
+        case EV3<TBase>::WAVE1_PARAM:
+            ret = {0.0f, numWaves, defWave, "Waveform (VCO 1)"};
+            break;
+        case EV3<TBase>::PW1_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Pulse width (VCO 1)"};
+            break;
+        case EV3<TBase>::PWM1_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Pulse width modulation (VCO 1)"};
+            break;
+        case EV3<TBase>::OCTAVE2_PARAM:
+            ret = {-5.0f, 4.0f, 0.f, "Octave transpose (VCO 2)"};
+            break;
+        case EV3<TBase>::SEMI2_PARAM:
+            ret = {-11.f, 11.0f, 0.f, "Semitone transpose (VCO 2)"};
+            break;
+        case EV3<TBase>::FINE2_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Fine tune (VCO 2)"};
+            break;
+        case EV3<TBase>::FM2_PARAM:
+            ret = {0.f, 1.f, 0, "Pitch modulation depth (VCO 2)"};
+            break;
+        case EV3<TBase>::SYNC2_PARAM:
+            ret = {0.0f, 1.0f, 0.0f, "Hard sync, VCO 1->2"};
+            break;
+        case EV3<TBase>::WAVE2_PARAM:
+            ret = {0.0f, numWaves, defWave, "Waveform (VCO 2)"};
+            break;
+        case EV3<TBase>::PW2_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Pulse width (VCO 2)"};
+            break;
+        case EV3<TBase>::PWM2_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Pulse width modulation (VCO 2)"};
+            break;
+
+        case EV3<TBase>::OCTAVE3_PARAM:
+            ret = {-5.0f, 4.0f, 0.f, "Octave transpose (VCO 3)"};
+            break;
+        case EV3<TBase>::SEMI3_PARAM:
+            ret = {-11.f, 11.0f, 0.f, "Semitone transpose (VCO 3)"};
+            break;
+        case EV3<TBase>::FINE3_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Fine tune (VCO 3)"};
+            break;
+        case EV3<TBase>::FM3_PARAM:
+            ret = {0.f, 1.f, 0, "Pitch modulation depth (VCO 3)"};
+            break;
+        case EV3<TBase>::SYNC3_PARAM:
+            ret = {0.0f, 1.0f, 0.0f, "Hard sync, VCO 1->3"};
+            break;
+        case EV3<TBase>::WAVE3_PARAM:
+            ret = {0.0f, numWaves, defWave, "Waveform (VCO 3)"};
+            break;
+        case EV3<TBase>::PW3_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Pulse width (VCO 3)"};
+            break;
+        case EV3<TBase>::PWM3_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Pulse width modulation (VCO 3)"};
+            break;
+
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
 
 
 
