@@ -137,7 +137,7 @@ public:
     static void setPanel(ModuleWidget* widget, const char* path)
     {
         SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
+        panel->box.size = widget->box.size;
         panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, path)));
         widget->addChild(panel);
     }
