@@ -30,6 +30,7 @@ MidiSequencerPtr MidiSequencer::make(MidiSongPtr song)
             break;
         }
     }
+    (void) found;
     assert(found);
     seq->assertValid();
     return seq;

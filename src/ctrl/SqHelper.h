@@ -1,6 +1,7 @@
 #pragma once
 
 #include "app.hpp"
+#include "math.hpp"
 #include "IComposite.h"
 /** Wrap up all the .6/1.0 dependencies here
  */
@@ -9,6 +10,26 @@ class SqHelper
 {
 public:
 
+    static bool contains(const struct rack::math::Rect& r, const Vec& pos)
+    {
+        return r.isContaining(pos);
+    }
+    using SvgWidget = SvgWidget;
+//void SvgKnob::setSvg(std::shared_ptr<Svg> svg
+
+    static void setSvg(SvgWidget* widget, std::shared_ptr<Svg> svg)
+    {
+        widget->setSvg(svg);
+    }
+    static void setSvg(SvgKnob* knob, std::shared_ptr<Svg> svg)
+    {
+        knob->setSvg(svg);
+    }
+    static std::shared_ptr<Svg> loadSvg(const char* path) 
+    {
+        return APP->window->loadSvg(
+            SqHelper::assetPlugin(pluginInstance, path));
+    }
     static void setPanel(ModuleWidget* widget, const char* path)
     {
          widget->setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, path)));
@@ -140,6 +161,12 @@ public:
         panel->box.size = widget->box.size;
         panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, path)));
         widget->addChild(panel);
+    }
+
+    static std::shared_ptr<SVG> loadSvg(const char* path) 
+    {
+        return SVG::load(
+            SqHelper::assetPlugin(pluginInstance, path));
     }
 };
 #endif

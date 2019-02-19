@@ -31,7 +31,8 @@ struct Blue30Knob : SVGKnob
     {
         minAngle = -0.83*M_PI;
         maxAngle = 0.83*M_PI;
-        setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/Blue30.svg")));
+       // setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/Blue30.svg")));
+       SqHelper::setSvg(this, SqHelper::loadSvg("res/Blue30.svg"));
     }
 };
 
@@ -55,9 +56,9 @@ struct NKKSmall : SVGSwitch
 {
     NKKSmall()
     {
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_0.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_1.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_2.svg")));
+        addFrame(SqHelper::loadSvg("res/NKKSmall_0.svg"));
+        addFrame(SqHelper::loadSvg("res/NKKSmall_1.svg"));
+        addFrame(SqHelper::loadSvg("res/NKKSmall_2.svg"));
     }
 };
 
@@ -68,8 +69,8 @@ struct BlueToggle : public SVGSwitch
 {
     BlueToggle()
     {
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")));
+        addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
+        addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
     }
 };
 
@@ -81,8 +82,8 @@ struct SQPush : SVGButton
     SQPush()
     {
 #ifdef __V1
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg")));
+        addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
+        addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
 #else
         setSVGs(
             SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")),
@@ -94,8 +95,8 @@ struct SQPush : SVGButton
     SQPush(const char* upSVG, const char* dnSVG)
     {
 #ifdef __V1
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, dnSVG)));
+        addFrame(SqHelper::loadSvg(upSVG));
+        addFrame(SqHelper::loadSvg(dnSVG));
 #else
         setSVGs(
             SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)),

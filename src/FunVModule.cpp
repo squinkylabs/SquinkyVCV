@@ -239,15 +239,16 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+FunVWidget::FunVWidget(FunVModule *module)
+{
+    setModule(module);
+#else
 FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
 {
+#endif
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;   
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/fun_panel.svg")));        
-        addChild(panel);
-    }
+    SqHelper::setPanel(this, "res/fun_panel.svg");
 
     addTop3(module, 0);
     addMiddle4(module, 0);

@@ -118,12 +118,7 @@ GrayWidget::GrayWidget(GrayModule *module) :
 #endif
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/gray.svg")));
-        addChild(panel);
-    }
+    SqHelper::setPanel(this, "res/gray.svg");
 
     addBits(module);
     addInput(createInputCentered<PJ301MPort>(

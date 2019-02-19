@@ -6,7 +6,7 @@
 class ToggleButton : public ParamWidget
 {
 public:
-    ToggleButton();
+    ToggleButton(); 
     /**
      * SVG Images must be added in order
      */
@@ -21,7 +21,9 @@ public:
 #endif
     
 private:
-    using SvgPtr = std::shared_ptr<SVGWidget>;
+    using SvgPtr = std::shared_ptr<SqHelper::SvgWidget>;
+ // using SvgPtr = std::shared_ptr<SvgWidget>;
+
     std::vector<SvgPtr> svgs;
 };
 
@@ -32,8 +34,11 @@ inline ToggleButton::ToggleButton()
 
 inline void ToggleButton::addSvg(const char* resourcePath)
 {
-    auto svg = std::make_shared<SVGWidget>();
-    svg->setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, resourcePath)));
+    auto svg = std::make_shared<SqHelper::SvgWidget>();
+
+   // static void setSvg(SvgKnob* knob, std::shared_ptr<Svg> svg)
+    //svg->setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, resourcePath)));
+    SqHelper::setSvg(svg.get(), SqHelper::loadSvg(resourcePath));
     svgs.push_back(svg);
     this->box.size.x = std::max(this->box.size.x, svg->box.size.x);
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
@@ -78,7 +83,8 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
     const int index = int(std::round(_value));
     const Vec pos(e.pos.x, e.pos.y);
 
-    if (!svgs[index]->box.contains(pos)) {
+    //if (!svgs[index]->box.contains(pos)) {
+    if (!SqHelper::contains(svgs[index]->box, pos)) {
         return;
     }
 

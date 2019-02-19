@@ -56,7 +56,7 @@ void ColoredNoiseModule::step()
 {
     noiseSource->step();
 }
-
+ 
 ////////////////////
 // module widget
 ////////////////////

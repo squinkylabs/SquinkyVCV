@@ -155,18 +155,17 @@ void ShaperWidget::addSelector(ShaperModule* module, std::shared_ptr<IComposite>
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-ShaperWidget::ShaperWidget(ShaperModule *module) :
+#ifdef __V1
+ShaperWidget::ShaperWidget(ShaperModule* module)
+{
+    setModule(module);
+#else
+ShaperWidget::ShaperWidget(ShaperModule* module) :
     ModuleWidget(module)
 {
+#endif
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(
-            pluginInstance,
-            "res/shaper.svg")));
-        addChild(panel);
-    }
+    SqHelper::setPanel(this, "res/shaper.svg");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 

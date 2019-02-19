@@ -172,16 +172,18 @@ void VocalFilterWidget::addModelKnob(std::shared_ptr<IComposite> icomp, VocalFil
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+VocalFilterWidget::VocalFilterWidget(VocalFilterModule* module)
+{   
+    setModule(module);
+#else
 VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(module)
 {
-    box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+#endif
 
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/formants_panel.svg")));
-        addChild(panel);
-    }
+    box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    SqHelper::setPanel(this, "res/formants_panel.svg");
+
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     addVowelLabels();

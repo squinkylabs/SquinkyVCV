@@ -273,12 +273,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 #endif
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/trem_panel.svg")));
-        addChild(panel);
-    }
+    SqHelper::setPanel(this, "res/trem_panel.svg");
 
     addClockSection(module, icomp);
     addMainSection(module, icomp);
