@@ -18,6 +18,7 @@
 #define _SHAPER
 #define _CHB
 #define _GRAY
+#define _TREM
 //#define _CH10
 
 #ifndef __V1

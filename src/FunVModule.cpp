@@ -260,7 +260,7 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 #ifndef __V1
-Model *modelFunVModule = Model::create<FunVModule,
+Model *modelFunVModule = createModel<FunVModule,
     FunVWidget>("Squinky Labs",
     "squinkylabs-funv",
     "Functional VCO-1", OSCILLATOR_TAG);

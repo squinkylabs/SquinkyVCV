@@ -7,6 +7,8 @@
 #include "Tremolo.h"
 #include "ctrl/SqMenuItem.h"
 
+using Comp = Tremolo<WidgetComposite>;
+
 /**
  */
 struct TremoloModule : Module
@@ -24,7 +26,7 @@ private:
 
 void TremoloModule::onSampleRateChange()
 {
-    float rate = engineGetSampleRate();
+    float rate = SqHelper::engineGetSampleRate();
     tremolo.setSampleRate(rate);
 }
 
@@ -51,9 +53,14 @@ void TremoloModule::step()
 struct TremoloWidget : ModuleWidget
 {
     TremoloWidget(TremoloModule *);
-    Menu* createContextMenu() override;
 
-    void addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+#ifdef __V1
+    void appendContextMenu(Menu *menu) override;
+#else
+    Menu* createContextMenu() override;
+#endif
+
+    void addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -66,6 +73,13 @@ struct TremoloWidget : ModuleWidget
     void addMainSection(TremoloModule *module);
 };
 
+#ifdef __V1
+void TremoloWidget::appendContextMenu(Menu* theMenu) 
+{
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md");
+    theMenu->addChild(manual);   
+}
+#else
 inline Menu* TremoloWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -74,23 +88,33 @@ inline Menu* TremoloWidget::createContextMenu()
     theMenu->addChild(manual);
     return theMenu;
 }
+#endif
 
 void TremoloWidget::addClockSection(TremoloModule *module)
 {
     const float y = 40;        // global offset for clock block
     const float labelY = y + 36;
 
-    addInput(Port::create<PJ301MPort>(Vec(10, y + 7), Port::INPUT, module, module->tremolo.CLOCK_INPUT));
+    //addInput(Port::create<PJ301MPort>(Vec(10, y + 7), Port::INPUT, module, module->tremolo.CLOCK_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(10, y + 7),
+        module, Comp::CLOCK_INPUT));
+  
+    
     addLabel(Vec(2, labelY), "ckin");
 
-    addParam(ParamWidget::create<RoundBlackKnob>(
-        Vec(110, y), module, module->tremolo.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    addParam(createParam<RoundBlackKnob>(
+        Vec(110, y),
+        module, Comp::LFO_RATE_PARAM));
     addLabel(Vec(104, labelY), "Rate");
 
     const float cmy = y;
     const float cmx = 60;
-    addParam(ParamWidget::create<RoundBlackSnapKnob>(
-        Vec(cmx, cmy), module, module->tremolo.CLOCK_MULT_PARAM, 0.0f, 4.0f, 4.0f));
+    addParam(createParam<RoundBlackSnapKnob>(
+        Vec(cmx, cmy),
+        module,
+        Comp::CLOCK_MULT_PARAM));
+
     addLabel(Vec(cmx - 8, labelY), "Clock");
     addLabel(Vec(cmx - 19, cmy + 20), "x1");
     addLabel(Vec(cmx + 21, cmy + 20), "int");
@@ -106,17 +130,29 @@ void TremoloWidget::addIOSection(TremoloModule *module)
     const float deltaX = 35;
     const float x = 10;
 
-    addInput(Port::create<PJ301MPort>(Vec(x, rowIO), Port::INPUT, module, module->tremolo.AUDIO_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(x, rowIO),
+        module,
+        Comp::AUDIO_INPUT));
     addLabel(Vec(9, label), "in");
 
-    addOutput(Port::create<PJ301MPort>(Vec(x + deltaX, rowIO), Port::OUTPUT, module, module->tremolo.AUDIO_OUTPUT));
-    addLabel(Vec(x + deltaX - 5, label), "out", COLOR_WHITE);
+    addOutput(createOutput<PJ301MPort>(
+        Vec(x + deltaX, rowIO),
+        module,
+        Comp::AUDIO_OUTPUT));
+    addLabel(Vec(x + deltaX - 5, label), "out", SqHelper::COLOR_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(x + 2 * deltaX, rowIO), Port::OUTPUT, module, module->tremolo.SAW_OUTPUT));
-    addLabel(Vec(x + 2 * deltaX - 7, label), "saw", COLOR_WHITE);
+    addOutput(createOutput<PJ301MPort>(
+        Vec(x + 2 * deltaX, rowIO),
+        module,
+        Comp::SAW_OUTPUT));
+    addLabel(Vec(x + 2 * deltaX - 7, label), "saw", SqHelper::COLOR_WHITE);
 
-    addOutput(Port::create<PJ301MPort>(Vec(x + 3 * deltaX, rowIO), Port::OUTPUT, module, module->tremolo.LFO_OUTPUT));
-    addLabel(Vec(x + 3 * deltaX - 2, label), "lfo", COLOR_WHITE);
+    addOutput(createOutput<PJ301MPort>(
+        Vec(x + 3 * deltaX, rowIO),
+        module,
+        Comp::LFO_OUTPUT));
+    addLabel(Vec(x + 3 * deltaX - 2, label), "lfo", SqHelper::COLOR_WHITE);
 }
 
 void TremoloWidget::addMainSection(TremoloModule *module)
@@ -132,39 +168,70 @@ void TremoloWidget::addMainSection(TremoloModule *module)
     const float inY = knobY + 6;
     const float inX = 8;
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 0 * knobDy), module, module->tremolo.LFO_SHAPE_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 0 * knobDy), module, module->tremolo.LFO_SHAPE_TRIM_PARAM, -1.0, 1.0, 1.0));
-    addInput(Port::create<PJ301MPort>(
-        Vec(inX, inY + 0 * knobDy), Port::INPUT, module, module->tremolo.LFO_SHAPE_INPUT));
+    addParam(createParam<Rogan1PSBlue>(
+        Vec(knobX, knobY + 0 * knobDy),
+        module,
+        Comp::LFO_SHAPE_PARAM));
+    
+    addParam(createParam<Trimpot>(
+        Vec(trimX, trimY + 0 * knobDy),
+        module,
+        Comp::LFO_SHAPE_TRIM_PARAM));
+    
+    addInput(createInput<PJ301MPort>(
+        Vec(inX, inY + 0 * knobDy),
+        module,
+        Comp::LFO_SHAPE_INPUT));
     addLabel(
         Vec(labelX, labelY + 0 * knobDy), "Shape");
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 1 * knobDy), module, module->tremolo.LFO_SKEW_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 1 * knobDy), module, module->tremolo.LFO_SKEW_TRIM_PARAM, -1.0, 1.0, 1.0));
-    addInput(Port::create<PJ301MPort>(
-        Vec(inX, labelY + 1 * knobDy + 6), Port::INPUT, module, module->tremolo.LFO_SKEW_INPUT));
+    addParam(createParam<Rogan1PSBlue>(
+        Vec(knobX, knobY + 1 * knobDy),
+        module,
+        Comp::LFO_SKEW_PARAM));
+
+    addParam(createParam<Trimpot>(
+        Vec(trimX, trimY + 1 * knobDy),
+        module,
+        Comp::LFO_SKEW_TRIM_PARAM));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(inX, labelY + 1 * knobDy + 6),
+        module,
+        Comp::LFO_SKEW_INPUT));
     addLabel(
         Vec(labelX + 1, labelY + 1 * knobDy), "Skew");
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 2 * knobDy), module, module->tremolo.LFO_PHASE_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 2 * knobDy), module, module->tremolo.LFO_PHASE_TRIM_PARAM, -1.0, 1.0, 1.0));
-    addInput(Port::create<PJ301MPort>(
-        Vec(inX, labelY + 2 * knobDy + 6), Port::INPUT, module, module->tremolo.LFO_PHASE_INPUT));
+    addParam(createParam<Rogan1PSBlue>(
+        Vec(knobX, knobY + 2 * knobDy),
+        module,
+        Comp::LFO_PHASE_PARAM));
+
+    addParam(createParam<Trimpot>(
+        Vec(trimX, trimY + 2 * knobDy),
+        module,
+        Comp::LFO_PHASE_TRIM_PARAM));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(inX, labelY + 2 * knobDy + 6),
+        module,
+        Comp::LFO_PHASE_INPUT));
     addLabel(
         Vec(labelX, labelY + 2 * knobDy), "Phase");
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY + 3 * knobDy), module, module->tremolo.MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY + 3 * knobDy), module, module->tremolo.MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 1.0));
-    addInput(Port::create<PJ301MPort>(
-        Vec(inX, labelY + 3 * knobDy + 6), Port::INPUT, module, module->tremolo.MOD_DEPTH_INPUT));
+    addParam(createParam<Rogan1PSBlue>(
+        Vec(knobX, knobY + 3 * knobDy),
+        module,
+        Comp::MOD_DEPTH_PARAM));
+    addParam(createParam<Trimpot>(
+        Vec(trimX, trimY + 3 * knobDy),
+        module,
+        Comp::MOD_DEPTH_TRIM_PARAM));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(inX, labelY + 3 * knobDy + 6),
+        module,
+        Comp::MOD_DEPTH_INPUT));
     addLabel(
         Vec(labelX, labelY + 3 * knobDy), "Depth");
 }
@@ -180,7 +247,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/trem_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/trem_panel.svg")));
         addChild(panel);
     }
 
@@ -189,15 +256,20 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     addIOSection(module);
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+#ifdef __V1
+Model *modelTremoloModule = createModel<TremoloModule,
+    TremoloWidget>("chopper");
+#else
 Model *modelTremoloModule = Model::create<TremoloModule,
     TremoloWidget>("Squinky Labs",
     "squinkylabs-tremolo",
     "Chopper: Tremolo", EFFECT_TAG, LFO_TAG, CLOCK_MODULATOR_TAG);
+#endif
 #endif
 

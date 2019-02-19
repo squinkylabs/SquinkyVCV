@@ -34,10 +34,16 @@
 			"description": "Shaper: Precision Wave Shaper",
 			"tags": ["EFFECT", "OSCILLATOR", "WAVESHAPER"]
 		},
+		"chopper": {
+			"name": "chopper",
+			"description": "Chopper: Tremolo",
+			"tags": ["Effect", "LFO"]
+		},
 		"gray": {
 			"name": "gray",
 			"description": "Gray Code: Eclectic clock divider",
 			"tags": [ "CLOCK_MODULATOR", "RANDOM"]
 		}
+
 	}
 }
