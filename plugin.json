@@ -43,6 +43,11 @@
 			"name": "gray",
 			"description": "Gray Code: Eclectic clock divider",
 			"tags": [ "CLOCK_MODULATOR", "RANDOM"]
+		},
+		"colors": {
+			"name": "colors",
+			"description": "Colors: Colored Noise",
+			"tags": ["Noise"]
 		}
 
 	}

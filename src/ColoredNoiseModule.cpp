@@ -7,6 +7,7 @@
 #include "NoiseDrawer.h"
 #include "ctrl/SqMenuItem.h"
 
+using Comp = ColoredNoise<WidgetComposite>;
 /**
  * Implementation class for VocalWidget
  */
@@ -20,31 +21,40 @@ struct ColoredNoiseModule : Module
     void step() override;
     void onSampleRateChange() override;
 
-    ColoredNoise<WidgetComposite> noiseSource;
+    std::shared_ptr<Comp> noiseSource;
 private:
     typedef float T;
 };
 
+#ifdef __V1
+ColoredNoiseModule::ColoredNoiseModule()
+{
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    noiseSource = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+#else
 ColoredNoiseModule::ColoredNoiseModule()
     : Module(noiseSource.NUM_PARAMS,
-    noiseSource.NUM_INPUTS,
-    noiseSource.NUM_OUTPUTS,
-    noiseSource.NUM_LIGHTS),
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
     noiseSource(this)
 {
+#endif
     onSampleRateChange();
-    noiseSource.init();
+    noiseSource->init();
 }
 
 void ColoredNoiseModule::onSampleRateChange()
 {
-    T rate = engineGetSampleRate();
-    noiseSource.setSampleRate(rate);
+    T rate = SqHelper::engineGetSampleRate();
+    noiseSource->setSampleRate(rate);
 }
 
 void ColoredNoiseModule::step()
 {
-    noiseSource.step();
+    noiseSource->step();
 }
 
 ////////////////////
@@ -56,9 +66,21 @@ struct ColoredNoiseWidget : ModuleWidget
     ColoredNoiseWidget(ColoredNoiseModule *);
     Label * slopeLabel;
     Label * signLabel;
+
+#ifdef __V1
+    void appendContextMenu(Menu *menu) override;
+#else
     Menu* createContextMenu() override;
+#endif
 };
 
+#ifdef __V1
+void ColoredNoiseWidget::appendContextMenu(Menu* theMenu) 
+{
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
+    theMenu->addChild(manual);   
+}
+#else
 inline Menu* ColoredNoiseWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -67,6 +89,7 @@ inline Menu* ColoredNoiseWidget::createContextMenu()
     theMenu->addChild(manual);
     return theMenu;
 }
+#endif
 
 // The colors of noise (UI colors)
 static const unsigned char red[3] = {0xff, 0x04, 0x14};
@@ -140,7 +163,10 @@ struct ColorDisplay : TransparentWidget
     void draw(NVGcontext *vg) override
     {
         // First draw the solid fill
-        const float slope = module->noiseSource.getSlope();
+        float slope = 0;
+        if (module) {
+            slope = module->noiseSource->getSlope();
+        }
         unsigned char color[3];
         getColor(color, slope);
         nvgFillColor(vg, nvgRGBA(color[0], color[1], color[2], 0xff));
@@ -180,8 +206,15 @@ struct ColorDisplay : TransparentWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule* module)
+{   
+    setModule(module);
+#else
 ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidget(module)
 {
+#endif
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
 
     // save so we can update later.
@@ -202,57 +235,65 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/colors_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/colors_panel.svg")));
         addChild(panel);
     }
 
-    addOutput(Port::create<PJ301MPort>(
+    addOutput(createOutput<PJ301MPort>(
         Vec(32, 310),
-        Port::OUTPUT,
         module,
-        module->noiseSource.AUDIO_OUTPUT));
+        Comp::AUDIO_OUTPUT));
     Label* label = new Label();
     label->box.pos = Vec(24.2, 294);
     label->text = "OUT";
-    label->color = COLOR_WHITE;
+    label->color = SqHelper::COLOR_WHITE;
     addChild(label);
 
-    addParam(ParamWidget::create<Rogan2PSBlue>(
-        Vec(22, 80), module, module->noiseSource.SLOPE_PARAM, -5.0, 5.0, 0.0));
-
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(58, 46),
-        module, module->noiseSource.SLOPE_TRIM, -1.0, 1.0, 1.0));
-
-    addInput(Port::create<PJ301MPort>(
-        Vec(14, 42),
-        Port::INPUT,
+    addParam(SqHelper::createParam<Rogan2PSBlue>(
+        icomp,
+        Vec(22, 80),
         module,
-        module->noiseSource.SLOPE_CV));
+        Comp::SLOPE_PARAM));
+
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(58, 46),
+        module, 
+        Comp::SLOPE_TRIM));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(14, 42),
+        module,
+        Comp::SLOPE_CV));
 
     // Create the labels for slope. They will get
     // text content later.
     const float labelY = 146;
     slopeLabel->box.pos = Vec(12, labelY);
     slopeLabel->text = "";
-    slopeLabel->color = COLOR_BLACK;
+    slopeLabel->color = SqHelper::COLOR_BLACK;
     addChild(slopeLabel);
     signLabel->box.pos = Vec(2, labelY);
     signLabel->text = "";
-    signLabel->color = COLOR_BLACK;
+    signLabel->color = SqHelper::COLOR_BLACK;
     addChild(signLabel);
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+#ifdef __V1
+Model *modelColoredNoiseModule = createModel<ColoredNoiseModule, ColoredNoiseWidget>(
+    "colors");
+#else
 Model *modelColoredNoiseModule = Model::create<ColoredNoiseModule, ColoredNoiseWidget>(
     "Squinky Labs",
     "squinkylabs-coloredNoise",
     "Colors: Colored Noise", NOISE_TAG);
+#endif
 #endif
 
 
