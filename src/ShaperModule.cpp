@@ -62,11 +62,8 @@ void ShaperModule::onSampleRateChange()
 struct ShaperWidget : ModuleWidget
 {
     ShaperWidget(ShaperModule *);
-#ifdef __V1
-    void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
+
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
     /**
      * Helper to add a text label to this widget
      */
@@ -89,24 +86,6 @@ private:
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
     void addSelector(ShaperModule* module, std::shared_ptr<IComposite> icomp);
 };
-
-#ifdef __V1
-inline void ShaperWidget::appendContextMenu(Menu *menu) 
-{
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
-    menu->addChild(manual);
-}
-#else
-inline Menu* ShaperWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
 
 void ShaperWidget::step()
 {

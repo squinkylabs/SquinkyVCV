@@ -67,29 +67,8 @@ struct ColoredNoiseWidget : ModuleWidget
     Label * slopeLabel;
     Label * signLabel;
 
-#ifdef __V1
-    void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
 };
-
-#ifdef __V1
-void ColoredNoiseWidget::appendContextMenu(Menu* theMenu) 
-{
-    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
-    theMenu->addChild(manual);   
-}
-#else
-inline Menu* ColoredNoiseWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
 
 // The colors of noise (UI colors)
 static const unsigned char red[3] = {0xff, 0x04, 0x14};

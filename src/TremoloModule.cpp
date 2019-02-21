@@ -65,11 +65,7 @@ struct TremoloWidget : ModuleWidget
 {
     TremoloWidget(TremoloModule *);
 
-#ifdef __V1
-    void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md");
 
     void addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -83,23 +79,6 @@ struct TremoloWidget : ModuleWidget
     void addIOSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
     void addMainSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
 };
-
-#ifdef __V1
-void TremoloWidget::appendContextMenu(Menu* theMenu) 
-{
-    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md");
-    theMenu->addChild(manual);   
-}
-#else
-inline Menu* TremoloWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
 
 void TremoloWidget::addClockSection(TremoloModule *module, std::shared_ptr<IComposite> icomp)
 {

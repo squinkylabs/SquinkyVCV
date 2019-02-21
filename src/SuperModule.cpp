@@ -73,20 +73,10 @@ struct superWidget : ModuleWidget
     void addPitchKnobs(SuperModule *);
     void addOtherKnobs(SuperModule *);
     void addJacks(SuperModule *);
-    Menu* createContextMenu() override;
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
 };
-
-
-inline Menu* superWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
 
 const float col1 = 40;
 const float col2 = 110;

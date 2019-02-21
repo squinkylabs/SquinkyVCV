@@ -72,11 +72,8 @@ struct FunVWidget : ModuleWidget
     void addTop3(FunVModule *, float verticalShift);
     void addMiddle4(FunVModule *, float verticalShift);
     void addJacks(FunVModule *, float verticalShift);
-#ifdef __V1
-    void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
+
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color)
     {
@@ -92,25 +89,6 @@ struct FunVWidget : ModuleWidget
         return addLabel(v, str, SqHelper::COLOR_BLACK);
     }
 };
-
-#ifdef __V1
-inline void FunVWidget::appendContextMenu(Menu* theMenu)
-{
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md");
-    theMenu->addChild(manual);
-}
-#else
-//#ifndef _V1 // should be built in
-inline Menu* FunVWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
 
 void FunVWidget::addTop3(FunVModule * module, float verticalShift)
 {
