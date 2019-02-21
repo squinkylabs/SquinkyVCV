@@ -136,10 +136,11 @@ inline WaveformSelector::~WaveformSelector()
 #ifdef __V1
 inline void WaveformSelector::drawSVG(const DrawArgs &arg, SqHelper::SvgWidget& svg, float x, float y)
 {
-    NVGcontext *vg = arg.vg;
+    NVGcontext* vg = arg.vg;
 #else
-inline void WaveformSelector::drawSVG(NVGcontext *vg, SqHelper::SvgWidget& svg, float x, float y)
+inline void WaveformSelector::drawSVG(NVGcontext *arg, SqHelper::SvgWidget& svg, float x, float y)
 {
+    NVGcontext* vg = arg;
 #endif
 
     nvgSave(vg);

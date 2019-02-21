@@ -192,11 +192,12 @@ public:
 
 };
 
-define DECLARE_MANUAL(URL) Menu* GrayWidget::createContextMenu() \
+#define DECLARE_MANUAL(URL) Menu* createContextMenu() override \
 { \
     Menu* theMenu = ModuleWidget::createContextMenu(); \
     ManualMenuItem* manual = new ManualMenuItem(URL); \
     theMenu->addChild(manual); \
     return theMenu; \
 }
+
 #endif

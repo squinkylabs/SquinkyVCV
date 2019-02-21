@@ -32,10 +32,10 @@ EV3Module::EV3Module()
 }
 #else
 EV3Module::EV3Module()
-    : Module(ev3.NUM_PARAMS,
-    ev3.NUM_INPUTS,
-    ev3.NUM_OUTPUTS,
-    ev3.NUM_LIGHTS),
+    : Module(Comp::NUM_PARAMS,
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
     ev3(std::make_shared<Comp>(this))
 {
 }
