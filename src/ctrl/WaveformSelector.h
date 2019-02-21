@@ -1,6 +1,10 @@
 #pragma once
 
+#include "SqHelper.h"
+#ifdef __V1
+#else
 #include "widgets.hpp"
+#endif
 
 class ButtonCell
 {
@@ -19,14 +23,16 @@ public:
 
     void dump(const char*);
 private:
-    SVGWidget svg;
-    SVGWidget svgOn;
+    SqHelper::SvgWidget svg;
+    SqHelper::SvgWidget svgOn;
 };
 
 inline void ButtonCell::loadSVG(const char* res, const char* resOn)
 {
-    svg.setSVG(SVG::load(assetPlugin(pluginInstance, res)));
-    svgOn.setSVG(SVG::load(assetPlugin(pluginInstance, resOn)));
+    SqHelper::setSvg(&svg, SqHelper::loadSvg(res));
+    SqHelper::setSvg(&svgOn, SqHelper::loadSvg(resOn));
+   // svg.setSVG(SVG::load(assetPlugin(pluginInstance, res)));
+  //  svgOn.setSVG(SVG::load(assetPlugin(pluginInstance, resOn)));
     this->box.size = svg.box.size;
 }
 
@@ -46,13 +52,21 @@ using CellPtr = std::shared_ptr<ButtonCell>;
 struct WaveformSelector : ParamWidget
 {
     WaveformSelector();
-    void draw(NVGcontext *vg) override;
     ~WaveformSelector() override;
 
     std::vector< std::vector< CellPtr>> svgs;
     void addSvg(int row, const char* res, const char* resOn);
-    void drawSVG(NVGcontext *vg, SVGWidget&, float x, float y);
+   
+
+#ifdef __V1
+    void draw(const DrawArgs &arg) override;
+    void onButton(const event::Button &e) override;
+    void drawSVG(const DrawArgs &arg, SqHelper::SvgWidget&, float x, float y);
+#else
     void onMouseDown(EventMouseDown &e) override;
+    void draw(NVGcontext *vg) override;
+    void drawSVG(NVGcontext *vg, SqHelper::SvgWidget&, float x, float y);
+#endif
     CellPtr hitTest(float x, float y);
     //
     float nextValue = 0;
@@ -63,7 +77,8 @@ CellPtr WaveformSelector::hitTest(float x, float y)
     const Vec pos(x, y);
     for (auto& r : svgs) {
         for (auto& s : r) {
-            if (s->box.contains(pos)) {
+            if (SqHelper::contains(s->box,  pos)) {
+           // if (s->box.contains(pos)) {
                 return s;
             }
         }
@@ -116,27 +131,61 @@ inline WaveformSelector::~WaveformSelector()
 {
 }
 
-inline void WaveformSelector::drawSVG(NVGcontext *vg, SVGWidget& svg, float x, float y)
+#if 1
+
+#ifdef __V1
+inline void WaveformSelector::drawSVG(const DrawArgs &arg, SqHelper::SvgWidget& svg, float x, float y)
 {
+    NVGcontext *vg = arg.vg;
+#else
+inline void WaveformSelector::drawSVG(NVGcontext *vg, SqHelper::SvgWidget& svg, float x, float y)
+{
+#endif
+
     nvgSave(vg);
     float transform[6];
     nvgTransformIdentity(transform);
     nvgTransformTranslate(transform, x, y);
     nvgTransform(vg, transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
-    svg.draw(vg);
+    svg.draw(arg);
     nvgRestore(vg);
 }
 
-void inline WaveformSelector::draw(NVGcontext *vg)
+#ifdef __V1
+inline void WaveformSelector::draw(const DrawArgs &arg)
+#else
+inline void WaveformSelector::draw(NVGcontext *arg)
+#endif
 {
     for (auto& r : svgs) {
         for (auto& s : r) {
-            const bool on = (this->value == s->value);
-            drawSVG(vg, on ? s->svgOn : s->svg, s->box.pos.x, s->box.pos.y);
+            const bool on = SqHelper::getValue(this) == s->value;
+            drawSVG(arg, on ? s->svgOn : s->svg, s->box.pos.x, s->box.pos.y);
         }
     }
 }
 
+
+#ifdef __V1
+//void onButton(const event::Button &e) override;
+ inline void WaveformSelector::onButton(const event::Button &e)
+ {
+     // for now, use both button presses.
+     // eventually get more sophisticated.
+    if (e.action == GLFW_PRESS && (e.button == GLFW_MOUSE_BUTTON_LEFT || e.button == GLFW_MOUSE_BUTTON_RIGHT)) {
+        CellPtr hit = hitTest(e.pos.x, e.pos.y);
+        if (hit) {
+            e.consume(this);
+            if (hit->value == SqHelper::getValue(this)) {
+                return;
+            }
+           SqHelper::setValue(this, hit->value);
+        }
+	}
+ }
+
+
+#else
 inline void WaveformSelector::onMouseDown(EventMouseDown &e)
 {
     e.consumed = false;
@@ -150,3 +199,6 @@ inline void WaveformSelector::onMouseDown(EventMouseDown &e)
         setValue(hit->value);
     }
 }
+#endif
+
+#endif

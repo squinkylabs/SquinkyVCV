@@ -59,11 +59,7 @@ struct GrayWidget : ModuleWidget
 {
     GrayWidget(GrayModule *);
 
-#ifdef __V1
-    void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md");
 
     /**
      * Helper to add a text label to this widget
@@ -146,24 +142,6 @@ GrayWidget::GrayWidget(GrayModule *module) :
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
-
-#ifdef __V1
-void GrayWidget::appendContextMenu(Menu* theMenu) 
-{
-    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md");
-    theMenu->addChild(manual);   
-}
-#else
-inline Menu* GrayWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
-
 
 #ifdef __V1
 Model *modelGrayModule = createModel<GrayModule,

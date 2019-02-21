@@ -88,6 +88,12 @@ public:
     }
 };
 
+#define DECLARE_MANUAL(URL) void appendContextMenu(Menu *theMenu) override \
+{ \
+    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    theMenu->addChild(manual);   \
+}
+
 #else
 
 
@@ -183,5 +189,14 @@ public:
     {
         return r.contains(pos);
     }
+
 };
+
+define DECLARE_MANUAL(URL) Menu* GrayWidget::createContextMenu() \
+{ \
+    Menu* theMenu = ModuleWidget::createContextMenu(); \
+    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    theMenu->addChild(manual); \
+    return theMenu; \
+}
 #endif
