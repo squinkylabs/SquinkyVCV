@@ -16,6 +16,7 @@
 #define _TREM
 #define _COLORS
 #define _EV3
+#define _SUPER
 //#define _CH10
 
 #ifndef __V1
