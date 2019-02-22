@@ -48,12 +48,11 @@ BootyModule::BootyModule()
     SqHelper::setupParams(icomp, this);
 #else
 BootyModule::BootyModule() :
-    Module(
-        Comp::NUM_PARAMS,
+    Module(Comp::NUM_PARAMS,
         Comp::NUM_INPUTS, 
         Comp::NUM_OUTPUTS, 
         Comp::NUM_LIGHTS),
-        Comp::(std::make_shared<Comp>(this)
+    shifter(std::make_shared<Comp>(this))
 {
 #endif
     // TODO: can we assume onSampleRateChange() gets called first, so this is unnecessary?
@@ -154,12 +153,13 @@ struct RangeChoice : ChoiceButton
     float * const output;
 #ifdef __V1
 	void onAction(const event::Action &e) override
+    {
+         Menu* menu = createMenu();
 #else
     void onAction(EventAction &e) override
-#endif
     {
-       // Menu *menu = gScene->createMenu();
-       Menu* menu = createMenu();
+        Menu *menu = gScene->createMenu();
+#endif
 
         menu->box.pos = getAbsoluteOffset(Vec(0, box.size.y)).round();
         menu->box.size.x = box.size.x;
