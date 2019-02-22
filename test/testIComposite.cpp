@@ -58,6 +58,5 @@ void testIComposite()
     test<ColoredNoise<TestComposite>>();
     test<EV3<TestComposite>>();
     test<FrequencyShifter<TestComposite>>();
-
-    
+    test<VocalAnimator<TestComposite>>();
 }
