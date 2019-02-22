@@ -2,6 +2,7 @@
 #include "CHB.h"
 #include "ColoredNoise.h"
 #include "EV3.h"
+#include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
 #include "LFN.h"
 #include "Gray.h"
@@ -56,6 +57,7 @@ void testIComposite()
     test<Super<TestComposite>>();
     test<ColoredNoise<TestComposite>>();
     test<EV3<TestComposite>>();
+    test<FrequencyShifter<TestComposite>>();
 
     
 }
