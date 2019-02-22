@@ -150,7 +150,7 @@ inline void FrequencyShifter<TBase>::step()
 template <class TBase>
 int BootyDescription<TBase>::getNumParams()
 {
-    return Gray<TBase>::NUM_PARAMS;
+    return FrequencyShifter<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>

@@ -301,20 +301,6 @@ struct EV3Widget : ModuleWidget
     bool wasNormalizing = false;
 };
 
-
-//IMPLEMENT_MANUAL;
-
-#if 0
-inline Menu* EV3Widget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/ev3.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
-
 static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);
 void EV3Widget::step()
 {
