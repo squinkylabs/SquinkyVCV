@@ -18,6 +18,7 @@
 #define _EV3
 #define _SUPER
 #define _BOOTY
+#define _GROWLER
 //#define _CH10
 
 #ifndef __V1

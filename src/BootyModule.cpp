@@ -41,8 +41,6 @@ extern const char* ranges[];
 BootyModule::BootyModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-
-    //wait until after config to allocate this guy.
     shifter = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);

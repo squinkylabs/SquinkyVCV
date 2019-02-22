@@ -14,6 +14,8 @@ public:
         return r.isContaining(pos);
     }
     using SvgWidget = SvgWidget;
+    using SvgSwitch = SvgSwitch;
+    
 //void SvgKnob::setSvg(std::shared_ptr<Svg> svg
 
     static void setSvg(SvgWidget* widget, std::shared_ptr<Svg> svg)
@@ -24,6 +26,10 @@ public:
     {
         knob->setSvg(svg);
     }
+
+    /**
+     * loads SVG from plugin's assets
+     */
     static std::shared_ptr<Svg> loadSvg(const char* path) 
     {
         return APP->window->loadSvg(

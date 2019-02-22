@@ -5,6 +5,9 @@
 #include "VocalAnimator.h"
 #include "ctrl/SqMenuItem.h"
 
+
+using Comp = VocalAnimator<WidgetComposite>;
+
 /**
  * Implementation class for VocalWidget
  */
@@ -17,28 +20,42 @@ struct VocalModule : Module
      */
     void step() override;
     void onSampleRateChange() override;
-    using Animator = VocalAnimator<WidgetComposite>;
-    Animator animator;
+    std::shared_ptr<Comp> animator;
 private:
     typedef float T;
 };
 
-VocalModule::VocalModule() : Module(animator.NUM_PARAMS, animator.NUM_INPUTS, animator.NUM_OUTPUTS, animator.NUM_LIGHTS),
-animator(this)
+#ifdef __V1
+VocalModule::VocalModule()
 {
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    animator = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+
+#else
+VocalModule::VocalModule() : 
+    Module(
+        Comp::NUM_PARAMS,
+        Comp::NUM_INPUTS,
+        Comp::NUM_OUTPUTS,
+        Comp::NUM_LIGHTS),
+    animator(std::make_shared<Comp>(this))
+{
+#endif
     onSampleRateChange();
-    animator.init();
+    animator->init();
 }
 
 void VocalModule::onSampleRateChange()
 {
-    T rate = engineGetSampleRate();
-    animator.setSampleRate(rate);
+    T rate = SqHelper::engineGetSampleRate();
+    animator->setSampleRate(rate);
 }
 
 void VocalModule::step()
 {
-    animator.step();
+    animator->step();
 }
 
 ////////////////////
@@ -48,17 +65,8 @@ void VocalModule::step()
 struct VocalWidget : ModuleWidget
 {
     VocalWidget(VocalModule *);
-    Menu* createContextMenu() override;
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/growler.md");
 };
-
-inline Menu* VocalWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/growler.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
 
 template <typename BASE>
 struct MuteLight : BASE
@@ -69,14 +77,28 @@ struct MuteLight : BASE
     }
 };
 
-struct NKK2 : SVGSwitch, ToggleSwitch
+#ifdef __V1
+struct NKK2 : SqHelper::SvgSwitch
 {
+    NKK2()
+    {
+        addFrame(APP->window->loadSvg(
+            asset::system("res/ComponentLibrary/NKK_0.svg").c_str()));
+        addFrame(APP->window->loadSvg(
+            asset::system("res/ComponentLibrary/NKK_2.svg").c_str()));
+    }
+};
+#else
+struct NKK2 : SqHelper::SvgSwitch, ToggleSwitch
+{
+
     NKK2()
     {
         addFrame(SVG::load(assetGlobal("res/ComponentLibrary/NKK_0.svg")));
         addFrame(SVG::load(assetGlobal("res/ComponentLibrary/NKK_2.svg")));
     }
 };
+#endif
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -92,13 +114,8 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 {
 #endif
     const float width = 14 * RACK_GRID_WIDTH;
-    box.size = Vec(width, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/vocal_animator_panel.svg")));
-        addChild(panel);
-    }
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setPanel(this, "res/vocal_animator_panel.svg");
     /**
      *  LEDs and LFO outputs
      */
@@ -120,31 +137,61 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float lfoRateKnobX = 100;
     const float lfoRateKnobY = lfoBlockY + 24;
 
-    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
-    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY + ledSpacingY), module, module->animator.LFO1_LIGHT));
-    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
-        Vec(ledX, ledY + 2 * ledSpacingY), module, module->animator.LFO2_LIGHT));
+   // addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+   //     Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
+    addChild(createLight<MediumLight<GreenLight>>(
+        Vec(ledX, ledY),
+        module, 
+        Comp::LFO0_LIGHT));
 
-    addOutput(Port::create<PJ301MPort>(
-        Vec(lfoOutX, lfoOutY), Port::OUTPUT, module, VocalModule::Animator::LFO0_OUTPUT));
-    addOutput(Port::create<PJ301MPort>(
-        Vec(lfoOutX, lfoOutY + 1 * ledSpacingY), Port::OUTPUT, module, VocalModule::Animator::LFO1_OUTPUT));
-    addOutput(Port::create<PJ301MPort>(
-        Vec(lfoOutX, lfoOutY + 2 * ledSpacingY), Port::OUTPUT, module, VocalModule::Animator::LFO2_OUTPUT));
+    addChild(createLight<MediumLight<GreenLight>>(
+        Vec(ledX, ledY + ledSpacingY), 
+        module, 
+        Comp::LFO1_LIGHT));
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(lfoRateKnobX, lfoRateKnobY), module, module->animator.LFO_RATE_PARAM, -5.0, 5.0, 0.0));
+    addChild(createLight<MediumLight<GreenLight>>(
+        Vec(ledX, ledY + 2 * ledSpacingY),
+        module, 
+        Comp::LFO2_LIGHT));
 
-    addInput(Port::create<PJ301MPort>(
-        Vec(lfoInputX, lfoInputY), Port::INPUT, module, VocalModule::Animator::LFO_RATE_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(lfoTrimX, lfoTrimY), module, module->animator.LFO_RATE_TRIM_PARAM, -1.0, 1.0, 1.0));
+    addOutput(createOutput<PJ301MPort>(
+        Vec(lfoOutX, lfoOutY), 
+        module, 
+        Comp::LFO0_OUTPUT));
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(lfoOutX, lfoOutY + 1 * ledSpacingY), 
+        module, 
+        Comp::LFO1_OUTPUT));
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(lfoOutX, lfoOutY + 2 * ledSpacingY), 
+        module, 
+        Comp::LFO2_OUTPUT));
+
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
+        Vec(lfoRateKnobX, lfoRateKnobY), 
+        module, 
+        Comp::LFO_RATE_PARAM));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(lfoInputX, lfoInputY), 
+        module, 
+        Comp::LFO_RATE_CV_INPUT));
+
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(lfoTrimX, lfoTrimY), 
+        module, 
+        Comp::LFO_RATE_TRIM_PARAM));
 
     // the matrix switch
-    addParam(ParamWidget::create<NKK>(
-        Vec(42, 65), module, module->animator.LFO_MIX_PARAM, 0.0f, 2.0f, 0.0f));
+    addParam(SqHelper::createParam<NKK>(
+        icomp,
+        Vec(42, 65), 
+        module, 
+        Comp::LFO_MIX_PARAM));
 
      /**
       * Parameters and CV
@@ -163,26 +210,56 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float inputX = mainBlockX + 8;
     const float inputY = mainBlockY + 108;
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX, knobY), module, module->animator.FILTER_FC_PARAM, -5.0, 5.0, 0.0));
-    addInput(Port::create<PJ301MPort>(
-        Vec(inputX, inputY), Port::INPUT, module, VocalModule::Animator::FILTER_FC_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX, trimY), module, module->animator.FILTER_FC_TRIM_PARAM, -1.0, 1.0, 1.0));
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
+        Vec(knobX, knobY), 
+        module, 
+        Comp::FILTER_FC_PARAM));
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX + colSpacingX, knobY), module, module->animator.FILTER_Q_PARAM, -5.0, 5.0, 0.0));
-    addInput(Port::create<PJ301MPort>(
-        Vec(inputX + colSpacingX, inputY), Port::INPUT, module, VocalModule::Animator::FILTER_Q_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX + colSpacingX, trimY), module, module->animator.FILTER_Q_TRIM_PARAM, -1.0, 1.0, 1.0));
+    addInput(createInput<PJ301MPort>(
+        Vec(inputX, inputY), 
+        module, 
+        Comp::FILTER_FC_CV_INPUT));
 
-    addParam(ParamWidget::create<Rogan1PSBlue>(
-        Vec(knobX + 2 * colSpacingX, knobY), module, module->animator.FILTER_MOD_DEPTH_PARAM, -5.0, 5.0, 0.0));
-    addInput(Port::create<PJ301MPort>(
-        Vec(inputX + 2 * colSpacingX, inputY), Port::INPUT, module, VocalModule::Animator::FILTER_MOD_DEPTH_CV_INPUT));
-    addParam(ParamWidget::create<Trimpot>(
-        Vec(trimX + 2 * colSpacingX, trimY), module, module->animator.FILTER_MOD_DEPTH_TRIM_PARAM, -1.0, 1.0, 1.0));
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(trimX, trimY), 
+        module, 
+        Comp::FILTER_FC_TRIM_PARAM));
+
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
+        Vec(knobX + colSpacingX, knobY), 
+        module, 
+        Comp::FILTER_Q_PARAM));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(inputX + colSpacingX, inputY), 
+        module, 
+        Comp::FILTER_Q_CV_INPUT));
+
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(trimX + colSpacingX, trimY), 
+        module, 
+        Comp::FILTER_Q_TRIM_PARAM));
+
+    addParam(SqHelper::createParam<Rogan1PSBlue>(
+        icomp,
+        Vec(knobX + 2 * colSpacingX, knobY), 
+        module, 
+        Comp::FILTER_MOD_DEPTH_PARAM));
+    
+    addInput(createInput<PJ301MPort>(
+        Vec(inputX + 2 * colSpacingX, inputY),
+        module, 
+        Comp::FILTER_MOD_DEPTH_CV_INPUT));
+    
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(trimX + 2 * colSpacingX, trimY), 
+        module, 
+        Comp::FILTER_MOD_DEPTH_TRIM_PARAM));
 
     const float row3 = 310;
 
@@ -190,28 +267,42 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float AudioInputX = inputX;
     const float outputX = inputX + 2 * colSpacingX;
 
-    addInput(Port::create<PJ301MPort>(
-        Vec(AudioInputX, row3), Port::INPUT, module, VocalModule::Animator::AUDIO_INPUT));
-    addOutput(Port::create<PJ301MPort>(
-        Vec(outputX, row3), Port::OUTPUT, module, VocalModule::Animator::AUDIO_OUTPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(AudioInputX, row3), 
+        module, 
+        Comp::AUDIO_INPUT));
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(outputX, row3), 
+        module, 
+        Comp::AUDIO_OUTPUT));
 
     const float bassX = inputX + colSpacingX - 4;
     const float bassY = row3 - 8;
 
      // the bass boost switch
-    addParam(ParamWidget::create<NKK2>(
-        Vec(bassX, bassY), module, module->animator.BASS_EXP_PARAM, 0.0f, 1.0f, 0.0f));
+     #if 1 // get this working
+    addParam(SqHelper::createParam<NKK2>(
+        icomp,
+        Vec(bassX, bassY), 
+        module, 
+        Comp::BASS_EXP_PARAM));
+    #endif
 
      /*************************************************
       *  screws
       */
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+#ifdef __V1
+Model *modelVocalModule = createModel<VocalModule, VocalWidget>("growler");
+#else
 Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs",
     "squinkylabs-vocalanimator",
     "Growler: Vocal Animator", EFFECT_TAG, FILTER_TAG, LFO_TAG, RANDOM_TAG);
+#endif
 #endif
