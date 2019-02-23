@@ -206,11 +206,6 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
     nvgFill(vg);
 }
 
-/*
-void onSelect(const event::Select &e) override;
-	void onDeselect(const event::Deselect &e) override;
-    void onSelectKey(const event::SelectKey &e) override;
-    */
 
 #ifdef __V1
 void NoteDisplay::onSelect(const event::Select &e) 
@@ -240,10 +235,33 @@ void NoteDisplay::onDefocus(EventDefocus &e)
 #endif
 }
 
+
+#if 0
+struct Key {
+	/** GLFW_KEY_* */
+	int key;
+	/** GLFW_KEY_*. You should usually use `key` instead. */
+	int scancode;
+	/** GLFW_RELEASE, GLFW_PRESS, or GLFW_REPEAT */
+	int action;
+	/** GLFW_MOD_* */
+	int mods;
+};
+#endif
+
 #ifdef __V1
 void NoteDisplay::onSelectKey(const event::SelectKey &e)
 {
-
+    // TODO: handle repeat
+    if (e.action != GLFW_PRESS) {
+        return;
+    }
+    bool handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
+    if (handled) {
+        e.consume(this);
+    } else {
+         OpaqueWidget::onSelectKey(e);
+    }
 }
 
 #else

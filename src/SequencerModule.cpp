@@ -30,6 +30,13 @@ struct SequencerModule : Module
         return SequencerSerializer::toJson(sequencer);
     }
     void fromJson(json_t* data) override;
+#else
+	virtual json_t *dataToJson() override
+    {
+        assert(sequencer);
+        return SequencerSerializer::toJson(sequencer);
+    }
+	virtual void dataFromJson(json_t *root) override;
 #endif
 
     void step() override
@@ -101,6 +108,8 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     box.size = Vec(width, RACK_GRID_HEIGHT);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setPanel(this, "res/blank_panel.svg");
+    box.size.x = width;     // restore to the full width that we want to be
+;
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
         const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
@@ -161,8 +170,11 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 
 }
 
-#ifndef __V1
+#ifdef __V1
+void SequencerModule::dataFromJson(json_t *data)
+#else
 void SequencerModule::fromJson(json_t* data) 
+#endif
 {
     MidiSongPtr oldSong = sequencer->song;
 
@@ -180,7 +192,7 @@ void SequencerModule::fromJson(json_t* data)
         seqComp->setSong(sequencer->song);
     }
 }
-#endif
+
 // Specify the Module and ModuleWidget subclass, human-readable
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags
