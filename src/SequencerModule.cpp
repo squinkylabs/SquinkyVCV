@@ -5,7 +5,7 @@
 #ifdef _SEQ
 #include "WidgetComposite.h"
 #include "Seq.h"
-#include "widgets.hpp"
+//#include "widgets.hpp"
 #include "seq/NoteDisplay.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidget.h"
@@ -23,13 +23,14 @@ struct SequencerModule : Module
 
     MidiSequencerPtr sequencer;
     SequencerWidget* widget = nullptr;
-
+#ifndef __V1
     json_t *toJson() override
     {
         assert(sequencer);
         return SequencerSerializer::toJson(sequencer);
     }
     void fromJson(json_t* data) override;
+#endif
 
     void step() override
     {
@@ -42,12 +43,20 @@ struct SequencerModule : Module
     }
 };
 
+#ifdef __V1
+SequencerModule::SequencerModule()
+{
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+#else
 SequencerModule::SequencerModule()
     : Module(Comp::NUM_PARAMS,
         Comp::NUM_INPUTS,
         Comp::NUM_OUTPUTS,
         Comp::NUM_LIGHTS)
 {
+#endif
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     //sequencer = std::make_shared<MidiSequencer>(song);
     //sequencer->makeEditor();
@@ -58,12 +67,12 @@ SequencerModule::SequencerModule()
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
-    Menu* createContextMenu() override;
-
-        /**
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq3/docs/sq.md");
+    
+    /**
      * Helper to add a text label to this widget
      */
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -76,36 +85,32 @@ struct SequencerWidget : ModuleWidget
     NoteDisplay* noteDisplay = nullptr;
 };
 
-inline Menu* SequencerWidget::createContextMenu()
+#ifdef __V1
+SequencerWidget::SequencerWidget(SequencerModule *module)
 {
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/sq3/docs/sq.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
+    setModule(module);
 
- SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
+#else
+SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 {
+#endif
     if (module) {
         module->widget = this;
     }
     const int width = (14 + 28) * RACK_GRID_WIDTH;      // 14 for panel, other for notes
     box.size = Vec(width, RACK_GRID_HEIGHT);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
-
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/blank_panel.svg")));
-        addChild(panel);
-    }
-
+    SqHelper::setPanel(this, "res/blank_panel.svg");
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
         const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
        // module->stop();         // don't start playback immediately
-		noteDisplay = new NoteDisplay(notePos, noteSize, module->sequencer);
+
+        MidiSequencerPtr seq;
+        if (module) {
+            seq = module->sequencer;
+        }
+		noteDisplay = new NoteDisplay(notePos, noteSize, seq);
 		addChild(noteDisplay);
 	}
 
@@ -114,7 +119,7 @@ inline Menu* SequencerWidget::createContextMenu()
         module,
         Comp::CLOCK_INPUT));
     addLabel(Vec(35, 56), "Clk");
-
+#ifndef __V1
     PopupMenuParamWidget* p = PopupMenuParamWidget::create<PopupMenuParamWidget>(
         Vec (40, 90),
         module, 
@@ -123,13 +128,14 @@ inline Menu* SequencerWidget::createContextMenu()
     p->box.size.x  = 100;    // width
     p->setLabels(Comp::getClockRates());
     addParam(p);
+#endif
 
 
-    addParam(ParamWidget::create<Rogan2PSBlue>(
+    addParam(SqHelper::createParam<Rogan2PSBlue>(
+        icomp,
         Vec(60, 150),
         module,
-        Comp::TEMPO_PARAM,
-        40, 200, 120));
+        Comp::TEMPO_PARAM));
     addLabel(Vec(60, 200), "Tempo");
 
     addOutput(createOutputCentered<PJ301MPort>(
@@ -144,7 +150,7 @@ inline Menu* SequencerWidget::createContextMenu()
         Seq<WidgetComposite>::GATE_OUTPUT));
     addLabel(Vec(75, 310), "G");
 
-    addChild(ModuleLightWidget::create<MediumLight<GreenLight>>(
+    addChild(createLight<MediumLight<GreenLight>>(
         Vec(120, 310), module,  Seq<WidgetComposite>::GATE_LIGHT));
 
       // screws
@@ -155,7 +161,7 @@ inline Menu* SequencerWidget::createContextMenu()
 
 }
 
-
+#ifndef __V1
 void SequencerModule::fromJson(json_t* data) 
 {
     MidiSongPtr oldSong = sequencer->song;
@@ -174,12 +180,17 @@ void SequencerModule::fromJson(json_t* data)
         seqComp->setSong(sequencer->song);
     }
 }
-
+#endif
 // Specify the Module and ModuleWidget subclass, human-readable
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
+
+#ifdef __V1
+Model *modelSequencerModule = createModel<SequencerModule, SequencerWidget>("seq");
+#else
 Model *modelSequencerModule = Model::create<SequencerModule, SequencerWidget>("Squinky Labs",
     "squinkylabs-sequencer",
     "S", SEQUENCER_TAG);
+#endif
 #endif

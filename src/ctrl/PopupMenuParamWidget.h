@@ -6,6 +6,7 @@
  *  pops up a menu of discrete choices.
  *  displays the current choice
  */
+#ifndef __V1
 class PopupMenuParamWidget : virtual public ParamWidget, virtual public ChoiceButton
 {
 public:
@@ -93,4 +94,5 @@ inline  void PopupMenuParamWidget::onAction(EventAction &e)
         }
     }
 }
+#endif
 

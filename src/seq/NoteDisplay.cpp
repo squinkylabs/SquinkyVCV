@@ -3,8 +3,14 @@
 #ifdef _SEQ
 #include "WidgetComposite.h"
 #include "Seq.h"
+
+#ifdef __V1
+#include "widget/Widget.hpp"
+#else
 #include "widgets.hpp"
 #include "util/math.hpp"
+#endif
+
 #include "nanovg.h"
 #include "window.hpp"
 #include "MidiEditorContext.h"
@@ -27,10 +33,10 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     box.size = size;
     sequencer = seq;
 
-    initEditContext();
-
-    //initScaleFuncs();
-    scaler = std::make_shared<NoteScreenScale>(sequencer->context, size.x, size.y);
+    if (sequencer) {
+         initEditContext();
+        scaler = std::make_shared<NoteScreenScale>(sequencer->context, size.x, size.y);
+    }
     
     focusLabel = new Label();
     focusLabel->box.pos = Vec(40, 40);
@@ -71,6 +77,9 @@ void NoteDisplay::initEditContext()
 
  void NoteDisplay::step() 
 {
+    if (!sequencer) {
+        return;
+    }
     auto attr = sequencer->context->noteAttribute;
     if (curAttribute != attr) {
         curAttribute = attr;
@@ -140,12 +149,26 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
     }
 }
 
+#ifdef __V1
+void NoteDisplay::draw(const Widget::DrawArgs &args) 
+{
+    NVGcontext *vg = args.vg;
+#else
 void NoteDisplay::draw(NVGcontext *vg)
-{   
+{  
+#endif 
+
+    if (!this->sequencer) {
+        return;
+    }
     drawBackground(vg);
     drawNotes(vg);
     drawCursor(vg);
+#ifdef __V1
+    OpaqueWidget::draw(args);
+#else
     OpaqueWidget::draw(vg);
+#endif
 }
 
 void NoteDisplay::drawBackground(NVGcontext *vg)
@@ -183,18 +206,47 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
     nvgFill(vg);
 }
 
+/*
+void onSelect(const event::Select &e) override;
+	void onDeselect(const event::Deselect &e) override;
+    void onSelectKey(const event::SelectKey &e) override;
+    */
+
+#ifdef __V1
+void NoteDisplay::onSelect(const event::Select &e) 
+#else
 void NoteDisplay::onFocus(EventFocus &e)
+#endif
 {
     updateFocus(true);
-    e.consumed = true;
+#ifdef __V1
+        e.consume(this);
+#else
+        e.consumed = true;
+#endif
 }
 
+#ifdef __V1
+void NoteDisplay::onDeselect(const event::Deselect &e)
+#else
 void NoteDisplay::onDefocus(EventDefocus &e)
+#endif
 {
     updateFocus(false);
-    e.consumed = true;
+#ifdef __V1
+        e.consume(this);
+#else
+        e.consumed = true;
+#endif
 }
 
+#ifdef __V1
+void NoteDisplay::onSelectKey(const event::SelectKey &e)
+{
+
+}
+
+#else
 void NoteDisplay::onKey(EventKey &e)
 {
     const unsigned key = e.key;
@@ -206,10 +258,14 @@ void NoteDisplay::onKey(EventKey &e)
         mods |= GLFW_MOD_CONTROL;
     }
 
-    bool handled =MidiKeyboardHandler::handle(sequencer.get(), key, mods);
+    bool handled = MidiKeyboardHandler::handle(sequencer.get(), key, mods);
     if (!handled) {
         OpaqueWidget::onKey(e);
+    } else {
+        e.consumed = true;
     }
+
 }
 
+#endif
 #endif

@@ -199,7 +199,6 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/booty_panel.svg");
 
-
     const int leftInputX = 11;
     const int rightInputX = 55;
 

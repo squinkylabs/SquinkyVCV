@@ -45,15 +45,26 @@ public:
 
     void drawNotes(NVGcontext *vg);
     void drawCursor(NVGcontext *vg) ;
-    void draw(NVGcontext *vg) override;
+   
     void drawBackground(NVGcontext *vg);
     void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
     void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
+
+#ifdef __V1
+	void onSelect(const event::Select &e) override;
+	void onDeselect(const event::Deselect &e) override;
+    void onSelectKey(const event::SelectKey &e) override;
+    void draw(const DrawArgs &args) override;
+#else
+    void draw(NVGcontext *vg) override;
     void onFocus(EventFocus &e) override;
     void onDefocus(EventDefocus &e) override;
     void onKey(EventKey &e) override;
+#endif
+    
 
-    //************************** These overrides are just to test even handling
+    //************************** These overrides are just to test event handling
+    #if 0
     void onMouseDown(EventMouseDown &e) override
     {
         OpaqueWidget::onMouseDown(e);
@@ -71,5 +82,6 @@ public:
     }
    /** Called when another widget begins responding to `onMouseMove` events */
 //	virtual void onMouseLeave(EventMouseLeave &e) {}
+#endif
 
 };
