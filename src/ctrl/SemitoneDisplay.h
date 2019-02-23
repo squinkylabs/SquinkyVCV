@@ -41,7 +41,7 @@ public:
         octParameterId = id;
     }
 private:
-    rack::Module* module;
+    rack::Module* module = ( rack::Module*)1234;
     rack::Label* semiLabel = nullptr;
     rack::Label* octLabel = nullptr;
     float semiXPosition = 0;
@@ -70,9 +70,11 @@ private:
 
 inline void SemitoneDisplay::step()
 {
+   // printf("SemitoneDisplay::step\n"); fflush(stdout);
     if (!module) {
         return;
     }
+    //  printf("SemitoneDisplay::step2 %d\n", module->params.size()); fflush(stdout);
     
     int curSemi = 0;
     int curOct = 0;

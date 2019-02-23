@@ -13,8 +13,8 @@ public:
     {
         return r.isContaining(pos);
     }
-    using SvgWidget = SvgWidget;
-    using SvgSwitch = SvgSwitch;
+    using SvgWidget = rack::widget::SvgWidget;
+    using SvgSwitch = rack::app::SvgSwitch;
     
 //void SvgKnob::setSvg(std::shared_ptr<Svg> svg
 
