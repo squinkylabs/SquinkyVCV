@@ -182,6 +182,7 @@ public:
 
 
     using SvgWidget = SVGWidget;
+    using SvgSwitch = SVGSwitch;
     static void setSvg(SvgWidget* widget, std::shared_ptr<SVG> svg)
     {
         widget->setSVG(svg);
