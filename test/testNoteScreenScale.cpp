@@ -56,7 +56,6 @@ static void test1()
 // viewport = 1 bar, have an eight not on beat 4
 static void test2()
 {
-    printf("test2\n");
     // viewport holds one bar of 4/4
     MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
     vp->setTimeRange(0, 4);
@@ -104,10 +103,42 @@ static void test3()
 }
 
 
+// basic test of x coordinates
+// with margins
+static void test4()
+{
+    // viewport holds single quarter note
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
+    vp->setStartTime(0);
+    vp->setEndTime(1);
+
+    // let's make one quarter note fill the whole screen
+    MidiNoteEvent note;
+    note.setPitch(3, 0);
+    vp->setPitchRange(note.pitchCV, note.pitchCV);
+
+    vp->setCursorPitch(note.pitchCV);
+
+    NoteScreenScale n(vp, 100, 100, 10);            // ten pix left and right
+    float left = n.midiTimeToX(note);
+    float right = left + n.midiTimeTodX(1.0f);
+    assertEQ(left, 10);
+    assertEQ(right, 90);
+
+    float l2 = n.midiTimeToX(note.startTime);
+    assertEQ(left, l2);
+
+    auto bounds = n.midiTimeToHBounds(note);
+    assertEQ(bounds.first, 10);
+    assertEQ(bounds.second, 90);
+}
+
+
 void testNoteScreenScale()
 {
     test0();
     test1();
     test2();
     test3();
+    test4();
 }

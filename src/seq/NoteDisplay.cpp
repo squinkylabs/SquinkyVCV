@@ -34,8 +34,12 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     sequencer = seq;
 
     if (sequencer) {
-         initEditContext();
-        scaler = std::make_shared<NoteScreenScale>(sequencer->context, size.x, size.y);
+        initEditContext();
+        scaler = std::make_shared<NoteScreenScale>(
+            sequencer->context, 
+            size.x, 
+            size.y,
+            UIPrefs::hMarginsNoteEdit);
     }
     
     focusLabel = new Label();
@@ -130,12 +134,15 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
 
 void NoteDisplay::drawGrid(NVGcontext *vg)
 {
+   // float z = APP->scene->zoomWidget->zoom;
+  //  printf("zoom is %f\n", z); fflush(stdout);
+  
     //assume two bars, quarter note grid
     float totalDuration = TimeUtils::barToTime(2);
     float deltaDuration = 1.f;
     for (float time = 0; time <= totalDuration; time += deltaDuration) {
         // need delta.
-        const float x = scaler->midiTimeTodX(time);        
+        const float x = scaler->midiTimeToX(time);        
         const float y = 0;
         float width = 2;
         float height = this->box.size.y;
