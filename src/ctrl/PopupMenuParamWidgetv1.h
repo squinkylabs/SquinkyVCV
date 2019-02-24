@@ -73,7 +73,6 @@ public:
 
     void onAction(const event::Action &e) override
     {
-        printf("PopupMenuItem::onAction index = %d\n", index); fflush(stdout);
         parent->text = this->text;
         event::Change ce;
         parent->paramQuantity->setValue(index);

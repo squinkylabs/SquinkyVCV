@@ -103,12 +103,10 @@ public:
     }
     void setGate(bool gate) override
     {
-        //fprintf(stderr, "setGate %d\n", gate); fflush(stderr);
         seq->outputs[Seq<TBase>::GATE_OUTPUT].value = gate ? 10.f : 0.f;
     }
     void setCV(float cv) override
     {
-       // fprintf(stderr, "setCV %f\n", cv); fflush(stderr);
         seq->outputs[Seq<TBase>::CV_OUTPUT].value = cv;
     }
     void onLockFailed() override

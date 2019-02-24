@@ -99,7 +99,6 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEndEvent> e)
 
 MidiSequencerPtr SequencerSerializer::fromJson(json_t *data)
 {
-    printf("in from json\n");
     json_t* songJson = json_object_get(data, "song");
     MidiSongPtr song = fromJsonSong(songJson);
     MidiSequencerPtr seq = MidiSequencer::make(song);
@@ -108,7 +107,6 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data)
 
 MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)
 {
-    printf("in fom json song\n");
     MidiSongPtr song = std::make_shared<MidiSong>();
     MidiLockPtr lock = song->lock;
     {
@@ -122,7 +120,6 @@ MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)
             song->addTrack(0, track);
         }
     }
-    printf("returning fromJsonSong\n"); fflush(stdout);
     return song;
 }
 

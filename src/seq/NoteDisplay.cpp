@@ -61,7 +61,6 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 
 void NoteDisplay::setSequencer(MidiSequencerPtr seq) {
     sequencer = seq;
-    printf("set seq, editor = %p\n", sequencer->editor.get()); fflush(stdout);
     sequencer->assertValid();
     initEditContext();
 }
