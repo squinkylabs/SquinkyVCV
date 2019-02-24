@@ -129,10 +129,8 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
         Comp::CLOCK_INPUT));
     addLabel(Vec(35, 56), "Clk");
 
-
-
-
-    PopupMenuParamWidget* p = createParam<PopupMenuParamWidget>(
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
         Vec (40, 90),
         module, 
         Comp::CLOCK_INPUT_PARAM);
