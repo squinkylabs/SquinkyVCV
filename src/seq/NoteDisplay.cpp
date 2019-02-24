@@ -128,6 +128,32 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
     }
 }
 
+void NoteDisplay::drawGrid(NVGcontext *vg)
+{
+    //assume two bars, quarter note grid
+    float totalDuration = TimeUtils::barToTime(2);
+    float deltaDuration = 1.f;
+    for (float time = 0; time <= totalDuration; time += deltaDuration) {
+        // need delta.
+        const float x = scaler->midiTimeTodX(time);        
+        const float y = 0;
+        float width = 2;
+        float height = this->box.size.y;
+
+        const bool isBar = (time==0) ||
+            (time==TimeUtils::barToTime(1)) ||
+            (time==TimeUtils::barToTime(2));
+
+     //   printf("t=%.2f b=%d ", time, isBar);
+        filledRect(
+            vg, 
+            isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR,
+            x, y, width, height);
+    }
+   // printf("\n"); fflush(stdout);
+
+}
+
 void NoteDisplay::drawCursor(NVGcontext *vg)
 {
     cursorFrameCount--;
@@ -161,6 +187,7 @@ void NoteDisplay::draw(NVGcontext *vg)
         return;
     }
     drawBackground(vg);
+    drawGrid(vg);
     drawNotes(vg);
     drawCursor(vg);
 #ifdef __V1

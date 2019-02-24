@@ -30,6 +30,9 @@ public:
 
 inline void PopupMenuParamWidget::onChange(const event::Change& e) 
  {
+     if (!this->paramQuantity) {
+         return;            // no module
+     }
     // process ourself to update the text label
     const int index = (int) std::round( this->paramQuantity->getValue());
     if (!labels.empty()) {

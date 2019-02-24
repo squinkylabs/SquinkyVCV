@@ -8,4 +8,6 @@ public:
     static const NVGcolor SELECTED_NOTE_COLOR;
     static const NVGcolor NOTE_EDIT_BACKGROUND;
     static const NVGcolor NOTE_EDIT_ACCIDENTAL_BACKGROUND;
+    static const NVGcolor GRID_COLOR;
+    static const NVGcolor GRID_BAR_COLOR;
 };

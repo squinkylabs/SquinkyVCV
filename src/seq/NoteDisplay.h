@@ -45,7 +45,7 @@ public:
 
     void drawNotes(NVGcontext *vg);
     void drawCursor(NVGcontext *vg) ;
-   
+    void drawGrid(NVGcontext *vg);
     void drawBackground(NVGcontext *vg);
     void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
     void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
