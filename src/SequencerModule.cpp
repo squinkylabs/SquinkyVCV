@@ -9,6 +9,7 @@
 #include "seq/NoteDisplay.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidget.h"
+#include "ctrl/PopupMenuParamWidgetv1.h"
 #include "seq/SequencerSerializer.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
@@ -109,7 +110,6 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setPanel(this, "res/blank_panel.svg");
     box.size.x = width;     // restore to the full width that we want to be
-;
 	{
         const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
         const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
@@ -128,7 +128,25 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
         module,
         Comp::CLOCK_INPUT));
     addLabel(Vec(35, 56), "Clk");
-#ifndef __V1
+
+
+
+
+    PopupMenuParamWidget* p = createParam<PopupMenuParamWidget>(
+        Vec (40, 90),
+        module, 
+        Comp::CLOCK_INPUT_PARAM);
+    p->box.size.x  = 100;    // width
+    p->box.size.y = 22;     // should set auto like button does
+    p->setLabels(Comp::getClockRates());
+    addParam(p);
+#if 0
+    PopupMenuParamWidget* p = createParam<PopupMenuParamWidget>(
+        Vec (40, 90),
+        module, 
+        Comp::CLOCK_INPUT_PARAM);
+
+
     PopupMenuParamWidget* p = PopupMenuParamWidget::create<PopupMenuParamWidget>(
         Vec (40, 90),
         module, 
@@ -138,7 +156,6 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     p->setLabels(Comp::getClockRates());
     addParam(p);
 #endif
-
 
     addParam(SqHelper::createParam<Rogan2PSBlue>(
         icomp,
