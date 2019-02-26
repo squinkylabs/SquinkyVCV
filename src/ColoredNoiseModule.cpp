@@ -275,7 +275,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
 
 #ifdef __V1
 Model *modelColoredNoiseModule = createModel<ColoredNoiseModule, ColoredNoiseWidget>(
-    "colors");
+    "squinkylabs-coloredNoise");
 #else
 Model *modelColoredNoiseModule = Model::create<ColoredNoiseModule, ColoredNoiseWidget>(
     "Squinky Labs",

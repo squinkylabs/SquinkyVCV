@@ -258,7 +258,7 @@ Model *modelLFNModule = Model::create<LFNModule,
     "LFN: Random Voltages", NOISE_TAG, RANDOM_TAG, LFO_TAG);
 #else
 Model *modelLFNModule = createModel<LFNModule, LFNWidget>(
-    "lfn");
+    "squinkylabs-lfn");
 #endif
 
 #endif

@@ -229,7 +229,7 @@ ShaperWidget::ShaperWidget(ShaperModule* module) :
 
 #ifdef __V1
 Model *modelShaperModule = createModel<ShaperModule, ShaperWidget>(
-    "shaper");
+    "squinkylabs-shp");
 #else
 Model *modelShaperModule = Model::create<ShaperModule,
     ShaperWidget>("Squinky Labs",

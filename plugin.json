@@ -6,49 +6,77 @@
 	"authorEmail": "contact@vcvrack.com",
 	"authorUrl": "https://github.com/squinkylabs/SquinkyVCV/README.md",
 	"sourceUrl": "https://github.com/squinkylabs/SquinkyVCV",
+	"manualUrl":  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md",
 	"version": "1.0.0",
-	"modules": {
-		"fun1": {
-			"name": "fun1",
-			"description": "A multi-function VCO with low aliasing",
-			"tags": ["VCO"],
-			"manualUrl":  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md"
+	"modules":
+	[
+		{
+			"slug": "squinkylabs-ev3",
+			"name": "EV3",
+			"description": "Triple VCO with even wavefo"
 		},
-		"lfn": {
-			"name": "lfn",
+		{
+			"slug": "squinkylabs-funv",
+			"name": "Functional VCO-1",
+			"description": "A multi-function VCO with low aliasing",
+			"tags": ["VCO"]
+		},
+		{
+			"slug": "squinkylabs-lfn",
+			"name": "LFN",
 			"description": "Low frequency random voltage generator",
 			"tags": ["NOISE", "RANDOM", "LFO"]
 		},
-		"growler": {
-			"name": "growler",
+		{
+			"slug": "squinkylabs-vocalanimator",
+			"name": "Growler",
 			"description": "Formants: Vocal Filter",
 			"tags":  ["EFFECT", "FILTER"]
 		},
-		"cheby": {
-			"name": "cheby",
+		{
+			"slug": "squinkylabs-CHB2",
+			"name": "Chebyshev II",
 			"description": "Chebyshev II: Waveshaper VCO",
 			"tags": ["VCO"]
 		},
-		"shaper": {
-			"name": "shaper",
+		{
+			"slug": "squinkylabs-shp",
+			"name": "Shaper",
 			"description": "Shaper: Precision Wave Shaper",
 			"tags": ["EFFECT", "OSCILLATOR", "WAVESHAPER"]
 		},
-		"chopper": {
-			"name": "chopper",
+		{
+			"slug": "squinkylabs-tremolo",
+			"name": "Chopper",
 			"description": "Chopper: Tremolo",
 			"tags": ["Effect", "LFO"]
 		},
-		"gray": {
-			"name": "gray",
+		{
+			"slug": "squinkylabs-gry",
+			"name": "Gray Code",
 			"description": "Gray Code: Eclectic clock divider",
 			"tags": [ "CLOCK_MODULATOR", "RANDOM"]
 		},
-		"colors": {
-			"name": "colors",
+		{
+			"slug": "squinkylabs-coloredNoise",
+			"name": "Colors",
 			"description": "Colors: Colored Noise",
 			"tags": ["Noise"]
+		},
+		{
+			"slug": "squinkylabs-freqshifter",
+			"name": "abc",
+			"description": "Booty Shifter: Frequency Shifter",
+			"tags": ["Ring Modulator", "effect"]
+		},
+		{
+			"slug": "squinkylabs-sequencer",
+			"name": "s"
+		},
+		{
+			"slug": "squinkylabs-super",
+			"name": "Saws",
+			"description": "super saw VCO emulation"
 		}
-
-	}
+	]
 }

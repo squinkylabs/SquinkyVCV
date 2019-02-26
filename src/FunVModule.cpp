@@ -245,7 +245,7 @@ Model *modelFunVModule = createModel<FunVModule,
     "Functional VCO-1", OSCILLATOR_TAG);
 #else
 Model *modelFunVModule = createModel<FunVModule, FunVWidget>(
-    "fun1");
+    "squinkylabs-funv");
 #endif
 
 

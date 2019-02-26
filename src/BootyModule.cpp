@@ -19,12 +19,14 @@ struct BootyModule : Module
      * Overrides of Module functions
      */
     void step() override;
-    json_t *toJson();
-    void fromJson(json_t *rootJ);
+#ifdef __V1
+	virtual json_t *dataToJson() override;
+	virtual void dataFromJson(json_t *root) override;
+#else
+    json_t *toJson() override;
+    void fromJson(json_t *rootJ) override;
+#endif
 
-
-    //	virtual json_t *toJson();
-//	virtual void fromJson(json_t *rootJ);
     void onSampleRateChange() override;
 
     std::shared_ptr<Comp> shifter;
@@ -64,7 +66,11 @@ void BootyModule::onSampleRateChange()
     shifter->setSampleRate(rate);
 }
 
+#ifdef __V1
+json_t *BootyModule::dataToJson()
+#else
 json_t *BootyModule::toJson()
+#endif
 {
     json_t *rootJ = json_object();
     const int rg = shifter->freqRange;
@@ -72,7 +78,11 @@ json_t *BootyModule::toJson()
     return rootJ;
 }
 
+#ifdef __V1
+void BootyModule::dataFromJson(json_t *rootJ)
+#else
 void BootyModule::fromJson(json_t *rootJ)
+#endif
 {
     json_t *driverJ = json_object_get(rootJ, "range");
     if (driverJ) {
@@ -178,7 +188,6 @@ struct RangeChoice : ChoiceButton
 struct BootyWidget : ModuleWidget
 {
     BootyWidget(BootyModule *);
-  //  Menu* createContextMenu() override;
     DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shifter.md");
 };
 
@@ -262,7 +271,7 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
 #ifdef __V1
-Model *modelBootyModule = createModel<BootyModule, BootyWidget>("booty");
+Model *modelBootyModule = createModel<BootyModule, BootyWidget>("squinkylabs-freqshifter");
 #else
 Model *modelBootyModule = Model::create<BootyModule, BootyWidget>("Squinky Labs",
     "squinkylabs-freqshifter",

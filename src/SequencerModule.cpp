@@ -214,7 +214,7 @@ void SequencerModule::fromJson(json_t* data)
 // (found in `include/tags.hpp`) separated by commas.
 
 #ifdef __V1
-Model *modelSequencerModule = createModel<SequencerModule, SequencerWidget>("seq");
+Model *modelSequencerModule = createModel<SequencerModule, SequencerWidget>("squinkylabs-sequencer");
 #else
 Model *modelSequencerModule = Model::create<SequencerModule, SequencerWidget>("Squinky Labs",
     "squinkylabs-sequencer",

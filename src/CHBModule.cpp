@@ -523,7 +523,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
 
 #ifdef __V1
 Model *modelCHBModule = createModel<CHBModule, CHBWidget>(
-    "cheby");
+    "squinkylabs-CHB2");
 #else
 Model *modelCHBModule = Model::create<CHBModule,
     CHBWidget>("Squinky Labs",

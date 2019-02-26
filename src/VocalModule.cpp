@@ -299,7 +299,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 }
 
 #ifdef __V1
-Model *modelVocalModule = createModel<VocalModule, VocalWidget>("growler");
+Model *modelVocalModule = createModel<VocalModule, VocalWidget>("squinkylabs-vocalanimator");
 #else
 Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs",
     "squinkylabs-vocalanimator",

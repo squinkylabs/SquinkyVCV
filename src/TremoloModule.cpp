@@ -267,7 +267,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
 
 #ifdef __V1
 Model *modelTremoloModule = createModel<TremoloModule,
-    TremoloWidget>("chopper");
+    TremoloWidget>("squinkylabs-tremolo");
 #else
 Model *modelTremoloModule = Model::create<TremoloModule,
     TremoloWidget>("Squinky Labs",

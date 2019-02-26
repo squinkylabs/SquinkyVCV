@@ -537,7 +537,7 @@ EV3Widget::EV3Widget(EV3Module *module) :
 
 #ifdef __V1
 Model *modelEV3Module = createModel<EV3Module,
-    EV3Widget>("ev3");
+    EV3Widget>("squinkylabs-ev3");
 #else
 Model *modelEV3Module = Model::create<EV3Module,
     EV3Widget>("Squinky Labs",

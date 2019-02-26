@@ -145,7 +145,7 @@ GrayWidget::GrayWidget(GrayModule *module) :
 
 #ifdef __V1
 Model *modelGrayModule = createModel<GrayModule,
-    GrayWidget>("gray");
+    GrayWidget>("squinkylabs-gry");
 #else
 Model *modelGrayModule = Model::create<GrayModule,
     GrayWidget>("Squinky Labs",

@@ -302,7 +302,7 @@ superWidget::superWidget(SuperModule *module) :
 
 #ifdef __V1
 Model *modelSuperModule = createModel<SuperModule,
-    superWidget>("super");
+    superWidget>("squinkylabs-super");
 #else
 Model *modelSuperModule = Model::create<SuperModule,
     superWidget>("Squinky Labs",
