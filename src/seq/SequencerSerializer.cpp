@@ -8,7 +8,7 @@
 json_t *SequencerSerializer::toJson(MidiSequencerPtr inSeq)
 {
     json_t* seq = json_object();
-    json_object_set_new(seq, "song", toJson(inSeq->song)); 
+    json_object_set_new(seq, "song", toJson(inSeq->song));
 
     return seq;
 }
@@ -42,7 +42,7 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEvent> evt)
         return toJson(note);
     }
 
-     MidiEndEventPtr end = safe_cast<MidiEndEvent>(evt);
+    MidiEndEventPtr end = safe_cast<MidiEndEvent>(evt);
     if (end) {
         return toJson(end);
     }
@@ -113,7 +113,7 @@ MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)
         // We must keep song locked to avoid asserts.
         // Must always have lock when changing a track.
         MidiLocker _(lock);
-    
+
         if (data) {
             json_t* trackJson = json_object_get(data, "tk0");
             MidiTrackPtr track = fromJsonTrack(trackJson, 0, lock);
@@ -129,9 +129,8 @@ MidiTrackPtr SequencerSerializer::fromJsonTrack(json_t *data, int index, MidiLoc
     MidiTrackPtr track = std::make_shared<MidiTrack>(lock);
 
     size_t eventCount = json_array_size(data);
-  
-    for (int i=0; i< int(eventCount); ++i )
-    {
+
+    for (int i = 0; i< int(eventCount); ++i) {
         json_t *eventJson = json_array_get(data, i);
         MidiEventPtr event = fromJsonEvent(eventJson);
         track->insertEvent(event);
@@ -145,24 +144,24 @@ MidiTrackPtr SequencerSerializer::fromJsonTrack(json_t *data, int index, MidiLoc
 
 MidiEventPtr SequencerSerializer::fromJsonEvent(json_t *data)
 {
-     MidiEventPtr event;
-     json_t* typeJson = json_object_get(data, "t");
-     if (!typeJson) {
-         printf("bad event\n");
-         return event;
-     }
-     //double json_number_value(const json_t *json)
-     int type = json_integer_value(typeJson);
-     switch(type) {
-         case typeNote:
+    MidiEventPtr event;
+    json_t* typeJson = json_object_get(data, "t");
+    if (!typeJson) {
+        printf("bad event\n");
+        return event;
+    }
+    //double json_number_value(const json_t *json)
+    int type = json_integer_value(typeJson);
+    switch (type) {
+        case typeNote:
             event = fromJsonNoteEvent(data);
             break;
-         case typeEnd:
+        case typeEnd:
             event = fromJsonEndEvent(data);
             break;
         default:
             printf("event type unrecognixed %d\n", type);
-     }
+    }
     return event;
 }
 

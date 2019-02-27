@@ -7,13 +7,13 @@
 /**
  * This class needs some refactoring and renaming.
  * It is really the entire sequencer UI, including the notes.
- * 
+ *
  * Pretty soon we should sepparate out the NoteEditor.
  */
 struct NoteDisplay : OpaqueWidget
 {
 private:
-    Label* focusLabel=nullptr;
+    Label* focusLabel = nullptr;
   //  Label* editAttributeLabel = nullptr;
   //  Label* barRangeLabel = nullptr;
     std::shared_ptr<NoteScreenScale> scaler;
@@ -36,7 +36,8 @@ public:
 
     void step() override;
 
-    void updateFocus(bool focus) {
+    void updateFocus(bool focus)
+    {
         if (focus != haveFocus) {
             haveFocus = focus;
             focusLabel->text = focus ? "" : "Click in editor to get focus";
@@ -44,15 +45,15 @@ public:
     }
 
     void drawNotes(NVGcontext *vg);
-    void drawCursor(NVGcontext *vg) ;
+    void drawCursor(NVGcontext *vg);
     void drawGrid(NVGcontext *vg);
     void drawBackground(NVGcontext *vg);
     void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
     void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
 
 #ifdef __V1
-	void onSelect(const event::Select &e) override;
-	void onDeselect(const event::Deselect &e) override;
+    void onSelect(const event::Select &e) override;
+    void onDeselect(const event::Deselect &e) override;
     void onSelectKey(const event::SelectKey &e) override;
     void draw(const DrawArgs &args) override;
 #else

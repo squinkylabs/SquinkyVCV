@@ -35,20 +35,20 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 
     if (sequencer) {
         scaler = std::make_shared<NoteScreenScale>(
-            size.x, 
+            size.x,
             size.y,
             UIPrefs::hMarginsNoteEdit,
             UIPrefs::topMarginNoteEdit);
-         initEditContext();
+        initEditContext();
     }
-    
+
     focusLabel = new Label();
     focusLabel->box.pos = Vec(40, 40);
     focusLabel->text = "";
     focusLabel->color = SqHelper::COLOR_WHITE;
     addChild(focusLabel);
     updateFocus(false);
- #if 0
+#if 0
     editAttributeLabel = new Label();
     editAttributeLabel->box.pos = Vec(10, 10);
     editAttributeLabel->text = "";
@@ -63,7 +63,8 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 #endif
 }
 
-void NoteDisplay::setSequencer(MidiSequencerPtr seq) {
+void NoteDisplay::setSequencer(MidiSequencerPtr seq)
+{
     sequencer = seq;
     sequencer->assertValid();
     initEditContext();
@@ -80,12 +81,12 @@ void NoteDisplay::initEditContext()
     sequencer->context->setScaler(scaler);
 }
 
- void NoteDisplay::step() 
+void NoteDisplay::step()
 {
     if (!sequencer) {
         return;
     }
-    #if 0
+#if 0
     auto attr = sequencer->context->noteAttribute;
     if (curAttribute != attr) {
         curAttribute = attr;
@@ -93,10 +94,10 @@ void NoteDisplay::initEditContext()
             case MidiEditorContext::NoteAttribute::Pitch:
                 editAttributeLabel->text = "Pitch";
                 break;
-                case MidiEditorContext::NoteAttribute::Duration:
+            case MidiEditorContext::NoteAttribute::Duration:
                 editAttributeLabel->text = "Duration";
                 break;
-                case MidiEditorContext::NoteAttribute::StartTime:
+            case MidiEditorContext::NoteAttribute::StartTime:
                 editAttributeLabel->text = "Start Time";
                 break;
         }
@@ -109,14 +110,14 @@ void NoteDisplay::initEditContext()
         str << "First Bar: " << curFirstBar << " Last Bar: " << curFirstBar + 1;
         barRangeLabel->text = str.str();
     }
-    #endif
+#endif
 }
 
 void NoteDisplay::drawNotes(NVGcontext *vg)
 {
     MidiEditorContext::iterator_pair it = sequencer->context->getEvents();
     const int noteHeight = scaler->noteHeight();
-    for ( ; it.first != it.second; ++it.first) {
+    for (; it.first != it.second; ++it.first) {
         auto temp = *(it.first);
         MidiEventPtr evn = temp.second;
         MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
@@ -140,23 +141,23 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
 {
     // float z = APP->scene->zoomWidget->zoom;
     //  printf("zoom is %f\n", z); fflush(stdout);
-  
+
     //assume two bars, quarter note grid
     float totalDuration = TimeUtils::barToTime(2);
     float deltaDuration = 1.f;
     for (float time = 0; time <= totalDuration; time += deltaDuration) {
         // need delta.
-        const float x = scaler->midiTimeToX(time);        
+        const float x = scaler->midiTimeToX(time);
         const float y = UIPrefs::topMarginNoteEdit;
         float width = 2;
         float height = this->box.size.y - y;
 
-        const bool isBar = (time==0) ||
-            (time==TimeUtils::barToTime(1)) ||
-            (time==TimeUtils::barToTime(2));
+        const bool isBar = (time == 0) ||
+            (time == TimeUtils::barToTime(1)) ||
+            (time == TimeUtils::barToTime(2));
 
         filledRect(
-            vg, 
+            vg,
             isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR,
             x, y, width, height);
     }
@@ -171,32 +172,32 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
     }
 
     if (true) {
-        auto color = cursorState ? 
+        auto color = cursorState ?
             nvgRGB(0xff, 0xff, 0xff) :
             nvgRGB(0, 0, 0);
-            
-        const float x = scaler->midiTimeToX(sequencer->context->cursorTime());        
-        const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) + 
-                scaler->noteHeight() / 2.f;  
+
+        const float x = scaler->midiTimeToX(sequencer->context->cursorTime());
+        const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) +
+            scaler->noteHeight() / 2.f;
         filledRect(vg, color, x, y, 10, 3);
 #if 0
-        static float lasty=1000;
+        static float lasty = 1000;
         if (y != lasty) {
             lasty = y;
             printf("draw curso at %f, %f\n", x, y);
             fflush(stdout);
         }
-        #endif
+#endif
     }
 }
 
 #ifdef __V1
-void NoteDisplay::draw(const Widget::DrawArgs &args) 
+void NoteDisplay::draw(const Widget::DrawArgs &args)
 {
     NVGcontext *vg = args.vg;
 #else
 void NoteDisplay::draw(NVGcontext *vg)
-{  
+{
 #endif 
 
     if (!this->sequencer) {
@@ -220,36 +221,35 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     for (float cv = sequencer->context->pitchLow();
         cv <= sequencer->context->pitchHi();
         cv += PitchUtils::semitone) {
-            const float y = scaler->midiCvToY(cv);
+        const float y = scaler->midiCvToY(cv);
 
-            static int _ct = 0;
-            bool p = false;
-            if (_ct == 0) {
-                p= true;
-                _ct = 1;
-            } else if (_ct == 1 && y < 0) {
-                p = true;
-                _ct = 2;
-            }
+        static int _ct = 0;
+        bool p = false;
+        if (_ct == 0) {
+            p = true;
+            _ct = 1;
+        } else if (_ct == 1 && y < 0) {
+            p = true;
+            _ct = 2;
+        }
 
-            if (p)
-             {
-                printf("draw back at y=%f low = %f hi=%f cv=%f\n",
-                    y,
-                    sequencer->context->pitchLow(), 
-                    sequencer->context->pitchHi(),
-                    cv);
-                fflush(stdout);
-            }
-            const float width = box.size.x;
-            bool accidental = PitchUtils::isAccidental(cv);
-            if (accidental) {
-                filledRect(
-                    vg,
-                    UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
-                    0, y, width, noteHeight);
-                   
-            }
+        if (p) {
+            printf("draw back at y=%f low = %f hi=%f cv=%f\n",
+                y,
+                sequencer->context->pitchLow(),
+                sequencer->context->pitchHi(),
+                cv);
+            fflush(stdout);
+        }
+        const float width = box.size.x;
+        bool accidental = PitchUtils::isAccidental(cv);
+        if (accidental) {
+            filledRect(
+                vg,
+                UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
+                0, y, width, noteHeight);
+
+        }
     }
 }
 
@@ -271,16 +271,16 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
 
 
 #ifdef __V1
-void NoteDisplay::onSelect(const event::Select &e) 
+void NoteDisplay::onSelect(const event::Select &e)
 #else
 void NoteDisplay::onFocus(EventFocus &e)
 #endif
 {
     updateFocus(true);
 #ifdef __V1
-        e.consume(this);
+    e.consume(this);
 #else
-        e.consumed = true;
+    e.consumed = true;
 #endif
 }
 
@@ -292,9 +292,9 @@ void NoteDisplay::onDefocus(EventDefocus &e)
 {
     updateFocus(false);
 #ifdef __V1
-        e.consume(this);
+    e.consume(this);
 #else
-        e.consumed = true;
+    e.consumed = true;
 #endif
 }
 
@@ -309,7 +309,7 @@ void NoteDisplay::onSelectKey(const event::SelectKey &e)
     if (handled) {
         e.consume(this);
     } else {
-         OpaqueWidget::onSelectKey(e);
+        OpaqueWidget::onSelectKey(e);
     }
 }
 
@@ -321,7 +321,7 @@ void NoteDisplay::onKey(EventKey &e)
     if (rack::windowIsShiftPressed()) {
         mods |= GLFW_MOD_SHIFT;
     }
-    if ( windowIsModPressed()) {
+    if (windowIsModPressed()) {
         mods |= GLFW_MOD_CONTROL;
     }
 
