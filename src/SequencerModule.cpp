@@ -7,6 +7,7 @@
 #include "Seq.h"
 //#include "widgets.hpp"
 #include "seq/NoteDisplay.h"
+#include "seq/AboveNoteGrid.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
@@ -91,6 +92,7 @@ struct SequencerWidget : ModuleWidget
     }
 
     NoteDisplay* noteDisplay = nullptr;
+    AboveNoteGrid* headerDisplay = nullptr;
 };
 
 #ifdef __V1
@@ -111,18 +113,23 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     SqHelper::setPanel(this, "res/blank_panel.svg");
     box.size.x = width;     // restore to the full width that we want to be
 	{
-        float topDivider = 100;
-        const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, topDivider);
+        const float topDivider = 60;
+        const float x = 14 * RACK_GRID_WIDTH;
+        const float width = 28 * RACK_GRID_WIDTH;
+        const Vec notePos = Vec(x, topDivider);
+        const Vec noteSize = Vec(width, RACK_GRID_HEIGHT - topDivider);
 
-        const Vec noteSize =Vec(28 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - topDivider);
+        const Vec headerPos = Vec(x, 0);
+        const Vec headerSize = Vec(width, topDivider);
 
         MidiSequencerPtr seq;
         if (module) {
             seq = module->sequencer;
         }
-        //auto header = new AboveNoteGrid(
+        headerDisplay = new AboveNoteGrid(headerPos, headerSize, seq);
 		noteDisplay = new NoteDisplay(notePos, noteSize, seq);
 		addChild(noteDisplay);
+        addChild(headerDisplay);
 	}
 
     addInput(createInputCentered<PJ301MPort>(
@@ -182,6 +189,7 @@ void SequencerModule::fromJson(json_t* data)
     sequencer = newSeq;
     if (widget) {
         widget->noteDisplay->setSequencer(newSeq);
+        widget->headerDisplay->setSequencer(newSeq);
     }
 
     {
