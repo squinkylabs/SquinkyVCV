@@ -6,6 +6,7 @@
 
 class MidiSong;
 class MidiSelectionModel;
+class NoteScreenScale;
 
 class MidiEditorContext
 {
@@ -84,7 +85,13 @@ public:
         trackNumber = n;
     }
 
+
     MidiTrackPtr getTrack();
+
+    void setScaler(std::shared_ptr<NoteScreenScale> scaler)
+    {
+        _scaler = scaler;
+    }
 
     void setCursorToNote(MidiNoteEventPtrC note);
     void setCursorToSelection(std::shared_ptr<MidiSelectionModel> selection);
@@ -95,8 +102,6 @@ public:
     using iterator_pair = std::pair<iterator, iterator>;
     iterator_pair getEvents() const;
 
-    // what is this?
-   // int track = 0;
     std::shared_ptr<MidiSong> getSong() const;
 
     void scrollVertically(float pitchCV);
@@ -119,7 +124,6 @@ public:
     bool cursorInViewportTime() const;
     void adjustViewportForCursor();
 private:
-       // TODO: don't allow direct access?
     float m_cursorTime = 0;
     float m_cursorPitch = 0;
 
@@ -134,10 +138,10 @@ private:
 
     int trackNumber = 0;
 
-     // Below is not for clients to call. TODO: use private or something.
-    // Definitely need some architecture here.
-    std::weak_ptr<MidiSong> _song;
+    std::weak_ptr<NoteScreenScale> _scaler;
 
+    // Use weak ref to break circular dependency
+    std::weak_ptr<MidiSong> _song;
 };
 
 using MidiEditorContextPtr = std::shared_ptr<MidiEditorContext>;

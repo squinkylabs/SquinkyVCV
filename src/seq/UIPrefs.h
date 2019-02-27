@@ -12,4 +12,6 @@ public:
     static const NVGcolor GRID_BAR_COLOR;
 
     static constexpr float hMarginsNoteEdit = 2.f;
+    static constexpr float topMarginNoteEdit = 0.f;
+
 };

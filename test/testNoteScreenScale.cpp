@@ -18,7 +18,8 @@ static void test0()
 
     vp->setCursorPitch(note.pitchCV);
 
-    NoteScreenScale n(vp, 100, 100);
+    NoteScreenScale n(100, 100, 0, 0);
+    n.setContext(vp);
     float left = n.midiTimeToX(note);
     float right = left + n.midiTimeTodX(1.0f);
     assertEQ(left, 0);
@@ -45,7 +46,8 @@ static void test1()
     vp->setPitchRange(note.pitchCV, note.pitchCV);
     vp->setCursorPitch(note.pitchCV);
 
-    NoteScreenScale n(vp, 100, 100);
+    NoteScreenScale n(100, 100, 0, 0);
+    n.setContext(vp);
     auto y = n.midiPitchToY(note);
     auto h = n.noteHeight();
     assertClose(y, 0, .001);
@@ -68,7 +70,8 @@ static void test2()
     vp->setPitchRange(note.pitchCV, note.pitchCV);
     vp->setCursorPitch(note.pitchCV);
 
-    NoteScreenScale n(vp, 100, 100);
+    NoteScreenScale n(100, 100, 0, 0);
+    n.setContext(vp);
 
     auto bounds = n.midiTimeToHBounds(note);
     assertEQ(bounds.first, 75.f);
@@ -92,14 +95,14 @@ static void test3()
     vp->setPitchRange(note1.pitchCV, note2.pitchCV);
     vp->setCursorPitch(note1.pitchCV);
 
-    NoteScreenScale n(vp, 100, 100);
+    NoteScreenScale n(100, 100, 0, 0);
+    n.setContext(vp);
     auto h = n.noteHeight();
     assertClose(h, 50, .001);
 
     // hight pitch should be at top
     auto y = n.midiPitchToY(note2);
     assertClose(y, 0, .001);
-
 }
 
 
@@ -119,7 +122,9 @@ static void test4()
 
     vp->setCursorPitch(note.pitchCV);
 
-    NoteScreenScale n(vp, 100, 100, 10);            // ten pix left and right
+    NoteScreenScale n(100, 100, 10, 0);            // ten pix left and right
+    n.setContext(vp);
+    
     float left = n.midiTimeToX(note);
     float right = left + n.midiTimeTodX(1.0f);
     assertEQ(left, 10);
@@ -134,6 +139,62 @@ static void test4()
 }
 
 
+// basic test of y coordinates with margin
+static void test5()
+{
+    // viewport holds two pitches
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
+    vp->setTimeRange(0, 1);
+
+    MidiNoteEvent note1, note2;
+    note1.setPitch(3, 0);
+    note2.setPitch(3, 1);
+    vp->setPitchRange(note1.pitchCV, note2.pitchCV);
+    vp->setCursorPitch(note1.pitchCV);
+
+    // make 20 pix on top
+    NoteScreenScale n(100, 100, 0, 20);
+    n.setContext(vp);
+    auto h = n.noteHeight();
+    assertClose(h, 40, .001);
+
+    // high pitch should be at top
+    auto y = n.midiPitchToY(note2);
+    assertClose(y, 20, .001);
+}
+
+
+// basic test of y coordinates, with re-calc
+static void test6()
+{
+    // viewport holds single quarter note
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
+    vp->setTimeRange(0, 1);
+
+    // let's make one quarter note fill the whole screen
+    MidiNoteEvent note;
+    note.setPitch(3, 0);
+    vp->setPitchRange(note.pitchCV, note.pitchCV);
+    vp->setCursorPitch(note.pitchCV);
+
+    NoteScreenScale n(100, 100, 0, 0);
+    n.setContext(vp);
+    auto y = n.midiPitchToY(note);
+    auto h = n.noteHeight();
+    assertClose(y, 0, .001);
+    assertClose(h, 100, .001);
+
+    // now go to quarter note an octave higher, should still fill the screen
+    note.setPitch(4, 0);
+    vp->setPitchRange(note.pitchCV, note.pitchCV);
+    vp->setCursorPitch(note.pitchCV);
+    y = n.midiPitchToY(note);
+    h = n.noteHeight();
+    assertClose(y, 0, .001);
+    assertClose(h, 100, .001);
+}
+
+
 void testNoteScreenScale()
 {
     test0();
@@ -141,4 +202,6 @@ void testNoteScreenScale()
     test2();
     test3();
     test4();
+    test5();
+    test6();
 }

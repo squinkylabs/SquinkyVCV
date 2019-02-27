@@ -111,14 +111,16 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     SqHelper::setPanel(this, "res/blank_panel.svg");
     box.size.x = width;     // restore to the full width that we want to be
 	{
-        const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, 0);
-        const Vec noteSize =Vec(28 * RACK_GRID_WIDTH,RACK_GRID_HEIGHT);
-       // module->stop();         // don't start playback immediately
+        float topDivider = 100;
+        const Vec notePos = Vec( 14 * RACK_GRID_WIDTH, topDivider);
+
+        const Vec noteSize =Vec(28 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - topDivider);
 
         MidiSequencerPtr seq;
         if (module) {
             seq = module->sequencer;
         }
+        //auto header = new AboveNoteGrid(
 		noteDisplay = new NoteDisplay(notePos, noteSize, seq);
 		addChild(noteDisplay);
 	}
@@ -138,23 +140,6 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getClockRates());
     addParam(p);
-#if 0
-    PopupMenuParamWidget* p = createParam<PopupMenuParamWidget>(
-        Vec (40, 90),
-        module, 
-        Comp::CLOCK_INPUT_PARAM);
-
-
-    PopupMenuParamWidget* p = PopupMenuParamWidget::create<PopupMenuParamWidget>(
-        Vec (40, 90),
-        module, 
-        Comp::CLOCK_INPUT_PARAM,
-        0, 5, 2);
-    p->box.size.x  = 100;    // width
-    p->setLabels(Comp::getClockRates());
-    addParam(p);
-#endif
-
     addParam(SqHelper::createParam<Rogan2PSBlue>(
         icomp,
         Vec(60, 150),

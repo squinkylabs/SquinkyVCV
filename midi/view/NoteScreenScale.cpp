@@ -1,22 +1,50 @@
 #include "NoteScreenScale.h"
 #include "MidiEditorContext.h"
 
-NoteScreenScale::NoteScreenScale(MidiEditorContextPtr vp,
+NoteScreenScale::NoteScreenScale(
     float screenWidth,
     float screenHeight,
-    float hMargin) : viewport(vp)
+    float hMargin,
+    float topMargin) :
+        screenWidth(screenWidth),
+        screenHeight(screenHeight),
+        hMargin(hMargin),
+        topMargin(topMargin)
 {
     assert(screenWidth > 0);
     assert(screenHeight > 0);
-    viewport->assertValid();
+   
 
-    float activeScreenWidth = screenWidth - 2 * hMargin;
-
+   
+#if 0
+    const float activeScreenWidth = screenWidth - 2 * hMargin;
     ax = activeScreenWidth / (viewport->endTime() - viewport->startTime());
     bx = hMargin;
 
     // min and max the same is fine - it's just one note bar full screen
-    ay = screenHeight / ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
+    float activeScreenHeight = screenHeight - topMargin;
+    ay = activeScreenHeight / ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
+    by = topMargin;
+#endif
+}
+
+void NoteScreenScale::setContext(std::shared_ptr<MidiEditorContext> context)
+{
+    viewport = context;
+    viewport->assertValid();
+    reCalculate();
+}
+
+void NoteScreenScale::reCalculate()
+{
+    const float activeScreenWidth = screenWidth - 2 * hMargin;
+    ax = activeScreenWidth / (viewport->endTime() - viewport->startTime());
+    bx = hMargin;
+
+    // min and max the same is fine - it's just one note bar full screen
+    float activeScreenHeight = screenHeight - topMargin;
+    ay = activeScreenHeight / ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
+    by = topMargin;
 }
 
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
@@ -26,6 +54,7 @@ float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
 
 float NoteScreenScale::midiTimeToX(MidiEvent::time_t t)
 {
+    assert(viewport);
     return  bx + (t - viewport->startTime()) * ax;
 }
 
@@ -36,12 +65,14 @@ float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
 
 float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note)
 {
-    return (viewport->pitchHi() - note.pitchCV) * ay;
+  //  return (viewport->pitchHi() - note.pitchCV) * ay;
+    return midiCvToY(note.pitchCV);
 }
 
 float NoteScreenScale::midiCvToY(float cv)
 {
-    return (viewport->pitchHi() - cv) * ay;
+    assert(viewport);
+    return by + (viewport->pitchHi() - cv) * ay;
 }
 
 float NoteScreenScale::noteHeight()

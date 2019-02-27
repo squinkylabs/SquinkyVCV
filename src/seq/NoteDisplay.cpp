@@ -34,12 +34,14 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     sequencer = seq;
 
     if (sequencer) {
-        initEditContext();
         scaler = std::make_shared<NoteScreenScale>(
-            sequencer->context, 
             size.x, 
             size.y,
-            UIPrefs::hMarginsNoteEdit);
+            UIPrefs::hMarginsNoteEdit,
+            UIPrefs::topMarginNoteEdit);
+         initEditContext();
+      
+   
     }
     
     focusLabel = new Label();
@@ -71,11 +73,13 @@ void NoteDisplay::setSequencer(MidiSequencerPtr seq) {
 
 void NoteDisplay::initEditContext()
 {
-    // hard code view range (ofr now?)
+    // hard code view range (for now?)
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
+    scaler->setContext(sequencer->context);
+    sequencer->context->setScaler(scaler);
 }
 
  void NoteDisplay::step() 
@@ -134,8 +138,8 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
 
 void NoteDisplay::drawGrid(NVGcontext *vg)
 {
-   // float z = APP->scene->zoomWidget->zoom;
-  //  printf("zoom is %f\n", z); fflush(stdout);
+    // float z = APP->scene->zoomWidget->zoom;
+    //  printf("zoom is %f\n", z); fflush(stdout);
   
     //assume two bars, quarter note grid
     float totalDuration = TimeUtils::barToTime(2);
@@ -143,22 +147,19 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     for (float time = 0; time <= totalDuration; time += deltaDuration) {
         // need delta.
         const float x = scaler->midiTimeToX(time);        
-        const float y = 0;
+        const float y = UIPrefs::topMarginNoteEdit;
         float width = 2;
-        float height = this->box.size.y;
+        float height = this->box.size.y - y;
 
         const bool isBar = (time==0) ||
             (time==TimeUtils::barToTime(1)) ||
             (time==TimeUtils::barToTime(2));
 
-     //   printf("t=%.2f b=%d ", time, isBar);
         filledRect(
             vg, 
             isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR,
             x, y, width, height);
     }
-   // printf("\n"); fflush(stdout);
-
 }
 
 void NoteDisplay::drawCursor(NVGcontext *vg)
@@ -178,6 +179,14 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
         const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) + 
                 scaler->noteHeight() / 2.f;  
         filledRect(vg, color, x, y, 10, 3);
+#if 0
+        static float lasty=1000;
+        if (y != lasty) {
+            lasty = y;
+            printf("draw curso at %f, %f\n", x, y);
+            fflush(stdout);
+        }
+        #endif
     }
 }
 
@@ -212,6 +221,26 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         cv <= sequencer->context->pitchHi();
         cv += PitchUtils::semitone) {
             const float y = scaler->midiCvToY(cv);
+
+            static int _ct = 0;
+            bool p = false;
+            if (_ct == 0) {
+                p= true;
+                _ct = 1;
+            } else if (_ct == 1 && y < 0) {
+                p = true;
+                _ct = 2;
+            }
+
+            if (p)
+             {
+                printf("draw back at y=%f low = %f hi=%f cv=%f\n",
+                    y,
+                    sequencer->context->pitchLow(), 
+                    sequencer->context->pitchHi(),
+                    cv);
+                fflush(stdout);
+            }
             const float width = box.size.x;
             bool accidental = PitchUtils::isAccidental(cv);
             if (accidental) {
@@ -219,6 +248,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
                     vg,
                     UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
                     0, y, width, noteHeight);
+                   
             }
     }
 }
@@ -267,20 +297,6 @@ void NoteDisplay::onDefocus(EventDefocus &e)
         e.consumed = true;
 #endif
 }
-
-
-#if 0
-struct Key {
-	/** GLFW_KEY_* */
-	int key;
-	/** GLFW_KEY_*. You should usually use `key` instead. */
-	int scancode;
-	/** GLFW_RELEASE, GLFW_PRESS, or GLFW_REPEAT */
-	int action;
-	/** GLFW_MOD_* */
-	int mods;
-};
-#endif
 
 #ifdef __V1
 void NoteDisplay::onSelectKey(const event::SelectKey &e)
