@@ -114,7 +114,7 @@ public:
         StartTime
     };
 
-    NoteAttribute noteAttribute;
+    NoteAttribute noteAttribute = NoteAttribute::Pitch;
 
     void assertValid() const;
 

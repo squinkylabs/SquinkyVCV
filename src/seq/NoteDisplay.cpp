@@ -13,7 +13,7 @@
 
 #include "nanovg.h"
 #include "window.hpp"
-#include "MidiEditorContext.h"
+//#include "MidiEditorContext.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
@@ -40,8 +40,6 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
             UIPrefs::hMarginsNoteEdit,
             UIPrefs::topMarginNoteEdit);
          initEditContext();
-      
-   
     }
     
     focusLabel = new Label();
@@ -50,8 +48,7 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     focusLabel->color = SqHelper::COLOR_WHITE;
     addChild(focusLabel);
     updateFocus(false);
-
-        
+ #if 0
     editAttributeLabel = new Label();
     editAttributeLabel->box.pos = Vec(10, 10);
     editAttributeLabel->text = "";
@@ -63,6 +60,7 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     barRangeLabel->text = "";
     barRangeLabel->color = SqHelper::COLOR_WHITE;
     addChild(barRangeLabel);
+#endif
 }
 
 void NoteDisplay::setSequencer(MidiSequencerPtr seq) {
@@ -87,6 +85,7 @@ void NoteDisplay::initEditContext()
     if (!sequencer) {
         return;
     }
+    #if 0
     auto attr = sequencer->context->noteAttribute;
     if (curAttribute != attr) {
         curAttribute = attr;
@@ -110,6 +109,7 @@ void NoteDisplay::initEditContext()
         str << "First Bar: " << curFirstBar << " Last Bar: " << curFirstBar + 1;
         barRangeLabel->text = str.str();
     }
+    #endif
 }
 
 void NoteDisplay::drawNotes(NVGcontext *vg)

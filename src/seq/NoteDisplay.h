@@ -14,15 +14,15 @@ struct NoteDisplay : OpaqueWidget
 {
 private:
     Label* focusLabel=nullptr;
-    Label* editAttributeLabel = nullptr;
-    Label* barRangeLabel = nullptr;
+  //  Label* editAttributeLabel = nullptr;
+  //  Label* barRangeLabel = nullptr;
     std::shared_ptr<NoteScreenScale> scaler;
     MidiSequencerPtr sequencer;
     bool cursorState = false;
     int cursorFrameCount = 0;
     bool haveFocus = true;
-    MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
-    int curFirstBar = -1;
+  //  MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
+  //  int curFirstBar = -1;
 
     void initEditContext();
 
@@ -60,28 +60,6 @@ public:
     void onFocus(EventFocus &e) override;
     void onDefocus(EventDefocus &e) override;
     void onKey(EventKey &e) override;
-#endif
-    
-
-    //************************** These overrides are just to test event handling
-    #if 0
-    void onMouseDown(EventMouseDown &e) override
-    {
-        OpaqueWidget::onMouseDown(e);
-      //  std::cout << "onMouseDown " << e.button << std::flush << std::endl;
-    }
-    void onMouseMove(EventMouseMove &e) override
-    {
-       //  std::cout << "onMouseMove " << std::flush << std::endl;
-        OpaqueWidget::onMouseMove(e);
-    }
-
-    void onMouseEnter(EventMouseEnter &e) override
-    {
-        //std::cout << "nmouseenger " << std::flush << std::endl;
-    }
-   /** Called when another widget begins responding to `onMouseMove` events */
-//	virtual void onMouseLeave(EventMouseLeave &e) {}
 #endif
 
 };

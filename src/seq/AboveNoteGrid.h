@@ -8,6 +8,8 @@
 #include "util/math.hpp"
 #endif
 
+#include "MidiEditorContext.h"
+
 class MidiSequencer;
 using  MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
@@ -22,18 +24,15 @@ public:
     void setSequencer(MidiSequencerPtr seq);
 
 #ifdef __V1
-	//void onSelect(const event::Select &e) override;
-	//void onDeselect(const event::Deselect &e) override;
-   // void onSelectKey(const event::SelectKey &e) override;
     void draw(const DrawArgs &args) override;
 #else
     void draw(NVGcontext *vg) override;
-    //void onFocus(EventFocus &e) override;
-   // void onDefocus(EventDefocus &e) override;
-   //void onKey(EventKey &e) override;
 #endif
+    void step() override;
 
 private:
+    bool firstTime = true;
     MidiSequencerPtr sequencer;
-
+    Label* editAttributeLabel = nullptr;
+    MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
 };
