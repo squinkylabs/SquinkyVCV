@@ -138,6 +138,7 @@ private:
 
     int trackNumber = 0;
 
+    // I think this is unused
     std::weak_ptr<NoteScreenScale> _scaler;
 
     // Use weak ref to break circular dependency

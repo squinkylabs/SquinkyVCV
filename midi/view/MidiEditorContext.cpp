@@ -18,15 +18,15 @@ MidiEditorContext::~MidiEditorContext()
 
 void MidiEditorContext::scrollViewportToCursorPitch()
 {
-    printf("scroll v cursor pitch %f, hi = %f\n", m_cursorPitch, pitchHi());
+   // printf("scroll v cursor pitch %f, hi = %f\n", m_cursorPitch, pitchHi());
     while (m_cursorPitch < pitchLow()) {
         scrollVertically(-1 * PitchUtils::octave);
     }
     while (m_cursorPitch > pitchHi()) {
-        printf("will scroll up\n");
+      //  printf("will scroll up\n");
         scrollVertically(1 * PitchUtils::octave);
     }
-    fflush(stdout);
+   // fflush(stdout);
 }
 
 void MidiEditorContext::assertCursorInViewport() const
