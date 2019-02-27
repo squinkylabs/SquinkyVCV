@@ -21,9 +21,6 @@ private:
     bool cursorState = false;
     int cursorFrameCount = 0;
     bool haveFocus = true;
-  //  MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
-  //  int curFirstBar = -1;
-
     void initEditContext();
 
 public:

@@ -23,7 +23,7 @@
 #include "../ctrl/SqHelper.h"
 #include "TimeUtils.h"
 
-#include <sstream>
+
 #include "NoteDisplay.h"
 
 

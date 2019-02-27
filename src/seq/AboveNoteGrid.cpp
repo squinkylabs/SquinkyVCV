@@ -1,7 +1,9 @@
-
 #include "AboveNoteGrid.h"
 #include "MidiSequencer.h"
+#include "TimeUtils.h"
 #include "UIPrefs.h"
+
+#include <sstream>
 
 AboveNoteGrid::AboveNoteGrid(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 {
@@ -14,6 +16,8 @@ AboveNoteGrid::AboveNoteGrid(const Vec& pos, const Vec& size, MidiSequencerPtr s
     editAttributeLabel->text = "";
     editAttributeLabel->color = UIPrefs::SELECTED_NOTE_COLOR;
     addChild(editAttributeLabel);
+
+    createTimeLabels();
 }
 
 void AboveNoteGrid::setSequencer(MidiSequencerPtr seq)
@@ -43,6 +47,10 @@ void AboveNoteGrid::step()
     firstTime = false;
 }
 
+void AboveNoteGrid::createTimeLabels()
+{
+    
+}
 
 // TODO: move to util
 static void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
@@ -51,6 +59,22 @@ static void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
     nvgBeginPath(vg);
     nvgRect(vg, x, y, w, h);
     nvgFill(vg);
+}
+
+
+
+
+void AboveNoteGrid::drawTimeLabels(NVGcontext *vg)
+{
+    #if 0
+    int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime());
+    if (firstBar != curFirstBar) {
+        curFirstBar = firstBar;
+        std::stringstream str;
+        str << "First Bar: " << curFirstBar << " Last Bar: " << curFirstBar + 1;
+        barRangeLabel->text = str.str();
+    }
+    #endif
 }
 
 
@@ -64,6 +88,7 @@ void AboveNoteGrid::draw(NVGcontext *vg)
 #endif
 
     filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
+    drawTimeLabels(vg);
 
 #ifdef __V1
     OpaqueWidget::draw(args);
