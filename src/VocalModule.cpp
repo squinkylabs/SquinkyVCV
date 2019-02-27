@@ -34,12 +34,12 @@ VocalModule::VocalModule()
     SqHelper::setupParams(icomp, this);
 
 #else
-VocalModule::VocalModule() : 
+VocalModule::VocalModule() :
     Module(
-        Comp::NUM_PARAMS,
-        Comp::NUM_INPUTS,
-        Comp::NUM_OUTPUTS,
-        Comp::NUM_LIGHTS),
+    Comp::NUM_PARAMS,
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
     animator(std::make_shared<Comp>(this))
 {
 #endif
@@ -141,56 +141,56 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
    //     Vec(ledX, ledY), module, module->animator.LFO0_LIGHT));
     addChild(createLight<MediumLight<GreenLight>>(
         Vec(ledX, ledY),
-        module, 
+        module,
         Comp::LFO0_LIGHT));
 
     addChild(createLight<MediumLight<GreenLight>>(
-        Vec(ledX, ledY + ledSpacingY), 
-        module, 
+        Vec(ledX, ledY + ledSpacingY),
+        module,
         Comp::LFO1_LIGHT));
 
     addChild(createLight<MediumLight<GreenLight>>(
         Vec(ledX, ledY + 2 * ledSpacingY),
-        module, 
+        module,
         Comp::LFO2_LIGHT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(lfoOutX, lfoOutY), 
-        module, 
+        Vec(lfoOutX, lfoOutY),
+        module,
         Comp::LFO0_OUTPUT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(lfoOutX, lfoOutY + 1 * ledSpacingY), 
-        module, 
+        Vec(lfoOutX, lfoOutY + 1 * ledSpacingY),
+        module,
         Comp::LFO1_OUTPUT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(lfoOutX, lfoOutY + 2 * ledSpacingY), 
-        module, 
+        Vec(lfoOutX, lfoOutY + 2 * ledSpacingY),
+        module,
         Comp::LFO2_OUTPUT));
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
         icomp,
-        Vec(lfoRateKnobX, lfoRateKnobY), 
-        module, 
+        Vec(lfoRateKnobX, lfoRateKnobY),
+        module,
         Comp::LFO_RATE_PARAM));
 
     addInput(createInput<PJ301MPort>(
-        Vec(lfoInputX, lfoInputY), 
-        module, 
+        Vec(lfoInputX, lfoInputY),
+        module,
         Comp::LFO_RATE_CV_INPUT));
 
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(lfoTrimX, lfoTrimY), 
-        module, 
+        Vec(lfoTrimX, lfoTrimY),
+        module,
         Comp::LFO_RATE_TRIM_PARAM));
 
     // the matrix switch
     addParam(SqHelper::createParam<NKK>(
         icomp,
-        Vec(42, 65), 
-        module, 
+        Vec(42, 65),
+        module,
         Comp::LFO_MIX_PARAM));
 
      /**
@@ -212,53 +212,53 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
         icomp,
-        Vec(knobX, knobY), 
-        module, 
+        Vec(knobX, knobY),
+        module,
         Comp::FILTER_FC_PARAM));
 
     addInput(createInput<PJ301MPort>(
-        Vec(inputX, inputY), 
-        module, 
+        Vec(inputX, inputY),
+        module,
         Comp::FILTER_FC_CV_INPUT));
 
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(trimX, trimY), 
-        module, 
+        Vec(trimX, trimY),
+        module,
         Comp::FILTER_FC_TRIM_PARAM));
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
         icomp,
-        Vec(knobX + colSpacingX, knobY), 
-        module, 
+        Vec(knobX + colSpacingX, knobY),
+        module,
         Comp::FILTER_Q_PARAM));
 
     addInput(createInput<PJ301MPort>(
-        Vec(inputX + colSpacingX, inputY), 
-        module, 
+        Vec(inputX + colSpacingX, inputY),
+        module,
         Comp::FILTER_Q_CV_INPUT));
 
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(trimX + colSpacingX, trimY), 
-        module, 
+        Vec(trimX + colSpacingX, trimY),
+        module,
         Comp::FILTER_Q_TRIM_PARAM));
 
     addParam(SqHelper::createParam<Rogan1PSBlue>(
         icomp,
-        Vec(knobX + 2 * colSpacingX, knobY), 
-        module, 
+        Vec(knobX + 2 * colSpacingX, knobY),
+        module,
         Comp::FILTER_MOD_DEPTH_PARAM));
-    
+
     addInput(createInput<PJ301MPort>(
         Vec(inputX + 2 * colSpacingX, inputY),
-        module, 
+        module,
         Comp::FILTER_MOD_DEPTH_CV_INPUT));
-    
+
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(trimX + 2 * colSpacingX, trimY), 
-        module, 
+        Vec(trimX + 2 * colSpacingX, trimY),
+        module,
         Comp::FILTER_MOD_DEPTH_TRIM_PARAM));
 
     const float row3 = 310;
@@ -268,30 +268,30 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     const float outputX = inputX + 2 * colSpacingX;
 
     addInput(createInput<PJ301MPort>(
-        Vec(AudioInputX, row3), 
-        module, 
+        Vec(AudioInputX, row3),
+        module,
         Comp::AUDIO_INPUT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(outputX, row3), 
-        module, 
+        Vec(outputX, row3),
+        module,
         Comp::AUDIO_OUTPUT));
 
     const float bassX = inputX + colSpacingX - 4;
     const float bassY = row3 - 8;
 
      // the bass boost switch
-     #if 1 // get this working
+#if 1 // get this working
     addParam(SqHelper::createParam<NKK2>(
         icomp,
-        Vec(bassX, bassY), 
-        module, 
+        Vec(bassX, bassY),
+        module,
         Comp::BASS_EXP_PARAM));
-    #endif
+#endif
 
-     /*************************************************
-      *  screws
-      */
+ /*************************************************
+  *  screws
+  */
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));

@@ -86,7 +86,7 @@ struct CHBWidget : ModuleWidget
         semitoneDisplay.step();
     }
 private:
-    void addHarmonics(CHBModule *module,  std::shared_ptr<IComposite>);
+    void addHarmonics(CHBModule *module, std::shared_ptr<IComposite>);
     void addRow1(CHBModule *module, std::shared_ptr<IComposite>);
     void addRow2(CHBModule *module, std::shared_ptr<IComposite>);
     void addRow3(CHBModule *module, std::shared_ptr<IComposite>);
@@ -99,7 +99,7 @@ private:
 #else
     Menu* createContextMenu() override;
 #endif
-    
+
     // TODO: stil used?
     // This is the gain which when run throught all the lookup tables
     // gives a gain of 1.
@@ -115,7 +115,7 @@ private:
 };
 
 #ifdef __V1
-inline void CHBWidget::appendContextMenu(Menu *menu) 
+inline void CHBWidget::appendContextMenu(Menu *menu)
 {
     ManualMenuItem* manual = new ManualMenuItem(
         "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
@@ -215,7 +215,7 @@ void CHBWidget::addRow1(CHBModule *module, std::shared_ptr<IComposite> icomp)
     addLabel(Vec(col4 - 22, row1 - labelAboveKnob), "Tune");
 }
 
-void CHBWidget::addRow2(CHBModule *module,  std::shared_ptr<IComposite> icomp)
+void CHBWidget::addRow2(CHBModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float row = row2;
 
@@ -256,7 +256,7 @@ void CHBWidget::addRow2(CHBModule *module,  std::shared_ptr<IComposite> icomp)
         CHB<WidgetComposite>::GAIN_GREEN_LIGHT));
 }
 
-void CHBWidget::addRow3(CHBModule *module,  std::shared_ptr<IComposite> icomp)
+void CHBWidget::addRow3(CHBModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float row = row3;
 
@@ -294,7 +294,7 @@ void CHBWidget::addRow3(CHBModule *module,  std::shared_ptr<IComposite> icomp)
 
 }
 
-void CHBWidget::addRow4(CHBModule *module,  std::shared_ptr<IComposite> icomp)
+void CHBWidget::addRow4(CHBModule *module, std::shared_ptr<IComposite> icomp)
 {
     float row = row4;
 

@@ -20,8 +20,8 @@ struct BootyModule : Module
      */
     void step() override;
 #ifdef __V1
-	virtual json_t *dataToJson() override;
-	virtual void dataFromJson(json_t *root) override;
+    virtual json_t *dataToJson() override;
+    virtual void dataFromJson(json_t *root) override;
 #else
     json_t *toJson() override;
     void fromJson(json_t *rootJ) override;
@@ -49,9 +49,9 @@ BootyModule::BootyModule()
 #else
 BootyModule::BootyModule() :
     Module(Comp::NUM_PARAMS,
-        Comp::NUM_INPUTS, 
-        Comp::NUM_OUTPUTS, 
-        Comp::NUM_LIGHTS),
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
     shifter(std::make_shared<Comp>(this))
 {
 #endif
@@ -139,7 +139,7 @@ struct RangeItem : MenuItem
     ChoiceButton* const rangeChoice;
 
 #ifdef __V1
-	void onAction(const event::Action &e) override
+    void onAction(const event::Action &e) override
 #else
     void onAction(EventAction &e) override
 #endif
@@ -160,9 +160,9 @@ struct RangeChoice : ChoiceButton
     }
     float * const output;
 #ifdef __V1
-	void onAction(const event::Action &e) override
+    void onAction(const event::Action &e) override
     {
-         Menu* menu = createMenu();
+        Menu* menu = createMenu();
 #else
     void onAction(EventAction &e) override
     {
@@ -197,7 +197,7 @@ struct BootyWidget : ModuleWidget
  * This is not shared by all modules in the DLL, just one
  */
 #ifdef __V1
-BootyWidget::BootyWidget(BootyModule *module) 
+BootyWidget::BootyWidget(BootyModule *module)
 {
     setModule(module);
 #else
@@ -217,12 +217,12 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
 
     // Inputs on Row 0
     addInput(createInput<PJ301MPort>(
-        Vec(leftInputX, row0),  
-        module, 
+        Vec(leftInputX, row0),
+        module,
         Comp::AUDIO_INPUT));
     addInput(createInput<PJ301MPort>(
-        Vec(rightInputX, row0), 
-        module, 
+        Vec(rightInputX, row0),
+        module,
         Comp::CV_INPUT));
 
     // shift Range on row 2
@@ -240,8 +240,8 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     // knob on row 1
     addParam(SqHelper::createParam<Rogan3PSBlue>(
         icomp,
-        Vec(18, row1), 
-        module, 
+        Vec(18, row1),
+        module,
         Comp::PITCH_PARAM));
 
     const float row3 = 317.5;
@@ -251,12 +251,12 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     const float rightOutputX = 55.5;
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(leftOutputX, row3), 
-        module, 
+        Vec(leftOutputX, row3),
+        module,
         Comp::SIN_OUTPUT));
     addOutput(createOutput<PJ301MPort>(
-        Vec(rightOutputX, row3),  
-        module, 
+        Vec(rightOutputX, row3),
+        module,
         Comp::COS_OUTPUT));
 
     // screws

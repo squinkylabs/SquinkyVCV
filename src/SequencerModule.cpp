@@ -33,12 +33,12 @@ struct SequencerModule : Module
     }
     void fromJson(json_t* data) override;
 #else
-	virtual json_t *dataToJson() override
+    virtual json_t *dataToJson() override
     {
         assert(sequencer);
         return SequencerSerializer::toJson(sequencer);
     }
-	virtual void dataFromJson(json_t *root) override;
+    virtual void dataFromJson(json_t *root) override;
 #endif
 
     void step() override
@@ -61,9 +61,9 @@ SequencerModule::SequencerModule()
 #else
 SequencerModule::SequencerModule()
     : Module(Comp::NUM_PARAMS,
-        Comp::NUM_INPUTS,
-        Comp::NUM_OUTPUTS,
-        Comp::NUM_LIGHTS)
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS)
 {
 #endif
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
@@ -77,7 +77,7 @@ struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
     DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq3/docs/sq.md");
-    
+
     /**
      * Helper to add a text label to this widget
      */
@@ -112,7 +112,7 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setPanel(this, "res/blank_panel.svg");
     box.size.x = width;     // restore to the full width that we want to be
-	{
+    {
         const float topDivider = 60;
         const float x = 14 * RACK_GRID_WIDTH;
         const float width = 28 * RACK_GRID_WIDTH;
@@ -127,10 +127,10 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
             seq = module->sequencer;
         }
         headerDisplay = new AboveNoteGrid(headerPos, headerSize, seq);
-		noteDisplay = new NoteDisplay(notePos, noteSize, seq);
-		addChild(noteDisplay);
+        noteDisplay = new NoteDisplay(notePos, noteSize, seq);
+        addChild(noteDisplay);
         addChild(headerDisplay);
-	}
+    }
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(50, 40),
@@ -140,10 +140,10 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec (40, 90),
-        module, 
+        Vec(40, 90),
+        module,
         Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x  = 100;    // width
+    p->box.size.x = 100;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getClockRates());
     addParam(p);
@@ -167,20 +167,20 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     addLabel(Vec(75, 310), "G");
 
     addChild(createLight<MediumLight<GreenLight>>(
-        Vec(120, 310), module,  Seq<WidgetComposite>::GATE_LIGHT));
+        Vec(120, 310), module, Seq<WidgetComposite>::GATE_LIGHT));
 
       // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
 }
 
 #ifdef __V1
 void SequencerModule::dataFromJson(json_t *data)
 #else
-void SequencerModule::fromJson(json_t* data) 
+void SequencerModule::fromJson(json_t* data)
 #endif
 {
     MidiSongPtr oldSong = sequencer->song;

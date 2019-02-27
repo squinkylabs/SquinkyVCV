@@ -37,7 +37,7 @@ VocalFilterModule::VocalFilterModule() :
     SqHelper::setupParams(icomp, this);
 }
 #else
-VocalFilterModule::VocalFilterModule() : 
+VocalFilterModule::VocalFilterModule() :
     Module(vocalFilter.NUM_PARAMS, vocalFilter.NUM_INPUTS, vocalFilter.NUM_OUTPUTS, vocalFilter.NUM_LIGHTS),
     vocalFilter(this)
 {
@@ -120,7 +120,7 @@ void VocalFilterWidget::addVowelLabels()
         addChild(label);
 
 //addChild(createLight<MediumLight<RedLight>>(Vec(41, 59), module, MyModule::BLINK_LIGHT));
-	
+
         addChild(createLight<MediumLight<GreenLight>>(
             Vec(ledX + i * ledDx, ledY), module, id));
     }
@@ -174,7 +174,7 @@ void VocalFilterWidget::addModelKnob(std::shared_ptr<IComposite> icomp, VocalFil
  */
 #ifdef __V1
 VocalFilterWidget::VocalFilterWidget(VocalFilterModule* module)
-{   
+{
     setModule(module);
 #else
 VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(module)
@@ -222,7 +222,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
         Vec(col1 + trimDx, row2L + trimDyL),
-        module,Comp::FILTER_VOWEL_TRIM_PARAM));
+        module, Comp::FILTER_VOWEL_TRIM_PARAM));
 
     // Fc
     label = new Label();
@@ -325,7 +325,7 @@ Model *modelVocalFilterModule = Model::create<VocalFilterModule, VocalFilterWidg
     "squinkylabs-vocalfilter",
     "Formants: Vocal Filter", EFFECT_TAG, FILTER_TAG);
 #else
-    Model *modelVocalFilterModule = createModel<VocalFilterModule, VocalFilterWidget>(
+Model *modelVocalFilterModule = createModel<VocalFilterModule, VocalFilterWidget>(
     "growler");
 #endif
 

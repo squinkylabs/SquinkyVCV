@@ -89,8 +89,8 @@ void TremoloWidget::addClockSection(TremoloModule *module, std::shared_ptr<IComp
     addInput(createInput<PJ301MPort>(
         Vec(10, y + 7),
         module, Comp::CLOCK_INPUT));
-  
-    
+
+
     addLabel(Vec(2, labelY), "ckin");
 
     addParam(SqHelper::createParam<RoundBlackKnob>(
@@ -151,7 +151,7 @@ void TremoloWidget::addMainSection(TremoloModule *module, std::shared_ptr<ICompo
 {
     const float dn = 3;
     const float knobX = 64;
-    const float knobY = 100+dn;
+    const float knobY = 100 + dn;
     const float knobDy = 50;
     const float labelX = 100;
     const float labelY = knobY;
@@ -165,13 +165,13 @@ void TremoloWidget::addMainSection(TremoloModule *module, std::shared_ptr<ICompo
         Vec(knobX, knobY + 0 * knobDy),
         module,
         Comp::LFO_SHAPE_PARAM));
-    
+
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
         Vec(trimX, trimY + 0 * knobDy),
         module,
         Comp::LFO_SHAPE_TRIM_PARAM));
-    
+
     addInput(createInput<PJ301MPort>(
         Vec(inX, inY + 0 * knobDy),
         module,
@@ -244,7 +244,7 @@ void TremoloWidget::addMainSection(TremoloModule *module, std::shared_ptr<ICompo
  */
 #ifdef __V1
 TremoloWidget::TremoloWidget(TremoloModule *module)
-{   
+{
     setModule(module);
 #else
 TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
