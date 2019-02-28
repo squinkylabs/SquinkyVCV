@@ -238,6 +238,90 @@ static void testTimeUtil1()
     assertEQ(t, 4);
 }
 
+static void testTimeUtil2()
+{
+    float t = 0;
+    auto x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = TimeUtils::barToTime(1);
+    x = TimeUtils::time2bbf(t);
+    assertEQ(1, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = TimeUtils::barToTime(100);
+    x = TimeUtils::time2bbf(t);
+    assertEQ(100, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+}
+
+static void testTimeUtil3()
+{
+    float t = TimeUtils::quarterNote();
+    auto x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(1, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = 2 * TimeUtils::quarterNote();
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(2, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = 3 * TimeUtils::quarterNote();
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(3, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+}
+
+static void testTimeUtil4()
+{
+    float t = TimeUtils::quarterNote() / 100.f;
+    auto x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(1, std::get<2>(x));
+
+    t = 40 * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(40, std::get<2>(x));
+
+    t = 60 * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(60, std::get<2>(x));
+
+    t = 99 * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(99, std::get<2>(x));
+}
+
+static void testTimeUtil5()
+{
+    float t = 0;
+    auto x = TimeUtils::time2str(t);
+    assert(x == "0.0.0");
+
+    t = TimeUtils::quarterNote() + TimeUtils::barToTime(2);
+    x = TimeUtils::time2str(t);
+    assert(x == "2.1.0");
+
+    t += 3.f * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2str(t);
+    assert(x == "2.1.3");
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -254,7 +338,10 @@ void  testMidiEvents()
 
     testTimeUtil0();
     testTimeUtil1();
+    testTimeUtil2();
+    testTimeUtil3();
+    testTimeUtil4();
+    testTimeUtil5();
     
-
     assertNoMidi();     // check for leaks
 }
