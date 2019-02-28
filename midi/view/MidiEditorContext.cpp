@@ -138,14 +138,14 @@ void MidiEditorContext::adjustViewportForCursor()
         }
 
         // figure what fraction of 2 bars this is
-        float advanceBars = minimumAdvance / TimeUtils::barToTime(2);
+        float advanceBars = minimumAdvance / TimeUtils::bar2time(2);
         advanceBars += (minimumAdvance < 0) ? -2 : 2;
 
         float x = std::round(advanceBars / 2.f);
-        float finalAdvanceTime = x * TimeUtils::barToTime(2);
+        float finalAdvanceTime = x * TimeUtils::bar2time(2);
 
         m_startTime += finalAdvanceTime;
-        m_endTime = m_startTime + TimeUtils::barToTime(2);
+        m_endTime = m_startTime + TimeUtils::bar2time(2);
         assert(m_startTime >= 0);
     }
 

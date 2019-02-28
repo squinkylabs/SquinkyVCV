@@ -216,25 +216,25 @@ static void testClone()
 
 static void testTimeUtil0()
 {
-    int b = TimeUtils::timeToBar(0);
+    int b = TimeUtils::time2bar(0);
     assertEQ(b, 0);
-    b = TimeUtils::timeToBar(1);
+    b = TimeUtils::time2bar(1);
     assertEQ(b, 0);
-    b = TimeUtils::timeToBar(2);
+    b = TimeUtils::time2bar(2);
     assertEQ(b, 0);
-    b = TimeUtils::timeToBar(3);
+    b = TimeUtils::time2bar(3);
     assertEQ(b, 0);
-    b = TimeUtils::timeToBar(4);
+    b = TimeUtils::time2bar(4);
     assertEQ(b, 1);
-    b = TimeUtils::timeToBar(5);
+    b = TimeUtils::time2bar(5);
     assertEQ(b, 1);
 }
 
 static void testTimeUtil1()
 {
-    float t = TimeUtils::barToTime(0);
+    float t = TimeUtils::bar2time(0);
     assertEQ(t, 0);
-    t = TimeUtils::barToTime(1);
+    t = TimeUtils::bar2time(1);
     assertEQ(t, 4);
 }
 
@@ -246,13 +246,13 @@ static void testTimeUtil2()
     assertEQ(0, std::get<1>(x));
     assertEQ(0, std::get<2>(x));
 
-    t = TimeUtils::barToTime(1);
+    t = TimeUtils::bar2time(1);
     x = TimeUtils::time2bbf(t);
     assertEQ(1, std::get<0>(x));
     assertEQ(0, std::get<1>(x));
     assertEQ(0, std::get<2>(x));
 
-    t = TimeUtils::barToTime(100);
+    t = TimeUtils::bar2time(100);
     x = TimeUtils::time2bbf(t);
     assertEQ(100, std::get<0>(x));
     assertEQ(0, std::get<1>(x));
@@ -313,7 +313,7 @@ static void testTimeUtil5()
     auto x = TimeUtils::time2str(t);
     assert(x == "0.0.0");
 
-    t = TimeUtils::quarterNote() + TimeUtils::barToTime(2);
+    t = TimeUtils::quarterNote() + TimeUtils::bar2time(2);
     x = TimeUtils::time2str(t);
     assert(x == "2.1.0");
 

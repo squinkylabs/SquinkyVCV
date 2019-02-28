@@ -6,6 +6,7 @@
 #include "MidiSequencer.h"
 #include "MidiTrack.h"
 #include "MidiSong.h"
+#include "TimeUtils.h"
 
 static int _trackNumber = 0;
 
@@ -469,7 +470,8 @@ static void testCursor6()
     seq->editor->advanceCursor(false, 16 * 2 + 1);
 
     // bar 2 should be new start time
-    assertEQ(seq->context->startTime(), 2 * 4);
+    assertEQ(seq->context->startTime(), TimeUtils::bar2time(2));
+    assertEQ(seq->context->endTime(), TimeUtils::bar2time(4));
 
 }
 

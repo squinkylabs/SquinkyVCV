@@ -323,6 +323,16 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     seq()->assertValid();
 }
 
+void MidiEditor::changeCursorPitch(int semitones)
+{
+    float pitch = seq()->context->cursorPitch() + (semitones * PitchUtils::semitone);
+    pitch = std::max(pitch, -5.f);
+    pitch = std::min(pitch, 5.f);
+    seq()->context->setCursorPitch(pitch);
+    seq()->context->scrollViewportToCursorPitch();
+    updateSelectionForCursor();
+}
+
 void MidiEditor::extendTrackToMinDuration(float neededLength)
 {
     auto track = seq()->context->getTrack();
@@ -390,16 +400,6 @@ void MidiEditor::updateSelectionForCursor()
             return;
         }
     }
-}
-
-void MidiEditor::changeCursorPitch(int semitones)
-{
-    float pitch = seq()->context->cursorPitch() + (semitones * PitchUtils::semitone);
-    pitch = std::max(pitch, -5.f);
-    pitch = std::min(pitch, 5.f);
-    seq()->context->setCursorPitch(pitch);
-    seq()->context->scrollViewportToCursorPitch();
-    updateSelectionForCursor();
 }
 
 void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)

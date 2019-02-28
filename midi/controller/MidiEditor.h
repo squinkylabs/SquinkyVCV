@@ -25,10 +25,11 @@ public:
      * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
+    void changeCursorPitch(int semitones);
 
 
     /*********** functions that edit/change the notes **************/
-    void changeCursorPitch(int semitones);
+    
     void changePitch(int semitones);
     void changeStartTime(bool ticks, int amount);
     void changeDuration(bool ticks, int amount);

@@ -5,12 +5,12 @@
 class TimeUtils
 {
 public:
-    static float barToTime(int bar)
+    static float bar2time(int bar)
     {
         return bar * 4.f;     // for now, 4 q in one bar
     }
 
-    static int timeToBar(float time)
+    static int time2bar(float time)
     {
         return (int) std::floor(time / 4.f);
     }
@@ -22,8 +22,8 @@ public:
 
     static std::tuple<int, int, int> time2bbf(float time)
     {
-        const int bar = timeToBar(time);
-        float remaining = time - barToTime(bar);
+        const int bar = time2bar(time);
+        float remaining = time - bar2time(bar);
         const int q = (int) std::floor(remaining);
         remaining -= q;
         const int f = int( std::round(remaining * 100));

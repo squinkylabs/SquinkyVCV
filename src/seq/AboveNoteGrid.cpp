@@ -57,7 +57,7 @@ void AboveNoteGrid::createTimeLabels()
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     //assume two bars, quarter note grid
-    float totalDuration = TimeUtils::barToTime(2);
+    float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = 1.f;
     for (float time = 0; time <= totalDuration; time += deltaDuration) {
         // need delta.
@@ -88,21 +88,22 @@ void AboveNoteGrid::updateTimeLabels()
         createTimeLabels();
     }
 
-    int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime());
+
+    int firstBar = 1 + TimeUtils::time2bar(sequencer->context->startTime());
     if (firstBar == curFirstBar) {
         return;
     }
+  //  printf("will update first t = %f\n", sequencer->context->startTime()); fflush(stdout);
 
     curFirstBar = firstBar;
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     //assume two bars, quarter note grid
-    float totalDuration = TimeUtils::barToTime(2);
+    float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = 1.f;
     int i=0;
-    for (float time = 0; time <= totalDuration; time += deltaDuration) {
-
-       // float bar = TimeUtils::timeToBar(time);
+    for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
+        const float time = relTime + sequencer->context->startTime();
         std::string s = TimeUtils::time2str(time);
         timeLabels[i]->text = s;
         ++i;

@@ -113,18 +113,18 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     //assume two bars, quarter note grid
-    float totalDuration = TimeUtils::barToTime(2);
+    float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = 1.f;
-    for (float time = 0; time <= totalDuration; time += deltaDuration) {
-        // need delta.
+    for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
+        const float time =  relTime + sequencer->context->startTime();
         const float x = scaler->midiTimeToX(time);
         const float y = UIPrefs::topMarginNoteEdit;
         float width = 2;
         float height = this->box.size.y - y;
 
         const bool isBar = (time == 0) ||
-            (time == TimeUtils::barToTime(1)) ||
-            (time == TimeUtils::barToTime(2));
+            (time == TimeUtils::bar2time(1)) ||
+            (time == TimeUtils::bar2time(2));
 
         filledRect(
             vg,
