@@ -15,4 +15,4 @@ const NVGcolor UIPrefs::GRID_COLOR =
 const NVGcolor UIPrefs::GRID_BAR_COLOR =
     nvgRGB(0x90, 0x90, 0x90);
 
-const NVGcolor UIPrefs::TIME_LABEL_COLOR = nvgRGB(0x90, 0x90, 0x90);
+const NVGcolor UIPrefs::TIME_LABEL_COLOR = nvgRGB(0xb0, 0xb0, 0xb0);

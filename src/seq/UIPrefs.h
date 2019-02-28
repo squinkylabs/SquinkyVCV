@@ -14,5 +14,6 @@ public:
 
     static constexpr float hMarginsNoteEdit = 2.f;
     static constexpr float topMarginNoteEdit = 0.f;
+    static constexpr float timeLabelFontSize = 11.f;
 
 };

@@ -48,6 +48,8 @@ void AboveNoteGrid::step()
         }
     }
     firstTime = false;
+
+    updateTimeLabels();
 }
 
 void AboveNoteGrid::createTimeLabels()
@@ -64,6 +66,7 @@ void AboveNoteGrid::createTimeLabels()
         label->box.pos = Vec(x, 30);
         label->text = "";
         label->color = UIPrefs::TIME_LABEL_COLOR;
+        label->fontSize = UIPrefs::timeLabelFontSize;
         addChild(label);
         timeLabels.push_back(label);
     }
@@ -79,8 +82,7 @@ static void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
     nvgFill(vg);
 }
 
-// TODO: should be in step.
-void AboveNoteGrid::drawTimeLabels(NVGcontext *vg)
+void AboveNoteGrid::updateTimeLabels()
 {
     if (timeLabels.empty()) {
         createTimeLabels();
@@ -100,10 +102,9 @@ void AboveNoteGrid::drawTimeLabels(NVGcontext *vg)
     int i=0;
     for (float time = 0; time <= totalDuration; time += deltaDuration) {
 
-        float bar = TimeUtils::timeToBar(time);
-        std::stringstream str;
-        str << bar;
-        timeLabels[i]->text = str.str();
+       // float bar = TimeUtils::timeToBar(time);
+        std::string s = TimeUtils::time2str(time);
+        timeLabels[i]->text = s;
         ++i;
     }
 }
@@ -123,7 +124,6 @@ void AboveNoteGrid::draw(NVGcontext *vg)
     }
 
     filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
-    drawTimeLabels(vg);
 
 #ifdef __V1
     OpaqueWidget::draw(args);

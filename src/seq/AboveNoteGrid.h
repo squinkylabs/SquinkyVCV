@@ -37,8 +37,7 @@ private:
     Label* editAttributeLabel = nullptr;
     MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
 
-    void drawTimeLabels(NVGcontext *vg);
+    void updateTimeLabels();
     void createTimeLabels();
     std::vector<Label*> timeLabels;
-   // std::weak_ptr<NoteScreenScale> _scaler;
 };
