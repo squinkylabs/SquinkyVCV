@@ -1,5 +1,6 @@
 #include "AboveNoteGrid.h"
 #include "MidiSequencer.h"
+#include "NoteScreenScale.h"
 #include "TimeUtils.h"
 #include "UIPrefs.h"
 
@@ -16,9 +17,8 @@ AboveNoteGrid::AboveNoteGrid(const Vec& pos, const Vec& size, MidiSequencerPtr s
     editAttributeLabel->text = "";
     editAttributeLabel->color = UIPrefs::SELECTED_NOTE_COLOR;
     addChild(editAttributeLabel);
-
-    createTimeLabels();
 }
+
 
 void AboveNoteGrid::setSequencer(MidiSequencerPtr seq)
 {
@@ -52,7 +52,22 @@ void AboveNoteGrid::step()
 
 void AboveNoteGrid::createTimeLabels()
 {
-    
+    auto scaler = sequencer->context->getScaler();
+    assert(scaler);
+    //assume two bars, quarter note grid
+    float totalDuration = TimeUtils::barToTime(2);
+    float deltaDuration = 1.f;
+    for (float time = 0; time <= totalDuration; time += deltaDuration) {
+        // need delta.
+        const float x = scaler->midiTimeToX(time);
+        Label* label = new Label();
+        label->box.pos = Vec(x, 30);
+        label->text = "";
+        label->color = UIPrefs::TIME_LABEL_COLOR;
+        addChild(label);
+        timeLabels.push_back(label);
+    }
+
 }
 
 // TODO: move to util
@@ -64,20 +79,33 @@ static void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
     nvgFill(vg);
 }
 
-
-
-
+// TODO: should be in step.
 void AboveNoteGrid::drawTimeLabels(NVGcontext *vg)
 {
-    #if 0
-    int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime());
-    if (firstBar != curFirstBar) {
-        curFirstBar = firstBar;
-        std::stringstream str;
-        str << "First Bar: " << curFirstBar << " Last Bar: " << curFirstBar + 1;
-        barRangeLabel->text = str.str();
+    if (timeLabels.empty()) {
+        createTimeLabels();
     }
-    #endif
+
+    int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime());
+    if (firstBar == curFirstBar) {
+        return;
+    }
+
+    curFirstBar = firstBar;
+    auto scaler = sequencer->context->getScaler();
+    assert(scaler);
+    //assume two bars, quarter note grid
+    float totalDuration = TimeUtils::barToTime(2);
+    float deltaDuration = 1.f;
+    int i=0;
+    for (float time = 0; time <= totalDuration; time += deltaDuration) {
+
+        float bar = TimeUtils::timeToBar(time);
+        std::stringstream str;
+        str << bar;
+        timeLabels[i]->text = str.str();
+        ++i;
+    }
 }
 
 
@@ -89,7 +117,6 @@ void AboveNoteGrid::draw(const DrawArgs &args)
 void AboveNoteGrid::draw(NVGcontext *vg)
 {
 #endif
-
 
     if (!this->sequencer) {
         return;

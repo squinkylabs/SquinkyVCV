@@ -22,10 +22,7 @@
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
 #include "TimeUtils.h"
-
-
 #include "NoteDisplay.h"
-
 
 NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 {
@@ -33,43 +30,19 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     box.size = size;
     sequencer = seq;
 
-// can't we just call setSequencer here??
     if (sequencer) {
-    #if 0
-        auto scaler = std::make_shared<NoteScreenScale>(
-            size.x,
-            size.y,
-            UIPrefs::hMarginsNoteEdit,
-            UIPrefs::topMarginNoteEdit);
-        sequencer->context->setScaler(scaler);
-    #endif
         initEditContext();
 
         auto scaler2 = sequencer->context->getScaler();
-        printf("47 scaler=%p\n", scaler2.get()); fflush(stdout);
         assert(scaler2);
     }
   
-
     focusLabel = new Label();
     focusLabel->box.pos = Vec(40, 40);
     focusLabel->text = "";
     focusLabel->color = SqHelper::COLOR_WHITE;
     addChild(focusLabel);
     updateFocus(false);
-#if 0
-    editAttributeLabel = new Label();
-    editAttributeLabel->box.pos = Vec(10, 10);
-    editAttributeLabel->text = "";
-    editAttributeLabel->color = SqHelper::COLOR_WHITE;
-    addChild(editAttributeLabel);
-
-    barRangeLabel = new Label();
-    barRangeLabel->box.pos = Vec(100, 10);
-    barRangeLabel->text = "";
-    barRangeLabel->color = SqHelper::COLOR_WHITE;
-    addChild(barRangeLabel);
-#endif
 }
 
 void NoteDisplay::setSequencer(MidiSequencerPtr seq)
@@ -77,28 +50,16 @@ void NoteDisplay::setSequencer(MidiSequencerPtr seq)
     assert(seq.get());
     sequencer = seq;
     sequencer->assertValid();
-    #if 0
-    auto scaler = std::make_shared<NoteScreenScale>(
-        box.size.x,
-        box.size.y,
-        UIPrefs::hMarginsNoteEdit,
-        UIPrefs::topMarginNoteEdit);
-    sequencer->context->setScaler(scaler);
-    #endif
     initEditContext();
 }
 
 void NoteDisplay::initEditContext()
 {
-     printf("NoteDisplay::initEditContext() will set range\n"); fflush(stdout);
-
-
     // hard code view range (for now?)
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
-    printf("NoteDisplay::initEditContext() set range\n"); fflush(stdout);
 
 // set scaler once context has a valid range
     auto scaler = std::make_shared<NoteScreenScale>(
@@ -107,11 +68,7 @@ void NoteDisplay::initEditContext()
         UIPrefs::hMarginsNoteEdit,
         UIPrefs::topMarginNoteEdit);
     sequencer->context->setScaler(scaler);
-
-     printf("114 scaler=%p\n", scaler.get()); fflush(stdout);
     assert(scaler);
- //   scaler->setContext(sequencer->context);
- //   sequencer->context->setScaler(scaler);
 }
 
 // TODO: get rid of this
@@ -120,31 +77,6 @@ void NoteDisplay::step()
     if (!sequencer) {
         return;
     }
-#if 0
-    auto attr = sequencer->context->noteAttribute;
-    if (curAttribute != attr) {
-        curAttribute = attr;
-        switch (attr) {
-            case MidiEditorContext::NoteAttribute::Pitch:
-                editAttributeLabel->text = "Pitch";
-                break;
-            case MidiEditorContext::NoteAttribute::Duration:
-                editAttributeLabel->text = "Duration";
-                break;
-            case MidiEditorContext::NoteAttribute::StartTime:
-                editAttributeLabel->text = "Start Time";
-                break;
-        }
-    }
-
-    int firstBar = 1 + TimeUtils::timeToBar(sequencer->context->startTime());
-    if (firstBar != curFirstBar) {
-        curFirstBar = firstBar;
-        std::stringstream str;
-        str << "First Bar: " << curFirstBar << " Last Bar: " << curFirstBar + 1;
-        barRangeLabel->text = str.str();
-    }
-#endif
 }
 
 void NoteDisplay::drawNotes(NVGcontext *vg)
@@ -221,14 +153,6 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
         const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) +
             scaler->noteHeight() / 2.f;
         filledRect(vg, color, x, y, 10, 3);
-#if 0
-        static float lasty = 1000;
-        if (y != lasty) {
-            lasty = y;
-            printf("draw curso at %f, %f\n", x, y);
-            fflush(stdout);
-        }
-#endif
     }
 }
 
@@ -266,34 +190,13 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         cv += PitchUtils::semitone) {
 
         const float y = scaler->midiCvToY(cv);
-
-        static int _ct = 0;
-        bool p = false;
-        if (_ct == 0) {
-            p = true;
-            _ct = 1;
-        } else if (_ct == 1 && y < 0) {
-            p = true;
-            _ct = 2;
-        }
-
-        if (p) {
-            printf("draw back at y=%f low = %f hi=%f cv=%f\n",
-                y,
-                sequencer->context->pitchLow(),
-                sequencer->context->pitchHi(),
-                cv);
-            fflush(stdout);
-        }
         const float width = box.size.x;
         bool accidental = PitchUtils::isAccidental(cv);
         if (accidental) {
-        //    printf("back, accident y=%f w=%f h=%d\n", y, width, noteHeight);
             filledRect(
                 vg,
                 UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
                 0, y, width, noteHeight);
-
         }
     }
 }

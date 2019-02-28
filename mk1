@@ -1,1 +1,1 @@
-make _ASSERT=1 __V1=1
+make _ASSERT=1 __V1=1 -j4

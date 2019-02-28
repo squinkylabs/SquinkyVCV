@@ -32,7 +32,7 @@ public:
 
 private:
     bool firstTime = true;
-    bool curFirstBar = -1;      // number of measure at start of grid
+    int curFirstBar = -1;      // number of measure at start of grid
     MidiSequencerPtr sequencer;
     Label* editAttributeLabel = nullptr;
     MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;

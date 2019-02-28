@@ -13,26 +13,11 @@ NoteScreenScale::NoteScreenScale(
 {
     assert(screenWidth > 0);
     assert(screenHeight > 0);
-   
-
-   printf("NSS, w=%f h=%f\n", screenWidth, screenHeight); fflush(stdout);
-#if 0
-    const float activeScreenWidth = screenWidth - 2 * hMargin;
-    ax = activeScreenWidth / (viewport->endTime() - viewport->startTime());
-    bx = hMargin;
-
-    // min and max the same is fine - it's just one note bar full screen
-    float activeScreenHeight = screenHeight - topMargin;
-    ay = activeScreenHeight / ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
-    by = topMargin;
-#endif
 }
 
 void NoteScreenScale::setContext(std::shared_ptr<MidiEditorContext> context)
 {
-     printf("NoteScreenScale::setContext pitch range = %f-%f\n", context->pitchLow(), context->pitchHi() );
-    fflush(stdout);
-      assert( context->pitchLow() < context->pitchHi());
+    assert( context->pitchLow() <= context->pitchHi());
     _context = context;
     this->context()->assertValid();
     reCalculate();
@@ -56,10 +41,7 @@ void NoteScreenScale::reCalculate()
     ay = activeScreenHeight / ((ctx->pitchHi() + 1 / 12.f) - ctx->pitchLow());
     by = topMargin;
 
-    printf("in NoteScreenScale::reCalculate, ax=%f, bx = %f ay=%f by=%f\n", ax, bx, ay, by );
-    printf("pitch range = %f-%f\n", ctx->pitchLow(), ctx->pitchHi() );
-    fflush(stdout);
-    assert( ctx->pitchLow() < ctx->pitchHi());
+    assert( ctx->pitchLow() <= ctx->pitchHi());
 }
 
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev)

@@ -9,6 +9,7 @@ public:
     }
     static int timeToBar(float time)
     {
-        return (int) std::round(time / 4.f);
+       // return (int) std::round(time / 4.f);
+        return (int) std::floor(time / 4.f);
     }
 };

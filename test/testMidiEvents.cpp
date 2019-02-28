@@ -1,6 +1,7 @@
 
 
 #include "MidiEvent.h"
+#include "TimeUtils.h"
 
 #include "asserts.h"
 
@@ -213,6 +214,30 @@ static void testClone()
 }
 
 
+static void testTimeUtil0()
+{
+    int b = TimeUtils::timeToBar(0);
+    assertEQ(b, 0);
+    b = TimeUtils::timeToBar(1);
+    assertEQ(b, 0);
+    b = TimeUtils::timeToBar(2);
+    assertEQ(b, 0);
+    b = TimeUtils::timeToBar(3);
+    assertEQ(b, 0);
+    b = TimeUtils::timeToBar(4);
+    assertEQ(b, 1);
+    b = TimeUtils::timeToBar(5);
+    assertEQ(b, 1);
+}
+
+static void testTimeUtil1()
+{
+    float t = TimeUtils::barToTime(0);
+    assertEQ(t, 0);
+    t = TimeUtils::barToTime(1);
+    assertEQ(t, 4);
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -226,6 +251,9 @@ void  testMidiEvents()
     testEqualNote();
     testEqualEnd();
     testClone();
+
+    testTimeUtil0();
+    testTimeUtil1();
     
 
     assertNoMidi();     // check for leaks
