@@ -15,7 +15,7 @@ NoteScreenScale::NoteScreenScale(
     assert(screenHeight > 0);
    
 
-   
+   printf("NSS, w=%f h=%f\n", screenWidth, screenHeight); fflush(stdout);
 #if 0
     const float activeScreenWidth = screenWidth - 2 * hMargin;
     ax = activeScreenWidth / (viewport->endTime() - viewport->startTime());
@@ -30,21 +30,36 @@ NoteScreenScale::NoteScreenScale(
 
 void NoteScreenScale::setContext(std::shared_ptr<MidiEditorContext> context)
 {
-    viewport = context;
-    viewport->assertValid();
+     printf("NoteScreenScale::setContext pitch range = %f-%f\n", context->pitchLow(), context->pitchHi() );
+    fflush(stdout);
+      assert( context->pitchLow() < context->pitchHi());
+    _context = context;
+    this->context()->assertValid();
     reCalculate();
 }
+
+void NoteScreenScale::assertValid() const
+{
+    assert(this->context());
+}
+
 
 void NoteScreenScale::reCalculate()
 {
     const float activeScreenWidth = screenWidth - 2 * hMargin;
-    ax = activeScreenWidth / (viewport->endTime() - viewport->startTime());
+    auto ctx = context();
+    ax = activeScreenWidth / (ctx->endTime() - ctx->startTime());
     bx = hMargin;
 
     // min and max the same is fine - it's just one note bar full screen
     float activeScreenHeight = screenHeight - topMargin;
-    ay = activeScreenHeight / ((viewport->pitchHi() + 1 / 12.f) - viewport->pitchLow());
+    ay = activeScreenHeight / ((ctx->pitchHi() + 1 / 12.f) - ctx->pitchLow());
     by = topMargin;
+
+    printf("in NoteScreenScale::reCalculate, ax=%f, bx = %f ay=%f by=%f\n", ax, bx, ay, by );
+    printf("pitch range = %f-%f\n", ctx->pitchLow(), ctx->pitchHi() );
+    fflush(stdout);
+    assert( ctx->pitchLow() < ctx->pitchHi());
 }
 
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
@@ -54,8 +69,7 @@ float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
 
 float NoteScreenScale::midiTimeToX(MidiEvent::time_t t)
 {
-    assert(viewport);
-    return  bx + (t - viewport->startTime()) * ax;
+    return  bx + (t - context()->startTime()) * ax;
 }
 
 float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
@@ -65,14 +79,12 @@ float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
 
 float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note)
 {
-  //  return (viewport->pitchHi() - note.pitchCV) * ay;
     return midiCvToY(note.pitchCV);
 }
 
 float NoteScreenScale::midiCvToY(float cv)
 {
-    assert(viewport);
-    return by + (viewport->pitchHi() - cv) * ay;
+    return by + (context()->pitchHi() - cv) * ay;
 }
 
 float NoteScreenScale::noteHeight()
@@ -82,9 +94,14 @@ float NoteScreenScale::noteHeight()
 
 std::pair<float, float> NoteScreenScale::midiTimeToHBounds(const MidiNoteEvent& note)
 {
- //   float x = (note.startTime - viewport->startTime()) * ax;
     float x0 = midiTimeToX(note.startTime);
- //   float y = (note.startTime + note.duration - viewport->startTime()) * ax;
     float x1 = midiTimeToX(note.startTime + note.duration);
     return std::pair<float, float>(x0, x1);
+}
+
+std::shared_ptr<MidiEditorContext> NoteScreenScale::context() const
+{
+    std::shared_ptr<MidiEditorContext> ret = _context.lock();
+    assert(ret);
+    return ret;
 }

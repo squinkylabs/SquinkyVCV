@@ -16,7 +16,7 @@ private:
     Label* focusLabel = nullptr;
   //  Label* editAttributeLabel = nullptr;
   //  Label* barRangeLabel = nullptr;
-    std::shared_ptr<NoteScreenScale> scaler;
+  //  std::shared_ptr<NoteScreenScale> scaler;
     MidiSequencerPtr sequencer;
     bool cursorState = false;
     int cursorFrameCount = 0;

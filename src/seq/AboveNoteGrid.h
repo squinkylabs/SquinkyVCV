@@ -40,4 +40,5 @@ private:
     void drawTimeLabels(NVGcontext *vg);
     void createTimeLabels();
     std::vector<Label*> timeLabels;
+   // std::weak_ptr<NoteScreenScale> _scaler;
 };

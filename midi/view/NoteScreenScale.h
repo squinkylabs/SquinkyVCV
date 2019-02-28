@@ -47,13 +47,16 @@ public:
     float midiCvToY(float cv);
 
     float noteHeight();
+
+    void assertValid() const;
 private:
     float unitsPerPix = 1;
     float by = 0;
     float bx = 0;
     float ax = 0;
     float ay = 0;
-    std::shared_ptr<MidiEditorContext> viewport;
+    std::weak_ptr<MidiEditorContext> _context;
+    std::shared_ptr<MidiEditorContext> context() const;
 
     const float screenWidth;
     const float screenHeight;

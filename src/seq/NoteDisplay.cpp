@@ -33,14 +33,23 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     box.size = size;
     sequencer = seq;
 
+// can't we just call setSequencer here??
     if (sequencer) {
-        scaler = std::make_shared<NoteScreenScale>(
+    #if 0
+        auto scaler = std::make_shared<NoteScreenScale>(
             size.x,
             size.y,
             UIPrefs::hMarginsNoteEdit,
             UIPrefs::topMarginNoteEdit);
+        sequencer->context->setScaler(scaler);
+    #endif
         initEditContext();
+
+        auto scaler2 = sequencer->context->getScaler();
+        printf("47 scaler=%p\n", scaler2.get()); fflush(stdout);
+        assert(scaler2);
     }
+  
 
     focusLabel = new Label();
     focusLabel->box.pos = Vec(40, 40);
@@ -65,22 +74,47 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 
 void NoteDisplay::setSequencer(MidiSequencerPtr seq)
 {
+    assert(seq.get());
     sequencer = seq;
     sequencer->assertValid();
+    #if 0
+    auto scaler = std::make_shared<NoteScreenScale>(
+        box.size.x,
+        box.size.y,
+        UIPrefs::hMarginsNoteEdit,
+        UIPrefs::topMarginNoteEdit);
+    sequencer->context->setScaler(scaler);
+    #endif
     initEditContext();
 }
 
 void NoteDisplay::initEditContext()
 {
+     printf("NoteDisplay::initEditContext() will set range\n"); fflush(stdout);
+
+
     // hard code view range (for now?)
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
-    scaler->setContext(sequencer->context);
+    printf("NoteDisplay::initEditContext() set range\n"); fflush(stdout);
+
+// set scaler once context has a valid range
+    auto scaler = std::make_shared<NoteScreenScale>(
+        box.size.x,
+        box.size.y,
+        UIPrefs::hMarginsNoteEdit,
+        UIPrefs::topMarginNoteEdit);
     sequencer->context->setScaler(scaler);
+
+     printf("114 scaler=%p\n", scaler.get()); fflush(stdout);
+    assert(scaler);
+ //   scaler->setContext(sequencer->context);
+ //   sequencer->context->setScaler(scaler);
 }
 
+// TODO: get rid of this
 void NoteDisplay::step()
 {
     if (!sequencer) {
@@ -116,6 +150,8 @@ void NoteDisplay::step()
 void NoteDisplay::drawNotes(NVGcontext *vg)
 {
     MidiEditorContext::iterator_pair it = sequencer->context->getEvents();
+    auto scaler = sequencer->context->getScaler();
+    assert(scaler);
     const int noteHeight = scaler->noteHeight();
     for (; it.first != it.second; ++it.first) {
         auto temp = *(it.first);
@@ -142,6 +178,8 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     // float z = APP->scene->zoomWidget->zoom;
     //  printf("zoom is %f\n", z); fflush(stdout);
 
+    auto scaler = sequencer->context->getScaler();
+    assert(scaler);
     //assume two bars, quarter note grid
     float totalDuration = TimeUtils::barToTime(2);
     float deltaDuration = 1.f;
@@ -175,6 +213,9 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
         auto color = cursorState ?
             nvgRGB(0xff, 0xff, 0xff) :
             nvgRGB(0, 0, 0);
+
+        auto scaler = sequencer->context->getScaler();
+        assert(scaler);
 
         const float x = scaler->midiTimeToX(sequencer->context->cursorTime());
         const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) +
@@ -216,11 +257,14 @@ void NoteDisplay::draw(NVGcontext *vg)
 
 void NoteDisplay::drawBackground(NVGcontext *vg)
 {
+    auto scaler = sequencer->context->getScaler();
     filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
+    assert(scaler);
     const int noteHeight = scaler->noteHeight();
     for (float cv = sequencer->context->pitchLow();
         cv <= sequencer->context->pitchHi();
         cv += PitchUtils::semitone) {
+
         const float y = scaler->midiCvToY(cv);
 
         static int _ct = 0;
@@ -244,6 +288,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         const float width = box.size.x;
         bool accidental = PitchUtils::isAccidental(cv);
         if (accidental) {
+        //    printf("back, accident y=%f w=%f h=%d\n", y, width, noteHeight);
             filledRect(
                 vg,
                 UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,

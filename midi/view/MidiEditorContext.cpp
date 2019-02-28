@@ -2,6 +2,7 @@
 #include "MidiEditorContext.h"
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
+#include "NoteScreenScale.h"
 #include "TimeUtils.h"
 
 extern int _mdb;
@@ -14,6 +15,14 @@ MidiEditorContext::MidiEditorContext(MidiSongPtr song) : _song(song)
 MidiEditorContext::~MidiEditorContext()
 {
     --_mdb;
+}
+
+void MidiEditorContext::setScaler(std::shared_ptr<NoteScreenScale> _scaler)
+{
+    assert(_scaler);
+    scaler = _scaler;
+    MidiEditorContextPtr ctx =  shared_from_this();
+    scaler->setContext(ctx);
 }
 
 void MidiEditorContext::scrollViewportToCursorPitch()

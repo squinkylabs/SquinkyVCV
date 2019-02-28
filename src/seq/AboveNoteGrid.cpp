@@ -27,6 +27,9 @@ void AboveNoteGrid::setSequencer(MidiSequencerPtr seq)
 
 void AboveNoteGrid::step()
 {
+    if (!sequencer) {
+        return;
+    }
     auto attr = sequencer->context->noteAttribute;
     if (firstTime || (curAttribute != attr)) {
         curAttribute = attr;
@@ -86,6 +89,11 @@ void AboveNoteGrid::draw(const DrawArgs &args)
 void AboveNoteGrid::draw(NVGcontext *vg)
 {
 #endif
+
+
+    if (!this->sequencer) {
+        return;
+    }
 
     filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
     drawTimeLabels(vg);

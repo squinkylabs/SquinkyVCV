@@ -8,7 +8,7 @@ class MidiSong;
 class MidiSelectionModel;
 class NoteScreenScale;
 
-class MidiEditorContext
+class MidiEditorContext  : public std::enable_shared_from_this<MidiEditorContext>
 {
 public:
     MidiEditorContext(std::shared_ptr<MidiSong>);
@@ -88,9 +88,12 @@ public:
 
     MidiTrackPtr getTrack();
 
-    void setScaler(std::shared_ptr<NoteScreenScale> scaler)
+
+    void setScaler(std::shared_ptr<NoteScreenScale> _scaler);
+
+    std::shared_ptr<NoteScreenScale> getScaler()
     {
-        _scaler = scaler;
+        return scaler;
     }
 
     void setCursorToNote(MidiNoteEventPtrC note);
@@ -138,8 +141,8 @@ private:
 
     int trackNumber = 0;
 
-    // I think this is unused
-    std::weak_ptr<NoteScreenScale> _scaler;
+
+    std::shared_ptr<NoteScreenScale> scaler;
 
     // Use weak ref to break circular dependency
     std::weak_ptr<MidiSong> _song;
