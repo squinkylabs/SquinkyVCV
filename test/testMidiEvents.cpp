@@ -408,7 +408,6 @@ static void testPitchUtil1()
 
     v = -.0001f;
     assert(PitchUtils::isC(v));
-
 }
 
 void  testMidiEvents()

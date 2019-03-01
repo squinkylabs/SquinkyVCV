@@ -61,7 +61,7 @@ void AboveNoteGrid::createTimeLabels()
     float deltaDuration = 1.f;
     for (float time = 0; time <= totalDuration; time += deltaDuration) {
         // need delta.
-        const float x = scaler->midiTimeToX(time);
+        const float x = scaler->midiTimeToX(time) - 6;
         Label* label = new Label();
         label->box.pos = Vec(x, 30);
         label->text = "";
@@ -93,7 +93,6 @@ void AboveNoteGrid::updateTimeLabels()
     if (firstBar == curFirstBar) {
         return;
     }
-  //  printf("will update first t = %f\n", sequencer->context->startTime()); fflush(stdout);
 
     curFirstBar = firstBar;
     auto scaler = sequencer->context->getScaler();
