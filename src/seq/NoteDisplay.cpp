@@ -122,9 +122,9 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
         float width = 2;
         float height = this->box.size.y - y;
 
-        const bool isBar = (time == 0) ||
-            (time == TimeUtils::bar2time(1)) ||
-            (time == TimeUtils::bar2time(2));
+        const bool isBar = (relTime == 0) ||
+            (relTime == TimeUtils::bar2time(1)) ||
+            (relTime == TimeUtils::bar2time(2));
 
         filledRect(
             vg,
