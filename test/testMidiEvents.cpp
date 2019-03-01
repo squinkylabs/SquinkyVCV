@@ -322,6 +322,95 @@ static void testTimeUtil5()
     assert(x == "2.1.3");
 }
 
+static void testPitchUtil0()
+{
+    // C
+    float v = PitchUtils::pitchToCV(4, 0);
+    assert(!PitchUtils::isAccidental(v));
+    assert(PitchUtils::isC(v));
+
+    // C#
+    v = PitchUtils::pitchToCV(4, 1);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // D
+    v = PitchUtils::pitchToCV(4, 2);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // D#
+    v = PitchUtils::pitchToCV(4, 3);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // E
+    v = PitchUtils::pitchToCV(4, 4);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // F
+    v = PitchUtils::pitchToCV(4, 5);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // F#
+    v = PitchUtils::pitchToCV(4, 6);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // G
+    v = PitchUtils::pitchToCV(4, 7);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // G#
+    v = PitchUtils::pitchToCV(4, 8);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // A
+    v = PitchUtils::pitchToCV(4, 9);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // A#
+    v = PitchUtils::pitchToCV(4, 10);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // B
+    v = PitchUtils::pitchToCV(4, 11);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+      // c
+    v = PitchUtils::pitchToCV(5, 0);
+    assert(!PitchUtils::isAccidental(v));
+    assert(PitchUtils::isC(v));
+}
+
+
+static void testPitchUtil1()
+{
+    // C
+    float v = PitchUtils::pitchToCV(4, 0);
+    assert(PitchUtils::isC(v));
+
+    v = PitchUtils::pitchToCV(4, 0) + (PitchUtils::semitone / 2.f) - .001f;
+    assert(PitchUtils::isC(v));
+
+    v = PitchUtils::pitchToCV(4, 0) + (PitchUtils::semitone / 2.f) + .001f;
+    assert(!PitchUtils::isC(v));
+
+    v = 0;
+    assert(PitchUtils::isC(v));
+
+    v = -.0001f;
+    assert(PitchUtils::isC(v));
+
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -342,6 +431,9 @@ void  testMidiEvents()
     testTimeUtil3();
     testTimeUtil4();
     testTimeUtil5();
+
+    testPitchUtil0();
+    testPitchUtil1();
     
     assertNoMidi();     // check for leaks
 }

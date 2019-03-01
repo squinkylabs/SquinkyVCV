@@ -11,6 +11,7 @@ public:
     static int cvToSemitone(float cv);
     static float pitchToCV(int octave, int semi);
     static bool isAccidental(float cv);
+    static bool isC(float cv);
 };
 
 inline std::pair<int, int> PitchUtils::cvToPitch(float cv)
@@ -21,6 +22,10 @@ inline std::pair<int, int> PitchUtils::cvToPitch(float cv)
     octave += 4;
     float s = remainder * 12;
     int semi = int(std::round(s));
+    if (semi >= 12) {
+        semi -= 12;
+        octave++;
+    }
     return std::pair<int, int>(octave, semi);
 }
 
@@ -49,4 +54,11 @@ inline bool PitchUtils::isAccidental(float cv)
             break;
     }
     return ret;
+}
+
+
+inline bool PitchUtils::isC(float cv)
+{
+    int semi = cvToPitch(cv).second;
+    return semi == 0;
 }

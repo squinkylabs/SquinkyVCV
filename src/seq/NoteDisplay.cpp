@@ -185,18 +185,39 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
     assert(scaler);
     const int noteHeight = scaler->noteHeight();
+    const float width = box.size.x;
     for (float cv = sequencer->context->pitchLow();
         cv <= sequencer->context->pitchHi();
         cv += PitchUtils::semitone) {
 
         const float y = scaler->midiCvToY(cv);
-        const float width = box.size.x;
+        
         bool accidental = PitchUtils::isAccidental(cv);
         if (accidental) {
             filledRect(
                 vg,
                 UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
                 0, y, width, noteHeight);
+        }
+       
+    }
+
+    for (float cv = sequencer->context->pitchLow();
+        cv <= sequencer->context->pitchHi();
+        cv += PitchUtils::semitone) {
+
+        float y = scaler->midiCvToY(cv) + scaler->noteHeight();
+        const bool isC = PitchUtils::isC(cv);
+        if (y > (box.size.y - .5)) {
+            y = y - 2;  // make sure  bottom line draws. Shoudl really
+                        // re-design the visuals here
+        }
+        if (isC) {
+         //   const float y = scaler->midiCvToY(cv);
+            filledRect(
+                vg,
+                UIPrefs::GRID_CLINE_COLOR,
+                0, y, width, 1);
         }
     }
 }
