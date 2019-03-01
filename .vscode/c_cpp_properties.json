@@ -64,6 +64,7 @@
                 "${workspaceRoot}/dsp/third-party/falco"
             ],
             "defines": [
+                "__V1",
                 "_EXP",
                 "_DEBUG",
                 "UNICODE",

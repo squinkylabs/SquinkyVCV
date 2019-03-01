@@ -249,14 +249,31 @@ void NoteDisplay::onDefocus(EventDefocus &e)
 #ifdef __V1
 void NoteDisplay::onSelectKey(const event::SelectKey &e)
 {
-    // TODO: handle repeat
-    if (e.action != GLFW_PRESS) {
-        return;
+    bool handle = false;
+    bool repeat = false;
+    switch (e.action) {
+        case GLFW_REPEAT:
+            handle = false;
+            repeat = true;
+            break;
+        case GLFW_PRESS:
+            handle = true;
+            repeat = false;
+            break;
     }
-    bool handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
-    if (handled) {
-        e.consume(this);
-    } else {
+
+    if (repeat) {
+        handle = MidiKeyboardHandler::doRepeat(e.key);
+    }
+
+    bool handled = false;
+    if (handle) {
+        handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
+        if (handled) {
+            e.consume(this);
+        }
+    }
+    if (!handled) {
         OpaqueWidget::onSelectKey(e);
     }
 }

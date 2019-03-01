@@ -5,6 +5,27 @@
 
 #include <assert.h>
 
+bool MidiKeyboardHandler::doRepeat(unsigned key)
+{
+    bool doIt = false;
+    switch(key) {
+        case GLFW_KEY_TAB: 
+        case GLFW_KEY_KP_ADD:
+        case GLFW_KEY_EQUAL:
+        case GLFW_KEY_KP_SUBTRACT:
+        case GLFW_KEY_LEFT_BRACKET:
+        case GLFW_KEY_RIGHT_BRACKET:
+        case GLFW_KEY_MINUS:
+      //  case GLFW_KEY_PLUS:
+        case GLFW_KEY_RIGHT:
+        case GLFW_KEY_LEFT:
+        case GLFW_KEY_UP:
+        case GLFW_KEY_DOWN:
+            doIt = true;
+    }
+    return doIt;
+}
+
 void MidiKeyboardHandler::handleNoteEditorChange(
     MidiSequencer* sequencer,
     ChangeType type,
