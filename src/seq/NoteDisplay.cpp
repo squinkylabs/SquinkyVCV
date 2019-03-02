@@ -240,7 +240,7 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
 
 
 #ifdef __V1
-void NoteDisplay::onSelect(const event::Select &e)
+void NoteDisplay::onSelect(const SelectEvent &e)
 #else
 void NoteDisplay::onFocus(EventFocus &e)
 #endif
@@ -254,7 +254,7 @@ void NoteDisplay::onFocus(EventFocus &e)
 }
 
 #ifdef __V1
-void NoteDisplay::onDeselect(const event::Deselect &e)
+void NoteDisplay::onDeselect(const DeselectEvent &e)
 #else
 void NoteDisplay::onDefocus(EventDefocus &e)
 #endif
@@ -268,7 +268,7 @@ void NoteDisplay::onDefocus(EventDefocus &e)
 }
 
 #ifdef __V1
-void NoteDisplay::onSelectKey(const event::SelectKey &e)
+void NoteDisplay::onSelectKey(const SelectKeyEvent &e)
 {
     bool handle = false;
     bool repeat = false;

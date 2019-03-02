@@ -49,9 +49,9 @@ public:
     void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
 
 #ifdef __V1
-    void onSelect(const event::Select &e) override;
-    void onDeselect(const event::Deselect &e) override;
-    void onSelectKey(const event::SelectKey &e) override;
+    void onSelect(const SelectEvent &e) override;
+    void onDeselect(const DeselectEvent &e) override;
+    void onSelectKey(const SelectKeyEvent &e) override;
     void draw(const DrawArgs &args) override;
 #else
     void draw(NVGcontext *vg) override;

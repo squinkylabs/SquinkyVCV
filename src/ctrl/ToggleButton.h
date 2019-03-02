@@ -13,7 +13,7 @@ public:
     void addSvg(const char* resourcePath);
 
 #ifdef __V1
-    void onButton(const event::Button &e) override;
+    void onButton(const ButtonEvent &e) override;
     void draw(const DrawArgs &args) override;
 #else
     void onMouseDown(EventMouseDown &e) override;
@@ -65,7 +65,7 @@ inline void ToggleButton::draw(NVGcontext *vg)
 
 
 #ifdef __V1
-inline void ToggleButton::onButton(const event::Button &e)
+inline void ToggleButton::onButton(const ButtonEvent &e)
 #else
 inline void ToggleButton::onMouseDown(EventMouseDown &e)
 #endif

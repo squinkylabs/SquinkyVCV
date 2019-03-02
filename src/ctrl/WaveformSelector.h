@@ -60,7 +60,7 @@ struct WaveformSelector : ParamWidget
 
 #ifdef __V1
     void draw(const DrawArgs &arg) override;
-    void onButton(const event::Button &e) override;
+    void onButton(const ButtonEvent &e) override;
     void drawSVG(const DrawArgs &arg, SqHelper::SvgWidget&, float x, float y);
 #else
     void onMouseDown(EventMouseDown &e) override;
@@ -168,8 +168,7 @@ inline void WaveformSelector::draw(NVGcontext *arg)
 
 
 #ifdef __V1
-//void onButton(const event::Button &e) override;
- inline void WaveformSelector::onButton(const event::Button &e)
+ inline void WaveformSelector::onButton(const ButtonEvent &e)
  {
      // for now, use both button presses.
      // eventually get more sophisticated.

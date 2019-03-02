@@ -17,18 +17,18 @@ public:
 
     void setLabels(std::vector<std::string> l) {
         labels = l;
-        event::Change e;
+        ChangeEvent e;
         onChange(e);
     }
 
     void draw(const DrawArgs &arg) override;
-    void onButton(const event::Button &e) override;
-    void onChange(const event::Change &e) override;
-    void onAction(const event::Action &e) override;
+    void onButton(const ButtonEvent &e) override;
+    void onChange(const ChangeEvent &e) override;
+    void onAction(const ActionEvent &e) override;
 };
 
 
-inline void PopupMenuParamWidget::onChange(const event::Change& e) 
+inline void PopupMenuParamWidget::onChange(const ChangeEvent& e) 
  {
      if (!this->paramQuantity) {
          return;            // no module
@@ -49,10 +49,10 @@ inline void PopupMenuParamWidget::draw(const DrawArgs &args)
 	bndChoiceButton(args.vg, 0.0, 0.0, box.size.x, box.size.y, BND_CORNER_NONE, state, -1, text.c_str());
 }
 
-inline void PopupMenuParamWidget::onButton(const event::Button &e)
+inline void PopupMenuParamWidget::onButton(const ButtonEvent &e)
 {
     // for now, let's activate on all mouse clicks
-    event::Action ea; 
+    ActionEvent ea; 
     onAction(ea);
 }
 
@@ -74,16 +74,16 @@ public:
     PopupMenuParamWidget* const parent;
 
 
-    void onAction(const event::Action &e) override
+    void onAction(const ActionEvent &e) override
     {
         parent->text = this->text;
-        event::Change ce;
+        ChangeEvent ce;
         parent->paramQuantity->setValue(index);
         parent->onChange(ce);
     }
 };
 
-void PopupMenuParamWidget::onAction(const event::Action &e) 
+void PopupMenuParamWidget::onAction(const ActionEvent &e) 
 {
     Menu* menu = createMenu();
 

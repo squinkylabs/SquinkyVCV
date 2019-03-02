@@ -147,7 +147,7 @@ struct SQPanelItem : MenuItem
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
 
-    void onAction(sq::EventAction &e) override
+    void onAction(const sq::EventAction &e) override
     {
         actionCallback();
     }
