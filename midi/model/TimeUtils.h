@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+#include <stdio.h>
 #include <tuple>
 
 class TimeUtils
@@ -35,7 +35,7 @@ public:
     {
         auto bbf = time2bbf(time);
         char buffer[256];
-        sprintf_s(buffer, "%d.%d.%d", std::get<0>(bbf), std::get<1>(bbf), std::get<2>(bbf));
+        snprintf(buffer, 256, "%d.%d.%d", std::get<0>(bbf), std::get<1>(bbf), std::get<2>(bbf));
         return buffer;
     }
 };
