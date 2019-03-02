@@ -33,11 +33,17 @@ public:
 private:
     bool firstTime = true;
     int curFirstBar = -1;      // number of measure at start of grid
+    float curCursorTime = -1;
+    float curCursorPitch = -1;
     MidiSequencerPtr sequencer;
     Label* editAttributeLabel = nullptr;
     MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
 
     void updateTimeLabels();
     void createTimeLabels();
+    void updateCursorLabels();
     std::vector<Label*> timeLabels;
+
+    Label* cursorTimeLabel = nullptr;
+    Label* cursorPitchLabel = nullptr;
 };

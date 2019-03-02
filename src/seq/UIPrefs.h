@@ -12,6 +12,7 @@ public:
     static const NVGcolor GRID_BAR_COLOR;
     static const NVGcolor TIME_LABEL_COLOR;
     static const NVGcolor GRID_CLINE_COLOR;
+    static const NVGcolor STATUS_LABEL_COLOR;
 
     static constexpr float hMarginsNoteEdit = 2.f;
     static constexpr float topMarginNoteEdit = 0.f;

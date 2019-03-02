@@ -73,10 +73,12 @@ SequencerModule::SequencerModule()
     seqComp = std::make_shared<Comp>(this, song);
 }
 
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq3/docs/sq.md";
+
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq3/docs/sq.md");
+    DECLARE_MANUAL(helpUrl);
 
     /**
      * Helper to add a text label to this widget
@@ -94,6 +96,11 @@ struct SequencerWidget : ModuleWidget
     NoteDisplay* noteDisplay = nullptr;
     AboveNoteGrid* headerDisplay = nullptr;
 };
+
+void sequencerHelp()
+{
+    SqHelper::openBrowser(helpUrl);
+}
 
 #ifdef __V1
 SequencerWidget::SequencerWidget(SequencerModule *module)

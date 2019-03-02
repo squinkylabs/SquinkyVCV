@@ -410,6 +410,57 @@ static void testPitchUtil1()
     assert(PitchUtils::isC(v));
 }
 
+static void testPitchUtil2()
+{       
+    float v = PitchUtils::pitchToCV(4, 0);
+    std::string s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "C:4");
+
+    v = PitchUtils::pitchToCV(4, 1);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "C#:4");
+
+    v = PitchUtils::pitchToCV(4, 2);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "D:4");
+
+    v = PitchUtils::pitchToCV(4, 3);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "D#:4");
+
+    v = PitchUtils::pitchToCV(4, 4);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "E:4");
+
+    v = PitchUtils::pitchToCV(4, 5);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "F:4");
+
+    v = PitchUtils::pitchToCV(4, 6);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "F#:4");
+
+    v = PitchUtils::pitchToCV(4, 7);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "G:4");
+
+    v = PitchUtils::pitchToCV(4, 8);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "G#:4");
+
+    v = PitchUtils::pitchToCV(4, 9);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "A:4");
+
+    v = PitchUtils::pitchToCV(4, 10);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "A#:4");
+
+    v = PitchUtils::pitchToCV(4, 11);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "B:4");
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -433,6 +484,7 @@ void  testMidiEvents()
 
     testPitchUtil0();
     testPitchUtil1();
+    testPitchUtil2();
     
     assertNoMidi();     // check for leaks
 }

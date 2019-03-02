@@ -26,3 +26,5 @@ When note is selected and Pitch is current edit attribute:
 **Ins** inserts a note at the current cursor.
 
 **Del** deletes the currently selected note.
+
+** F1 ** This manual.

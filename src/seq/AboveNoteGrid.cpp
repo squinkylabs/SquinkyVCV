@@ -6,6 +6,9 @@
 
 #include <sstream>
 
+const float row1 = 10;
+const float row2 = 40;
+
 AboveNoteGrid::AboveNoteGrid(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 {
     this->box.pos = pos;
@@ -13,7 +16,7 @@ AboveNoteGrid::AboveNoteGrid(const Vec& pos, const Vec& size, MidiSequencerPtr s
     sequencer = seq;
 
     editAttributeLabel = new Label();
-    editAttributeLabel->box.pos = Vec(10, 10);
+    editAttributeLabel->box.pos = Vec(10, row1);
     editAttributeLabel->text = "";
     editAttributeLabel->color = UIPrefs::SELECTED_NOTE_COLOR;
     addChild(editAttributeLabel);
@@ -50,6 +53,7 @@ void AboveNoteGrid::step()
     firstTime = false;
 
     updateTimeLabels();
+    updateCursorLabels();
 }
 
 void AboveNoteGrid::createTimeLabels()
@@ -63,7 +67,7 @@ void AboveNoteGrid::createTimeLabels()
         // need delta.
         const float x = scaler->midiTimeToX(time) - 6;
         Label* label = new Label();
-        label->box.pos = Vec(x, 30);
+        label->box.pos = Vec(x, row2);
         label->text = "";
         label->color = UIPrefs::TIME_LABEL_COLOR;
         label->fontSize = UIPrefs::timeLabelFontSize;
@@ -71,6 +75,17 @@ void AboveNoteGrid::createTimeLabels()
         timeLabels.push_back(label);
     }
 
+    cursorTimeLabel = new Label();
+    cursorTimeLabel->box.pos = Vec(200, row1);
+    cursorTimeLabel->text = "";
+    cursorTimeLabel->color = UIPrefs::STATUS_LABEL_COLOR;
+    addChild(cursorTimeLabel);
+
+    cursorPitchLabel = new Label();
+    cursorPitchLabel->box.pos = Vec(350, row1);
+    cursorPitchLabel->text = "";
+    cursorPitchLabel->color = UIPrefs::STATUS_LABEL_COLOR;
+    addChild(cursorPitchLabel);
 }
 
 // TODO: move to util
@@ -80,6 +95,19 @@ static void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
     nvgBeginPath(vg);
     nvgRect(vg, x, y, w, h);
     nvgFill(vg);
+}
+
+void AboveNoteGrid::updateCursorLabels()
+{
+    if (curCursorTime != sequencer->context->cursorTime()) {
+        curCursorTime = sequencer->context->cursorTime();
+        cursorTimeLabel->text = TimeUtils::time2str(curCursorTime);
+    }
+     if (curCursorPitch != sequencer->context->cursorPitch()) {
+        curCursorPitch = sequencer->context->cursorPitch();
+        cursorPitchLabel->text = PitchUtils::pitch2str(curCursorPitch);
+    }
+    
 }
 
 void AboveNoteGrid::updateTimeLabels()

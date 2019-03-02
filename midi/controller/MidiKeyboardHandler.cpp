@@ -65,6 +65,8 @@ void MidiKeyboardHandler::handleNoteEditorChange(
     }
 }
 
+extern void sequencerHelp();
+
 bool MidiKeyboardHandler::handle(
     MidiSequencer* sequencer,
     unsigned key,
@@ -75,6 +77,10 @@ bool MidiKeyboardHandler::handle(
     const bool ctrl = (mods & GLFW_MOD_CONTROL);
    
     switch(key) {
+        case GLFW_KEY_F1:
+            sequencerHelp();
+            //system::openBrowser("https://github.com/squinkylabs/SquinkyVCV/blob/sq3b/docs/sq.md");
+            break;
         case GLFW_KEY_TAB: 
             if (shift) {
                 sequencer->editor->selectPrevNote();
