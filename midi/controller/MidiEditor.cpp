@@ -101,6 +101,7 @@ static MidiTrack::const_iterator findPrevNoteOrCurrent(
  *
  * Returns track.end if can't find a note
  */
+#if 0
 static void selectNextNoteOrCurrent(
     MidiTrackPtr track,
     MidiTrack::const_iterator it,
@@ -118,6 +119,7 @@ static void selectNextNoteOrCurrent(
         }
     }
 }
+#endif
 
 static void selectPrevNoteOrCurrent(
     MidiTrackPtr track,
@@ -153,7 +155,7 @@ static void selectNextNotePastCursor(bool atCursorOk,
 
     // if it came back with a note exactly at cursor time,
     // check if it's acceptable.
-    if ((it->first > t) || atCursorOk) {
+    if ((it->first > t) || (it->first == t && atCursorOk)) {
         selection->select(it->second);
         return;
     }
@@ -173,8 +175,45 @@ static void selectNextNotePastCursor(bool atCursorOk,
 
     // If nothing past where we are, it's ok, even it it is at the same time
     selection->select(bestSoFar->second);
-
 }
+
+static void selectPrevNoteBeforeCursor(bool atCursorOk,
+    MidiTrackPtr track,
+    MidiEditorContextPtr context,
+    MidiSelectionModelPtr selection)
+{
+    const auto t = context->cursorTime();
+    // first, seek into track until cursor time.
+    MidiTrack::const_iterator it = track->seekToTimeNote(t);
+    if (it == track->end()) {
+        selection->clear();
+        return;
+    }
+
+    // if it came back with a note exactly at cursor time,
+    // check if it's acceptable.
+    if ((it->first < t) || (it->first == t && atCursorOk)) {
+        selection->select(it->second);
+        return;
+    }
+
+    MidiTrack::const_iterator bestSoFar = it;
+
+    // If must be before cursor time, go back to next
+    --it;
+
+    for (; it != track->end(); --it) {
+        MidiEventPtr evt = it->second;
+        if ((evt->type == MidiEvent::Type::Note) && (evt->startTime < t)) {
+            selection->select(evt);
+            return;
+        }
+    }
+
+    // If nothing past where we are, it's ok, even it it is at the same time
+    selection->select(bestSoFar->second);
+}
+
 
 #if 0 // abandon this for now
 static void selectNextNotePastSelection(MidiSequencerPtr seq)
@@ -222,8 +261,56 @@ void MidiEditor::selectNextNote()
     seq()->context->adjustViewportForCursor();
 }
 
+void MidiEditor::selectPrevNote()
+{
+    seq()->assertValid();
+
+    MidiTrackPtr track = getTrack();
+    assert(track);
+    if (seq()->selection->empty()) {
+        selectPrevNoteBeforeCursor(true, track, seq()->context, seq()->selection);
+    } else {
+        assert(seq()->selection->size() == 1);         // can't handle multi select yet
+       // selectNextNotePastSelection(seq());
+        selectPrevNoteBeforeCursor(false, track, seq()->context, seq()->selection);
+    }
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
+}
 
 #if 0
+
+void MidiEditor::selectPrevNote()
+{
+    //assert(song);
+    //assert(selection);
+    seq()->assertValid();
+
+    MidiTrackPtr track = getTrack();
+    assert(track);
+    if (seq()->selection->empty()) {
+        // for prev, let's do same as next - if nothing selected, select first
+        selectPrevNoteOrCurrent(track, --track->end(), seq()->selection);
+    } else {
+        // taken from next..
+        assert(seq()->selection->size() == 1);         // can't handle multi select yet
+        MidiEventPtr evt = *seq()->selection->begin();
+        assert(evt->type == MidiEvent::Type::Note);
+
+        // find the event in the track
+        auto it = track->findEventDeep(*evt);
+        if (it == track->begin()) {
+            seq()->selection->clear();         // if we are at start, can't dec.unselect
+            return;
+        }
+        --it;
+        selectPrevNoteOrCurrent(track, it, seq()->selection);
+    }
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
+}
+
+
 void MidiEditor::selectNextNote()
 {
     seq()->assertValid();
@@ -276,35 +363,6 @@ void MidiEditor::updateCursor()
     seq()->context->setCursorPitch(firstNote->pitchCV);
 }
 
-void MidiEditor::selectPrevNote()
-{
-    //assert(song);
-    //assert(selection);
-    seq()->assertValid();
-
-    MidiTrackPtr track = getTrack();
-    assert(track);
-    if (seq()->selection->empty()) {
-        // for prev, let's do same as next - if nothing selected, select first
-        selectPrevNoteOrCurrent(track, --track->end(), seq()->selection);
-    } else {
-        // taken from next..
-        assert(seq()->selection->size() == 1);         // can't handle multi select yet
-        MidiEventPtr evt = *seq()->selection->begin();
-        assert(evt->type == MidiEvent::Type::Note);
-
-        // find the event in the track
-        auto it = track->findEventDeep(*evt);
-        if (it == track->begin()) {
-            seq()->selection->clear();         // if we are at start, can't dec.unselect
-            return;
-        }
-        --it;
-        selectPrevNoteOrCurrent(track, it, seq()->selection);
-    }
-    updateCursor();
-    seq()->context->adjustViewportForCursor();
-}
 
 void MidiEditor::changePitch(int semitones)
 {

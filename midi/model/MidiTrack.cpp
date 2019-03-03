@@ -98,14 +98,21 @@ void MidiTrack::_dump() const
     const_iterator it;
     for (auto it : events) {
         float ti = it.first;
-        std::shared_ptr<const MidiEvent> evt = it.second;
+        std::shared_ptr<MidiEvent> evt = it.second;
         std::string type = "Note";
+        std::string pitch = "";
         switch (evt->type) {
             case MidiEvent::Type::End:
                 type = "End";
                 break;
             case MidiEvent::Type::Note:
                 type = "Note";
+                {
+                    MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(evt);
+                    char buf[256];
+                    sprintf_s(buf, sizeof(buf), "pitch=%f", n->pitchCV);
+                    pitch = buf;
+                }
                 break;
             case MidiEvent::Type::Test:
             default:
@@ -113,7 +120,11 @@ void MidiTrack::_dump() const
 
         }
         const void* addr = evt.get();
-        printf("time = %f, type=%s addr=%p\n", ti, type.c_str(), addr);
+        printf("time = %f, type=%s ", ti, type.c_str());
+        if (!pitch.empty()) {
+            printf(pitch.c_str());
+        }
+        printf(" addr=%p\n", addr);
     }
     fflush(stdout);
 }
