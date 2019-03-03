@@ -48,7 +48,7 @@ static bool cursorOnSelection(MidiSequencerPtr seq)
 
 // from a null selection, select next
 // should select first after cursor time 0
-static void testNext1()
+static void testNextInitialState()
 {
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
@@ -61,7 +61,7 @@ static void testNext1()
 }
 
 // from nothing selected, but not at zero. should select the next note.
-static void testNext1c()
+static void testNextNoSelectionNonZeroCursor()
 {
     MidiSequencerPtr seq = makeTest();
     seq->context->setCursorTime(.5);        // set an eight note into it
@@ -79,7 +79,7 @@ static void testNext1c()
 }
 
 // with last note selected, should not do anything
-static void testNext1d()
+static void testNextLastNoteSelected()
 {
     MidiSequencerPtr seq = makeTest();
     seq->context->setCursorTime(.5);        // set an eight note into it
@@ -145,7 +145,7 @@ static void testNext1e()
 }
 
 // from a null selection, select previous. should select last note
-static void testNext1b()
+static void testPrevInitialState()
 {
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectPrevNote();
@@ -163,7 +163,7 @@ static void testNext1b()
 }
 
 // from a non-null selection, select next
-static void testNext2()
+static void testNextWhenFirstIsSelected()
 {
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
@@ -183,7 +183,7 @@ static void testNext2()
 }
 
 // from a non-null selection, select previous
-static void testNext2b()
+static void testPrevWhenSecondSelected()
 {
     MidiSequencerPtr seq = makeTest();
 
@@ -207,8 +207,19 @@ static void testNext2b()
     assert(seq->selection->isSelected(firstEvent));
 }
 
+static void testPrevWhenFirstSelected()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+    assert(!seq->selection->empty());
+    seq->editor->assertCursorInSelection();
+
+    seq->editor->selectPrevNote();
+    assert(seq->selection->empty());
+}
+
 // from a null selection, select next in null track
-static void testNext3()
+static void testNextInEmptyTrack()
 {
     MidiSequencerPtr seq = makeTest(true);
     seq->editor->selectNextNote();
@@ -217,7 +228,7 @@ static void testNext3()
 }
 
 // from a null selection, select previous in null track
-static void testNext3b()
+static void testPrevInEmptyTrack()
 {
     MidiSequencerPtr seq = makeTest(true);
     seq->editor->selectPrevNote();
@@ -244,7 +255,7 @@ static void testNext4()
 #endif
 
 // select next that off way out of viewport
-static void testNext5()
+static void testNextWhenOutsideViewport()
 {
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
@@ -254,6 +265,8 @@ static void testNext5()
     // way outside viewport
     seq->editor->changePitch(50);
 
+  
+#if 0
     //temporary kludge, because change pitch has a bug.
     // We need to re-select the note in question
     {
@@ -261,6 +274,7 @@ static void testNext5()
         seq->selection->clear();
         seq->editor->selectNextNote();
     }
+#endif
 
     seq->editor->changeStartTime(false, 50);
 
@@ -280,32 +294,27 @@ static void testNext5()
     seq->editor->assertCursorInSelection();
 }
 
-static void testPrev1()
-{
-    MidiSequencerPtr seq = makeTest(false);
-    seq->editor->selectNextNote();          // now first is selected
-    assert(!seq->selection->empty());
-    seq->editor->assertCursorInSelection();
 
-    seq->editor->selectPrevNote();
-    assert(seq->selection->empty());
-}
 
 void testMidiEditorNextPrevSub(int trackNumber)
 {
     _trackNumber = trackNumber;
-    testNext1();
-    testNext1b();
-    testNext1c();
-    testNext1d();
+    testNextInitialState();
+    testPrevInitialState();
+    testNextNoSelectionNonZeroCursor();
+    testNextLastNoteSelected();
+
+// for later with fancy multi-select
  //   testNext1e();
-    printf("can pass testNext1e yet\n");
-    testNext2();
-    testNext2b();
-    testNext3();
-    testNext3b();
-    testPrev1();
-    testNext5();
+//    printf("can pass testNext1e yet\n");
+    testNextWhenFirstIsSelected();
+    testPrevWhenFirstSelected();
+    testPrevWhenSecondSelected();
+
+    testNextInEmptyTrack();
+    testPrevInEmptyTrack();
+
+    testNextWhenOutsideViewport();
 }
 
 void testMidiEditorNextPrev()
