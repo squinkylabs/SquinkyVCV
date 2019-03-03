@@ -58,13 +58,15 @@ static MidiTrack::const_iterator findNextNoteOrCurrent(
 }
 
 /**
- * returns track.end if can't find a note
+ * Starts searching from iterator it.
+ * Returns iterator to the first Note at or after iter.
+ *
+ * Returns track.end if can't find a note
  */
 static MidiTrack::const_iterator findPrevNoteOrCurrent(
     MidiTrackPtr track,
     MidiTrack::const_iterator it)
 {
-
     for (bool done = false; !done; ) {
 
         MidiEventPtr evt = it->second;
@@ -76,7 +78,7 @@ static MidiTrack::const_iterator findPrevNoteOrCurrent(
                 if (it == track->begin()) {
                     return track->end();            // Empty track, can't dec end ptr, so return "fail"
                 } else {
-                    --it;                           // try prev
+                    --it;                           // try prev (Why???)
                 }
                 break;
             default:
@@ -87,11 +89,18 @@ static MidiTrack::const_iterator findPrevNoteOrCurrent(
                     --it;                           // try prev
                 }
         }
-
     }
     return it;
 }
 
+
+/**
+ * Starts searching from iterator it.
+ * Returns iterator to the first Note at or after iter,
+ * and resets selection to point to that note.
+ *
+ * Returns track.end if can't find a note
+ */
 static void selectNextNoteOrCurrent(
     MidiTrackPtr track,
     MidiTrack::const_iterator it,
@@ -129,6 +138,92 @@ static void selectPrevNoteOrCurrent(
     }
 }
 
+static void selectNextNotePastCursor(bool atCursorOk,
+    MidiTrackPtr track, 
+    MidiEditorContextPtr context,
+    MidiSelectionModelPtr selection)
+{
+    const auto t = context->cursorTime();
+    // first, seek into track until cursor time.
+    MidiTrack::const_iterator it = track->seekToTimeNote(t);
+    if (it == track->end()) {
+        selection->clear();
+        return;
+    }
+
+    // if it came back with a note exactly at cursor time,
+    // check if it's acceptable.
+    if ((it->first > t) || atCursorOk) {
+        selection->select(it->second);
+        return;
+    }
+
+    MidiTrack::const_iterator bestSoFar = it;
+
+    // If must be past cursor time, advance to next
+    ++it;
+
+    for (; it != track->end(); ++it) {
+        MidiEventPtr evt = it->second;
+        if (evt->type == MidiEvent::Type::Note) {
+            selection->select(evt);
+            return;
+        }
+    }
+
+    // If nothing past where we are, it's ok, even it it is at the same time
+    selection->select(bestSoFar->second);
+
+}
+
+#if 0 // abandon this for now
+static void selectNextNotePastSelection(MidiSequencerPtr seq)
+{
+    // get the time of the (only) event in the selection
+    assert(seq->selection->size() == 1);
+    MidiEventPtr selected = *seq->selection->begin();
+    const auto t = selected->startTime;
+
+    // first, seek into track until selection time.
+    MidiTrack::const_iterator it = track->seekToTimeNote(t);
+    if (it == track->end()) {
+        selection->clear();
+        return;
+    }
+    
+}
+#endif
+
+/**
+ * Here's the "new" algorithm:
+ *  if there is a note selected, search for the next note that's later
+ *  in the track than the current selection. If not found,
+ *  don't change anything.
+ *
+ *  If nothing selected, then search for the first note that is later or at the same time as the cursor.
+ *
+ * For now we can base everything from cursor. Later, when we do multi-select, will need to be smarter.
+ */
+
+void MidiEditor::selectNextNote()
+{
+    seq()->assertValid();
+
+    MidiTrackPtr track = getTrack();
+    assert(track);
+    if (seq()->selection->empty()) {
+        selectNextNotePastCursor(true, track, seq()->context, seq()->selection);
+    } else {
+        assert(seq()->selection->size() == 1);         // can't handle multi select yet
+       // selectNextNotePastSelection(seq());
+        selectNextNotePastCursor(false, track, seq()->context, seq()->selection);
+    }
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
+}
+
+
+#if 0
 void MidiEditor::selectNextNote()
 {
     seq()->assertValid();
@@ -153,6 +248,7 @@ void MidiEditor::selectNextNote()
     updateCursor();
     seq()->context->adjustViewportForCursor();
 }
+#endif
 
 // Move to edit context?
 void MidiEditor::updateCursor()

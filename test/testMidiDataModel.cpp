@@ -245,7 +245,6 @@ static void testNoteTimeRange1()
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
 
-    // This is a terrible hack putting the "same" event in multiple time.
     ev->startTime = 100;
     mt.insertEvent(ev);
 
@@ -270,6 +269,46 @@ static void testNoteTimeRange1()
     assert(its.first != its.second);
     auto count = std::distance(its.first, its.second);
     assertEQ(count, 2);
+}
+
+static void testSeekTime1()
+{
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+ //   MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
+
+    ev->startTime = 100;
+    mt.insertEvent(ev);
+
+    auto it = mt.seekToTimeNote(100);       // should find note at pitch
+    assert(it != mt.end());
+
+    it = mt.seekToTimeNote(101);        // nothing here
+    assert(it == mt.end());
+}
+
+
+static void testSeekTime2()
+{
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
+
+    ev->startTime = 100;
+    mt.insertEvent(ev);
+
+    evt->startTime = 110;
+    mt.insertEvent(evt);
+
+    auto it = mt.seekToTimeNote(100);       // should find note at pitch
+    assert(it != mt.end());
+
+    it = mt.seekToTimeNote(101);        // nothing here
+    assert(it == mt.end());
 }
 
 static void testSameTime()
@@ -380,6 +419,8 @@ void testMidiDataModel()
     testTimeRange1();
     testNoteTimeRange1();
     testSameTime();
+    testSeekTime1();
+    testSeekTime2();
     testSong();
     testQuant();
 

@@ -31,6 +31,7 @@ public:
     std::shared_ptr<MidiEndEvent> getEndEvent();
     std::shared_ptr<MidiNoteEvent> getFirstNote();
 
+
     /**
      * Returns all events as a vector, so that they may be indexed.
      * Obviously this is rather slow (O(n)), so don't use it for editing.
@@ -52,8 +53,12 @@ public:
      * finds an event that satisfies == and returns a pointer to it
      */
     const_iterator findEventDeep(const MidiEvent&);
-
     const_iterator findEventPointer(MidiEventPtrC);
+
+    /**
+     * Find the first MidiNoteEvent that is at time 't' or past it
+     */
+    const_iterator seekToTimeNote(MidiEvent::time_t time);
 
     /**
      * Returns pair of iterators for all events  start <= t <= end

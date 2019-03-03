@@ -82,7 +82,7 @@ bool MidiKeyboardHandler::handle(
             //system::openBrowser("https://github.com/squinkylabs/SquinkyVCV/blob/sq3b/docs/sq.md");
             break;
         case GLFW_KEY_TAB: 
-            if (shift) {
+            if (ctrl) {
                 sequencer->editor->selectPrevNote();
             } else {
                 sequencer->editor->selectNextNote();

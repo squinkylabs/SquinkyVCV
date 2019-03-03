@@ -178,6 +178,23 @@ MidiTrack::const_iterator MidiTrack::findEventDeep(const MidiEvent& ev)
     return events.end();
 }
 
+MidiTrack::const_iterator MidiTrack::seekToTimeNote(MidiEvent::time_t time)
+{
+    const_iterator it;
+
+    for (it = events.lower_bound(time);
+        it != events.end();
+        ++it) {
+
+        MidiEventPtr ev = it->second;
+        if (ev->type == MidiEvent::Type::Note) {
+            return it;
+        };
+    }
+    assert(it == events.end());
+    return it;
+}
+
 MidiTrack::const_iterator MidiTrack::findEventPointer(MidiEventPtrC ev)
 {
     iterator_pair range = timeRange(ev->startTime, ev->startTime);

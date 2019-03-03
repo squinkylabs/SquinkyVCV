@@ -59,6 +59,7 @@ extern void testMultiLag();
 extern void testUtils();
 extern void testIComposite();
 extern void testMidiEditor();
+extern void testMidiEditorNextPrev();
 extern void testNoteScreenScale();
 
 #if 0
@@ -130,6 +131,7 @@ int main(int argc, char ** argv)
     testMidiViewport();
  
     testMidiControllers();
+    testMidiEditorNextPrev();
     testMidiEditor();
     testNoteScreenScale();
 
