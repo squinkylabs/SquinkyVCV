@@ -359,6 +359,7 @@ void MidiEditor::updateCursor()
             }
         }
     }
+ //   printf("in updateCursor, moving to note start = %f pitch=%f\n", firstNote->startTime, firstNote->pitchCV); fflush(stdout);
     seq()->context->setCursorTime(firstNote->startTime);
     seq()->context->setCursorPitch(firstNote->pitchCV);
 }

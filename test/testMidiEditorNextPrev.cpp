@@ -133,7 +133,6 @@ static void testNext1e()
     MidiTrackPtr track = song->getTrack(0);
     auto lock =  track->lock;
 
-
   // make two notes at start time, and one after
     MidiLocker l(lock);
     MidiNoteEventPtr ev1 = std::make_shared<MidiNoteEvent>();
@@ -172,6 +171,49 @@ static void testNext1e()
  
 }
 
+static void testNextPrevSingleNote()
+{
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    song->createTrack(0);
+    MidiTrackPtr track = song->getTrack(0);
+    auto lock = track->lock;
+
+
+  // make two notes at start time, and one after
+    MidiLocker l(lock);
+    MidiNoteEventPtr ev1 = std::make_shared<MidiNoteEvent>();
+    ev1->startTime = 2.3f;
+    ev1->pitchCV = 0;
+    track->insertEvent(ev1);
+
+    MidiEndEventPtr ev2 = std::make_shared<MidiEndEvent>();
+    ev2->startTime = 4;
+    track->insertEvent(ev2);
+
+    MidiSequencerPtr seq = MidiSequencer::make(song);
+    auto x = seq->context->cursorTime();
+    seq->context->adjustViewportForCursor();
+    x = seq->context->cursorTime();
+    seq->assertValid();
+
+    printf("\n-- about to go to next\n");
+    // select first event
+    seq->editor->selectNextNote();
+    seq->assertValid();
+    assertEQ(seq->selection->size(), 1);     // should be one note selected
+    
+    seq->editor->selectNextNote();
+    seq->assertValid();
+    assertEQ(seq->selection->size(), 1);     // should be one note selected
+    
+    seq->editor->selectPrevNote();
+    seq->assertValid();
+    assertEQ(seq->selection->size(), 1);     // should be one note selected
+    
+    seq->editor->selectPrevNote();
+    seq->assertValid();
+    assertEQ(seq->selection->size(), 1);     // should be one note selected
+}
 
 
 // from a non-null selection, select next
@@ -319,6 +361,7 @@ void testMidiEditorNextPrevSub(int trackNumber)
     testNextNoSelectionNonZeroCursor();
     testPrevNoSelectionNonZeroCursor();
     testNextLastNoteSelected();
+    testNextPrevSingleNote();
 
 // for later with fancy multi-select
  //   testNext1e();

@@ -1,6 +1,7 @@
 
 #include "MidiSequencer.h"
 #include "MidiEditor.h"
+#include "TimeUtils.h"
 #include "UndoRedoStack.h"
 
 int _mdb = 0;       // global instance counter
@@ -11,6 +12,8 @@ MidiSequencer::MidiSequencer(MidiSongPtr sng) :
     context(std::make_shared<MidiEditorContext>(sng)
     )
 {
+    // init the context to something reasonable.
+    context->setEndTime(TimeUtils::bar2time(2));
     undo = std::make_shared<UndoRedoStack>();
     ++_mdb;
 }

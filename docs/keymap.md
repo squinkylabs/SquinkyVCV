@@ -11,7 +11,7 @@
 **ctrl-cursor**: moves left and right by four units.
 
 **Tab**: select next note.
-**shift-Tab**: select previous note.
+**ctrl-Tab**: select previous note. (used to be shift tab).
 
 When note is selected and StartTime or Duration is current edit attribute:
 

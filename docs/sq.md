@@ -3,6 +3,25 @@ Work in progress
 
 Keyboard mappings [here](./keymap.md)
 
+## Keyboard focus
+
+The UI is entirely keyboard driven, no mouse. And the module will not receive keyboard input until you click in the note-grid. Then it will steal keyboard focus until you click somewhere else.
+
+## The panel side
+
+On the left are a few inputs, outputs, and controls.
+
+**Clock Rate** dropdown determines the clocking. Most of the settings tell the sequencer how to interpret the external clock input. Of course when it's set to internal it's a different story.
+
+**Tempo** determines the tempo when the Clock Rate is set to internal.
+
+**CV** is the pitch CV output.
+
+**G** is the gate output. When it is active the gree LED lights.
+
+**Clk** is the eternal clock input.
+
+
 ## What works now
 
 Plays sequence looped all the time.
@@ -13,9 +32,11 @@ Draw Piano roll.
 
 Undo / Redo
 
+There is a single track, and it is monophonic.
+
 ## What doesn't work.
 
-There are obviously many missing features (start/stop, advanced editing). There is no mouse interface. It looks horrible. There is no screen area top or bottom like you might expect to show where you are and what your are doing.
+There are obviously many missing features (start/stop, advanced editing). There is no mouse interface. It looks pretty rough.
 
 Note editor things that don't work:
 
