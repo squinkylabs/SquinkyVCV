@@ -2,6 +2,7 @@
 #include "MidiTrack.h"
 #include <assert.h>
 #include <algorithm>
+#include <stdio.h>
 
 
 #ifdef _DEBUG
