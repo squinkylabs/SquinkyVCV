@@ -58,6 +58,7 @@ public:
      * O(n), where n is the number of items in selection
      */
     bool isSelectedDeep(std::shared_ptr<MidiEvent> event) const;
+
 private:
 
     void add(std::shared_ptr<MidiEvent>);

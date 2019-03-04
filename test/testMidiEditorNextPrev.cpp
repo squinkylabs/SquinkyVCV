@@ -236,6 +236,15 @@ static void testNextWhenFirstIsSelected()
     assert(seq->selection->isSelected(secondEvent));
 }
 
+static void textExtendNoteWhenOneSelected()
+{
+    MidiSequencerPtr seq = makeTest();
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);  
+    seq->editor->extendSelectionToNextNote();
+    assertEQ(seq->selection->size(), 2); 
+}
+
 // from a non-null selection, select previous
 static void testPrevWhenSecondSelected()
 {
@@ -374,6 +383,8 @@ void testMidiEditorNextPrevSub(int trackNumber)
     testPrevInEmptyTrack();
 
     testNextWhenOutsideViewport();
+
+    textExtendNoteWhenOneSelected();
 }
 
 void testMidiEditorNextPrev()

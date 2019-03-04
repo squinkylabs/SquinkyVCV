@@ -250,15 +250,27 @@ void MidiEditor::selectNextNote()
 
     MidiTrackPtr track = getTrack();
     assert(track);
-    if (seq()->selection->empty()) {
-        selectNextNotePastCursor(true, track, seq()->context, seq()->selection);
-    } else {
-        assert(seq()->selection->size() == 1);         // can't handle multi select yet
-       // selectNextNotePastSelection(seq());
-        selectNextNotePastCursor(false, track, seq()->context, seq()->selection);
-    }
+    const bool acceptCursorTime = seq()->selection->empty();
+    selectNextNotePastCursor(acceptCursorTime, track, seq()->context, seq()->selection);
+
     updateCursor();
     seq()->context->adjustViewportForCursor();
+}
+
+void MidiEditor::extendSelectionToNextNote()
+{
+    printf("extendSelectionToNextNote\n");
+    auto sq = seq();
+    auto origSelection = sq->selection->clone();
+    printf("orig selection had %d\n", sq->selection->size());
+    sq->selection->clear();
+    selectNextNote();
+    for (auto it : *origSelection) {
+        printf("adding orig to new\n");
+        sq->selection->extendSelection(it);
+    }
+    printf("leaving have %d\n", sq->selection->size());
+    fflush(stdout);
 }
 
 void MidiEditor::selectPrevNote()
@@ -267,75 +279,16 @@ void MidiEditor::selectPrevNote()
 
     MidiTrackPtr track = getTrack();
     assert(track);
-    if (seq()->selection->empty()) {
-        selectPrevNoteBeforeCursor(true, track, seq()->context, seq()->selection);
-    } else {
-        assert(seq()->selection->size() == 1);         // can't handle multi select yet
-       // selectNextNotePastSelection(seq());
-        selectPrevNoteBeforeCursor(false, track, seq()->context, seq()->selection);
-    }
+    const bool acceptCursorTime = seq()->selection->empty();
+    selectPrevNoteBeforeCursor(acceptCursorTime, track, seq()->context, seq()->selection);
     updateCursor();
     seq()->context->adjustViewportForCursor();
 }
 
-#if 0
-
-void MidiEditor::selectPrevNote()
+void MidiEditor::extendSelectionToPrevNote()
 {
-    //assert(song);
-    //assert(selection);
-    seq()->assertValid();
-
-    MidiTrackPtr track = getTrack();
-    assert(track);
-    if (seq()->selection->empty()) {
-        // for prev, let's do same as next - if nothing selected, select first
-        selectPrevNoteOrCurrent(track, --track->end(), seq()->selection);
-    } else {
-        // taken from next..
-        assert(seq()->selection->size() == 1);         // can't handle multi select yet
-        MidiEventPtr evt = *seq()->selection->begin();
-        assert(evt->type == MidiEvent::Type::Note);
-
-        // find the event in the track
-        auto it = track->findEventDeep(*evt);
-        if (it == track->begin()) {
-            seq()->selection->clear();         // if we are at start, can't dec.unselect
-            return;
-        }
-        --it;
-        selectPrevNoteOrCurrent(track, it, seq()->selection);
-    }
-    updateCursor();
-    seq()->context->adjustViewportForCursor();
+    assert(false);
 }
-
-
-void MidiEditor::selectNextNote()
-{
-    seq()->assertValid();
-
-    MidiTrackPtr track = getTrack();
-    assert(track);
-    if (seq()->selection->empty()) {
-        selectNextNoteOrCurrent(track, track->begin(), seq()->selection);
-    } else {
-        assert(seq()->selection->size() == 1);         // can't handle multi select yet
-        MidiEventPtr evt = *seq()->selection->begin();
-        assert(evt->type == MidiEvent::Type::Note);
-
-        // find the event in the track
-        auto it = track->findEventDeep(*evt);
-        if (it == track->end()) {
-            assert(false);
-        }
-        ++it;
-        selectNextNoteOrCurrent(track, it, seq()->selection);
-    }
-    updateCursor();
-    seq()->context->adjustViewportForCursor();
-}
-#endif
 
 // Move to edit context?
 void MidiEditor::updateCursor()
@@ -367,18 +320,11 @@ void MidiEditor::updateCursor()
 
 void MidiEditor::changePitch(int semitones)
 {
-#if 1
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangePitchCommand(seq(), semitones);
     seq()->undo->execute(cmd);
     seq()->assertValid();
     float deltaCV = PitchUtils::semitone * semitones;
-#else
-    float deltaCV = PitchUtils::semitone * semitones;
-    for (auto ev : *seq()->selection) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
-        note->pitchCV += deltaCV;
-    }
-#endif
+
 
     // Now fixup selection and viewport
     seq()->context->setCursorPitch(seq()->context->cursorPitch() + deltaCV);
