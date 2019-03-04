@@ -21,7 +21,6 @@ using MidiEventPtrC = std::shared_ptr<const MidiEvent>;
 using MidiNoteEventPtr = std::shared_ptr<MidiNoteEvent>;
 using MidiNoteEventPtrC = std::shared_ptr<const MidiNoteEvent>;
 
-
 /**
  * Abstract base class for all events
  */

@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <vector>
+#include <set>
 
 class MidiEvent;
 class MidiSelectionModel;
@@ -19,15 +19,15 @@ public:
      * replace the current selection with a single event
      */
     void select(std::shared_ptr<MidiEvent>);
-
     void extendSelection(std::shared_ptr<MidiEvent>);
+    void addToSelection(std::shared_ptr<MidiEvent>, bool keepExisting);
 
     /**
      * select nothing
      */
     void clear();
 
-    using container = std::vector<std::shared_ptr<MidiEvent>>;
+    using container = std::set<std::shared_ptr<MidiEvent>>;
     using const_iterator = container::const_iterator;
 
     const_iterator begin() const;
