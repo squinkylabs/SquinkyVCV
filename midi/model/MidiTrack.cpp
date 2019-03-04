@@ -111,7 +111,7 @@ void MidiTrack::_dump() const
                 {
                     MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(evt);
                     char buf[256];
-                    sprintf_s(buf, sizeof(buf), "pitch=%f", n->pitchCV);
+                    snprintf(buf, sizeof(buf), "pitch=%f", n->pitchCV);
                     pitch = buf;
                 }
                 break;
