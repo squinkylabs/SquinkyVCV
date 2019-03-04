@@ -73,7 +73,7 @@ SequencerModule::SequencerModule()
     seqComp = std::make_shared<Comp>(this, song);
 }
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq3/docs/sq.md";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq3b/docs/sq.md";
 
 struct SequencerWidget : ModuleWidget
 {
