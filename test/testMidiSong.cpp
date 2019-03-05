@@ -1,6 +1,7 @@
 #include "MidiLock.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "SqClipboard.h"
 
 #include "asserts.h"
 
@@ -61,10 +62,28 @@ static void testDefSong()
     song->assertValid();
 }
 
+
+static void testClip1()
+{
+    auto p = SqClipboard::getTrackData();
+    assert(!p);
+
+    std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
+
+    std::shared_ptr<SqClipboard::Track> t = std::make_shared< SqClipboard::Track>();
+    t->track = std::make_shared<MidiTrack>(lock);
+    SqClipboard::putTrackData(t);
+
+    p = SqClipboard::getTrackData();
+    assert(p);
+}
+
 void testMidiSong()
 {
     test0();
     test1();
     testDefSong();
+
+    testClip1();
     assertNoMidi();     // check for leaks
 }
