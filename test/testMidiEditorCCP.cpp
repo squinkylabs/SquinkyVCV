@@ -71,7 +71,6 @@ static void testCopy2()
 
 static void testPaste1()
 {
-    printf("--- testPaste1\n"); fflush(stdout);
     MidiSequencerPtr seq = makeSongPut8NotesOnClip();
     assert(!seq->undo->canUndo());
     seq->selection->clear();   
@@ -90,6 +89,19 @@ static void testPasteNothingShouldDoNothing()
     assert(!seq->undo->canUndo());
 }
 
+static void testPasteOntoSelection()
+{
+    MidiSequencerPtr seq = makeSongPut8NotesOnClip();
+    assert(!seq->undo->canUndo());
+    seq->editor->selectAll();
+    seq->editor->paste();
+    seq->assertValid();
+
+    // pasting a whole track onto itself should leave no change
+    assertEQ(seq->context->getTrack()->size(), 9);
+    assert(seq->undo->canUndo());
+}
+
 static void testMidiEditorCCPSub(int tk)
 {
     _trackNumber = tk;
@@ -98,6 +110,7 @@ static void testMidiEditorCCPSub(int tk)
 
     testPaste1();
     testPasteNothingShouldDoNothing();
+    testPasteOntoSelection();
 }
 
 

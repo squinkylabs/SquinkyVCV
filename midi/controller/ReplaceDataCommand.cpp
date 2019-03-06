@@ -196,10 +196,16 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
     
-    // TODO: what should we do if clip is empty?? Should we even be called?
     auto clipData = SqClipboard::getTrackData();
     assert(clipData);
+
+    // all the selected notes get deleted
+    for (auto it : *seq->selection) {
+        toRemove.push_back(it);
+    }
     
+    // copy all the notes on the clipboard into the track.
+    // ? should we make clones here?
     for (auto it : *clipData->track) {
         MidiEventPtr evt = it.second;
         if (evt->type != MidiEvent::Type::End) {
