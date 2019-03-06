@@ -551,20 +551,28 @@ void MidiEditor::copy()
 {
     auto songLock = seq()->song->lock;
     MidiLocker l(songLock);
+
+    float earliestEventTime = 0;
+    bool firstOne = true;
    
-     // put cloned selection into a track
+    // put cloned selection into a track
     // TODO: why do we clone all the time? aren't events immutable?
     MidiTrackPtr track = std::make_shared<MidiTrack>(songLock);
     for (auto it : *seq()->selection) {
         MidiEventPtr orig = it;
         MidiEventPtr newEvent = orig->clone();
         track->insertEvent(newEvent);
+        if (firstOne) {
+            earliestEventTime = newEvent->startTime;
+        }
+        earliestEventTime = std::min(earliestEventTime, newEvent->startTime);
+        firstOne = false;
     }
 
     if (track->size() == 0) {
         return;
     }
-    // TODO: make helper?
+    // TODO: make helper? Adding a final end event
     auto it = track->end();
     --it;
     MidiEventPtr lastEvent = it->second;
@@ -582,10 +590,10 @@ void MidiEditor::copy()
 
     auto firstNote = track->getFirstNote();
     if (!firstNote) {
-        return;
+        return;             // this won't work if we put non-note data in here.
     }
-    int t = TimeUtils::time2bar(firstNote->startTime);
-    clipData->offset = float(t); 
+   // int t = TimeUtils::time2bar(firstNote->startTime);
+    clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
 }
 

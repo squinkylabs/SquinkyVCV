@@ -1,4 +1,5 @@
 
+#include "MidiLock.h"
 #include "MidiSequencer.h"
 #include "SqClipboard.h"
 
@@ -43,6 +44,7 @@ static void testCopy1()
     assertEQ(clip->track->size(), 2);       //just the selected note and the end
     assertEQ(clip->offset, 0);
 }
+
 static MidiSequencerPtr makeSongPut8NotesOnClip()
 {
     SqClipboard::clear();
@@ -76,7 +78,6 @@ static void testPaste1()
     seq->selection->clear();   
     seq->editor->paste();
     seq->assertValid();
-    fflush(stdout);
     assertEQ(seq->context->getTrack()->size(), 9 + 8);
     assert(seq->undo->canUndo());
 }
@@ -102,6 +103,57 @@ static void testPasteOntoSelection()
     assert(seq->undo->canUndo());
 }
 
+static void testPasteTimeSub(float pasteTime)
+{
+    // Make a song with a single note at 1.23
+    auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
+    MidiSequencerPtr seq = MidiSequencer::make(song);
+    seq->context->setTrackNumber(_trackNumber);
+    seq->assertValid();
+    MidiLocker l(seq->song->lock);
+
+    MidiNoteEventPtr note = seq->context->getTrack()->getFirstNote();
+
+    // Set the cursor to be on the one note, and select it
+    seq->context->setCursorTime(3);     // we don't use cursor here, so set it crazy
+    seq->selection->select(note);
+
+    // copy one note at zero-relative time to clip
+    seq->editor->copy();
+
+    assert(SqClipboard::getTrackData());
+    assertEQ(SqClipboard::getTrackData()->track->size(), 2);
+    float offset = SqClipboard::getTrackData()->offset;
+    assertEQ(offset, 1.23f);
+    
+    // clear out the track
+    seq->context->getTrack()->deleteEvent(*note);
+    assertEQ(seq->context->getTrack()->size(), 1);
+
+    // now paste at pasteTime, with nothing selected in dest
+    seq->context->setCursorTime(pasteTime);
+    seq->selection->clear();
+    seq->editor->paste();
+    seq->assertValid();
+
+    // note should be at zero time
+    MidiNoteEventPtr first = seq->context->getTrack()->getFirstNote();
+    assert(first);
+    assertEQ(first->startTime, pasteTime);
+
+}
+
+static void testPasteTime1()
+{
+    testPasteTimeSub(0);
+}
+
+static void testPasteTime2()
+{
+    testPasteTimeSub(.3f);
+}
+
+
 static void testMidiEditorCCPSub(int tk)
 {
     _trackNumber = tk;
@@ -111,6 +163,9 @@ static void testMidiEditorCCPSub(int tk)
     testPaste1();
     testPasteNothingShouldDoNothing();
     testPasteOntoSelection();
+    testPasteTime1();
+    testPasteTime2();
+    // need to test pasting one note onto itself
 }
 
 

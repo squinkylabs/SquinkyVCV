@@ -90,7 +90,8 @@ public:
     enum class TestContent
     {
         eightQNotes,
-        empty
+        empty,
+        oneNote123,         // a single note at time 1.23
     };
     static MidiTrackPtr makeTest(TestContent, std::shared_ptr<MidiLock>);
     std::shared_ptr<MidiLock> lock;
@@ -100,6 +101,7 @@ private:
 
     static MidiTrackPtr makeTest1(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestEmpty(std::shared_ptr<MidiLock>);
+    static MidiTrackPtr makeTestNote123(std::shared_ptr<MidiLock>);
 };
 
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;

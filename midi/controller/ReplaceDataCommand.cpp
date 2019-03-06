@@ -67,10 +67,8 @@ void ReplaceDataCommand::undo()
         MidiEventPtr evt = foundIter->second;
         selection->extendSelection(evt);
     }
-
     // TODO: move cursor
 }
-
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq)
 {
@@ -203,16 +201,21 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
     for (auto it : *seq->selection) {
         toRemove.push_back(it);
     }
+
+    const float insertTime = seq->context->cursorTime();
+    const float eventOffsetTime = insertTime - clipData->offset;
     
-    // copy all the notes on the clipboard into the track.
-    // ? should we make clones here?
+    // copy all the notes on the clipboard into the track, but move to insert time
+
     for (auto it : *clipData->track) {
-        MidiEventPtr evt = it.second;
+        MidiEventPtr evt = it.second->clone();
+        evt->startTime += eventOffsetTime;
+        assert(evt->startTime >= 0);
         if (evt->type != MidiEvent::Type::End) {
             toAdd.push_back(evt);
         }
     }
-
+   // printf("Make paste command, add %d, remove %d\n", (int) toAdd.size(), (int) toRemove.size());
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,

@@ -1,5 +1,7 @@
 #include "MidiLock.h"
 #include "MidiTrack.h"
+#include "TimeUtils.h"
+
 #include <assert.h>
 #include <algorithm>
 #include <stdio.h>
@@ -242,6 +244,9 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
         case TestContent::empty:
             ret = makeTestEmpty(lock);
             break;
+        case TestContent::oneNote123:
+            ret = makeTestNote123(lock);
+            break;
         default:
             assert(false);
     }
@@ -269,6 +274,20 @@ MidiTrackPtr MidiTrack::makeTest1(std::shared_ptr<MidiLock> lock)
     }
 
     track->insertEnd(time);
+    return track;
+}
+
+MidiTrackPtr MidiTrack::makeTestNote123(std::shared_ptr<MidiLock> lock)
+{
+    auto track = std::make_shared<MidiTrack>(lock);
+    MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+    const float testTime = 1.23f;
+    newNote->startTime = testTime;
+    newNote->duration = 1;
+    newNote->pitchCV = 2.3f;
+
+    track->insertEvent(newNote);
+    track->insertEnd(TimeUtils::bar2time(1));
     return track;
 }
 
