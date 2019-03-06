@@ -18,8 +18,6 @@ public:
 
 private:
 
-
-
     std::list<std::shared_ptr<SqCommand>> undoList;
     std::list<std::shared_ptr<SqCommand>> redoList;
 

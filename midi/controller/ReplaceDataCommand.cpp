@@ -3,6 +3,7 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "SqClipboard.h"
 
 #include <assert.h>
 
@@ -189,6 +190,32 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
     return makeChangeNoteCommand(Ops::Duration, seq, xform, true);
 }
 
+
+ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
+{
+    std::vector<MidiEventPtr> toAdd;
+    std::vector<MidiEventPtr> toRemove;
+    
+    // TODO: what should we do if clip is empty?? Should we even be called?
+    auto clipData = SqClipboard::getTrackData();
+    assert(clipData);
+    
+    for (auto it : *clipData->track) {
+        MidiEventPtr evt = it.second;
+        if (evt->type != MidiEvent::Type::End) {
+            toAdd.push_back(evt);
+        }
+    }
+
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    return ret;
+}
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr seq, MidiNoteEventPtrC origNote)
 {

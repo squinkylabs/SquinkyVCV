@@ -8,6 +8,7 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "ReplaceDataCommand.h"
+#include "SqClipboard.h"
 #include "TimeUtils.h"
 
 extern int _mdb;
@@ -527,4 +528,75 @@ void MidiEditor::updateSelectionForCursor()
 void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
 {
     seq()->context->noteAttribute = attr;
+}
+
+void MidiEditor::selectAll()
+{
+    seq()->selection->clear();
+    MidiTrackPtr track = seq()->context->getTrack();
+    for (auto it : *track) {
+        MidiEventPtr orig = it.second;
+        if (orig->type != MidiEvent::Type::End) {
+            seq()->selection->extendSelection(orig);
+        }
+    }
+}
+
+void MidiEditor::cut()
+{
+
+}
+
+void MidiEditor::copy()
+{
+    auto songLock = seq()->song->lock;
+    MidiLocker l(songLock);
+   
+     // put cloned selection into a track
+    // TODO: why do we clone all the time? aren't events immutable?
+    MidiTrackPtr track = std::make_shared<MidiTrack>(songLock);
+    for (auto it : *seq()->selection) {
+        MidiEventPtr orig = it;
+        MidiEventPtr newEvent = orig->clone();
+        track->insertEvent(newEvent);
+    }
+
+    if (track->size() == 0) {
+        return;
+    }
+    // TODO: make helper?
+    auto it = track->end();
+    --it;
+    MidiEventPtr lastEvent = it->second;
+    float lastT = lastEvent->startTime;
+    MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(lastEvent);
+    if (lastNote) {
+        lastT += lastNote->duration;
+    }
+
+    track->insertEnd(lastT);
+    track->assertValid();
+    
+    std::shared_ptr<SqClipboard::Track> clipData = std::make_shared< SqClipboard::Track>();
+    clipData->track = track;
+
+    auto firstNote = track->getFirstNote();
+    if (!firstNote) {
+        return;
+    }
+    int t = TimeUtils::time2bar(firstNote->startTime);
+    clipData->offset = float(t); 
+    SqClipboard::putTrackData(clipData);
+}
+
+void MidiEditor::paste()
+{
+    if (!SqClipboard::getTrackData()) {
+        return;
+    }
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
+    seq()->undo->execute(cmd);
+    seq()->assertValid();
+
+    // TODO: what do we select afterwards?
 }

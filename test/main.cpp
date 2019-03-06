@@ -61,6 +61,7 @@ extern void testIComposite();
 extern void testMidiEditor();
 extern void testMidiEditorNextPrev();
 extern void testNoteScreenScale();
+extern void testMidiEditorCCP();
 
 #if 0
 #include <sstream>
@@ -133,6 +134,7 @@ int main(int argc, char ** argv)
     testMidiControllers();
     testMidiEditorNextPrev();
     testMidiEditor();
+    testMidiEditorCCP();
     testNoteScreenScale();
 
     testAudioMath();

@@ -19,9 +19,8 @@ public:
 
     static std::shared_ptr<Track> getTrackData();
     static void putTrackData(std::shared_ptr<Track>);
-private:
-
     static void clear();
 
+private:
     static std::shared_ptr<Track> trackData;
 };

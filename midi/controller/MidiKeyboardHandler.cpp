@@ -79,7 +79,6 @@ bool MidiKeyboardHandler::handle(
     switch(key) {
         case GLFW_KEY_F1:
             sequencerHelp();
-            //system::openBrowser("https://github.com/squinkylabs/SquinkyVCV/blob/sq3b/docs/sq.md");
             break;
         case GLFW_KEY_TAB: 
 
@@ -152,6 +151,22 @@ bool MidiKeyboardHandler::handle(
                 handled = true;
             }
             break;
+        case GLFW_KEY_A:
+            {
+                if (ctrl) {
+                    sequencer->editor->selectAll();
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_C:
+            {
+                if (ctrl) {
+                    sequencer->editor->copy();
+                    handled = true;
+                }
+            }
+            break;
         case GLFW_KEY_P:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
@@ -167,6 +182,22 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_S:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+            }
+            break;
+        case GLFW_KEY_V:
+            {
+                if (ctrl) {
+                    sequencer->editor->paste();
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_X:
+            {
+                if (ctrl) {
+                    sequencer->editor->cut();
+                    handled = true;
+                }
             }
             break;
         case GLFW_KEY_KP_0:

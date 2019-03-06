@@ -23,6 +23,8 @@ public:
     void selectPrevNote();
     void extendSelectionToPrevNote();
 
+    void selectAll();
+
     /**
      * If ticks is false, will move by "units" (like 1/16 note)
      * amount is a multiplier, and may be negative
@@ -42,6 +44,11 @@ public:
     /*************                                   ***************/
     // Editing start time / duration / pitch
     void setNoteEditorAttribute(MidiEditorContext::NoteAttribute);
+
+    //************** cut / copy / paste ***************/
+    void cut();
+    void copy();
+    void paste();
 
     void assertCursorInSelection();
 private:
