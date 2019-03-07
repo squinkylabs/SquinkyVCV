@@ -47,6 +47,5 @@ Note that you may paste into a different instance of the sequencer than you copi
 
 ## Help
 
-# F1 key, when note editor has focus.
-
-# Context menu when the module has focus.
+**F1 key**, when note editor has focus.
+**Context menu**, when the module has focus.
