@@ -21,7 +21,6 @@ On the left are a few inputs, outputs, and controls.
 
 **Clk** is the eternal clock input.
 
-
 ## What works now
 
 Plays sequence looped all the time.
@@ -30,7 +29,9 @@ Edit note attributes (pitch, start time, duration)
 
 Draw Piano roll.
 
-Undo / Redo
+Undo / Redo.
+
+Cut/Copy/Paste
 
 There is a single track, and it is monophonic.
 
@@ -51,4 +52,4 @@ There is a temporary hack to make it possible to lengthen a track. You may move 
 
 It works like you would expect. Details are in [Keyboard Summary](./keymap.md).
 
-Note that there is a blinking "DOS cursor". It is not connected to the mouse cursor in any way. All note editing is done via the keyboard an this cursor.
+Note that there is a blinking "DOS cursor". It is not connected to the mouse cursor in any way. All note editing is done via the keyboard and this cursor.
