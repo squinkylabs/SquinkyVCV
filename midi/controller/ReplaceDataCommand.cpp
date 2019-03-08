@@ -207,14 +207,22 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
     
     // copy all the notes on the clipboard into the track, but move to insert time
 
+    float newDuration = 0;
     for (auto it : *clipData->track) {
         MidiEventPtr evt = it.second->clone();
         evt->startTime += eventOffsetTime;
         assert(evt->startTime >= 0);
         if (evt->type != MidiEvent::Type::End) {
             toAdd.push_back(evt);
+            newDuration = std::max(newDuration, evt->startTime);
+        }
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+        if (note) {
+            newDuration = std::max(newDuration, note->duration + note->startTime);
         }
     }
+    extendTrackToMinDuration(seq, newDuration, toAdd, toRemove);
+
    // printf("Make paste command, add %d, remove %d\n", (int) toAdd.size(), (int) toRemove.size());
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,

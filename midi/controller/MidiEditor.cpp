@@ -604,6 +604,10 @@ void MidiEditor::paste()
     }
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
     seq()->undo->execute(cmd);
+
+    // Am finding that after this cursor pitch is not in viewport
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
     seq()->assertValid();
 
     // TODO: what do we select afterwards?

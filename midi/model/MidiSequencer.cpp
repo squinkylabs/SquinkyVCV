@@ -59,8 +59,8 @@ void MidiSequencer::assertValid() const
     assert(song);
     assert(context);
     assert(selection);
+    song->assertValid();
     context->assertValid();
-    song->assertValid(); 
     assertSelectionInTrack();
 }
 

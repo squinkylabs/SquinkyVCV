@@ -105,12 +105,16 @@ static void testPasteOntoSelection()
 
 static void testPasteTimeSub(float pasteTime)
 {
+    printf("----------- testPasteTimeSub\n");
+    todo: have sequencer make make a valid context (with two octave range)
     // Make a song with a single note at 1.23
     auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
     MidiSequencerPtr seq = MidiSequencer::make(song);
     seq->context->setTrackNumber(_trackNumber);
     seq->assertValid();
     MidiLocker l(seq->song->lock);
+
+    printf("vp = %f, %f\n", seq->context->pitchLow(), seq->context->pitchHi());
 
     MidiNoteEventPtr note = seq->context->getTrack()->getFirstNote();
 
@@ -153,6 +157,10 @@ static void testPasteTime2()
     testPasteTimeSub(.3f);
 }
 
+static void testPasteTime3()
+{
+    testPasteTimeSub(4567.89f);
+}
 
 static void testMidiEditorCCPSub(int tk)
 {
@@ -165,6 +173,7 @@ static void testMidiEditorCCPSub(int tk)
     testPasteOntoSelection();
     testPasteTime1();
     testPasteTime2();
+    testPasteTime3();
     // need to test pasting one note onto itself
 }
 

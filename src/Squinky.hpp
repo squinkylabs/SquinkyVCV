@@ -19,7 +19,6 @@
 #define _SUPER
 #define _BOOTY
 #define _GROWLER
-#define _SEQ
 //#define _CH10
 
 #ifndef __V1

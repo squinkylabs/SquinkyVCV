@@ -5,6 +5,8 @@
 
 #include <assert.h>
 
+#ifdef _SEQ
+
 bool MidiKeyboardHandler::doRepeat(unsigned key)
 {
     bool doIt = false;
@@ -234,3 +236,4 @@ bool MidiKeyboardHandler::handle(
     }
     return handled;
 }
+#endif

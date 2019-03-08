@@ -27,15 +27,16 @@ void MidiEditorContext::setScaler(std::shared_ptr<NoteScreenScale> _scaler)
 
 void MidiEditorContext::scrollViewportToCursorPitch()
 {
-   // printf("scroll v cursor pitch %f, hi = %f\n", m_cursorPitch, pitchHi());
+    printf("scroll v cursor pitch %f, lo = %f hi = %f\n", m_cursorPitch, pitchLow(), pitchHi());
     while (m_cursorPitch < pitchLow()) {
         scrollVertically(-1 * PitchUtils::octave);
     }
     while (m_cursorPitch > pitchHi()) {
-      //  printf("will scroll up\n");
+        printf("will scroll up\n");
         scrollVertically(1 * PitchUtils::octave);
     }
-   // fflush(stdout);
+    printf("leaving scroll v cursor pitch %f, lo = %f hi = %f\n", m_cursorPitch, pitchLow(), pitchHi());
+    fflush(stdout);
 }
 
 void MidiEditorContext::assertCursorInViewport() const
