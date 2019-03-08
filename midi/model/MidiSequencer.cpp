@@ -35,6 +35,9 @@ MidiSequencerPtr MidiSequencer::make(MidiSongPtr song)
     }
     (void) found;
     assert(found);
+    seq->context->setPitchLow(0);
+    seq->context->setPitchHi(2);
+
     seq->assertValid();
     return seq;
 }

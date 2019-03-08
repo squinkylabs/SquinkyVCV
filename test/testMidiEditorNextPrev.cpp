@@ -331,19 +331,7 @@ static void testNextWhenOutsideViewport()
     // way outside viewport
     seq->editor->changePitch(50);
 
-  
-#if 0
-    //temporary kludge, because change pitch has a bug.
-    // We need to re-select the note in question
-    {
-        printf("remove this hack\n");
-        seq->selection->clear();
-        seq->editor->selectNextNote();
-    }
-#endif
-
     seq->editor->changeStartTime(false, 50);
-
 
     assertEQ(seq->selection->size(), 1);
     seq->assertValid();

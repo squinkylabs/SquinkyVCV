@@ -60,8 +60,6 @@ static MidiSequencerPtr makeSongPut8NotesOnClip()
 
 static void testCopy2()
 {
-    printf("testCopy\n");
-
     MidiSequencerPtr seq = makeSongPut8NotesOnClip();
     assertEQ(seq->context->getTrack()->size(), 9);
     auto clip = SqClipboard::getTrackData();
@@ -105,16 +103,12 @@ static void testPasteOntoSelection()
 
 static void testPasteTimeSub(float pasteTime)
 {
-    printf("----------- testPasteTimeSub\n");
-    todo: have sequencer make make a valid context (with two octave range)
     // Make a song with a single note at 1.23
     auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
     MidiSequencerPtr seq = MidiSequencer::make(song);
     seq->context->setTrackNumber(_trackNumber);
     seq->assertValid();
     MidiLocker l(seq->song->lock);
-
-    printf("vp = %f, %f\n", seq->context->pitchLow(), seq->context->pitchHi());
 
     MidiNoteEventPtr note = seq->context->getTrack()->getFirstNote();
 
