@@ -1,6 +1,7 @@
 #include "../Squinky.hpp"
 
 #ifdef _SEQ
+a
 #include "WidgetComposite.h"
 #include "Seq.h"
 
