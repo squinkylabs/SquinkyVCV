@@ -18,12 +18,12 @@ namespace sq {
 #endif
 
 #ifdef __V1
-    inline void consumeEvent(const Event* evt, ParamWidget* widget)
+    inline void consumeEvent(const Event* evt, Widget* widget)
     {
        evt->consume(widget);
     }
 #else
-    inline void consumeEvent(Event* evt, ParamWidget* dummy)
+    inline void consumeEvent(Event* evt, Widget* dummy)
     {
         evt->consumed = true;
     }

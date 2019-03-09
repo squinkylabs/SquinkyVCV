@@ -108,8 +108,23 @@ struct SQPush : SVGButton
     {
         this->box.pos = pos.minus(this->box.size.div(2));
     }
-    // TODO: we just need to port
-#ifndef __V1
+#ifdef __V1
+     void onButton(const ButtonEvent &e) override
+     {
+        //only pick the mouse events we care about.
+        // TODO: should our buttons be on release, like normal buttons?
+        // Probably should use drag end
+        if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
+            e.action != GLFW_RELEASE) {
+                return;
+            }
+
+        if (clickHandler) {
+            clickHandler();
+        }
+       sq::consumeEvent(&e, this);
+     }
+#else
     void onDragEnd(EventDragEnd &e) override
     {
         SVGButton::onDragEnd(e);

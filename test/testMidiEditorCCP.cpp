@@ -129,8 +129,10 @@ static void testPasteTimeSub(float pasteTime)
     assertEQ(seq->context->getTrack()->size(), 1);
 
     // now paste at pasteTime, with nothing selected in dest
-    seq->context->setCursorTime(pasteTime);
-    seq->selection->clear();
+    if (pasteTime >= 0) {
+        seq->context->setCursorTime(pasteTime);
+        seq->selection->clear();
+    }
     seq->editor->paste();
     seq->assertValid();
 
@@ -169,6 +171,7 @@ static void testMidiEditorCCPSub(int tk)
     testPasteTime2();
     testPasteTime3();
     // need to test pasting one note onto itself
+    testPasteTimeSub(-1);
 }
 
 
