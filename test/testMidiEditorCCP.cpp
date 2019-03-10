@@ -126,20 +126,33 @@ static void testPasteTimeSub(float pasteTime)
     
     // clear out the track
     seq->context->getTrack()->deleteEvent(*note);
+    seq->selection->clear();
     assertEQ(seq->context->getTrack()->size(), 1);
+
+    // at this point there will be notes in the selection that don't exist any more
+    seq->assertValid();;
 
     // now paste at pasteTime, with nothing selected in dest
     if (pasteTime >= 0) {
         seq->context->setCursorTime(pasteTime);
+        seq->context->adjustViewportForCursor();
+        // NOW NEED TO SCROLL TO CURSOR
         seq->selection->clear();
+    } else {
+        seq->context->setCursorTime(0);
     }
+
     seq->editor->paste();
     seq->assertValid();
 
-    // note should be at zero time
+    // note should be at zero time (but not for -1 case, right?
     MidiNoteEventPtr first = seq->context->getTrack()->getFirstNote();
     assert(first);
-    assertEQ(first->startTime, pasteTime);
+    if (pasteTime >= 0) {
+        assertEQ(first->startTime, pasteTime);
+    } else {
+        assertEQ(first->startTime, 0);
+    }
 
 }
 

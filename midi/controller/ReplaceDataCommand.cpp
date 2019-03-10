@@ -72,6 +72,7 @@ void ReplaceDataCommand::undo()
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq)
 {
+    seq->assertValid();
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
     auto track = seq->context->getTrack();
@@ -95,6 +96,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     Xform xform,
     bool canChangeLength)
 {
+    seq->assertValid();
+
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
 
@@ -152,6 +155,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPtr seq, int semitones)
 {
+    seq->assertValid();
     const float deltaCV = PitchUtils::semitone * semitones;
     Xform xform = [deltaCV](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
@@ -165,6 +169,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
 {
+    seq->assertValid();
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
@@ -177,6 +182,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
 {
+    seq->assertValid();
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
@@ -191,6 +197,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
 
 ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 {
+    seq->assertValid();
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
     
@@ -236,6 +243,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr seq, MidiNoteEventPtrC origNote)
 {
+    seq->assertValid();
     MidiNoteEventPtr note = origNote->clonen();
 
     // Make the delete end / inserts end to extend track.

@@ -1,0 +1,8 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="29" height="26" viewBox="0 0 29 26">
+  <title>seq-play-button</title>
+  <rect x="0.5" y="0.5" width="28" height="25" rx="3" style="fill: none;stroke: #999;stroke-miterlimit: 10"/>
+  <line x1="24.5" y1="10.5" x2="11.5" y2="20.5" style="fill: none"/>
+  <line x1="20" y1="13" x2="12" y2="21" style="fill: none;stroke: #307dee;stroke-linecap: round;stroke-miterlimit: 10"/>
+  <line x1="20" y1="13" x2="12" y2="5" style="fill: none;stroke: #307dee;stroke-linecap: round;stroke-miterlimit: 10"/>
+  <line x1="12" y1="21" x2="12" y2="5" style="fill: none;stroke: #307dee;stroke-linecap: round;stroke-miterlimit: 10"/>
+</svg>

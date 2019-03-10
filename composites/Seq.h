@@ -41,12 +41,15 @@ public:
     {
         CLOCK_INPUT_PARAM,
         TEMPO_PARAM,
+        RUN_STOP_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
         CLOCK_INPUT,
+        RESET_INPUT,
+        RUN_INPUT,
         NUM_INPUTS
     };
 
@@ -183,6 +186,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::TEMPO_PARAM:
             ret = {40, 200, 120, "Tempo"};
+            break;
+        case Seq<TBase>::RUN_STOP_PARAM:
+            ret = {0, 1, 0, "Run/Stop"};
             break;
         default:
             assert(false);
