@@ -64,7 +64,7 @@ TestWidget -> I/O
 
 The purpose of the composite's base class is to provide the inputs/outputs/etc... to the composite. The TestComposite base class has vectors of I/O exposed as public members that the tests may directly manipulate. The WidgetComposite base class just marshals references to the I/O that is already in the VCV provided Widget base class.
 
-All of the enums for module I/O goes into the composite. So they are available to tests as composite.ENUM_NAME. They are also available to Modules as `CompositeClass<ModuleWidget>::ENUM_NAME`. Most of our modules do something the reduce all that typing. Typicaly:
+All of the enums for module I/O goes into the composite. So they are available to tests as composite.ENUM_NAME. They are also available to Modules as `CompositeClass<ModuleWidget>::ENUM_NAME`. Most of our modules do something the reduce all that typing. Typically:
 ```c++
 using Comp = CompositeClass<ModuleWidget>;
 
