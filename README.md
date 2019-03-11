@@ -33,4 +33,6 @@ We are not currently accepting pull requests.
 
 ## More information for programmers, builders, and experimenters
 
-There are "secret" modules, extra code and other things scattered around this repo. Pointers to some of it can be found [in the docs folder](./docs/README.md).
+There are "secret" modules, extra code and other things scattered around this repo. We also have written several "essays" about software efficiency, aliasing, and other topics.
+
+Pointers to some of it can be found [in the docs folder](./docs/README.md).
