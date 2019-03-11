@@ -6,7 +6,7 @@ In general most of this software is fairly unremarkable code that supports unit 
 
 We find that reasonably thorough unit testing is even more valuable for plugins than for "normal" code. Some of the reasons are:
 
-* Without unit tests, it can be very easy to make filters that don’t have the response they should ("oops – forget to multiply by 2 pi"), lookup tables aren’t as accurate as they should be, numeric approximations have gross discontinuities, etc.
+* Without unit tests, it can be very easy to make filters that don’t have the response they should ("oops – forgot to multiply by 2 pi"), lookup tables aren’t as accurate as they should be, numeric approximations have gross discontinuities, etc.
 * Unit tests may be built and debugged with a conventional IDE, whereas (at least for us) debugging a plugin with gdb from inside a running instance of VCV Rack is more difficult.
 * It is easy to measure CPU usage in a unit test, whereas it is difficult to impossible to measure while running in VCV Rack.
 
