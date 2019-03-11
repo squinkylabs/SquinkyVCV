@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "AudioMath.h"
+#include "IComposite.h"
 #include "LookupTable.h"
 #include "LookupTableFactory.h"
 #include "MultiModOsc.h"
@@ -9,6 +10,15 @@
 #include "StateVariableFilter.h"
 
 #define _ANORM
+
+
+template <class TBase>
+class VocalAnimatorDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
  * Version 2 - make the math sane.
@@ -30,6 +40,13 @@ public:
     }
     VocalAnimator() : TBase()
     {
+    }
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<VocalAnimatorDescription<TBase>>();
     }
 
     void setSampleRate(float rate)
@@ -327,4 +344,85 @@ inline void VocalAnimator<TBase>::stepModulation()
         spread,
         matrixMode,
         reciprocalSampleRate);
+}
+
+
+template <class TBase>
+int VocalAnimatorDescription<TBase>::getNumParams()
+{
+    return VocalAnimator<TBase>::NUM_PARAMS;
+}
+
+/*
+enum ParamIds
+{
+    LFO_RATE_PARAM,
+    FILTER_Q_PARAM,
+    FILTER_FC_PARAM,
+    FILTER_MOD_DEPTH_PARAM,
+    LFO_RATE_TRIM_PARAM,
+    FILTER_Q_TRIM_PARAM,
+    FILTER_FC_TRIM_PARAM,
+    FILTER_MOD_DEPTH_TRIM_PARAM,
+    BASS_EXP_PARAM,
+
+    // tracking:
+    //  0 = all 1v/octave, mod scaled, no on top
+    //  1 = mod and cv scaled
+    //  2 = 1, + top filter gets some mod
+    TRACK_EXP_PARAM,
+
+    // LFO mixing options
+    // 0 = classic
+    // 1 = option
+    // 2 = lf sub
+    LFO_MIX_PARAM,
+
+    NUM_PARAMS
+};
+*/
+template <class TBase>
+inline IComposite::Config VocalAnimatorDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case VocalAnimator<TBase>::LFO_RATE_PARAM:
+            ret = {-5.0, 5.0, 0.0, "LFO rate"};
+            break;
+        case VocalAnimator<TBase>::FILTER_Q_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Filter Q"};
+            break;
+        case VocalAnimator<TBase>::FILTER_FC_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Filter cutoff"};
+            break;
+        case VocalAnimator<TBase>::FILTER_MOD_DEPTH_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Filter mod depth"};
+            break;
+        case VocalAnimator<TBase>::LFO_RATE_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "LFO rate trim"};
+            break;
+        case VocalAnimator<TBase>::FILTER_Q_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "FilterQ trim"};
+            break;
+        case VocalAnimator<TBase>::FILTER_FC_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "Filter cutoff trim"};
+            break;
+        case VocalAnimator<TBase>::FILTER_MOD_DEPTH_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "Filter mod depth trim"};
+            break;
+        case VocalAnimator<TBase>::BASS_EXP_PARAM:
+            ret = {0.0f, 1.0f, 0.0f, "Bass expand"};
+            break;
+        case VocalAnimator<TBase>::TRACK_EXP_PARAM:
+            ret = {0, 2, 0, "Track ExP"};           // TODO: we don't use this - what is the default?
+            ret.active = false;
+            break;
+        case VocalAnimator<TBase>::LFO_MIX_PARAM:
+            ret = {0.0f, 2.0f, 0.0f, "LFO mix select"};
+            break;
+        default:
+            assert(false);
+            break;
+    }
+    return ret;
 }

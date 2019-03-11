@@ -11,6 +11,8 @@
 
 #include <sstream>
 
+using Comp = Super<WidgetComposite>;
+
 /**
  */
 struct SuperModule : Module
@@ -24,27 +26,37 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    Super<WidgetComposite> super;
+    std::shared_ptr<Comp> super;
 };
 
 void SuperModule::onSampleRateChange()
 {
 }
 
+#ifdef __V1
 SuperModule::SuperModule()
-    : Module(super.NUM_PARAMS,
-    super.NUM_INPUTS,
-    super.NUM_OUTPUTS,
-    super.NUM_LIGHTS),
-    super(this)
 {
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    super = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+
+#else
+SuperModule::SuperModule()
+    : Module(Comp::NUM_PARAMS,
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
+    super(std::make_shared<Comp>(this))
+{
+#endif
     onSampleRateChange();
-    super.init();
+    super->init();
 }
 
 void SuperModule::step()
 {
-    super.step();
+    super->step();
 }
 
 ////////////////////
@@ -55,7 +67,7 @@ struct superWidget : ModuleWidget
 {
     superWidget(SuperModule *);
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -70,23 +82,13 @@ struct superWidget : ModuleWidget
         ModuleWidget::step();
     }
 
-    void addPitchKnobs(SuperModule *);
-    void addOtherKnobs(SuperModule *);
+    void addPitchKnobs(SuperModule *, std::shared_ptr<IComposite>);
+    void addOtherKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addJacks(SuperModule *);
-    Menu* createContextMenu() override;
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
 };
-
-
-inline Menu* superWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
 
 const float col1 = 40;
 const float col2 = 110;
@@ -102,11 +104,14 @@ const float jackRow2 = 332;
 const float labelOffsetBig = -40;
 const float labelOffsetSmall = -32;
 
-void superWidget::addPitchKnobs(SuperModule *)
+void superWidget::addPitchKnobs(SuperModule* module, std::shared_ptr<IComposite> icomp)
 {
     // Octave
-    auto oct = createParamCentered<Rogan1PSBlue>(
-        Vec(col1, row1), module, Super<WidgetComposite>::OCTAVE_PARAM, -5, 4, 0);
+    Rogan1PSBlue* oct = SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(col1, row1),
+        module, 
+        Comp::OCTAVE_PARAM);
     oct->snap = true;
     oct->smooth = false;
     addParam(oct);
@@ -116,8 +121,11 @@ void superWidget::addPitchKnobs(SuperModule *)
     semitoneDisplay.setOctLabel(l, Super<WidgetComposite>::OCTAVE_PARAM);
 
     // Semi
-    auto semi = createParamCentered<Rogan1PSBlue>(
-        Vec(col2, row1), module, Super<WidgetComposite>::SEMI_PARAM, -11, 11, 0);
+    auto semi = SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(col2, row1),
+        module,
+        Super<WidgetComposite>::SEMI_PARAM);
     semi->snap = true;
     semi->smooth = false;
     addParam(semi);
@@ -127,40 +135,58 @@ void superWidget::addPitchKnobs(SuperModule *)
     semitoneDisplay.setSemiLabel(l, Super<WidgetComposite>::SEMI_PARAM);
 
     // Fine
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(col1, row2), module, Super<WidgetComposite>::FINE_PARAM, -1, 1, 0));
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(col1, row2),
+        module,
+        Comp::FINE_PARAM));
     addLabel(
         Vec(col1 - 19,
         row2 + labelOffsetBig),
         "Fine");
 
     // FM
-    addParam(createParamCentered<Rogan1PSBlue>(
-        Vec(col2, row2), module, Super<WidgetComposite>::FM_PARAM, 0, 1, 0));
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(col2, row2),
+        module, 
+        Comp::FM_PARAM));
     addLabel(
         Vec(col2 - 15, row2 + labelOffsetBig),
         "FM");
 }
 
-void superWidget::addOtherKnobs(SuperModule *)
+void superWidget::addOtherKnobs(SuperModule *, std::shared_ptr<IComposite> icomp)
 {
     // Detune
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col1, row3), module, Super<WidgetComposite>::DETUNE_PARAM, -5, 5, 0));
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(col1, row3), 
+        module, 
+        Comp::DETUNE_PARAM));
     addLabel(
         Vec(col1 - 27, row3 + labelOffsetSmall),
         "Detune");
 
-    addParam(createParamCentered<Trimpot>(
-        Vec(col1, row4), module, Super<WidgetComposite>::DETUNE_TRIM_PARAM, -1, 1, 0));
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(col1, row4), 
+        module, 
+        Comp::DETUNE_TRIM_PARAM));
 
-    addParam(createParamCentered<Blue30Knob>(
-        Vec(col2, row3), module, Super<WidgetComposite>::MIX_PARAM, -5, 5, 0));
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(col2, row3), 
+        module, 
+        Comp::MIX_PARAM));
     addLabel(
         Vec(col2 - 18, row3 + labelOffsetSmall),
         "Mix");
-    addParam(createParamCentered<Trimpot>(
-        Vec(col2, row4), module, Super<WidgetComposite>::MIX_TRIM_PARAM, -1, 1, 0));
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(col2, row4), 
+        module, 
+        Comp::MIX_TRIM_PARAM));
 }
 
 const float jackX = 27;
@@ -223,7 +249,7 @@ void superWidget::addJacks(SuperModule *)
         Super<WidgetComposite>::MAIN_OUTPUT));
     l = addLabel(
         Vec(jackX + 3 * jackDx - 18, jackRow2 + jackOffsetLabel),
-        "Out", COLOR_WHITE);
+        "Out", SqHelper::COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 }
 
@@ -232,49 +258,57 @@ void superWidget::addJacks(SuperModule *)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+superWidget::superWidget(SuperModule *module) : semitoneDisplay(module)
+{
+    setModule(module);
+#else
 superWidget::superWidget(SuperModule *module) :
     ModuleWidget(module),
     semitoneDisplay(module)
 {
+#endif
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/super_panel.svg")));
-        addChild(panel);
+    SqHelper::setPanel(this, "res/super_panel.svg");
 
-        // Is this really needed?
-        auto border = new PanelBorderWidget();
-        border->box = box;
-        addChild(border);
-    }
+    // Is this really needed?
+    auto border = new PanelBorderWidget();
+    border->box = box;
+    addChild(border);
 
-    addPitchKnobs(module);
-    addOtherKnobs(module);
+    addPitchKnobs(module, icomp);
+    addOtherKnobs(module, icomp);
     addJacks(module);
 
     // the "classic" switch
-    ToggleButton* tog = createParamCentered<ToggleButton>(
+    ToggleButton* tog = SqHelper::createParamCentered<ToggleButton>(
+        icomp,
         Vec(83, 164),
         module,
-        Super<WidgetComposite>::CLEAN_PARAM,
-        0.0f, 2, 0);
+        Comp::CLEAN_PARAM);
     tog->addSvg("res/clean-switch-01.svg");
     tog->addSvg("res/clean-switch-02.svg");
     tog->addSvg("res/clean-switch-03.svg");
     addParam(tog);
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+
+#ifdef __V1
+Model *modelSuperModule = createModel<SuperModule,
+    superWidget>("squinkylabs-super");
+#else
 Model *modelSuperModule = Model::create<SuperModule,
     superWidget>("Squinky Labs",
     "squinkylabs-super",
     "Saws: super saw VCO emulation", RANDOM_TAG);
+#endif
 
 #endif
 

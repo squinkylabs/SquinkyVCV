@@ -1,7 +1,10 @@
 #include "MidiLock.h"
 #include "MidiTrack.h"
+#include "TimeUtils.h"
+
 #include <assert.h>
 #include <algorithm>
+#include <stdio.h>
 
 
 #ifdef _DEBUG
@@ -98,19 +101,33 @@ void MidiTrack::_dump() const
     const_iterator it;
     for (auto it : events) {
         float ti = it.first;
-        std::shared_ptr<const MidiEvent> evt = it.second;
+        std::shared_ptr<MidiEvent> evt = it.second;
         std::string type = "Note";
+        std::string pitch = "";
         switch (evt->type) {
             case MidiEvent::Type::End:
                 type = "End";
                 break;
             case MidiEvent::Type::Note:
                 type = "Note";
+                {
+                    MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(evt);
+                    char buf[256];
+                    snprintf(buf, sizeof(buf), "pitch=%f", n->pitchCV);
+                    pitch = buf;
+                }
                 break;
+            case MidiEvent::Type::Test:
+            default:
+                assert(false);
 
         }
         const void* addr = evt.get();
-        printf("time = %f, type=%s addr=%p\n", ti, type.c_str(), addr);
+        printf("time = %f, type=%s ", ti, type.c_str());
+        if (!pitch.empty()) {
+            printf(pitch.c_str());
+        }
+        printf(" addr=%p\n", addr);
     }
     fflush(stdout);
 }
@@ -175,6 +192,23 @@ MidiTrack::const_iterator MidiTrack::findEventDeep(const MidiEvent& ev)
     return events.end();
 }
 
+MidiTrack::const_iterator MidiTrack::seekToTimeNote(MidiEvent::time_t time)
+{
+    const_iterator it;
+
+    for (it = events.lower_bound(time);
+        it != events.end();
+        ++it) {
+
+        MidiEventPtr ev = it->second;
+        if (ev->type == MidiEvent::Type::Note) {
+            return it;
+        };
+    }
+    assert(it == events.end());
+    return it;
+}
+
 MidiTrack::const_iterator MidiTrack::findEventPointer(MidiEventPtrC ev)
 {
     iterator_pair range = timeRange(ev->startTime, ev->startTime);
@@ -210,6 +244,9 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
         case TestContent::empty:
             ret = makeTestEmpty(lock);
             break;
+        case TestContent::oneNote123:
+            ret = makeTestNote123(lock);
+            break;
         default:
             assert(false);
     }
@@ -237,6 +274,20 @@ MidiTrackPtr MidiTrack::makeTest1(std::shared_ptr<MidiLock> lock)
     }
 
     track->insertEnd(time);
+    return track;
+}
+
+MidiTrackPtr MidiTrack::makeTestNote123(std::shared_ptr<MidiLock> lock)
+{
+    auto track = std::make_shared<MidiTrack>(lock);
+    MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+    const float testTime = 1.23f;
+    newNote->startTime = testTime;
+    newNote->duration = 1;
+    newNote->pitchCV = 2.3f;
+
+    track->insertEvent(newNote);
+    track->insertEnd(TimeUtils::bar2time(1));
     return track;
 }
 

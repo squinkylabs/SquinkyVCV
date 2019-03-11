@@ -19,6 +19,15 @@ int MidiSong::getHighestTrackNumber() const
     return numTracks - 1;
 }
 
+bool MidiSong::trackExists(int tkNum) const
+{
+    if (tkNum >= int(tracks.size())) {
+        return false;
+    }
+
+    return bool(tracks[tkNum]);
+}
+
 
 void MidiSong::addTrack(int index, std::shared_ptr<MidiTrack> track)
 {

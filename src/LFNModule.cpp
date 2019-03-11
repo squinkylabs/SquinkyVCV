@@ -187,12 +187,7 @@ LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
 {
 #endif
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/lfn_panel.svg")));
-        addChild(panel);
-    }
+    SqHelper::setPanel(this, "res/lfn_panel.svg");
 
     addOutput(createOutput<PJ301MPort>(
         Vec(59, inputY - knobDy - 1),
@@ -263,7 +258,7 @@ Model *modelLFNModule = Model::create<LFNModule,
     "LFN: Random Voltages", NOISE_TAG, RANDOM_TAG, LFO_TAG);
 #else
 Model *modelLFNModule = createModel<LFNModule, LFNWidget>(
-    "lfn");
+    "squinkylabs-lfn");
 #endif
 
 #endif

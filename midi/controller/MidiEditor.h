@@ -19,16 +19,22 @@ public:
     /************** functions that move the cursor position ***********/
 
     void selectNextNote();
+    void extendSelectionToNextNote();
     void selectPrevNote();
+    void extendSelectionToPrevNote();
+
+    void selectAll();
+
     /**
      * If ticks is false, will move by "units" (like 1/16 note)
      * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
+    void changeCursorPitch(int semitones);
 
 
     /*********** functions that edit/change the notes **************/
-    void changeCursorPitch(int semitones);
+    
     void changePitch(int semitones);
     void changeStartTime(bool ticks, int amount);
     void changeDuration(bool ticks, int amount);
@@ -38,6 +44,11 @@ public:
     /*************                                   ***************/
     // Editing start time / duration / pitch
     void setNoteEditorAttribute(MidiEditorContext::NoteAttribute);
+
+    //************** cut / copy / paste ***************/
+    void cut();
+    void copy();
+    void paste();
 
     void assertCursorInSelection();
 private:

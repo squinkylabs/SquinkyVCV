@@ -38,6 +38,7 @@ public:
     static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta);
     static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq, float delta);
+    static ReplaceDataCommandPtr makePasteCommand(std::shared_ptr<MidiSequencer> seq);
 
 
 private:

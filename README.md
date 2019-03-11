@@ -33,4 +33,10 @@ We are not currently accepting pull requests.
 
 ## More information for programmers, builders, and experimenters
 
-There are "secret" modules, extra code and other things scattered around this repo. Pointers to some of it can be found [in the docs folder](./docs/README.md).
+There is plenty of information here for programmers. Pointers to most of it can be found [in the docs folder](./docs/README.md).
+
+There are:
+
+* Instructions for building our code, for VCV 0.6.x and 1.0.0.
+* "Essays" with programming tips.
+* Instructions for running our test suites and performance suites.

@@ -62,11 +62,8 @@ void ShaperModule::onSampleRateChange()
 struct ShaperWidget : ModuleWidget
 {
     ShaperWidget(ShaperModule *);
-#ifdef __V1
-    void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
+
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
     /**
      * Helper to add a text label to this widget
      */
@@ -89,24 +86,6 @@ private:
     Shaper<WidgetComposite>::Shapes curShape = Shaper<WidgetComposite>::Shapes::Invalid;
     void addSelector(ShaperModule* module, std::shared_ptr<IComposite> icomp);
 };
-
-#ifdef __V1
-inline void ShaperWidget::appendContextMenu(Menu *menu) 
-{
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
-    menu->addChild(manual);
-}
-#else
-inline Menu* ShaperWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
 
 void ShaperWidget::step()
 {
@@ -155,18 +134,17 @@ void ShaperWidget::addSelector(ShaperModule* module, std::shared_ptr<IComposite>
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-ShaperWidget::ShaperWidget(ShaperModule *module) :
+#ifdef __V1
+ShaperWidget::ShaperWidget(ShaperModule* module)
+{
+    setModule(module);
+#else
+ShaperWidget::ShaperWidget(ShaperModule* module) :
     ModuleWidget(module)
 {
+#endif
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(
-            pluginInstance,
-            "res/shaper.svg")));
-        addChild(panel);
-    }
+    SqHelper::setPanel(this, "res/shaper.svg");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
@@ -251,7 +229,7 @@ ShaperWidget::ShaperWidget(ShaperModule *module) :
 
 #ifdef __V1
 Model *modelShaperModule = createModel<ShaperModule, ShaperWidget>(
-    "shaper");
+    "squinkylabs-shp");
 #else
 Model *modelShaperModule = Model::create<ShaperModule,
     ShaperWidget>("Squinky Labs",

@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
-    </Filter>
     <Filter Include="Source Files\test">
       <UniqueIdentifier>{f5dea203-4bd6-45b8-ac87-b6b9a4877380}</UniqueIdentifier>
     </Filter>
@@ -132,6 +128,10 @@
     </Filter>
     <Filter Include="Header Files\util">
       <UniqueIdentifier>{2783a1b8-2a42-4f69-87bc-391a5bc4288e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\sqsrc\delay\Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -380,6 +380,15 @@
     </ClCompile>
     <ClCompile Include="..\..\midi\controller\MidiLock.cpp">
       <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiEditorNextPrev.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\model\SqClipboard.cpp">
+      <Filter>Source Files\midi\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiEditorCCP.cpp">
+      <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -682,6 +691,12 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\Seq.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\SeqClock.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\model\SqClipboard.h">
+      <Filter>Header Files\midi\model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -30,10 +30,11 @@ public:
     {
         isReset = true;
     }
-  // void timeElapsed(float seconds);
+    void setTrack(std::shared_ptr<MidiTrack> newTrack)
+    {
+        track = newTrack;
+    }
     void updateToMetricTime(double seconds, IPlayerHost*);
-
-   // void seekTo(MidiSong*, float time, IPlayerHost* host);
 private:
   
     double noteOffTime = -1;
@@ -66,14 +67,15 @@ public:
     {
         --_mdb;
     }
+    void setSong(std::shared_ptr<MidiSong>);
 
-    void timeElapsed(float seconds);
+    //void timeElapsed(float seconds);
+    void updateToMetricTime(double metricTime);
 
     std::shared_ptr<MidiSong> getSong()
     {
         return song;
     }
-
 
     void stop()
     {
@@ -84,15 +86,6 @@ private:
     std::shared_ptr<IPlayerHost> host;
     std::shared_ptr<MidiSong> song;
 
-    /*
-    float curMetricTime = 0;
-    float noteOffTime = -1;
-    MidiTrack::const_iterator curEvent;
-    */
-    double curMetricTime = 0;
     bool isPlaying = true;
     TrackPlayer trackPlayer;
-
-
-   // bool playOnce();
 };

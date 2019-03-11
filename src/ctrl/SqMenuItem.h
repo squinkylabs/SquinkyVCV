@@ -12,8 +12,11 @@
 struct SqMenuItem : rack::MenuItem
 {
 
-   // void onAction(rack::EventAction &e) override
-    void onAction(sq::EventAction &e) override
+#ifdef __V1
+void onAction(const ActionEvent &e) override
+#else
+void onAction(EventAction &e) override
+#endif
     {
         _onActionFn();
     }
@@ -56,25 +59,31 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
     {
     }
 
-    void onAction(sq::EventAction &e) override
+#ifdef __V1
+    void onAction(const sq::EventAction &e) override
     {
         const float newValue = isOn() ? 0 : 1;
-#ifdef __V1
-       //widget->dirtyValue = newValue;
        if (widget->paramQuantity) {
             widget->paramQuantity->setValue(newValue);
        }
-#else
-        widget->value = newValue;
-#endif
+
         sq::EventChange ec;
         widget->onChange(ec);
-#ifdef __V1
         e.consume(this);
-#else
-        e.consumed = true;
-#endif
     }
+    
+#else
+
+ void onAction(EventAction &e) override
+    {
+        const float newValue = isOn() ? 0 : 1;
+        widget->value = newValue;
+        sq::EventChange ec;
+        widget->onChange(ec);
+        e.consumed = true;
+    }
+
+#endif
 
 
     void step() override

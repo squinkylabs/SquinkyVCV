@@ -8,6 +8,7 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "ReplaceDataCommand.h"
+#include "SqClipboard.h"
 #include "TimeUtils.h"
 
 extern int _mdb;
@@ -28,106 +29,92 @@ MidiTrackPtr MidiEditor::getTrack()
     return seq()->song->getTrack(seq()->context->getTrackNumber());
 }
 
-/**
- * If iterator already points to a note, return it.
- * Otherwise search for next one
- */
-static MidiTrack::const_iterator findNextNoteOrCurrent(
-    MidiTrackPtr track,
-    MidiTrack::const_iterator it)
+static void selectNextNotePastCursor(bool atCursorOk,
+    bool keepExisting,
+    MidiSequencerPtr seq)
 {
+    const auto t = seq->context->cursorTime();
+    const auto track = seq->context->getTrack();
+    // first, seek into track until cursor time.
+    MidiTrack::const_iterator it = track->seekToTimeNote(t);
     if (it == track->end()) {
-        return it;                  // if we are at the end, give up
-    }
-    for (bool done = false; !done; ) {
-
-        if (it == track->end()) {
-            done = true;
+        if (!keepExisting) {
+            seq->selection->clear();
         }
+        return;
+    }
+
+    // if it came back with a note exactly at cursor time,
+    // check if it's acceptable.
+    if ((it->first > t) || (it->first == t && atCursorOk)) {
+        seq->selection->addToSelection(it->second, keepExisting);
+        return;
+    }
+
+    MidiTrack::const_iterator bestSoFar = it;
+
+    // If must be past cursor time, advance to next
+    ++it;
+
+    for (; it != track->end(); ++it) {
         MidiEventPtr evt = it->second;
         if (evt->type == MidiEvent::Type::Note) {
-            done = true;
-        } else if (evt->type == MidiEvent::Type::End) {
-            done = true;
-        } else {
-            assert(false);
-            ++it;
+            seq->selection->addToSelection(it->second, keepExisting);
+            return;
         }
     }
-    return it;
+
+    // If nothing past where we are, it's ok, even it it is at the same time
+    seq->selection->addToSelection(bestSoFar->second, keepExisting);
+}
+
+static void selectPrevNoteBeforeCursor(bool atCursorOk,
+    MidiSequencerPtr seq)
+{
+    const auto t = seq->context->cursorTime();
+    const auto track = seq->context->getTrack();
+
+    // first, seek into track until cursor time.
+    MidiTrack::const_iterator it = track->seekToTimeNote(t);
+    if (it == track->end()) {
+        seq->selection->clear();
+        return;
+    }
+
+    // if it came back with a note exactly at cursor time,
+    // check if it's acceptable.
+    if ((it->first < t) || (it->first == t && atCursorOk)) {
+        seq->selection->select(it->second);
+        return;
+    }
+
+    MidiTrack::const_iterator bestSoFar = it;
+
+    // If must be before cursor time, go back to next
+    --it;
+
+    for (; it != track->end(); --it) {
+        MidiEventPtr evt = it->second;
+        if ((evt->type == MidiEvent::Type::Note) && (evt->startTime < t)) {
+            seq->selection->select(evt);
+            return;
+        }
+    }
+
+    // If nothing past where we are, it's ok, even it it is at the same time
+    seq->selection->select(bestSoFar->second);
 }
 
 /**
- * returns track.end if can't find a note
+ * Here's the "new" algorithm:
+ *  if there is a note selected, search for the next note that's later
+ *  in the track than the current selection. If not found,
+ *  don't change anything.
+ *
+ *  If nothing selected, then search for the first note that is later or at the same time as the cursor.
+ *
+ * For now we can base everything from cursor. Later, when we do multi-select, will need to be smarter.
  */
-static MidiTrack::const_iterator findPrevNoteOrCurrent(
-    MidiTrackPtr track,
-    MidiTrack::const_iterator it)
-{
-
-    for (bool done = false; !done; ) {
-
-        MidiEventPtr evt = it->second;
-        switch (evt->type) {
-            case  MidiEvent::Type::Note:
-                done = true;                    // if we are on a note, then we can accept that
-                break;
-            case MidiEvent::Type::End:
-                if (it == track->begin()) {
-                    return track->end();            // Empty track, can't dec end ptr, so return "fail"
-                } else {
-                    --it;                           // try prev
-                }
-                break;
-            default:
-                assert(false);
-                if (it == track->begin()) {
-                    return track->end();            // Empty track, can't dec end ptr, so return "fail"
-                } else {
-                    --it;                           // try prev
-                }
-        }
-
-    }
-    return it;
-}
-
-static void selectNextNoteOrCurrent(
-    MidiTrackPtr track,
-    MidiTrack::const_iterator it,
-    MidiSelectionModelPtr selection)
-{
-    it = findNextNoteOrCurrent(track, it);
-    if (it == track->end()) {
-        selection->clear();
-    } else {
-        MidiEventPtr evt = it->second;
-        if (evt->type == MidiEvent::Type::End) {
-            selection->clear();
-        } else {
-            selection->select(evt);
-        }
-    }
-}
-
-static void selectPrevNoteOrCurrent(
-    MidiTrackPtr track,
-    MidiTrack::const_iterator it,
-    MidiSelectionModelPtr selection)
-{
-    it = findPrevNoteOrCurrent(track, it);
-    if (it == track->end()) {
-        // If we can't find a good one, give up
-        selection->clear();
-    } else {
-        MidiEventPtr evt = it->second;
-        if (evt->type == MidiEvent::Type::End) {
-            selection->clear();
-        } else {
-            selection->select(evt);
-        }
-    }
-}
 
 void MidiEditor::selectNextNote()
 {
@@ -135,23 +122,41 @@ void MidiEditor::selectNextNote()
 
     MidiTrackPtr track = getTrack();
     assert(track);
-    if (seq()->selection->empty()) {
-        selectNextNoteOrCurrent(track, track->begin(), seq()->selection);
-    } else {
-        assert(seq()->selection->size() == 1);         // can't handle multi select yet
-        MidiEventPtr evt = *seq()->selection->begin();
-        assert(evt->type == MidiEvent::Type::Note);
+    const bool acceptCursorTime = seq()->selection->empty();
+    selectNextNotePastCursor(acceptCursorTime, false, seq());
 
-        // find the event in the track
-        auto it = track->findEventDeep(*evt);
-        if (it == track->end()) {
-            assert(false);
-        }
-        ++it;
-        selectNextNoteOrCurrent(track, it, seq()->selection);
-    }
     updateCursor();
     seq()->context->adjustViewportForCursor();
+}
+
+void MidiEditor::extendSelectionToNextNote()
+{
+    seq()->assertValid();
+
+    MidiTrackPtr track = getTrack();
+    assert(track);
+    const bool acceptCursorTime = seq()->selection->empty();
+    selectNextNotePastCursor(acceptCursorTime, true, seq());
+
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
+}
+
+void MidiEditor::selectPrevNote()
+{
+    seq()->assertValid();
+
+    MidiTrackPtr track = getTrack();
+    assert(track);
+    const bool acceptCursorTime = seq()->selection->empty();
+    selectPrevNoteBeforeCursor(acceptCursorTime, seq());
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
+}
+
+void MidiEditor::extendSelectionToPrevNote()
+{
+    assert(false);
 }
 
 // Move to edit context?
@@ -176,54 +181,19 @@ void MidiEditor::updateCursor()
             }
         }
     }
+    //printf("in updateCursor, moving to note start = %f pitch=%f\n", firstNote->startTime, firstNote->pitchCV); fflush(stdout);
     seq()->context->setCursorTime(firstNote->startTime);
     seq()->context->setCursorPitch(firstNote->pitchCV);
 }
 
-void MidiEditor::selectPrevNote()
-{
-    //assert(song);
-    //assert(selection);
-    seq()->assertValid();
-
-    MidiTrackPtr track = getTrack();
-    assert(track);
-    if (seq()->selection->empty()) {
-        // for prev, let's do same as next - if nothing selected, select first
-        selectPrevNoteOrCurrent(track, --track->end(), seq()->selection);
-    } else {
-        // taken from next..
-        assert(seq()->selection->size() == 1);         // can't handle multi select yet
-        MidiEventPtr evt = *seq()->selection->begin();
-        assert(evt->type == MidiEvent::Type::Note);
-
-        // find the event in the track
-        auto it = track->findEventDeep(*evt);
-        if (it == track->begin()) {
-            seq()->selection->clear();         // if we are at start, can't dec.unselect
-            return;
-        }
-        --it;
-        selectPrevNoteOrCurrent(track, it, seq()->selection);
-    }
-    updateCursor();
-    seq()->context->adjustViewportForCursor();
-}
 
 void MidiEditor::changePitch(int semitones)
 {
-#if 1
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangePitchCommand(seq(), semitones);
     seq()->undo->execute(cmd);
     seq()->assertValid();
     float deltaCV = PitchUtils::semitone * semitones;
-#else
-    float deltaCV = PitchUtils::semitone * semitones;
-    for (auto ev : *seq()->selection) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
-        note->pitchCV += deltaCV;
-    }
-#endif
+
 
     // Now fixup selection and viewport
     seq()->context->setCursorPitch(seq()->context->cursorPitch() + deltaCV);
@@ -238,35 +208,13 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
     assert(amount != 0);
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
 
-#if 1
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount);
     seq()->undo->execute(cmd);
     seq()->assertValid();
 
     // after we change start times, we need to put the cursor on the moved notes
     seq()->context->setCursorToSelection(seq()->selection);
-#else
 
-    MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(seq()->selection->getLast());
-    float lastTime = lastNote->startTime + lastNote->duration;
-    lastTime += advanceAmount;
-    extendTrackToMinDuration(lastTime);
-
-    bool setCursor = false;
-    MidiTrackPtr track = seq()->context->getTrack();
-
-    for (auto ev : *seq()->selection) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
-        track->deleteEvent(*note);
-        note->startTime += advanceAmount;
-        note->startTime = std::max(0.f, note->startTime);
-        track->insertEvent(note);
-        if (!setCursor) {
-            seq()->context->setCursorTime(note->startTime);
-            setCursor = true;
-        }
-    }
-#endif
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
 }
@@ -278,25 +226,15 @@ void MidiEditor::changeDuration(bool ticks, int amount)
 
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
 
-#if 1
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
     seq()->undo->execute(cmd);
     seq()->assertValid();
-#else
-
-    for (auto ev : *seq()->selection) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);       // for now selection is all notes
-        note->duration += advanceAmount;
-
-        // arbitrary min limit.
-        note->duration = std::max(.001f, note->duration);
-    }
-#endif
 }
 
 void MidiEditor::assertCursorInSelection()
 {
     bool foundIt = false;
+    (void) foundIt;
     assert(!seq()->selection->empty());
     for (auto it : *seq()->selection) {
         if (seq()->context->cursorTime() == it->startTime) {
@@ -322,6 +260,16 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     seq()->assertValid();
 }
 
+void MidiEditor::changeCursorPitch(int semitones)
+{
+    float pitch = seq()->context->cursorPitch() + (semitones * PitchUtils::semitone);
+    pitch = std::max(pitch, -5.f);
+    pitch = std::min(pitch, 5.f);
+    seq()->context->setCursorPitch(pitch);
+    seq()->context->scrollViewportToCursorPitch();
+    updateSelectionForCursor();
+}
+
 void MidiEditor::extendTrackToMinDuration(float neededLength)
 {
     auto track = seq()->context->getTrack();
@@ -341,7 +289,7 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
 void MidiEditor::insertNote()
 {
     MidiLocker l(seq()->song->lock);
-#if 1
+
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = seq()->context->cursorTime();
     note->pitchCV = seq()->context->cursorPitch();
@@ -349,25 +297,13 @@ void MidiEditor::insertNote()
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
 
     seq()->undo->execute(cmd);
-#else
-     // for now, fixed to quarter
-    extendTrackToMinDuration(seq()->context->cursorTime() + 1.f);
 
-    auto track = seq()->context->getTrack();
-    // for now, assume no note there
-    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-    note->pitchCV = seq()->context->cursorPitch();
-    note->startTime = seq()->context->cursorTime();
-    note->duration = 1.0f;          // for now, fixed to quarter
-    track->insertEvent(note);
-#endif
     updateSelectionForCursor();
     seq()->assertValid();
 }
 
 void MidiEditor::deleteNote()
 {
-
     if (seq()->selection->empty()) {
         return;
     }
@@ -402,17 +338,89 @@ void MidiEditor::updateSelectionForCursor()
     }
 }
 
-void MidiEditor::changeCursorPitch(int semitones)
-{
-    float pitch = seq()->context->cursorPitch() + (semitones * PitchUtils::semitone);
-    pitch = std::max(pitch, -5.f);
-    pitch = std::min(pitch, 5.f);
-    seq()->context->setCursorPitch(pitch);
-    seq()->context->scrollViewportToCursorPitch();
-    updateSelectionForCursor();
-}
-
 void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
 {
     seq()->context->noteAttribute = attr;
+}
+
+void MidiEditor::selectAll()
+{
+    seq()->selection->clear();
+    MidiTrackPtr track = seq()->context->getTrack();
+    for (auto it : *track) {
+        MidiEventPtr orig = it.second;
+        if (orig->type != MidiEvent::Type::End) {
+            seq()->selection->extendSelection(orig);
+        }
+    }
+}
+
+void MidiEditor::cut()
+{
+}
+
+void MidiEditor::copy()
+{
+    auto songLock = seq()->song->lock;
+    MidiLocker l(songLock);
+
+    float earliestEventTime = 0;
+    bool firstOne = true;
+   
+    // put cloned selection into a track
+    // TODO: why do we clone all the time? aren't events immutable?
+    MidiTrackPtr track = std::make_shared<MidiTrack>(songLock);
+    for (auto it : *seq()->selection) {
+        MidiEventPtr orig = it;
+        MidiEventPtr newEvent = orig->clone();
+        track->insertEvent(newEvent);
+        if (firstOne) {
+            earliestEventTime = newEvent->startTime;
+        }
+        earliestEventTime = std::min(earliestEventTime, newEvent->startTime);
+        firstOne = false;
+    }
+
+    if (track->size() == 0) {
+        return;
+    }
+    // TODO: make helper? Adding a final end event
+    auto it = track->end();
+    --it;
+    MidiEventPtr lastEvent = it->second;
+    float lastT = lastEvent->startTime;
+    MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(lastEvent);
+    if (lastNote) {
+        lastT += lastNote->duration;
+    }
+
+    track->insertEnd(lastT);
+    track->assertValid();
+    
+    std::shared_ptr<SqClipboard::Track> clipData = std::make_shared< SqClipboard::Track>();
+    clipData->track = track;
+
+    auto firstNote = track->getFirstNote();
+    if (!firstNote) {
+        return;             // this won't work if we put non-note data in here.
+    }
+   // int t = TimeUtils::time2bar(firstNote->startTime);
+    clipData->offset = float(earliestEventTime);
+    SqClipboard::putTrackData(clipData);
+}
+
+void MidiEditor::paste()
+{
+    if (!SqClipboard::getTrackData()) {
+        return;
+    }
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
+    seq()->undo->execute(cmd);
+
+    // Am finding that after this cursor pitch is not in viewport
+    updateCursor();  
+    seq()->context->adjustViewportForCursor();
+    seq()->assertValid();
+
+    // TODO: what do we select afterwards?
 }

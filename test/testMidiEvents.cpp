@@ -1,6 +1,7 @@
 
 
 #include "MidiEvent.h"
+#include "TimeUtils.h"
 
 #include "asserts.h"
 
@@ -213,6 +214,253 @@ static void testClone()
 }
 
 
+static void testTimeUtil0()
+{
+    int b = TimeUtils::time2bar(0);
+    assertEQ(b, 0);
+    b = TimeUtils::time2bar(1);
+    assertEQ(b, 0);
+    b = TimeUtils::time2bar(2);
+    assertEQ(b, 0);
+    b = TimeUtils::time2bar(3);
+    assertEQ(b, 0);
+    b = TimeUtils::time2bar(4);
+    assertEQ(b, 1);
+    b = TimeUtils::time2bar(5);
+    assertEQ(b, 1);
+}
+
+static void testTimeUtil1()
+{
+    float t = TimeUtils::bar2time(0);
+    assertEQ(t, 0);
+    t = TimeUtils::bar2time(1);
+    assertEQ(t, 4);
+}
+
+static void testTimeUtil2()
+{
+    float t = 0;
+    auto x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = TimeUtils::bar2time(1);
+    x = TimeUtils::time2bbf(t);
+    assertEQ(1, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = TimeUtils::bar2time(100);
+    x = TimeUtils::time2bbf(t);
+    assertEQ(100, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+}
+
+static void testTimeUtil3()
+{
+    float t = TimeUtils::quarterNote();
+    auto x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(1, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = 2 * TimeUtils::quarterNote();
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(2, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+
+    t = 3 * TimeUtils::quarterNote();
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(3, std::get<1>(x));
+    assertEQ(0, std::get<2>(x));
+}
+
+static void testTimeUtil4()
+{
+    float t = TimeUtils::quarterNote() / 100.f;
+    auto x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(1, std::get<2>(x));
+
+    t = 40 * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(40, std::get<2>(x));
+
+    t = 60 * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(60, std::get<2>(x));
+
+    t = 99 * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2bbf(t);
+    assertEQ(0, std::get<0>(x));
+    assertEQ(0, std::get<1>(x));
+    assertEQ(99, std::get<2>(x));
+}
+
+static void testTimeUtil5()
+{
+    float t = 0;
+    auto x = TimeUtils::time2str(t);
+    assert(x == "0.0.0");
+
+    t = TimeUtils::quarterNote() + TimeUtils::bar2time(2);
+    x = TimeUtils::time2str(t);
+    assert(x == "2.1.0");
+
+    t += 3.f * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::time2str(t);
+    assert(x == "2.1.3");
+}
+
+static void testPitchUtil0()
+{
+    // C
+    float v = PitchUtils::pitchToCV(4, 0);
+    assert(!PitchUtils::isAccidental(v));
+    assert(PitchUtils::isC(v));
+
+    // C#
+    v = PitchUtils::pitchToCV(4, 1);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // D
+    v = PitchUtils::pitchToCV(4, 2);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // D#
+    v = PitchUtils::pitchToCV(4, 3);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // E
+    v = PitchUtils::pitchToCV(4, 4);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // F
+    v = PitchUtils::pitchToCV(4, 5);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // F#
+    v = PitchUtils::pitchToCV(4, 6);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // G
+    v = PitchUtils::pitchToCV(4, 7);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // G#
+    v = PitchUtils::pitchToCV(4, 8);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // A
+    v = PitchUtils::pitchToCV(4, 9);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // A#
+    v = PitchUtils::pitchToCV(4, 10);
+    assert(PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+    // B
+    v = PitchUtils::pitchToCV(4, 11);
+    assert(!PitchUtils::isAccidental(v));
+    assert(!PitchUtils::isC(v));
+
+      // c
+    v = PitchUtils::pitchToCV(5, 0);
+    assert(!PitchUtils::isAccidental(v));
+    assert(PitchUtils::isC(v));
+}
+
+
+static void testPitchUtil1()
+{
+    // C
+    float v = PitchUtils::pitchToCV(4, 0);
+    assert(PitchUtils::isC(v));
+
+    v = PitchUtils::pitchToCV(4, 0) + (PitchUtils::semitone / 2.f) - .001f;
+    assert(PitchUtils::isC(v));
+
+    v = PitchUtils::pitchToCV(4, 0) + (PitchUtils::semitone / 2.f) + .001f;
+    assert(!PitchUtils::isC(v));
+
+    v = 0;
+    assert(PitchUtils::isC(v));
+
+    v = -.0001f;
+    assert(PitchUtils::isC(v));
+}
+
+static void testPitchUtil2()
+{       
+    float v = PitchUtils::pitchToCV(4, 0);
+    std::string s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "C:4");
+
+    v = PitchUtils::pitchToCV(4, 1);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "C#:4");
+
+    v = PitchUtils::pitchToCV(4, 2);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "D:4");
+
+    v = PitchUtils::pitchToCV(4, 3);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "D#:4");
+
+    v = PitchUtils::pitchToCV(4, 4);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "E:4");
+
+    v = PitchUtils::pitchToCV(4, 5);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "F:4");
+
+    v = PitchUtils::pitchToCV(4, 6);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "F#:4");
+
+    v = PitchUtils::pitchToCV(4, 7);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "G:4");
+
+    v = PitchUtils::pitchToCV(4, 8);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "G#:4");
+
+    v = PitchUtils::pitchToCV(4, 9);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "A:4");
+
+    v = PitchUtils::pitchToCV(4, 10);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "A#:4");
+
+    v = PitchUtils::pitchToCV(4, 11);
+    s = PitchUtils::pitch2str(v);
+    assert(PitchUtils::pitch2str(v) == "B:4");
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -226,7 +474,17 @@ void  testMidiEvents()
     testEqualNote();
     testEqualEnd();
     testClone();
-    
 
+    testTimeUtil0();
+    testTimeUtil1();
+    testTimeUtil2();
+    testTimeUtil3();
+    testTimeUtil4();
+    testTimeUtil5();
+
+    testPitchUtil0();
+    testPitchUtil1();
+    testPitchUtil2();
+    
     assertNoMidi();     // check for leaks
 }

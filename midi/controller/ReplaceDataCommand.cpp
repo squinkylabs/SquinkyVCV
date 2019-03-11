@@ -3,6 +3,7 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "SqClipboard.h"
 
 #include <assert.h>
 
@@ -66,13 +67,12 @@ void ReplaceDataCommand::undo()
         MidiEventPtr evt = foundIter->second;
         selection->extendSelection(evt);
     }
-
     // TODO: move cursor
 }
 
-
 ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq)
 {
+    seq->assertValid();
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
     auto track = seq->context->getTrack();
@@ -96,6 +96,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     Xform xform,
     bool canChangeLength)
 {
+    seq->assertValid();
+
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
 
@@ -153,6 +155,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPtr seq, int semitones)
 {
+    seq->assertValid();
     const float deltaCV = PitchUtils::semitone * semitones;
     Xform xform = [deltaCV](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
@@ -166,6 +169,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
 {
+    seq->assertValid();
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
@@ -178,6 +182,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
 {
+    seq->assertValid();
     Xform xform = [delta](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
@@ -190,8 +195,55 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
 }
 
 
+ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
+{
+    seq->assertValid();
+    std::vector<MidiEventPtr> toAdd;
+    std::vector<MidiEventPtr> toRemove;
+    
+    auto clipData = SqClipboard::getTrackData();
+    assert(clipData);
+
+    // all the selected notes get deleted
+    for (auto it : *seq->selection) {
+        toRemove.push_back(it);
+    }
+
+    const float insertTime = seq->context->cursorTime();
+    const float eventOffsetTime = insertTime - clipData->offset;
+    
+    // copy all the notes on the clipboard into the track, but move to insert time
+
+    float newDuration = 0;
+    for (auto it : *clipData->track) {
+        MidiEventPtr evt = it.second->clone();
+        evt->startTime += eventOffsetTime;
+        assert(evt->startTime >= 0);
+        if (evt->type != MidiEvent::Type::End) {
+            toAdd.push_back(evt);
+            newDuration = std::max(newDuration, evt->startTime);
+        }
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+        if (note) {
+            newDuration = std::max(newDuration, note->duration + note->startTime);
+        }
+    }
+    extendTrackToMinDuration(seq, newDuration, toAdd, toRemove);
+
+   // printf("Make paste command, add %d, remove %d\n", (int) toAdd.size(), (int) toRemove.size());
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    return ret;
+}
+
 ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr seq, MidiNoteEventPtrC origNote)
 {
+    seq->assertValid();
     MidiNoteEventPtr note = origNote->clonen();
 
     // Make the delete end / inserts end to extend track.

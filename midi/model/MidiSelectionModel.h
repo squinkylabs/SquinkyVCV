@@ -19,8 +19,8 @@ public:
      * replace the current selection with a single event
      */
     void select(std::shared_ptr<MidiEvent>);
-
     void extendSelection(std::shared_ptr<MidiEvent>);
+    void addToSelection(std::shared_ptr<MidiEvent>, bool keepExisting);
 
     /**
      * select nothing
@@ -58,8 +58,10 @@ public:
      * O(n), where n is the number of items in selection
      */
     bool isSelectedDeep(std::shared_ptr<MidiEvent> event) const;
+
 private:
 
+    void add(std::shared_ptr<MidiEvent>);
 
     container selection;
 };

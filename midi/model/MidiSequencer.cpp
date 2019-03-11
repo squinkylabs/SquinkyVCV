@@ -1,19 +1,47 @@
 
 #include "MidiSequencer.h"
 #include "MidiEditor.h"
+#include "TimeUtils.h"
 #include "UndoRedoStack.h"
 
 int _mdb = 0;       // global instance counter
 
-MidiSequencer::MidiSequencer(std::shared_ptr<MidiSong> sng) :
+MidiSequencer::MidiSequencer(MidiSongPtr sng) :
     selection(std::make_shared<MidiSelectionModel>()),
     song(sng),
     context(std::make_shared<MidiEditorContext>(sng)
     )
 {
+    // init the context to something reasonable.
+    context->setEndTime(TimeUtils::bar2time(2));
     undo = std::make_shared<UndoRedoStack>();
     ++_mdb;
 }
+
+MidiSequencerPtr MidiSequencer::make(MidiSongPtr song)
+{
+    MidiSequencerPtr seq(new MidiSequencer(song));
+    seq->makeEditor();
+
+    // Find a track to point the edit context at
+    bool found = false;
+    int maxTk = song->getHighestTrackNumber();
+    for (int i = 0; i <= maxTk; ++i) {
+        if (song->trackExists(i)) {
+            seq->context->setTrackNumber(i);
+            found = true;
+            break;
+        }
+    }
+    (void) found;
+    assert(found);
+    seq->context->setPitchLow(0);
+    seq->context->setPitchHi(2);
+
+    seq->assertValid();
+    return seq;
+}
+ 
 
 void MidiSequencer::makeEditor()
 {
@@ -34,28 +62,19 @@ void MidiSequencer::assertValid() const
     assert(song);
     assert(context);
     assert(selection);
+    song->assertValid();
     context->assertValid();
-    song->assertValid(); 
     assertSelectionInTrack();
 }
 
 void MidiSequencer::assertSelectionInTrack() const
 {
     MidiTrackPtr track = context->getTrack();
+    
     for (auto it : *selection) {
-#if 1
-        
         auto foundPtr = track->findEventPointer(it);
         assert(foundPtr != track->end());
         auto x = *foundPtr;
         MidiEventPtrC y = x.second;
-
-       // MidiEventPtrC x = track->findEventPointer(it);;
-#else
-       MidiEventPtrC foundPtr = track->findEventPointer(it)->second;
-       assert(foundPtr);
-#endif
-       
-       
     }
 }

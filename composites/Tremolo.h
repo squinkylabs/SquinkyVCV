@@ -7,6 +7,15 @@
 #include "ObjectCache.h"
 #include "AsymRampShaper.h"
 #include "GateTrigger.h"
+#include "IComposite.h"
+
+template <class TBase>
+class TremoloDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
  * CPU usage was 15
@@ -19,9 +28,18 @@ public:
     Tremolo(struct Module * module) : TBase(module), gateTrigger(true)
     {
     }
+
     Tremolo() : TBase(), gateTrigger(true)
     {
     }
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<TremoloDescription<TBase>>();
+    }
+
     void setSampleRate(float rate)
     {
         reciprocalSampleRate = 1 / rate;
@@ -256,3 +274,64 @@ LookupUniform<vec_t>::lookup_clip_v(*tanhParams, tempBuffer, tempBuffer, sampleF
 
     // now range = +/- tanh(5*shape) * depth / tanh(10 * shape)
 */
+
+
+template <class TBase>
+int TremoloDescription<TBase>::getNumParams()
+{
+    return Tremolo<TBase>::NUM_PARAMS;
+}
+
+/*
+        LFO_RATE_PARAM,
+        LFO_SHAPE_PARAM,
+        LFO_SKEW_PARAM,
+        LFO_PHASE_PARAM,
+        MOD_DEPTH_PARAM,
+        CLOCK_MULT_PARAM,
+
+        LFO_SHAPE_TRIM_PARAM,
+        LFO_SKEW_TRIM_PARAM,
+        LFO_PHASE_TRIM_PARAM,
+        MOD_DEPTH_TRIM_PARAM,
+*/
+template <class TBase>
+inline IComposite::Config TremoloDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case Tremolo<TBase>::LFO_RATE_PARAM:
+            ret = {-5.0, 5.0, 0.0, "LFO rate"};
+            break;
+        case Tremolo<TBase>::LFO_SHAPE_PARAM:
+            ret = {-5.0, 5.0, 0.0, "LFO shape"};
+            break;
+        case Tremolo<TBase>::LFO_SKEW_PARAM:
+            ret = {-5.0, 5.0, 0.0, "LFO skew"};
+            break;
+        case Tremolo<TBase>::LFO_PHASE_PARAM:
+            ret = {-5.0, 5.0, 0.0, "LFO phase"};
+            break;
+        case Tremolo<TBase>::MOD_DEPTH_PARAM:
+            ret = {-5.0, 5.0, 0.0, "Mod depth"};
+            break;
+        case Tremolo<TBase>::CLOCK_MULT_PARAM:
+            ret = {0.0f, 4.0f, 4.0f, "Clock multiplier"};
+            break;
+        case Tremolo<TBase>::LFO_SHAPE_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "LFO shape trim"};
+            break;
+        case Tremolo<TBase>::LFO_SKEW_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "LFO skew trim"};
+            break;
+        case Tremolo<TBase>::LFO_PHASE_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "LFO phase trim"};
+            break;
+        case Tremolo<TBase>::MOD_DEPTH_TRIM_PARAM:
+            ret = {-1.0, 1.0, 1.0, "Mod depth trim"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}

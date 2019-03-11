@@ -6,24 +6,24 @@
 class ToggleButton : public ParamWidget
 {
 public:
-    ToggleButton();
+    ToggleButton(); 
     /**
      * SVG Images must be added in order
      */
     void addSvg(const char* resourcePath);
 
-    
-
 #ifdef __V1
-    void onButton(const event::Button &e) override;
-    void draw(const DrawContext& ) override;
+    void onButton(const ButtonEvent &e) override;
+    void draw(const DrawArgs &args) override;
 #else
     void onMouseDown(EventMouseDown &e) override;
     void draw(NVGcontext *vg) override;
 #endif
     
 private:
-    using SvgPtr = std::shared_ptr<SVGWidget>;
+    using SvgPtr = std::shared_ptr<SqHelper::SvgWidget>;
+ // using SvgPtr = std::shared_ptr<SvgWidget>;
+
     std::vector<SvgPtr> svgs;
 };
 
@@ -34,20 +34,23 @@ inline ToggleButton::ToggleButton()
 
 inline void ToggleButton::addSvg(const char* resourcePath)
 {
-    auto svg = std::make_shared<SVGWidget>();
-    svg->setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, resourcePath)));
+    auto svg = std::make_shared<SqHelper::SvgWidget>();
+
+   // static void setSvg(SvgKnob* knob, std::shared_ptr<Svg> svg)
+    //svg->setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, resourcePath)));
+    SqHelper::setSvg(svg.get(), SqHelper::loadSvg(resourcePath));
     svgs.push_back(svg);
     this->box.size.x = std::max(this->box.size.x, svg->box.size.x);
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
 }
 
 #ifdef __V1
-inline void ToggleButton::draw(const DrawContext& ctx)
+inline void ToggleButton::draw(const DrawArgs &args)
 {
     const float _value = SqHelper::getValue(this);
     int index = int(std::round(_value));
     auto svg = svgs[index];
-    svg->draw(ctx);
+    svg->draw(args);
 }
 #else
 inline void ToggleButton::draw(NVGcontext *vg)
@@ -62,7 +65,7 @@ inline void ToggleButton::draw(NVGcontext *vg)
 
 
 #ifdef __V1
-inline void ToggleButton::onButton(const event::Button &e)
+inline void ToggleButton::onButton(const ButtonEvent &e)
 #else
 inline void ToggleButton::onMouseDown(EventMouseDown &e)
 #endif
@@ -80,7 +83,8 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
     const int index = int(std::round(_value));
     const Vec pos(e.pos.x, e.pos.y);
 
-    if (!svgs[index]->box.contains(pos)) {
+    //if (!svgs[index]->box.contains(pos)) {
+    if (!SqHelper::contains(svgs[index]->box, pos)) {
         return;
     }
 

@@ -2,6 +2,7 @@
 #include "MidiEditorContext.h"
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
+#include "NoteScreenScale.h"
 #include "TimeUtils.h"
 
 extern int _mdb;
@@ -16,14 +17,26 @@ MidiEditorContext::~MidiEditorContext()
     --_mdb;
 }
 
+void MidiEditorContext::setScaler(std::shared_ptr<NoteScreenScale> _scaler)
+{
+    assert(_scaler);
+    scaler = _scaler;
+    MidiEditorContextPtr ctx =  shared_from_this();
+    scaler->setContext(ctx);
+}
+
 void MidiEditorContext::scrollViewportToCursorPitch()
 {
+    //printf("scroll v cursor pitch %f, lo = %f hi = %f\n", m_cursorPitch, pitchLow(), pitchHi());
     while (m_cursorPitch < pitchLow()) {
         scrollVertically(-1 * PitchUtils::octave);
     }
     while (m_cursorPitch > pitchHi()) {
+        //printf("will scroll up\n");
         scrollVertically(1 * PitchUtils::octave);
     }
+    //printf("leaving scroll v cursor pitch %f, lo = %f hi = %f\n", m_cursorPitch, pitchLow(), pitchHi());
+    //fflush(stdout);
 }
 
 void MidiEditorContext::assertCursorInViewport() const
@@ -75,7 +88,7 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
     };
 
     const auto song = getSong();
-    const auto track = song->getTrack(this->track);
+    const auto track = song->getTrack(this->trackNumber);
 
     // raw will be pair of track::const_iterator
     const auto rawIterators = track->timeRange(this->m_startTime, this->m_endTime);
@@ -116,26 +129,20 @@ bool MidiEditorContext::cursorInViewportTime() const
 
 void MidiEditorContext::adjustViewportForCursor()
 {
+   // printf(" MidiEditorContext::adjustViewportForCursor c=%f, vp=%f\n", m_cursorTime, m_startTime);
     if (!cursorInViewportTime()) {
 
-        float minimumAdvance = 0;
-        if (m_cursorTime >= m_endTime) {
-            minimumAdvance = m_cursorTime - m_endTime;
-        } else if (m_cursorTime < m_startTime) {
-            minimumAdvance = m_cursorTime - m_startTime;
-        }
+        int bars2 = int(m_cursorTime / TimeUtils::bar2time(2));
+        m_startTime = bars2 * TimeUtils::bar2time(2);
+        m_endTime = m_startTime + TimeUtils::bar2time(2);
 
-        // figure what fraction of 2 bars this is
-        float advanceBars = minimumAdvance / TimeUtils::barToTime(2);
-        advanceBars += (minimumAdvance < 0) ? -2 : 2;
-
-        float x = std::round(advanceBars / 2.f);
-        float finalAdvanceTime = x * TimeUtils::barToTime(2);
-
-        m_startTime += finalAdvanceTime;
-        m_endTime = m_startTime + TimeUtils::barToTime(2);
         assert(m_startTime >= 0);
+
+        assert(m_cursorTime >= m_startTime);
+        assert(m_cursorTime <= m_endTime);
     }
+
+   // printf(" 2MidiEditorContext::adjustViewportForCursor c=%f, vp=%f\n", m_cursorTime, m_startTime);
 
     // and to the pitch
     scrollViewportToCursorPitch();

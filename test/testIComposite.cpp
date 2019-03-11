@@ -1,13 +1,20 @@
 
-#include "LFN.h"
-#include "asserts.h"
 #include "CHB.h"
+#include "ColoredNoise.h"
+#include "EV3.h"
+#include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
+#include "LFN.h"
 #include "Gray.h"
+#include "Seq.h"
 #include "Shaper.h"
+#include "Super.h"
 #include "TestComposite.h"
+#include "Tremolo.h"
+#include "VocalAnimator.h"
 #include "VocalFilter.h"
 
+#include "asserts.h"
 #include <set>
 
 
@@ -44,4 +51,12 @@ void testIComposite()
     test<Shaper<TestComposite>>();
     test<CHB<TestComposite>>();
     test<Gray<TestComposite>>();
+    test<Seq<TestComposite>>();
+    test<VocalAnimator<TestComposite>>();
+    test<Tremolo<TestComposite>>();
+    test<Super<TestComposite>>();
+    test<ColoredNoise<TestComposite>>();
+    test<EV3<TestComposite>>();
+    test<FrequencyShifter<TestComposite>>();
+    test<VocalAnimator<TestComposite>>();
 }

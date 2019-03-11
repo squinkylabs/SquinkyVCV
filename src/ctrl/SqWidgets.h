@@ -10,6 +10,7 @@
 /**
  * Like Trimpot, but with blue stripe
  */
+#if 0
 struct BlueTrimmer : SVGKnob
 {
     BlueTrimmer()
@@ -19,6 +20,7 @@ struct BlueTrimmer : SVGKnob
         setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BlueTrimmer.svg")));
     }
 };
+#endif
 
 /**
  * Like Rogan1PSBlue, but smaller.
@@ -29,7 +31,8 @@ struct Blue30Knob : SVGKnob
     {
         minAngle = -0.83*M_PI;
         maxAngle = 0.83*M_PI;
-        setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/Blue30.svg")));
+       // setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/Blue30.svg")));
+       SqHelper::setSvg(this, SqHelper::loadSvg("res/Blue30.svg"));
     }
 };
 
@@ -53,9 +56,9 @@ struct NKKSmall : SVGSwitch
 {
     NKKSmall()
     {
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_0.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_1.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/NKKSmall_2.svg")));
+        addFrame(SqHelper::loadSvg("res/NKKSmall_0.svg"));
+        addFrame(SqHelper::loadSvg("res/NKKSmall_1.svg"));
+        addFrame(SqHelper::loadSvg("res/NKKSmall_2.svg"));
     }
 };
 
@@ -66,8 +69,8 @@ struct BlueToggle : public SVGSwitch
 {
     BlueToggle()
     {
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")));
+        addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
+        addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
     }
 };
 
@@ -79,8 +82,8 @@ struct SQPush : SVGButton
     SQPush()
     {
 #ifdef __V1
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg")));
+        addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
+        addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
 #else
         setSVGs(
             SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")),
@@ -92,8 +95,8 @@ struct SQPush : SVGButton
     SQPush(const char* upSVG, const char* dnSVG)
     {
 #ifdef __V1
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)));
-        addFrame(SVG::load(SqHelper::assetPlugin(pluginInstance, dnSVG)));
+        addFrame(SqHelper::loadSvg(upSVG));
+        addFrame(SqHelper::loadSvg(dnSVG));
 #else
         setSVGs(
             SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)),
@@ -105,8 +108,23 @@ struct SQPush : SVGButton
     {
         this->box.pos = pos.minus(this->box.size.div(2));
     }
-    // TODO: we just need to port
-#ifndef __V1
+#ifdef __V1
+     void onButton(const ButtonEvent &e) override
+     {
+        //only pick the mouse events we care about.
+        // TODO: should our buttons be on release, like normal buttons?
+        // Probably should use drag end
+        if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
+            e.action != GLFW_RELEASE) {
+                return;
+            }
+
+        if (clickHandler) {
+            clickHandler();
+        }
+       sq::consumeEvent(&e, this);
+     }
+#else
     void onDragEnd(EventDragEnd &e) override
     {
         SVGButton::onDragEnd(e);
@@ -144,7 +162,11 @@ struct SQPanelItem : MenuItem
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
 
-    void onAction(sq::EventAction &e) override
+#ifdef __V1
+    void onAction(const ActionEvent &e) override
+#else
+    void onAction(EventAction &e) override
+#endif
     {
         actionCallback();
     }

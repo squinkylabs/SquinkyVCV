@@ -1,11 +1,20 @@
 #pragma once
 
+#include "IComposite.h"
 #include "LookupTable.h"
 #include "SinOscillator.h"
 #include "BiquadFilter.h"
 #include "BiquadParams.h"
 #include "BiquadState.h"
 #include "HilbertFilterDesigner.h"
+
+template <class TBase>
+class BootyDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
  * Complete Frequency Shifter composite
@@ -20,9 +29,18 @@ public:
     FrequencyShifter(struct Module * module) : TBase(module)
     {
     }
+
     FrequencyShifter() : TBase()
     {
     }
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<BootyDescription<TBase>>();
+    }
+
     void setSampleRate(float rate)
     {
         reciprocalSampleRate = 1 / rate;
@@ -126,4 +144,27 @@ inline void FrequencyShifter<TBase>::step()
     // And combine for final SSB output.
     TBase::outputs[SIN_OUTPUT].value = x + y;
     TBase::outputs[COS_OUTPUT].value = x - y;
+}
+
+
+template <class TBase>
+int BootyDescription<TBase>::getNumParams()
+{
+    return FrequencyShifter<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+IComposite::Config BootyDescription<TBase>::getParam(int i)
+{
+   
+    IComposite::Config ret = {0.0f, 1.0f, 0.0f, "Code type"};
+    switch (i) {
+        case FrequencyShifter<TBase>::PITCH_PARAM:      // the big pitch knob
+            ret = {-5.0, 5.0, 0.0, "Pitch shift"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+
 }

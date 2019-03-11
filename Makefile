@@ -15,12 +15,15 @@ FLAGS += -I./src/third-party -I.src/ctrl
 CFLAGS +=
 CXXFLAGS +=
 
-# For now, this branch is always V1
-# FLAGS += -D __V1
+# compile for V1 vs 0.6
+FLAGS += -D __V1
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
 	FLAGS += -D _EXP
+endif
+ifdef _SEQ
+	FLAGS += -D _SEQ
 endif
 # Macro to use on any target where we don't normally want asserts
 ASSERTOFF = -D NDEBUG

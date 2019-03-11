@@ -245,7 +245,6 @@ static void testNoteTimeRange1()
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
 
-    // This is a terrible hack putting the "same" event in multiple time.
     ev->startTime = 100;
     mt.insertEvent(ev);
 
@@ -270,6 +269,46 @@ static void testNoteTimeRange1()
     assert(its.first != its.second);
     auto count = std::distance(its.first, its.second);
     assertEQ(count, 2);
+}
+
+static void testSeekTime1()
+{
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+ //   MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
+
+    ev->startTime = 100;
+    mt.insertEvent(ev);
+
+    auto it = mt.seekToTimeNote(100);       // should find note at pitch
+    assert(it != mt.end());
+
+    it = mt.seekToTimeNote(101);        // nothing here
+    assert(it == mt.end());
+}
+
+
+static void testSeekTime2()
+{
+    auto lock = MidiLock::make();
+    MidiTrack mt(lock);
+    MidiLocker l(lock);
+    MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+    MidiTestEventPtr evt = std::make_shared<MidiTestEvent>();
+
+    ev->startTime = 100;
+    mt.insertEvent(ev);
+
+    evt->startTime = 110;
+    mt.insertEvent(evt);
+
+    auto it = mt.seekToTimeNote(100);       // should find note at pitch
+    assert(it != mt.end());
+
+    it = mt.seekToTimeNote(101);        // nothing here
+    assert(it == mt.end());
 }
 
 static void testSameTime()
@@ -303,8 +342,9 @@ static void testQuant()
     //assertEQ(x, 64);
 }
 
-static void testSelection()
+static void testExtendSelection()
 {
+    // put in one, then extend to second one
     MidiSelectionModel sel;
     MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
     MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
@@ -322,20 +362,24 @@ static void testSelection()
     assert(!sel.empty());
     assertEQ(sel.size(), 2);
 
-    MidiSelectionModel::const_iterator it = sel.begin();
-    assert(it != sel.end());
-    MidiEventPtr ev = *it;
-    assert(*ev == *note1);
-    ++it;
-    assert(it != sel.end());
-    ev = *it;
-    assert(*ev == *note2);
-    ++it;
-    assert(it == sel.end());
+    // should find the events
+    bool found1 = false;
+    bool found2 = false;
+    for (auto it : sel) {
+        if (it == note1) {
+            found1 = true;
+        }
+        if (it == note2) {
+            found2 = true;
+        }
+    }
+    assert(found1);
+    assert(found2);
+
 }
 
 
-static void testSelection2()
+static void testSelectionDeep()
 {
     MidiSelectionModel selOrig;
     MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
@@ -365,6 +409,31 @@ static void testSelection2()
     assert(!sel->isSelectedDeep(note3));
 }
 
+void testSelectionAddTwice()
+{
+    MidiSelectionModel selOrig;
+    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
+    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
+    note1->startTime = 1;
+    note1->pitchCV = 1.1f;
+    note2->startTime = 2;
+    note2->pitchCV = 2.1f;
+    
+
+    MidiSelectionModel sel;
+    sel.extendSelection(note1);
+    sel.extendSelection(note2);
+    assertEQ(sel.size(), 2);
+
+    sel.extendSelection(note1);
+    assertEQ(sel.size(), 2);
+
+    // should still be able to insert a clone
+    MidiEventPtr cloneNote1 = note1->clone();
+    sel.extendSelection(cloneNote1);
+    assertEQ(sel.size(), 3);
+}
+
 void testMidiDataModel()
 {
     assertNoMidi();     // check for leaks
@@ -380,10 +449,13 @@ void testMidiDataModel()
     testTimeRange1();
     testNoteTimeRange1();
     testSameTime();
+    testSeekTime1();
+    testSeekTime2();
     testSong();
     testQuant();
 
-    testSelection();
-    testSelection2();
+    testExtendSelection();
+    testSelectionDeep();
+    testSelectionAddTwice();
     assertNoMidi();     // check for leaks
 }

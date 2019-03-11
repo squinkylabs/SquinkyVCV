@@ -5,6 +5,29 @@
 
 #include <assert.h>
 
+#ifdef _SEQ
+
+bool MidiKeyboardHandler::doRepeat(unsigned key)
+{
+    bool doIt = false;
+    switch(key) {
+        case GLFW_KEY_TAB: 
+        case GLFW_KEY_KP_ADD:
+        case GLFW_KEY_EQUAL:
+        case GLFW_KEY_KP_SUBTRACT:
+        case GLFW_KEY_LEFT_BRACKET:
+        case GLFW_KEY_RIGHT_BRACKET:
+        case GLFW_KEY_MINUS:
+      //  case GLFW_KEY_PLUS:
+        case GLFW_KEY_RIGHT:
+        case GLFW_KEY_LEFT:
+        case GLFW_KEY_UP:
+        case GLFW_KEY_DOWN:
+            doIt = true;
+    }
+    return doIt;
+}
+
 void MidiKeyboardHandler::handleNoteEditorChange(
     MidiSequencer* sequencer,
     ChangeType type,
@@ -44,6 +67,8 @@ void MidiKeyboardHandler::handleNoteEditorChange(
     }
 }
 
+extern void sequencerHelp();
+
 bool MidiKeyboardHandler::handle(
     MidiSequencer* sequencer,
     unsigned key,
@@ -54,11 +79,23 @@ bool MidiKeyboardHandler::handle(
     const bool ctrl = (mods & GLFW_MOD_CONTROL);
    
     switch(key) {
+        case GLFW_KEY_F1:
+            sequencerHelp();
+            break;
         case GLFW_KEY_TAB: 
-            if (shift) {
-                sequencer->editor->selectPrevNote();
+
+            if (!shift) {
+                if (ctrl) {
+                    sequencer->editor->selectPrevNote();
+                } else {
+                    sequencer->editor->selectNextNote();
+                }
             } else {
-                sequencer->editor->selectNextNote();
+                if (ctrl) {
+                    sequencer->editor->extendSelectionToPrevNote();
+                } else {
+                    sequencer->editor->extendSelectionToNextNote();
+                }
             }
             handled = true;
             break;
@@ -116,6 +153,22 @@ bool MidiKeyboardHandler::handle(
                 handled = true;
             }
             break;
+        case GLFW_KEY_A:
+            {
+                if (ctrl) {
+                    sequencer->editor->selectAll();
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_C:
+            {
+                if (ctrl) {
+                    sequencer->editor->copy();
+                    handled = true;
+                }
+            }
+            break;
         case GLFW_KEY_P:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
@@ -131,6 +184,22 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_S:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+            }
+            break;
+        case GLFW_KEY_V:
+            {
+                if (ctrl) {
+                    sequencer->editor->paste();
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_X:
+            {
+                if (ctrl) {
+                    sequencer->editor->cut();
+                    handled = true;
+                }
             }
             break;
         case GLFW_KEY_KP_0:
@@ -167,3 +236,4 @@ bool MidiKeyboardHandler::handle(
     }
     return handled;
 }
+#endif

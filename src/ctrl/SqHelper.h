@@ -9,6 +9,37 @@ class SqHelper
 {
 public:
 
+    static bool contains(const struct rack::math::Rect& r, const Vec& pos)
+    {
+        return r.isContaining(pos);
+    }
+    using SvgWidget = rack::widget::SvgWidget;
+    using SvgSwitch = rack::app::SvgSwitch;
+    
+//void SvgKnob::setSvg(std::shared_ptr<Svg> svg
+
+    static void setSvg(SvgWidget* widget, std::shared_ptr<Svg> svg)
+    {
+        widget->setSvg(svg);
+    }
+    static void setSvg(SvgKnob* knob, std::shared_ptr<Svg> svg)
+    {
+        knob->setSvg(svg);
+    }
+
+    /**
+     * loads SVG from plugin's assets
+     */
+    static std::shared_ptr<Svg> loadSvg(const char* path) 
+    {
+        return APP->window->loadSvg(
+            SqHelper::assetPlugin(pluginInstance, path));
+    }
+    static void setPanel(ModuleWidget* widget, const char* path)
+    {
+         widget->setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, path)));
+    }
+
     static void openBrowser(const char* url)
     {
         system::openBrowser(url);
@@ -63,12 +94,19 @@ public:
     }
 };
 
+#define DECLARE_MANUAL(URL) void appendContextMenu(Menu *theMenu) override \
+{ \
+    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    theMenu->addChild(manual);   \
+}
+
 #else
 
 
 class SqHelper
 {
 public:
+
     static std::string assetPlugin(Plugin *plugin, const std::string& filename)
     {
         return rack::assetPlugin(plugin, filename);
@@ -127,5 +165,46 @@ public:
     static void setValue(ParamWidget* widget, float v) {
         widget->setValue(v);
     }
+
+    static void setPanel(ModuleWidget* widget, const char* path)
+    {
+        SVGPanel *panel = new SVGPanel();
+        panel->box.size = widget->box.size;
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, path)));
+        widget->addChild(panel);
+    }
+
+    static std::shared_ptr<SVG> loadSvg(const char* path) 
+    {
+        return SVG::load(
+            SqHelper::assetPlugin(pluginInstance, path));
+    }
+
+
+    using SvgWidget = SVGWidget;
+    using SvgSwitch = SVGSwitch;
+    static void setSvg(SvgWidget* widget, std::shared_ptr<SVG> svg)
+    {
+        widget->setSVG(svg);
+    }
+    static void setSvg(SVGKnob* knob, std::shared_ptr<SVG> svg)
+    {
+        knob->setSVG(svg);
+    }
+
+    static bool contains(struct Rect& r, const Vec& pos)
+    {
+        return r.contains(pos);
+    }
+
 };
+
+#define DECLARE_MANUAL(URL) Menu* createContextMenu() override \
+{ \
+    Menu* theMenu = ModuleWidget::createContextMenu(); \
+    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    theMenu->addChild(manual); \
+    return theMenu; \
+}
+
 #endif

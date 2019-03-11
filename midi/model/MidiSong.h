@@ -4,7 +4,6 @@
 #include <vector>
 #include <memory>
 
-
 class MidiSong;
 class MidiLock;
 
@@ -15,9 +14,14 @@ class MidiSong
 public:
     MidiSong();
     ~MidiSong();
+
     std::shared_ptr<MidiTrack> getTrack(int index);
     std::shared_ptr<const MidiTrack> getTrackConst(int index) const;
     void createTrack(int index);
+    /** like create track, but passes in the track
+     */
+    void addTrack(int index, std::shared_ptr<MidiTrack>);
+   
 
     void assertValid() const;
 
@@ -25,6 +29,8 @@ public:
      * returns -1 if no tracks exist
      */
     int getHighestTrackNumber() const;
+
+    bool trackExists(int tkNum) const;
 
     /**
      * factory method to generate test content
@@ -34,11 +40,5 @@ public:
     std::shared_ptr<MidiLock> lock;
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
-
-    /** like create track, but passes in the track
-     */
-    void addTrack(int index, std::shared_ptr<MidiTrack>);
-
-   
 };
 

@@ -21,7 +21,20 @@ class MidiEditorContext;
 class NoteScreenScale
 {
 public:
-    NoteScreenScale(std::shared_ptr<MidiEditorContext> vp, float screenWidth, float screenHeight);
+    NoteScreenScale(
+        float screenWidth,
+        float screenHeight,
+        float hMargin,        // units of empty space l and r (won't be pixels if zoom != 1).
+        float topMargin
+    );
+    void setContext(std::shared_ptr<MidiEditorContext>);
+
+    /**
+     * update internal match to reflect new state of edit context
+     */
+    void reCalculate();
+
+
     float midiTimeToX(const MidiEvent& ev);
     float midiTimeToX(MidiEvent::time_t ev);
     float midiTimeTodX(MidiEvent::time_t dt);
@@ -34,8 +47,19 @@ public:
     float midiCvToY(float cv);
 
     float noteHeight();
+
+    void assertValid() const;
 private:
+    float unitsPerPix = 1;
+    float by = 0;
+    float bx = 0;
     float ax = 0;
     float ay = 0;
-    std::shared_ptr<MidiEditorContext> viewport;
+    std::weak_ptr<MidiEditorContext> _context;
+    std::shared_ptr<MidiEditorContext> context() const;
+
+    const float screenWidth;
+    const float screenHeight;
+    const float hMargin;
+    const float topMargin;
 };

@@ -59,7 +59,9 @@ extern void testMultiLag();
 extern void testUtils();
 extern void testIComposite();
 extern void testMidiEditor();
+extern void testMidiEditorNextPrev();
 extern void testNoteScreenScale();
+extern void testMidiEditorCCP();
 
 #if 0
 #include <sstream>
@@ -83,6 +85,8 @@ static void xx()
     std::cout << s.str();
 }
 #endif
+
+#define _MIDIONLY
 
 int main(int argc, char ** argv)
 {
@@ -128,7 +132,9 @@ int main(int argc, char ** argv)
     testMidiViewport();
  
     testMidiControllers();
+    testMidiEditorNextPrev();
     testMidiEditor();
+    testMidiEditorCCP();
     testNoteScreenScale();
 
     testAudioMath();

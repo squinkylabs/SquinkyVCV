@@ -34,6 +34,11 @@ private:
     bool tryLock();
 };
 
+/**
+ * MidiLocker is a scoped lock.
+ * It calls editorLock and editorUnlock, so may
+ * only be used by the UI thread.
+ */
 class MidiLocker
 {
 public:
