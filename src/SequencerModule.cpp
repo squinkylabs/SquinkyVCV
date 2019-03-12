@@ -5,12 +5,13 @@
 #ifdef _SEQ
 #include "WidgetComposite.h"
 #include "Seq.h"
-//#include "widgets.hpp"
 #include "seq/NoteDisplay.h"
 #include "seq/AboveNoteGrid.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/ToggleButton.h"
+
 #include "seq/SequencerSerializer.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
@@ -73,7 +74,7 @@ SequencerModule::SequencerModule()
     seqComp = std::make_shared<Comp>(this, song);
 }
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq3b/docs/sq.md";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq4/docs/sq.md";
 
 struct SequencerWidget : ModuleWidget
 {
@@ -95,6 +96,9 @@ struct SequencerWidget : ModuleWidget
 
     NoteDisplay* noteDisplay = nullptr;
     AboveNoteGrid* headerDisplay = nullptr;
+
+    void addJacks(SequencerModule *module);
+    void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 void sequencerHelp()
@@ -139,48 +143,108 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
         addChild(headerDisplay);
     }
 
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(50, 40),
-        module,
-        Comp::CLOCK_INPUT));
-    addLabel(Vec(35, 56), "Clk");
 
-    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
-        icomp,
-        Vec(40, 90),
-        module,
-        Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 100;    // width
-    p->box.size.y = 22;     // should set auto like button does
-    p->setLabels(Comp::getClockRates());
-    addParam(p);
-    addParam(SqHelper::createParam<Rogan2PSBlue>(
-        icomp,
-        Vec(60, 150),
-        module,
-        Comp::TEMPO_PARAM));
-    addLabel(Vec(60, 200), "Tempo");
-
-    addOutput(createOutputCentered<PJ301MPort>(
-        Vec(50, 339),
-        module,
-        Seq<WidgetComposite>::CV_OUTPUT));
-    addLabel(Vec(35, 310), "CV");
-
-    addOutput(createOutputCentered<PJ301MPort>(
-        Vec(90, 339),
-        module,
-        Seq<WidgetComposite>::GATE_OUTPUT));
-    addLabel(Vec(75, 310), "G");
-
-    addChild(createLight<MediumLight<GreenLight>>(
-        Vec(120, 310), module, Seq<WidgetComposite>::GATE_LIGHT));
-
+    addControls(module, icomp);
+    addJacks(module);
+ 
       // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+}
+
+void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
+{
+    addParam(SqHelper::createParam<Rogan2PSBlue>(
+        icomp,
+        Vec(60, 65),
+        module,
+        Comp::TEMPO_PARAM));
+    addLabel(Vec(60, 40), "Tempo");
+
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(40, 120),
+        module,
+        Comp::CLOCK_INPUT_PARAM);
+    p->box.size.x = 85;    // width
+    p->box.size.y = 22;     // should set auto like button does
+    p->setLabels(Comp::getClockRates());
+    addParam(p);
+
+    ToggleButton* tog = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(40, 200),
+        module,
+        Comp::RUN_STOP_PARAM);
+    tog->addSvg("res/seq-play-button-pause.svg");
+    tog->addSvg("res/seq-play-button-play.svg");
+    addParam(tog);
+
+    tog = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(90, 200),
+        module,
+        Comp::PLAY_SCROLL_PARAM);
+    tog->addSvg("res/seq-scroll-button-off.svg");
+    tog->addSvg("res/seq-scroll-button-bars.svg");
+    tog->addSvg("res/seq-scroll-button-smooth.svg");
+    addParam(tog);
+}
+
+void SequencerWidget::addJacks(SequencerModule *module)
+{
+    const float jacksY = 310;
+    const float jacksLabelY = 280;
+    const float jacksDx = 40;
+    const float jacksX = 20;
+    const float labelX = jacksX - 20;
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 0 * jacksDx, jacksY),
+        module,
+        Comp::CLOCK_INPUT));
+    addLabel(
+        Vec(5 + labelX + 0 * jacksDx, jacksLabelY),
+        "Clk");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 1 * jacksDx, jacksY),
+        module,
+        Comp::RESET_INPUT));
+    addLabel(
+        Vec(-5 + labelX + 1 * jacksDx, jacksLabelY),
+        "Reset");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 2 * jacksDx, jacksY),
+        module,
+        Comp::RUN_INPUT));
+    addLabel(
+        Vec(labelX + 2 * jacksDx, jacksLabelY),
+        "Run");
+
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(jacksX + 3 * jacksDx, jacksY),
+        module,
+        Seq<WidgetComposite>::CV_OUTPUT));
+    addLabel(
+        Vec(labelX + 3 * jacksDx, jacksLabelY),
+        "CV");
+
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(jacksX + 4 * jacksDx, jacksY),
+        module,
+        Seq<WidgetComposite>::GATE_OUTPUT));
+    addLabel(
+        Vec(labelX + 4 * jacksDx, jacksLabelY),
+        "Gate");
+
+    addChild(createLight<MediumLight<GreenLight>>(
+         Vec(jacksX + 4 * jacksDx , jacksLabelY-10),
+        module,
+        Seq<WidgetComposite>::GATE_LIGHT));
 
 }
 

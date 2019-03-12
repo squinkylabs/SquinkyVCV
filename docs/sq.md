@@ -15,11 +15,19 @@ On the left are a few inputs, outputs, and controls.
 
 **Tempo** determines the tempo when the Clock Rate is set to internal.
 
+**Run/Stop** button does nothing yet.
+
+**Scroll mode** button does nothing yet.
+
 **CV** is the pitch CV output.
 
 **G** is the gate output. When it is active the gree LED lights.
 
 **Clk** is the eternal clock input.
+
+**Rst** does nothing yet.
+
+**Run** does nothing yet.
 
 ## What works now
 
