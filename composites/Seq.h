@@ -42,6 +42,7 @@ public:
         CLOCK_INPUT_PARAM,
         TEMPO_PARAM,
         RUN_STOP_PARAM,
+        PLAY_SCROLL_PARAM,
         NUM_PARAMS
     };
 
@@ -189,6 +190,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::RUN_STOP_PARAM:
             ret = {0, 1, 0, "Run/Stop"};
+            break;
+        case Seq<TBase>::PLAY_SCROLL_PARAM:
+            ret = {0, 2, 0, "Scroll during playback"};
             break;
         default:
             assert(false);
