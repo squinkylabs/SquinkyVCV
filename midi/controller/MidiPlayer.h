@@ -35,6 +35,10 @@ public:
         track = newTrack;
     }
     void updateToMetricTime(double seconds, IPlayerHost*);
+
+    double getLoopStart() const {
+        return loopStart;
+    }
 private:
   
     double noteOffTime = -1;
@@ -81,6 +85,10 @@ public:
     {
         isPlaying = false;
     }
+
+     double getLoopStart() const {
+         return trackPlayer.getLoopStart();
+     }
 
 private:
     std::shared_ptr<IPlayerHost> host;

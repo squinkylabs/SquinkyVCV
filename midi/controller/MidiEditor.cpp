@@ -244,6 +244,35 @@ void MidiEditor::assertCursorInSelection()
     assert(foundIt);
 }
 
+void MidiEditor::advanceCursorToTime(float time)
+{
+   // assert(!ticks);         // not implemented yet
+//assert(amount != 0);
+
+  //  seq()->context->assertCursorInViewport();
+
+  //  float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+  //  seq()->context->setCursorTime(seq()->context->cursorTime() + advanceAmount);
+    seq()->context->setCursorTime(std::max(0.f, time));
+    updateSelectionForCursor();
+    seq()->context->adjustViewportForCursor();
+    seq()->context->assertCursorInViewport();
+    seq()->assertValid();
+}
+
+void MidiEditor::advanceCursor(bool ticks, int amount)
+{
+    assert(!ticks);         // not implemented yet
+    assert(amount != 0);
+
+    seq()->context->assertCursorInViewport();
+
+    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+    float newTime = seq()->context->cursorTime() + advanceAmount;
+    advanceCursorToTime(newTime);
+}
+
+#if 0
 void MidiEditor::advanceCursor(bool ticks, int amount)
 {
     assert(!ticks);         // not implemented yet
@@ -259,6 +288,7 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     seq()->context->assertCursorInViewport();
     seq()->assertValid();
 }
+#endif
 
 void MidiEditor::changeCursorPitch(int semitones)
 {

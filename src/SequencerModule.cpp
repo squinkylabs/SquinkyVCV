@@ -15,6 +15,7 @@
 #include "seq/SequencerSerializer.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
+#include "TimeUtils.h"
 
 using Comp = Seq<WidgetComposite>;
 class SequencerWidget;
@@ -50,6 +51,14 @@ struct SequencerModule : Module
     void stop()
     {
         seqComp->stop();
+    }
+
+    float getPlayPosition()
+    {
+        return seqComp->getPlayPosition();
+    }
+    MidiSequencerPtr getSeq() {
+        return sequencer;
     }
 };
 
@@ -93,9 +102,29 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
+#if 0
+    void step() override {
+        ModuleWidget::step();
+        if (scrollControl) {
+            const int y = scrollControl->getValue();
+            if (y) {
+                float curTime = _module->getPlayPosition();
+               // printf("time = %f\n", curTime); fflush(stdout);
+                if (y == 2) {
+                    auto curBar = TimeUtils::time2bar(curTime);
+                    curTime = TimeUtils::bar2time(curBar);
+                }
+                auto seq = _module->getSeq();
+                seq->context->setTimeRange(curTime, curTime + TimeUtils::bar2time(2));
+            }
+        }
+    }
+#endif
 
     NoteDisplay* noteDisplay = nullptr;
     AboveNoteGrid* headerDisplay = nullptr;
+    ToggleButton*  scrollControl = nullptr;
+    SequencerModule* _module = nullptr;
 
     void addJacks(SequencerModule *module);
     void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
@@ -107,7 +136,7 @@ void sequencerHelp()
 }
 
 #ifdef __V1
-SequencerWidget::SequencerWidget(SequencerModule *module)
+SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 {
     setModule(module);
 
@@ -173,6 +202,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
+    {
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(40, 200),
@@ -181,16 +211,19 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     tog->addSvg("res/seq-play-button-pause.svg");
     tog->addSvg("res/seq-play-button-play.svg");
     addParam(tog);
+    }
 
-    tog = SqHelper::createParam<ToggleButton>(
+    {
+    scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(90, 200),
         module,
         Comp::PLAY_SCROLL_PARAM);
-    tog->addSvg("res/seq-scroll-button-off.svg");
-    tog->addSvg("res/seq-scroll-button-bars.svg");
-    tog->addSvg("res/seq-scroll-button-smooth.svg");
-    addParam(tog);
+    scrollControl->addSvg("res/seq-scroll-button-off.svg");
+    scrollControl->addSvg("res/seq-scroll-button-bars.svg");
+    scrollControl->addSvg("res/seq-scroll-button-smooth.svg");
+    addParam(scrollControl);
+    }
 }
 
 void SequencerWidget::addJacks(SequencerModule *module)

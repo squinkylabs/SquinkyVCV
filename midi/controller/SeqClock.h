@@ -17,6 +17,10 @@ public:
     void setup(int inputSetting, float tempoSetting, float sampleTime);
     void reset();
     static std::vector<std::string> getClockRates();
+
+    double getCurMetricTime() const {
+        return curMetricTime; 
+    }
 private:
     int clockSetting = 0;       // default to internal
     float internalTempo = 120.f;

@@ -30,6 +30,7 @@ public:
      * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
+    void advanceCursorToTime(float time);
     void changeCursorPitch(int semitones);
 
 

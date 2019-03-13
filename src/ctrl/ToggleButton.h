@@ -12,6 +12,11 @@ public:
      */
     void addSvg(const char* resourcePath);
 
+    int getValue() 
+    {
+        return  SqHelper::getValue(this);
+    }
+
 #ifdef __V1
     void onButton(const ButtonEvent &e) override;
     void draw(const DrawArgs &args) override;

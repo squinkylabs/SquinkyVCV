@@ -77,10 +77,17 @@ public:
         return std::make_shared<SeqDescription<TBase>>();
     }
 
-
     void stop()
     {
         player->stop();
+    }
+
+    float getPlayPosition()
+    {
+        double absTime = clock.getCurMetricTime();
+        double loopDuration = player->getLoopStart();
+        double ret = absTime - loopDuration;
+        return ret;
     }
 
     static std::vector<std::string> getClockRates();
@@ -126,7 +133,6 @@ template <class TBase>
 void  Seq<TBase>::init(MidiSongPtr song)
 { 
     std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
-   // std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     player = std::make_shared<MidiPlayer>(host, song);
     div.setup(4, [this] {
         this->stepn(div.div());
