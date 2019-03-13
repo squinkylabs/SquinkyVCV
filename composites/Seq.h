@@ -189,7 +189,7 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Seq<TBase>::CLOCK_INPUT_PARAM:
-            ret = {0, 5, 2, "Clock Rate"};
+            ret = {0, 5, 0, "Clock Rate"};
             break;
         case Seq<TBase>::TEMPO_PARAM:
             ret = {40, 200, 120, "Tempo"};
@@ -198,7 +198,7 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Run/Stop"};
             break;
         case Seq<TBase>::PLAY_SCROLL_PARAM:
-            ret = {0, 2, 0, "Scroll during playback"};
+            ret = {0, 1, 0, "Scroll during playback"};
             break;
         default:
             assert(false);

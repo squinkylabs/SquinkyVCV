@@ -102,7 +102,7 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
-#if 0
+#if 1
     void step() override {
         ModuleWidget::step();
         if (scrollControl) {
@@ -115,7 +115,8 @@ struct SequencerWidget : ModuleWidget
                     curTime = TimeUtils::bar2time(curBar);
                 }
                 auto seq = _module->getSeq();
-                seq->context->setTimeRange(curTime, curTime + TimeUtils::bar2time(2));
+                //seq->context->setTimeRange(curTime, curTime + TimeUtils::bar2time(2));
+                seq->editor-> advanceCursorToTime(curTime);
             }
         }
     }
@@ -172,11 +173,9 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
         addChild(headerDisplay);
     }
 
-
     addControls(module, icomp);
     addJacks(module);
  
-      // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
@@ -220,9 +219,13 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         module,
         Comp::PLAY_SCROLL_PARAM);
     scrollControl->addSvg("res/seq-scroll-button-off.svg");
-    scrollControl->addSvg("res/seq-scroll-button-bars.svg");
+ //   scrollControl->addSvg("res/seq-scroll-button-bars.svg");
     scrollControl->addSvg("res/seq-scroll-button-smooth.svg");
     addParam(scrollControl);
+
+    addLabel(
+        Vec(90, 180),
+        "Scroll");
     }
 }
 
