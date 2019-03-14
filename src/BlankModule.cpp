@@ -3,9 +3,11 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
-#if 0
+#ifdef _BLANKMODULE
 #include "Blank.h"
+#include "ctrl/SqHelper.h"
 
+using Comp = Blank<WidgetComposite>;
 
 /**
  */
@@ -20,7 +22,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    Blank<WidgetComposite> blank;
+    std::shared_ptr<Comp> blank;
 private:
 
 };
@@ -29,6 +31,15 @@ void BlankModule::onSampleRateChange()
 {
 }
 
+
+#ifdef __V1
+BlankModule::BlankModule()
+{
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    blank = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    SqHelper::setupParams(icomp, this);
+#else
 BlankModule::BlankModule()
     : Module(blank.NUM_PARAMS,
     blank.NUM_INPUTS,
@@ -36,8 +47,9 @@ BlankModule::BlankModule()
     blank.NUM_LIGHTS),
     blank(this)
 {
+#endif
     onSampleRateChange();
-    blank.init();
+    blank->init();
 }
 
 void BlankModule::step()
@@ -53,7 +65,7 @@ struct BlankWidget : ModuleWidget
 {
     BlankWidget(BlankModule *);
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -76,22 +88,27 @@ BlankWidget::BlankWidget(BlankModule *module) : ModuleWidget(module)
     {
         SVGPanel *panel = new SVGPanel();
         panel->box.size = box.size;
-        panel->setBackground(SVG::load(assetPlugin(pluginInstance, "res/blank_panel.svg")));
+        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/blank_panel.svg")));
         addChild(panel);
     }
 
 
     // screws
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 
+#ifdef __V1
+Model *modelBlankModule = createModel<BlankModule, BlankWidget>("squinkylabs-blank");
+#else
+a b c
 Model *modelBlankModule = Model::create<BlankModule,
     BlankWidget>("Squinky Labs",
     "squinkylabs-blank",
     "-- Blank --", RANDOM_TAG);
+#endif
 #endif
 

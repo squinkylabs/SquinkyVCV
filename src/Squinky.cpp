@@ -72,7 +72,9 @@ void init(rack::Plugin *p)
 #ifdef _DG
     p->addModel(modelDGModule);
 #endif
-   // p->addModel(modelBlankModule);
+#ifdef _BLANKMODULE
+    p->addModel(modelBlankModule);
+#endif
 
 #ifdef _SINK
     p->addModel(modelKSModule);

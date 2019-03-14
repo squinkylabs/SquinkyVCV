@@ -93,7 +93,7 @@ inline IComposite::Config BlankDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case CHB<TBase>::PARAM_TUNE:
+        case Blank<TBase>::TEST_PARAM:
             ret = {-1.0f, 1.0f, 0, "Test"};
             break;
         default:
