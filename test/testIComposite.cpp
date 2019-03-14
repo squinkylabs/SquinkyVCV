@@ -1,4 +1,4 @@
-
+#include "Blank.h"
 #include "CHB.h"
 #include "ColoredNoise.h"
 #include "EV3.h"
@@ -59,4 +59,5 @@ void testIComposite()
     test<EV3<TestComposite>>();
     test<FrequencyShifter<TestComposite>>();
     test<VocalAnimator<TestComposite>>();
+    test<Blank<TestComposite>>();
 }

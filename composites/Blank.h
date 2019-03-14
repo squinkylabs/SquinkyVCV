@@ -1,6 +1,17 @@
 
 #pragma once
 
+#include <assert.h>
+#include <memory>
+#include "IComposite.h"
+
+template <class TBase>
+class BlankDescription : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 template <class TBase>
 class Blank : public TBase
@@ -24,6 +35,7 @@ public:
 
     enum ParamIds
     {
+        TEST_PARAM,
         NUM_PARAMS
     };
 
@@ -41,6 +53,13 @@ public:
     {
         NUM_LIGHTS
     };
+
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<BlankDescription<TBase>>();
+    }
 
     /**
      * Main processing entry point. Called every sample
@@ -62,4 +81,25 @@ template <class TBase>
 inline void Blank<TBase>::step()
 {
 }
+
+template <class TBase>
+int BlankDescription<TBase>::getNumParams()
+{
+    return Blank<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config BlankDescription<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case CHB<TBase>::PARAM_TUNE:
+            ret = {-1.0f, 1.0f, 0, "Test"};
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
 

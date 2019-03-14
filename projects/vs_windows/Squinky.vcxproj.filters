@@ -698,5 +698,8 @@
     <ClInclude Include="..\..\midi\model\SqClipboard.h">
       <Filter>Header Files\midi\model</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\Blank.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
