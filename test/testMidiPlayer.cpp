@@ -254,52 +254,10 @@ static void test3L()
     assertEQ(host->cvState, 2);
 }
 
-// test internal clock
-static void testClock0()
-{
-    const int sampleRateI = 44100;
-    const float sampleRate = float(sampleRateI);
-    const float sampleTime = 1.f / sampleRate;
-    SeqClock ck;
-    ck.setup(0, 120, sampleTime);       // internal clock
-
-    // now clock by one second
-    double elapsed = ck.update(sampleRateI, false);
-
-    // quarter note = half second at 120,
-    // so one second = 2q
-    assertEQ(elapsed, 2.0);
-
-    elapsed = ck.update(sampleRateI, false);
-    assertEQ(elapsed, 4.0);
-
-    ck.reset();
-    ck.setup(0, 240, sampleTime);       // internal clock
-    elapsed = ck.update(sampleRateI * 10, false);
-    assertEQ(elapsed, 40);
-}
 
 //  double update(int samplesElapsed, bool externalClock);
 
-static void testClockExt(int rate, double metricTimePerClock)
-{
-    assertGT(rate, 0);
-    assertLE(rate, 5);
 
-    SeqClock ck;
-    ck.setup(rate, 120, 100);       // internal clock
-    
-    // send one clock
-    for (int i = 0; i < 10; ++i) {
-        double x = ck.update(55, false);        // low clock
-        assertEQ(x, 0);
-    }
-
-    // count home much metric time comes back
-    double x = ck.update(55, true);
-    assertEQ(x, metricTimePerClock);
-    
-}
 
 
 #if 0
@@ -339,8 +297,6 @@ static void testReset()
 
     // Should play just like it does in test1
     pl.updateToMetricTime(2 * .24f);
-#if 1
-    //host = makeSongOneQandRun(2 * .24f);
 
     assertEQ(host->lockConflicts, 0);
     assertEQ(host->gateChangeCount, 1);
@@ -348,17 +304,9 @@ static void testReset()
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvState, 2);
     assertEQ(host->lockConflicts, 0);
-#endif
 }
 
-static void testClock1()
-{
-    testClockExt(5, 1.0);
-    testClockExt(4, 1.0 / 2.0);
-    testClockExt(3, 1.0 / 4.0);
-    testClockExt(2, 1.0 / 8.0);
-    testClockExt(1, 1.0 / 16.0);
-}
+
 
 void testMidiPlayer()
 {
@@ -378,8 +326,7 @@ void testMidiPlayer()
     test2L();
     test3L();
 
-    testClock0();
-    testClock1();
+
 
     testReset();
 

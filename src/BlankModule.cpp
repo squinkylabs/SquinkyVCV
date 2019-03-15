@@ -6,6 +6,7 @@
 #ifdef _BLANKMODULE
 #include "Blank.h"
 #include "ctrl/SqHelper.h"
+#include "ctrl/SqMenuItem.h"
 
 using Comp = Blank<WidgetComposite>;
 
@@ -38,7 +39,7 @@ BlankModule::BlankModule()
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     blank = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    SqHelper::setupParams(icomp, this);
+    SqHelper::setupParams(icomp, this); 
 #else
 BlankModule::BlankModule()
     : Module(blank.NUM_PARAMS,
@@ -54,7 +55,7 @@ BlankModule::BlankModule()
 
 void BlankModule::step()
 {
-    blank.step();
+    blank->step();
 }
 
 ////////////////////
@@ -64,6 +65,7 @@ void BlankModule::step()
 struct BlankWidget : ModuleWidget
 {
     BlankWidget(BlankModule *);
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -82,16 +84,16 @@ struct BlankWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+BlankWidget::BlankWidget(BlankModule *module)
+{
+    setModule(module);
+#else
 BlankWidget::BlankWidget(BlankModule *module) : ModuleWidget(module)
 {
+#endif
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/blank_panel.svg")));
-        addChild(panel);
-    }
-
+    SqHelper::setPanel(this, "res/blank_panel.svg");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

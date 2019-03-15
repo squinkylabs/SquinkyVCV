@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Divider.h"
-#include "GateTrigger.h"
 #include "IComposite.h"
 #include "MidiPlayer.h"
 #include "MidiSong.h"
@@ -23,11 +22,11 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(struct Module * module, MidiSongPtr song) : TBase(module), gateTrigger(true)
+    Seq(struct Module * module, MidiSongPtr song) : TBase(module)
     {
         init(song);
     }
-    Seq(MidiSongPtr song) : TBase(), gateTrigger(true)
+    Seq(MidiSongPtr song) : TBase()
     {
         init(song);
     }
@@ -92,7 +91,7 @@ public:
 
     static std::vector<std::string> getClockRates();
 private:
-    GateTrigger gateTrigger;
+   // GateTrigger gateTrigger;
     void init(MidiSongPtr);
 
     std::shared_ptr<MidiPlayer> player;
@@ -160,12 +159,13 @@ void  Seq<TBase>::stepn(int n)
     clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
 
     // and the clock input
-    gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
+  //  gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
+    const float extClock = TBase::inputs[CLOCK_INPUT].value;
 
     // now call the clock (internal only, for now
-    const bool externalClock = gateTrigger.trigger();
+
     int samplesElapsed = n;
-    double t = clock.update(samplesElapsed, externalClock);
+    double t = clock.update(samplesElapsed, extClock, 0, 0);
     player->updateToMetricTime(t);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;

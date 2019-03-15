@@ -63,6 +63,7 @@ extern void testMidiEditorNextPrev();
 extern void testNoteScreenScale();
 extern void testMidiEditorCCP();
 extern void testVec();
+extern void testSeqClock();
 
 #if 0
 #include <sstream>
@@ -128,6 +129,7 @@ int main(int argc, char ** argv)
     testFilteredIterator();
     testMidiDataModel();
     testMidiSong();
+    testSeqClock();
     testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();

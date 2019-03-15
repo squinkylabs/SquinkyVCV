@@ -1,19 +1,25 @@
 #pragma once
 
+#include "GateTrigger.h"
+
 #include <vector>
 
 class SeqClock
 {
 public:
+    SeqClock();
     /**
      * param samplesElapsed is how many sample clocks have elapsed since last call.
-     * param externalClock - if true indicates a rising edge of clock
+     * param externalClock - is the clock CV, 0..10. will look for rising edges
+     * param runStop is the run/stop CV, 0..10. will look for rising edges and toggle run state from that
+     * param reset
+     *
      * return - total elapsed metric time
      *
      * note that only one of the two passed params will be used, depending 
      * on internal/external model.
      */
-    double update(int samplesElapsed, bool externalClock);
+    double update(int samplesElapsed, float externalClock, float runStop, float reset);
     void setup(int inputSetting, float tempoSetting, float sampleTime);
     void reset();
     static std::vector<std::string> getClockRates();
@@ -27,9 +33,21 @@ private:
     double curMetricTime = 0;
     float sampleTime = 1.f / 44100.f;
     double metricTimePerClock = 1;
+
+    GateTrigger clockProcessor;
+    GateTrigger runProcessor;
+    GateTrigger resetProcessor;
 };
 
-inline double SeqClock::update(int samplesElapsed, bool externalClock)
+inline SeqClock::SeqClock() :
+    clockProcessor(true),
+    runProcessor(true),
+    resetProcessor(true)
+{
+
+}
+
+inline double SeqClock::update(int samplesElapsed, float externalClock, float runStop, float reset)
 {
     if (clockSetting == 0) {
         double deltaSeconds = samplesElapsed * sampleTime;
