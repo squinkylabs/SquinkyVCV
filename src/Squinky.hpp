@@ -16,6 +16,8 @@
 #define _GROWLER
 //#define _CH10
 
+#define _BLANKMODULE
+
 #ifndef __V1
     #define _EV3
     #define _CHB
@@ -72,7 +74,7 @@ extern Model *modelShaperModule;
 #ifdef _DG
 extern Model *modelDGModule;
 #endif
-#ifdef _BLANK
+#ifdef _BLANKMODULE
 extern Model *modelBlankModule;
 #endif
 #ifdef _SUPER

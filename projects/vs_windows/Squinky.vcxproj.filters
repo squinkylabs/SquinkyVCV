@@ -390,6 +390,9 @@
     <ClCompile Include="..\..\test\testMidiEditorCCP.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testVec.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -700,6 +703,9 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\Blank.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\fVec.h">
+      <Filter>Header Files\dsp\utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

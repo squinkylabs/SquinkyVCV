@@ -62,6 +62,7 @@ extern void testMidiEditor();
 extern void testMidiEditorNextPrev();
 extern void testNoteScreenScale();
 extern void testMidiEditorCCP();
+extern void testVec();
 
 #if 0
 #include <sstream>
@@ -122,6 +123,7 @@ int main(int argc, char ** argv)
     }
 
     testIComposite();
+    testVec();
     testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();

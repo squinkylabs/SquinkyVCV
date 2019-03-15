@@ -103,6 +103,7 @@
     <ClCompile Include="..\..\test\testUtils.cpp" />
     <ClCompile Include="..\..\test\testVCO.cpp" />
     <ClCompile Include="..\..\test\testVCOAlias.cpp" />
+    <ClCompile Include="..\..\test\testVec.cpp" />
     <ClCompile Include="..\..\test\testVocalAnimator.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +160,7 @@
     <ClInclude Include="..\..\dsp\utils\AsymWaveShaper.h" />
     <ClInclude Include="..\..\dsp\utils\AudioMath.h" />
     <ClInclude Include="..\..\dsp\utils\Decimator.h" />
+    <ClInclude Include="..\..\dsp\utils\fVec.h" />
     <ClInclude Include="..\..\dsp\utils\IIRDecimator.h" />
     <ClInclude Include="..\..\dsp\utils\IIRUpsampler.h" />
     <ClInclude Include="..\..\dsp\utils\LookupTable.h" />
