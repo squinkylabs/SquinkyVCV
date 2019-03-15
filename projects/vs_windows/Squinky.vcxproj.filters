@@ -710,5 +710,8 @@
     <ClInclude Include="..\..\dsp\utils\fVec.h">
       <Filter>Header Files\dsp\utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\Slew4.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -83,6 +83,11 @@
 			"slug": "squinkylabs-blank",
 			"name": "Blank",
 			"description": "blank starting project"
+		},
+		{
+			"slug": "squinkylabs-slew4",
+			"name": "Slew",
+			"description": "Quad slew / VCA"
 		}
 	]
 }

@@ -82,6 +82,9 @@ void init(rack::Plugin *p)
 #ifdef _CH10
     p->addModel(modelCH10Module);
 #endif
+#ifdef _SLEW
+    p->addModel(modelSlew4Module);
+#endif
 
 }
 

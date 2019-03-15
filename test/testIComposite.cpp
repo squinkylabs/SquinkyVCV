@@ -8,6 +8,7 @@
 #include "Gray.h"
 #include "Seq.h"
 #include "Shaper.h"
+#include "Slew4.h"
 #include "Super.h"
 #include "TestComposite.h"
 #include "Tremolo.h"
@@ -60,4 +61,5 @@ void testIComposite()
     test<FrequencyShifter<TestComposite>>();
     test<VocalAnimator<TestComposite>>();
     test<Blank<TestComposite>>();
+    test<Slew4<TestComposite>>();
 }

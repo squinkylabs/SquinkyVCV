@@ -40,8 +40,9 @@ public:
     {
         CLOCK_INPUT_PARAM,
         TEMPO_PARAM,
-        RUN_STOP_PARAM,
+        RUN_STOP_PARAM,             // the switch the user pushes
         PLAY_SCROLL_PARAM,
+        RUNNING_PARAM,              // the invisible param that stores the state
         NUM_PARAMS
     };
 
@@ -199,6 +200,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::PLAY_SCROLL_PARAM:
             ret = {0, 1, 0, "Scroll during playback"};
+            break;
+        case Seq<TBase>::RUNNING_PARAM:
+            ret = {0, 1, 0, "Running"};
             break;
         default:
             assert(false);

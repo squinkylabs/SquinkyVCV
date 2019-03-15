@@ -14,9 +14,10 @@
 #define _SUPER
 #define _BOOTY
 #define _GROWLER
+#define _SLEW
 //#define _CH10
 
-#define _BLANKMODULE
+//#define _BLANKMODULE
 
 #ifndef __V1
     #define _EV3
@@ -89,6 +90,9 @@ extern Model *modelKSModule;
 #endif
 #ifdef _SEQ
 extern Model *modelSequencerModule;
+#endif
+#ifdef _SLEW
+extern Model *modelSlew4Module;
 #endif
 
 
