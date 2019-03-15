@@ -5,7 +5,7 @@
 
 //  SeqClock::update(int samplesElapsed, float externalClock, float runStop, float reset)
 // test internal clock
-static void testClock0()
+static void testClockInternal0()
 {
     const int sampleRateI = 44100;
     const float sampleRate = float(sampleRateI);
@@ -50,7 +50,7 @@ static void testClockExt(int rate, double metricTimePerClock)
 
 }
 
-static void testClock1()
+static void testClockExt1()
 {
     testClockExt(5, 1.0);
     testClockExt(4, 1.0 / 2.0);
@@ -59,8 +59,45 @@ static void testClock1()
     testClockExt(1, 1.0 / 16.0);
 }
 
+static void testClockExtEdge()
+{
+    const int rate = 5;
+    const double metricTimePerClock = 1;
+    SeqClock ck;
+    ck.setup(rate, 120, 100);       // internal clock
+
+    // send one clock (first low)
+    for (int i = 0; i < 10; ++i) {
+        double x = ck.update(55, 0, 0, 0);        // low clock
+        assertEQ(x, 0);
+    }
+
+    // then high once
+    double x = ck.update(55, 10, 0, 0);
+    assertEQ(x, metricTimePerClock);
+    
+    // then high some more
+    for (int i = 0; i < 10; ++i) {
+        double x = ck.update(55, 10, 0, 0);        // low clock
+        assertEQ(x, metricTimePerClock);
+    }
+
+     // low more
+    for (int i = 0; i < 10; ++i) {
+        double x = ck.update(55, 0, 0, 0);        // low clock
+        assertEQ(x, metricTimePerClock);
+    }
+
+     // then high some more
+    for (int i = 0; i < 10; ++i) {
+        double x = ck.update(55, 10, 0, 0);        // low clock
+        assertEQ(x, 2 * metricTimePerClock);
+    }
+}
+
 void testSeqClock()
 {
-    testClock0();
-    testClock1();
+    testClockInternal0();
+    testClockExt1();
+    testClockExtEdge();
 }

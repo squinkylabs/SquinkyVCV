@@ -49,12 +49,15 @@ inline SeqClock::SeqClock() :
 
 inline double SeqClock::update(int samplesElapsed, float externalClock, float runStop, float reset)
 {
+    // Internal clock
     if (clockSetting == 0) {
         double deltaSeconds = samplesElapsed * sampleTime;
         double deltaMetric = deltaSeconds * internalTempo / 60.0;
         curMetricTime += deltaMetric;
     } else {
-        if (externalClock) {
+        // external clock
+        clockProcessor.go(externalClock);
+        if (clockProcessor.trigger()) {
             curMetricTime += metricTimePerClock;
         }
     }
