@@ -64,7 +64,7 @@ static void selectNextNotePastCursor(bool atCursorOk,
         }
     }
 
-    // If nothing past where we are, it's ok, even it it is at the same time
+    // If nothing past where we are, it's ok, even if it is at the same time
     seq->selection->addToSelection(bestSoFar->second, keepExisting);
 }
 
@@ -96,7 +96,7 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
         --it;
     }
 
-    // now either this prev is acceptable, or something before it
+    // now either this previous is acceptable, or something before it
     while (true) {
         MidiEventPtr evt = it->second;
         if ((evt->type == MidiEvent::Type::Note) && (evt->startTime < t)) {
@@ -104,12 +104,12 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
             return;
         }
         if (it == track->begin()) {
-            break;  // give up if we are at start and have foundnothing good
+            break;  // give up if we are at start and have found nothing good
         }
-        --it;       // if nothing good, try prev
+        --it;       // if nothing good, try previous
     }
 
-    // If nothing past where we are, it's ok, even it it is at the same time
+    // If nothing past where we are, it's OK, even if it is at the same time
     seq->selection->select(bestSoFar->second);
 }
 
@@ -201,7 +201,7 @@ void MidiEditor::changePitch(int semitones)
     float deltaCV = PitchUtils::semitone * semitones;
 
 
-    // Now fixup selection and viewport
+    // Now fix-up selection and view-port
     seq()->context->setCursorPitch(seq()->context->cursorPitch() + deltaCV);
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
@@ -453,7 +453,7 @@ void MidiEditor::paste()
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
     seq()->undo->execute(cmd);
 
-    // Am finding that after this cursor pitch is not in viewport
+    // Am finding that after this cursor pitch is not in view-port
     updateCursor();  
     seq()->context->adjustViewportForCursor();
     seq()->assertValid();

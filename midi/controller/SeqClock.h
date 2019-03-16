@@ -12,7 +12,7 @@ public:
     /**
      * param samplesElapsed is how many sample clocks have elapsed since last call.
      * param externalClock - is the clock CV, 0..10. will look for rising edges
-     * param runStop is the run/stop CV, 0..10. will look for rising edges and toggle run state from that
+     * param runStop is the run/stop flag. External logic must toggle it
      * param reset
      *
      * return - total elapsed metric time
@@ -20,7 +20,7 @@ public:
      * note that only one of the two passed params will be used, depending 
      * on internal/external model.
      */
-    double update(int samplesElapsed, float externalClock, float runStop, float reset);
+    double update(int samplesElapsed, float externalClock, bool runStop, float reset);
     void setup(int inputSetting, float tempoSetting, float sampleTime);
     void reset();
     static std::vector<std::string> getClockRates();
@@ -48,8 +48,12 @@ inline SeqClock::SeqClock() :
 
 }
 
-inline double SeqClock::update(int samplesElapsed, float externalClock, float runStop, float reset)
+inline double SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
 {
+    // if stopped, don't do anything
+    if (!runStop) {
+        return curMetricTime;
+    }
     // Internal clock
     if (clockSetting == 0) {
         double deltaSeconds = samplesElapsed * sampleTime;
