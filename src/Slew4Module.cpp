@@ -31,6 +31,7 @@ private:
 
 void Slew4Module::onSampleRateChange()
 {
+    slew->onSampleRateChange();
 }
 
 
@@ -161,7 +162,7 @@ void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
         Vec(knobX + 2 * knobDx, knobY),
         module,
         Comp::PARAM_LEVEL));
-    addLabel(Vec(knobX + 2 * knobDx - 20, knobY - labelAboveKnob), "Rise");
+    addLabel(Vec(knobX + 2 * knobDx - 20, knobY - labelAboveKnob), "Level");
 };
 
 void Slew4Widget::addScrews()

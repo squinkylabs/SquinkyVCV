@@ -3,7 +3,10 @@
 
 #include <assert.h>
 #include <memory>
+
+#include "Divider.h"
 #include "IComposite.h"
+#include "MultiLag.h"
 
 template <class TBase>
 class Slew4Description : public IComposite
@@ -13,6 +16,13 @@ public:
     int getNumParams() override;
 };
 
+/**
+ * next:
+ *      add the lag unit
+ *      set up 1/4 fs to look at knobs
+ *      set lag from knobs like Cheby
+ *      hood up the VCA func
+ */
 template <class TBase>
 class Slew4 : public TBase
 {
@@ -21,6 +31,7 @@ public:
     Slew4(struct Module * module) : TBase(module)
     {
     }
+
     Slew4() : TBase()
     {
     }
@@ -93,7 +104,21 @@ public:
      */
     void step() override;
 
+    
+    void onSampleRateChange()
+    {
+        knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime());
+    }
+
 private:
+
+    MultiLag<8> lag;
+    std::shared_ptr <LookupTableParams<float>> knobToFilterL;
+    Divider divider;
+
+    void updateKnobs();
+
+    AudioMath::ScaleFun<float> lin = AudioMath::makeLinearScaler<float>(0, 1);
 
 };
 
@@ -101,12 +126,61 @@ private:
 template <class TBase>
 inline void Slew4<TBase>::init()
 {
+    divider.setup(4, [this](){
+        updateKnobs();
+    });
+    
+    onSampleRateChange();
+    lag.setAttack(.1f);
+    lag.setRelease(.0001f);
+}
+
+
+template <class TBase>
+inline void Slew4<TBase>::updateKnobs()
+{
+    const float combinedA = lin(
+     //   TBase::inputs[RISE_INPUT].value,
+        0,
+        TBase::params[PARAM_RISE].value,
+        1);
+
+    const float combinedR = lin(
+   //     TBase::inputs[FALL_INPUT].value,
+    0,
+        TBase::params[PARAM_FALL].value,
+        1);
+    if (combinedA < .1 && combinedR < .1) {
+        lag.setEnable(false);
+    } else {
+        lag.setEnable(true);
+
+        const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
+        lag.setAttackL(lA);
+        const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
+        lag.setReleaseL(lR);
+    }
 }
 
 
 template <class TBase>
 inline void Slew4<TBase>::step()
 {
+    divider.step();
+    // get input to slews
+    float slewInput[8];
+    for (int i=0; i<8; ++i) {
+        slewInput[i] = TBase::inputs[i + INPUT_TRIGGER0].value;
+    }
+
+    // clock the slew
+    lag.step(slewInput);
+   
+    // send slew to output/
+    // todo: WHAT ABOUT vcA
+     for (int i=0; i<8; ++i) {
+         TBase::outputs[i + OUTPUT0].value = lag.get(i);
+     }
 }
 
 template <class TBase>
