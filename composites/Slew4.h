@@ -35,9 +35,9 @@ public:
 
     enum ParamIds
     {
-        RISE_PARAM,
-        FALL_PARAM,
-        LEVEL_PARAM,
+        PARAM_RISE,
+        PARAM_FALL,
+        PARAM_LEVEL,
         NUM_PARAMS
     };
 
@@ -120,13 +120,13 @@ inline IComposite::Config Slew4Description<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Slew4<TBase>::RISE_PARAM:
+        case Slew4<TBase>::PARAM_RISE:
             ret = {-5.0f, 5.0f, 0, "Rise time"};
             break;
-        case Slew4<TBase>::FALL_PARAM:
+        case Slew4<TBase>::PARAM_FALL:
             ret = {-5.0f, 5.0f, 0, "Fall time"};
             break;
-        case Slew4<TBase>::LEVEL_PARAM:
+        case Slew4<TBase>::PARAM_LEVEL:
             ret = {-5.0f, 5.0f, 0, "Level"};
             break;
         default:

@@ -7,6 +7,7 @@
 #include "Slew4.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqWidgets.h"
 
 using Comp = Slew4<WidgetComposite>;
 
@@ -76,6 +77,10 @@ struct Slew4Widget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addJacks(Slew4Module *);
+    void addScrews();
+    void addOther(Slew4Module*, std::shared_ptr<IComposite> icomp);
 };
 
 
@@ -92,9 +97,75 @@ Slew4Widget::Slew4Widget(Slew4Module *module)
 Slew4Widget::Slew4Widget(Slew4Module *module) : ModuleWidget(module)
 {
 #endif
+    
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
+    addJacks(module);
+    addScrews();
+    addOther(module, icomp);
+}
+
+
+
+float jackY = 40;
+float jackDy = 30;
+float jackX = 20;
+float jackDx = 30;
+
+void Slew4Widget::addJacks(Slew4Module *module)
+{
+    for (int i=0; i<8; ++i) {
+        addInput(createInputCentered<PJ301MPort>(
+            Vec(jackX, jackY + i * jackDy),
+            module,
+            Comp::INPUT_TRIGGER0 + i));
+
+        addInput(createInputCentered<PJ301MPort>(
+            Vec(jackX + jackDx, jackY + i * jackDy),
+            module,
+            Comp::INPUT_AUDIO0 + i));
+
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(jackX + 2 * jackDx, jackY + i * jackDy),
+            module,
+            Comp::OUTPUT0 + i));
+        
+    }
+}
+
+float knobY= 300;
+float knobX = 20;
+float knobDx = 40;
+float labelAboveKnob = 36;
+
+void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
+{
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY),
+        module,
+        Comp::PARAM_RISE));
+    addLabel(Vec(knobX - 20, knobY - labelAboveKnob), "Rise");
+
+     addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(knobX + knobDx, knobY),
+        module,
+        Comp::PARAM_FALL));
+    addLabel(Vec(knobX + knobDx - 20, knobY - labelAboveKnob), "Fall");
+
+     addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(knobX + 2 * knobDx, knobY),
+        module,
+        Comp::PARAM_LEVEL));
+    addLabel(Vec(knobX + 2 * knobDx - 20, knobY - labelAboveKnob), "Rise");
+};
+
+void Slew4Widget::addScrews()
+{
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -106,7 +177,6 @@ Slew4Widget::Slew4Widget(Slew4Module *module) : ModuleWidget(module)
 #ifdef __V1
 Model *modelSlew4Module = createModel<Slew4Module, Slew4Widget>("squinkylabs-slew4");
 #else
-a b c
 Model *modelSlew4Module = Model::create<Slew4Module,
     Slew4Widget>("Squinky Labs",
     "squinkylabs-slew4",
