@@ -2,6 +2,8 @@
 #include "LookupTable.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
+#include "Slew4.h"
+#include "TestComposite.h"
 
 #include "MeasureTime.h"
 
@@ -125,6 +127,24 @@ static void testNonUniform()
     }, 1);
 }
 
+using Slewer = Slew4<TestComposite>;
+
+static void testSlew4()
+{
+    Slewer fs;
+
+    fs.init();
+
+    fs.inputs[Slewer::INPUT_AUDIO0].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "slew lags", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+        }, 1);
+}
+
 void perfTest2()
 {
     testUniformLookup();
@@ -133,4 +153,5 @@ void perfTest2()
     testMultiLPFMod();
     testMultiLag();
     testMultiLagMod();
+    testSlew4();
 }

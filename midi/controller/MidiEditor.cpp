@@ -90,15 +90,23 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
 
     MidiTrack::const_iterator bestSoFar = it;
 
-    // If must be before cursor time, go back to next
-    --it;
+    // If must be before cursor time, go back to prev
 
-    for (; it != track->end(); --it) {
+    if (it != track->begin()) {
+        --it;
+    }
+
+    // now either this prev is acceptable, or something before it
+    while (true) {
         MidiEventPtr evt = it->second;
         if ((evt->type == MidiEvent::Type::Note) && (evt->startTime < t)) {
             seq->selection->select(evt);
             return;
         }
+        if (it == track->begin()) {
+            break;  // give up if we are at start and have foundnothing good
+        }
+        --it;       // if nothing good, try prev
     }
 
     // If nothing past where we are, it's ok, even it it is at the same time
@@ -145,7 +153,6 @@ void MidiEditor::extendSelectionToNextNote()
 void MidiEditor::selectPrevNote()
 {
     seq()->assertValid();
-
     MidiTrackPtr track = getTrack();
     assert(track);
     const bool acceptCursorTime = seq()->selection->empty();
@@ -181,7 +188,6 @@ void MidiEditor::updateCursor()
             }
         }
     }
-    //printf("in updateCursor, moving to note start = %f pitch=%f\n", firstNote->startTime, firstNote->pitchCV); fflush(stdout);
     seq()->context->setCursorTime(firstNote->startTime);
     seq()->context->setCursorPitch(firstNote->pitchCV);
 }

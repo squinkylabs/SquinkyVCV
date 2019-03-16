@@ -2,6 +2,7 @@
 
 #include "GateTrigger.h"
 
+#include <string>
 #include <vector>
 
 class SeqClock

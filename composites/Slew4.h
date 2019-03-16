@@ -176,10 +176,15 @@ inline void Slew4<TBase>::step()
     // clock the slew
     lag.step(slewInput);
    
-    // send slew to output/
-    // todo: WHAT ABOUT vcA
+    // send slew to output
      for (int i=0; i<8; ++i) {
-         TBase::outputs[i + OUTPUT0].value = lag.get(i);
+         //if audio in hooked up, then output[n] = input[n] * lag
+         // else output = lag
+         float inputValue = 10.f;   
+         if (TBase::outputs[i + OUTPUT0].active) {
+             inputValue = TBase::inputs[i + INPUT_AUDIO0].value;
+         } 
+        TBase::outputs[i + OUTPUT0].value = lag.get(i) * inputValue * .1f;
      }
 }
 
