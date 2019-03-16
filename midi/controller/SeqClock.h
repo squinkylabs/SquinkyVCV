@@ -36,13 +36,12 @@ private:
     double metricTimePerClock = 1;
 
     GateTrigger clockProcessor;
-    GateTrigger runProcessor;
+  //  GateTrigger runProcessor;
     GateTrigger resetProcessor;
 };
 
 inline SeqClock::SeqClock() :
     clockProcessor(true),
-    runProcessor(true),
     resetProcessor(true)
 {
 

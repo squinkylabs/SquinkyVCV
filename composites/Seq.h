@@ -22,11 +22,12 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(struct Module * module, MidiSongPtr song) : TBase(module)
+    Seq(struct Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
     {
         init(song);
     }
-    Seq(MidiSongPtr song) : TBase()
+
+    Seq(MidiSongPtr song) : TBase(), runStopProcessor(true)
     {
         init(song);
     }
@@ -64,10 +65,18 @@ public:
     enum LightIds
     {
         GATE_LIGHT,
+        RUN_STOP_LIGHT,
         NUM_LIGHTS
     };
 
     void step() override;
+
+    /** This should be called on audio thread
+     */
+    void toggleRunStop()
+    {
+        runStopRequested = true;
+    }
 
 
     /** Implement IComposite
@@ -92,12 +101,16 @@ public:
 
     static std::vector<std::string> getClockRates();
 private:
-   // GateTrigger gateTrigger;
+    GateTrigger runStopProcessor;
     void init(MidiSongPtr);
+    void serviceRunStop();
 
     std::shared_ptr<MidiPlayer> player;
     SeqClock clock;
     Divider div;
+    bool runStopRequested = false;
+
+    bool isRunning();
 
     /**
      * called by the divider every 'n' step calls
@@ -152,21 +165,40 @@ void  Seq<TBase>::step()
 }
 
 template <class TBase>
+bool Seq<TBase>::isRunning()
+{
+    return TBase::params[RUNNING_PARAM].value > 5;
+}
+
+template <class TBase>
+void  Seq<TBase>::serviceRunStop()
+{
+    runStopProcessor.go(TBase::inputs[RUN_INPUT].value);
+    if (runStopProcessor.trigger() || runStopRequested) { 
+        runStopRequested = false;
+        bool curValue = isRunning();
+        curValue = !curValue;
+        TBase::params[RUNNING_PARAM].value = curValue ? 10.f : 0.f;
+    }
+    TBase::lights[RUN_STOP_LIGHT].value = TBase::params[RUNNING_PARAM].value;
+}
+
+template <class TBase>
 void  Seq<TBase>::stepn(int n)
 {
+    serviceRunStop();
     // first process all the clock input params
     const int clockRate = (int) std::round(TBase::params[CLOCK_INPUT_PARAM].value);
     const float tempo = TBase::params[TEMPO_PARAM].value;
     clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
 
     // and the clock input
-  //  gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
     const float extClock = TBase::inputs[CLOCK_INPUT].value;
 
     // now call the clock (internal only, for now
 
     int samplesElapsed = n;
-    double t = clock.update(samplesElapsed, extClock, 0, 0);
+    double t = clock.update(samplesElapsed, extClock, isRunning(), 0);
     player->updateToMetricTime(t);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
@@ -202,7 +234,7 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Scroll during playback"};
             break;
         case Seq<TBase>::RUNNING_PARAM:
-            ret = {0, 1, 0, "Running"};
+            ret = {0, 1, 1, "Running"};
             break;
         default:
             assert(false);

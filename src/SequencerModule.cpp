@@ -11,6 +11,7 @@
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/ToggleButton.h"
+#include "ctrl/SqWidgets.h"
 
 #include "seq/SequencerSerializer.h"
 #include "MidiLock.h"
@@ -27,7 +28,37 @@ struct SequencerModule : Module
 
     MidiSequencerPtr sequencer;
     SequencerWidget* widget = nullptr;
-#ifndef __V1
+
+
+    void step() override
+    {
+        if (runStopRequested) {
+            seqComp->toggleRunStop();
+            runStopRequested = false;
+        }
+        seqComp->step();
+    }
+
+    void stop()
+    {
+        seqComp->stop();
+    }
+
+    float getPlayPosition()
+    {
+        return seqComp->getPlayPosition();
+    }
+
+    MidiSequencerPtr getSeq() {
+        return sequencer;
+    }
+
+    void toggleRunStop()
+    {
+        runStopRequested = true;
+    }
+
+    #ifndef __V1
     json_t *toJson() override
     {
         assert(sequencer);
@@ -43,23 +74,7 @@ struct SequencerModule : Module
     virtual void dataFromJson(json_t *root) override;
 #endif
 
-    void step() override
-    {
-        seqComp->step();
-    }
-
-    void stop()
-    {
-        seqComp->stop();
-    }
-
-    float getPlayPosition()
-    {
-        return seqComp->getPlayPosition();
-    }
-    MidiSequencerPtr getSeq() {
-        return sequencer;
-    }
+    std::atomic<bool> runStopRequested;
 };
 
 #ifdef __V1
@@ -76,6 +91,7 @@ SequencerModule::SequencerModule()
     Comp::NUM_LIGHTS)
 {
 #endif
+    runStopRequested = false;
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     //sequencer = std::make_shared<MidiSequencer>(song);
     //sequencer->makeEditor();
@@ -102,25 +118,10 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
-#if 1
-    void step() override {
-        ModuleWidget::step();
-        if (scrollControl) {
-            const int y = scrollControl->getValue();
-            if (y) {
-                float curTime = _module->getPlayPosition();
-               // printf("time = %f\n", curTime); fflush(stdout);
-                if (y == 2) {
-                    auto curBar = TimeUtils::time2bar(curTime);
-                    curTime = TimeUtils::bar2time(curBar);
-                }
-                auto seq = _module->getSeq();
-                //seq->context->setTimeRange(curTime, curTime + TimeUtils::bar2time(2));
-                seq->editor-> advanceCursorToTime(curTime);
-            }
-        }
-    }
-#endif
+
+    // Scroll the note grid durning playback
+    void step() override;
+
 
     NoteDisplay* noteDisplay = nullptr;
     AboveNoteGrid* headerDisplay = nullptr;
@@ -129,7 +130,32 @@ struct SequencerWidget : ModuleWidget
 
     void addJacks(SequencerModule *module);
     void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
+    void toggleRunStop(SequencerModule *module);
 };
+
+void SequencerWidget::step()
+ {
+    ModuleWidget::step();
+    if (scrollControl) {
+        const int y = scrollControl->getValue();
+        if (y) {
+            float curTime = _module->getPlayPosition();
+            // printf("time = %f\n", curTime); fflush(stdout);
+            if (y == 2) {
+                auto curBar = TimeUtils::time2bar(curTime);
+                curTime = TimeUtils::bar2time(curBar);
+            }
+            auto seq = _module->getSeq();
+            //seq->context->setTimeRange(curTime, curTime + TimeUtils::bar2time(2));
+            seq->editor-> advanceCursorToTime(curTime);
+        }
+    }
+}
+
+void SequencerWidget::toggleRunStop(SequencerModule *module)
+{
+    module->toggleRunStop();
+}
 
 void sequencerHelp()
 {
@@ -201,16 +227,21 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
-    {
-    ToggleButton* tog = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(40, 200),
+    // momentary button to toggle runState
+    auto sw = new SQPush(
+        "res/preset-button-up.svg",
+        "res/preset-button-down.svg");
+    Vec pos(40, 200);
+    sw->center(pos);
+    sw->onClick([this, module]() {
+        this->toggleRunStop(module);
+    });
+    addChild(sw);
+
+    addChild(createLight<MediumLight<GreenLight>>(
+         Vec(40, 220),
         module,
-        Comp::RUN_STOP_PARAM);
-    tog->addSvg("res/seq-play-button-pause.svg");
-    tog->addSvg("res/seq-play-button-play.svg");
-    addParam(tog);
-    }
+        Seq<WidgetComposite>::RUN_STOP_LIGHT));
 
     {
     scrollControl = SqHelper::createParam<ToggleButton>(
