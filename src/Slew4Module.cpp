@@ -100,7 +100,7 @@ Slew4Widget::Slew4Widget(Slew4Module *module) : ModuleWidget(module)
 #endif
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     addJacks(module);
@@ -138,7 +138,7 @@ void Slew4Widget::addJacks(Slew4Module *module)
 
 float knobY= 300;
 float knobX = 20;
-float knobDx = 40;
+float knobDx = 36;
 float labelAboveKnob = 36;
 
 void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
