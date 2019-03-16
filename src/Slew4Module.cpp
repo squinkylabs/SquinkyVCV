@@ -101,16 +101,14 @@ Slew4Widget::Slew4Widget(Slew4Module *module) : ModuleWidget(module)
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/slew_panel.svg");
 
     addJacks(module);
     addScrews();
     addOther(module, icomp);
 }
 
-
-
-float jackY = 40;
+float jackY = 60;
 float jackDy = 30;
 float jackX = 20;
 float jackDx = 30;
@@ -132,11 +130,13 @@ void Slew4Widget::addJacks(Slew4Module *module)
             Vec(jackX + 2 * jackDx, jackY + i * jackDy),
             module,
             Comp::OUTPUT0 + i));
-        
     }
+    addLabel(Vec(jackX -22, jackY-40), "Gate");
+    addLabel(Vec(jackX + jackDx -16, jackY-40), "(In)");
+    addLabel(Vec(jackX + 2 * jackDx -18, jackY-40), "Out");
 }
 
-float knobY= 300;
+float knobY= 330;
 float knobX = 20;
 float knobDx = 36;
 float labelAboveKnob = 36;
@@ -150,7 +150,7 @@ void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
         Comp::PARAM_RISE));
     addLabel(Vec(knobX - 20, knobY - labelAboveKnob), "Rise");
 
-     addParam(SqHelper::createParamCentered<Blue30Knob>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(knobX + knobDx, knobY),
         module,
