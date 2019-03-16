@@ -43,11 +43,11 @@ Slew4Module::Slew4Module()
     SqHelper::setupParams(icomp, this); 
 #else
 Slew4Module::Slew4Module()
-    : Module(Slew4.NUM_PARAMS,
-    Slew4.NUM_INPUTS,
-    Slew4.NUM_OUTPUTS,
-    Slew4.NUM_LIGHTS),
-    Slew4(this)
+    : Module(Comp::NUM_PARAMS,
+    Comp::NUM_INPUTS,
+    Comp::NUM_OUTPUTS,
+    Comp::NUM_LIGHTS),
+    slew( std::make_shared<Comp>(this))
 {
 #endif
     onSampleRateChange();
