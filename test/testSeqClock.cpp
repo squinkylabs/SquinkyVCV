@@ -95,7 +95,6 @@ static void testClockExtEdge()
     }
 }
 
-
 static void testClockInternalRunStop()
 {
     const int sampleRateI = 44100;
@@ -121,10 +120,40 @@ static void testClockInternalRunStop()
     assertEQ(elapsed, 4.0);
 }
 
+static void testClockChangeWhileStopped()
+{
+    const int sampleRateI = 44100;
+    const float sampleRate = float(sampleRateI);
+    const float sampleTime = 1.f / sampleRate;
+
+    SeqClock ck;
+    ck.setup(5, 120, sampleTime);       // external clock
+
+    // call with clock low, running
+    double elapsed = ck.update(sampleRateI, 0, true, 0);
+    assertEQ(elapsed, 0);
+
+    // now stop
+    elapsed = ck.update(sampleRateI, 0, false, 0);
+    assertEQ(elapsed, 0);
+
+    // raise clock while stopped
+    for (int i = 0; i < 10; ++i) {
+        double elapsed = ck.update(sampleRateI, 10, false, 0);
+    }
+    assertEQ(elapsed, 0);
+
+    // now run. see if we catch the edge
+    elapsed = ck.update(sampleRateI, 10, true, 0);
+    assertEQ(elapsed, 1);
+}
+
+
 void testSeqClock()
 {
     testClockInternal0();
     testClockExt1();
     testClockExtEdge();
     testClockInternalRunStop();
+    testClockChangeWhileStopped();
 }
