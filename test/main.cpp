@@ -147,6 +147,7 @@ int main(int argc, char ** argv)
     testManagedPool();
     testLookupTable();
     testObjectCache();
+    testMultiLag();
 
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
@@ -172,6 +173,7 @@ int main(int argc, char ** argv)
     testAnalyzer();
     testRateConversion();
     testUtils();
+    testLowpassFilter();
  
 #if 0
     printf("skipping lots of tests\n");
@@ -183,9 +185,9 @@ int main(int argc, char ** argv)
         testThread(extended);
     }
 
-    testLowpassFilter();
+    
     testFilter();
-    testMultiLag();
+
     testStochasticGrammar();
     testGMR();
 
@@ -216,4 +218,9 @@ int main(int argc, char ** argv)
 #else
     printf("Tests passed.\n");
 #endif
+}
+
+void sequencerHelp()
+{
+
 }

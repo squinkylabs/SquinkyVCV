@@ -17,11 +17,7 @@ public:
 };
 
 /**
- * next:
- *      add the lag unit
- *      set up 1/4 fs to look at knobs
- *      set lag from knobs like Cheby
- *      hood up the VCA func
+ * perf, initial build. 11.35%
  */
 template <class TBase>
 class Slew4 : public TBase
