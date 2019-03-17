@@ -3,9 +3,21 @@ Work in progress
 
 Keyboard mappings [here](./keymap.md)
 
+## About this Sequencer
+
+This sequencer is modeled after the MS-DOS sequencer "Sequencer Plug Gold" originally release in 1984. Sequencer Plus was the first popular sequencer to feature a "piano roll" note editor.
+
+So, while Seq++ is much like a typical DAW's Midi edit screen, it is not exactly like those. The note editor is heavily focused around the keyboard interface, which allows the user to "type in" music very quickly.
+
+It can deal with tracks that are arbitrarily long and dense. User may edit the notes as the sequencer is playing.
+
+There are some concessions to the current world - it has unlimited undo/redo, and clipboard support.
+
 ## Keyboard focus
 
 The UI is entirely keyboard driven, no mouse. And the module will not receive keyboard input until you click in the note-grid. Then it will steal keyboard focus until you click somewhere else.
+
+Because it's easy to forget, the edit grid had a conspicuous indicator that tells when it has keyboard focus.
 
 ## The panel side
 
