@@ -1,7 +1,41 @@
 
+#include "OneShot.h"
 #include "SeqClock.h"
 #include "asserts.h"
 
+static void testOneShotInit()
+{
+    OneShot o;
+    assert(!o.hasFired());
+}
+
+static void testOneShot2Ms()
+{
+    OneShot o;
+    o.setSampleTime(.001f); // sample rate 1k
+    o.setDelayMs(2);        // delay 2ms
+    assert(!o.hasFired());
+    o.step();               // 1 ms.
+    assert(!o.hasFired());
+
+    o.step();               // 2 ms.
+    assert(o.hasFired());
+
+    for (int i = 0; i < 10; ++i) {
+        o.step();               
+        assert(o.hasFired());
+    }
+
+    o.set();
+    assert(!o.hasFired());
+
+    o.step();               // 1 ms.
+    assert(!o.hasFired());
+
+    o.step();               // 2 ms.
+    assert(o.hasFired());
+
+}
 
 //  SeqClock::update(int samplesElapsed, float externalClock, float runStop, float reset)
 // test internal clock
@@ -151,6 +185,8 @@ static void testClockChangeWhileStopped()
 
 void testSeqClock()
 {
+    testOneShotInit();
+    testOneShot2Ms();
     testClockInternal0();
     testClockExt1();
     testClockExtEdge();

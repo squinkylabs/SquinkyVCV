@@ -713,5 +713,8 @@
     <ClInclude Include="..\..\composites\Slew4.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\OneShot.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
