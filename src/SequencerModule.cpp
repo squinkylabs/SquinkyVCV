@@ -93,8 +93,6 @@ SequencerModule::SequencerModule()
 #endif
     runStopRequested = false;
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    //sequencer = std::make_shared<MidiSequencer>(song);
-    //sequencer->makeEditor();
     sequencer = MidiSequencer::make(song);
     seqComp = std::make_shared<Comp>(this, song);
 }
@@ -136,17 +134,15 @@ struct SequencerWidget : ModuleWidget
 void SequencerWidget::step()
  {
     ModuleWidget::step();
-    if (scrollControl) {
+    if (scrollControl && _module) {
         const int y = scrollControl->getValue();
         if (y) {
             float curTime = _module->getPlayPosition();
-            // printf("time = %f\n", curTime); fflush(stdout);
             if (y == 2) {
                 auto curBar = TimeUtils::time2bar(curTime);
                 curTime = TimeUtils::bar2time(curBar);
             }
             auto seq = _module->getSeq();
-            //seq->context->setTimeRange(curTime, curTime + TimeUtils::bar2time(2));
             seq->editor-> advanceCursorToTime(curTime);
         }
     }
@@ -168,7 +164,7 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
     setModule(module);
 
 #else
-SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
+SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module), _module(module)
 {
 #endif
     if (module) {
