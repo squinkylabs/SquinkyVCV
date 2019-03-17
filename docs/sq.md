@@ -7,7 +7,7 @@ Keyboard mappings [here](./keymap.md)
 
 This sequencer is modeled after the MS-DOS sequencer "Sequencer Plug Gold" originally release in 1984. Sequencer Plus was the first popular sequencer to feature a "piano roll" note editor.
 
-So, while Seq++ is much like a typical DAW's Midi edit screen, it is not exactly like those. The note editor is heavily focused around the keyboard interface, which allows the user to "type in" music very quickly.
+So, while Seq++ is much like a typical DAW's MIDI edit screen, it is not exactly like those. The note editor is heavily focused around the keyboard interface, which allows the user to "type in" music very quickly.
 
 It can deal with tracks that are arbitrarily long and dense. User may edit the notes as the sequencer is playing.
 
@@ -33,7 +33,7 @@ On the left are a few inputs, outputs, and controls.
 
 **CV** is the pitch CV output.
 
-**G** is the gate output. When it is active the gree LED lights.
+**G** is the gate output. When it is active the green LED lights.
 
 **Clk** is the eternal clock input.
 
