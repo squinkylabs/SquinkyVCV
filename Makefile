@@ -22,9 +22,9 @@ FLAGS += -D __V1
 ifdef _EXP
 	FLAGS += -D _EXP
 endif
-ifdef _SEQ
-	FLAGS += -D _SEQ
-endif
+
+FLAGS += -D _SEQ
+
 # Macro to use on any target where we don't normally want asserts
 ASSERTOFF = -D NDEBUG
 
