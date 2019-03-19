@@ -716,8 +716,5 @@
     <ClInclude Include="..\..\sqsrc\util\OneShot.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\dsp\filters\MultiLag2.h">
-      <Filter>Header Files\dsp\filters</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

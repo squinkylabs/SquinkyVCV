@@ -26,7 +26,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
 
-    
+
     sequencer->assertValid();
     return sequencer;
 }
@@ -58,7 +58,8 @@ static void testTrans1()
     seq->editor->assertCursorInSelection();
 }
 
-static void testTrans3()
+
+static void testTrans3Sub(int semitones)
 {
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
@@ -69,9 +70,20 @@ static void testTrans3()
     MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
-    seq->editor->changePitch(50);       // transpose off screen
+    seq->editor->changePitch(semitones);       // transpose off screen
     seq->assertValid();
     seq->editor->assertCursorInSelection();
+}
+
+static void testTrans3()
+{
+    testTrans3Sub(50);
+}
+
+static void testTransHuge()
+{
+    testTrans3Sub(300);
+    testTrans3Sub(-300);
 }
 
 static void testShiftTime1()
@@ -88,7 +100,7 @@ static void testShiftTime1()
     firstNote = seq->context->getTrack()->getFirstNote();
     const float s1 = firstNote->startTime;
     assertClose(s1 - s0, 1.f / 4.f, .000001);
-    
+
     seq->editor->changeStartTime(false, -50);
     firstNote = seq->context->getTrack()->getFirstNote();
     const float s2 = firstNote->startTime;
@@ -182,7 +194,7 @@ static void testCursor1()
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime(), 0);
     assertEQ(seq->context->cursorPitch(), 0)
-    assertEQ(seq->context->startTime(), 0);
+        assertEQ(seq->context->startTime(), 0);
 }
 
 static void testCursor2()
@@ -387,7 +399,7 @@ void testMidiEditorSub(int trackNumber)
 {
     _trackNumber = trackNumber;
 
-  
+
 
     testTrans1();
     testShiftTime1();
@@ -397,6 +409,7 @@ void testMidiEditorSub(int trackNumber)
 
     testTrans2();
     testTrans3();
+    testTransHuge();
 
     testCursor1();
     testCursor2();

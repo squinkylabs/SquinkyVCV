@@ -51,11 +51,10 @@ void MidiEditorContext::assertValid() const
 {
     assert(m_endTime > m_startTime);
     assert(m_pitchHi >= m_pitchLow);
-    //assert(getSong());
 
     assertGE(m_cursorTime, 0);
-    assertLT(m_cursorPitch, 10);      // just for now
-    assertGT(m_cursorPitch, -10);
+    assertLE(m_cursorPitch, 10);      // just for now
+    assertGE(m_cursorPitch, -10);
 
     assertCursorInViewport();
 }

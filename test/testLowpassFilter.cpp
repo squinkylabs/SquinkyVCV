@@ -1,8 +1,6 @@
 
 #include "asserts.h"
 #include "MultiLag.h"
-#include "MultiLag2.h"
-
 #include "LowpassFilter.h"
 #include "Decimator.h"
 #include "Analyzer.h"
@@ -282,7 +280,6 @@ static void testMultiLag0()
 {
     _testMultiLag0<MultiLPF<8>>(8);
     _testMultiLag0<MultiLag<8>>(8);
-    _testMultiLag0<MultiLag2<8>>(8);
 }
 
 
@@ -317,11 +314,6 @@ static void testMultiLag1()
     l.setAttack(.4f);
     l.setRelease(.4f);
     _testMultiLag1(8, l);
-
-    MultiLag2<8> l2;
-    l2.setAttack(.4f);
-    l2.setRelease(.4f);
-    _testMultiLag1(8, l2);
 }
 
 
@@ -353,14 +345,9 @@ static void testMultiLag2()
     l.setAttack(fC / sampleRate);
     l.setRelease(fC / sampleRate);
     _testMultiLag2(8, l, fC);
-
-    MultiLag2<8> l2;
-    l2.setAttack(fC / sampleRate);
-    l2.setRelease(fC / sampleRate);
-    _testMultiLag2(8, l2, fC);
 }
 
-static void testMultiLagDisable1()
+static void testMultiLagDisable()
 {
     MultiLag<8> f;
     float fC = 10.f;
@@ -379,27 +366,7 @@ static void testMultiLagDisable1()
     for (int i = 0; i < 8; ++i) {
         assertEQ(f.get(0), 1);
     }
-}
 
-static void testMultiLagDisable2()
-{
-    MultiLag2<8> f;
-    float fC = 10.f;
-    f.setAttack(fC / sampleRate);
-    f.setRelease(fC / sampleRate);
-
-    // when enabled, should lag
-    const float buffer[8] = {1,1,1,1,1,1,1,1};
-    f.step(buffer);
-    for (int i = 0; i < 8; ++i) {
-        assertNE(f.get(0), 1);
-    }
-
-    f.setEnable(false);
-    f.step(buffer);
-    for (int i = 0; i < 8; ++i) {
-        assertEQ(f.get(0), 1);
-    }
 }
 
 
@@ -450,7 +417,6 @@ static void testDirectLookup2()
     assertEQ(y, 1 - .00002f);
 }
 
-
 void testMultiLag()
 {
     testLowpassLookup();
@@ -461,6 +427,5 @@ void testMultiLag()
     testMultiLag0();
     testMultiLag1();
     testMultiLag2();
-    testMultiLagDisable1();
-    testMultiLagDisable2();
+    testMultiLagDisable();
 }

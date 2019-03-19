@@ -20,6 +20,8 @@ public:
     }
     void setCursorPitch(float pitch)
     {
+        assert(pitch <= 10);
+        assert(pitch >= -10);
         m_cursorPitch = pitch;
     }
     float cursorTime() const

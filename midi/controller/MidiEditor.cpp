@@ -202,7 +202,11 @@ void MidiEditor::changePitch(int semitones)
 
 
     // Now fix-up selection and view-port
-    seq()->context->setCursorPitch(seq()->context->cursorPitch() + deltaCV);
+    float newCursorPitch = seq()->context->cursorPitch() + deltaCV;
+    newCursorPitch = std::min(10.f, newCursorPitch);
+    newCursorPitch = std::max(-10.f, newCursorPitch);
+
+    seq()->context->setCursorPitch(newCursorPitch);
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
 }
