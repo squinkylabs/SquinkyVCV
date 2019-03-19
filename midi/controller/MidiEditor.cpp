@@ -326,8 +326,59 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
     }
 }
 
+void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
+{
+    MidiLocker l(seq()->song->lock);
+    const float artic = 7.f/8.f;
+    float duration = 1;
+    float cursorAdvance = 0;
+    switch (dur) {
+        case Durations::Whole:
+            cursorAdvance = moveCursorAfter ? 4.f : 0;
+            duration = 4.f * artic;
+            break;
+        case Durations::Half:
+            cursorAdvance = moveCursorAfter ? 2.f : 0;
+            duration = 2.f * artic;
+            break;
+        case Durations::Quarter:
+            cursorAdvance = moveCursorAfter ? 1.f : 0;
+            duration = 1.f * artic;
+            break;
+        case Durations::Eighth:
+            cursorAdvance = moveCursorAfter ? .5f : 0;
+            duration = .5f * artic;
+            break;
+        case Durations::Sixteenth:
+            cursorAdvance = moveCursorAfter ? .25f : 0;
+            duration = .25f * artic;
+            break;
+        default:
+            assert(false);
+    }
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = seq()->context->cursorTime();
+    note->pitchCV = seq()->context->cursorPitch();
+    note->duration = duration;
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
+
+    seq()->undo->execute(cmd);
+    seq()->context->setCursorTime(note->startTime + cursorAdvance);
+
+    updateSelectionForCursor();
+    seq()->assertValid();
+}
+
+void MidiEditor::insertPresetNote(Durations dur)
+{
+    insertNoteHelper(dur, true);
+}
+
 void MidiEditor::insertNote()
 {
+    insertNoteHelper(Durations::Quarter, false);
+    #if 0
     MidiLocker l(seq()->song->lock);
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
@@ -340,6 +391,7 @@ void MidiEditor::insertNote()
 
     updateSelectionForCursor();
     seq()->assertValid();
+    #endif
 }
 
 void MidiEditor::deleteNote()

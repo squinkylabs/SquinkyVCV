@@ -81,9 +81,9 @@ bool MidiKeyboardHandler::handle(
     switch(key) {
         case GLFW_KEY_F1:
             sequencerHelp();
+            handled = true;
             break;
         case GLFW_KEY_TAB: 
-
             if (!shift) {
                 if (ctrl) {
                     sequencer->editor->selectPrevNote();
@@ -110,11 +110,11 @@ bool MidiKeyboardHandler::handle(
             }
             break;
         case GLFW_KEY_KP_SUBTRACT:
-             handleNoteEditorChange(sequencer, ChangeType::plus, false);
+            handleNoteEditorChange(sequencer, ChangeType::plus, false);
             handled = true;
             break;
         case GLFW_KEY_LEFT_BRACKET:
-             handleNoteEditorChange(sequencer, ChangeType::bracket, false);
+            handleNoteEditorChange(sequencer, ChangeType::bracket, false);
             handled = true;
             break;
          case GLFW_KEY_RIGHT_BRACKET:
@@ -123,7 +123,7 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_MINUS:
             if (!shift) {
-                 handleNoteEditorChange(sequencer, ChangeType::plus, false);
+                handleNoteEditorChange(sequencer, ChangeType::plus, false);
                 handled = true;
             }
             break;
@@ -153,6 +153,7 @@ bool MidiKeyboardHandler::handle(
                 handled = true;
             }
             break;
+
         case GLFW_KEY_A:
             {
                 if (ctrl) {
@@ -169,27 +170,64 @@ bool MidiKeyboardHandler::handle(
                 }
             }
             break;
+        case GLFW_KEY_D:
+            {
+                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Duration);
+                handled = true;
+            }
+            break;
+        case GLFW_KEY_E:
+            {
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth);
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_H:
+            {
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Half);
+                    handled = true;
+                }
+            }
+            break;
         case GLFW_KEY_P:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
                 handled = true;
             }
             break;
-        case GLFW_KEY_D:
+        case GLFW_KEY_Q:
             {
-                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Duration);
-                 handled = true;
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter);
+                    handled = true;
+                }
             }
             break;
         case GLFW_KEY_S:
             {
-                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+                if (!ctrl) {
+                    sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+                } else {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth);
+                }
+                handled = true;
             }
             break;
         case GLFW_KEY_V:
             {
                 if (ctrl) {
                     sequencer->editor->paste();
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_W:
+            {
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole);
                     handled = true;
                 }
             }
@@ -219,6 +257,7 @@ bool MidiKeyboardHandler::handle(
                     sequencer->undo->undo();
                 } 
             } else if (ctrl & shift) {
+                handled = true;
                 if (sequencer->undo->canRedo()) {
                     sequencer->undo->redo();  
                 }

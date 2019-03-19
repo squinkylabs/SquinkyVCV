@@ -39,6 +39,12 @@ public:
     void changePitch(int semitones);
     void changeStartTime(bool ticks, int amount);
     void changeDuration(bool ticks, int amount);
+
+    /************* functions that add or remove notes ************/
+
+    enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
+
+    void insertPresetNote(Durations);
     void insertNote();
     void deleteNote();
 
@@ -75,6 +81,8 @@ private:
     void updateSelectionForCursor();
 
     void extendTrackToMinDuration(float time);
+
+    void insertNoteHelper(Durations dur, bool moveCursorAfter);
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;
