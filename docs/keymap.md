@@ -6,7 +6,7 @@
 
 **ctrl-cursor**: moves left and right by four units.
 
-## Selection notes
+## Selecting notes
 
 **ctrl-a** selects all the events in the track.
 
@@ -30,14 +30,24 @@ When notes are selected and StartTime or Duration is current edit attribute:
 
 * ], [ changes by four units.
 
-**Ins** inserts a note at the current cursor.
-
-**Del** deletes the currently selected notes.
-
 When note is selected and Pitch is current edit attribute:
 
 * plus/minus changes by one semitone.
 * ], [ changes by an octave.
+
+## Inserting and deleting notes
+
+**Ins** inserts a note at the current cursor.
+
+**Del** deletes the currently selected notes.
+
+Insert preset note durations. They shortcuts insert note of a specific duration, then move the cursor past that location.
+
+* **ctrl-w** Whole note.
+* **ctrl-h** Half note.
+* **ctrl-q** Quarter note.
+* **ctrl-e** Eighth note.
+* **ctrl-s** Sixteenth note.
 
 ## Cut/Copy/Paste
 
@@ -57,6 +67,6 @@ Note that you may paste into a different instance of the sequencer than you copi
 
 ## Help
 
-**F1 key**, when note editor has focus
-.
+**F1 key**, when note editor has focus.
+
 **Context menu**, when the module has focus.

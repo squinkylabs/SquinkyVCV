@@ -1,11 +1,11 @@
 # Seq
 Work in progress
 
-Keyboard mappings [here](./keymap.md)
+If you read nothing else, please checkout out the list of keyboard "shortcuts". This is the only way you can hope ti figure out how to enter note: Keyboard mappings [here](./keymap.md)
 
 ## About this Sequencer
 
-This sequencer is modeled after the MS-DOS sequencer "Sequencer Plug Gold" originally release in 1984. Sequencer Plus was the first popular sequencer to feature a "piano roll" note editor.
+This sequencer is modeled after the MS-DOS sequencer "Sequencer Plug Gold" originally released in 1984. Sequencer Plus was the first popular sequencer to feature a "piano roll" note editor.
 
 So, while Seq++ is much like a typical DAW's MIDI edit screen, it is not exactly like those. The note editor is heavily focused around the keyboard interface, which allows the user to "type in" music very quickly.
 
@@ -37,15 +37,17 @@ On the left are a few inputs, outputs, and controls.
 
 **Clk** is the eternal clock input.
 
-**Rst** does nothing yet.
+**Rst** does nothing yet, but will be reset
 
-**Run** CV input. Meant to be hooked up to the Run output of clocked. I haven't tested it yet.
+**Run** CV input. Meant to be hooked up to the Run output of Clocked, or similar master clock.
 
 ## What works now
 
 Plays sequence looped.
 
-Edit note attributes (pitch, start time, duration)
+Edit note attributes (pitch, start time, duration). 
+
+Enter new notes from the keyboard.
 
 Draw Piano roll.
 
@@ -57,12 +59,12 @@ There is a single track, and it is monophonic.
 
 ## What doesn't work
 
-There are obviously many missing features (start/stop, advanced editing). There is no mouse interface. It looks pretty rough.
+There are obviously many missing features. There is no mouse interface. It looks pretty rough.
 
 Note editor things that don't work:
 
 * Time units are always 1/16 notes.
-* Insert note is always 1/4 (I think).
+* Insert note is always 1/4.
 
 Reset input not hooked up.
 
@@ -71,6 +73,8 @@ It is probably possible to crash it with some note editor operations. But please
 ## Extending the length
 
 There is a temporary hack to make it possible to lengthen a track. You may move the cursor past the end of the track. If you insert a note there, the track will be extended in units of 4/4 bars to accommodate the new note.
+
+Note that it is not easy to know how long your track actually is. And it is currenly impossible to shorten it, once you have lengthened it.
 
 ## Piano roll
 
