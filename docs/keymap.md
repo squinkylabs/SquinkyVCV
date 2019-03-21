@@ -26,9 +26,11 @@ Moving the cursor onto a note will select it.
 
 When notes are selected and StartTime or Duration is current edit attribute:
 
-* plus/minus changes by one time unit.
+* plus/minus changes by one sixteenth note
 
-* ], [ changes by four units.
+* ], [ changes by a quarter note.
+
+* <, > change by a sixty-fourth note.
 
 When note is selected and Pitch is current edit attribute:
 
