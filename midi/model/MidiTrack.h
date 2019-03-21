@@ -30,6 +30,7 @@ public:
     float getLength() const;
     std::shared_ptr<MidiEndEvent> getEndEvent();
     std::shared_ptr<MidiNoteEvent> getFirstNote();
+    std::shared_ptr<MidiNoteEvent> getSecondNote();
 
 
     /**

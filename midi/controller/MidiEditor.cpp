@@ -214,9 +214,11 @@ void MidiEditor::changePitch(int semitones)
 void MidiEditor::changeStartTime(bool ticks, int amount)
 {
     MidiLocker l(seq()->song->lock);
-    assert(!ticks);         // not implemented yet
     assert(amount != 0);
-    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+
+    // "units" are 16th, "ticks" are 64th
+    float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
+
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount);
     seq()->undo->execute(cmd);
@@ -231,10 +233,9 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
 
 void MidiEditor::changeDuration(bool ticks, int amount)
 {
-    assert(!ticks);         // not implemented yet
     assert(amount != 0);
 
-    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+    float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
     seq()->undo->execute(cmd);

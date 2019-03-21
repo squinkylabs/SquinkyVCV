@@ -233,6 +233,19 @@ MidiNoteEventPtr MidiTrack::getFirstNote()
     return nullptr;
 }
 
+MidiNoteEventPtr MidiTrack::getSecondNote()
+{
+    int count = 0;
+    for (auto it : events) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it.second);
+        if (note) {
+            if (++count == 2) {
+                return note;
+            }
+        }
+    }
+    return nullptr;
+}
 
 MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> lock)
 {

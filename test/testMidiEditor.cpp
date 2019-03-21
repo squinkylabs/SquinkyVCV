@@ -135,6 +135,36 @@ static void testShiftTime3()
     testShiftTimex(50);
 }
 
+// TODO: make this work with negative shift.
+static void testShiftTimeTicks(int howMany)
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+    seq->editor->selectNextNote();          // now second
+
+    MidiNoteEventPtr secondNote = seq->context->getTrack()->getSecondNote();
+
+
+    const float s0 = secondNote->startTime;
+    seq->editor->changeStartTime(true, howMany);     // delay n "ticks" 
+
+    // find second again.
+    secondNote = seq->context->getTrack()->getSecondNote();
+
+    const float s1 = secondNote->startTime;
+    assertClose(s1 - s0, howMany / 16.f, .000001);
+}
+
+static void testShiftTimeTicks0()
+{
+    testShiftTimeTicks(1);
+}
+
+static void testShiftTimeTicks1()
+{
+    testShiftTimeTicks(-1);
+}
+
 static void testChangeDuration1()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -151,6 +181,28 @@ static void testChangeDuration1()
 
     // try to make negative, should not go below 1
     seq->editor->changeDuration(false, -50);
+    firstNote = seq->context->getTrack()->getFirstNote();
+    const float d2 = firstNote->duration;
+    assertGT(d2, 0);
+    seq->assertValid();
+}
+
+static void testChangeDurationTicks()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
+    const float d0 = firstNote->duration;
+    seq->editor->changeDuration(true, 1);     // lengthen one tick
+
+    firstNote = seq->context->getTrack()->getFirstNote();
+    const float d1 = firstNote->duration;
+    assertClose(d1 - d0, 1.f / 16.f, .000001);
+    seq->assertValid();
+
+    // try to make negative, should not go below 1
+    seq->editor->changeDuration(true, -50);
     firstNote = seq->context->getTrack()->getFirstNote();
     const float d2 = firstNote->duration;
     assertGT(d2, 0);
@@ -405,7 +457,11 @@ void testMidiEditorSub(int trackNumber)
     testShiftTime1();
     testShiftTime2();
     testShiftTime3();
+    testShiftTimeTicks0();
+    testShiftTimeTicks1();
+
     testChangeDuration1();
+    testChangeDurationTicks();
 
     testTrans2();
     testTrans3();
