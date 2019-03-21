@@ -60,6 +60,7 @@ void NoteDisplay::initEditContext()
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
+    sequencer->editor->updateSelectionForCursor();
 
 // set scaler once context has a valid range
     auto scaler = std::make_shared<NoteScreenScale>(

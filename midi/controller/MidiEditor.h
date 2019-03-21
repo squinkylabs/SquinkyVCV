@@ -58,6 +58,8 @@ public:
     void paste();
 
     void assertCursorInSelection();
+     // select any note that is under the cursor
+    void updateSelectionForCursor();
 private:
     /**
      * The sequencer we will act on.
@@ -77,8 +79,7 @@ private:
     // move the cursor, if necessary.
     void updateCursor();
 
-    // select any note that is under the cursor
-    void updateSelectionForCursor();
+   
 
     void extendTrackToMinDuration(float time);
 
