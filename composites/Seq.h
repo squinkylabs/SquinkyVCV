@@ -99,11 +99,6 @@ public:
         return ret;
     }
 
-    void setSampleTime(float time)
-    {
-        clock.setSampleTime(time);
-    }
-
     static std::vector<std::string> getClockRates();
 private:
     GateTrigger runStopProcessor;
@@ -202,8 +197,9 @@ void  Seq<TBase>::stepn(int n)
 
     // now call the clock (internal only, for now
 
+    const float reset = TBase::inputs[RESET_INPUT].value;
     int samplesElapsed = n;
-    SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, isRunning(), 0);
+    SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, isRunning(), reset);
     player->updateToMetricTime(results.totalElapsedTime);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;

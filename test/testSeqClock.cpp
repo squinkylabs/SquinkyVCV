@@ -33,7 +33,7 @@ static void testOneShot2Ms()
     assert(o.hasFired());
 
     for (int i = 0; i < 10; ++i) {
-        o.step();               
+        o.step();
         assert(o.hasFired());
     }
 
@@ -124,7 +124,7 @@ static void testClockExtEdge()
     // then high once
     results = ck.update(55, 10, true, 0);
     assertEQ(results.totalElapsedTime, metricTimePerClock);
-    
+
     // then high some more
     for (int i = 0; i < 10; ++i) {
         results = ck.update(55, 10, true, 0);        // low clock
@@ -254,18 +254,72 @@ static void testSimpleResetIgnoreClock()
     results = ck.update(sampleRateI, 10, true, 10);
     assert(results.didReset);
     assert(results.totalElapsedTime == 0);      // reset should set clock back to zero
-    
-    
+
+
     results = ck.update(sampleRateI, 0, true, 0);
     assert(!results.didReset);
 
     //   ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
- 
+
     // clock should be locked out now
     results = ck.update(1, 10, true, 0);
     assert(!results.didReset);
 }
 
+
+static void testResetIgnoreClock()
+{
+    const int sampleRateI = 44100;
+    const float sampleRate = float(sampleRateI);
+    const float sampleTime = 1.f / sampleRate;
+
+    int samplesInOneMs = int(44100.f / 1000.f);
+
+    SeqClock ck;
+    SeqClock::ClockResults results;
+    ck.setup(5, 120, sampleTime);       // external clock = quarter
+
+    // run external clock high
+    results = ck.update(sampleRateI, 10, true, 0);
+    assert(!results.didReset);
+    const double t0 = results.totalElapsedTime;
+
+    // clock low and high
+    ck.update(sampleRateI, 0, true, 0);
+    results = ck.update(sampleRateI, 10, true, 0);
+    const double t1 = results.totalElapsedTime;
+
+    assertClose(t1 - t0, 1, .0001);     // quarter note elapsed from one clock edge
+
+    // now reset
+    results = ck.update(sampleRateI, 10, true, 10);
+    assert(results.didReset);
+    assert(results.totalElapsedTime == 0);      // reset should set clock back to zero
+
+
+    //   ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
+
+    int errorMargin = 10;
+    // step for a little under one ms
+    for (int i = 0; i < (samplesInOneMs - errorMargin); ++i) {
+        results = ck.update(sampleRateI, 0, true, 0);
+        assertEQ(results.totalElapsedTime, 0);
+    }
+
+    // this clock should be ignored
+    results = ck.update(sampleRateI, 10, true, 0);
+    assertEQ(results.totalElapsedTime, 0);
+
+    // step for a little more with clock low
+    for (int i = 0; i < 2 * errorMargin; ++i) {
+        results = ck.update(sampleRateI, 0, true, 0);
+        assertEQ(results.totalElapsedTime, 0);
+    }
+
+    // this clock should NOT be ignored
+    results = ck.update(sampleRateI, 10, true, 0);
+    assertClose(results.totalElapsedTime, 1, .000001);
+}
 
 void testSeqClock()
 {
@@ -278,4 +332,5 @@ void testSeqClock()
     testClockChangeWhileStopped();
     testSimpleReset();
     testSimpleResetIgnoreClock();
+    testResetIgnoreClock();
 }

@@ -38,7 +38,7 @@ public:
         return curMetricTime; 
     }
 
-    void setSampleTime(float);
+   // void setSampleTime(float);
 private:
     int clockSetting = 0;       // default to internal
     float internalTempo = 120.f;
@@ -101,16 +101,19 @@ inline void SeqClock::reset()
     curMetricTime = 0;
 }
 
+#if 0
 inline void SeqClock::setSampleTime(float sampleTime)
 {
     resetLockout.setSampleTime(sampleTime);
 }
+#endif
 
 inline void SeqClock::setup(int inputSetting, float tempoSetting, float sampleT)
 {
     internalTempo = tempoSetting;
     sampleTime = sampleT;
     clockSetting = inputSetting;
+    resetLockout.setSampleTime(sampleT);
     switch (clockSetting) {
         case 0:
             break;
