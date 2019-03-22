@@ -6,7 +6,15 @@
 static void testOneShotInit()
 {
     OneShot o;
+    // should always be fired, until triggered
+    assert(o.hasFired());
+    o.setDelayMs(1);
+    assert(o.hasFired());
+    o.setSampleTime(1.f / 44100.f);
+    assert(o.hasFired());
+    o.set();
     assert(!o.hasFired());
+
 }
 
 static void testOneShot2Ms()
@@ -14,7 +22,10 @@ static void testOneShot2Ms()
     OneShot o;
     o.setSampleTime(.001f); // sample rate 1k
     o.setDelayMs(2);        // delay 2ms
+    assert(o.hasFired());
+    o.set();
     assert(!o.hasFired());
+
     o.step();               // 1 ms.
     assert(!o.hasFired());
 
@@ -196,11 +207,63 @@ static void testSimpleReset()
     SeqClock::ClockResults results;
     ck.setup(0, 120, sampleTime);       // internal clock
 
+    // one second goes by at 120 -> half note
     results = ck.update(sampleRateI, 0, true, 0);
+    assert(!results.didReset);
+    assertEQ(results.totalElapsedTime, 2.f);
+
+    // now reset. should send reset, and set us back to zero, but
+    // not suppress us
+    results = ck.update(sampleRateI, 0, true, 10);
+    assert(results.didReset);
+    assertEQ(results.totalElapsedTime, 2.f);
+
+    results = ck.update(sampleRateI, 0, true, 10);
     assert(!results.didReset);
 
     results = ck.update(sampleRateI, 0, true, 10);
+    assert(!results.didReset);
+
+    results = ck.update(sampleRateI, 0, true, 0);
+    assert(!results.didReset);
+}
+
+static void testSimpleResetIgnoreClock()
+{
+    const int sampleRateI = 44100;
+    const float sampleRate = float(sampleRateI);
+    const float sampleTime = 1.f / sampleRate;
+
+    SeqClock ck;
+    SeqClock::ClockResults results;
+    ck.setup(1, 120, sampleTime);       // external clock tempo 120
+
+    // run external clock high
+    results = ck.update(sampleRateI, 10, true, 0);
+    assert(!results.didReset);
+    const double t0 = results.totalElapsedTime;
+
+    // clock low and high
+    ck.update(sampleRateI, 0, true, 0);
+    results = ck.update(sampleRateI, 10, true, 0);
+    const double t1 = results.totalElapsedTime;
+
+    assertGT(t1, t0);       // we are clocking now
+
+    // now reset
+    results = ck.update(sampleRateI, 10, true, 10);
     assert(results.didReset);
+    assert(results.totalElapsedTime == 0);      // reset should set clock back to zero
+    
+    
+    results = ck.update(sampleRateI, 0, true, 0);
+    assert(!results.didReset);
+
+    //   ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
+ 
+    // clock should be locked out now
+    results = ck.update(1, 10, true, 0);
+    assert(!results.didReset);
 }
 
 
@@ -214,4 +277,5 @@ void testSeqClock()
     testClockInternalRunStop();
     testClockChangeWhileStopped();
     testSimpleReset();
+    testSimpleResetIgnoreClock();
 }

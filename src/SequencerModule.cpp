@@ -58,6 +58,11 @@ struct SequencerModule : Module
         runStopRequested = true;
     }
 
+    void onSampleRateChange() override
+    {
+        seqComp->setSampleTime(SqHelper::engineGetSampleTime());
+    }
+
     #ifndef __V1
     json_t *toJson() override
     {

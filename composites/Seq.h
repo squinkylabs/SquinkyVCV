@@ -99,6 +99,11 @@ public:
         return ret;
     }
 
+    void setSampleTime(float time)
+    {
+        clock.sampleTime();
+    }
+
     static std::vector<std::string> getClockRates();
 private:
     GateTrigger runStopProcessor;

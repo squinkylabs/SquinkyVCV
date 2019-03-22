@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GateTrigger.h"
+#include "OneShot.h"
 
 #include <string>
 #include <vector>
@@ -20,7 +21,7 @@ public:
      * param samplesElapsed is how many sample clocks have elapsed since last call.
      * param externalClock - is the clock CV, 0..10. will look for rising edges
      * param runStop is the run/stop flag. External logic must toggle it. It is level
-     *      sensetive, so clock stays stopped as long as it is low
+     *      sensitive, so clock stays stopped as long as it is low
      * param reset is edge sensitive. Only false -> true transition will trigger a reset.
      *
      * return - total elapsed metric time
@@ -36,6 +37,8 @@ public:
     double getCurMetricTime() const {
         return curMetricTime; 
     }
+
+    void setSampleTime(float);
 private:
     int clockSetting = 0;       // default to internal
     float internalTempo = 120.f;
@@ -44,15 +47,16 @@ private:
     double metricTimePerClock = 1;
 
     GateTrigger clockProcessor;
-  //  GateTrigger runProcessor;
     GateTrigger resetProcessor;
+    OneShot resetLockout;
 };
 
 inline SeqClock::SeqClock() :
     clockProcessor(true),
     resetProcessor(true)
 {
-
+    resetLockout.setDelayMs(1);
+    resetLockout.setSampleTime(1.f / 44100.f);
 }
 
 inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
@@ -62,6 +66,13 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
 
     resetProcessor.go(reset);
     results.didReset = resetProcessor.trigger();
+    if (results.didReset) {
+        resetLockout.set();
+        curMetricTime = 0;          // go back to start
+    }
+
+    resetLockout.step();
+
 
     if (!runStop) {
         results.totalElapsedTime = curMetricTime;
@@ -73,10 +84,13 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
         double deltaMetric = deltaSeconds * internalTempo / 60.0;
         curMetricTime += deltaMetric;
     } else {
-        // external clock
-        clockProcessor.go(externalClock);
-        if (clockProcessor.trigger()) {
-            curMetricTime += metricTimePerClock;
+        // ignore external clock during lockout.
+        if (resetLockout.hasFired()) {
+            // external clock
+            clockProcessor.go(externalClock);
+            if (clockProcessor.trigger()) {
+                curMetricTime += metricTimePerClock;
+            }
         }
     }
     results.totalElapsedTime = curMetricTime;
