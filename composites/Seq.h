@@ -101,7 +101,7 @@ public:
 
     void setSampleTime(float time)
     {
-        clock.sampleTime();
+        clock.setSampleTime(time);
     }
 
     static std::vector<std::string> getClockRates();

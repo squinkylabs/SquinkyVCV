@@ -73,7 +73,6 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
 
     resetLockout.step();
 
-
     if (!runStop) {
         results.totalElapsedTime = curMetricTime;
         return results;
@@ -100,6 +99,11 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
 inline void SeqClock::reset()
 {
     curMetricTime = 0;
+}
+
+inline void SeqClock::setSampleTime(float sampleTime)
+{
+    resetLockout.setSampleTime(sampleTime);
 }
 
 inline void SeqClock::setup(int inputSetting, float tempoSetting, float sampleT)
