@@ -49,19 +49,21 @@ static void testClockInternal0()
     ck.setup(0, 120, sampleTime);       // internal clock
 
     // now clock by one second
-    double elapsed = ck.update(sampleRateI, 0, true, 0);
+    SeqClock::ClockResults results = ck.update(sampleRateI, 0, true, 0);
 
     // quarter note = half second at 120,
     // so one second = 2q
-    assertEQ(elapsed, 2.0);
+    assertEQ(results.totalElapsedTime, 2.0);
+    assert(!results.didReset);
 
-    elapsed = ck.update(sampleRateI, 0, true, 0);
-    assertEQ(elapsed, 4.0);
+    results = ck.update(sampleRateI, 0, true, 0);
+    assertEQ(results.totalElapsedTime, 4.0);
 
     ck.reset();
     ck.setup(0, 240, sampleTime);       // internal clock
-    elapsed = ck.update(sampleRateI * 10, 0, true, 0);
-    assertEQ(elapsed, 40);
+    results = ck.update(sampleRateI * 10, 0, true, 0);
+    assertEQ(results.totalElapsedTime, 40);
+    assert(!results.didReset);
 }
 
 static void testClockExt(int rate, double metricTimePerClock)
@@ -72,15 +74,16 @@ static void testClockExt(int rate, double metricTimePerClock)
     SeqClock ck;
     ck.setup(rate, 120, 100);       // internal clock
 
+    SeqClock::ClockResults results;
     // send one clock
     for (int i = 0; i < 10; ++i) {
-        double x = ck.update(55, 0, true, 0);        // low clock
-        assertEQ(x, 0);
+        results = ck.update(55, 0, true, 0);        // low clock
+        assertEQ(results.totalElapsedTime, 0);
     }
 
     // count home much metric time comes back
-    double x = ck.update(55, 10, true, 0);
-    assertEQ(x, metricTimePerClock);
+    results = ck.update(55, 10, true, 0);
+    assertEQ(results.totalElapsedTime, metricTimePerClock);
 
 }
 
@@ -98,34 +101,35 @@ static void testClockExtEdge()
     const int rate = 5;
     const double metricTimePerClock = 1;
     SeqClock ck;
+    SeqClock::ClockResults results;
     ck.setup(rate, 120, 100);       // internal clock
 
     // send one clock (first low)
     for (int i = 0; i < 10; ++i) {
-        double x = ck.update(55, 0, true, 0);        // low clock
-        assertEQ(x, 0);
+        results = ck.update(55, 0, true, 0);        // low clock
+        assertEQ(results.totalElapsedTime, 0);
     }
 
     // then high once
-    double x = ck.update(55, 10, true, 0);
-    assertEQ(x, metricTimePerClock);
+    results = ck.update(55, 10, true, 0);
+    assertEQ(results.totalElapsedTime, metricTimePerClock);
     
     // then high some more
     for (int i = 0; i < 10; ++i) {
-        double x = ck.update(55, 10, true, 0);        // low clock
-        assertEQ(x, metricTimePerClock);
+        results = ck.update(55, 10, true, 0);        // low clock
+        assertEQ(results.totalElapsedTime, metricTimePerClock);
     }
 
      // low more
     for (int i = 0; i < 10; ++i) {
-        double x = ck.update(55, 0, true, 0);        // low clock
-        assertEQ(x, metricTimePerClock);
+        results = ck.update(55, 0, true, 0);        // low clock
+        assertEQ(results.totalElapsedTime, metricTimePerClock);
     }
 
      // then high some more
     for (int i = 0; i < 10; ++i) {
-        double x = ck.update(55, 10, true, 0);        // low clock
-        assertEQ(x, 2 * metricTimePerClock);
+        results = ck.update(55, 10, true, 0);        // low clock
+        assertEQ(results.totalElapsedTime, 2 * metricTimePerClock);
     }
 }
 
@@ -139,19 +143,19 @@ static void testClockInternalRunStop()
     ck.setup(0, 120, sampleTime);       // internal clock
 
     // now clock by one second
-    double elapsed = ck.update(sampleRateI, 0, true, 0);
+    SeqClock::ClockResults results = ck.update(sampleRateI, 0, true, 0);
 
     // quarter note = half second at 120,
     // so one second = 2q
-    assertEQ(elapsed, 2.0);
+    assertEQ(results.totalElapsedTime, 2.0);
 
     // now clock stopped, should not run
-    elapsed = ck.update(sampleRateI, 0, 0, 0);
-    assertEQ(elapsed, 2.0);
+    results = ck.update(sampleRateI, 0, 0, 0);
+    assertEQ(results.totalElapsedTime, 2.0);
 
      // now on again, should run
-    elapsed = ck.update(sampleRateI, 0, true, 0);
-    assertEQ(elapsed, 4.0);
+    results = ck.update(sampleRateI, 0, true, 0);
+    assertEQ(results.totalElapsedTime, 4.0);
 }
 
 static void testClockChangeWhileStopped()
@@ -164,22 +168,39 @@ static void testClockChangeWhileStopped()
     ck.setup(5, 120, sampleTime);       // external clock
 
     // call with clock low, running
-    double elapsed = ck.update(sampleRateI, 0, true, 0);
-    assertEQ(elapsed, 0);
+    SeqClock::ClockResults results = ck.update(sampleRateI, 0, true, 0);
+    assertEQ(results.totalElapsedTime, 0);
 
     // now stop
-    elapsed = ck.update(sampleRateI, 0, false, 0);
-    assertEQ(elapsed, 0);
+    results = ck.update(sampleRateI, 0, false, 0);
+    assertEQ(results.totalElapsedTime, 0);
 
     // raise clock while stopped
     for (int i = 0; i < 10; ++i) {
-        double elapsed = ck.update(sampleRateI, 10, false, 0);
+        results = ck.update(sampleRateI, 10, false, 0);
     }
-    assertEQ(elapsed, 0);
+    assertEQ(results.totalElapsedTime, 0);
 
     // now run. see if we catch the edge
-    elapsed = ck.update(sampleRateI, 10, true, 0);
-    assertEQ(elapsed, 1);
+    results = ck.update(sampleRateI, 10, true, 0);
+    assertEQ(results.totalElapsedTime, 1);
+}
+
+static void testSimpleReset()
+{
+    const int sampleRateI = 44100;
+    const float sampleRate = float(sampleRateI);
+    const float sampleTime = 1.f / sampleRate;
+
+    SeqClock ck;
+    SeqClock::ClockResults results;
+    ck.setup(0, 120, sampleTime);       // internal clock
+
+    results = ck.update(sampleRateI, 0, true, 0);
+    assert(!results.didReset);
+
+    results = ck.update(sampleRateI, 0, true, 10);
+    assert(results.didReset);
 }
 
 
@@ -192,4 +213,5 @@ void testSeqClock()
     testClockExtEdge();
     testClockInternalRunStop();
     testClockChangeWhileStopped();
+    testSimpleReset();
 }

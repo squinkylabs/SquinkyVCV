@@ -198,8 +198,8 @@ void  Seq<TBase>::stepn(int n)
     // now call the clock (internal only, for now
 
     int samplesElapsed = n;
-    double t = clock.update(samplesElapsed, extClock, isRunning(), 0);
-    player->updateToMetricTime(t);
+    SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, isRunning(), 0);
+    player->updateToMetricTime(results.totalElapsedTime);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 }

@@ -9,18 +9,26 @@ class SeqClock
 {
 public:
     SeqClock();
+
+    class ClockResults
+    {
+    public:
+        double totalElapsedTime = 0;
+        bool didReset = false;
+    };
     /**
      * param samplesElapsed is how many sample clocks have elapsed since last call.
      * param externalClock - is the clock CV, 0..10. will look for rising edges
-     * param runStop is the run/stop flag. External logic must toggle it
-     * param reset
+     * param runStop is the run/stop flag. External logic must toggle it. It is level
+     *      sensetive, so clock stays stopped as long as it is low
+     * param reset is edge sensitive. Only false -> true transition will trigger a reset.
      *
      * return - total elapsed metric time
      *
      * note that only one of the two passed params will be used, depending 
      * on internal/external model.
      */
-    double update(int samplesElapsed, float externalClock, bool runStop, float reset);
+    ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
     void setup(int inputSetting, float tempoSetting, float sampleTime);
     void reset();
     static std::vector<std::string> getClockRates();
@@ -47,11 +55,17 @@ inline SeqClock::SeqClock() :
 
 }
 
-inline double SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
+inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
 {
+    ClockResults results;
     // if stopped, don't do anything
+
+    resetProcessor.go(reset);
+    results.didReset = resetProcessor.trigger();
+
     if (!runStop) {
-        return curMetricTime;
+        results.totalElapsedTime = curMetricTime;
+        return results;
     }
     // Internal clock
     if (clockSetting == 0) {
@@ -65,7 +79,8 @@ inline double SeqClock::update(int samplesElapsed, float externalClock, bool run
             curMetricTime += metricTimePerClock;
         }
     }
-    return curMetricTime;
+    results.totalElapsedTime = curMetricTime;
+    return results;
 }
 
 inline void SeqClock::reset()
