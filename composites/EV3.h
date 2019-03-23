@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Divider.h"
 #include "IComposite.h"
 #include "MinBLEPVCO.h"
 #include "ObjectCache.h"
@@ -126,6 +127,7 @@ private:
     void processPitchInputs(int osc);
     void processWaveforms();
     void stepVCOs();
+    void stepn(int);
     void init();
     void processPWInputs();
     void processPWInput(int osc);
@@ -134,11 +136,15 @@ private:
     MinBLEPVCO vcos[3];
     float _freq[3];
     float _out[3];
+    float _outGain[3];
+    float _pitchOffset[3];
     float volumeScale = 1;
     std::function<float(float)> expLookup =
         ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
+
+    Divider div;
 };
 
 template <class TBase>
@@ -146,13 +152,20 @@ inline void EV3<TBase>::init()
 {
     for (int i = 0; i < 3; ++i) {
         vcos[i].setWaveform(MinBLEPVCO::Waveform::Saw);
+        _outGain[i] = 0;
+        _pitchOffset[i] = 0;
     }
+
+    div.setup(4, [this] {
+        this->stepn(div.div());
+        });
 
     vcos[0].setSyncCallback([this](float f) {
 
         if (TBase::params[SYNC2_PARAM].value > .5) {
             vcos[1].onMasterSync(f);
         }
+
         if (TBase::params[SYNC3_PARAM].value > .5) {
             vcos[2].onMasterSync(f);
         }
@@ -215,21 +228,39 @@ inline void EV3<TBase>::processPWInputs()
 }
 
 template <class TBase>
-inline void EV3<TBase>::step()
+inline void EV3<TBase>::stepn(int)
 {
+    // do the mix know taper lookup at a lower sample rate
+    for (int i = 0; i < 3; ++i) {
+        const float knob = TBase::params[MIX1_PARAM + i].value;
+        _outGain[i] = LookupTable<float>::lookup(*audioTaper, knob, false);
+
+        const int delta = i * (OCTAVE2_PARAM - OCTAVE1_PARAM);
+        const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
+        const float semiPitch = TBase::params[SEMI1_PARAM + delta].value / 12.0f;
+
+        float pitch = 1.0f + roundf(TBase::params[OCTAVE1_PARAM + delta].value) +
+            semiPitch +
+            finePitch;
+        _pitchOffset[i] = pitch;
+    }
     setSync();
-    processPitchInputs();
     processWaveforms();
     processPWInputs();
+}
+
+template <class TBase>
+inline void EV3<TBase>::step()
+{
+    div.step();
+    processPitchInputs();
     stepVCOs();
 
     float mix = 0;
     float totalGain = 0;
 
     for (int i = 0; i < 3; ++i) {
-
-        const float knob = TBase::params[MIX1_PARAM + i].value;
-        const float gain = LookupTable<float>::lookup(*audioTaper, knob, false);
+        const float gain = _outGain[i];
         const float rawWaveform = vcos[i].getOutput();
         const float scaledWaveform = rawWaveform * gain;
         totalGain += gain;
@@ -263,12 +294,7 @@ inline void EV3<TBase>::processPitchInputs()
         const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
 
         const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
-        const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
-        const float semiPitch = TBase::params[SEMI1_PARAM + delta].value / 12.0f;
-
-        float pitch = 1.0f + roundf(TBase::params[OCTAVE1_PARAM + delta].value) +
-            semiPitch +
-            finePitch;
+        float pitch = _pitchOffset[osc];
         pitch += cv;
 
         float fmCombined = 0;       // The final, scaled, value (post knob
@@ -281,7 +307,6 @@ inline void EV3<TBase>::processPitchInputs()
         }
         pitch += fmCombined;
         lastFM = fmCombined;
-
 
         const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
         pitch += q;
@@ -389,7 +414,6 @@ inline IComposite::Config EV3Description<TBase>::getParam(int i)
         case EV3<TBase>::PWM3_PARAM:
             ret = {-1.0f, 1.0f, 0, "Pulse width modulation (VCO 3)"};
             break;
-
         default:
             assert(false);
     }

@@ -7,6 +7,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "MultiLag.h"
+#include "ObjectCache.h"
 
 template <class TBase>
 class Slew4Description : public IComposite
@@ -115,7 +116,9 @@ private:
     void updateKnobs();
 
     AudioMath::ScaleFun<float> lin = AudioMath::makeLinearScaler<float>(0, 1);
-
+    std::shared_ptr<LookupTableParams<float>> audioTaper =
+        ObjectCache<float>::getAudioTaper();
+    float _outputLevel = 0;
 };
 
 
@@ -156,6 +159,9 @@ inline void Slew4<TBase>::updateKnobs()
         const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
         lag.setReleaseL(lR);
     }
+
+    const float knob = TBase::params[PARAM_LEVEL].value;
+    _outputLevel = LookupTable<float>::lookup(*audioTaper, knob, false);
 }
 
 
@@ -173,15 +179,20 @@ inline void Slew4<TBase>::step()
     lag.step(slewInput);
    
     // send slew to output
-     for (int i=0; i<8; ++i) {
-         //if audio in hooked up, then output[n] = input[n] * lag
-         // else output = lag
-         float inputValue = 10.f;   
-         if (TBase::outputs[i + OUTPUT0].active) {
-             inputValue = TBase::inputs[i + INPUT_AUDIO0].value;
-         } 
+    float sum = 0;
+    for (int i=0; i<8; ++i) {
+        //if audio in hooked up, then output[n] = input[n] * lag
+        // else output = lag
+        float inputValue = 10.f;   
+      //  if (TBase::outputs[i + OUTPUT0].active) {
+        if (TBase::inputs[i + INPUT_AUDIO0].active) {
+            inputValue = TBase::inputs[i + INPUT_AUDIO0].value;
+        } 
         TBase::outputs[i + OUTPUT0].value = lag.get(i) * inputValue * .1f;
-     }
+        sum += TBase::outputs[i + OUTPUT0].value;
+    }
+
+    TBase::outputs[OUTPUT_MIX].value = sum * _outputLevel;
 }
 
 template <class TBase>
@@ -202,7 +213,7 @@ inline IComposite::Config Slew4Description<TBase>::getParam(int i)
             ret = {-5.0f, 5.0f, 0, "Fall time"};
             break;
         case Slew4<TBase>::PARAM_LEVEL:
-            ret = {-5.0f, 5.0f, 0, "Level"};
+            ret = {0.f, 1.f, .5, "Level"};
             break;
         default:
             assert(false);
