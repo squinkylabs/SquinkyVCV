@@ -6,7 +6,6 @@
 #include "MidiSong.h"
 #include "SeqClock.h"
 
-
 template <class TBase>
 class SeqDescription : public IComposite
 {
@@ -90,6 +89,7 @@ public:
     {
         player->stop();
     }
+
 
     float getPlayPosition()
     {
@@ -200,6 +200,9 @@ void  Seq<TBase>::stepn(int n)
     const float reset = TBase::inputs[RESET_INPUT].value;
     int samplesElapsed = n;
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, isRunning(), reset);
+    if (results.didReset) {
+        player->reset();
+    }
     player->updateToMetricTime(results.totalElapsedTime);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;

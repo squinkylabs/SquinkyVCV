@@ -101,13 +101,6 @@ inline void SeqClock::reset()
     curMetricTime = 0;
 }
 
-#if 0
-inline void SeqClock::setSampleTime(float sampleTime)
-{
-    resetLockout.setSampleTime(sampleTime);
-}
-#endif
-
 inline void SeqClock::setup(int inputSetting, float tempoSetting, float sampleT)
 {
     internalTempo = tempoSetting;
