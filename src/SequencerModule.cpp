@@ -58,6 +58,11 @@ struct SequencerModule : Module
         runStopRequested = true;
     }
 
+    bool isRunning()
+    {
+        return seqComp->isRunning();
+    }
+
 #ifndef __V1
     json_t *toJson() override
     {
@@ -134,7 +139,8 @@ struct SequencerWidget : ModuleWidget
 void SequencerWidget::step()
  {
     ModuleWidget::step();
-    if (scrollControl && _module) {
+    if (scrollControl && _module && _module->isRunning()) {
+        
         const int y = scrollControl->getValue();
         if (y) {
             float curTime = _module->getPlayPosition();

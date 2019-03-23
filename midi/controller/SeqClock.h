@@ -70,8 +70,9 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
         resetLockout.set();
         curMetricTime = 0;          // go back to start
     }
-
-    resetLockout.step();
+    for (int i = 0; i < samplesElapsed; ++i) {
+        resetLockout.step();
+    }
 
     if (!runStop) {
         results.totalElapsedTime = curMetricTime;

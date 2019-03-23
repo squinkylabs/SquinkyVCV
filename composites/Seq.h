@@ -90,6 +90,7 @@ public:
         player->stop();
     }
 
+    bool isRunning();
 
     float getPlayPosition()
     {
@@ -110,7 +111,7 @@ private:
     Divider div;
     bool runStopRequested = false;
 
-    bool isRunning();
+   
 
     /**
      * called by the divider every 'n' step calls
