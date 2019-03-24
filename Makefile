@@ -62,6 +62,8 @@ include $(RACK_DIR)/plugin.mk
 # This turns asserts off for make (plugin), not for test or perf
 $(TARGET) :  FLAGS += $(ASSERTOFF)
 
+$(TARGET) : FLAGS += -D __PLUGIN
+
 # mac does not like this argument
 ifdef ARCH_WIN
 	FLAGS += -fmax-errors=5

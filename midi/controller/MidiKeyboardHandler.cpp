@@ -292,6 +292,8 @@ bool MidiKeyboardHandler::handle(
             sequencer->editor->deleteNote();
             handled = true;
             break;
+#ifndef __USE_VCV_UNDO
+// In VCV 1.0, VCV provides the undo 
         case GLFW_KEY_Z:
             if (ctrl & !shift) {
                 handled = true;
@@ -314,6 +316,7 @@ bool MidiKeyboardHandler::handle(
                 } 
             }
             break;
+#endif
     }
     return handled;
 }

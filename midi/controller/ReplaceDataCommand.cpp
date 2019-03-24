@@ -87,6 +87,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
+
+    ret->name = "delete notes";
     return ret;
 }
 
@@ -164,7 +166,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
             note->pitchCV = newPitch;
         }
     };
-    return makeChangeNoteCommand(Ops::Pitch, seq, xform, false);
+    auto ret = makeChangeNoteCommand(Ops::Pitch, seq, xform, false);
+    ret->name = "change pitch";
+    return ret;
 }
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
@@ -177,7 +181,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
             note->startTime = std::max(0.f, note->startTime);
         }
     };
-    return makeChangeNoteCommand(Ops::Start, seq, xform, true);
+    auto ret =  makeChangeNoteCommand(Ops::Start, seq, xform, true);
+    ret->name = "change note start";
+    return ret;
 }
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
@@ -191,7 +197,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
             note->duration = std::max(.001f, note->duration);
         }
     };
-    return makeChangeNoteCommand(Ops::Duration, seq, xform, true);
+    auto ret = makeChangeNoteCommand(Ops::Duration, seq, xform, true);
+    ret->name = "change note duration";
+    return ret;
 }
 
 
@@ -238,6 +246,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
+    ret->name = "paste";
     return ret;
 }
 
@@ -261,6 +270,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
+    ret->name = "insert note";
     return ret;
 }
 
