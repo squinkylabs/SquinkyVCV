@@ -23,7 +23,8 @@
                 "/Library/Frameworks"
             ],
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++17",
+            "compilerPath": "D:/VisualStudio2017/VC/Tools/MSVC/14.16.27023/bin/Hostx64/x64/cl.exe"
         },
         {
             "name": "Linux",
@@ -44,7 +45,8 @@
                 "databaseFilename": ""
             },
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++17",
+            "compilerPath": "D:/VisualStudio2017/VC/Tools/MSVC/14.16.27023/bin/Hostx64/x64/cl.exe"
         },
         {
             "name": "Win32",
@@ -86,7 +88,8 @@
                 "databaseFilename": ""
             },
             "cStandard": "c11",
-            "cppStandard": "c++11"
+            "cppStandard": "c++17",
+            "compilerPath": "D:/VisualStudio2017/VC/Tools/MSVC/14.16.27023/bin/Hostx64/x64/cl.exe"
         }
     ],
     "version": 4
