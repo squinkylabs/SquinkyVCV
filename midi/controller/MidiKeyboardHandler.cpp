@@ -1,4 +1,5 @@
 
+#include "../Squinky.hpp"
 #include "MidiKeyboardHandler.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
