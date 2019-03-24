@@ -85,6 +85,9 @@ void init(rack::Plugin *p)
 #ifdef _SLEW
     p->addModel(modelSlew4Module);
 #endif
+#ifdef _MIX8
+    p->addModel(modelMix8Module);
+#endif
 
 }
 

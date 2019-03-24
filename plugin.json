@@ -88,6 +88,11 @@
 			"slug": "squinkylabs-slew4",
 			"name": "Slew",
 			"description": "Quad slew / VCA"
+		},
+		{
+			"slug": "squinkylabs-mix8",
+			"name": "Mixer",
+			"description": "8 channel mixer"
 		}
 	]
 }

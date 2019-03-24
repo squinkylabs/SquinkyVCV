@@ -16,6 +16,7 @@
 #define _GROWLER
 #define _SEQ
 #define _SLEW
+#define _MIX8
 //#define _CH10
 
 //#define _BLANKMODULE
@@ -95,6 +96,8 @@ extern Model *modelSequencerModule;
 #ifdef _SLEW
 extern Model *modelSlew4Module;
 #endif
-
+#ifdef _MIX8
+extern Model *modelMix8Module;
+#endif
 
 
