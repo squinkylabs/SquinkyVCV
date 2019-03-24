@@ -77,8 +77,11 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
     // first, seek into track until cursor time.
     MidiTrack::const_iterator it = track->seekToTimeNote(t);
     if (it == track->end()) {
-        seq->selection->clear();
-        return;
+        it = track->seekToLastNote();
+        if (it == track->end()) {
+            seq->selection->clear();
+            return;
+        }
     }
 
     // if it came back with a note exactly at cursor time,

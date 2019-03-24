@@ -292,7 +292,7 @@ static void testResetIgnoreClock()
     assertClose(t1 - t0, 1, .0001);     // quarter note elapsed from one clock edge
 
     // now reset
-    results = ck.update(sampleRateI, 10, true, 10);
+    results = ck.update(1, 10, true, 10);
     assert(results.didReset);
     assert(results.totalElapsedTime == 0);      // reset should set clock back to zero
 
@@ -301,18 +301,19 @@ static void testResetIgnoreClock()
 
     int errorMargin = 10;
     // step for a little under one ms
+
     for (int i = 0; i < (samplesInOneMs - errorMargin); ++i) {
-        results = ck.update(sampleRateI, 0, true, 0);
+        results = ck.update(1, 0, true, 0);
         assertEQ(results.totalElapsedTime, 0);
     }
 
     // this clock should be ignored
-    results = ck.update(sampleRateI, 10, true, 0);
+    results = ck.update(1, 10, true, 0);
     assertEQ(results.totalElapsedTime, 0);
 
     // step for a little more with clock low
     for (int i = 0; i < 2 * errorMargin; ++i) {
-        results = ck.update(sampleRateI, 0, true, 0);
+        results = ck.update(1, 0, true, 0);
         assertEQ(results.totalElapsedTime, 0);
     }
 

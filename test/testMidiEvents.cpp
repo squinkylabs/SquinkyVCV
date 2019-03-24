@@ -311,15 +311,15 @@ static void testTimeUtil5()
 {
     float t = 0;
     auto x = TimeUtils::time2str(t);
-    assert(x == "0.0.0");
+    assert(x == "1.1.0");
 
     t = TimeUtils::quarterNote() + TimeUtils::bar2time(2);
     x = TimeUtils::time2str(t);
-    assert(x == "2.1.0");
+    assert(x == "3.2.0");
 
-    t += 3.f * TimeUtils::quarterNote() / 100.f;
+    t += 4.f * TimeUtils::quarterNote() / 100.f;
     x = TimeUtils::time2str(t);
-    assert(x == "2.1.3");
+    assert(x == "3.2.4");
 }
 
 static void testPitchUtil0()

@@ -107,6 +107,17 @@ static void testPrevNoSelectionNonZeroCursor()
     assert(cursorOnSelection(seq));
 }
 
+static void testPrevWhenPastAll()
+{
+    MidiSequencerPtr seq = makeTest();
+    seq->context->setCursorTime(123);        // way past all the notes
+                                            // (in between second and third note)
+    seq->context->adjustViewportForCursor();
+
+    seq->editor->selectPrevNote();
+    assertEQ(seq->selection->size(), 1);     // should be one note selected
+}
+
 // with last note selected, should not do anything
 static void testNextLastNoteSelected()
 {
@@ -366,6 +377,8 @@ void testMidiEditorNextPrevSub(int trackNumber)
     testNextWhenFirstIsSelected();
     testPrevWhenFirstSelected();
     testPrevWhenSecondSelected();
+
+    testPrevWhenPastAll();
 
     testNextInEmptyTrack();
     testPrevInEmptyTrack();
