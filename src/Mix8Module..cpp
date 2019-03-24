@@ -106,7 +106,6 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
 #ifdef __V1
 Model *modelMix8Module = createModel<Mix8Module, Mix8Widget>("squinkylabs-mix8");
 #else
-a b c
 Model *modelMix8Module = Model::create<Mix8Module,
     Mix8Widget>("Squinky Labs",
     "squinkylabs-mix8",
