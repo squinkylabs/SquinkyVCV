@@ -1,5 +1,6 @@
 
 #include "LookupTable.h"
+#include "Mix8.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "Slew4.h"
@@ -145,13 +146,31 @@ static void testSlew4()
         }, 1);
 }
 
+using Mixer = Mix8<TestComposite>;
+static void testMix8()
+{
+    Mixer fs;
+
+    fs.init();
+
+    fs.inputs[Slewer::INPUT_AUDIO0].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "mix8", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+        }, 1);
+}
 void perfTest2()
 {
+    testSlew4();
+    testMix8();
     testUniformLookup();
     testNonUniform();
     testMultiLPF();
     testMultiLPFMod();
     testMultiLag();
     testMultiLagMod();
-    testSlew4();
+
 }
