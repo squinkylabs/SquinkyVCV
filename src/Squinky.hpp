@@ -14,7 +14,8 @@
 #define _SUPER
 #define _BOOTY
 #define _GROWLER
-#define _SLEW
+//#define _SEQ
+//#define _SLEW
 //#define _CH10
 
 //#define _BLANKMODULE
