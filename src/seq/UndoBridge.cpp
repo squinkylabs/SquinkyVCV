@@ -2,14 +2,14 @@
 #include "SqCommand.h"
 #include "UndoRedoStack.h"
 
-// VCV includes
-#include "app.hpp"
-#include "history.hpp"
-
 // std C
 #include <assert.h>
 
 #ifdef __USE_VCV_UNDO
+
+// VCV includes
+#include "app.hpp"
+#include "history.hpp"
 
 class SeqAction : public rack::history::ModuleAction
 {
