@@ -18,11 +18,12 @@ bool MidiKeyboardHandler::doRepeat(unsigned key)
         case GLFW_KEY_LEFT_BRACKET:
         case GLFW_KEY_RIGHT_BRACKET:
         case GLFW_KEY_MINUS:
-      //  case GLFW_KEY_PLUS:
         case GLFW_KEY_RIGHT:
         case GLFW_KEY_LEFT:
         case GLFW_KEY_UP:
         case GLFW_KEY_DOWN:
+        case GLFW_KEY_COMMA:
+        case GLFW_KEY_PERIOD:
             doIt = true;
     }
     return doIt;
@@ -33,7 +34,8 @@ void MidiKeyboardHandler::handleNoteEditorChange(
     ChangeType type,
     bool increase)
 {
-    assert(type != ChangeType::lessThan); // can't handle
+    int units = 1;
+    bool ticks = false;
     switch(sequencer->context->noteAttribute) {
         case MidiEditorContext::NoteAttribute::Pitch:
             {
@@ -47,21 +49,53 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 
          case MidiEditorContext::NoteAttribute::Duration:
             {
-                int units = (type == ChangeType::bracket) ? 4 : 1;
+                switch(type) {
+                    case ChangeType::bracket:
+                        units = 4;
+                        ticks = false;
+                        break;
+                    case ChangeType::lessThan:
+                        units = 1;
+                        ticks = true;
+                        break;
+                    case ChangeType::plus:
+                        units = 1;
+                        ticks = false;
+                        break;
+                    default:
+                        assert(false);
+
+                }
                 if (!increase) {
                     units = -units;
                 }
-                sequencer->editor->changeDuration(false, units);
+                sequencer->editor->changeDuration(ticks, units);
             }
             break;
 
         case MidiEditorContext::NoteAttribute::StartTime:
             {
-                int units = (type == ChangeType::bracket) ? 4 : 1;
+                switch(type) {
+                    case ChangeType::bracket:
+                        units = 4;
+                        ticks = false;
+                        break;
+                    case ChangeType::lessThan:
+                        units = 1;
+                        ticks = true;
+                        break;
+                    case ChangeType::plus:
+                        units = 1;
+                        ticks = false;
+                        break;
+                    default:
+                        assert(false);
+
+                }
                 if (!increase) {
                     units = -units;
                 }
-                sequencer->editor->changeStartTime(false, units);
+                sequencer->editor->changeStartTime(ticks, units);
             }
             break;
     }
@@ -81,9 +115,9 @@ bool MidiKeyboardHandler::handle(
     switch(key) {
         case GLFW_KEY_F1:
             sequencerHelp();
+            handled = true;
             break;
         case GLFW_KEY_TAB: 
-
             if (!shift) {
                 if (ctrl) {
                     sequencer->editor->selectPrevNote();
@@ -110,11 +144,11 @@ bool MidiKeyboardHandler::handle(
             }
             break;
         case GLFW_KEY_KP_SUBTRACT:
-             handleNoteEditorChange(sequencer, ChangeType::plus, false);
+            handleNoteEditorChange(sequencer, ChangeType::plus, false);
             handled = true;
             break;
         case GLFW_KEY_LEFT_BRACKET:
-             handleNoteEditorChange(sequencer, ChangeType::bracket, false);
+            handleNoteEditorChange(sequencer, ChangeType::bracket, false);
             handled = true;
             break;
          case GLFW_KEY_RIGHT_BRACKET:
@@ -123,9 +157,17 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_MINUS:
             if (!shift) {
-                 handleNoteEditorChange(sequencer, ChangeType::plus, false);
+                handleNoteEditorChange(sequencer, ChangeType::plus, false);
                 handled = true;
             }
+            break;
+        case GLFW_KEY_COMMA:
+            handleNoteEditorChange(sequencer, ChangeType::lessThan, false);
+            handled = true;
+            break;
+        case GLFW_KEY_PERIOD:
+            handleNoteEditorChange(sequencer, ChangeType::lessThan, true);
+            handled = true;
             break;
         case GLFW_KEY_RIGHT:
             {
@@ -153,6 +195,7 @@ bool MidiKeyboardHandler::handle(
                 handled = true;
             }
             break;
+
         case GLFW_KEY_A:
             {
                 if (ctrl) {
@@ -169,27 +212,64 @@ bool MidiKeyboardHandler::handle(
                 }
             }
             break;
+        case GLFW_KEY_D:
+            {
+                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Duration);
+                handled = true;
+            }
+            break;
+        case GLFW_KEY_E:
+            {
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth);
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_H:
+            {
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Half);
+                    handled = true;
+                }
+            }
+            break;
         case GLFW_KEY_P:
             {
                 sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
                 handled = true;
             }
             break;
-        case GLFW_KEY_D:
+        case GLFW_KEY_Q:
             {
-                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Duration);
-                 handled = true;
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter);
+                    handled = true;
+                }
             }
             break;
         case GLFW_KEY_S:
             {
-                sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+                if (!ctrl) {
+                    sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+                } else {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth);
+                }
+                handled = true;
             }
             break;
         case GLFW_KEY_V:
             {
                 if (ctrl) {
                     sequencer->editor->paste();
+                    handled = true;
+                }
+            }
+            break;
+        case GLFW_KEY_W:
+            {
+                if (ctrl) {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole);
                     handled = true;
                 }
             }
@@ -212,6 +292,8 @@ bool MidiKeyboardHandler::handle(
             sequencer->editor->deleteNote();
             handled = true;
             break;
+#ifndef __USE_VCV_UNDO
+// In VCV 1.0, VCV provides the undo 
         case GLFW_KEY_Z:
             if (ctrl & !shift) {
                 handled = true;
@@ -219,6 +301,7 @@ bool MidiKeyboardHandler::handle(
                     sequencer->undo->undo();
                 } 
             } else if (ctrl & shift) {
+                handled = true;
                 if (sequencer->undo->canRedo()) {
                     sequencer->undo->redo();  
                 }
@@ -233,6 +316,7 @@ bool MidiKeyboardHandler::handle(
                 } 
             }
             break;
+#endif
     }
     return handled;
 }

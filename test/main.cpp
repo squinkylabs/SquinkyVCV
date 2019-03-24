@@ -62,6 +62,8 @@ extern void testMidiEditor();
 extern void testMidiEditorNextPrev();
 extern void testNoteScreenScale();
 extern void testMidiEditorCCP();
+extern void testVec();
+extern void testSeqClock();
 
 #if 0
 #include <sstream>
@@ -122,10 +124,12 @@ int main(int argc, char ** argv)
     }
 
     testIComposite();
+    testVec();
     testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();
     testMidiSong();
+    testSeqClock();
     testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();
@@ -143,6 +147,7 @@ int main(int argc, char ** argv)
     testManagedPool();
     testLookupTable();
     testObjectCache();
+    testMultiLag();
 
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
@@ -168,6 +173,7 @@ int main(int argc, char ** argv)
     testAnalyzer();
     testRateConversion();
     testUtils();
+    testLowpassFilter();
  
 #if 0
     printf("skipping lots of tests\n");
@@ -179,9 +185,9 @@ int main(int argc, char ** argv)
         testThread(extended);
     }
 
-    testLowpassFilter();
+    
     testFilter();
-    testMultiLag();
+
     testStochasticGrammar();
     testGMR();
 
@@ -212,4 +218,9 @@ int main(int argc, char ** argv)
 #else
     printf("Tests passed.\n");
 #endif
+}
+
+void sequencerHelp()
+{
+
 }

@@ -211,21 +211,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
     }
 
     // Add the background panel
-   // SqHelper::setPanel(Widget* widget, const char* path);
    SqHelper::setPanel(this, "res/colors_panel.svg");
-#if 0
-    {
-#ifdef __V1
-    
-	    setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, "res/colors_panel.svg")));
-#else
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/colors_panel.svg")));
-        addChild(panel);
-#endif
-    }
-    #endif
 
     addOutput(createOutput<PJ301MPort>(
         Vec(32, 310),

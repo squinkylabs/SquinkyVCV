@@ -35,6 +35,10 @@ public:
         track = newTrack;
     }
     void updateToMetricTime(double seconds, IPlayerHost*);
+
+    double getLoopStart() const {
+        return loopStart;
+    }
 private:
   
     double noteOffTime = -1;
@@ -61,26 +65,18 @@ private:
 class MidiPlayer
 {
 public:
-
     MidiPlayer(std::shared_ptr<IPlayerHost> host, std::shared_ptr<MidiSong> song);
     ~MidiPlayer()
     {
         --_mdb;
     }
+
     void setSong(std::shared_ptr<MidiSong>);
-
-    //void timeElapsed(float seconds);
     void updateToMetricTime(double metricTime);
-
-    std::shared_ptr<MidiSong> getSong()
-    {
-        return song;
-    }
-
-    void stop()
-    {
-        isPlaying = false;
-    }
+    std::shared_ptr<MidiSong> getSong();
+    void stop();
+    double getLoopStart() const;
+    void reset();
 
 private:
     std::shared_ptr<IPlayerHost> host;

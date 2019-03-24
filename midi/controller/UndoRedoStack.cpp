@@ -4,37 +4,7 @@
 #include "SqCommand.h"
 #include "UndoRedoStack.h"
 
-#if 0
-
-std::shared_ptr<SqCommand> UndoRedoStack::popUndo()
-{
-    assert(canUndo());
-
-    auto returnValue = undoList.front();
-    undoList.pop_front();
-    return returnValue;
-}
-
-std::shared_ptr<SqCommand> UndoRedoStack::popRedo()
-{
-    assert(canRedo());
-
-    auto returnValue = redoList.front();
-    redoList.pop_front();
-    return returnValue;
-}
-
-void UndoRedoStack::pushUndo(std::shared_ptr<SqCommand> cmd)
-{
-    undoList.push_front(cmd);
-}
-
-void UndoRedoStack::pushRedo(std::shared_ptr<SqCommand> cmd)
-{
-    redoList.push_front(cmd);
-}
-#endif
-
+#ifndef __USE_VCV_UNDO
 bool UndoRedoStack::canUndo() const
 {
     return !undoList.empty();
@@ -71,3 +41,4 @@ void UndoRedoStack::redo()
 
     undoList.push_front(cmd);
 }
+#endif

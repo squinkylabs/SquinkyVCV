@@ -22,9 +22,7 @@ FLAGS += -D __V1
 ifdef _EXP
 	FLAGS += -D _EXP
 endif
-ifdef _SEQ
-	FLAGS += -D _SEQ
-endif
+
 # Macro to use on any target where we don't normally want asserts
 ASSERTOFF = -D NDEBUG
 
@@ -61,6 +59,8 @@ include $(RACK_DIR)/plugin.mk
 
 # This turns asserts off for make (plugin), not for test or perf
 $(TARGET) :  FLAGS += $(ASSERTOFF)
+
+$(TARGET) : FLAGS += -D __PLUGIN
 
 # mac does not like this argument
 ifdef ARCH_WIN

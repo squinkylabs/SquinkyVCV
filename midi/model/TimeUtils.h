@@ -31,11 +31,15 @@ public:
         return std::make_tuple(bar, q, f);
     }
 
+    /**
+     * Converts a regular metric time to bar:beat:hundredths.
+     * bars and beats start numbering at 1, like humans do.
+     */
     static std::string time2str(float time)
     {
         auto bbf = time2bbf(time);
         char buffer[256];
-        snprintf(buffer, 256, "%d.%d.%d", std::get<0>(bbf), std::get<1>(bbf), std::get<2>(bbf));
+        snprintf(buffer, 256, "%d.%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf), std::get<2>(bbf));
         return buffer;
     }
 };

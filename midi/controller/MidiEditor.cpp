@@ -64,7 +64,7 @@ static void selectNextNotePastCursor(bool atCursorOk,
         }
     }
 
-    // If nothing past where we are, it's ok, even it it is at the same time
+    // If nothing past where we are, it's ok, even if it is at the same time
     seq->selection->addToSelection(bestSoFar->second, keepExisting);
 }
 
@@ -77,8 +77,11 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
     // first, seek into track until cursor time.
     MidiTrack::const_iterator it = track->seekToTimeNote(t);
     if (it == track->end()) {
-        seq->selection->clear();
-        return;
+        it = track->seekToLastNote();
+        if (it == track->end()) {
+            seq->selection->clear();
+            return;
+        }
     }
 
     // if it came back with a note exactly at cursor time,
@@ -90,18 +93,26 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
 
     MidiTrack::const_iterator bestSoFar = it;
 
-    // If must be before cursor time, go back to next
-    --it;
+    // If must be before cursor time, go back to prev
 
-    for (; it != track->end(); --it) {
+    if (it != track->begin()) {
+        --it;
+    }
+
+    // now either this previous is acceptable, or something before it
+    while (true) {
         MidiEventPtr evt = it->second;
         if ((evt->type == MidiEvent::Type::Note) && (evt->startTime < t)) {
             seq->selection->select(evt);
             return;
         }
+        if (it == track->begin()) {
+            break;  // give up if we are at start and have found nothing good
+        }
+        --it;       // if nothing good, try previous
     }
 
-    // If nothing past where we are, it's ok, even it it is at the same time
+    // If nothing past where we are, it's OK, even if it is at the same time
     seq->selection->select(bestSoFar->second);
 }
 
@@ -145,7 +156,6 @@ void MidiEditor::extendSelectionToNextNote()
 void MidiEditor::selectPrevNote()
 {
     seq()->assertValid();
-
     MidiTrackPtr track = getTrack();
     assert(track);
     const bool acceptCursorTime = seq()->selection->empty();
@@ -181,7 +191,6 @@ void MidiEditor::updateCursor()
             }
         }
     }
-    //printf("in updateCursor, moving to note start = %f pitch=%f\n", firstNote->startTime, firstNote->pitchCV); fflush(stdout);
     seq()->context->setCursorTime(firstNote->startTime);
     seq()->context->setCursorPitch(firstNote->pitchCV);
 }
@@ -195,8 +204,12 @@ void MidiEditor::changePitch(int semitones)
     float deltaCV = PitchUtils::semitone * semitones;
 
 
-    // Now fixup selection and viewport
-    seq()->context->setCursorPitch(seq()->context->cursorPitch() + deltaCV);
+    // Now fix-up selection and view-port
+    float newCursorPitch = seq()->context->cursorPitch() + deltaCV;
+    newCursorPitch = std::min(10.f, newCursorPitch);
+    newCursorPitch = std::max(-10.f, newCursorPitch);
+
+    seq()->context->setCursorPitch(newCursorPitch);
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
 }
@@ -204,9 +217,11 @@ void MidiEditor::changePitch(int semitones)
 void MidiEditor::changeStartTime(bool ticks, int amount)
 {
     MidiLocker l(seq()->song->lock);
-    assert(!ticks);         // not implemented yet
     assert(amount != 0);
-    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+
+    // "units" are 16th, "ticks" are 64th
+    float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
+
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount);
     seq()->undo->execute(cmd);
@@ -221,10 +236,9 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
 
 void MidiEditor::changeDuration(bool ticks, int amount)
 {
-    assert(!ticks);         // not implemented yet
     assert(amount != 0);
 
-    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+    float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
     seq()->undo->execute(cmd);
@@ -244,6 +258,35 @@ void MidiEditor::assertCursorInSelection()
     assert(foundIt);
 }
 
+void MidiEditor::advanceCursorToTime(float time)
+{
+   // assert(!ticks);         // not implemented yet
+//assert(amount != 0);
+
+  //  seq()->context->assertCursorInViewport();
+
+  //  float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+  //  seq()->context->setCursorTime(seq()->context->cursorTime() + advanceAmount);
+    seq()->context->setCursorTime(std::max(0.f, time));
+    updateSelectionForCursor();
+    seq()->context->adjustViewportForCursor();
+    seq()->context->assertCursorInViewport();
+    seq()->assertValid();
+}
+
+void MidiEditor::advanceCursor(bool ticks, int amount)
+{
+    assert(!ticks);         // not implemented yet
+    assert(amount != 0);
+
+    seq()->context->assertCursorInViewport();
+
+    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
+    float newTime = seq()->context->cursorTime() + advanceAmount;
+    advanceCursorToTime(newTime);
+}
+
+#if 0
 void MidiEditor::advanceCursor(bool ticks, int amount)
 {
     assert(!ticks);         // not implemented yet
@@ -259,6 +302,7 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     seq()->context->assertCursorInViewport();
     seq()->assertValid();
 }
+#endif
 
 void MidiEditor::changeCursorPitch(int semitones)
 {
@@ -286,8 +330,59 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
     }
 }
 
+void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
+{
+    MidiLocker l(seq()->song->lock);
+    const float artic = 7.f/8.f;
+    float duration = 1;
+    float cursorAdvance = 0;
+    switch (dur) {
+        case Durations::Whole:
+            cursorAdvance = moveCursorAfter ? 4.f : 0;
+            duration = 4.f * artic;
+            break;
+        case Durations::Half:
+            cursorAdvance = moveCursorAfter ? 2.f : 0;
+            duration = 2.f * artic;
+            break;
+        case Durations::Quarter:
+            cursorAdvance = moveCursorAfter ? 1.f : 0;
+            duration = 1.f * artic;
+            break;
+        case Durations::Eighth:
+            cursorAdvance = moveCursorAfter ? .5f : 0;
+            duration = .5f * artic;
+            break;
+        case Durations::Sixteenth:
+            cursorAdvance = moveCursorAfter ? .25f : 0;
+            duration = .25f * artic;
+            break;
+        default:
+            assert(false);
+    }
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = seq()->context->cursorTime();
+    note->pitchCV = seq()->context->cursorPitch();
+    note->duration = duration;
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
+
+    seq()->undo->execute(cmd);
+    seq()->context->setCursorTime(note->startTime + cursorAdvance);
+
+    updateSelectionForCursor();
+    seq()->assertValid();
+}
+
+void MidiEditor::insertPresetNote(Durations dur)
+{
+    insertNoteHelper(dur, true);
+}
+
 void MidiEditor::insertNote()
 {
+    insertNoteHelper(Durations::Quarter, false);
+    #if 0
     MidiLocker l(seq()->song->lock);
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
@@ -300,6 +395,7 @@ void MidiEditor::insertNote()
 
     updateSelectionForCursor();
     seq()->assertValid();
+    #endif
 }
 
 void MidiEditor::deleteNote()
@@ -417,7 +513,7 @@ void MidiEditor::paste()
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
     seq()->undo->execute(cmd);
 
-    // Am finding that after this cursor pitch is not in viewport
+    // Am finding that after this cursor pitch is not in view-port
     updateCursor();  
     seq()->context->adjustViewportForCursor();
     seq()->assertValid();

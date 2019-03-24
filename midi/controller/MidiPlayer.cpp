@@ -37,6 +37,27 @@ void MidiPlayer::updateToMetricTime(double metricTime)
     }
 }
 
+std::shared_ptr<MidiSong> MidiPlayer::getSong()
+{
+    return song;
+}
+
+void MidiPlayer::stop()
+{
+    isPlaying = false;
+}
+
+double MidiPlayer::getLoopStart() const
+{
+    return trackPlayer.getLoopStart();
+}
+
+void MidiPlayer::reset()
+{
+    trackPlayer.reset();
+}
+
+/****************************************************************/
 TrackPlayer::TrackPlayer(MidiTrackPtr track) : track(track)
 {
 }
@@ -50,7 +71,7 @@ TrackPlayer::~TrackPlayer()
 void TrackPlayer::updateToMetricTime(double time, IPlayerHost* host)
 {
     // If we had a conflict and needed to reset, then
-    // start all over from beginning
+    // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
         curEvent = track->begin();
         noteOffTime = -1;
@@ -67,12 +88,13 @@ bool TrackPlayer::playOnce(double metricTime, IPlayerHost* host)
 {
     bool didSomething = false;
 
+
     if (noteOffTime >= 0 && noteOffTime <= metricTime) {
         host->setGate(false);
         noteOffTime = -1;
         didSomething = true;
     }
-
+    
     const double eventStart = (loopStart + curEvent->first);
     if (eventStart <= metricTime) {
         MidiEventPtr event = curEvent->second;

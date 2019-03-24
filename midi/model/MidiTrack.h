@@ -30,6 +30,8 @@ public:
     float getLength() const;
     std::shared_ptr<MidiEndEvent> getEndEvent();
     std::shared_ptr<MidiNoteEvent> getFirstNote();
+    std::shared_ptr<MidiNoteEvent> getSecondNote();
+    std::shared_ptr<MidiNoteEvent> getLastNote();
 
 
     /**
@@ -59,6 +61,9 @@ public:
      * Find the first MidiNoteEvent that is at time 't' or past it
      */
     const_iterator seekToTimeNote(MidiEvent::time_t time);
+
+    const_iterator seekToLastNote();
+   
 
     /**
      * Returns pair of iterators for all events  start <= t <= end

@@ -1,42 +1,100 @@
 #pragma once
 
+#include "GateTrigger.h"
+#include "OneShot.h"
+
+#include <string>
 #include <vector>
 
 class SeqClock
 {
 public:
+    SeqClock();
+
+    class ClockResults
+    {
+    public:
+        double totalElapsedTime = 0;
+        bool didReset = false;
+    };
     /**
      * param samplesElapsed is how many sample clocks have elapsed since last call.
-     * param externalClock - if true indicates a rising edge of clock
+     * param externalClock - is the clock CV, 0..10. will look for rising edges
+     * param runStop is the run/stop flag. External logic must toggle it. It is level
+     *      sensitive, so clock stays stopped as long as it is low
+     * param reset is edge sensitive. Only false -> true transition will trigger a reset.
+     *
      * return - total elapsed metric time
      *
      * note that only one of the two passed params will be used, depending 
      * on internal/external model.
      */
-    double update(int samplesElapsed, bool externalClock);
+    ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
     void setup(int inputSetting, float tempoSetting, float sampleTime);
     void reset();
     static std::vector<std::string> getClockRates();
+
+    double getCurMetricTime() const {
+        return curMetricTime; 
+    }
+
+   // void setSampleTime(float);
 private:
     int clockSetting = 0;       // default to internal
     float internalTempo = 120.f;
     double curMetricTime = 0;
     float sampleTime = 1.f / 44100.f;
     double metricTimePerClock = 1;
+
+    GateTrigger clockProcessor;
+    GateTrigger resetProcessor;
+    OneShot resetLockout;
 };
 
-inline double SeqClock::update(int samplesElapsed, bool externalClock)
+inline SeqClock::SeqClock() :
+    clockProcessor(true),
+    resetProcessor(true)
 {
+    resetLockout.setDelayMs(1);
+    resetLockout.setSampleTime(1.f / 44100.f);
+}
+
+inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
+{
+    ClockResults results;
+    // if stopped, don't do anything
+
+    resetProcessor.go(reset);
+    results.didReset = resetProcessor.trigger();
+    if (results.didReset) {
+        resetLockout.set();
+        curMetricTime = 0;          // go back to start
+    }
+    for (int i = 0; i < samplesElapsed; ++i) {
+        resetLockout.step();
+    }
+
+    if (!runStop) {
+        results.totalElapsedTime = curMetricTime;
+        return results;
+    }
+    // Internal clock
     if (clockSetting == 0) {
         double deltaSeconds = samplesElapsed * sampleTime;
         double deltaMetric = deltaSeconds * internalTempo / 60.0;
         curMetricTime += deltaMetric;
     } else {
-        if (externalClock) {
-            curMetricTime += metricTimePerClock;
+        // ignore external clock during lockout.
+        if (resetLockout.hasFired()) {
+            // external clock
+            clockProcessor.go(externalClock);
+            if (clockProcessor.trigger()) {
+                curMetricTime += metricTimePerClock;
+            }
         }
     }
-    return curMetricTime;
+    results.totalElapsedTime = curMetricTime;
+    return results;
 }
 
 inline void SeqClock::reset()
@@ -49,6 +107,7 @@ inline void SeqClock::setup(int inputSetting, float tempoSetting, float sampleT)
     internalTempo = tempoSetting;
     sampleTime = sampleT;
     clockSetting = inputSetting;
+    resetLockout.setSampleTime(sampleT);
     switch (clockSetting) {
         case 0:
             break;

@@ -30,6 +30,7 @@ public:
      * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
+    void advanceCursorToTime(float time);
     void changeCursorPitch(int semitones);
 
 
@@ -38,6 +39,12 @@ public:
     void changePitch(int semitones);
     void changeStartTime(bool ticks, int amount);
     void changeDuration(bool ticks, int amount);
+
+    /************* functions that add or remove notes ************/
+
+    enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
+
+    void insertPresetNote(Durations);
     void insertNote();
     void deleteNote();
 
@@ -51,6 +58,8 @@ public:
     void paste();
 
     void assertCursorInSelection();
+     // select any note that is under the cursor
+    void updateSelectionForCursor();
 private:
     /**
      * The sequencer we will act on.
@@ -70,10 +79,11 @@ private:
     // move the cursor, if necessary.
     void updateCursor();
 
-    // select any note that is under the cursor
-    void updateSelectionForCursor();
+   
 
     void extendTrackToMinDuration(float time);
+
+    void insertNoteHelper(Durations dur, bool moveCursorAfter);
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;

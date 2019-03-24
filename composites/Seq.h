@@ -1,12 +1,10 @@
 #pragma once
 
 #include "Divider.h"
-#include "GateTrigger.h"
 #include "IComposite.h"
 #include "MidiPlayer.h"
 #include "MidiSong.h"
 #include "SeqClock.h"
-
 
 template <class TBase>
 class SeqDescription : public IComposite
@@ -23,11 +21,12 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(struct Module * module, MidiSongPtr song) : TBase(module), gateTrigger(true)
+    Seq(struct Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
     {
         init(song);
     }
-    Seq(MidiSongPtr song) : TBase(), gateTrigger(true)
+
+    Seq(MidiSongPtr song) : TBase(), runStopProcessor(true)
     {
         init(song);
     }
@@ -41,7 +40,9 @@ public:
     {
         CLOCK_INPUT_PARAM,
         TEMPO_PARAM,
-        RUN_STOP_PARAM,
+        RUN_STOP_PARAM,             // the switch the user pushes
+        PLAY_SCROLL_PARAM,
+        RUNNING_PARAM,              // the invisible param that stores the state
         NUM_PARAMS
     };
 
@@ -63,10 +64,18 @@ public:
     enum LightIds
     {
         GATE_LIGHT,
+        RUN_STOP_LIGHT,
         NUM_LIGHTS
     };
 
     void step() override;
+
+    /** This should be called on audio thread
+     */
+    void toggleRunStop()
+    {
+        runStopRequested = true;
+    }
 
 
     /** Implement IComposite
@@ -76,20 +85,33 @@ public:
         return std::make_shared<SeqDescription<TBase>>();
     }
 
-
     void stop()
     {
         player->stop();
     }
 
+    bool isRunning();
+
+    float getPlayPosition()
+    {
+        double absTime = clock.getCurMetricTime();
+        double loopDuration = player->getLoopStart();
+        double ret = absTime - loopDuration;
+        return ret;
+    }
+
     static std::vector<std::string> getClockRates();
 private:
-    GateTrigger gateTrigger;
+    GateTrigger runStopProcessor;
     void init(MidiSongPtr);
+    void serviceRunStop();
 
     std::shared_ptr<MidiPlayer> player;
     SeqClock clock;
     Divider div;
+    bool runStopRequested = false;
+
+   
 
     /**
      * called by the divider every 'n' step calls
@@ -125,7 +147,6 @@ template <class TBase>
 void  Seq<TBase>::init(MidiSongPtr song)
 { 
     std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
-   // std::shared_ptr<MidiSong> song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     player = std::make_shared<MidiPlayer>(host, song);
     div.setup(4, [this] {
         this->stepn(div.div());
@@ -145,21 +166,45 @@ void  Seq<TBase>::step()
 }
 
 template <class TBase>
+bool Seq<TBase>::isRunning()
+{
+    return TBase::params[RUNNING_PARAM].value > 5;
+}
+
+template <class TBase>
+void  Seq<TBase>::serviceRunStop()
+{
+    runStopProcessor.go(TBase::inputs[RUN_INPUT].value);
+    if (runStopProcessor.trigger() || runStopRequested) { 
+        runStopRequested = false;
+        bool curValue = isRunning();
+        curValue = !curValue;
+        TBase::params[RUNNING_PARAM].value = curValue ? 10.f : 0.f;
+    }
+    TBase::lights[RUN_STOP_LIGHT].value = TBase::params[RUNNING_PARAM].value;
+}
+
+template <class TBase>
 void  Seq<TBase>::stepn(int n)
 {
+    serviceRunStop();
     // first process all the clock input params
     const int clockRate = (int) std::round(TBase::params[CLOCK_INPUT_PARAM].value);
     const float tempo = TBase::params[TEMPO_PARAM].value;
     clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
 
     // and the clock input
-    gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
+    const float extClock = TBase::inputs[CLOCK_INPUT].value;
 
     // now call the clock (internal only, for now
-    const bool externalClock = gateTrigger.trigger();
+
+    const float reset = TBase::inputs[RESET_INPUT].value;
     int samplesElapsed = n;
-    double t = clock.update(samplesElapsed, externalClock);
-    player->updateToMetricTime(t);
+    SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, isRunning(), reset);
+    if (results.didReset) {
+        player->reset();
+    }
+    player->updateToMetricTime(results.totalElapsedTime);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 }
@@ -182,13 +227,19 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Seq<TBase>::CLOCK_INPUT_PARAM:
-            ret = {0, 5, 2, "Clock Rate"};
+            ret = {0, 5, 0, "Clock Rate"};
             break;
         case Seq<TBase>::TEMPO_PARAM:
             ret = {40, 200, 120, "Tempo"};
             break;
         case Seq<TBase>::RUN_STOP_PARAM:
             ret = {0, 1, 0, "Run/Stop"};
+            break;
+        case Seq<TBase>::PLAY_SCROLL_PARAM:
+            ret = {0, 1, 0, "Scroll during playback"};
+            break;
+        case Seq<TBase>::RUNNING_PARAM:
+            ret = {0, 1, 1, "Running"};
             break;
         default:
             assert(false);

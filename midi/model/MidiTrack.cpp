@@ -233,6 +233,40 @@ MidiNoteEventPtr MidiTrack::getFirstNote()
     return nullptr;
 }
 
+MidiNoteEventPtr MidiTrack::getSecondNote()
+{
+    int count = 0;
+    for (auto it : events) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it.second);
+        if (note) {
+            if (++count == 2) {
+                return note;
+            }
+        }
+    }
+    return nullptr;
+}
+
+MidiNoteEventPtr MidiTrack::getLastNote()
+{
+    for (auto it = events.rbegin(); it != events.rend(); ++it) {
+        MidiEventPtr evt = it->second;
+        if (evt->type == MidiEvent::Type::Note) {
+            return safe_cast<MidiNoteEvent>(evt);
+        }
+    }
+    return nullptr;
+}
+
+MidiTrack::const_iterator MidiTrack::seekToLastNote()
+{
+    MidiNoteEventPtr note = getLastNote();
+    if (!note) {
+        return events.end();
+    }
+    const_iterator it = seekToTimeNote(note->startTime);
+    return it;
+}
 
 MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> lock)
 {

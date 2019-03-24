@@ -1,4 +1,4 @@
-
+#include "Blank.h"
 #include "CHB.h"
 #include "ColoredNoise.h"
 #include "EV3.h"
@@ -8,6 +8,7 @@
 #include "Gray.h"
 #include "Seq.h"
 #include "Shaper.h"
+#include "Slew4.h"
 #include "Super.h"
 #include "TestComposite.h"
 #include "Tremolo.h"
@@ -59,4 +60,6 @@ void testIComposite()
     test<EV3<TestComposite>>();
     test<FrequencyShifter<TestComposite>>();
     test<VocalAnimator<TestComposite>>();
+    test<Blank<TestComposite>>();
+    test<Slew4<TestComposite>>();
 }

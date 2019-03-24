@@ -115,6 +115,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
 #endif
     const float width = 14 * RACK_GRID_WIDTH;
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    this->box.size = Vec(width, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/vocal_animator_panel.svg");
     /**
      *  LEDs and LFO outputs

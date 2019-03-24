@@ -26,7 +26,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
 
-    
+
     sequencer->assertValid();
     return sequencer;
 }
@@ -58,7 +58,8 @@ static void testTrans1()
     seq->editor->assertCursorInSelection();
 }
 
-static void testTrans3()
+
+static void testTrans3Sub(int semitones)
 {
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();          // now first is selected
@@ -69,9 +70,20 @@ static void testTrans3()
     MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
-    seq->editor->changePitch(50);       // transpose off screen
+    seq->editor->changePitch(semitones);       // transpose off screen
     seq->assertValid();
     seq->editor->assertCursorInSelection();
+}
+
+static void testTrans3()
+{
+    testTrans3Sub(50);
+}
+
+static void testTransHuge()
+{
+    testTrans3Sub(300);
+    testTrans3Sub(-300);
 }
 
 static void testShiftTime1()
@@ -88,7 +100,7 @@ static void testShiftTime1()
     firstNote = seq->context->getTrack()->getFirstNote();
     const float s1 = firstNote->startTime;
     assertClose(s1 - s0, 1.f / 4.f, .000001);
-    
+
     seq->editor->changeStartTime(false, -50);
     firstNote = seq->context->getTrack()->getFirstNote();
     const float s2 = firstNote->startTime;
@@ -123,6 +135,36 @@ static void testShiftTime3()
     testShiftTimex(50);
 }
 
+// TODO: make this work with negative shift.
+static void testShiftTimeTicks(int howMany)
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+    seq->editor->selectNextNote();          // now second
+
+    MidiNoteEventPtr secondNote = seq->context->getTrack()->getSecondNote();
+
+
+    const float s0 = secondNote->startTime;
+    seq->editor->changeStartTime(true, howMany);     // delay n "ticks" 
+
+    // find second again.
+    secondNote = seq->context->getTrack()->getSecondNote();
+
+    const float s1 = secondNote->startTime;
+    assertClose(s1 - s0, howMany / 16.f, .000001);
+}
+
+static void testShiftTimeTicks0()
+{
+    testShiftTimeTicks(1);
+}
+
+static void testShiftTimeTicks1()
+{
+    testShiftTimeTicks(-1);
+}
+
 static void testChangeDuration1()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -139,6 +181,28 @@ static void testChangeDuration1()
 
     // try to make negative, should not go below 1
     seq->editor->changeDuration(false, -50);
+    firstNote = seq->context->getTrack()->getFirstNote();
+    const float d2 = firstNote->duration;
+    assertGT(d2, 0);
+    seq->assertValid();
+}
+
+static void testChangeDurationTicks()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
+    const float d0 = firstNote->duration;
+    seq->editor->changeDuration(true, 1);     // lengthen one tick
+
+    firstNote = seq->context->getTrack()->getFirstNote();
+    const float d1 = firstNote->duration;
+    assertClose(d1 - d0, 1.f / 16.f, .000001);
+    seq->assertValid();
+
+    // try to make negative, should not go below 1
+    seq->editor->changeDuration(true, -50);
     firstNote = seq->context->getTrack()->getFirstNote();
     const float d2 = firstNote->duration;
     assertGT(d2, 0);
@@ -182,7 +246,7 @@ static void testCursor1()
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime(), 0);
     assertEQ(seq->context->cursorPitch(), 0)
-    assertEQ(seq->context->startTime(), 0);
+        assertEQ(seq->context->startTime(), 0);
 }
 
 static void testCursor2()
@@ -387,16 +451,21 @@ void testMidiEditorSub(int trackNumber)
 {
     _trackNumber = trackNumber;
 
-  
+
 
     testTrans1();
     testShiftTime1();
     testShiftTime2();
     testShiftTime3();
+    testShiftTimeTicks0();
+    testShiftTimeTicks1();
+
     testChangeDuration1();
+    testChangeDurationTicks();
 
     testTrans2();
     testTrans3();
+    testTransHuge();
 
     testCursor1();
     testCursor2();

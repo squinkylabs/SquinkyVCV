@@ -87,6 +87,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
+
+    ret->name = "delete notes";
     return ret;
 }
 
@@ -115,11 +117,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
             MidiNoteEventPtrC note = safe_cast<MidiNoteEvent>(ev);
             if (note) {
                 t += note->duration;
-                //printf("note extends to %f\n", t);
             }
             endTime = std::max(endTime, t);
         }
-       // printf("when done, end Time = %f\n", endTime);
         // set up events to extend to that length
         if (endTime > end->startTime) {
             extendTrackToMinDuration(seq, endTime, toAdd, toRemove);
@@ -160,11 +160,15 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
     Xform xform = [deltaCV](MidiEventPtr event) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
-            note->pitchCV += deltaCV;
+            float newPitch = note->pitchCV + deltaCV;
+            newPitch = std::min(10.f, newPitch);
+            newPitch = std::max(-10.f, newPitch);
+            note->pitchCV = newPitch;
         }
-
     };
-    return makeChangeNoteCommand(Ops::Pitch, seq, xform, false);
+    auto ret = makeChangeNoteCommand(Ops::Pitch, seq, xform, false);
+    ret->name = "change pitch";
+    return ret;
 }
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
@@ -177,7 +181,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
             note->startTime = std::max(0.f, note->startTime);
         }
     };
-    return makeChangeNoteCommand(Ops::Start, seq, xform, true);
+    auto ret =  makeChangeNoteCommand(Ops::Start, seq, xform, true);
+    ret->name = "change note start";
+    return ret;
 }
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
@@ -191,7 +197,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
             note->duration = std::max(.001f, note->duration);
         }
     };
-    return makeChangeNoteCommand(Ops::Duration, seq, xform, true);
+    auto ret = makeChangeNoteCommand(Ops::Duration, seq, xform, true);
+    ret->name = "change note duration";
+    return ret;
 }
 
 
@@ -200,7 +208,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
     seq->assertValid();
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
-    
+
     auto clipData = SqClipboard::getTrackData();
     assert(clipData);
 
@@ -211,7 +219,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 
     const float insertTime = seq->context->cursorTime();
     const float eventOffsetTime = insertTime - clipData->offset;
-    
+
     // copy all the notes on the clipboard into the track, but move to insert time
 
     float newDuration = 0;
@@ -238,6 +246,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
+    ret->name = "paste";
     return ret;
 }
 
@@ -261,6 +270,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
         seq->context->getTrackNumber(),
         toRemove,
         toAdd);
+    ret->name = "insert note";
     return ret;
 }
 

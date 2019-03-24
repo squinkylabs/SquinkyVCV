@@ -14,8 +14,8 @@ public:
     static const NVGcolor GRID_CLINE_COLOR;
     static const NVGcolor STATUS_LABEL_COLOR;
 
-    static constexpr float hMarginsNoteEdit = 2.f;
-    static constexpr float topMarginNoteEdit = 0.f;
-    static constexpr float timeLabelFontSize = 11.f;
+    static const float hMarginsNoteEdit;
+    static const float topMarginNoteEdit;
+    static const float timeLabelFontSize;
 
 };

@@ -390,6 +390,12 @@
     <ClCompile Include="..\..\test\testMidiEditorCCP.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testVec.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testSeqClock.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -697,6 +703,18 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\model\SqClipboard.h">
       <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Blank.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\fVec.h">
+      <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Slew4.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\OneShot.h">
+      <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -86,8 +86,8 @@
                 "databaseFilename": ""
             },
             "cStandard": "c11",
-            "cppStandard": "c++17"
+            "cppStandard": "c++11"
         }
     ],
-    "version": 3
+    "version": 4
 }

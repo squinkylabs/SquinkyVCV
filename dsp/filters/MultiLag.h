@@ -303,7 +303,6 @@ static float getLValue(int index, float sampleTime)
     float  fTarget = fs * 44100;
     float fsAdjusted = fTarget * sampleTime;
     float ret = LowpassFilter<float>::computeLfromFs(fsAdjusted);
-  //  printf("index = %i k=%f l=%f\n  fs=%f f=%f ret=%f\n", index, _k, l, fs, fTarget, ret);
     return ret;
 }
 
