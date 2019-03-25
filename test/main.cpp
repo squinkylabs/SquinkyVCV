@@ -64,6 +64,7 @@ extern void testNoteScreenScale();
 extern void testMidiEditorCCP();
 extern void testVec();
 extern void testSeqClock();
+extern void testMix8();
 
 #if 0
 #include <sstream>
@@ -148,6 +149,7 @@ int main(int argc, char ** argv)
     testLookupTable();
     testObjectCache();
     testMultiLag();
+    testMix8();
 
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
