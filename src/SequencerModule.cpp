@@ -32,7 +32,9 @@ struct SequencerModule : Module
 
     void step() override
     {
+    #ifdef __V1
         sequencer->undo->setModuleId(this->id);
+    #endif
         if (runStopRequested) {
             seqComp->toggleRunStop();
             runStopRequested = false;

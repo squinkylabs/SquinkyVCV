@@ -37,18 +37,18 @@ void Mix8Module::onSampleRateChange()
 Mix8Module::Mix8Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    Mix8 = std::make_shared<Comp>(this);
+    
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 #else
 Mix8Module::Mix8Module()
-    : Module(Mix8.NUM_PARAMS,
+    : Module(Comp::NUM_PARAMS,
     Comp::NUM_INPUTS,
     Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS),
-    Mix8(this)
+    Comp::NUM_LIGHTS)
 {
 #endif
+    Mix8 = std::make_shared<Comp>(this);
     onSampleRateChange();
     Mix8->init();
 }
