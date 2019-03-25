@@ -8,6 +8,8 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 
+#include "ctrl/SqWidgets.h"
+
 using Comp = Mix8<WidgetComposite>;
 
 /**
@@ -76,8 +78,88 @@ struct Mix8Widget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void makeStrip(Mix8Module* , std::shared_ptr<IComposite>, int);
 };
 
+const float channelX = 40;
+const float dX = 30;
+const float channelY = 350;
+const float channelDy = 30;     // just for the bottom jacks
+
+void Mix8Widget::makeStrip(Mix8Module* , std::shared_ptr<IComposite> icomp, int channel)
+{
+    const float x = channelX + channel * dX;
+
+    float y = channelY;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::AUDIO0_INPUT));
+
+    if (channel == 0) {
+        addLabel(
+            Vec(x - 40, y-10),
+            "In");
+    }
+
+    y -= channelDy;
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::CHANNEL0_OUTPUT));
+
+    if (channel == 0) {
+        addLabel(
+            Vec(x - 46, y-10),
+            "Out");
+    }
+
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::LEVEL0_INPUT));
+
+    if (channel == 0) {
+        addLabel(
+            Vec(x - 40, y-10),
+            "Lvl");
+    }
+
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::PAN0_INPUT));
+
+    if (channel == 0) {
+        addLabel(
+            Vec(x - 46, y-10),
+            "Pan");
+    }
+
+    y -= channelDy;
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::GAIN0_PARAM));
+    if (channel == 0) {
+        addLabel(
+            Vec(x - 46, y-10),
+            "Vol");
+    }
+}
+
+/*
+
+  addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(col4, row),
+        module,
+        CHB<WidgetComposite>::PARAM_MAG_ODD));
+        */
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -94,6 +176,11 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
 #endif
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix8_panel.svg");
+     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
+    for (int i=0; i<8; ++i) {
+        makeStrip(module, icomp, i);
+    }
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

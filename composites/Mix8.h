@@ -48,6 +48,14 @@ public:
         GAIN5_PARAM,
         GAIN6_PARAM,
         GAIN7_PARAM,
+        PAN0_PARAM,
+        PAN1_PARAM,
+        PAN2_PARAM,
+        PAN3_PARAM,
+        PAN4_PARAM,
+        PAN5_PARAM,
+        PAN6_PARAM,
+        PAN7_PARAM,
         NUM_PARAMS
     };
 
@@ -61,6 +69,22 @@ public:
         AUDIO5_INPUT,
         AUDIO6_INPUT,
         AUDIO7_INPUT,
+        LEVEL0_INPUT,
+        LEVEL1_INPUT,
+        LEVEL2_INPUT,
+        LEVEL3_INPUT,
+        LEVEL4_INPUT,
+        LEVEL5_INPUT,
+        LEVEL6_INPUT,
+        LEVEL7_INPUT,
+        PAN0_INPUT,
+        PAN1_INPUT,
+        PAN2_INPUT,
+        PAN3_INPUT,
+        PAN4_INPUT,
+        PAN5_INPUT,
+        PAN6_INPUT,
+        PAN7_INPUT,
         NUM_INPUTS
     };
 
