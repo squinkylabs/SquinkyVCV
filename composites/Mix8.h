@@ -124,14 +124,14 @@ public:
 
     const static int numChannels = 8;
 
-private:
-
-    Divider divider;
     float buf_inputs[numChannels];
     float buf_channelGains[numChannels];
     float buf_channelOuts[numChannels];
     float buf_leftPanGains[numChannels];
     float buf_rightPanGains[numChannels];
+
+ private:
+     Divider divider;
 };
 
 
@@ -280,6 +280,31 @@ inline IComposite::Config Mix8Description<TBase>::getParam(int i)
         case Mix8<TBase>::GAIN7_PARAM:
             ret = {-5.0f, 5.0f, -5, "Level 8"};
             break;
+        case Mix8<TBase>::PAN0_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 1"};
+            break;
+        case Mix8<TBase>::PAN1_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 2"};
+            break;
+        case Mix8<TBase>::PAN2_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 3"};
+            break;
+        case Mix8<TBase>::PAN3_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 4"};
+            break;
+        case Mix8<TBase>::PAN4_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 5"};
+            break;
+        case Mix8<TBase>::PAN5_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 6"};
+            break;
+        case Mix8<TBase>::PAN6_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 7"};
+            break;
+        case Mix8<TBase>::PAN7_PARAM:
+            ret = {-5.0f, 5.0f, -5, "Pan 8"};
+            break;
+
         default:
             assert(false);
     }
