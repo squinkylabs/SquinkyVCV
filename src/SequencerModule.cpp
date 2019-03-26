@@ -245,10 +245,14 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     addChild(sw);
 
 #if 1
-    addChild(createLight<SqToggleLED>(
+    SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(40, 220),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    
+    addChild(tog);
 #else
     addChild(createLight<MediumLight<GreenLight>>(
         Vec(40, 220),

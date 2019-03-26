@@ -27,8 +27,6 @@ public:
     
 private:
     using SvgPtr = std::shared_ptr<SqHelper::SvgWidget>;
- // using SvgPtr = std::shared_ptr<SvgWidget>;
-
     std::vector<SvgPtr> svgs;
 };
 
