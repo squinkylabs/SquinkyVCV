@@ -12,6 +12,7 @@
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SqWidgets.h"
+#include "ctrl/SqToggleLED.h"
 
 #include "seq/SequencerSerializer.h"
 #include "MidiLock.h"
@@ -243,10 +244,17 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     });
     addChild(sw);
 
-    addChild(createLight<MediumLight<GreenLight>>(
-         Vec(40, 220),
+#if 1
+    addChild(createLight<SqToggleLED>(
+        Vec(40, 220),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
+#else
+    addChild(createLight<MediumLight<GreenLight>>(
+        Vec(40, 220),
+        module,
+        Seq<WidgetComposite>::RUN_STOP_LIGHT));
+#endif
 
     {
     scrollControl = SqHelper::createParam<ToggleButton>(
