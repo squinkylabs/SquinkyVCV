@@ -68,13 +68,6 @@ inline void SqToggleLED::draw(NVGcontext *args)
     int index = getSvgIndex();
     auto svg = svgs[index];
     svg->draw(args);
-
-    static int ct=0;
-    if (!ct) {
-        ct = 50;
-        printf("in draw, index = %d\n", index); fflush (stdout);
-    }
-    --ct;
 }
 
 
