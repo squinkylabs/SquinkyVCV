@@ -80,6 +80,7 @@ struct Mix8Widget : ModuleWidget
     }
 
     void makeStrip(Mix8Module* , std::shared_ptr<IComposite>, int);
+    void makeMaster(Mix8Module* , std::shared_ptr<IComposite>);
 };
 
 const float channelX = 40;
@@ -152,6 +153,11 @@ void Mix8Widget::makeStrip(Mix8Module* , std::shared_ptr<IComposite> icomp, int 
     }
 }
 
+void Mix8Widget::makeMaster(Mix8Module* , std::shared_ptr<IComposite>)
+{
+    
+}
+
 /*
 
   addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -174,13 +180,14 @@ Mix8Widget::Mix8Widget(Mix8Module *module)
 Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
 {
 #endif
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(26 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix8_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     for (int i=0; i<8; ++i) {
         makeStrip(module, icomp, i);
     }
+    makeMaster(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

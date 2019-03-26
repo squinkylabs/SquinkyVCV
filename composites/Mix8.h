@@ -3,6 +3,7 @@
 
 #include "Divider.h"
 #include "IComposite.h"
+#include "SqMath.h"
 
 
 #include <assert.h>
@@ -93,6 +94,8 @@ public:
 
     enum ParamIds
     {
+        MASTER_VOLUME_PARAM,
+        MASTER_MUTE_PARAM,
         GAIN0_PARAM,
         GAIN1_PARAM,
         GAIN2_PARAM,
@@ -109,6 +112,14 @@ public:
         PAN5_PARAM,
         PAN6_PARAM,
         PAN7_PARAM,
+        MUTE0_PARAM,
+        MUTE1_PARAM,
+        MUTE2_PARAM,
+        MUTE3_PARAM,
+        MUTE4_PARAM,
+        MUTE5_PARAM,
+        MUTE6_PARAM,
+        MUTE7_PARAM,
         NUM_PARAMS
     };
 
@@ -197,6 +208,7 @@ namespace std {
     }
 }
 #endif
+
 
 
 static inline float PanL(float balance, float cv) { // -1...+1
@@ -292,6 +304,13 @@ inline IComposite::Config Mix8Description<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
+
+        case Mix8<TBase>::MASTER_VOLUME_PARAM:
+            ret = {0, 1, .8f, "Master Vol"};
+            break;
+        case Mix8<TBase>::MASTER_MUTE_PARAM:
+            ret = {0, 1, 0, "Master Mute"};
+            break;
         case Mix8<TBase>::GAIN0_PARAM:
             ret = {0, 1, .8f, "Level 1"};
             break;
@@ -340,7 +359,30 @@ inline IComposite::Config Mix8Description<TBase>::getParam(int i)
         case Mix8<TBase>::PAN7_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 8"};
             break;
-
+        case Mix8<TBase>::MUTE0_PARAM:
+            ret = {0, 1.0f, 0, "Mute  1"};
+            break;
+        case Mix8<TBase>::MUTE1_PARAM:
+            ret = {0, 1.0f, 0, "Mute  2"};
+            break;
+        case Mix8<TBase>::MUTE2_PARAM:
+            ret = {0, 1.0f, 0, "Mute  3"};
+            break;
+        case Mix8<TBase>::MUTE3_PARAM:
+            ret = {0, 1.0f, 0, "Mute  4"};
+            break;
+        case Mix8<TBase>::MUTE4_PARAM:
+            ret = {0, 1.0f, 0, "Mute  5"};
+            break;
+        case Mix8<TBase>::MUTE5_PARAM:
+            ret = {0, 1.0f, 0, "Mute  6"};
+            break;
+        case Mix8<TBase>::MUTE6_PARAM:
+            ret = {0, 1.0f, 0, "Mute  7"};
+            break;
+        case Mix8<TBase>::MUTE7_PARAM:
+            ret = {0, 1.0f, 0, "Mute  8"};
+            break;
         default:
             assert(false);
     }
