@@ -235,7 +235,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
 
 #if 1
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(40, 220),
+        Vec(40, 180),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
@@ -243,8 +243,10 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     tog->setHandler( [this, module]() {
         this->toggleRunStop(module);
     });
-    
     addChild(tog);
+    addLabel(
+        Vec(70, 180),
+        "Run");
 #else
     addChild(createLight<MediumLight<GreenLight>>(
         Vec(40, 220),
@@ -255,16 +257,15 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     {
     scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(90, 200),
+        Vec(40, 220),
         module,
         Comp::PLAY_SCROLL_PARAM);
-    scrollControl->addSvg("res/seq-scroll-button-off.svg");
- //   scrollControl->addSvg("res/seq-scroll-button-bars.svg");
-    scrollControl->addSvg("res/seq-scroll-button-smooth.svg");
+    scrollControl->addSvg("res/square-button-01.svg");
+    scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
 
     addLabel(
-        Vec(90, 180),
+        Vec(70, 220),
         "Scroll");
     }
 }
