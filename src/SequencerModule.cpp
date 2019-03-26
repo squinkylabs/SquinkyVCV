@@ -233,17 +233,6 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
-    // momentary button to toggle runState
-    auto sw = new SQPush(
-        "res/preset-button-up.svg",
-        "res/preset-button-down.svg");
-    Vec pos(40, 200);
-    sw->center(pos);
-    sw->onClick([this, module]() {
-        this->toggleRunStop(module);
-    });
-    addChild(sw);
-
 #if 1
     SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(40, 220),
@@ -251,6 +240,9 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
+    tog->setHandler( [this, module]() {
+        this->toggleRunStop(module);
+    });
     
     addChild(tog);
 #else

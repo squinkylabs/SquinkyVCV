@@ -65,8 +65,6 @@ inline void ToggleButton::draw(NVGcontext *vg)
 }
 #endif
 
-
-
 #ifdef __V1
 inline void ToggleButton::onButton(const ButtonEvent &e)
 #else
