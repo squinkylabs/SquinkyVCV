@@ -23,7 +23,7 @@ public:
 
 /**
  * CPU usage, straight AS copy: 298
- *      reduce CV SR/4: 83.
+ *  with all the master and mute logic hooked up, 299
  * 
  * Notes on how the AS mixer works.
  * VOL =  CH1_PARAM, 0.0f, 1.0f, 0.8f)
@@ -77,7 +77,7 @@ template <class TBase>
 class Mix8 : public TBase
 {
 public:
-    MultiLag<12> antiPop;
+    MultiLPF<8> antiPop;
 
     Mix8(struct Module * module) : TBase(module)
     {
@@ -295,6 +295,9 @@ inline void Mix8<TBase>::init()
     divider.setup(divRate, [this, divRate] {
         this->stepn(divRate);
         });
+
+    // 400 was smooth, 100 popped
+    antiPop.setCutoff(1.0f / 400.f);
 }
 
 template <class TBase>
