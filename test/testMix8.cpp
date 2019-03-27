@@ -154,6 +154,24 @@ static void testPanLookL()
     }
 }
 
+static void testPanMiddle()
+{
+    MixerPtr m = getMixer();
+
+    m->inputs[Mixer::AUDIO0_INPUT].value = 10;
+    m->params[Mixer::PAN0_PARAM].value = 0;     // pan in middle
+
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+    float outL = m->outputs[Mixer::LEFT_OUTPUT].value;
+    float outR = m->outputs[Mixer::RIGHT_OUTPUT].value;
+    float expectedOut = float(10 * .8 * .8 / sqrt(2.f));
+  
+    assertClose(outL, expectedOut, .01);
+    assertClose(outR, expectedOut, .01);
+}
+
 void testMix8()
 {
     testChannel();
@@ -162,4 +180,5 @@ void testMix8()
     testSolo();
     testPanLook0();
     testPanLookL();
+    testPanMiddle();
 }

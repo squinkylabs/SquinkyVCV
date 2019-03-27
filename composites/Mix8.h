@@ -4,6 +4,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "MultiLag.h"
+#include "ObjectCache.h"
 #include "SqMath.h"
 
 
@@ -24,6 +25,8 @@ public:
 /**
  * CPU usage, straight AS copy: 298
  *  with all the master and mute logic hooked up, 299
+ * with pan lookup: 44
+ * add /4 process for cv : 19
  *
  * Notes on how the AS mixer works.
  * VOL =  CH1_PARAM, 0.0f, 1.0f, 0.8f)
@@ -209,6 +212,8 @@ public:
 private:
     Divider divider;
     MultiLPF<8> antiPop;
+    std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
+    std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 };
 
 #ifndef _CLAMP
@@ -222,6 +227,7 @@ namespace std {
 }
 #endif
 
+#if 0
 static inline float PanL(float balance, float cv)
 { // -1...+1
     float p, inp;
@@ -237,6 +243,7 @@ static inline float PanR(float balance, float cv)
     p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
     return ::sin(p);
 }
+#endif
 
 template <class TBase>
 inline void Mix8<TBase>::stepn(int div)
@@ -257,8 +264,8 @@ inline void Mix8<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float balance = TBase::params[i + PAN0_PARAM].value;
         const float cv = TBase::inputs[i + PAN0_INPUT].value;
-        buf_leftPanGains[i] = PanL(balance, cv);
-        buf_rightPanGains[i] = PanR(balance, cv);
+        buf_leftPanGains[i] = LookupTable<float>::lookup(*panL, balance + cv/5);
+        buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, balance + cv / 5);
     }
 
     buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
@@ -286,13 +293,13 @@ inline void Mix8<TBase>::stepn(int div)
 template <class TBase>
 inline void Mix8<TBase>::init()
 {
-    const int divRate = 1;
+    const int divRate = 4;
     divider.setup(divRate, [this, divRate] {
         this->stepn(divRate);
         });
 
     // 400 was smooth, 100 popped
-    antiPop.setCutoff(1.0f / 400.f);
+    antiPop.setCutoff(1.0f / 100.f);
 }
 
 template <class TBase>
