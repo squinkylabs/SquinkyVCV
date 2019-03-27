@@ -24,17 +24,17 @@ public:
 /**
  * CPU usage, straight AS copy: 298
  *  with all the master and mute logic hooked up, 299
- * 
+ *
  * Notes on how the AS mixer works.
  * VOL =  CH1_PARAM, 0.0f, 1.0f, 0.8f)
  * PAN = CH1_PAN_PARAM, -1.0f, 1.0f, 0.0f)
  * CH1MUTE , 0.0f, 1.0f, 0.0f
- * 
+ *
  * CH1_CV_INPUT
  * CH1_CV_PAN_INPUT
- * 
- * float ch1L =  
- *      (1-ch1m) * 
+ *
+ * float ch1L =
+ *      (1-ch1m) *
  *      (inputs[CH1_INPUT].value) *
  *      params[CH1_PARAM].value *
  *      PanL(   params[CH1_PAN_PARAM].value,
@@ -42,25 +42,25 @@ public:
  *      clamp(  inputs[CH1_CV_INPUT].normalize(10.0f) / 10.0f,
  *              0.0f,
  *              1.0f);
- * 
+ *
  * so the mutes have no pop reduction
  * if (ch1mute.process(params[CH1MUTE].value)) {
-		ch1m = !ch1m;
-	}
+        ch1m = !ch1m;
+    }
 
 float PanL(float balance, float cv) { // -1...+1
-		float p, inp;
-		inp = balance + cv / 5;
-		p = M_PI * (clamp(inp, -1.0f, 1.0f) + 1) / 4;
-		return ::cos(p);
-	}
+        float p, inp;
+        inp = balance + cv / 5;
+        p = M_PI * (clamp(inp, -1.0f, 1.0f) + 1) / 4;
+        return ::cos(p);
+    }
 
-	float PanR(float balance , float cv) {
-		float p, inp;
-		inp = balance + cv / 5;
-		p = M_PI * (clamp(inp, -1.0f, 1.0f) + 1) / 4;
-		return ::sin(p);
-	}
+    float PanR(float balance , float cv) {
+        float p, inp;
+        inp = balance + cv / 5;
+        p = M_PI * (clamp(inp, -1.0f, 1.0f) + 1) / 4;
+        return ::sin(p);
+    }
 
     so, in english, the gain is: sliderPos * panL(knob, cv) * clamped&scaled CV
 
@@ -77,8 +77,6 @@ template <class TBase>
 class Mix8 : public TBase
 {
 public:
-    MultiLPF<8> antiPop;
-
     Mix8(struct Module * module) : TBase(module)
     {
     }
@@ -208,10 +206,9 @@ public:
     float buf_muteInputs[numChannels];
     float buf_masterGain;
 
- private:
-     Divider divider;
-    
-
+private:
+    Divider divider;
+    MultiLPF<8> antiPop;
 };
 
 #ifndef _CLAMP
@@ -224,8 +221,6 @@ namespace std {
     }
 }
 #endif
-
-
 
 static inline float PanL(float balance, float cv)
 { // -1...+1

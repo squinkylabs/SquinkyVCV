@@ -1,6 +1,7 @@
 
 #include "asserts.h"
 #include "Mix8.h"
+#include "ObjectCache.h"
 #include "TestComposite.h"
 
 using Mixer = Mix8<TestComposite>;
@@ -111,10 +112,54 @@ void testSolo()
     assertClose(m->outputs[Mixer::RIGHT_OUTPUT].value, 0, .001);
 }
 
+
+static void testPanLook0()
+{
+    assert(ObjectCache<float>::getMixerPanL());
+    assert(ObjectCache<float>::getMixerPanR());
+}
+
+#if 1
+static inline float _PanL(float balance, float cv)
+{ // -1...+1
+    float p, inp;
+    inp = balance + cv / 5;
+    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
+    return ::cos(p);
+}
+
+static inline float _PanR(float balance, float cv)
+{
+    float p, inp;
+    inp = balance + cv / 5;
+    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
+    return ::sin(p);
+}
+#endif
+
+static void testPanLookL()
+{
+    auto p = ObjectCache<float>::getMixerPanL();
+    auto r = ObjectCache<float>::getMixerPanR();
+    for (float x = -1; x <= 1; x += .021f) {
+        const float lookL = LookupTable<float>::lookup(*p, x);
+        const float actualL = _PanL(x, 0);
+        assertClose(lookL, actualL, .01);
+
+        const float lookR = LookupTable<float>::lookup(*r, x);
+        const float actualR = _PanR(x, 0);
+        assertClose(lookR, actualR, .01);
+
+        assertNE(actualL, actualR);
+    }
+}
+
 void testMix8()
 {
     testChannel();
     testMaster();
     testMute();
     testSolo();
+    testPanLook0();
+    testPanLookL();
 }
