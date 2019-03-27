@@ -203,6 +203,7 @@ public:
     float buf_channelOuts[numChannels];
     float buf_leftPanGains[numChannels];
     float buf_rightPanGains[numChannels];
+    float buf_masterGain;
 
  private:
      Divider divider;
@@ -260,6 +261,8 @@ inline void Mix8<TBase>::stepn(int div)
         //const float cvR = TBase::inputs[i PAN0_INPUT].value;
         buf_rightPanGains[i] = PanR(balance, cv);
     }
+
+    buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
 }
 
 
@@ -294,8 +297,8 @@ inline void Mix8<TBase>::step()
         right += buf_channelOuts[i] * buf_rightPanGains[i];
     }
 
-    TBase::outputs[LEFT_OUTPUT].value = left;
-    TBase::outputs[RIGHT_OUTPUT].value = right;
+    TBase::outputs[LEFT_OUTPUT].value = left * buf_masterGain;
+    TBase::outputs[RIGHT_OUTPUT].value = right * buf_masterGain;
 
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {
