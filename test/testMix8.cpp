@@ -39,12 +39,10 @@ static void testChannel(int channel, bool useParam)
 
     m.step();
 
-//    assert(useParam);
     for (int i = 0; i < 8; ++i) {
         float expected = (i == channel) ? 5.5f : 0;
         assertClose(m.outputs[Mixer::CHANNEL0_OUTPUT + i].value, expected, .00001f);
     }
-
 }
 
 static void testChannel()
@@ -77,8 +75,38 @@ static void testMaster()
     testMaster(false);
     testMaster(true);
 }
+
+void testMute()
+{
+    MixerPtr m = getMixer();
+
+    m->inputs[Mixer::AUDIO0_INPUT].value = 10;
+    m->params[Mixer::PAN0_PARAM].value = -1.f;     // full left
+    m->params[Mixer::MUTE0_PARAM].value = 1;        // mute
+    m->step();
+   
+    assertClose(m->outputs[Mixer::LEFT_OUTPUT].value, 0, .001);
+    assertClose(m->outputs[Mixer::RIGHT_OUTPUT].value, 0, .001);
+}
+
+
+void testSolo()
+{
+    MixerPtr m = getMixer();
+
+    m->inputs[Mixer::AUDIO0_INPUT].value = 10;
+    m->params[Mixer::PAN0_PARAM].value = -1.f;     // full left
+    m->params[Mixer::SOLO0_PARAM].value = 1;        // mute
+    m->step();
+
+    assertClose(m->outputs[Mixer::LEFT_OUTPUT].value, float(10 * .8 * .8), .001);
+    assertClose(m->outputs[Mixer::RIGHT_OUTPUT].value, 0, .001);
+}
+
 void testMix8()
 {
     testChannel();
     testMaster();
+    testMute();
+    testSolo();
 }

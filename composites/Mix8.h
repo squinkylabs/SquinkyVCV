@@ -3,6 +3,7 @@
 
 #include "Divider.h"
 #include "IComposite.h"
+#include "MultiLag.h"
 #include "SqMath.h"
 
 
@@ -76,6 +77,7 @@ template <class TBase>
 class Mix8 : public TBase
 {
 public:
+    MultiLag<12> antiPop;
 
     Mix8(struct Module * module) : TBase(module)
     {
@@ -203,10 +205,13 @@ public:
     float buf_channelOuts[numChannels];
     float buf_leftPanGains[numChannels];
     float buf_rightPanGains[numChannels];
+    float buf_muteInputs[numChannels];
     float buf_masterGain;
 
  private:
      Divider divider;
+    
+
 };
 
 #ifndef _CLAMP
@@ -222,14 +227,16 @@ namespace std {
 
 
 
-static inline float PanL(float balance, float cv) { // -1...+1
+static inline float PanL(float balance, float cv)
+{ // -1...+1
     float p, inp;
     inp = balance + cv / 5;
     p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
     return ::cos(p);
 }
 
-static inline float PanR(float balance , float cv) {
+static inline float PanR(float balance, float cv)
+{
     float p, inp;
     inp = balance + cv / 5;
     p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
@@ -244,7 +251,7 @@ inline void Mix8<TBase>::stepn(int div)
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
         // TODO: get rid of normalize. if active ? cv : 10;
-        const float cv = std::clamp(  
+        const float cv = std::clamp(
             TBase::inputs[i + LEVEL0_INPUT].normalize(10.0f) / 10.0f,
             0.0f,
             1.0f);
@@ -256,15 +263,30 @@ inline void Mix8<TBase>::stepn(int div)
         const float balance = TBase::params[i + PAN0_PARAM].value;
         const float cv = TBase::inputs[i + PAN0_INPUT].value;
         buf_leftPanGains[i] = PanL(balance, cv);
-
-       // const float balanceR = TBase::params[i + PAN0_PARAM].value;
-        //const float cvR = TBase::inputs[i PAN0_INPUT].value;
         buf_rightPanGains[i] = PanR(balance, cv);
     }
 
     buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
-}
 
+    bool anySolo = false;
+    for (int i = 0; i < numChannels; ++i) {
+        if (TBase::params[i + SOLO0_PARAM].value > .5f) {
+            anySolo = true;
+            break;
+        }
+    }
+
+    if (anySolo) {
+        for (int i = 0; i < numChannels; ++i) {
+            buf_muteInputs[i] = TBase::params[i + SOLO0_PARAM].value;
+        }
+    } else {
+        for (int i = 0; i < numChannels; ++i) {
+            buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
+        }
+    }
+    antiPop.step(buf_muteInputs);
+}
 
 template <class TBase>
 inline void Mix8<TBase>::init()
@@ -287,7 +309,8 @@ inline void Mix8<TBase>::step()
 
     // compute buf_channelOuts
     for (int i = 0; i < numChannels; ++i) {
-        buf_channelOuts[i] = buf_inputs[i] * buf_channelGains[i];
+        float muteValue = antiPop.get(i);
+        buf_channelOuts[i] = buf_inputs[i] * buf_channelGains[i] * muteValue;
     }
 
     // compute and output master outputs
