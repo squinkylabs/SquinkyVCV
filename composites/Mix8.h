@@ -120,6 +120,14 @@ public:
         MUTE5_PARAM,
         MUTE6_PARAM,
         MUTE7_PARAM,
+        SOLO0_PARAM,
+        SOLO1_PARAM,
+        SOLO2_PARAM,
+        SOLO3_PARAM,
+        SOLO4_PARAM,
+        SOLO5_PARAM,
+        SOLO6_PARAM,
+        SOLO7_PARAM,
         NUM_PARAMS
     };
 
@@ -149,6 +157,8 @@ public:
         PAN5_INPUT,
         PAN6_INPUT,
         PAN7_INPUT,
+        RIGHT_EXPAND_INPUT,
+        LEFT_EXPAND_INPUT,
         NUM_INPUTS
     };
 
@@ -382,6 +392,30 @@ inline IComposite::Config Mix8Description<TBase>::getParam(int i)
             break;
         case Mix8<TBase>::MUTE7_PARAM:
             ret = {0, 1.0f, 0, "Mute  8"};
+            break;
+        case Mix8<TBase>::SOLO0_PARAM:
+            ret = {0, 1.0f, 0, "Solo  1"};
+            break;
+        case Mix8<TBase>::SOLO1_PARAM:
+            ret = {0, 1.0f, 0, "Solo  2"};
+            break;
+        case Mix8<TBase>::SOLO2_PARAM:
+            ret = {0, 1.0f, 0, "Solo  3"};
+            break;
+        case Mix8<TBase>::SOLO3_PARAM:
+            ret = {0, 1.0f, 0, "Solo  4"};
+            break;
+        case Mix8<TBase>::SOLO4_PARAM:
+            ret = {0, 1.0f, 0, "Solo  5"};
+            break;
+        case Mix8<TBase>::SOLO5_PARAM:
+            ret = {0, 1.0f, 0, "Solo  6"};
+            break;
+        case Mix8<TBase>::SOLO6_PARAM:
+            ret = {0, 1.0f, 0, "Solo  7"};
+            break;
+        case Mix8<TBase>::SOLO7_PARAM:
+            ret = {0, 1.0f, 0, "Solo  8"};
             break;
         default:
             assert(false);
