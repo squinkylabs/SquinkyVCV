@@ -206,12 +206,20 @@ public:
     float buf_channelOuts[numChannels];
     float buf_leftPanGains[numChannels];
     float buf_rightPanGains[numChannels];
-    float buf_muteInputs[numChannels];
+
+    /** 
+     * allocate extra bank for the master mute
+     */
+    float buf_muteInputs[numChannels + 4];
     float buf_masterGain;
 
 private:
     Divider divider;
-    MultiLPF<8> antiPop;
+
+    /**
+     * 8 input channels and one master
+     */
+    MultiLPF<12> antiPop;
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 };
@@ -287,6 +295,7 @@ inline void Mix8<TBase>::stepn(int div)
             buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
     }
+    buf_muteInputs[8] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
     antiPop.step(buf_muteInputs);
 }
 
@@ -314,7 +323,7 @@ inline void Mix8<TBase>::step()
 
     // compute buf_channelOuts
     for (int i = 0; i < numChannels; ++i) {
-        float muteValue = antiPop.get(i);
+        const float muteValue = antiPop.get(i);
         buf_channelOuts[i] = buf_inputs[i] * buf_channelGains[i] * muteValue;
     }
 
@@ -325,8 +334,11 @@ inline void Mix8<TBase>::step()
         right += buf_channelOuts[i] * buf_rightPanGains[i];
     }
 
-    TBase::outputs[LEFT_OUTPUT].value = left * buf_masterGain;
-    TBase::outputs[RIGHT_OUTPUT].value = right * buf_masterGain;
+    // output the masters
+    const float masterMuteValue = antiPop.get(8);
+    const float masterGain = buf_masterGain * masterMuteValue;
+    TBase::outputs[LEFT_OUTPUT].value = left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].value;
+    TBase::outputs[RIGHT_OUTPUT].value = right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].value;
 
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {

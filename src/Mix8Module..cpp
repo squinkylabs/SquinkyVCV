@@ -93,6 +93,7 @@ const float dX = 34;
 const float channelY = 350;
 const float channelDy = 30;     // just for the bottom jacks
 float volY = 0;
+float muteY = 0;
 
 void Mix8Widget::makeStrip(
     Mix8Module*,
@@ -159,6 +160,7 @@ void Mix8Widget::makeStrip(
     mute->addSvg("res/square-button-01.svg");
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
+    muteY = y-12;
    
 
     if (channel == 0) {
@@ -232,11 +234,23 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
     }
 
     x = 312 + 15 + 15;
+
+    auto mute = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(x-12, muteY),
+        module,
+        Comp::MASTER_MUTE_PARAM);
+    mute->addSvg("res/square-button-01.svg");
+    mute->addSvg("res/square-button-02.svg");
+    addParam(mute);
+
+     y -= channelDy;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, volY),
         module,
         Comp::MASTER_VOLUME_PARAM));
+   
 }
 
 /*
