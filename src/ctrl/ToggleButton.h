@@ -5,6 +5,9 @@
 
 #include <memory>
 
+#ifndef __V1
+#include "window.hpp"
+#endif
 
 class ToggleButton;
 
@@ -132,7 +135,7 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
 
         const bool ctrl = (e.mods & GLFW_MOD_CONTROL);
     #else 
-        const bool ctrl = false;
+        const bool ctrl = rack::windowIsModPressed();
     #endif
 
     // normally we tell manager to turn siblings off.
