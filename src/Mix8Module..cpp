@@ -80,7 +80,11 @@ struct Mix8Widget : ModuleWidget
         return label;
     }
 
-    void makeStrip(Mix8Module* , std::shared_ptr<IComposite>, int);
+    void makeStrip(
+        Mix8Module*,
+        std::shared_ptr<IComposite>,
+        int channel,
+        std::shared_ptr<ToggleManager>);
     void makeMaster(Mix8Module* , std::shared_ptr<IComposite>);
 };
 
@@ -90,7 +94,11 @@ const float channelY = 350;
 const float channelDy = 30;     // just for the bottom jacks
 float volY = 0;
 
-void Mix8Widget::makeStrip(Mix8Module* , std::shared_ptr<IComposite> icomp, int channel)
+void Mix8Widget::makeStrip(
+    Mix8Module*,
+    std::shared_ptr<IComposite> icomp,
+    int channel,
+    std::shared_ptr<ToggleManager> mgr)
 {
     const float x = channelX + channel * dX;
 
@@ -117,8 +125,6 @@ void Mix8Widget::makeStrip(Mix8Module* , std::shared_ptr<IComposite> icomp, int 
             Vec(x - 46, y-10),
             "Out");
     }
-
-
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -153,6 +159,7 @@ void Mix8Widget::makeStrip(Mix8Module* , std::shared_ptr<IComposite> icomp, int 
     mute->addSvg("res/square-button-01.svg");
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
+   
 
     if (channel == 0) {
         addLabel(
@@ -169,6 +176,7 @@ void Mix8Widget::makeStrip(Mix8Module* , std::shared_ptr<IComposite> icomp, int 
     solo->addSvg("res/square-button-01.svg");
     solo->addSvg("res/square-button-02.svg");
     addParam(solo);
+     mgr->registerClient(solo);
 
     if (channel == 0) {
         addLabel(
@@ -202,17 +210,6 @@ void Mix8Widget::makeStrip(Mix8Module* , std::shared_ptr<IComposite> icomp, int 
     }
 }
 
-/*
-
-    RIGHT_EXPAND_INPUT,
-        LEFT_EXPAND_INPUT,
-        NUM_INPUTS
-    };
-
-    enum OutputIds
-    {
-        LEFT_OUTPUT,
-        */
 void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icomp)
 {
     float x = 0;
@@ -234,14 +231,12 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_OUTPUT));
     }
 
-
     x = 312 + 15 + 15;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, volY),
         module,
         Comp::MASTER_VOLUME_PARAM));
-
 }
 
 /*
@@ -270,8 +265,9 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
     SqHelper::setPanel(this, "res/mix8_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
+    std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
     for (int i=0; i<8; ++i) {
-        makeStrip(module, icomp, i);
+        makeStrip(module, icomp, i, mgr);
     }
     makeMaster(module, icomp);
 
