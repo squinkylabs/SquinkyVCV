@@ -11,6 +11,22 @@
 using Comp = FunVCOComposite<WidgetComposite>;
 
 /**
+ * Two position NKK
+ * in V0.6 didn't need this - it just worked
+ */
+#ifdef __V1
+struct NKK2 : app::SvgSwitch {
+	NKK2() {
+        // add all up and all down image, no middle
+		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_0.svg")));
+		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_2.svg")));
+	}
+};
+#else
+using NKK2 = NKK;
+#endif
+
+/**
  */
 struct FunVModule : Module
 {
@@ -96,7 +112,7 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
     const float right = 112;
     const float center = 49;
 
-    addParam(SqHelper::createParam<NKK>(
+    addParam(SqHelper::createParam<NKK2>(
         icomp,
         Vec(left, 66 + verticalShift),
         module,
@@ -112,7 +128,7 @@ void FunVWidget::addTop3(FunVModule * module, float verticalShift)
     auto label = addLabel(Vec(center + 3, 40+ verticalShift), "pitch");
     label->fontSize = 16;
 
-    addParam(SqHelper::createParam<NKK>(
+    addParam(SqHelper::createParam<NKK2>(
         icomp,
         Vec(right, 66 + verticalShift),
         module,
