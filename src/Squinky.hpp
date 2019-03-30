@@ -17,7 +17,7 @@
 #define _SEQ
 #define _SLEW
 #define _MIX8
-//#define _CH10
+#define _CH10
 
 //#define _BLANKMODULE
 

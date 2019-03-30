@@ -5,6 +5,13 @@
 #include "Poly.h"
 #include "SinOscillator.h"
 
+template <class TBase>
+class CH10Description : public IComposite
+{
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 template <class TBase>
 class CH10 : public TBase
@@ -175,6 +182,13 @@ public:
         NUM_LIGHTS
     };
 
+    /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription()
+    {
+        return std::make_shared<CH10Description<TBase>>();
+    }
+
     /**
      * Main processing entry point. Called every sample
      */
@@ -243,8 +257,6 @@ inline void CH10<TBase>::updateVCOs(int which)
     float time = freq * TBase::engineGetSampleTime();
 
     Osc::setFrequency(vcoState[which].sinParams, time);
-       // vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq,
-        //    TBase::engineGetSampleTime());
 }
 
 template <class TBase>
@@ -287,7 +299,7 @@ inline void CH10<TBase>::doOutput()
         for (int col = 0; col < 10; ++col) {
             //float x = gridCol1 + gridSize * (col+1);
             //float y = gridRow1 - row * gridSize;
-            int id = CH10<Widget>::A0B0_PARAM + col + row * 10;
+            int id = CH10<TBase>::A0B0_PARAM + col + row * 10;
             if (TBase::params[id].value > .5f) {
                 const float ring = vcoState[0].poly.getOutput(col) *
                     vcoState[1].poly.getOutput(row);
@@ -299,3 +311,50 @@ inline void CH10<TBase>::doOutput()
 
     TBase::outputs[MIXED_OUTPUT].value = sum / num;
 }
+
+
+template <class TBase>
+int CH10Description<TBase>::getNumParams()
+{
+    return CH10<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config CH10Description<TBase>::getParam(int i)
+{
+    Config ret(0, 1, 0, "");
+
+
+    if (i >= CH10<TBase>::A0_PARAM && i <= CH10<TBase>::A9B9_PARAM) {
+       // std::stringstream str;
+      //  str << "h " << i;
+        ret.name = " some harmonic";
+        return ret;
+
+    }
+
+    switch (i) {
+        case CH10<TBase>::AOCTAVE_PARAM:
+            ret = {-5.f, 4.f, 0.f, "A octave"};
+            break;
+        case CH10<TBase>::BOCTAVE_PARAM:
+            ret = {-5.f, 4.f, 0.f, "B octave"};
+            break;
+        case CH10<TBase>::ASEMI_PARAM:
+            ret = {-11.f, 11.0f, 0.f, "A semi"};
+            break;
+        case CH10<TBase>::BSEMI_PARAM:
+            ret = {-11.f, 11.0f, 0.f, "B semi"};
+            break;
+        case CH10<TBase>::ATUNE_PARAM:
+            ret = {-1.0f, 1.0f, 0, "A fine Tune"};
+            break;
+        case CH10<TBase>::BTUNE_PARAM:
+            ret = {-1.0f, 1.0f, 0, "B fine Tune"};
+            break;
+        default: 
+            assert(0);
+    }
+    return ret;
+}
+

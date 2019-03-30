@@ -93,6 +93,11 @@
 			"slug": "squinkylabs-mix8",
 			"name": "Mixer",
 			"description": "8 channel mixer"
+		},
+		{
+			"slug": "squinkylabs-ch10",
+			"name": "ch10",
+			"description": "ch10"
 		}
 	]
 }
