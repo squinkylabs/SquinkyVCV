@@ -79,6 +79,8 @@ private:
     // move the cursor, if necessary.
     void updateCursor();
 
+    void setCursorToNote(MidiNoteEventPtr note);
+
    
 
     void extendTrackToMinDuration(float time);

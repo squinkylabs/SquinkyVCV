@@ -29,26 +29,33 @@ MidiTrackPtr MidiEditor::getTrack()
     return seq()->song->getTrack(seq()->context->getTrackNumber());
 }
 
-static void selectNextNotePastCursor(bool atCursorOk,
+/**
+ * returns the not that was added to selection, or nullptr if none
+ */
+static MidiNoteEventPtr selectNextNotePastCursor(bool atCursorOk,
     bool keepExisting,
     MidiSequencerPtr seq)
 {
     const auto t = seq->context->cursorTime();
     const auto track = seq->context->getTrack();
+
     // first, seek into track until cursor time.
     MidiTrack::const_iterator it = track->seekToTimeNote(t);
     if (it == track->end()) {
         if (!keepExisting) {
             seq->selection->clear();
         }
-        return;
+        return nullptr;
     }
 
     // if it came back with a note exactly at cursor time,
     // check if it's acceptable.
     if ((it->first > t) || (it->first == t && atCursorOk)) {
-        seq->selection->addToSelection(it->second, keepExisting);
-        return;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note) {
+            seq->selection->addToSelection(note, keepExisting);
+            return note;
+        }
     }
 
     MidiTrack::const_iterator bestSoFar = it;
@@ -57,18 +64,23 @@ static void selectNextNotePastCursor(bool atCursorOk,
     ++it;
 
     for (; it != track->end(); ++it) {
-        MidiEventPtr evt = it->second;
-        if (evt->type == MidiEvent::Type::Note) {
-            seq->selection->addToSelection(it->second, keepExisting);
-            return;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note) {
+            seq->selection->addToSelection(note, keepExisting);
+            return note;
         }
     }
 
     // If nothing past where we are, it's ok, even if it is at the same time
-    seq->selection->addToSelection(bestSoFar->second, keepExisting);
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(bestSoFar->second);
+    if (note) {
+        seq->selection->addToSelection(note, keepExisting);
+    }
+    return note;
 }
 
-static void selectPrevNoteBeforeCursor(bool atCursorOk,
+static MidiNoteEventPtr selectPrevNoteBeforeCursor(bool atCursorOk,
+    bool keepExisting,
     MidiSequencerPtr seq)
 {
     const auto t = seq->context->cursorTime();
@@ -80,31 +92,34 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
         it = track->seekToLastNote();
         if (it == track->end()) {
             seq->selection->clear();
-            return;
+            return nullptr;
         }
     }
 
     // if it came back with a note exactly at cursor time,
     // check if it's acceptable.
     if ((it->first < t) || (it->first == t && atCursorOk)) {
-        seq->selection->select(it->second);
-        return;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note) {
+            seq->selection->addToSelection(note, keepExisting);
+            return note;
+        }
     }
+
 
     MidiTrack::const_iterator bestSoFar = it;
-
     // If must be before cursor time, go back to prev
 
-    if (it != track->begin()) {
-        --it;
-    }
+  //  if (it != track->begin()) {
+  //      --it;
+  //  }
 
     // now either this previous is acceptable, or something before it
     while (true) {
-        MidiEventPtr evt = it->second;
-        if ((evt->type == MidiEvent::Type::Note) && (evt->startTime < t)) {
-            seq->selection->select(evt);
-            return;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note && (note->startTime < t)) {
+            seq->selection->addToSelection(note, keepExisting);
+            return note;
         }
         if (it == track->begin()) {
             break;  // give up if we are at start and have found nothing good
@@ -113,7 +128,14 @@ static void selectPrevNoteBeforeCursor(bool atCursorOk,
     }
 
     // If nothing past where we are, it's OK, even if it is at the same time
-    seq->selection->select(bestSoFar->second);
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(bestSoFar->second);
+    if (note && note->startTime >= t) {
+        note = nullptr;
+    }
+    if (note) {
+        seq->selection->select(bestSoFar->second);
+    }
+    return note;
 }
 
 /**
@@ -147,9 +169,14 @@ void MidiEditor::extendSelectionToNextNote()
     MidiTrackPtr track = getTrack();
     assert(track);
     const bool acceptCursorTime = seq()->selection->empty();
-    selectNextNotePastCursor(acceptCursorTime, true, seq());
+    MidiNoteEventPtr note =  selectNextNotePastCursor(acceptCursorTime, true, seq());
 
-    updateCursor();
+    // move cursor to newly selected note - it if exists
+    if (note) {
+        setCursorToNote(note);
+    } else {
+        updateCursor();
+    }
     seq()->context->adjustViewportForCursor();
 }
 
@@ -159,17 +186,35 @@ void MidiEditor::selectPrevNote()
     MidiTrackPtr track = getTrack();
     assert(track);
     const bool acceptCursorTime = seq()->selection->empty();
-    selectPrevNoteBeforeCursor(acceptCursorTime, seq());
+    selectPrevNoteBeforeCursor(acceptCursorTime, false, seq());
     updateCursor();
     seq()->context->adjustViewportForCursor();
 }
 
 void MidiEditor::extendSelectionToPrevNote()
 {
-    assert(false);
+    seq()->assertValid();
+
+    MidiTrackPtr track = getTrack();
+    assert(track);
+    const bool acceptCursorTime = seq()->selection->empty();
+    MidiNoteEventPtr note = selectPrevNoteBeforeCursor(acceptCursorTime, true, seq());
+      // move cursor to newly selected note - it if exists
+    if (note) {
+        setCursorToNote(note);
+    } else {
+        updateCursor();
+    }
+    seq()->context->adjustViewportForCursor();
 }
 
-// Move to edit context?
+
+void MidiEditor::setCursorToNote(MidiNoteEventPtr note)
+{
+    seq()->context->setCursorTime(note->startTime);
+    seq()->context->setCursorPitch(note->pitchCV);
+}
+
 void MidiEditor::updateCursor()
 {
     if (seq()->selection->empty()) {
@@ -191,8 +236,7 @@ void MidiEditor::updateCursor()
             }
         }
     }
-    seq()->context->setCursorTime(firstNote->startTime);
-    seq()->context->setCursorPitch(firstNote->pitchCV);
+    setCursorToNote(firstNote);
 }
 
 
