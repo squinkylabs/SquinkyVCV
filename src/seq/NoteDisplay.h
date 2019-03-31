@@ -61,7 +61,7 @@ public:
     void onFocus(EventFocus &e) override;
     void onDefocus(EventDefocus &e) override;
     void onKey(EventKey &e) override;
-    void onHoverKey(EventHoverKey &e) override;
+    //void onHoverKey(EventHoverKey &e) override;
 #endif
 
 };
