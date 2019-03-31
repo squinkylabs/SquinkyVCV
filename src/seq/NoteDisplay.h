@@ -14,9 +14,6 @@ struct NoteDisplay : OpaqueWidget
 {
 private:
     Label* focusLabel = nullptr;
-  //  Label* editAttributeLabel = nullptr;
-  //  Label* barRangeLabel = nullptr;
-  //  std::shared_ptr<NoteScreenScale> scaler;
     MidiSequencerPtr sequencer;
     bool cursorState = false;
     int cursorFrameCount = 0;
@@ -47,17 +44,24 @@ public:
     void drawBackground(NVGcontext *vg);
     void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
     void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
+    
 
 #ifdef __V1
     void onSelect(const SelectEvent &e) override;
     void onDeselect(const DeselectEvent &e) override;
     void onSelectKey(const SelectKeyEvent &e) override;
     void draw(const DrawArgs &args) override;
+
+    virtual void onHoverKey(const HoverKeyEvent &e) override;
+	
+    void _onSelectKey(const KeyEvent&, const Event&, const SelectKeyEvent* );
+
 #else
     void draw(NVGcontext *vg) override;
     void onFocus(EventFocus &e) override;
     void onDefocus(EventDefocus &e) override;
     void onKey(EventKey &e) override;
+    void onHoverKey(EventHoverKey &e) override;
 #endif
 
 };

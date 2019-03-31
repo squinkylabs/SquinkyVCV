@@ -130,15 +130,15 @@ void Slew4Widget::addJacks(Slew4Module *module)
             Vec(jackX + 2 * jackDx, jackY + i * jackDy),
             module,
             Comp::OUTPUT0 + i));
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(jackX + 3 * jackDx, jackY + i * jackDy),
+            module,
+            Comp::OUTPUT_MIX0 + i));
     }
     addLabel(Vec(jackX -22, jackY-40), "Gate");
     addLabel(Vec(jackX + jackDx -16, jackY-40), "(In)");
     addLabel(Vec(jackX + 2 * jackDx -18, jackY-40), "Out");
-
-    addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jackX + 3 * jackDx, jackY + 4 * jackDy),
-        module,
-        Comp::OUTPUT_MIX));
+    addLabel(Vec(jackX + 3 * jackDx -18, jackY-40), "Mix");
 }
 
 float knobY= 330;

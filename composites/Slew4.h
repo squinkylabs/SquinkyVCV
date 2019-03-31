@@ -80,7 +80,14 @@ public:
         OUTPUT5,
         OUTPUT6,
         OUTPUT7,
-        OUTPUT_MIX,
+        OUTPUT_MIX0,
+        OUTPUT_MIX1,
+        OUTPUT_MIX2,
+        OUTPUT_MIX3,
+        OUTPUT_MIX4,
+        OUTPUT_MIX5,
+        OUTPUT_MIX6,
+        OUTPUT_MIX7,
         NUM_OUTPUTS
     };
 
@@ -139,16 +146,15 @@ template <class TBase>
 inline void Slew4<TBase>::updateKnobs()
 {
     const float combinedA = lin(
-     //   TBase::inputs[RISE_INPUT].value,
         0,
         TBase::params[PARAM_RISE].value,
         1);
 
     const float combinedR = lin(
-   //     TBase::inputs[FALL_INPUT].value,
-    0,
+        0,
         TBase::params[PARAM_FALL].value,
         1);
+
     if (combinedA < .1 && combinedR < .1) {
         lag.setEnable(false);
     } else {
@@ -184,15 +190,19 @@ inline void Slew4<TBase>::step()
         //if audio in hooked up, then output[n] = input[n] * lag
         // else output = lag
         float inputValue = 10.f;   
-      //  if (TBase::outputs[i + OUTPUT0].active) {
+
         if (TBase::inputs[i + INPUT_AUDIO0].active) {
             inputValue = TBase::inputs[i + INPUT_AUDIO0].value;
         } 
         TBase::outputs[i + OUTPUT0].value = lag.get(i) * inputValue * .1f;
         sum += TBase::outputs[i + OUTPUT0].value;
-    }
 
-    TBase::outputs[OUTPUT_MIX].value = sum * _outputLevel;
+        // normaled output logic: patched outputs get the sum of the unpatched above them.
+        if (TBase::outputs[i + OUTPUT_MIX0].active) {
+            TBase::outputs[i + OUTPUT_MIX0].value = sum * _outputLevel;
+            sum = 0;
+        }
+    }
 }
 
 template <class TBase>
@@ -220,5 +230,3 @@ inline IComposite::Config Slew4Description<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

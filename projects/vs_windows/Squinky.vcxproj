@@ -95,6 +95,7 @@
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
+    <ClCompile Include="..\..\test\testSlew4.cpp" />
     <ClCompile Include="..\..\test\testSpline.cpp" />
     <ClCompile Include="..\..\test\testStateVariable.cpp" />
     <ClCompile Include="..\..\test\testStochasticGrammar.cpp" />

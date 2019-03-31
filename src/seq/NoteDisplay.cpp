@@ -239,6 +239,23 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
     nvgFill(vg);
 }
 
+#ifdef __V1
+void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
+{
+    printf("on HOver Key\n"); 
+    if (e.key == GLFW_KEY_TAB) {
+        printf("acting on tab\n");
+       // updateFocus(true);
+        e.consume(this);
+        APP->event->setSelected(this);
+        this->_onSelectKey(e, e, nullptr);
+    } else {
+        Widget::onHoverKey(e);
+    }
+    fflush(stdout);
+}
+
+#endif
 
 #ifdef __V1
 void NoteDisplay::onSelect(const SelectEvent &e)
@@ -248,6 +265,7 @@ void NoteDisplay::onFocus(EventFocus &e)
 {
     updateFocus(true);
 #ifdef __V1
+    printf("onSelect\n"); fflush(stdout);
     e.consume(this);
 #else
     e.consumed = true;
@@ -269,7 +287,20 @@ void NoteDisplay::onDefocus(EventDefocus &e)
 }
 
 #ifdef __V1
-void NoteDisplay::onSelectKey(const SelectKeyEvent &e)
+
+void NoteDisplay::onSelectKey(const SelectKeyEvent& e)
+{
+    _onSelectKey(e, e, &e);
+}
+
+/**
+ * In order to call this from our hover handler, it was
+ * necessary to add all these arguments with different related types
+ */
+void NoteDisplay::_onSelectKey(
+    const KeyEvent& e, 
+    const Event& ev,  
+    const SelectKeyEvent* selectKeyEvent)
 {
     bool handle = false;
     bool repeat = false;
@@ -292,11 +323,11 @@ void NoteDisplay::onSelectKey(const SelectKeyEvent &e)
     if (handle) {
         handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
         if (handled) {
-            e.consume(this);
+            ev.consume(this);
         }
     }
-    if (!handled) {
-        OpaqueWidget::onSelectKey(e);
+    if (!handled && selectKeyEvent ) {
+        OpaqueWidget::onSelectKey(*selectKeyEvent);
     }
 }
 
@@ -320,6 +351,5 @@ void NoteDisplay::onKey(EventKey &e)
     }
 
 }
-
 #endif
 #endif

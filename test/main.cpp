@@ -65,6 +65,7 @@ extern void testMidiEditorCCP();
 extern void testVec();
 extern void testSeqClock();
 extern void testMix8();
+extern void testSlew4();
 
 #if 0
 #include <sstream>
@@ -149,7 +150,9 @@ int main(int argc, char ** argv)
     testLookupTable();
     testObjectCache();
     testMultiLag();
+    testSlew4();
     testMix8();
+
 
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
