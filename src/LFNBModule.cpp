@@ -31,7 +31,7 @@ private:
 
 void LFNBModule::onSampleRateChange()
 {
-    lfn.setSampleTime(SqHelper::engineGetSampleTime());
+    lfn.onSampleRateChange();
 }
 
 #ifdef __V1
@@ -110,8 +110,8 @@ struct LFNBWidget : ModuleWidget
 #endif
 
    // void addStage(int i);
-   void addJacks(LFNBModule* module);
-   void addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp);
+   void addJacks(LFNBModule* module, int channel);
+   void addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp, int channel);
 
     LFNBLabelUpdater updater;
     // note that module will be null in some cases
@@ -177,51 +177,57 @@ inline Menu* LFNBWidget::createContextMenu()
 #endif
 
 
-const float jacksY = 330;
+const float jacksY = 300;
 const float jacksX = 6;
 const float jacksDx = 30;
+const float jacksDy = 30;
 const float labelsY = jacksY - 24;
-void LFNBWidget::addJacks(LFNBModule* module)
+void LFNBWidget::addJacks(LFNBModule* module, int channel)
 {
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX, jacksY),
+        Vec(jacksX, jacksY + jacksDy * channel),
         module,
-        Comp::FC_INPUT));
-     addLabel(
+        Comp::FC0_INPUT+channel));
+    if (channel == 0) addLabel(
         Vec(jacksX, labelsY), "Fc");
 
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + jacksDx, jacksY),
+        Vec(jacksX + jacksDx, jacksY + jacksDy * channel),
         module,
-        Comp::Q_INPUT));
-    addLabel(
+        Comp::Q0_INPUT + channel));
+    if (channel == 0) addLabel(
         Vec(jacksX + jacksDx, labelsY), "Q");
 
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 2 * jacksDx, jacksY),
+        Vec(jacksX + 2 * jacksDx, jacksY + jacksDy * channel),
         module,
-        Comp::AUDIO_INPUT));
-    addLabel(
+        Comp::AUDIO0_INPUT + channel));
+    if (channel == 0) addLabel(
         Vec(jacksX + 2*jacksDx, labelsY), "In");
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jacksX + 3 * jacksDx, jacksY),
+        Vec(jacksX + 3 * jacksDx, jacksY + jacksDy * channel),
         module,
-        Comp::AUDIO_OUTPUT));
-    addLabel(
+        Comp::AUDIO0_OUTPUT + channel));
+    if (channel == 0) addLabel(
         Vec(jacksX + 3 * jacksDx - 6, labelsY), "Out");
 }
 
-void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp)
+void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp, int channel)
 {
     float knobX = 40;
     float knobY = 240;
     float labelDy = 42;
 
+    if (channel > 0) {
+        knobX = 100;
+        knobY = 140;
+    }
+
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(knobX, knobY),
-        module, Comp::FC_PARAM));
+        module, Comp::FC0_PARAM +  channel));
     addLabel(
         Vec(knobX-12, knobY-labelDy), "Fc");
 
@@ -229,7 +235,7 @@ void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp)
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(knobX, knobY),
-        module, Comp::Q_PARAM));
+        module, Comp::Q0_PARAM + channel));
     addLabel(
         Vec(knobX-12, knobY-labelDy), "Q");
 }
@@ -252,8 +258,10 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module
     box.size = Vec(9 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this,  "res/lfnb_panel.svg");
 
-    addJacks(module);
-    addKnobs(module, icomp);
+    addJacks(module, 0);
+    addJacks(module, 1);
+    addKnobs(module, icomp, 0);
+    addKnobs(module, icomp, 1);
 
     xlfnWidget = SqHelper::createParam<NullWidget>(
         icomp,

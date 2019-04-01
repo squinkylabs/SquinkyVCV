@@ -19,6 +19,7 @@
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
 #include "LFN.h"
+#include "LFNB.h"
 #include "GMR.h"
 #include "CHB.h"
 #include "FunVCOComposite.h"
@@ -257,6 +258,22 @@ static void testLFN()
         }, 1);
 }
 
+static void testLFNB()
+{
+    LFNB<TestComposite> lfn;
+
+ 
+
+ //   lfn.setSampleTime(1.0f / 44100.f);
+    lfn.onSampleRateChanged();
+    lfn.init();
+    
+
+    MeasureTime<float>::run(overheadOutOnly, "lfnb", [&lfn]() {
+        lfn.step();
+        return lfn.outputs[LFNB<TestComposite>::AUDIO0_OUTPUT].value;
+        }, 1);
+}
 #if 0
 static void testEvenOrig()
 {
@@ -830,10 +847,13 @@ void perfTest()
     testVocalFilter();
     testAnimator();
     testTremolo();
-    testLFN();
+  
     testShifter();
     testGMR();
 #endif
+    testLFN();
+    testLFNB();
+
 
     testCHBdef();
     testSuper();
