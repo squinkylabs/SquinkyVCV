@@ -211,9 +211,27 @@ void LFNBWidget::addJacks(LFNBModule* module)
     addLabel(
         Vec(jacksX + 3 * jacksDx - 6, labelsY), "Out");
 }
+
 void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp)
 {
+    float knobX = 40;
+    float knobY = 240;
+    float labelDy = 42;
 
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(knobX, knobY),
+        module, Comp::FC_PARAM));
+    addLabel(
+        Vec(knobX-12, knobY-labelDy), "Fc");
+
+    knobY -= 70;
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(knobX, knobY),
+        module, Comp::Q_PARAM));
+    addLabel(
+        Vec(knobX-12, knobY-labelDy), "Q");
 }
 
 /**
@@ -231,7 +249,7 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module
 #endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     addJacks(module);
