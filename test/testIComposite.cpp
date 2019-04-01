@@ -5,6 +5,7 @@
 #include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
 #include "LFN.h"
+#include "LFNB.h"
 #include "Gray.h"
 #include "Mix8.h"
 #include "Seq.h"
@@ -64,4 +65,5 @@ void testIComposite()
     test<Blank<TestComposite>>();
     test<Slew4<TestComposite>>();
     test<Mix8<TestComposite>>();
+    test<LFNB<TestComposite>>();
 }

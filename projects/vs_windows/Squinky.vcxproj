@@ -123,6 +123,7 @@
     <ClInclude Include="..\..\composites\Gray.h" />
     <ClInclude Include="..\..\composites\KSComposite.h" />
     <ClInclude Include="..\..\composites\LFN.h" />
+    <ClInclude Include="..\..\composites\LFNB.h" />
     <ClInclude Include="..\..\composites\Mix8.h" />
     <ClInclude Include="..\..\composites\Seq.h" />
     <ClInclude Include="..\..\composites\Shaper.h" />

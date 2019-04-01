@@ -45,7 +45,9 @@ void init(rack::Plugin *p)
 #ifdef _LFN
     p->addModel(modelLFNModule); 
 #endif
-
+#ifdef _LFNB
+    p->addModel(modelLFNBModule); 
+#endif
 #ifdef _SUPER
     p->addModel(modelSuperModule);
 #endif

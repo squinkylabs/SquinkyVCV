@@ -126,6 +126,7 @@ static const float inputY = knobY + 16;
 static const float inputX = 6;
 static const float labelX = 2;
 
+#if 0
 void LFNBWidget::addStage(int index)
 {
     // make a temporary one for instantiation controls,
@@ -141,6 +142,7 @@ void LFNBWidget::addStage(int index)
         Vec(inputX, inputY + index * knobDy),
         module, Comp::EQ0_INPUT + index));
 }
+#endif
 
 #ifdef __V1
 void LFNBWidget::appendContextMenu(Menu* theMenu) 
@@ -187,8 +189,10 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module
 {
 #endif
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/lfn_panel.svg");
+    SqHelper::setPanel(this, "res/blank_panel.svg");
 
+
+#if 0
     addOutput(createOutput<PJ301MPort>(
         Vec(59, inputY - knobDy - 1),
         module,
@@ -205,12 +209,13 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module
     for (int i = 0; i < 5; ++i) {
         addStage(i);
     }
+#endif
 
     xlfnWidget = SqHelper::createParam<NullWidget>(
         icomp,
         Vec(0, 0),
         module,
-        Comp::XLFN_PARAM);
+        Comp::XLFNB_PARAM);
     xlfnWidget->box.size.x = 0;
     xlfnWidget->box.size.y = 0;
     addParam(xlfnWidget);
@@ -229,6 +234,8 @@ void LFNBLabelUpdater::makeLabel(struct LFNBWidget& widget, int index, float x, 
 
 void LFNBLabelUpdater::update(struct LFNBWidget& widget)
 {
+    // needs update for b
+
     // This will happen often
     if (!widget.module) {
         return;
@@ -240,6 +247,9 @@ void LFNBLabelUpdater::update(struct LFNBWidget& widget)
     if (baseFreq != baseFrequency) {
         baseFrequency = baseFreq;
         for (int i = 0; i < 5; ++i) {
+            if (labels[i] == nullptr) {
+                return;
+            }
             std::stringstream str;
             str.precision(digits);
             str.setf(std::ios::fixed, std::ios::floatfield);
@@ -254,11 +264,12 @@ void LFNBLabelUpdater::update(struct LFNBWidget& widget)
 #ifndef __V1
 Model *modelLFNBModule = Model::create<LFNBModule,
     LFNBWidget>("Squinky Labs",
-    "squinkylabs-lfn",
-    "LFN: Random Voltages", NOISE_TAG, RANDOM_TAG, LFO_TAG);
+    "squinkylabs-lfnb",
+
+    "LFNB: Random Voltages", NOISE_TAG, RANDOM_TAG, LFO_TAG);
 #else
 Model *modelLFNBModule = createModel<LFNBModule, LFNBWidget>(
-    "squinkylabs-lfn");
+    "squinkylabs-lfnb");
 #endif
 
 #endif

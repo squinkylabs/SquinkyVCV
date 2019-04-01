@@ -725,5 +725,8 @@
     <ClInclude Include="..\..\composites\Mix8.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\LFNB.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

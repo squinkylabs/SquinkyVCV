@@ -13,7 +13,7 @@
 #include <random>
 
 /**
- * Noise generator feeding a graphic equalizer.
+ * Noise generator feeding a bandpass filter.
  * Calculated at very low sample rate, then re-sampled
  * up to audio rate.
  *
@@ -96,23 +96,18 @@ public:
 
     enum ParamIds
     {
-        EQ0_PARAM,
-        EQ1_PARAM,
-        EQ2_PARAM,
-        EQ3_PARAM,
-        EQ4_PARAM,
-        FREQ_RANGE_PARAM,
-        XLFN_PARAM,
+        FC_PARAM,
+        Q_PARAM,
+        XLFNB_PARAM,
+        FC_TRIM_PARAM,
+        Q_TRIM_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
-        EQ0_INPUT,
-        EQ1_INPUT,
-        EQ2_INPUT,
-        EQ3_INPUT,
-        EQ4_INPUT,
+        FC_INPUT,
+        Q_INPUT,
         NUM_INPUTS
     };
 
@@ -139,7 +134,7 @@ public:
 
     bool isXLFN() const
     {
-        return  TBase::params[XLFN_PARAM].value > .5;
+        return  TBase::params[XLFNB_PARAM].value > .5;
     }
 
     /**
@@ -215,33 +210,34 @@ int LFNBDescription<TBase>::getNumParams()
     return LFNB<TBase>::NUM_PARAMS;
 }
 
+/*
+ FC_PARAM,
+        Q_PARAM,
+        XLFNB_PARAM,
+        FC_TRIM_PARAM,
+        Q_TRIM_PARAM,
+*/
 template <class TBase>
 inline IComposite::Config LFNBDescription<TBase>::getParam(int i)
 {
-    const float gmin = -5;
-    const float gmax = 5;
-    const float gdef = 0;
+    //const float gmin = -5;
+   // const float gmax = 5;
+    //const float gdef = 0;
     Config ret(0, 1, 0, "");
     switch(i) {
-        case LFNB<TBase>::EQ0_PARAM:
-            ret = { gmin, gmax, gdef, "Low freq mix"};
+        case LFNB<TBase>::FC_PARAM:
+            ret = { -5, 5, 0, "Frequency"};
             break;
-        case LFNB<TBase>::EQ1_PARAM:
-            ret = { gmin, gmax, gdef, "Mid-low freq fix"};
+        case LFNB<TBase>::Q_PARAM:
+            ret = { -5, 5, 0, "Filter Q"};
             break;
-        case LFNB<TBase>::EQ2_PARAM:
-            ret = { gmin, gmax, gdef, "Mid freq mix"};
+        case LFNB<TBase>::FC_TRIM_PARAM:
+            ret = {-5, 5, 0, "Frequency CV trim"};
             break;
-        case LFNB<TBase>::EQ3_PARAM:
-            ret = { gmin, gmax, gdef, "Mid-high freq mix"};
+        case LFNB<TBase>::Q_TRIM_PARAM:
+            ret = {-5, 5, 0, "FFilter Q CV trim"};
             break;
-        case LFNB<TBase>::EQ4_PARAM:
-            ret = { gmin, gmax, gdef, "High freq mix"};
-            break;
-        case LFNB<TBase>::FREQ_RANGE_PARAM:
-            ret = {  -5, 5, 0, "Base frequency"};
-            break;
-        case LFNB<TBase>::XLFN_PARAM:
+        case LFNB<TBase>::XLFNB_PARAM:
             ret = { 0, 1, 0, "Extra low frequency"};
             break;
         default:
@@ -253,19 +249,23 @@ inline IComposite::Config LFNBDescription<TBase>::getParam(int i)
 template <class TBase>
 inline void LFNB<TBase>::pollForChangeOnUIThread()
 {
+#if 0
+// in new one do we need to look at fc also? does UI control the other param?
+
     if ((lastBaseFrequencyParamValue != TBase::params[FREQ_RANGE_PARAM].value) ||
-        (lastXLFMParamValue != TBase::params[XLFN_PARAM].value)) {
+        (lastXLFMParamValue != TBase::params[XLFNB_PARAM].value)) {
 
         lastBaseFrequencyParamValue = TBase::params[FREQ_RANGE_PARAM].value;
-        lastXLFMParamValue = TBase::params[XLFN_PARAM].value;
+        lastXLFMParamValue = TBase::params[XLFNB_PARAM].value;
 
         baseFrequency = float(rangeFunc(lastBaseFrequencyParamValue));
-        if (TBase::params[XLFN_PARAM].value > .5f) {
+        if (TBase::params[XLFN_PARAMB].value > .5f) {
             baseFrequency /= 10.f;
         }
 
         updateLPF();         // now get the filters updated
     }
+#endif
 }
 
 template <class TBase>
@@ -295,6 +295,7 @@ inline void LFNB<TBase>::updateLPF()
 template <class TBase>
 inline void LFNB<TBase>::step()
 {
+#if 0
     // Let's only check the inputs every 4 samples. Still plenty fast, but
     // get the CPU usage down really far.
     if (controlUpdateCount++ > 4) {
@@ -319,5 +320,6 @@ inline void LFNB<TBase>::step()
     }
 
     TBase::outputs[OUTPUT].value = (float) x;
+#endif
 }
 

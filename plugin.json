@@ -98,6 +98,12 @@
 			"slug": "squinkylabs-ch10",
 			"name": "ch10",
 			"description": "ch10"
+		},
+		{
+			"slug": "squinkylabs-lfnb",
+			"name": "LFNB",
+			"description": "Low frequency random voltage generator 2",
+			"tags": ["NOISE", "RANDOM", "LFO"]
 		}
 	]
 }
