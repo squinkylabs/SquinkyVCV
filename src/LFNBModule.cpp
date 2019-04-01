@@ -254,24 +254,6 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module
 
     addJacks(module);
     addKnobs(module, icomp);
-#if 0
-    addOutput(createOutput<PJ301MPort>(
-        Vec(59, inputY - knobDy - 1),
-        module,
-        Comp::OUTPUT));
-    addLabel(
-        Vec(54, inputY - knobDy - 18), "out", SqHelper::COLOR_WHITE);
-
-    addParam(SqHelper::createParam<Rogan1PSBlue>(
-        icomp,
-        Vec(10, knobY - 1 * knobDy),
-        module,
-        Comp::FREQ_RANGE_PARAM));
-
-    for (int i = 0; i < 5; ++i) {
-        addStage(i);
-    }
-#endif
 
     xlfnWidget = SqHelper::createParam<NullWidget>(
         icomp,
