@@ -262,8 +262,10 @@ inline void Mix8<TBase>::stepn(int div)
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
         // TODO: get rid of normalize. if active ? cv : 10;
+        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ? 
+             TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
         const float cv = std::clamp(
-            TBase::inputs[i + LEVEL0_INPUT].normalize(10.0f) / 10.0f,
+            rawCV / 10.0f,
             0.0f,
             1.0f);
         buf_channelGains[i] = slider * cv;

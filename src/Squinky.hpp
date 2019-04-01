@@ -18,6 +18,7 @@
 #define _SLEW
 #define _MIX8
 #define _CH10
+#define _LFNB
 
 //#define _BLANKMODULE
 
@@ -44,6 +45,7 @@ extern Model *modelColoredNoiseModule;
 extern Model *modelTremoloModule;
 extern Model *modelThreadBoostModule;
 extern Model *modelLFNModule;
+extern Model *modelLFNBModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 

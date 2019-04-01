@@ -318,7 +318,7 @@ void NoteDisplay::_onSelectKey(
     if (repeat) {
         handle = MidiKeyboardHandler::doRepeat(e.key);
     }
-
+    printf("key = %d, scan = %d\n", e.key, e.scancode); fflush(stdout);
     bool handled = false;
     if (handle) {
         handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
