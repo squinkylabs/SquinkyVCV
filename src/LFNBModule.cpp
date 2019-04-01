@@ -247,10 +247,10 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : module(module)
 LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module)
 {
 #endif
-
+ 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(9 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this,  "res/lfnb_panel.svg");
 
     addJacks(module);
     addKnobs(module, icomp);
