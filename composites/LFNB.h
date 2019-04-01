@@ -108,12 +108,13 @@ public:
     {
         FC_INPUT,
         Q_INPUT,
+        AUDIO_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
-        OUTPUT,
+        AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 

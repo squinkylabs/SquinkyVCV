@@ -82,8 +82,7 @@ private:
 struct LFNBWidget : ModuleWidget
 {
     LFNBWidget(LFNBModule *);
-    std::shared_ptr<IComposite> icomp = Comp::getDescription();
-
+   
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -110,7 +109,9 @@ struct LFNBWidget : ModuleWidget
     Menu* createContextMenu() override;
 #endif
 
-    void addStage(int i);
+   // void addStage(int i);
+   void addJacks(LFNBModule* module);
+   void addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp);
 
     LFNBLabelUpdater updater;
     // note that module will be null in some cases
@@ -175,6 +176,46 @@ inline Menu* LFNBWidget::createContextMenu()
 }
 #endif
 
+
+const float jacksY = 330;
+const float jacksX = 30;
+const float jacksDx = 30;
+const float labelsY = jacksY - 24;
+void LFNBWidget::addJacks(LFNBModule* module)
+{
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX, jacksY),
+        module,
+        Comp::FC_INPUT));
+     addLabel(
+        Vec(jacksX, labelsY), "Fc");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX + jacksDx, jacksY),
+        module,
+        Comp::Q_INPUT));
+    addLabel(
+        Vec(jacksX + jacksDx, labelsY), "Q");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX + 2 * jacksDx, jacksY),
+        module,
+        Comp::AUDIO_INPUT));
+    addLabel(
+        Vec(jacksX + 2*jacksDx, labelsY), "In");
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jacksX + 3 * jacksDx, jacksY),
+        module,
+        Comp::AUDIO_OUTPUT));
+    addLabel(
+        Vec(jacksX + 3 * jacksDx - 6, labelsY), "Out");
+}
+void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp)
+{
+
+}
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -188,10 +229,13 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : module(module)
 LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module)
 {
 #endif
+
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
-
+    addJacks(module);
+    addKnobs(module, icomp);
 #if 0
     addOutput(createOutput<PJ301MPort>(
         Vec(59, inputY - knobDy - 1),
