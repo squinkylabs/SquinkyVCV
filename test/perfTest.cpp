@@ -265,7 +265,7 @@ static void testLFNB()
  
 
  //   lfn.setSampleTime(1.0f / 44100.f);
-    lfn.onSampleRateChanged();
+    lfn.onSampleRateChange();
     lfn.init();
     
 

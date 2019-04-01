@@ -2,7 +2,7 @@
 #pragma once
 
 #include "ObjectCache.h"
-#include "Poly.h"
+#include "poly.h"
 #include "SinOscillator.h"
 
 template <class TBase>

@@ -19,26 +19,22 @@
  * Calculated at very low sample rate, then re-sampled
  * up to audio rate.
  *
- * Below assumes 44k SR. TODO: other rates.
- *
- * We first design the EQ around bands of 100, 200, 400, 800,
- * 1600. EQ gets noise.
+ * To do like LFN we would make a fixed bandpass at (say) 100 hz.
  *
  * Then output of EQ is re-sampled up by a factor of 100
- * to bring the first band down to 1hz.
+ * to bring it down to 1hz.
  * or : decimation factor = 100 * (fs) / 44100.
  *
  * A butterworth lowpass then removes the re-sampling artifacts.
  * Otherwise these images bring in high frequencies that we
  * don't want.
  *
- * Cutoff for the filter can be as low as the top of the eq,
+ * for GEQ, Cutoff for the filter can be as low as the top of the eq,
  * which is 3.2khz. 44k/3.2k is about 10,
  * so fc/fs can be 1/1000.
  *
  * or :   fc = (fs / 44100) / 1000;
  *
- * (had been using  fc/fs = float(1.0 / (44 * 100.0)));)
  *
  * Design for R = root freq (was 1 Hz, above)
  * EQ first band at E (was 100 Hz, above)
@@ -48,25 +44,64 @@
  * Imaging filter fc = 3.2khz / decimation-divider
  * fc/fs = 3200 * (reciprocal sr) / decimation-divider.
  *
- * Experiment: let's use those values and compare to what we had been using.
- * result: not too far off.
  *
  * make a range/base control. map -5 to +5 into 1/10 Hz to 2 Hz rate. Can use regular
  * functions, since we won't calc that often.
  */
 
-// does the processing
+/** does the DSP processing
+ *
+ * TODO:
+ *      get the bandpass working a audio rates.
+ */
 class LFNBChannel
 {
 public:
-    void setSampleTime(float)
+    void setSampleTime(float sampleTime)
     {
+        float decimationDivisor = 100;          // only for Fc = 1;
+        designBPFilter(sampleTime);
+        designLPF(sampleTime, decimationDivisor);
+        setupDecimator(decimationDivisor);
     }
+
+    /*
+      bool needsData;
+    TButter x = decimator.clock(needsData);
+    x = BiquadFilter<TButter>::run(x, lpfState, lpfParams);
+    if (needsData) {
+        const float z = geq.run(noise());
+        decimator.acceptData(z);
+    }
+    */
     float step()
     {
-        return 0;
+        bool needsData;
+        TButter x = decimator.clock(needsData);
+        x = BiquadFilter<TButter>::run(x, lpfState, lpfParams);
+        if (needsData) {
+            const float z = StateVariableFilter<float>::run(noise(), bpState, bpParams);
+           // const float z = geq.run(noise());
+            decimator.acceptData(z);
+        }
+        return float(x);
     }
 private:
+    void designBPFilter(float sampleTime)
+    {
+        bpParams.setMode(StateVariableFilterParams<float>::Mode::BandPass);
+        bpParams.setFreq(100 * sampleTime);     // for now, fixed at 100 -> 1
+    }
+    void designLPF(float sampleTime, float decimationDivisor)
+    {
+        const float lpFc = 3200 * sampleTime / decimationDivisor;
+        ButterworthFilterDesigner<TButter>::designThreePoleLowpass(
+            lpfParams, lpFc);
+    }
+    void setupDecimator(float decimationDivisor)
+    {
+        decimator.setDecimationRate(decimationDivisor);
+    }
     ::Decimator decimator;
 
     // the bandpass filter
@@ -81,6 +116,13 @@ private:
     using TButter = double;
     BiquadParams<TButter, 2> lpfParams;
     BiquadState<TButter, 2> lpfState;
+
+    std::default_random_engine generator{57};
+    std::normal_distribution<double> distribution{-1.0, 1.0};
+    float noise()
+    {
+        return  (float) distribution(generator);
+    }
 };
 
 
@@ -90,8 +132,6 @@ class LFNBDescription : public IComposite
 public:
     Config getParam(int i) override;
     int getNumParams() override;
-
-
 };
 
 template <class TBase>
@@ -119,13 +159,6 @@ public:
         channels[0].setSampleTime(s);
         channels[1].setSampleTime(s);
     }
-#if 0
-    void setSampleTime(float time)
-    {
-        reciprocalSampleRate = time;
-        updateLPF();
-    }
-#endif
 
     /**
     * re-calc everything that changes with sample
@@ -212,21 +245,13 @@ private:
     float lastBaseFrequencyParamValue = -100;
     float lastXLFMParamValue = -1;
 
-    std::default_random_engine generator{57};
-    std::normal_distribution<double> distribution{-1.0, 1.0};
-
-    float noise()
-    {
-        return  (float) distribution(generator);
-    }
-
-    int controlUpdateCount = 0;
+   // int controlUpdateCount = 0;
 
     /**
      * Must be called after baseFrequency is updated.
      * re-calculates the butterworth lowpass.
      */
-    void updateLPF();
+  //  void updateLPF();
 
     /**
      * scaling function for the range / base frequency knob

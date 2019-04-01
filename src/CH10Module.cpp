@@ -165,8 +165,14 @@ inline void CH10Widget::makeVCO(CH10Module* module, int whichVCO, std::shared_pt
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
+#ifdef __V1
+CH10Widget::CH10Widget(CH10Module *module)
+{
+    setModule(module);
+#else
 CH10Widget::CH10Widget(CH10Module *module) : ModuleWidget(module)
 {
+#endif
     box.size = Vec(35 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/ch10_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
