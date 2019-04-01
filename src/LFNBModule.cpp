@@ -178,7 +178,7 @@ inline Menu* LFNBWidget::createContextMenu()
 
 
 const float jacksY = 330;
-const float jacksX = 30;
+const float jacksX = 6;
 const float jacksDx = 30;
 const float labelsY = jacksY - 24;
 void LFNBWidget::addJacks(LFNBModule* module)
@@ -249,7 +249,7 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module
 #endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(9 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     addJacks(module);
