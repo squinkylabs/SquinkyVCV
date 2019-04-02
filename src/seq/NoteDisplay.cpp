@@ -242,10 +242,7 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
 #ifdef __V1
 void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
 {
-    printf("on HOver Key\n"); 
     if (e.key == GLFW_KEY_TAB) {
-        printf("acting on tab\n");
-       // updateFocus(true);
         e.consume(this);
         APP->event->setSelected(this);
         this->_onSelectKey(e, e, nullptr);
@@ -265,7 +262,6 @@ void NoteDisplay::onFocus(EventFocus &e)
 {
     updateFocus(true);
 #ifdef __V1
-    printf("onSelect\n"); fflush(stdout);
     e.consume(this);
 #else
     e.consumed = true;
@@ -318,7 +314,7 @@ void NoteDisplay::_onSelectKey(
     if (repeat) {
         handle = MidiKeyboardHandler::doRepeat(e.key);
     }
-    printf("key = %d, scan = %d\n", e.key, e.scancode); fflush(stdout);
+
     bool handled = false;
     if (handle) {
         handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);

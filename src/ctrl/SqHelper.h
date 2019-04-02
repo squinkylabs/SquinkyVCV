@@ -85,7 +85,8 @@ public:
         for (int i=0; i<n; ++i) {
             auto param = comp->getParam(i);
             std::string paramName(param.name);
-            module->params[i].config(param.min, param.max, param.def, paramName);
+            // module->params[i].config(param.min, param.max, param.def, paramName);
+            module->configParam(i, param.min, param.max, param.def, paramName);
         }
     }
 
