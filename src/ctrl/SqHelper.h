@@ -1,10 +1,17 @@
 #pragma once
 
+/**
+ * This is a collection of utilties that work on both VCV 1.0
+ * and VCV 0.6.n
+ */
 #include "app.hpp"
 #include "IComposite.h"
-/** Wrap up all the .6/1.0 dependencies here
- */
+
 #ifdef __V1
+
+#include "engine/Module.hpp"
+#include <string>
+
 class SqHelper
 {
 public:
@@ -16,8 +23,6 @@ public:
     using SvgWidget = rack::widget::SvgWidget;
     using SvgSwitch = rack::app::SvgSwitch;
     
-//void SvgKnob::setSvg(std::shared_ptr<Svg> svg
-
     static void setSvg(SvgWidget* widget, std::shared_ptr<Svg> svg)
     {
         widget->setSvg(svg);
@@ -72,12 +77,15 @@ public:
     static const NVGcolor COLOR_WHITE;
     static const NVGcolor COLOR_BLACK;
 
-    static void setupParams(std::shared_ptr<IComposite> comp, Module* module)
+    static void setupParams(
+        std::shared_ptr<IComposite> comp,
+        rack::engine::Module* module)
     {
         const int n = comp->getNumParams();
         for (int i=0; i<n; ++i) {
             auto param = comp->getParam(i);
-            module->params[i].config(param.min, param.max, param.def, param.name);
+            std::string paramName(param.name);
+            module->params[i].config(param.min, param.max, param.def, paramName);
         }
     }
 
