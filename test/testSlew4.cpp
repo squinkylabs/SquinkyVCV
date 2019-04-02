@@ -14,6 +14,7 @@ static void testTriggers(int outputNumber)
     slew.params[Slew::PARAM_RISE].value = -5;
     slew.params[Slew::PARAM_FALL].value = -5;
     slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].value = 10;       // trigger channel under test
+    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].active = true;
     slew.step();
 
     for (int i = 0; i < 8; ++i) {
@@ -48,6 +49,7 @@ static void testMixedOutNormals(int outputNumber)
     slew.outputs[Slew::OUTPUT_MIX0 + outputNumber].active = true;       // patch the output under test
 
     for (int i = 0; i < 8; ++i) {
+        slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].active = true;
         slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].value = 10;       // trigger all
     }
     slew.step();
@@ -70,32 +72,47 @@ static void testMixedOutNormals()
 // gate input n triggers output m
 bool gateInputTriggersOutput(Slew& slew, int gateIn, int gateOut)
 {
-    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].value
-    return true;
+
+    slew.inputs[Slew::INPUT_TRIGGER0 + gateIn].value = 10;
+    slew.step();
+    bool ret = slew.outputs[Slew::OUTPUT0 + gateOut].value > 5;
+    return ret;
 }
 
 static void testGateInputs()
 {
-    // straight thru
+    // straight through
     for (int i = 0; i < 8; ++i) {
         Slew slew;
         init(slew);
+        slew.inputs[Slew::INPUT_TRIGGER0 + i].active = true;
         assert(gateInputTriggersOutput(slew, i, i));
     }
 
-    // unpatched, flows down via normals
+    // un-patched, flows down via normals
+
     for (int i = 0; i < 8; ++i) {
         Slew slew;
         init(slew);
+        slew.inputs[Slew::INPUT_TRIGGER0].active = true;       // patch the first input
         assert(gateInputTriggersOutput(slew, 0, i));
     }
 
-    Slew slew;
-    init(slew);
-    slew.inputs[Slew::INPUT_TRIGGER0].active = true;
-    slew.inputs[Slew::INPUT_TRIGGER1].active = true;
-    assert(!gateInputTriggersOutput(slew, 0, 1));
-    assert(!gateInputTriggersOutput(slew, 1, 0));
+    {
+        Slew slew;
+        init(slew);
+        slew.inputs[Slew::INPUT_TRIGGER0].active = true;
+        slew.inputs[Slew::INPUT_TRIGGER1].active = true;
+        assert(!gateInputTriggersOutput(slew, 0, 1));
+    }
+
+    {
+        Slew slew;
+        init(slew);
+        slew.inputs[Slew::INPUT_TRIGGER0].active = true;
+        slew.inputs[Slew::INPUT_TRIGGER1].active = true;
+        assert(!gateInputTriggersOutput(slew, 1, 0));
+    }
 
 
 }

@@ -177,8 +177,15 @@ inline void Slew4<TBase>::step()
     divider.step();
     // get input to slews
     float slewInput[8];
+    float triggerIn = 0;
     for (int i=0; i<8; ++i) {
-        slewInput[i] = TBase::inputs[i + INPUT_TRIGGER0].value;
+        // if input is patched, it becomes the new normaled input;
+        const bool bPatched = TBase::inputs[i + INPUT_TRIGGER0].active;
+        if (bPatched) {
+            triggerIn = TBase::inputs[i + INPUT_TRIGGER0].value;
+        }
+
+        slewInput[i] = triggerIn;
     }
 
     // clock the slew
