@@ -124,7 +124,7 @@ inline void LookupTableFactory<T>::makeMixerPanL(LookupTableParams<T>& params)
     const T xMax = 1;
     assert(xMin < xMax);
     LookupTable<T>::init(params, bins, xMin, xMax, [](double x) {
-        return _PanL(x, 0);
+        return _PanL(float(x), 0);
         });
 }
 
@@ -136,7 +136,7 @@ inline void LookupTableFactory<T>::makeMixerPanR(LookupTableParams<T>& params)
     const T xMax = 1;
     assert(xMin < xMax);
     LookupTable<T>::init(params, bins, xMin, xMax, [](double x) {
-        return _PanR(x, 0);
+        return _PanR(float(x), 0);
         });
 }
 

@@ -198,19 +198,21 @@ void LFNBWidget::addJacks(LFNBModule* module, int channel)
     if (channel == 0) addLabel(
         Vec(jacksX + jacksDx, labelsY), "Q");
 
+#if 0
     addInput(createInput<PJ301MPort>(
         Vec(jacksX + 2 * jacksDx, jacksY + jacksDy * channel),
         module,
         Comp::AUDIO0_INPUT + channel));
     if (channel == 0) addLabel(
         Vec(jacksX + 2*jacksDx, labelsY), "In");
+#endif
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jacksX + 3 * jacksDx, jacksY + jacksDy * channel),
+        Vec(jacksX + 2 * jacksDx, jacksY + jacksDy * channel),
         module,
         Comp::AUDIO0_OUTPUT + channel));
     if (channel == 0) addLabel(
-        Vec(jacksX + 3 * jacksDx - 6, labelsY), "Out");
+        Vec(jacksX + 2 * jacksDx - 6, labelsY), "Out");
 }
 
 void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp, int channel)
@@ -219,7 +221,7 @@ void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp,
     float knobY = 240;
     float labelDy = 42;
 
-    if (channel > 0) {
+    if (channel == 0) {
         knobX = 100;
         knobY = 140;
     }

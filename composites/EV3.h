@@ -157,7 +157,7 @@ inline void EV3<TBase>::init()
     }
 
     div.setup(4, [this] {
-        this->stepn(div.div());
+        this->stepn(div.getDiv());
         });
 
     vcos[0].setSyncCallback([this](float f) {

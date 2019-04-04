@@ -139,7 +139,7 @@ static void testSlew4()
     fs.inputs[Slewer::INPUT_AUDIO0].value = 0;
 
     assert(overheadInOut >= 0);
-    MeasureTime<float>::run(overheadInOut, "slew lags", [&fs]() {
+    MeasureTime<float>::run(overheadInOut, "Slade", [&fs]() {
         fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
         fs.step();
         return fs.outputs[Slewer::OUTPUT0].value;

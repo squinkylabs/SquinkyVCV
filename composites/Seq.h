@@ -149,7 +149,7 @@ void  Seq<TBase>::init(MidiSongPtr song)
     std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
     player = std::make_shared<MidiPlayer>(host, song);
     div.setup(4, [this] {
-        this->stepn(div.div());
+        this->stepn(div.getDiv());
      });
 }
 

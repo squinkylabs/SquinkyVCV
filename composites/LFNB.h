@@ -18,35 +18,20 @@
  * Noise generator feeding a bandpass filter.
  * Calculated at very low sample rate, then re-sampled
  * up to audio rate.
- *
- * To do like LFN we would make a fixed bandpass at (say) 100 hz.
- *
- * Then output of EQ is re-sampled up by a factor of 100
- * to bring it down to 1hz.
- * or : decimation factor = 100 * (fs) / 44100.
- *
- * A butterworth lowpass then removes the re-sampling artifacts.
- * Otherwise these images bring in high frequencies that we
- * don't want.
- *
- * for GEQ, Cutoff for the filter can be as low as the top of the eq,
- * which is 3.2khz. 44k/3.2k is about 10,
- * so fc/fs can be 1/1000.
- *
- * or :   fc = (fs / 44100) / 1000;
- *
- *
- * Design for R = root freq (was 1 Hz, above)
- * EQ first band at E (was 100 Hz, above)
- *
- * Decimation divider = E / R
- *
- * Imaging filter fc = 3.2khz / decimation-divider
- * fc/fs = 3200 * (reciprocal sr) / decimation-divider.
- *
- *
- * make a range/base control. map -5 to +5 into 1/10 Hz to 2 Hz rate. Can use regular
- * functions, since we won't calc that often.
+ *  CV knob scaling: freq. working backwards:
+ *      want the device to span .01 hz to 10 hz.
+ *      so decimate by 100, have filter 1hz to 10k
+ *      if filter wants exp sweep, let's map that exp like:
+ *          fm = 4   k = 2;
+ *          fm = 8   k = 3;        
+ *          fm = 16k k = 14;         
+ * 
+ *  fc = fm / 4
+ *  fm = exp2(k).
+ *  k is linear scalar range, 2..14
+ * 
+ * For Q, let's start linear 1..50
+ * 
  */
 
 /** does the DSP processing
@@ -60,41 +45,44 @@ public:
     void setSampleTime(float sampleTime)
     {
         float decimationDivisor = 100;          // only for Fc = 1;
-        designBPFilter(sampleTime);
         designLPF(sampleTime, decimationDivisor);
         setupDecimator(decimationDivisor);
     }
 
-    /*
-      bool needsData;
-    TButter x = decimator.clock(needsData);
-    x = BiquadFilter<TButter>::run(x, lpfState, lpfParams);
-    if (needsData) {
-        const float z = geq.run(noise());
-        decimator.acceptData(z);
-    }
-    */
+    /* with just noise, it's ok.
+     * with decimated noise, it's ok (but blocky looking
+     */
     float step()
     {
         bool needsData;
         TButter x = decimator.clock(needsData);
         x = BiquadFilter<TButter>::run(x, lpfState, lpfParams);
         if (needsData) {
-            const float z = StateVariableFilter<float>::run(noise(), bpState, bpParams);
-           // const float z = geq.run(noise());
-            decimator.acceptData(z);
+            double z = 50 * StateVariableFilter<double>::run(noise(), bpState, bpParams);
+            z /= sqrt(_fc);           // boost output at low freq. But this will over compensate! do we need log f here?
+            z *= .007;
+            decimator.acceptData( float(z));
+
         }
         return float(x);
     }
-private:
-    void designBPFilter(float sampleTime)
+
+    void setFilter(float fc, float q)
     {
-        bpParams.setMode(StateVariableFilterParams<float>::Mode::BandPass);
-        bpParams.setFreq(100 * sampleTime);     // for now, fixed at 100 -> 1
+        bpParams.setFreq(fc);
+        bpParams.setQ(q);
+        _fc = fc;
     }
+    LFNBChannel()
+    {
+        bpParams.setMode(StateVariableFilterParams<double>::Mode::BandPass);
+    }
+
+private:
+
     void designLPF(float sampleTime, float decimationDivisor)
     {
-        const float lpFc = 3200 * sampleTime / decimationDivisor;
+        const float lpFc = 100 * sampleTime;        // for now, let's try 100 hz. probably too high
         ButterworthFilterDesigner<TButter>::designThreePoleLowpass(
             lpfParams, lpFc);
     }
@@ -105,8 +93,8 @@ private:
     ::Decimator decimator;
 
     // the bandpass filter
-    StateVariableFilterState<float> bpState;
-    StateVariableFilterParams<float> bpParams;
+    StateVariableFilterState<double> bpState;
+    StateVariableFilterParams<double> bpParams;
 
     /**
      * Template type for butterworth reconstruction filter
@@ -123,6 +111,7 @@ private:
     {
         return  (float) distribution(generator);
     }
+    float _fc = .1f;
 };
 
 
@@ -188,8 +177,8 @@ public:
         FC1_INPUT,
         Q0_INPUT,
         Q1_INPUT,
-        AUDIO0_INPUT,
-        AUDIO1_INPUT,
+     //   AUDIO0_INPUT,
+     //   AUDIO1_INPUT,
         NUM_INPUTS
     };
 
@@ -266,7 +255,103 @@ private:
  */
     AudioMath::SimpleScaleFun<float> gainScale =
     {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
+
+
+// new stuff
+    std::shared_ptr<LookupTableParams<float>> expLookup = ObjectCache<float>::getExp2();
+    AudioMath::ScaleFun<float> cvLinearScalar = AudioMath::makeLinearScaler(2.f, 14.f);
+    AudioMath::ScaleFun<float> qLinearScalar  = AudioMath::makeLinearScaler(1.f, 30.f);
 };
+
+
+template <class TBase>
+inline void LFNB<TBase>::pollForChangeOnUIThread()
+{
+
+}
+
+template <class TBase>
+inline void LFNB<TBase>::init()
+{
+    divider.setup(4, [this]() {
+        stepn(4);
+    });
+}
+
+
+template <class TBase>
+inline void LFNB<TBase>::stepn(int)
+{
+    // update the BP filter base on fc,q knobs and cv
+    float k = cvLinearScalar(
+        TBase::inputs[FC0_INPUT].value,
+        TBase::params[FC0_PARAM].value,
+        TBase::params[FC0_TRIM_PARAM].value);
+
+    float fm =  LookupTable<float>::lookup(*expLookup, k); 
+    float fc = fm / 4;
+
+   
+
+    float q = qLinearScalar(
+        TBase::inputs[Q0_INPUT].value,
+        TBase::params[Q0_PARAM].value,
+        TBase::params[Q0_TRIM_PARAM].value);
+#if 0
+    static float lastq = -1;
+    if (q != lastq) {
+        printf("q = %.2f\n", q);
+        fflush(stdout);
+        lastq = q;
+    }
+    static float last = -1;
+    if (fc != last) {
+        printf("fc = %.2f fm=%.2f k=%.2f\n", fc, fm, k);
+        fflush(stdout);
+        last = fc;
+    }
+#endif
+
+
+     channels[0].setFilter(fc * this->engineGetSampleTime(), q);
+}
+
+template <class TBase>
+inline void LFNB<TBase>::step()
+{
+    divider.step();
+
+    for (int i = 0; i < 2; ++i) {
+        float x = channels[i].step();
+        TBase::outputs[AUDIO0_OUTPUT+i].value = (float) x;
+    }
+#if 0
+    // Let's only check the inputs every 4 samples. Still plenty fast, but
+    // get the CPU usage down really far.
+    if (controlUpdateCount++ > 4) {
+        controlUpdateCount = 0;
+        const int numEqStages = geq.getNumStages();
+        for (int i = 0; i < numEqStages; ++i) {
+            auto paramNum = i + EQ0_PARAM;
+            auto cvNum = i + EQ0_INPUT;
+            const float gainParamKnob = TBase::params[paramNum].value;
+            const float gainParamCV = TBase::inputs[cvNum].value;
+            const float gain = gainScale(gainParamKnob, gainParamCV);
+            geq.setGain(i, gain);
+        }
+    }
+
+    bool needsData;
+    TButter x = decimator.clock(needsData);
+    x = BiquadFilter<TButter>::run(x, lpfState, lpfParams);
+    if (needsData) {
+        const float z = geq.run(noise());
+        decimator.acceptData(z);
+    }
+
+    TBase::outputs[OUTPUT].value = (float) x;
+#endif
+}
 
 
 
@@ -314,97 +399,4 @@ inline IComposite::Config LFNBDescription<TBase>::getParam(int i)
     return ret;
 }
 
-template <class TBase>
-inline void LFNB<TBase>::pollForChangeOnUIThread()
-{
-#if 0
-// in new one do we need to look at fc also? does UI control the other param?
-
-    if ((lastBaseFrequencyParamValue != TBase::params[FREQ_RANGE_PARAM].value) ||
-        (lastXLFMParamValue != TBase::params[XLFNB_PARAM].value)) {
-
-        lastBaseFrequencyParamValue = TBase::params[FREQ_RANGE_PARAM].value;
-        lastXLFMParamValue = TBase::params[XLFNB_PARAM].value;
-
-        baseFrequency = float(rangeFunc(lastBaseFrequencyParamValue));
-        if (TBase::params[XLFN_PARAMB].value > .5f) {
-            baseFrequency /= 10.f;
-        }
-
-        updateLPF();         // now get the filters updated
-    }
-#endif
-}
-
-template <class TBase>
-inline void LFNB<TBase>::init()
-{
-   // updateLPF();
-    divider.setup(4, [this]() {
-        stepn(4);
-    });
-}
-
-#if 0
-template <class TBase>
-inline void LFNB<TBase>::updateLPF()
-{
-    assert(reciprocalSampleRate > 0);
-    // decimation must be 100hz (what our EQ is designed at)
-    // divided by base.
-    float decimationDivider = float(100.0 / baseFrequency);
-
-    decimator.setDecimationRate(decimationDivider);
-
-    // calculate lpFc ( Fc / sr)
-    // Imaging filter fc = 3.2khz / decimation-divider
-    // fc/fs = 3200 * (reciprocal sr) / decimation-divider.
-    const float lpFc = 3200 * reciprocalSampleRate / decimationDivider;
-    ButterworthFilterDesigner<TButter>::designThreePoleLowpass(
-        lpfParams, lpFc);
-}
-#endif
-
-template <class TBase>
-inline void LFNB<TBase>::stepn(int)
-{
-    // update the BP filter base on fc,q knobs and cv
-}
-
-template <class TBase>
-inline void LFNB<TBase>::step()
-{
-    divider.div();
-
-    for (int i = 0; i < 2; ++i) {
-        float x = channels[i].step();
-        TBase::outputs[AUDIO0_OUTPUT].value = (float) x;
-    }
-#if 0
-    // Let's only check the inputs every 4 samples. Still plenty fast, but
-    // get the CPU usage down really far.
-    if (controlUpdateCount++ > 4) {
-        controlUpdateCount = 0;
-        const int numEqStages = geq.getNumStages();
-        for (int i = 0; i < numEqStages; ++i) {
-            auto paramNum = i + EQ0_PARAM;
-            auto cvNum = i + EQ0_INPUT;
-            const float gainParamKnob = TBase::params[paramNum].value;
-            const float gainParamCV = TBase::inputs[cvNum].value;
-            const float gain = gainScale(gainParamKnob, gainParamCV);
-            geq.setGain(i, gain);
-        }
-    }
-
-    bool needsData;
-    TButter x = decimator.clock(needsData);
-    x = BiquadFilter<TButter>::run(x, lpfState, lpfParams);
-    if (needsData) {
-        const float z = geq.run(noise());
-        decimator.acceptData(z);
-    }
-
-    TBase::outputs[OUTPUT].value = (float) x;
-#endif
-}
 

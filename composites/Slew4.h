@@ -19,6 +19,8 @@ public:
 
 /**
  * perf, initial build. 11.35%
+ * with all normals, now 13.5%
+ * 
  */
 template <class TBase>
 class Slew4 : public TBase
@@ -126,6 +128,8 @@ private:
     std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
     float _outputLevel = 0;
+
+
 };
 
 

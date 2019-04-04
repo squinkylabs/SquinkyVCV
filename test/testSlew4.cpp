@@ -117,9 +117,20 @@ static void testGateInputs()
 
 }
 
+
+#include "LFNB.h"
+static void testLFNB()
+{
+    LFNB<TestComposite> b;
+    b.init();
+    for (int i=0; i<100; ++i)
+        b.step();
+}
+
 void testSlew4()
 {
     testTriggers();
     testMixedOutNormals();
     testGateInputs();
+    testLFNB();
 }
