@@ -148,7 +148,7 @@ void LFNBWidget::addStage(int index)
 #ifdef __V1
 void LFNBWidget::appendContextMenu(Menu* theMenu) 
 {
-    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/sq5/docs/lfnb.md");
     theMenu->addChild(manual);
     
     MenuLabel *spacerLabel = new MenuLabel();
@@ -163,7 +163,7 @@ inline Menu* LFNBWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
 
-    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
+    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/sq5/docs/lfnb.md");
     theMenu->addChild(manual);
     
     MenuLabel *spacerLabel = new MenuLabel();
