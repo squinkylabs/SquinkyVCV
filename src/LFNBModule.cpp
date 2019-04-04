@@ -111,7 +111,7 @@ struct LFNBWidget : ModuleWidget
 
    // void addStage(int i);
    void addJacks(LFNBModule* module, int channel);
-   void addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp, int channel);
+   void addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp);
 
     LFNBLabelUpdater updater;
     // note that module will be null in some cases
@@ -198,15 +198,6 @@ void LFNBWidget::addJacks(LFNBModule* module, int channel)
     if (channel == 0) addLabel(
         Vec(jacksX + jacksDx, labelsY), "Q");
 
-#if 0
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 2 * jacksDx, jacksY + jacksDy * channel),
-        module,
-        Comp::AUDIO0_INPUT + channel));
-    if (channel == 0) addLabel(
-        Vec(jacksX + 2*jacksDx, labelsY), "In");
-#endif
-
     addOutput(createOutput<PJ301MPort>(
         Vec(jacksX + 2 * jacksDx, jacksY + jacksDy * channel),
         module,
@@ -215,31 +206,64 @@ void LFNBWidget::addJacks(LFNBModule* module, int channel)
         Vec(jacksX + 2 * jacksDx - 6, labelsY), "Out");
 }
 
-void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp, int channel)
+void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp)
 {
-    float knobX = 40;
-    float knobY = 240;
-    float labelDy = 42;
-
-    if (channel == 0) {
-        knobX = 100;
-        knobY = 140;
-    }
+    float knobX = 30;
+    float knobY = 60;
+    float knobDy = 60;
+    float labelDy = 28;
+   
+    float trimX = 80;
+    float labelX = 60; 
+    float trimDy = 6;
+   // float lavelDy = 6;
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(knobX, knobY),
-        module, Comp::FC0_PARAM +  channel));
+        module, Comp::FC0_PARAM ));
     addLabel(
-        Vec(knobX-12, knobY-labelDy), "Fc");
+        Vec(labelX, knobY-labelDy), "Fc 1");
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(trimX, knobY+trimDy),
+        module,  Comp::FC0_TRIM_PARAM ));
 
-    knobY -= 70;
+    knobY += knobDy;
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(knobX, knobY),
-        module, Comp::Q0_PARAM + channel));
+        module, Comp::Q0_PARAM));
     addLabel(
-        Vec(knobX-12, knobY-labelDy), "Q");
+        Vec(labelX, knobY-labelDy), "Q 1");
+     addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(trimX, knobY+trimDy),
+        module,  Comp::Q0_TRIM_PARAM ));
+
+    knobY += knobDy;
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(knobX, knobY),
+        module, Comp::FC1_PARAM ));
+    addLabel(
+        Vec(labelX, knobY-labelDy), "Fc 2");
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(trimX, knobY+trimDy),
+        module,  Comp::FC1_TRIM_PARAM ));
+
+    knobY += knobDy;
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(knobX, knobY),
+        module, Comp::Q1_PARAM));
+    addLabel(
+        Vec(labelX, knobY-labelDy), "Q 2");
+     addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(trimX, knobY+trimDy),
+        module,  Comp::Q1_TRIM_PARAM ));
 }
 
 /**
@@ -262,8 +286,7 @@ LFNBWidget::LFNBWidget(LFNBModule *module) : ModuleWidget(module), module(module
 
     addJacks(module, 0);
     addJacks(module, 1);
-    addKnobs(module, icomp, 0);
-    addKnobs(module, icomp, 1);
+    addKnobs(module, icomp);
 
     xlfnWidget = SqHelper::createParam<NullWidget>(
         icomp,
