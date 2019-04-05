@@ -8,6 +8,8 @@
 #include "LFNB.h"
 #include "Gray.h"
 #include "Mix8.h"
+#include "Mix4.h"
+#include "MixM.h"
 #include "Seq.h"
 #include "Shaper.h"
 #include "Slew4.h"
@@ -65,5 +67,7 @@ void testIComposite()
     test<Blank<TestComposite>>();
     test<Slew4<TestComposite>>();
     test<Mix8<TestComposite>>();
+    test<Mix4<TestComposite>>();
+    test<MixM<TestComposite>>();
     test<LFNB<TestComposite>>();
 }

@@ -91,6 +91,13 @@ void init(rack::Plugin *p)
     p->addModel(modelMix8Module);
 #endif
 
+#ifdef _MIX4
+    p->addModel(modelMix4Module);
+#endif
+#ifdef _MIXM
+    p->addModel(modelMixMModule);
+#endif
+
 }
 
 const NVGcolor SqHelper::COLOR_WHITE = nvgRGB(0xff, 0xff, 0xff);

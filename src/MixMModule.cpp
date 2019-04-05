@@ -3,22 +3,22 @@
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
-#ifdef _MIX8
-#include "Mix8.h"
+#ifdef _MIXM
+#include "MixM.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/ToggleButton.h"
 
 #include "ctrl/SqWidgets.h"
 
-using Comp = Mix8<WidgetComposite>;
+using Comp = MixM<WidgetComposite>;
 
 /**
  */
-struct Mix8Module : Module
+struct MixMModule : Module
 {
 public:
-    Mix8Module();
+    MixMModule();
     /**
      *
      * Overrides of Module functions
@@ -26,48 +26,48 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    std::shared_ptr<Comp> Mix8;
+    std::shared_ptr<Comp> MixM;
 private:
 
 };
 
-void Mix8Module::onSampleRateChange()
+void MixMModule::onSampleRateChange()
 {
 }
 
 
 #ifdef __V1
-Mix8Module::Mix8Module()
+MixMModule::MixMModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 #else
-Mix8Module::Mix8Module()
+MixMModule::MixMModule()
     : Module(Comp::NUM_PARAMS,
     Comp::NUM_INPUTS,
     Comp::NUM_OUTPUTS,
     Comp::NUM_LIGHTS)
 {
 #endif
-    Mix8 = std::make_shared<Comp>(this);
+    MixM = std::make_shared<Comp>(this);
     onSampleRateChange();
-    Mix8->init();
+    MixM->init();
 }
 
-void Mix8Module::step()
+void MixMModule::step()
 {
-    Mix8->step();
+    MixM->step();
 }
 
 ////////////////////
 // module widget
 ////////////////////
 
-struct Mix8Widget : ModuleWidget
+struct MixMWidget : ModuleWidget
 {
-    Mix8Widget(Mix8Module *);
+    MixMWidget(MixMModule *);
     DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
@@ -81,11 +81,11 @@ struct Mix8Widget : ModuleWidget
     }
 
     void makeStrip(
-        Mix8Module*,
+        MixMModule*,
         std::shared_ptr<IComposite>,
         int channel,
         std::shared_ptr<ToggleManager>);
-    void makeMaster(Mix8Module* , std::shared_ptr<IComposite>);
+    void makeMaster(MixMModule* , std::shared_ptr<IComposite>);
 };
 
 static const float channelX = 40;
@@ -95,8 +95,8 @@ static const float channelDy = 30;     // just for the bottom jacks
 static float volY = 0;
 static float muteY = 0;
 
-void Mix8Widget::makeStrip(
-    Mix8Module*,
+void MixMWidget::makeStrip(
+    MixMModule*,
     std::shared_ptr<IComposite> icomp,
     int channel,
     std::shared_ptr<ToggleManager> mgr)
@@ -212,7 +212,7 @@ void Mix8Widget::makeStrip(
     }
 }
 
-void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icomp)
+void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icomp)
 {
     float x = 0;
     float y = channelY;
@@ -268,11 +268,11 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
  * This is not shared by all modules in the DLL, just one
  */
 #ifdef __V1
-Mix8Widget::Mix8Widget(Mix8Module *module)
+MixMWidget::MixMWidget(MixMModule *module)
 {
     setModule(module);
 #else
-Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
+MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 {
 #endif
     box.size = Vec(26 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
@@ -294,10 +294,10 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
 
 
 #ifdef __V1
-Model *modelMix8Module = createModel<Mix8Module, Mix8Widget>("squinkylabs-mix8");
+Model *modelMixMModule = createModel<MixMModule, MixMWidget>("squinkylabs-mixm");
 #else
-Model *modelMix8Module = Model::create<Mix8Module,
-    Mix8Widget>("Squinky Labs",
+Model *modelMixMModule = Model::create<MixMModule,
+    MixMWidget>("Squinky Labs",
     "squinkylabs-mix8",
     "-- Mix8 --", RANDOM_TAG);
 #endif

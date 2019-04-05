@@ -37,6 +37,11 @@
     #define _TREM
 #endif
 
+#ifdef __V1
+    #define _MIX4
+    #define _MIXM
+#endif
+
 
 using namespace rack;
 extern Plugin *pluginInstance;
@@ -101,5 +106,12 @@ extern Model *modelSlew4Module;
 #ifdef _MIX8
 extern Model *modelMix8Module;
 #endif
+#ifdef _MIX4
+extern Model *modelMix4Module;
+#endif
+#ifdef _MIXM
+extern Model *modelMixMModule;
+#endif
+
 
 

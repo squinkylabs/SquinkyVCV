@@ -95,6 +95,16 @@
 			"description": "8 channel mixer"
 		},
 		{
+			"slug": "squinkylabs-mix4",
+			"name": "Mixer 4",
+			"description": "4 channel mixer expander"
+		},
+		{
+			"slug": "squinkylabs-mixm",
+			"name": "Mixer m",
+			"description": "Mixer master module"
+		},
+		{
 			"slug": "squinkylabs-ch10",
 			"name": "ch10",
 			"description": "ch10"

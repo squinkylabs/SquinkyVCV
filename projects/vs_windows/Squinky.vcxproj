@@ -124,7 +124,9 @@
     <ClInclude Include="..\..\composites\KSComposite.h" />
     <ClInclude Include="..\..\composites\LFN.h" />
     <ClInclude Include="..\..\composites\LFNB.h" />
+    <ClInclude Include="..\..\composites\Mix4.h" />
     <ClInclude Include="..\..\composites\Mix8.h" />
+    <ClInclude Include="..\..\composites\MixM.h" />
     <ClInclude Include="..\..\composites\Seq.h" />
     <ClInclude Include="..\..\composites\Shaper.h" />
     <ClInclude Include="..\..\composites\Slew4.h" />
