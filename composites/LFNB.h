@@ -82,7 +82,7 @@ private:
 
     void designLPF(float sampleTime, float decimationDivisor)
     {
-        const float lpFc = 100 * sampleTime;        // for now, let's try 100 hz. probably too high
+        const float lpFc = 50 * sampleTime;        // for now, let's try 100 hz. probably too high
         ButterworthFilterDesigner<TButter>::designThreePoleLowpass(
             lpfParams, lpFc);
     }
