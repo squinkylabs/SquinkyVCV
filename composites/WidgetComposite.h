@@ -1,5 +1,14 @@
 #pragma once
 
+#include "engine/Module.hpp"
+#include "engine/Port.hpp"
+#include "engine/Engine.hpp"
+
+using Input = rack::engine::Input;
+using Output = rack::engine::Output;
+using Param = rack::engine::Param;
+using Light = rack::engine::Light;
+
 /**
  * Base class for composites embeddable in a VCV Widget
  * This is used for "real" implementations
@@ -7,7 +16,7 @@
 class WidgetComposite
 {
 public:
-    WidgetComposite(Module * parent) :
+    WidgetComposite(rack::engine::Module * parent) :
         inputs(parent->inputs),
         outputs(parent->outputs),
         params(parent->params),

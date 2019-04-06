@@ -11,6 +11,8 @@
 #include "app.hpp"
 #include "history.hpp"
 
+#include "..\SequencerModule.h"
+
 class SeqAction : public rack::history::ModuleAction
 {
 public: 
@@ -21,15 +23,35 @@ public:
     }
     void undo() override
     {
-        wrappedCommand->undo();
+        MidiSequencerPtr seq = getSeq();
+        if (seq) {
+            wrappedCommand->undo(seq);
+        }
     }
     void redo() override
     {
-        wrappedCommand->execute();
+        MidiSequencerPtr seq = getSeq();
+        if (seq) {
+            wrappedCommand->execute(seq);
+        }
     }
 
 private:
     std::shared_ptr<SqCommand> wrappedCommand;
+    MidiSequencerPtr getSeq()
+    {
+        MidiSequencerPtr ret;
+        SequencerModule* module = dynamic_cast<SequencerModule *>(APP->engine->getModule(moduleId));
+        if (!module) {
+            fprintf(stderr, "error getting module in undo\n");
+            return ret;
+        }
+        ret = module->sequencer;
+        if (!ret) {
+            fprintf(stderr, "error getting sequencer in undo\n");
+        }
+        return ret;
+    }
 };
 
 void UndoRedoStack::setModuleId(int id) 
@@ -37,9 +59,10 @@ void UndoRedoStack::setModuleId(int id)
     this->moduleId = id;
 }
 
-void UndoRedoStack::execute(std::shared_ptr<SqCommand> cmd)
+void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)
 {
-    cmd->execute();
+    assert(seq);
+    cmd->execute(seq);
     auto action = new SeqAction("unknown", cmd, moduleId);
 
     APP->history->push(action);

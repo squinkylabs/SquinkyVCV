@@ -15,30 +15,32 @@ bool UndoRedoStack::canRedo() const
     return !redoList.empty();
 }
 
-void UndoRedoStack::execute(std::shared_ptr<SqCommand> cmd)
+void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)
 {
-    cmd->execute();
+    cmd->execute(seq);
     undoList.push_front(cmd);
     redoList.clear();   
 }
 
-void UndoRedoStack::undo()
+
+void UndoRedoStack::undo(MidiSequencerPtr seq)
 {
     assert(canUndo());
     CommandPtr cmd = undoList.front();
-    cmd->undo();
+    cmd->undo(seq);
     undoList.pop_front();
 
     redoList.push_front(cmd);
 }
 
-void UndoRedoStack::redo()
+void UndoRedoStack::redo(MidiSequencerPtr seq)
 {
     assert(canRedo());
     CommandPtr cmd = redoList.front();
-    cmd->execute();
+    cmd->execute(seq);
     redoList.pop_front();
 
     undoList.push_front(cmd);
 }
+
 #endif

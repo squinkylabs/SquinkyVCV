@@ -229,11 +229,11 @@ static void testTrans2()
     seq->assertValid();
 
     assert(seq->undo->canUndo());
-    seq->undo->undo();
+    seq->undo->undo(seq);
     MidiNoteEventPtr firstNoteAfterUndo = safe_cast<MidiNoteEvent>(seq->context->getTrack()->begin()->second);
     const float p3 = firstNoteAfterUndo->pitchCV;
     assertClose(p3, p0, .000001);
-    seq->undo->redo();
+    seq->undo->redo(seq);
     MidiNoteEventPtr firstNoteAfterRedo = safe_cast<MidiNoteEvent>(seq->context->getTrack()->begin()->second);
     const float p4 = firstNoteAfterRedo->pitchCV;
     assertClose(p4, p1, .000001);
@@ -442,7 +442,7 @@ static void testDelete2()
     assertLT(trackSizeAfter, trackSizeBefore);
 
     assert(seq->undo->canUndo());
-    seq->undo->undo();
+    seq->undo->undo(seq);
     const int trackSizeAfterUndo = seq->context->getTrack()->size();
     assertEQ(trackSizeAfterUndo, trackSizeBefore);
 }

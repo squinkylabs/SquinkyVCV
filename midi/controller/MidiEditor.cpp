@@ -243,7 +243,7 @@ void MidiEditor::updateCursor()
 void MidiEditor::changePitch(int semitones)
 {
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangePitchCommand(seq(), semitones);
-    seq()->undo->execute(cmd);
+    seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
     float deltaCV = PitchUtils::semitone * semitones;
 
@@ -268,7 +268,7 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
 
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount);
-    seq()->undo->execute(cmd);
+    seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 
     // after we change start times, we need to put the cursor on the moved notes
@@ -285,7 +285,7 @@ void MidiEditor::changeDuration(bool ticks, int amount)
     float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
-    seq()->undo->execute(cmd);
+    seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 }
 
@@ -411,7 +411,7 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
     note->duration = duration;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
 
-    seq()->undo->execute(cmd);
+    seq()->undo->execute(seq(), cmd);
     seq()->context->setCursorTime(note->startTime + cursorAdvance);
 
     updateSelectionForCursor();
@@ -450,7 +450,7 @@ void MidiEditor::deleteNote()
 
     auto cmd = ReplaceDataCommand::makeDeleteCommand(seq());
 
-    seq()->undo->execute(cmd);
+    seq()->undo->execute(seq(), cmd);
     // TODO: move selection into undo
     seq()->selection->clear();
 }
@@ -555,7 +555,7 @@ void MidiEditor::paste()
         return;
     }
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
-    seq()->undo->execute(cmd);
+    seq()->undo->execute(seq(), cmd);
 
     // Am finding that after this cursor pitch is not in view-port
     updateCursor();  

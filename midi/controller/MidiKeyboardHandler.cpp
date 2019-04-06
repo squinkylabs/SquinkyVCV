@@ -50,7 +50,7 @@ bool MidiKeyboardHandler::doRepeat(unsigned key)
 }
 
 void MidiKeyboardHandler::handleNoteEditorChange(
-    MidiSequencer* sequencer,
+    MidiSequencerPtr sequencer,
     ChangeType type,
     bool increase)
 {
@@ -124,7 +124,7 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 extern void sequencerHelp();
 
 bool MidiKeyboardHandler::handle(
-    MidiSequencer* sequencer,
+    MidiSequencerPtr sequencer,
     unsigned key,
     unsigned mods)
 {
@@ -317,13 +317,14 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_Z:
             if (ctrl & !shift) {
                 handled = true;
+                
                 if (sequencer->undo->canUndo()) {
-                    sequencer->undo->undo();
+                    sequencer->undo->undo(sequencer);
                 } 
             } else if (ctrl & shift) {
                 handled = true;
                 if (sequencer->undo->canRedo()) {
-                    sequencer->undo->redo();  
+                    sequencer->undo->redo(sequencer);  
                 }
             }
             break;
@@ -332,7 +333,7 @@ bool MidiKeyboardHandler::handle(
             if (ctrl) {
                 handled = true;
                 if (sequencer->undo->canRedo()) {
-                    sequencer->undo->redo();
+                    sequencer->undo->redo(sequencer);
                 } 
             }
             break;

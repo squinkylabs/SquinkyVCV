@@ -1,7 +1,10 @@
 #pragma once
 
 #include <memory>
+
 class SqCommand;
+class MidiSequencer;
+using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
 #if defined(__PLUGIN) && defined(__V1)
 #define __USE_VCV_UNDO
@@ -12,8 +15,8 @@ class SqCommand;
 class UndoRedoStack
 {
 public:
- // execute the command, make undo record
-    void execute(std::shared_ptr<SqCommand>);
+    // execute the command, make undo record
+    void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
     void setModuleId(int);
 private:
     int moduleId=-1;
@@ -22,10 +25,9 @@ private:
 using UndoRedoStackPtr = std::shared_ptr<UndoRedoStack>;
 
 #else
+
 #include <memory>
 #include <list>
-
-class SqCommand;
 
 class UndoRedoStack
 {
@@ -34,9 +36,9 @@ public:
     bool canRedo() const;
 
     // execute the command, make undo record
-    void execute(std::shared_ptr<SqCommand>);
-    void undo();
-    void redo();
+    void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
+    void undo(MidiSequencerPtr);
+    void redo(MidiSequencerPtr);
 
 private:
 

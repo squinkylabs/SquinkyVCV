@@ -266,7 +266,7 @@ void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
 
     bool handled = false;
     if (handle) {
-        handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
+        handled = MidiKeyboardHandler::handle(sequencer, e.key, e.mods);
         if (handled) {
             APP->event->setSelected(this);
            //updateFocus(true);

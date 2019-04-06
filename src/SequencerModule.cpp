@@ -19,9 +19,12 @@
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
-using Comp = Seq<WidgetComposite>;
-class SequencerWidget;
+#include "SequencerModule.h"
 
+using Comp = Seq<WidgetComposite>;
+
+
+#if 0
 struct SequencerModule : Module
 {
     SequencerModule();
@@ -85,6 +88,7 @@ struct SequencerModule : Module
 
     std::atomic<bool> runStopRequested;
 };
+#endif
 
 #ifdef __V1
 SequencerModule::SequencerModule()
