@@ -96,7 +96,8 @@ static void testPasteOntoSelection()
     seq->editor->paste();
     seq->assertValid();
 
-    // pasting a whole track onto itself should leave no change
+    // pasting a whole track onto itself should leave no change,
+    // since it will replace all the existing notes onto themselves.
     assertEQ(seq->context->getTrack()->size(), 9);
     assert(seq->undo->canUndo());
 }

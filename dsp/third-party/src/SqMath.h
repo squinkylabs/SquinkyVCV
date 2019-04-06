@@ -6,7 +6,16 @@
 #endif
 
 #ifdef __V1
-    #include "math.hpp"
+
+    #if defined(_MSC_VER)
+    #pragma warning (push)
+    #pragma warning ( disable: 4244 )
+    #endif
+    #include "math.hpp" 
+    #if defined(_MSC_VER)
+    #pragma warning (pop)
+    #endif
+
     #include "dsp/filter.hpp"
     #include "dsp/minblep.hpp"
 #else

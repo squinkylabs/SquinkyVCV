@@ -95,9 +95,6 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
         const float y = scaler->midiPitchToY(*ev);
         const float width = scaler->midiTimeTodX(ev->duration);
 
-        //  printf("draw note x=%f y=%f vs =%f\n", x, y, sequencer->context->viewport->startTime);
-        fflush(stdout);
-
         const bool selected = sequencer->selection->isSelected(ev);
         filledRect(
             vg,
@@ -200,7 +197,6 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
                 UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
                 0, y, width, noteHeight);
         }
-       
     }
 
     for (float cv = sequencer->context->pitchLow();
@@ -210,7 +206,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         float y = scaler->midiCvToY(cv) + scaler->noteHeight();
         const bool isC = PitchUtils::isC(cv);
         if (y > (box.size.y - .5)) {
-            y = y - 2;  // make sure  bottom line draws. Shoudl really
+            y = y - 2;  // make sure  bottom line draws. Should really
                         // re-design the visuals here
         }
         if (isC) {
@@ -239,50 +235,33 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
     nvgFill(vg);
 }
 
+//******************** All V1 keyboard handling here *******************
+ 
 #ifdef __V1
 void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
 {
     if (e.key == GLFW_KEY_TAB) {
         e.consume(this);
+         this->_onSelectKey(e, e, nullptr); // does it work to do action first.
         APP->event->setSelected(this);
-        this->_onSelectKey(e, e, nullptr);
+       
     } else {
         Widget::onHoverKey(e);
     }
     fflush(stdout);
 }
 
-#endif
-
-#ifdef __V1
 void NoteDisplay::onSelect(const SelectEvent &e)
-#else
-void NoteDisplay::onFocus(EventFocus &e)
-#endif
 {
     updateFocus(true);
-#ifdef __V1
     e.consume(this);
-#else
-    e.consumed = true;
-#endif
 }
 
-#ifdef __V1
 void NoteDisplay::onDeselect(const DeselectEvent &e)
-#else
-void NoteDisplay::onDefocus(EventDefocus &e)
-#endif
 {
     updateFocus(false);
-#ifdef __V1
     e.consume(this);
-#else
-    e.consumed = true;
-#endif
 }
-
-#ifdef __V1
 
 void NoteDisplay::onSelectKey(const SelectKeyEvent& e)
 {
@@ -326,8 +305,24 @@ void NoteDisplay::_onSelectKey(
         OpaqueWidget::onSelectKey(*selectKeyEvent);
     }
 }
+#endif
 
-#else
+//**************** All V0.6 keyboard handling here ***********
+
+#ifndef __V1
+
+void NoteDisplay::onFocus(EventFocus &e)
+{
+    updateFocus(true);
+    e.consumed = true;
+}
+
+void NoteDisplay::onDefocus(EventDefocus &e)
+{
+    updateFocus(false);
+    e.consumed = true;
+}
+
 void NoteDisplay::onKey(EventKey &e)
 {
     const unsigned key = e.key;
@@ -345,7 +340,7 @@ void NoteDisplay::onKey(EventKey &e)
     } else {
         e.consumed = true;
     }
-
 }
+
 #endif
 #endif
