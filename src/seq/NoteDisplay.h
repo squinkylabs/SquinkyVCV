@@ -49,12 +49,12 @@ public:
 #ifdef __V1
     void onSelect(const SelectEvent &e) override;
     void onDeselect(const DeselectEvent &e) override;
-    void onSelectKey(const SelectKeyEvent &e) override;
+  //  void onSelectKey(const SelectKeyEvent &e) override;
     void draw(const DrawArgs &args) override;
 
     virtual void onHoverKey(const HoverKeyEvent &e) override;
 	
-    void _onSelectKey(const KeyEvent&, const Event&, const SelectKeyEvent* );
+  //  void _onSelectKey(const KeyEvent&, const Event&, const SelectKeyEvent* );
 
 #else
     void draw(NVGcontext *vg) override;

@@ -235,47 +235,17 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
     nvgFill(vg);
 }
 
-//******************** All V1 keyboard handling here *******************
- 
-#ifdef __V1
-void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
-{
-    if (e.key == GLFW_KEY_TAB) {
-        e.consume(this);
-         this->_onSelectKey(e, e, nullptr); // does it work to do action first.
-        APP->event->setSelected(this);
-       
-    } else {
-        Widget::onHoverKey(e);
-    }
-    fflush(stdout);
-}
-
-void NoteDisplay::onSelect(const SelectEvent &e)
-{
-    updateFocus(true);
-    e.consume(this);
-}
-
-void NoteDisplay::onDeselect(const DeselectEvent &e)
-{
-    updateFocus(false);
-    e.consume(this);
-}
-
-void NoteDisplay::onSelectKey(const SelectKeyEvent& e)
-{
-    _onSelectKey(e, e, &e);
-}
-
-/**
- * In order to call this from our hover handler, it was
- * necessary to add all these arguments with different related types
+/******************** All V1 keyboard handling here *******************
+ * 
+ * New idea:
+ *      let's do all keyboard with hover key.
+ *      if we consume the key, then grab focus.
  */
-void NoteDisplay::_onSelectKey(
-    const KeyEvent& e, 
-    const Event& ev,  
-    const SelectKeyEvent* selectKeyEvent)
+ 
+
+#ifdef __V1
+
+void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
 {
     bool handle = false;
     bool repeat = false;
@@ -298,13 +268,27 @@ void NoteDisplay::_onSelectKey(
     if (handle) {
         handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
         if (handled) {
-            ev.consume(this);
+            APP->event->setSelected(this);
+           //updateFocus(true);
+            e.consume(this);
         }
     }
-    if (!handled && selectKeyEvent ) {
-        OpaqueWidget::onSelectKey(*selectKeyEvent);
+    if (!handled) {
+        OpaqueWidget::onHoverKey(e);
     }
 }
+void NoteDisplay::onSelect(const SelectEvent &e)
+{
+    updateFocus(true);
+    e.consume(this);
+}
+
+void NoteDisplay::onDeselect(const DeselectEvent &e)
+{
+    updateFocus(false);
+    e.consume(this);
+}
+
 #endif
 
 //**************** All V0.6 keyboard handling here ***********
