@@ -81,7 +81,7 @@ template <class TBase>
 class MixM : public TBase
 {
 public:
-    MixM(struct Module * module) : TBase(module)
+    MixM(Module * module) : TBase(module)
     {
     }
     MixM() : TBase()

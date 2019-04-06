@@ -18,7 +18,7 @@ class Blank : public TBase
 {
 public:
 
-    Blank(struct Module * module) : TBase(module)
+    Blank(Module * module) : TBase(module)
     {
     }
     Blank() : TBase()

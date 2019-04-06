@@ -11,7 +11,7 @@ public:
     {
         init();
     }
-    KSComposite(struct Module * module) : TBase(module)
+    KSComposite(Module * module) : TBase(module)
     {
         init();
     }

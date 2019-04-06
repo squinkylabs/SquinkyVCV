@@ -21,7 +21,7 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(struct Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
+    Seq(Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
     {
         init(song);
     }

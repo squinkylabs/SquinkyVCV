@@ -23,7 +23,7 @@ class EV3 : public TBase
 {
 public:
     friend class TestMB;
-    EV3(struct Module * module) : TBase(module)
+    EV3(Module * module) : TBase(module)
     {
         init();
     }

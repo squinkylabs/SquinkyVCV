@@ -128,7 +128,7 @@ class LFNB : public TBase
 {
 public:
 
-    LFNB(struct Module * module) : TBase(module)
+    LFNB(Module * module) : TBase(module)
     {
     }
     LFNB() : TBase()

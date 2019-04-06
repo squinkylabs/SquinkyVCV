@@ -70,7 +70,7 @@ class Super : public TBase
 {
 public:
 
-    Super(struct Module * module) : TBase(module), gateTrigger(true)
+    Super(Module * module) : TBase(module), gateTrigger(true)
     {
         init();
     }

@@ -18,7 +18,7 @@ class CH10 : public TBase
 {
 public:
 
-    CH10(struct Module * module) : TBase(module)
+    CH10(Module * module) : TBase(module)
     {
     }
     CH10() : TBase()

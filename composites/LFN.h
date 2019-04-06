@@ -66,7 +66,7 @@ class LFN : public TBase
 {
 public:
 
-    LFN(struct Module * module) : TBase(module)
+    LFN(Module * module) : TBase(module)
     {
     }
     LFN() : TBase()

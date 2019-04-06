@@ -44,7 +44,7 @@ template <class TBase>
 class CHB : public TBase
 {
 public:
-    CHB(struct Module * module) : TBase(module)
+    CHB(Module * module) : TBase(module)
     {
         init();
     }

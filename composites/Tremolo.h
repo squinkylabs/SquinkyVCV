@@ -25,7 +25,7 @@ template <class TBase>
 class Tremolo : public TBase
 {
 public:
-    Tremolo(struct Module * module) : TBase(module), gateTrigger(true)
+    Tremolo(Module * module) : TBase(module), gateTrigger(true)
     {
     }
 

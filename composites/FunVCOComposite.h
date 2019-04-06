@@ -21,7 +21,7 @@ public:
     {
         init();
     }
-    FunVCOComposite(struct Module * module) : TBase(module)
+    FunVCOComposite(Module * module) : TBase(module)
     {
         init();
     }

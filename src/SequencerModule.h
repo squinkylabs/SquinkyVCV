@@ -7,11 +7,18 @@
 
 class SequencerWidget;
 #include "WidgetComposite.h"
-#include "engine/Module.hpp"
+
+#ifdef __V1
+    #include "engine/Module.hpp"
+    using Module =  rack::engine::Module;
+#else
+    #include "Engine.hpp"
+    using Module =  rack::Module;
+#endif
 
 #include <atomic>
 
-struct SequencerModule : rack::engine::Module
+struct SequencerModule : Module
 {
     SequencerModule();
     std::shared_ptr<Seq<WidgetComposite>> seqComp;

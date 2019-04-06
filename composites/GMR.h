@@ -12,7 +12,7 @@ template <class TBase>
 class GMR : public TBase
 {
 public:
-    GMR(struct Module * module) : TBase(module), inputClockProcessing(true)
+    GMR(Module * module) : TBase(module), inputClockProcessing(true)
     {
     }
     GMR() : TBase(), inputClockProcessing(true)

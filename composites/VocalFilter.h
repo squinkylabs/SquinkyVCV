@@ -29,7 +29,7 @@ public:
     typedef float T;
     static const int numFilters = FormantTables2::numFormantBands;
 
-    VocalFilter(struct Module * module) : TBase(module)
+    VocalFilter(Module * module) : TBase(module)
     {
     }
     VocalFilter() : TBase()

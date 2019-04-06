@@ -27,7 +27,7 @@ class Slew4 : public TBase
 {
 public:
 
-    Slew4(struct Module * module) : TBase(module)
+    Slew4(Module * module) : TBase(module)
     {
     }
 

@@ -28,7 +28,7 @@ using namespace rack;
 template <class TBase>
 struct EvenVCO : TBase
 {
-    EvenVCO(struct Module * module);
+    EvenVCO(Module * module);
     EvenVCO();
 
     enum ParamIds
@@ -118,7 +118,7 @@ inline EvenVCO<TBase>::EvenVCO() : TBase()
 }
 
 template <class TBase>
-inline EvenVCO<TBase>::EvenVCO(struct Module * module) : TBase(module)
+inline EvenVCO<TBase>::EvenVCO(Module * module) : TBase(module)
 {
     initialize();
 }

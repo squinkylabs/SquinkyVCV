@@ -26,7 +26,7 @@ template <class TBase>
 class FrequencyShifter : public TBase
 {
 public:
-    FrequencyShifter(struct Module * module) : TBase(module)
+    FrequencyShifter(Module * module) : TBase(module)
     {
     }
 

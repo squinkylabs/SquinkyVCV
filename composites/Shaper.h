@@ -46,7 +46,7 @@ template <class TBase>
 class Shaper : public TBase
 {
 public:
-    Shaper(struct Module * module) : TBase(module)
+    Shaper(Module * module) : TBase(module)
     {
         init();
     }

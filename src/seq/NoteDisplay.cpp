@@ -318,7 +318,7 @@ void NoteDisplay::onKey(EventKey &e)
         mods |= GLFW_MOD_CONTROL;
     }
 
-    bool handled = MidiKeyboardHandler::handle(sequencer.get(), key, mods);
+    bool handled = MidiKeyboardHandler::handle(sequencer, key, mods);
     if (!handled) {
         OpaqueWidget::onKey(e);
     } else {

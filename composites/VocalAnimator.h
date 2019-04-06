@@ -35,7 +35,7 @@ public:
     static const int numFilters = 4;
     static const int modulationSubSample = 2;       // do at a fraction of the audio sample rate
 
-    VocalAnimator(struct Module * module) : TBase(module)
+    VocalAnimator(Module * module) : TBase(module)
     {
     }
     VocalAnimator() : TBase()
