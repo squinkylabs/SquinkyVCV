@@ -245,6 +245,28 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
 
 #ifdef __V1
 
+void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
+{
+   // printf("got double click"); fflush(stdout);
+    OpaqueWidget::onDoubleClick(e);
+}
+
+void NoteDisplay::onButton(const ButtonEvent &e)
+{
+    // printf("got on button pos: %.2f, %.2f\n", e.pos.x, e.pos.y); fflush(stdout);
+#if 0
+struct ButtonEvent : Event, PositionEvent {
+	/** GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_RIGHT, GLFW_MOUSE_BUTTON_MIDDLE, etc. */
+	int button;
+	/** GLFW_PRESS or GLFW_RELEASE */
+	int action;
+	/** GLFW_MOD_* */
+	int mods;
+};
+#endif
+    OpaqueWidget::onButton(e);
+}
+
 void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
 {
     bool handle = false;

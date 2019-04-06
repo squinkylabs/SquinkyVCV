@@ -49,13 +49,10 @@ public:
 #ifdef __V1
     void onSelect(const SelectEvent &e) override;
     void onDeselect(const DeselectEvent &e) override;
-  //  void onSelectKey(const SelectKeyEvent &e) override;
     void draw(const DrawArgs &args) override;
-
-    virtual void onHoverKey(const HoverKeyEvent &e) override;
-	
-  //  void _onSelectKey(const KeyEvent&, const Event&, const SelectKeyEvent* );
-
+	void onDoubleClick(const widget::DoubleClickEvent &e) override;
+    void onButton(const ButtonEvent &e) override;
+    void onHoverKey(const HoverKeyEvent &e) override;
 #else
     void draw(NVGcontext *vg) override;
     void onFocus(EventFocus &e) override;
