@@ -190,6 +190,22 @@ static void testMasterMute()
     assertClose(outR, expectedOut, .01);
 }
 
+#include <atomic>
+
+static void test()
+{
+    float x[4];
+   // std::atomic<float> y[4];
+
+  //  std::atomic<float>* p = y;
+    std::atomic<float>* p = reinterpret_cast<std::atomic<float>*>(x);
+
+    x[0] = 5.4f;
+    float z = p[0];
+    printf("z = %f\n", z);
+
+}
+
 void testMix8()
 {
     testChannel();
@@ -200,4 +216,5 @@ void testMix8()
     testPanLookL();
     testPanMiddle();
     testMasterMute();
+    test();
 }

@@ -87,6 +87,7 @@ public:
     Mix4() : TBase()
     {
     }
+    static const int numChan = 4;
 
     /**
     * re-calc everything that changes with sample
@@ -104,34 +105,22 @@ public:
         GAIN1_PARAM,
         GAIN2_PARAM,
         GAIN3_PARAM,
-        GAIN4_PARAM,
-        GAIN5_PARAM,
-        GAIN6_PARAM,
-        GAIN7_PARAM,
+       
         PAN0_PARAM,
         PAN1_PARAM,
         PAN2_PARAM,
         PAN3_PARAM,
-        PAN4_PARAM,
-        PAN5_PARAM,
-        PAN6_PARAM,
-        PAN7_PARAM,
+        
         MUTE0_PARAM,
         MUTE1_PARAM,
         MUTE2_PARAM,
         MUTE3_PARAM,
-        MUTE4_PARAM,
-        MUTE5_PARAM,
-        MUTE6_PARAM,
-        MUTE7_PARAM,
+      
         SOLO0_PARAM,
         SOLO1_PARAM,
         SOLO2_PARAM,
         SOLO3_PARAM,
-        SOLO4_PARAM,
-        SOLO5_PARAM,
-        SOLO6_PARAM,
-        SOLO7_PARAM,
+       
         NUM_PARAMS
     };
 
@@ -141,43 +130,28 @@ public:
         AUDIO1_INPUT,
         AUDIO2_INPUT,
         AUDIO3_INPUT,
-        AUDIO4_INPUT,
-        AUDIO5_INPUT,
-        AUDIO6_INPUT,
-        AUDIO7_INPUT,
+      
         LEVEL0_INPUT,
         LEVEL1_INPUT,
         LEVEL2_INPUT,
         LEVEL3_INPUT,
-        LEVEL4_INPUT,
-        LEVEL5_INPUT,
-        LEVEL6_INPUT,
-        LEVEL7_INPUT,
+      
         PAN0_INPUT,
         PAN1_INPUT,
         PAN2_INPUT,
         PAN3_INPUT,
-        PAN4_INPUT,
-        PAN5_INPUT,
-        PAN6_INPUT,
-        PAN7_INPUT,
-        RIGHT_EXPAND_INPUT,
-        LEFT_EXPAND_INPUT,
+       
         NUM_INPUTS
     };
 
     enum OutputIds
     {
-        LEFT_OUTPUT,
-        RIGHT_OUTPUT,
+
         CHANNEL0_OUTPUT,
         CHANNEL1_OUTPUT,
         CHANNEL2_OUTPUT,
         CHANNEL3_OUTPUT,
-        CHANNEL4_OUTPUT,
-        CHANNEL5_OUTPUT,
-        CHANNEL6_OUTPUT,
-        CHANNEL7_OUTPUT,
+      
         NUM_OUTPUTS
     };
 
@@ -338,11 +312,12 @@ inline void Mix4<TBase>::step()
     }
 
     // output the masters
+#if 0
     const float masterMuteValue = antiPop.get(8);
     const float masterGain = buf_masterGain * masterMuteValue;
     TBase::outputs[LEFT_OUTPUT].value = left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].value;
     TBase::outputs[RIGHT_OUTPUT].value = right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].value;
-
+#endif
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {
         TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
@@ -379,18 +354,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::GAIN3_PARAM:
             ret = {0, 1, .8f, "Level 4"};
             break;
-        case Mix4<TBase>::GAIN4_PARAM:
-            ret = {0, 1, .8f, "Level 5"};
-            break;
-        case Mix4<TBase>::GAIN5_PARAM:
-            ret = {0, 1, .8f, "Level 6"};
-            break;
-        case Mix4<TBase>::GAIN6_PARAM:
-            ret = {0, 1, .8f, "Level 7"};
-            break;
-        case Mix4<TBase>::GAIN7_PARAM:
-            ret = {0, 1, .8f, "Level 8"};
-            break;
+      
         case Mix4<TBase>::PAN0_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 1"};
             break;
@@ -403,18 +367,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::PAN3_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 4"};
             break;
-        case Mix4<TBase>::PAN4_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f, "Pan 5"};
-            break;
-        case Mix4<TBase>::PAN5_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f, "Pan 6"};
-            break;
-        case Mix4<TBase>::PAN6_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f, "Pan 7"};
-            break;
-        case Mix4<TBase>::PAN7_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f, "Pan 8"};
-            break;
+    
         case Mix4<TBase>::MUTE0_PARAM:
             ret = {0, 1.0f, 0, "Mute  1"};
             break;
@@ -427,18 +380,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::MUTE3_PARAM:
             ret = {0, 1.0f, 0, "Mute  4"};
             break;
-        case Mix4<TBase>::MUTE4_PARAM:
-            ret = {0, 1.0f, 0, "Mute  5"};
-            break;
-        case Mix4<TBase>::MUTE5_PARAM:
-            ret = {0, 1.0f, 0, "Mute  6"};
-            break;
-        case Mix4<TBase>::MUTE6_PARAM:
-            ret = {0, 1.0f, 0, "Mute  7"};
-            break;
-        case Mix4<TBase>::MUTE7_PARAM:
-            ret = {0, 1.0f, 0, "Mute  8"};
-            break;
+   
         case Mix4<TBase>::SOLO0_PARAM:
             ret = {0, 1.0f, 0, "Solo  1"};
             break;
@@ -451,18 +393,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::SOLO3_PARAM:
             ret = {0, 1.0f, 0, "Solo  4"};
             break;
-        case Mix4<TBase>::SOLO4_PARAM:
-            ret = {0, 1.0f, 0, "Solo  5"};
-            break;
-        case Mix4<TBase>::SOLO5_PARAM:
-            ret = {0, 1.0f, 0, "Solo  6"};
-            break;
-        case Mix4<TBase>::SOLO6_PARAM:
-            ret = {0, 1.0f, 0, "Solo  7"};
-            break;
-        case Mix4<TBase>::SOLO7_PARAM:
-            ret = {0, 1.0f, 0, "Solo  8"};
-            break;
+   
         default:
             assert(false);
     }

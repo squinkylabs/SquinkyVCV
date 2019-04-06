@@ -84,10 +84,9 @@ struct Mix4Widget : ModuleWidget
         std::shared_ptr<IComposite>,
         int channel,
         std::shared_ptr<ToggleManager>);
-    void makeMaster(Mix4Module* , std::shared_ptr<IComposite>);
 };
 
-static const float channelX = 40;
+static const float channelX = 20;
 static const float dX = 34;
 static const float channelY = 350;
 static const float channelDy = 30;     // just for the bottom jacks
@@ -108,11 +107,7 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::AUDIO0_INPUT));
 
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 40, y-10),
-            "In");
-    }
+
 
     y -= channelDy;
     addOutput(createOutputCentered<PJ301MPort>(
@@ -120,11 +115,7 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::CHANNEL0_OUTPUT));
 
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 46, y-10),
-            "Out");
-    }
+
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -132,11 +123,7 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::LEVEL0_INPUT));
 
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 40, y-10),
-            "Lvl");
-    }
+
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -144,11 +131,7 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::PAN0_INPUT));
 
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 46, y-10),
-            "Pan");
-    }
+
 
     y -= channelDy;
     auto mute = SqHelper::createParam<ToggleButton>(
@@ -160,14 +143,7 @@ void Mix4Widget::makeStrip(
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
     muteY = y-12;
-   
-
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 46, y-10),
-            "M");
-    }    
-
+    
     y -= channelDy;
     auto solo = SqHelper::createParam<ToggleButton>(
         icomp,
@@ -177,25 +153,14 @@ void Mix4Widget::makeStrip(
     solo->addSvg("res/square-button-01.svg");
     solo->addSvg("res/square-button-02.svg");
     addParam(solo);
-     mgr->registerClient(solo);
-
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 46, y-10),
-            "S");
-    }    
-
+    mgr->registerClient(solo);
+   
     y -= (channelDy + 2);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
         module,
         channel + Comp::GAIN0_PARAM));
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 46, y-10),
-            "Vol");
-    }
     volY = y;
 
     y -= (channelDy + 2);
@@ -204,62 +169,8 @@ void Mix4Widget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::PAN0_PARAM));
-    if (channel == 0) {
-        addLabel(
-            Vec(x - 46, y-10),
-            "Pan");
-    }
+    
 }
-
-void Mix4Widget::makeMaster(Mix4Module* module, std::shared_ptr<IComposite> icomp)
-{
-    float x = 0;
-    float y = channelY;
-
-    for (int channel = 0; channel<2; ++channel) {
-        y = channelY;
-        x = 312 + 15 + channel * dX;
-        addInput(createInputCentered<PJ301MPort>(
-            Vec(x, y),
-            module,
-            channel + Comp::LEFT_EXPAND_INPUT));
-
-
-        y -= channelDy;
-        addOutput(createOutputCentered<PJ301MPort>(
-            Vec(x, y),
-            module,
-            channel + Comp::LEFT_OUTPUT));
-    }
-
-    x = 312 + 15 + 15;
-
-    auto mute = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(x-12, muteY),
-        module,
-        Comp::MASTER_MUTE_PARAM);
-    mute->addSvg("res/square-button-01.svg");
-    mute->addSvg("res/square-button-02.svg");
-    addParam(mute);
-
-     y -= channelDy;
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(x, volY),
-        module,
-        Comp::MASTER_VOLUME_PARAM));
-   
-}
-
-/*
-
-  addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(col4, row),
-        module,
-        CHB<WidgetComposite>::PARAM_MAG_ODD));
-        */
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -275,14 +186,13 @@ Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
 {
 #endif
     box.size = Vec(26 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/mix8_panel.svg");
+    SqHelper::setPanel(this, "res/mix4_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
-    for (int i=0; i<8; ++i) {
+    for (int i=0; i< Comp::numChan; ++i) {
         makeStrip(module, icomp, i, mgr);
     }
-    makeMaster(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

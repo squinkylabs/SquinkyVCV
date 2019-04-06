@@ -216,15 +216,17 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
 {
     float x = 0;
     float y = channelY;
+    const float x0 = 160;
 
     for (int channel = 0; channel<2; ++channel) {
         y = channelY;
-        x = 312 + 15 + channel * dX;
+        x = x0 + 15 + channel * dX;
+    #if 0
         addInput(createInputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_EXPAND_INPUT));
-
+#endif
 
         y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
@@ -233,7 +235,7 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_OUTPUT));
     }
 
-    x = 312 + 15 + 15;
+    x = x0 + 15 + 15;
 
     auto mute = SqHelper::createParam<ToggleButton>(
         icomp,
@@ -253,15 +255,6 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
    
 }
 
-/*
-
-  addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(col4, row),
-        module,
-        CHB<WidgetComposite>::PARAM_MAG_ODD));
-        */
-
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -275,12 +268,12 @@ MixMWidget::MixMWidget(MixMModule *module)
 MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 {
 #endif
-    box.size = Vec(26 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/mix8_panel.svg");
+    box.size = Vec(15 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    SqHelper::setPanel(this, "res/mixm_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
-    for (int i=0; i<8; ++i) {
+    for (int i=0; i<Comp::numChan; ++i) {
         makeStrip(module, icomp, i, mgr);
     }
     makeMaster(module, icomp);
@@ -294,12 +287,12 @@ MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 
 
 #ifdef __V1
-Model *modelMixMModule = createModel<MixMModule, MixMWidget>("squinkylabs-mixm");
+Model *modelMixMModule = createModel<MixMModule, MixMWidget>("squinkylabs-MixM");
 #else
 Model *modelMixMModule = Model::create<MixMModule,
     MixMWidget>("Squinky Labs",
-    "squinkylabs-mix8",
-    "-- Mix8 --", RANDOM_TAG);
+    "squinkylabs-MixM",
+    "-- MixM --", RANDOM_TAG);
 #endif
 #endif
 
