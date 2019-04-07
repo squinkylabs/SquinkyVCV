@@ -44,9 +44,13 @@ void NoteScreenScale::reCalculate()
 
     // now calculate the reverse function by just inverting the equation
     ax_rev = 1.0f / ax;
-    ay_rev = 1.0f / ay;
     bx_rev = -bx / ax;
-    by_rev = -by / ay;
+
+    // third try
+    ay_rev = -(ctx->pitchHi() - ctx->pitchLow()) / activeScreenHeight;
+
+    // zero Y should be the highest pitch
+    by_rev = ctx->pitchHi();
 }
 
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev) const
@@ -62,6 +66,7 @@ float NoteScreenScale::midiTimeToX(MidiEvent::time_t t) const
 float NoteScreenScale::xToMidiTime(float x) const
 {
     float t = bx_rev + ax_rev * x;
+
     // todo: normalize for viewport position
     return t;
 }
@@ -71,12 +76,23 @@ float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt) const
     return  dt * ax;
 }
 
-
-
 float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note) const
 {
     return midiCvToY(note.pitchCV);
 }
+
+
+float NoteScreenScale::yToMidiCVPitch(float y) const
+{
+
+   // float unquantizedPitch = (y - topMargin) * ay_rev + by_rev;
+    float unquantizedPitch = (y - topMargin) * ay_rev + context()->pitchHi();
+    return unquantizedPitch;
+  //  unquantizedPitch += PitchUtils::semitone / 2;
+  //  std::pair<int, int> quantizedPitch = PitchUtils::cvToPitch(unquantizedPitch);
+  //  return PitchUtils::pitchToCV(quantizedPitch.first, quantizedPitch.second);
+}
+
 
 float NoteScreenScale::midiCvToY(float cv) const
 {

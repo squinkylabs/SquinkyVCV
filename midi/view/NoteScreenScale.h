@@ -14,7 +14,7 @@ class MidiEditorContext;
  *
  * Coordinate conventions:
  *      if viewport hi and low pitches are the same, it maps a note of that pitch to full screen.
- *      y==0 it the top edge, increasing y goes down the screen
+ *      y==0 it the top edge, increasing y goes down the screen (lower pitch)
  */
 
 class NoteScreenScale
@@ -52,8 +52,12 @@ public:
      */
     float xToMidiTime(float) const;
 
+    /** Convert y position to pitch
+     *  Will quantize the pitch to the nearest semitone.
+     */
+    float yToMidiCVPitch(float) const;
 
-   
+
 private:
     /** These are the linear equation coefficients
      * for mapping from music time/pitch to screen
