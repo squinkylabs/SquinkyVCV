@@ -194,6 +194,31 @@ static void test6()
     assertClose(h, 100, .001);
 }
 
+static void testScreenToNote0()
+{
+    // viewport holds single quarter note of time
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
+    vp->setStartTime(0);
+    vp->setEndTime(1);
+
+    // let's make one octave fill the whole screen
+
+    vp->setPitchRange(2.0, 3.0);
+
+    vp->setCursorPitch(2.0);
+
+    NoteScreenScale n(100, 100, 0, 0);
+    n.setContext(vp);
+
+    float t = n.xToMidiTime(0);
+    assertEQ(t, 0);
+
+    t = n.xToMidiTime(100);
+    assertEQ(t, 1);
+
+    t = n.xToMidiTime(50);
+    assertEQ(t, 0.5f);
+}
 
 void testNoteScreenScale()
 {
@@ -204,4 +229,5 @@ void testNoteScreenScale()
     test4();
     test5();
     test6();
+    testScreenToNote0();
 }

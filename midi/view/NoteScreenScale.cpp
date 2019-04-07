@@ -41,39 +41,54 @@ void NoteScreenScale::reCalculate()
     by = topMargin;
 
     assert( ctx->pitchLow() <= ctx->pitchHi());
+
+    // now calculate the reverse function by just inverting the equation
+    ax_rev = 1.0f / ax;
+    ay_rev = 1.0f / ay;
+    bx_rev = -bx / ax;
+    by_rev = -by / ay;
 }
 
-float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
+float NoteScreenScale::midiTimeToX(const MidiEvent& ev) const
 {
     return midiTimeToX(ev.startTime);
 }
 
-float NoteScreenScale::midiTimeToX(MidiEvent::time_t t)
+float NoteScreenScale::midiTimeToX(MidiEvent::time_t t) const
 {
     return  bx + (t - context()->startTime()) * ax;
 }
 
-float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
+float NoteScreenScale::xToMidiTime(float x) const
+{
+    float t = bx_rev + ax_rev * x;
+    // todo: normalize for viewport position
+    return t;
+}
+
+float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt) const
 {
     return  dt * ax;
 }
 
-float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note)
+
+
+float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note) const
 {
     return midiCvToY(note.pitchCV);
 }
 
-float NoteScreenScale::midiCvToY(float cv)
+float NoteScreenScale::midiCvToY(float cv) const
 {
     return by + (context()->pitchHi() - cv) * ay;
 }
 
-float NoteScreenScale::noteHeight()
+float NoteScreenScale::noteHeight() const
 {
     return (1 / 12.f) * ay;
 }
 
-std::pair<float, float> NoteScreenScale::midiTimeToHBounds(const MidiNoteEvent& note)
+std::pair<float, float> NoteScreenScale::midiTimeToHBounds(const MidiNoteEvent& note) const
 {
     float x0 = midiTimeToX(note.startTime);
     float x1 = midiTimeToX(note.startTime + note.duration);
@@ -86,3 +101,4 @@ std::shared_ptr<MidiEditorContext> NoteScreenScale::context() const
     assert(ret);
     return ret;
 }
+

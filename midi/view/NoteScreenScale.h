@@ -32,23 +32,47 @@ public:
      * update internal match to reflect new state of edit context
      */
     void reCalculate();
-
-    float midiTimeToX(const MidiEvent& ev);
-    float midiTimeToX(MidiEvent::time_t ev);
-    float midiTimeTodX(MidiEvent::time_t dt);
-
-    std::pair<float, float> midiTimeToHBounds(const MidiNoteEvent& note);
-
-    float midiPitchToY(const MidiNoteEvent& note);
-    float midiCvToY(float cv);
-    float noteHeight();
     void assertValid() const;
+
+    /**
+     * Convert time to x position
+     */
+    float midiTimeToX(const MidiEvent& ev) const;
+    float midiTimeToX(MidiEvent::time_t ev) const;
+    float midiTimeTodX(MidiEvent::time_t dt) const;
+    std::pair<float, float> midiTimeToHBounds(const MidiNoteEvent& note) const;
+
+    /** Convert pitch to Y position
+     */
+    float midiPitchToY(const MidiNoteEvent& note) const;
+    float midiCvToY(float cv) const;
+    float noteHeight() const;
+
+    /** Convert x position to time
+     */
+    float xToMidiTime(float) const;
+
+
+   
 private:
-    float unitsPerPix = 1;
+    /** These are the linear equation coefficients
+     * for mapping from music time/pitch to screen
+     */
     float by = 0;
     float bx = 0;
     float ax = 0;
     float ay = 0;
+
+     /** These are the linear equation coefficients
+     * for mapping from screen coordinates to music time/pitch
+     */
+    float by_rev = 0;
+    float bx_rev = 0;
+    float ax_rev = 0;
+    float ay_rev = 0;
+
+
+    float unitsPerPix = 1;
     std::weak_ptr<MidiEditorContext> _context;
     std::shared_ptr<MidiEditorContext> context() const;
 
