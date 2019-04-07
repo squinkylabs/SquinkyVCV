@@ -2,12 +2,11 @@
 
 class MidiEditorContext;
 
-
-
 #include "MidiEvent.h"
+
 /**
- * This class know how to map between pitch, time, and screen coordinates.
- * notes on the screen have:
+ * This class knows how to map between pitch, time, and screen coordinates.
+ * Notes on the screen have:
  *      height in pixels - determined by vertical zoom
  *      width in pixels - determined by duration and horizontal zoom
  *      x position where the note starts.
@@ -34,20 +33,15 @@ public:
      */
     void reCalculate();
 
-
     float midiTimeToX(const MidiEvent& ev);
     float midiTimeToX(MidiEvent::time_t ev);
     float midiTimeTodX(MidiEvent::time_t dt);
 
     std::pair<float, float> midiTimeToHBounds(const MidiNoteEvent& note);
 
-
-
     float midiPitchToY(const MidiNoteEvent& note);
     float midiCvToY(float cv);
-
     float noteHeight();
-
     void assertValid() const;
 private:
     float unitsPerPix = 1;

@@ -87,9 +87,7 @@ public:
         trackNumber = n;
     }
 
-
     MidiTrackPtr getTrack();
-
 
     void setScaler(std::shared_ptr<NoteScreenScale> _scaler);
 
@@ -101,7 +99,6 @@ public:
     void setCursorToNote(MidiNoteEventPtrC note);
     void setCursorToSelection(std::shared_ptr<MidiSelectionModel> selection);
 
- 
     // TODO: change to const_iterator
     using iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
     using iterator_pair = std::pair<iterator, iterator>;
@@ -142,7 +139,6 @@ private:
     float m_pitchHi = 0;
 
     int trackNumber = 0;
-
 
     std::shared_ptr<NoteScreenScale> scaler;
 

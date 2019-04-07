@@ -8,6 +8,20 @@
 #include "BiquadState.h"
 #include "HilbertFilterDesigner.h"
 
+#ifdef __V1
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+using Module = rack::engine::Module;
+#else
+namespace rack {
+    struct Module;
+};
+using Module = rack::Module;
+#endif
+
 template <class TBase>
 class BootyDescription : public IComposite
 {

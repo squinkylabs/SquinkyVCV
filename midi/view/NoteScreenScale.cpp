@@ -28,7 +28,6 @@ void NoteScreenScale::assertValid() const
     assert(this->context());
 }
 
-
 void NoteScreenScale::reCalculate()
 {
     const float activeScreenWidth = screenWidth - 2 * hMargin;
