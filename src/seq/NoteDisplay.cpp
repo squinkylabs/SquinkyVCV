@@ -267,11 +267,38 @@ struct ButtonEvent : Event, PositionEvent {
     OpaqueWidget::onButton(e);
 }
 
+void NoteDisplay::onSelectKey(const SelectKeyEvent &e) 
+{
+    // GLFW_KEY_Q
+    //printf("got select key %d q is %d\n", e.key, GLFW_KEY_Q);
+    //fflush(stdout);
+
+    bool handled = handleKey(e.key, e.mods, e.action);
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onSelectKey(e);
+    }
+}
+
 void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
+{
+    //printf("got select key %d q is %d\n", e.key, GLFW_KEY_Q);
+    //fflush(stdout);
+
+    bool handled = handleKey(e.key, e.mods, e.action);
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onHoverKey(e);
+    }
+}
+
+bool NoteDisplay::handleKey(int key, int mods, int action)
 {
     bool handle = false;
     bool repeat = false;
-    switch (e.action) {
+    switch (action) {
         case GLFW_REPEAT:
             handle = false;
             repeat = true;
@@ -283,22 +310,21 @@ void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
     }
 
     if (repeat) {
-        handle = MidiKeyboardHandler::doRepeat(e.key);
+        handle = MidiKeyboardHandler::doRepeat(key);
     }
 
     bool handled = false;
     if (handle) {
-        handled = MidiKeyboardHandler::handle(sequencer, e.key, e.mods);
+        handled = MidiKeyboardHandler::handle(sequencer, key, mods);
         if (handled) {
             APP->event->setSelected(this);
-           //updateFocus(true);
-            e.consume(this);
+           
         }
     }
-    if (!handled) {
-        OpaqueWidget::onHoverKey(e);
-    }
+    //printf("handle key ret %d key=%d\n", handled, key);
+    return handled;
 }
+
 void NoteDisplay::onSelect(const SelectEvent &e)
 {
     updateFocus(true);

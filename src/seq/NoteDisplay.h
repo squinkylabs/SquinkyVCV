@@ -53,6 +53,8 @@ public:
 	void onDoubleClick(const widget::DoubleClickEvent &e) override;
     void onButton(const ButtonEvent &e) override;
     void onHoverKey(const HoverKeyEvent &e) override;
+    void onSelectKey(const SelectKeyEvent &e) override;
+    bool handleKey(int key, int mods, int action);
 #else
     void draw(NVGcontext *vg) override;
     void onFocus(EventFocus &e) override;
