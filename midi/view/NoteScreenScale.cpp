@@ -53,6 +53,15 @@ void NoteScreenScale::reCalculate()
     by_rev = ctx->pitchHi();
 }
 
+
+bool NoteScreenScale::isPointInBounds(float x, float y) const
+{
+    return (x >= hMargin) &&
+        (x <= (screenWidth - hMargin)) &&
+        (y > topMargin) &&
+        (y < screenHeight);
+        ;
+}
 float NoteScreenScale::midiTimeToX(const MidiEvent& ev) const
 {
     return midiTimeToX(ev.startTime);
@@ -66,8 +75,7 @@ float NoteScreenScale::midiTimeToX(MidiEvent::time_t t) const
 float NoteScreenScale::xToMidiTime(float x) const
 {
     float t = bx_rev + ax_rev * x;
-
-    // todo: normalize for viewport position
+    t += context()->startTime();
     return t;
 }
 
@@ -87,10 +95,10 @@ float NoteScreenScale::yToMidiCVPitch(float y) const
 
    // float unquantizedPitch = (y - topMargin) * ay_rev + by_rev;
     float unquantizedPitch = (y - topMargin) * ay_rev + context()->pitchHi();
-    return unquantizedPitch;
+  //  return unquantizedPitch;
   //  unquantizedPitch += PitchUtils::semitone / 2;
-  //  std::pair<int, int> quantizedPitch = PitchUtils::cvToPitch(unquantizedPitch);
-  //  return PitchUtils::pitchToCV(quantizedPitch.first, quantizedPitch.second);
+    std::pair<int, int> quantizedPitch = PitchUtils::cvToPitch(unquantizedPitch);
+    return PitchUtils::pitchToCV(quantizedPitch.first, quantizedPitch.second);
 }
 
 

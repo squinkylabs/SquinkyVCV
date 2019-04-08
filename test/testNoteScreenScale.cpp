@@ -239,42 +239,99 @@ static void test6()
     assertEQ(p, note.pitchCV);
 }
 
-static void testScreenToNote0()
+// basic test of x coordinates
+static void testTimeRange()
 {
-    // viewport holds single quarter note of time
+    // viewport holds single quarter note
     MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
-    vp->setStartTime(0);
-    vp->setEndTime(1);
+    const float start = 1000;
+    vp->setStartTime(start);
+    vp->setEndTime(start+1);
 
-    // let's make one octave fill the whole screen
+    // let's make one quarter note fill the whole screen
+    MidiNoteEvent note;
+    note.setPitch(3, 0);
+    note.startTime = start;
 
-    vp->setPitchRange(2.0, 3.0);
+    vp->setPitchRange(note.pitchCV, note.pitchCV);
 
-    vp->setCursorPitch(2.0);
+    vp->setCursorPitch(note.pitchCV);
+    vp->setCursorTime(start);
 
     NoteScreenScale n(100, 100, 0, 0);
     n.setContext(vp);
+    float left = n.midiTimeToX(note);
+    float right = left + n.midiTimeTodX(1.0f);
+    assertEQ(left, 0);
+    assertEQ(right, 100);
 
-    float t = n.xToMidiTime(0);
-    assertEQ(t, 0);
+    float l2 = n.midiTimeToX(note.startTime);
+    assertEQ(left, l2);
 
-    t = n.xToMidiTime(100);
-    assertEQ(t, 1);
+    auto bounds = n.midiTimeToHBounds(note);
+    assertEQ(bounds.first, 0);
+    assertEQ(bounds.second, 100);
 
-    t = n.xToMidiTime(50);
-    assertEQ(t, 0.5f);
+    // check x -> time
+    float t0 = n.xToMidiTime(0);
+    assertEQ(t0, start);
+    t0 = n.xToMidiTime(100);
+    assertEQ(t0, start+1);
 
-    float p = n.yToMidiCVPitch(0);
-    float p2 = n.yToMidiCVPitch(100);
-
-    // top of the screen should be high pitch
-    assertClose(p, 3.f, .01);
-    assertClose(p2, 2.f, .01);
 }
 
+static void testPitchQuantize()
+{
+    // viewport holds two pitches
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
+    vp->setTimeRange(0, 1);
 
-// TODO: need some tests where time range doesn't start at 0.
-// Need some tests for "in-between" pitches 
+    MidiNoteEvent note1, note2;
+    note1.setPitch(3, 0);
+    note2.setPitch(3, 1);
+    vp->setPitchRange(note1.pitchCV, note2.pitchCV);
+    vp->setCursorPitch(note1.pitchCV);
+
+    // make 20 pix on top
+    NoteScreenScale n(100, 100, 0, 0);
+    n.setContext(vp);
+  
+    // check y -> quantized pitch
+    assertEQ(n.yToMidiCVPitch(0), note2.pitchCV);
+    assertEQ(n.yToMidiCVPitch(49), note2.pitchCV);
+
+    assertEQ(n.yToMidiCVPitch(100), note1.pitchCV);
+    assertEQ(n.yToMidiCVPitch(51), note1.pitchCV);
+}
+
+static void testPointInBounds()
+{
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr);
+    vp->setTimeRange(0, 1);
+
+    MidiNoteEvent note1, note2;
+    note1.setPitch(3, 0);
+    note2.setPitch(3, 1);
+    vp->setPitchRange(note1.pitchCV, note2.pitchCV);
+    vp->setCursorPitch(note1.pitchCV);
+
+    // make 20 pix on top
+    NoteScreenScale n(200, 100, 20, 30);
+    n.setContext(vp);
+
+    assert(n.isPointInBounds(50, 50));
+
+    assert(!n.isPointInBounds(19, 50));
+    assert(!n.isPointInBounds(200-19, 50));
+
+    assert(!n.isPointInBounds(50, 29));
+    assert(!n.isPointInBounds(50, 101));
+
+    assert(!n.isPointInBounds(10000, 100000));
+    assert(!n.isPointInBounds(-1, -1));
+}
+
+// TODO:
 // Need tests where x, y are out of bounds
 void testNoteScreenScale()
 {
@@ -285,5 +342,7 @@ void testNoteScreenScale()
     test4();
     test5();
     test6();
-    testScreenToNote0();
+    testTimeRange();
+    testPitchQuantize();
+    testPointInBounds();
 }

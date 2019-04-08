@@ -57,7 +57,7 @@ public:
      */
     float yToMidiCVPitch(float) const;
 
-
+    bool isPointInBounds(float x, float y) const;
 private:
     /** These are the linear equation coefficients
      * for mapping from music time/pitch to screen
