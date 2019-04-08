@@ -25,8 +25,11 @@ public:
      *
      * Overrides of Module functions
      */
-    void step() override;
+    
     void onSampleRateChange() override;
+
+    // Override MixerModule
+    void internalProcess() override;
 
     std::shared_ptr<Comp> Mix4;
 private:
@@ -57,7 +60,7 @@ Mix4Module::Mix4Module()
     Mix4->init();
 }
 
-void Mix4Module::step()
+void Mix4Module::internalProcess()
 {
     Mix4->step();
 }
@@ -205,7 +208,7 @@ Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
 
 
 #ifdef __V1
-Model *modelMix4Module = createModel<Mix4Module, Mix4Widget>("squinkylabs-mix8");
+Model *modelMix4Module = createModel<Mix4Module, Mix4Widget>("squinkylabs-mix4");
 #else
 Model *modelMix4Module = Model::create<Mix4Module,
     Mix4Widget>("Squinky Labs",

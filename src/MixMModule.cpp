@@ -26,8 +26,11 @@ public:
      *
      * Overrides of Module functions
      */
-    void step() override;
     void onSampleRateChange() override;
+
+    // Override MixerModule
+    void internalProcess() override;
+     bool amMaster() override { return true; }
 
     std::shared_ptr<Comp> MixM;
 private:
@@ -59,7 +62,7 @@ MixMModule::MixMModule()
     MixM->init();
 }
 
-void MixMModule::step()
+void MixMModule::internalProcess()
 {
     MixM->step();
 }
