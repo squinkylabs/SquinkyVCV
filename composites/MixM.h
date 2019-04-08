@@ -306,8 +306,8 @@ inline void MixM<TBase>::step()
     }
 
     // output the masters
-    const float masterMuteValue = antiPop.get(8);
-    const float masterGain = buf_masterGain * masterMuteValue;
+  //  const float masterMuteValue = antiPop.get(8);
+  //  const float masterGain = buf_masterGain * masterMuteValue;
  //   TBase::outputs[LEFT_OUTPUT].value = left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].value;
   //  TBase::outputs[RIGHT_OUTPUT].value = right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].value;
 

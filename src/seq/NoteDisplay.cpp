@@ -253,7 +253,16 @@ void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
 
 void NoteDisplay::onButton(const ButtonEvent &e)
 {
-    // printf("got on button pos: %.2f, %.2f\n", e.pos.x, e.pos.y); fflush(stdout);
+    auto scaler = sequencer->context->getScaler();
+    assert(scaler);
+    bool bInBounds = scaler->isPointInBounds(e.pos.x, e.pos.y);
+    if (bInBounds) {
+       // float t = scaler->xToMidiTime(e.pos.x);
+        //float p = scaler->yToMidiCVPitch(e.pos.y);
+
+    }
+    OpaqueWidget::onButton(e);
+
 #if 0
 struct ButtonEvent : Event, PositionEvent {
 	/** GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_RIGHT, GLFW_MOUSE_BUTTON_MIDDLE, etc. */
@@ -264,7 +273,7 @@ struct ButtonEvent : Event, PositionEvent {
 	int mods;
 };
 #endif
-    OpaqueWidget::onButton(e);
+    
 }
 
 void NoteDisplay::onSelectKey(const SelectKeyEvent &e) 

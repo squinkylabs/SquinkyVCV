@@ -4,6 +4,8 @@
 #include "WidgetComposite.h"
 
 #ifdef _MIX4
+
+#include "MixerModule.h"
 #include "Mix4.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -15,7 +17,7 @@ using Comp = Mix4<WidgetComposite>;
 
 /**
  */
-struct Mix4Module : Module
+struct Mix4Module : public MixerModule
 {
 public:
     Mix4Module();
