@@ -23,7 +23,6 @@ static std::shared_ptr<T> getMixer()
     return ret;
 }
 
-
 template <typename T>
 void testChannel(int channel, bool useParam)
 {
@@ -47,12 +46,6 @@ void testChannel(int channel, bool useParam)
     m.inputs[T::LEVEL0_INPUT + channel].value = activeCVValue;
     m.inputs[T::LEVEL0_INPUT + channel].active = true;
 
-    auto xx2 = m.inputs[T::PAN0_INPUT].value;
-    auto yy2 = m.params[T::PAN0_PARAM].value;
-
-  ////  const float balance = m.T::params[0 + PAN0_PARAM].value;
- //   const float cv = TBase::inputs[0 + PAN0_INPUT].value;
-
     for (int i = 0; i < 1000; ++i) {
         m.step();           // let mutes settle
     }
@@ -71,7 +64,6 @@ static void testChannel()
         testChannel<T>(i, false);
     }
 }
-
 
 template <typename T>
 static void testMaster(bool side)
@@ -131,14 +123,11 @@ void testSolo()
     assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
 }
 
-
-
 static void testPanLook0()
 {
     assert(ObjectCache<float>::getMixerPanL());
     assert(ObjectCache<float>::getMixerPanR());
 }
-
 
 static inline float _PanL(float balance, float cv)
 { // -1...+1
@@ -155,7 +144,6 @@ static inline float _PanR(float balance, float cv)
     p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
     return ::sin(p);
 }
-
 
 static void testPanLookL()
 {
@@ -214,6 +202,31 @@ static void testMasterMute()
     assertClose(outR, expectedOut, .01);
 }
 
+#include "ExtremeTester.h"
+template <typename T>
+static void testInputExtremes()
+{
+    T dut;
+   // dut.setSampleRate(44100);
+
+    std::vector< std::pair<float, float> > paramLimits;
+    dut.init();
+
+    paramLimits.resize(dut.NUM_PARAMS);
+    using fp = std::pair<float, float>;
+   
+
+    auto iComp = T::getDescription();
+    for (int i = 0; i < iComp->getNumParams(); ++i) {
+        auto desc = iComp->getParam(i);
+        fp t(desc.min, desc.max);
+        paramLimits[i] = t;
+    }
+
+    ExtremeTester<T>::test(dut, paramLimits, false, "mix");
+}
+
+
 void testMix8()
 {
     testChannel<Mixer8>();
@@ -234,4 +247,10 @@ void testMix8()
     testPanMiddle<MixerM>();
     testMasterMute<Mixer8>();
     testMasterMute<MixerM>();
+
+#if 0 // these take too long
+    testInputExtremes<Mixer8>();
+    testInputExtremes<MixerM>();
+    testInputExtremes<Mixer4>();
+#endif
 }

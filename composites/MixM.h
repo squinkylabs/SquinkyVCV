@@ -222,8 +222,9 @@ inline void MixM<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float balance = TBase::params[i + PAN0_PARAM].value;
         const float cv = TBase::inputs[i + PAN0_INPUT].value;
-        buf_leftPanGains[i] = LookupTable<float>::lookup(*panL, balance + cv/5);
-        buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, balance + cv / 5);
+        const float panValue = std::clamp(balance + cv / 5, -1, 1);
+        buf_leftPanGains[i] = LookupTable<float>::lookup(*panL, panValue);
+        buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, panValue);
     }
 
     buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
