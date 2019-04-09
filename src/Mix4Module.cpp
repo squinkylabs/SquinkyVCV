@@ -195,7 +195,7 @@ Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
-    for (int i=0; i< Comp::numChan; ++i) {
+    for (int i=0; i< Comp::numChannels; ++i) {
         makeStrip(module, icomp, i, mgr);
     }
 

@@ -22,6 +22,17 @@ public:
 };
 
 
+#ifndef _CLAMP
+#define _CLAMP
+namespace std {
+    inline float clamp(float v, float lo, float hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+}
+#endif
+
 /**
  * CPU usage, straight AS copy: 298
  *  with all the master and mute logic hooked up, 299

@@ -12,6 +12,16 @@
 #include <immintrin.h>
 #include <memory>
 
+#ifndef _CLAMP
+#define _CLAMP
+namespace std {
+    inline float clamp(float v, float lo, float hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+}
+#endif
 
 template <class TBase>
 class MixMDescription : public IComposite
@@ -88,7 +98,7 @@ public:
     {
     }
 
-    static const int numChan = 4;
+    static const int numChannels = 4;
 
     /**
     * re-calc everything that changes with sample
@@ -168,8 +178,6 @@ public:
 
     void stepn(int steps);
 
-    const static int numChannels = numChan;
-
     float buf_inputs[numChannels];
     float buf_channelGains[numChannels];
     float buf_channelOuts[numChannels];
@@ -186,41 +194,12 @@ private:
     Divider divider;
 
     /**
-     * 8 input channels and one master
+     * 4 input channels and one master
      */
-    MultiLPF<12> antiPop;
+    MultiLPF<8> antiPop;
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 };
-
-#ifndef _CLAMP
-#define _CLAMP
-namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
-}
-#endif
-
-#if 0
-static inline float PanL(float balance, float cv)
-{ // -1...+1
-    float p, inp;
-    inp = balance + cv / 5;
-    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
-    return ::cos(p);
-}
-
-static inline float PanR(float balance, float cv)
-{
-    float p, inp;
-    inp = balance + cv / 5;
-    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
-    return ::sin(p);
-}
-#endif
 
 template <class TBase>
 inline void MixM<TBase>::stepn(int div)
@@ -306,10 +285,10 @@ inline void MixM<TBase>::step()
     }
 
     // output the masters
-  //  const float masterMuteValue = antiPop.get(8);
-  //  const float masterGain = buf_masterGain * masterMuteValue;
- //   TBase::outputs[LEFT_OUTPUT].value = left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].value;
-  //  TBase::outputs[RIGHT_OUTPUT].value = right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].value;
+    const float masterMuteValue = antiPop.get(numChannels);     // master is the one after
+    const float masterGain = buf_masterGain * masterMuteValue;
+    TBase::outputs[LEFT_OUTPUT].value = left * masterGain;
+    TBase::outputs[RIGHT_OUTPUT].value = right * masterGain;
 
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {
@@ -388,56 +367,4 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-#ifdef _USEAVX
-
-
-template <class TBase>
-inline void MixM<TBase>::step()
-{
-    divider.step();
-
-    // fill buf_inputs
-    for (int i = 0; i < numChannels; ++i) {
-        buf_inputs[i] = TBase::inputs[i + AUDIO0_INPUT].value;
-    }
-
-     // compute buf_channelOuts
-    __m256 inputs = _mm256_load_ps(buf_inputs);
-    __m256 gains = _mm256_load_ps(buf_channelGains);
-    inputs = _mm256_mul_ps(inputs, gains);
-    _mm256_store_ps(buf_channelOuts, inputs);
-
-    // inputs now is a vector of channel outputs
-    __m256 leftGains = _mm256_load_ps(buf_leftPanGains);
-    __m256 rightGains = _mm256_load_ps(buf_rightPanGains);
-    __m256 left = _mm256_mul_ps(inputs, leftGains);
-    __m256 right = _mm256_mul_ps(inputs, rightGains);
-
-
-
-    __m256 zero = _mm256_set1_ps(0);
-    left = _mm256_hadd_ps(left, zero);
-    left = _mm256_hadd_ps(left, zero);
-    left = _mm256_hadd_ps(left, zero);
-
-    right = _mm256_hadd_ps(right, zero);
-    right = _mm256_hadd_ps(right, zero);
-    right = _mm256_hadd_ps(right, zero);
-
-    float temp[8];
-    _mm256_store_ps(temp, right);
-    TBase::outputs[RIGHT_OUTPUT].value = temp[0];
-    _mm256_store_ps(temp, left);
-    TBase::outputs[LEFT_OUTPUT].value = temp[0];
-
-      // output channel outputs
-    for (int i = 0; i < numChannels; ++i) {
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
-    }
-
-}
-
-#endif
-
 

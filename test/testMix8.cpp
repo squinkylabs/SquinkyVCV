@@ -98,10 +98,11 @@ static void testMaster()
     testMaster<T>(false);
     testMaster<T>(true);
 }
-#if 0
+
+template <typename T>
 void testMute()
 {
-    MixerPtr m = getMixer();
+    auto m = getMixer<T>();
 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
@@ -114,10 +115,10 @@ void testMute()
     assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
 }
 
-
+template <typename T>
 void testSolo()
 {
-    MixerPtr m = getMixer();
+    auto m = getMixer<T>();
 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
@@ -129,7 +130,7 @@ void testSolo()
     assertClose(m->outputs[T::LEFT_OUTPUT].value, float(10 * .8 * .8), .001);
     assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
 }
-#endif
+
 
 
 static void testPanLook0()
@@ -138,7 +139,7 @@ static void testPanLook0()
     assert(ObjectCache<float>::getMixerPanR());
 }
 
-#if 1
+
 static inline float _PanL(float balance, float cv)
 { // -1...+1
     float p, inp;
@@ -154,7 +155,7 @@ static inline float _PanR(float balance, float cv)
     p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
     return ::sin(p);
 }
-#endif
+
 
 static void testPanLookL()
 {
@@ -173,10 +174,11 @@ static void testPanLookL()
     }
 }
 
-#if 0
+
+template <typename T>
 static void testPanMiddle()
 {
-    MixerPtr m = getMixer();
+    auto m = getMixer<T>();
 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = 0;     // pan in middle
@@ -192,9 +194,11 @@ static void testPanMiddle()
     assertClose(outR, expectedOut, .01);
 }
 
+
+template <typename T>
 static void testMasterMute()
 {
-    MixerPtr m = getMixer();
+    auto m = getMixer<T>();
 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = 0;     // straight up
@@ -209,35 +213,25 @@ static void testMasterMute()
     assertClose(outL, expectedOut, .01);
     assertClose(outR, expectedOut, .01);
 }
-#endif
-
-#include <atomic>
-
-static void test()
-{
-    float x[4];
-   // std::atomic<float> y[4];
-
-  //  std::atomic<float>* p = y;
-    std::atomic<float>* p = reinterpret_cast<std::atomic<float>*>(x);
-
-    x[0] = 5.4f;
-    float z = p[0];
-    printf("z = %f\n", z);
-
-}
 
 void testMix8()
 {
     testChannel<Mixer8>();
     testChannel<Mixer4>();
+    testChannel<MixerM>();
+
     testMaster<Mixer8>();
     testMaster<MixerM>();
-   // testMute();
-  //  testSolo();
+
+    testMute<Mixer8>();
+    testMute<MixerM>();
+    testSolo<Mixer8>();
+    testSolo<MixerM>();
     testPanLook0();
     testPanLookL();
-  //  testPanMiddle();
-  //  testMasterMute();
-    test();
+
+    testPanMiddle<Mixer8>();
+    testPanMiddle<MixerM>();
+    testMasterMute<Mixer8>();
+    testMasterMute<MixerM>();
 }
