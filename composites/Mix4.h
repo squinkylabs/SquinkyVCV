@@ -87,7 +87,7 @@ public:
     Mix4() : TBase()
     {
     }
-    static const int numChan = 4;
+    static const int numChannels = 4;
 
     /**
     * re-calc everything that changes with sample
@@ -99,8 +99,6 @@ public:
 
     enum ParamIds
     {
-        MASTER_VOLUME_PARAM,
-        MASTER_MUTE_PARAM,
         GAIN0_PARAM,
         GAIN1_PARAM,
         GAIN2_PARAM,
@@ -140,18 +138,15 @@ public:
         PAN1_INPUT,
         PAN2_INPUT,
         PAN3_INPUT,
-       
         NUM_INPUTS
     };
 
     enum OutputIds
     {
-
         CHANNEL0_OUTPUT,
         CHANNEL1_OUTPUT,
         CHANNEL2_OUTPUT,
         CHANNEL3_OUTPUT,
-      
         NUM_OUTPUTS
     };
 
@@ -174,59 +169,22 @@ public:
 
     void stepn(int steps);
 
-    const static int numChannels = 8;
-
     float buf_inputs[numChannels];
     float buf_channelGains[numChannels];
     float buf_channelOuts[numChannels];
     float buf_leftPanGains[numChannels];
     float buf_rightPanGains[numChannels];
 
-    /** 
-     * allocate extra bank for the master mute
-     */
-    float buf_muteInputs[numChannels + 4];
-    float buf_masterGain;
 
+    float buf_muteInputs[numChannels];
 private:
     Divider divider;
 
-    /**
-     * 8 input channels and one master
-     */
-    MultiLPF<12> antiPop;
+    MultiLPF<numChannels> antiPop;
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 };
 
-#ifndef _CLAMP
-#define _CLAMP
-namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
-}
-#endif
-
-#if 0
-static inline float PanL(float balance, float cv)
-{ // -1...+1
-    float p, inp;
-    inp = balance + cv / 5;
-    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
-    return ::cos(p);
-}
-
-static inline float PanR(float balance, float cv)
-{
-    float p, inp;
-    inp = balance + cv / 5;
-    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
-    return ::sin(p);
-}
-#endif
 
 template <class TBase>
 inline void Mix4<TBase>::stepn(int div)
@@ -253,7 +211,7 @@ inline void Mix4<TBase>::stepn(int div)
         buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, balance + cv / 5);
     }
 
-    buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
+//    buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
 
     bool anySolo = false;
     for (int i = 0; i < numChannels; ++i) {
@@ -272,7 +230,7 @@ inline void Mix4<TBase>::stepn(int div)
             buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
     }
-    buf_muteInputs[8] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
+//    buf_muteInputs[8] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
     antiPop.step(buf_muteInputs);
 }
 
@@ -336,12 +294,12 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
 
-        case Mix4<TBase>::MASTER_VOLUME_PARAM:
-            ret = {0, 1, .8f, "Master Vol"};
-            break;
-        case Mix4<TBase>::MASTER_MUTE_PARAM:
-            ret = {0, 1, 0, "Master Mute"};
-            break;
+   //     case Mix4<TBase>::MASTER_VOLUME_PARAM:
+   //         ret = {0, 1, .8f, "Master Vol"};
+   //         break;
+    //    case Mix4<TBase>::MASTER_MUTE_PARAM:
+    //        ret = {0, 1, 0, "Master Mute"};
+    //        break;
         case Mix4<TBase>::GAIN0_PARAM:
             ret = {0, 1, .8f, "Level 1"};
             break;
