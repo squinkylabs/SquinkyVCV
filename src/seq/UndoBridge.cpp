@@ -11,7 +11,7 @@
 #include "app.hpp"
 #include "history.hpp"
 
-#include "..\SequencerModule.h"
+#include "../SequencerModule.h"
 
 class SeqAction : public rack::history::ModuleAction
 {
