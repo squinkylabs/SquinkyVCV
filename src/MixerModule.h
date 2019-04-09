@@ -70,8 +70,21 @@ inline void MixerModule::process(const ProcessArgs &args)
     }
 #endif
 
-#if 1
+    if (rightModule) {
+        printf("right module model = %p, mixM = %p\n",
+            rightModule->model,
+            modelMixMModule);
+    }
+     if (leftModule) {
+        printf("left module model = %p, mix4 = %p\n",
+            leftModule->model,
+            modelMix4Module);
+    }
+    fflush(stdout);
 
+
+#if 0
+    // set up the audio busses buffers for this processing cycle
     if (!amMaster()) {
         // slave module
         // must send my output to this->rightProducerBuffer
@@ -86,5 +99,7 @@ inline void MixerModule::process(const ProcessArgs &args)
     }
     #endif
 
+
+    // Now do the real mixer processing
     internalProcess();
 }

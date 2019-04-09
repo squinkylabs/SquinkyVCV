@@ -171,6 +171,8 @@ public:
         return std::make_shared<MixMDescription<TBase>>();
     }
 
+    void setExpansionInputs(float*);
+
     /**
      * Main processing entry point. Called every sample
      */
@@ -199,6 +201,8 @@ private:
     MultiLPF<8> antiPop;
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
+
+    const float* expansionInputs = nullptr;
 };
 
 template <class TBase>
@@ -280,6 +284,10 @@ inline void MixM<TBase>::step()
 
     // compute and output master outputs
     float left = 0, right = 0;
+    if (expansionInputs) {
+        left = expansionInputs[0];
+        right = expansionInputs[1];
+    }
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
         right += buf_channelOuts[i] * buf_rightPanGains[i];
@@ -295,6 +303,12 @@ inline void MixM<TBase>::step()
     for (int i = 0; i < numChannels; ++i) {
         TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
     }
+}
+
+template <class TBase>
+inline void MixM<TBase>::setExpansionInputs(float* p)
+{
+    expansionInputs = p;
 }
 
 template <class TBase>

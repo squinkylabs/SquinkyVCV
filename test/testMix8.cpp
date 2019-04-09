@@ -227,6 +227,63 @@ static void testInputExtremes()
 }
 
 
+static void testExpansion4()
+{
+    float inbuf[6];
+    float outbuf[6];
+
+    auto m = getMixer<Mixer4>();
+    inbuf[0] = 1.1f;
+    inbuf[1] = 3.2f;
+    m->setExpansionInputs(inbuf);
+    m->setExpansionOutputs(outbuf);
+    m->step();
+    assertEQ(outbuf[0], 1.1f);
+    assertEQ(outbuf[1], 3.2f);
+
+    // output,no input
+    m->setExpansionInputs(nullptr);
+    m->step();
+    assertEQ(outbuf[0], 0);
+    assertEQ(outbuf[1], 0);
+
+    // input, no output
+    m->setExpansionInputs(inbuf);
+    m->setExpansionOutputs(nullptr);
+    m->step();
+    assertEQ(outbuf[0], 0);
+    assertEQ(outbuf[1], 0);
+}
+
+
+static void testExpansionM()
+{
+    float inbuf[6];
+
+    auto m = getMixer<MixerM>();
+    inbuf[0] = 1.1f;
+    inbuf[1] = 3.2f;
+    m->setExpansionInputs(inbuf);
+
+    m->params[MixerM::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+
+    assertClose(m->outputs[MixerM::LEFT_OUTPUT].value, 1.1f, .01);
+    assertClose(m->outputs[MixerM::RIGHT_OUTPUT].value, 3.2f, .01);
+
+    // disconnect input
+    m->setExpansionInputs(nullptr);
+    m->step();
+   
+    assertClose(m->outputs[MixerM::LEFT_OUTPUT].value, 0, .01);
+    assertClose(m->outputs[MixerM::RIGHT_OUTPUT].value, 0, .01);
+}
+
+
+
 void testMix8()
 {
     testChannel<Mixer8>();
@@ -247,6 +304,9 @@ void testMix8()
     testPanMiddle<MixerM>();
     testMasterMute<Mixer8>();
     testMasterMute<MixerM>();
+
+    testExpansion4();
+    testExpansionM();
 
 #if 0 // these take too long
     testInputExtremes<Mixer8>();

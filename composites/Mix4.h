@@ -173,6 +173,9 @@ public:
         return std::make_shared<Mix4Description<TBase>>();
     }
 
+    void setExpansionInputs(float*);
+    void setExpansionOutputs(float*);
+
     /**
      * Main processing entry point. Called every sample
      */
@@ -194,6 +197,10 @@ private:
     MultiLPF<numChannels> antiPop;
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
+
+    const float* expansionInputs = nullptr;
+    float* expansionOutputs = nullptr;
+
 };
 
 
@@ -225,8 +232,6 @@ inline void Mix4<TBase>::stepn(int div)
         buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, panValue);
     }
 
-//    buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
-
     bool anySolo = false;
     for (int i = 0; i < numChannels; ++i) {
         if (TBase::params[i + SOLO0_PARAM].value > .5f) {
@@ -244,7 +249,6 @@ inline void Mix4<TBase>::stepn(int div)
             buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
     }
-//    buf_muteInputs[8] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
     antiPop.step(buf_muteInputs);
 }
 
@@ -278,12 +282,21 @@ inline void Mix4<TBase>::step()
 
     // compute and output master outputs
     float left = 0, right = 0;
+    if (expansionInputs) {
+        left  = expansionInputs[0];
+        right = expansionInputs[1];
+    }
+
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
         right += buf_channelOuts[i] * buf_rightPanGains[i];
     }
 
     // output the masters
+    if (expansionOutputs) {
+        expansionOutputs[0] = left;
+        expansionOutputs[1] = right;
+    }
 #if 0
     const float masterMuteValue = antiPop.get(8);
     const float masterGain = buf_masterGain * masterMuteValue;
@@ -294,6 +307,19 @@ inline void Mix4<TBase>::step()
     for (int i = 0; i < numChannels; ++i) {
         TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
     }
+}
+
+
+template <class TBase>
+inline void Mix4<TBase>::setExpansionInputs(float* p)
+{
+    expansionInputs = p;
+}
+
+template <class TBase>
+inline void Mix4<TBase>::setExpansionOutputs(float* p)
+{
+    expansionOutputs = p;
 }
 
 template <class TBase>
