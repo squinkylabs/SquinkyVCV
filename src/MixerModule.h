@@ -22,6 +22,9 @@ public:
     {
         
     }
+protected:
+    virtual void setExternalInput(const float*)=0;
+    virtual void setExternalOutput(float*)=0;
 private:
    // float lConsumerBuffer[8];
    // float lProducerBuffer[8];
@@ -54,11 +57,41 @@ inline MixerModule::MixerModule()
 //      from the unit on its right
 
 // For now, let's hard code for one expander
+#if 1
 inline void MixerModule::process(const ProcessArgs &args)
 {
+    // first, determine what modules are are paired with
+    const bool pairedRight = rightModule && 
+        (rightModule->model == modelMixMModule) &&
+        !amMaster();
+
+    const bool pairedLeft = leftModule &&
+        (leftModule->model == modelMix4Module);
+
+    assert(rightProducerMessage);
+    assert(!pairedLeft || leftModule->rightConsumerMessage);
+
+    // "our" mixer will send stuff out using our out right message buffer.
+    // (we don't have a left one, btw)
+    setExternalOutput(pairedRight ? reinterpret_cast<float *>(rightProducerMessage) : nullptr);
+    setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
+
+
+    // fflush(stdout);
+    // Now do the real mixer processing
+    internalProcess();
+}
+#endif
+
+
 #if 0
+inline void MixerModule::process(const ProcessArgs &args)
+{
+#if 1
+static int x =0;
+if (++x == 50) {
      if (rightModule) {
-        printf("\n%p I have a right module ammaster=%d\n", this, amMaster()); 
+        printf("\n\n %p I have a right module ammaster=%d\n", this, amMaster()); 
         printf("lpm=%p rpm = %p\n", 
             leftProducerMessage, 
             rightProducerMessage);
@@ -68,8 +101,10 @@ inline void MixerModule::process(const ProcessArgs &args)
         printf("this flip=%p, flop=%p\n", bufferFlip, bufferFlop);
         fflush(stdout);
     }
+}
 #endif
 
+#if 0
     if (rightModule) {
         printf("right module model = %p, mixM = %p\n",
             rightModule->model,
@@ -80,7 +115,8 @@ inline void MixerModule::process(const ProcessArgs &args)
             leftModule->model,
             modelMix4Module);
     }
-    fflush(stdout);
+    #endif
+
 
 
 #if 0
@@ -103,3 +139,4 @@ inline void MixerModule::process(const ProcessArgs &args)
     // Now do the real mixer processing
     internalProcess();
 }
+#endif

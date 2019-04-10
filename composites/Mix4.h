@@ -173,7 +173,7 @@ public:
         return std::make_shared<Mix4Description<TBase>>();
     }
 
-    void setExpansionInputs(float*);
+    void setExpansionInputs(const float*);
     void setExpansionOutputs(float*);
 
     /**
@@ -311,7 +311,7 @@ inline void Mix4<TBase>::step()
 
 
 template <class TBase>
-inline void Mix4<TBase>::setExpansionInputs(float* p)
+inline void Mix4<TBase>::setExpansionInputs(const float* p)
 {
     expansionInputs = p;
 }

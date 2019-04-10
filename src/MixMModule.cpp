@@ -33,12 +33,26 @@ public:
      bool amMaster() override { return true; }
 
     std::shared_ptr<Comp> MixM;
+protected:
+    void setExternalInput(const float*) override;
+    void setExternalOutput(float*) override;
 private:
 
 };
 
 void MixMModule::onSampleRateChange()
 {
+    // TODO: do we need this?
+}
+
+void MixMModule::setExternalInput(const float* buf)
+{
+    MixM->setExpansionInputs(buf);
+}
+
+void MixMModule::setExternalOutput(float*)
+{
+    assert(false);          // expander doesn't have an output expand
 }
 
 

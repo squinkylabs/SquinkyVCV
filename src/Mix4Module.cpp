@@ -32,12 +32,26 @@ public:
     void internalProcess() override;
 
     std::shared_ptr<Comp> Mix4;
+
+protected:
+    void setExternalInput(const float*) override;
+    void setExternalOutput(float*) override;
 private:
 
 };
 
 void Mix4Module::onSampleRateChange()
 {
+}
+
+void Mix4Module::setExternalInput(const float* buf)
+{
+    Mix4->setExpansionInputs(buf);
+}
+
+void Mix4Module::setExternalOutput(float* buf)
+{
+    Mix4->setExpansionOutputs(buf);
 }
 
 #ifdef __V1

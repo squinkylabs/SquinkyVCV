@@ -171,7 +171,7 @@ public:
         return std::make_shared<MixMDescription<TBase>>();
     }
 
-    void setExpansionInputs(float*);
+    void setExpansionInputs(const float*);
 
     /**
      * Main processing entry point. Called every sample
@@ -306,7 +306,7 @@ inline void MixM<TBase>::step()
 }
 
 template <class TBase>
-inline void MixM<TBase>::setExpansionInputs(float* p)
+inline void MixM<TBase>::setExpansionInputs(const float* p)
 {
     expansionInputs = p;
 }
