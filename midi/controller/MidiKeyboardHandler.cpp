@@ -341,4 +341,9 @@ bool MidiKeyboardHandler::handle(
     }
     return handled;
 }
+
+void MidiKeyboardHandler::doMouseClick(MidiSequencerPtr sequencer, float time, float pitchCV)
+{
+    sequencer->editor->selectAt(time, pitchCV);
+}
 #endif

@@ -47,12 +47,14 @@ void MixMModule::onSampleRateChange()
 
 void MixMModule::setExternalInput(const float* buf)
 {
+   // printf("mixm, set external input\n"); fflush(stdout);
     MixM->setExpansionInputs(buf);
 }
 
-void MixMModule::setExternalOutput(float*)
+void MixMModule::setExternalOutput(float* buf)
 {
-    assert(false);          // expander doesn't have an output expand
+    // printf("mixm, set external outpu\n"); fflush(stdout);
+    assert(buf == nullptr);          // expander doesn't have an output expand
 }
 
 

@@ -242,6 +242,7 @@ void MidiEditor::updateCursor()
 
 void MidiEditor::changePitch(int semitones)
 {
+   
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangePitchCommand(seq(), semitones);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
@@ -252,6 +253,8 @@ void MidiEditor::changePitch(int semitones)
     float newCursorPitch = seq()->context->cursorPitch() + deltaCV;
     newCursorPitch = std::min(10.f, newCursorPitch);
     newCursorPitch = std::max(-10.f, newCursorPitch);
+
+    printf("changePitch newcv = %f\n", newCursorPitch); fflush(stdout);
 
     seq()->context->setCursorPitch(newCursorPitch);
     seq()->context->adjustViewportForCursor();
@@ -351,11 +354,31 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 void MidiEditor::changeCursorPitch(int semitones)
 {
     float pitch = seq()->context->cursorPitch() + (semitones * PitchUtils::semitone);
+    setNewCursorPitch(pitch);
+    #if 0
     pitch = std::max(pitch, -5.f);
     pitch = std::min(pitch, 5.f);
     seq()->context->setCursorPitch(pitch);
     seq()->context->scrollViewportToCursorPitch();
     updateSelectionForCursor();
+    #endif
+}
+
+void MidiEditor::setNewCursorPitch(float pitch)
+{
+    pitch = std::max(pitch, -5.f);
+    pitch = std::min(pitch, 5.f);
+    seq()->context->setCursorPitch(pitch);
+    seq()->context->scrollViewportToCursorPitch();
+    updateSelectionForCursor();
+}
+
+void MidiEditor::selectAt(float time, float pitchCV)
+{
+    // Implement by calling existing handlers. This will
+    // cause double update, but I don't think anyone cares.
+    setNewCursorPitch(pitchCV);
+    advanceCursorToTime(time);
 }
 
 void MidiEditor::extendTrackToMinDuration(float neededLength)

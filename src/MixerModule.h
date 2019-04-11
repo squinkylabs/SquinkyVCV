@@ -37,7 +37,6 @@ private:
      */
     float bufferFlip[8];
     float bufferFlop[8];
-
 };
 
 // Remember : "rightModule" is the module to your right
@@ -56,17 +55,26 @@ inline MixerModule::MixerModule()
 // And - master on the right will get it's bus input from the consumer buffer 
 //      from the unit on its right
 
-// For now, let's hard code for one expander
-#if 1
 inline void MixerModule::process(const ProcessArgs &args)
 {
-    // first, determine what modules are are paired with
+   #if 0
+    // first, determine what modules are are paired with what
+    // A Mix4 is not a master, and can pair with either a Mix4 or a MixM to the right
     const bool pairedRight = rightModule && 
-        (rightModule->model == modelMixMModule) &&
+        ((rightModule->model == modelMixMModule) || (rightModule->model == modelMix4Module)) &&
         !amMaster();
 
+    // A MixM and a Mix4 can both pair with a Mix4 to the left
     const bool pairedLeft = leftModule &&
         (leftModule->model == modelMix4Module);
+
+    printf("\nmixer %p\n amMaster=%d, pairedLeft=%d right=%d\n", this, amMaster(), pairedLeft, pairedRight);
+    #else 
+    bool pairedLeft = false;
+    bool pairedRight = false;
+    #endif
+    //printf("rm=%d lm=%d\n", bool(rightModule), bool(leftModule));
+    //fflush(stdout);
 
     assert(rightProducerMessage);
     assert(!pairedLeft || leftModule->rightConsumerMessage);
@@ -76,12 +84,9 @@ inline void MixerModule::process(const ProcessArgs &args)
     setExternalOutput(pairedRight ? reinterpret_cast<float *>(rightProducerMessage) : nullptr);
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
 
-
-    // fflush(stdout);
-    // Now do the real mixer processing
     internalProcess();
+
 }
-#endif
 
 
 #if 0

@@ -11,6 +11,11 @@ public:
      */
     static bool doRepeat(unsigned key);
     static bool handle(MidiSequencerPtr sequencer, unsigned key, unsigned mods);
+
+    /**
+     * Let's put the mouse handlers in here, too
+     */
+    static void doMouseClick( MidiSequencerPtr sequencer, float time, float pitchCV);
 private:
     enum class ChangeType { lessThan, plus, bracket };
    

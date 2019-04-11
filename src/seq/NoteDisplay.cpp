@@ -253,13 +253,15 @@ void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
 
 void NoteDisplay::onButton(const ButtonEvent &e)
 {
-    auto scaler = sequencer->context->getScaler();
-    assert(scaler);
-    bool bInBounds = scaler->isPointInBounds(e.pos.x, e.pos.y);
-    if (bInBounds) {
-       // float t = scaler->xToMidiTime(e.pos.x);
-        //float p = scaler->yToMidiCVPitch(e.pos.y);
-
+    if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
+        auto scaler = sequencer->context->getScaler();
+        assert(scaler);
+        bool bInBounds = scaler->isPointInBounds(e.pos.x, e.pos.y);
+        if (bInBounds) {
+            const float time = scaler->xToMidiTime(e.pos.x);
+            const float pitchCV = scaler->yToMidiCVPitch(e.pos.y);
+            MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV);
+        }
     }
     OpaqueWidget::onButton(e);
 

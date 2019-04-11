@@ -33,6 +33,8 @@ public:
     void advanceCursorToTime(float time);
     void changeCursorPitch(int semitones);
 
+    void selectAt(float time, float pitchCV);
+
 
     /*********** functions that edit/change the notes **************/
     
@@ -78,13 +80,9 @@ private:
 
     // move the cursor, if necessary.
     void updateCursor();
-
     void setCursorToNote(MidiNoteEventPtr note);
-
-   
-
+    void setNewCursorPitch(float pitch);
     void extendTrackToMinDuration(float time);
-
     void insertNoteHelper(Durations dur, bool moveCursorAfter);
 };
 
