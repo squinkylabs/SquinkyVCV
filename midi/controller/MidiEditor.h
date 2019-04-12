@@ -33,7 +33,7 @@ public:
     void advanceCursorToTime(float time);
     void changeCursorPitch(int semitones);
 
-    void selectAt(float time, float pitchCV);
+    void selectAt(float time, float pitchCV, bool extendSelection);
 
 
     /*********** functions that edit/change the notes **************/
@@ -61,7 +61,7 @@ public:
 
     void assertCursorInSelection();
      // select any note that is under the cursor
-    void updateSelectionForCursor();
+    void updateSelectionForCursor(bool extendCurrent);
 private:
     /**
      * The sequencer we will act on.
