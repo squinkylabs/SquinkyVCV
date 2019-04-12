@@ -307,15 +307,8 @@ void MidiEditor::assertCursorInSelection()
 
 void MidiEditor::advanceCursorToTime(float time)
 {
-   // assert(!ticks);         // not implemented yet
-//assert(amount != 0);
-
-  //  seq()->context->assertCursorInViewport();
-
-  //  float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
-  //  seq()->context->setCursorTime(seq()->context->cursorTime() + advanceAmount);
     seq()->context->setCursorTime(std::max(0.f, time));
-    updateSelectionForCursor();
+    updateSelectionForCursor(false);
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
     seq()->assertValid();
@@ -370,11 +363,12 @@ void MidiEditor::setNewCursorPitch(float pitch)
     pitch = std::min(pitch, 5.f);
     seq()->context->setCursorPitch(pitch);
     seq()->context->scrollViewportToCursorPitch();
-    updateSelectionForCursor();
+    updateSelectionForCursor(false);
 }
 
-void MidiEditor::selectAt(float time, float pitchCV)
+void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
 {
+    assert(!shiftKey);
     // Implement by calling existing handlers. This will
     // cause double update, but I don't think anyone cares.
     setNewCursorPitch(pitchCV);
@@ -437,7 +431,7 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
     seq()->undo->execute(seq(), cmd);
     seq()->context->setCursorTime(note->startTime + cursorAdvance);
 
-    updateSelectionForCursor();
+    updateSelectionForCursor(false);
     seq()->assertValid();
 }
 
@@ -478,8 +472,9 @@ void MidiEditor::deleteNote()
     seq()->selection->clear();
 }
 
-void MidiEditor::updateSelectionForCursor()
+void MidiEditor::updateSelectionForCursor(bool extendCurrent)
 {
+    assert(!extendCurrent);
     seq()->selection->clear();
     const int cursorSemi = PitchUtils::cvToSemitone(seq()->context->cursorPitch());
 
