@@ -15,7 +15,7 @@ public:
     /**
      * Let's put the mouse handlers in here, too
      */
-    static void doMouseClick( MidiSequencerPtr sequencer, float time, float pitchCV);
+    static void doMouseClick( MidiSequencerPtr sequencer, float time, float pitchCV, bool shiftKey);
 private:
     enum class ChangeType { lessThan, plus, bracket };
    
