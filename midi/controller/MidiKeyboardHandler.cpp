@@ -342,8 +342,13 @@ bool MidiKeyboardHandler::handle(
     return handled;
 }
 
-void MidiKeyboardHandler::doMouseClick(MidiSequencerPtr sequencer, float time, float pitchCV, bool shiftKey)
+void MidiKeyboardHandler::doMouseClick(MidiSequencerPtr sequencer, 
+    float time, float pitchCV, bool shiftKey, bool ctrlKey)
 {
-    sequencer->editor->selectAt(time, pitchCV, shiftKey);
+    if (!ctrlKey) {
+        sequencer->editor->selectAt(time, pitchCV, shiftKey);
+    } else {
+        sequencer->editor->toggleSelectionAt(time, pitchCV);
+    }
 }
 #endif

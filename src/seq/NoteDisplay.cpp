@@ -60,7 +60,7 @@ void NoteDisplay::initEditContext()
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
-    sequencer->editor->updateSelectionForCursor();
+    sequencer->editor->updateSelectionForCursor(false);
 
 // set scaler once context has a valid range
     auto scaler = std::make_shared<NoteScreenScale>(
@@ -254,14 +254,15 @@ void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
 void NoteDisplay::onButton(const ButtonEvent &e)
 {
     if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
-        bool shift = e.mods & GLFW_MOD_SHIFT;
+        const bool shift = e.mods & GLFW_MOD_SHIFT;
+        const bool ctrl = e.mods & GLFW_MOD_CONTROL;
         auto scaler = sequencer->context->getScaler();
         assert(scaler);
         bool bInBounds = scaler->isPointInBounds(e.pos.x, e.pos.y);
         if (bInBounds) {
             const float time = scaler->xToMidiTime(e.pos.x);
             const float pitchCV = scaler->yToMidiCVPitch(e.pos.y);
-            MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV, shift);
+            MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV, shift, ctrl);
         }
     }
     OpaqueWidget::onButton(e);

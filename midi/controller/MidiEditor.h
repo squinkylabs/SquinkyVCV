@@ -30,10 +30,11 @@ public:
      * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
-    void advanceCursorToTime(float time);
+    void advanceCursorToTime(float time, bool extendSelection);
     void changeCursorPitch(int semitones);
 
     void selectAt(float time, float pitchCV, bool extendSelection);
+    void toggleSelectionAt(float time, float pitchCV);
 
 
     /*********** functions that edit/change the notes **************/
@@ -81,9 +82,10 @@ private:
     // move the cursor, if necessary.
     void updateCursor();
     void setCursorToNote(MidiNoteEventPtr note);
-    void setNewCursorPitch(float pitch);
+    void setNewCursorPitch(float pitch, bool extendSelection);
     void extendTrackToMinDuration(float time);
     void insertNoteHelper(Durations dur, bool moveCursorAfter);
+    MidiNoteEventPtr getNoteUnderCursor();
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;

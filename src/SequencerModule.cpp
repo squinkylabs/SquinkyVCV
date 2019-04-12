@@ -88,7 +88,7 @@ void SequencerWidget::step()
                 curTime = TimeUtils::bar2time(curBar);
             }
             auto seq = _module->getSeq();
-            seq->editor-> advanceCursorToTime(curTime);
+            seq->editor-> advanceCursorToTime(curTime, false);
         }
     }
 }

@@ -254,7 +254,7 @@ void MidiEditor::changePitch(int semitones)
     newCursorPitch = std::min(10.f, newCursorPitch);
     newCursorPitch = std::max(-10.f, newCursorPitch);
 
-    printf("changePitch newcv = %f\n", newCursorPitch); fflush(stdout);
+   // printf("changePitch newcv = %f\n", newCursorPitch); fflush(stdout);
 
     seq()->context->setCursorPitch(newCursorPitch);
     seq()->context->adjustViewportForCursor();
@@ -305,10 +305,10 @@ void MidiEditor::assertCursorInSelection()
     assert(foundIt);
 }
 
-void MidiEditor::advanceCursorToTime(float time)
+void MidiEditor::advanceCursorToTime(float time, bool extendSelection)
 {
     seq()->context->setCursorTime(std::max(0.f, time));
-    updateSelectionForCursor(false);
+    updateSelectionForCursor(extendSelection);
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
     seq()->assertValid();
@@ -323,7 +323,7 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 
     float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
     float newTime = seq()->context->cursorTime() + advanceAmount;
-    advanceCursorToTime(newTime);
+    advanceCursorToTime(newTime, false);
 }
 
 #if 0
@@ -347,7 +347,7 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
 void MidiEditor::changeCursorPitch(int semitones)
 {
     float pitch = seq()->context->cursorPitch() + (semitones * PitchUtils::semitone);
-    setNewCursorPitch(pitch);
+    setNewCursorPitch(pitch, false);
     #if 0
     pitch = std::max(pitch, -5.f);
     pitch = std::min(pitch, 5.f);
@@ -357,22 +357,56 @@ void MidiEditor::changeCursorPitch(int semitones)
     #endif
 }
 
-void MidiEditor::setNewCursorPitch(float pitch)
+void MidiEditor::setNewCursorPitch(float pitch, bool extendSelection)
 {
     pitch = std::max(pitch, -5.f);
     pitch = std::min(pitch, 5.f);
     seq()->context->setCursorPitch(pitch);
     seq()->context->scrollViewportToCursorPitch();
-    updateSelectionForCursor(false);
+    updateSelectionForCursor(extendSelection);
 }
 
 void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
 {
-    assert(!shiftKey);
     // Implement by calling existing handlers. This will
     // cause double update, but I don't think anyone cares.
-    setNewCursorPitch(pitchCV);
-    advanceCursorToTime(time);
+    setNewCursorPitch(pitchCV, shiftKey);
+    advanceCursorToTime(time, shiftKey);
+}
+
+void MidiEditor::toggleSelectionAt(float time, float pitchCV)
+{
+    int a = seq()->selection->size();
+   // auto origSel = seq()->selection->clone();
+   
+    // set the pitch and time, without messing up selection
+    pitchCV = std::max(pitchCV, -5.f);
+    pitchCV = std::min(pitchCV, 5.f);
+    seq()->context->setCursorPitch(pitchCV);
+    seq()->context->scrollViewportToCursorPitch();
+
+    seq()->context->setCursorTime(std::max(0.f, time));
+    seq()->context->adjustViewportForCursor();
+    seq()->assertValid();
+
+    // if there is no note at the new location, leave
+    MidiNoteEventPtr note = getNoteUnderCursor();
+    if (!note) {
+        return;
+    }
+
+    int b = seq()->selection->size();
+    const bool noteIsSelectedDeep = seq()->selection->isSelectedDeep(note);
+    const bool noteIsSelected = seq()->selection->isSelected(note);
+    // if the note is not selected, select it
+    if (!noteIsSelected) {
+        seq()->selection->addToSelection(note, true);
+    } else {
+
+        // if it is, remove it from selection
+        seq()->selection->removeFromSelection(note);
+    }
+
 }
 
 void MidiEditor::extendTrackToMinDuration(float neededLength)
@@ -472,10 +506,53 @@ void MidiEditor::deleteNote()
     seq()->selection->clear();
 }
 
+/*
+new version of updateSelectionForCursor
+1) find note under cursor
+2) add/replace selection
+*/
+
 void MidiEditor::updateSelectionForCursor(bool extendCurrent)
 {
-    assert(!extendCurrent);
-    seq()->selection->clear();
+    MidiNoteEventPtr note = getNoteUnderCursor();
+    if (!note) {
+        if (!extendCurrent) {
+            seq()->selection->clear();
+        }
+    } else {
+        seq()->selection->addToSelection(note, extendCurrent);
+    }
+}
+
+MidiNoteEventPtr MidiEditor::getNoteUnderCursor()
+{
+    const int cursorSemi = PitchUtils::cvToSemitone(seq()->context->cursorPitch());
+
+   // iterator over all the notes that are in the edit context
+    auto start = seq()->context->startTime();
+    auto end = seq()->context->endTime();
+    MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);
+    for (auto it = notes.first; it != notes.second; ++it) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        const auto startTime = note->startTime;
+        const auto endTime = note->startTime + note->duration;
+
+        if ((PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
+            (startTime <= seq()->context->cursorTime()) &&
+            (endTime > seq()->context->cursorTime())) {
+            //seq()->selection->select(note);
+            return note;
+        }
+    }
+    return nullptr;
+}
+
+#if 0
+void MidiEditor::updateSelectionForCursor(bool extendCurrent)
+{
+    if (!extendCurrent) {
+        seq()->selection->clear();
+    }
     const int cursorSemi = PitchUtils::cvToSemitone(seq()->context->cursorPitch());
 
     // iterator over all the notes that are in the edit context
@@ -490,11 +567,13 @@ void MidiEditor::updateSelectionForCursor(bool extendCurrent)
         if ((PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
             (startTime <= seq()->context->cursorTime()) &&
             (endTime > seq()->context->cursorTime())) {
-            seq()->selection->select(note);
+            //seq()->selection->select(note);
+            seq()->selection->addToSelection(note, extendCurrent);
             return;
         }
     }
 }
+#endif
 
 void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
 {
