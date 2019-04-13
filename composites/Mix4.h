@@ -129,6 +129,11 @@ public:
         SOLO1_PARAM,
         SOLO2_PARAM,
         SOLO3_PARAM,
+
+        SEND0_PARAM,
+        SEND1_PARAM,
+        SEND2_PARAM,
+        SEND3_PARAM,
        
         NUM_PARAMS
     };
@@ -149,6 +154,12 @@ public:
         PAN1_INPUT,
         PAN2_INPUT,
         PAN3_INPUT,
+
+        MUTE0_INPUT,
+        MUTE1_INPUT,
+        MUTE2_INPUT,
+        MUTE3_INPUT,
+
         NUM_INPUTS
     };
 
@@ -390,6 +401,19 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
             break;
         case Mix4<TBase>::SOLO3_PARAM:
             ret = {0, 1.0f, 0, "Solo  4"};
+            break;
+
+        case Mix4<TBase>::SEND0_PARAM:
+            ret = {0, 1.0f, 0, "Send 1"};
+            break;
+        case Mix4<TBase>::SEND1_PARAM:
+            ret = {0, 1.0f, 0, "Send 2"};
+            break;
+        case Mix4<TBase>::SEND2_PARAM:
+            ret = {0, 1.0f, 0, "Send 3"};
+            break;
+        case Mix4<TBase>::SEND3_PARAM:
+            ret = {0, 1.0f, 0, "Send 4"};
             break;
    
         default:
