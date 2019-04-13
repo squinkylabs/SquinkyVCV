@@ -105,8 +105,8 @@ struct Mix4Widget : ModuleWidget
         std::shared_ptr<ToggleManager>);
 };
 
-static const float channelX = 20;
-static const float dX = 34;
+static const float channelX = 21;           // was 20
+static const float dX = 36;             // was 34
 static const float channelY = 350;
 static const float channelDy = 30;     // just for the bottom jacks
 static float volY = 0;
@@ -126,15 +126,11 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::AUDIO0_INPUT));
 
-
-
     y -= channelDy;
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::CHANNEL0_OUTPUT));
-
-
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -142,15 +138,11 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::LEVEL0_INPUT));
 
-
-
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::PAN0_INPUT));
-
-
 
     y -= channelDy;
     auto mute = SqHelper::createParam<ToggleButton>(
@@ -188,7 +180,6 @@ void Mix4Widget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::PAN0_PARAM));
-    
 }
 
 /**
@@ -204,7 +195,7 @@ Mix4Widget::Mix4Widget(Mix4Module *module)
 Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
 {
 #endif
-    box.size = Vec(26 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix4_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 

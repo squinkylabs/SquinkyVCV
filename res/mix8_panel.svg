@@ -14,7 +14,6 @@
       <rect width="390" height="380" style="fill: #fff"/>
       <g id="background_fill" data-name="background fill">
         <rect width="390" height="380" style="fill: #e6e6e6"/>
-        <rect x="0.5" y="0.5" width="389" height="379" style="fill: none;stroke: #707070"/>
       </g>
     </g>
   </g>
