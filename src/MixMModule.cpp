@@ -108,10 +108,29 @@ struct MixMWidget : ModuleWidget
         int channel,
         std::shared_ptr<ToggleManager>);
     void makeMaster(MixMModule* , std::shared_ptr<IComposite>);
+
+#if 0
+     Label* addLabel2(const Vec& pos, const std::string& text)
+     {
+         printf("add label %s\n", text.c_str()); fflush(stdout);
+        Label* label = new Label();
+        label->box.pos = pos;
+        label->box.size.x = 36;    
+        label->box.size.y = 12;
+        label->text = text;
+        label->alignment = Label::Alignment::RIGHT_ALIGNMENT;
+        label->color = SqHelper::COLOR_BLACK;
+        addChild(label);
+       
+        return label;
+     }
+     #endif
+           
 };
 
-static const float channelX = 40;
+static const float channelX = 42;
 static const float dX = 34;
+static const float labelX = 0; 
 static const float channelY = 350;
 static const float channelDy = 30;     // just for the bottom jacks
 static float volY = 0;
@@ -133,7 +152,7 @@ void MixMWidget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 40, y-10),
+            Vec(labelX+6, y-10),
             "In");
     }
 
@@ -145,8 +164,20 @@ void MixMWidget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-4, y-10),
             "Out");
+    }
+
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::MUTE0_INPUT));
+
+    if (channel == 0) {
+        addLabel(
+            Vec(labelX+2, y-10),
+            "Mt");
     }
 
     y -= channelDy;
@@ -157,7 +188,7 @@ void MixMWidget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 40, y-10),
+            Vec(labelX, y-10),
             "Lvl");
     }
 
@@ -169,7 +200,7 @@ void MixMWidget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-2, y-10),
             "Pan");
     }
 
@@ -184,10 +215,9 @@ void MixMWidget::makeStrip(
     addParam(mute);
     muteY = y-12;
    
-
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX+4, y-10),
             "M");
     }    
 
@@ -204,11 +234,12 @@ void MixMWidget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX+4, y-10),
             "S");
     }    
 
-    y -= (channelDy + 2);
+    const float extraDy = 6;
+    y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
@@ -216,12 +247,12 @@ void MixMWidget::makeStrip(
         channel + Comp::GAIN0_PARAM));
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-2, y-10),
             "Vol");
     }
     volY = y;
 
-    y -= (channelDy + 2);
+    y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
@@ -229,8 +260,20 @@ void MixMWidget::makeStrip(
         channel + Comp::PAN0_PARAM));
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-4, y-10),
             "Pan");
+    }
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::SEND0_PARAM));
+    if (channel == 0) {
+        addLabel(
+            Vec(labelX-4, y-10),
+            "Aux");
     }
 }
 
@@ -290,7 +333,7 @@ MixMWidget::MixMWidget(MixMModule *module)
 MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 {
 #endif
-    box.size = Vec(15 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mixm_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
