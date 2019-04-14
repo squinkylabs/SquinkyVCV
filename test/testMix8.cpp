@@ -25,7 +25,8 @@ static float outputGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
 
 static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
 {
-    return gOutputBuffer[bRight ? 1 : 0];
+    // use the expander bus, and apply the default master gain
+    return 0.8f * gOutputBuffer[bRight ? 1 : 0];
 }
 
 
@@ -169,7 +170,7 @@ void testMute( std::function<float(std::shared_ptr<T>, bool bRight)> outputGette
 }
 
 template <typename T>
-void testSolo(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, float masterGain)
+void testSolo(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
 
@@ -182,12 +183,8 @@ void testSolo(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     }
     m->step();
 
-    // these values for default master gain
-    assertClose(outputGetter(m, false), float(10 * .8 * masterGain), .001);
-   // assertClose(outputGetter(m, false), float(10 * .8 * .8), .001);
+    assertClose(outputGetter(m, false), float(10 * .8 * .8), .001);
     assertClose(outputGetter(m, true), 0, .001);
-   // assertClose(m->outputs[T::LEFT_OUTPUT].value, float(10 * .8 * .8), .001);
-   // assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
 }
 
 static void testPanLook0()
@@ -231,7 +228,7 @@ static void testPanLookL()
 
 
 template <typename T>
-static void testPanMiddle()
+static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
 
@@ -241,14 +238,14 @@ static void testPanMiddle()
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
-    float outL = m->outputs[T::LEFT_OUTPUT].value;
-    float outR = m->outputs[T::RIGHT_OUTPUT].value;
-    float expectedOut = float(10 * .8 * .8 / sqrt(2.f));
+
+    float outL = outputGetter(m, false);
+    float outR = outputGetter(m, false);
+    float expectedOut = float(10 * .8 * .8f / sqrt(2.f));
   
     assertClose(outL, expectedOut, .01);
     assertClose(outR, expectedOut, .01);
 }
-
 
 template <typename T>
 static void testMasterMute()
@@ -322,7 +319,6 @@ static void testExpansion4()
     assertEQ(outbuf[1], 0);
 }
 
-
 static void testExpansionM()
 {
     float inbuf[6];
@@ -363,16 +359,18 @@ void testMix8()
     testMute<MixerM>(outputGetterMixM);
     testMute<Mixer4>(outputGetterMix4);
 
-    testSolo<Mixer4>(outputGetterMix4, 1);
-    testSolo<Mixer8>(outputGetterMix8, .8f);
-    testSolo<MixerM>(outputGetterMixM, .8f);
+    testSolo<Mixer4>(outputGetterMix4);
+    testSolo<Mixer8>(outputGetterMix8);
+    testSolo<MixerM>(outputGetterMixM);
    
 
     testPanLook0();
     testPanLookL();
 
-    testPanMiddle<Mixer8>();
-    testPanMiddle<MixerM>();
+    testPanMiddle<Mixer8>(outputGetterMix8);
+    testPanMiddle<MixerM>(outputGetterMixM);
+    testPanMiddle<Mixer4>(outputGetterMix4);
+
     testMasterMute<Mixer8>();
     testMasterMute<MixerM>();
 
