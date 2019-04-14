@@ -19,6 +19,7 @@ private:
     int cursorFrameCount = 0;
     bool haveFocus = true;
     void initEditContext();
+    std::shared_ptr<class NoteDragger> noteDragger;
 
 public:
     NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq);
@@ -54,6 +55,9 @@ public:
     void onButton(const ButtonEvent &e) override;
     void onHoverKey(const HoverKeyEvent &e) override;
     void onSelectKey(const SelectKeyEvent &e) override;
+    void onDragStart(const DragStartEvent &e) override;
+	void onDragEnd(const DragEndEvent &e) override;
+	void onDragMove(const DragMoveEvent &e)  override;
     bool handleKey(int key, int mods, int action);
 #else
     void draw(NVGcontext *vg) override;

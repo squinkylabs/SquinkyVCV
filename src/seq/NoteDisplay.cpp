@@ -18,6 +18,7 @@
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
 #include "MidiKeyboardHandler.h"
+#include "NoteDragger.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
@@ -253,6 +254,7 @@ void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
 
 void NoteDisplay::onButton(const ButtonEvent &e)
 {
+     printf("on button\n"); fflush(stdout);
     if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
         const bool shift = e.mods & GLFW_MOD_SHIFT;
         const bool ctrl = e.mods & GLFW_MOD_CONTROL;
@@ -265,19 +267,7 @@ void NoteDisplay::onButton(const ButtonEvent &e)
             MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV, shift, ctrl);
         }
     }
-    OpaqueWidget::onButton(e);
-
-#if 0
-struct ButtonEvent : Event, PositionEvent {
-	/** GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_RIGHT, GLFW_MOUSE_BUTTON_MIDDLE, etc. */
-	int button;
-	/** GLFW_PRESS or GLFW_RELEASE */
-	int action;
-	/** GLFW_MOD_* */
-	int mods;
-};
-#endif
-    
+    OpaqueWidget::onButton(e);    
 }
 
 void NoteDisplay::onSelectKey(const SelectKeyEvent &e) 
@@ -347,6 +337,23 @@ void NoteDisplay::onSelect(const SelectEvent &e)
 void NoteDisplay::onDeselect(const DeselectEvent &e)
 {
     updateFocus(false);
+    e.consume(this);
+}
+
+void NoteDisplay::onDragStart(const DragStartEvent &e) 
+{
+    printf("on drag start\n"); fflush(stdout);
+    noteDragger = std::make_shared<NotePitchDragger>(this); 
+    e.consume(this);
+}
+void NoteDisplay::onDragEnd(const DragEndEvent &e)
+{
+    printf("on drag end\n"); fflush(stdout);
+    e.consume(this);
+}
+void NoteDisplay::onDragMove(const DragMoveEvent &e)
+{
+    printf("on drag move\n"); fflush(stdout);
     e.consume(this);
 }
 
