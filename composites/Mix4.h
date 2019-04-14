@@ -207,7 +207,9 @@ inline void Mix4<TBase>::stepn(int div)
         }
     } else {
         for (int i = 0; i < numChannels; ++i) {
-            buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
+            bool isMute = (TBase::params[i + MUTE0_PARAM].value > .5f) ||
+                (TBase::inputs[i + MUTE0_INPUT].value > 2);
+            buf_muteInputs[i] = isMute ? 0.f : 1.f;
         }
     }
     antiPop.step(buf_muteInputs);

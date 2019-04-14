@@ -10,8 +10,28 @@ using Mixer8 = Mix8<TestComposite>;
 using Mixer4 = Mix4<TestComposite>;
 using MixerM = MixM<TestComposite>;
 
+static float gOutputBuffer[8];
+
+// function that knows how to get left output from a mixerM
+static float outputGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
+{
+    return m->outputs[bRight ? MixerM::RIGHT_OUTPUT : MixerM::LEFT_OUTPUT].value;
+}
+
+static float outputGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
+{
+    return m->outputs[bRight ? Mixer8::RIGHT_OUTPUT : Mixer8::LEFT_OUTPUT].value;
+}
+
+static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
+{
+    return gOutputBuffer[bRight ? 1 : 0];
+}
+
+
+
 template <typename T>
-static std::shared_ptr<T> getMixer()
+static std::shared_ptr<T> getMixerBase()
 {
     auto ret = std::make_shared<T>();
     ret->init();
@@ -20,8 +40,35 @@ static std::shared_ptr<T> getMixer()
         auto param = icomp->getParam(i);
         ret->params[i].value = param.def;
     }
+   
     return ret;
 }
+
+template <typename T>
+static std::shared_ptr<T> getMixer();
+
+template <>
+static std::shared_ptr<Mixer4> getMixer<Mixer4>()
+{
+    std::shared_ptr<Mixer4> ret = getMixerBase<Mixer4>();
+    ret->setExpansionOutputs(gOutputBuffer);
+    return ret;
+}
+
+template <>
+static std::shared_ptr<MixerM> getMixer<MixerM>()
+{
+    std::shared_ptr<MixerM> ret = getMixerBase<MixerM>();
+    return ret;
+}
+
+template <>
+static std::shared_ptr<Mixer8> getMixer<Mixer8>()
+{
+    std::shared_ptr<Mixer8> ret = getMixerBase<Mixer8>();
+    return ret;
+}
+
 
 template <typename T>
 void testChannel(int channel, bool useParam)
@@ -92,7 +139,7 @@ static void testMaster()
 }
 
 template <typename T>
-void testMute()
+void testMute( std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
 
@@ -102,17 +149,15 @@ void testMute()
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
-   
-    assertClose(m->outputs[T::LEFT_OUTPUT].value, 0, .001);
-    assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
+  
+    assertClose(outputGetter(m, false), 0, .001);
 
     // un-mute
     m->params[T::MUTE0_PARAM].value = 0;    
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
-    assertGT(m->outputs[T::LEFT_OUTPUT].value, 5);
-   // assertGT(m->outputs[T::RIGHT_OUTPUT].value, 5);
+    assertGT(outputGetter(m, false), 5);
 
     m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
 
@@ -120,25 +165,29 @@ void testMute()
         m->step();           // let mutes settle
     }
 
-    assertClose(m->outputs[T::LEFT_OUTPUT].value, 0, .001);
-    assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
-
+    assertClose(outputGetter(m, false), 0, .001);
 }
 
 template <typename T>
-void testSolo()
+void testSolo(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, float masterGain)
 {
     auto m = getMixer<T>();
 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
-    m->params[T::SOLO0_PARAM].value = 1;        // mute
+    m->params[T::SOLO0_PARAM].value = 1;        // solo
+
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
+    m->step();
 
-    assertClose(m->outputs[T::LEFT_OUTPUT].value, float(10 * .8 * .8), .001);
-    assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
+    // these values for default master gain
+    assertClose(outputGetter(m, false), float(10 * .8 * masterGain), .001);
+   // assertClose(outputGetter(m, false), float(10 * .8 * .8), .001);
+    assertClose(outputGetter(m, true), 0, .001);
+   // assertClose(m->outputs[T::LEFT_OUTPUT].value, float(10 * .8 * .8), .001);
+   // assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
 }
 
 static void testPanLook0()
@@ -311,11 +360,14 @@ void testMix8()
     testMaster<Mixer8>();
     testMaster<MixerM>();
 
-  //  testMute<Mixer8>();
-    testMute<MixerM>();
-    // TODO test 4 also
-    testSolo<Mixer8>();
-    testSolo<MixerM>();
+    testMute<MixerM>(outputGetterMixM);
+    testMute<Mixer4>(outputGetterMix4);
+
+    testSolo<Mixer4>(outputGetterMix4, 1);
+    testSolo<Mixer8>(outputGetterMix8, .8f);
+    testSolo<MixerM>(outputGetterMixM, .8f);
+   
+
     testPanLook0();
     testPanLookL();
 
