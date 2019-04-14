@@ -105,10 +105,11 @@ struct Mix4Widget : ModuleWidget
         std::shared_ptr<ToggleManager>);
 };
 
-static const float channelX = 21;           // was 20
-static const float dX = 36;             // was 34
+static const float channelX = 21;
+static const float dX = 36;
+static const float labelX = 0; 
 static const float channelY = 350;
-static const float channelDy = 30;     // just for the bottom jacks
+static const float channelDy = 30;   
 static float volY = 0;
 static float muteY = 0;
 
@@ -131,6 +132,12 @@ void Mix4Widget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::CHANNEL0_OUTPUT));
+
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::MUTE0_INPUT));
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -166,7 +173,8 @@ void Mix4Widget::makeStrip(
     addParam(solo);
     mgr->registerClient(solo);
    
-    y -= (channelDy + 2);
+    const float extraDy = 6;
+    y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
@@ -174,12 +182,19 @@ void Mix4Widget::makeStrip(
         channel + Comp::GAIN0_PARAM));
     volY = y;
 
-    y -= (channelDy + 2);
+    y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
         module,
         channel + Comp::PAN0_PARAM));
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::SEND0_PARAM));
 }
 
 /**

@@ -107,32 +107,14 @@ struct MixMWidget : ModuleWidget
         std::shared_ptr<IComposite>,
         int channel,
         std::shared_ptr<ToggleManager>);
-    void makeMaster(MixMModule* , std::shared_ptr<IComposite>);
-
-#if 0
-     Label* addLabel2(const Vec& pos, const std::string& text)
-     {
-         printf("add label %s\n", text.c_str()); fflush(stdout);
-        Label* label = new Label();
-        label->box.pos = pos;
-        label->box.size.x = 36;    
-        label->box.size.y = 12;
-        label->text = text;
-        label->alignment = Label::Alignment::RIGHT_ALIGNMENT;
-        label->color = SqHelper::COLOR_BLACK;
-        addChild(label);
-       
-        return label;
-     }
-     #endif
-           
+    void makeMaster(MixMModule* , std::shared_ptr<IComposite>);           
 };
 
 static const float channelX = 42;
 static const float dX = 34;
 static const float labelX = 0; 
 static const float channelY = 350;
-static const float channelDy = 30;     // just for the bottom jacks
+static const float channelDy = 30; 
 static float volY = 0;
 static float muteY = 0;
 
