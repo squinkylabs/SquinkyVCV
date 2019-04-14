@@ -341,17 +341,23 @@ static void testExpansion4()
     auto m = getMixer<Mixer4>();
     inbuf[0] = 1.1f;
     inbuf[1] = 3.2f;
+    inbuf[2] = 2.2f;
+    inbuf[3] = 3.3f;
     m->setExpansionInputs(inbuf);
     m->setExpansionOutputs(outbuf);
     m->step();
     assertEQ(outbuf[0], 1.1f);
     assertEQ(outbuf[1], 3.2f);
+    assertEQ(outbuf[2], 2.2f);
+    assertEQ(outbuf[3], 3.3f);
 
     // output,no input
     m->setExpansionInputs(nullptr);
     m->step();
     assertEQ(outbuf[0], 0);
     assertEQ(outbuf[1], 0);
+    assertEQ(outbuf[2], 0);
+    assertEQ(outbuf[3], 0);
 
     // input, no output
     m->setExpansionInputs(inbuf);
@@ -359,6 +365,8 @@ static void testExpansion4()
     m->step();
     assertEQ(outbuf[0], 0);
     assertEQ(outbuf[1], 0);
+    assertEQ(outbuf[2], 0);
+    assertEQ(outbuf[3], 0);
 }
 
 static void testExpansionM()
