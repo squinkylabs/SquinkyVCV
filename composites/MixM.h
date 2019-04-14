@@ -145,6 +145,7 @@ public:
 
     float buf_inputs[numChannels];
     float buf_channelGains[numChannels];
+    float buf_channelSendGains[numChannels];
     float buf_channelOuts[numChannels];
     float buf_leftPanGains[numChannels];
     float buf_rightPanGains[numChannels];
@@ -175,7 +176,6 @@ inline void MixM<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
-        // TODO: get rid of normalize. if active ? cv : 10;
         const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ? 
              TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
         const float cv = std::clamp(
@@ -183,6 +183,12 @@ inline void MixM<TBase>::stepn(int div)
             0.0f,
             1.0f);
         buf_channelGains[i] = slider * cv;
+    }
+
+    // send gains
+    for (int i = 0; i < numChannels; ++i) {
+        const float slider = TBase::params[i + SEND0_PARAM].value;
+        buf_channelSendGains[i] = slider;
     }
 
     // fill buf_leftPanGains and buf_rightPanGains
@@ -247,15 +253,20 @@ inline void MixM<TBase>::step()
         buf_channelOuts[i] = buf_inputs[i] * buf_channelGains[i] * muteValue;
     }
 
-    // compute and output master outputs
+    // compute and output master outputs, and send outputs
     float left = 0, right = 0;
+    float lSend = 0, rSend = 0;
     if (expansionInputs) {
         left = expansionInputs[0];
         right = expansionInputs[1];
+        lSend = expansionInputs[2];
+        rSend = expansionInputs[3];
     }
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
+        lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
         right += buf_channelOuts[i] * buf_rightPanGains[i];
+        rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
     }
 
     // output the masters
@@ -263,6 +274,9 @@ inline void MixM<TBase>::step()
     const float masterGain = buf_masterGain * masterMuteValue;
     TBase::outputs[LEFT_OUTPUT].value = left * masterGain;
     TBase::outputs[RIGHT_OUTPUT].value = right * masterGain;
+
+    TBase::outputs[LEFT_SEND_OUTPUT].value = lSend;
+    TBase::outputs[RIGHT_SEND_OUTPUT].value = rSend;
 
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {

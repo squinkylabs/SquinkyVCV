@@ -18,6 +18,11 @@ static float outputGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
     return m->outputs[bRight ? MixerM::RIGHT_OUTPUT : MixerM::LEFT_OUTPUT].value;
 }
 
+static float auxGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
+{
+    return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].value;
+}
+
 static float outputGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
 {
     return m->outputs[bRight ? Mixer8::RIGHT_OUTPUT : Mixer8::LEFT_OUTPUT].value;
@@ -29,6 +34,11 @@ static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
     return 0.8f * gOutputBuffer[bRight ? 1 : 0];
 }
 
+static float auxGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return gOutputBuffer[bRight ? 3 : 2];
+}
 
 
 template <typename T>
@@ -138,6 +148,37 @@ static void testMaster()
     testMaster<T>(false);
     testMaster<T>(true);
 }
+
+template <typename T>
+static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter, bool side)
+{
+    auto m = getMixer<T>();
+
+    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
+    m->params[T::SEND0_PARAM].value = 1;
+
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+   // float auxL = m->outputs[T::LEFT_SEND_OUTPUT].value;
+   // float auxR = m->outputs[T::RIGHT_SEND_OUTPUT].value;
+    float auxL = auxGetter(m, 0);
+    float auxR = auxGetter(m, 1);
+
+    float expectedOutL = side ? float(10 * .8) : 0;
+    float expectedOutR = side ? 0 : float(10 * .8);
+    assertClose(auxL, expectedOutL, .01);
+    assertClose(auxR, expectedOutR, .01);
+}
+
+template <typename T>
+static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
+{
+    _testAuxOut<T>(auxGetter, false);
+    _testAuxOut<T>(auxGetter, true);
+}
+
 
 template <typename T>
 void testMute( std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
@@ -291,6 +332,7 @@ static void testInputExtremes()
 }
 
 
+// test pass-through of data on expansion buses
 static void testExpansion4()
 {
     float inbuf[6];
@@ -353,8 +395,12 @@ void testMix8()
     testChannel<Mixer4>();
     testChannel<MixerM>();
 
+    // TODO: add mix4
     testMaster<Mixer8>();
     testMaster<MixerM>();
+
+    testAuxOut<MixerM>(auxGetterMixM);
+    testAuxOut<Mixer4>(auxGetterMix4);
 
     testMute<MixerM>(outputGetterMixM);
     testMute<Mixer4>(outputGetterMix4);
@@ -376,6 +422,8 @@ void testMix8()
 
     testExpansion4();
     testExpansionM();
+
+    // need a test for master volume
 
 #if 0 // these take too long
     testInputExtremes<Mixer8>();
