@@ -124,7 +124,7 @@ static void testChannel()
 }
 
 template <typename T>
-static void testMaster(bool side)
+static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
 {
     auto m = getMixer<T>();
 
@@ -134,8 +134,9 @@ static void testMaster(bool side)
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
-    float outL = m->outputs[T::LEFT_OUTPUT].value;
-    float outR = m->outputs[T::RIGHT_OUTPUT].value;
+
+    float outL = outputGetter(m, 0);
+    float outR = outputGetter(m, 1);
     float expectedOutL = side ? float(10 * .8 * .8) : 0;
     float expectedOutR = side ? 0 : float(10 * .8 * .8);
     assertClose(outL, expectedOutL, .01);
@@ -143,10 +144,10 @@ static void testMaster(bool side)
 }
 
 template <typename T>
-static void testMaster()
+static void testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
-    testMaster<T>(false);
-    testMaster<T>(true);
+    _testMaster<T>(outputGetter, false);
+    _testMaster<T>(outputGetter, true);
 }
 
 template <typename T>
@@ -376,6 +377,8 @@ static void testExpansionM()
     auto m = getMixer<MixerM>();
     inbuf[0] = 1.1f;
     inbuf[1] = 3.2f;
+    inbuf[2] = 2.2f;
+    inbuf[3] = 3.3f;
     m->setExpansionInputs(inbuf);
 
     m->params[MixerM::MASTER_VOLUME_PARAM].value = 1;
@@ -386,6 +389,8 @@ static void testExpansionM()
 
     assertClose(m->outputs[MixerM::LEFT_OUTPUT].value, 1.1f, .01);
     assertClose(m->outputs[MixerM::RIGHT_OUTPUT].value, 3.2f, .01);
+    assertClose(m->outputs[MixerM::LEFT_SEND_OUTPUT].value, 2.2f, .01);
+    assertClose(m->outputs[MixerM::RIGHT_SEND_OUTPUT].value, 3.3f, .01);
 
     // disconnect input
     m->setExpansionInputs(nullptr);
@@ -393,6 +398,8 @@ static void testExpansionM()
    
     assertClose(m->outputs[MixerM::LEFT_OUTPUT].value, 0, .01);
     assertClose(m->outputs[MixerM::RIGHT_OUTPUT].value, 0, .01);
+    assertClose(m->outputs[MixerM::LEFT_SEND_OUTPUT].value, 0, .01);
+    assertClose(m->outputs[MixerM::RIGHT_SEND_OUTPUT].value, 0, .01);
 }
 
 
@@ -403,9 +410,9 @@ void testMix8()
     testChannel<Mixer4>();
     testChannel<MixerM>();
 
-    // TODO: add mix4
-    testMaster<Mixer8>();
-    testMaster<MixerM>();
+    testMaster<Mixer8>(outputGetterMix8);
+    testMaster<MixerM>(outputGetterMixM);
+    testMaster<Mixer4>(outputGetterMix4);
 
     testAuxOut<MixerM>(auxGetterMixM);
     testAuxOut<Mixer4>(auxGetterMix4);
@@ -417,7 +424,6 @@ void testMix8()
     testSolo<Mixer8>(outputGetterMix8);
     testSolo<MixerM>(outputGetterMixM);
    
-
     testPanLook0();
     testPanLookL();
 
@@ -431,7 +437,7 @@ void testMix8()
     testExpansion4();
     testExpansionM();
 
-    // need a test for master volume
+    // TODO: need a test for master volume
 
 #if 0 // these take too long
     testInputExtremes<Mixer8>();
