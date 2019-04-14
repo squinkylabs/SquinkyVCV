@@ -1,6 +1,8 @@
 
 #include "LookupTable.h"
 #include "Mix8.h"
+#include "Mix4.h"
+#include "MixM.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "Slew4.h"
@@ -146,17 +148,49 @@ static void testSlew4()
         }, 1);
 }
 
-using Mixer = Mix8<TestComposite>;
+using Mixer8 = Mix8<TestComposite>;
 static void testMix8()
 {
-    Mixer fs;
+    Mixer8 fs;
 
     fs.init();
 
-    fs.inputs[Slewer::INPUT_AUDIO0].value = 0;
+    fs.inputs[fs.AUDIO0_INPUT].value = 0;
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "mix8", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+      }, 1);
+}
+
+using Mixer4 = Mix4<TestComposite>;
+static void testMix4()
+{
+    Mixer4 fs;
+    fs.init();
+    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "mix4", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+        }, 1);
+}
+
+using MixerM = MixM<TestComposite>;
+static void testMixM()
+{
+    MixerM fs;
+
+    fs.init();
+
+    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "mixM", [&fs]() {
         fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
         fs.step();
         return fs.outputs[Slewer::OUTPUT0].value;
@@ -166,6 +200,8 @@ void perfTest2()
 {
     testSlew4();
     testMix8();
+    testMix4();
+    testMixM();
     testUniformLookup();
     testNonUniform();
     testMultiLPF();

@@ -34,57 +34,7 @@ namespace std {
 #endif
 
 /**
- * CPU usage, straight AS copy: 298
- *  with all the master and mute logic hooked up, 299
- * with pan lookup: 44
- * add /4 process for cv : 19
- * add the master mute and expand: 19.6
- *
- * Notes on how the AS mixer works.
- * VOL =  CH1_PARAM, 0.0f, 1.0f, 0.8f)
- * PAN = CH1_PAN_PARAM, -1.0f, 1.0f, 0.0f)
- * CH1MUTE , 0.0f, 1.0f, 0.0f
- *
- * CH1_CV_INPUT
- * CH1_CV_PAN_INPUT
- *
- * float ch1L =
- *      (1-ch1m) *
- *      (inputs[CH1_INPUT].value) *
- *      params[CH1_PARAM].value *
- *      PanL(   params[CH1_PAN_PARAM].value,
- *              (inputs[CH1_CV_PAN_INPUT].value))*
- *      clamp(  inputs[CH1_CV_INPUT].normalize(10.0f) / 10.0f,
- *              0.0f,
- *              1.0f);
- *
- * so the mutes have no pop reduction
- * if (ch1mute.process(params[CH1MUTE].value)) {
-        ch1m = !ch1m;
-    }
-
-float PanL(float balance, float cv) { // -1...+1
-        float p, inp;
-        inp = balance + cv / 5;
-        p = M_PI * (clamp(inp, -1.0f, 1.0f) + 1) / 4;
-        return ::cos(p);
-    }
-
-    float PanR(float balance , float cv) {
-        float p, inp;
-        inp = balance + cv / 5;
-        p = M_PI * (clamp(inp, -1.0f, 1.0f) + 1) / 4;
-        return ::sin(p);
-    }
-
-    so, in english, the gain is: sliderPos * panL(knob, cv) * clamped&scaled CV
-
-    plan:
-        make all the params have the same range.
-        implement the channel volumes -> all the way to out.
-        implement the pan, using slow math.
-        make lookup tables.
-        implement mute, with no pop
+ Perf: 10.4 before new features
 
  */
 

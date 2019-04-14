@@ -105,6 +105,24 @@ void testMute()
    
     assertClose(m->outputs[T::LEFT_OUTPUT].value, 0, .001);
     assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
+
+    // un-mute
+    m->params[T::MUTE0_PARAM].value = 0;    
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+    assertGT(m->outputs[T::LEFT_OUTPUT].value, 5);
+   // assertGT(m->outputs[T::RIGHT_OUTPUT].value, 5);
+
+    m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
+
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+
+    assertClose(m->outputs[T::LEFT_OUTPUT].value, 0, .001);
+    assertClose(m->outputs[T::RIGHT_OUTPUT].value, 0, .001);
+
 }
 
 template <typename T>
@@ -293,8 +311,9 @@ void testMix8()
     testMaster<Mixer8>();
     testMaster<MixerM>();
 
-    testMute<Mixer8>();
+  //  testMute<Mixer8>();
     testMute<MixerM>();
+    // TODO test 4 also
     testSolo<Mixer8>();
     testSolo<MixerM>();
     testPanLook0();
