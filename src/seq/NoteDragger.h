@@ -2,27 +2,25 @@
 
 class NoteDisplay;
 
-#include "math.hpp"
-
-using Vec = rack::math::Vec;
+#include "SqMath.h"
 
 class NoteDragger
 {
 public:
-    NoteDragger(NoteDisplay*, const Vec& pos);
+    NoteDragger(NoteDisplay*, const sq::Vec& pos);
     virtual ~NoteDragger();
     virtual void onDrag()=0;
     virtual void commit()=0;
    
 protected:
     NoteDisplay* const host;
-    const Vec startPos;
+    const sq::Vec startPos;
 };
 
 class NotePitchDragger : public NoteDragger
 {
 public:
-    NotePitchDragger(NoteDisplay*,const Vec& pos);
+    NotePitchDragger(NoteDisplay*,const sq::Vec& pos);
     void onDrag() override;
     void commit() override;
 };

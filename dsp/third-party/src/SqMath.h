@@ -34,8 +34,10 @@ namespace sq
 {
 #ifdef __V1
     using RCFilter = rack::dsp::RCFilter;
+    using Vec = rack::math::Vec;
 #else
     using RCFilter = rack::RCFilter;
+    using Vec = rack::Vec;
 #endif
 
 inline float quadraticBipolar(float x)
