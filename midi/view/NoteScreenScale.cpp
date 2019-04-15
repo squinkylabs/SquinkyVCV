@@ -92,13 +92,14 @@ float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note) const
 
 float NoteScreenScale::yToMidiCVPitch(float y) const
 {
-
-   // float unquantizedPitch = (y - topMargin) * ay_rev + by_rev;
     float unquantizedPitch = (y - topMargin) * ay_rev + context()->pitchHi();
-  //  return unquantizedPitch;
-  //  unquantizedPitch += PitchUtils::semitone / 2;
     std::pair<int, int> quantizedPitch = PitchUtils::cvToPitch(unquantizedPitch);
     return PitchUtils::pitchToCV(quantizedPitch.first, quantizedPitch.second);
+}
+
+float NoteScreenScale::yToMidiDeltaCVPitch(float dy) const
+{
+    return dy * ay_rev;
 }
 
 

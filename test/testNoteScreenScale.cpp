@@ -122,6 +122,10 @@ static void test3()
     assertEQ(p, note2.pitchCV);
     p = n.yToMidiCVPitch(100);
     assertEQ(p, note1.pitchCV);
+
+    // check delta Y. 10 pix should be tenth of the screen, which is a semi
+    auto deltaY = n.yToMidiDeltaCVPitch(10);
+    assertClose(deltaY, -PitchUtils::semitone * .1f, .001);
 }
 
 

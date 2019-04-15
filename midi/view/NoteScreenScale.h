@@ -57,6 +57,10 @@ public:
      */
     float yToMidiCVPitch(float) const;
 
+    /** convert y axis range to change in pitch
+     */
+    float yToMidiDeltaCVPitch(float) const;
+
     bool isPointInBounds(float x, float y) const;
 private:
     /** These are the linear equation coefficients

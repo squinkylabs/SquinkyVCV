@@ -351,12 +351,20 @@ void NoteDisplay::onDragStart(const DragStartEvent &e)
 void NoteDisplay::onDragEnd(const DragEndEvent &e)
 {
     printf("on drag end\n"); fflush(stdout);
-    e.consume(this);
+    if (noteDragger) {
+        noteDragger->commit();
+        noteDragger.reset();
+        e.consume(this);
+    }
 }
 void NoteDisplay::onDragMove(const DragMoveEvent &e)
 {
     printf("on drag move\n"); fflush(stdout);
-    e.consume(this);
+    if (noteDragger) {
+        //const Vec pos = e.mouseDelta;
+        noteDragger->onDrag(e.mouseDelta);
+        e.consume(this);
+    }
 }
 
 #endif
