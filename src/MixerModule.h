@@ -57,7 +57,7 @@ inline MixerModule::MixerModule()
 
 inline void MixerModule::process(const ProcessArgs &args)
 {
-   #if 0
+   #if 1
     // first, determine what modules are are paired with what
     // A Mix4 is not a master, and can pair with either a Mix4 or a MixM to the right
     const bool pairedRight = rightModule && 
@@ -68,7 +68,7 @@ inline void MixerModule::process(const ProcessArgs &args)
     const bool pairedLeft = leftModule &&
         (leftModule->model == modelMix4Module);
 
-    printf("\nmixer %p\n amMaster=%d, pairedLeft=%d right=%d\n", this, amMaster(), pairedLeft, pairedRight);
+    //printf("\nmixer %p\n amMaster=%d, pairedLeft=%d right=%d\n", this, amMaster(), pairedLeft, pairedRight);
     #else 
     bool pairedLeft = false;
     bool pairedRight = false;

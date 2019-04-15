@@ -405,6 +405,9 @@
     <ClCompile Include="..\..\test\testMidiEditorSelection.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testCommChannels.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -736,6 +739,9 @@
     </ClInclude>
     <ClInclude Include="..\..\composites\MixM.h">
       <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\CommChannels.h">
+      <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

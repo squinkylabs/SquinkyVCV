@@ -67,6 +67,7 @@ extern void testVec();
 extern void testSeqClock();
 extern void testMix8();
 extern void testSlew4();
+extern void testCommChannels();
 
 #if 0
 #include <sstream>
@@ -128,6 +129,7 @@ int main(int argc, char ** argv)
 
     testIComposite();
     testVec();
+    testCommChannels();
     testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();

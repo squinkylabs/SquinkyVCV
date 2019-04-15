@@ -29,15 +29,23 @@ NoteDragger::~NoteDragger()
 
 }
 
+void NoteDragger::onDrag(const sq::Vec& pos)
+{
+    curMousePosition.x += pos.x;    
+    curMousePosition.y += pos.y;
+     printf("x=%.2f y=%.2f\n", curMousePosition.x, curMousePosition.y); fflush(stdout);
+} 
+
+
+//******************************************************************
 
 NotePitchDragger::NotePitchDragger(NoteDisplay* display, const sq::Vec& initPos) :
     NoteDragger(display, initPos)
 {
 
 }
-void NotePitchDragger::onDrag(const sq::Vec& pos)
-{
-}
+
+
 
 
 void NotePitchDragger::commit()

@@ -59,6 +59,7 @@
     <ClCompile Include="..\..\test\testButterLookup.cpp" />
     <ClCompile Include="..\..\test\testClockMult.cpp" />
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
+    <ClCompile Include="..\..\test\testCommChannels.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
     <ClCompile Include="..\..\test\testFFT.cpp" />
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="..\..\sqsrc\thread\ThreadServer.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h" />
     <ClInclude Include="..\..\sqsrc\util\asserts.h" />
+    <ClInclude Include="..\..\sqsrc\util\CommChannels.h" />
     <ClInclude Include="..\..\sqsrc\util\Constants.h" />
     <ClInclude Include="..\..\sqsrc\util\Divider.h" />
     <ClInclude Include="..\..\sqsrc\util\GateTrigger.h" />

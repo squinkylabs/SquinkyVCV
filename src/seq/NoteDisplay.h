@@ -12,6 +12,18 @@
  */
 struct NoteDisplay : OpaqueWidget
 {
+public:
+    NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq);
+
+    // These drawing utils could go elsewhere
+    static void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
+    static void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
+    
+    /**
+     * Inject a new sequencer into this editor.
+     */
+    void setSequencer(MidiSequencerPtr seq);
+    MidiSequencerPtr getSequencer();
 private:
     Label* focusLabel = nullptr;
     MidiSequencerPtr sequencer;
@@ -21,14 +33,6 @@ private:
     void initEditContext();
     std::shared_ptr<class NoteDragger> noteDragger;
     Vec lastMouseClickPos;
-
-public:
-    NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq);
-
-    /**
-     * Inject a new sequencer into this editor.
-     */
-    void setSequencer(MidiSequencerPtr seq);
 
     void step() override;
 
@@ -44,10 +48,7 @@ public:
     void drawCursor(NVGcontext *vg);
     void drawGrid(NVGcontext *vg);
     void drawBackground(NVGcontext *vg);
-    void strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
-    void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
-    
-
+   
 #ifdef __V1
     void onSelect(const SelectEvent &e) override;
     void onDeselect(const DeselectEvent &e) override;
