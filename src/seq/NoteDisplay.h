@@ -20,6 +20,7 @@ private:
     bool haveFocus = true;
     void initEditContext();
     std::shared_ptr<class NoteDragger> noteDragger;
+    Vec lastMouseClickPos;
 
 public:
     NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq);

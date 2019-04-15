@@ -255,6 +255,7 @@ void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
 void NoteDisplay::onButton(const ButtonEvent &e)
 {
      printf("on button\n"); fflush(stdout);
+     lastMouseClickPos = e.pos;
     if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
         const bool shift = e.mods & GLFW_MOD_SHIFT;
         const bool ctrl = e.mods & GLFW_MOD_CONTROL;
@@ -343,7 +344,8 @@ void NoteDisplay::onDeselect(const DeselectEvent &e)
 void NoteDisplay::onDragStart(const DragStartEvent &e) 
 {
     printf("on drag start\n"); fflush(stdout);
-    noteDragger = std::make_shared<NotePitchDragger>(this); 
+   // auto p = e.pos;
+    noteDragger = std::make_shared<NotePitchDragger>(this, lastMouseClickPos); 
     e.consume(this);
 }
 void NoteDisplay::onDragEnd(const DragEndEvent &e)
