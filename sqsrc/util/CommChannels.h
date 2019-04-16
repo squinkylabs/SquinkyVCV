@@ -28,7 +28,6 @@ private:
     int zeroCount = 0;
 };
 
-
 /**
  * CommChannelReceive
  * Sends messages from on VCV Module to another
@@ -40,17 +39,17 @@ public:
      * returns zero if no data received, otherwise returns data
      */
     uint32_t rx(const uint32_t * inputBuffer);
+private:
+    uint32_t lastCommand = 0;
 };
 
-
-void CommChannelSend::send(uint32_t msg)
+inline void CommChannelSend::send(uint32_t msg)
 {
     assert(!messageBuffer.full());
     messageBuffer.push(msg);
 }
 
-
-void CommChannelSend::go(uint32_t* output)
+inline void CommChannelSend::go(uint32_t* output)
 {
     uint32_t x=0;
     if (sendingZero) {
@@ -72,22 +71,13 @@ void CommChannelSend::go(uint32_t* output)
     *output = x;
 }
 
-#if 0
-void CommChannelSend::go(uint32_t* output)
-{
-    uint32_t x;
-    if (sendingMsg) {
-        x = messageBuffer.pop();
-        sendingMsg = false;
-    } else {
-        x = 0;
-    }
-    *output = x;
-}
-#endif
-
-uint32_t CommChannelReceive::rx(const uint32_t * inputBuffer)
+inline uint32_t CommChannelReceive::rx(const uint32_t * inputBuffer)
 {
     uint32_t ret = inputBuffer[0];
+    if (ret == lastCommand) {
+        ret = 0;
+    } else {
+        lastCommand = ret;
+    }
     return ret;
 };

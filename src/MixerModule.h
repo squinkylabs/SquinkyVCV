@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CommChannels.h"
 /**
  * This class manages the communication between
  * misers and mixer expanders
@@ -26,17 +27,24 @@ protected:
     virtual void setExternalInput(const float*)=0;
     virtual void setExternalOutput(float*)=0;
 private:
-   // float lConsumerBuffer[8];
-   // float lProducerBuffer[8];
-   // float rConsumerBuffer[8];
-   // float rProducerBuffer[8];
-
     /**
-     * Expanders provide the buffers to talk to the module to their right.
-     * that module may be a master, or another expander.
+     * Expanders provide the buffers to talk to (send data to) the module to their right.
+     * that module may be a master, or another expander. 
+     * 
+     * #1) Send data to right: use you own right producer buffer.
+     * #2) Receive data from left:  use left's consumer buffer
+     * 
+     * #3) Send data to the left: use left's producer buffer.
+     * #4) Receive data from right: user your own consumer buffer
      */
     float bufferFlip[8];
     float bufferFlop[8];
+
+    CommChannelSend sendRightChannel;
+    CommChannelSend sendLeftChannel;
+    CommChannelReceive receiveRightChannel;
+    CommChannelReceive receiveLeftChannel;
+
 };
 
 // Remember : "rightModule" is the module to your right
@@ -57,7 +65,7 @@ inline MixerModule::MixerModule()
 
 inline void MixerModule::process(const ProcessArgs &args)
 {
-   #if 1
+
     // first, determine what modules are are paired with what
     // A Mix4 is not a master, and can pair with either a Mix4 or a MixM to the right
     const bool pairedRight = rightModule && 
@@ -69,22 +77,22 @@ inline void MixerModule::process(const ProcessArgs &args)
         (leftModule->model == modelMix4Module);
 
     //printf("\nmixer %p\n amMaster=%d, pairedLeft=%d right=%d\n", this, amMaster(), pairedLeft, pairedRight);
-    #else 
-    bool pairedLeft = false;
-    bool pairedRight = false;
-    #endif
     //printf("rm=%d lm=%d\n", bool(rightModule), bool(leftModule));
     //fflush(stdout);
 
     assert(rightProducerMessage);
     assert(!pairedLeft || leftModule->rightConsumerMessage);
 
-    // "our" mixer will send stuff out using our out right message buffer.
-    // (we don't have a left one, btw)
+    // set a channel to send data to the right (case #1, above)
     setExternalOutput(pairedRight ? reinterpret_cast<float *>(rightProducerMessage) : nullptr);
+    
+    // set a channel to rx data from the left (case #2, above)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
 
+    // Do the audio processing, and handle the left and right audio buses
     internalProcess();
+
+
 
 }
 

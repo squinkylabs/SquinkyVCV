@@ -99,6 +99,20 @@ static void testRx1()
 }
 
 
+static void testRxTwoInARowNoZeros()
+{
+    CommChannelReceive ch;
+    buffer[0] = 0;
+    for (int i = 0; i < 4; ++i) {
+        assertEQ(ch.rx(buffer), 0);
+    }
+
+    buffer[0] = 55;
+    assertEQ(ch.rx(buffer), 55);
+    assertEQ(ch.rx(buffer), 0);
+}
+
+
 void testCommChannels()
 {
    // debug();
@@ -106,4 +120,5 @@ void testCommChannels()
     testSend2();
     testRx0();
     testRx1();
+    testRxTwoInARowNoZeros();
 }
