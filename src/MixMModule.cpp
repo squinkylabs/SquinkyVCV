@@ -31,13 +31,15 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
-     bool amMaster() override { return true; }
+    bool amMaster() override { return true; }
 
-    std::shared_ptr<Comp> MixM;
+
+    
 protected:
     void setExternalInput(const float*) override;
     void setExternalOutput(float*) override;
 private:
+    std::shared_ptr<Comp> MixM;
 
 };
 
@@ -107,7 +109,9 @@ struct MixMWidget : ModuleWidget
         MixMModule*,
         std::shared_ptr<IComposite>,
         int channel);
-    void makeMaster(MixMModule* , std::shared_ptr<IComposite>);           
+    void makeMaster(MixMModule* , std::shared_ptr<IComposite>); 
+private:
+    MixMModule* mixModule;          
 };
 
 static const float channelX = 42;
@@ -203,29 +207,16 @@ void MixMWidget::makeStrip(
     }    
 
     y -= channelDy;
-#if 0
-    auto solo = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(x-12, y-12),
-        module,
-        channel + Comp::SOLO0_PARAM);
-    solo->addSvg("res/square-button-01.svg");
-    solo->addSvg("res/square-button-02.svg");
-    addParam(solo);
-     mgr->registerClient(solo);
-#else
-
     SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(x-12, y-12),
         module,
         channel + Comp::SOLO0_LIGHT));
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
-    tog->setHandler( []() {
-        printf("add handler for solo button M\n"); fflush(stdout);
+    tog->setHandler( [this, channel]() {
+         mixModule->requestSolo(channel);
     });
     addChild(tog);
-#endif
 
     if (channel == 0) {
         addLabel(
@@ -346,6 +337,7 @@ MixMWidget::MixMWidget(MixMModule *module)
 MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 {
 #endif
+    mixModule = module;
     box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mixm_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();

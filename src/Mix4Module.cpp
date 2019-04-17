@@ -33,12 +33,11 @@ public:
     // Override MixerModule
     void internalProcess() override;
 
-    std::shared_ptr<Comp> Mix4;
-
 protected:
     void setExternalInput(const float*) override;
     void setExternalOutput(float*) override;
 private:
+    std::shared_ptr<Comp> Mix4;
 
 };
 
@@ -104,6 +103,8 @@ struct Mix4Widget : ModuleWidget
         Mix4Module*,
         std::shared_ptr<IComposite>,
         int channel);
+private:
+    Mix4Module* mixModule;
 };
 
 static const float channelX = 21;
@@ -163,29 +164,16 @@ void Mix4Widget::makeStrip(
     muteY = y-12;
     
     y -= channelDy;
-#if 0
-    auto solo = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(x-12, y-12),
-        module,
-        channel + Comp::SOLO0_PARAM);
-    solo->addSvg("res/square-button-01.svg");
-    solo->addSvg("res/square-button-02.svg");
-    addParam(solo);
-    mgr->registerClient(solo);
-#else
-
     SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(x-12, y-12),
         module,
         channel + Comp::SOLO0_LIGHT));
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
-    tog->setHandler( []() {
-        printf("add handler for solo button\n"); fflush(stdout);
+    tog->setHandler( [this, channel]() {
+        mixModule->requestSolo(channel);
     });
     addChild(tog);
-#endif
    
     const float extraDy = 6;
     y -= (channelDy + extraDy);
@@ -224,6 +212,7 @@ Mix4Widget::Mix4Widget(Mix4Module *module)
 Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
 {
 #endif
+    mixModule = module;
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix4_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();

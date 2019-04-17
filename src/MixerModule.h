@@ -23,9 +23,15 @@ public:
     {
         
     }
+
+    /**
+     * UI calls this to initiate a solo
+     */
+    void requestSolo(int channel);
 protected:
     virtual void setExternalInput(const float*)=0;
     virtual void setExternalOutput(float*)=0;
+
 private:
     /**
      * Expanders provide the buffers to talk to (send data to) the module to their right.
@@ -96,6 +102,10 @@ inline void MixerModule::process(const ProcessArgs &args)
 
 }
 
+inline void MixerModule::requestSolo(int channel)
+{
+    printf("UI req solo %d\n", channel); fflush(stdout);
+}
 
 #if 0
 inline void MixerModule::process(const ProcessArgs &args)
