@@ -139,6 +139,7 @@ public:
     }
 
     void setExpansionInputs(const float*);
+    void requestModuleSolo(int channel);
 
     /**
      * Main processing entry point. Called every sample
@@ -171,7 +172,24 @@ private:
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 
     const float* expansionInputs = nullptr;
+
+    /**
+     * 0 = no solo
+     * 1..4 = soloe 0..3
+     */
+    int     soloChannel=0;
 };
+
+template <class TBase>
+inline  void MixM<TBase>::requestModuleSolo(int channel)
+{
+    soloChannel = channel;
+
+    int ch = soloChannel-1;
+    for (int i=0; i<4; ++i) {
+        TBase::lights[i + SOLO0_LIGHT].value = (ch == i) ? 10 : 0;
+    }
+}
 
 template <class TBase>
 inline void MixM<TBase>::stepn(int div)
