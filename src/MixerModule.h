@@ -42,13 +42,15 @@ private:
      * that module may be a master, or another expander. 
      * 
      * #1) Send data to right: use you own right producer buffer.
-     * #2) Receive data from left:  use left's consumer buffer
+     * #2) Receive data from left:  use left's right consumer buffer
      * 
-     * #3) Send data to the left: use left's producer buffer.
-     * #4) Receive data from right: user your own consumer buffer
+     * #3) Send data to the left: use your own left producer buffer.
+     * #4) Receive data from right: user right's left consumer buffer 
      */
-    float bufferFlip[8];
-    float bufferFlop[8];
+    float bufferFlipR[5];
+    float bufferFlopR[5];
+    float bufferFlipL[1];
+    float bufferFlopL[1];
 
     CommChannelSend sendRightChannel;
     CommChannelSend sendLeftChannel;
@@ -64,12 +66,14 @@ private:
 };
 
 // Remember : "rightModule" is the module to your right
-// producer and consumer and concepts of the engine, not us.
-// rack will flip producer and consumer each
+// producer and consumer are concepts of the engine, not us.
+// rack will flip producer and consumer each process tick.
 inline MixerModule::MixerModule()
 {
-    rightProducerMessage = bufferFlip;
-    rightConsumerMessage = bufferFlop;
+    rightProducerMessage = bufferFlipR;
+    rightConsumerMessage = bufferFlopR;
+    leftProducerMessage = bufferFlipL;
+    leftConsumerMessage = bufferFlopL;
 }
 
 
@@ -105,27 +109,60 @@ inline void MixerModule::process(const ProcessArgs &args)
     // set a channel to rx data from the left (case #2, above)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
 
+   
     if (soloRequest) {
-        
-        // should send solo reset commands to both sides
-
-        // tell the module to solo
+        // If solo requested, queue up reset solo commands for both sides     
+        if (pairedRight) {
+            printf("solo req, mod is paired R\n");
+            sendRightChannel.send(CommCommand_ClearMute);
+        }
+        if (pairedLeft) {
+            printf("solo req, mod is paired L\n");
+            sendLeftChannel.send(CommCommand_ClearMute);
+        }
+      
+        // tell our own module to solo
         requestModuleSolo(soloRequest);
         soloRequest = 0;
+    }
+
+    if (pairedRight) {
+        // #1) Send data to right: use you own right producer buffer.
+        uint32_t* outBuf = reinterpret_cast<uint32_t *>(rightProducerMessage);
+
+        // #4) Receive data from right: user right's left consumer buffer
+        const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightModule->leftConsumerMessage);
+        sendRightChannel.go(outBuf + 4);
+        uint32_t cmd = receiveRightChannel.rx(inBuf + 0);
+        if (cmd != 0) {
+            printf("right read cmd %x module=%p\n", cmd, this); fflush(stdout);
+        }
+        //assert(cmd == 0);
 
     }
+    if (pairedLeft) {
+        // #3) Send data to the left: use your own left producer buffer.
+        uint32_t* outBuf = reinterpret_cast<uint32_t *>(leftProducerMessage);
+        
+        // 2) Receive data from left:  use left's right consumer buffer
+        const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftModule->rightConsumerMessage);
+        sendLeftChannel.go(outBuf + 0);
+        uint32_t cmd = receiveLeftChannel.rx(inBuf + 4);
+        if (cmd != 0) {
+            printf("left read cmd %x module %p\n", cmd, this); fflush(stdout);
+        }
+    }
+
+    
 
     // Do the audio processing, and handle the left and right audio buses
     internalProcess();
-
-
-
 }
 
 
 inline void MixerModule::requestSolo(int channel)
 {
-    printf("UI req solo %d\n", channel); fflush(stdout);
+    printf("\nUI req solo %d module=%p\n", channel, this); fflush(stdout);
     soloRequest = channel+1;      // Queue up a request for the audio thread.
                                 // TODO: use atomic?
 }

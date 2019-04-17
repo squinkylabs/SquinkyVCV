@@ -3,6 +3,16 @@
 #include "RingBuffer.h"
 
 /**
+ * Protocol:
+ *      We send one unit32_t, followed by 'n' zeros
+ *      zero is not a legal command
+ * 
+ *      Top 16 bits are the command, bottom 16 are the data
+ */
+
+const uint32_t CommCommand_ClearMute = (100 << 16); 
+
+/**
  * CommChannelSend
  * Sends messages from on VCV Module to another
  */
@@ -68,6 +78,7 @@ inline void CommChannelSend::go(uint32_t* output)
             x = messageBuffer.pop();
         }
     }
+    if (x != 0) printf("output 32: %x\n", x);
     *output = x;
 }
 
