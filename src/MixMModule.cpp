@@ -31,6 +31,7 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
+    void requestModuleSolo(int) override;
     bool amMaster() override { return true; }
 
 
@@ -42,6 +43,12 @@ private:
     std::shared_ptr<Comp> MixM;
 
 };
+
+void MixMModule::requestModuleSolo(int channel)
+{
+    printf("MixMModule::requestModuleSolo\n"); fflush(stdout);
+    MixM->requestModuleSolo(channel);
+}
 
 void MixMModule::onSampleRateChange()
 {
@@ -214,6 +221,7 @@ void MixMWidget::makeStrip(
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, channel]() {
+        printf("clicked on channel %d\n", channel);
          mixModule->requestSolo(channel);
     });
     addChild(tog);

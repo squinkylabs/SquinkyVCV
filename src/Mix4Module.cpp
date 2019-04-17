@@ -32,6 +32,7 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
+    void requestModuleSolo(int) override;
 
 protected:
     void setExternalInput(const float*) override;
@@ -53,6 +54,12 @@ void Mix4Module::setExternalInput(const float* buf)
 void Mix4Module::setExternalOutput(float* buf)
 {
     Mix4->setExpansionOutputs(buf);
+}
+
+void Mix4Module::requestModuleSolo(int channel)
+{
+    printf("Mix4Module::requestModuleSolo\n"); fflush(stdout);
+    Mix4->requestModuleSolo(channel);
 }
 
 #ifdef __V1

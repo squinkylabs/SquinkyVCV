@@ -12,9 +12,12 @@ public:
 
     void process(const ProcessArgs &args) override;
     virtual void internalProcess() = 0;
+    virtual void requestModuleSolo(int) = 0;
 
-    // for debugging
+
     virtual bool amMaster() { return false; }
+
+    #if 0
     virtual void setBusOutput(float*)
     {
 
@@ -23,6 +26,7 @@ public:
     {
         
     }
+    #endif
 
     /**
      * UI calls this to initiate a solo
@@ -50,6 +54,12 @@ private:
     CommChannelSend sendLeftChannel;
     CommChannelReceive receiveRightChannel;
     CommChannelReceive receiveLeftChannel;
+
+    /**
+     * 0 - no request,
+     * 1..4 is a request to solo channel n-1
+     */
+    int soloRequest = 0;
 
 };
 
@@ -95,6 +105,16 @@ inline void MixerModule::process(const ProcessArgs &args)
     // set a channel to rx data from the left (case #2, above)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
 
+    if (soloRequest) {
+        
+        // should send solo reset commands to both sides
+
+        // tell the module to solo
+        requestModuleSolo(soloRequest);
+        soloRequest = 0;
+
+    }
+
     // Do the audio processing, and handle the left and right audio buses
     internalProcess();
 
@@ -102,9 +122,12 @@ inline void MixerModule::process(const ProcessArgs &args)
 
 }
 
+
 inline void MixerModule::requestSolo(int channel)
 {
     printf("UI req solo %d\n", channel); fflush(stdout);
+    soloRequest = channel+1;      // Queue up a request for the audio thread.
+                                // TODO: use atomic?
 }
 
 #if 0
