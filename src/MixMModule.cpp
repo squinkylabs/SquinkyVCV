@@ -11,6 +11,7 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/ToggleButton.h"
+#include "ctrl/SqToggleLED.h"
 
 #include "ctrl/SqWidgets.h"
 
@@ -105,8 +106,7 @@ struct MixMWidget : ModuleWidget
     void makeStrip(
         MixMModule*,
         std::shared_ptr<IComposite>,
-        int channel,
-        std::shared_ptr<ToggleManager>);
+        int channel);
     void makeMaster(MixMModule* , std::shared_ptr<IComposite>);           
 };
 
@@ -121,8 +121,7 @@ static float muteY = 0;
 void MixMWidget::makeStrip(
     MixMModule*,
     std::shared_ptr<IComposite> icomp,
-    int channel,
-    std::shared_ptr<ToggleManager> mgr)
+    int channel)
 {
     const float x = channelX + channel * dX;
 
@@ -204,6 +203,7 @@ void MixMWidget::makeStrip(
     }    
 
     y -= channelDy;
+#if 0
     auto solo = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(x-12, y-12),
@@ -213,6 +213,19 @@ void MixMWidget::makeStrip(
     solo->addSvg("res/square-button-02.svg");
     addParam(solo);
      mgr->registerClient(solo);
+#else
+
+    SqToggleLED* tog = (createLight<SqToggleLED>(
+        Vec(x-12, y-12),
+        module,
+        channel + Comp::SOLO0_LIGHT));
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    tog->setHandler( []() {
+        printf("add handler for solo button M\n"); fflush(stdout);
+    });
+    addChild(tog);
+#endif
 
     if (channel == 0) {
         addLabel(
@@ -280,6 +293,18 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
             Vec(x, y),
             module,
             channel + Comp::LEFT_OUTPUT));
+
+         y -= 2 * channelDy;
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(x, y),
+            module,
+            channel + Comp::LEFT_SEND_OUTPUT));
+
+        y -= channelDy;
+        addInput(createInputCentered<PJ301MPort>(
+            Vec(x, y),
+            module,
+            channel + Comp::LEFT_RETURN_INPUT));
     }
 
     x = x0 + 15 + 15;
@@ -293,13 +318,19 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
 
-     y -= channelDy;
+    y = volY;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
-        Vec(x, volY),
+        Vec(x, y),
         module,
         Comp::MASTER_VOLUME_PARAM));
-   
+
+    y -= 55;
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        Comp::RETURN_GAIN_PARAM));
 }
 
 /**
@@ -317,11 +348,10 @@ MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 #endif
     box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mixm_panel.svg");
-     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
-    std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
     for (int i=0; i<Comp::numChannels; ++i) {
-        makeStrip(module, icomp, i, mgr);
+        makeStrip(module, icomp, i);
     }
     makeMaster(module, icomp);
 

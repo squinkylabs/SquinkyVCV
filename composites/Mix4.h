@@ -124,6 +124,10 @@ public:
 
     enum LightIds
     {
+        SOLO0_LIGHT,
+        SOLO1_LIGHT,
+        SOLO2_LIGHT,
+        SOLO3_LIGHT,
         NUM_LIGHTS
     };
 

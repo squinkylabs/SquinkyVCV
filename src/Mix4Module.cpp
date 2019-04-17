@@ -10,6 +10,8 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/ToggleButton.h"
+#include "ctrl/SqToggleLED.h"
+
 
 #include "ctrl/SqWidgets.h"
 
@@ -101,8 +103,7 @@ struct Mix4Widget : ModuleWidget
     void makeStrip(
         Mix4Module*,
         std::shared_ptr<IComposite>,
-        int channel,
-        std::shared_ptr<ToggleManager>);
+        int channel);
 };
 
 static const float channelX = 21;
@@ -116,8 +117,7 @@ static float muteY = 0;
 void Mix4Widget::makeStrip(
     Mix4Module*,
     std::shared_ptr<IComposite> icomp,
-    int channel,
-    std::shared_ptr<ToggleManager> mgr)
+    int channel)
 {
     const float x = channelX + channel * dX;
 
@@ -163,6 +163,7 @@ void Mix4Widget::makeStrip(
     muteY = y-12;
     
     y -= channelDy;
+#if 0
     auto solo = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(x-12, y-12),
@@ -172,6 +173,19 @@ void Mix4Widget::makeStrip(
     solo->addSvg("res/square-button-02.svg");
     addParam(solo);
     mgr->registerClient(solo);
+#else
+
+    SqToggleLED* tog = (createLight<SqToggleLED>(
+        Vec(x-12, y-12),
+        module,
+        channel + Comp::SOLO0_LIGHT));
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    tog->setHandler( []() {
+        printf("add handler for solo button\n"); fflush(stdout);
+    });
+    addChild(tog);
+#endif
    
     const float extraDy = 6;
     y -= (channelDy + extraDy);
@@ -214,9 +228,8 @@ Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
     SqHelper::setPanel(this, "res/mix4_panel.svg");
      std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
-    std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
     for (int i=0; i< Comp::numChannels; ++i) {
-        makeStrip(module, icomp, i, mgr);
+        makeStrip(module, icomp, i);
     }
 
     // screws
