@@ -60,6 +60,8 @@ private:
     /**
      * 0 - no request,
      * 1..4 is a request to solo channel n-1
+     * 
+     * Set by the the UI thread
      */
     int soloRequest = 0;
 
@@ -134,10 +136,15 @@ inline void MixerModule::process(const ProcessArgs &args)
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightModule->leftConsumerMessage);
         sendRightChannel.go(outBuf + 4);
         uint32_t cmd = receiveRightChannel.rx(inBuf + 0);
-        if (cmd != 0) {
-            printf("right read cmd %x module=%p\n", cmd, this); fflush(stdout);
+        if (cmd == CommCommand_ClearMute) {
+            printf("right read clearmute module=%p\n", this); fflush(stdout);
+            requestModuleSolo(0);
+            // now relay down to the left
+            if (pairedLeft) {
+                 sendLeftChannel.send(CommCommand_ClearMute);
+            }
         }
-        //assert(cmd == 0);
+  
 
     }
     if (pairedLeft) {
@@ -148,8 +155,13 @@ inline void MixerModule::process(const ProcessArgs &args)
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftModule->rightConsumerMessage);
         sendLeftChannel.go(outBuf + 0);
         uint32_t cmd = receiveLeftChannel.rx(inBuf + 4);
-        if (cmd != 0) {
-            printf("left read cmd %x module %p\n", cmd, this); fflush(stdout);
+        if (cmd == CommCommand_ClearMute) {
+            printf("left read clear mute module %p\n", this); fflush(stdout);
+            requestModuleSolo(0);
+             // now relay down to the right
+            if (pairedRight) {
+                 sendRightChannel.send(CommCommand_ClearMute);
+            }
         }
     }
 
@@ -166,60 +178,3 @@ inline void MixerModule::requestSolo(int channel)
     soloRequest = channel+1;      // Queue up a request for the audio thread.
                                 // TODO: use atomic?
 }
-
-#if 0
-inline void MixerModule::process(const ProcessArgs &args)
-{
-#if 1
-static int x =0;
-if (++x == 50) {
-     if (rightModule) {
-        printf("\n\n %p I have a right module ammaster=%d\n", this, amMaster()); 
-        printf("lpm=%p rpm = %p\n", 
-            leftProducerMessage, 
-            rightProducerMessage);
-        printf("lcm=%p rcm = %p\n", 
-            leftConsumerMessage, 
-            rightConsumerMessage);
-        printf("this flip=%p, flop=%p\n", bufferFlip, bufferFlop);
-        fflush(stdout);
-    }
-}
-#endif
-
-#if 0
-    if (rightModule) {
-        printf("right module model = %p, mixM = %p\n",
-            rightModule->model,
-            modelMixMModule);
-    }
-     if (leftModule) {
-        printf("left module model = %p, mix4 = %p\n",
-            leftModule->model,
-            modelMix4Module);
-    }
-    #endif
-
-
-
-#if 0
-    // set up the audio busses buffers for this processing cycle
-    if (!amMaster()) {
-        // slave module
-        // must send my output to this->rightProducerBuffer
-
-        setBusOutput( static_cast<float *>(this->rightProducerMessage));
-    } else {
-        // master module.
-        // must get my input from left->rightConsumerBuffer
-        if (leftModule) {
-            setBusInput(static_cast<float *>(leftModule->rightConsumerMessage));
-        }
-    }
-    #endif
-
-
-    // Now do the real mixer processing
-    internalProcess();
-}
-#endif

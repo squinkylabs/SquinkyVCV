@@ -176,14 +176,16 @@ private:
 
 };
 
+// called from audio thread
 template <class TBase>
 inline  void Mix4<TBase>::requestModuleSolo(int channel)
 {
     soloChannel = channel;
-
+    printf("Mix4::requestModuleSolo(%d)\n", channel);
     int ch = soloChannel-1;
     for (int i=0; i<4; ++i) {
-        TBase::lights[i + SOLO0_LIGHT].value = (ch == i) ? 10 : 0;
+        TBase::lights[i + SOLO0_LIGHT].value = (ch == i) ? 10.f : 0.f;
+        printf("light[%d] = %f\n", i, (ch == i) ? 10.f : 0.f);
     }
 }
 
