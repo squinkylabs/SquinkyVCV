@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "CommChannels.h"
 #include "Divider.h"
 #include "IComposite.h"
 #include "MultiLag.h"
@@ -74,11 +75,12 @@ public:
         MUTE1_PARAM,
         MUTE2_PARAM,
         MUTE3_PARAM,
-      
+    #if 0 
         SOLO0_PARAM,
         SOLO1_PARAM,
         SOLO2_PARAM,
         SOLO3_PARAM,
+    #endif
 
         SEND0_PARAM,
         SEND1_PARAM,
@@ -140,7 +142,7 @@ public:
 
     void setExpansionInputs(const float*);
     void setExpansionOutputs(float*);
-    void requestModuleSolo(int channel);
+    void requestModuleSolo(SoloCommands);
 
     /**
      * Main processing entry point. Called every sample
@@ -168,25 +170,26 @@ private:
     const float* expansionInputs = nullptr;
     float* expansionOutputs = nullptr;
 
-    /**
-     * 0 = no solo
-     * 1..4 = soloe 0..3
-     */
-    int     soloChannel=0;
-
+    SoloCommands soloState = SoloCommands::SOLO_NONE;
 };
 
 // called from audio thread
 template <class TBase>
-inline  void Mix4<TBase>::requestModuleSolo(int channel)
+inline  void Mix4<TBase>::requestModuleSolo(SoloCommands command)
 {
-    soloChannel = channel;
-    printf("Mix4::requestModuleSolo(%d)\n", channel);
+    soloState = command;
+    printf("DOLIGHT Mix4::requestModuleSolo(%d)\n", int(command));
+    //get mixM working first
+    #if 0
     int ch = soloChannel-1;
     for (int i=0; i<4; ++i) {
+
+        
+        
         TBase::lights[i + SOLO0_LIGHT].value = (ch == i) ? 10.f : 0.f;
         printf("light[%d] = %f\n", i, (ch == i) ? 10.f : 0.f);
     }
+    #endif
 }
 
 
@@ -197,7 +200,6 @@ inline void Mix4<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
-        // TODO: get rid of normalize. if active ? cv : 10;
         const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ? 
              TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
         const float cv = std::clamp(
@@ -213,6 +215,16 @@ inline void Mix4<TBase>::stepn(int div)
         buf_channelSendGains[i] = slider;
     }
 
+        // If the is an external solo, then mute all channels
+    const bool allMutedDueToSolo = (soloState == SoloCommands::SOLO_ALL);
+    for (int i = 0; i < numChannels; ++i) {
+        bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
+            (TBase::inputs[i + MUTE0_INPUT].value > 2));
+        const bool mute = allMutedDueToSolo ||
+            ((i != int(soloState)) && muteActivated);
+        buf_muteInputs[i] = mute ? 0.f : 1.f;
+    }
+
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {
         const float balance = TBase::params[i + PAN0_PARAM].value;
@@ -224,25 +236,6 @@ inline void Mix4<TBase>::stepn(int div)
         buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, panValue);
     }
 
-    bool anySolo = false;
-    for (int i = 0; i < numChannels; ++i) {
-        if (TBase::params[i + SOLO0_PARAM].value > .5f) {
-            anySolo = true;
-            break;
-        }
-    }
-
-    if (anySolo) {
-        for (int i = 0; i < numChannels; ++i) {
-            buf_muteInputs[i] = TBase::params[i + SOLO0_PARAM].value;
-        }
-    } else {
-        for (int i = 0; i < numChannels; ++i) {
-            bool isMute = (TBase::params[i + MUTE0_PARAM].value > .5f) ||
-                (TBase::inputs[i + MUTE0_INPUT].value > 2);
-            buf_muteInputs[i] = isMute ? 0.f : 1.f;
-        }
-    }
     antiPop.step(buf_muteInputs);
 }
 
@@ -298,12 +291,7 @@ inline void Mix4<TBase>::step()
         expansionOutputs[2] = lSend;
         expansionOutputs[3] = rSend;
     }
-#if 0
-    const float masterMuteValue = antiPop.get(8);
-    const float masterGain = buf_masterGain * masterMuteValue;
-    TBase::outputs[LEFT_OUTPUT].value = left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].value;
-    TBase::outputs[RIGHT_OUTPUT].value = right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].value;
-#endif
+
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {
         TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
@@ -379,7 +367,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::MUTE3_PARAM:
             ret = {0, 1.0f, 0, "Mute  4"};
             break;
-   
+   #if 0
         case Mix4<TBase>::SOLO0_PARAM:
             ret = {0, 1.0f, 0, "Solo  1"};
             break;
@@ -392,6 +380,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::SOLO3_PARAM:
             ret = {0, 1.0f, 0, "Solo  4"};
             break;
+    #endif
 
         case Mix4<TBase>::SEND0_PARAM:
             ret = {0, 1.0f, 0, "Send 1"};

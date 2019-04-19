@@ -211,8 +211,9 @@ void testMute( std::function<float(std::shared_ptr<T>, bool bRight)> outputGette
     assertClose(outputGetter(m, false), 0, .001);
 }
 
+// only works for mix8 now
 template <typename T>
-void testSolo(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
 
@@ -226,6 +227,44 @@ void testSolo(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     m->step();
 
     assertClose(outputGetter(m, false), float(10 * .8 * .8), .001);
+    assertClose(outputGetter(m, true), 0, .001);
+}
+
+
+template <typename T>
+void testSoloNew(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+{
+    auto m = getMixer<T>();
+
+    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->params[T::PAN0_PARAM].value = -1.f;     // full left
+ //   m->params[T::SOLO0_PARAM].value = 1;        // solo
+    m->requestModuleSolo(SoloCommands::SOLO_0);
+
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+    m->step();
+
+    assertClose(outputGetter(m, false), float(10 * .8 * .8), .001);
+    assertClose(outputGetter(m, true), 0, .001);
+}
+
+template <typename T>
+void testSoloNew2(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+{
+    auto m = getMixer<T>();
+
+    m->inputs[T::AUDIO2_INPUT].value = 10;
+    m->params[T::PAN2_PARAM].value = -1.f;     // full left
+    m->requestModuleSolo(SoloCommands::SOLO_ALL);
+
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+    m->step();
+
+    assertClose(outputGetter(m, false), 0, .001);
     assertClose(outputGetter(m, true), 0, .001);
 }
 
@@ -420,10 +459,13 @@ void testMix8()
     testMute<MixerM>(outputGetterMixM);
     testMute<Mixer4>(outputGetterMix4);
 
-    testSolo<Mixer4>(outputGetterMix4);
-    testSolo<Mixer8>(outputGetterMix8);
-    testSolo<MixerM>(outputGetterMixM);
-   
+
+    testSoloNew<Mixer4>(outputGetterMix4);
+    testSoloLegacy<Mixer8>(outputGetterMix8);
+    testSoloNew<MixerM>(outputGetterMixM);
+    testSoloNew2<MixerM>(outputGetterMixM);
+    testSoloNew2<Mixer4>(outputGetterMix4);
+
     testPanLook0();
     testPanLookL();
 

@@ -10,7 +10,27 @@
  *      Top 16 bits are the command, bottom 16 are the data
  */
 
-const uint32_t CommCommand_ClearMute = (100 << 16); 
+// This command sent when un-soloing. Receiver should clear it's solo status.
+const uint32_t CommCommand_ClearAllSolo = (100 << 16); 
+
+// This command sent when soloing. 
+// Receiver should turn off all channels, as a different module will be soloing.
+const uint32_t CommCommand_ExternalSolo = (101 << 16); 
+
+/**
+ * commands used by mixers for communicating sol info
+ * (These are not sent over a comm channel, and don't really belong here)
+ */
+
+enum class SoloCommands {
+    SOLO_0,
+    SOLO_1,
+    SOLO_2,
+    SOLO_3,
+    SOLO_ALL,
+    SOLO_NONE,
+    DO_NOTHING,
+};
 
 /**
  * CommChannelSend

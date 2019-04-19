@@ -12,26 +12,15 @@ public:
 
     void process(const ProcessArgs &args) override;
     virtual void internalProcess() = 0;
-    virtual void requestModuleSolo(int) = 0;
+    virtual void requestModuleSolo(SoloCommands) = 0;
 
 
     virtual bool amMaster() { return false; }
 
-    #if 0
-    virtual void setBusOutput(float*)
-    {
-
-    }
-     virtual void setBusInput(float*)
-    {
-        
-    }
-    #endif
-
     /**
      * UI calls this to initiate a solo
      */
-    void requestSolo(int channel);
+    void requestSoloFromUI(SoloCommands);
 protected:
     virtual void setExternalInput(const float*)=0;
     virtual void setExternalOutput(float*)=0;
@@ -57,14 +46,12 @@ private:
     CommChannelReceive receiveRightChannel;
     CommChannelReceive receiveLeftChannel;
 
-    /**
-     * 0 - no request,
-     * 1..4 is a request to solo channel n-1
-     * 
-     * Set by the the UI thread
-     */
-    int soloRequest = 0;
+    // This gets set when UI calls us ask us to do something
+    SoloCommands soloRequestFromUI = SoloCommands::DO_NOTHING;
 
+    // This is set by us after executing a request from UI.
+    // We use it to track our state
+    SoloCommands currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
 };
 
 // Remember : "rightModule" is the module to your right
@@ -77,7 +64,6 @@ inline MixerModule::MixerModule()
     leftProducerMessage = bufferFlipL;
     leftConsumerMessage = bufferFlopL;
 }
-
 
 // Each time we are called, we want the unit on the left to output
 // all bus audio to the unit on its right.
@@ -98,10 +84,6 @@ inline void MixerModule::process(const ProcessArgs &args)
     const bool pairedLeft = leftModule &&
         (leftModule->model == modelMix4Module);
 
-    //printf("\nmixer %p\n amMaster=%d, pairedLeft=%d right=%d\n", this, amMaster(), pairedLeft, pairedRight);
-    //printf("rm=%d lm=%d\n", bool(rightModule), bool(leftModule));
-    //fflush(stdout);
-
     assert(rightProducerMessage);
     assert(!pairedLeft || leftModule->rightConsumerMessage);
 
@@ -111,21 +93,24 @@ inline void MixerModule::process(const ProcessArgs &args)
     // set a channel to rx data from the left (case #2, above)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
 
-   
-    if (soloRequest) {
-        // If solo requested, queue up reset solo commands for both sides     
+    if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
+        // If solo requested, queue up solo commands for both sides     
         if (pairedRight) {
             printf("solo req, mod is paired R\n");
-            sendRightChannel.send(CommCommand_ClearMute);
+            sendRightChannel.send(CommCommand_ExternalSolo);
         }
         if (pairedLeft) {
             printf("solo req, mod is paired L\n");
-            sendLeftChannel.send(CommCommand_ClearMute);
+            sendLeftChannel.send(CommCommand_ExternalSolo);
         }
       
-        // tell our own module to solo
-        requestModuleSolo(soloRequest);
-        soloRequest = 0;
+        // tell our own module to solo, if a state change is requested
+        if (soloRequestFromUI != currentSoloStatusFromUI) {
+            requestModuleSolo(soloRequestFromUI);
+
+            //and update our current state
+            currentSoloStatusFromUI = soloRequestFromUI;
+        }
     }
 
     if (pairedRight) {
@@ -136,17 +121,19 @@ inline void MixerModule::process(const ProcessArgs &args)
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightModule->leftConsumerMessage);
         sendRightChannel.go(outBuf + 4);
         uint32_t cmd = receiveRightChannel.rx(inBuf + 0);
-        if (cmd == CommCommand_ClearMute) {
-            printf("right read clearmute module=%p\n", this); fflush(stdout);
-            requestModuleSolo(0);
+        if (cmd != 0) {
+            const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
+                SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
+            printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
+
+            requestModuleSolo(reqMuteStatus);
             // now relay down to the left
             if (pairedLeft) {
-                 sendLeftChannel.send(CommCommand_ClearMute);
+                 sendLeftChannel.send(cmd);
             }
         }
-  
-
     }
+
     if (pairedLeft) {
         // #3) Send data to the left: use your own left producer buffer.
         uint32_t* outBuf = reinterpret_cast<uint32_t *>(leftProducerMessage);
@@ -155,26 +142,35 @@ inline void MixerModule::process(const ProcessArgs &args)
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftModule->rightConsumerMessage);
         sendLeftChannel.go(outBuf + 0);
         uint32_t cmd = receiveLeftChannel.rx(inBuf + 4);
-        if (cmd == CommCommand_ClearMute) {
-            printf("left read clear mute module %p\n", this); fflush(stdout);
-            requestModuleSolo(0);
-             // now relay down to the right
+        if (cmd != 0) {
+            const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
+                SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
+            printf("left read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
+
+            requestModuleSolo(reqMuteStatus);
+            // now relay down to the right
             if (pairedRight) {
-                 sendRightChannel.send(CommCommand_ClearMute);
+                 sendRightChannel.send(cmd);
             }
         }
     }
-
-    
 
     // Do the audio processing, and handle the left and right audio buses
     internalProcess();
 }
 
 
-inline void MixerModule::requestSolo(int channel)
+inline void MixerModule::requestSoloFromUI(SoloCommands command)
 {
-    printf("\nUI req solo %d module=%p\n", channel, this); fflush(stdout);
-    soloRequest = channel+1;      // Queue up a request for the audio thread.
+    printf("\nUI req solo %d state =%d module=%p\n", (int) command, (int) currentSoloStatusFromUI, this); fflush(stdout);
+
+    // Is it a request to turn off an already soloing channel,
+    // thus clearing all solos?
+    if (currentSoloStatusFromUI == command) {
+        soloRequestFromUI = SoloCommands::SOLO_NONE;
+    } else {
+   
+        soloRequestFromUI = command;      // Queue up a request for the audio thread.
                                 // TODO: use atomic?
+    }
 }

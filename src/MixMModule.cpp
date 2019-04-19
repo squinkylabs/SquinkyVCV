@@ -31,7 +31,7 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
-    void requestModuleSolo(int) override;
+    void requestModuleSolo( SoloCommands) override;
     bool amMaster() override { return true; }
 
 
@@ -44,10 +44,10 @@ private:
 
 };
 
-void MixMModule::requestModuleSolo(int channel)
+void MixMModule::requestModuleSolo(SoloCommands command)
 {
-    printf("MixMModule::requestModuleSolo\n"); fflush(stdout);
-    MixM->requestModuleSolo(channel);
+    printf("MixMModule::requestModuleSolo %d\n", (int)command); fflush(stdout);
+    MixM->requestModuleSolo(command);
 }
 
 void MixMModule::onSampleRateChange()
@@ -222,7 +222,7 @@ void MixMWidget::makeStrip(
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, channel]() {
         printf("clicked on channel %d\n", channel);
-         mixModule->requestSolo(channel);
+         mixModule->requestSoloFromUI(SoloCommands(channel));
     });
     addChild(tog);
 

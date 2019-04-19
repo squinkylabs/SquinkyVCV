@@ -32,7 +32,7 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
-    void requestModuleSolo(int) override;
+    void requestModuleSolo(SoloCommands) override;
 
 protected:
     void setExternalInput(const float*) override;
@@ -56,10 +56,10 @@ void Mix4Module::setExternalOutput(float* buf)
     Mix4->setExpansionOutputs(buf);
 }
 
-void Mix4Module::requestModuleSolo(int channel)
+void Mix4Module::requestModuleSolo(SoloCommands command)
 {
     printf("Mix4Module::requestModuleSolo\n"); fflush(stdout);
-    Mix4->requestModuleSolo(channel);
+    Mix4->requestModuleSolo(command);
 }
 
 #ifdef __V1
@@ -178,7 +178,7 @@ void Mix4Widget::makeStrip(
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, channel]() {
-        mixModule->requestSolo(channel);
+        mixModule->requestSoloFromUI( SoloCommands(channel));
     });
     addChild(tog);
    
