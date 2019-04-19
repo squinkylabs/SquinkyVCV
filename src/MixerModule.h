@@ -94,14 +94,16 @@ inline void MixerModule::process(const ProcessArgs &args)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
 
     if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
+        const auto commCmd = (soloRequestFromUI == SoloCommands::SOLO_NONE) ?
+            CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
         // If solo requested, queue up solo commands for both sides     
         if (pairedRight) {
             printf("solo req, mod is paired R\n");
-            sendRightChannel.send(CommCommand_ExternalSolo);
+            sendRightChannel.send(commCmd);
         }
         if (pairedLeft) {
             printf("solo req, mod is paired L amMaster=%d send cmd to left\n", amMaster());
-            sendLeftChannel.send(CommCommand_ExternalSolo);
+            sendLeftChannel.send(commCmd);
         }
       
         // tell our own module to solo, if a state change is requested
@@ -111,6 +113,8 @@ inline void MixerModule::process(const ProcessArgs &args)
             //and update our current state
             currentSoloStatusFromUI = soloRequestFromUI;
         }
+
+        // Now that we have processed the command from UI, retire it.
         soloRequestFromUI = SoloCommands::DO_NOTHING;
 
     }
@@ -171,9 +175,10 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
     // thus clearing all solos?
     if (currentSoloStatusFromUI == command) {
         soloRequestFromUI = SoloCommands::SOLO_NONE;
+        printf("UI req interpreted as un-solo\n");
     } else {
    
-        soloRequestFromUI = command;      // Queue up a request for the audio thread.
-                                // TODO: use atomic?
+        soloRequestFromUI = command;        // Queue up a request for the audio thread.
+                                            // TODO: use atomic?
     }
 }

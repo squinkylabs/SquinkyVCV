@@ -150,18 +150,19 @@ public:
 
     void stepn(int steps);
 
-    float buf_inputs[numChannels];
-    float buf_channelGains[numChannels];
-    float buf_channelSendGains[numChannels];
-    float buf_channelOuts[numChannels];
-    float buf_leftPanGains[numChannels];
-    float buf_rightPanGains[numChannels];
+    float buf_inputs[numChannels] = {0};
+    float buf_channelGains[numChannels] = {0};
+    float buf_channelSendGains[numChannels] = {0};
+    float buf_channelOuts[numChannels] = {0};
+    float buf_leftPanGains[numChannels] = {0};
+    float buf_rightPanGains[numChannels] = {0};
 
     /** 
      * allocate extra bank for the master mute
      */
-    float buf_muteInputs[numChannels + 4];
-    float buf_masterGain;
+    float buf_muteInputs[numChannels + 4] = {0};
+    float buf_masterGain = 0;
+    float buf_auxReturnGain = 0;
 
 private:
     Divider divider;
@@ -195,8 +196,8 @@ inline void MixM<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
-        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ? 
-             TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
+            TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
         const float cv = std::clamp(
             rawCV / 10.0f,
             0.0f,
@@ -220,6 +221,7 @@ inline void MixM<TBase>::stepn(int div)
     }
 
     buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
+    buf_auxReturnGain = TBase::params[RETURN_GAIN_PARAM].value;
 
     // If the is an external solo, then mute all channels
     const bool allMutedDueToSolo = (soloState == SoloCommands::SOLO_ALL);
@@ -282,11 +284,15 @@ inline void MixM<TBase>::step()
         rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
     }
 
+    left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGain;
+    right += TBase::inputs[RIGHT_RETURN_INPUT].value * buf_auxReturnGain;
+
     // output the masters
     const float masterMuteValue = antiPop.get(numChannels);     // master is the one after
     const float masterGain = buf_masterGain * masterMuteValue;
     TBase::outputs[LEFT_OUTPUT].value = left * masterGain;
     TBase::outputs[RIGHT_OUTPUT].value = right * masterGain;
+
 
     TBase::outputs[LEFT_SEND_OUTPUT].value = lSend;
     TBase::outputs[RIGHT_SEND_OUTPUT].value = rSend;
