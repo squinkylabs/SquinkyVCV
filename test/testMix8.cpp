@@ -232,22 +232,33 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
 
 
 template <typename T>
-void testSoloNew(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+void _testSoloNew(int channel, std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
-    m->params[T::PAN0_PARAM].value = -1.f;     // full left
- //   m->params[T::SOLO0_PARAM].value = 1;        // solo
-    m->requestModuleSolo(SoloCommands::SOLO_0);
+    m->inputs[T::AUDIO0_INPUT + channel].value = 10;
+    m->params[T::PAN0_PARAM + channel].value = -1.f;     // full left
+    m->requestModuleSolo(SoloCommands(int(SoloCommands::SOLO_0) + channel));
 
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
     m->step();
 
+    const int chanOther = (channel == 0) ? 3 : 0;
+
     assertClose(outputGetter(m, false), float(10 * .8 * .8), .001);
     assertClose(outputGetter(m, true), 0, .001);
+    assertClose(m->lights[T::SOLO0_LIGHT + channel].value, 10, .001);
+    assertClose(m->lights[T::SOLO0_LIGHT + chanOther].value, 0, .001);
+}
+
+
+template <typename T>
+void testSoloNew(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+{
+    _testSoloNew(0, outputGetter);
+    _testSoloNew(2, outputGetter);
 }
 
 template <typename T>
@@ -459,10 +470,11 @@ void testMix8()
     testMute<MixerM>(outputGetterMixM);
     testMute<Mixer4>(outputGetterMix4);
 
-
-    testSoloNew<Mixer4>(outputGetterMix4);
     testSoloLegacy<Mixer8>(outputGetterMix8);
+
     testSoloNew<MixerM>(outputGetterMixM);
+    testSoloNew<Mixer4>(outputGetterMix4);
+ 
     testSoloNew2<MixerM>(outputGetterMixM);
     testSoloNew2<Mixer4>(outputGetterMix4);
 

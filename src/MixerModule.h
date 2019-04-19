@@ -100,7 +100,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             sendRightChannel.send(CommCommand_ExternalSolo);
         }
         if (pairedLeft) {
-            printf("solo req, mod is paired L\n");
+            printf("solo req, mod is paired L amMaster=%d send cmd to left\n", amMaster());
             sendLeftChannel.send(CommCommand_ExternalSolo);
         }
       
@@ -111,6 +111,8 @@ inline void MixerModule::process(const ProcessArgs &args)
             //and update our current state
             currentSoloStatusFromUI = soloRequestFromUI;
         }
+        soloRequestFromUI = SoloCommands::DO_NOTHING;
+
     }
 
     if (pairedRight) {
@@ -121,6 +123,7 @@ inline void MixerModule::process(const ProcessArgs &args)
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightModule->leftConsumerMessage);
         sendRightChannel.go(outBuf + 4);
         uint32_t cmd = receiveRightChannel.rx(inBuf + 0);
+
         if (cmd != 0) {
             const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;

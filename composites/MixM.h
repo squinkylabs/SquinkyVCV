@@ -183,17 +183,9 @@ inline  void MixM<TBase>::requestModuleSolo(SoloCommands command)
 {
     soloState = command;
 
-    printf("DOLIGHT just set MixM solo state to %d\n", (int) soloState);
-
-#if 0
-  //  int ch = soloChannel-1;
     for (int i=0; i<4; ++i) {
-        //const bool allSolo = (command == SoloCommands::SOLO_ALL);
-        //const bool noneSolo = (command == SoloCommands::SOLO_NONE);
-       
-        TBase::lights[i + SOLO0_LIGHT].value = (soloState == i) ? 10 : 0;
+        TBase::lights[i + SOLO0_LIGHT].value = (int(soloState) == i) ? 10.f : 0.f;
     }
-    #endif
 }
 
 template <class TBase>
@@ -232,11 +224,14 @@ inline void MixM<TBase>::stepn(int div)
     // If the is an external solo, then mute all channels
     const bool allMutedDueToSolo = (soloState == SoloCommands::SOLO_ALL);
     for (int i = 0; i < numChannels; ++i) {
-        bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
+        const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
             (TBase::inputs[i + MUTE0_INPUT].value > 2));
         const bool mute = allMutedDueToSolo ||
-            ((i != int(soloState)) && muteActivated); 
+            ((i != int(soloState)) && (soloState <= SoloCommands::SOLO_3)) ||
+            muteActivated; 
+        
         buf_muteInputs[i] = mute ? 0.f : 1.f;
+       // printf("i = %d, muteActivate=%d mute=%d level=%.2f soloState=%d\n",        i, muteActivated, mute, buf_muteInputs[i], soloState); fflush(stdout);
     }
 
     buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
