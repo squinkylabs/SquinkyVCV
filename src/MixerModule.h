@@ -98,11 +98,11 @@ inline void MixerModule::process(const ProcessArgs &args)
             CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
         // If solo requested, queue up solo commands for both sides     
         if (pairedRight) {
-            printf("solo req, mod is paired R\n");
+            //printf("solo req, mod is paired R\n");
             sendRightChannel.send(commCmd);
         }
         if (pairedLeft) {
-            printf("solo req, mod is paired L amMaster=%d send cmd to left\n", amMaster());
+            //printf("solo req, mod is paired L amMaster=%d send cmd to left\n", amMaster());
             sendLeftChannel.send(commCmd);
         }
       
@@ -131,7 +131,7 @@ inline void MixerModule::process(const ProcessArgs &args)
         if (cmd != 0) {
             const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
-            printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
+            //printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
 
             requestModuleSolo(reqMuteStatus);
             // now relay down to the left
@@ -152,7 +152,7 @@ inline void MixerModule::process(const ProcessArgs &args)
         if (cmd != 0) {
             const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
-            printf("left read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
+            //printf("left read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
 
             requestModuleSolo(reqMuteStatus);
             // now relay down to the right
@@ -169,13 +169,13 @@ inline void MixerModule::process(const ProcessArgs &args)
 
 inline void MixerModule::requestSoloFromUI(SoloCommands command)
 {
-    printf("\nUI req solo %d state =%d module=%p\n", (int) command, (int) currentSoloStatusFromUI, this); fflush(stdout);
+    //printf("\nUI req solo %d state =%d module=%p\n", (int) command, (int) currentSoloStatusFromUI, this); fflush(stdout);
 
     // Is it a request to turn off an already soloing channel,
     // thus clearing all solos?
     if (currentSoloStatusFromUI == command) {
         soloRequestFromUI = SoloCommands::SOLO_NONE;
-        printf("UI req interpreted as un-solo\n");
+        //printf("UI req interpreted as un-solo\n");
     } else {
    
         soloRequestFromUI = command;        // Queue up a request for the audio thread.

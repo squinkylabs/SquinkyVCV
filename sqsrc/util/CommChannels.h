@@ -98,7 +98,7 @@ inline void CommChannelSend::go(uint32_t* output)
             x = messageBuffer.pop();
         }
     }
-    if (x != 0) printf("output 32: %x\n", x);
+    //if (x != 0) printf("output 32: %x\n", x);
     *output = x;
 }
 

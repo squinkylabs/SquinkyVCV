@@ -56,10 +56,10 @@ static std::shared_ptr<T> getMixerBase()
 }
 
 template <typename T>
-static std::shared_ptr<T> getMixer();
+std::shared_ptr<T> getMixer();
 
 template <>
-static std::shared_ptr<Mixer4> getMixer<Mixer4>()
+std::shared_ptr<Mixer4> getMixer<Mixer4>()
 {
     std::shared_ptr<Mixer4> ret = getMixerBase<Mixer4>();
     ret->setExpansionOutputs(gOutputBuffer);
@@ -67,14 +67,14 @@ static std::shared_ptr<Mixer4> getMixer<Mixer4>()
 }
 
 template <>
-static std::shared_ptr<MixerM> getMixer<MixerM>()
+std::shared_ptr<MixerM> getMixer<MixerM>()
 {
     std::shared_ptr<MixerM> ret = getMixerBase<MixerM>();
     return ret;
 }
 
 template <>
-static std::shared_ptr<Mixer8> getMixer<Mixer8>()
+std::shared_ptr<Mixer8> getMixer<Mixer8>()
 {
     std::shared_ptr<Mixer8> ret = getMixerBase<Mixer8>();
     return ret;

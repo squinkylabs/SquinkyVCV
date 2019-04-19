@@ -46,7 +46,7 @@ private:
 
 void MixMModule::requestModuleSolo(SoloCommands command)
 {
-    printf("MixMModule::requestModuleSolo %d\n", (int)command); fflush(stdout);
+    //printf("MixMModule::requestModuleSolo %d\n", (int)command); fflush(stdout);
     MixM->requestModuleSolo(command);
 }
 
@@ -221,8 +221,8 @@ void MixMWidget::makeStrip(
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, channel]() {
-        printf("clicked on channel %d\n", channel);
-         mixModule->requestSoloFromUI(SoloCommands(channel));
+        //printf("clicked on channel %d\n", channel);
+        mixModule->requestSoloFromUI(SoloCommands(channel));
     });
     addChild(tog);
 

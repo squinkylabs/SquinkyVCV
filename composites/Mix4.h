@@ -36,6 +36,7 @@ namespace std {
 
 /**
  Perf: 10.4 before new features
+    13.5 with all the features
 
  */
 
@@ -216,7 +217,6 @@ inline void Mix4<TBase>::stepn(int div)
             muteActivated;
 
         buf_muteInputs[i] = mute ? 0.f : 1.f;
-       // printf("i = %d, muteActivate=%d mute=%d level=%.2f soloState=%d\n",        i, muteActivated, mute, buf_muteInputs[i], soloState); fflush(stdout);
     }
 
     // fill buf_leftPanGains and buf_rightPanGains

@@ -34,6 +34,7 @@ public:
 
 /**
     Perf: 12.4 before new stuff (mix8 was 20)
+    16.2 with all the features
 
  */
 
@@ -233,7 +234,6 @@ inline void MixM<TBase>::stepn(int div)
             muteActivated; 
         
         buf_muteInputs[i] = mute ? 0.f : 1.f;
-       // printf("i = %d, muteActivate=%d mute=%d level=%.2f soloState=%d\n",        i, muteActivated, mute, buf_muteInputs[i], soloState); fflush(stdout);
     }
 
     buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
