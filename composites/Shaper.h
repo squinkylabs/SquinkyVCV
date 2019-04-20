@@ -99,7 +99,8 @@ public:
 
     enum InputIds
     {
-        INPUT_AUDIO,
+        INPUT_AUDIO0,
+        INPUT_AUDIO1,
         INPUT_GAIN,
         INPUT_OFFSET,
         NUM_INPUTS
@@ -107,7 +108,8 @@ public:
 
     enum OutputIds
     {
-        OUTPUT_AUDIO,
+        OUTPUT_AUDIO0,
+        OUTPUT_AUDIO1,
         NUM_OUTPUTS
     };
 
@@ -141,21 +143,31 @@ private:
     const static int maxOversample = 16;
     int curOversample = 16;
     void init();
-    IIRUpsampler up;
-    IIRDecimator dec;
+  
     std::shared_ptr<LookupTableParams<float>> tanhLookup;
     AsymWaveShaper asymShaper;
     int cycleCount = 0;
     Shapes shape = Shapes::Clip;
     int asymCurveindex = 0;
 
-    /**
-     * 4 pole butterworth HP
-     */
-    using Thpf = double;
-    BiquadParams<Thpf, 2> dcBlockParams;
-    BiquadState<Thpf, 2> dcBlockState;
+  
+    class DSPImp {
+    public:
+        /**
+         * 4 pole butterworth HP (DC blocker)
+         */
+        using Thpf = double;
+        BiquadParams<Thpf, 2> dcBlockParams;
+        BiquadState<Thpf, 2> dcBlockState;
 
+        IIRUpsampler up;
+        IIRDecimator dec;
+
+        bool isActive = false;
+    };
+
+    // stereo
+    DSPImp dsp[2];
 
     void processCV();
     void setOversample();
@@ -211,8 +223,11 @@ template <class TBase>
 void  Shaper<TBase>::setOversample()
 {
     //   float fc = .25 / float(oversample);
-    up.setup(curOversample);
-    dec.setup(curOversample);
+    for (int i = 0; i < 2; ++i) {
+        DSPImp& imp = dsp[i];
+        imp.up.setup(curOversample);
+        imp.dec.setup(curOversample);
+    }
 }
 
 template <class TBase>
@@ -221,7 +236,10 @@ void  Shaper<TBase>::onSampleRateChange()
     const float cutoffHz = 20.f;
     float fcNormalized = cutoffHz * this->engineGetSampleTime();
     assert((fcNormalized > 0) && (fcNormalized < .1));
-    ButterworthFilterDesigner<Thpf>::designFourPoleHighpass(dcBlockParams, fcNormalized);
+    for (int i = 0; i < 2; ++i) {
+        DSPImp& imp = dsp[i];
+        ButterworthFilterDesigner<double>::designFourPoleHighpass(imp.dcBlockParams, fcNormalized);
+    }
 }
 
 template <class TBase>
@@ -252,7 +270,6 @@ void Shaper<TBase>::processCV()
 
     _gain = 5 * LookupTable<float>::lookup(*audioTaper, _gainInput, false);
 
-
     // -5 .. 5
     const float offsetInput = scaleOffset(
         TBase::inputs[INPUT_OFFSET].value,
@@ -266,6 +283,10 @@ void Shaper<TBase>::processCV()
 
     const float sym = .1f * (5 - _offset);
     asymCurveindex = (int) round(sym * 15.1);           // This math belongs in the shaper
+
+    for (int i = 0; i < 2; ++i) {
+        dsp[i].isActive = TBase::inputs[INPUT_AUDIO0 + i].active && TBase::outputs[OUTPUT_AUDIO0 + i].active;
+    }
 }
 
 template <class TBase>
@@ -276,36 +297,40 @@ void  Shaper<TBase>::step()
         processCV();
     }
 
-    float buffer[maxOversample];
-    float input = TBase::inputs[INPUT_AUDIO].value;
-    // const float rawInput = input;
+    for (int i = 0; i < 2; ++i) {
+        DSPImp& imp = dsp[i];
+        if (imp.isActive) {
+            float buffer[maxOversample];
+            float input = TBase::inputs[INPUT_AUDIO0 + i].value;
 
-    // TODO: maybe add offset after gain?
-    if (shape != Shapes::AsymSpline) {
-        input += _offset;
-    }
-    if (shape != Shapes::Crush) {
-        input *= _gain;
-    }
+            // TODO: maybe add offset after gain?
+            if (shape != Shapes::AsymSpline) {
+                input += _offset;
+            }
+            if (shape != Shapes::Crush) {
+                input *= _gain;
+            }
 
-    if (curOversample != 1) {
-        up.process(buffer, input);
-    } else {
-        buffer[0] = input;
-    }
+            if (curOversample != 1) {
+                imp.up.process(buffer, input);
+            } else {
+                buffer[0] = input;
+            }
 
-    processBuffer(buffer);
-    float output;
-    if (curOversample != 1) {
-        output = dec.process(buffer);
-    } else {
-        output = buffer[0];
-    }
+            processBuffer(buffer);
+            float output;
+            if (curOversample != 1) {
+                output = imp.dec.process(buffer);
+            } else {
+                output = buffer[0];
+            }
 
-    if (TBase::params[PARAM_ACDC].value < .5) {
-        output = float(BiquadFilter<Thpf>::run(output, dcBlockState, dcBlockParams));
+            if (TBase::params[PARAM_ACDC].value < .5) {
+                output = float(BiquadFilter<double>::run(output, imp.dcBlockState, imp.dcBlockParams));
+            }
+            TBase::outputs[OUTPUT_AUDIO0 + i].value = output;
+        }
     }
-    TBase::outputs[OUTPUT_AUDIO].value = output;
 }
 
 
@@ -350,7 +375,6 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
                 buffer[i] = x;
             }
             break;
-
         case Shapes::HalfWave:
             for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
