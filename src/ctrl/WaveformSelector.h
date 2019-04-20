@@ -4,6 +4,7 @@
 #ifdef __V1
 #else
 #include "widgets.hpp"
+#include <GLFW/glfw3.h>
 #endif
 
 class ButtonCell
@@ -190,13 +191,15 @@ inline void WaveformSelector::onMouseDown(EventMouseDown &e)
 {
     e.consumed = false;
 
-    CellPtr hit = hitTest(e.pos.x, e.pos.y);
-    if (hit) {
-        e.consumed = true;
-        if (hit->value == this->value) {
-            return;
-        }
+    if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
+        CellPtr hit = hitTest(e.pos.x, e.pos.y);
+        if (hit) {
+            e.consumed = true;
+            if (hit->value == this->value) {
+                return;
+            }
         setValue(hit->value);
+        }
     }
 }
 #endif

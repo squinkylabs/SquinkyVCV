@@ -135,6 +135,9 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
 
         const bool ctrl = (e.mods & GLFW_MOD_CONTROL);
     #else 
+      if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
+                return;
+            }
         const bool ctrl = rack::windowIsModPressed();
     #endif
 

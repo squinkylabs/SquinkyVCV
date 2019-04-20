@@ -83,7 +83,11 @@ inline void SqToggleLED::onMouseDown(EventMouseDown &e)
         if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
             e.action != GLFW_RELEASE) {
                 return;
-            }
+        }
+    #else
+         if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
+                return;
+        }
     #endif
 
     int index = getSvgIndex();
