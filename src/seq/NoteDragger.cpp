@@ -17,12 +17,13 @@
 
 
 
- NoteDragger::NoteDragger(NoteDisplay* display, const sq::Vec& initPos) :
+NoteDragger::NoteDragger(NoteDisplay* display, const sq::Vec& initPos) :
     host(display),
     startPos(initPos)
- {
+{
+    curMousePosition = initPos;
 
- }
+}
 
 NoteDragger::~NoteDragger()
 {
@@ -33,7 +34,7 @@ void NoteDragger::onDrag(const sq::Vec& pos)
 {
     curMousePosition.x += pos.x;    
     curMousePosition.y += pos.y;
-     printf("x=%.2f y=%.2f\n", curMousePosition.x, curMousePosition.y); fflush(stdout);
+    //printf("x=%.2f y=%.2f\n", curMousePosition.x, curMousePosition.y); fflush(stdout);
 } 
 
 
@@ -54,7 +55,8 @@ void NotePitchDragger::commit()
 
 void NotePitchDragger::draw(NVGcontext *vg)
 {
-    //  void filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h);
-    // crazy value - test
-    host->filledRect(vg,  UIPrefs::NOTE_COLOR, 10, 10, 10, 10);
+    host->filledRect(vg,  UIPrefs::NOTE_COLOR, curMousePosition.x, curMousePosition.y, 10, 10);
+
+    nvgText(vg, curMousePosition.x, curMousePosition.y,
+        "mouse", nullptr);
 }

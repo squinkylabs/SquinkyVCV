@@ -167,10 +167,17 @@ void NoteDisplay::draw(NVGcontext *vg)
     if (!this->sequencer) {
         return;
     }
+  //  box.size
+   // nvgScissor(vg, this->box.pos.x, float y, float w, float h);
+  //  nvgScissor(vg, this->box.pos.x, this->box.pos.y, this->box.size.x, this->box.size.y);
+    nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
     drawBackground(vg);
     drawGrid(vg);
     drawNotes(vg);
     drawCursor(vg);
+    if (noteDragger) {
+        noteDragger->draw(vg);
+    }
 #ifdef __V1
     OpaqueWidget::draw(args);
 #else
@@ -359,7 +366,7 @@ void NoteDisplay::onDragEnd(const DragEndEvent &e)
 }
 void NoteDisplay::onDragMove(const DragMoveEvent &e)
 {
-    printf("on drag move\n"); fflush(stdout);
+   // printf("on drag move\n"); fflush(stdout);
     if (noteDragger) {
         //const Vec pos = e.mouseDelta;
         noteDragger->onDrag(e.mouseDelta);

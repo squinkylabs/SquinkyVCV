@@ -198,7 +198,7 @@ ShaperWidget::ShaperWidget(ShaperModule* module) :
      addOutput(createOutputCentered<PJ301MPort>(
             Vec(127,jackY-jackDy),
             module,
-            Shaper<WidgetComposite>::OUTPUT_AUDIO1));
+        Shaper<WidgetComposite>::OUTPUT_AUDIO1));
     addLabel(Vec(109+1, jackLabelY+1), "Out", SqHelper::COLOR_WHITE)->fontSize = 12;
 
     addInput(createInputCentered<PJ301MPort>(
