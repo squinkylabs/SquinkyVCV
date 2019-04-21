@@ -3,6 +3,8 @@
 #include <memory>
 
 class MidiSequencer;
+struct NVGcontext;
+class NoteDisplay;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
 class MouseManager
@@ -10,6 +12,7 @@ class MouseManager
 public:
     MouseManager(MidiSequencerPtr);
 
+    void draw(NVGcontext *vg);
     /**
      * Handler for primary mouse button
      * 
@@ -18,7 +21,14 @@ public:
      * shift is true if shift key is down.
      */
     bool onMouseButton(float x, float y, bool isPressed, bool ctrl, bool shift);
+    bool onDragStart();
+    bool onDragEnd();
+    bool onDragMove(float x, float y);
 private:
+
     MidiSequencerPtr sequencer;
+    float lastMouseClickPosX=0;
+    float lastMouseClickPosY=0;
+    std::shared_ptr<class NoteDragger> noteDragger;
     
 };

@@ -33,9 +33,10 @@ private:
     void initEditContext();
 
     // mouse stuff (move some to manager)
-    std::shared_ptr<class NoteDragger> noteDragger;
+  
     std::shared_ptr<class MouseManager> mouseManager;
-    Vec lastMouseClickPos;
+  //  Vec lastMouseClickPos;
+   // std::shared_ptr<class NoteDragger> noteDragger;
 
     void step() override;
 

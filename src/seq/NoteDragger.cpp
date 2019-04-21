@@ -17,12 +17,12 @@
 
 
 
-NoteDragger::NoteDragger(NoteDisplay* display, const sq::Vec& initPos) :
-    host(display),
-    startPos(initPos)
+NoteDragger::NoteDragger(float initX, float initY) :
+    startX(initX),
+    startY(initY)
 {
-    curMousePosition = initPos;
-
+    curMousePositionX = initX;
+    curMousePositionY = initY;
 }
 
 NoteDragger::~NoteDragger()
@@ -30,18 +30,18 @@ NoteDragger::~NoteDragger()
 
 }
 
-void NoteDragger::onDrag(const sq::Vec& pos)
+void NoteDragger::onDrag(float deltaX, float deltaY)
 {
-    curMousePosition.x += pos.x;    
-    curMousePosition.y += pos.y;
+    curMousePositionX += deltaX;    
+    curMousePositionY += deltaY;
     //printf("x=%.2f y=%.2f\n", curMousePosition.x, curMousePosition.y); fflush(stdout);
 } 
 
 
 //******************************************************************
 
-NotePitchDragger::NotePitchDragger(NoteDisplay* display, const sq::Vec& initPos) :
-    NoteDragger(display, initPos)
+NotePitchDragger::NotePitchDragger(float x, float y) :
+    NoteDragger(x, y)
 {
 
 }
@@ -55,8 +55,9 @@ void NotePitchDragger::commit()
 
 void NotePitchDragger::draw(NVGcontext *vg)
 {
-    host->filledRect(vg,  UIPrefs::NOTE_COLOR, curMousePosition.x, curMousePosition.y, 10, 10);
+    // move filled rec to a stan-alone class? or repeat it here...
+   // host->filledRect(vg,  UIPrefs::NOTE_COLOR, curMousePositionX, curMousePositionY, 10, 10);
 
-    nvgText(vg, curMousePosition.x, curMousePosition.y,
+    nvgText(vg, curMousePositionX, curMousePositionY,
         "mouse", nullptr);
 }

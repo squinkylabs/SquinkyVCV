@@ -4,29 +4,34 @@ class NoteDisplay;
 
 #include "SqMath.h"
 struct NVGcontext;
+class NoteDisplay;
 
 class NoteDragger
 {
 public:
     /**
-     * pos is the initial mouse position in screen coordinates
+     * x, y is the initial mouse position in screen coordinates
      */
-    NoteDragger(NoteDisplay*, const sq::Vec& pos);
+    NoteDragger(float x, float y);
     virtual ~NoteDragger();
-    virtual void onDrag(const sq::Vec& pos);
+    virtual void onDrag(float deltaX, float deltaY);
     virtual void commit()=0;
     virtual void draw(NVGcontext *vg)=0;
    
 protected:
-    NoteDisplay* const host;
-    const sq::Vec startPos;
-    sq::Vec curMousePosition;
+   // NoteDisplay* const host;
+   // const sq::Vec startPos;
+    const float startX;
+    const float startY;
+   // sq::Vec curMousePosition;
+   float curMousePositionX = 0;
+   float curMousePositionY = 0;
 };
 
 class NotePitchDragger : public NoteDragger
 {
 public:
-    NotePitchDragger(NoteDisplay*,const sq::Vec& pos);
+    NotePitchDragger(float x, float y);
 
 private:
    

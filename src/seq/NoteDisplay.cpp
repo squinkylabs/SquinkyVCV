@@ -19,7 +19,7 @@
 #include "UIPrefs.h"
 #include "MidiKeyboardHandler.h"
 #include "MouseManager.h"
-#include "NoteDragger.h"
+//#include "NoteDragger.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
@@ -179,9 +179,12 @@ void NoteDisplay::draw(NVGcontext *vg)
     drawGrid(vg);
     drawNotes(vg);
     drawCursor(vg);
-    if (noteDragger) {
-        noteDragger->draw(vg);
-    }
+   // if (noteDragger) {
+  //      noteDragger->draw(vg);
+  //  }
+
+    // if we are dragging, will have something to draw
+    mouseManager->draw(vg);     
 #ifdef __V1
     OpaqueWidget::draw(args);
 #else
@@ -249,9 +252,6 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
 
 /******************** All V1 keyboard handling here *******************
  * 
- * New idea:
- *      let's do all keyboard with hover key.
- *      if we consume the key, then grab focus.
  */
  
 
@@ -385,26 +385,24 @@ void NoteDisplay::onDeselect(const DeselectEvent &e)
 
 void NoteDisplay::onDragStart(const DragStartEvent &e) 
 {
+    bool b = mouseManager->onDragStart();
     printf("on drag start\n"); fflush(stdout);
-   // auto p = e.pos;
-    noteDragger = std::make_shared<NotePitchDragger>(this, lastMouseClickPos); 
-    e.consume(this);
+    if (b) {
+        e.consume(this);
+    }
 }
 void NoteDisplay::onDragEnd(const DragEndEvent &e)
 {
     printf("on drag end\n"); fflush(stdout);
-    if (noteDragger) {
-        noteDragger->commit();
-        noteDragger.reset();
+    bool b = mouseManager->onDragEnd();
+     if (b) {
         e.consume(this);
     }
 }
 void NoteDisplay::onDragMove(const DragMoveEvent &e)
 {
-   // printf("on drag move\n"); fflush(stdout);
-    if (noteDragger) {
-        //const Vec pos = e.mouseDelta;
-        noteDragger->onDrag(e.mouseDelta);
+     bool b = mouseManager->onDragMove(e.mouseDelta.x, e.mouseDelta.y);
+     if (b) {
         e.consume(this);
     }
 }
