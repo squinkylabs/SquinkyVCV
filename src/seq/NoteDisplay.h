@@ -60,6 +60,7 @@ private:
     void onDragStart(const DragStartEvent &e) override;
 	void onDragEnd(const DragEndEvent &e) override;
 	void onDragMove(const DragMoveEvent &e)  override;
+    void onDragDrop(const DragDropEvent &e) override;
     bool handleKey(int key, int mods, int action);
 #else
     void draw(NVGcontext *vg) override;

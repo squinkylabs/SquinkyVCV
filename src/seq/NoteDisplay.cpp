@@ -167,9 +167,8 @@ void NoteDisplay::draw(NVGcontext *vg)
     if (!this->sequencer) {
         return;
     }
-  //  box.size
-   // nvgScissor(vg, this->box.pos.x, float y, float w, float h);
-  //  nvgScissor(vg, this->box.pos.x, this->box.pos.y, this->box.size.x, this->box.size.y);
+
+    // let's clip everything to our window
     nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
     drawBackground(vg);
     drawGrid(vg);
@@ -259,10 +258,17 @@ void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
     OpaqueWidget::onDoubleClick(e);
 }
 
+ void NoteDisplay::onDragDrop(const DragDropEvent &e) 
+ {
+     printf("on drag drop\n"); fflush(stdout);
+     OpaqueWidget::onDragDrop(e);
+ }
+
 void NoteDisplay::onButton(const ButtonEvent &e)
 {
-     printf("on button\n"); fflush(stdout);
-     lastMouseClickPos = e.pos;
+    printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
+    fflush(stdout);
+    lastMouseClickPos = e.pos;
     if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
         const bool shift = e.mods & GLFW_MOD_SHIFT;
         const bool ctrl = e.mods & GLFW_MOD_CONTROL;
