@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 class MidiSequencer;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 

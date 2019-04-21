@@ -18,6 +18,7 @@
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
 #include "MidiKeyboardHandler.h"
+#include "MouseManager.h"
 #include "NoteDragger.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
@@ -30,6 +31,7 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
     this->box.pos = pos;
     box.size = size;
     sequencer = seq;
+    mouseManager = std::make_shared<MouseManager>(sequencer);
 
     if (sequencer) {
         initEditContext();
@@ -52,6 +54,9 @@ void NoteDisplay::setSequencer(MidiSequencerPtr seq)
     sequencer = seq;
     sequencer->assertValid();
     initEditContext();
+
+    // re-associate seq and mouse manager
+    mouseManager = std::make_shared<MouseManager>(sequencer);
 }
 
 void NoteDisplay::initEditContext()
@@ -268,6 +273,29 @@ void NoteDisplay::onButton(const ButtonEvent &e)
 {
     printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
     fflush(stdout);
+
+    bool handled = false;
+    if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
+        const bool isPressed = e.action == GLFW_PRESS;
+        const bool shift = e.mods & GLFW_MOD_SHIFT;
+        const bool ctrl = e.mods & GLFW_MOD_CONTROL;
+        handled = mouseManager-> onMouseButton(
+            e.pos.x, 
+            e.pos.y,
+            isPressed, ctrl, shift);
+    }
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onButton(e);
+    }    
+}
+
+#if 0 // old way
+void NoteDisplay::onButton(const ButtonEvent &e)
+{
+    printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
+    fflush(stdout);
     lastMouseClickPos = e.pos;
     if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
         const bool shift = e.mods & GLFW_MOD_SHIFT;
@@ -283,6 +311,7 @@ void NoteDisplay::onButton(const ButtonEvent &e)
     }
     OpaqueWidget::onButton(e);    
 }
+#endif
 
 void NoteDisplay::onSelectKey(const SelectKeyEvent &e) 
 {

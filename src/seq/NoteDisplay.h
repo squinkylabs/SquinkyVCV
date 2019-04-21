@@ -31,7 +31,10 @@ private:
     int cursorFrameCount = 0;
     bool haveFocus = true;
     void initEditContext();
+
+    // mouse stuff (move some to manager)
     std::shared_ptr<class NoteDragger> noteDragger;
+    std::shared_ptr<class MouseManager> mouseManager;
     Vec lastMouseClickPos;
 
     void step() override;
