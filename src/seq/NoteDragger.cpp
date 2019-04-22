@@ -8,6 +8,7 @@
 #else
 #include "widgets.hpp"
 #include "util/math.hpp"
+#include "window.hpp"
 #endif
 
 #include "NoteDragger.h"
@@ -56,7 +57,11 @@ void NotePitchDragger::draw(NVGcontext *vg)
     // move filled rec to a stan-alone class? or repeat it here...
    // host->filledRect(vg,  UIPrefs::NOTE_COLOR, curMousePositionX, curMousePositionY, 10, 10);
 
+#ifdef __V1
     int f = APP->window->uiFont->handle;
+#else
+    int f = gGuiFont->handle;
+#endif
     nvgFillColor(vg, UIPrefs::NOTE_COLOR);
     nvgFontFaceId(vg, f);
     nvgFontSize(vg, 14);
