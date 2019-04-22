@@ -46,8 +46,6 @@ void NoteDragger::onDrag(float deltaX, float deltaY)
 NotePitchDragger::NotePitchDragger(float x, float y) :
     NoteDragger(x, y)
 {
-  
-    //rintf("in ctor of dragger, font=%d\n", f); fflush(stdout);
 }
 
 void NotePitchDragger::commit()

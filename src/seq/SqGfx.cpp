@@ -5,9 +5,10 @@
 #include "nanovg.h"
 #ifdef __V1
     #include "app.hpp"
-#else
-    #include "window.hpp"
 #endif
+
+#include "window.hpp"
+
 
 void SqGfx::strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
 {
