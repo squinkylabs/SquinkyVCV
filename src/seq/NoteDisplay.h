@@ -32,12 +32,7 @@ private:
     bool haveFocus = true;
     void initEditContext();
 
-    // mouse stuff (move some to manager)
-  
     std::shared_ptr<class MouseManager> mouseManager;
-  //  Vec lastMouseClickPos;
-   // std::shared_ptr<class NoteDragger> noteDragger;
-
     void step() override;
 
     void updateFocus(bool focus)
@@ -73,5 +68,4 @@ private:
     void onKey(EventKey &e) override;
     //void onHoverKey(EventHoverKey &e) override;
 #endif
-
 };

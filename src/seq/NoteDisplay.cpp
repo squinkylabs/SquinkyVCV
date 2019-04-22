@@ -13,13 +13,11 @@
 
 #include "nanovg.h"
 #include "window.hpp"
-//#include "MidiEditorContext.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
 #include "MidiKeyboardHandler.h"
 #include "MouseManager.h"
-//#include "NoteDragger.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
@@ -111,9 +109,6 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
 
 void NoteDisplay::drawGrid(NVGcontext *vg)
 {
-    // float z = APP->scene->zoomWidget->zoom;
-    //  printf("zoom is %f\n", z); fflush(stdout);
-
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     //assume two bars, quarter note grid
@@ -179,10 +174,6 @@ void NoteDisplay::draw(NVGcontext *vg)
     drawGrid(vg);
     drawNotes(vg);
     drawCursor(vg);
-   // if (noteDragger) {
-  //      noteDragger->draw(vg);
-  //  }
-
     // if we are dragging, will have something to draw
     mouseManager->draw(vg);     
 #ifdef __V1
@@ -254,7 +245,6 @@ void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, f
  * 
  */
  
-
 #ifdef __V1
 
 void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
@@ -291,34 +281,8 @@ void NoteDisplay::onButton(const ButtonEvent &e)
     }    
 }
 
-#if 0 // old way
-void NoteDisplay::onButton(const ButtonEvent &e)
-{
-    printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
-    fflush(stdout);
-    lastMouseClickPos = e.pos;
-    if (e.button == GLFW_MOUSE_BUTTON_LEFT && e.action == GLFW_PRESS) {
-        const bool shift = e.mods & GLFW_MOD_SHIFT;
-        const bool ctrl = e.mods & GLFW_MOD_CONTROL;
-        auto scaler = sequencer->context->getScaler();
-        assert(scaler);
-        bool bInBounds = scaler->isPointInBounds(e.pos.x, e.pos.y);
-        if (bInBounds) {
-            const float time = scaler->xToMidiTime(e.pos.x);
-            const float pitchCV = scaler->yToMidiCVPitch(e.pos.y);
-            MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV, shift, ctrl);
-        }
-    }
-    OpaqueWidget::onButton(e);    
-}
-#endif
-
 void NoteDisplay::onSelectKey(const SelectKeyEvent &e) 
 {
-    // GLFW_KEY_Q
-    //printf("got select key %d q is %d\n", e.key, GLFW_KEY_Q);
-    //fflush(stdout);
-
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
@@ -329,9 +293,6 @@ void NoteDisplay::onSelectKey(const SelectKeyEvent &e)
 
 void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
 {
-    //printf("got select key %d q is %d\n", e.key, GLFW_KEY_Q);
-    //fflush(stdout);
-
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
@@ -367,7 +328,6 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
            
         }
     }
-    //printf("handle key ret %d key=%d\n", handled, key);
     return handled;
 }
 

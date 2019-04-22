@@ -37,11 +37,9 @@ std::tuple<bool, float, float> MouseManager::xyToTimePitch(float x, float y) con
 bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bool shift)
 {
     bool ret = false;
-    const bool anySelected = !sequencer->selection->empty();
 
-      printf("mouse manager click ctrl=%d shift = %d pressed = %d anysel=%d\n",
-       ctrl, shift, isPressed, anySelected);
-  
+    lastMouseClickPosX = x;
+    lastMouseClickPosY = y;
 
     auto timeAndPitch = xyToTimePitch(x, y);
     if (!std::get<0>(timeAndPitch)) {
@@ -52,16 +50,12 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
     const float time = std::get<1>(timeAndPitch);
     const float pitchCV = std::get<2>(timeAndPitch);
 
+    // This will move the cursor, which we may not want all the time
     MidiNoteEventPtr curNote = sequencer->editor->moveToTimeAndPitch(time, pitchCV);
     bool curNoteIsSelected = sequencer->selection->isSelected(curNote);
 
-    // mouse down does nothing if notes selected, it's the mouse up that does it.
-    // mouse up when some are selected does it.
-  //  if ((isPressed && !anySelected) ||
-  //      (!isPressed && anySelected && mouseClickWasIgnored)) {
 
-      //
-      if ((isPressed && curNote && !curNoteIsSelected) || 
+    if ((isPressed && curNote && !curNoteIsSelected) || 
             (!isPressed && mouseClickWasIgnored)) {
         printf("onMouseButton calling doMouseClick\n"); fflush(stdout);
         mouseClickWasIgnored = false;
