@@ -23,6 +23,7 @@
 #include "../ctrl/SqHelper.h"
 #include "TimeUtils.h"
 #include "NoteDisplay.h"
+#include "SqGfx.h"
 
 NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 {
@@ -100,7 +101,7 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
         const float width = scaler->midiTimeTodX(ev->duration);
 
         const bool selected = sequencer->selection->isSelected(ev);
-        filledRect(
+        SqGfx::filledRect(
             vg,
             selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
             x, y, width, noteHeight);
@@ -125,7 +126,7 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
             (relTime == TimeUtils::bar2time(1)) ||
             (relTime == TimeUtils::bar2time(2));
 
-        filledRect(
+        SqGfx::filledRect(
             vg,
             isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR,
             x, y, width, height);
@@ -151,7 +152,7 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
         const float x = scaler->midiTimeToX(sequencer->context->cursorTime());
         const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) +
             scaler->noteHeight() / 2.f;
-        filledRect(vg, color, x, y, 10, 3);
+        SqGfx::filledRect(vg, color, x, y, 10, 3);
     }
 }
 
@@ -186,7 +187,7 @@ void NoteDisplay::draw(NVGcontext *vg)
 void NoteDisplay::drawBackground(NVGcontext *vg)
 {
     auto scaler = sequencer->context->getScaler();
-    filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
+    SqGfx::filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
     assert(scaler);
     const int noteHeight = scaler->noteHeight();
     const float width = box.size.x;
@@ -198,7 +199,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         
         bool accidental = PitchUtils::isAccidental(cv);
         if (accidental) {
-            filledRect(
+            SqGfx::filledRect(
                 vg,
                 UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
                 0, y, width, noteHeight);
@@ -217,28 +218,12 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         }
         if (isC) {
          //   const float y = scaler->midiCvToY(cv);
-            filledRect(
+            SqGfx::filledRect(
                 vg,
                 UIPrefs::GRID_CLINE_COLOR,
                 0, y, width, 1);
         }
     }
-}
-
-void NoteDisplay::strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
-{
-    nvgStrokeColor(vg, color);
-    nvgBeginPath(vg);
-    nvgRect(vg, x, y, w, h);
-    nvgStroke(vg);
-}
-
-void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
-{
-    nvgFillColor(vg, color);
-    nvgBeginPath(vg);
-    nvgRect(vg, x, y, w, h);
-    nvgFill(vg);
 }
 
 /******************** All V1 keyboard handling here *******************

@@ -1,10 +1,12 @@
 
 
 #include "../Squinky.hpp"
+#include "SqGfx.h"
 #include "WidgetComposite.h"
 
 #ifdef __V1
 #include "widget/Widget.hpp"
+#include "app.hpp"
 #else
 #include "widgets.hpp"
 #include "util/math.hpp"
@@ -53,13 +55,15 @@ void NotePitchDragger::commit()
 
 void NotePitchDragger::draw(NVGcontext *vg)
 {
+    SqGfx::drawText(vg, curMousePositionX, curMousePositionY, "mouse");
     // move filled rec to a stan-alone class? or repeat it here...
    // host->filledRect(vg,  UIPrefs::NOTE_COLOR, curMousePositionX, curMousePositionY, 10, 10);
-
+#if 0
     int f = APP->window->uiFont->handle;
     nvgFillColor(vg, UIPrefs::NOTE_COLOR);
     nvgFontFaceId(vg, f);
     nvgFontSize(vg, 14);
     nvgText(vg, curMousePositionX, curMousePositionY,
         "mouse", nullptr);
+#endif
 }
