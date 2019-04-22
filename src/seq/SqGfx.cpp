@@ -27,7 +27,11 @@ void SqGfx::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
 
 void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int size)
 {
+#ifdef __V1
     int f = APP->window->uiFont->handle;
+#else
+    int f = gGuiFont->handle;
+#endif
     nvgFillColor(vg, UIPrefs::NOTE_COLOR);
     nvgFontFaceId(vg, f);
     nvgFontSize(vg, 14);
