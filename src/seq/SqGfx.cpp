@@ -4,10 +4,10 @@
 
 #include "nanovg.h"
 #ifdef __V1
-#include "app.hpp"
-#include "window.hpp"
+    #include "app.hpp"
+#else
+    #include "window.hpp"
 #endif
-
 
 void SqGfx::strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
 {
@@ -30,7 +30,7 @@ void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int siz
 #ifdef __V1
     int f = APP->window->uiFont->handle;
 #else
-    int f = gGuiFont->handle;
+    int f = rack::gGuiFont->handle;
 #endif
     nvgFillColor(vg, UIPrefs::NOTE_COLOR);
     nvgFontFaceId(vg, f);
