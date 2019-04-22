@@ -30,5 +30,8 @@ private:
     float lastMouseClickPosX=0;
     float lastMouseClickPosY=0;
     std::shared_ptr<class NoteDragger> noteDragger;
+    bool mouseClickWasIgnored = false;
+
+    std::tuple<bool, float, float> xyToTimePitch(float x, float y) const;
     
 };

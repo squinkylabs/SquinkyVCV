@@ -366,6 +366,22 @@ void MidiEditor::setNewCursorPitch(float pitch, bool extendSelection)
     updateSelectionForCursor(extendSelection);
 }
 
+
+ MidiNoteEventPtr MidiEditor::moveToTimeAndPitch(float time, float pitchCV)
+ {
+     // make a helper for this combo?
+    seq()->context->setCursorPitch(pitchCV);
+    seq()->context->scrollViewportToCursorPitch();
+
+    seq()->context->setCursorTime(std::max(0.f, time));
+    seq()->context->adjustViewportForCursor();
+    seq()->assertValid();
+
+    // if there is no note at the new location, leave
+    MidiNoteEventPtr note = getNoteUnderCursor();
+    return note;
+ }
+ 
 void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
 {
     // Implement by calling existing handlers. This will

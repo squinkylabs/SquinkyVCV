@@ -18,19 +18,64 @@ void MouseManager::draw(NVGcontext *vg)
     }
 }
 
-bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bool shift)
+
+std::tuple<bool, float, float> MouseManager::xyToTimePitch(float x, float y) const
 {
-    printf("mouse manager click\n");
-    bool ret = false;
-    // old handler logic
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     bool bInBounds = scaler->isPointInBounds(x, y);
+    float time=0, pitchCV=0;
     if (bInBounds) {
-        const float time = scaler->xToMidiTime(x);
-        const float pitchCV = scaler->yToMidiCVPitch(y);
-        MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV, shift, ctrl);
+        time = scaler->xToMidiTime(x);
+        pitchCV = scaler->yToMidiCVPitch(y);
+       // MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV, shift, ctrl);
+       // ret = true;
+    }
+    return std::make_tuple(bInBounds, time, pitchCV);
+}
+
+bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bool shift)
+{
+    bool ret = false;
+    const bool anySelected = !sequencer->selection->empty();
+
+      printf("mouse manager click ctrl=%d shift = %d pressed = %d anysel=%d\n",
+       ctrl, shift, isPressed, anySelected);
+  
+
+    auto timeAndPitch = xyToTimePitch(x, y);
+    if (!std::get<0>(timeAndPitch)) {
+        // if the mouse click is not in bounds, ignore it
+        return false;
+    }
+
+    const float time = std::get<1>(timeAndPitch);
+    const float pitchCV = std::get<2>(timeAndPitch);
+
+    MidiNoteEventPtr curNote = sequencer->editor->moveToTimeAndPitch(time, pitchCV);
+    bool curNoteIsSelected = sequencer->selection->isSelected(curNote);
+
+    // mouse down does nothing if notes selected, it's the mouse up that does it.
+    // mouse up when some are selected does it.
+  //  if ((isPressed && !anySelected) ||
+  //      (!isPressed && anySelected && mouseClickWasIgnored)) {
+
+      //
+      if ((isPressed && curNote && !curNoteIsSelected) || 
+            (!isPressed && mouseClickWasIgnored)) {
+        printf("onMouseButton calling doMouseClick\n"); fflush(stdout);
+        mouseClickWasIgnored = false;
+
+        // TODO: use more specific handler calls, get rid of this ambiguous catchall
+        MidiKeyboardHandler::doMouseClick(
+            sequencer,
+            std::get<1>(timeAndPitch),
+            std::get<2>(timeAndPitch),
+            shift,
+            ctrl);
         ret = true;
+    } else {
+        mouseClickWasIgnored = true;
     }
     return ret;
 }

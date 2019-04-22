@@ -33,6 +33,9 @@ public:
     void advanceCursorToTime(float time, bool extendSelection);
     void changeCursorPitch(int semitones);
 
+    MidiNoteEventPtr moveToTimeAndPitch(float time, float pitchCV);
+
+    // These two should be deprecated. they are "old school"
     void selectAt(float time, float pitchCV, bool extendSelection);
     void toggleSelectionAt(float time, float pitchCV);
 
