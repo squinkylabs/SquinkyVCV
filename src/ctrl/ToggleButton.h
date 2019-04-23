@@ -41,7 +41,7 @@ public:
     }
 
 #ifdef __V1
-    void onButton(const ButtonEvent &e) override;
+    void onButton(const event::Button &e) override;
     void draw(const DrawArgs &args) override;
 #else
     void onMouseDown(EventMouseDown &e) override;
@@ -120,7 +120,7 @@ inline void ToggleButton::turnOff()
 } 
 
 #ifdef __V1
-inline void ToggleButton::onButton(const ButtonEvent &e)
+inline void ToggleButton::onButton(const event::Button &e)
 #else
 inline void ToggleButton::onMouseDown(EventMouseDown &e)
 #endif

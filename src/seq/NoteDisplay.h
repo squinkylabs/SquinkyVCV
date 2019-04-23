@@ -46,17 +46,17 @@ private:
     void drawBackground(NVGcontext *vg);
    
 #ifdef __V1
-    void onSelect(const SelectEvent &e) override;
-    void onDeselect(const DeselectEvent &e) override;
+    void onSelect(const event::Select &e) override;
+    void onDeselect(const event::Deselect &e) override;
     void draw(const DrawArgs &args) override;
-	void onDoubleClick(const widget::DoubleClickEvent &e) override;
-    void onButton(const ButtonEvent &e) override;
-    void onHoverKey(const HoverKeyEvent &e) override;
-    void onSelectKey(const SelectKeyEvent &e) override;
-    void onDragStart(const DragStartEvent &e) override;
-	void onDragEnd(const DragEndEvent &e) override;
-	void onDragMove(const DragMoveEvent &e)  override;
-    void onDragDrop(const DragDropEvent &e) override;
+	void onDoubleClick(const event::DoubleClick &e) override;
+    void onButton(const event::Button &e) override;
+    void onHoverKey(const event::HoverKey &e) override;
+    void onSelectKey(const event::SelectKey &e) override;
+    void onDragStart(const event::DragStart &e) override;
+	void onDragEnd(const event::DragEnd &e) override;
+	void onDragMove(const event::DragMove &e)  override;
+    void onDragDrop(const event::DragDrop &e) override;
     bool handleKey(int key, int mods, int action);
 #else
     void draw(NVGcontext *vg) override;

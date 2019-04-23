@@ -232,19 +232,19 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
  
 #ifdef __V1
 
-void NoteDisplay::onDoubleClick(const widget::DoubleClickEvent &e)
+void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 {
    // printf("got double click"); fflush(stdout);
     OpaqueWidget::onDoubleClick(e);
 }
 
- void NoteDisplay::onDragDrop(const DragDropEvent &e) 
+ void NoteDisplay::onDragDrop(const event::DragDrop &e) 
  {
      printf("on drag drop\n"); fflush(stdout);
      OpaqueWidget::onDragDrop(e);
  }
 
-void NoteDisplay::onButton(const ButtonEvent &e)
+void NoteDisplay::onButton(const event::Button &e)
 {
     printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
     fflush(stdout);
@@ -266,7 +266,7 @@ void NoteDisplay::onButton(const ButtonEvent &e)
     }    
 }
 
-void NoteDisplay::onSelectKey(const SelectKeyEvent &e) 
+void NoteDisplay::onSelectKey(const event::SelectKey &e) 
 {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
@@ -276,7 +276,7 @@ void NoteDisplay::onSelectKey(const SelectKeyEvent &e)
     }
 }
 
-void NoteDisplay::onHoverKey(const HoverKeyEvent &e)
+void NoteDisplay::onHoverKey(const event::HoverKey &e)
 {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
@@ -316,19 +316,19 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
     return handled;
 }
 
-void NoteDisplay::onSelect(const SelectEvent &e)
+void NoteDisplay::onSelect(const event::Select &e)
 {
     updateFocus(true);
     e.consume(this);
 }
 
-void NoteDisplay::onDeselect(const DeselectEvent &e)
+void NoteDisplay::onDeselect(const event::Deselect &e)
 {
     updateFocus(false);
     e.consume(this);
 }
 
-void NoteDisplay::onDragStart(const DragStartEvent &e) 
+void NoteDisplay::onDragStart(const event::DragStart &e) 
 {
     bool b = mouseManager->onDragStart();
     printf("on drag start\n"); fflush(stdout);
@@ -336,7 +336,7 @@ void NoteDisplay::onDragStart(const DragStartEvent &e)
         e.consume(this);
     }
 }
-void NoteDisplay::onDragEnd(const DragEndEvent &e)
+void NoteDisplay::onDragEnd(const event::DragEnd &e)
 {
     printf("on drag end\n"); fflush(stdout);
     bool b = mouseManager->onDragEnd();
@@ -344,7 +344,7 @@ void NoteDisplay::onDragEnd(const DragEndEvent &e)
         e.consume(this);
     }
 }
-void NoteDisplay::onDragMove(const DragMoveEvent &e)
+void NoteDisplay::onDragMove(const event::DragMove &e)
 {
      bool b = mouseManager->onDragMove(e.mouseDelta.x, e.mouseDelta.y);
      if (b) {

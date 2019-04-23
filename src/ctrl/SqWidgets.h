@@ -109,7 +109,7 @@ struct SQPush : SVGButton
         this->box.pos = pos.minus(this->box.size.div(2));
     }
 #ifdef __V1
-     void onButton(const ButtonEvent &e) override
+     void onButton(const event::Button &e) override
      {
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
@@ -163,7 +163,7 @@ struct SQPanelItem : MenuItem
     SQPanelItem(SQStatusCallback, SQActionCAllback);
 
 #ifdef __V1
-    void onAction(const ActionEvent &e) override
+    void onAction(const event::Action &e) override
 #else
     void onAction(EventAction &e) override
 #endif

@@ -15,7 +15,7 @@ public:
     void setHandler(std::function<void(void)>);
 
 #ifdef __V1
-    void onButton(const ButtonEvent &e) override;
+    void onButton(const event::Button &e) override;
     void draw(const DrawArgs &args) override;
 #else
     void onMouseDown(EventMouseDown &e) override;
@@ -72,7 +72,7 @@ inline void SqToggleLED::draw(NVGcontext *args)
 
 
 #ifdef __V1
-inline void SqToggleLED::onButton(const ButtonEvent &e)
+inline void SqToggleLED::onButton(const event::Button &e)
 #else
 inline void SqToggleLED::onMouseDown(EventMouseDown &e)
 #endif

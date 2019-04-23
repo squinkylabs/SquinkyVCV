@@ -13,7 +13,7 @@ struct SqMenuItem : rack::MenuItem
 {
 
 #ifdef __V1
-void onAction(const ActionEvent &e) override
+void onAction(const event::Action &e) override
 #else
 void onAction(EventAction &e) override
 #endif
