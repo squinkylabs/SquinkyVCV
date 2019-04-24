@@ -342,6 +342,20 @@ static void testQuant()
     //assertEQ(x, 64);
 }
 
+static void testQuantRel()
+{
+    assertEQ(PitchUtils::deltaCVToSemitone(0), 0);
+    assertEQ(PitchUtils::deltaCVToSemitone(PitchUtils::semitone), 1);
+    assertEQ(PitchUtils::deltaCVToSemitone(-PitchUtils::semitone), -1);
+
+    const float halfSemi = PitchUtils::semitone / 2.f;
+    assertEQ(PitchUtils::deltaCVToSemitone(halfSemi - .001f), 0);
+    assertEQ(PitchUtils::deltaCVToSemitone(halfSemi + .001f), 1);
+
+    assertEQ(PitchUtils::deltaCVToSemitone(-halfSemi + .001f), 0);
+    assertEQ(PitchUtils::deltaCVToSemitone(-halfSemi - .001f), -1);
+}
+
 static void testExtendSelection()
 {
     // put in one, then extend to second one
@@ -453,9 +467,11 @@ void testMidiDataModel()
     testSeekTime2();
     testSong();
     testQuant();
+    testQuantRel();
 
     testExtendSelection();
     testSelectionDeep();
     testSelectionAddTwice();
+
     assertNoMidi();     // check for leaks
 }

@@ -13,6 +13,7 @@ public:
     static const NVGcolor TIME_LABEL_COLOR;
     static const NVGcolor GRID_CLINE_COLOR;
     static const NVGcolor STATUS_LABEL_COLOR;
+    static const NVGcolor DRAGGED_NOTE_COLOR;
 
     static const float hMarginsNoteEdit;
     static const float topMarginNoteEdit;

@@ -9,6 +9,7 @@ public:
     static constexpr float octave = 1.f;
     static std::pair<int, int> cvToPitch(float cv);
     static int cvToSemitone(float cv);
+    static int deltaCVToSemitone(float cv);
     static float pitchToCV(int octave, int semi);
     static bool isAccidental(float cv);
     static bool isC(float cv);
@@ -91,6 +92,12 @@ inline  int PitchUtils::cvToSemitone(float cv)
 {
     auto p = cvToPitch(cv);
     return p.first * 12 + p.second;
+}
+
+inline  int PitchUtils::deltaCVToSemitone(float cv)
+{
+    auto p = cvToPitch(cv);
+    return (p.first-4) * 12 + p.second;
 }
 
 inline float PitchUtils::pitchToCV(int octave, int semi)

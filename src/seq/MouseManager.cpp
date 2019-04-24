@@ -28,8 +28,6 @@ std::tuple<bool, float, float> MouseManager::xyToTimePitch(float x, float y) con
     if (bInBounds) {
         time = scaler->xToMidiTime(x);
         pitchCV = scaler->yToMidiCVPitch(y);
-       // MidiKeyboardHandler::doMouseClick(sequencer, time, pitchCV, shift, ctrl);
-       // ret = true;
     }
     return std::make_tuple(bInBounds, time, pitchCV);
 }
@@ -44,6 +42,12 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
     auto timeAndPitch = xyToTimePitch(x, y);
     if (!std::get<0>(timeAndPitch)) {
         // if the mouse click is not in bounds, ignore it
+        return false;
+    }
+
+    if (!isPressed && noteDragger && mouseMovedWhileDragging) {
+        // Mouse up without any dragging get processed.
+        // Mouse up with drag does not -> dragger will finish
         return false;
     }
 
@@ -77,7 +81,8 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
 bool MouseManager::onDragStart()
 {
     printf("MouseManger::onDragStart()\n"); fflush(stdout);
-    noteDragger = std::make_shared<NotePitchDragger>(lastMouseClickPosX, lastMouseClickPosY); 
+    mouseMovedWhileDragging = false;
+    noteDragger = std::make_shared<NotePitchDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
     return true;
 }
 
@@ -99,6 +104,9 @@ bool MouseManager::onDragMove(float x, float y)
     if (noteDragger) {
         noteDragger->onDrag(x, y);
         ret=true;
+    }
+    if (x!=0 || y != 0) {
+        mouseMovedWhileDragging = true;
     }
     return ret;
 }
