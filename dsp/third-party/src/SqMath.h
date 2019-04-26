@@ -39,6 +39,7 @@ namespace sq
 #else
     using RCFilter = rack::RCFilter;
     using Vec = rack::Vec;
+    using Rect = rack::Rect;
 #endif
 
 inline float quadraticBipolar(float x)

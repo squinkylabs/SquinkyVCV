@@ -588,8 +588,11 @@ MidiNoteEventPtr MidiEditor::getNoteUnderCursor()
     return nullptr;
 }
 
+
+
 void MidiEditor::extendSelectionToCurrentNote()
 {
+#ifdef __V1
     MidiNoteEventPtr ni = getNoteUnderCursor();
     printf("extend sel to current, current note = %d sel size = %d\n", !!ni, seq()->selection->size());
 
@@ -645,6 +648,7 @@ void MidiEditor::extendSelectionToCurrentNote()
     }
     auto xxx = seq()->selection->size();
     printf("leaving with %d sel\n", xxx); fflush(stdout);
+#endif
 }
 
 void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
