@@ -104,7 +104,7 @@ void ReplaceDataCommand::undo(MidiSequencerPtr seq)
     // TODO: move cursor
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq)
+ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq, const char* name)
 {
     seq->assertValid();
     std::vector<MidiEventPtr> toRemove;
@@ -122,7 +122,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
         toRemove,
         toAdd);
 
-    ret->name = "delete notes";
+    ret->name = name;
     return ret;
 }
 

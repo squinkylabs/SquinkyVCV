@@ -16,9 +16,9 @@
 class SeqAction : public rack::history::ModuleAction
 {
 public: 
-    SeqAction(const std::string& name, std::shared_ptr<SqCommand> command, int moduleId) {
+    SeqAction(const std::string& _name, std::shared_ptr<SqCommand> command, int moduleId) {
         wrappedCommand = command; 
-        this->name = wrappedCommand->name;
+        this->name =  "Seq++: " + wrappedCommand->name;
         this->moduleId = moduleId;
     }
     void undo() override

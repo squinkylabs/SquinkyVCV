@@ -35,6 +35,7 @@ namespace sq
 #ifdef __V1
     using RCFilter = rack::dsp::RCFilter;
     using Vec = rack::math::Vec;
+    using Rect = rack::math::Rect;
 #else
     using RCFilter = rack::RCFilter;
     using Vec = rack::Vec;

@@ -89,6 +89,8 @@ private:
     void extendTrackToMinDuration(float time);
     void insertNoteHelper(Durations dur, bool moveCursorAfter);
     MidiNoteEventPtr getNoteUnderCursor();
+    void extendSelectionToCurrentNote();
+    void deleteNoteSub(const char* name);
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;

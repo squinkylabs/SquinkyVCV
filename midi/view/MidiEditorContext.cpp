@@ -70,6 +70,7 @@ MidiSongPtr MidiEditorContext::getSong() const
     return _song.lock();
 }
 
+#if 0
 MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
 {
 
@@ -91,6 +92,41 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
 
     // raw will be pair of track::const_iterator
     const auto rawIterators = track->timeRange(this->m_startTime, this->m_endTime);
+
+    return iterator_pair(iterator(rawIterators.first, rawIterators.second, lambda),
+        iterator(rawIterators.second, rawIterators.second, lambda));
+}
+#endif
+
+MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
+{
+    return getEvents(m_startTime, m_endTime, m_pitchLow, m_pitchHi);
+}
+
+MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh) const
+{
+    assert(timeLow <= timeHigh);
+    assert(timeLow >= 0);
+    assert(pitchHigh >= pitchLow);
+
+    iterator::filter_func lambda = [this, pitchLow, pitchHigh, timeHigh](MidiTrack::const_iterator ii) {
+        const MidiEventPtr me = ii->second;
+        bool ret = false;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);
+        if (note) {
+            ret = note->pitchCV >= pitchLow && note->pitchCV <= pitchHigh;
+        }
+        if (ret) {
+            ret = me->startTime < timeHigh;
+        }
+        return ret;
+    };
+
+    const auto song = getSong();
+    const auto track = song->getTrack(this->trackNumber);
+
+    // raw will be pair of track::const_iterator
+    const auto rawIterators = track->timeRange(timeLow, timeHigh);
 
     return iterator_pair(iterator(rawIterators.first, rawIterators.second, lambda),
         iterator(rawIterators.second, rawIterators.second, lambda));

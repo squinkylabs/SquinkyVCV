@@ -75,6 +75,7 @@ public:
     void setPitchRange(float l, float h)
     {
         assert(h >= l);
+        assert(h <= 10);
         m_pitchHi = h;
         m_pitchLow = l;
     }
@@ -103,6 +104,7 @@ public:
     using iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
     using iterator_pair = std::pair<iterator, iterator>;
     iterator_pair getEvents() const;
+    iterator_pair getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh) const;
 
     std::shared_ptr<MidiSong> getSong() const;
 

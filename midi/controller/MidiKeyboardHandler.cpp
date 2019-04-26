@@ -307,6 +307,7 @@ bool MidiKeyboardHandler::handle(
             sequencer->editor->insertNote();
             handled = true;
             break;
+        case GLFW_KEY_BACKSPACE:
         case GLFW_KEY_KP_DECIMAL:
         case GLFW_KEY_DELETE:
             sequencer->editor->deleteNote();

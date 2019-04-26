@@ -92,7 +92,7 @@ static void xx()
 }
 #endif
 
-//#define _MIDIONLY
+#define _MIDIONLY
 
 int main(int argc, char ** argv)
 {

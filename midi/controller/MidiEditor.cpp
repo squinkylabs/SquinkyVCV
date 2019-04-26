@@ -9,6 +9,7 @@
 #include "MidiTrack.h"
 #include "ReplaceDataCommand.h"
 #include "SqClipboard.h"
+#include "SqMath.h"
 #include "TimeUtils.h"
 
 extern int _mdb;
@@ -382,6 +383,7 @@ void MidiEditor::setNewCursorPitch(float pitch, bool extendSelection)
     return note;
  }
  
+#if 0 // old way
 void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
 {
     // Implement by calling existing handlers. This will
@@ -389,12 +391,43 @@ void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
     setNewCursorPitch(pitchCV, shiftKey);
     advanceCursorToTime(time, shiftKey);
 }
+#endif
+
+
+#if 0 // first try
+void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
+{
+    // Implement by calling existing handlers. This will
+    // cause double update, but I don't think anyone cares.
+    setNewCursorPitch(pitchCV, false);
+    advanceCursorToTime(time, false);
+    if (shiftKey) {
+        extendSelectionToCurrentNote();
+    }
+}
+#endif
+
+
+void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
+{
+    // Implement by calling existing handlers. This will
+    // cause double update, but I don't think anyone cares.
+
+    // TODO: break up this function
+    if (!shiftKey) {
+        setNewCursorPitch(pitchCV, false);
+        advanceCursorToTime(time, false);
+    } else {
+        // for shift key, just move the cursor to the new pitch
+        seq()->context->setCursorTime(time);
+        seq()->context->setCursorPitch(pitchCV);
+        // and extend the old selection to include it
+        extendSelectionToCurrentNote();
+    }
+}
 
 void MidiEditor::toggleSelectionAt(float time, float pitchCV)
 {
-    int a = seq()->selection->size();
-   // auto origSel = seq()->selection->clone();
-   
     // set the pitch and time, without messing up selection
     pitchCV = std::max(pitchCV, -5.f);
     pitchCV = std::min(pitchCV, 5.f);
@@ -411,8 +444,7 @@ void MidiEditor::toggleSelectionAt(float time, float pitchCV)
         return;
     }
 
-    int b = seq()->selection->size();
-    const bool noteIsSelectedDeep = seq()->selection->isSelectedDeep(note);
+   // const bool noteIsSelectedDeep = seq()->selection->isSelectedDeep(note);
     const bool noteIsSelected = seq()->selection->isSelected(note);
     // if the note is not selected, select it
     if (!noteIsSelected) {
@@ -493,29 +525,22 @@ void MidiEditor::insertPresetNote(Durations dur)
 void MidiEditor::insertNote()
 {
     insertNoteHelper(Durations::Quarter, false);
-    #if 0
-    MidiLocker l(seq()->song->lock);
-
-    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-    note->startTime = seq()->context->cursorTime();
-    note->pitchCV = seq()->context->cursorPitch();
-    note->duration = 1;  // for now, fixed to quarter
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
-
-    seq()->undo->execute(cmd);
-
-    updateSelectionForCursor();
-    seq()->assertValid();
-    #endif
 }
 
 void MidiEditor::deleteNote()
+{
+    const char* const name = (seq()->selection->size() > 1) ?
+        "delete notes" : "delete note"; 
+    deleteNoteSub(name);
+}
+
+void MidiEditor::deleteNoteSub(const char* name)
 {
     if (seq()->selection->empty()) {
         return;
     }
 
-    auto cmd = ReplaceDataCommand::makeDeleteCommand(seq());
+    auto cmd = ReplaceDataCommand::makeDeleteCommand(seq(), name);
 
     seq()->undo->execute(seq(), cmd);
     // TODO: move selection into undo
@@ -563,33 +588,64 @@ MidiNoteEventPtr MidiEditor::getNoteUnderCursor()
     return nullptr;
 }
 
-#if 0
-void MidiEditor::updateSelectionForCursor(bool extendCurrent)
+void MidiEditor::extendSelectionToCurrentNote()
 {
-    if (!extendCurrent) {
-        seq()->selection->clear();
+    MidiNoteEventPtr ni = getNoteUnderCursor();
+    printf("extend sel to current, current note = %d sel size = %d\n", !!ni, seq()->selection->size());
+
+    sq::Rect boundingBox;
+    if (ni) {
+        // If there is a note at cursor, start our bounding box with that
+        sq::Vec initPos = {ni->startTime, ni->pitchCV};
+        boundingBox = {initPos, {ni->duration, 0}};
+    } else {
+        // If no note under cursor, get bounding box of cursor position,
+        // but give it non-zero length, so our filter logic works.
+        sq::Vec initPos = {seq()->context->cursorTime(), seq()->context->cursorPitch()};
+        boundingBox = {initPos, {.001f,0}};
     }
-    const int cursorSemi = PitchUtils::cvToSemitone(seq()->context->cursorPitch());
 
-    // iterator over all the notes that are in the edit context
-    auto start = seq()->context->startTime();
-    auto end = seq()->context->endTime();
-    MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);
-    for (auto it = notes.first; it != notes.second; ++it) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
-        const auto startTime = note->startTime;
-        const auto endTime = note->startTime + note->duration;
+    printf("bb before expand = t=%.2f te=%.2f p=%.2f pe=%.2f", boundingBox.pos.x,
+        boundingBox.getRight(),
+        boundingBox.pos.y,
+        boundingBox.getBottom());
 
-        if ((PitchUtils::cvToSemitone(note->pitchCV) == cursorSemi) &&
-            (startTime <= seq()->context->cursorTime()) &&
-            (endTime > seq()->context->cursorTime())) {
-            //seq()->selection->select(note);
-            seq()->selection->addToSelection(note, extendCurrent);
-            return;
+    // expand to include all the notes in selection
+    for (auto sel : *seq()->selection) {
+        MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(sel);
+        if (n) {
+            printf("expanding bb with selection t=%.2f d=%.2f p=%.2f\n", n->startTime, n->duration, n->pitchCV);
+            sq::Rect nr{{n->startTime, n->pitchCV}, {n->duration,0}};
+            boundingBox = boundingBox.expand(nr);
         }
     }
+    printf("bb after expand = t=%.2f te=%.2f p=%.2f pe=%.2f", boundingBox.pos.x,
+        boundingBox.getRight(),
+        boundingBox.pos.y,
+        boundingBox.getBottom());
+
+    // now boundingBox is the final selection area
+    // Find all notes in new bounds
+    // terator_pair getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh);
+    MidiEditorContext::iterator_pair it = seq()->context->getEvents(
+        boundingBox.pos.x,
+        boundingBox.getRight(),
+        boundingBox.pos.y,
+        boundingBox.getBottom());
+
+    // iterate all the notes, and add to selection
+    for (; it.first != it.second; ++it.first) {
+        auto temp = *(it.first);
+        MidiEventPtr ev = temp.second;
+        MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(ev);
+        if (n) {
+            seq()->selection->extendSelection(n);
+            printf("in loop, adding note t=%.2f, p=%.2f\n", n->startTime, n->pitchCV);
+        }
+    }
+    auto xxx = seq()->selection->size();
+    printf("leaving with %d sel\n", xxx); fflush(stdout);
 }
-#endif
 
 void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
 {
@@ -608,8 +664,10 @@ void MidiEditor::selectAll()
     }
 }
 
+
 void MidiEditor::cut()
 {
+    deleteNoteSub("cut");
 }
 
 void MidiEditor::copy()
