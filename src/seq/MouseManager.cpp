@@ -80,15 +80,34 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
 
 bool MouseManager::onDragStart()
 {
-    printf("MouseManger::onDragStart()\n"); fflush(stdout);
+   // printf("MouseManger::onDragStart()\n"); fflush(stdout);
     mouseMovedWhileDragging = false;
-    noteDragger = std::make_shared<NotePitchDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
+    MidiNoteEventPtr note = sequencer->editor->getNoteUnderCursor();
+    if (!note) {
+        return true;
+    }
+    auto scaler = sequencer->context->getScaler();
+    const float start = note->startTime;
+    const float end = note->endTime();
+    const float cursorTime =sequencer->context->cursorTime();
+
+
+    const float relativeTime = (cursorTime - start) / (end - start);
+    printf("relative time = %f\n", relativeTime); fflush(stdout);
+
+    if (relativeTime <= .33f) {
+        noteDragger = std::make_shared<NoteStartDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY);     
+    } else if (relativeTime <= .66f) {
+        noteDragger = std::make_shared<NotePitchDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
+    } else {
+        noteDragger = std::make_shared<NoteDurationDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
+    }
     return true;
 }
 
 bool MouseManager::onDragEnd()
 {
-     printf("MouseManger::onDragEnd()\n"); fflush(stdout);
+  //   printf("MouseManger::onDragEnd()\n"); fflush(stdout);
     bool ret = false;
     if (noteDragger) {
         noteDragger->commit();

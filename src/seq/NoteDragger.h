@@ -29,6 +29,11 @@ protected:
     float curMousePositionX = 0;
     float curMousePositionY = 0;
 
+    /**
+     * shifts are in units of one pixel
+     */
+    void drawNotes(NVGcontext *vg, float verticalShift, float horizontalShift);
+
    
 };
 
@@ -41,5 +46,21 @@ private:
    
     void commit() override;
     void draw(NVGcontext *vg) override;
-    void drawNotes(NVGcontext *vg);
+  //  void drawNotes(NVGcontext *vg);
+};
+
+class NoteStartDragger : public NoteDragger
+{
+public:
+    NoteStartDragger(MidiSequencerPtr, float x, float y);
+    void commit() override;
+    virtual void draw(NVGcontext *vg) override;
+};
+
+class NoteDurationDragger : public NoteDragger
+{
+public:
+    NoteDurationDragger(MidiSequencerPtr, float x, float y);
+    void commit() override;
+    virtual void draw(NVGcontext *vg) override;
 };

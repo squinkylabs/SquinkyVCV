@@ -66,6 +66,8 @@ public:
     void assertCursorInSelection();
      // select any note that is under the cursor
     void updateSelectionForCursor(bool extendCurrent);
+
+    MidiNoteEventPtr getNoteUnderCursor();
 private:
     /**
      * The sequencer we will act on.
@@ -88,7 +90,7 @@ private:
     void setNewCursorPitch(float pitch, bool extendSelection);
     void extendTrackToMinDuration(float time);
     void insertNoteHelper(Durations dur, bool moveCursorAfter);
-    MidiNoteEventPtr getNoteUnderCursor();
+
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);
 };

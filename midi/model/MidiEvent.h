@@ -142,6 +142,7 @@ public:
 
     void setPitch(int octave, int semi);
     std::pair<int, int> getPitch() const;
+    float endTime() const;
 
     virtual MidiEventPtr clone() const override;
     MidiNoteEventPtr clonen() const;
@@ -158,6 +159,11 @@ inline std::pair<int, int> MidiNoteEvent::getPitch() const
 inline void MidiNoteEvent::setPitch(int octave, int semi)
 {
     pitchCV = PitchUtils::pitchToCV(octave, semi);
+}
+
+inline float MidiNoteEvent::endTime() const
+{
+    return startTime + duration;
 }
 
 inline void MidiNoteEvent::assertValid() const
