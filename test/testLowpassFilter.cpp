@@ -72,10 +72,11 @@ static void testTrap100()
 
     const float g = .00717f;
 
-    TrapezoidalLowpass<T> lpf(g);
+    TrapezoidalLowpass<T> lpf;
+    const T g2 = TrapezoidalLowpass<T>::legacyCalcG2(g);
 
-    std::function<float(float)> filter = [&lpf](float x) {
-        auto y = lpf.run(x);
+    std::function<float(float)> filter = [&lpf, g2](float x) {
+        auto y = lpf.run(x, g2);
         return float(y);
     };
     doLowpassTest<T>(filter, Fc, -6);
@@ -221,16 +222,19 @@ static void testCVFeedthroughTrap()
     const float Fc = 100;
     using T = float;
 
-    TrapezoidalLowpass<T> lpf( T(.00717));
+  //  TrapezoidalLowpass<T> lpf( T(.00717));
+    TrapezoidalLowpass<T> lpf;
+    float g2 = lpf.legacyCalcG2(.00717f);
 
-    auto filter = [&lpf](float x) {
-        auto y = lpf.run(x);
+    auto filter = [&lpf, g2](float x) {
+        auto y = lpf.run(x, g2);
         return float(y);
     };
 
-    auto change = [&lpf] {
+    auto change = [&lpf, &g2] {
         const float Fc = 400;
-        lpf.setG(T(.0287));
+      //  lpf.setG(T(.0287));
+        g2 = lpf.legacyCalcG2(.0287f);
     };
 
     const double jump = measureFeedthrough(filter, change);
