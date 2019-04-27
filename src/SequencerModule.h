@@ -38,6 +38,7 @@ struct SequencerModule : Module
         }
         seqComp->step();
     }
+    void onReset() override;
 
     void stop()
     {
@@ -78,6 +79,9 @@ struct SequencerModule : Module
     }
     virtual void dataFromJson(json_t *root) override;
 #endif
+private:
+    void setNewSeq(MidiSequencerPtr);
+
 
     std::atomic<bool> runStopRequested;
 };

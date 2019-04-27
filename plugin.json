@@ -13,7 +13,14 @@
 		{
 			"slug": "squinkylabs-ev3",
 			"name": "EV3",
-			"description": "Triple VCO with even wavefo"
+			"description": "Triple VCO with even wavefo",
+			"tags": ["VCO", "Multiple"]
+		},
+		{
+			"slug": "squinkylabs-vocalfilter",
+			"name": "Formants",
+			"description": "Formants: Vocal Filter",
+			"tags":  ["Effect", "Filter"]
 		},
 		{
 			"slug": "squinkylabs-funv",
@@ -25,13 +32,13 @@
 			"slug": "squinkylabs-lfn",
 			"name": "LFN",
 			"description": "Low frequency random voltage generator",
-			"tags": ["NOISE", "RANDOM", "LFO"]
+			"tags": ["Noise", "Random", "LFO"]
 		},
 		{
 			"slug": "squinkylabs-vocalanimator",
 			"name": "Growler",
-			"description": "Formants: Vocal Filter",
-			"tags":  ["EFFECT", "FILTER"]
+			"description": "Growler: Vocal Animator",
+			"tags":  ["Effect", "Filter"]
 		},
 		{
 			"slug": "squinkylabs-CHB2",
@@ -43,19 +50,19 @@
 			"slug": "squinkylabs-shp",
 			"name": "Shaper",
 			"description": "Shaper: Precision Wave Shaper",
-			"tags": ["EFFECT", "OSCILLATOR", "WAVESHAPER"]
+			"tags": ["Effect", "Waveshaper", "Distortion"]
 		},
 		{
 			"slug": "squinkylabs-tremolo",
 			"name": "Chopper",
 			"description": "Chopper: Tremolo",
-			"tags": ["Effect", "LFO"]
+			"tags": ["Clock modulator", "Effect", "LFO"]
 		},
 		{
 			"slug": "squinkylabs-gry",
 			"name": "Gray Code",
 			"description": "Gray Code: Eclectic clock divider",
-			"tags": [ "CLOCK_MODULATOR", "RANDOM"]
+			"tags": [ "Clock modulator", "Random", "Logic"]
 		},
 		{
 			"slug": "squinkylabs-coloredNoise",
@@ -65,18 +72,21 @@
 		},
 		{
 			"slug": "squinkylabs-freqshifter",
-			"name": "abc",
+			"name": "Booty Shifter",
 			"description": "Booty Shifter: Frequency Shifter",
 			"tags": ["Ring Modulator", "effect"]
 		},
 		{
 			"slug": "squinkylabs-sequencer",
-			"name": "Seq++"
+			"name": "Seq++",
+			"description": "DAW-like sequencer",
+			"tags": ["Sequencer"]
 		},
 		{
 			"slug": "squinkylabs-super",
 			"name": "Saws",
-			"description": "super saw VCO emulation"
+			"description": "super saw VCO emulation",
+			"tags": ["VCO"]
 		}
 		,
 		{
@@ -86,7 +96,7 @@
 		},
 		{
 			"slug": "squinkylabs-slew4",
-			"name": "Slew",
+			"name": "Slade",
 			"description": "Quad slew / VCA"
 		},
 		{
@@ -96,13 +106,14 @@
 		},
 		{
 			"slug": "squinkylabs-mix4",
-			"name": "Mixer 4",
+			"name": "Mixer-EX 4",
 			"description": "4 channel mixer expander"
 		},
 		{
 			"slug": "squinkylabs-mixm",
-			"name": "Mixer m",
-			"description": "Mixer master module"
+			"name": "Mixer Master",
+			"description": "Mixer master module",
+			"tags": ["Mixer"]
 		},
 		{
 			"slug": "squinkylabs-ch10",

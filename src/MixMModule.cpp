@@ -364,11 +364,11 @@ MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 
 
 #ifdef __V1
-Model *modelMixMModule = createModel<MixMModule, MixMWidget>("squinkylabs-MixM");
+Model *modelMixMModule = createModel<MixMModule, MixMWidget>("squinkylabs-mixm");
 #else
 Model *modelMixMModule = Model::create<MixMModule,
     MixMWidget>("Squinky Labs",
-    "squinkylabs-MixM",
+    "squinkylabs-mixm",
     "-- MixM --", RANDOM_TAG);
 #endif
 #endif

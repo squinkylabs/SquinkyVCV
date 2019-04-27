@@ -264,9 +264,13 @@ void SequencerModule::dataFromJson(json_t *data)
 void SequencerModule::fromJson(json_t* data)
 #endif
 {
-    MidiSongPtr oldSong = sequencer->song;
-
     MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
+    setNewSeq(newSeq);
+}
+
+void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
+{
+    MidiSongPtr oldSong = sequencer->song;
     sequencer = newSeq;
     if (widget) {
         widget->noteDisplay->setSequencer(newSeq);
@@ -281,6 +285,16 @@ void SequencerModule::fromJson(json_t* data)
         seqComp->setSong(sequencer->song);
     }
 }
+
+
+void SequencerModule::onReset()
+{
+    Module::onReset();
+    std::shared_ptr<MidiSong> newSong = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong);
+    setNewSeq(newSeq);
+}
+
 
 // Specify the Module and ModuleWidget subclass, human-readable
 // manufacturer name for categorization, module slug (should never
