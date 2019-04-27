@@ -48,7 +48,7 @@ static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSl
 
 
 template<typename T>
-static void test1()
+static void testBasicLowpass100()
 {
     const float Fc = 100;
 
@@ -64,7 +64,7 @@ static void test1()
 }
 
 template<typename T>
-static void test2()
+static void testTwoPoleButterworth100()
 {
     const float Fc = 100;
     BiquadParams<T, 1> params;
@@ -81,7 +81,7 @@ static void test2()
 }
 
 template<typename T>
-static void test3()
+static void testThreePoleButterworth100()
 {
     const float Fc = 100;
     BiquadParams<T, 2> params;
@@ -98,7 +98,7 @@ static void test3()
 }
 
 template<typename T>
-static void test4()
+static void testFourPoleButterworth100()
 {
     const float Fc = 100;
     BiquadParams<T, 2> params;
@@ -113,8 +113,9 @@ static void test4()
     };
     doLowpassTest<T>(filter, Fc, -24);
 }
+
 template<typename T>
-static void test5()
+static void testFivePoleButterworth100()
 {
     const float Fc = 100;
     BiquadParams<T, 3> params;
@@ -131,7 +132,7 @@ static void test5()
 }
 
 template<typename T>
-static void test6()
+static void testSixPoleButterworth100()
 {
     const float Fc = 100;
     BiquadParams<T, 3> params;
@@ -209,12 +210,12 @@ template<typename T>
 void _testLowpassFilter()
 {
     test0<T>();
-    test1<T>();
-    test2<T>();
-    test3<T>();
-    test4<T>();
-    test5<T>();
-    test6<T>();
+    testBasicLowpass100<T>();
+    testTwoPoleButterworth100<T>();
+    testThreePoleButterworth100<T>();
+    testFourPoleButterworth100<T>();
+    testFivePoleButterworth100<T>();
+    testSixPoleButterworth100<T>();
 }
 
 
