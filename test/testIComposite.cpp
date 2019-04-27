@@ -6,6 +6,7 @@
 #include "FunVCOComposite.h"
 #include "LFN.h"
 #include "LFNB.h"
+#include "Filt.h"
 #include "Gray.h"
 #include "Mix8.h"
 #include "Mix4.h"
@@ -70,4 +71,6 @@ void testIComposite()
     test<Mix4<TestComposite>>();
     test<MixM<TestComposite>>();
     test<LFNB<TestComposite>>();
+    test<Filt<TestComposite>>();
+
 }

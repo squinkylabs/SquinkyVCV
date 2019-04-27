@@ -188,7 +188,6 @@ static double measureFeedthrough(
     changeFunc();
     float jump = filter(1);
     return jump;
-
 }
 
 static void testCVFeedthroughSimple()

@@ -17,8 +17,8 @@
 #define _SEQ
 #define _SLEW
 #define _MIX8
-#define _CH10
-#define _LFNB
+//#define _CH10
+//#define _LFNB
 
 //#define _BLANKMODULE
 
@@ -35,11 +35,13 @@
     #define _TBOOST
     #define _BOOTY
     #define _TREM
+   
 #endif
 
 #ifdef __V1
     #define _MIX4
     #define _MIXM
+    #define _FILT
 #endif
 
 
@@ -111,6 +113,9 @@ extern Model *modelMix4Module;
 #endif
 #ifdef _MIXM
 extern Model *modelMixMModule;
+#endif
+#ifdef _FILT
+extern Model *modelFiltModule;
 #endif
 
 

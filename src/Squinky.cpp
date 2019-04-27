@@ -97,6 +97,9 @@ void init(rack::Plugin *p)
 #ifdef _MIXM
     p->addModel(modelMixMModule);
 #endif
+#ifdef _FILT
+    p->addModel(modelFiltModule);
+#endif
 
 }
 

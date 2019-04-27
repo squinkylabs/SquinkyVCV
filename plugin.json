@@ -125,6 +125,12 @@
 			"name": "LFNB",
 			"description": "Low frequency random voltage generator 2",
 			"tags": ["NOISE", "RANDOM", "LFO"]
+		},
+		{
+			"slug": "squinkylabs-filt",
+			"name": "Filter",
+			"description": "",
+			"tags": ["VCF"]
 		}
 	]
 }
