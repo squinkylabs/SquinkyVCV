@@ -79,6 +79,11 @@ float NoteScreenScale::xToMidiTime(float x) const
     return t;
 }
 
+float NoteScreenScale::xToMidiDeltaTime(float x)
+{
+    return ax_rev * x;
+}
+
 float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt) const
 {
     return  dt * ax;

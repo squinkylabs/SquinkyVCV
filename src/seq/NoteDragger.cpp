@@ -46,6 +46,7 @@ void NoteDragger::onDrag(float deltaX, float deltaY)
 
 void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizontalShift)
 {
+   // printf("draw vert=%f h=%f\n", verticalShift, horizontalShift);
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
 
@@ -84,8 +85,10 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
 
 
 
-//******************************************************************
-//extern int bnd_font;
+/******************************************************************
+ *
+ * NotePitchDragger 
+ */
 
 NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
     NoteDragger(seq, x, y)
@@ -94,20 +97,20 @@ NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
 
 void NotePitchDragger::commit()
 {
-    printf("NotePitchDragger::commit\n"); fflush(stdout);
-      auto scaler = sequencer->context->getScaler();
-    assert(scaler);
+   // printf("NotePitchDragger::commit\n"); fflush(stdout);
+    auto scaler = sequencer->context->getScaler();
     float verticalShift =  curMousePositionY - startY;
-   // printf("vertical pix = %f\n", verticalShift); fflush(stdout);
     float transposeCV = scaler->yToMidiDeltaCVPitch(verticalShift);
 
-    // std::pair<int, int> x1 = PitchUtils::cvToPitch(transposeCV);
-    // printf("quantized shift = %d, %d\n", x1.first, x1.second); fflush(stdout);
     int semiShift = PitchUtils::deltaCVToSemitone(transposeCV);
+#if 0
     printf("will shift by %d semis\n", semiShift);
     printf("selection has %d notes\n", sequencer->selection->size());
      fflush(stdout);
-    sequencer->editor->changePitch(semiShift);
+#endif
+    if (semiShift != 0) {
+        sequencer->editor->changePitch(semiShift);
+    }
 }
 
 void NotePitchDragger::draw(NVGcontext *vg)
@@ -158,25 +161,52 @@ void NotePitchDragger::drawNotes(NVGcontext *vg)
 }
 #endif
 
-//*******************************************************
 
+/******************************************************************
+ *
+ * NoteStartDragger 
+ */
 NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y) :
     NoteDragger(seq, x, y)
-{
-   
+{ 
 }
 
 void NoteStartDragger::draw(NVGcontext *vg)
 {
-     float horizontalShift =  curMousePositionX - startX;
+    const float horizontalShift =  curMousePositionX - startX;
     drawNotes(vg, 0, horizontalShift);
 }
 
 void NoteStartDragger::commit()
 {
+    printf("NoteStartDragger::commit\n"); fflush(stdout);
+    auto scaler = sequencer->context->getScaler();
+    const float horizontalShift =  curMousePositionX - startX;
+    float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
+
+    // convert qusrter notes to 64th notes.
+    int timeShiftTicks = std::round(timeShiftAmount * 16);
+
+//void changeStartTime(bool ticks, int amount);
+//   int semiShift = PitchUtils::deltaCVToSemitone(transposeCV);
+#if 0
+    printf("will shift by %f pix, %d in midi time\n", 
+        horizontalShift,timeShiftAmount);
+
+    printf("selection has %d notes\n", sequencer->selection->size());
+     fflush(stdout);
+#endif
+    if (timeShiftTicks != 0) {
+        sequencer->editor->changeStartTime(true, timeShiftTicks);
+    }
 }
 
-//*********************************************************
+
+/******************************************************************
+ *
+ * NoteDurationDragger 
+ */
+
 NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y) :
     NoteDragger(seq, x, y)
 {

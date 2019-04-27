@@ -51,6 +51,7 @@ public:
     /** Convert x position to time
      */
     float xToMidiTime(float) const;
+    float xToMidiDeltaTime(float);
 
     /** Convert y position to pitch
      *  Will quantize the pitch to the nearest semitone.
