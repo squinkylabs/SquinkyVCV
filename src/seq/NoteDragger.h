@@ -32,7 +32,7 @@ protected:
     /**
      * shifts are in units of one pixel
      */
-    void drawNotes(NVGcontext *vg, float verticalShift, float horizontalShift);
+    void drawNotes(NVGcontext *vg, float verticalShift, float horizontalShift, float horizontalStretch);
 
    
 };
@@ -46,7 +46,6 @@ private:
    
     void commit() override;
     void draw(NVGcontext *vg) override;
-  //  void drawNotes(NVGcontext *vg);
 };
 
 class NoteStartDragger : public NoteDragger
