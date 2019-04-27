@@ -2,6 +2,8 @@
 
 #include "NonUniformLookupTable.h"
 
+#include <memory>
+
 /**
  * a one pole lowpass filter
  * has 6db less control voltage feedthrough than standard lpf
