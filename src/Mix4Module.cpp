@@ -222,7 +222,7 @@ Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
     mixModule = module;
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix4_panel.svg");
-     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     for (int i=0; i< Comp::numChannels; ++i) {
         makeStrip(module, icomp, i);

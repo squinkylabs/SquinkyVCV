@@ -752,5 +752,8 @@
     <ClInclude Include="..\..\dsp\filters\LadderFilter.h">
       <Filter>Header Files\dsp\filters</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\composites\Filt.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

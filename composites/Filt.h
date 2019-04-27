@@ -49,17 +49,20 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        FC_PARAM,
+        Q_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
+        AUDIO_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -107,8 +110,11 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Filt<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case Filt<TBase>::FC_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Cutoff Freq"};
+            break;
+        case Filt<TBase>::Q_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Resonance"};
             break;
         default:
             assert(false);

@@ -20,8 +20,10 @@ static void test0()
 }
 
 const float sampleRate = 44100;
+
+// return first = fc, second = slope
 template<typename T>
-static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSlope)
+static std::pair<T, T> getLowpassStats(std::function<float(float)> filter, T FcExpected)
 {
     const int numSamples = 16 * 1024;
     FFTDataCpx response(numSamples);
@@ -29,7 +31,7 @@ static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSl
 
     auto x = Analyzer::getMaxAndShoulders(response, -3);
 
-    const double cutoff = FFT::bin2Freq(std::get<2>(x), sampleRate, numSamples);
+    const T cutoff = (T) FFT::bin2Freq(std::get<2>(x), sampleRate, numSamples);
 
     // Is the peak at zero? i.e. no ripple.
     if (std::get<1>(x) == 0) {
@@ -41,12 +43,22 @@ static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSl
         assertClose(peakMag / zeroMag, 1, .0001);
     }
 
-    assertClose(cutoff, Fc, 3);    // 3db down at Fc
+    //assertClose(cutoff, Fc, 3);    // 3db down at Fc
 
-    double slope = Analyzer::getSlope(response, (float) Fc * 2, sampleRate);
-    assertClose(slope, expectedSlope, 1);          // to get accurate we need to go to higher freq, etc... this is fine
+    T slope = Analyzer::getSlope(response, (float) FcExpected * 2, sampleRate);
+   // assertClose(slope, expectedSlope, 1);          // to get accurate we nee
+    return std::make_pair(cutoff, slope);
 }
 
+template<typename T>
+static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSlope)
+{
+    auto stats = getLowpassStats<T>(filter, Fc);
+    assertClose(stats.first, Fc, 3);    // 3db down at Fc
+
+    //double slope = Analyzer::getSlope(response, (float) Fc * 2, sampleRate);
+    assertClose(stats.second, expectedSlope, 1);          // to get accurate we need to go to higher freq, etc... this is fine
+}
 
 template<typename T>
 static void testBasicLowpass100()
@@ -81,6 +93,24 @@ static void testTrap100()
     };
     doLowpassTest<T>(filter, Fc, -6);
 }
+
+static void calibrateTrap()
+{
+    for (double g = 1.5; g > .000001; g /= 2) {
+        TrapezoidalLowpass<double> lpf;
+        double g2 = TrapezoidalLowpass<double>::legacyCalcG2(g);
+
+        std::function<float(float)> filter = [&lpf, g2](float x) {
+            auto y = lpf.run(x, g2);
+            return float(y);
+        };
+        auto stats = getLowpassStats<double>(filter, 100);
+        //printf("g = %f, g2 = %f, fC = %f\n", g, g2, stats.first);
+        printf("f/fs = %f, g2=%f\n", stats.first / sampleRate, g2);
+    }
+
+}
+
 
 
 template<typename T>
@@ -310,6 +340,7 @@ void _testLowpassFilter()
     testFourPoleButterworth100<T>();
     testFivePoleButterworth100<T>();
     testSixPoleButterworth100<T>();
+   
 }
 
 
@@ -357,6 +388,7 @@ void testLowpassFilter()
     _testLowpassFilter<float>();
     _testLowpassFilter<double>();
     testCVFeedthrough();
+    calibrateTrap();
     decimate0();
     decimate1();
 }

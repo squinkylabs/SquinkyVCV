@@ -120,6 +120,7 @@
     <ClInclude Include="..\..\composites\ColoredNoise.h" />
     <ClInclude Include="..\..\composites\daveguide.h" />
     <ClInclude Include="..\..\composites\EV3.h" />
+    <ClInclude Include="..\..\composites\Filt.h" />
     <ClInclude Include="..\..\composites\FrequencyShifter.h" />
     <ClInclude Include="..\..\composites\FunVCOComposite.h" />
     <ClInclude Include="..\..\composites\GMR.h" />

@@ -7,6 +7,7 @@
 #include "Filt.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqWidgets.h"
 
 using Comp = Filt<WidgetComposite>;
 
@@ -92,8 +93,36 @@ BlankWidget::BlankWidget(FiltModule *module)
 BlankWidget::BlankWidget(FiltModule *module) : ModuleWidget(module)
 {
 #endif
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    box.size = Vec(14 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    SqHelper::setPanel(this, "res/filter_panel.svg");
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
+    const float x1 = 46;
+    const float x2 = 210 - x1;
+    const float y1 = 100;
+    const float y2 = 300;
+
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(x1, y1),
+        module,
+        Comp::FC_PARAM));
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(x2, y1),
+        module,
+        Comp::Q_PARAM));
+
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1, y2),
+        module,
+        Comp::AUDIO_INPUT));
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(x2, y2),
+        module,
+        Comp::AUDIO_OUTPUT));
+
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
