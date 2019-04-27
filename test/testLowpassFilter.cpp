@@ -7,6 +7,7 @@
 #include "asserts.h"
 #include "LFN.h"
 #include "TestComposite.h"
+#include "TrapezoidalLowpass.h"
 
 
 template<typename T>
@@ -62,6 +63,24 @@ static void testBasicLowpass100()
     };
     doLowpassTest<T>(filter, Fc, -6);
 }
+
+
+template<typename T>
+static void testTrap100()
+{
+    const float Fc = 100;
+
+    const float g = .00717f;
+
+    TrapezoidalLowpass<T> lpf(g);
+
+    std::function<float(float)> filter = [&lpf](float x) {
+        auto y = lpf.run(x);
+        return float(y);
+    };
+    doLowpassTest<T>(filter, Fc, -6);
+}
+
 
 template<typename T>
 static void testTwoPoleButterworth100()
@@ -148,6 +167,77 @@ static void testSixPoleButterworth100()
     doLowpassTest<T>(filter, Fc, -36);
 }
 
+static double measureFeedthrough(
+    std::function<float(float)> filter,
+    std::function<void(void)> changeFunc)
+{
+    // run silence through it, settle
+    float x = 0;
+    for (int i = 0; i < 1000; ++i) {
+        x = filter(0);      
+    }
+    for (int i = 0; i < 20; ++i) {
+        x = filter(1);
+    }
+
+    // now back to zero
+    for (int i = 0; i < 1000; ++i) {
+        x = filter(0);
+    }
+   
+    changeFunc();
+    float jump = filter(1);
+    return jump;
+
+}
+
+static void testCVFeedthroughSimple()
+{
+    const float Fc = 100;
+    using T = float;
+
+   
+    LowpassFilterState<T> state;
+    LowpassFilterParams<T> params;
+    LowpassFilter<T>::setCutoff(params, Fc / sampleRate);
+
+    auto filter = [&state, &params](float x) {
+        auto y = LowpassFilter<T>::run(x, state, params);
+        return float(y);
+    };
+    printf("here goes\n");
+
+    auto change = [&params] {
+        const float Fc = 400;
+        LowpassFilter<T>::setCutoff(params, Fc / sampleRate);
+    };
+
+    const double jump = measureFeedthrough(filter, change);
+    assertGT(jump, .05);
+}
+
+
+static void testCVFeedthroughTrap()
+{
+    const float Fc = 100;
+    using T = float;
+
+    TrapezoidalLowpass<T> lpf( T(.00717));
+
+    auto filter = [&lpf](float x) {
+        auto y = lpf.run(x);
+        return float(y);
+    };
+
+    auto change = [&lpf] {
+        const float Fc = 400;
+        lpf.setG(T(.0287));
+    };
+
+    const double jump = measureFeedthrough(filter, change);
+    assertLT(jump, .28);
+}
+
 /******************************************************************************************************/
 
 #if 0 // not ready for prime time
@@ -211,6 +301,7 @@ void _testLowpassFilter()
 {
     test0<T>();
     testBasicLowpass100<T>();
+    testTrap100<T>();
     testTwoPoleButterworth100<T>();
     testThreePoleButterworth100<T>();
     testFourPoleButterworth100<T>();
@@ -252,10 +343,17 @@ static void decimate1()
     assertEQ(x, 5);
 }
 
+static void testCVFeedthrough()
+{
+    testCVFeedthroughSimple();
+    testCVFeedthroughTrap();
+}
+
 void testLowpassFilter()
 {
     _testLowpassFilter<float>();
     _testLowpassFilter<double>();
+    testCVFeedthrough();
     decimate0();
     decimate1();
 }

@@ -154,6 +154,7 @@
     <ClInclude Include="..\..\dsp\filters\SmoothedHPF.h" />
     <ClInclude Include="..\..\dsp\filters\StateVariable4PHP.h" />
     <ClInclude Include="..\..\dsp\filters\StateVariableFilter.h" />
+    <ClInclude Include="..\..\dsp\filters\TrapezoidalLowpass.h" />
     <ClInclude Include="..\..\dsp\generators\MinBLEPVCO.h" />
     <ClInclude Include="..\..\dsp\generators\MultiModOsc.h" />
     <ClInclude Include="..\..\dsp\generators\SawOscillator.h" />

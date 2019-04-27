@@ -594,7 +594,6 @@ void MidiEditor::extendSelectionToCurrentNote()
 {
 #ifdef __V1
     MidiNoteEventPtr ni = getNoteUnderCursor();
-    printf("extend sel to current, current note = %d sel size = %d\n", !!ni, seq()->selection->size());
 
     sq::Rect boundingBox;
     if (ni) {
@@ -608,24 +607,14 @@ void MidiEditor::extendSelectionToCurrentNote()
         boundingBox = {initPos, {.001f,0}};
     }
 
-    printf("bb before expand = t=%.2f te=%.2f p=%.2f pe=%.2f", boundingBox.pos.x,
-        boundingBox.getRight(),
-        boundingBox.pos.y,
-        boundingBox.getBottom());
-
     // expand to include all the notes in selection
     for (auto sel : *seq()->selection) {
         MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(sel);
         if (n) {
-            printf("expanding bb with selection t=%.2f d=%.2f p=%.2f\n", n->startTime, n->duration, n->pitchCV);
             sq::Rect nr{{n->startTime, n->pitchCV}, {n->duration,0}};
             boundingBox = boundingBox.expand(nr);
         }
     }
-    printf("bb after expand = t=%.2f te=%.2f p=%.2f pe=%.2f", boundingBox.pos.x,
-        boundingBox.getRight(),
-        boundingBox.pos.y,
-        boundingBox.getBottom());
 
     // now boundingBox is the final selection area
     // Find all notes in new bounds
@@ -643,11 +632,8 @@ void MidiEditor::extendSelectionToCurrentNote()
         MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(ev);
         if (n) {
             seq()->selection->extendSelection(n);
-            printf("in loop, adding note t=%.2f, p=%.2f\n", n->startTime, n->pitchCV);
         }
     }
-    auto xxx = seq()->selection->size();
-    printf("leaving with %d sel\n", xxx); fflush(stdout);
 #endif
 }
 

@@ -387,7 +387,6 @@ static void testInsertSub(int advancUnits)
     const int insertSize = seq->context->getTrack()->size();
     assertGT(insertSize, initialSize);
 
-    printf("finish undo for insert note\n");
 #if 0
     assert(seq->undo->canUndo());
     seq->undo->undo();
