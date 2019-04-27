@@ -12,7 +12,7 @@ class SequencerWidget;
     #include "engine/Module.hpp"
     using Module =  rack::engine::Module;
 #else
-    #include "Engine.hpp"
+    #include "engine.hpp"
     using Module =  rack::Module;
 #endif
 
