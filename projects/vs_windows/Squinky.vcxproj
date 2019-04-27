@@ -73,6 +73,7 @@
     <ClCompile Include="..\..\test\testGMR.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
     <ClCompile Include="..\..\test\testIComposite.cpp" />
+    <ClCompile Include="..\..\test\testLadder.cpp" />
     <ClCompile Include="..\..\test\testLookupTable.cpp" />
     <ClCompile Include="..\..\test\testLowpassFilter.cpp" />
     <ClCompile Include="..\..\test\testMidiControllers.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="..\..\dsp\filters\FormantTables2.h" />
     <ClInclude Include="..\..\dsp\filters\GraphicEq.h" />
     <ClInclude Include="..\..\dsp\filters\HilbertFilterDesigner.h" />
+    <ClInclude Include="..\..\dsp\filters\LadderFilter.h" />
     <ClInclude Include="..\..\dsp\filters\LowPassFilter.h" />
     <ClInclude Include="..\..\dsp\filters\MultiLag.h" />
     <ClInclude Include="..\..\dsp\filters\SmoothedHPF.h" />

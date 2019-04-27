@@ -408,6 +408,9 @@
     <ClCompile Include="..\..\test\testCommChannels.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testLadder.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -744,6 +747,9 @@
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\filters\TrapezoidalLowpass.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\LadderFilter.h">
       <Filter>Header Files\dsp\filters</Filter>
     </ClInclude>
   </ItemGroup>
