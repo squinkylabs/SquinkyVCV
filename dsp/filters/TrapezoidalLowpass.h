@@ -13,19 +13,9 @@ class TrapezoidalLowpass
 {
 public:
     T run(T g2, T input);
-
-#if 0
-    void setG(T x)
-    {
-        _g = x;
-        _g2 = _g / (1 + _g);
-    }
-#endif
     static T legacyCalcG2(T g);
 private:
     T _z = 0;
-  //  T _g = 0;
- //   T _g2 = 0;
 };
 
 template <typename T>
@@ -69,20 +59,20 @@ template <typename T>
 inline std::shared_ptr<NonUniformLookupTableParams<T>> makeTrapFilter_Lookup()
 {
     std::shared_ptr<NonUniformLookupTableParams<T>> ret = std::make_shared<NonUniformLookupTableParams<T>>();
-    NonUniformLookupTable<T>::addPoint(*ret, 0.309937, 0.600000);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.202148, 0.428571);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.112793, 0.272727);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.058472, 0.157895);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.029602, 0.085714);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.014893, 0.044776);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.007446, 0.022901);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.003723, 0.011583);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.001892, 0.005825);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.000977, 0.002921);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.000488, 0.001463);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.000244, 0.000732);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.000122, 0.000366);
-    NonUniformLookupTable<T>::addPoint(*ret, 0.000061, 0.000183);
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.309937), T(0.600000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.202148), T(0.428571));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.112793), T(0.272727));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.058472), T(0.157895));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.029602), T(0.085714));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.014893), T(0.044776));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.007446), T(0.022901));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.003723), T(0.011583));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.001892), T(0.005825));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.000977), T(0.002921));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.000488), T(0.001463));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.000244), T(0.000732));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.000122), T(0.000366));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.000061), T(0.000183));
 
     NonUniformLookupTable<T>::finalize(*ret);
     return ret;

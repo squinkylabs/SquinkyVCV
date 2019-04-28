@@ -388,7 +388,7 @@ void testLowpassFilter()
     _testLowpassFilter<float>();
     _testLowpassFilter<double>();
     testCVFeedthrough();
-    calibrateTrap();
+    //calibrateTrap();
     decimate0();
     decimate1();
 }

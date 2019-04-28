@@ -1,4 +1,5 @@
 
+#include "Filt.h"
 #include "LookupTable.h"
 #include "Mix8.h"
 #include "Mix4.h"
@@ -148,6 +149,24 @@ static void testSlew4()
         }, 1);
 }
 
+
+using Filter = Filt<TestComposite>;
+static void testFilt()
+{
+    Filter fs;
+
+    fs.init();
+
+   // fs.inputs[fs.AUDIO0_INPUT].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "filt", [&fs]() {
+        fs.inputs[Filter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Filter::AUDIO_OUTPUT].value;
+        }, 1);
+}
+
 using Mixer8 = Mix8<TestComposite>;
 static void testMix8()
 {
@@ -202,6 +221,7 @@ void perfTest2()
     testMix8();
     testMix4();
     testMixM();
+    testFilt();
     testUniformLookup();
     testNonUniform();
     testMultiLPF();

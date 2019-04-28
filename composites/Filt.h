@@ -1,9 +1,15 @@
 
 #pragma once
 
+
+#include "Divider.h"
+#include "IComposite.h"
+#include "LadderFilter.h"
+#include "LookupTable.h"
+#include "ObjectCache.h"
+
 #include <assert.h>
 #include <memory>
-#include "IComposite.h"
 
 #ifdef __V1
 namespace rack {
@@ -84,6 +90,12 @@ public:
     void step() override;
 
 private:
+    using T = float;
+    LadderFilter<T> _f;
+    Divider div;
+    std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
+
+    void stepn(int);
 
 };
 
@@ -91,12 +103,36 @@ private:
 template <class TBase>
 inline void Filt<TBase>::init()
 {
+    div.setup(4, [this] {
+        this->stepn(div.getDiv());
+        });
 }
 
+template <class TBase>
+inline void Filt<TBase>::stepn(int)
+{
+    // get param -5..5
+    T x = TBase::params[FC_PARAM].value;
+
+    // now 0..10
+    x += 5;
+
+    const T fc = LookupTable<T>::lookup(*expLookup, x, true) * 10;
+    const T normFc = fc * TBase::engineGetSampleTime();
+    T fcClipped = std::min(normFc, T(.4));
+    fcClipped = std::max(normFc, T(.0000001));
+   // if (print) printf("want fc = %f clipped to %f\n", normFc, fcClipped); 
+    _f.setNormalizedFc(fcClipped);
+}
 
 template <class TBase>
 inline void Filt<TBase>::step()
 {
+    div.step();
+    float input = TBase::inputs[AUDIO_INPUT].value;
+    _f.run(input);
+    float output = _f.getOutput();
+    TBase::outputs[AUDIO_OUTPUT].value = output;
 }
 
 template <class TBase>
@@ -111,10 +147,10 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Filt<TBase>::FC_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Cutoff Freq"};
+            ret = {-5.0f, 5.0f, 0, "Cutoff Freq"};
             break;
         case Filt<TBase>::Q_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Resonance"};
+            ret = {-5.0f, 5.0f, 0, "Resonance"};
             break;
         default:
             assert(false);
