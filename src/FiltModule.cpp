@@ -102,6 +102,10 @@ BlankWidget::BlankWidget(FiltModule *module) : ModuleWidget(module)
     const float y1 = 100;
     const float y2 = 300;
 
+    const float xTest = 40;
+    const float yTest = 200;
+    const float dx = 40;
+
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(x1, y1),
@@ -122,6 +126,13 @@ BlankWidget::BlankWidget(FiltModule *module) : ModuleWidget(module)
         Vec(x2, y2),
         module,
         Comp::AUDIO_OUTPUT));
+
+    for (int i=0; i<4; ++i) {
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(xTest + i * dx, yTest),
+            module,
+            Comp::TEST_OUTPUT1 + i));
+    }
 
 
     // screws

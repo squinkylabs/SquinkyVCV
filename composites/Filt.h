@@ -69,6 +69,10 @@ public:
     enum OutputIds
     {
         AUDIO_OUTPUT,
+        TEST_OUTPUT1,
+        TEST_OUTPUT2,
+        TEST_OUTPUT3,
+        TEST_OUTPUT4,
         NUM_OUTPUTS
     };
 
@@ -96,7 +100,6 @@ private:
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
 
     void stepn(int);
-
 };
 
 
@@ -121,8 +124,10 @@ inline void Filt<TBase>::stepn(int)
     const T normFc = fc * TBase::engineGetSampleTime();
     T fcClipped = std::min(normFc, T(.4));
     fcClipped = std::max(normFc, T(.0000001));
-   // if (print) printf("want fc = %f clipped to %f\n", normFc, fcClipped); 
     _f.setNormalizedFc(fcClipped);
+
+    const float res = TBase::params[Q_PARAM].value;
+    _f.setFeedback(res);
 }
 
 template <class TBase>
@@ -133,6 +138,10 @@ inline void Filt<TBase>::step()
     _f.run(input);
     float output = _f.getOutput();
     TBase::outputs[AUDIO_OUTPUT].value = output;
+
+    for (int i = 0; i < 4; ++i) {
+        TBase::outputs[TEST_OUTPUT1 + i].value = _f.getRawOutput(i);
+    }
 }
 
 template <class TBase>
@@ -150,7 +159,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {-5.0f, 5.0f, 0, "Cutoff Freq"};
             break;
         case Filt<TBase>::Q_PARAM:
-            ret = {-5.0f, 5.0f, 0, "Resonance"};
+            ret = {0, 4.0f, 0, "Resonance"};
             break;
         default:
             assert(false);

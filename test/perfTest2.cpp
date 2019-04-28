@@ -154,11 +154,7 @@ using Filter = Filt<TestComposite>;
 static void testFilt()
 {
     Filter fs;
-
     fs.init();
-
-   // fs.inputs[fs.AUDIO0_INPUT].value = 0;
-
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "filt", [&fs]() {
         fs.inputs[Filter::AUDIO_INPUT].value = TestBuffers<float>::get();
