@@ -56,6 +56,7 @@ void LadderFilter<T>::setType(Types t)
     if (t == type) 
         return;
 
+    printf("setting type to %d\n", (int) t); fflush(stdout);
     type = t;
     switch (type) {
         case Types::_4PLP:
@@ -141,19 +142,19 @@ inline void LadderFilter<T>::run(T input)
     const float k = 1.f / 5.f;
     const float j = 1.f / k;
 
-    input = input - feedback * output;
-    input = j * LookupTable<float>::lookup(*tanhLookup.get(), k * input, true);
-    T temp = lpfs[0].run(input, _g);
+    T temp  = input - feedback * output;
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = lpfs[0].run(input, _g);
 
-    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     stageOutputs[0] = temp;
     temp = lpfs[1].run(temp, _g);
 
-    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+ //   temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     stageOutputs[1] = temp;
     temp = lpfs[2].run(temp, _g);
 
-    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     stageOutputs[2] = temp;
     temp = lpfs[3].run(temp, _g);
 
