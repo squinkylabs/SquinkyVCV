@@ -40,7 +40,7 @@ public:
 private:
     TrapezoidalLowpass<T> lpfs[4];
     T _g = .001f;
-    T output = 0;
+    T mixedOutput = 0;
     T feedback = 0;
     T stageOutputs[4];
     T stageTaps[4] = {0, 0, 0, 1};
@@ -127,7 +127,7 @@ void LadderFilter<T>::setType(Types t)
 template <typename T>
 inline T LadderFilter<T>::getOutput() 
 {
-    return output;
+    return mixedOutput;
 }
 
 template <typename T>
@@ -142,7 +142,7 @@ inline void LadderFilter<T>::run(T input)
     const float k = 1.f / 5.f;
     const float j = 1.f / k;
 
-    T temp  = input - feedback * output;
+    T temp = input - feedback * stageOutputs[3];
     temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     temp = lpfs[0].run(temp, _g);
 
@@ -169,7 +169,7 @@ inline void LadderFilter<T>::run(T input)
 
     temp = std::max(T(-10), temp);
     temp = std::min(T(10), temp);
-    output = temp;
+    mixedOutput = temp;
 }
 
 template <typename T>
