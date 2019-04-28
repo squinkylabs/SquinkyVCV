@@ -8,6 +8,8 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
+#include "ctrl/PopupMenuParamWidget.h"
+#include "ctrl/PopupMenuParamWidgetv1.h"
 
 using Comp = Filt<WidgetComposite>;
 
@@ -100,12 +102,15 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
 
     const float x1 = 46;
     const float x2 = 210 - x1;
-    const float y1 = 100;
-    const float y2 = 300;
 
-    const float xTest = 40;
-    const float yTest = 200;
-    const float dx = 40;
+    const float y1 = 100;
+    const float y2 = 180;
+    const float y3 = 230;
+    const float yJacks = 300;
+
+    //const float xTest = 40;
+   // const float yTest = 200;
+   // const float dx = 40;
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
@@ -117,14 +122,35 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
         Vec(x2, y1),
         module,
         Comp::Q_PARAM));
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(x1, y2),
+        module,
+        Comp::DRIVE_PARAM));
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(x2, y2),
+        module,
+        Comp::STAGING_PARAM));
+
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(60, y3),
+        module,
+        Comp::TYPE_PARAM);
+    p->box.size.x = 85;    // width
+    p->box.size.y = 22;     // should set auto like button does
+    p->setLabels(Comp::getTypeNames());
+    addParam(p);
+
 
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(x1, y2),
+        Vec(x1, yJacks),
         module,
         Comp::AUDIO_INPUT));
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(x2, y2),
+        Vec(x2, yJacks),
         module,
         Comp::AUDIO_OUTPUT));
 

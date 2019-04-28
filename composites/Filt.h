@@ -37,7 +37,7 @@ template <class TBase>
 class Filt : public TBase
 {
 public:
-
+    using T = float;
     Filt(Module * module) : TBase(module)
     {
     }
@@ -80,6 +80,11 @@ public:
         NUM_LIGHTS
     };
 
+    static std::vector<std::string> getTypeNames()
+    {
+        return LadderFilter<T>::getTypeNames();
+    }
+
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()
@@ -93,7 +98,7 @@ public:
     void step() override;
 
 private:
-    using T = float;
+   
     LadderFilter<T> _f;
     Divider div;
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
@@ -155,6 +160,15 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             break;
         case Filt<TBase>::Q_PARAM:
             ret = {0, 4.0f, 0, "Resonance"};
+            break;
+        case Filt<TBase>::TYPE_PARAM:
+            ret = {0, 9.0f, 0, "Type"};
+            break;
+        case Filt<TBase>::DRIVE_PARAM:
+            ret = {0, 1, 0, "Drive"};
+            break;
+        case Filt<TBase>::STAGING_PARAM:
+            ret = {0, 1, 0, "???"};
             break;
         default:
             assert(false);

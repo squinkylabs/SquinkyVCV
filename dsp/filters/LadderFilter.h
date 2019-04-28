@@ -26,7 +26,7 @@ public:
     void setFeedback(T f);
   // T getRawOutput(int stage);
 
-    std::vector<std::string> getTypeNames();
+    static std::vector<std::string> getTypeNames();
 private:
     TrapezoidalLowpass<T> lpfs[4];
     T _g = .001f;
@@ -94,4 +94,21 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
 {
     const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
     _g = g2;
+}
+
+template <typename T>
+inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
+{
+    return {
+        "4P LP",
+        "3P LP",
+        "2P LP",
+        "1P LP",
+        "2P BP",
+        "2HP+1LP",
+        "3HP+1LP",
+        "4P BP",
+        "1LP+Notch",
+        "3AP+1LP"
+    };
 }

@@ -83,7 +83,7 @@ public:
     }
 };
 
-void PopupMenuParamWidget::onAction(const event::Action &e) 
+inline void PopupMenuParamWidget::onAction(const event::Action &e) 
 {
     Menu* menu = createMenu();
 
