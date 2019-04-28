@@ -143,18 +143,18 @@ inline void LadderFilter<T>::run(T input)
     const float j = 1.f / k;
 
     T temp  = input - feedback * output;
-  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     temp = lpfs[0].run(temp, _g);
 
-  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     stageOutputs[0] = temp;
     temp = lpfs[1].run(temp, _g);
 
- //   temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     stageOutputs[1] = temp;
     temp = lpfs[2].run(temp, _g);
 
-  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     stageOutputs[2] = temp;
     temp = lpfs[3].run(temp, _g);
 
