@@ -4,10 +4,17 @@
 #include "ObjectCache.h"
 #include "TrapezoidalLowpass.h"
 
+#include <vector>
+#include <string>
+
 template <typename T>
 class LadderFilter
 {
 public:
+    enum class Types
+    {
+
+    };
     void run(T);
     T getOutput();
 
@@ -17,7 +24,9 @@ public:
     void setNormalizedFc(T);
 
     void setFeedback(T f);
-    T getRawOutput(int stage);
+  // T getRawOutput(int stage);
+
+    std::vector<std::string> getTypeNames();
 private:
     TrapezoidalLowpass<T> lpfs[4];
     T _g = .001f;
@@ -35,6 +44,7 @@ inline T LadderFilter<T>::getOutput()
     return output;
 }
 
+#if 0
 template <typename T>
 inline T LadderFilter<T>::getRawOutput(int i)
 {
@@ -42,6 +52,7 @@ inline T LadderFilter<T>::getRawOutput(int i)
     assert(i >= 0);
     return rawOutput[i];
 }
+#endif
 
 template <typename T>
 inline void LadderFilter<T>::setFeedback(T f)

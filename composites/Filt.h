@@ -57,6 +57,9 @@ public:
     {
         FC_PARAM,
         Q_PARAM,
+        TYPE_PARAM,
+        DRIVE_PARAM,
+        STAGING_PARAM,
         NUM_PARAMS
     };
 
@@ -69,10 +72,6 @@ public:
     enum OutputIds
     {
         AUDIO_OUTPUT,
-        TEST_OUTPUT1,
-        TEST_OUTPUT2,
-        TEST_OUTPUT3,
-        TEST_OUTPUT4,
         NUM_OUTPUTS
     };
 
@@ -138,10 +137,6 @@ inline void Filt<TBase>::step()
     _f.run(input);
     float output = _f.getOutput();
     TBase::outputs[AUDIO_OUTPUT].value = output;
-
-    for (int i = 0; i < 4; ++i) {
-        TBase::outputs[TEST_OUTPUT1 + i].value = _f.getRawOutput(i);
-    }
 }
 
 template <class TBase>

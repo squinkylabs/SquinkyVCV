@@ -38,7 +38,7 @@ void FiltModule::onSampleRateChange()
 FiltModule::FiltModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    blank = std::make_shared<Comp>(this);
+    filt = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 #else
@@ -127,13 +127,6 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
         Vec(x2, y2),
         module,
         Comp::AUDIO_OUTPUT));
-
-    for (int i=0; i<4; ++i) {
-        addOutput(createOutputCentered<PJ301MPort>(
-            Vec(xTest + i * dx, yTest),
-            module,
-            Comp::TEST_OUTPUT1 + i));
-    }
 
 
     // screws
