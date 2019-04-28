@@ -86,37 +86,37 @@ void LadderFilter<T>::setType(Types t)
         case Types::_2PBP:
             stageTaps[3] = 0;
             stageTaps[2] = 0;
-            stageTaps[1] = 1;
+            stageTaps[1] = -1;
             stageTaps[0] = 1;
             break;
         case Types::_2HP1LP:
             stageTaps[3] = 0;
             stageTaps[2] = 0;
-            stageTaps[1] = 1;
+            stageTaps[1] = -1;
             stageTaps[0] = .5;
             break;
         case Types::_3HP1LP:
-            stageTaps[3] = T(.33334);
+            stageTaps[3] = -T(.33334);
             stageTaps[2] = 1;
-            stageTaps[1] = 1;
+            stageTaps[1] = -1;
             stageTaps[0] = T(.33334);
             break;
         case Types::_4PBP:
-            stageTaps[3] = .5;
+            stageTaps[3] = -.5;
             stageTaps[2] = 1;
-            stageTaps[1] = .5;
+            stageTaps[1] = -.5;
             stageTaps[0] = 0;
             break;
         case Types::_1LPNotch:
             stageTaps[3] = 0;
             stageTaps[2] = 1;
-            stageTaps[1] = 1;
+            stageTaps[1] = -1;
             stageTaps[0] = .5;
             break;
         case Types::_3AP1LP:
-            stageTaps[3] = T(.6667);
+            stageTaps[3] = -T(.6667);
             stageTaps[2] = 1;
-            stageTaps[1] = 1;
+            stageTaps[1] = -1;
             stageTaps[0] = .5;
             break;
         default:
@@ -144,7 +144,7 @@ inline void LadderFilter<T>::run(T input)
 
     T temp  = input - feedback * output;
   //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[0].run(input, _g);
+    temp = lpfs[0].run(temp, _g);
 
   //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     stageOutputs[0] = temp;
