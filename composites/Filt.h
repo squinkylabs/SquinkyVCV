@@ -132,6 +132,9 @@ inline void Filt<TBase>::stepn(int)
 
     const float res = TBase::params[Q_PARAM].value;
     _f.setFeedback(res);
+
+    LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
+    _f.setType(type);
 }
 
 template <class TBase>
