@@ -24,7 +24,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    std::shared_ptr<Comp> blank;
+    std::shared_ptr<Comp> filt;
 private:
 
 };
@@ -43,29 +43,30 @@ FiltModule::FiltModule()
     SqHelper::setupParams(icomp, this); 
 #else
 FiltModule::FiltModule()
-    : Module(blank.NUM_PARAMS,
-    blank.NUM_INPUTS,
-    blank.NUM_OUTPUTS,
-    blank.NUM_LIGHTS),
-    blank(this)
+    : Module(
+        Comp::NUM_PARAMS,
+        Comp::NUM_INPUTS,
+        Comp::NUM_OUTPUTS,
+        Comp::NUM_LIGHTS)
 {
+    filt = std::make_shared<Comp>(this);
 #endif
     onSampleRateChange();
-    blank->init();
+    filt->init();
 }
 
 void FiltModule::step()
 {
-    blank->step();
+    filt->step();
 }
 
 ////////////////////
 // module widget
 ////////////////////
 
-struct BlankWidget : ModuleWidget
+struct FiltWidget : ModuleWidget
 {
-    BlankWidget(FiltModule *);
+    FiltWidget(FiltModule *);
     DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
@@ -86,11 +87,11 @@ struct BlankWidget : ModuleWidget
  * This is not shared by all modules in the DLL, just one
  */
 #ifdef __V1
-BlankWidget::BlankWidget(FiltModule *module)
+FiltWidget::FiltWidget(FiltModule *module)
 {
     setModule(module);
 #else
-BlankWidget::BlankWidget(FiltModule *module) : ModuleWidget(module)
+FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
 {
 #endif
     box.size = Vec(14 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
@@ -144,13 +145,13 @@ BlankWidget::BlankWidget(FiltModule *module) : ModuleWidget(module)
 
 
 #ifdef __V1
-Model *modelFiltModule = createModel<FiltModule, BlankWidget>("squinkylabs-filt");
+Model *modelFiltModule = createModel<FiltModule, FiltWidget>("squinkylabs-filt");
 #else
-a b c
+
 Model *modelFiltModule = Model::create<FiltModule,
-    BlankWidget>("Squinky Labs",
+    FiltWidget>("Squinky Labs",
     "squinkylabs-filt",
-    "-- filt --", RANDOM_TAG);
+    "-- filt --", FILTER_TAG);
 #endif
 #endif
 

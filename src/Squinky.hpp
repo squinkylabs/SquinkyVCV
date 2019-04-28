@@ -35,7 +35,7 @@
     #define _TBOOST
     #define _BOOTY
     #define _TREM
-   
+    #define _FILT
 #endif
 
 #ifdef __V1
