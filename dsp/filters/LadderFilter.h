@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LookupTable.h"
+#include "ObjectCache.h"
 #include "TrapezoidalLowpass.h"
 
 template <typename T>
@@ -25,6 +26,7 @@ private:
     T rawOutput[4];
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
+    std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
 };
 
 template <typename T>
@@ -50,15 +52,29 @@ inline void LadderFilter<T>::setFeedback(T f)
 template <typename T>
 inline void LadderFilter<T>::run(T input)
 {
+    const float k = 1.f / 5.f;
+    const float j = 1.f / k;
+
     input = input - feedback * output;
+    input = j * LookupTable<float>::lookup(*tanhLookup.get(), k * input, true);
     T temp = lpfs[0].run(input, _g);
+
+    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     rawOutput[0] = temp;
     temp = lpfs[1].run(temp, _g);
+
+    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     rawOutput[1] = temp;
     temp = lpfs[2].run(temp, _g);
+
+    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     rawOutput[2] = temp;
     temp = lpfs[3].run(temp, _g);
+
     rawOutput[3] = temp;
+
+    temp = std::max(T(-10), temp);
+    temp = std::min(T(10), temp);
     output = temp;
 }
 
