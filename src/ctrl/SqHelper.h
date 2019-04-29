@@ -37,12 +37,12 @@ public:
      */
     static std::shared_ptr<Svg> loadSvg(const char* path) 
     {
-        return APP->window->loadSvg(
+        return rack::APP->window->loadSvg(
             SqHelper::assetPlugin(pluginInstance, path));
     }
     static void setPanel(ModuleWidget* widget, const char* path)
     {
-         widget->setPanel(APP->window->loadSvg(asset::plugin(pluginInstance, path)));
+         widget->setPanel(rack::APP->window->loadSvg(asset::plugin(pluginInstance, path)));
     }
 
     static void openBrowser(const char* url)
@@ -55,11 +55,11 @@ public:
     } 
     static float engineGetSampleRate()
     {
-        return APP->engine->getSampleRate();
+        return rack::APP->engine->getSampleRate();
     }
       static float engineGetSampleTime()
     {
-        return APP->engine->getSampleTime();
+        return rack::APP->engine->getSampleTime();
     }
 
     template <typename T>

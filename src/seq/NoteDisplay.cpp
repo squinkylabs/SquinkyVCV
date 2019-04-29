@@ -309,8 +309,7 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
     if (handle) {
         handled = MidiKeyboardHandler::handle(sequencer, key, mods);
         if (handled) {
-            APP->event->setSelected(this);
-           
+            rack::APP->event->setSelected(this);
         }
     }
     return handled;

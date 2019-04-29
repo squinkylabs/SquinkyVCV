@@ -106,6 +106,8 @@ private:
     LadderFilter<T> _f;
     Divider div;
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
+    AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
+    std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
 
     void stepn(int);
 };
@@ -139,6 +141,18 @@ inline void Filt<TBase>::stepn(int)
 
     LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     _f.setType(type);
+
+    //********* now the drive 
+        // 0..1
+    float  gainInput = scaleGain(
+     //   TBase::inputs[INPUT_GAIN].value,
+        0,
+        TBase::params[DRIVE_PARAM].value,
+       // TBase::params[PARAM_GAIN_TRIM].value);
+        1);
+
+    float gain = 5 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    _f.setGain(gain);
 }
 
 template <class TBase>
@@ -172,7 +186,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 9.0f, 0, "Type"};
             break;
         case Filt<TBase>::DRIVE_PARAM:
-            ret = {0, 1, 0, "Drive"};
+            ret = {-5, 5, 0, "Drive"};
             break;
         case Filt<TBase>::STAGING_PARAM:
             ret = {0, 1, 0, "???"};

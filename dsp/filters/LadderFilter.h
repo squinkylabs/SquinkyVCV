@@ -38,13 +38,19 @@ public:
 
     void setFeedback(T f);
     void setType(Types);
+    void setGain(T);
    
     static std::vector<std::string> getTypeNames();
 private:
     TrapezoidalLowpass<T> lpfs[4];
+
+    /**
+     * Lowpass pole gain
+     */
     T _g = .001f;
     T mixedOutput = 0;
     T feedback = 0;
+    T gain = T(.3);
     T stageOutputs[4];
     T stageTaps[4] = {0, 0, 0, 1};
     Types type = Types::_4PLP;
@@ -67,6 +73,13 @@ LadderFilter<T>::LadderFilter()
     // fix at 4X oversample
     up.setup(oversampleRate);
     down.setup(oversampleRate);
+}
+
+template <typename T>
+void LadderFilter<T>::setGain(T g)
+{
+  //  printf("set gain %f\n", g); fflush(stdout);
+    gain = g;
 }
 
 template <typename T>
@@ -158,6 +171,7 @@ inline void LadderFilter<T>::setFeedback(T f)
 template <typename T>
 inline void LadderFilter<T>::run(T input)
 {
+    input *= gain;
     T buffer[oversampleRate];
     up.process(buffer, input);
     for (int i = 0; i < oversampleRate; ++i) {

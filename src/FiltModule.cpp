@@ -107,6 +107,7 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     const float y2 = 180;
     const float y3 = 230;
     const float yJacks = 300;
+    const float labelY = 26;
 
     //const float xTest = 40;
    // const float yTest = 200;
@@ -117,21 +118,36 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
         Vec(x1, y1),
         module,
         Comp::FC_PARAM));
+    addLabel(
+        Vec(x1-40, y1 + labelY),
+        "Cutoff");
+
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(x2, y1),
         module,
         Comp::Q_PARAM));
+     addLabel(
+        Vec(x2-40, y1 + labelY),
+        "Resonance");
+
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(x1, y2),
         module,
         Comp::DRIVE_PARAM));
+     addLabel(
+        Vec(x1-40, y2 + labelY),
+        "Drive");
+
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(x2, y2),
         module,
         Comp::STAGING_PARAM));
+     addLabel(
+        Vec(x2-40, y2 + labelY),
+        "???");
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
