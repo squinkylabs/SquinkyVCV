@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IIRDecimator.h"
+#include "IIRUpsampler.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
 #include "TrapezoidalLowpass.h"
@@ -11,6 +13,7 @@ template <typename T>
 class LadderFilter
 {
 public:
+    LadderFilter();
     enum class Types
     {
         _4PLP,
@@ -48,7 +51,23 @@ private:
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
     std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
+
+    static const int oversampleRate = 4;
+    IIRUpsampler up;
+    IIRDecimator down;
+
+    //void  processBuffer(T* buffer) const
+    T runSample(T);
+
 };
+
+template <typename T>
+LadderFilter<T>::LadderFilter()
+{
+    // fix at 4X oversample
+    up.setup(oversampleRate);
+    down.setup(oversampleRate);
+}
 
 template <typename T>
 void LadderFilter<T>::setType(Types t)
@@ -139,6 +158,19 @@ inline void LadderFilter<T>::setFeedback(T f)
 template <typename T>
 inline void LadderFilter<T>::run(T input)
 {
+    T buffer[oversampleRate];
+    up.process(buffer, input);
+    for (int i = 0; i < oversampleRate; ++i) {
+        buffer[i] = runSample(buffer[i]);
+    }
+    mixedOutput = down.process(buffer);
+    mixedOutput = std::max(T(-10), mixedOutput);
+    mixedOutput = std::min(T(10), mixedOutput);
+}
+
+template <typename T>
+inline T LadderFilter<T>::runSample(T input)
+{
     const float k = 1.f / 5.f;
     const float j = 1.f / k;
 
@@ -167,14 +199,15 @@ inline void LadderFilter<T>::run(T input)
         }
     }
 
-    temp = std::max(T(-10), temp);
-    temp = std::min(T(10), temp);
-    mixedOutput = temp;
+   
+   // mixedOutput = temp;
+    return temp;
 }
 
 template <typename T>
 inline void LadderFilter<T>::setNormalizedFc(T input)
 {
+    input *= (1.0 / oversampleRate);
     const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
     _g = g2;
 }
