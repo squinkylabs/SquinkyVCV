@@ -103,9 +103,10 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     const float x1 = 46;
     const float x2 = 210 - x1;
 
-    const float y1 = 100;
-    const float y2 = 180;
-    const float y3 = 230;
+    const float y1 = 50;
+    const float y2 = 120;
+    const float y3 = 190;
+    const float y4 = 246;
     const float yJacks = 300;
     const float labelY = 26;
 
@@ -149,9 +150,18 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
         Vec(x2-40, y2 + labelY),
         "???");
 
+     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(x1, y3),
+        module,
+        Comp::VOICING_PARAM));
+     addLabel(
+        Vec(x1-40, y3 + labelY),
+        "Voicing");
+
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(60, y3),
+        Vec(60, y4),
         module,
         Comp::TYPE_PARAM);
     p->box.size.x = 85;    // width

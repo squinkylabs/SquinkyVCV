@@ -31,7 +31,8 @@ public:
     enum class Voicing
     {
         Classic,
-        Clip
+        Clip,
+        Clip2
     };
 
     void run(T);
@@ -61,7 +62,7 @@ private:
     T stageOutputs[4];
     T stageTaps[4] = {0, 0, 0, 1};
     Types type = Types::_4PLP;
-    Voicing voicing = Voicing::Clip;
+    Voicing voicing = Voicing::Classic;
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
     std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
@@ -73,6 +74,7 @@ private:
     //void  processBuffer(T* buffer) const
     T runSampleClassic(T);
     T runSampleClip(T);
+    T runSampleClip2(T);
 
 };
 
@@ -196,6 +198,9 @@ inline void LadderFilter<T>::run(T input)
             case Voicing::Clip:
                 buffer[i] = runSampleClip(buffer[i]);
                 break;
+            case Voicing::Clip2:
+                buffer[i] = runSampleClip2(buffer[i]);
+                break;
             default:
                 assert(false);
         }
@@ -263,6 +268,47 @@ inline T LadderFilter<T>::runSampleClip(T input)
 
   //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
     temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
+    stageOutputs[2] = temp;
+    temp = lpfs[3].run(temp, _g);
+
+    stageOutputs[3] = temp;
+
+    if (type != Types::_4PLP) {
+        temp = 0;
+        for (int i = 0; i < 4; ++i) {
+            temp += stageOutputs[i] * stageTaps[i];
+        }
+    }
+
+
+   // mixedOutput = temp;
+    return temp;
+}
+
+
+template <typename T>
+inline T LadderFilter<T>::runSampleClip2(T input)
+{
+   // const float k = 1.f / 5.f;
+  //  const float j = 1.f / k;
+
+    T temp = input - feedback * stageOutputs[3];
+   // temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::min(temp, 1.f);
+    temp = lpfs[0].run(temp, _g);
+
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::max(temp, -1.f);
+    stageOutputs[0] = temp;
+    temp = lpfs[1].run(temp, _g);
+
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::min(temp, 1.f);
+    stageOutputs[1] = temp;
+    temp = lpfs[2].run(temp, _g);
+
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::max(temp, -1.f);
     stageOutputs[2] = temp;
     temp = lpfs[3].run(temp, _g);
 

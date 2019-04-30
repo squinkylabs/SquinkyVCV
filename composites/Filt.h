@@ -196,7 +196,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "???"};
             break;
         case Filt<TBase>::VOICING_PARAM:
-            ret = {0, 1, 0, "Voicing"};
+            ret = {0, 2, 0, "Voicing"};
             break;
         default:
             assert(false);
