@@ -28,6 +28,12 @@ public:
         _3AP1LP
     };
 
+    enum class Voicing
+    {
+        Classic,
+        Clip
+    };
+
     void run(T);
     T getOutput();
 
@@ -38,6 +44,7 @@ public:
 
     void setFeedback(T f);
     void setType(Types);
+    void setVoicing(Voicing);
     void setGain(T);
    
     static std::vector<std::string> getTypeNames();
@@ -54,6 +61,7 @@ private:
     T stageOutputs[4];
     T stageTaps[4] = {0, 0, 0, 1};
     Types type = Types::_4PLP;
+    Voicing voicing = Voicing::Clip;
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
     std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
@@ -63,7 +71,8 @@ private:
     IIRDecimator down;
 
     //void  processBuffer(T* buffer) const
-    T runSample(T);
+    T runSampleClassic(T);
+    T runSampleClip(T);
 
 };
 
@@ -82,6 +91,11 @@ void LadderFilter<T>::setGain(T g)
     gain = g;
 }
 
+template <typename T>
+void LadderFilter<T>::setVoicing(Voicing v)
+{
+    voicing = v;
+}
 template <typename T>
 void LadderFilter<T>::setType(Types t)
 {
@@ -175,7 +189,16 @@ inline void LadderFilter<T>::run(T input)
     T buffer[oversampleRate];
     up.process(buffer, input);
     for (int i = 0; i < oversampleRate; ++i) {
-        buffer[i] = runSample(buffer[i]);
+        switch (voicing) {
+            case Voicing::Classic:
+                buffer[i] = runSampleClassic(buffer[i]);
+                break;
+            case Voicing::Clip:
+                buffer[i] = runSampleClip(buffer[i]);
+                break;
+            default:
+                assert(false);
+        }
     }
     mixedOutput = down.process(buffer);
     mixedOutput = std::max(T(-10), mixedOutput);
@@ -183,7 +206,7 @@ inline void LadderFilter<T>::run(T input)
 }
 
 template <typename T>
-inline T LadderFilter<T>::runSample(T input)
+inline T LadderFilter<T>::runSampleClassic(T input)
 {
     const float k = 1.f / 5.f;
     const float j = 1.f / k;
@@ -213,10 +236,50 @@ inline T LadderFilter<T>::runSample(T input)
         }
     }
 
-   
    // mixedOutput = temp;
     return temp;
 }
+
+template <typename T>
+inline T LadderFilter<T>::runSampleClip(T input)
+{
+   // const float k = 1.f / 5.f;
+  //  const float j = 1.f / k;
+
+    T temp = input - feedback * stageOutputs[3];
+   // temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
+    temp = lpfs[0].run(temp, _g);
+
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
+    stageOutputs[0] = temp;
+    temp = lpfs[1].run(temp, _g);
+
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
+    stageOutputs[1] = temp;
+    temp = lpfs[2].run(temp, _g);
+
+  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
+    stageOutputs[2] = temp;
+    temp = lpfs[3].run(temp, _g);
+
+    stageOutputs[3] = temp;
+
+    if (type != Types::_4PLP) {
+        temp = 0;
+        for (int i = 0; i < 4; ++i) {
+            temp += stageOutputs[i] * stageTaps[i];
+        }
+    }
+
+
+   // mixedOutput = temp;
+    return temp;
+}
+
 
 template <typename T>
 inline void LadderFilter<T>::setNormalizedFc(T input)
@@ -242,3 +305,30 @@ inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
         "3AP+1LP"
     };
 }
+
+/*
+#define BX  x = 5
+
+#define AX  a = 3 * a; \
+            BX; \
+            a = 3 * a
+
+void __foo2()
+{
+    float a = 1;
+    float x = 2;
+    AX;
+}
+
+
+#define CX(Z)  a = 3 * a; \
+            Z; \
+            a = 3 * a
+
+void __foo3()
+{
+    float a = 1;
+    float x = 2;
+    CX(BX);
+}
+*/

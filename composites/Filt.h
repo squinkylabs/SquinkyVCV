@@ -63,6 +63,7 @@ public:
         Q_PARAM,
         TYPE_PARAM,
         DRIVE_PARAM,
+        VOICING_PARAM,
         STAGING_PARAM,
         NUM_PARAMS
     };
@@ -142,6 +143,9 @@ inline void Filt<TBase>::stepn(int)
     LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     _f.setType(type);
 
+    LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
+    _f.setVoicing(voicing);
+
     //********* now the drive 
         // 0..1
     float  gainInput = scaleGain(
@@ -191,10 +195,15 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::STAGING_PARAM:
             ret = {0, 1, 0, "???"};
             break;
+        case Filt<TBase>::VOICING_PARAM:
+            ret = {0, 1, 0, "Voicing"};
+            break;
         default:
             assert(false);
     }
     return ret;
 }
+
+
 
 
