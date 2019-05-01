@@ -17,7 +17,7 @@ static void testLadderZero()
 static void testLadderNotZero()
 {
     LadderFilter<float> f;
-    f.setNormalizedFc(.01f);
+    f.setNormalizedFc(.1f);
     for (int i = 0; i < 20; ++i) {
         f.run(1);
         float x = f.getOutput();

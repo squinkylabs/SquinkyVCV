@@ -101,7 +101,8 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     const float x1 = 46;
-    const float x2 = 210 - x1;
+    const float x2 = 210 / 2;
+    const float x3 = 210 - x1;
 
     const float y1 = 50;
     const float y2 = 120;
@@ -109,6 +110,10 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     const float y4 = 246;
     const float yJacks = 300;
     const float labelY = 26;
+    const float labelDx = 28;
+
+    const float deltaXJack = 30;
+    const float JackLabelY = -30;
 
     //const float xTest = 40;
    // const float yTest = 200;
@@ -120,7 +125,7 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
         module,
         Comp::FC_PARAM));
     addLabel(
-        Vec(x1-40, y1 + labelY),
+        Vec(x1-labelDx, y1 + labelY),
         "Cutoff");
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
@@ -129,57 +134,103 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
         module,
         Comp::Q_PARAM));
      addLabel(
-        Vec(x2-40, y1 + labelY),
-        "Resonance");
+        Vec(x2-labelDx, y1 + labelY),
+        "Q / Reso");
 
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(x3, y1),
+        module,
+        Comp::DRIVE_PARAM));
+     addLabel(
+        Vec(x3-labelDx, y1 + labelY),
+        "Drive");
+
+// second row
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(x1, y2),
         module,
-        Comp::DRIVE_PARAM));
-     addLabel(
-        Vec(x1-40, y2 + labelY),
-        "Drive");
+        Comp::STAGING_PARAM));
+    addLabel(
+        Vec(x1-labelDx, y2 + labelY),
+        "Edge");
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(x2, y2),
         module,
-        Comp::STAGING_PARAM));
-     addLabel(
-        Vec(x2-40, y2 + labelY),
-        "???");
+        Comp::SPREAD_PARAM));
+    addLabel(
+        Vec(x2-labelDx, y2 + labelY),
+        "Caps");
 
-     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(x3, y2),
+        module,
+        Comp::POLES_PARAM));
+    addLabel(
+        Vec(x3-labelDx, y2 + labelY),
+        "Poles");
+
+
+// Third row
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(x1, y3),
         module,
-        Comp::VOICING_PARAM));
-     addLabel(
-        Vec(x1-40, y3 + labelY),
-        "Voicing");
+        Comp::BASS_MAKEUP_PARAM));
+    addLabel(
+        Vec(x1-labelDx, y3 + labelY),
+        "Bass");
+
+
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(60, y4),
+        Vec(x2, y3),
         module,
         Comp::TYPE_PARAM);
     p->box.size.x = 85;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getTypeNames());
     addParam(p);
-
-
+ 
+    p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(x2, y3 + 40),
+        module,
+        Comp::VOICING_PARAM);
+    p->box.size.x = 85;    // width
+    p->box.size.y = 22;     // should set auto like button does
+    p->setLabels(Comp::getVoicingNames());
+    addParam(p);
+ 
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(x1, yJacks),
         module,
         Comp::AUDIO_INPUT));
+    addLabel(
+        Vec(x1-18, yJacks + JackLabelY),
+        "In");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1 + deltaXJack, yJacks),
+        module,
+        Comp::CV_INPUT));
+    addLabel(
+        Vec(x1 + deltaXJack -18, yJacks + JackLabelY),
+        "CV");
+
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(x2, yJacks),
+        Vec(x1 + 2 * deltaXJack, yJacks),
         module,
         Comp::AUDIO_OUTPUT));
-
+    addLabel(
+        Vec(x1 + 2 * deltaXJack -18, yJacks + JackLabelY),
+        "Out");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

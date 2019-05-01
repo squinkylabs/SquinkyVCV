@@ -49,6 +49,7 @@ public:
     void setGain(T);
    
     static std::vector<std::string> getTypeNames();
+    static std::vector<std::string> getVoicingNames();
 private:
     TrapezoidalLowpass<T> lpfs[4];
 
@@ -349,6 +350,16 @@ inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
         "4P BP",
         "1LP+Notch",
         "3AP+1LP"
+    };
+}
+
+template <typename T>
+inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
+{
+    return {
+        "Transistor",
+        "Clip",
+        "Asym Clip"
     };
 }
 

@@ -64,13 +64,17 @@ public:
         TYPE_PARAM,
         DRIVE_PARAM,
         VOICING_PARAM,
-        STAGING_PARAM,
+        STAGING_PARAM,      // aka "edge"
+        SPREAD_PARAM,
+        POLES_PARAM,
+        BASS_MAKEUP_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
         AUDIO_INPUT,
+        CV_INPUT,
         NUM_INPUTS
     };
 
@@ -88,6 +92,11 @@ public:
     static std::vector<std::string> getTypeNames()
     {
         return LadderFilter<T>::getTypeNames();
+    }
+
+    static std::vector<std::string> getVoicingNames()
+    {
+        return LadderFilter<T>::getVoicingNames();
     }
 
     /** Implement IComposite
@@ -197,6 +206,15 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             break;
         case Filt<TBase>::VOICING_PARAM:
             ret = {0, 2, 0, "Voicing"};
+            break;
+        case Filt<TBase>::SPREAD_PARAM:
+            ret = {0, 1, 0, "Capacitor"};
+            break;
+        case Filt<TBase>::POLES_PARAM:
+            ret = {0, 3, 0, "Poles"};
+            break;
+        case Filt<TBase>::BASS_MAKEUP_PARAM:
+            ret = {-5, 5, -5, "Base"};
             break;
         default:
             assert(false);
