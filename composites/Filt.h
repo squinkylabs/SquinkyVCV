@@ -139,10 +139,11 @@ inline void Filt<TBase>::stepn(int)
 
     // now 0..10
     x += 5;
+    x += TBase::inputs[CV_INPUT].value;
 
     const T fc = LookupTable<T>::lookup(*expLookup, x, true) * 10;
     const T normFc = fc * TBase::engineGetSampleTime();
-    T fcClipped = std::min(normFc, T(.4));
+    T fcClipped = std::min(normFc, T(.48));
     fcClipped = std::max(normFc, T(.0000001));
     _f.setNormalizedFc(fcClipped);
 

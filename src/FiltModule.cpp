@@ -107,8 +107,8 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     const float y1 = 50;
     const float y2 = 120;
     const float y3 = 190;
-    const float y4 = 246;
-    const float yJacks = 300;
+ //   const float y4 = 246;
+    const float yJacks = 330;
     const float labelY = 26;
     const float labelDx = 28;
 
@@ -184,8 +184,6 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     addLabel(
         Vec(x1-labelDx, y3 + labelY),
         "Bass");
-
-
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
