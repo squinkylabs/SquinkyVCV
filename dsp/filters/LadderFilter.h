@@ -48,6 +48,7 @@ public:
     void setVoicing(Voicing);
     void setGain(T);
     void setEdge(T);        // 0..1
+    void setFreqSpread(T);
    
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
@@ -63,10 +64,14 @@ private:
     T gain = T(.3);
     T stageOutputs[4];
     T edge = 0;
+    T freqSpread = 0;
     T stageTaps[4] = {0, 0, 0, 1};
     T stageGain[4] = {1, 1, 1, 1};
+    T stageFreqOffsets[4] = {1, 1, 1, 1};
+    T stageG[4] = {.001f, .001f, .001f, .001f};
     Types type = Types::_4PLP;
     Voicing voicing = Voicing::Classic;
+    T lastNormalizedFc = T(.0001);
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
     std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
@@ -82,6 +87,8 @@ private:
     T runSampleClip2(T);
     T runSampleTest(T);
 
+    void updateFilter();
+
 };
 
 template <typename T>
@@ -95,8 +102,36 @@ LadderFilter<T>::LadderFilter()
 template <typename T>
 void LadderFilter<T>::setGain(T g)
 {
-
     gain = g;
+}
+
+template <typename T>
+void LadderFilter<T>::setFreqSpread(T s)
+{
+    if (s == freqSpread) {
+        return;
+    }
+    freqSpread = s;
+    assert(s <= 1 && s >= 0);
+
+    T s2 = s + 1;       // 1..2
+    AudioMath::distributeEvenly(stageFreqOffsets, 4, s2);
+#if 0
+    for (int i = 0; i < 4; ++i) {
+        printf("s=%.2f, delta[%d] = %f\n", s, i, stageFreqOffsets[i]);
+    }
+    fflush(stdout);
+#endif
+    updateFilter();
+}
+
+
+template <typename T>
+void LadderFilter<T>::updateFilter()
+{
+    for (int i = 0; i < 4; ++i) {
+        stageG[i] = _g * stageFreqOffsets[i];
+    }
 }
 
 template <typename T>
@@ -107,8 +142,7 @@ void LadderFilter<T>::setEdge(T e)
     }
     edge = e;
     assert(e <= 1 && e >= 0);
-   // T e2 = 1 + e;
- //   T e2 = T(.25) + e * T(3.75);
+
     T e2 = 1;
     if (e > .5) {
         e2 = 6 * (e - T(.5)) + 1;
@@ -120,8 +154,9 @@ void LadderFilter<T>::setEdge(T e)
     for (int i = 0; i < 4; ++i) {
         printf("e=%.2f, gain[%d] = %f\n", e, i, stageGain[i]);
     }
-#endif
     fflush(stdout);
+#endif
+
 }
 
 template <typename T>
@@ -129,6 +164,7 @@ void LadderFilter<T>::setVoicing(Voicing v)
 {
     voicing = v;
 }
+
 template <typename T>
 void LadderFilter<T>::setType(Types t)
 {
@@ -251,22 +287,22 @@ inline T LadderFilter<T>::runSampleClassic(T input)
     T temp = input - feedback * stageOutputs[3];
     temp *= stageGain[0];
     temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[0].run(temp, _g);
+    temp = lpfs[0].run(temp, stageG[0]);
     stageOutputs[0] = temp;
 
     temp *= stageGain[1];
     temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[1].run(temp, _g);
+    temp = lpfs[1].run(temp, stageG[1]);
     stageOutputs[1] = temp;
 
     temp *= stageGain[2];
     temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[2].run(temp, _g);
+    temp = lpfs[2].run(temp, stageG[2]);
     stageOutputs[2] = temp;
 
     temp *= stageGain[3];
     temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[3].run(temp, _g);
+    temp = lpfs[3].run(temp, stageG[3]);
     stageOutputs[3] = temp;
 
     if (type != Types::_4PLP) {
@@ -433,9 +469,15 @@ inline T LadderFilter<T>::runSampleClip2(T input)
 template <typename T>
 inline void LadderFilter<T>::setNormalizedFc(T input)
 {
+    if (input == lastNormalizedFc) {
+        return;
+    }
+    lastNormalizedFc = input;
+
     input *= (1.0 / oversampleRate);
     const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
     _g = g2;
+    updateFilter();
 }
 
 template <typename T>

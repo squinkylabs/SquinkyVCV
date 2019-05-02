@@ -165,11 +165,14 @@ inline void Filt<TBase>::stepn(int)
        // TBase::params[PARAM_GAIN_TRIM].value);
         1);
 
-    float gain = 5 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    const float gain = 5 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     _f.setGain(gain);
 
-    float staging = TBase::params[STAGING_PARAM].value;
+    const float staging = TBase::params[STAGING_PARAM].value;
     _f.setEdge(staging);
+
+    const float spread = TBase::params[SPREAD_PARAM].value;
+    _f.setFreqSpread(spread);
 }
 
 template <class TBase>
