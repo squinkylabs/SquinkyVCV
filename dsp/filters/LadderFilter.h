@@ -107,7 +107,9 @@ void LadderFilter<T>::setEdge(T e)
     }
     edge = e;
     assert(e <= 1 && e >= 0);
-    AudioMath::distributeEvenly(stageGain, 4, 1 + e);
+   // T e2 = 1 + e;
+    T e2 = T(.25) + e * T(3.75);
+    AudioMath::distributeEvenly(stageGain, 4, e2);
 }
 
 template <typename T>
