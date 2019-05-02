@@ -108,8 +108,20 @@ void LadderFilter<T>::setEdge(T e)
     edge = e;
     assert(e <= 1 && e >= 0);
    // T e2 = 1 + e;
-    T e2 = T(.25) + e * T(3.75);
+ //   T e2 = T(.25) + e * T(3.75);
+    T e2 = 1;
+    if (e > .5) {
+        e2 = 6 * (e - T(.5)) + 1;
+    } else {
+        e2 = e * T(1.75) + T(.25);
+    }
     AudioMath::distributeEvenly(stageGain, 4, e2);
+#if 0
+    for (int i = 0; i < 4; ++i) {
+        printf("e=%.2f, gain[%d] = %f\n", e, i, stageGain[i]);
+    }
+#endif
+    fflush(stdout);
 }
 
 template <typename T>
