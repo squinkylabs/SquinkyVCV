@@ -82,10 +82,10 @@ private:
     IIRDecimator down;
 
     //void  processBuffer(T* buffer) const
-    T runSampleClassic(T);
-    T runSampleClip(T);
-    T runSampleClip2(T);
-    T runSampleTest(T);
+    void runBufferClassic(T* buffer, int );
+  //  T runSampleClip(T);
+ //   T runSampleClip2(T);
+  //  T runSampleTest(T);
 
     void updateFilter();
 
@@ -173,7 +173,7 @@ void LadderFilter<T>::setType(Types t)
     if (t == type) 
         return;
 
-   // printf("setting type to %d\n", (int) t); fflush(stdout);
+
     type = t;
     switch (type) {
         case Types::_4PLP:
@@ -253,12 +253,16 @@ inline void LadderFilter<T>::setFeedback(T f)
     feedback = f;
 }
 
+
+//step 1: runSampleXXX -> runBufferXXX(T * buffer, size)
+
 template <typename T>
 inline void LadderFilter<T>::run(T input)
 {
     input *= gain;
     T buffer[oversampleRate];
     up.process(buffer, input);
+#if 0
     for (int i = 0; i < oversampleRate; ++i) {
         switch (voicing) {
             case Voicing::Classic:
@@ -274,6 +278,23 @@ inline void LadderFilter<T>::run(T input)
                 assert(false);
         }
     }
+#endif
+    switch (voicing) {
+        case Voicing::Classic:
+            runBufferClassic(buffer, oversampleRate);
+            break;
+#if 0
+        case Voicing::Clip:
+            buffer[i] = runBufferClip(buffer[i]);
+            break;
+        case Voicing::Clip2:
+            buffer[i] = runBufferClip2(buffer[i]);
+            break;
+#endif
+        default:
+            assert(false);
+    }
+
     mixedOutput = down.process(buffer);
     mixedOutput = std::max(T(-10), mixedOutput);
     mixedOutput = std::min(T(10), mixedOutput);
@@ -281,41 +302,44 @@ inline void LadderFilter<T>::run(T input)
 
 #if 1
 template <typename T>
-inline T LadderFilter<T>::runSampleClassic(T input)
+inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 {
     const float k = 1.f / 5.f;
     const float j = 1.f / k;
+    for (int i = 0; i < numSamples; ++i) {
+        const T input = buffer[i];
+        T temp = input - feedback * stageOutputs[3];
+        temp *= stageGain[0];
+        temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+        temp = lpfs[0].run(temp, stageG[0]);
+        stageOutputs[0] = temp;
 
-    T temp = input - feedback * stageOutputs[3];
-    temp *= stageGain[0];
-    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[0].run(temp, stageG[0]);
-    stageOutputs[0] = temp;
+        temp *= stageGain[1];
+        temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+        temp = lpfs[1].run(temp, stageG[1]);
+        stageOutputs[1] = temp;
 
-    temp *= stageGain[1];
-    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[1].run(temp, stageG[1]);
-    stageOutputs[1] = temp;
+        temp *= stageGain[2];
+        temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+        temp = lpfs[2].run(temp, stageG[2]);
+        stageOutputs[2] = temp;
 
-    temp *= stageGain[2];
-    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[2].run(temp, stageG[2]);
-    stageOutputs[2] = temp;
+        temp *= stageGain[3];
+        temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
+        temp = lpfs[3].run(temp, stageG[3]);
+        stageOutputs[3] = temp;
 
-    temp *= stageGain[3];
-    temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = lpfs[3].run(temp, stageG[3]);
-    stageOutputs[3] = temp;
-
-    if (type != Types::_4PLP) {
-       temp = 0;
-        for (int i = 0; i < 4; ++i) {
-            temp += stageOutputs[i] * stageTaps[i];
+        if (type != Types::_4PLP) {
+            temp = 0;
+            for (int i = 0; i < 4; ++i) {
+                temp += stageOutputs[i] * stageTaps[i];
+            }
         }
+        buffer[i] = temp;
     }
 
    // mixedOutput = temp;
-    return temp;
+   // return temp;
 }
 #endif
 
@@ -404,6 +428,7 @@ PROC_END
 
 
 
+#if 0
 template <typename T>
 inline T LadderFilter<T>::runSampleClip(T input)
 {
@@ -466,6 +491,7 @@ inline T LadderFilter<T>::runSampleClip2(T input)
 
     return temp;
 }
+#endif
 
 
 template <typename T>
