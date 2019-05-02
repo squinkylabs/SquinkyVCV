@@ -167,6 +167,9 @@ inline void Filt<TBase>::stepn(int)
 
     float gain = 5 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     _f.setGain(gain);
+
+    float staging = TBase::params[STAGING_PARAM].value;
+    _f.setEdge(staging);
 }
 
 template <class TBase>
@@ -203,7 +206,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {-5, 5, 0, "Drive"};
             break;
         case Filt<TBase>::STAGING_PARAM:
-            ret = {0, 1, 0, "???"};
+            ret = {0, 1, 0, "Edge"};
             break;
         case Filt<TBase>::VOICING_PARAM:
             ret = {0, 2, 0, "Voicing"};
