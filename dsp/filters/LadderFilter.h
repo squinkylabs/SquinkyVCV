@@ -32,7 +32,9 @@ public:
     {
         Classic,
         Clip,
-        Clip2
+        Clip2,
+        Fold,
+        NUM_VOICINGS
     };
 
     void run(T);
@@ -81,11 +83,10 @@ private:
     IIRUpsampler up;
     IIRDecimator down;
 
-    //void  processBuffer(T* buffer) const
     void runBufferClassic(T* buffer, int );
-  //  T runSampleClip(T);
- //   T runSampleClip2(T);
-  //  T runSampleTest(T);
+    void runBufferClip(T* buffer, int);
+    void runBufferClip2(T* buffer, int);
+    void runBufferFold(T* buffer, int);
 
     void updateFilter();
 
@@ -262,35 +263,21 @@ inline void LadderFilter<T>::run(T input)
     input *= gain;
     T buffer[oversampleRate];
     up.process(buffer, input);
-#if 0
-    for (int i = 0; i < oversampleRate; ++i) {
-        switch (voicing) {
-            case Voicing::Classic:
-                buffer[i] = runSampleClassic(buffer[i]);
-                break;
-            case Voicing::Clip:
-                buffer[i] = runSampleClip(buffer[i]);
-                break;
-            case Voicing::Clip2:
-                buffer[i] = runSampleClip2(buffer[i]);
-                break;
-            default:
-                assert(false);
-        }
-    }
-#endif
+
     switch (voicing) {
         case Voicing::Classic:
             runBufferClassic(buffer, oversampleRate);
             break;
-#if 0
+
         case Voicing::Clip:
-            buffer[i] = runBufferClip(buffer[i]);
+            runBufferClip(buffer, oversampleRate);
             break;
         case Voicing::Clip2:
-            buffer[i] = runBufferClip2(buffer[i]);
+            runBufferClip2(buffer, oversampleRate);
             break;
-#endif
+        case Voicing::Fold:
+            runBufferFold(buffer, oversampleRate);
+            break;
         default:
             assert(false);
     }
@@ -300,7 +287,7 @@ inline void LadderFilter<T>::run(T input)
     mixedOutput = std::min(T(10), mixedOutput);
 }
 
-#if 1
+#if 0
 template <typename T>
 inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 {
@@ -343,89 +330,62 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 }
 #endif
 
-// signature should really be:
-
-// T runBuffer_ff(const T* buffer)
-
-#if 0
-#define TANH() temp = 5 * LookupTable<float>::lookup(*tanhLookup.get(), .2 * temp, true)
+/**************************************************************************************
+ *
+ * A set of macros for (ugh) building up process functions for different distortion functions
+ */
 #define PROC_PREAMBLE(name) template <typename T> \
-    inline T LadderFilter<T>::name(T input) { \
-        T temp = input - feedback * stageOutputs[3];
+    inline void  LadderFilter<T>::name(T* buffer, int numSamples) { \
+        for (int i = 0; i < numSamples; ++i) { \
+            const T input = buffer[i]; \
+            T temp = input - feedback * stageOutputs[3];
 
-#define PROC_END }
-
-#define PROC_BODY(clipper) clipper(); \
-        temp = lpfs[0].run(temp, _g); \
-        stageOutputs[0] = temp; \
-        clipper(); \
-        temp = lpfs[1].run(temp, _g); \
-        stageOutputs[1] = temp; \
-        clipper(); \
-        temp = lpfs[2].run(temp, _g); \
-        stageOutputs[2] = temp; \
-        clipper(); \
-        temp = lpfs[3].run(temp, _g); \
-        stageOutputs[3] = temp; \
+#define PROC_END \
         if (type != Types::_4PLP) { \
             temp = 0; \
             for (int i = 0; i < 4; ++i) { \
                 temp += stageOutputs[i] * stageTaps[i]; \
             } \
         } \
-        return temp; \
+            buffer[i] = temp; \
+     } \
+}
 
+#define ONETAP(func, index) \
+    temp *= stageGain[index]; \
+    func(); \
+    temp = lpfs[index].run(temp, stageG[index]); \
+    stageOutputs[index] = temp;
+    
 
-PROC_PREAMBLE(runSampleClassic)
-PROC_BODY(TANH)
-PROC_END
-#endif
+#define BODY( func0, func1, func2, func3) \
+    ONETAP(func0, 0) \
+    ONETAP(func1, 1) \
+    ONETAP(func2, 2) \
+    ONETAP(func3, 3) \
 
-//--------- first version. not paramterized
-#if 0
 #define TANH() temp = T(5) * LookupTable<float>::lookup(*tanhLookup.get(), T(.2) * temp, true)
-//#define TANH()  temp = std::max(temp, -1.f); temp = std::min(temp, 1.f)
-#define PROC_PREAMBLE(name) template <typename T> \
-    inline T LadderFilter<T>::name(T input) { \
-        T temp = input - feedback * stageOutputs[3];
-
-#define PROC_END }
-
-#if 1
-#define PROC_BODY TANH(); \
-        temp = lpfs[0].run(temp, _g); \
-        stageOutputs[0] = temp; \
-        TANH(); \
-        temp = lpfs[1].run(temp, _g); \
-        stageOutputs[1] = temp; \
-        TANH(); \
-        temp = lpfs[2].run(temp, _g); \
-        stageOutputs[2] = temp; \
-        TANH(); \
-        temp = lpfs[3].run(temp, _g); \
-        stageOutputs[3] = temp; \
-        if (type != Types::_4PLP) { \
-            temp = 0; \
-            for (int i = 0; i < 4; ++i) { \
-                temp += stageOutputs[i] * stageTaps[i]; \
-            } \
-        } \
-        return temp; \
-
-#endif
-
-#if 0
-#define PROC_BODY  \
-    TANH(); \
-    return temp;
-#endif
+#define CLIP() temp = std::max(temp, -1.f); temp = std::min(temp, 1.f)
+#define CLIP_TOP()  temp = std::min(temp, 1.f)
+#define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
+#define FOLD() temp = AudioMath::fold(temp)
 
 
-PROC_PREAMBLE(runSampleClassic)
-PROC_BODY
+PROC_PREAMBLE(runBufferClassic)
+BODY( TANH, TANH, TANH, TANH)
 PROC_END
-#endif
 
+PROC_PREAMBLE(runBufferClip)
+BODY(CLIP, CLIP, CLIP, CLIP)
+PROC_END
+
+PROC_PREAMBLE(runBufferClip2)
+BODY(CLIP_TOP, CLIP_BOTTOM, CLIP_TOP, CLIP_BOTTOM)
+PROC_END
+
+PROC_PREAMBLE(runBufferFold)
+BODY(FOLD, FOLD, FOLD, FOLD)
+PROC_END
 
 
 #if 0
@@ -531,56 +491,8 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
     return {
         "Transistor",
         "Clip",
-        "Asym Clip"
+        "Asym Clip",
+        "Fold"
     };
 }
 
-/*
-#define BX  x = 5
-
-#define AX  a = 3 * a; \
-            BX; \
-            a = 3 * a
-
-void __foo2()
-{
-    float a = 1;
-    float x = 2;
-    AX;
-}
-
-
-#define CX(Z)  a = 3 * a; \
-            Z; \
-            a = 3 * a
-
-void __foo3()
-{
-    float a = 1;
-    float x = 2;
-    CX(BX);
-}
-*/
-
-/*
-
-template <typename T>
-inline T LadderFilter<T>::runSampleClip(T input)
-{
-   // const float k = 1.f / 5.f;
-  //  const float j = 1.f / k;
-
-    T temp = input - feedback * stageOutputs[3];
-   // temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
-    temp = lpfs[0].run(temp, _g);
-
-  //  temp = j * LookupTable<float>::lookup(*tanhLookup.get(), k * temp, true);
-    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
-    stageOutputs[0] = temp;
-    temp = lpfs[1].run(temp, _g);
-
-
-
-    
-    */

@@ -212,7 +212,10 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Edge"};
             break;
         case Filt<TBase>::VOICING_PARAM:
-            ret = {0, 2, 0, "Voicing"};
+            {
+                int numV = (int) LadderFilter<float>::Voicing::NUM_VOICINGS;
+                ret = {0, float(numV - 1) , 0, "Voicing"};
+            }
             break;
         case Filt<TBase>::SPREAD_PARAM:
             ret = {0, 1, 0, "Capacitor"};
