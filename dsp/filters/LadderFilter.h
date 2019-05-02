@@ -112,6 +112,8 @@ void LadderFilter<T>::setFreqSpread(T s)
         return;
     }
     freqSpread = s;
+
+    s *= .5;        // cut it down
     assert(s <= 1 && s >= 0);
 
     T s2 = s + 1;       // 1..2
@@ -171,7 +173,7 @@ void LadderFilter<T>::setType(Types t)
     if (t == type) 
         return;
 
-    printf("setting type to %d\n", (int) t); fflush(stdout);
+   // printf("setting type to %d\n", (int) t); fflush(stdout);
     type = t;
     switch (type) {
         case Types::_4PLP:

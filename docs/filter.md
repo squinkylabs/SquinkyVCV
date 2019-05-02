@@ -8,6 +8,8 @@ Filter Provides many more shapes that just four pole low-pass. We believe this i
 
 Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat, although it is possible to dial in more and different distortions.
 
+Bug alert - at them moment many of the features only work when set to 4P-LP and "Classic".
+
 ## Controls
 
 **Fc** - filter cutoff.
@@ -23,6 +25,8 @@ Note that many of these filter type are not what you would normally expect from,
 **Voicing** selects different types of distortion. The first selection is the standard one that is pretty close to a Moog. The third one has a lot of even harmonics in it. Need much more work
 
 **Edge** - 4P Ladder filters are pretty mellow, even when driven hard, because much of the internal distortion get filtered very heavily. This control changes the internal gain structure of the filter so that it still has the same frequency response, but the spectrum will change. Set in the middle is "normal".
+
+**Caps** - simulate using inaccurate capacitor values. At the minimum setting, the are all perfectly matched. As the value is increased, they to to typical values that would be found in a Moog, up to very imprecise values. That said, the effect is pretty suble, and heard mostly as a reduction in resonance.
 
 ## Suggestions
 
