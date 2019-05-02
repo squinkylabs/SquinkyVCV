@@ -16,13 +16,13 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 **Type** - filter response type. Choices are four pole lowpass, three pole lowpass, two pole lowpass, one pole lowpass, two pole bandpass, two pole highpass with one pole lowpass, three pole highpass with one pole lowpass, four pose bandpass, one pole lowpass with notch, and three pole allpass with one pole lowpass.
 
-Note that many of these filter type are not what you would normally expect from, say a highpass filter. But they are all useful sounds. Also note that technically when the resonance it turned up, they are all going to have four poles - of course it is impossible to truly make a one-pole resonant filter.
+Note that many of these filter type are not what you would normally expect from, say a highpass filter. But they are all useful sounds. Also note that technically when the resonance it turned up, they are all going to have four poles - of course it iss impossible to truly make a one-pole resonant filter.
 
-**Drive** - controls the signal level going into the filter. More drive gives more distortion.
+**Drive** - controls the signal level going into the filter. More drive gives more distortion. Too much and the filter stops working right and gets all flabby.
 
-**Voicing** selects different types of distortion. The first selection is the standard one that is pretty close to a Moog. The third one has a lot of even harmonics in it.
+**Voicing** selects different types of distortion. The first selection is the standard one that is pretty close to a Moog. The third one has a lot of even harmonics in it. Need much more work
 
-**???** - does nothing.
+**Edge** - 4P Ladder filters are pretty mellow, even when driven hard, because much of the internal distortion get filtered very heavily. This control changes the internal gain structure of the filter so that it still has the same frequency response, but the spectrum will change. Set in the middle is "normal".
 
 ## Suggestions
 
