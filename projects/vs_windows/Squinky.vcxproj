@@ -71,6 +71,7 @@
     <ClCompile Include="..\..\test\testFrequencyShifter.cpp" />
     <ClCompile Include="..\..\test\testGateTrigger.cpp" />
     <ClCompile Include="..\..\test\testGMR.cpp" />
+    <ClCompile Include="..\..\test\testHighpassFilter.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
     <ClCompile Include="..\..\test\testIComposite.cpp" />
     <ClCompile Include="..\..\test\testLadder.cpp" />

@@ -69,6 +69,7 @@ extern void testMix8();
 extern void testSlew4();
 extern void testCommChannels();
 extern void testLadder();
+extern void testHighpassFilter();
 
 #if 0
 #include <sstream>
@@ -185,6 +186,7 @@ int main(int argc, char ** argv)
     testUtils();
     testLowpassFilter();
     testLadder();
+    testHighpassFilter();
  
 #if 0
     printf("skipping lots of tests\n");

@@ -78,3 +78,21 @@ inline std::shared_ptr<NonUniformLookupTableParams<T>> makeTrapFilter_Lookup()
     return ret;
 }
 
+
+template <typename T>
+class TrapezoidalHighpass
+{
+public:
+    T run(T g2, T input);
+private:
+    T _z = 0;
+};
+
+template <typename T>
+inline T TrapezoidalHighpass<T>::run(T vin, T _g2)
+{
+    const T temp = (vin - _z) * _g2;
+    const T outputLP = temp + _z;
+    _z = outputLP + temp;
+    return vin - outputLP;
+}

@@ -61,7 +61,8 @@ public:
      */
     static void getSpectrum(FFTDataCpx& out, bool useWindow, std::function<float()> func);
 
-    static float getSlope(const FFTDataCpx& response, float fTest, float sampleRate);
+    static float getSlopeLowpass(const FFTDataCpx& response, float fTest, float sampleRate);
+    static float getSlopeHighpass(const FFTDataCpx& response, float fTest, float sampleRate);
 
     static void generateSweep(float sampleRate, float* out, int numSamples, float minFreq, float maxFreq);
 

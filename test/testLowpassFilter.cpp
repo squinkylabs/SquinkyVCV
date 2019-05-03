@@ -45,7 +45,7 @@ static std::pair<T, T> getLowpassStats(std::function<float(float)> filter, T FcE
 
     //assertClose(cutoff, Fc, 3);    // 3db down at Fc
 
-    T slope = Analyzer::getSlope(response, (float) FcExpected * 2, sampleRate);
+    T slope = Analyzer::getSlopeLowpass(response, (float) FcExpected * 2, sampleRate);
    // assertClose(slope, expectedSlope, 1);          // to get accurate we nee
     return std::make_pair(cutoff, slope);
 }
