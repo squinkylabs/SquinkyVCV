@@ -35,6 +35,7 @@ public:
         Clip2,
         Fold,
         Fold2,
+        Clean,
         NUM_VOICINGS
     };
 
@@ -57,11 +58,17 @@ public:
     static std::vector<std::string> getVoicingNames();
 private:
     TrapezoidalLowpass<T> lpfs[4];
+    TrapezoidalHighpass<T> hpf;
+
 
     /**
      * Lowpass pole gain
      */
     T _g = .001f;
+
+    T _gHP = .001f;
+
+
     T mixedOutput = 0;
     T feedback = 0;
     T gain = T(.3);
@@ -89,6 +96,7 @@ private:
     void runBufferClip2(T* buffer, int);
     void runBufferFold(T* buffer, int);
     void runBufferFold2(T* buffer, int);
+    void runBufferClean(T* buffer, int);
 
     void updateFilter();
 
@@ -121,12 +129,7 @@ void LadderFilter<T>::setFreqSpread(T s)
 
     T s2 = s + 1;       // 1..2
     AudioMath::distributeEvenly(stageFreqOffsets, 4, s2);
-#if 0
-    for (int i = 0; i < 4; ++i) {
-        printf("s=%.2f, delta[%d] = %f\n", s, i, stageFreqOffsets[i]);
-    }
-    fflush(stdout);
-#endif
+
     updateFilter();
 }
 
@@ -155,13 +158,6 @@ void LadderFilter<T>::setEdge(T e)
         e2 = e * T(1.75) + T(.25);
     }
     AudioMath::distributeEvenly(stageGain, 4, e2);
-#if 0
-    for (int i = 0; i < 4; ++i) {
-        printf("e=%.2f, gain[%d] = %f\n", e, i, stageGain[i]);
-    }
-    fflush(stdout);
-#endif
-
 }
 
 template <typename T>
@@ -175,7 +171,6 @@ void LadderFilter<T>::setType(Types t)
 {
     if (t == type) 
         return;
-
 
     type = t;
     switch (type) {
@@ -270,7 +265,6 @@ inline void LadderFilter<T>::run(T input)
         case Voicing::Classic:
             runBufferClassic(buffer, oversampleRate);
             break;
-
         case Voicing::Clip:
             runBufferClip(buffer, oversampleRate);
             break;
@@ -283,6 +277,9 @@ inline void LadderFilter<T>::run(T input)
         case Voicing::Fold2:
             runBufferFold2(buffer, oversampleRate);
             break;
+        case Voicing::Clean:
+            runBufferClean(buffer, oversampleRate);
+            break;
         default:
             assert(false);
     }
@@ -290,6 +287,46 @@ inline void LadderFilter<T>::run(T input)
     mixedOutput = down.process(buffer);
     mixedOutput = std::max(T(-10), mixedOutput);
     mixedOutput = std::min(T(10), mixedOutput);
+}
+
+template <typename T>
+inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
+{
+
+    for (int i = 0; i < numSamples; ++i) {
+        const T input = buffer[i];
+
+        // to preserve bass, hpf the feedback
+        const T prevOutput = stageOutputs[3];
+        const T filteredOutput = hpf.run(prevOutput, _gHP);
+        T temp = input - feedback * filteredOutput;
+
+        // old way:
+        //T temp = input - feedback * stageOutputs[3];
+
+        temp = lpfs[0].run(temp, stageG[0]);
+        stageOutputs[0] = temp;
+
+        temp = lpfs[1].run(temp, stageG[1]);
+        stageOutputs[1] = temp;
+
+        temp = lpfs[2].run(temp, stageG[2]);
+        stageOutputs[2] = temp;
+;
+        temp = lpfs[3].run(temp, stageG[3]);
+        stageOutputs[3] = temp;
+
+        if (type != Types::_4PLP) {
+            temp = 0;
+            for (int i = 0; i < 4; ++i) {
+                temp += stageOutputs[i] * stageTaps[i];
+            }
+        }
+        buffer[i] = temp;
+    }
+
+   // mixedOutput = temp;
+   // return temp;
 }
 
 #if 0
@@ -398,72 +435,6 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
-#if 0
-template <typename T>
-inline T LadderFilter<T>::runSampleClip(T input)
-{
-    T temp = input - feedback * stageOutputs[3];
-    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
-    temp = lpfs[0].run(temp, _g);
-    stageOutputs[0] = temp;
-
-    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
-    temp = lpfs[1].run(temp, _g);
-    stageOutputs[1] = temp;
-
-    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
-    temp = lpfs[2].run(temp, _g);
-    stageOutputs[2] = temp;
-
-    temp = std::max(temp, -1.f); temp = std::min(temp, 1.f);
-    temp = lpfs[3].run(temp, _g);
-    stageOutputs[3] = temp;
-
-    if (type != Types::_4PLP) {
-        temp = 0;
-        for (int i = 0; i < 4; ++i) {
-            temp += stageOutputs[i] * stageTaps[i];
-        }
-    }
-
-
-   // mixedOutput = temp;
-    return temp;
-}
-
-
-template <typename T>
-inline T LadderFilter<T>::runSampleClip2(T input)
-{
-    T temp = input - feedback * stageOutputs[3];
-    temp = std::min(temp, 1.f);
-    temp = lpfs[0].run(temp, _g);
-    stageOutputs[0] = temp;
-
-    temp = std::max(temp, -1.f);
-    temp = lpfs[1].run(temp, _g);
-    stageOutputs[1] = temp;
-
-    temp = std::min(temp, 1.f);
-    temp = lpfs[2].run(temp, _g);
-    stageOutputs[2] = temp;
-
-    temp = std::max(temp, -1.f);
-    temp = lpfs[3].run(temp, _g);
-    stageOutputs[3] = temp;
-
-    if (type != Types::_4PLP) {
-        temp = 0;
-        for (int i = 0; i < 4; ++i) {
-            temp += stageOutputs[i] * stageTaps[i];
-        }
-    }
-
-    return temp;
-}
-#endif
-
-
 template <typename T>
 inline void LadderFilter<T>::setNormalizedFc(T input)
 {
@@ -475,6 +446,11 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
     input *= (1.0 / oversampleRate);
     const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
     _g = g2;
+
+    // Let's try HPF two octaves below reso
+    _gHP = NonUniformLookupTable<T>::lookup(*fs2gLookup, input / 4);
+
+
     updateFilter();
 }
 
@@ -503,7 +479,8 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
         "Clip",
         "Asym Clip",
         "Fold",
-        "Asym Fold"
+        "Asym Fold",
+        "Clean"
     };
 }
 
