@@ -285,6 +285,8 @@ inline void LadderFilter<T>::run(T input)
     }
 
     mixedOutput = down.process(buffer);
+
+    // amybe don't need this anymre?
     mixedOutput = std::max(T(-10), mixedOutput);
     mixedOutput = std::min(T(10), mixedOutput);
 }
@@ -312,8 +314,11 @@ inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
 
         temp = lpfs[2].run(temp, stageG[2]);
         stageOutputs[2] = temp;
-;
+
         temp = lpfs[3].run(temp, stageG[3]);
+
+        temp = std::max(T(-10), temp);
+        temp = std::min(T(10), temp);
         stageOutputs[3] = temp;
 
         if (type != Types::_4PLP) {
