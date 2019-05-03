@@ -34,6 +34,7 @@ public:
         Clip,
         Clip2,
         Fold,
+        Fold2,
         NUM_VOICINGS
     };
 
@@ -87,6 +88,7 @@ private:
     void runBufferClip(T* buffer, int);
     void runBufferClip2(T* buffer, int);
     void runBufferFold(T* buffer, int);
+    void runBufferFold2(T* buffer, int);
 
     void updateFilter();
 
@@ -278,6 +280,9 @@ inline void LadderFilter<T>::run(T input)
         case Voicing::Fold:
             runBufferFold(buffer, oversampleRate);
             break;
+        case Voicing::Fold2:
+            runBufferFold2(buffer, oversampleRate);
+            break;
         default:
             assert(false);
     }
@@ -369,6 +374,8 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 #define CLIP_TOP()  temp = std::min(temp, 1.f)
 #define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
 #define FOLD() temp = AudioMath::fold(temp)
+#define FOLD_TOP() temp = (temp > 0) ? AudioMath::fold(temp) : temp
+#define FOLD_BOTTOM() temp = (temp < 0) ? AudioMath::fold(temp) : temp
 
 
 PROC_PREAMBLE(runBufferClassic)
@@ -387,6 +394,9 @@ PROC_PREAMBLE(runBufferFold)
 BODY(FOLD, FOLD, FOLD, FOLD)
 PROC_END
 
+PROC_PREAMBLE(runBufferFold2)
+BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
+PROC_END
 
 #if 0
 template <typename T>
@@ -492,7 +502,8 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
         "Transistor",
         "Clip",
         "Asym Clip",
-        "Fold"
+        "Fold",
+        "Asym Fold"
     };
 }
 
