@@ -117,18 +117,20 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
 
 void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float x1 = 46;
-    const float x2 = 210 / 2;
-    const float x3 = 210 - x1;
+    const float deltaX = 50;
+    const float x1 = 32;
+    const float x2 = x1 + deltaX;
+    const float x3 = x2 + deltaX;
+    const float x4 = x3 + deltaX;
 
     const float y1 = 50;
     const float y2 = 120;
     const float y3 = 190;
+  
     const float labelDx = 28;
     const float labelY = 26;
    
-
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x1, y1),
         module,
@@ -137,7 +139,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Vec(x1-labelDx, y1 + labelY),
         "Cutoff");
 
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x2, y1),
         module,
@@ -146,7 +148,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Vec(x2-labelDx, y1 + labelY),
         "Q / Reso");
 
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x3, y1),
         module,
@@ -155,26 +157,35 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Vec(x3-labelDx, y1 + labelY),
         "Drive");
 
-// second row
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
-        Vec(x1, y2),
+        Vec(x4, y1),
         module,
         Comp::STAGING_PARAM));
     addLabel(
-        Vec(x1-labelDx, y2 + labelY),
+        Vec(x4-labelDx, y1 + labelY),
         "Edge");
 
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+// second row
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
-        Vec(x2, y2),
+        Vec(x1, y2),
         module,
         Comp::SPREAD_PARAM));
     addLabel(
-        Vec(x2-labelDx, y2 + labelY),
+        Vec(x1-labelDx, y2 + labelY),
         "Caps");
 
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x2, y2),
+        module,
+        Comp::BASS_MAKEUP_PARAM));
+    addLabel(
+        Vec(x2-labelDx, y2 + labelY),
+        "Bass");
+
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x3, y2),
         module,
@@ -185,14 +196,6 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
 
 
 // Third row
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
-        icomp,
-        Vec(x1, y3),
-        module,
-        Comp::BASS_MAKEUP_PARAM));
-    addLabel(
-        Vec(x1-labelDx, y3 + labelY),
-        "Bass");
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
@@ -217,34 +220,78 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
 
 void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
  {
-    const float x1 = 46;
-    const float yJacks = 330;
-    const float deltaXJack = 30;
+    const float x1 = 30;
+    const float yJacks1 = 286;
+    const float yJacks2 = 330;
+    const float deltaXJack = 38;
     const float JackLabelY = -30;
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(x1, yJacks),
+        Vec(x1, yJacks1),
         module,
         Comp::L_AUDIO_INPUT));
     addLabel(
-        Vec(x1-18, yJacks + JackLabelY),
-        "In");
+        Vec(x1-18, yJacks1 + JackLabelY),
+        "In L");
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(x1 + deltaXJack, yJacks),
+        Vec(x1, yJacks2),
+        module,
+        Comp::R_AUDIO_INPUT));
+    addLabel(
+        Vec(x1-18, yJacks2 + JackLabelY),
+        "In R");
+
+    
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1 + 1 * deltaXJack, yJacks1),
         module,
         Comp::CV_INPUT));
     addLabel(
-        Vec(x1 + deltaXJack -18, yJacks + JackLabelY),
+        Vec(x1 + 1 * deltaXJack -18, yJacks1 + JackLabelY),
         "CV");
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1 + 2 * deltaXJack, yJacks1),
+        module,
+        Comp::Q_INPUT));
+    addLabel(
+        Vec(x1 + 2 * deltaXJack -18, yJacks1 + JackLabelY),
+        "Q");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1 + 1 * deltaXJack, yJacks2),
+        module,
+        Comp::DRIVE_INPUT));
+    addLabel(
+        Vec(x1 + 1 * deltaXJack -18, yJacks2 + JackLabelY),
+        "drive");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1 + 2 * deltaXJack, yJacks2),
+        module,
+        Comp::POLES_INPUT));
+    addLabel(
+        Vec(x1 + 2 * deltaXJack -18, yJacks2 + JackLabelY),
+        "poles");
+
+
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(x1 + 2 * deltaXJack, yJacks),
+        Vec(x1 + 3 * deltaXJack, yJacks1),
         module,
         Comp::L_AUDIO_OUTPUT));
     addLabel(
-        Vec(x1 + 2 * deltaXJack -18, yJacks + JackLabelY),
-        "Out");
+        Vec(x1 + 3 * deltaXJack -18, yJacks1 + JackLabelY),
+        "Out L");
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(x1 + 3 * deltaXJack, yJacks2),
+        module,
+        Comp::L_AUDIO_OUTPUT));
+    addLabel(
+        Vec(x1 + 3 * deltaXJack -18, yJacks2 + JackLabelY),
+        "Out R");
+
+   
 
  }
 
