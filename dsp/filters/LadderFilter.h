@@ -99,7 +99,7 @@ private:
     void runBufferClean(T* buffer, int);
 
     void updateFilter();
-
+    void dump(const char* p);
 };
 
 template <typename T>
@@ -111,9 +111,26 @@ LadderFilter<T>::LadderFilter()
 }
 
 template <typename T>
+inline void LadderFilter<T>::dump(const char* p)
+    {
+        #if 0
+        printf("dump %s\n", p);
+        printf("f = %.2f, g=%.2f edge=%.2f\n", feedback, gain, edge);
+        for (int i = 0; i < 4; ++i) {
+            printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f\n", i,
+                stageTaps[i],
+                stageGain[i],
+                stageFreqOffsets[i]);
+        }
+        fflush(stdout);
+#endif
+    }
+
+template <typename T>
 void LadderFilter<T>::setGain(T g)
 {
     gain = g;
+    dump("set gain");
 }
 
 template <typename T>
@@ -140,6 +157,7 @@ void LadderFilter<T>::updateFilter()
     for (int i = 0; i < 4; ++i) {
         stageG[i] = _g * stageFreqOffsets[i];
     }
+    dump("update");
 }
 
 template <typename T>
@@ -286,7 +304,7 @@ inline void LadderFilter<T>::run(T input)
 
     mixedOutput = down.process(buffer);
 
-    // amybe don't need this anymre?
+    // maybe don't need this anymore?
     mixedOutput = std::max(T(-10), mixedOutput);
     mixedOutput = std::min(T(10), mixedOutput);
 }
@@ -330,8 +348,6 @@ inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
         buffer[i] = temp;
     }
 
-   // mixedOutput = temp;
-   // return temp;
 }
 
 #if 0

@@ -80,6 +80,9 @@ struct FiltWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addParams(FiltModule *module, std::shared_ptr<IComposite> icomp);
+    void addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 
@@ -99,7 +102,21 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     box.size = Vec(14 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/filter_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    addParams(module, icomp);
+    addJacks(module, icomp);
 
+       // screws
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+}
+
+
+
+void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp)
+{
     const float x1 = 46;
     const float x2 = 210 / 2;
     const float x3 = 210 - x1;
@@ -107,17 +124,9 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     const float y1 = 50;
     const float y2 = 120;
     const float y3 = 190;
- //   const float y4 = 246;
-    const float yJacks = 330;
-    const float labelY = 26;
     const float labelDx = 28;
-
-    const float deltaXJack = 30;
-    const float JackLabelY = -30;
-
-    //const float xTest = 40;
-   // const float yTest = 200;
-   // const float dx = 40;
+    const float labelY = 26;
+   
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
@@ -204,12 +213,19 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getVoicingNames());
     addParam(p);
- 
+ } 
+
+void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
+ {
+    const float x1 = 46;
+    const float yJacks = 330;
+    const float deltaXJack = 30;
+    const float JackLabelY = -30;
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(x1, yJacks),
         module,
-        Comp::AUDIO_INPUT));
+        Comp::L_AUDIO_INPUT));
     addLabel(
         Vec(x1-18, yJacks + JackLabelY),
         "In");
@@ -225,17 +241,12 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x1 + 2 * deltaXJack, yJacks),
         module,
-        Comp::AUDIO_OUTPUT));
+        Comp::L_AUDIO_OUTPUT));
     addLabel(
         Vec(x1 + 2 * deltaXJack -18, yJacks + JackLabelY),
         "Out");
 
-    // screws
-    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-}
+ }
 
 
 #ifdef __V1

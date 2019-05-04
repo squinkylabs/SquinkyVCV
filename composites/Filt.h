@@ -73,14 +73,19 @@ public:
 
     enum InputIds
     {
-        AUDIO_INPUT,
+        L_AUDIO_INPUT,
+        R_AUDIO_INPUT,
         CV_INPUT,
+        Q_INPUT,
+        DRIVE_INPUT,
+        POLES_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
-        AUDIO_OUTPUT,
+        L_AUDIO_OUTPUT,
+        R_AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -165,7 +170,7 @@ inline void Filt<TBase>::stepn(int)
        // TBase::params[PARAM_GAIN_TRIM].value);
         1);
 
-    const float gain = 5 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    const float gain = 1 + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     _f.setGain(gain);
 
     const float staging = TBase::params[STAGING_PARAM].value;
@@ -179,10 +184,10 @@ template <class TBase>
 inline void Filt<TBase>::step()
 {
     div.step();
-    float input = TBase::inputs[AUDIO_INPUT].value;
+    float input = TBase::inputs[L_AUDIO_INPUT].value;
     _f.run(input);
     float output = _f.getOutput();
-    TBase::outputs[AUDIO_OUTPUT].value = output;
+    TBase::outputs[L_AUDIO_OUTPUT].value = output;
 }
 
 template <class TBase>
