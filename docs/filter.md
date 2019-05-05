@@ -13,7 +13,9 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 ## 5/5/19
 
-Made drive default to minimum.
+Made drive default to minimum (the old default was quite distorted).
+
+Fixed a bug where high CV would sent the filter into instablility.
 
 Calibrated drive and overall volume to be like Alma.
 
