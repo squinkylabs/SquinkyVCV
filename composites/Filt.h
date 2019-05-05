@@ -159,20 +159,21 @@ inline void Filt<TBase>::stepn(int)
     x += TBase::inputs[CV_INPUT].value;
 
     const T fc = LookupTable<T>::lookup(*expLookup, x, true) * 10;
+    {
+        static float c = -1;
+        if (c != fc) {
+            c = fc;
+            printf("setting Fc to %f\n", fc); fflush(stdout);
+        }
+    }
     const T normFc = fc * TBase::engineGetSampleTime();
     T fcClipped = std::min(normFc, T(.48));
     fcClipped = std::max(normFc, T(.0000001));
     
-
     const float res = TBase::params[Q_PARAM].value;
-
-
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
-
-
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
    
-
     //********* now the drive 
         // 0..1
     float  gainInput = scaleGain(
