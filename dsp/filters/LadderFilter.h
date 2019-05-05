@@ -122,7 +122,7 @@ LadderFilter<T>::LadderFilter()
 template <typename T>
 inline void LadderFilter<T>::dump(const char* p)
     {
-        #if 0
+#if 0
         printf("dump %s\n", p);
         printf("f = %.2f, g=%.2f edge=%.2f\n", feedback, gain, edge);
         for (int i = 0; i < 4; ++i) {
@@ -185,6 +185,7 @@ void LadderFilter<T>::setEdge(T e)
         e2 = e * T(1.75) + T(.25);
     }
     AudioMath::distributeEvenly(stageGain, 4, e2);
+    dump("set edge");
 }
 
 template <typename T>

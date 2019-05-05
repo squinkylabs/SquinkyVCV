@@ -11,7 +11,11 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 ## change log
 
-5/4/19: Made it stereo.
+### 5/4/19
+
+Fixed a terrible mistake where "Drive" was defaulting to 0, which is a very extreme setting.
+
+Made it stereo.
 
 Added all the inputs and controls, although most are still not operational. The panel will look a lot different, but will function the same (for now);
 

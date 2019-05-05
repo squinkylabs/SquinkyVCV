@@ -240,7 +240,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {-5, 5, 0, "Drive"};
             break;
         case Filt<TBase>::STAGING_PARAM:
-            ret = {0, 1, 0, "Edge"};
+            ret = {0, 1, .5, "Edge"};
             break;
         case Filt<TBase>::VOICING_PARAM:
             {
