@@ -113,8 +113,6 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
 
 }
 
-
-
 void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float deltaX = 50;
@@ -123,12 +121,13 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     const float x3 = x2 + deltaX;
     const float x4 = x3 + deltaX;
 
-    const float y1 = 50;
-    const float y2 = 120;
-    const float y3 = 190;
+    const float y1 = 80;
+    const float y2 = 142;
+    const float y3 = 186;
+    const float y4 = 220;
   
-    const float labelDx = 28;
-    const float labelY = 26;
+    const float labelDx = 22;
+    const float labelY = -38;
    
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
@@ -137,7 +136,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Comp::FC_PARAM));
     addLabel(
         Vec(x1-labelDx, y1 + labelY),
-        "Cutoff");
+        "Fc");
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
@@ -146,7 +145,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Comp::Q_PARAM));
      addLabel(
         Vec(x2-labelDx, y1 + labelY),
-        "Q / Reso");
+        "Q");
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
@@ -194,12 +193,11 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Vec(x3-labelDx, y2 + labelY),
         "Poles");
 
-
 // Third row
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(x2, y3),
+        Vec(20, y3),
         module,
         Comp::TYPE_PARAM);
     p->box.size.x = 85;    // width
@@ -209,12 +207,22 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
  
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(x2, y3 + 40),
+        Vec(110, y3),
         module,
         Comp::VOICING_PARAM);
     p->box.size.x = 85;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getVoicingNames());
+    addParam(p);
+
+    p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(64, y4),
+        module,
+        Comp::BASS_MAKEUP_TYPE_PARAM);
+    p->box.size.x = 100;    // width
+    p->box.size.y = 22;     // should set auto like button does
+    p->setLabels(Comp::getBassMakeupNames());
     addParam(p);
  } 
 
@@ -223,7 +231,7 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
     const float x1 = 30;
     const float yJacks1 = 286;
     const float yJacks2 = 330;
-    const float deltaXJack = 38;
+    const float deltaXJack = 44;
     const float JackLabelY = -30;
 
     addInput(createInputCentered<PJ301MPort>(
@@ -241,8 +249,7 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
     addLabel(
         Vec(x1-18, yJacks2 + JackLabelY),
         "In R");
-
-    
+  
     addInput(createInputCentered<PJ301MPort>(
         Vec(x1 + 1 * deltaXJack, yJacks1),
         module,
@@ -274,8 +281,6 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         Vec(x1 + 2 * deltaXJack -18, yJacks2 + JackLabelY),
         "poles");
 
-
-
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x1 + 3 * deltaXJack, yJacks1),
         module,
@@ -286,14 +291,11 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x1 + 3 * deltaXJack, yJacks2),
         module,
-        Comp::L_AUDIO_OUTPUT));
+        Comp::R_AUDIO_OUTPUT));
     addLabel(
         Vec(x1 + 3 * deltaXJack -18, yJacks2 + JackLabelY),
         "Out R");
-
-   
-
- }
+}
 
 
 #ifdef __V1

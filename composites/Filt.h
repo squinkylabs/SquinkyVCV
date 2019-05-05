@@ -68,6 +68,7 @@ public:
         SPREAD_PARAM,
         POLES_PARAM,
         BASS_MAKEUP_PARAM,
+        BASS_MAKEUP_TYPE_PARAM,
         NUM_PARAMS
     };
 
@@ -104,6 +105,11 @@ public:
         return LadderFilter<T>::getVoicingNames();
     }
 
+    static std::vector<std::string> getBassMakeupNames()
+    {
+        return LadderFilter<T>::getBassMakeupNames();
+    }
+
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()
@@ -117,8 +123,13 @@ public:
     void step() override;
 
 private:
-   
-    LadderFilter<T> _f;
+    class DSPImp
+    {
+    public:
+        LadderFilter<T> _f;
+        bool isActive = false;
+    };
+    DSPImp dsp[2];
     Divider div;
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
@@ -139,6 +150,7 @@ inline void Filt<TBase>::init()
 template <class TBase>
 inline void Filt<TBase>::stepn(int)
 {
+
     // get param -5..5
     T x = TBase::params[FC_PARAM].value;
 
@@ -150,16 +162,16 @@ inline void Filt<TBase>::stepn(int)
     const T normFc = fc * TBase::engineGetSampleTime();
     T fcClipped = std::min(normFc, T(.48));
     fcClipped = std::max(normFc, T(.0000001));
-    _f.setNormalizedFc(fcClipped);
+    
 
     const float res = TBase::params[Q_PARAM].value;
-    _f.setFeedback(res);
 
-    LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
-    _f.setType(type);
 
-    LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
-    _f.setVoicing(voicing);
+    const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
+
+
+    const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
+   
 
     //********* now the drive 
         // 0..1
@@ -171,23 +183,37 @@ inline void Filt<TBase>::stepn(int)
         1);
 
     const float gain = 1 + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
-    _f.setGain(gain);
-
     const float staging = TBase::params[STAGING_PARAM].value;
-    _f.setEdge(staging);
-
     const float spread = TBase::params[SPREAD_PARAM].value;
-    _f.setFreqSpread(spread);
+   
+    for (int i = 0; i < 2; ++i) {
+        DSPImp& imp = dsp[i];
+        imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].active && TBase::outputs[L_AUDIO_OUTPUT + i].active;
+        if (imp.isActive) {
+            imp._f.setFreqSpread(spread);
+            imp._f.setEdge(staging);
+            imp._f.setGain(gain);
+            imp._f.setVoicing(voicing);
+            imp._f.setType(type);
+            imp._f.setFeedback(res);
+            imp._f.setNormalizedFc(fcClipped);
+        }
+    }
 }
 
 template <class TBase>
 inline void Filt<TBase>::step()
 {
     div.step();
-    float input = TBase::inputs[L_AUDIO_INPUT].value;
-    _f.run(input);
-    float output = _f.getOutput();
-    TBase::outputs[L_AUDIO_OUTPUT].value = output;
+    for (int i = 0; i < 2; ++i) {
+        DSPImp& imp = dsp[i];
+        if (imp.isActive) {
+            const float input = TBase::inputs[L_AUDIO_INPUT+i].value;
+            imp._f.run(input);
+            const float output = imp._f.getOutput();
+            TBase::outputs[L_AUDIO_OUTPUT+i].value = output;
+        }
+    }
 }
 
 template <class TBase>
@@ -229,7 +255,10 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 3, 0, "Poles"};
             break;
         case Filt<TBase>::BASS_MAKEUP_PARAM:
-            ret = {-5, 5, -5, "Base"};
+            ret = {-5, 5, -5, "Bass"};
+            break;
+        case Filt<TBase>::BASS_MAKEUP_TYPE_PARAM:
+            ret = {0, 2, 1, "Bass Makeup"};
             break;
         default:
             assert(false);

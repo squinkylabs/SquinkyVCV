@@ -39,6 +39,13 @@ public:
         NUM_VOICINGS
     };
 
+    enum class BassMakeup
+    {
+        Gain,
+        TrackingFilter,
+        FixedFilter
+    };
+
     void run(T);
     T getOutput();
 
@@ -53,9 +60,11 @@ public:
     void setGain(T);
     void setEdge(T);        // 0..1
     void setFreqSpread(T);
+    void setBassMakeup(BassMakeup);
    
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
+    static std::vector<std::string> getBassMakeupNames();
 private:
     TrapezoidalLowpass<T> lpfs[4];
     TrapezoidalHighpass<T> hpf;
@@ -505,3 +514,12 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
     };
 }
 
+template <typename T>
+inline  std::vector<std::string> LadderFilter<T>::getBassMakeupNames()
+{
+    return {
+       "Gain",
+       "Tracking Filter",
+       "Fixed Filter"
+    };
+}

@@ -36,6 +36,11 @@ inline void PopupMenuParamWidget::onChange(const event::Change& e)
     // process ourself to update the text label
     const int index = (int) std::round( this->paramQuantity->getValue());
     if (!labels.empty()) {
+
+        if (index < 0 || index >= (int) labels.size()) {
+            fprintf(stderr, "index is outside label ranges %d\n", index);
+            return;
+        }
         this->text = labels[index];
     }
 

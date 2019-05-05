@@ -1,6 +1,8 @@
 
 #include "asserts.h"
+#include "Filt.h"
 #include "LadderFilter.h"
+#include "TestComposite.h"
 
 
 static void testLadderZero()
@@ -25,8 +27,16 @@ static void testLadderNotZero()
     }
 }
 
+static void testFilt()
+{
+    Filt<TestComposite> f;
+    assert(!f.getBassMakeupNames().empty());
+    assert(!f.getVoicingNames().empty());
+    assert(!f.getTypeNames().empty());
+}
 void testLadder()
 {
     testLadderZero();
     testLadderNotZero();
+    testFilt();
 }

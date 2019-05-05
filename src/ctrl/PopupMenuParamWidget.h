@@ -22,6 +22,10 @@ public:
         // process ourself to update the text label
         const int index = (int) std::round( this->value);
         if (!labels.empty()) {
+            if (index < 0 || index >= (int) labels.size()) {
+                fprintf(stderr, "index is outside label ranges %d\n", index);
+                return;
+            }
             this->text = labels[index];
         }
 
