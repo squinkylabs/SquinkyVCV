@@ -270,17 +270,21 @@ void LadderFilter<T>::setType(Types t)
 template <typename T>
 inline T LadderFilter<T>::getOutput() 
 {
-    return mixedOutput;
+    return mixedOutput * 10;        // 2.5 orig        
 }
 
 template <typename T>
 inline void LadderFilter<T>::setFeedback(T f)
 {
-    feedback = f;
+    feedback = f * 1.0;
+    #if 0
+    static float ff = -1;
+    if (ff != feedback) {
+        ff = feedback;
+        printf("set f to %f, will use %f\n", f, feedback); fflush(stdout);
+    }
+    #endif
 }
-
-
-//step 1: runSampleXXX -> runBufferXXX(T * buffer, size)
 
 template <typename T>
 inline void LadderFilter<T>::run(T input)
@@ -319,6 +323,7 @@ inline void LadderFilter<T>::run(T input)
     mixedOutput = std::min(T(10), mixedOutput);
 }
 
+#if 0 // This is the test bed for HPF Q comp
 template <typename T>
 inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
 {
@@ -330,9 +335,6 @@ inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
         const T prevOutput = stageOutputs[3];
         const T filteredOutput = hpf.run(prevOutput, _gHP);
         T temp = input - feedback * filteredOutput;
-
-        // old way:
-        //T temp = input - feedback * stageOutputs[3];
 
         temp = lpfs[0].run(temp, stageG[0]);
         stageOutputs[0] = temp;
@@ -357,8 +359,8 @@ inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
         }
         buffer[i] = temp;
     }
-
 }
+#endif
 
 #if 0
 template <typename T>
@@ -437,13 +439,18 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
     ONETAP(func2, 2) \
     ONETAP(func3, 3) \
 
-#define TANH() temp = T(5) * LookupTable<float>::lookup(*tanhLookup.get(), T(.2) * temp, true)
+
+//#define TANH() temp = T(5) * LookupTable<float>::lookup(*tanhLookup.get(), T(.2) * temp, true)
+#define TANH() temp = T(2) * LookupTable<float>::lookup(*tanhLookup.get(), T(.5) * temp, true)
+//#define TANH() temp =  LookupTable<float>::lookup(*tanhLookup.get(), temp, true)
 #define CLIP() temp = std::max(temp, -1.f); temp = std::min(temp, 1.f)
 #define CLIP_TOP()  temp = std::min(temp, 1.f)
 #define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
 #define FOLD() temp = AudioMath::fold(temp)
 #define FOLD_TOP() temp = (temp > 0) ? AudioMath::fold(temp) : temp
 #define FOLD_BOTTOM() temp = (temp < 0) ? AudioMath::fold(temp) : temp
+#define NOPROC()
+
 
 
 PROC_PREAMBLE(runBufferClassic)
@@ -464,6 +471,10 @@ PROC_END
 
 PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
+PROC_END
+
+PROC_PREAMBLE(runBufferClean)
+BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
 
 template <typename T>

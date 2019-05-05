@@ -153,22 +153,24 @@ inline void Filt<TBase>::stepn(int)
 
     // get param -5..5
     T x = TBase::params[FC_PARAM].value;
-
-    // now 0..10
-    x += 5;
+    x += 6;
     x += TBase::inputs[CV_INPUT].value;
-
     const T fc = LookupTable<T>::lookup(*expLookup, x, true) * 10;
+
+    const T normFc = fc * TBase::engineGetSampleTime();
+    T fcClipped = std::min(normFc, T(.48));
+    fcClipped = std::max(fcClipped, T(.0000001));
+
+ #if 0
     {
         static float c = -1;
         if (c != fc) {
             c = fc;
-            printf("setting Fc to %f\n", fc); fflush(stdout);
+            printf("setting Fc to %f x=%f normFC=%f clipped=%f\n",
+             fc, x, normFc, fcClipped); fflush(stdout);
         }
     }
-    const T normFc = fc * TBase::engineGetSampleTime();
-    T fcClipped = std::min(normFc, T(.48));
-    fcClipped = std::max(normFc, T(.0000001));
+    #endif
     
     const float res = TBase::params[Q_PARAM].value;
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
@@ -183,9 +185,18 @@ inline void Filt<TBase>::stepn(int)
        // TBase::params[PARAM_GAIN_TRIM].value);
         1);
 
-    const float gain = 1 + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    const float gain = .15 + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     const float staging = TBase::params[STAGING_PARAM].value;
     const float spread = TBase::params[SPREAD_PARAM].value;
+#if 0
+    {
+        static float g = -1;
+        if (g != gain) {
+            g = gain;
+            printf("gainInput = %f final = %f\n", gainInput, gain); fflush(stdout);
+        }
+    }
+#endif
    
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
@@ -238,7 +249,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 9.0f, 0, "Type"};
             break;
         case Filt<TBase>::DRIVE_PARAM:
-            ret = {-5, 5, 0, "Drive"};
+            ret = {-5, 5, -5, "Drive"};
             break;
         case Filt<TBase>::STAGING_PARAM:
             ret = {0, 1, .5, "Edge"};

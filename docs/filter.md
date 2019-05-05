@@ -11,6 +11,16 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 ## change log
 
+## 5/5/19
+
+Made drive default to minimum.
+
+Calibrated drive and overall volume to be like Alma.
+
+Played around with the internal gain staging of "Transistor" voicing to more like a normal moog/Alma. Somewhere in between there and where is was before. I will look that some of the other voicings in the future and see if they need work.
+
+Moved the tuning of the filter up by about an octave. Should open up better, although may still be slightly dull compared to other filters.
+
 ### 5/4/19
 
 Fixed a terrible mistake where "Drive" was defaulting to 0, which is a very extreme setting.
