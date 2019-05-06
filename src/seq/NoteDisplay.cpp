@@ -276,10 +276,26 @@ void NoteDisplay::onSelectKey(const event::SelectKey &e)
     }
 }
 
+bool NoteDisplay::isCursorKey(int key) {
+    bool isCursor = false;
+    switch (key) {
+        case GLFW_KEY_LEFT:
+        case GLFW_KEY_RIGHT:
+        case GLFW_KEY_UP:
+        case GLFW_KEY_DOWN:
+            isCursor = true;
+    }
+    return isCursor;
+}
+
 void NoteDisplay::onHoverKey(const event::HoverKey &e)
 {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
+        e.consume(this);
+    } else if (isCursorKey(e.key)) {
+        // Swallow all hover events around cursor keys.
+        // This keeps Rack from stealing them.
         e.consume(this);
     } else {
         OpaqueWidget::onHoverKey(e);
