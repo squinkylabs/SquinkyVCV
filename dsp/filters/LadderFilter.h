@@ -38,13 +38,17 @@ public:
         Clean,
         NUM_VOICINGS
     };
-
+#if 0
     enum class BassMakeup
     {
         Gain,
         TrackingFilter,
         FixedFilter
     };
+#endif
+
+    void setBaseMakeupNormalizeFreq(T);
+    void setBaseMakeupGain(T);
 
     void run(T);
     T getOutput();
@@ -60,11 +64,15 @@ public:
     void setGain(T);
     void setEdge(T);        // 0..1
     void setFreqSpread(T);
-    void setBassMakeup(BassMakeup);
+
+    /** set < 0 to turn off
+    */
+    void setBassMakeupNormalizeFreq(T);
+    void setBassMakeupGain(T);
    
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
-    static std::vector<std::string> getBassMakeupNames();
+
 private:
     TrapezoidalLowpass<T> lpfs[4];
     TrapezoidalHighpass<T> hpf;
@@ -76,7 +84,7 @@ private:
     T _g = .001f;
 
     T _gHP = .001f;
-
+    T bassMakeupGain = 1;
 
     T mixedOutput = 0;
     T feedback = 0;
@@ -91,6 +99,7 @@ private:
     Types type = Types::_4PLP;
     Voicing voicing = Voicing::Classic;
     T lastNormalizedFc = T(.0001);
+    T lastNormalizedBassFreq = T(.0001);
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
     std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
@@ -109,6 +118,7 @@ private:
 
     void updateFilter();
     void dump(const char* p);
+    T getGfromNormFreq(T nf) const;
 };
 
 template <typename T>
@@ -125,6 +135,7 @@ inline void LadderFilter<T>::dump(const char* p)
 #if 0
         printf("dump %s\n", p);
         printf("f = %.2f, g=%.2f edge=%.2f\n", feedback, gain, edge);
+        printf("_g=%.2f, _ghpf=%.2f bgain=%.2f\n", _g, _gHP, bassMakeupGain);
         for (int i = 0; i < 4; ++i) {
             printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f\n", i,
                 stageTaps[i],
@@ -135,11 +146,63 @@ inline void LadderFilter<T>::dump(const char* p)
 #endif
     }
 
+
+
+template <typename T>
+void LadderFilter<T>::setBassMakeupNormalizeFreq(T f)
+{
+    if (f != lastNormalizedBassFreq) {
+        lastNormalizedBassFreq = f;
+        _gHP = getGfromNormFreq(f);
+        dump("setBassF");
+    }
+}
+
+
+template <typename T>
+inline T LadderFilter<T>::getGfromNormFreq(T nf) const
+{
+    nf *= (1.0 / oversampleRate);
+    const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, nf);
+    return g2;
+}
+
+template <typename T>
+inline void LadderFilter<T>::setNormalizedFc(T input)
+{
+    if (input == lastNormalizedFc) {
+        return;
+    }
+    lastNormalizedFc = input;
+
+  //  input *= (1.0 / oversampleRate);
+  //  const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
+ //   _g = g2;
+    _g = getGfromNormFreq(input);
+
+    // Let's try HPF two octaves below reso
+   // _gHP = NonUniformLookupTable<T>::lookup(*fs2gLookup, input / 4);
+
+
+    updateFilter();
+}
+
+template <typename T>
+void LadderFilter<T>::setBassMakeupGain(T g)
+{
+    if (g != bassMakeupGain) {
+        bassMakeupGain = g;
+        dump("setBassG");
+    }
+}
+
 template <typename T>
 void LadderFilter<T>::setGain(T g)
 {
-    gain = g;
-    dump("set gain");
+    if (g != gain) {
+        gain = g;
+        dump("set gain");
+    }
 }
 
 template <typename T>
@@ -276,7 +339,7 @@ inline T LadderFilter<T>::getOutput()
 template <typename T>
 inline void LadderFilter<T>::setFeedback(T f)
 {
-    feedback = f * 1.0;
+    feedback = f * T(1.0);
     #if 0
     static float ff = -1;
     if (ff != feedback) {
@@ -477,6 +540,7 @@ PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
 
+#if 0
 template <typename T>
 inline void LadderFilter<T>::setNormalizedFc(T input)
 {
@@ -495,6 +559,7 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
 
     updateFilter();
 }
+#endif
 
 template <typename T>
 inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
@@ -526,6 +591,7 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
     };
 }
 
+#if 0
 template <typename T>
 inline  std::vector<std::string> LadderFilter<T>::getBassMakeupNames()
 {
@@ -535,3 +601,4 @@ inline  std::vector<std::string> LadderFilter<T>::getBassMakeupNames()
        "Fixed Filter"
     };
 }
+#endif

@@ -95,6 +95,13 @@ public:
         NUM_LIGHTS
     };
 
+    enum class BassMakeup
+    {
+        Gain,
+        TrackingFilter,
+        FixedFilter
+    };
+
     static std::vector<std::string> getTypeNames()
     {
         return LadderFilter<T>::getTypeNames();
@@ -105,10 +112,7 @@ public:
         return LadderFilter<T>::getVoicingNames();
     }
 
-    static std::vector<std::string> getBassMakeupNames()
-    {
-        return LadderFilter<T>::getBassMakeupNames();
-    }
+    static std::vector<std::string> getBassMakeupNames();
 
     /** Implement IComposite
      */
@@ -152,10 +156,10 @@ inline void Filt<TBase>::stepn(int)
 {
 
     // get param -5..5
-    T x = TBase::params[FC_PARAM].value;
-    x += 6;
-    x += TBase::inputs[CV_INPUT].value;
-    const T fc = LookupTable<T>::lookup(*expLookup, x, true) * 10;
+    T freqCV = TBase::params[FC_PARAM].value;
+    freqCV += 6;
+    freqCV += TBase::inputs[CV_INPUT].value;
+    const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
 
     const T normFc = fc * TBase::engineGetSampleTime();
     T fcClipped = std::min(normFc, T(.48));
@@ -185,7 +189,7 @@ inline void Filt<TBase>::stepn(int)
        // TBase::params[PARAM_GAIN_TRIM].value);
         1);
 
-    const float gain = .15 + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    const float gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     const float staging = TBase::params[STAGING_PARAM].value;
     const float spread = TBase::params[SPREAD_PARAM].value;
 #if 0
@@ -197,7 +201,35 @@ inline void Filt<TBase>::stepn(int)
         }
     }
 #endif
-   
+
+    T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
+    BassMakeup b = (BassMakeup)(int) std::round(TBase::params[BASS_MAKEUP_TYPE_PARAM].value);
+    T makeupGain = 1;
+    T makeupFreq = -1;
+    switch (b) {
+        case BassMakeup::Gain:
+            // 1 ... 4
+            makeupGain = 1 + bAmt * (res);
+            break;
+        case BassMakeup::TrackingFilter:
+            {
+                T trackingCV = freqCV + ((bAmt - 1) * 5);
+                const T fc = LookupTable<T>::lookup(*expLookup, trackingCV, true) * 10;
+
+                const T normT = fc * TBase::engineGetSampleTime();
+                T tClipped = std::min(normT, T(.48));
+                tClipped = std::max(tClipped, T(.0000001));
+                makeupFreq = tClipped;
+            }
+            break;
+        case BassMakeup::FixedFilter:
+            {
+                T fHz = 100 + 400 * bAmt;
+                makeupFreq = fHz * TBase::engineGetSampleTime();
+            }
+            break;
+    }
+
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
         imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].active && TBase::outputs[L_AUDIO_OUTPUT + i].active;
@@ -209,8 +241,21 @@ inline void Filt<TBase>::stepn(int)
             imp._f.setType(type);
             imp._f.setFeedback(res);
             imp._f.setNormalizedFc(fcClipped);
+            imp._f.setBassMakeupNormalizeFreq(makeupFreq);
+            imp._f.setBassMakeupGain(makeupGain);
+
         }
     }
+}
+
+template <class TBase>
+inline  std::vector<std::string> Filt<TBase>::getBassMakeupNames()
+{
+    return {
+       "Gain",
+       "Tracking Filter",
+       "Fixed Filter"
+    };
 }
 
 template <class TBase>
@@ -267,7 +312,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 3, 0, "Poles"};
             break;
         case Filt<TBase>::BASS_MAKEUP_PARAM:
-            ret = {-5, 5, -5, "Bass"};
+            ret = {0, 1, 0, "Bass"};
             break;
         case Filt<TBase>::BASS_MAKEUP_TYPE_PARAM:
             ret = {0, 2, 1, "Bass Makeup"};
@@ -277,6 +322,8 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
     }
     return ret;
 }
+
+
 
 
 
