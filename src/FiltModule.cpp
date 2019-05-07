@@ -124,7 +124,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     const float y1 = 80;
     const float y2 = 142;
     const float y3 = 186;
-    const float y4 = 220;
+   // const float y4 = 220;
   
     const float labelDx = 22;
     const float labelY = -38;
@@ -214,7 +214,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getVoicingNames());
     addParam(p);
-
+#if 0
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(64, y4),
@@ -224,6 +224,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getBassMakeupNames());
     addParam(p);
+#endif
  } 
 
 void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
