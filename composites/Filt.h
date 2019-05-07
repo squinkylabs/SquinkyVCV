@@ -68,7 +68,7 @@ public:
         SPREAD_PARAM,
         POLES_PARAM,
         BASS_MAKEUP_PARAM,
-        BASS_MAKEUP_TYPE_PARAM,
+    //    BASS_MAKEUP_TYPE_PARAM,
         NUM_PARAMS
     };
 
@@ -204,9 +204,11 @@ inline void Filt<TBase>::stepn(int)
 #endif
 
     T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
-    BassMakeup b = (BassMakeup)(int) std::round(TBase::params[BASS_MAKEUP_TYPE_PARAM].value);
+  //  BassMakeup b = (BassMakeup)(int) std::round(TBase::params[BASS_MAKEUP_TYPE_PARAM].value);
     T makeupGain = 1;
-    T makeupFreq = -1;
+    makeupGain = 1 + bAmt * (res);
+#if 0
+    //T makeupFreq = -1;
     switch (b) {
         case BassMakeup::Gain:
             // 1 ... 4
@@ -231,6 +233,7 @@ inline void Filt<TBase>::stepn(int)
             }
             break;
     }
+#endif
 
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
@@ -243,7 +246,7 @@ inline void Filt<TBase>::stepn(int)
             imp._f.setType(type);
             imp._f.setFeedback(res);
             imp._f.setNormalizedFc(fcClipped);
-            imp._f.setBassMakeupNormalizeFreq(makeupFreq);
+      //      imp._f.setBassMakeupNormalizeFreq(makeupFreq); 
             imp._f.setBassMakeupGain(makeupGain);
 
         }
@@ -316,9 +319,11 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::BASS_MAKEUP_PARAM:
             ret = {0, 1, 0, "Bass"};
             break;
+#if 0
         case Filt<TBase>::BASS_MAKEUP_TYPE_PARAM:
             ret = {0, 2, 1, "Bass Makeup"};
             break;
+#endif
         default:
             assert(false);
     }

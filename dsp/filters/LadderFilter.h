@@ -47,7 +47,7 @@ public:
     };
 #endif
 
-    void setBaseMakeupNormalizeFreq(T);
+  //  void setBaseMakeupNormalizeFreq(T);
     void setBaseMakeupGain(T);
 
     void run(T);
@@ -67,7 +67,7 @@ public:
 
     /** set < 0 to turn off
     */
-    void setBassMakeupNormalizeFreq(T);
+  //  void setBassMakeupNormalizeFreq(T);
     void setBassMakeupGain(T);
    
     static std::vector<std::string> getTypeNames();
@@ -75,7 +75,7 @@ public:
 
 private:
     TrapezoidalLowpass<T> lpfs[4];
-    TrapezoidalHighpass<T> hpf;
+   // TrapezoidalHighpass<T> hpf;
 
 
     /**
@@ -83,7 +83,7 @@ private:
      */
     T _g = .001f;
 
-    T _gHP = .001f;
+ //   T _gHP = .001f;
     T bassMakeupGain = 1;
 
     T mixedOutput = 0;
@@ -147,7 +147,7 @@ inline void LadderFilter<T>::dump(const char* p)
     }
 
 
-
+#if 0
 template <typename T>
 void LadderFilter<T>::setBassMakeupNormalizeFreq(T f)
 {
@@ -157,6 +157,7 @@ void LadderFilter<T>::setBassMakeupNormalizeFreq(T f)
         dump("setBassF");
     }
 }
+#endif
 
 
 template <typename T>
@@ -374,11 +375,11 @@ inline void LadderFilter<T>::run(T input)
     mixedOutput = down.process(buffer);
 
     // maybe don't need this anymore?
-    mixedOutput = std::max(T(-10), mixedOutput);
-    mixedOutput = std::min(T(10), mixedOutput);
+   // mixedOutput = std::max(T(-10), mixedOutput);
+  //  mixedOutput = std::min(T(10), mixedOutput);
 }
 
-#if 1 // This is the test bed for HPF Q comp
+#if 0 // This is the test bed for HPF Q comp
 template <typename T>
 inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
 {
@@ -478,7 +479,9 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
     inline void  LadderFilter<T>::name(T* buffer, int numSamples) { \
         for (int i = 0; i < numSamples; ++i) { \
             const T input = buffer[i]; \
-            T temp = input - feedback * stageOutputs[3];
+            T temp = input - feedback * stageOutputs[3]; \
+            temp = std::max(T(-10), temp); \
+            temp = std::min(T(10), temp);
 
 #define PROC_END \
         if (type != Types::_4PLP) { \
@@ -536,7 +539,7 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
-#if 0
+#if 1
 PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
