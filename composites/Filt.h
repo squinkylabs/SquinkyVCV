@@ -165,6 +165,7 @@ inline void Filt<TBase>::stepn(int)
     T fcClipped = std::min(normFc, T(.48));
     fcClipped = std::max(fcClipped, T(.0000001));
 
+   // printf("main freq = %f norm=%f\n", fc, normFc);
  #if 0
     {
         static float c = -1;
@@ -226,6 +227,7 @@ inline void Filt<TBase>::stepn(int)
             {
                 T fHz = 100 + 400 * bAmt;
                 makeupFreq = fHz * TBase::engineGetSampleTime();
+               // printf("bass makeup val = %f, fhz=%f,mf = %f\n", bAmt, fHz, makeupFreq);
             }
             break;
     }

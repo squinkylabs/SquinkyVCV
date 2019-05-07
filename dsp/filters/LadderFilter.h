@@ -135,7 +135,7 @@ inline void LadderFilter<T>::dump(const char* p)
 #if 0
         printf("dump %s\n", p);
         printf("f = %.2f, g=%.2f edge=%.2f\n", feedback, gain, edge);
-        printf("_g=%.2f, _ghpf=%.2f bgain=%.2f\n", _g, _gHP, bassMakeupGain);
+        printf("_g=%f, _ghpf=%f bgain=%.2f\n", _g, _gHP, bassMakeupGain);
         for (int i = 0; i < 4; ++i) {
             printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f\n", i,
                 stageTaps[i],
@@ -174,16 +174,7 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
         return;
     }
     lastNormalizedFc = input;
-
-  //  input *= (1.0 / oversampleRate);
-  //  const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
- //   _g = g2;
     _g = getGfromNormFreq(input);
-
-    // Let's try HPF two octaves below reso
-   // _gHP = NonUniformLookupTable<T>::lookup(*fs2gLookup, input / 4);
-
-
     updateFilter();
 }
 
@@ -333,7 +324,8 @@ void LadderFilter<T>::setType(Types t)
 template <typename T>
 inline T LadderFilter<T>::getOutput() 
 {
-    return mixedOutput * 10;        // 2.5 orig        
+    //bassMakeupGain
+    return mixedOutput * 10 * bassMakeupGain;       
 }
 
 template <typename T>
@@ -386,7 +378,7 @@ inline void LadderFilter<T>::run(T input)
     mixedOutput = std::min(T(10), mixedOutput);
 }
 
-#if 0 // This is the test bed for HPF Q comp
+#if 1 // This is the test bed for HPF Q comp
 template <typename T>
 inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
 {
@@ -396,7 +388,17 @@ inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
 
         // to preserve bass, hpf the feedback
         const T prevOutput = stageOutputs[3];
-        const T filteredOutput = hpf.run(prevOutput, _gHP);
+        const T filteredOutput = (_gHP > 0) ?
+            hpf.run(prevOutput, _gHP) :
+            prevOutput;
+#if 0
+        if (_gHP > 0) {
+            const T filteredOutput = hpf.run(prevOutput, _gHP);
+        } else {
+            filteredOutput = prevOutput;
+        }
+#endif
+
         T temp = input - feedback * filteredOutput;
 
         temp = lpfs[0].run(temp, stageG[0]);
@@ -514,8 +516,6 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 #define FOLD_BOTTOM() temp = (temp < 0) ? AudioMath::fold(temp) : temp
 #define NOPROC()
 
-
-
 PROC_PREAMBLE(runBufferClassic)
 BODY( TANH, TANH, TANH, TANH)
 PROC_END
@@ -536,29 +536,10 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
+#if 0
 PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
-
-#if 0
-template <typename T>
-inline void LadderFilter<T>::setNormalizedFc(T input)
-{
-    if (input == lastNormalizedFc) {
-        return;
-    }
-    lastNormalizedFc = input;
-
-    input *= (1.0 / oversampleRate);
-    const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
-    _g = g2;
-
-    // Let's try HPF two octaves below reso
-    _gHP = NonUniformLookupTable<T>::lookup(*fs2gLookup, input / 4);
-
-
-    updateFilter();
-}
 #endif
 
 template <typename T>
