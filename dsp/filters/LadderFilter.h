@@ -174,16 +174,7 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
         return;
     }
     lastNormalizedFc = input;
-
-  //  input *= (1.0 / oversampleRate);
-  //  const T g2 = NonUniformLookupTable<T>::lookup(*fs2gLookup, input);
- //   _g = g2;
     _g = getGfromNormFreq(input);
-
-    // Let's try HPF two octaves below reso
-   // _gHP = NonUniformLookupTable<T>::lookup(*fs2gLookup, input / 4);
-
-
     updateFilter();
 }
 
