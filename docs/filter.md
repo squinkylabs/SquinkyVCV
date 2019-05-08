@@ -11,6 +11,16 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 ## change log
 
+## next
+
+Reduced overall output volume 6db.
+
+Mode the overall filter much more stable.
+
+Removed the choices for bass makeup gain and went with the standard one. It works now.
+
+Reduced the input gain of the folder to make it less crazy. Asym Folder is still crazy, and will still go into chaotic modes pretty easily.
+
 ## 5/5/19
 
 Made drive default to minimum (the old default was quite distorted).
