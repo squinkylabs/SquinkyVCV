@@ -135,7 +135,7 @@ inline void LadderFilter<T>::dump(const char* p)
 #if 0
         printf("dump %s\n", p);
         printf("f = %.2f, g=%.2f edge=%.2f\n", feedback, gain, edge);
-        printf("_g=%f, _ghpf=%f bgain=%.2f\n", _g, _gHP, bassMakeupGain);
+        printf("_g=%f,  bgain=%.2f\n", _g, bassMakeupGain);
         for (int i = 0; i < 4; ++i) {
             printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f\n", i,
                 stageTaps[i],
@@ -326,7 +326,7 @@ template <typename T>
 inline T LadderFilter<T>::getOutput() 
 {
     //bassMakeupGain
-    return mixedOutput * 10 * bassMakeupGain;       
+    return mixedOutput * 5 * bassMakeupGain;       
 }
 
 template <typename T>
@@ -515,6 +515,7 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 #define CLIP_TOP()  temp = std::min(temp, 1.f)
 #define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
 #define FOLD() temp = AudioMath::fold(temp)
+#define FOLD_ATTEN() temp = AudioMath::fold(temp * T(.5))
 #define FOLD_TOP() temp = (temp > 0) ? AudioMath::fold(temp) : temp
 #define FOLD_BOTTOM() temp = (temp < 0) ? AudioMath::fold(temp) : temp
 #define NOPROC()
@@ -532,7 +533,7 @@ BODY(CLIP_TOP, CLIP_BOTTOM, CLIP_TOP, CLIP_BOTTOM)
 PROC_END
 
 PROC_PREAMBLE(runBufferFold)
-BODY(FOLD, FOLD, FOLD, FOLD)
+BODY(FOLD_ATTEN, FOLD, FOLD, FOLD)
 PROC_END
 
 PROC_PREAMBLE(runBufferFold2)
