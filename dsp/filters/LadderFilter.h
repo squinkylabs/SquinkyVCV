@@ -272,7 +272,7 @@ void LadderFilter<T>::setType(Types t)
         case Types::_2PLP:
             stageTaps[3] = 0;
             stageTaps[2] = 0;
-            stageTaps[1] = 1.1;
+            stageTaps[1] = 1;
             stageTaps[0] = 0;
             break;
         case Types::_1PLP:
@@ -284,38 +284,38 @@ void LadderFilter<T>::setType(Types t)
         case Types::_2PBP:
             stageTaps[3] = 0;
             stageTaps[2] = 0;
-            stageTaps[1] = -.68;
-            stageTaps[0] = .68;
+            stageTaps[1] = T(-.68);
+            stageTaps[0] = T(.68);
             break;
         case Types::_2HP1LP:
             stageTaps[3] = 0;
-            stageTaps[2] = .68;
-            stageTaps[1] = -1.36;
-            stageTaps[0] = .5;
+            stageTaps[2] = T(.68);
+            stageTaps[1] = T(-1.36);
+            stageTaps[0] = T(.5);
             break;
         case Types::_3HP1LP:
-            stageTaps[3] = -.68;
-            stageTaps[2] = 2.05;
-            stageTaps[1] = -2.05;
-            stageTaps[0] = .68;
+            stageTaps[3] = T(-.68);
+            stageTaps[2] = T(2.05);
+            stageTaps[1] = T(-2.05);
+            stageTaps[0] = T(.68);
             break;
         case Types::_4PBP:
-            stageTaps[3] = -.68;
-            stageTaps[2] = 1.36;
-            stageTaps[1] = -.68;
+            stageTaps[3] = T(-.68);
+            stageTaps[2] = T(1.36);
+            stageTaps[1] = T(-.68);
             stageTaps[0] = 0;
             break;
         case Types::_1LPNotch:
             stageTaps[3] = 0;
-            stageTaps[2] = 1.36;
-            stageTaps[1] = -1.36;
-            stageTaps[0] = .68;
+            stageTaps[2] = T(1.36);
+            stageTaps[1] = T(-1.36);
+            stageTaps[0] = T(.68);
             break;
         case Types::_3AP1LP:
-            stageTaps[3] = -2.73;
-            stageTaps[2] = 4.12;
-            stageTaps[1] = -2.05;
-            stageTaps[0] = .68;
+            stageTaps[3] = T(-2.73);
+            stageTaps[2] = T(4.12);
+            stageTaps[1] = T(-2.05);
+            stageTaps[0] = T(.68);
             break;
         default:
             assert(false);
