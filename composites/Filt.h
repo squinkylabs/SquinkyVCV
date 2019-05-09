@@ -112,8 +112,6 @@ public:
         return LadderFilter<T>::getVoicingNames();
     }
 
-    static std::vector<std::string> getBassMakeupNames();
-
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()
@@ -253,6 +251,7 @@ inline void Filt<TBase>::stepn(int)
     }
 }
 
+#if 0
 template <class TBase>
 inline  std::vector<std::string> Filt<TBase>::getBassMakeupNames()
 {
@@ -262,6 +261,7 @@ inline  std::vector<std::string> Filt<TBase>::getBassMakeupNames()
        "Fixed Filter"
     };
 }
+#endif
 
 template <class TBase>
 inline void Filt<TBase>::step()
@@ -296,7 +296,11 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 4.0f, 0, "Resonance"};
             break;
         case Filt<TBase>::TYPE_PARAM:
-            ret = {0, 9.0f, 0, "Type"};
+            //ret = {0, 9.0f, 0, "Type"};
+            { 
+                int num = (int) LadderFilter<float>::Types::NUM_TYPES;
+                ret = {0, float(num - 1) , 0, "Type"};
+            }
             break;
         case Filt<TBase>::DRIVE_PARAM:
             ret = {-5, 5, -5, "Drive"};

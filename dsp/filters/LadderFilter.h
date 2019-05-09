@@ -26,7 +26,8 @@ public:
         _4PBP,
         _1LPNotch,
         _3AP1LP,
-        _3PHP
+        _3PHP,
+        NUM_TYPES
     };
 
     enum class Voicing
@@ -130,32 +131,23 @@ LadderFilter<T>::LadderFilter()
 template <typename T>
 inline void LadderFilter<T>::dump(const char* p)
     {
-#if 0
-        printf("dump %s\n", p);
+#if 1
+        printf("\ndump %s\n", p);
         printf("feedback = %.2f, gain%.2f edge=%.2f\n", feedback, gain, edge);
-        printf("filt:_g=%f,  bgain=%.2f\n", _g, bassMakeupGain);
+        printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
         for (int i = 0; i < 4; ++i) {
-            printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f\n", i,
+            printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f filter_G %f\n", i,
                 stageTaps[i],
                 stageGain[i],
-                stageFreqOffsets[i]);
+                stageFreqOffsets[i],
+                stageG[i]);
         }
         fflush(stdout);
 #endif
     }
 
 
-#if 0
-template <typename T>
-void LadderFilter<T>::setBassMakeupNormalizeFreq(T f)
-{
-    if (f != lastNormalizedBassFreq) {
-        lastNormalizedBassFreq = f;
-        _gHP = getGfromNormFreq(f);
-        dump("setBassF");
-    }
-}
-#endif
+
 
 
 template <typename T>
@@ -219,6 +211,10 @@ void LadderFilter<T>::updateFilter()
         stageG[i] = _g * stageFreqOffsets[i];
     }
 
+    if (bypassFirstStage) {
+        stageG[0] = getGfromNormFreq(T(.49));
+    }
+
     dump("update");
 }
 
@@ -254,6 +250,7 @@ void LadderFilter<T>::setType(Types t)
         return;
 
     bypassFirstStage = false;
+  //  _g = getGfromNormFreq(input);
     type = t;
     switch (type) {
         case Types::_4PLP:
@@ -318,14 +315,16 @@ void LadderFilter<T>::setType(Types t)
             break;
         case Types::_3PHP:
             bypassFirstStage = true;
-            stageTaps[3] = 1;
+            stageTaps[3] = -1;
             stageTaps[2] = 3;
-            stageTaps[1] = 3;
+            stageTaps[1] = -3;
             stageTaps[0] = 1;
             break;
         default:
             assert(false);
     }
+    updateFilter();
+    dump("set type");
 }
 
 template <typename T>
@@ -380,10 +379,122 @@ inline void LadderFilter<T>::run(T input)
 
     mixedOutput = down.process(buffer);
 
-    // maybe don't need this anymore?
-   // mixedOutput = std::max(T(-10), mixedOutput);
-  //  mixedOutput = std::min(T(10), mixedOutput);
 }
+
+/**************************************************************************************
+ *
+ * A set of macros for (ugh) building up process functions for different distortion functions
+ */
+#define PROC_PREAMBLE(name) template <typename T> \
+    inline void  LadderFilter<T>::name(T* buffer, int numSamples) { \
+        for (int i = 0; i < numSamples; ++i) { \
+            const T input = buffer[i]; \
+            T temp = input - feedback * stageOutputs[3]; \
+            temp = std::max(T(-10), temp); \
+            temp = std::min(T(10), temp);
+
+#define PROC_END \
+        if (type != Types::_4PLP) { \
+            temp = 0; \
+            for (int i = 0; i < 4; ++i) { \
+                temp += stageOutputs[i] * stageTaps[i]; \
+            } \
+        } \
+        buffer[i] = temp; \
+     } \
+}
+
+#define ONETAP(func, index) \
+    temp *= stageGain[index]; \
+    func(); \
+    temp = lpfs[index].run(temp, stageG[index]); \
+    stageOutputs[index] = temp;
+    
+#define BODY( func0, func1, func2, func3) \
+    ONETAP(func0, 0) \
+    ONETAP(func1, 1) \
+    ONETAP(func2, 2) \
+    ONETAP(func3, 3)
+
+#define TANH() temp = T(2) * LookupTable<float>::lookup(*tanhLookup.get(), T(.5) * temp, true)
+#define CLIP() temp = std::max(temp, -1.f); temp = std::min(temp, 1.f)
+#define CLIP_TOP()  temp = std::min(temp, 1.f)
+#define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
+#define FOLD() temp = AudioMath::fold(temp)
+#define FOLD_ATTEN() temp = AudioMath::fold(temp * T(.5))
+#define FOLD_TOP() temp = (temp > 0) ? AudioMath::fold(temp) : temp
+#define FOLD_BOTTOM() temp = (temp < 0) ? AudioMath::fold(temp) : temp
+#define NOPROC()
+
+PROC_PREAMBLE(runBufferClassic)
+BODY( TANH, TANH, TANH, TANH)
+PROC_END
+
+PROC_PREAMBLE(runBufferClip)
+BODY(CLIP, CLIP, CLIP, CLIP)
+PROC_END
+
+PROC_PREAMBLE(runBufferClip2)
+BODY(CLIP_TOP, CLIP_BOTTOM, CLIP_TOP, CLIP_BOTTOM)
+PROC_END
+
+PROC_PREAMBLE(runBufferFold)
+BODY(FOLD_ATTEN, FOLD, FOLD, FOLD)
+PROC_END
+
+PROC_PREAMBLE(runBufferFold2)
+BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
+PROC_END
+
+#if 1
+PROC_PREAMBLE(runBufferClean)
+BODY(NOPROC, NOPROC, NOPROC, NOPROC)
+PROC_END
+#endif
+
+template <typename T>
+inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
+{
+    return {
+        "4P LP",
+        "3P LP",
+        "2P LP",
+        "1P LP",
+        "2P BP",
+        "2HP+1LP",
+        "3HP+1LP",
+        "4P BP",
+        "1LP+Notch",
+        "3AP+1LP",
+        "3P HP"
+    };
+}
+
+template <typename T>
+inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
+{
+    return {
+        "Transistor",
+        "Clip",
+        "Asym Clip",
+        "Fold",
+        "Asym Fold",
+        "Clean"
+    };
+}
+
+#if 0
+template <typename T>
+inline  std::vector<std::string> LadderFilter<T>::getBassMakeupNames()
+{
+    return {
+       "Gain",
+       "Tracking Filter",
+       "Fixed Filter"
+    };
+}
+#endif
+
 
 #if 0 // This is the test bed for HPF Q comp
 template <typename T>
@@ -477,115 +588,15 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 }
 #endif
 
-/**************************************************************************************
- *
- * A set of macros for (ugh) building up process functions for different distortion functions
- */
-#define PROC_PREAMBLE(name) template <typename T> \
-    inline void  LadderFilter<T>::name(T* buffer, int numSamples) { \
-        for (int i = 0; i < numSamples; ++i) { \
-            const T input = buffer[i]; \
-            T temp = input - feedback * stageOutputs[3]; \
-            temp = std::max(T(-10), temp); \
-            temp = std::min(T(10), temp);
-
-#define PROC_END \
-        if (type != Types::_4PLP) { \
-            temp = 0; \
-            for (int i = 0; i < 4; ++i) { \
-                temp += stageOutputs[i] * stageTaps[i]; \
-            } \
-        } \
-        buffer[i] = temp; \
-     } \
-}
-
-#define ONETAP(func, index) \
-    temp *= stageGain[index]; \
-    func(); \
-    temp = lpfs[index].run(temp, stageG[index]); \
-    stageOutputs[index] = temp;
-    
-#define BODY( func0, func1, func2, func3) \
-    ONETAP(func0, 0) \
-    ONETAP(func1, 1) \
-    ONETAP(func2, 2) \
-    ONETAP(func3, 3)
-
-#define TANH() temp = T(2) * LookupTable<float>::lookup(*tanhLookup.get(), T(.5) * temp, true)
-#define CLIP() temp = std::max(temp, -1.f); temp = std::min(temp, 1.f)
-#define CLIP_TOP()  temp = std::min(temp, 1.f)
-#define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
-#define FOLD() temp = AudioMath::fold(temp)
-#define FOLD_ATTEN() temp = AudioMath::fold(temp * T(.5))
-#define FOLD_TOP() temp = (temp > 0) ? AudioMath::fold(temp) : temp
-#define FOLD_BOTTOM() temp = (temp < 0) ? AudioMath::fold(temp) : temp
-#define NOPROC()
-
-PROC_PREAMBLE(runBufferClassic)
-BODY( TANH, TANH, TANH, TANH)
-PROC_END
-
-PROC_PREAMBLE(runBufferClip)
-BODY(CLIP, CLIP, CLIP, CLIP)
-PROC_END
-
-PROC_PREAMBLE(runBufferClip2)
-BODY(CLIP_TOP, CLIP_BOTTOM, CLIP_TOP, CLIP_BOTTOM)
-PROC_END
-
-PROC_PREAMBLE(runBufferFold)
-BODY(FOLD_ATTEN, FOLD, FOLD, FOLD)
-PROC_END
-
-PROC_PREAMBLE(runBufferFold2)
-BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
-PROC_END
-
-#if 1
-PROC_PREAMBLE(runBufferClean)
-BODY(NOPROC, NOPROC, NOPROC, NOPROC)
-PROC_END
-#endif
-
-template <typename T>
-inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
-{
-    return {
-        "4P LP",
-        "3P LP",
-        "2P LP",
-        "1P LP",
-        "2P BP",
-        "2HP+1LP",
-        "3HP+1LP",
-        "4P BP",
-        "1LP+Notch",
-        "3AP+1LP"
-    };
-}
-
-template <typename T>
-inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
-{
-    return {
-        "Transistor",
-        "Clip",
-        "Asym Clip",
-        "Fold",
-        "Asym Fold",
-        "Clean"
-    };
-}
 
 #if 0
 template <typename T>
-inline  std::vector<std::string> LadderFilter<T>::getBassMakeupNames()
+void LadderFilter<T>::setBassMakeupNormalizeFreq(T f)
 {
-    return {
-       "Gain",
-       "Tracking Filter",
-       "Fixed Filter"
-    };
+    if (f != lastNormalizedBassFreq) {
+        lastNormalizedBassFreq = f;
+        _gHP = getGfromNormFreq(f);
+        dump("setBassF");
+    }
 }
 #endif
