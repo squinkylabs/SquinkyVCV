@@ -17,6 +17,8 @@ Reduced overall output volume 6db.
 
 Mode the overall filter much more stable.
 
+Corrected the arithmetic in the Edge control such that the default setting (50%) is now neutral. This make the other filters (like bandpass) work correctly.
+
 Removed the choices for bass makeup gain and went with the standard one. It works now.
 
 Reduced the input gain of the folder to make it less crazy. Asym Folder is still crazy, and will still go into chaotic modes pretty easily.

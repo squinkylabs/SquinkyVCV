@@ -25,7 +25,8 @@ public:
         _3HP1LP,
         _4PBP,
         _1LPNotch,
-        _3AP1LP
+        _3AP1LP,
+        _3PHP
     };
 
     enum class Voicing
@@ -64,10 +65,6 @@ public:
     void setGain(T);
     void setEdge(T);        // 0..1
     void setFreqSpread(T);
-
-    /** set < 0 to turn off
-    */
-  //  void setBassMakeupNormalizeFreq(T);
     void setBassMakeupGain(T);
    
     static std::vector<std::string> getTypeNames();
@@ -100,6 +97,7 @@ private:
     Voicing voicing = Voicing::Classic;
     T lastNormalizedFc = T(.0001);
     T lastNormalizedBassFreq = T(.0001);
+    bool bypassFirstStage = false;
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
     std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
@@ -134,8 +132,8 @@ inline void LadderFilter<T>::dump(const char* p)
     {
 #if 0
         printf("dump %s\n", p);
-        printf("f = %.2f, g=%.2f edge=%.2f\n", feedback, gain, edge);
-        printf("_g=%f,  bgain=%.2f\n", _g, bassMakeupGain);
+        printf("feedback = %.2f, gain%.2f edge=%.2f\n", feedback, gain, edge);
+        printf("filt:_g=%f,  bgain=%.2f\n", _g, bassMakeupGain);
         for (int i = 0; i < 4; ++i) {
             printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f\n", i,
                 stageTaps[i],
@@ -214,13 +212,13 @@ void LadderFilter<T>::setFreqSpread(T s)
     updateFilter();
 }
 
-
 template <typename T>
 void LadderFilter<T>::updateFilter()
 {
     for (int i = 0; i < 4; ++i) {
         stageG[i] = _g * stageFreqOffsets[i];
     }
+
     dump("update");
 }
 
@@ -237,7 +235,7 @@ void LadderFilter<T>::setEdge(T e)
     if (e > .5) {
         e2 = 6 * (e - T(.5)) + 1;
     } else {
-        e2 = e * T(1.75) + T(.25);
+        e2 = e * T(1.75) + T(.125);
     }
     AudioMath::distributeEvenly(stageGain, 4, e2);
     dump("set edge");
@@ -255,6 +253,7 @@ void LadderFilter<T>::setType(Types t)
     if (t == type) 
         return;
 
+    bypassFirstStage = false;
     type = t;
     switch (type) {
         case Types::_4PLP:
@@ -316,6 +315,13 @@ void LadderFilter<T>::setType(Types t)
             stageTaps[2] = T(4.12);
             stageTaps[1] = T(-2.05);
             stageTaps[0] = T(.68);
+            break;
+        case Types::_3PHP:
+            bypassFirstStage = true;
+            stageTaps[3] = 1;
+            stageTaps[2] = 3;
+            stageTaps[1] = 3;
+            stageTaps[0] = 1;
             break;
         default:
             assert(false);
@@ -490,7 +496,7 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
                 temp += stageOutputs[i] * stageTaps[i]; \
             } \
         } \
-            buffer[i] = temp; \
+        buffer[i] = temp; \
      } \
 }
 
@@ -500,17 +506,13 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
     temp = lpfs[index].run(temp, stageG[index]); \
     stageOutputs[index] = temp;
     
-
 #define BODY( func0, func1, func2, func3) \
     ONETAP(func0, 0) \
     ONETAP(func1, 1) \
     ONETAP(func2, 2) \
-    ONETAP(func3, 3) \
+    ONETAP(func3, 3)
 
-
-//#define TANH() temp = T(5) * LookupTable<float>::lookup(*tanhLookup.get(), T(.2) * temp, true)
 #define TANH() temp = T(2) * LookupTable<float>::lookup(*tanhLookup.get(), T(.5) * temp, true)
-//#define TANH() temp =  LookupTable<float>::lookup(*tanhLookup.get(), temp, true)
 #define CLIP() temp = std::max(temp, -1.f); temp = std::min(temp, 1.f)
 #define CLIP_TOP()  temp = std::min(temp, 1.f)
 #define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
