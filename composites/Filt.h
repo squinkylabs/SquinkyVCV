@@ -41,7 +41,7 @@ template <class TBase>
 class Filt : public TBase
 {
 public:
-    using T = float;
+    using T = double;
     Filt(Module * module) : TBase(module)
     {
     }

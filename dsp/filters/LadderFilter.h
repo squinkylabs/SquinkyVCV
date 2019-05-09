@@ -130,24 +130,21 @@ LadderFilter<T>::LadderFilter()
 
 template <typename T>
 inline void LadderFilter<T>::dump(const char* p)
-    {
+{
 #if 1
-        printf("\ndump %s\n", p);
-        printf("feedback = %.2f, gain%.2f edge=%.2f\n", feedback, gain, edge);
-        printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
-        for (int i = 0; i < 4; ++i) {
-            printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f filter_G %f\n", i,
-                stageTaps[i],
-                stageGain[i],
-                stageFreqOffsets[i],
-                stageG[i]);
-        }
-        fflush(stdout);
-#endif
+    printf("\ndump %s\n", p);
+    printf("feedback = %.2f, gain%.2f edge=%.2f\n", feedback, gain, edge);
+    printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
+    for (int i = 0; i < 4; ++i) {
+        printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f filter_G %f\n", i,
+            stageTaps[i],
+            stageGain[i],
+            stageFreqOffsets[i],
+            stageG[i]);
     }
-
-
-
+    fflush(stdout);
+#endif
+}
 
 
 template <typename T>
@@ -212,7 +209,7 @@ void LadderFilter<T>::updateFilter()
     }
 
     if (bypassFirstStage) {
-        stageG[0] = getGfromNormFreq(T(.49));
+        stageG[0] = getGfromNormFreq(T(.9));
     }
 
     dump("update");
@@ -295,6 +292,13 @@ void LadderFilter<T>::setType(Types t)
             stageTaps[1] = T(-2.05);
             stageTaps[0] = T(.68);
             break;
+        case Types::_3PHP:
+            bypassFirstStage = true;
+            stageTaps[3] = -1;
+            stageTaps[2] = 3;
+            stageTaps[1] = -3;
+            stageTaps[0] = 1;
+            break;
         case Types::_4PBP:
             stageTaps[3] = T(-.68);
             stageTaps[2] = T(1.36);
@@ -313,13 +317,7 @@ void LadderFilter<T>::setType(Types t)
             stageTaps[1] = T(-2.05);
             stageTaps[0] = T(.68);
             break;
-        case Types::_3PHP:
-            bypassFirstStage = true;
-            stageTaps[3] = -1;
-            stageTaps[2] = 3;
-            stageTaps[1] = -3;
-            stageTaps[0] = 1;
-            break;
+
         default:
             assert(false);
     }
@@ -351,7 +349,7 @@ template <typename T>
 inline void LadderFilter<T>::run(T input)
 {
     input *= gain;
-    T buffer[oversampleRate];
+    float buffer[oversampleRate];
     up.process(buffer, input);
 
     switch (voicing) {
