@@ -108,12 +108,12 @@ private:
     IIRUpsampler up;
     IIRDecimator down;
 
-    void runBufferClassic(T* buffer, int );
-    void runBufferClip(T* buffer, int);
-    void runBufferClip2(T* buffer, int);
-    void runBufferFold(T* buffer, int);
-    void runBufferFold2(T* buffer, int);
-    void runBufferClean(T* buffer, int);
+    void runBufferClassic(float* buffer, int );
+    void runBufferClip(float* buffer, int);
+    void runBufferClip2(float* buffer, int);
+    void runBufferFold(float* buffer, int);
+    void runBufferFold2(float* buffer, int);
+    void runBufferClean(float* buffer, int);
 
     void updateFilter();
     void dump(const char* p);
@@ -350,7 +350,7 @@ inline void LadderFilter<T>::run(T input)
 {
     input *= gain;
     float buffer[oversampleRate];
-    up.process(buffer, input);
+    up.process(buffer, (float) input);
 
     switch (voicing) {
         case Voicing::Classic:
@@ -384,7 +384,7 @@ inline void LadderFilter<T>::run(T input)
  * A set of macros for (ugh) building up process functions for different distortion functions
  */
 #define PROC_PREAMBLE(name) template <typename T> \
-    inline void  LadderFilter<T>::name(T* buffer, int numSamples) { \
+    inline void  LadderFilter<T>::name(float* buffer, int numSamples) { \
         for (int i = 0; i < numSamples; ++i) { \
             const T input = buffer[i]; \
             T temp = input - feedback * stageOutputs[3]; \
@@ -415,9 +415,9 @@ inline void LadderFilter<T>::run(T input)
     ONETAP(func3, 3)
 
 #define TANH() temp = T(2) * LookupTable<float>::lookup(*tanhLookup.get(), T(.5) * temp, true)
-#define CLIP() temp = std::max(temp, -1.f); temp = std::min(temp, 1.f)
-#define CLIP_TOP()  temp = std::min(temp, 1.f)
-#define CLIP_BOTTOM()  temp = std::max(temp, -1.f)
+#define CLIP() temp = std::max<T>(temp, -1.f); temp = std::min<T>(temp, 1.f)
+#define CLIP_TOP()  temp = std::min<T>(temp, 1.f)
+#define CLIP_BOTTOM()  temp = std::max<T>(temp, -1.f)
 #define FOLD() temp = AudioMath::fold(temp)
 #define FOLD_ATTEN() temp = AudioMath::fold(temp * T(.5))
 #define FOLD_TOP() temp = (temp > 0) ? AudioMath::fold(temp) : temp

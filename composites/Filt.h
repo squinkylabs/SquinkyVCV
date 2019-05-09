@@ -272,7 +272,7 @@ inline void Filt<TBase>::step()
         if (imp.isActive) {
             const float input = TBase::inputs[L_AUDIO_INPUT+i].value;
             imp._f.run(input);
-            const float output = imp._f.getOutput();
+            const float output = (float) imp._f.getOutput();
             TBase::outputs[L_AUDIO_OUTPUT+i].value = output;
         }
     }
