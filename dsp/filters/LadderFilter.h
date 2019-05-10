@@ -50,7 +50,7 @@ public:
 #endif
 
   //  void setBaseMakeupNormalizeFreq(T);
-    void setBaseMakeupGain(T);
+   // void setBaseMakeupGain(T);
 
     void run(T);
     T getOutput();
@@ -131,7 +131,7 @@ LadderFilter<T>::LadderFilter()
 template <typename T>
 inline void LadderFilter<T>::dump(const char* p)
 {
-#if 1
+#if 0
     printf("\ndump %s\n", p);
     printf("feedback = %.2f, gain%.2f edge=%.2f\n", feedback, gain, edge);
     printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
@@ -169,6 +169,8 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
 template <typename T>
 void LadderFilter<T>::setBassMakeupGain(T g)
 {
+    assert(g >= 1);     // must be
+    assert(g < 10);     // tends to be
     if (g != bassMakeupGain) {
         bassMakeupGain = g;
         dump("setBassG");

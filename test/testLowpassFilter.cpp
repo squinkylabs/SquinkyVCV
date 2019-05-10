@@ -111,8 +111,6 @@ static void calibrateTrap()
 
 }
 
-
-
 template<typename T>
 static void testTwoPoleButterworth100()
 {
@@ -252,7 +250,6 @@ static void testCVFeedthroughTrap()
     const float Fc = 100;
     using T = float;
 
-  //  TrapezoidalLowpass<T> lpf( T(.00717));
     TrapezoidalLowpass<T> lpf;
     float g2 = lpf.legacyCalcG2(.00717f);
 
@@ -263,7 +260,6 @@ static void testCVFeedthroughTrap()
 
     auto change = [&lpf, &g2] {
         const float Fc = 400;
-      //  lpf.setG(T(.0287));
         g2 = lpf.legacyCalcG2(.0287f);
     };
 
@@ -271,6 +267,42 @@ static void testCVFeedthroughTrap()
     assertLT(jump, .28);
 }
 
+static void testTrapDCf()
+{
+    TrapezoidalLowpass<float> lpf;
+    const float g2 = lpf.legacyCalcG2(.00717f);
+    const float x = 3.41f;
+    float y;
+
+    const int times = 1000;
+    for (int i = 0; i < times; ++i) {
+        y = lpf.run(x, g2);
+    }
+    // 100 iter: error = .8
+    // 1000 and up:  .000016
+    //printf("testTrapDCf: repeat %d: output = %f, error = %f\n", times,  y, x - y);
+
+    assertClose(x - y, 0, .00002);
+}
+
+static void testTrapDCd()
+{
+    TrapezoidalLowpass<double> lpf;
+    const double g2 = lpf.legacyCalcG2(.00717f);
+    const double x = 3.41;
+    double y;
+    const int times = 10000;
+    for (int i = 0; i < times; ++i) {
+        y = lpf.run(x, g2);
+    }
+    // 100 iter: error = .8
+    // 1000 .000002
+    // 10000: 0
+   // printf("testTrapDCd: rep %d output = %f, error = %f\n", times, y, x - y);
+    const double error = x - y;
+    const double exp = 4.1e-14;
+    assertClose(error, 0, exp);
+}
 /******************************************************************************************************/
 
 #if 0 // not ready for prime time
@@ -389,11 +421,11 @@ void testLowpassFilter()
     _testLowpassFilter<double>();
     testCVFeedthrough();
     //calibrateTrap();
+    testTrapDCf();
+    testTrapDCd();
     decimate0();
     decimate1();
 }
-
-
 
 /*********************************************************************************
 **

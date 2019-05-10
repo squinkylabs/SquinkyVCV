@@ -175,9 +175,9 @@ inline void Filt<TBase>::stepn(int)
     }
     #endif
     
-    const float res = TBase::params[Q_PARAM].value;
-    const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
-    const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
+    float res = TBase::params[Q_PARAM].value;
+    LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
+    LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
    
     //********* now the drive 
         // 0..1
@@ -188,9 +188,9 @@ inline void Filt<TBase>::stepn(int)
        // TBase::params[PARAM_GAIN_TRIM].value);
         1);
 
-    const float gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
-    const float staging = TBase::params[STAGING_PARAM].value;
-    const float spread = TBase::params[SPREAD_PARAM].value;
+    float gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    float staging = TBase::params[STAGING_PARAM].value;
+    float spread = TBase::params[SPREAD_PARAM].value;
 #if 0
     {
         static float g = -1;
@@ -232,6 +232,18 @@ inline void Filt<TBase>::stepn(int)
             break;
     }
 #endif
+
+// fix it to known good values for test
+    type = LadderFilter<T>::Types::_3PHP;
+    fcClipped = (1 / T(40));
+    makeupGain = 1;
+    voicing = LadderFilter<T>::Voicing::Clean;
+    res = 0;
+
+
+    staging = (.5);
+    spread = 0;
+    gain = (1);
 
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
