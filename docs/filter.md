@@ -17,9 +17,9 @@ There are five new filter types, including some really nice highpass types.
 
 I made all the filters slightly more accurate an less noisy at low frequencies.
 
-Reduced overall output volume 6db.
+Reduced overall output volume 6db, and brought up the levels of the really quiet filter types.
 
-Mode the overall filter much more stable.
+Made the overall filter much more stable.
 
 Corrected the arithmetic in the Edge control such that the default setting (50%) is now neutral. This make the other filters (like bandpass) work correctly.
 

@@ -281,20 +281,20 @@ void LadderFilter<T>::setType(Types t)
         case Types::_2PBP:
             stageTaps[3] = 0;
             stageTaps[2] = 0;
-            stageTaps[1] = T(-.68);
-            stageTaps[0] = T(.68);
+            stageTaps[1] = T(-.68) * 2;
+            stageTaps[0] = T(.68) * 2;
             break;
         case Types::_2HP1LP:
             stageTaps[3] = 0;
-            stageTaps[2] = T(.68);
-            stageTaps[1] = T(-1.36);
-            stageTaps[0] = T(.5);
+            stageTaps[2] = T(.68) * 2;
+            stageTaps[1] = T(-1.36) * 2;
+            stageTaps[0] = T(.68) * 2;
             break;
         case Types::_3HP1LP:
-            stageTaps[3] = T(-.68);
-            stageTaps[2] = T(2.05);
-            stageTaps[1] = T(-2.05);
-            stageTaps[0] = T(.68);
+            stageTaps[3] = T(-.68) * 4;
+            stageTaps[2] = T(2.05) * 4;
+            stageTaps[1] = T(-2.05) * 4;
+            stageTaps[0] = T(.68) * 4;
             break;
         case Types::_3PHP:
             bypassFirstStage = true;
@@ -318,9 +318,9 @@ void LadderFilter<T>::setType(Types t)
             stageTaps[0] = 1;
             break;
         case Types::_4PBP:
-            stageTaps[3] = T(-.68);
-            stageTaps[2] = T(1.36);
-            stageTaps[1] = T(-.68);
+            stageTaps[3] = T(-.68) * 4;
+            stageTaps[2] = T(1.36) * 4;
+            stageTaps[1] = T(-.68) * 4;
             stageTaps[0] = 0;
             break;
         case Types::_1LPNotch:
