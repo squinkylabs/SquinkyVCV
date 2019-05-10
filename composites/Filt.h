@@ -162,22 +162,10 @@ inline void Filt<TBase>::stepn(int)
     const T normFc = fc * TBase::engineGetSampleTime();
     T fcClipped = std::min(normFc, T(.48));
     fcClipped = std::max(fcClipped, T(.0000001));
-
-   // printf("main freq = %f norm=%f\n", fc, normFc);
- #if 0
-    {
-        static float c = -1;
-        if (c != fc) {
-            c = fc;
-            printf("setting Fc to %f x=%f normFC=%f clipped=%f\n",
-             fc, x, normFc, fcClipped); fflush(stdout);
-        }
-    }
-    #endif
     
-    float res = TBase::params[Q_PARAM].value;
-    LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
-    LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
+    const float res = TBase::params[Q_PARAM].value;
+    const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
+    const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
    
     //********* now the drive 
         // 0..1
@@ -191,48 +179,12 @@ inline void Filt<TBase>::stepn(int)
     float gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     float staging = TBase::params[STAGING_PARAM].value;
     float spread = TBase::params[SPREAD_PARAM].value;
-#if 0
-    {
-        static float g = -1;
-        if (g != gain) {
-            g = gain;
-            printf("gainInput = %f final = %f\n", gainInput, gain); fflush(stdout);
-        }
-    }
-#endif
 
     T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
-  //  BassMakeup b = (BassMakeup)(int) std::round(TBase::params[BASS_MAKEUP_TYPE_PARAM].value);
     T makeupGain = 1;
     makeupGain = 1 + bAmt * (res);
+
 #if 0
-    //T makeupFreq = -1;
-    switch (b) {
-        case BassMakeup::Gain:
-            // 1 ... 4
-            makeupGain = 1 + bAmt * (res);
-            break;
-        case BassMakeup::TrackingFilter:
-            {
-                T trackingCV = freqCV + ((bAmt - 1) * 5);
-                const T fc = LookupTable<T>::lookup(*expLookup, trackingCV, true) * 10;
-
-                const T normT = fc * TBase::engineGetSampleTime();
-                T tClipped = std::min(normT, T(.48));
-                tClipped = std::max(tClipped, T(.0000001));
-                makeupFreq = tClipped;
-            }
-            break;
-        case BassMakeup::FixedFilter:
-            {
-                T fHz = 100 + 400 * bAmt;
-                makeupFreq = fHz * TBase::engineGetSampleTime();
-               // printf("bass makeup val = %f, fhz=%f,mf = %f\n", bAmt, fHz, makeupFreq);
-            }
-            break;
-    }
-#endif
-
 // fix it to known good values for test
     type = LadderFilter<T>::Types::_3PHP;
     fcClipped = (1 / T(40));
@@ -244,6 +196,7 @@ inline void Filt<TBase>::stepn(int)
     staging = (.5);
     spread = 0;
     gain = (1);
+#endif
 
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
