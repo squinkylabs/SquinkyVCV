@@ -13,6 +13,10 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 ## next
 
+There are five new filter types, including some really nice highpass types.
+
+I made all the filters slightly more accurate an less noisy at low frequencies.
+
 Reduced overall output volume 6db.
 
 Mode the overall filter much more stable.
@@ -47,7 +51,7 @@ There is a new voicing setting, "Clean", but aside from being clean, it's also w
 
 ## Important notes
 
-Although the filter can produce many responses besides just four pole lowpass, it it still at its heart a four pole lowpass with some fancy stuff on top. Because of this, many of the responses other than lowpass will work less well the more the filter itself is pushed away from perfection. So with enough *drive*, *edge*, *Caps* and such it will be less and less like a highpass or a bandpass.
+Although the filter can produce many responses besides just four pole lowpass, it it still at its heart a four pole lowpass with some fancy stuff on top. Because of this, many of the responses other than lowpass will work less well the more the filter itself is pushed away from perfection. So with enough *drive*, *edge*, *Caps* and such it will be less and less like a highpass or a bandpass. This can be dramatic, so if you want the highpass or bandpass to be close at all to their real shape, it's very important that the edge control be exactly in the middle. Sometimes re-initializing the module is the easiest way to get there.
 
 Many of the controls change the distortion level or the character of the distortion. So sometimes turning one won't sound that much different from turning another one. Or you keep adding more and more distortion until everything is just a big flabby mess. The Drive, Voicing, and Edge all add or change distortion. When you are first learning to find sounds with Filter, try keeping the distortion to a moderate level so that it's easier to hear what the other controls do.
 
