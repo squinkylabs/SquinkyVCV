@@ -188,7 +188,7 @@ inline void Filt<TBase>::stepn(int)
        // TBase::params[PARAM_GAIN_TRIM].value);
         1);
 
-    float gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+    T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     float staging = TBase::params[STAGING_PARAM].value;
     float spread = TBase::params[SPREAD_PARAM].value;
 #if 0

@@ -36,20 +36,11 @@ static void setupFilter(LadderFilter<T>& f)
     f.setVoicing(LadderFilter<T>::Voicing::Clean);
     f.setFeedback(0);
 
-#if 1   // these settings pass
     f.setEdge(.5);
    
     f.setFeedback(0);
     f.setFreqSpread(0);
     f.setGain(1);
-#endif
-    // edge has no effect on clean
-    //f.setEdge(.5);
-    // feedback up up until unstable
-   // f.setFeedback(3);
-    // for 3php spread is ok
-  //  f.setFreqSpread(.5);
- //   f.setGain(1.1);
 }
 
 static void testLadderDCf(int repeats)
@@ -90,6 +81,14 @@ static void testLadderDCd(int repeats)
     if (repeats >= 1000) assertClose(y, 0, 3e-6);
 }
 
+static void testLadderTypes()
+{
+    for (int i = 0; i < (int) LadderFilter<double>::Types::NUM_TYPES; ++i) {
+        LadderFilter<double> f;
+        f.setType(LadderFilter<double>::Types(i));
+    }
+}
+
 static void testFilt()
 {
     Filt<TestComposite> f;
@@ -122,12 +121,9 @@ void testLadder()
 {
     testLadderZero();
     testLadderNotZero();
-    testLadderDCf(100);
     testLadderDCf(1000);
-    testLadderDCd(100);
     testLadderDCd(1000);
-
-    testLadderDCd(10000);
+    testLadderTypes();
     testFilt();
     testFilt2();
 }
