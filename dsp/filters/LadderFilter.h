@@ -27,6 +27,10 @@ public:
         _1LPNotch,
         _3AP1LP,
         _3PHP,
+        _2PHP,
+        _1PHP,
+        _NOTCH,
+        _PHASER,
         NUM_TYPES
     };
 
@@ -73,8 +77,6 @@ public:
 
 private:
     TrapezoidalLowpass<T> lpfs[4];
-   // TrapezoidalHighpass<T> hpf;
-
 
     /**
      * Lowpass pole gain
@@ -101,7 +103,7 @@ private:
     bool bypassFirstStage = false;
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
-    std::shared_ptr<LookupTableParams<float>> tanhLookup = ObjectCache<float>::getTanh5();
+    std::shared_ptr<LookupTableParams<T>> tanhLookup = ObjectCache<T>::getTanh5();
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();
 
     static const int oversampleRate = 4;
@@ -301,6 +303,20 @@ void LadderFilter<T>::setType(Types t)
             stageTaps[1] = -3;
             stageTaps[0] = 1;
             break;
+        case Types::_2PHP:
+            bypassFirstStage = true;
+            stageTaps[3] = 0;
+            stageTaps[2] = 1;
+            stageTaps[1] = -2;
+            stageTaps[0] = 1;
+            break;
+        case Types::_1PHP:
+            bypassFirstStage = true;
+            stageTaps[3] = 0;
+            stageTaps[2] = 0;
+            stageTaps[1] = -1;
+            stageTaps[0] = 1;
+            break;
         case Types::_4PBP:
             stageTaps[3] = T(-.68);
             stageTaps[2] = T(1.36);
@@ -318,6 +334,20 @@ void LadderFilter<T>::setType(Types t)
             stageTaps[2] = T(4.12);
             stageTaps[1] = T(-2.05);
             stageTaps[0] = T(.68);
+            break;
+        case Types::_NOTCH:
+            bypassFirstStage = true;
+            stageTaps[3] = 0;
+            stageTaps[2] = 2;
+            stageTaps[1] = -2;
+            stageTaps[0] = 1;
+            break;
+        case Types::_PHASER:
+            bypassFirstStage = true;
+            stageTaps[3] = -4;
+            stageTaps[2] = 6;
+            stageTaps[1] = -3;
+            stageTaps[0] = 1;
             break;
 
         default:
@@ -400,7 +430,7 @@ inline void LadderFilter<T>::run(T input)
                 temp += stageOutputs[i] * stageTaps[i]; \
             } \
         } \
-        buffer[i] = temp; \
+        buffer[i] = float(temp); \
      } \
 }
 
@@ -416,14 +446,14 @@ inline void LadderFilter<T>::run(T input)
     ONETAP(func2, 2) \
     ONETAP(func3, 3)
 
-#define TANH() temp = T(2) * LookupTable<float>::lookup(*tanhLookup.get(), T(.5) * temp, true)
+#define TANH() temp = T(2) * LookupTable<T>::lookup(*tanhLookup.get(), T(.5) * temp, true)
 #define CLIP() temp = std::max<T>(temp, -1.f); temp = std::min<T>(temp, 1.f)
 #define CLIP_TOP()  temp = std::min<T>(temp, 1.f)
 #define CLIP_BOTTOM()  temp = std::max<T>(temp, -1.f)
-#define FOLD() temp = AudioMath::fold(temp)
-#define FOLD_ATTEN() temp = AudioMath::fold(temp * T(.5))
-#define FOLD_TOP() temp = (temp > 0) ? AudioMath::fold(temp) : temp
-#define FOLD_BOTTOM() temp = (temp < 0) ? AudioMath::fold(temp) : temp
+#define FOLD() temp = AudioMath::fold(float(temp))
+#define FOLD_ATTEN() temp = AudioMath::fold(float(temp) * .5f)
+#define FOLD_TOP() temp = (temp > 0) ? (T) AudioMath::fold(float(temp)) : temp
+#define FOLD_BOTTOM() temp = (temp < 0) ? (T) AudioMath::fold(float(temp)) : temp
 #define NOPROC()
 
 PROC_PREAMBLE(runBufferClassic)
@@ -466,7 +496,11 @@ inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
         "4P BP",
         "1LP+Notch",
         "3AP+1LP",
-        "3P HP"
+        "3P HP",
+        "2P HP",
+        "1P HP",
+        "NOTCH",
+        "PHASER"
     };
 }
 
