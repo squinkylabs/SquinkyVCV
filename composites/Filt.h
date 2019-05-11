@@ -36,6 +36,7 @@ public:
 /**
  * CPU usage, tanh and no oversampling: 30
  * with 4X: 140
+ * with all the features: 145
  */
 template <class TBase>
 class Filt : public TBase

@@ -155,6 +155,8 @@ static void testFilt()
 {
     Filter fs;
     fs.init();
+    fs.inputs[Filter::L_AUDIO_INPUT].active = true;
+    fs.outputs[Filter::L_AUDIO_OUTPUT].active = true;
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "filt", [&fs]() {
         fs.inputs[Filter::L_AUDIO_INPUT].value = TestBuffers<float>::get();
