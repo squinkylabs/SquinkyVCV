@@ -66,9 +66,8 @@ public:
         VOICING_PARAM,
         STAGING_PARAM,      // aka "edge"
         SPREAD_PARAM,
-        POLES_PARAM,
+        SLOPE_PARAM,
         BASS_MAKEUP_PARAM,
-    //    BASS_MAKEUP_TYPE_PARAM,
         NUM_PARAMS
     };
 
@@ -92,10 +91,10 @@ public:
 
     enum LightIds
     {
-        POLE1_LIGHT,
-        POLE2_LIGHT,
-        POLE3_LIGHT,
-        POLE4_LIGHT,
+        SLOPE0_LIGHT,
+        SLOPE1_LIGHT,
+        SLOPE2_LIGHT,
+        SLOPE3_LIGHT,
         NUM_LIGHTS
     };
 
@@ -188,6 +187,8 @@ inline void Filt<TBase>::stepn(int)
     T makeupGain = 1;
     makeupGain = 1 + bAmt * (res);
 
+    T slope = TBase::params[SLOPE_PARAM].value;
+
 #if 0
 // fix it to known good values for test
     type = LadderFilter<T>::Types::_3PHP;
@@ -202,6 +203,7 @@ inline void Filt<TBase>::stepn(int)
     gain = (1);
 #endif
 
+    bool didSlope = false;
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
         imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].active && TBase::outputs[L_AUDIO_OUTPUT + i].active;
@@ -213,9 +215,17 @@ inline void Filt<TBase>::stepn(int)
             imp._f.setType(type);
             imp._f.setFeedback(res);
             imp._f.setNormalizedFc(fcClipped);
-      //      imp._f.setBassMakeupNormalizeFreq(makeupFreq); 
             imp._f.setBassMakeupGain(makeupGain);
-
+            imp._f.setSlope(slope);
+            if (!didSlope) {
+                didSlope = true;
+                for (int i = 0; i < 4; ++i) {
+                    float s = imp._f.getLEDValue(i);
+                    s *= 2;
+                    s = s * s;
+                    TBase::lights[i + Filt<TBase>::SLOPE0_LIGHT].value = s;
+                }
+            }
         }
     }
 }
@@ -286,8 +296,8 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::SPREAD_PARAM:
             ret = {0, 1, 0, "Capacitor"};
             break;
-        case Filt<TBase>::POLES_PARAM:
-            ret = {0, 3, 0, "Poles"};
+        case Filt<TBase>::SLOPE_PARAM:
+            ret = {0, 3, 0, "Slope"};
             break;
         case Filt<TBase>::BASS_MAKEUP_PARAM:
             ret = {0, 1, 0, "Bass"};

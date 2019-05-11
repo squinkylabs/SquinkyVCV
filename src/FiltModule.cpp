@@ -191,17 +191,17 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         icomp,
         Vec(x3, y2),
         module,
-        Comp::POLES_PARAM));
+        Comp::SLOPE_PARAM));
     addLabel(
         Vec(x3-labelDx, y2 + labelY),
         "Poles");
 
     for (int i=0; i<4; ++i) {
-        printf("about to make led # %d\n", i); fflush(stdout);
+      //  printf("about to make led # %d\n", i); fflush(stdout);
         addChild(createLightCentered<SmallLight<GreenLight>>(
             Vec(xLED, yPole1 + dyPoles * i ),
             module,
-            Comp::POLE1_LIGHT + i));
+            Comp::SLOPE0_LIGHT + i));
     }
     
 

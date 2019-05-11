@@ -179,16 +179,20 @@ inline void  LadderFilter<T>::updateSlope()
         return;
     }
    
-
+  //  printf("\n update slope %f\n", slope);
     int iSlope = (int) std::floor(slope);
     for (int i = 0; i < 4; ++i) {
         if (i == iSlope) {
             stageTaps[i] = ((i + 1) - slope) * 1;
-            stageTaps[i + 1] = (slope - i) * 1;
+            if (i < 3) {
+                stageTaps[i + 1] = (slope - i) * 1;
+            }
         } else if (i != (iSlope + 1)) {
             stageTaps[i] = 0;
         }
+     //   printf("led[%d] = %f\n", i, stageTaps[i]);
     }
+  //  fflush(stdout);
 }
 
 template <typename T>
@@ -469,7 +473,7 @@ inline void LadderFilter<T>::run(T input)
             temp = std::min(T(10), temp);
 
 #define PROC_END \
-        if (type != Types::_4PLP) { \
+        if (true || type != Types::_4PLP) { \
             temp = 0; \
             for (int i = 0; i < 4; ++i) { \
                 temp += stageOutputs[i] * stageTaps[i]; \
