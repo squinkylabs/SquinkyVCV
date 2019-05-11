@@ -191,17 +191,6 @@ inline void  LadderFilter<T>::updateSlope()
     }
 }
 
-/*
-    for (int i = LED_A; i <= LED_U; ++i) {
-        if (i == iVowel) {
-            TBase::lights[i].value = ((i + 1) - fVowel) * 1;
-            TBase::lights[i + 1].value = (fVowel - i) * 1;
-        } else if (i != (iVowel + 1)) {
-            TBase::lights[i].value = 0;
-        }
-    }
-    */
-
 template <typename T>
 inline void LadderFilter<T>::setSlope(T _slope)
 {

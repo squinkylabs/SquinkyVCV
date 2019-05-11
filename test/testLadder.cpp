@@ -148,6 +148,18 @@ static void testLED4()
     assertEQ(f.getLEDValue(1), 0);
 }
 
+static void testLED5()
+{
+    LadderFilter<double> f;
+    f.setType(LadderFilter<double>::Types::_4PLP);
+    f.setSlope(2.5);
+
+    assertClose(f.getLEDValue(3), .5, .01);
+    assertEQ(f.getLEDValue(0), 0);
+    assertClose(f.getLEDValue(2), .5, .01);
+    assertEQ(f.getLEDValue(1), 0);
+}
+
 static void testFilt()
 {
     Filt<TestComposite> f;
@@ -187,6 +199,7 @@ void testLadder()
     testLED2();
     testLED3();
     testLED4();
+    testLED5();
     testFilt();
     testFilt2();
    
