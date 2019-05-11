@@ -125,6 +125,9 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     const float y2 = 142;
     const float y3 = 186;
    // const float y4 = 220;
+   const float yPole1 = y2 - 12;
+   const float dyPoles = 8;
+   const float xLED = x3 + 26;
   
     const float labelDx = 22;
     const float labelY = -38;
@@ -192,6 +195,15 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     addLabel(
         Vec(x3-labelDx, y2 + labelY),
         "Poles");
+
+    for (int i=0; i<4; ++i) {
+        printf("about to make led # %d\n", i); fflush(stdout);
+        addChild(createLightCentered<SmallLight<GreenLight>>(
+            Vec(xLED, yPole1 + dyPoles * i ),
+            module,
+            Comp::POLE1_LIGHT + i));
+    }
+    
 
 // Third row
 

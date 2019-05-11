@@ -92,6 +92,10 @@ public:
 
     enum LightIds
     {
+        POLE1_LIGHT,
+        POLE2_LIGHT,
+        POLE3_LIGHT,
+        POLE4_LIGHT,
         NUM_LIGHTS
     };
 

@@ -15,6 +15,8 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 There are five new filter types, including some really nice highpass types.
 
+Fixed a typo that was making 2P HP + LP not do anything.
+
 I made all the filters slightly more accurate an less noisy at low frequencies.
 
 Reduced overall output volume 6db, and brought up the levels of the really quiet filter types.
