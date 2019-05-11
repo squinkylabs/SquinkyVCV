@@ -89,6 +89,65 @@ static void testLadderTypes()
     }
 }
 
+// if not 4P LP, will all be zero
+static void testLED0()
+{
+    LadderFilter<double> f;
+    f.setType(LadderFilter<double>::Types::_1PHP);
+    f.setSlope(2);
+    for (int i = 0; i < 4; ++i) {
+        assertEQ(f.getLEDValue(i), 0);
+    }
+}
+
+static void testLED1()
+{
+    LadderFilter<double> f;
+    f.setType(LadderFilter<double>::Types::_4PLP);
+    f.setSlope(0);
+
+    assertClose(f.getLEDValue(0), 1, .01);
+    assertEQ(f.getLEDValue(1), 0);
+    assertEQ(f.getLEDValue(2), 0);
+    assertEQ(f.getLEDValue(3), 0); 
+}
+
+static void testLED2()
+{
+    LadderFilter<double> f;
+    f.setType(LadderFilter<double>::Types::_4PLP);
+    f.setSlope(1);
+
+    assertClose(f.getLEDValue(1), 1, .01);
+    assertEQ(f.getLEDValue(0), 0);
+    assertEQ(f.getLEDValue(2), 0);
+    assertEQ(f.getLEDValue(3), 0);
+}
+
+static void testLED3()
+{
+    LadderFilter<double> f;
+    f.setType(LadderFilter<double>::Types::_4PLP);
+    f.setSlope(2);
+
+    assertClose(f.getLEDValue(2), 1, .01);
+    assertEQ(f.getLEDValue(0), 0);
+    assertEQ(f.getLEDValue(1), 0);
+    assertEQ(f.getLEDValue(3), 0);
+}
+
+static void testLED4()
+{
+    LadderFilter<double> f;
+    f.setType(LadderFilter<double>::Types::_4PLP);
+    f.setSlope(3);
+
+    assertClose(f.getLEDValue(3), 1, .01);
+    assertEQ(f.getLEDValue(0), 0);
+    assertEQ(f.getLEDValue(2), 0);
+    assertEQ(f.getLEDValue(1), 0);
+}
+
 static void testFilt()
 {
     Filt<TestComposite> f;
@@ -116,7 +175,6 @@ static void testFilt2()
 }
 
 
-
 void testLadder()
 {
     testLadderZero();
@@ -124,6 +182,12 @@ void testLadder()
     testLadderDCf(1000);
     testLadderDCd(1000);
     testLadderTypes();
+    testLED0();
+    testLED1();
+    testLED2();
+    testLED3();
+    testLED4();
     testFilt();
     testFilt2();
+   
 }

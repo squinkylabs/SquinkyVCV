@@ -71,7 +71,10 @@ public:
     void setEdge(T);        // 0..1
     void setFreqSpread(T);
     void setBassMakeupGain(T);
-   
+    void setSlope(T);       // 0..3. only works in 4 pole
+
+    float getLEDValue(int tapNumber);
+
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
 
@@ -79,27 +82,40 @@ private:
     TrapezoidalLowpass<T> lpfs[4];
 
     /**
-     * Lowpass pole gain
+     * Lowpass pole gain (base freq of filter converted)
      */
     T _g = .001f;
 
- //   T _gHP = .001f;
-    T bassMakeupGain = 1;
+    /**
+     * Individual _g values for each stage of filter.
+     * normally all the same, but "caps" control separates them
+     */
+    T stageG[4] = {.001f, .001f, .001f, .001f};
 
+   /**
+    * Output mixer gain for each stage
+    */
+    T stageTaps[4] = {0, 0, 0, 1};
+
+    T bassMakeupGain = 1;
     T mixedOutput = 0;
     T feedback = 0;
     T gain = T(.3);
     T stageOutputs[4];
     T edge = 0;
     T freqSpread = 0;
-    T stageTaps[4] = {0, 0, 0, 1};
+    T slope = 3;
+
+
     T stageGain[4] = {1, 1, 1, 1};
     T stageFreqOffsets[4] = {1, 1, 1, 1};
-    T stageG[4] = {.001f, .001f, .001f, .001f};
+
     Types type = Types::_4PLP;
     Voicing voicing = Voicing::Classic;
     T lastNormalizedFc = T(.0001);
     T lastNormalizedBassFreq = T(.0001);
+    T lastSlope = -1;
+
     bool bypassFirstStage = false;
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
@@ -110,7 +126,7 @@ private:
     IIRUpsampler up;
     IIRDecimator down;
 
-    void runBufferClassic(float* buffer, int );
+    void runBufferClassic(float* buffer, int);
     void runBufferClip(float* buffer, int);
     void runBufferClip2(float* buffer, int);
     void runBufferFold(float* buffer, int);
@@ -118,6 +134,7 @@ private:
     void runBufferClean(float* buffer, int);
 
     void updateFilter();
+    void updateSlope();
     void dump(const char* p);
     T getGfromNormFreq(T nf) const;
 };
@@ -148,6 +165,54 @@ inline void LadderFilter<T>::dump(const char* p)
 #endif
 }
 
+template <typename T>
+inline float LadderFilter<T>::getLEDValue(int tapNumber)
+{
+    T ret =  (type == Types::_4PLP) ? stageTaps[tapNumber] : 0;  
+    return float(ret);
+}
+
+template <typename T>
+inline void  LadderFilter<T>::updateSlope()
+{
+    if (type != Types::_4PLP) {
+        return;
+    }
+   
+
+    int iSlope = (int) std::floor(slope);
+    for (int i = 0; i < 4; ++i) {
+        if (i == iSlope) {
+            stageTaps[i] = ((i + 1) - slope) * 1;
+            stageTaps[i + 1] = (slope - i) * 1;
+        } else if (i != (iSlope + 1)) {
+            stageTaps[i] = 0;
+        }
+    }
+}
+
+/*
+    for (int i = LED_A; i <= LED_U; ++i) {
+        if (i == iVowel) {
+            TBase::lights[i].value = ((i + 1) - fVowel) * 1;
+            TBase::lights[i + 1].value = (fVowel - i) * 1;
+        } else if (i != (iVowel + 1)) {
+            TBase::lights[i].value = 0;
+        }
+    }
+    */
+
+template <typename T>
+inline void LadderFilter<T>::setSlope(T _slope)
+{
+    if (slope == lastSlope) {
+        return;
+    }
+    slope = _slope;
+    slope = std::min(slope, T(3));
+    slope = std::max(slope, T(0));
+    updateSlope();
+}
 
 template <typename T>
 inline T LadderFilter<T>::getGfromNormFreq(T nf) const
@@ -247,7 +312,7 @@ void LadderFilter<T>::setVoicing(Voicing v)
 template <typename T>
 void LadderFilter<T>::setType(Types t)
 {
-    if (t == type) 
+    if (t == type)
         return;
 
     bypassFirstStage = false;
@@ -354,27 +419,20 @@ void LadderFilter<T>::setType(Types t)
             assert(false);
     }
     updateFilter();
+    updateSlope();
     dump("set type");
 }
 
 template <typename T>
-inline T LadderFilter<T>::getOutput() 
+inline T LadderFilter<T>::getOutput()
 {
-    //bassMakeupGain
-    return mixedOutput * 5 * bassMakeupGain;       
+    return mixedOutput * 5 * bassMakeupGain;
 }
 
 template <typename T>
 inline void LadderFilter<T>::setFeedback(T f)
 {
     feedback = f * T(1.0);
-    #if 0
-    static float ff = -1;
-    if (ff != feedback) {
-        ff = feedback;
-        printf("set f to %f, will use %f\n", f, feedback); fflush(stdout);
-    }
-    #endif
 }
 
 template <typename T>
@@ -406,9 +464,7 @@ inline void LadderFilter<T>::run(T input)
         default:
             assert(false);
     }
-
     mixedOutput = down.process(buffer);
-
 }
 
 /**************************************************************************************
@@ -439,7 +495,7 @@ inline void LadderFilter<T>::run(T input)
     func(); \
     temp = lpfs[index].run(temp, stageG[index]); \
     stageOutputs[index] = temp;
-    
+
 #define BODY( func0, func1, func2, func3) \
     ONETAP(func0, 0) \
     ONETAP(func1, 1) \
@@ -457,7 +513,7 @@ inline void LadderFilter<T>::run(T input)
 #define NOPROC()
 
 PROC_PREAMBLE(runBufferClassic)
-BODY( TANH, TANH, TANH, TANH)
+BODY(TANH, TANH, TANH, TANH)
 PROC_END
 
 PROC_PREAMBLE(runBufferClip)
