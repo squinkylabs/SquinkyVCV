@@ -1,7 +1,7 @@
 
 # Filter
 
-The filter module is a work in progress. The documentation is for the parts that are working. Since there is no CV yet you can't really do anything with it.
+The filter module is a work in progress. The documentation is for the parts that are working. Many of the CVs are not hooked up.
 
 Filter is yet another ladder filter, but one that combines many of the ladder enhancements that have been discovered over the decades since the Moog filter first came out.
 
@@ -15,9 +15,11 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 There are five new filter types, including some really nice highpass types.
 
+The Poles control in now "Slope", and it works (but only with 4P LP filter). Added 4 LEDs to indicate slope. CV still not connected.
+
 Fixed a typo that was making 2P HP + LP not do anything.
 
-I made all the filters slightly more accurate an less noisy at low frequencies.
+I made all the filters slightly more accurate and less noisy at low frequencies.
 
 Reduced overall output volume 6db, and brought up the levels of the really quiet filter types.
 
