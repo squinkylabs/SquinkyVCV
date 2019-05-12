@@ -520,6 +520,7 @@ void testMix8()
     testExpansionM();
 
     testReturn<MixerM>();
+    testReturn<Mixer8>();
 
     // TODO: need a test for master volume
 

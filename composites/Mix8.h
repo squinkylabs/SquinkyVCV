@@ -250,7 +250,8 @@ public:
      * allocate extra bank for the master mute
      */
     float buf_muteInputs[numChannels + 4];
-    float buf_masterGain;
+    float buf_masterGain=0;
+    float buf_auxReturnGain = 0;
 
 private:
     Divider divider;
@@ -308,6 +309,9 @@ inline void Mix8<TBase>::stepn(int div)
             1.0f);
         buf_channelGains[i] = slider * cv;
     }
+
+    buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
+    buf_auxReturnGain = TBase::params[RETURN_GAIN_PARAM].value;
 
         // send gains
     for (int i = 0; i < numChannels; ++i) {
@@ -388,6 +392,9 @@ inline void Mix8<TBase>::step()
         lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
         rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
     }
+
+    left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGain;
+    right += TBase::inputs[RIGHT_RETURN_INPUT].value * buf_auxReturnGain;
 
     // output the masters
     const float masterMuteValue = antiPop.get(8);
