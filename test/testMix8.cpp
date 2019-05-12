@@ -40,6 +40,11 @@ static float auxGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
     return gOutputBuffer[bRight ? 3 : 2];
 }
 
+static float auxGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
+{
+    return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].value;
+}
+
 
 template <typename T>
 static std::shared_ptr<T> getMixerBase()
@@ -464,11 +469,13 @@ void testMix8()
     testMaster<MixerM>(outputGetterMixM);
     testMaster<Mixer4>(outputGetterMix4);
 
-    testAuxOut<MixerM>(auxGetterMixM);
-    testAuxOut<Mixer4>(auxGetterMix4);
-
     testMute<MixerM>(outputGetterMixM);
     testMute<Mixer4>(outputGetterMix4);
+    testMute<Mixer8>(outputGetterMix8);
+
+    testAuxOut<MixerM>(auxGetterMixM);
+    testAuxOut<Mixer4>(auxGetterMix4);
+    testAuxOut<Mixer8>(auxGetterMix8);
 
     testSoloLegacy<Mixer8>(outputGetterMix8);
 

@@ -146,6 +146,15 @@ public:
         SOLO5_PARAM,
         SOLO6_PARAM,
         SOLO7_PARAM,
+        SEND0_PARAM,
+        SEND1_PARAM,
+        SEND2_PARAM,
+        SEND3_PARAM,
+        SEND4_PARAM,
+        SEND5_PARAM,
+        SEND6_PARAM,
+        SEND7_PARAM,
+        RETURN_GAIN_PARAM,
         NUM_PARAMS
     };
 
@@ -175,8 +184,20 @@ public:
         PAN5_INPUT,
         PAN6_INPUT,
         PAN7_INPUT,
+
+        MUTE0_INPUT,
+        MUTE1_INPUT,
+        MUTE2_INPUT,
+        MUTE3_INPUT,
+        MUTE4_INPUT,
+        MUTE5_INPUT,
+        MUTE6_INPUT,
+        MUTE7_INPUT,
+
         RIGHT_EXPAND_INPUT,
         LEFT_EXPAND_INPUT,
+        LEFT_RETURN_INPUT,
+        RIGHT_RETURN_INPUT,
         NUM_INPUTS
     };
 
@@ -192,6 +213,8 @@ public:
         CHANNEL5_OUTPUT,
         CHANNEL6_OUTPUT,
         CHANNEL7_OUTPUT,
+        LEFT_SEND_OUTPUT,
+        RIGHT_SEND_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -477,6 +500,33 @@ inline IComposite::Config Mix8Description<TBase>::getParam(int i)
             break;
         case Mix8<TBase>::SOLO7_PARAM:
             ret = {0, 1.0f, 0, "Solo  8"};
+            break;
+        case Mix8<TBase>::SEND0_PARAM:
+            ret = {0, 1.0f, 0, "Send 1"};
+            break;
+        case Mix8<TBase>::SEND1_PARAM:
+            ret = {0, 1.0f, 0, "Send 2"};
+            break;
+        case Mix8<TBase>::SEND2_PARAM:
+            ret = {0, 1.0f, 0, "Send 3"};
+            break;
+        case Mix8<TBase>::SEND3_PARAM:
+            ret = {0, 1.0f, 0, "Send 4"};
+            break;
+        case Mix8<TBase>::SEND4_PARAM:
+            ret = {0, 1.0f, 0, "Send 5"};
+            break;
+        case Mix8<TBase>::SEND5_PARAM:
+            ret = {0, 1.0f, 0, "Send 6"};
+            break;
+        case Mix8<TBase>::SEND6_PARAM:
+            ret = {0, 1.0f, 0, "Send 7"};
+            break;
+        case Mix8<TBase>::SEND7_PARAM:
+            ret = {0, 1.0f, 0, "Send 8"};
+            break;
+        case Mix8<TBase>::RETURN_GAIN_PARAM:
+            ret = {0, 1.0f, 0, "Return Gain"};
             break;
         default:
             assert(false);
