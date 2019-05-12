@@ -239,11 +239,12 @@ public:
 
     const static int numChannels = 8;
 
-    float buf_inputs[numChannels];
-    float buf_channelGains[numChannels];
-    float buf_channelOuts[numChannels];
-    float buf_leftPanGains[numChannels];
-    float buf_rightPanGains[numChannels];
+    float buf_inputs[numChannels] = {0};
+    float buf_channelGains[numChannels] = {0};
+    float buf_channelOuts[numChannels] = {0};
+    float buf_leftPanGains[numChannels] = {0};
+    float buf_rightPanGains[numChannels] = {0};
+    float buf_channelSendGains[numChannels] = {0};
 
     /** 
      * allocate extra bank for the master mute
@@ -308,6 +309,12 @@ inline void Mix8<TBase>::stepn(int div)
         buf_channelGains[i] = slider * cv;
     }
 
+        // send gains
+    for (int i = 0; i < numChannels; ++i) {
+        const float slider = TBase::params[i + SEND0_PARAM].value;
+        buf_channelSendGains[i] = slider;
+    }
+
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {
         const float balance = TBase::params[i + PAN0_PARAM].value;
@@ -333,7 +340,10 @@ inline void Mix8<TBase>::stepn(int div)
         }
     } else {
         for (int i = 0; i < numChannels; ++i) {
-            buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
+            const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
+                (TBase::inputs[i + MUTE0_INPUT].value > 2));
+            buf_muteInputs[i] = muteActivated ? 0.f : 1.f;
+           // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
     }
     buf_muteInputs[8] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
@@ -370,9 +380,13 @@ inline void Mix8<TBase>::step()
 
     // compute and output master outputs
     float left = 0, right = 0;
+    float lSend = 0, rSend = 0;
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
         right += buf_channelOuts[i] * buf_rightPanGains[i];
+
+        lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
+        rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
     }
 
     // output the masters
@@ -380,6 +394,9 @@ inline void Mix8<TBase>::step()
     const float masterGain = buf_masterGain * masterMuteValue;
     TBase::outputs[LEFT_OUTPUT].value = left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].value;
     TBase::outputs[RIGHT_OUTPUT].value = right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].value;
+
+    TBase::outputs[LEFT_SEND_OUTPUT].value = lSend;
+    TBase::outputs[RIGHT_SEND_OUTPUT].value = rSend;
 
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {

@@ -42,7 +42,7 @@ static float auxGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
 
 static float auxGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
 {
-    return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].value;
+    return m->outputs[bRight ? Mixer8::RIGHT_SEND_OUTPUT : Mixer8::LEFT_SEND_OUTPUT].value;
 }
 
 
