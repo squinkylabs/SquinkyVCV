@@ -226,17 +226,6 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getVoicingNames());
     addParam(p);
-#if 0
-    p = SqHelper::createParam<PopupMenuParamWidget>(
-        icomp,
-        Vec(64, y4),
-        module,
-        Comp::BASS_MAKEUP_TYPE_PARAM);
-    p->box.size.x = 100;    // width
-    p->box.size.y = 22;     // should set auto like button does
-    p->setLabels(Comp::getBassMakeupNames());
-    addParam(p);
-#endif
  } 
 
 void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
@@ -244,32 +233,26 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
     const float x1 = 30;
     const float yJacks1 = 286;
     const float yJacks2 = 330;
-    const float deltaXJack = 44;
+    const float deltaXJack = 38;
     const float JackLabelY = -30;
 
+    // row 1
     addInput(createInputCentered<PJ301MPort>(
-        Vec(x1, yJacks1),
+        Vec(x1 + 0 * deltaXJack, yJacks1),
         module,
-        Comp::L_AUDIO_INPUT));
+        Comp::CV_INPUT1));
     addLabel(
-        Vec(x1-18, yJacks1 + JackLabelY),
-        "In L");
+        Vec(x1 + 0 * deltaXJack -18, yJacks1 + JackLabelY),
+        "CV1");
 
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x1, yJacks2),
-        module,
-        Comp::R_AUDIO_INPUT));
-    addLabel(
-        Vec(x1-18, yJacks2 + JackLabelY),
-        "In R");
-  
     addInput(createInputCentered<PJ301MPort>(
         Vec(x1 + 1 * deltaXJack, yJacks1),
         module,
-        Comp::CV_INPUT));
+        Comp::CV_INPUT2));
     addLabel(
         Vec(x1 + 1 * deltaXJack -18, yJacks1 + JackLabelY),
-        "CV");
+        "CV2");
+
     addInput(createInputCentered<PJ301MPort>(
         Vec(x1 + 2 * deltaXJack, yJacks1),
         module,
@@ -277,29 +260,46 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
     addLabel(
         Vec(x1 + 2 * deltaXJack -18, yJacks1 + JackLabelY),
         "Q");
+    
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1 + 3 * deltaXJack, yJacks1),
+        module,
+        Comp::DRIVE_INPUT));
+    addLabel(
+        Vec(x1 + 3 * deltaXJack -18, yJacks1 + JackLabelY),
+        "drive");
+
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1 + 4 * deltaXJack, yJacks1),
+        module,
+        Comp::SLOPE_INPUT));
+    addLabel(
+        Vec(x1 + 4 * deltaXJack -18, yJacks1 + JackLabelY),
+        "slope");
+
+    // row2
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x1, yJacks2),
+        module,
+        Comp::L_AUDIO_INPUT));
+    addLabel(
+        Vec(x1-18, yJacks2 + JackLabelY),
+        "In L");
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(x1 + 1 * deltaXJack, yJacks2),
         module,
-        Comp::DRIVE_INPUT));
+        Comp::R_AUDIO_INPUT));
     addLabel(
         Vec(x1 + 1 * deltaXJack -18, yJacks2 + JackLabelY),
-        "drive");
-
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x1 + 2 * deltaXJack, yJacks2),
-        module,
-        Comp::POLES_INPUT));
-    addLabel(
-        Vec(x1 + 2 * deltaXJack -18, yJacks2 + JackLabelY),
-        "poles");
-
+        "In R");
+  
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(x1 + 3 * deltaXJack, yJacks1),
+        Vec(x1 + 2 * deltaXJack, yJacks2),
         module,
         Comp::L_AUDIO_OUTPUT));
     addLabel(
-        Vec(x1 + 3 * deltaXJack -18, yJacks1 + JackLabelY),
+        Vec(x1 + 2 * deltaXJack -18, yJacks2 + JackLabelY),
         "Out L");
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x1 + 3 * deltaXJack, yJacks2),

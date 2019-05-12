@@ -61,13 +61,18 @@ public:
     enum ParamIds
     {
         FC_PARAM,
+        FC_TRIM_PARAM,
+        FC2_TRIM_PARAM,
         Q_PARAM,
+        Q_TRIM_PARAM,
         TYPE_PARAM,
         DRIVE_PARAM,
+        DRIVE_TRIM_PARAM,
         VOICING_PARAM,
         STAGING_PARAM,      // aka "edge"
         SPREAD_PARAM,
         SLOPE_PARAM,
+        SLOPE_TRIM_PARAM,
         BASS_MAKEUP_PARAM,
         NUM_PARAMS
     };
@@ -76,10 +81,11 @@ public:
     {
         L_AUDIO_INPUT,
         R_AUDIO_INPUT,
-        CV_INPUT,
+        CV_INPUT1,
+        CV_INPUT2,
         Q_INPUT,
         DRIVE_INPUT,
-        POLES_INPUT,
+        SLOPE_INPUT,
         NUM_INPUTS
     };
 
@@ -160,7 +166,7 @@ inline void Filt<TBase>::stepn(int)
     // get param -5..5
     T freqCV = TBase::params[FC_PARAM].value;
     freqCV += 6;
-    freqCV += TBase::inputs[CV_INPUT].value;
+    freqCV += TBase::inputs[CV_INPUT1].value;
     const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
 
     const T normFc = fc * TBase::engineGetSampleTime();
@@ -303,6 +309,22 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::BASS_MAKEUP_PARAM:
             ret = {0, 1, 0, "Bass"};
             break;
+
+        case Filt<TBase>::FC_TRIM_PARAM:
+            ret = {-1, 1, 0, "Fc 1 trim"};
+            break;
+        case Filt<TBase>::FC2_TRIM_PARAM:
+            ret = {-1, 1, 0, "Fc 2 trim"};
+            break;
+        case Filt<TBase>::DRIVE_TRIM_PARAM:
+            ret = {-1, 1, 0, "Drive trim"};
+            break;
+        case Filt<TBase>::Q_TRIM_PARAM:
+            ret = {-1, 1, 0, "Q trim"};
+            break;
+        case Filt<TBase>::SLOPE_TRIM_PARAM:
+            ret = {-1, 1, 0, "Slope trim"};
+            break;   
 #if 0
         case Filt<TBase>::BASS_MAKEUP_TYPE_PARAM:
             ret = {0, 2, 1, "Bass Makeup"};
