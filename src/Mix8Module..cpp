@@ -68,7 +68,7 @@ void Mix8Module::step()
 struct Mix8Widget : ModuleWidget
 {
     Mix8Widget(Mix8Module *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq5/docs/mix8.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -87,15 +87,6 @@ struct Mix8Widget : ModuleWidget
         std::shared_ptr<ToggleManager>);
     void makeMaster(Mix8Module* , std::shared_ptr<IComposite>);
 };
-
-/* original positions
-static const float channelX = 40;
-static const float dX = 34;
-static const float channelY = 350;
-static const float channelDy = 30;     // just for the bottom jacks
-static float volY = 0;
-static float muteY = 0;
-*/
 
 static const float channelX = 42;
 static const float dX = 34;
@@ -250,6 +241,8 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
 {
     float x = 0;
     float y = channelY;
+    const float xL = 368;
+    const float labelDy = -10;
 
     for (int channel = 0; channel<2; ++channel) {
         y = channelY;
@@ -258,28 +251,45 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
             Vec(x, y),
             module,
             channel + Comp::LEFT_EXPAND_INPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "X");
+        }
 
         y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_OUTPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "O");
+        }
 
         y -= 2 * channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_SEND_OUTPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "S");
+        }
 
         y -= channelDy;
         addInput(createInputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_RETURN_INPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "R");
+        }
+
     }
 
     x = 312 + 15 + 15;
-
+  
     auto mute = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(x-12, muteY),
@@ -296,13 +306,18 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
         Vec(x, y),
         module,
         Comp::MASTER_VOLUME_PARAM));
-
+    addLabel(Vec(xL, y+labelDy),
+            "M");
+    
     y -= 55;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
         module,
-        Comp::RETURN_GAIN_PARAM));  
+        Comp::RETURN_GAIN_PARAM)); 
+    addLabel(Vec(xL, y+labelDy),
+            "R"); 
+    
 }
 
 /*
