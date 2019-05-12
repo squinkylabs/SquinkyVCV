@@ -1,5 +1,5 @@
 
-# Filter
+# Stairway ladder filter
 
 The filter module is a work in progress. The documentation is for the parts that are working. Many of the CVs are not hooked up.
 
@@ -89,4 +89,49 @@ The "lower order" lowpass settings, like one and two pole can sound nice and bri
 
 Sometimes the Edge control will make the sound darker or brighter. Use it to dial in the sound.
 
-Play a sin wave into the filter and watch the output on a spectrum analyzer. This may help reveal what the different distortion controls do. Similarly, if you run white noise into a the spectrum analyzer will show you the frequency response. Use this to learn more what Type, Caps, Q, and Fc co
+Play a sin wave into the filter and watch the output on a spectrum analyzer. This may help reveal what the different distortion controls do. Similarly, if you run white noise into a the spectrum analyzer will show you the frequency response. Use this to learn more what Type, Caps, Q, and Fc do.
+
+## More details on Stairway
+
+### Basic Moog emulation
+
+Stairway is an emulation of the Moog ladder filter, with a lot of extra features thrown in.
+
+The standard way to emulate the Moog filer is to use four one pole lowpass filters in a row, and put a non-linear saturator in between each one. Usually the tanh function is used for the saturator as it is a very good model of how the transistors in the Moog filter saturate.
+
+Then, to realize the correct frequency response digitally, it is  implemented as Zero Delay Filter, or by using a standard filter oversampling.
+
+We started with this standard high quality emulation. We chose oversampling is it let us implement some of the extra features more easily.
+
+### Additional filter types
+
+In 1978, Bernie Hutchins published an article in his Electronotes (issue 85) entitled "Additional Ideas For Voltage-Controlled Filters". In the article he outlined how a lowpass ladder could easily be modified to produce many filter responses other than the normal lowpass.
+
+This idea was (we believe) first commercialized in 1984 by the Oberhiem Matrix-12 analog polyphonic synthesizer.
+
+This idea wall also commercialized  in the Mutable Instrument 4 Pole Mission filter board for the Struthi synthesizer. This was released in 2011 or 2012, and designed by the legendary Émilie Gillet.
+
+We imagine that there are many digital filters that use this technique. In VCV the Blamsoft FXF-35 seems to.
+
+In Stairway we use the Mutable Instruments method of adding the extra filter types, which give somewhat different responses than the Matrix-12 method.
+
+### Bass makeup gain
+
+The Moog filters are somewhat infamous for an effect called "bass suck". As you turn up the resonance, the bass seems to go away.
+
+Now, let's back up a bit. With any resonant lowpass filter increasing the resonance is going increase the difference in volume between the frequencies at resonance and the lower frequencies. It happens that in the very simplest implementation of a ladder filter the gain stays constant at resonance and the low frequencies are attenuated. Whereas with the simplest implementation of a state variable filter the low frequency gain stays constant, and the frequencies at the resonant frequency are amplified.
+
+Long ago it was discovered that it is very easy to modify the standard ladder to be like the state variable filter - no bass suck. Over the years maybe filters have made one choice of the other.
+
+But there is no one answer that is always right. Sure the Moog will suck out the bass when you increase the resonance, on the other hand some filters will get extremely loud and/or distorted at the resonance is increased.
+
+The Evolution filter has a control, which they call "Q Compensation" that lets you control what happens when the resonance is increased. So we borrowed that good idea.
+
+### Further reading
+
+[Additional Ideas For Voltage-Controlled Filters](http://electronotes.netfirms.com/EN85VCF.PDF)
+
+[Evolution filter description](https://www.modulargrid.net/e/rossum-electro-music-evolution)
+
+[Paper on the Mutable Instruments filter](https://mutable-instruments.net/archive/documents/pole_mixing.pdf)
+

@@ -42,6 +42,7 @@ public:
  * with pan lookup: 44
  * add /4 process for cv : 19
  * add the master mute and expand: 19.6
+ * with final features: 25
  *
  * Notes on how the AS mixer works.
  * VOL =  CH1_PARAM, 0.0f, 1.0f, 0.8f)
