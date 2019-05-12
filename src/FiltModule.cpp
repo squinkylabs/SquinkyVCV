@@ -82,6 +82,7 @@ struct FiltWidget : ModuleWidget
     }
 
     void addParams(FiltModule *module, std::shared_ptr<IComposite> icomp);
+    void addTrimmers(FiltModule *module, std::shared_ptr<IComposite> icomp);
     void addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp);
 };
 
@@ -103,14 +104,14 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
     SqHelper::setPanel(this, "res/filter_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addParams(module, icomp);
+    addTrimmers(module, icomp);
     addJacks(module, icomp);
 
-       // screws
+    // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-
 }
 
 void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp)
@@ -124,10 +125,9 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     const float y1 = 80;
     const float y2 = 142;
     const float y3 = 186;
-   // const float y4 = 220;
-   const float yPole1 = y2 - 12;
-   const float dyPoles = 8;
-   const float xLED = x3 + 26;
+    const float yPole1 = y2 - 12;
+    const float dyPoles = 8;
+    const float xLED = x3 + 26;
   
     const float labelDx = 22;
     const float labelY = -38;
@@ -228,12 +228,49 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     addParam(p);
  } 
 
+static const float jacksX1 = 30;
+const float deltaXJack = 38;
+
+void FiltWidget::addTrimmers(FiltModule *module, std::shared_ptr<IComposite> icomp)
+ {
+    const float yTrim = 240;
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(jacksX1 + 0 * deltaXJack, yTrim),
+        module,
+        Comp::FC1_TRIM_PARAM));
+
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(jacksX1 + 1 * deltaXJack, yTrim),
+        module,
+        Comp::FC2_TRIM_PARAM));
+
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(jacksX1 + 2 * deltaXJack, yTrim),
+        module,
+        Comp::Q_TRIM_PARAM));
+
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(jacksX1 + 3 * deltaXJack, yTrim),
+        module,
+        Comp::DRIVE_TRIM_PARAM));
+    
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(jacksX1 + 4 * deltaXJack, yTrim),
+        module,
+        Comp::SLOPE_TRIM_PARAM));
+ }
+
 void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
  {
-    const float x1 = 30;
+    const float x1 = jacksX1;
     const float yJacks1 = 286;
     const float yJacks2 = 330;
-    const float deltaXJack = 38;
+   
     const float JackLabelY = -30;
 
     // row 1
@@ -258,7 +295,7 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::Q_INPUT));
     addLabel(
-        Vec(x1 + 2 * deltaXJack -18, yJacks1 + JackLabelY),
+        Vec(x1 + 2 * deltaXJack -14, yJacks1 + JackLabelY),
         "Q");
     
     addInput(createInputCentered<PJ301MPort>(
@@ -266,7 +303,7 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::DRIVE_INPUT));
     addLabel(
-        Vec(x1 + 3 * deltaXJack -18, yJacks1 + JackLabelY),
+        Vec(x1 + 3 * deltaXJack - 22, yJacks1 + JackLabelY),
         "drive");
 
     addInput(createInputCentered<PJ301MPort>(
@@ -274,7 +311,7 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::SLOPE_INPUT));
     addLabel(
-        Vec(x1 + 4 * deltaXJack -18, yJacks1 + JackLabelY),
+        Vec(x1 + 4 * deltaXJack - 22, yJacks1 + JackLabelY),
         "slope");
 
     // row2

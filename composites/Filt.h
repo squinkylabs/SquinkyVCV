@@ -61,7 +61,7 @@ public:
     enum ParamIds
     {
         FC_PARAM,
-        FC_TRIM_PARAM,
+        FC1_TRIM_PARAM,
         FC2_TRIM_PARAM,
         Q_PARAM,
         Q_TRIM_PARAM,
@@ -147,6 +147,12 @@ private:
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
 
+
+//   static ScaleFun<float> makeScalerWithBipolarAudioTrim(float y0, float y1);
+    AudioMath::ScaleFun<float> scaleFc = AudioMath::makeScalerWithBipolarAudioTrim(-5, 5);
+    AudioMath::ScaleFun<float> scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(0, 4);
+    AudioMath::ScaleFun<float> scaleSlope = AudioMath::makeScalerWithBipolarAudioTrim(0, 3);
+
     void stepn(int);
 };
 
@@ -162,29 +168,39 @@ inline void Filt<TBase>::init()
 template <class TBase>
 inline void Filt<TBase>::stepn(int)
 {
+    T fcClipped = 0;
+    {
+        T freqCV1 = scaleFc(
+            TBase::inputs[CV_INPUT1].value,
+            TBase::params[FC_PARAM].value,
+            TBase::params[FC1_TRIM_PARAM].value);
+        T freqCV2 = scaleFc(
+            TBase::inputs[CV_INPUT2].value,
+            0,
+            TBase::params[FC2_TRIM_PARAM].value);
+        T freqCV = freqCV1 + freqCV2 + 6;
+        const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
+        const T normFc = fc * TBase::engineGetSampleTime();
 
-    // get param -5..5
-    T freqCV = TBase::params[FC_PARAM].value;
-    freqCV += 6;
-    freqCV += TBase::inputs[CV_INPUT1].value;
-    const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
+        T fcClipped = std::min(normFc, T(.48));
+        fcClipped = std::max(fcClipped, T(.0000001));
+    }
 
-    const T normFc = fc * TBase::engineGetSampleTime();
-    T fcClipped = std::min(normFc, T(.48));
-    fcClipped = std::max(fcClipped, T(.0000001));
-    
-    const float res = TBase::params[Q_PARAM].value;
+    const float res = scaleQ(
+        TBase::inputs[Q_INPUT].value,
+        TBase::params[Q_PARAM].value,
+        TBase::params[Q_TRIM_PARAM].value); 
+    if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
+
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
    
     //********* now the drive 
         // 0..1
     float  gainInput = scaleGain(
-     //   TBase::inputs[INPUT_GAIN].value,
-        0,
+        TBase::inputs[DRIVE_INPUT].value,
         TBase::params[DRIVE_PARAM].value,
-       // TBase::params[PARAM_GAIN_TRIM].value);
-        1);
+        TBase::params[DRIVE_TRIM_PARAM].value);
 
     T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     float staging = TBase::params[STAGING_PARAM].value;
@@ -194,7 +210,12 @@ inline void Filt<TBase>::stepn(int)
     T makeupGain = 1;
     makeupGain = 1 + bAmt * (res);
 
-    T slope = TBase::params[SLOPE_PARAM].value;
+    T slope = scaleSlope(
+        TBase::inputs[SLOPE_INPUT].value,
+        TBase::params[SLOPE_PARAM].value,
+        TBase::params[SLOPE_TRIM_PARAM].value);
+
+    
 
 #if 0
 // fix it to known good values for test
@@ -279,7 +300,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {-5.0f, 5.0f, 0, "Cutoff Freq"};
             break;
         case Filt<TBase>::Q_PARAM:
-            ret = {0, 4.0f, 0, "Resonance"};
+            ret = {-5, 5, -5, "Resonance"};
             break;
         case Filt<TBase>::TYPE_PARAM:
             //ret = {0, 9.0f, 0, "Type"};
@@ -310,7 +331,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Bass"};
             break;
 
-        case Filt<TBase>::FC_TRIM_PARAM:
+        case Filt<TBase>::FC1_TRIM_PARAM:
             ret = {-1, 1, 0, "Fc 1 trim"};
             break;
         case Filt<TBase>::FC2_TRIM_PARAM:
