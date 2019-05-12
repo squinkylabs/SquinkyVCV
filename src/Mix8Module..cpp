@@ -88,10 +88,20 @@ struct Mix8Widget : ModuleWidget
     void makeMaster(Mix8Module* , std::shared_ptr<IComposite>);
 };
 
+/* original positions
 static const float channelX = 40;
 static const float dX = 34;
 static const float channelY = 350;
 static const float channelDy = 30;     // just for the bottom jacks
+static float volY = 0;
+static float muteY = 0;
+*/
+
+static const float channelX = 42;
+static const float dX = 34;
+static const float labelX = 0; 
+static const float channelY = 350;
+static const float channelDy = 30; 
 static float volY = 0;
 static float muteY = 0;
 
@@ -111,7 +121,7 @@ void Mix8Widget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 40, y-10),
+            Vec(labelX+6, y-10),
             "In");
     }
 
@@ -123,8 +133,20 @@ void Mix8Widget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-4, y-10),
             "Out");
+    }
+
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::MUTE0_INPUT));
+
+    if (channel == 0) {
+        addLabel(
+            Vec(labelX+2, y-10),
+            "Mt");
     }
 
     y -= channelDy;
@@ -135,7 +157,7 @@ void Mix8Widget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 40, y-10),
+            Vec(labelX, y-10),
             "Lvl");
     }
 
@@ -147,7 +169,7 @@ void Mix8Widget::makeStrip(
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-2, y-10),
             "Pan");
     }
 
@@ -162,10 +184,9 @@ void Mix8Widget::makeStrip(
     addParam(mute);
     muteY = y-12;
    
-
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX+4, y-10),
             "M");
     }    
 
@@ -178,15 +199,16 @@ void Mix8Widget::makeStrip(
     solo->addSvg("res/square-button-01.svg");
     solo->addSvg("res/square-button-02.svg");
     addParam(solo);
-     mgr->registerClient(solo);
+    mgr->registerClient(solo);
 
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX+4, y-10),
             "S");
     }    
 
-    y -= (channelDy + 2);
+    const float extraDy = 6;
+    y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
@@ -194,12 +216,12 @@ void Mix8Widget::makeStrip(
         channel + Comp::GAIN0_PARAM));
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-2, y-10),
             "Vol");
     }
     volY = y;
 
-    y -= (channelDy + 2);
+    y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
@@ -207,8 +229,20 @@ void Mix8Widget::makeStrip(
         channel + Comp::PAN0_PARAM));
     if (channel == 0) {
         addLabel(
-            Vec(x - 46, y-10),
+            Vec(labelX-4, y-10),
             "Pan");
+    }
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::SEND0_PARAM));
+    if (channel == 0) {
+        addLabel(
+            Vec(labelX-4, y-10),
+            "Aux");
     }
 }
 
@@ -225,12 +259,23 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
             module,
             channel + Comp::LEFT_EXPAND_INPUT));
 
-
         y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_OUTPUT));
+
+        y -= 2 * channelDy;
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(x, y),
+            module,
+            channel + Comp::LEFT_SEND_OUTPUT));
+
+        y -= channelDy;
+        addInput(createInputCentered<PJ301MPort>(
+            Vec(x, y),
+            module,
+            channel + Comp::LEFT_RETURN_INPUT));
     }
 
     x = 312 + 15 + 15;
@@ -244,13 +289,20 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
 
-     y -= channelDy;
+    //y -= channelDy;
+    y = volY;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
-        Vec(x, volY),
+        Vec(x, y),
         module,
         Comp::MASTER_VOLUME_PARAM));
-   
+
+    y -= 55;
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        Comp::RETURN_GAIN_PARAM));  
 }
 
 /*
@@ -277,7 +329,7 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
 #endif
     box.size = Vec(26 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix8_panel.svg");
-     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
     for (int i=0; i<8; ++i) {
