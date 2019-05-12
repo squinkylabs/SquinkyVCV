@@ -167,8 +167,7 @@ static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> au
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
-   // float auxL = m->outputs[T::LEFT_SEND_OUTPUT].value;
-   // float auxR = m->outputs[T::RIGHT_SEND_OUTPUT].value;
+
     float auxL = auxGetter(m, 0);
     float auxR = auxGetter(m, 1);
 
@@ -321,6 +320,28 @@ static void testPanLookL()
 
         assertNE(actualL, actualR);
     }
+}
+
+template <typename T>
+static void testReturn()
+{
+    auto m = getMixer<T>();
+    m->inputs[T::LEFT_RETURN_INPUT].value = 5;
+    m->inputs[T::RIGHT_RETURN_INPUT].value = 6;
+
+    m->params[T::RETURN_GAIN_PARAM].value = .5;
+    m->params[T::MASTER_VOLUME_PARAM].value = .4f;
+    for (int i = 0; i < 1000; ++i) {
+        m->step();           // let mutes settle
+    }
+
+    float expectedOutL = 5 * .5f * .4f;
+    float expectedOutR = 6 * .5f * .4f;
+
+    float outL = m->outputs[T::LEFT_OUTPUT].value;
+    float outR = m->outputs[T::RIGHT_OUTPUT].value;
+    assertClose(outL, expectedOutL, .01);
+    assertClose(outR, expectedOutR, .01);
 }
 
 
@@ -497,6 +518,8 @@ void testMix8()
 
     testExpansion4();
     testExpansionM();
+
+    testReturn<MixerM>();
 
     // TODO: need a test for master volume
 
