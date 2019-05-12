@@ -182,7 +182,7 @@ inline void Filt<TBase>::stepn(int)
         const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
         const T normFc = fc * TBase::engineGetSampleTime();
 
-        T fcClipped = std::min(normFc, T(.48));
+        fcClipped = std::min(normFc, T(.48));
         fcClipped = std::max(fcClipped, T(.0000001));
     }
 
