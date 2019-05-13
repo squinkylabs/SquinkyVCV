@@ -215,7 +215,6 @@ inline void Filt<TBase>::stepn(int)
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
 
-    
 
 #if 0
 // fix it to known good values for test
@@ -325,7 +324,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Capacitor"};
             break;
         case Filt<TBase>::SLOPE_PARAM:
-            ret = {0, 3, 0, "Slope"};
+            ret = {-5, 5, 5, "Slope"};
             break;
         case Filt<TBase>::BASS_MAKEUP_PARAM:
             ret = {0, 1, 0, "Bass"};

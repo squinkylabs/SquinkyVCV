@@ -152,7 +152,7 @@ inline void LadderFilter<T>::dump(const char* p)
 {
 #if 0
     printf("\ndump %s\n", p);
-    printf("feedback = %.2f, gain%.2f edge=%.2f\n", feedback, gain, edge);
+    printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", feedback, gain, edge, slope);
     printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
     for (int i = 0; i < 4; ++i) {
         printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f filter_G %f\n", i,

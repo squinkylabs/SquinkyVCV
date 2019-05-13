@@ -194,7 +194,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Comp::SLOPE_PARAM));
     addLabel(
         Vec(x3-labelDx, y2 + labelY),
-        "Poles");
+        "Slope");
 
     for (int i=0; i<4; ++i) {
       //  printf("about to make led # %d\n", i); fflush(stdout);
