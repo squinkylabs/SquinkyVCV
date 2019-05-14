@@ -495,22 +495,25 @@ inline void LadderFilter<T>::run(T input)
     ONETAP(func3, 3)
 
 #define TANH() temp = T(2) * LookupTable<T>::lookup(*tanhLookup.get(), T(.5) * temp, true)
+
 #define CLIP() temp = std::max<T>(temp, -1.f); temp = std::min<T>(temp, 1.f)
 #define CLIP_TOP()  temp = std::min<T>(temp, 1.f)
 #define CLIP_BOTTOM()  temp = std::max<T>(temp, -1.f)
+
 #define FOLD() temp = AudioMath::fold(float(temp))
 #define FOLD_ATTEN() temp = AudioMath::fold(float(temp) * .5f)
+//#define FOLD_ATTEN() temp = AudioMath::fold(float(temp) * 1)
+#define FOLD_BOOST() temp = 2 * AudioMath::fold(float(temp))
+
 #define FOLD_TOP() temp = (temp > 0) ? (T) AudioMath::fold(float(temp)) : temp
 #define FOLD_BOTTOM() temp = (temp < 0) ? (T) AudioMath::fold(float(temp)) : temp
 #define NOPROC()
-#define TRIODE1() temp = T(1.4) * shaper.lookup(float(temp * .4f), 7)
 
+//#define TRIODE1() temp = T(1.4) * shaper.lookup(float(temp * .4f), 7)
 //#define TRIODE2_ATTEN() temp = T(.1) * shaper.lookup(float(temp), 5)
-#define TRIODE2() temp = 1.1 * shaper.lookup(float(temp * .4f), 5)
-#define TRIODE2g() temp = 3 * shaper.lookup(float(temp * .4f), 5)
-#define TRIODE2b() temp = 1.1 * -shaper.lookup(float(-temp * .4f), 5)
-
-//  x = asymShaper.lookup(x, asymCurveindex);
+//#define TRIODE2() temp = 1.1 * shaper.lookup(float(temp * .4f), 5)
+//#define TRIODE2g() temp = 3 * shaper.lookup(float(temp * .4f), 5)
+//#define TRIODE2b() temp = 1.1 * -shaper.lookup(float(-temp * .4f), 5)
 
 PROC_PREAMBLE(runBufferClassic)
 BODY(TANH, TANH, TANH, TANH)
