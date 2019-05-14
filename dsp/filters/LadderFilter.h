@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AsymWaveShaper.h"
 #include "IIRDecimator.h"
 #include "IIRUpsampler.h"
 #include "LookupTable.h"
@@ -42,6 +43,8 @@ public:
         Fold,
         Fold2,
         Clean,
+        Triode,
+        Triode2,
         NUM_VOICINGS
     };
 #if 0
@@ -126,12 +129,16 @@ private:
     IIRUpsampler up;
     IIRDecimator down;
 
+    AsymWaveShaper shaper;
+
     void runBufferClassic(float* buffer, int);
     void runBufferClip(float* buffer, int);
     void runBufferClip2(float* buffer, int);
     void runBufferFold(float* buffer, int);
     void runBufferFold2(float* buffer, int);
     void runBufferClean(float* buffer, int);
+    void runBufferTriode(float* buffer, int);
+    void runBufferTriode2(float* buffer, int);
 
     void updateFilter();
     void updateSlope();
@@ -454,6 +461,12 @@ inline void LadderFilter<T>::run(T input)
         case Voicing::Clean:
             runBufferClean(buffer, oversampleRate);
             break;
+        case Voicing::Triode:
+            runBufferTriode(buffer, oversampleRate);
+            break;
+        case Voicing::Triode2:
+            runBufferTriode2(buffer, oversampleRate);
+            break;
         default:
             assert(false);
     }
@@ -504,6 +517,12 @@ inline void LadderFilter<T>::run(T input)
 #define FOLD_TOP() temp = (temp > 0) ? (T) AudioMath::fold(float(temp)) : temp
 #define FOLD_BOTTOM() temp = (temp < 0) ? (T) AudioMath::fold(float(temp)) : temp
 #define NOPROC()
+#define TRIODE1() temp = T(.4) * shaper.lookup(float(temp), 9)
+#define TRIODE2() temp = shaper.lookup(float(temp), 8)
+#define TRIODE2_ATTEN() temp = T(.1) * shaper.lookup(float(temp), 8)
+#define TRIODE2b() temp = -shaper.lookup(float(-temp), 10)
+
+//  x = asymShaper.lookup(x, asymCurveindex);
 
 PROC_PREAMBLE(runBufferClassic)
 BODY(TANH, TANH, TANH, TANH)
@@ -525,11 +544,18 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
-#if 1
 PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
-#endif
+
+PROC_PREAMBLE(runBufferTriode)
+BODY(TRIODE2_ATTEN, TRIODE2, TRIODE2, TRIODE2)
+PROC_END
+
+PROC_PREAMBLE(runBufferTriode2)
+BODY(TRIODE2_ATTEN, TRIODE2b, TRIODE2, TRIODE2b)
+PROC_END
+
 
 template <typename T>
 inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
@@ -562,21 +588,11 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
         "Asym Clip",
         "Fold",
         "Asym Fold",
-        "Clean"
+        "Clean",
+        "Triode",
+        "Triode 2"
     };
 }
-
-#if 0
-template <typename T>
-inline  std::vector<std::string> LadderFilter<T>::getBassMakeupNames()
-{
-    return {
-       "Gain",
-       "Tracking Filter",
-       "Fixed Filter"
-    };
-}
-#endif
 
 
 #if 0 // This is the test bed for HPF Q comp
@@ -672,14 +688,3 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 #endif
 
 
-#if 0
-template <typename T>
-void LadderFilter<T>::setBassMakeupNormalizeFreq(T f)
-{
-    if (f != lastNormalizedBassFreq) {
-        lastNormalizedBassFreq = f;
-        _gHP = getGfromNormFreq(f);
-        dump("setBassF");
-    }
-}
-#endif
