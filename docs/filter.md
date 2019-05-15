@@ -127,7 +127,29 @@ But there is no one answer that is always right. Sure the Moog will suck out the
 
 The Evolution filter has a control, which they call "Q Compensation" that lets you control what happens when the resonance is increased. So we borrowed that good idea.
 
-### Further reading
+### Different types of distortion
+
+A ladder filter (or any filter) is a fun playground for distortion. Combining multiple saturators with multiple filters results in a complex non-linear dynamic system that can get a lot more sounds than a regular memoryless non-linearity.
+
+As we mentioned before, the transistor ladder can be modeled closely with the tanh function, which sounds great and is our default.
+
+There are a couple of filters for VCV that give you a choice of the type of non-linearity, but we went crazy an put a bunch in. The Moog filter will generate only odd harmonics, so we wanted have some options that add even harmonics to.
+
+So, "Transistor" just puts a tanh in front of each of the four filter stages. "Asym Clip" alternates - the tops are clipped off oging into the first and third stages, whereas the bottoms are chopped off going into the second and fourth. Carvin guitar amps patented that in the 70's to emulate a tube  amp with a cheap solid state amp. The "Fold" is four standard wave folders, one in front of each filter stage. "Fold 2" is similar to "Asym Clip" - half the stages fold the tops, the other half fold the bottom.
+
+The distortion types start to sound quite different from each other when there is lots of resonance and a good amount of drive.  The wave folder can go from aggressive to very aggressive to completely unstable.
+
+### Edge
+
+In most, if not all, ladder filters, each stage has a gain of 1. This means that when the first stage saturates, the next stage is going to see less signal, and will saturate much less. So the bulk of the distortion is generate in the first stage, then it gets filtered through the next stages.
+
+The result is a nice, fat, warm sound. Which is great.
+
+We thought - but what about other sounds? The Edge control does this. In the middle position, the gain is the same in all stage. As the control is increased the first stages get their gain reduced, and the later stages get more gain. Decreasing the "Edge" from the middle does the opposite - more gain in the early stages, less in the late.
+
+It must have been done before, probably several times, but we know of no filter that has a control like this.
+
+## Further reading
 
 [Additional Ideas For Voltage-Controlled Filters](http://electronotes.netfirms.com/EN85VCF.PDF)
 
