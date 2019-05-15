@@ -12,9 +12,18 @@ public:
 
     void process(const ProcessArgs &args) override;
     virtual void internalProcess() = 0;
+
+    /**
+     * Concrete subclass implements this do accept a request
+     * for solo change.
+     */
     virtual void requestModuleSolo(SoloCommands) = 0;
 
 
+    /**
+     * Master module will override this to return true.
+     * Let's us (base class) know if we are master or slave.
+     */
     virtual bool amMaster() { return false; }
 
     /**
@@ -22,6 +31,12 @@ public:
      */
     void requestSoloFromUI(SoloCommands);
 protected:
+
+    /**
+     * Concrete subclass overrides these to transfer audio
+     * with neighbors. subclass will fill input and consume output
+     * on its process call.
+     */s
     virtual void setExternalInput(const float*)=0;
     virtual void setExternalOutput(float*)=0;
 
@@ -98,11 +113,9 @@ inline void MixerModule::process(const ProcessArgs &args)
             CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
         // If solo requested, queue up solo commands for both sides     
         if (pairedRight) {
-            //printf("solo req, mod is paired R\n");
             sendRightChannel.send(commCmd);
         }
         if (pairedLeft) {
-            //printf("solo req, mod is paired L amMaster=%d send cmd to left\n", amMaster());
             sendLeftChannel.send(commCmd);
         }
       
@@ -145,7 +158,7 @@ inline void MixerModule::process(const ProcessArgs &args)
         // #3) Send data to the left: use your own left producer buffer.
         uint32_t* outBuf = reinterpret_cast<uint32_t *>(leftProducerMessage);
         
-        // 2) Receive data from left:  use left's right consumer buffer
+        // #2) Receive data from left:  use left's right consumer buffer
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftModule->rightConsumerMessage);
         sendLeftChannel.go(outBuf + 0);
         uint32_t cmd = receiveLeftChannel.rx(inBuf + 4);
@@ -164,6 +177,14 @@ inline void MixerModule::process(const ProcessArgs &args)
 
     // Do the audio processing, and handle the left and right audio buses
     internalProcess();
+
+    if (pairedRight) {
+        rightMessageFlipRequested = true;
+    }
+    if (pairedLeft) {
+        leftMessageFlipRequested = true;
+     }
+    
 }
 
 
