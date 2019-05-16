@@ -152,7 +152,7 @@ LadderFilter<T>::LadderFilter()
 template <typename T>
 inline void LadderFilter<T>::dump(const char* p)
 {
-#if 0
+#if 0 
     printf("\ndump %s\n", p);
     printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", feedback, gain, edge, slope);
     printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
@@ -311,7 +311,6 @@ void LadderFilter<T>::setType(Types t)
         return;
 
     bypassFirstStage = false;
-  //  _g = getGfromNormFreq(input);
     type = t;
     switch (type) {
         case Types::_4PLP:
@@ -409,7 +408,6 @@ void LadderFilter<T>::setType(Types t)
             stageTaps[1] = -3;
             stageTaps[0] = 1;
             break;
-
         default:
             assert(false);
     }
@@ -428,6 +426,7 @@ template <typename T>
 inline void LadderFilter<T>::setFeedback(T f)
 {
     feedback = f * T(1.0);
+    //dump("feedback");
 }
 
 template <typename T>
@@ -467,7 +466,7 @@ inline void LadderFilter<T>::run(T input)
     inline void  LadderFilter<T>::name(float* buffer, int numSamples) { \
         for (int i = 0; i < numSamples; ++i) { \
             const T input = buffer[i]; \
-            T temp = input - feedback * stageOutputs[3]; \
+            T temp = input + feedback * stageOutputs[3]; \
             temp = std::max(T(-10), temp); \
             temp = std::min(T(10), temp);
 

@@ -186,14 +186,15 @@ inline void Filt<TBase>::stepn(int)
         fcClipped = std::max(fcClipped, T(.0000001));
     }
 
-    const float res = scaleQ(
+    float res = scaleQ(
         TBase::inputs[Q_INPUT].value,
         TBase::params[Q_PARAM].value,
         TBase::params[Q_TRIM_PARAM].value); 
     const float qMiddle = 2.8;
     res = (res < 2) ? 
         (res * qMiddle / 2) :
-        (res-2) * (4 - qMiddle) + qMiddle;
+        .5 * (res-2) * (4 - qMiddle) + qMiddle;
+
     if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
