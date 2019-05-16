@@ -56,6 +56,7 @@ float Analyzer::getSlopeHighpass(const FFTDataCpx& response, float fTest, float 
     const float mag2 = response.getAbs(bin2);
     return float(AudioMath::db(mag2) - AudioMath::db(mag1)) / 2;
 }
+
 std::tuple<int, int, int> Analyzer::getMaxAndShoulders(const FFTDataCpx& data, float atten)
 {
     assert(atten < 0);

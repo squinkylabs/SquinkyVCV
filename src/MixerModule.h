@@ -36,7 +36,7 @@ protected:
      * Concrete subclass overrides these to transfer audio
      * with neighbors. subclass will fill input and consume output
      * on its process call.
-     */s
+     */
     virtual void setExternalInput(const float*)=0;
     virtual void setExternalOutput(float*)=0;
 

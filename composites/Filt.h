@@ -186,11 +186,11 @@ inline void Filt<TBase>::stepn(int)
         fcClipped = std::max(fcClipped, T(.0000001));
     }
 
-    float res = scaleQ(
+    T res = scaleQ(
         TBase::inputs[Q_INPUT].value,
         TBase::params[Q_PARAM].value,
         TBase::params[Q_TRIM_PARAM].value); 
-    const float qMiddle = 2.8;
+    const T qMiddle = 2.8;
     res = (res < 2) ? 
         (res * qMiddle / 2) :
         .5 * (res-2) * (4 - qMiddle) + qMiddle;
