@@ -466,7 +466,7 @@ inline void LadderFilter<T>::run(T input)
     inline void  LadderFilter<T>::name(float* buffer, int numSamples) { \
         for (int i = 0; i < numSamples; ++i) { \
             const T input = buffer[i]; \
-            T temp = input + feedback * stageOutputs[3]; \
+            T temp = input - feedback * stageOutputs[3]; \
             temp = std::max(T(-10), temp); \
             temp = std::min(T(10), temp);
 
@@ -530,9 +530,11 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
+#if 0
 PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
+#endif
 
 template <typename T>
 inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
@@ -568,29 +570,20 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
     };
 }
 
+//inline void  LadderFilter<T>::name(float* buffer, int numSamples)
 
-#if 0 // This is the test bed for HPF Q comp
+    
+#if 1 
 template <typename T>
-inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
+inline void LadderFilter<T>::runBufferClean(float* buffer, int numSamples)
 {
 
     for (int i = 0; i < numSamples; ++i) {
         const T input = buffer[i];
 
-        // to preserve bass, hpf the feedback
-        const T prevOutput = stageOutputs[3];
-        const T filteredOutput = (_gHP > 0) ?
-            hpf.run(prevOutput, _gHP) :
-            prevOutput;
-#if 0
-        if (_gHP > 0) {
-            const T filteredOutput = hpf.run(prevOutput, _gHP);
-        } else {
-            filteredOutput = prevOutput;
-        }
-#endif
-
-        T temp = input - feedback * filteredOutput;
+        T temp = input - feedback * stageOutputs[3];
+        temp = std::max(T(-10), temp); 
+        temp = std::min(T(10), temp);
 
         temp = lpfs[0].run(temp, stageG[0]);
         stageOutputs[0] = temp;
@@ -613,7 +606,7 @@ inline void LadderFilter<T>::runBufferClean(T* buffer, int numSamples)
                 temp += stageOutputs[i] * stageTaps[i];
             }
         }
-        buffer[i] = temp;
+        buffer[i] = float(temp);
     }
 }
 #endif

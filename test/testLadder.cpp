@@ -187,6 +187,55 @@ static void testFilt2()
 }
 
 
+/*
+   void setNormalizedFc(T);
+
+    void setFeedback(T f);
+    void setType(Types);
+    void setVoicing(Voicing);
+    void setGain(T);
+    void setEdge(T);        // 0..1
+    void setFreqSpread(T);
+    void setBassMakeupGain(T);
+    void setSlope(T);       // 0..3. onl
+*/
+static void testFiltStability()
+{
+    LadderFilter<double> f;
+    f.setType(LadderFilter<double>::Types::_4PLP);
+    f.setVoicing(LadderFilter<double>::Voicing::Clean);
+    f.setGain(1);
+    f.setEdge(.5);
+    f.setFreqSpread(0);
+    f.setBassMakeupGain(1);
+    f.setNormalizedFc(.05);
+    f.setSlope(4);
+    f.setFeedback(3.9);       // 5 unstable at 200, 4 unstable at 800 3.9 unstable at 1200
+                                // 3.75 unstable at 6000
+                                // 3.6 stable
+
+    AudioMath::RandomUniformFunc random = AudioMath::random();
+    double a = 0, b = 0;
+    for (int i = 0; i < 10000; ++i) {
+      //  const double noise = .1 * (random() - .5);
+        const double noise = -.01;
+        f.run(noise);
+        double x = f.getOutput();
+        if ((x < -1) || (x > 1)) {
+            printf("over at i = %d\n", i);
+            f.getOutput();
+            f.run(noise);
+        }
+        a = std::min(a, x);
+        b = std::max(b, x);
+        assert(x < 1);
+        assert(x > -1);
+       // printf("output = %f\n", x);
+    }
+    printf("LADDER extremes were %f, %f\n", a, b);
+}
+
+
 void testLadder()
 {
     testLadderZero();
@@ -202,5 +251,6 @@ void testLadder()
     testLED5();
     testFilt();
     testFilt2();
+    testFiltStability();
    
 }
