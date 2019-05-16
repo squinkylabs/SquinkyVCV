@@ -184,7 +184,7 @@ int main(int argc, char ** argv)
     testAnalyzer();
     testRateConversion();
     testUtils();
-    testLowpassFilter();
+    //testLowpassFilter();
     testLadder();
     testHighpassFilter();
  

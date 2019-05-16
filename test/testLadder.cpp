@@ -186,20 +186,7 @@ static void testFilt2()
     }
 }
 
-
-/*
-   void setNormalizedFc(T);
-
-    void setFeedback(T f);
-    void setType(Types);
-    void setVoicing(Voicing);
-    void setGain(T);
-    void setEdge(T);        // 0..1
-    void setFreqSpread(T);
-    void setBassMakeupGain(T);
-    void setSlope(T);       // 0..3. onl
-*/
-static void testFiltStability()
+static bool _testFiltStability(double fNorm, double feedback)
 {
     LadderFilter<double> f;
     f.setType(LadderFilter<double>::Types::_4PLP);
@@ -208,23 +195,30 @@ static void testFiltStability()
     f.setEdge(.5);
     f.setFreqSpread(0);
     f.setBassMakeupGain(1);
-    f.setNormalizedFc(.05);
+    f.setNormalizedFc(fNorm);     // (.05) at .01 is stable at 3.99  .1 stable at 3.4
     f.setSlope(4);
-    f.setFeedback(3.9);       // 5 unstable at 200, 4 unstable at 800 3.9 unstable at 1200
+    f.setFeedback(feedback);       // 5 unstable at 200, 4 unstable at 800 3.9 unstable at 1200
                                 // 3.75 unstable at 6000
-                                // 3.6 stable
+                                // 3.7 stable
 
-    AudioMath::RandomUniformFunc random = AudioMath::random();
+   // AudioMath::RandomUniformFunc random = AudioMath::random();
+#ifdef _TEXTEX
+    const int  reps = 100000;
+#else
+    const int  reps = 10000;
+#endif
+
     double a = 0, b = 0;
-    for (int i = 0; i < 10000; ++i) {
-      //  const double noise = .1 * (random() - .5);
+    for (int i = 0; i < reps; ++i) {
+     //   const double noise = .1 * (random() - .5);
         const double noise = -.01;
         f.run(noise);
         double x = f.getOutput();
         if ((x < -1) || (x > 1)) {
-            printf("over at i = %d\n", i);
+         //   printf("over at i = %d\n", i);
             f.getOutput();
             f.run(noise);
+            return false;
         }
         a = std::min(a, x);
         b = std::max(b, x);
@@ -232,12 +226,66 @@ static void testFiltStability()
         assert(x > -1);
        // printf("output = %f\n", x);
     }
-    printf("LADDER extremes were %f, %f\n", a, b);
+  //  printf("LADDER extremes were %f, %f\n", a, b);
+    return true;
+}
+
+
+// This is now baked into the ladder
+static double getFeedForTest(double fNorm)
+{
+    double ret = 3.99;
+
+    if (fNorm <= .002) {
+        ret = 3.99;
+    } else if (fNorm <= .008) {
+        ret = 3.9;
+    } else if (fNorm <= .032) {
+        ret = 3.8;
+    } else if (fNorm <= .064) {
+        ret = 3.6;
+    } else if (fNorm <= .128) {
+        ret = 2.95;
+    } else if (fNorm <= .25) {
+        ret = 2.85;
+    } else {
+        ret = 2.30;
+    }
+    return ret;
+
+}
+
+static void testFiltStability()
+{
+#ifdef _TESTEX   // full test
+    for (double f = .001; f < .5; f *= 2) {
+     //   const double feed = getFeedForTest(f);
+        const double feed = 4;
+        bool stable = _testFiltStability(f, feed);
+        printf("freq %f feed = %f stable=%d\n", f, feed, stable);
+        assert(stable);
+
+    }
+
+    printf("\n");
+    for (double f = .25; f < .7; f *= 1.1) {
+        //const double feed = getFeedForTest(f);
+        const double feed = 4;
+        bool stable = _testFiltStability(f, feed);
+        printf("freq %f feed = %f stable=%d\n", f, feed, stable);
+        assert(stable);
+
+    }
+#endif
+
+    assert(_testFiltStability(.01, 4));
+    assert(_testFiltStability(.05, 4));
 }
 
 
 void testLadder()
 {
+#if 1
     testLadderZero();
     testLadderNotZero();
     testLadderDCf(1000);
@@ -251,6 +299,7 @@ void testLadder()
     testLED5();
     testFilt();
     testFilt2();
+#endif
     testFiltStability();
    
 }

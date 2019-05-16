@@ -44,17 +44,6 @@ public:
         Clean,
         NUM_VOICINGS
     };
-#if 0
-    enum class BassMakeup
-    {
-        Gain,
-        TrackingFilter,
-        FixedFilter
-    };
-#endif
-
-  //  void setBaseMakeupNormalizeFreq(T);
-   // void setBaseMakeupGain(T);
 
     void run(T);
     T getOutput();
@@ -99,13 +88,13 @@ private:
 
     T bassMakeupGain = 1;
     T mixedOutput = 0;
-    T feedback = 0;
+    T requestedFeedback = 0;
+    T adjustedFeedback = 0;
     T gain = T(.3);
     T stageOutputs[4];
     T edge = 0;
     T freqSpread = 0;
     T slope = 3;
-
 
     T stageGain[4] = {1, 1, 1, 1};
     T stageFreqOffsets[4] = {1, 1, 1, 1};
@@ -113,7 +102,7 @@ private:
     Types type = Types::_4PLP;
     Voicing voicing = Voicing::Classic;
     T lastNormalizedFc = T(.0001);
-    T lastNormalizedBassFreq = T(.0001);
+   // T lastNormalizedBassFreq = T(.0001);
     T lastSlope = -1;
 
     bool bypassFirstStage = false;
@@ -129,7 +118,6 @@ private:
     AsymWaveShaper shaper;
 
     void runBufferClassic(float* buffer, int);
-   // void runBufferClip(float* buffer, int);
     void runBufferClip2(float* buffer, int);
     void runBufferFold(float* buffer, int);
     void runBufferFold2(float* buffer, int);
@@ -137,6 +125,7 @@ private:
 
     void updateFilter();
     void updateSlope();
+    void updateFeedback();
     void dump(const char* p);
     T getGfromNormFreq(T nf) const;
 };
@@ -226,6 +215,7 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
     lastNormalizedFc = input;
     _g = getGfromNormFreq(input);
     updateFilter();
+    updateFeedback();
 }
 
 template <typename T>
@@ -425,9 +415,47 @@ inline T LadderFilter<T>::getOutput()
 template <typename T>
 inline void LadderFilter<T>::setFeedback(T f)
 {
-    feedback = f * T(1.0);
-    //dump("feedback");
+    if (f == requestedFeedback) {
+        return;
+    }
+    requestedFeedback = f;
+    updateFeedback();
+    dump("feedback");
 }
+
+template <typename T>
+inline void LadderFilter<T>::updateFeedback()
+{
+    double maxFeedback = 4;
+    double fNorm = lastNormalizedFc;
+
+    // Becuase this filter isn't zero delay, it can get unstable at high freq.
+    // So limite the feedback up there.
+    if (fNorm <= .002) {
+        maxFeedback = 3.99;
+    } else if (fNorm <= .008) {
+        maxFeedback = 3.9;
+    } else if (fNorm <= .032) {
+        maxFeedback = 3.8;
+    } else if (fNorm <= .064) {
+        maxFeedback = 3.6;
+    } else if (fNorm <= .128) {
+        maxFeedback = 2.95;
+    } else if (fNorm <= .25) {
+        maxFeedback = 2.85;
+    } else {
+        maxFeedback = 2.30;
+    }
+
+    assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
+
+    adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
+    adjustedFeedback = std::max(adjustedFeedback, T(0));
+  //  printf("in set feedback, adjusted to %f\n", adjustedFeedback);
+}
+
+
+
 
 template <typename T>
 inline void LadderFilter<T>::run(T input)
@@ -466,7 +494,7 @@ inline void LadderFilter<T>::run(T input)
     inline void  LadderFilter<T>::name(float* buffer, int numSamples) { \
         for (int i = 0; i < numSamples; ++i) { \
             const T input = buffer[i]; \
-            T temp = input - feedback * stageOutputs[3]; \
+            T temp = input - adjustedFeedback * stageOutputs[3]; \
             temp = std::max(T(-10), temp); \
             temp = std::min(T(10), temp);
 
@@ -530,11 +558,9 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
-#if 0
 PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
-#endif
 
 template <typename T>
 inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
@@ -569,11 +595,8 @@ inline  std::vector<std::string> LadderFilter<T>::getVoicingNames()
         "Clean"
     };
 }
-
-//inline void  LadderFilter<T>::name(float* buffer, int numSamples)
-
-    
-#if 1 
+  
+#if 0
 template <typename T>
 inline void LadderFilter<T>::runBufferClean(float* buffer, int numSamples)
 {

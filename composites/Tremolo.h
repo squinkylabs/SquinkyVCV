@@ -229,14 +229,14 @@ inline void Tremolo<TBase>::step()
     mod = AsymRampShaper::proc_1(rampShaper, mod);
     mod -= 0.5f;
     // now we have a skewed saw -.5 to .5
-    TBase::outputs[SAW_OUTPUT].value = mod;
+    TBase::outputs[SAW_OUTPUT].value = 10 * mod;
 
     // TODO: don't scale twice - just get it right the first time
   //  const float shapeMul = std::max(.25f, 10 * shape);
     mod *= shapeMul;
 
     mod = LookupTable<float>::lookup(*tanhLookup.get(), mod);
-    TBase::outputs[LFO_OUTPUT].value = mod;
+    TBase::outputs[LFO_OUTPUT].value = 5 * mod;
 
 
     // TODO: move this intp input proc

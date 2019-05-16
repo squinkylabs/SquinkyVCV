@@ -1,5 +1,13 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.15
+
+Direct link to the instruction manual for each module is available from the context menu (right click on the module).
+
+Shaper is now stereo.
+
+Increased the LFO outputs from Chopper to five volts.
+
 ## 0.6.14
 
 New Module: Saws (Super Saw VCO emulation).

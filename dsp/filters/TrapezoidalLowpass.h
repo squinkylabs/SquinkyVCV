@@ -24,7 +24,6 @@ inline T TrapezoidalLowpass<T>::legacyCalcG2(T g)
     return g / (1 + g);
 }
 
-#if 0 // old way
 template <typename T>
 inline T TrapezoidalLowpass<T>::run(T vin, T _g2)
 {
@@ -33,21 +32,6 @@ inline T TrapezoidalLowpass<T>::run(T vin, T _g2)
     _z = output + temp;
     return output;
 }
-#else
-template <typename T>
-inline T TrapezoidalLowpass<T>::run(T vin, T _g2)
-{
-    _g2 = T(.1);
-    const T output = (_g2 * vin + _z) / (1 + _g2);
-    _z = 2 * output - _z;
-    return output;
-
-   // const T temp = (vin - _z) * _g2;
-   // const T output = temp + _z;
-  //  _z = output + temp;
-  //  return output;
-}
-#endif
 
 /*
 f / fs = 0.309937, g2 = 0.600000
