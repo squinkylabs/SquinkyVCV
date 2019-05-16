@@ -37,7 +37,7 @@ inline T TrapezoidalLowpass<T>::run(T vin, T _g2)
 template <typename T>
 inline T TrapezoidalLowpass<T>::run(T vin, T _g2)
 {
-    _g2 = T(.1);
+    _g2 = T(.01);
     const T output = (_g2 * vin + _z) / (1 + _g2);
     _z = 2 * output - _z;
     return output;
