@@ -204,9 +204,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
             Comp::SLOPE0_LIGHT + i));
     }
     
-
-// Third row
-
+    // Third row
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(20, y3),
@@ -355,7 +353,7 @@ Model *modelFiltModule = createModel<FiltModule, FiltWidget>("squinkylabs-filt")
 Model *modelFiltModule = Model::create<FiltModule,
     FiltWidget>("Squinky Labs",
     "squinkylabs-filt",
-    "-- filt --", FILTER_TAG);
+    "Stairway: Ladder Filter", FILTER_TAG);
 #endif
 #endif
 
