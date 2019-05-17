@@ -74,10 +74,10 @@ private:
 // rack will flip producer and consumer each process tick.
 inline MixerModule::MixerModule()
 {
-    rightProducerMessage = bufferFlipR;
-    rightConsumerMessage = bufferFlopR;
-    leftProducerMessage = bufferFlipL;
-    leftConsumerMessage = bufferFlopL;
+    rightExpander.producerMessage = bufferFlipR;
+    rightExpander.consumerMessage = bufferFlopR;
+    leftExpander.producerMessage = bufferFlipL;
+    leftExpander.consumerMessage = bufferFlopL;
 }
 
 // Each time we are called, we want the unit on the left to output
@@ -91,22 +91,22 @@ inline void MixerModule::process(const ProcessArgs &args)
 
     // first, determine what modules are are paired with what
     // A Mix4 is not a master, and can pair with either a Mix4 or a MixM to the right
-    const bool pairedRight = rightModule && 
-        ((rightModule->model == modelMixMModule) || (rightModule->model == modelMix4Module)) &&
+    const bool pairedRight = rightExpander.module && 
+        ((rightExpander.module->model == modelMixMModule) || (rightExpander.module->model == modelMix4Module)) &&
         !amMaster();
 
     // A MixM and a Mix4 can both pair with a Mix4 to the left
-    const bool pairedLeft = leftModule &&
-        (leftModule->model == modelMix4Module);
+    const bool pairedLeft = leftExpander.module &&
+        (leftExpander.module->model == modelMix4Module);
 
     assert(rightProducerMessage);
     assert(!pairedLeft || leftModule->rightConsumerMessage);
 
     // set a channel to send data to the right (case #1, above)
-    setExternalOutput(pairedRight ? reinterpret_cast<float *>(rightProducerMessage) : nullptr);
+    setExternalOutput(pairedRight ? reinterpret_cast<float *>(rightExpander.producerMessage) : nullptr);
     
     // set a channel to rx data from the left (case #2, above)
-    setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftModule->rightConsumerMessage) : nullptr);
+    setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftExpander.module->rightExpander.consumerMessage) : nullptr);
 
     if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
         const auto commCmd = (soloRequestFromUI == SoloCommands::SOLO_NONE) ?
@@ -134,10 +134,10 @@ inline void MixerModule::process(const ProcessArgs &args)
 
     if (pairedRight) {
         // #1) Send data to right: use you own right producer buffer.
-        uint32_t* outBuf = reinterpret_cast<uint32_t *>(rightProducerMessage);
+        uint32_t* outBuf = reinterpret_cast<uint32_t *>(rightExpander.producerMessage);
 
         // #4) Receive data from right: user right's left consumer buffer
-        const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightModule->leftConsumerMessage);
+        const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightExpander.module->leftExpander.consumerMessage);
         sendRightChannel.go(outBuf + 4);
         uint32_t cmd = receiveRightChannel.rx(inBuf + 0);
 
@@ -156,10 +156,10 @@ inline void MixerModule::process(const ProcessArgs &args)
 
     if (pairedLeft) {
         // #3) Send data to the left: use your own left producer buffer.
-        uint32_t* outBuf = reinterpret_cast<uint32_t *>(leftProducerMessage);
+        uint32_t* outBuf = reinterpret_cast<uint32_t *>(leftExpander.producerMessage);
         
         // #2) Receive data from left:  use left's right consumer buffer
-        const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftModule->rightConsumerMessage);
+        const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftExpander.module->rightExpander.consumerMessage);
         sendLeftChannel.go(outBuf + 0);
         uint32_t cmd = receiveLeftChannel.rx(inBuf + 4);
         if (cmd != 0) {
@@ -179,10 +179,10 @@ inline void MixerModule::process(const ProcessArgs &args)
     internalProcess();
 
     if (pairedRight) {
-        rightMessageFlipRequested = true;
+        rightExpander.messageFlipRequested = true;
     }
     if (pairedLeft) {
-        leftMessageFlipRequested = true;
+        leftExpander.messageFlipRequested = true;
      }
     
 }
