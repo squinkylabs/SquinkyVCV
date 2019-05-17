@@ -186,7 +186,7 @@ Model *modelSlew4Module = createModel<Slew4Module, Slew4Widget>("squinkylabs-sle
 Model *modelSlew4Module = Model::create<Slew4Module,
     Slew4Widget>("Squinky Labs",
     "squinkylabs-slew4",
-    "-- Slew4 --", RANDOM_TAG);
+    "Slade: Octal slew/lag with mixing", RANDOM_TAG);
 #endif
 #endif
 
