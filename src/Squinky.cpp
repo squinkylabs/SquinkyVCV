@@ -54,10 +54,17 @@ void init(rack::Plugin *p)
 #ifdef _SHAPER
     p->addModel(modelShaperModule);
 #endif
+#ifdef _SLEW
+    // Slade
+    p->addModel(modelSlew4Module);
+#endif
+#ifdef _FILT
+    // Stairway
+    p->addModel(modelFiltModule);
+#endif
 #ifdef _TBOOST
     p->addModel(modelThreadBoostModule);
 #endif
-
 #ifdef _CHBG
     p->addModel(modelCHBgModule);
 #endif
@@ -84,9 +91,7 @@ void init(rack::Plugin *p)
 #ifdef _CH10
     p->addModel(modelCH10Module);
 #endif
-#ifdef _SLEW
-    p->addModel(modelSlew4Module);
-#endif
+
 #ifdef _MIX8
     p->addModel(modelMix8Module);
 #endif
@@ -97,9 +102,7 @@ void init(rack::Plugin *p)
 #ifdef _MIXM
     p->addModel(modelMixMModule);
 #endif
-#ifdef _FILT
-    p->addModel(modelFiltModule);
-#endif
+
 
 }
 
