@@ -6,6 +6,8 @@ Direct link to the instruction manual for each module is available from the cont
 
 Shaper is now stereo.
 
+Buttons now only active on primary (left) button press.
+
 Increased the LFO outputs from Chopper to five volts.
 
 ## 0.6.14

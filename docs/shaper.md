@@ -3,7 +3,7 @@
 ![shaper image](./shaper-panel.png)
 
 ## Overview
-Shaper is a waveshaper offering many different shape options. Some of these shapes are commonly found in other wave shapers, and some are unique to Shaper. It can be used to modify the waveforms from a VCO, or to add distortion to some other sound. And, as usual, the creative user may use for "left field" uses, such as shaping control voltages.
+Shaper is a stereo waveshaper offering many different shape options. Some of these shapes are commonly found in other wave shapers, and some are unique to Shaper. It can be used to modify the waveforms from a VCO, or to add distortion to some other sound. And, as usual, the creative user may use for "left field" uses, such as shaping control voltages.
 
 A unique feature of Shaper is that it has very little aliasing, whereas most we have seen have a lot of aliasing. The other special thing about Shaper is that it has a few shapes that are good for "soft overdrive".
 
@@ -44,6 +44,10 @@ As we mentioned earlier, it is usually bad to have high levels of DC in your aud
 On the other hand, if you are using Shaper to process control voltages, it is essential that the DC be preserved.
 
 Like most waveshapers, the first version of Shaper did not have highpass filters, and hence would output a lot of DC. The second version had the filter to block DC, but they were always on, making it bad for CV processing. This third version of Shaper finally gives the user a choice.
+
+## About stereo
+
+There are two sets on inputs and outputs. They share the same settings, so are convenient for processing stereo signals. A channel will only use CPU resources if both its input and output are patched.
 
 ## Typical Uses
 

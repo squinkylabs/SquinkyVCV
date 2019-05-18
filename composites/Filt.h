@@ -220,21 +220,6 @@ inline void Filt<TBase>::stepn(int)
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
 
-
-#if 0
-// fix it to known good values for test
-    type = LadderFilter<T>::Types::_3PHP;
-    fcClipped = (1 / T(40));
-    makeupGain = 1;
-    voicing = LadderFilter<T>::Voicing::Clean;
-    res = 0;
-
-
-    staging = (.5);
-    spread = 0;
-    gain = (1);
-#endif
-
     bool didSlope = false;
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
@@ -261,18 +246,6 @@ inline void Filt<TBase>::stepn(int)
         }
     }
 }
-
-#if 0
-template <class TBase>
-inline  std::vector<std::string> Filt<TBase>::getBassMakeupNames()
-{
-    return {
-       "Gain",
-       "Tracking Filter",
-       "Fixed Filter"
-    };
-}
-#endif
 
 template <class TBase>
 inline void Filt<TBase>::step()
