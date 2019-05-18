@@ -10,6 +10,8 @@ Buttons now only active on primary (left) button press.
 
 Increased the LFO outputs from Chopper to five volts.
 
+Fixed a typo on the LFN panel.
+
 ## 0.6.14
 
 New Module: Saws (Super Saw VCO emulation).
