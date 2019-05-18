@@ -25,5 +25,7 @@ Rectangle corners have 3 pix rounding.
 Font: Space Patrol.
 
 Logo size: 14pt
+Logo location: 360
 
 Title size: 21 pt
+Title location: 21

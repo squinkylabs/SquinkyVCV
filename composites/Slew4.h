@@ -83,6 +83,8 @@ public:
         INPUT_AUDIO5,
         INPUT_AUDIO6,
         INPUT_AUDIO7,
+        INPUT_RISE,
+        INPUT_FALL,
         NUM_INPUTS
     };
 

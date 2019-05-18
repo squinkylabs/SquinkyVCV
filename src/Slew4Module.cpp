@@ -108,10 +108,11 @@ Slew4Widget::Slew4Widget(Slew4Module *module) : ModuleWidget(module)
     addOther(module, icomp);
 }
 
-float jackY = 60;
+float jackY = 50;       // was 60
 float jackDy = 30;
 float jackX = 18;
 float jackDx = 28;
+const float jackLabelDy = -34;
 
 void Slew4Widget::addJacks(Slew4Module *module)
 {
@@ -135,16 +136,17 @@ void Slew4Widget::addJacks(Slew4Module *module)
             module,
             Comp::OUTPUT_MIX0 + i));
     }
-    addLabel(Vec(jackX -22, jackY-40), "Gate");
-    addLabel(Vec(jackX + jackDx -16, jackY-40), "(In)");
-    addLabel(Vec(jackX + 2 * jackDx -18, jackY-40), "Out");
-    addLabel(Vec(jackX + 3 * jackDx -18, jackY-40), "Mix");
+    addLabel(Vec(jackX -22, jackY+jackLabelDy), "Gate");
+    addLabel(Vec(jackX + jackDx -16, jackY+jackLabelDy), "(In)");
+    addLabel(Vec(jackX + 2 * jackDx -18, jackY+jackLabelDy), "Out");
+    addLabel(Vec(jackX + 3 * jackDx -18, jackY+jackLabelDy), "Mix");
 }
 
-float knobY= 330;
-float knobX = 20;
-float knobDx = 36;
-float labelAboveKnob = 36;
+static const float knobY= 310;
+static const float knobX = 20;
+static const float knobDx = 36;
+static const float labelAboveKnob = 36;
+static const float jackY2 = 342;
 
 void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
 {
@@ -168,6 +170,15 @@ void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
         module,
         Comp::PARAM_LEVEL));
     addLabel(Vec(knobX + 2 * knobDx - 20, knobY - labelAboveKnob), "Level");
+
+    addInput(createInputCentered<PJ301MPort>(
+         Vec(knobX, jackY2),
+         module,
+         Comp::INPUT_RISE));
+    addInput(createInputCentered<PJ301MPort>(
+         Vec(knobX + knobDx, jackY2),
+         module,
+         Comp::INPUT_FALL));
 };
 
 void Slew4Widget::addScrews()
