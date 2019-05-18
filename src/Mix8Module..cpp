@@ -149,7 +149,7 @@ void Mix8Widget::makeStrip(
     if (channel == 0) {
         addLabel(
             Vec(labelX, y-10),
-            "Lvl");
+            "Vol");
     }
 
     y -= channelDy;

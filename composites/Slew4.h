@@ -146,7 +146,6 @@ private:
 
 };
 
-
 template <class TBase>
 inline void Slew4<TBase>::init()
 {
@@ -158,7 +157,6 @@ inline void Slew4<TBase>::init()
     lag.setAttack(.1f);
     lag.setRelease(.0001f);
 }
-
 
 template <class TBase>
 inline void Slew4<TBase>::updateKnobs()
