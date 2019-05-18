@@ -197,7 +197,6 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         "Slope");
 
     for (int i=0; i<4; ++i) {
-      //  printf("about to make led # %d\n", i); fflush(stdout);
         addChild(createLightCentered<SmallLight<GreenLight>>(
             Vec(xLED, yPole1 + dyPoles * i ),
             module,

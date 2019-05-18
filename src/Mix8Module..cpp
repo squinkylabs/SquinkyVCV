@@ -88,7 +88,7 @@ struct Mix8Widget : ModuleWidget
     void makeMaster(Mix8Module* , std::shared_ptr<IComposite>);
 };
 
-static const float channelX = 42;
+static const float channelX = 43;
 static const float dX = 34;
 static const float labelX = 0; 
 static const float channelY = 350;
@@ -285,7 +285,6 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
             addLabel(Vec(xL, y+labelDy),
             "R");
         }
-
     }
 
     x = 312 + 15 + 15;
@@ -319,15 +318,6 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
             "R"); 
     
 }
-
-/*
-
-  addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(col4, row),
-        module,
-        CHB<WidgetComposite>::PARAM_MAG_ODD));
-        */
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -366,7 +356,7 @@ Model *modelMix8Module = createModel<Mix8Module, Mix8Widget>("squinkylabs-mix8")
 Model *modelMix8Module = Model::create<Mix8Module,
     Mix8Widget>("Squinky Labs",
     "squinkylabs-mix8",
-    "-- Mix8 --", MIXER_TAG);
+    "Mixer-8", MIXER_TAG);
 #endif
 #endif
 
