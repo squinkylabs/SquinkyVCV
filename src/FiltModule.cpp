@@ -353,7 +353,7 @@ Model *modelFiltModule = createModel<FiltModule, FiltWidget>("squinkylabs-filt")
 Model *modelFiltModule = Model::create<FiltModule,
     FiltWidget>("Squinky Labs",
     "squinkylabs-filt",
-    "Stairway: Ladder Filter", FILTER_TAG);
+    "Stairway: Ladder Filter", FILTER_TAG, DISTORTION_TAG, DUAL_TAG);
 #endif
 #endif
 

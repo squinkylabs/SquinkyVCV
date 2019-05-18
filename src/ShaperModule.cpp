@@ -244,7 +244,7 @@ Model *modelShaperModule = createModel<ShaperModule, ShaperWidget>(
 Model *modelShaperModule = Model::create<ShaperModule,
     ShaperWidget>("Squinky Labs",
     "squinkylabs-shp",
-    "Shaper: Precision Wave Shaper", WAVESHAPER_TAG, DISTORTION_TAG);
+    "Shaper: Precision Wave Shaper", WAVESHAPER_TAG, DISTORTION_TAG, DUAL_TAG);
 #endif
 #endif
 

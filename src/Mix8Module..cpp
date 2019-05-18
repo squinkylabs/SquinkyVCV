@@ -366,7 +366,7 @@ Model *modelMix8Module = createModel<Mix8Module, Mix8Widget>("squinkylabs-mix8")
 Model *modelMix8Module = Model::create<Mix8Module,
     Mix8Widget>("Squinky Labs",
     "squinkylabs-mix8",
-    "-- Mix8 --", RANDOM_TAG);
+    "-- Mix8 --", MIXER_TAG);
 #endif
 #endif
 
