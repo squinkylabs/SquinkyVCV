@@ -125,7 +125,8 @@ void Mix8Widget::makeStrip(
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
-            "Out");
+            "Out", 
+            SqHelper::COLOR_WHITE);
     }
 
     y -= channelDy;
@@ -263,7 +264,8 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_OUTPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "O");
+            "O",
+             SqHelper::COLOR_WHITE);
         }
 
         y -= 2 * channelDy;
@@ -273,7 +275,8 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_SEND_OUTPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "S");
+            "S",
+             SqHelper::COLOR_WHITE);
         }
 
         y -= channelDy;
