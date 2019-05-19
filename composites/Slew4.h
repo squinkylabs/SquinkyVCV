@@ -164,25 +164,28 @@ template <class TBase>
 inline void Slew4<TBase>::updateKnobs()
 {
     const float combinedA = lin(
-        0,
+        TBase::inputs[INPUT_RISE].value,
         TBase::params[PARAM_RISE].value,
         1);
 
     const float combinedR = lin(
-        0,
+        TBase::inputs[INPUT_FALL].value,
         TBase::params[PARAM_FALL].value,
         1);
 
+    lag.setEnable(true);
+#if 0
+    // TODO: does this unit really want to disable ever?
     if (combinedA < .1 && combinedR < .1) {
         lag.setEnable(false);
     } else {
         lag.setEnable(true);
+    #endif
 
-        const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
+    const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
         lag.setAttackL(lA);
         const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
         lag.setReleaseL(lR);
-    }
 
     const float knob = TBase::params[PARAM_LEVEL].value;
     _outputLevel = LookupTable<float>::lookup(*audioTaper, knob, false);
