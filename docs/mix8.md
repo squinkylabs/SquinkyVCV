@@ -12,13 +12,13 @@ Even with these new features, however, the CPU usage is still only 10% of the or
 
 **Out**: The channel direct outs.
 
-**Mt**: Mute control voltages in. These go through the mute anti-pop filters,so sharp gates may be used without pops.
+**Mt**: Mute control voltages in. These go through the mute anti-pop filters, so sharp gates may be used without pops.
 
 **Vol**: CV input for volume control.
 
 **Pan**: CV input for pan control.
 
-**X**: Expansion inputs. Typically type output of another mixer is run into the expansion inputs. Signal here is just mixed to the output along with everything else.
+**X**: Expansion inputs. Typically the output of another mixer is run into the expansion inputs. Signal here is just mixed to the output along with everything else.
 
 **O**: Main stereo outputs.
 
@@ -28,10 +28,18 @@ Even with these new features, however, the CPU usage is still only 10% of the or
 
 ## Controls
 
-**S**: Solo. Will turn off all the other channels and let the soloed channel play on its own. Soloing one channel will un-solo other channels. When solo is active it overrides mutes, i.e. if you solo a muted channel it will play. Pressing an active solo button will remove the solo.
+**S**: Solo. Will turn off all the other channels and let the soloed channel play on its own. Soloing one channel will un-solo the other channels. When solo is active it overrides mutes, i.e. if you solo a muted channel it will play. Pressing an active solo button will remove the solo.
 
-**M**: Mute. Silences the muted channel.
+**M** (in the channel): Mute. Silences the muted channel. Not that the button on the far right is the master mute.
 
-**Aux**: Aux send level. Controls how much of the current channel will be send to the stereo Aux bux. If the send and return are patched to an echo, for example, Aux will control how much of that channel is send to the echo.
+**Aux**: Aux send level. Controls how much of the current channel will be sent to the stereo Aux bux. If the send and return are patched to an echo, for example, Aux will control how much of that channel is send to the echo.
 
 Aux is post-fader, so any channel settings will also affect the Aux send level.
+
+**Pan**: Pans the channel left to right. Uses the AS Mixer's equal power pan law.
+
+**Vol**: Controls the channel's volume. Uses the same tapered response as the AS mixer.
+
+**R**: Sets the level of the aux return as it is mixed into the master out.
+
+**M** (in the master section): Master volume.

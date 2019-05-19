@@ -3,17 +3,17 @@
 
 Stairway is yet another ladder filter, but one that combines many of the ladder enhancements that have been discovered over the decades since the original Moog filter first came out.
 
-Filter Provides many more shapes that just four pole low-pass. We believe this innovation was first used in the Oberheim Matrix-12, although our implementation is a little different.
+Stairway Provides many more shapes that just four pole low-pass. We believe this innovation was first used in the Oberheim Matrix-12, although our implementation is a little different.
 
-Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat, although it is possible to dial in more and different distortions.
+Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat, although it is possible to dial in more and quite different distortions.
 
-Stairway is by no means an accurate "model" of a specific moog filter. It is based on a standard good quality model of the transistor ladder, but it uses no component level modeling, and has not been painstakingly voice to sound as close as possible to a Moog. The intention of Stairway is to be rich and warm like a Moog, but will a lot of other sounds, too.
+Stairway is by no means an accurate "model" of a specific moog filter. It is based on a standard good quality model of the transistor ladder, but it uses no component level modeling, and has not been painstakingly voice to sound as close as possible to a Moog. The intention of Stairway is to be rich and warm like a Moog, but with a lot of other sounds, too.
 
 There are extensive notes at the bottom of this page about how the filter actually work.
 
 ## Important notes
 
-Although the filter can produce many responses besides just four pole lowpass, it it still at its heart a four pole lowpass with some fancy stuff on top. Because of this, many of the responses other than lowpass will work less well the more the filter itself is pushed away from perfection. So with enough *drive*, *edge*, *Caps* and such it will be less and less like a highpass or a bandpass. This can be dramatic, so if you want the highpass or bandpass to be close at all to their real shape, it's very important that the edge control be exactly in the middle. Sometimes re-initializing the module is the easiest way to get there.
+Although the filter can produce many responses besides just four pole lowpass, it it still at its heart a four pole lowpass with some fancy stuff on top. Because of this, many of the responses other than lowpass will work less well the more the filter itself is pushed away from perfection. So with enough *Drive*, *Edge*, *Caps* and such it will be less and less like a highpass or a bandpass. This can be dramatic, so if you want the highpass or bandpass to be close at all to their real shape, it's very important that the edge control be exactly in the middle. Sometimes re-initializing the module is the easiest way to get there.
 
 Many of the controls change the distortion level or the character of the distortion. So sometimes turning one won't sound that much different from turning another one. Or you keep adding more and more distortion until everything is just a big flabby mess. The Drive, Voicing, and Edge all add or change distortion. When you are first learning to find sounds with Filter, try keeping the distortion to a moderate level so that it's easier to hear what the other controls do.
 
@@ -21,21 +21,21 @@ Also, adding a lot of distortion starts to make the filter act less like a filte
 
 ## Controls
 
-**Fc** - filter cutoff.
+**Fc** - Filter cutoff.
 
-**Q** - filter resonance, or Q. At the moment it won't usually go into self oscillation. I should fix that.
+**Q** - Filter resonance, or Q. At the moment it won't usually go into self oscillation. I should fix that.
 
-**Drive** - controls the signal level going into the filter. More drive gives more distortion. Too much and the filter stops working right and gets all flabby.
+**Drive** - Controls the signal level going into the filter. More drive gives more distortion. Too much and the filter stops working right and gets all flabby.
 
 **Edge** - Redistributes the distortion in different ways between the four filter elements. In the middle all stages have the same gain, like most ladders. To the left, the first stages get more distortion than the later one. And to the right the later stages get more.
 
-**Type** - filter response type. Choices are four pole lowpass, three pole lowpass, two pole lowpass, one pole lowpass, two pole bandpass, two pole highpass with one pole lowpass, three pole highpass with one pole lowpass, four pole bandpass, one pole lowpass with notch, three pole allpass with one pole lowpass, three pole highpass two pole highpass, one pole highpass, notch, and phaser.
+**Type** - Filter response type. Choices are four pole lowpass, three pole lowpass, two pole lowpass, one pole lowpass, two pole bandpass, two pole highpass with one pole lowpass, three pole highpass with one pole lowpass, four pole bandpass, one pole lowpass with notch, three pole allpass with one pole lowpass, three pole highpass two pole highpass, one pole highpass, notch, and phaser.
 
 Note that many of these filter type are not what you would normally expect from, say a highpass filter. But they are all useful sounds. Also note that technically when the resonance it turned up, they are all going to have four poles - of course it is impossible to truly make a one-pole resonant filter.
 
-**Voicing** selects different types of distortion. The first selection is the standard one that is pretty close to a Moog. The "Asym" ones have a lot of even harmonics, the others are all odd harmonics. Some of them, like "Fold", will radically affect the sound.
+**Voicing** - Selects different types of distortion. The first selection is the standard one that is pretty close to a Moog. The "Asym" ones have a lot of even harmonics, the others are all odd harmonics. Some of them, like "Fold", will radically affect the sound.
 
-**Caps** - simulates using inaccurate capacitor values. At the minimum setting, the are all perfectly matched. As the value is increased, they go to typical values that would be found in a Moog, up to very imprecise values. That said, the effect is pretty subtle, and heard mostly as a reduction in resonance. It is more noticable, however, with the "alternate" filter responses.
+**Caps** - Simulates using inaccurate capacitor values. At the minimum setting, the are all perfectly matched. As the value is increased, they go to typical values that would be found in a Moog, up to very imprecise values. That said, the effect is pretty subtle, and heard mostly as a reduction in resonance. It is more noticable, however, with the "alternate" filter responses.
 
 **Bass** - Reduces the infamous "bass suck" of the moog filter. When it's all the way donw it's like a regular moog, and the bass will decrease as the resonance increases. When Bass is all the way it then there is no bass suck.
 
@@ -93,7 +93,7 @@ A ladder filter (or any filter) is a fun playground for distortion. Combining mu
 
 As we mentioned before, the transistor ladder can be modeled closely with the tanh function, which sounds great and is our default.
 
-There are a couple of filters for VCV that give you a choice of the type of non-linearity, but we went crazy and put a bunch in. The Moog filter will generate only odd harmonics, so we wanted have some options that add even harmonics to.
+There are a couple of filters for VCV that give you a choice of the type of non-linearity, but we went crazy and put a bunch in. The Moog filter will generate only odd harmonics, so we wanted have some options that add even harmonics too.
 
 So, "Transistor" just puts a tanh in front of each of the four filter stages. "Asym Clip" alternates - the tops are clipped off going into the first and third stages, whereas the bottoms are chopped off going into the second and fourth. Carvin guitar amps patented that in the 70's to emulate a tube  amp using a cheaper solid state amp. The "Fold" is four standard wave folders, one in front of each filter stage. "Fold 2" is similar to "Asym Clip" - half the stages fold the tops, the other half fold the bottom.
 
