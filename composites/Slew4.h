@@ -129,7 +129,7 @@ public:
     
     void onSampleRateChange()
     {
-        knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime());
+        knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime(), 4);
     }
 
 private:
