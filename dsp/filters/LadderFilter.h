@@ -92,7 +92,8 @@ private:
     T adjustedFeedback = 0;
     T gain = T(.3);
     T stageOutputs[4];
-    T edge = 0;
+    T rawEdge = 0;
+    T processedEdge = 0;
     T freqSpread = 0;
     T slope = 3;
 
@@ -126,6 +127,7 @@ private:
     void updateFilter();
     void updateSlope();
     void updateFeedback();
+    void updateStageGains();
     void dump(const char* p);
     T getGfromNormFreq(T nf) const;
 };
@@ -181,9 +183,7 @@ inline void  LadderFilter<T>::updateSlope()
         } else if (i != (iSlope + 1)) {
             stageTaps[i] = 0;
         }
-     //   printf("led[%d] = %f\n", i, stageTaps[i]);
     }
-  //  fflush(stdout);
 }
 
 template <typename T>
@@ -272,10 +272,10 @@ void LadderFilter<T>::updateFilter()
 template <typename T>
 void LadderFilter<T>::setEdge(T e)
 {
-    if (e == edge) {
+    if (e == rawEdge) {
         return;
     }
-    edge = e;
+    rawEdge = e;
     assert(e <= 1 && e >= 0);
 
     T e2 = 1;
@@ -284,9 +284,29 @@ void LadderFilter<T>::setEdge(T e)
     } else {
         e2 = e * T(1.75) + T(.125);
     }
-    AudioMath::distributeEvenly(stageGain, 4, e2);
+    processedEdge = e2;
+    updateStageGains();   
     dump("set edge");
 }
+
+template <typename T>
+void LadderFilter<T>::updateStageGains()
+{
+    // turn off the edge if not lowpass filter
+    T edgeToUse = processedEdge;
+    switch (type) {
+        case Types::_4PLP:
+        case Types::_3PLP:
+        case Types::_2PLP:
+        case Types::_1PLP:
+            edgeToUse = processedEdge;
+            break;
+        default:
+            edgeToUse = 1;
+    }
+     AudioMath::distributeEvenly(stageGain, 4, edgeToUse);
+}
+
 
 template <typename T>
 void LadderFilter<T>::setVoicing(Voicing v)
@@ -403,6 +423,7 @@ void LadderFilter<T>::setType(Types t)
     }
     updateFilter();
     updateSlope();
+    updateStageGains();         // many filter types turn off the edge
     dump("set type");
 }
 
@@ -451,7 +472,6 @@ inline void LadderFilter<T>::updateFeedback()
 
     adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
     adjustedFeedback = std::max(adjustedFeedback, T(0));
-  //  printf("in set feedback, adjusted to %f\n", adjustedFeedback);
 }
 
 
@@ -495,16 +515,16 @@ inline void LadderFilter<T>::run(T input)
         for (int i = 0; i < numSamples; ++i) { \
             const T input = buffer[i]; \
             T temp = input - adjustedFeedback * stageOutputs[3]; \
-            temp = std::max(T(-10), temp); \
-            temp = std::min(T(10), temp);
+            temp = std::max(T(-3), temp); \
+            temp = std::min(T(3), temp);
 
 #define PROC_END \
-        if (true || type != Types::_4PLP) { \
-            temp = 0; \
-            for (int i = 0; i < 4; ++i) { \
-                temp += stageOutputs[i] * stageTaps[i]; \
-            } \
+        temp = 0; \
+        for (int i = 0; i < 4; ++i) { \
+            temp += stageOutputs[i] * stageTaps[i]; \
         } \
+        temp = std::max(T(-1.7), temp); \
+        temp = std::min(T(1.7), temp); \
         buffer[i] = float(temp); \
      } \
 }
