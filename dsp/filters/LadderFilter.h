@@ -292,13 +292,13 @@ void LadderFilter<T>::setEdge(T e)
 template <typename T>
 void LadderFilter<T>::updateStageGains()
 {
-    // turn off the edge if not lowpass filter
+    // turn off the edge if not 4p lowpass filter
     T edgeToUse = processedEdge;
     switch (type) {
         case Types::_4PLP:
-        case Types::_3PLP:
-        case Types::_2PLP:
-        case Types::_1PLP:
+      //  case Types::_3PLP:
+      //  case Types::_2PLP:
+      //  case Types::_1PLP:
             edgeToUse = processedEdge;
             break;
         default:
