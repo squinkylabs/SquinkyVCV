@@ -19,13 +19,13 @@
 		{
 			"slug": "squinkylabs-vocalfilter",
 			"name": "Formants",
-			"description": "Formants: Vocal Filter",
+			"description": "Singing Vocal Filter",
 			"tags":  ["Effect", "Filter"]
 		},
 		{
 			"slug": "squinkylabs-funv",
 			"name": "Functional VCO-1",
-			"description": "A multi-function VCO with low aliasing",
+			"description": "Multi-function VCO with low aliasing",
 			"tags": ["VCO"]
 		},
 		{
@@ -37,43 +37,43 @@
 		{
 			"slug": "squinkylabs-vocalanimator",
 			"name": "Growler",
-			"description": "Growler: Vocal Animator",
+			"description": "Vocal Animator",
 			"tags":  ["Effect", "Filter"]
 		},
 		{
 			"slug": "squinkylabs-CHB2",
 			"name": "Chebyshev II",
-			"description": "Chebyshev II: Waveshaper VCO",
+			"description": "Waveshaper VCO with FM",
 			"tags": ["VCO"]
 		},
 		{
 			"slug": "squinkylabs-shp",
 			"name": "Shaper",
-			"description": "Shaper: Precision Wave Shaper",
+			"description": "Precision Wave Shaper",
 			"tags": ["Effect", "Waveshaper", "Distortion"]
 		},
 		{
 			"slug": "squinkylabs-tremolo",
 			"name": "Chopper",
-			"description": "Chopper: Tremolo",
+			"description": "Tremolo",
 			"tags": ["Clock modulator", "Effect", "LFO"]
 		},
 		{
 			"slug": "squinkylabs-gry",
 			"name": "Gray Code",
-			"description": "Gray Code: Eclectic clock divider",
+			"description": "Eclectic clock divider",
 			"tags": [ "Clock modulator", "Random", "Logic"]
 		},
 		{
 			"slug": "squinkylabs-coloredNoise",
 			"name": "Colors",
-			"description": "Colors: Colored Noise",
+			"description": "Colored Noise",
 			"tags": ["Noise"]
 		},
 		{
 			"slug": "squinkylabs-freqshifter",
 			"name": "Booty Shifter",
-			"description": "Booty Shifter: Frequency Shifter",
+			"description": "Frequency Shifter",
 			"tags": ["Ring Modulator", "effect"]
 		},
 		{
@@ -85,7 +85,7 @@
 		{
 			"slug": "squinkylabs-super",
 			"name": "Saws",
-			"description": "super saw VCO emulation",
+			"description": "Super saw VCO emulation",
 			"tags": ["VCO"]
 		}
 		,
@@ -97,11 +97,11 @@
 		{
 			"slug": "squinkylabs-slew4",
 			"name": "Slade",
-			"description": "Quad slew / VCA"
+			"description": "Ocatal slew/lag/VCA"
 		},
 		{
 			"slug": "squinkylabs-mix8",
-			"name": "Mixer",
+			"name": "Mixer-8",
 			"description": "8 channel mixer"
 		},
 		{
@@ -128,7 +128,7 @@
 		},
 		{
 			"slug": "squinkylabs-filt",
-			"name": "Stairawy",
+			"name": "Stairway",
 			"description": "Ladder filter on steroids",
 			"tags": ["VCF"]
 		}

@@ -40,11 +40,8 @@ struct Blue30SnapKnob : Blue30Knob
 {
     Blue30SnapKnob()
     {
-        // TODO: snap for V1
-#ifndef __V1
         snap = true;
         smooth = false;
-#endif
     }
 };
 
