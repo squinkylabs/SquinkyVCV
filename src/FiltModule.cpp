@@ -138,7 +138,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         module,
         Comp::FC_PARAM));
     addLabel(
-        Vec(x1-labelDx, y1 + labelY),
+        Vec(x1+8-labelDx, y1 + labelY),
         "Fc");
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -147,7 +147,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         module,
         Comp::Q_PARAM));
      addLabel(
-        Vec(x2-labelDx, y1 + labelY),
+        Vec(x2+10-labelDx, y1 + labelY),
         "Q");
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -165,7 +165,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         module,
         Comp::STAGING_PARAM));
     addLabel(
-        Vec(x4-labelDx, y1 + labelY),
+        Vec(x4+2-labelDx, y1 + labelY),
         "Edge");
 
 // second row
@@ -184,7 +184,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         module,
         Comp::BASS_MAKEUP_PARAM));
     addLabel(
-        Vec(x2-labelDx, y2 + labelY),
+        Vec(x2+2-labelDx, y2 + labelY),
         "Bass");
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -333,14 +333,14 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::L_AUDIO_OUTPUT));
     addLabel(
-        Vec(x1 + 2 * deltaXJack -18, yJacks2 + JackLabelY),
+        Vec(x1 -2 + 2 * deltaXJack -18, yJacks2 + JackLabelY),
         "Out L");
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x1 + 3 * deltaXJack, yJacks2),
         module,
         Comp::R_AUDIO_OUTPUT));
     addLabel(
-        Vec(x1 + 3 * deltaXJack -18, yJacks2 + JackLabelY),
+        Vec(x1 - 4 + 3 * deltaXJack -18, yJacks2 + JackLabelY),
         "Out R");
 }
 

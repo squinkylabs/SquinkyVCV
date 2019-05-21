@@ -13,7 +13,7 @@
 		{
 			"slug": "squinkylabs-ev3",
 			"name": "EV3",
-			"description": "Triple VCO with even wavefo",
+			"description": "Triple VCO with even waveform",
 			"tags": ["VCO", "Multiple"]
 		},
 		{
@@ -55,7 +55,7 @@
 		{
 			"slug": "squinkylabs-tremolo",
 			"name": "Chopper",
-			"description": "Tremolo",
+			"description": "Tremolo with synched LFO",
 			"tags": ["Clock modulator", "Effect", "LFO"]
 		},
 		{
@@ -67,7 +67,7 @@
 		{
 			"slug": "squinkylabs-coloredNoise",
 			"name": "Colors",
-			"description": "Colored Noise",
+			"description": "All the colors of noise",
 			"tags": ["Noise"]
 		},
 		{

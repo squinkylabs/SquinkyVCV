@@ -137,9 +137,9 @@ void Slew4Widget::addJacks(Slew4Module *module)
             Comp::OUTPUT_MIX0 + i));
     }
     addLabel(Vec(jackX -22, jackY+jackLabelDy), "Gate");
-    addLabel(Vec(jackX + jackDx -16, jackY+jackLabelDy), "(In)");
-    addLabel(Vec(jackX + 2 * jackDx -18, jackY+jackLabelDy), "Out");
-    addLabel(Vec(jackX + 3 * jackDx -18, jackY+jackLabelDy), "Mix");
+    addLabel(Vec(jackX + jackDx - 17, jackY+jackLabelDy), "(In)");
+    addLabel(Vec(jackX + 2 * jackDx - 18, jackY+jackLabelDy), "Out");
+    addLabel(Vec(jackX + 3 * jackDx - 18, jackY+jackLabelDy), "Mix");
 }
 
 static const float knobY= 310;
@@ -162,14 +162,14 @@ void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
         Vec(knobX + knobDx, knobY),
         module,
         Comp::PARAM_FALL));
-    addLabel(Vec(knobX + knobDx - 20, knobY - labelAboveKnob), "Fall");
+    addLabel(Vec(knobX + 2 + knobDx - 20, knobY - labelAboveKnob), "Fall");
 
      addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(knobX + 2 * knobDx, knobY),
         module,
         Comp::PARAM_LEVEL));
-    addLabel(Vec(knobX + 2 * knobDx - 20, knobY - labelAboveKnob), "Level");
+    addLabel(Vec(knobX - 3 + 2 * knobDx - 20, knobY - labelAboveKnob), "Level");
 
     addInput(createInputCentered<PJ301MPort>(
          Vec(knobX, jackY2),
