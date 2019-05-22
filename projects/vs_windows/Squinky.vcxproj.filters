@@ -758,5 +758,8 @@
     <ClInclude Include="..\..\composites\Filt.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\PeakDetector.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

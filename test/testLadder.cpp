@@ -2,6 +2,7 @@
 #include "asserts.h"
 #include "Filt.h"
 #include "LadderFilter.h"
+#include "PeakDetector.h"
 #include "TestComposite.h"
 
 
@@ -283,9 +284,37 @@ static void testFiltStability()
 }
 
 
+static void testPeak0()
+{
+    PeakDetector p;
+    p.step(0);
+    assertEQ(p.get(), 0);
+    p.step(4.4f);
+    assertEQ(p.get(), 4.4f);
+
+    p.step(8.4f);
+    assertEQ(p.get(), 8.4f);
+}
+
+static void testPeak1()
+{
+    PeakDetector p;
+    p.step(5);
+    assertEQ(p.get(), 5);
+    p.step(4.4f);
+    assertEQ(p.get(), 5);
+}
+
+static void testPeak2()
+{
+    PeakDetector p;
+    p.step(5);
+    p.decay(4.f / 44000);
+    assertLT(p.get(), 5);
+}
 void testLadder()
 {
-#if 1
+
     testLadderZero();
     testLadderNotZero();
     testLadderDCf(1000);
@@ -299,7 +328,9 @@ void testLadder()
     testLED5();
     testFilt();
     testFilt2();
-#endif
+
     testFiltStability();
-   
+    testPeak0();
+    testPeak1();
+    testPeak2();
 }

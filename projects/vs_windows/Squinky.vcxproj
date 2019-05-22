@@ -217,6 +217,7 @@
     <ClInclude Include="..\..\sqsrc\util\GateTrigger.h" />
     <ClInclude Include="..\..\sqsrc\util\ManagedPool.h" />
     <ClInclude Include="..\..\sqsrc\util\OneShot.h" />
+    <ClInclude Include="..\..\sqsrc\util\PeakDetector.h" />
     <ClInclude Include="..\..\sqsrc\util\RingBuffer.h" />
     <ClInclude Include="..\..\sqsrc\util\SchmidtTrigger.h" />
     <ClInclude Include="..\..\sqsrc\util\TriggerOutput.h" />
