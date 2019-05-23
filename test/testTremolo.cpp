@@ -32,8 +32,8 @@ static void test1Sub(float skew)
         max = std::max(x, max);
         min = std::min(x, min);
     }
-    assertClose(max, .5f, .001);
-    assertClose(min, -.5f, .001);
+    assertClose(max, 5.f, .01);
+    assertClose(min, -5.f, .01);
 }
 
 static void test1()

@@ -116,7 +116,7 @@ FiltWidget::FiltWidget(FiltModule *module) : ModuleWidget(module)
 
 void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float deltaX = 50;
+    const float deltaX = 46;        // was 50, 40 too close
     const float x1 = 32;
     const float x2 = x1 + deltaX;
     const float x3 = x2 + deltaX;
@@ -126,8 +126,9 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
     const float y2 = 142;
     const float y3 = 186;
     const float yPole1 = y2 - 12;
+    const float yVol1 = y1 - 12;
     const float dyPoles = 8;
-    const float xLED = x3 + 26;
+    const float xLED = x4 + 26;
   
     const float labelDx = 22;
     const float labelY = -38;
@@ -163,37 +164,54 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         icomp,
         Vec(x4, y1),
         module,
-        Comp::STAGING_PARAM));
+        Comp::MASTER_VOLUME_PARAM));
     addLabel(
-        Vec(x4+2-labelDx, y1 + labelY),
-        "Edge");
+        Vec(x4-labelDx, y1 + labelY),
+        "Vol");
+
+    for (int i=0; i<4; ++i) {
+        addChild(createLightCentered<SmallLight<GreenLight>>(
+            Vec(xLED, yVol1 + dyPoles * i ),
+            module,
+            Comp::VOL0_LIGHT + i));
+    }
 
 // second row
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x1, y2),
         module,
-        Comp::SPREAD_PARAM));
+        Comp::STAGING_PARAM));
     addLabel(
-        Vec(x1-labelDx, y2 + labelY),
-        "Caps");
+        Vec(x1+2-labelDx, y2 + labelY),
+        "Edge");
+
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x2, y2),
         module,
-        Comp::BASS_MAKEUP_PARAM));
+        Comp::SPREAD_PARAM));
     addLabel(
-        Vec(x2+2-labelDx, y2 + labelY),
-        "Bass");
+        Vec(x2-labelDx, y2 + labelY),
+        "Caps");
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x3, y2),
         module,
+        Comp::BASS_MAKEUP_PARAM));
+    addLabel(
+        Vec(x3+2-labelDx, y2 + labelY),
+        "Bass");
+
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x4, y2),
+        module,
         Comp::SLOPE_PARAM));
     addLabel(
-        Vec(x3-labelDx, y2 + labelY),
+        Vec(x4-labelDx, y2 + labelY),
         "Slope");
 
     for (int i=0; i<4; ++i) {

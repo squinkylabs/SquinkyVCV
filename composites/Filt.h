@@ -74,6 +74,7 @@ public:
         SLOPE_PARAM,
         SLOPE_TRIM_PARAM,
         BASS_MAKEUP_PARAM,
+        MASTER_VOLUME_PARAM,
         NUM_PARAMS
     };
 
@@ -102,6 +103,10 @@ public:
         SLOPE1_LIGHT,
         SLOPE2_LIGHT,
         SLOPE3_LIGHT,
+        VOL0_LIGHT,
+        VOL1_LIGHT,
+        VOL2_LIGHT,
+        VOL3_LIGHT,
         NUM_LIGHTS
     };
 
@@ -323,6 +328,10 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::SLOPE_TRIM_PARAM:
             ret = {-1, 1, 0, "Slope trim"};
             break;   
+        case Filt<TBase>::MASTER_VOLUME_PARAM:
+            ret = {0, 1, .5, "Output volume"};
+            break;
+            
 #if 0
         case Filt<TBase>::BASS_MAKEUP_TYPE_PARAM:
             ret = {0, 2, 1, "Bass Makeup"};
