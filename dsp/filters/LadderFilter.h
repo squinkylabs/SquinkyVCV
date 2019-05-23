@@ -61,6 +61,7 @@ public:
     void setFreqSpread(T);
     void setBassMakeupGain(T);
     void setSlope(T);       // 0..3. only works in 4 pole
+    void setVolume(T vol);  // 0..1
 
     float getLEDValue(int tapNumber);
 
@@ -96,6 +97,7 @@ private:
     T processedEdge = 0;
     T freqSpread = 0;
     T slope = 3;
+    T volume = 0;
 
     T stageGain[4] = {1, 1, 1, 1};
     T stageFreqOffsets[4] = {1, 1, 1, 1};
@@ -103,8 +105,9 @@ private:
     Types type = Types::_4PLP;
     Voicing voicing = Voicing::Classic;
     T lastNormalizedFc = T(.0001);
-   // T lastNormalizedBassFreq = T(.0001);
     T lastSlope = -1;
+    T lastVolume = -1;
+    T finalVolume = 0;
 
     bool bypassFirstStage = false;
 
@@ -197,6 +200,18 @@ inline void LadderFilter<T>::setSlope(T _slope)
     slope = std::max(slope, T(0));
     updateSlope();
 }
+
+template <typename T>
+inline void LadderFilter<T>::setVolume(T vol)
+{
+    if (lastVolume == vol) {
+        return;
+    }
+    lastVolume = vol;
+    finalVolume = 4 * vol * vol;
+}
+  
+
 
 template <typename T>
 inline T LadderFilter<T>::getGfromNormFreq(T nf) const
@@ -503,7 +518,7 @@ inline void LadderFilter<T>::run(T input)
         default:
             assert(false);
     }
-    mixedOutput = down.process(buffer);
+    mixedOutput = down.process(buffer) * finalVolume;
 }
 
 /**************************************************************************************

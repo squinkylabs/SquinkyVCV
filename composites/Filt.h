@@ -152,8 +152,6 @@ private:
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
 
-
-//   static ScaleFun<float> makeScalerWithBipolarAudioTrim(float y0, float y1);
     AudioMath::ScaleFun<float> scaleFc = AudioMath::makeScalerWithBipolarAudioTrim(-5, 5);
     AudioMath::ScaleFun<float> scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(0, 4);
     AudioMath::ScaleFun<float> scaleSlope = AudioMath::makeScalerWithBipolarAudioTrim(0, 3);
@@ -191,6 +189,8 @@ inline void Filt<TBase>::stepn(int)
         fcClipped = std::max(fcClipped, T(.0000001));
     }
 
+    const T vol = TBase::params[MASTER_VOLUME_PARAM].value;
+
     T res = scaleQ(
         TBase::inputs[Q_INPUT].value,
         TBase::params[Q_PARAM].value,
@@ -225,7 +225,7 @@ inline void Filt<TBase>::stepn(int)
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
 
-    bool didSlope = false;
+    bool didLeds = false;
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
         imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].active && TBase::outputs[L_AUDIO_OUTPUT + i].active;
@@ -239,8 +239,9 @@ inline void Filt<TBase>::stepn(int)
             imp._f.setNormalizedFc(fcClipped);
             imp._f.setBassMakeupGain(makeupGain);
             imp._f.setSlope(slope);
-            if (!didSlope) {
-                didSlope = true;
+            imp._f.setVolume(vol);
+            if (!didLeds) {
+                didLeds = true;
                 for (int i = 0; i < 4; ++i) {
                     float s = imp._f.getLEDValue(i);
                     s *= 2;
