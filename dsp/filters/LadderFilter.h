@@ -94,7 +94,6 @@ private:
     T gain = T(.3);
     T stageOutputs[4];
     T rawEdge = 0;
-    T processedEdge = 0;
     T freqSpread = 0;
     T slope = 3;
     T volume = 0;
@@ -146,9 +145,9 @@ LadderFilter<T>::LadderFilter()
 template <typename T>
 inline void LadderFilter<T>::dump(const char* p)
 {
-#if 0 
+#if 0
     printf("\ndump %s\n", p);
-    printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", feedback, gain, edge, slope);
+    printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", adjustedFeedback, gain, rawEdge, slope);
     printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
     for (int i = 0; i < 4; ++i) {
         printf("stage[%d] tap=%.2f, gain=%.2f freqoff=%.2f filter_G %f\n", i,
@@ -293,6 +292,7 @@ void LadderFilter<T>::setEdge(T e)
     rawEdge = e;
     assert(e <= 1 && e >= 0);
 
+#if 0
     T e2 = 1;
     if (e > .5) {
         e2 = 6 * (e - T(.5)) + 1;
@@ -300,10 +300,12 @@ void LadderFilter<T>::setEdge(T e)
         e2 = e * T(1.75) + T(.125);
     }
     processedEdge = e2;
+#endif
     updateStageGains();   
     dump("set edge");
 }
 
+#if 0
 template <typename T>
 void LadderFilter<T>::updateStageGains()
 {
@@ -311,9 +313,6 @@ void LadderFilter<T>::updateStageGains()
     T edgeToUse = processedEdge;
     switch (type) {
         case Types::_4PLP:
-      //  case Types::_3PLP:
-      //  case Types::_2PLP:
-      //  case Types::_1PLP:
             edgeToUse = processedEdge;
             break;
         default:
@@ -321,6 +320,23 @@ void LadderFilter<T>::updateStageGains()
     }
      AudioMath::distributeEvenly(stageGain, 4, edgeToUse);
 }
+#endif
+
+template <typename T>
+void LadderFilter<T>::updateStageGains()
+{
+    T k;
+    if (rawEdge > .5) {
+        k =  (type == Types::_4PLP) ? .2f : .5f;
+    } else {
+        k =  (type == Types::_4PLP) ? .6f : .8f;
+      //  k = .6;
+    }
+
+    const T edgeToUse = k + rawEdge * (1 - k) / .5f;
+    AudioMath::distributeEvenly(stageGain, 4, edgeToUse);
+}
+
 
 
 template <typename T>

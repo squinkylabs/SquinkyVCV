@@ -7,6 +7,7 @@
 #include "LadderFilter.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
+#include "PeakDetector.h"
 
 #include <assert.h>
 #include <memory>
@@ -139,6 +140,11 @@ public:
      */
     void step() override;
 
+    float getLevel() const
+    {
+        return peak.get();
+    }
+
 private:
     class DSPImp
     {
@@ -148,6 +154,7 @@ private:
     };
     DSPImp dsp[2];
     Divider div;
+    PeakDetector peak;
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
@@ -169,7 +176,7 @@ inline void Filt<TBase>::init()
 }
 
 template <class TBase>
-inline void Filt<TBase>::stepn(int)
+inline void Filt<TBase>::stepn(int divFactor)
 {
     T fcClipped = 0;
     {
@@ -225,7 +232,7 @@ inline void Filt<TBase>::stepn(int)
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
 
-    bool didLeds = false;
+    bool didSlopeLeds = false;
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
         imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].active && TBase::outputs[L_AUDIO_OUTPUT + i].active;
@@ -240,17 +247,26 @@ inline void Filt<TBase>::stepn(int)
             imp._f.setBassMakeupGain(makeupGain);
             imp._f.setSlope(slope);
             imp._f.setVolume(vol);
-            if (!didLeds) {
-                didLeds = true;
+            if (!didSlopeLeds) {
+                didSlopeLeds = true;
                 for (int i = 0; i < 4; ++i) {
                     float s = imp._f.getLEDValue(i);
-                    s *= 2;
+                    s *= 2.5;
                     s = s * s;
                     TBase::lights[i + Filt<TBase>::SLOPE0_LIGHT].value = s;
                 }
             }
         }
     }
+
+    // now update level LEDs
+    peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
+    const float level = peak.get();
+    TBase::lights[Filt<TBase>::VOL3_LIGHT].value = (level >= 7) ? .8f : .2;
+    TBase::lights[Filt<TBase>::VOL2_LIGHT].value = (level >= 3.5) ? .8f : .2;
+    TBase::lights[Filt<TBase>::VOL1_LIGHT].value = (level >= 1.75) ? .8f : .2;
+    TBase::lights[Filt<TBase>::VOL0_LIGHT].value = (level >= .87) ? .8f : .2;
+    
 }
 
 template <class TBase>
@@ -264,6 +280,7 @@ inline void Filt<TBase>::step()
             imp._f.run(input);
             const float output = (float) imp._f.getOutput();
             TBase::outputs[L_AUDIO_OUTPUT+i].value = output;
+            peak.step(output);
         }
     }
 }

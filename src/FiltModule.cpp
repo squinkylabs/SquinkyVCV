@@ -166,14 +166,32 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         module,
         Comp::MASTER_VOLUME_PARAM));
     addLabel(
-        Vec(x4-labelDx, y1 + labelY),
+        Vec(x4-labelDx+5, y1 + labelY),
         "Vol");
 
     for (int i=0; i<4; ++i) {
-        addChild(createLightCentered<SmallLight<GreenLight>>(
-            Vec(xLED, yVol1 + dyPoles * i ),
-            module,
-            Comp::VOL0_LIGHT + i));
+
+        switch (i) {
+            case 0:
+            case 1:
+                addChild(createLightCentered<SmallLight<GreenLight>>(
+                    Vec(xLED, yVol1 + dyPoles * (3 - i) ),
+                    module,
+                    Comp::VOL0_LIGHT + i));
+                break;
+            case 2:
+                addChild(createLightCentered<SmallLight<YellowLight>>(
+                    Vec(xLED, yVol1 + dyPoles * (3 - i) ),
+                    module,
+                    Comp::VOL0_LIGHT + i));
+                break;
+            case 3:
+                addChild(createLightCentered<SmallLight<RedLight>>(
+                    Vec(xLED, yVol1 + dyPoles * (3 - i) ),
+                    module,
+                    Comp::VOL0_LIGHT + i));
+                break;
+        }
     }
 
 // second row
@@ -216,7 +234,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
 
     for (int i=0; i<4; ++i) {
         addChild(createLightCentered<SmallLight<GreenLight>>(
-            Vec(xLED, yPole1 + dyPoles * i ),
+            Vec(xLED, yPole1 + dyPoles * (3 - i)),
             module,
             Comp::SLOPE0_LIGHT + i));
     }
