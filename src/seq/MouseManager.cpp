@@ -5,6 +5,7 @@
 #include "NoteDragger.h"
 #include "NoteScreenScale.h"
 
+#ifdef _SEQ
 MouseManager::MouseManager(MidiSequencerPtr seq) 
     : sequencer(seq)
 {
@@ -129,3 +130,4 @@ bool MouseManager::onDragMove(float x, float y)
     }
     return ret;
 }
+#endif

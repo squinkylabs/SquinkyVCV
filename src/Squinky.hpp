@@ -14,34 +14,25 @@
 #define _SUPER
 #define _BOOTY
 #define _GROWLER
-#define _SEQ
+//#define _SEQ
 #define _SLEW
 #define _MIX8
+#define _FILT
 //#define _CH10
 //#define _LFNB
 
 //#define _BLANKMODULE
 
 #ifndef __V1
-    #define _EV3
-    #define _CHB
     #define _CHBG
-    #define _LFN
-    #define _COLORS
-    #define _GRAY
-    #define _SUPER
-    #define _GROWLER
-    #define _FORMANTS
     #define _TBOOST
     #define _BOOTY
     #define _TREM
-    #define _FILT
 #endif
 
-#ifdef __V1
+#if defined(__V1) && 0
     #define _MIX4
     #define _MIXM
-    #define _FILT
 #endif
 
 
