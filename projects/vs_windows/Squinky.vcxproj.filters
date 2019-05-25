@@ -133,9 +133,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Header Files\sse_hack">
-      <UniqueIdentifier>{63e6cc68-2020-43f9-9b74-0bec15a1fdd5}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -763,9 +760,6 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\PeakDetector.h">
       <Filter>Header Files\sqsrc\util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\ssehack\x86intrin.h">
-      <Filter>Header Files\sse_hack</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -262,10 +262,10 @@ inline void Filt<TBase>::stepn(int divFactor)
     // now update level LEDs
     peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
     const float level = peak.get();
-    TBase::lights[Filt<TBase>::VOL3_LIGHT].value = (level >= 7) ? .8f : .2;
-    TBase::lights[Filt<TBase>::VOL2_LIGHT].value = (level >= 3.5) ? .8f : .2;
-    TBase::lights[Filt<TBase>::VOL1_LIGHT].value = (level >= 1.75) ? .8f : .2;
-    TBase::lights[Filt<TBase>::VOL0_LIGHT].value = (level >= .87) ? .8f : .2;
+    TBase::lights[Filt<TBase>::VOL3_LIGHT].value = (level >= 7) ? .8f : .2f;
+    TBase::lights[Filt<TBase>::VOL2_LIGHT].value = (level >= 3.5) ? .8f : .2f;
+    TBase::lights[Filt<TBase>::VOL1_LIGHT].value = (level >= 1.75) ? .8f : .2f;
+    TBase::lights[Filt<TBase>::VOL0_LIGHT].value = (level >= .87) ? .8f : .2f;
     
 }
 
