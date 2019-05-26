@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef __V1
+
 #include "app/SvgButton.hpp"
 #include "ToggleManager2.h"
 
@@ -80,7 +81,7 @@ inline void SqSvgToggleButton::onDragDrop(const event::DragDrop &e)
 
 /**
  * A Param widget that wraps a SqSvgToggleButton.
- * We delegate downt to the button to do all the button work
+ * We delegate down to the button to do all the button work
  * like drawing and event handling.
  */
 class SqSvgParamToggleButton : public ParamWidget

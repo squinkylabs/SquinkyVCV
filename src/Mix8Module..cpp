@@ -16,7 +16,9 @@
 
 using Comp = Mix8<WidgetComposite>;
 using Manager = ToggleManager2<SqSvgParamToggleButton>;
-
+#ifndef __V1
+using Svg = SVG;
+#endif
 /**
  */
 struct Mix8Module : Module
@@ -307,8 +309,8 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
     mute->addFrame(buttonUp);
     mute->addFrame(buttonDn);
     addParam(mute);
-    const float zz = SqHelper::getValue(mute);
-    const float zz2 = mute->getValue();
+  //  const float zz = SqHelper::getValue(mute);
+  //  const float zz2 = mute->getValue();
 
     y = volY;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
