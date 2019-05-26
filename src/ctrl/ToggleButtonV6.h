@@ -1,5 +1,5 @@
 
-#ifndef __v1
+#ifndef __V1
 
 #include "app.hpp"
 
