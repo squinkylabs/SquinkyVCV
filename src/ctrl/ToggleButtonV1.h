@@ -1,6 +1,8 @@
+#pragma once
 
 #ifdef __V1
 #include "app/SvgButton.hpp"
+#include "ToggleManager2.h"
 
 /**
  * An SvgButton, but in stead of being momentary it toggles between values.
@@ -14,12 +16,11 @@ public:
     void onDragDrop(const event::DragDrop &e) override;
 
     float getValue() const;
+    void setValue(float);
 private:
     int index = 0;
     void setIndex(int i);
     rack::widget::Widget* actionDelegate = nullptr;
-
-    //sw->setSvg(frames[0]);
 };
 
 inline SqSvgToggleButton::SqSvgToggleButton(rack::widget::Widget* delegate)
@@ -34,9 +35,17 @@ inline void SqSvgToggleButton::setIndex(int i)
     fb->dirty = true;
 }
 
+
 inline float SqSvgToggleButton::getValue() const
 {
     return std::round(index);
+}
+
+
+inline void SqSvgToggleButton::setValue(float v) 
+{
+    const int newIndex = int(std::round(v));
+    setIndex(newIndex);
 }
 
 inline void SqSvgToggleButton::onDragStart(const event::DragStart &e)
@@ -60,7 +69,6 @@ inline void SqSvgToggleButton::onDragDrop(const event::DragDrop &e)
 
     setIndex(nextIndex);
    
-
 	event::Action eAction;
     if (actionDelegate) {
         actionDelegate->onAction(eAction);
@@ -88,20 +96,58 @@ public:
     void onDragDrop(const event::DragDrop &e) override;
 
     void onAction(const event::Action &e) override;
+    void onButton(const event::Button &e) override;
+    float getValue();
 
-    float getValue() const;
+    // To support toggle manager
+    void registerManager(std::shared_ptr<ToggleManager2<SqSvgParamToggleButton>>);
+    void turnOff();
+
+    void step() override;
 private:
 
 
     // the pointer does not imply ownership
     SqSvgToggleButton* button = nullptr;
+    std::shared_ptr<ToggleManager2<SqSvgParamToggleButton>> manager;
+
+    bool didStep = false;
+    bool isControlKey = false;
 };
+
 
 inline SqSvgParamToggleButton::SqSvgParamToggleButton()
 {
     button = new SqSvgToggleButton(this);
     this->addChild(button);
 }
+
+inline void SqSvgParamToggleButton::registerManager(std::shared_ptr<ToggleManager2<SqSvgParamToggleButton>> m)
+{
+    manager = m;
+}
+
+
+inline void SqSvgParamToggleButton::step()
+{
+    // the first time step is called, we need to get the "offical"
+    // param value (set from deserializtion), and propegate that to the button
+    if (!didStep) { 
+        const float mv = SqHelper::getValue(this);
+        float bv = button->getValue();
+        if (mv != bv) {
+            button->setValue(mv);
+        }
+    }
+    ParamWidget::step();
+    this->didStep = true;
+}
+
+inline void SqSvgParamToggleButton::turnOff()
+{
+    button->setValue(0.f);
+    SqHelper::setValue(this, 0);
+} 
 
 inline void SqSvgParamToggleButton::addFrame(std::shared_ptr<Svg> svg)
 {
@@ -114,7 +160,7 @@ inline void SqSvgParamToggleButton::onAdd(const event::Add&)
     this->box.size = button->box.size;
 }
 
-inline float SqSvgParamToggleButton::getValue() const
+inline float SqSvgParamToggleButton::getValue()
 {
     return button->getValue();
 }
@@ -122,6 +168,15 @@ inline float SqSvgParamToggleButton::getValue() const
 inline void SqSvgParamToggleButton::draw(const DrawArgs &args)
 {
     button->draw(args);
+}
+
+void SqSvgParamToggleButton::onButton(const event::Button &e) 
+{
+    if (e.action == GLFW_RELEASE) {
+        isControlKey = e.mods & GLFW_MOD_CONTROL;
+    }
+
+    ParamWidget::onButton(e);
 }
 
 inline void SqSvgParamToggleButton::onDragStart(const event::DragStart &e)
@@ -141,6 +196,14 @@ inline void SqSvgParamToggleButton::onDragDrop(const event::DragDrop &e)
         e2.origin = button;
     }
     button->onDragDrop(e2);
+
+    // normally we tell manager to turn siblings off.
+    // control key we don't - allows more than one to be on
+    if (!isControlKey) {
+        if (manager) {
+            manager->go(this);
+        }
+    }
 }
 
  inline void SqSvgParamToggleButton::onAction(const event::Action &e)

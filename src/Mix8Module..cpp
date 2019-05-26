@@ -7,14 +7,15 @@
 #include "Mix8.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/ToggleButton.h"
 
 #include "ctrl/SqWidgets.h"
 
 #include "ctrl/ToggleButtonV1.h"
 #include "ctrl/ToggleButtonV6.h"
+#include "ctrl/ToggleManager2.h"
 
 using Comp = Mix8<WidgetComposite>;
+using Manager = ToggleManager2<SqSvgParamToggleButton>;
 
 /**
  */
@@ -37,7 +38,6 @@ private:
 void Mix8Module::onSampleRateChange()
 {
 }
-
 
 #ifdef __V1
 Mix8Module::Mix8Module()
@@ -87,8 +87,12 @@ struct Mix8Widget : ModuleWidget
         Mix8Module*,
         std::shared_ptr<IComposite>,
         int channel,
-        std::shared_ptr<ToggleManager>);
+        std::shared_ptr<Manager>);
+
     void makeMaster(Mix8Module* , std::shared_ptr<IComposite>);
+
+    std::shared_ptr<Svg> buttonUp =  SqHelper::loadSvg("res/square-button-01.svg");
+    std::shared_ptr<Svg> buttonDn =  SqHelper::loadSvg("res/square-button-02.svg");
 };
 
 static const float channelX = 43;
@@ -103,7 +107,7 @@ void Mix8Widget::makeStrip(
     Mix8Module*,
     std::shared_ptr<IComposite> icomp,
     int channel,
-    std::shared_ptr<ToggleManager> mgr)
+    std::shared_ptr<Manager> mgr)
 {
     const float x = channelX + channel * dX;
 
@@ -169,13 +173,13 @@ void Mix8Widget::makeStrip(
     }
 
     y -= channelDy;
-    auto mute = SqHelper::createParam<ToggleButton>(
+    auto mute = SqHelper::createParam<SqSvgParamToggleButton>(
         icomp,
         Vec(x-12, y-12),
         module,
         channel + Comp::MUTE0_PARAM);
-    mute->addSvg("res/square-button-01.svg");
-    mute->addSvg("res/square-button-02.svg");
+    mute->addFrame(buttonUp);
+    mute->addFrame(buttonDn);
     addParam(mute);
     muteY = y-12;
    
@@ -186,13 +190,13 @@ void Mix8Widget::makeStrip(
     }    
 
     y -= channelDy;
-    auto solo = SqHelper::createParam<ToggleButton>(
+    auto solo = SqHelper::createParam<SqSvgParamToggleButton>(
         icomp,
         Vec(x-12, y-12),
         module,
         channel + Comp::SOLO0_PARAM);
-    solo->addSvg("res/square-button-01.svg");
-    solo->addSvg("res/square-button-02.svg");
+    solo->addFrame(buttonUp);
+    solo->addFrame(buttonDn);
     addParam(solo);
     mgr->registerClient(solo);
 
@@ -295,28 +299,17 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
 
     x = 312 + 15 + 15;
   
-  #if 0
     auto mute = SqHelper::createParam<SqSvgParamToggleButton>(
         icomp,
         Vec(x-12, muteY),
         module,
         Comp::MASTER_MUTE_PARAM);
-    mute->addFrame( SqHelper::loadSvg("res/square-button-01.svg"));
-    mute->addFrame( SqHelper::loadSvg("res/square-button-02.svg"));
+    mute->addFrame(buttonUp);
+    mute->addFrame(buttonDn);
     addParam(mute);
-#else 
+    const float zz = SqHelper::getValue(mute);
+    const float zz2 = mute->getValue();
 
-
-    auto mute = new SqSvgToggleButton();
-    //auto mute = new SqSvgParamToggleButton();
-    mute->addFrame( SqHelper::loadSvg("res/square-button-01.svg"));
-    mute->addFrame( SqHelper::loadSvg("res/square-button-02.svg"));
-    mute->box.pos =  Vec(x-12, muteY);
-    printf("button width = %f\n", mute->box.size.x); fflush(stdout);
-    addChild(mute);
-#endif
-
-    //y -= channelDy;
     y = volY;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
@@ -354,7 +347,7 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
     SqHelper::setPanel(this, "res/mix8_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
-    std::shared_ptr<ToggleManager> mgr = std::make_shared<ToggleManager>();
+    std::shared_ptr<Manager> mgr = std::make_shared<Manager>();
     for (int i=0; i<8; ++i) {
         makeStrip(module, icomp, i, mgr);
     }

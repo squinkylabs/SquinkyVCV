@@ -1,9 +1,8 @@
 
+#pragma once
+
 #ifndef __V1
-
 #include "app.hpp"
-
-
 
 // let's back-port the v1 svg button, since that's what our sutf expects
 struct SvgButtonV1 : rack::OpaqueWidget {
