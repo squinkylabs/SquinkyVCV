@@ -11,7 +11,8 @@
 
 #include "ctrl/SqWidgets.h"
 
-#include "ctrl/ToggleButton2.h"
+#include "ctrl/ToggleButtonV1.h"
+#include "ctrl/ToggleButtonV6.h"
 
 using Comp = Mix8<WidgetComposite>;
 
@@ -242,8 +243,6 @@ void Mix8Widget::makeStrip(
 
 void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icomp)
 {
-    SqSvgParamToggleButton test;        // just to see if it compiles
-
     float x = 0;
     float y = channelY;
     const float xL = 368;
@@ -296,7 +295,7 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
 
     x = 312 + 15 + 15;
   
-  #if 1
+  #if 0
     auto mute = SqHelper::createParam<SqSvgParamToggleButton>(
         icomp,
         Vec(x-12, muteY),
@@ -308,13 +307,13 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
 #else 
 
 
-    //auto mute = new SqSvgToggleButton();
-    auto mute = new SqSvgParamToggleButton();
+    auto mute = new SqSvgToggleButton();
+    //auto mute = new SqSvgParamToggleButton();
     mute->addFrame( SqHelper::loadSvg("res/square-button-01.svg"));
     mute->addFrame( SqHelper::loadSvg("res/square-button-02.svg"));
     mute->box.pos =  Vec(x-12, muteY);
     printf("button width = %f\n", mute->box.size.x); fflush(stdout);
-    addParam(mute);
+    addChild(mute);
 #endif
 
     //y -= channelDy;

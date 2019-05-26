@@ -1,7 +1,7 @@
 
+#ifdef __V1
 #include "app/SvgButton.hpp"
 
-#ifdef __V1
 /**
  * An SvgButton, but in stead of being momentary it toggles between values.
  */
