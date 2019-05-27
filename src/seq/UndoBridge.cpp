@@ -5,7 +5,7 @@
 // std C
 #include <assert.h>
 
-#ifdef __USE_VCV_UNDO
+#if defined(__USE_VCV_UNDO) && defined(_SEQ)
 
 // VCV includes
 #include "app.hpp"
@@ -68,4 +68,18 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd
     rack::APP->history->push(action);
 }
 
+#endif
+
+
+#if defined(__USE_VCV_UNDO) && !defined(_SEQ)
+
+void UndoRedoStack::setModuleId(int id) 
+{
+   ;
+}
+
+void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)
+{
+
+}
 #endif
