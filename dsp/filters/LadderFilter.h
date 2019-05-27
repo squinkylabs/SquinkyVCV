@@ -106,7 +106,7 @@ private:
     T lastNormalizedFc = T(.0001);
     T lastSlope = -1;
     T lastVolume = -1;
-    T finalVolume = 0;
+    T finalVolume = 1;
 
     bool bypassFirstStage = false;
 
