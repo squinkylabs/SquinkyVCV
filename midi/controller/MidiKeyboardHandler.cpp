@@ -1,9 +1,29 @@
 
+#include "../Squinky.hpp"
 #include "MidiKeyboardHandler.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 
 #include <assert.h>
+
+// Crazy linker problem - to get perf suite to link I need to put this here.
+#if !defined(__PLUGIN)
+NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b)
+{
+	return nvgRGBA(r,g,b,255);
+}
+
+NVGcolor nvgRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	NVGcolor color;
+	// Use longer initialization to suppress warning.
+	color.r = r / 255.0f;
+	color.g = g / 255.0f;
+	color.b = b / 255.0f;
+	color.a = a / 255.0f;
+	return color;
+}
+#endif
 
 #ifdef _SEQ
 
@@ -30,7 +50,7 @@ bool MidiKeyboardHandler::doRepeat(unsigned key)
 }
 
 void MidiKeyboardHandler::handleNoteEditorChange(
-    MidiSequencer* sequencer,
+    MidiSequencerPtr sequencer,
     ChangeType type,
     bool increase)
 {
@@ -104,7 +124,7 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 extern void sequencerHelp();
 
 bool MidiKeyboardHandler::handle(
-    MidiSequencer* sequencer,
+    MidiSequencerPtr sequencer,
     unsigned key,
     unsigned mods)
 {
@@ -287,6 +307,7 @@ bool MidiKeyboardHandler::handle(
             sequencer->editor->insertNote();
             handled = true;
             break;
+        case GLFW_KEY_BACKSPACE:
         case GLFW_KEY_KP_DECIMAL:
         case GLFW_KEY_DELETE:
             sequencer->editor->deleteNote();
@@ -297,13 +318,14 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_Z:
             if (ctrl & !shift) {
                 handled = true;
+                
                 if (sequencer->undo->canUndo()) {
-                    sequencer->undo->undo();
+                    sequencer->undo->undo(sequencer);
                 } 
             } else if (ctrl & shift) {
                 handled = true;
                 if (sequencer->undo->canRedo()) {
-                    sequencer->undo->redo();  
+                    sequencer->undo->redo(sequencer);  
                 }
             }
             break;
@@ -312,12 +334,22 @@ bool MidiKeyboardHandler::handle(
             if (ctrl) {
                 handled = true;
                 if (sequencer->undo->canRedo()) {
-                    sequencer->undo->redo();
+                    sequencer->undo->redo(sequencer);
                 } 
             }
             break;
 #endif
     }
     return handled;
+}
+
+void MidiKeyboardHandler::doMouseClick(MidiSequencerPtr sequencer, 
+    float time, float pitchCV, bool shiftKey, bool ctrlKey)
+{
+    if (!ctrlKey) {
+        sequencer->editor->selectAt(time, pitchCV, shiftKey);
+    } else {
+        sequencer->editor->toggleSelectionAt(time, pitchCV);
+    }
 }
 #endif

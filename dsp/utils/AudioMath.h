@@ -155,7 +155,6 @@ public:
 
     static RandomUniformFunc random();
 
-
     /**
      * Folds numbers between +1 and -1
      */
@@ -165,13 +164,49 @@ public:
         const float bias = (x < 0) ? -1.f : 1.f;
         int phase = int((x + bias) / 2.f);
         bool isEven = !(phase & 1);
-        //  printf(" wrap(%f) phase=%d, isEven=%d", x, phase, isEven);
         if (isEven) {
             fold = x - 2.f * phase;
         } else {
             fold = -x + 2.f * phase;
         }
-        // printf(" y=%f\n", wrap);
         return fold;
+    }
+
+    /**
+     * Input: data is a list of floats/doubles
+     * Output all elements are scaled by the same amount, product of all elements is 1
+     */
+    template <typename T>
+    static inline void normalizeProduct(T* data, int n)
+    {
+        // get the product of all the input
+        T prod = 1;
+        for (int i = 0; i < n; ++i) {
+            prod *= data[i];
+        }
+
+        double logProd = std::log(prod);
+        double k = std::exp(-logProd / T(n));
+        for (int i = 0; i < n; ++i) {
+            data[i] *= T(k);
+        }
+    }
+
+    /**
+     * fills data with a list of numbers that are:
+     *      exponentially spaced
+     *      product is 1
+     *      ratio = data[n] / data[n-1]   
+     */
+    template <typename T>
+    static inline void distributeEvenly(T* data, int n, T ratio)
+    {
+        T x = 1;
+        for (int i = 0; i < n; ++i)
+        {
+            data[i] = x;
+            x *= ratio;
+        }
+        normalizeProduct(data, n);
     }
 };

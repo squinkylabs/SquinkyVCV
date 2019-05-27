@@ -293,27 +293,32 @@ static float sampledKValues[] = {
 
 // Computes filter "l" value for lookup table entries.
 // Input comes from sampledKValuesk
-static float getLValue(int index, float sampleTime)
+static float getLValue(int index, float sampleTime, float slowdownFactor)
 {
     assert(index >= 0);
     assert(index <= 11);
+    assert(slowdownFactor >= 1);
+
+    // first, use the lookup table to derive the the cutoff freq at 44k
     float _k = sampledKValues[index];
     float l = 1.0f - _k;
     float fs = (float) std::log(l) / (-2.0f *  (float) AudioMath::Pi);
+
+    // now find _l at the requested sample rate
     float  fTarget = fs * 44100;
-    float fsAdjusted = fTarget * sampleTime;
+    float fsAdjusted = (fTarget * sampleTime) / slowdownFactor;
     float ret = LowpassFilter<float>::computeLfromFs(fsAdjusted);
     return ret;
 }
 
 template <typename T>
-inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup(float sampleTime)
+inline std::shared_ptr <LookupTableParams<T>> makeLPFDirectFilterLookup(float sampleTime, float slowdownFactor = 1)
 {
     std::shared_ptr <LookupTableParams<T>> params = std::make_shared< LookupTableParams<T>>();
-    LookupTable<T>::init(*params, 10, 0, 1, [sampleTime](double x) {
+    LookupTable<T>::init(*params, 10, 0, 1, [sampleTime, slowdownFactor](double x) {
         int index = (int) std::round(x * 10);
-        return getLValue(index, sampleTime);
-        });
+        return getLValue(index, sampleTime, slowdownFactor);
+    });
     return params;
 }
 

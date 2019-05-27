@@ -18,10 +18,10 @@ using ReplaceDataCommandPtr = std::shared_ptr<ReplaceDataCommand>;
 class ReplaceDataCommand : public SqCommand
 {
 public:
-    virtual void execute() override;
-    virtual void undo() override;
+    virtual void execute(MidiSequencerPtr) override;
+    virtual void undo(MidiSequencerPtr) override;
 
-    // TODO: rvalue
+    // TODO: get rid of obsolete arguments.
     ReplaceDataCommand(
         std::shared_ptr<MidiSong> song,
         std::shared_ptr<MidiSelectionModel>,
@@ -30,10 +30,17 @@ public:
         const std::vector<MidiEventPtr>& inRemove,
         const std::vector<MidiEventPtr>& inAdd);
 
+    ReplaceDataCommand(
+        std::shared_ptr<MidiSong> song,
+        int trackNumber,
+        const std::vector<MidiEventPtr>& inRemove,
+        const std::vector<MidiEventPtr>& inAdd);
+
+
     /**
      * static factories for replace commands
      */
-    static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq);
+    static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq, const char* name);
     static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq, std::shared_ptr<const MidiNoteEvent>);
     static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta);
@@ -42,10 +49,11 @@ public:
 
 
 private:
-    std::shared_ptr<MidiSong> song;
-    int trackNumber;
-    std::shared_ptr<MidiSelectionModel> selection;
+    // old way. can't save data pointers with vcv 1
+    //std::shared_ptr<MidiSong> song;
+    //std::shared_ptr<MidiSelectionModel> selection;
 
+    int trackNumber;
     std::vector<MidiEventPtr> removeData;
     std::vector<MidiEventPtr> addData;
 

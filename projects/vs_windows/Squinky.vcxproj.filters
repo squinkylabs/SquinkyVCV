@@ -396,6 +396,24 @@
     <ClCompile Include="..\..\test\testSeqClock.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testMix8.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testSlew4.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiEditorSelection.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testCommChannels.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testLadder.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testHighpassFilter.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -714,6 +732,33 @@
       <Filter>Header Files\composites</Filter>
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\OneShot.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Mix8.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\LFNB.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Mix4.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\MixM.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\CommChannels.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\TrapezoidalLowpass.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\filters\LadderFilter.h">
+      <Filter>Header Files\dsp\filters</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\Filt.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\PeakDetector.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,7 +5,12 @@
 #include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
 #include "LFN.h"
+#include "LFNB.h"
+#include "Filt.h"
 #include "Gray.h"
+#include "Mix8.h"
+#include "Mix4.h"
+#include "MixM.h"
 #include "Seq.h"
 #include "Shaper.h"
 #include "Slew4.h"
@@ -62,4 +67,10 @@ void testIComposite()
     test<VocalAnimator<TestComposite>>();
     test<Blank<TestComposite>>();
     test<Slew4<TestComposite>>();
+    test<Mix8<TestComposite>>();
+    test<Mix4<TestComposite>>();
+    test<MixM<TestComposite>>();
+    test<LFNB<TestComposite>>();
+    test<Filt<TestComposite>>();
+
 }

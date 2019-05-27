@@ -28,7 +28,6 @@ void NoteScreenScale::assertValid() const
     assert(this->context());
 }
 
-
 void NoteScreenScale::reCalculate()
 {
     const float activeScreenWidth = screenWidth - 2 * hMargin;
@@ -42,39 +41,84 @@ void NoteScreenScale::reCalculate()
     by = topMargin;
 
     assert( ctx->pitchLow() <= ctx->pitchHi());
+
+    // now calculate the reverse function by just inverting the equation
+    ax_rev = 1.0f / ax;
+    bx_rev = -bx / ax;
+
+    // third try
+    ay_rev = -(ctx->pitchHi() - ctx->pitchLow()) / activeScreenHeight;
+
+    // zero Y should be the highest pitch
+    by_rev = ctx->pitchHi();
 }
 
-float NoteScreenScale::midiTimeToX(const MidiEvent& ev)
+
+bool NoteScreenScale::isPointInBounds(float x, float y) const
+{
+    return (x >= hMargin) &&
+        (x <= (screenWidth - hMargin)) &&
+        (y > topMargin) &&
+        (y < screenHeight);
+        ;
+}
+float NoteScreenScale::midiTimeToX(const MidiEvent& ev) const
 {
     return midiTimeToX(ev.startTime);
 }
 
-float NoteScreenScale::midiTimeToX(MidiEvent::time_t t)
+float NoteScreenScale::midiTimeToX(MidiEvent::time_t t) const
 {
     return  bx + (t - context()->startTime()) * ax;
 }
 
-float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt)
+float NoteScreenScale::xToMidiTime(float x) const
+{
+    float t = bx_rev + ax_rev * x;
+    t += context()->startTime();
+    return t;
+}
+
+float NoteScreenScale::xToMidiDeltaTime(float x)
+{
+    return ax_rev * x;
+}
+
+float NoteScreenScale::midiTimeTodX(MidiEvent::time_t dt) const
 {
     return  dt * ax;
 }
 
-float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note)
+float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note) const
 {
     return midiCvToY(note.pitchCV);
 }
 
-float NoteScreenScale::midiCvToY(float cv)
+
+float NoteScreenScale::yToMidiCVPitch(float y) const
+{
+    float unquantizedPitch = (y - topMargin) * ay_rev + context()->pitchHi();
+    std::pair<int, int> quantizedPitch = PitchUtils::cvToPitch(unquantizedPitch);
+    return PitchUtils::pitchToCV(quantizedPitch.first, quantizedPitch.second);
+}
+
+float NoteScreenScale::yToMidiDeltaCVPitch(float dy) const
+{
+    return dy * ay_rev;
+}
+
+
+float NoteScreenScale::midiCvToY(float cv) const
 {
     return by + (context()->pitchHi() - cv) * ay;
 }
 
-float NoteScreenScale::noteHeight()
+float NoteScreenScale::noteHeight() const
 {
     return (1 / 12.f) * ay;
 }
 
-std::pair<float, float> NoteScreenScale::midiTimeToHBounds(const MidiNoteEvent& note)
+std::pair<float, float> NoteScreenScale::midiTimeToHBounds(const MidiNoteEvent& note) const
 {
     float x0 = midiTimeToX(note.startTime);
     float x1 = midiTimeToX(note.startTime + note.duration);
@@ -87,3 +131,4 @@ std::shared_ptr<MidiEditorContext> NoteScreenScale::context() const
     assert(ret);
     return ret;
 }
+

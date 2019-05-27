@@ -53,7 +53,7 @@ Insert preset note durations. They shortcuts insert note of a specific duration,
 
 ## Cut/Copy/Paste
 
-**ctrl-x** cut. Removes all the selected notes and puts them on the clipboard.
+**ctrl-x** cut. Removes all the selected notes and puts them on the clipboard. (doesn't work yet).
 
 **ctrl-c** copy. Puts a copy of all the selected notes on the clipboard.
 
@@ -62,6 +62,8 @@ Insert preset note durations. They shortcuts insert note of a specific duration,
 Note that you may paste into a different instance of the sequencer than you copied from, as you would expect.
 
 ## Undo/Redo
+
+When Seq++ is run in VCV 0.6, it implements its own undo system, using the keys below. In VCV 1.0, Seq++ uses VCV's undo system, which is available from a mouse menu and from keyboard shortcuts.
 
 **ctrl-z**: undo
 

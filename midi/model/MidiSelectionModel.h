@@ -21,6 +21,7 @@ public:
     void select(std::shared_ptr<MidiEvent>);
     void extendSelection(std::shared_ptr<MidiEvent>);
     void addToSelection(std::shared_ptr<MidiEvent>, bool keepExisting);
+    void removeFromSelection(std::shared_ptr<MidiEvent>);
 
     /**
      * select nothing

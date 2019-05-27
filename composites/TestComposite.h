@@ -13,7 +13,7 @@ public:
     TestComposite() :
         inputs(40),
         outputs(40),
-        params(40),
+        params(60),
         lights(20)
     {
 

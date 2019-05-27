@@ -67,7 +67,7 @@ void Slew4Module::step()
 struct Slew4Widget : ModuleWidget
 {
     Slew4Widget(Slew4Module *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq4/docs/slew4.md");
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq5/docs/slew4.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -108,10 +108,11 @@ Slew4Widget::Slew4Widget(Slew4Module *module) : ModuleWidget(module)
     addOther(module, icomp);
 }
 
-float jackY = 60;
+float jackY = 50;       // was 60
 float jackDy = 30;
 float jackX = 18;
 float jackDx = 28;
+const float jackLabelDy = -34;
 
 void Slew4Widget::addJacks(Slew4Module *module)
 {
@@ -130,21 +131,22 @@ void Slew4Widget::addJacks(Slew4Module *module)
             Vec(jackX + 2 * jackDx, jackY + i * jackDy),
             module,
             Comp::OUTPUT0 + i));
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(jackX + 3 * jackDx, jackY + i * jackDy),
+            module,
+            Comp::OUTPUT_MIX0 + i));
     }
-    addLabel(Vec(jackX -22, jackY-40), "Gate");
-    addLabel(Vec(jackX + jackDx -16, jackY-40), "(In)");
-    addLabel(Vec(jackX + 2 * jackDx -18, jackY-40), "Out");
-
-    addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jackX + 3 * jackDx, jackY + 4 * jackDy),
-        module,
-        Comp::OUTPUT_MIX));
+    addLabel(Vec(jackX -22, jackY+jackLabelDy), "Gate");
+    addLabel(Vec(jackX + jackDx - 17, jackY+jackLabelDy), "(In)");
+    addLabel(Vec(jackX + 2 * jackDx - 18, jackY+jackLabelDy), "Out");
+    addLabel(Vec(jackX + 3 * jackDx - 18, jackY+jackLabelDy), "Mix");
 }
 
-float knobY= 330;
-float knobX = 20;
-float knobDx = 36;
-float labelAboveKnob = 36;
+static const float knobY= 310;
+static const float knobX = 20;
+static const float knobDx = 36;
+static const float labelAboveKnob = 36;
+static const float jackY2 = 342;
 
 void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
 {
@@ -160,14 +162,23 @@ void Slew4Widget::addOther(Slew4Module*, std::shared_ptr<IComposite> icomp)
         Vec(knobX + knobDx, knobY),
         module,
         Comp::PARAM_FALL));
-    addLabel(Vec(knobX + knobDx - 20, knobY - labelAboveKnob), "Fall");
+    addLabel(Vec(knobX + 2 + knobDx - 20, knobY - labelAboveKnob), "Fall");
 
      addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(knobX + 2 * knobDx, knobY),
         module,
         Comp::PARAM_LEVEL));
-    addLabel(Vec(knobX + 2 * knobDx - 20, knobY - labelAboveKnob), "Level");
+    addLabel(Vec(knobX - 3 + 2 * knobDx - 20, knobY - labelAboveKnob), "Level");
+
+    addInput(createInputCentered<PJ301MPort>(
+         Vec(knobX, jackY2),
+         module,
+         Comp::INPUT_RISE));
+    addInput(createInputCentered<PJ301MPort>(
+         Vec(knobX + knobDx, jackY2),
+         module,
+         Comp::INPUT_FALL));
 };
 
 void Slew4Widget::addScrews()
@@ -186,7 +197,7 @@ Model *modelSlew4Module = createModel<Slew4Module, Slew4Widget>("squinkylabs-sle
 Model *modelSlew4Module = Model::create<Slew4Module,
     Slew4Widget>("Squinky Labs",
     "squinkylabs-slew4",
-    "-- Slew4 --", RANDOM_TAG);
+    "Slade: Octal slew/lag with mixing", SLEW_LIMITER_TAG);
 #endif
 #endif
 

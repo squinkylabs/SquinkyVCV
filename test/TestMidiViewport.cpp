@@ -34,14 +34,14 @@ static void testEventAccess()
 
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
     ev->startTime = 100;
-    ev->pitchCV = 40;
+    ev->pitchCV = 4;
     track->insertEvent(ev);
 
     MidiEditorContext vp(song);
     vp.setStartTime(90);
     vp.setEndTime(110);
     vp.setPitchLow(0);
-    vp.setPitchHi(80);
+    vp.setPitchHi(10);      // was 80
 
     auto its = vp.getEvents();
     assertEQ(std::distance(its.first, its.second), 1);

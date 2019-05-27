@@ -13,7 +13,7 @@
 template <class TBase>
 struct EvenVCO_orig : TBase
 {
-    EvenVCO_orig(struct Module * module);
+    EvenVCO_orig(Module * module);
     EvenVCO_orig();
 
     void initialize();
@@ -70,7 +70,7 @@ inline EvenVCO_orig<TBase>::EvenVCO_orig() : TBase()
 }
 
 template <class TBase>
-inline EvenVCO_orig<TBase>::EvenVCO_orig(struct Module * module) : TBase(module)
+inline EvenVCO_orig<TBase>::EvenVCO_orig(Module * module) : TBase(module)
 {
     initialize();
 }

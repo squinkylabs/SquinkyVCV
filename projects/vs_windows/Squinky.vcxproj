@@ -59,6 +59,7 @@
     <ClCompile Include="..\..\test\testButterLookup.cpp" />
     <ClCompile Include="..\..\test\testClockMult.cpp" />
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
+    <ClCompile Include="..\..\test\testCommChannels.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
     <ClCompile Include="..\..\test\testFFT.cpp" />
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
@@ -70,8 +71,10 @@
     <ClCompile Include="..\..\test\testFrequencyShifter.cpp" />
     <ClCompile Include="..\..\test\testGateTrigger.cpp" />
     <ClCompile Include="..\..\test\testGMR.cpp" />
+    <ClCompile Include="..\..\test\testHighpassFilter.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
     <ClCompile Include="..\..\test\testIComposite.cpp" />
+    <ClCompile Include="..\..\test\testLadder.cpp" />
     <ClCompile Include="..\..\test\testLookupTable.cpp" />
     <ClCompile Include="..\..\test\testLowpassFilter.cpp" />
     <ClCompile Include="..\..\test\testMidiControllers.cpp" />
@@ -79,11 +82,13 @@
     <ClCompile Include="..\..\test\testMidiEditor.cpp" />
     <ClCompile Include="..\..\test\testMidiEditorCCP.cpp" />
     <ClCompile Include="..\..\test\testMidiEditorNextPrev.cpp" />
+    <ClCompile Include="..\..\test\testMidiEditorSelection.cpp" />
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />
+    <ClCompile Include="..\..\test\testMix8.cpp" />
     <ClCompile Include="..\..\test\testNoteScreenScale.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
@@ -94,6 +99,7 @@
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
+    <ClCompile Include="..\..\test\testSlew4.cpp" />
     <ClCompile Include="..\..\test\testSpline.cpp" />
     <ClCompile Include="..\..\test\testStateVariable.cpp" />
     <ClCompile Include="..\..\test\testStochasticGrammar.cpp" />
@@ -115,12 +121,17 @@
     <ClInclude Include="..\..\composites\ColoredNoise.h" />
     <ClInclude Include="..\..\composites\daveguide.h" />
     <ClInclude Include="..\..\composites\EV3.h" />
+    <ClInclude Include="..\..\composites\Filt.h" />
     <ClInclude Include="..\..\composites\FrequencyShifter.h" />
     <ClInclude Include="..\..\composites\FunVCOComposite.h" />
     <ClInclude Include="..\..\composites\GMR.h" />
     <ClInclude Include="..\..\composites\Gray.h" />
     <ClInclude Include="..\..\composites\KSComposite.h" />
     <ClInclude Include="..\..\composites\LFN.h" />
+    <ClInclude Include="..\..\composites\LFNB.h" />
+    <ClInclude Include="..\..\composites\Mix4.h" />
+    <ClInclude Include="..\..\composites\Mix8.h" />
+    <ClInclude Include="..\..\composites\MixM.h" />
     <ClInclude Include="..\..\composites\Seq.h" />
     <ClInclude Include="..\..\composites\Shaper.h" />
     <ClInclude Include="..\..\composites\Slew4.h" />
@@ -141,11 +152,13 @@
     <ClInclude Include="..\..\dsp\filters\FormantTables2.h" />
     <ClInclude Include="..\..\dsp\filters\GraphicEq.h" />
     <ClInclude Include="..\..\dsp\filters\HilbertFilterDesigner.h" />
+    <ClInclude Include="..\..\dsp\filters\LadderFilter.h" />
     <ClInclude Include="..\..\dsp\filters\LowPassFilter.h" />
     <ClInclude Include="..\..\dsp\filters\MultiLag.h" />
     <ClInclude Include="..\..\dsp\filters\SmoothedHPF.h" />
     <ClInclude Include="..\..\dsp\filters\StateVariable4PHP.h" />
     <ClInclude Include="..\..\dsp\filters\StateVariableFilter.h" />
+    <ClInclude Include="..\..\dsp\filters\TrapezoidalLowpass.h" />
     <ClInclude Include="..\..\dsp\generators\MinBLEPVCO.h" />
     <ClInclude Include="..\..\dsp\generators\MultiModOsc.h" />
     <ClInclude Include="..\..\dsp\generators\SawOscillator.h" />
@@ -198,11 +211,13 @@
     <ClInclude Include="..\..\sqsrc\thread\ThreadServer.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h" />
     <ClInclude Include="..\..\sqsrc\util\asserts.h" />
+    <ClInclude Include="..\..\sqsrc\util\CommChannels.h" />
     <ClInclude Include="..\..\sqsrc\util\Constants.h" />
     <ClInclude Include="..\..\sqsrc\util\Divider.h" />
     <ClInclude Include="..\..\sqsrc\util\GateTrigger.h" />
     <ClInclude Include="..\..\sqsrc\util\ManagedPool.h" />
     <ClInclude Include="..\..\sqsrc\util\OneShot.h" />
+    <ClInclude Include="..\..\sqsrc\util\PeakDetector.h" />
     <ClInclude Include="..\..\sqsrc\util\RingBuffer.h" />
     <ClInclude Include="..\..\sqsrc\util\SchmidtTrigger.h" />
     <ClInclude Include="..\..\sqsrc\util\TriggerOutput.h" />
@@ -287,7 +302,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1;_ENABLE_EXTENDED_ALIGNED_STORAGE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -321,7 +336,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1;_ENABLE_EXTENDED_ALIGNED_STORAGE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>

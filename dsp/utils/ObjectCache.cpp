@@ -48,6 +48,30 @@ std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getSinLookup()
 }
 
 template <typename T>
+std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getMixerPanL()
+{
+    std::shared_ptr< LookupTableParams<T>> ret = mixerPanL.lock();
+    if (!ret) {
+        ret = std::make_shared<LookupTableParams<T>>();
+        LookupTableFactory<T>::makeMixerPanL(*ret);
+        mixerPanL = ret;
+    }
+    return ret;
+}
+
+template <typename T>
+std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getMixerPanR()
+{
+    std::shared_ptr< LookupTableParams<T>> ret = mixerPanR.lock();
+    if (!ret) {
+        ret = std::make_shared<LookupTableParams<T>>();
+        LookupTableFactory<T>::makeMixerPanR(*ret);
+        mixerPanR = ret;
+    }
+    return ret;
+}
+
+template <typename T>
 std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getExp2()
 {
     std::shared_ptr< LookupTableParams<T>> ret = exp2.lock();
@@ -195,6 +219,12 @@ std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::db2Gain;
 
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::tanh5;
+
+template <typename T>
+std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::mixerPanL;
+
+template <typename T>
+std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::mixerPanR;
 
 // Explicit instantiation, so we can put implementation into .cpp file
 template class ObjectCache<double>;

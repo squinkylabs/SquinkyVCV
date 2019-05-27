@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#if 0 // old way with persistent song pointers
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
     MidiSelectionModelPtr selection,
@@ -18,10 +19,35 @@ ReplaceDataCommand::ReplaceDataCommand(
 {
     assert(song->getTrack(trackNumber));
 }
+#endif
 
-void ReplaceDataCommand::execute()
+
+ReplaceDataCommand::ReplaceDataCommand(
+    MidiSongPtr song,
+    MidiSelectionModelPtr selection,
+    std::shared_ptr<MidiEditorContext> unused,
+    int trackNumber,
+    const std::vector<MidiEventPtr>& inRemove,
+    const std::vector<MidiEventPtr>& inAdd)
+    : trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
 {
-    MidiTrackPtr mt = song->getTrack(trackNumber);
+    assert(song->getTrack(trackNumber));
+}
+
+ReplaceDataCommand::ReplaceDataCommand(
+    MidiSongPtr song,
+    int trackNumber,
+    const std::vector<MidiEventPtr>& inRemove,
+    const std::vector<MidiEventPtr>& inAdd)
+    : trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
+{
+    assert(song->getTrack(trackNumber));
+}
+
+void ReplaceDataCommand::execute(MidiSequencerPtr seq)
+{
+    assert(seq);
+    MidiTrackPtr mt = seq->song->getTrack(trackNumber);
     assert(mt);
     MidiLocker l(mt->lock);
 
@@ -36,7 +62,11 @@ void ReplaceDataCommand::execute()
     // clone the selection, clear real selection, add stuff back correctly
     // at the very least we must clear the selection, as those notes are no
     // longer in the track.
+
+    MidiSelectionModelPtr selection = seq->selection;
+    assert(selection);
     MidiSelectionModelPtr reference = selection->clone();
+    assert(reference);
     selection->clear();
     for (auto it : addData) {
         auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
@@ -46,9 +76,11 @@ void ReplaceDataCommand::execute()
     }
 }
 
-void ReplaceDataCommand::undo()
+void ReplaceDataCommand::undo(MidiSequencerPtr seq)
 {
-    MidiTrackPtr mt = song->getTrack(trackNumber);
+    assert(seq);
+    MidiTrackPtr mt = seq->song->getTrack(trackNumber);
+  //  MidiTrackPtr mt = song->getTrack(trackNumber);
     assert(mt);
     MidiLocker l(mt->lock);
 
@@ -60,6 +92,8 @@ void ReplaceDataCommand::undo()
         mt->insertEvent(it);
     }
 
+    MidiSelectionModelPtr selection = seq->selection;
+    assert(selection);
     selection->clear();
     for (auto it : removeData) {
         auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
@@ -70,7 +104,7 @@ void ReplaceDataCommand::undo()
     // TODO: move cursor
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq)
+ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq, const char* name)
 {
     seq->assertValid();
     std::vector<MidiEventPtr> toRemove;
@@ -88,7 +122,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
         toRemove,
         toAdd);
 
-    ret->name = "delete notes";
+    ret->name = name;
     return ret;
 }
 

@@ -178,18 +178,28 @@ ShaperWidget::ShaperWidget(ShaperModule* module) :
         module, Shaper<WidgetComposite>::PARAM_OFFSET_TRIM));
 
     const float jackY = 327;
-    const float jackLabelY = jackY - 29;
+    const float jackDy = 30;
+    const float jackLabelY = jackY - (34 + jackDy);
+
     addInput(createInputCentered<PJ301MPort>(
             Vec(30,jackY),
             module,
-            Shaper<WidgetComposite>::INPUT_AUDIO));
-    addLabel(Vec(18, jackLabelY), "In")->fontSize = 12;
+            Shaper<WidgetComposite>::INPUT_AUDIO0));
+    addInput(createInputCentered<PJ301MPort>(
+            Vec(30,jackY-jackDy),
+            module,
+            Shaper<WidgetComposite>::INPUT_AUDIO1));
+    addLabel(Vec(17, jackLabelY), "In")->fontSize = 12;
 
     addOutput(createOutputCentered<PJ301MPort>(
             Vec(127,jackY),
             module,
-            Shaper<WidgetComposite>::OUTPUT_AUDIO));
-    addLabel(Vec(109+1, jackLabelY+1), "Out", SqHelper::COLOR_WHITE)->fontSize = 12;
+            Shaper<WidgetComposite>::OUTPUT_AUDIO0));
+     addOutput(createOutputCentered<PJ301MPort>(
+            Vec(127,jackY-jackDy),
+            module,
+        Shaper<WidgetComposite>::OUTPUT_AUDIO1));
+    addLabel(Vec(110, jackLabelY), "Out")->fontSize = 12;
 
     addInput(createInputCentered<PJ301MPort>(
             Vec(62, jackY),
@@ -203,7 +213,7 @@ ShaperWidget::ShaperWidget(ShaperModule* module) :
 // try new style creation
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(125-16, 265 - 13),
+        Vec(125-16, 245 - 13),
         module,
         Shaper<WidgetComposite>::PARAM_ACDC);
     tog->addSvg("res/AC.svg");
@@ -212,7 +222,7 @@ ShaperWidget::ShaperWidget(ShaperModule* module) :
 
     tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(123-20, 226 - 13),
+        Vec(123-20, 206 - 13),
         module,
         Shaper<WidgetComposite>::PARAM_OVERSAMPLE);
     tog->addSvg("res/16x-03.svg");
@@ -234,7 +244,7 @@ Model *modelShaperModule = createModel<ShaperModule, ShaperWidget>(
 Model *modelShaperModule = Model::create<ShaperModule,
     ShaperWidget>("Squinky Labs",
     "squinkylabs-shp",
-    "Shaper: Precision Wave Shaper", WAVESHAPER_TAG, DISTORTION_TAG);
+    "Shaper: Precision Wave Shaper", WAVESHAPER_TAG, DISTORTION_TAG, DUAL_TAG);
 #endif
 #endif
 

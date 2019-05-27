@@ -22,6 +22,10 @@ public:
     static std::shared_ptr<LookupTableParams<T>> getAudioTaper();
     static std::shared_ptr<LookupTableParams<T>> getSinLookup();
 
+    static std::shared_ptr<LookupTableParams<T>> getMixerPanL();
+    static std::shared_ptr<LookupTableParams<T>> getMixerPanR();
+
+
     /**
      * 2 ** x, not scaled or shifted in any manner, but tables
      * selected to span a "reasonable" range when used as frequencies
@@ -66,4 +70,7 @@ private:
     static std::weak_ptr< BiquadParams<float, 3>> lowpass64;
     static std::weak_ptr< BiquadParams<float, 3>> lowpass32; 
     static std::weak_ptr< BiquadParams<float, 3>> lowpass16;
+
+    static std::weak_ptr<LookupTableParams<T>> mixerPanL;
+    static std::weak_ptr<LookupTableParams<T>> mixerPanR;
 };

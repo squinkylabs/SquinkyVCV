@@ -17,18 +17,18 @@ public:
 
     void setLabels(std::vector<std::string> l) {
         labels = l;
-        ChangeEvent e;
+        event::Change e;
         onChange(e);
     }
 
     void draw(const DrawArgs &arg) override;
-    void onButton(const ButtonEvent &e) override;
-    void onChange(const ChangeEvent &e) override;
-    void onAction(const ActionEvent &e) override;
+    void onButton(const event::Button &e) override;
+    void onChange(const event::Change &e) override;
+    void onAction(const event::Action &e) override;
 };
 
 
-inline void PopupMenuParamWidget::onChange(const ChangeEvent& e) 
+inline void PopupMenuParamWidget::onChange(const event::Change& e) 
  {
      if (!this->paramQuantity) {
          return;            // no module
@@ -36,6 +36,11 @@ inline void PopupMenuParamWidget::onChange(const ChangeEvent& e)
     // process ourself to update the text label
     const int index = (int) std::round( this->paramQuantity->getValue());
     if (!labels.empty()) {
+
+        if (index < 0 || index >= (int) labels.size()) {
+            fprintf(stderr, "index is outside label ranges %d\n", index);
+            return;
+        }
         this->text = labels[index];
     }
 
@@ -49,10 +54,10 @@ inline void PopupMenuParamWidget::draw(const DrawArgs &args)
 	bndChoiceButton(args.vg, 0.0, 0.0, box.size.x, box.size.y, BND_CORNER_NONE, state, -1, text.c_str());
 }
 
-inline void PopupMenuParamWidget::onButton(const ButtonEvent &e)
+inline void PopupMenuParamWidget::onButton(const event::Button &e)
 {
     // for now, let's activate on all mouse clicks
-    ActionEvent ea; 
+    event::Action ea; 
     onAction(ea);
 }
 
@@ -74,16 +79,16 @@ public:
     PopupMenuParamWidget* const parent;
 
 
-    void onAction(const ActionEvent &e) override
+    void onAction(const event::Action &e) override
     {
         parent->text = this->text;
-        ChangeEvent ce;
+        event::Change ce;
         parent->paramQuantity->setValue(index);
         parent->onChange(ce);
     }
 };
 
-void PopupMenuParamWidget::onAction(const ActionEvent &e) 
+inline void PopupMenuParamWidget::onAction(const event::Action &e) 
 {
     Menu* menu = createMenu();
 

@@ -12,7 +12,6 @@ static MidiSequencerPtr makeTest(bool empty = false)
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
     MidiSequencerPtr sequencer = MidiSequencer::make(song);
-   // sequencer->makeEditor();
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -20,7 +19,6 @@ static MidiSequencerPtr makeTest(bool empty = false)
         sequencer->context->startTime() + 8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
-
 
     sequencer->assertValid();
     return sequencer;
@@ -256,6 +254,58 @@ static void textExtendNoteWhenOneSelected()
     assertEQ(seq->selection->size(), 2); 
 }
 
+static void textExtendNoteTwiceWhenOneSelected()
+{
+    MidiSequencerPtr seq = makeTest();
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);
+    assertClose(seq->context->cursorTime(), 0, .001);
+
+    seq->editor->extendSelectionToNextNote();
+    assertEQ(seq->selection->size(), 2);
+    assertClose(seq->context->cursorTime(), 1, .001);
+
+    seq->editor->extendSelectionToNextNote();
+    printf("cursor time = %f\n", seq->context->cursorTime());
+    assertEQ(seq->selection->size(), 3);
+}
+
+static void textExtendNotePrevWhenOneSelected()
+{
+    MidiSequencerPtr seq = makeTest();
+
+    // select the second note
+    seq->editor->selectNextNote();
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);
+    assertClose(seq->context->cursorTime(), 1, .001);
+
+    seq->editor->extendSelectionToPrevNote();
+    assertEQ(seq->selection->size(), 2);
+    assertClose(seq->context->cursorTime(), 0, .001);
+}
+
+static void textExtendNoteTwicePrevWhenOneSelected()
+{
+    MidiSequencerPtr seq = makeTest();
+
+    // select the third note
+    seq->editor->selectNextNote();
+    seq->editor->selectNextNote();
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);
+    assertClose(seq->context->cursorTime(), 2, .001);
+
+    seq->editor->extendSelectionToPrevNote();
+    assertEQ(seq->selection->size(), 2);
+    assertClose(seq->context->cursorTime(), 1, .001);
+
+    seq->editor->extendSelectionToPrevNote();
+    assertEQ(seq->selection->size(), 3);
+    assertClose(seq->context->cursorTime(), 0, .001);
+}
+
+
 // from a non-null selection, select previous
 static void testPrevWhenSecondSelected()
 {
@@ -359,6 +409,24 @@ static void testNextWhenOutsideViewport()
     seq->editor->assertCursorInSelection();
 }
 
+static void testPrevWhenBeforeStart()
+{
+    MidiSequencerPtr seq = makeTest(true);
+    assertEQ (seq->context->getTrack()->size(), 1);
+
+    // add a single note a time 1
+    seq->context->setCursorTime(1);
+    seq->editor->insertNote();
+    assertEQ(seq->context->getTrack()->size(), 2);
+
+    seq->context->setCursorTime(0);             // cursor before all notes
+    seq->selection->clear();                    // and of course nothing selected
+
+    seq->editor->selectPrevNote(); 
+    assertEQ(seq->selection->size(), 0);
+    assertEQ(seq->context->cursorTime(), 0);
+}
+
 
 
 void testMidiEditorNextPrevSub(int trackNumber)
@@ -392,4 +460,12 @@ void testMidiEditorNextPrev()
 {
     testMidiEditorNextPrevSub(0);
     testMidiEditorNextPrevSub(2);
+
+    // ok, that's enough testing of multi tracks.
+    _trackNumber = 3;
+    textExtendNoteTwiceWhenOneSelected();
+    textExtendNotePrevWhenOneSelected();
+    textExtendNoteTwicePrevWhenOneSelected();
+
+    testPrevWhenBeforeStart();
 }

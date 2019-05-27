@@ -6,6 +6,20 @@
 #include "MidiSong.h"
 #include "SeqClock.h"
 
+#ifdef __V1
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+using Module = rack::engine::Module;
+#else
+namespace rack {
+    struct Module;
+};
+using Module = rack::Module;
+#endif
+
 template <class TBase>
 class SeqDescription : public IComposite
 {
@@ -14,6 +28,8 @@ public:
     int getNumParams() override;
 };
 
+
+
 template <class TBase>
 class Seq : public TBase
 {
@@ -21,7 +37,7 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(struct Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
+    Seq(Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
     {
         init(song);
     }
@@ -149,7 +165,7 @@ void  Seq<TBase>::init(MidiSongPtr song)
     std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
     player = std::make_shared<MidiPlayer>(host, song);
     div.setup(4, [this] {
-        this->stepn(div.div());
+        this->stepn(div.getDiv());
      });
 }
 

@@ -62,8 +62,14 @@ extern void testMidiEditor();
 extern void testMidiEditorNextPrev();
 extern void testNoteScreenScale();
 extern void testMidiEditorCCP();
+extern void testMidiEditorSelection();
 extern void testVec();
 extern void testSeqClock();
+extern void testMix8();
+extern void testSlew4();
+extern void testCommChannels();
+extern void testLadder();
+extern void testHighpassFilter();
 
 #if 0
 #include <sstream>
@@ -88,7 +94,7 @@ static void xx()
 }
 #endif
 
-#define _MIDIONLY
+//#define _MIDIONLY
 
 int main(int argc, char ** argv)
 {
@@ -125,6 +131,7 @@ int main(int argc, char ** argv)
 
     testIComposite();
     testVec();
+    testCommChannels();
     testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();
@@ -136,6 +143,7 @@ int main(int argc, char ** argv)
     testMidiViewport();
  
     testMidiControllers();
+    testMidiEditorSelection();
     testMidiEditorNextPrev();
     testMidiEditor();
     testMidiEditorCCP();
@@ -148,6 +156,9 @@ int main(int argc, char ** argv)
     testLookupTable();
     testObjectCache();
     testMultiLag();
+    testSlew4();
+    testMix8();
+
 
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
@@ -173,7 +184,9 @@ int main(int argc, char ** argv)
     testAnalyzer();
     testRateConversion();
     testUtils();
-    testLowpassFilter();
+    //testLowpassFilter();
+    testLadder();
+    testHighpassFilter();
  
 #if 0
     printf("skipping lots of tests\n");

@@ -30,8 +30,14 @@ public:
      * amount is a multiplier, and may be negative
      */
     void advanceCursor(bool ticks, int amount);
-    void advanceCursorToTime(float time);
+    void advanceCursorToTime(float time, bool extendSelection);
     void changeCursorPitch(int semitones);
+
+    MidiNoteEventPtr moveToTimeAndPitch(float time, float pitchCV);
+
+    // These two should be deprecated. they are "old school"
+    void selectAt(float time, float pitchCV, bool extendSelection);
+    void toggleSelectionAt(float time, float pitchCV);
 
 
     /*********** functions that edit/change the notes **************/
@@ -59,7 +65,9 @@ public:
 
     void assertCursorInSelection();
      // select any note that is under the cursor
-    void updateSelectionForCursor();
+    void updateSelectionForCursor(bool extendCurrent);
+
+    MidiNoteEventPtr getNoteUnderCursor();
 private:
     /**
      * The sequencer we will act on.
@@ -78,12 +86,13 @@ private:
 
     // move the cursor, if necessary.
     void updateCursor();
-
-   
-
+    void setCursorToNote(MidiNoteEventPtr note);
+    void setNewCursorPitch(float pitch, bool extendSelection);
     void extendTrackToMinDuration(float time);
-
     void insertNoteHelper(Durations dur, bool moveCursorAfter);
+
+    void extendSelectionToCurrentNote();
+    void deleteNoteSub(const char* name);
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;

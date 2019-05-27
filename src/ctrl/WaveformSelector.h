@@ -4,6 +4,7 @@
 #ifdef __V1
 #else
 #include "widgets.hpp"
+#include <GLFW/glfw3.h>
 #endif
 
 class ButtonCell
@@ -60,7 +61,7 @@ struct WaveformSelector : ParamWidget
 
 #ifdef __V1
     void draw(const DrawArgs &arg) override;
-    void onButton(const ButtonEvent &e) override;
+    void onButton(const event::Button &e) override;
     void drawSVG(const DrawArgs &arg, SqHelper::SvgWidget&, float x, float y);
 #else
     void onMouseDown(EventMouseDown &e) override;
@@ -168,7 +169,7 @@ inline void WaveformSelector::draw(NVGcontext *arg)
 
 
 #ifdef __V1
- inline void WaveformSelector::onButton(const ButtonEvent &e)
+ inline void WaveformSelector::onButton(const event::Button &e)
  {
      // for now, use both button presses.
      // eventually get more sophisticated.
@@ -190,13 +191,15 @@ inline void WaveformSelector::onMouseDown(EventMouseDown &e)
 {
     e.consumed = false;
 
-    CellPtr hit = hitTest(e.pos.x, e.pos.y);
-    if (hit) {
-        e.consumed = true;
-        if (hit->value == this->value) {
-            return;
-        }
+    if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
+        CellPtr hit = hitTest(e.pos.x, e.pos.y);
+        if (hit) {
+            e.consumed = true;
+            if (hit->value == this->value) {
+                return;
+            }
         setValue(hit->value);
+        }
     }
 }
 #endif

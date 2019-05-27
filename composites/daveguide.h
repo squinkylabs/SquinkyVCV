@@ -8,7 +8,7 @@ template <class TBase>
 class Daveguide : public TBase
 {
 public:
-    Daveguide(struct Module * module) : TBase(module), delay(44100)
+    Daveguide(Module * module) : TBase(module), delay(44100)
     {
        // init();
     }

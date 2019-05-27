@@ -19,3 +19,13 @@ Rectangle height is 25 pix.
 Stroke is 1 pix.
 
 Rectangle corners have 3 pix rounding.
+
+## Names
+
+Font: Space Patrol.
+
+Logo size: 14pt
+Logo location: 360
+
+Title size: 21 pt
+Title location: 21

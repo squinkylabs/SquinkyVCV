@@ -1,7 +1,7 @@
-# Seq
+# Seq++
 Work in progress
 
-If you read nothing else, please checkout out the list of keyboard "shortcuts". This is the only way you can hope ti figure out how to enter note: Keyboard mappings [here](./keymap.md)
+If you read nothing else, please checkout out the list of keyboard "shortcuts". This is the only way you can hope to figure out how to enter notes: Keyboard mappings [here](./keymap.md)
 
 ## About this Sequencer
 
@@ -15,7 +15,7 @@ There are some concessions to the current world - it has unlimited undo/redo, an
 
 ## Keyboard focus
 
-The UI is entirely keyboard driven, no mouse. And the module will not receive keyboard input until you click in the note-grid. Then it will steal keyboard focus until you click somewhere else.
+The UI is entirely keyboard driven, no mouse. The module will only respond the the keyboard if the cursor is over the note editor, in which case it will grab the focus as you type. Once the module had focus it keeps it until you click outside.
 
 Because it's easy to forget, the edit grid had a conspicuous indicator that tells when it has keyboard focus.
 
@@ -27,7 +27,7 @@ On the left are a few inputs, outputs, and controls.
 
 **Tempo** determines the tempo when the Clock Rate is set to internal.
 
-**Run/Stop** button. At the moment it is labeled "preset". It has a green LED next to it that indicates running. This is modeled on the run button in clocked.
+**Run/Stop** button that changes color to  indicate when it's running. The runs state is controlled from this button, as well as the external run input. Either of them can start and stop the sequencer. This button is modeled on the run button in "Clocked", from Impromptu Modular.
 
 **Scroll mode** button enabled scrolling while running.
 
@@ -37,7 +37,7 @@ On the left are a few inputs, outputs, and controls.
 
 **Clk** is the eternal clock input.
 
-**Rst** does nothing yet, but will be reset
+**Rst** is the reset CV. It is quite compatible with the reset out of "Clocked".
 
 **Run** CV input. Meant to be hooked up to the Run output of Clocked, or similar master clock.
 
@@ -66,15 +66,13 @@ Note editor things that don't work:
 * Time units are always 1/16 notes.
 * Insert note is always 1/4.
 
-Reset input not hooked up.
-
 It is probably possible to crash it with some note editor operations. But please report such things to me.
 
 ## Extending the length
 
 There is a temporary hack to make it possible to lengthen a track. You may move the cursor past the end of the track. If you insert a note there, the track will be extended in units of 4/4 bars to accommodate the new note.
 
-Note that it is not easy to know how long your track actually is. And it is currenly impossible to shorten it, once you have lengthened it.
+Note that it is not easy to know how long your track actually is. And it is currently impossible to shorten it, once you have lengthened it.
 
 ## Piano roll
 
@@ -82,12 +80,8 @@ It works like you would expect. Details are in [Keyboard Summary](./keymap.md).
 
 Note that there is a blinking "DOS cursor". It is not connected to the mouse cursor in any way. All note editing is done via the keyboard and this cursor.
 
-## Features I plan to add before release
+## Some hints with editing
 
-Address all the issues mentioned above.
+Once you have selected a note, or group of notes, it is very easy to move them around, typically by Pressing 's', 'd', or 'p' to set the editor editing start time, duration, or pitch. Then all selected notes may be adjusted with the '+' and '-' keys (and may others).
 
-Add a minimal mouse interface to the note editor.
-
-Integrate undo/redo with the undo/redo in VCV 1.0.
-
-Do something about the keyboard focus so you don't always need to click in the grid.
+New notes are inserted by moving the cursor to the desired location, and pressing 'Ins'. There are many other keys for inserting different lengths of notes.

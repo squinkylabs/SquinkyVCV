@@ -37,11 +37,21 @@ int Analyzer::getMaxExcluding(const FFTDataCpx& data, std::set<int> exclusions)
     return maxBin;
 }
 
-float Analyzer::getSlope(const FFTDataCpx& response, float fTest, float sampleRate)
+float Analyzer::getSlopeLowpass(const FFTDataCpx& response, float fTest, float sampleRate)
 {
     const int bin1 = FFT::freqToBin(fTest, sampleRate, response.size());
     const int bin2 = bin1 * 4;                // two octaves
     assert(bin2 < response.size());
+    const float mag1 = response.getAbs(bin1);
+    const float mag2 = response.getAbs(bin2);
+    return float(AudioMath::db(mag2) - AudioMath::db(mag1)) / 2;
+}
+
+float Analyzer::getSlopeHighpass(const FFTDataCpx& response, float fTest, float sampleRate)
+{
+    const int bin1 = FFT::freqToBin(fTest, sampleRate, response.size());
+    const int bin2 = bin1 / 4;                // two octaves
+    assert(bin2  > 2);
     const float mag1 = response.getAbs(bin1);
     const float mag2 = response.getAbs(bin2);
     return float(AudioMath::db(mag2) - AudioMath::db(mag1)) / 2;

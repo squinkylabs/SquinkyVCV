@@ -15,24 +15,24 @@
 #define _BOOTY
 #define _GROWLER
 //#define _SEQ
-//#define _SLEW
+#define _SLEW
+#define _MIX8
+#define _FILT
 //#define _CH10
+//#define _LFNB
 
 //#define _BLANKMODULE
 
 #ifndef __V1
-    #define _EV3
-    #define _CHB
     #define _CHBG
-    #define _LFN
-    #define _COLORS
-    #define _GRAY
-    #define _SUPER
-    #define _GROWLER
-    #define _FORMANTS
     #define _TBOOST
     #define _BOOTY
     #define _TREM
+#endif
+
+#if defined(__V1) && 0
+    #define _MIX4
+    #define _MIXM
 #endif
 
 
@@ -43,6 +43,7 @@ extern Model *modelColoredNoiseModule;
 extern Model *modelTremoloModule;
 extern Model *modelThreadBoostModule;
 extern Model *modelLFNModule;
+extern Model *modelLFNBModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 
@@ -94,6 +95,18 @@ extern Model *modelSequencerModule;
 #endif
 #ifdef _SLEW
 extern Model *modelSlew4Module;
+#endif
+#ifdef _MIX8
+extern Model *modelMix8Module;
+#endif
+#ifdef _MIX4
+extern Model *modelMix4Module;
+#endif
+#ifdef _MIXM
+extern Model *modelMixMModule;
+#endif
+#ifdef _FILT
+extern Model *modelFiltModule;
 #endif
 
 

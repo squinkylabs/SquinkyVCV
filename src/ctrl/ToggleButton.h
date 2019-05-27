@@ -3,6 +3,29 @@
 #include "SqUI.h"
 #include "SqHelper.h"
 
+#include <memory>
+
+#ifndef __V1
+#include "window.hpp"
+#endif
+
+class ToggleButton;
+
+/**
+ * Implements radio button from separate buttons.
+ * clients hold strong pointers to us.
+ * we hold weak ptrs to clients
+ */
+class ToggleManager : public std::enable_shared_from_this<ToggleManager>
+{
+public:
+    void registerClient(ToggleButton*);
+    void go(ToggleButton*);
+private:
+    std::vector<ToggleButton*> clients;
+};
+
+
 class ToggleButton : public ParamWidget
 {
 public:
@@ -18,19 +41,43 @@ public:
     }
 
 #ifdef __V1
-    void onButton(const ButtonEvent &e) override;
+    void onButton(const event::Button &e) override;
     void draw(const DrawArgs &args) override;
 #else
     void onMouseDown(EventMouseDown &e) override;
     void draw(NVGcontext *vg) override;
 #endif
+
+    void registerManager(std::shared_ptr<ToggleManager>);
+    void turnOff();
     
 private:
     using SvgPtr = std::shared_ptr<SqHelper::SvgWidget>;
- // using SvgPtr = std::shared_ptr<SvgWidget>;
-
     std::vector<SvgPtr> svgs;
+    std::shared_ptr<ToggleManager> manager;
 };
+
+inline void ToggleManager::registerClient(ToggleButton* button)
+{
+    clients.push_back(button);
+    std::shared_ptr<ToggleManager> mgr = shared_from_this(); 
+    button->registerManager(mgr);
+}
+
+inline void ToggleManager::go(ToggleButton* client)
+{
+    for (auto cl : clients) {
+        ToggleButton* pc = cl;
+        if (pc != client) {
+            pc->turnOff();
+        }
+    }
+}
+
+inline void ToggleButton::registerManager(std::shared_ptr<ToggleManager> m)
+{
+    manager = m;
+}
 
 inline ToggleButton::ToggleButton()
 {
@@ -67,10 +114,13 @@ inline void ToggleButton::draw(NVGcontext *vg)
 }
 #endif
 
-
+inline void ToggleButton::turnOff()
+{
+    SqHelper::setValue(this, 0);
+} 
 
 #ifdef __V1
-inline void ToggleButton::onButton(const ButtonEvent &e)
+inline void ToggleButton::onButton(const event::Button &e)
 #else
 inline void ToggleButton::onMouseDown(EventMouseDown &e)
 #endif
@@ -82,7 +132,22 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
             e.action != GLFW_RELEASE) {
                 return;
             }
+
+        const bool ctrl = (e.mods & GLFW_MOD_CONTROL);
+    #else 
+      if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
+                return;
+            }
+        const bool ctrl = rack::windowIsModPressed();
     #endif
+
+    // normally we tell manager to turn siblings off.
+    // control key we don't - allows more than one to be on
+    if (!ctrl) {
+        if (manager) {
+            manager->go(this);
+        }
+    }
 
     float _value = SqHelper::getValue(this);
     const int index = int(std::round(_value));

@@ -10,6 +10,20 @@
 #include "StateVariableFilter.h"
 #include "IComposite.h"
 
+#ifdef __V1
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+using Module = rack::engine::Module;
+#else
+namespace rack {
+    struct Module;
+};
+using Module = rack::Module;
+#endif
+
 template <class TBase>
 class VocalDescription : public IComposite
 {
@@ -29,7 +43,7 @@ public:
     typedef float T;
     static const int numFilters = FormantTables2::numFormantBands;
 
-    VocalFilter(struct Module * module) : TBase(module)
+    VocalFilter(Module * module) : TBase(module)
     {
     }
     VocalFilter() : TBase()

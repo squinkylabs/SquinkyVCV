@@ -14,6 +14,21 @@
 #include "FFT.h"
 #include "FFTCrossFader.h"
 
+
+#ifdef __V1
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+using Module = rack::engine::Module;
+#else
+namespace rack {
+    struct Module;
+};
+using Module = rack::Module;
+#endif
+
 class NoiseMessage;
 
 
@@ -26,7 +41,7 @@ public:
 };
 
 const int crossfadeSamples = 4 * 1024;
-template <class TBase>
+
 
 /**
  * Implementation of the "Colors" noises generator
@@ -34,10 +49,11 @@ template <class TBase>
  * Original CPI = 11.7
  * service thread less often and iput less often -> 5.6
  */
+template <class TBase>
 class ColoredNoise : public TBase
 {
 public:
-    ColoredNoise(struct Module * module) : TBase(module), crossFader(crossfadeSamples)
+    ColoredNoise(Module * module) : TBase(module), crossFader(crossfadeSamples)
     {
         commonConstruct();
     }

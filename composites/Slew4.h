@@ -9,6 +9,20 @@
 #include "MultiLag.h"
 #include "ObjectCache.h"
 
+#ifdef __V1
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+using Module = rack::engine::Module;
+#else
+namespace rack {
+    struct Module;
+};
+using Module = rack::Module;
+#endif
+
 template <class TBase>
 class Slew4Description : public IComposite
 {
@@ -19,13 +33,15 @@ public:
 
 /**
  * perf, initial build. 11.35%
+ * with all normals, now 13.5%
+ * 
  */
 template <class TBase>
 class Slew4 : public TBase
 {
 public:
 
-    Slew4(struct Module * module) : TBase(module)
+    Slew4(Module * module) : TBase(module)
     {
     }
 
@@ -67,6 +83,8 @@ public:
         INPUT_AUDIO5,
         INPUT_AUDIO6,
         INPUT_AUDIO7,
+        INPUT_RISE,
+        INPUT_FALL,
         NUM_INPUTS
     };
 
@@ -80,7 +98,14 @@ public:
         OUTPUT5,
         OUTPUT6,
         OUTPUT7,
-        OUTPUT_MIX,
+        OUTPUT_MIX0,
+        OUTPUT_MIX1,
+        OUTPUT_MIX2,
+        OUTPUT_MIX3,
+        OUTPUT_MIX4,
+        OUTPUT_MIX5,
+        OUTPUT_MIX6,
+        OUTPUT_MIX7,
         NUM_OUTPUTS
     };
 
@@ -104,7 +129,7 @@ public:
     
     void onSampleRateChange()
     {
-        knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime());
+        knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime(), 4);
     }
 
 private:
@@ -119,8 +144,9 @@ private:
     std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
     float _outputLevel = 0;
-};
 
+
+};
 
 template <class TBase>
 inline void Slew4<TBase>::init()
@@ -134,31 +160,32 @@ inline void Slew4<TBase>::init()
     lag.setRelease(.0001f);
 }
 
-
 template <class TBase>
 inline void Slew4<TBase>::updateKnobs()
 {
     const float combinedA = lin(
-     //   TBase::inputs[RISE_INPUT].value,
-        0,
+        TBase::inputs[INPUT_RISE].value,
         TBase::params[PARAM_RISE].value,
         1);
 
     const float combinedR = lin(
-   //     TBase::inputs[FALL_INPUT].value,
-    0,
+        TBase::inputs[INPUT_FALL].value,
         TBase::params[PARAM_FALL].value,
         1);
+
+    lag.setEnable(true);
+#if 0
+    // TODO: does this unit really want to disable ever?
     if (combinedA < .1 && combinedR < .1) {
         lag.setEnable(false);
     } else {
         lag.setEnable(true);
+    #endif
 
-        const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
+    const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
         lag.setAttackL(lA);
         const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
         lag.setReleaseL(lR);
-    }
 
     const float knob = TBase::params[PARAM_LEVEL].value;
     _outputLevel = LookupTable<float>::lookup(*audioTaper, knob, false);
@@ -171,8 +198,15 @@ inline void Slew4<TBase>::step()
     divider.step();
     // get input to slews
     float slewInput[8];
+    float triggerIn = 0;
     for (int i=0; i<8; ++i) {
-        slewInput[i] = TBase::inputs[i + INPUT_TRIGGER0].value;
+        // if input is patched, it becomes the new normaled input;
+        const bool bPatched = TBase::inputs[i + INPUT_TRIGGER0].active;
+        if (bPatched) {
+            triggerIn = TBase::inputs[i + INPUT_TRIGGER0].value;
+        }
+
+        slewInput[i] = triggerIn;
     }
 
     // clock the slew
@@ -184,15 +218,19 @@ inline void Slew4<TBase>::step()
         //if audio in hooked up, then output[n] = input[n] * lag
         // else output = lag
         float inputValue = 10.f;   
-      //  if (TBase::outputs[i + OUTPUT0].active) {
+
         if (TBase::inputs[i + INPUT_AUDIO0].active) {
             inputValue = TBase::inputs[i + INPUT_AUDIO0].value;
         } 
         TBase::outputs[i + OUTPUT0].value = lag.get(i) * inputValue * .1f;
         sum += TBase::outputs[i + OUTPUT0].value;
-    }
 
-    TBase::outputs[OUTPUT_MIX].value = sum * _outputLevel;
+        // normaled output logic: patched outputs get the sum of the unpatched above them.
+        if (TBase::outputs[i + OUTPUT_MIX0].active) {
+            TBase::outputs[i + OUTPUT_MIX0].value = sum * _outputLevel;
+            sum = 0;
+        }
+    }
 }
 
 template <class TBase>
@@ -220,5 +258,3 @@ inline IComposite::Config Slew4Description<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

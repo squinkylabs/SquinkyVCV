@@ -45,20 +45,33 @@ void init(rack::Plugin *p)
 #ifdef _LFN
     p->addModel(modelLFNModule); 
 #endif
-
+#ifdef _LFNB
+    p->addModel(modelLFNBModule); 
+#endif
+#ifdef _MIX8
+    p->addModel(modelMix8Module);
+#endif
 #ifdef _SUPER
     p->addModel(modelSuperModule);
 #endif
 #ifdef _SHAPER
     p->addModel(modelShaperModule);
 #endif
+#ifdef _SLEW
+    // Slade
+    p->addModel(modelSlew4Module);
+#endif
+#ifdef _FILT
+    // Stairway
+    p->addModel(modelFiltModule);
+#endif
 #ifdef _TBOOST
     p->addModel(modelThreadBoostModule);
 #endif
-
 #ifdef _CHBG
     p->addModel(modelCHBgModule);
 #endif
+
 #ifdef _SEQ
     assert(modelSequencerModule);
     p->addModel(modelSequencerModule);
@@ -75,16 +88,19 @@ void init(rack::Plugin *p)
 #ifdef _BLANKMODULE
     p->addModel(modelBlankModule);
 #endif
-
 #ifdef _SINK
     p->addModel(modelKSModule);
 #endif
 #ifdef _CH10
     p->addModel(modelCH10Module);
 #endif
-#ifdef _SLEW
-    p->addModel(modelSlew4Module);
+#ifdef _MIX4
+    p->addModel(modelMix4Module);
 #endif
+#ifdef _MIXM
+    p->addModel(modelMixMModule);
+#endif
+
 
 }
 

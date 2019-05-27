@@ -30,6 +30,8 @@ perf.exe : FLAGS += $(ASSERTOFF)
 
 FLAGS += $(PERFFLAG)
 
+test.exe : FLAGS += -D _TESTEX
+
 ifeq ($(ARCH), win)
 	# don't need these yet
 	#  -lcomdlg32 -lole32 -ldsound -lwinmm

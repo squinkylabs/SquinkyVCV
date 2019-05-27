@@ -12,76 +12,16 @@
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SqWidgets.h"
+#include "ctrl/SqToggleLED.h"
 
 #include "seq/SequencerSerializer.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
+#include "SequencerModule.h"
+
 using Comp = Seq<WidgetComposite>;
-class SequencerWidget;
-
-struct SequencerModule : Module
-{
-    SequencerModule();
-    std::shared_ptr<Seq<WidgetComposite>> seqComp;
-
-    MidiSequencerPtr sequencer;
-    SequencerWidget* widget = nullptr;
-
-
-    void step() override
-    {
-        sequencer->undo->setModuleId(this->id);
-        if (runStopRequested) {
-            seqComp->toggleRunStop();
-            runStopRequested = false;
-        }
-        seqComp->step();
-    }
-
-    void stop()
-    {
-        seqComp->stop();
-    }
-
-    float getPlayPosition()
-    {
-        return seqComp->getPlayPosition();
-    }
-
-    MidiSequencerPtr getSeq() {
-        return sequencer;
-    }
-
-    void toggleRunStop()
-    {
-        runStopRequested = true;
-    }
-
-    bool isRunning()
-    {
-        return seqComp->isRunning();
-    }
-
-#ifndef __V1
-    json_t *toJson() override
-    {
-        assert(sequencer);
-        return SequencerSerializer::toJson(sequencer);
-    }
-    void fromJson(json_t* data) override;
-#else
-    virtual json_t *dataToJson() override
-    {
-        assert(sequencer);
-        return SequencerSerializer::toJson(sequencer);
-    }
-    virtual void dataFromJson(json_t *root) override;
-#endif
-
-    std::atomic<bool> runStopRequested;
-};
 
 #ifdef __V1
 SequencerModule::SequencerModule()
@@ -103,7 +43,7 @@ SequencerModule::SequencerModule()
     seqComp = std::make_shared<Comp>(this, song);
 }
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq4/docs/sq.md";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq5/docs/sq.md";
 
 struct SequencerWidget : ModuleWidget
 {
@@ -123,9 +63,7 @@ struct SequencerWidget : ModuleWidget
         return label;
     }
 
-    // Scroll the note grid durning playback
     void step() override;
-
 
     NoteDisplay* noteDisplay = nullptr;
     AboveNoteGrid* headerDisplay = nullptr;
@@ -150,7 +88,7 @@ void SequencerWidget::step()
                 curTime = TimeUtils::bar2time(curBar);
             }
             auto seq = _module->getSeq();
-            seq->editor-> advanceCursorToTime(curTime);
+            seq->editor-> advanceCursorToTime(curTime, false);
         }
     }
 }
@@ -177,14 +115,17 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
     if (module) {
         module->widget = this;
     }
-    const int width = (14 + 28) * RACK_GRID_WIDTH;      // 14 for panel, other for notes
+    // was 14, before 8
+    // 8 for panel, 28 for notes
+    const int panelWidthHP = 8;
+    const int width = (panelWidthHP + 28) * RACK_GRID_WIDTH; 
     box.size = Vec(width, RACK_GRID_HEIGHT);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/seq_panel.svg");
     box.size.x = width;     // restore to the full width that we want to be
     {
         const float topDivider = 60;
-        const float x = 14 * RACK_GRID_WIDTH;
+        const float x = panelWidthHP * RACK_GRID_WIDTH;
         const float width = 28 * RACK_GRID_WIDTH;
         const Vec notePos = Vec(x, topDivider);
         const Vec noteSize = Vec(width, RACK_GRID_HEIGHT - topDivider);
@@ -213,16 +154,17 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
 {
+    const float controlX = 20;
     addParam(SqHelper::createParam<Rogan2PSBlue>(
         icomp,
-        Vec(60, 65),
+        Vec(controlX, 65),
         module,
         Comp::TEMPO_PARAM));
     addLabel(Vec(60, 40), "Tempo");
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(40, 120),
+        Vec(controlX, 120),
         module,
         Comp::CLOCK_INPUT_PARAM);
     p->box.size.x = 85;    // width
@@ -230,35 +172,33 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
-    // momentary button to toggle runState
-    auto sw = new SQPush(
-        "res/preset-button-up.svg",
-        "res/preset-button-down.svg");
-    Vec pos(40, 200);
-    sw->center(pos);
-    sw->onClick([this, module]() {
-        this->toggleRunStop(module);
-    });
-    addChild(sw);
 
-    addChild(createLight<MediumLight<GreenLight>>(
-         Vec(40, 220),
+    SqToggleLED* tog = (createLight<SqToggleLED>(
+        Vec(controlX, 180),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    tog->setHandler( [this, module]() {
+        this->toggleRunStop(module);
+    });
+    addChild(tog);
+    addLabel(
+        Vec(controlX+30, 180),
+        "Run");
 
     {
     scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(90, 200),
+        Vec(controlX, 220),
         module,
         Comp::PLAY_SCROLL_PARAM);
-    scrollControl->addSvg("res/seq-scroll-button-off.svg");
- //   scrollControl->addSvg("res/seq-scroll-button-bars.svg");
-    scrollControl->addSvg("res/seq-scroll-button-smooth.svg");
+    scrollControl->addSvg("res/square-button-01.svg");
+    scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
 
     addLabel(
-        Vec(90, 180),
+        Vec(controlX + 30, 220),
         "Scroll");
     }
 }
@@ -266,6 +206,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
 void SequencerWidget::addJacks(SequencerModule *module)
 {
     const float jacksY = 310;
+    const float jacksDy = 40;
     const float jacksLabelY = 280;
     const float jacksDx = 40;
     const float jacksX = 20;
@@ -296,26 +237,25 @@ void SequencerWidget::addJacks(SequencerModule *module)
         "Run");
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX + 3 * jacksDx, jacksY),
+        Vec(jacksX, jacksY + jacksDy),
         module,
         Seq<WidgetComposite>::CV_OUTPUT));
     addLabel(
-        Vec(labelX + 3 * jacksDx, jacksLabelY),
+        Vec(labelX, jacksLabelY + jacksDy),
         "CV");
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX + 4 * jacksDx, jacksY),
+        Vec(jacksX + 1 * jacksDx, jacksY + jacksDy),
         module,
         Seq<WidgetComposite>::GATE_OUTPUT));
     addLabel(
-        Vec(labelX + 4 * jacksDx, jacksLabelY),
+        Vec(labelX + 1 * jacksDx, jacksLabelY + jacksDy),
         "Gate");
 
     addChild(createLight<MediumLight<GreenLight>>(
-         Vec(jacksX + 4 * jacksDx , jacksLabelY-10),
+        Vec(jacksX + 2 * jacksDx , jacksY + jacksDy),
         module,
         Seq<WidgetComposite>::GATE_LIGHT));
-
 }
 
 #ifdef __V1
@@ -324,9 +264,13 @@ void SequencerModule::dataFromJson(json_t *data)
 void SequencerModule::fromJson(json_t* data)
 #endif
 {
-    MidiSongPtr oldSong = sequencer->song;
-
     MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
+    setNewSeq(newSeq);
+}
+
+void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
+{
+    MidiSongPtr oldSong = sequencer->song;
     sequencer = newSeq;
     if (widget) {
         widget->noteDisplay->setSequencer(newSeq);
@@ -341,6 +285,16 @@ void SequencerModule::fromJson(json_t* data)
         seqComp->setSong(sequencer->song);
     }
 }
+
+
+void SequencerModule::onReset()
+{
+    Module::onReset();
+    std::shared_ptr<MidiSong> newSong = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong);
+    setNewSeq(newSeq);
+}
+
 
 // Specify the Module and ModuleWidget subclass, human-readable
 // manufacturer name for categorization, module slug (should never

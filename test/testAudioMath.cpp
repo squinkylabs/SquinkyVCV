@@ -179,6 +179,32 @@ static void testFoldNegative()
     }
 }
 
+static void testNormalizeProduct()
+{
+    float data1[] = {1, 1, 1, 1};
+    float data2[] = {1, 10, 100};
+    AudioMath::normalizeProduct(data1, 4);
+    AudioMath::normalizeProduct(data2, 3);
+
+    for (int i = 0; i < 4; ++i) {
+        assertEQ(data1[i], 1);
+    }
+
+    assertClose(data2[0] * data2[1] * data2[2], 1, .001);
+    assertClose(data2[0] * 10, data2[1], .001);
+    assertClose(data2[1] * 10, data2[2], .001);
+}
+
+static void testDistributeEvenly()
+{
+    float buffer[10];
+    AudioMath::distributeEvenly(buffer, 4, 1.f);
+    for (int i = 0; i < 4; ++i) {
+        assertEQ(buffer[i], 1);
+    }
+
+}
+
 void testAudioMath()
 {
     test0();
@@ -192,4 +218,6 @@ void testAudioMath()
     testAudioScaler2();
     testFold();
     testFoldNegative();
+    testNormalizeProduct();
+    testDistributeEvenly();
 }

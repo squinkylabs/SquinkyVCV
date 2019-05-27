@@ -326,7 +326,7 @@ Model *modelVocalFilterModule = Model::create<VocalFilterModule, VocalFilterWidg
     "Formants: Vocal Filter", EFFECT_TAG, FILTER_TAG);
 #else
 Model *modelVocalFilterModule = createModel<VocalFilterModule, VocalFilterWidget>(
-    "growler");
+    "squinkylabs-vocalfilter");
 #endif
 
 #endif

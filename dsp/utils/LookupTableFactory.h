@@ -1,6 +1,19 @@
 #pragma once
 
 #include "LookupTable.h"
+#include "SqMath.h"
+
+#ifndef _CLAMP
+#define _CLAMP
+namespace std {
+    inline float clamp(float v, float lo, float hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+}
+#endif
+
 
 // TODO: this class should not be templatized. the functions should
 template<typename T>
@@ -11,6 +24,10 @@ public:
      * domain (x) = -1 .. +1
      */
     static void makeBipolarAudioTaper(LookupTableParams<T>& params);
+
+
+    static void makeMixerPanL(LookupTableParams<T>& params);
+    static void makeMixerPanR(LookupTableParams<T>& params);
 
     /**
      * domain (x) = 0..1
@@ -81,10 +98,47 @@ public:
     {
         return  std::log2(exp2ExHighYMax());
     }
-
-
 };
 
+static inline float _PanL(float balance, float cv)
+{ // -1...+1
+    float p, inp;
+    inp = balance + cv / 5;
+    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
+    return ::cos(p);
+}
+
+static inline float _PanR(float balance, float cv)
+{
+    float p, inp;
+    inp = balance + cv / 5;
+    p = M_PI * (std::clamp(inp, -1.0f, 1.0f) + 1) / 4;
+    return ::sin(p);
+}
+
+template<typename T>
+inline void LookupTableFactory<T>::makeMixerPanL(LookupTableParams<T>& params)
+{
+    const int bins = 16;
+    const T xMin = -1;
+    const T xMax = 1;
+    assert(xMin < xMax);
+    LookupTable<T>::init(params, bins, xMin, xMax, [](double x) {
+        return _PanL(float(x), 0);
+        });
+}
+
+template<typename T>
+inline void LookupTableFactory<T>::makeMixerPanR(LookupTableParams<T>& params)
+{
+    const int bins = 16;
+    const T xMin = -1;
+    const T xMax = 1;
+    assert(xMin < xMax);
+    LookupTable<T>::init(params, bins, xMin, xMax, [](double x) {
+        return _PanR(float(x), 0);
+        });
+}
 
 template<typename T>
 inline void LookupTableFactory<T>::makeExp2(LookupTableParams<T>& params)

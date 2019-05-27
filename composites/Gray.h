@@ -55,7 +55,7 @@ template <class TBase>
 class Gray : public TBase
 {
 public:
-    Gray(struct Module * module) : TBase(module), gateTrigger(true)
+    Gray(Module * module) : TBase(module), gateTrigger(true)
     {
         init();
     }

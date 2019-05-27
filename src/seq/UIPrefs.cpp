@@ -10,6 +10,9 @@ const NVGcolor UIPrefs::NOTE_EDIT_BACKGROUND =
 const NVGcolor UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND =
     nvgRGB(0, 0, 0);
 
+const NVGcolor UIPrefs::DRAGGED_NOTE_COLOR = 
+    nvgRGBA(0xff, 0x80, 0, 0x80);
+
 const NVGcolor UIPrefs::GRID_COLOR =
     nvgRGB(0x40, 0x40, 0x40);
 const NVGcolor UIPrefs::GRID_BAR_COLOR =

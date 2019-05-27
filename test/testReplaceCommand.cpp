@@ -11,98 +11,84 @@
 // test that functions can be called
 static void test0()
 {
-    UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
-    MidiSongPtr song(std::make_shared<MidiSong>());
-    MidiSelectionModelPtr selection = std::make_shared<MidiSelectionModel>();
-    MidiEditorContextPtr context = std::make_shared<MidiEditorContext>(song);
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(song);
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
 
-    song->createTrack(0);
-
-    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(song, selection, context, 0, toRem, toAdd);
-    ur->execute(cmd);
+    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(song, 0, toRem, toAdd);
+    seq->undo->execute(seq, cmd);
 }
 
 // Test simple add note command
 static void test1()
 {
-    UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
-    MidiSongPtr ms(std::make_shared<MidiSong>());
-    MidiSelectionModelPtr selection = std::make_shared<MidiSelectionModel>();
-    MidiEditorContextPtr context = std::make_shared<MidiEditorContext>(ms);
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(ms);
 
-    ms->createTrack(0);
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
 
+    assert(ms->getTrack(0)->size() == 1);           // just end event
     MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
     assert(newNote);
     newNote->pitchCV = 12;
     toAdd.push_back(newNote);
 
-    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, selection, context, 0, toRem, toAdd);
-    ur->execute(cmd);
+    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, 0, toRem, toAdd);
+    seq->undo->execute(seq, cmd);
 
-    assert(ms->getTrack(0)->size() == 1);     // we added an event
-    assert(ur->canUndo());
+    assertEQ(ms->getTrack(0)->size(), 2);     // we added an event
+    assert(seq->undo->canUndo());
 
     auto tv = ms->getTrack(0)->_testGetVector();
     assert(*tv[0] == *newNote);
 
-    ur->undo();
-    assert(ms->getTrack(0)->size() == 0);     // we added an event
-    assert(!ur->canUndo());
-    assert(ur->canRedo());
-    ur->redo();
-    assert(ms->getTrack(0)->size() == 1);
+    seq->undo->undo(seq);
+    assertEQ(ms->getTrack(0)->size(), 1);     // back to just end
+    assert(!seq->undo->canUndo());
+    assert(seq->undo->canRedo());
+    seq->undo->redo(seq);
+    assertEQ(ms->getTrack(0)->size(), 2);
 }
 
 
 // Test simple remove note command
 static void test2()
 {
-    UndoRedoStackPtr ur(std::make_shared<UndoRedoStack>());
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSelectionModelPtr selection = std::make_shared<MidiSelectionModel>();
-    MidiEditorContextPtr context = std::make_shared<MidiEditorContext>(ms);
+    MidiSequencerPtr seq = MidiSequencer::make(ms);
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
 
     MidiTrackPtr track = ms->getTrack(0);
     const int origSize = track->size();
-  //  MidiEventPtr noteToDelete = track->begin()->second;
-  //  assert(noteToDelete);
     auto noteToDelete = track->getFirstNote();
     toRem.push_back(noteToDelete);
 
-    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, selection, context, 0, toRem, toAdd);
-    ur->execute(cmd);
+    CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, 0, toRem, toAdd);
+    seq->undo->execute(seq, cmd);
 
     assertEQ(ms->getTrack(0)->size(), (origSize - 1));     // we removed an event
-    assert(ur->canUndo());
+    assert(seq->undo->canUndo());
 
-    ur->undo();
+    seq->undo->undo(seq);
     assert(ms->getTrack(0)->size() == origSize);     // we added an event
-    assert(!ur->canUndo());
+    assert(!seq->undo->canUndo());
 }
 
 static void testTrans()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     MidiSequencerPtr seq = MidiSequencer::make(ms);
-    //seq->makeEditor();
-   // seq->assertValid();
 
-  //  MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiEventPtr firstEvent = seq->context->getTrack()->getFirstNote();
     assert(firstEvent);
     seq->selection->select(firstEvent);
     auto cmd = ReplaceDataCommand::makeChangePitchCommand(seq, 1);
-    cmd->execute();
-
+    cmd->execute(seq);
 
     firstEvent = seq->context->getTrack()->begin()->second;
     float pitch = safe_cast<MidiNoteEvent>(firstEvent)->pitchCV;
@@ -110,9 +96,9 @@ static void testTrans()
     assertClose(pitch, -.91666, .01);
     seq->assertValid();
 
-    cmd->undo();
+    cmd->undo(seq);
     seq->assertValid();
-    cmd->execute();
+    cmd->execute(seq);
     seq->assertValid();
 }
 
@@ -121,8 +107,6 @@ static void testInsert()
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
     MidiSequencerPtr seq = MidiSequencer::make(ms);
-    //seq->makeEditor()
-    //seq->assertValid();
 
     assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
 
@@ -132,7 +116,7 @@ static void testInsert()
     note->duration = 2;
 
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
-    cmd->execute();
+    cmd->execute(seq);
     seq->assertValid();
 
     assertEQ(seq->context->getTrack()->size(), 2);
@@ -152,7 +136,6 @@ static void testInsert()
     x += 8;     // and round up two bars
     assertEQ(end->startTime, x);
 
-   // assert(false);      // undo and redo
     printf("add tests for insert note undo/redo\n");
 
 }
@@ -163,8 +146,6 @@ static void testStartTime()
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
     MidiSequencerPtr seq = MidiSequencer::make(ms);
-    //seq->makeEditor();
-    //seq->assertValid();
 
     // put a note into it at time 100;
     auto track = seq->context->getTrack();
@@ -173,25 +154,24 @@ static void testStartTime()
     note->pitchCV = 1.1f;
     note->duration = 2;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
-    cmd->execute();
+    cmd->execute(seq);
     seq->assertValid();
     assertEQ(seq->selection->size(), 1);
-   
 
     // shift note later to 1100
     cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.f);
-    seq->undo->execute(cmd);
+    seq->undo->execute(seq, cmd);
 
     seq->assertValid();
     note = track->getFirstNote();   
     assertEQ(note->startTime, 1100.f);
 
-    seq->undo->undo();
+    seq->undo->undo(seq);
     seq->assertValid();
     note = track->getFirstNote();
     assertEQ(note->startTime, 100.f);
 
-    seq->undo->redo();
+    seq->undo->redo(seq);
     seq->assertValid();
     note = track->getFirstNote();
     assertEQ(note->startTime, 1100.f);
@@ -202,8 +182,6 @@ static void testDuration()
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
     MidiSequencerPtr seq = MidiSequencer::make(ms);
-    //seq->makeEditor();
-    //seq->assertValid();
 
      // put a note into it at time 10, dur 5;
     auto track = seq->context->getTrack();
@@ -212,12 +190,12 @@ static void testDuration()
     note->pitchCV = 1.1f;
     note->duration = 5;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
-    cmd->execute();
+    cmd->execute(seq);
     seq->assertValid();
 
     // now increase dur by 1
     cmd = ReplaceDataCommand::makeChangeDurationCommand(seq, 1.f);
-    seq->undo->execute(cmd);
+    seq->undo->execute(seq, cmd);
     seq->assertValid();
     note = track->getFirstNote();
     assert(note);
@@ -225,12 +203,12 @@ static void testDuration()
     assertEQ(note->startTime, 10.f);
     assertEQ(note->duration, 6.f)
 
-    seq->undo->undo();
+    seq->undo->undo(seq);
     seq->assertValid();
     note = track->getFirstNote();
     assertEQ(note->duration, 5.f);
 
-    seq->undo->redo();
+    seq->undo->redo(seq);
     seq->assertValid();
     note = track->getFirstNote();
     assertEQ(note->duration, 6.f);

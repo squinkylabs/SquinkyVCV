@@ -9,6 +9,21 @@
 #include "ObjectCache.h"
 #include "StateVariableFilter.h"
 
+
+#ifdef __V1
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+using Module = rack::engine::Module;
+#else
+namespace rack {
+    struct Module;
+};
+using Module = rack::Module;
+#endif
+
 #define _ANORM
 
 
@@ -35,7 +50,7 @@ public:
     static const int numFilters = 4;
     static const int modulationSubSample = 2;       // do at a fraction of the audio sample rate
 
-    VocalAnimator(struct Module * module) : TBase(module)
+    VocalAnimator(Module * module) : TBase(module)
     {
     }
     VocalAnimator() : TBase()

@@ -13,22 +13,24 @@
 
 #include "nanovg.h"
 #include "window.hpp"
-//#include "MidiEditorContext.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
 #include "MidiKeyboardHandler.h"
+#include "MouseManager.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
 #include "TimeUtils.h"
 #include "NoteDisplay.h"
+#include "SqGfx.h"
 
 NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
 {
     this->box.pos = pos;
     box.size = size;
     sequencer = seq;
+    mouseManager = std::make_shared<MouseManager>(sequencer);
 
     if (sequencer) {
         initEditContext();
@@ -51,6 +53,9 @@ void NoteDisplay::setSequencer(MidiSequencerPtr seq)
     sequencer = seq;
     sequencer->assertValid();
     initEditContext();
+
+    // re-associate seq and mouse manager
+    mouseManager = std::make_shared<MouseManager>(sequencer);
 }
 
 void NoteDisplay::initEditContext()
@@ -60,7 +65,7 @@ void NoteDisplay::initEditContext()
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
     sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
-    sequencer->editor->updateSelectionForCursor();
+    sequencer->editor->updateSelectionForCursor(false);
 
 // set scaler once context has a valid range
     auto scaler = std::make_shared<NoteScreenScale>(
@@ -95,11 +100,8 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
         const float y = scaler->midiPitchToY(*ev);
         const float width = scaler->midiTimeTodX(ev->duration);
 
-        //  printf("draw note x=%f y=%f vs =%f\n", x, y, sequencer->context->viewport->startTime);
-        fflush(stdout);
-
         const bool selected = sequencer->selection->isSelected(ev);
-        filledRect(
+        SqGfx::filledRect(
             vg,
             selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
             x, y, width, noteHeight);
@@ -108,9 +110,6 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
 
 void NoteDisplay::drawGrid(NVGcontext *vg)
 {
-    // float z = APP->scene->zoomWidget->zoom;
-    //  printf("zoom is %f\n", z); fflush(stdout);
-
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     //assume two bars, quarter note grid
@@ -127,7 +126,7 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
             (relTime == TimeUtils::bar2time(1)) ||
             (relTime == TimeUtils::bar2time(2));
 
-        filledRect(
+        SqGfx::filledRect(
             vg,
             isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR,
             x, y, width, height);
@@ -153,7 +152,7 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
         const float x = scaler->midiTimeToX(sequencer->context->cursorTime());
         const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) +
             scaler->noteHeight() / 2.f;
-        filledRect(vg, color, x, y, 10, 3);
+        SqGfx::filledRect(vg, color, x, y, 10, 3);
     }
 }
 
@@ -169,10 +168,15 @@ void NoteDisplay::draw(NVGcontext *vg)
     if (!this->sequencer) {
         return;
     }
+
+    // let's clip everything to our window
+    nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
     drawBackground(vg);
     drawGrid(vg);
     drawNotes(vg);
     drawCursor(vg);
+    // if we are dragging, will have something to draw
+    mouseManager->draw(vg);     
 #ifdef __V1
     OpaqueWidget::draw(args);
 #else
@@ -183,7 +187,7 @@ void NoteDisplay::draw(NVGcontext *vg)
 void NoteDisplay::drawBackground(NVGcontext *vg)
 {
     auto scaler = sequencer->context->getScaler();
-    filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
+    SqGfx::filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
     assert(scaler);
     const int noteHeight = scaler->noteHeight();
     const float width = box.size.x;
@@ -195,12 +199,11 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         
         bool accidental = PitchUtils::isAccidental(cv);
         if (accidental) {
-            filledRect(
+            SqGfx::filledRect(
                 vg,
                 UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND,
                 0, y, width, noteHeight);
         }
-       
     }
 
     for (float cv = sequencer->context->pitchLow();
@@ -210,12 +213,12 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
         float y = scaler->midiCvToY(cv) + scaler->noteHeight();
         const bool isC = PitchUtils::isC(cv);
         if (y > (box.size.y - .5)) {
-            y = y - 2;  // make sure  bottom line draws. Shoudl really
+            y = y - 2;  // make sure  bottom line draws. Should really
                         // re-design the visuals here
         }
         if (isC) {
          //   const float y = scaler->midiCvToY(cv);
-            filledRect(
+            SqGfx::filledRect(
                 vg,
                 UIPrefs::GRID_CLINE_COLOR,
                 0, y, width, 1);
@@ -223,57 +226,87 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     }
 }
 
-void NoteDisplay::strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
+/******************** All V1 keyboard handling here *******************
+ * 
+ */
+ 
+#ifdef __V1
+
+void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 {
-    nvgStrokeColor(vg, color);
-    nvgBeginPath(vg);
-    nvgRect(vg, x, y, w, h);
-    nvgStroke(vg);
+   // printf("got double click"); fflush(stdout);
+    OpaqueWidget::onDoubleClick(e);
 }
 
-void NoteDisplay::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
+ void NoteDisplay::onDragDrop(const event::DragDrop &e) 
+ {
+     printf("on drag drop\n"); fflush(stdout);
+     OpaqueWidget::onDragDrop(e);
+ }
+
+void NoteDisplay::onButton(const event::Button &e)
 {
-    nvgFillColor(vg, color);
-    nvgBeginPath(vg);
-    nvgRect(vg, x, y, w, h);
-    nvgFill(vg);
+    printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
+    fflush(stdout);
+
+    bool handled = false;
+    if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
+        const bool isPressed = e.action == GLFW_PRESS;
+        const bool shift = e.mods & GLFW_MOD_SHIFT;
+        const bool ctrl = e.mods & GLFW_MOD_CONTROL;
+        handled = mouseManager-> onMouseButton(
+            e.pos.x, 
+            e.pos.y,
+            isPressed, ctrl, shift);
+    }
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onButton(e);
+    }    
 }
 
-
-#ifdef __V1
-void NoteDisplay::onSelect(const SelectEvent &e)
-#else
-void NoteDisplay::onFocus(EventFocus &e)
-#endif
+void NoteDisplay::onSelectKey(const event::SelectKey &e) 
 {
-    updateFocus(true);
-#ifdef __V1
-    e.consume(this);
-#else
-    e.consumed = true;
-#endif
+    bool handled = handleKey(e.key, e.mods, e.action);
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onSelectKey(e);
+    }
 }
 
-#ifdef __V1
-void NoteDisplay::onDeselect(const DeselectEvent &e)
-#else
-void NoteDisplay::onDefocus(EventDefocus &e)
-#endif
-{
-    updateFocus(false);
-#ifdef __V1
-    e.consume(this);
-#else
-    e.consumed = true;
-#endif
+bool NoteDisplay::isCursorKey(int key) {
+    bool isCursor = false;
+    switch (key) {
+        case GLFW_KEY_LEFT:
+        case GLFW_KEY_RIGHT:
+        case GLFW_KEY_UP:
+        case GLFW_KEY_DOWN:
+            isCursor = true;
+    }
+    return isCursor;
 }
 
-#ifdef __V1
-void NoteDisplay::onSelectKey(const SelectKeyEvent &e)
+void NoteDisplay::onHoverKey(const event::HoverKey &e)
+{
+    bool handled = handleKey(e.key, e.mods, e.action);
+    if (handled) {
+        e.consume(this);
+    } else if (isCursorKey(e.key)) {
+        // Swallow all hover events around cursor keys.
+        // This keeps Rack from stealing them.
+        e.consume(this);
+    } else {
+        OpaqueWidget::onHoverKey(e);
+    }
+}
+
+bool NoteDisplay::handleKey(int key, int mods, int action)
 {
     bool handle = false;
     bool repeat = false;
-    switch (e.action) {
+    switch (action) {
         case GLFW_REPEAT:
             handle = false;
             repeat = true;
@@ -285,22 +318,73 @@ void NoteDisplay::onSelectKey(const SelectKeyEvent &e)
     }
 
     if (repeat) {
-        handle = MidiKeyboardHandler::doRepeat(e.key);
+        handle = MidiKeyboardHandler::doRepeat(key);
     }
 
     bool handled = false;
     if (handle) {
-        handled = MidiKeyboardHandler::handle(sequencer.get(), e.key, e.mods);
+        handled = MidiKeyboardHandler::handle(sequencer, key, mods);
         if (handled) {
-            e.consume(this);
+            rack::APP->event->setSelected(this);
         }
     }
-    if (!handled) {
-        OpaqueWidget::onSelectKey(e);
+    return handled;
+}
+
+void NoteDisplay::onSelect(const event::Select &e)
+{
+    updateFocus(true);
+    e.consume(this);
+}
+
+void NoteDisplay::onDeselect(const event::Deselect &e)
+{
+    updateFocus(false);
+    e.consume(this);
+}
+
+void NoteDisplay::onDragStart(const event::DragStart &e) 
+{
+    bool b = mouseManager->onDragStart();
+    printf("on drag start\n"); fflush(stdout);
+    if (b) {
+        e.consume(this);
+    }
+}
+void NoteDisplay::onDragEnd(const event::DragEnd &e)
+{
+    printf("on drag end\n"); fflush(stdout);
+    bool b = mouseManager->onDragEnd();
+     if (b) {
+        e.consume(this);
+    }
+}
+void NoteDisplay::onDragMove(const event::DragMove &e)
+{
+     bool b = mouseManager->onDragMove(e.mouseDelta.x, e.mouseDelta.y);
+     if (b) {
+        e.consume(this);
     }
 }
 
-#else
+#endif
+
+//**************** All V0.6 keyboard handling here ***********
+
+#ifndef __V1
+
+void NoteDisplay::onFocus(EventFocus &e)
+{
+    updateFocus(true);
+    e.consumed = true;
+}
+
+void NoteDisplay::onDefocus(EventDefocus &e)
+{
+    updateFocus(false);
+    e.consumed = true;
+}
+
 void NoteDisplay::onKey(EventKey &e)
 {
     const unsigned key = e.key;
@@ -312,13 +396,12 @@ void NoteDisplay::onKey(EventKey &e)
         mods |= GLFW_MOD_CONTROL;
     }
 
-    bool handled = MidiKeyboardHandler::handle(sequencer.get(), key, mods);
+    bool handled = MidiKeyboardHandler::handle(sequencer, key, mods);
     if (!handled) {
         OpaqueWidget::onKey(e);
     } else {
         e.consumed = true;
     }
-
 }
 
 #endif

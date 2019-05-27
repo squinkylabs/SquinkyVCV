@@ -11,6 +11,20 @@
 #include "poly.h"
 #include "SinOscillator.h"
 
+#ifdef __V1
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+using Module = rack::engine::Module;
+#else
+namespace rack {
+    struct Module;
+};
+using Module = rack::Module;
+#endif
+
 using Osc = SinOscillator<float, true>;
 
 #ifndef _CLAMP
@@ -44,7 +58,7 @@ template <class TBase>
 class CHB : public TBase
 {
 public:
-    CHB(struct Module * module) : TBase(module)
+    CHB(Module * module) : TBase(module)
     {
         init();
     }

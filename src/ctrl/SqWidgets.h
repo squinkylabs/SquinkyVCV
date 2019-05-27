@@ -40,11 +40,8 @@ struct Blue30SnapKnob : Blue30Knob
 {
     Blue30SnapKnob()
     {
-        // TODO: snap for V1
-#ifndef __V1
         snap = true;
         smooth = false;
-#endif
     }
 };
 
@@ -109,7 +106,7 @@ struct SQPush : SVGButton
         this->box.pos = pos.minus(this->box.size.div(2));
     }
 #ifdef __V1
-     void onButton(const ButtonEvent &e) override
+     void onButton(const event::Button &e) override
      {
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
@@ -163,7 +160,7 @@ struct SQPanelItem : MenuItem
     SQPanelItem(SQStatusCallback, SQActionCAllback);
 
 #ifdef __V1
-    void onAction(const ActionEvent &e) override
+    void onAction(const event::Action &e) override
 #else
     void onAction(EventAction &e) override
 #endif

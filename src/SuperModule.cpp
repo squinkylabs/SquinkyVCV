@@ -307,7 +307,7 @@ Model *modelSuperModule = createModel<SuperModule,
 Model *modelSuperModule = Model::create<SuperModule,
     superWidget>("Squinky Labs",
     "squinkylabs-super",
-    "Saws: super saw VCO emulation", RANDOM_TAG);
+    "Saws: super saw VCO emulation", OSCILLATOR_TAG);
 #endif
 
 #endif

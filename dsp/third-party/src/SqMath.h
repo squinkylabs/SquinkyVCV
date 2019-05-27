@@ -6,9 +6,31 @@
 #endif
 
 #ifdef __V1
-    #include "math.hpp"
+
+    #if defined(_MSC_VER)
+    #pragma warning (push)
+    #pragma warning ( disable: 4244 )
+    #endif
+
+    #include "math.hpp" 
+    #if defined(_MSC_VER)
+    #pragma warning (pop)
+    #endif
+
+
+    #if defined(_MSC_VER)
+    #pragma warning (push)
+    #pragma warning (disable: 4305)
+    #endif
+
     #include "dsp/filter.hpp"
+    
+    #if defined(_MSC_VER)
+    #pragma warning (pop)
+    #endif
+
     #include "dsp/minblep.hpp"
+
 #else
     #include "util/math.hpp"
     #include "dsp/functions.hpp"
@@ -25,8 +47,12 @@ namespace sq
 {
 #ifdef __V1
     using RCFilter = rack::dsp::RCFilter;
+    using Vec = rack::math::Vec;
+    using Rect = rack::math::Rect;
 #else
     using RCFilter = rack::RCFilter;
+    using Vec = rack::Vec;
+    using Rect = rack::Rect;
 #endif
 
 inline float quadraticBipolar(float x)

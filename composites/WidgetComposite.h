@@ -1,5 +1,26 @@
 #pragma once
 
+#ifdef __V1
+#include "engine/Module.hpp"
+#include "engine/Port.hpp"
+#include "engine/Engine.hpp"
+
+using Input = rack::engine::Input;
+using Output = rack::engine::Output;
+using Param = rack::engine::Param;
+using Light = rack::engine::Light;
+using Module = rack::engine::Module;
+#else
+
+#include "engine.hpp"
+
+using Input = rack::Input;
+using Output = rack::Output;
+using Param = rack::Param;
+using Light = rack::Light;
+using Module = rack::Module;
+#endif
+
 /**
  * Base class for composites embeddable in a VCV Widget
  * This is used for "real" implementations
@@ -20,7 +41,7 @@ public:
     float engineGetSampleRate()
     {
 #ifdef __V1
-        return APP->engine->getSampleRate();
+        return rack::APP->engine->getSampleRate();
 #else  
         return ::engineGetSampleRate();
 #endif
@@ -29,7 +50,7 @@ public:
     float engineGetSampleTime()
     {
 #ifdef __V1
-        return APP->engine->getSampleTime();
+        return rack::APP->engine->getSampleTime();
 #else  
         return ::engineGetSampleTime();
 #endif

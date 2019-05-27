@@ -1,5 +1,9 @@
 
+#include "Filt.h"
 #include "LookupTable.h"
+#include "Mix8.h"
+#include "Mix4.h"
+#include "MixM.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "Slew4.h"
@@ -138,20 +142,89 @@ static void testSlew4()
     fs.inputs[Slewer::INPUT_AUDIO0].value = 0;
 
     assert(overheadInOut >= 0);
-    MeasureTime<float>::run(overheadInOut, "slew lags", [&fs]() {
+    MeasureTime<float>::run(overheadInOut, "Slade", [&fs]() {
         fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
         fs.step();
         return fs.outputs[Slewer::OUTPUT0].value;
         }, 1);
 }
 
+
+using Filter = Filt<TestComposite>;
+static void testFilt()
+{
+    Filter fs;
+    fs.init();
+    fs.inputs[Filter::L_AUDIO_INPUT].active = true;
+    fs.outputs[Filter::L_AUDIO_OUTPUT].active = true;
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "filt", [&fs]() {
+        fs.inputs[Filter::L_AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Filter::L_AUDIO_OUTPUT].value;
+        }, 1);
+}
+
+using Mixer8 = Mix8<TestComposite>;
+static void testMix8()
+{
+    Mixer8 fs;
+
+    fs.init();
+
+    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "mix8", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+      }, 1);
+}
+
+using Mixer4 = Mix4<TestComposite>;
+static void testMix4()
+{
+    Mixer4 fs;
+    fs.init();
+    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "mix4", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+        }, 1);
+}
+
+using MixerM = MixM<TestComposite>;
+static void testMixM()
+{
+    MixerM fs;
+
+    fs.init();
+
+    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "mixM", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+        }, 1);
+}
 void perfTest2()
 {
+    testSlew4();
+    testMix8();
+    testMix4();
+    testMixM();
+    testFilt();
     testUniformLookup();
     testNonUniform();
     testMultiLPF();
     testMultiLPFMod();
     testMultiLag();
     testMultiLagMod();
-    testSlew4();
+
 }

@@ -26,7 +26,7 @@ public:
         }
     }
 
-    int div() const
+    int getDiv() const
     {
         return divisor;
     }

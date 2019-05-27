@@ -210,8 +210,23 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
         display->module = module;
     }
 
+
     // Add the background panel
+#ifndef __V1
    SqHelper::setPanel(this, "res/colors_panel.svg");
+#else
+    {
+        // use the code from ModuleWidget::setPanel, but don't jam to bottom
+        auto svg = SqHelper::loadSvg("res/colors_panel.svg");
+        SvgPanel *svgPanel = new SvgPanel;
+        svgPanel->setBackground(svg);
+        panel = svgPanel;
+        addChild(panel);
+
+        // Set ModuleWidget size based on panel
+        box.size.x = std::round(panel->box.size.x / RACK_GRID_WIDTH) * RACK_GRID_WIDTH;
+    }
+#endif
 
     addOutput(createOutput<PJ301MPort>(
         Vec(32, 310),
