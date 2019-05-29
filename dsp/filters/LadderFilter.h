@@ -337,8 +337,6 @@ void LadderFilter<T>::updateStageGains()
     AudioMath::distributeEvenly(stageGain, 4, edgeToUse);
 }
 
-
-
 template <typename T>
 void LadderFilter<T>::setVoicing(Voicing v)
 {
