@@ -72,7 +72,7 @@ public:
         DRIVE_PARAM,
         DRIVE_TRIM_PARAM,
         VOICING_PARAM,
-        STAGING_PARAM,      // aka "edge"
+        EDGE_PARAM,
         SPREAD_PARAM,
         SLOPE_PARAM,
         SLOPE_TRIM_PARAM,
@@ -159,6 +159,7 @@ private:
     AudioMath::ScaleFun<float> scaleFc = AudioMath::makeScalerWithBipolarAudioTrim(-5, 5);
     AudioMath::ScaleFun<float> scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(0, 4);
     AudioMath::ScaleFun<float> scaleSlope = AudioMath::makeScalerWithBipolarAudioTrim(0, 3);
+    AudioMath::ScaleFun<float> scaleEdge = AudioMath::makeScalerWithBipolarAudioTrim(0, 1);
 
     void stepn(int);
 };
@@ -198,17 +199,17 @@ inline void Filt<TBase>::stepn(int divFactor)
     T res = scaleQ(
         TBase::inputs[Q_INPUT].value,
         TBase::params[Q_PARAM].value,
-        TBase::params[Q_TRIM_PARAM].value); 
+        TBase::params[Q_TRIM_PARAM].value);
     const T qMiddle = 2.8;
-    res = (res < 2) ? 
+    res = (res < 2) ?
         (res * qMiddle / 2) :
-        .5 * (res-2) * (4 - qMiddle) + qMiddle;
+        .5 * (res - 2) * (4 - qMiddle) + qMiddle;
 
     if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
-   
+
     //********* now the drive 
         // 0..1
     float  gainInput = scaleGain(
@@ -217,7 +218,11 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[DRIVE_TRIM_PARAM].value);
 
     T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
-    float staging = TBase::params[STAGING_PARAM].value;
+    const float edge = scaleEdge(
+        TBase::inputs[EDGE_INPUT].value,
+        TBase::params[EDGE_PARAM].value,
+        TBase::params[EDGE_TRIM_PARAM].value);
+
     float spread = TBase::params[SPREAD_PARAM].value;
 
     T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
@@ -235,7 +240,7 @@ inline void Filt<TBase>::stepn(int divFactor)
         imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].active && TBase::outputs[L_AUDIO_OUTPUT + i].active;
         if (imp.isActive) {
             imp._f.setFreqSpread(spread);
-            imp._f.setEdge(staging);
+            imp._f.setEdge(edge);
             imp._f.setGain(gain);
             imp._f.setVoicing(voicing);
             imp._f.setType(type);
@@ -309,8 +314,8 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::DRIVE_PARAM:
             ret = {-5, 5, -5, "Drive"};
             break;
-        case Filt<TBase>::STAGING_PARAM:
-            ret = {0, 1, .5, "Edge"};
+        case Filt<TBase>::EDGE_PARAM:
+            ret = {-5, 5, 0, "Edge"};
             break;
         case Filt<TBase>::VOICING_PARAM:
             {

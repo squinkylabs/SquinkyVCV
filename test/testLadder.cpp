@@ -44,6 +44,7 @@ static void setupFilter(LadderFilter<T>& f)
     f.setGain(1);
 }
 
+// test that highpass decays to zero
 static void testLadderDCf(int repeats)
 {
     LadderFilter<float> f;
@@ -58,7 +59,7 @@ static void testLadderDCf(int repeats)
       
     }
     y = f.getOutput();
-    printf("testLadderDCf rep = %d out=%e\n", repeats, y);
+    //printf("testLadderDCf rep = %d out=%e\n", repeats, y);
     if (repeats >= 1000) assertClose(y, 0, 3.3e-5);
 }
 
@@ -74,7 +75,7 @@ static void testLadderDCd(int repeats)
 
     }
     y = f.getOutput();
-    printf("testLadderDCd rep = %d out=%e\n", repeats, y);
+    //printf("testLadderDCd rep = %d out=%e\n", repeats, y);
    // .02 after 100+
     // 0 after 1000
 
@@ -321,7 +322,7 @@ static void testEdgeInMiddleUnity(bool is4PLP)
   
     t.lookup(is4PLP, .5, buf);
     for (int i = 0; i < 4; ++i) {
-        assertClose(buf[i], 1, .02);
+        assertClose(buf[i], 1, .0001);  // float passed at .02
     }
     assertEQ(buf[4], 0);
 }
@@ -367,6 +368,12 @@ static void testEdge0(bool is4PLP)
 
 void testLadder()
 {
+    testEdgeInMiddleUnity(true);
+    testEdgeInMiddleUnity(false);
+    testEdge1(true);
+    testEdge1(false);
+    testEdge0(true);
+    testEdge0(false);
 
     testLadderZero();
     testLadderNotZero();
@@ -386,10 +393,4 @@ void testLadder()
     testPeak0();
     testPeak1();
     testPeak2();
-    testEdgeInMiddleUnity(true);
-    testEdgeInMiddleUnity(false);
-    testEdge1(true);
-    testEdge1(false);
-    testEdge0(true);
-    testEdge0(false);
 }

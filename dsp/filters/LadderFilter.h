@@ -34,7 +34,7 @@ inline EdgeTables::EdgeTables()
         for (int stage = 0; stage < 4; ++stage) {
             LookupTableParams<float>* tables = (is4PLP) ? tables4PLP : tablesOther;
           
-            LookupTable<float>::init(tables[stage], 21, 0, 1, [stage, is4PLP](double rawEdge) {
+            LookupTable<float>::init(tables[stage], 20, 0, 1, [stage, is4PLP](double rawEdge) {
                 float localStageGains[4];
                 float k;
                 if (rawEdge > .5) {

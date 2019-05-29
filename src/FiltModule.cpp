@@ -197,16 +197,15 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         }
     }
 
-// second row
+    // second row
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x1, y2),
         module,
-        Comp::STAGING_PARAM));
+        Comp::EDGE_PARAM));
     addLabel(
         Vec(x1+2-labelDx, y2 + labelY),
         "Edge");
-
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
