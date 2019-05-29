@@ -10,7 +10,6 @@
 
 
 #include <assert.h>
-#include <immintrin.h>
 #include <memory>
 
 
@@ -395,55 +394,5 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
     return ret;
 }
 
-#ifdef _USEAVX
-
-
-template <class TBase>
-inline void Mix4<TBase>::step()
-{
-    divider.step();
-
-    // fill buf_inputs
-    for (int i = 0; i < numChannels; ++i) {
-        buf_inputs[i] = TBase::inputs[i + AUDIO0_INPUT].value;
-    }
-
-     // compute buf_channelOuts
-    __m256 inputs = _mm256_load_ps(buf_inputs);
-    __m256 gains = _mm256_load_ps(buf_channelGains);
-    inputs = _mm256_mul_ps(inputs, gains);
-    _mm256_store_ps(buf_channelOuts, inputs);
-
-    // inputs now is a vector of channel outputs
-    __m256 leftGains = _mm256_load_ps(buf_leftPanGains);
-    __m256 rightGains = _mm256_load_ps(buf_rightPanGains);
-    __m256 left = _mm256_mul_ps(inputs, leftGains);
-    __m256 right = _mm256_mul_ps(inputs, rightGains);
-
-
-
-    __m256 zero = _mm256_set1_ps(0);
-    left = _mm256_hadd_ps(left, zero);
-    left = _mm256_hadd_ps(left, zero);
-    left = _mm256_hadd_ps(left, zero);
-
-    right = _mm256_hadd_ps(right, zero);
-    right = _mm256_hadd_ps(right, zero);
-    right = _mm256_hadd_ps(right, zero);
-
-    float temp[8];
-    _mm256_store_ps(temp, right);
-    TBase::outputs[RIGHT_OUTPUT].value = temp[0];
-    _mm256_store_ps(temp, left);
-    TBase::outputs[LEFT_OUTPUT].value = temp[0];
-
-      // output channel outputs
-    for (int i = 0; i < numChannels; ++i) {
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
-    }
-
-}
-
-#endif
 
 

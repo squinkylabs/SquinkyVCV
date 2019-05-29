@@ -27,4 +27,5 @@ public:
     };
     virtual Config getParam(int i)=0;
     virtual int getNumParams()=0;
+    virtual ~IComposite() {};
 };

@@ -375,8 +375,6 @@ void LadderFilter<T>::updateStageGains()
 }
 #endif
 
-
-
 template <typename T>
 void LadderFilter<T>::setVoicing(Voicing v)
 {
