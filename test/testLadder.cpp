@@ -312,6 +312,59 @@ static void testPeak2()
     p.decay(4.f / 44000);
     assertLT(p.get(), 5);
 }
+
+
+static void testEdgeInMiddleUnity(bool is4PLP)
+{
+    EdgeTables t;
+    float buf[5] = {0};
+  
+    t.lookup(is4PLP, .5, buf);
+    for (int i = 0; i < 4; ++i) {
+        assertClose(buf[i], 1, .02);
+    }
+    assertEQ(buf[4], 0);
+}
+
+
+static void testEdge1(bool is4PLP)
+{
+    EdgeTables t;
+    float buf[5] = {0};
+
+    t.lookup(is4PLP, 1, buf);
+
+    assertGT(buf[1], buf[0]);
+    assertGT(buf[2], buf[1]);
+    assertGT(buf[3], buf[2]);
+
+    if (is4PLP) {
+        assertClose(buf[3], 2.42, .1);
+    } else {
+        assertClose(buf[3], 1.84, .1);
+    }
+}
+
+
+static void testEdge0(bool is4PLP)
+{
+    EdgeTables t;
+    float buf[5] = {0};
+
+    t.lookup(is4PLP, 0, buf);
+
+    assertLT(buf[1], buf[0]);
+    assertLT(buf[2], buf[1]);
+    assertLT(buf[3], buf[2]);
+
+    if (is4PLP) {
+        assertClose(buf[3], .46, .1);
+    } else {
+        assertClose(buf[3], .71, .1);
+    }
+}
+
+
 void testLadder()
 {
 
@@ -333,4 +386,10 @@ void testLadder()
     testPeak0();
     testPeak1();
     testPeak2();
+    testEdgeInMiddleUnity(true);
+    testEdgeInMiddleUnity(false);
+    testEdge1(true);
+    testEdge1(false);
+    testEdge0(true);
+    testEdge0(false);
 }

@@ -10,6 +10,61 @@
 #include <vector>
 #include <string>
 
+
+
+/**
+ * Helper object to do the Edge lookup quickly
+ */
+
+
+class EdgeTables
+{
+public:
+    EdgeTables();
+    void lookup(bool is4PLP, float edge, float* gains);
+private:
+    LookupTableParams<float> tables4PLP[4];
+    LookupTableParams<float> tablesOther[4];
+};
+
+inline EdgeTables::EdgeTables()
+{
+
+    for (int is4PLP = 0; is4PLP <= 1; ++is4PLP) {
+        for (int stage = 0; stage < 4; ++stage) {
+            LookupTableParams<float>* tables = (is4PLP) ? tables4PLP : tablesOther;
+          
+            LookupTable<float>::init(tables[stage], 21, 0, 1, [stage, is4PLP](double rawEdge) {
+                float localStageGains[4];
+                float k;
+                if (rawEdge > .5) {
+                    k = is4PLP ? .2f : .5f;
+                } else {
+                    k = is4PLP ? .6f : .8f;
+                  //  k = .6;
+                }
+
+                const float edgeToUse = float(k + rawEdge * (1 - k) / .5f);
+                AudioMath::distributeEvenly(localStageGains, 4, edgeToUse);
+                return localStageGains[stage];
+                });
+        }
+    }
+
+}
+
+inline void EdgeTables::lookup(bool is4PLP, float edge, float* gains)
+{
+    const LookupTableParams<float> * tables = (is4PLP) ? tables4PLP : tablesOther;
+    for (int i = 0; i < 4; ++i) {
+        float x = LookupTable<float>::lookup(tables[i], edge, false);
+        gains[i] = x;
+    }
+}
+
+/**
+ * Moog-ish ladder filter, but lots of options
+ */
 template <typename T>
 class LadderFilter
 {
@@ -70,6 +125,7 @@ public:
 
 private:
     TrapezoidalLowpass<T> lpfs[4];
+    EdgeTables edgeLookup;
 
     /**
      * Lowpass pole gain (base freq of filter converted)
@@ -98,7 +154,7 @@ private:
     T slope = 3;
     T volume = 0;
 
-    T stageGain[4] = {1, 1, 1, 1};
+    float stageGain[4] = {1, 1, 1, 1};
     T stageFreqOffsets[4] = {1, 1, 1, 1};
 
     Types type = Types::_4PLP;
@@ -292,36 +348,17 @@ void LadderFilter<T>::setEdge(T e)
     rawEdge = e;
     assert(e <= 1 && e >= 0);
 
-#if 0
-    T e2 = 1;
-    if (e > .5) {
-        e2 = 6 * (e - T(.5)) + 1;
-    } else {
-        e2 = e * T(1.75) + T(.125);
-    }
-    processedEdge = e2;
-#endif
     updateStageGains();   
     dump("set edge");
 }
 
-#if 0
 template <typename T>
 void LadderFilter<T>::updateStageGains()
 {
-    // turn off the edge if not 4p lowpass filter
-    T edgeToUse = processedEdge;
-    switch (type) {
-        case Types::_4PLP:
-            edgeToUse = processedEdge;
-            break;
-        default:
-            edgeToUse = 1;
-    }
-     AudioMath::distributeEvenly(stageGain, 4, edgeToUse);
+    edgeLookup.lookup((type == Types::_4PLP), float(rawEdge), stageGain);
 }
-#endif
 
+#if 0
 template <typename T>
 void LadderFilter<T>::updateStageGains()
 {
@@ -336,6 +373,7 @@ void LadderFilter<T>::updateStageGains()
     const T edgeToUse = k + rawEdge * (1 - k) / .5f;
     AudioMath::distributeEvenly(stageGain, 4, edgeToUse);
 }
+#endif
 
 
 
@@ -625,13 +663,13 @@ inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
         "2HP+1LP",
         "3HP+1LP",
         "4P BP",
-        "1LP+Notch",
+        "LP+Notch",
         "3AP+1LP",
         "3P HP",
         "2P HP",
         "1P HP",
-        "NOTCH",
-        "PHASER"
+        "Notch",
+        "Phaser"
     };
 }
 

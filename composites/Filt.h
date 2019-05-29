@@ -26,6 +26,8 @@ namespace rack {
 using Module = rack::Module;
 #endif
 
+/**
+ */
 template <class TBase>
 class FiltDescription : public IComposite
 {
@@ -76,6 +78,7 @@ public:
         SLOPE_TRIM_PARAM,
         BASS_MAKEUP_PARAM,
         MASTER_VOLUME_PARAM,
+        EDGE_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -88,6 +91,7 @@ public:
         Q_INPUT,
         DRIVE_INPUT,
         SLOPE_INPUT,
+        EDGE_INPUT,
         NUM_INPUTS
     };
 
@@ -109,13 +113,6 @@ public:
         VOL2_LIGHT,
         VOL3_LIGHT,
         NUM_LIGHTS
-    };
-
-    enum class BassMakeup
-    {
-        Gain,
-        TrackingFilter,
-        FixedFilter
     };
 
     static std::vector<std::string> getTypeNames()
@@ -348,6 +345,9 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             break;   
         case Filt<TBase>::MASTER_VOLUME_PARAM:
             ret = {0, 1, .5, "Output volume"};
+            break;
+        case Filt<TBase>::EDGE_TRIM_PARAM:
+            ret = {-1, 1, 0, "Edge trim"};
             break;
             
 #if 0
