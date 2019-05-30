@@ -11,7 +11,7 @@ In addition, any subset of the stages may be summed together to make a mix of th
 
 Each of the 8 channels is independent, although they all share common rise and fall settings.
 
-To use a channel as a lag unit, patch the CV to be lagged into the gate input (first column). A lagged version will be available at the output (last column). Leave the (audio) input un-patched.
+To use a channel as a lag unit, patch the CV to be lagged into the gate input (first column). A lagged version will be available at the output (third column). Leave the (audio) input un-patched.
 
 To use a channel as a VCA/AR, patch a 0..10 v CV into the gate input (first column). Patch the audio to be gated into the audio input (second column). The output will have the audio input multiplied by the output of the lag generator, which in this case should be thought of as an AR (attack/release) envelope generator.
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <functional>
 
 /**
@@ -20,6 +21,8 @@ public:
 
     void step()
     {
+        assert(lambda);
+        assert(divisor > 0);        // Not initialized
         if (--counter == 0) {
             counter = divisor;
             lambda();

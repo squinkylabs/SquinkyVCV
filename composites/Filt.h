@@ -285,6 +285,12 @@ inline void Filt<TBase>::step()
             peak.step(output);
         }
     }
+
+    // Do special processing for unconnected outputs
+    if (!dsp[0].isActive && !dsp[1].isActive) {
+        TBase::outputs[L_AUDIO_OUTPUT].value = 0;
+        TBase::outputs[R_AUDIO_OUTPUT].value = 0;
+    }
 }
 
 template <class TBase>

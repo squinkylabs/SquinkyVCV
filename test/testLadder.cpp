@@ -365,6 +365,42 @@ static void testEdge0(bool is4PLP)
     }
 }
 
+static void testFiltOutputsDisconnect()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].active = true;
+    f.inputs[F::R_AUDIO_INPUT].active = true;
+    f.inputs[F::L_AUDIO_INPUT].value = 10;
+    f.inputs[F::R_AUDIO_INPUT].value = 10;
+    f.outputs[F::L_AUDIO_OUTPUT].active = true;
+    f.outputs[F::R_AUDIO_OUTPUT].active = true;
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    // should be passing DC already
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].value, 1);
+    assertGT(f.outputs[F::R_AUDIO_OUTPUT].value, 1);
+
+    // disconnect the inputs
+    f.outputs[F::L_AUDIO_INPUT].active = false;
+    f.outputs[F::R_AUDIO_INPUT].active = false;
+
+    for (int i = 0; i < 8; ++i) {
+        f.step();
+    }
+
+    // disconnected should go to zero.
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].value, 0);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].value, 0);
+
+}
+
 
 void testLadder()
 {
@@ -393,4 +429,6 @@ void testLadder()
     testPeak0();
     testPeak1();
     testPeak2();
+
+    testFiltOutputsDisconnect();
 }
