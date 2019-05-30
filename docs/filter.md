@@ -51,6 +51,12 @@ Many of the controls listed above may also be voltage controlled. The CV inputs 
 
 Most of the attenuverters are directly above the CV they control. The exception is the lone attenuverter above them that controls the Edge CV.
 
+## About stereo
+
+There are two sets on inputs and outputs. They share the same settings, so are convenient for processing stereo signals. A channel will only use CPU resources if both its input and output are patched.
+
+If only one input is patched, both outputs will have the same mono signal.
+
 ## Suggestions
 
 The "lower order" lowpass settings, like one and two pole can sound nice and bright. Using 1P LP with the Edge all the way up and a decent drive can get some fairly bright sounds.
@@ -71,7 +77,7 @@ Stairway is an emulation of the Moog ladder filter, with a lot of extra features
 
 The standard way to emulate the Moog filer is to use four one pole lowpass filters in a row, and put a non-linear saturator in between each one. Usually the tanh function is used for the saturator as it is a very good model of how the transistors in the Moog filter saturate.
 
-Then, to realize the correct frequency response digitally, it is  implemented as Zero Delay Filter, or by using a standard filter oversampling.
+Then, to realize the correct frequency response digitally, it is  implemented as Zero Delay Filter, or by uses standard filter oversampling.
 
 We started with this standard high quality emulation. We chose oversampling is it let us implement some of the extra features more easily.
 
@@ -79,9 +85,9 @@ We started with this standard high quality emulation. We chose oversampling is i
 
 In 1978, Bernie Hutchins published an article in his Electronotes (issue 85) entitled "Additional Ideas For Voltage-Controlled Filters". In the article he outlined how a lowpass ladder could easily be modified to produce many filter responses other than the normal lowpass.
 
-This idea was (we believe) first commercialized in 1984 by the Oberhiem Matrix-12 analog polyphonic synthesizer.
+This idea was (we believe) first commercialized in 1984 by the Oberheim Matrix-12 analog polyphonic synthesizer.
 
-This idea was also commercialized  in the Mutable Instrument 4 Pole Mission filter board for the Struthi synthesizer. This was released in 2011 or 2012, and designed by the legendary Émilie Gillet.
+This idea was also commercialized in the Mutable Instrument 4 Pole Mission filter board for the Struthi synthesizer. This was released in 2011 or 2012, and designed by the legendary Émilie Gillet.
 
 We imagine that there are many digital filters that use this technique. In VCV the Blamsoft FXF-35 seems to.
 
@@ -93,7 +99,7 @@ The Moog filters are somewhat infamous for an effect called "bass suck". As you 
 
 Now, let's back up a bit. With any resonant lowpass filter increasing the resonance is going increase the difference in volume between the frequencies at resonance and the lower frequencies. It happens that in the very simplest implementation of a ladder filter the gain stays more constant at resonance and the low frequencies are attenuated. Whereas with the simplest implementation of a state variable filter the low frequency gain stays constant, and the frequencies at the resonant frequency are amplified.
 
-Long ago it was discovered that it is very easy to modify the standard ladder to be like the state variable filter - no bass suck. Over the years maybe filters have made one choice of the other.
+Long ago it was discovered that it is very easy to modify the standard ladder to be like the state variable filter - no bass suck. Over the years many filters have made one choice of the other.
 
 But there is no one answer that is always right. Sure the Moog will suck out the bass when you increase the resonance, on the other hand some filters will get extremely loud and/or distorted at the resonance is increased.
 
@@ -107,7 +113,7 @@ As we mentioned before, the transistor ladder can be modeled closely with the ta
 
 There are a couple of filters for VCV that give you a choice of the type of non-linearity, but we went crazy and put a bunch in. The Moog filter will generate only odd harmonics, so we wanted have some options that add even harmonics too.
 
-So, "Transistor" just puts a tanh in front of each of the four filter stages. "Asym Clip" alternates - the tops are clipped off going into the first and third stages, whereas the bottoms are chopped off going into the second and fourth. Carvin guitar amps patented that in the 70's to emulate a tube  amp using a cheaper solid state amp. The "Fold" is four standard wave folders, one in front of each filter stage. "Fold 2" is similar to "Asym Clip" - half the stages fold the tops, the other half fold the bottom.
+So, "Transistor" just puts a tanh in front of each of the four filter stages. "Asym Clip" alternates - the tops are clipped off going into the first and third stages, whereas the bottoms are chopped off going into the second and fourth. Carvin guitar amps patented that in the 70's to emulate a tube guitar amp using a cheaper solid state amp. The "Fold" is four standard wave folders, one in front of each filter stage. "Asym Fold" is similar to "Asym Clip" - half the stages fold the tops, the other half fold the bottom.
 
 The distortion types start to sound quite different from each other when there is lots of resonance and a good amount of drive.  The wave folder can go from aggressive to very aggressive to completely unstable.
 
@@ -123,7 +129,7 @@ It must have been done before, probably several times, but we know of no filter 
 
 ## Slope control
 
-This is another old trick, although the only examples we can site a the moment are the Rossum Evolution filter, and in VCV the Alma ladder filter from Lindenberg Research. The idea is that by cross-fading between different lowpass filter slopes (6,12,18, and 24 in our case), you achieve the effect of a lowpass that is continusouly variable between these extremes.
+This is another old trick, although the only examples we can site at the moment are the Rossum Evolution filter, and in VCV the Alma ladder filter from Lindenberg Research. The idea is that by cross-fading between different lowpass filter slopes (6, 12, 18, and 24 in our case), you achieve the effect of a lowpass that is continuously variable between these extremes.
 
 In Stairway the slope control is only active when the filter is in four pole lowpass mode. In all other modes the control is inactive and the LEDs are dim.
 

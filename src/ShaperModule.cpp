@@ -63,7 +63,7 @@ struct ShaperWidget : ModuleWidget
 {
     ShaperWidget(ShaperModule *);
 
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md");
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq6/docs/shaper.md");
     /**
      * Helper to add a text label to this widget
      */

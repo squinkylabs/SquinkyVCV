@@ -49,6 +49,8 @@ Like most waveshapers, the first version of Shaper did not have highpass filters
 
 There are two sets on inputs and outputs. They share the same settings, so are convenient for processing stereo signals. A channel will only use CPU resources if both its input and output are patched.
 
+If only one input is patched, both outputs will have the same mono signal.
+
 ## Typical Uses
 
 ### Classic wave shaping
