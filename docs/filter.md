@@ -9,6 +9,8 @@ Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat
 
 Stairway is by no means an accurate "model" of a specific moog filter. It is based on a standard good quality model of the transistor ladder, but it uses no component level modeling, and has not been painstakingly voice to sound as close as possible to a Moog. The intention of Stairway is to be rich and warm like a Moog, but with a lot of other sounds, too.
 
+Stairway is "stereo". There are two independent channels. But they will be inactive (using no CPU) if they are not patched.
+
 There are extensive notes at the bottom of this page about how the filter actually work.
 
 ## Important notes
@@ -27,6 +29,8 @@ Also, adding a lot of distortion starts to make the filter act less like a filte
 
 **Drive** - Controls the signal level going into the filter. More drive gives more distortion. Too much and the filter stops working right and gets all flabby.
 
+**Vol** - Output level control. Since the different settings can have a big effect on the level, the Vol control is provided to even things out. There is an LED output level meter next to the knob. It will track the hottest of the stereo channels, and the red LED comes on at +/- 7 volts, with each step below being -6db.
+
 **Edge** - Redistributes the distortion in different ways between the four filter elements. In the middle all stages have the same gain, like most ladders. To the left, the first stages get more distortion than the later one. And to the right the later stages get more.
 
 **Type** - Filter response type. Choices are four pole lowpass, three pole lowpass, two pole lowpass, one pole lowpass, two pole bandpass, two pole highpass with one pole lowpass, three pole highpass with one pole lowpass, four pole bandpass, one pole lowpass with notch, three pole allpass with one pole lowpass, three pole highpass two pole highpass, one pole highpass, notch, and phaser.
@@ -39,7 +43,13 @@ Note that many of these filter type are not what you would normally expect from,
 
 **Bass** - Reduces the infamous "bass suck" of the moog filter. When it's all the way donw it's like a regular moog, and the bass will decrease as the resonance increases. When Bass is all the way it then there is no bass suck.
 
-**Slope** - Sets the filter slope continuously between -6 and -24 db per octave. Only operation with four pole lowpass.
+**Slope** - Sets the filter slope continuously between -6 and -24 db per octave. Only operational with four pole lowpass. The top (fourth) LED is for -24 db/oct, or four poles.
+
+## CV and attenuverters
+
+Many of the controls listed above may also be voltage controlled. The CV inputs are clearly labeled. Each CV has an associated attenuverted to scale it before it is combined with the control knob. Note the the attenuverters default to the middle "off" position, so they must be set to allow the CV to affect the filter.
+
+Most of the attenuverters are directly above the CV they control. The exception is the lone attenuverter above them that controls the Edge CV.
 
 ## Suggestions
 
@@ -50,6 +60,8 @@ Sometimes the Edge control will make the sound darker or brighter. Use it to dia
 Play a sin wave into the filter and watch the output on a spectrum analyzer. This may help reveal what the different distortion controls do. Similarly, if you run white noise into a the spectrum analyzer will show you the frequency response. Use this to learn more what Type, Caps, Q, and Fc do.
 
 Run an ADSR envelope into the slope control, and invert is with the attenuverter. Like modulating the Fc, modulating the slope can make the notes have a bright attack and then mellow out. But is sounds quite different, and is much less common (since so few filters have a slope control).
+
+For crazy, semi-chaotic sounds, use the Asym Fold voicing.
 
 ## More details on Stairway
 
