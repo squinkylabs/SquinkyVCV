@@ -25,7 +25,11 @@ struct BlueTrimmer : SVGKnob
 /**
  * Like Rogan1PSBlue, but smaller.
  */
+#ifdef __V1
+struct Blue30Knob : SvgKnob
+#else
 struct Blue30Knob : SVGKnob
+#endif
 {
     Blue30Knob()
     {
@@ -45,10 +49,10 @@ struct Blue30SnapKnob : Blue30Knob
     }
 };
 
-
-struct NKKSmall : SVGSwitch
-#ifndef __V1
-, ToggleSwitch
+#ifdef __V1
+struct NKKSmall : SvgSwitch
+#else
+struct NKKSmall : SVGSwitch, ToggleSwitch
 #endif
 {
     NKKSmall()
@@ -59,9 +63,10 @@ struct NKKSmall : SVGSwitch
     }
 };
 
-struct BlueToggle : public SVGSwitch
-#ifndef __V1
-, ToggleSwitch
+#ifdef __V1
+struct BlueToggle : public SvgSwitch
+#else 
+struct BlueToggle : public SVGSwitch, ToggleSwitch
 #endif
 {
     BlueToggle()
@@ -74,7 +79,11 @@ struct BlueToggle : public SVGSwitch
 /**
  * A very basic momentary push button.
  */
+#ifdef __V1
+struct SQPush : SvgButton
+#else
 struct SQPush : SVGButton
+#endif
 {
     SQPush()
     {

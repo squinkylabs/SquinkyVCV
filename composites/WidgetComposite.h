@@ -35,6 +35,7 @@ public:
         lights(parent->lights)
     {
     }
+    virtual ~WidgetComposite() {}
     virtual void step()
     {
     };
