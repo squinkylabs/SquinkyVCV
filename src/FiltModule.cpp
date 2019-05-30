@@ -251,7 +251,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(50, y3),
+        Vec(43, y3),
         module,
         Comp::TYPE_PARAM);
     p->box.size.x = 76;    // width
@@ -261,10 +261,10 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
  
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(130, y3),
+        Vec(123, y3),
         module,
         Comp::VOICING_PARAM);
-    p->box.size.x = 73;    // width
+    p->box.size.x = 80;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getVoicingNames());
     addParam(p);
