@@ -120,7 +120,7 @@ static const float deltaXJack = 38;
 void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float deltaX = 46;        // was 50, 40 too close
-    const float x1 = 32;
+    const float x1 = 30;
     const float x2 = x1 + deltaX;
     const float x3 = x2 + deltaX;
     const float x4 = x3 + deltaX;
@@ -160,7 +160,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         module,
         Comp::DRIVE_PARAM));
      addLabel(
-        Vec(x3-labelDx, y1 + labelY),
+        Vec(x3+1-labelDx, y1 + labelY),
         "Drive");
 
     addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -231,7 +231,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         module,
         Comp::SLOPE_PARAM));
     addLabel(
-        Vec(x4-labelDx, y2 + labelY),
+        Vec(x4+2-labelDx, y2 + labelY),
         "Slope");
 
     for (int i=0; i<4; ++i) {
@@ -307,10 +307,10 @@ void FiltWidget::addTrimmers(FiltModule *module, std::shared_ptr<IComposite> ico
 void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
  {
     const float x1 = jacksX1;
-    const float yJacks1 = 286;
-    const float yJacks2 = 330;
+    const float yJacks1 = 286-2;
+    const float yJacks2 = 330+2;
    
-    const float JackLabelY = -30;
+    const float JackLabelY = -31;
 
     // row 1
     addInput(createInputCentered<PJ301MPort>(
@@ -334,7 +334,7 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::Q_INPUT));
     addLabel(
-        Vec(x1 + 2 * deltaXJack -14, yJacks1 + JackLabelY),
+        Vec(x1 + 2 * deltaXJack -12, yJacks1 + JackLabelY),
         "Q");
     
     addInput(createInputCentered<PJ301MPort>(
@@ -343,15 +343,15 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         Comp::DRIVE_INPUT));
     addLabel(
         Vec(x1 + 3 * deltaXJack - 22, yJacks1 + JackLabelY),
-        "drive");
+        "Drive");
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(x1 + 4 * deltaXJack, yJacks1),
         module,
         Comp::SLOPE_INPUT));
     addLabel(
-        Vec(x1 + 4 * deltaXJack - 22, yJacks1 + JackLabelY),
-        "slope");
+        Vec(x1 + 4 * deltaXJack - 21, yJacks1 + JackLabelY),
+        "Slope");
 
     // row2
      addInput(createInputCentered<PJ301MPort>(
@@ -383,15 +383,17 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::L_AUDIO_OUTPUT));
     addLabel(
-        Vec(x1 -2 + 3 * deltaXJack -18, yJacks2 + JackLabelY),
-        "Out L");
+        Vec(x1 - 6 + 3 * deltaXJack -18, yJacks2 + JackLabelY),
+        "Out L",
+        SqHelper::COLOR_WHITE);
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x1 + 4 * deltaXJack, yJacks2),
         module,
         Comp::R_AUDIO_OUTPUT));
     addLabel(
-        Vec(x1 - 4 + 4 * deltaXJack -18, yJacks2 + JackLabelY),
-        "Out R");
+        Vec(x1 - 6 + 4 * deltaXJack -18, yJacks2 + JackLabelY),
+        "Out R",
+        SqHelper::COLOR_WHITE);
 }
 
 
