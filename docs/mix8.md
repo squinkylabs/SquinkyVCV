@@ -1,10 +1,20 @@
 # 8 channel mixer
 
-This module started with a very simple idea. Make a mixer based the popular AS 8-CH Mixer, and fix the problems with it. The problems we saw being the very high CPU usage, and the absence of anti-pop on the mutes.
+This module started with a very simple idea. Make a mixer based the popular AS 8-CH Mixer, and fix the problems with it. The problems we saw being the extremely high CPU usage, and the absence of anti-pop on the mutes.
 
-But we got carried away and added channel solo, CV for mutes, and an effect/aux bus. Of course we kept all the features of the original, including the equal power pan law which is one of the best things about it.
+But we got carried away and added channel solo, CV for mutes, and an effect/aux bus. Of course we kept all the features of the original, including the equal power pan law which is one of the best things about it. We also kept all the math of the response to control voltage and knobs.
 
 Even with these new features, however, the CPU usage is still only 10% of the original.
+
+## TL;DR
+
+If you know how to use a mixer, most things should be obvious. Here are the non-obvious things.
+
+The solo buttons normally solo a channel and un-solo the others. But ctrl+solo will let you solo multiple channels.
+
+The sends to the aux bus are post-fader.
+
+The expansion input in the master section is meant for the output of a "slave" mixer.
 
 ## Inputs and outputs
 
