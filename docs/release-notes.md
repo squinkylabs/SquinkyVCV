@@ -2,6 +2,8 @@
 
 ## 0.6.15
 
+New modules: Stairway, Mixer-8, and Slade.
+
 Direct link to the instruction manual for each module is available from the context menu (right click on the module).
 
 Shaper is now stereo.
