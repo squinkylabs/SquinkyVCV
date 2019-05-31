@@ -1,5 +1,9 @@
 
-# Stairway ladder filter
+# Stairway ladder
+
+Ladder VCF with influences from Moog, Oberheim, Rossum and others.
+
+![Stairway Panel](./stairway.png)
 
 Stairway is yet another ladder filter, but one that combines many of the ladder enhancements that have been discovered over the decades since the original Moog filter first came out.
 
