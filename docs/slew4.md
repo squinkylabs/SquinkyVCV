@@ -1,5 +1,9 @@
 # Slade
 
+Octal lag / slew / vca
+
+![Slade Panel](./slade.png)
+
 This module has 8 independent lag generators, and 8 VCAs. It may be used to smooth out gate signals so that they don't cause pops, or it may be used as a VCA to gate an audio signal with a simple envelope generator.
 
 Each of the eight independent stage can be thought of as:

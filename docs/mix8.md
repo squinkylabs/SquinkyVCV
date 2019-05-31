@@ -1,4 +1,8 @@
-# 8 channel mixer
+# Mixer-8
+
+8 channel mixer - improved 8-CH Mixer
+
+![Mixer-8 Panel](./mixer-8.png)
 
 This module started with a very simple idea. Make a mixer based the popular AS 8-CH Mixer, and fix the problems with it. The problems we saw being the extremely high CPU usage, and the absence of anti-pop on the mutes.
 
