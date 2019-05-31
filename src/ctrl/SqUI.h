@@ -1,12 +1,12 @@
 #pragma once
 
-#ifdef __V1
+#ifdef __V1x
 #include "event.hpp"
 #endif
 
 namespace sq {
   
-#ifdef __V1
+#ifdef __V1x
    using EventAction = event::Action;
    using EventChange = event::Change;
   //  using Event = Event;
@@ -17,7 +17,7 @@ namespace sq {
     using Event = rack::Event;
 #endif
 
-#ifdef __V1
+#ifdef __V1x
     inline void consumeEvent(const event::Base* evt, Widget* widget)
     {
        evt->consume(widget);

@@ -34,7 +34,7 @@ void LFNModule::onSampleRateChange()
     lfn.setSampleTime(SqHelper::engineGetSampleTime());
 }
 
-#ifdef __V1
+#ifdef __V1x
 LFNModule::LFNModule() : lfn(this)
 {
     config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
@@ -104,7 +104,7 @@ struct LFNWidget : ModuleWidget
         ModuleWidget::step();
     }
 
-#ifdef __V1
+#ifdef __V1x
     void appendContextMenu(Menu *menu) override;
 #else
     Menu* createContextMenu() override;
@@ -142,7 +142,7 @@ void LFNWidget::addStage(int index)
         module, Comp::EQ0_INPUT + index));
 }
 
-#ifdef __V1
+#ifdef __V1x
 void LFNWidget::appendContextMenu(Menu* theMenu) 
 {
     ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
@@ -178,7 +178,7 @@ inline Menu* LFNWidget::createContextMenu()
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 LFNWidget::LFNWidget(LFNModule *module) : module(module)
 {
     setModule(module);
@@ -251,7 +251,7 @@ void LFNLabelUpdater::update(struct LFNWidget& widget)
     }
 }
 
-#ifndef __V1
+#ifndef __V1x
 Model *modelLFNModule = Model::create<LFNModule,
     LFNWidget>("Squinky Labs",
     "squinkylabs-lfn",

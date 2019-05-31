@@ -26,7 +26,7 @@ private:
     typedef float T;
 };
 
-#ifdef __V1
+#ifdef __V1x
 VocalFilterModule::VocalFilterModule() :
     vocalFilter(this)
 {
@@ -65,14 +65,14 @@ void VocalFilterModule::step()
 struct VocalFilterWidget : ModuleWidget
 {
     VocalFilterWidget(VocalFilterModule *);
-#ifndef __V1
+#ifndef __V1x
     Menu* createContextMenu() override;
 #endif
     void addVowelLabels();
     void addModelKnob(std::shared_ptr<IComposite>, VocalFilterModule *module, float x, float y);
 };
 
-#ifndef __V1
+#ifndef __V1x
 inline Menu* VocalFilterWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
@@ -172,7 +172,7 @@ void VocalFilterWidget::addModelKnob(std::shared_ptr<IComposite> icomp, VocalFil
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 VocalFilterWidget::VocalFilterWidget(VocalFilterModule* module)
 {
     setModule(module);
@@ -320,7 +320,7 @@ VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(m
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifndef __V1
+#ifndef __V1x
 Model *modelVocalFilterModule = Model::create<VocalFilterModule, VocalFilterWidget>("Squinky Labs",
     "squinkylabs-vocalfilter",
     "Formants: Vocal Filter", EFFECT_TAG, FILTER_TAG);

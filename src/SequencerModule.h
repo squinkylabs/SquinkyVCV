@@ -8,7 +8,7 @@
 class SequencerWidget;
 #include "WidgetComposite.h"
 
-#ifdef __V1
+#ifdef __V1x
     #include "engine/Module.hpp"
     using Module =  rack::engine::Module;
 #else
@@ -29,7 +29,7 @@ struct SequencerModule : Module
 
     void step() override
     {
-    #ifdef __V1
+    #ifdef __V1x
         sequencer->undo->setModuleId(this->id);
     #endif
         if (runStopRequested) {
@@ -64,7 +64,7 @@ struct SequencerModule : Module
         return seqComp->isRunning();
     }
 
-#ifndef __V1
+#ifndef __V1x
     json_t *toJson() override
     {
         assert(sequencer);

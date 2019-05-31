@@ -23,14 +23,14 @@
 
 //#define _BLANKMODULE
 
-#ifndef __V1
+#ifndef __V1x
     #define _CHBG
     #define _TBOOST
     #define _BOOTY
     #define _TREM
 #endif
 
-#if defined(__V1) && 0
+#if defined(__V1x) && 0
     #define _MIX4
     #define _MIXM
 #endif

@@ -36,7 +36,7 @@ void FiltModule::onSampleRateChange()
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 FiltModule::FiltModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -92,7 +92,7 @@ struct FiltWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 FiltWidget::FiltWidget(FiltModule *module)
 {
     setModule(module);
@@ -395,7 +395,7 @@ void FiltWidget::addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelFiltModule = createModel<FiltModule, FiltWidget>("squinkylabs-filt");
 #else
 

@@ -12,7 +12,7 @@
 struct SqMenuItem : rack::MenuItem
 {
 
-#ifdef __V1
+#ifdef __V1x
 void onAction(const event::Action &e) override
 #else
 void onAction(EventAction &e) override
@@ -59,7 +59,7 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
     {
     }
 
-#ifdef __V1
+#ifdef __V1x
     void onAction(const sq::EventAction &e) override
     {
         const float newValue = isOn() ? 0 : 1;
@@ -94,7 +94,7 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
 private:
     bool isOn()
     {
-#ifdef __V1
+#ifdef __V1x
         //return false;
         bool ret = false;
         if (widget->paramQuantity) {

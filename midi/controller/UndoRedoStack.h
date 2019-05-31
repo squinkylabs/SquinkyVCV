@@ -6,7 +6,7 @@ class SqCommand;
 class MidiSequencer;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
-#if defined(__PLUGIN) && defined(__V1)
+#if defined(__PLUGIN) && defined(__V1x)
 #define __USE_VCV_UNDO
 #endif
 

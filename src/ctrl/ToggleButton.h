@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#ifndef __V1
+#ifndef __V1x
 #include "window.hpp"
 #endif
 
@@ -40,7 +40,7 @@ public:
         return  SqHelper::getValue(this);
     }
 
-#ifdef __V1
+#ifdef __V1x
     void onButton(const event::Button &e) override;
     void draw(const DrawArgs &args) override;
 #else
@@ -96,7 +96,7 @@ inline void ToggleButton::addSvg(const char* resourcePath)
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
 }
 
-#ifdef __V1
+#ifdef __V1x
 inline void ToggleButton::draw(const DrawArgs &args)
 {
     const float _value = SqHelper::getValue(this);
@@ -119,13 +119,13 @@ inline void ToggleButton::turnOff()
     SqHelper::setValue(this, 0);
 } 
 
-#ifdef __V1
+#ifdef __V1x
 inline void ToggleButton::onButton(const event::Button &e)
 #else
 inline void ToggleButton::onMouseDown(EventMouseDown &e)
 #endif
 {
-    #ifdef __V1
+    #ifdef __V1x
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
         if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||

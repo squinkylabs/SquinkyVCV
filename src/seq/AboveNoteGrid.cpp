@@ -138,7 +138,7 @@ void AboveNoteGrid::updateTimeLabels()
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 void AboveNoteGrid::draw(const DrawArgs &args)
 {
     NVGcontext *vg = args.vg;
@@ -153,7 +153,7 @@ void AboveNoteGrid::draw(NVGcontext *vg)
 
     filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
 
-#ifdef __V1
+#ifdef __V1x
     OpaqueWidget::draw(args);
 #else
     OpaqueWidget::draw(vg);

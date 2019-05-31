@@ -33,7 +33,7 @@ void BlankModule::onSampleRateChange()
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 BlankModule::BlankModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -84,7 +84,7 @@ struct BlankWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 BlankWidget::BlankWidget(BlankModule *module)
 {
     setModule(module);
@@ -103,7 +103,7 @@ BlankWidget::BlankWidget(BlankModule *module) : ModuleWidget(module)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelBlankModule = createModel<BlankModule, BlankWidget>("squinkylabs-blank");
 #else
 a b c

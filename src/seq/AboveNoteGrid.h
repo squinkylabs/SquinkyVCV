@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Squinky.hpp"
-#ifdef __V1
+#ifdef __V1x
 #include "widget/Widget.hpp"
 #else
 #include "widgets.hpp"
@@ -23,7 +23,7 @@ public:
      */
     void setSequencer(MidiSequencerPtr seq);
 
-#ifdef __V1
+#ifdef __V1x
     void draw(const DrawArgs &args) override;
 #else
     void draw(NVGcontext *vg) override;

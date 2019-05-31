@@ -68,7 +68,7 @@ void MixMModule::setExternalOutput(float* buf)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 MixMModule::MixMModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -337,7 +337,7 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 MixMWidget::MixMWidget(MixMModule *module)
 {
     setModule(module);
@@ -363,7 +363,7 @@ MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelMixMModule = createModel<MixMModule, MixMWidget>("squinkylabs-mixm");
 #else
 Model *modelMixMModule = Model::create<MixMModule,

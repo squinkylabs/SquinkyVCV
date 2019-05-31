@@ -3,7 +3,7 @@
 #include "UIPrefs.h"
 
 #include "nanovg.h"
-#ifdef __V1
+#ifdef __V1x
     #include "app.hpp"
 #endif
 
@@ -28,7 +28,7 @@ void SqGfx::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
 
 void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int size)
 {
-#ifdef __V1
+#ifdef __V1x
     int f = rack::APP->window->uiFont->handle;
 #else
     int f = rack::gGuiFont->handle;

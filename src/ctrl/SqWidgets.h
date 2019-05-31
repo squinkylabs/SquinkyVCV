@@ -25,7 +25,7 @@ struct BlueTrimmer : SVGKnob
 /**
  * Like Rogan1PSBlue, but smaller.
  */
-#ifdef __V1
+#ifdef __V1x
 struct Blue30Knob : SvgKnob
 #else
 struct Blue30Knob : SVGKnob
@@ -49,7 +49,7 @@ struct Blue30SnapKnob : Blue30Knob
     }
 };
 
-#ifdef __V1
+#ifdef __V1x
 struct NKKSmall : SvgSwitch
 #else
 struct NKKSmall : SVGSwitch, ToggleSwitch
@@ -63,7 +63,7 @@ struct NKKSmall : SVGSwitch, ToggleSwitch
     }
 };
 
-#ifdef __V1
+#ifdef __V1x
 struct BlueToggle : public SvgSwitch
 #else 
 struct BlueToggle : public SVGSwitch, ToggleSwitch
@@ -79,7 +79,7 @@ struct BlueToggle : public SVGSwitch, ToggleSwitch
 /**
  * A very basic momentary push button.
  */
-#ifdef __V1
+#ifdef __V1x
 struct SQPush : SvgButton
 #else
 struct SQPush : SVGButton
@@ -87,7 +87,7 @@ struct SQPush : SVGButton
 {
     SQPush()
     {
-#ifdef __V1
+#ifdef __V1x
         addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
         addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
 #else
@@ -100,7 +100,7 @@ struct SQPush : SVGButton
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
-#ifdef __V1
+#ifdef __V1x
         addFrame(SqHelper::loadSvg(upSVG));
         addFrame(SqHelper::loadSvg(dnSVG));
 #else
@@ -114,7 +114,7 @@ struct SQPush : SVGButton
     {
         this->box.pos = pos.minus(this->box.size.div(2));
     }
-#ifdef __V1
+#ifdef __V1x
      void onButton(const event::Button &e) override
      {
         //only pick the mouse events we care about.
@@ -168,7 +168,7 @@ struct SQPanelItem : MenuItem
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
 
-#ifdef __V1
+#ifdef __V1x
     void onAction(const event::Action &e) override
 #else
     void onAction(EventAction &e) override

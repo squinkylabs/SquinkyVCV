@@ -6,7 +6,7 @@
  *  pops up a menu of discrete choices.
  *  displays the current choice
  */
-#ifndef __V1
+#ifndef __V1x
 class PopupMenuParamWidget : virtual public ParamWidget, virtual public ChoiceButton
 {
 public:
