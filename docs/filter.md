@@ -5,7 +5,7 @@ Stairway is yet another ladder filter, but one that combines many of the ladder 
 
 Stairway Provides many more shapes that just four pole low-pass. We believe this innovation was first used in the Oberheim Matrix-12, although our implementation is a little different.
 
-Like the Moog filter, Filter has a pleasant mild distortion to make it sound fat, although it is possible to dial in more and quite different distortions.
+Like the Moog filter, Stairway has a pleasant mild distortion to make it sound fat, although it is possible to dial in more and quite different distortions.
 
 Stairway is by no means an accurate "model" of a specific moog filter. It is based on a standard good quality model of the transistor ladder, but it uses no component level modeling, and has not been painstakingly voice to sound as close as possible to a Moog. The intention of Stairway is to be rich and warm like a Moog, but with a lot of other sounds, too.
 
@@ -17,7 +17,7 @@ There are extensive notes at the bottom of this page about how the filter actual
 
 Although the filter can produce many responses besides just four pole lowpass, it it still at its heart a four pole lowpass with some fancy stuff on top. Because of this, many of the responses other than lowpass will work less well the more the filter itself is pushed away from perfection. So with enough *Drive*, *Edge*, *Caps* and such it will be less and less like a highpass or a bandpass. This can be dramatic, so if you want the highpass or bandpass to be close at all to their real shape, it's very important that the edge control be exactly in the middle. Sometimes re-initializing the module is the easiest way to get there.
 
-Many of the controls change the distortion level or the character of the distortion. So sometimes turning one won't sound that much different from turning another one. Or you keep adding more and more distortion until everything is just a big flabby mess. The Drive, Voicing, and Edge all add or change distortion. When you are first learning to find sounds with Filter, try keeping the distortion to a moderate level so that it's easier to hear what the other controls do.
+Many of the controls change the distortion level or the character of the distortion. So sometimes turning one won't sound that much different from turning another one. Or you keep adding more and more distortion until everything is just a big flabby mess. The Drive, Voicing, and Edge all add or change distortion. When you are first learning to find sounds with Stairway, try keeping the distortion to a moderate level so that it's easier to hear what the other controls do.
 
 Also, adding a lot of distortion starts to make the filter act less like a filter. This is particularly true with "extra" filter types. These filter types will only sound as advertised if the Drive is moderate. Also, the Edge and caps controls can make the frequency response of the extra filter types change a lot. They are all useful sounds, but again, while learning about the different filter types it can be easier if you keep the other controls near their default settings.
 
@@ -55,7 +55,7 @@ Most of the attenuverters are directly above the CV they control. The exception 
 
 There are two sets on inputs and outputs. They share the same settings, so are convenient for processing stereo signals. A channel will only use CPU resources if both its input and output are patched.
 
-If only one input is patched, both outputs will have the same mono signal.
+If only one input is patched, both outputs will have the same mono signal. If both inputs and outputs are patched, then Stairway will have two independent channels.
 
 ## Suggestions
 
@@ -129,7 +129,7 @@ It must have been done before, probably several times, but we know of no filter 
 
 ## Slope control
 
-This is another old trick, although the only examples we can site at the moment are the Rossum Evolution filter, and in VCV the Alma ladder filter from Lindenberg Research. The idea is that by cross-fading between different lowpass filter slopes (6, 12, 18, and 24 in our case), you achieve the effect of a lowpass that is continuously variable between these extremes.
+This is another old trick, although the only examples we can cite at the moment are the Rossum Evolution filter, and in VCV the Alma ladder filter from Lindenberg Research. The idea is that by cross-fading between different lowpass filter slopes (6, 12, 18, and 24 in our case), you achieve the effect of a lowpass that is continuously variable between these extremes.
 
 In Stairway the slope control is only active when the filter is in four pole lowpass mode. In all other modes the control is inactive and the LEDs are dim.
 
