@@ -15,7 +15,7 @@ CFLAGS +=
 CXXFLAGS +=
 
 # compile for V1 vs 0.6
-FLAGS += -D __V1x
+# FLAGS += -D __V1x
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
