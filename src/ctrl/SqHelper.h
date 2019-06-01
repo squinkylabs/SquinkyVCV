@@ -7,7 +7,7 @@
 #include "app.hpp"
 #include "IComposite.h"
 
-#ifdef __V1
+#ifdef __V1x
 
 #include "engine/Module.hpp"
 #include <string>

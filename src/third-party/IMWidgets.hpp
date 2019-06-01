@@ -13,7 +13,7 @@
 
 using namespace rack;
 
-#ifndef __V1
+#ifndef __V1x
 
 // Dynamic SVGScrew
 
@@ -57,7 +57,7 @@ struct PanelBorderWidget : TransparentWidget { // from SVGPanel.cpp
 };
 
 
-#ifndef __V1
+#ifndef __V1x
 struct DynamicSVGPanel : FramebufferWidget { // like SVGPanel (in app.hpp and SVGPanel.cpp) but with dynmically assignable panel
     int* mode;
     int oldMode;

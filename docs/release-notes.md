@@ -2,6 +2,8 @@
 
 ## 0.6.15
 
+New modules: Stairway, Mixer-8, and Slade.
+
 Direct link to the instruction manual for each module is available from the context menu (right click on the module).
 
 Shaper is now stereo.
@@ -10,7 +12,7 @@ Buttons now only active on primary (left) button press.
 
 Increased the LFO outputs from Chopper to five volts.
 
-Fixed a typo on the LFN panel.
+Fixed a typo on the LFN panel graphic.
 
 ## 0.6.14
 

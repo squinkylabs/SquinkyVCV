@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SqHelper.h"
-#ifdef __V1
+#ifdef __V1x
 #else
 #include "widgets.hpp"
 #include <GLFW/glfw3.h>
@@ -59,7 +59,7 @@ struct WaveformSelector : ParamWidget
     void addSvg(int row, const char* res, const char* resOn);
    
 
-#ifdef __V1
+#ifdef __V1x
     void draw(const DrawArgs &arg) override;
     void onButton(const event::Button &e) override;
     void drawSVG(const DrawArgs &arg, SqHelper::SvgWidget&, float x, float y);
@@ -134,7 +134,7 @@ inline WaveformSelector::~WaveformSelector()
 
 #if 1
 
-#ifdef __V1
+#ifdef __V1x
 inline void WaveformSelector::drawSVG(const DrawArgs &arg, SqHelper::SvgWidget& svg, float x, float y)
 {
     NVGcontext* vg = arg.vg;
@@ -153,7 +153,7 @@ inline void WaveformSelector::drawSVG(NVGcontext *arg, SqHelper::SvgWidget& svg,
     nvgRestore(vg);
 }
 
-#ifdef __V1
+#ifdef __V1x
 inline void WaveformSelector::draw(const DrawArgs &arg)
 #else
 inline void WaveformSelector::draw(NVGcontext *arg)
@@ -168,7 +168,7 @@ inline void WaveformSelector::draw(NVGcontext *arg)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
  inline void WaveformSelector::onButton(const event::Button &e)
  {
      // for now, use both button presses.

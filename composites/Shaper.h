@@ -9,7 +9,7 @@
 #include "LookupTable.h"
 #include "ObjectCache.h"
 
-#ifdef __V1
+#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;
@@ -330,6 +330,18 @@ void  Shaper<TBase>::step()
             }
             TBase::outputs[OUTPUT_AUDIO0 + i].value = output;
         }
+    }
+
+    // Do special processing for unconnected outputs
+    if (!dsp[0].isActive && !dsp[1].isActive) {
+        // both sides unpatched - clear output
+        TBase::outputs[OUTPUT_AUDIO0].value = 0;
+        TBase::outputs[OUTPUT_AUDIO1].value = 0;
+    } else if (dsp[0].isActive && !dsp[1].isActive) {
+        // left connected, right not r = l
+        TBase::outputs[OUTPUT_AUDIO1].value = TBase::outputs[OUTPUT_AUDIO0].value;
+    } else if (!dsp[0].isActive && dsp[1].isActive) {
+        TBase::outputs[OUTPUT_AUDIO0].value = TBase::outputs[OUTPUT_AUDIO1].value;
     }
 }
 

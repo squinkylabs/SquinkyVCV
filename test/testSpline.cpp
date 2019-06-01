@@ -390,15 +390,12 @@ static void testShaperChannelsSub(bool ch0, bool ch1)
     float x0 = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
     float x1 = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO1].value;
     
-    if (ch0) {
+    // now that we duplicate mono output to both channels, but need to look for signal
+    if (ch0 || ch1) {
         assertGT(x0, 5);
+        assertEQ(x0, x1);
     } else {
         assertEQ(x0, 0);
-    }
-
-    if (ch1) {
-        assertGT(x1, 5);
-    } else {
         assertEQ(x1, 0);
     }
 }
@@ -410,6 +407,96 @@ static void testShaperChannels()
     testShaperChannelsSub(true, false);
     testShaperChannelsSub(true, true);
 }
+
+
+static void testShaperOutputsDisconnect()
+{
+    using S = Shaper<TestComposite>;
+    S s;;
+   // s.init();
+    s.inputs[S::INPUT_AUDIO0].active = true;
+    s.inputs[S::INPUT_AUDIO1].active = true;
+    s.inputs[S::INPUT_AUDIO0].value = 10;
+    s.inputs[S::INPUT_AUDIO1].value = 10;
+    s.outputs[S::OUTPUT_AUDIO0].active = true;
+    s.outputs[S::OUTPUT_AUDIO1].active = true;
+
+   
+
+    for (int i = 0; i < 50; ++i) {
+        s.step();
+    }
+
+    // should be passing DC already
+    assertGT(s.outputs[S::OUTPUT_AUDIO0].value, 1);
+    assertGT(s.outputs[S::OUTPUT_AUDIO1].value, 1);
+
+    // disconnect the inputs
+    s.inputs[S::INPUT_AUDIO0].active = false;
+    s.inputs[S::INPUT_AUDIO1].active = false;
+
+    for (int i = 0; i < 8; ++i) {
+        s.step();
+    }
+
+    // disconnected should go to zero.
+    assertEQ(s.outputs[S::OUTPUT_AUDIO0].value, 0);
+    assertEQ(s.outputs[S::OUTPUT_AUDIO1].value, 0);
+
+}
+
+#if 0
+static void testFiltOutputsRightDisconnect()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[S::L_AUDIO_INPUT].active = true;
+    f.inputs[S::R_AUDIO_INPUT].active = false;
+    f.inputs[S::L_AUDIO_INPUT].value = 10;
+    f.inputs[S::R_AUDIO_INPUT].value = 0;
+    f.outputs[S::L_AUDIO_OUTPUT].active = true;
+    f.outputs[S::R_AUDIO_OUTPUT].active = true;
+
+    f.params[S::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    // should be passing DC already
+    assertGT(f.outputs[S::L_AUDIO_OUTPUT].value, 1);
+    assertEQ(f.outputs[S::R_AUDIO_OUTPUT].value, (f.outputs[S::L_AUDIO_OUTPUT].value));
+
+}
+
+
+static void testShaperOutputsLeftDisconnect()
+{
+    using S = Shaper<TestComposite>;
+    S s;
+    f.init();
+    f.inputs[S::L_AUDIO_INPUT].active = false;
+    f.inputs[S::R_AUDIO_INPUT].active = true;
+    f.inputs[S::L_AUDIO_INPUT].value = 0;
+    f.inputs[S::R_AUDIO_INPUT].value = 10;
+    f.outputs[S::L_AUDIO_OUTPUT].active = true;
+    f.outputs[S::R_AUDIO_OUTPUT].active = true;
+
+    f.params[S::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    // should be passing DC already
+    assertGT(f.outputs[S::L_AUDIO_OUTPUT].value, 1);
+    assertEQ(f.outputs[S::R_AUDIO_OUTPUT].value, (f.outputs[S::L_AUDIO_OUTPUT].value));
+
+}
+#endif
+
+
 
 void testSpline(bool doEmit)
 {
@@ -434,5 +521,9 @@ void testSpline(bool doEmit)
     testShaperChannels();
 
     testSplineExtremes();
+
+    testShaperOutputsDisconnect();
+   // testShaperOutputsRightDisconnect();
+  //  testShaperOutputsLeftDisconnect();
 }
 

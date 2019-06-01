@@ -30,7 +30,7 @@ public:
 private:
 };
 
-#ifdef __V1
+#ifdef __V1x
 CHBModule::CHBModule() : chb(this)
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -94,7 +94,7 @@ private:
 
     void addBottomJacks(CHBModule *module);
     void resetMe(CHBModule *module);
-#ifdef __V1
+#ifdef __V1x
     void appendContextMenu(Menu *menu) override;
 #else
     Menu* createContextMenu() override;
@@ -114,7 +114,7 @@ private:
     SemitoneDisplay semitoneDisplay;
 };
 
-#ifdef __V1
+#ifdef __V1x
 inline void CHBWidget::appendContextMenu(Menu *menu)
 {
     ManualMenuItem* manual = new ManualMenuItem(
@@ -468,7 +468,7 @@ void CHBWidget::resetMe(CHBModule *module)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 CHBWidget::CHBWidget(CHBModule *module) :
   //  numHarmonics(module->chb.numHarmonics),
     module(module),
@@ -521,7 +521,7 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelCHBModule = createModel<CHBModule, CHBWidget>(
     "squinkylabs-CHB2");
 #else

@@ -34,7 +34,7 @@ void LFNBModule::onSampleRateChange()
     lfn.onSampleRateChange();
 }
 
-#ifdef __V1
+#ifdef __V1x
 LFNBModule::LFNBModule() : lfn(this)
 {
     config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
@@ -103,7 +103,7 @@ struct LFNBWidget : ModuleWidget
         ModuleWidget::step();
     }
 
-#ifdef __V1
+#ifdef __V1x
     void appendContextMenu(Menu *menu) override;
 #else
     Menu* createContextMenu() override;
@@ -145,7 +145,7 @@ void LFNBWidget::addStage(int index)
 }
 #endif
 
-#ifdef __V1
+#ifdef __V1x
 void LFNBWidget::appendContextMenu(Menu* theMenu) 
 {
     ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfnb.md");
@@ -271,7 +271,7 @@ void LFNBWidget::addKnobs(LFNBModule* module, std::shared_ptr<IComposite> icomp)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 LFNBWidget::LFNBWidget(LFNBModule *module) : module(module)
 {
     setModule(module);
@@ -338,7 +338,7 @@ void LFNBLabelUpdater::update(struct LFNBWidget& widget)
     }
 }
 
-#ifndef __V1
+#ifndef __V1x
 Model *modelLFNBModule = Model::create<LFNBModule,
     LFNBWidget>("Squinky Labs",
     "squinkylabs-lfnb",

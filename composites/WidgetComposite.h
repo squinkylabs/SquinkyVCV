@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __V1
+#ifdef __V1x
 #include "engine/Module.hpp"
 #include "engine/Port.hpp"
 #include "engine/Engine.hpp"
@@ -35,12 +35,13 @@ public:
         lights(parent->lights)
     {
     }
+    virtual ~WidgetComposite() {}
     virtual void step()
     {
     };
     float engineGetSampleRate()
     {
-#ifdef __V1
+#ifdef __V1x
         return rack::APP->engine->getSampleRate();
 #else  
         return ::engineGetSampleRate();
@@ -49,7 +50,7 @@ public:
     
     float engineGetSampleTime()
     {
-#ifdef __V1
+#ifdef __V1x
         return rack::APP->engine->getSampleTime();
 #else  
         return ::engineGetSampleTime();

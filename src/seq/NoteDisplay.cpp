@@ -4,7 +4,7 @@
 #include "WidgetComposite.h"
 #include "Seq.h"
 
-#ifdef __V1
+#ifdef __V1x
 #include "widget/Widget.hpp"
 #else
 #include "widgets.hpp"
@@ -156,7 +156,7 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
     }
 }
 
-#ifdef __V1
+#ifdef __V1x
 void NoteDisplay::draw(const Widget::DrawArgs &args)
 {
     NVGcontext *vg = args.vg;
@@ -177,7 +177,7 @@ void NoteDisplay::draw(NVGcontext *vg)
     drawCursor(vg);
     // if we are dragging, will have something to draw
     mouseManager->draw(vg);     
-#ifdef __V1
+#ifdef __V1x
     OpaqueWidget::draw(args);
 #else
     OpaqueWidget::draw(vg);
@@ -230,7 +230,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
  * 
  */
  
-#ifdef __V1
+#ifdef __V1x
 
 void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 {
@@ -371,7 +371,7 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
 
 //**************** All V0.6 keyboard handling here ***********
 
-#ifndef __V1
+#ifndef __V1x
 
 void NoteDisplay::onFocus(EventFocus &e)
 {

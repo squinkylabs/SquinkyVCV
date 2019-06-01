@@ -25,7 +25,7 @@ public:
 private:
 };
 
-#ifdef __V1
+#ifdef __V1x
 GrayModule::GrayModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -103,7 +103,7 @@ inline void GrayWidget::addBits(GrayModule *module)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 GrayWidget::GrayWidget(GrayModule *module)
 {
     setModule(module);
@@ -143,7 +143,7 @@ GrayWidget::GrayWidget(GrayModule *module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelGrayModule = createModel<GrayModule,
     GrayWidget>("squinkylabs-gry");
 #else

@@ -31,7 +31,7 @@ void TremoloModule::onSampleRateChange()
     tremolo->setSampleRate(rate);
 }
 
-#ifdef __V1
+#ifdef __V1x
 TremoloModule::TremoloModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -242,7 +242,7 @@ void TremoloWidget::addMainSection(TremoloModule *module, std::shared_ptr<ICompo
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 TremoloWidget::TremoloWidget(TremoloModule *module)
 {
     setModule(module);
@@ -265,7 +265,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelTremoloModule = createModel<TremoloModule,
     TremoloWidget>("squinkylabs-tremolo");
 #else

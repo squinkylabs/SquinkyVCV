@@ -46,7 +46,7 @@ private:
     void drawBackground(NVGcontext *vg);
    
     static bool isCursorKey(int key); 
-#ifdef __V1
+#ifdef __V1x
     void onSelect(const event::Select &e) override;
     void onDeselect(const event::Deselect &e) override;
     void draw(const DrawArgs &args) override;

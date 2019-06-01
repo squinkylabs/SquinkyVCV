@@ -14,7 +14,7 @@ using Comp = FunVCOComposite<WidgetComposite>;
  * Two position NKK
  * in V0.6 didn't need this - it just worked
  */
-#ifdef __V1
+#ifdef __V1x
 struct NKK2 : app::SvgSwitch {
 	NKK2() {
         // add all up and all down image, no middle
@@ -49,7 +49,7 @@ void FunVModule::onSampleRateChange()
     vco.setSampleRate(rate);
 }
 
-#ifdef __V1
+#ifdef __V1x
 FunVModule::FunVModule() : vco(this)
 {
     // Set the number of components
@@ -233,7 +233,7 @@ void FunVWidget::addJacks(FunVModule * module, float verticalShift)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 FunVWidget::FunVWidget(FunVModule *module)
 {
     setModule(module);
@@ -254,7 +254,7 @@ FunVWidget::FunVWidget(FunVModule *module) : ModuleWidget(module)
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
-#ifndef __V1
+#ifndef __V1x
 Model *modelFunVModule = createModel<FunVModule,
     FunVWidget>("Squinky Labs",
     "squinkylabs-funv",

@@ -16,7 +16,7 @@
 
 using Comp = Mix8<WidgetComposite>;
 using Manager = ToggleManager2<SqSvgParamToggleButton>;
-#ifndef __V1
+#ifndef __V1x
 using Svg = SVG;
 #endif
 /**
@@ -41,7 +41,7 @@ void Mix8Module::onSampleRateChange()
 {
 }
 
-#ifdef __V1
+#ifdef __V1x
 Mix8Module::Mix8Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -73,7 +73,7 @@ void Mix8Module::step()
 struct Mix8Widget : ModuleWidget
 {
     Mix8Widget(Mix8Module *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/mix8.md");
+    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/sq6s/docs/mix8.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -337,7 +337,7 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 Mix8Widget::Mix8Widget(Mix8Module *module)
 {
     setModule(module);
@@ -363,7 +363,7 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelMix8Module = createModel<Mix8Module, Mix8Widget>("squinkylabs-mix8");
 #else
 Model *modelMix8Module = Model::create<Mix8Module,

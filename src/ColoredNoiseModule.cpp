@@ -26,7 +26,7 @@ private:
     typedef float T;
 };
 
-#ifdef __V1
+#ifdef __V1x
 ColoredNoiseModule::ColoredNoiseModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -185,7 +185,7 @@ struct ColorDisplay : TransparentWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule* module)
 {   
     setModule(module);
@@ -212,7 +212,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
 
 
     // Add the background panel
-#ifndef __V1
+#ifndef __V1x
    SqHelper::setPanel(this, "res/colors_panel.svg");
 #else
     {
@@ -274,7 +274,7 @@ ColoredNoiseWidget::ColoredNoiseWidget(ColoredNoiseModule *module) : ModuleWidge
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelColoredNoiseModule = createModel<ColoredNoiseModule, ColoredNoiseWidget>(
     "squinkylabs-coloredNoise");
 #else

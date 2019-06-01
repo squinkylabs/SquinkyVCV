@@ -97,17 +97,20 @@
 		{
 			"slug": "squinkylabs-slew4",
 			"name": "Slade",
-			"description": "Ocatal slew/lag/VCA"
+			"description": "Octal slew/lag/VCA",
+			"tags": ["Slew limiter", "VCA"]
 		},
 		{
 			"slug": "squinkylabs-mix8",
 			"name": "Mixer-8",
-			"description": "8 channel mixer"
+			"description": "8 channel mixer",
+			"tags": ["Mixer"]
 		},
 		{
 			"slug": "squinkylabs-mix4",
 			"name": "Mixer-EX 4",
-			"description": "4 channel mixer expander"
+			"description": "4 channel mixer expander",
+			"tags": ["Mixer", "Expander"]
 		},
 		{
 			"slug": "squinkylabs-mixm",

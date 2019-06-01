@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __V1
+#ifdef __V1x
 
 /**
  * UI Widget that does:

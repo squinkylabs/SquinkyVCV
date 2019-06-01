@@ -14,7 +14,7 @@ public:
     void addSvg(const char* resourcePath);
     void setHandler(std::function<void(void)>);
 
-#ifdef __V1
+#ifdef __V1x
     void onButton(const event::Button &e) override;
     void draw(const DrawArgs &args) override;
 #else
@@ -57,7 +57,7 @@ inline int SqToggleLED::getSvgIndex()
     return index;
 }
 
-#ifdef __V1
+#ifdef __V1x
 inline void SqToggleLED::draw(const DrawArgs &args)
 {
 #else
@@ -71,13 +71,13 @@ inline void SqToggleLED::draw(NVGcontext *args)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 inline void SqToggleLED::onButton(const event::Button &e)
 #else
 inline void SqToggleLED::onMouseDown(EventMouseDown &e)
 #endif
 {
-    #ifdef __V1
+    #ifdef __V1x
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
         if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||

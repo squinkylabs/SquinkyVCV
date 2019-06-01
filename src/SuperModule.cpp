@@ -33,7 +33,7 @@ void SuperModule::onSampleRateChange()
 {
 }
 
-#ifdef __V1
+#ifdef __V1x
 SuperModule::SuperModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -258,7 +258,7 @@ void superWidget::addJacks(SuperModule *)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 superWidget::superWidget(SuperModule *module) : semitoneDisplay(module)
 {
     setModule(module);
@@ -300,7 +300,7 @@ superWidget::superWidget(SuperModule *module) :
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelSuperModule = createModel<SuperModule,
     superWidget>("squinkylabs-super");
 #else

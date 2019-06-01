@@ -19,7 +19,7 @@ struct BootyModule : Module
      * Overrides of Module functions
      */
     void step() override;
-#ifdef __V1
+#ifdef __V1x
     virtual json_t *dataToJson() override;
     virtual void dataFromJson(json_t *root) override;
 #else
@@ -39,7 +39,7 @@ public:
 extern float values[];
 extern const char* ranges[];
 
-#ifdef __V1
+#ifdef __V1x
 BootyModule::BootyModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -66,7 +66,7 @@ void BootyModule::onSampleRateChange()
     shifter->setSampleRate(rate);
 }
 
-#ifdef __V1
+#ifdef __V1x
 json_t *BootyModule::dataToJson()
 #else
 json_t *BootyModule::toJson()
@@ -78,7 +78,7 @@ json_t *BootyModule::toJson()
     return rootJ;
 }
 
-#ifdef __V1
+#ifdef __V1x
 void BootyModule::dataFromJson(json_t *rootJ)
 #else
 void BootyModule::fromJson(json_t *rootJ)
@@ -138,7 +138,7 @@ struct RangeItem : MenuItem
     float * const rangeOut;
     ChoiceButton* const rangeChoice;
 
-#ifdef __V1
+#ifdef __V1x
     void onAction(const event::Action &e) override
 #else
     void onAction(EventAction &e) override
@@ -159,7 +159,7 @@ struct RangeChoice : ChoiceButton
         this->box.size.x = width;
     }
     float * const output;
-#ifdef __V1
+#ifdef __V1x
     void onAction(const event::Action &e) override
     {
         Menu* menu = createMenu();
@@ -196,7 +196,7 @@ struct BootyWidget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 BootyWidget::BootyWidget(BootyModule *module)
 {
     setModule(module);
@@ -270,7 +270,7 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
 // manufacturer name for categorization, module slug (should never
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
-#ifdef __V1
+#ifdef __V1x
 Model *modelBootyModule = createModel<BootyModule, BootyWidget>("squinkylabs-freqshifter");
 #else
 Model *modelBootyModule = Model::create<BootyModule, BootyWidget>("Squinky Labs",

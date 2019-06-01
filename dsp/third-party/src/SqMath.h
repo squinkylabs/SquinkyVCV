@@ -5,7 +5,7 @@
 #define M_PI float(3.14159265358979323846264338327950288)
 #endif
 
-#ifdef __V1
+#ifdef __V1x
 
     #if defined(_MSC_VER)
     #pragma warning (push)
@@ -45,7 +45,7 @@
  */
 namespace sq 
 {
-#ifdef __V1
+#ifdef __V1x
     using RCFilter = rack::dsp::RCFilter;
     using Vec = rack::math::Vec;
     using Rect = rack::math::Rect;
@@ -57,7 +57,7 @@ namespace sq
 
 inline float quadraticBipolar(float x)
 {
-#ifdef __V1
+#ifdef __V1x
     return rack::dsp::quadraticBipolar(x);
 #else
     return rack::quadraticBipolar(x);
@@ -66,7 +66,7 @@ inline float quadraticBipolar(float x)
 
 inline float clamp(float a, float b, float c)
 {
-    #ifdef __V1 
+    #ifdef __V1x 
         return rack::math::clamp(a, b, c);
     #else
         return rack::clamp(a, b, c);
@@ -75,7 +75,7 @@ inline float clamp(float a, float b, float c)
 
 inline float interpolateLinear(float* a, float b)
 {
-    #ifdef __V1
+    #ifdef __V1x
         return rack::math::interpolateLinear(a, b);
     #else
         return rack::interpolateLinear(a, b);
@@ -85,7 +85,7 @@ inline float interpolateLinear(float* a, float b)
 
 inline float rescale(float a, float b, float c, float d, float e)
 {
-    #ifdef __V1
+    #ifdef __V1x
         return rack::math::rescale(a, b, c, d, e);
     #else
         return rack::rescale(a, b, c, d, e);

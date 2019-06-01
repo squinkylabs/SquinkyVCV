@@ -62,7 +62,7 @@ void Mix4Module::requestModuleSolo(SoloCommands command)
     Mix4->requestModuleSolo(command);
 }
 
-#ifdef __V1
+#ifdef __V1x
 Mix4Module::Mix4Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -211,7 +211,7 @@ void Mix4Widget::makeStrip(
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 Mix4Widget::Mix4Widget(Mix4Module *module)
 {
     setModule(module);
@@ -236,7 +236,7 @@ Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelMix4Module = createModel<Mix4Module, Mix4Widget>("squinkylabs-mix4");
 #else
 Model *modelMix4Module = Model::create<Mix4Module,

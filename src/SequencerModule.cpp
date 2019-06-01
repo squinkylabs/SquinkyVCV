@@ -23,7 +23,7 @@
 
 using Comp = Seq<WidgetComposite>;
 
-#ifdef __V1
+#ifdef __V1x
 SequencerModule::SequencerModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -103,7 +103,7 @@ void sequencerHelp()
     SqHelper::openBrowser(helpUrl);
 }
 
-#ifdef __V1
+#ifdef __V1x
 SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 {
     setModule(module);
@@ -258,7 +258,7 @@ void SequencerWidget::addJacks(SequencerModule *module)
         Seq<WidgetComposite>::GATE_LIGHT));
 }
 
-#ifdef __V1
+#ifdef __V1x
 void SequencerModule::dataFromJson(json_t *data)
 #else
 void SequencerModule::fromJson(json_t* data)
@@ -301,7 +301,7 @@ void SequencerModule::onReset()
 // change), human-readable module name, and any number of tags
 // (found in `include/tags.hpp`) separated by commas.
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelSequencerModule = createModel<SequencerModule, SequencerWidget>("squinkylabs-sequencer");
 #else
 Model *modelSequencerModule = Model::create<SequencerModule, SequencerWidget>("Squinky Labs",

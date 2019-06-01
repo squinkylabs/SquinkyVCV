@@ -20,7 +20,7 @@ struct EV3Module : Module
 };
 
 
-#ifdef __V1
+#ifdef __V1x
 EV3Module::EV3Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -507,7 +507,7 @@ void EV3Widget::makeOutputs(EV3Module *, std::shared_ptr<IComposite> icomp)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 EV3Widget::EV3Widget(EV3Module* module) :
     pitchDisplay(module),
     module(module)
@@ -535,7 +535,7 @@ EV3Widget::EV3Widget(EV3Module *module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelEV3Module = createModel<EV3Module,
     EV3Widget>("squinkylabs-ev3");
 #else

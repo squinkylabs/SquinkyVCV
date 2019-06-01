@@ -1,7 +1,7 @@
 
 #pragma once
 
-#ifndef __V1
+#ifndef __V1x
 
 #include "ToggleManager2.h"
 

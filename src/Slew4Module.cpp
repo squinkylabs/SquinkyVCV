@@ -35,7 +35,7 @@ void Slew4Module::onSampleRateChange()
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Slew4Module::Slew4Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -90,7 +90,7 @@ struct Slew4Widget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 Slew4Widget::Slew4Widget(Slew4Module *module)
 {
     setModule(module);
@@ -191,7 +191,7 @@ void Slew4Widget::addScrews()
 }
 
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelSlew4Module = createModel<Slew4Module, Slew4Widget>("squinkylabs-slew4");
 #else
 Model *modelSlew4Module = Model::create<Slew4Module,

@@ -25,7 +25,7 @@ private:
     typedef float T;
 };
 
-#ifdef __V1
+#ifdef __V1x
 VocalModule::VocalModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -77,7 +77,7 @@ struct MuteLight : BASE
     }
 };
 
-#ifdef __V1
+#ifdef __V1x
 struct NKK2 : SqHelper::SvgSwitch
 {
     NKK2()
@@ -105,7 +105,7 @@ struct NKK2 : SqHelper::SvgSwitch, ToggleSwitch
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1
+#ifdef __V1x
 VocalWidget::VocalWidget(VocalModule *module)
 {
     setModule(module);
@@ -299,7 +299,7 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1
+#ifdef __V1x
 Model *modelVocalModule = createModel<VocalModule, VocalWidget>("squinkylabs-vocalanimator");
 #else
 Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs",

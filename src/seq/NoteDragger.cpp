@@ -4,7 +4,7 @@
 #include "SqGfx.h"
 #include "WidgetComposite.h"
 
-#ifdef __V1
+#ifdef __V1x
     #include "widget/Widget.hpp"
     #include "app.hpp"
 #else

@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <memory>
 
-#ifdef __V1
+#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;
@@ -26,6 +26,8 @@ namespace rack {
 using Module = rack::Module;
 #endif
 
+/**
+ */
 template <class TBase>
 class FiltDescription : public IComposite
 {
@@ -38,6 +40,7 @@ public:
  * CPU usage, tanh and no oversampling: 30
  * with 4X: 140
  * with all the features: 145
+ * final version: 152
  */
 template <class TBase>
 class Filt : public TBase
@@ -70,12 +73,13 @@ public:
         DRIVE_PARAM,
         DRIVE_TRIM_PARAM,
         VOICING_PARAM,
-        STAGING_PARAM,      // aka "edge"
+        EDGE_PARAM,
         SPREAD_PARAM,
         SLOPE_PARAM,
         SLOPE_TRIM_PARAM,
         BASS_MAKEUP_PARAM,
         MASTER_VOLUME_PARAM,
+        EDGE_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -88,6 +92,7 @@ public:
         Q_INPUT,
         DRIVE_INPUT,
         SLOPE_INPUT,
+        EDGE_INPUT,
         NUM_INPUTS
     };
 
@@ -109,13 +114,6 @@ public:
         VOL2_LIGHT,
         VOL3_LIGHT,
         NUM_LIGHTS
-    };
-
-    enum class BassMakeup
-    {
-        Gain,
-        TrackingFilter,
-        FixedFilter
     };
 
     static std::vector<std::string> getTypeNames()
@@ -162,6 +160,7 @@ private:
     AudioMath::ScaleFun<float> scaleFc = AudioMath::makeScalerWithBipolarAudioTrim(-5, 5);
     AudioMath::ScaleFun<float> scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(0, 4);
     AudioMath::ScaleFun<float> scaleSlope = AudioMath::makeScalerWithBipolarAudioTrim(0, 3);
+    AudioMath::ScaleFun<float> scaleEdge = AudioMath::makeScalerWithBipolarAudioTrim(0, 1);
 
     void stepn(int);
 };
@@ -201,17 +200,17 @@ inline void Filt<TBase>::stepn(int divFactor)
     T res = scaleQ(
         TBase::inputs[Q_INPUT].value,
         TBase::params[Q_PARAM].value,
-        TBase::params[Q_TRIM_PARAM].value); 
+        TBase::params[Q_TRIM_PARAM].value);
     const T qMiddle = 2.8;
-    res = (res < 2) ? 
+    res = (res < 2) ?
         (res * qMiddle / 2) :
-        .5 * (res-2) * (4 - qMiddle) + qMiddle;
+        .5 * (res - 2) * (4 - qMiddle) + qMiddle;
 
     if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
-   
+
     //********* now the drive 
         // 0..1
     float  gainInput = scaleGain(
@@ -220,7 +219,11 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[DRIVE_TRIM_PARAM].value);
 
     T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
-    float staging = TBase::params[STAGING_PARAM].value;
+    const float edge = scaleEdge(
+        TBase::inputs[EDGE_INPUT].value,
+        TBase::params[EDGE_PARAM].value,
+        TBase::params[EDGE_TRIM_PARAM].value);
+
     float spread = TBase::params[SPREAD_PARAM].value;
 
     T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
@@ -238,7 +241,7 @@ inline void Filt<TBase>::stepn(int divFactor)
         imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].active && TBase::outputs[L_AUDIO_OUTPUT + i].active;
         if (imp.isActive) {
             imp._f.setFreqSpread(spread);
-            imp._f.setEdge(staging);
+            imp._f.setEdge(edge);
             imp._f.setGain(gain);
             imp._f.setVoicing(voicing);
             imp._f.setType(type);
@@ -283,6 +286,18 @@ inline void Filt<TBase>::step()
             peak.step(output);
         }
     }
+
+    // Do special processing for unconnected outputs
+    if (!dsp[0].isActive && !dsp[1].isActive) {
+        // both sides unpatched - clear output
+        TBase::outputs[L_AUDIO_OUTPUT].value = 0;
+        TBase::outputs[R_AUDIO_OUTPUT].value = 0;
+    } else if (dsp[0].isActive && !dsp[1].isActive) {
+        // left connected, right not r = l
+        TBase::outputs[R_AUDIO_OUTPUT].value = TBase::outputs[L_AUDIO_OUTPUT].value;
+    } else if (!dsp[0].isActive && dsp[1].isActive) {
+        TBase::outputs[L_AUDIO_OUTPUT].value = TBase::outputs[R_AUDIO_OUTPUT].value;
+    }
 }
 
 template <class TBase>
@@ -312,8 +327,8 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::DRIVE_PARAM:
             ret = {-5, 5, -5, "Drive"};
             break;
-        case Filt<TBase>::STAGING_PARAM:
-            ret = {0, 1, .5, "Edge"};
+        case Filt<TBase>::EDGE_PARAM:
+            ret = {-5, 5, 0, "Edge"};
             break;
         case Filt<TBase>::VOICING_PARAM:
             {
@@ -348,6 +363,9 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             break;   
         case Filt<TBase>::MASTER_VOLUME_PARAM:
             ret = {0, 1, .5, "Output volume"};
+            break;
+        case Filt<TBase>::EDGE_TRIM_PARAM:
+            ret = {-1, 1, 0, "Edge trim"};
             break;
             
 #if 0

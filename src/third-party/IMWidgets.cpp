@@ -9,7 +9,7 @@
 #include "IMWidgets.hpp"
 
 
-#ifndef __V1
+#ifndef __V1x
 // Dynamic SVGScrew
 
 
@@ -117,7 +117,7 @@ void PanelBorderWidget::draw(NVGcontext *vg) {  // carbon copy from SVGPanel.cpp
 	}
 }
 
-#ifndef __V1
+#ifndef __V1x
 
 DynamicSVGPanel::DynamicSVGPanel() {
     mode = nullptr;

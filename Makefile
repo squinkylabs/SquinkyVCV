@@ -1,8 +1,7 @@
-# Must follow the format in the Naming section of https://vcvrack.com/manual/PluginDevelopmentTutorial.html
+
 SLUG = squinkylabs-plug1
 
-# Must follow the format in the Versioning section of https://vcvrack.com/manual/PluginDevelopmentTutorial.html
-VERSION = 0.6.14
+VERSION = 0.6.15
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
@@ -16,7 +15,7 @@ CFLAGS +=
 CXXFLAGS +=
 
 # compile for V1 vs 0.6
-FLAGS += -D __V1
+FLAGS += -D __V1x
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP

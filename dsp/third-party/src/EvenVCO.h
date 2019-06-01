@@ -23,7 +23,7 @@
 
 
 
-#ifdef __V1
+#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;
@@ -136,7 +136,7 @@ inline EvenVCO<TBase>::EvenVCO(Module * module) : TBase(module)
     initialize();
 }
 
-#ifdef __V1
+#ifdef __V1x
 using namespace rack::dsp;
 #else
 using namespace rack;

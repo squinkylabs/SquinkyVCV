@@ -44,6 +44,7 @@ static void setupFilter(LadderFilter<T>& f)
     f.setGain(1);
 }
 
+// test that highpass decays to zero
 static void testLadderDCf(int repeats)
 {
     LadderFilter<float> f;
@@ -58,7 +59,7 @@ static void testLadderDCf(int repeats)
       
     }
     y = f.getOutput();
-    printf("testLadderDCf rep = %d out=%e\n", repeats, y);
+    //printf("testLadderDCf rep = %d out=%e\n", repeats, y);
     if (repeats >= 1000) assertClose(y, 0, 3.3e-5);
 }
 
@@ -74,7 +75,7 @@ static void testLadderDCd(int repeats)
 
     }
     y = f.getOutput();
-    printf("testLadderDCd rep = %d out=%e\n", repeats, y);
+    //printf("testLadderDCd rep = %d out=%e\n", repeats, y);
    // .02 after 100+
     // 0 after 1000
 
@@ -312,8 +313,153 @@ static void testPeak2()
     p.decay(4.f / 44000);
     assertLT(p.get(), 5);
 }
+
+
+static void testEdgeInMiddleUnity(bool is4PLP)
+{
+    EdgeTables t;
+    float buf[5] = {0};
+  
+    t.lookup(is4PLP, .5, buf);
+    for (int i = 0; i < 4; ++i) {
+        assertClose(buf[i], 1, .0001);  // float passed at .02
+    }
+    assertEQ(buf[4], 0);
+}
+
+
+static void testEdge1(bool is4PLP)
+{
+    EdgeTables t;
+    float buf[5] = {0};
+
+    t.lookup(is4PLP, 1, buf);
+
+    assertGT(buf[1], buf[0]);
+    assertGT(buf[2], buf[1]);
+    assertGT(buf[3], buf[2]);
+
+    if (is4PLP) {
+        assertClose(buf[3], 2.42, .1);
+    } else {
+        assertClose(buf[3], 1.84, .1);
+    }
+}
+
+
+static void testEdge0(bool is4PLP)
+{
+    EdgeTables t;
+    float buf[5] = {0};
+
+    t.lookup(is4PLP, 0, buf);
+
+    assertLT(buf[1], buf[0]);
+    assertLT(buf[2], buf[1]);
+    assertLT(buf[3], buf[2]);
+
+    if (is4PLP) {
+        assertClose(buf[3], .46, .1);
+    } else {
+        assertClose(buf[3], .71, .1);
+    }
+}
+
+static void testFiltOutputsDisconnect()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].active = true;
+    f.inputs[F::R_AUDIO_INPUT].active = true;
+    f.inputs[F::L_AUDIO_INPUT].value = 10;
+    f.inputs[F::R_AUDIO_INPUT].value = 10;
+    f.outputs[F::L_AUDIO_OUTPUT].active = true;
+    f.outputs[F::R_AUDIO_OUTPUT].active = true;
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    // should be passing DC already
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].value, 1);
+    assertGT(f.outputs[F::R_AUDIO_OUTPUT].value, 1);
+
+    // disconnect the inputs
+    f.outputs[F::L_AUDIO_INPUT].active = false;
+    f.outputs[F::R_AUDIO_INPUT].active = false;
+
+    for (int i = 0; i < 8; ++i) {
+        f.step();
+    }
+
+    // disconnected should go to zero.
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].value, 0);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].value, 0);
+
+}
+
+
+static void testFiltOutputsRightDisconnect()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].active = true;
+    f.inputs[F::R_AUDIO_INPUT].active = false;
+    f.inputs[F::L_AUDIO_INPUT].value = 10;
+    f.inputs[F::R_AUDIO_INPUT].value = 0;
+    f.outputs[F::L_AUDIO_OUTPUT].active = true;
+    f.outputs[F::R_AUDIO_OUTPUT].active = true;
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    // should be passing DC already
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].value, 1);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].value, (f.outputs[F::L_AUDIO_OUTPUT].value));
+
+}
+
+
+static void testFiltOutputsLeftDisconnect()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].active = false;
+    f.inputs[F::R_AUDIO_INPUT].active = true;
+    f.inputs[F::L_AUDIO_INPUT].value = 0;
+    f.inputs[F::R_AUDIO_INPUT].value = 10;
+    f.outputs[F::L_AUDIO_OUTPUT].active = true;
+    f.outputs[F::R_AUDIO_OUTPUT].active = true;
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    // should be passing DC already
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].value, 1);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].value, (f.outputs[F::L_AUDIO_OUTPUT].value));
+
+}
+
+
 void testLadder()
 {
+    testEdgeInMiddleUnity(true);
+    testEdgeInMiddleUnity(false);
+    testEdge1(true);
+    testEdge1(false);
+    testEdge0(true);
+    testEdge0(false);
 
     testLadderZero();
     testLadderNotZero();
@@ -333,4 +479,8 @@ void testLadder()
     testPeak0();
     testPeak1();
     testPeak2();
+
+    testFiltOutputsDisconnect();
+    testFiltOutputsRightDisconnect();
+    testFiltOutputsLeftDisconnect();
 }

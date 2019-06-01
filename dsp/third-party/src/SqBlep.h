@@ -4,7 +4,7 @@
  * Thin wrapper around rack MinBLEP
  * to make porting easier
  */
-#ifdef __V1
+#ifdef __V1x
 class SqBlep
 {
 public:
@@ -19,7 +19,7 @@ public:
 };
 #endif
 
-#ifndef __V1
+#ifndef __V1x
 
 #include "dsp/minblep.hpp"
 class SqBlep

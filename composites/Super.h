@@ -8,7 +8,7 @@
 #include "ObjectCache.h"
 #include "StateVariable4PHP.h"
 
-#ifdef __V1
+#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;

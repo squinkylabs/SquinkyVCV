@@ -26,10 +26,10 @@ Our `Makefile` is currently set up to build for the forthcoming VCV Rack 1.0. If
 
 ```make
 # compile for V1 vs 0.6
-FLAGS += -D __V1
+FLAGS += -D __V1x
 ```
 
-Remove the __V1 flag and it will build for 0.6.x.
+Remove the __V1x flag and it will build for 0.6.x.
 
 ## Unit testing framework
 
