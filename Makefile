@@ -1,8 +1,7 @@
-# Must follow the format in the Naming section of https://vcvrack.com/manual/PluginDevelopmentTutorial.html
+
 SLUG = squinkylabs-plug1
 
-# Must follow the format in the Versioning section of https://vcvrack.com/manual/PluginDevelopmentTutorial.html
-VERSION = 0.6.14
+VERSION = 0.6.15
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
