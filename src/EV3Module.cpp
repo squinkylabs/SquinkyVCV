@@ -9,6 +9,8 @@
 #include "EV3.h"
 #include <sstream>
 
+#include "SqPort.h"
+
 
 using Comp = EV3<WidgetComposite>;
 
@@ -91,7 +93,7 @@ void EV3PitchDisplay::step()
         if (module) {
             oct = module->params[octaveParam].value;
             semi = module->params[semiParam].value;
-            patched = module->inputs[inputId].active;
+            patched = SqPort::isConnected(module->inputs[inputId]);
         }
         if (semi != lastSemi[i] ||
             oct != lastOctave[i] ||
@@ -313,7 +315,6 @@ void EV3Widget::step()
     if (norm != wasNormalizing) {
         wasNormalizing = norm;
         auto color = norm ? COLOR_GREEN2 : SqHelper::COLOR_WHITE;
-        plusOne->color = color;
         plusTwo->color = color;
     }
 }

@@ -8,6 +8,7 @@
 #include "IComposite.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
+#include "SqPort.h"
 
 #ifdef __V1x
 namespace rack {
@@ -201,7 +202,7 @@ inline void Slew4<TBase>::step()
     float triggerIn = 0;
     for (int i=0; i<8; ++i) {
         // if input is patched, it becomes the new normaled input;
-        const bool bPatched = TBase::inputs[i + INPUT_TRIGGER0].active;
+        const bool bPatched = SqPort::isConnected(TBase::inputs[i + INPUT_TRIGGER0]);
         if (bPatched) {
             triggerIn = TBase::inputs[i + INPUT_TRIGGER0].value;
         }
@@ -219,14 +220,14 @@ inline void Slew4<TBase>::step()
         // else output = lag
         float inputValue = 10.f;   
 
-        if (TBase::inputs[i + INPUT_AUDIO0].active) {
+        if (SqPort::isConnected(TBase::inputs[i + INPUT_AUDIO0])) {
             inputValue = TBase::inputs[i + INPUT_AUDIO0].value;
         } 
         TBase::outputs[i + OUTPUT0].value = lag.get(i) * inputValue * .1f;
         sum += TBase::outputs[i + OUTPUT0].value;
 
         // normaled output logic: patched outputs get the sum of the unpatched above them.
-        if (TBase::outputs[i + OUTPUT_MIX0].active) {
+        if (SqPort::isConnected(TBase::outputs[i + OUTPUT_MIX0])) {
             TBase::outputs[i + OUTPUT_MIX0].value = sum * _outputLevel;
             sum = 0;
         }

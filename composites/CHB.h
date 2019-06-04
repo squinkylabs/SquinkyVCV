@@ -10,6 +10,7 @@
 #include "ObjectCache.h"
 #include "poly.h"
 #include "SinOscillator.h"
+#include "SqPort.h"
 
 #ifdef __V1x
 namespace rack {
@@ -310,8 +311,8 @@ inline float CHB<TBase>::getInput()
     if (cycleCount == 0) {
         // Get the gain from the envelope generator in
         // eGain = {0 .. 10.0f }
-        float eGain = TBase::inputs[ENV_INPUT].active ? TBase::inputs[ENV_INPUT].value : 10.f;
-        isExternalAudio = TBase::inputs[AUDIO_INPUT].active;
+        float eGain = SqPort::isConnected(TBase::inputs[ENV_INPUT]) ? TBase::inputs[ENV_INPUT].value : 10.f;
+        isExternalAudio = SqPort::isConnected(TBase::inputs[AUDIO_INPUT]);
 
         const float gainKnobValue = TBase::params[PARAM_EXTGAIN].value;
         const float gainCVValue = TBase::inputs[GAIN_INPUT].value;
@@ -383,7 +384,7 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
         float val = taper(TBase::params[i + PARAM_H0].value);       // apply taper to the knobs
 
         // If input connected, scale and multiply with knob value
-        if (TBase::inputs[i + H0_INPUT].active) {
+        if (SqPort::isConnected(TBase::inputs[i + H0_INPUT])) {
             const float inputCV = TBase::inputs[i + H0_INPUT].value * .1f;
             val *= std::max(inputCV, 0.f);
         }
