@@ -1,5 +1,5 @@
 #include <assert.h>
-
+#include "TestComposite.h"
 #include "asserts.h"
 #include "EV3.h"
 

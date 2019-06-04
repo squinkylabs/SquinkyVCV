@@ -1,5 +1,6 @@
 
 #include "asserts.h"
+#include "TestComposite.h"
 #include "Filt.h"
 #include "LadderFilter.h"
 #include "PeakDetector.h"

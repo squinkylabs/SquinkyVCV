@@ -1,4 +1,4 @@
-
+#include "TestComposite.h"
 #include "Filt.h"
 #include "LookupTable.h"
 #include "Mix8.h"

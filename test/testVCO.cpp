@@ -1,6 +1,6 @@
 
 #include <assert.h>
-
+#include "TestComposite.h"
 #include "Analyzer.h"
 #include "asserts.h"
 #include "CHB.h"

@@ -1,4 +1,4 @@
-
+#include "TestComposite.h"
 #include "asserts.h"
 #include "Mix8.h"
 #include "Mix4.h"
