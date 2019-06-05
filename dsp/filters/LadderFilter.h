@@ -203,6 +203,7 @@ inline void LadderFilter<T>::dump(const char* p)
 {
 #if 0
     printf("\ndump %s\n", p);
+    printf("norm freq = %.2f, @44 = %.2f\n", lastNormalizedFc, lastNormalizedFc * 44100.0f);
     printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", adjustedFeedback, gain, rawEdge, slope);
     printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
     for (int i = 0; i < 4; ++i) {
@@ -282,10 +283,27 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
     if (input == lastNormalizedFc) {
         return;
     }
+
+    // temp debugging stuff
+    #if 0
+    {
+        float f = input * 44100;
+        static float lastf = 0;
+        float delta = std::abs<float>(f - lastf);
+        if (delta > 500) {
+            lastf = f;
+        } else {
+            return;
+        }
+    }
+    #endif
+
+
     lastNormalizedFc = input;
     _g = getGfromNormFreq(input);
     updateFilter();
     updateFeedback();
+    dump("setnormfc");
 }
 
 template <typename T>
@@ -531,14 +549,25 @@ inline void LadderFilter<T>::updateFeedback()
         maxFeedback = 2.95;
     } else if (fNorm <= .25) {
         maxFeedback = 2.85;
+    } else if (fNorm <= .3) {
+      //  maxFeedback = 2.30;
+      // experiment 2.5 too low.
+      // 2.7 slightly low?
+      // 2.8 ever so lightly high
+      // 2.85 too high
+      maxFeedback = 2.75;
+    } else if (fNorm <= .4) {
+        maxFeedback = 2.5;
     } else {
-        maxFeedback = 2.30;
+        maxFeedback = 2.3;
     }
 
     assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
 
     adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
     adjustedFeedback = std::max(adjustedFeedback, T(0));
+    //printf("in updateFeedback, f= %.2f (%.2f) max = %.2f\n", fNorm * 44100, fNorm, maxFeedback);
+    //printf("  reqF=%.2f adj = %.2f \n", requestedFeedback, adjustedFeedback);
 }
 
 
