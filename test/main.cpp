@@ -70,6 +70,7 @@ extern void testSlew4();
 extern void testCommChannels();
 extern void testLadder();
 extern void testHighpassFilter();
+extern void calQ();
 
 #if 0
 #include <sstream>
@@ -102,6 +103,7 @@ int main(int argc, char ** argv)
     bool runPerf = false;
     bool extended = false;
     bool runShaperGen = false;
+    bool cq = false;
     if (argc > 1) {
         std::string arg = argv[1];
         if (arg == "--ext") {
@@ -110,6 +112,8 @@ int main(int argc, char ** argv)
             runPerf = true;
         } else if (arg == "--shaper") {
             runShaperGen = true;
+        } else if (arg == "--calQ") {
+            cq = true;
         } else {
             printf("%s is not a valid command line argument\n", arg.c_str());
         }
@@ -126,6 +130,11 @@ int main(int argc, char ** argv)
 
     if (runShaperGen) {
         testSpline(true);
+        return 0;
+    }
+
+    if (cq) {
+        calQ();
         return 0;
     }
 

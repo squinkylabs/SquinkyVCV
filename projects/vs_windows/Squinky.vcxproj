@@ -51,6 +51,7 @@
     <ClCompile Include="..\..\sqsrc\thread\ThreadServer.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadSharedState.cpp" />
     <ClCompile Include="..\..\test\Analyzer.cpp" />
+    <ClCompile Include="..\..\test\calQ.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
     <ClCompile Include="..\..\test\perfTest2.cpp" />
