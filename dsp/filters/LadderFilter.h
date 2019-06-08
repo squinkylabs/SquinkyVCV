@@ -123,6 +123,12 @@ public:
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
 
+    void disableQComp()
+    {
+        _disableQComp = true;
+        //printf("disable qc of ladder %p\n", this);
+    }
+
 private:
     TrapezoidalLowpass<T> lpfs[4];
     EdgeTables edgeLookup;
@@ -148,7 +154,7 @@ private:
     T requestedFeedback = 0;
     T adjustedFeedback = 0;
     T gain = T(.3);
-    T stageOutputs[4];
+    T stageOutputs[4] = {0,0,0,0};
     T rawEdge = 0;
     T freqSpread = 0;
     T slope = 3;
@@ -165,6 +171,7 @@ private:
     T finalVolume = 1;
 
     bool bypassFirstStage = false;
+    bool _disableQComp = false;
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
     std::shared_ptr<LookupTableParams<T>> tanhLookup = ObjectCache<T>::getTanh5();
@@ -193,6 +200,8 @@ private:
 template <typename T>
 LadderFilter<T>::LadderFilter()
 {
+   // printf("ctrol of ladder %p\n", this);
+
     // fix at 4X oversample
     up.setup(oversampleRate);
     down.setup(oversampleRate);
@@ -532,42 +541,46 @@ inline void LadderFilter<T>::setFeedback(T f)
 template <typename T>
 inline void LadderFilter<T>::updateFeedback()
 {
-    double maxFeedback = 4;
-    double fNorm = lastNormalizedFc;
+    if (!_disableQComp) {
+        double maxFeedback = 4;
+        double fNorm = lastNormalizedFc;
 
-    // Becuase this filter isn't zero delay, it can get unstable at high freq.
-    // So limite the feedback up there.
-    if (fNorm <= .002) {
-        maxFeedback = 3.99;
-    } else if (fNorm <= .008) {
-        maxFeedback = 3.9;
-    } else if (fNorm <= .032) {
-        maxFeedback = 3.8;
-    } else if (fNorm <= .064) {
-        maxFeedback = 3.6;
-    } else if (fNorm <= .128) {
-        maxFeedback = 2.95;
-    } else if (fNorm <= .25) {
-        maxFeedback = 2.85;
-    } else if (fNorm <= .3) {
-      //  maxFeedback = 2.30;
-      // experiment 2.5 too low.
-      // 2.7 slightly low?
-      // 2.8 ever so lightly high
-      // 2.85 too high
-      maxFeedback = 2.75;
-    } else if (fNorm <= .4) {
-        maxFeedback = 2.5;
+        // Becuase this filter isn't zero delay, it can get unstable at high freq.
+        // So limite the feedback up there.
+        if (fNorm <= .002) {
+            maxFeedback = 3.99;
+        } else if (fNorm <= .008) {
+            maxFeedback = 3.9;
+        } else if (fNorm <= .032) {
+            maxFeedback = 3.8;
+        } else if (fNorm <= .064) {
+            maxFeedback = 3.6;
+        } else if (fNorm <= .128) {
+            maxFeedback = 2.95;
+        } else if (fNorm <= .25) {
+            maxFeedback = 2.85;
+        } else if (fNorm <= .3) {
+          //  maxFeedback = 2.30;
+          // experiment 2.5 too low.
+          // 2.7 slightly low?
+          // 2.8 ever so lightly high
+          // 2.85 too high
+            maxFeedback = 2.75;
+        } else if (fNorm <= .4) {
+            maxFeedback = 2.5;
+        } else {
+            maxFeedback = 2.3;
+        }
+        
+        assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
+
+        adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
+        adjustedFeedback = std::max(adjustedFeedback, T(0));
+       // printf("in updateFeedback, f= %.2f (%.2f) max = %.2f\n", fNorm * 44100, fNorm, maxFeedback);
+       // printf("  reqF=%.2f adj = %.2f \n", requestedFeedback, adjustedFeedback);
     } else {
-        maxFeedback = 2.3;
+        adjustedFeedback = requestedFeedback;
     }
-
-    assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
-
-    adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
-    adjustedFeedback = std::max(adjustedFeedback, T(0));
-    //printf("in updateFeedback, f= %.2f (%.2f) max = %.2f\n", fNorm * 44100, fNorm, maxFeedback);
-    //printf("  reqF=%.2f adj = %.2f \n", requestedFeedback, adjustedFeedback);
 }
 
 
@@ -674,9 +687,11 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
+#if 1
 PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
+#endif
 
 template <typename T>
 inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
@@ -720,7 +735,7 @@ inline void LadderFilter<T>::runBufferClean(float* buffer, int numSamples)
     for (int i = 0; i < numSamples; ++i) {
         const T input = buffer[i];
 
-        T temp = input - feedback * stageOutputs[3];
+        T temp = input - adjustedFeedback * stageOutputs[3];
         temp = std::max(T(-10), temp); 
         temp = std::min(T(10), temp);
 

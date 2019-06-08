@@ -14,7 +14,7 @@ const int numBins =  4 * 16 * 4096;
 
 // 
 const double toleranceDb = 1;
-const double toleranceDbInterp = 10;
+double toleranceDbInterp = 6;
 const double sampleRate = 44100;
 
 //ok at 100
@@ -146,6 +146,39 @@ static bool isRegistered(double freq)
     return data.find(freq) != data.end();
 }
 
+/*
+template <typename T>
+inline std::shared_ptr<NonUniformLookupTableParams<T>> makeLPFilterL_Lookup()
+{
+    std::shared_ptr<NonUniformLookupTableParams<T>> ret = std::make_shared<NonUniformLookupTableParams<T>>();
+
+    T freqs[] = {22000, 1000, 100, 10, 1, .1f};
+    int numFreqs = sizeof(freqs) / sizeof(T);
+
+    for (int i = 0; i < numFreqs; ++i) {
+        T fs = freqs[i] / 44100.f;
+        T l = LowpassFilter<T>::computeLfromFs(fs);
+        NonUniformLookupTable<T>::addPoint(*ret, fs, l);
+    }
+    NonUniformLookupTable<T>::finalize(*ret);
+    return ret;
+}
+*/
+
+
+static void generate()
+{
+    printf("std::shared_ptr<NonUniformLookupTableParams<T>> ret = std::make_shared<NonUniformLookupTableParam;");
+    std::map<double, double>::iterator it;
+    for (it = data.begin(); it != data.end(); ++it) {
+        const double f = it->first;
+        const double fb = it->second;
+        printf("NonUniformLookupTable<T>::addPoint(*ret, %f, %f);\n", f, fb);
+    }
+    printf(" NonUniformLookupTable<T>::finalize(*ret);");
+}
+
+
 static void dumpData()
 {
     bool isFirst = true;
@@ -205,7 +238,7 @@ void cal2(double fLow, double feedLow, double fHigh, double feedHigh)
     double err = (dbMiddle - desiredGainDb);
 
     printf("in cal2(%.2f, %.2f, testing f=%.2f err = %f\n", fLow * sampleRate, fHigh * sampleRate, fMiddle * sampleRate, err);
-    if (err <= toleranceDbInterp) {
+    if ((err <= toleranceDbInterp) && (fHigh < fLow * 5))  {
         printf("success at %.2f\n", fMiddle * sampleRate);
         return;
     }
@@ -229,11 +262,21 @@ void calQ()
      // doRange(9800 / sampleRate, 22000 / sampleRate, 1.02);
      //  findFeedback(50 / sampleRate);
 #if 1
-       double fLow = 4000 / sampleRate;
-       double fHigh = 20000 / sampleRate;
-       double feedLow = findFeedback(fLow);
-       double feedHigh = findFeedback(fHigh);
-       cal2(fLow, feedLow, fHigh, feedHigh);
+        toleranceDbInterp = 6;
+        double fLow = 50 / sampleRate;
+        double fHigh = 4000 / sampleRate;
+        double feedLow = findFeedback(fLow);
+        double feedHigh = findFeedback(fHigh);
+        cal2(fLow, feedLow, fHigh, feedHigh);
+
+        toleranceDbInterp = 10;
+        fLow = 4100 / sampleRate;
+        fHigh = 22000 / sampleRate;
+        feedLow = findFeedback(fLow);
+        feedHigh = findFeedback(fHigh);
+        cal2(fLow, feedLow, fHigh, feedHigh);
+
+
 #endif
  
    }
@@ -241,4 +284,5 @@ void calQ()
        printf("\n\n----- ERROR %s -------\n", err.c_str());
    }
    dumpData();
+   generate();
 }
