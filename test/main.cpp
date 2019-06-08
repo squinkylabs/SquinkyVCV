@@ -13,12 +13,11 @@ extern void testLookupTable();
 extern void testSinOscillator();
 extern void testHilbert();
 extern void testAudioMath();
+extern void initPerf();
 extern void perfTest();
 extern void perfTest2();
 extern void testFrequencyShifter();
 extern void testStateVariable();
-
-
 extern void testVocalAnimator();
 extern void testObjectCache();
 extern void testThread(bool exended);
@@ -138,6 +137,20 @@ int main(int argc, char ** argv)
         return 0;
     }
 
+    if (runPerf) {
+        initPerf();
+        perfTest2();
+        perfTest();
+        return 0;
+    }
+
+#ifndef _DEBUG
+    if (true) {
+        printf("****** can't run tests with release build\n");
+        return 0;
+}
+#endif
+
     testIComposite();
     testVec();
     testCommChannels();
@@ -221,10 +234,7 @@ int main(int argc, char ** argv)
     testVocalAnimator();
 #endif
 
-    if (runPerf) {
-        perfTest();
-        perfTest2();
-    }
+
 
 
     testFilterDesign();

@@ -165,6 +165,21 @@ static void testFilt()
         }, 1);
 }
 
+static void testFilt2()
+{
+    Filter fs;
+    fs.init();
+    fs.inputs[Filter::L_AUDIO_INPUT].active = true;
+    fs.outputs[Filter::L_AUDIO_OUTPUT].active = true;
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "filt w/mod", [&fs]() {
+        fs.inputs[Filter::L_AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.params[Filter::FC_PARAM].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Filter::L_AUDIO_OUTPUT].value;
+        }, 1);
+}
+
 using Mixer8 = Mix8<TestComposite>;
 static void testMix8()
 {
@@ -215,16 +230,19 @@ static void testMixM()
 }
 void perfTest2()
 {
+    assert(overheadInOut > 0);
+    assert(overheadOutOnly > 0);
+    testFilt();
+    testFilt2();
     testSlew4();
     testMix8();
     testMix4();
     testMixM();
-    testFilt();
+   
     testUniformLookup();
     testNonUniform();
     testMultiLPF();
     testMultiLPFMod();
     testMultiLag();
     testMultiLagMod();
-
 }

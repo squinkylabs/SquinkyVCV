@@ -37,7 +37,6 @@ FiltPtr getFilter(T normFc, T feedback)
     const double d1 = filter->getOutput();
     assert(d1 == 0);
  
-   
     return filter;
 }
 

@@ -123,10 +123,10 @@ public:
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
 
+    // Only calibration routines will do this
     void disableQComp()
     {
         _disableQComp = true;
-        //printf("disable qc of ladder %p\n", this);
     }
 
 private:
@@ -193,6 +193,7 @@ private:
     void updateSlope();
     void updateFeedback();
     void updateStageGains();
+    T processFeedback(T fcNorm, T feedback) const;
     void dump(const char* p);
     T getGfromNormFreq(T nf) const;
 };
@@ -200,8 +201,6 @@ private:
 template <typename T>
 LadderFilter<T>::LadderFilter()
 {
-   // printf("ctrol of ladder %p\n", this);
-
     // fix at 4X oversample
     up.setup(oversampleRate);
     down.setup(oversampleRate);
@@ -539,9 +538,48 @@ inline void LadderFilter<T>::setFeedback(T f)
 }
 
 template <typename T>
+inline T LadderFilter<T>::processFeedback(T fcNorm, T feedback) const
+{
+   // double fNorm = lastNormalizedFc;
+    double maxFeedback = 0;
+       // Becuase this filter isn't zero delay, it can get unstable at high freq.
+       // So limite the feedback up there.
+    if (fcNorm <= .002) {
+        maxFeedback = 3.99;
+    } else if (fcNorm <= .008) {
+        maxFeedback = 3.9;
+    } else if (fcNorm <= .032) {
+        maxFeedback = 3.8;
+    } else if (fcNorm <= .064) {
+        maxFeedback = 3.6;
+    } else if (fcNorm <= .128) {
+        maxFeedback = 2.95;
+    } else if (fcNorm <= .25) {
+        maxFeedback = 2.85;
+    } else if (fcNorm <= .3) {
+      //  maxFeedback = 2.30;
+      // experiment 2.5 too low.
+      // 2.7 slightly low?
+      // 2.8 ever so lightly high
+      // 2.85 too high
+        maxFeedback = 2.75;
+    } else if (fcNorm <= .4) {
+        maxFeedback = 2.5;
+    } else {
+        maxFeedback = 2.3;
+    }
+
+    assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
+    T ret = std::min(feedback, (T) maxFeedback);
+    ret = std::max(feedback, T(0));
+    return ret;
+}
+
+template <typename T>
 inline void LadderFilter<T>::updateFeedback()
 {
     if (!_disableQComp) {
+#if 0
         double maxFeedback = 4;
         double fNorm = lastNormalizedFc;
 
@@ -576,6 +614,8 @@ inline void LadderFilter<T>::updateFeedback()
 
         adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
         adjustedFeedback = std::max(adjustedFeedback, T(0));
+#endif
+        adjustedFeedback = processFeedback(lastNormalizedFc, requestedFeedback);
        // printf("in updateFeedback, f= %.2f (%.2f) max = %.2f\n", fNorm * 44100, fNorm, maxFeedback);
        // printf("  reqF=%.2f adj = %.2f \n", requestedFeedback, adjustedFeedback);
     } else {
