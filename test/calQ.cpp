@@ -14,11 +14,17 @@ const int numBins =  4 * 16 * 4096;
 
 // 
 const double toleranceDb = 1;
-double toleranceDbInterp = 6;
+double toleranceDbInterp = 2;
 const double sampleRate = 44100;
 
-//ok at 100
-const double desiredGain = 40;
+// 40 sounded like self osc
+// 10 too much, too
+// 1 was crazy low
+// 3 not bad, but peaks only 24 db
+// now use 2 db interp tolerance
+// 6 pretty good, but still whistles
+// 4 too low
+const double desiredGain = 5;
 const double desiredGainDb = AudioMath::db(desiredGain);
 
 FiltPtr getFilter(T normFc, T feedback)
@@ -167,12 +173,12 @@ inline std::shared_ptr<NonUniformLookupTableParams<T>> makeLPFilterL_Lookup()
 
 static void generate()
 {
-    printf("std::shared_ptr<NonUniformLookupTableParams<T>> ret = std::make_shared<NonUniformLookupTableParam;");
+    printf("std::shared_ptr<NonUniformLookupTableParams<T>> ret = std::make_shared<NonUniformLookupTableParam;\n");
     std::map<double, double>::iterator it;
     for (it = data.begin(); it != data.end(); ++it) {
         const double f = it->first;
         const double fb = it->second;
-        printf("NonUniformLookupTable<T>::addPoint(*ret, %f, %f);\n", f, fb);
+        printf("NonUniformLookupTable<T>::addPoint(*ret, T(%f), T(%f));\n", f, fb);
     }
     printf(" NonUniformLookupTable<T>::finalize(*ret);");
 }

@@ -194,8 +194,8 @@ public:
         MUTE6_INPUT,
         MUTE7_INPUT,
 
-        RIGHT_EXPAND_INPUT,
         LEFT_EXPAND_INPUT,
+        RIGHT_EXPAND_INPUT,
         LEFT_RETURN_INPUT,
         RIGHT_RETURN_INPUT,
         NUM_INPUTS

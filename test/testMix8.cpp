@@ -408,6 +408,20 @@ static void testInputExtremes()
     ExtremeTester<T>::test(dut, paramLimits, false, "mix");
 }
 
+static void testExpansion8()
+{
+    auto m = getMixer<Mixer8>();
+    m->inputs[Mixer8::RIGHT_EXPAND_INPUT].value = 5;
+    m->inputs[Mixer8::LEFT_EXPAND_INPUT].value = 6;
+
+    m->step();
+
+    assertEQ(m->outputs[Mixer8::LEFT_OUTPUT].value, 6);
+    assertEQ(m->outputs[Mixer8::RIGHT_OUTPUT].value, 5);
+
+    assertEQ(Mixer8::LEFT_EXPAND_INPUT + 1, Mixer8::RIGHT_EXPAND_INPUT);
+    assertEQ(Mixer8::LEFT_RETURN_INPUT + 1, Mixer8::RIGHT_RETURN_INPUT);   
+}
 
 // test pass-through of data on expansion buses
 static void testExpansion4()
@@ -518,6 +532,7 @@ void testMix8()
 
     testExpansion4();
     testExpansionM();
+    testExpansion8();
 
     testReturn<MixerM>();
     testReturn<Mixer8>();
