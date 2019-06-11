@@ -1,4 +1,4 @@
-
+#include "TestComposite.h"
 #include <map>
 #include <vector>
 #include "asserts.h"

@@ -80,6 +80,7 @@
 			"slug": "squinkylabs-sequencer",
 			"name": "Seq++",
 			"description": "DAW-like sequencer",
+			"disabled": true,
 			"tags": ["Sequencer"]
 		},
 		{
@@ -92,6 +93,7 @@
 		{
 			"slug": "squinkylabs-blank",
 			"name": "Blank",
+			"disabled": true,
 			"description": "blank starting project"
 		},
 		{
@@ -110,23 +112,28 @@
 			"slug": "squinkylabs-mix4",
 			"name": "Mixer-EX 4",
 			"description": "4 channel mixer expander",
+			"disabled": true,
 			"tags": ["Mixer", "Expander"]
 		},
 		{
 			"slug": "squinkylabs-mixm",
 			"name": "Mixer Master",
 			"description": "Mixer master module",
+			"disabled": true,
 			"tags": ["Mixer"]
 		},
 		{
 			"slug": "squinkylabs-ch10",
 			"name": "ch10",
-			"description": "ch10"
+			"disabled": true,
+			"description": "ch10",
+			"tags": ["VCO"]
 		},
 		{
 			"slug": "squinkylabs-lfnb",
 			"name": "LFNB",
 			"description": "Low frequency random voltage generator 2",
+			"disabled": true,
 			"tags": ["NOISE", "RANDOM", "LFO"]
 		},
 		{

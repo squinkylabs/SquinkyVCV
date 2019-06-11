@@ -1,3 +1,4 @@
+#include "TestComposite.h"
 #include "Blank.h"
 #include "CHB.h"
 #include "ColoredNoise.h"

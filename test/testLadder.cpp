@@ -1,5 +1,6 @@
 
 #include "asserts.h"
+#include "TestComposite.h"
 #include "Filt.h"
 #include "LadderFilter.h"
 #include "PeakDetector.h"
@@ -13,6 +14,23 @@ static void testLadderZero()
     for (int i = 0; i < 20; ++i) {
         f.run(0);
         float x = f.getOutput();
+        assertEQ(x, 0);
+    }
+}
+
+
+static void testLadderZero2()
+{
+    LadderFilter<double> filter;
+
+    filter.setNormalizedFc(.1);
+    filter.setVoicing(LadderFilter<double>::Voicing::Clean);
+    filter.disableQComp();
+    filter.setFeedback(3.9);
+
+    for (int i = 0; i < 20; ++i) {
+        filter.run(0);
+        double x = filter.getOutput();
         assertEQ(x, 0);
     }
 }
@@ -460,8 +478,9 @@ void testLadder()
     testEdge1(false);
     testEdge0(true);
     testEdge0(false);
-
+    printf("in test ladder\n");
     testLadderZero();
+    testLadderZero2();
     testLadderNotZero();
     testLadderDCf(1000);
     testLadderDCd(1000);

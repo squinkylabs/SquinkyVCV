@@ -4,19 +4,16 @@
 #include "IIRDecimator.h"
 #include "IIRUpsampler.h"
 #include "LookupTable.h"
+#include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
 #include "TrapezoidalLowpass.h"
 
 #include <vector>
 #include <string>
 
-
-
 /**
  * Helper object to do the Edge lookup quickly
  */
-
-
 class EdgeTables
 {
 public:
@@ -41,7 +38,6 @@ inline EdgeTables::EdgeTables()
                     k = is4PLP ? .2f : .5f;
                 } else {
                     k = is4PLP ? .6f : .8f;
-                  //  k = .6;
                 }
 
                 const float edgeToUse = float(k + rawEdge * (1 - k) / .5f);
@@ -123,6 +119,12 @@ public:
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
 
+    // Only calibration routines will do this
+    void disableQComp()
+    {
+        _disableQComp = true;
+    }
+
 private:
     TrapezoidalLowpass<T> lpfs[4];
     EdgeTables edgeLookup;
@@ -148,7 +150,7 @@ private:
     T requestedFeedback = 0;
     T adjustedFeedback = 0;
     T gain = T(.3);
-    T stageOutputs[4];
+    T stageOutputs[4] = {0,0,0,0};
     T rawEdge = 0;
     T freqSpread = 0;
     T slope = 3;
@@ -165,8 +167,10 @@ private:
     T finalVolume = 1;
 
     bool bypassFirstStage = false;
+    bool _disableQComp = false;
 
     std::shared_ptr<NonUniformLookupTableParams<T>> fs2gLookup = makeTrapFilter_Lookup<T>();
+    std::shared_ptr<NonUniformLookupTableParams<T>> feedbackAdjust;
     std::shared_ptr<LookupTableParams<T>> tanhLookup = ObjectCache<T>::getTanh5();
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();
 
@@ -186,6 +190,10 @@ private:
     void updateSlope();
     void updateFeedback();
     void updateStageGains();
+    T processFeedback(T fcNorm, T feedback) const;
+    void initQLookup();
+
+
     void dump(const char* p);
     T getGfromNormFreq(T nf) const;
 };
@@ -193,6 +201,7 @@ private:
 template <typename T>
 LadderFilter<T>::LadderFilter()
 {
+    initQLookup();
     // fix at 4X oversample
     up.setup(oversampleRate);
     down.setup(oversampleRate);
@@ -203,6 +212,7 @@ inline void LadderFilter<T>::dump(const char* p)
 {
 #if 0
     printf("\ndump %s\n", p);
+    printf("norm freq = %.2f, @44 = %.2f\n", lastNormalizedFc, lastNormalizedFc * 44100.0f);
     printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", adjustedFeedback, gain, rawEdge, slope);
     printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
     for (int i = 0; i < 4; ++i) {
@@ -282,10 +292,27 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
     if (input == lastNormalizedFc) {
         return;
     }
+
+    // temp debugging stuff
+    #if 0
+    {
+        float f = input * 44100;
+        static float lastf = 0;
+        float delta = std::abs<float>(f - lastf);
+        if (delta > 500) {
+            lastf = f;
+        } else {
+            return;
+        }
+    }
+    #endif
+
+
     lastNormalizedFc = input;
     _g = getGfromNormFreq(input);
     updateFilter();
     updateFeedback();
+    dump("setnormfc");
 }
 
 template <typename T>
@@ -514,31 +541,50 @@ inline void LadderFilter<T>::setFeedback(T f)
 template <typename T>
 inline void LadderFilter<T>::updateFeedback()
 {
-    double maxFeedback = 4;
-    double fNorm = lastNormalizedFc;
+    if (!_disableQComp) {
+#if 0
+        double maxFeedback = 4;
+        double fNorm = lastNormalizedFc;
 
-    // Becuase this filter isn't zero delay, it can get unstable at high freq.
-    // So limite the feedback up there.
-    if (fNorm <= .002) {
-        maxFeedback = 3.99;
-    } else if (fNorm <= .008) {
-        maxFeedback = 3.9;
-    } else if (fNorm <= .032) {
-        maxFeedback = 3.8;
-    } else if (fNorm <= .064) {
-        maxFeedback = 3.6;
-    } else if (fNorm <= .128) {
-        maxFeedback = 2.95;
-    } else if (fNorm <= .25) {
-        maxFeedback = 2.85;
+        // Becuase this filter isn't zero delay, it can get unstable at high freq.
+        // So limite the feedback up there.
+        if (fNorm <= .002) {
+            maxFeedback = 3.99;
+        } else if (fNorm <= .008) {
+            maxFeedback = 3.9;
+        } else if (fNorm <= .032) {
+            maxFeedback = 3.8;
+        } else if (fNorm <= .064) {
+            maxFeedback = 3.6;
+        } else if (fNorm <= .128) {
+            maxFeedback = 2.95;
+        } else if (fNorm <= .25) {
+            maxFeedback = 2.85;
+        } else if (fNorm <= .3) {
+          //  maxFeedback = 2.30;
+          // experiment 2.5 too low.
+          // 2.7 slightly low?
+          // 2.8 ever so lightly high
+          // 2.85 too high
+            maxFeedback = 2.75;
+        } else if (fNorm <= .4) {
+            maxFeedback = 2.5;
+        } else {
+            maxFeedback = 2.3;
+        }
+        
+        assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
+
+        adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
+        adjustedFeedback = std::max(adjustedFeedback, T(0));
+#endif
+        adjustedFeedback = processFeedback(lastNormalizedFc, requestedFeedback);
+        assert(adjustedFeedback >= 0 && adjustedFeedback < 4);
+       // printf("in updateFeedback, f= %.2f (%.2f) max = %.2f\n", fNorm * 44100, fNorm, maxFeedback);
+       // printf("  reqF=%.2f adj = %.2f \n", requestedFeedback, adjustedFeedback);
     } else {
-        maxFeedback = 2.30;
+        adjustedFeedback = requestedFeedback;
     }
-
-    assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
-
-    adjustedFeedback = std::min(requestedFeedback, (T) maxFeedback);
-    adjustedFeedback = std::max(adjustedFeedback, T(0));
 }
 
 
@@ -645,9 +691,11 @@ PROC_PREAMBLE(runBufferFold2)
 BODY(FOLD_TOP, FOLD_BOTTOM, FOLD_TOP, FOLD_BOTTOM)
 PROC_END
 
+#if 1
 PROC_PREAMBLE(runBufferClean)
 BODY(NOPROC, NOPROC, NOPROC, NOPROC)
 PROC_END
+#endif
 
 template <typename T>
 inline  std::vector<std::string> LadderFilter<T>::getTypeNames()
@@ -691,7 +739,7 @@ inline void LadderFilter<T>::runBufferClean(float* buffer, int numSamples)
     for (int i = 0; i < numSamples; ++i) {
         const T input = buffer[i];
 
-        T temp = input - feedback * stageOutputs[3];
+        T temp = input - adjustedFeedback * stageOutputs[3];
         temp = std::max(T(-10), temp); 
         temp = std::min(T(10), temp);
 
@@ -761,6 +809,177 @@ inline void LadderFilter<T>::runBufferClassic(T* buffer, int numSamples)
 
    // mixedOutput = temp;
    // return temp;
+}
+#endif
+
+
+#if 0 // old manual way
+template <typename T>
+inline T LadderFilter<T>::processFeedback(T fcNorm, T feedback) const
+{
+    printf("doing old feedback\n");
+   // double fNorm = lastNormalizedFc;
+    double maxFeedback = 0;
+       // Becuase this filter isn't zero delay, it can get unstable at high freq.
+       // So limite the feedback up there.
+    if (fcNorm <= .002) {
+        maxFeedback = 3.99;
+    } else if (fcNorm <= .008) {
+        maxFeedback = 3.9;
+    } else if (fcNorm <= .032) {
+        maxFeedback = 3.8;
+    } else if (fcNorm <= .064) {
+        maxFeedback = 3.6;
+    } else if (fcNorm <= .128) {
+        maxFeedback = 2.95;
+    } else if (fcNorm <= .25) {
+        maxFeedback = 2.85;
+    } else if (fcNorm <= .3) {
+      //  maxFeedback = 2.30;
+      // experiment 2.5 too low.
+      // 2.7 slightly low?
+      // 2.8 ever so lightly high
+      // 2.85 too high
+        maxFeedback = 2.75;
+    } else if (fcNorm <= .4) {
+        maxFeedback = 2.5;
+    } else {
+        maxFeedback = 2.3;
+    }
+
+    assert(requestedFeedback <= 4 && adjustedFeedback >= 0);
+    T ret = std::min(feedback, (T) maxFeedback);
+    ret = std::max(feedback, T(0));
+    return ret;
+}
+#else
+
+template <typename T>
+inline T LadderFilter<T>::processFeedback(T fcNorm, T feedback) const
+{
+    const T x = feedback * T(.25);         // range 0..1
+    const T y = x * (2 - x);            // still 0..1, but now a smooshed parabola
+  //  const t z = 4 * y;                  // now 0..4 again, but still squared and inverted
+
+    const T maxFeedback = NonUniformLookupTable<T>::lookup(*feedbackAdjust, fcNorm);
+
+  //  printf("proc f. raw f = %f, x = %f, x = %f, will ret %f\n", feedback, x, y, y * maxFeedback);
+    return y * maxFeedback;
+}
+
+#endif
+
+
+
+template <typename T>
+void LadderFilter<T>::initQLookup()
+{
+    std::shared_ptr<NonUniformLookupTableParams<T>> ret =
+        std::make_shared<NonUniformLookupTableParams<T>>();
+
+    /** this derived by CalQ with:
+    const double desiredGain = 5;
+    const double toleranceDb = 1;
+    double toleranceDbInterp = 2;
+    */
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.001134), T(3.531250));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.003933), T(3.625000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.006732), T(3.625000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.012330), T(3.625000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.023526), T(3.625000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.045918), T(3.625000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.090703), T(3.250000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.092971), T(3.250000));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.295918), T(2.687500));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.498866), T(2.390137));
+    
+    NonUniformLookupTable<T>::finalize(*ret);
+    feedbackAdjust = ret;
+}
+#if 0 // gain=40 = too much
+template <typename T>
+void LadderFilter<T>::initQLookup()
+{
+    std::shared_ptr<NonUniformLookupTableParams<T>> ret = 
+        std::make_shared<NonUniformLookupTableParams<T>>(); 
+   
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.001134), T(3.964844));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.003933), T(3.966309));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.006732), T(3.953125));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.012330), T(3.923096));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.023526), T(3.858643));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.034722), T(3.796021));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.045918), T(3.736328));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.057115), T(3.677734));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.062713), T(3.649902));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.068311), T(3.622803));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.079507), T(3.569702));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.090703), T(3.517700));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.092971), T(3.507355));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.105655), T(3.450043));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.118339), T(3.394150));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.131023), T(3.345032));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.143707), T(3.297035));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.150050), T(3.273415));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.156392), T(3.250080));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.162734), T(3.226952));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.169076), T(3.204063));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.175418), T(3.181427));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.181760), T(3.159042));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.188102), T(3.136887));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.194444), T(3.114960));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.200787), T(3.093296));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.207129), T(3.071838));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.213471), T(3.050587));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.219813), T(3.029575));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.226155), T(3.008770));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.232497), T(2.988182));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.234083), T(2.983158));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.235668), T(2.978855));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.238839), T(2.970261));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.245181), T(2.953175));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.251524), T(2.936214));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.257866), T(2.919426));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.264208), T(2.902786));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.270550), T(2.886272));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.276892), T(2.869907));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.283234), T(2.853668));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.289576), T(2.837578));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.292747), T(2.829578));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.295918), T(2.821659));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.302260), T(2.805792));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.308603), T(2.790108));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.314945), T(2.774555));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.321287), T(2.759140));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.327629), T(2.743839));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.333971), T(2.728664));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.340313), T(2.713633));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.346655), T(2.698704));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.352997), T(2.683895));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.359340), T(2.669224));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.365682), T(2.654684));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.372024), T(2.640224));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.378366), T(2.625925));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.384708), T(2.611706));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.391050), T(2.597647));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.397392), T(2.583662));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.403734), T(2.569792));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.410077), T(2.556053));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.416419), T(2.542418));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.422761), T(2.528876));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.429103), T(2.515444));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.435445), T(2.502129));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.441787), T(2.488908));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.448129), T(2.475807));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.451300), T(2.469341));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.454471), T(2.463985));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.460813), T(2.453320));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.473498), T(2.432211));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.486182), T(2.411366));
+    NonUniformLookupTable<T>::addPoint(*ret, T(0.498866), T(2.390795));
+
+    NonUniformLookupTable<T>::finalize(*ret);
+    feedbackAdjust = ret;
 }
 #endif
 

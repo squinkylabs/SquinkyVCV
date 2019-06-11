@@ -273,7 +273,6 @@ void testMidiEditorSelection()
     testSelectAt0(true);
     testSelectAt1(true);
     testSelectAt2(true);
-    printf("put this back!!!!\n");
 
     testExtend1();
     testExtend2();
