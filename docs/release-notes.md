@@ -1,5 +1,13 @@
 # Release notes for Squinky Labs modules
 
+## 0.6.16
+
+Fixed bug in Mixer-8 where the X inputs either did not work or crashed Rack.
+
+Smoothed out the resonance of Stairway for high resonance, high frequency sweeps.
+
+Adjusted the response of the resonance control in Stairway to make is respond more naturally.
+
 ## 0.6.15
 
 New modules: Stairway, Mixer-8, and Slade.
