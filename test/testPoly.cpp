@@ -1,4 +1,4 @@
-
+#include "TestComposite.h"
 #include "asserts.h"
 #include "poly.h"
 #include "Analyzer.h"

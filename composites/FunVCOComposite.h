@@ -2,8 +2,8 @@
 
 
 #include "FunVCO.h"
-
 #include "IComposite.h"
+#include "SqPort.h"
 
 template <class TBase>
 class FunDescription : public IComposite
@@ -131,7 +131,7 @@ inline void FunVCOComposite<TBase>::step()
 
     float pitchFine = 3.0f * sq::quadraticBipolar(TBase::params[FINE_PARAM].value);
     float pitchCv = 12.0f * TBase::inputs[PITCH_INPUT].value;
-    if (TBase::inputs[FM_INPUT].active) {
+    if (SqPort::isConnected(TBase::inputs[FM_INPUT])) {
         pitchCv += sq::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
     }
 
@@ -139,24 +139,24 @@ inline void FunVCOComposite<TBase>::step()
 
 
     oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].value / 10.0f);
-    oscillator.syncEnabled = TBase::inputs[SYNC_INPUT].active;
+    oscillator.syncEnabled = SqPort::isConnected(TBase::inputs[SYNC_INPUT]);
 
 #ifndef _ORIGVCO
-    oscillator.sawEnabled = TBase::outputs[SAW_OUTPUT].active;
-    oscillator.sinEnabled = TBase::outputs[SIN_OUTPUT].active;
-    oscillator.sqEnabled = TBase::outputs[SQR_OUTPUT].active;
-    oscillator.triEnabled = TBase::outputs[TRI_OUTPUT].active;
+    oscillator.sawEnabled = SqPort::isConnected(TBase::outputs[SAW_OUTPUT]);
+    oscillator.sinEnabled = SqPort::isConnected(TBase::outputs[SIN_OUTPUT]);
+    oscillator.sqEnabled = SqPort::isConnected(TBase::outputs[SQR_OUTPUT]);
+    oscillator.triEnabled = SqPort::isConnected(TBase::outputs[TRI_OUTPUT]);
 #endif
 
     oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].value);
     // Set output
-    if (TBase::outputs[SIN_OUTPUT].active)
+    if (SqPort::isConnected(TBase::outputs[SIN_OUTPUT]))
         TBase::outputs[SIN_OUTPUT].value = 5.0f * oscillator.sin();
-    if (TBase::outputs[TRI_OUTPUT].active)
+    if (SqPort::isConnected(TBase::outputs[TRI_OUTPUT]))
         TBase::outputs[TRI_OUTPUT].value = 5.0f * oscillator.tri();
-    if (TBase::outputs[SAW_OUTPUT].active)
+    if (SqPort::isConnected(TBase::outputs[SAW_OUTPUT]))
         TBase::outputs[SAW_OUTPUT].value = 5.0f * oscillator.saw();
-    if (TBase::outputs[SQR_OUTPUT].active)
+    if (SqPort::isConnected(TBase::outputs[SQR_OUTPUT]))
         TBase::outputs[SQR_OUTPUT].value = 5.0f * oscillator.sqr();
 
 }

@@ -22,6 +22,8 @@ The [release notes](release-notes.md) describe recent changes to our modules.
 
 ![Intro 2 image](./intro-2-110.png)
 
+[Stairway](./filter.md). Ladder filter with an enormous range of over-driven and clean sounds. Combines features from Moog, Oberheim, and Rossum filters and adds some some of our own, including four independent wave shapers.
+
 [Shaper](./shaper.md). Yet another wave shaper. But unlike most, this one has almost no aliasing distortion. And a few new shapes that sound nice.
 
 [Chopper](./chopper.md) Is a tremolo powered by a clock-synchable LFO. The LFO is highly programmable to give a range of waveforms. A built-in clock multiplier enables easy rhythmic effects.
@@ -32,14 +34,21 @@ The [release notes](release-notes.md) describe recent changes to our modules.
 
 [Formants](./formants.md) is a programmable bank of filters that can synthesize various vowel sounds and morph between them easily.
 
+# Mixers
+![Mixer Intro Image](./mixer-8.png)
+
+[Mixer-8](./mix8.md) is our clone of the AS 8-CH mixer, with more features and 1/10 the CPU usage.
+
 # Other things
 ![Intro 3 image](./intro-3-110.png)
+
+[Slade](./slew4.md) has eight identical channels of lag/anti-pop/envelope generator/VCA. Very low CPU, as always.
 
 [Gray Code](./gray-code.md). Think of it as a semi-random clock divider. Or not. Gray codes have the cool property that only one bit changes at a time. Having only one "thing" change at a time can be interesting for music, so we are hoping you will find some good things to do with it.
 
 [LFN](./lfn.md) is a random voltage generator made by running low frequency noise through a graphic equalizer. The equalizer gives a lot of easy control over the shape of the randomness.
 
-[Thread Booster](./booster.md) reduces pops and clicks in VCV Rack by reprogramming VCV's audio engine.
+[Thread Booster](./booster.md) (for VCV 0.6 only). Reduces pops and clicks in VCV Rack by reprogramming VCV's audio engine.
 
 # More resources
 

@@ -13,6 +13,8 @@ Like the Moog filter, Stairway has a pleasant mild distortion to make it sound f
 
 Stairway is by no means an accurate "model" of a specific moog filter. It is based on a standard good quality model of the transistor ladder, but it uses no component level modeling, and has not been painstakingly voice to sound as close as possible to a Moog. The intention of Stairway is to be rich and warm like a Moog, but with a lot of other sounds, too.
 
+Stairway provides much more control over distortion and overdrive that most filters. The Drive, Edge, and Voicing controls all work together to give a huge range of over-driven sounds.
+
 Stairway is "stereo". There are two independent channels. But they will be inactive (using no CPU) if they are not patched.
 
 There are extensive notes at the bottom of this page about how the filter actually work.

@@ -8,6 +8,7 @@
 #include "IIRDecimator.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
+#include "SqPort.h"
 
 #ifdef __V1x
 namespace rack {
@@ -285,7 +286,8 @@ void Shaper<TBase>::processCV()
     asymCurveindex = (int) round(sym * 15.1);           // This math belongs in the shaper
 
     for (int i = 0; i < 2; ++i) {
-        dsp[i].isActive = TBase::inputs[INPUT_AUDIO0 + i].active && TBase::outputs[OUTPUT_AUDIO0 + i].active;
+        dsp[i].isActive = SqPort::isConnected(TBase::inputs[INPUT_AUDIO0 + i]) &&
+            SqPort::isConnected(TBase::outputs[OUTPUT_AUDIO0 + i]);
     }
 }
 
