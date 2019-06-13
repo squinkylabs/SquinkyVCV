@@ -112,14 +112,14 @@
 			"slug": "squinkylabs-mix4",
 			"name": "Mixer-EX 4",
 			"description": "4 channel mixer expander",
-			"disabled": true,
+			"disabled": false,
 			"tags": ["Mixer", "Expander"]
 		},
 		{
 			"slug": "squinkylabs-mixm",
 			"name": "Mixer Master",
 			"description": "Mixer master module",
-			"disabled": true,
+			"disabled": false,
 			"tags": ["Mixer"]
 		},
 		{

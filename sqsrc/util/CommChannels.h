@@ -23,10 +23,18 @@ const uint32_t CommCommand_ExternalSolo = (101 << 16);
  */
 
 enum class SoloCommands {
+    // SOLO_x normal, exclusive solo requested
     SOLO_0,
     SOLO_1,
     SOLO_2,
     SOLO_3,
+
+    // SOLO_x_MULTI, non-exclusive "multi-solo"
+    SOLO_0_MULTI,
+    SOLO_1_MULTI,
+    SOLO_2_MULTI,
+    SOLO_3_MULTI,
+    
     SOLO_ALL,
     SOLO_NONE,
     DO_NOTHING,

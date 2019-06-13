@@ -220,9 +220,14 @@ void MixMWidget::makeStrip(
         channel + Comp::SOLO0_LIGHT));
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
-    tog->setHandler( [this, channel]() {
-        //printf("clicked on channel %d\n", channel);
-        mixModule->requestSoloFromUI(SoloCommands(channel));
+    tog->setHandler( [this, channel](bool ctrlKey) {
+         //printf("clicked on channel %d\n", channel);
+        auto soloCommand =  SoloCommands(channel);
+        if (ctrlKey) {
+            soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
+        }
+
+        mixModule->requestSoloFromUI(soloCommand);
     });
     addChild(tog);
 
@@ -280,12 +285,6 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
     for (int channel = 0; channel<2; ++channel) {
         y = channelY;
         x = x0 + 15 + channel * dX;
-    #if 0
-        addInput(createInputCentered<PJ301MPort>(
-            Vec(x, y),
-            module,
-            channel + Comp::LEFT_EXPAND_INPUT));
-#endif
 
         y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(

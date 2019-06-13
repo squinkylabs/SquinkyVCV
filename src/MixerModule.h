@@ -27,7 +27,9 @@ public:
     virtual bool amMaster() { return false; }
 
     /**
-     * UI calls this to initiate a solo
+     * UI calls this to initiate a solo. UI
+     * will only call with  SoloCommands::SOLO_0..3
+     * (for now)
      */
     void requestSoloFromUI(SoloCommands);
 protected:
@@ -111,7 +113,9 @@ inline void MixerModule::process(const ProcessArgs &args)
     if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
         const auto commCmd = (soloRequestFromUI == SoloCommands::SOLO_NONE) ?
             CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
-        // If solo requested, queue up solo commands for both sides     
+
+        // If solo requested, queue up solo commands for both sides    
+        // TODO: these should only be done for exclusive solo 
         if (pairedRight) {
             sendRightChannel.send(commCmd);
         }

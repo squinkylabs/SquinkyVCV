@@ -30,7 +30,7 @@
     #define _TREM
 #endif
 
-#if defined(__V1x) && 0
+#if defined(__V1x) && 1
     #define _MIX4
     #define _MIXM
 #endif
