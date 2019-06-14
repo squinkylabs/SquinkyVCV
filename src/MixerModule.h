@@ -212,33 +212,42 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
  */
 
 template<class Comp>
+inline void unSoloAllChannels(MixerModule* mod)
+{
+    engine::Engine* eng = APP->engine;
+    for (int i=0; i<4; ++i) {
+        eng->setParam(mod, i + Comp::SOLO0_PARAM, 0);  
+    }
+}
+
+template<class Comp>
 inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
 {
-  printf("MixMModule::requestModuleSolo %d\n", (int)command); fflush(stdout);
-   engine::Engine* eng = APP->engine;
-   switch (command) {
+    printf("MixMModule::requestModuleSolo %d\n", (int)command); fflush(stdout);
+    engine::Engine* eng = APP->engine;
+    switch (command) {
        case SoloCommands::SOLO_0:
             printf("MixMModule::requestModuleSolo SOLO_0\n"); fflush(stdout);
+            unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO0_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_1:
             printf("MixMModule::requestModuleSolo SOLO_1\n"); fflush(stdout);
+            unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO1_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_2:
             printf("MixMModule::requestModuleSolo SOLO_2\n"); fflush(stdout);
+            unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO2_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_3:
             printf("MixMModule::requestModuleSolo SOLO_3\n"); fflush(stdout);
+            unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO3_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_NONE:
-            {
-                for (int i=0; i<4; ++i) {
-                    eng->setParam(mod, i + Comp::SOLO0_PARAM, 0);  
-                }
-            }
+            unSoloAllChannels<Comp>(mod);
             break;
         default:
             printf("MixMModule::requestModuleSolo %d, but nimp\n", (int)command); fflush(stdout);     
