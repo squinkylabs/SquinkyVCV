@@ -79,8 +79,7 @@ public:
         SOLO1_PARAM,
         SOLO2_PARAM,
         SOLO3_PARAM,
-
-        ALL_CHANNELS_OFF_PARAM, // when > .05, acts as if all channels muted.
+        ALL_CHANNELS_OFF_PARAM, // when > .05, acts as if all channels muted. 
 
         SEND0_PARAM,
         SEND1_PARAM,
@@ -247,8 +246,16 @@ inline void MixM<TBase>::stepn(int div)
             break;
         }
     }
-
-    if (anySolo) {
+    const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
+    if (moduleIsMuted) {
+       // printf("whole module muted\n");
+        for (int i = 0; i < numChannels; ++i) {
+            buf_muteInputs[i] = 0;
+        } 
+    }
+    else if (anySolo) {
+        // If any channels in this module are soloed, then
+        // mute any channels that aren't soled
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = TBase::params[i + SOLO0_PARAM].value;
         }
@@ -421,8 +428,8 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
         case MixM<TBase>::RETURN_GAIN_PARAM:
             ret = {0, 1.0f, 0, "Return Gain"};
             break;
-        case  MixM<TBase>::ALL_CHANNELS_OFF_PARAM:
-            ret = {0, 1.0f, 0, "All Off"};
+        case MixM<TBase>::ALL_CHANNELS_OFF_PARAM:
+            ret = {0, 1.0f, 0, "(All Off)"};
             break;
         default:
             assert(false);

@@ -256,6 +256,7 @@ inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
         case SoloCommands::SOLO_ALL:
             // we should turn off all channels, but clear all solo lights
             unSoloAllChannels<Comp>(mod);
+            eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 1);
             printf("we still need to (audi) mute our whole module now\n"); fflush(stdout);
             break;
         default:
