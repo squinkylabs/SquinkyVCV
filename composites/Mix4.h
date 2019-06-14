@@ -81,6 +81,8 @@ public:
         SOLO2_PARAM,
         SOLO3_PARAM,
 
+        ALL_CHANNELS_OFF_PARAM, // when > .05, acts as if all channels muted.
+
         SEND0_PARAM,
         SEND1_PARAM,
         SEND2_PARAM,
@@ -259,6 +261,12 @@ inline void Mix4<TBase>::stepn(int div)
     }
 
     antiPop.step(buf_muteInputs);
+
+
+    for (int i = 0; i < 4; ++i) {
+        const float soloValue = TBase::params[i + SOLO0_PARAM].value;
+        TBase::lights[i + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
+    }
 }
 
 template <class TBase>
@@ -412,6 +420,9 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
             break;
         case Mix4<TBase>::SEND3_PARAM:
             ret = {0, 1.0f, 0, "Send 4"};
+            break;
+        case  Mix4<TBase>::ALL_CHANNELS_OFF_PARAM:
+            ret = {0, 1.0f, 0, "All Off"};
             break;
         default:
             assert(false);

@@ -146,6 +146,10 @@ inline void MixerModule::process(const ProcessArgs &args)
         uint32_t cmd = receiveRightChannel.rx(inBuf + 0);
 
         if (cmd != 0) {
+            // iI the command is external solo, then we want to turn off all our
+            // channles to let the other module have exclusive solo.
+            // Otherwise the command is CommCommand_ClearAllSolo, and we should
+            // lift all our external overrides.
             const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
             //printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
@@ -223,33 +227,41 @@ inline void unSoloAllChannels(MixerModule* mod)
 template<class Comp>
 inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
 {
-    printf("MixMModule::requestModuleSolo %d\n", (int)command); fflush(stdout);
+    //printf("processSoloRequestForModule %d\n", (int)command); fflush(stdout);
     engine::Engine* eng = APP->engine;
     switch (command) {
        case SoloCommands::SOLO_0:
-            printf("MixMModule::requestModuleSolo SOLO_0\n"); fflush(stdout);
+            //printf("processSoloRequestForModule SOLO_0\n"); fflush(stdout);
             unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO0_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_1:
-            printf("MixMModule::requestModuleSolo SOLO_1\n"); fflush(stdout);
+            //printf("processSoloRequestForModule SOLO_1\n"); fflush(stdout);
             unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO1_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_2:
-            printf("MixMModule::requestModuleSolo SOLO_2\n"); fflush(stdout);
+            //printf("processSoloRequestForModule SOLO_2\n"); fflush(stdout);
             unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO2_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_3:
-            printf("MixMModule::requestModuleSolo SOLO_3\n"); fflush(stdout);
+            //printf("processSoloRequestForModule SOLO_3\n"); fflush(stdout);
             unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::SOLO3_PARAM, 1.f);      
             break;
         case SoloCommands::SOLO_NONE:
             unSoloAllChannels<Comp>(mod);
             break;
+        case SoloCommands::SOLO_ALL:
+            // we should turn off all channels, but clear all solo lights
+            unSoloAllChannels<Comp>(mod);
+            printf("we still need to (audi) mute our whole module now\n"); fflush(stdout);
+            break;
         default:
-            printf("MixMModule::requestModuleSolo %d, but nimp\n", (int)command); fflush(stdout);     
+        /*   SOLO_ALL,           // 8
+    SOLO_NONE,          
+    DO_NOTHING, */
+            printf("processSoloRequestForModule %d, but nimp (all=8, none=9, nothing=10\n", (int)command); fflush(stdout);     
    }   
 }

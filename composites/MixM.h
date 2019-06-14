@@ -80,6 +80,8 @@ public:
         SOLO2_PARAM,
         SOLO3_PARAM,
 
+        ALL_CHANNELS_OFF_PARAM, // when > .05, acts as if all channels muted.
+
         SEND0_PARAM,
         SEND1_PARAM,
         SEND2_PARAM,
@@ -418,6 +420,9 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             break;
         case MixM<TBase>::RETURN_GAIN_PARAM:
             ret = {0, 1.0f, 0, "Return Gain"};
+            break;
+        case  MixM<TBase>::ALL_CHANNELS_OFF_PARAM:
+            ret = {0, 1.0f, 0, "All Off"};
             break;
         default:
             assert(false);

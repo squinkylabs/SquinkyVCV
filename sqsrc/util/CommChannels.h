@@ -35,7 +35,18 @@ enum class SoloCommands {
     SOLO_2_MULTI,
     SOLO_3_MULTI,
     
-    SOLO_ALL,           // 8
+    /**
+     * (8)
+     * mute all of your channels, because another module is 
+     * requesting an exclusive solo.
+     */
+    SOLO_ALL,
+
+    /**
+     * (9)
+     * remove the solo overrides from all your channels,
+     * because another module stopped soloing
+     */  
     SOLO_NONE,          
     DO_NOTHING,
 };
