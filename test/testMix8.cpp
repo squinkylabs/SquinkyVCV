@@ -235,6 +235,7 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
 }
 
 
+#if 0 // port these to V1 !!
 template <typename T>
 void _testSoloNew(int channel, std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
@@ -282,6 +283,7 @@ void testSoloNew2(std::function<float(std::shared_ptr<T>, bool bRight)> outputGe
     assertClose(outputGetter(m, false), 0, .001);
     assertClose(outputGetter(m, true), 0, .001);
 }
+#endif
 
 static void testPanLook0()
 {
@@ -512,13 +514,16 @@ void testMix8()
     testAuxOut<Mixer4>(auxGetterMix4);
     testAuxOut<Mixer8>(auxGetterMix8);
 
+    // now all mixers support "legacy" solo
     testSoloLegacy<Mixer8>(outputGetterMix8);
+    testSoloLegacy<Mixer4>(outputGetterMix4);
+    testSoloLegacy<MixerM>(outputGetterMixM);
 
-    testSoloNew<MixerM>(outputGetterMixM);
-    testSoloNew<Mixer4>(outputGetterMix4);
+  //  testSoloNew<MixerM>(outputGetterMixM);
+ //   testSoloNew<Mixer4>(outputGetterMix4);
  
-    testSoloNew2<MixerM>(outputGetterMixM);
-    testSoloNew2<Mixer4>(outputGetterMix4);
+   // testSoloNew2<MixerM>(outputGetterMixM);
+  //  testSoloNew2<Mixer4>(outputGetterMix4);
 
     testPanLook0();
     testPanLookL();

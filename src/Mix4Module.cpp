@@ -58,8 +58,7 @@ void Mix4Module::setExternalOutput(float* buf)
 
 void Mix4Module::requestModuleSolo(SoloCommands command)
 {
-    //printf("Mix4Module::requestModuleSolo\n"); fflush(stdout);
-    Mix4->requestModuleSolo(command);
+    processSoloRequestForModule<Comp>(this, command);
 }
 
 #ifdef __V1x

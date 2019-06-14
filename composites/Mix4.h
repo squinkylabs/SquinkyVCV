@@ -75,12 +75,11 @@ public:
         MUTE1_PARAM,
         MUTE2_PARAM,
         MUTE3_PARAM,
-    #if 0 
+
         SOLO0_PARAM,
         SOLO1_PARAM,
         SOLO2_PARAM,
         SOLO3_PARAM,
-    #endif
 
         SEND0_PARAM,
         SEND1_PARAM,
@@ -142,7 +141,7 @@ public:
 
     void setExpansionInputs(const float*);
     void setExpansionOutputs(float*);
-    void requestModuleSolo(SoloCommands);
+  //  void requestModuleSolo(SoloCommands);
 
     /**
      * Main processing entry point. Called every sample
@@ -170,9 +169,10 @@ private:
     const float* expansionInputs = nullptr;
     float* expansionOutputs = nullptr;
 
-    SoloCommands soloState = SoloCommands::SOLO_NONE;
+  //  SoloCommands soloState = SoloCommands::SOLO_NONE;
 };
 
+#if 0
 // called from audio thread
 template <class TBase>
 inline  void Mix4<TBase>::requestModuleSolo(SoloCommands command)
@@ -182,6 +182,7 @@ inline  void Mix4<TBase>::requestModuleSolo(SoloCommands command)
         TBase::lights[i + SOLO0_LIGHT].value = (int(soloState) == i) ? 10.f : 0.f;
     }
 }
+#endif
 
 
 template <class TBase>
@@ -206,8 +207,12 @@ inline void Mix4<TBase>::stepn(int div)
         buf_channelSendGains[i] = slider;
     }
 
-       // If the is an external solo, then mute all channels
+    // If the is an external solo, then mute all channels
+
+    // TODO
+#if 0
     const bool allMutedDueToSolo = (soloState == SoloCommands::SOLO_ALL);
+
     for (int i = 0; i < numChannels; ++i) {
         const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
             (TBase::inputs[i + MUTE0_INPUT].value > 2));
@@ -215,8 +220,32 @@ inline void Mix4<TBase>::stepn(int div)
             ((i != int(soloState)) && (soloState <= SoloCommands::SOLO_3)) ||
             muteActivated;
 
+
+
         buf_muteInputs[i] = mute ? 0.f : 1.f;
     }
+#else
+  bool anySolo = false;
+    for (int i = 0; i < numChannels; ++i) {
+        if (TBase::params[i + SOLO0_PARAM].value > .5f) {
+            anySolo = true;
+            break;
+        }
+    }
+
+    if (anySolo) {
+        for (int i = 0; i < numChannels; ++i) {
+            buf_muteInputs[i] = TBase::params[i + SOLO0_PARAM].value;
+        }
+    } else {
+        for (int i = 0; i < numChannels; ++i) {
+            const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
+                (TBase::inputs[i + MUTE0_INPUT].value > 2));
+            buf_muteInputs[i] = muteActivated ? 0.f : 1.f;
+           // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
+        }
+    }
+#endif
 
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {
@@ -360,7 +389,6 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::MUTE3_PARAM:
             ret = {0, 1.0f, 0, "Mute  4"};
             break;
-   #if 0
         case Mix4<TBase>::SOLO0_PARAM:
             ret = {0, 1.0f, 0, "Solo  1"};
             break;
@@ -373,8 +401,6 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::SOLO3_PARAM:
             ret = {0, 1.0f, 0, "Solo  4"};
             break;
-    #endif
-
         case Mix4<TBase>::SEND0_PARAM:
             ret = {0, 1.0f, 0, "Send 1"};
             break;
@@ -387,7 +413,6 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::SEND3_PARAM:
             ret = {0, 1.0f, 0, "Send 4"};
             break;
-   
         default:
             assert(false);
     }

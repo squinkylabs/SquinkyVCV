@@ -35,8 +35,8 @@ enum class SoloCommands {
     SOLO_2_MULTI,
     SOLO_3_MULTI,
     
-    SOLO_ALL,
-    SOLO_NONE,
+    SOLO_ALL,           // 8
+    SOLO_NONE,          
     DO_NOTHING,
 };
 

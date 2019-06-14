@@ -46,8 +46,7 @@ private:
 
 void MixMModule::requestModuleSolo(SoloCommands command)
 {
-    //printf("MixMModule::requestModuleSolo %d\n", (int)command); fflush(stdout);
-    MixM->requestModuleSolo(command);
+    processSoloRequestForModule<Comp>(this, command);
 }
 
 void MixMModule::onSampleRateChange()
@@ -130,7 +129,7 @@ static float volY = 0;
 static float muteY = 0;
 
 void MixMWidget::makeStrip(
-    MixMModule*,
+    MixMModule* module,
     std::shared_ptr<IComposite> icomp,
     int channel)
 {
@@ -220,9 +219,10 @@ void MixMWidget::makeStrip(
         channel + Comp::SOLO0_LIGHT));
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
-    tog->setHandler( [this, channel](bool ctrlKey) {
+    tog->setHandler( [this, module, channel](bool ctrlKey) {
          //printf("clicked on channel %d\n", channel);
-        auto soloCommand =  SoloCommands(channel);
+        const bool isSoloing = APP->engine->getParam(module, channel + Comp::SOLO0_PARAM);
+        auto soloCommand =  isSoloing ? SoloCommands::SOLO_NONE : SoloCommands(channel);
         if (ctrlKey) {
             soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
         }
