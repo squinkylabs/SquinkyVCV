@@ -252,8 +252,7 @@ inline void MixM<TBase>::stepn(int div)
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = 0;
         } 
-    }
-    else if (anySolo) {
+    } else if (anySolo) {
         // If any channels in this module are soloed, then
         // mute any channels that aren't soled
         for (int i = 0; i < numChannels; ++i) {

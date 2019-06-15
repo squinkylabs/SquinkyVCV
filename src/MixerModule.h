@@ -244,6 +244,15 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);    
 }
 
+
+template<class Comp>
+inline void processMultiSolo(MixerModule* mod, SoloCommands command)
+{
+    engine::Engine* const eng = APP->engine;
+    const int channel = int(command)- int(SoloCommands::SOLO_0_MULTI);
+    assert(channel >= 0 && channel < 4);
+    printf("need to imp processMultiSolo\n"); fflush(stdout);
+}
 /**
  * Called from modules as they process calls into their 
  * requestModuleSolo(SoloCommands command) functions.
@@ -260,6 +269,12 @@ inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
         case SoloCommands::SOLO_2:
         case SoloCommands::SOLO_3:
             processExclusiveSolo<Comp>(mod, command);   
+            break;
+        case SoloCommands::SOLO_0_MULTI:
+        case SoloCommands::SOLO_1_MULTI:
+        case SoloCommands::SOLO_2_MULTI:
+        case SoloCommands::SOLO_3_MULTI:
+            processMultiSolo<Comp>(mod, command);   
             break;
         case SoloCommands::SOLO_NONE:
             printf("got SOLO_NONE command\n");

@@ -235,7 +235,13 @@ inline void Mix4<TBase>::stepn(int div)
         }
     }
 
-    if (anySolo) {
+    const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
+    if (moduleIsMuted) {
+        // printf("whole module muted\n"); fflush(stdout);
+        for (int i = 0; i < numChannels; ++i) {
+            buf_muteInputs[i] = 0;
+        } 
+    } else if (anySolo) {
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = TBase::params[i + SOLO0_PARAM].value;
         }
