@@ -58,7 +58,7 @@ void Mix4Module::setExternalOutput(float* buf)
 
 void Mix4Module::requestModuleSolo(SoloCommands command)
 {
-    processSoloRequestForModule<Comp>(this, command);
+    sqmix::processSoloRequestForModule<Comp>(this, command);
 }
 
 #ifdef __V1x

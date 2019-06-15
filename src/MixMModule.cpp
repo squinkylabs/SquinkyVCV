@@ -46,7 +46,7 @@ private:
 
 void MixMModule::requestModuleSolo(SoloCommands command)
 {
-    processSoloRequestForModule<Comp>(this, command);
+    sqmix::processSoloRequestForModule<Comp>(this, command);
 }
 
 void MixMModule::onSampleRateChange()

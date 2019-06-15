@@ -248,7 +248,7 @@ inline void MixM<TBase>::stepn(int div)
     }
     const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
     if (moduleIsMuted) {
-       // printf("whole module muted\n");
+        // printf("whole module muted\n"); fflush(stdout);
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = 0;
         } 
@@ -267,6 +267,8 @@ inline void MixM<TBase>::stepn(int div)
            // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
     }
+
+    //printf("buf_muteInputs = %.2f %.2f %.2f %.2f \n",buf_muteInputs[0],buf_muteInputs[1],buf_muteInputs[2],buf_muteInputs[3]);
 #endif
 
     buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
