@@ -176,8 +176,6 @@ private:
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 
     const float* expansionInputs = nullptr;
-
-   // SoloCommands soloState = SoloCommands::SOLO_NONE;
 };
 
 #if 0

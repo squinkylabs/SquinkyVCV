@@ -170,8 +170,6 @@ private:
 
     const float* expansionInputs = nullptr;
     float* expansionOutputs = nullptr;
-
-  //  SoloCommands soloState = SoloCommands::SOLO_NONE;
 };
 
 #if 0

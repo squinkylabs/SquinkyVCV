@@ -221,8 +221,13 @@ void MixMWidget::makeStrip(
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, module, channel](bool ctrlKey) {
          //printf("clicked on channel %d\n", channel);
+         // maybe this ws rigth after all
         const bool isSoloing = APP->engine->getParam(module, channel + Comp::SOLO0_PARAM);
         auto soloCommand =  isSoloing ? SoloCommands::SOLO_NONE : SoloCommands(channel);
+
+        if (soloCommand == SoloCommands::SOLO_NONE) {
+            printf("MixerM doing strange SOLO_NONE thing\n");
+        }
         if (ctrlKey) {
             soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
         }

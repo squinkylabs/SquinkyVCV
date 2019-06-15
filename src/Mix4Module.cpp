@@ -182,6 +182,7 @@ void Mix4Widget::makeStrip(
         if (ctrlKey) {
             soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
         }
+        printf("ui is requesting %f from click handler\n", (int) soloCommand);
 
         mixModule->requestSoloFromUI(soloCommand);
     });
