@@ -220,6 +220,8 @@ void MixMWidget::makeStrip(
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, module, channel](bool ctrlKey) {
+        sqmix::handleSoloClickFromUI(mixModule, channel);
+        #if 0
          //printf("clicked on channel %d\n", channel);
          // maybe this ws rigth after all
         const bool isSoloing = APP->engine->getParam(module, channel + Comp::SOLO0_PARAM);
@@ -233,6 +235,7 @@ void MixMWidget::makeStrip(
         }
 
         mixModule->requestSoloFromUI(soloCommand);
+        #endif
     });
     addChild(tog);
 

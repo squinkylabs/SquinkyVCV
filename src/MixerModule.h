@@ -32,6 +32,11 @@
  * 
  * multi-solo on a non-solo channel
  *      solo self
+ *      mute other modules unless they have a soloed channel
+ * 
+ * multi-colo on a soloed channel
+ *      unsolo current channel
+ *      perhaps turn off self (if other module is soloing)
  *      
  */
 class MixerModule : public rack::engine::Module
@@ -236,7 +241,6 @@ inline void MixerModule::process(const ProcessArgs &args)
  */
 inline void MixerModule::requestSoloFromUI(SoloCommands command)
 {
-#if 0 // hopefull this is all obsolete?
     //printf("\nUI req solo %d state =%d module=%p\n", (int) command, (int) currentSoloStatusFromUI, this); fflush(stdout);
 
     // Is it a request to turn off an already soloing channel,
@@ -248,8 +252,6 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
         soloRequestFromUI = command;        // Queue up a request for the audio thread.
                                             // TODO: use atomic?
     }
-    #endif
-    soloRequestFromUI = command;        // Queue up a request for the audio thread.
 }
 
 /********************************************************
@@ -257,6 +259,16 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
  */
 
 namespace sqmix {
+
+//template<class Comp>
+inline void handleSoloClickFromUI(MixerModule* mixer, int channel)
+{
+    // may be too simple, but start with it. Just send a solo command 
+    // for all clicks
+    SoloCommands cmd = SoloCommands(int(SoloCommands::SOLO_0) + channel);
+    mixer->requestSoloFromUI(cmd); 
+}
+
 
 /**
  * clears all the SOLO params from the composites.
