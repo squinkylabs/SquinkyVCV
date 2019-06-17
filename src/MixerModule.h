@@ -241,6 +241,7 @@ inline void MixerModule::process(const ProcessArgs &args)
  */
 inline void MixerModule::requestSoloFromUI(SoloCommands command)
 {
+    #if 0 //to fix the sunday morning bug, let's move the unsolo logic out of here
     //printf("\nUI req solo %d state =%d module=%p\n", (int) command, (int) currentSoloStatusFromUI, this); fflush(stdout);
 
     // Is it a request to turn off an already soloing channel,
@@ -252,6 +253,10 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
         soloRequestFromUI = command;        // Queue up a request for the audio thread.
                                             // TODO: use atomic?
     }
+    #endif
+    printf("requestSoloFromUI %d\n", int(command));
+    soloRequestFromUI = command;       // Queue up a request for the audio thread.
+                                        // TODO: use atomic?
 }
 
 /********************************************************
@@ -260,12 +265,16 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
 
 namespace sqmix {
 
-//template<class Comp>
+template<class Comp>
 inline void handleSoloClickFromUI(MixerModule* mixer, int channel)
 {
-    // may be too simple, but start with it. Just send a solo command 
-    // for all clicks
-    SoloCommands cmd = SoloCommands(int(SoloCommands::SOLO_0) + channel);
+    
+    const int paramNum =  Comp::SOLO0_PARAM + channel;
+    const bool isSoloing = APP->engine->getParam(mixer, paramNum);
+    printf("handleSoloClickFromUI(%d) isSoling = %d\n", channel, isSoloing);
+    SoloCommands cmd = isSoloing ? 
+        SoloCommands::SOLO_NONE :
+        SoloCommands(int(SoloCommands::SOLO_0) + channel);
     mixer->requestSoloFromUI(cmd); 
 }
 
@@ -289,6 +298,7 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
     const int channel = int(command)- int(SoloCommands::SOLO_0);
     assert(channel >= 0 && channel < 4);
     unSoloAllChannels<Comp>(mod);
+    printf("processExclusiveSolo channel %d, will unnute module\n", channel); fflush(stdout);
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, 1.f); 
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);    
 }

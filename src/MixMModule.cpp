@@ -220,7 +220,7 @@ void MixMWidget::makeStrip(
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, module, channel](bool ctrlKey) {
-        sqmix::handleSoloClickFromUI(mixModule, channel);
+        sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
         #if 0
          //printf("clicked on channel %d\n", channel);
          // maybe this ws rigth after all
