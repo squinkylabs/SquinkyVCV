@@ -87,6 +87,11 @@ public:
         SEND1_PARAM,
         SEND2_PARAM,
         SEND3_PARAM,
+
+        SENDb0_PARAM,
+        SENDb1_PARAM,
+        SENDb2_PARAM,
+        SENDb3_PARAM,
        
         NUM_PARAMS
     };
@@ -424,6 +429,18 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
             break;
         case Mix4<TBase>::SEND3_PARAM:
             ret = {0, 1.0f, 0, "Send 4"};
+            break;
+        case Mix4<TBase>::SENDb0_PARAM:
+            ret = {0, 1.0f, 0, "Send 1b"};
+            break;
+        case Mix4<TBase>::SENDb1_PARAM:
+            ret = {0, 1.0f, 0, "Send 2b"};
+            break;
+        case Mix4<TBase>::SENDb2_PARAM:
+            ret = {0, 1.0f, 0, "Send 3b"};
+            break;
+        case Mix4<TBase>::SENDb3_PARAM:
+            ret = {0, 1.0f, 0, "Send 4b"};
             break;
         case  Mix4<TBase>::ALL_CHANNELS_OFF_PARAM:
             ret = {0, 1.0f, 0, "All Off"};

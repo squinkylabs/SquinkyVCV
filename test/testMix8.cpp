@@ -162,7 +162,7 @@ static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> au
 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
-    m->params[T::SEND0_ch0_PARAM].value = 1;
+    m->params[T::SEND0_PARAM].value = 1;
 
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle

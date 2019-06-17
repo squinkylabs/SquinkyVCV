@@ -221,21 +221,6 @@ void MixMWidget::makeStrip(
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, module, channel](bool ctrlKey) {
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
-        #if 0
-         //printf("clicked on channel %d\n", channel);
-         // maybe this ws rigth after all
-        const bool isSoloing = APP->engine->getParam(module, channel + Comp::SOLO0_PARAM);
-        auto soloCommand =  isSoloing ? SoloCommands::SOLO_NONE : SoloCommands(channel);
-
-        if (soloCommand == SoloCommands::SOLO_NONE) {
-            printf("MixerM doing strange SOLO_NONE thing\n");
-        }
-        if (ctrlKey) {
-            soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
-        }
-
-        mixModule->requestSoloFromUI(soloCommand);
-        #endif
     });
     addChild(tog);
 
@@ -282,6 +267,18 @@ void MixMWidget::makeStrip(
             Vec(labelX-4, y-10),
             "Aux");
     }
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::SENDb0_PARAM));
+    if (channel == 0) {
+        addLabel(
+            Vec(labelX-4, y-10),
+            "AxB");
+    }
 }
 
 void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icomp)
@@ -289,28 +286,68 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
     float x = 0;
     float y = channelY;
     const float x0 = 160;
+    const float xL = 215;
+    const float labelDy = -10;
 
     for (int channel = 0; channel<2; ++channel) {
         y = channelY;
         x = x0 + 15 + channel * dX;
 
-        y -= channelDy;
+       // y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_OUTPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "O"
+            //,SqHelper::COLOR_WHITE
+            );
+        }
 
-         y -= 2 * channelDy;
+        y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_SEND_OUTPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "Sa"
+            //,SqHelper::COLOR_WHITE
+            );
+        }
 
         y -= channelDy;
         addInput(createInputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_RETURN_INPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "Ra");
+        }
+
+        y -= channelDy;
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(x, y),
+            module,
+            channel + Comp::LEFT_SENDb_OUTPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "Sb"
+            //,SqHelper::COLOR_WHITE
+            );
+        }
+
+        y -= channelDy;
+        addInput(createInputCentered<PJ301MPort>(
+            Vec(x, y),
+            module,
+            channel + Comp::LEFT_RETURNb_INPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "Rb");
+        }
     }
 
     x = x0 + 15 + 15;

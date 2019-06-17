@@ -85,6 +85,12 @@ public:
         SEND1_PARAM,
         SEND2_PARAM,
         SEND3_PARAM,
+
+        SENDb0_PARAM,
+        SENDb1_PARAM,
+        SENDb2_PARAM,
+        SENDb3_PARAM,
+
         RETURN_GAIN_PARAM,
         NUM_PARAMS
     };
@@ -109,6 +115,8 @@ public:
         MUTE3_INPUT,
         LEFT_RETURN_INPUT,
         RIGHT_RETURN_INPUT,
+        LEFT_RETURNb_INPUT,
+        RIGHT_RETURNb_INPUT,
         NUM_INPUTS
     };
 
@@ -122,6 +130,8 @@ public:
         CHANNEL3_OUTPUT,
         LEFT_SEND_OUTPUT,
         RIGHT_SEND_OUTPUT,
+        LEFT_SENDb_OUTPUT,
+        RIGHT_SENDb_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -423,6 +433,18 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             break;
         case MixM<TBase>::SEND3_PARAM:
             ret = {0, 1.0f, 0, "Send 4"};
+            break;
+        case MixM<TBase>::SENDb0_PARAM:
+            ret = {0, 1.0f, 0, "Send 1b"};
+            break;
+        case MixM<TBase>::SENDb1_PARAM:
+            ret = {0, 1.0f, 0, "Send 2b"};
+            break;
+        case MixM<TBase>::SENDb2_PARAM:
+            ret = {0, 1.0f, 0, "Send 3b"};
+            break;
+        case MixM<TBase>::SENDb3_PARAM:
+            ret = {0, 1.0f, 0, "Send 4b"};
             break;
         case MixM<TBase>::RETURN_GAIN_PARAM:
             ret = {0, 1.0f, 0, "Return Gain"};
