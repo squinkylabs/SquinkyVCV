@@ -67,6 +67,9 @@ public:
     {
         init();
     }
+    virtual ~CHB()
+    {
+    }
 
     enum ParamIds
     {

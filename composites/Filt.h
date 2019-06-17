@@ -54,6 +54,9 @@ public:
     Filt() : TBase()
     {
     }
+    virtual ~Filt()
+    {
+    }
 
     /**
     * re-calc everything that changes with sample

@@ -160,7 +160,7 @@ inline void MixerModule::process(const ProcessArgs &args)
       
         // tell our own module to solo, if a state change is requested
         if (soloRequestFromUI != currentSoloStatusFromUI) {
-            printf("requesting moduel solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
+            //printf("requesting moduel solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
             requestModuleSolo(soloRequestFromUI);
 
             //and update our current state
@@ -189,7 +189,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
             
-            printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
+            //printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
 
             requestModuleSolo(reqMuteStatus);
             // now relay down to the left
@@ -211,8 +211,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
             
-            
-            printf("left read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
+            //printf("left read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
 
             requestModuleSolo(reqMuteStatus);
             // now relay down to the right
@@ -241,22 +240,8 @@ inline void MixerModule::process(const ProcessArgs &args)
  */
 inline void MixerModule::requestSoloFromUI(SoloCommands command)
 {
-    #if 0 //to fix the sunday morning bug, let's move the unsolo logic out of here
-    //printf("\nUI req solo %d state =%d module=%p\n", (int) command, (int) currentSoloStatusFromUI, this); fflush(stdout);
-
-    // Is it a request to turn off an already soloing channel,
-    // thus clearing all solos?
-    if (currentSoloStatusFromUI == command) {
-        soloRequestFromUI = SoloCommands::SOLO_NONE;
-        printf("UI req interpreted as un-solo (SOLO_NONE\n"); fflush(stdout);
-    } else {
-        soloRequestFromUI = command;        // Queue up a request for the audio thread.
-                                            // TODO: use atomic?
-    }
-    #endif
-    printf("requestSoloFromUI %d\n", int(command));
-    soloRequestFromUI = command;       // Queue up a request for the audio thread.
-                                        // TODO: use atomic?
+    //printf("requestSoloFromUI %d\n", int(command));
+    soloRequestFromUI = command;       // Queue up a request for the audio thread.                                  // TODO: use atomic?
 }
 
 /********************************************************
@@ -271,7 +256,7 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel)
     
     const int paramNum =  Comp::SOLO0_PARAM + channel;
     const bool isSoloing = APP->engine->getParam(mixer, paramNum);
-    printf("handleSoloClickFromUI(%d) isSoling = %d\n", channel, isSoloing);
+    //printf("handleSoloClickFromUI(%d) isSoling = %d\n", channel, isSoloing);
     SoloCommands cmd = isSoloing ? 
         SoloCommands::SOLO_NONE :
         SoloCommands(int(SoloCommands::SOLO_0) + channel);
@@ -298,7 +283,7 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
     const int channel = int(command)- int(SoloCommands::SOLO_0);
     assert(channel >= 0 && channel < 4);
     unSoloAllChannels<Comp>(mod);
-    printf("processExclusiveSolo channel %d, will unnute module\n", channel); fflush(stdout);
+    //printf("processExclusiveSolo channel %d, will unnute module\n", channel); fflush(stdout);
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, 1.f); 
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);    
 }
@@ -313,7 +298,7 @@ inline void processMultiSolo(MixerModule* mod, SoloCommands command)
 
     const bool channelIsSoloed = eng->getParam(mod, Comp::SOLO0_PARAM + channel);
 
-    printf("nprocessMultiSolo(%d), is soloed = %d\n", channel, channelIsSoloed); fflush(stdout);
+    //printf("nprocessMultiSolo(%d), is soloed = %d\n", channel, channelIsSoloed); fflush(stdout);
 
     // toggle the solo state of this one 
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, channelIsSoloed ? 0 : 1); 
@@ -327,7 +312,10 @@ inline void processMultiSolo(MixerModule* mod, SoloCommands command)
 template<class Comp>
 inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
 {
-    printf("processSoloRequestForModule %d\n", (int)command); fflush(stdout);
+    //printf("processSoloRequestForModule %d mod=%p\n", (int)command, mod); 
+    //printf("SOLO_NONE = %d, SOLO_ALL = %d\n", (int)SoloCommands::SOLO_NONE, (int)SoloCommands::SOLO_ALL);
+    //fflush(stdout);
+
     engine::Engine* eng = APP->engine;
     switch (command) {
         case SoloCommands::SOLO_0:
@@ -343,15 +331,15 @@ inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
             processMultiSolo<Comp>(mod, command);   
             break;
         case SoloCommands::SOLO_NONE:
-            printf("got SOLO_NONE command\n");
-            fflush(stdout);
+            //printf("got SOLO_NONE command\n"); fflush(stdout);
             unSoloAllChannels<Comp>(mod);
+            eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);
             break;
         case SoloCommands::SOLO_ALL:
+            //printf("got SOLO_ALL command\n"); fflush(stdout);
             // we should turn off all channels, and clear all solo lights
             unSoloAllChannels<Comp>(mod);
             eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 1);
-            printf("we still need to (audi) mute our whole module now\n"); fflush(stdout);
             break;
         default:
             printf("processSoloRequestForModule %d, but NIMP (all=8, none=9, nothing=10\n", (int)command); fflush(stdout);     

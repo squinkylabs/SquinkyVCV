@@ -48,6 +48,11 @@ public:
     {
     }
 
+    virtual ~FrequencyShifter()
+    {
+    }
+
+
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()

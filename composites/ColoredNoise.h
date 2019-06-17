@@ -63,7 +63,7 @@ public:
         commonConstruct();
     }
 
-    ~ColoredNoise()
+    virtual ~ColoredNoise()
     {
         thread.reset();     // kill the threads before deleting other things
     }
