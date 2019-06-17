@@ -164,6 +164,7 @@ public:
     float buf_inputs[numChannels] = {0};
     float buf_channelGains[numChannels] = {0};
     float buf_channelSendGains[numChannels] = {0};
+    float buf_channelSendbGains[numChannels] = {0};     // second set of sends
     float buf_channelOuts[numChannels] = {0};
     float buf_leftPanGains[numChannels] = {0};
     float buf_rightPanGains[numChannels] = {0};
@@ -220,6 +221,10 @@ inline void MixM<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + SEND0_PARAM].value;
         buf_channelSendGains[i] = slider;
+
+        const float sliderb = TBase::params[i + SENDb0_PARAM].value;
+        buf_channelSendbGains[i] = sliderb;
+
     }
 
     // fill buf_leftPanGains and buf_rightPanGains
@@ -318,6 +323,7 @@ inline void MixM<TBase>::step()
     // compute and output master outputs, and send outputs
     float left = 0, right = 0;
     float lSend = 0, rSend = 0;
+    float lSendb = 0, rSendb = 0;
     if (expansionInputs) {
         left = expansionInputs[0];
         right = expansionInputs[1];
@@ -327,8 +333,10 @@ inline void MixM<TBase>::step()
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
         lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
+        lSendb += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendbGains[i];
         right += buf_channelOuts[i] * buf_rightPanGains[i];
         rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
+        rSendb += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendbGains[i];
     }
 
     left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGain;
@@ -343,6 +351,9 @@ inline void MixM<TBase>::step()
 
     TBase::outputs[LEFT_SEND_OUTPUT].value = lSend;
     TBase::outputs[RIGHT_SEND_OUTPUT].value = rSend;
+
+    TBase::outputs[LEFT_SENDb_OUTPUT].value = lSendb;
+    TBase::outputs[RIGHT_SENDb_OUTPUT].value = rSendb;
 
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {

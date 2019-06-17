@@ -87,10 +87,10 @@ private:
      * #3) Send data to the left: use your own left producer buffer.
      * #4) Receive data from right: user right's left consumer buffer 
      */
-    float bufferFlipR[5];
-    float bufferFlopR[5];
-    float bufferFlipL[1];
-    float bufferFlopL[1];
+    float bufferFlipR[comBufferSizeRight];
+    float bufferFlopR[comBufferSizeRight];
+    float bufferFlipL[comBufferSizeLeft];
+    float bufferFlopL[comBufferSizeLeft];
 
     CommChannelSend sendRightChannel;
     CommChannelSend sendLeftChannel;
@@ -178,8 +178,8 @@ inline void MixerModule::process(const ProcessArgs &args)
 
         // #4) Receive data from right: user right's left consumer buffer
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightExpander.module->leftExpander.consumerMessage);
-        sendRightChannel.go(outBuf + 4);
-        uint32_t cmd = receiveRightChannel.rx(inBuf + 0);
+        sendRightChannel.go(outBuf + comBufferRightCommandOffset);
+        uint32_t cmd = receiveRightChannel.rx(inBuf + comBufferLeftCommandOffset);
 
         if (cmd != 0) {
             // iI the command is external solo, then we want to turn off all our
@@ -205,8 +205,8 @@ inline void MixerModule::process(const ProcessArgs &args)
         
         // #2) Receive data from left:  use left's right consumer buffer
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftExpander.module->rightExpander.consumerMessage);
-        sendLeftChannel.go(outBuf + 0);
-        uint32_t cmd = receiveLeftChannel.rx(inBuf + 4);
+        sendLeftChannel.go(outBuf + comBufferLeftCommandOffset);
+        uint32_t cmd = receiveLeftChannel.rx(inBuf + comBufferRightCommandOffset);
         if (cmd != 0) {
             const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;

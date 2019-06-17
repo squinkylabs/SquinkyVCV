@@ -160,6 +160,7 @@ public:
     float buf_inputs[numChannels];
     float buf_channelGains[numChannels];
     float buf_channelSendGains[numChannels];
+    float buf_channelSendbGains[numChannels] = {0};     // second set of sends
     float buf_channelOuts[numChannels];
     float buf_leftPanGains[numChannels];
     float buf_rightPanGains[numChannels];
@@ -210,6 +211,9 @@ inline void Mix4<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + SEND0_PARAM].value;
         buf_channelSendGains[i] = slider;
+
+        const float sliderb = TBase::params[i + SENDb0_PARAM].value;
+        buf_channelSendbGains[i] = sliderb;
     }
 
     // If the is an external solo, then mute all channels
@@ -309,18 +313,24 @@ inline void Mix4<TBase>::step()
     // compute and output master outputs
     float left = 0, right = 0;
     float lSend = 0, rSend = 0;
+    float lSendb = 0, rSendb = 0;
     if (expansionInputs) {
         left  = expansionInputs[0];
         right = expansionInputs[1];
         lSend = expansionInputs[2];
         rSend = expansionInputs[3];
+        lSendb = expansionInputs[4];
+        rSendb = expansionInputs[5];
     }
 
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
         lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
+        lSendb += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendbGains[i];
+
         right += buf_channelOuts[i] * buf_rightPanGains[i];
         rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
+        rSendb += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendbGains[i];
     }
 
     // output the masters
@@ -329,6 +339,8 @@ inline void Mix4<TBase>::step()
         expansionOutputs[1] = right;
         expansionOutputs[2] = lSend;
         expansionOutputs[3] = rSend;
+        expansionOutputs[4] = lSendb;
+        expansionOutputs[5] = rSendb;
     }
 
     // output channel outputs

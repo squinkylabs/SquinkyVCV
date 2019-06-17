@@ -23,6 +23,11 @@ static float auxGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
     return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].value;
 }
 
+static float auxGetterMixMB(std::shared_ptr<MixerM> m, bool bRight)
+{
+    return m->outputs[bRight ? MixerM::RIGHT_SENDb_OUTPUT : MixerM::LEFT_SENDb_OUTPUT].value;
+}
+
 static float outputGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
 {
     return m->outputs[bRight ? Mixer8::RIGHT_OUTPUT : Mixer8::LEFT_OUTPUT].value;
@@ -38,6 +43,12 @@ static float auxGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
 {
     // use the expander bus, and apply the default master gain
     return gOutputBuffer[bRight ? 3 : 2];
+}
+
+static float auxGetterMix4B(std::shared_ptr<Mixer4> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return gOutputBuffer[bRight ? 5 : 4];
 }
 
 static float auxGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
@@ -155,14 +166,21 @@ static void testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> out
     _testMaster<T>(outputGetter, true);
 }
 
+/**
+ * param augGetter is one of the functions that will retrieve data from the aux send.
+ * param side is true if left,  false if right
+ * param aux0 is true if we want to test the aux0 bus, false for aux1
+ */
 template <typename T>
-static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter, bool side)
+static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter, bool side, bool aux0, int sendParam)
 {
     auto m = getMixer<T>();
 
+
+ //   const T::ParamIds sendParam = (aux0) ? T::SEND0_PARAM : T::SENDb0_PARAM;
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
-    m->params[T::SEND0_PARAM].value = 1;
+    m->params[sendParam].value = 1;
 
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
@@ -180,8 +198,16 @@ static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> au
 template <typename T>
 static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
 {
-    _testAuxOut<T>(auxGetter, false);
-    _testAuxOut<T>(auxGetter, true);
+    _testAuxOut<T>(auxGetter, false, true, T::SEND0_PARAM);
+    _testAuxOut<T>(auxGetter, true, true, T::SEND0_PARAM);
+}
+
+
+template <typename T>
+static void testAuxOutB(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
+{
+    _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM);
+    _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM);
 }
 
 
@@ -514,12 +540,15 @@ void testMix8()
     testAuxOut<Mixer4>(auxGetterMix4);
     testAuxOut<Mixer8>(auxGetterMix8);
 
+    testAuxOutB<MixerM>(auxGetterMixMB);
+    testAuxOutB<Mixer4>(auxGetterMix4B);
+
     // now all mixers support "legacy" solo
     testSoloLegacy<Mixer8>(outputGetterMix8);
     testSoloLegacy<Mixer4>(outputGetterMix4);
     testSoloLegacy<MixerM>(outputGetterMixM);
 
-  //  testSoloNew<MixerM>(outputGetterMixM);
+    testSoloNew<MixerM>(outputGetterMixM);
  //   testSoloNew<Mixer4>(outputGetterMix4);
  
    // testSoloNew2<MixerM>(outputGetterMixM);
