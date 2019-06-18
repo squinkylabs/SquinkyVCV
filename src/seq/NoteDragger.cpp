@@ -63,6 +63,27 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
     }
 }
 
+
+float NoteDragger::getCursorOutsidePitchRange() const
+{
+    auto scaler = sequencer->context->getScaler();
+    assert(scaler);
+
+    const float pitchLow = sequencer->context->pitchLow();
+    const float pitchHi = sequencer->context->pitchHi();
+
+    const float mousePitchCV = scaler->yToMidiCVPitch(curMousePositionY);
+
+    float ret = 0;
+    if (mousePitchCV > pitchHi) {
+        ret = mousePitchCV - pitchHi;
+    } else if (mousePitchCV < pitchLow) {
+        ret =  mousePitchCV - pitchLow;
+    }
+
+    return ret;
+}
+
 /******************************************************************
  *
  * NotePitchDragger 
@@ -90,6 +111,15 @@ void NotePitchDragger::draw(NVGcontext *vg)
     
     float verticalShift =  curMousePositionY - startY;
     drawNotes(vg, verticalShift, 0, 0);
+}
+
+void NotePitchDragger::onDrag(float deltaX, float deltaY)
+{
+    NoteDragger::onDrag(deltaX, deltaY);
+    const float pitchShift = getCursorOutsidePitchRange();
+    if (pitchShift != 0) {
+        printf("cursor outside pitch range\n"); fflush(stdout);
+    }
 }
 
 /******************************************************************

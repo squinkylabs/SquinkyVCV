@@ -179,7 +179,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
-    tog->setHandler( [this, module]() {
+    tog->setHandler( [this, module](bool ctrlKey) {
         this->toggleRunStop(module);
     });
     addChild(tog);
