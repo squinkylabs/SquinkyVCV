@@ -548,7 +548,7 @@ void testMix8()
     testSoloLegacy<Mixer4>(outputGetterMix4);
     testSoloLegacy<MixerM>(outputGetterMixM);
 
-    testSoloNew<MixerM>(outputGetterMixM);
+  //  testSoloNew<MixerM>(outputGetterMixM);
  //   testSoloNew<Mixer4>(outputGetterMix4);
  
    // testSoloNew2<MixerM>(outputGetterMixM);

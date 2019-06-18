@@ -329,11 +329,14 @@ inline void MixM<TBase>::step()
         right = expansionInputs[1];
         lSend = expansionInputs[2];
         rSend = expansionInputs[3];
+        lSendb = expansionInputs[4];
+        rSendb = expansionInputs[5];
     }
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
         lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
         lSendb += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendbGains[i];
+        
         right += buf_channelOuts[i] * buf_rightPanGains[i];
         rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
         rSendb += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendbGains[i];
