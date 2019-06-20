@@ -28,16 +28,20 @@ using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
  * viewport. that should be relatively easy, and could be
  * implemented in the base class. To do this:
  * 
- *      drawing will have to get smarter. now it's just delta = movement of mousem
- *      but it will need to subtract changes in viewport.
- * 
- *      dragging will introduce undesired undo events.
- * 
+ *      drawing will have to get smarter. now it's just delta = movement of mouse
+ *      but it will need to subtract changes in viewport. 
  *      
  * so, for drawing, drawDelta = mouseDelta - viewportDelta.
  * remember that  auto scaler = sequencer->context->getScaler();
  * the scaler relates screen coordinated to music ones.
  * will need helpers to know how far out of bounds the cursor is.
+ * 
+ * Ok, let's try this for next round:
+ *      when cursor gets within one semitone of the outside, 
+ *      we will scroll. This will keep the note visible all the time.
+ *      
+ *      When we do scroll, we will scroll by a whole semitone, so that note
+ *      will seem to stay at the same location as the grid scrolls under it.
  */
 
 class NoteDragger
@@ -68,7 +72,7 @@ protected:
      * returns 0 if cursor is still inviewport
      *          amount outside, if not (+/-), in pitch CV
      */
-    float getCursorOutsidePitchRange() const;
+  //  float getCursorOutsidePitchRange() const;
     
 };
 
@@ -82,6 +86,21 @@ private:
    
     void commit() override;
     void draw(NVGcontext *vg) override;
+
+    /**
+     * Calculate the transpose based on how far the mouse has moved.
+     * Units are pitch units.
+     */
+    float calcTranspose() const;
+
+    /**
+     * Calculate how much the viewport must be shifted to
+     * keep the transposed notes in range.
+     */
+    float calcShift(float transpose) const;
+
+    const float highPitch0;       // viewport top when mouse went down
+    const float lowPitch0;        // viewport bottom when mouse went down
 };
 
 class NoteStartDragger : public NoteDragger

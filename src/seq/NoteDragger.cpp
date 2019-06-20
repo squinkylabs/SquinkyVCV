@@ -63,7 +63,7 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
     }
 }
 
-
+#if 0
 float NoteDragger::getCursorOutsidePitchRange() const
 {
     auto scaler = sequencer->context->getScaler();
@@ -83,6 +83,7 @@ float NoteDragger::getCursorOutsidePitchRange() const
 
     return ret;
 }
+#endif
 
 /******************************************************************
  *
@@ -90,17 +91,59 @@ float NoteDragger::getCursorOutsidePitchRange() const
  */
 
 NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteDragger(seq, x, y)
+    NoteDragger(seq, x, y),
+    highPitch0(sequencer->context->pitchHi()),
+    lowPitch0(sequencer->context->pitchLow())
 {
+}
+
+float NotePitchDragger::calcTranspose() const
+{
+    auto scaler = sequencer->context->getScaler();
+    const float verticalShift =  curMousePositionY - startY;
+    const float transposeCV = scaler->yToMidiDeltaCVPitch(verticalShift);
+    return transposeCV;
+}
+
+float NotePitchDragger::calcShift(float transpose) const
+{
+    auto scaler = sequencer->context->getScaler();
+    assert(scaler);
+
+    float ret = 0;
+    if (transpose > highPitch0) {
+        ret = transpose - highPitch0;
+    } else if (transpose < lowPitch0) {
+        ret =  transpose - lowPitch0;
+    }
+
+    return ret;
+}
+
+void NotePitchDragger::onDrag(float deltaX, float deltaY)
+{
+    NoteDragger::onDrag(deltaX, deltaY);
+    const float transpose = calcTranspose();
+    const float shift = calcShift(transpose);
+
+    printf("onDrag, trans = %.2f, shift = %.2f\n", transpose, shift); fflush(stdout);
+    // TODO: only if shift moves away from center,
+    // or only if pitch not in viewport.
+    auto scaler = sequencer->context->getScaler();
+    if (shift) {
+        sequencer->context->setPitchRange(lowPitch0 + shift, highPitch0 + shift);
+    }
 }
 
 void NotePitchDragger::commit()
 {
+    // TODO: use calcTranspose
     auto scaler = sequencer->context->getScaler();
     const float verticalShift =  curMousePositionY - startY;
     const float transposeCV = scaler->yToMidiDeltaCVPitch(verticalShift);
     const int semiShift = PitchUtils::deltaCVToSemitone(transposeCV);
     if (semiShift != 0) {
+        // only do the edit if significant change
         sequencer->editor->changePitch(semiShift);
     }
 }
@@ -113,14 +156,36 @@ void NotePitchDragger::draw(NVGcontext *vg)
     drawNotes(vg, verticalShift, 0, 0);
 }
 
+
+
+
+#if 0
 void NotePitchDragger::onDrag(float deltaX, float deltaY)
 {
     NoteDragger::onDrag(deltaX, deltaY);
     const float pitchShift = getCursorOutsidePitchRange();
+   
     if (pitchShift != 0) {
-        printf("cursor outside pitch range\n"); fflush(stdout);
+        printf("drag, pitch is %.2f shift is %.2f",  sequencer->context->cursorPitch(), pitchShift);
+        #if 0
+        float cursorPitch;
+        if (pitchShift > 0) {
+            cursorPitch = sequencer->context->pitchHi() + pitchShift;
+        } else {
+            cursorPitch = sequencer->context->pitchLow() + pitchShift;
+        }
+        #endif
+        const float cursorPitch = sequencer->context->cursorPitch() +  pitchShift;
+        printf(" -> %.2f \n",  cursorPitch); fflush(stdout);
+        
+        //float cursorPitch = sequencer->context->cursorPitch();
+        //cursorPitch += pitchShift;
+        sequencer->context->setCursorPitch(cursorPitch);
+        sequencer->context->adjustViewportForCursor();
+
     }
 }
+#endif
 
 /******************************************************************
  *
