@@ -107,7 +107,8 @@ NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
     viewportUpperPitch0(sequencer->context->pitchHi()),
     highPitchForDragStart(sequencer->context->pitchHi() - 2 * PitchUtils::semitone),
     viewportLowerPitch0(sequencer->context->pitchLow()),
-    lowPitchForDragStart(sequencer->context->pitchLow() + 2 * PitchUtils::semitone) 
+    lowPitchForDragStart(sequencer->context->pitchLow() + 2 * PitchUtils::semitone),
+    pitch0(sequencer->context->getScaler()->yToMidiCVPitch(y))
 {
 }
 
@@ -126,11 +127,22 @@ float NotePitchDragger::calcShift(float transpose) const
     assert(scaler);
 
     float ret = 0;
-    printf("in calcShift, t=%.2f, hi=%.2f lo=%.2f\n", transpose, highPitchForDragStart, lowPitchForDragStart);
-    if (transpose > highPitchForDragStart) {
-        ret = transpose - highPitchForDragStart;
-    } else if (transpose < lowPitchForDragStart) {
-        ret =  transpose - lowPitchForDragStart;
+    #if 0
+    printf("in calcShift, t=%.2f, draghi=%.2f draglo=%.2f\n", transpose, highPitchForDragStart, lowPitchForDragStart);
+    printf("  viewport hi = %.2f low = %.2f initialPitch = %.2f\n", 
+        viewportUpperPitch0,
+        viewportLowerPitch0,
+        pitch0);
+    #endif
+
+    // distance between initial mouse click and top of viewport
+    const float deltaP02Hp = highPitchForDragStart - pitch0; 
+    const float deltaP02Lp = lowPitchForDragStart - pitch0; 
+
+    if (transpose > deltaP02Hp) {
+        ret = transpose - deltaP02Hp;
+    } else if (transpose < deltaP02Lp) {
+        ret =  transpose - deltaP02Lp;
     }
 
     return ret;
@@ -142,7 +154,7 @@ void NotePitchDragger::onDrag(float deltaX, float deltaY)
     const float transpose = calcTranspose();
     const float shift = calcShift(transpose);
 
-    printf("onDrag, trans = %.2f, shift = %.2f\n", transpose, shift); fflush(stdout);
+   // printf("onDrag, trans = %.2f, shift = %.2f\n", transpose, shift); fflush(stdout);
 
     // TODO: only if shift moves away from center,
     // or only if pitch not in viewport.

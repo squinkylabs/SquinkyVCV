@@ -104,8 +104,7 @@ private:
     const float viewportLowerPitch0;    // The initial pitch of the bottom most pixel in the viewport
     const float lowPitchForDragStart;   // The pitch at which we start dragging down
 
-   // const float highPitch0;       // viewport top when mouse went down
-  //  const float lowPitch0;        // viewport bottom when mouse went down
+    const float pitch0;                     // pitch when the drag started
 };
 
 class NoteStartDragger : public NoteDragger
