@@ -99,8 +99,13 @@ private:
      */
     float calcShift(float transpose) const;
 
-    const float highPitch0;       // viewport top when mouse went down
-    const float lowPitch0;        // viewport bottom when mouse went down
+    const float viewportUpperPitch0;    // The initial pitch of the topmost pixel in the viewport
+    const float highPitchForDragStart;  // The pitch at which we start dragging up
+    const float viewportLowerPitch0;    // The initial pitch of the bottom most pixel in the viewport
+    const float lowPitchForDragStart;   // The pitch at which we start dragging down
+
+   // const float highPitch0;       // viewport top when mouse went down
+  //  const float lowPitch0;        // viewport bottom when mouse went down
 };
 
 class NoteStartDragger : public NoteDragger

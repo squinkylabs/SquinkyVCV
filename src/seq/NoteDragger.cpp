@@ -90,10 +90,24 @@ float NoteDragger::getCursorOutsidePitchRange() const
  * NotePitchDragger 
  */
 
+
+/*
+
+  const float viewportUpperPitch0;    // The initial pitch of the topmost pixel in the viewport
+    const float highPitchForDragStart;  // The pitch at which we start dragging up
+    const float viewportLowerPitch0;    // The initial pitch of the bottom most pixel in the viewport
+    const float lowPitchForDragStart;   // The pitch at which we start dragging down
+ */
+
+
+// Remember current viewport pitch range. Shave some off top and
+// bottom to allow reasonable dragging.
 NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
     NoteDragger(seq, x, y),
-    highPitch0(sequencer->context->pitchHi()),
-    lowPitch0(sequencer->context->pitchLow())
+    viewportUpperPitch0(sequencer->context->pitchHi()),
+    highPitchForDragStart(sequencer->context->pitchHi() - 2 * PitchUtils::semitone),
+    viewportLowerPitch0(sequencer->context->pitchLow()),
+    lowPitchForDragStart(sequencer->context->pitchLow() + 2 * PitchUtils::semitone) 
 {
 }
 
@@ -105,16 +119,18 @@ float NotePitchDragger::calcTranspose() const
     return transposeCV;
 }
 
+// TODO: take into account note height!
 float NotePitchDragger::calcShift(float transpose) const
 {
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
 
     float ret = 0;
-    if (transpose > highPitch0) {
-        ret = transpose - highPitch0;
-    } else if (transpose < lowPitch0) {
-        ret =  transpose - lowPitch0;
+    printf("in calcShift, t=%.2f, hi=%.2f lo=%.2f\n", transpose, highPitchForDragStart, lowPitchForDragStart);
+    if (transpose > highPitchForDragStart) {
+        ret = transpose - highPitchForDragStart;
+    } else if (transpose < lowPitchForDragStart) {
+        ret =  transpose - lowPitchForDragStart;
     }
 
     return ret;
@@ -127,11 +143,12 @@ void NotePitchDragger::onDrag(float deltaX, float deltaY)
     const float shift = calcShift(transpose);
 
     printf("onDrag, trans = %.2f, shift = %.2f\n", transpose, shift); fflush(stdout);
+
     // TODO: only if shift moves away from center,
     // or only if pitch not in viewport.
     auto scaler = sequencer->context->getScaler();
     if (shift) {
-        sequencer->context->setPitchRange(lowPitch0 + shift, highPitch0 + shift);
+        sequencer->context->setPitchRange(viewportLowerPitch0 + shift, viewportUpperPitch0 + shift);
     }
 }
 

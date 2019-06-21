@@ -276,13 +276,16 @@ void NoteDisplay::onSelectKey(const event::SelectKey &e)
     }
 }
 
-bool NoteDisplay::isCursorKey(int key) {
+bool NoteDisplay::isKeyWeNeedToStealFromRack(int key) {
     bool isCursor = false;
     switch (key) {
         case GLFW_KEY_LEFT:
         case GLFW_KEY_RIGHT:
         case GLFW_KEY_UP:
         case GLFW_KEY_DOWN:
+        case GLFW_KEY_BACKSPACE:
+        case GLFW_KEY_KP_DECIMAL:
+        case GLFW_KEY_DELETE:
             isCursor = true;
     }
     return isCursor;
@@ -293,7 +296,7 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
-    } else if (isCursorKey(e.key)) {
+    } else if (isKeyWeNeedToStealFromRack(e.key)) {
         // Swallow all hover events around cursor keys.
         // This keeps Rack from stealing them.
         e.consume(this);
