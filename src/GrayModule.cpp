@@ -59,7 +59,7 @@ struct GrayWidget : ModuleWidget
 {
     GrayWidget(GrayModule *);
 
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md");
+    DECLARE_MANUAL("Gray Code manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md");
 
     /**
      * Helper to add a text label to this widget

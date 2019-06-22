@@ -48,7 +48,7 @@ static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mas
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
-    DECLARE_MANUAL(helpUrl);
+    DECLARE_MANUAL("Seq++ manual", helpUrl);
 
     /**
      * Helper to add a text label to this widget

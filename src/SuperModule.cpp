@@ -85,7 +85,7 @@ struct superWidget : ModuleWidget
     void addPitchKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addOtherKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addJacks(SuperModule *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+    DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
 };

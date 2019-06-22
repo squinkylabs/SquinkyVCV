@@ -67,7 +67,7 @@ struct ColoredNoiseWidget : ModuleWidget
     Label * slopeLabel;
     Label * signLabel;
 
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
+    DECLARE_MANUAL("Colors manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
 };
 
 // The colors of noise (UI colors)

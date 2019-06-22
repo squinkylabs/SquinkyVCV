@@ -103,9 +103,11 @@ public:
     }
 };
 
-#define DECLARE_MANUAL(URL) void appendContextMenu(Menu *theMenu) override \
+#define DECLARE_MANUAL(TEXT, URL) void appendContextMenu(Menu *theMenu) override \
 { \
-    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    MenuLabel *spacerLabel = new MenuLabel(); \
+	theMenu->addChild(spacerLabel); \
+    ManualMenuItem* manual = new ManualMenuItem(TEXT, URL); \
     theMenu->addChild(manual);   \
 }
 
@@ -208,10 +210,10 @@ public:
 
 };
 
-#define DECLARE_MANUAL(URL) Menu* createContextMenu() override \
+#define DECLARE_MANUAL(TEXT, URL) Menu* createContextMenu() override \
 { \
     Menu* theMenu = ModuleWidget::createContextMenu(); \
-    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    ManualMenuItem* manual = new ManualMenuItem(TEXT, URL); \
     theMenu->addChild(manual); \
     return theMenu; \
 }

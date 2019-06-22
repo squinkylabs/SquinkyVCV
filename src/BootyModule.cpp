@@ -188,7 +188,7 @@ struct RangeChoice : ChoiceButton
 struct BootyWidget : ModuleWidget
 {
     BootyWidget(BootyModule *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shifter.md");
+    DECLARE_MANUAL("Booty Shifter manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shifter.md");
 };
 
 /**

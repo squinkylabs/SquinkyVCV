@@ -65,7 +65,7 @@ struct TremoloWidget : ModuleWidget
 {
     TremoloWidget(TremoloModule *);
 
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md");
+    DECLARE_MANUAL("Chopper manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md");
 
     void addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

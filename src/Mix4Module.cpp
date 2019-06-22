@@ -93,8 +93,7 @@ void Mix4Module::internalProcess()
 struct Mix4Widget : ModuleWidget
 {
     Mix4Widget(Mix4Module *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
-
+ 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
@@ -109,9 +108,29 @@ struct Mix4Widget : ModuleWidget
         Mix4Module*,
         std::shared_ptr<IComposite>,
         int channel);
+    void appendContextMenu(Menu *menu) override;
 private:
     Mix4Module* mixModule;
 };
+
+void Mix4Widget::appendContextMenu(Menu *menu)
+{
+    MenuLabel *spacerLabel = new MenuLabel();
+	menu->addChild(spacerLabel);
+
+    ManualMenuItem* manual = new ManualMenuItem("Mix-4X manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
+    menu->addChild(manual);
+    
+    MenuLabel *spacerLabel2 = new MenuLabel();
+    menu->addChild(spacerLabel2);
+    SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERa_PARAM);
+    item->text = "Send A Pre-Fader";
+    menu->addChild(item);
+
+    item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERb_PARAM);
+    item->text = "Send B Pre-Fader";
+    menu->addChild(item);
+}
 
 static const float channelX = 21;
 static const float dX = 36;
