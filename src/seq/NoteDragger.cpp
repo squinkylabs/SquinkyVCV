@@ -57,33 +57,11 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
         if (selected) {
             SqGfx::filledRect(
                 vg,
-                UIPrefs::DRAGGED_NOTE_COLOR,
+                UIPrefs::SELECTED_NOTE_COLOR,
                 x, y, width, noteHeight);
         }
     }
 }
-
-#if 0
-float NoteDragger::getCursorOutsidePitchRange() const
-{
-    auto scaler = sequencer->context->getScaler();
-    assert(scaler);
-
-    const float pitchLow = sequencer->context->pitchLow();
-    const float pitchHi = sequencer->context->pitchHi();
-
-    const float mousePitchCV = scaler->yToMidiCVPitch(curMousePositionY);
-
-    float ret = 0;
-    if (mousePitchCV > pitchHi) {
-        ret = mousePitchCV - pitchHi;
-    } else if (mousePitchCV < pitchLow) {
-        ret =  mousePitchCV - pitchLow;
-    }
-
-    return ret;
-}
-#endif
 
 /******************************************************************
  *
@@ -169,42 +147,11 @@ void NotePitchDragger::commit()
 
 void NotePitchDragger::draw(NVGcontext *vg)
 {
-    SqGfx::drawText(vg, curMousePositionX, curMousePositionY, "mouse");
-    
     float verticalShift =  curMousePositionY - startY;
     drawNotes(vg, verticalShift, 0, 0);
+    SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "transpose");
 }
 
-
-
-
-#if 0
-void NotePitchDragger::onDrag(float deltaX, float deltaY)
-{
-    NoteDragger::onDrag(deltaX, deltaY);
-    const float pitchShift = getCursorOutsidePitchRange();
-   
-    if (pitchShift != 0) {
-        printf("drag, pitch is %.2f shift is %.2f",  sequencer->context->cursorPitch(), pitchShift);
-        #if 0
-        float cursorPitch;
-        if (pitchShift > 0) {
-            cursorPitch = sequencer->context->pitchHi() + pitchShift;
-        } else {
-            cursorPitch = sequencer->context->pitchLow() + pitchShift;
-        }
-        #endif
-        const float cursorPitch = sequencer->context->cursorPitch() +  pitchShift;
-        printf(" -> %.2f \n",  cursorPitch); fflush(stdout);
-        
-        //float cursorPitch = sequencer->context->cursorPitch();
-        //cursorPitch += pitchShift;
-        sequencer->context->setCursorPitch(cursorPitch);
-        sequencer->context->adjustViewportForCursor();
-
-    }
-}
-#endif
 
 /******************************************************************
  *
@@ -219,6 +166,7 @@ void NoteStartDragger::draw(NVGcontext *vg)
 {
     const float horizontalShift =  curMousePositionX - startX;
     drawNotes(vg, 0, horizontalShift, 0);
+    SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "shift");
 }
 
 void NoteStartDragger::commit()
@@ -251,6 +199,7 @@ void NoteDurationDragger::draw(NVGcontext *vg)
 {
     const float horizontalShift =  curMousePositionX - startX;
     drawNotes(vg, 0, 0, horizontalShift);
+    SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "stretch");
 }
 
 void NoteDurationDragger::commit()
