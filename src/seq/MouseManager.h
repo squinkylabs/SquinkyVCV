@@ -24,6 +24,7 @@ public:
     bool onDragStart();
     bool onDragEnd();
     bool onDragMove(float x, float y);
+    bool willDrawSelection() const;
 private:
 
     MidiSequencerPtr sequencer;

@@ -56,6 +56,10 @@ public:
     virtual void commit()=0;
     virtual void draw(NVGcontext *vg)=0;
    
+    virtual bool willDrawSelection() const
+    {
+        return true;        // for now, they all do
+    }
 protected:
     MidiSequencerPtr sequencer;
     const float startX;
@@ -67,13 +71,6 @@ protected:
      * shifts are in units of one pixel
      */
     void drawNotes(NVGcontext *vg, float verticalShift, float horizontalShift, float horizontalStretch);
-
-    /**
-     * returns 0 if cursor is still inviewport
-     *          amount outside, if not (+/-), in pitch CV
-     */
-  //  float getCursorOutsidePitchRange() const;
-    
 };
 
 class NotePitchDragger : public NoteDragger

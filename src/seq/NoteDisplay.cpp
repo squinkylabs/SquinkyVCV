@@ -101,10 +101,12 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
         const float width = scaler->midiTimeTodX(ev->duration);
 
         const bool selected = sequencer->selection->isSelected(ev);
-        SqGfx::filledRect(
-            vg,
-            selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
-            x, y, width, noteHeight);
+        if (!selected || !mouseManager->willDrawSelection()) {
+            SqGfx::filledRect(
+                vg,
+                selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
+                x, y, width, noteHeight);
+        }
     }
 }
 

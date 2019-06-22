@@ -90,16 +90,6 @@ float NoteDragger::getCursorOutsidePitchRange() const
  * NotePitchDragger 
  */
 
-
-/*
-
-  const float viewportUpperPitch0;    // The initial pitch of the topmost pixel in the viewport
-    const float highPitchForDragStart;  // The pitch at which we start dragging up
-    const float viewportLowerPitch0;    // The initial pitch of the bottom most pixel in the viewport
-    const float lowPitchForDragStart;   // The pitch at which we start dragging down
- */
-
-
 // Remember current viewport pitch range. Shave some off top and
 // bottom to allow reasonable dragging.
 NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :

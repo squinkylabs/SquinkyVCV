@@ -130,4 +130,13 @@ bool MouseManager::onDragMove(float x, float y)
     }
     return ret;
 }
+
+bool MouseManager::willDrawSelection() const
+{
+    bool ret = false;
+    if (noteDragger) {
+        ret = noteDragger->willDrawSelection();
+    }
+    return ret;
+}
 #endif
