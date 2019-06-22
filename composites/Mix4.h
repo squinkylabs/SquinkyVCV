@@ -181,19 +181,6 @@ private:
     float* expansionOutputs = nullptr;
 };
 
-#if 0
-// called from audio thread
-template <class TBase>
-inline  void Mix4<TBase>::requestModuleSolo(SoloCommands command)
-{
-    soloState = command;
-    for (int i = 0; i < 4; ++i) {
-        TBase::lights[i + SOLO0_LIGHT].value = (int(soloState) == i) ? 10.f : 0.f;
-    }
-}
-#endif
-
-
 template <class TBase>
 inline void Mix4<TBase>::stepn(int div)
 {
@@ -221,22 +208,7 @@ inline void Mix4<TBase>::stepn(int div)
 
     // If the is an external solo, then mute all channels
 
-    // TODO
-#if 0
-    const bool allMutedDueToSolo = (soloState == SoloCommands::SOLO_ALL);
 
-    for (int i = 0; i < numChannels; ++i) {
-        const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
-            (TBase::inputs[i + MUTE0_INPUT].value > 2));
-        const bool mute = allMutedDueToSolo ||
-            ((i != int(soloState)) && (soloState <= SoloCommands::SOLO_3)) ||
-            muteActivated;
-
-
-
-        buf_muteInputs[i] = mute ? 0.f : 1.f;
-    }
-#else
   bool anySolo = false;
     for (int i = 0; i < numChannels; ++i) {
         if (TBase::params[i + SOLO0_PARAM].value > .5f) {
@@ -263,7 +235,6 @@ inline void Mix4<TBase>::stepn(int div)
            // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
     }
-#endif
 
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {

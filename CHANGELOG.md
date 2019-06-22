@@ -1,4 +1,14 @@
-# Release notes for Squinky Labs modules
+# Change log for Squinky Labs modules
+
+## 1.0.1
+
+New modular mixer (Mix-4M and Mix-4X).
+
+Changed the context menu display for our instruction manuals.
+
+## 1.0.0
+
+Released 1.0 versions of release 0.6.16
 
 ## 0.6.16
 

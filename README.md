@@ -8,7 +8,7 @@ You can find us on Facebook [here](https://www.facebook.com/SquinkyLabs).
 
 Here is the user's manual for our modules: [instruction manual](./docs/booty-shifter.md). It contains descriptions of all of them.
 
-The [release notes](./docs/release-notes.md) describe recent changes.
+The [Changelog](./CHANGELOG.md) describes recent changes.
 
 ## Credits
 

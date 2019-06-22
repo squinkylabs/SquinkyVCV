@@ -2,7 +2,7 @@
 
 Below are short descriptions of our modules with links to more detailed manuals.
 
-The [release notes](release-notes.md) describe recent changes to our modules.
+The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 # Things that make sound
 

@@ -166,11 +166,16 @@ public:
 
     float buf_inputs[numChannels] = {0};
     float buf_channelGains[numChannels] = {0};
-    float buf_channelSendGains[numChannels] = {0};
-    float buf_channelSendbGains[numChannels] = {0};     // second set of sends
+   // float buf_channelSendGains[numChannels] = {0};
+ //   float buf_channelSendbGains[numChannels] = {0};     // second set of sends
     float buf_channelOuts[numChannels] = {0};
     float buf_leftPanGains[numChannels] = {0};
     float buf_rightPanGains[numChannels] = {0};
+
+    float buf_channelSendGainsALeft[numChannels] = {0};
+    float buf_channelSendGainsARight[numChannels] = {0};
+    float buf_channelSendGainsBLeft[numChannels] = {0};
+    float buf_channelSendGainsBRight[numChannels] = {0};
 
     /** 
      * allocate extra bank for the master mute
@@ -192,17 +197,17 @@ private:
     const float* expansionInputs = nullptr;
 };
 
-#if 0
 template <class TBase>
-inline  void MixM<TBase>::requestModuleSolo(SoloCommands command)
+inline void MixM<TBase>::init()
 {
-    soloState = command;
+    const int divRate = 4;
+    divider.setup(divRate, [this, divRate] {
+        this->stepn(divRate);
+        });
 
-    for (int i=0; i<4; ++i) {
-        TBase::lights[i + SOLO0_LIGHT].value = (int(soloState) == i) ? 10.f : 0.f;
-    }
+    // 400 was smooth, 100 popped
+    antiPop.setCutoff(1.0f / 100.f);
 }
-#endif
 
 template <class TBase>
 inline void MixM<TBase>::stepn(int div)
@@ -220,15 +225,7 @@ inline void MixM<TBase>::stepn(int div)
         buf_channelGains[i] = slider * cv;
     }
 
-    // send gains
-    for (int i = 0; i < numChannels; ++i) {
-        const float slider = TBase::params[i + SEND0_PARAM].value;
-        buf_channelSendGains[i] = slider;
 
-        const float sliderb = TBase::params[i + SENDb0_PARAM].value;
-        buf_channelSendbGains[i] = sliderb;
-
-    }
 
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {
@@ -243,18 +240,6 @@ inline void MixM<TBase>::stepn(int div)
     buf_auxReturnGain = TBase::params[RETURN_GAIN_PARAM].value;
 
     // If the is an external solo, then mute all channels
-#if 0
-    const bool allMutedDueToSolo = (soloState == SoloCommands::SOLO_ALL);
-    for (int i = 0; i < numChannels; ++i) {
-        const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
-            (TBase::inputs[i + MUTE0_INPUT].value > 2));
-        const bool mute = allMutedDueToSolo ||
-            ((i != int(soloState)) && (soloState <= SoloCommands::SOLO_3)) ||
-            muteActivated; 
-        
-        buf_muteInputs[i] = mute ? 0.f : 1.f;
-    }
-#else
     bool anySolo = false;
     for (int i = 0; i < numChannels; ++i) {
         if (TBase::params[i + SOLO0_PARAM].value > .5f) {
@@ -283,8 +268,39 @@ inline void MixM<TBase>::stepn(int div)
         }
     }
 
+    // send gains
+    const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;
+    const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
+    for (int i = 0; i < numChannels; ++i) {
+
+        const float sliderA = TBase::params[i + SEND0_PARAM].value;
+        const float sliderB = TBase::params[i + SENDb0_PARAM].value;
+        const float muteValue = antiPop.get(i);
+
+        // TODO: we can do some main volume work ahead of time, just like the sends here
+        if (!AisPreFader) {
+            // post faster, gain sees mutes, faders,  pan, and send level       
+            buf_channelSendGainsALeft[i] = buf_channelGains[i] * muteValue *  buf_leftPanGains[i] * sliderA;
+            buf_channelSendGainsARight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderA;
+        } else {
+            // pref fader, gain sees mutes and send only
+            buf_channelSendGainsALeft[i] = muteValue * sliderA;
+            buf_channelSendGainsARight[i] = muteValue * sliderA;
+        }
+
+        if (!BisPreFader) {
+          // post faster, gain sees mutes, faders,  pan, and send level       
+            buf_channelSendGainsBLeft[i] = buf_channelGains[i] * muteValue *  buf_leftPanGains[i] * sliderB;
+            buf_channelSendGainsBRight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderB;
+        } else {
+            // pref fader, gain sees mutes and send only
+            buf_channelSendGainsBLeft[i] = muteValue * sliderB;
+            buf_channelSendGainsBRight[i] = muteValue * sliderB;
+        }
+    }
+
     //printf("buf_muteInputs = %.2f %.2f %.2f %.2f \n",buf_muteInputs[0],buf_muteInputs[1],buf_muteInputs[2],buf_muteInputs[3]);
-#endif
+
 
     buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
     antiPop.step(buf_muteInputs);
@@ -295,17 +311,7 @@ inline void MixM<TBase>::stepn(int div)
     }
 }
 
-template <class TBase>
-inline void MixM<TBase>::init()
-{
-    const int divRate = 4;
-    divider.setup(divRate, [this, divRate] {
-        this->stepn(divRate);
-        });
 
-    // 400 was smooth, 100 popped
-    antiPop.setCutoff(1.0f / 100.f);
-}
 
 template <class TBase>
 inline void MixM<TBase>::step()
@@ -337,12 +343,12 @@ inline void MixM<TBase>::step()
     }
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
-        lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
-        lSendb += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendbGains[i];
-        
         right += buf_channelOuts[i] * buf_rightPanGains[i];
-        rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
-        rSendb += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendbGains[i];
+
+        lSend += buf_inputs[i] * buf_channelSendGainsALeft[i];
+        lSendb += buf_inputs[i] * buf_channelSendGainsBLeft[i];
+        rSend += buf_inputs[i] * buf_channelSendGainsARight[i];
+        rSendb += buf_inputs[i] * buf_channelSendGainsBRight[i];
     }
 
     left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGain;
