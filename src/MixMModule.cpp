@@ -146,6 +146,7 @@ static const float labelX = 0;
 static const float channelY = 350;
 static const float channelDy = 30; 
 static float volY = 0;
+const float extraDy = 6;
 static float muteY = 0;
 
 void MixMWidget::makeStrip(
@@ -250,7 +251,7 @@ void MixMWidget::makeStrip(
             "S");
     }    
 
-    const float extraDy = 6;
+    
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
@@ -388,12 +389,18 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         module,
         Comp::MASTER_VOLUME_PARAM));
 
-    y -= 55;
+    y -=  (channelDy + extraDy) * 2;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
         module,
         Comp::RETURN_GAIN_PARAM));
+     y -=  (channelDy + extraDy);;
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        Comp::RETURN_GAINb_PARAM));
 }
 
 /**

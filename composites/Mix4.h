@@ -65,12 +65,12 @@ public:
         GAIN1_PARAM,
         GAIN2_PARAM,
         GAIN3_PARAM,
-       
+
         PAN0_PARAM,
         PAN1_PARAM,
         PAN2_PARAM,
         PAN3_PARAM,
-        
+
         MUTE0_PARAM,
         MUTE1_PARAM,
         MUTE2_PARAM,
@@ -95,7 +95,7 @@ public:
 
         PRE_FADERa_PARAM,       // 0 = post, 1 = pre
         PRE_FADERb_PARAM,
-       
+
         NUM_PARAMS
     };
 
@@ -105,12 +105,12 @@ public:
         AUDIO1_INPUT,
         AUDIO2_INPUT,
         AUDIO3_INPUT,
-      
+
         LEVEL0_INPUT,
         LEVEL1_INPUT,
         LEVEL2_INPUT,
         LEVEL3_INPUT,
-      
+
         PAN0_INPUT,
         PAN1_INPUT,
         PAN2_INPUT,
@@ -160,14 +160,16 @@ public:
 
     void stepn(int steps);
 
-    float buf_inputs[numChannels];
-    float buf_channelGains[numChannels];
-    float buf_channelSendGains[numChannels];
-    float buf_channelSendbGains[numChannels] = {0};     // second set of sends
-    float buf_channelOuts[numChannels];
-    float buf_leftPanGains[numChannels];
-    float buf_rightPanGains[numChannels];
+    float buf_inputs[numChannels] = {0};
+    float buf_channelGains[numChannels] = {0};
+    float buf_channelOuts[numChannels] = {0};
+    float buf_leftPanGains[numChannels] = {0};
+    float buf_rightPanGains[numChannels] = {0};
 
+    float buf_channelSendGainsALeft[numChannels] = {0};
+    float buf_channelSendGainsARight[numChannels] = {0};
+    float buf_channelSendGainsBLeft[numChannels] = {0};
+    float buf_channelSendGainsBRight[numChannels] = {0};
 
     float buf_muteInputs[numChannels];
 private:
@@ -188,8 +190,8 @@ inline void Mix4<TBase>::stepn(int div)
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
-        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ? 
-             TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
+            TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
         const float cv = std::clamp(
             rawCV / 10.0f,
             0.0f,
@@ -197,19 +199,9 @@ inline void Mix4<TBase>::stepn(int div)
         buf_channelGains[i] = slider * cv;
     }
 
-        // send gains
-    for (int i = 0; i < numChannels; ++i) {
-        const float slider = TBase::params[i + SEND0_PARAM].value;
-        buf_channelSendGains[i] = slider;
-
-        const float sliderb = TBase::params[i + SENDb0_PARAM].value;
-        buf_channelSendbGains[i] = sliderb;
-    }
 
     // If the is an external solo, then mute all channels
-
-
-  bool anySolo = false;
+    bool anySolo = false;
     for (int i = 0; i < numChannels; ++i) {
         if (TBase::params[i + SOLO0_PARAM].value > .5f) {
             anySolo = true;
@@ -222,7 +214,7 @@ inline void Mix4<TBase>::stepn(int div)
         // printf("whole module muted\n"); fflush(stdout);
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = 0;
-        } 
+        }
     } else if (anySolo) {
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = TBase::params[i + SOLO0_PARAM].value;
@@ -245,6 +237,37 @@ inline void Mix4<TBase>::stepn(int div)
         assert(panValue <= 1);
         buf_leftPanGains[i] = LookupTable<float>::lookup(*panL, panValue);
         buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, panValue);
+    }
+
+    // send gains
+    const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;
+    const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
+    for (int i = 0; i < numChannels; ++i) {
+
+        const float sliderA = TBase::params[i + SEND0_PARAM].value;
+        const float sliderB = TBase::params[i + SENDb0_PARAM].value;
+        const float muteValue = antiPop.get(i);
+
+        // TODO: we can do some main volume work ahead of time, just like the sends here
+        if (!AisPreFader) {
+            // post faster, gain sees mutes, faders,  pan, and send level       
+            buf_channelSendGainsALeft[i] = buf_channelGains[i] * muteValue *  buf_leftPanGains[i] * sliderA;
+            buf_channelSendGainsARight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderA;
+        } else {
+            // pref fader, gain sees mutes and send only
+            buf_channelSendGainsALeft[i] = muteValue * sliderA * .8f;
+            buf_channelSendGainsARight[i] = muteValue * sliderA * .8f;
+        }
+
+        if (!BisPreFader) {
+          // post faster, gain sees mutes, faders,  pan, and send level       
+            buf_channelSendGainsBLeft[i] = buf_channelGains[i] * muteValue *  buf_leftPanGains[i] * sliderB;
+            buf_channelSendGainsBRight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderB;
+        } else {
+            // pref fader, gain sees mutes and send only
+            buf_channelSendGainsBLeft[i] = muteValue * sliderB * .8f;
+            buf_channelSendGainsBRight[i] = muteValue * sliderB * .8f;
+        }
     }
 
     antiPop.step(buf_muteInputs);
@@ -289,7 +312,7 @@ inline void Mix4<TBase>::step()
     float lSend = 0, rSend = 0;
     float lSendb = 0, rSendb = 0;
     if (expansionInputs) {
-        left  = expansionInputs[0];
+        left = expansionInputs[0];
         right = expansionInputs[1];
         lSend = expansionInputs[2];
         rSend = expansionInputs[3];
@@ -299,12 +322,12 @@ inline void Mix4<TBase>::step()
 
     for (int i = 0; i < numChannels; ++i) {
         left += buf_channelOuts[i] * buf_leftPanGains[i];
-        lSend += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendGains[i];
-        lSendb += buf_channelOuts[i] * buf_leftPanGains[i] * buf_channelSendbGains[i];
-
         right += buf_channelOuts[i] * buf_rightPanGains[i];
-        rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
-        rSendb += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendbGains[i];
+
+        lSend += buf_inputs[i] * buf_channelSendGainsALeft[i];
+        lSendb += buf_inputs[i] * buf_channelSendGainsBLeft[i];
+        rSend += buf_inputs[i] * buf_channelSendGainsARight[i];
+        rSendb += buf_inputs[i] * buf_channelSendGainsBRight[i];
     }
 
     // output the masters
@@ -347,13 +370,6 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-
-   //     case Mix4<TBase>::MASTER_VOLUME_PARAM:
-   //         ret = {0, 1, .8f, "Master Vol"};
-   //         break;
-    //    case Mix4<TBase>::MASTER_MUTE_PARAM:
-    //        ret = {0, 1, 0, "Master Mute"};
-    //        break;
         case Mix4<TBase>::GAIN0_PARAM:
             ret = {0, 1, .8f, "Level 1"};
             break;
@@ -366,7 +382,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::GAIN3_PARAM:
             ret = {0, 1, .8f, "Level 4"};
             break;
-      
+
         case Mix4<TBase>::PAN0_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 1"};
             break;
@@ -379,7 +395,7 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
         case Mix4<TBase>::PAN3_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 4"};
             break;
-    
+
         case Mix4<TBase>::MUTE0_PARAM:
             ret = {0, 1.0f, 0, "Mute  1"};
             break;

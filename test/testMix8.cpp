@@ -67,7 +67,7 @@ static std::shared_ptr<T> getMixerBase()
         auto param = icomp->getParam(i);
         ret->params[i].value = param.def;
     }
-   
+
     return ret;
 }
 
@@ -177,21 +177,21 @@ template <typename T>
 static void _testAuxOut(
     std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter,
     bool side,
-    bool aux0, 
+    bool aux0,
     int sendParam,
     bool pre,
     int preParam
-    )
+)
 {
     auto m = getMixer<T>();
 
- 
+
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
     m->params[sendParam].value = 1;
 
     if (preParam) {
-        m->params[preParam].value = pre ? 0.f : 1.f;
+        m->params[preParam].value = pre ? 1.f : 0.f;
     }
 
     // with pre-fader, should still get out with no volume
@@ -210,9 +210,11 @@ static void _testAuxOut(
     float expectedOutL = side ? float(10 * .8) : 0;
     float expectedOutR = side ? 0 : float(10 * .8);
     if (pre) {
-        expectedOutL = 0;
-        expectedOutR = 0;
+        // no pan on pre
+        expectedOutL = float(10 * .8);
+        expectedOutR = float(10 * .8);
     }
+
     assertClose(auxL, expectedOutL, .01);
     assertClose(auxR, expectedOutR, .01);
 }
@@ -221,7 +223,7 @@ template <typename T>
 static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
 {
     _testAuxOut<T>(auxGetter, false, true, T::SEND0_PARAM, false, 0);
-    _testAuxOut<T>(auxGetter, true,  true, T::SEND0_PARAM, false, 0);
+    _testAuxOut<T>(auxGetter, true, true, T::SEND0_PARAM, false, 0);
 }
 
 
@@ -232,7 +234,7 @@ static void testAuxOutB(std::function<float(std::shared_ptr<T>, bool bRight)> au
    // _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
    // _testAuxOut<T>(auxGetter, true,  false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
     _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, false, 0);
-    _testAuxOut<T>(auxGetter, true,  false, T::SENDb0_PARAM, false, 0);
+    _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM, false, 0);
 }
 
 template <typename T>
@@ -242,10 +244,16 @@ static void testAuxOutBpre(std::function<float(std::shared_ptr<T>, bool bRight)>
     _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM, true, T::PRE_FADERb_PARAM);
 }
 
+template <typename T>
+static void testAuxOutApre(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
+{
+    _testAuxOut<T>(auxGetter, false, false, T::SEND0_PARAM, true, T::PRE_FADERa_PARAM);
+    _testAuxOut<T>(auxGetter, true, false, T::SEND0_PARAM, true, T::PRE_FADERa_PARAM);
+}
 
 
 template <typename T>
-void testMute( std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
 
@@ -255,11 +263,11 @@ void testMute( std::function<float(std::shared_ptr<T>, bool bRight)> outputGette
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
-  
+
     assertClose(outputGetter(m, false), 0, .001);
 
     // un-mute
-    m->params[T::MUTE0_PARAM].value = 0;    
+    m->params[T::MUTE0_PARAM].value = 0;
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
@@ -421,7 +429,7 @@ static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> 
     float outL = outputGetter(m, false);
     float outR = outputGetter(m, false);
     float expectedOut = float(10 * .8 * .8f / sqrt(2.f));
-  
+
     assertClose(outL, expectedOut, .01);
     assertClose(outR, expectedOut, .01);
 }
@@ -457,7 +465,7 @@ static void testInputExtremes()
 
     paramLimits.resize(dut.NUM_PARAMS);
     using fp = std::pair<float, float>;
-   
+
 
     auto iComp = T::getDescription();
     for (int i = 0; i < iComp->getNumParams(); ++i) {
@@ -481,7 +489,7 @@ static void testExpansion8()
     assertEQ(m->outputs[Mixer8::RIGHT_OUTPUT].value, 5);
 
     assertEQ(Mixer8::LEFT_EXPAND_INPUT + 1, Mixer8::RIGHT_EXPAND_INPUT);
-    assertEQ(Mixer8::LEFT_RETURN_INPUT + 1, Mixer8::RIGHT_RETURN_INPUT);   
+    assertEQ(Mixer8::LEFT_RETURN_INPUT + 1, Mixer8::RIGHT_RETURN_INPUT);
 }
 
 // test pass-through of data on expansion buses
@@ -546,7 +554,7 @@ static void testExpansionM()
     // disconnect input
     m->setExpansionInputs(nullptr);
     m->step();
-   
+
     assertClose(m->outputs[MixerM::LEFT_OUTPUT].value, 0, .01);
     assertClose(m->outputs[MixerM::RIGHT_OUTPUT].value, 0, .01);
     assertClose(m->outputs[MixerM::LEFT_SEND_OUTPUT].value, 0, .01);
@@ -568,13 +576,16 @@ void testMix8()
     testMute<Mixer8>(outputGetterMix8);
 
     testAuxOut<MixerM>(auxGetterMixM);
-   // testAuxOut<Mixer4>(auxGetterMix4);
-  //  testAuxOut<Mixer8>(auxGetterMix8);
+    testAuxOut<Mixer4>(auxGetterMix4);
+    testAuxOut<Mixer8>(auxGetterMix8);
 
     testAuxOutB<MixerM>(auxGetterMixMB);
-   // testAuxOutB<Mixer4>(auxGetterMix4B);
+    testAuxOutB<Mixer4>(auxGetterMix4B);
 
     testAuxOutBpre<MixerM>(auxGetterMixMB);
+    testAuxOutApre<MixerM>(auxGetterMixM);
+    testAuxOutBpre<Mixer4>(auxGetterMix4B);
+    testAuxOutApre<Mixer4>(auxGetterMix4);
 
     // now all mixers support "legacy" solo
     testSoloLegacy<Mixer8>(outputGetterMix8);
@@ -583,7 +594,7 @@ void testMix8()
 
   //  testSoloNew<MixerM>(outputGetterMixM);
  //   testSoloNew<Mixer4>(outputGetterMix4);
- 
+
    // testSoloNew2<MixerM>(outputGetterMixM);
   //  testSoloNew2<Mixer4>(outputGetterMix4);
 

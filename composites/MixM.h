@@ -95,6 +95,7 @@ public:
         PRE_FADERb_PARAM,
 
         RETURN_GAIN_PARAM,
+        RETURN_GAINb_PARAM,
         NUM_PARAMS
     };
 
@@ -166,8 +167,6 @@ public:
 
     float buf_inputs[numChannels] = {0};
     float buf_channelGains[numChannels] = {0};
-   // float buf_channelSendGains[numChannels] = {0};
- //   float buf_channelSendbGains[numChannels] = {0};     // second set of sends
     float buf_channelOuts[numChannels] = {0};
     float buf_leftPanGains[numChannels] = {0};
     float buf_rightPanGains[numChannels] = {0};
@@ -177,12 +176,13 @@ public:
     float buf_channelSendGainsBLeft[numChannels] = {0};
     float buf_channelSendGainsBRight[numChannels] = {0};
 
-    /** 
+    /**
      * allocate extra bank for the master mute
      */
     float buf_muteInputs[numChannels + 4] = {0};
     float buf_masterGain = 0;
-    float buf_auxReturnGain = 0;
+    float buf_auxReturnGainA = 0;
+    float buf_auxReturnGainB = 0;
 
 private:
     Divider divider;
@@ -225,8 +225,6 @@ inline void MixM<TBase>::stepn(int div)
         buf_channelGains[i] = slider * cv;
     }
 
-
-
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {
         const float balance = TBase::params[i + PAN0_PARAM].value;
@@ -237,7 +235,8 @@ inline void MixM<TBase>::stepn(int div)
     }
 
     buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
-    buf_auxReturnGain = TBase::params[RETURN_GAIN_PARAM].value;
+    buf_auxReturnGainA = TBase::params[RETURN_GAIN_PARAM].value;
+    buf_auxReturnGainB = TBase::params[RETURN_GAINb_PARAM].value;
 
     // If the is an external solo, then mute all channels
     bool anySolo = false;
@@ -252,7 +251,7 @@ inline void MixM<TBase>::stepn(int div)
         // printf("whole module muted\n"); fflush(stdout);
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = 0;
-        } 
+        }
     } else if (anySolo) {
         // If any channels in this module are soloed, then
         // mute any channels that aren't soled
@@ -284,8 +283,8 @@ inline void MixM<TBase>::stepn(int div)
             buf_channelSendGainsARight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderA;
         } else {
             // pref fader, gain sees mutes and send only
-            buf_channelSendGainsALeft[i] = muteValue * sliderA;
-            buf_channelSendGainsARight[i] = muteValue * sliderA;
+            buf_channelSendGainsALeft[i] = muteValue * sliderA * .8f;
+            buf_channelSendGainsARight[i] = muteValue * sliderA * .8f;
         }
 
         if (!BisPreFader) {
@@ -294,8 +293,8 @@ inline void MixM<TBase>::stepn(int div)
             buf_channelSendGainsBRight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderB;
         } else {
             // pref fader, gain sees mutes and send only
-            buf_channelSendGainsBLeft[i] = muteValue * sliderB;
-            buf_channelSendGainsBRight[i] = muteValue * sliderB;
+            buf_channelSendGainsBLeft[i] = muteValue * sliderB * .8f;
+            buf_channelSendGainsBRight[i] = muteValue * sliderB * .8f;
         }
     }
 
@@ -305,13 +304,11 @@ inline void MixM<TBase>::stepn(int div)
     buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
     antiPop.step(buf_muteInputs);
 
-    for (int i=0; i<4; ++i) {
+    for (int i = 0; i < 4; ++i) {
         const float soloValue = TBase::params[i + SOLO0_PARAM].value;
         TBase::lights[i + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
     }
 }
-
-
 
 template <class TBase>
 inline void MixM<TBase>::step()
@@ -351,8 +348,11 @@ inline void MixM<TBase>::step()
         rSendb += buf_inputs[i] * buf_channelSendGainsBRight[i];
     }
 
-    left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGain;
-    right += TBase::inputs[RIGHT_RETURN_INPUT].value * buf_auxReturnGain;
+    left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGainA;
+    right += TBase::inputs[RIGHT_RETURN_INPUT].value * buf_auxReturnGainA;
+
+    left += TBase::inputs[LEFT_RETURNb_INPUT].value * buf_auxReturnGainB;
+    right += TBase::inputs[RIGHT_RETURNb_INPUT].value * buf_auxReturnGainB;
 
     // output the masters
     const float masterMuteValue = antiPop.get(numChannels);     // master is the one after
@@ -470,7 +470,10 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             ret = {0, 1.0f, 0, "Send 4b"};
             break;
         case MixM<TBase>::RETURN_GAIN_PARAM:
-            ret = {0, 1.0f, 0, "Return Gain"};
+            ret = {0, 1.0f, 0, "Return Gain A"};
+            break;
+        case MixM<TBase>::RETURN_GAINb_PARAM:
+            ret = {0, 1.0f, 0, "Return Gain B"};
             break;
         case MixM<TBase>::ALL_CHANNELS_OFF_PARAM:
             ret = {0, 1.0f, 0, "(All Off)"};
