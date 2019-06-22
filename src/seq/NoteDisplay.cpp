@@ -64,7 +64,7 @@ void NoteDisplay::initEditContext()
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
-    sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
+    sequencer->context->setPitchHi(PitchUtils::pitchToCV(6, 0));        // was originally 5, for 2 octaves
     sequencer->editor->updateSelectionForCursor(false);
 
 // set scaler once context has a valid range
