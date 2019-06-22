@@ -144,13 +144,6 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-#ifndef _DEBUG
-    if (true) {
-        printf("****** can't run tests with release build\n");
-        return 0;
-}
-#endif
-
     testIComposite();
     testVec();
     testCommChannels();

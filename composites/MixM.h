@@ -91,6 +91,9 @@ public:
         SENDb2_PARAM,
         SENDb3_PARAM,
 
+        PRE_FADERa_PARAM,       // 0 = post, 1 = pre
+        PRE_FADERb_PARAM,
+
         RETURN_GAIN_PARAM,
         NUM_PARAMS
     };
@@ -465,6 +468,12 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             break;
         case MixM<TBase>::ALL_CHANNELS_OFF_PARAM:
             ret = {0, 1.0f, 0, "(All Off)"};
+            break;
+        case  MixM<TBase>::PRE_FADERa_PARAM:      // 0 = post, 1 = pre
+            ret = {0, 1.0f, 0, "Pre Fader A"};
+            break;
+        case  MixM<TBase>::PRE_FADERb_PARAM:
+            ret = {0, 1.0f, 0, "Pre Fader B"};
             break;
         default:
             assert(false);

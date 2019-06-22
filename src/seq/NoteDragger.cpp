@@ -182,7 +182,7 @@ void NoteStartDragger::commit()
     if (timeShiftTicks != 0) {
         sequencer->editor->changeStartTime(true, timeShiftTicks);
     }
-}
+} 
 
 
 /******************************************************************

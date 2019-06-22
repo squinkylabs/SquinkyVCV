@@ -170,17 +170,35 @@ static void testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> out
  * param augGetter is one of the functions that will retrieve data from the aux send.
  * param side is true if left,  false if right
  * param aux0 is true if we want to test the aux0 bus, false for aux1
+ * param sendParam is the parameter id for the send level
+ * param pre is true for pre-fader send
  */
 template <typename T>
-static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter, bool side, bool aux0, int sendParam)
+static void _testAuxOut(
+    std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter,
+    bool side,
+    bool aux0, 
+    int sendParam,
+    bool pre,
+    int preParam
+    )
 {
     auto m = getMixer<T>();
 
-
- //   const T::ParamIds sendParam = (aux0) ? T::SEND0_PARAM : T::SENDb0_PARAM;
+ 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
     m->params[sendParam].value = 1;
+
+    if (preParam) {
+        m->params[preParam].value = pre ? 0.f : 1.f;
+    }
+
+    // with pre-fader, should still get out with no volume
+    // TODO: test that with post fade the fader has an effect
+    if (pre) {
+        m->params[T::GAIN0_PARAM].value = 0;
+    }
 
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
@@ -198,17 +216,25 @@ static void _testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> au
 template <typename T>
 static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
 {
-    _testAuxOut<T>(auxGetter, false, true, T::SEND0_PARAM);
-    _testAuxOut<T>(auxGetter, true, true, T::SEND0_PARAM);
+    _testAuxOut<T>(auxGetter, false, true, T::SEND0_PARAM, false,0);
+    _testAuxOut<T>(auxGetter, true, true, T::SEND0_PARAM, false, 0);
 }
 
 
 template <typename T>
 static void testAuxOutB(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
 {
-    _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM);
-    _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM);
+    _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
+    _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
 }
+
+template <typename T>
+static void testAuxOutBpre(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
+{
+    _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, true, T::PRE_FADERb_PARAM);
+    _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM, true, T::PRE_FADERb_PARAM);
+}
+
 
 
 template <typename T>
@@ -520,8 +546,6 @@ static void testExpansionM()
     assertClose(m->outputs[MixerM::RIGHT_SEND_OUTPUT].value, 0, .01);
 }
 
-
-
 void testMix8()
 {
     testChannel<Mixer8>();
@@ -542,6 +566,8 @@ void testMix8()
 
     testAuxOutB<MixerM>(auxGetterMixMB);
     testAuxOutB<Mixer4>(auxGetterMix4B);
+
+    testAuxOutBpre<MixerM>(auxGetterMixMB);
 
     // now all mixers support "legacy" solo
     testSoloLegacy<Mixer8>(outputGetterMix8);
