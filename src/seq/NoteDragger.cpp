@@ -153,12 +153,18 @@ void NotePitchDragger::draw(NVGcontext *vg)
 }
 
 
+NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, float y) :
+    NoteDragger(seq, x, y)
+{
+
+}
+
 /******************************************************************
  *
  * NoteStartDragger 
  */
 NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteDragger(seq, x, y)
+    NoteHorizontalDragger(seq, x, y)
 { 
 }
 
@@ -191,7 +197,7 @@ void NoteStartDragger::commit()
  */
 
 NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteDragger(seq, x, y)
+    NoteHorizontalDragger(seq, x, y)
 {
 }
 

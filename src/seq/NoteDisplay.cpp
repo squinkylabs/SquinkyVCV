@@ -242,14 +242,13 @@ void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 
  void NoteDisplay::onDragDrop(const event::DragDrop &e) 
  {
-     printf("on drag drop\n"); fflush(stdout);
+     //printf("on drag drop\n"); fflush(stdout);
      OpaqueWidget::onDragDrop(e);
  }
 
 void NoteDisplay::onButton(const event::Button &e)
 {
-    printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
-    fflush(stdout);
+   // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
 
     bool handled = false;
     if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -351,14 +350,14 @@ void NoteDisplay::onDeselect(const event::Deselect &e)
 void NoteDisplay::onDragStart(const event::DragStart &e) 
 {
     bool b = mouseManager->onDragStart();
-    printf("on drag start\n"); fflush(stdout);
+    //printf("on drag start\n"); fflush(stdout);
     if (b) {
         e.consume(this);
     }
 }
 void NoteDisplay::onDragEnd(const event::DragEnd &e)
 {
-    printf("on drag end\n"); fflush(stdout);
+    //printf("on drag end\n"); fflush(stdout);
     bool b = mouseManager->onDragEnd();
      if (b) {
         e.consume(this);

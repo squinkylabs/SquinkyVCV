@@ -1,10 +1,12 @@
-
 #include "UIPrefs.h"
 
 const NVGcolor UIPrefs::NOTE_COLOR =
     nvgRGB(0,0xc0,0);
 const NVGcolor UIPrefs::SELECTED_NOTE_COLOR =
-    nvgRGB(0xe0, 0xe0, 0);
+    nvgRGB(0xf0, 0xf0, 0);
+const NVGcolor UIPrefs::DRAG_TEXT_COLOR = 
+    nvgRGB(0x20, 0xff, 0x20);                        // same a note color, but brighter.
+
 const NVGcolor UIPrefs::NOTE_EDIT_BACKGROUND =
     nvgRGB(0x28, 0x28, 0x2b); 
 const NVGcolor UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND =

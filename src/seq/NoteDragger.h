@@ -14,34 +14,14 @@ using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 /**
  * Base class for all drag operations
  * 
- * currently, the way it works is that as you drag, 
+ * Currently, the way it works is that as you drag, 
  * the only thing that changes is the mouse pos.
  * 
- * When we draw the overridden draw function draw the 
- * displaced notes as if they are "dragging".
+ * Also, some overridden onDrag handler know how to scroll the viewport 
+ * allowind dragging to locations that would be off the screen.
  * 
  * When the mouse is released, "commit" is called. That
  * does the persistent edits.
- * --------------------------------------
- * 
- * We would like for dragging off the canvas to scroll the
- * viewport. that should be relatively easy, and could be
- * implemented in the base class. To do this:
- * 
- *      drawing will have to get smarter. now it's just delta = movement of mouse
- *      but it will need to subtract changes in viewport. 
- *      
- * so, for drawing, drawDelta = mouseDelta - viewportDelta.
- * remember that  auto scaler = sequencer->context->getScaler();
- * the scaler relates screen coordinated to music ones.
- * will need helpers to know how far out of bounds the cursor is.
- * 
- * Ok, let's try this for next round:
- *      when cursor gets within one semitone of the outside, 
- *      we will scroll. This will keep the note visible all the time.
- *      
- *      When we do scroll, we will scroll by a whole semitone, so that note
- *      will seem to stay at the same location as the grid scrolls under it.
  */
 
 class NoteDragger
@@ -73,6 +53,9 @@ protected:
     void drawNotes(NVGcontext *vg, float verticalShift, float horizontalShift, float horizontalStretch);
 };
 
+/**
+ * Concrete implentation for dragging notes up and down in pitch
+ */
 class NotePitchDragger : public NoteDragger
 {
 public:
@@ -104,7 +87,20 @@ private:
     const float pitch0;                     // pitch when the drag started
 };
 
-class NoteStartDragger : public NoteDragger
+
+/**
+ * Base class for draggers the drag left and right.
+ */
+class NoteHorizontalDragger :  public NoteDragger
+{
+public:
+    NoteHorizontalDragger(MidiSequencerPtr, float x, float y);
+};
+
+/**
+ * concrete implementation for dragging the start times of notes
+ */
+class NoteStartDragger : public NoteHorizontalDragger
 {
 public:
     NoteStartDragger(MidiSequencerPtr, float x, float y);
@@ -112,7 +108,7 @@ public:
     virtual void draw(NVGcontext *vg) override;
 };
 
-class NoteDurationDragger : public NoteDragger
+class NoteDurationDragger : public NoteHorizontalDragger
 {
 public:
     NoteDurationDragger(MidiSequencerPtr, float x, float y);

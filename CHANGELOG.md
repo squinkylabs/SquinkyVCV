@@ -4,7 +4,7 @@
 
 New modular mixer (Mix-4M and Mix-4X).
 
-Changed the context menu display for our instruction manuals.
+Changed the context menu display for our instruction manuals to be clearer.
 
 ## 1.0.0
 
