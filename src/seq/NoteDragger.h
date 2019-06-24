@@ -95,6 +95,14 @@ class NoteHorizontalDragger :  public NoteDragger
 {
 public:
     NoteHorizontalDragger(MidiSequencerPtr, float x, float y);
+
+private:
+    const float viewportStartTime0;    // The initial time of the leftmost pixel in the viewport
+   // const float highPitchForDragStart;  // The pitch at which we start dragging up
+    const float viewportEndTime0;    // The initial time of the rightmost pixel in the viewport
+   // const float lowPitchForDragStart;   // The pitch at which we start dragging down
+
+    const float time0;                     // time (on screen) when the drag started
 };
 
 /**

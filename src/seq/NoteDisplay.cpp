@@ -194,7 +194,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     const int noteHeight = scaler->noteHeight();
     const float width = box.size.x;
     for (float cv = sequencer->context->pitchLow();
-        cv <= sequencer->context->pitchHi();
+        cv <= sequencer->context->pitchHigh();
         cv += PitchUtils::semitone) {
 
         const float y = scaler->midiCvToY(cv);
@@ -209,7 +209,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     }
 
     for (float cv = sequencer->context->pitchLow();
-        cv <= sequencer->context->pitchHi();
+        cv <= sequencer->context->pitchHigh();
         cv += PitchUtils::semitone) {
 
         float y = scaler->midiCvToY(cv) + scaler->noteHeight();

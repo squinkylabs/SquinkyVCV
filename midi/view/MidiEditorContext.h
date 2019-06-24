@@ -56,9 +56,9 @@ public:
     {
         return m_endTime;
     }
-    float pitchHi()
+    float pitchHigh()
     {
-        return m_pitchHi;
+        return m_pitchHigh;
     }
     float pitchLow()
     {
@@ -70,13 +70,13 @@ public:
     }
     void setPitchHi(float p)
     {
-        m_pitchHi = p;
+        m_pitchHigh = p;
     }
     void setPitchRange(float l, float h)
     {
         assert(h >= l);
         assert(h <= 10);
-        m_pitchHi = h;
+        m_pitchHigh = h;
         m_pitchLow = l;
     }
     int getTrackNumber()
@@ -138,7 +138,7 @@ private:
 
     // pitch is inclusive: Low and Hi will be included
     float m_pitchLow = 0;
-    float m_pitchHi = 0;
+    float m_pitchHigh = 0;
 
     int trackNumber = 0;
 

@@ -72,8 +72,8 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
 // bottom to allow reasonable dragging.
 NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
     NoteDragger(seq, x, y),
-    viewportUpperPitch0(sequencer->context->pitchHi()),
-    highPitchForDragStart(sequencer->context->pitchHi() - 2 * PitchUtils::semitone),
+    viewportUpperPitch0(sequencer->context->pitchHigh()),
+    highPitchForDragStart(sequencer->context->pitchHigh() - 2 * PitchUtils::semitone),
     viewportLowerPitch0(sequencer->context->pitchLow()),
     lowPitchForDragStart(sequencer->context->pitchLow() + 2 * PitchUtils::semitone),
     pitch0(sequencer->context->getScaler()->yToMidiCVPitch(y))
@@ -152,9 +152,25 @@ void NotePitchDragger::draw(NVGcontext *vg)
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "transpose");
 }
 
+/******************************************************************
+ *
+ * HorizontalDragger 
+ */
+
+/*
+
+   viewportUpperPitch0(sequencer->context->pitchHi()),
+    highPitchForDragStart(sequencer->context->pitchHi() - 2 * PitchUtils::semitone),
+    viewportLowerPitch0(sequencer->context->pitchLow()),
+    lowPitchForDragStart(sequencer->context->pitchLow() + 2 * PitchUtils::semitone),
+    pitch0(sequencer->context->getScaler()->yToMidiCVPitch(y))
+ */
 
 NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteDragger(seq, x, y)
+    NoteDragger(seq, x, y),
+    viewportStartTime0(sequencer->context->startTime()),
+    viewportEndTime0(sequencer->context->endTime()),
+    time0(sequencer->context->getScaler()->xToMidiTime(x))
 {
 
 }

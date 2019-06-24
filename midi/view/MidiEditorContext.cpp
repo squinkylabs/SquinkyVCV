@@ -31,7 +31,7 @@ void MidiEditorContext::scrollViewportToCursorPitch()
     while (m_cursorPitch < pitchLow()) {
         scrollVertically(-1 * PitchUtils::octave);
     }
-    while (m_cursorPitch > pitchHi()) {
+    while (m_cursorPitch > pitchHigh()) {
         //printf("will scroll up\n");
         scrollVertically(1 * PitchUtils::octave);
     }
@@ -44,13 +44,13 @@ void MidiEditorContext::assertCursorInViewport() const
     assertGE(m_cursorTime, m_startTime);
     assertLT(m_cursorTime, m_endTime);
     assertGE(m_cursorPitch, m_pitchLow);
-    assertLE(m_cursorPitch, m_pitchHi);
+    assertLE(m_cursorPitch, m_pitchHigh);
 }
  
 void MidiEditorContext::assertValid() const
 {
     assert(m_endTime > m_startTime);
-    assert(m_pitchHi >= m_pitchLow);
+    assert(m_pitchHigh >= m_pitchLow);
 
     assertGE(m_cursorTime, 0);
     assertLE(m_cursorPitch, 10);      // just for now
@@ -61,7 +61,7 @@ void MidiEditorContext::assertValid() const
 
 void MidiEditorContext::scrollVertically(float pitchCV)
 {
-    m_pitchHi += pitchCV;
+    m_pitchHigh += pitchCV;
     m_pitchLow += pitchCV;
 }
 
@@ -70,37 +70,9 @@ MidiSongPtr MidiEditorContext::getSong() const
     return _song.lock();
 }
 
-#if 0
 MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
 {
-
-    iterator::filter_func lambda = [this](MidiTrack::const_iterator ii) {
-        const MidiEventPtr me = ii->second;
-        bool ret = false;
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);
-        if (note) {
-            ret = note->pitchCV >= m_pitchLow && note->pitchCV <= m_pitchHi;
-        }
-        if (ret) {
-            ret = me->startTime < this->m_endTime;
-        }
-        return ret;
-    };
-
-    const auto song = getSong();
-    const auto track = song->getTrack(this->trackNumber);
-
-    // raw will be pair of track::const_iterator
-    const auto rawIterators = track->timeRange(this->m_startTime, this->m_endTime);
-
-    return iterator_pair(iterator(rawIterators.first, rawIterators.second, lambda),
-        iterator(rawIterators.second, rawIterators.second, lambda));
-}
-#endif
-
-MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
-{
-    return getEvents(m_startTime, m_endTime, m_pitchLow, m_pitchHi);
+    return getEvents(m_startTime, m_endTime, m_pitchLow, m_pitchHigh);
 }
 
 MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh) const
@@ -140,7 +112,7 @@ bool MidiEditorContext::cursorInViewport() const
     if (m_cursorTime >= m_endTime) {
         return false;
     }
-    if (m_cursorPitch > m_pitchHi) {
+    if (m_cursorPitch > m_pitchHigh) {
         return false;
     }
     if (m_cursorPitch < m_pitchLow) {
