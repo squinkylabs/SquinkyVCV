@@ -1,5 +1,6 @@
 #pragma once
 
+#include <immintrin.h>
 #include <random>
 #if !defined(M_PI)
 #define M_PI float(3.14159265358979323846264338327950288)
