@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "LookupTable.h"
 #include "BiquadParams.h"
 

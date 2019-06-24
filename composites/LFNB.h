@@ -3,7 +3,6 @@
 
 #include "ButterworthFilterDesigner.h"
 #include "Decimator.h"
-//#include "GraphicEq.h"
 #include "LowpassFilter.h"
 #include "BiquadParams.h"
 #include "BiquadState.h"

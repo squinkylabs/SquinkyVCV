@@ -1,5 +1,6 @@
 
 #pragma once
+
 #include "ObjectCache.h"
 #include "GenerativeTriggerGenerator.h"
 #include "TriggerOutput.h"

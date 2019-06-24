@@ -21,8 +21,6 @@
 #include "AudioMath.h"
 #include "ObjectCache.h"
 
-
-
 #ifdef __V1x
 namespace rack {
     namespace engine {
