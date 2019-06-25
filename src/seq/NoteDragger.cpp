@@ -41,30 +41,19 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
 {
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
-
-    // The problem seems to be that getEvents does not like is to change the viewport.
-    // That's cool, but why does transpose work?
-    // A1: It's for sure the problem with horizontal shift.
-    MidiEditorContext::iterator_pair it = sequencer->context->getEvents();
-
-    
     const int noteHeight = scaler->noteHeight();
-    for (; it.first != it.second; ++it.first) {
-        auto temp = *(it.first);
-        MidiEventPtr evn = temp.second;
-        MidiNoteEventPtr ev = safe_cast<MidiNoteEvent>(evn);
 
-        const float x = scaler->midiTimeToX(*ev) + horizontalShift;
-        const float y = scaler->midiPitchToY(*ev) + verticalShift;
-        const float width = scaler->midiTimeTodX(ev->duration) + horizontalStretch;
-        const bool selected = sequencer->selection->isSelected(ev);
-
+    // For drag operations, let's use the selection to pick notes to draw.
+    for (auto it : *sequencer->selection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
+        if (note) {
+            const float x = scaler->midiTimeToX(*note) + horizontalShift;
+            const float y = scaler->midiPitchToY(*note) + verticalShift;
+            const float width = scaler->midiTimeTodX(note->duration) + horizontalStretch;
         
-        printf("drawing at x=%.2f y = %.2f width = %.2f h=%d #sel=%d sel=%d\n",
-            x, y, width, noteHeight, sequencer->selection->size(), selected);
-        fflush(stdout);
-        assert(selected);
-        if (selected) {
+            //printf("drawing at x=%.2f y = %.2f width = %.2f h=%d\n", x, y, width, noteHeight);
+           // fflush(stdout);
+
             SqGfx::filledRect(
                 vg,
                 UIPrefs::SELECTED_NOTE_COLOR,
