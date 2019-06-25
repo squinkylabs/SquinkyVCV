@@ -96,7 +96,7 @@ class NoteHorizontalDragger :  public NoteDragger
 {
 public:
     NoteHorizontalDragger(MidiSequencerPtr, float x, float y);
-
+    void onDrag(float deltaX, float deltaY) override;
 protected:
 
     /**
@@ -104,6 +104,8 @@ protected:
      * Units are midi time.
      */
     float calcTimeShift() const;
+
+   
 
     /**
      * Calculate how much the viewport must be shifted to
@@ -128,7 +130,6 @@ public:
     NoteStartDragger(MidiSequencerPtr, float x, float y);
     void commit() override;
     void draw(NVGcontext *vg) override;
-    void onDrag(float deltaX, float deltaY) override;
 };
 
 class NoteDurationDragger : public NoteHorizontalDragger

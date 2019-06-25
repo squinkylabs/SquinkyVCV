@@ -181,45 +181,9 @@ float NoteHorizontalDragger::calcTimeShift() const
     return timeShiftAmount; 
 }
 
-/******************************************************************
- *
- * NoteStartDragger 
- */
-NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteHorizontalDragger(seq, x, y)
-{ 
-}
-
-
-/*
-
-void MidiEditorContext::adjustViewportForCursor()
+void NoteHorizontalDragger::onDrag(float deltaX, float deltaY)
 {
-   // printf(" MidiEditorContext::adjustViewportForCursor c=%f, vp=%f\n", m_cursorTime, m_startTime);
-    if (!cursorInViewportTime()) {
-
-        int bars2 = int(m_cursorTime / TimeUtils::bar2time(2));
-        m_startTime = bars2 * TimeUtils::bar2time(2);
-        m_endTime = m_startTime + TimeUtils::bar2time(2);
-
-        assert(m_startTime >= 0);
-
-        assert(m_cursorTime >= m_startTime);
-        assert(m_cursorTime <= m_endTime);
-    }
-
-    Here's the plan:
-
-a)
-    make TimeUtils::time2barsAndRemainder(numBarsInUnit, time);
-b) use that function in MidiEditorContext::adjustViewportForCursor
-c) use it here to adjust the viewport
-
- */
-
-void NoteStartDragger::onDrag(float deltaX, float deltaY)
-{
-    NoteHorizontalDragger::onDrag(deltaX, deltaY);
+    NoteDragger::onDrag(deltaX, deltaY);
     const float timeShift = calcTimeShift();
     
     const float t = timeShift + time0;
@@ -231,6 +195,15 @@ void NoteStartDragger::onDrag(float deltaX, float deltaY)
     sequencer->context->setCursorTime(t);
 }
 
+/******************************************************************
+ *
+ * NoteStartDragger 
+ */
+NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y) :
+    NoteHorizontalDragger(seq, x, y)
+{ 
+}
+
 void NoteStartDragger::draw(NVGcontext *vg)
 {
     const float horizontalShift =  curMousePositionX - startX;
@@ -240,7 +213,6 @@ void NoteStartDragger::draw(NVGcontext *vg)
 
 void NoteStartDragger::commit()
 {
-
     auto scaler = sequencer->context->getScaler();
     const float horizontalShift =  curMousePositionX - startX;
     const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
@@ -270,6 +242,8 @@ void NoteDurationDragger::draw(NVGcontext *vg)
     drawNotes(vg, 0, 0, horizontalShift);
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "stretch");
 }
+
+
 
 void NoteDurationDragger::commit()
 {
