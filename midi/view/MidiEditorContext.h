@@ -11,6 +11,17 @@ class NoteScreenScale;
 class MidiEditorContext  : public std::enable_shared_from_this<MidiEditorContext>
 {
 public:
+
+    // TODO: use this later?
+    class Range
+    {
+    public:
+        float pitchLow = 0;
+        float pitchHigh = 0;
+        float start = 0;
+        float end = 0;
+    };
+
     MidiEditorContext(std::shared_ptr<MidiSong>);
     ~MidiEditorContext();
 

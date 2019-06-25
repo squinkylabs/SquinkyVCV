@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <stdio.h>
 #include <tuple>
 
@@ -29,6 +30,19 @@ public:
         remaining -= q;
         const int f = int( std::round(remaining * 100));
         return std::make_tuple(bar, q, f);
+    }
+
+    /**
+     * Quantizes a midi time into a number of bars and a remaining time
+     * number of bars will be quantized to numBarsInUnit.
+     */
+    static std::tuple<int, float> time2barsAndRemainder(int numBarsInUnit, float time)
+    {
+        int barsN = int(time / bar2time(numBarsInUnit));
+        float t0 = barsN * TimeUtils::bar2time(numBarsInUnit);
+        float remainder = time - t0;
+        assert(remainder >= 0);
+        return std::make_tuple(barsN, remainder);
     }
 
     /**

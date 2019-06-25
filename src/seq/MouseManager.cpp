@@ -57,7 +57,7 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
 
     // This will move the cursor, which we may not want all the time
     MidiNoteEventPtr curNote = sequencer->editor->moveToTimeAndPitch(time, pitchCV);
-    bool curNoteIsSelected = sequencer->selection->isSelected(curNote);
+    bool curNoteIsSelected = curNote && sequencer->selection->isSelected(curNote);
 
 
     if ((isPressed && curNote && !curNoteIsSelected) || 

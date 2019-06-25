@@ -136,20 +136,15 @@ bool MidiEditorContext::cursorInViewportTime() const
 
 void MidiEditorContext::adjustViewportForCursor()
 {
-   // printf(" MidiEditorContext::adjustViewportForCursor c=%f, vp=%f\n", m_cursorTime, m_startTime);
     if (!cursorInViewportTime()) {
-
-        int bars2 = int(m_cursorTime / TimeUtils::bar2time(2));
-        m_startTime = bars2 * TimeUtils::bar2time(2);
+        auto x = TimeUtils::time2barsAndRemainder(2, m_cursorTime);
+        m_startTime = std::get<0>(x) * TimeUtils::bar2time(2);
         m_endTime = m_startTime + TimeUtils::bar2time(2);
 
         assert(m_startTime >= 0);
-
         assert(m_cursorTime >= m_startTime);
         assert(m_cursorTime <= m_endTime);
     }
-
-   // printf(" 2MidiEditorContext::adjustViewportForCursor c=%f, vp=%f\n", m_cursorTime, m_startTime);
 
     // and to the pitch
     scrollViewportToCursorPitch();

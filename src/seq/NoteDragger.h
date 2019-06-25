@@ -67,6 +67,7 @@ private:
     void commit() override;
     void draw(NVGcontext *vg) override;
 
+// TODO: do we use any of the below???
     /**
      * Calculate the transpose based on how far the mouse has moved.
      * Units are pitch units.
@@ -96,7 +97,20 @@ class NoteHorizontalDragger :  public NoteDragger
 public:
     NoteHorizontalDragger(MidiSequencerPtr, float x, float y);
 
-private:
+protected:
+
+    /**
+     * Calculate the time shift based on how far the mouse has moved.
+     * Units are midi time.
+     */
+    float calcTimeShift() const;
+
+    /**
+     * Calculate how much the viewport must be shifted to
+     * keep the shifted notes in range.
+     */
+    float calcViewportShift(float transpose) const;
+
     const float viewportStartTime0;    // The initial time of the leftmost pixel in the viewport
    // const float highPitchForDragStart;  // The pitch at which we start dragging up
     const float viewportEndTime0;    // The initial time of the rightmost pixel in the viewport
@@ -113,7 +127,8 @@ class NoteStartDragger : public NoteHorizontalDragger
 public:
     NoteStartDragger(MidiSequencerPtr, float x, float y);
     void commit() override;
-    virtual void draw(NVGcontext *vg) override;
+    void draw(NVGcontext *vg) override;
+    void onDrag(float deltaX, float deltaY) override;
 };
 
 class NoteDurationDragger : public NoteHorizontalDragger
@@ -121,5 +136,5 @@ class NoteDurationDragger : public NoteHorizontalDragger
 public:
     NoteDurationDragger(MidiSequencerPtr, float x, float y);
     void commit() override;
-    virtual void draw(NVGcontext *vg) override;
+    void draw(NVGcontext *vg) override;
 };

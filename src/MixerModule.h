@@ -10,10 +10,10 @@
  * to handle on the audio thread.
  * 
  * All solo handling goes on on the audio thread, whether if came from our own UI
- * or from a different module over the exansion bus.
+ * or from a different module over the expansion bus.
  * 
  * Modules just send SOLO commands to toggle themselve, and we re-interpret them
- * as requests to solo or unsolo. But can we do that with multi solos?
+ * as requests to solo or un-solo. But can we do that with multi solos?
  * 
  * And should be be doing this on the audio thread at all? 
  * We can just as easily do it from the UI.
@@ -35,7 +35,7 @@
  *      mute other modules unless they have a soloed channel
  * 
  * multi-colo on a soloed channel
- *      unsolo current channel
+ *      un-solo current channel
  *      perhaps turn off self (if other module is soloing)
  *      
  */
@@ -135,8 +135,9 @@ inline void MixerModule::process(const ProcessArgs &args)
     const bool pairedLeft = leftExpander.module &&
         (leftExpander.module->model == modelMix4Module);
 
-    assert(rightProducerMessage);
-    assert(!pairedLeft || leftModule->rightConsumerMessage);
+    // recently ported these asserts. Hope they are right.
+    assert(rightExpander.producerMessage);
+    assert(!pairedLeft || leftExpander.module->rightExpander.consumerMessage);
 
     // set a channel to send data to the right (case #1, above)
     setExternalOutput(pairedRight ? reinterpret_cast<float *>(rightExpander.producerMessage) : nullptr);
@@ -160,7 +161,7 @@ inline void MixerModule::process(const ProcessArgs &args)
       
         // tell our own module to solo, if a state change is requested
         if (soloRequestFromUI != currentSoloStatusFromUI) {
-            //printf("requesting moduel solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
+            //printf("requesting module solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
             requestModuleSolo(soloRequestFromUI);
 
             //and update our current state
@@ -283,7 +284,7 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
     const int channel = int(command)- int(SoloCommands::SOLO_0);
     assert(channel >= 0 && channel < 4);
     unSoloAllChannels<Comp>(mod);
-    //printf("processExclusiveSolo channel %d, will unnute module\n", channel); fflush(stdout);
+    //printf("processExclusiveSolo channel %d, will un-mute module\n", channel); fflush(stdout);
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, 1.f); 
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);    
 }

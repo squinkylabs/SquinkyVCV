@@ -67,6 +67,7 @@ void MidiSelectionModel::add(MidiEventPtr evt)
 
 bool MidiSelectionModel::isSelected(MidiEventPtr evt) const
 {
+    assert(evt);
     auto it = std::find(selection.begin(), selection.end(), evt);
     return it != selection.end();
 }
