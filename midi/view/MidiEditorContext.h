@@ -29,6 +29,10 @@ public:
     {
         return m_cursorPitch;
     }
+
+    /**
+     * Sets cursor pitch in CV (1v/8) units
+     */
     void setCursorPitch(float pitch)
     {
         assert(pitch <= 10);

@@ -129,19 +129,28 @@ void NotePitchDragger::onDrag(float deltaX, float deltaY)
     if (shift) {
         sequencer->context->setPitchRange(viewportLowerPitch0 + shift, viewportUpperPitch0 + shift);
     }
+    sequencer->context->setCursorPitch(transpose + pitch0);
+    //printf("just set cursor pitch to %.2f\n", transpose + pitch0); fflush(stdout);
 }
 
 void NotePitchDragger::commit()
 {
+    //printf("enter commit-1, cursor pitch = %f\n", sequencer->context->cursorPitch());
     // TODO: use calcTranspose
     auto scaler = sequencer->context->getScaler();
     const float verticalShift =  curMousePositionY - startY;
     const float transposeCV = scaler->yToMidiDeltaCVPitch(verticalShift);
     const int semiShift = PitchUtils::deltaCVToSemitone(transposeCV);
+
+    // Only do the edit if significant change.
     if (semiShift != 0) {
-        // only do the edit if significant change
+        // Restore cursor to original pitch.
+        sequencer->context->setCursorPitch(pitch0);
+        // Now transpose notes and cursor.
         sequencer->editor->changePitch(semiShift);
     }
+    // printf("leave commit-2, cursor pitch = %f\n", sequencer->context->cursorPitch());
+    // fflush(stdout);
 }
 
 void NotePitchDragger::draw(NVGcontext *vg)
@@ -156,22 +165,12 @@ void NotePitchDragger::draw(NVGcontext *vg)
  * HorizontalDragger 
  */
 
-/*
-
-   viewportUpperPitch0(sequencer->context->pitchHi()),
-    highPitchForDragStart(sequencer->context->pitchHi() - 2 * PitchUtils::semitone),
-    viewportLowerPitch0(sequencer->context->pitchLow()),
-    lowPitchForDragStart(sequencer->context->pitchLow() + 2 * PitchUtils::semitone),
-    pitch0(sequencer->context->getScaler()->yToMidiCVPitch(y))
- */
-
 NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, float y) :
     NoteDragger(seq, x, y),
     viewportStartTime0(sequencer->context->startTime()),
     viewportEndTime0(sequencer->context->endTime()),
     time0(sequencer->context->getScaler()->xToMidiTime(x))
 {
-
 }
 
 float NoteHorizontalDragger::calcTimeShift() const
@@ -223,36 +222,13 @@ void NoteStartDragger::onDrag(float deltaX, float deltaY)
     NoteHorizontalDragger::onDrag(deltaX, deltaY);
     const float timeShift = calcTimeShift();
     
-   // const float viewportShift = calcViewportShift(timeShift);
+    const float t = timeShift + time0;
 
-    printf("\nonDrag, time shift = %.2f,\n", timeShift); fflush(stdout);
-
-    // TODO: only if shift moves away from center,
-    // or only if pitch not in viewport.
-  //  auto scaler = sequencer->context->getScaler();
-
-// TODO: finish
-
-   // if (viewportShift) {
-       {
-
-        //const float horizontalShift =  curMousePositionX - startX;
-        //const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
-
-        // this is the time we want to display
-        const float t = timeShift + time0;
-
-       // sequencer->editor->advanceCursorToTime(t, false);
-
-       // quantize to bars (TODO: do we ever use the remainder?)
-       // TODO: put the two bar duration into the prefs object.
-
-        auto x = TimeUtils::time2barsAndRemainder(2, t);
-        const float newStartTime = std::get<0>(x) * TimeUtils::bar2time(2);
-        const float newEndTime = newStartTime + TimeUtils::bar2time(2);
-        sequencer->context->setTimeRange(newStartTime, newEndTime);
-
-    }
+    auto x = TimeUtils::time2barsAndRemainder(2, t);
+    const float newStartTime = std::get<0>(x) * TimeUtils::bar2time(2);
+    const float newEndTime = newStartTime + TimeUtils::bar2time(2);
+    sequencer->context->setTimeRange(newStartTime, newEndTime);
+    sequencer->context->setCursorTime(t);
 }
 
 void NoteStartDragger::draw(NVGcontext *vg)
@@ -264,7 +240,7 @@ void NoteStartDragger::draw(NVGcontext *vg)
 
 void NoteStartDragger::commit()
 {
-    printf("NoteStartDragger::commit\n"); fflush(stdout);
+
     auto scaler = sequencer->context->getScaler();
     const float horizontalShift =  curMousePositionX - startX;
     const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);

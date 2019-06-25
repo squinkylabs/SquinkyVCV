@@ -176,9 +176,10 @@ void NoteDisplay::draw(NVGcontext *vg)
     drawBackground(vg);
     drawGrid(vg);
     drawNotes(vg);
-    drawCursor(vg);
+    
     // if we are dragging, will have something to draw
-    mouseManager->draw(vg);     
+    mouseManager->draw(vg);  
+    drawCursor(vg);   
 #ifdef __V1x
     OpaqueWidget::draw(args);
 #else

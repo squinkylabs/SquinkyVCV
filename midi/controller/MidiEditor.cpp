@@ -249,7 +249,6 @@ void MidiEditor::changePitch(int semitones)
     seq()->assertValid();
     float deltaCV = PitchUtils::semitone * semitones;
 
-
     // Now fix-up selection and view-port
     float newCursorPitch = seq()->context->cursorPitch() + deltaCV;
     newCursorPitch = std::min(10.f, newCursorPitch);
