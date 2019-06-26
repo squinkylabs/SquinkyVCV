@@ -7,6 +7,11 @@ struct NVGcontext;
 class NoteDisplay;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
+/**
+ * This class only exists to isolate the mouse
+ * handler from NoteDisplay, so that we can do
+ * conditional builds.
+ */
 class MouseManager
 {
 public:
@@ -21,10 +26,16 @@ public:
      * shift is true if shift key is down.
      */
     bool onMouseButton(float x, float y, bool isPressed, bool ctrl, bool shift);
+
+    /**
+     * drag handlers
+     */
     bool onDragStart();
     bool onDragEnd();
     bool onDragMove(float x, float y);
     bool willDrawSelection() const;
+
+    bool onDoubleClick();
 private:
 
     MidiSequencerPtr sequencer;

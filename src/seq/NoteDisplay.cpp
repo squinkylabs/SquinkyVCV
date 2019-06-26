@@ -238,7 +238,13 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
 void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 {
    // printf("got double click"); fflush(stdout);
-    OpaqueWidget::onDoubleClick(e);
+   
+    bool handled = mouseManager->onDoubleClick();
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onDoubleClick(e);
+    }
 }
 
  void NoteDisplay::onDragDrop(const event::DragDrop &e) 

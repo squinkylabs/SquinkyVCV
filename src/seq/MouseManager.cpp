@@ -79,6 +79,17 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
     return ret;
 }
 
+bool MouseManager::onDoubleClick()
+{
+    MidiNoteEventPtr note = sequencer->editor->getNoteUnderCursor();
+    if (note) {
+        sequencer->editor->deleteNote();
+    } else {
+        sequencer->editor->insertNote();
+    }
+    return true;
+}
+
 bool MouseManager::onDragStart()
 {
    // printf("MouseManger::onDragStart()\n"); fflush(stdout);
