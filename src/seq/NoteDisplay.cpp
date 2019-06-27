@@ -23,6 +23,7 @@
 #include "../ctrl/SqHelper.h"
 #include "TimeUtils.h"
 #include "NoteDisplay.h"
+#include "SeqSettings.h"
 #include "SqGfx.h"
 
 NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
@@ -77,12 +78,13 @@ void NoteDisplay::initEditContext()
     assert(scaler);
 }
 
-// TODO: get rid of this
+// TODO: get rid of this (dont remember why this is here)
 void NoteDisplay::step()
 {
     if (!sequencer) {
         return;
     }
+    OpaqueWidget::step();
 }
 
 void NoteDisplay::drawNotes(NVGcontext *vg)
@@ -258,14 +260,21 @@ void NoteDisplay::onButton(const event::Button &e)
    // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
 
     bool handled = false;
+
+    const bool isPressed = e.action == GLFW_PRESS;
+    const bool shift = e.mods & GLFW_MOD_SHIFT;
+    const bool ctrl = e.mods & GLFW_MOD_CONTROL;
+
     if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
-        const bool isPressed = e.action == GLFW_PRESS;
-        const bool shift = e.mods & GLFW_MOD_SHIFT;
-        const bool ctrl = e.mods & GLFW_MOD_CONTROL;
         handled = mouseManager-> onMouseButton(
             e.pos.x, 
             e.pos.y,
             isPressed, ctrl, shift);
+    } else if (e.button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (isPressed && !shift && !ctrl) {
+            SeqSettings::invokeUI(this);
+            handled = true;
+        }
     }
     if (handled) {
         e.consume(this);

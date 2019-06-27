@@ -16,6 +16,7 @@
 #include "ctrl/SqWidgets.h"
 
 using Comp = MixM<WidgetComposite>;
+#define WIDE 1
 
 /**
  */
@@ -132,11 +133,11 @@ void MixMWidget::appendContextMenu(Menu *menu)
     MenuLabel *spacerLabel2 = new MenuLabel();
     menu->addChild(spacerLabel2);
     SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERa_PARAM);
-    item->text = "Send A Pre-Fader";
+    item->text = "Send 1 Pre-Fader";
     menu->addChild(item);
 
     item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERb_PARAM);
-    item->text = "Send B Pre-Fader";
+    item->text = "Send 2 Pre-Fader";
     menu->addChild(item);
 }
 
@@ -286,7 +287,7 @@ void MixMWidget::makeStrip(
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
-            "Aux");
+            "AX1");
     }
 
     y -= (channelDy + extraDy);
@@ -298,7 +299,7 @@ void MixMWidget::makeStrip(
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
-            "AxB");
+            "AX2");
     }
 }
 
@@ -307,12 +308,12 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
     float x = 0;
     float y = channelY;
     const float x0 = 160;
-    const float xL = 215;
+    const float xL = 215  + (WIDE * 15);
     const float labelDy = -10;
 
     for (int channel = 0; channel<2; ++channel) {
         y = channelY;
-        x = x0 + 15 + channel * dX;
+        x = x0 + 15 + (channel * dX) + (WIDE * 15);
 
        // y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
@@ -333,7 +334,7 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_SEND_OUTPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "Sa"
+            "S1"
             //,SqHelper::COLOR_WHITE
             );
         }
@@ -345,7 +346,7 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_RETURN_INPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "Ra");
+            "R1");
         }
 
         y -= channelDy;
@@ -355,7 +356,7 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_SENDb_OUTPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "Sb"
+            "S2"
             //,SqHelper::COLOR_WHITE
             );
         }
@@ -367,11 +368,11 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
             channel + Comp::LEFT_RETURNb_INPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "Rb");
+            "R2");
         }
     }
 
-    x = x0 + 15 + 15;
+    x = x0 + 15 + 17  + (WIDE * 15);
 
     auto mute = SqHelper::createParam<ToggleButton>(
         icomp,
@@ -417,7 +418,7 @@ MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
 {
 #endif
     mixModule = module;
-    box.size = Vec(16 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec((16 + WIDE) * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mixm_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
