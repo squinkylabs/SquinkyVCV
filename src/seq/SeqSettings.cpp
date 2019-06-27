@@ -1,5 +1,7 @@
+//#include "SqMath.h"
 
 #include "SeqSettings.h"
+#include "../ctrl/SqMenuItem.h"
 
 
 
@@ -10,23 +12,30 @@ public:
     {
         text = "Grid settings";
     }
-    #if 1
+
     rack::ui::Menu *createChildMenu() override
     {
         rack::ui::Menu* menu = new rack::ui::Menu();
         menu->addChild(rack::construct<rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
             "Grids"));
-        rack::ui::MenuItem* item = new rack::ui::MenuItem();
+
+        std::function<bool()> isCheckedFn = []() { return false; };
+
+        rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, []() {
+                printf("do quarter grid\n"); fflush(stdout);
+        });
         item->text = "Quarter Notes";
         menu->addChild(item);
 
-         item = new rack::ui::MenuItem();
+
+        item = new SqMenuItem(isCheckedFn, []() {
+                printf("do eigth grid\n"); fflush(stdout);
+        });
         item->text = "Eighth Notes";
         menu->addChild(item);
         return menu;
     }
-    #endif
 };
 
 void SeqSettings::invokeUI(rack::widget::Widget* parent)

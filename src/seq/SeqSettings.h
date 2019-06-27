@@ -10,6 +10,7 @@ class SeqSettings
 {
 public:
     static void invokeUI(rack::widget::Widget* parent);
+    float getSecondsInGrid();
 private:
 
 };

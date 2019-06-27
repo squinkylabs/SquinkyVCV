@@ -38,7 +38,8 @@
 
 
 using namespace rack;
-extern Plugin *pluginInstance;
+
+extern rack::plugin::Plugin *pluginInstance;
 extern Model *modelBootyModule;
 extern Model *modelColoredNoiseModule;
 extern Model *modelTremoloModule;

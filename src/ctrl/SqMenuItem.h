@@ -13,7 +13,7 @@ struct SqMenuItem : rack::MenuItem
 {
 
 #ifdef __V1x
-void onAction(const event::Action &e) override
+void onAction(const rack::event::Action &e) override
 #else
 void onAction(EventAction &e) override
 #endif
@@ -67,7 +67,7 @@ struct  SqMenuItem_BooleanParam2 : rack::MenuItem
     void onAction(const sq::EventAction &e) override
     {
         const float newValue = isOn() ? 0 : 1;
-        APP->engine->setParam(module, paramId, newValue); 
+        rack::appGet()->engine->setParam(module, paramId, newValue); 
         e.consume(this);
     }
 
@@ -79,7 +79,7 @@ private:
 
     bool isOn()
     {
-        return APP->engine->getParam(module, paramId) > .5;
+        return rack::appGet()->engine->getParam(module, paramId) > .5;
     }
     const int paramId;
     rack::engine::Module* const module;
