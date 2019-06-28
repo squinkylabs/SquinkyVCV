@@ -1,4 +1,5 @@
 
+#include "asserts.h"
 #include "MixHelper.h"
 #include "TestComposite.h"
 
@@ -36,10 +37,35 @@ static void test0()
 {
     MockMixComposite comp;
     MixHelper< MockMixComposite> helper;
-   helper.procMixInputs(&comp);
+    helper.procMixInputs(&comp);
+
+
+    for (int i = 0; i < 4; ++i) {
+        assertEQ(comp.params[MockMixComposite::MUTE0_PARAM + i].value, 0);
+        assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, 0);
+    }
+}
+
+
+static void testParamToggle(int channel)
+{
+    MockMixComposite comp;
+    MixHelper< MockMixComposite> helper;
+
+    for (int i = 0; i < 4; ++i) {
+     //   comp.params[MUTE0_PARAM].
+    }
+}
+
+static void testParamToggle()
+{
+    for (int i = 0; i < 4; ++i) {
+        testParamToggle(i);
+    }
 }
 
 void testMixHelper()
 {
     test0();
+    testParamToggle();
 }
