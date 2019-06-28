@@ -65,6 +65,7 @@ extern void testMidiEditorSelection();
 extern void testVec();
 extern void testSeqClock();
 extern void testMix8();
+extern void testMixHelper();
 extern void testSlew4();
 extern void testCommChannels();
 extern void testLadder();
@@ -171,9 +172,9 @@ int main(int argc, char ** argv)
     testLookupTable();
     testObjectCache();
     testMultiLag();
-    testSlew4();
+    testSlew4();   
+    testMixHelper();
     testMix8();
-
 
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)

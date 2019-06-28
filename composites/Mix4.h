@@ -96,6 +96,11 @@ public:
         PRE_FADERa_PARAM,       // 0 = post, 1 = pre
         PRE_FADERb_PARAM,
 
+        MUTE0_STATE_PARAM,
+        MUTE1_STATE_PARAM,
+        MUTE2_STATE_PARAM,
+        MUTE3_STATE_PARAM,
+
         NUM_PARAMS
     };
 
@@ -139,6 +144,11 @@ public:
         SOLO1_LIGHT,
         SOLO2_LIGHT,
         SOLO3_LIGHT,
+
+        MUTE0_LIGHT,
+        MUTE1_LIGHT,
+        MUTE2_LIGHT,
+        MUTE3_LIGHT,
         NUM_LIGHTS
     };
 
@@ -452,6 +462,18 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
             break;
         case  Mix4<TBase>::PRE_FADERb_PARAM:
             ret = {0, 1.0f, 0, "Pre Fader B"};
+            break;
+        case Mix4<TBase>::MUTE0_STATE_PARAM:
+            ret = {0, 1, 0, "MSX0"};            // not user visible
+            break;
+        case Mix4<TBase>::MUTE1_STATE_PARAM:
+            ret = {0, 1, 0, "MSX1"};
+            break;
+        case Mix4<TBase>::MUTE2_STATE_PARAM:
+            ret = {0, 1, 0, "MSX2"};
+            break;
+        case Mix4<TBase>::MUTE3_STATE_PARAM:
+            ret = {0, 1, 0, "MSX3"};
             break;
         default:
             assert(false);

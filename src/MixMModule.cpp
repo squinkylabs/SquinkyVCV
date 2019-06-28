@@ -150,6 +150,14 @@ static float volY = 0;
 const float extraDy = 6;
 static float muteY = 0;
 
+// From VCV Mutes
+template <typename BASE>
+struct MuteLight : BASE {
+	MuteLight() {
+	  this->box.size = mm2px(Vec(6.0, 6.0));
+	}
+};
+
 void MixMWidget::makeStrip(
     MixMModule* module,
     std::shared_ptr<IComposite> icomp,
@@ -218,6 +226,8 @@ void MixMWidget::makeStrip(
     }
 
     y -= channelDy;
+#if 0
+   
     auto mute = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(x-12, y-12),
@@ -227,6 +237,29 @@ void MixMWidget::makeStrip(
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
     muteY = y-12;
+#else
+
+    const float mutex = x-12;
+    const float mutey = y-12;
+    auto mute = SqHelper::createParam<LEDBezel>(
+        icomp,
+        Vec(x-12, y-12),
+        module,
+        channel + Comp::MUTE0_PARAM);
+    addParam(mute);
+
+    addChild(createLight<MuteLight<GreenLight>>(
+        Vec(mutex + 2.2, mutey + 2),
+        module, Comp::MUTE0_LIGHT));
+
+// From Mutes:
+//	addChild(createLight<MuteLight<GreenLight>>(mm2px(Vec(17.32, 18.915)), module, Mutes::MUTE_LIGHT + 0));
+	
+// from AS:
+    //	addParam(createParam<LEDBezel>(Vec(columnPos[0]+3, mutePosY), module, Mixer8ch::CH1MUTE ));
+//	addChild(createLight<LedLight<RedLight>>(Vec(columnPos[0]+5.2, mutePosY+2), module, Mixer8ch::MUTE_LIGHT1));
+	
+#endif
    
     if (channel == 0) {
         addLabel(

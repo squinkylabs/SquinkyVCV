@@ -3,6 +3,7 @@
 
 #include "Divider.h"
 #include "IComposite.h"
+#include "MixHelper.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
@@ -35,6 +36,24 @@ public:
 /**
     Perf: 12.4 before new stuff (mix8 was 20)
     16.2 with all the features
+
+Plan for v2:
+    start in master mixer. X
+
+    add a new set of params, "mute state". they will be invisible and hold the
+    persistent mute state. X
+
+    replace my mute buttons (for now), with standard LED like "Gates" uses.
+
+    create a MixHelper class to implement the mute logic (finally!) so I don't
+    need to do it separate for each mixer.
+
+    make it work.
+
+    add to expander
+
+    try to make it look better (at least Squinky blue).
+
 
  */
 
@@ -71,6 +90,8 @@ public:
         PAN1_PARAM,
         PAN2_PARAM,
         PAN3_PARAM,
+
+        // These mutes are exposed to the user. They are toggles.
         MUTE0_PARAM,
         MUTE1_PARAM,
         MUTE2_PARAM,
@@ -96,6 +117,14 @@ public:
 
         RETURN_GAIN_PARAM,
         RETURN_GAINb_PARAM,
+
+        // These mutes are not toggles. They are not directly controlled by
+        // user. They are the actual value, post UI logic.
+        MUTE0_STATE_PARAM,
+        MUTE1_STATE_PARAM,
+        MUTE2_STATE_PARAM,
+        MUTE3_STATE_PARAM,
+
         NUM_PARAMS
     };
 
@@ -145,6 +174,11 @@ public:
         SOLO1_LIGHT,
         SOLO2_LIGHT,
         SOLO3_LIGHT,
+
+        MUTE0_LIGHT,
+        MUTE1_LIGHT,
+        MUTE2_LIGHT,
+        MUTE3_LIGHT,
         NUM_LIGHTS
     };
 
@@ -195,6 +229,8 @@ private:
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 
     const float* expansionInputs = nullptr;
+
+    MixHelper<MixM<TBase>> helper;
 };
 
 template <class TBase>
@@ -212,6 +248,7 @@ inline void MixM<TBase>::init()
 template <class TBase>
 inline void MixM<TBase>::stepn(int div)
 {
+    helper.procMixInputs(this);           // just to see if it compiles, for now
     // fill buf_channelGains
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + GAIN0_PARAM].value;
@@ -483,6 +520,18 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             break;
         case  MixM<TBase>::PRE_FADERb_PARAM:
             ret = {0, 1.0f, 0, "Pre Fader B"};
+            break;
+        case MixM<TBase>::MUTE0_STATE_PARAM:
+            ret = {0, 1, 0, "MSX0"};            // not user visible
+            break;
+        case MixM<TBase>::MUTE1_STATE_PARAM:
+            ret = {0, 1, 0, "MSX1"};
+            break;
+        case MixM<TBase>::MUTE2_STATE_PARAM:
+            ret = {0, 1, 0, "MSX2"};
+            break;
+        case MixM<TBase>::MUTE3_STATE_PARAM:
+            ret = {0, 1, 0, "MSX3"};
             break;
         default:
             assert(false);

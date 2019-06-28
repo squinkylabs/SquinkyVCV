@@ -91,6 +91,7 @@
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />
     <ClCompile Include="..\..\test\testMix8.cpp" />
+    <ClCompile Include="..\..\test\testMixHelper.cpp" />
     <ClCompile Include="..\..\test\testNoteScreenScale.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="..\..\composites\LFNB.h" />
     <ClInclude Include="..\..\composites\Mix4.h" />
     <ClInclude Include="..\..\composites\Mix8.h" />
+    <ClInclude Include="..\..\composites\MixHelper.h" />
     <ClInclude Include="..\..\composites\MixM.h" />
     <ClInclude Include="..\..\composites\Seq.h" />
     <ClInclude Include="..\..\composites\Shaper.h" />
