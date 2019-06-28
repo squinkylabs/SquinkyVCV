@@ -123,7 +123,8 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     assert(scaler);
     //assume two bars, quarter note grid
     float totalDuration = TimeUtils::bar2time(2);
-    float deltaDuration = 1.f;
+   // float deltaDuration = 1.f;
+    const float deltaDuration = sequencer->context->settings()->getQuarterNotesInGrid();
     for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
         const float time =  relTime + sequencer->context->startTime();
         const float x = scaler->midiTimeToX(time);

@@ -8,32 +8,42 @@
 class GridMenuItem : public  rack::ui::MenuItem
 {
 public:
-    GridMenuItem()
+    GridMenuItem(SeqSettings* stt) : settings(stt)
     {
         text = "Grid settings";
     }
 
+    SeqSettings* const settings;
+
     rack::ui::Menu *createChildMenu() override
     {
         rack::ui::Menu* menu = new rack::ui::Menu();
-        menu->addChild(rack::construct<rack::ui::MenuLabel>(
+
+        auto label = rack::construct<rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
-            "Grids"));
+            "Grids             "); 
+        menu->addChild(label);
 
         std::function<bool()> isCheckedFn = []() { return false; };
 
-        rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, []() {
-                printf("do quarter grid\n"); fflush(stdout);
+        rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, [this]() {
+            settings->quarterNotesInGrid = 1;
         });
-        item->text = "Quarter Notes";
+        item->text = "Quarter notes";
         menu->addChild(item);
 
-
-        item = new SqMenuItem(isCheckedFn, []() {
-                printf("do eigth grid\n"); fflush(stdout);
+        item = new SqMenuItem(isCheckedFn, [this]() {
+            settings->quarterNotesInGrid = .5;
         });
-        item->text = "Eighth Notes";
+        item->text = "Eighth notes";
         menu->addChild(item);
+
+        item = new SqMenuItem(isCheckedFn, [this]() {
+            settings->quarterNotesInGrid = .25;
+        });
+        item->text = "Sixteenth notes";
+        menu->addChild(item);
+
         return menu;
     }
 };
@@ -41,24 +51,16 @@ public:
 
 SeqSettings::SeqSettings(rack::engine::Module* mod) : module(mod)
 {
-
 }
 
 void SeqSettings::invokeUI(rack::widget::Widget* parent)
 {
-    printf("creating menu\n"); fflush(stdout);
     rack::ui::Menu* menu = rack::createMenu();
-
-    //menu->addChild(new rack::ui::MenuLabel);
     menu->addChild(rack::construct<rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
-   // rack::ui::MenuItem* item = new rack::ui::MenuItem();
-  //  item->text = "item text";
-  //  item->rightText = "right";
-    menu->addChild(new GridMenuItem());
+    menu->addChild(new GridMenuItem(this));
 }
 
- float SeqSettings::getSecondsInGrid()
+ float SeqSettings::getQuarterNotesInGrid()
  {
-     // TODO: not seconds... quarter notes?
-     return .25;
+     return quarterNotesInGrid;
  }
