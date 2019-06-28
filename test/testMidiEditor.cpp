@@ -16,7 +16,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song);
+    MidiSequencerPtr sequencer = MidiSequencer::make(song, nullptr);
    // sequencer->makeEditor();
 
     sequencer->context->setTrackNumber(_trackNumber);

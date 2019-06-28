@@ -1,16 +1,17 @@
 
+#include "ISeqSettings.h"
 #include "MidiSequencer.h"
 #include "MidiEditor.h"
+
 #include "TimeUtils.h"
 #include "UndoRedoStack.h"
 
 int _mdb = 0;       // global instance counter
 
-MidiSequencer::MidiSequencer(MidiSongPtr sng) :
+MidiSequencer::MidiSequencer(MidiSongPtr sng, ISeqSettingsPtr setp) :
     selection(std::make_shared<MidiSelectionModel>()),
     song(sng),
-    context(std::make_shared<MidiEditorContext>(sng)
-    )
+    context(std::make_shared<MidiEditorContext>(sng, setp))
 {
     // init the context to something reasonable.
     context->setEndTime(TimeUtils::bar2time(2));
@@ -18,9 +19,9 @@ MidiSequencer::MidiSequencer(MidiSongPtr sng) :
     ++_mdb;
 }
 
-MidiSequencerPtr MidiSequencer::make(MidiSongPtr song)
+MidiSequencerPtr MidiSequencer::make(MidiSongPtr song, std::shared_ptr<ISeqSettings> settings)
 {
-    MidiSequencerPtr seq(new MidiSequencer(song));
+    MidiSequencerPtr seq(new MidiSequencer(song, settings));
     seq->makeEditor();
 
     // Find a track to point the edit context at

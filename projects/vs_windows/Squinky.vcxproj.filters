@@ -767,5 +767,8 @@
     <ClInclude Include="..\..\sqsrc\util\PeakDetector.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\midi\model\ISeqSettings.h">
+      <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

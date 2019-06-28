@@ -13,7 +13,11 @@
 struct NoteDisplay : OpaqueWidget
 {
 public:
-    NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq);
+    NoteDisplay(
+        const Vec& pos,
+        const Vec& size, 
+        MidiSequencerPtr seq,
+        rack::engine::Module* mod);
 
      
     /**
@@ -29,8 +33,11 @@ private:
     bool haveFocus = true;
     void initEditContext();
 
+    //std::shared_ptr<class SeqSettings> seqSettings;
     std::shared_ptr<class MouseManager> mouseManager;
+
     void step() override;
+
 
     void updateFocus(bool focus)
     {

@@ -1,4 +1,5 @@
 
+#include "ISeqSettings.h"
 #include "MidiEditorContext.h"
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
@@ -7,7 +8,9 @@
 
 extern int _mdb;
 
-MidiEditorContext::MidiEditorContext(MidiSongPtr song) : _song(song)
+MidiEditorContext::MidiEditorContext(MidiSongPtr song, ISeqSettingsPtr stt) : 
+    _song(song),
+    _settings(stt)
 {
     ++_mdb;
 }

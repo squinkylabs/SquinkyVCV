@@ -2,6 +2,7 @@
 #include "MidiLock.h"
 #include "MidiSequencer.h"
 #include "SequencerSerializer.h"
+#include "SeqSettings.h"
 #include "jansson.h"
 
 
@@ -97,11 +98,13 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEndEvent> e)
       },
       */
 
-MidiSequencerPtr SequencerSerializer::fromJson(json_t *data)
+MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, rack::engine::Module* module)
 {
     json_t* songJson = json_object_get(data, "song");
     MidiSongPtr song = fromJsonSong(songJson);
-    MidiSequencerPtr seq = MidiSequencer::make(song);
+    ISeqSettings* ss = new SeqSettings(module);
+    std::shared_ptr<ISeqSettings> _settings( ss);
+    MidiSequencerPtr seq = MidiSequencer::make(song, _settings);
     return seq;
 }
 

@@ -4,6 +4,7 @@
 #include "FilteredIterator.h"
 #include <memory>
 
+class ISeqSettings;
 class MidiSong;
 class MidiSelectionModel;
 class NoteScreenScale;
@@ -22,7 +23,7 @@ public:
         float end = 0;
     };
 
-    MidiEditorContext(std::shared_ptr<MidiSong>);
+    MidiEditorContext(std::shared_ptr<MidiSong>, std::shared_ptr<ISeqSettings>);
     ~MidiEditorContext();
 
     float cursorPitch() const
@@ -142,6 +143,11 @@ public:
     void scrollViewportToCursorPitch();
     bool cursorInViewportTime() const;
     void adjustViewportForCursor();
+
+    std::shared_ptr<ISeqSettings> settings()
+    {
+        return _settings;
+    }
 private:
     float m_cursorTime = 0;
     float m_cursorPitch = 0;
@@ -161,6 +167,8 @@ private:
 
     // Use weak ref to break circular dependency
     std::weak_ptr<MidiSong> _song;
+
+    std::shared_ptr<ISeqSettings> _settings;
 };
 
 using MidiEditorContextPtr = std::shared_ptr<MidiEditorContext>;

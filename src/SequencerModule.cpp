@@ -5,6 +5,7 @@
 #ifdef _SEQ
 #include "WidgetComposite.h"
 #include "Seq.h"
+#include "seq/SeqSettings.h"
 #include "seq/NoteDisplay.h"
 #include "seq/AboveNoteGrid.h"
 #include "ctrl/SqMenuItem.h"
@@ -18,6 +19,7 @@
 #include "MidiLock.h"
 #include "MidiSong.h"
 #include "TimeUtils.h"
+
 
 #include "SequencerModule.h"
 
@@ -39,7 +41,9 @@ SequencerModule::SequencerModule()
 #endif
     runStopRequested = false;
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    sequencer = MidiSequencer::make(song);
+    ISeqSettings* ss = new SeqSettings(this);
+    std::shared_ptr<ISeqSettings> _settings( ss);
+    sequencer = MidiSequencer::make(song, _settings);
     seqComp = std::make_shared<Comp>(this, song);
 }
 
@@ -138,7 +142,7 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
             seq = module->sequencer;
         }
         headerDisplay = new AboveNoteGrid(headerPos, headerSize, seq);
-        noteDisplay = new NoteDisplay(notePos, noteSize, seq);
+        noteDisplay = new NoteDisplay(notePos, noteSize, seq, module);
         addChild(noteDisplay);
         addChild(headerDisplay);
     }
@@ -264,7 +268,7 @@ void SequencerModule::dataFromJson(json_t *data)
 void SequencerModule::fromJson(json_t* data)
 #endif
 {
-    MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data);
+    MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data, this);
     setNewSeq(newSeq);
 }
 
@@ -291,7 +295,9 @@ void SequencerModule::onReset()
 {
     Module::onReset();
     std::shared_ptr<MidiSong> newSong = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong);
+    ISeqSettings* ss = new SeqSettings(this);
+    std::shared_ptr<ISeqSettings> _settings( ss);
+    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong, _settings);
     setNewSeq(newSeq);
 }
 

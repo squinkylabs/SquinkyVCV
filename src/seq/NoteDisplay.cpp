@@ -26,12 +26,17 @@
 #include "SeqSettings.h"
 #include "SqGfx.h"
 
-NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
+NoteDisplay::NoteDisplay(
+    const Vec& pos, 
+    const Vec& size, 
+    MidiSequencerPtr seq,
+    rack::engine::Module* mod)
 {
     this->box.pos = pos;
     box.size = size;
     sequencer = seq;
     mouseManager = std::make_shared<MouseManager>(sequencer);
+  //  seqSettings = std::make_shared<SeqSettings>(mod);
 
     if (sequencer) {
         initEditContext();
@@ -272,7 +277,8 @@ void NoteDisplay::onButton(const event::Button &e)
             isPressed, ctrl, shift);
     } else if (e.button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (isPressed && !shift && !ctrl) {
-            SeqSettings::invokeUI(this);
+            sequencer->context->settings()->invokeUI(this);
+            //seqSettings->invokeUI(this);
             handled = true;
         }
     }

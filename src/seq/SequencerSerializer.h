@@ -10,12 +10,18 @@ class MidiSequencer;
 class MidiSong;
 class MidiTrack;
 
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+
 class SequencerSerializer
 {
 
 public:
     static json_t *toJson(std::shared_ptr<MidiSequencer>);
-    static std::shared_ptr<MidiSequencer> fromJson(json_t *data);
+    static std::shared_ptr<MidiSequencer> fromJson(json_t *data, rack::engine::Module*);
 
 private:
     static json_t *toJson(std::shared_ptr<MidiSong>);

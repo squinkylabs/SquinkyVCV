@@ -92,7 +92,7 @@ static MidiSequencerPtr makeTest2(int type)
 
     }
   
-    MidiSequencerPtr sequencer = MidiSequencer::make(song);
+    MidiSequencerPtr sequencer = MidiSequencer::make(song, nullptr);
 
     sequencer->context->setTrackNumber(0);
     sequencer->context->setStartTime(0);

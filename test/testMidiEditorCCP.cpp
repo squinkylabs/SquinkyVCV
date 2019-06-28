@@ -13,7 +13,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song);
+    MidiSequencerPtr sequencer = MidiSequencer::make(song, nullptr);
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -106,7 +106,7 @@ static void testPasteTimeSub(float pasteTime)
 {
     // Make a song with a single note at 1.23
     auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
-    MidiSequencerPtr seq = MidiSequencer::make(song);
+    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
     seq->context->setTrackNumber(_trackNumber);
     seq->assertValid();
     MidiLocker l(seq->song->lock);

@@ -38,6 +38,12 @@ public:
     }
 };
 
+
+SeqSettings::SeqSettings(rack::engine::Module* mod) : module(mod)
+{
+
+}
+
 void SeqSettings::invokeUI(rack::widget::Widget* parent)
 {
     printf("creating menu\n"); fflush(stdout);
@@ -50,3 +56,9 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
   //  item->rightText = "right";
     menu->addChild(new GridMenuItem());
 }
+
+ float SeqSettings::getSecondsInGrid()
+ {
+     // TODO: not seconds... quarter notes?
+     return .25;
+ }

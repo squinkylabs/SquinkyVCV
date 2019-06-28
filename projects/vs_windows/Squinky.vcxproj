@@ -193,6 +193,7 @@
     <ClInclude Include="..\..\midi\controller\SeqClock.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
+    <ClInclude Include="..\..\midi\model\ISeqSettings.h" />
     <ClInclude Include="..\..\midi\model\MidiEvent.h" />
     <ClInclude Include="..\..\midi\model\MidiSequencer.h" />
     <ClInclude Include="..\..\midi\model\MidiSong.h" />
