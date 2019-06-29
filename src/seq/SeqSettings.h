@@ -3,7 +3,7 @@
 
 #include "ISeqSettings.h"
 
-#include "Rack.hpp"
+#include "rack.hpp"
 
 #include <stdio.h>
 
