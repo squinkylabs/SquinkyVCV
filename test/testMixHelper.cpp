@@ -78,10 +78,31 @@ static void testParamToggle(int channel)
     // send it a mute toggle
     comp.params[MockMixComposite::MUTE0_PARAM + channel].value = 1;
     helper.procMixInputs(&comp);
+
+    // check the results
     for (int i = 0; i < 4; ++i) {
         const float expectedMuteState = (i == channel) ? 1.f : 0.f;
         assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, expectedMuteState);
     }
+
+    // mute back down to zero
+    comp.params[MockMixComposite::MUTE0_PARAM + channel].value = 0;
+    helper.procMixInputs(&comp);
+    // check the results - should be unchanged
+    for (int i = 0; i < 4; ++i) {
+        const float expectedMuteState = (i == channel) ? 1.f : 0.f;
+        assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, expectedMuteState);
+    }
+
+    // mute up again should toggle
+    comp.params[MockMixComposite::MUTE0_PARAM + channel].value = 1;
+    helper.procMixInputs(&comp);
+    // check the results - should be unchanged
+    for (int i = 0; i < 4; ++i) {
+        const float expectedMuteState = 0;
+        assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, expectedMuteState);
+    }
+
 }
 
 static void testParamToggle()
