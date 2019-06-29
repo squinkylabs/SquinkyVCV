@@ -128,6 +128,8 @@ public:
         MUTE2_STATE_PARAM,
         MUTE3_STATE_PARAM,
 
+        CV_MUTE_TOGGLE,
+
         NUM_PARAMS
     };
 
@@ -535,6 +537,9 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             break;
         case MixM<TBase>::MUTE3_STATE_PARAM:
             ret = {0, 1, 0, "MSX3"};
+            break;
+        case MixM<TBase>::CV_MUTE_TOGGLE:
+            ret = {0, 1, 0, "VCTM"};
             break;
         default:
             assert(false);

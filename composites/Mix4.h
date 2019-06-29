@@ -43,6 +43,10 @@ template <class TBase>
 class Mix4 : public TBase
 {
 public:
+
+    template<typename Q>
+    friend class MixHelper;
+
     Mix4(Module * module) : TBase(module)
     {
     }
@@ -100,6 +104,8 @@ public:
         MUTE1_STATE_PARAM,
         MUTE2_STATE_PARAM,
         MUTE3_STATE_PARAM,
+
+        CV_MUTE_TOGGLE,
 
         NUM_PARAMS
     };
@@ -474,6 +480,9 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
             break;
         case Mix4<TBase>::MUTE3_STATE_PARAM:
             ret = {0, 1, 0, "MSX3"};
+            break;
+        case Mix4<TBase>::CV_MUTE_TOGGLE:
+            ret = {0, 1, 0, "VCTM"};
             break;
         default:
             assert(false);
