@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SchmidtTrigger.h"
+#include "GateTrigger.h"
 
 /**
  * template class must provide:
@@ -14,6 +14,10 @@ template <class TMixComposite>
 class MixHelper
 {
 public:
+    MixHelper()
+    {
+
+    }
     /**
      * input: params[MUTE_PARAM];
                 inputs[MUTE0_INPUT]
@@ -21,7 +25,8 @@ public:
      */
     void procMixInputs(TMixComposite*);
 private:
-    SchmidtTrigger triggers[TMixComposite::numChannels];
+    GateTrigger inputTriggers[TMixComposite::numChannels] = {};
+    GateTrigger paramTriggers[TMixComposite::numChannels] = {};
 };
 
 
@@ -30,11 +35,25 @@ inline void MixHelper<TMixComposite>::procMixInputs(TMixComposite* mixer)
 {
     for (int i = 0; i < TMixComposite::numChannels; ++i) {
         // pump the CV though the schmidts
-        const bool muteCV = triggers[i].go(mixer->inputs[TMixComposite::MUTE0_INPUT + i].value);
+      //  const bool muteCV = triggers[i].go(mixer->inputs[TMixComposite::MUTE0_INPUT + i].value);
 
         // combine schmidt and params into bool muted
-        const bool muted = muteCV || (mixer->params[TMixComposite::MUTE0_PARAM + i].value > .5);
-        // write that out to param
-        mixer->params[TMixComposite::MUTE0_STATE_PARAM + i].value = muted ? 1.f : 0.f;
+       // const bool muted = muteCV || (mixer->params[TMixComposite::MUTE0_PARAM + i].value > .5);
+     //  const bool muted =  
+
+
+        // temp, just to toggle on param
+        paramTriggers[i].go(10 * mixer->params[TMixComposite::MUTE0_PARAM + i].value);
+        const bool paramTriggered = paramTriggers[i].trigger();
+        if (paramTriggered) {
+            bool muted = mixer->params[TMixComposite::MUTE0_STATE_PARAM + i].value > .5;
+            muted = !muted;
+            mixer->params[TMixComposite::MUTE0_STATE_PARAM + i].value = muted ? 1.f : 0.f;
+        }
+       // bool paramTriggered = paramTriggers[i].
+      //  bool muted = false;
+       // write that out to param
+
+       // mixer->params[TMixComposite::MUTE0_STATE_PARAM + i].value = muted ? 1.f : 0.f;
     }
 }
