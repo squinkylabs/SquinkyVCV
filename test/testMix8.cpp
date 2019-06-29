@@ -125,6 +125,8 @@ void testChannel(int channel, bool useParam)
     }
 
     for (int i = 0; i < T::numChannels; ++i) {
+
+       // auto debugMuteState = m.params[T::MUTE0_STATE_PARAM + i];
         float expected = (i == channel) ? 5.5f : 0;
         assertClose(m.outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
     }
@@ -256,6 +258,7 @@ template <typename T>
 void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
+    m->step();          // let mutes see zero first (startup reset)
 
     m->inputs[T::AUDIO0_INPUT].value = 10;
     m->params[T::PAN0_PARAM].value = -1.f;     // full left

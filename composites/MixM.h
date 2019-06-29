@@ -129,6 +129,7 @@ public:
         MUTE3_STATE_PARAM,
 
         CV_MUTE_TOGGLE,
+        MASTER_MUTE_STATE_PARAM,
 
         NUM_PARAMS
     };
@@ -184,6 +185,8 @@ public:
         MUTE1_LIGHT,
         MUTE2_LIGHT,
         MUTE3_LIGHT,
+
+        MUTE_MASTER_LIGHT,
         NUM_LIGHTS
     };
 
@@ -253,7 +256,7 @@ inline void MixM<TBase>::init()
 template <class TBase>
 inline void MixM<TBase>::stepn(int div)
 {
-    helper.procMixInputs(this);           // just to see if it compiles, for now
+   
     // fill buf_channelGains
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + GAIN0_PARAM].value;
@@ -288,6 +291,11 @@ inline void MixM<TBase>::stepn(int div)
             break;
         }
     }
+
+
+    helper.procMixInputs(this);           // run the mute helper
+    helper.procMasterMute(this);
+    // TODO: move this all to mute helper?
     const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
     if (moduleIsMuted) {
         // printf("whole module muted\n"); fflush(stdout);
@@ -302,12 +310,17 @@ inline void MixM<TBase>::stepn(int div)
         }
     } else {
         for (int i = 0; i < numChannels; ++i) {
-            const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
-                (TBase::inputs[i + MUTE0_INPUT].value > 2));
-            buf_muteInputs[i] = muteActivated ? 0.f : 1.f;
-           // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
+            // The pre-calculated state in :params[i + MUTE0_STATE_PARAM] will
+            // be applicable if no solo
+            buf_muteInputs[i] = TBase::params[i + MUTE0_STATE_PARAM].value > .5 ? 0.f : 1.f;
         }
     }
+
+
+
+  //  TBase::lights[MASTER_MUTE_LIGHT].value =  
+  //      TBase::params[TBase::MUTE0_STATE_PARAM + i].value = muted ? 1.f : 0.f;
+  //      mixer->lights[TMixComposite::MUTE0_LIGHT + i].value = muted ? 10.f : 0.f;
 
     // send gains
     const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;
@@ -343,7 +356,7 @@ inline void MixM<TBase>::stepn(int div)
     //printf("buf_muteInputs = %.2f %.2f %.2f %.2f \n",buf_muteInputs[0],buf_muteInputs[1],buf_muteInputs[2],buf_muteInputs[3]);
 
 
-    buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
+    buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_STATE_PARAM].value;
     antiPop.step(buf_muteInputs);
 
     for (int i = 0; i < 4; ++i) {
@@ -537,6 +550,9 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             break;
         case MixM<TBase>::MUTE3_STATE_PARAM:
             ret = {0, 1, 0, "MSX3"};
+            break;
+        case MixM<TBase>::MASTER_MUTE_STATE_PARAM:
+            ret = {0, 1, 0, "MMS"};
             break;
         case MixM<TBase>::CV_MUTE_TOGGLE:
             ret = {0, 1, 0, "VCTM"};

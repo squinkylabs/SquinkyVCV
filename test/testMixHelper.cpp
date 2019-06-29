@@ -31,6 +31,12 @@ public:
         MUTE2_INPUT,
         MUTE3_INPUT
     };
+
+    enum LightIds
+    {
+        MUTE0_LIGHT
+    };
+
 };
 
 
