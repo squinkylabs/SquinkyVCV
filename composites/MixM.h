@@ -61,6 +61,9 @@ template <class TBase>
 class MixM : public TBase
 {
 public:
+    template<typename Q>
+    friend class MixHelper;
+
     MixM(Module * module) : TBase(module)
     {
     }
