@@ -453,16 +453,16 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Master Mute"};
             break;
         case MixM<TBase>::GAIN0_PARAM:
-            ret = {0, 1, .8f, "Level 1"};
+            ret = {0, 1, 0, "Level 1"};
             break;
         case MixM<TBase>::GAIN1_PARAM:
-            ret = {0, 1, .8f, "Level 2"};
+            ret = {0, 1, 0, "Level 2"};
             break;
         case MixM<TBase>::GAIN2_PARAM:
-            ret = {0, 1, .8f, "Level 3"};
+            ret = {0, 1, 0, "Level 3"};
             break;
         case MixM<TBase>::GAIN3_PARAM:
-            ret = {0, 1, .8f, "Level 4"};
+            ret = {0, 1, 0, "Level 4"};
             break;
         case MixM<TBase>::PAN0_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 1"};

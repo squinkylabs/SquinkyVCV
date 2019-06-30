@@ -389,16 +389,16 @@ inline IComposite::Config Mix4Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Mix4<TBase>::GAIN0_PARAM:
-            ret = {0, 1, .8f, "Level 1"};
+            ret = {0, 1, 0, "Level 1"};
             break;
         case Mix4<TBase>::GAIN1_PARAM:
-            ret = {0, 1, .8f, "Level 2"};
+            ret = {0, 1, 0, "Level 2"};
             break;
         case Mix4<TBase>::GAIN2_PARAM:
-            ret = {0, 1, .8f, "Level 3"};
+            ret = {0, 1, 0, "Level 3"};
             break;
         case Mix4<TBase>::GAIN3_PARAM:
-            ret = {0, 1, .8f, "Level 4"};
+            ret = {0, 1, 0, "Level 4"};
             break;
 
         case Mix4<TBase>::PAN0_PARAM:

@@ -87,10 +87,10 @@ private:
      * #3) Send data to the left: use your own left producer buffer.
      * #4) Receive data from right: user right's left consumer buffer 
      */
-    float bufferFlipR[comBufferSizeRight];
-    float bufferFlopR[comBufferSizeRight];
-    float bufferFlipL[comBufferSizeLeft];
-    float bufferFlopL[comBufferSizeLeft];
+    float bufferFlipR[comBufferSizeRight] = {0};
+    float bufferFlopR[comBufferSizeRight] = {0};
+    float bufferFlipL[comBufferSizeLeft] = {0};
+    float bufferFlopL[comBufferSizeLeft] = {0};
 
     CommChannelSend sendRightChannel;
     CommChannelSend sendLeftChannel;
