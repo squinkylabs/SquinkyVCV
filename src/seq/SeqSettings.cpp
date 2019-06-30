@@ -4,7 +4,28 @@
 #include "../ctrl/SqMenuItem.h"
 
 
+class GridItem 
+{
+public:
+    GridItem() = delete;
+    static rack::ui::MenuItem* make(SeqSettings::Grids grid, SeqSettings* stt)
+    {
+         std::function<bool()> isCheckedFn = [stt, grid]() { 
+             return stt->curGrid == grid;
+         };
 
+        std::function<void()> clickFn = [stt, grid]() {
+            stt->curGrid = grid;
+        };
+
+        return new SqMenuItem(isCheckedFn, clickFn);
+    }
+};
+
+
+/** 
+ * GridMenuItem is the whole grid selection sub-menu
+ */
 class GridMenuItem : public  rack::ui::MenuItem
 {
 public:
@@ -21,26 +42,18 @@ public:
 
         auto label = rack::construct<rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
-            "Grids             "); 
+            "Grids             ");      // need to do this to size correctly. probably doing something wrong.
         menu->addChild(label);
 
-        std::function<bool()> isCheckedFn = []() { return false; };
-
-        rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, [this]() {
-            settings->quarterNotesInGrid = 1;
-        });
+        rack::ui::MenuItem* item = GridItem::make(SeqSettings::Grids::quarter, settings);
         item->text = "Quarter notes";
         menu->addChild(item);
 
-        item = new SqMenuItem(isCheckedFn, [this]() {
-            settings->quarterNotesInGrid = .5;
-        });
+        item = GridItem::make(SeqSettings::Grids::eighth, settings);
         item->text = "Eighth notes";
         menu->addChild(item);
 
-        item = new SqMenuItem(isCheckedFn, [this]() {
-            settings->quarterNotesInGrid = .25;
-        });
+        item = GridItem::make(SeqSettings::Grids::sixteenth, settings);
         item->text = "Sixteenth notes";
         menu->addChild(item);
 
@@ -60,7 +73,27 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
     menu->addChild(new GridMenuItem(this));
 }
 
+float SeqSettings::grid2Time(Grids g)
+{
+    float time = 1;         // default to quarter note
+    switch(g) {
+        case Grids::quarter:
+            time = 1;
+            break;
+        case Grids::eighth:
+            time = .5f;
+            break;
+        case Grids::sixteenth:
+            time = .25f;
+            break;
+        default:
+            assert(false);
+
+    }
+    return time;
+}
+
  float SeqSettings::getQuarterNotesInGrid()
  {
-     return quarterNotesInGrid;
+    return grid2Time(curGrid);
  }

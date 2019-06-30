@@ -130,6 +130,10 @@ void Mix4Widget::appendContextMenu(Menu *menu)
     item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERb_PARAM);
     item->text = "Send B Pre-Fader";
     menu->addChild(item);
+
+    item = new SqMenuItem_BooleanParam2(mixModule, Comp::CV_MUTE_TOGGLE);
+    item->text = "Mute CV toggles on/off";
+    menu->addChild(item);
 }
 
 static const float channelX = 21;

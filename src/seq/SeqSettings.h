@@ -11,12 +11,20 @@ class SeqSettings : public ISeqSettings
 {
 public:
     friend class GridMenuItem;
+    friend class GridItem;
     SeqSettings(rack::engine::Module*);
     void invokeUI(rack::widget::Widget* parent) override;
     float getQuarterNotesInGrid() override;
 private:
     rack::engine::Module* const module;
 
-    float quarterNotesInGrid = 1;
+    enum class Grids {
+        quarter,
+        eighth,
+        sixteenth
+    };
 
+    Grids curGrid = Grids::quarter;
+
+    static float grid2Time(Grids);
 };
