@@ -103,6 +103,7 @@ void testChannel(int channel, bool useParam)
     T m;
     m.init();
 
+    // param > 1 is illegal. Fix this test!
     const float activeParamValue = useParam ? 2.f : 1.f;
     const float activeCVValue = useParam ? 5.f : 10.f;
 
