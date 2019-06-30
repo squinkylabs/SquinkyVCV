@@ -203,7 +203,7 @@ private:
     MixHelper<Mix4<TBase>> helper;
 
 #ifdef MIX4_AT
-     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper();
+     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
 #endif
 };
 
