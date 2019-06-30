@@ -66,7 +66,6 @@ inline void MixHelper<TMixComposite>::procMixInputs(TMixComposite* mixer)
 template <class TMixComposite>
 inline void MixHelper<TMixComposite>::procMasterMute(TMixComposite* mixer)
 {
-    printf("proc master mute called\n"); fflush(stdout);
     const bool cvToggleMode = mixer->params[TMixComposite::CV_MUTE_TOGGLE].value > .5;
     procOneMute(
         4,

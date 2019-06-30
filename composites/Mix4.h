@@ -4,6 +4,7 @@
 #include "CommChannels.h"
 #include "Divider.h"
 #include "IComposite.h"
+#include "MixHelper.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
@@ -197,6 +198,8 @@ private:
 
     const float* expansionInputs = nullptr;
     float* expansionOutputs = nullptr;
+
+    MixHelper<Mix4<TBase>> helper;
 };
 
 template <class TBase>
@@ -225,6 +228,7 @@ inline void Mix4<TBase>::stepn(int div)
         }
     }
 
+    helper.procMixInputs(this);           // run the mute helper
     const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
     if (moduleIsMuted) {
         // printf("whole module muted\n"); fflush(stdout);
@@ -237,10 +241,8 @@ inline void Mix4<TBase>::stepn(int div)
         }
     } else {
         for (int i = 0; i < numChannels; ++i) {
-            const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
-                (TBase::inputs[i + MUTE0_INPUT].value > 2));
-            buf_muteInputs[i] = muteActivated ? 0.f : 1.f;
-           // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
+            // use the calculated mute from the helper
+            buf_muteInputs[i] = TBase::params[i + MUTE0_STATE_PARAM].value > .5 ? 0.f : 1.f;
         }
     }
 

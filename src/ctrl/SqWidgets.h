@@ -222,3 +222,12 @@ public:
 #endif
 
 };
+
+
+// From VCV Mutes
+template <typename BASE>
+struct MuteLight : BASE {
+	MuteLight() {
+	  this->box.size = mm2px(Vec(6.0, 6.0));
+	}
+};

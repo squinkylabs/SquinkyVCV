@@ -160,10 +160,24 @@ void Mix4Widget::makeStrip(
         channel + Comp::CHANNEL0_OUTPUT));
 
     y -= channelDy;
+#if 1
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::MUTE0_INPUT));
+#else  
+    auto _mute = SqHelper::createParam<LEDBezel>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::MUTE0_PARAM);
+    addParam(_mute);
+
+    addChild(createLight<MuteLight<GreenLight>>(
+        Vec(x + 2.2, y + 2),
+        module,
+        channel + Comp::MUTE0_LIGHT));
+#endif
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -178,6 +192,7 @@ void Mix4Widget::makeStrip(
         channel + Comp::PAN0_INPUT));
 
     y -= channelDy;
+#if 0
     auto mute = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(x-12, y-12),
@@ -187,6 +202,22 @@ void Mix4Widget::makeStrip(
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
     muteY = y-12;
+
+#else  
+    const float mutx = x-12;
+    const float muty = y-12;
+    auto _mute = SqHelper::createParam<LEDBezel>(
+        icomp,
+        Vec(mutx, muty),
+        module,
+        channel + Comp::MUTE0_PARAM);
+    addParam(_mute);
+
+    addChild(createLight<MuteLight<GreenLight>>(
+        Vec(mutx + 2.2, muty + 2),
+        module,
+        channel + Comp::MUTE0_LIGHT));
+#endif
     
     y -= channelDy;
     SqToggleLED* tog = (createLight<SqToggleLED>(

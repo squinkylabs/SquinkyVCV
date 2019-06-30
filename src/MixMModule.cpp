@@ -154,14 +154,6 @@ static float volY = 0;
 const float extraDy = 6;
 static float muteY = 0;
 
-// From VCV Mutes
-template <typename BASE>
-struct MuteLight : BASE {
-	MuteLight() {
-	  this->box.size = mm2px(Vec(6.0, 6.0));
-	}
-};
-
 void MixMWidget::makeStrip(
     MixMModule* module,
     std::shared_ptr<IComposite> icomp,
