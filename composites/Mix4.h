@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <memory>
 
+#define MIX4_AT     // audio taper
 
 template <class TBase>
 class Mix4Description : public IComposite
@@ -200,6 +201,10 @@ private:
     float* expansionOutputs = nullptr;
 
     MixHelper<Mix4<TBase>> helper;
+
+#ifdef MIX4_AT
+     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper();
+#endif
 };
 
 template <class TBase>
@@ -207,7 +212,13 @@ inline void Mix4<TBase>::stepn(int div)
 {
     // fill buf_channelGains
     for (int i = 0; i < numChannels; ++i) {
+#ifdef MIX4_AT
+        const float rawSlider =  TBase::params[i + GAIN0_PARAM].value;
+        const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
+#else
         const float slider = TBase::params[i + GAIN0_PARAM].value;
+#endif
+    
 
         const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
             TBase::inputs[i + LEVEL0_INPUT].value : 10.f;

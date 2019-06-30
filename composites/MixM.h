@@ -316,12 +316,6 @@ inline void MixM<TBase>::stepn(int div)
         }
     }
 
-
-
-  //  TBase::lights[MASTER_MUTE_LIGHT].value =  
-  //      TBase::params[TBase::MUTE0_STATE_PARAM + i].value = muted ? 1.f : 0.f;
-  //      mixer->lights[TMixComposite::MUTE0_LIGHT + i].value = muted ? 10.f : 0.f;
-
     // send gains
     const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;
     const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
@@ -352,9 +346,6 @@ inline void MixM<TBase>::stepn(int div)
             buf_channelSendGainsBRight[i] = muteValue * sliderB * .8f;
         }
     }
-
-    //printf("buf_muteInputs = %.2f %.2f %.2f %.2f \n",buf_muteInputs[0],buf_muteInputs[1],buf_muteInputs[2],buf_muteInputs[3]);
-
 
     buf_muteInputs[4] = 1.0f - TBase::params[MASTER_MUTE_STATE_PARAM].value;
     antiPop.step(buf_muteInputs);
