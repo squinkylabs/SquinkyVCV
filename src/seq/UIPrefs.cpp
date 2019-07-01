@@ -15,10 +15,11 @@ const NVGcolor UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND =
 const NVGcolor UIPrefs::DRAGGED_NOTE_COLOR = 
     nvgRGBA(0xff, 0x80, 0, 0x80);
 
+// was 90 / 40
 const NVGcolor UIPrefs::GRID_COLOR =
-    nvgRGB(0x40, 0x40, 0x40);
+    nvgRGB(0x80, 0x80, 0x80);
 const NVGcolor UIPrefs::GRID_BAR_COLOR =
-    nvgRGB(0x90, 0x90, 0x90);
+    nvgRGB(0xe0, 0xe0, 0xe0);
 
 const NVGcolor UIPrefs::TIME_LABEL_COLOR = nvgRGB(0xb0, 0xb0, 0xb0);
 const NVGcolor UIPrefs::GRID_CLINE_COLOR = nvgRGB(0x60, 0x60, 0x60);

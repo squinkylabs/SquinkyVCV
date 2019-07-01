@@ -129,7 +129,7 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
         const float time =  relTime + sequencer->context->startTime();
         const float x = scaler->midiTimeToX(time);
         const float y = UIPrefs::topMarginNoteEdit;
-        float width = 2;
+        float width = 1;
         float height = this->box.size.y - y;
 
         const bool isBar = (relTime == 0) ||
