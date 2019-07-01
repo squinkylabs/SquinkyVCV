@@ -63,9 +63,9 @@ void AboveNoteGrid::createTimeLabels()
     //assume two bars, quarter note grid
     float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = 1.f;
-    for (float time = 0; time <= totalDuration; time += deltaDuration) {
+    for (float time = 0; time < totalDuration; time += deltaDuration) {
         // need delta.
-        const float x = scaler->midiTimeToX(time) - 6;
+        const float x = scaler->midiTimeToX(time) - 9;
         Label* label = new Label();
         label->box.pos = Vec(x, row2);
         label->text = "";
@@ -129,10 +129,12 @@ void AboveNoteGrid::updateTimeLabels()
     float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = 1.f;
     int i=0;
-    for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
+    for (float relTime = 0; relTime < totalDuration; relTime += deltaDuration) {
         const float time = relTime + sequencer->context->startTime();
         const bool isBar = !(i %4);
-        std::string s = TimeUtils::time2str(time);
+        const int numDigitsDisplayed = isBar ? 1 : 2;
+        std::string s = TimeUtils::time2str(time, numDigitsDisplayed);
+        assert(timeLabels.size < i);
         timeLabels[i]->text = s;
         ++i;
     }
