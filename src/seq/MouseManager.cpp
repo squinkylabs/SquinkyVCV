@@ -108,11 +108,12 @@ bool MouseManager::onDragStart()
     //printf("relative time = %f\n", relativeTime); fflush(stdout);
 
     if (relativeTime <= .33f) {
-        noteDragger = std::make_shared<NoteStartDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY);     
+        noteDragger = std::make_shared<NoteStartDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY, start);     
     } else if (relativeTime <= .66f) {
         noteDragger = std::make_shared<NotePitchDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
     } else {
-        noteDragger = std::make_shared<NoteDurationDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
+        const float noteDuration = note->duration;
+        noteDragger = std::make_shared<NoteDurationDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY, noteDuration); 
     }
     return true;
 }

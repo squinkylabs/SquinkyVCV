@@ -15,6 +15,7 @@ public:
     }
     virtual void invokeUI(rack::widget::Widget* parent) = 0;
     virtual float getQuarterNotesInGrid() = 0;
+    virtual bool snapToGrid() = 0;
 };
 
 using ISeqSettingsPtr = std::shared_ptr<ISeqSettings>;

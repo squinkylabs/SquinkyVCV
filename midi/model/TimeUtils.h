@@ -90,7 +90,6 @@ public:
     static float quantizeForEdit(float time, float deltaTime, float units)
     {
         assert(units > 0);
-        float t =  time + deltaTime;
         float q = units * std::round((time + deltaTime) / units);
         if (deltaTime > 0) {
             if (q < time) {

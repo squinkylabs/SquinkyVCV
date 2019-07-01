@@ -166,7 +166,26 @@ static void testCopyCtor()
         assert(end == end3);
     }
     assertNoMidi();     // check for leaks
+}
 
+static void testAssignment()
+{
+    MidiNoteEvent note;
+    note.pitchCV = 1.12f;
+    note.duration = 33.45f;
+    note.startTime = 15.3f;
+
+    MidiNoteEvent note2;
+    note2.pitchCV = 5;
+    note2 = note;
+    assert(note == note2);
+
+    MidiEndEvent end;
+    end.startTime = 234.5f;
+    MidiEndEvent end2;
+    end2.startTime = 5;
+    end2 = end;
+    assert(end == end2);
 }
 
 
@@ -510,6 +529,7 @@ void  testMidiEvents()
     testPitch();
     testPitch2();
     testCopyCtor();
+    testAssignment();
 
     testEqualNote();
     testEqualEnd();

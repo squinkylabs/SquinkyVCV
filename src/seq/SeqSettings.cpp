@@ -114,3 +114,8 @@ float SeqSettings::getQuarterNotesInGrid()
 {
     return grid2Time(curGrid);
 }
+
+ bool SeqSettings::snapToGrid()
+ {
+     return snapEnabled;
+ }

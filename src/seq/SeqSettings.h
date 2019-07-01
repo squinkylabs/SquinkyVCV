@@ -14,7 +14,9 @@ public:
     friend class GridItem;
     SeqSettings(rack::engine::Module*);
     void invokeUI(rack::widget::Widget* parent) override;
+
     float getQuarterNotesInGrid() override;
+    bool snapToGrid() override;
 private:
     rack::engine::Module* const module;
 

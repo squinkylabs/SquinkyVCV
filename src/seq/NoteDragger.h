@@ -6,9 +6,10 @@ class NoteDisplay;
 
 struct NVGcontext;
 class NoteDisplay;
+class MidiNoteEvent;
 class MidiSequencer;
 class MidiSequencer;
-using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
+//using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
 
 /**
@@ -40,6 +41,12 @@ public:
     {
         return true;        // for now, they all do
     }
+
+    /**
+     * tweaks an a time shift into one that will follow the grid.
+     * time units are all pixel shifts
+     */
+    virtual float quantizeForDisplay(const MidiNoteEvent& note, float timeShiftPixels);
 protected:
     MidiSequencerPtr sequencer;
     const float startX;
@@ -95,8 +102,9 @@ private:
 class NoteHorizontalDragger : public NoteDragger
 {
 public:
-    NoteHorizontalDragger(MidiSequencerPtr, float x, float y);
+    NoteHorizontalDragger(MidiSequencerPtr, float x, float y, float initialNoteValue);
     void onDrag(float deltaX, float deltaY) override;
+   // float quantizeForDisplay(const MidiNoteEvent& note, float shiftInMetricTime) override;
 protected:
 
     /**
@@ -105,20 +113,25 @@ protected:
      */
     float calcTimeShift() const;
 
-
-
     /**
      * Calculate how much the viewport must be shifted to
      * keep the shifted notes in range.
      */
     float calcViewportShift(float transpose) const;
 
-    const float viewportStartTime0;    // The initial time of the leftmost pixel in the viewport
-   // const float highPitchForDragStart;  // The pitch at which we start dragging up
-    const float viewportEndTime0;    // The initial time of the rightmost pixel in the viewport
-   // const float lowPitchForDragStart;   // The pitch at which we start dragging down
+    const float viewportStartTime0;     // The initial time of the leftmost pixel in the viewport
+    const float viewportEndTime0;       // The initial time of the rightmost pixel in the viewport
 
-    const float time0;                     // time (on screen) when the drag started
+    const float time0;                  // time (on screen) when the drag started
+
+    /**
+     * Attribute of the note clicked on to start the drag.  
+     * start time of first note or duration.
+     * 
+     * TODO: are we using this?
+     */
+    const float initialNoteValue;           
+
 };
 
 /**
@@ -127,15 +140,18 @@ protected:
 class NoteStartDragger : public NoteHorizontalDragger
 {
 public:
-    NoteStartDragger(MidiSequencerPtr, float x, float y);
+    NoteStartDragger(MidiSequencerPtr, float x, float y, float initialStartTime);
     void commit() override;
     void draw(NVGcontext *vg) override;
+
+    // TODO: use for both
+    float quantizeForDisplay(const MidiNoteEvent& note, float shiftInMetricTime) override;
 };
 
 class NoteDurationDragger : public NoteHorizontalDragger
 {
 public:
-    NoteDurationDragger(MidiSequencerPtr, float x, float y);
+    NoteDurationDragger(MidiSequencerPtr, float x, float y, float initialDuration);
     void commit() override;
     void draw(NVGcontext *vg) override;
 };

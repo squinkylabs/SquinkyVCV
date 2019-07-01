@@ -13,6 +13,9 @@
 #include "window.hpp"
 #endif
 
+#include "ISeqSettings.h"
+#include "MidiEvent.h"
+#include "MidiSequencer.h"
 #include "NoteDragger.h"
 #include "NoteDisplay.h"
 #include "TimeUtils.h"
@@ -37,6 +40,7 @@ void NoteDragger::onDrag(float deltaX, float deltaY)
     curMousePositionY += deltaY;
 }
 
+// all of the "shift" and drag params are in pixels
 void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizontalShift, float horizontalStretch)
 {
     auto scaler = sequencer->context->getScaler();
@@ -47,7 +51,8 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
     for (auto it : *sequencer->selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
         if (note) {
-            const float x = scaler->midiTimeToX(*note) + horizontalShift;
+            float quantizedHShift = quantizeForDisplay(*note, horizontalShift);
+            const float x = scaler->midiTimeToX(*note) + quantizedHShift;
             const float y = scaler->midiPitchToY(*note) + verticalShift;
             const float width = scaler->midiTimeTodX(note->duration) + horizontalStretch;
 
@@ -60,6 +65,11 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
                 x, y, width, noteHeight);
         }
     }
+}
+
+float NoteDragger::quantizeForDisplay(const MidiNoteEvent& note, float timeShiftPixels)
+{
+   return timeShiftPixels;       // default imp does nothing
 }
 
 /******************************************************************
@@ -165,11 +175,12 @@ void NotePitchDragger::draw(NVGcontext *vg)
  * HorizontalDragger
  */
 
-NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, float y) :
+NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, float y, float initialNoteValue) :
     NoteDragger(seq, x, y),
     viewportStartTime0(sequencer->context->startTime()),
     viewportEndTime0(sequencer->context->endTime()),
-    time0(sequencer->context->getScaler()->xToMidiTime(x))
+    time0(sequencer->context->getScaler()->xToMidiTime(x)),
+    initialNoteValue(initialNoteValue)
 {
 }
 
@@ -199,8 +210,8 @@ void NoteHorizontalDragger::onDrag(float deltaX, float deltaY)
  *
  * NoteStartDragger
  */
-NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteHorizontalDragger(seq, x, y)
+NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y, float noteStartTime) :
+    NoteHorizontalDragger(seq, x, y, noteStartTime)
 {
 }
 
@@ -209,6 +220,34 @@ void NoteStartDragger::draw(NVGcontext *vg)
     const float horizontalShift = curMousePositionX - startX;
     drawNotes(vg, 0, horizontalShift, 0);
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "shift");
+}
+
+float NoteStartDragger::quantizeForDisplay(const MidiNoteEvent& note, float timeShiftPixels)
+{
+    bool snap = sequencer->context->settings()->snapToGrid();
+    if (snap) {
+        auto scaler = sequencer->context->getScaler();
+
+        float grid = sequencer->context->settings()->getQuarterNotesInGrid();
+        float timeShiftMetric = scaler->xToMidiDeltaTime(timeShiftPixels);
+        float quantizedMetricTime = TimeUtils::quantizeForEdit(note.startTime, timeShiftMetric, grid);
+        float metricDelta = quantizedMetricTime - note.startTime;
+        float pixelDelta = scaler->midiTimeTodX(metricDelta);
+        
+        printf("note start = %.2f, pix shift=%.2f unq shift=%.2f, qt=%.2f\n",
+            note.startTime,
+            timeShiftPixels,
+            timeShiftMetric,
+            quantizedMetricTime);
+        printf("metricDelta = %.2f, finalpixShift = %.2f\n", metricDelta, pixelDelta);
+        fflush(stdout);
+          return pixelDelta;
+    } else {
+        return timeShiftPixels;     // do nothing if off
+    }
+
+    // return timeShiftPixels;       // default imp does nothing
+  
 }
 
 void NoteStartDragger::commit()
@@ -231,8 +270,8 @@ void NoteStartDragger::commit()
  * NoteDurationDragger
  */
 
-NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteHorizontalDragger(seq, x, y)
+NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y, float duration) :
+    NoteHorizontalDragger(seq, x, y, duration)
 {
 }
 
