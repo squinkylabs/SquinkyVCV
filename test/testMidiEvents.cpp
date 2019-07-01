@@ -322,6 +322,28 @@ static void testTimeUtil5()
     assert(x == "3.2.4");
 }
 
+
+static void testTimeUtil6()
+{
+    float t = 0;
+    auto x = TimeUtils::time2str(t, 3);
+    assert(x == "1.1.0");
+    x = TimeUtils::time2str(t, 2);
+    assert(x == "1.1");
+    x = TimeUtils::time2str(t, 1);
+    assert(x == "1");
+
+    t = TimeUtils::quarterNote() + TimeUtils::bar2time(2);
+    x = TimeUtils::time2str(t,3);
+    assert(x == "3.2.0");
+    x = TimeUtils::time2str(t, 2);
+    assert(x == "3.2");
+    x = TimeUtils::time2str(t, 1);
+    assert(x == "3");
+}
+
+
+
 static void testPitchUtil0()
 {
     // C
@@ -481,6 +503,7 @@ void  testMidiEvents()
     testTimeUtil3();
     testTimeUtil4();
     testTimeUtil5();
+    testTimeUtil6();
 
     testPitchUtil0();
     testPitchUtil1();

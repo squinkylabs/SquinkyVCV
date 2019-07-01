@@ -125,12 +125,13 @@ void AboveNoteGrid::updateTimeLabels()
     curFirstBar = firstBar;
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
-    //assume two bars, quarter note grid
+    //assume two bars, quarter note spacing of labels
     float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = 1.f;
     int i=0;
     for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
         const float time = relTime + sequencer->context->startTime();
+        const bool isBar = !(i %4);
         std::string s = TimeUtils::time2str(time);
         timeLabels[i]->text = s;
         ++i;

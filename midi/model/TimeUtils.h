@@ -56,4 +56,26 @@ public:
         snprintf(buffer, 256, "%d.%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf), std::get<2>(bbf));
         return buffer;
     }
+
+    static std::string time2str(float time, int digits)
+    {
+        auto bbf = time2bbf(time);
+        char buffer[256];
+        switch (digits) {
+            case 3:
+                snprintf(buffer, 256, "%d.%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf), std::get<2>(bbf));
+                break;
+            case 2:
+                snprintf(buffer, 256, "%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf));
+                break;
+            case 1:
+                snprintf(buffer, 256, "%d", 1 + std::get<0>(bbf));
+                break;
+            default:
+                assert(false);
+        }
+
+        return buffer;
+
+    }
 };

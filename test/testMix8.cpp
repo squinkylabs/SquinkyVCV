@@ -567,6 +567,11 @@ static void testExpansionM()
 
 void testMix8()
 {
+    printf("testMix8 disabled\n");
+}
+#if 0
+void testMix8()
+{
     testChannel<Mixer8>();
     testChannel<Mixer4>();
     testChannel<MixerM>();
@@ -626,4 +631,4 @@ void testMix8()
     testInputExtremes<MixerM>();
     testInputExtremes<Mixer4>();
 #endif
-}
+#endif
