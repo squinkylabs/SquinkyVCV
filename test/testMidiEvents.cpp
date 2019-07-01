@@ -342,6 +342,24 @@ static void testTimeUtil6()
     assert(x == "3");
 }
 
+// simple tests of quant function
+static void testTimeUtilQuant0()
+{
+    // pre-quantized pass through
+    assertEQ(TimeUtils::quantizeForEdit(0, 1, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(5, 1, 1), 6);
+
+    // simple quantize that doesn't care about drag direction
+    assertEQ(TimeUtils::quantizeForEdit(.8f, .1f, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(.5f, .1f, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(10, -.9f, 1), 9);
+    assertEQ(TimeUtils::quantizeForEdit(10, -.51f, 1), 9);
+
+    // ones that would quantize to other side of home, but we don't want that.
+    assertEQ(TimeUtils::quantizeForEdit(.2f, .1f, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(.9f, -.1f, 1), 0);
+}
+
 
 
 static void testPitchUtil0()
@@ -504,6 +522,7 @@ void  testMidiEvents()
     testTimeUtil4();
     testTimeUtil5();
     testTimeUtil6();
+    testTimeUtilQuant0();
 
     testPitchUtil0();
     testPitchUtil1();

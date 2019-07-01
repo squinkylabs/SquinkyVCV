@@ -51,10 +51,13 @@ public:
      */
     static std::string time2str(float time)
     {
+        #if 0
         auto bbf = time2bbf(time);
         char buffer[256];
         snprintf(buffer, 256, "%d.%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf), std::get<2>(bbf));
         return buffer;
+        #endif
+        return time2str(time, 3);
     }
 
     static std::string time2str(float time, int digits)
@@ -74,8 +77,30 @@ public:
             default:
                 assert(false);
         }
-
         return buffer;
-
+    }
+    
+    /**
+     * Quantizes time, rounding a way a grid constrained editor should.
+     * @param time is the time to quantize.
+     * @param deltaTime is how much we want to move the un-quantized time.
+     * @param units is the time unit we want to quantize to.
+     * @returns quantize(time + deltaTime), such that we never quantize "backwards"
+     */
+    static float quantizeForEdit(float time, float deltaTime, float units)
+    {
+        assert(units > 0);
+        float t =  time + deltaTime;
+        float q = units * std::round((time + deltaTime) / units);
+        if (deltaTime > 0) {
+            if (q < time) {
+                q += units;
+            }
+        } else {
+            if (q > time) {
+                q -= units;
+            }
+        }
+        return q;
     }
 };
