@@ -5,12 +5,12 @@
 #include "WidgetComposite.h"
 
 #ifdef __V1x
-    #include "widget/Widget.hpp"
-    #include "app.hpp"
+#include "widget/Widget.hpp"
+#include "app.hpp"
 #else
-    #include "widgets.hpp"
-    #include "util/math.hpp"
-    #include "window.hpp"
+#include "widgets.hpp"
+#include "util/math.hpp"
+#include "window.hpp"
 #endif
 
 #include "NoteDragger.h"
@@ -22,7 +22,7 @@ NoteDragger::NoteDragger(MidiSequencerPtr seq, float initX, float initY) :
     sequencer(seq),
     startX(initX),
     startY(initY)
-{ 
+{
     curMousePositionX = initX;
     curMousePositionY = initY;
 }
@@ -33,7 +33,7 @@ NoteDragger::~NoteDragger()
 
 void NoteDragger::onDrag(float deltaX, float deltaY)
 {
-    curMousePositionX += deltaX;    
+    curMousePositionX += deltaX;
     curMousePositionY += deltaY;
 }
 
@@ -50,7 +50,7 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
             const float x = scaler->midiTimeToX(*note) + horizontalShift;
             const float y = scaler->midiPitchToY(*note) + verticalShift;
             const float width = scaler->midiTimeTodX(note->duration) + horizontalStretch;
-        
+
             //printf("drawing at x=%.2f y = %.2f width = %.2f h=%d\n", x, y, width, noteHeight);
            // fflush(stdout);
 
@@ -64,7 +64,7 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
 
 /******************************************************************
  *
- * NotePitchDragger 
+ * NotePitchDragger
  */
 
 // Remember current viewport pitch range. Shave some off top and
@@ -82,7 +82,7 @@ NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
 float NotePitchDragger::calcTranspose() const
 {
     auto scaler = sequencer->context->getScaler();
-    const float verticalShift =  curMousePositionY - startY;
+    const float verticalShift = curMousePositionY - startY;
     const float transposeCV = scaler->yToMidiDeltaCVPitch(verticalShift);
     return transposeCV;
 }
@@ -94,22 +94,22 @@ float NotePitchDragger::calcShift(float transpose) const
     assert(scaler);
 
     float ret = 0;
-    #if 0
+#if 0
     printf("in calcShift, t=%.2f, draghi=%.2f draglo=%.2f\n", transpose, highPitchForDragStart, lowPitchForDragStart);
-    printf("  viewport hi = %.2f low = %.2f initialPitch = %.2f\n", 
+    printf("  viewport hi = %.2f low = %.2f initialPitch = %.2f\n",
         viewportUpperPitch0,
         viewportLowerPitch0,
         pitch0);
-    #endif
+#endif
 
-    // distance between initial mouse click and top of viewport
-    const float deltaP02Hp = highPitchForDragStart - pitch0; 
-    const float deltaP02Lp = lowPitchForDragStart - pitch0; 
+// distance between initial mouse click and top of viewport
+    const float deltaP02Hp = highPitchForDragStart - pitch0;
+    const float deltaP02Lp = lowPitchForDragStart - pitch0;
 
     if (transpose > deltaP02Hp) {
         ret = transpose - deltaP02Hp;
     } else if (transpose < deltaP02Lp) {
-        ret =  transpose - deltaP02Lp;
+        ret = transpose - deltaP02Lp;
     }
 
     return ret;
@@ -138,7 +138,7 @@ void NotePitchDragger::commit()
     //printf("enter commit-1, cursor pitch = %f\n", sequencer->context->cursorPitch());
     // TODO: use calcTranspose
     auto scaler = sequencer->context->getScaler();
-    const float verticalShift =  curMousePositionY - startY;
+    const float verticalShift = curMousePositionY - startY;
     const float transposeCV = scaler->yToMidiDeltaCVPitch(verticalShift);
     const int semiShift = PitchUtils::deltaCVToSemitone(transposeCV);
 
@@ -155,14 +155,14 @@ void NotePitchDragger::commit()
 
 void NotePitchDragger::draw(NVGcontext *vg)
 {
-    float verticalShift =  curMousePositionY - startY;
+    float verticalShift = curMousePositionY - startY;
     drawNotes(vg, verticalShift, 0, 0);
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "transpose");
 }
 
 /******************************************************************
  *
- * HorizontalDragger 
+ * HorizontalDragger
  */
 
 NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, float y) :
@@ -176,16 +176,16 @@ NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, floa
 float NoteHorizontalDragger::calcTimeShift() const
 {
     auto scaler = sequencer->context->getScaler();
-    const float horizontalShift =  curMousePositionX - startX;
-    const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift); 
-    return timeShiftAmount; 
+    const float horizontalShift = curMousePositionX - startX;
+    const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
+    return timeShiftAmount;
 }
 
 void NoteHorizontalDragger::onDrag(float deltaX, float deltaY)
 {
     NoteDragger::onDrag(deltaX, deltaY);
     const float timeShift = calcTimeShift();
-    
+
     const float t = timeShift + time0;
 
     auto x = TimeUtils::time2barsAndRemainder(2, t);
@@ -197,16 +197,16 @@ void NoteHorizontalDragger::onDrag(float deltaX, float deltaY)
 
 /******************************************************************
  *
- * NoteStartDragger 
+ * NoteStartDragger
  */
 NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y) :
     NoteHorizontalDragger(seq, x, y)
-{ 
+{
 }
 
 void NoteStartDragger::draw(NVGcontext *vg)
 {
-    const float horizontalShift =  curMousePositionX - startX;
+    const float horizontalShift = curMousePositionX - startX;
     drawNotes(vg, 0, horizontalShift, 0);
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "shift");
 }
@@ -214,7 +214,7 @@ void NoteStartDragger::draw(NVGcontext *vg)
 void NoteStartDragger::commit()
 {
     auto scaler = sequencer->context->getScaler();
-    const float horizontalShift =  curMousePositionX - startX;
+    const float horizontalShift = curMousePositionX - startX;
     const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
 
     // convert quarter notes to 64th notes.
@@ -223,12 +223,12 @@ void NoteStartDragger::commit()
     if (timeShiftTicks != 0) {
         sequencer->editor->changeStartTime(true, timeShiftTicks);
     }
-} 
+}
 
 
 /******************************************************************
  *
- * NoteDurationDragger 
+ * NoteDurationDragger
  */
 
 NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y) :
@@ -238,7 +238,7 @@ NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y)
 
 void NoteDurationDragger::draw(NVGcontext *vg)
 {
-    const float horizontalShift =  curMousePositionX - startX;
+    const float horizontalShift = curMousePositionX - startX;
     drawNotes(vg, 0, 0, horizontalShift);
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "stretch");
 }
@@ -248,7 +248,7 @@ void NoteDurationDragger::draw(NVGcontext *vg)
 void NoteDurationDragger::commit()
 {
     auto scaler = sequencer->context->getScaler();
-    const float horizontalShift =  curMousePositionX - startX;
+    const float horizontalShift = curMousePositionX - startX;
     const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
     const int timeShiftTicks = std::round(timeShiftAmount * 16);
     if (timeShiftTicks != 0) {

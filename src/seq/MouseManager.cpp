@@ -1,4 +1,4 @@
-
+#include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiSequencer.h"
 #include "MouseManager.h"

@@ -103,7 +103,7 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, rack::engine::Modul
     json_t* songJson = json_object_get(data, "song");
     MidiSongPtr song = fromJsonSong(songJson);
     ISeqSettings* ss = new SeqSettings(module);
-    std::shared_ptr<ISeqSettings> _settings( ss);
+    std::shared_ptr<ISeqSettings> _settings(ss);
     MidiSequencerPtr seq = MidiSequencer::make(song, _settings);
     return seq;
 }

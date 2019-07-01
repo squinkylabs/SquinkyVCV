@@ -1,25 +1,25 @@
 #include "UIPrefs.h"
 
 const NVGcolor UIPrefs::NOTE_COLOR =
-    nvgRGB(0,0xc0,0);
+nvgRGB(0, 0xc0, 0);
 const NVGcolor UIPrefs::SELECTED_NOTE_COLOR =
-    nvgRGB(0xf0, 0xf0, 0);
-const NVGcolor UIPrefs::DRAG_TEXT_COLOR = 
-    nvgRGB(0x20, 0xff, 0x20);                        // same a note color, but brighter.
+nvgRGB(0xf0, 0xf0, 0);
+const NVGcolor UIPrefs::DRAG_TEXT_COLOR =
+nvgRGB(0x20, 0xff, 0x20);                        // same a note color, but brighter.
 
 const NVGcolor UIPrefs::NOTE_EDIT_BACKGROUND =
-    nvgRGB(0x28, 0x28, 0x2b); 
+nvgRGB(0x28, 0x28, 0x2b);
 const NVGcolor UIPrefs::NOTE_EDIT_ACCIDENTAL_BACKGROUND =
-    nvgRGB(0, 0, 0);
+nvgRGB(0, 0, 0);
 
-const NVGcolor UIPrefs::DRAGGED_NOTE_COLOR = 
-    nvgRGBA(0xff, 0x80, 0, 0x80);
+const NVGcolor UIPrefs::DRAGGED_NOTE_COLOR =
+nvgRGBA(0xff, 0x80, 0, 0x80);
 
 // was 90 / 40
 const NVGcolor UIPrefs::GRID_COLOR =
-    nvgRGB(0x80, 0x80, 0x80);
+nvgRGB(0x80, 0x80, 0x80);
 const NVGcolor UIPrefs::GRID_BAR_COLOR =
-    nvgRGB(0xe0, 0xe0, 0xe0);
+nvgRGB(0xe0, 0xe0, 0xe0);
 
 // was b0
 const NVGcolor UIPrefs::TIME_LABEL_COLOR = nvgRGB(0xe0, 0xe0, 0xe0);

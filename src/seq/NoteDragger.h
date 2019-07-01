@@ -13,13 +13,13 @@ using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
 /**
  * Base class for all drag operations
- * 
- * Currently, the way it works is that as you drag, 
+ *
+ * Currently, the way it works is that as you drag,
  * the only thing that changes is the mouse pos.
- * 
- * Also, some overridden onDrag handler know how to scroll the viewport 
+ *
+ * Also, some overridden onDrag handler know how to scroll the viewport
  * allowind dragging to locations that would be off the screen.
- * 
+ *
  * When the mouse is released, "commit" is called. That
  * does the persistent edits.
  */
@@ -33,9 +33,9 @@ public:
     NoteDragger(MidiSequencerPtr, float x, float y);
     virtual ~NoteDragger();
     virtual void onDrag(float deltaX, float deltaY);
-    virtual void commit()=0;
-    virtual void draw(NVGcontext *vg)=0;
-   
+    virtual void commit() = 0;
+    virtual void draw(NVGcontext *vg) = 0;
+
     virtual bool willDrawSelection() const
     {
         return true;        // for now, they all do
@@ -63,7 +63,7 @@ public:
     void onDrag(float deltaX, float deltaY) override;
 
 private:
-   
+
     void commit() override;
     void draw(NVGcontext *vg) override;
 
@@ -92,7 +92,7 @@ private:
 /**
  * Base class for draggers the drag left and right.
  */
-class NoteHorizontalDragger :  public NoteDragger
+class NoteHorizontalDragger : public NoteDragger
 {
 public:
     NoteHorizontalDragger(MidiSequencerPtr, float x, float y);
@@ -105,7 +105,7 @@ protected:
      */
     float calcTimeShift() const;
 
-   
+
 
     /**
      * Calculate how much the viewport must be shifted to

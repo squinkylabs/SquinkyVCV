@@ -103,11 +103,11 @@ void AboveNoteGrid::updateCursorLabels()
         curCursorTime = sequencer->context->cursorTime();
         cursorTimeLabel->text = TimeUtils::time2str(curCursorTime);
     }
-     if (curCursorPitch != sequencer->context->cursorPitch()) {
+    if (curCursorPitch != sequencer->context->cursorPitch()) {
         curCursorPitch = sequencer->context->cursorPitch();
         cursorPitchLabel->text = PitchUtils::pitch2str(curCursorPitch);
     }
-    
+
 }
 
 void AboveNoteGrid::updateTimeLabels()
@@ -128,10 +128,10 @@ void AboveNoteGrid::updateTimeLabels()
     //assume two bars, quarter note spacing of labels
     float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = 1.f;
-    int i=0;
+    int i = 0;
     for (float relTime = 0; relTime < totalDuration; relTime += deltaDuration) {
         const float time = relTime + sequencer->context->startTime();
-        const bool isBar = !(i %4);
+        const bool isBar = !(i % 4);
         const int numDigitsDisplayed = isBar ? 1 : 2;
         std::string s = TimeUtils::time2str(time, numDigitsDisplayed);
         assert(timeLabels.size < i);

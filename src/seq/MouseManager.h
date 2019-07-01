@@ -20,7 +20,7 @@ public:
     void draw(NVGcontext *vg);
     /**
      * Handler for primary mouse button
-     * 
+     *
      * isPressed is true on a button press, false on button release.
      * ctrl is true if control key is down.
      * shift is true if shift key is down.
@@ -39,12 +39,12 @@ public:
 private:
 
     MidiSequencerPtr sequencer;
-    float lastMouseClickPosX=0;
-    float lastMouseClickPosY=0;
+    float lastMouseClickPosX = 0;
+    float lastMouseClickPosY = 0;
     std::shared_ptr<class NoteDragger> noteDragger;
     bool mouseClickWasIgnored = false;
     bool mouseMovedWhileDragging = false;
 
     std::tuple<bool, float, float> xyToTimePitch(float x, float y) const;
-    
+
 };

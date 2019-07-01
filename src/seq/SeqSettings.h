@@ -18,13 +18,16 @@ public:
 private:
     rack::engine::Module* const module;
 
-    enum class Grids {
+    enum class Grids
+    {
         quarter,
         eighth,
         sixteenth
     };
 
     Grids curGrid = Grids::quarter;
+    bool snapEnabled = true;
 
     static float grid2Time(Grids);
+    rack::ui::MenuItem* makeSnapItem();
 };

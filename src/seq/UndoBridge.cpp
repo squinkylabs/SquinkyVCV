@@ -15,10 +15,11 @@
 
 class SeqAction : public rack::history::ModuleAction
 {
-public: 
-    SeqAction(const std::string& _name, std::shared_ptr<SqCommand> command, int moduleId) {
-        wrappedCommand = command; 
-        this->name =  "Seq++: " + wrappedCommand->name;
+public:
+    SeqAction(const std::string& _name, std::shared_ptr<SqCommand> command, int moduleId)
+    {
+        wrappedCommand = command;
+        this->name = "Seq++: " + wrappedCommand->name;
         this->moduleId = moduleId;
     }
     void undo() override
@@ -54,7 +55,7 @@ private:
     }
 };
 
-void UndoRedoStack::setModuleId(int id) 
+void UndoRedoStack::setModuleId(int id)
 {
     this->moduleId = id;
 }
@@ -73,9 +74,9 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd
 
 #if defined(__USE_VCV_UNDO) && !defined(_SEQ)
 
-void UndoRedoStack::setModuleId(int id) 
+void UndoRedoStack::setModuleId(int id)
 {
-   ;
+    ;
 }
 
 void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)

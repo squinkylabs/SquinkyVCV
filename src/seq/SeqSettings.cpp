@@ -4,15 +4,15 @@
 #include "../ctrl/SqMenuItem.h"
 
 
-class GridItem 
+class GridItem
 {
 public:
     GridItem() = delete;
     static rack::ui::MenuItem* make(SeqSettings::Grids grid, SeqSettings* stt)
     {
-         std::function<bool()> isCheckedFn = [stt, grid]() { 
-             return stt->curGrid == grid;
-         };
+        std::function<bool()> isCheckedFn = [stt, grid]() {
+            return stt->curGrid == grid;
+        };
 
         std::function<void()> clickFn = [stt, grid]() {
             stt->curGrid = grid;
@@ -23,7 +23,7 @@ public:
 };
 
 
-/** 
+/**
  * GridMenuItem is the whole grid selection sub-menu
  */
 class GridMenuItem : public  rack::ui::MenuItem
@@ -71,12 +71,29 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
     rack::ui::Menu* menu = rack::createMenu();
     menu->addChild(rack::construct<rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
     menu->addChild(new GridMenuItem(this));
+    menu->addChild(makeSnapItem());
+}
+
+rack::ui::MenuItem* SeqSettings::makeSnapItem()
+{
+    bool& snap = this->snapEnabled;
+    std::function<bool()> isCheckedFn = [snap]() {
+        return snap;
+    };
+
+    std::function<void()> clickFn = [&snap]() {
+        snap = !snap;
+    };
+
+    rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
+    item->text = "Snap to grid";
+    return item;
 }
 
 float SeqSettings::grid2Time(Grids g)
 {
     float time = 1;         // default to quarter note
-    switch(g) {
+    switch (g) {
         case Grids::quarter:
             time = 1;
             break;
@@ -93,7 +110,7 @@ float SeqSettings::grid2Time(Grids g)
     return time;
 }
 
- float SeqSettings::getQuarterNotesInGrid()
- {
+float SeqSettings::getQuarterNotesInGrid()
+{
     return grid2Time(curGrid);
- }
+}

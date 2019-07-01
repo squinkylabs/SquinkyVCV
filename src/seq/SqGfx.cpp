@@ -4,7 +4,7 @@
 
 #include "nanovg.h"
 #ifdef __V1x
-    #include "app.hpp"
+#include "app.hpp"
 #endif
 
 #include "window.hpp"
@@ -37,5 +37,5 @@ void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int siz
     nvgFillColor(vg, UIPrefs::DRAG_TEXT_COLOR);
     nvgFontFaceId(vg, f);
     nvgFontSize(vg, 16);
-    nvgText(vg, x, y,text, nullptr);
+    nvgText(vg, x, y, text, nullptr);
 }

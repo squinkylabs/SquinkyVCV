@@ -15,11 +15,11 @@ struct NoteDisplay : OpaqueWidget
 public:
     NoteDisplay(
         const Vec& pos,
-        const Vec& size, 
+        const Vec& size,
         MidiSequencerPtr seq,
         rack::engine::Module* mod);
 
-     
+
     /**
      * Inject a new sequencer into this editor.
      */
@@ -51,19 +51,19 @@ private:
     void drawCursor(NVGcontext *vg);
     void drawGrid(NVGcontext *vg);
     void drawBackground(NVGcontext *vg);
-   
-    static bool isKeyWeNeedToStealFromRack(int key); 
+
+    static bool isKeyWeNeedToStealFromRack(int key);
 #ifdef __V1x
     void onSelect(const event::Select &e) override;
     void onDeselect(const event::Deselect &e) override;
     void draw(const DrawArgs &args) override;
-	void onDoubleClick(const event::DoubleClick &e) override;
+    void onDoubleClick(const event::DoubleClick &e) override;
     void onButton(const event::Button &e) override;
     void onHoverKey(const event::HoverKey &e) override;
     void onSelectKey(const event::SelectKey &e) override;
     void onDragStart(const event::DragStart &e) override;
-	void onDragEnd(const event::DragEnd &e) override;
-	void onDragMove(const event::DragMove &e)  override;
+    void onDragEnd(const event::DragEnd &e) override;
+    void onDragMove(const event::DragMove &e)  override;
     void onDragDrop(const event::DragDrop &e) override;
     bool handleKey(int key, int mods, int action);
 #else
