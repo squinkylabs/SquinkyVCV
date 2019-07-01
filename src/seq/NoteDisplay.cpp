@@ -122,9 +122,15 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     //assume two bars, quarter note grid
-    float totalDuration = TimeUtils::bar2time(2);
-   // float deltaDuration = 1.f;
-    const float deltaDuration = sequencer->context->settings()->getQuarterNotesInGrid();
+    const float totalDuration = TimeUtils::bar2time(2);
+    float deltaDuration = sequencer->context->settings()->getQuarterNotesInGrid();
+
+    // if grid lines are too close together, don't draw all.
+    const float dx = scaler->midiTimeTodX(deltaDuration);
+    if (dx < 22) {
+        deltaDuration *= 2;
+    }
+
     for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
         const float time =  relTime + sequencer->context->startTime();
         const float x = scaler->midiTimeToX(time);
