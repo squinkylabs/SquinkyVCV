@@ -46,7 +46,7 @@ public:
      * tweaks an a time shift into one that will follow the grid.
      * time units are all pixel shifts
      */
-    virtual float quantizeForDisplay(const MidiNoteEvent& note, float timeShiftPixels);
+    virtual float quantizeForDisplay(float metricTime, float timeShiftPixels, bool canGoBelowGridSize);
 protected:
     MidiSequencerPtr sequencer;
     const float startX;
@@ -104,7 +104,7 @@ class NoteHorizontalDragger : public NoteDragger
 public:
     NoteHorizontalDragger(MidiSequencerPtr, float x, float y, float initialNoteValue);
     void onDrag(float deltaX, float deltaY) override;
-   // float quantizeForDisplay(const MidiNoteEvent& note, float shiftInMetricTime) override;
+    float quantizeForDisplay(float metricTime, float shiftInMetricTime, bool canGoBelowGridSize) override;
 protected:
 
     /**
@@ -143,9 +143,6 @@ public:
     NoteStartDragger(MidiSequencerPtr, float x, float y, float initialStartTime);
     void commit() override;
     void draw(NVGcontext *vg) override;
-
-    // TODO: use for both
-    float quantizeForDisplay(const MidiNoteEvent& note, float shiftInMetricTime) override;
 };
 
 class NoteDurationDragger : public NoteHorizontalDragger
