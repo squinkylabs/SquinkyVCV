@@ -164,24 +164,10 @@ void Mix4Widget::makeStrip(
         channel + Comp::CHANNEL0_OUTPUT));
 
     y -= channelDy;
-#if 1
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::MUTE0_INPUT));
-#else  
-    auto _mute = SqHelper::createParam<LEDBezel>(
-        icomp,
-        Vec(x, y),
-        module,
-        channel + Comp::MUTE0_PARAM);
-    addParam(_mute);
-
-    addChild(createLight<MuteLight<GreenLight>>(
-        Vec(x + 2.2, y + 2),
-        module,
-        channel + Comp::MUTE0_LIGHT));
-#endif
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -217,7 +203,7 @@ void Mix4Widget::makeStrip(
         channel + Comp::MUTE0_PARAM);
     addParam(_mute);
 
-    addChild(createLight<MuteLight<GreenLight>>(
+    addChild(createLight<MuteLight<SquinkyLight>>(
         Vec(mutx + 2.2, muty + 2),
         module,
         channel + Comp::MUTE0_LIGHT));

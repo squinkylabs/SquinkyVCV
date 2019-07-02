@@ -224,10 +224,19 @@ public:
 };
 
 
-// From VCV Mutes
+/**
+ * From VCV Mutes, just a light that is a specific size
+ */
 template <typename BASE>
 struct MuteLight : BASE {
 	MuteLight() {
 	  this->box.size = mm2px(Vec(6.0, 6.0));
 	}
 };
+
+struct SquinkyLight : GrayModuleLightWidget {
+	SquinkyLight() {
+		addBaseColor(SqHelper::COLOR_SQUINKY);
+	}
+};
+

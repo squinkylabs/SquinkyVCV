@@ -244,7 +244,7 @@ void MixMWidget::makeStrip(
         channel + Comp::MUTE0_PARAM);
     addParam(mute);
 
-    addChild(createLight<MuteLight<GreenLight>>(
+    addChild(createLight<MuteLight<SquinkyLight>>(
         Vec(mutex + 2.2, mutey + 2),
         module,
         channel + Comp::MUTE0_LIGHT));
@@ -416,7 +416,7 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         Comp::MASTER_MUTE_PARAM);
     addParam(mute);
 
-    addChild(createLight<MuteLight<GreenLight>>(
+    addChild(createLight<MuteLight<SquinkyLight>>(
         Vec(mutex + 2.2, mutey + 2),
         module, Comp::MUTE_MASTER_LIGHT));
     muteY = y-12;
