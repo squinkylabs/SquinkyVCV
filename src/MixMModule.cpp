@@ -57,7 +57,6 @@ void MixMModule::onSampleRateChange()
 
 void MixMModule::setExternalInput(const float* buf)
 {
-   // printf("mixm, set external input\n"); fflush(stdout);
     MixM->setExpansionInputs(buf);
 }
 
@@ -151,7 +150,7 @@ static const float labelX = 0;
 static const float channelY = 350;
 static const float channelDy = 30; 
 static float volY = 0;
-const float extraDy = 6;
+const float extraDy = 5;
 static float muteY = 0;
 
 void MixMWidget::makeStrip(
@@ -221,7 +220,7 @@ void MixMWidget::makeStrip(
             "Pan");
     }
 
-    y -= channelDy;
+    y -= (channelDy -1);
 #if 0
    
     auto mute = SqHelper::createParam<ToggleButton>(
@@ -234,15 +233,14 @@ void MixMWidget::makeStrip(
     addParam(mute);
     muteY = y-12;
 #else
-
-    const float mutex = x-12;
+    const float mutex = x-11;       // was 12
     const float mutey = y-12;
-    auto mute = SqHelper::createParam<LEDBezel>(
+    addParam(SqHelper::createParam<LEDBezel>(
         icomp,
         Vec(mutex, mutey),
         module,
-        channel + Comp::MUTE0_PARAM);
-    addParam(mute);
+        channel + Comp::MUTE0_PARAM));
+  
 
     addChild(createLight<MuteLight<SquinkyLight>>(
         Vec(mutex + 2.2, mutey + 2),
@@ -257,13 +255,17 @@ void MixMWidget::makeStrip(
             "M");
     }    
 
-    y -= channelDy;
+    y -= (channelDy - 1);
+
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(x-12, y-12),
+        Vec(x-11, y-12),
         module,
         channel + Comp::SOLO0_LIGHT));
-    tog->addSvg("res/square-button-01.svg");
-    tog->addSvg("res/square-button-02.svg");
+
+    std::string sLed = asset::system("res/ComponentLibrary/LEDBezel.svg");
+    tog->addSvg(sLed.c_str(), true);
+    tog->addSvg("res/SquinkyBezel.svg");
+
     tog->setHandler( [this, module, channel](bool ctrlKey) {
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
     });
@@ -277,6 +279,7 @@ void MixMWidget::makeStrip(
 
     
     y -= (channelDy + extraDy);
+
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
@@ -407,7 +410,7 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
 #else
-    const float mutex = x-12;
+    const float mutex = x-11;
     const float mutey = muteY;
     auto mute = SqHelper::createParam<LEDBezel>(
         icomp,
@@ -421,9 +424,6 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         module, Comp::MUTE_MASTER_LIGHT));
     muteY = y-12;
 #endif
-
-
-
 
     y = volY;
     addParam(SqHelper::createParamCentered<Blue30Knob>(

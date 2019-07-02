@@ -254,8 +254,6 @@ void MidiEditor::changePitch(int semitones)
     newCursorPitch = std::min(10.f, newCursorPitch);
     newCursorPitch = std::max(-10.f, newCursorPitch);
 
-   // printf("changePitch newcv = %f\n", newCursorPitch); fflush(stdout);
-
     seq()->context->setCursorPitch(newCursorPitch);
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();

@@ -10,8 +10,11 @@ public:
         baseColors[0] =  cx;
     }
 
-
-    void addSvg(const char* resourcePath);
+    /** 
+     * path is relative to our plugin,
+     * unless pathIsAbsolute
+     */
+    void addSvg(const char* resourcePath, bool pathIsAbsolute = false);
 
     /**
      * pass callback here to handle clicking on LED
@@ -40,11 +43,10 @@ inline void SqToggleLED::setHandler(callback h)
     handler = h;
 }
 
-inline void SqToggleLED::addSvg(const char* resourcePath)
+inline void SqToggleLED::addSvg(const char* resourcePath, bool pathIsAbsolute)
 {
     auto svg = std::make_shared<SqHelper::SvgWidget>();
-
-    SqHelper::setSvg(svg.get(), SqHelper::loadSvg(resourcePath));
+    SqHelper::setSvg(svg.get(), SqHelper::loadSvg(resourcePath, pathIsAbsolute));
     svgs.push_back(svg);
     this->box.size.x = std::max(this->box.size.x, svg->box.size.x);
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);

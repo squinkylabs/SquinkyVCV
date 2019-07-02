@@ -34,13 +34,19 @@ public:
     }
 
     /**
-     * loads SVG from plugin's assets
+     * loads SVG from plugin's assets,
+     * unless pathIsAbsolute is ture
      */
-    static std::shared_ptr<rack::Svg> loadSvg(const char* path) 
+    static std::shared_ptr<rack::Svg> loadSvg(const char* path, bool pathIsAbsolute = false) 
     {
-        return rack::APP->window->loadSvg(
-            SqHelper::assetPlugin(pluginInstance, path));
+        if (pathIsAbsolute) {
+            return rack::APP->window->loadSvg(path);
+        } else {
+            return rack::APP->window->loadSvg(
+                SqHelper::assetPlugin(pluginInstance, path));
+        }
     }
+
     static void setPanel(rack::app::ModuleWidget* widget, const char* path)
     {
          widget->setPanel(rack::APP->window->loadSvg(rack::asset::plugin(pluginInstance, path)));

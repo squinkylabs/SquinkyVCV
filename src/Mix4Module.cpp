@@ -142,7 +142,6 @@ static const float labelX = 0;
 static const float channelY = 350;
 static const float channelDy = 30;   
 static float volY = 0;
-static float muteY = 0;
 
 void Mix4Widget::makeStrip(
     Mix4Module*,
@@ -181,7 +180,7 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::PAN0_INPUT));
 
-    y -= channelDy;
+    y -= (channelDy -1);
 #if 0
     auto mute = SqHelper::createParam<ToggleButton>(
         icomp,
@@ -193,8 +192,9 @@ void Mix4Widget::makeStrip(
     addParam(mute);
     muteY = y-12;
 
-#else  
-    const float mutx = x-12;
+#else 
+   
+    const float mutx = x-11;
     const float muty = y-12;
     auto _mute = SqHelper::createParam<LEDBezel>(
         icomp,
@@ -209,13 +209,14 @@ void Mix4Widget::makeStrip(
         channel + Comp::MUTE0_LIGHT));
 #endif
     
-    y -= channelDy;
+    y -= (channelDy-1);
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(x-12, y-12),
+        Vec(x-11, y-12),
         module,
         channel + Comp::SOLO0_LIGHT));
-    tog->addSvg("res/square-button-01.svg");
-    tog->addSvg("res/square-button-02.svg");
+    std::string sLed = asset::system("res/ComponentLibrary/LEDBezel.svg");
+    tog->addSvg(sLed.c_str(), true);
+    tog->addSvg("res/SquinkyBezel.svg");
     tog->setHandler( [this, channel](bool ctrlKey) {
        // MixerModule* mod = mixModule;
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
@@ -232,7 +233,7 @@ void Mix4Widget::makeStrip(
     });
     addChild(tog);
    
-    const float extraDy = 6;
+    const float extraDy = 5;
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,

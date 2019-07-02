@@ -298,7 +298,6 @@ inline void MixM<TBase>::stepn(int div)
     // TODO: move this all to mute helper?
     const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
     if (moduleIsMuted) {
-        // printf("whole module muted\n"); fflush(stdout);
         for (int i = 0; i < numChannels; ++i) {
             buf_muteInputs[i] = 0;
         }

@@ -296,21 +296,6 @@ inline void LFNB<TBase>::stepn(int)
         TBase::inputs[Q0_INPUT].value,
         TBase::params[Q0_PARAM].value,
         TBase::params[Q0_TRIM_PARAM].value);
-#if 0
-    static float lastq = -1;
-    if (q != lastq) {
-        printf("q = %.2f\n", q);
-        fflush(stdout);
-        lastq = q;
-    }
-    static float last = -1;
-    if (fc != last) {
-        printf("fc = %.2f fm=%.2f k=%.2f\n", fc, fm, k);
-        fflush(stdout);
-        last = fc;
-    }
-#endif
-
 
      channels[0].setFilter(fc * this->engineGetSampleTime(), q);
 }
