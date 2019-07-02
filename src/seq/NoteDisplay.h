@@ -33,7 +33,6 @@ private:
     bool haveFocus = true;
     void initEditContext();
 
-    //std::shared_ptr<class SeqSettings> seqSettings;
     std::shared_ptr<class MouseManager> mouseManager;
 
     void step() override;

@@ -285,7 +285,6 @@ void NoteDisplay::onButton(const event::Button &e)
     } else if (e.button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (isPressed && !shift && !ctrl) {
             sequencer->context->settings()->invokeUI(this);
-            //seqSettings->invokeUI(this);
             handled = true;
         }
     }
@@ -380,14 +379,12 @@ void NoteDisplay::onDeselect(const event::Deselect &e)
 void NoteDisplay::onDragStart(const event::DragStart &e)
 {
     bool b = mouseManager->onDragStart();
-    //printf("on drag start\n"); fflush(stdout);
     if (b) {
         e.consume(this);
     }
 }
 void NoteDisplay::onDragEnd(const event::DragEnd &e)
 {
-    //printf("on drag end\n"); fflush(stdout);
     bool b = mouseManager->onDragEnd();
     if (b) {
         e.consume(this);

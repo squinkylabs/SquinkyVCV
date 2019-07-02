@@ -47,6 +47,8 @@ public:
      * time units are all pixel shifts
      */
     virtual float quantizeForDisplay(float metricTime, float timeShiftPixels, bool canGoBelowGridSize);
+    virtual bool draggingStartTime();
+    virtual bool draggingDuration();
 protected:
     MidiSequencerPtr sequencer;
     const float startX;
@@ -105,6 +107,7 @@ public:
     NoteHorizontalDragger(MidiSequencerPtr, float x, float y, float initialNoteValue);
     void onDrag(float deltaX, float deltaY) override;
     float quantizeForDisplay(float metricTime, float shiftInMetricTime, bool canGoBelowGridSize) override;
+    
 protected:
 
     /**
@@ -143,6 +146,8 @@ public:
     NoteStartDragger(MidiSequencerPtr, float x, float y, float initialStartTime);
     void commit() override;
     void draw(NVGcontext *vg) override;
+    bool draggingStartTime() override;
+
 };
 
 class NoteDurationDragger : public NoteHorizontalDragger
@@ -151,4 +156,5 @@ public:
     NoteDurationDragger(MidiSequencerPtr, float x, float y, float initialDuration);
     void commit() override;
     void draw(NVGcontext *vg) override;
+    bool draggingDuration() override;
 };

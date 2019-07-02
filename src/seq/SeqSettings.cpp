@@ -61,7 +61,6 @@ public:
     }
 };
 
-
 SeqSettings::SeqSettings(rack::engine::Module* mod) : module(mod)
 {
 }

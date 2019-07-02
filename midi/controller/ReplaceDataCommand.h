@@ -47,6 +47,7 @@ public:
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, const std::vector<float>&);
     
     static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq, float delta);
+    static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq,  const std::vector<float>&);
     static ReplaceDataCommandPtr makePasteCommand(std::shared_ptr<MidiSequencer> seq);
 
 

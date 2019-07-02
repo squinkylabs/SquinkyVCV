@@ -254,6 +254,21 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
     return ret;
 }
 
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, const std::vector<float>& shifts)
+{
+    seq->assertValid();
+    Xform xform = [shifts](MidiEventPtr event, int index) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->duration += shifts[index];
+             // arbitrary min limit.
+            note->duration = std::max(.001f, note->duration);
+        }
+    };
+    auto ret = makeChangeNoteCommand(Ops::Duration, seq, xform, true);
+    ret->name = "change note duration";
+    return ret;
+}
 
 ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 {

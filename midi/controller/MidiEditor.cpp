@@ -299,11 +299,22 @@ void MidiEditor::changeStartTime(const std::vector<float>& shifts)
 
 void MidiEditor::changeDuration(bool ticks, int amount)
 {
+    MidiLocker l(seq()->song->lock);
     assert(amount != 0);
 
     float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
+    seq()->undo->execute(seq(), cmd);
+    seq()->assertValid();
+}
+
+void MidiEditor::changeDuration(const std::vector<float>& shifts)
+{
+    MidiLocker l(seq()->song->lock);
+    assert(!shifts.empty());
+
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), shifts);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 }
@@ -342,35 +353,10 @@ void MidiEditor::advanceCursor(bool ticks, int amount)
     advanceCursorToTime(newTime, false);
 }
 
-#if 0
-void MidiEditor::advanceCursor(bool ticks, int amount)
-{
-    assert(!ticks);         // not implemented yet
-    assert(amount != 0);
-
-    seq()->context->assertCursorInViewport();
-
-    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
-    seq()->context->setCursorTime(seq()->context->cursorTime() + advanceAmount);
-    seq()->context->setCursorTime(std::max(0.f, seq()->context->cursorTime()));
-    updateSelectionForCursor();
-    seq()->context->adjustViewportForCursor();
-    seq()->context->assertCursorInViewport();
-    seq()->assertValid();
-}
-#endif
-
 void MidiEditor::changeCursorPitch(int semitones)
 {
     float pitch = seq()->context->cursorPitch() + (semitones * PitchUtils::semitone);
     setNewCursorPitch(pitch, false);
-    #if 0
-    pitch = std::max(pitch, -5.f);
-    pitch = std::min(pitch, 5.f);
-    seq()->context->setCursorPitch(pitch);
-    seq()->context->scrollViewportToCursorPitch();
-    updateSelectionForCursor();
-    #endif
 }
 
 void MidiEditor::setNewCursorPitch(float pitch, bool extendSelection)
@@ -398,31 +384,6 @@ void MidiEditor::setNewCursorPitch(float pitch, bool extendSelection)
     return note;
  }
  
-#if 0 // old way
-void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
-{
-    // Implement by calling existing handlers. This will
-    // cause double update, but I don't think anyone cares.
-    setNewCursorPitch(pitchCV, shiftKey);
-    advanceCursorToTime(time, shiftKey);
-}
-#endif
-
-
-#if 0 // first try
-void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
-{
-    // Implement by calling existing handlers. This will
-    // cause double update, but I don't think anyone cares.
-    setNewCursorPitch(pitchCV, false);
-    advanceCursorToTime(time, false);
-    if (shiftKey) {
-        extendSelectionToCurrentNote();
-    }
-}
-#endif
-
-
 void MidiEditor::selectAt(float time, float pitchCV, bool shiftKey)
 {
     // Implement by calling existing handlers. This will

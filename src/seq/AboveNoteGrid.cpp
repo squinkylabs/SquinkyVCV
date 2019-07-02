@@ -116,7 +116,6 @@ void AboveNoteGrid::updateTimeLabels()
         createTimeLabels();
     }
 
-
     int firstBar = 1 + TimeUtils::time2bar(sequencer->context->startTime());
     if (firstBar == curFirstBar) {
         return;

@@ -51,12 +51,19 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
     for (auto it : *sequencer->selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
         if (note) {
-            const float quantizedHShift = quantizeForDisplay(note->startTime, horizontalShift, true);
-            const float quantizedHStretch = quantizeForDisplay(note->duration, horizontalStretch, false);
+            float finalHShift = horizontalShift; 
+            if (draggingStartTime()) {
+                finalHShift = quantizeForDisplay(note->startTime, horizontalShift, true);
+            }
 
-            const float x = scaler->midiTimeToX(*note) + quantizedHShift;
+            float finalHStretch = horizontalStretch;
+            if (draggingDuration()) {
+                finalHStretch = quantizeForDisplay(note->duration, horizontalStretch, false);
+            }
+
+            const float x = scaler->midiTimeToX(*note) + finalHShift;
             const float y = scaler->midiPitchToY(*note) + verticalShift;
-            const float width = scaler->midiTimeTodX(note->duration) + quantizedHStretch;
+            const float width = scaler->midiTimeTodX(note->duration) + finalHStretch;
 
             SqGfx::filledRect(
                 vg,
@@ -69,6 +76,16 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
 float NoteDragger::quantizeForDisplay(float metricTime, float timeShiftPixels, bool canGoBelowGridSize)
 {
    return timeShiftPixels;       // default imp does nothing
+}
+
+bool NoteDragger::draggingStartTime()
+{
+    return false;
+}
+
+bool NoteDragger::draggingDuration()
+{
+    return false;
 }
 
 /******************************************************************
@@ -222,14 +239,17 @@ NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y, float
 {
 }
 
+bool NoteStartDragger::draggingStartTime()
+{
+    return true;
+}
+
 void NoteStartDragger::draw(NVGcontext *vg)
 {
     const float horizontalShift = curMousePositionX - startX;
     drawNotes(vg, 0, horizontalShift, 0);
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "shift");
 }
-
-
 
 void NoteStartDragger::commit()
 {
@@ -265,6 +285,12 @@ NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y,
 {
 }
 
+
+bool NoteDurationDragger::draggingDuration()
+{
+    return true;
+}
+
 void NoteDurationDragger::draw(NVGcontext *vg)
 {
     const float horizontalShift = curMousePositionX - startX;
@@ -273,15 +299,27 @@ void NoteDurationDragger::draw(NVGcontext *vg)
 }
 
 
-
 void NoteDurationDragger::commit()
 {
     auto scaler = sequencer->context->getScaler();
-    const float horizontalShift = curMousePositionX - startX;
-    const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
-    const int timeShiftTicks = std::round(timeShiftAmount * 16);
-    if (timeShiftTicks != 0) {
-        sequencer->editor->changeDuration(true, timeShiftTicks);
+    const float horizontalShiftPix = curMousePositionX - startX; 
+
+
+    // find the shift required for each note
+    std::vector<float> shifts;
+    bool isShift = false;
+    for (auto it : *sequencer->selection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
+        float timeShiftAmountQuantized = quantizeForDisplay(note->duration, horizontalShiftPix, true);
+        float timeshiftAmountMetric = scaler->xToMidiDeltaTime(timeShiftAmountQuantized);
+        shifts.push_back(timeshiftAmountMetric);
+        if (std::abs(timeshiftAmountMetric) > .1) {
+            isShift = true;
+        }
+    }
+
+    if (isShift) {
+        sequencer->editor->changeDuration(shifts);
     }
 }
 

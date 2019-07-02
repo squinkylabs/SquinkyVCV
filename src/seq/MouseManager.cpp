@@ -62,7 +62,6 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
 
     if ((isPressed && curNote && !curNoteIsSelected) || 
             (!isPressed && mouseClickWasIgnored)) {
-        // printf("onMouseButton calling doMouseClick\n"); fflush(stdout);
         mouseClickWasIgnored = false;
 
         // TODO: use more specific handler calls, get rid of this ambiguous catchall
@@ -105,7 +104,6 @@ bool MouseManager::onDragStart()
 
 
     const float relativeTime = (cursorTime - start) / (end - start);
-    //printf("relative time = %f\n", relativeTime); fflush(stdout);
 
     if (relativeTime <= .33f) {
         noteDragger = std::make_shared<NoteStartDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY, start);     
@@ -120,7 +118,6 @@ bool MouseManager::onDragStart()
 
 bool MouseManager::onDragEnd()
 {
-  //   printf("MouseManger::onDragEnd()\n"); fflush(stdout);
     bool ret = false;
     if (noteDragger) {
         noteDragger->commit();
