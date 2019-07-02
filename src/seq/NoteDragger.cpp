@@ -233,7 +233,7 @@ float NoteStartDragger::quantizeForDisplay(const MidiNoteEvent& note, float time
         float quantizedMetricTime = TimeUtils::quantizeForEdit(note.startTime, timeShiftMetric, grid);
         float metricDelta = quantizedMetricTime - note.startTime;
         float pixelDelta = scaler->midiTimeTodX(metricDelta);
-        
+ #if 0       
         printf("note start = %.2f, pix shift=%.2f unq shift=%.2f, qt=%.2f\n",
             note.startTime,
             timeShiftPixels,
@@ -241,6 +241,7 @@ float NoteStartDragger::quantizeForDisplay(const MidiNoteEvent& note, float time
             quantizedMetricTime);
         printf("metricDelta = %.2f, finalpixShift = %.2f\n", metricDelta, pixelDelta);
         fflush(stdout);
+#endif
           return pixelDelta;
     } else {
         return timeShiftPixels;     // do nothing if off
@@ -253,8 +254,34 @@ float NoteStartDragger::quantizeForDisplay(const MidiNoteEvent& note, float time
 void NoteStartDragger::commit()
 {
     auto scaler = sequencer->context->getScaler();
-    const float horizontalShift = curMousePositionX - startX;
+    const float horizontalShiftPix = curMousePositionX - startX; 
+
+
+    // find the shift required for each note
+    std::vector<float> shifts;
+    bool isShift = false;
+    for (auto it : *sequencer->selection) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
+        float timeShiftAmountQuantized = quantizeForDisplay(*note, horizontalShiftPix);
+        float timeshiftAmountMetric = scaler->xToMidiDeltaTime(timeShiftAmountQuantized);
+        shifts.push_back(timeshiftAmountMetric);
+        if (std::abs(timeshiftAmountMetric) > .1) {
+            isShift = true;
+        }
+    }
+
+    if (isShift) {
+        sequencer->editor->changeStartTime(shifts);
+    }
+}
+
+#if 0
+void NoteStartDragger::commit()
+{
+    auto scaler = sequencer->context->getScaler();
+    const float horizontalShift = curMousePositionX - startX; 
     const float timeShiftAmount = scaler->xToMidiDeltaTime(horizontalShift);
+
 
     // convert quarter notes to 64th notes.
     const int timeShiftTicks = std::round(timeShiftAmount * 16);
@@ -263,6 +290,7 @@ void NoteStartDragger::commit()
         sequencer->editor->changeStartTime(true, timeShiftTicks);
     }
 }
+#endif
 
 
 /******************************************************************

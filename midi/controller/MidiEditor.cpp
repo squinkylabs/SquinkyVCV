@@ -281,6 +281,22 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
     seq()->context->assertCursorInViewport();
 }
 
+void MidiEditor::changeStartTime(const std::vector<float>& shifts)
+{
+    MidiLocker l(seq()->song->lock);
+    assert(!shifts.empty());
+
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), shifts);
+    seq()->undo->execute(seq(), cmd);
+    seq()->assertValid();
+
+    // after we change start times, we need to put the cursor on the moved notes
+    seq()->context->setCursorToSelection(seq()->selection);
+
+    seq()->context->adjustViewportForCursor();
+    seq()->context->assertCursorInViewport();
+}
+
 void MidiEditor::changeDuration(bool ticks, int amount)
 {
     assert(amount != 0);
