@@ -52,7 +52,8 @@ void MixMModule::requestModuleSolo(SoloCommands command)
 
 void MixMModule::onSampleRateChange()
 {
-    // TODO: do we need this?
+    // update the anti-pop filters
+    MixM->onSampleRateChange();
 }
 
 void MixMModule::setExternalInput(const float* buf)
@@ -83,7 +84,6 @@ MixMModule::MixMModule()
 {
 #endif
     MixM = std::make_shared<Comp>(this);
-    onSampleRateChange();
     MixM->init();
 }
 

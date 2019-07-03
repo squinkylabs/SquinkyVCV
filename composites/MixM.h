@@ -200,6 +200,8 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
+    void onSampleRateChange();
+    void setupFilters();
 
     void stepn(int steps);
 
@@ -250,8 +252,22 @@ inline void MixM<TBase>::init()
         this->stepn(divRate);
         });
 
+    setupFilters();
+}
+
+template <class TBase>
+inline void MixM<TBase>::onSampleRateChange()
+{
+    setupFilters();
+}
+
+template <class TBase>
+inline void MixM<TBase>::setupFilters()
+{
     // 400 was smooth, 100 popped
-    filteredCV.setCutoff(1.0f / 100.f);
+    const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
+    //printf("using %f, calc=%f\n", x, (1.0f / 100.f)); fflush(stdout);
+    filteredCV.setCutoff(x);
 }
 
 template <class TBase>

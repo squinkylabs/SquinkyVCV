@@ -56,12 +56,10 @@ public:
     static const int numChannels = 4;
 
     /**
-    * re-calc everything that changes with sample
-    * rate. Also everything that depends on baseFrequency.
-    *
     * Only needs to be called once.
     */
     void init();
+    void setupFilters();
 
     enum ParamIds
     {
@@ -172,6 +170,7 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
+    void onSampleRateChange();
 
     void stepn(int steps);
 
@@ -334,9 +333,22 @@ inline void Mix4<TBase>::init()
     divider.setup(divRate, [this, divRate] {
         this->stepn(divRate);
         });
+    setupFilters();
+}
 
+template <class TBase>
+inline void Mix4<TBase>::onSampleRateChange()
+{
+    setupFilters();
+}
+
+template <class TBase>
+inline void Mix4<TBase>::setupFilters()
+{
     // 400 was smooth, 100 popped
-    filteredCV.setCutoff(1.0f / 100.f);
+    const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
+    //printf("using %f, calc=%f\n", x, (1.0f / 100.f)); fflush(stdout);
+    filteredCV.setCutoff(x);
 }
 
 template <class TBase>

@@ -44,6 +44,7 @@ private:
 
 void Mix4Module::onSampleRateChange()
 {
+    Mix4->onSampleRateChange();
 }
 
 void Mix4Module::setExternalInput(const float* buf)
@@ -77,7 +78,6 @@ Mix4Module::Mix4Module()
 {
 #endif
     Mix4 = std::make_shared<Comp>(this);
-    onSampleRateChange();
     Mix4->init();
 }
 
