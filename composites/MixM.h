@@ -340,8 +340,8 @@ inline void MixM<TBase>::stepn(int div)
             buf_channelSendGainsARight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderA;
         } else {
             // pref fader, gain sees mutes and send only
-            buf_channelSendGainsALeft[i] = muteValue * sliderA * .8f;
-            buf_channelSendGainsARight[i] = muteValue * sliderA * .8f;
+            buf_channelSendGainsALeft[i] = muteValue * sliderA * (1.f / sqrt(2.f));
+            buf_channelSendGainsARight[i] = muteValue * sliderA * (1.f / sqrt(2.f));
         }
 
         if (!BisPreFader) {
@@ -350,8 +350,8 @@ inline void MixM<TBase>::stepn(int div)
             buf_channelSendGainsBRight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderB;
         } else {
             // pref fader, gain sees mutes and send only
-            buf_channelSendGainsBLeft[i] = muteValue * sliderB * .8f;
-            buf_channelSendGainsBRight[i] = muteValue * sliderB * .8f;
+            buf_channelSendGainsBLeft[i] = muteValue * sliderB * (1.f / sqrt(2.f));
+            buf_channelSendGainsBRight[i] = muteValue * sliderB * (1.f / sqrt(2.f));
         }
     }
 

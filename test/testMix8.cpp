@@ -239,32 +239,6 @@ static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> aux
     _testAuxOut<T>(auxGetter, true, true, T::SEND0_PARAM, false, 0);
 }
 
-
-template <typename T>
-static void testAuxOutB(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
-{
-    // should pass like this
-   // _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
-   // _testAuxOut<T>(auxGetter, true,  false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
-    _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, false, 0);
-    _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM, false, 0);
-}
-
-template <typename T>
-static void testAuxOutBpre(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
-{
-    _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, true, T::PRE_FADERb_PARAM);
-    _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM, true, T::PRE_FADERb_PARAM);
-}
-
-template <typename T>
-static void testAuxOutApre(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
-{
-    _testAuxOut<T>(auxGetter, false, false, T::SEND0_PARAM, true, T::PRE_FADERa_PARAM);
-    _testAuxOut<T>(auxGetter, true, false, T::SEND0_PARAM, true, T::PRE_FADERa_PARAM);
-}
-
-
 template <typename T>
 void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
@@ -317,6 +291,7 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
 
 
 #if 0 // port these to V1 !!
+// they don't work since we changed the messaging protocol
 template <typename T>
 void _testSoloNew(int channel, std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
@@ -586,12 +561,10 @@ void testMix8()
     testChannel<Mixer8>();
 
     testMaster<Mixer8>(outputGetterMix8);
- //   testMaster<MixerM>(outputGetterMixM);
-//    testMaster<Mixer4>(outputGetterMix4);
 
+    // why doesn't this work?
     testMute<MixerM>(outputGetterMixM);
-//    testMute<Mixer4>(outputGetterMix4);
-//    testMute<Mixer8>(outputGetterMix8);
+
 
     // why does this test fail for mixer8?
   //  testAuxOut<Mixer8>(auxGetterMix8);
@@ -599,13 +572,7 @@ void testMix8()
   //  testAuxOut<Mixer4>(auxGetterMix4);
    
 
-  //  testAuxOutB<MixerM>(auxGetterMixMB);
-  //  testAuxOutB<Mixer4>(auxGetterMix4B);
-
-  //  testAuxOutBpre<MixerM>(auxGetterMixMB);
-  //  testAuxOutApre<MixerM>(auxGetterMixM);
-  //  testAuxOutBpre<Mixer4>(auxGetterMix4B);
-  //  testAuxOutApre<Mixer4>(auxGetterMix4);
+ 
 
     // now all mixers support "legacy" solo
     testSoloLegacy<Mixer8>(outputGetterMix8);
@@ -622,8 +589,7 @@ void testMix8()
     testPanLookL();
 
     testPanMiddle<Mixer8>(outputGetterMix8);
-    testPanMiddle<MixerM>(outputGetterMixM);
-    testPanMiddle<Mixer4>(outputGetterMix4);
+
 
     testMasterMute<Mixer8>();
     testMasterMute<MixerM>();
