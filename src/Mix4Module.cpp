@@ -118,17 +118,17 @@ void Mix4Widget::appendContextMenu(Menu *menu)
     MenuLabel *spacerLabel = new MenuLabel();
 	menu->addChild(spacerLabel);
 
-    ManualMenuItem* manual = new ManualMenuItem("Mix-4X manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
+    ManualMenuItem* manual = new ManualMenuItem("ExFor manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
     menu->addChild(manual);
     
     MenuLabel *spacerLabel2 = new MenuLabel();
     menu->addChild(spacerLabel2);
     SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERa_PARAM);
-    item->text = "Send A Pre-Fader";
+    item->text = "Send 1 Pre-Fader";
     menu->addChild(item);
 
     item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERb_PARAM);
-    item->text = "Send B Pre-Fader";
+    item->text = "Send 2 Pre-Fader";
     menu->addChild(item);
 
     item = new SqMenuItem_BooleanParam2(mixModule, Comp::CV_MUTE_TOGGLE);
