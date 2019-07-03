@@ -193,7 +193,7 @@ void MixMWidget::makeStrip(
     if (channel == 0) {
         addLabel(
             Vec(labelX+2, y-10),
-            "Mt");
+            "M");
     }
 
     y -= channelDy;
@@ -221,18 +221,7 @@ void MixMWidget::makeStrip(
     }
 
     y -= (channelDy -1);
-#if 0
-   
-    auto mute = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(x-12, y-12),
-        module,
-        channel + Comp::MUTE0_PARAM);
-    mute->addSvg("res/square-button-01.svg");
-    mute->addSvg("res/square-button-02.svg");
-    addParam(mute);
-    muteY = y-12;
-#else
+
     const float mutex = x-11;       // was 12
     const float mutey = y-12;
     addParam(SqHelper::createParam<LEDBezel>(
@@ -247,7 +236,6 @@ void MixMWidget::makeStrip(
         module,
         channel + Comp::MUTE0_LIGHT));
     muteY = y-12;
-#endif
    
     if (channel == 0) {
         addLabel(
@@ -309,11 +297,11 @@ void MixMWidget::makeStrip(
         icomp,
         Vec(x, y),
         module,
-        channel + Comp::SEND0_PARAM));
+        channel + Comp::SENDb0_PARAM));
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
-            "AX1");
+            "AX2");
     }
 
     y -= (channelDy + extraDy);
@@ -321,11 +309,11 @@ void MixMWidget::makeStrip(
         icomp,
         Vec(x, y),
         module,
-        channel + Comp::SENDb0_PARAM));
+        channel + Comp::SEND0_PARAM));
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
-            "AX2");
+            "AX1");
     }
 }
 
@@ -341,7 +329,6 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         y = channelY;
         x = x0 + 15 + (channel * dX) + (WIDE * 15);
 
-       // y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
@@ -349,6 +336,18 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
             "O"
+            //,SqHelper::COLOR_WHITE
+            );
+        }
+
+        y -= channelDy;
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(x, y),
+            module,
+            channel + Comp::LEFT_SENDb_OUTPUT));
+        if (channel == 0) {
+            addLabel(Vec(xL, y+labelDy),
+            "S2"
             //,SqHelper::COLOR_WHITE
             );
         }
@@ -369,81 +368,74 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         addInput(createInputCentered<PJ301MPort>(
             Vec(x, y),
             module,
-            channel + Comp::LEFT_RETURN_INPUT));
+            channel + Comp::LEFT_RETURNb_INPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "R1");
-        }
-
-        y -= channelDy;
-        addOutput(createOutputCentered<PJ301MPort>(
-            Vec(x, y),
-            module,
-            channel + Comp::LEFT_SENDb_OUTPUT));
-        if (channel == 0) {
-            addLabel(Vec(xL, y+labelDy),
-            "S2"
-            //,SqHelper::COLOR_WHITE
-            );
+            "R2");
         }
 
         y -= channelDy;
         addInput(createInputCentered<PJ301MPort>(
             Vec(x, y),
             module,
-            channel + Comp::LEFT_RETURNb_INPUT));
+            channel + Comp::LEFT_RETURN_INPUT));
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
-            "R2");
+            "R1");
         }
     }
 
     x = x0 + 15 + 17  + (WIDE * 15);
 
-#if 0
-    auto mute = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(x-12, muteY),
-        module,
-        Comp::MASTER_MUTE_PARAM);
-    mute->addSvg("res/square-button-01.svg");
-    mute->addSvg("res/square-button-02.svg");
-    addParam(mute);
-#else
+
+    // Big Mute button
     const float mutex = x-11;
     const float mutey = muteY;
-    auto mute = SqHelper::createParam<LEDBezel>(
+
+    auto mute = SqHelper::createParam<LEDBezelLG>(
         icomp,
-        Vec(mutex, mutey),
+        Vec(mutex - 6, mutey - 21),
         module,
         Comp::MASTER_MUTE_PARAM);
     addParam(mute);
 
-    addChild(createLight<MuteLight<SquinkyLight>>(
-        Vec(mutex + 2.2, mutey + 2),
+
+    auto light = (createLight<MuteLight<SquinkyLight>>(
+        Vec(mutex + 3.2 - 6, mutey + 3 - 21),
         module, Comp::MUTE_MASTER_LIGHT));
+    // 30 too big
+    light->box.size.x = 26;
+    addChild(light);
+    //printf("\nlight width = %f\n", light->box.size.x); fflush(stdout);
     muteY = y-12;
-#endif
+    
 
     y = volY;
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
+  
+    addParam(SqHelper::createParamCentered<Rogan2PSBlue>(
         icomp,
-        Vec(x, y),
+        Vec(x, y-12),
         module,
         Comp::MASTER_VOLUME_PARAM));
 
-    y -=  (channelDy + extraDy) * 2;
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(x, y),
-        module,
-        Comp::RETURN_GAIN_PARAM));
-     y -=  (channelDy + extraDy);;
+  
+     y -=  (channelDy + extraDy) * 2;
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
         module,
         Comp::RETURN_GAINb_PARAM));
+    addLabel(Vec(xL-3, y+labelDy),
+            "R2");
+
+    y -=  (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        Comp::RETURN_GAIN_PARAM));
+    addLabel(Vec(xL-3, y+labelDy),
+            "R1");
 }
 
 /**

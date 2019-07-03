@@ -249,12 +249,7 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::PAN0_PARAM));
 
-    y -= (channelDy + extraDy);
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(x, y),
-        module,
-        channel + Comp::SEND0_PARAM));
+
 
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -262,6 +257,13 @@ void Mix4Widget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::SENDb0_PARAM));
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::SEND0_PARAM));
 }
 
 /**

@@ -240,3 +240,13 @@ struct SquinkyLight : GrayModuleLightWidget {
 	}
 };
 
+/**
+ * our enlarged version of the stock bezel
+ */
+struct LEDBezelLG : app::SvgSwitch {
+	LEDBezelLG() {
+		momentary = true;
+		addFrame(APP->window->loadSvg(asset::plugin(pluginInstance, "res/LEDBezelLG.svg")));
+	}
+};
+
