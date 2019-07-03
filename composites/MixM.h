@@ -37,24 +37,20 @@ public:
     Perf: 12.4 before new stuff (mix8 was 20)
     16.2 with all the features
 
-Plan for v2:
-    start in master mixer. X
-
-    add a new set of params, "mute state". they will be invisible and hold the
-    persistent mute state. X
-
-    replace my mute buttons (for now), with standard LED like "Gates" uses.
-
-    create a MixHelper class to implement the mute logic (finally!) so I don't
-    need to do it separate for each mixer.
-
-    make it work.
-
-    add to expander
-
-    try to make it look better (at least Squinky blue).
+    20.6 on 7/2 mixx is 18
+    mixm drops to 15 at div = 8
 
 
+    plan to add new lag units:
+        all member buffers are only for subsampled control.
+        no member buffers for audio
+
+        get rid of anti pop, replace with lagUnit
+            0..3 for smoothed input gain
+            4..7 for left pan
+            8..11 for right pan
+            [12] for master mute
+    mixm up to 24 new stuff no sends
  */
 
 template <class TBase>
@@ -198,7 +194,6 @@ public:
     }
 
     void setExpansionInputs(const float*);
-  //  void requestModuleSolo( SoloCommands);
 
     /**
      * Main processing entry point. Called every sample
@@ -207,11 +202,14 @@ public:
 
     void stepn(int steps);
 
-    float buf_inputs[numChannels] = {0};
-    float buf_channelGains[numChannels] = {0};
-    float buf_channelOuts[numChannels] = {0};
-    float buf_leftPanGains[numChannels] = {0};
-    float buf_rightPanGains[numChannels] = {0};
+    //float buf_inputs[numChannels] = {0};
+    //float buf_channelGains[numChannels] = {0};
+    //float buf_channelOuts[numChannels] = {0};
+    //float buf_leftPanGains[numChannels] = {0};
+    //float buf_rightPanGains[numChannels] = {0};
+
+    // These are all calculated in stepn from the
+    // contents of filteredCV
 
     float buf_channelSendGainsALeft[numChannels] = {0};
     float buf_channelSendGainsARight[numChannels] = {0};
@@ -221,8 +219,8 @@ public:
     /**
      * allocate extra bank for the master mute
      */
-    float buf_muteInputs[numChannels + 4] = {0};
-    float buf_masterGain = 0;
+    //float buf_muteInputs[numChannels + 4] = {0};
+    //float buf_masterGain = 0;
     float buf_auxReturnGainA = 0;
     float buf_auxReturnGainB = 0;
 
@@ -230,9 +228,17 @@ private:
     Divider divider;
 
     /**
-     * 4 input channels and one master
+     *      0..3 for smoothed input gain * channel mute
+     *      4..7 for left pan
+     *      8..11 for right pan
+     *      [12] for master mute * master gain
      */
-    MultiLPF<8> antiPop;
+    static const int cvOffsetGain = 0;
+    static const int cvOffsetPanLeft = 4;
+    static const int cvOffsetPanRight = 8;
+    static const int cvOffsetMaster = 12;
+    MultiLPF<16> filteredCV;
+
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 
@@ -253,31 +259,140 @@ inline void MixM<TBase>::init()
         });
 
     // 400 was smooth, 100 popped
-    antiPop.setCutoff(1.0f / 100.f);
+    filteredCV.setCutoff(1.0f / 100.f);
 }
 
 template <class TBase>
 inline void MixM<TBase>::stepn(int div)
 {
-   
-    // fill buf_channelGains
+    float unbufferedCV[cvOffsetMaster + 1] = {0};
+
+    const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
+    const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;
+    const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
+
+    helper.procMixInputs(this);
+    helper.procMasterMute(this);
+
+    // round up some scalars the we need for step()
+    buf_auxReturnGainA = TBase::params[RETURN_GAIN_PARAM].value;
+    buf_auxReturnGainB = TBase::params[RETURN_GAINb_PARAM].value;
+
+    unbufferedCV[cvOffsetMaster] = (1.0f - TBase::params[MASTER_MUTE_STATE_PARAM].value) *
+        TBase::params[MASTER_VOLUME_PARAM].value;
+
+    // If the is an external solo, then mute all channels
+    bool anySolo = false;
     for (int i = 0; i < numChannels; ++i) {
+        if (TBase::params[i + SOLO0_PARAM].value > .5f) {
+            anySolo = true;
+            break;
+        }
+    }
+
+    for (int i = 0; i < numChannels; ++i) {
+        float channelGain = 0;
+
+        // First let's round up the channel volume
+        {
 #ifdef _CHAUDIOTAPER
-        const float rawSlider =  TBase::params[i + GAIN0_PARAM].value;
-        const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
+            const float rawSlider = TBase::params[i + GAIN0_PARAM].value;
+            const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 #else
-        a b why are we here?
-        const float slider = TBase::params[i + GAIN0_PARAM].value;
+            a b why are we here ?
+                const float slider = TBase::params[i + GAIN0_PARAM].value;
 #endif
 
-        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
-            TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
-        const float cv = std::clamp(
-            rawCV / 10.0f,
-            0.0f,
-            1.0f);
-        buf_channelGains[i] = slider * cv;
+            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
+                TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+            const float cv = std::clamp(
+                rawCV / 10.0f,
+                0.0f,
+                1.0f);
+            channelGain = slider * cv;
+        }
+
+        // now round up the mutes
+        if (moduleIsMuted) {
+            channelGain = 0;
+        } else if (anySolo) {
+            // If any channels in this module are soloed, then
+            // mute any channels that aren't soled
+            channelGain *= TBase::params[i + SOLO0_PARAM].value;
+
+        } else {
+             // The pre-calculated state in :params[i + MUTE0_STATE_PARAM] will
+             // be applicable if no solo
+            channelGain *= TBase::params[i + MUTE0_STATE_PARAM].value > .5 ? 0.f : 1.f;
+        }
+
+        // now the raw channel gains are all computed
+        unbufferedCV[cvOffsetGain + i] = channelGain;
+
+        // now do the pan calculation
+        {
+            const float balance = TBase::params[i + PAN0_PARAM].value;
+            const float cv = TBase::inputs[i + PAN0_INPUT].value;
+            const float panValue = std::clamp(balance + cv / 5, -1, 1);
+            unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
+            unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
+        }
+
+
+        // TODO: precalc all the send gains
+#if 0
+        {
+               // send gains
+            const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;
+            const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
+            for (int i = 0; i < numChannels; ++i) {
+
+                const float sliderA = TBase::params[i + SEND0_PARAM].value;
+                const float sliderB = TBase::params[i + SENDb0_PARAM].value;
+                const float muteValue = antiPop.get(i);
+               
+
+                // TODO: we can do some main volume work ahead of time, just like the sends here
+                if (!AisPreFader) {
+                    // post faster, gain sees mutes, faders,  pan, and send level       
+                    buf_channelSendGainsALeft[i] = buf_channelGains[i] * muteValue *  buf_leftPanGains[i] * sliderA;
+                    buf_channelSendGainsARight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderA;
+                } else {
+                    // pref fader, gain sees mutes and send only
+                    buf_channelSendGainsALeft[i] = muteValue * sliderA * (1.f / sqrt(2.f));
+                    buf_channelSendGainsARight[i] = muteValue * sliderA * (1.f / sqrt(2.f));
+                }
+
+                if (!BisPreFader) {
+                  // post faster, gain sees mutes, faders,  pan, and send level       
+                    buf_channelSendGainsBLeft[i] = buf_channelGains[i] * muteValue *  buf_leftPanGains[i] * sliderB;
+                    buf_channelSendGainsBRight[i] = buf_channelGains[i] * muteValue *  buf_rightPanGains[i] * sliderB;
+                } else {
+                    // pref fader, gain sees mutes and send only
+                    buf_channelSendGainsBLeft[i] = muteValue * sliderB * (1.f / sqrt(2.f));
+                    buf_channelSendGainsBRight[i] = muteValue * sliderB * (1.f / sqrt(2.f));
+                }
+            }
+
+        }
+#endif
+
+        // refresh the solo lights
+        {
+            const float soloValue = TBase::params[i + SOLO0_PARAM].value;
+            TBase::lights[i + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
+        }
+
+
+
     }
+    filteredCV.step(unbufferedCV);
+}
+        
+        
+#if 0
+        buf_channelGains[i] = slider * cv;
+    
 
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {
@@ -300,7 +415,6 @@ inline void MixM<TBase>::stepn(int div)
             break;
         }
     }
-
 
     helper.procMixInputs(this);           // run the mute helper
     helper.procMasterMute(this);
@@ -362,13 +476,56 @@ inline void MixM<TBase>::stepn(int div)
         const float soloValue = TBase::params[i + SOLO0_PARAM].value;
         TBase::lights[i + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
     }
+
 }
+#endif
 
 template <class TBase>
 inline void MixM<TBase>::step()
 {
     divider.step();
 
+   // float  buf_channelOuts[4] = {0};        // will hold the signals for the output of each channel
+
+    float left = 0, right = 0;              // these variables will be summed up over all channels
+    float lSend = 0, rSend = 0;
+    float lSendb = 0, rSendb = 0;
+
+    if (expansionInputs) {
+        left = expansionInputs[0];
+        right = expansionInputs[1];
+        lSend = expansionInputs[2];
+        rSend = expansionInputs[3];
+        lSendb = expansionInputs[4];
+        rSendb = expansionInputs[5];
+    }
+
+    for (int i = 0; i < numChannels; ++i) {
+#if 0
+        // get the channel output
+        float channelOutput;
+        {
+            const float input = TBase::inputs[i + AUDIO0_INPUT].value;
+            channelOutput = input * filteredCV.get(i + cvOffsetGain);
+        }
+#endif
+        const float channelInput = TBase::inputs[i + AUDIO0_INPUT].value;
+
+        // sum the channel output to the masters
+        left += channelInput * filteredCV.get(i + cvOffsetPanLeft);
+        right += channelInput * filteredCV.get(i + cvOffsetPanRight);
+
+        // TODO: aux sends
+
+        TBase::outputs[i + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(i + cvOffsetGain);
+
+    }
+    const float masterGain = filteredCV.get(cvOffsetMaster);
+    TBase::outputs[LEFT_OUTPUT].value = left * masterGain;
+    TBase::outputs[RIGHT_OUTPUT].value = right * masterGain;
+}
+
+#if 0
     // fill buf_inputs
     for (int i = 0; i < numChannels; ++i) {
         buf_inputs[i] = TBase::inputs[i + AUDIO0_INPUT].value;
@@ -425,7 +582,9 @@ inline void MixM<TBase>::step()
     for (int i = 0; i < numChannels; ++i) {
         TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
     }
+
 }
+#endif
 
 template <class TBase>
 inline void MixM<TBase>::setExpansionInputs(const float* p)
