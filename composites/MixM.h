@@ -239,6 +239,9 @@ private:
     const float* expansionInputs = nullptr;
 
     MixHelper<MixM<TBase>> helper;
+#ifdef _CHAUDIOTAPER
+     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
+#endif
 };
 
 template <class TBase>
@@ -259,7 +262,13 @@ inline void MixM<TBase>::stepn(int div)
    
     // fill buf_channelGains
     for (int i = 0; i < numChannels; ++i) {
+#ifdef _CHAUDIOTAPER
+        const float rawSlider =  TBase::params[i + GAIN0_PARAM].value;
+        const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
+#else
+        a b why are we here?
         const float slider = TBase::params[i + GAIN0_PARAM].value;
+#endif
 
         const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
             TBase::inputs[i + LEVEL0_INPUT].value : 10.f;

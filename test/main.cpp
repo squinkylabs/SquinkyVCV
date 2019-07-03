@@ -65,6 +65,7 @@ extern void testMidiEditorSelection();
 extern void testVec();
 extern void testSeqClock();
 extern void testMix8();
+extern void testMix4();
 extern void testMixHelper();
 extern void testSlew4();
 extern void testCommChannels();
@@ -174,6 +175,7 @@ int main(int argc, char ** argv)
     testMultiLag();
     testSlew4();   
     testMixHelper();
+    testMix4();
     testMix8();
 
 //#ifndef _MSC_VER

@@ -2,6 +2,8 @@
 
 #include "GateTrigger.h"
 
+#define _CHAUDIOTAPER
+
 /**
  * template class must provide:
         MUTE0_PARAM..3
