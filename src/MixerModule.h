@@ -159,8 +159,6 @@ inline void MixerModule::process(const ProcessArgs &args)
             sendLeftChannel.send(commCmd);
         }
       
-        printf("soloRequestFromUI = %d, cur = %d\n",
-            (int)soloRequestFromUI, (int) currentSoloStatusFromUI);
         // tell our own module to solo, if a state change is requested
         if (soloRequestFromUI != currentSoloStatusFromUI) {
             //printf("requesting module solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
