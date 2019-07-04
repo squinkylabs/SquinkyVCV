@@ -5,8 +5,6 @@
 
 #ifdef _MIXM
 #include "MixerModule.h"
-
-
 #include "MixM.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -17,6 +15,7 @@
 
 using Comp = MixM<WidgetComposite>;
 #define WIDE 1
+//#define _LABELS
 
 /**
  */
@@ -34,9 +33,6 @@ public:
     void internalProcess() override;
     void requestModuleSolo( SoloCommands) override;
     bool amMaster() override { return true; }
-
-
-    
 protected:
     void setExternalInput(const float*) override;
     void setExternalOutput(float*) override;
@@ -67,22 +63,13 @@ void MixMModule::setExternalOutput(float* buf)
     assert(buf == nullptr);          // expander doesn't have an output expand
 }
 
-
-#ifdef __V1x
 MixMModule::MixMModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
-#else
-MixMModule::MixMModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS)
-{
-#endif
+
     MixM = std::make_shared<Comp>(this);
     MixM->init();
 }
@@ -100,6 +87,7 @@ struct MixMWidget : ModuleWidget
 {
     MixMWidget(MixMModule *);
 
+#ifdef _LABELS
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
@@ -109,6 +97,7 @@ struct MixMWidget : ModuleWidget
         addChild(label);
         return label;
     }
+    #endif
 
     void makeStrip(
         MixMModule*,
@@ -165,48 +154,52 @@ void MixMWidget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::AUDIO0_INPUT));
-
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX+6, y-10),
             "In");
     }
+#endif
 
     y -= channelDy;
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::CHANNEL0_OUTPUT));
-
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
             "Out");
     }
+#endif
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::MUTE0_INPUT));
-
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX+2, y-10),
             "M");
     }
+#endif
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::LEVEL0_INPUT));
-
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX, y-10),
             "Vol");
     }
+#endif
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -214,11 +207,13 @@ void MixMWidget::makeStrip(
         module,
         channel + Comp::PAN0_INPUT));
 
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX-2, y-10),
             "Pan");
     }
+#endif
 
     y -= (channelDy -1);
 
@@ -236,12 +231,13 @@ void MixMWidget::makeStrip(
         module,
         channel + Comp::MUTE0_LIGHT));
     muteY = y-12;
-   
+#ifdef _LABELS   
     if (channel == 0) {
         addLabel(
             Vec(labelX+4, y-10),
             "M");
     }    
+#endif
 
     y -= (channelDy - 1);
 
@@ -258,13 +254,13 @@ void MixMWidget::makeStrip(
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
     });
     addChild(tog);
-
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX+4, y-10),
             "S");
     }    
-
+#endif
     
     y -= (channelDy + extraDy);
 
@@ -273,11 +269,13 @@ void MixMWidget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::GAIN0_PARAM));
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX-2, y-10),
             "Vol");
     }
+#endif
     volY = y;
 
     y -= (channelDy + extraDy);
@@ -286,11 +284,13 @@ void MixMWidget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::PAN0_PARAM));
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
             "Pan");
     }
+#endif
 
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -298,11 +298,13 @@ void MixMWidget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::SENDb0_PARAM));
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
             "AX2");
     }
+#endif
 
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
@@ -310,11 +312,13 @@ void MixMWidget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::SEND0_PARAM));
+#ifdef _LABELS
     if (channel == 0) {
         addLabel(
             Vec(labelX-4, y-10),
             "AX1");
     }
+#endif
 }
 
 void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icomp)
@@ -327,65 +331,75 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
 
     for (int channel = 0; channel<2; ++channel) {
         y = channelY;
-        x = x0 + 15 + (channel * dX) + (WIDE * 15);
+        x = x0 + 13 + (channel * dX) + (WIDE * 15);
 
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_OUTPUT));
+#ifdef _LABELS
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
             "O"
             //,SqHelper::COLOR_WHITE
             );
         }
+#endif
 
         y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_SENDb_OUTPUT));
+#ifdef _LABELS
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
             "S2"
             //,SqHelper::COLOR_WHITE
             );
         }
+#endif
 
         y -= channelDy;
         addOutput(createOutputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_SEND_OUTPUT));
+#ifdef _LABELS
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
             "S1"
             //,SqHelper::COLOR_WHITE
             );
         }
+#endif
 
         y -= channelDy;
         addInput(createInputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_RETURNb_INPUT));
+#ifdef _LABELS
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
             "R2");
         }
+#endif
 
         y -= channelDy;
         addInput(createInputCentered<PJ301MPort>(
             Vec(x, y),
             module,
             channel + Comp::LEFT_RETURN_INPUT));
+#ifdef _LABELS
         if (channel == 0) {
             addLabel(Vec(xL, y+labelDy),
             "R1");
         }
+#endif
     }
 
-    x = x0 + 15 + 17  + (WIDE * 15);
+    x = x0 + 15 + 16  + (WIDE * 15);
 
 
     // Big Mute button
@@ -425,17 +439,20 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         Vec(x, y),
         module,
         Comp::RETURN_GAINb_PARAM));
+#ifdef _LABELS
     addLabel(Vec(xL-3, y+labelDy),
             "R2");
-
+#endif
     y -=  (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
         Vec(x, y),
         module,
         Comp::RETURN_GAIN_PARAM));
+#ifdef _LABELS
     addLabel(Vec(xL-3, y+labelDy),
             "R1");
+#endif
 }
 
 /**
@@ -443,14 +460,9 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
 MixMWidget::MixMWidget(MixMModule *module)
 {
     setModule(module);
-#else
-MixMWidget::MixMWidget(MixMModule *module) : ModuleWidget(module)
-{
-#endif
     mixModule = module;
     box.size = Vec((16 + WIDE) * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mixm_panel.svg");

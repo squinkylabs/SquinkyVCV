@@ -44,7 +44,7 @@ The expansion input in the master section is meant for the output of a "slave" m
 
 **S**: Solo. Will turn off all the other channels and let the soloed channel play on its own. Soloing one channel will un-solo the other channels. When solo is active it overrides mutes, i.e. if you solo a muted channel it will play. Pressing an active solo button will remove the solo.
 
-**M** (in the channel): Mute. Silences the muted channel. Not that the button on the far right is the master mute.
+**M** (in the channel): Mute. Silences the muted channel. Note that the button on the far right is the master mute.
 
 **Aux**: Aux send level. Controls how much of the current channel will be sent to the stereo Aux bux. If the send and return are patched to an echo, for example, Aux will control how much of that channel is send to the echo.
 
