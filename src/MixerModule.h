@@ -159,6 +159,8 @@ inline void MixerModule::process(const ProcessArgs &args)
             sendLeftChannel.send(commCmd);
         }
       
+        printf("soloRequestFromUI = %d, cur = %d\n",
+            (int)soloRequestFromUI, (int) currentSoloStatusFromUI);
         // tell our own module to solo, if a state change is requested
         if (soloRequestFromUI != currentSoloStatusFromUI) {
             //printf("requesting module solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
@@ -191,7 +193,9 @@ inline void MixerModule::process(const ProcessArgs &args)
                 SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
             
             //printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
-
+            
+            // clear the UI status, so that UI can again solo in the future
+            currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
             requestModuleSolo(reqMuteStatus);
             // now relay down to the left
             if (pairedLeft) {
@@ -214,6 +218,8 @@ inline void MixerModule::process(const ProcessArgs &args)
             
             //printf("left read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
 
+            // clear the UI status, so that UI can again solo in the future
+            currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
             requestModuleSolo(reqMuteStatus);
             // now relay down to the right
             if (pairedRight) {
@@ -246,7 +252,8 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
 }
 
 /********************************************************
- * support function added here for convenience.
+ * Support function added here for convenience.
+ * Put in their own namespace: sqmix.
  */
 
 namespace sqmix {
@@ -263,7 +270,6 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel)
         SoloCommands(int(SoloCommands::SOLO_0) + channel);
     mixer->requestSoloFromUI(cmd); 
 }
-
 
 /**
  * clears all the SOLO params from the composites.
@@ -289,7 +295,6 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);    
 }
 
-
 template<class Comp>
 inline void processMultiSolo(MixerModule* mod, SoloCommands command)
 {
@@ -305,6 +310,7 @@ inline void processMultiSolo(MixerModule* mod, SoloCommands command)
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, channelIsSoloed ? 0 : 1); 
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);
 }
+
 /**
  * Called from modules as they process calls into their 
  * requestModuleSolo(SoloCommands command) functions.
