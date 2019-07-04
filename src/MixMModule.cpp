@@ -115,7 +115,9 @@ void MixMWidget::appendContextMenu(Menu *menu)
     MenuLabel *spacerLabel = new MenuLabel();
 	menu->addChild(spacerLabel);
 
-    ManualMenuItem* manual = new ManualMenuItem("Form manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
+    ManualMenuItem* manual = new ManualMenuItem(
+        "Form manual",
+        "https://github.com/squinkylabs/SquinkyVCV/blob/m9/docs/form.md");
     menu->addChild(manual);
     
     MenuLabel *spacerLabel2 = new MenuLabel();
@@ -326,8 +328,10 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
     float x = 0;
     float y = channelY;
     const float x0 = 160;
+#ifdef _LABELS
     const float xL = 215  + (WIDE * 15);
     const float labelDy = -10;
+#endif
 
     for (int channel = 0; channel<2; ++channel) {
         y = channelY;
