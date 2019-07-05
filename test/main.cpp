@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <string>
 
+extern void testMidiPlayer2();
 extern void testBiquad();
 extern void testTestSignal();
 extern void testSaw();
@@ -154,6 +155,7 @@ int main(int argc, char ** argv)
     testMidiDataModel();
     testMidiSong();
     testSeqClock();
+    testMidiPlayer2();
     testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();

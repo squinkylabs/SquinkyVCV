@@ -35,6 +35,9 @@
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiLock.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiPlayer2.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiVoice.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiVoiceAssigner.cpp" />
     <ClCompile Include="..\..\midi\controller\ReplaceDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
@@ -87,6 +90,7 @@
     <ClCompile Include="..\..\test\testMidiEditorSelection.cpp" />
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer.cpp" />
+    <ClCompile Include="..\..\test\testMidiPlayer2.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />
@@ -188,10 +192,14 @@
     <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h" />
     <ClInclude Include="..\..\dsp\utils\ObjectCache.h" />
     <ClInclude Include="..\..\dsp\utils\poly.h" />
+    <ClInclude Include="..\..\midi\controller\IMidiPlayerHost.h" />
     <ClInclude Include="..\..\midi\controller\MidiEditor.h" />
     <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h" />
     <ClInclude Include="..\..\midi\controller\MidiLock.h" />
     <ClInclude Include="..\..\midi\controller\MidiPlayer.h" />
+    <ClInclude Include="..\..\midi\controller\MidiPlayer2.h" />
+    <ClInclude Include="..\..\midi\controller\MidiVoice.h" />
+    <ClInclude Include="..\..\midi\controller\MidiVoiceAssigner.h" />
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h" />
     <ClInclude Include="..\..\midi\controller\SeqClock.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
