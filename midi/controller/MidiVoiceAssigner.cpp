@@ -23,8 +23,8 @@ MidiVoiceAssigner::MidiVoiceAssigner(MidiVoice* vx, int maxVoices) :
 {
     assert(maxVoices > 0 && maxVoices <= 16);
     for (int i = 0; i < maxVoices; ++i) {
-        bool p = voices[i].isPlaying();
-        assert(!p);
+        auto s = voices[i].state();
+        assert(s == MidiVoice::State::Idle);
     }
 }
 

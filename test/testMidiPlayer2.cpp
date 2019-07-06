@@ -11,7 +11,7 @@
 /**
  * mock host to spy on the voices.
  */
-class TestHost : public IMidiPlayerHost
+class TestHost2 : public IMidiPlayerHost
 {
 public:
 
@@ -53,7 +53,7 @@ public:
         -100,-100,-100,-100};
 };
 
-using TestHostPtr = std::shared_ptr<TestHost>;
+using TestHost2Ptr = std::shared_ptr<TestHost2>;
 
 static void test0()
 {
@@ -63,11 +63,27 @@ static void test0()
     (void) mp;
 }
 
-static void basicTestOfMidiVoice()
+//************************** MidiVoice tests *********************************************
+
+static void testMidiVoiceDefaultState()
 {
     MidiVoice mv;
-    assert(!mv.isPlaying());
+    assert(mv.state() == MidiVoice::State::Idle);
 }
+
+static void testMidiVoicePlayNote()
+{
+    TestHost2 th;
+    MidiVoice mv;
+    mv.setHost(&th);
+    mv.playNote(3.f, 1.f);      // pitch 3, dur 1
+
+    assert(mv.state() == MidiVoice::State::Playing);
+    assert(th.cvChangeCount == 1);
+    assert(th.gateChangeCount == 1);
+}
+
+//************************** MidiVoiceAssigner tests **********************************
 
 static void basicTestOfVoiceAssigner()
 {
@@ -81,6 +97,8 @@ static void basicTestOfVoiceAssigner()
 void testMidiPlayer2()
 {
     test0();
-    basicTestOfMidiVoice();
+    testMidiVoiceDefaultState();
+    testMidiVoicePlayNote();
+
     basicTestOfVoiceAssigner();
 }
