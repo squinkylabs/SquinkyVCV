@@ -35,5 +35,14 @@ void MidiVoiceAssigner::setNumVoices(int)
 
 MidiVoice* MidiVoiceAssigner::getNext(float pitch)
 {
-    return voices + 0;          // very dumb!
+    //return voices + 0;          // very dumb!
+
+    // second algorithm - pretty dumb
+    // first, look for any idle voice
+    for (int i = 0; i < maxVoices; ++i) {
+        if (voices[i].state() == MidiVoice::State::Idle) {
+            return voices + i;
+        }
+    }
+    return voices + 0;              // if no idle voices, use the first one. 
 }

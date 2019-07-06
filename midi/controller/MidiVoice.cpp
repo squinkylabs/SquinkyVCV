@@ -32,6 +32,11 @@ void MidiVoice::setHost(IMidiPlayerHost* ph)
     host = ph;
 }
 
+void MidiVoice::setIndex(int i)
+{
+    index = i;
+}
+
 void MidiVoice::playNote(float pitch, float endTime)
 {
     this->curPitch = pitch;
@@ -40,6 +45,6 @@ void MidiVoice::playNote(float pitch, float endTime)
     // This is over-simplified - doesn't account for what if a note was already playing
 
     this->curState = State::Playing;
-    host->setCV(0, pitch);
-    host->setGate(0, true);
+    host->setCV(index, pitch);
+    host->setGate(index, true);
 }

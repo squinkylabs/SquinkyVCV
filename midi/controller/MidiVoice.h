@@ -7,6 +7,7 @@ class MidiVoice
 public:
     enum class State {Idle, Playing, ReTriggering };
     void setHost(IMidiPlayerHost*);
+    void setIndex(int);
 
     /**
      * Will always play the note, not matter what state it is in.
@@ -26,4 +27,5 @@ private:
     IMidiPlayerHost* host = nullptr;
 
     State curState = State::Idle;
+    int index = 0;
 };

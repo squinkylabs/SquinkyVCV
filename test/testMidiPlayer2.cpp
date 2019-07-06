@@ -65,6 +65,14 @@ static void test0()
 
 //************************** MidiVoice tests *********************************************
 
+void initVoices(MidiVoice* voices, int numVoices, IMidiPlayerHost* host)
+{
+    for (int i = 0; i < numVoices; ++i) {
+        voices[i].setHost(host);
+        voices[i].setIndex(i);
+    }
+}
+
 static void testMidiVoiceDefaultState()
 {
     MidiVoice mv;
@@ -81,6 +89,26 @@ static void testMidiVoicePlayNote()
     assert(mv.state() == MidiVoice::State::Playing);
     assert(th.cvChangeCount == 1);
     assert(th.gateChangeCount == 1);
+    assert(th.cvValue[0] == 3.f);
+    assert(th.gateState[0] == true);
+}
+
+
+static void testMidiVoicePlayNote2()
+{
+    TestHost2 th;
+    IMidiPlayerHost* host = &th;
+    MidiVoice mv[2];
+
+    initVoices(mv, 2, host);
+   
+    mv[1].playNote(3.f, 1.f);      // pitch 3, dur 1
+
+    assert(mv[1].state() == MidiVoice::State::Playing);
+    assert(th.cvChangeCount == 1);
+    assert(th.gateChangeCount == 1);
+    assert(th.cvValue[1] == 3.f);
+    assert(th.gateState[1] == true);
 }
 
 //************************** MidiVoiceAssigner tests **********************************
@@ -94,11 +122,48 @@ static void basicTestOfVoiceAssigner()
     assert(p == &vx);
 }
 
+static void testVoiceAssign2Notes()
+{
+    TestHost2 th;
+    IMidiPlayerHost* host = &th;
+    MidiVoice mv[2];
+    initVoices(mv, 2, host);
+
+    MidiVoiceAssigner va(mv, 2);
+
+    auto p = va.getNext(0);
+    assert(p);
+    assert(p == mv);
+    p->playNote(3, 1);
+
+    // first is still playing, so have to get second
+    p = va.getNext(0);
+    assert(p);
+    assert(p == mv+1);
+}
+
+static void testVoiceReAssign()
+{
+    MidiVoice vx;
+    MidiVoiceAssigner va(&vx, 1);
+    auto p = va.getNext(0);
+    assert(p);
+    assert(p == &vx);
+
+    p = va.getNext(0);
+    assert(p);
+    assert(p == &vx);
+}
+
+//*********************************************************************
 void testMidiPlayer2()
 {
     test0();
     testMidiVoiceDefaultState();
     testMidiVoicePlayNote();
-
+    testMidiVoicePlayNote2();
+  
     basicTestOfVoiceAssigner();
+    testVoiceAssign2Notes();
+    testVoiceReAssign();
 }
