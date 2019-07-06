@@ -4,7 +4,7 @@ Form is a feature packed four channel mixer that can be expanded to any number o
 
 Form is an enhanced version of our Mixer-8, which was based on the AS 8-CH mixer, with some added features.
 
-To those features, Form adds many more:
+To the Mixer-8 features, Form adds many more:
 
 * Two stereo aux buses.
 * Aux sends may be post-fader or pre-fader.
@@ -12,7 +12,7 @@ To those features, Form adds many more:
 * Volume controls now have audio taper, rather than linear taper.
 * Mute CV can be momentary or toggle.
 
-Note that most of the non-obvious aspects of Form are mentioned a the start of this documentation. The reference at the end may have some tidbits. so make sure to read the start at least.
+Note that most of the non-obvious aspects of Form are mentioned at the start of this documentation. The reference at the end may have some tidbits, so make sure to read the start at least.
 
 Also note, "fader" is an audio term that often refers to the linear travel volume controls found on many mixers. But fader can also apply to regular round volume controls. In the case of Form we use round controls to save panel space without having to make the controls too small to use.
 
@@ -24,7 +24,7 @@ Linear taper is easy to understand - the level will be directly proportional to 
 
 But humans do not perceive loudness linearly, we perceive it  logarithmically. That is why the unit of loudness is "decibel", which is basically the logarithm of the level. But audio does not use log taper controls, because we want the volume to go to zero when we turn it all the way down, and zero volume is negative infinity decibels.
 
-So audio taper was invented. Audio taper is  logarithmic through most if its range, becoming linear at the very quiet end. So it responds evenly at moderate to high levels, but becomes linear when quiet so it can cut the sound at zero.
+So audio taper was invented. Audio taper is logarithmic through most if its range, becoming linear at the very quiet end. So it responds evenly at moderate to high levels, but becomes linear when quiet so it can cut the sound at zero.
 
 The channel volumes in Form are log for the top 3/4. At 1/4 the gain is -18 decibels, and it goes linearly to zero below 1/4.
 
@@ -32,33 +32,33 @@ The channel volumes in Form are log for the top 3/4. At 1/4 the gain is -18 deci
 
 Most of the mixer controls are on the panel, and pretty much self-explanatory. But there are some that are on the context menu that you see when you right-click on the panel.
 
-**Send 1 (or 2) Pre Fader**: When this is in the default un-checked the aux sends will be post fader, and post pan. This is the most common setting, and is usually appropriate for adding reverb, echo, or bus compression.
+**Send 1 (or 2) Pre Fader**: When this is in the default un-checked state the aux sends will be post fader, and post pan. This is the most common setting, and is usually appropriate for adding reverb, echo, or bus compression.
 
 When checked, the send will be pre fader. This means that the setting of the pan and volume controls will not affect the signal going to the bus. This is handy for making an entirely separate mix. Perhaps for monitoring or special effects.
 
-**Mute CV toggles on/off**: normally, when the mute CV is over 1.6 volts the signal is muted, and when the CV goes below 0.8 it is un-muted. But when Mute CV toggles on/off is enabled, each low to high transition of the gate will toggle the mute. First muted, then un-muted.
+**Mute CV toggles on/off**: Normally, when the mute CV is over 1.6 volts the signal is muted, and when the CV goes below 0.8 it is un-muted. But when Mute CV toggles on/off is enabled, each low to high transition of the gate will toggle the mute. First muted, then un-muted.
 
 ## Channel strip controls
 
 **S**: Solo. Will turn off all the other channels and let the soloed channel play on its own. Soloing one channel will un-solo the other channels. When solo is active it overrides mutes, i.e. if you solo a muted channel it will play. Pressing an active solo button will remove the solo.
 
-**M** Mute. Silences the muted channel. Note that the button on the far right is the master mute.
+**M** Mute. Silences the muted channel. Note that the larger button on the far right is the master mute.
 
-**AX1, XA2**: Aux send levels. Controls how much of the current channel will be sent to each stereo Aux bux. If the send and return are patched to an echo, for example, Aux will control how much of that channel is send to the echo.
+**AX1, XA2**: Aux send levels. Controls how much of the current channel will be sent to each stereo Aux bux. If the send and return are patched to an echo, for example, Aux will control how much of that channel is sent to the echo.
 
 Aux is post-fader by default, so any channel settings will also affect the Aux send level. But it may be switched to be pre-fader, in which case the mute and solo will still affect it, but pan and volume will not.
 
 **Pan**: Pans the channel left to right. Uses the AS Mixer's equal power pan law.
 
-**Vol**: Controls the channel's volume.
+**Vol**: Controls the channel's volume. Audio Taper.
 
 ## Channel strip jacks
 
-**In**: The channel audio input.
-
 **Out**: The channel direct output. This is always post-mute and post-fader.
 
-**M**: Mute control voltages in. These go through the mute anti-pop filters, so sharp gates may be used without pops. The can be momentary or toggle. See section on context menu for more on this. Because the mute CV has a pop filter on it, you can automate the mute with fast gate signal without poping. For example use the outputs from Gray Code to automate them.
+**In**: The channel audio input.
+
+**M**: Mute control voltages in. These go through the mute anti-pop filters, so sharp gates may be used without pops. The can be momentary or toggle. See section on context menu for more on this. Because the mute CV has a pop filter on it, you can automate the mute with fast gate signal without popping. For example use the outputs from Gray Code to automate them.
 
 **Vol**: CV input for volume control. This also has a pop filter.
 
@@ -70,11 +70,13 @@ Aux is post-fader by default, so any channel settings will also affect the Aux s
 
 ## Master section controls
 
-**Big knob**: master volume. Controls the level of the signals coming from the **O** outputs
+**Big knob**: master volume. Controls the level of the signals coming from the **O** outputs. Audio taper, and all the way up provides +6db of gain.
 
 **Big button**: master mute.
 
-**R2**: Aux bus 2 return level. The level of the signal patched into the R2 jacks is controller by this knob before it is mixed with the other buses into the **O** output. 
+**R2**: Aux bus 2 return level. The level of the signal patched into the R2 jacks is controller by this knob before it is mixed with the other buses into the **O** output.  Audio taper, and all the way up provides +6db of gain.
+
+**R1**" Aux bus 1 return level.
 
 ## Master section jacks
 
