@@ -153,16 +153,17 @@ void Mix4Widget::makeStrip(
     const float x = channelX + channel * dX;
 
     float y = channelY;
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x, y),
-        module,
-        channel + Comp::AUDIO0_INPUT));
 
-    y -= channelDy;
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::CHANNEL0_OUTPUT));
+
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::AUDIO0_INPUT));
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(

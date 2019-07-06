@@ -283,11 +283,18 @@ inline void MixM<TBase>::stepn(int div)
     helper.procMasterMute(this);
 
     // round up some scalars the we need for step()
-    buf_auxReturnGainA = TBase::params[RETURN_GAIN_PARAM].value;
-    buf_auxReturnGainB = TBase::params[RETURN_GAINb_PARAM].value;
+    {
+        float rawSlider = TBase::params[RETURN_GAIN_PARAM].value;
+        buf_auxReturnGainA = 2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 
-    unbufferedCV[cvOffsetMaster] = (1.0f - TBase::params[MASTER_MUTE_STATE_PARAM].value) *
-        TBase::params[MASTER_VOLUME_PARAM].value;
+        rawSlider = TBase::params[RETURN_GAINb_PARAM].value;
+        buf_auxReturnGainB =  2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
+
+        rawSlider = TBase::params[MASTER_VOLUME_PARAM].value;
+        float procMaster =  2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
+        unbufferedCV[cvOffsetMaster] = (1.0f - TBase::params[MASTER_MUTE_STATE_PARAM].value) *
+           procMaster;
+    }
 
     // If the is an external solo, then mute all channels
     bool anySolo = false;
@@ -348,9 +355,7 @@ inline void MixM<TBase>::stepn(int div)
             unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
         }
 
-
-        // TODO: precalc all the send gains
-
+        // precalc all the send gains
         {
             const float muteValue = filteredCV.get(cvOffsetMute + i);
             const float sliderA = TBase::params[i + SEND0_PARAM].value;
@@ -464,7 +469,7 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
     switch (i) {
 
         case MixM<TBase>::MASTER_VOLUME_PARAM:
-            ret = {0, 1, .8f, "Master Vol"};
+            ret = {0, 1, .75f, "Master Vol"};
             break;
         case MixM<TBase>::MASTER_MUTE_PARAM:
             ret = {0, 1, 0, "Master Mute"};

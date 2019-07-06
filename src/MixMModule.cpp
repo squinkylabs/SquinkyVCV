@@ -152,19 +152,7 @@ void MixMWidget::makeStrip(
     const float x = channelX + channel * dX;
 
     float y = channelY;
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x, y),
-        module,
-        channel + Comp::AUDIO0_INPUT));
-#ifdef _LABELS
-    if (channel == 0) {
-        addLabel(
-            Vec(labelX+6, y-10),
-            "In");
-    }
-#endif
 
-    y -= channelDy;
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x, y),
         module,
@@ -177,6 +165,18 @@ void MixMWidget::makeStrip(
     }
 #endif
 
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::AUDIO0_INPUT));
+#ifdef _LABELS
+    if (channel == 0) {
+        addLabel(
+            Vec(labelX+6, y-10),
+            "In");
+    }
+#endif
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
