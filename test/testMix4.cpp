@@ -7,6 +7,8 @@
 #include "ObjectCache.h"
 
 
+const static float defaultMasterGain = 1.002374f;
+
 //using Mixer8 = Mix8<TestComposite>;
 using Mixer4 = Mix4<TestComposite>;
 using MixerM = MixM<TestComposite>;
@@ -33,7 +35,7 @@ static float auxGetterMixMB(std::shared_ptr<MixerM> m, bool bRight)
 static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
 {
     // use the expander bus, and apply the default master gain
-    return 0.8f * gOutputBuffer[bRight ? 1 : 0];
+    return defaultMasterGain * gOutputBuffer[bRight ? 1 : 0];
 }
 
 static float auxGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
@@ -139,6 +141,8 @@ static void testChannel()
 
 //***********************************************************************************
 
+
+
 template <typename T>
 static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
 {
@@ -152,16 +156,12 @@ static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> ou
         m->step();           // let mutes settle
     }
 
-   // for (int i = 0; i < 1000; ++i) {
-  //      m->step();           // let mutes settle
-   // }
-
     float outL = outputGetter(m, 0);
     float outR = outputGetter(m, 1);
 
     // input 10, channel atten 1, master default .8
-    float expectedOutL = side ? float(10 * .8) : 0;
-    float expectedOutR = side ? 0 : float(10 * .8);
+    float expectedOutL = side ? float(10 * defaultMasterGain) : 0;
+    float expectedOutR = side ? 0 : float(10 * defaultMasterGain);
     assertClose(outL, expectedOutL, .01);
     assertClose(outR, expectedOutR, .01);
 }
@@ -329,7 +329,7 @@ static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> 
 
     float outL = outputGetter(m, false);
     float outR = outputGetter(m, false);
-    float expectedOut = float(10 * 1 * .8f / sqrt(2.f));
+    float expectedOut = float(10 * 1 * defaultMasterGain / sqrt(2.f));
 
     assertClose(outL, expectedOut, .01);
     assertClose(outR, expectedOut, .01);
@@ -353,7 +353,7 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
     }
 
     // only testing that signal passes
-    assertClose(outputGetter(m, false), float(10 * 1 * .8), .001);
+    assertClose(outputGetter(m, false), float(10 * 1 * defaultMasterGain), .001);
     assertClose(outputGetter(m, true), 0, .001);
 
     // now solo other channel, should mute all

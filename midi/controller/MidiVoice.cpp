@@ -37,6 +37,16 @@ void MidiVoice::setIndex(int i)
     index = i;
 }
 
+void MidiVoice::setGate(bool g)
+{
+    host->setGate(index, g);
+}
+
+void MidiVoice::setCV(float cv)
+{
+    host->setCV(index, cv);
+}
+
 void MidiVoice::playNote(float pitch, float endTime)
 {
     this->curPitch = pitch;
@@ -45,6 +55,15 @@ void MidiVoice::playNote(float pitch, float endTime)
     // This is over-simplified - doesn't account for what if a note was already playing
 
     this->curState = State::Playing;
-    host->setCV(index, pitch);
-    host->setGate(index, true);
+    setCV(pitch);
+    setGate(true);
+}
+
+void MidiVoice::updateToMetricTime(double metricTime)
+{
+    if (noteOffTime >= 0 && noteOffTime <= metricTime) {
+        setGate(false);
+        noteOffTime = -1;
+        curState = State::Idle;
+    }
 }

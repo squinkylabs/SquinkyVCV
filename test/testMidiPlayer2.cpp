@@ -94,7 +94,7 @@ static void testMidiVoicePlayNote()
 }
 
 
-static void testMidiVoicePlayNote2()
+static void testMidiVoicePlayNoteVoice2()
 {
     TestHost2 th;
     IMidiPlayerHost* host = &th;
@@ -109,6 +109,25 @@ static void testMidiVoicePlayNote2()
     assert(th.gateChangeCount == 1);
     assert(th.cvValue[1] == 3.f);
     assert(th.gateState[1] == true);
+}
+
+static void testMidiVoicePlayNoteOnAndOff()
+{
+    TestHost2 th;
+    IMidiPlayerHost* host = &th;
+    MidiVoice mv;
+    initVoices(&mv, 1, host);
+
+    mv.playNote(3.f, 1.f);      // pitch 3, dur 1
+    mv.updateToMetricTime(2);   // after note is over
+
+   
+    assert(th.cvValue[0] == 3.f);
+    assert(th.gateState[0] == false);
+    assert(th.cvChangeCount == 1);
+    assert(th.gateChangeCount == 2);
+    assert(mv.state() == MidiVoice::State::Idle);
+
 }
 
 //************************** MidiVoiceAssigner tests **********************************
@@ -161,7 +180,8 @@ void testMidiPlayer2()
     test0();
     testMidiVoiceDefaultState();
     testMidiVoicePlayNote();
-    testMidiVoicePlayNote2();
+    testMidiVoicePlayNoteVoice2();
+    testMidiVoicePlayNoteOnAndOff();
   
     basicTestOfVoiceAssigner();
     testVoiceAssign2Notes();
