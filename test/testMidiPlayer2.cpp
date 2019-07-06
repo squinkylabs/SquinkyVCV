@@ -5,6 +5,7 @@
 #include "MidiVoiceAssigner.h"
 
 #include "asserts.h"
+#include <memory>
 #include <vector>
 
 
