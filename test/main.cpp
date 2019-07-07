@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <string>
 
+extern void testMidiPlayer2();
 extern void testBiquad();
 extern void testTestSignal();
 extern void testSaw();
@@ -65,6 +66,8 @@ extern void testMidiEditorSelection();
 extern void testVec();
 extern void testSeqClock();
 extern void testMix8();
+extern void testMix4();
+extern void testMixHelper();
 extern void testSlew4();
 extern void testCommChannels();
 extern void testLadder();
@@ -144,13 +147,6 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-#ifndef _DEBUG
-    if (true) {
-        printf("****** can't run tests with release build\n");
-        return 0;
-}
-#endif
-
     testIComposite();
     testVec();
     testCommChannels();
@@ -159,6 +155,7 @@ int main(int argc, char ** argv)
     testMidiDataModel();
     testMidiSong();
     testSeqClock();
+    testMidiPlayer2();
     testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();
@@ -178,9 +175,10 @@ int main(int argc, char ** argv)
     testLookupTable();
     testObjectCache();
     testMultiLag();
-    testSlew4();
+    testSlew4();   
+    testMixHelper();
+    testMix4();
     testMix8();
-
 
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)

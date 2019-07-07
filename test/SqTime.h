@@ -1,4 +1,6 @@
 #pragma once
+
+#include <assert.h>
 /**
  * @class SqTime
  * A simple high-res timer. Returns current seconds

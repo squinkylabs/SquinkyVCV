@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "LookupTable.h"
 #include "BiquadParams.h"
 
@@ -20,6 +19,7 @@ class ObjectCache
 public:
     static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper();
     static std::shared_ptr<LookupTableParams<T>> getAudioTaper();
+    static std::shared_ptr<LookupTableParams<T>> getAudioTaper18();
     static std::shared_ptr<LookupTableParams<T>> getSinLookup();
 
     static std::shared_ptr<LookupTableParams<T>> getMixerPanL();
@@ -43,7 +43,6 @@ public:
     static std::shared_ptr<LookupTableParams<T>> getExp2ExtendedHigh();
 
 
-
     static std::shared_ptr<LookupTableParams<T>> getDb2Gain();
 
     /**
@@ -60,6 +59,7 @@ private:
      */
     static std::weak_ptr<LookupTableParams<T>> bipolarAudioTaper;
     static std::weak_ptr<LookupTableParams<T>> audioTaper;
+    static std::weak_ptr<LookupTableParams<T>> audioTaper18;
     static std::weak_ptr<LookupTableParams<T>> sinLookupTable;
     static std::weak_ptr<LookupTableParams<T>> exp2;
     static std::weak_ptr<LookupTableParams<T>> exp2ExHigh;

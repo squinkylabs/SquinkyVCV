@@ -85,6 +85,8 @@ struct CHBWidget : ModuleWidget
         ModuleWidget::step();
         semitoneDisplay.step();
     }
+
+    DECLARE_MANUAL("Chebyshev manual",  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
 private:
     void addHarmonics(CHBModule *module, std::shared_ptr<IComposite>);
     void addRow1(CHBModule *module, std::shared_ptr<IComposite>);
@@ -94,13 +96,8 @@ private:
 
     void addBottomJacks(CHBModule *module);
     void resetMe(CHBModule *module);
-#ifdef __V1x
-    void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
 
-    // TODO: stil used?
+    // TODO: still used?
     // This is the gain which when run throught all the lookup tables
     // gives a gain of 1.
     const float defaultGainParam = .63108f;
@@ -113,25 +110,6 @@ private:
 
     SemitoneDisplay semitoneDisplay;
 };
-
-#ifdef __V1x
-inline void CHBWidget::appendContextMenu(Menu *menu)
-{
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
-    menu->addChild(manual);
-}
-#else
-inline Menu* CHBWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-    ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
-    theMenu->addChild(manual);
-    return theMenu;
-}
-#endif
-
 
 /**
  * Global coordinate constants

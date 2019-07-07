@@ -44,6 +44,7 @@ private:
 
 void Mix4Module::onSampleRateChange()
 {
+    Mix4->onSampleRateChange();
 }
 
 void Mix4Module::setExternalInput(const float* buf)
@@ -58,8 +59,7 @@ void Mix4Module::setExternalOutput(float* buf)
 
 void Mix4Module::requestModuleSolo(SoloCommands command)
 {
-    //printf("Mix4Module::requestModuleSolo\n"); fflush(stdout);
-    Mix4->requestModuleSolo(command);
+    sqmix::processSoloRequestForModule<Comp>(this, command);
 }
 
 #ifdef __V1x
@@ -78,7 +78,6 @@ Mix4Module::Mix4Module()
 {
 #endif
     Mix4 = std::make_shared<Comp>(this);
-    onSampleRateChange();
     Mix4->init();
 }
 
@@ -94,8 +93,7 @@ void Mix4Module::internalProcess()
 struct Mix4Widget : ModuleWidget
 {
     Mix4Widget(Mix4Module *);
-    DECLARE_MANUAL("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
-
+ 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
@@ -110,9 +108,35 @@ struct Mix4Widget : ModuleWidget
         Mix4Module*,
         std::shared_ptr<IComposite>,
         int channel);
+    void appendContextMenu(Menu *menu) override;
 private:
     Mix4Module* mixModule;
 };
+
+void Mix4Widget::appendContextMenu(Menu *menu)
+{
+    MenuLabel *spacerLabel = new MenuLabel();
+	menu->addChild(spacerLabel);
+
+    ManualMenuItem* manual = new ManualMenuItem(
+        "ExFor manual",
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/exfor.md");
+    menu->addChild(manual);
+    
+    MenuLabel *spacerLabel2 = new MenuLabel();
+    menu->addChild(spacerLabel2);
+    SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERa_PARAM);
+    item->text = "Send 1 Pre-Fader";
+    menu->addChild(item);
+
+    item = new SqMenuItem_BooleanParam2(mixModule, Comp::PRE_FADERb_PARAM);
+    item->text = "Send 2 Pre-Fader";
+    menu->addChild(item);
+
+    item = new SqMenuItem_BooleanParam2(mixModule, Comp::CV_MUTE_TOGGLE);
+    item->text = "Mute CV toggles on/off";
+    menu->addChild(item);
+}
 
 static const float channelX = 21;
 static const float dX = 36;
@@ -120,7 +144,6 @@ static const float labelX = 0;
 static const float channelY = 350;
 static const float channelDy = 30;   
 static float volY = 0;
-static float muteY = 0;
 
 void Mix4Widget::makeStrip(
     Mix4Module*,
@@ -130,16 +153,17 @@ void Mix4Widget::makeStrip(
     const float x = channelX + channel * dX;
 
     float y = channelY;
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x, y),
-        module,
-        channel + Comp::AUDIO0_INPUT));
 
-    y -= channelDy;
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         channel + Comp::CHANNEL0_OUTPUT));
+
+    y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        channel + Comp::AUDIO0_INPUT));
 
     y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
@@ -159,7 +183,8 @@ void Mix4Widget::makeStrip(
         module,
         channel + Comp::PAN0_INPUT));
 
-    y -= channelDy;
+    y -= (channelDy -1);
+#if 0
     auto mute = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(x-12, y-12),
@@ -169,20 +194,49 @@ void Mix4Widget::makeStrip(
     mute->addSvg("res/square-button-02.svg");
     addParam(mute);
     muteY = y-12;
+
+#else 
+   
+    const float mutx = x-11;
+    const float muty = y-12;
+    auto _mute = SqHelper::createParam<LEDBezel>(
+        icomp,
+        Vec(mutx, muty),
+        module,
+        channel + Comp::MUTE0_PARAM);
+    addParam(_mute);
+
+    addChild(createLight<MuteLight<SquinkyLight>>(
+        Vec(mutx + 2.2, muty + 2),
+        module,
+        channel + Comp::MUTE0_LIGHT));
+#endif
     
-    y -= channelDy;
+    y -= (channelDy-1);
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(x-12, y-12),
+        Vec(x-11, y-12),
         module,
         channel + Comp::SOLO0_LIGHT));
-    tog->addSvg("res/square-button-01.svg");
-    tog->addSvg("res/square-button-02.svg");
-    tog->setHandler( [this, channel]() {
-        mixModule->requestSoloFromUI( SoloCommands(channel));
+    std::string sLed = asset::system("res/ComponentLibrary/LEDBezel.svg");
+    tog->addSvg(sLed.c_str(), true);
+    tog->addSvg("res/SquinkyBezel.svg");
+    tog->setHandler( [this, channel](bool ctrlKey) {
+       // MixerModule* mod = mixModule;
+        sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
+        #if 0
+         //printf("clicked on channel %d\n", channel);
+        auto soloCommand =  SoloCommands(channel);
+        if (ctrlKey) {
+            soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
+        }
+        printf("ui is requesting %f from click handler\n", (int) soloCommand);
+
+        mixModule->requestSoloFromUI(soloCommand);
+        #endif
     });
     addChild(tog);
    
-    const float extraDy = 6;
+    const float extraDy = 5;
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
@@ -197,6 +251,15 @@ void Mix4Widget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::PAN0_PARAM));
+
+
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        channel + Comp::SENDb0_PARAM));
 
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(

@@ -22,7 +22,7 @@
 
 [CV ranges](#cv)
 
-The [release notes](release-notes.md) describe recent changes to our modules.
+The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 # Functional VCO-1 <a name="fun"></a>
 

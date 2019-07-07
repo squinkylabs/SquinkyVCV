@@ -3,12 +3,32 @@
 #include "RingBuffer.h"
 
 /**
- * Protocol:
+ * Command Protocol:
  *      We send one unit32_t, followed by 'n' zeros
  *      zero is not a legal command
  * 
  *      Top 16 bits are the command, bottom 16 are the data
+ * 
+ * Data protocol: VCV provides are array of 32-bit floats that you may use for message passing.
+ * 
+ * going left to right we send a lot of busses:
+ *  buffer[0] = left master buss
+ *  buffer[1] = right master buss
+ *  buffer[2] = left aux A buss
+ *  buffer[3] = right aux A buss
+ *  buffer[4] = left aux B bus
+ *  buffer[5] = right aux B bus
+ *  buffer[6] = commands
+ * 
+ * going right to left, only commands are sent:
+ *  buffer[0] = command
+ * 
  */
+
+const int comBufferSizeRight = 7;
+const int comBufferRightCommandOffset = 6;
+const int comBufferSizeLeft = 1;
+const int comBufferLeftCommandOffset = 0;
 
 // This command sent when un-soloing. Receiver should clear it's solo status.
 const uint32_t CommCommand_ClearAllSolo = (100 << 16); 
@@ -23,12 +43,31 @@ const uint32_t CommCommand_ExternalSolo = (101 << 16);
  */
 
 enum class SoloCommands {
+    // SOLO_x normal, exclusive solo requested
     SOLO_0,
     SOLO_1,
     SOLO_2,
     SOLO_3,
+
+    // SOLO_x_MULTI, non-exclusive "multi-solo"
+    SOLO_0_MULTI,
+    SOLO_1_MULTI,
+    SOLO_2_MULTI,
+    SOLO_3_MULTI,
+    
+    /**
+     * (8)
+     * mute all of your channels, because another module is 
+     * requesting an exclusive solo.
+     */
     SOLO_ALL,
-    SOLO_NONE,
+
+    /**
+     * (9)
+     * remove the solo overrides from all your channels,
+     * because another module stopped soloing
+     */  
+    SOLO_NONE,          
     DO_NOTHING,
 };
 

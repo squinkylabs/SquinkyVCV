@@ -4,7 +4,7 @@
 
 #include "nanovg.h"
 #ifdef __V1x
-    #include "app.hpp"
+#include "app.hpp"
 #endif
 
 #include "window.hpp"
@@ -33,8 +33,9 @@ void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int siz
 #else
     int f = rack::gGuiFont->handle;
 #endif
-    nvgFillColor(vg, UIPrefs::NOTE_COLOR);
+    // It's a hack to hard code color. Change it later.
+    nvgFillColor(vg, UIPrefs::DRAG_TEXT_COLOR);
     nvgFontFaceId(vg, f);
-    nvgFontSize(vg, 14);
-    nvgText(vg, x, y,text, nullptr);
+    nvgFontSize(vg, 16);
+    nvgText(vg, x, y, text, nullptr);
 }

@@ -44,7 +44,9 @@ public:
     
     void changePitch(int semitones);
     void changeStartTime(bool ticks, int amount);
+    void changeStartTime(const std::vector<float>& shifts);
     void changeDuration(bool ticks, int amount);
+    void changeDuration(const std::vector<float>& shifts);
 
     /************* functions that add or remove notes ************/
 

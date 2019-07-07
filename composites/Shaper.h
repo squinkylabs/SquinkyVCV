@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "AsymWaveShaper.h"
 #include "ButterworthFilterDesigner.h"
 #include "IComposite.h"

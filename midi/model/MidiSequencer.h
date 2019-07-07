@@ -7,6 +7,7 @@
 #include "UndoRedoStack.h"
 #include <memory>
 
+class ISeqSettings;
 class MidiSong;
 class MidiSequencer;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
@@ -20,7 +21,9 @@ class MidiSequencer : public std::enable_shared_from_this<MidiSequencer>
 {
 public:
     
-    static MidiSequencerPtr make(std::shared_ptr<MidiSong>);
+    static MidiSequencerPtr make(
+        std::shared_ptr<MidiSong>,
+        std::shared_ptr<ISeqSettings>);
     ~MidiSequencer();
 
     void assertValid() const;
@@ -39,7 +42,7 @@ private:
 
     /** constructor takes a song to edit
     */
-    MidiSequencer(std::shared_ptr<MidiSong>);
+    MidiSequencer(std::shared_ptr<MidiSong>, std::shared_ptr<ISeqSettings>);
     MidiSequencer() = delete;
     MidiSequencer(const MidiSequencer&) = delete;
 

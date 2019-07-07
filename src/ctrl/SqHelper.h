@@ -12,70 +12,86 @@
 #include "engine/Module.hpp"
 #include <string>
 
+extern rack::plugin::Plugin *pluginInstance;
 class SqHelper
 {
 public:
 
-    static bool contains(const struct rack::math::Rect& r, const Vec& pos)
+    static bool contains(const struct rack::math::Rect& r, const rack::math::Vec& pos)
     {
         return r.isContaining(pos);
     }
     using SvgWidget = rack::widget::SvgWidget;
     using SvgSwitch = rack::app::SvgSwitch;
     
-    static void setSvg(SvgWidget* widget, std::shared_ptr<Svg> svg)
+    static void setSvg(SvgWidget* widget, std::shared_ptr<rack::Svg> svg)
     {
         widget->setSvg(svg);
     }
-    static void setSvg(SvgKnob* knob, std::shared_ptr<Svg> svg)
+    static void setSvg(rack::app::SvgKnob* knob, std::shared_ptr<rack::Svg> svg)
     {
         knob->setSvg(svg);
     }
 
     /**
-     * loads SVG from plugin's assets
+     * loads SVG from plugin's assets,
+     * unless pathIsAbsolute is ture
      */
-    static std::shared_ptr<Svg> loadSvg(const char* path) 
+    static std::shared_ptr<rack::Svg> loadSvg(const char* path, bool pathIsAbsolute = false) 
     {
-        return rack::APP->window->loadSvg(
-            SqHelper::assetPlugin(pluginInstance, path));
+        if (pathIsAbsolute) {
+            return rack::APP->window->loadSvg(path);
+        } else {
+            return rack::APP->window->loadSvg(
+                SqHelper::assetPlugin(pluginInstance, path));
+        }
     }
-    static void setPanel(ModuleWidget* widget, const char* path)
+
+    static void setPanel(rack::app::ModuleWidget* widget, const char* path)
     {
-         widget->setPanel(rack::APP->window->loadSvg(asset::plugin(pluginInstance, path)));
+         widget->setPanel(rack::APP->window->loadSvg(rack::asset::plugin(pluginInstance, path)));
     }
 
     static void openBrowser(const char* url)
     {
-        system::openBrowser(url);
+        rack::system::openBrowser(url);
     }
-    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
+    static std::string assetPlugin(rack::plugin::Plugin *plugin, const std::string& filename)
     {
-        return asset::plugin(plugin, filename);
+        return rack::asset::plugin(plugin, filename);
     } 
     static float engineGetSampleRate()
     {
         return rack::APP->engine->getSampleRate();
     }
-      static float engineGetSampleTime()
+    static float engineGetSampleTime()
     {
         return rack::APP->engine->getSampleTime();
     }
 
     template <typename T>
-    static T* createParam(std::shared_ptr<IComposite> dummy, const Vec& pos, Module* module, int paramId )
+    static T* createParam(
+        std::shared_ptr<IComposite> dummy, 
+        const rack::math::Vec& pos, 
+        rack::engine::Module* module, 
+        int paramId )
     {
         return rack::createParam<T>(pos, module, paramId);
     }
 
     template <typename T>
-    static T* createParamCentered(std::shared_ptr<IComposite> dummy, const Vec& pos, Module* module, int paramId )
+    static T* createParamCentered(
+        std::shared_ptr<IComposite> dummy, 
+        const rack::math::Vec& pos, 
+        rack::engine::Module* module,
+        int paramId )
     {
         return rack::createParamCentered<T>(pos, module, paramId);
     }
 
     static const NVGcolor COLOR_WHITE;
     static const NVGcolor COLOR_BLACK;
+    static const NVGcolor COLOR_SQUINKY;
 
     static void setupParams(
         std::shared_ptr<IComposite> comp,
@@ -90,22 +106,24 @@ public:
         }
     }
 
-    static float getValue(ParamWidget* widget) {
+    static float getValue(rack::app::ParamWidget* widget) {
         return (widget->paramQuantity) ?
             widget->paramQuantity->getValue() :
             0;
     }
 
-    static void setValue(ParamWidget* widget, float v) {
+    static void setValue(rack::app::ParamWidget* widget, float v) {
         if (widget->paramQuantity) {
             widget->paramQuantity->setValue(v);
         }
     }
 };
 
-#define DECLARE_MANUAL(URL) void appendContextMenu(Menu *theMenu) override \
+#define DECLARE_MANUAL(TEXT, URL) void appendContextMenu(Menu *theMenu) override \
 { \
-    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    rack::ui::MenuLabel *spacerLabel = new rack::ui::MenuLabel(); \
+	theMenu->addChild(spacerLabel); \
+    ManualMenuItem* manual = new ManualMenuItem(TEXT, URL); \
     theMenu->addChild(manual);   \
 }
 
@@ -208,10 +226,10 @@ public:
 
 };
 
-#define DECLARE_MANUAL(URL) Menu* createContextMenu() override \
+#define DECLARE_MANUAL(TEXT, URL) Menu* createContextMenu() override \
 { \
-    Menu* theMenu = ModuleWidget::createContextMenu(); \
-    ManualMenuItem* manual = new ManualMenuItem(URL); \
+    rack::ui::Menu* theMenu = ModuleWidget::createContextMenu(); \
+    ManualMenuItem* manual = new ManualMenuItem(TEXT, URL); \
     theMenu->addChild(manual); \
     return theMenu; \
 }

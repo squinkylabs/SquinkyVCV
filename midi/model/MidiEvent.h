@@ -126,11 +126,21 @@ public:
     {
         type = Type::Note;
     }
+
     MidiNoteEvent(const MidiNoteEvent& n) : MidiEvent(n)
     {
         type = Type::Note;
         this->pitchCV = n.pitchCV;
         this->duration = n.duration;
+    }
+
+    MidiNoteEvent& operator=(const MidiNoteEvent& n)
+    {
+        assert (type == Type::Note);
+        this->pitchCV = n.pitchCV;
+        this->duration = n.duration;
+        this->startTime = n.startTime;
+        return *this;
     }
 
     /**

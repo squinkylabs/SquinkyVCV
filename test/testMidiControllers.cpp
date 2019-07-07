@@ -76,7 +76,7 @@ static void testSelectionModel4()
 static void testMidiSequencer1()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(song);
+    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
     //seq->makeEditor();
 
     assert(seq->selection);
@@ -90,7 +90,7 @@ static void testMidiSequencer1()
 static void testMidiSequencer2()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0); 
-    MidiSequencerPtr seq = MidiSequencer::make(song);
+    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
     //seq->makeEditor();
 
     assert(seq->editor);

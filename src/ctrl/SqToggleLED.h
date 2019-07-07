@@ -10,9 +10,17 @@ public:
         baseColors[0] =  cx;
     }
 
+    /** 
+     * path is relative to our plugin,
+     * unless pathIsAbsolute
+     */
+    void addSvg(const char* resourcePath, bool pathIsAbsolute = false);
 
-    void addSvg(const char* resourcePath);
-    void setHandler(std::function<void(void)>);
+    /**
+     * pass callback here to handle clicking on LED
+     */
+    using callback = std::function<void(bool isCtrlKey)>;
+    void setHandler(callback);
 
 #ifdef __V1x
     void onButton(const event::Button &e) override;
@@ -26,20 +34,19 @@ private:
     float getValue();
     using SvgPtr = std::shared_ptr<SqHelper::SvgWidget>;
     std::vector<SvgPtr> svgs;
-    std::function<void(void)> handler = nullptr;
+    callback handler = nullptr;
     int getSvgIndex();
 };
 
-inline void SqToggleLED::setHandler(std::function<void(void)> h)
+inline void SqToggleLED::setHandler(callback h)
 {
     handler = h;
 }
 
-inline void SqToggleLED::addSvg(const char* resourcePath)
+inline void SqToggleLED::addSvg(const char* resourcePath, bool pathIsAbsolute)
 {
     auto svg = std::make_shared<SqHelper::SvgWidget>();
-
-    SqHelper::setSvg(svg.get(), SqHelper::loadSvg(resourcePath));
+    SqHelper::setSvg(svg.get(), SqHelper::loadSvg(resourcePath, pathIsAbsolute));
     svgs.push_back(svg);
     this->box.size.x = std::max(this->box.size.x, svg->box.size.x);
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
@@ -84,10 +91,12 @@ inline void SqToggleLED::onMouseDown(EventMouseDown &e)
             e.action != GLFW_RELEASE) {
                 return;
         }
+        const bool ctrlKey = (e.mods & GLFW_MOD_CONTROL);
     #else
-         if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
+        if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
                 return;
         }
+        const bool ctrlKey = rack::windowIsModPressed();
     #endif
 
     int index = getSvgIndex();
@@ -101,7 +110,7 @@ inline void SqToggleLED::onMouseDown(EventMouseDown &e)
     sq::consumeEvent(&e, this);
 
     if (handler) {
-        handler();
+        handler(ctrlKey);
     }
 }
 

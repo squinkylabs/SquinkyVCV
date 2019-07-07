@@ -29,8 +29,19 @@ std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getAudioTaper()
         audioTaper = ret;
     }
     return ret;
+}
 
-    return nullptr;
+template <typename T>
+std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getAudioTaper18()
+{
+
+    std::shared_ptr< LookupTableParams<T>> ret = audioTaper18.lock();
+    if (!ret) {
+        ret = std::make_shared<LookupTableParams<T>>();
+        LookupTableFactory<T>::makeAudioTaper(*ret, -18);
+        audioTaper18 = ret;
+    }
+    return ret;
 }
 
 template <typename T>
@@ -201,6 +212,9 @@ std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::bipolarAudioTaper;
 
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::audioTaper;
+
+template <typename T>
+std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::audioTaper18;
 
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::sinLookupTable;

@@ -7,8 +7,8 @@
 namespace sq {
   
 #ifdef __V1x
-   using EventAction = event::Action;
-   using EventChange = event::Change;
+   using EventAction = rack::event::Action;
+   using EventChange = rack::event::Change;
   //  using Event = Event;
 #else
     using Action = rack::EventAction;       // what is this?
@@ -18,7 +18,7 @@ namespace sq {
 #endif
 
 #ifdef __V1x
-    inline void consumeEvent(const event::Base* evt, Widget* widget)
+    inline void consumeEvent(const rack::event::Base* evt, rack::Widget* widget)
     {
        evt->consume(widget);
     }

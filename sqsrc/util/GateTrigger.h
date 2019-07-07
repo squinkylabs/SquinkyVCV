@@ -14,7 +14,11 @@
 class GateTrigger
 {
 public:
-    GateTrigger(bool wantResetLogic) :
+    /**
+     * param wantResetLogic if true we will ignore gates right
+     * after reset until we see a low gate.
+     */
+    GateTrigger(bool wantResetLogic = true) :
         _gate(false),
         _trigger(false),
         _reset(wantResetLogic)

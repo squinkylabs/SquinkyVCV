@@ -1,4 +1,4 @@
-#pragma once
+
 
 #include "../Squinky.hpp"
 #ifdef __V1x

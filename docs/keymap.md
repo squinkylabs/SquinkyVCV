@@ -20,6 +20,20 @@
 
 Moving the cursor onto a note will select it.
 
+## Inserting and deleting notes
+
+**Ins** inserts a note at the current cursor.
+
+**Del** deletes the currently selected notes.
+
+Insert preset note durations. They shortcuts insert note of a specific duration, then move the cursor past that location.
+
+* **ctrl-w** Whole note.
+* **ctrl-h** Half note.
+* **ctrl-q** Quarter note.
+* **ctrl-e** Eighth note.
+* **ctrl-s** Sixteenth note.
+
 ## Changing notes
 
 **S, P, D**: sets note attribute to be edited (Start time, Pitch, and Duration).
@@ -37,20 +51,6 @@ When note is selected and Pitch is current edit attribute:
 * plus/minus changes by one semitone.
 * ], [ changes by an octave.
 
-## Inserting and deleting notes
-
-**Ins** inserts a note at the current cursor.
-
-**Del** deletes the currently selected notes.
-
-Insert preset note durations. They shortcuts insert note of a specific duration, then move the cursor past that location.
-
-* **ctrl-w** Whole note.
-* **ctrl-h** Half note.
-* **ctrl-q** Quarter note.
-* **ctrl-e** Eighth note.
-* **ctrl-s** Sixteenth note.
-
 ## Cut/Copy/Paste
 
 **ctrl-x** cut. Removes all the selected notes and puts them on the clipboard. (doesn't work yet).
@@ -63,7 +63,7 @@ Note that you may paste into a different instance of the sequencer than you copi
 
 ## Undo/Redo
 
-When Seq++ is run in VCV 0.6, it implements its own undo system, using the keys below. In VCV 1.0, Seq++ uses VCV's undo system, which is available from a mouse menu and from keyboard shortcuts.
+VCV 1.0, Seq++ uses VCV's undo system, which is available from a mouse menu and from keyboard shortcuts.
 
 **ctrl-z**: undo
 

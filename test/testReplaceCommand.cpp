@@ -12,7 +12,7 @@
 static void test0()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(song);
+    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -25,7 +25,7 @@ static void test0()
 static void test1()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -58,7 +58,7 @@ static void test1()
 static void test2()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -82,7 +82,7 @@ static void test2()
 static void testTrans()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
 
     MidiEventPtr firstEvent = seq->context->getTrack()->getFirstNote();
     assert(firstEvent);
@@ -106,7 +106,7 @@ static void testInsert()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
 
     assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
 
@@ -145,7 +145,7 @@ static void testStartTime()
     // make empty song
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
 
     // put a note into it at time 100;
     auto track = seq->context->getTrack();
@@ -181,7 +181,7 @@ static void testDuration()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
 
      // put a note into it at time 10, dur 5;
     auto track = seq->context->getTrack();

@@ -63,6 +63,9 @@ public:
     {
         init();
     }
+    virtual ~Gray() 
+    {
+    }
 
     enum ParamIds
     {

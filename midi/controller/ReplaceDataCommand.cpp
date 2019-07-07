@@ -144,9 +144,10 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
         MidiEndEventPtr end = seq->context->getTrack()->getEndEvent();
         float endTime = end->startTime;
 
+        int index = 0;  // hope index is stable accross clones
         for (auto it : *clonedSelection) {
             MidiEventPtr ev = it;
-            xform(ev);
+            xform(ev, index++);
             float t = ev->startTime;
             MidiNoteEventPtrC note = safe_cast<MidiNoteEvent>(ev);
             if (note) {
@@ -171,9 +172,10 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     }
 
     // and add back the transformed notes
+    int index=0;
     for (auto it : *clonedSelection) {
         MidiEventPtr event = it;
-        xform(event);
+        xform(event, index++);
         toAdd.push_back(event);
     }
 
@@ -191,7 +193,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
 {
     seq->assertValid();
     const float deltaCV = PitchUtils::semitone * semitones;
-    Xform xform = [deltaCV](MidiEventPtr event) {
+    Xform xform = [deltaCV](MidiEventPtr event, int) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
             float newPitch = note->pitchCV + deltaCV;
@@ -208,7 +210,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
 {
     seq->assertValid();
-    Xform xform = [delta](MidiEventPtr event) {
+    Xform xform = [delta](MidiEventPtr event, int) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
             note->startTime += delta;
@@ -220,10 +222,26 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
     return ret;
 }
 
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, const std::vector<float>& shifts)
+{
+    seq->assertValid();
+    Xform xform = [shifts](MidiEventPtr event, int index) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->startTime += shifts[index];
+            note->startTime = std::max(0.f, note->startTime);
+        }
+    };
+    auto ret =  makeChangeNoteCommand(Ops::Start, seq, xform, true);
+    ret->name = "change note start";
+    return ret;
+}
+
+
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
 {
     seq->assertValid();
-    Xform xform = [delta](MidiEventPtr event) {
+    Xform xform = [delta](MidiEventPtr event, int) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
             note->duration += delta;
@@ -236,6 +254,21 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
     return ret;
 }
 
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, const std::vector<float>& shifts)
+{
+    seq->assertValid();
+    Xform xform = [shifts](MidiEventPtr event, int index) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->duration += shifts[index];
+             // arbitrary min limit.
+            note->duration = std::max(.001f, note->duration);
+        }
+    };
+    auto ret = makeChangeNoteCommand(Ops::Duration, seq, xform, true);
+    ret->name = "change note duration";
+    return ret;
+}
 
 ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 {

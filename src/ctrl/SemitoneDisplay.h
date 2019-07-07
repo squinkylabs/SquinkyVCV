@@ -70,11 +70,9 @@ private:
 
 inline void SemitoneDisplay::step()
 {
-   // printf("SemitoneDisplay::step\n"); fflush(stdout);
     if (!module) {
         return;
     }
-    //  printf("SemitoneDisplay::step2 %d\n", module->params.size()); fflush(stdout);
     
     int curSemi = 0;
     int curOct = 0;

@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "FunVCO.h"
 #include "IComposite.h"
 #include "SqPort.h"

@@ -282,17 +282,17 @@ static void testFiltStability()
      //   const double feed = getFeedForTest(f);
         const double feed = 4;
         bool stable = _testFiltStability(f, feed);
-        printf("freq %f feed = %f stable=%d\n", f, feed, stable);
+        //printf("freq %f feed = %f stable=%d\n", f, feed, stable);
         assert(stable);
 
     }
 
-    printf("\n");
+    //printf("\n");
     for (double f = .25; f < .7; f *= 1.1) {
         //const double feed = getFeedForTest(f);
         const double feed = 4;
         bool stable = _testFiltStability(f, feed);
-        printf("freq %f feed = %f stable=%d\n", f, feed, stable);
+        //printf("freq %f feed = %f stable=%d\n", f, feed, stable);
         assert(stable);
 
     }

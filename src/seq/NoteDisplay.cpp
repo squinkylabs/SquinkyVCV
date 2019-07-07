@@ -23,14 +23,20 @@
 #include "../ctrl/SqHelper.h"
 #include "TimeUtils.h"
 #include "NoteDisplay.h"
+#include "SeqSettings.h"
 #include "SqGfx.h"
 
-NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
+NoteDisplay::NoteDisplay(
+    const Vec& pos,
+    const Vec& size,
+    MidiSequencerPtr seq,
+    rack::engine::Module* mod)
 {
     this->box.pos = pos;
     box.size = size;
     sequencer = seq;
     mouseManager = std::make_shared<MouseManager>(sequencer);
+  //  seqSettings = std::make_shared<SeqSettings>(mod);
 
     if (sequencer) {
         initEditContext();
@@ -38,7 +44,7 @@ NoteDisplay::NoteDisplay(const Vec& pos, const Vec& size, MidiSequencerPtr seq)
         auto scaler2 = sequencer->context->getScaler();
         assert(scaler2);
     }
-  
+
     focusLabel = new Label();
     focusLabel->box.pos = Vec(40, 40);
     focusLabel->text = "";
@@ -64,7 +70,7 @@ void NoteDisplay::initEditContext()
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
-    sequencer->context->setPitchHi(PitchUtils::pitchToCV(5, 0));
+    sequencer->context->setPitchHi(PitchUtils::pitchToCV(6, 0));        // was originally 5, for 2 octaves
     sequencer->editor->updateSelectionForCursor(false);
 
 // set scaler once context has a valid range
@@ -77,12 +83,13 @@ void NoteDisplay::initEditContext()
     assert(scaler);
 }
 
-// TODO: get rid of this
+// TODO: get rid of this (dont remember why this is here)
 void NoteDisplay::step()
 {
     if (!sequencer) {
         return;
     }
+    OpaqueWidget::step();
 }
 
 void NoteDisplay::drawNotes(NVGcontext *vg)
@@ -101,10 +108,12 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
         const float width = scaler->midiTimeTodX(ev->duration);
 
         const bool selected = sequencer->selection->isSelected(ev);
-        SqGfx::filledRect(
-            vg,
-            selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
-            x, y, width, noteHeight);
+        if (!selected || !mouseManager->willDrawSelection()) {
+            SqGfx::filledRect(
+                vg,
+                selected ? UIPrefs::SELECTED_NOTE_COLOR : UIPrefs::NOTE_COLOR,
+                x, y, width, noteHeight);
+        }
     }
 }
 
@@ -113,13 +122,20 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     //assume two bars, quarter note grid
-    float totalDuration = TimeUtils::bar2time(2);
-    float deltaDuration = 1.f;
+    const float totalDuration = TimeUtils::bar2time(2);
+    float deltaDuration = sequencer->context->settings()->getQuarterNotesInGrid();
+
+    // if grid lines are too close together, don't draw all.
+    const float dx = scaler->midiTimeTodX(deltaDuration);
+    if (dx < 22) {
+        deltaDuration *= 2;
+    }
+
     for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
-        const float time =  relTime + sequencer->context->startTime();
+        const float time = relTime + sequencer->context->startTime();
         const float x = scaler->midiTimeToX(time);
         const float y = UIPrefs::topMarginNoteEdit;
-        float width = 2;
+        float width = 1;
         float height = this->box.size.y - y;
 
         const bool isBar = (relTime == 0) ||
@@ -174,9 +190,10 @@ void NoteDisplay::draw(NVGcontext *vg)
     drawBackground(vg);
     drawGrid(vg);
     drawNotes(vg);
-    drawCursor(vg);
+
     // if we are dragging, will have something to draw
-    mouseManager->draw(vg);     
+    mouseManager->draw(vg);
+    drawCursor(vg);
 #ifdef __V1x
     OpaqueWidget::draw(args);
 #else
@@ -192,11 +209,11 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     const int noteHeight = scaler->noteHeight();
     const float width = box.size.x;
     for (float cv = sequencer->context->pitchLow();
-        cv <= sequencer->context->pitchHi();
+        cv <= sequencer->context->pitchHigh();
         cv += PitchUtils::semitone) {
 
         const float y = scaler->midiCvToY(cv);
-        
+
         bool accidental = PitchUtils::isAccidental(cv);
         if (accidental) {
             SqGfx::filledRect(
@@ -207,7 +224,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     }
 
     for (float cv = sequencer->context->pitchLow();
-        cv <= sequencer->context->pitchHi();
+        cv <= sequencer->context->pitchHigh();
         cv += PitchUtils::semitone) {
 
         float y = scaler->midiCvToY(cv) + scaler->noteHeight();
@@ -227,46 +244,58 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
 }
 
 /******************** All V1 keyboard handling here *******************
- * 
+ *
  */
- 
+
 #ifdef __V1x
 
 void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 {
    // printf("got double click"); fflush(stdout);
-    OpaqueWidget::onDoubleClick(e);
+
+    bool handled = mouseManager->onDoubleClick();
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onDoubleClick(e);
+    }
 }
 
- void NoteDisplay::onDragDrop(const event::DragDrop &e) 
- {
-     printf("on drag drop\n"); fflush(stdout);
-     OpaqueWidget::onDragDrop(e);
- }
+void NoteDisplay::onDragDrop(const event::DragDrop &e)
+{
+    //printf("on drag drop\n"); fflush(stdout);
+    OpaqueWidget::onDragDrop(e);
+}
 
 void NoteDisplay::onButton(const event::Button &e)
 {
-    printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);
-    fflush(stdout);
+   // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
 
     bool handled = false;
+
+    const bool isPressed = e.action == GLFW_PRESS;
+    const bool shift = e.mods & GLFW_MOD_SHIFT;
+    const bool ctrl = e.mods & GLFW_MOD_CONTROL;
+
     if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
-        const bool isPressed = e.action == GLFW_PRESS;
-        const bool shift = e.mods & GLFW_MOD_SHIFT;
-        const bool ctrl = e.mods & GLFW_MOD_CONTROL;
-        handled = mouseManager-> onMouseButton(
-            e.pos.x, 
+        handled = mouseManager->onMouseButton(
+            e.pos.x,
             e.pos.y,
             isPressed, ctrl, shift);
+    } else if (e.button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (isPressed && !shift && !ctrl) {
+            sequencer->context->settings()->invokeUI(this);
+            handled = true;
+        }
     }
     if (handled) {
         e.consume(this);
     } else {
         OpaqueWidget::onButton(e);
-    }    
+    }
 }
 
-void NoteDisplay::onSelectKey(const event::SelectKey &e) 
+void NoteDisplay::onSelectKey(const event::SelectKey &e)
 {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
@@ -276,13 +305,17 @@ void NoteDisplay::onSelectKey(const event::SelectKey &e)
     }
 }
 
-bool NoteDisplay::isCursorKey(int key) {
+bool NoteDisplay::isKeyWeNeedToStealFromRack(int key)
+{
     bool isCursor = false;
     switch (key) {
         case GLFW_KEY_LEFT:
         case GLFW_KEY_RIGHT:
         case GLFW_KEY_UP:
         case GLFW_KEY_DOWN:
+        case GLFW_KEY_BACKSPACE:
+        case GLFW_KEY_KP_DECIMAL:
+        case GLFW_KEY_DELETE:
             isCursor = true;
     }
     return isCursor;
@@ -293,7 +326,7 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
-    } else if (isCursorKey(e.key)) {
+    } else if (isKeyWeNeedToStealFromRack(e.key)) {
         // Swallow all hover events around cursor keys.
         // This keeps Rack from stealing them.
         e.consume(this);
@@ -343,26 +376,24 @@ void NoteDisplay::onDeselect(const event::Deselect &e)
     e.consume(this);
 }
 
-void NoteDisplay::onDragStart(const event::DragStart &e) 
+void NoteDisplay::onDragStart(const event::DragStart &e)
 {
     bool b = mouseManager->onDragStart();
-    printf("on drag start\n"); fflush(stdout);
     if (b) {
         e.consume(this);
     }
 }
 void NoteDisplay::onDragEnd(const event::DragEnd &e)
 {
-    printf("on drag end\n"); fflush(stdout);
     bool b = mouseManager->onDragEnd();
-     if (b) {
+    if (b) {
         e.consume(this);
     }
 }
 void NoteDisplay::onDragMove(const event::DragMove &e)
 {
-     bool b = mouseManager->onDragMove(e.mouseDelta.x, e.mouseDelta.y);
-     if (b) {
+    bool b = mouseManager->onDragMove(e.mouseDelta.x, e.mouseDelta.y);
+    if (b) {
         e.consume(this);
     }
 }

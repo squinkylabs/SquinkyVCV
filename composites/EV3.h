@@ -48,6 +48,10 @@ public:
         init();
     }
 
+    virtual ~EV3()
+    {
+    }
+
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()

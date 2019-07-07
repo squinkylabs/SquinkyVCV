@@ -11,7 +11,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song);
+    MidiSequencerPtr sequencer = MidiSequencer::make(song, nullptr);
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -163,7 +163,7 @@ static void testNext1e()
     ev4->startTime = 200;
     track->insertEvent(ev4);
 
-    MidiSequencerPtr seq = MidiSequencer::make(song);
+    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
 
     // select first event
     seq->editor->selectNextNote();
@@ -199,7 +199,7 @@ static void testNextPrevSingleNote()
     ev2->startTime = 4;
     track->insertEvent(ev2);
 
-    MidiSequencerPtr seq = MidiSequencer::make(song);
+    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
     auto x = seq->context->cursorTime();
     seq->context->adjustViewportForCursor();
     x = seq->context->cursorTime();

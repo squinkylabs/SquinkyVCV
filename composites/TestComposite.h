@@ -59,6 +59,9 @@ public:
     {
 
     }
+    virtual ~TestComposite()
+    {
+    }
     struct Param
     {
         float value = 0.0;

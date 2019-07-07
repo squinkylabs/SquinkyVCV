@@ -1,4 +1,4 @@
-
+#include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiSequencer.h"
 #include "MouseManager.h"
@@ -57,12 +57,11 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
 
     // This will move the cursor, which we may not want all the time
     MidiNoteEventPtr curNote = sequencer->editor->moveToTimeAndPitch(time, pitchCV);
-    bool curNoteIsSelected = sequencer->selection->isSelected(curNote);
+    bool curNoteIsSelected = curNote && sequencer->selection->isSelected(curNote);
 
 
     if ((isPressed && curNote && !curNoteIsSelected) || 
             (!isPressed && mouseClickWasIgnored)) {
-        printf("onMouseButton calling doMouseClick\n"); fflush(stdout);
         mouseClickWasIgnored = false;
 
         // TODO: use more specific handler calls, get rid of this ambiguous catchall
@@ -77,6 +76,17 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
         mouseClickWasIgnored = true;
     }
     return ret;
+}
+
+bool MouseManager::onDoubleClick()
+{
+    MidiNoteEventPtr note = sequencer->editor->getNoteUnderCursor();
+    if (note) {
+        sequencer->editor->deleteNote();
+    } else {
+        sequencer->editor->insertNote();
+    }
+    return true;
 }
 
 bool MouseManager::onDragStart()
@@ -94,21 +104,20 @@ bool MouseManager::onDragStart()
 
 
     const float relativeTime = (cursorTime - start) / (end - start);
-    printf("relative time = %f\n", relativeTime); fflush(stdout);
 
     if (relativeTime <= .33f) {
-        noteDragger = std::make_shared<NoteStartDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY);     
+        noteDragger = std::make_shared<NoteStartDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY, start);     
     } else if (relativeTime <= .66f) {
         noteDragger = std::make_shared<NotePitchDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
     } else {
-        noteDragger = std::make_shared<NoteDurationDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY); 
+        const float noteDuration = note->duration;
+        noteDragger = std::make_shared<NoteDurationDragger>(sequencer, lastMouseClickPosX, lastMouseClickPosY, noteDuration); 
     }
     return true;
 }
 
 bool MouseManager::onDragEnd()
 {
-  //   printf("MouseManger::onDragEnd()\n"); fflush(stdout);
     bool ret = false;
     if (noteDragger) {
         noteDragger->commit();
@@ -127,6 +136,15 @@ bool MouseManager::onDragMove(float x, float y)
     }
     if (x!=0 || y != 0) {
         mouseMovedWhileDragging = true;
+    }
+    return ret;
+}
+
+bool MouseManager::willDrawSelection() const
+{
+    bool ret = false;
+    if (noteDragger) {
+        ret = noteDragger->willDrawSelection();
     }
     return ret;
 }

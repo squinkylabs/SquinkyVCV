@@ -166,7 +166,26 @@ static void testCopyCtor()
         assert(end == end3);
     }
     assertNoMidi();     // check for leaks
+}
 
+static void testAssignment()
+{
+    MidiNoteEvent note;
+    note.pitchCV = 1.12f;
+    note.duration = 33.45f;
+    note.startTime = 15.3f;
+
+    MidiNoteEvent note2;
+    note2.pitchCV = 5;
+    note2 = note;
+    assert(note == note2);
+
+    MidiEndEvent end;
+    end.startTime = 234.5f;
+    MidiEndEvent end2;
+    end2.startTime = 5;
+    end2 = end;
+    assert(end == end2);
 }
 
 
@@ -322,6 +341,46 @@ static void testTimeUtil5()
     assert(x == "3.2.4");
 }
 
+
+static void testTimeUtil6()
+{
+    float t = 0;
+    auto x = TimeUtils::time2str(t, 3);
+    assert(x == "1.1.0");
+    x = TimeUtils::time2str(t, 2);
+    assert(x == "1.1");
+    x = TimeUtils::time2str(t, 1);
+    assert(x == "1");
+
+    t = TimeUtils::quarterNote() + TimeUtils::bar2time(2);
+    x = TimeUtils::time2str(t,3);
+    assert(x == "3.2.0");
+    x = TimeUtils::time2str(t, 2);
+    assert(x == "3.2");
+    x = TimeUtils::time2str(t, 1);
+    assert(x == "3");
+}
+
+// simple tests of quant function
+static void testTimeUtilQuant0()
+{
+    // pre-quantized pass through
+    assertEQ(TimeUtils::quantizeForEdit(0, 1, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(5, 1, 1), 6);
+
+    // simple quantize that doesn't care about drag direction
+    assertEQ(TimeUtils::quantizeForEdit(.8f, .1f, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(.5f, .1f, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(10, -.9f, 1), 9);
+    assertEQ(TimeUtils::quantizeForEdit(10, -.51f, 1), 9);
+
+    // ones that would quantize to other side of home, but we don't want that.
+    assertEQ(TimeUtils::quantizeForEdit(.2f, .1f, 1), 1);
+    assertEQ(TimeUtils::quantizeForEdit(.9f, -.1f, 1), 0);
+}
+
+
+
 static void testPitchUtil0()
 {
     // C
@@ -470,6 +529,7 @@ void  testMidiEvents()
     testPitch();
     testPitch2();
     testCopyCtor();
+    testAssignment();
 
     testEqualNote();
     testEqualEnd();
@@ -481,6 +541,8 @@ void  testMidiEvents()
     testTimeUtil3();
     testTimeUtil4();
     testTimeUtil5();
+    testTimeUtil6();
+    testTimeUtilQuant0();
 
     testPitchUtil0();
     testPitchUtil1();

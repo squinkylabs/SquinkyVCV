@@ -1,7 +1,6 @@
 
 #pragma once
 
-
 #include "Divider.h"
 #include "IComposite.h"
 #include "LadderFilter.h"
@@ -52,6 +51,9 @@ public:
     {
     }
     Filt() : TBase()
+    {
+    }
+    virtual ~Filt()
     {
     }
 

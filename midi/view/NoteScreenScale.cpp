@@ -17,7 +17,7 @@ NoteScreenScale::NoteScreenScale(
 
 void NoteScreenScale::setContext(std::shared_ptr<MidiEditorContext> context)
 {
-    assert( context->pitchLow() <= context->pitchHi());
+    assert( context->pitchLow() <= context->pitchHigh());
     _context = context;
     this->context()->assertValid();
     reCalculate();
@@ -37,20 +37,20 @@ void NoteScreenScale::reCalculate()
 
     // min and max the same is fine - it's just one note bar full screen
     float activeScreenHeight = screenHeight - topMargin;
-    ay = activeScreenHeight / ((ctx->pitchHi() + 1 / 12.f) - ctx->pitchLow());
+    ay = activeScreenHeight / ((ctx->pitchHigh() + 1 / 12.f) - ctx->pitchLow());
     by = topMargin;
 
-    assert( ctx->pitchLow() <= ctx->pitchHi());
+    assert( ctx->pitchLow() <= ctx->pitchHigh());
 
     // now calculate the reverse function by just inverting the equation
     ax_rev = 1.0f / ax;
     bx_rev = -bx / ax;
 
     // third try
-    ay_rev = -(ctx->pitchHi() - ctx->pitchLow()) / activeScreenHeight;
+    ay_rev = -(ctx->pitchHigh() - ctx->pitchLow()) / activeScreenHeight;
 
     // zero Y should be the highest pitch
-    by_rev = ctx->pitchHi();
+    by_rev = ctx->pitchHigh();
 }
 
 
@@ -97,7 +97,7 @@ float NoteScreenScale::midiPitchToY(const MidiNoteEvent& note) const
 
 float NoteScreenScale::yToMidiCVPitch(float y) const
 {
-    float unquantizedPitch = (y - topMargin) * ay_rev + context()->pitchHi();
+    float unquantizedPitch = (y - topMargin) * ay_rev + context()->pitchHigh();
     std::pair<int, int> quantizedPitch = PitchUtils::cvToPitch(unquantizedPitch);
     return PitchUtils::pitchToCV(quantizedPitch.first, quantizedPitch.second);
 }
@@ -110,7 +110,7 @@ float NoteScreenScale::yToMidiDeltaCVPitch(float dy) const
 
 float NoteScreenScale::midiCvToY(float cv) const
 {
-    return by + (context()->pitchHi() - cv) * ay;
+    return by + (context()->pitchHigh() - cv) * ay;
 }
 
 float NoteScreenScale::noteHeight() const

@@ -31,8 +31,11 @@ public:
 
     /**
      * domain (x) = 0..1
+     * at .25, output will be "knee" attenuation.
+     * default is -24
      */
     static void makeAudioTaper(LookupTableParams<T>& params);
+    static void makeAudioTaper(LookupTableParams<T>& params, double knee);
 
     static double audioTaperKnee()
     {
@@ -196,8 +199,15 @@ inline void LookupTableFactory<T>::makeBipolarAudioTaper(LookupTableParams<T>& p
 template<typename T>
 inline void LookupTableFactory<T>::makeAudioTaper(LookupTableParams<T>& params)
 {
+    makeAudioTaper(params, audioTaperKnee());
+}
+
+template<typename T>
+inline void LookupTableFactory<T>::makeAudioTaper(LookupTableParams<T>& params, double knee)
+{
+    assert(knee < 0);
     const int bins = 32;
-    std::function<double(double)> audioTaper = AudioMath::makeFunc_AudioTaper(audioTaperKnee());
+    std::function<double(double)> audioTaper = AudioMath::makeFunc_AudioTaper(knee);
     const T xMin = 0;
     const T xMax = 1;
     LookupTable<T>::init(params, bins, xMin, xMax, [audioTaper](double x) {

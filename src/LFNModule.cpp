@@ -145,11 +145,12 @@ void LFNWidget::addStage(int index)
 #ifdef __V1x
 void LFNWidget::appendContextMenu(Menu* theMenu) 
 {
-    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
-    theMenu->addChild(manual);
-    
     MenuLabel *spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
+    ManualMenuItem* manual = new ManualMenuItem("LFN manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
+    theMenu->addChild(manual);
+    
+
     SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
         xlfnWidget);
     item->text = "Extra Low Frequency";

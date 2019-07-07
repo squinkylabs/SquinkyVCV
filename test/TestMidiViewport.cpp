@@ -9,7 +9,7 @@ static void testReleaseSong()
 {
     MidiSongPtr song(std::make_shared<MidiSong>());
     MidiLocker l(song->lock);
-    MidiEditorContext vp(song);
+    MidiEditorContext vp(song, nullptr);
     {
        
        // vp._song = song;
@@ -37,7 +37,7 @@ static void testEventAccess()
     ev->pitchCV = 4;
     track->insertEvent(ev);
 
-    MidiEditorContext vp(song);
+    MidiEditorContext vp(song, nullptr);
     vp.setStartTime(90);
     vp.setEndTime(110);
     vp.setPitchLow(0);
@@ -74,7 +74,7 @@ static void testEventFilter()
     track->insertEvent(ev2);
     assertEQ(track->size(), 2);
 
-    MidiEditorContext vp(song);
+    MidiEditorContext vp(song, nullptr);
     vp.setStartTime(90);
     vp.setEndTime(110);
     vp.setPitchLow(3);
@@ -93,7 +93,7 @@ static void testDemoSong()
     assertEQ(std::distance(track->begin(), track->end()), numEvents);
 
 
-    MidiEditorContext viewport(song);
+    MidiEditorContext viewport(song, nullptr);
     viewport.setTimeRange(0, 8);   // two measures
 
     // try a crazy wide range

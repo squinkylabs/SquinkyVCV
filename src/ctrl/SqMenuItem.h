@@ -13,7 +13,7 @@ struct SqMenuItem : rack::MenuItem
 {
 
 #ifdef __V1x
-void onAction(const event::Action &e) override
+void onAction(const rack::event::Action &e) override
 #else
 void onAction(EventAction &e) override
 #endif
@@ -42,15 +42,49 @@ private:
 
 struct ManualMenuItem : SqMenuItem
 {
-    ManualMenuItem(const char* url) : SqMenuItem(
+    ManualMenuItem(const char* menuText, const char* url) : SqMenuItem(
         []() { return false; },
         [url]() { SqHelper::openBrowser(url); })
     {
-        this->text = "Manual";
+        this->text = menuText;
     }
 
 };
 
+/**
+ * menu item that toggles a boolean param.
+ * only works in V1, since it requires no param widget
+ */
+#ifdef __V1x
+struct  SqMenuItem_BooleanParam2 : rack::MenuItem
+{
+    SqMenuItem_BooleanParam2(rack::engine::Module* mod, int id) : 
+        paramId(id),
+        module(mod)
+    {   
+    }
+
+    void onAction(const sq::EventAction &e) override
+    {
+        const float newValue = isOn() ? 0 : 1;
+        rack::appGet()->engine->setParam(module, paramId, newValue); 
+        e.consume(this);
+    }
+
+    void step() override
+    {
+        rightText = CHECKMARK(isOn());
+    }
+private:
+
+    bool isOn()
+    {
+        return rack::appGet()->engine->getParam(module, paramId) > .5;
+    }
+    const int paramId;
+    rack::engine::Module* const module;
+};
+#endif
 
 struct  SqMenuItem_BooleanParam : rack::MenuItem
 {

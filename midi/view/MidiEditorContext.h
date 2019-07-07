@@ -4,6 +4,7 @@
 #include "FilteredIterator.h"
 #include <memory>
 
+class ISeqSettings;
 class MidiSong;
 class MidiSelectionModel;
 class NoteScreenScale;
@@ -11,13 +12,28 @@ class NoteScreenScale;
 class MidiEditorContext  : public std::enable_shared_from_this<MidiEditorContext>
 {
 public:
-    MidiEditorContext(std::shared_ptr<MidiSong>);
+
+    // TODO: use this later?
+    class Range
+    {
+    public:
+        float pitchLow = 0;
+        float pitchHigh = 0;
+        float start = 0;
+        float end = 0;
+    };
+
+    MidiEditorContext(std::shared_ptr<MidiSong>, std::shared_ptr<ISeqSettings>);
     ~MidiEditorContext();
 
     float cursorPitch() const
     {
         return m_cursorPitch;
     }
+
+    /**
+     * Sets cursor pitch in CV (1v/8) units
+     */
     void setCursorPitch(float pitch)
     {
         assert(pitch <= 10);
@@ -56,9 +72,9 @@ public:
     {
         return m_endTime;
     }
-    float pitchHi()
+    float pitchHigh()
     {
-        return m_pitchHi;
+        return m_pitchHigh;
     }
     float pitchLow()
     {
@@ -70,13 +86,13 @@ public:
     }
     void setPitchHi(float p)
     {
-        m_pitchHi = p;
+        m_pitchHigh = p;
     }
     void setPitchRange(float l, float h)
     {
         assert(h >= l);
         assert(h <= 10);
-        m_pitchHi = h;
+        m_pitchHigh = h;
         m_pitchLow = l;
     }
     int getTrackNumber()
@@ -127,6 +143,11 @@ public:
     void scrollViewportToCursorPitch();
     bool cursorInViewportTime() const;
     void adjustViewportForCursor();
+
+    std::shared_ptr<ISeqSettings> settings()
+    {
+        return _settings;
+    }
 private:
     float m_cursorTime = 0;
     float m_cursorPitch = 0;
@@ -138,7 +159,7 @@ private:
 
     // pitch is inclusive: Low and Hi will be included
     float m_pitchLow = 0;
-    float m_pitchHi = 0;
+    float m_pitchHigh = 0;
 
     int trackNumber = 0;
 
@@ -146,6 +167,8 @@ private:
 
     // Use weak ref to break circular dependency
     std::weak_ptr<MidiSong> _song;
+
+    std::shared_ptr<ISeqSettings> _settings;
 };
 
 using MidiEditorContextPtr = std::shared_ptr<MidiEditorContext>;
