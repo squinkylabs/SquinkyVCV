@@ -2,6 +2,9 @@
 #include "IMidiPlayerHost.h"
 #include "MidiVoice.h"
 
+#include <assert.h>
+#include <stdio.h>
+
 /*
 class MidiVoice
 {
@@ -47,22 +50,40 @@ void MidiVoice::setCV(float cv)
     host->setCV(index, cv);
 }
 
-void MidiVoice::playNote(float pitch, float endTime)
+void MidiVoice::setSampleCountForRetrigger(int samples)
 {
-    this->curPitch = pitch;
-    this->noteOffTime = endTime;
+    printf("setSampleCountForRetrigger ng\n");
+}
 
-    // This is over-simplified - doesn't account for what if a note was already playing
+void MidiVoice::updateSampleCount(int samples)
+{
+    printf("updateSampleCount ng\n");
+}
 
-    this->curState = State::Playing;
-    setCV(pitch);
-    setGate(true);
+void MidiVoice::playNote(float pitch, double currentTime, float endTime)
+{
+    // do re-triggering, if needed
+    if (currentTime == lastNoteOffTime) {
+        curState = State::ReTriggering;
+        setGate(false);
+        delayedNotePitch = pitch;
+        delayedNoteEndtime = endTime;
+    } else {
+        this->curPitch = pitch;
+        this->noteOffTime = endTime;
+
+
+        this->curState = State::Playing;
+        setCV(pitch);
+        setGate(true);
+    }
 }
 
 void MidiVoice::updateToMetricTime(double metricTime)
 {
     if (noteOffTime >= 0 && noteOffTime <= metricTime) {
         setGate(false);
+        lastNoteOffTime = noteOffTime;
         noteOffTime = -1;
         curState = State::Idle;
     }

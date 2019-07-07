@@ -85,7 +85,7 @@ static void testMidiVoicePlayNote()
     TestHost2 th;
     MidiVoice mv;
     mv.setHost(&th);
-    mv.playNote(3.f, 1.f);      // pitch 3, dur 1
+    mv.playNote(3.f, 0, 1.f);      // pitch 3, dur 1
 
     assert(mv.state() == MidiVoice::State::Playing);
     assert(th.cvChangeCount == 1);
@@ -103,7 +103,7 @@ static void testMidiVoicePlayNoteVoice2()
 
     initVoices(mv, 2, host);
    
-    mv[1].playNote(3.f, 1.f);      // pitch 3, dur 1
+    mv[1].playNote(3.f, 0, 1.f);      // pitch 3, dur 1
 
     assert(mv[1].state() == MidiVoice::State::Playing);
     assert(th.cvChangeCount == 1);
@@ -119,7 +119,7 @@ static void testMidiVoicePlayNoteOnAndOff()
     MidiVoice mv;
     initVoices(&mv, 1, host);
 
-    mv.playNote(3.f, 1.f);      // pitch 3, dur 1
+    mv.playNote(3.f, 0, 1.f);      // pitch 3, dur 1
     mv.updateToMetricTime(2);   // after note is over
 
    
@@ -129,6 +129,56 @@ static void testMidiVoicePlayNoteOnAndOff()
     assert(th.gateChangeCount == 2);
     assert(mv.state() == MidiVoice::State::Idle);
 
+}
+
+static void testMidiVoiceRetrigger()
+{
+    TestHost2 th;
+    IMidiPlayerHost* host = &th;
+    MidiVoice mv;
+    initVoices(&mv, 1, host);
+
+    mv.playNote(3.f, 0, 1.f);      // pitch 3, dur 1
+    assert(th.gateState[0] == true);
+
+    mv.updateToMetricTime(1.0); // note just finished
+    assert(th.gateState[0] == false);
+
+    mv.playNote(4.f, 1, 1.f);      // pitch 4, dur 1
+    assert(mv.state() == MidiVoice::State::ReTriggering);
+    assert(th.gateState[0] == false);
+    assert(th.cvValue[0] == 3.f);
+    assert(th.gateChangeCount == 2);
+}
+
+static void testMidiVoiceRetrigger2()
+{
+    TestHost2 th;
+    IMidiPlayerHost* host = &th;
+    MidiVoice mv;
+    initVoices(&mv, 1, host);
+    mv.setSampleCountForRetrigger(100);
+
+    mv.playNote(3.f, 0, 1.f);      // pitch 3, dur 1
+    assert(th.gateState[0] == true);
+
+    mv.updateToMetricTime(1.0); // note just finished
+    assert(th.gateState[0] == false);
+
+    mv.playNote(4.f, 1, 1.f);      // pitch 4, dur 1
+    assert(mv.state() == MidiVoice::State::ReTriggering);
+    assert(th.gateState[0] == false);
+    assert(th.cvValue[0] == 3.f);
+    assert(th.gateChangeCount == 2);
+
+    mv.updateSampleCount(99);
+    assert(th.gateState[0] == false);
+    assert(th.gateChangeCount == 2);
+
+    mv.updateSampleCount(1);
+    assert(th.gateState[0] == true);
+    assert(th.gateChangeCount == 3);
+    assert(th.cvValue[0] == 4.f);
 }
 
 //************************** MidiVoiceAssigner tests **********************************
@@ -154,7 +204,7 @@ static void testVoiceAssign2Notes()
     auto p = va.getNext(0);
     assert(p);
     assert(p == mv);
-    p->playNote(3, 1);
+    p->playNote(3, 0, 1);
 
     // first is still playing, so have to get second
     p = va.getNext(0);
@@ -183,6 +233,10 @@ void testMidiPlayer2()
     testMidiVoicePlayNote();
     testMidiVoicePlayNoteVoice2();
     testMidiVoicePlayNoteOnAndOff();
+    testMidiVoiceRetrigger();
+
+    printf("put bad back voice test\n");
+    //testMidiVoiceRetrigger2();
   
     basicTestOfVoiceAssigner();
     testVoiceAssign2Notes();

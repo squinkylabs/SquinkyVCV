@@ -120,7 +120,7 @@ void Mix4Widget::appendContextMenu(Menu *menu)
 
     ManualMenuItem* manual = new ManualMenuItem(
         "ExFor manual",
-        "https://github.com/squinkylabs/SquinkyVCV/blob/m9/docs/exfor.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/exfor.md");
     menu->addChild(manual);
     
     MenuLabel *spacerLabel2 = new MenuLabel();
