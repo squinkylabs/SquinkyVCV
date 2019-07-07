@@ -35,11 +35,17 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 [Formants](./formants.md) is a programmable bank of filters that can synthesize various vowel sounds and morph between them easily.
 
 # Mixers
-![Mixer Intro Image](./mixer-8.png)
+
+![Mixer Intro Image](./mixers.png)
+
+[Form](./form.md) is a modular mixer with a ton of features. Channels are added by placing ExFor modules to the right of it. It has two stereo send busses, and anti-pop filters on all CV inputs.
+
+[ExFor](./exfor.md) is the expander for Form. Each instance of ExFor adds four more channels.
 
 [Mixer-8](./mix8.md) is our clone of the AS 8-CH mixer, with more features and 1/10 the CPU usage.
 
 # Other things
+
 ![Intro 3 image](./intro-3-110.png)
 
 [Slade](./slew4.md) has eight identical channels of lag/anti-pop/envelope generator/VCA. Very low CPU, as always.
