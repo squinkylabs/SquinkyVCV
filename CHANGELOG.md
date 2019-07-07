@@ -6,6 +6,8 @@ New modular mixer (Mix-4M and Mix-4X).
 
 Changed the context menu display for our instruction manuals to be clearer.
 
+Fixed mistakes and omissions in the Stairway manual
+
 ## 1.0.0
 
 Released 1.0 versions of release 0.6.16
