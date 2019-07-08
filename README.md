@@ -14,12 +14,13 @@ The [Changelog](./CHANGELOG.md) describes recent changes.
 
 Beta testing by:
 
-* Espen Storø
-* [Dave Phillips](https://www.youtube.com/channel/UC4Kw67XwyKACygelcd-D2-g)
-* [Artem Leonov](https://www.youtube.com/vcvrackideas)
-* [Norbert Denninger](https://www.youtube.com/c/Wavesunlimited)
-* [Omri Cohen](https://www.youtube.com/channel/UCuWKHSHTHMV_nVSeNH4gYAg)
+* [Simon Bader](https://www.instagram.com/circadiansound)
 * Lars Bjerregaard
+* [Omri Cohen](https://www.youtube.com/channel/UCuWKHSHTHMV_nVSeNH4gYAg)
+* [Norbert Denninger](https://www.youtube.com/c/Wavesunlimited)
+* [Artem Leonov](https://www.youtube.com/vcvrackideas)
+* [Dave Phillips](https://www.youtube.com/channel/UC4Kw67XwyKACygelcd-D2-g)
+* Espen Storø
 
 All third party software copyright information is in [LICENSE-dist.txt](./LICENSE-dist.txt)
 
