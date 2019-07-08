@@ -235,8 +235,8 @@ void testMidiPlayer2()
     testMidiVoicePlayNoteOnAndOff();
     testMidiVoiceRetrigger();
 
-    printf("put bad back voice test\n");
-    //testMidiVoiceRetrigger2();
+    //printf("put bad back voice test\n");
+    testMidiVoiceRetrigger2();
   
     basicTestOfVoiceAssigner();
     testVoiceAssign2Notes();

@@ -52,12 +52,23 @@ void MidiVoice::setCV(float cv)
 
 void MidiVoice::setSampleCountForRetrigger(int samples)
 {
-    printf("setSampleCountForRetrigger ng\n");
+    numSamplesInRetrigger = samples;
 }
 
 void MidiVoice::updateSampleCount(int samples)
 {
-    printf("updateSampleCount ng\n");
+    if (retriggerSampleCounter) {
+        retriggerSampleCounter -= samples;
+        if (retriggerSampleCounter <= 0) {
+            retriggerSampleCounter = 0;
+            curState = State::Playing;
+            setCV(delayedNotePitch);
+            noteOffTime = delayedNoteEndtime;
+            setGate(true);
+        }
+    }
+    printf("leaving updateSampleCount with counter = %d\n", retriggerSampleCounter);
+  
 }
 
 void MidiVoice::playNote(float pitch, double currentTime, float endTime)
@@ -68,10 +79,10 @@ void MidiVoice::playNote(float pitch, double currentTime, float endTime)
         setGate(false);
         delayedNotePitch = pitch;
         delayedNoteEndtime = endTime;
+        retriggerSampleCounter = numSamplesInRetrigger;
     } else {
         this->curPitch = pitch;
         this->noteOffTime = endTime;
-
 
         this->curState = State::Playing;
         setCV(pitch);

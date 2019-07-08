@@ -81,7 +81,7 @@
 			"slug": "squinkylabs-sequencer",
 			"name": "Seq++",
 			"description": "DAW-like sequencer",
-			"disabled": true,
+			"disabled": false,
 			"tags": ["Sequencer"]
 		},
 		{
