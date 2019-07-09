@@ -251,6 +251,7 @@ static void testMidiPlayer0()
 // just play the first note on
 static void testMidiPlayerOneNote()
 {
+    printf("one note\n");
     std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .24f);
 
     assertEQ(host->lockConflicts, 0);

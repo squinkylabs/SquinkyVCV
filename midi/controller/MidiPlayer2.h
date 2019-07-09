@@ -34,9 +34,14 @@ private:
     bool isReset = true;
 
     bool isPlaying = true;
+    double loopStart = 0;
+    int numVoices=1;
 
     std::shared_ptr<MidiTrack> track;
 
     void reset();
     void updateToMetricTimeInternal(double);
+    bool playOnce(double metricTime);
+    bool pollForNoteOff(double metricTime);
+    void resetAllVoices();
 };

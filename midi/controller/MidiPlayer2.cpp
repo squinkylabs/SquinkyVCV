@@ -11,7 +11,11 @@ MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<
     voiceAssigner(voices, 16),
     track(song->getTrack(0))
 {
-
+    for (int i = 0; i < 16; ++i) {
+        MidiVoice& vx = voices[i];
+        vx.setHost(host.get());
+        vx.setIndex(i);
+    }
 }
 
 void MidiPlayer2::reset()
@@ -39,5 +43,91 @@ void MidiPlayer2::updateToMetricTime(double metricTime)
 
 void MidiPlayer2::updateToMetricTimeInternal(double metricTime)
 {
-    assert(false);      // need to play to pass next test
+    // If we had a conflict and needed to reset, then
+    // start all over from beginning. Or, if reset initiated by user.
+    if (isReset) {
+        curEvent = track->begin();
+    //    noteOffTime = -1;
+        resetAllVoices();
+        isReset = false;
+        loopStart = 0;
+    }
+     // keep processing events until we are caught up
+    while (playOnce(metricTime)) {
+
+    }
+}
+
+bool MidiPlayer2::playOnce(double metricTime)
+{
+    bool didSomething = false;
+
+#if 0
+    if (noteOffTime >= 0 && noteOffTime <= metricTime) {
+        host->setGate(false);
+        noteOffTime = -1;
+        didSomething = true;
+    }
+#endif
+    didSomething = pollForNoteOff(metricTime);
+    if (didSomething) {
+        return true;
+    }
+
+    const double eventStart = (loopStart + curEvent->first);
+    if (eventStart <= metricTime) {
+        MidiEventPtr event = curEvent->second;
+        switch (event->type) {
+            case MidiEvent::Type::Note:
+            {
+                MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+#if 0
+              
+                // should now output the note.
+                host->setGate(true);
+                host->setCV(note->pitchCV);
+
+                // and save off the note-off time.
+                noteOffTime = note->duration + eventStart;
+#endif
+              
+                // find a voice to play
+                MidiVoice* voice = voiceAssigner.getNext(note->pitchCV);
+                assert(voice);
+
+                // play the note
+                voice->playNote(note->pitchCV, eventStart, note->duration + eventStart);
+                ++curEvent;
+            }
+            break;
+            case MidiEvent::Type::End:
+                // for now, should loop.
+                loopStart += curEvent->first;
+                curEvent = track->begin();
+                break;
+            default:
+                assert(false);
+        }
+        didSomething = true;
+    }
+    return didSomething;
+}
+
+bool MidiPlayer2::pollForNoteOff(double metricTime)
+{
+    bool didSomething = false;
+    for (int i = 0; i < numVoices; ++i) {
+        bool b = voices[i].updateToMetricTime(metricTime);
+        if (b) {
+            didSomething = true;;
+        }
+    }
+    return didSomething;
+}
+
+void MidiPlayer2::resetAllVoices()
+{
+    for (int i = 0; i < numVoices; ++i) {
+        voices[i].reset();
+    }
 }

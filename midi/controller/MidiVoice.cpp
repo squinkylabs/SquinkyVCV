@@ -90,12 +90,23 @@ void MidiVoice::playNote(float pitch, double currentTime, float endTime)
     }
 }
 
-void MidiVoice::updateToMetricTime(double metricTime)
+bool MidiVoice::updateToMetricTime(double metricTime)
 {
+    bool ret = false;
     if (noteOffTime >= 0 && noteOffTime <= metricTime) {
         setGate(false);
         lastNoteOffTime = noteOffTime;
         noteOffTime = -1;
         curState = State::Idle;
+        ret = true;
     }
+    return ret;
+}
+
+void MidiVoice::reset()
+{
+    noteOffTime = -1;           // the absolute metric time when the 
+                                // currently playing note should stop
+    curPitch = -100;            // the pitch of the last note played in this voice
+    lastNoteOffTime = -1;
 }

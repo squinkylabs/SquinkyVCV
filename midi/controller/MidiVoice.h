@@ -40,13 +40,15 @@ public:
     /**
      * Advance clock, sending any data that needs to be sent.
      * @param quarterNotes is the absolute metric time, in our standard quarter note units.
+     * @returns true if it did anything.
      */
-    void updateToMetricTime(double quarterNotes);
+    bool updateToMetricTime(double quarterNotes);
 
     void updateSampleCount(int samples);
 
     State state() const;
     float pitch() const;
+    void reset();
 private:
     double noteOffTime = -1;        // the absolute metric time when the 
                                     // currently playing note should stop
