@@ -325,6 +325,19 @@ static void testMidiPlayerOneNote()
     assertEQ(host->cvValue[0], 2);
 }
 
+// play the first note on and off with lock contention
+static void testMidiPlayerOneNoteLockContention()
+{
+    std::shared_ptr<TestHost2> host = makeSongOneQandRun2(2 * .20f, 2 * .01f, 2 * .04f);
+
+    assertAllButZeroAreInit(host.get());
+    assertEQ(host->lockConflicts, 1);
+    assertEQ(host->gateChangeCount, 2);
+    assertEQ(host->gateState[0], false);
+    assertEQ(host->cvChangeCount, 1);
+    assertEQ(host->cvValue[0], 2);
+}
+
 // loop around to first note on second time
 static void testMidiPlayerOneNoteLoop()
 {
@@ -335,6 +348,58 @@ static void testMidiPlayerOneNoteLoop()
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvChangeCount, 1);       // only changes once because it's one note loop
     assertEQ(host->cvValue[0], 2);
+}
+
+// loop around to first note on second time
+static void testMidiPlayerOneNoteLoopLockContention()
+{
+    std::shared_ptr<TestHost2> host = makeSongOneQandRun2(2 * .4f, 2 * .7f, 2 * .4f);
+
+    assertAllButZeroAreInit(host.get());
+    assertGE(host->gateChangeCount, 3);
+    assertEQ(host->gateState[0], true);
+    assertGE(host->cvChangeCount, 1);       // only changes once because it's one note loop
+    assertEQ(host->cvValue[0], 2);
+}
+
+
+
+
+static void testMidiPLayerReset()
+{
+    printf("\n TEST RESET\n");
+    // make empty song, player ets.
+    // play it a long time
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.updateToMetricTime(100);
+
+
+    assertAllButZeroAreInit(host.get());
+    assertEQ(host->gateChangeCount, 0);
+    assertEQ(host->gateState[0], false);
+    assertEQ(host->cvChangeCount, 0);
+
+    // Now set new real song
+    MidiSongPtr newSong = makeSongOneQ();
+    {
+        MidiLocker l1(newSong->lock);
+        MidiLocker l2(song->lock);
+        pl.setSong(newSong);
+    }
+
+    // Should play just like it does in test1
+    pl.updateToMetricTime(2 * .24f);
+
+
+    assertAllButZeroAreInit(host.get());
+    assertEQ(host->lockConflicts, 0);
+    assertEQ(host->gateChangeCount, 1);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvChangeCount, 1);
+    assertEQ(host->cvValue[0], 2);
+    assertEQ(host->lockConflicts, 0);
 }
 
 
@@ -358,5 +423,8 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteOn();
     testMidiPlayerOneNoteOnWithLockContention();
     testMidiPlayerOneNote();
+    testMidiPlayerOneNoteLockContention();
     testMidiPlayerOneNoteLoop();
+    testMidiPlayerOneNoteLoopLockContention();
+    testMidiPLayerReset();
 }

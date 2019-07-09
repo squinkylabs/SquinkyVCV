@@ -13,6 +13,7 @@ class MidiPlayer2
 {
 public:
     MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song);
+    void setSong(std::shared_ptr<MidiSong> song);
 
     void updateToMetricTime(double metricTime);
 private:
