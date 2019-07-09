@@ -1,6 +1,42 @@
 #pragma once
 
+#include <memory>
+
+class MidiSong;
+class IMidiPlayerHost;
+
+#include "MidiTrack.h"
+#include "MidiVoice.h"
+#include "MidiVoiceAssigner.h"
+
 class MidiPlayer2
 {
+public:
+    MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song);
 
+    void updateToMetricTime(double metricTime);
+private:
+    std::shared_ptr<IMidiPlayerHost> host;
+    std::shared_ptr<MidiSong> song;
+
+    MidiVoice voices[16];
+    MidiVoiceAssigner voiceAssigner;
+
+    /***************************************
+     * Variables  to play one track
+     */
+
+    MidiTrack::const_iterator curEvent;
+
+    /**
+     * when starting, or when reset by lock contention
+     */
+    bool isReset = true;
+
+    bool isPlaying = true;
+
+    std::shared_ptr<MidiTrack> track;
+
+    void reset();
+    void updateToMetricTimeInternal(double);
 };

@@ -1,6 +1,7 @@
 
 #include "IMidiPlayerHost.h"
 #include "MidiPlayer2.h"
+#include "MidiSong.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
 
@@ -58,10 +59,8 @@ using TestHost2Ptr = std::shared_ptr<TestHost2>;
 
 static void test0()
 {
-    MidiPlayer2 mp;
     MidiVoice mv;
     MidiVoiceAssigner va(&mv, 1);
-    (void) mp;
 }
 
 //************************** MidiVoice tests *********************************************
@@ -225,7 +224,46 @@ static void testVoiceReAssign()
     assert(p == &vx);
 }
 
-//*********************************************************************
+
+//********************* test helper functions ************************************************
+
+extern MidiSongPtr makeSongOneQ();
+
+std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
+{
+    MidiSongPtr song = makeSongOneQ();
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.updateToMetricTime(time);
+    return host;
+}
+
+//***************************** MidiPlayer2 ****************************************
+// test that APIs can be called
+static void testMidiPlayer0()
+{
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.updateToMetricTime(.01f);
+}
+
+// just play the first note on
+static void testMidiPlayerOneNote()
+{
+    std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .24f);
+
+    assertEQ(host->lockConflicts, 0);
+    assertEQ(host->gateChangeCount, 1);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvChangeCount, 1);
+    assertEQ(host->cvValue[0], 2);
+    assertEQ(host->lockConflicts, 0);
+}
+
+
+
+//*******************************tests of MidiPlayer2 **************************************
 void testMidiPlayer2()
 {
     test0();
@@ -234,11 +272,13 @@ void testMidiPlayer2()
     testMidiVoicePlayNoteVoice2();
     testMidiVoicePlayNoteOnAndOff();
     testMidiVoiceRetrigger();
-
-    //printf("put bad back voice test\n");
     testMidiVoiceRetrigger2();
   
     basicTestOfVoiceAssigner();
     testVoiceAssign2Notes();
     testVoiceReAssign();
+
+    testMidiPlayer0();
+    testMidiPlayerOneNote();
+
 }
