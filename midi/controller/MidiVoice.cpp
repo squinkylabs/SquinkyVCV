@@ -109,4 +109,6 @@ void MidiVoice::reset()
                                 // currently playing note should stop
     curPitch = -100;            // the pitch of the last note played in this voice
     lastNoteOffTime = -1;
+    curState = State::Idle;
+    retriggerSampleCounter = 0;
 }

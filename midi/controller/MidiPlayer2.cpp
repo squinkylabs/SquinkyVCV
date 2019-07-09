@@ -62,13 +62,6 @@ bool MidiPlayer2::playOnce(double metricTime)
 {
     bool didSomething = false;
 
-#if 0
-    if (noteOffTime >= 0 && noteOffTime <= metricTime) {
-        host->setGate(false);
-        noteOffTime = -1;
-        didSomething = true;
-    }
-#endif
     didSomething = pollForNoteOff(metricTime);
     if (didSomething) {
         return true;
@@ -81,16 +74,7 @@ bool MidiPlayer2::playOnce(double metricTime)
             case MidiEvent::Type::Note:
             {
                 MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
-#if 0
-              
-                // should now output the note.
-                host->setGate(true);
-                host->setCV(note->pitchCV);
-
-                // and save off the note-off time.
-                noteOffTime = note->duration + eventStart;
-#endif
-              
+  
                 // find a voice to play
                 MidiVoice* voice = voiceAssigner.getNext(note->pitchCV);
                 assert(voice);

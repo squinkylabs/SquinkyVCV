@@ -1,5 +1,6 @@
 
 #include "IMidiPlayerHost.h"
+#include "MidiLock.h"
 #include "MidiPlayer2.h"
 #include "MidiSong.h"
 #include "MidiVoice.h"
@@ -20,6 +21,8 @@ public:
     void setGate(int voice, bool g) override
     {
         assert(voice >= 0 && voice < 16);
+        bool bs = gateState[voice];
+        bool chg = (bs != g);
         if (g != gateState[voice]) {
             ++gateChangeCount;
             gateState[voice] = g;
@@ -79,6 +82,14 @@ static void testMidiVoiceDefaultState()
     assert(mv.state() == MidiVoice::State::Idle);
 }
 
+static void assertAllButZeroAreInit(TestHost2 *th)
+{
+    for (int i = 1; i < 16; ++i) {
+        assertLT(th->cvValue[i], -10);
+        assert(!th->gateState[i]);
+    }
+}
+
 static void testMidiVoicePlayNote()
 {
     TestHost2 th;
@@ -86,6 +97,7 @@ static void testMidiVoicePlayNote()
     mv.setHost(&th);
     mv.playNote(3.f, 0, 1.f);      // pitch 3, dur 1
 
+    assertAllButZeroAreInit(&th);
     assert(mv.state() == MidiVoice::State::Playing);
     assert(th.cvChangeCount == 1);
     assert(th.gateChangeCount == 1);
@@ -121,7 +133,7 @@ static void testMidiVoicePlayNoteOnAndOff()
     mv.playNote(3.f, 0, 1.f);      // pitch 3, dur 1
     mv.updateToMetricTime(2);   // after note is over
 
-   
+    assertAllButZeroAreInit(&th);
     assert(th.cvValue[0] == 3.f);
     assert(th.gateState[0] == false);
     assert(th.cvChangeCount == 1);
@@ -148,6 +160,7 @@ static void testMidiVoiceRetrigger()
     assert(th.gateState[0] == false);
     assert(th.cvValue[0] == 3.f);
     assert(th.gateChangeCount == 2);
+    assertAllButZeroAreInit(&th);
 }
 
 static void testMidiVoiceRetrigger2()
@@ -178,6 +191,8 @@ static void testMidiVoiceRetrigger2()
     assert(th.gateState[0] == true);
     assert(th.gateChangeCount == 3);
     assert(th.cvValue[0] == 4.f);
+
+    assertAllButZeroAreInit(&th);
 }
 
 //************************** MidiVoiceAssigner tests **********************************
@@ -229,12 +244,29 @@ static void testVoiceReAssign()
 
 extern MidiSongPtr makeSongOneQ();
 
-std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
+static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
 {
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
     pl.updateToMetricTime(time);
+    return host;
+}
+
+
+static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
+{
+
+    MidiSongPtr song = makeSongOneQ();
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.updateToMetricTime(timeBeforeLock);
+    {
+        MidiLocker l(song->lock);
+        pl.updateToMetricTime(timeBeforeLock + timeDuringLock);
+    }
+
+    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock);
     return host;
 }
 
@@ -249,17 +281,60 @@ static void testMidiPlayer0()
 }
 
 // just play the first note on
-static void testMidiPlayerOneNote()
+// fka test1
+static void testMidiPlayerOneNoteOn()
 {
     printf("one note\n");
     std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .24f);
 
+    assertAllButZeroAreInit(host.get());
     assertEQ(host->lockConflicts, 0);
     assertEQ(host->gateChangeCount, 1);
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvValue[0], 2);
     assertEQ(host->lockConflicts, 0);
+}
+
+// same as test1, but with a lock contention
+static void testMidiPlayerOneNoteOnWithLockContention()
+{
+    std::shared_ptr<TestHost2> host = makeSongOneQandRun2(2 * .20f, 2 * .01f, 2 * .03f);
+
+    assertAllButZeroAreInit(host.get());
+    assertEQ(host->gateChangeCount, 1);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvChangeCount, 1);
+    assertEQ(host->cvValue[0], 2);
+    assertEQ(host->lockConflicts, 1);
+}
+
+// play the first note on and off
+// test2
+static void testMidiPlayerOneNote()
+{
+    // this was wall time (1/4 sec)
+    //std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
+    std::shared_ptr<TestHost2> host = makeSongOneQandRun(.5f);
+
+    assertAllButZeroAreInit(host.get());
+    assertEQ(host->lockConflicts, 0);
+    assertEQ(host->gateChangeCount, 2);
+    assertEQ(host->gateState[0], false);
+    assertEQ(host->cvChangeCount, 1);
+    assertEQ(host->cvValue[0], 2);
+}
+
+// loop around to first note on second time
+static void testMidiPlayerOneNoteLoop()
+{
+    std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .51f);
+
+    assertAllButZeroAreInit(host.get());
+    assertEQ(host->gateChangeCount, 3);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvChangeCount, 1);       // only changes once because it's one note loop
+    assertEQ(host->cvValue[0], 2);
 }
 
 
@@ -274,12 +349,14 @@ void testMidiPlayer2()
     testMidiVoicePlayNoteOnAndOff();
     testMidiVoiceRetrigger();
     testMidiVoiceRetrigger2();
-  
+
     basicTestOfVoiceAssigner();
     testVoiceAssign2Notes();
     testVoiceReAssign();
 
     testMidiPlayer0();
+    testMidiPlayerOneNoteOn();
+    testMidiPlayerOneNoteOnWithLockContention();
     testMidiPlayerOneNote();
-
+    testMidiPlayerOneNoteLoop();
 }

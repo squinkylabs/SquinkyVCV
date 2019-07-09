@@ -63,6 +63,9 @@ private:
     float delayedNotePitch;
     double delayedNoteEndtime;
 
+    /**
+     * during re-trigger, this counts down. when it hits zero, retrigger is over
+     */
     int retriggerSampleCounter = 0;
     int numSamplesInRetrigger = 0;
 
