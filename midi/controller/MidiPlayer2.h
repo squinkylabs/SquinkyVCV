@@ -16,6 +16,12 @@ public:
     void setSong(std::shared_ptr<MidiSong> song);
 
     void updateToMetricTime(double metricTime);
+
+    // need some UT for these
+    void reset();
+    void stop();
+    double getLoopStart() const;
+
 private:
     std::shared_ptr<IMidiPlayerHost> host;
     std::shared_ptr<MidiSong> song;
@@ -40,7 +46,7 @@ private:
 
     std::shared_ptr<MidiTrack> track;
 
-    void reset();
+   
     void updateToMetricTimeInternal(double);
     bool playOnce(double metricTime);
     bool pollForNoteOff(double metricTime);

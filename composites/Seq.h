@@ -2,11 +2,18 @@
 
 #include "Divider.h"
 #include "IComposite.h"
-#include "MidiPlayer.h"
+
 #include "MidiSong.h"
 #include "SeqClock.h"
 
 #define _PLAY2
+
+#ifdef _PLAY2
+    #include "IMidiPlayerHost.h"
+    #include "MidiPlayer2.h"
+#else
+    #include "MidiPlayer.h"
+#endif
 
 #ifdef __V1x
 namespace rack {
@@ -126,12 +133,15 @@ private:
     void init(MidiSongPtr);
     void serviceRunStop();
 
-    std::shared_ptr<MidiPlayer> player;
     SeqClock clock;
     Divider div;
     bool runStopRequested = false;
 
-   
+#ifdef _PLAY2
+    std::shared_ptr<MidiPlayer2> player;
+#else
+    std::shared_ptr<MidiPlayer> player;
+#endif
 
     /**
      * called by the divider every 'n' step calls
@@ -139,6 +149,31 @@ private:
     void stepn(int n);
 };
 
+#ifdef _PLAY2
+template <class TBase>
+class SeqHost : public IMidiPlayerHost
+{
+public:
+    SeqHost(Seq<TBase>* s) : seq(s)
+    {
+    }
+    void setGate(int voice, bool gate) override
+    {
+        seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
+    }
+    void setCV(int voice, float cv) override
+    {
+        seq->outputs[Seq<TBase>::CV_OUTPUT].voltages[voice] = cv;
+    }
+    void onLockFailed() override
+    {
+
+    }
+private:
+    Seq<TBase>* const seq;
+};
+
+#else
 template <class TBase>
 class SeqHost : public IPlayerHost
 {
@@ -161,13 +196,19 @@ public:
 private:
     Seq<TBase>* const seq;
 };
+#endif
 
 
 template <class TBase>
 void  Seq<TBase>::init(MidiSongPtr song)
 { 
+#ifdef _PLAY2
+    std::shared_ptr<IMidiPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
+    player = std::make_shared<MidiPlayer2>(host, song);
+#else
     std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
     player = std::make_shared<MidiPlayer>(host, song);
+#endif
     div.setup(4, [this] {
         this->stepn(div.getDiv());
      });
@@ -227,6 +268,11 @@ void  Seq<TBase>::stepn(int n)
     player->updateToMetricTime(results.totalElapsedTime);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
+
+#ifdef _PLAY2
+    TBase::outputs[CV_OUTPUT].channels = TBase::params[NUM_VOICES_PARAM].value + 1;
+    TBase::outputs[GATE_OUTPUT].channels = TBase::params[NUM_VOICES_PARAM].value + 1;
+#endif
 }
 
 template <class TBase>

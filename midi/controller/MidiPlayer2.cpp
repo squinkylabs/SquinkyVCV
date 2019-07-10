@@ -33,6 +33,16 @@ void MidiPlayer2::reset()
     isReset = true;
 }
 
+void MidiPlayer2::stop()
+{
+    printf("impl stop\n");
+}
+double MidiPlayer2::getLoopStart() const
+{
+    printf("impl getLoopStart\n");
+    return 0;
+}
+
 void MidiPlayer2::updateToMetricTime(double metricTime)
 {
     if (!isPlaying) {
