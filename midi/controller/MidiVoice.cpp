@@ -51,7 +51,7 @@ void MidiVoice::updateSampleCount(int samples)
             noteOffTime = delayedNoteEndtime;
             setGate(true);
         }
-    }  
+    } 
 }
 
 void MidiVoice::playNote(float pitch, double currentTime, float endTime)

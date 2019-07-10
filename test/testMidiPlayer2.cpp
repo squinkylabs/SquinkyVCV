@@ -274,6 +274,55 @@ static void testVoiceAssignReUse()
     assert(p == vx+1);
 }
 
+static void testVoiceAssingOverflow()
+{
+
+    MidiVoice vx[4];
+    MidiVoiceAssigner va(vx, 4);
+    TestHost2 th;
+    va.setNumVoices(4);
+    initVoices(vx, 4, &th);
+
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+    const float pitch3 = 2;
+    const float pitch4 = 3;
+    const float pitch5 = 4;
+
+    auto p = va.getNext(pitch1);
+    assert(p);
+    assert(p == vx);
+    p->playNote(pitch1, 0, 10);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx + 1);
+    p->playNote(pitch2, 0, 10);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    p = va.getNext(pitch3);
+    assert(p);
+    assert(p == vx + 2);
+    p->playNote(pitch3, 0, 10);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    p = va.getNext(pitch4);
+    assert(p);
+    assert(p == vx + 3);
+    p->playNote(pitch4, 0, 10);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    p = va.getNext(pitch5);
+    assert(p);
+    assert(p == vx + 0);
+    p->playNote(pitch5, 0, 10);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+  
+}
+
 
 //********************* test helper functions ************************************************
 
@@ -396,7 +445,7 @@ static void testMidiPlayerOneNoteLoopLockContention()
     assertEQ(host->cvValue[0], 2);
 }
 
-static void testMidiPLayerReset()
+static void testMidiPlayerReset()
 {
     // make empty song, player ets.
     // play it a long time
@@ -449,6 +498,7 @@ void testMidiPlayer2()
     testVoiceAssign2Notes();
     testVoiceReAssign();
     testVoiceAssignReUse();
+    testVoiceAssingOverflow();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();
@@ -457,5 +507,5 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteLockContention();
     testMidiPlayerOneNoteLoop();
     testMidiPlayerOneNoteLoopLockContention();
-    testMidiPLayerReset();
+    testMidiPlayerReset();
 }
