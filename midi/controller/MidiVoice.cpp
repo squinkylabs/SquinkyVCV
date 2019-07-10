@@ -5,26 +5,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-/*
-class MidiVoice
-{
-public:
-    void setHost(IMidiPlayerHost*);
-
-/
-    void playNote(float pitch, float duration);
-
-
-    bool isPlaying() const;
-    float pitch() const;
-private:
-    double noteOffTime = -1;        // the absolute metric time when the 
-                                    // currently playing note should stop
-    float pitch = -100;              // the pitch of the last note played in this voice
-};
-*/
-
-
 MidiVoice::State MidiVoice::state() const
 {
     return curState;
@@ -50,6 +30,11 @@ void MidiVoice::setCV(float cv)
     host->setCV(index, cv);
 }
 
+float MidiVoice::pitch() const
+{
+    return curPitch;
+}
+
 void MidiVoice::setSampleCountForRetrigger(int samples)
 {
     numSamplesInRetrigger = samples;
@@ -66,9 +51,7 @@ void MidiVoice::updateSampleCount(int samples)
             noteOffTime = delayedNoteEndtime;
             setGate(true);
         }
-    }
-    printf("leaving updateSampleCount with counter = %d\n", retriggerSampleCounter);
-  
+    }  
 }
 
 void MidiVoice::playNote(float pitch, double currentTime, float endTime)

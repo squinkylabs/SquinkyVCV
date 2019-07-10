@@ -139,7 +139,6 @@ static void testMidiVoicePlayNoteOnAndOff()
     assert(th.cvChangeCount == 1);
     assert(th.gateChangeCount == 2);
     assert(mv.state() == MidiVoice::State::Idle);
-
 }
 
 static void testMidiVoiceRetrigger()
@@ -239,6 +238,42 @@ static void testVoiceReAssign()
     assert(p == &vx);
 }
 
+static void testVoiceAssignReUse()
+{
+    MidiVoice vx[4];
+    MidiVoiceAssigner va(vx, 4);
+    TestHost2 th;
+    va.setNumVoices(4);
+    initVoices(vx, 4, &th);
+
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+
+    auto p = va.getNext(pitch1);
+    assert(p);
+    assert(p == vx);
+    p->playNote(pitch1, 0, 10);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx+1);
+    p->playNote(pitch2, 0, 10);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    //now terminate the notes
+    vx[0].updateToMetricTime(20);
+    assert(vx[0].state() == MidiVoice::State::Idle);
+    vx[1].updateToMetricTime(20);
+    assert(vx[1].state() == MidiVoice::State::Idle);
+
+    // now re-allocate pitch 2
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx+1);
+}
+
 
 //********************* test helper functions ************************************************
 
@@ -256,7 +291,6 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
 
 static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
 {
-
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -362,12 +396,8 @@ static void testMidiPlayerOneNoteLoopLockContention()
     assertEQ(host->cvValue[0], 2);
 }
 
-
-
-
 static void testMidiPLayerReset()
 {
-    printf("\n TEST RESET\n");
     // make empty song, player ets.
     // play it a long time
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
@@ -418,6 +448,7 @@ void testMidiPlayer2()
     basicTestOfVoiceAssigner();
     testVoiceAssign2Notes();
     testVoiceReAssign();
+    testVoiceAssignReUse();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();
