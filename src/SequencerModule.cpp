@@ -176,6 +176,18 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
+#ifdef _PLAY2
+    p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(controlX, 148),
+        module,
+        Comp::NUM_VOICES_PARAM);
+    p->box.size.x = 85;    // width
+    p->box.size.y = 22;     // should set auto like button does
+    p->setLabels(Comp::getPolyLabels());
+    addParam(p);
+#endif
+
 
     SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(controlX, 180),

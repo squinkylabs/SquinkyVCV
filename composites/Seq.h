@@ -6,6 +6,8 @@
 #include "MidiSong.h"
 #include "SeqClock.h"
 
+#define _PLAY2
+
 #ifdef __V1x
 namespace rack {
     namespace engine {
@@ -58,7 +60,8 @@ public:
         TEMPO_PARAM,
         RUN_STOP_PARAM,             // the switch the user pushes
         PLAY_SCROLL_PARAM,
-        RUNNING_PARAM,              // the invisible param that stores the state
+        RUNNING_PARAM,              // the invisible param that stores the run 
+        NUM_VOICES_PARAM,
         NUM_PARAMS
     };
 
@@ -117,6 +120,7 @@ public:
     }
 
     static std::vector<std::string> getClockRates();
+    static std::vector<std::string> getPolyLabels();
 private:
     GateTrigger runStopProcessor;
     void init(MidiSongPtr);
@@ -232,6 +236,16 @@ inline std::vector<std::string> Seq<TBase>::getClockRates()
 }
 
 template <class TBase>
+inline std::vector<std::string> Seq<TBase>::getPolyLabels()
+{
+    return { "1", "2", "3", "4",
+        "5", "6", "7", "8",
+        "9", "10", "11", "12",
+        "13", "14", "15", "16",
+    };
+}
+
+template <class TBase>
 int SeqDescription<TBase>::getNumParams()
 {
     return Seq<TBase>::NUM_PARAMS;
@@ -256,6 +270,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::RUNNING_PARAM:
             ret = {0, 1, 1, "Running"};
+            break;
+        case Seq<TBase>::NUM_VOICES_PARAM:
+            ret = {0, 15, 0, "Polyphony"};
             break;
         default:
             assert(false);
