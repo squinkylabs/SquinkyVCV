@@ -16,6 +16,7 @@ struct Light
     }
 };
 
+#if 0
 struct Port
 {
     /** Voltage of the port, zero if not plugged in. Read-only by Module */
@@ -35,6 +36,45 @@ struct Port
         return active ? value : normalValue;
     }
 };
+#endif
+
+static const int PORT_MAX_CHANNELS = 16;
+
+
+struct alignas(32) Port
+{
+/** Voltage of the port. */
+    union
+    {
+ /** Unstable API. Use getVoltage() and setVoltage() instead. */
+        float voltages[PORT_MAX_CHANNELS] = {};
+        /** DEPRECATED. Unstable API. Use getVoltage() and setVoltage() instead. */
+        float value;
+    };
+    union
+    {
+ /** Number of polyphonic channels
+ Unstable API. Use set/getChannels() instead.
+ May be 0 to PORT_MAX_CHANNELS.
+ */
+        uint8_t channels = 0;
+        /** DEPRECATED. Unstable API. Use isConnected() instead. */
+        uint8_t active;
+    };
+    /** For rendering plug lights on cables.
+    Green for positive, red for negative, and blue for polyphonic.
+    */
+    Light plugLights[3];
+
+        /** Returns whether a cable is connected to the Port.
+    You can use this for skipping code that generates output voltages.
+    */
+    bool isConnected()
+    {
+        return channels > 0;
+    }
+};
+
 struct Input : Port
 {
 };
