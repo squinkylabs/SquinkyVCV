@@ -334,9 +334,13 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
     pl.updateToMetricTime(time);
+
+    // song is only 1.0 long
+    float expectedLoopStart = std::floor(time);
+    assertEQ(pl.getLoopStart(), expectedLoopStart);
+    
     return host;
 }
-
 
 static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
 {
@@ -350,6 +354,11 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
     }
 
     pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock);
+
+       // song is only 1.0 long
+    float expectedLoopStart = std::floor(timeBeforeLock + timeDuringLock + timeAfterLock);
+    assertEQ(pl.getLoopStart(), expectedLoopStart);
+
     return host;
 }
 
@@ -377,6 +386,7 @@ static void testMidiPlayerOneNoteOn()
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvValue[0], 2);
     assertEQ(host->lockConflicts, 0);
+
 }
 
 // same as test1, but with a lock contention
