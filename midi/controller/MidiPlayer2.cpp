@@ -35,8 +35,9 @@ void MidiPlayer2::reset()
 
 void MidiPlayer2::stop()
 {
-    printf("impl stop\n");
+    isPlaying = false;
 }
+
 double MidiPlayer2::getLoopStart() const
 {
     return loopStart;

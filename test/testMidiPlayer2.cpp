@@ -17,7 +17,17 @@
 class TestHost2 : public IMidiPlayerHost
 {
 public:
-
+    void reset()
+    {
+        cvChangeCount = 0;
+        gateChangeCount = 0;
+        for (auto it : gateState) {
+            it = false;
+        }
+        for (auto it : cvValue) {
+            it = -100;
+        }
+    }
     void setGate(int voice, bool g) override
     {
         assert(voice >= 0 && voice < 16);
@@ -342,6 +352,9 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
     return host;
 }
 
+/**
+ * runs a while, generates a lock contention, runs some more
+ */
 static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
 {
     MidiSongPtr song = makeSongOneQ();
@@ -361,6 +374,28 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
 
     return host;
 }
+
+/**
+ * runs a while, then stops, resets test host, the runs more
+ */
+static std::shared_ptr<TestHost2> makeSongOneQandRun3(float timeBeforeStop, float timeAfterStop)
+{
+    MidiSongPtr song = makeSongOneQ();
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.updateToMetricTime(timeBeforeStop);
+
+    // song is only 1.0 long
+    float expectedLoopStart = std::floor(timeBeforeStop);
+    assertEQ(pl.getLoopStart(), expectedLoopStart);
+
+    pl.stop();
+    host->reset();
+    pl.updateToMetricTime(timeAfterStop);
+
+    return host;
+}
+
 
 //***************************** MidiPlayer2 ****************************************
 // test that APIs can be called
@@ -491,6 +526,13 @@ static void testMidiPlayerReset()
     assertEQ(host->lockConflicts, 0);
 }
 
+static void testMidiPlayerStop()
+{
+    std::shared_ptr<TestHost2> host = makeSongOneQandRun3(1, 100);
+    assertEQ(host->gateChangeCount, 0);
+    assertEQ(host->cvChangeCount, 0);
+}
+
 
 
 //*******************************tests of MidiPlayer2 **************************************
@@ -518,4 +560,5 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteLoop();
     testMidiPlayerOneNoteLoopLockContention();
     testMidiPlayerReset();
+    testMidiPlayerStop();
 }
