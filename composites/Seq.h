@@ -270,8 +270,10 @@ void  Seq<TBase>::stepn(int n)
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 
 #ifdef _PLAY2
-    TBase::outputs[CV_OUTPUT].channels = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
-    TBase::outputs[GATE_OUTPUT].channels = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
+    const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
+    TBase::outputs[CV_OUTPUT].channels = numVoices;
+    TBase::outputs[GATE_OUTPUT].channels = numVoices;
+    player->setNumVoices(numVoices);
 #endif
 }
 

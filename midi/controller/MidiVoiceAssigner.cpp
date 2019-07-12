@@ -19,18 +19,19 @@ private:
 
 MidiVoiceAssigner::MidiVoiceAssigner(MidiVoice* vx, int maxVoices) :
     voices(vx),
-    maxVoices(maxVoices)
+    maxVoices(maxVoices),
+    numVoices(maxVoices)
 {
     assert(maxVoices > 0 && maxVoices <= 16);
     for (int i = 0; i < maxVoices; ++i) {
-        auto s = voices[i].state();
-        assert(s == MidiVoice::State::Idle);
+        assert(voices[i].state() == MidiVoice::State::Idle);
     }
 }
 
-void MidiVoiceAssigner::setNumVoices(int)
+void MidiVoiceAssigner::setNumVoices(int voices)
 {
-
+    numVoices = voices;
+    assert(numVoices <= maxVoices);
 }
 
 MidiVoice* MidiVoiceAssigner::getNext(float pitch)
@@ -48,17 +49,17 @@ MidiVoice* MidiVoiceAssigner::getNext(float pitch)
 
 MidiVoice* MidiVoiceAssigner::getNextReUse(float pitch)
 {
-    //return voices + 0;          // very dumb!
+    assert(numVoices > 0);
 
     // first, look for a voice already playing this pitch
-    for (int i = 0; i < maxVoices; ++i) {
+    for (int i = 0; i < numVoices; ++i) {
         if (voices[i].pitch() == pitch) {
             return voices + i;
         }
     }
 
     // next, look for any idle voice
-    for (int i = 0; i < maxVoices; ++i) {
+    for (int i = 0; i < numVoices; ++i) {
         if (voices[i].state() == MidiVoice::State::Idle) {
             return voices + i;
         }

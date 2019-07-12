@@ -17,10 +17,13 @@ public:
 
     void updateToMetricTime(double metricTime);
 
+    void setNumVoices(int voices);
+
     // need some UT for these
     void reset();
     void stop();
     double getLoopStart() const;
+
 
 private:
     std::shared_ptr<IMidiPlayerHost> host;

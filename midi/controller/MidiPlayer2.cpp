@@ -25,7 +25,6 @@ void MidiPlayer2::setSong(std::shared_ptr<MidiSong> newSong)
     assert(newSong->lock->locked());
     song = newSong;
     track = song->getTrack(0);
-    //trackPlayer.setTrack(newSong->getTrack(0));
 }
 
 void MidiPlayer2::reset()
@@ -36,6 +35,12 @@ void MidiPlayer2::reset()
 void MidiPlayer2::stop()
 {
     isPlaying = false;
+}
+
+void MidiPlayer2::setNumVoices(int voices)
+{
+    numVoices = voices;
+    voiceAssigner.setNumVoices(voices);
 }
 
 double MidiPlayer2::getLoopStart() const

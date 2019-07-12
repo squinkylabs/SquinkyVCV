@@ -330,9 +330,78 @@ static void testVoiceAssingOverflow()
     p->playNote(pitch5, 0, 10);         // play long note to this voice
     assert(p->state() == MidiVoice::State::Playing);
 
-  
 }
 
+static void testVoiceAssignOverlap()
+{
+    MidiVoice vx[4];
+    MidiVoiceAssigner va(vx, 4);
+    TestHost2 th;
+    va.setNumVoices(4);
+    initVoices(vx, 4, &th);
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+
+    vx[0].updateToMetricTime(1);
+    vx[1].updateToMetricTime(1);
+    auto p = va.getNext(pitch1);
+    assert(p);
+    assert(p == vx);
+    p->playNote(pitch1, 1, 3);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    vx[0].updateToMetricTime(1.5);
+    vx[1].updateToMetricTime(1.5);
+
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx+1);
+    p->playNote(pitch1, 2, 4);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    vx[0].updateToMetricTime(5);
+    vx[1].updateToMetricTime(5);
+    assert(vx[0].state() == MidiVoice::State::Idle);
+
+    assert(vx[1].state() == MidiVoice::State::Idle);
+}
+
+
+static void testVoiceAssignOverlapMono()
+{
+    MidiVoice vx[4];
+    MidiVoiceAssigner va(vx, 4);
+    TestHost2 th;
+    va.setNumVoices(1);
+    initVoices(vx, 4, &th);
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+
+    vx[0].updateToMetricTime(1);
+    vx[1].updateToMetricTime(1);
+    auto p = va.getNext(pitch1);
+    assert(p);
+    assert(p == vx);
+    p->playNote(pitch1, 1, 3);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    vx[0].updateToMetricTime(1.5);
+    vx[1].updateToMetricTime(1.5);
+
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx);
+    p->playNote(pitch1, 2, 4);         // play long note to same voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+    vx[0].updateToMetricTime(5);
+    vx[1].updateToMetricTime(5);
+    assert(vx[0].state() == MidiVoice::State::Idle);
+
+    assert(vx[1].state() == MidiVoice::State::Idle);
+}
 
 //********************* test helper functions ************************************************
 
@@ -352,6 +421,76 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
     return host;
 }
 
+
+MidiSongPtr makeSongOverlapQ()
+{
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
+    song->createTrack(0);
+    MidiTrackPtr track = song->getTrack(0);
+
+    //quarter note at time 1..3
+    {
+        MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+        note->startTime = 1;
+        note->duration = 2;
+        note->pitchCV = 2.f;
+        track->insertEvent(note);
+    }
+
+    // quarter 2..4
+    {
+        MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
+        note2->startTime = 2;
+        note2->duration = 2;
+        note2->pitchCV = 2.1f;
+        track->insertEvent(note2);
+    }
+
+    track->insertEnd(20);
+
+    return song;
+}
+
+static std::shared_ptr<TestHost2> makeSongOverlapQandRun(float time)
+{
+    MidiSongPtr song = makeSongOverlapQ();
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.setNumVoices(4);
+
+    pl.updateToMetricTime(.5);
+    assert(host->gateChangeCount == 0);
+    assert(!host->gateState[0]);
+    assert(!host->gateState[1]);
+
+
+    pl.updateToMetricTime(1.5);
+    assert(host->gateChangeCount == 1);
+    assert(host->gateState[0]);
+    assert(!host->gateState[1]);
+
+
+    pl.updateToMetricTime(2.5);
+    assert(host->gateChangeCount == 2);
+    assert(host->gateState[0]);
+    assert(host->gateState[1]);
+
+
+    pl.updateToMetricTime(3.5);
+    assert(host->gateChangeCount == 3);
+    assert(!host->gateState[0]);
+    assert(host->gateState[1]);
+
+    pl.updateToMetricTime(4.5);
+    assert(host->gateChangeCount == 4);
+
+
+    assert(time > 4.5);
+    pl.updateToMetricTime(time);
+
+    return host;
+}
 /**
  * runs a while, generates a lock contention, runs some more
  */
@@ -411,7 +550,6 @@ static void testMidiPlayer0()
 // fka test1
 static void testMidiPlayerOneNoteOn()
 {
-    printf("one note\n");
     std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .24f);
 
     assertAllButZeroAreInit(host.get());
@@ -534,6 +672,17 @@ static void testMidiPlayerStop()
 }
 
 
+// four voice assigner, but only two overlapping notes
+static void testMidiPlayerOverlap()
+{
+    std::shared_ptr<TestHost2> host = makeSongOverlapQandRun(5);
+    assertEQ(host->gateChangeCount, 4);
+    assert(host->gateState[0] == false);
+    assert(host->gateState[1] == false);
+    assert(host->gateState[2] == false);
+    assert(host->cvValue[0] == 2);
+    assertClose(host->cvValue[1],  2.1, .001);
+}
 
 //*******************************tests of MidiPlayer2 **************************************
 void testMidiPlayer2()
@@ -551,6 +700,8 @@ void testMidiPlayer2()
     testVoiceReAssign();
     testVoiceAssignReUse();
     testVoiceAssingOverflow();
+    testVoiceAssignOverlap();
+    testVoiceAssignOverlapMono();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();
@@ -561,4 +712,5 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteLoopLockContention();
     testMidiPlayerReset();
     testMidiPlayerStop();
+    testMidiPlayerOverlap();
 }

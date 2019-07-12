@@ -16,6 +16,7 @@ public:
 private:
     MidiVoice* const voices;
     const int maxVoices;
+    int numVoices = 0;
 
     Mode mode = Mode::ReUse;
 
