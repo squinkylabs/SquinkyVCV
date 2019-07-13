@@ -281,6 +281,9 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
         case TestContent::oneNote123:
             ret = makeTestNote123(lock);
             break;
+        case TestContent::oneQ1:
+            ret = makeTestOneQ1(lock);
+            break;
         default:
             assert(false);
     }
@@ -319,6 +322,20 @@ MidiTrackPtr MidiTrack::makeTestNote123(std::shared_ptr<MidiLock> lock)
     newNote->startTime = testTime;
     newNote->duration = 1;
     newNote->pitchCV = 2.3f;
+
+    track->insertEvent(newNote);
+    track->insertEnd(TimeUtils::bar2time(1));
+    return track;
+}
+
+MidiTrackPtr MidiTrack::makeTestOneQ1(std::shared_ptr<MidiLock> lock)
+{
+    auto track = std::make_shared<MidiTrack>(lock);
+    MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+    const float testTime = 1.;
+    newNote->startTime = testTime;
+    newNote->duration = 1;
+    newNote->pitchCV = 3.0f;
 
     track->insertEvent(newNote);
     track->insertEnd(TimeUtils::bar2time(1));

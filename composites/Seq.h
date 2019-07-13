@@ -65,7 +65,7 @@ public:
     {
         CLOCK_INPUT_PARAM,
         TEMPO_PARAM,
-        RUN_STOP_PARAM,             // the switch the user pushes
+        RUN_STOP_PARAM,             // the switch the user pushes (actually unused????
         PLAY_SCROLL_PARAM,
         RUNNING_PARAM,              // the invisible param that stores the run 
         NUM_VOICES_PARAM,
@@ -97,6 +97,7 @@ public:
     void step() override;
 
     /** This should be called on audio thread
+     * (but is it??)
      */
     void toggleRunStop()
     {
@@ -123,7 +124,7 @@ public:
         double absTime = clock.getCurMetricTime();
         double loopDuration = player->getLoopStart();
         double ret = absTime - loopDuration;
-        return ret;
+        return float(ret);
     }
 
     static std::vector<std::string> getClockRates();
@@ -261,10 +262,16 @@ void  Seq<TBase>::stepn(int n)
 
     const float reset = TBase::inputs[RESET_INPUT].value;
     int samplesElapsed = n;
+#if 0
+    if (extClock && isRunning() && !reset) {
+        printf("let's go\n");
+    }
+#endif
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, isRunning(), reset);
     if (results.didReset) {
         player->reset();
     }
+  //  printf("in step, time = %.2f ext was %.2f isRunning - %d reset = %.2f\n", results.totalElapsedTime, extClock, isRunning(), reset);
     player->updateToMetricTime(results.totalElapsedTime);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
