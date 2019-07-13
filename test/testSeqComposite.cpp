@@ -79,7 +79,37 @@ static void testBasicGates()
     assertAllGatesLow(*s);
 }
 
+static void testStopGatesLow()
+{
+    std::shared_ptr<Sq> s = makeWith8Clock();                          // start it
+
+    stepN(*s, 16);
+
+    assertEQ(s->outputs[Sq::GATE_OUTPUT].channels, 16);
+    assertAllGatesLow(*s);
+
+    auto pos = s->getPlayPosition();
+    assertEQ(pos, 0);
+
+    // now give first clock 
+    genOneClock(*s);
+    pos = s->getPlayPosition();
+    assertEQ(pos, .5);
+    assertAllGatesLow(*s);
+
+    // first real Q note, gate high
+    genOneClock(*s);
+    pos = s->getPlayPosition();
+    assertEQ(pos, 1);
+    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+
+    s->toggleRunStop();     // STOP
+    stepN(*s, 16);
+    assertAllGatesLow(*s);
+}
+
 void testSeqComposite()
 {
     testBasicGates();
+    testStopGatesLow();
 }

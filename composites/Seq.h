@@ -138,6 +138,8 @@ private:
     Divider div;
     bool runStopRequested = false;
 
+    bool wasRunning = false;
+
 #ifdef _PLAY2
     std::shared_ptr<MidiPlayer2> player;
 #else
@@ -261,27 +263,36 @@ void  Seq<TBase>::stepn(int n)
     // now call the clock (internal only, for now
 
     const float reset = TBase::inputs[RESET_INPUT].value;
+    const bool running = isRunning();
     int samplesElapsed = n;
 #if 0
-    if (extClock && isRunning() && !reset) {
+    if (extClock && running && !reset) {
         printf("let's go\n");
     }
 #endif
-    SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, isRunning(), reset);
+    SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
         player->reset();
     }
-  //  printf("in step, time = %.2f ext was %.2f isRunning - %d reset = %.2f\n", results.totalElapsedTime, extClock, isRunning(), reset);
+  //  printf("in step, time = %.2f ext was %.2f isRunning - %d reset = %.2f\n", results.totalElapsedTime, extClock, running, reset);
     player->updateToMetricTime(results.totalElapsedTime);
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 
 #ifdef _PLAY2
+    // copy the current voice number to the poly ports
     const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
     TBase::outputs[CV_OUTPUT].channels = numVoices;
     TBase::outputs[GATE_OUTPUT].channels = numVoices;
     player->setNumVoices(numVoices);
 #endif
+
+    if (!running && wasRunning) {
+        for (int i = 0; i < numVoices; ++i) {
+            TBase::outputs[GATE_OUTPUT].voltages[i] = 0;
+        }
+    }
+    wasRunning = running;
 }
 
 template <class TBase>
