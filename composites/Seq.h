@@ -260,8 +260,9 @@ void  Seq<TBase>::stepn(int n)
     // and the clock input
     const float extClock = TBase::inputs[CLOCK_INPUT].value;
 
-    // now call the clock (internal only, for now
-
+    
+    
+    // now call the clock 
     const float reset = TBase::inputs[RESET_INPUT].value;
     const bool running = isRunning();
     int samplesElapsed = n;
@@ -270,6 +271,8 @@ void  Seq<TBase>::stepn(int n)
         printf("let's go\n");
     }
 #endif
+   
+    // Our level sensitiev reset will get turned into an edge in here
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
         player->reset();

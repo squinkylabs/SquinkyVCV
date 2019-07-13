@@ -94,4 +94,5 @@ void MidiVoice::reset()
     lastNoteOffTime = -1;
     curState = State::Idle;
     retriggerSampleCounter = 0;
+    setGate(false);             // and stop the playing CV
 }
