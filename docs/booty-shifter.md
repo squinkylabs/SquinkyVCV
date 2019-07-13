@@ -16,7 +16,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 [Colors](./colors.md) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. And all the colors in between.
 
-[Functional VCO-1](./functional-vco-1.md) is an improved version of the Fundamental VCO-1. Like Fundamental VCO-1, it will never alias, no matter what you throw at it. It is one of the few VCOs that can do sync, FM, and PWM without aliasing. Functional VCO-1 improves on Fundamental by lowering the CPU usage dramatically.
+[Functional VCO-1](./functional-vco-1.md) [deprecated] is an improved version of the Fundamental VCO-1 version 0.6. Now that Fundamental VCO-1 1.0 is so much improved, there is no reason to use Functional VCO-1.
 
 # Things that process sound
 

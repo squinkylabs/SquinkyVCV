@@ -2,6 +2,8 @@
 
 ![Functional image](../docs/functional.png)
 
+In version 1.0.0, VCV has dramatically improved Fundamental VCO-1. It is now very efficient, polyphonic, and perhaps sounds better. Because of this update we are no long recommending our own Fundamental VCO-1. We will keep it alive for a while so that patches that use it will still load.
+
 Functional VCO-1 works just like its namesake. The control layout is familiar, the sound is the same, but it uses about 1/4 as much CPU as the original.
 
 We believe VCV's Fundamental VCO is an unsung hero. It's one of the few VCOs that never has audible aliasing artifacts. You can sync it, and modulate all its inputs, but the sound never falls apart.

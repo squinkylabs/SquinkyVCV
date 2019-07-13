@@ -1,7 +1,7 @@
 
 SLUG = squinkylabs-plug1
 
-VERSION = 1.0.1
+VERSION = 1.0.2
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
@@ -16,8 +16,6 @@ CXXFLAGS +=
 
 # compile for V1 vs 0.6
 FLAGS += -D __V1x
-FLAGS += -D _SEQ
-
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP

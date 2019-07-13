@@ -1,16 +1,24 @@
 # Change log for Squinky Labs modules
 
+## 1.0.2
+
+Fixed bug in Form and ExFor that made solo and mute activate occasionally when dragging volume knob.
+
+Deprecated Functional VCO-1.
+
+Fixed some documentation errors.
+
 ## 1.0.1
 
 New modular mixer (Mix-4M and Mix-4X).
 
 Changed the context menu display for our instruction manuals to be clearer.
 
-Fixed mistakes and omissions in the Stairway manual
+Fixed mistakes and omissions in the Stairway manual.
 
 ## 1.0.0
 
-Released 1.0 versions of release 0.6.16
+Released 1.0 versions of release 0.6.16.
 
 ## 0.6.16
 
