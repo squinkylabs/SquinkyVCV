@@ -24,6 +24,7 @@ void onAction(EventAction &e) override
 
     void step() override
     {
+        rack::MenuItem::step();
         rightText = CHECKMARK(_isCheckedFn());
     }
 

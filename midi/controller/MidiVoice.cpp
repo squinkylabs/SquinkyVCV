@@ -5,26 +5,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-/*
-class MidiVoice
-{
-public:
-    void setHost(IMidiPlayerHost*);
-
-/
-    void playNote(float pitch, float duration);
-
-
-    bool isPlaying() const;
-    float pitch() const;
-private:
-    double noteOffTime = -1;        // the absolute metric time when the 
-                                    // currently playing note should stop
-    float pitch = -100;              // the pitch of the last note played in this voice
-};
-*/
-
-
 MidiVoice::State MidiVoice::state() const
 {
     return curState;
@@ -50,14 +30,28 @@ void MidiVoice::setCV(float cv)
     host->setCV(index, cv);
 }
 
+float MidiVoice::pitch() const
+{
+    return curPitch;
+}
+
 void MidiVoice::setSampleCountForRetrigger(int samples)
 {
-    printf("setSampleCountForRetrigger ng\n");
+    numSamplesInRetrigger = samples;
 }
 
 void MidiVoice::updateSampleCount(int samples)
 {
-    printf("updateSampleCount ng\n");
+    if (retriggerSampleCounter) {
+        retriggerSampleCounter -= samples;
+        if (retriggerSampleCounter <= 0) {
+            retriggerSampleCounter = 0;
+            curState = State::Playing;
+            setCV(delayedNotePitch);
+            noteOffTime = delayedNoteEndtime;
+            setGate(true);
+        }
+    } 
 }
 
 void MidiVoice::playNote(float pitch, double currentTime, float endTime)
@@ -68,10 +62,10 @@ void MidiVoice::playNote(float pitch, double currentTime, float endTime)
         setGate(false);
         delayedNotePitch = pitch;
         delayedNoteEndtime = endTime;
+        retriggerSampleCounter = numSamplesInRetrigger;
     } else {
         this->curPitch = pitch;
         this->noteOffTime = endTime;
-
 
         this->curState = State::Playing;
         setCV(pitch);
@@ -79,12 +73,28 @@ void MidiVoice::playNote(float pitch, double currentTime, float endTime)
     }
 }
 
-void MidiVoice::updateToMetricTime(double metricTime)
+bool MidiVoice::updateToMetricTime(double metricTime)
 {
+    bool ret = false;
     if (noteOffTime >= 0 && noteOffTime <= metricTime) {
         setGate(false);
         lastNoteOffTime = noteOffTime;
         noteOffTime = -1;
         curState = State::Idle;
+        ret = true;
+    }
+    return ret;
+}
+
+void MidiVoice::reset(bool clearGate)
+{
+    noteOffTime = -1;           // the absolute metric time when the 
+                                // currently playing note should stop
+    curPitch = -100;            // the pitch of the last note played in this voice
+    lastNoteOffTime = -1;
+    curState = State::Idle;
+    retriggerSampleCounter = 0;
+    if (clearGate) {
+        setGate(false);             // and stop the playing CV
     }
 }

@@ -135,7 +135,7 @@ static void test0()
  * noteOnTime = 0 * .5;
  * noteOffTime = .5 * .5;
  */
-static MidiSongPtr makeSongOneQ()
+MidiSongPtr makeSongOneQ()
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
     MidiLocker l(song->lock);

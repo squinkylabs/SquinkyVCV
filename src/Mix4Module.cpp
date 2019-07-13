@@ -221,9 +221,8 @@ void Mix4Widget::makeStrip(
     tog->addSvg(sLed.c_str(), true);
     tog->addSvg("res/SquinkyBezel.svg");
     tog->setHandler( [this, channel](bool ctrlKey) {
-       // MixerModule* mod = mixModule;
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
-        #if 0
+#if 0
          //printf("clicked on channel %d\n", channel);
         auto soloCommand =  SoloCommands(channel);
         if (ctrlKey) {
@@ -232,7 +231,7 @@ void Mix4Widget::makeStrip(
         printf("ui is requesting %f from click handler\n", (int) soloCommand);
 
         mixModule->requestSoloFromUI(soloCommand);
-        #endif
+#endif
     });
     addChild(tog);
    

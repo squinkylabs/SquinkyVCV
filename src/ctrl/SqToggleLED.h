@@ -1,6 +1,12 @@
 #pragma once
 
 #include "nanovg.h"
+
+
+/**
+ * SqToggleLED is a light that can also give callback when it's clicked.
+ * Should probably use something more standard in the future...
+ */
 class SqToggleLED : public ModuleLightWidget
 {
 public:
@@ -8,6 +14,8 @@ public:
         baseColors.resize(1);
         NVGcolor cx = nvgRGBAf(1, 1, 1, 1);
         baseColors[0] =  cx;
+        this->box.size.x = 0;
+        this->box.size.y = 0;
     }
 
     /** 
@@ -22,13 +30,12 @@ public:
     using callback = std::function<void(bool isCtrlKey)>;
     void setHandler(callback);
 
-#ifdef __V1x
     void onButton(const event::Button &e) override;
+    void onDragHover(const event::DragHover &e) override;
+    void onDragEnter(const event::DragEnter &e) override;
+    void onDragLeave(const event::DragLeave &e) override;
     void draw(const DrawArgs &args) override;
-#else
-    void onMouseDown(EventMouseDown &e) override;
-    void draw(NVGcontext *vg) override;
-#endif
+
 
 private:
     float getValue();
@@ -36,6 +43,8 @@ private:
     std::vector<SvgPtr> svgs;
     callback handler = nullptr;
     int getSvgIndex();
+
+    bool isDragging = false;
 };
 
 inline void SqToggleLED::setHandler(callback h)
@@ -64,53 +73,68 @@ inline int SqToggleLED::getSvgIndex()
     return index;
 }
 
-#ifdef __V1x
+
 inline void SqToggleLED::draw(const DrawArgs &args)
 {
-#else
-inline void SqToggleLED::draw(NVGcontext *args)
-{
-#endif
-
     int index = getSvgIndex();
     auto svg = svgs[index];
     svg->draw(args);
 }
 
 
-#ifdef __V1x
-inline void SqToggleLED::onButton(const event::Button &e)
-#else
-inline void SqToggleLED::onMouseDown(EventMouseDown &e)
-#endif
+inline void SqToggleLED::onDragHover(const event::DragHover &e)
 {
-    #ifdef __V1x
-        //only pick the mouse events we care about.
-        // TODO: should our buttons be on release, like normal buttons?
-        if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
-            e.action != GLFW_RELEASE) {
-                return;
-        }
-        const bool ctrlKey = (e.mods & GLFW_MOD_CONTROL);
-    #else
-        if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
-                return;
-        }
-        const bool ctrlKey = rack::windowIsModPressed();
-    #endif
+   // printf("consuming drag hover\n");  fflush(stdout);
+    sq::consumeEvent(&e, this);
+}
 
-    int index = getSvgIndex();
-    const Vec pos(e.pos.x, e.pos.y);
+inline void SqToggleLED::onDragEnter(const event::DragEnter &e)
+{
+    //printf("drag enter \n");  fflush(stdout);
+}
 
-    //if (!svgs[index]->box.contains(pos)) {
-    if (!SqHelper::contains(svgs[index]->box, pos)) {
+inline void SqToggleLED::onDragLeave(const event::DragLeave &e) 
+{
+    //printf("got a drag leave, so clearing state\n"); fflush(stdout);
+    isDragging = false;
+}
+
+inline void SqToggleLED::onButton(const event::Button &e)
+{
+    //printf("on button %d (l=%d r=%d)\n", e.button, GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_RIGHT); fflush(stdout);
+    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
+        // Do we need to consume this key to get dragLeave?
+        isDragging = true;
+        sq::consumeEvent(&e, this);
+       //  printf("on button down\n"); fflush(stdout);
         return;
     }
 
-    sq::consumeEvent(&e, this);
+    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_RELEASE)) {
+ //printf("on button up\n"); fflush(stdout);
+        const bool ctrlKey = (e.mods & GLFW_MOD_CONTROL);
 
-    if (handler) {
-        handler(ctrlKey);
+
+        int index = getSvgIndex();
+        const Vec pos(e.pos.x, e.pos.y);
+
+        // ignore it if it's not in bounds
+        if (!SqHelper::contains(svgs[index]->box, pos)) {
+             //printf("on button up not contained\n"); fflush(stdout);
+            return;
+        }
+
+        if (!isDragging) {
+           // printf("got up when not dragging. will ignore\n"); fflush(stdout);
+            return;
+        }
+
+        // OK, process it
+        sq::consumeEvent(&e, this);
+
+        if (handler) {
+            handler(ctrlKey);
+        }
     }
 }
 

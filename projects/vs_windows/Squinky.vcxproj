@@ -105,6 +105,7 @@
     <ClCompile Include="..\..\test\testRingBuffer.cpp" />
     <ClCompile Include="..\..\test\testSaw.cpp" />
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
+    <ClCompile Include="..\..\test\testSeqComposite.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
     <ClCompile Include="..\..\test\testSlew4.cpp" />

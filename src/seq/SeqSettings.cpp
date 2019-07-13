@@ -32,6 +32,7 @@ public:
     GridMenuItem(SeqSettings* stt) : settings(stt)
     {
         text = "Grid settings";
+        rightText = RIGHT_ARROW;
     }
 
     SeqSettings* const settings;
@@ -42,7 +43,7 @@ public:
 
         auto label = rack::construct<rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
-            "Grids             ");      // need to do this to size correctly. probably doing something wrong.
+            "Grids");      // need to do this to size correctly. probably doing something wrong.
         menu->addChild(label);
 
         rack::ui::MenuItem* item = GridItem::make(SeqSettings::Grids::quarter, settings);

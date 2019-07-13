@@ -40,13 +40,21 @@ public:
     /**
      * Advance clock, sending any data that needs to be sent.
      * @param quarterNotes is the absolute metric time, in our standard quarter note units.
+     * @returns true if it did anything.
      */
-    void updateToMetricTime(double quarterNotes);
+    bool updateToMetricTime(double quarterNotes);
 
     void updateSampleCount(int samples);
 
+    /**
+     * resets all internal playback state.
+     * @param clearGate will set the host's gate low, if true
+     */
+    void reset(bool clearGate);
+
     State state() const;
     float pitch() const;
+   
 private:
     double noteOffTime = -1;        // the absolute metric time when the 
                                     // currently playing note should stop
@@ -61,6 +69,9 @@ private:
     float delayedNotePitch;
     double delayedNoteEndtime;
 
+    /**
+     * during re-trigger, this counts down. when it hits zero, retrigger is over
+     */
     int retriggerSampleCounter = 0;
     int numSamplesInRetrigger = 0;
 
