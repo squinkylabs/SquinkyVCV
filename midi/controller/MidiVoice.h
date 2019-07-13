@@ -46,9 +46,15 @@ public:
 
     void updateSampleCount(int samples);
 
+    /**
+     * resets all internal playback state.
+     * @param clearGate will set the host's gate low, if true
+     */
+    void reset(bool clearGate);
+
     State state() const;
     float pitch() const;
-    void reset();
+   
 private:
     double noteOffTime = -1;        // the absolute metric time when the 
                                     // currently playing note should stop

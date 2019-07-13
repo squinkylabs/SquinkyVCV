@@ -27,9 +27,10 @@ void MidiPlayer2::setSong(std::shared_ptr<MidiSong> newSong)
     track = song->getTrack(0);
 }
 
-void MidiPlayer2::reset()
+void MidiPlayer2::reset(bool clearGates)
 {
     isReset = true;
+    isResetGates = clearGates;
 }
 
 void MidiPlayer2::stop()
@@ -56,12 +57,12 @@ void MidiPlayer2::updateToMetricTime(double metricTime)
     const bool acquiredLock = song->lock->playerTryLock();
     if (acquiredLock) {
         if (song->lock->dataModelDirty()) {
-            reset();
+            reset(false);
         }
         updateToMetricTimeInternal(metricTime);
         song->lock->playerUnlock();
     } else {
-        reset();
+        reset(false);
         host->onLockFailed();
     }
 }
@@ -72,9 +73,9 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime)
     // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
         curEvent = track->begin();
-    //    noteOffTime = -1;
-        resetAllVoices();
+        resetAllVoices(isResetGates);
         isReset = false;
+        isResetGates = false;
         loopStart = 0;
     }
      // keep processing events until we are caught up
@@ -105,7 +106,7 @@ bool MidiPlayer2::playOnce(double metricTime)
                 assert(voice);
 
                 // play the note
-                voice->playNote(note->pitchCV, eventStart, note->duration + eventStart);
+                voice->playNote(note->pitchCV, float(eventStart), float(note->duration + eventStart));
                 ++curEvent;
             }
             break;
@@ -134,9 +135,9 @@ bool MidiPlayer2::pollForNoteOff(double metricTime)
     return didSomething;
 }
 
-void MidiPlayer2::resetAllVoices()
+void MidiPlayer2::resetAllVoices(bool clearGates)
 {
     for (int i = 0; i < numVoices; ++i) {
-        voices[i].reset();
+        voices[i].reset(clearGates);
     }
 }

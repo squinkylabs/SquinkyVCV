@@ -19,8 +19,11 @@ public:
 
     void setNumVoices(int voices);
 
-    // need some UT for these
-    void reset();
+    /**
+     * resets all internal playback state.
+     * @param clearGate will set the host's gate low, if true
+     */
+    void reset(bool clearGates);
     void stop();
     double getLoopStart() const;
 
@@ -42,6 +45,7 @@ private:
      * when starting, or when reset by lock contention
      */
     bool isReset = true;
+    bool isResetGates = false;
 
     bool isPlaying = true;
     double loopStart = 0;
@@ -53,5 +57,5 @@ private:
     void updateToMetricTimeInternal(double);
     bool playOnce(double metricTime);
     bool pollForNoteOff(double metricTime);
-    void resetAllVoices();
+    void resetAllVoices(bool clearGates);
 };

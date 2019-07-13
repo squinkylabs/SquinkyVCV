@@ -86,7 +86,7 @@ bool MidiVoice::updateToMetricTime(double metricTime)
     return ret;
 }
 
-void MidiVoice::reset()
+void MidiVoice::reset(bool clearGate)
 {
     noteOffTime = -1;           // the absolute metric time when the 
                                 // currently playing note should stop
@@ -94,5 +94,7 @@ void MidiVoice::reset()
     lastNoteOffTime = -1;
     curState = State::Idle;
     retriggerSampleCounter = 0;
-    setGate(false);             // and stop the playing CV
+    if (clearGate) {
+        setGate(false);             // and stop the playing CV
+    }
 }

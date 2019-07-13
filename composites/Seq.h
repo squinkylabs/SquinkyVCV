@@ -275,7 +275,7 @@ void  Seq<TBase>::stepn(int n)
     // Our level sensitiev reset will get turned into an edge in here
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
-        player->reset();
+        player->reset(true);
     }
   //  printf("in step, time = %.2f ext was %.2f isRunning - %d reset = %.2f\n", results.totalElapsedTime, extClock, running, reset);
     player->updateToMetricTime(results.totalElapsedTime);
