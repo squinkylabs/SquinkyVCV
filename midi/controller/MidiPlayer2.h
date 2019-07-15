@@ -27,12 +27,16 @@ public:
     void stop();
     double getLoopStart() const;
 
+    void setSampleCountForRetrigger(int);
+    void updateSampleCount(int numElapsed);
+
 
 private:
     std::shared_ptr<IMidiPlayerHost> host;
     std::shared_ptr<MidiSong> song;
 
-    MidiVoice voices[16];
+    static const int maxVoices = 16;
+    MidiVoice voices[maxVoices];
     MidiVoiceAssigner voiceAssigner;
 
     /***************************************

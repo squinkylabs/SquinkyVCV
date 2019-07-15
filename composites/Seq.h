@@ -127,6 +127,8 @@ public:
         return float(ret);
     }
 
+    void onSampleRateChange();
+
     static std::vector<std::string> getClockRates();
     static std::vector<std::string> getPolyLabels();
 private:
@@ -162,6 +164,7 @@ public:
     }
     void setGate(int voice, bool gate) override
     {
+        printf("gate(%d) = %d t=%f\n", voice, gate, seq->getPlayPosition()); fflush(stdout);
         seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
     void setCV(int voice, float cv) override
@@ -215,6 +218,16 @@ void  Seq<TBase>::init(MidiSongPtr song)
     div.setup(4, [this] {
         this->stepn(div.getDiv());
      });
+    onSampleRateChange();
+}
+
+
+template <class TBase>
+void Seq<TBase>::onSampleRateChange()
+{
+    float secondsPerRetrigger = 1.f / 1000.f;
+    float samplePerTrigger = secondsPerRetrigger * this->engineGetSampleRate();
+    player->setSampleCountForRetrigger((int) samplePerTrigger);
 }
 
 template <class TBase>
@@ -296,6 +309,8 @@ void  Seq<TBase>::stepn(int n)
         }
     }
     wasRunning = running;
+
+    player->updateSampleCount(n);
 }
 
 template <class TBase>

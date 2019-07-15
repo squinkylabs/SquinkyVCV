@@ -44,6 +44,21 @@ void MidiPlayer2::setNumVoices(int voices)
     voiceAssigner.setNumVoices(voices);
 }
 
+void MidiPlayer2::setSampleCountForRetrigger(int samples)
+{
+    for (int i = 0; i < maxVoices; ++i) {
+        voices[i].setSampleCountForRetrigger(samples);
+    }
+}
+
+void MidiPlayer2::updateSampleCount(int numElapsed)
+{
+    for (int i = 0; i < numVoices; ++i) {
+        voices[i].updateSampleCount(numElapsed);
+    }
+}
+
+
 double MidiPlayer2::getLoopStart() const
 {
     return loopStart;

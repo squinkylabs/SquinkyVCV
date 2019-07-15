@@ -30,6 +30,7 @@ public:
     }
     void setGate(int voice, bool g) override
     {
+        printf("testhost 2, gate(%d) = %d\n", voice, g);
         assert(voice >= 0 && voice < 16);
         bool bs = gateState[voice];
         bool chg = (bs != g);
@@ -83,6 +84,7 @@ void initVoices(MidiVoice* voices, int numVoices, IMidiPlayerHost* host)
     for (int i = 0; i < numVoices; ++i) {
         voices[i].setHost(host);
         voices[i].setIndex(i);
+        voices[i].setSampleCountForRetrigger(44);           // some plausible value
     }
 }
 
@@ -491,6 +493,20 @@ static std::shared_ptr<TestHost2> makeSongOverlapQandRun(float time)
 
     return host;
 }
+
+static std::shared_ptr<TestHost2> makeSongTouchingQandRun(bool exactDuration, float time)
+{
+    assert(exactDuration);
+
+    MidiSongPtr song = exactDuration ? MidiSong::makeTest(MidiTrack::TestContent::FourTouchingQuarters, 0) :
+        MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.setNumVoices(4);
+    pl.updateToMetricTime(time);
+    return host;
+
+}
 /**
  * runs a while, generates a lock contention, runs some more
  */
@@ -684,6 +700,16 @@ static void testMidiPlayerOverlap()
     assertClose(host->cvValue[1],  2.1, .001);
 }
 
+#if 0
+static void testMidiPlayerReTrigger(bool useExactDuration)
+{
+    printf("\n****testMidiPlayerReTrigger\n");
+    // play the exactly overlapping Q note until the middle of the last note
+    std::shared_ptr<TestHost2> host = makeSongTouchingQandRun(true, 3.5);
+    assertEQ(host->gateChangeCount, 7);
+}
+#endif
+
 //*******************************tests of MidiPlayer2 **************************************
 void testMidiPlayer2()
 {
@@ -713,4 +739,8 @@ void testMidiPlayer2()
     testMidiPlayerReset();
     testMidiPlayerStop();
     testMidiPlayerOverlap();
+#if 0
+    testMidiPlayerReTrigger(true);
+    testMidiPlayerReTrigger(false);
+#endif
 }

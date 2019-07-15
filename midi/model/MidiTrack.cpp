@@ -284,6 +284,12 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
         case TestContent::oneQ1:
             ret = makeTestOneQ1(lock);
             break;
+        case TestContent::FourTouchingQuarters:
+            ret = makeTestFourTouchingQuarters(true, lock);
+            break;
+        case TestContent::FourAlmostTouchingQuarters:
+            ret = makeTestFourTouchingQuarters(false, lock);
+            break;
         default:
             assert(false);
     }
@@ -338,6 +344,23 @@ MidiTrackPtr MidiTrack::makeTestOneQ1(std::shared_ptr<MidiLock> lock)
     newNote->pitchCV = 3.0f;
 
     track->insertEvent(newNote);
+    track->insertEnd(TimeUtils::bar2time(1));
+    return track;
+}
+
+MidiTrackPtr MidiTrack::makeTestFourTouchingQuarters(bool exactDuration, std::shared_ptr<MidiLock> lock)
+{
+    auto track = std::make_shared<MidiTrack>(lock);
+
+    const float duration = exactDuration ? 1.f : .999f;
+    for (int i = 0; i < 4; ++i) {
+        MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+        newNote->startTime = float(i);
+        newNote->duration = duration;
+        newNote->pitchCV = 3.0f;
+
+        track->insertEvent(newNote);
+    }
     track->insertEnd(TimeUtils::bar2time(1));
     return track;
 }

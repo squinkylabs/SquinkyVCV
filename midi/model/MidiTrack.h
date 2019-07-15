@@ -97,7 +97,9 @@ public:
         eightQNotes,
         empty,
         oneNote123,         // a single note at time 1.23
-        oneQ1              // a single quarter note at time 1.0
+        oneQ1,             // a single quarter note at time 1.0
+        FourTouchingQuarters,       // a measure with four full-duration quarters
+        FourAlmostTouchingQuarters
     };
     static MidiTrackPtr makeTest(TestContent, std::shared_ptr<MidiLock>);
     std::shared_ptr<MidiLock> lock;
@@ -108,6 +110,7 @@ private:
     static MidiTrackPtr makeTestEmpty(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestNote123(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestOneQ1(std::shared_ptr<MidiLock>);
+    static MidiTrackPtr makeTestFourTouchingQuarters(bool exactDuration, std::shared_ptr<MidiLock>);
 };
 
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;

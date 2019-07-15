@@ -43,6 +43,7 @@ void MidiVoice::setSampleCountForRetrigger(int samples)
 void MidiVoice::updateSampleCount(int samples)
 {
     if (retriggerSampleCounter) {
+        printf("midi voice will subtract %d from %d\n", samples, retriggerSampleCounter);
         retriggerSampleCounter -= samples;
         if (retriggerSampleCounter <= 0) {
             retriggerSampleCounter = 0;
@@ -56,14 +57,19 @@ void MidiVoice::updateSampleCount(int samples)
 
 void MidiVoice::playNote(float pitch, double currentTime, float endTime)
 {
+    printf("\nMidiVoice::playNote curt=%f, lastnot=%f\n", currentTime, lastNoteOffTime);
     // do re-triggering, if needed
     if (currentTime == lastNoteOffTime) {
+        assert(numSamplesInRetrigger);
+        printf(" mv retrigger. interval = %d\n", numSamplesInRetrigger);
         curState = State::ReTriggering;
         setGate(false);
         delayedNotePitch = pitch;
         delayedNoteEndtime = endTime;
         retriggerSampleCounter = numSamplesInRetrigger;
+        printf("voice retric count = %d\n", retriggerSampleCounter);
     } else {
+        printf("don't retrigger\n");
         this->curPitch = pitch;
         this->noteOffTime = endTime;
 
@@ -78,7 +84,12 @@ bool MidiVoice::updateToMetricTime(double metricTime)
     bool ret = false;
     if (noteOffTime >= 0 && noteOffTime <= metricTime) {
         setGate(false);
-        lastNoteOffTime = noteOffTime;
+
+        printf("shutting off note in update, grabbing last = %f\n", noteOffTime);
+        printf(" (the note off time was %.2f, metric = %.2f\n", noteOffTime, metricTime);
+        // should probably use metric time here - the time it "acutally" played.
+        lastNoteOffTime = noteOffTime; 
+        //lastNoteOffTime = metricTime;
         noteOffTime = -1;
         curState = State::Idle;
         ret = true;

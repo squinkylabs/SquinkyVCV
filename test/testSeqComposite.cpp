@@ -28,20 +28,45 @@ static void assertAllGatesLow(Sq& sq)
     }
 }
 
-// makes a seq composite set of for external 8th note clock
-// playing 1q song
-std::shared_ptr<Sq> makeWith8Clock()
+/**
+ * @param clockDiv - 4 for quarter, etc..
+ */
+std::shared_ptr<Sq> make(int clockDiv,
+    int numVoices, 
+    MidiTrack::TestContent testContent)
 {
-    auto song = MidiSong::makeTest(MidiTrack::TestContent::oneQ1, 0);
+    assert(numVoices > 0 && numVoices <= 16);
+    int clockCode = 0;
+    switch(clockDiv)
+    {
+        case 8:
+            clockCode = 4;
+            break;
+        case 16:
+            clockCode = 3;
+            break;
+        default:
+            assert(false);
+    }
+    auto song = MidiSong::makeTest(testContent, 0);
     std::shared_ptr<Sq> ret = std::make_shared<Sq>(song);
 
-    ret->params[Sq::NUM_VOICES_PARAM].value = 16 - 1;
-    ret->params[Sq::CLOCK_INPUT].value = 4;        // 1/8th notes
+    ret->params[Sq::NUM_VOICES_PARAM].value = float(numVoices - 1);
+    ret->params[Sq::CLOCK_INPUT_PARAM].value = float(clockCode);        
     ret->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
     ret->toggleRunStop();                          // start it
 
     return ret;
 }
+
+// makes a seq composite set of for external 8th note clock
+// playing 1q song
+
+std::shared_ptr<Sq> makeWith8Clock()
+{
+    return make(8, 16, MidiTrack::TestContent::oneQ1);
+}
+
 
 static void testBasicGates()
 {
@@ -108,8 +133,124 @@ static void testStopGatesLow()
     assertAllGatesLow(*s);
 }
 
+
+class TestClocker
+{
+public:
+    TestClocker(std::shared_ptr<Sq> seq) : s(seq)
+    {
+            // want samples Per Clokm
+            //120 bpm, one q = .5
+            float secondsPerClock = .125f;        // 1/6th at 120bpm
+            //float secondsPerSample = 1.f / 44100.f;
+            float samplesPerSecond = 44100.f;
+            samplesPerClock = secondsPerClock * samplesPerSecond;
+            printf("samples per clock = %f\n", samplesPerClock);
+    }
+
+    /**
+     * clocks the composite until we generate a clock low to high
+     */
+    void advanceToClock()
+    {
+        for (bool done = false; !done; ) {
+            if (clockOccured) {
+                clockOccured = false;
+                printf("advance returning at sample %f metric time %f\n", totalSamples, s->getPlayPosition());
+                done = true;
+            } else {
+                oneMoreSample();
+            }
+        }
+    }
+
+    /**
+     * @returns the number of samples the output was low
+     */
+    int advanceSampleCountUntilGateHigh()
+    {
+        int count = 0;
+        for (bool done = false; !done; ) {
+            ++count;
+            s->step();
+            if (s->outputs[s->GATE_OUTPUT].voltages[0] > 5.f) {
+                done = true;
+            }
+        }
+        return count;
+    }
+
+private:
+    std::shared_ptr<Sq> s;
+
+    void oneMoreSample()
+    {
+        sampleCount += 1;       
+        if (sampleCount >= samplesPerClock) {
+            printf("* generating 1/16 clock\n");
+            s->inputs[s->CLOCK_INPUT].value = 10;
+            stepN(*s, 16);   // let it get noticed
+            s->inputs[s->CLOCK_INPUT].value = 0;
+            stepN(*s, 16);   // let it get noticed
+            sampleCount -= samplesPerClock;
+            clockOccured = true;
+
+            totalSamples += 32;
+        }
+        s->step();
+        totalSamples += 1;
+    }
+
+    float samplesPerClock;
+    float sampleCount = 0;
+    bool clockOccured = false;
+    float totalSamples = 0;
+};
+
+static void testRetrigger(bool exactDuration)
+{
+    printf("\n**** test retrigger *****\n");
+    std::shared_ptr<Sq> s = make(16, 1,
+        exactDuration ? MidiTrack::TestContent::FourTouchingQuarters :
+        MidiTrack::TestContent::FourAlmostTouchingQuarters
+    );
+    TestClocker clock(s);
+    
+
+    assert(s->outputs[s->GATE_OUTPUT].voltages[0] < 5);
+
+    // first tick will play the note at time zero. don't need a clock
+    stepN(*s, 16);   // let it get noticed
+    assert(s->outputs[s->GATE_OUTPUT].voltages[0] > 5);
+
+
+    printf("test will now send the next 3");
+    // now, three more 1/6 note clocks - should all be in the first note - no triggers
+    for (int i = 0; i < 3; ++i) {
+        clock.advanceToClock();
+        assert(s->outputs[s->GATE_OUTPUT].voltages[0] > 5);
+    }
+
+    printf("done with first note?\n");
+    // next clock should cause a re-trigger, so get should be low after that
+    clock.advanceToClock();
+    assert(s->outputs[s->GATE_OUTPUT].voltages[0] < 5);
+
+    printf("test back from playing first note, will wait retrig\n");
+    // now we are done with first note, in the re-trigger period before second note
+    int x = clock.advanceSampleCountUntilGateHigh();
+
+    // there is a lot of slop in the test in in the div4 step in Seq
+    // Really as long it takes a couple clocks to get back we know re-trigger is working
+    assert(x <= 44 && x > 8);       
+
+}
+
 void testSeqComposite()
 {
     testBasicGates();
     testStopGatesLow();
+
+    testRetrigger(true);
+    testRetrigger(false);
 }

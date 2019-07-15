@@ -64,6 +64,10 @@ struct SequencerModule : Module
         return seqComp->isRunning();
     }
 
+    void onSampleRateChange() override {
+        seqComp->onSampleRateChange();
+    }
+
 #ifndef __V1x
     json_t *toJson() override
     {
