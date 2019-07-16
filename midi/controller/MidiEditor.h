@@ -91,7 +91,7 @@ private:
     void setCursorToNote(MidiNoteEventPtr note);
     void setNewCursorPitch(float pitch, bool extendSelection);
     void extendTrackToMinDuration(float time);
-    void insertNoteHelper(Durations dur, bool moveCursorAfter);
+    void insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration);
 
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);

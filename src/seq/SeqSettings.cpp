@@ -2,6 +2,7 @@
 
 #include "SeqSettings.h"
 #include "../ctrl/SqMenuItem.h"
+#include "TimeUtils.h"
 
 
 class GridItem
@@ -118,6 +119,15 @@ float SeqSettings::getQuarterNotesInGrid()
  bool SeqSettings::snapToGrid()
  {
      return snapEnabled;
+ }
+
+ float SeqSettings::quantize(float time, bool allowZero)
+ {
+     auto quantized = time;
+     if (snapToGrid()) {
+        quantized = TimeUtils::quantize(time, getQuarterNotesInGrid(), allowZero);
+     }
+     return quantized;
  }
 
 std::string SeqSettings::getGridString() const

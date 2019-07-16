@@ -1,5 +1,6 @@
 
 #include <assert.h>
+#include "ISeqSettings.h"
 #include "MidiEditor.h"
 #include "MidiEditorContext.h"
 #include "MidiLock.h"
@@ -447,7 +448,7 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
     }
 }
 
-void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
+void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration)
 {
     MidiLocker l(seq()->song->lock);
     const float artic = 7.f/8.f;
@@ -479,9 +480,17 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
     }
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-    note->startTime = seq()->context->cursorTime();
+    //note->startTime = seq()->context->cursorTime();
+    const float unquantizedStart = seq()->context->cursorTime();
+    const float startTime = seq()->context->settings()->quantize(unquantizedStart, true);
+    note->startTime = startTime;
     note->pitchCV = seq()->context->cursorPitch();
-    note->duration = duration;
+    //note->duration = duration;
+    float finalDuration = duration;
+    if (quantizeDuration) {
+        finalDuration = seq()->context->settings()->quantize(finalDuration, false);
+    }
+    note->duration = finalDuration;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
 
     seq()->undo->execute(seq(), cmd);
@@ -493,12 +502,12 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
 
 void MidiEditor::insertPresetNote(Durations dur)
 {
-    insertNoteHelper(dur, true);
+    insertNoteHelper(dur, true, false);
 }
 
 void MidiEditor::insertNote()
 {
-    insertNoteHelper(Durations::Quarter, false);
+    insertNoteHelper(Durations::Quarter, false, true);
 }
 
 void MidiEditor::deleteNote()

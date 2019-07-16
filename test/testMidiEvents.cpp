@@ -381,13 +381,18 @@ static void testTimeUtilQuant0()
 
 static void testTimeUtilSimpleQuant()
 {
-    assertEQ(TimeUtils::quantize(10, 1), 10);
-    assertEQ(TimeUtils::quantize(4, 10), 0);
-    assertEQ(TimeUtils::quantize(6, 10), 10);
+    assertEQ(TimeUtils::quantize(10, 1, true), 10);
+    assertEQ(TimeUtils::quantize(4, 10, true), 0);
+    assertEQ(TimeUtils::quantize(6, 10, true), 10);
 
-    assertEQ(TimeUtils::quantize(-10, 1), -10);
-    assertEQ(TimeUtils::quantize(-4, 10), 0);
-    assertEQ(TimeUtils::quantize(-6, 10), -10);
+    assertEQ(TimeUtils::quantize(10, 1, false), 10);
+    assertEQ(TimeUtils::quantize(4, 10, false), 10);
+    assertEQ(TimeUtils::quantize(6, 10, false), 10);
+
+
+    assertEQ(TimeUtils::quantize(-10, 1, true), -10);
+    assertEQ(TimeUtils::quantize(-4, 10, true), 0);
+    assertEQ(TimeUtils::quantize(-6, 10, true), -10);
    
 }
 

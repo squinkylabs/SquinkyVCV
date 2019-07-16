@@ -4,6 +4,7 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "TestSettings.h"
 
 // selects a note and verifies that one event is selected
 static void testSelectionModel1()
@@ -76,7 +77,7 @@ static void testSelectionModel4()
 static void testMidiSequencer1()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
     //seq->makeEditor();
 
     assert(seq->selection);
@@ -90,7 +91,7 @@ static void testMidiSequencer1()
 static void testMidiSequencer2()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0); 
-    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
     //seq->makeEditor();
 
     assert(seq->editor);

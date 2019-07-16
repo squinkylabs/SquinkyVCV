@@ -6,6 +6,7 @@
 #include "MidiSequencer.h"
 #include "MidiTrack.h"
 #include "MidiSong.h"
+#include "TestSettings.h"
 #include "TimeUtils.h"
 
 static int _trackNumber = 0;
@@ -16,7 +17,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr sequencer = MidiSequencer::make(song, std::make_shared<TestSettings>());
    // sequencer->makeEditor();
 
     sequencer->context->setTrackNumber(_trackNumber);

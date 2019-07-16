@@ -59,6 +59,8 @@ void MidiEditorContext::assertValid() const
     assertLE(m_cursorPitch, 10);      // just for now
     assertGE(m_cursorPitch, -10);
 
+    assert(_settings);
+
     assertCursorInViewport();
 }
 

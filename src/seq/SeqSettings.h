@@ -19,6 +19,7 @@ public:
 
     float getQuarterNotesInGrid() override;
     bool snapToGrid() override;
+    float quantize(float, bool allowZero) override;
 private:
     rack::engine::Module* const module;
 

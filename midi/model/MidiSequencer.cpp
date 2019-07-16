@@ -2,7 +2,6 @@
 #include "ISeqSettings.h"
 #include "MidiSequencer.h"
 #include "MidiEditor.h"
-
 #include "TimeUtils.h"
 #include "UndoRedoStack.h"
 
@@ -21,6 +20,7 @@ MidiSequencer::MidiSequencer(MidiSongPtr sng, ISeqSettingsPtr setp) :
 
 MidiSequencerPtr MidiSequencer::make(MidiSongPtr song, std::shared_ptr<ISeqSettings> settings)
 {
+    assert(settings);
     MidiSequencerPtr seq(new MidiSequencer(song, settings));
     seq->makeEditor();
 
