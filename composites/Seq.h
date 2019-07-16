@@ -164,7 +164,9 @@ public:
     }
     void setGate(int voice, bool gate) override
     {
+#ifdef _MLOG
         printf("gate(%d) = %d t=%f\n", voice, gate, seq->getPlayPosition()); fflush(stdout);
+#endif
         seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
     void setCV(int voice, float cv) override
@@ -291,7 +293,7 @@ void  Seq<TBase>::stepn(int n)
         player->reset(true);
     }
   //  printf("in step, time = %.2f ext was %.2f isRunning - %d reset = %.2f\n", results.totalElapsedTime, extClock, running, reset);
-    player->updateToMetricTime(results.totalElapsedTime);
+    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()));
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 

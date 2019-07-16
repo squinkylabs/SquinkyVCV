@@ -11,11 +11,11 @@ public:
      * @returns and even multiple of quantize.
      * rounds to closest.
      */
-    static float quantize(float value, float quantize)
+    static double quantize(double value, double quantize)
     {
-        double div = (double(value) + double(quantize) / 2.0) / double(quantize);
+        double div = (value + quantize / 2.0) / quantize;
         double x = floor(div);
-        return float(x * double(quantize));
+        return x * quantize;
     }
     
     static float bar2time(int bar)

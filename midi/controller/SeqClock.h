@@ -38,6 +38,10 @@ public:
         return curMetricTime; 
     }
 
+    double getMetricTimePerClock() {
+        return metricTimePerClock;
+    }
+
    // void setSampleTime(float);
 private:
     int clockSetting = 0;       // default to internal
@@ -110,6 +114,10 @@ inline void SeqClock::setup(int inputSetting, float tempoSetting, float sampleT)
     resetLockout.setSampleTime(sampleT);
     switch (clockSetting) {
         case 0:
+            // just a hack, there really isn't a known value
+            // for internal clock, but this may make external clients
+            //happy
+            metricTimePerClock = .005;     
             break;
         case 1:
             metricTimePerClock = .0625;

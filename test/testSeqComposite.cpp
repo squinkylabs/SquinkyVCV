@@ -145,7 +145,6 @@ public:
             //float secondsPerSample = 1.f / 44100.f;
             float samplesPerSecond = 44100.f;
             samplesPerClock = secondsPerClock * samplesPerSecond;
-            printf("samples per clock = %f\n", samplesPerClock);
     }
 
     /**
@@ -156,7 +155,6 @@ public:
         for (bool done = false; !done; ) {
             if (clockOccured) {
                 clockOccured = false;
-                printf("advance returning at sample %f metric time %f\n", totalSamples, s->getPlayPosition());
                 done = true;
             } else {
                 oneMoreSample();
@@ -187,7 +185,6 @@ private:
     {
         sampleCount += 1;       
         if (sampleCount >= samplesPerClock) {
-            printf("* generating 1/16 clock\n");
             s->inputs[s->CLOCK_INPUT].value = 10;
             stepN(*s, 16);   // let it get noticed
             s->inputs[s->CLOCK_INPUT].value = 0;
@@ -209,7 +206,6 @@ private:
 
 static void testRetrigger(bool exactDuration)
 {
-    printf("\n**** test retrigger *****\n");
     std::shared_ptr<Sq> s = make(16, 1,
         exactDuration ? MidiTrack::TestContent::FourTouchingQuarters :
         MidiTrack::TestContent::FourAlmostTouchingQuarters
@@ -223,20 +219,16 @@ static void testRetrigger(bool exactDuration)
     stepN(*s, 16);   // let it get noticed
     assert(s->outputs[s->GATE_OUTPUT].voltages[0] > 5);
 
-
-    printf("test will now send the next 3");
     // now, three more 1/6 note clocks - should all be in the first note - no triggers
     for (int i = 0; i < 3; ++i) {
         clock.advanceToClock();
         assert(s->outputs[s->GATE_OUTPUT].voltages[0] > 5);
     }
 
-    printf("done with first note?\n");
     // next clock should cause a re-trigger, so get should be low after that
     clock.advanceToClock();
     assert(s->outputs[s->GATE_OUTPUT].voltages[0] < 5);
 
-    printf("test back from playing first note, will wait retrig\n");
     // now we are done with first note, in the re-trigger period before second note
     int x = clock.advanceSampleCountUntilGateHigh();
 

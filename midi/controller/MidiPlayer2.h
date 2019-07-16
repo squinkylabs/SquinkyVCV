@@ -15,7 +15,13 @@ public:
     MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song);
     void setSong(std::shared_ptr<MidiSong> song);
 
-    void updateToMetricTime(double metricTime);
+    /**
+     * Main "play something" function.
+     * @param metricTime is the current time where 1 = quarter note.
+     * @param quantizationInterval is the amound of metric time in a clock. 
+     * So, if the click is a sixteenth note clock, quantizationInterval will be .25
+     */
+    void updateToMetricTime(double metricTime, float quantizationInterval);
 
     void setNumVoices(int voices);
 
@@ -58,8 +64,8 @@ private:
     std::shared_ptr<MidiTrack> track;
 
    
-    void updateToMetricTimeInternal(double);
-    bool playOnce(double metricTime);
+    void updateToMetricTimeInternal(double, float);
+    bool playOnce(double metricTime, float quantizeInterval);
     bool pollForNoteOff(double metricTime);
     void resetAllVoices(bool clearGates);
 };
