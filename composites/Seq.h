@@ -268,7 +268,7 @@ void  Seq<TBase>::stepn(int n)
 {
     serviceRunStop();
     // first process all the clock input params
-    const int clockRate = (int) std::round(TBase::params[CLOCK_INPUT_PARAM].value);
+    const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
     const float tempo = TBase::params[TEMPO_PARAM].value;
     clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
 

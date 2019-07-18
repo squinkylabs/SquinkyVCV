@@ -57,7 +57,7 @@ static void testClockInternal0()
     const float sampleTime = 1.f / sampleRate;
 
     SeqClock ck;
-    ck.setup(0, 120, sampleTime);       // internal clock
+    ck.setup(SeqClock::ClockRate::Internal, 120, sampleTime);       // internal clock
 
     // now clock by one second
     SeqClock::ClockResults results = ck.update(sampleRateI, 0, true, 0);
@@ -71,16 +71,16 @@ static void testClockInternal0()
     assertEQ(results.totalElapsedTime, 4.0);
 
     ck.reset();
-    ck.setup(0, 240, sampleTime);       // internal clock
+    ck.setup(SeqClock::ClockRate::Internal, 240, sampleTime);       // internal clock
     results = ck.update(sampleRateI * 10, 0, true, 0);
     assertEQ(results.totalElapsedTime, 40);
     assert(!results.didReset);
 }
 
-static void testClockExt(int rate, double metricTimePerClock)
+static void testClockExt(SeqClock::ClockRate rate, double metricTimePerClock)
 {
-    assertGT(rate, 0);
-    assertLE(rate, 5);
+   // assertGT(rate, 0);
+   // assertLE(rate, 5);
 
     SeqClock ck;
     ck.setup(rate, 120, 100);       // internal clock
@@ -100,16 +100,17 @@ static void testClockExt(int rate, double metricTimePerClock)
 
 static void testClockExt1()
 {
-    testClockExt(5, 1.0);
-    testClockExt(4, 1.0 / 2.0);
-    testClockExt(3, 1.0 / 4.0);
-    testClockExt(2, 1.0 / 8.0);
-    testClockExt(1, 1.0 / 16.0);
+    testClockExt(SeqClock::ClockRate::Div1, 1.0);
+    testClockExt(SeqClock::ClockRate::Div2, 1.0 / 2.0);
+    testClockExt(SeqClock::ClockRate::Div4, 1.0 / 4.0);
+    testClockExt(SeqClock::ClockRate::Div8, 1.0 / 8.0);
+    testClockExt(SeqClock::ClockRate::Div16, 1.0 / 16.0);
 }
 
 static void testClockExtEdge()
 {
-    const int rate = 5;
+  //  const int rate = 5;
+    auto rate = SeqClock::ClockRate::Div1;
     const double metricTimePerClock = 1;
     SeqClock ck;
     SeqClock::ClockResults results;
@@ -151,7 +152,7 @@ static void testClockInternalRunStop()
     const float sampleTime = 1.f / sampleRate;
 
     SeqClock ck;
-    ck.setup(0, 120, sampleTime);       // internal clock
+    ck.setup(SeqClock::ClockRate::Internal, 120, sampleTime);       // internal clock
 
     // now clock by one second
     SeqClock::ClockResults results = ck.update(sampleRateI, 0, true, 0);
@@ -176,7 +177,7 @@ static void testClockChangeWhileStopped()
     const float sampleTime = 1.f / sampleRate;
 
     SeqClock ck;
-    ck.setup(5, 120, sampleTime);       // external clock
+    ck.setup(SeqClock::ClockRate::Div1, 120, sampleTime);       // external clock
 
     // call with clock low, running
     SeqClock::ClockResults results = ck.update(sampleRateI, 0, true, 0);
@@ -205,7 +206,7 @@ static void testSimpleReset()
 
     SeqClock ck;
     SeqClock::ClockResults results;
-    ck.setup(0, 120, sampleTime);       // internal clock
+    ck.setup(SeqClock::ClockRate::Internal, 120, sampleTime);       // internal clock
 
     // one second goes by at 120 -> half note
     results = ck.update(sampleRateI, 0, true, 0);
@@ -236,7 +237,7 @@ static void testSimpleResetIgnoreClock()
 
     SeqClock ck;
     SeqClock::ClockResults results;
-    ck.setup(1, 120, sampleTime);       // external clock tempo 120
+    ck.setup(SeqClock::ClockRate::Div16, 120, sampleTime);       // external clock tempo 120
 
     // run external clock high
     results = ck.update(sampleRateI, 10, true, 0);
@@ -277,7 +278,7 @@ static void testResetIgnoreClock()
 
     SeqClock ck;
     SeqClock::ClockResults results;
-    ck.setup(5, 120, sampleTime);       // external clock = quarter
+    ck.setup(SeqClock::ClockRate::Div1, 120, sampleTime);       // external clock = quarter
 
     // run external clock high
     results = ck.update(sampleRateI, 10, true, 0);

@@ -11,12 +11,26 @@ class SeqClock
 public:
     SeqClock();
 
+    enum class ClockRate
+    {
+        Internal,
+        Div16,        // sixty-fourth
+        Div8,       // thirty second
+        Div4,       // sixteenth
+        Div2,       // eighth
+        Div1       // quarter
+    };
+
+    /**
+     * Data returned when clock is advanced
+     */
     class ClockResults
     {
     public:
         double totalElapsedTime = 0;
         bool didReset = false;
     };
+
     /**
      * param samplesElapsed is how many sample clocks have elapsed since last call.
      * param externalClock - is the clock CV, 0..10. will look for rising edges
@@ -30,8 +44,11 @@ public:
      * on internal/external model.
      */
     ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
-    void setup(int inputSetting, float tempoSetting, float sampleTime);
+
+    void setup(ClockRate inputSetting, float tempoSetting, float sampleTime);
     void reset();
+
+  
     static std::vector<std::string> getClockRates();
 
     double getCurMetricTime() const {
@@ -44,7 +61,7 @@ public:
 
    // void setSampleTime(float);
 private:
-    int clockSetting = 0;       // default to internal
+    ClockRate clockSetting = ClockRate::Internal;       // default to internal
     float internalTempo = 120.f;
     double curMetricTime = 0;
     float sampleTime = 1.f / 44100.f;
@@ -83,7 +100,7 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
         return results;
     }
     // Internal clock
-    if (clockSetting == 0) {
+    if (clockSetting == ClockRate::Internal) {
         double deltaSeconds = samplesElapsed * sampleTime;
         double deltaMetric = deltaSeconds * internalTempo / 60.0;
         curMetricTime += deltaMetric;
@@ -106,7 +123,7 @@ inline void SeqClock::reset()
     curMetricTime = 0;
 }
 
-inline void SeqClock::setup(int inputSetting, float tempoSetting, float sampleT)
+inline void SeqClock::setup(ClockRate inputSetting, float tempoSetting, float sampleT)
 {
     internalTempo = tempoSetting;
     sampleTime = sampleT;
