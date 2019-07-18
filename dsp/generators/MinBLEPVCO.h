@@ -20,12 +20,10 @@ namespace std {
 }
 #endif
 
-//#include "math.hpp"
-
-#include "SqBlep.h"
 #include "SqMath.h"
 
 #include "dsp/filter.hpp"
+#include "dsp/minblep.hpp"
 #include "AudioMath.h"
 #include "ObjectCache.h"
 
@@ -91,6 +89,7 @@ public:
     }
 
 private:
+    using MinBlep = rack::dsp::MinBlepGenerator<16, 32>;
 
     float output = 0;
     Waveform waveform = Waveform::Saw;
@@ -118,12 +117,12 @@ private:
     int loopCounter = 0;        // still used?
     float pulseWidth = .5;
 
-    SqBlep syncMinBLEP;
-    SqBlep aMinBLEP;
-    SqBlep bMinBLEP;
+    MinBlep syncMinBLEP;
+    MinBlep aMinBLEP;
+    MinBlep bMinBLEP;
 
     bool aIsNext = false;
-    SqBlep* getNextMinBLEP();
+    MinBlep* getNextMinBLEP();
 
     /**
      * Waveform generation helper
@@ -158,7 +157,7 @@ inline MinBLEPVCO::MinBLEPVCO()
 {
 }
 
-inline  SqBlep* MinBLEPVCO::getNextMinBLEP()
+inline  MinBLEPVCO::MinBlep* MinBLEPVCO::getNextMinBLEP()
 {
     aIsNext = !aIsNext;
     return aIsNext ? &aMinBLEP : &bMinBLEP;
@@ -240,14 +239,19 @@ inline void MinBLEPVCO::step_saw()
        // printf("%s jump = %f\n", name.c_str(), jump); fflush(stdout);
         if (gotSyncCallback) {
             const float crossing = syncCallbackCrossing;
-            syncMinBLEP.jump(crossing, jump);
+
+
+	/** Places a discontinuity with magnitude `x` at -1 < p <= 0 relative to the current frame */
+	//void insertDiscontinuity(float p, T x) {
+            syncMinBLEP.insertDiscontinuity(crossing, jump);
+           // syncMinBLEP.jump(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
             }
         } else {
             // phase overflowed
             const float crossing = -phase / normalizedFreq;
-            aMinBLEP.jump(crossing, jump);
+            aMinBLEP.insertDiscontinuity(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
             }
@@ -255,8 +259,8 @@ inline void MinBLEPVCO::step_saw()
     }
 
     float totalPhase = phase;
-    totalPhase += aMinBLEP.shift();
-    totalPhase += syncMinBLEP.shift();
+    totalPhase += aMinBLEP.process();
+    totalPhase += syncMinBLEP.process();
     float saw = -1.0 + 2.0 * totalPhase;
     output = 5.0*saw;
 
@@ -291,27 +295,27 @@ inline void MinBLEPVCO::step_sq()
         const float jump = newSq ? 2 : -2;
         if (gotSyncCallback) {
             const float crossing = syncCallbackCrossing;
-            syncMinBLEP.jump(crossing, jump);
+            syncMinBLEP.insertDiscontinuity(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
             }
         } else if (phaseDidOverflow) {
             const float crossing = -phase / normalizedFreq;
-            aMinBLEP.jump(crossing, jump);
+            aMinBLEP.insertDiscontinuity(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
             }
         } else {
             // crossed PW boundary
             const float crossing = -(phase - pulseWidth) / normalizedFreq;
-            bMinBLEP.jump(crossing, jump);
+            bMinBLEP.insertDiscontinuity(crossing, jump);
         }
     }
 
     float square = newSq ? 1.0f : -1.0f;
-    square += aMinBLEP.shift();
-    square += bMinBLEP.shift();
-    square += syncMinBLEP.shift();
+    square += aMinBLEP.process();
+    square += bMinBLEP.process();
+    square += syncMinBLEP.process();
 
     output = 5.0*square;
 
@@ -347,7 +351,7 @@ inline void MinBLEPVCO::step_sin()
         const float newOutput = sineLook(newPhase);
         const float jump = newOutput - oldOutput;
 
-        syncMinBLEP.jump(syncCallbackCrossing, jump);
+        syncMinBLEP.insertDiscontinuity(syncCallbackCrossing, jump);
         this->phase = newPhase;
        // return;
     } else {
@@ -365,7 +369,7 @@ inline void MinBLEPVCO::step_sin()
     }
 
     float sine = sineLook(phase);
-    sine += syncMinBLEP.shift();
+    sine += syncMinBLEP.process();
     output = 5.0*sine;
 }
 
@@ -389,7 +393,7 @@ inline void MinBLEPVCO::step_tri()
             excess,
             syncCallbackCrossing, jump);
 #endif
-        syncMinBLEP.jump(syncCallbackCrossing, jump);
+        syncMinBLEP.insertDiscontinuity(syncCallbackCrossing, jump);
         this->phase = newPhase;
         return;
     }
@@ -398,14 +402,14 @@ inline void MinBLEPVCO::step_tri()
 
     if (oldPhase < 0.5 && phase >= 0.5) {
         const float crossing = -(phase - 0.5) / normalizedFreq;
-        aMinBLEP.jump(crossing, 2.0);
+        aMinBLEP.insertDiscontinuity(crossing, 2.0);
     }
 
     // Reset phase if at end of cycle
     if (phase >= 1.0) {
         phase -= 1.0;
         float crossing = -phase / normalizedFreq;
-        aMinBLEP.jump(crossing, -2.0);
+        aMinBLEP.insertDiscontinuity(crossing, -2.0);
         halfPhase = false;
         if (syncCallback) {
             syncCallback(crossing);
@@ -414,8 +418,8 @@ inline void MinBLEPVCO::step_tri()
 
     // Outputs
     float triSquare = (phase < 0.5) ? -1.0 : 1.0;
-    triSquare += aMinBLEP.shift();
-    triSquare += syncMinBLEP.shift();
+    triSquare += aMinBLEP.process();
+    triSquare += syncMinBLEP.process();
 
     // Integrate square for triangle
     tri += 4.0 * triSquare * normalizedFreq;
@@ -485,7 +489,7 @@ inline void MinBLEPVCO::step_even()
 
         // FIXME!!
         float jump = syncJump;
-        syncMinBLEP.jump(crossing, jump);
+        syncMinBLEP.insertDiscontinuity(crossing, jump);
         if (syncCallback) {
             syncCallback(crossing);
         }
@@ -493,7 +497,7 @@ inline void MinBLEPVCO::step_even()
     } else if (jump1) {
         const float jump = -2;
         float crossing = -phase / normalizedFreq;
-        aMinBLEP.jump(crossing, jump);
+        aMinBLEP.insertDiscontinuity(crossing, jump);
         if (syncCallback) {
             syncCallback(crossing);
         }
@@ -501,7 +505,7 @@ inline void MinBLEPVCO::step_even()
     } else if (jump5) {
         const float jump = -2;
         const float crossing = -(phase - 0.5) / normalizedFreq;
-        aMinBLEP.jump(crossing, jump);
+        aMinBLEP.insertDiscontinuity(crossing, jump);
     }
 
     
@@ -509,9 +513,9 @@ inline void MinBLEPVCO::step_even()
     // but for sync it's added to even. 
     const float sine = sineLook(phase);
     float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
-    doubleSaw += aMinBLEP.shift();
+    doubleSaw += aMinBLEP.process();
     float even = 0.55 * (doubleSaw + 1.27 * sine);
-    even += syncMinBLEP.shift();
+    even += syncMinBLEP.process();
 
     output = 5.0*even;
     gotSyncCallback = false;
