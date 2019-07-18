@@ -270,9 +270,6 @@
     <ClCompile Include="..\..\test\testGMR.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp">
-      <Filter>Source Files\dsp\third-party\src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\test\testVCO.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
@@ -611,16 +608,10 @@
     <ClInclude Include="..\..\sqsrc\util\TriggerOutput.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\dsp\third-party\src\EvenVCO.h">
-      <Filter>Header Files\dsp\third-party\src</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\composites\FunVCOComposite.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO.h">
-      <Filter>Header Files\dsp\third-party\src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\dsp\third-party\src\EvenVCO_orig.h">
       <Filter>Header Files\dsp\third-party\src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\generators\MinBLEPVCO.h">

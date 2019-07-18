@@ -2,7 +2,9 @@
 
 #include "Divider.h"
 #include "IComposite.h"
+#ifndef _MSC_VER
 #include "MinBLEPVCO.h"
+#endif
 #include "ObjectCache.h"
 #include "SqMath.h"
 #include "SqPort.h"

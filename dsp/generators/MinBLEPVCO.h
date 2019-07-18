@@ -23,7 +23,9 @@ namespace std {
 #include "SqMath.h"
 
 #include "dsp/filter.hpp"
+#ifndef _MSC_VER
 #include "dsp/minblep.hpp"
+#endif
 #include "AudioMath.h"
 #include "ObjectCache.h"
 

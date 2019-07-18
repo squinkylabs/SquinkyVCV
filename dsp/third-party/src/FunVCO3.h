@@ -17,6 +17,8 @@
 #include "ObjectCache.h"
 #include "IIRDecimator.h"
 
+#include "dsp/filter.hpp"
+
 extern float sawTable[2048];
 extern float triTable[2048];
 
@@ -58,7 +60,7 @@ struct KSOscillator
     rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
     rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
 #endif
-    RCFilter sqrFilter;
+    rack::dsp::RCFilter sqrFilter;
 
     // For analog detuning effect
    // float pitchSlew = 0.0f;

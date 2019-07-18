@@ -4,13 +4,13 @@
 #include "Analyzer.h"
 #include "asserts.h"
 #include "CHB.h"
-#include "EvenVCO.h"
+//#include "EvenVCO.h"
 #include "FunVCO.h"
 #include "SawOscillator.h"
 #include "TestComposite.h"
 
 
-using EVCO = EvenVCO <TestComposite>;
+//using EVCO = EvenVCO <TestComposite>;
 //using FUN = VoltageControlledOscillator<16, 16>;
 using CH = CHB<TestComposite>;
 
@@ -25,6 +25,7 @@ float desiredPitch(float octave, float tune, float cv1, float cv2, float mod)
     return freq;
 }
 
+#if 0
 float desiredPitchEv(const EVCO& vco)
 {
 #if 1
@@ -46,6 +47,7 @@ float desiredPitchEv(const EVCO& vco)
     return freq;
 #endif
 }
+#endif
 
 float desiredPitchCh(const CH& vco)
 {
@@ -78,6 +80,7 @@ float desiredPitchCh(const CH& vco)
 #endif
 }
 
+#if 0
 static void testxEv(float octave, float tune = 0, float pitch1 = 0, float pitch2 = 0, float fm = 0)
 {
     EVCO vco;
@@ -105,6 +108,7 @@ static void testxEv(float octave, float tune = 0, float pitch1 = 0, float pitch2
         assertClose(vco._freq, desired, 1.5);     // todo: make better tolerance
     }
 }
+#endif
 
 static void testxCh(float octave, float tune = 0, float pitch1 = 0, float pitch2 = 0, float fm = 0)
 {
@@ -132,6 +136,7 @@ static void testxCh(float octave, float tune = 0, float pitch1 = 0, float pitch2
 }
 
 
+#if 0
 static void testInitEv()
 {
     EVCO vco;
@@ -140,6 +145,7 @@ static void testInitEv()
     const float desired = desiredPitchEv(vco);
     assertClose(vco._freq, desired, 1);         // todo: tighten up
 }
+#endif
 
 static void testInitCh()
 {
@@ -150,6 +156,7 @@ static void testInitCh()
     assertClose(vco._freq, desired, 1);         // todo: tighten up
 }
 
+#if 0
 static void testOctavesEv()
 {
     EVCO vco;
@@ -157,6 +164,7 @@ static void testOctavesEv()
         testxEv(float(octave));
     }
 }
+#endif
 
 static void testOctavesCh()
 {
@@ -165,6 +173,8 @@ static void testOctavesCh()
         testxCh(float(octave));
     }
 }
+
+#if 0
 // test that we go up to 20k
 static void testMaxFreqEv()
 {
@@ -173,6 +183,7 @@ static void testMaxFreqEv()
     testxEv(4, 7, 0, 1);
 
 }
+#endif
 
 static void testMaxFreqCh()
 {
@@ -180,11 +191,13 @@ static void testMaxFreqCh()
     testxCh(4, 7, 1, 0);
 }
 
+#if 0
 static void testMinFreqEv()
 {
     testxEv(-5, -7, 0, 0);
     testxEv(-5, -7, -2, 0);
 }
+#endif
 
 static void testMinFreqCh()
 {
@@ -192,11 +205,13 @@ static void testMinFreqCh()
     testxCh(-5, -7, -2, 0);
 }
 
+#if 0
 static void testTuneEv()
 {
     testxEv(0, -7, 0, 0);
     testxEv(0, 7, 0, 0);
 }
+#endif
 
 
 static void testTuneCh()
@@ -217,16 +232,16 @@ static void testClamp()
 #if 1
 void testVCO()
 {
-    testInitEv();
+    //testInitEv();
     testInitCh();
-    testOctavesEv();
+   // testOctavesEv();
     testOctavesCh();
-    testMaxFreqEv();
+   // testMaxFreqEv();
     testMaxFreqCh();
-    testMinFreqEv();
+   // testMinFreqEv();
     testMinFreqCh();
     testClamp();
-    testTuneEv();
+  //  testTuneEv();
     testTuneCh();
 }
 #else

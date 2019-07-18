@@ -2,7 +2,7 @@
 #include "Blank.h"
 #include "CHB.h"
 #include "ColoredNoise.h"
-#include "EV3.h"
+//#include "EV3.h"
 #include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
 #include "LFN.h"
@@ -63,7 +63,7 @@ void testIComposite()
     test<Tremolo<TestComposite>>();
     test<Super<TestComposite>>();
     test<ColoredNoise<TestComposite>>();
-    test<EV3<TestComposite>>();
+//    test<EV3<TestComposite>>();
     test<FrequencyShifter<TestComposite>>();
     test<VocalAnimator<TestComposite>>();
     test<Blank<TestComposite>>();
