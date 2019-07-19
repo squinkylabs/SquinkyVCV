@@ -31,13 +31,14 @@ static void assertAllGatesLow(Sq& sq)
 /**
  * @param clockDiv - 4 for quarter, etc..
  */
-std::shared_ptr<Sq> make(int clockDiv,
+std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
     int numVoices, 
     MidiTrack::TestContent testContent)
 {
     assert(numVoices > 0 && numVoices <= 16);
+#if 0
     int clockCode = 0;
-    switch(clockDiv)
+    switch(rate)
     {
         case 8:
             clockCode = 4;
@@ -48,11 +49,12 @@ std::shared_ptr<Sq> make(int clockDiv,
         default:
             assert(false);
     }
+#endif
     auto song = MidiSong::makeTest(testContent, 0);
     std::shared_ptr<Sq> ret = std::make_shared<Sq>(song);
 
     ret->params[Sq::NUM_VOICES_PARAM].value = float(numVoices - 1);
-    ret->params[Sq::CLOCK_INPUT_PARAM].value = float(clockCode);        
+    ret->params[Sq::CLOCK_INPUT_PARAM].value = float(rate);        
     ret->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
     ret->toggleRunStop();                          // start it
 
@@ -63,8 +65,8 @@ std::shared_ptr<Sq> make(int clockDiv,
 // playing 1q song
 
 std::shared_ptr<Sq> makeWith8Clock()
-{
-    return make(8, 16, MidiTrack::TestContent::oneQ1);
+{   //need 8 clock
+    return make(SeqClock::ClockRate::Div2, 16, MidiTrack::TestContent::oneQ1);
 }
 
 
@@ -206,7 +208,8 @@ private:
 
 static void testRetrigger(bool exactDuration)
 {
-    std::shared_ptr<Sq> s = make(16, 1,
+    // 1/16
+    std::shared_ptr<Sq> s = make(SeqClock::ClockRate::Div4, 1,
         exactDuration ? MidiTrack::TestContent::FourTouchingQuarters :
         MidiTrack::TestContent::FourAlmostTouchingQuarters
     );

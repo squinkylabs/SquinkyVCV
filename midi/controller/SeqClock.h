@@ -14,11 +14,14 @@ public:
     enum class ClockRate
     {
         Internal,
+        Div64,
+        Div32,
         Div16,        // sixty-fourth
         Div8,       // thirty second
         Div4,       // sixteenth
         Div2,       // eighth
-        Div1       // quarter
+        Div1,       // quarter
+        NUM_CLOCKS
     };
 
     /**
@@ -130,25 +133,31 @@ inline void SeqClock::setup(ClockRate inputSetting, float tempoSetting, float sa
     clockSetting = inputSetting;
     resetLockout.setSampleTime(sampleT);
     switch (clockSetting) {
-        case 0:
+        case ClockRate::Internal:
             // just a hack, there really isn't a known value
             // for internal clock, but this may make external clients
             //happy
             metricTimePerClock = .005;     
             break;
-        case 1:
+        case  ClockRate::Div64:
+            metricTimePerClock = .0625 / 4.0;
+            break;
+        case  ClockRate::Div32:
+            metricTimePerClock = .0625 / 2.0;
+            break;
+        case  ClockRate::Div16:
             metricTimePerClock = .0625;
             break;
-        case 2:
+        case  ClockRate::Div8:
             metricTimePerClock = .125;
             break;
-        case 3:
+        case  ClockRate::Div4:
             metricTimePerClock = .25;
             break;
-        case 4: 
+        case  ClockRate::Div2:
             metricTimePerClock = .5;
             break;
-        case 5:
+        case ClockRate::Div1:
             metricTimePerClock = 1;
             break;
         default:
@@ -160,10 +169,12 @@ inline std::vector<std::string> SeqClock::getClockRates()
 {
     return {
         "Internal",
-        "64th note",
-        "32nd note",
-        "16th note",
-        "8th note",
-        "Quarter"
+        "x64",
+        "x32",
+        "x16 64th",
+        "x8 32nd",
+        "x4 16th",
+        "x2 8th",
+        "x1 Quarter"
     };
 }

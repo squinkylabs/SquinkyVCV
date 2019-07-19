@@ -323,6 +323,16 @@ static void testResetIgnoreClock()
     assertClose(results.totalElapsedTime, 1, .000001);
 }
 
+static void testRates()
+{
+    const int num = int( SeqClock::ClockRate::NUM_CLOCKS);
+    auto labels = SeqClock::getClockRates();
+    assert(num == labels.size());
+    for (std::string label : labels) {
+        assert(!label.empty());
+    }
+}
+
 void testSeqClock()
 {
     testOneShotInit();
@@ -335,4 +345,5 @@ void testSeqClock()
     testSimpleReset();
     testSimpleResetIgnoreClock();
     testResetIgnoreClock();
+    testRates();
 }

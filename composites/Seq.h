@@ -343,7 +343,11 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Seq<TBase>::CLOCK_INPUT_PARAM:
-            ret = {0, 5, 0, "Clock Rate"};
+        {
+            float low = int(SeqClock::ClockRate::Internal);
+            float high = int(SeqClock::ClockRate::NUM_CLOCKS) + 1;
+            ret = {low, high, low, "Clock Rate"};
+        }
             break;
         case Seq<TBase>::TEMPO_PARAM:
             ret = {40, 200, 120, "Tempo"};
