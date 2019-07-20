@@ -88,12 +88,15 @@ void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterv
     }
 }
 
+
+
 void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizationInterval)
 {
     metricTime = TimeUtils::quantize(metricTime, quantizationInterval, true);
     // If we had a conflict and needed to reset, then
     // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
+       //  printf("\n******  player proc reset\n");
         curEvent = track->begin();
         resetAllVoices(isResetGates);
         isReset = false;

@@ -64,9 +64,12 @@ std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
 // makes a seq composite set of for external 8th note clock
 // playing 1q song
 
-std::shared_ptr<Sq> makeWith8Clock()
+std::shared_ptr<Sq> makeWith8Clock(bool noteAtTimeZero = false)
 {   //need 8 clock
-    return make(SeqClock::ClockRate::Div2, 16, MidiTrack::TestContent::oneQ1);
+    MidiTrack::TestContent content = noteAtTimeZero ? 
+        MidiTrack::TestContent::eightQNotes :
+        MidiTrack::TestContent::oneQ1;
+    return make(SeqClock::ClockRate::Div2, 16, content);
 }
 
 
@@ -241,6 +244,40 @@ static void testRetrigger(bool exactDuration)
 
 }
 
+
+static void testResetGatesLow()
+{
+
+    std::shared_ptr<Sq> s = makeWith8Clock(true);                          // start it
+
+    stepN(*s, 16);
+
+    auto pos = s->getPlayPosition();
+    assertEQ(pos, 0);
+
+    // now give first clock 
+    genOneClock(*s);
+    pos = s->getPlayPosition();
+    assertEQ(pos, .5);
+    assertAllGatesLow(*s);
+
+    // first real Q note, gate high
+    genOneClock(*s);
+    pos = s->getPlayPosition();
+    assertEQ(pos, 1);
+    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+
+    s->toggleRunStop();     // STOP
+    stepN(*s, 16);
+    assertAllGatesLow(*s);
+
+    // after reset the gates should be low
+    s->inputs[Sq::RESET_INPUT].value = 10;
+    stepN(*s, 16);
+    assertAllGatesLow(*s);
+
+}
+
 void testSeqComposite()
 {
     testBasicGates();
@@ -248,4 +285,6 @@ void testSeqComposite()
 
     testRetrigger(true);
     testRetrigger(false);
+
+    testResetGatesLow();
 }

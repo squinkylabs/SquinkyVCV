@@ -70,10 +70,14 @@ static void testClockInternal0()
     results = ck.update(sampleRateI, 0, true, 0);
     assertEQ(results.totalElapsedTime, 4.0);
 
-    ck.reset();
+    ck.reset(true);
     ck.setup(SeqClock::ClockRate::Internal, 240, sampleTime);       // internal clock
     results = ck.update(sampleRateI * 10, 0, true, 0);
     assertEQ(results.totalElapsedTime, 40);
+  //  assertGT(results.totalElapsedTime, 38.9);
+ //   assertLE(results.totalElapsedTime, 40);
+// with original reset this was 40. new reset clock logic maybe doesn't work right with internal
+    
     assert(!results.didReset);
 }
 
@@ -254,7 +258,7 @@ static void testSimpleResetIgnoreClock()
     // now reset
     results = ck.update(sampleRateI, 10, true, 10);
     assert(results.didReset);
-    assert(results.totalElapsedTime == 0);      // reset should set clock back to zero
+    assertLT(results.totalElapsedTime, 0);      // reset should set clock back to waiting
 
 
     results = ck.update(sampleRateI, 0, true, 0);
@@ -295,8 +299,7 @@ static void testResetIgnoreClock()
     // now reset
     results = ck.update(1, 10, true, 10);
     assert(results.didReset);
-    assert(results.totalElapsedTime == 0);      // reset should set clock back to zero
-
+    assertLT(results.totalElapsedTime, 0);      // reset should set clock back to waiting
 
     //   ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
 
@@ -305,22 +308,23 @@ static void testResetIgnoreClock()
 
     for (int i = 0; i < (samplesInOneMs - errorMargin); ++i) {
         results = ck.update(1, 0, true, 0);
-        assertEQ(results.totalElapsedTime, 0);
+        assertLT(results.totalElapsedTime, 0);
     }
 
     // this clock should be ignored
     results = ck.update(1, 10, true, 0);
-    assertEQ(results.totalElapsedTime, 0);
+    assertLT(results.totalElapsedTime, 0);
 
     // step for a little more with clock low
     for (int i = 0; i < 2 * errorMargin; ++i) {
         results = ck.update(1, 0, true, 0);
-        assertEQ(results.totalElapsedTime, 0);
+        assertLT(results.totalElapsedTime, 0);
     }
 
     // this clock should NOT be ignored
     results = ck.update(sampleRateI, 10, true, 0);
-    assertClose(results.totalElapsedTime, 1, .000001);
+    assertEQ(results.totalElapsedTime, 0);      // first clock after reset advance to start
+   // assertClose(results.totalElapsedTime, 1, .000001);
 }
 
 static void testRates()
@@ -331,6 +335,62 @@ static void testRates()
     for (std::string label : labels) {
         assert(!label.empty());
     }
+}
+
+static void testNoNoteAfterReset()
+{
+    const int sampleRateI = 44100;
+    const float sampleRate = float(sampleRateI);
+    const float sampleTime = 1.f / sampleRate;
+
+    SeqClock ck;
+    SeqClock::ClockResults results;
+    ck.setup(SeqClock::ClockRate::Div1, 120, sampleTime);       // external clock = quarter
+
+    //   ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset)
+    
+    
+    // clock it a bit
+
+    for (int j = 0; j < 10; ++j) {
+         results = ck.update(100, 0, true, 0);
+         results = ck.update(100, 10, true, 0);
+    }
+
+    // stop it
+    results = ck.update(1, 0, false, 0);
+    assert(!results.didReset);
+
+    // reset it
+    results = ck.update(1, 0, false, 10);
+    assert(results.didReset);
+
+    // after reset we should output time before start, so that when we finally start we play the first note
+    assertLT(results.totalElapsedTime, 0);
+
+    // while we are stopped, time should still not pass, even if clocked
+    for (int i = 0; i < 100; ++i) {
+        results = ck.update(100, 0, false, 0);
+        assert(!results.didReset);
+        assertLT(results.totalElapsedTime, 0);
+
+        results = ck.update(100, 10, false, 0);
+        assert(!results.didReset);
+        assertLT(results.totalElapsedTime, 0);
+    }
+
+    // now let it run (but no clock)
+    for (int i = 0; i < 100; ++i) {
+        results = ck.update(100, 0, true, 0);
+        assert(!results.didReset);
+        assertLT(results.totalElapsedTime, 0);
+    }
+
+    // now clock it - should go to zero
+
+
+    printf("finish this reset test\n");
+   // assert(false);      // finish me
 }
 
 void testSeqClock()
@@ -346,4 +406,5 @@ void testSeqClock()
     testSimpleResetIgnoreClock();
     testResetIgnoreClock();
     testRates();
+    testNoNoteAfterReset();
 }

@@ -22,6 +22,7 @@ void MidiVoice::setIndex(int i)
 
 void MidiVoice::setGate(bool g)
 {
+   // printf("mv::setGate(%d) %d\n ", index, g);
     host->setGate(index, g);
 }
 
@@ -69,6 +70,8 @@ void MidiVoice::playNote(float pitch, double currentTime, float endTime)
         printf(" mv retrigger. interval = %d\n", numSamplesInRetrigger);
 #endif
         curState = State::ReTriggering;
+
+       // printf("gate low in normal gate off logic\n");
         setGate(false);
         delayedNotePitch = pitch;
         delayedNoteEndtime = endTime;
@@ -97,6 +100,7 @@ bool MidiVoice::updateToMetricTime(double metricTime)
         printf("shutting off note in update, grabbing last = %f (cur NoteOff time) \n", noteOffTime);
         printf(" (the note off time was %.2f, metric = %.2f\n", noteOffTime, metricTime);
 #endif
+       // printf("gate off in normal update\n");
         setGate(false);
         // should probably use metric time here - the time it "actually" played.
         lastNoteOffTime = noteOffTime; 
@@ -117,6 +121,7 @@ void MidiVoice::reset(bool clearGate)
     curState = State::Idle;
     retriggerSampleCounter = 0;
     if (clearGate) {
+       // printf("gate off from reset call\n");
         setGate(false);             // and stop the playing CV
     }
 }
