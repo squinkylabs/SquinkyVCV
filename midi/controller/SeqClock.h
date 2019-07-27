@@ -51,7 +51,6 @@ public:
     void setup(ClockRate inputSetting, float tempoSetting, float sampleTime);
     void reset(bool internalClock);
 
-  
     static std::vector<std::string> getClockRates();
 
     double getCurMetricTime() const {
@@ -66,7 +65,7 @@ public:
 private:
     ClockRate clockSetting = ClockRate::Internal;       // default to internal
     float internalTempo = 120.f;
-    double curMetricTime = 0;
+    double curMetricTime = -1;                          // this is correct for external, who cares about internal?          
     float sampleTime = 1.f / 44100.f;
     double metricTimePerClock = 1;
 
@@ -120,6 +119,7 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
             // external clock
             clockProcessor.go(externalClock);
             if (clockProcessor.trigger()) {
+                //printf("seqClock proc new one\n"); fflush(stdout);
                 // if an external clock fires, advance the time.
                 // But if we are reset (negative time), then always go to zero
                 if (curMetricTime >= 0) {

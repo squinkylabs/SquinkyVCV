@@ -52,6 +52,7 @@ static void testOneShot2Ms()
 // test internal clock
 static void testClockInternal0()
 {
+    assert(false);      // internal has changes
     const int sampleRateI = 44100;
     const float sampleRate = float(sampleRateI);
     const float sampleTime = 1.f / sampleRate;
@@ -85,18 +86,28 @@ static void testClockExt(SeqClock::ClockRate rate, double metricTimePerClock)
 {
    // assertGT(rate, 0);
    // assertLE(rate, 5);
+    assert(rate != SeqClock::ClockRate::Internal);
 
     SeqClock ck;
     ck.setup(rate, 120, 100);       // internal clock
 
     SeqClock::ClockResults results;
-    // send one clock
+
+    // low clock, nothing will happen
     for (int i = 0; i < 10; ++i) {
         results = ck.update(55, 0, true, 0);        // low clock
-        assertEQ(results.totalElapsedTime, 0);
+        assertLT(results.totalElapsedTime, 0);      // still waiting for first
     }
 
-    // count home much metric time comes back
+    // first high clock, will start by advancing to time 0
+    results = ck.update(55, 10, true, 0);
+    assertEQ(results.totalElapsedTime, 0);
+
+    // now another low clock
+    results = ck.update(55, 0, true, 0);
+    assertEQ(results.totalElapsedTime, 0);
+
+    // real high clock: count how much metric time comes back
     results = ck.update(55, 10, true, 0);
     assertEQ(results.totalElapsedTime, metricTimePerClock);
 
@@ -113,7 +124,7 @@ static void testClockExt1()
 
 static void testClockExtEdge()
 {
-  //  const int rate = 5;
+
     auto rate = SeqClock::ClockRate::Div1;
     const double metricTimePerClock = 1;
     SeqClock ck;
@@ -123,8 +134,16 @@ static void testClockExtEdge()
     // send one clock (first low)
     for (int i = 0; i < 10; ++i) {
         results = ck.update(55, 0, true, 0);        // low clock
-        assertEQ(results.totalElapsedTime, 0);
+        assertLT(results.totalElapsedTime, 0);      // in start up
     }
+
+    // then high once to start at time zero
+    results = ck.update(55, 10, true, 0);
+    assertEQ(results.totalElapsedTime, 0);
+
+    // then low once to get ready for next clock
+    results = ck.update(55, 0, true, 0);
+    assertEQ(results.totalElapsedTime, 0);
 
     // then high once
     results = ck.update(55, 10, true, 0);
@@ -151,6 +170,7 @@ static void testClockExtEdge()
 
 static void testClockInternalRunStop()
 {
+    assert(false);  // no more internal
     const int sampleRateI = 44100;
     const float sampleRate = float(sampleRateI);
     const float sampleTime = 1.f / sampleRate;
@@ -183,8 +203,13 @@ static void testClockChangeWhileStopped()
     SeqClock ck;
     ck.setup(SeqClock::ClockRate::Div1, 120, sampleTime);       // external clock
 
-    // call with clock low, running
-    SeqClock::ClockResults results = ck.update(sampleRateI, 0, true, 0);
+    // call with clock low,high,low whole running
+    // to get to time zero, ready for first
+    SeqClock::ClockResults results;
+    ck.update(sampleRateI, 0, true, 0);
+    ck.update(sampleRateI, 10, true, 0);
+    results = ck.update(sampleRateI, 0, true, 0);
+
     assertEQ(results.totalElapsedTime, 0);
 
     // now stop
@@ -408,13 +433,13 @@ static void testRunGeneratesClock()
     for (int j = 0; j < 10; ++j) {
         results = ck.update(100, 10, false, 0);
         assert(!results.didReset);
-        assertEQ(results.totalElapsedTime, 0);
+        assertLT(results.totalElapsedTime, 0);
     }
 
     // now run. rising run signal should gen a clock with clock high
     results = ck.update(1, 10, true, 0);
     assert(!results.didReset);
-    assertEQ(results.totalElapsedTime, 1);
+    assertEQ(results.totalElapsedTime, 0);
 }
 
 static void testResetRetriggersClock()
@@ -431,19 +456,19 @@ static void testResetRetriggersClock()
     for (int j = 0; j < 10; ++j) {
         results = ck.update(100, 10, false, 0);
         assert(!results.didReset);
-        assertEQ(results.totalElapsedTime, 0);
+        assertLT(results.totalElapsedTime, 0);
     }
 
     // now run. rising run signal should gen a clock with clock high
     results = ck.update(1, 10, true, 0);
     assert(!results.didReset);
-    assertEQ(results.totalElapsedTime, 1);
+    assertEQ(results.totalElapsedTime, 0);
 
     // stay high should not generate more clocks
     for (int j = 0; j < 10; ++j) {
         results = ck.update(100, 10, true, 0);
         assert(!results.didReset);
-        assertEQ(results.totalElapsedTime, 1);
+        assertEQ(results.totalElapsedTime, 0);
     }
 
     // reset should re-trigger clock, but only after lock-out interval
@@ -451,8 +476,8 @@ static void testResetRetriggersClock()
     assert(results.didReset);
     assertLT(results.totalElapsedTime, 0);
 
-    // now wait through the lock-out interval
-    const float lockOutSamples = 1000.f;        // TODO: expose magic num from clock
+    // now wait through the lock-out interval 
+    const int lockOutSamples = 1000;        // TODO: expose magic num from clock
     results = ck.update(lockOutSamples, 10, true, 0);
     assertEQ(results.totalElapsedTime, 0);
 
@@ -462,10 +487,11 @@ void testSeqClock()
 {
     testOneShotInit();
     testOneShot2Ms();
-    testClockInternal0();
+    //testClockInternal0();
     testClockExt1();
     testClockExtEdge();
-    testClockInternalRunStop();
+    //testClockInternalRunStop();
+    printf("let's make testClockExternalRunStop\n");
     testClockChangeWhileStopped();
 
     //testSimpleReset();

@@ -62,6 +62,8 @@ std::shared_ptr<Sq> makeWith8Clock(bool noteAtTimeZero = false)
 
 static void testBasicGates()
 {
+    // Test song is one quater note at time 1
+    // eight note clocks
     std::shared_ptr<Sq> s = makeWith8Clock();                          // start it
 
     stepN(*s, 16);
@@ -70,9 +72,16 @@ static void testBasicGates()
     assertAllGatesLow(*s);
 
     auto pos = s->getPlayPosition();
-    assertEQ(pos, 0);
+    assertLT(pos, 0);
 
-    // now give first clock 
+    // Now give first clock - advance to time zero.
+    // There is no note at time zero
+    genOneClock(*s);
+    pos = s->getPlayPosition();
+    assertEQ(pos, 0);
+    assertAllGatesLow(*s);
+
+    // next clock will take us to the first eighth note, where there is no note
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, .5);
@@ -98,17 +107,25 @@ static void testBasicGates()
 
 static void testStopGatesLow()
 {
-    std::shared_ptr<Sq> s = makeWith8Clock();                          // start it
+    std::shared_ptr<Sq> s = makeWith8Clock();
 
+    // step for a while, but with no clock
     stepN(*s, 16);
 
     assertEQ(s->outputs[Sq::GATE_OUTPUT].channels, 16);
     assertAllGatesLow(*s);
-
     auto pos = s->getPlayPosition();
-    assertEQ(pos, 0);
+    assertLT(pos, 0);
 
-    // now give first clock 
+
+    // now give first clock to time zero
+    genOneClock(*s);
+    pos = s->getPlayPosition();
+    assertEQ(pos, 0);
+    assertAllGatesLow(*s);
+
+
+    // now clock to first eigth
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, .5);
@@ -209,11 +226,12 @@ static void testRetrigger(bool exactDuration)
     assert(s->outputs[s->GATE_OUTPUT].voltages[0] < 5);
 
     // first tick will play the note at time zero. don't need a clock
+    // wait - that's wrong. we (now) do require a clock
     stepN(*s, 16);   // let it get noticed
-    assert(s->outputs[s->GATE_OUTPUT].voltages[0] > 5);
+    assert(s->outputs[s->GATE_OUTPUT].voltages[0] < 5);
 
     // now, three more 1/6 note clocks - should all be in the first note - no triggers
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         clock.advanceToClock();
         assert(s->outputs[s->GATE_OUTPUT].voltages[0] > 5);
     }
@@ -239,9 +257,14 @@ static void testResetGatesLow()
     stepN(*s, 16);
 
     auto pos = s->getPlayPosition();
+    assertLT(pos, 0);
+
+    // first clock to get to time t=0
+    genOneClock(*s);
+    pos = s->getPlayPosition();
     assertEQ(pos, 0);
 
-    // now give first clock 
+    // now give first advance past zero clock 
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, .5);
@@ -265,45 +288,113 @@ static void testResetGatesLow()
 }
 
 
+
+void sendClockAndStep(Sq& sq, float clockValue)
+{
+    sq.inputs[Sq::CLOCK_INPUT].value = clockValue;
+
+    // now step a bit so that we see clock 
+    stepN(sq, 4);
+}
+
 static void testLoopingQ()
 {
     // 1/8 note clock 4 q
-    auto song = MidiSong::makeTest(MidiTrack::TestContent::FourTouchingQuarters, 0);
+    auto song = MidiSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
     std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
 
     seq->params[Sq::NUM_VOICES_PARAM].value = 0;
     seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
     seq->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
 
-    printf("finish the looping test\n");
-    return;
+    // just pause for a bit.
+    // we are now "running", but no clocks
+    stepN(*seq, 1000);
 
     assertAllGatesLow(*seq);
-    seq->step();
-    assertAllGatesLow(*seq);
-  
 
-    // just pause for a bit
-    for (int i = 0; i < 10000; ++i) {
-        seq->step();
-    }
-
-    assertAllGatesLow(*seq);
     // now start and clock
     seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
     seq->inputs[Sq::CLOCK_INPUT].value = 10;
     assertAllGatesLow(*seq);
 
-    // now step a bit
-    for (int i = 0; i < 4; ++i) {
-        seq->step();
-    }
+    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
+
+    // now step a bit so that we see clock
+    stepN(*seq, 4);
 
     // should be playing the first note
     assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertEQ(seq->getPlayPosition(), 0);
+    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 3);
 
-    
-    assert(false);
+    // send the clock low
+    sendClockAndStep(*seq, 0);
+
+    /* What we need to do (at least on the real clocks) is:
+     * send the clock, note that gate is now low, and cv is same
+     * wait a bit, note gate goes high and cv advances
+     */
+
+    // We are now just started, on the first tick, playing 3V
+
+    assertEQ(seq->getPlayPosition(), 0);
+    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 3);
+    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+
+    // now send clock another clock
+    // expect no change, other than advancing an eight note since notes a quarters
+    genOneClock(*seq);
+    assertEQ(seq->getPlayPosition(), .5);
+    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 3);
+    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+
+
+    float expectedPos = .5;
+    float expectedCV = 3;
+    // now, all notes after this will be "the same"
+    for (int i = 0; i < 20; ++i) {
+        assertEQ(seq->inputs[Sq::CLOCK_INPUT].value, 0);        // precondition for loop, clock low
+        /* Clock high and step.
+         * This will send the player into re-trigger, since notes touch.
+         * In re-trigger we hold the prev CV and force the gate low
+         */
+        sendClockAndStep(*seq, 10);
+        assertEQ(seq->inputs[Sq::CLOCK_INPUT].value, 10);
+        expectedPos += .5f;
+
+        // loop around one bar
+        bool didLoop = false;
+        if (expectedPos > 3.75) {
+            expectedPos -= 4;
+            didLoop = true;
+        }
+
+        assertEQ(seq->getPlayPosition(), expectedPos);
+        assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], expectedCV);
+        assertLT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+
+        // now we are at the onset of a new note, but still re-triggering.
+        // wait a bit and should see next note
+        stepN(*seq, 50);
+        expectedCV += 1;
+        if (didLoop) {
+            expectedCV -= 4;
+        }
+        assertEQ(seq->getPlayPosition(), expectedPos);
+        assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], expectedCV);
+        assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+
+        // send clock low
+        sendClockAndStep(*seq, 0);
+
+        // next clock will just get us to middle of same note
+        genOneClock(*seq);
+        expectedPos += .5f;
+        assertEQ(seq->getPlayPosition(), expectedPos);
+        assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], expectedCV);
+        assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    }
 }
 
 void testSeqComposite()
