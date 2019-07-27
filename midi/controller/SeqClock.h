@@ -75,9 +75,11 @@ private:
     OneShot resetLockout;
 };
 
+// We don't want reset logic on clock, as clock high should not be ignoreed.
+// Probably don't want on reset either.
 inline SeqClock::SeqClock() :
-    clockProcessor(true),
-    resetProcessor(true)
+    clockProcessor(false),
+    resetProcessor(false)
 {
     resetLockout.setDelayMs(1);
     resetLockout.setSampleTime(1.f / 44100.f);
@@ -93,11 +95,14 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
     results.didReset = resetProcessor.trigger();
     if (results.didReset) {
         resetLockout.set();
+        // go back to start. For correct start, go negative, so that first clock plays first note
         curMetricTime = (clockSetting == ClockRate::Internal) ? 0 : -1;
-          // go back to start
+
+        // reset the clock so that high clock can gen another clock
+        clockProcessor.reset();
     }
     for (int i = 0; i < samplesElapsed; ++i) {
-        resetLockout.step();
+        resetLockout.step();            // TODO: don't iterate
     }
 
     if (!runStop) {

@@ -111,11 +111,12 @@ public:
     {
         return std::make_shared<SeqDescription<TBase>>();
     }
-
+#if 0 // unused?
     void stop()
     {
         player->stop();
     }
+#endif
 
     bool isRunning();
 

@@ -147,6 +147,10 @@ int main(int argc, char ** argv)
         return 0;
     }
 
+    testAudioMath();
+    testRingBuffer();
+    testGateTrigger();
+
     testIComposite();
     testVec();
     testCommChannels();
@@ -169,9 +173,6 @@ int main(int argc, char ** argv)
     testNoteScreenScale();
     testSeqComposite();
 
-    testAudioMath();
-    testRingBuffer();
-    testGateTrigger();
     testManagedPool();
     testLookupTable();
     testObjectCache();

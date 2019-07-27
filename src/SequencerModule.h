@@ -40,10 +40,12 @@ struct SequencerModule : Module
     }
     void onReset() override;
 
+#if 0 // obsolete?
     void stop()
     {
         seqComp->stop();
     }
+#endif
 
     float getPlayPosition()
     {

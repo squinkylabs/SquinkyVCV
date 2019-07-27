@@ -21,7 +21,8 @@ public:
     GateTrigger(bool wantResetLogic = true) :
         _gate(false),
         _trigger(false),
-        _reset(wantResetLogic)
+        _reset(wantResetLogic),
+        _wantResetLogic(wantResetLogic)
     {
     }
 
@@ -46,7 +47,9 @@ public:
     {
         _gate = false;
         _trigger = false;
-        _reset = true;
+        if (_wantResetLogic) {
+            _reset = true;
+        }
     }
 
     bool gate() const
@@ -74,6 +77,7 @@ private:
     bool _gate;
     bool _trigger;
     bool _reset;		// just reset - gate must go low before high to trigger
+    const bool _wantResetLogic;
 };
 
 

@@ -36,20 +36,7 @@ std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
     MidiTrack::TestContent testContent)
 {
     assert(numVoices > 0 && numVoices <= 16);
-#if 0
-    int clockCode = 0;
-    switch(rate)
-    {
-        case 8:
-            clockCode = 4;
-            break;
-        case 16:
-            clockCode = 3;
-            break;
-        default:
-            assert(false);
-    }
-#endif
+
     auto song = MidiSong::makeTest(testContent, 0);
     std::shared_ptr<Sq> ret = std::make_shared<Sq>(song);
 
@@ -241,7 +228,6 @@ static void testRetrigger(bool exactDuration)
     // there is a lot of slop in the test in in the div4 step in Seq
     // Really as long it takes a couple clocks to get back we know re-trigger is working
     assert(x <= 44 && x > 8);       
-
 }
 
 
@@ -278,6 +264,48 @@ static void testResetGatesLow()
 
 }
 
+
+static void testLoopingQ()
+{
+    // 1/8 note clock 4 q
+    auto song = MidiSong::makeTest(MidiTrack::TestContent::FourTouchingQuarters, 0);
+    std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
+
+    seq->params[Sq::NUM_VOICES_PARAM].value = 0;
+    seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
+    seq->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
+
+    printf("finish the looping test\n");
+    return;
+
+    assertAllGatesLow(*seq);
+    seq->step();
+    assertAllGatesLow(*seq);
+  
+
+    // just pause for a bit
+    for (int i = 0; i < 10000; ++i) {
+        seq->step();
+    }
+
+    assertAllGatesLow(*seq);
+    // now start and clock
+    seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
+    seq->inputs[Sq::CLOCK_INPUT].value = 10;
+    assertAllGatesLow(*seq);
+
+    // now step a bit
+    for (int i = 0; i < 4; ++i) {
+        seq->step();
+    }
+
+    // should be playing the first note
+    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+
+    
+    assert(false);
+}
+
 void testSeqComposite()
 {
     testBasicGates();
@@ -287,4 +315,5 @@ void testSeqComposite()
     testRetrigger(false);
 
     testResetGatesLow();
+    testLoopingQ();
 }
