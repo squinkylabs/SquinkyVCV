@@ -1,5 +1,9 @@
 # Change log for Squinky Labs modules
 
+## 1.0.3
+
+EV-3 gained a lot of aliasing distortion in the 1.0.0 release. Now it's fixed.
+
 ## 1.0.2
 
 Fixed bug in Form and ExFor that made solo and mute activate occasionally when dragging volume knob.
