@@ -47,7 +47,7 @@ SequencerModule::SequencerModule()
     seqComp = std::make_shared<Comp>(this, song);
 }
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/sq.md";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq10/docs/sq.md";
 
 struct SequencerWidget : ModuleWidget
 {
@@ -171,7 +171,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Vec(controlX, 120),
         module,
         Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 85;    // width
+    p->box.size.x = 90;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getClockRates());
     addParam(p);

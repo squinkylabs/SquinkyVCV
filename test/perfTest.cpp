@@ -3,9 +3,6 @@
 #include <cmath>
 #include <limits>
 
-#include "EvenVCO.h"
-//#include "EvenVCO_orig.h"
-
 #include "AudioMath.h"
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
@@ -23,7 +20,7 @@
 #include "GMR.h"
 #include "CHB.h"
 #include "FunVCOComposite.h"
-#include "EV3.h"
+//#include "EV3.h"
 #include "daveguide.h"
 #include "Shaper.h"
 #include "Super.h"
@@ -281,6 +278,7 @@ static void testEvenOrig()
 }
 #endif
 
+#if 0
 static void testEven()
 {
     EvenVCO<TestComposite> lfn;
@@ -396,6 +394,7 @@ static void testEvenSqSaw()
         return lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].value;
         }, 1);
 }
+#endif
 
 static void testFun()
 {
@@ -502,6 +501,7 @@ static void testCHBdef()
         }, 1);
 }
 
+#if 0
 static void testEV3()
 {
     EV3<TestComposite> ev3;
@@ -511,6 +511,7 @@ static void testEV3()
         return ev3.outputs[EV3<TestComposite>::MIX_OUTPUT].value;
         }, 1);
 }
+#endif
 
 static void testGMR()
 {
@@ -858,7 +859,7 @@ void perfTest()
     testShaper5();
 #endif
 
-    testEV3();
+   // testEV3();
 
     testFunSaw(true);
 #if 0
@@ -870,8 +871,7 @@ void perfTest()
     testFunNone();
 #endif
 
-   // testEvenOrig();
-    testEvenSaw();
+
 #if 0
     testEven();
     testEvenEven();

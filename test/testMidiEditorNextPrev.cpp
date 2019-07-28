@@ -2,6 +2,7 @@
 #include "asserts.h"
 #include "MidiLock.h"
 #include "MidiSequencer.h"
+#include "TestSettings.h"
 
 static int _trackNumber = 0;
 
@@ -11,7 +12,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr sequencer = MidiSequencer::make(song, std::make_shared<TestSettings>());
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -163,7 +164,7 @@ static void testNext1e()
     ev4->startTime = 200;
     track->insertEvent(ev4);
 
-    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
 
     // select first event
     seq->editor->selectNextNote();
@@ -199,7 +200,7 @@ static void testNextPrevSingleNote()
     ev2->startTime = 4;
     track->insertEvent(ev2);
 
-    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
     auto x = seq->context->cursorTime();
     seq->context->adjustViewportForCursor();
     x = seq->context->cursorTime();

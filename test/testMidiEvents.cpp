@@ -361,7 +361,7 @@ static void testTimeUtil6()
     assert(x == "3");
 }
 
-// simple tests of quant function
+// simple tests of quantforEdit function
 static void testTimeUtilQuant0()
 {
     // pre-quantized pass through
@@ -377,6 +377,23 @@ static void testTimeUtilQuant0()
     // ones that would quantize to other side of home, but we don't want that.
     assertEQ(TimeUtils::quantizeForEdit(.2f, .1f, 1), 1);
     assertEQ(TimeUtils::quantizeForEdit(.9f, -.1f, 1), 0);
+}
+
+static void testTimeUtilSimpleQuant()
+{
+    assertEQ(TimeUtils::quantize(10, 1, true), 10);
+    assertEQ(TimeUtils::quantize(4, 10, true), 0);
+    assertEQ(TimeUtils::quantize(6, 10, true), 10);
+
+    assertEQ(TimeUtils::quantize(10, 1, false), 10);
+    assertEQ(TimeUtils::quantize(4, 10, false), 10);
+    assertEQ(TimeUtils::quantize(6, 10, false), 10);
+
+
+    assertEQ(TimeUtils::quantize(-10, 1, true), -10);
+    assertEQ(TimeUtils::quantize(-4, 10, true), 0);
+    assertEQ(TimeUtils::quantize(-6, 10, true), -10);
+   
 }
 
 
@@ -543,10 +560,12 @@ void  testMidiEvents()
     testTimeUtil5();
     testTimeUtil6();
     testTimeUtilQuant0();
+    testTimeUtilSimpleQuant();
 
     testPitchUtil0();
     testPitchUtil1();
     testPitchUtil2();
+   
     
     assertNoMidi();     // check for leaks
 }

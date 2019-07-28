@@ -2,12 +2,13 @@
 
 #include "MidiEditorContext.h"
 #include "NoteScreenScale.h"
+#include "TestSettings.h"
 
 // basic test of x coordinates
 static void test0()
 {
     // viewport holds single quarter note
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setStartTime(0);
     vp->setEndTime(1);
 
@@ -44,7 +45,7 @@ static void test0()
 static void test1()
 {
     // viewport holds single quarter note
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setTimeRange(0, 1);
 
     // let's make one quarter note fill the whole screen
@@ -72,7 +73,7 @@ static void test1()
 static void test2()
 {
     // viewport holds one bar of 4/4
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setTimeRange(0, 4);
 
     // let's make one eight note
@@ -99,7 +100,7 @@ static void test2()
 static void test3()
 {
     // viewport holds two pitches
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setTimeRange(0, 1);
 
     MidiNoteEvent note1, note2;
@@ -134,7 +135,7 @@ static void test3()
 static void test4()
 {
     // viewport holds single quarter note
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setStartTime(0);
     vp->setEndTime(1);
 
@@ -172,7 +173,7 @@ static void test4()
 static void test5()
 {
     // viewport holds two pitches
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setTimeRange(0, 1);
 
     MidiNoteEvent note1, note2;
@@ -203,7 +204,7 @@ static void test5()
 static void test6()
 {
     // viewport holds single quarter note
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setTimeRange(0, 1);
 
     // let's make one quarter note fill the whole screen
@@ -247,7 +248,7 @@ static void test6()
 static void testTimeRange()
 {
     // viewport holds single quarter note
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     const float start = 1000;
     vp->setStartTime(start);
     vp->setEndTime(start+1);
@@ -287,7 +288,7 @@ static void testTimeRange()
 static void testPitchQuantize()
 {
     // viewport holds two pitches
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setTimeRange(0, 1);
 
     MidiNoteEvent note1, note2;
@@ -310,7 +311,7 @@ static void testPitchQuantize()
 
 static void testPointInBounds()
 {
-    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, nullptr);
+    MidiEditorContextPtr vp = std::make_shared<MidiEditorContext>(nullptr, std::make_shared<TestSettings>());
     vp->setTimeRange(0, 1);
 
     MidiNoteEvent note1, note2;

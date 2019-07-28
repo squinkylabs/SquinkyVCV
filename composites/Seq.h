@@ -111,11 +111,12 @@ public:
     {
         return std::make_shared<SeqDescription<TBase>>();
     }
-
+#if 0 // unused?
     void stop()
     {
         player->stop();
     }
+#endif
 
     bool isRunning();
 
@@ -126,6 +127,8 @@ public:
         double ret = absTime - loopDuration;
         return float(ret);
     }
+
+    void onSampleRateChange();
 
     static std::vector<std::string> getClockRates();
     static std::vector<std::string> getPolyLabels();
@@ -162,6 +165,9 @@ public:
     }
     void setGate(int voice, bool gate) override
     {
+#ifdef _MLOG
+        printf("gate(%d) = %d t=%f\n", voice, gate, seq->getPlayPosition()); fflush(stdout);
+#endif
         seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
     void setCV(int voice, float cv) override
@@ -215,6 +221,16 @@ void  Seq<TBase>::init(MidiSongPtr song)
     div.setup(4, [this] {
         this->stepn(div.getDiv());
      });
+    onSampleRateChange();
+}
+
+
+template <class TBase>
+void Seq<TBase>::onSampleRateChange()
+{
+    float secondsPerRetrigger = 1.f / 1000.f;
+    float samplePerTrigger = secondsPerRetrigger * this->engineGetSampleRate();
+    player->setSampleCountForRetrigger((int) samplePerTrigger);
 }
 
 template <class TBase>
@@ -253,7 +269,7 @@ void  Seq<TBase>::stepn(int n)
 {
     serviceRunStop();
     // first process all the clock input params
-    const int clockRate = (int) std::round(TBase::params[CLOCK_INPUT_PARAM].value);
+    const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
     const float tempo = TBase::params[TEMPO_PARAM].value;
     clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
 
@@ -278,7 +294,7 @@ void  Seq<TBase>::stepn(int n)
         player->reset(true);
     }
   //  printf("in step, time = %.2f ext was %.2f isRunning - %d reset = %.2f\n", results.totalElapsedTime, extClock, running, reset);
-    player->updateToMetricTime(results.totalElapsedTime);
+    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()));
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 
@@ -296,6 +312,8 @@ void  Seq<TBase>::stepn(int n)
         }
     }
     wasRunning = running;
+
+    player->updateSampleCount(n);
 }
 
 template <class TBase>
@@ -326,7 +344,11 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Seq<TBase>::CLOCK_INPUT_PARAM:
-            ret = {0, 5, 0, "Clock Rate"};
+        {
+            float low = int(SeqClock::ClockRate::Internal);
+            float high = int(SeqClock::ClockRate::NUM_CLOCKS) + 1;
+            ret = {low, high, low, "Clock Rate"};
+        }
             break;
         case Seq<TBase>::TEMPO_PARAM:
             ret = {40, 200, 120, "Tempo"};

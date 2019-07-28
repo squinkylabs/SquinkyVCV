@@ -212,18 +212,22 @@ void NoteHorizontalDragger::onDrag(float deltaX, float deltaY)
 
 float NoteHorizontalDragger::quantizeForDisplay(float metricTime, float timeShiftPixels, bool canGoBelowGridSize)
 {
+    //printf("in quantizeForDisplay(metricTime=%f, timeShiftPixels=%f congobelwo=%d\n", metricTime, timeShiftPixels, canGoBelowGridSize);
     bool snap = sequencer->context->settings()->snapToGrid();
     if (snap) {
         auto scaler = sequencer->context->getScaler();
 
         float grid = sequencer->context->settings()->getQuarterNotesInGrid();
         float timeShiftMetric = scaler->xToMidiDeltaTime(timeShiftPixels);
+       
         float quantizedMetricTime = TimeUtils::quantizeForEdit(metricTime, timeShiftMetric, grid);
+ //printf("time shift metric, unquant=%f q=%f\n", timeShiftMetric, quantizedMetricTime);
         if (!canGoBelowGridSize && quantizedMetricTime < grid) {
             quantizedMetricTime = grid;
         }
         float metricDelta = quantizedMetricTime - metricTime;
         float pixelDelta = scaler->midiTimeTodX(metricDelta);
+         //printf("q for disp will return pixel delta %f metric delta = %f\n", pixelDelta, metricDelta);
         return pixelDelta;
     } else {
         return timeShiftPixels;     // do nothing if off
@@ -293,8 +297,9 @@ bool NoteDurationDragger::draggingDuration()
 
 void NoteDurationDragger::draw(NVGcontext *vg)
 {
-    const float horizontalShift = curMousePositionX - startX;
-    drawNotes(vg, 0, 0, horizontalShift);
+    const float horizontalStretch = curMousePositionX - startX;
+    // printf("in draw, stretch = %f\n", horizontalStretch);
+    drawNotes(vg, 0, 0, horizontalStretch);
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "stretch");
 }
 
@@ -303,6 +308,7 @@ void NoteDurationDragger::commit()
 {
     auto scaler = sequencer->context->getScaler();
     const float horizontalShiftPix = curMousePositionX - startX; 
+    // printf("\n\n*** in commit, stretchpix = %f\n", horizontalShiftPix);
 
 
     // find the shift required for each note
@@ -310,8 +316,9 @@ void NoteDurationDragger::commit()
     bool isShift = false;
     for (auto it : *sequencer->selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
-        float timeShiftAmountQuantized = quantizeForDisplay(note->duration, horizontalShiftPix, true);
+        float timeShiftAmountQuantized = quantizeForDisplay(note->duration, horizontalShiftPix, false);
         float timeshiftAmountMetric = scaler->xToMidiDeltaTime(timeShiftAmountQuantized);
+        // printf("timeShiftAmountQuantize = %f, metric = %f\n", timeShiftAmountQuantized, timeshiftAmountMetric);
         shifts.push_back(timeshiftAmountMetric);
         if (std::abs(timeshiftAmountMetric) > .1) {
             isShift = true;

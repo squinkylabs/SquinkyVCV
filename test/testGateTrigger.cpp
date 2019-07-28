@@ -98,7 +98,6 @@ void to0()
 {
     TriggerOutput t;
 
-   // const int ghigh = DACVoltage::xcodeForGateHi();
     t.go(false);
     assert(t.get() == 0);
 
@@ -128,7 +127,80 @@ void to1()
 }
 
 
+static void testGateTriggerResetWithResetLogic()
+{
+    GateTrigger t(true);
 
+    t.go(10);
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(0);
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(10);
+    assert(t.gate());
+    assert(t.trigger());
+
+    t.go(10);
+    assert(t.gate());
+    assert(!t.trigger());
+
+    t.reset();
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(10);
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(0);
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(10);
+    assert(t.gate());
+    assert(t.trigger());
+}
+
+static void testGateTriggerResetNoResetLogic()
+{
+    GateTrigger t(false);
+
+    t.go(10);
+    assert(t.gate());
+    assert(t.trigger());
+
+    t.go(0);
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(10);
+    assert(t.gate());
+    assert(t.trigger());
+
+    t.go(10);
+    assert(t.gate());
+    assert(!t.trigger());
+
+    t.reset();
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(10);
+    assert(t.gate());
+    assert(t.trigger());
+
+    t.go(0);
+    assert(!t.gate());
+    assert(!t.trigger());
+
+    t.go(10);
+    assert(t.gate());
+    assert(t.trigger());
+
+}
 
 void testGateTrigger()
 {
@@ -140,4 +212,8 @@ void testGateTrigger()
     grst1();
     to0();
     to1();
+
+    testGateTriggerResetWithResetLogic();
+    testGateTriggerResetNoResetLogic();
+
 }

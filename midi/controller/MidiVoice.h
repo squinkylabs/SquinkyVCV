@@ -1,5 +1,8 @@
 #pragma once
 
+
+//#define _MLOG
+
 class IMidiPlayerHost;
 
 /**

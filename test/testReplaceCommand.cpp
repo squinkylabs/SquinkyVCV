@@ -1,18 +1,20 @@
 #include "asserts.h"
 
+#include "ISeqSettings.h"
 #include "MidiEvent.h"
 #include "MidiLock.h"
 #include "MidiTrack.h"
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "ReplaceDataCommand.h"
-#include "UndoRedoStack.h"
+#include "TestSettings.h"
+
 
 // test that functions can be called
 static void test0()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -25,7 +27,7 @@ static void test0()
 static void test1()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -58,7 +60,7 @@ static void test1()
 static void test2()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -82,7 +84,7 @@ static void test2()
 static void testTrans()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
     MidiEventPtr firstEvent = seq->context->getTrack()->getFirstNote();
     assert(firstEvent);
@@ -106,7 +108,7 @@ static void testInsert()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
     assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
 
@@ -145,7 +147,7 @@ static void testStartTime()
     // make empty song
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
     // put a note into it at time 100;
     auto track = seq->context->getTrack();
@@ -181,7 +183,7 @@ static void testDuration()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, nullptr);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
      // put a note into it at time 10, dur 5;
     auto track = seq->context->getTrack();

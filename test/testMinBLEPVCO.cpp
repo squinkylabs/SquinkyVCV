@@ -1,10 +1,12 @@
 #include <assert.h>
 #include "TestComposite.h"
 #include "asserts.h"
-#include "EV3.h"
+//#include "EV3.h"
 
-#include "MinBLEPVCO.h"
+//#include "MinBLEPVCO.h"
 #include "TestComposite.h"
+
+#if 0
 
 static float sampleTime = 1.0f / 44100.0f;
 
@@ -212,6 +214,8 @@ void TestMB::testSync3()
 
 
 // TODO: what is this??
+#if 0
+// didn't port to 1.0
 static void testBlepx(float crossing, float jump)
 {
     printf("BLEP crossing = %.2f, jump =%.2f\n", crossing, jump);
@@ -225,6 +229,7 @@ static void testBlepx(float crossing, float jump)
     }
 
 }
+#endif
 
 static void testEnums()
 {
@@ -263,12 +268,14 @@ static void testOutputs()
     testOutput(MinBLEPVCO::Waveform::Even, false);
 }
 
+#if 0
 static void testBlep()
 {
     testBlepx(-.5, -2);
     testBlepx(-.5, 1);
     testBlepx(-.9f, .2f);
 }
+#endif
 
 static void testZero()
 {
@@ -382,3 +389,4 @@ void testMinBLEPVCO()
     testSyncIn();
     testNormal();
 }
+#endif

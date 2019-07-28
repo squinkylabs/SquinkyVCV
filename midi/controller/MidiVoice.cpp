@@ -22,6 +22,7 @@ void MidiVoice::setIndex(int i)
 
 void MidiVoice::setGate(bool g)
 {
+   // printf("mv::setGate(%d) %d\n ", index, g);
     host->setGate(index, g);
 }
 
@@ -43,6 +44,9 @@ void MidiVoice::setSampleCountForRetrigger(int samples)
 void MidiVoice::updateSampleCount(int samples)
 {
     if (retriggerSampleCounter) {
+#ifdef _MLOG
+        printf("midi voice will subtract %d from %d\n", samples, retriggerSampleCounter);
+#endif
         retriggerSampleCounter -= samples;
         if (retriggerSampleCounter <= 0) {
             retriggerSampleCounter = 0;
@@ -56,14 +60,29 @@ void MidiVoice::updateSampleCount(int samples)
 
 void MidiVoice::playNote(float pitch, double currentTime, float endTime)
 {
+#ifdef _MLOG
+    printf("\nMidiVoice::playNote curt=%f, end time = %f, lastnot=%f\n", currentTime, endTime, lastNoteOffTime);
+#endif
     // do re-triggering, if needed
     if (currentTime == lastNoteOffTime) {
+        assert(numSamplesInRetrigger);
+#ifdef _MLOG
+        printf(" mv retrigger. interval = %d\n", numSamplesInRetrigger);
+#endif
         curState = State::ReTriggering;
+
+       // printf("gate low in normal gate off logic\n");
         setGate(false);
         delayedNotePitch = pitch;
         delayedNoteEndtime = endTime;
         retriggerSampleCounter = numSamplesInRetrigger;
+#ifdef _MLOG
+        printf("voice retric count = %d\n", retriggerSampleCounter);
+#endif
     } else {
+#ifdef _MLOG
+        printf("don't retrigger\n");
+#endif
         this->curPitch = pitch;
         this->noteOffTime = endTime;
 
@@ -77,8 +96,15 @@ bool MidiVoice::updateToMetricTime(double metricTime)
 {
     bool ret = false;
     if (noteOffTime >= 0 && noteOffTime <= metricTime) {
+#ifdef _MLOG
+        printf("shutting off note in update, grabbing last = %f (cur NoteOff time) \n", noteOffTime);
+        printf(" (the note off time was %.2f, metric = %.2f\n", noteOffTime, metricTime);
+#endif
+       // printf("gate off in normal update\n");
         setGate(false);
-        lastNoteOffTime = noteOffTime;
+        // should probably use metric time here - the time it "actually" played.
+        lastNoteOffTime = noteOffTime; 
+        //lastNoteOffTime = metricTime;
         noteOffTime = -1;
         curState = State::Idle;
         ret = true;
@@ -95,6 +121,7 @@ void MidiVoice::reset(bool clearGate)
     curState = State::Idle;
     retriggerSampleCounter = 0;
     if (clearGate) {
+       // printf("gate off from reset call\n");
         setGate(false);             // and stop the playing CV
     }
 }

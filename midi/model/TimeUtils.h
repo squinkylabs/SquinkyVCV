@@ -7,6 +7,22 @@
 class TimeUtils
 {
 public:
+    /**
+     * @returns and even multiple of quantize.
+     * rounds to closest.
+     */
+    static double quantize(double value, double quantize, bool allowZero)
+    {
+        double div = (value + quantize / 2.0) / quantize;
+        double x = floor(div);
+        double ret =  x * quantize;
+        if (!allowZero && (ret < quantize)) {
+            assert(value >= 0);     // can't handle negative numbers
+            ret = quantize;
+        }
+        return ret;
+    }
+    
     static float bar2time(int bar)
     {
         return bar * 4.f;     // for now, 4 q in one bar
@@ -103,3 +119,4 @@ public:
         return q;
     }
 };
+

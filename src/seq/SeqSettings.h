@@ -12,11 +12,14 @@ class SeqSettings : public ISeqSettings
 public:
     friend class GridMenuItem;
     friend class GridItem;
+    friend class SequencerSerializer;
+
     SeqSettings(rack::engine::Module*);
     void invokeUI(rack::widget::Widget* parent) override;
 
     float getQuarterNotesInGrid() override;
     bool snapToGrid() override;
+    float quantize(float, bool allowZero) override;
 private:
     rack::engine::Module* const module;
 
@@ -26,6 +29,10 @@ private:
         eighth,
         sixteenth
     };
+
+    std::string getGridString() const;
+    static std::vector<std::string> getGridLabels();
+    static Grids gridFromString(const std::string& s);
 
     Grids curGrid = Grids::quarter;
     bool snapEnabled = true;

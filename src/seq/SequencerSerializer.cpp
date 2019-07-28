@@ -10,6 +10,7 @@ json_t *SequencerSerializer::toJson(MidiSequencerPtr inSeq)
 {
     json_t* seq = json_object();
     json_object_set_new(seq, "song", toJson(inSeq->song));
+    json_object_set_new(seq, "settings", toJson(inSeq->context->settings()));
 
     return seq;
 }
@@ -71,6 +72,19 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEndEvent> e)
     return end;
 }
 
+json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
+{
+    SeqSettings* rawSettings = dynamic_cast<SeqSettings*>(settings.get());
+    json_t* jsonSettings = json_object();
+    json_object_set_new(jsonSettings, "snapToGrid", json_boolean(settings->snapToGrid()));
+
+    auto grid = rawSettings->getGridString();
+    json_object_set_new(jsonSettings, "grid", json_string(grid.c_str()));
+
+    assert(false);
+    return jsonSettings;
+}
+
 /********************************************************/
 
 /*
@@ -102,10 +116,38 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, rack::engine::Modul
 {
     json_t* songJson = json_object_get(data, "song");
     MidiSongPtr song = fromJsonSong(songJson);
-    ISeqSettings* ss = new SeqSettings(module);
-    std::shared_ptr<ISeqSettings> _settings(ss);
+
+    json_t* settingsJson = json_object_get(data, "settings");
+    std::shared_ptr<ISeqSettings> _settings = fromJsonSettings(settingsJson, module);
+
     MidiSequencerPtr seq = MidiSequencer::make(song, _settings);
     return seq;
+}
+
+std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
+    json_t* data,
+    rack::engine::Module* module)
+{
+    SeqSettings* rawSettings = new SeqSettings(module);
+
+    ISeqSettings* ss = rawSettings;
+    std::shared_ptr<ISeqSettings> _settings(ss);
+
+    if (data) {
+        json_t* gridSetting = json_object_get(data, "grid");
+        if (gridSetting) {
+            std::string gridS = json_string_value(gridSetting);
+            SeqSettings::Grids g = SeqSettings::gridFromString(gridS);
+            rawSettings->curGrid = g;
+        }
+
+        json_t* snap = json_object_get(data, "snapToGrid");
+        if (snap) {
+            bool bSnap = json_boolean_value(snap);
+            rawSettings->snapEnabled = bSnap;
+        }
+    }
+    return _settings;
 }
 
 MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)

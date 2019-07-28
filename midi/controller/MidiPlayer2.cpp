@@ -3,6 +3,7 @@
 #include "MidiLock.h"
 #include "MidiPlayer2.h"
 #include "MidiSong.h"
+#include "TimeUtils.h"
 
 
 MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song) :
@@ -44,13 +45,33 @@ void MidiPlayer2::setNumVoices(int voices)
     voiceAssigner.setNumVoices(voices);
 }
 
+void MidiPlayer2::setSampleCountForRetrigger(int samples)
+{
+    for (int i = 0; i < maxVoices; ++i) {
+        voices[i].setSampleCountForRetrigger(samples);
+    }
+}
+
+void MidiPlayer2::updateSampleCount(int numElapsed)
+{
+    for (int i = 0; i < numVoices; ++i) {
+        voices[i].updateSampleCount(numElapsed);
+    }
+}
+
+
 double MidiPlayer2::getLoopStart() const
 {
     return loopStart;
 }
 
-void MidiPlayer2::updateToMetricTime(double metricTime)
+void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval)
 {
+#ifdef _MLOG
+    printf("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
+#endif
+    assert(quantizationInterval != 0);
+
     if (!isPlaying) {
         return;
     }
@@ -59,7 +80,7 @@ void MidiPlayer2::updateToMetricTime(double metricTime)
         if (song->lock->dataModelDirty()) {
             reset(false);
         }
-        updateToMetricTimeInternal(metricTime);
+        updateToMetricTimeInternal(metricTime, quantizationInterval);
         song->lock->playerUnlock();
     } else {
         reset(false);
@@ -67,11 +88,15 @@ void MidiPlayer2::updateToMetricTime(double metricTime)
     }
 }
 
-void MidiPlayer2::updateToMetricTimeInternal(double metricTime)
+
+
+void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizationInterval)
 {
+    metricTime = TimeUtils::quantize(metricTime, quantizationInterval, true);
     // If we had a conflict and needed to reset, then
     // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
+       //  printf("\n******  player proc reset\n");
         curEvent = track->begin();
         resetAllVoices(isResetGates);
         isReset = false;
@@ -79,13 +104,16 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime)
         loopStart = 0;
     }
      // keep processing events until we are caught up
-    while (playOnce(metricTime)) {
+    while (playOnce(metricTime, quantizationInterval)) {
 
     }
 }
 
-bool MidiPlayer2::playOnce(double metricTime)
+bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
 {
+#ifdef _MLOG
+    printf("MidiPlayer::playOnce metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizeInterval);
+#endif
     bool didSomething = false;
 
     didSomething = pollForNoteOff(metricTime);
@@ -93,7 +121,8 @@ bool MidiPlayer2::playOnce(double metricTime)
         return true;
     }
 
-    const double eventStart = (loopStart + curEvent->first);
+    const double eventStartUnQuantized = (loopStart + curEvent->first);
+    const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
     if (eventStart <= metricTime) {
         MidiEventPtr event = curEvent->second;
         switch (event->type) {
@@ -106,7 +135,8 @@ bool MidiPlayer2::playOnce(double metricTime)
                 assert(voice);
 
                 // play the note
-                voice->playNote(note->pitchCV, float(eventStart), float(note->duration + eventStart));
+                double quantizedNoteEnd = TimeUtils::quantize(note->duration + eventStart, quantizeInterval, false);
+                voice->playNote(note->pitchCV, float(eventStart), float(quantizedNoteEnd));
                 ++curEvent;
             }
             break;

@@ -11,6 +11,9 @@
 #include <vector>
 
 
+const float quantInterval = .001f;      // very fine to avoid messing up old tests. 
+                                        // old tests are pre-quantized playback
+
 /**
  * mock host to spy on the voices.
  */
@@ -83,6 +86,7 @@ void initVoices(MidiVoice* voices, int numVoices, IMidiPlayerHost* host)
     for (int i = 0; i < numVoices; ++i) {
         voices[i].setHost(host);
         voices[i].setIndex(i);
+        voices[i].setSampleCountForRetrigger(44);           // some plausible value
     }
 }
 
@@ -367,7 +371,6 @@ static void testVoiceAssignOverlap()
     assert(vx[1].state() == MidiVoice::State::Idle);
 }
 
-
 static void testVoiceAssignOverlapMono()
 {
     MidiVoice vx[4];
@@ -407,12 +410,16 @@ static void testVoiceAssignOverlapMono()
 
 extern MidiSongPtr makeSongOneQ();
 
+
+// song has an eight note starting at time 0
 static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
 {
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(time);
+
+    // let's make quantization very fine so these old tests don't freak out
+    pl.updateToMetricTime(time, quantInterval);
 
     // song is only 1.0 long
     float expectedLoopStart = std::floor(time);
@@ -459,37 +466,53 @@ static std::shared_ptr<TestHost2> makeSongOverlapQandRun(float time)
     MidiPlayer2 pl(host, song);
     pl.setNumVoices(4);
 
-    pl.updateToMetricTime(.5);
+    const float quantizationInterval = .25f;        // shouldn't matter for this test...
+
+    pl.updateToMetricTime(.5, quantizationInterval);
     assert(host->gateChangeCount == 0);
     assert(!host->gateState[0]);
     assert(!host->gateState[1]);
 
 
-    pl.updateToMetricTime(1.5);
+    pl.updateToMetricTime(1.5, quantizationInterval);
     assert(host->gateChangeCount == 1);
     assert(host->gateState[0]);
     assert(!host->gateState[1]);
 
 
-    pl.updateToMetricTime(2.5);
+    pl.updateToMetricTime(2.5, quantizationInterval);
     assert(host->gateChangeCount == 2);
     assert(host->gateState[0]);
     assert(host->gateState[1]);
 
 
-    pl.updateToMetricTime(3.5);
+    pl.updateToMetricTime(3.5, quantizationInterval);
     assert(host->gateChangeCount == 3);
     assert(!host->gateState[0]);
     assert(host->gateState[1]);
 
-    pl.updateToMetricTime(4.5);
+    pl.updateToMetricTime(4.5, quantizationInterval);
     assert(host->gateChangeCount == 4);
 
 
     assert(time > 4.5);
-    pl.updateToMetricTime(time);
+    pl.updateToMetricTime(time, quantizationInterval);
 
     return host;
+}
+
+static std::shared_ptr<TestHost2> makeSongTouchingQandRun(bool exactDuration, float time)
+{
+    assert(exactDuration);
+
+    MidiSongPtr song = exactDuration ? MidiSong::makeTest(MidiTrack::TestContent::FourTouchingQuarters, 0) :
+        MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.setNumVoices(4);
+    pl.updateToMetricTime(time, .25f);
+    return host;
+
 }
 /**
  * runs a while, generates a lock contention, runs some more
@@ -499,13 +522,15 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(timeBeforeLock);
+
+
+    pl.updateToMetricTime(timeBeforeLock, quantInterval);
     {
         MidiLocker l(song->lock);
-        pl.updateToMetricTime(timeBeforeLock + timeDuringLock);
+        pl.updateToMetricTime(timeBeforeLock + timeDuringLock, quantInterval);
     }
 
-    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock);
+    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock, quantInterval);
 
        // song is only 1.0 long
     float expectedLoopStart = std::floor(timeBeforeLock + timeDuringLock + timeAfterLock);
@@ -522,7 +547,7 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun3(float timeBeforeStop, floa
     MidiSongPtr song = makeSongOneQ();
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(timeBeforeStop);
+    pl.updateToMetricTime(timeBeforeStop, .25f);
 
     // song is only 1.0 long
     float expectedLoopStart = std::floor(timeBeforeStop);
@@ -530,7 +555,7 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun3(float timeBeforeStop, floa
 
     pl.stop();
     host->reset();
-    pl.updateToMetricTime(timeAfterStop);
+    pl.updateToMetricTime(timeAfterStop, .25f);
 
     return host;
 }
@@ -543,11 +568,11 @@ static void testMidiPlayer0()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(.01f);
+    pl.updateToMetricTime(.01f, .25f);
 }
 
-// just play the first note on
-// fka test1
+// test song has an eight note starting at time 0
+// just play the first note on, but not the note off
 static void testMidiPlayerOneNoteOn()
 {
     std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .24f);
@@ -635,7 +660,7 @@ static void testMidiPlayerReset()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(100);
+    pl.updateToMetricTime(100, quantInterval);
 
 
     assertAllButZeroAreInit(host.get());
@@ -652,7 +677,7 @@ static void testMidiPlayerReset()
     }
 
     // Should play just like it does in test1
-    pl.updateToMetricTime(2 * .24f);
+    pl.updateToMetricTime(2 * .24f, quantInterval);
 
 
     assertAllButZeroAreInit(host.get());
@@ -713,4 +738,8 @@ void testMidiPlayer2()
     testMidiPlayerReset();
     testMidiPlayerStop();
     testMidiPlayerOverlap();
+#if 0
+    testMidiPlayerReTrigger(true);
+    testMidiPlayerReTrigger(false);
+#endif
 }

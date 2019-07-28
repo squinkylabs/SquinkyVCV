@@ -2,7 +2,7 @@
 #include "asserts.h"
 #include "MidiLock.h"
 #include "MidiSequencer.h"
-
+#include "TestSettings.h"
 
 static MidiTrackPtr makeSpiralTrack(std::shared_ptr<MidiLock> lock)
 {
@@ -92,7 +92,7 @@ static MidiSequencerPtr makeTest2(int type)
 
     }
   
-    MidiSequencerPtr sequencer = MidiSequencer::make(song, nullptr);
+    MidiSequencerPtr sequencer = MidiSequencer::make(song, std::make_shared<TestSettings>());
 
     sequencer->context->setTrackNumber(0);
     sequencer->context->setStartTime(0);

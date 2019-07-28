@@ -28,7 +28,6 @@
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.c" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.c" />
-    <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp" />
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
@@ -176,8 +175,6 @@
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.h" />
-    <ClInclude Include="..\..\dsp\third-party\src\EvenVCO.h" />
-    <ClInclude Include="..\..\dsp\third-party\src\EvenVCO_orig.h" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO.h" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO3.h" />
     <ClInclude Include="..\..\dsp\third-party\src\SQMath.h" />
@@ -241,6 +238,7 @@
     <ClInclude Include="..\..\test\ExtremeTester.h" />
     <ClInclude Include="..\..\test\MeasureTime.h" />
     <ClInclude Include="..\..\test\SqTime.h" />
+    <ClInclude Include="..\..\test\TestSettings.h" />
     <ClInclude Include="..\..\test\TestSignal.h" />
     <ClInclude Include="..\..\test\TimeStatsCollector.h" />
     <ClInclude Include="..\..\util\FilteredIterator.h" />

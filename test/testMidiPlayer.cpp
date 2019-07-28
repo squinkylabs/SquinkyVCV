@@ -132,8 +132,6 @@ static void test0()
  * Track has one quarter note at t=0, duration = eighth.
  * End event at quarter note end.
  *
- * noteOnTime = 0 * .5;
- * noteOffTime = .5 * .5;
  */
 MidiSongPtr makeSongOneQ()
 {

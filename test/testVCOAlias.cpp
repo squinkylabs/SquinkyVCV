@@ -1,7 +1,6 @@
 
 #include "Analyzer.h"
 #include "asserts.h"
-#include "EvenVCO.h"
 #include "FunVCO.h"
 #include "SawOscillator.h"
 #include "SinOscillator.h"
@@ -354,6 +353,7 @@ void testRawSaw(double normalizedFreq)
 
 }
 
+#if 0
 static void testEven(double normalizedFreq)
 {
 
@@ -377,6 +377,7 @@ static void testEven(double normalizedFreq)
 
     fflush(stdout);
 }
+#endif
 
 #if 0 // most builds don't have orig
 static void testAliasFunOrig(double normalizedFreq)

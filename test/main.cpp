@@ -41,7 +41,6 @@ extern void testVCO();
 extern void testFilterDesign();
 extern void testVCOAlias();
 extern void testSin();
-extern void testMinBLEPVCO();
 extern void testRateConversion();
 extern void testDelay();
 extern void testSpline(bool emit);
@@ -148,6 +147,10 @@ int main(int argc, char ** argv)
         return 0;
     }
 
+    testAudioMath();
+    testRingBuffer();
+    testGateTrigger();
+
     testIComposite();
     testVec();
     testCommChannels();
@@ -170,9 +173,6 @@ int main(int argc, char ** argv)
     testNoteScreenScale();
     testSeqComposite();
 
-    testAudioMath();
-    testRingBuffer();
-    testGateTrigger();
     testManagedPool();
     testLookupTable();
     testObjectCache();
@@ -192,7 +192,6 @@ int main(int argc, char ** argv)
     testPoly();
 
     testSinOscillator();
-    testMinBLEPVCO();
     testHilbert();
     testButterLookup();
    

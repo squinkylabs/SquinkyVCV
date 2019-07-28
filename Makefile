@@ -1,7 +1,7 @@
 
 SLUG = squinkylabs-plug1
 
-VERSION = 1.0.2
+VERSION = 1.0.3
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
@@ -16,6 +16,7 @@ CXXFLAGS +=
 
 # compile for V1 vs 0.6
 FLAGS += -D __V1x
+# FLAGS += -D _SEQ
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
@@ -38,7 +39,6 @@ LDFLAGS += -lpthread
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard dsp/**/*.cpp)
 SOURCES += $(wildcard dsp/third-party/falco/*.cpp)
-xxSOURCES += dsp/third-party/src/minblep.cpp
 SOURCES += dsp/third-party/kiss_fft130/kiss_fft.c
 SOURCES += dsp/third-party/kiss_fft130/tools/kiss_fftr.c
 SOURCES += $(wildcard sqsrc/**/*.cpp)

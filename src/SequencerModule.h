@@ -40,10 +40,12 @@ struct SequencerModule : Module
     }
     void onReset() override;
 
+#if 0 // obsolete?
     void stop()
     {
         seqComp->stop();
     }
+#endif
 
     float getPlayPosition()
     {
@@ -62,6 +64,10 @@ struct SequencerModule : Module
     bool isRunning()
     {
         return seqComp->isRunning();
+    }
+
+    void onSampleRateChange() override {
+        seqComp->onSampleRateChange();
     }
 
 #ifndef __V1x
