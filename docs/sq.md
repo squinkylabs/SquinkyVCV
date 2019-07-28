@@ -1,8 +1,8 @@
 # Seq++
 
-Work in progress
+If you read nothing else, please checkout out the list of keyboard "shortcuts", and the mouse commands. This is the only way you can hope to figure out how to enter notes quickly: Keyboard mappings [here](./keymap.md) Mouse:[here](./mouse.md).
 
-If you read nothing else, please checkout out the list of keyboard "shortcuts", and the mouse commands. This is the only way you can hope to figure out how to enter notes quickly: Keyboard mappings [here](./keymap.md) Mouse:[here](./mouse.md)
+That said, the entire manual is not very long, and there is quite a bit of useful information in here. If you don't read it now, consider coming back later.
 
 ## About this Sequencer
 
@@ -30,17 +30,23 @@ If you cut or copy a range of notes, you may insert your cursor in a new locatio
 
 ## About clocking and playback
 
+Always keep the following in mind:
+
+* The Clock Rate control only controls playback.
+* The "grid" is merely a graphic overlay drawn on top of the edit window. It has no effect on playback ever.
+* If "snap to grid" is enabled, some note editing operations will quantize to the grid, but it will still have no effect at all at playback time.
+
 At the moment, there is a choice of internal clock or external. In most every case you will want to use an external clock. *Clocked* from Impromptu Modular is a good choice. Connect the clock, run and reset between Seq++ and Clocked.
 
-Set Seq++'s clock rate to match the *Ratio* in clocked. So if Clocked is set for X 4, set Seq++ to Sixteenth. In the future there will be more clock choices in Seq++, and perhaps labeled more conveniently.
+Set Seq++'s clock rate to match the *Ratio* in clocked. So if Clocked is set for X4, set Seq++ to *x4 1/16".
 
-For DAW workflows, or other times when you want fine timing, use as fine a clock resolution as possible (In future - support Clocked X 64). To intentionally coarsely quantize Seq++, use a less fine clock.
+For DAW workflows, or other times when you want fine timing, use as fine a clock resolution as possible (Clocked X 64). To intentionally coarsely quantize Seq++, use a less fine clock.
 
 When Seq++ quantizes during playback, it should quantize "correctly" - i.e. it should quantize to the **nearest** clock. Both the start time and duration will be quantized.
 
 If two notes of the same pitch "touch" each other, such that the end of one note is at the same time as the start of the next, Seq++ will re-trigger the note by bringing the gate low for a millisecond. Note that with quantization it is very common for two notes to touch this way.
 
-If the sequence is set for monophonic, then is should play a proper legato if the notes fully overlap (the second one starts after the first one ends). But remember that quantization may erase this overlap, causing the retrigger to kick in.
+If the sequence is set for monophonic, then is should play a proper legato if the notes fully overlap (the second one starts after the first one ends). But remember that quantization may erase this overlap, causing the re-trigger to kick in.
 
 If there are more simultaneous notes being played than may be accommodated by the polyphony setting, then voices will get "stolen" and re-assigned to play the new notes. At the moment it uses a variation on "last note" assignment. If there is already a voice playing the new pitch, that voice will be stolen. Then any currently idle voice will be used, then the first voice will be used. This will be made more sophisticated in the future.
 
@@ -48,7 +54,7 @@ If there are more simultaneous notes being played than may be accommodated by th
 
 In the edit grid, right click will bring up an context menu. This has edit grid settings: snap to grid on/off and grid spacing. The grid only affects editing, and does not affect playback.
 
-The lines one the note grid will reflect the setting, although if won't go below 1/8th note spacind.
+The lines one the note grid will reflect the setting, although if won't go below 1/8th note spacing, as that makes grid lines too close and it looks ugly.
 
 If snap to grid is enabled, the following edit operations will be quantized to the grid: drag start time, drag duration, double click to insert note, and insert note from the keyboard. In the future perhaps other operations will be quantized.
 
@@ -96,35 +102,6 @@ The computer keyboard is the fastest way to ender notes. Details are in [Keyboar
 
 Conventional editing with a mouse is also fully supported. Details are in [Mouse Summary](./mouse.md).
 
-## What works now
-
-Plays sequence looped.
-
-POlyphonic playback.
-
-Edit note attributes (pitch, start time, duration) with mouse or keyboard.
-
-Enter new notes from the mouse ofkeyboard.
-
-Draw Piano roll.
-
-Undo / Redo. Every operation that changes the note data may be undone.
-
-Copy/Paste (you can even copy from one instance and paste to another);
-
-There is a single track, and it is monophonic.
-
-## What doesn't work
-
-There are obviously many missing features. It looks pretty rough.
-
-Note editor things that don't work:
-
-* Time units are always 1/16 notes.
-* Insert note is always 1/4.
-
-It is probably possible to crash it with some note editor operations. But please report such things to me.
-
 ## Extending the length
 
 There is a temporary hack to make it possible to lengthen a track. You may move the cursor past the end of the track. If you insert a note there, the track will be extended in units of 4/4 bars to accommodate the new note.
@@ -136,3 +113,5 @@ Note that it is not easy to know how long your track actually is. And it is curr
 Once you have selected a note, or group of notes, it is very easy to move them around, typically by Pressing 's', 'd', or 'p' to set the editor editing start time, duration, or pitch. Then all selected notes may be adjusted with the '+' and '-' keys (and may others).
 
 New notes are inserted by moving the cursor to the desired location, and pressing 'Ins'. There are many other keys for inserting different lengths of notes.
+
+Note selection, insertion, and changing can all be done with the mouse or the keyboard. So it may be handy to select some notes with the mouse, then move them from the keyboard. Or vice versa.
