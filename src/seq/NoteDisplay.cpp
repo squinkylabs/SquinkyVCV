@@ -4,13 +4,8 @@
 #include "WidgetComposite.h"
 #include "Seq.h"
 
-#ifdef __V1x
-#include "widget/Widget.hpp"
-#else
-#include "widgets.hpp"
-#include "util/math.hpp"
-#endif
 
+#include "widget/Widget.hpp"
 #include "nanovg.h"
 #include "window.hpp"
 #include "MidiSequencer.h"
@@ -172,15 +167,10 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
     }
 }
 
-#ifdef __V1x
 void NoteDisplay::draw(const Widget::DrawArgs &args)
 {
     NVGcontext *vg = args.vg;
-#else
-void NoteDisplay::draw(NVGcontext *vg)
-{
-#endif 
-
+ 
     if (!this->sequencer) {
         return;
     }
@@ -194,11 +184,7 @@ void NoteDisplay::draw(NVGcontext *vg)
     // if we are dragging, will have something to draw
     mouseManager->draw(vg);
     drawCursor(vg);
-#ifdef __V1x
     OpaqueWidget::draw(args);
-#else
-    OpaqueWidget::draw(vg);
-#endif
 }
 
 void NoteDisplay::drawBackground(NVGcontext *vg)
@@ -246,8 +232,6 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
 /******************** All V1 keyboard handling here *******************
  *
  */
-
-#ifdef __V1x
 
 void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 {
@@ -398,42 +382,4 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
-#endif
-
-//**************** All V0.6 keyboard handling here ***********
-
-#ifndef __V1x
-
-void NoteDisplay::onFocus(EventFocus &e)
-{
-    updateFocus(true);
-    e.consumed = true;
-}
-
-void NoteDisplay::onDefocus(EventDefocus &e)
-{
-    updateFocus(false);
-    e.consumed = true;
-}
-
-void NoteDisplay::onKey(EventKey &e)
-{
-    const unsigned key = e.key;
-    unsigned mods = 0;
-    if (rack::windowIsShiftPressed()) {
-        mods |= GLFW_MOD_SHIFT;
-    }
-    if (windowIsModPressed()) {
-        mods |= GLFW_MOD_CONTROL;
-    }
-
-    bool handled = MidiKeyboardHandler::handle(sequencer, key, mods);
-    if (!handled) {
-        OpaqueWidget::onKey(e);
-    } else {
-        e.consumed = true;
-    }
-}
-
-#endif
 #endif

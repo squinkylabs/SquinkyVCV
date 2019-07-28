@@ -1,13 +1,7 @@
 
 
 #include "../Squinky.hpp"
-#ifdef __V1x
 #include "widget/Widget.hpp"
-#else
-#include "widgets.hpp"
-#include "util/math.hpp"
-#endif
-
 #include "MidiEditorContext.h"
 
 class MidiSequencer;
@@ -23,11 +17,7 @@ public:
      */
     void setSequencer(MidiSequencerPtr seq);
 
-#ifdef __V1x
     void draw(const DrawArgs &args) override;
-#else
-    void draw(NVGcontext *vg) override;
-#endif
     void step() override;
 
 private:

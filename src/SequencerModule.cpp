@@ -9,7 +9,6 @@
 #include "seq/NoteDisplay.h"
 #include "seq/AboveNoteGrid.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SqWidgets.h"
@@ -20,25 +19,15 @@
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
-
 #include "SequencerModule.h"
 
 using Comp = Seq<WidgetComposite>;
 
-#ifdef __V1x
 SequencerModule::SequencerModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
-#else
-SequencerModule::SequencerModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS)
-{
-#endif
     runStopRequested = false;
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     ISeqSettings* ss = new SeqSettings(this);
@@ -107,15 +96,9 @@ void sequencerHelp()
     SqHelper::openBrowser(helpUrl);
 }
 
-#ifdef __V1x
 SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 {
     setModule(module);
-
-#else
-SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module), _module(module)
-{
-#endif
     if (module) {
         module->widget = this;
     }
@@ -176,7 +159,6 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
-#ifdef _PLAY2
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(controlX, 148),
@@ -186,8 +168,6 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getPolyLabels());
     addParam(p);
-#endif
-
 
     SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(controlX, 180),
@@ -274,11 +254,7 @@ void SequencerWidget::addJacks(SequencerModule *module)
         Seq<WidgetComposite>::GATE_LIGHT));
 }
 
-#ifdef __V1x
 void SequencerModule::dataFromJson(json_t *data)
-#else
-void SequencerModule::fromJson(json_t* data)
-#endif
 {
     MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data, this);
     setNewSeq(newSeq);
@@ -302,7 +278,6 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
     }
 }
 
-
 void SequencerModule::onReset()
 {
     Module::onReset();
@@ -313,17 +288,7 @@ void SequencerModule::onReset()
     setNewSeq(newSeq);
 }
 
+Model *modelSequencerModule = 
+    createModel<SequencerModule, SequencerWidget>("squinkylabs-sequencer");
 
-// Specify the Module and ModuleWidget subclass, human-readable
-// manufacturer name for categorization, module slug (should never
-// change), human-readable module name, and any number of tags
-// (found in `include/tags.hpp`) separated by commas.
-
-#ifdef __V1x
-Model *modelSequencerModule = createModel<SequencerModule, SequencerWidget>("squinkylabs-sequencer");
-#else
-Model *modelSequencerModule = Model::create<SequencerModule, SequencerWidget>("Squinky Labs",
-    "squinkylabs-sequencer",
-    "S", SEQUENCER_TAG);
-#endif
 #endif
