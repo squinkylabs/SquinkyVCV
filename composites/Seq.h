@@ -15,19 +15,12 @@
     #include "MidiPlayer.h"
 #endif
 
-#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;
     }
 }
 using Module = rack::engine::Module;
-#else
-namespace rack {
-    struct Module;
-};
-using Module = rack::Module;
-#endif
 
 template <class TBase>
 class SeqDescription : public IComposite
@@ -36,8 +29,6 @@ public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
-
-
 
 template <class TBase>
 class Seq : public TBase

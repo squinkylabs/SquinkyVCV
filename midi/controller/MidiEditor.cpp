@@ -575,7 +575,6 @@ MidiNoteEventPtr MidiEditor::getNoteUnderCursor()
 
 void MidiEditor::extendSelectionToCurrentNote()
 {
-#ifdef __V1x
     MidiNoteEventPtr ni = getNoteUnderCursor();
 
     sq::Rect boundingBox;
@@ -617,7 +616,6 @@ void MidiEditor::extendSelectionToCurrentNote()
             seq()->selection->extendSelection(n);
         }
     }
-#endif
 }
 
 void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)

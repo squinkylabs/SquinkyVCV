@@ -4,14 +4,8 @@
 #include "SqGfx.h"
 #include "WidgetComposite.h"
 
-#ifdef __V1x
 #include "widget/Widget.hpp"
 #include "app.hpp"
-#else
-#include "widgets.hpp"
-#include "util/math.hpp"
-#include "window.hpp"
-#endif
 
 #include "ISeqSettings.h"
 #include "MidiEvent.h"

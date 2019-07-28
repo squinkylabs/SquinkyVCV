@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef __V1x
-
 /**
  * UI Widget that does:
  *  functions as a parameter
@@ -101,4 +99,3 @@ inline void PopupMenuParamWidget::onAction(const event::Action &e)
         }
     }
 }
-#endif

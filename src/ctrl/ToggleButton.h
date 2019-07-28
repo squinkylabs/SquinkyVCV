@@ -40,14 +40,8 @@ public:
         return  SqHelper::getValue(this);
     }
 
-#ifdef __V1x
     void onButton(const event::Button &e) override;
     void draw(const DrawArgs &args) override;
-#else
-    void onMouseDown(EventMouseDown &e) override;
-    void draw(NVGcontext *vg) override;
-#endif
-
     void registerManager(std::shared_ptr<ToggleManager>);
     void turnOff();
     
@@ -96,7 +90,6 @@ inline void ToggleButton::addSvg(const char* resourcePath)
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
 }
 
-#ifdef __V1x
 inline void ToggleButton::draw(const DrawArgs &args)
 {
     const float _value = SqHelper::getValue(this);
@@ -104,28 +97,14 @@ inline void ToggleButton::draw(const DrawArgs &args)
     auto svg = svgs[index];
     svg->draw(args);
 }
-#else
-inline void ToggleButton::draw(NVGcontext *vg)
-{
-    const float _value = SqHelper::getValue(this);
-    int index = int(std::round(_value));
-    auto svg = svgs[index];
-    svg->draw(vg);
-}
-#endif
 
 inline void ToggleButton::turnOff()
 {
     SqHelper::setValue(this, 0);
 } 
 
-#ifdef __V1x
 inline void ToggleButton::onButton(const event::Button &e)
-#else
-inline void ToggleButton::onMouseDown(EventMouseDown &e)
-#endif
 {
-    #ifdef __V1x
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
         if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
@@ -134,12 +113,6 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
             }
 
         const bool ctrl = (e.mods & GLFW_MOD_CONTROL);
-    #else 
-      if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
-                return;
-            }
-        const bool ctrl = rack::windowIsModPressed();
-    #endif
 
     // normally we tell manager to turn siblings off.
     // control key we don't - allows more than one to be on

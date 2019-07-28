@@ -6,37 +6,17 @@
 #include "SqUI.h"
 #include <functional>
 
-
-/**
- * Like Trimpot, but with blue stripe
- */
-#if 0
-struct BlueTrimmer : SVGKnob
-{
-    BlueTrimmer()
-    {
-        minAngle = -0.75*M_PI;
-        maxAngle = 0.75*M_PI;
-        setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BlueTrimmer.svg")));
-    }
-};
-#endif
-
 /**
  * Like Rogan1PSBlue, but smaller.
  */
-#ifdef __V1x
+
 struct Blue30Knob : SvgKnob
-#else
-struct Blue30Knob : SVGKnob
-#endif
 {
     Blue30Knob()
     {
         minAngle = -0.83*M_PI;
         maxAngle = 0.83*M_PI;
-       // setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/Blue30.svg")));
-       SqHelper::setSvg(this, SqHelper::loadSvg("res/Blue30.svg"));
+        SqHelper::setSvg(this, SqHelper::loadSvg("res/Blue30.svg"));
     }
 };
 
@@ -49,11 +29,7 @@ struct Blue30SnapKnob : Blue30Knob
     }
 };
 
-#ifdef __V1x
 struct NKKSmall : SvgSwitch
-#else
-struct NKKSmall : SVGSwitch, ToggleSwitch
-#endif
 {
     NKKSmall()
     {
@@ -63,11 +39,7 @@ struct NKKSmall : SVGSwitch, ToggleSwitch
     }
 };
 
-#ifdef __V1x
 struct BlueToggle : public SvgSwitch
-#else 
-struct BlueToggle : public SVGSwitch, ToggleSwitch
-#endif
 {
     BlueToggle()
     {
@@ -79,36 +51,18 @@ struct BlueToggle : public SVGSwitch, ToggleSwitch
 /**
  * A very basic momentary push button.
  */
-#ifdef __V1x
 struct SQPush : SvgButton
-#else
-struct SQPush : SVGButton
-#endif
 {
     SQPush()
     {
-#ifdef __V1x
         addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
         addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
-#else
-        setSVGs(
-            SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")),
-            SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg"))
-        );
-#endif
     }
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
-#ifdef __V1x
         addFrame(SqHelper::loadSvg(upSVG));
         addFrame(SqHelper::loadSvg(dnSVG));
-#else
-        setSVGs(
-            SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)),
-            SVG::load(SqHelper::assetPlugin(pluginInstance, dnSVG))
-        );
-#endif
     }
     void center(Vec& pos)
     {
@@ -151,8 +105,6 @@ struct SQPush : SVGButton
     std::function<void(void)> clickHandler;
 };
 
-
-
 /**************************************************************************
  **
  ** SQPanelItem
@@ -168,11 +120,7 @@ struct SQPanelItem : MenuItem
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
 
-#ifdef __V1x
     void onAction(const event::Action &e) override
-#else
-    void onAction(EventAction &e) override
-#endif
     {
         actionCallback();
     }
