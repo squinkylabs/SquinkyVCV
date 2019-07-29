@@ -6,14 +6,8 @@
 #include "MidiSong.h"
 #include "SeqClock.h"
 
-#define _PLAY2
-
-#ifdef _PLAY2
-    #include "IMidiPlayerHost.h"
-    #include "MidiPlayer2.h"
-#else
-    #include "MidiPlayer.h"
-#endif
+#include "IMidiPlayerHost.h"
+#include "MidiPlayer2.h"
 
 namespace rack {
     namespace engine {
@@ -102,12 +96,6 @@ public:
     {
         return std::make_shared<SeqDescription<TBase>>();
     }
-#if 0 // unused?
-    void stop()
-    {
-        player->stop();
-    }
-#endif
 
     bool isRunning();
 
@@ -133,20 +121,13 @@ private:
     bool runStopRequested = false;
 
     bool wasRunning = false;
-
-#ifdef _PLAY2
     std::shared_ptr<MidiPlayer2> player;
-#else
-    std::shared_ptr<MidiPlayer> player;
-#endif
-
     /**
      * called by the divider every 'n' step calls
      */
     void stepn(int n);
 };
 
-#ifdef _PLAY2
 template <class TBase>
 class SeqHost : public IMidiPlayerHost
 {
@@ -173,42 +154,15 @@ private:
     Seq<TBase>* const seq;
 };
 
-#else
-template <class TBase>
-class SeqHost : public IPlayerHost
-{
-public:
-    SeqHost(Seq<TBase>* s) : seq(s)
-    {
-    }
-    void setGate(bool gate) override
-    {
-        seq->outputs[Seq<TBase>::GATE_OUTPUT].value = gate ? 10.f : 0.f;
-    }
-    void setCV(float cv) override
-    {
-        seq->outputs[Seq<TBase>::CV_OUTPUT].value = cv;
-    }
-    void onLockFailed() override
-    {
 
-    }
-private:
-    Seq<TBase>* const seq;
-};
-#endif
 
 
 template <class TBase>
 void  Seq<TBase>::init(MidiSongPtr song)
 { 
-#ifdef _PLAY2
     std::shared_ptr<IMidiPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
     player = std::make_shared<MidiPlayer2>(host, song);
-#else
-    std::shared_ptr<IPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
-    player = std::make_shared<MidiPlayer>(host, song);
-#endif
+
     div.setup(4, [this] {
         this->stepn(div.getDiv());
      });
@@ -289,13 +243,11 @@ void  Seq<TBase>::stepn(int n)
 
     TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
 
-#ifdef _PLAY2
     // copy the current voice number to the poly ports
     const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
     TBase::outputs[CV_OUTPUT].channels = numVoices;
     TBase::outputs[GATE_OUTPUT].channels = numVoices;
     player->setNumVoices(numVoices);
-#endif
 
     if (!running && wasRunning) {
         for (int i = 0; i < numVoices; ++i) {

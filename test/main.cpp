@@ -53,7 +53,6 @@ extern void testMidiViewport();
 extern void testFilteredIterator();
 extern void testMidiEvents();
 extern void testMidiControllers();
-extern void testMidiPlayer();
 extern void testMultiLag();
 extern void testUtils();
 extern void testIComposite();
@@ -160,7 +159,6 @@ int main(int argc, char ** argv)
     testMidiSong();
     testSeqClock();
     testMidiPlayer2();
-    testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();
     testMidiViewport();

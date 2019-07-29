@@ -15,6 +15,29 @@ const float quantInterval = .001f;      // very fine to avoid messing up old tes
                                         // old tests are pre-quantized playback
 
 /**
+ * Makes a one-track song.
+ * Track has one quarter note at t=0, duration = eighth.
+ * End event at quarter note end.
+ *
+ */
+MidiSongPtr makeSongOneQ()
+{
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
+    song->createTrack(0);
+    MidiTrackPtr track = song->getTrack(0);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = 0;
+    note->duration = .5;
+    note->pitchCV = 2.f;
+    track->insertEvent(note);
+    track->insertEnd(1);
+
+    return song;
+}
+
+/**
  * mock host to spy on the voices.
  */
 class TestHost2 : public IMidiPlayerHost
@@ -542,6 +565,7 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
 /**
  * runs a while, then stops, resets test host, the runs more
  */
+#if 0
 static std::shared_ptr<TestHost2> makeSongOneQandRun3(float timeBeforeStop, float timeAfterStop)
 {
     MidiSongPtr song = makeSongOneQ();
@@ -553,12 +577,14 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun3(float timeBeforeStop, floa
     float expectedLoopStart = std::floor(timeBeforeStop);
     assertEQ(pl.getLoopStart(), expectedLoopStart);
 
-    pl.stop();
+    // took out stop - it wasn't really supported
+    //pl.stop();
     host->reset();
     pl.updateToMetricTime(timeAfterStop, .25f);
 
     return host;
 }
+#endif
 
 
 //***************************** MidiPlayer2 ****************************************
@@ -689,12 +715,14 @@ static void testMidiPlayerReset()
     assertEQ(host->lockConflicts, 0);
 }
 
+#if 0   // don't support stop any more
 static void testMidiPlayerStop()
 {
     std::shared_ptr<TestHost2> host = makeSongOneQandRun3(1, 100);
     assertEQ(host->gateChangeCount, 0);
     assertEQ(host->cvChangeCount, 0);
 }
+#endif
 
 
 // four voice assigner, but only two overlapping notes
@@ -736,9 +764,9 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteLoop();
     testMidiPlayerOneNoteLoopLockContention();
     testMidiPlayerReset();
-    testMidiPlayerStop();
+   // testMidiPlayerStop();
     testMidiPlayerOverlap();
-#if 0
+#if 0   // never finished - did in composite instead
     testMidiPlayerReTrigger(true);
     testMidiPlayerReTrigger(false);
 #endif

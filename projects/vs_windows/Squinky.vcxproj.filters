@@ -339,9 +339,6 @@
     <ClCompile Include="..\..\test\testMidiPlayer.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp">
-      <Filter>Source Files\midi\controller</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\test\perfTest2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
@@ -670,9 +667,6 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\asserts.h">
       <Filter>Header Files\sqsrc\util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\midi\controller\MidiPlayer.h">
-      <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\filters\MultiLag.h">
       <Filter>Header Files\dsp\filters</Filter>

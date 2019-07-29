@@ -34,11 +34,6 @@ void MidiPlayer2::reset(bool clearGates)
     isResetGates = clearGates;
 }
 
-void MidiPlayer2::stop()
-{
-    isPlaying = false;
-}
-
 void MidiPlayer2::setNumVoices(int voices)
 {
     numVoices = voices;

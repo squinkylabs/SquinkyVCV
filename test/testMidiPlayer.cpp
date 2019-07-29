@@ -1,3 +1,4 @@
+#if 0
 #include "MidiEvent.h"
 #include "MidiLock.h"
 #include "MidiPlayer.h"
@@ -330,3 +331,4 @@ void testMidiPlayer()
 
     assertNoMidi();     // check for leaks
 }
+#endif
