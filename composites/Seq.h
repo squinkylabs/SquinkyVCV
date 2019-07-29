@@ -227,12 +227,7 @@ void  Seq<TBase>::stepn(int n)
     const float reset = TBase::inputs[RESET_INPUT].value;
     const bool running = isRunning();
     int samplesElapsed = n;
-#if 0
-    if (extClock && running && !reset) {
-        printf("let's go\n");
-    }
-#endif
-   
+
     // Our level sensitiev reset will get turned into an edge in here
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
