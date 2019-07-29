@@ -7,14 +7,18 @@
 class TestSettings : public ISeqSettings
 {
 public:
-    virtual void invokeUI(rack::widget::Widget* parent)
+    void invokeUI(rack::widget::Widget* parent) override
     {
     }
-    virtual float getQuarterNotesInGrid()
+    float getQuarterNotesInGrid() override
     {
         return 0;
     }
-    virtual bool snapToGrid()
+    bool snapToGrid() override
+    {
+        return false;
+    }
+    bool snapDurationToGrid() override
     {
         return false;
     }
@@ -24,10 +28,15 @@ public:
      * otherwise does nothing.
      * will not quantize smaller than a grid.
      */
-    virtual float quantize(float x, bool allowZero)
+    float quantize(float x, bool allowZero) override
     {
        // assert(false);
         //return 0;
         return x;
+    }
+
+    float articulation() override
+    {
+        return false;
     }
 };

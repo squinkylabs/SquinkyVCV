@@ -63,6 +63,20 @@ public:
     }
 };
 
+/**
+ */
+class ArticulationMenuItem : public  rack::ui::MenuItem
+{
+public:
+    ArticulationMenuItem(SeqSettings* stt) : settings(stt)
+    {
+        text = "Articulation";
+        rightText = RIGHT_ARROW;
+    }
+private:
+    SeqSettings* const settings;
+};
+
 SeqSettings::SeqSettings(rack::engine::Module* mod) : module(mod)
 {
 }
@@ -73,6 +87,8 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
     menu->addChild(rack::construct<rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
     menu->addChild(new GridMenuItem(this));
     menu->addChild(makeSnapItem());
+    menu->addChild(makeSnapDurationItem());
+    menu->addChild(new ArticulationMenuItem(this));
 }
 
 rack::ui::MenuItem* SeqSettings::makeSnapItem()
@@ -88,6 +104,22 @@ rack::ui::MenuItem* SeqSettings::makeSnapItem()
 
     rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
     item->text = "Snap to grid";
+    return item;
+}
+
+rack::ui::MenuItem* SeqSettings::makeSnapDurationItem()
+{
+    bool& snap = this->snapDurationEnabled;
+    std::function<bool()> isCheckedFn = [snap]() {
+        return snap;
+    };
+
+    std::function<void()> clickFn = [&snap]() {
+        snap = !snap;
+    };
+
+    rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
+    item->text = "Snap duration to grid";
     return item;
 }
 
@@ -119,6 +151,11 @@ float SeqSettings::getQuarterNotesInGrid()
  bool SeqSettings::snapToGrid()
  {
      return snapEnabled;
+ }
+
+  bool SeqSettings::snapDurationToGrid()
+ {
+     return snapDurationEnabled;
  }
 
  float SeqSettings::quantize(float time, bool allowZero)
@@ -162,4 +199,9 @@ SeqSettings::Grids SeqSettings::gridFromString(const std::string& s)
         assert(false);
     }
     return ret;
+}
+
+float SeqSettings::articulation() 
+{
+    return articulationValue;
 }

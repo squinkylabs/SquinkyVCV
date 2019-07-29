@@ -17,9 +17,15 @@ public:
     SeqSettings(rack::engine::Module*);
     void invokeUI(rack::widget::Widget* parent) override;
 
+    /**
+     * Grid related settings
+     */
     float getQuarterNotesInGrid() override;
     bool snapToGrid() override;
+    bool snapDurationToGrid() override;
     float quantize(float, bool allowZero) override;
+
+    float articulation() override;
 private:
     rack::engine::Module* const module;
 
@@ -36,7 +42,11 @@ private:
 
     Grids curGrid = Grids::quarter;
     bool snapEnabled = true;
+    bool snapDurationEnabled = false;
+
+    float articulationValue = .85;
 
     static float grid2Time(Grids);
     rack::ui::MenuItem* makeSnapItem();
+    rack::ui::MenuItem* makeSnapDurationItem();
 };
