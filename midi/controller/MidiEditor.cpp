@@ -451,7 +451,9 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
 void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration)
 {
     MidiLocker l(seq()->song->lock);
-    const float artic = 7.f/8.f;
+    const float artic = seq()->context->settings()->articulation();
+    assertGT(artic, .001);
+    assertLT(artic, 1.1);
     float duration = 1;
     float cursorAdvance = 0;
     switch (dur) {
@@ -500,9 +502,9 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter, bool quan
     seq()->assertValid();
 }
 
-void MidiEditor::insertPresetNote(Durations dur)
+void MidiEditor::insertPresetNote(Durations dur, bool advanceAfter)
 {
-    insertNoteHelper(dur, true, false);
+    insertNoteHelper(dur, advanceAfter, false);
 }
 
 void MidiEditor::insertNote()

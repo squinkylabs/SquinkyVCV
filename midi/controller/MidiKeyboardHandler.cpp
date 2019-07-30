@@ -241,7 +241,7 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_E:
             {
                 if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth);
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth, true);
                     handled = true;
                 }
             }
@@ -249,7 +249,7 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_H:
             {
                 if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Half);
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Half, true);
                     handled = true;
                 }
             }
@@ -263,7 +263,7 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_Q:
             {
                 if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter);
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter, true);
                     handled = true;
                 }
             }
@@ -273,7 +273,7 @@ bool MidiKeyboardHandler::handle(
                 if (!ctrl) {
                     sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
                 } else {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth);
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth, true);
                 }
                 handled = true;
             }
@@ -289,7 +289,7 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_W:
             {
                 if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole);
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole, true);
                     handled = true;
                 }
             }

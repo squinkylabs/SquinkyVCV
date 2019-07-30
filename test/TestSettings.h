@@ -37,6 +37,8 @@ public:
 
     float articulation() override
     {
-        return false;
+        return _articulation;
     }
+
+    float _articulation = 1;
 };

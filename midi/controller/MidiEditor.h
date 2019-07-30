@@ -52,7 +52,7 @@ public:
 
     enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
 
-    void insertPresetNote(Durations);
+    void insertPresetNote(Durations, bool advanceAfter);
     void insertNote();
     void deleteNote();
 

@@ -406,6 +406,81 @@ static void testInsert2()
     testInsertSub(34);      //middle of second bar
 }
 
+static float getDuration(MidiEditor::Durations dur)
+{
+    float ret = 0;
+    switch (dur) {
+        case MidiEditor::Durations::Whole:
+            ret = 4;
+            break;
+        case MidiEditor::Durations::Half:
+            ret = 2;
+            break;
+        case MidiEditor::Durations::Quarter:
+            ret = 1;
+            break;
+        case MidiEditor::Durations::Eighth:
+            ret = .5;
+            break;
+        case MidiEditor::Durations::Sixteenth:
+            ret = .25f;
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+static void testInsertPresetNote(MidiEditor::Durations dur, bool advance, float articulation)
+{
+
+    MidiSequencerPtr seq = makeTest(true);
+    assert(seq->selection->empty());
+    const int initialSize = seq->context->getTrack()->size();
+
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_articulation = articulation;
+
+    assertEQ(seq->context->cursorTime(), 0);
+    float pitch = seq->context->cursorPitch();
+
+    seq->editor->insertPresetNote(dur, advance);
+
+    auto it = seq->context->getTrack()->begin();
+    assert(it != seq->context->getTrack()->end());
+    MidiEventPtr ev = it->second;
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+    assert(note);
+
+    assertEQ(note->pitchCV, pitch);
+    const int expectedSelection = advance ? 0 : 1;
+    assertEQ(seq->selection->size(), expectedSelection);
+
+    const float expectedDuration = getDuration(dur) * articulation;
+    assertEQ(note->duration, expectedDuration);
+
+    const bool expectSelected = advance ? false : true;
+    assertEQ(seq->selection->isSelected(note), expectSelected);
+    seq->assertValid();
+    const int insertSize = seq->context->getTrack()->size();
+    assertGT(insertSize, initialSize);
+
+    const float expectedCursorTime = advance ? getDuration(dur) : 0;
+    assertEQ(seq->context->cursorTime(), expectedCursorTime);
+}
+
+
+static void testInsertPresetNotes()
+{
+    testInsertPresetNote(MidiEditor::Durations::Quarter, false, .5f);
+    testInsertPresetNote(MidiEditor::Durations::Half, true, .85f);
+    testInsertPresetNote(MidiEditor::Durations::Whole, true, .1f);
+    testInsertPresetNote(MidiEditor::Durations::Eighth, false, 1.01f);
+    testInsertPresetNote(MidiEditor::Durations::Sixteenth, true, .2f);
+}
+
 static void testDelete()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -479,6 +554,7 @@ void testMidiEditorSub(int trackNumber)
     testInsert2();
     testDelete();
     testDelete2();
+    testInsertPresetNotes();
 
 }
 
