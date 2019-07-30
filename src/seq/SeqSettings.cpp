@@ -24,6 +24,25 @@ public:
 };
 
 
+class ArticItem
+{
+public:
+    ArticItem() = delete;
+    static rack::ui::MenuItem* make(SeqSettings::Artics artic, SeqSettings* stt)
+    {
+        std::function<bool()> isCheckedFn = [stt, artic]() {
+            return stt->curArtic == artic;
+        };
+
+        std::function<void()> clickFn = [stt, artic]() {
+            stt->curArtic = artic;
+        };
+
+        return new SqMenuItem(isCheckedFn, clickFn);
+    }
+};
+
+
 /**
  * GridMenuItem is the whole grid selection sub-menu
  */
@@ -72,6 +91,43 @@ public:
     {
         text = "Articulation";
         rightText = RIGHT_ARROW;
+    }
+
+    
+    rack::ui::Menu *createChildMenu() override
+    {
+        rack::ui::Menu* menu = new rack::ui::Menu();
+
+        auto label = rack::construct<rack::ui::MenuLabel>(
+            &rack::ui::MenuLabel::text,
+            "Articulation");      // need to do this to size correctly. probably doing something wrong.
+        menu->addChild(label);
+
+        rack::ui::MenuItem* item = ArticItem::make(SeqSettings::Artics::tenPercent, settings);
+        item->text = "10%";
+        menu->addChild(item);
+
+        item = ArticItem::make(SeqSettings::Artics::twentyPercent, settings);
+        item->text = "20%";
+        menu->addChild(item);
+
+         item = ArticItem::make(SeqSettings::Artics::fiftyPercent, settings);
+        item->text = "50%";
+        menu->addChild(item);
+
+        item = ArticItem::make(SeqSettings::Artics::eightyFivePercent, settings);
+        item->text = "85%";
+        menu->addChild(item);
+
+        item = ArticItem::make(SeqSettings::Artics::oneHundredPercent, settings);
+        item->text = "100%";
+        menu->addChild(item);
+
+        item = ArticItem::make(SeqSettings::Artics::legato, settings);
+        item->text = "legato";
+        menu->addChild(item);
+
+        return menu;
     }
 private:
     SeqSettings* const settings;
@@ -143,6 +199,32 @@ float SeqSettings::grid2Time(Grids g)
     return time;
 }
 
+float SeqSettings::artic2Number(Artics a)
+{
+    float artic = .85f; 
+    switch (a) {
+        case Artics::eightyFivePercent:
+            artic = .85f;
+            break;
+        case Artics::legato:
+            artic = 1.01f;
+            break;
+        case Artics::tenPercent:
+            artic = .1f;
+            break;
+        case Artics::twentyPercent:
+            artic = .2f;
+            break;
+        case Artics::fiftyPercent:
+            artic = .5f;
+            break;
+        default:
+            assert(false);
+    }
+    return artic;
+}
+
+
 float SeqSettings::getQuarterNotesInGrid()
 {
     return grid2Time(curGrid);
@@ -184,6 +266,34 @@ std::string SeqSettings::getGridString() const
             assert(false);
     }
     return ret;
+}
+
+std::string SeqSettings::getArticString() const
+{
+    std::string ret;
+    switch(curArtic) {
+        case Artics::eightyFivePercent:
+            ret = "85%";
+            break;
+        case Artics::legato:
+            ret = "legato";
+            break;
+        case Artics::oneHundredPercent:
+            ret = "100%";
+            break;
+        case Artics::tenPercent:
+            ret = "10%";
+            break;
+        case Artics::twentyPercent:
+            ret = "20%";
+            break;
+        case Artics::fiftyPercent:
+            ret = "50%";
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
   }
 
 SeqSettings::Grids SeqSettings::gridFromString(const std::string& s)
@@ -201,7 +311,29 @@ SeqSettings::Grids SeqSettings::gridFromString(const std::string& s)
     return ret;
 }
 
+SeqSettings::Artics SeqSettings::articFromString(const std::string& s)
+{
+    Artics ret = Artics::eightyFivePercent;
+    if (s == "85%") {
+        ret = Artics::eightyFivePercent;
+    } else if (s == "10%") {
+        ret = Artics::tenPercent;
+    } else if ( s == "100%") {
+        ret = Artics::oneHundredPercent;
+    } else if (s == "legato") {
+        ret = Artics::legato;
+    } else if (s == "20%") {
+        ret = Artics::twentyPercent;
+    } else if (s == "50%") {
+        ret = Artics::fiftyPercent;
+    } else {
+        assert(false);
+    }
+    return ret;
+}
+
 float SeqSettings::articulation() 
 {
-    return articulationValue;
+    //return articulationValue;
+    return artic2Number(curArtic);
 }

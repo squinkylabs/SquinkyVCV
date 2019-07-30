@@ -76,10 +76,16 @@ json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
 {
     SeqSettings* rawSettings = dynamic_cast<SeqSettings*>(settings.get());
     json_t* jsonSettings = json_object();
+
     json_object_set_new(jsonSettings, "snapToGrid", json_boolean(settings->snapToGrid()));
+    json_object_set_new(jsonSettings, "snapDurationToGrid", json_boolean(settings->snapDurationToGrid()));
+
 
     auto grid = rawSettings->getGridString();
     json_object_set_new(jsonSettings, "grid", json_string(grid.c_str()));
+
+    auto artic = rawSettings->getArticString();
+    json_object_set_new(jsonSettings, "articulation", json_string(artic.c_str()));
 
     assert(false);
     return jsonSettings;
@@ -141,10 +147,23 @@ std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
             rawSettings->curGrid = g;
         }
 
+        json_t* articSetting = json_object_get(data, "articulation");
+        if (articSetting) {
+            std::string articS = json_string_value(articSetting);
+            SeqSettings::Artics a = SeqSettings::articFromString(articS);
+            rawSettings->curArtic = a;
+        }
+
         json_t* snap = json_object_get(data, "snapToGrid");
         if (snap) {
             bool bSnap = json_boolean_value(snap);
             rawSettings->snapEnabled = bSnap;
+        }
+
+        json_t* snapDur = json_object_get(data, "snapDurationToGrid");
+        if (snapDur) {
+            bool bSnap = json_boolean_value(snapDur);
+            rawSettings->snapDurationEnabled = bSnap;
         }
     }
     return _settings;
