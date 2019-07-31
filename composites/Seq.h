@@ -154,9 +154,6 @@ private:
     Seq<TBase>* const seq;
 };
 
-
-
-
 template <class TBase>
 void  Seq<TBase>::init(MidiSongPtr song)
 { 

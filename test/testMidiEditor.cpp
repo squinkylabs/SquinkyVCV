@@ -363,16 +363,23 @@ static void testCursor6()
 
 }
 
-static void testInsertSub(int advancUnits)
+static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float testGridSize)
 {
     MidiSequencerPtr seq = makeTest(true);
     assert(seq->selection->empty());
     const int initialSize = seq->context->getTrack()->size();
 
-    seq->editor->advanceCursor(false, advancUnits);       // move up a half note
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = testGridSize;
+
+    seq->editor->advanceCursor(false, advancUnitsBeforeInsert);       // move up a half note
     float pitch = seq->context->cursorPitch();
 
-    seq->editor->insertNote();
+    const float dur = s->getQuarterNotesInGrid();
+    
+    seq->editor->insertNote(dur, advanceAfter);
 
     auto it = seq->context->getTrack()->begin();
     assert(it != seq->context->getTrack()->end());
@@ -381,9 +388,18 @@ static void testInsertSub(int advancUnits)
     assert(note);
 
     assertEQ(note->pitchCV, pitch);
-    assertEQ(seq->selection->size(), 1);
+  
+    assertEQ(note->duration, testGridSize);
 
-    assert(seq->selection->isSelected(note));
+    float expectedCursorTime = note->startTime + ((advanceAfter) ? testGridSize : 0);
+  //  float expectedCursorTime = note->startTime;
+    assertEQ(expectedCursorTime, seq->context->cursorTime());
+
+    if (!advanceAfter) {     // these asserts don't always make sense here
+        assertEQ(seq->selection->size(), 1);
+        assert(seq->selection->isSelected(note));
+    }
+  
     seq->assertValid();
     const int insertSize = seq->context->getTrack()->size();
     assertGT(insertSize, initialSize);
@@ -398,12 +414,13 @@ static void testInsertSub(int advancUnits)
 
 static void testInsert()
 {
-    testInsertSub(8);
-}
+    // static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float testGridSize)
+    testInsertSub(8, false, 1.f / 4.f);         // old default - 16th, no advance
+    testInsertSub(34, false, 1.f / 4.f);      //middle of second bar
 
-static void testInsert2()
-{
-    testInsertSub(34);      //middle of second bar
+    testInsertSub(8, false, 1);
+    testInsertSub(8, true, 1);
+
 }
 
 static float getDuration(MidiEditor::Durations dur)
@@ -551,7 +568,6 @@ void testMidiEditorSub(int trackNumber)
     testCursor6();
 
     testInsert();
-    testInsert2();
     testDelete();
     testDelete2();
     testInsertPresetNotes();

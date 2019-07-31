@@ -12,7 +12,7 @@ public:
     }
     float getQuarterNotesInGrid() override
     {
-        return 0;
+        return _quartersInGrid;
     }
     bool snapToGrid() override
     {
@@ -41,4 +41,5 @@ public:
     }
 
     float _articulation = 1;
+    float _quartersInGrid = .25;
 };

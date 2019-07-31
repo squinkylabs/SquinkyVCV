@@ -53,7 +53,7 @@ public:
     enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
 
     void insertPresetNote(Durations, bool advanceAfter);
-    void insertNote();
+    void insertNote(float duration, bool advanceAfter);
     void deleteNote();
 
     /*************                                   ***************/
@@ -92,6 +92,7 @@ private:
     void setNewCursorPitch(float pitch, bool extendSelection);
     void extendTrackToMinDuration(float time);
     void insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration);
+    void insertNoteHelper2(float dur, bool moveCursorAfter, bool quantizeDuration);
 
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);

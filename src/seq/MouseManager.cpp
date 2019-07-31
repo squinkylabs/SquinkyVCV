@@ -1,3 +1,4 @@
+#include "ISeqSettings.h"
 #include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiSequencer.h"
@@ -84,7 +85,8 @@ bool MouseManager::onDoubleClick()
     if (note) {
         sequencer->editor->deleteNote();
     } else {
-        sequencer->editor->insertNote();
+        const float dur = sequencer->context->settings()->getQuarterNotesInGrid();
+        sequencer->editor->insertNote(dur, false);
     }
     return true;
 }

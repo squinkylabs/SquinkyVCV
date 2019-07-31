@@ -448,14 +448,48 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
     }
 }
 
+static float getDuration(MidiEditor::Durations dur)
+{
+    float ret = 0;
+    switch (dur) {
+        case MidiEditor::Durations::Whole:
+            ret = 4;
+            break;
+        case MidiEditor::Durations::Half:
+            ret = 2;
+            break;
+        case MidiEditor::Durations::Quarter:
+            ret = 1;
+            break;
+        case MidiEditor::Durations::Eighth:
+            ret = .5;
+            break;
+        case MidiEditor::Durations::Sixteenth:
+            ret = .25f;
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
 void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration)
+{
+    float duration = getDuration(dur);
+    insertNoteHelper2(duration, moveCursorAfter, quantizeDuration);
+}
+
+void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool quantizeDuration)
 {
     MidiLocker l(seq()->song->lock);
     const float artic = seq()->context->settings()->articulation();
     assertGT(artic, .001);
     assertLT(artic, 1.1);
-    float duration = 1;
-    float cursorAdvance = 0;
+   // float duration = 1;
+ //   float cursorAdvance = 0;
+    const float cursorAdvance = moveCursorAfter ? dur : 0;
+    const float duration = dur * artic;
+#if 0
     switch (dur) {
         case Durations::Whole:
             cursorAdvance = moveCursorAfter ? 4.f : 0;
@@ -480,6 +514,7 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter, bool quan
         default:
             assert(false);
     }
+#endif
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     //note->startTime = seq()->context->cursorTime();
@@ -507,9 +542,9 @@ void MidiEditor::insertPresetNote(Durations dur, bool advanceAfter)
     insertNoteHelper(dur, advanceAfter, false);
 }
 
-void MidiEditor::insertNote()
+void MidiEditor::insertNote(float duration, bool advanceAfter)
 {
-    insertNoteHelper(Durations::Quarter, false, true);
+    insertNoteHelper2(duration, advanceAfter, true);
 }
 
 void MidiEditor::deleteNote()

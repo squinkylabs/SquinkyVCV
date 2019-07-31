@@ -62,8 +62,6 @@ private:
     bool snapEnabled = true;
     bool snapDurationEnabled = false;
 
-  //  float articulationValue = .85;
-
     static float grid2Time(Grids);
     static float artic2Number(Artics);
     rack::ui::MenuItem* makeSnapItem();
