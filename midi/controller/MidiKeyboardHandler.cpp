@@ -192,15 +192,19 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_RIGHT:
             {
-                int units = ctrl ? 4 : 1;
-                sequencer->editor->advanceCursor(false, units);
+                //one grid space or quater note
+                sequencer->editor->advanceCursor(
+                    ctrl ? MidiEditor::Advance::Beat : MidiEditor::Advance::GridUnit,
+                    1);  
                 handled = true;
             }
             break;
         case GLFW_KEY_LEFT:
             {
-                int units = ctrl ? -4 : -1;
-                sequencer->editor->advanceCursor(false, units);
+                //one grid space or quater note
+                sequencer->editor->advanceCursor(
+                    ctrl ? MidiEditor::Advance::Beat : MidiEditor::Advance::GridUnit,
+                    -1);  
                 handled = true;
             }
             break;

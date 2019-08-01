@@ -116,6 +116,10 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
 {
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
+
+    const float endTime =  sequencer->context->getTrack()->getLength();
+    const float endX = scaler->midiTimeToX(endTime);
+
     //assume two bars, quarter note grid
     const float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = sequencer->context->settings()->getQuarterNotesInGrid();
@@ -137,9 +141,13 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
             (relTime == TimeUtils::bar2time(1)) ||
             (relTime == TimeUtils::bar2time(2));
 
+        NVGcolor color = isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR;
+        if (x == endX) {
+            color = UIPrefs::GRID_END_COLOR;
+        }
         SqGfx::filledRect(
             vg,
-            isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR,
+            color,
             x, y, width, height);
     }
 }
