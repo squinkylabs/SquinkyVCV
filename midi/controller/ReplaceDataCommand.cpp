@@ -168,7 +168,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
         MidiEndEventPtr end = seq->context->getTrack()->getEndEvent();
         float endTime = end->startTime;
 
-        int index = 0;  // hope index is stable accross clones
+        int index = 0;  // hope index is stable across clones
         for (auto it : *clonedSelection) {
             MidiEventPtr ev = it;
             xform(ev, index++);
@@ -371,6 +371,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMoveEndCommand(std::shared_ptr<Mid
 
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toDelete;
+
+    modifyNotesToFitNewLength(seq, newLength, toAdd, toDelete);
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
@@ -381,6 +383,30 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMoveEndCommand(std::shared_ptr<Mid
         newLength);
     ret->name = "move end point";
     return ret;
+}
+
+
+void ReplaceDataCommand::modifyNotesToFitNewLength(
+    std::shared_ptr<MidiSequencer>seq,
+    float newLength,
+    std::vector<MidiEventPtr>& toAdd,
+    std::vector<MidiEventPtr>& toDelete)
+{
+    auto tk = seq->context->getTrack();
+    for (auto it : *tk) {
+        MidiEventPtr ev = it.second;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+        if (note) {
+            if (note->startTime >= newLength) {
+                toDelete.push_back(note);
+            } else if (note->endTime() > newLength) {
+                MidiNoteEventPtr newNote = safe_cast<MidiNoteEvent>(note->clone());
+                toDelete.push_back(note);
+                newNote->duration = newLength - newNote->startTime;
+                toAdd.push_back(newNote);
+            }
+        }
+    }
 }
 
 void ReplaceDataCommand::extendTrackToMinDuration(

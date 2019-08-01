@@ -74,6 +74,15 @@ private:
         std::vector<MidiEventPtr>& toAdd,
         std::vector<MidiEventPtr>& toDelete);
 
+    /**
+     * queues up note additions and deletions to make them all fit in a shorter track
+     */
+    static void modifyNotesToFitNewLength(
+        std::shared_ptr<MidiSequencer>seq,
+        float newLengh, 
+        std::vector<MidiEventPtr>& toAdd,
+        std::vector<MidiEventPtr>& toDelete);
+
     // base for change pitch, start time, duration
     enum class Ops {Pitch, Start, Duration };
     using Xform = std::function<void(MidiEventPtr event, int index)>;

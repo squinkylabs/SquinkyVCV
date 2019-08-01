@@ -104,8 +104,7 @@ static void testTrans()
     seq->assertValid();
 }
 
-#if 1
-static void testLength()
+static void testTrackLength()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
@@ -130,7 +129,32 @@ static void testLength()
     assertEQ(seq->context->getTrack()->getLength(), 77);
 
 }
-#endif
+
+// this one shortens the track to less than the time the notes take
+static void testTrackLength2()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+
+    assertEQ(seq->context->getTrack()->getLength(), 4); // one bar long
+
+    //change to 1.5 quarter notes
+    auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq, 1.5);
+    cmd->execute(seq);
+    seq->assertValid();
+
+    assertEQ(seq->context->getTrack()->getLength(), 1.5);
+
+    cmd->undo(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 4);
+
+    cmd->execute(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 1.5);
+}
+
 
 static void testInsert()
 {
@@ -252,7 +276,8 @@ void testReplaceCommand()
     test2();
 
     testTrans();
-    testLength();
+    testTrackLength();
+    testTrackLength2();
     testInsert();
     testStartTime();
     testDuration();
