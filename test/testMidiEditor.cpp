@@ -270,16 +270,11 @@ static void testCursor2Sub(MidiEditor::Advance adv, float expectedShift)
 
 static void testCursorAll()
 {
-    if (_trackNumber != 0) {
-        return;
-    }
-    assertEQ(_trackNumber, 0);
     // make a two bar test seq.
     // "end" should be the start of the second bar
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->advanceCursor(MidiEditor::Advance::All, 1);
     assertEQ(seq->context->cursorTime(), 4);
-
 }
 
 static void testCursor2()

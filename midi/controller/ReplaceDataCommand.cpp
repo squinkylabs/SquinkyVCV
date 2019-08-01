@@ -28,11 +28,14 @@ ReplaceDataCommand::ReplaceDataCommand(
     std::shared_ptr<MidiEditorContext> unused,
     int trackNumber,
     const std::vector<MidiEventPtr>& inRemove,
-    const std::vector<MidiEventPtr>& inAdd)
-    : trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
+    const std::vector<MidiEventPtr>& inAdd,
+    float trackLength)
+    : trackNumber(trackNumber), removeData(inRemove), addData(inAdd), newTrackLength(trackLength)
 {
     assert(song->getTrack(trackNumber));
+    originalTrackLength = song->getTrack(trackNumber)->getLength();     /// save off
 }
+
 
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
@@ -43,6 +46,7 @@ ReplaceDataCommand::ReplaceDataCommand(
 {
     assert(song->getTrack(trackNumber));
 }
+
 
 void ReplaceDataCommand::execute(MidiSequencerPtr seq)
 {
@@ -57,6 +61,17 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq)
 
     for (auto it : removeData) {
         mt->deleteEvent(*it);
+    }
+
+    // last, adjust the duration, if required
+    // note that this is way to simplified for real life!
+    if (newTrackLength >= 0) {
+        auto xx = mt->getEndEvent();
+        MidiEndEventPtr end = mt->getEndEvent();
+        assert(end);
+        mt->deleteEvent(*end);
+        mt->insertEnd(newTrackLength);
+        mt->assertValid();
     }
 
     // clone the selection, clear real selection, add stuff back correctly
@@ -80,9 +95,18 @@ void ReplaceDataCommand::undo(MidiSequencerPtr seq)
 {
     assert(seq);
     MidiTrackPtr mt = seq->song->getTrack(trackNumber);
-  //  MidiTrackPtr mt = song->getTrack(trackNumber);
     assert(mt);
     MidiLocker l(mt->lock);
+
+    // first, reset the length
+    if (newTrackLength >= 0) {
+        auto xx = mt->getEndEvent();
+        MidiEndEventPtr end = mt->getEndEvent();
+        assert(end);
+        mt->deleteEvent(*end);
+        mt->insertEnd(originalTrackLength);
+        mt->assertValid();
+    }
 
     // to undo the insertion, delete all of them
     for (auto it : addData) {
@@ -338,6 +362,24 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
         toRemove,
         toAdd);
     ret->name = "insert note";
+    return ret;
+}
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength)
+{
+    seq->assertValid();
+
+    std::vector<MidiEventPtr> toAdd;
+    std::vector<MidiEventPtr> toDelete;
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toDelete,
+        toAdd,
+        newLength);
+    ret->name = "move end point";
     return ret;
 }
 

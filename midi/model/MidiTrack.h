@@ -33,7 +33,6 @@ public:
     std::shared_ptr<MidiNoteEvent> getSecondNote();
     std::shared_ptr<MidiNoteEvent> getLastNote();
 
-
     /**
      * Returns all events as a vector, so that they may be indexed.
      * Obviously this is rather slow (O(n)), so don't use it for editing.
@@ -61,10 +60,8 @@ public:
      * Find the first MidiNoteEvent that is at time 't' or past it
      */
     const_iterator seekToTimeNote(MidiEvent::time_t time);
-
     const_iterator seekToLastNote();
    
-
     /**
      * Returns pair of iterators for all events  start <= t <= end
      */

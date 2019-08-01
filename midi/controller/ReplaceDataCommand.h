@@ -28,13 +28,15 @@ public:
         std::shared_ptr<MidiEditorContext>,
         int trackNumber,
         const std::vector<MidiEventPtr>& inRemove,
-        const std::vector<MidiEventPtr>& inAdd);
+        const std::vector<MidiEventPtr>& inAdd,
+        float trackLength = -1);
 
     ReplaceDataCommand(
         std::shared_ptr<MidiSong> song,
         int trackNumber,
         const std::vector<MidiEventPtr>& inRemove,
         const std::vector<MidiEventPtr>& inAdd);
+
 
 
     /**
@@ -50,15 +52,21 @@ public:
     static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq,  const std::vector<float>&);
     static ReplaceDataCommandPtr makePasteCommand(std::shared_ptr<MidiSequencer> seq);
 
+    static ReplaceDataCommandPtr makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength);
+
 
 private:
-    // old way. can't save data pointers with vcv 1
-    //std::shared_ptr<MidiSong> song;
-    //std::shared_ptr<MidiSelectionModel> selection;
 
     int trackNumber;
     std::vector<MidiEventPtr> removeData;
     std::vector<MidiEventPtr> addData;
+
+    /**
+     * Clients who want track length changed should
+     * pass in a non-negative value
+     */
+    float newTrackLength=-1;
+    float originalTrackLength=-1;
 
     static void extendTrackToMinDuration(
         std::shared_ptr<MidiSequencer> seq,

@@ -375,7 +375,8 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
             break;
         case All:
             {
-                const float len = seq()->song->getTrack(0)->getLength();
+                //const float len = seq()->song->getTrack(0)->getLength();
+                const float len = getTrack()->getLength();
                 auto bb = TimeUtils::time2bbf(len);
                 int bar = 0;
                 if (multiplier > 0) {

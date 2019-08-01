@@ -104,6 +104,34 @@ static void testTrans()
     seq->assertValid();
 }
 
+#if 1
+static void testLength()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+
+    assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
+    assertEQ(seq->context->getTrack()->getLength(), 8); // two bars long
+
+    //change to 77 bars
+    auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq, 77);
+    cmd->execute(seq);
+    seq->assertValid();
+
+    assertEQ(seq->context->getTrack()->getLength(), 77);
+
+    cmd->undo(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 8);
+
+    cmd->execute(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 77);
+
+}
+#endif
+
 static void testInsert()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
@@ -111,6 +139,7 @@ static void testInsert()
     MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
     assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
+    assertEQ(seq->context->getTrack()->getLength(), 8); // two bars long
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = 100;
@@ -223,6 +252,7 @@ void testReplaceCommand()
     test2();
 
     testTrans();
+    testLength();
     testInsert();
     testStartTime();
     testDuration();
