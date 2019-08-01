@@ -247,19 +247,53 @@ static void testCursor1()
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime(), 0);
     assertEQ(seq->context->cursorPitch(), 0)
-        assertEQ(seq->context->startTime(), 0);
+    assertEQ(seq->context->startTime(), 0);
+}
+
+static void testCursor2Sub(MidiEditor::Advance adv, float expectedShift)
+{
+    MidiSequencerPtr seq = makeTest(false);
+
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = expectedShift;
+
+
+    seq->editor->advanceCursor(adv, 1);
+    assertEQ(seq->context->cursorTime(), expectedShift);
+
+    seq->editor->advanceCursor(adv, -1);
+    assertEQ(seq->context->cursorTime(), 0);
+    assertEQ(seq->context->startTime(), 0);
+}
+
+static void testCursorAll()
+{
+    if (_trackNumber != 0) {
+        return;
+    }
+    assertEQ(_trackNumber, 0);
+    // make a two bar test seq.
+    // "end" should be the start of the second bar
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->advanceCursor(MidiEditor::Advance::All, 1);
+    assertEQ(seq->context->cursorTime(), 4);
+
 }
 
 static void testCursor2()
 {
-    MidiSequencerPtr seq = makeTest(false);
-    seq->editor->advanceCursor(false, 1);
-    assertEQ(seq->context->cursorTime(), 1.f / 4.f);
-
-    seq->editor->advanceCursor(false, -4);
-    assertEQ(seq->context->cursorTime(), 0);
-    assertEQ(seq->context->startTime(), 0);
+    testCursor2Sub(MidiEditor::Advance::GridUnit, 1.f / 4.f);
+    testCursor2Sub(MidiEditor::Advance::GridUnit, 1.f);
+    testCursor2Sub(MidiEditor::Advance::Beat, 1.f);
+    testCursor2Sub(MidiEditor::Advance::Tick, 4.f / 64.f);
+    testCursor2Sub(MidiEditor::Advance::Measure, 4.f);
+    testCursorAll();
 }
+
+
+
 
 static void testCursor3()
 {
@@ -273,12 +307,14 @@ static void testCursor3()
     assertEQ(seq->context->cursorPitch(), note.pitchCV);
 
     // Now advance a 1/4 note
-    seq->editor->advanceCursor(false, 4);
+    seq->editor->advanceCursor(MidiEditor::Advance::Beat, 1);
     assertEQ(seq->context->cursorTime(), 1.f);
     assert(seq->selection->empty());
     assertEQ(seq->context->startTime(), 0);
 
 }
+
+// was(bool ticks, int amount)
 
 // move multiple times in two directions
 static void testCursor4()
@@ -292,13 +328,19 @@ static void testCursor4()
     note.setPitch(3, 0);
     assertEQ(seq->context->cursorPitch(), note.pitchCV);
 
-    // Now advance up 3
+
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = .25;              // set grid to 1/16
+
+    // Now advance up 3 1/16
     seq->editor->changeCursorPitch(1);
     seq->editor->changeCursorPitch(1);
     seq->editor->changeCursorPitch(1);
 
     for (int i = 0; i < 12; ++i) {
-        seq->editor->advanceCursor(false, 1);
+        seq->editor->advanceCursor(MidiEditor::Advance::GridUnit, 1);
     }
 
     assert(!seq->selection->empty());
@@ -338,13 +380,20 @@ static void testCursor5()
     note.setPitch(3, 0);
     assertEQ(seq->context->cursorPitch(), note.pitchCV);
 
-    // Now advance two units right, to end of note
-    seq->editor->advanceCursor(false, 1);
-    seq->editor->advanceCursor(false, 1);
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = .25;
+
+    // Now advance two 1/16 units right, to end of note
+    seq->editor->advanceCursor(MidiEditor::Advance::GridUnit, 1);
+    seq->editor->advanceCursor(MidiEditor::Advance::GridUnit, 1);
 
     assert(seq->selection->empty());
     assertEQ(seq->context->startTime(), 0);
 }
+
+
 
 // move past the end of the second bar
 static void testCursor6()
@@ -354,13 +403,17 @@ static void testCursor6()
     assertEQ(seq->context->startTime(), 0);
     seq->assertValid();
 
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = .25;
+
     // go up two bars and 1/16
-    seq->editor->advanceCursor(false, 16 * 2 + 1);
+    seq->editor->advanceCursor(MidiEditor::Advance::GridUnit, 16 * 2 + 1);
 
     // bar 2 should be new start time
     assertEQ(seq->context->startTime(), TimeUtils::bar2time(2));
     assertEQ(seq->context->endTime(), TimeUtils::bar2time(4));
-
 }
 
 static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float testGridSize)
@@ -374,7 +427,8 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     assert(ts);
     ts->_quartersInGrid = testGridSize;
 
-    seq->editor->advanceCursor(false, advancUnitsBeforeInsert);       // move up a half note
+//    seq->editor->advanceCursor(false, advancUnitsBeforeInsert);       // move up a half note
+    seq->editor->advanceCursor(MidiEditor::Advance::Tick, advancUnitsBeforeInsert);
     float pitch = seq->context->cursorPitch();
 
     const float dur = s->getQuarterNotesInGrid();
@@ -542,8 +596,6 @@ static void testDelete2()
 void testMidiEditorSub(int trackNumber)
 {
     _trackNumber = trackNumber;
-
-
 
     testTrans1();
     testShiftTime1();

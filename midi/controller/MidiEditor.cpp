@@ -340,16 +340,68 @@ void MidiEditor::advanceCursorToTime(float time, bool extendSelection)
     seq()->assertValid();
 }
 
-void MidiEditor::advanceCursor(bool ticks, int amount)
+void MidiEditor::advanceCursor(Advance type, int multiplier)
 {
-    assert(!ticks);         // not implemented yet
-    assert(amount != 0);
+    assert(multiplier != 0);
 
     seq()->context->assertCursorInViewport();
 
-    float advanceAmount = amount * 1.f / 4.f;       // hard code units to 1/16th notes
-    float newTime = seq()->context->cursorTime() + advanceAmount;
-    advanceCursorToTime(newTime, false);
+    float advanceAmount = 0;
+    bool doRelative = true;
+    switch (type) {
+        case Tick:
+            advanceAmount = 4.0 / 64.f;
+            doRelative = true;
+            break;
+        case Beat:
+            advanceAmount = 1;
+            doRelative = true;
+            break;
+        case GridUnit:
+            advanceAmount = seq()->context->settings()->getQuarterNotesInGrid();
+            doRelative = true;
+            break;
+        case Measure:
+            {
+                // what bar are we in now?
+                    float time = seq()->context->cursorTime();
+                    auto bb = TimeUtils::time2bbf(time);
+                    int bar = std::get<0>(bb);
+                    bar += multiplier;          // next one
+                    bar = std::max(0, bar);
+                    advanceAmount = TimeUtils::bar2time(bar);
+                    doRelative = false;
+            }
+            break;
+        case All:
+            {
+                const float len = seq()->song->getTrack(0)->getLength();
+                auto bb = TimeUtils::time2bbf(len);
+                int bar = 0;
+                if (multiplier > 0) {
+                    // if not even bar, to to the last fractional bar
+                    if ((std::get<1>(bb) != 0) || (std::get<2>(bb) != 0)) {
+                        bar = std::get<0>(bb);
+                    } else {
+                        bar = std::get<0>(bb) - 1;
+                    }
+                }
+                advanceAmount = TimeUtils::bar2time(bar);
+                doRelative = false;
+            }
+            break;
+        default:
+            assert(false);
+
+    }
+
+    if (doRelative) {
+        advanceAmount *= multiplier;
+        float newTime = seq()->context->cursorTime() + advanceAmount;
+        advanceCursorToTime(newTime, false);
+    } else {
+        advanceCursorToTime(advanceAmount, false);
+    }
 }
 
 void MidiEditor::changeCursorPitch(int semitones)
@@ -485,36 +537,9 @@ void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool quantiz
     const float artic = seq()->context->settings()->articulation();
     assertGT(artic, .001);
     assertLT(artic, 1.1);
-   // float duration = 1;
- //   float cursorAdvance = 0;
+
     const float cursorAdvance = moveCursorAfter ? dur : 0;
     const float duration = dur * artic;
-#if 0
-    switch (dur) {
-        case Durations::Whole:
-            cursorAdvance = moveCursorAfter ? 4.f : 0;
-            duration = 4.f * artic;
-            break;
-        case Durations::Half:
-            cursorAdvance = moveCursorAfter ? 2.f : 0;
-            duration = 2.f * artic;
-            break;
-        case Durations::Quarter:
-            cursorAdvance = moveCursorAfter ? 1.f : 0;
-            duration = 1.f * artic;
-            break;
-        case Durations::Eighth:
-            cursorAdvance = moveCursorAfter ? .5f : 0;
-            duration = .5f * artic;
-            break;
-        case Durations::Sixteenth:
-            cursorAdvance = moveCursorAfter ? .25f : 0;
-            duration = .25f * artic;
-            break;
-        default:
-            assert(false);
-    }
-#endif
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     //note->startTime = seq()->context->cursorTime();

@@ -25,11 +25,21 @@ public:
 
     void selectAll();
 
+    enum Advance
+    {
+        Tick,
+        GridUnit,
+        Beat,           // Quarter note
+        Measure,
+        All             // start or end
+    };
+
     /**
-     * If ticks is false, will move by "units" (like 1/16 note)
-     * amount is a multiplier, and may be negative
+     * Move cursor by a logical unit.
+     * @param type is logical unit
+     * @param multiplier. may be negative.
      */
-    void advanceCursor(bool ticks, int amount);
+    void advanceCursor(Advance type, int multiplier);
     void advanceCursorToTime(float time, bool extendSelection);
     void changeCursorPitch(int semitones);
 
