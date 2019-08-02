@@ -439,9 +439,9 @@ float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float d
     }
 
     const float needBars = duration / 4.f;
-    const float roundedBars = std::round(needBars + 1.f);
+    //const float roundedBars = std::round(needBars + 1.f);
     // maybe it should be this?
-    //const float roundedBars = std::floor(needBars + 1.f);
+    const float roundedBars = std::floor(needBars + 1.f);
     const float durationRequest = roundedBars * 4;
     return durationRequest;
 }

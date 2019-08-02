@@ -191,7 +191,7 @@ static void testInsert()
     int x = (100 + 2) / 4;
     x *= 4;
     assert(x < 102);
-    x += 8;     // and round up two bars
+    x += 4;     // and round up one bar
     assertEQ(end->startTime, x);
 
     const float longerLength = seq->context->getTrack()->getLength();
