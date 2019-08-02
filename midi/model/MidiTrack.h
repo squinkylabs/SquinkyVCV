@@ -61,6 +61,9 @@ public:
      */
     const_iterator seekToTimeNote(MidiEvent::time_t time);
     const_iterator seekToLastNote();
+
+    void setLength(float newTrackLength);
+
    
     /**
      * Returns pair of iterators for all events  start <= t <= end

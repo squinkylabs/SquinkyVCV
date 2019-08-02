@@ -100,7 +100,6 @@ private:
     void updateCursor();
     void setCursorToNote(MidiNoteEventPtr note);
     void setNewCursorPitch(float pitch, bool extendSelection);
-    void extendTrackToMinDuration(float time);
     void insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration);
     void insertNoteHelper2(float dur, bool moveCursorAfter, bool quantizeDuration);
 

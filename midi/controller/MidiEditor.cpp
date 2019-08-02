@@ -485,8 +485,10 @@ void MidiEditor::toggleSelectionAt(float time, float pitchCV)
 
 }
 
+#if 0 // not used
 void MidiEditor::extendTrackToMinDuration(float neededLength)
 {
+  
     auto track = seq()->context->getTrack();
     float curLength = track->getLength();
 
@@ -500,6 +502,7 @@ void MidiEditor::extendTrackToMinDuration(float neededLength)
         track->insertEnd(duration);
     }
 }
+#endif
 
 static float getDuration(MidiEditor::Durations dur)
 {

@@ -165,6 +165,9 @@ static void testInsert()
     assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
     assertEQ(seq->context->getTrack()->getLength(), 8); // two bars long
 
+    const float initLength = seq->context->getTrack()->getLength();
+
+    // let's insert a note way in the future.
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = 100;
     note->pitchCV = 1.1f;
@@ -191,8 +194,17 @@ static void testInsert()
     x += 8;     // and round up two bars
     assertEQ(end->startTime, x);
 
-    printf("add tests for insert note undo/redo\n");
+    const float longerLength = seq->context->getTrack()->getLength();
 
+    seq->assertValid();
+
+    cmd->undo(seq);
+    assertEQ(initLength, seq->context->getTrack()->getLength());
+    seq->assertValid();
+
+    cmd->execute(seq);
+    assertEQ(longerLength, seq->context->getTrack()->getLength());
+    seq->assertValid();
 }
 
 static void testStartTime()
@@ -202,6 +214,7 @@ static void testStartTime()
     MidiLocker l(ms->lock);
     MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
+    printf("test start time first inserting a note at 100\n");
     // put a note into it at time 100;
     auto track = seq->context->getTrack();
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
@@ -214,6 +227,7 @@ static void testStartTime()
     assertEQ(seq->selection->size(), 1);
 
     // shift note later to 1100
+    printf("now testStartTime will make change start itme command\n");
     cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.f);
     seq->undo->execute(seq, cmd);
 
@@ -221,11 +235,13 @@ static void testStartTime()
     note = track->getFirstNote();   
     assertEQ(note->startTime, 1100.f);
 
+    printf("now will undo set start time\n");
     seq->undo->undo(seq);
     seq->assertValid();
     note = track->getFirstNote();
     assertEQ(note->startTime, 100.f);
 
+    printf("now will redo set start time\n");
     seq->undo->redo(seq);
     seq->assertValid();
     note = track->getFirstNote();

@@ -62,11 +62,13 @@ In the above operations, the start time is always quantized. Usually the duratio
 
 ## Keyboard focus
 
-As mentions before the UI is heavily keyboard driven. The module will only respond the the keyboard if the cursor is over the note editor, in which case it will grab the focus as you type. Once the module had focus it keeps it until you click outside.
+As mentioned before, the UI is heavily keyboard driven. The module will only respond the the keyboard if the cursor is over the note editor, in which case it will grab the focus as you type. Once the module had focus it keeps it until you click outside.
 
 If you don't have the keyboard focus, some of VCV Rack's keyboard handling may kick in and delete you module (backspace) of pan the rack (cursor keys), so don't be too surprised if this happens. Because it's easy to forget, the edit grid had a conspicuous indicator that tells when it has keyboard focus.
 
 ## Basic mouse editing
+
+Most things may be edited with the mouse as well as the keyboard. It is very easy to insert notes, delete them, drag them around, etc... It is also easy to select a group of notes and drag-edit them all at once.
 
 ## The panel side
 
@@ -78,7 +80,7 @@ On the left are a few inputs, outputs, and controls.
 
 **Tempo** determines the tempo when the Clock Rate is set to internal.
 
-**Run/Stop** button that changes color to  indicate when it's running. The runs state is controlled from this button, as well as the external run input. Either of them can start and stop the sequencer. This button is modeled on the run button in "Clocked", from Impromptu Modular.
+**Run/Stop** button that changes color to  indicate when it's running. The run state is controlled from this button, as well as the external run input. Either of them can start and stop the sequencer. This button is modeled on the run button in "Clocked", from Impromptu Modular.
 
 **Scroll mode** button enabled scrolling while running.
 
@@ -96,7 +98,7 @@ On the left are a few inputs, outputs, and controls.
 
 It works like you would expect.
 
-Note that there is a blinking "DOS cursor". It does not follow the mouse cursor much of the time. Note editing may done via the keyboard and this cursor, or with the mouse.
+Note that there is a blinking "DOS cursor". It does not follow the mouse cursor much of the time. Note editing may done via the keyboard and this cursor, or with the mouse. A very powerful feature is the ability to select more than one note, and apply edits to all of them at once.
 
 The computer keyboard is the fastest way to ender notes. Details are in [Keyboard Summary](./keymap.md).
 
@@ -110,8 +112,10 @@ Note that it is not easy to know how long your track actually is. And it is curr
 
 ## Some hints with editing
 
-Once you have selected a note, or group of notes, it is very easy to move them around, typically by Pressing 's', 'd', or 'p' to set the editor editing start time, duration, or pitch. Then all selected notes may be adjusted with the '+' and '-' keys (and may others).
+Once you have selected a note, or group of notes, it is very easy to move them around, typically by Pressing 's', 'd', or 'p' to set the editor editing start time, duration, or pitch. Then all selected notes may be adjusted with the '+' and '-' keys (and many others).
 
 New notes are inserted by moving the cursor to the desired location, and pressing 'Ins'. There are many other keys for inserting different lengths of notes.
 
 Note selection, insertion, and changing can all be done with the mouse or the keyboard. So it may be handy to select some notes with the mouse, then move them from the keyboard. Or vice versa.
+
+You are free to perform any edit operation while Seq++ is playing. It will not glitch or crash. One tip, however: it is very difficult to edit while playing if the scroll function is enabled - you will end up fighting over the cursor position, and Seq++ will usually win. So turn off scroll if you wish to edit while playing.

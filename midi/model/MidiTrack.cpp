@@ -96,6 +96,17 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
     assert(false);          // If you get here it means the event to be deleted was not in the track
 }
 
+void MidiTrack::setLength(float newTrackLength)
+{
+   // auto xx = getEndEvent();
+    MidiEndEventPtr end = getEndEvent();
+    assert(end);
+    deleteEvent(*end);
+    insertEnd(newTrackLength);
+    assertValid();
+}
+
+
 void MidiTrack::_dump() const
 {
     const_iterator it;
