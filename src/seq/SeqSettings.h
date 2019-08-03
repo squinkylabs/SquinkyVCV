@@ -26,6 +26,7 @@ public:
     bool snapToGrid() override;
     bool snapDurationToGrid() override;
     float quantize(float, bool allowZero) override;
+    float quantizeAlways(float, bool allowZero) override;
 
     float articulation() override;
 private:

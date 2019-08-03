@@ -318,6 +318,10 @@ bool MidiKeyboardHandler::handle(
             sequencer->editor->deleteNote();
             handled = true;
             break;
+        case GLFW_KEY_N:
+            handled = true;
+            sequencer->editor->changeTrackLength();
+            break;
 #ifndef __USE_VCV_UNDO
 // In VCV 1.0, VCV provides the undo 
         case GLFW_KEY_Z:

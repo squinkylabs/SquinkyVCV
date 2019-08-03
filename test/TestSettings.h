@@ -38,6 +38,11 @@ public:
         return quantized;
     }
 
+    float quantizeAlways(float time, bool allowZero) override
+    {
+        return  (float) TimeUtils::quantize(time, getQuarterNotesInGrid(), allowZero);
+    }
+
     float articulation() override
     {
         return _articulation;

@@ -16,7 +16,7 @@
 #include "UIPrefs.h"
 
 NoteDragger::NoteDragger(MidiSequencerPtr seq, float initX, float initY) :
-    sequencer(seq),
+sequencer(seq),
     startX(initX),
     startY(initY)
 {
@@ -69,7 +69,7 @@ void NoteDragger::drawNotes(NVGcontext *vg, float verticalShift, float horizonta
 
 float NoteDragger::quantizeForDisplay(float metricTime, float timeShiftPixels, bool canGoBelowGridSize)
 {
-   return timeShiftPixels;       // default imp does nothing
+    return timeShiftPixels;       // default imp does nothing
 }
 
 bool NoteDragger::draggingStartTime()
@@ -83,14 +83,14 @@ bool NoteDragger::draggingDuration()
 }
 
 /******************************************************************
- *
- * NotePitchDragger
- */
+*
+* NotePitchDragger
+*/
 
 // Remember current viewport pitch range. Shave some off top and
 // bottom to allow reasonable dragging.
 NotePitchDragger::NotePitchDragger(MidiSequencerPtr seq, float x, float y) :
-    NoteDragger(seq, x, y),
+NoteDragger(seq, x, y),
     viewportUpperPitch0(sequencer->context->pitchHigh()),
     highPitchForDragStart(sequencer->context->pitchHigh() - 2 * PitchUtils::semitone),
     viewportLowerPitch0(sequencer->context->pitchLow()),
@@ -169,12 +169,12 @@ void NotePitchDragger::draw(NVGcontext *vg)
 }
 
 /******************************************************************
- *
- * HorizontalDragger
- */
+*
+* HorizontalDragger
+*/
 
 NoteHorizontalDragger::NoteHorizontalDragger(MidiSequencerPtr seq, float x, float y, float initialNoteValue) :
-    NoteDragger(seq, x, y),
+NoteDragger(seq, x, y),
     viewportStartTime0(sequencer->context->startTime()),
     viewportEndTime0(sequencer->context->endTime()),
     time0(sequencer->context->getScaler()->xToMidiTime(x)),
@@ -213,15 +213,15 @@ float NoteHorizontalDragger::quantizeForDisplay(float metricTime, float timeShif
 
         float grid = sequencer->context->settings()->getQuarterNotesInGrid();
         float timeShiftMetric = scaler->xToMidiDeltaTime(timeShiftPixels);
-       
+
         float quantizedMetricTime = TimeUtils::quantizeForEdit(metricTime, timeShiftMetric, grid);
- //printf("time shift metric, unquant=%f q=%f\n", timeShiftMetric, quantizedMetricTime);
+        //printf("time shift metric, unquant=%f q=%f\n", timeShiftMetric, quantizedMetricTime);
         if (!canGoBelowGridSize && quantizedMetricTime < grid) {
             quantizedMetricTime = grid;
         }
         float metricDelta = quantizedMetricTime - metricTime;
         float pixelDelta = scaler->midiTimeTodX(metricDelta);
-         //printf("q for disp will return pixel delta %f metric delta = %f\n", pixelDelta, metricDelta);
+        //printf("q for disp will return pixel delta %f metric delta = %f\n", pixelDelta, metricDelta);
         return pixelDelta;
     } else {
         return timeShiftPixels;     // do nothing if off
@@ -229,11 +229,11 @@ float NoteHorizontalDragger::quantizeForDisplay(float metricTime, float timeShif
 }
 
 /******************************************************************
- *
- * NoteStartDragger
- */
+*
+* NoteStartDragger
+*/
 NoteStartDragger::NoteStartDragger(MidiSequencerPtr seq, float x, float y, float noteStartTime) :
-    NoteHorizontalDragger(seq, x, y, noteStartTime)
+NoteHorizontalDragger(seq, x, y, noteStartTime)
 {
 }
 
@@ -274,12 +274,12 @@ void NoteStartDragger::commit()
 }
 
 /******************************************************************
- *
- * NoteDurationDragger
- */
+*
+* NoteDurationDragger
+*/
 
 NoteDurationDragger::NoteDurationDragger(MidiSequencerPtr seq, float x, float y, float duration) :
-    NoteHorizontalDragger(seq, x, y, duration)
+NoteHorizontalDragger(seq, x, y, duration)
 {
 }
 

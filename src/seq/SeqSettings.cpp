@@ -44,8 +44,8 @@ public:
 
 
 /**
- * GridMenuItem is the whole grid selection sub-menu
- */
+* GridMenuItem is the whole grid selection sub-menu
+*/
 class GridMenuItem : public  rack::ui::MenuItem
 {
 public:
@@ -83,7 +83,7 @@ public:
 };
 
 /**
- */
+*/
 class ArticulationMenuItem : public  rack::ui::MenuItem
 {
 public:
@@ -93,7 +93,7 @@ public:
         rightText = RIGHT_ARROW;
     }
 
-    
+
     rack::ui::Menu *createChildMenu() override
     {
         rack::ui::Menu* menu = new rack::ui::Menu();
@@ -111,7 +111,7 @@ public:
         item->text = "20%";
         menu->addChild(item);
 
-         item = ArticItem::make(SeqSettings::Artics::fiftyPercent, settings);
+        item = ArticItem::make(SeqSettings::Artics::fiftyPercent, settings);
         item->text = "50%";
         menu->addChild(item);
 
@@ -183,17 +183,17 @@ float SeqSettings::grid2Time(Grids g)
 {
     float time = 1;         // default to quarter note
     switch (g) {
-        case Grids::quarter:
-            time = 1;
-            break;
-        case Grids::eighth:
-            time = .5f;
-            break;
-        case Grids::sixteenth:
-            time = .25f;
-            break;
-        default:
-            assert(false);
+    case Grids::quarter:
+        time = 1;
+        break;
+    case Grids::eighth:
+        time = .5f;
+        break;
+    case Grids::sixteenth:
+        time = .25f;
+        break;
+    default:
+        assert(false);
 
     }
     return time;
@@ -203,23 +203,23 @@ float SeqSettings::artic2Number(Artics a)
 {
     float artic = .85f; 
     switch (a) {
-        case Artics::eightyFivePercent:
-            artic = .85f;
-            break;
-        case Artics::legato:
-            artic = 1.01f;
-            break;
-        case Artics::tenPercent:
-            artic = .1f;
-            break;
-        case Artics::twentyPercent:
-            artic = .2f;
-            break;
-        case Artics::fiftyPercent:
-            artic = .5f;
-            break;
-        default:
-            assert(false);
+    case Artics::eightyFivePercent:
+        artic = .85f;
+        break;
+    case Artics::legato:
+        artic = 1.01f;
+        break;
+    case Artics::tenPercent:
+        artic = .1f;
+        break;
+    case Artics::twentyPercent:
+        artic = .2f;
+        break;
+    case Artics::fiftyPercent:
+        artic = .5f;
+        break;
+    default:
+        assert(false);
     }
     return artic;
 }
@@ -230,40 +230,45 @@ float SeqSettings::getQuarterNotesInGrid()
     return grid2Time(curGrid);
 }
 
- bool SeqSettings::snapToGrid()
- {
-     return snapEnabled;
- }
+bool SeqSettings::snapToGrid()
+{
+    return snapEnabled;
+}
 
-  bool SeqSettings::snapDurationToGrid()
- {
-     return snapDurationEnabled;
- }
+bool SeqSettings::snapDurationToGrid()
+{
+    return snapDurationEnabled;
+}
 
- float SeqSettings::quantize(float time, bool allowZero)
- {
-     auto quantized = time;
-     if (snapToGrid()) {
+float SeqSettings::quantize(float time, bool allowZero)
+{
+    auto quantized = time;
+    if (snapToGrid()) {
         quantized = TimeUtils::quantize(time, getQuarterNotesInGrid(), allowZero);
-     }
-     return quantized;
- }
+    }
+    return quantized;
+}
+
+float SeqSettings::quantizeAlways(float time, bool allowZero)
+{
+    return (float) TimeUtils::quantize(time, getQuarterNotesInGrid(), allowZero);
+}
 
 std::string SeqSettings::getGridString() const
 {
     std::string ret;
     switch(curGrid) {
-        case Grids::quarter:
-            ret = "quarter";
-            break;
-        case Grids::eighth:
-            ret = "eighth";
-            break;
-             case Grids::sixteenth:
-            ret = "sixteenth";
-            break;
-        default:
-            assert(false);
+    case Grids::quarter:
+        ret = "quarter";
+        break;
+    case Grids::eighth:
+        ret = "eighth";
+        break;
+    case Grids::sixteenth:
+        ret = "sixteenth";
+        break;
+    default:
+        assert(false);
     }
     return ret;
 }
@@ -272,29 +277,29 @@ std::string SeqSettings::getArticString() const
 {
     std::string ret;
     switch(curArtic) {
-        case Artics::eightyFivePercent:
-            ret = "85%";
-            break;
-        case Artics::legato:
-            ret = "legato";
-            break;
-        case Artics::oneHundredPercent:
-            ret = "100%";
-            break;
-        case Artics::tenPercent:
-            ret = "10%";
-            break;
-        case Artics::twentyPercent:
-            ret = "20%";
-            break;
-        case Artics::fiftyPercent:
-            ret = "50%";
-            break;
-        default:
-            assert(false);
+    case Artics::eightyFivePercent:
+        ret = "85%";
+        break;
+    case Artics::legato:
+        ret = "legato";
+        break;
+    case Artics::oneHundredPercent:
+        ret = "100%";
+        break;
+    case Artics::tenPercent:
+        ret = "10%";
+        break;
+    case Artics::twentyPercent:
+        ret = "20%";
+        break;
+    case Artics::fiftyPercent:
+        ret = "50%";
+        break;
+    default:
+        assert(false);
     }
     return ret;
-  }
+}
 
 SeqSettings::Grids SeqSettings::gridFromString(const std::string& s)
 {

@@ -28,6 +28,8 @@ public:
      */
     virtual float quantize(float x, bool allowZero) = 0;
 
+    virtual float quantizeAlways(float x, bool allowZer0) = 0;
+
     /**
      * articulation of inserted notes.
      * 1 = 100%
