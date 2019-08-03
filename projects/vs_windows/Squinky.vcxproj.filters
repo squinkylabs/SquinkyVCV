@@ -336,9 +336,6 @@
     <ClCompile Include="..\..\test\testMidiEvents.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testMidiPlayer.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\test\perfTest2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
@@ -420,9 +417,6 @@
     <ClCompile Include="..\..\test\testMix4.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testMidiPlayer2.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\midi\controller\MidiVoice.cpp">
       <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
@@ -433,6 +427,9 @@
       <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
     <ClCompile Include="..\..\test\testSeqComposite.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiPlayer2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>

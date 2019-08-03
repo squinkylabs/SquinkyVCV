@@ -87,7 +87,6 @@
     <ClCompile Include="..\..\test\testMidiEditorNextPrev.cpp" />
     <ClCompile Include="..\..\test\testMidiEditorSelection.cpp" />
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
-    <ClCompile Include="..\..\test\testMidiPlayer.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer2.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />

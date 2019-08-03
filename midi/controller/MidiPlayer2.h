@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 
 class MidiSong;
@@ -18,7 +19,7 @@ public:
     /**
      * Main "play something" function.
      * @param metricTime is the current time where 1 = quarter note.
-     * @param quantizationInterval is the amound of metric time in a clock. 
+     * @param quantizationInterval is the amount of metric time in a clock. 
      * So, if the click is a sixteenth note clock, quantizationInterval will be .25
      */
     void updateToMetricTime(double metricTime, float quantizationInterval);
@@ -26,11 +27,24 @@ public:
     void setNumVoices(int voices);
 
     /**
+     * Client may change looping by calling this API.
+     * Parameters are constant, so of course a new set must be passed for every change
+     */
+    void setLoopParams(const MidiLoopParams* p)
+    {
+        loopParams = p;
+    }
+    const MidiLoopParams* _getP()    // just for test
+    {
+        return loopParams;
+    }
+
+
+    /**
      * resets all internal playback state.
      * @param clearGate will set the host's gate low, if true
      */
     void reset(bool clearGates);
-   // void stop();
     double getLoopStart() const;
 
     void setSampleCountForRetrigger(int);
@@ -60,6 +74,7 @@ private:
     bool isPlaying = true;
     double loopStart = 0;
     int numVoices=1;
+    std::atomic<const MidiLoopParams*> loopParams;
 
     std::shared_ptr<MidiTrack> track;
 

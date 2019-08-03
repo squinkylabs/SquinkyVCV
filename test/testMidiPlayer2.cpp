@@ -18,9 +18,8 @@ const float quantInterval = .001f;      // very fine to avoid messing up old tes
  * Makes a one-track song.
  * Track has one quarter note at t=0, duration = eighth.
  * End event at quarter note end.
- *
  */
-MidiSongPtr makeSongOneQ()
+MidiSongPtr makeSongOneQ(float noteTime)
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
     MidiLocker l(song->lock);
@@ -28,13 +27,23 @@ MidiSongPtr makeSongOneQ()
     MidiTrackPtr track = song->getTrack(0);
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-    note->startTime = 0;
+    note->startTime = noteTime;
     note->duration = .5;
     note->pitchCV = 2.f;
     track->insertEvent(note);
     track->insertEnd(1);
 
     return song;
+}
+
+/**
+ * Makes a one-track song.
+ * Track has one quarter note at t=0, duration = eighth.
+ * End event at quarter note end.
+ */
+MidiSongPtr makeSongOneQ()
+{
+    return makeSongOneQ(0);
 }
 
 /**
@@ -313,7 +322,6 @@ static void testVoiceAssignReUse()
 
 static void testVoiceAssingOverflow()
 {
-
     MidiVoice vx[4];
     MidiVoiceAssigner va(vx, 4);
     TestHost2 th;
@@ -562,31 +570,6 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
     return host;
 }
 
-/**
- * runs a while, then stops, resets test host, the runs more
- */
-#if 0
-static std::shared_ptr<TestHost2> makeSongOneQandRun3(float timeBeforeStop, float timeAfterStop)
-{
-    MidiSongPtr song = makeSongOneQ();
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(timeBeforeStop, .25f);
-
-    // song is only 1.0 long
-    float expectedLoopStart = std::floor(timeBeforeStop);
-    assertEQ(pl.getLoopStart(), expectedLoopStart);
-
-    // took out stop - it wasn't really supported
-    //pl.stop();
-    host->reset();
-    pl.updateToMetricTime(timeAfterStop, .25f);
-
-    return host;
-}
-#endif
-
-
 //***************************** MidiPlayer2 ****************************************
 // test that APIs can be called
 static void testMidiPlayer0()
@@ -737,6 +720,22 @@ static void testMidiPlayerOverlap()
     assertClose(host->cvValue[1],  2.1, .001);
 }
 
+static void testMidiPlayerLoop()
+{
+    // make a song with one note in the second bar
+    MidiSongPtr song = makeSongOneQ(4);
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    assert(!pl._getP());
+
+    MidiLoopParams loopParams(true, 4, 8);      // loop second bar
+    pl.setLoopParams(&loopParams);
+    assert(pl._getP());
+
+    assert(false);      // finish the test
+}
+
 //*******************************tests of MidiPlayer2 **************************************
 void testMidiPlayer2()
 {
@@ -764,10 +763,10 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteLoop();
     testMidiPlayerOneNoteLoopLockContention();
     testMidiPlayerReset();
-   // testMidiPlayerStop();
     testMidiPlayerOverlap();
 #if 0   // never finished - did in composite instead
     testMidiPlayerReTrigger(true);
     testMidiPlayerReTrigger(false);
 #endif
+    testMidiPlayerLoop();
 }
