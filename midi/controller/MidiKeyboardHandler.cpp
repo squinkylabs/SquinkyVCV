@@ -190,6 +190,18 @@ bool MidiKeyboardHandler::handle(
             handleNoteEditorChange(sequencer, ChangeType::lessThan, true);
             handled = true;
             break;
+        case GLFW_KEY_END:
+            sequencer->editor->advanceCursor(
+                ctrl ? MidiEditor::Advance::All : MidiEditor::Advance::Measure,
+                1);  
+            handled = true;
+            break;
+        case GLFW_KEY_HOME:
+            sequencer->editor->advanceCursor(
+                ctrl ? MidiEditor::Advance::All : MidiEditor::Advance::Measure,
+                -1);  
+            handled = true;
+            break;
         case GLFW_KEY_RIGHT:
             {
                 //one grid space or quater note
@@ -208,17 +220,21 @@ bool MidiKeyboardHandler::handle(
                 handled = true;
             }
             break;
-         case GLFW_KEY_UP:
-            {
-                sequencer->editor->changeCursorPitch(1);
-                handled = true;
-            }
+         case GLFW_KEY_PAGE_UP:
+            sequencer->editor->changeCursorPitch(12);
+            handled = true;
+            break;
+        case GLFW_KEY_PAGE_DOWN:
+            sequencer->editor->changeCursorPitch(-12);
+            handled = true;
+            break;
+        case GLFW_KEY_UP:
+            sequencer->editor->changeCursorPitch(1);
+            handled = true;
             break;
         case GLFW_KEY_DOWN:
-            {
-                sequencer->editor->changeCursorPitch(-1);
-                handled = true;
-            }
+            sequencer->editor->changeCursorPitch(-1);
+            handled = true;
             break;
 
         case GLFW_KEY_A:
