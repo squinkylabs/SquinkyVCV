@@ -1,10 +1,24 @@
 # Sequencer keyboard commands
 
+Please note that everything here has changed August 1 2019.
+
+Many key commands take input from the grid size set from the settings menu.
+
+## Misc
+
+**n**: sets the end point of the sequence to the current cursor time. Time is always quantized to the grid, even if snap to grid is off.
+
 ## Moving around
 
-**cursor keypad**: moves cursor in two dimensions. Up and down by semitone, left and right by one time unit.
+**cursor keypad**: moves cursor in two dimensions. Up and down by semitone, left and right by one grid unit.
 
-**ctrl-cursor**: moves left and right by four units.
+**ctrl-cursor**: moves left and right by a quarter note.
+
+**home, end**: moved on bar earlier or later.
+
+**ctrl-hom, end**: moves to first bar or last bar in the sequence.
+
+**PgUp, PgDn**: moves up or down by an octave.
 
 ## Selecting notes
 
@@ -22,17 +36,19 @@ Moving the cursor onto a note will select it.
 
 ## Inserting and deleting notes
 
-**Ins** inserts a note at the current cursor.
+Note that are inserted will have their start time quantized to the grid if snap to grid is enabled in the settings menu. After note is inserted the cursor will be advanced past the note just inserted, unless the shift key is held down.
+
+**Ins or Enter** inserts a note at the current cursor. Duration will be one grid unit.
 
 **Del** deletes the currently selected notes.
 
-Insert preset note durations. They shortcuts insert note of a specific duration, then move the cursor past that location.
+Insert preset note durations. They shortcuts insert note of a specific duration.
 
-* **ctrl-w** Whole note.
-* **ctrl-h** Half note.
-* **ctrl-q** Quarter note.
-* **ctrl-e** Eighth note.
-* **ctrl-s** Sixteenth note.
+* **w** Whole note.
+* **h** Half note.
+* **q** Quarter note.
+* **e** Eighth note.
+* **x** Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
 
 ## Changing notes
 

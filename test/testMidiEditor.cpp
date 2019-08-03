@@ -6,6 +6,7 @@
 #include "MidiSequencer.h"
 #include "MidiTrack.h"
 #include "MidiSong.h"
+#include "SqClipboard.h"
 #include "TestSettings.h"
 #include "TimeUtils.h"
 
@@ -626,6 +627,29 @@ static void testChangeTrackLengthNoSnap()
     testChangeTrackLength(false);
 }
 
+static void testCut()
+{
+    MidiSequencerPtr seq = makeTest(false);
+  
+    const float origLen = seq->context->getTrack()->getLength();
+    const int origSize = seq->context->getTrack()->size();
+    seq->editor->selectAll();
+    seq->editor->cut();
+  
+    seq->assertValid();
+
+    assertEQ(1, seq->context->getTrack()->size());
+
+    seq->undo->undo(seq);
+    assertEQ(origSize, seq->context->getTrack()->size());
+
+    auto clipData = SqClipboard::getTrackData();
+    assertEQ(clipData->offset, 0);
+    MidiTrackPtr tk = clipData->track;
+
+    assertEQ(tk->size(), origSize);
+}
+
 void testMidiEditorSub(int trackNumber)
 {
     _trackNumber = trackNumber;
@@ -659,7 +683,7 @@ void testMidiEditorSub(int trackNumber)
 
     testChangeTrackLength();
     testChangeTrackLengthNoSnap();
-
+    testCut();
 }
 
 void testMidiEditor()

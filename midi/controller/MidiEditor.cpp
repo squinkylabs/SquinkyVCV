@@ -709,9 +709,47 @@ void MidiEditor::changeTrackLength()
     seq()->undo->execute(seq(), cmd);
 }
 
-void MidiEditor::cut()
+// TODO: use this for copy, too
+void moveSelectionToClipboard(MidiSequencerPtr seq)
 {
-    deleteNoteSub("cut");
+    float earliestEventTime = 0;
+    bool firstOne = true;
+
+    MidiTrackPtr track = std::make_shared<MidiTrack>(seq->song->lock);
+    for (auto it : *seq->selection) {
+        MidiEventPtr orig = it;
+        MidiEventPtr newEvent = orig->clone();
+        track->insertEvent(newEvent);
+        if (firstOne) {
+            earliestEventTime = newEvent->startTime;
+        }
+        earliestEventTime = std::min(earliestEventTime, newEvent->startTime);
+        firstOne = false;
+    }
+
+    if (track->size() == 0) {
+        return;
+    }
+    // TODO: make helper? Adding a final end event
+
+
+    auto it = track->end();
+    --it;
+    MidiEventPtr lastEvent = it->second;
+    float lastT = lastEvent->startTime;
+    MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(lastEvent);
+    if (lastNote) {
+        lastT += lastNote->duration;
+    }
+
+    track->insertEnd(lastT);
+    track->assertValid();
+
+    std::shared_ptr<SqClipboard::Track> clipData = std::make_shared< SqClipboard::Track>();
+    clipData->track = track;
+
+    clipData->offset = float(earliestEventTime);
+    SqClipboard::putTrackData(clipData);
 }
 
 void MidiEditor::copy()
@@ -740,6 +778,8 @@ void MidiEditor::copy()
         return;
     }
     // TODO: make helper? Adding a final end event
+
+
     auto it = track->end();
     --it;
     MidiEventPtr lastEvent = it->second;
@@ -778,4 +818,15 @@ void MidiEditor::paste()
     seq()->assertValid();
 
     // TODO: what do we select afterwards?
+}
+
+void MidiEditor::cut()
+{
+    auto songLock = seq()->song->lock;
+    MidiLocker l(songLock);
+
+    moveSelectionToClipboard(seq());
+    // put all the notes in the clip
+    // cut out all the notes in an undoable way
+    deleteNoteSub("cut");
 }

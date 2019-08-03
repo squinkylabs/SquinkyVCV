@@ -281,6 +281,25 @@ static void testDuration()
     assertEQ(note->duration, 6.f);
 }
 
+static void testCut()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+
+    const float origLen = seq->context->getTrack()->getLength();
+    const int origSize = seq->context->getTrack()->size();
+    seq->editor->selectAll();
+    auto cmd = ReplaceDataCommand::makeDeleteCommand(seq, "cut");
+
+    seq->undo->execute(seq, cmd);
+    seq->assertValid();
+
+    assertEQ(1, seq->context->getTrack()->size());
+    seq->undo->undo(seq);
+    assertEQ(origSize, seq->context->getTrack()->size());
+}
+
 void testReplaceCommand()
 {
     test0();
@@ -293,4 +312,5 @@ void testReplaceCommand()
     testInsert();
     testStartTime();
     testDuration();
+    testCut();
 }
