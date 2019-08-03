@@ -214,7 +214,6 @@ static void testStartTime()
     MidiLocker l(ms->lock);
     MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
 
-    printf("test start time first inserting a note at 100\n");
     // put a note into it at time 100;
     auto track = seq->context->getTrack();
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
@@ -227,7 +226,6 @@ static void testStartTime()
     assertEQ(seq->selection->size(), 1);
 
     // shift note later to 1100
-    printf("now testStartTime will make change start itme command\n");
     cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.f);
     seq->undo->execute(seq, cmd);
 
@@ -235,13 +233,11 @@ static void testStartTime()
     note = track->getFirstNote();   
     assertEQ(note->startTime, 1100.f);
 
-    printf("now will undo set start time\n");
     seq->undo->undo(seq);
     seq->assertValid();
     note = track->getFirstNote();
     assertEQ(note->startTime, 100.f);
 
-    printf("now will redo set start time\n");
     seq->undo->redo(seq);
     seq->assertValid();
     note = track->getFirstNote();

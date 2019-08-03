@@ -98,7 +98,9 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
 
 void MidiTrack::setLength(float newTrackLength)
 {
-   // auto xx = getEndEvent();
+    assert(lock);
+    assert(lock->locked());
+
     MidiEndEventPtr end = getEndEvent();
     assert(end);
     deleteEvent(*end);
@@ -385,7 +387,6 @@ MidiTrackPtr MidiTrack::makeTestFourTouchingQuarters(
     track->insertEnd(TimeUtils::bar2time(1));
     return track;
 }
-
 
 MidiTrackPtr MidiTrack::makeTestEmpty(std::shared_ptr<MidiLock> lock)
 {

@@ -588,6 +588,57 @@ static void testDelete2()
     assertEQ(trackSizeAfterUndo, trackSizeBefore);
 }
 
+static void testChangeTrackLength()
+{
+    MidiSequencerPtr seq = makeTest(false);
+
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = 1;        // set to quarter note grid
+
+    const float initialLength = seq->context->getTrack()->getLength();
+  
+    seq->editor->advanceCursorToTime(41.356f, false);
+    seq->editor->changeTrackLength();
+    seq->assertValid();
+
+    assertEQ(seq->context->getTrack()->getLength(), 41);
+    seq->undo->undo(seq);
+    assertEQ(seq->context->getTrack()->getLength(), initialLength);
+    seq->undo->redo(seq);
+    assertEQ(seq->context->getTrack()->getLength(), 41);
+
+    seq->assertValid();
+}
+
+
+
+static void testChangeTrackLengthNoSnap()
+{
+    MidiSequencerPtr seq = makeTest(false);
+
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = 1;        // set to quarter note grid
+    ts->_snapToGrid = false;
+
+    const float initialLength = seq->context->getTrack()->getLength();
+
+    seq->editor->advanceCursorToTime(41.356f, false);
+    seq->editor->changeTrackLength();
+    seq->assertValid();
+
+    assertEQ(seq->context->getTrack()->getLength(), 41.356f);
+    seq->undo->undo(seq);
+    assertEQ(seq->context->getTrack()->getLength(), initialLength);
+    seq->undo->redo(seq);
+    assertEQ(seq->context->getTrack()->getLength(), 41.356f);
+
+    seq->assertValid();
+}
+
 void testMidiEditorSub(int trackNumber)
 {
     _trackNumber = trackNumber;
@@ -618,6 +669,9 @@ void testMidiEditorSub(int trackNumber)
     testDelete();
     testDelete2();
     testInsertPresetNotes();
+
+    testChangeTrackLength();
+    testChangeTrackLengthNoSnap();
 
 }
 

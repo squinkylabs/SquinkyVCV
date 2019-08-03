@@ -701,6 +701,13 @@ void MidiEditor::selectAll()
     }
 }
 
+void MidiEditor::changeTrackLength()
+{
+    float endTime = seq()->context->cursorTime();
+    endTime = seq()->context->settings()->quantize(endTime, false);
+    auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq(), endTime);
+    seq()->undo->execute(seq(), cmd);
+}
 
 void MidiEditor::cut()
 {

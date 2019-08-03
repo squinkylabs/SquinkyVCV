@@ -75,6 +75,8 @@ public:
     void copy();
     void paste();
 
+    void changeTrackLength();
+
     void assertCursorInSelection();
      // select any note that is under the cursor
     void updateSelectionForCursor(bool extendCurrent);

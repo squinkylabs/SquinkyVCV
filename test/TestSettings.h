@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include "ISeqSettings.h"
+#include "TimeUtils.h"
 
 class TestSettings : public ISeqSettings
 {
@@ -16,7 +17,7 @@ public:
     }
     bool snapToGrid() override
     {
-        return false;
+        return _snapToGrid;
     }
     bool snapDurationToGrid() override
     {
@@ -28,11 +29,13 @@ public:
      * otherwise does nothing.
      * will not quantize smaller than a grid.
      */
-    float quantize(float x, bool allowZero) override
+    float quantize(float time, bool allowZero) override
     {
-       // assert(false);
-        //return 0;
-        return x;
+        auto quantized = time;
+        if (snapToGrid()) {
+            quantized = (float) TimeUtils::quantize(time, getQuarterNotesInGrid(), allowZero);
+        }
+        return quantized;
     }
 
     float articulation() override
@@ -42,4 +45,5 @@ public:
 
     float _articulation = 1;
     float _quartersInGrid = .25;
+    bool _snapToGrid = true;
 };

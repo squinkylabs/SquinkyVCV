@@ -31,6 +31,7 @@ bool MidiSong::trackExists(int tkNum) const
 
 void MidiSong::addTrack(int index, std::shared_ptr<MidiTrack> track)
 {
+    assert(lock);
     if (index >= (int) tracks.size()) {
         tracks.resize(index + 1);
     }
