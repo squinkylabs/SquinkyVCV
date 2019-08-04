@@ -3,6 +3,7 @@
 #include "Squinky.hpp"
 
 #ifdef _SEQ
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 #include "Seq.h"
 #include "seq/SeqSettings.h"
@@ -20,6 +21,10 @@
 #include "TimeUtils.h"
 
 #include "SequencerModule.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Seq");
+#endif
 
 using Comp = Seq<WidgetComposite>;
 
@@ -66,6 +71,15 @@ struct SequencerWidget : ModuleWidget
     void addJacks(SequencerModule *module);
     void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
     void toggleRunStop(SequencerModule *module);
+
+#ifdef _TIME_DRAWING
+    // Seq: avg = 399.650112, stddev = 78.684572 (us) Quota frac=2.397901
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 void SequencerWidget::step()

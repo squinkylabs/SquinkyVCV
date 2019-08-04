@@ -2,7 +2,7 @@
 
 #include "SqTime.h"
 
-//#define _TIME_DRAWING
+// #define _TIME_DRAWING
 class DrawTimer
 {
 public:
@@ -23,7 +23,7 @@ public:
         name = n;
     }
 private:
-    static const int frames = 100;
+    static const int frames = 400;
     double hits[frames];
     int index = 0;
     std::string name;

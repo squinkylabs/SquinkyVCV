@@ -4,7 +4,7 @@
 #include "WidgetComposite.h"
 
 #ifdef _MIX4
-
+#include "DrawTimer.h"
 #include "MixerModule.h"
 #include "Mix4.h"
 #include "ctrl/SqHelper.h"
@@ -14,6 +14,10 @@
 
 
 #include "ctrl/SqWidgets.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Mix4");
+#endif
 
 using Comp = Mix4<WidgetComposite>;
 
@@ -109,6 +113,15 @@ struct Mix4Widget : ModuleWidget
         std::shared_ptr<IComposite>,
         int channel);
     void appendContextMenu(Menu *menu) override;
+
+#ifdef _TIME_DRAWING
+    // Mix4: avg = 109.139913, stddev = 21.922893 (us) Quota frac=0.654839
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 private:
     Mix4Module* mixModule;
 };

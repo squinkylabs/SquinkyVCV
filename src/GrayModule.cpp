@@ -3,8 +3,13 @@
 #include "WidgetComposite.h"
 
 #ifdef _GRAY
+#include "DrawTimer.h"
 #include "Gray.h"
 #include "ctrl/SqMenuItem.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Gray");
+#endif
 
 using Comp = Gray<WidgetComposite>;
 
@@ -73,6 +78,14 @@ struct GrayWidget : ModuleWidget
         addChild(label);
         return label;
     }
+#ifdef _TIME_DRAWING
+    // Gray: avg = 52.826101, stddev = 16.951956 (us) Quota frac=0.316957
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 
 private:
     void addBits(GrayModule *module);

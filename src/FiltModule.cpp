@@ -4,11 +4,16 @@
 #include "WidgetComposite.h"
 
 #ifdef _FILT
+#include "DrawTimer.h"
 #include "Filt.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Filt");
+#endif
 
 using Comp = Filt<WidgetComposite>;
 
@@ -83,6 +88,15 @@ struct FiltWidget : ModuleWidget
     void addParams(FiltModule *module, std::shared_ptr<IComposite> icomp);
     void addTrimmers(FiltModule *module, std::shared_ptr<IComposite> icomp);
     void addJacks(FiltModule *module, std::shared_ptr<IComposite> icomp);
+
+#ifdef _TIME_DRAWING
+    // Filt: avg = 160.360240, stddev = 32.932833 (us) Quota frac=0.962161
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 

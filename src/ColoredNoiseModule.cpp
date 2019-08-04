@@ -2,10 +2,15 @@
 #include "Squinky.hpp"
 
 #ifdef _COLORS
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 #include "ColoredNoise.h"
 #include "NoiseDrawer.h"
 #include "ctrl/SqMenuItem.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Colors");
+#endif
 
 using Comp = ColoredNoise<WidgetComposite>;
 /**
@@ -68,6 +73,16 @@ struct ColoredNoiseWidget : ModuleWidget
     Label * signLabel;
 
     DECLARE_MANUAL("Colors manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
+
+
+#ifdef _TIME_DRAWING
+    // Colors: avg = 41.157473, stddev = 13.277238 (us) Quota frac=0.246945
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 // The colors of noise (UI colors)

@@ -4,6 +4,7 @@
 #include "ctrl/WaveformSelector.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 
 #include "EV3.h"
@@ -11,6 +12,9 @@
 
 #include "SqPort.h"
  
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("EV3");
+#endif
 
 using Comp = EV3<WidgetComposite>;
 
@@ -301,6 +305,15 @@ struct EV3Widget : ModuleWidget
     Label* plusOne = nullptr;
     Label* plusTwo = nullptr;
     bool wasNormalizing = false;
+
+#ifdef _TIME_DRAWING
+    // EV3: avg = 464.417900, stddev = 145.768622 (us) Quota frac=2.786507
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);

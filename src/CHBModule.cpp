@@ -92,6 +92,7 @@ struct CHBWidget : ModuleWidget
     }
 
 #ifdef _TIME_DRAWING
+    //Cheby: avg = 114.110832, stddev = 37.485271 (us) Quota frac=0.684665
     void draw(const DrawArgs &args) override
     {
         DrawLocker l(drawTimer);

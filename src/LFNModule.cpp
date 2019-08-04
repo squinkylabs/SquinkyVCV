@@ -2,6 +2,7 @@
 
 #include "Squinky.hpp"
 #ifdef _LFN
+#include "DrawTimer.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqWidgets.h"
@@ -9,6 +10,10 @@
 #include "LFN.h"
 
 #include <sstream>
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("LFN");
+#endif
 
 using Comp = LFN<WidgetComposite>;
 
@@ -117,6 +122,15 @@ struct LFNWidget : ModuleWidget
     LFNModule* module;
 
     ParamWidget* xlfnWidget = nullptr;
+
+#ifdef _TIME_DRAWING
+    // LFN: avg = 30.989896, stddev = 10.567962 (us) Quota frac=0.185939
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 static const float knobX = 42;

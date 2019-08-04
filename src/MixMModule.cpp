@@ -113,6 +113,7 @@ struct MixMWidget : ModuleWidget
     void appendContextMenu(Menu *menu) override;
 
 #ifdef _TIME_DRAWING
+    // Mixm: avg = 106.471380, stddev = 34.237331 (us) Quota frac=0.638828
     void draw(const DrawArgs &args) override
     {
         DrawLocker l(drawTimer);

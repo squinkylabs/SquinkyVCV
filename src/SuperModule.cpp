@@ -95,6 +95,7 @@ struct superWidget : ModuleWidget
     SemitoneDisplay semitoneDisplay;
 
 #ifdef _TIME_DRAWING
+    //Saws: avg = 793.744399, stddev = 271.946036 (us) Quota frac=4.762466
     void draw(const DrawArgs &args) override
     {
         DrawLocker l(drawTimer);
@@ -271,16 +272,11 @@ void superWidget::addJacks(SuperModule *)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
+
 superWidget::superWidget(SuperModule *module) : semitoneDisplay(module)
 {
     setModule(module);
-#else
-superWidget::superWidget(SuperModule *module) :
-    ModuleWidget(module),
-    semitoneDisplay(module)
-{
-#endif
+
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/super_panel.svg");
@@ -312,16 +308,8 @@ superWidget::superWidget(SuperModule *module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-
-#ifdef __V1x
 Model *modelSuperModule = createModel<SuperModule,
     superWidget>("squinkylabs-super");
-#else
-Model *modelSuperModule = Model::create<SuperModule,
-    superWidget>("Squinky Labs",
-    "squinkylabs-super",
-    "Saws: super saw VCO emulation", OSCILLATOR_TAG);
-#endif
 
 #endif
 

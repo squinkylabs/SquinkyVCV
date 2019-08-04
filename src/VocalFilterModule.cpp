@@ -2,6 +2,7 @@
 #include "Squinky.hpp"
 
 #ifdef _FORMANTS
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 #include "VocalFilter.h"
 #include "ctrl/SqMenuItem.h"
