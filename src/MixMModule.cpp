@@ -4,6 +4,7 @@
 #include "WidgetComposite.h"
 
 #ifdef _MIXM
+#include "DrawTimer.h"
 #include "MixerModule.h"
 #include "MixM.h"
 #include "ctrl/SqHelper.h"
@@ -12,6 +13,10 @@
 #include "ctrl/SqToggleLED.h"
 
 #include "ctrl/SqWidgets.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Mixm");
+#endif
 
 using Comp = MixM<WidgetComposite>;
 #define WIDE 1
@@ -106,6 +111,14 @@ struct MixMWidget : ModuleWidget
     void makeMaster(MixMModule* , std::shared_ptr<IComposite>); 
 
     void appendContextMenu(Menu *menu) override;
+
+#ifdef _TIME_DRAWING
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 private:
     MixMModule* mixModule;          
 };

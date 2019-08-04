@@ -7,9 +7,14 @@
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SemitoneDisplay.h"
+#include "DrawTimer.h"
 #include "IMWidgets.hpp"
 
 #include <sstream>
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Saws");
+#endif
 
 using Comp = Super<WidgetComposite>;
 
@@ -88,6 +93,14 @@ struct superWidget : ModuleWidget
     DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
+
+#ifdef _TIME_DRAWING
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 const float col1 = 40;

@@ -17,6 +17,7 @@ MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<
         vx.setHost(host.get());
         vx.setIndex(i);
     }
+    loopParams = nullptr;
 }
 
 void MidiPlayer2::setSong(std::shared_ptr<MidiSong> newSong)
@@ -83,8 +84,6 @@ void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterv
     }
 }
 
-
-
 void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizationInterval)
 {
     metricTime = TimeUtils::quantize(metricTime, quantizationInterval, true);
@@ -97,6 +96,10 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
         isReset = false;
         isResetGates = false;
         loopStart = 0;
+    }
+
+    if (loopParams && loopParams.load()->enabled) {
+        metricTime += loopParams.load()->startTime;
     }
      // keep processing events until we are caught up
     while (playOnce(metricTime, quantizationInterval)) {
@@ -117,6 +120,7 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
     }
 
     const double eventStartUnQuantized = (loopStart + curEvent->first);
+
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
     if (eventStart <= metricTime) {
         MidiEventPtr event = curEvent->second;

@@ -17,10 +17,13 @@ const float quantInterval = .001f;      // very fine to avoid messing up old tes
 /**
  * Makes a one-track song.
  * Track has one quarter note at t=0, duration = eighth.
- * End event at quarter note end.
+ * End event at quarter note after note
  */
-MidiSongPtr makeSongOneQ(float noteTime)
+MidiSongPtr makeSongOneQ(float noteTime, float endTime)
 {
+    const float duration = .5;
+    assert(endTime >= (noteTime + duration));
+
     MidiSongPtr song = std::make_shared<MidiSong>();
     MidiLocker l(song->lock);
     song->createTrack(0);
@@ -31,7 +34,10 @@ MidiSongPtr makeSongOneQ(float noteTime)
     note->duration = .5;
     note->pitchCV = 2.f;
     track->insertEvent(note);
-    track->insertEnd(1);
+    track->insertEnd(endTime);
+
+    MidiEventPtr p = track->begin()->second;
+    assert(p->type == MidiEvent::Type::Note);
 
     return song;
 }
@@ -43,7 +49,7 @@ MidiSongPtr makeSongOneQ(float noteTime)
  */
 MidiSongPtr makeSongOneQ()
 {
-    return makeSongOneQ(0);
+    return makeSongOneQ(0, 1);
 }
 
 /**
@@ -614,7 +620,6 @@ static void testMidiPlayerOneNoteOnWithLockContention()
 static void testMidiPlayerOneNote()
 {
     // this was wall time (1/4 sec)
-    //std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
     std::shared_ptr<TestHost2> host = makeSongOneQandRun(.5f);
 
     assertAllButZeroAreInit(host.get());
@@ -723,7 +728,8 @@ static void testMidiPlayerOverlap()
 static void testMidiPlayerLoop()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ(4);
+    MidiSongPtr song = makeSongOneQ(4, 100);
+
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
 
@@ -733,7 +739,11 @@ static void testMidiPlayerLoop()
     pl.setLoopParams(&loopParams);
     assert(pl._getP());
 
-    assert(false);      // finish the test
+    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+
+    assertEQ(1, host->gateChangeCount);
+    assert(host->gateState[0]);
+
 }
 
 //*******************************tests of MidiPlayer2 **************************************
