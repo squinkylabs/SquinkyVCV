@@ -741,9 +741,45 @@ static void testMidiPlayerLoop()
 
     pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
 
+    // Expect one note played on first clock, due to loop start offset
     assertEQ(1, host->gateChangeCount);
     assert(host->gateState[0]);
 
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(.9, .5);
+    assertEQ(2, host->gateChangeCount);
+    assert(!host->gateState[0]);
+}
+
+static void testMidiPlayerLoop2()
+{
+    // make a song with one note in the second bar
+    MidiSongPtr song = makeSongOneQ(4, 100);
+
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    assert(!pl._getP());
+
+    MidiLoopParams loopParams(true, 4, 8);      // loop second bar
+    pl.setLoopParams(&loopParams);
+    assert(pl._getP());
+
+    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+
+    // Expect one note played on first clock, due to loop start offset
+    assertEQ(1, host->gateChangeCount);
+    assert(host->gateState[0]);
+
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(.9, .5);   
+    assertEQ(2, host->gateChangeCount);
+    assert(!host->gateState[0]);
+
+   // now go to the second time around the loop, should play again.
+    pl.updateToMetricTime(1, .5);
+    assertEQ(3, host->gateChangeCount);
+    assert(host->gateState[0]);
 }
 
 //*******************************tests of MidiPlayer2 **************************************
@@ -779,4 +815,5 @@ void testMidiPlayer2()
     testMidiPlayerReTrigger(false);
 #endif
     testMidiPlayerLoop();
+    testMidiPlayerLoop2();
 }
