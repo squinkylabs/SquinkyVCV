@@ -132,7 +132,7 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
     if (song->getLoop().enabled) {
         auto loopEnd = song->getLoop().endTime + loopStart;
         if (loopEnd <= metricTime) {
-            loopStart += (loopEnd - song->getLoop().startTime);
+            loopStart += (song->getLoop().endTime - song->getLoop().startTime);
             curEvent = track->begin();
             return true;
         }

@@ -45,7 +45,6 @@ public:
 
     MidiSelectionModelPtr clone() const;
 
-
     std::shared_ptr<MidiEvent> getLast();
 
     /** Returns true is this object instance is in selection.

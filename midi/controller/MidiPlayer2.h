@@ -1,17 +1,13 @@
 #pragma once
 
-#include <atomic>
 #include <memory>
 
 class MidiSong;
 class IMidiPlayerHost;
 
-
 #include "MidiTrack.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
-
-
 
 class MidiPlayer2
 {
@@ -30,22 +26,6 @@ public:
     void setNumVoices(int voices);
 
     /**
-     * Client may change looping by calling this API.
-     * Parameters are constant, so of course a new set must be passed for every change
-     */
-#if 0
-    void setLoopParams(const MidiLoopParams* p)
-    {
-        loopParams = p;
-    }
-    const MidiLoopParams* _getP()    // just for test
-    {
-        return loopParams;
-    }
-#endif
-
-
-    /**
      * resets all internal playback state.
      * @param clearGate will set the host's gate low, if true
      */
@@ -54,7 +34,6 @@ public:
 
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
-
 
 private:
     std::shared_ptr<IMidiPlayerHost> host;
@@ -67,7 +46,6 @@ private:
     /***************************************
      * Variables  to play one track
      */
-
     MidiTrack::const_iterator curEvent;
 
     /**
@@ -79,14 +57,9 @@ private:
     bool isPlaying = true;
     double loopStart = 0;
     int numVoices=1;
-   // std::atomic<const MidiLoopParams*> loopParams;
-    //MidiSong::SubrangeLoop subrangeLoopParams;
-   // std::shared_ptr<SubrangeLoop> subrangeLoopParams;
-    
 
     std::shared_ptr<MidiTrack> track;
 
-   
     void updateToMetricTimeInternal(double, float);
     bool playOnce(double metricTime, float quantizeInterval);
     bool pollForNoteOff(double metricTime);

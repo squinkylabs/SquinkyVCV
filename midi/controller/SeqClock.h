@@ -84,7 +84,6 @@ inline SeqClock::SeqClock() :
     resetLockout.setSampleTime(1.f / 44100.f);
 }
 
-#if 1
 inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
 {
     ClockResults results;
@@ -138,53 +137,6 @@ inline void SeqClock::reset(bool internalClock)
 {
     curMetricTime = internalClock? 0 : -1;
 }
-
-#else // original
-inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
-{
-    ClockResults results;
-    // if stopped, don't do anything
-
-    resetProcessor.go(reset);
-    results.didReset = resetProcessor.trigger();
-    if (results.didReset) {
-        resetLockout.set();
-        curMetricTime = 0;          // go back to start
-    }
-    for (int i = 0; i < samplesElapsed; ++i) {
-        resetLockout.step();
-    }
-
-    if (!runStop) {
-        results.totalElapsedTime = curMetricTime;
-        return results;
-    }
-    // Internal clock
-    if (clockSetting == ClockRate::Internal) {
-        double deltaSeconds = samplesElapsed * sampleTime;
-        double deltaMetric = deltaSeconds * internalTempo / 60.0;
-        curMetricTime += deltaMetric;
-    } else {
-        // ignore external clock during lockout.
-        if (resetLockout.hasFired()) {
-            // external clock
-            clockProcessor.go(externalClock);
-            if (clockProcessor.trigger()) {
-                curMetricTime += metricTimePerClock;
-            }
-        }
-    }
-    results.totalElapsedTime = curMetricTime;
-    return results;
-}
-
-inline void SeqClock::reset()
-{
-    curMetricTime = 0;
-}
-#endif
-
-
 
 inline void SeqClock::setup(ClockRate inputSetting, float tempoSetting, float sampleT)
 {

@@ -11,17 +11,3 @@ public:
     virtual void onLockFailed() = 0;
     virtual ~IMidiPlayerHost() = default;
 };
-
-#if 0
-class MidiLoopParams
-{
-public:
-    MidiLoopParams(bool b, float s, float e) : enabled(b), startTime(s), endTime(e)
-    {
-
-    }
-    bool enabled=false;
-    float startTime=0;
-    float endTime = 0;
-};
-#endif

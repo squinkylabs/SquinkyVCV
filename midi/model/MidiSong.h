@@ -9,8 +9,6 @@ class MidiLock;
 
 using MidiSongPtr = std::shared_ptr<MidiSong>;
 
-
-
 class MidiSong
 {
 public:
@@ -24,7 +22,6 @@ public:
      */
     void addTrack(int index, std::shared_ptr<MidiTrack>);
    
-
     void assertValid() const;
 
     /**

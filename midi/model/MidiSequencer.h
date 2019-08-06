@@ -46,8 +46,6 @@ private:
     MidiSequencer() = delete;
     MidiSequencer(const MidiSequencer&) = delete;
 
-    
-
     /**
      * must be called to make constructor
      * todo: memory leak for circular ref

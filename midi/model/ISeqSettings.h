@@ -21,8 +21,9 @@ public:
     virtual float getQuarterNotesInGrid() = 0;
     virtual bool snapToGrid() = 0;
     virtual bool snapDurationToGrid() = 0;
+
     /**
-     * if snap to grid,will quantize the passed value to the current grid.
+     * If snap to grid,will quantize the passed value to the current grid.
      * otherwise does nothing.
      * will not quantize smaller than a grid.
      */

@@ -7,7 +7,6 @@
 
 #include "PitchUtils.h"
 
-
 // forward declare smart pointers
 class MidiEvent;
 class MidiEndEvent;

@@ -738,7 +738,6 @@ static void testMidiPlayerLoop()
     song->setLoop(l);
     assert(song->getLoop().enabled);
 
-
     pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
@@ -764,6 +763,7 @@ static void testMidiPlayerLoop2()
     song->setLoop(l);
     assert(song->getLoop().enabled);
 
+    assertEQ(pl.getLoopStart(), 0);
     pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
@@ -774,11 +774,57 @@ static void testMidiPlayerLoop2()
     pl.updateToMetricTime(3.5, .5);   
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
+    assertEQ(pl.getLoopStart(), 0);
 
    // now go to the second time around the loop, should play again.
     pl.updateToMetricTime(4, .5);
     assert(host->gateState[0]);
     assertEQ(3, host->gateChangeCount);
+    assertEQ(pl.getLoopStart(), 4);
+}
+
+
+static void testMidiPlayerLoop3()
+{
+    // make a song with one note in the second bar
+    MidiSongPtr song = makeSongOneQ(4, 100);
+
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    assert(!song->getLoop().enabled);
+    MidiSong::SubrangeLoop l(true, 4, 8);
+    song->setLoop(l);
+    assert(song->getLoop().enabled);
+
+    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+
+    // Expect one note played on first clock, due to loop start offset
+    assertEQ(1, host->gateChangeCount);
+    assert(host->gateState[0]);
+
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(3.5, .5);
+    assertEQ(2, host->gateChangeCount);
+    assert(!host->gateState[0]);
+
+    // now go to the second time around the loop, should play again.
+    pl.updateToMetricTime(4, .5);
+    assert(host->gateState[0]);
+    assertEQ(3, host->gateChangeCount);
+    assertEQ(pl.getLoopStart(), 4);
+
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(4 + 3.5, .5);
+    assert(!host->gateState[0]);
+    assertEQ(4, host->gateChangeCount);
+    assertEQ(pl.getLoopStart(), 4);
+
+    // now go to the third time around the loop, should play again.
+    pl.updateToMetricTime(4+4, .5);
+    assertEQ(pl.getLoopStart(), 8);
+    assert(host->gateState[0]);
+    assertEQ(5, host->gateChangeCount);
 }
 
 //*******************************tests of MidiPlayer2 **************************************
@@ -815,4 +861,6 @@ void testMidiPlayer2()
 #endif
     testMidiPlayerLoop();
     testMidiPlayerLoop2();
+    testMidiPlayerLoop3();
+
 }

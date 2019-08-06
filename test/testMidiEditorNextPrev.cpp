@@ -267,7 +267,6 @@ static void textExtendNoteTwiceWhenOneSelected()
     assertClose(seq->context->cursorTime(), 1, .001);
 
     seq->editor->extendSelectionToNextNote();
-    printf("cursor time = %f\n", seq->context->cursorTime());
     assertEQ(seq->selection->size(), 3);
 }
 

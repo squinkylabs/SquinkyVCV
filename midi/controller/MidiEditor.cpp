@@ -393,7 +393,6 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
             break;
         default:
             assert(false);
-
     }
 
     if (doRelative) {
@@ -403,6 +402,14 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
     } else {
         advanceCursorToTime(advanceAmount, false);
     }
+
+    // TODO: locking
+    auto l = seq()->song->getLoop();
+    if (l.enabled) {
+        l.startTime = seq()->context->startTime();
+        l.endTime = seq()->context->startTime();
+    }
+
 }
 
 void MidiEditor::changeCursorPitch(int semitones)

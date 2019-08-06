@@ -61,7 +61,6 @@ inline const char* PitchUtils::semi2name(int semi)
             assert(false);
     }
     return ret;
-
 }
 
 inline std::string PitchUtils::pitch2str(float cv)
