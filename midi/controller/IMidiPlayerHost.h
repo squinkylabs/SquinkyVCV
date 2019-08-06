@@ -12,6 +12,7 @@ public:
     virtual ~IMidiPlayerHost() = default;
 };
 
+#if 0
 class MidiLoopParams
 {
 public:
@@ -23,3 +24,4 @@ public:
     float startTime=0;
     float endTime = 0;
 };
+#endif

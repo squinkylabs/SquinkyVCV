@@ -6,9 +6,12 @@
 class MidiSong;
 class IMidiPlayerHost;
 
+
 #include "MidiTrack.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
+
+
 
 class MidiPlayer2
 {
@@ -30,6 +33,7 @@ public:
      * Client may change looping by calling this API.
      * Parameters are constant, so of course a new set must be passed for every change
      */
+#if 0
     void setLoopParams(const MidiLoopParams* p)
     {
         loopParams = p;
@@ -38,6 +42,7 @@ public:
     {
         return loopParams;
     }
+#endif
 
 
     /**
@@ -74,7 +79,10 @@ private:
     bool isPlaying = true;
     double loopStart = 0;
     int numVoices=1;
-    std::atomic<const MidiLoopParams*> loopParams;
+   // std::atomic<const MidiLoopParams*> loopParams;
+    //MidiSong::SubrangeLoop subrangeLoopParams;
+   // std::shared_ptr<SubrangeLoop> subrangeLoopParams;
+    
 
     std::shared_ptr<MidiTrack> track;
 

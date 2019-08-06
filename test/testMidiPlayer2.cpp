@@ -733,11 +733,11 @@ static void testMidiPlayerLoop()
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
 
-    assert(!pl._getP());
+    assert(!song->getLoop().enabled);
+    MidiSong::SubrangeLoop l(true, 4, 8);
+    song->setLoop(l);
+    assert(song->getLoop().enabled);
 
-    MidiLoopParams loopParams(true, 4, 8);      // loop second bar
-    pl.setLoopParams(&loopParams);
-    assert(pl._getP());
 
     pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
 
@@ -759,11 +759,10 @@ static void testMidiPlayerLoop2()
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
 
-    assert(!pl._getP());
-
-    MidiLoopParams loopParams(true, 4, 8);      // loop second bar
-    pl.setLoopParams(&loopParams);
-    assert(pl._getP());
+    assert(!song->getLoop().enabled);
+    MidiSong::SubrangeLoop l(true, 4, 8);
+    song->setLoop(l);
+    assert(song->getLoop().enabled);
 
     pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
 
@@ -772,14 +771,14 @@ static void testMidiPlayerLoop2()
     assert(host->gateState[0]);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(.9, .5);   
+    pl.updateToMetricTime(3.5, .5);   
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
 
    // now go to the second time around the loop, should play again.
-    pl.updateToMetricTime(1, .5);
-    assertEQ(3, host->gateChangeCount);
+    pl.updateToMetricTime(4, .5);
     assert(host->gateState[0]);
+    assertEQ(3, host->gateChangeCount);
 }
 
 //*******************************tests of MidiPlayer2 **************************************

@@ -17,7 +17,7 @@ MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<
         vx.setHost(host.get());
         vx.setIndex(i);
     }
-    loopParams = nullptr;
+//    loopParams = nullptr;
 }
 
 void MidiPlayer2::setSong(std::shared_ptr<MidiSong> newSong)
@@ -98,8 +98,13 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
         loopStart = 0;
     }
 
-    if (loopParams && loopParams.load()->enabled) {
-        metricTime += loopParams.load()->startTime;
+
+    // To implement loop start, we just push metric time up to where we want to start.
+    // TODO: skip over initial stuff?
+    
+    if (song->getLoop().enabled) {
+   // if (loopParams && loopParams.load()->enabled) {
+        metricTime += song->getLoop().startTime;
     }
      // keep processing events until we are caught up
     while (playOnce(metricTime, quantizationInterval)) {
@@ -119,7 +124,19 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
         return true;
     }
 
+    // push the start time up by loop start, so that event t==loop start happens at start of loop
     const double eventStartUnQuantized = (loopStart + curEvent->first);
+
+    // Treat loop end just like track end. loop back around
+    // when we pass then end.
+    if (song->getLoop().enabled) {
+        auto loopEnd = song->getLoop().endTime + loopStart;
+        if (loopEnd <= metricTime) {
+            loopStart += (loopEnd - song->getLoop().startTime);
+            curEvent = track->begin();
+            return true;
+        }
+    }
 
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
     if (eventStart <= metricTime) {

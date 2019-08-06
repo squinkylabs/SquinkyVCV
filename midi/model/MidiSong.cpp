@@ -83,3 +83,13 @@ void MidiSong::assertValid() const
         }
     }
 }
+
+const MidiSong::SubrangeLoop& MidiSong::getLoop()
+{
+    return loop;
+}
+
+void MidiSong::setLoop(const SubrangeLoop& l)
+{
+    loop = l;
+}
