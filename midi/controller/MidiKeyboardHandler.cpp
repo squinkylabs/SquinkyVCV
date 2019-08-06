@@ -237,6 +237,10 @@ bool MidiKeyboardHandler::handle(
             handled = true;
             break;
 
+        case GLFW_KEY_L:
+            sequencer->editor->loop();
+            handled = true;
+            break;
         case GLFW_KEY_A:
             {
                 if (ctrl) {

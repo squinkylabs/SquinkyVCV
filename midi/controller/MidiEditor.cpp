@@ -709,6 +709,19 @@ void MidiEditor::changeTrackLength()
     seq()->undo->execute(seq(), cmd);
 }
 
+void MidiEditor::loop()
+{
+    MidiSong::SubrangeLoop l = seq()->song->getLoop();
+    if (l.enabled) {
+        l.enabled = false;
+    } else {
+        l.enabled = true;
+        l.startTime = seq()->context->startTime();
+        l.endTime = seq()->context->endTime();
+    }
+    seq()->song->setLoop(l);
+}
+
 // TODO: use this for copy, too
 void moveSelectionToClipboard(MidiSequencerPtr seq)
 {

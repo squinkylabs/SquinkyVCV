@@ -86,6 +86,12 @@ void AboveNoteGrid::createTimeLabels()
     cursorPitchLabel->text = "";
     cursorPitchLabel->color = UIPrefs::STATUS_LABEL_COLOR;
     addChild(cursorPitchLabel);
+
+    loopLabel = new Label();
+    loopLabel->box.pos = Vec(100, row1);
+    loopLabel->text = "";
+    loopLabel->color =  UIPrefs::STATUS_LABEL_COLOR;
+    addChild(loopLabel);
 }
 
 // TODO: move to util
@@ -106,6 +112,11 @@ void AboveNoteGrid::updateCursorLabels()
     if (curCursorPitch != sequencer->context->cursorPitch()) {
         curCursorPitch = sequencer->context->cursorPitch();
         cursorPitchLabel->text = PitchUtils::pitch2str(curCursorPitch);
+    }
+
+    if (curLoopEnabled != sequencer->song->getLoop().enabled) {
+        curLoopEnabled = !curLoopEnabled;
+        loopLabel->text = curLoopEnabled ? "Loop" : "";
     }
 
 }

@@ -76,6 +76,7 @@ public:
     void paste();
 
     void changeTrackLength();
+    void loop();
 
     void assertCursorInSelection();
      // select any note that is under the cursor

@@ -25,6 +25,7 @@ private:
     int curFirstBar = -1;      // number of measure at start of grid
     float curCursorTime = -1;
     float curCursorPitch = -1;
+    bool curLoopEnabled = false;
     MidiSequencerPtr sequencer;
     Label* editAttributeLabel = nullptr;
     MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
@@ -36,4 +37,5 @@ private:
 
     Label* cursorTimeLabel = nullptr;
     Label* cursorPitchLabel = nullptr;
+    Label* loopLabel = nullptr;
 };
