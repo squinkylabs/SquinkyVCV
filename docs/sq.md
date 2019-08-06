@@ -106,9 +106,17 @@ Conventional editing with a mouse is also fully supported. Details are in [Mouse
 
 ## Extending the length
 
-There is a temporary hack to make it possible to lengthen a track. You may move the cursor past the end of the track. If you insert a note there, the track will be extended in units of 4/4 bars to accommodate the new note.
+The end of the sequence (loop point) is indicated with a vertical purple line in the piano roll.
 
-Note that it is not easy to know how long your track actually is. And it is currently impossible to shorten it, once you have lengthened it.
+There are two ways to change the length of the sequence: inserting notes past the end, and the change length command.
+
+You may move the cursor past the end of the track. If you insert a note there, the track will be extended in units of 4/4 bars to accommodate the new note. This way there is always room available in a measure to insert new notes.
+
+The other way, with the change length command, allows more control. Pressing the 'n' key will set the length to the nearest grid point to the cursor. This allows setting and end point that is not on a bar boundary, and also allows shortening a track.
+
+Note that the end point is quantized to the grid, even if *snap to grid* is not enabled.
+
+Note, also that if the end point is set earlier than any notes, the notes after the new end point will be deleted or shortened to fit in the new length.
 
 ## Some hints with editing
 

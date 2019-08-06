@@ -2,31 +2,17 @@
 #include "asserts.h"
 #include "MidiEditor.h"
 #include "MidiEvent.h"
+#include "MidiLock.h"
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
 #include "MidiTrack.h"
 #include "MidiSong.h"
+#include "MLockTest.h"
 #include "SqClipboard.h"
 #include "TestSettings.h"
 #include "TimeUtils.h"
 
-#include "MidiLock.h"
-class MLockTest
-{
-public:
-    MLockTest(MidiSequencerPtr s) : lp(s->song->lock)
-    {
-        assert(!lp->dataModelDirty());
-        assert(!lp->locked());
-    }
-    ~MLockTest()
-    {
-        assert(lp->dataModelDirty());
-        assert(!lp->locked());
-    }
-private:
-    MidiLockPtr lp;
-};
+
 
 static int _trackNumber = 0;
 

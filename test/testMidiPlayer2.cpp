@@ -734,7 +734,7 @@ static void testMidiPlayerLoop()
     MidiPlayer2 pl(host, song);
 
     assert(!song->getLoop().enabled);
-    MidiSong::SubrangeLoop l(true, 4, 8);
+    SubrangeLoop l(true, 4, 8);
     song->setLoop(l);
     assert(song->getLoop().enabled);
 
@@ -759,7 +759,7 @@ static void testMidiPlayerLoop2()
     MidiPlayer2 pl(host, song);
 
     assert(!song->getLoop().enabled);
-    MidiSong::SubrangeLoop l(true, 4, 8);
+    SubrangeLoop l(true, 4, 8);
     song->setLoop(l);
     assert(song->getLoop().enabled);
 
@@ -793,7 +793,7 @@ static void testMidiPlayerLoop3()
     MidiPlayer2 pl(host, song);
 
     assert(!song->getLoop().enabled);
-    MidiSong::SubrangeLoop l(true, 4, 8);
+    SubrangeLoop l(true, 4, 8);
     song->setLoop(l);
     assert(song->getLoop().enabled);
 
