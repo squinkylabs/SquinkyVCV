@@ -10,6 +10,24 @@
 #include "TestSettings.h"
 #include "TimeUtils.h"
 
+#include "MidiLock.h"
+class MLockTest
+{
+public:
+    MLockTest(MidiSequencerPtr s) : lp(s->song->lock)
+    {
+        assert(!lp->dataModelDirty());
+        assert(!lp->locked());
+    }
+    ~MLockTest()
+    {
+        assert(lp->dataModelDirty());
+        assert(!lp->locked());
+    }
+private:
+    MidiLockPtr lp;
+};
+
 static int _trackNumber = 0;
 
 // sequencer factory - helper function
@@ -30,6 +48,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
 
 
     sequencer->assertValid();
+    sequencer->song->lock->dataModelDirty();
     return sequencer;
 }
 
@@ -37,6 +56,7 @@ static MidiSequencerPtr makeTest(bool empty = false)
 static void testTrans1()
 {
     MidiSequencerPtr seq = makeTest(false);
+   
     seq->editor->selectNextNote();          // now first is selected
 
     const float firstNotePitch = PitchUtils::pitchToCV(3, 0);
@@ -45,6 +65,8 @@ static void testTrans1()
     MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
+    MLockTest l(seq);
+
     seq->editor->changePitch(1);
     //seq->assertValid();
 
@@ -60,7 +82,6 @@ static void testTrans1()
     seq->editor->assertCursorInSelection();
 }
 
-
 static void testTrans3Sub(int semitones)
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -72,6 +93,8 @@ static void testTrans3Sub(int semitones)
     MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
+    MLockTest l(seq);
+
     seq->editor->changePitch(semitones);       // transpose off screen
     seq->assertValid();
     seq->editor->assertCursorInSelection();
@@ -97,6 +120,8 @@ static void testShiftTime1()
     MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
 
     const float s0 = firstNote->startTime;
+    MLockTest l(seq);
+
     seq->editor->changeStartTime(false, 1);     // delay one unit (1/16 6h)
 
     firstNote = seq->context->getTrack()->getFirstNote();
@@ -119,6 +144,8 @@ static void testShiftTimex(int units)
     MidiEventPtr firstEvent = seq->context->getTrack()->begin()->second;
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float s0 = firstNote->startTime;
+    MLockTest l(seq);
+
     seq->editor->changeStartTime(false, units);     // delay n units
     seq->assertValid();
 
@@ -146,8 +173,8 @@ static void testShiftTimeTicks(int howMany)
 
     MidiNoteEventPtr secondNote = seq->context->getTrack()->getSecondNote();
 
-
     const float s0 = secondNote->startTime;
+    MLockTest l(seq);
     seq->editor->changeStartTime(true, howMany);     // delay n "ticks" 
 
     // find second again.
@@ -174,6 +201,7 @@ static void testChangeDuration1()
 
     MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
     const float d0 = firstNote->duration;
+    MLockTest l(seq);
     seq->editor->changeDuration(false, 1);     // lengthen one unit
 
     firstNote = seq->context->getTrack()->getFirstNote();
@@ -221,6 +249,7 @@ static void testTrans2()
     MidiNoteEventPtr firstNote = safe_cast<MidiNoteEvent>(firstEvent);
     const float p0 = firstNote->pitchCV;
 
+    MLockTest l(seq);
     seq->editor->changePitch(1);
     firstEvent = seq->context->getTrack()->begin()->second;
     firstNote = safe_cast<MidiNoteEvent>(firstEvent);
@@ -239,8 +268,6 @@ static void testTrans2()
     MidiNoteEventPtr firstNoteAfterRedo = safe_cast<MidiNoteEvent>(seq->context->getTrack()->begin()->second);
     const float p4 = firstNoteAfterRedo->pitchCV;
     assertClose(p4, p1, .000001);
-
-
 }
 
 static void testCursor1()
@@ -288,9 +315,6 @@ static void testCursor2()
     testCursorAll();
 }
 
-
-
-
 static void testCursor3()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -307,10 +331,7 @@ static void testCursor3()
     assertEQ(seq->context->cursorTime(), 1.f);
     assert(seq->selection->empty());
     assertEQ(seq->context->startTime(), 0);
-
 }
-
-// was(bool ticks, int amount)
 
 // move multiple times in two directions
 static void testCursor4()
@@ -343,7 +364,6 @@ static void testCursor4()
     assertEQ(seq->context->startTime(), 0);
 }
 
-
 // move up to scroll viewport
 static void testCursor4b()
 {
@@ -362,7 +382,6 @@ static void testCursor4b()
     assert(seq->selection->empty());
     seq->assertValid();
 }
-
 
 // just past end of note
 static void testCursor5()
@@ -388,8 +407,6 @@ static void testCursor5()
     assert(seq->selection->empty());
     assertEQ(seq->context->startTime(), 0);
 }
-
-
 
 // move past the end of the second bar
 static void testCursor6()
@@ -423,11 +440,11 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     assert(ts);
     ts->_quartersInGrid = testGridSize;
 
-//    seq->editor->advanceCursor(false, advancUnitsBeforeInsert);       // move up a half note
     seq->editor->advanceCursor(MidiEditor::Advance::Tick, advancUnitsBeforeInsert);
     float pitch = seq->context->cursorPitch();
 
     const float dur = s->getQuarterNotesInGrid();
+    MLockTest l(seq);
     
     seq->editor->insertNote(dur, advanceAfter);
 
@@ -442,7 +459,6 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     assertEQ(note->duration, testGridSize);
 
     float expectedCursorTime = note->startTime + ((advanceAfter) ? testGridSize : 0);
-  //  float expectedCursorTime = note->startTime;
     assertEQ(expectedCursorTime, seq->context->cursorTime());
 
     if (!advanceAfter) {     // these asserts don't always make sense here
@@ -454,9 +470,9 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     const int insertSize = seq->context->getTrack()->size();
     assertGT(insertSize, initialSize);
 
-#if 0
+#if 1
     assert(seq->undo->canUndo());
-    seq->undo->undo();
+    seq->undo->undo(seq);
     const int undoSize = seq->context->getTrack()->size();
     assert(undoSize == initialSize);
 #endif
@@ -512,6 +528,7 @@ static void testInsertPresetNote(MidiEditor::Durations dur, bool advance, float 
 
     assertEQ(seq->context->cursorTime(), 0);
     float pitch = seq->context->cursorPitch();
+    MLockTest l(seq);
 
     seq->editor->insertPresetNote(dur, advance);
 
@@ -561,6 +578,8 @@ static void testDelete()
     assertEQ(firstNote->startTime, 0);
 
     assertEQ(seq->selection->size(), 1);
+    MLockTest l(seq);
+
     seq->editor->deleteNote();
     assert(seq->selection->empty());
 
@@ -579,6 +598,7 @@ static void testDelete2()
     MidiSequencerPtr seq = makeTest(false);
     seq->editor->selectNextNote();
     const int trackSizeBefore = seq->context->getTrack()->size();
+    MLockTest l(seq);
     seq->editor->deleteNote();
     const int trackSizeAfter = seq->context->getTrack()->size();
     assertLT(trackSizeAfter, trackSizeBefore);
@@ -600,6 +620,7 @@ static void testChangeTrackLength(bool snap)
     ts->_quartersInGrid = 1;        // set to quarter note grid
     ts->_snapToGrid = snap;
 
+    MLockTest l(seq);
     const float initialLength = seq->context->getTrack()->getLength();
 
     seq->editor->advanceCursorToTime(41.356f, false);
@@ -620,8 +641,6 @@ static void testChangeTrackLength()
     testChangeTrackLength(true);
 }
 
-
-
 static void testChangeTrackLengthNoSnap()
 {
     testChangeTrackLength(false);
@@ -634,6 +653,8 @@ static void testCut()
     const float origLen = seq->context->getTrack()->getLength();
     const int origSize = seq->context->getTrack()->size();
     seq->editor->selectAll();
+    MLockTest l(seq);
+
     seq->editor->cut();
   
     seq->assertValid();

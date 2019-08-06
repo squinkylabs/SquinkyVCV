@@ -20,6 +20,8 @@ AboveNoteGrid::AboveNoteGrid(const Vec& pos, const Vec& size, MidiSequencerPtr s
     editAttributeLabel->text = "";
     editAttributeLabel->color = UIPrefs::SELECTED_NOTE_COLOR;
     addChild(editAttributeLabel);
+
+    curLoop = std::make_shared<SubrangeLoop>();
 }
 
 
@@ -114,11 +116,19 @@ void AboveNoteGrid::updateCursorLabels()
         cursorPitchLabel->text = PitchUtils::pitch2str(curCursorPitch);
     }
 
-    if (curLoopEnabled != sequencer->song->getLoop().enabled) {
-        curLoopEnabled = !curLoopEnabled;
-        loopLabel->text = curLoopEnabled ? "Loop" : "";
+    if (*curLoop != sequencer->song->getLoop()) {
+        *curLoop = sequencer->song->getLoop();
+        if (!curLoop->enabled) {
+            loopLabel->text.erase();    
+        } else {
+            std::stringstream str;
+            str << "L ";
+            str << 1 + TimeUtils::time2bar(curLoop->startTime);
+            str << '-';
+            str << 1 + TimeUtils::time2bar(curLoop->endTime);
+            loopLabel->text = str.str();
+        }
     }
-
 }
 
 void AboveNoteGrid::updateTimeLabels()

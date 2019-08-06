@@ -404,12 +404,14 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
     }
 
     // TODO: locking
-    auto l = seq()->song->getLoop();
+    const SubrangeLoop& l = seq()->song->getLoop();
     if (l.enabled) {
-        l.startTime = seq()->context->startTime();
-        l.endTime = seq()->context->startTime();
+        SubrangeLoop newLoop(
+            l.enabled,
+            seq()->context->startTime(),
+            seq()->context->endTime());
+        seq()->song->setLoop(newLoop);
     }
-
 }
 
 void MidiEditor::changeCursorPitch(int semitones)
@@ -718,7 +720,7 @@ void MidiEditor::changeTrackLength()
 
 void MidiEditor::loop()
 {
-    MidiSong::SubrangeLoop l = seq()->song->getLoop();
+    SubrangeLoop l = seq()->song->getLoop();
     if (l.enabled) {
         l.enabled = false;
     } else {

@@ -5,6 +5,8 @@
 #include "MidiEditorContext.h"
 
 class MidiSequencer;
+class MidiSong;
+class SubrangeLoop;
 using  MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
 struct AboveNoteGrid : OpaqueWidget
@@ -25,7 +27,7 @@ private:
     int curFirstBar = -1;      // number of measure at start of grid
     float curCursorTime = -1;
     float curCursorPitch = -1;
-    bool curLoopEnabled = false;
+    std::shared_ptr<SubrangeLoop> curLoop;
     MidiSequencerPtr sequencer;
     Label* editAttributeLabel = nullptr;
     MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
