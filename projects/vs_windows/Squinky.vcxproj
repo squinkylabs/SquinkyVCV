@@ -64,6 +64,7 @@
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
+    <ClCompile Include="..\..\test\testDrumTrigger.cpp" />
     <ClCompile Include="..\..\test\testFFT.cpp" />
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
     <ClCompile Include="..\..\test\testAnalyzer.cpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="..\..\composites\CHBg.h" />
     <ClInclude Include="..\..\composites\ColoredNoise.h" />
     <ClInclude Include="..\..\composites\daveguide.h" />
+    <ClInclude Include="..\..\composites\DrumTrigger.h" />
     <ClInclude Include="..\..\composites\EV3.h" />
     <ClInclude Include="..\..\composites\Filt.h" />
     <ClInclude Include="..\..\composites\FrequencyShifter.h" />

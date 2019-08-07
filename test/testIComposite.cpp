@@ -8,6 +8,7 @@
 #include "LFN.h"
 #include "LFNB.h"
 #include "Filt.h"
+#include "DrumTrigger.h"
 #include "Gray.h"
 #include "Mix8.h"
 #include "Mix4.h"
@@ -73,5 +74,6 @@ void testIComposite()
     test<MixM<TestComposite>>();
     test<LFNB<TestComposite>>();
     test<Filt<TestComposite>>();
+    test<DrumTrigger<TestComposite>>();
 
 }
