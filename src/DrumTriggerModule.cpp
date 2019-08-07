@@ -12,10 +12,10 @@ using Comp = DrumTrigger<WidgetComposite>;
 
 /**
  */
-struct BlankModule : Module
+struct DrumTriggerModule : Module
 {
 public:
-    BlankModule();
+    DrumTriggerModule();
     /**
      *
      * Overrides of Module functions
@@ -28,11 +28,11 @@ private:
 
 };
 
-void BlankModule::onSampleRateChange()
+void DrumTriggerModule::onSampleRateChange()
 {
 }
 
-BlankModule::BlankModule()
+DrumTriggerModule::DrumTriggerModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     blank = std::make_shared<Comp>(this);
@@ -43,7 +43,7 @@ BlankModule::BlankModule()
     blank->init();
 }
 
-void BlankModule::step()
+void DrumTriggerModule::step()
 {
     blank->step();
 }
@@ -52,9 +52,9 @@ void BlankModule::step()
 // module widget
 ////////////////////
 
-struct BlankWidget : ModuleWidget
+struct DrumTriggerWidget : ModuleWidget
 {
-    BlankWidget(BlankModule *);
+    DrumTriggerWidget(DrumTriggerModule *);
     DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
@@ -66,8 +66,36 @@ struct BlankWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void makeOutputs(DrumTriggerModule* module);
+    void makeOutput(DrumTriggerModule* module, int i);
 };
 
+const float xLed = 10;
+const float xJack = 50;
+const float yJack = 350;
+const float dy = 30;
+
+void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
+{
+    const float y = yJack -dy * index;
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(xJack, y),
+        module,
+        index + Comp::GATE0_OUTPUT));
+
+    addChild(createLight<MediumLight<GreenLight>>(
+            Vec(xLed, y),
+            module,
+            Comp::LIGHT0 + index));
+}
+
+void DrumTriggerWidget::makeOutputs(DrumTriggerModule* module)
+{
+    for (int i=0; i< Comp::numChannels; ++i) {
+        makeOutput(module, i);
+    }
+}
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -75,11 +103,13 @@ struct BlankWidget : ModuleWidget
  * This is not shared by all modules in the DLL, just one
  */
 
-BlankWidget::BlankWidget(BlankModule *module)
+DrumTriggerWidget::DrumTriggerWidget(DrumTriggerModule *module)
 {
     setModule(module);
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
+
+    makeOutputs(module);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -87,7 +117,7 @@ BlankWidget::BlankWidget(BlankModule *module)
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
-
-Model *modelBlankModule = createModel<BlankModule, BlankWidget>("squinkylabs-blank");
+ 
+Model *modelDrumTriggerModule = createModel<DrumTriggerModule, DrumTriggerWidget>("squinkylabs-dt");
 #endif
 

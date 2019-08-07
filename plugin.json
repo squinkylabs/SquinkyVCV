@@ -139,6 +139,12 @@
 			"tags": ["VCF"]
 		},
 		{
+			"slug": "squinkylabs-dt",
+			"name": "Drum Trigger",
+			"description": "Drum Trigger",
+			"tags": ["Polyphonic"]
+		},
+		{
 			"slug": "squinkylabs-funv",
 			"name": "Functional VCO-1",
 			"description": "[deprecated] Multi-function VCO with low aliasing",

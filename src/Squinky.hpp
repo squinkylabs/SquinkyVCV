@@ -111,6 +111,9 @@ extern Model *modelMixMModule;
 #ifdef _FILT
 extern Model *modelFiltModule;
 #endif
+#ifdef _DTMODULE
+extern Model* modelDrumTriggerModule;
+#endif
 
 
 
