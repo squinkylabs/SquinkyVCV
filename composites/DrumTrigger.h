@@ -70,6 +70,14 @@ public:
 
     enum LightIds
     {
+        LIGHT0,
+        LIGHT1,
+        LIGHT2,
+        LIGHT3,
+        LIGHT4,
+        LIGHT5,
+        LIGHT6,
+        LIGHT7,
         NUM_LIGHTS
     };
 
@@ -77,7 +85,7 @@ public:
      */
     static std::shared_ptr<IComposite> getDescription()
     {
-        return std::make_shared<BlankDescription<TBase>>();
+        return std::make_shared<DrumTriggerDescription<TBase>>();
     }
 
     /**
@@ -109,42 +117,20 @@ inline void DrumTrigger<TBase>::step()
 {
     // iterator over the 8 input channels we monitor
     for (int i = 0; i < numChannels; ++i) {
-        const float cv = inputs[CV_INPUT].voltages[i];
+        const float cv = TBase::inputs[CV_INPUT].voltages[i];
         int index = PitchUtils::cvToSemitone(cv) - 84;
         if (index >= 0 && index < numChannels) {
             // here we have a pitch that we care about
-            const bool gInput = inputs[GATE_INPUT].voltages[i] > 5;
+            const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
             if (gInput != lastGate[index]) {
                 lastGate[index] = gInput;
-                if (!gInput) {
-                    outputs[GATE0_OUTPUT + index].value = 0;
-                } else {
-                    outputs[GATE0_OUTPUT + index].value = 10;
-                }
+                const float val = gInput ? 10.f : 0.f;
+                TBase::outputs[GATE0_OUTPUT + index].value = val;
+                TBase::lights[LIGHT0 + index].value = val;
             }
         }
     }
 }
-
-#if 0
-template <class TBase>
-inline void DrumTrigger<TBase>::step()
-{
-    for (int i = 0; i < numChannels; ++i) {
-        const bool g = inputs[GATE_INPUT].voltages[i] > 5;
-        if (g != lastGate[i]) {
-            lastGate[i] = g;
-            if (!g) {
-                outpus[GATE_OUTPUS].volages[i] = 0;         // if gate went low, turn off
-            } else {
-                const float cv = inputs[CV_INPUT].voltages[i];
-                int x = PitchUtils::cvToSemitone(cv - base());
-                if (x)
-            }
-        }
-    }
-}
-#endif
 
 template <class TBase>
 int DrumTriggerDescription<TBase>::getNumParams()

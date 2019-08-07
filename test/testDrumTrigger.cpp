@@ -20,16 +20,21 @@ static void test1()
 {
     DT dt;
     dt.inputs[DT::GATE_INPUT].channels = 8;
-    assertLT(dt.outputs[DT::GATE0_OUTPUT].value, 1);
-
-    // trigger a note on  output 0
-    dt.inputs[DT::CV_INPUT].voltages[0] = DT::base();
-    dt.inputs[DT::GATE_INPUT].voltages[0] = 10;
-
-    dt.step();
-    assertGT(dt.outputs[DT::GATE0_OUTPUT].value, 5);
-    
    
+    for (int i = 0; i < DT::numChannels; ++i) {
+        const float pitch = DT::base() + PitchUtils::semitone * i;
+        dt.inputs[DT::CV_INPUT].voltages[i] = pitch;
+        dt.inputs[DT::GATE_INPUT].voltages[i] = 10;
+        dt.step();
+        assertGT(dt.outputs[DT::GATE0_OUTPUT + i].value, 5);
+        assertGT(dt.lights[DT::LIGHT0 + i].value, 5);
+
+        // turn it off
+        dt.inputs[DT::GATE_INPUT].voltages[i] = 0;
+        dt.step();
+        assertLT(dt.outputs[DT::GATE0_OUTPUT + i].value, 1);
+        assertLT(dt.lights[DT::LIGHT0 + i].value, 1);
+    }
 }
 
 void testDrumTrigger()

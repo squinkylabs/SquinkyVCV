@@ -36,6 +36,7 @@
     #define _MIXM
 #endif
 
+#define _DTMODULE
 
 using namespace rack;
 
