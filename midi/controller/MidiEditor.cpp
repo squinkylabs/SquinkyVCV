@@ -201,7 +201,8 @@ void MidiEditor::extendSelectionToPrevNote()
     assert(track);
     const bool acceptCursorTime = seq()->selection->empty();
     MidiNoteEventPtr note = selectPrevNoteBeforeCursor(acceptCursorTime, true, seq());
-      // move cursor to newly selected note - it if exists
+    
+    // move cursor to newly selected note - it if exists
     if (note) {
         setCursorToNote(note);
     } else {
@@ -275,7 +276,6 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
 
     // after we change start times, we need to put the cursor on the moved notes
     seq()->context->setCursorToSelection(seq()->selection);
-
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
 }
@@ -291,7 +291,6 @@ void MidiEditor::changeStartTime(const std::vector<float>& shifts)
 
     // after we change start times, we need to put the cursor on the moved notes
     seq()->context->setCursorToSelection(seq()->selection);
-
     seq()->context->adjustViewportForCursor();
     seq()->context->assertCursorInViewport();
 }
@@ -403,7 +402,9 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
         advanceCursorToTime(advanceAmount, false);
     }
 
-    // TODO: locking
+    // Lock the MIDI so that a) we can change the loop atomically,
+    // and b) so that player realized the model is dirty.
+    MidiLocker _lock(seq()->song->lock);
     const SubrangeLoop& l = seq()->song->getLoop();
     if (l.enabled) {
         SubrangeLoop newLoop(
@@ -493,25 +494,6 @@ void MidiEditor::toggleSelectionAt(float time, float pitchCV)
     }
 
 }
-
-#if 0 // not used
-void MidiEditor::extendTrackToMinDuration(float neededLength)
-{
-  
-    auto track = seq()->context->getTrack();
-    float curLength = track->getLength();
-
-    if (neededLength > curLength) {
-        float need = neededLength;
-        float needBars = need / 4.f;
-        float roundedBars = std::round(needBars + 1.f);
-        float duration = roundedBars * 4;
-        std::shared_ptr<MidiEndEvent> end = track->getEndEvent();
-        track->deleteEvent(*end);
-        track->insertEnd(duration);
-    }
-}
-#endif
 
 static float getDuration(MidiEditor::Durations dur)
 {
@@ -646,8 +628,6 @@ MidiNoteEventPtr MidiEditor::getNoteUnderCursor()
     return nullptr;
 }
 
-
-
 void MidiEditor::extendSelectionToCurrentNote()
 {
     MidiNoteEventPtr ni = getNoteUnderCursor();
@@ -720,6 +700,7 @@ void MidiEditor::changeTrackLength()
 
 void MidiEditor::loop()
 {
+    MidiLocker _lock(seq()->song->lock);
     SubrangeLoop l = seq()->song->getLoop();
     if (l.enabled) {
         l.enabled = false;
