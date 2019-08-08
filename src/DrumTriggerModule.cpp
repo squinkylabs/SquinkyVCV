@@ -67,6 +67,7 @@ struct DrumTriggerWidget : ModuleWidget
         return label;
     }
 
+    void makeInputs(DrumTriggerModule* module);
     void makeOutputs(DrumTriggerModule* module);
     void makeOutput(DrumTriggerModule* module, int i);
 };
@@ -75,6 +76,19 @@ const float xLed = 10;
 const float xJack = 50;
 const float yJack = 350;
 const float dy = 30;
+const float yInput = 40;
+
+void DrumTriggerWidget::makeInputs(DrumTriggerModule* module)
+{
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(40, yInput),
+        module,
+        Comp::CV_INPUT));
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(70, yInput),
+        module,
+        Comp::GATE_INPUT));
+}
 
 void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
 {
@@ -109,6 +123,7 @@ DrumTriggerWidget::DrumTriggerWidget(DrumTriggerModule *module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
+    makeInputs(module);
     makeOutputs(module);
 
     // screws

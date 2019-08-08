@@ -16,11 +16,18 @@ static void testInitialState()
     }
 }
 
-static void test1()
+
+
+static void test1Sub(float initCV)
 {
     DT dt;
     dt.inputs[DT::GATE_INPUT].channels = 8;
    
+    for (int i = 0; i < DT::numChannels; ++i) {
+        dt.inputs[DT::CV_INPUT].voltages[i] = initCV;
+      //  dt.inputs[DT::CV_INPUT].voltages[i] = -5;
+    }
+
     for (int i = 0; i < DT::numChannels; ++i) {
         const float pitch = DT::base() + PitchUtils::semitone * i;
         dt.inputs[DT::CV_INPUT].voltages[i] = pitch;
@@ -37,8 +44,19 @@ static void test1()
     }
 }
 
+static void test1()
+{
+    test1Sub(-5);
+}
+
+static void test2()
+{
+    test1Sub(0);
+}
+
 void testDrumTrigger()
 {
     testInitialState();
     test1();
+    test2();
 }
