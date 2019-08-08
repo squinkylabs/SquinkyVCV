@@ -140,8 +140,8 @@
 		},
 		{
 			"slug": "squinkylabs-dt",
-			"name": "Drum Trigger",
-			"description": "Drum Trigger",
+			"name": "Polygate",
+			"description": "Polyphonic gate demux",
 			"tags": ["Polyphonic"]
 		},
 		{
