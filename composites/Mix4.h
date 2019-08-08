@@ -247,7 +247,7 @@ inline void Mix4<TBase>::stepn(int div)
                 const float slider = TBase::params[i + GAIN0_PARAM].value;
 #endif
 
-            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
+            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
                 TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,

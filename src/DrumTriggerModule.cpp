@@ -55,7 +55,7 @@ void DrumTriggerModule::step()
 struct DrumTriggerWidget : ModuleWidget
 {
     DrumTriggerWidget(DrumTriggerModule *);
-    DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
+    DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/sq11/docs/dt.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -73,21 +73,24 @@ struct DrumTriggerWidget : ModuleWidget
 };
 
 const float xLed = 10;
-const float xJack = 50;
-const float yJack = 350;
+const float xJack = 40;
+const float yJack = 330;
 const float dy = 30;
 const float yInput = 40;
+const float xOff = -10;
 
 void DrumTriggerWidget::makeInputs(DrumTriggerModule* module)
 {
     addInput(createInputCentered<PJ301MPort>(
-        Vec(40, yInput),
+        Vec(40 + xOff, yInput),
         module,
         Comp::CV_INPUT));
+    addLabel(Vec(25 + xOff, yInput+20), "CV");
     addInput(createInputCentered<PJ301MPort>(
-        Vec(70, yInput),
+        Vec(70 + xOff, yInput),
         module,
         Comp::GATE_INPUT));
+    addLabel(Vec(55 + xOff, yInput+20), "G");
 }
 
 void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
@@ -121,7 +124,7 @@ DrumTriggerWidget::DrumTriggerWidget(DrumTriggerModule *module)
 {
     setModule(module);
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/dt_panel.svg");
 
     makeInputs(module);
     makeOutputs(module);

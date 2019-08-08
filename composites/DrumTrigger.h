@@ -130,6 +130,9 @@ inline void DrumTrigger<TBase>::step()
     // iterator over the 8 input channels we monitor
     // Remember: in here 'i' is the input channel,
     // index is the output channel - they are not the same!
+
+    int activeInputs = std::min(numChannels, int(TBase::inputs[GATE_INPUT].channels));
+    activeInputs = std::min(activeInputs, int(TBase::inputs[CV_INPUT].channels));
     for (int i = 0; i < numChannels; ++i) {
         const float cv = TBase::inputs[CV_INPUT].voltages[i];
        // printf("cv = %.2f, semi=%d\n", cv, PitchUtils::cvToSemitone(cv));
@@ -164,36 +167,6 @@ inline void DrumTrigger<TBase>::step()
         }
     }
 }
-
-#if 0
-template <class TBase>
-inline void DrumTrigger<TBase>::step()
-{
-    printf("\n");
-    // iterator over the 8 input channels we monitor
-    // Remember: in here 'i' is the input channel,
-    // index is the output channel - they are not the same!
-    for (int i = 0; i < numChannels; ++i) {
-        const float cv = TBase::inputs[CV_INPUT].voltages[i];
-        printf("cv = %.2f, semi=%d\n", cv, PitchUtils::cvToSemitone(cv));
-        fflush(stdout);
-        int index = PitchUtils::cvToSemitone(cv) - 48;
-        if (index >= 0 && index < numChannels) {
-            // here we have a pitch that we care about
-            const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
-            printf("index=%d i=%d, gInput = %d raw = %f\n", index, i, gInput,
-                TBase::inputs[GATE_INPUT].voltages[i]);
-            if (gInput != lastGate[index]) {
-                lastGate[index] = gInput;
-                const float val = gInput ? 10.f : 0.f;
-                TBase::outputs[GATE0_OUTPUT + index].value = val;
-                TBase::lights[LIGHT0 + index].value = val;
-                printf("wrote %.2f to light %d\n", val, index);
-            }
-        }
-    }
-}
-#endif
 
 template <class TBase>
 int DrumTriggerDescription<TBase>::getNumParams()
