@@ -101,8 +101,19 @@ public:
     static const int numChannels = NUM_OUTPUTS;
 private:
 
+    class OutputChannelState
+    {
+    public:
+        bool gate = false;
+        int inputChannel=0;
+    };
+
+    // for a given OUTPUT channel:
+    //  gate indicated it that output gate was high
+    //  inputChannel indicates which input made gate high
+    OutputChannelState state[numChannels];
     
-    bool lastGate[numChannels] = {false};
+  //  bool lastGate[numChannels] = {false};
 
 };
 
@@ -112,6 +123,49 @@ inline void DrumTrigger<TBase>::init()
 {
 }
 
+template <class TBase>
+inline void DrumTrigger<TBase>::step()
+{
+   // printf("\n");
+    // iterator over the 8 input channels we monitor
+    // Remember: in here 'i' is the input channel,
+    // index is the output channel - they are not the same!
+    for (int i = 0; i < numChannels; ++i) {
+        const float cv = TBase::inputs[CV_INPUT].voltages[i];
+       // printf("cv = %.2f, semi=%d\n", cv, PitchUtils::cvToSemitone(cv));
+      //  fflush(stdout);
+        int index = PitchUtils::cvToSemitone(cv) - 48;
+        if (index >= 0 && index < numChannels) {
+            // here we have a pitch that we care about
+            const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
+         //   printf("index=%d i=%d, gInput = %d raw = %f\n", index, i, gInput, TBase::inputs[GATE_INPUT].voltages[i]);
+            if (gInput) {
+                // gate low to high at this output's pitch,
+                // lets raise the gate.
+                if (!state[index].gate) {
+                    TBase::outputs[GATE0_OUTPUT + index].value = 10;
+                    TBase::lights[LIGHT0 + index].value = 10;
+                    state[index].gate = true;
+
+                    // Remember which input made the gate go high.
+                    // Only that one can turn it off
+                    state[index].inputChannel = i;
+                }
+            } else {
+                if (state[index].gate && state[index].inputChannel == i) {
+
+                    // If this output is high, and the input that made it 
+                    // high is now low, then go low.
+                    TBase::outputs[GATE0_OUTPUT + index].value = 0;
+                    TBase::lights[LIGHT0 + index].value = 0;
+                    state[index].gate = false;
+                }
+            }
+        }
+    }
+}
+
+#if 0
 template <class TBase>
 inline void DrumTrigger<TBase>::step()
 {
@@ -139,6 +193,7 @@ inline void DrumTrigger<TBase>::step()
         }
     }
 }
+#endif
 
 template <class TBase>
 int DrumTriggerDescription<TBase>::getNumParams()
