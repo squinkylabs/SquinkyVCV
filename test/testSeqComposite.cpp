@@ -397,6 +397,36 @@ static void testLoopingQ()
     }
 }
 
+extern MidiSongPtr makeSongOneQ(float noteTime, float endTime);
+static void testSubrangeLoop()
+{
+    // make a song with one note in the second bar.
+    // loop the second bar
+    MidiSongPtr song = makeSongOneQ(4, 100);
+    SubrangeLoop lp(true, 4, 8);
+    song->setLoop(lp);
+    std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
+
+    seq->params[Sq::NUM_VOICES_PARAM].value = 0;
+    seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
+    seq->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
+
+
+    assertAllGatesLow(*seq);
+
+    // now start and clock
+    seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
+    seq->inputs[Sq::CLOCK_INPUT].value = 10;
+
+      // now step a bit so that we see clock
+    stepN(*seq, 4);
+
+    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
+//    sendClockAndStep(*seq, 0);                                   //
+    assertEQ(seq->getPlayPosition(), 1);
+
+}
+
 void testSeqComposite()
 {
     testBasicGates();
@@ -407,4 +437,5 @@ void testSeqComposite()
 
     testResetGatesLow();
     testLoopingQ();
+    testSubrangeLoop();
 }

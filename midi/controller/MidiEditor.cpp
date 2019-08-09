@@ -402,16 +402,25 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
         advanceCursorToTime(advanceAmount, false);
     }
 
-    // Lock the MIDI so that a) we can change the loop atomically,
+    // If the loop points have moved, then
+    // lock the MIDI so that a) we can change the loop atomically,
     // and b) so that player realized the model is dirty.
-    MidiLocker _lock(seq()->song->lock);
-    const SubrangeLoop& l = seq()->song->getLoop();
-    if (l.enabled) {
-        SubrangeLoop newLoop(
-            l.enabled,
-            seq()->context->startTime(),
-            seq()->context->endTime());
-        seq()->song->setLoop(newLoop);
+
+    const SubrangeLoop& origLoop = seq()->song->getLoop();
+    const bool loopChanged = origLoop.enabled &&
+        (origLoop.startTime != seq()->context->startTime() || 
+            origLoop.endTime != seq()->context->endTime());
+
+    if (loopChanged) {
+        MidiLocker _lock(seq()->song->lock);
+        const SubrangeLoop& l = seq()->song->getLoop();
+        if (l.enabled) {
+            SubrangeLoop newLoop(
+                l.enabled,
+                seq()->context->startTime(),
+                seq()->context->endTime());
+            seq()->song->setLoop(newLoop);
+        }
     }
 }
 

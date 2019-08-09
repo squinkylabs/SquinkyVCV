@@ -855,12 +855,7 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteLoopLockContention();
     testMidiPlayerReset();
     testMidiPlayerOverlap();
-#if 0   // never finished - did in composite instead
-    testMidiPlayerReTrigger(true);
-    testMidiPlayerReTrigger(false);
-#endif
     testMidiPlayerLoop();
     testMidiPlayerLoop2();
     testMidiPlayerLoop3();
-
 }

@@ -22,7 +22,7 @@ public:
 
     /** 
      * Returns true is an editor lock has occurred since last query.
-     * Will clear flag after calling
+     * Will clear flag after calling.
      */
     bool dataModelDirty();
 

@@ -427,9 +427,14 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     ts->_quartersInGrid = testGridSize;
 
     seq->editor->advanceCursor(MidiEditor::Advance::Tick, advancUnitsBeforeInsert);
+    
+    // advance cursor may have dirtied the lock. let's clear
+    seq->context->getTrack()->lock->dataModelDirty();
+
     float pitch = seq->context->cursorPitch();
 
     const float dur = s->getQuarterNotesInGrid();
+
     MLockTest l(seq);
     
     seq->editor->insertNote(dur, advanceAfter);
