@@ -50,7 +50,7 @@ public:
     {
         CLOCK_INPUT_PARAM,
         TEMPO_PARAM,
-        RUN_STOP_PARAM,             // the switch the user pushes (actually unused????
+        UNUSED_RUN_STOP_PARAM,             // the switch the user pushes (actually unused????
         PLAY_SCROLL_PARAM,
         RUNNING_PARAM,              // the invisible param that stores the run 
         NUM_VOICES_PARAM,
@@ -101,10 +101,17 @@ public:
 
     float getPlayPosition()
     {
+
         // NOTE: this calculation is wrong. need subrange loop start, too
         double absTime = clock.getCurMetricTime();
         double loopDuration = player->getCurrentLoopIterationStart();
+
+        // absTime - loop duration is the metric time of the start of the current loop,
+        // if the overall loop starts at t=0
         double ret = absTime - loopDuration;
+
+        // push it up to take into account subrange looping
+        ret += player->getCurrentSubrangeLoopStart();
         return float(ret);
     }
 
@@ -289,8 +296,8 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
         case Seq<TBase>::TEMPO_PARAM:
             ret = {40, 200, 120, "Tempo"};
             break;
-        case Seq<TBase>::RUN_STOP_PARAM:
-            ret = {0, 1, 0, "Run/Stop"};
+        case Seq<TBase>::UNUSED_RUN_STOP_PARAM:
+            ret = {0, 1, 0, "unused Run/Stop"};
             break;
         case Seq<TBase>::PLAY_SCROLL_PARAM:
             ret = {0, 1, 0, "Scroll during playback"};

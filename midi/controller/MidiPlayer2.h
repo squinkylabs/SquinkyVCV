@@ -30,8 +30,8 @@ public:
      * @param clearGate will set the host's gate low, if true
      */
     void reset(bool clearGates);
-   // double getLoopStart() const;
     double getCurrentLoopIterationStart() const;
+    float getCurrentSubrangeLoopStart() const;
 
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);

@@ -314,7 +314,9 @@ static void testLoopingQ()
     assertAllGatesLow(*seq);
 
     // now start and clock
-    seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
+    // How does this acutally start?
+ //   seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
+    seq->inputs[Sq::RUN_INPUT].value = 10;
     seq->inputs[Sq::CLOCK_INPUT].value = 10;
     assertAllGatesLow(*seq);
 
@@ -411,19 +413,25 @@ static void testSubrangeLoop()
     seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
     seq->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
 
-
-    assertAllGatesLow(*seq);
-
-    // now start and clock
-    seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
-    seq->inputs[Sq::CLOCK_INPUT].value = 10;
-
-      // now step a bit so that we see clock
+    // now step a bit so that we see low inputs (run and clock)
     stepN(*seq, 4);
 
+    assertAllGatesLow(*seq);
     assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
-//    sendClockAndStep(*seq, 0);                                   //
-    assertEQ(seq->getPlayPosition(), 1);
+
+    // now start and clock
+    seq->inputs[Sq::RUN_INPUT].value = 10;
+    seq->inputs[Sq::CLOCK_INPUT].value = 10;
+
+    // now step a bit so that we see clock
+    stepN(*seq, 4);
+
+   // assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
+    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+//    sendClockAndStep(*seq, 0);      
+
+    // should be back arount to another loops starting in the first bar.
+    assertEQ(seq->getPlayPosition(), 4);
 
 }
 

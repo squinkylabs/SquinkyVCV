@@ -8,6 +8,8 @@ Many key commands take input from the grid size set from the settings menu.
 
 **n**: sets the end point of the sequence to the current cursor time. Time is always quantized to the grid, even if snap to grid is off.
 
+**l**: Loops a range of bars from the track. Loop range is the bars that are on screen. May be turned on and off while playing. Moving the "viewport" to a different range of bars will change the loop range, even if you are playing when you do it.
+
 ## Moving around
 
 **cursor keypad**: moves cursor in two dimensions. Up and down by semitone, left and right by one grid unit.

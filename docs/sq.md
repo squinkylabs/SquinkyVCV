@@ -12,11 +12,13 @@ So, while Seq++ is much like a typical DAW's MIDI edit screen, it is not exactly
 
 The note editor is heavily focused around the keyboard interface, which allows the user to "type in" music very quickly. More conventional note-entry is available with the mouse.
 
-It can deal with tracks that are arbitrarily long and dense. User may edit the notes as the sequencer is playing.
+It can deal with tracks that are arbitrarily long and dense. User may edit the notes as the sequencer is playing with no bad effects.
 
 There are some concessions to the current world - it has unlimited undo/redo, and clipboard support.
 
 There is no limit to how long the sequence can be, although initially it may not be obvious how to extend it.
+
+A two bar range may be looped. Of course you may edit the two bar range as it loops.
 
 ## More about undo/redo
 

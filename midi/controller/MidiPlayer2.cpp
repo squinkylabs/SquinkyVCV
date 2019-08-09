@@ -61,6 +61,15 @@ double MidiPlayer2::getCurrentLoopIterationStart() const
     return currentLoopIterationStart;
 }
 
+float MidiPlayer2::getCurrentSubrangeLoopStart() const
+{
+    float ret = 0;
+    if (song->getSubrangeLoop().enabled) {
+        ret += song->getSubrangeLoop().startTime;
+    }
+    return ret;
+}
+
 void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval)
 {
 #ifdef _MLOG
