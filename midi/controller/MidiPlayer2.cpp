@@ -56,9 +56,9 @@ void MidiPlayer2::updateSampleCount(int numElapsed)
 }
 
 
-double MidiPlayer2::getLoopStart() const
+double MidiPlayer2::getCurrentLoopIterationStart() const
 {
-    return loopStart;
+    return currentLoopIterationStart;
 }
 
 void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval)
@@ -95,16 +95,16 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
         resetAllVoices(isResetGates);
         isReset = false;
         isResetGates = false;
-        loopStart = 0;
+        currentLoopIterationStart = 0;
     }
 
 
     // To implement loop start, we just push metric time up to where we want to start.
     // TODO: skip over initial stuff?
     
-    if (song->getLoop().enabled) {
+    if (song->getSubrangeLoop().enabled) {
    // if (loopParams && loopParams.load()->enabled) {
-        metricTime += song->getLoop().startTime;
+        metricTime += song->getSubrangeLoop().startTime;
     }
      // keep processing events until we are caught up
     while (playOnce(metricTime, quantizationInterval)) {
@@ -125,14 +125,14 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
     }
 
     // push the start time up by loop start, so that event t==loop start happens at start of loop
-    const double eventStartUnQuantized = (loopStart + curEvent->first);
+    const double eventStartUnQuantized = (currentLoopIterationStart + curEvent->first);
 
     // Treat loop end just like track end. loop back around
     // when we pass then end.
-    if (song->getLoop().enabled) {
-        auto loopEnd = song->getLoop().endTime + loopStart;
+    if (song->getSubrangeLoop().enabled) {
+        auto loopEnd = song->getSubrangeLoop().endTime + currentLoopIterationStart;
         if (loopEnd <= metricTime) {
-            loopStart += (song->getLoop().endTime - song->getLoop().startTime);
+            currentLoopIterationStart += (song->getSubrangeLoop().endTime - song->getSubrangeLoop().startTime);
             curEvent = track->begin();
             return true;
         }
@@ -158,7 +158,7 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
             break;
             case MidiEvent::Type::End:
                 // for now, should loop.
-                loopStart += curEvent->first;
+                currentLoopIterationStart += curEvent->first;
                 curEvent = track->begin();
                 break;
             default:

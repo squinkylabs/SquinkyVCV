@@ -404,7 +404,7 @@ static void testSubrangeLoop()
     // loop the second bar
     MidiSongPtr song = makeSongOneQ(4, 100);
     SubrangeLoop lp(true, 4, 8);
-    song->setLoop(lp);
+    song->setSubrangeLoop(lp);
     std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
 
     seq->params[Sq::NUM_VOICES_PARAM].value = 0;

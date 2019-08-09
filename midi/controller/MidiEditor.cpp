@@ -406,20 +406,20 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
     // lock the MIDI so that a) we can change the loop atomically,
     // and b) so that player realized the model is dirty.
 
-    const SubrangeLoop& origLoop = seq()->song->getLoop();
+    const SubrangeLoop& origLoop = seq()->song->getSubrangeLoop();
     const bool loopChanged = origLoop.enabled &&
         (origLoop.startTime != seq()->context->startTime() || 
             origLoop.endTime != seq()->context->endTime());
 
     if (loopChanged) {
         MidiLocker _lock(seq()->song->lock);
-        const SubrangeLoop& l = seq()->song->getLoop();
+        const SubrangeLoop& l = seq()->song->getSubrangeLoop();
         if (l.enabled) {
             SubrangeLoop newLoop(
                 l.enabled,
                 seq()->context->startTime(),
                 seq()->context->endTime());
-            seq()->song->setLoop(newLoop);
+            seq()->song->setSubrangeLoop(newLoop);
         }
     }
 }
@@ -710,7 +710,7 @@ void MidiEditor::changeTrackLength()
 void MidiEditor::loop()
 {
     MidiLocker _lock(seq()->song->lock);
-    SubrangeLoop l = seq()->song->getLoop();
+    SubrangeLoop l = seq()->song->getSubrangeLoop();
     if (l.enabled) {
         l.enabled = false;
     } else {
@@ -718,7 +718,7 @@ void MidiEditor::loop()
         l.startTime = seq()->context->startTime();
         l.endTime = seq()->context->endTime();
     }
-    seq()->song->setLoop(l);
+    seq()->song->setSubrangeLoop(l);
 }
 
 // TODO: use this for copy, too

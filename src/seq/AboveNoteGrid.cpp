@@ -116,8 +116,8 @@ void AboveNoteGrid::updateCursorLabels()
         cursorPitchLabel->text = PitchUtils::pitch2str(curCursorPitch);
     }
 
-    if (*curLoop != sequencer->song->getLoop()) {
-        *curLoop = sequencer->song->getLoop();
+    if (*curLoop != sequencer->song->getSubrangeLoop()) {
+        *curLoop = sequencer->song->getSubrangeLoop();
         if (!curLoop->enabled) {
             loopLabel->text.erase();    
         } else {

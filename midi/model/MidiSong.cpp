@@ -84,12 +84,12 @@ void MidiSong::assertValid() const
     }
 }
 
-const SubrangeLoop& MidiSong::getLoop()
+const SubrangeLoop& MidiSong::getSubrangeLoop()
 {
     return loop;
 }
 
-void MidiSong::setLoop(const SubrangeLoop& l)
+void MidiSong::setSubrangeLoop(const SubrangeLoop& l)
 {
     loop = l;
 }

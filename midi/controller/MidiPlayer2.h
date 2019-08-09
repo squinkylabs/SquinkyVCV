@@ -30,7 +30,8 @@ public:
      * @param clearGate will set the host's gate low, if true
      */
     void reset(bool clearGates);
-    double getLoopStart() const;
+   // double getLoopStart() const;
+    double getCurrentLoopIterationStart() const;
 
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
@@ -55,7 +56,7 @@ private:
     bool isResetGates = false;
 
     bool isPlaying = true;
-    double loopStart = 0;
+    double currentLoopIterationStart = 0;
     int numVoices=1;
 
     std::shared_ptr<MidiTrack> track;

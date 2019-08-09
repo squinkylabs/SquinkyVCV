@@ -101,8 +101,9 @@ public:
 
     float getPlayPosition()
     {
+        // NOTE: this calculation is wrong. need subrange loop start, too
         double absTime = clock.getCurMetricTime();
-        double loopDuration = player->getLoopStart();
+        double loopDuration = player->getCurrentLoopIterationStart();
         double ret = absTime - loopDuration;
         return float(ret);
     }

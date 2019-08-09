@@ -57,8 +57,8 @@ public:
 
     std::shared_ptr<MidiLock> lock;
 
-    const SubrangeLoop& getLoop();
-    void setLoop(const SubrangeLoop&);
+    const SubrangeLoop& getSubrangeLoop();
+    void setSubrangeLoop(const SubrangeLoop&);
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
     SubrangeLoop loop;
