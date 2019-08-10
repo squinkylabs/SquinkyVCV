@@ -133,7 +133,7 @@ private:
     SeqSettings* const settings;
 };
 
-SeqSettings::SeqSettings(rack::engine::Module* mod) : module(mod)
+SeqSettings::SeqSettings(SequencerModule* mod) : module(mod)
 {
 }
 

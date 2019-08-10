@@ -7,8 +7,8 @@
 
 int _mdb = 0;       // global instance counter
 
-MidiSequencer::MidiSequencer(MidiSongPtr sng, ISeqSettingsPtr setp) :
-    selection(std::make_shared<MidiSelectionModel>()),
+MidiSequencer::MidiSequencer(MidiSongPtr sng, ISeqSettingsPtr setp, IMidiPlayerAuditionHostPtr auditionHost) :
+    selection(std::make_shared<MidiSelectionModel>(auditionHost)),
     song(sng),
     context(std::make_shared<MidiEditorContext>(sng, setp))
 {
@@ -18,10 +18,10 @@ MidiSequencer::MidiSequencer(MidiSongPtr sng, ISeqSettingsPtr setp) :
     ++_mdb;
 }
 
-MidiSequencerPtr MidiSequencer::make(MidiSongPtr song, std::shared_ptr<ISeqSettings> settings)
+MidiSequencerPtr MidiSequencer::make(MidiSongPtr song, std::shared_ptr<ISeqSettings> settings, IMidiPlayerAuditionHostPtr audition)
 {
     assert(settings);
-    MidiSequencerPtr seq(new MidiSequencer(song, settings));
+    MidiSequencerPtr seq(new MidiSequencer(song, settings, audition));
     seq->makeEditor();
 
     // Find a track to point the edit context at

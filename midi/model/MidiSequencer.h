@@ -10,7 +10,9 @@
 class ISeqSettings;
 class MidiSong;
 class MidiSequencer;
+class IMidiPlayerAuditionHost;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
+using IMidiPlayerAuditionHostPtr = std::shared_ptr<IMidiPlayerAuditionHost>;
 
 /**
  * Despite the fancy name, this class doesn't do much.
@@ -23,7 +25,8 @@ public:
     
     static MidiSequencerPtr make(
         std::shared_ptr<MidiSong>,
-        std::shared_ptr<ISeqSettings>);
+        std::shared_ptr<ISeqSettings>,
+        IMidiPlayerAuditionHostPtr audition);
     ~MidiSequencer();
 
     void assertValid() const;
@@ -42,7 +45,7 @@ private:
 
     /** constructor takes a song to edit
     */
-    MidiSequencer(std::shared_ptr<MidiSong>, std::shared_ptr<ISeqSettings>);
+    MidiSequencer(std::shared_ptr<MidiSong>, std::shared_ptr<ISeqSettings>, IMidiPlayerAuditionHostPtr);
     MidiSequencer() = delete;
     MidiSequencer(const MidiSequencer&) = delete;
 

@@ -4,8 +4,10 @@
 
 class MidiEvent;
 class MidiSelectionModel;
+class IMidiPlayerAuditionHost;
 
 using MidiSelectionModelPtr = std::shared_ptr<MidiSelectionModel>;
+using IMidiPlayerAuditionHostPtr = std::shared_ptr<IMidiPlayerAuditionHost>;
 
 /**
  * Central manager for tracking selections in the MidiSong being edited.
@@ -13,7 +15,7 @@ using MidiSelectionModelPtr = std::shared_ptr<MidiSelectionModel>;
 class MidiSelectionModel
 {
 public:
-    MidiSelectionModel();
+    MidiSelectionModel(IMidiPlayerAuditionHostPtr);
     ~MidiSelectionModel();
     /**
      * replace the current selection with a single event
@@ -64,4 +66,6 @@ private:
     void add(std::shared_ptr<MidiEvent>);
 
     container selection;
+
+    IMidiPlayerAuditionHostPtr auditionHost;
 };

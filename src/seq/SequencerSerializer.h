@@ -10,19 +10,14 @@ class MidiSequencer;
 class MidiSong;
 class MidiTrack;
 class ISeqSettings;
-
-namespace rack {
-    namespace engine {
-        struct Module;
-    }
-}
+class SequencerModule;
 
 class SequencerSerializer
 {
 
 public:
     static json_t *toJson(std::shared_ptr<MidiSequencer>);
-    static std::shared_ptr<MidiSequencer> fromJson(json_t *data, rack::engine::Module*);
+    static std::shared_ptr<MidiSequencer> fromJson(json_t *data, SequencerModule*);
 
 private:
     static json_t *toJson(std::shared_ptr<MidiSong>);
@@ -37,7 +32,7 @@ private:
     static MidiEventPtr fromJsonEvent(json_t *data);
     static MidiNoteEventPtr fromJsonNoteEvent(json_t *data);
     static MidiEndEventPtr fromJsonEndEvent(json_t *data);
-    static std::shared_ptr<ISeqSettings> fromJsonSettings(json_t* data, rack::engine::Module*);
+    static std::shared_ptr<ISeqSettings> fromJsonSettings(json_t* data, SequencerModule*);
 
     static const int typeNote = 1;
     static const int typeEnd = 2;

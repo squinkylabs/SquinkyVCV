@@ -7,6 +7,7 @@
 #include "SeqClock.h"
 
 #include "IMidiPlayerHost.h"
+#include "MidiAudition.h"
 #include "MidiPlayer2.h"
 
 namespace rack {
@@ -24,6 +25,9 @@ public:
     int getNumParams() override;
 };
 
+/**
+ *
+ */
 template <class TBase>
 class Seq : public TBase
 {
@@ -39,6 +43,11 @@ public:
     Seq(MidiSongPtr song) : TBase(), runStopProcessor(true)
     {
         init(song);
+    }
+
+    IMidiPlayerAuditionHostPtr getAuditionHost()
+    {
+        return audition;
     }
 
     /**
@@ -124,6 +133,7 @@ private:
     void init(MidiSongPtr);
     void serviceRunStop();
 
+    std::shared_ptr<MidiAudition> audition = std::make_shared<MidiAudition>();
     SeqClock clock;
     Divider div;
     bool runStopRequested = false;

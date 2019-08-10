@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 
+class SequencerModule;
+
 class SeqSettings : public ISeqSettings
 {
 public:
@@ -16,7 +18,7 @@ public:
     friend class ArticItem;
     friend class SequencerSerializer;
 
-    SeqSettings(rack::engine::Module*);
+    SeqSettings(SequencerModule*);
     void invokeUI(rack::widget::Widget* parent) override;
 
     /**
@@ -30,7 +32,7 @@ public:
 
     float articulation() override;
 private:
-    rack::engine::Module* const module;
+    SequencerModule* const module;
 
     enum class Grids
     {

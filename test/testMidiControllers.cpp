@@ -1,15 +1,18 @@
 
+#include "IMidiPlayerHost.h"
 #include "MidiEvent.h"
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "TestAuditionHost.h"
 #include "TestSettings.h"
 
 // selects a note and verifies that one event is selected
 static void testSelectionModel1()
 {
-    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>();
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(a);
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     MidiEventPtr evt = song->getTrack(0)->begin()->second;
     assert(evt);
@@ -30,7 +33,8 @@ static void testSelectionModel1()
 // selects a note and verifies that it is selected
 static void testSelectionModel2()
 {
-    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>();
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(a);
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     MidiEventPtr evt = song->getTrack(0)->begin()->second;
     assert(evt);
@@ -41,7 +45,8 @@ static void testSelectionModel2()
 // selects a note and verifies that its clone is not selected
 static void testSelectionModel3()
 {
-    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>();
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(a);
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     MidiEventPtr evt = song->getTrack(0)->begin()->second;
 
@@ -57,7 +62,8 @@ static void testSelectionModel3()
 // selects two notes and verifies that it is selected
 static void testSelectionModel4()
 {
-    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>();
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(a);
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
 
     auto it = song->getTrack(0)->begin();
@@ -77,7 +83,8 @@ static void testSelectionModel4()
 static void testMidiSequencer1()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>(), a);
     //seq->makeEditor();
 
     assert(seq->selection);
@@ -90,8 +97,9 @@ static void testMidiSequencer1()
 
 static void testMidiSequencer2()
 {
+    auto a = std::make_shared<TestAuditionHost>();
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0); 
-    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>(), a);
     //seq->makeEditor();
 
     assert(seq->editor);

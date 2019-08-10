@@ -800,5 +800,11 @@
     <ClInclude Include="..\..\composites\DrumTrigger.h">
       <Filter>Header Files\composites</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\test\TestAuditionHost.h">
+      <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiAudition.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

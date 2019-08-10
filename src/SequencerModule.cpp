@@ -37,8 +37,8 @@ SequencerModule::SequencerModule()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     ISeqSettings* ss = new SeqSettings(this);
     std::shared_ptr<ISeqSettings> _settings( ss);
-    sequencer = MidiSequencer::make(song, _settings);
     seqComp = std::make_shared<Comp>(this, song);
+    sequencer = MidiSequencer::make(song, _settings, seqComp->getAuditionHost());
 }
 
 static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq11/docs/sq.md";
@@ -298,7 +298,7 @@ void SequencerModule::onReset()
     std::shared_ptr<MidiSong> newSong = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     ISeqSettings* ss = new SeqSettings(this);
     std::shared_ptr<ISeqSettings> _settings( ss);
-    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong, _settings);
+    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong, _settings, seqComp->getAuditionHost());
     setNewSeq(newSeq);
 }
 

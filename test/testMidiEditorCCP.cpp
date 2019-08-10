@@ -2,6 +2,7 @@
 #include "MidiLock.h"
 #include "MidiSequencer.h"
 #include "SqClipboard.h"
+#include "TestAuditionHost.h"
 #include "TestSettings.h"
 
 #include <assert.h>
@@ -14,7 +15,10 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr sequencer = MidiSequencer::make(
+        song,
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -107,7 +111,10 @@ static void testPasteTimeSub(float pasteTime)
 {
     // Make a song with a single note at 1.23
     auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
-    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(
+        song, 
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
     seq->context->setTrackNumber(_trackNumber);
     seq->assertValid();
     MidiLocker l(seq->song->lock);

@@ -9,6 +9,7 @@
 #include "MidiSong.h"
 #include "MLockTest.h"
 #include "SqClipboard.h"
+#include "TestAuditionHost.h"
 #include "TestSettings.h"
 #include "TimeUtils.h"
 
@@ -22,7 +23,10 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr sequencer = MidiSequencer::make(
+        song,
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
    // sequencer->makeEditor();
 
     sequencer->context->setTrackNumber(_trackNumber);

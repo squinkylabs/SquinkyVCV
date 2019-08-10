@@ -4,7 +4,7 @@
 
 #include <assert.h>
 extern int _mdb;
-MidiSelectionModel::MidiSelectionModel()
+MidiSelectionModel::MidiSelectionModel(IMidiPlayerAuditionHostPtr aud) : auditionHost(aud)
 {
     ++_mdb;
 }
@@ -97,7 +97,7 @@ MidiEventPtr MidiSelectionModel::getLast()
 
 MidiSelectionModelPtr MidiSelectionModel::clone() const
 {
-    MidiSelectionModelPtr ret = std::make_shared<MidiSelectionModel>();
+    MidiSelectionModelPtr ret = std::make_shared<MidiSelectionModel>(auditionHost);
     for (auto it : selection) {
         MidiEventPtr clonedEvent = it->clone();
         ret->add(clonedEvent);
