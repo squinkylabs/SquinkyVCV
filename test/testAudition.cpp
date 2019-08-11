@@ -77,7 +77,33 @@ static void testPlaysNote()
     assertEQ(host->cvValue[0], 5);
 }
 
+static void testNoteStops()
+{
+    const float sampleRate = 44100;
+    const float sampleTime = 1.0f / sampleRate;
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiAudition a(host);
+    a.setSampleTime(sampleTime);
 
+    float samplesToStop = MidiAudition::noteDurationSeconds() / sampleTime;
+    int notEnoughSamples = int(samplesToStop - 10);
+
+
+    a.auditionNote(5);
+    assertEQ(host->gateChangeCount, 1);
+    assert(host->gateState[0]);
+    assertEQ(host->cvValue[0], 5);
+
+    a.sampleTicksElapsed(notEnoughSamples);
+    assertEQ(host->gateChangeCount, 1);
+    assert(host->gateState[0]);
+
+    a.sampleTicksElapsed(20);
+    assertEQ(host->gateChangeCount, 2);
+    assert(!host->gateState[0]);
+
+
+}
 
 void testAudition()
 {
@@ -86,4 +112,5 @@ void testAudition()
     testSelectThreeBothAudition();
 
     testPlaysNote();
+    testNoteStops();
 }
