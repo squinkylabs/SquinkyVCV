@@ -19,7 +19,7 @@ public:
     {
 #ifdef _DEBUG   // disable in real seq until done
         
-        if (!isPlaying) {
+        if (!isPlaying && !isRetriggering) {
             // starting a new note
             playerHost->setCV(0, pitch);
             playerHost->setGate(0, true);

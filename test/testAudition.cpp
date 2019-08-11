@@ -128,6 +128,7 @@ static void testNoteRetrigger()
     assert(!host->gateState[0]);
     assertEQ(host->cvValue[0], 5);
 
+    // gate should still be held in retrigger.
     float retriggerSamples = MidiAudition::retriggerDurationSeconds() / sampleTime;
     notEnoughSamples = int(retriggerSamples - 10);
     a.sampleTicksElapsed(notEnoughSamples);
@@ -135,15 +136,57 @@ static void testNoteRetrigger()
     assert(!host->gateState[0]);
     assertEQ(host->cvValue[0], 5);
 
+    // now it will trigger again
     a.sampleTicksElapsed(20);
     assertEQ(host->gateChangeCount, 3);
     assert(host->gateState[0]);
     assertEQ(host->cvValue[0], 6);
-
-
-
-
 }
+
+static void testMultiNoteRetrigger()
+{
+    const float sampleRate = 44100;
+    const float sampleTime = 1.0f / sampleRate;
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiAudition a(host);
+    a.setSampleTime(sampleTime);
+
+    float samplesToStop = MidiAudition::noteDurationSeconds() / sampleTime;
+    int notEnoughSamples = int(samplesToStop / 2.f);
+
+    a.auditionNote(5);
+    assertEQ(host->gateChangeCount, 1);
+    assert(host->gateState[0]);
+    assertEQ(host->cvValue[0], 5);
+
+    a.sampleTicksElapsed(notEnoughSamples);
+    assertEQ(host->gateChangeCount, 1);
+    assert(host->gateState[0]);
+
+    // audition note again, should re-trigger
+    a.auditionNote(6);
+    assertEQ(host->gateChangeCount, 2);
+    assert(!host->gateState[0]);
+    assertEQ(host->cvValue[0], 5);
+
+    float retriggerSamples = MidiAudition::retriggerDurationSeconds() / sampleTime;
+    notEnoughSamples = int(retriggerSamples - 10);
+    a.sampleTicksElapsed(notEnoughSamples);
+    assertEQ(host->gateChangeCount, 2);
+    assert(!host->gateState[0]);
+    assertEQ(host->cvValue[0], 5);
+
+    // extra notes shouldn't do anything bad
+    a.auditionNote(7);
+    a.auditionNote(8);
+
+    a.sampleTicksElapsed(20);
+    assertEQ(host->gateChangeCount, 3);
+    assert(host->gateState[0]);
+    assertEQ(host->cvValue[0], 8);
+}
+
+
 
 void testAudition()
 {
@@ -154,4 +197,5 @@ void testAudition()
     testPlaysNote();
     testNoteStops();
     testNoteRetrigger();
+    testMultiNoteRetrigger();
 }
