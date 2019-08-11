@@ -73,6 +73,7 @@ extern void testLadder();
 extern void testHighpassFilter();
 extern void calQ();
 extern void testDrumTrigger();
+extern void testAudition();
 
 #if 0
 #include <sstream>
@@ -171,6 +172,7 @@ int main(int argc, char ** argv)
     testMidiEditorCCP();
     testNoteScreenScale();
     testSeqComposite();
+    testAudition();
 
     testDrumTrigger();
 

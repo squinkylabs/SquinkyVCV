@@ -4,9 +4,16 @@
 
 class MidiAudition : public IMidiPlayerAuditionHost
 {
-    virtual void auditionNote(float pitch)
+public:
+    MidiAudition(IMidiPlayerHostPtr h) : playerHost(h)
     {
 
     }
+    void auditionNote(float pitch) override
+    {
+
+    }
+private:
+    IMidiPlayerHostPtr playerHost;
 
 };

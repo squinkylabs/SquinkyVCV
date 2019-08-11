@@ -1,4 +1,5 @@
 
+#include "IMidiPlayerHost.h"
 #include "MidiEvent.h"
 #include "MidiSelectionModel.h"
 
@@ -42,8 +43,6 @@ void MidiSelectionModel::removeFromSelection(std::shared_ptr<MidiEvent> event)
     }
 }
 
-//void addToSelection(std::shared_ptr<MidiEvent>, bool keepExisting);
-
 MidiSelectionModel::const_iterator MidiSelectionModel::begin() const
 {
     return selection.begin();
@@ -61,7 +60,10 @@ void MidiSelectionModel::clear()
 
 void MidiSelectionModel::add(MidiEventPtr evt)
 {
-   // selection.push_back(evt);
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+    if (note) {
+        auditionHost->auditionNote(note->pitchCV);
+    }
     selection.insert(evt);
 }
 

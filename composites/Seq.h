@@ -133,7 +133,7 @@ private:
     void init(MidiSongPtr);
     void serviceRunStop();
 
-    std::shared_ptr<MidiAudition> audition = std::make_shared<MidiAudition>();
+    std::shared_ptr<MidiAudition> audition;
     SeqClock clock;
     Divider div;
     bool runStopRequested = false;
@@ -177,6 +177,7 @@ void  Seq<TBase>::init(MidiSongPtr song)
 { 
     std::shared_ptr<IMidiPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
     player = std::make_shared<MidiPlayer2>(host, song);
+    audition = std::make_shared<MidiAudition>(host);
 
     div.setup(4, [this] {
         this->stepn(div.getDiv());

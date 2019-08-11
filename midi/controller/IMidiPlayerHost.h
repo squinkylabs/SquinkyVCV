@@ -14,6 +14,8 @@ public:
     virtual ~IMidiPlayerHost() = default;
 };
 
+using IMidiPlayerHostPtr = std::shared_ptr<IMidiPlayerHost>;
+
 /**
  * Receiver for UI requests to audition a note.
  * Not really a host, but...
