@@ -241,6 +241,7 @@
     <ClInclude Include="..\..\test\MLockTest.h" />
     <ClInclude Include="..\..\test\SqTime.h" />
     <ClInclude Include="..\..\test\TestAuditionHost.h" />
+    <ClInclude Include="..\..\test\TestHost2.h" />
     <ClInclude Include="..\..\test\TestSettings.h" />
     <ClInclude Include="..\..\test\TestSignal.h" />
     <ClInclude Include="..\..\test\TimeStatsCollector.h" />
