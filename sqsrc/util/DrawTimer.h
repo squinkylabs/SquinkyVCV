@@ -1,5 +1,7 @@
 #pragma once
 
+// let's turn off this whole thing for now. The mac doesn't like it
+#ifdef _TIME_DRAWING
 #include "SqTime.h"
 
 // #define _TIME_DRAWING
@@ -74,3 +76,6 @@ public:
 private:
     DrawTimer& dt;
 };
+
+#endif
+

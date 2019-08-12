@@ -69,6 +69,7 @@ static void testPlaysNote()
 {
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiAudition a(host);
+    a.setRunningStatus(false);
 
     a.auditionNote(5);
 
@@ -84,6 +85,7 @@ static void testNoteStops()
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiAudition a(host);
     a.setSampleTime(sampleTime);
+    a.setRunningStatus(false);
 
     float samplesToStop = MidiAudition::noteDurationSeconds() / sampleTime;
     int notEnoughSamples = int(samplesToStop - 10);
@@ -109,6 +111,7 @@ static void testNoteRetrigger()
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiAudition a(host);
     a.setSampleTime(sampleTime);
+    a.setRunningStatus(false);
 
     float samplesToStop = MidiAudition::noteDurationSeconds() / sampleTime;
     int notEnoughSamples = int(samplesToStop / 2.f);
@@ -150,6 +153,7 @@ static void testMultiNoteRetrigger()
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiAudition a(host);
     a.setSampleTime(sampleTime);
+    a.setRunningStatus(false);
 
     float samplesToStop = MidiAudition::noteDurationSeconds() / sampleTime;
     int notEnoughSamples = int(samplesToStop / 2.f);
@@ -187,6 +191,35 @@ static void testMultiNoteRetrigger()
 }
 
 
+static void testSuppressWhilePlaying()
+{
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiAudition a(host);
+    a.setRunningStatus(true);
+
+    a.auditionNote(5);
+
+    assertEQ(host->gateChangeCount, 0);
+    assert(!host->gateState[0]);
+    assertLT(host->cvValue[0], 5);
+}
+
+static void testStartPlayingStopsAudition()
+{
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiAudition a(host);
+    a.setRunningStatus(false);
+
+    a.auditionNote(5);
+
+    assertEQ(host->gateChangeCount, 1);
+    assert(host->gateState[0]);
+
+    a.setRunningStatus(true);
+    assertEQ(host->gateChangeCount, 2);
+    assert(!host->gateState[0]);
+}
+
 
 void testAudition()
 {
@@ -198,4 +231,7 @@ void testAudition()
     testNoteStops();
     testNoteRetrigger();
     testMultiNoteRetrigger();
+
+    testSuppressWhilePlaying();
+    testStartPlayingStopsAudition();
 }

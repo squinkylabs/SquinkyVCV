@@ -17,28 +17,6 @@ struct Light
     }
 };
 
-#if 0
-struct Port
-{
-    /** Voltage of the port, zero if not plugged in. Read-only by Module */
-    float value = 0.0;
-
-    /** Whether a wire is plugged in */
-    bool active = false;
-    bool isConnected()
-    {
-        return active;
-    }
-
-    Light plugLights[2];
-    /** Returns the value if a wire is plugged in, otherwise returns the given default value */
-    float normalize(float normalValue)
-    {
-        return active ? value : normalValue;
-    }
-};
-#endif
-
 static const int PORT_MAX_CHANNELS = 16;
 
 

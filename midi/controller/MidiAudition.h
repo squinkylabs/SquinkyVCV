@@ -17,6 +17,9 @@ public:
 
     void auditionNote(float pitch) override
     {
+        if (seqIsRunning) {
+            return;
+        }
 #ifdef _DEBUG   // disable in real seq until done
         
         if (!isPlaying && !isRetriggering) {
@@ -42,6 +45,9 @@ public:
 
     void sampleTicksElapsed(int ticks)
     {
+        if (seqIsRunning) {
+            return;
+        }
 #ifdef _DEBUG
         assert(sampleTime > 0);
         if (timerSeconds > 0) {
@@ -62,6 +68,11 @@ public:
             }
         }
 #endif
+    }
+
+    void setRunningStatus(bool b)
+    {
+        seqIsRunning = b;
     }
 
     void setSampleTime(float time)
@@ -86,4 +97,5 @@ private:
     bool isRetriggering = false;
     bool isPlaying = false;
     float pitchToPlayAfterRetrigger = 0;
+    bool seqIsRunning = true;
 };
