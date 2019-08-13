@@ -213,6 +213,77 @@ static void testEqualEnd()
     assert(end1 != end2);
 }
 
+static void testLessMixed()
+{
+    MidiEndEvent end;
+    MidiNoteEvent note;
+
+    assert(note < end); // note type is first
+}
+static void testLessEnd()
+{
+    MidiEndEvent end1;
+    MidiEndEvent end2;
+    MidiEndEvent end3;
+    end3.startTime = 1000;
+
+    assert(!(end1 < end2));
+    assert(!(end2 < end1));
+
+    assert(end1 < end3);
+    assert(!(end3 < end1));
+}
+
+
+static void testLessNote()
+{
+    MidiNoteEvent note1;
+    MidiNoteEvent note2;
+   
+    assert(!(note1 < note2));
+    assert(!(note2 < note1));
+
+    note2.startTime = 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    note1 = note2;
+    note2.pitchCV += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    note1 = note2;
+    note2.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    // start time wins
+    note1 = note2;
+    note2.startTime += 1;
+    note1.pitchCV += 1;
+    note1.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    // if start time same pitch wins
+    note1 = note2;
+    note2.pitchCV += 1;
+    note1.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    // if start time,pitch same duration wins
+    note1 = note2;
+    note2.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+}
 
 static void testClone()
 {
@@ -537,6 +608,26 @@ static void testPitchUtil2()
     assert(PitchUtils::pitch2str(v) == "B:4");
 }
 
+class CC
+{
+public:
+    std::string c;
+    bool operator < (const CC& rhs) const
+    {
+        return this->c < rhs.c;
+    }
+};
+
+
+struct compareC
+{
+    bool operator() (const CC& lhs, const CC& rhs) const
+    {
+        printf("compare l=%s, r=%s\n", lhs.c.c_str(), rhs.c.c_str());
+        return lhs.c < rhs.c;
+    }
+};
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -552,6 +643,10 @@ void  testMidiEvents()
     testEqualEnd();
     testClone();
 
+    testLessMixed();
+    testLessEnd();
+    testLessNote();
+
     testTimeUtil0();
     testTimeUtil1();
     testTimeUtil2();
@@ -565,6 +660,8 @@ void  testMidiEvents()
     testPitchUtil0();
     testPitchUtil1();
     testPitchUtil2();
+
+
    
     
     assertNoMidi();     // check for leaks

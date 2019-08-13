@@ -41,6 +41,7 @@ public:
      */
     time_t startTime = 0;
 
+    bool operator < (const MidiEvent&) const;
     bool operator == (const MidiEvent&) const;
     bool operator != (const MidiEvent&) const;
 
@@ -78,9 +79,23 @@ public:
     {
         return this->startTime == other.startTime;
     }
+    virtual bool isLessBase(const MidiEvent& other) const
+    {
+        assert(this->type == other.type);
+        return this->startTime < other.startTime;
+    }
     virtual bool isEqual(const MidiEvent& other) const = 0;
+    virtual bool isLess(const MidiEvent& other) const = 0;
 };
 
+
+inline bool MidiEvent::operator < (const MidiEvent& other) const
+{
+    if (other.type != this->type) {
+        return this->type < other.type;
+    }
+    return isLess(other);
+}
 
 inline bool MidiEvent::operator == (const MidiEvent& other) const
 {
@@ -158,6 +173,7 @@ public:
 
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
+    virtual bool isLess(const MidiEvent&) const override;
 };
 
 inline std::pair<int, int> MidiNoteEvent::getPitch() const
@@ -189,6 +205,23 @@ inline  bool MidiNoteEvent::isEqual(const MidiEvent& other) const
     return other.isEqualBase(*this) &&
         this->pitchCV == otherNote->pitchCV &&
         this->duration == otherNote->duration;
+}
+
+inline  bool MidiNoteEvent::isLess(const MidiEvent& other) const
+{
+    assert(this->type == other.type);
+
+    const MidiNoteEvent* otherNote = static_cast<const MidiNoteEvent*>(&other);
+
+    if (!this->isEqualBase(*otherNote)) {
+        return this->isLessBase(*otherNote);
+    }
+
+    if (this->pitchCV != otherNote->pitchCV) {
+        return (this->pitchCV < otherNote->pitchCV);
+    }
+
+    return this->duration < otherNote->duration;
 }
 
 template<>
@@ -240,11 +273,17 @@ public:
     MidiEndEventPtr clonee() const;
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
+    virtual bool isLess(const MidiEvent&) const override;
 };
 
 inline void MidiEndEvent::assertValid() const
 {
     MidiEvent::assertValid();
+}
+
+inline  bool MidiEndEvent::isLess(const MidiEvent& other) const
+{
+    return this->isLessBase(other);
 }
 
 inline  bool MidiEndEvent::isEqual(const MidiEvent& other) const
@@ -292,11 +331,18 @@ public:
     virtual MidiEventPtr clone() const override;
 protected:
     virtual bool isEqual(const MidiEvent&) const override;
+    virtual bool isLess(const MidiEvent&) const override;
 };
 
 inline void MidiTestEvent::assertValid() const
 {
     MidiEvent::assertValid();
+}
+
+inline  bool MidiTestEvent::isLess(const MidiEvent& other) const
+{
+    assert(false);
+    return false;
 }
 
 inline  bool MidiTestEvent::isEqual(const MidiEvent& other) const
