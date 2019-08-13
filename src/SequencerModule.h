@@ -18,6 +18,8 @@ class SequencerWidget;
 
 #include <atomic>
 
+
+
 struct SequencerModule : Module
 {
     SequencerModule();
@@ -61,6 +63,11 @@ struct SequencerModule : Module
 
     void onSampleRateChange() override {
         seqComp->onSampleRateChange();
+    }
+
+    int getAuditionParamId()
+    {
+        return Seq<WidgetComposite>::AUDITION_PARAM;
     }
 
 #ifndef __V1x

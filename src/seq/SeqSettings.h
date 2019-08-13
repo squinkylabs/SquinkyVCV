@@ -69,4 +69,5 @@ private:
     static float artic2Number(Artics);
     rack::ui::MenuItem* makeSnapItem();
     rack::ui::MenuItem* makeSnapDurationItem();
+    rack::ui::MenuItem* makeAuditionItem(SequencerModule*);
 };

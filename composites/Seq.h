@@ -63,6 +63,7 @@ public:
         PLAY_SCROLL_PARAM,
         RUNNING_PARAM,              // the invisible param that stores the run 
         NUM_VOICES_PARAM,
+        AUDITION_PARAM,
         NUM_PARAMS
     };
 
@@ -192,6 +193,7 @@ void Seq<TBase>::onSampleRateChange()
     float secondsPerRetrigger = 1.f / 1000.f;
     float samplePerTrigger = secondsPerRetrigger * this->engineGetSampleRate();
     player->setSampleCountForRetrigger((int) samplePerTrigger);
+    audition->setSampleTime(this->engineGetSampleTime());
 }
 
 template <class TBase>
@@ -229,6 +231,8 @@ template <class TBase>
 void  Seq<TBase>::stepn(int n)
 {
     serviceRunStop();
+    audition->enable(!isRunning() && (TBase::params[AUDITION_PARAM].value > .5f));
+    audition->sampleTicksElapsed(n);
     // first process all the clock input params
     const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
     const float tempo = TBase::params[TEMPO_PARAM].value;
@@ -318,6 +322,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::NUM_VOICES_PARAM:
             ret = {0, 15, 0, "Polyphony"};
+            break;
+        case Seq<TBase>::AUDITION_PARAM:
+            ret = {0, 1, 0, "Audition"};
             break;
         default:
             assert(false);

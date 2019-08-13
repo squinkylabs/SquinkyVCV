@@ -2,6 +2,7 @@
 
 #include "SeqSettings.h"
 #include "../ctrl/SqMenuItem.h"
+#include "../SequencerModule.h"
 #include "TimeUtils.h"
 
 
@@ -144,7 +145,30 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
     menu->addChild(new GridMenuItem(this));
     menu->addChild(makeSnapItem());
     menu->addChild(makeSnapDurationItem());
+    menu->addChild(makeAuditionItem(module));
     menu->addChild(new ArticulationMenuItem(this));
+}
+
+rack::ui::MenuItem* SeqSettings::makeAuditionItem(SequencerModule* module)
+{
+     int id = module->getAuditionParamId();
+    rack::ui::MenuItem* item = new SqMenuItem_BooleanParam2(module, id);
+    item->text = "Audition";
+    return item;
+    #if 0
+    int id = module->getAuditionParamId();
+    std::function<bool()> isCheckedFn = [module]() {
+        return module->isAuditionEnabled();
+    };
+
+    std::function<void()> clickFn = [module]() {
+        module->setAuditionEnabled(!module->isAuditionEnabled());
+    };
+
+    rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
+    item->text = "Audition";
+    return item;
+    #endif
 }
 
 rack::ui::MenuItem* SeqSettings::makeSnapItem()

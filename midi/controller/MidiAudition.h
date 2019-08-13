@@ -5,23 +5,35 @@
 #include <algorithm>
 #include <assert.h>
 
+#if 1
+#define _AUDITION
+#endif
+
+/**
+ * class implements the auditioning of notes from the editor.
+ * Note that the threading is a little sloppy - the editor calls
+ * auditionNote from the UI thread, everything else is done from the
+ * audio thread. Might need some atomic variables.
+ */
 class MidiAudition : public IMidiPlayerAuditionHost
 {
 public:
     
-
     MidiAudition(IMidiPlayerHostPtr h) : playerHost(h)
     {
-
     }
 
+    /**
+     * This method called from the UI thread. 
+     */
     void auditionNote(float pitch) override
     {
-        if (seqIsRunning) {
+#ifdef _AUDITION   // disable in real seq until done
+        //printf("audition note pitch %.2f retig=%d, playing=%d\n", pitch, isRetriggering, isPlaying);
+        if (!enabled) {
             return;
         }
-#ifdef _DEBUG   // disable in real seq until done
-        
+
         if (!isPlaying && !isRetriggering) {
             // starting a new note
             playerHost->setCV(0, pitch);
@@ -35,33 +47,46 @@ public:
             if (!isRetriggering) {
                 isRetriggering = true;
                 isPlaying = false;
-                timerSeconds = retriggerDurationSeconds();      
+                timerSeconds = retriggerDurationSeconds();  
+                // printf("audition note retrigger set timer sec to %f\n", timerSeconds);
                 playerHost->setGate(0, false);
-            }
-          
+            } 
         }
+        // printf("leaving audition,  retig=%d, playing=%d\n", isRetriggering, isPlaying);
 #endif
     }
 
     void sampleTicksElapsed(int ticks)
     {
-        if (seqIsRunning) {
+        if (!enabled) {
             return;
         }
-#ifdef _DEBUG
+#ifdef _AUDITION
         assert(sampleTime > 0);
+        assert(sampleTime < .01);
         if (timerSeconds > 0) {
+          
             const float elapsedTime = ticks * sampleTime;
+           // printf("counting down timer= %f ticks=%d, st=%f elpased=%f\n", timerSeconds, ticks, sampleTime, elapsedTime); fflush(stdout);
             timerSeconds -= elapsedTime;
             timerSeconds = std::max(0.f, timerSeconds);
 
             if (timerSeconds == 0) {
-                //playerHost->setGate(0, false);
+               // printf("firing\n");  fflush(stdout);
+
                 if (isRetriggering) {
+                    //turn the note back on
                     isRetriggering = false;
                     playerHost->setCV(0, pitchToPlayAfterRetrigger);
                     playerHost->setGate(0, true);
+
+                    // but turn it off after play duration
+                    timerSeconds = noteDurationSeconds();
+                    isPlaying = true;
+                   // printf("audition note retrigger end set timer sec to %f\n", timerSeconds);
+
                 } else {
+                    //printf("clearing\n");  fflush(stdout);
                     // timer is just timing down for note
                     playerHost->setGate(0, false);
                 }
@@ -70,13 +95,25 @@ public:
 #endif
     }
 
-    void setRunningStatus(bool b)
+    void enable(bool b)
     {
-        seqIsRunning = b;
+        if (b != enabled) {
+            enabled = b;
+
+            // if we just disabled, then shut off audition
+            if (!enabled) {
+                playerHost->setGate(0, false);
+            }
+            // any time we change from running to not, clear state.
+            isPlaying = false;
+            isRetriggering = false;
+            timerSeconds = 0;
+        }
     }
 
     void setSampleTime(float time)
     {
+        // printf("set sample time %f\n", time);
         sampleTime = time;
     }
 
@@ -92,10 +129,9 @@ public:
 private:
     IMidiPlayerHostPtr playerHost;
     float sampleTime = 0;
-   // float notePlayTimer = 0;
     float timerSeconds = 0;
     bool isRetriggering = false;
     bool isPlaying = false;
     float pitchToPlayAfterRetrigger = 0;
-    bool seqIsRunning = true;
+    bool enabled = false;
 };
