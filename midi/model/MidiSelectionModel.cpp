@@ -15,6 +15,15 @@ MidiSelectionModel::~MidiSelectionModel()
     --_mdb;
 }
 
+
+bool MidiSelectionModel::CompareEventPtrs::operator() (const std::shared_ptr<MidiEvent>& lhs, const std::shared_ptr<MidiEvent>& rhs) const
+
+{
+    MidiEvent& le = *lhs;
+    MidiEvent& re = *rhs;
+    return  le < re;
+}
+
 void MidiSelectionModel::select(std::shared_ptr<MidiEvent> event)
 {
     selection.clear();
@@ -28,6 +37,12 @@ void MidiSelectionModel::extendSelection(std::shared_ptr<MidiEvent> event)
 
 void MidiSelectionModel::addToSelection(std::shared_ptr<MidiEvent> event, bool keepExisting)
 {
+    auto it = selection.find(event);
+    if (it != selection.end()) {
+        // if note is already in, then don't clear and re-add
+        return;
+    }
+
     if (!keepExisting) {
         selection.clear();
     }
@@ -60,6 +75,11 @@ void MidiSelectionModel::clear()
 
 void MidiSelectionModel::add(MidiEventPtr evt)
 {
+    auto found = selection.find(evt);
+    if (found != selection.end()) {
+        // if the event is already there, don't do anything.
+        return;
+    }
     MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
     if (note) {
         auditionHost->auditionNote(note->pitchCV);

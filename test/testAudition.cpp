@@ -62,8 +62,8 @@ static void testSelectThreeBothAudition()
     assertEQ(a->notes[2], 3);
 }
 
-#if 0 // add back when selection model fixed
-static void testSelectNoteTwiceAuditionsOnce()
+
+static void testSelectNoteTwiceAuditionsOnceSub(bool keepExisting)
 {
     auto a = std::make_shared<TestAuditionHost>();
     MidiSelectionModel s(a);
@@ -79,28 +79,30 @@ static void testSelectNoteTwiceAuditionsOnce()
     assertEQ(a->notes.size(), 1);
     assertEQ(a->notes[0], 0);
 
+    // add second note, but it's the same, do will do nothing
     MidiNoteEventPtr n2 = std::make_shared<MidiNoteEvent>();
     n2->pitchCV = 0;
-    s.addToSelection(n2, true);
+    s.addToSelection(n2, keepExisting);
 
-    MidiEvent* m[2];
-    int i = 0;
-    for (auto x : s) {
-        MidiEvent* p = x.get();
-        m[i++] = p;
-    }
-    bool b = m[0] == m[1];
-    bool b2 = *m[0] == *m[1];
+    assertEQ(s.size(), 1);
 
-    MidiEventPtr me0(m[0]);
-    MidiEventPtr me1(m[1]);
-    bool b3 = me0 == me1;
     assertEQ(s.size(), 1);
     assert(!a->notes.empty());
     assertEQ(a->notes.size(), 1);
     assertEQ(a->notes[0], 0);
 }
-#endif
+
+static void testSelectNoteTwiceAuditionsOnce()
+{
+    testSelectNoteTwiceAuditionsOnceSub(true);
+}
+
+
+static void testSelectNoteTwiceAuditionsOnce2()
+{
+    testSelectNoteTwiceAuditionsOnceSub(false);
+}
+
 
 
 //******************These tests are for MidiAudition
@@ -300,7 +302,8 @@ void testAudition()
     testSelectNoteAuditions();
     testNotNoteNoAudition();
     testSelectThreeBothAudition();
-   // testSelectNoteTwiceAuditionsOnce();
+    testSelectNoteTwiceAuditionsOnce();
+    testSelectNoteTwiceAuditionsOnce2();
 
     testPlaysNote();
     testNoteStops();

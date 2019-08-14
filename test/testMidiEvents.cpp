@@ -220,6 +220,21 @@ static void testLessMixed()
 
     assert(note < end); // note type is first
 }
+
+static void testLessEvent()
+{
+    MidiEndEvent end;
+    MidiNoteEvent note;
+
+    MidiEvent& e1 = end;
+    MidiEvent& e2 = note;
+    assert(e2 < e1);
+
+    const MidiEvent& e1b = note;
+    const MidiEvent& e2b = note;
+    assert(!(e2b < e1b));
+    assert(!(e1b < e2b));
+}
 static void testLessEnd()
 {
     MidiEndEvent end1;
@@ -646,6 +661,7 @@ void  testMidiEvents()
     testLessMixed();
     testLessEnd();
     testLessNote();
+    testLessEvent();
 
     testTimeUtil0();
     testTimeUtil1();

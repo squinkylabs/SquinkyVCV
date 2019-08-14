@@ -394,9 +394,22 @@ static void testExtendSelection()
     }
     assert(found1);
     assert(found2);
-
 }
 
+static void testAddSelectionSameNote()
+{
+    auto a = std::make_shared<TestAuditionHost>();
+
+    MidiSelectionModel sel(a);
+    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
+    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
+
+    assert(*note1 == *note2);
+
+    sel.select(note1);
+    sel.extendSelection(note2);
+    assertEQ(sel.size(), 1);
+}
 
 static void testSelectionDeep()
 {
@@ -449,10 +462,10 @@ void testSelectionAddTwice()
     sel.extendSelection(note1);
     assertEQ(sel.size(), 2);
 
-    // should still be able to insert a clone
+    //  clone should be recognized as the same.
     MidiEventPtr cloneNote1 = note1->clone();
     sel.extendSelection(cloneNote1);
-    assertEQ(sel.size(), 3);
+    assertEQ(sel.size(), 2);
 }
 
 void testMidiDataModel()
@@ -477,6 +490,7 @@ void testMidiDataModel()
     testQuantRel();
 
     testExtendSelection();
+    testAddSelectionSameNote();
     testSelectionDeep();
     testSelectionAddTwice();
 

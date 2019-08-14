@@ -30,7 +30,13 @@ public:
      */
     void clear();
 
-    using container = std::set<std::shared_ptr<MidiEvent>>;
+    class CompareEventPtrs
+    {
+    public:
+        bool operator() (const std::shared_ptr<MidiEvent>& lhs, const std::shared_ptr<MidiEvent>& rhs) const;
+    };
+
+    using container = std::set<std::shared_ptr<MidiEvent>, CompareEventPtrs>;
     using const_iterator = container::const_iterator;
 
     const_iterator begin() const;
