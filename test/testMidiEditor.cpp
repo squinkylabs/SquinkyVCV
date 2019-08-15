@@ -104,8 +104,14 @@ static void testTransHuge()
 static void testShiftTime1()
 {
     MidiSequencerPtr seq = makeTest(false);
+   // TestAuditionHost audition = seq->selection->_testGetAudition();
+    auto au = seq->selection->_testGetAudition();
+    TestAuditionHost* audition = dynamic_cast<TestAuditionHost*>(au.get());
+    assert(audition);
     seq->editor->selectNextNote();          // now first is selected
 
+    assertEQ(audition->count(), 1);
+    audition->reset();
 
     MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
 
@@ -113,10 +119,14 @@ static void testShiftTime1()
     MLockTest l(seq);
 
     seq->editor->changeStartTime(false, 1);     // delay one unit (1/16 6h)
+    assertEQ(audition->count(), 0);
+    audition->reset();
 
     firstNote = seq->context->getTrack()->getFirstNote();
     const float s1 = firstNote->startTime;
     assertClose(s1 - s0, 1.f / 4.f, .000001);
+
+    const int aa3 = audition->notes.size();
 
     seq->editor->changeStartTime(false, -50);
     firstNote = seq->context->getTrack()->getFirstNote();
@@ -124,6 +134,8 @@ static void testShiftTime1()
     assertEQ(s2, 0);
     seq->assertValid();
     seq->editor->assertCursorInSelection();
+
+    assertEQ(audition->notes.size(), 0);        // shift in time should not re-audition
 }
 
 static void testShiftTimex(int units)

@@ -12,5 +12,15 @@ public:
         notes.push_back(p);
     }
 
+    void reset()
+    {
+        notes.clear();
+    }
+
+    int count() const
+    {
+        return int(notes.size());
+    }
+
     std::vector<float> notes;
 };

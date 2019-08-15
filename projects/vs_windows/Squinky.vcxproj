@@ -191,6 +191,7 @@
     <ClInclude Include="..\..\dsp\utils\NonUniformLookupTable.h" />
     <ClInclude Include="..\..\dsp\utils\ObjectCache.h" />
     <ClInclude Include="..\..\dsp\utils\poly.h" />
+    <ClInclude Include="..\..\midi\controller\AuditionLocker.h" />
     <ClInclude Include="..\..\midi\controller\IMidiPlayerHost.h" />
     <ClInclude Include="..\..\midi\controller\MidiAudition.h" />
     <ClInclude Include="..\..\midi\controller\MidiEditor.h" />

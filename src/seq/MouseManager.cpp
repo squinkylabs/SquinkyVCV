@@ -93,7 +93,6 @@ bool MouseManager::onDoubleClick()
 
 bool MouseManager::onDragStart()
 {
-   // printf("MouseManger::onDragStart()\n"); fflush(stdout);
     mouseMovedWhileDragging = false;
     MidiNoteEventPtr note = sequencer->editor->getNoteUnderCursor();
     if (!note) {

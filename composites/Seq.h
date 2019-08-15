@@ -324,7 +324,7 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             ret = {0, 15, 0, "Polyphony"};
             break;
         case Seq<TBase>::AUDITION_PARAM:
-            ret = {0, 1, 0, "Audition"};
+            ret = {0, 1, 1, "Audition"};
             break;
         default:
             assert(false);

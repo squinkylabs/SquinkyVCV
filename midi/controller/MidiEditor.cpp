@@ -1,5 +1,5 @@
 
-#include <assert.h>
+#include "AuditionLocker.h"
 #include "ISeqSettings.h"
 #include "MidiEditor.h"
 #include "MidiEditorContext.h"
@@ -12,6 +12,9 @@
 #include "SqClipboard.h"
 #include "SqMath.h"
 #include "TimeUtils.h"
+
+
+#include <assert.h>
 
 extern int _mdb;
 
@@ -242,7 +245,6 @@ void MidiEditor::updateCursor()
     setCursorToNote(firstNote);
 }
 
-
 void MidiEditor::changePitch(int semitones)
 {
    
@@ -264,6 +266,7 @@ void MidiEditor::changePitch(int semitones)
 void MidiEditor::changeStartTime(bool ticks, int amount)
 {
     MidiLocker l(seq()->song->lock);
+    AuditionLocker u(seq()->selection);       // don't audition while shifting
     assert(amount != 0);
 
     // "units" are 16th, "ticks" are 64th
@@ -283,6 +286,7 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
 void MidiEditor::changeStartTime(const std::vector<float>& shifts)
 {
     MidiLocker l(seq()->song->lock);
+    AuditionLocker u(seq()->selection);       // don't audition while shifting
     assert(!shifts.empty());
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), shifts);
@@ -298,6 +302,7 @@ void MidiEditor::changeStartTime(const std::vector<float>& shifts)
 void MidiEditor::changeDuration(bool ticks, int amount)
 {
     MidiLocker l(seq()->song->lock);
+    AuditionLocker u(seq()->selection);       // don't audition while shifting
     assert(amount != 0);
 
     float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
@@ -311,6 +316,7 @@ void MidiEditor::changeDuration(const std::vector<float>& shifts)
 {
     MidiLocker l(seq()->song->lock);
     assert(!shifts.empty());
+    AuditionLocker u(seq()->selection);       // don't audition while shifting
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), shifts);
     seq()->undo->execute(seq(), cmd);

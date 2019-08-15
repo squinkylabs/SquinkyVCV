@@ -812,5 +812,8 @@
     <ClInclude Include="..\..\test\TestHost2.h">
       <Filter>Source Files\test</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\midi\controller\AuditionLocker.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

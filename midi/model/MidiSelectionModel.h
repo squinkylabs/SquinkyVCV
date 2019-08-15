@@ -25,6 +25,9 @@ public:
     void addToSelection(std::shared_ptr<MidiEvent>, bool keepExisting);
     void removeFromSelection(std::shared_ptr<MidiEvent>);
 
+    bool isAuditionSuppressed() const;
+    void setAuditionSuppressed(bool);
+
     /**
      * select nothing
      */
@@ -67,6 +70,8 @@ public:
      */
     bool isSelectedDeep(std::shared_ptr<MidiEvent> event) const;
 
+    IMidiPlayerAuditionHostPtr _testGetAudition();
+
 private:
 
     void add(std::shared_ptr<MidiEvent>);
@@ -74,4 +79,5 @@ private:
     container selection;
 
     IMidiPlayerAuditionHostPtr auditionHost;
+    bool auditionSuppressed = false;
 };
