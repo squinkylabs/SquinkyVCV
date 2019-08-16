@@ -9,7 +9,6 @@
 #include "Mix4.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/ToggleButton.h"
 #include "ctrl/SqToggleLED.h"
 
 
@@ -197,19 +196,7 @@ void Mix4Widget::makeStrip(
         channel + Comp::PAN0_INPUT));
 
     y -= (channelDy -1);
-#if 0
-    auto mute = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(x-12, y-12),
-        module,
-        channel + Comp::MUTE0_PARAM);
-    mute->addSvg("res/square-button-01.svg");
-    mute->addSvg("res/square-button-02.svg");
-    addParam(mute);
-    muteY = y-12;
 
-#else 
-   
     const float mutx = x-11;
     const float muty = y-12;
     auto _mute = SqHelper::createParam<LEDBezel>(
@@ -223,7 +210,7 @@ void Mix4Widget::makeStrip(
         Vec(mutx + 2.2, muty + 2),
         module,
         channel + Comp::MUTE0_LIGHT));
-#endif
+
     
     y -= (channelDy-1);
     SqToggleLED* tog = (createLight<SqToggleLED>(

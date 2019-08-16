@@ -104,7 +104,7 @@ static void testTransHuge()
 static void testShiftTime1()
 {
     MidiSequencerPtr seq = makeTest(false);
-   // TestAuditionHost audition = seq->selection->_testGetAudition();
+
     auto au = seq->selection->_testGetAudition();
     TestAuditionHost* audition = dynamic_cast<TestAuditionHost*>(au.get());
     assert(audition);
@@ -125,8 +125,6 @@ static void testShiftTime1()
     firstNote = seq->context->getTrack()->getFirstNote();
     const float s1 = firstNote->startTime;
     assertClose(s1 - s0, 1.f / 4.f, .000001);
-
-    const int aa3 = audition->notes.size();
 
     seq->editor->changeStartTime(false, -50);
     firstNote = seq->context->getTrack()->getFirstNote();

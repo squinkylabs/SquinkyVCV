@@ -53,22 +53,35 @@ struct BlueToggle : public SvgSwitch
  */
 struct SQPush : SvgButton
 {
+
+    /* in ctor of SvgButton
+    shadow = new CircularShadow;
+	fb->addChild(shadow);
+    */
     SQPush()
     {
+        auto shadow = this->shadow;
+        this->fb->removeChild(shadow);
+        delete shadow;
         addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
         addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
     }
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
+        auto shadow = this->shadow;
+        this->fb->removeChild(shadow);
+        delete shadow;
+
         addFrame(SqHelper::loadSvg(upSVG));
         addFrame(SqHelper::loadSvg(dnSVG));
     }
+
     void center(Vec& pos)
     {
         this->box.pos = pos.minus(this->box.size.div(2));
     }
-#ifdef __V1x
+
      void onButton(const event::Button &e) override
      {
         //only pick the mouse events we care about.
@@ -84,15 +97,6 @@ struct SQPush : SvgButton
         }
        sq::consumeEvent(&e, this);
      }
-#else
-    void onDragEnd(EventDragEnd &e) override
-    {
-        SVGButton::onDragEnd(e);
-        if (clickHandler) {
-            clickHandler();
-        }
-    }
-#endif
 
     /**
      * User of button passes in a callback lamba here

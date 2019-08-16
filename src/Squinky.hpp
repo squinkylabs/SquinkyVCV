@@ -1,5 +1,6 @@
 #pragma once
 #include "rack.hpp"
+#define _TIME_DRAWING
 
 #include "componentlibrary.hpp"
 

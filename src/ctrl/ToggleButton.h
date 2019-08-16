@@ -9,6 +9,41 @@
 #include "window.hpp"
 #endif
 
+
+
+#if 1   // just use SvgSwitch
+
+// og->addFrame(SqHelper::loadSvg("res/clean-switch-01.svg"));
+class ToggleButton : public SvgSwitch
+{
+public:
+    ToggleButton()
+    {
+        // The default shadow gives a look we don't want 
+        auto shadow = this->shadow;
+        this->fb->removeChild(shadow);
+        delete shadow;
+
+        // old one had default size 0
+        this->box.size.y = 0;
+        this->box.size.x = 0;
+    }
+
+    // Old switch took relative paths into plugin bundle
+    void addSvg(const char* resPath)
+    {
+        addFrame(SqHelper::loadSvg(resPath));
+    }
+
+    // old helper
+    int getValue() 
+    {
+        return  SqHelper::getValue(this);
+    }
+};
+
+#else
+
 class ToggleButton;
 
 /**
@@ -141,5 +176,6 @@ inline void ToggleButton::onButton(const event::Button &e)
 
     SqHelper::setValue(this, v);
 }
+#endif
 
 
