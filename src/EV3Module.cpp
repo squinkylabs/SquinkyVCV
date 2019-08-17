@@ -2,6 +2,7 @@
 
 #ifdef _EV3
 #include "ctrl/WaveformSelector.h"
+#include "ctrl/WaveformSwitch.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
 #include "DrawTimer.h"
@@ -405,19 +406,19 @@ void EV3Widget::makeSection(EV3Module *module, int index, std::shared_ptr<ICompo
     const float y4 = y3 + 43;
     const float xx = x - 12;
 
-    // These defines used to be passed as the max and default param values.
-    // presumably they are passed elsewhere
-    // include one extra wf - none
-#if 0
-    const float numWaves = (float) Comp::Waves::END;
-    const float defWave = (float) Comp::Waves::SIN;
-#endif
-
+#if 1
+ addParam(SqHelper::createParam<WaveformSwitch>(
+        icomp,
+        Vec(xx, y4),
+        module,
+        Comp::WAVE1_PARAM + delta * index));
+#else
     addParam(SqHelper::createParam<WaveformSelector>(
         icomp,
         Vec(xx, y4),
         module,
         Comp::WAVE1_PARAM + delta * index));
+#endif
 }
 
 void EV3Widget::makeSections(EV3Module* module, std::shared_ptr<IComposite> icomp)
