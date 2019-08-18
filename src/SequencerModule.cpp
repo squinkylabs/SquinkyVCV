@@ -156,19 +156,21 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float controlX = 20;
+    #if 0
     addParam(SqHelper::createParam<Rogan2PSBlue>(
         icomp,
         Vec(controlX, 65),
         module,
         Comp::TEMPO_PARAM));
     addLabel(Vec(60, 40), "Tempo");
+    #endif
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(controlX, 120),
         module,
         Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 90;    // width
+    p->box.size.x = 85;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getClockRates());
     addParam(p);

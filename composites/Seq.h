@@ -58,7 +58,7 @@ public:
     enum ParamIds
     {
         CLOCK_INPUT_PARAM,
-        TEMPO_PARAM,
+        UNUSED_TEMPO_PARAM,
         UNUSED_RUN_STOP_PARAM,             // the switch the user pushes (actually unused????
         PLAY_SCROLL_PARAM,
         RUNNING_PARAM,              // the invisible param that stores the run 
@@ -235,8 +235,8 @@ void  Seq<TBase>::stepn(int n)
     audition->sampleTicksElapsed(n);
     // first process all the clock input params
     const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
-    const float tempo = TBase::params[TEMPO_PARAM].value;
-    clock.setup(clockRate, tempo, TBase::engineGetSampleTime());
+    //const float tempo = TBase::params[TEMPO_PARAM].value;
+    clock.setup(clockRate, 0, TBase::engineGetSampleTime());
 
     // and the clock input
     const float extClock = TBase::inputs[CLOCK_INPUT].value;
@@ -303,12 +303,12 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
     switch (i) {
         case Seq<TBase>::CLOCK_INPUT_PARAM:
         {
-            float low = int(SeqClock::ClockRate::Internal);
+            float low = 0;
             float high = int(SeqClock::ClockRate::NUM_CLOCKS) + 1;
             ret = {low, high, low, "Clock Rate"};
         }
             break;
-        case Seq<TBase>::TEMPO_PARAM:
+        case Seq<TBase>::UNUSED_TEMPO_PARAM:
             ret = {40, 200, 120, "Tempo"};
             break;
         case Seq<TBase>::UNUSED_RUN_STOP_PARAM:
