@@ -5,7 +5,6 @@
 #include "../SequencerModule.h"
 #include "TimeUtils.h"
 
-
 class GridItem
 {
 public:
@@ -23,7 +22,6 @@ public:
         return new SqMenuItem(isCheckedFn, clickFn);
     }
 };
-
 
 class ArticItem
 {
@@ -94,7 +92,6 @@ public:
         rightText = RIGHT_ARROW;
     }
 
-
     rack::ui::Menu *createChildMenu() override
     {
         rack::ui::Menu* menu = new rack::ui::Menu();
@@ -147,28 +144,56 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
     menu->addChild(makeSnapDurationItem());
     menu->addChild(makeAuditionItem(module));
     menu->addChild(new ArticulationMenuItem(this));
+    // now the commands
+    menu->addChild(new rack::ui::MenuLabel);
+    menu->addChild(makeNoteCommand(module));
+    menu->addChild(makeEndCommand(module));
+}
+
+rack::ui::MenuItem* SeqSettings::makeNoteCommand(SequencerModule* module)
+{
+    const bool isNote = bool(module->getSeq()->editor->getNoteUnderCursor());
+    std::function<bool()> isCheckedFn = []() {
+        return false;
+    };
+
+    std::function<void()> clickFn = [module, isNote]() {
+        MidiSequencerPtr seq = module->getSeq();
+        MidiEditorPtr editor =seq->editor;
+        if (isNote) {
+            editor->deleteNote();
+        } else {
+            const float dur = seq->context->settings()->getQuarterNotesInGrid();
+            editor->insertNote(dur, false);
+        }
+    };
+
+    auto item = new SqMenuItem(isCheckedFn, clickFn);
+    item->text = isNote ? "Delete note" : "Insert note";
+    return item;
+}
+
+rack::ui::MenuItem* SeqSettings::makeEndCommand(SequencerModule* module)
+{
+    std::function<bool()> isCheckedFn = []() {
+        return false;
+    };
+
+    std::function<void()> clickFn = [module]() {
+        MidiEditorPtr editor = module->getSeq()->editor;
+        editor->changeTrackLength();
+    };
+    auto item = new SqMenuItem(isCheckedFn, clickFn);
+    item->text = "Set end point";
+    return item;
 }
 
 rack::ui::MenuItem* SeqSettings::makeAuditionItem(SequencerModule* module)
 {
-     int id = module->getAuditionParamId();
+    int id = module->getAuditionParamId();
     rack::ui::MenuItem* item = new SqMenuItem_BooleanParam2(module, id);
     item->text = "Audition";
     return item;
-    #if 0
-    int id = module->getAuditionParamId();
-    std::function<bool()> isCheckedFn = [module]() {
-        return module->isAuditionEnabled();
-    };
-
-    std::function<void()> clickFn = [module]() {
-        module->setAuditionEnabled(!module->isAuditionEnabled());
-    };
-
-    rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
-    item->text = "Audition";
-    return item;
-    #endif
 }
 
 rack::ui::MenuItem* SeqSettings::makeSnapItem()
@@ -218,7 +243,6 @@ float SeqSettings::grid2Time(Grids g)
         break;
     default:
         assert(false);
-
     }
     return time;
 }
@@ -363,6 +387,5 @@ SeqSettings::Artics SeqSettings::articFromString(const std::string& s)
 
 float SeqSettings::articulation() 
 {
-    //return articulationValue;
     return artic2Number(curArtic);
 }

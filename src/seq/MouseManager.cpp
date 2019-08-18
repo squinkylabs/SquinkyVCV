@@ -1,6 +1,5 @@
 #include "ISeqSettings.h"
 #include "MidiKeyboardHandler.h"    // TODO: get rid of this
-#include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiSequencer.h"
 #include "MouseManager.h"
 #include "NoteDragger.h"
@@ -19,7 +18,6 @@ void MouseManager::draw(NVGcontext *vg)
         noteDragger->draw(vg);
     }
 }
-
 
 std::tuple<bool, float, float> MouseManager::xyToTimePitch(float x, float y) const
 {
@@ -59,7 +57,6 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
     // This will move the cursor, which we may not want all the time
     MidiNoteEventPtr curNote = sequencer->editor->moveToTimeAndPitch(time, pitchCV);
     bool curNoteIsSelected = curNote && sequencer->selection->isSelected(curNote);
-
 
     if ((isPressed && curNote && !curNoteIsSelected) || 
             (!isPressed && mouseClickWasIgnored)) {

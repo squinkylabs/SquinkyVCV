@@ -31,7 +31,6 @@ NoteDisplay::NoteDisplay(
     box.size = size;
     sequencer = seq;
     mouseManager = std::make_shared<MouseManager>(sequencer);
-  //  seqSettings = std::make_shared<SeqSettings>(mod);
 
     if (sequencer) {
         initEditContext();
@@ -276,6 +275,13 @@ void NoteDisplay::onButton(const event::Button &e)
             isPressed, ctrl, shift);
     } else if (e.button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (isPressed && !shift && !ctrl) {
+            // first, click here to get note select status ready for new commands
+            mouseManager->onMouseButton(
+                e.pos.x,
+                e.pos.y,
+                isPressed, ctrl, shift);
+
+            // now invoke the settings menu
             sequencer->context->settings()->invokeUI(this);
             handled = true;
         }

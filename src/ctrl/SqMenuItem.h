@@ -51,7 +51,6 @@ struct ManualMenuItem : SqMenuItem
 /**
  * menu item that toggles a boolean param.
  */
-
 struct  SqMenuItem_BooleanParam2 : rack::MenuItem
 {
     SqMenuItem_BooleanParam2(rack::engine::Module* mod, int id) : 

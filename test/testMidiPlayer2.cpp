@@ -389,6 +389,56 @@ static void testVoiceAssignOverlapMono()
     assert(vx[1].state() == MidiVoice::State::Idle);
 }
 
+static void testVoiceAssignRotate()
+{
+    MidiVoice vx[2];
+    MidiVoiceAssigner va(vx, 2);
+    TestHost2 th;
+    va.setNumVoices(2);
+    initVoices(vx, 2, &th);
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+    const float pitch3 = 2;
+   
+
+    // play first note
+    vx[0].updateToMetricTime(1);
+    vx[1].updateToMetricTime(1);
+
+    auto p = va.getNext(pitch1);
+    assert(p);
+    assert(p == vx);                    // pitch 1 assigned to voice 0
+
+    p->playNote(pitch1, 1, 3);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+
+    // let first end
+    vx[0].updateToMetricTime(5);
+    vx[1].updateToMetricTime(5);
+    assert(p->state() == MidiVoice::State::Idle);
+
+    // play second
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx+1);                // pitch 2 assigned to next voice
+    p->playNote(pitch1, 5, 6);        // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+     // let second end
+    vx[0].updateToMetricTime(7);
+    vx[1].updateToMetricTime(7);
+    assert(p->state() == MidiVoice::State::Idle);
+
+     // play third
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx);                // pitch 2 assigned to next voice (wrap
+    p->playNote(pitch1, 7, 8);        // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+}
+
 //********************* test helper functions ************************************************
 
 extern MidiSongPtr makeSongOneQ();
@@ -791,6 +841,7 @@ void testMidiPlayer2()
     testVoiceAssingOverflow();
     testVoiceAssignOverlap();
     testVoiceAssignOverlapMono();
+    testVoiceAssignRotate();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();

@@ -102,6 +102,7 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
        //  printf("\n******  player proc reset\n");
         curEvent = track->begin();
         resetAllVoices(isResetGates);
+        voiceAssigner.reset();
         isReset = false;
         isResetGates = false;
         currentLoopIterationStart = 0;

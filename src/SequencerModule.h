@@ -31,9 +31,7 @@ struct SequencerModule : Module
 
     void step() override
     {
-    #ifdef __V1x
         sequencer->undo->setModuleId(this->id);
-    #endif
         if (runStopRequested) {
             seqComp->toggleRunStop();
             runStopRequested = false;
@@ -70,21 +68,12 @@ struct SequencerModule : Module
         return Seq<WidgetComposite>::AUDITION_PARAM;
     }
 
-#ifndef __V1x
-    json_t *toJson() override
-    {
-        assert(sequencer);
-        return SequencerSerializer::toJson(sequencer);
-    }
-    void fromJson(json_t* data) override;
-#else
     virtual json_t *dataToJson() override
     {
         assert(sequencer);
         return SequencerSerializer::toJson(sequencer);
     }
     virtual void dataFromJson(json_t *root) override;
-#endif
 private:
     void setNewSeq(MidiSequencerPtr);
 

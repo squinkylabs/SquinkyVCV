@@ -251,7 +251,7 @@ static void testRetrigger(bool exactDuration)
 
 static void testResetGatesLow()
 {
-
+    // make a seq with note at time zero, eight eighth notes
     std::shared_ptr<Sq> s = makeWith8Clock(true);                          // start it
 
     stepN(*s, 16);
@@ -260,21 +260,11 @@ static void testResetGatesLow()
     assertLT(pos, 0);
 
     // first clock to get to time t=0
+    // this will play first note
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
-
-    // now give first advance past zero clock 
-    genOneClock(*s);
-    pos = s->getPlayPosition();
-    assertEQ(pos, .5);
-    assertAllGatesLow(*s);
-
-    // first real Q note, gate high
-    genOneClock(*s);
-    pos = s->getPlayPosition();
-    assertEQ(pos, 1);
-    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);   // now note playing
 
     s->toggleRunStop();     // STOP
     stepN(*s, 16);
@@ -284,7 +274,6 @@ static void testResetGatesLow()
     s->inputs[Sq::RESET_INPUT].value = 10;
     stepN(*s, 16);
     assertAllGatesLow(*s);
-
 }
 
 

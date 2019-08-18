@@ -70,4 +70,6 @@ private:
     rack::ui::MenuItem* makeSnapItem();
     rack::ui::MenuItem* makeSnapDurationItem();
     rack::ui::MenuItem* makeAuditionItem(SequencerModule*);
+    rack::ui::MenuItem* makeNoteCommand(SequencerModule*);
+    rack::ui::MenuItem* makeEndCommand(SequencerModule*);
 };

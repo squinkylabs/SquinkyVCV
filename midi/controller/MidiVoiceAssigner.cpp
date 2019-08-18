@@ -4,19 +4,6 @@
 
 #include <assert.h>
 
-/*
-class MidiVoiceAssigner
-{
-public:
-    MidiVoiceAssigner(MidiVoice* vx, int maxVoices);
-    void setNumVoices(int);
-    MidiVoice* getNext(float pitch);
-private:
-    MidiVoice* const voices;
-    const int maxVoices;
-};
-*/
-
 MidiVoiceAssigner::MidiVoiceAssigner(MidiVoice* vx, int maxVoices) :
     voices(vx),
     maxVoices(maxVoices),
@@ -28,10 +15,18 @@ MidiVoiceAssigner::MidiVoiceAssigner(MidiVoice* vx, int maxVoices) :
     }
 }
 
+void MidiVoiceAssigner::reset()
+{
+    nextVoice = 0;
+}
+
 void MidiVoiceAssigner::setNumVoices(int voices)
 {
     numVoices = voices;
     assert(numVoices <= maxVoices);
+    if (nextVoice >= numVoices) {
+        nextVoice = 0;          // make sure it's valid
+    }
 }
 
 MidiVoice* MidiVoiceAssigner::getNext(float pitch)
@@ -47,6 +42,19 @@ MidiVoice* MidiVoiceAssigner::getNext(float pitch)
     return nextVoice;
 }
 
+int MidiVoiceAssigner::wrapAround(int vxNum)
+{
+    if (vxNum >= numVoices) {
+        vxNum -= numVoices;
+    }
+    return vxNum;
+}
+
+int MidiVoiceAssigner::advance(int vxNum)
+{
+    return wrapAround(vxNum + 1);
+}
+
 MidiVoice* MidiVoiceAssigner::getNextReUse(float pitch)
 {
     assert(numVoices > 0);
@@ -58,10 +66,13 @@ MidiVoice* MidiVoiceAssigner::getNextReUse(float pitch)
         }
     }
 
-    // next, look for any idle voice
+    // next, look for any idle voice, starting at next voice
     for (int i = 0; i < numVoices; ++i) {
-        if (voices[i].state() == MidiVoice::State::Idle) {
-            return voices + i;
+        int candidateVoice = wrapAround(i + nextVoice);
+     
+        if (voices[candidateVoice].state() == MidiVoice::State::Idle) {
+            nextVoice = advance(candidateVoice);
+            return voices + candidateVoice;
         }
     }
 
