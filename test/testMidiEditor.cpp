@@ -429,6 +429,23 @@ static void testCursor6()
     assertEQ(seq->context->endTime(), TimeUtils::bar2time(4));
 }
 
+
+static void testCursorNonQuantSnaps()
+{ 
+    MidiEditor::Advance adv = MidiEditor::Advance::GridUnit;
+    MidiSequencerPtr seq = makeTest(false);
+
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_quartersInGrid = 1;            // set test grid to a quarter
+
+    seq->context->setCursorTime(.123f);
+
+    seq->editor->advanceCursor(adv, 1);
+    assertEQ(seq->context->cursorTime(), 1);        // expect to go to the next grid point.
+}
+
 static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float testGridSize)
 {
     MidiSequencerPtr seq = makeTest(true);
@@ -701,6 +718,7 @@ void testMidiEditorSub(int trackNumber)
     testCursor4b();
     testCursor5();
     testCursor6();
+    testCursorNonQuantSnaps();
 
     testInsert();
     testDelete();

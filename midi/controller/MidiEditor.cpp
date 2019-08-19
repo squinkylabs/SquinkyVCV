@@ -13,7 +13,6 @@
 #include "SqMath.h"
 #include "TimeUtils.h"
 
-
 #include <assert.h>
 
 extern int _mdb;
@@ -111,13 +110,7 @@ static MidiNoteEventPtr selectPrevNoteBeforeCursor(bool atCursorOk,
         }
     }
 
-
     MidiTrack::const_iterator bestSoFar = it;
-    // If must be before cursor time, go back to prev
-
-  //  if (it != track->begin()) {
-  //      --it;
-  //  }
 
     // now either this previous is acceptable, or something before it
     while (true) {
@@ -369,23 +362,22 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
         case Measure:
             {
                 // what bar are we in now?
-                    float time = seq()->context->cursorTime();
-                    auto bb = TimeUtils::time2bbf(time);
-                    int bar = std::get<0>(bb);
-                    bar += multiplier;          // next one
-                    bar = std::max(0, bar);
-                    advanceAmount = TimeUtils::bar2time(bar);
-                    doRelative = false;
+                float time = seq()->context->cursorTime();
+                auto bb = TimeUtils::time2bbf(time);
+                int bar = std::get<0>(bb);
+                bar += multiplier;          // next one
+                bar = std::max(0, bar);
+                advanceAmount = TimeUtils::bar2time(bar);
+                doRelative = false;
             }
             break;
         case All:
             {
-                //const float len = seq()->song->getTrack(0)->getLength();
                 const float len = getTrack()->getLength();
                 auto bb = TimeUtils::time2bbf(len);
                 int bar = 0;
                 if (multiplier > 0) {
-                    // if not even bar, to to the last fractional bar
+                    // if not even bar, go to the last fractional bar
                     if ((std::get<1>(bb) != 0) || (std::get<2>(bb) != 0)) {
                         bar = std::get<0>(bb);
                     } else {
@@ -401,6 +393,10 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
     }
 
     if (doRelative) {
+        // pre-quantize cursor time, if needed.
+        auto newCursorTime = seq()->context->settings()->quantize(seq()->context->cursorTime(), true);
+        seq()->context->setCursorTime(newCursorTime);
+
         advanceAmount *= multiplier;
         float newTime = seq()->context->cursorTime() + advanceAmount;
         advanceCursorToTime(newTime, false);
@@ -497,7 +493,6 @@ void MidiEditor::toggleSelectionAt(float time, float pitchCV)
         return;
     }
 
-   // const bool noteIsSelectedDeep = seq()->selection->isSelectedDeep(note);
     const bool noteIsSelected = seq()->selection->isSelected(note);
     // if the note is not selected, select it
     if (!noteIsSelected) {
@@ -552,12 +547,10 @@ void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool quantiz
     const float duration = dur * artic;
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-    //note->startTime = seq()->context->cursorTime();
     const float unquantizedStart = seq()->context->cursorTime();
     const float startTime = seq()->context->settings()->quantize(unquantizedStart, true);
     note->startTime = startTime;
     note->pitchCV = seq()->context->cursorPitch();
-    //note->duration = duration;
     float finalDuration = duration;
     if (quantizeDuration) {
         finalDuration = seq()->context->settings()->quantize(finalDuration, false);
@@ -817,7 +810,7 @@ void MidiEditor::copy()
     if (!firstNote) {
         return;             // this won't work if we put non-note data in here.
     }
-   // int t = TimeUtils::time2bar(firstNote->startTime);
+
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
 }
