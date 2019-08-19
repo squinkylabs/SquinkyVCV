@@ -211,7 +211,7 @@ void  Seq<TBase>::step()
 template <class TBase>
 bool Seq<TBase>::isRunning()
 {
-    return TBase::params[RUNNING_PARAM].value > 5;
+    return TBase::params[RUNNING_PARAM].value > .5;
 }
 
 template <class TBase>
@@ -222,7 +222,7 @@ void  Seq<TBase>::serviceRunStop()
         runStopRequested = false;
         bool curValue = isRunning();
         curValue = !curValue;
-        TBase::params[RUNNING_PARAM].value = curValue ? 10.f : 0.f;
+        TBase::params[RUNNING_PARAM].value = curValue ? 1.f : 0.f;
     }
     TBase::lights[RUN_STOP_LIGHT].value = TBase::params[RUNNING_PARAM].value;
 }
