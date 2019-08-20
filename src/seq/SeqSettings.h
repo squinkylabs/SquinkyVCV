@@ -59,7 +59,7 @@ private:
     static std::vector<std::string> getArticulationLabels();
     static Artics articFromString(const std::string& s);
 
-    Grids curGrid = Grids::quarter;
+    Grids curGrid = Grids::sixteenth;
     Artics curArtic = Artics::eightyFivePercent;
 
     bool snapEnabled = true;

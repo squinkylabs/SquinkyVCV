@@ -552,9 +552,12 @@ void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool quantiz
     note->startTime = startTime;
     note->pitchCV = seq()->context->cursorPitch();
     float finalDuration = duration;
+
+#if 0   // let's never quantize durations when inserting
     if (quantizeDuration) {
-        finalDuration = seq()->context->settings()->quantize(finalDuration, false);
+    //    finalDuration = seq()->context->settings()->quantize(finalDuration, false);
     }
+#endif
     note->duration = finalDuration;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
 
