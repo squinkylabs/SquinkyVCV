@@ -11,8 +11,10 @@ namespace rack {
         struct Module;
     }
 }
+
 using Module = rack::engine::Module;
 
+#define numTriggerChannels 8
 
 template <class TBase>
 class DrumTriggerDescription : public IComposite
@@ -98,7 +100,6 @@ public:
         return 0;
     }
 
-    static const int numChannels = NUM_OUTPUTS;
 private:
 
     class OutputChannelState
@@ -111,10 +112,7 @@ private:
     // for a given OUTPUT channel:
     //  gate indicated it that output gate was high
     //  inputChannel indicates which input made gate high
-    OutputChannelState state[numChannels];
-    
-  //  bool lastGate[numChannels] = {false};
-
+    OutputChannelState state[numTriggerChannels];
 };
 
 
@@ -131,14 +129,14 @@ inline void DrumTrigger<TBase>::step()
     // Remember: in here 'i' is the input channel,
     // index is the output channel - they are not the same!
 
-    int activeInputs = std::min(numChannels, int(TBase::inputs[GATE_INPUT].channels));
+    int activeInputs = std::min(numTriggerChannels, int(TBase::inputs[GATE_INPUT].channels));
     activeInputs = std::min(activeInputs, int(TBase::inputs[CV_INPUT].channels));
-    for (int i = 0; i < numChannels; ++i) {
+    for (int i = 0; i < numTriggerChannels; ++i) {
         const float cv = TBase::inputs[CV_INPUT].voltages[i];
        // printf("cv = %.2f, semi=%d\n", cv, PitchUtils::cvToSemitone(cv));
       //  fflush(stdout);
         int index = PitchUtils::cvToSemitone(cv) - 48;
-        if (index >= 0 && index < numChannels) {
+        if (index >= 0 && index < numTriggerChannels) {
             // here we have a pitch that we care about
             const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
          //   printf("index=%d i=%d, gInput = %d raw = %f\n", index, i, gInput, TBase::inputs[GATE_INPUT].voltages[i]);

@@ -109,7 +109,7 @@ void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
 
 void DrumTriggerWidget::makeOutputs(DrumTriggerModule* module)
 {
-    for (int i=0; i< Comp::numChannels; ++i) {
+    for (int i=0; i< numTriggerChannels; ++i) {
         makeOutput(module, i);
     }
 }
