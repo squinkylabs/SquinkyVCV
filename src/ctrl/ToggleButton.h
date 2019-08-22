@@ -17,12 +17,20 @@
 class ToggleButton : public SvgSwitch
 {
 public:
+    CircularShadow* shadowToDelete = nullptr;
+
+    ~ToggleButton()
+    {
+        if (shadowToDelete) {
+            delete shadowToDelete;
+        }
+    }
+    
     ToggleButton()
     {
         // The default shadow gives a look we don't want 
-        auto shadow = this->shadow;
-        this->fb->removeChild(shadow);
-        delete shadow;
+        auto shadowToDelete = this->shadow;
+        this->fb->removeChild(shadowToDelete);
 
         // old one had default size 0
         this->box.size.y = 0;
