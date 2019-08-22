@@ -77,9 +77,8 @@ struct SQPush : SvgButton
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
-        auto shadow = this->shadow;
-        this->fb->removeChild(shadow);
-        delete shadow;
+        shadowToDelete = this->shadow;
+        this->fb->removeChild(shadowToDelete);
 
         addFrame(SqHelper::loadSvg(upSVG));
         addFrame(SqHelper::loadSvg(dnSVG));
