@@ -53,19 +53,27 @@ struct BlueToggle : public SvgSwitch
  */
 struct SQPush : SvgButton
 {
+    CircularShadow* shadowToDelete = nullptr;
 
-    /* in ctor of SvgButton
-    shadow = new CircularShadow;
-	fb->addChild(shadow);
-    */
     SQPush()
     {
-        auto shadow = this->shadow;
-        this->fb->removeChild(shadow);
-        delete shadow;
+        // we don't want the shadow to show, so remove it from the tree
+        shadowToDelete = this->shadow;
+        this->fb->removeChild(shadowToDelete);
+
+        // But the widget still references it so we just need to 
+        // delete it later
         addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
         addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
     }
+
+    ~SQPush()
+    {
+        if (shadowToDelete) {
+            delete shadowToDelete;
+        }
+    }
+
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
@@ -82,8 +90,8 @@ struct SQPush : SvgButton
         this->box.pos = pos.minus(this->box.size.div(2));
     }
 
-     void onButton(const event::Button &e) override
-     {
+    void onButton(const event::Button &e) override
+    {
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
         // Probably should use drag end
@@ -95,8 +103,8 @@ struct SQPush : SvgButton
         if (clickHandler) {
             clickHandler();
         }
-       sq::consumeEvent(&e, this);
-     }
+        sq::consumeEvent(&e, this);
+    }
 
     /**
      * User of button passes in a callback lamba here
