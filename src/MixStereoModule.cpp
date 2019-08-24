@@ -65,21 +65,12 @@ void MixStereoModule::requestModuleSolo(SoloCommands command)
     sqmix::processSoloRequestForModule<Comp>(this, command);
 }
 
-#ifdef __V1x
 MixStereoModule::MixStereoModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
-#else
-MixStereoModule::MixStereoModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS)
-{
-#endif
     MixStereo = std::make_shared<Comp>(this);
     MixStereo->init();
 }
@@ -111,6 +102,12 @@ struct MixStereoWidget : ModuleWidget
         MixStereoModule*,
         std::shared_ptr<IComposite>,
         int channel);
+
+    void makeGroup(
+        MixStereoModule*,
+        std::shared_ptr<IComposite>,
+        int group);
+
     void appendContextMenu(Menu *menu) override;
 
 #ifdef _TIME_DRAWING
@@ -151,11 +148,86 @@ void MixStereoWidget::appendContextMenu(Menu *menu)
 }
 
 static const float channelX = 21;
-static const float dX = 36;
+
+// other mixers use 36
+static const float dX = 27.5;
 static const float labelX = 0; 
 static const float channelY = 350;
 static const float channelDy = 30;   
 static float volY = 0;
+static const float groupX = 40;
+
+float yGlobal = 0;    // set by channel strip so group knows where to gi.
+
+
+void MixStereoWidget::makeGroup(
+    MixStereoModule*,
+    std::shared_ptr<IComposite> icomp,
+    int group)
+{
+    const float x= groupX + 2 * group * dX;
+    float y = yGlobal;
+    const float mutx = x-11;
+    const float muty = y-12;
+    auto _mute = SqHelper::createParam<LEDBezel>(
+        icomp,
+        Vec(mutx, muty),
+        module,
+        group + Comp::MUTE0_PARAM);
+    addParam(_mute);
+
+    addChild(createLight<MuteLight<SquinkyLight>>(
+        Vec(mutx + 2.2, muty + 2),
+        module,
+        group + Comp::MUTE0_LIGHT));
+
+    
+    y -= (channelDy-1);
+    SqToggleLED* tog = (createLight<SqToggleLED>(
+        Vec(x-11, y-12),
+        module,
+        group + Comp::SOLO0_LIGHT));
+    std::string sLed = asset::system("res/ComponentLibrary/LEDBezel.svg");
+    tog->addSvg(sLed.c_str(), true);
+    tog->addSvg("res/SquinkyBezel.svg");
+    tog->setHandler( [this, group](bool ctrlKey) {
+        sqmix::handleSoloClickFromUI<Comp>(mixModule, group);
+    });
+    addChild(tog);
+   
+    const float extraDy = 5;
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        group + Comp::GAIN0_PARAM));
+    volY = y;
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        group + Comp::PAN0_PARAM));
+
+
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        group + Comp::SENDb0_PARAM));
+
+    y -= (channelDy + extraDy);
+    addParam(SqHelper::createParamCentered<Blue30Knob>(
+        icomp,
+        Vec(x, y),
+        module,
+        group + Comp::SEND0_PARAM));
+    
+}
 
 void MixStereoWidget::makeStrip(
     MixStereoModule*,
@@ -197,6 +269,8 @@ void MixStereoWidget::makeStrip(
 
     y -= (channelDy -1);
 
+    yGlobal = y;
+#if 0
     const float mutx = x-11;
     const float muty = y-12;
     auto _mute = SqHelper::createParam<LEDBezel>(
@@ -222,16 +296,6 @@ void MixStereoWidget::makeStrip(
     tog->addSvg("res/SquinkyBezel.svg");
     tog->setHandler( [this, channel](bool ctrlKey) {
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
-#if 0
-         //printf("clicked on channel %d\n", channel);
-        auto soloCommand =  SoloCommands(channel);
-        if (ctrlKey) {
-            soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
-        }
-        printf("ui is requesting %f from click handler\n", (int) soloCommand);
-
-        mixModule->requestSoloFromUI(soloCommand);
-#endif
     });
     addChild(tog);
    
@@ -266,6 +330,7 @@ void MixStereoWidget::makeStrip(
         Vec(x, y),
         module,
         channel + Comp::SEND0_PARAM));
+        #endif
 }
 
 /**
@@ -273,14 +338,10 @@ void MixStereoWidget::makeStrip(
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
+
 MixStereoWidget::MixStereoWidget(MixStereoModule *module)
 {
     setModule(module);
-#else
-MixStereoWidget::MixStereoWidget(MixStereoModule *module) : ModuleWidget(module)
-{
-#endif
     mixModule = module;
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix4_panel.svg");
@@ -288,6 +349,9 @@ MixStereoWidget::MixStereoWidget(MixStereoModule *module) : ModuleWidget(module)
 
     for (int i=0; i< Comp::numChannels; ++i) {
         makeStrip(module, icomp, i);
+    }
+     for (int i=0; i< Comp::numGroups; ++i) {
+        makeGroup(module, icomp, i);
     }
 
     // screws

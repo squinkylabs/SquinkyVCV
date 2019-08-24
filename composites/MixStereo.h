@@ -54,6 +54,8 @@ public:
     {
     }
     static const int numChannels = 4;
+    static const int numGroups = 2;
+
 
     /**
     * Only needs to be called once.
