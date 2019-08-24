@@ -7,6 +7,7 @@ class MockMixComposite : public TestComposite
 {
 public:
     static const int numChannels = 4;
+    static const int numGroups = 4;
 
 
     enum ParamIds
@@ -21,6 +22,7 @@ public:
         MUTE3_STATE_PARAM,
 
         CV_MUTE_TOGGLE,
+        NUM_PARAMS
 
     };
 
@@ -34,7 +36,11 @@ public:
 
     enum LightIds
     {
-        MUTE0_LIGHT
+        MUTE0_LIGHT,
+        MUTE1_LIGHT,
+        MUTE2_LIGHT,
+        MUTE3_LIGHT,
+        NUM_LIGHTS
     };
 
 };
