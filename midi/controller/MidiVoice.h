@@ -1,7 +1,7 @@
 #pragma once
 
 
-//#define _MLOG
+// #define _MLOG
 
 class IMidiPlayerHost;
 
@@ -57,6 +57,8 @@ public:
 
     State state() const;
     float pitch() const;
+
+    int _getIndex() const;
    
 private:
     double noteOffTime = -1;        // the absolute metric time when the 

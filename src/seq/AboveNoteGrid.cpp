@@ -154,7 +154,8 @@ void AboveNoteGrid::updateTimeLabels()
         const bool isBar = !(i % 4);
         const int numDigitsDisplayed = isBar ? 1 : 2;
         std::string s = TimeUtils::time2str(time, numDigitsDisplayed);
-        assert(timeLabels.size < i);
+       // printf("in label update, i = %d, size = %d\n", i, timeLabels.size());
+        assert(timeLabels.size() > i);
         timeLabels[i]->text = s;
         ++i;
     }

@@ -3,6 +3,7 @@
 #include "MidiVoice.h"
 
 #include <assert.h>
+#include <stdio.h>
 
 MidiVoiceAssigner::MidiVoiceAssigner(MidiVoice* vx, int maxVoices) :
     voices(vx),
@@ -39,6 +40,10 @@ MidiVoice* MidiVoiceAssigner::getNext(float pitch)
         default:
             assert(false);
     }
+#ifdef _MLOG
+    printf("get next pitch=%.2f, ret voice %d\n", pitch, nextVoice->_getIndex()); 
+    fflush(stdout);
+#endif
     return nextVoice;
 }
 

@@ -125,3 +125,8 @@ void MidiVoice::reset(bool clearGate)
         setGate(false);             // and stop the playing CV
     }
 }
+
+int MidiVoice::_getIndex() const
+{
+    return index;
+}

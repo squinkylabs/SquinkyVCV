@@ -5,7 +5,6 @@
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
-
 MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song) :
     host(host),
     song(song),
@@ -72,7 +71,7 @@ float MidiPlayer2::getCurrentSubrangeLoopStart() const
 
 void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval)
 {
-#ifdef _MLOG
+#if defined(_MLOG) && 0
     printf("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
 #endif
     assert(quantizationInterval != 0);
@@ -124,7 +123,7 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
 
 bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
 {
-#ifdef _MLOG
+#if defined(_MLOG) && 0
     printf("MidiPlayer::playOnce metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizeInterval);
 #endif
     bool didSomething = false;

@@ -88,7 +88,6 @@ json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
     auto artic = rawSettings->getArticString();
     json_object_set_new(jsonSettings, "articulation", json_string(artic.c_str()));
 
-    assert(false);
     return jsonSettings;
 }
 

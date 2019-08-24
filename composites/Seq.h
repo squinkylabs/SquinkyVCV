@@ -157,12 +157,23 @@ public:
     void setGate(int voice, bool gate) override
     {
 #ifdef _MLOG
-        printf("gate(%d) = %d t=%f\n", voice, gate, seq->getPlayPosition()); fflush(stdout);
+        printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
+            voice, 
+            gate,
+            seq->outputs[Seq<TBase>::CV_OUTPUT].voltages[voice],
+            seq->getPlayPosition()); fflush(stdout);
 #endif
         seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
     void setCV(int voice, float cv) override
     {
+#ifdef _MLOG
+        printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
+            voice, 
+            seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] > 5,
+            cv,
+            seq->getPlayPosition()); fflush(stdout);
+#endif
         seq->outputs[Seq<TBase>::CV_OUTPUT].voltages[voice] = cv;
     }
     void onLockFailed() override
