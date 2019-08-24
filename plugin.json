@@ -83,8 +83,7 @@
 			"name": "Saws",
 			"description": "Super saw VCO emulation",
 			"tags": ["VCO"]
-		}
-		,
+		},
 		{
 			"slug": "squinkylabs-blank",
 			"name": "Blank",
@@ -108,6 +107,13 @@
 			"slug": "squinkylabs-mix4",
 			"name": "ExFor",
 			"description": "4 channel mixer expander",
+			"disabled": false,
+			"tags": ["Mixer", "Expander"]
+		},
+		{
+			"slug": "squinkylabs-mixStereo",
+			"name": "ExStereo",
+			"description": "stereo channel mixer expander",
 			"disabled": false,
 			"tags": ["Mixer", "Expander"]
 		},

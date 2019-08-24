@@ -101,6 +101,9 @@ void init(rack::Plugin *p)
 #ifdef _MIXM
     p->addModel(modelMixMModule);
 #endif
+#ifdef _MIX_STEREO
+    p->addModel(modelMixStereoModule);
+#endif
 #ifdef _DTMODULE
     p->addModel(modelDrumTriggerModule);
 #endif

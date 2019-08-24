@@ -22,6 +22,7 @@
 #define _FILT
 //#define _CH10
 //#define _LFNB
+#define _MIX_STEREO
 
 //#define _BLANKMODULE
 
@@ -108,6 +109,9 @@ extern Model *modelMix4Module;
 #endif
 #ifdef _MIXM
 extern Model *modelMixMModule;
+#endif
+#ifdef _MIX_STEREO
+extern Model* modelMixStereoModule;
 #endif
 #ifdef _FILT
 extern Model *modelFiltModule;
