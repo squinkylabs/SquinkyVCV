@@ -39,9 +39,6 @@ public:
 
 };
 
-
-
-
 // just make it all compile
 static void test0()
 {
@@ -71,8 +68,6 @@ static void testNothing()
         assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, 0);
     }
 }
-
-
 
 static void testParamToggle(int channel)
 {
@@ -109,7 +104,6 @@ static void testParamToggle(int channel)
         const float expectedMuteState = 0;
         assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, expectedMuteState);
     }
-
 }
 
 static void testParamToggle()
@@ -147,7 +141,6 @@ static void testCVMomentary(int channel)
         const float actualState = comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value;
         assertEQ(actualState, expectedMuteState);
     }
-
 }
 
 static void testCVMomentary()
@@ -162,8 +155,6 @@ static void testCVToggle(int channel)
 {
     MockMixComposite comp;
     MixHelper< MockMixComposite> helper;
-
-   
 
     comp.params[MockMixComposite::CV_MUTE_TOGGLE].value = 1;
 
@@ -217,6 +208,7 @@ static void testCVToggle()
         testCVToggle(i);
     }
 }
+
 void testMixHelper()
 {
     test0();

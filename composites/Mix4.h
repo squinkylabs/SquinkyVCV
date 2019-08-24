@@ -223,7 +223,6 @@ inline void Mix4<TBase>::stepn(int div)
     const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
 
     helper.procMixInputs(this);
-    //helper.procMasterMute(this);
 
     // If the is an external solo, then mute all channels
     bool anySolo = false;

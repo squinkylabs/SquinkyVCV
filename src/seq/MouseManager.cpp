@@ -51,7 +51,8 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
         return false;
     }
 
-    const float time = std::get<1>(timeAndPitch);
+    float time = std::get<1>(timeAndPitch); 
+    time = sequencer->context->settings()->quantize(time, true);
     const float pitchCV = std::get<2>(timeAndPitch);
 
     // This will move the cursor, which we may not want all the time
@@ -60,13 +61,14 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
 
     if ((isPressed && curNote && !curNoteIsSelected) || 
             (!isPressed && mouseClickWasIgnored)) {
+        printf("will pass to kbd\n");
         mouseClickWasIgnored = false;
 
-        // TODO: use more specific handler calls, get rid of this ambiguous catchall
+        // now set/extend the selection
         MidiKeyboardHandler::doMouseClick(
             sequencer,
-            std::get<1>(timeAndPitch),
-            std::get<2>(timeAndPitch),
+            time,
+            pitchCV,
             shift,
             ctrl);
         ret = true;
