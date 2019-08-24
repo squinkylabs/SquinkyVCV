@@ -61,7 +61,6 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
 
     if ((isPressed && curNote && !curNoteIsSelected) || 
             (!isPressed && mouseClickWasIgnored)) {
-        printf("will pass to kbd\n");
         mouseClickWasIgnored = false;
 
         // now set/extend the selection
