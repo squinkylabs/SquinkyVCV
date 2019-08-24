@@ -69,6 +69,7 @@ public:
     }
 
     static const int numChannels = 4;
+    static const int numGroups = 4;
 
     /**
     * re-calc everything that changes with sample

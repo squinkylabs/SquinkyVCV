@@ -67,43 +67,29 @@ public:
     {
         GAIN0_PARAM,
         GAIN1_PARAM,
-        GAIN2_PARAM,
-        GAIN3_PARAM,
+      
 
         PAN0_PARAM,
         PAN1_PARAM,
-        PAN2_PARAM,
-        PAN3_PARAM,
-
+     
         MUTE0_PARAM,
         MUTE1_PARAM,
-        MUTE2_PARAM,
-        MUTE3_PARAM,
-
         SOLO0_PARAM,
         SOLO1_PARAM,
-        SOLO2_PARAM,
-        SOLO3_PARAM,
-
+      
         ALL_CHANNELS_OFF_PARAM, // when > .05, acts as if all channels muted.
 
         SEND0_PARAM,
         SEND1_PARAM,
-        SEND2_PARAM,
-        SEND3_PARAM,
-
         SENDb0_PARAM,
         SENDb1_PARAM,
-        SENDb2_PARAM,
-        SENDb3_PARAM,
-
+       
         PRE_FADERa_PARAM,       // 0 = post, 1 = pre
         PRE_FADERb_PARAM,
 
         MUTE0_STATE_PARAM,
         MUTE1_STATE_PARAM,
-        MUTE2_STATE_PARAM,
-        MUTE3_STATE_PARAM,
+       
 
         CV_MUTE_TOGGLE,
 
@@ -119,19 +105,13 @@ public:
 
         LEVEL0_INPUT,
         LEVEL1_INPUT,
-        LEVEL2_INPUT,
-        LEVEL3_INPUT,
-
+    
         PAN0_INPUT,
         PAN1_INPUT,
-        PAN2_INPUT,
-        PAN3_INPUT,
-
+       
         MUTE0_INPUT,
         MUTE1_INPUT,
-        MUTE2_INPUT,
-        MUTE3_INPUT,
-
+       
         NUM_INPUTS
     };
 
@@ -148,13 +128,8 @@ public:
     {
         SOLO0_LIGHT,
         SOLO1_LIGHT,
-        SOLO2_LIGHT,
-        SOLO3_LIGHT,
-
         MUTE0_LIGHT,
         MUTE1_LIGHT,
-        MUTE2_LIGHT,
-        MUTE3_LIGHT,
         NUM_LIGHTS
     };
 
@@ -184,8 +159,6 @@ public:
     float buf_channelSendGainsBLeft[numChannels] = {0};
     float buf_channelSendGainsBRight[numChannels] = {0};
 
-    float buf_auxReturnGainA = 0;
-    float buf_auxReturnGainB = 0;
 private:
     Divider divider;
 
@@ -430,24 +403,12 @@ inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
         case MixStereo<TBase>::GAIN1_PARAM:
             ret = {0, 1, 0, "Level 2"};
             break;
-        case MixStereo<TBase>::GAIN2_PARAM:
-            ret = {0, 1, 0, "Level 3"};
-            break;
-        case MixStereo<TBase>::GAIN3_PARAM:
-            ret = {0, 1, 0, "Level 4"};
-            break;
 
         case MixStereo<TBase>::PAN0_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 1"};
             break;
         case MixStereo<TBase>::PAN1_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 2"};
-            break;
-        case MixStereo<TBase>::PAN2_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f, "Pan 3"};
-            break;
-        case MixStereo<TBase>::PAN3_PARAM:
-            ret = {-1.0f, 1.0f, 0.0f, "Pan 4"};
             break;
 
         case MixStereo<TBase>::MUTE0_PARAM:
@@ -456,23 +417,12 @@ inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
         case MixStereo<TBase>::MUTE1_PARAM:
             ret = {0, 1.0f, 0, "Mute  2"};
             break;
-        case MixStereo<TBase>::MUTE2_PARAM:
-            ret = {0, 1.0f, 0, "Mute  3"};
-            break;
-        case MixStereo<TBase>::MUTE3_PARAM:
-            ret = {0, 1.0f, 0, "Mute  4"};
-            break;
+
         case MixStereo<TBase>::SOLO0_PARAM:
             ret = {0, 1.0f, 0, "Solo  1"};
             break;
         case MixStereo<TBase>::SOLO1_PARAM:
             ret = {0, 1.0f, 0, "Solo  2"};
-            break;
-        case MixStereo<TBase>::SOLO2_PARAM:
-            ret = {0, 1.0f, 0, "Solo  3"};
-            break;
-        case MixStereo<TBase>::SOLO3_PARAM:
-            ret = {0, 1.0f, 0, "Solo  4"};
             break;
         case MixStereo<TBase>::SEND0_PARAM:
             ret = {0, 1.0f, 0, "Send 1"};
@@ -480,23 +430,11 @@ inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
         case MixStereo<TBase>::SEND1_PARAM:
             ret = {0, 1.0f, 0, "Send 2"};
             break;
-        case MixStereo<TBase>::SEND2_PARAM:
-            ret = {0, 1.0f, 0, "Send 3"};
-            break;
-        case MixStereo<TBase>::SEND3_PARAM:
-            ret = {0, 1.0f, 0, "Send 4"};
-            break;
         case MixStereo<TBase>::SENDb0_PARAM:
             ret = {0, 1.0f, 0, "Send 1b"};
             break;
         case MixStereo<TBase>::SENDb1_PARAM:
             ret = {0, 1.0f, 0, "Send 2b"};
-            break;
-        case MixStereo<TBase>::SENDb2_PARAM:
-            ret = {0, 1.0f, 0, "Send 3b"};
-            break;
-        case MixStereo<TBase>::SENDb3_PARAM:
-            ret = {0, 1.0f, 0, "Send 4b"};
             break;
         case  MixStereo<TBase>::ALL_CHANNELS_OFF_PARAM:
             ret = {0, 1.0f, 0, "All Off"};
@@ -512,12 +450,6 @@ inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
             break;
         case MixStereo<TBase>::MUTE1_STATE_PARAM:
             ret = {0, 1, 0, "MSX1"};
-            break;
-        case MixStereo<TBase>::MUTE2_STATE_PARAM:
-            ret = {0, 1, 0, "MSX2"};
-            break;
-        case MixStereo<TBase>::MUTE3_STATE_PARAM:
-            ret = {0, 1, 0, "MSX3"};
             break;
         case MixStereo<TBase>::CV_MUTE_TOGGLE:
             ret = {0, 1, 0, "VCTM"};

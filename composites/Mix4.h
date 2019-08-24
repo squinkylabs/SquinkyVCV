@@ -54,7 +54,7 @@ public:
     {
     }
     static const int numChannels = 4;
-
+    static const int numGroups = 4;
     /**
     * Only needs to be called once.
     */
@@ -182,8 +182,8 @@ public:
     float buf_channelSendGainsBLeft[numChannels] = {0};
     float buf_channelSendGainsBRight[numChannels] = {0};
 
-    float buf_auxReturnGainA = 0;
-    float buf_auxReturnGainB = 0;
+    //float buf_auxReturnGainA = 0;
+    //float buf_auxReturnGainB = 0;
 private:
     Divider divider;
 

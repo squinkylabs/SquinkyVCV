@@ -6,11 +6,12 @@
 
 /**
  * template class must provide:
-        MUTE0_PARAM..3
+        MUTE0_PARAM..numGroups
         MUTE0_STATE_PARAM
         params
 
         numChannels
+        numGroups
  */
 template <class TMixComposite>
 class MixHelper
@@ -41,7 +42,7 @@ private:
         int index,              // index into my input triggers, etc..
         TMixComposite*, 
         int muteParam, 
-        int muteStateParm, 
+        int muteStateParam, 
         int light, 
         bool cvMuteToggle,
         int cvInput);
@@ -52,7 +53,7 @@ template <class TMixComposite>
 inline void MixHelper<TMixComposite>::procMixInputs(TMixComposite* mixer)
 {
     const bool cvToggleMode = mixer->params[TMixComposite::CV_MUTE_TOGGLE].value > .5;
-    for (int i = 0; i < TMixComposite::numChannels; ++i) {
+    for (int i = 0; i < TMixComposite::numGroups; ++i) {
         procOneMute(
             i,
             mixer,
@@ -70,7 +71,7 @@ inline void MixHelper<TMixComposite>::procMasterMute(TMixComposite* mixer)
 {
     const bool cvToggleMode = mixer->params[TMixComposite::CV_MUTE_TOGGLE].value > .5;
     procOneMute(
-        4,
+        TMixComposite::numGroups,   // mute status comes after the groups
         mixer,
         TMixComposite::MASTER_MUTE_PARAM,
         TMixComposite::MASTER_MUTE_STATE_PARAM,
@@ -84,12 +85,16 @@ inline void MixHelper<TMixComposite>::procOneMute(
     int index,
     TMixComposite* mixer,
     int muteParam,
-    int muteStateParm,
+    int muteStateParam,
     int light,
     bool cvMuteToggle,
     int cvInput)
 {
-    bool muted = mixer->params[muteStateParm].value > .5;
+    assert(muteParam < TMixComposite::NUM_PARAMS);
+    assert(muteStateParam < TMixComposite::NUM_PARAMS);
+    assert(light < int(TMixComposite::NUM_LIGHTS));
+
+    bool muted = mixer->params[muteStateParam].value > .5;
 
     // run the mute param though a gate trigger. Don't need schmidt, but the edge
     // detector is useful here.
@@ -120,7 +125,7 @@ inline void MixHelper<TMixComposite>::procOneMute(
     }
 
     // set the final mute state
-    mixer->params[muteStateParm].value = muted ? 1.f : 0.f;
+    mixer->params[muteStateParam].value = muted ? 1.f : 0.f;
     mixer->lights[light].value = muted ? 10.f : 0.f;
 }
 //proc1(mixer, muteparam, mutesstatusparam, light)

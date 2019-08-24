@@ -2,7 +2,6 @@
 #include "Blank.h"
 #include "CHB.h"
 #include "ColoredNoise.h"
-//#include "EV3.h"
 #include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
 #include "LFN.h"
@@ -13,6 +12,7 @@
 #include "Mix8.h"
 #include "Mix4.h"
 #include "MixM.h"
+#include "MixStereo.h"
 #include "Seq.h"
 #include "Shaper.h"
 #include "Slew4.h"
@@ -71,6 +71,7 @@ void testIComposite()
     test<Slew4<TestComposite>>();
     test<Mix8<TestComposite>>();
     test<Mix4<TestComposite>>();
+    test<MixStereo<TestComposite>>();
     test<MixM<TestComposite>>();
     test<LFNB<TestComposite>>();
     test<Filt<TestComposite>>();

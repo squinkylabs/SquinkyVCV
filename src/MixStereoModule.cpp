@@ -155,7 +155,7 @@ static const float labelX = 0;
 static const float channelY = 350;
 static const float channelDy = 30;   
 static float volY = 0;
-static const float groupX = 40;
+static const float groupX = 36;
 
 float yGlobal = 0;    // set by channel strip so group knows where to gi.
 
@@ -167,6 +167,32 @@ void MixStereoWidget::makeGroup(
 {
     const float x= groupX + 2 * group * dX;
     float y = yGlobal;
+
+printf("making group %d, y=%f\n", group, y); fflush(stdout);
+   // y -= channelDy;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        group + Comp::MUTE0_INPUT));
+
+    y -= channelDy;
+    #if 1
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        group + Comp::LEVEL0_INPUT));
+    #endif
+    y -= channelDy;
+    #if 1
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(x, y),
+        module,
+        group + Comp::PAN0_INPUT));
+    #endif
+    printf("added last port of 3 at %f\n", y);
+     y -= channelDy;
+
+
     const float mutx = x-11;
     const float muty = y-12;
     auto _mute = SqHelper::createParam<LEDBezel>(
@@ -175,6 +201,7 @@ void MixStereoWidget::makeGroup(
         module,
         group + Comp::MUTE0_PARAM);
     addParam(_mute);
+    printf("mute at %f\n", muty);
 
     addChild(createLight<MuteLight<SquinkyLight>>(
         Vec(mutx + 2.2, muty + 2),
@@ -194,6 +221,8 @@ void MixStereoWidget::makeGroup(
         sqmix::handleSoloClickFromUI<Comp>(mixModule, group);
     });
     addChild(tog);
+
+    printf("tog at %f\n", y);
    
     const float extraDy = 5;
     y -= (channelDy + extraDy);
@@ -211,8 +240,6 @@ void MixStereoWidget::makeGroup(
         module,
         group + Comp::PAN0_PARAM));
 
-
-
     y -= (channelDy + extraDy);
     addParam(SqHelper::createParamCentered<Blue30Knob>(
         icomp,
@@ -226,6 +253,7 @@ void MixStereoWidget::makeGroup(
         Vec(x, y),
         module,
         group + Comp::SEND0_PARAM));
+
     
 }
 
@@ -249,88 +277,9 @@ void MixStereoWidget::makeStrip(
         module,
         channel + Comp::AUDIO0_INPUT));
 
-    y -= channelDy;
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x, y),
-        module,
-        channel + Comp::MUTE0_INPUT));
-
-    y -= channelDy;
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x, y),
-        module,
-        channel + Comp::LEVEL0_INPUT));
-
-    y -= channelDy;
-    addInput(createInputCentered<PJ301MPort>(
-        Vec(x, y),
-        module,
-        channel + Comp::PAN0_INPUT));
-
     y -= (channelDy -1);
 
     yGlobal = y;
-#if 0
-    const float mutx = x-11;
-    const float muty = y-12;
-    auto _mute = SqHelper::createParam<LEDBezel>(
-        icomp,
-        Vec(mutx, muty),
-        module,
-        channel + Comp::MUTE0_PARAM);
-    addParam(_mute);
-
-    addChild(createLight<MuteLight<SquinkyLight>>(
-        Vec(mutx + 2.2, muty + 2),
-        module,
-        channel + Comp::MUTE0_LIGHT));
-
-    
-    y -= (channelDy-1);
-    SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(x-11, y-12),
-        module,
-        channel + Comp::SOLO0_LIGHT));
-    std::string sLed = asset::system("res/ComponentLibrary/LEDBezel.svg");
-    tog->addSvg(sLed.c_str(), true);
-    tog->addSvg("res/SquinkyBezel.svg");
-    tog->setHandler( [this, channel](bool ctrlKey) {
-        sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
-    });
-    addChild(tog);
-   
-    const float extraDy = 5;
-    y -= (channelDy + extraDy);
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(x, y),
-        module,
-        channel + Comp::GAIN0_PARAM));
-    volY = y;
-
-    y -= (channelDy + extraDy);
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(x, y),
-        module,
-        channel + Comp::PAN0_PARAM));
-
-
-
-    y -= (channelDy + extraDy);
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(x, y),
-        module,
-        channel + Comp::SENDb0_PARAM));
-
-    y -= (channelDy + extraDy);
-    addParam(SqHelper::createParamCentered<Blue30Knob>(
-        icomp,
-        Vec(x, y),
-        module,
-        channel + Comp::SEND0_PARAM));
-        #endif
 }
 
 /**
