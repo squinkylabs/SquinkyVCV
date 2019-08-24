@@ -43,7 +43,7 @@ public:
     static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq, const char* name);
     static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq, std::shared_ptr<const MidiNoteEvent>);
     static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
-    static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta);
+    static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta, float quantizeGrid);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, const std::vector<float>&);
     
     static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq, float delta);

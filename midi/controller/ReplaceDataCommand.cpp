@@ -4,23 +4,9 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "SqClipboard.h"
+#include "TimeUtils.h"
 
 #include <assert.h>
-
-#if 0 // old way with persistent song pointers
-ReplaceDataCommand::ReplaceDataCommand(
-    MidiSongPtr song,
-    MidiSelectionModelPtr selection,
-    std::shared_ptr<MidiEditorContext> unused,
-    int trackNumber,
-    const std::vector<MidiEventPtr>& inRemove,
-    const std::vector<MidiEventPtr>& inAdd)
-    : song(song), trackNumber(trackNumber), selection(selection), removeData(inRemove), addData(inAdd)
-{
-    assert(song->getTrack(trackNumber));
-}
-#endif
-
 
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
@@ -46,18 +32,6 @@ ReplaceDataCommand::ReplaceDataCommand(
 {
     assert(song->getTrack(trackNumber));
 }
-
-#if 0
-void ReplaceDataCommand::se(MidiTrackPtr mt, float newTrackLength)
-{
-    auto xx = mt->getEndEvent();
-    MidiEndEventPtr end = mt->getEndEvent();
-    assert(end);
-    mt->deleteEvent(*end);
-    mt->insertEnd(newTrackLength);
-    mt->assertValid();
-}
-#endif
 
 void ReplaceDataCommand::execute(MidiSequencerPtr seq)
 {
@@ -253,14 +227,19 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
     return ret;
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta, float quantizeGrid)
 {
     seq->assertValid();
-    Xform xform = [delta](MidiEventPtr event, int) {
+    Xform xform = [delta, quantizeGrid](MidiEventPtr event, int) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
-            note->startTime += delta;
-            note->startTime = std::max(0.f, note->startTime);
+            float s = note->startTime;
+            s += delta;
+            s = std::max(0.f, s);
+            if (quantizeGrid != 0) {
+                s = (float) TimeUtils::quantize(s, quantizeGrid, true);
+            }
+            note->startTime = s;
         }
     };
     auto ret =  makeChangeNoteCommand(Ops::Start, seq, xform, true);
@@ -282,7 +261,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
     ret->name = "change note start";
     return ret;
 }
-
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
 {
@@ -440,8 +418,6 @@ float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float d
     }
 
     const float needBars = duration / 4.f;
-    //const float roundedBars = std::round(needBars + 1.f);
-    // maybe it should be this?
     const float roundedBars = std::floor(needBars + 1.f);
     const float durationRequest = roundedBars * 4;
     return durationRequest;

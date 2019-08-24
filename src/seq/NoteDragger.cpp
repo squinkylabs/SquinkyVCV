@@ -203,6 +203,31 @@ void NoteHorizontalDragger::onDrag(float deltaX, float deltaY)
     sequencer->context->setCursorTime(t);
 }
 
+static const int shiftPixThreshold = 2;
+
+float NoteHorizontalDragger::quantizeForDisplay(float metricTime, float timeShiftPixels, bool canGoBelowGridSize)
+{
+    if (std::abs(timeShiftPixels) <  shiftPixThreshold) {
+        return 0;
+    }
+
+    auto scaler = sequencer->context->getScaler();
+
+    float grid = sequencer->context->settings()->getQuarterNotesInGrid();
+    float timeShiftMetric = scaler->xToMidiDeltaTime(timeShiftPixels);
+
+    float quantizedMetricTime = TimeUtils::quantize(metricTime + timeShiftMetric, grid, true );
+    //printf("hd::qfd time shift metric, unquant=%f q=%f\n", timeShiftMetric, quantizedMetricTime);
+    if (!canGoBelowGridSize && quantizedMetricTime < grid) {
+        quantizedMetricTime = grid;
+    }
+    float metricDelta = quantizedMetricTime - metricTime;
+    float pixelDelta = scaler->midiTimeTodX(metricDelta);
+    // printf("hd::qfd q for disp will return pixel delta %f metric delta = %f\n", pixelDelta, metricDelta);
+    return pixelDelta;
+}
+
+#if 0 // orig
 float NoteHorizontalDragger::quantizeForDisplay(float metricTime, float timeShiftPixels, bool canGoBelowGridSize)
 {
     auto scaler = sequencer->context->getScaler();
@@ -211,15 +236,16 @@ float NoteHorizontalDragger::quantizeForDisplay(float metricTime, float timeShif
     float timeShiftMetric = scaler->xToMidiDeltaTime(timeShiftPixels);
 
     float quantizedMetricTime = TimeUtils::quantizeForEdit(metricTime, timeShiftMetric, grid);
-    //printf("time shift metric, unquant=%f q=%f\n", timeShiftMetric, quantizedMetricTime);
+    printf("hd::qfd time shift metric, unquant=%f q=%f\n", timeShiftMetric, quantizedMetricTime);
     if (!canGoBelowGridSize && quantizedMetricTime < grid) {
         quantizedMetricTime = grid;
     }
     float metricDelta = quantizedMetricTime - metricTime;
     float pixelDelta = scaler->midiTimeTodX(metricDelta);
-    //printf("q for disp will return pixel delta %f metric delta = %f\n", pixelDelta, metricDelta);
+    printf("hd::qfd q for disp will return pixel delta %f metric delta = %f\n", pixelDelta, metricDelta);
     return pixelDelta;
 }
+#endif
 
 /******************************************************************
 *
@@ -242,21 +268,29 @@ void NoteStartDragger::draw(NVGcontext *vg)
     SqGfx::drawText(vg, curMousePositionX + 20, curMousePositionY + 20, "shift");
 }
 
+
+
 void NoteStartDragger::commit()
 {
     auto scaler = sequencer->context->getScaler();
     const float horizontalShiftPix = curMousePositionX - startX; 
 
+    if (std::abs(horizontalShiftPix) <  shiftPixThreshold) {
+        return;
+    }
 
     // find the shift required for each note
     std::vector<float> shifts;
-    bool isShift = false;
+
+    // TODO: get rid of this useless appendage.
+    bool isShift = true;
     for (auto it : *sequencer->selection) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it);
         float timeShiftAmountPixels = horizontalShiftPix;
         if (sequencer->context->settings()->snapToGrid()) {
             timeShiftAmountPixels = quantizeForDisplay(note->startTime, horizontalShiftPix, true);
         }
+        printf("in commit after quantize timeshift = %f\n", timeShiftAmountPixels);  fflush(stdout);
         float timeshiftAmountMetric = scaler->xToMidiDeltaTime(timeShiftAmountPixels);
         shifts.push_back(timeshiftAmountMetric);
         if (std::abs(timeshiftAmountMetric) > .1) {
@@ -267,6 +301,7 @@ void NoteStartDragger::commit()
     if (isShift) {
         sequencer->editor->changeStartTime(shifts);
     }
+   
 }
 
 /******************************************************************

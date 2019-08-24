@@ -103,6 +103,7 @@ public:
      * @param units is the time unit we want to quantize to.
      * @returns quantize(time + deltaTime), such that we never quantize "backwards"
      */
+    #if 0 // no used any more
     static float quantizeForEdit(float time, float deltaTime, float units)
     {
         assert(units > 0);
@@ -118,5 +119,6 @@ public:
         }
         return q;
     }
+    #endif
 };
 

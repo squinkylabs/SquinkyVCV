@@ -448,6 +448,7 @@ static void testTimeUtil6()
 }
 
 // simple tests of quantforEdit function
+#if 0   // no longer used
 static void testTimeUtilQuant0()
 {
     // pre-quantized pass through
@@ -464,6 +465,7 @@ static void testTimeUtilQuant0()
     assertEQ(TimeUtils::quantizeForEdit(.2f, .1f, 1), 1);
     assertEQ(TimeUtils::quantizeForEdit(.9f, -.1f, 1), 0);
 }
+#endif
 
 static void testTimeUtilSimpleQuant()
 {
@@ -670,7 +672,7 @@ void  testMidiEvents()
     testTimeUtil4();
     testTimeUtil5();
     testTimeUtil6();
-    testTimeUtilQuant0();
+    //testTimeUtilQuant0();
     testTimeUtilSimpleQuant();
 
     testPitchUtil0();

@@ -57,6 +57,14 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 {
     int units = 1;
     bool ticks = false;
+
+    // make >,< always advance cursor by ticks i note not selected
+    const bool noteSelected = bool(sequencer->editor->getNoteUnderCursor());
+    if ((type == ChangeType::lessThan) && !noteSelected) {
+        sequencer->editor->advanceCursor(MidiEditor::Advance::Tick, increase ? 1 : -1);
+        return;
+    }
+    
     switch(sequencer->context->noteAttribute) {
         case MidiEditorContext::NoteAttribute::Pitch:
             {

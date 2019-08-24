@@ -214,7 +214,7 @@ static void testInsert()
     seq->assertValid();
 }
 
-static void testStartTime()
+static void testStartTimeUnquantized()
 {
     // make empty song
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
@@ -233,11 +233,50 @@ static void testStartTime()
     assertEQ(seq->selection->size(), 1);
 
     // shift note later to 1100
-    cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.f);
+    cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.3f, 0);
     seq->undo->execute(seq, cmd);
 
     seq->assertValid();
     note = track->getFirstNote();   
+    assertEQ(note->startTime, 1100.3f);
+
+    seq->undo->undo(seq);
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->startTime, 100.f);
+
+    seq->undo->redo(seq);
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->startTime, 1100.3f);
+}
+
+
+static void testStartTimeQuantized()
+{
+    const float qGrid = 1;      // quarter notes
+    // make empty song
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    // put a note into it at time 100;
+    auto track = seq->context->getTrack();
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = 100;
+    note->pitchCV = 1.1f;
+    note->duration = 2;
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    cmd->execute(seq);
+    seq->assertValid();
+    assertEQ(seq->selection->size(), 1);
+
+    // shift note later to 1100
+    cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.2f, qGrid);
+    seq->undo->execute(seq, cmd);
+
+    seq->assertValid();
+    note = track->getFirstNote();
     assertEQ(note->startTime, 1100.f);
 
     seq->undo->undo(seq);
@@ -317,7 +356,8 @@ void testReplaceCommand()
     testTrackLength();
     testTrackLength2();
     testInsert();
-    testStartTime();
+    testStartTimeUnquantized();
+    testStartTimeQuantized();
     testDuration();
     testCut();
 }

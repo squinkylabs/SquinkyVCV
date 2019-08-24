@@ -262,11 +262,19 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
     AuditionLocker u(seq()->selection);       // don't audition while shifting
     assert(amount != 0);
 
+    ISeqSettingsPtr settings = seq()->context->settings();
+
     // "units" are 16th, "ticks" are 64th
-    float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
+    float advanceAmount = amount * (ticks ? (1.f / 16.f) : settings->getQuarterNotesInGrid());
+
+    const bool snap = seq()->context->settings()->snapToGrid();
+    float quantizeGrid = 0;
+    if (snap && !ticks) {
+        settings->getQuarterNotesInGrid();
+    }
 
 
-    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount);
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount, quantizeGrid);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 
@@ -340,6 +348,7 @@ void MidiEditor::advanceCursorToTime(float time, bool extendSelection)
 
 void MidiEditor::advanceCursor(Advance type, int multiplier)
 {
+    
     assert(multiplier != 0);
 
     seq()->context->assertCursorInViewport();
@@ -394,7 +403,12 @@ void MidiEditor::advanceCursor(Advance type, int multiplier)
 
     if (doRelative) {
         // pre-quantize cursor time, if needed.
-        auto newCursorTime = seq()->context->settings()->quantize(seq()->context->cursorTime(), true);
+        // Don't quantize ticks
+        auto newCursorTime = seq()->context->cursorTime();
+        if (type != Tick) {
+            newCursorTime = seq()->context->settings()->quantize(seq()->context->cursorTime(), true);
+        }
+
         seq()->context->setCursorTime(newCursorTime);
 
         advanceAmount *= multiplier;

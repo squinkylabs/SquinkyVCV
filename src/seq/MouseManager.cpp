@@ -52,7 +52,6 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
     }
 
     float time = std::get<1>(timeAndPitch); 
-    time = sequencer->context->settings()->quantize(time, true);
     const float pitchCV = std::get<2>(timeAndPitch);
 
     // This will move the cursor, which we may not want all the time
@@ -74,6 +73,13 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
     } else {
         mouseClickWasIgnored = true;
     }
+
+    // if no note is selected, then quantize cursor position
+    if (!curNote) {
+         time = sequencer->context->settings()->quantize(time, true);
+         sequencer->editor->moveToTimeAndPitch(time, pitchCV);
+    }
+
     return ret;
 }
 
