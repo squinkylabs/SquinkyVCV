@@ -270,7 +270,7 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
     const bool snap = seq()->context->settings()->snapToGrid();
     float quantizeGrid = 0;
     if (snap && !ticks) {
-        settings->getQuarterNotesInGrid();
+        quantizeGrid = settings->getQuarterNotesInGrid();
     }
 
 
@@ -550,7 +550,7 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter, bool quan
     insertNoteHelper2(duration, moveCursorAfter, quantizeDuration);
 }
 
-void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool quantizeDuration)
+void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool was_quantizeDuration)
 {
     MidiLocker l(seq()->song->lock);
     const float artic = seq()->context->settings()->articulation();
@@ -561,8 +561,12 @@ void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool quantiz
     const float duration = dur * artic;
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    // let's not insert quantized any more
     const float unquantizedStart = seq()->context->cursorTime();
-    const float startTime = seq()->context->settings()->quantize(unquantizedStart, true);
+    //const float startTime = seq()->context->settings()->quantize(unquantizedStart, true);
+    const float startTime = unquantizedStart;
+
     note->startTime = startTime;
     note->pitchCV = seq()->context->cursorPitch();
     float finalDuration = duration;

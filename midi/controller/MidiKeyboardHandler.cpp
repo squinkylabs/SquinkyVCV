@@ -336,6 +336,8 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_ENTER:
             {
                 const float dur = sequencer->context->settings()->getQuarterNotesInGrid();
+                   // sequencer->context->settings()->articulation();
+
                 sequencer->editor->insertNote(dur, !shift);
                 handled = true;
             }
