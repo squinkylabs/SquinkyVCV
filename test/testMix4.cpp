@@ -31,7 +31,6 @@ static float auxGetterMixMB(std::shared_ptr<MixerM> m, bool bRight)
     return m->outputs[bRight ? MixerM::RIGHT_SENDb_OUTPUT : MixerM::LEFT_SENDb_OUTPUT].value;
 }
 
-
 static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
 {
     // use the expander bus, and apply the default master gain

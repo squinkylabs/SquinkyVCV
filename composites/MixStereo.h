@@ -184,6 +184,9 @@ public:
     // This is where we build up all the inputs to the CV filter
     float unbufferedCV[cvFilterSize] = {0};
 
+
+    void _disableAntiPop();
+
 private:
     Divider divider;
 
@@ -363,6 +366,12 @@ inline void MixStereo<TBase>::setupFilters()
     const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
     //printf("using %f, calc=%f\n", x, (1.0f / 100.f)); fflush(stdout);
     filteredCV.setCutoff(x);
+}
+
+template <class TBase>
+inline void MixStereo<TBase>::_disableAntiPop()
+{
+    filteredCV.setCutoff(0.49f);     // set it super fast
 }
 
 template <class TBase>

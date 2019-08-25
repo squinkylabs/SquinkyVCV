@@ -33,6 +33,13 @@ namespace std {
 }
 #endif
 
+
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+
 /**
  Perf: 10.4 before new features
     13.5 with all the features
@@ -47,7 +54,7 @@ public:
     template<typename Q>
     friend class MixHelper;
 
-    Mix4(Module * module) : TBase(module)
+    Mix4(rack::engine::Module * module) : TBase(module)
     {
     }
     Mix4() : TBase()
@@ -182,8 +189,8 @@ public:
     float buf_channelSendGainsBLeft[numChannels] = {0};
     float buf_channelSendGainsBRight[numChannels] = {0};
 
-    //float buf_auxReturnGainA = 0;
-    //float buf_auxReturnGainB = 0;
+     void _disableAntiPop();
+
 private:
     Divider divider;
 
@@ -340,6 +347,14 @@ inline void Mix4<TBase>::onSampleRateChange()
 {
     setupFilters();
 }
+
+
+template <class TBase>
+inline void Mix4<TBase>::_disableAntiPop()
+{
+    filteredCV.setCutoff(0.49f);     // set it super fast
+}
+
 
 template <class TBase>
 inline void Mix4<TBase>::setupFilters()

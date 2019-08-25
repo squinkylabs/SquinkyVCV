@@ -1,3 +1,5 @@
+
+#include "Mix4.h"
 #include "MixStereo.h"
 
 #include "TestComposite.h"
@@ -5,9 +7,21 @@
 
 #include <memory>
 
+const static float defaultMasterGain = 1.002374f;
+
 using MixerS = MixStereo<TestComposite>;
+using Mixer4 = Mix4<TestComposite>;
 
 static float gOutputBuffer[8];
+static float gInputBuffer[8];
+
+static void clear()
+{
+    for (int i = 0; i < 8; ++i) {
+        gOutputBuffer[i] = 0;
+        gInputBuffer[i] = 0;
+    }
+}
 
 template <typename T>
 static std::shared_ptr<T> getMixerBase()
@@ -19,6 +33,7 @@ static std::shared_ptr<T> getMixerBase()
         auto param = icomp->getParam(i);
         ret->params[i].value = param.def;
     }
+    ret->_disableAntiPop();
 
     return ret;
 }
@@ -32,6 +47,16 @@ std::shared_ptr<MixerS> getMixer<MixerS>()
 {
     std::shared_ptr<MixerS> ret = getMixerBase<MixerS>();
     ret->setExpansionOutputs(gOutputBuffer);
+    ret->setExpansionInputs(gInputBuffer);
+    return ret;
+}
+
+template <>
+std::shared_ptr<Mixer4> getMixer<Mixer4>()
+{
+    std::shared_ptr<Mixer4> ret = getMixerBase<Mixer4>();
+    ret->setExpansionOutputs(gOutputBuffer);
+    ret->setExpansionInputs(gInputBuffer);
     return ret;
 }
 
@@ -64,6 +89,20 @@ static void dumpOut(std::shared_ptr<T> mixer)
     }
     printf("\n");
 }
+
+
+static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return defaultMasterGain * gOutputBuffer[bRight ? 1 : 0];
+}
+
+static void outputSenderMix4(std::shared_ptr<Mixer4> m, bool bRight, float value)
+{
+    // use the expander bus, and apply the default master gain
+    //return defaultMasterGain * gOutputBuffer[bRight ? 1 : 0];
+    gInputBuffer[bRight ? 1 : 0] = value;
+}
 //***********************************************************************************
 
 
@@ -71,7 +110,7 @@ template <typename T>
 void testChannel(int group, bool useParam)
 {
     assert(group < T::numGroups);
-    printf("\n** running test group %d useParam %d\n", 0, useParam);
+    //printf("\n** running test group %d useParam %d\n", 0, useParam);
     auto mixer = getMixer<T>();
 
     const float activeParamValue = useParam ? 1.f : .25f;
@@ -83,63 +122,104 @@ void testChannel(int group, bool useParam)
         mixer->params[T::GAIN0_PARAM + i].value = 1;
     }
 
-   // auto xx = mixer->inputs[T::PAN0_INPUT].value;
-  //  auto yy = mixer->params[T::PAN0_PARAM].value;
-
     // TODO: make left and right inputs different
 
     const int leftChannel = group * 2;
     const int rightChannel = 1 + group * 2;
 
     mixer->inputs[T::AUDIO0_INPUT + leftChannel].value = 5.5f;
-    mixer->inputs[T::AUDIO0_INPUT + rightChannel].value = 5.5f;
+    mixer->inputs[T::AUDIO0_INPUT + rightChannel].value = 6.5f;
     mixer->params[T::GAIN0_PARAM + group].value = activeParamValue;
     mixer->inputs[T::LEVEL0_INPUT + group].value = activeCVValue;
     mixer->inputs[T::LEVEL0_INPUT + group].active = true;
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10; ++i) {
         mixer->step();           // let mutes settle
     }
 
     float atten18Db = 1.0f / (2.0f * 2.0f * 2.0f);
 
-    const float exectedInActiveChannel = (useParam) ?
-        (5.5f * .5f) :       // param at 1, cv at 5, gain = .5
+    const float exectedInActiveChannelLeft = (useParam) ?
+        (5.5f * .5f) :          // param at 1, cv at 5, gain = .5
         atten18Db * 5.5f;       // param at .25 is 18db down cv at 10 is units
 
-    dumpUb(mixer);
-    dumpOut(mixer);
+    const float exectedInActiveChannelRight = (useParam) ?
+        (6.5f * .5f) :          // param at 1, cv at 5, gain = .5
+        atten18Db * 6.5f;       // param at .25 is 18db down cv at 10 is units
 
-   // mixer->stepn(4);
-    mixer->step();  // for debugging: what's up in there?
+    //dumpUb(mixer);
+    //dumpOut(mixer);
+
     for (int gp = 0; gp < T::numGroups; ++gp) {
         const int leftChannel = gp * 2;
         const int rightChannel = 1 + gp * 2;
        
-       // auto debugMuteState = mixer->params[T::MUTE0_STATE_PARAM + i];
-        float expected = (gp == group) ? exectedInActiveChannel : 0;
-    //    printf("mixer output for channel %d gp %d, useparam %d = %.2f\n", i, gp, useParam, mixer->outputs[T::CHANNEL0_OUTPUT + i].value);
-        
-        assertClose(mixer->outputs[leftChannel].value, expected, .01f);
-        assertClose(mixer->outputs[rightChannel].value, expected, .01f);
+        float expectedLeft = (gp == group) ? exectedInActiveChannelLeft : 0;
+        float expectedRight = (gp == group) ? exectedInActiveChannelRight : 0;
+          
+        assertClose(mixer->outputs[leftChannel].value, expectedLeft, .01f);
+        assertClose(mixer->outputs[rightChannel].value, expectedRight, .01f);
     }
 }
 
 template <typename T>
 static void testChannel()
 {
-#if 1
     for (int i = 0; i < T::numGroups; ++i) {
         testChannel<T>(i, true);
         testChannel<T>(i, false);
     }
-#else
-    testChannel<T>(0, true);
-    testChannel<T>(0, false);
-#endif
 }
+
+
+template <typename T>
+static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
+{
+}
+
+
+template <typename T>
+static void _testExpansionPassthrough(
+    std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter,
+    std::function<void(std::shared_ptr<T>, bool bRight, float)> inputPutter,
+    bool bRight
+)
+{
+    auto mixer = getMixer<T>();
+    clear();
+    inputPutter(mixer, bRight, .78f);
+
+    for (int i = 0; i < 10; ++i) {
+        mixer->step();           // let mutes settle
+    }
+    mixer->step();
+
+    const float x = outputGetter(mixer, bRight);
+    assertClose(x, .78f, .01);
+}
+
+template <typename T>
+static void testExpansionPassthrough(
+    std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter,
+    std::function<void(std::shared_ptr<T>, bool bRight, float)> inputPutter
+    )
+{
+    _testExpansionPassthrough(outputGetter, inputPutter, true);
+    _testExpansionPassthrough(outputGetter, inputPutter, false);
+
+}
+
+//template <typename T>
+//static void testExpansionPassthrough()
+//{
+//    auto mixer = getMixer<T>();
+//}
+
+
 
 void testStereoMix()
 {
     testChannel<MixerS>();
+    testExpansionPassthrough<Mixer4>(outputGetterMix4, outputSenderMix4);
+ //   testMaster<Mixer4>(outputGetterMix4);
 }
