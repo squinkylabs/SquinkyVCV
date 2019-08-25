@@ -166,28 +166,31 @@ public:
     float buf_channelSendGainsBLeft[numChannels] = {0};
     float buf_channelSendGainsBRight[numChannels] = {0};
 
-      // TODO: is this correct for stereo?
-    static const int cvOffsetMute = 12;
-    float unbufferedCV[cvOffsetMute + 4] = {0};
+    // TODO: reduce this number to what we actually need
+
+    /**
+     *      0..1 for smoothed input gain * channel mute
+     *      2..3 for left  pan
+     *      4..5 for right pan
+     *      6..7 for mute
+     */
+
+    static const int cvOffsetGain = 0;
+    static const int cvOffsetPanLeft = 2;
+    static const int cvOffsetPanRight = 4;
+    static const int cvOffsetMute = 6;
+    static const int cvFilterSize = 8;
+
+    // This is where we build up all the inputs to the CV filter
+    float unbufferedCV[cvFilterSize] = {0};
 
 private:
     Divider divider;
 
 
-    // TODO: reduce this number to what we actually need
 
-    /**
-     *      0..3 for smoothed input gain * channel mute
-     *      4..7 for left pan
-     *      8..11 for right pan
-     *      12..15 for mute
-     */
-
-    static const int cvOffsetGain = 0;
-    static const int cvOffsetPanLeft = 4;
-    static const int cvOffsetPanRight = 8;
    
-    MultiLPF<16> filteredCV;
+    MultiLPF<cvFilterSize> filteredCV;
 
     // TODO: pan for stereo
   //  std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
@@ -209,7 +212,7 @@ inline void MixStereo<TBase>::stepn(int div)
 {
     // TODO: is this correct for stereo?
     //float unbufferesdCV[cvOffsetMute + 4] = {0};
-    const int numUb = sizeof(unbufferedCV) / sizeof(unbufferedCV[0]);
+    const int numUb = cvFilterSize;
     for (int i = 0; i < numUb; ++i) {
         unbufferedCV[i] = 0;
     }
@@ -270,6 +273,8 @@ inline void MixStereo<TBase>::stepn(int div)
 
         // now the raw channel gains are all computed
         // TODO: split this out into a separate function, only needs to be done on groups
+        assert(cvOffsetGain + group < cvFilterSize);
+        assert(cvOffsetMute + group < cvFilterSize);
         unbufferedCV[cvOffsetGain + group] = groupGain;
         unbufferedCV[cvOffsetMute + group] = rawMuteValue;
 
@@ -277,12 +282,13 @@ inline void MixStereo<TBase>::stepn(int div)
         {
             assert(channel + PAN0_PARAM < NUM_PARAMS);
             assert(channel + PAN0_INPUT < NUM_INPUTS);
-            const float balance = TBase::params[channel + PAN0_PARAM].value;
-            const float cv = TBase::inputs[channel + PAN0_INPUT].value;
+            const float balance = TBase::params[group + PAN0_PARAM].value;
+            const float cv = TBase::inputs[group + PAN0_INPUT].value;
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
 
-             unbufferedCV[cvOffsetPanLeft + channel] = 1.f * groupGain;
-             unbufferedCV[cvOffsetPanRight + channel] = 1.f * groupGain;
+            assert(cvOffsetPanRight + group < cvFilterSize);
+             unbufferedCV[cvOffsetPanLeft + group] = 1.f * groupGain;
+             unbufferedCV[cvOffsetPanRight + group] = 1.f * groupGain;
             //unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             //unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
         }
@@ -291,19 +297,19 @@ inline void MixStereo<TBase>::stepn(int div)
         // TODO: precalc all the send gains
 
         {
-            assert(channel + SEND0_PARAM < NUM_PARAMS);
-            assert(channel + SENDb0_PARAM < NUM_PARAMS);
+            assert(group + SEND0_PARAM < NUM_PARAMS);
+            assert(group + SENDb0_PARAM < NUM_PARAMS);
 
-            const float muteValue = filteredCV.get(cvOffsetMute + channel);
-            const float sliderA = TBase::params[channel + SEND0_PARAM].value;
-            const float sliderB = TBase::params[channel + SENDb0_PARAM].value;
+            const float muteValue = filteredCV.get(cvOffsetMute + group);
+            const float sliderA = TBase::params[group + SEND0_PARAM].value;
+            const float sliderB = TBase::params[group + SENDb0_PARAM].value;
 
 
             // TODO: we can do some main volume work ahead of time, just like the sends here
             if (!AisPreFader) {
                 // post faster, gain sees mutes, faders,  pan, and send level    
-                buf_channelSendGainsALeft[channel] = filteredCV.get(channel + cvOffsetPanLeft) * sliderA;
-                buf_channelSendGainsARight[channel] = filteredCV.get(channel + cvOffsetPanRight) * sliderA;
+                buf_channelSendGainsALeft[channel] = filteredCV.get(group + cvOffsetPanLeft) * sliderA;
+                buf_channelSendGainsARight[channel] = filteredCV.get(group + cvOffsetPanRight) * sliderA;
             } else {
                 // pre-fader fader, gain sees mutes and send only
                 buf_channelSendGainsALeft[channel] = muteValue * sliderA * (1.f / sqrt(2.f));
@@ -312,8 +318,8 @@ inline void MixStereo<TBase>::stepn(int div)
 
             if (!BisPreFader) {
                 // post faster, gain sees mutes, faders,  pan, and send level
-                buf_channelSendGainsBLeft[channel] = filteredCV.get(channel + cvOffsetPanLeft) * sliderB;
-                buf_channelSendGainsBRight[channel] = filteredCV.get(channel + cvOffsetPanRight) * sliderB;
+                buf_channelSendGainsBLeft[channel] = filteredCV.get(group + cvOffsetPanLeft) * sliderB;
+                buf_channelSendGainsBRight[channel] = filteredCV.get(group + cvOffsetPanRight) * sliderB;
             } else {
                 // pref fader, gain sees mutes and send only
                 buf_channelSendGainsBLeft[channel] = muteValue * sliderB * (1.f / sqrt(2.f));
@@ -364,8 +370,6 @@ inline void MixStereo<TBase>::step()
 {
     divider.step();
 
-   // float  buf_channelOuts[4] = {0};        // will hold the signals for the output of each channel
-
     float left = 0, right = 0;              // these variables will be summed up over all channels
     float lSend = 0, rSend = 0;
     float lSendb = 0, rSendb = 0;
@@ -379,20 +383,25 @@ inline void MixStereo<TBase>::step()
         rSendb = expansionInputs[5];
     }
 
-    for (int i = 0; i < numChannels; ++i) {
-        const float channelInput = TBase::inputs[i + AUDIO0_INPUT].value;
+    for (int channel = 0; channel < numChannels; ++channel) {
+        const int group = channel / 2;
+
+        assert(channel + AUDIO0_INPUT < NUM_INPUTS);
+        const float channelInput = TBase::inputs[channel + AUDIO0_INPUT].value;
 
         // sum the channel output to the masters
-        left += channelInput * filteredCV.get(i + cvOffsetPanLeft);
-        right += channelInput * filteredCV.get(i + cvOffsetPanRight);
+        left += channelInput * filteredCV.get(group + cvOffsetPanLeft);
+        right += channelInput * filteredCV.get(group + cvOffsetPanRight);
 
         // TODO: aux sends
-        lSend += channelInput * buf_channelSendGainsALeft[i];
-        lSendb += channelInput * buf_channelSendGainsBLeft[i];
-        rSend += channelInput * buf_channelSendGainsARight[i];
-        rSendb += channelInput * buf_channelSendGainsBRight[i];
+        lSend += channelInput * buf_channelSendGainsALeft[channel];
+        lSendb += channelInput * buf_channelSendGainsBLeft[channel];
+        rSend += channelInput * buf_channelSendGainsARight[channel];
+        rSendb += channelInput * buf_channelSendGainsBRight[channel];
 
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(i + cvOffsetGain);
+        assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
+        const float tester = channelInput * filteredCV.get(group + cvOffsetGain);
+        TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
     }
 
     // output the buses to the expansion port

@@ -60,7 +60,7 @@ static void dumpOut(std::shared_ptr<T> mixer)
 
     int x = 0;
     for (int i = 0; i < T::numChannels; ++i) {
-        printf("%.2f ", mixer->unbufferedCV[i]);
+        printf("%.2f ", mixer->outputs[i + T::CHANNEL0_OUTPUT].value);
     }
     printf("\n");
 }
@@ -68,13 +68,12 @@ static void dumpOut(std::shared_ptr<T> mixer)
 
 
 template <typename T>
-void testChannel(int channel, bool useParam)
+void testChannel(int group, bool useParam)
 {
-    printf("\n** running test channel %d useParam %d\n", channel, useParam);
-    const int group = channel / 2;      //stereo
+    assert(group < T::numGroups);
+    printf("\n** running test group %d useParam %d\n", 0, useParam);
     auto mixer = getMixer<T>();
 
-    // param > 1 is illegal. Fix this test!
     const float activeParamValue = useParam ? 1.f : .25f;
     const float activeCVValue = useParam ? 5.f : 10.f;
 
@@ -87,7 +86,13 @@ void testChannel(int channel, bool useParam)
    // auto xx = mixer->inputs[T::PAN0_INPUT].value;
   //  auto yy = mixer->params[T::PAN0_PARAM].value;
 
-    mixer->inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
+    // TODO: make left and right inputs different
+
+    const int leftChannel = group * 2;
+    const int rightChannel = 1 + group * 2;
+
+    mixer->inputs[T::AUDIO0_INPUT + leftChannel].value = 5.5f;
+    mixer->inputs[T::AUDIO0_INPUT + rightChannel].value = 5.5f;
     mixer->params[T::GAIN0_PARAM + group].value = activeParamValue;
     mixer->inputs[T::LEVEL0_INPUT + group].value = activeCVValue;
     mixer->inputs[T::LEVEL0_INPUT + group].active = true;
@@ -104,13 +109,19 @@ void testChannel(int channel, bool useParam)
 
     dumpUb(mixer);
     dumpOut(mixer);
-    for (int i = 0; i < T::numChannels; ++i) {
-        const int gp = i / 2;
+
+   // mixer->stepn(4);
+    mixer->step();  // for debugging: what's up in there?
+    for (int gp = 0; gp < T::numGroups; ++gp) {
+        const int leftChannel = gp * 2;
+        const int rightChannel = 1 + gp * 2;
+       
        // auto debugMuteState = mixer->params[T::MUTE0_STATE_PARAM + i];
         float expected = (gp == group) ? exectedInActiveChannel : 0;
-        printf("mixer output for channel %d gp %d, useparam %d = %.2f\n", i, gp, useParam, mixer->outputs[T::CHANNEL0_OUTPUT + i].value);
-        assertClose(mixer->outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
+    //    printf("mixer output for channel %d gp %d, useparam %d = %.2f\n", i, gp, useParam, mixer->outputs[T::CHANNEL0_OUTPUT + i].value);
         
+        assertClose(mixer->outputs[leftChannel].value, expected, .01f);
+        assertClose(mixer->outputs[rightChannel].value, expected, .01f);
     }
 }
 
@@ -118,7 +129,7 @@ template <typename T>
 static void testChannel()
 {
 #if 1
-    for (int i = 0; i < T::numChannels; ++i) {
+    for (int i = 0; i < T::numGroups; ++i) {
         testChannel<T>(i, true);
         testChannel<T>(i, false);
     }
