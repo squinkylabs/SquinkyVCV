@@ -35,15 +35,44 @@ std::shared_ptr<MixerS> getMixer<MixerS>()
     return ret;
 }
 
+template <typename T>
+static void dumpUb(std::shared_ptr<T> mixer)
+{
+    const int numUb = sizeof(mixer->unbufferedCV) / sizeof(mixer->unbufferedCV[0]);
+    printf("ubcv: ");
 
+    int x = 0;
+    for (int i = 0; i < numUb; ++i) {
+        printf("%.2f ", mixer->unbufferedCV[i]);
+        if (++x >= 4) {
+            printf("\n      ");
+            x = 0;
+        }
+    }
+    printf("\n");
+}
+
+
+template <typename T>
+static void dumpOut(std::shared_ptr<T> mixer)
+{
+    printf("channel outs:\n");
+
+    int x = 0;
+    for (int i = 0; i < T::numChannels; ++i) {
+        printf("%.2f ", mixer->unbufferedCV[i]);
+    }
+    printf("\n");
+}
 //***********************************************************************************
 
 
 template <typename T>
 void testChannel(int channel, bool useParam)
 {
-    T m;
-    m.init();
+    printf("\n** running test channel %d useParam %d\n", channel, useParam);
+    const int group = channel / 2;      //stereo
+    auto mixer = getMixer<T>();
 
     // param > 1 is illegal. Fix this test!
     const float activeParamValue = useParam ? 1.f : .25f;
@@ -51,20 +80,20 @@ void testChannel(int channel, bool useParam)
 
     // zero all inputs, put all channel gains to 1
     for (int i = 0; i < T::numChannels; ++i) {
-        m.inputs[T::AUDIO0_INPUT + i].value = 0;
-        m.params[T::GAIN0_PARAM + i].value = 1;
+        mixer->inputs[T::AUDIO0_INPUT + i].value = 0;
+        mixer->params[T::GAIN0_PARAM + i].value = 1;
     }
 
-    auto xx = m.inputs[T::PAN0_INPUT].value;
-    auto yy = m.params[T::PAN0_PARAM].value;
+   // auto xx = mixer->inputs[T::PAN0_INPUT].value;
+  //  auto yy = mixer->params[T::PAN0_PARAM].value;
 
-    m.inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
-    m.params[T::GAIN0_PARAM + channel].value = activeParamValue;
-    m.inputs[T::LEVEL0_INPUT + channel].value = activeCVValue;
-    m.inputs[T::LEVEL0_INPUT + channel].active = true;
+    mixer->inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
+    mixer->params[T::GAIN0_PARAM + group].value = activeParamValue;
+    mixer->inputs[T::LEVEL0_INPUT + group].value = activeCVValue;
+    mixer->inputs[T::LEVEL0_INPUT + group].active = true;
 
     for (int i = 0; i < 1000; ++i) {
-        m.step();           // let mutes settle
+        mixer->step();           // let mutes settle
     }
 
     float atten18Db = 1.0f / (2.0f * 2.0f * 2.0f);
@@ -73,11 +102,14 @@ void testChannel(int channel, bool useParam)
         (5.5f * .5f) :       // param at 1, cv at 5, gain = .5
         atten18Db * 5.5f;       // param at .25 is 18db down cv at 10 is units
 
+    dumpUb(mixer);
+    dumpOut(mixer);
     for (int i = 0; i < T::numChannels; ++i) {
-
-       // auto debugMuteState = m.params[T::MUTE0_STATE_PARAM + i];
-        float expected = (i == channel) ? exectedInActiveChannel : 0;
-        assertClose(m.outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
+        const int gp = i / 2;
+       // auto debugMuteState = mixer->params[T::MUTE0_STATE_PARAM + i];
+        float expected = (gp == group) ? exectedInActiveChannel : 0;
+        printf("mixer output for channel %d gp %d, useparam %d = %.2f\n", i, gp, useParam, mixer->outputs[T::CHANNEL0_OUTPUT + i].value);
+        assertClose(mixer->outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
         
     }
 }
@@ -85,10 +117,15 @@ void testChannel(int channel, bool useParam)
 template <typename T>
 static void testChannel()
 {
+#if 1
     for (int i = 0; i < T::numChannels; ++i) {
         testChannel<T>(i, true);
         testChannel<T>(i, false);
     }
+#else
+    testChannel<T>(0, true);
+    testChannel<T>(0, false);
+#endif
 }
 
 void testStereoMix()
