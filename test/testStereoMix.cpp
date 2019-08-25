@@ -60,6 +60,15 @@ std::shared_ptr<Mixer4> getMixer<Mixer4>()
     return ret;
 }
 
+
+template <typename T>
+static void step(std::shared_ptr<T> mixer)
+{
+    for (int i = 0; i < 10; ++i) {
+        mixer->step();
+    }
+}
+
 template <typename T>
 static void dumpUb(std::shared_ptr<T> mixer)
 {
@@ -97,11 +106,70 @@ static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
     return defaultMasterGain * gOutputBuffer[bRight ? 1 : 0];
 }
 
+static float outputGetterMixS(std::shared_ptr<MixerS> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return defaultMasterGain * gOutputBuffer[bRight ? 1 : 0];
+}
+
 static void outputSenderMix4(std::shared_ptr<Mixer4> m, bool bRight, float value)
 {
     // use the expander bus, and apply the default master gain
     //return defaultMasterGain * gOutputBuffer[bRight ? 1 : 0];
     gInputBuffer[bRight ? 1 : 0] = value;
+}
+
+static void outputSenderMixS(std::shared_ptr<MixerS> m, bool bRight, float value)
+{
+    // use the expander bus, and apply the default master gain
+    //return defaultMasterGain * gOutputBuffer[bRight ? 1 : 0];
+    gInputBuffer[bRight ? 1 : 0] = value;
+}
+
+static float auxGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return gOutputBuffer[bRight ? 3 : 2];
+}
+
+static float auxGetterMixS(std::shared_ptr<MixerS> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return gOutputBuffer[bRight ? 3 : 2];
+}
+
+static void auxSenderMix4(std::shared_ptr<Mixer4> m, bool bRight, float value)
+{
+    // use the expander bus, and apply the default master gain
+    gInputBuffer[bRight ? 3 : 2] = value;
+}
+
+static void auxSenderMixS(std::shared_ptr<MixerS> m, bool bRight, float value)
+{
+    // use the expander bus, and apply the default master gain
+    gInputBuffer[bRight ? 3 : 2] = value;
+}
+
+static float auxGetterMix4B(std::shared_ptr<Mixer4> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return gOutputBuffer[bRight ? 5 : 4];
+}
+
+static float auxGetterMixSB(std::shared_ptr<MixerS> m, bool bRight)
+{
+    // use the expander bus, and apply the default master gain
+    return gOutputBuffer[bRight ? 5 : 4];
+}
+static void auxSenderMix4B(std::shared_ptr<Mixer4> m, bool bRight, float value)
+{
+    // use the expander bus, and apply the default master gain
+    gInputBuffer[bRight ? 5 : 4] = value;
+}
+static void auxSenderMixSB(std::shared_ptr<MixerS> m, bool bRight, float value)
+{
+    // use the expander bus, and apply the default master gain
+    gInputBuffer[bRight ? 5 : 4] = value;
 }
 //***********************************************************************************
 
@@ -171,7 +239,6 @@ static void testChannel()
     }
 }
 
-
 template <typename T>
 static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
 {
@@ -182,20 +249,18 @@ template <typename T>
 static void _testExpansionPassthrough(
     std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter,
     std::function<void(std::shared_ptr<T>, bool bRight, float)> inputPutter,
-    bool bRight
+    bool bRight,
+    float testValue
 )
 {
     auto mixer = getMixer<T>();
     clear();
-    inputPutter(mixer, bRight, .78f);
+    inputPutter(mixer, bRight, testValue);
 
-    for (int i = 0; i < 10; ++i) {
-        mixer->step();           // let mutes settle
-    }
-    mixer->step();
+    step(mixer);
 
     const float x = outputGetter(mixer, bRight);
-    assertClose(x, .78f, .01);
+    assertClose(x, testValue, .01);
 }
 
 template <typename T>
@@ -204,22 +269,20 @@ static void testExpansionPassthrough(
     std::function<void(std::shared_ptr<T>, bool bRight, float)> inputPutter
     )
 {
-    _testExpansionPassthrough(outputGetter, inputPutter, true);
-    _testExpansionPassthrough(outputGetter, inputPutter, false);
-
+    _testExpansionPassthrough(outputGetter, inputPutter, true, .33f);
+    _testExpansionPassthrough(outputGetter, inputPutter, false, .87f);
 }
-
-//template <typename T>
-//static void testExpansionPassthrough()
-//{
-//    auto mixer = getMixer<T>();
-//}
 
 
 
 void testStereoMix()
 {
     testChannel<MixerS>();
+    
     testExpansionPassthrough<Mixer4>(outputGetterMix4, outputSenderMix4);
- //   testMaster<Mixer4>(outputGetterMix4);
+    testExpansionPassthrough<Mixer4>(auxGetterMix4, auxSenderMix4);
+    testExpansionPassthrough<Mixer4>(auxGetterMix4B, auxSenderMix4B);
+    testExpansionPassthrough<MixerS>(outputGetterMixS, outputSenderMixS);
+    testExpansionPassthrough<MixerS>(auxGetterMixS, auxSenderMixS);
+    testExpansionPassthrough<MixerS>(auxGetterMixSB, auxSenderMixSB);
 }
