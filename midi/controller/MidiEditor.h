@@ -76,6 +76,7 @@ public:
     void paste();
 
     void changeTrackLength();
+    bool isLooped() const;
     void loop();
 
     void assertCursorInSelection();
@@ -90,6 +91,14 @@ private:
      */
     std::weak_ptr<MidiSequencer> m_seq;
     std::shared_ptr< MidiSequencer> seq()
+    {
+        // This assumes of course that m_seq still exists
+        auto ret = m_seq.lock();
+        assert(ret);
+        return ret;
+    }
+
+    std::shared_ptr<const MidiSequencer> seq() const 
     {
         // This assumes of course that m_seq still exists
         auto ret = m_seq.lock();

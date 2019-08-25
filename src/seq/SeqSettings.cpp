@@ -144,12 +144,35 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
     menu->addChild(makeSnapDurationItem());
     menu->addChild(makeAuditionItem(module));
     menu->addChild(new ArticulationMenuItem(this));
+    menu->addChild(makeLoopItem(module));
     // now the commands
     menu->addChild(new rack::ui::MenuLabel);
     menu->addChild(makeNoteCommand(module));
     menu->addChild(makeEndCommand(module));
 }
 
+rack::ui::MenuItem* SeqSettings::makeLoopItem(SequencerModule* module)
+{
+     std::function<bool()> isCheckedFn = [module]() {
+        bool ret = false;
+        MidiSequencerPtr seq = module->getSeq();
+        if (seq) {
+            ret = seq->editor->isLooped();
+        }
+        return ret;
+    };
+
+     std::function<void()> clickFn = [module]() {
+        MidiSequencerPtr seq = module->getSeq();
+        if (seq) {
+            seq->editor->loop();
+        }
+    };
+
+    auto item = new SqMenuItem(isCheckedFn, clickFn);
+    item->text = "Loop subrange";
+    return item;
+}
 rack::ui::MenuItem* SeqSettings::makeNoteCommand(SequencerModule* module)
 {
     const bool isNote = bool(module->getSeq()->editor->getNoteUnderCursor());

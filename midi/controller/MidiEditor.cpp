@@ -727,6 +727,12 @@ void MidiEditor::changeTrackLength()
     seq()->undo->execute(seq(), cmd);
 }
 
+bool MidiEditor::isLooped() const
+{
+    SubrangeLoop l = seq()->song->getSubrangeLoop(); 
+    return l.enabled;
+}
+
 void MidiEditor::loop()
 {
     MidiLocker _lock(seq()->song->lock);

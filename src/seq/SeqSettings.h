@@ -68,6 +68,7 @@ private:
     static float grid2Time(Grids);
     static float artic2Number(Artics);
     rack::ui::MenuItem* makeSnapItem();
+    rack::ui::MenuItem* makeLoopItem(SequencerModule* module);
     rack::ui::MenuItem* makeSnapDurationItem();
     rack::ui::MenuItem* makeAuditionItem(SequencerModule*);
     rack::ui::MenuItem* makeNoteCommand(SequencerModule*);
