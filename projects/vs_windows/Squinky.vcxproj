@@ -110,6 +110,7 @@
     <ClCompile Include="..\..\test\testSlew4.cpp" />
     <ClCompile Include="..\..\test\testSpline.cpp" />
     <ClCompile Include="..\..\test\testStateVariable.cpp" />
+    <ClCompile Include="..\..\test\testStereoMix.cpp" />
     <ClCompile Include="..\..\test\testStochasticGrammar.cpp" />
     <ClCompile Include="..\..\test\testTestSignal.cpp" />
     <ClCompile Include="..\..\test\testThread.cpp" />

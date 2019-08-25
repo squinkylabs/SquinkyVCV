@@ -67,6 +67,7 @@ extern void testSeqClock();
 extern void testMix8();
 extern void testMix4();
 extern void testMixHelper();
+extern void testStereoMix();
 extern void testSlew4();
 extern void testCommChannels();
 extern void testLadder();
@@ -182,6 +183,7 @@ int main(int argc, char ** argv)
     testMultiLag();
     testSlew4();   
     testMixHelper();
+    testStereoMix();
     testMix4();
     testMix8();
 

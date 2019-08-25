@@ -13,6 +13,12 @@
 #include <assert.h>
 #include <memory>
 
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+
 template <class TBase>
 class MixStereoDescription : public IComposite
 {
@@ -47,7 +53,7 @@ public:
     template<typename Q>
     friend class MixHelper;
 
-    MixStereo(Module * module) : TBase(module)
+    MixStereo(rack::engine::Module * module) : TBase(module)
     {
     }
     MixStereo() : TBase()

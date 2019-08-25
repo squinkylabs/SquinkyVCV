@@ -2,6 +2,8 @@
 
 #include "RingBuffer.h"
 
+#include <cstdint>
+
 /**
  * Command Protocol:
  *      We send one unit32_t, followed by 'n' zeros
