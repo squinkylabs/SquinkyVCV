@@ -156,7 +156,7 @@ public:
     }
     void setGate(int voice, bool gate) override
     {
-#ifdef _MLOG
+#if defined(_MLOG)
         printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
             voice, 
             gate,
@@ -167,7 +167,7 @@ public:
     }
     void setCV(int voice, float cv) override
     {
-#ifdef _MLOG
+#if defined(_MLOG)
         printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
             voice, 
             seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] > 5,

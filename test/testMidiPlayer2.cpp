@@ -439,6 +439,33 @@ static void testVoiceAssignRotate()
     assert(p->state() == MidiVoice::State::Playing);
 }
 
+static void testVoiceAssignRetrigger()
+{
+    MidiVoice vx[2];
+    MidiVoiceAssigner va(vx, 2);
+    TestHost2 th;
+    va.setNumVoices(2);
+    initVoices(vx, 2, &th);
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+
+    MidiVoice* p = va.getNext(pitch1);
+    p->playNote(pitch1, 0, 1);
+
+    // re-assign same pitch should not work - it's still playing
+    MidiVoice* p2 = va.getNext(pitch1); 
+    assert(p->_getIndex() != p2->_getIndex());
+
+    p2 = va.getNext(pitch1);
+    assert(p->_getIndex() != p2->_getIndex());
+
+    // now set first voice to retrigger
+    p->_setState(MidiVoice::State::ReTriggering);
+    p2 = va.getNext(pitch1);
+    assert(p->_getIndex() != p2->_getIndex());
+}
+
 //********************* test helper functions ************************************************
 
 extern MidiSongPtr makeSongOneQ();
@@ -842,6 +869,7 @@ void testMidiPlayer2()
     testVoiceAssignOverlap();
     testVoiceAssignOverlapMono();
     testVoiceAssignRotate();
+    testVoiceAssignRetrigger();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();

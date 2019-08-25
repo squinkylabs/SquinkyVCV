@@ -40,8 +40,9 @@ MidiVoice* MidiVoiceAssigner::getNext(float pitch)
         default:
             assert(false);
     }
-#ifdef _MLOG
-    printf("get next pitch=%.2f, ret voice %d\n", pitch, nextVoice->_getIndex()); 
+#if defined(_MLOG)
+    printf("MidiVoiceAssigner::getNext(pitch=%.2f), ret voice #%d state=%d\n",
+        pitch, nextVoice->_getIndex(), nextVoice->state()); 
     fflush(stdout);
 #endif
     return nextVoice;
@@ -64,9 +65,10 @@ MidiVoice* MidiVoiceAssigner::getNextReUse(float pitch)
 {
     assert(numVoices > 0);
 
-    // first, look for a voice already playing this pitch
+    // first, look for a voice already playing this pitch, but idle
     for (int i = 0; i < numVoices; ++i) {
-        if (voices[i].pitch() == pitch) {
+        if ((voices[i].pitch() == pitch) &&
+         (voices[i].state() == MidiVoice::State::Idle)) {
             return voices + i;
         }
     }

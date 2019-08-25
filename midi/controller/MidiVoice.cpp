@@ -36,6 +36,11 @@ float MidiVoice::pitch() const
     return curPitch;
 }
 
+void MidiVoice::_setState(State s)
+{
+    curState = s;
+}
+
 void MidiVoice::setSampleCountForRetrigger(int samples)
 {
     numSamplesInRetrigger = samples;
