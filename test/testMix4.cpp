@@ -100,8 +100,9 @@ std::shared_ptr<MixerM> getMixer<MixerM>()
 template <typename T>
 void testChannel(int channel, bool useParam)
 {
-    T m;
-    m.init();
+   // T m;
+   // m.init();
+    auto m = getMixer<T>();
 
     // param > 1 is illegal. Fix this test!
     const float activeParamValue = useParam ? 1.f : .25f;
@@ -109,21 +110,16 @@ void testChannel(int channel, bool useParam)
 
     // zero all inputs, put all channel gains to 1
     for (int i = 0; i < T::numChannels; ++i) {
-        m.inputs[T::AUDIO0_INPUT + i].value = 0;
-        m.params[T::GAIN0_PARAM + i].value = 1;
+        m->inputs[T::AUDIO0_INPUT + i].value = 0;
+        m->params[T::GAIN0_PARAM + i].value = 1;
     }
 
-    auto xx = m.inputs[T::PAN0_INPUT].value;
-    auto yy = m.params[T::PAN0_PARAM].value;
+    m->inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
+    m->params[T::GAIN0_PARAM + channel].value = activeParamValue;
+    m->inputs[T::LEVEL0_INPUT + channel].value = activeCVValue;
+    m->inputs[T::LEVEL0_INPUT + channel].active = true;
 
-    m.inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
-    m.params[T::GAIN0_PARAM + channel].value = activeParamValue;
-    m.inputs[T::LEVEL0_INPUT + channel].value = activeCVValue;
-    m.inputs[T::LEVEL0_INPUT + channel].active = true;
-
-    for (int i = 0; i < 1000; ++i) {
-        m.step();           // let mutes settle
-    }
+    step(m);
 
     float atten18Db = 1.0f / (2.0f * 2.0f * 2.0f);  
 
@@ -135,7 +131,7 @@ void testChannel(int channel, bool useParam)
 
        // auto debugMuteState = m.params[T::MUTE0_STATE_PARAM + i];
         float expected = (i == channel) ? exectedInActiveChannel : 0;
-        assertClose(m.outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
+        assertClose(m->outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
     }
 }
 
@@ -161,9 +157,6 @@ static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> ou
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
 
-    //for (int i = 0; i < 1000; ++i) {
-    //    m->step();           // let mutes settle
-    //}
     step(m);
 
     float outL = outputGetter(m, 0);
@@ -197,36 +190,26 @@ void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
     m->params[T::MUTE0_PARAM].value = 1;        // mute
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+    
+    step(m);
 
     assertClose(outputGetter(m, false), 0, .001);
 
     // un-mute
     m->params[T::MUTE0_PARAM].value = 0;
-    for (int i = 0; i < 8; ++i) {
-        m->step();           // let mutes settle
-    }
+   
+    step(m);
 
 
     m->params[T::MUTE0_PARAM].value = 1;
-    for (int i = 0; i < 8; ++i) {
-        m->step();           // let mutes settle
-    }
-
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+    step(m);
 
     float s1 = outputGetter(m, false);
     assertGT(s1, 5);
 
     m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
 
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+    step(m);
 
     assertClose(outputGetter(m, false), 0, .001);
 }
