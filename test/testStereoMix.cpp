@@ -300,6 +300,30 @@ static void testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> out
 
 
 template <typename T>
+void testMaster2(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+{
+    const int channel = 0;
+    const int group = 0;
+
+    assert(group == channel / 2);
+    auto m = getMixer<T>();
+
+    m->inputs[T::AUDIO0_INPUT + channel].value = 1.3f;
+    m->params[T::GAIN0_PARAM + group].value = 1;
+    m->params[T::PAN0_PARAM + group].value = 0;     // middle
+
+    step(m);
+
+    float outL = outputGetter(m, 0);
+    float outR = outputGetter(m, 1);
+
+    float expectedOutL = 1.3f;
+    float expectedOutR = 0;
+    assertClose(outL, expectedOutL, .01);
+    assertClose(outR, expectedOutR, .01)
+}
+
+template <typename T>
 void _testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, int group, bool bRight)
 {
     const int channel = group * 2;
@@ -441,6 +465,7 @@ void testStereoMix()
     testExpansionPassthrough<MixerS>(auxGetterMixSB, auxSenderMixSB);
 
     testMaster<MixerS>(outputGetterMixS);
+    testMaster2<MixerS>(outputGetterMixS);
     testMute<MixerS>(outputGetterMixS);
 
     testAuxOut<MixerS>(auxGetterMixS);

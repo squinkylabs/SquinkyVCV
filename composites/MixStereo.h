@@ -322,22 +322,22 @@ inline void MixStereo<TBase>::stepn(int div)
             // TODO: we can do some main volume work ahead of time, just like the sends here
             if (!AisPreFader) {
                 // post faster, gain sees mutes, faders,  pan, and send level    
-                buf_channelSendGainsALeft[channel] = filteredCV.get(group + cvOffsetPanLeft) * sliderA;
-                buf_channelSendGainsARight[channel] = filteredCV.get(group + cvOffsetPanRight) * sliderA;
+                buf_channelSendGainsALeft[group] = filteredCV.get(group + cvOffsetPanLeft) * sliderA;
+                buf_channelSendGainsARight[group] = filteredCV.get(group + cvOffsetPanRight) * sliderA;
             } else {
                 // pre-fader fader, gain sees mutes and send only
-                buf_channelSendGainsALeft[channel] = muteValue * sliderA * (1.f / sqrt(2.f));
-                buf_channelSendGainsARight[channel] = muteValue * sliderA * (1.f / sqrt(2.f));
+                buf_channelSendGainsALeft[group] = muteValue * sliderA * (1.f / sqrt(2.f));
+                buf_channelSendGainsARight[group] = muteValue * sliderA * (1.f / sqrt(2.f));
             }
 
             if (!BisPreFader) {
                 // post faster, gain sees mutes, faders,  pan, and send level
-                buf_channelSendGainsBLeft[channel] = filteredCV.get(group + cvOffsetPanLeft) * sliderB;
-                buf_channelSendGainsBRight[channel] = filteredCV.get(group + cvOffsetPanRight) * sliderB;
+                buf_channelSendGainsBLeft[group] = filteredCV.get(group + cvOffsetPanLeft) * sliderB;
+                buf_channelSendGainsBRight[group] = filteredCV.get(group + cvOffsetPanRight) * sliderB;
             } else {
                 // pref fader, gain sees mutes and send only
-                buf_channelSendGainsBLeft[channel] = muteValue * sliderB * (1.f / sqrt(2.f));
-                buf_channelSendGainsBRight[channel] = muteValue * sliderB * (1.f / sqrt(2.f));
+                buf_channelSendGainsBLeft[group] = muteValue * sliderB * (1.f / sqrt(2.f));
+                buf_channelSendGainsBRight[group] = muteValue * sliderB * (1.f / sqrt(2.f));
             }
         }
 
@@ -418,10 +418,10 @@ inline void MixStereo<TBase>::step()
         right += channelInput * filteredCV.get(group + cvOffsetPanRight);
 
         // TODO: aux sends
-        lSend += channelInput * buf_channelSendGainsALeft[channel];
-        lSendb += channelInput * buf_channelSendGainsBLeft[channel];
-        rSend += channelInput * buf_channelSendGainsARight[channel];
-        rSendb += channelInput * buf_channelSendGainsBRight[channel];
+        lSend += channelInput * buf_channelSendGainsALeft[group];
+        lSendb += channelInput * buf_channelSendGainsBLeft[group];
+        rSend += channelInput * buf_channelSendGainsARight[group];
+        rSendb += channelInput * buf_channelSendGainsBRight[group];
 
         assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
         TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
