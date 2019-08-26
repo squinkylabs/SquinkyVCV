@@ -161,9 +161,10 @@ static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> ou
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
 
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+    //for (int i = 0; i < 1000; ++i) {
+    //    m->step();           // let mutes settle
+    //}
+    step(m);
 
     float outL = outputGetter(m, 0);
     float outR = outputGetter(m, 1);
