@@ -252,9 +252,6 @@ static void _testAuxOut(
         m->params[T::GAIN0_PARAM].value = 0;
     }
 
-  //  for (int i = 0; i < 1000; ++i) {
- //       m->step();           // let mutes settle
- //   }
     step(m);
 
     float auxL = auxGetter(m, 0);
@@ -347,7 +344,6 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
     m->params[T::SOLO0_PARAM].value = 0;        // solo
     m->params[T::SOLO1_PARAM].value = 1;        // solo
 
-    step(m);
     step(m);
 
     assertClose(outputGetter(m, false), 0, .01);

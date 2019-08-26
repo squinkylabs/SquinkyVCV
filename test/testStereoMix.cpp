@@ -299,6 +299,47 @@ static void testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> out
 }
 
 
+template <typename T>
+void _testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, int group, bool bRight)
+{
+    auto m = getMixer<T>();
+    m->step();          // let mutes see zero first (startup reset)
+
+    // now mute input 0
+    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->params[T::GAIN0_PARAM].value = 1;
+    m->params[T::PAN0_PARAM].value = -1.f;     // full left
+    m->params[T::MUTE0_PARAM].value = 1;        // mute
+
+    step(m);
+
+    assertClose(outputGetter(m, false), 0, .001);
+
+    // un-mute
+    m->params[T::MUTE0_PARAM].value = 0;
+
+    step(m);
+
+
+    m->params[T::MUTE0_PARAM].value = 1;
+    step(m);
+
+    float s1 = outputGetter(m, false);
+    assertGT(s1, 5);
+
+    m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
+
+    step(m);
+
+    assertClose(outputGetter(m, false), 0, .01);
+}
+
+template <typename T>
+void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+{
+    _testMute(outputGetter, 0, false);
+}
+
 
 void testStereoMix()
 {
@@ -312,4 +353,5 @@ void testStereoMix()
     testExpansionPassthrough<MixerS>(auxGetterMixSB, auxSenderMixSB);
 
     testMaster<MixerS>(outputGetterMixS);
+    testMute<MixerS>(outputGetterMixS);
 }
