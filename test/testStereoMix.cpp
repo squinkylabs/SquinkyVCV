@@ -240,12 +240,6 @@ static void testChannel()
 }
 
 template <typename T>
-static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
-{
-}
-
-
-template <typename T>
 static void _testExpansionPassthrough(
     std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter,
     std::function<void(std::shared_ptr<T>, bool bRight, float)> inputPutter,
@@ -273,6 +267,37 @@ static void testExpansionPassthrough(
     _testExpansionPassthrough(outputGetter, inputPutter, false, .87f);
 }
 
+template <typename T>
+static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
+{
+    auto m = getMixer<T>();
+
+    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->params[T::GAIN0_PARAM].value = 1;
+    m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
+
+   // for (int i = 0; i < 1000; ++i) {
+   //     m->step();           // let mutes settle
+   // }
+    step(m);
+
+    float outL = outputGetter(m, 0);
+    float outR = outputGetter(m, 1);
+
+    // input 10, channel atten 1, master default .8
+    float expectedOutL = side ? float(10 * defaultMasterGain) : 0;
+    float expectedOutR = side ? 0 : float(10 * defaultMasterGain);
+    assertClose(outL, expectedOutL, .01);
+    assertClose(outR, expectedOutR, .01);
+}
+
+template <typename T>
+static void testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
+{
+    _testMaster<T>(outputGetter, false);
+    _testMaster<T>(outputGetter, true);
+}
+
 
 
 void testStereoMix()
@@ -285,4 +310,6 @@ void testStereoMix()
     testExpansionPassthrough<MixerS>(outputGetterMixS, outputSenderMixS);
     testExpansionPassthrough<MixerS>(auxGetterMixS, auxSenderMixS);
     testExpansionPassthrough<MixerS>(auxGetterMixSB, auxSenderMixSB);
+
+    testMaster<MixerS>(outputGetterMixS);
 }

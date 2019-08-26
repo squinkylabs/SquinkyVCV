@@ -289,9 +289,21 @@ inline void MixStereo<TBase>::stepn(int div)
             const float cv = TBase::inputs[group + PAN0_INPUT].value;
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
 
+
+            // temporary pan hack to boostrap mixer and tests
+            float panGainLeft = 1;
+            float panGainRight = 1;
+            if (panValue < -.9) {
+                panGainRight = 0;
+            } else if (panValue > .9) {
+                panGainLeft = 0;
+            }
             assert(cvOffsetPanRight + group < cvFilterSize);
-             unbufferedCV[cvOffsetPanLeft + group] = 1.f * groupGain;
-             unbufferedCV[cvOffsetPanRight + group] = 1.f * groupGain;
+            unbufferedCV[cvOffsetPanLeft + group] = panGainLeft * groupGain;
+            unbufferedCV[cvOffsetPanRight + group] = panGainRight * groupGain;
+
+           
+
             //unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             //unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
         }
@@ -409,7 +421,6 @@ inline void MixStereo<TBase>::step()
         rSendb += channelInput * buf_channelSendGainsBRight[channel];
 
         assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
-        const float tester = channelInput * filteredCV.get(group + cvOffsetGain);
         TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
     }
 
