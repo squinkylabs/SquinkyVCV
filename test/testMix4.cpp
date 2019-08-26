@@ -19,7 +19,7 @@ static float gOutputBuffer[8];
 template <typename T>
 static void step(std::shared_ptr<T> mixer)
 {
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 20; ++i) {
         mixer->step();
     }
 }
@@ -268,9 +268,10 @@ static void _testAuxOut(
         m->params[T::GAIN0_PARAM].value = 0;
     }
 
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+  //  for (int i = 0; i < 1000; ++i) {
+ //       m->step();           // let mutes settle
+ //   }
+    step(m);
 
     float auxL = auxGetter(m, 0);
     float auxR = auxGetter(m, 1);
@@ -298,9 +299,6 @@ static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> aux
 template <typename T>
 static void testAuxOutB(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
 {
-    // should pass like this
-   // _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
-   // _testAuxOut<T>(auxGetter, true,  false, T::SENDb0_PARAM, false, T::PRE_FADERb_PARAM);
     _testAuxOut<T>(auxGetter, false, false, T::SENDb0_PARAM, false, 0);
     _testAuxOut<T>(auxGetter, true, false, T::SENDb0_PARAM, false, 0);
 }
@@ -332,9 +330,7 @@ static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> 
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = 0;     // pan in middle
 
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+    step(m);
 
     float outL = outputGetter(m, false);
     float outR = outputGetter(m, false);
