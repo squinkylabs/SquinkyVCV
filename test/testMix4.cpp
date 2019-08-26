@@ -194,6 +194,7 @@ void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     step(m);
 
     assertClose(outputGetter(m, false), 0, .001);
+    assertGT(m->lights[T::MUTE0_LIGHT].value, 5.f);
 
     // un-mute
     m->params[T::MUTE0_PARAM].value = 0;
@@ -206,12 +207,14 @@ void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
 
     float s1 = outputGetter(m, false);
     assertGT(s1, 5);
+    assertLT(m->lights[T::MUTE0_LIGHT].value, 5.f);
 
     m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
 
     step(m);
 
     assertClose(outputGetter(m, false), 0, .001);
+    assertGT(m->lights[T::MUTE0_LIGHT].value, 5.f);
 }
 
 //**********************************************

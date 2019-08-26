@@ -268,25 +268,23 @@ static void testExpansionPassthrough(
 }
 
 template <typename T>
-static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
-{
+static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side, int group)
+{    
+    const int channel = 2 * group;
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
-    m->params[T::GAIN0_PARAM].value = 1;
-    m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
+    m->inputs[T::AUDIO0_INPUT+ channel].value = 7.7f;
+    m->params[T::GAIN0_PARAM + group].value = 1;
+    m->params[T::PAN0_PARAM + group].value = side ? -1.f : 1.f;     // full left
 
-   // for (int i = 0; i < 1000; ++i) {
-   //     m->step();           // let mutes settle
-   // }
     step(m);
 
     float outL = outputGetter(m, 0);
     float outR = outputGetter(m, 1);
 
     // input 10, channel atten 1, master default .8
-    float expectedOutL = side ? float(10 * defaultMasterGain) : 0;
-    float expectedOutR = side ? 0 : float(10 * defaultMasterGain);
+    float expectedOutL = side ? float(7.7f * defaultMasterGain) : 0;
+    float expectedOutR = side ? 0 : float(7.7f * defaultMasterGain);
     assertClose(outL, expectedOutL, .01);
     assertClose(outR, expectedOutR, .01);
 }
@@ -294,52 +292,142 @@ static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> ou
 template <typename T>
 static void testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
-    _testMaster<T>(outputGetter, false);
-    _testMaster<T>(outputGetter, true);
+    _testMaster<T>(outputGetter, false, 0);
+    _testMaster<T>(outputGetter, true, 0);
+    _testMaster<T>(outputGetter, false, 1);
+    _testMaster<T>(outputGetter, true, 1);
 }
 
 
 template <typename T>
 void _testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, int group, bool bRight)
 {
+    const int channel = group * 2;
     auto m = getMixer<T>();
     m->step();          // let mutes see zero first (startup reset)
 
     // now mute input 0
-    m->inputs[T::AUDIO0_INPUT].value = 10;
-    m->params[T::GAIN0_PARAM].value = 1;
-    m->params[T::PAN0_PARAM].value = -1.f;     // full left
-    m->params[T::MUTE0_PARAM].value = 1;        // mute
+    m->inputs[T::AUDIO0_INPUT + channel].value = 10;
+    m->params[T::GAIN0_PARAM + group].value = 1;
+
+    m->params[T::PAN0_PARAM + group].value = bRight ? 1.f : -1.f;  
+
+    m->params[T::MUTE0_PARAM + group].value = 1;        // mute
 
     step(m);
 
-    assertClose(outputGetter(m, false), 0, .001);
+    assertClose(outputGetter(m, bRight), 0, .001);
+
+    m->stepn(4);    // let's watch it up date the light
+    const int xx = T::MUTE0_LIGHT + group;
+    const float yy = m->lights[T::MUTE0_LIGHT + group].value;
+    assertGT(m->lights[T::MUTE0_LIGHT + group].value, 5.f);
 
     // un-mute
-    m->params[T::MUTE0_PARAM].value = 0;
+    m->params[T::MUTE0_PARAM + group].value = 0;
 
     step(m);
 
 
-    m->params[T::MUTE0_PARAM].value = 1;
+    m->params[T::MUTE0_PARAM + group].value = 1;
     step(m);
 
-    float s1 = outputGetter(m, false);
+    float s1 = outputGetter(m, bRight);
     assertGT(s1, 5);
+    assertLT(m->lights[T::MUTE0_LIGHT + group].value, 5.f);
 
-    m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
+    m->inputs[T::MUTE0_INPUT + group].value = 10;       //mute with CV
 
     step(m);
 
-    assertClose(outputGetter(m, false), 0, .01);
+    assertClose(outputGetter(m, bRight), 0, .01);
+    assertGT(m->lights[T::MUTE0_LIGHT + group].value, 5.f);
 }
 
 template <typename T>
 void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     _testMute(outputGetter, 0, false);
+    _testMute(outputGetter, 0, true);
+    _testMute(outputGetter, 1, false);
+    _testMute(outputGetter, 1, true);
 }
 
+
+//**********************************************
+
+
+/**
+ * param augGetter is one of the functions that will retrieve data from the aux send.
+ * param side is true if left,  false if right
+ * param aux0 is true if we want to test the aux0 bus, false for aux1
+ * param sendParam is the parameter id for the send level
+ * param pre is true for pre-fader send
+ * param preParam is (redundant?)
+ * 
+ */
+template <typename T>
+static void _testAuxOut(
+    std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter,
+    bool side,
+    bool aux0,
+    int sendParam,
+    bool pre,
+    int preParam,
+    int group
+)
+{
+    printf("\n** textAuxOut side=%d, group=%d\n", side, group);
+    auto m = getMixer<T>();
+    const int channel = group * 2;
+
+    m->inputs[T::AUDIO0_INPUT + channel].value = 10;
+    m->params[T::GAIN0_PARAM + group].value = 1;
+
+    m->params[T::PAN0_PARAM + group].value = side ? -1.f : 1.f;     // full side
+    m->params[sendParam ].value = 1;
+
+    if (preParam) {
+        assert(false);      // finish me?
+        m->params[preParam].value = pre ? 1.f : 0.f;
+    }
+
+    // with pre-fader, should still get out with no volume
+    // TODO: test that with post fade the fader has an effect
+    if (pre) {
+        assert(false);
+        m->params[T::GAIN0_PARAM].value = 0;
+    }
+
+    step(m);
+    step(m);
+
+    float auxL = auxGetter(m, 0);
+    float auxR = auxGetter(m, 1);
+
+    float expectedOutL = side ? float(10 * 1) : 0;
+    float expectedOutR = side ? 0 : float(10 * 1);
+    if (pre) {
+        // no pan control on pre, just fixed as if middle all the time.
+        expectedOutL = float(10 * (1.f / sqrt(2.f)));
+        expectedOutR = float(10 * (1.f / sqrt(2.f)));
+    }
+
+    dumpUb(m);
+    dumpOut(m);
+
+    assertClose(auxL, expectedOutL, .01);
+    assertClose(auxR, expectedOutR, .01);
+}
+
+template <typename T>
+static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> auxGetter)
+{
+    _testAuxOut<T>(auxGetter, false, true, T::SEND0_PARAM, false, 0, 0);
+    _testAuxOut<T>(auxGetter, true, true, T::SEND0_PARAM, false, 0, 0);
+
+    _testAuxOut<T>(auxGetter, false, true, T::SEND0_PARAM, false, 0, 1);
+}
 
 void testStereoMix()
 {
@@ -354,4 +442,6 @@ void testStereoMix()
 
     testMaster<MixerS>(outputGetterMixS);
     testMute<MixerS>(outputGetterMixS);
+
+    testAuxOut<MixerS>(auxGetterMixS);
 }

@@ -168,28 +168,24 @@ void MixStereoWidget::makeGroup(
     const float x= groupX + 2 * group * dX;
     float y = yGlobal;
 
-printf("making group %d, y=%f\n", group, y); fflush(stdout);
-   // y -= channelDy;
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         group + Comp::MUTE0_INPUT));
 
     y -= channelDy;
-    #if 1
+
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         group + Comp::LEVEL0_INPUT));
-    #endif
     y -= channelDy;
-    #if 1
+
     addInput(createInputCentered<PJ301MPort>(
         Vec(x, y),
         module,
         group + Comp::PAN0_INPUT));
-    #endif
-    printf("added last port of 3 at %f\n", y);
+
      y -= channelDy;
 
 
@@ -201,7 +197,6 @@ printf("making group %d, y=%f\n", group, y); fflush(stdout);
         module,
         group + Comp::MUTE0_PARAM);
     addParam(_mute);
-    printf("mute at %f\n", muty);
 
     addChild(createLight<MuteLight<SquinkyLight>>(
         Vec(mutx + 2.2, muty + 2),
@@ -221,8 +216,6 @@ printf("making group %d, y=%f\n", group, y); fflush(stdout);
         sqmix::handleSoloClickFromUI<Comp>(mixModule, group);
     });
     addChild(tog);
-
-    printf("tog at %f\n", y);
    
     const float extraDy = 5;
     y -= (channelDy + extraDy);

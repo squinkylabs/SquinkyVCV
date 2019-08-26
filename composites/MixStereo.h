@@ -9,7 +9,6 @@
 #include "ObjectCache.h"
 #include "SqMath.h"
 
-
 #include <assert.h>
 #include <memory>
 
@@ -225,6 +224,7 @@ inline void MixStereo<TBase>::stepn(int div)
     const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
 
     helper.procMixInputs(this);
+
     //helper.procMasterMute(this);
 
     // If the is an external solo, then mute all channels
@@ -272,6 +272,7 @@ inline void MixStereo<TBase>::stepn(int div)
             assert(group + MUTE0_STATE_PARAM < NUM_PARAMS);
             rawMuteValue = TBase::params[group + MUTE0_STATE_PARAM].value > .5 ? 0.f : 1.f;
         }
+
         groupGain *= rawMuteValue;
 
         // now the raw channel gains are all computed
@@ -283,8 +284,8 @@ inline void MixStereo<TBase>::stepn(int div)
 
         // now do the pan calculation
         {
-            assert(channel + PAN0_PARAM < NUM_PARAMS);
-            assert(channel + PAN0_INPUT < NUM_INPUTS);
+            assert(group + PAN0_PARAM < NUM_PARAMS);
+            assert(group + PAN0_INPUT < NUM_INPUTS);
             const float balance = TBase::params[group + PAN0_PARAM].value;
             const float cv = TBase::inputs[group + PAN0_INPUT].value;
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
@@ -301,8 +302,6 @@ inline void MixStereo<TBase>::stepn(int div)
             assert(cvOffsetPanRight + group < cvFilterSize);
             unbufferedCV[cvOffsetPanLeft + group] = panGainLeft * groupGain;
             unbufferedCV[cvOffsetPanRight + group] = panGainRight * groupGain;
-
-           
 
             //unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             //unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
@@ -342,13 +341,12 @@ inline void MixStereo<TBase>::stepn(int div)
             }
         }
 
-
         // refresh the solo lights
         {
-            assert(channel + SOLO0_PARAM < NUM_PARAMS);
-            assert(channel + SOLO0_LIGHT < NUM_LIGHTS);
-            const float soloValue = TBase::params[channel + SOLO0_PARAM].value;
-            TBase::lights[channel + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
+            assert(group + SOLO0_PARAM < NUM_PARAMS);
+            assert(group + SOLO0_LIGHT < NUM_LIGHTS);
+            const float soloValue = TBase::params[group + SOLO0_PARAM].value;
+            TBase::lights[group + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
         }
 
     }
@@ -409,6 +407,11 @@ inline void MixStereo<TBase>::step()
 
         assert(channel + AUDIO0_INPUT < NUM_INPUTS);
         const float channelInput = TBase::inputs[channel + AUDIO0_INPUT].value;
+    #if 0
+        printf("channel input(%d) = %.2f filtered cd = %.2f / %.2f\n", channel, channelInput, 
+            filteredCV.get(group + cvOffsetPanLeft),
+            filteredCV.get(group + cvOffsetPanRight));
+    #endif
 
         // sum the channel output to the masters
         left += channelInput * filteredCV.get(group + cvOffsetPanLeft);
@@ -432,7 +435,8 @@ inline void MixStereo<TBase>::step()
         expansionOutputs[3] = rSend;
         expansionOutputs[4] = lSendb;
         expansionOutputs[5] = rSendb;
-    }
+        //printf("sending l=%.2f r = %.2f\n", left, right); fflush(stdout);
+    } 
 
 }
 

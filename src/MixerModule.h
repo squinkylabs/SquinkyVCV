@@ -128,12 +128,16 @@ inline void MixerModule::process(const ProcessArgs &args)
     // first, determine what modules are are paired with what
     // A Mix4 is not a master, and can pair with either a Mix4 or a MixM to the right
     const bool pairedRight = rightExpander.module && 
-        ((rightExpander.module->model == modelMixMModule) || (rightExpander.module->model == modelMix4Module)) &&
+        (   (rightExpander.module->model == modelMixMModule) ||
+            (rightExpander.module->model == modelMix4Module) ||
+            (rightExpander.module->model == modelMixStereoModule)
+        ) &&
         !amMaster();
 
     // A MixM and a Mix4 can both pair with a Mix4 to the left
     const bool pairedLeft = leftExpander.module &&
-        (leftExpander.module->model == modelMix4Module);
+        ((leftExpander.module->model == modelMix4Module) ||
+        (leftExpander.module->model == modelMixStereoModule));
 
     // recently ported these asserts. Hope they are right.
     assert(rightExpander.producerMessage);
@@ -276,7 +280,7 @@ template<class Comp>
 inline void unSoloAllChannels(MixerModule* mod)
 {
     engine::Engine* eng = APP->engine;
-    for (int i=0; i<4; ++i) {
+    for (int i=0; i < Comp::numGroups; ++i) {
         eng->setParam(mod, i + Comp::SOLO0_PARAM, 0);  
     }
 }
@@ -286,7 +290,7 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
 {
     engine::Engine* const eng = APP->engine;
     const int channel = int(command)- int(SoloCommands::SOLO_0);
-    assert(channel >= 0 && channel < 4);
+    assert(channel >= 0 && channel < Comp::numGroups);
     unSoloAllChannels<Comp>(mod);
     //printf("processExclusiveSolo channel %d, will un-mute module\n", channel); fflush(stdout);
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, 1.f); 
@@ -298,7 +302,7 @@ inline void processMultiSolo(MixerModule* mod, SoloCommands command)
 {
     engine::Engine* const eng = APP->engine;
     const int channel = int(command)- int(SoloCommands::SOLO_0_MULTI);
-    assert(channel >= 0 && channel < 4);
+    assert(channel >= 0 && channel < Comp::numGroups);
 
     const bool channelIsSoloed = eng->getParam(mod, Comp::SOLO0_PARAM + channel);
 
