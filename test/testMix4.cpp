@@ -15,6 +15,15 @@ using MixerM = MixM<TestComposite>;
 
 static float gOutputBuffer[8];
 
+
+template <typename T>
+static void step(std::shared_ptr<T> mixer)
+{
+    for (int i = 0; i < 10; ++i) {
+        mixer->step();
+    }
+}
+
 // function that knows how to get left output from a mixerM
 static float outputGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
 {
@@ -60,6 +69,7 @@ static std::shared_ptr<T> getMixerBase()
         auto param = icomp->getParam(i);
         ret->params[i].value = param.def;
     }
+    ret->_disableAntiPop();
 
     return ret;
 }
@@ -347,24 +357,21 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
     m->params[T::SOLO0_PARAM].value = 1;        // solo
 
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+    step(m);
 
     // only testing that signal passes
-    assertClose(outputGetter(m, false), float(10 * 1 * defaultMasterGain), .001);
-    assertClose(outputGetter(m, true), 0, .001);
+    assertClose(outputGetter(m, false), float(10 * 1 * defaultMasterGain), .01);
+    assertClose(outputGetter(m, true), 0, .01);
 
     // now solo other channel, should mute all
     m->params[T::SOLO0_PARAM].value = 0;        // solo
     m->params[T::SOLO1_PARAM].value = 1;        // solo
 
-    for (int i = 0; i < 1000; ++i) {
-        m->step();           // let mutes settle
-    }
+    step(m);
+    step(m);
 
-    assertClose(outputGetter(m, false), 0, .001);
-    assertClose(outputGetter(m, true), 0, .001);
+    assertClose(outputGetter(m, false), 0, .01);
+    assertClose(outputGetter(m, true), 0, .01);
 }
 
 void testMix4()

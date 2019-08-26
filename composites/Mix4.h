@@ -348,13 +348,11 @@ inline void Mix4<TBase>::onSampleRateChange()
     setupFilters();
 }
 
-
 template <class TBase>
 inline void Mix4<TBase>::_disableAntiPop()
 {
     filteredCV.setCutoff(0.49f);     // set it super fast
 }
-
 
 template <class TBase>
 inline void Mix4<TBase>::setupFilters()

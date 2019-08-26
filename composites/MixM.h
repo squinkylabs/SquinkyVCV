@@ -217,6 +217,7 @@ public:
     float buf_auxReturnGainA = 0;
     float buf_auxReturnGainB = 0;
 
+    void _disableAntiPop();
 private:
     Divider divider;
 
@@ -260,6 +261,12 @@ template <class TBase>
 inline void MixM<TBase>::onSampleRateChange()
 {
     setupFilters();
+}
+
+template <class TBase>
+inline void MixM<TBase>::_disableAntiPop()
+{
+    filteredCV.setCutoff(0.49f);     // set it super fast
 }
 
 template <class TBase>
