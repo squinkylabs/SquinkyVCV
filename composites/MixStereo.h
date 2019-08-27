@@ -201,9 +201,8 @@ private:
    
     MultiLPF<cvFilterSize> filteredCV;
 
-    // TODO: pan for stereo
-  //  std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
-  //  std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
+    std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
+    std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 
     const float* expansionInputs = nullptr;
     float* expansionOutputs = nullptr;
@@ -299,6 +298,7 @@ inline void MixStereo<TBase>::stepn(int div)
 
 
             // temporary pan hack to boostrap mixer and tests
+            #if 0
             float panGainLeft = 1;
             float panGainRight = 1;
             if (panValue < -.9) {
@@ -308,10 +308,17 @@ inline void MixStereo<TBase>::stepn(int div)
             }
             unbufferedCV[cvOffsetGainBalance + group * 2] = panGainLeft * groupGain;
             unbufferedCV[cvOffsetGainBalance + group * 2 + 1] = panGainRight * groupGain;
-           // assert(cvOffsetPanRight + group < cvFilterSize);
-           // unbufferedCV[cvOffsetPanLeft + group] = panGainLeft * groupGain;
-          //  unbufferedCV[cvOffsetPanRight + group] = panGainRight * groupGain;
+           #else
 
+            unbufferedCV[cvOffsetGainBalance + group * 2] = LookupTable<float>::lookup(*panL, panValue) * groupGain;
+            unbufferedCV[cvOffsetGainBalance + group * 2 + 1] = LookupTable<float>::lookup(*panR, panValue) * groupGain;
+        #endif
+
+#if 0
+            printf("set pan l=%.2f r= %.2f\n", 
+                unbufferedCV[cvOffsetGainBalance + group * 2],
+                unbufferedCV[cvOffsetGainBalance + group * 2 + 1]); fflush(stdout);
+#endif
 
             //unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             //unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
