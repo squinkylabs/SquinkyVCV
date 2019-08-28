@@ -63,7 +63,8 @@ public:
     enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
 
     void insertPresetNote(Durations, bool advanceAfter);
-    void insertNote(float duration, bool advanceAfter);
+    //void insertNote(float duration, bool advanceAfter);
+    void insertDefaultNote(bool advanceAfter);
     void deleteNote();
 
     /*************                                   ***************/
@@ -87,7 +88,7 @@ public:
 private:
     /**
      * The sequencer we will act on.
-     * use wek ptr to break ref circle
+     * use weak ptr to break ref circle
      */
     std::weak_ptr<MidiSequencer> m_seq;
     std::shared_ptr< MidiSequencer> seq()
@@ -112,8 +113,9 @@ private:
     void updateCursor();
     void setCursorToNote(MidiNoteEventPtr note);
     void setNewCursorPitch(float pitch, bool extendSelection);
-    void insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration);
-    void insertNoteHelper2(float dur, bool moveCursorAfter, bool quantizeDuration);
+    void insertNoteHelper(Durations dur, bool moveCursorAfter);
+    void insertNoteHelper2(float dur, bool moveCursorAfter);
+    void insertNoteHelper3(float duration, float advanceAmount);
 
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);

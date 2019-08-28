@@ -19,6 +19,7 @@ public:
     friend class SequencerSerializer;
 
     SeqSettings(SequencerModule*);
+    ~SeqSettings() override;
     void invokeUI(rack::widget::Widget* parent) override;
 
     /**

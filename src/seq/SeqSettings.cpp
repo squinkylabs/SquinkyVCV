@@ -133,6 +133,12 @@ private:
 
 SeqSettings::SeqSettings(SequencerModule* mod) : module(mod)
 {
+    ++_mdb;
+}
+
+SeqSettings::~SeqSettings()
+{
+    --_mdb;
 }
 
 void SeqSettings::invokeUI(rack::widget::Widget* parent)

@@ -148,6 +148,13 @@ public:
     {
         return _settings;
     }
+
+     /**
+     * If zero, take duration from grid.
+     * If >=, contains duration
+     */
+    float insertNoteDuration = 0;
+    
 private:
     float m_cursorTime = 0;
     float m_cursorPitch = 0;
@@ -169,6 +176,8 @@ private:
     std::weak_ptr<MidiSong> _song;
 
     std::shared_ptr<ISeqSettings> _settings;
+
+   
 };
 
 using MidiEditorContextPtr = std::shared_ptr<MidiEditorContext>;

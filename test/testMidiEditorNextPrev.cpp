@@ -423,7 +423,9 @@ static void testPrevWhenBeforeStart()
 
     // add a single note a time 1
     seq->context->setCursorTime(1);
-    seq->editor->insertNote(.25f, false);
+    
+    seq->context->insertNoteDuration = .25f;
+    seq->editor->insertDefaultNote(false);
     assertEQ(seq->context->getTrack()->size(), 2);
 
     seq->context->setCursorTime(0);             // cursor before all notes

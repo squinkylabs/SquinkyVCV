@@ -464,11 +464,11 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
 
     float pitch = seq->context->cursorPitch();
 
-    const float dur = s->getQuarterNotesInGrid();
-
     MLockTest l(seq);
     
-    seq->editor->insertNote(dur, advanceAfter);
+    // let's use the grid
+    seq->context->insertNoteDuration = 0;
+    seq->editor->insertDefaultNote(advanceAfter);
 
     auto it = seq->context->getTrack()->begin();
     assert(it != seq->context->getTrack()->end());
@@ -492,12 +492,11 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     const int insertSize = seq->context->getTrack()->size();
     assertGT(insertSize, initialSize);
 
-#if 1
     assert(seq->undo->canUndo());
     seq->undo->undo(seq);
     const int undoSize = seq->context->getTrack()->size();
     assert(undoSize == initialSize);
-#endif
+
 }
 
 static void testInsert()
