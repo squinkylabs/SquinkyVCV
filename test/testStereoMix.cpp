@@ -323,8 +323,11 @@ void _testMaster2(std::function<float(std::shared_ptr<T>, bool bRight)> outputGe
     float outL = outputGetter(m, 0);
     float outR = outputGetter(m, 1);
 
-    float expectedOutL = side ? 0 : 1.3f;
-    float expectedOutR = side ? 1.3f : 0;
+    // pan in middle -> .5
+    float expectedOutL = side ? 0 : .5f * 1.3f;
+    float expectedOutR = side ? .5f * 1.3f : 0;
+
+
     assertClose(outL, expectedOutL, .01);
     assertClose(outR, expectedOutR, .01);
 }
@@ -347,8 +350,9 @@ void _testAuxOutA(std::function<float(std::shared_ptr<T>, bool bRight)> outputGe
     float outL = outputGetter(m, 0);
     float outR = outputGetter(m, 1);
 
-    float expectedOutL = side ? 0 : testValue;
-    float expectedOutR = side ? testValue : 0;
+    // pan middle -> .5
+    float expectedOutL = side ? 0 : .5f * testValue;
+    float expectedOutR = side ? .5f *testValue : 0;
     assertClose(outL, expectedOutL, .01);
     assertClose(outR, expectedOutR, .01);
 }
