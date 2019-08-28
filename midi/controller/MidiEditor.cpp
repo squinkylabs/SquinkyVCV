@@ -618,10 +618,17 @@ void MidiEditor::insertPresetNote(Durations dur, bool advanceAfter)
     insertNoteHelper(dur, advanceAfter);
 }
 
+void MidiEditor::grabDefaultNote()
+{
+    MidiNoteEventPtr note = getNoteUnderCursor();
+    if (note) {
+        seq()->context->insertNoteDuration = note->duration;
+    }
+}
+
 void MidiEditor::insertDefaultNote(bool advanceAfter)
 {
     float duration = seq()->context->insertNoteDuration;
- //   float totalDuration = 0;
     float advanceAmount = 0;
     if (duration <= 0) {
 

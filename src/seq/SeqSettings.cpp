@@ -192,8 +192,7 @@ rack::ui::MenuItem* SeqSettings::makeNoteCommand(SequencerModule* module)
         if (isNote) {
             editor->deleteNote();
         } else {
-            const float dur = seq->context->settings()->getQuarterNotesInGrid();
-            editor->insertNote(dur, false);
+            editor->insertDefaultNote(false);
         }
     };
 

@@ -89,8 +89,7 @@ bool MouseManager::onDoubleClick()
     if (note) {
         sequencer->editor->deleteNote();
     } else {
-        const float dur = sequencer->context->settings()->getQuarterNotesInGrid();
-        sequencer->editor->insertNote(dur, false);
+        sequencer->editor->insertDefaultNote(false);
     }
     return true;
 }

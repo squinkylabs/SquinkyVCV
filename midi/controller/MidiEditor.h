@@ -63,9 +63,10 @@ public:
     enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
 
     void insertPresetNote(Durations, bool advanceAfter);
-    //void insertNote(float duration, bool advanceAfter);
     void insertDefaultNote(bool advanceAfter);
     void deleteNote();
+
+    void grabDefaultNote();
 
     /*************                                   ***************/
     // Editing start time / duration / pitch

@@ -335,13 +335,20 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_INSERT:
         case GLFW_KEY_ENTER:
             {
-                const float dur = sequencer->context->settings()->getQuarterNotesInGrid();
-                   // sequencer->context->settings()->articulation();
-
-                sequencer->editor->insertNote(dur, !shift);
+                sequencer->editor->insertDefaultNote(!shift);
                 handled = true;
             }
             break;
+        case GLFW_KEY_KP_MULTIPLY:
+            sequencer->editor->grabDefaultNote();
+            handled = true;
+            break;
+        case GLFW_KEY_8:
+            if (shift) {
+                 sequencer->editor->grabDefaultNote();
+                handled = true;
+            }
+            break;        
         case GLFW_KEY_BACKSPACE:
         case GLFW_KEY_KP_DECIMAL:
         case GLFW_KEY_DELETE:
