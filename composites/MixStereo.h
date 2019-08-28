@@ -241,8 +241,6 @@ inline void MixStereo<TBase>::stepn(int div)
         }
     }
 
-   // for (int _channel = 0; _channel < numChannels; ++_channel) {
-  //      const int group = _channel / 2;
     for (int group = 0; group < numGroups; ++group) {
         float groupGain = 0;
 
@@ -307,9 +305,6 @@ inline void MixStereo<TBase>::stepn(int div)
 #endif
         }
 
-
-        // TODO: precalc all the send gains
-
         {
             assert(group + SEND0_PARAM < NUM_PARAMS);
             assert(group + SENDb0_PARAM < NUM_PARAMS);
@@ -347,7 +342,6 @@ inline void MixStereo<TBase>::stepn(int div)
             const float soloValue = TBase::params[group + SOLO0_PARAM].value;
             TBase::lights[group + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
         }
-
     }
     filteredCV.step(unbufferedCV);
 }
@@ -373,7 +367,6 @@ inline void MixStereo<TBase>::setupFilters()
 {
     // 400 was smooth, 100 popped
     const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
-    //printf("using %f, calc=%f\n", x, (1.0f / 100.f)); fflush(stdout);
     filteredCV.setCutoff(x);
 }
 
@@ -422,7 +415,6 @@ inline void MixStereo<TBase>::step()
         assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
         TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
     }
-  //  printf("end of step lsendA=%.2e rSendA=%.2f\n", lSendA, rSendA);
 
     // output the buses to the expansion port
     if (expansionOutputs) {
@@ -464,21 +456,18 @@ inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
         case MixStereo<TBase>::GAIN1_PARAM:
             ret = {0, 1, 0, "Level 2"};
             break;
-
         case MixStereo<TBase>::PAN0_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 1"};
             break;
         case MixStereo<TBase>::PAN1_PARAM:
             ret = {-1.0f, 1.0f, 0.0f, "Pan 2"};
             break;
-
         case MixStereo<TBase>::MUTE0_PARAM:
             ret = {0, 1.0f, 0, "Mute  1"};
             break;
         case MixStereo<TBase>::MUTE1_PARAM:
             ret = {0, 1.0f, 0, "Mute  2"};
             break;
-
         case MixStereo<TBase>::SOLO0_PARAM:
             ret = {0, 1.0f, 0, "Solo  1"};
             break;
