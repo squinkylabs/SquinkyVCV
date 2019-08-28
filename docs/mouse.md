@@ -10,7 +10,12 @@ Shift-click will extent the selection up to the cursor. This means all previousl
 
 ## Inserting and deleting notes
 
-TBD
+Double clicking on a note will delete it.
+
+Double clicking on in an empty location will inserts a note:
+
+* By default the duration will be one grid unit.
+* You may override the default duration using the asterisk key.
 
 ## Changing notes
 

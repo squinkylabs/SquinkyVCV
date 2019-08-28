@@ -40,7 +40,7 @@ Moving the cursor onto a note will select it.
 
 Note that are inserted will have their start time quantized to the grid if snap to grid is enabled in the settings menu. After note is inserted the cursor will be advanced past the note just inserted, unless the shift key is held down.
 
-**Ins or Enter** inserts a note at the current cursor. Duration will be one grid unit.
+**Ins or Enter** inserts a note at the current cursor. Duration will be one grid unit by defult, but my be set to whatever you want with the asterisk.
 
 **Del** deletes the currently selected notes.
 
@@ -51,6 +51,10 @@ Insert preset note durations. They shortcuts insert note of a specific duration.
 * **q** Quarter note.
 * **e** Eighth note.
 * **x** Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
+
+* **asterisk** (*) will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse.
+
+**Very Important**: by default the cursor will advance after inserting a note, making it easier to insert a stream on notes in succession. But if you hold down the shift key the cursor will not move ahead, making it easy to insert chords. 
 
 ## Changing notes
 
