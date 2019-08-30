@@ -140,6 +140,7 @@ bool MidiKeyboardHandler::handle(
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);
     const bool ctrl = (mods & GLFW_MOD_CONTROL);
+    //const bool alt = (mods && GLFW_MOD_ALT);
    
     switch(key) {
         case GLFW_KEY_F1:
@@ -210,6 +211,9 @@ bool MidiKeyboardHandler::handle(
                 -1);  
             handled = true;
             break;
+
+        case GLFW_KEY_6:
+        case GLFW_KEY_KP_6:
         case GLFW_KEY_RIGHT:
             {
                 //one grid space or quater note
@@ -219,6 +223,9 @@ bool MidiKeyboardHandler::handle(
                 handled = true;
             }
             break;
+
+        case GLFW_KEY_4:
+        case GLFW_KEY_KP_4:
         case GLFW_KEY_LEFT:
             {
                 //one grid space or quater note
@@ -245,10 +252,7 @@ bool MidiKeyboardHandler::handle(
             handled = true;
             break;
 
-        case GLFW_KEY_L:
-            sequencer->editor->loop();
-            handled = true;
-            break;
+        // alpha
         case GLFW_KEY_A:
             {
                 if (ctrl) {
@@ -283,6 +287,10 @@ bool MidiKeyboardHandler::handle(
                 sequencer->editor->insertPresetNote(MidiEditor::Durations::Half, !shift);
                 handled = true;
             }
+            break;
+        case GLFW_KEY_L:
+            sequencer->editor->loop();
+            handled = true;
             break;
         case GLFW_KEY_P:
             {
