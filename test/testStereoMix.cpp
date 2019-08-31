@@ -505,6 +505,63 @@ static void testAuxOut(std::function<float(std::shared_ptr<T>, bool bRight)> aux
     _testAuxOut<T>(auxGetter, false, true, T::SEND0_PARAM, false, 0, 1);
 }
 
+static void _testNorm(int group)
+{
+    auto m = getMixer<MixerS>();
+    const int chan = group * 2;
+
+    m->inputs[MixerS::AUDIO0_INPUT + chan].active = true;
+    m->inputs[MixerS::AUDIO0_INPUT + chan].value = 10;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].active = false;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].value = 0;
+
+    m->params[MixerS::GAIN0_PARAM + group].value = 1;
+   
+
+    step(m);
+    m->step();
+
+    // TODO: take into account pan law
+    float panGain = .5;
+    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].value, 10 * panGain, .01);
+    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].value, 10 * panGain, .01);
+}
+
+static void testNorm()
+{
+    _testNorm(0);
+    _testNorm(1);
+}
+
+
+static void _testNormPan(int group)
+{
+    const int chan = group * 2;
+    auto m = getMixer<MixerS>();
+
+    m->inputs[MixerS::AUDIO0_INPUT + chan].active = true;
+    m->inputs[MixerS::AUDIO0_INPUT + chan].value = 10;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].active = false;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].value = 0;
+
+    m->params[MixerS::GAIN0_PARAM + group].value = 1;
+    m->params[MixerS::PAN0_PARAM + group].value = -1;
+
+
+    step(m);
+    m->step();
+
+    // TODO: take into account pan law
+    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].value, 10, .01);
+    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].value, 0, .01);
+}
+
+static void testNormPan()
+{
+    _testNormPan(0);
+    _testNormPan(1);
+}
+
 void testStereoMix()
 {
     testChannel<MixerS>();
@@ -520,4 +577,9 @@ void testStereoMix()
     testMaster<MixerS>(outputGetterMixS);
     testMute<MixerS>(outputGetterMixS);
     testAuxOutA<MixerS>(auxGetterMixS);
+
+#ifdef _NN
+    testNorm();
+    testNormPan();
+#endif
 }

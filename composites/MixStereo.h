@@ -12,6 +12,8 @@
 #include <assert.h>
 #include <memory>
 
+#define _NN     // normaled mono mode
+
 namespace rack {
     namespace engine {
         struct Module;
@@ -190,6 +192,9 @@ public:
     // This is where we build up all the inputs to the CV filter
     float unbufferedCV[cvFilterSize] = {0};
 
+#ifdef _NN
+    bool groupIsMono[numGroups] = {false};
+#endif
 
     void _disableAntiPop();
 
@@ -305,6 +310,7 @@ inline void MixStereo<TBase>::stepn(int div)
 #endif
         }
 
+        // Calculate all the send gains
         {
             assert(group + SEND0_PARAM < NUM_PARAMS);
             assert(group + SENDb0_PARAM < NUM_PARAMS);
@@ -313,6 +319,8 @@ inline void MixStereo<TBase>::stepn(int div)
             const float sliderA = TBase::params[group + SEND0_PARAM].value;
             const float sliderB = TBase::params[group + SENDb0_PARAM].value;
 
+            const float panAttenuation = .5f;     // 6db pan law
+
             // TODO: we can do some main volume work ahead of time, just like the sends here
             if (!AisPreFader) {
                 // post faster, gain sees mutes, faders,  pan, and send level    
@@ -320,8 +328,8 @@ inline void MixStereo<TBase>::stepn(int div)
                 buf_channelSendGainA[group * 2 + 1] = filteredCV.get(group * 2 + 1 +  cvOffsetGainBalance) * sliderA;
             } else {
                 // pre-fader fader, gain sees mutes and send only
-                buf_channelSendGainA[group * 2] = muteValue * sliderA * (1.f / sqrt(2.f));
-                buf_channelSendGainA[group * 2 + 1] = muteValue * sliderA * (1.f / sqrt(2.f));
+                buf_channelSendGainA[group * 2] = muteValue * sliderA * panAttenuation;
+                buf_channelSendGainA[group * 2 + 1] = muteValue * sliderA * panAttenuation;
             }
 
             if (!BisPreFader) {
@@ -329,9 +337,18 @@ inline void MixStereo<TBase>::stepn(int div)
                 buf_channelSendGainB[group * 2] = filteredCV.get(group * 2 + cvOffsetGainBalance) * sliderB;
                 buf_channelSendGainB[group * 2 + 1] = filteredCV.get(group * 2 + 1 + cvOffsetGainBalance) * sliderB;
             } else {
-                buf_channelSendGainB[group * 2] = muteValue * sliderB * (1.f / sqrt(2.f));
-                buf_channelSendGainB[group * 2 + 1] = muteValue * sliderB * (1.f / sqrt(2.f));
+                buf_channelSendGainB[group * 2] = muteValue * sliderB * panAttenuation;
+                buf_channelSendGainB[group * 2 + 1] = muteValue * sliderB * panAttenuation;
             }
+        }
+
+        // look for normaled mono channels
+        {
+#ifdef _NN
+            const bool lActive = TBase::inputs[group * 2 + AUDIO0_INPUT].active;
+            const bool rActive = TBase::inputs[group * 2 + AUDIO1_INPUT].active;
+            groupIsMono[group] = lActive && !rActive;
+#endif
         }
 
 
@@ -399,8 +416,14 @@ inline void MixStereo<TBase>::step()
         const int group = channel / 2;
         const bool isLeft = !(channel & 1);
 
+        int inputChannel = channel;
+#ifdef _NN
+        if (!isLeft && groupIsMono[group]) {
+            inputChannel--;
+        }
+#endif
         assert(channel + AUDIO0_INPUT < NUM_INPUTS);
-        const float channelInput = TBase::inputs[channel + AUDIO0_INPUT].value;
+        const float channelInput = TBase::inputs[inputChannel + AUDIO0_INPUT].value;
 
         if (isLeft) {
             left += channelInput * filteredCV.get(channel + cvOffsetGainBalance);
@@ -412,8 +435,19 @@ inline void MixStereo<TBase>::step()
             rSendB += channelInput * buf_channelSendGainB[channel];
         }
 
+        // now calculate and output the channel outs
         assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
-        TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
+        #ifdef _NN
+        float channelOutput = 0;
+            if (groupIsMono[group]) {
+                channelOutput = channelInput * filteredCV.get(channel + cvOffsetGainBalance);
+            } else {
+                channelOutput = channelInput * filteredCV.get(group + cvOffsetGain);
+            }
+            TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelOutput;
+        #else
+            TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
+        #endif
     }
 
     // output the buses to the expansion port
