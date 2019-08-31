@@ -534,7 +534,7 @@ static void testNorm()
 }
 
 
-static void _testNormPan(int group)
+static void _testNormPan(int group, bool fullLeft)
 {
     const int chan = group * 2;
     auto m = getMixer<MixerS>();
@@ -545,21 +545,24 @@ static void _testNormPan(int group)
     m->inputs[MixerS::AUDIO1_INPUT + chan].value = 0;
 
     m->params[MixerS::GAIN0_PARAM + group].value = 1;
-    m->params[MixerS::PAN0_PARAM + group].value = -1;
+    m->params[MixerS::PAN0_PARAM + group].value = fullLeft ? -1.f : 1.f;
 
 
     step(m);
     m->step();
 
-    // TODO: take into account pan law
-    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].value, 10, .01);
-    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].value, 0, .01);
+    const float expectedLeft = fullLeft ? 10.f : 0.f;
+    const float expectedRight = fullLeft ? 0.f : 10.f;
+    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].value, expectedLeft, .01);
+    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].value, expectedRight, .01);
 }
 
 static void testNormPan()
 {
-    _testNormPan(0);
-    _testNormPan(1);
+    _testNormPan(0, true);
+    _testNormPan(1, true);
+    _testNormPan(0, false);
+    _testNormPan(1, false);
 }
 
 void testStereoMix()

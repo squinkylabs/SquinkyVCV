@@ -112,8 +112,8 @@
 		},
 		{
 			"slug": "squinkylabs-mixStereo",
-			"name": "ExStereo",
-			"description": "stereo channel mixer expander",
+			"name": "ExTwo",
+			"description": "Two channel stereo mixer expander",
 			"disabled": false,
 			"tags": ["Mixer", "Expander"]
 		},

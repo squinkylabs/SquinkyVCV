@@ -147,7 +147,7 @@ void MixStereoWidget::appendContextMenu(Menu *menu)
     menu->addChild(item);
 }
 
-static const float channelX = 21;
+static const float channelX = 21-2;
 
 // other mixers use 36
 static const float dX = 27.5;
@@ -155,7 +155,7 @@ static const float labelX = 0;
 static const float channelY = 350;
 static const float channelDy = 30;   
 static float volY = 0;
-static const float groupX = 36;
+static const float groupX = 36-3;
 
 float yGlobal = 0;    // set by channel strip so group knows where to gi.
 
@@ -246,8 +246,6 @@ void MixStereoWidget::makeGroup(
         Vec(x, y),
         module,
         group + Comp::SEND0_PARAM));
-
-    
 }
 
 void MixStereoWidget::makeStrip(
@@ -285,8 +283,8 @@ MixStereoWidget::MixStereoWidget(MixStereoModule *module)
 {
     setModule(module);
     mixModule = module;
-    box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/mix4_panel.svg");
+    box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    SqHelper::setPanel(this, "res/mix2_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     for (int i=0; i< Comp::numChannels; ++i) {

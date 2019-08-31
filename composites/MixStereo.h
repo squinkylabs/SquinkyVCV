@@ -63,7 +63,6 @@ public:
     static const int numChannels = 4;
     static const int numGroups = 2;
 
-
     /**
     * Only needs to be called once.
     */
@@ -75,7 +74,6 @@ public:
         GAIN0_PARAM,
         GAIN1_PARAM,
       
-
         PAN0_PARAM,
         PAN1_PARAM,
      
@@ -162,10 +160,6 @@ public:
     // contents of filteredCV
 
     // TODO: this should be numGroups
-    //float buf_channelSendGainsALeft[numChannels] = {0};
-    //float buf_channelSendGainsARight[numChannels] = {0};
-    //float buf_channelSendGainsBLeft[numChannels] = {0};
-    //float buf_channelSendGainsBRight[numChannels] = {0};
     float buf_channelSendGainA[numChannels] = {0};
     float buf_channelSendGainB[numChannels] = {0};
 
@@ -201,9 +195,6 @@ public:
 private:
     Divider divider;
 
-
-
-   
     MultiLPF<cvFilterSize> filteredCV;
 
    // std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
@@ -215,16 +206,12 @@ private:
     // TODO:cut down mix helper size.
     MixHelper<MixStereo<TBase>> helper;
 
-#ifdef _CHAUDIOTAPER
      std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
-#endif
 };
 
 template <class TBase>
 inline void MixStereo<TBase>::stepn(int div)
 {
-    // TODO: is this correct for stereo?
-    //float unbufferesdCV[cvOffsetMute + 4] = {0};
     const int numUb = cvFilterSize;
     for (int i = 0; i < numUb; ++i) {
         unbufferedCV[i] = 0;
@@ -351,7 +338,6 @@ inline void MixStereo<TBase>::stepn(int div)
 #endif
         }
 
-
         // refresh the solo lights
         {
             assert(group + SOLO0_PARAM < NUM_PARAMS);
@@ -436,6 +422,7 @@ inline void MixStereo<TBase>::step()
         }
 
         // now calculate and output the channel outs
+        // TODO: clean this up
         assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
         #ifdef _NN
         float channelOutput = 0;
