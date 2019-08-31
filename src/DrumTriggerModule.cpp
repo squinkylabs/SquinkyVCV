@@ -72,11 +72,12 @@ struct DrumTriggerWidget : ModuleWidget
     void makeOutput(DrumTriggerModule* module, int i);
 };
 
-const float xLed = 10;
-const float xJack = 40;
-const float yJack = 330;
-const float dy = 30;
-const float yInput = 40;
+const float width = 90;
+const float xLed = width - 51;
+const float xJack = width - 20.5;
+const float yJack = 281; // 330;
+const float dy = 31;
+const float yInput = 339;
 const float xOff = -10;
 
 void DrumTriggerWidget::makeInputs(DrumTriggerModule* module)
@@ -85,12 +86,12 @@ void DrumTriggerWidget::makeInputs(DrumTriggerModule* module)
         Vec(40 + xOff, yInput),
         module,
         Comp::CV_INPUT));
-    addLabel(Vec(25 + xOff, yInput+20), "CV");
+    addLabel(Vec(20.5 + xOff, yInput-30), "CV");
     addInput(createInputCentered<PJ301MPort>(
-        Vec(70 + xOff, yInput),
+        Vec(xJack, yInput),
         module,
         Comp::GATE_INPUT));
-    addLabel(Vec(55 + xOff, yInput+20), "G");
+    addLabel(Vec(60 + xOff, yInput-30), "Gate");
 }
 
 void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
@@ -102,7 +103,7 @@ void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
         index + Comp::GATE0_OUTPUT));
 
     addChild(createLight<MediumLight<GreenLight>>(
-            Vec(xLed, y),
+            Vec(xLed, y-4),
             module,
             Comp::LIGHT0 + index));
 }
