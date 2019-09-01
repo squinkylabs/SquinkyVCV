@@ -20,6 +20,10 @@ Stroke is 1 pix.
 
 Rectangle corners have 3 pix rounding.
 
+## Labels
+
+Robota regular, 12pt
+
 ## Names
 
 Font: Space Patrol.

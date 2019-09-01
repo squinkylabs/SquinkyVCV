@@ -75,7 +75,7 @@ struct DrumTriggerWidget : ModuleWidget
 const float width = 90;
 const float xLed = width - 51;
 const float xJack = width - 20.5;
-const float yJack = 281; // 330;
+const float yJack = 277; // 330;
 const float dy = 31;
 const float yInput = 339;
 const float xOff = -10;
@@ -83,15 +83,15 @@ const float xOff = -10;
 void DrumTriggerWidget::makeInputs(DrumTriggerModule* module)
 {
     addInput(createInputCentered<PJ301MPort>(
-        Vec(40 + xOff, yInput),
+        Vec(31 + xOff, yInput),
         module,
         Comp::CV_INPUT));
-    addLabel(Vec(20.5 + xOff, yInput-30), "CV");
+   // addLabel(Vec(20.5 + xOff, yInput-30), "CV");
     addInput(createInputCentered<PJ301MPort>(
         Vec(xJack, yInput),
         module,
         Comp::GATE_INPUT));
-    addLabel(Vec(60 + xOff, yInput-30), "Gate");
+   // addLabel(Vec(60 + xOff, yInput-30), "Gate");
 }
 
 void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
