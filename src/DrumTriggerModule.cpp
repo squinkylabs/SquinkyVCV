@@ -103,7 +103,7 @@ void DrumTriggerWidget::makeOutput(DrumTriggerModule* module, int index)
         index + Comp::GATE0_OUTPUT));
 
     addChild(createLight<MediumLight<GreenLight>>(
-            Vec(xLed, y-4),
+            Vec(xLed, y-4.5),
             module,
             Comp::LIGHT0 + index));
 }

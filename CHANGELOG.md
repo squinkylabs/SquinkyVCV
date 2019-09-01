@@ -1,5 +1,15 @@
 # Change log for Squinky Labs modules
 
+## 1.0.4
+
+Three new modules: Seq++, Gateseq, and ExTwo.
+
+Improved the drawing speed of Saws, EV-3 and Chebyshev. Now use 4X less CPU to draw.
+
+Made the "choice widget" used in Stairway only response on left mouse down, so it will come up accidentally less often.
+
+Slight cleanup of Gray Code panel.
+
 ## 1.0.3
 
 EV-3 gained a lot of aliasing distortion in the 1.0.0 release. Now it's fixed.
