@@ -61,6 +61,17 @@ struct SequencerWidget : ModuleWidget
         return label;
     }
 
+     Label* addLabelLeft(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
+    {
+        Label* label = new Label();
+        label->alignment = Label::LEFT_ALIGNMENT;
+        label->box.pos = v;
+        label->text = str;
+        label->color = color;
+        addChild(label);
+        return label;
+    }
+
     void step() override;
 
     NoteDisplay* noteDisplay = nullptr;
@@ -156,18 +167,15 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float controlX = 20;
-    #if 0
-    addParam(SqHelper::createParam<Rogan2PSBlue>(
-        icomp,
-        Vec(controlX, 65),
-        module,
-        Comp::TEMPO_PARAM));
-    addLabel(Vec(60, 40), "Tempo");
-    #endif
 
+    float y = 50;
+    addLabelLeft(Vec(controlX - 4, y),
+        "Clock rate");
+
+    y += 20;
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(controlX, 120),
+        Vec(controlX, y),
         module,
         Comp::CLOCK_INPUT_PARAM);
     p->box.size.x = 85;    // width
@@ -175,18 +183,28 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
+    y += 28;
+    addLabelLeft(Vec(controlX - 4, y),
+        "Polyphony");
+    y += 20;
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(controlX, 148),
+        Vec(controlX, y),
         module,
         Comp::NUM_VOICES_PARAM);
     p->box.size.x = 85;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getPolyLabels());
     addParam(p);
+   
+    y += 28;
+    const float yy = y;
+    addLabel(Vec(controlX - 8, y),
+        "Run");
 
+    y += 20;
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(controlX, 180),
+        Vec(controlX, y),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
@@ -195,77 +213,78 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         this->toggleRunStop(module);
     });
     addChild(tog);
-    addLabel(
-        Vec(controlX+30, 180),
-        "Run");
+   
+
+    y = yy;
+    float controlDx = 40;
 
     {
+    addLabel(
+        Vec(controlX + controlDx - 8, y),
+        "Scroll");
+    y += 20;
     scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(controlX, 220),
+        Vec(controlX + controlDx, y),
         module,
         Comp::PLAY_SCROLL_PARAM);
     scrollControl->addSvg("res/square-button-01.svg");
     scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
-
-    addLabel(
-        Vec(controlX + 30, 220),
-        "Scroll");
     }
 }
 
 void SequencerWidget::addJacks(SequencerModule *module)
 {
-    const float jacksY = 310;
-    const float jacksDy = 40;
-    const float jacksLabelY = 280;
+    const float jacksY1 = 286-2;
+    const float jacksY2 = 330+2;
     const float jacksDx = 40;
     const float jacksX = 20;
     const float labelX = jacksX - 20;
+    const float dy = -32;
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jacksX + 0 * jacksDx, jacksY),
+        Vec(jacksX + 0 * jacksDx, jacksY1),
         module,
         Comp::CLOCK_INPUT));
     addLabel(
-        Vec(5 + labelX + 0 * jacksDx, jacksLabelY),
+        Vec(3 + labelX + 0 * jacksDx, jacksY1 + dy),
         "Clk");
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jacksX + 1 * jacksDx, jacksY),
+        Vec(jacksX + 1 * jacksDx, jacksY1),
         module,
         Comp::RESET_INPUT));
     addLabel(
-        Vec(-5 + labelX + 1 * jacksDx, jacksLabelY),
+        Vec(-4 + labelX + 1 * jacksDx, jacksY1 + dy),
         "Reset");
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jacksX + 2 * jacksDx, jacksY),
+        Vec(jacksX + 2 * jacksDx, jacksY1),
         module,
         Comp::RUN_INPUT));
     addLabel(
-        Vec(labelX + 2 * jacksDx, jacksLabelY),
+        Vec(labelX + 1 + 2 * jacksDx, jacksY1 + dy),
         "Run");
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX, jacksY + jacksDy),
+        Vec(jacksX, jacksY2),
         module,
         Seq<WidgetComposite>::CV_OUTPUT));
     addLabel(
-        Vec(labelX, jacksLabelY + jacksDy),
+        Vec(labelX+2, jacksY2 + dy),
         "CV");
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX + 1 * jacksDx, jacksY + jacksDy),
+        Vec(jacksX + 1 * jacksDx, jacksY2),
         module,
         Seq<WidgetComposite>::GATE_OUTPUT));
     addLabel(
-        Vec(labelX + 1 * jacksDx, jacksLabelY + jacksDy),
+        Vec(labelX + 1 * jacksDx, jacksY2 + dy),
         "Gate");
 
     addChild(createLight<MediumLight<GreenLight>>(
-        Vec(jacksX + 2 * jacksDx , jacksY + jacksDy),
+        Vec(jacksX + 2 * jacksDx -6 , jacksY2 -6),
         module,
         Seq<WidgetComposite>::GATE_LIGHT));
 }

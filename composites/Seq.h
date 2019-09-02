@@ -252,22 +252,18 @@ void  Seq<TBase>::stepn(int n)
     // and the clock input
     const float extClock = TBase::inputs[CLOCK_INPUT].value;
 
-    
-    
     // now call the clock 
     const float reset = TBase::inputs[RESET_INPUT].value;
     const bool running = isRunning();
     int samplesElapsed = n;
 
-    // Our level sensitiev reset will get turned into an edge in here
+    // Our level sensitive reset will get turned into an edge in here
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
         player->reset(true);
     }
-  //  printf("in step, time = %.2f ext was %.2f isRunning - %d reset = %.2f\n", results.totalElapsedTime, extClock, running, reset);
-    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()));
 
-    TBase::lights[GATE_LIGHT].value = TBase::outputs[GATE_OUTPUT].value;
+    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()));
 
     // copy the current voice number to the poly ports
     const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
@@ -281,6 +277,13 @@ void  Seq<TBase>::stepn(int n)
         }
     }
     wasRunning = running;
+
+    // light the gate LED is any voices playing
+    bool isGate = false;
+    for (int i=0; i<numVoices; ++i) {
+        isGate = isGate || (TBase::outputs[GATE_OUTPUT].voltages[i] > 5);
+    }
+    TBase::lights[GATE_LIGHT].value = isGate;
 
     player->updateSampleCount(n);
 }
@@ -329,7 +332,7 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Scroll during playback"};
             break;
         case Seq<TBase>::RUNNING_PARAM:
-            ret = {0, 1, 1, "Running"};
+            ret = {0, 1, 0, "Running"};
             break;
         case Seq<TBase>::NUM_VOICES_PARAM:
             ret = {0, 15, 0, "Polyphony"};

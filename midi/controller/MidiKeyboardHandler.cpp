@@ -223,7 +223,6 @@ bool MidiKeyboardHandler::handle(
                 handled = true;
             }
             break;
-
         case GLFW_KEY_4:
         case GLFW_KEY_KP_4:
         case GLFW_KEY_LEFT:
@@ -243,10 +242,14 @@ bool MidiKeyboardHandler::handle(
             sequencer->editor->changeCursorPitch(-12);
             handled = true;
             break;
+        case GLFW_KEY_KP_8:
+        case GLFW_KEY_5:
         case GLFW_KEY_UP:
             sequencer->editor->changeCursorPitch(1);
             handled = true;
             break;
+        case GLFW_KEY_KP_2:
+        case GLFW_KEY_R:
         case GLFW_KEY_DOWN:
             sequencer->editor->changeCursorPitch(-1);
             handled = true;

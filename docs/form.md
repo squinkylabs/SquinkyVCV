@@ -49,7 +49,7 @@ The channel volumes in Form are log for the top 3/4. At 1/4 the gain is -18 deci
 
 **M** Mute. Silences the muted channel. Note that the larger button on the far right is the master mute.
 
-**AX1, XA2**: Aux send levels. Controls how much of the current channel will be sent to each stereo Aux bux. If the send and return are patched to an echo, for example, Aux will control how much of that channel is sent to the echo.
+**AX1, AX2**: Aux send levels. Controls how much of the current channel will be sent to each stereo Aux bus. If the send and return are patched to an echo, for example, Aux will control how much of that channel is sent to the echo.
 
 Aux is post-fader by default, so any channel settings will also affect the Aux send level. But it may be switched to be pre-fader, in which case the mute and solo will still affect it, but pan and volume will not.
 
