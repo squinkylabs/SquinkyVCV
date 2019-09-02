@@ -155,7 +155,7 @@ inline void ToggleButton::onButton(const event::Button &e)
                 return;
             }
 
-        const bool ctrl = (e.mods & GLFW_MOD_CONTROL);
+        const bool ctrl = (e.mods & RACK_MOD_CTRL);
 
     // normally we tell manager to turn siblings off.
     // control key we don't - allows more than one to be on

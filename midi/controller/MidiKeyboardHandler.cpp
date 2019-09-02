@@ -45,6 +45,16 @@ bool MidiKeyboardHandler::doRepeat(unsigned key)
         case GLFW_KEY_DOWN:
         case GLFW_KEY_COMMA:
         case GLFW_KEY_PERIOD:
+
+        // the new cursor keys
+        case GLFW_KEY_4:
+        case GLFW_KEY_5:
+        case GLFW_KEY_6:
+        case GLFW_KEY_R:
+        case GLFW_KEY_KP_2:
+        case GLFW_KEY_KP_4:
+        case GLFW_KEY_KP_8:
+        case GLFW_KEY_KP_6:
             doIt = true;
     }
     return doIt;
@@ -139,7 +149,7 @@ bool MidiKeyboardHandler::handle(
 {
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);
-    const bool ctrl = (mods & GLFW_MOD_CONTROL);
+    const bool ctrl = (mods & RACK_MOD_CTRL);        // was GLFW_MOD_CONTROL
     //const bool alt = (mods && GLFW_MOD_ALT);
    
     switch(key) {

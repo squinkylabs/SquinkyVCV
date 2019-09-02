@@ -248,8 +248,10 @@ void SequencerWidget::addJacks(SequencerModule *module)
     const float jacksY2 = 330+2;
     const float jacksDx = 40;
     const float jacksX = 20;
+#ifdef _LAB
     const float labelX = jacksX - 20;
     const float dy = -32;
+#endif
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(jacksX + 0 * jacksDx, jacksY1),

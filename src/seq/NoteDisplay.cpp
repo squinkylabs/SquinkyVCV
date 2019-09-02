@@ -266,7 +266,7 @@ void NoteDisplay::onButton(const event::Button &e)
 
     const bool isPressed = e.action == GLFW_PRESS;
     const bool shift = e.mods & GLFW_MOD_SHIFT;
-    const bool ctrl = e.mods & GLFW_MOD_CONTROL;
+    const bool ctrl = e.mods & RACK_MOD_CTRL;
 
     if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
         handled = mouseManager->onMouseButton(

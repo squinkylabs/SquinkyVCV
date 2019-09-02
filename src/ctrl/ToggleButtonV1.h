@@ -174,7 +174,7 @@ inline void SqSvgParamToggleButton::draw(const DrawArgs &args)
 void SqSvgParamToggleButton::onButton(const event::Button &e) 
 {
     if (e.action == GLFW_RELEASE) {
-        isControlKey = e.mods & GLFW_MOD_CONTROL;
+        isControlKey = e.mods & RACK_MOD_CTRL;
     }
 
     ParamWidget::onButton(e);

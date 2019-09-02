@@ -112,7 +112,7 @@ inline void SqToggleLED::onButton(const event::Button &e)
 
     if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_RELEASE)) {
  //printf("on button up\n"); fflush(stdout);
-        const bool ctrlKey = (e.mods & GLFW_MOD_CONTROL);
+        const bool ctrlKey = (e.mods & RACK_MOD_CTRL);
 
 
         int index = getSvgIndex();
