@@ -51,6 +51,7 @@ struct SequencerWidget : ModuleWidget
     /**
      * Helper to add a text label to this widget
      */
+#ifdef _LAB
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
@@ -71,6 +72,7 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
+    #endif
 
     void step() override;
 
@@ -169,9 +171,10 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     const float controlX = 20;
 
     float y = 50;
+#ifdef _LAB
     addLabelLeft(Vec(controlX - 4, y),
         "Clock rate");
-
+#endif
     y += 20;
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
@@ -184,8 +187,10 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     addParam(p);
 
     y += 28;
+#ifdef _LAB
     addLabelLeft(Vec(controlX - 4, y),
         "Polyphony");
+#endif
     y += 20;
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
@@ -199,9 +204,10 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
    
     y += 28;
     const float yy = y;
+#ifdef _LAB
     addLabel(Vec(controlX - 8, y),
         "Run");
-
+#endif
     y += 20;
     SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(controlX, y),
@@ -219,9 +225,11 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     float controlDx = 40;
 
     {
+#ifdef _LAB
     addLabel(
         Vec(controlX + controlDx - 8, y),
         "Scroll");
+#endif
     y += 20;
     scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
@@ -247,42 +255,51 @@ void SequencerWidget::addJacks(SequencerModule *module)
         Vec(jacksX + 0 * jacksDx, jacksY1),
         module,
         Comp::CLOCK_INPUT));
+#ifdef _LAB
     addLabel(
         Vec(3 + labelX + 0 * jacksDx, jacksY1 + dy),
         "Clk");
+#endif
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(jacksX + 1 * jacksDx, jacksY1),
         module,
         Comp::RESET_INPUT));
+#ifdef _LAB
     addLabel(
         Vec(-4 + labelX + 1 * jacksDx, jacksY1 + dy),
         "Reset");
+#endif
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(jacksX + 2 * jacksDx, jacksY1),
         module,
         Comp::RUN_INPUT));
+#ifdef _LAB
     addLabel(
         Vec(labelX + 1 + 2 * jacksDx, jacksY1 + dy),
         "Run");
+#endif
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(jacksX, jacksY2),
         module,
         Seq<WidgetComposite>::CV_OUTPUT));
+#ifdef _LAB
     addLabel(
         Vec(labelX+2, jacksY2 + dy),
         "CV");
+#endif
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(jacksX + 1 * jacksDx, jacksY2),
         module,
         Seq<WidgetComposite>::GATE_OUTPUT));
+#ifdef _LAB
     addLabel(
         Vec(labelX + 1 * jacksDx, jacksY2 + dy),
         "Gate");
-
+#endif
     addChild(createLight<MediumLight<GreenLight>>(
         Vec(jacksX + 2 * jacksDx -6 , jacksY2 -6),
         module,
