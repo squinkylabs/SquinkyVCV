@@ -8,7 +8,7 @@ Improved the drawing speed of Saws, EV-3 and Chebyshev. Now use 4X less CPU to d
 
 Made the "choice widget" used in Stairway only response on left mouse down, so it will come up accidentally less often.
 
-Changed some buttons so they respond to command-click on the Mac, rather than control-click.
+Changed all buttons so they respond to command-click on the Mac, rather than control-click.
 
 Slight cleanup of Gray Code panel.
 
