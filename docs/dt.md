@@ -1,4 +1,6 @@
-# Polygate
+# Polygate polphphonic trigger generator
+
+![Polygate Panel](./polygate.png)
 
 Converts polyphonic CV/Gate info to 8 monophonic gates.
 

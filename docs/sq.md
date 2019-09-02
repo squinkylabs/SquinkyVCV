@@ -1,4 +1,6 @@
-# Seq++
+# Seq++ Polyphonic piano-roll sequencer
+
+![Seq++ Panel](./seq.png)
 
 If you read nothing else, please checkout out the list of keyboard "shortcuts", and the mouse commands. This is the only way you can hope to figure out how to enter notes quickly: Keyboard mappings [here](./keymap.md) Mouse:[here](./mouse.md).
 
