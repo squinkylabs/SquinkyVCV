@@ -4,19 +4,19 @@
 
 ## Table of contents
 
-[Major features](#Major-Features)
-
-[About this Sequence](#About-this-Sequencer)
-
-[Grids](#Grids)
-
-[Editing](#Editing)
-
-[Settings](#Settings)
-
-[Adjusting length of sequence](#Adjusting-length-of-sequence)
-
-[Auditioning notes](#Auditioning-notes)
+[Major features](#Major-Features)\
+[About this Sequence](#About-this-Sequencer)\
+[Grids](#Grids)\
+[Editing](#Editing)\
+[Settings](#Settings)\
+[Adjusting length of sequence](#Adjusting-length-of-sequence)\
+[Auditioning notes](#Auditioning-notes)\
+[Looping and editing while playing](#Looping-and-editing-while-playing)\
+[Keyboard and focus](#Keyboard-and-focus)\
+[Panel](#Panel)\
+[Clocking and playback](#Clocking-and-playback)\
+[Keyboard reference](#Keyboard-reference)\
+[Mouse reference](#Mouse-reference)\
 
 ## Major features
 
@@ -37,6 +37,7 @@ The note editor is heavily focused around the keyboard interface, which allows t
 There are some concessions to the current world - it has unlimited undo/redo, and clipboard support.
 
 ## Editing
+
  (see separate doc)
 
 ## Grids
@@ -89,7 +90,9 @@ For example, if the sequence end is at the end of the second bar, and you move t
 By default, every time you select a new note (with cursor or keyboard), it plays on the first output channel. This lets you hear the notes as you are editing. If you don’t like this, it may be turned off in the context menu.
 
 Holding down the tab key will let you quickly hear all the notes in your sequence, one at a time.
-Looping, and editing while playing
+
+## Looping and editing while playing
+
 The looping feature lets you play a range of bars, which can be quite useful when you are editing notes and don’t want to play from the start every time. Looping is toggled on and off with the L key. The loop range is always the range shown in the note editor (the two bar range on the screen).
 
 Looping may be turned on and off while Seq++ is running, and of course you may edit the notes as the sequencer plays. You may also move the loop points in time by moving the edit cursor. Moving by whole bars with the home and end keys is probably the most useful.
@@ -98,13 +101,16 @@ It is almost impossible to edit while playing if the playback scrolling is turne
 
 While Seq++ is playing you can turn loop on and off, freely move the time range, and use all the edit commands. It will not glitch or get out of sync. Switching looping off can be jarring, however, as the play point will immediately go to where it would have been if you never looped - often far past the current loop range.
 
-Keyboard focus
+## Keyboard and focus
+
 As mentioned before, the UI is heavily keyboard driven. The module will only respond to the keyboard if the mouse cursor is over the note editor, in which case it will grab the focus as you type. Once the module has focus it keeps it until you click outside. Normally this means that the mouse can move anywhere outside the module, but the keyboard will still control Seq++.
 
 But there are some keys that VCV Rack itself tries very hard to steal from Seq++, like the cursor keys and the backspace key. For these keys, the mouse must stay over the piano roll for Seq++ to get those keys. 
 
 That is why for all these keys there are substitute keys that also work, and do not have to fight with VCV for control of the keyboard. Both 4 keys will cursor to the left, and both 6 keys will cursor to the right.
-Panel 
+
+## Panel
+
 On the left are a few inputs, outputs, and controls.
 
 **Clock Rate** dropdown determines the clocking. These settings tell the sequencer how to interpret the external clock input.
@@ -125,7 +131,8 @@ On the left are a few inputs, outputs, and controls.
 
 **Run** is a CV input. Meant to be hooked up to the Run output of Clocked, or similar master clock.
 
-Clocking and playback
+## Clocking and playback
+
 Always keep the following in mind:
 
 * The Clock Rate control only affectcs playback.
@@ -148,7 +155,6 @@ If the sequence is set for monophonic, then it should play a proper legato if th
 
 If there are more simultaneous notes being played than may be accommodated by the polyphony setting, then voices will get "stolen" and re-assigned to play the new notes. At the moment Seq++ uses a variation on "last note" assignment. If there is already an idle voice that was playing the new pitch, that voice will be selected. Then the next idle voice (in rotation) will be used, then the first voice will be used.
 
-Keyboard reference
-Mouse reference
+## Keyboard reference
 
-
+## Mouse reference
