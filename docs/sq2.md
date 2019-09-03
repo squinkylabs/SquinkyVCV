@@ -135,7 +135,7 @@ On the left are a few inputs, outputs, and controls.
 
 Always keep the following in mind:
 
-* The Clock Rate control only affectcs playback.
+* The Clock Rate control only affects playback.
 * The "grid" is merely a graphic overlay drawn on top of the edit window. It has no effect on playback. Ever.
 * If "snap to grid" is enabled, some note editing operations will quantize to the grid, but it will still have no effect at all at playback time.
 
@@ -157,4 +157,135 @@ If there are more simultaneous notes being played than may be accommodated by th
 
 ## Keyboard reference
 
+### Sequencer keyboard commands
+
+(move to about keyboar)
+Many key commands take input from the grid size set from the settings menu. Commands that are mapped to letter keys will usually work with either lower or upper case. In some selection operations, however, the shift key is used to extend a selection.
+
+### Misc
+
+**n**: Sets the end point of the sequence to the current cursor time. Time is always quantized to the grid, even if snap to grid is off.
+
+**l**: Loops a range of bars from the track. Loop range is the bars that are on screen. May be turned on and off while playing. Moving the "viewport" to a different range of bars will change the loop range, even if you are playing when you do it.
+
+### Moving around
+
+The normal cursor keys can be used to move the edit cursor, but this can be inconvenient, as VCV will fight with you for these keys. If the mouse cursor isn't over the note grid, then Seq++ can not get those keys.
+
+For that reason, the numeric keypad (2,4,8,6) can also be used to move the cursor, as can 4,5,6,r.
+
+**cursor keypad, 456r, and keypad 2,4,6,8**: Moves cursor in two dimensions. Up and down by semitone, left and right by one grid unit.
+
+**ctrl-cursor, ctrl-456r, and ctrl-2,4,6,8 on keypad**: Moves left and right by a quarter note.
+
+**home, end**: Moves one bar earlier or later.
+
+**ctrl-home, end**: Moves to first bar or last bar in the sequence.
+
+**PgUp, PgDn**: Moves up or down by an octave.
+
+### Selecting notes
+
+**ctrl-a** Selects all the events in the track.
+
+**tab**: Select next note.
+
+**ctrl-tab**: Select previous note.
+
+**shift-tab**: Extends selection to include the next note.
+
+**ctrl-shift-tab**: extends selection to the previous note.
+
+Moving the cursor onto a note will select it.
+
+### Inserting and deleting notes
+
+When a note is inserted, its start time and duration will not be quantized, no matter the snap to gird settings. But since most cursor movement **will** qunatize the cursor time when snap to grid is on, notes will naturally tend to be inserted on the grid. But it is possible to move off the grid and then use all the insert commands.
+
+After a note is inserted the cursor will be advanced past the note just inserted, unless the shift key is held down.
+
+**Ins or Enter** Inserts a note at the current cursor. Duration will be one grid unit by default, but may be set to whatever you want with the asterisk key.
+
+**Del** Deletes the currently selected notes.
+
+Insert preset note durations. They shortcuts insert a note of a specific duration.
+
+* **w** Whole note.
+* **h** Half note.
+* **q** Quarter note.
+* **e** Eighth note.
+* **x** Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
+
+* **asterisk** (*) will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse.
+
+**Very Important**: by default the cursor will advance after inserting a note, making it easier to insert a stream on notes in succession. But if you hold down the shift key the cursor will not move ahead, making it easy to insert chords.
+
+### Changing notes
+
+**S, P, D**: sets note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
+
+When notes are selected and StartTime or Duration is current edit attribute:
+
+* plus/minus changes by one sixteenth note
+
+* ], [ changes by a quarter note.
+
+* <, > change by a sixty-fourth note.
+
+When note is selected and Pitch is current edit attribute:
+
+* plus/minus changes by one semitone.
+* ], [ changes by an octave.
+
+### Cut/Copy/Paste
+
+**ctrl-x** cut. Removes all the selected notes and puts them on the clipboard. (doesn't work yet).
+
+**ctrl-c** copy. Puts a copy of all the selected notes on the clipboard.
+
+**ctrl-v** paste. Pastes the contents of the clipboard at the current edit cursor.
+
+Note that you may paste into a different instance of the sequencer than you copied from, as you would expect.
+
+### Undo/Redo
+
+Seq++ uses VCV's undo system, which is available from a mouse menu and from keyboard shortcuts.
+
+**ctrl-z**: undo
+
+**ctrl-y, shift-ctrl-z**: redo
+
+### Help
+
+**F1 key**, when note editor has focus.
+
+**Context menu**, when the module has focus.
+
 ## Mouse reference
+
+Clicking on the note grid will move the blinking edit cursor to the click location. If snap to grid is on, the edit cursor location will snap to the grid.
+
+### Selecting notes with the mouse
+
+Clicking on a note will select it, and deselect all others.
+
+Ctrl-click on a note will toggle its selection state, while leaving any other selected notes selected.
+
+Shift-click will extent the selection up to the cursor. This means all previously selected notes will stay selected, and all notes between the cursor and the selection will get selected, too.
+
+### Inserting and deleting notes
+
+Double clicking on a note will delete it.
+
+Double clicking in an empty location will inserts a note:
+
+* By default the duration will be one grid unit.
+* You may override the default duration using the asterisk key.
+
+### Changing notes
+
+Transpose: if you click and hold in the middle of a selected note, you can drag all the selected notes up and down in pitch.
+
+Shift: if you click and hold at the start of a selected note, you can drag all the selected notes left and right in time.
+
+Stretch: if you click and hold at the end of a selected note, you can drag all the selected notes left and right in duration.
