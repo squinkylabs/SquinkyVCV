@@ -14,6 +14,10 @@
 
 [Settings](#Settings)
 
+[Adjusting length of sequence](#Adjusting-length-of-sequence)
+
+[Auditioning notes](#Auditioning-notes)
+
 ## Major features
 
 Polyphonic sequence of unlimited length.
@@ -62,21 +66,26 @@ Settings:
 Note that all of the settings are saved with your patch.
 
 Commands:
-Insert/Delete note. This menu item changes depending on what is under the cursor. If nothing is there, it will insert a note. If a note is there, it will delete it. (note that double click does that same thing).
-Set end point. Will set the end/loop point of the sequencer to the grid line nearest the cursor.
 
-Adjusting length of sequence
+* *Insert/Delete* note. This menu item changes depending on what is under the cursor. If nothing is there, it will insert a note. If a note is there, it will delete it. (note that double click does that same thing).
+* *Set end point*. Will set the end/loop point of the sequencer to the grid line nearest the cursor.
+
+## Adjusting length of sequence
+
 Seq++ always plays your sequence in a loop, and the looping comes back around when the “play head” hits the end of the sequence. 
 
 The sequence end is indicated by a vertical purple line in the note grid.
 
 Sequence end point is initialized to the end of the second bar, and can be moved in several ways:
-The ‘e’ key will set the end point to the nearest grid point to the edit cursor.
-Any edit operation can extend the sequence length to include the results of the edit. So if you drag a note to an area past the end, the end will be extended.
-The “set end point” command in the setting menu will do that, too.
+
+* The ‘e’ key will set the end point to the nearest grid point to the edit cursor.
+* Any edit operation can extend the sequence length to include the results of the edit. So if you drag a note to an area past the end, the end will be extended.
+* The *set end point* command in the setting menu will do that, too.
 
 For example, if the sequence end is at the end of the second bar, and you move the edit cursor up into bar 10 and insert a note, the edit point will be moved to after the note you just inserted. Similarly, changing the start time or duration of a group of notes may extend the sequence length.
-Auditioning notes
+
+## Auditioning notes
+
 By default, every time you select a new note (with cursor or keyboard), it plays on the first output channel. This lets you hear the notes as you are editing. If you don’t like this, it may be turned off in the context menu.
 
 Holding down the tab key will let you quickly hear all the notes in your sequence, one at a time.
