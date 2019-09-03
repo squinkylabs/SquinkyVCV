@@ -8,7 +8,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 ![Seq++ Image](./seq.png)
 
-[Seq++](./sq.md) is a polyphonic sequencer that provides "DAW-like" music editing in a VCV module. May be used for composing "traditional" music, for triggering patch changes from a timeline, and many other uses.
+[Seq++](./sq2.md) is a polyphonic sequencer that provides "DAW-like" music editing in a VCV module. May be used for composing "traditional" music, for triggering patch changes from a timeline, and many other uses.
 
 # Mixers
 
