@@ -2,9 +2,11 @@
 
 ![ExFor Panel](./exfor.png)
 
-ExFor is used to add four more channels to the Form "master mixer". ExFor is only functional when it is placed directly to the left of a Form mixer, or another ExFor that is paired with a Form. As many ExFor expanders may be added to the left as you like. So, for example, you could make a 32 channel mixer with one Form and seven ExFors.
+ExFour is used to add four channels to the Form "master mixer". ExFour is only functional when it is part of a chain of a Form mixer and some Ex expanders.
 
-The ExFor and the Form recognize each other, and automatically connect together the stereo master bus, the two stereo aux busses, and the solo bus.  This allows all the linked mixers to act as one without any extra cables.
+The master Form mixer is always on the right. Then any number of ExFor and ExTwo expanders may be placed to the left.
+
+The ExFor and the other mixers recognize each other, and automatically connect together the stereo master bus, the two stereo aux busses, and the solo bus.  This allows all the linked mixers to act as one without any extra cables.
 
 The ExFor is of course just four channel strips from the Form mixer. Refer to the [Form instruction manual](./form.md) for detailed instructions.
 

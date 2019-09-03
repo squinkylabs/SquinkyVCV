@@ -2,9 +2,9 @@
 
 ![Form Panel](./form.png)
 
-Form is a feature packed four channel mixer that can be expanded to any number of channels by stacking it with ExFor expander modules. See the [ExFor manual](./exfor.md) for more on how to do this.
+Form is a feature packed four channel mixer that can be expanded to any number of channels by stacking it with Ex series expander modules. See the [ExFor manual](./exfor.md) or [ExTwo manual](./extwo.md) for more on how to do this.
 
-Form is an enhanced version of our Mixer-8, which was based on the AS 8-CH mixer, with some added features. Form and ExFor have diverged enough from the AS mixer that we can't call them clones, although we have retained the equal power pan formulae from the AS mixer.
+Form is an enhanced version of our Mixer-8, which was based on the AS 8-CH mixer, with some added features. Form and the expanders have diverged enough from the AS mixer that we can't call them clones, although we have retained the equal power pan formulae from the AS mixer.
 
 To the Mixer-8 features, Form adds many more:
 
@@ -14,8 +14,6 @@ To the Mixer-8 features, Form adds many more:
 * Volume controls now have audio taper, rather than linear taper.
 * Mute CV can be momentary or toggle.
 * Master and bus returns now have up to +6db gain.
-
-Most of the non-obvious aspects of Form are mentioned at the start of this documentation. The reference at the end may have some tidbits, but make sure to read the start at least.
 
 This manual will use the word *fader*. Fader is an audio term that often refers to the linear travel volume controls found on many mixers. But fader can also apply to regular round volume controls. In the case of Form we use round controls to save panel space without having to make the controls too small to use, but we call them faders.
 

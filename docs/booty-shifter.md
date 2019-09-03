@@ -4,6 +4,24 @@ Below are short descriptions of our modules with links to more detailed manuals.
 
 The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
+# Seq++
+
+![Seq++ Image](./seq.png)
+
+[Seq++](./sq.md) is a polyphonic sequencer that provides "DAW-like" music editing in a VCV module. May be used for composing "traditional" music, for triggering patch changes from a timeline, and many other uses.
+
+# Mixers
+
+![Mixer Intro Image](./mixers.png)
+
+[Form](./form.md) is a modular mixer with a ton of features. Channels are added by placing ExFor modules to the right of it. It has two stereo send busses, and anti-pop filters on all CV inputs.
+
+[ExFor](./exfor.md) is the an expander for Form. Each instance of ExFor adds four more channels.
+
+[ExTwo](.extwo.md) is the newest expander for Form. Each instance adds two stereo channels.
+
+[Mixer-8](./mix8.md) is our clone of the AS 8-CH mixer, with more features and 1/10 the CPU usage.
+
 # Things that make sound
 
 ![Intro 1 image](./intro-1-110.png)
@@ -34,19 +52,11 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 [Formants](./formants.md) is a programmable bank of filters that can synthesize various vowel sounds and morph between them easily.
 
-# Mixers
-
-![Mixer Intro Image](./mixers.png)
-
-[Form](./form.md) is a modular mixer with a ton of features. Channels are added by placing ExFor modules to the right of it. It has two stereo send busses, and anti-pop filters on all CV inputs.
-
-[ExFor](./exfor.md) is the expander for Form. Each instance of ExFor adds four more channels.
-
-[Mixer-8](./mix8.md) is our clone of the AS 8-CH mixer, with more features and 1/10 the CPU usage.
-
 # Other things
 
 ![Intro 3 image](./intro-3-110.png)
+
+[Polygate](./polygate.md) is an eight channel get generator. It takes polyphonic CV and Gate as inputs, and outputs eight mono gate signals. Design for triggering drums from a polyphonic sequencer, it als has many less obvious uses.
 
 [Slade](./slew4.md) has eight identical channels of lag/anti-pop/envelope generator/VCA. Very low CPU, as always.
 
@@ -54,8 +64,10 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 [LFN](./lfn.md) is a random voltage generator made by running low frequency noise through a graphic equalizer. The equalizer gives a lot of easy control over the shape of the randomness.
 
-[Thread Booster](./booster.md) (for VCV 0.6 only). Reduces pops and clicks in VCV Rack by reprogramming VCV's audio engine.
-
 # More resources
 
 Here is a video by Dave Phillips that uses a lot of EV3 VCOs, and some other Squinky Labs modules: [A Machine Dream](https://www.youtube.com/watch?v=c2fzgobYjbk).
+
+Omri Cohen has this [Chebyshev tutorial](https://www.youtube.com/watch?v=cv4N_6qRAK8&t=549s)
+
+Artem Leonov has [7 REASONS to use a Tremolo in Modular Environment](https://www.youtube.com/watch?v=UYeEKPMYDoA)
