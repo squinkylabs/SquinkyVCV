@@ -16,7 +16,7 @@
 [Panel](#Panel)\
 [Clocking and playback](#Clocking-and-playback)\
 [Keyboard reference](#Keyboard-reference)\
-[Mouse reference](#Mouse-reference)\
+[Mouse reference](#Mouse-reference)
 
 ## Major features
 
@@ -102,6 +102,10 @@ It is almost impossible to edit while playing if the playback scrolling is turne
 While Seq++ is playing you can turn loop on and off, freely move the time range, and use all the edit commands. It will not glitch or get out of sync. Switching looping off can be jarring, however, as the play point will immediately go to where it would have been if you never looped - often far past the current loop range.
 
 ## Keyboard and focus
+
+Throughout this manual, we refer the the "control key" (ctrl). On the Macintosh, however, we substitute the command key for these functions, as is customary on that platform.
+
+Some keys will repeat if you hold them down, others will not. In general the cursor movement keys and the "nudging" keys (like +) will repeat.
 
 As mentioned before, the UI is heavily keyboard driven. The module will only respond to the keyboard if the mouse cursor is over the note editor, in which case it will grab the focus as you type. Once the module has focus it keeps it until you click outside. Normally this means that the mouse can move anywhere outside the module, but the keyboard will still control Seq++.
 

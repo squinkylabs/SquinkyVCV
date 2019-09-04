@@ -2,6 +2,8 @@
 
 Below are short descriptions of our modules with links to more detailed manuals.
 
+At the end of the description of each module there is a link the the documentation for that module. There is much more information there, so be sure to click on the links of modules you are interested in.
+
 The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 # Seq++
