@@ -2,9 +2,9 @@
 
 Below are short descriptions of our modules with links to more detailed manuals.
 
-At the end of the description of each module there is a link the the documentation for that module. There is much more information there, so be sure to click on the links of modules you are interested in.
+Te module title in the description of each module there is a link the the documentation for that module. There is much more information there, so be sure to click on the links of modules you are interested in.
 
-The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
+The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notice that the word *Changelog* in the previous sentence is a link to the changelog);
 
 # Seq++
 
@@ -20,7 +20,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 [ExFor](./exfor.md) is the an expander for Form. Each instance of ExFor adds four more channels.
 
-[ExTwo](.extwo.md) is the newest expander for Form. Each instance adds two stereo channels.
+[ExTwo](./extwo.md) is the newest expander for Form. Each instance adds two stereo channels.
 
 [Mixer-8](./mix8.md) is our clone of the AS 8-CH mixer, with more features and 1/10 the CPU usage.
 
@@ -58,9 +58,9 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules.
 
 ![Intro 3 image](./intro-3-110.png)
 
-[Polygate](./polygate.md) is an eight channel get generator. It takes polyphonic CV and Gate as inputs, and outputs eight mono gate signals. Design for triggering drums from a polyphonic sequencer, it also has many less obvious uses.
+[Polygate](./polygate.md) is an eight channel gate generator. It takes polyphonic CV and Gate as inputs, and outputs eight mono gate signals. Designed for triggering drums from a polyphonic sequencer, it also has many less obvious uses.
 
-[Slade](./slew4.md) has eight identical channels of lag/anti-pop/envelope generator/VCA. Very low CPU, as always.
+[Slade](./slew4.md) has eight identical channels of lag/anti-pop/envelope generator/VCA, and flexible submixing. Very low CPU, as always.
 
 [Gray Code](./gray-code.md). Think of it as a semi-random clock divider. Or not. Gray codes have the cool property that only one bit changes at a time. Having only one "thing" change at a time can be interesting for music, so we are hoping you will find some good things to do with it.
 
