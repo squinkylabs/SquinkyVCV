@@ -1,5 +1,7 @@
 # Seq++ mouse interface
 
+Clicking on the note grid will move the blinking edit cursor to the click location. If snap to grid is on, the edit cursor location will snap to the grid.
+
 ## Selecting notes
 
 Clicking on a note will select it, and deselect all others.
@@ -10,7 +12,12 @@ Shift-click will extent the selection up to the cursor. This means all previousl
 
 ## Inserting and deleting notes
 
-TBD
+Double clicking on a note will delete it.
+
+Double clicking in an empty location will inserts a note:
+
+* By default the duration will be one grid unit.
+* You may override the default duration using the asterisk key.
 
 ## Changing notes
 

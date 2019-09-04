@@ -53,7 +53,6 @@ extern void testMidiViewport();
 extern void testFilteredIterator();
 extern void testMidiEvents();
 extern void testMidiControllers();
-extern void testMidiPlayer();
 extern void testMultiLag();
 extern void testUtils();
 extern void testIComposite();
@@ -68,11 +67,14 @@ extern void testSeqClock();
 extern void testMix8();
 extern void testMix4();
 extern void testMixHelper();
+extern void testStereoMix();
 extern void testSlew4();
 extern void testCommChannels();
 extern void testLadder();
 extern void testHighpassFilter();
 extern void calQ();
+extern void testDrumTrigger();
+extern void testAudition();
 
 #if 0
 #include <sstream>
@@ -160,7 +162,6 @@ int main(int argc, char ** argv)
     testMidiSong();
     testSeqClock();
     testMidiPlayer2();
-    testMidiPlayer();
     testReplaceCommand();
     testUndoRedo();
     testMidiViewport();
@@ -172,6 +173,9 @@ int main(int argc, char ** argv)
     testMidiEditorCCP();
     testNoteScreenScale();
     testSeqComposite();
+    testAudition();
+
+    testDrumTrigger();
 
     testManagedPool();
     testLookupTable();
@@ -179,6 +183,7 @@ int main(int argc, char ** argv)
     testMultiLag();
     testSlew4();   
     testMixHelper();
+    testStereoMix();
     testMix4();
     testMix8();
 

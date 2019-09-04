@@ -4,6 +4,7 @@
 #include "Mix8.h"
 #include "Mix4.h"
 #include "MixM.h"
+#include "MixStereo.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "Slew4.h"
@@ -212,6 +213,21 @@ static void testMix4()
         }, 1);
 }
 
+using MixerSt = MixStereo<TestComposite>;
+static void testMixStereo()
+{
+    MixerSt fs;
+    fs.init();
+    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "mix stereo", [&fs]() {
+        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[Slewer::OUTPUT0].value;
+        }, 1);
+}
+
 using MixerM = MixM<TestComposite>;
 static void testMixM()
 {
@@ -235,6 +251,7 @@ void perfTest2()
     testFilt();
     testFilt2();
     testSlew4();
+    testMixStereo();
     testMix8();
     testMix4();
     testMixM();

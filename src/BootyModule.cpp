@@ -5,6 +5,11 @@
 #include "ctrl/SqMenuItem.h"
 
 #ifdef _BOOTY
+#include "DrawTimer.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Booty");
+#endif
 
 using Comp = FrequencyShifter<WidgetComposite>;
 
@@ -189,6 +194,15 @@ struct BootyWidget : ModuleWidget
 {
     BootyWidget(BootyModule *);
     DECLARE_MANUAL("Booty Shifter manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shifter.md");
+
+#ifdef _TIME_DRAWING
+    // Booty: avg = 30.679601, stddev = 10.568395 (us) Quota frac=0.184078
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 /**

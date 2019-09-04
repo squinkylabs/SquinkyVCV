@@ -7,9 +7,14 @@
 #include "Super.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SemitoneDisplay.h"
+#include "DrawTimer.h"
 #include "IMWidgets.hpp"
 
 #include <sstream>
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Saws");
+#endif
 
 using Comp = Super<WidgetComposite>;
 
@@ -88,6 +93,18 @@ struct superWidget : ModuleWidget
     DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
+
+#ifdef _TIME_DRAWING
+    //Saws: avg = 793.744399, stddev = 271.946036 (us) Quota frac=4.762466
+    //new switches:  Saws: avg = 27.301192, stddev = 6.996107 (us) Quota frac=0.163807
+    // old, but only Saws: avg = 362.616217, stddev = 41.723176 (us) Quota frac=2.175697
+
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 const float col1 = 40;
@@ -258,16 +275,11 @@ void superWidget::addJacks(SuperModule *)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
+
 superWidget::superWidget(SuperModule *module) : semitoneDisplay(module)
 {
     setModule(module);
-#else
-superWidget::superWidget(SuperModule *module) :
-    ModuleWidget(module),
-    semitoneDisplay(module)
-{
-#endif
+
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/super_panel.svg");
@@ -282,6 +294,7 @@ superWidget::superWidget(SuperModule *module) :
     addJacks(module);
 
     // the "classic" switch
+    #if 1
     ToggleButton* tog = SqHelper::createParamCentered<ToggleButton>(
         icomp,
         Vec(83, 164),
@@ -290,6 +303,17 @@ superWidget::superWidget(SuperModule *module) :
     tog->addSvg("res/clean-switch-01.svg");
     tog->addSvg("res/clean-switch-02.svg");
     tog->addSvg("res/clean-switch-03.svg");
+    #else
+    SvgSwitch* tog =  SqHelper::createParam<rack::app::SvgSwitch>(
+        icomp,
+        Vec(83, 164),
+        module,
+        Comp::CLEAN_PARAM);
+    tog->fb->removeChild(tog->shadow);
+    tog->addFrame(SqHelper::loadSvg("res/clean-switch-01.svg"));
+    tog->addFrame(SqHelper::loadSvg("res/clean-switch-02.svg"));
+    tog->addFrame(SqHelper::loadSvg("res/clean-switch-03.svg"));
+    #endif
     addParam(tog);
 
     // screws
@@ -299,16 +323,8 @@ superWidget::superWidget(SuperModule *module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-
-#ifdef __V1x
 Model *modelSuperModule = createModel<SuperModule,
     superWidget>("squinkylabs-super");
-#else
-Model *modelSuperModule = Model::create<SuperModule,
-    superWidget>("Squinky Labs",
-    "squinkylabs-super",
-    "Saws: super saw VCO emulation", OSCILLATOR_TAG);
-#endif
 
 #endif
 

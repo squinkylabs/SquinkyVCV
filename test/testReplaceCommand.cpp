@@ -7,6 +7,7 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "ReplaceDataCommand.h"
+#include "TestAuditionHost.h"
 #include "TestSettings.h"
 
 
@@ -14,7 +15,10 @@
 static void test0()
 {
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(
+        song, 
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -27,7 +31,10 @@ static void test0()
 static void test1()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(
+        ms,
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -60,7 +67,7 @@ static void test1()
 static void test2()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
 
     std::vector<MidiEventPtr> toRem;
     std::vector<MidiEventPtr> toAdd;
@@ -84,7 +91,7 @@ static void test2()
 static void testTrans()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
 
     MidiEventPtr firstEvent = seq->context->getTrack()->getFirstNote();
     assert(firstEvent);
@@ -104,14 +111,70 @@ static void testTrans()
     seq->assertValid();
 }
 
+static void testTrackLength()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
+    assertEQ(seq->context->getTrack()->getLength(), 8); // two bars long
+
+    //change to 77 bars
+    auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq, 77);
+    cmd->execute(seq);
+    seq->assertValid();
+
+    assertEQ(seq->context->getTrack()->getLength(), 77);
+
+    cmd->undo(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 8);
+
+    cmd->execute(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 77);
+
+}
+
+// this one shortens the track to less than the time the notes take
+static void testTrackLength2()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    assertEQ(seq->context->getTrack()->getLength(), 4); // one bar long
+
+    //change to 1.5 quarter notes
+    auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq, 1.5);
+    cmd->execute(seq);
+    seq->assertValid();
+
+    assertEQ(seq->context->getTrack()->getLength(), 1.5);
+
+    cmd->undo(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 4);
+
+    cmd->execute(seq);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->getLength(), 1.5);
+}
+
+
 static void testInsert()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
 
     assertEQ(seq->context->getTrack()->size(), 1);     // just an end event
+    assertEQ(seq->context->getTrack()->getLength(), 8); // two bars long
 
+    const float initLength = seq->context->getTrack()->getLength();
+
+    // let's insert a note way in the future.
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = 100;
     note->pitchCV = 1.1f;
@@ -135,19 +198,28 @@ static void testInsert()
     int x = (100 + 2) / 4;
     x *= 4;
     assert(x < 102);
-    x += 8;     // and round up two bars
+    x += 4;     // and round up one bar
     assertEQ(end->startTime, x);
 
-    printf("add tests for insert note undo/redo\n");
+    const float longerLength = seq->context->getTrack()->getLength();
 
+    seq->assertValid();
+
+    cmd->undo(seq);
+    assertEQ(initLength, seq->context->getTrack()->getLength());
+    seq->assertValid();
+
+    cmd->execute(seq);
+    assertEQ(longerLength, seq->context->getTrack()->getLength());
+    seq->assertValid();
 }
 
-static void testStartTime()
+static void testStartTimeUnquantized()
 {
     // make empty song
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
 
     // put a note into it at time 100;
     auto track = seq->context->getTrack();
@@ -161,11 +233,50 @@ static void testStartTime()
     assertEQ(seq->selection->size(), 1);
 
     // shift note later to 1100
-    cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.f);
+    cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.3f, 0);
     seq->undo->execute(seq, cmd);
 
     seq->assertValid();
     note = track->getFirstNote();   
+    assertEQ(note->startTime, 1100.3f);
+
+    seq->undo->undo(seq);
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->startTime, 100.f);
+
+    seq->undo->redo(seq);
+    seq->assertValid();
+    note = track->getFirstNote();
+    assertEQ(note->startTime, 1100.3f);
+}
+
+
+static void testStartTimeQuantized()
+{
+    const float qGrid = 1;      // quarter notes
+    // make empty song
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    // put a note into it at time 100;
+    auto track = seq->context->getTrack();
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = 100;
+    note->pitchCV = 1.1f;
+    note->duration = 2;
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    cmd->execute(seq);
+    seq->assertValid();
+    assertEQ(seq->selection->size(), 1);
+
+    // shift note later to 1100
+    cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq, 1000.2f, qGrid);
+    seq->undo->execute(seq, cmd);
+
+    seq->assertValid();
+    note = track->getFirstNote();
     assertEQ(note->startTime, 1100.f);
 
     seq->undo->undo(seq);
@@ -183,7 +294,7 @@ static void testDuration()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     MidiLocker l(ms->lock);
-    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
 
      // put a note into it at time 10, dur 5;
     auto track = seq->context->getTrack();
@@ -216,6 +327,25 @@ static void testDuration()
     assertEQ(note->duration, 6.f);
 }
 
+static void testCut()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    const float origLen = seq->context->getTrack()->getLength();
+    const int origSize = seq->context->getTrack()->size();
+    seq->editor->selectAll();
+    auto cmd = ReplaceDataCommand::makeDeleteCommand(seq, "cut");
+
+    seq->undo->execute(seq, cmd);
+    seq->assertValid();
+
+    assertEQ(1, seq->context->getTrack()->size());
+    seq->undo->undo(seq);
+    assertEQ(origSize, seq->context->getTrack()->size());
+}
+
 void testReplaceCommand()
 {
     test0();
@@ -223,7 +353,11 @@ void testReplaceCommand()
     test2();
 
     testTrans();
+    testTrackLength();
+    testTrackLength2();
     testInsert();
-    testStartTime();
+    testStartTimeUnquantized();
+    testStartTimeQuantized();
     testDuration();
+    testCut();
 }

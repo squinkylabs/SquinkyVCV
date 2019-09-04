@@ -50,6 +50,7 @@ static void testOneShot2Ms()
 
 //  SeqClock::update(int samplesElapsed, float externalClock, float runStop, float reset)
 // test internal clock
+#if 0 // no more internal
 static void testClockInternal0()
 {
     assert(false);      // internal has changes
@@ -81,13 +82,10 @@ static void testClockInternal0()
     
     assert(!results.didReset);
 }
+#endif
 
 static void testClockExt(SeqClock::ClockRate rate, double metricTimePerClock)
 {
-   // assertGT(rate, 0);
-   // assertLE(rate, 5);
-    assert(rate != SeqClock::ClockRate::Internal);
-
     SeqClock ck;
     ck.setup(rate, 120, 100);       // internal clock
 
@@ -168,6 +166,7 @@ static void testClockExtEdge()
     }
 }
 
+#if 0       // no more inernal. do we need a new test?
 static void testClockInternalRunStop()
 {
     assert(false);  // no more internal
@@ -193,6 +192,7 @@ static void testClockInternalRunStop()
     results = ck.update(sampleRateI, 0, true, 0);
     assertEQ(results.totalElapsedTime, 4.0);
 }
+#endif
 
 static void testClockChangeWhileStopped()
 {
@@ -227,6 +227,7 @@ static void testClockChangeWhileStopped()
     assertEQ(results.totalElapsedTime, 1);
 }
 
+#if 0 // no inernal, do we need new test?
 static void testSimpleReset()
 {
     const int sampleRateI = 44100;
@@ -257,6 +258,7 @@ static void testSimpleReset()
     results = ck.update(sampleRateI, 0, true, 0);
     assert(!results.didReset);
 }
+#endif
 
 static void testSimpleResetIgnoreClock()
 {

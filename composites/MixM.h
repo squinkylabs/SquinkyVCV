@@ -69,6 +69,7 @@ public:
     }
 
     static const int numChannels = 4;
+    static const int numGroups = 4;
 
     /**
     * re-calc everything that changes with sample
@@ -216,6 +217,7 @@ public:
     float buf_auxReturnGainA = 0;
     float buf_auxReturnGainB = 0;
 
+    void _disableAntiPop();
 private:
     Divider divider;
 
@@ -259,6 +261,12 @@ template <class TBase>
 inline void MixM<TBase>::onSampleRateChange()
 {
     setupFilters();
+}
+
+template <class TBase>
+inline void MixM<TBase>::_disableAntiPop()
+{
+    filteredCV.setCutoff(0.49f);     // set it super fast
 }
 
 template <class TBase>
@@ -318,7 +326,7 @@ inline void MixM<TBase>::stepn(int div)
                 const float slider = TBase::params[i + GAIN0_PARAM].value;
 #endif
 
-            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
+            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
                 TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,

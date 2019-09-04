@@ -4,16 +4,19 @@
 #include "WidgetComposite.h"
 
 #ifdef _MIX4
-
+#include "DrawTimer.h"
 #include "MixerModule.h"
 #include "Mix4.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/ToggleButton.h"
 #include "ctrl/SqToggleLED.h"
 
 
 #include "ctrl/SqWidgets.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Mix4");
+#endif
 
 using Comp = Mix4<WidgetComposite>;
 
@@ -109,6 +112,15 @@ struct Mix4Widget : ModuleWidget
         std::shared_ptr<IComposite>,
         int channel);
     void appendContextMenu(Menu *menu) override;
+
+#ifdef _TIME_DRAWING
+    // Mix4: avg = 109.139913, stddev = 21.922893 (us) Quota frac=0.654839
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 private:
     Mix4Module* mixModule;
 };
@@ -184,19 +196,7 @@ void Mix4Widget::makeStrip(
         channel + Comp::PAN0_INPUT));
 
     y -= (channelDy -1);
-#if 0
-    auto mute = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(x-12, y-12),
-        module,
-        channel + Comp::MUTE0_PARAM);
-    mute->addSvg("res/square-button-01.svg");
-    mute->addSvg("res/square-button-02.svg");
-    addParam(mute);
-    muteY = y-12;
 
-#else 
-   
     const float mutx = x-11;
     const float muty = y-12;
     auto _mute = SqHelper::createParam<LEDBezel>(
@@ -210,7 +210,7 @@ void Mix4Widget::makeStrip(
         Vec(mutx + 2.2, muty + 2),
         module,
         channel + Comp::MUTE0_LIGHT));
-#endif
+
     
     y -= (channelDy-1);
     SqToggleLED* tog = (createLight<SqToggleLED>(

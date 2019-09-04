@@ -336,12 +336,6 @@
     <ClCompile Include="..\..\test\testMidiEvents.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testMidiPlayer.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\midi\controller\MidiPlayer.cpp">
-      <Filter>Source Files\midi\controller</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\test\perfTest2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
@@ -423,9 +417,6 @@
     <ClCompile Include="..\..\test\testMix4.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testMidiPlayer2.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\midi\controller\MidiVoice.cpp">
       <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
@@ -436,6 +427,18 @@
       <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
     <ClCompile Include="..\..\test\testSeqComposite.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiPlayer2.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testDrumTrigger.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testAudition.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testStereoMix.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>
@@ -671,9 +674,6 @@
     <ClInclude Include="..\..\sqsrc\util\asserts.h">
       <Filter>Header Files\sqsrc\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\midi\controller\MidiPlayer.h">
-      <Filter>Header Files\midi\controller</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\dsp\filters\MultiLag.h">
       <Filter>Header Files\dsp\filters</Filter>
     </ClInclude>
@@ -799,6 +799,24 @@
     </ClInclude>
     <ClInclude Include="..\..\test\TestSettings.h">
       <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\MLockTest.h">
+      <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\composites\DrumTrigger.h">
+      <Filter>Header Files\composites</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\TestAuditionHost.h">
+      <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiAudition.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\TestHost2.h">
+      <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\AuditionLocker.h">
+      <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

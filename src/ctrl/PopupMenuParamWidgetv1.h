@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef __V1x
-
 /**
  * UI Widget that does:
  *  functions as a parameter
@@ -57,8 +55,11 @@ inline void PopupMenuParamWidget::draw(const DrawArgs &args)
 inline void PopupMenuParamWidget::onButton(const event::Button &e)
 {
     // for now, let's activate on all mouse clicks
-    event::Action ea; 
-    onAction(ea);
+     if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
+        event::Action ea; 
+        onAction(ea);
+        sq::consumeEvent(&e, this);
+     }
 }
 
 class PopupMenuItem : public MenuItem
@@ -101,4 +102,3 @@ inline void PopupMenuParamWidget::onAction(const event::Action &e)
         }
     }
 }
-#endif

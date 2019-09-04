@@ -2,7 +2,7 @@
 
 8 channel mixer - improved 8-CH Mixer
 
-**Note that we now have the Form expandable mixer. It has more features that Mixer-8, and can be expanded to any number of inputs, in multiples of four. Details [here](./form.md).**
+**Note that we now have the Form expandable mixer. It has more features that Mixer-8, and can be expanded to any number of inputs, both mono and stereo. Details [here](./form.md).**
 
 ![Mixer-8 Panel](./mixer-8.png)
 

@@ -12,11 +12,7 @@
 struct SqMenuItem : rack::MenuItem
 {
 
-#ifdef __V1x
-void onAction(const rack::event::Action &e) override
-#else
-void onAction(EventAction &e) override
-#endif
+    void onAction(const rack::event::Action &e) override
     {
         _onActionFn();
     }
@@ -54,9 +50,7 @@ struct ManualMenuItem : SqMenuItem
 
 /**
  * menu item that toggles a boolean param.
- * only works in V1, since it requires no param widget
  */
-#ifdef __V1x
 struct  SqMenuItem_BooleanParam2 : rack::MenuItem
 {
     SqMenuItem_BooleanParam2(rack::engine::Module* mod, int id) : 
@@ -85,7 +79,7 @@ private:
     const int paramId;
     rack::engine::Module* const module;
 };
-#endif
+
 
 struct  SqMenuItem_BooleanParam : rack::MenuItem
 {
@@ -94,7 +88,6 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
     {
     }
 
-#ifdef __V1x
     void onAction(const sq::EventAction &e) override
     {
         const float newValue = isOn() ? 0 : 1;
@@ -107,20 +100,6 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
         e.consume(this);
     }
     
-#else
-
- void onAction(EventAction &e) override
-    {
-        const float newValue = isOn() ? 0 : 1;
-        widget->value = newValue;
-        sq::EventChange ec;
-        widget->onChange(ec);
-        e.consumed = true;
-    }
-
-#endif
-
-
     void step() override
     {
         rightText = CHECKMARK(isOn());
@@ -129,15 +108,11 @@ struct  SqMenuItem_BooleanParam : rack::MenuItem
 private:
     bool isOn()
     {
-#ifdef __V1x
-        //return false;
         bool ret = false;
         if (widget->paramQuantity) {
             ret = widget->paramQuantity->getValue() > .5f;
         }
-#else
-        bool ret = widget->value > .5f;
-#endif
+
         return ret;
     }
     rack::ParamWidget* const widget;

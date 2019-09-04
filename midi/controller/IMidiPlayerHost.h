@@ -1,5 +1,10 @@
 #pragma once
 
+#include <memory>
+
+/**
+ * Implemented by a class that wants to host a Midi Player
+ */
 class IMidiPlayerHost
 {
 public:
@@ -8,3 +13,17 @@ public:
     virtual void onLockFailed() = 0;
     virtual ~IMidiPlayerHost() = default;
 };
+
+using IMidiPlayerHostPtr = std::shared_ptr<IMidiPlayerHost>;
+
+/**
+ * Receiver for UI requests to audition a note.
+ * Not really a host, but...
+ */
+class IMidiPlayerAuditionHost
+{
+public:
+    virtual void auditionNote(float pitch) = 0;
+};
+
+using IMidiPlayerAuditionHostPtr = std::shared_ptr<IMidiPlayerAuditionHost>;

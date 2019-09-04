@@ -4,13 +4,8 @@
 #include "WidgetComposite.h"
 #include "Seq.h"
 
-#ifdef __V1x
-#include "widget/Widget.hpp"
-#else
-#include "widgets.hpp"
-#include "util/math.hpp"
-#endif
 
+#include "widget/Widget.hpp"
 #include "nanovg.h"
 #include "window.hpp"
 #include "MidiSequencer.h"
@@ -36,7 +31,6 @@ NoteDisplay::NoteDisplay(
     box.size = size;
     sequencer = seq;
     mouseManager = std::make_shared<MouseManager>(sequencer);
-  //  seqSettings = std::make_shared<SeqSettings>(mod);
 
     if (sequencer) {
         initEditContext();
@@ -121,6 +115,10 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
 {
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
+
+    const float endTime =  sequencer->context->getTrack()->getLength();
+    const float endX = scaler->midiTimeToX(endTime);
+
     //assume two bars, quarter note grid
     const float totalDuration = TimeUtils::bar2time(2);
     float deltaDuration = sequencer->context->settings()->getQuarterNotesInGrid();
@@ -142,9 +140,13 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
             (relTime == TimeUtils::bar2time(1)) ||
             (relTime == TimeUtils::bar2time(2));
 
+        NVGcolor color = isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR;
+        if (x == endX) {
+            color = UIPrefs::GRID_END_COLOR;
+        }
         SqGfx::filledRect(
             vg,
-            isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR,
+            color,
             x, y, width, height);
     }
 }
@@ -172,15 +174,10 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
     }
 }
 
-#ifdef __V1x
 void NoteDisplay::draw(const Widget::DrawArgs &args)
 {
     NVGcontext *vg = args.vg;
-#else
-void NoteDisplay::draw(NVGcontext *vg)
-{
-#endif 
-
+ 
     if (!this->sequencer) {
         return;
     }
@@ -194,11 +191,7 @@ void NoteDisplay::draw(NVGcontext *vg)
     // if we are dragging, will have something to draw
     mouseManager->draw(vg);
     drawCursor(vg);
-#ifdef __V1x
     OpaqueWidget::draw(args);
-#else
-    OpaqueWidget::draw(vg);
-#endif
 }
 
 void NoteDisplay::drawBackground(NVGcontext *vg)
@@ -247,8 +240,6 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
  *
  */
 
-#ifdef __V1x
-
 void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
 {
    // printf("got double click"); fflush(stdout);
@@ -275,7 +266,7 @@ void NoteDisplay::onButton(const event::Button &e)
 
     const bool isPressed = e.action == GLFW_PRESS;
     const bool shift = e.mods & GLFW_MOD_SHIFT;
-    const bool ctrl = e.mods & GLFW_MOD_CONTROL;
+    const bool ctrl = e.mods & RACK_MOD_CTRL;
 
     if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
         handled = mouseManager->onMouseButton(
@@ -284,6 +275,13 @@ void NoteDisplay::onButton(const event::Button &e)
             isPressed, ctrl, shift);
     } else if (e.button == GLFW_MOUSE_BUTTON_RIGHT) {
         if (isPressed && !shift && !ctrl) {
+            // first, click here to get note select status ready for new commands
+            mouseManager->onMouseButton(
+                e.pos.x,
+                e.pos.y,
+                isPressed, ctrl, shift);
+
+            // now invoke the settings menu
             sequencer->context->settings()->invokeUI(this);
             handled = true;
         }
@@ -398,42 +396,4 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
-#endif
-
-//**************** All V0.6 keyboard handling here ***********
-
-#ifndef __V1x
-
-void NoteDisplay::onFocus(EventFocus &e)
-{
-    updateFocus(true);
-    e.consumed = true;
-}
-
-void NoteDisplay::onDefocus(EventDefocus &e)
-{
-    updateFocus(false);
-    e.consumed = true;
-}
-
-void NoteDisplay::onKey(EventKey &e)
-{
-    const unsigned key = e.key;
-    unsigned mods = 0;
-    if (rack::windowIsShiftPressed()) {
-        mods |= GLFW_MOD_SHIFT;
-    }
-    if (windowIsModPressed()) {
-        mods |= GLFW_MOD_CONTROL;
-    }
-
-    bool handled = MidiKeyboardHandler::handle(sequencer, key, mods);
-    if (!handled) {
-        OpaqueWidget::onKey(e);
-    } else {
-        e.consumed = true;
-    }
-}
-
-#endif
 #endif

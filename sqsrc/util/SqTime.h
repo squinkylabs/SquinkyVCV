@@ -13,6 +13,9 @@
   * accurate by tinkering with your bios
   */
 #if defined(_MSC_VER) || defined(ARCH_WIN)
+//#if defined(_MSC_VER)
+
+#define _USE_WINDOWS_PERFTIME
 #include <Windows.h>
 class SqTime
 {
@@ -44,6 +47,7 @@ public:
         struct timespec ts;
         int x = clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
         assert(x == 0);
+        (void) x;
 
         // seconds = sec + nsec / 10**9
         return double(ts.tv_sec) + double(ts.tv_nsec) / (1000.0 * 1000.0 * 1000.0);

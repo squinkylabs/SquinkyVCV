@@ -5,7 +5,6 @@
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
-
 MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song) :
     host(host),
     song(song),
@@ -17,6 +16,7 @@ MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<
         vx.setHost(host.get());
         vx.setIndex(i);
     }
+//    loopParams = nullptr;
 }
 
 void MidiPlayer2::setSong(std::shared_ptr<MidiSong> newSong)
@@ -32,11 +32,6 @@ void MidiPlayer2::reset(bool clearGates)
 {
     isReset = true;
     isResetGates = clearGates;
-}
-
-void MidiPlayer2::stop()
-{
-    isPlaying = false;
 }
 
 void MidiPlayer2::setNumVoices(int voices)
@@ -60,14 +55,23 @@ void MidiPlayer2::updateSampleCount(int numElapsed)
 }
 
 
-double MidiPlayer2::getLoopStart() const
+double MidiPlayer2::getCurrentLoopIterationStart() const
 {
-    return loopStart;
+    return currentLoopIterationStart;
+}
+
+float MidiPlayer2::getCurrentSubrangeLoopStart() const
+{
+    float ret = 0;
+    if (song->getSubrangeLoop().enabled) {
+        ret += song->getSubrangeLoop().startTime;
+    }
+    return ret;
 }
 
 void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval)
 {
-#ifdef _MLOG
+#if defined(_MLOG) && 0
     printf("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
 #endif
     assert(quantizationInterval != 0);
@@ -88,8 +92,6 @@ void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterv
     }
 }
 
-
-
 void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizationInterval)
 {
     metricTime = TimeUtils::quantize(metricTime, quantizationInterval, true);
@@ -99,9 +101,19 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
        //  printf("\n******  player proc reset\n");
         curEvent = track->begin();
         resetAllVoices(isResetGates);
+        voiceAssigner.reset();
         isReset = false;
         isResetGates = false;
-        loopStart = 0;
+        currentLoopIterationStart = 0;
+    }
+
+
+    // To implement loop start, we just push metric time up to where we want to start.
+    // TODO: skip over initial stuff?
+    
+    if (song->getSubrangeLoop().enabled) {
+   // if (loopParams && loopParams.load()->enabled) {
+        metricTime += song->getSubrangeLoop().startTime;
     }
      // keep processing events until we are caught up
     while (playOnce(metricTime, quantizationInterval)) {
@@ -111,7 +123,7 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
 
 bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
 {
-#ifdef _MLOG
+#if defined(_MLOG) && 0
     printf("MidiPlayer::playOnce metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizeInterval);
 #endif
     bool didSomething = false;
@@ -121,7 +133,20 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
         return true;
     }
 
-    const double eventStartUnQuantized = (loopStart + curEvent->first);
+    // push the start time up by loop start, so that event t==loop start happens at start of loop
+    const double eventStartUnQuantized = (currentLoopIterationStart + curEvent->first);
+
+    // Treat loop end just like track end. loop back around
+    // when we pass then end.
+    if (song->getSubrangeLoop().enabled) {
+        auto loopEnd = song->getSubrangeLoop().endTime + currentLoopIterationStart;
+        if (loopEnd <= metricTime) {
+            currentLoopIterationStart += (song->getSubrangeLoop().endTime - song->getSubrangeLoop().startTime);
+            curEvent = track->begin();
+            return true;
+        }
+    }
+
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
     if (eventStart <= metricTime) {
         MidiEventPtr event = curEvent->second;
@@ -142,7 +167,7 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
             break;
             case MidiEvent::Type::End:
                 // for now, should loop.
-                loopStart += curEvent->first;
+                currentLoopIterationStart += curEvent->first;
                 curEvent = track->begin();
                 break;
             default:

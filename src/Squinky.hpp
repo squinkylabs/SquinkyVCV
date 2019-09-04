@@ -1,5 +1,6 @@
 #pragma once
 #include "rack.hpp"
+// #define _TIME_DRAWING
 
 #include "componentlibrary.hpp"
 
@@ -21,6 +22,7 @@
 #define _FILT
 //#define _CH10
 //#define _LFNB
+#define _MIX_STEREO
 
 //#define _BLANKMODULE
 
@@ -36,6 +38,7 @@
     #define _MIXM
 #endif
 
+#define _DTMODULE
 
 using namespace rack;
 
@@ -107,8 +110,14 @@ extern Model *modelMix4Module;
 #ifdef _MIXM
 extern Model *modelMixMModule;
 #endif
+#ifdef _MIX_STEREO
+extern Model* modelMixStereoModule;
+#endif
 #ifdef _FILT
 extern Model *modelFiltModule;
+#endif
+#ifdef _DTMODULE
+extern Model* modelDrumTriggerModule;
 #endif
 
 

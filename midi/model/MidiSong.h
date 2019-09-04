@@ -9,6 +9,25 @@ class MidiLock;
 
 using MidiSongPtr = std::shared_ptr<MidiSong>;
 
+class SubrangeLoop
+{
+public:
+    SubrangeLoop(bool b, float s, float e) : enabled(b), startTime(s), endTime(e)
+    {
+    }
+    SubrangeLoop() = default;
+    bool operator != (const SubrangeLoop& other) const
+    {
+        return enabled != other.enabled ||
+            startTime != other.startTime ||
+            endTime != other.endTime;
+    }
+
+    bool enabled = false;
+    float startTime = 0;
+    float endTime = 0;
+};
+
 class MidiSong
 {
 public:
@@ -22,7 +41,6 @@ public:
      */
     void addTrack(int index, std::shared_ptr<MidiTrack>);
    
-
     void assertValid() const;
 
     /**
@@ -38,7 +56,11 @@ public:
     static MidiSongPtr makeTest(MidiTrack::TestContent, int trackNumber);
 
     std::shared_ptr<MidiLock> lock;
+
+    const SubrangeLoop& getSubrangeLoop();
+    void setSubrangeLoop(const SubrangeLoop&);
 private:
     std::vector<std::shared_ptr<MidiTrack>> tracks;
+    SubrangeLoop loop;
 };
 

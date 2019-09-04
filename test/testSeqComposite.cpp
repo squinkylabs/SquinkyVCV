@@ -28,22 +28,45 @@ static void assertAllGatesLow(Sq& sq)
     }
 }
 
+// TODO: move to a general UTIL
+template <typename T>
+static void initParams(T * composite)
+{
+    auto icomp = composite->getDescription();
+    for (int i = 0; i < icomp->getNumParams(); ++i) {
+        auto param = icomp->getParam(i);
+        composite->params[i].value = param.def;
+    }
+}
+
 /**
  * @param clockDiv - 4 for quarter, etc..
  */
 std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
     int numVoices, 
-    MidiTrack::TestContent testContent)
+    MidiTrack::TestContent testContent,
+    bool toggleStart)
 {
     assert(numVoices > 0 && numVoices <= 16);
 
     auto song = MidiSong::makeTest(testContent, 0);
     std::shared_ptr<Sq> ret = std::make_shared<Sq>(song);
 
+    // we SHOULD init the params properly for all the tests,
+    // but not all work. this is a start.
+    if (!toggleStart) {
+        initParams(ret.get());
+    }
+
+
+    const float f = ret->params[Sq::RUNNING_PARAM].value;
+
     ret->params[Sq::NUM_VOICES_PARAM].value = float(numVoices - 1);
     ret->params[Sq::CLOCK_INPUT_PARAM].value = float(rate);        
     ret->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
-    ret->toggleRunStop();                          // start it
+    if (toggleStart) {
+        ret->toggleRunStop();                          // start it
+    }
 
     return ret;
 }
@@ -56,23 +79,21 @@ std::shared_ptr<Sq> makeWith8Clock(bool noteAtTimeZero = false)
     MidiTrack::TestContent content = noteAtTimeZero ? 
         MidiTrack::TestContent::eightQNotes :
         MidiTrack::TestContent::oneQ1;
-    return make(SeqClock::ClockRate::Div2, 16, content);
+    return make(SeqClock::ClockRate::Div2, 16, content, true);
 }
 
-
-static void testBasicGates()
+static void testBasicGatesSub(std::shared_ptr<Sq> s)
 {
-    // Test song is one quater note at time 1
-    // eight note clocks
-    std::shared_ptr<Sq> s = makeWith8Clock();                          // start it
-
+    float f = s->params[Sq::RUNNING_PARAM].value;
     stepN(*s, 16);
+    f = s->params[Sq::RUNNING_PARAM].value;
 
     assertEQ(s->outputs[Sq::GATE_OUTPUT].channels, 16);
     assertAllGatesLow(*s);
 
     auto pos = s->getPlayPosition();
     assertLT(pos, 0);
+    f = s->params[Sq::RUNNING_PARAM].value;
 
     // Now give first clock - advance to time zero.
     // There is no note at time zero
@@ -80,12 +101,14 @@ static void testBasicGates()
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
     assertAllGatesLow(*s);
+    f = s->params[Sq::RUNNING_PARAM].value;
 
     // next clock will take us to the first eighth note, where there is no note
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, .5);
     assertAllGatesLow(*s);
+    f = s->params[Sq::RUNNING_PARAM].value;
 
     // first real Q note, gate high
     genOneClock(*s);
@@ -103,6 +126,28 @@ static void testBasicGates()
     pos = s->getPlayPosition();
     assertEQ(pos, 2);
     assertAllGatesLow(*s);
+}
+
+
+
+
+static void testBasicGateNoExplicitStart()
+{
+    //printf("skipping testBasicGateNoExplicitStart\n");
+#if 1
+    // OK - running param is not getting set becuase we aren't using the init code.
+    // So why does it work at all?
+    std::shared_ptr<Sq> s = make(SeqClock::ClockRate::Div2, 16, MidiTrack::TestContent::oneQ1, false);
+ //   initParams(s.get());
+    testBasicGatesSub(s);
+#endif
+}
+
+static void testBasicGates()
+{
+    std::shared_ptr<Sq> s = makeWith8Clock();                          // start it
+    const float f = s->params[Sq::RUNNING_PARAM].value;
+    testBasicGatesSub(s);
 }
 
 static void testStopGatesLow()
@@ -218,7 +263,8 @@ static void testRetrigger(bool exactDuration)
     // 1/16
     std::shared_ptr<Sq> s = make(SeqClock::ClockRate::Div4, 1,
         exactDuration ? MidiTrack::TestContent::FourTouchingQuarters :
-        MidiTrack::TestContent::FourAlmostTouchingQuarters
+        MidiTrack::TestContent::FourAlmostTouchingQuarters,
+        true
     );
     TestClocker clock(s);
     
@@ -251,7 +297,7 @@ static void testRetrigger(bool exactDuration)
 
 static void testResetGatesLow()
 {
-
+    // make a seq with note at time zero, eight eighth notes
     std::shared_ptr<Sq> s = makeWith8Clock(true);                          // start it
 
     stepN(*s, 16);
@@ -260,21 +306,11 @@ static void testResetGatesLow()
     assertLT(pos, 0);
 
     // first clock to get to time t=0
+    // this will play first note
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
-
-    // now give first advance past zero clock 
-    genOneClock(*s);
-    pos = s->getPlayPosition();
-    assertEQ(pos, .5);
-    assertAllGatesLow(*s);
-
-    // first real Q note, gate high
-    genOneClock(*s);
-    pos = s->getPlayPosition();
-    assertEQ(pos, 1);
-    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);   // now note playing
 
     s->toggleRunStop();     // STOP
     stepN(*s, 16);
@@ -284,7 +320,6 @@ static void testResetGatesLow()
     s->inputs[Sq::RESET_INPUT].value = 10;
     stepN(*s, 16);
     assertAllGatesLow(*s);
-
 }
 
 
@@ -314,7 +349,9 @@ static void testLoopingQ()
     assertAllGatesLow(*seq);
 
     // now start and clock
-    seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
+    // How does this acutally start?
+ //   seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
+    seq->inputs[Sq::RUN_INPUT].value = 10;
     seq->inputs[Sq::CLOCK_INPUT].value = 10;
     assertAllGatesLow(*seq);
 
@@ -397,9 +434,46 @@ static void testLoopingQ()
     }
 }
 
+extern MidiSongPtr makeSongOneQ(float noteTime, float endTime);
+static void testSubrangeLoop()
+{
+    // make a song with one note in the second bar.
+    // loop the second bar
+    MidiSongPtr song = makeSongOneQ(4, 100);
+    SubrangeLoop lp(true, 4, 8);
+    song->setSubrangeLoop(lp);
+    std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
+
+    seq->params[Sq::NUM_VOICES_PARAM].value = 0;
+    seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
+    seq->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
+
+    // now step a bit so that we see low inputs (run and clock)
+    stepN(*seq, 4);
+
+    assertAllGatesLow(*seq);
+    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
+
+    // now start and clock
+    seq->inputs[Sq::RUN_INPUT].value = 10;
+    seq->inputs[Sq::CLOCK_INPUT].value = 10;
+
+    // now step a bit so that we see clock
+    stepN(*seq, 4);
+
+   // assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
+    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+//    sendClockAndStep(*seq, 0);      
+
+    // should be back arount to another loops starting in the first bar.
+    assertEQ(seq->getPlayPosition(), 4);
+
+}
+
 void testSeqComposite()
 {
     testBasicGates();
+    testBasicGateNoExplicitStart();
     testStopGatesLow();
 
     testRetrigger(true);
@@ -407,4 +481,5 @@ void testSeqComposite()
 
     testResetGatesLow();
     testLoopingQ();
+    testSubrangeLoop();
 }

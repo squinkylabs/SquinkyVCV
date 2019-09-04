@@ -4,8 +4,10 @@
 
 class MidiEvent;
 class MidiSelectionModel;
+class IMidiPlayerAuditionHost;
 
 using MidiSelectionModelPtr = std::shared_ptr<MidiSelectionModel>;
+using IMidiPlayerAuditionHostPtr = std::shared_ptr<IMidiPlayerAuditionHost>;
 
 /**
  * Central manager for tracking selections in the MidiSong being edited.
@@ -13,7 +15,7 @@ using MidiSelectionModelPtr = std::shared_ptr<MidiSelectionModel>;
 class MidiSelectionModel
 {
 public:
-    MidiSelectionModel();
+    MidiSelectionModel(IMidiPlayerAuditionHostPtr);
     ~MidiSelectionModel();
     /**
      * replace the current selection with a single event
@@ -23,12 +25,21 @@ public:
     void addToSelection(std::shared_ptr<MidiEvent>, bool keepExisting);
     void removeFromSelection(std::shared_ptr<MidiEvent>);
 
+    bool isAuditionSuppressed() const;
+    void setAuditionSuppressed(bool);
+
     /**
      * select nothing
      */
     void clear();
 
-    using container = std::set<std::shared_ptr<MidiEvent>>;
+    class CompareEventPtrs
+    {
+    public:
+        bool operator() (const std::shared_ptr<MidiEvent>& lhs, const std::shared_ptr<MidiEvent>& rhs) const;
+    };
+
+    using container = std::set<std::shared_ptr<MidiEvent>, CompareEventPtrs>;
     using const_iterator = container::const_iterator;
 
     const_iterator begin() const;
@@ -45,7 +56,6 @@ public:
 
     MidiSelectionModelPtr clone() const;
 
-
     std::shared_ptr<MidiEvent> getLast();
 
     /** Returns true is this object instance is in selection.
@@ -60,9 +70,14 @@ public:
      */
     bool isSelectedDeep(std::shared_ptr<MidiEvent> event) const;
 
+    IMidiPlayerAuditionHostPtr _testGetAudition();
+
 private:
 
     void add(std::shared_ptr<MidiEvent>);
 
     container selection;
+
+    IMidiPlayerAuditionHostPtr auditionHost;
+    bool auditionSuppressed = false;
 };

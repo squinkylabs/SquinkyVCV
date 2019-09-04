@@ -3,9 +3,14 @@
 #include "Squinky.hpp"
 
 #ifdef _TREM
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 #include "Tremolo.h"
 #include "ctrl/SqMenuItem.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Chopper");
+#endif
 
 using Comp = Tremolo<WidgetComposite>;
 
@@ -78,6 +83,15 @@ struct TremoloWidget : ModuleWidget
     void addClockSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
     void addIOSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
     void addMainSection(TremoloModule *module, std::shared_ptr<IComposite> icomp);
+
+#ifdef _TIME_DRAWING
+    // Chopper: avg = 54.819744, stddev = 18.252829 (us) Quota frac=0.328918
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 void TremoloWidget::addClockSection(TremoloModule *module, std::shared_ptr<IComposite> icomp)

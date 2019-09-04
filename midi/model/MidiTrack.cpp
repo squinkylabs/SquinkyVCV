@@ -96,6 +96,19 @@ void MidiTrack::deleteEvent(const MidiEvent& evIn)
     assert(false);          // If you get here it means the event to be deleted was not in the track
 }
 
+void MidiTrack::setLength(float newTrackLength)
+{
+    assert(lock);
+    assert(lock->locked());
+
+    MidiEndEventPtr end = getEndEvent();
+    assert(end);
+    deleteEvent(*end);
+    insertEnd(newTrackLength);
+    assertValid();
+}
+
+
 void MidiTrack::_dump() const
 {
     const_iterator it;
@@ -112,8 +125,8 @@ void MidiTrack::_dump() const
                 type = "Note";
                 {
                     MidiNoteEventPtr n = safe_cast<MidiNoteEvent>(evt);
-                    char buf[256];
-                    snprintf(buf, sizeof(buf), "pitch=%f", n->pitchCV);
+                    char buf[1024];
+                    snprintf(buf, sizeof(buf), "pitch=%.2f duration = %.2f", n->pitchCV, n->duration);
                     pitch = buf;
                 }
                 break;
@@ -122,12 +135,13 @@ void MidiTrack::_dump() const
                 assert(false);
 
         }
-        const void* addr = evt.get();
+        //const void* addr = evt.get();
         printf("time = %f, type=%s ", ti, type.c_str());
         if (!pitch.empty()) {
             printf(pitch.c_str());
         }
-        printf(" addr=%p\n", addr);
+        //printf(" addr=%p\n", addr);
+        printf("\n");
     }
     fflush(stdout);
 }
@@ -374,7 +388,6 @@ MidiTrackPtr MidiTrack::makeTestFourTouchingQuarters(
     track->insertEnd(TimeUtils::bar2time(1));
     return track;
 }
-
 
 MidiTrackPtr MidiTrack::makeTestEmpty(std::shared_ptr<MidiLock> lock)
 {

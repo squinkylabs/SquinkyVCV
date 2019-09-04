@@ -18,7 +18,7 @@ public:
     /**
      * Main "play something" function.
      * @param metricTime is the current time where 1 = quarter note.
-     * @param quantizationInterval is the amound of metric time in a clock. 
+     * @param quantizationInterval is the amount of metric time in a clock. 
      * So, if the click is a sixteenth note clock, quantizationInterval will be .25
      */
     void updateToMetricTime(double metricTime, float quantizationInterval);
@@ -30,12 +30,11 @@ public:
      * @param clearGate will set the host's gate low, if true
      */
     void reset(bool clearGates);
-    void stop();
-    double getLoopStart() const;
+    double getCurrentLoopIterationStart() const;
+    float getCurrentSubrangeLoopStart() const;
 
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
-
 
 private:
     std::shared_ptr<IMidiPlayerHost> host;
@@ -48,7 +47,6 @@ private:
     /***************************************
      * Variables  to play one track
      */
-
     MidiTrack::const_iterator curEvent;
 
     /**
@@ -58,12 +56,11 @@ private:
     bool isResetGates = false;
 
     bool isPlaying = true;
-    double loopStart = 0;
+    double currentLoopIterationStart = 0;
     int numVoices=1;
 
     std::shared_ptr<MidiTrack> track;
 
-   
     void updateToMetricTimeInternal(double, float);
     bool playOnce(double metricTime, float quantizeInterval);
     bool pollForNoteOff(double metricTime);

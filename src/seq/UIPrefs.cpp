@@ -16,10 +16,9 @@ const NVGcolor UIPrefs::DRAGGED_NOTE_COLOR =
 nvgRGBA(0xff, 0x80, 0, 0x80);
 
 // was 90 / 40
-const NVGcolor UIPrefs::GRID_COLOR =
-nvgRGB(0x80, 0x80, 0x80);
-const NVGcolor UIPrefs::GRID_BAR_COLOR =
-nvgRGB(0xe0, 0xe0, 0xe0);
+const NVGcolor UIPrefs::GRID_COLOR     = nvgRGB(0x80, 0x80, 0x80);
+const NVGcolor UIPrefs::GRID_BAR_COLOR = nvgRGB(0xe0, 0xe0, 0xe0);
+const NVGcolor UIPrefs::GRID_END_COLOR = nvgRGB(0xff, 0x0, 0xff);
 
 // was b0
 const NVGcolor UIPrefs::TIME_LABEL_COLOR = nvgRGB(0xe0, 0xe0, 0xe0);

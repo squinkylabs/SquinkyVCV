@@ -4,35 +4,24 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "SqClipboard.h"
+#include "TimeUtils.h"
 
 #include <assert.h>
 
-#if 0 // old way with persistent song pointers
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
     MidiSelectionModelPtr selection,
     std::shared_ptr<MidiEditorContext> unused,
     int trackNumber,
     const std::vector<MidiEventPtr>& inRemove,
-    const std::vector<MidiEventPtr>& inAdd)
-    : song(song), trackNumber(trackNumber), selection(selection), removeData(inRemove), addData(inAdd)
+    const std::vector<MidiEventPtr>& inAdd,
+    float trackLength)
+    : trackNumber(trackNumber), removeData(inRemove), addData(inAdd), newTrackLength(trackLength)
 {
     assert(song->getTrack(trackNumber));
+    originalTrackLength = song->getTrack(trackNumber)->getLength();     /// save off
 }
-#endif
 
-
-ReplaceDataCommand::ReplaceDataCommand(
-    MidiSongPtr song,
-    MidiSelectionModelPtr selection,
-    std::shared_ptr<MidiEditorContext> unused,
-    int trackNumber,
-    const std::vector<MidiEventPtr>& inRemove,
-    const std::vector<MidiEventPtr>& inAdd)
-    : trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
-{
-    assert(song->getTrack(trackNumber));
-}
 
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
@@ -51,12 +40,26 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq)
     assert(mt);
     MidiLocker l(mt->lock);
 
+    const float currentTrackLength = mt->getLength();
+    const bool isNewLengthRequested = (newTrackLength >= 0);
+    const bool isNewLengthLonger = (newTrackLength > currentTrackLength);
+   
+    // If we need to make track longer, do it first
+    if (isNewLengthRequested && isNewLengthLonger) {
+        mt->setLength(newTrackLength);
+    }
+
     for (auto it : addData) {
         mt->insertEvent(it);
     }
 
     for (auto it : removeData) {
         mt->deleteEvent(*it);
+    }
+
+    //  if we need to make track shorter, do it last
+    if (isNewLengthRequested && !isNewLengthLonger) {
+        mt->setLength(newTrackLength);
     }
 
     // clone the selection, clear real selection, add stuff back correctly
@@ -80,9 +83,18 @@ void ReplaceDataCommand::undo(MidiSequencerPtr seq)
 {
     assert(seq);
     MidiTrackPtr mt = seq->song->getTrack(trackNumber);
-  //  MidiTrackPtr mt = song->getTrack(trackNumber);
     assert(mt);
     MidiLocker l(mt->lock);
+
+    // we may need to change length back to originalTrackLength
+    const float currentTrackLength = mt->getLength();
+    const bool isNewLengthRequested = (originalTrackLength >= 0);
+    const bool isNewLengthLonger = (originalTrackLength > currentTrackLength);
+
+    // If we need to make track longer, do it first
+    if (isNewLengthRequested && isNewLengthLonger) {
+        mt->setLength(originalTrackLength);
+    }
 
     // to undo the insertion, delete all of them
     for (auto it : addData) {
@@ -90,6 +102,11 @@ void ReplaceDataCommand::undo(MidiSequencerPtr seq)
     }
     for (auto it : removeData) {
         mt->insertEvent(it);
+    }
+
+        // If we need to make track shorter, do it last
+    if (isNewLengthRequested && !isNewLengthLonger) {
+        mt->setLength(originalTrackLength);
     }
 
     MidiSelectionModelPtr selection = seq->selection;
@@ -114,6 +131,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeDeleteCommand(MidiSequencerPtr seq
         MidiEventPtr ev = it;
         toRemove.push_back(ev);
     }
+
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
@@ -137,6 +155,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
 
+    float newTrackLength = -1;         // assume we won't need to change track length
     if (canChangeLength) {
         // Figure out the duration of the track after xforming the notes
         MidiSelectionModelPtr clonedSelection = seq->selection->clone();
@@ -144,7 +163,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
         MidiEndEventPtr end = seq->context->getTrack()->getEndEvent();
         float endTime = end->startTime;
 
-        int index = 0;  // hope index is stable accross clones
+        int index = 0;  // hope index is stable across clones
         for (auto it : *clonedSelection) {
             MidiEventPtr ev = it;
             xform(ev, index++);
@@ -155,10 +174,10 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
             }
             endTime = std::max(endTime, t);
         }
+
+        // now end time is the required duration
         // set up events to extend to that length
-        if (endTime > end->startTime) {
-            extendTrackToMinDuration(seq, endTime, toAdd, toRemove);
-        }
+        newTrackLength = calculateDurationRequest(seq, endTime);
     }
 
     MidiSelectionModelPtr clonedSelection = seq->selection->clone();
@@ -185,7 +204,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
         seq->context,
         seq->context->getTrackNumber(),
         toRemove,
-        toAdd);
+        toAdd,
+        newTrackLength);
     return ret;
 }
 
@@ -207,14 +227,19 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPt
     return ret;
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta)
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequencerPtr seq, float delta, float quantizeGrid)
 {
     seq->assertValid();
-    Xform xform = [delta](MidiEventPtr event, int) {
+    Xform xform = [delta, quantizeGrid](MidiEventPtr event, int) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
-            note->startTime += delta;
-            note->startTime = std::max(0.f, note->startTime);
+            float s = note->startTime;
+            s += delta;
+            s = std::max(0.f, s);
+            if (quantizeGrid != 0) {
+                s = (float) TimeUtils::quantize(s, quantizeGrid, true);
+            }
+            note->startTime = s;
         }
     };
     auto ret =  makeChangeNoteCommand(Ops::Start, seq, xform, true);
@@ -236,7 +261,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
     ret->name = "change note start";
     return ret;
 }
-
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
 {
@@ -269,6 +293,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
     ret->name = "change note duration";
     return ret;
 }
+
 
 ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 {
@@ -303,16 +328,15 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
             newDuration = std::max(newDuration, note->duration + note->startTime);
         }
     }
-    extendTrackToMinDuration(seq, newDuration, toAdd, toRemove);
-
-   // printf("Make paste command, add %d, remove %d\n", (int) toAdd.size(), (int) toRemove.size());
+    const float newTrackLength = calculateDurationRequest(seq, newDuration);
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
         seq->context,
         seq->context->getTrackNumber(),
         toRemove,
-        toAdd);
+        toAdd,
+        newTrackLength);
     ret->name = "paste";
     return ret;
 }
@@ -322,11 +346,12 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
     seq->assertValid();
     MidiNoteEventPtr note = origNote->clonen();
 
+    const float newDuration = calculateDurationRequest(seq, note->startTime + note->duration);
+  
     // Make the delete end / inserts end to extend track.
     // Make it long enough to hold insert note.
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
-    extendTrackToMinDuration(seq, note->startTime + note->duration, toAdd, toRemove);
 
     toAdd.push_back(note);
 
@@ -336,27 +361,64 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
         seq->context,
         seq->context->getTrackNumber(),
         toRemove,
-        toAdd);
+        toAdd,
+        newDuration);
     ret->name = "insert note";
     return ret;
 }
 
-void ReplaceDataCommand::extendTrackToMinDuration(
-    MidiSequencerPtr seq,
-    float neededLength,
+ReplaceDataCommandPtr ReplaceDataCommand::makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength)
+{
+    seq->assertValid();
+
+    std::vector<MidiEventPtr> toAdd;
+    std::vector<MidiEventPtr> toDelete;
+
+    modifyNotesToFitNewLength(seq, newLength, toAdd, toDelete);
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toDelete,
+        toAdd,
+        newLength);
+    ret->name = "move end point";
+    return ret;
+}
+
+void ReplaceDataCommand::modifyNotesToFitNewLength(
+    std::shared_ptr<MidiSequencer>seq,
+    float newLength,
     std::vector<MidiEventPtr>& toAdd,
     std::vector<MidiEventPtr>& toDelete)
 {
-    auto track = seq->context->getTrack();
-    float curLength = track->getLength();
-
-    if (neededLength > curLength) {
-        float need = neededLength;
-        float needBars = need / 4.f;
-        float roundedBars = std::round(needBars + 1.f);
-        float duration = roundedBars * 4;
-        std::shared_ptr<MidiEndEvent> end = track->getEndEvent();
-        track->deleteEvent(*end);
-        track->insertEnd(duration);
+    auto tk = seq->context->getTrack();
+    for (auto it : *tk) {
+        MidiEventPtr ev = it.second;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+        if (note) {
+            if (note->startTime >= newLength) {
+                toDelete.push_back(note);
+            } else if (note->endTime() > newLength) {
+                MidiNoteEventPtr newNote = safe_cast<MidiNoteEvent>(note->clone());
+                toDelete.push_back(note);
+                newNote->duration = newLength - newNote->startTime;
+                toAdd.push_back(newNote);
+            }
+        }
     }
+}
+
+float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float duration)
+{
+    const float currentDuration = seq->context->getTrack()->getLength();
+    if (currentDuration >= duration) {
+        return -1;                      // Don't need to do anything, long enough
+    }
+
+    const float needBars = duration / 4.f;
+    const float roundedBars = std::floor(needBars + 1.f);
+    const float durationRequest = roundedBars * 4;
+    return durationRequest;
 }

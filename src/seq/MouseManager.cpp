@@ -1,4 +1,4 @@
-#include "MidiKeyboardHandler.h"    // TODO: get rid of this
+#include "ISeqSettings.h"
 #include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiSequencer.h"
 #include "MouseManager.h"
@@ -18,7 +18,6 @@ void MouseManager::draw(NVGcontext *vg)
         noteDragger->draw(vg);
     }
 }
-
 
 std::tuple<bool, float, float> MouseManager::xyToTimePitch(float x, float y) const
 {
@@ -52,29 +51,35 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
         return false;
     }
 
-    const float time = std::get<1>(timeAndPitch);
+    float time = std::get<1>(timeAndPitch); 
     const float pitchCV = std::get<2>(timeAndPitch);
 
     // This will move the cursor, which we may not want all the time
     MidiNoteEventPtr curNote = sequencer->editor->moveToTimeAndPitch(time, pitchCV);
     bool curNoteIsSelected = curNote && sequencer->selection->isSelected(curNote);
 
-
     if ((isPressed && curNote && !curNoteIsSelected) || 
             (!isPressed && mouseClickWasIgnored)) {
         mouseClickWasIgnored = false;
 
-        // TODO: use more specific handler calls, get rid of this ambiguous catchall
+        // now set/extend the selection
         MidiKeyboardHandler::doMouseClick(
             sequencer,
-            std::get<1>(timeAndPitch),
-            std::get<2>(timeAndPitch),
+            time,
+            pitchCV,
             shift,
             ctrl);
         ret = true;
     } else {
         mouseClickWasIgnored = true;
     }
+
+    // if no note is selected, then quantize cursor position
+    if (!curNote) {
+         time = sequencer->context->settings()->quantize(time, true);
+         sequencer->editor->moveToTimeAndPitch(time, pitchCV);
+    }
+
     return ret;
 }
 
@@ -84,14 +89,13 @@ bool MouseManager::onDoubleClick()
     if (note) {
         sequencer->editor->deleteNote();
     } else {
-        sequencer->editor->insertNote();
+        sequencer->editor->insertDefaultNote(false);
     }
     return true;
 }
 
 bool MouseManager::onDragStart()
 {
-   // printf("MouseManger::onDragStart()\n"); fflush(stdout);
     mouseMovedWhileDragging = false;
     MidiNoteEventPtr note = sequencer->editor->getNoteUnderCursor();
     if (!note) {

@@ -8,7 +8,7 @@
 	"sourceUrl": "https://github.com/squinkylabs/SquinkyVCV",
 	"manualUrl":  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md",
 	"changelogUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/CHANGELOG.md",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"modules":
 	[
 		{
@@ -75,7 +75,7 @@
 			"slug": "squinkylabs-sequencer",
 			"name": "Seq++",
 			"description": "DAW-like sequencer",
-			"disabled": true,
+			"disabled": false,
 			"tags": ["Sequencer"]
 		},
 		{
@@ -83,8 +83,7 @@
 			"name": "Saws",
 			"description": "Super saw VCO emulation",
 			"tags": ["VCO"]
-		}
-		,
+		},
 		{
 			"slug": "squinkylabs-blank",
 			"name": "Blank",
@@ -108,6 +107,13 @@
 			"slug": "squinkylabs-mix4",
 			"name": "ExFor",
 			"description": "4 channel mixer expander",
+			"disabled": false,
+			"tags": ["Mixer", "Expander"]
+		},
+		{
+			"slug": "squinkylabs-mixStereo",
+			"name": "ExTwo",
+			"description": "Two channel stereo mixer expander",
 			"disabled": false,
 			"tags": ["Mixer", "Expander"]
 		},
@@ -137,6 +143,12 @@
 			"name": "Stairway",
 			"description": "Ladder filter on steroids",
 			"tags": ["VCF"]
+		},
+		{
+			"slug": "squinkylabs-dt",
+			"name": "Polygate",
+			"description": "Polyphonic gate demultiplexer",
+			"tags": ["Polyphonic"]
 		},
 		{
 			"slug": "squinkylabs-funv",

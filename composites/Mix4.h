@@ -33,6 +33,13 @@ namespace std {
 }
 #endif
 
+
+namespace rack {
+    namespace engine {
+        struct Module;
+    }
+}
+
 /**
  Perf: 10.4 before new features
     13.5 with all the features
@@ -47,14 +54,14 @@ public:
     template<typename Q>
     friend class MixHelper;
 
-    Mix4(Module * module) : TBase(module)
+    Mix4(rack::engine::Module * module) : TBase(module)
     {
     }
     Mix4() : TBase()
     {
     }
     static const int numChannels = 4;
-
+    static const int numGroups = 4;
     /**
     * Only needs to be called once.
     */
@@ -182,8 +189,8 @@ public:
     float buf_channelSendGainsBLeft[numChannels] = {0};
     float buf_channelSendGainsBRight[numChannels] = {0};
 
-    float buf_auxReturnGainA = 0;
-    float buf_auxReturnGainB = 0;
+     void _disableAntiPop();
+
 private:
     Divider divider;
 
@@ -223,7 +230,6 @@ inline void Mix4<TBase>::stepn(int div)
     const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
 
     helper.procMixInputs(this);
-    //helper.procMasterMute(this);
 
     // If the is an external solo, then mute all channels
     bool anySolo = false;
@@ -247,7 +253,7 @@ inline void Mix4<TBase>::stepn(int div)
                 const float slider = TBase::params[i + GAIN0_PARAM].value;
 #endif
 
-            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].active ?
+            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
                 TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
@@ -340,6 +346,12 @@ template <class TBase>
 inline void Mix4<TBase>::onSampleRateChange()
 {
     setupFilters();
+}
+
+template <class TBase>
+inline void Mix4<TBase>::_disableAntiPop()
+{
+    filteredCV.setCutoff(0.49f);     // set it super fast
 }
 
 template <class TBase>

@@ -39,7 +39,7 @@ using Trem = Tremolo<TestComposite>;
 
 #include "MeasureTime.h"
 
-#if defined(_MSC_VER) || defined(ARCH_WIN)
+#ifdef _USE_WINDOWS_PERFTIME
 double SqTime::frequency = 0;
 #endif
 

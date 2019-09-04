@@ -3,18 +3,23 @@
 
 #include <assert.h>
 #include "ISeqSettings.h"
+#include "TimeUtils.h"
 
 class TestSettings : public ISeqSettings
 {
 public:
-    virtual void invokeUI(rack::widget::Widget* parent)
+    void invokeUI(rack::widget::Widget* parent) override
     {
     }
-    virtual float getQuarterNotesInGrid()
+    float getQuarterNotesInGrid() override
     {
-        return 0;
+        return _quartersInGrid;
     }
-    virtual bool snapToGrid()
+    bool snapToGrid() override
+    {
+        return _snapToGrid;
+    }
+    bool snapDurationToGrid() override
     {
         return false;
     }
@@ -24,10 +29,26 @@ public:
      * otherwise does nothing.
      * will not quantize smaller than a grid.
      */
-    virtual float quantize(float x, bool allowZero)
+    float quantize(float time, bool allowZero) override
     {
-       // assert(false);
-        //return 0;
-        return x;
+        auto quantized = time;
+        if (snapToGrid()) {
+            quantized = (float) TimeUtils::quantize(time, getQuarterNotesInGrid(), allowZero);
+        }
+        return quantized;
     }
+
+    float quantizeAlways(float time, bool allowZero) override
+    {
+        return  (float) TimeUtils::quantize(time, getQuarterNotesInGrid(), allowZero);
+    }
+
+    float articulation() override
+    {
+        return _articulation;
+    }
+
+    float _articulation = 1;
+    float _quartersInGrid = .25;
+    bool _snapToGrid = true;
 };

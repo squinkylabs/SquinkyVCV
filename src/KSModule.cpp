@@ -64,6 +64,14 @@ struct KCCompositeWidget : ModuleWidget
 
     void addJacks(KSModule*);
     void addKnobs(KSModule*);
+
+#ifdef _TIME_DRAWING
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 void KCCompositeWidget::addJacks(KSModule*)

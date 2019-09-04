@@ -5,11 +5,16 @@
 #include "IComposite.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 #include <sstream>
 
 #include "CHB.h"
 #include "IMWidgets.hpp"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Cheby");
+#endif
 
 using Comp = CHB<WidgetComposite>;
 
@@ -85,6 +90,15 @@ struct CHBWidget : ModuleWidget
         ModuleWidget::step();
         semitoneDisplay.step();
     }
+
+#ifdef _TIME_DRAWING
+    //Cheby: avg = 114.110832, stddev = 37.485271 (us) Quota frac=0.684665
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 
     DECLARE_MANUAL("Chebyshev manual",  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
 private:

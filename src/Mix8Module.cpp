@@ -4,6 +4,7 @@
 #include "WidgetComposite.h"
 
 #ifdef _MIX8
+#include "DrawTimer.h"
 #include "Mix8.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -13,6 +14,10 @@
 #include "ctrl/ToggleButtonV1.h"
 #include "ctrl/ToggleButtonV6.h"
 #include "ctrl/ToggleManager2.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Mix8");
+#endif
 
 using Comp = Mix8<WidgetComposite>;
 using Manager = ToggleManager2<SqSvgParamToggleButton>;
@@ -95,6 +100,15 @@ struct Mix8Widget : ModuleWidget
 
     std::shared_ptr<Svg> buttonUp =  SqHelper::loadSvg("res/square-button-01.svg");
     std::shared_ptr<Svg> buttonDn =  SqHelper::loadSvg("res/square-button-02.svg");
+
+#ifdef _TIME_DRAWING
+    // Mix8: avg = 152.609857, stddev = 38.358624 (us) Quota frac=0.915659
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 static const float channelX = 43;

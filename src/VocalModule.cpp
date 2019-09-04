@@ -1,10 +1,14 @@
 #include "Squinky.hpp"
 
 #ifdef _GROWLER
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 #include "VocalAnimator.h"
 #include "ctrl/SqMenuItem.h"
 
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Growler");
+#endif
 
 using Comp = VocalAnimator<WidgetComposite>;
 
@@ -66,6 +70,16 @@ struct VocalWidget : ModuleWidget
 {
     VocalWidget(VocalModule *);
     DECLARE_MANUAL("Growler manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/growler.md");
+
+
+#ifdef _TIME_DRAWING
+    // Growler: avg = 40.949576, stddev = 13.453620 (us) Quota frac=0.245697
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 template <typename BASE>

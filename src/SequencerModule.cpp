@@ -3,13 +3,13 @@
 #include "Squinky.hpp"
 
 #ifdef _SEQ
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 #include "Seq.h"
 #include "seq/SeqSettings.h"
 #include "seq/NoteDisplay.h"
 #include "seq/AboveNoteGrid.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SqWidgets.h"
@@ -20,34 +20,28 @@
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
-
 #include "SequencerModule.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Seq");
+#endif
 
 using Comp = Seq<WidgetComposite>;
 
-#ifdef __V1x
 SequencerModule::SequencerModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
-#else
-SequencerModule::SequencerModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS)
-{
-#endif
     runStopRequested = false;
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     ISeqSettings* ss = new SeqSettings(this);
     std::shared_ptr<ISeqSettings> _settings( ss);
-    sequencer = MidiSequencer::make(song, _settings);
     seqComp = std::make_shared<Comp>(this, song);
+    sequencer = MidiSequencer::make(song, _settings, seqComp->getAuditionHost());
 }
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq10/docs/sq.md";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq11/docs/sq.md";
 
 struct SequencerWidget : ModuleWidget
 {
@@ -57,6 +51,7 @@ struct SequencerWidget : ModuleWidget
     /**
      * Helper to add a text label to this widget
      */
+#ifdef _LAB
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
@@ -66,6 +61,18 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+     Label* addLabelLeft(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
+    {
+        Label* label = new Label();
+        label->alignment = Label::LEFT_ALIGNMENT;
+        label->box.pos = v;
+        label->text = str;
+        label->color = color;
+        addChild(label);
+        return label;
+    }
+    #endif
 
     void step() override;
 
@@ -77,6 +84,15 @@ struct SequencerWidget : ModuleWidget
     void addJacks(SequencerModule *module);
     void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
     void toggleRunStop(SequencerModule *module);
+
+#ifdef _TIME_DRAWING
+    // Seq: avg = 399.650112, stddev = 78.684572 (us) Quota frac=2.397901
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 void SequencerWidget::step()
@@ -107,15 +123,9 @@ void sequencerHelp()
     SqHelper::openBrowser(helpUrl);
 }
 
-#ifdef __V1x
 SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 {
     setModule(module);
-
-#else
-SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module), _module(module)
-{
-#endif
     if (module) {
         module->widget = this;
     }
@@ -159,38 +169,48 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : ModuleWidget(module)
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float controlX = 20;
-    addParam(SqHelper::createParam<Rogan2PSBlue>(
-        icomp,
-        Vec(controlX, 65),
-        module,
-        Comp::TEMPO_PARAM));
-    addLabel(Vec(60, 40), "Tempo");
 
+    float y = 50;
+#ifdef _LAB
+    addLabelLeft(Vec(controlX - 4, y),
+        "Clock rate");
+#endif
+    y += 20;
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(controlX, 120),
+        Vec(controlX, y),
         module,
         Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 90;    // width
+    p->box.size.x = 85;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
-#ifdef _PLAY2
+    y += 28;
+#ifdef _LAB
+    addLabelLeft(Vec(controlX - 4, y),
+        "Polyphony");
+#endif
+    y += 20;
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(controlX, 148),
+        Vec(controlX, y),
         module,
         Comp::NUM_VOICES_PARAM);
     p->box.size.x = 85;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->setLabels(Comp::getPolyLabels());
     addParam(p);
+   
+    y += 28;
+    const float yy = y;
+#ifdef _LAB
+    addLabel(Vec(controlX - 8, y),
+        "Run");
 #endif
-
-
+    y += 20;
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(controlX, 180),
+        Vec(controlX, y),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
@@ -199,86 +219,96 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         this->toggleRunStop(module);
     });
     addChild(tog);
-    addLabel(
-        Vec(controlX+30, 180),
-        "Run");
+   
+
+    y = yy;
+    float controlDx = 40;
 
     {
+#ifdef _LAB
+    addLabel(
+        Vec(controlX + controlDx - 8, y),
+        "Scroll");
+#endif
+    y += 20;
     scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(controlX, 220),
+        Vec(controlX + controlDx, y),
         module,
         Comp::PLAY_SCROLL_PARAM);
     scrollControl->addSvg("res/square-button-01.svg");
     scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
-
-    addLabel(
-        Vec(controlX + 30, 220),
-        "Scroll");
     }
 }
 
 void SequencerWidget::addJacks(SequencerModule *module)
 {
-    const float jacksY = 310;
-    const float jacksDy = 40;
-    const float jacksLabelY = 280;
+    const float jacksY1 = 286-2;
+    const float jacksY2 = 330+2;
     const float jacksDx = 40;
     const float jacksX = 20;
+#ifdef _LAB
     const float labelX = jacksX - 20;
+    const float dy = -32;
+#endif
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jacksX + 0 * jacksDx, jacksY),
+        Vec(jacksX + 0 * jacksDx, jacksY1),
         module,
         Comp::CLOCK_INPUT));
+#ifdef _LAB
     addLabel(
-        Vec(5 + labelX + 0 * jacksDx, jacksLabelY),
+        Vec(3 + labelX + 0 * jacksDx, jacksY1 + dy),
         "Clk");
+#endif
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jacksX + 1 * jacksDx, jacksY),
+        Vec(jacksX + 1 * jacksDx, jacksY1),
         module,
         Comp::RESET_INPUT));
+#ifdef _LAB
     addLabel(
-        Vec(-5 + labelX + 1 * jacksDx, jacksLabelY),
+        Vec(-4 + labelX + 1 * jacksDx, jacksY1 + dy),
         "Reset");
+#endif
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jacksX + 2 * jacksDx, jacksY),
+        Vec(jacksX + 2 * jacksDx, jacksY1),
         module,
         Comp::RUN_INPUT));
+#ifdef _LAB
     addLabel(
-        Vec(labelX + 2 * jacksDx, jacksLabelY),
+        Vec(labelX + 1 + 2 * jacksDx, jacksY1 + dy),
         "Run");
+#endif
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX, jacksY + jacksDy),
+        Vec(jacksX, jacksY2),
         module,
         Seq<WidgetComposite>::CV_OUTPUT));
+#ifdef _LAB
     addLabel(
-        Vec(labelX, jacksLabelY + jacksDy),
+        Vec(labelX+2, jacksY2 + dy),
         "CV");
+#endif
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX + 1 * jacksDx, jacksY + jacksDy),
+        Vec(jacksX + 1 * jacksDx, jacksY2),
         module,
         Seq<WidgetComposite>::GATE_OUTPUT));
+#ifdef _LAB
     addLabel(
-        Vec(labelX + 1 * jacksDx, jacksLabelY + jacksDy),
+        Vec(labelX + 1 * jacksDx, jacksY2 + dy),
         "Gate");
-
+#endif
     addChild(createLight<MediumLight<GreenLight>>(
-        Vec(jacksX + 2 * jacksDx , jacksY + jacksDy),
+        Vec(jacksX + 2 * jacksDx -6 , jacksY2 -6),
         module,
         Seq<WidgetComposite>::GATE_LIGHT));
 }
 
-#ifdef __V1x
 void SequencerModule::dataFromJson(json_t *data)
-#else
-void SequencerModule::fromJson(json_t* data)
-#endif
 {
     MidiSequencerPtr newSeq = SequencerSerializer::fromJson(data, this);
     setNewSeq(newSeq);
@@ -302,28 +332,17 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
     }
 }
 
-
 void SequencerModule::onReset()
 {
     Module::onReset();
     std::shared_ptr<MidiSong> newSong = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     ISeqSettings* ss = new SeqSettings(this);
     std::shared_ptr<ISeqSettings> _settings( ss);
-    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong, _settings);
+    MidiSequencerPtr newSeq  = MidiSequencer::make(newSong, _settings, seqComp->getAuditionHost());
     setNewSeq(newSeq);
 }
 
+Model *modelSequencerModule = 
+    createModel<SequencerModule, SequencerWidget>("squinkylabs-sequencer");
 
-// Specify the Module and ModuleWidget subclass, human-readable
-// manufacturer name for categorization, module slug (should never
-// change), human-readable module name, and any number of tags
-// (found in `include/tags.hpp`) separated by commas.
-
-#ifdef __V1x
-Model *modelSequencerModule = createModel<SequencerModule, SequencerWidget>("squinkylabs-sequencer");
-#else
-Model *modelSequencerModule = Model::create<SequencerModule, SequencerWidget>("Squinky Labs",
-    "squinkylabs-sequencer",
-    "S", SEQUENCER_TAG);
-#endif
 #endif

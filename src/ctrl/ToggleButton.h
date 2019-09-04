@@ -9,6 +9,49 @@
 #include "window.hpp"
 #endif
 
+
+
+#if 1   // just use SvgSwitch
+
+// og->addFrame(SqHelper::loadSvg("res/clean-switch-01.svg"));
+class ToggleButton : public SvgSwitch
+{
+public:
+    CircularShadow* shadowToDelete = nullptr;
+
+    ~ToggleButton()
+    {
+        if (shadowToDelete) {
+            delete shadowToDelete;
+        }
+    }
+    
+    ToggleButton()
+    {
+        // The default shadow gives a look we don't want 
+        auto shadowToDelete = this->shadow;
+        this->fb->removeChild(shadowToDelete);
+
+        // old one had default size 0
+        this->box.size.y = 0;
+        this->box.size.x = 0;
+    }
+
+    // Old switch took relative paths into plugin bundle
+    void addSvg(const char* resPath)
+    {
+        addFrame(SqHelper::loadSvg(resPath));
+    }
+
+    // old helper
+    int getValue() 
+    {
+        return  SqHelper::getValue(this);
+    }
+};
+
+#else
+
 class ToggleButton;
 
 /**
@@ -40,14 +83,8 @@ public:
         return  SqHelper::getValue(this);
     }
 
-#ifdef __V1x
     void onButton(const event::Button &e) override;
     void draw(const DrawArgs &args) override;
-#else
-    void onMouseDown(EventMouseDown &e) override;
-    void draw(NVGcontext *vg) override;
-#endif
-
     void registerManager(std::shared_ptr<ToggleManager>);
     void turnOff();
     
@@ -96,7 +133,6 @@ inline void ToggleButton::addSvg(const char* resourcePath)
     this->box.size.y = std::max(this->box.size.y, svg->box.size.y);
 }
 
-#ifdef __V1x
 inline void ToggleButton::draw(const DrawArgs &args)
 {
     const float _value = SqHelper::getValue(this);
@@ -104,28 +140,14 @@ inline void ToggleButton::draw(const DrawArgs &args)
     auto svg = svgs[index];
     svg->draw(args);
 }
-#else
-inline void ToggleButton::draw(NVGcontext *vg)
-{
-    const float _value = SqHelper::getValue(this);
-    int index = int(std::round(_value));
-    auto svg = svgs[index];
-    svg->draw(vg);
-}
-#endif
 
 inline void ToggleButton::turnOff()
 {
     SqHelper::setValue(this, 0);
 } 
 
-#ifdef __V1x
 inline void ToggleButton::onButton(const event::Button &e)
-#else
-inline void ToggleButton::onMouseDown(EventMouseDown &e)
-#endif
 {
-    #ifdef __V1x
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
         if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
@@ -133,13 +155,7 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
                 return;
             }
 
-        const bool ctrl = (e.mods & GLFW_MOD_CONTROL);
-    #else 
-      if (e.button != GLFW_MOUSE_BUTTON_LEFT) {
-                return;
-            }
-        const bool ctrl = rack::windowIsModPressed();
-    #endif
+        const bool ctrl = (e.mods & RACK_MOD_CTRL);
 
     // normally we tell manager to turn siblings off.
     // control key we don't - allows more than one to be on
@@ -168,5 +184,6 @@ inline void ToggleButton::onMouseDown(EventMouseDown &e)
 
     SqHelper::setValue(this, v);
 }
+#endif
 
 

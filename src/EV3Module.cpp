@@ -2,8 +2,10 @@
 
 #ifdef _EV3
 #include "ctrl/WaveformSelector.h"
+#include "ctrl/WaveformSwitch.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
+#include "DrawTimer.h"
 #include "WidgetComposite.h"
 
 #include "EV3.h"
@@ -11,6 +13,9 @@
 
 #include "SqPort.h"
  
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("EV3");
+#endif
 
 using Comp = EV3<WidgetComposite>;
 
@@ -301,6 +306,15 @@ struct EV3Widget : ModuleWidget
     Label* plusOne = nullptr;
     Label* plusTwo = nullptr;
     bool wasNormalizing = false;
+
+#ifdef _TIME_DRAWING
+    // EV3: avg = 464.417900, stddev = 145.768622 (us) Quota frac=2.786507
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);
@@ -392,19 +406,19 @@ void EV3Widget::makeSection(EV3Module *module, int index, std::shared_ptr<ICompo
     const float y4 = y3 + 43;
     const float xx = x - 12;
 
-    // These defines used to be passed as the max and default param values.
-    // presumably they are passed elsewhere
-    // include one extra wf - none
-#if 0
-    const float numWaves = (float) Comp::Waves::END;
-    const float defWave = (float) Comp::Waves::SIN;
-#endif
-
+#if 1
+ addParam(SqHelper::createParam<WaveformSwitch>(
+        icomp,
+        Vec(xx, y4),
+        module,
+        Comp::WAVE1_PARAM + delta * index));
+#else
     addParam(SqHelper::createParam<WaveformSelector>(
         icomp,
         Vec(xx, y4),
         module,
         Comp::WAVE1_PARAM + delta * index));
+#endif
 }
 
 void EV3Widget::makeSections(EV3Module* module, std::shared_ptr<IComposite> icomp)

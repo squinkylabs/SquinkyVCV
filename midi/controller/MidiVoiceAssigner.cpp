@@ -3,19 +3,7 @@
 #include "MidiVoice.h"
 
 #include <assert.h>
-
-/*
-class MidiVoiceAssigner
-{
-public:
-    MidiVoiceAssigner(MidiVoice* vx, int maxVoices);
-    void setNumVoices(int);
-    MidiVoice* getNext(float pitch);
-private:
-    MidiVoice* const voices;
-    const int maxVoices;
-};
-*/
+#include <stdio.h>
 
 MidiVoiceAssigner::MidiVoiceAssigner(MidiVoice* vx, int maxVoices) :
     voices(vx),
@@ -28,10 +16,18 @@ MidiVoiceAssigner::MidiVoiceAssigner(MidiVoice* vx, int maxVoices) :
     }
 }
 
+void MidiVoiceAssigner::reset()
+{
+    nextVoice = 0;
+}
+
 void MidiVoiceAssigner::setNumVoices(int voices)
 {
     numVoices = voices;
     assert(numVoices <= maxVoices);
+    if (nextVoice >= numVoices) {
+        nextVoice = 0;          // make sure it's valid
+    }
 }
 
 MidiVoice* MidiVoiceAssigner::getNext(float pitch)
@@ -44,24 +40,46 @@ MidiVoice* MidiVoiceAssigner::getNext(float pitch)
         default:
             assert(false);
     }
+#if defined(_MLOG)
+    printf("MidiVoiceAssigner::getNext(pitch=%.2f), ret voice #%d state=%d\n",
+        pitch, nextVoice->_getIndex(), nextVoice->state()); 
+    fflush(stdout);
+#endif
     return nextVoice;
+}
+
+int MidiVoiceAssigner::wrapAround(int vxNum)
+{
+    if (vxNum >= numVoices) {
+        vxNum -= numVoices;
+    }
+    return vxNum;
+}
+
+int MidiVoiceAssigner::advance(int vxNum)
+{
+    return wrapAround(vxNum + 1);
 }
 
 MidiVoice* MidiVoiceAssigner::getNextReUse(float pitch)
 {
     assert(numVoices > 0);
 
-    // first, look for a voice already playing this pitch
+    // first, look for a voice already playing this pitch, but idle
     for (int i = 0; i < numVoices; ++i) {
-        if (voices[i].pitch() == pitch) {
+        if ((voices[i].pitch() == pitch) &&
+         (voices[i].state() == MidiVoice::State::Idle)) {
             return voices + i;
         }
     }
 
-    // next, look for any idle voice
+    // next, look for any idle voice, starting at next voice
     for (int i = 0; i < numVoices; ++i) {
-        if (voices[i].state() == MidiVoice::State::Idle) {
-            return voices + i;
+        int candidateVoice = wrapAround(i + nextVoice);
+     
+        if (voices[candidateVoice].state() == MidiVoice::State::Idle) {
+            nextVoice = advance(candidateVoice);
+            return voices + candidateVoice;
         }
     }
 

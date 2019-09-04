@@ -1,16 +1,12 @@
 
 
 #include "../Squinky.hpp"
-#ifdef __V1x
 #include "widget/Widget.hpp"
-#else
-#include "widgets.hpp"
-#include "util/math.hpp"
-#endif
-
 #include "MidiEditorContext.h"
 
 class MidiSequencer;
+class MidiSong;
+class SubrangeLoop;
 using  MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
 struct AboveNoteGrid : OpaqueWidget
@@ -23,11 +19,7 @@ public:
      */
     void setSequencer(MidiSequencerPtr seq);
 
-#ifdef __V1x
     void draw(const DrawArgs &args) override;
-#else
-    void draw(NVGcontext *vg) override;
-#endif
     void step() override;
 
 private:
@@ -35,6 +27,7 @@ private:
     int curFirstBar = -1;      // number of measure at start of grid
     float curCursorTime = -1;
     float curCursorPitch = -1;
+    std::shared_ptr<SubrangeLoop> curLoop;
     MidiSequencerPtr sequencer;
     Label* editAttributeLabel = nullptr;
     MidiEditorContext::NoteAttribute curAttribute = MidiEditorContext::NoteAttribute::Duration;
@@ -46,4 +39,5 @@ private:
 
     Label* cursorTimeLabel = nullptr;
     Label* cursorPitchLabel = nullptr;
+    Label* loopLabel = nullptr;
 };

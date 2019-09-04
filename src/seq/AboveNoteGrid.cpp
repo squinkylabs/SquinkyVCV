@@ -20,6 +20,8 @@ AboveNoteGrid::AboveNoteGrid(const Vec& pos, const Vec& size, MidiSequencerPtr s
     editAttributeLabel->text = "";
     editAttributeLabel->color = UIPrefs::SELECTED_NOTE_COLOR;
     addChild(editAttributeLabel);
+
+    curLoop = std::make_shared<SubrangeLoop>();
 }
 
 
@@ -86,6 +88,12 @@ void AboveNoteGrid::createTimeLabels()
     cursorPitchLabel->text = "";
     cursorPitchLabel->color = UIPrefs::STATUS_LABEL_COLOR;
     addChild(cursorPitchLabel);
+
+    loopLabel = new Label();
+    loopLabel->box.pos = Vec(100, row1);
+    loopLabel->text = "";
+    loopLabel->color =  UIPrefs::STATUS_LABEL_COLOR;
+    addChild(loopLabel);
 }
 
 // TODO: move to util
@@ -108,6 +116,19 @@ void AboveNoteGrid::updateCursorLabels()
         cursorPitchLabel->text = PitchUtils::pitch2str(curCursorPitch);
     }
 
+    if (*curLoop != sequencer->song->getSubrangeLoop()) {
+        *curLoop = sequencer->song->getSubrangeLoop();
+        if (!curLoop->enabled) {
+            loopLabel->text.erase();    
+        } else {
+            std::stringstream str;
+            str << "L ";
+            str << 1 + TimeUtils::time2bar(curLoop->startTime);
+            str << '-';
+            str << 1 + TimeUtils::time2bar(curLoop->endTime);
+            loopLabel->text = str.str();
+        }
+    }
 }
 
 void AboveNoteGrid::updateTimeLabels()
@@ -133,31 +154,22 @@ void AboveNoteGrid::updateTimeLabels()
         const bool isBar = !(i % 4);
         const int numDigitsDisplayed = isBar ? 1 : 2;
         std::string s = TimeUtils::time2str(time, numDigitsDisplayed);
-        assert(timeLabels.size < i);
+       // printf("in label update, i = %d, size = %d\n", i, timeLabels.size());
+        assert(timeLabels.size() > i);
         timeLabels[i]->text = s;
         ++i;
     }
 }
 
 
-#ifdef __V1x
 void AboveNoteGrid::draw(const DrawArgs &args)
 {
     NVGcontext *vg = args.vg;
-#else
-void AboveNoteGrid::draw(NVGcontext *vg)
-{
-#endif
 
     if (!this->sequencer) {
         return;
     }
 
     filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
-
-#ifdef __V1x
     OpaqueWidget::draw(args);
-#else
-    OpaqueWidget::draw(vg);
-#endif
 }

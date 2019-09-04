@@ -32,8 +32,6 @@ inline void ButtonCell::loadSVG(const char* res, const char* resOn)
 {
     SqHelper::setSvg(&svg, SqHelper::loadSvg(res));
     SqHelper::setSvg(&svgOn, SqHelper::loadSvg(resOn));
-   // svg.setSVG(SVG::load(assetPlugin(pluginInstance, res)));
-  //  svgOn.setSVG(SVG::load(assetPlugin(pluginInstance, resOn)));
     this->box.size = svg.box.size;
 }
 
@@ -58,19 +56,13 @@ struct WaveformSelector : ParamWidget
     std::vector< std::vector< CellPtr>> svgs;
     void addSvg(int row, const char* res, const char* resOn);
    
-
-#ifdef __V1x
     void draw(const DrawArgs &arg) override;
     void onButton(const event::Button &e) override;
     void drawSVG(const DrawArgs &arg, SqHelper::SvgWidget&, float x, float y);
-#else
-    void onMouseDown(EventMouseDown &e) override;
-    void draw(NVGcontext *vg) override;
-    void drawSVG(NVGcontext *vg, SqHelper::SvgWidget&, float x, float y);
-#endif
     CellPtr hitTest(float x, float y);
     //
     float nextValue = 0;
+    widget::FramebufferWidget* fb = nullptr;
 };
 
 CellPtr WaveformSelector::hitTest(float x, float y)
@@ -79,7 +71,6 @@ CellPtr WaveformSelector::hitTest(float x, float y)
     for (auto& r : svgs) {
         for (auto& s : r) {
             if (SqHelper::contains(s->box,  pos)) {
-           // if (s->box.contains(pos)) {
                 return s;
             }
         }
@@ -134,16 +125,9 @@ inline WaveformSelector::~WaveformSelector()
 
 #if 1
 
-#ifdef __V1x
 inline void WaveformSelector::drawSVG(const DrawArgs &arg, SqHelper::SvgWidget& svg, float x, float y)
 {
     NVGcontext* vg = arg.vg;
-#else
-inline void WaveformSelector::drawSVG(NVGcontext *arg, SqHelper::SvgWidget& svg, float x, float y)
-{
-    NVGcontext* vg = arg;
-#endif
-
     nvgSave(vg);
     float transform[6];
     nvgTransformIdentity(transform);
@@ -153,11 +137,7 @@ inline void WaveformSelector::drawSVG(NVGcontext *arg, SqHelper::SvgWidget& svg,
     nvgRestore(vg);
 }
 
-#ifdef __V1x
 inline void WaveformSelector::draw(const DrawArgs &arg)
-#else
-inline void WaveformSelector::draw(NVGcontext *arg)
-#endif
 {
     for (auto& r : svgs) {
         for (auto& s : r) {
@@ -167,12 +147,10 @@ inline void WaveformSelector::draw(NVGcontext *arg)
     }
 }
 
-
-#ifdef __V1x
- inline void WaveformSelector::onButton(const event::Button &e)
- {
-     // for now, use both button presses.
-     // eventually get more sophisticated.
+inline void WaveformSelector::onButton(const event::Button &e)
+{
+        // for now, use both button presses.
+        // eventually get more sophisticated.
     if (e.action == GLFW_PRESS && (e.button == GLFW_MOUSE_BUTTON_LEFT || e.button == GLFW_MOUSE_BUTTON_RIGHT)) {
         CellPtr hit = hitTest(e.pos.x, e.pos.y);
         if (hit) {
@@ -180,28 +158,10 @@ inline void WaveformSelector::draw(NVGcontext *arg)
             if (hit->value == SqHelper::getValue(this)) {
                 return;
             }
-           SqHelper::setValue(this, hit->value);
-        }
-	}
- }
-
-
-#else
-inline void WaveformSelector::onMouseDown(EventMouseDown &e)
-{
-    e.consumed = false;
-
-    if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
-        CellPtr hit = hitTest(e.pos.x, e.pos.y);
-        if (hit) {
-            e.consumed = true;
-            if (hit->value == this->value) {
-                return;
-            }
-        setValue(hit->value);
+            SqHelper::setValue(this, hit->value);
         }
     }
 }
-#endif
+
 
 #endif

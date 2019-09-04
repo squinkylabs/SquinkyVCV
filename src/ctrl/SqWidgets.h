@@ -6,37 +6,17 @@
 #include "SqUI.h"
 #include <functional>
 
-
-/**
- * Like Trimpot, but with blue stripe
- */
-#if 0
-struct BlueTrimmer : SVGKnob
-{
-    BlueTrimmer()
-    {
-        minAngle = -0.75*M_PI;
-        maxAngle = 0.75*M_PI;
-        setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BlueTrimmer.svg")));
-    }
-};
-#endif
-
 /**
  * Like Rogan1PSBlue, but smaller.
  */
-#ifdef __V1x
+
 struct Blue30Knob : SvgKnob
-#else
-struct Blue30Knob : SVGKnob
-#endif
 {
     Blue30Knob()
     {
         minAngle = -0.83*M_PI;
         maxAngle = 0.83*M_PI;
-       // setSVG(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/Blue30.svg")));
-       SqHelper::setSvg(this, SqHelper::loadSvg("res/Blue30.svg"));
+        SqHelper::setSvg(this, SqHelper::loadSvg("res/Blue30.svg"));
     }
 };
 
@@ -49,11 +29,7 @@ struct Blue30SnapKnob : Blue30Knob
     }
 };
 
-#ifdef __V1x
 struct NKKSmall : SvgSwitch
-#else
-struct NKKSmall : SVGSwitch, ToggleSwitch
-#endif
 {
     NKKSmall()
     {
@@ -63,11 +39,7 @@ struct NKKSmall : SVGSwitch, ToggleSwitch
     }
 };
 
-#ifdef __V1x
 struct BlueToggle : public SvgSwitch
-#else 
-struct BlueToggle : public SVGSwitch, ToggleSwitch
-#endif
 {
     BlueToggle()
     {
@@ -79,44 +51,46 @@ struct BlueToggle : public SVGSwitch, ToggleSwitch
 /**
  * A very basic momentary push button.
  */
-#ifdef __V1x
 struct SQPush : SvgButton
-#else
-struct SQPush : SVGButton
-#endif
 {
+    CircularShadow* shadowToDelete = nullptr;
+
     SQPush()
     {
-#ifdef __V1x
+        // we don't want the shadow to show, so remove it from the tree
+        shadowToDelete = this->shadow;
+        this->fb->removeChild(shadowToDelete);
+
+        // But the widget still references it so we just need to 
+        // delete it later
         addFrame(SqHelper::loadSvg("res/BluePush_0.svg"));
         addFrame(SqHelper::loadSvg("res/BluePush_1.svg"));
-#else
-        setSVGs(
-            SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_0.svg")),
-            SVG::load(SqHelper::assetPlugin(pluginInstance, "res/BluePush_1.svg"))
-        );
-#endif
     }
+
+    ~SQPush()
+    {
+        if (shadowToDelete) {
+            delete shadowToDelete;
+        }
+    }
+
 
     SQPush(const char* upSVG, const char* dnSVG)
     {
-#ifdef __V1x
+        shadowToDelete = this->shadow;
+        this->fb->removeChild(shadowToDelete);
+
         addFrame(SqHelper::loadSvg(upSVG));
         addFrame(SqHelper::loadSvg(dnSVG));
-#else
-        setSVGs(
-            SVG::load(SqHelper::assetPlugin(pluginInstance, upSVG)),
-            SVG::load(SqHelper::assetPlugin(pluginInstance, dnSVG))
-        );
-#endif
     }
+
     void center(Vec& pos)
     {
         this->box.pos = pos.minus(this->box.size.div(2));
     }
-#ifdef __V1x
-     void onButton(const event::Button &e) override
-     {
+
+    void onButton(const event::Button &e) override
+    {
         //only pick the mouse events we care about.
         // TODO: should our buttons be on release, like normal buttons?
         // Probably should use drag end
@@ -128,17 +102,8 @@ struct SQPush : SVGButton
         if (clickHandler) {
             clickHandler();
         }
-       sq::consumeEvent(&e, this);
-     }
-#else
-    void onDragEnd(EventDragEnd &e) override
-    {
-        SVGButton::onDragEnd(e);
-        if (clickHandler) {
-            clickHandler();
-        }
+        sq::consumeEvent(&e, this);
     }
-#endif
 
     /**
      * User of button passes in a callback lamba here
@@ -150,8 +115,6 @@ struct SQPush : SVGButton
 
     std::function<void(void)> clickHandler;
 };
-
-
 
 /**************************************************************************
  **
@@ -168,11 +131,7 @@ struct SQPanelItem : MenuItem
 
     SQPanelItem(SQStatusCallback, SQActionCAllback);
 
-#ifdef __V1x
     void onAction(const event::Action &e) override
-#else
-    void onAction(EventAction &e) override
-#endif
     {
         actionCallback();
     }

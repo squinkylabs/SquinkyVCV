@@ -4,10 +4,15 @@
 #include "WidgetComposite.h"
 
 #ifdef _SLEW
+#include "DrawTimer.h"
 #include "Slew4.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Slade");
+#endif
 
 using Comp = Slew4<WidgetComposite>;
 
@@ -82,6 +87,16 @@ struct Slew4Widget : ModuleWidget
     void addJacks(Slew4Module *);
     void addScrews();
     void addOther(Slew4Module*, std::shared_ptr<IComposite> icomp);
+
+
+#ifdef _TIME_DRAWING
+    // Slade: avg = 71.970501, stddev = 16.551967 (us) Quota frac=0.431823
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 };
 
 

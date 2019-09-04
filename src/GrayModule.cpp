@@ -3,8 +3,13 @@
 #include "WidgetComposite.h"
 
 #ifdef _GRAY
+#include "DrawTimer.h"
 #include "Gray.h"
 #include "ctrl/SqMenuItem.h"
+
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Gray");
+#endif
 
 using Comp = Gray<WidgetComposite>;
 
@@ -73,6 +78,14 @@ struct GrayWidget : ModuleWidget
         addChild(label);
         return label;
     }
+#ifdef _TIME_DRAWING
+    // Gray: avg = 52.826101, stddev = 16.951956 (us) Quota frac=0.316957
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 
 private:
     void addBits(GrayModule *module);
@@ -92,7 +105,7 @@ inline void GrayWidget::addBits(GrayModule *module)
             module,
             Gray<WidgetComposite>::OUTPUT_0 + i));
         addChild(createLight<MediumLight<GreenLight>>(
-            Vec(ledCol, firstBitY + i * vertSpace - 6),
+            Vec(ledCol, firstBitY + i * vertSpace - 4.5),
             module,
             Gray<WidgetComposite>::LIGHT_0 + i));
     }
@@ -125,10 +138,10 @@ GrayWidget::GrayWidget(GrayModule *module) :
 
     addParam(SqHelper::createParamCentered<CKSS>(
         icomp,
-        Vec(71, 33),
+        Vec(74, 31),
         module,
         Gray<WidgetComposite>::PARAM_CODE));
-    addLabel(Vec(2, 27), "Balanced");
+    addLabel(Vec(2, 25), "Balanced");
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(100, 339),

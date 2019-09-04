@@ -5,6 +5,8 @@
 #include "MidiSelectionModel.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "TestAuditionHost.h"
+
 #include "asserts.h"
 
 static void testCanInsert()
@@ -342,6 +344,8 @@ static void testQuant()
     //assertEQ(x, 64);
 }
 
+
+
 static void testQuantRel()
 {
     assertEQ(PitchUtils::deltaCVToSemitone(0), 0);
@@ -358,8 +362,9 @@ static void testQuantRel()
 
 static void testExtendSelection()
 {
+    auto a = std::make_shared<TestAuditionHost>();
     // put in one, then extend to second one
-    MidiSelectionModel sel;
+    MidiSelectionModel sel(a);
     MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
     MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
     note1->startTime = 1;
@@ -389,13 +394,27 @@ static void testExtendSelection()
     }
     assert(found1);
     assert(found2);
-
 }
 
+static void testAddSelectionSameNote()
+{
+    auto a = std::make_shared<TestAuditionHost>();
+
+    MidiSelectionModel sel(a);
+    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
+    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
+
+    assert(*note1 == *note2);
+
+    sel.select(note1);
+    sel.extendSelection(note2);
+    assertEQ(sel.size(), 1);
+}
 
 static void testSelectionDeep()
 {
-    MidiSelectionModel selOrig;
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSelectionModel selOrig(a);
     MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
     MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
     MidiNoteEventPtr note3 = std::make_shared<MidiNoteEvent>();
@@ -425,7 +444,8 @@ static void testSelectionDeep()
 
 void testSelectionAddTwice()
 {
-    MidiSelectionModel selOrig;
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSelectionModel selOrig(a);
     MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
     MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
     note1->startTime = 1;
@@ -434,7 +454,7 @@ void testSelectionAddTwice()
     note2->pitchCV = 2.1f;
     
 
-    MidiSelectionModel sel;
+    MidiSelectionModel sel(a);
     sel.extendSelection(note1);
     sel.extendSelection(note2);
     assertEQ(sel.size(), 2);
@@ -442,10 +462,10 @@ void testSelectionAddTwice()
     sel.extendSelection(note1);
     assertEQ(sel.size(), 2);
 
-    // should still be able to insert a clone
+    //  clone should be recognized as the same.
     MidiEventPtr cloneNote1 = note1->clone();
     sel.extendSelection(cloneNote1);
-    assertEQ(sel.size(), 3);
+    assertEQ(sel.size(), 2);
 }
 
 void testMidiDataModel()
@@ -470,6 +490,7 @@ void testMidiDataModel()
     testQuantRel();
 
     testExtendSelection();
+    testAddSelectionSameNote();
     testSelectionDeep();
     testSelectionAddTwice();
 

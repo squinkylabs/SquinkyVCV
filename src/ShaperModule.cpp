@@ -1,12 +1,16 @@
 #include "Squinky.hpp"
 
 #ifdef _SHAPER
+#include "DrawTimer.h"
 #include "ctrl/ToggleButton.h"
 #include "WidgetComposite.h"
 #include "ctrl/SqMenuItem.h"
 
 #include "Shaper.h"
 
+#ifdef _TIME_DRAWING
+static DrawTimer drawTimer("Shaper");
+#endif
 
 using Comp = Shaper<WidgetComposite>;
 
@@ -79,6 +83,18 @@ struct ShaperWidget : ModuleWidget
     }
 
     void step() override;
+
+    
+#ifdef _TIME_DRAWING
+    // Shaper: avg = 251.852924, stddev = 78.230563 (us) Quota frac=1.511118
+    // new button Shaper: avg = 40.648590, stddev = 7.040337 (us) Quota frac=0.243892
+
+    void draw(const DrawArgs &args) override
+    {
+        DrawLocker l(drawTimer);
+        ModuleWidget::draw(args);
+    }
+#endif
 private:
     Label* shapeLabel=nullptr;
     Label* shapeLabel2=nullptr;

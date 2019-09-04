@@ -5,6 +5,7 @@
 #include "MidiSong.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
+#include "TestHost2.h"
 
 #include "asserts.h"
 #include <memory>
@@ -15,61 +16,44 @@ const float quantInterval = .001f;      // very fine to avoid messing up old tes
                                         // old tests are pre-quantized playback
 
 /**
- * mock host to spy on the voices.
+ * Makes a one-track song.
+ * Track has one quarter note at t=0, duration = eighth.
+ * End event at quarter note after note
  */
-class TestHost2 : public IMidiPlayerHost
+MidiSongPtr makeSongOneQ(float noteTime, float endTime)
 {
-public:
-    void reset()
-    {
-        cvChangeCount = 0;
-        gateChangeCount = 0;
-        for (auto it : gateState) {
-            it = false;
-        }
-        for (auto it : cvValue) {
-            it = -100;
-        }
-    }
-    void setGate(int voice, bool g) override
-    {
-        assert(voice >= 0 && voice < 16);
-        bool bs = gateState[voice];
-        bool chg = (bs != g);
-        if (g != gateState[voice]) {
-            ++gateChangeCount;
-            gateState[voice] = g;
-        }
-    }
-    void setCV(int voice, float cv) override
-    {
-        assert(voice >= 0 && voice < 16);
-        if (cv != cvValue[voice]) {
-            ++cvChangeCount;
-            cvValue[voice] = cv;
-        }
-    }
-    void onLockFailed() override
-    {
-        ++lockConflicts;
-    }
+    const float duration = .5;
+    assert(endTime >= (noteTime + duration));
 
-    int cvChangeCount = 0;
-    int gateChangeCount = 0;
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
+    song->createTrack(0);
+    MidiTrackPtr track = song->getTrack(0);
 
-    int lockConflicts = 0;
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = noteTime;
+    note->duration = .5;
+    note->pitchCV = 2.f;
+    track->insertEvent(note);
+    track->insertEnd(endTime);
 
-    std::vector<bool> gateState = {
-        false, false, false, false,
-        false, false, false, false,
-        false, false, false, false,
-        false, false, false, false};
-    std::vector<float> cvValue = {
-        -100,-100,-100,-100,
-        -100,-100,-100,-100,
-        -100,-100,-100,-100,
-        -100,-100,-100,-100};
-};
+    MidiEventPtr p = track->begin()->second;
+    assert(p->type == MidiEvent::Type::Note);
+
+    return song;
+}
+
+/**
+ * Makes a one-track song.
+ * Track has one quarter note at t=0, duration = eighth.
+ * End event at quarter note end.
+ */
+MidiSongPtr makeSongOneQ()
+{
+    return makeSongOneQ(0, 1);
+}
+
+
 
 using TestHost2Ptr = std::shared_ptr<TestHost2>;
 
@@ -290,7 +274,6 @@ static void testVoiceAssignReUse()
 
 static void testVoiceAssingOverflow()
 {
-
     MidiVoice vx[4];
     MidiVoiceAssigner va(vx, 4);
     TestHost2 th;
@@ -406,6 +389,83 @@ static void testVoiceAssignOverlapMono()
     assert(vx[1].state() == MidiVoice::State::Idle);
 }
 
+static void testVoiceAssignRotate()
+{
+    MidiVoice vx[2];
+    MidiVoiceAssigner va(vx, 2);
+    TestHost2 th;
+    va.setNumVoices(2);
+    initVoices(vx, 2, &th);
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+    const float pitch3 = 2;
+   
+
+    // play first note
+    vx[0].updateToMetricTime(1);
+    vx[1].updateToMetricTime(1);
+
+    auto p = va.getNext(pitch1);
+    assert(p);
+    assert(p == vx);                    // pitch 1 assigned to voice 0
+
+    p->playNote(pitch1, 1, 3);         // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+
+    // let first end
+    vx[0].updateToMetricTime(5);
+    vx[1].updateToMetricTime(5);
+    assert(p->state() == MidiVoice::State::Idle);
+
+    // play second
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx+1);                // pitch 2 assigned to next voice
+    p->playNote(pitch1, 5, 6);        // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+
+     // let second end
+    vx[0].updateToMetricTime(7);
+    vx[1].updateToMetricTime(7);
+    assert(p->state() == MidiVoice::State::Idle);
+
+     // play third
+    p = va.getNext(pitch2);
+    assert(p);
+    assert(p == vx);                // pitch 2 assigned to next voice (wrap
+    p->playNote(pitch1, 7, 8);        // play long note to this voice
+    assert(p->state() == MidiVoice::State::Playing);
+}
+
+static void testVoiceAssignRetrigger()
+{
+    MidiVoice vx[2];
+    MidiVoiceAssigner va(vx, 2);
+    TestHost2 th;
+    va.setNumVoices(2);
+    initVoices(vx, 2, &th);
+
+    const float pitch1 = 0;
+    const float pitch2 = 1;
+
+    MidiVoice* p = va.getNext(pitch1);
+    p->playNote(pitch1, 0, 1);
+
+    // re-assign same pitch should not work - it's still playing
+    MidiVoice* p2 = va.getNext(pitch1); 
+    assert(p->_getIndex() != p2->_getIndex());
+
+    p2 = va.getNext(pitch1);
+    assert(p->_getIndex() != p2->_getIndex());
+
+    // now set first voice to retrigger
+    p->_setState(MidiVoice::State::ReTriggering);
+    p2 = va.getNext(pitch1);
+    assert(p->_getIndex() != p2->_getIndex());
+}
+
 //********************* test helper functions ************************************************
 
 extern MidiSongPtr makeSongOneQ();
@@ -423,7 +483,7 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
 
     // song is only 1.0 long
     float expectedLoopStart = std::floor(time);
-    assertEQ(pl.getLoopStart(), expectedLoopStart);
+    assertEQ(pl.getCurrentLoopIterationStart(), expectedLoopStart);
     
     return host;
 }
@@ -534,32 +594,10 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
 
        // song is only 1.0 long
     float expectedLoopStart = std::floor(timeBeforeLock + timeDuringLock + timeAfterLock);
-    assertEQ(pl.getLoopStart(), expectedLoopStart);
+    assertEQ(pl.getCurrentLoopIterationStart(), expectedLoopStart);
 
     return host;
 }
-
-/**
- * runs a while, then stops, resets test host, the runs more
- */
-static std::shared_ptr<TestHost2> makeSongOneQandRun3(float timeBeforeStop, float timeAfterStop)
-{
-    MidiSongPtr song = makeSongOneQ();
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(timeBeforeStop, .25f);
-
-    // song is only 1.0 long
-    float expectedLoopStart = std::floor(timeBeforeStop);
-    assertEQ(pl.getLoopStart(), expectedLoopStart);
-
-    pl.stop();
-    host->reset();
-    pl.updateToMetricTime(timeAfterStop, .25f);
-
-    return host;
-}
-
 
 //***************************** MidiPlayer2 ****************************************
 // test that APIs can be called
@@ -605,7 +643,6 @@ static void testMidiPlayerOneNoteOnWithLockContention()
 static void testMidiPlayerOneNote()
 {
     // this was wall time (1/4 sec)
-    //std::shared_ptr<TestHost> host = makeSongOneQandRun(.25f);
     std::shared_ptr<TestHost2> host = makeSongOneQandRun(.5f);
 
     assertAllButZeroAreInit(host.get());
@@ -689,12 +726,14 @@ static void testMidiPlayerReset()
     assertEQ(host->lockConflicts, 0);
 }
 
+#if 0   // don't support stop any more
 static void testMidiPlayerStop()
 {
     std::shared_ptr<TestHost2> host = makeSongOneQandRun3(1, 100);
     assertEQ(host->gateChangeCount, 0);
     assertEQ(host->cvChangeCount, 0);
 }
+#endif
 
 
 // four voice assigner, but only two overlapping notes
@@ -707,6 +746,108 @@ static void testMidiPlayerOverlap()
     assert(host->gateState[2] == false);
     assert(host->cvValue[0] == 2);
     assertClose(host->cvValue[1],  2.1, .001);
+}
+
+static void testMidiPlayerLoop()
+{
+    // make a song with one note in the second bar
+    MidiSongPtr song = makeSongOneQ(4, 100);
+
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    assert(!song->getSubrangeLoop().enabled);
+    SubrangeLoop l(true, 4, 8);
+    song->setSubrangeLoop(l);
+    assert(song->getSubrangeLoop().enabled);
+
+    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+
+    // Expect one note played on first clock, due to loop start offset
+    assertEQ(1, host->gateChangeCount);
+    assert(host->gateState[0]);
+
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(.9, .5);
+    assertEQ(2, host->gateChangeCount);
+    assert(!host->gateState[0]);
+}
+
+static void testMidiPlayerLoop2()
+{
+    // make a song with one note in the second bar
+    MidiSongPtr song = makeSongOneQ(4, 100);
+
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    assert(!song->getSubrangeLoop().enabled);
+    SubrangeLoop l(true, 4, 8);
+    song->setSubrangeLoop(l);
+    assert(song->getSubrangeLoop().enabled);
+
+    assertEQ(pl.getCurrentLoopIterationStart(), 0);
+    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+
+    // Expect one note played on first clock, due to loop start offset
+    assertEQ(1, host->gateChangeCount);
+    assert(host->gateState[0]);
+
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(3.5, .5);   
+    assertEQ(2, host->gateChangeCount);
+    assert(!host->gateState[0]);
+    assertEQ(pl.getCurrentLoopIterationStart(), 0);
+
+   // now go to the second time around the loop, should play again.
+    pl.updateToMetricTime(4, .5);
+    assert(host->gateState[0]);
+    assertEQ(3, host->gateChangeCount);
+    assertEQ(pl.getCurrentLoopIterationStart(), 4);
+}
+
+
+static void testMidiPlayerLoop3()
+{
+    // make a song with one note in the second bar
+    MidiSongPtr song = makeSongOneQ(4, 100);
+
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    assert(!song->getSubrangeLoop().enabled);
+    SubrangeLoop l(true, 4, 8);
+    song->setSubrangeLoop(l);
+    assert(song->getSubrangeLoop().enabled);
+
+    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+
+    // Expect one note played on first clock, due to loop start offset
+    assertEQ(1, host->gateChangeCount);
+    assert(host->gateState[0]);
+
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(3.5, .5);
+    assertEQ(2, host->gateChangeCount);
+    assert(!host->gateState[0]);
+
+    // now go to the second time around the loop, should play again.
+    pl.updateToMetricTime(4, .5);
+    assert(host->gateState[0]);
+    assertEQ(3, host->gateChangeCount);
+    assertEQ(pl.getCurrentLoopIterationStart(), 4);
+
+    // now go to near the end of the first loop. Should be nothing playing
+    pl.updateToMetricTime(4 + 3.5, .5);
+    assert(!host->gateState[0]);
+    assertEQ(4, host->gateChangeCount);
+    assertEQ(pl.getCurrentLoopIterationStart(), 4);
+
+    // now go to the third time around the loop, should play again.
+    pl.updateToMetricTime(4+4, .5);
+    assertEQ(pl.getCurrentLoopIterationStart(), 8);
+    assert(host->gateState[0]);
+    assertEQ(5, host->gateChangeCount);
 }
 
 //*******************************tests of MidiPlayer2 **************************************
@@ -727,6 +868,8 @@ void testMidiPlayer2()
     testVoiceAssingOverflow();
     testVoiceAssignOverlap();
     testVoiceAssignOverlapMono();
+    testVoiceAssignRotate();
+    testVoiceAssignRetrigger();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();
@@ -736,10 +879,8 @@ void testMidiPlayer2()
     testMidiPlayerOneNoteLoop();
     testMidiPlayerOneNoteLoopLockContention();
     testMidiPlayerReset();
-    testMidiPlayerStop();
     testMidiPlayerOverlap();
-#if 0
-    testMidiPlayerReTrigger(true);
-    testMidiPlayerReTrigger(false);
-#endif
+    testMidiPlayerLoop();
+    testMidiPlayerLoop2();
+    testMidiPlayerLoop3();
 }

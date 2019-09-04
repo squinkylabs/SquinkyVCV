@@ -28,7 +28,8 @@ public:
         std::shared_ptr<MidiEditorContext>,
         int trackNumber,
         const std::vector<MidiEventPtr>& inRemove,
-        const std::vector<MidiEventPtr>& inAdd);
+        const std::vector<MidiEventPtr>& inAdd,
+        float trackLength = -1);
 
     ReplaceDataCommand(
         std::shared_ptr<MidiSong> song,
@@ -36,33 +37,49 @@ public:
         const std::vector<MidiEventPtr>& inRemove,
         const std::vector<MidiEventPtr>& inAdd);
 
-
     /**
      * static factories for replace commands
      */
     static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq, const char* name);
     static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq, std::shared_ptr<const MidiNoteEvent>);
     static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
-    static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta);
+    static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta, float quantizeGrid);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, const std::vector<float>&);
     
     static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq, float delta);
     static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq,  const std::vector<float>&);
     static ReplaceDataCommandPtr makePasteCommand(std::shared_ptr<MidiSequencer> seq);
 
+    static ReplaceDataCommandPtr makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength);
 
 private:
-    // old way. can't save data pointers with vcv 1
-    //std::shared_ptr<MidiSong> song;
-    //std::shared_ptr<MidiSelectionModel> selection;
 
     int trackNumber;
     std::vector<MidiEventPtr> removeData;
     std::vector<MidiEventPtr> addData;
 
-    static void extendTrackToMinDuration(
-        std::shared_ptr<MidiSequencer> seq,
-        float neededLength,
+    /**
+     * Clients who want track length changed should
+     * pass in a non-negative value
+     */
+    float newTrackLength=-1;
+    float originalTrackLength=-1;
+
+    /**
+     * Some operations require the track length to be extended
+     * to accommodate the edited notes. This function rounds to bar
+     * boundaries; if the result is longer than the current track length,
+     * then that will be returned. If track length already sufficient, will
+     * return -1;
+     */
+    static float calculateDurationRequest(std::shared_ptr<MidiSequencer> seq, float duration);
+
+    /**
+     * queues up note additions and deletions to make them all fit in a shorter track
+     */
+    static void modifyNotesToFitNewLength(
+        std::shared_ptr<MidiSequencer>seq,
+        float newLengh, 
         std::vector<MidiEventPtr>& toAdd,
         std::vector<MidiEventPtr>& toDelete);
 

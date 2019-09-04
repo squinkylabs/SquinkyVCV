@@ -2,6 +2,7 @@
 #include "asserts.h"
 #include "MidiLock.h"
 #include "MidiSequencer.h"
+#include "TestAuditionHost.h"
 #include "TestSettings.h"
 
 static int _trackNumber = 0;
@@ -12,7 +13,10 @@ static MidiSequencerPtr makeTest(bool empty = false)
     MidiSongPtr song = empty ?
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::empty, _trackNumber) :
         MidiSong::MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, _trackNumber);
-    MidiSequencerPtr sequencer = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr sequencer = MidiSequencer::make(
+        song, 
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
 
     sequencer->context->setTrackNumber(_trackNumber);
     sequencer->context->setStartTime(0);
@@ -164,7 +168,10 @@ static void testNext1e()
     ev4->startTime = 200;
     track->insertEvent(ev4);
 
-    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(
+        song,
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
 
     // select first event
     seq->editor->selectNextNote();
@@ -200,7 +207,7 @@ static void testNextPrevSingleNote()
     ev2->startTime = 4;
     track->insertEvent(ev2);
 
-    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>());
+    MidiSequencerPtr seq = MidiSequencer::make(song, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
     auto x = seq->context->cursorTime();
     seq->context->adjustViewportForCursor();
     x = seq->context->cursorTime();
@@ -267,7 +274,6 @@ static void textExtendNoteTwiceWhenOneSelected()
     assertClose(seq->context->cursorTime(), 1, .001);
 
     seq->editor->extendSelectionToNextNote();
-    printf("cursor time = %f\n", seq->context->cursorTime());
     assertEQ(seq->selection->size(), 3);
 }
 
@@ -417,7 +423,9 @@ static void testPrevWhenBeforeStart()
 
     // add a single note a time 1
     seq->context->setCursorTime(1);
-    seq->editor->insertNote();
+    
+    seq->context->insertNoteDuration = .25f;
+    seq->editor->insertDefaultNote(false);
     assertEQ(seq->context->getTrack()->size(), 2);
 
     seq->context->setCursorTime(0);             // cursor before all notes

@@ -1,10 +1,11 @@
 
+#include "IMidiPlayerHost.h"
 #include "MidiEvent.h"
 #include "MidiSelectionModel.h"
 
 #include <assert.h>
 extern int _mdb;
-MidiSelectionModel::MidiSelectionModel()
+MidiSelectionModel::MidiSelectionModel(IMidiPlayerAuditionHostPtr aud) : auditionHost(aud)
 {
     ++_mdb;
 }
@@ -12,6 +13,26 @@ MidiSelectionModel::MidiSelectionModel()
 MidiSelectionModel::~MidiSelectionModel()
 {
     --_mdb;
+}
+
+
+bool MidiSelectionModel::CompareEventPtrs::operator() (const std::shared_ptr<MidiEvent>& lhs, const std::shared_ptr<MidiEvent>& rhs) const
+
+{
+    MidiEvent& le = *lhs;
+    MidiEvent& re = *rhs;
+    return  le < re;
+}
+
+bool MidiSelectionModel::isAuditionSuppressed() const
+{
+    return auditionSuppressed;
+}
+
+void MidiSelectionModel::setAuditionSuppressed(bool b)
+{
+    // TODO: is this used now?
+    auditionSuppressed = b;
 }
 
 void MidiSelectionModel::select(std::shared_ptr<MidiEvent> event)
@@ -27,6 +48,12 @@ void MidiSelectionModel::extendSelection(std::shared_ptr<MidiEvent> event)
 
 void MidiSelectionModel::addToSelection(std::shared_ptr<MidiEvent> event, bool keepExisting)
 {
+    auto it = selection.find(event);
+    if (it != selection.end()) {
+        // if note is already in, then don't clear and re-add
+        return;
+    }
+
     if (!keepExisting) {
         selection.clear();
     }
@@ -41,8 +68,6 @@ void MidiSelectionModel::removeFromSelection(std::shared_ptr<MidiEvent> event)
         selection.erase(it);
     }
 }
-
-//void addToSelection(std::shared_ptr<MidiEvent>, bool keepExisting);
 
 MidiSelectionModel::const_iterator MidiSelectionModel::begin() const
 {
@@ -61,7 +86,16 @@ void MidiSelectionModel::clear()
 
 void MidiSelectionModel::add(MidiEventPtr evt)
 {
-   // selection.push_back(evt);
+    auto found = selection.find(evt);
+    if (found != selection.end()) {
+        // if the event is already there, don't do anything.
+        return;
+    }
+
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+    if (note && !auditionSuppressed) {
+        auditionHost->auditionNote(note->pitchCV);
+    }
     selection.insert(evt);
 }
 
@@ -95,9 +129,20 @@ MidiEventPtr MidiSelectionModel::getLast()
     return ret;
 }
 
+
+class NullAudition : public IMidiPlayerAuditionHost
+{
+public:
+    void auditionNote(float pitch) override
+    {
+
+    }
+};
 MidiSelectionModelPtr MidiSelectionModel::clone() const
 {
-    MidiSelectionModelPtr ret = std::make_shared<MidiSelectionModel>();
+    // Clones ones never need to drive audition
+    auto nullAudition = std::make_shared<NullAudition>();
+    MidiSelectionModelPtr ret = std::make_shared<MidiSelectionModel>(nullAudition);
     for (auto it : selection) {
         MidiEventPtr clonedEvent = it->clone();
         ret->add(clonedEvent);
@@ -112,4 +157,9 @@ bool MidiSelectionModel::isSelectedDeep(MidiEventPtr evt) const
     });
 
     return it != end();
+}
+
+IMidiPlayerAuditionHostPtr MidiSelectionModel::_testGetAudition()
+{
+    return auditionHost;
 }

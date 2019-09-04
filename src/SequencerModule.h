@@ -18,6 +18,8 @@ class SequencerWidget;
 
 #include <atomic>
 
+
+
 struct SequencerModule : Module
 {
     SequencerModule();
@@ -29,9 +31,7 @@ struct SequencerModule : Module
 
     void step() override
     {
-    #ifdef __V1x
         sequencer->undo->setModuleId(this->id);
-    #endif
         if (runStopRequested) {
             seqComp->toggleRunStop();
             runStopRequested = false;
@@ -39,13 +39,6 @@ struct SequencerModule : Module
         seqComp->step();
     }
     void onReset() override;
-
-#if 0 // obsolete?
-    void stop()
-    {
-        seqComp->stop();
-    }
-#endif
 
     float getPlayPosition()
     {
@@ -70,21 +63,17 @@ struct SequencerModule : Module
         seqComp->onSampleRateChange();
     }
 
-#ifndef __V1x
-    json_t *toJson() override
+    int getAuditionParamId()
     {
-        assert(sequencer);
-        return SequencerSerializer::toJson(sequencer);
+        return Seq<WidgetComposite>::AUDITION_PARAM;
     }
-    void fromJson(json_t* data) override;
-#else
+
     virtual json_t *dataToJson() override
     {
         assert(sequencer);
         return SequencerSerializer::toJson(sequencer);
     }
     virtual void dataFromJson(json_t *root) override;
-#endif
 private:
     void setNewSeq(MidiSequencerPtr);
 

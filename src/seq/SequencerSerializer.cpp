@@ -1,6 +1,7 @@
 
 #include "MidiLock.h"
 #include "MidiSequencer.h"
+#include "../SequencerModule.h"
 #include "SequencerSerializer.h"
 #include "SeqSettings.h"
 #include "jansson.h"
@@ -76,12 +77,17 @@ json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
 {
     SeqSettings* rawSettings = dynamic_cast<SeqSettings*>(settings.get());
     json_t* jsonSettings = json_object();
+
     json_object_set_new(jsonSettings, "snapToGrid", json_boolean(settings->snapToGrid()));
+    json_object_set_new(jsonSettings, "snapDurationToGrid", json_boolean(settings->snapDurationToGrid()));
+
 
     auto grid = rawSettings->getGridString();
     json_object_set_new(jsonSettings, "grid", json_string(grid.c_str()));
 
-    assert(false);
+    auto artic = rawSettings->getArticString();
+    json_object_set_new(jsonSettings, "articulation", json_string(artic.c_str()));
+
     return jsonSettings;
 }
 
@@ -112,7 +118,7 @@ json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
       },
       */
 
-MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, rack::engine::Module* module)
+MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, SequencerModule* module)
 {
     json_t* songJson = json_object_get(data, "song");
     MidiSongPtr song = fromJsonSong(songJson);
@@ -120,13 +126,13 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, rack::engine::Modul
     json_t* settingsJson = json_object_get(data, "settings");
     std::shared_ptr<ISeqSettings> _settings = fromJsonSettings(settingsJson, module);
 
-    MidiSequencerPtr seq = MidiSequencer::make(song, _settings);
+    MidiSequencerPtr seq = MidiSequencer::make(song, _settings, module->seqComp->getAuditionHost());
     return seq;
 }
 
 std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
     json_t* data,
-    rack::engine::Module* module)
+    SequencerModule* module)
 {
     SeqSettings* rawSettings = new SeqSettings(module);
 
@@ -141,10 +147,23 @@ std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
             rawSettings->curGrid = g;
         }
 
+        json_t* articSetting = json_object_get(data, "articulation");
+        if (articSetting) {
+            std::string articS = json_string_value(articSetting);
+            SeqSettings::Artics a = SeqSettings::articFromString(articS);
+            rawSettings->curArtic = a;
+        }
+
         json_t* snap = json_object_get(data, "snapToGrid");
         if (snap) {
             bool bSnap = json_boolean_value(snap);
             rawSettings->snapEnabled = bSnap;
+        }
+
+        json_t* snapDur = json_object_get(data, "snapDurationToGrid");
+        if (snapDur) {
+            bool bSnap = json_boolean_value(snapDur);
+            rawSettings->snapDurationEnabled = bSnap;
         }
     }
     return _settings;

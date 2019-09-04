@@ -25,11 +25,21 @@ public:
 
     void selectAll();
 
+    enum Advance
+    {
+        Tick,
+        GridUnit,
+        Beat,           // Quarter note
+        Measure,
+        All             // start or end
+    };
+
     /**
-     * If ticks is false, will move by "units" (like 1/16 note)
-     * amount is a multiplier, and may be negative
+     * Move cursor by a logical unit.
+     * @param type is logical unit
+     * @param multiplier. may be negative.
      */
-    void advanceCursor(bool ticks, int amount);
+    void advanceCursor(Advance type, int multiplier);
     void advanceCursorToTime(float time, bool extendSelection);
     void changeCursorPitch(int semitones);
 
@@ -52,9 +62,11 @@ public:
 
     enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
 
-    void insertPresetNote(Durations);
-    void insertNote();
+    void insertPresetNote(Durations, bool advanceAfter);
+    void insertDefaultNote(bool advanceAfter);
     void deleteNote();
+
+    void grabDefaultNote();
 
     /*************                                   ***************/
     // Editing start time / duration / pitch
@@ -65,6 +77,10 @@ public:
     void copy();
     void paste();
 
+    void changeTrackLength();
+    bool isLooped() const;
+    void loop();
+
     void assertCursorInSelection();
      // select any note that is under the cursor
     void updateSelectionForCursor(bool extendCurrent);
@@ -73,10 +89,18 @@ public:
 private:
     /**
      * The sequencer we will act on.
-     * use wek ptr to break ref circle
+     * use weak ptr to break ref circle
      */
     std::weak_ptr<MidiSequencer> m_seq;
     std::shared_ptr< MidiSequencer> seq()
+    {
+        // This assumes of course that m_seq still exists
+        auto ret = m_seq.lock();
+        assert(ret);
+        return ret;
+    }
+
+    std::shared_ptr<const MidiSequencer> seq() const 
     {
         // This assumes of course that m_seq still exists
         auto ret = m_seq.lock();
@@ -90,8 +114,9 @@ private:
     void updateCursor();
     void setCursorToNote(MidiNoteEventPtr note);
     void setNewCursorPitch(float pitch, bool extendSelection);
-    void extendTrackToMinDuration(float time);
-    void insertNoteHelper(Durations dur, bool moveCursorAfter, bool quantizeDuration);
+    void insertNoteHelper(Durations dur, bool moveCursorAfter);
+    void insertNoteHelper2(float dur, bool moveCursorAfter);
+    void insertNoteHelper3(float duration, float advanceAmount);
 
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);

@@ -1,5 +1,6 @@
 
 #include "../Squinky.hpp"
+#include "ISeqSettings.h"
 #include "MidiKeyboardHandler.h"
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
@@ -44,6 +45,16 @@ bool MidiKeyboardHandler::doRepeat(unsigned key)
         case GLFW_KEY_DOWN:
         case GLFW_KEY_COMMA:
         case GLFW_KEY_PERIOD:
+
+        // the new cursor keys
+        case GLFW_KEY_4:
+        case GLFW_KEY_5:
+        case GLFW_KEY_6:
+        case GLFW_KEY_R:
+        case GLFW_KEY_KP_2:
+        case GLFW_KEY_KP_4:
+        case GLFW_KEY_KP_8:
+        case GLFW_KEY_KP_6:
             doIt = true;
     }
     return doIt;
@@ -56,6 +67,14 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 {
     int units = 1;
     bool ticks = false;
+
+    // make >,< always advance cursor by ticks i note not selected
+    const bool noteSelected = bool(sequencer->editor->getNoteUnderCursor());
+    if ((type == ChangeType::lessThan) && !noteSelected) {
+        sequencer->editor->advanceCursor(MidiEditor::Advance::Tick, increase ? 1 : -1);
+        return;
+    }
+    
     switch(sequencer->context->noteAttribute) {
         case MidiEditorContext::NoteAttribute::Pitch:
             {
@@ -130,7 +149,8 @@ bool MidiKeyboardHandler::handle(
 {
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);
-    const bool ctrl = (mods & GLFW_MOD_CONTROL);
+    const bool ctrl = (mods & RACK_MOD_CTRL);        // was GLFW_MOD_CONTROL
+    //const bool alt = (mods && GLFW_MOD_ALT);
    
     switch(key) {
         case GLFW_KEY_F1:
@@ -189,33 +209,63 @@ bool MidiKeyboardHandler::handle(
             handleNoteEditorChange(sequencer, ChangeType::lessThan, true);
             handled = true;
             break;
-        case GLFW_KEY_RIGHT:
-            {
-                int units = ctrl ? 4 : 1;
-                sequencer->editor->advanceCursor(false, units);
-                handled = true;
-            }
+        case GLFW_KEY_END:
+            sequencer->editor->advanceCursor(
+                ctrl ? MidiEditor::Advance::All : MidiEditor::Advance::Measure,
+                1);  
+            handled = true;
             break;
-        case GLFW_KEY_LEFT:
-            {
-                int units = ctrl ? -4 : -1;
-                sequencer->editor->advanceCursor(false, units);
-                handled = true;
-            }
-            break;
-         case GLFW_KEY_UP:
-            {
-                sequencer->editor->changeCursorPitch(1);
-                handled = true;
-            }
-            break;
-        case GLFW_KEY_DOWN:
-            {
-                sequencer->editor->changeCursorPitch(-1);
-                handled = true;
-            }
+        case GLFW_KEY_HOME:
+            sequencer->editor->advanceCursor(
+                ctrl ? MidiEditor::Advance::All : MidiEditor::Advance::Measure,
+                -1);  
+            handled = true;
             break;
 
+        case GLFW_KEY_6:
+        case GLFW_KEY_KP_6:
+        case GLFW_KEY_RIGHT:
+            {
+                //one grid space or quater note
+                sequencer->editor->advanceCursor(
+                    ctrl ? MidiEditor::Advance::Beat : MidiEditor::Advance::GridUnit,
+                    1);  
+                handled = true;
+            }
+            break;
+        case GLFW_KEY_4:
+        case GLFW_KEY_KP_4:
+        case GLFW_KEY_LEFT:
+            {
+                //one grid space or quater note
+                sequencer->editor->advanceCursor(
+                    ctrl ? MidiEditor::Advance::Beat : MidiEditor::Advance::GridUnit,
+                    -1);  
+                handled = true;
+            }
+            break;
+         case GLFW_KEY_PAGE_UP:
+            sequencer->editor->changeCursorPitch(12);
+            handled = true;
+            break;
+        case GLFW_KEY_PAGE_DOWN:
+            sequencer->editor->changeCursorPitch(-12);
+            handled = true;
+            break;
+        case GLFW_KEY_KP_8:
+        case GLFW_KEY_5:
+        case GLFW_KEY_UP:
+            sequencer->editor->changeCursorPitch(1);
+            handled = true;
+            break;
+        case GLFW_KEY_KP_2:
+        case GLFW_KEY_R:
+        case GLFW_KEY_DOWN:
+            sequencer->editor->changeCursorPitch(-1);
+            handled = true;
+            break;
+
+        // alpha
         case GLFW_KEY_A:
             {
                 if (ctrl) {
@@ -240,19 +290,20 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_E:
             {
-                if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth);
-                    handled = true;
-                }
+                sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth, !shift);
+                handled = true;
+
             }
             break;
         case GLFW_KEY_H:
             {
-                if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Half);
-                    handled = true;
-                }
+                sequencer->editor->insertPresetNote(MidiEditor::Durations::Half, !shift);
+                handled = true;
             }
+            break;
+        case GLFW_KEY_L:
+            sequencer->editor->loop();
+            handled = true;
             break;
         case GLFW_KEY_P:
             {
@@ -262,10 +313,8 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_Q:
             {
-                if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter);
-                    handled = true;
-                }
+                sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter, !shift);
+                handled = true;
             }
             break;
         case GLFW_KEY_S:
@@ -273,7 +322,7 @@ bool MidiKeyboardHandler::handle(
                 if (!ctrl) {
                     sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
                 } else {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth);
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth, !shift);
                 }
                 handled = true;
             }
@@ -288,10 +337,8 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_W:
             {
-                if (ctrl) {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole);
-                    handled = true;
-                }
+                sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole, !shift);
+                handled = true;
             }
             break;
         case GLFW_KEY_X:
@@ -299,19 +346,39 @@ bool MidiKeyboardHandler::handle(
                 if (ctrl) {
                     sequencer->editor->cut();
                     handled = true;
+                } else {
+                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth, !shift);
+                    handled = true;
                 }
             }
             break;
         case GLFW_KEY_KP_0:
         case GLFW_KEY_INSERT:
-            sequencer->editor->insertNote();
+        case GLFW_KEY_ENTER:
+            {
+                sequencer->editor->insertDefaultNote(!shift);
+                handled = true;
+            }
+            break;
+        case GLFW_KEY_KP_MULTIPLY:
+            sequencer->editor->grabDefaultNote();
             handled = true;
             break;
+        case GLFW_KEY_8:
+            if (shift) {
+                 sequencer->editor->grabDefaultNote();
+                handled = true;
+            }
+            break;        
         case GLFW_KEY_BACKSPACE:
         case GLFW_KEY_KP_DECIMAL:
         case GLFW_KEY_DELETE:
             sequencer->editor->deleteNote();
             handled = true;
+            break;
+        case GLFW_KEY_N:
+            handled = true;
+            sequencer->editor->changeTrackLength();
             break;
 #ifndef __USE_VCV_UNDO
 // In VCV 1.0, VCV provides the undo 

@@ -1,28 +1,19 @@
 #pragma once
 
-#ifdef __V1x
 #include "engine/Module.hpp"
 #include "engine/Port.hpp"
 #include "engine/Engine.hpp"
+#include "app.hpp"
 
 using Input = rack::engine::Input;
 using Output = rack::engine::Output;
 using Param = rack::engine::Param;
 using Light = rack::engine::Light;
 using Module = rack::engine::Module;
-#else
 
-#include "engine.hpp"
-
-using Input = rack::Input;
-using Output = rack::Output;
-using Param = rack::Param;
-using Light = rack::Light;
-using Module = rack::Module;
-#endif
 
 /**
- * Base class for composites embeddable in a VCV Widget
+ * Base class for composites embedable in a VCV Widget
  * This is used for "real" implementations
  */
 class WidgetComposite
@@ -41,20 +32,12 @@ public:
     };
     float engineGetSampleRate()
     {
-#ifdef __V1x
         return rack::APP->engine->getSampleRate();
-#else  
-        return ::engineGetSampleRate();
-#endif
     }
     
     float engineGetSampleTime()
     {
-#ifdef __V1x
         return rack::APP->engine->getSampleTime();
-#else  
-        return ::engineGetSampleTime();
-#endif
     }
 protected:
     std::vector<Input>& inputs;

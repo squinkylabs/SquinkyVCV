@@ -213,6 +213,92 @@ static void testEqualEnd()
     assert(end1 != end2);
 }
 
+static void testLessMixed()
+{
+    MidiEndEvent end;
+    MidiNoteEvent note;
+
+    assert(note < end); // note type is first
+}
+
+static void testLessEvent()
+{
+    MidiEndEvent end;
+    MidiNoteEvent note;
+
+    MidiEvent& e1 = end;
+    MidiEvent& e2 = note;
+    assert(e2 < e1);
+
+    const MidiEvent& e1b = note;
+    const MidiEvent& e2b = note;
+    assert(!(e2b < e1b));
+    assert(!(e1b < e2b));
+}
+static void testLessEnd()
+{
+    MidiEndEvent end1;
+    MidiEndEvent end2;
+    MidiEndEvent end3;
+    end3.startTime = 1000;
+
+    assert(!(end1 < end2));
+    assert(!(end2 < end1));
+
+    assert(end1 < end3);
+    assert(!(end3 < end1));
+}
+
+
+static void testLessNote()
+{
+    MidiNoteEvent note1;
+    MidiNoteEvent note2;
+   
+    assert(!(note1 < note2));
+    assert(!(note2 < note1));
+
+    note2.startTime = 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    note1 = note2;
+    note2.pitchCV += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    note1 = note2;
+    note2.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    // start time wins
+    note1 = note2;
+    note2.startTime += 1;
+    note1.pitchCV += 1;
+    note1.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    // if start time same pitch wins
+    note1 = note2;
+    note2.pitchCV += 1;
+    note1.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+
+    // if start time,pitch same duration wins
+    note1 = note2;
+    note2.duration += 1;
+
+    assert(note1 < note2);
+    assert(!(note2 < note1));
+}
 
 static void testClone()
 {
@@ -362,6 +448,7 @@ static void testTimeUtil6()
 }
 
 // simple tests of quantforEdit function
+#if 0   // no longer used
 static void testTimeUtilQuant0()
 {
     // pre-quantized pass through
@@ -378,6 +465,7 @@ static void testTimeUtilQuant0()
     assertEQ(TimeUtils::quantizeForEdit(.2f, .1f, 1), 1);
     assertEQ(TimeUtils::quantizeForEdit(.9f, -.1f, 1), 0);
 }
+#endif
 
 static void testTimeUtilSimpleQuant()
 {
@@ -537,6 +625,26 @@ static void testPitchUtil2()
     assert(PitchUtils::pitch2str(v) == "B:4");
 }
 
+class CC
+{
+public:
+    std::string c;
+    bool operator < (const CC& rhs) const
+    {
+        return this->c < rhs.c;
+    }
+};
+
+
+struct compareC
+{
+    bool operator() (const CC& lhs, const CC& rhs) const
+    {
+        printf("compare l=%s, r=%s\n", lhs.c.c_str(), rhs.c.c_str());
+        return lhs.c < rhs.c;
+    }
+};
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -552,6 +660,11 @@ void  testMidiEvents()
     testEqualEnd();
     testClone();
 
+    testLessMixed();
+    testLessEnd();
+    testLessNote();
+    testLessEvent();
+
     testTimeUtil0();
     testTimeUtil1();
     testTimeUtil2();
@@ -559,12 +672,14 @@ void  testMidiEvents()
     testTimeUtil4();
     testTimeUtil5();
     testTimeUtil6();
-    testTimeUtilQuant0();
+    //testTimeUtilQuant0();
     testTimeUtilSimpleQuant();
 
     testPitchUtil0();
     testPitchUtil1();
     testPitchUtil2();
+
+
    
     
     assertNoMidi();     // check for leaks

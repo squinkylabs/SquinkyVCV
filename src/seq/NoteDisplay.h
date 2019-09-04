@@ -52,7 +52,7 @@ private:
     void drawBackground(NVGcontext *vg);
 
     static bool isKeyWeNeedToStealFromRack(int key);
-#ifdef __V1x
+
     void onSelect(const event::Select &e) override;
     void onDeselect(const event::Deselect &e) override;
     void draw(const DrawArgs &args) override;
@@ -65,11 +65,4 @@ private:
     void onDragMove(const event::DragMove &e)  override;
     void onDragDrop(const event::DragDrop &e) override;
     bool handleKey(int key, int mods, int action);
-#else
-    void draw(NVGcontext *vg) override;
-    void onFocus(EventFocus &e) override;
-    void onDefocus(EventDefocus &e) override;
-    void onKey(EventKey &e) override;
-    //void onHoverKey(EventHoverKey &e) override;
-#endif
 };

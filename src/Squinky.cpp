@@ -1,5 +1,6 @@
 // plugin main
 #include "Squinky.hpp"
+//#include "SqTime.h"
 #include "ctrl/SqHelper.h"
 
 
@@ -100,6 +101,12 @@ void init(rack::Plugin *p)
 #ifdef _MIXM
     p->addModel(modelMixMModule);
 #endif
+#ifdef _MIX_STEREO
+    p->addModel(modelMixStereoModule);
+#endif
+#ifdef _DTMODULE
+    p->addModel(modelDrumTriggerModule);
+#endif
 
 
 }
@@ -107,3 +114,10 @@ void init(rack::Plugin *p)
 const NVGcolor SqHelper::COLOR_WHITE = nvgRGB(0xff, 0xff, 0xff);
 const NVGcolor SqHelper::COLOR_BLACK = nvgRGB(0,0,0);
 const NVGcolor SqHelper::COLOR_SQUINKY = nvgRGB(0x30, 0x7d, 0xee);
+
+#ifdef _TIME_DRAWING
+#include "SqTime.h"
+#ifdef _USE_WINDOWS_PERFTIME
+    double SqTime::frequency = 0;
+#endif
+#endif

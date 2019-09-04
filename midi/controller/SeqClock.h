@@ -13,7 +13,7 @@ public:
 
     enum class ClockRate
     {
-        Internal,
+    //    Internal,
         Div64,
         Div32,
         Div16,        // sixty-fourth
@@ -48,7 +48,7 @@ public:
      */
     ClockResults update(int samplesElapsed, float externalClock, bool runStop, float reset);
 
-    void setup(ClockRate inputSetting, float tempoSetting, float sampleTime);
+    void setup(ClockRate inputSetting, float, float sampleTime);
     void reset(bool internalClock);
 
     static std::vector<std::string> getClockRates();
@@ -63,8 +63,8 @@ public:
 
    // void setSampleTime(float);
 private:
-    ClockRate clockSetting = ClockRate::Internal;       // default to internal
-    float internalTempo = 120.f;
+    ClockRate clockSetting = ClockRate::Div4;
+   // float internalTempo = 120.f;
     double curMetricTime = -1;                          // this is correct for external, who cares about internal?          
     float sampleTime = 1.f / 44100.f;
     double metricTimePerClock = 1;
@@ -84,7 +84,6 @@ inline SeqClock::SeqClock() :
     resetLockout.setSampleTime(1.f / 44100.f);
 }
 
-#if 1
 inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
 {
     ClockResults results;
@@ -95,7 +94,7 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
     if (results.didReset) {
         resetLockout.set();
         // go back to start. For correct start, go negative, so that first clock plays first note
-        curMetricTime = (clockSetting == ClockRate::Internal) ? 0 : -1;
+        curMetricTime = -1;
 
         // reset the clock so that high clock can gen another clock
         clockProcessor.reset();
@@ -108,28 +107,23 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
         results.totalElapsedTime = curMetricTime;
         return results;
     }
-    // Internal clock
-    if (clockSetting == ClockRate::Internal) {
-        double deltaSeconds = samplesElapsed * sampleTime;
-        double deltaMetric = deltaSeconds * internalTempo / 60.0;
-        curMetricTime += deltaMetric;
-    } else {
-        // ignore external clock during lockout
-        if (resetLockout.hasFired()) {
-            // external clock
-            clockProcessor.go(externalClock);
-            if (clockProcessor.trigger()) {
-                //printf("seqClock proc new one\n"); fflush(stdout);
-                // if an external clock fires, advance the time.
-                // But if we are reset (negative time), then always go to zero
-                if (curMetricTime >= 0) {
-                    curMetricTime += metricTimePerClock;
-                } else {
-                    curMetricTime = 0;
-                }
+
+    // ignore external clock during lockout
+    if (resetLockout.hasFired()) {
+        // external clock
+        clockProcessor.go(externalClock);
+        if (clockProcessor.trigger()) {
+            //printf("seqClock proc new one\n"); fflush(stdout);
+            // if an external clock fires, advance the time.
+            // But if we are reset (negative time), then always go to zero
+            if (curMetricTime >= 0) {
+                curMetricTime += metricTimePerClock;
+            } else {
+                curMetricTime = 0;
             }
         }
     }
+
     results.totalElapsedTime = curMetricTime;
     return results;
 }
@@ -139,66 +133,13 @@ inline void SeqClock::reset(bool internalClock)
     curMetricTime = internalClock? 0 : -1;
 }
 
-#else // original
-inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
+inline void SeqClock::setup(ClockRate inputSetting, float, float sampleT)
 {
-    ClockResults results;
-    // if stopped, don't do anything
-
-    resetProcessor.go(reset);
-    results.didReset = resetProcessor.trigger();
-    if (results.didReset) {
-        resetLockout.set();
-        curMetricTime = 0;          // go back to start
-    }
-    for (int i = 0; i < samplesElapsed; ++i) {
-        resetLockout.step();
-    }
-
-    if (!runStop) {
-        results.totalElapsedTime = curMetricTime;
-        return results;
-    }
-    // Internal clock
-    if (clockSetting == ClockRate::Internal) {
-        double deltaSeconds = samplesElapsed * sampleTime;
-        double deltaMetric = deltaSeconds * internalTempo / 60.0;
-        curMetricTime += deltaMetric;
-    } else {
-        // ignore external clock during lockout.
-        if (resetLockout.hasFired()) {
-            // external clock
-            clockProcessor.go(externalClock);
-            if (clockProcessor.trigger()) {
-                curMetricTime += metricTimePerClock;
-            }
-        }
-    }
-    results.totalElapsedTime = curMetricTime;
-    return results;
-}
-
-inline void SeqClock::reset()
-{
-    curMetricTime = 0;
-}
-#endif
-
-
-
-inline void SeqClock::setup(ClockRate inputSetting, float tempoSetting, float sampleT)
-{
-    internalTempo = tempoSetting;
+  //  internalTempo = tempoSetting;
     sampleTime = sampleT;
     clockSetting = inputSetting;
     resetLockout.setSampleTime(sampleT);
     switch (clockSetting) {
-        case ClockRate::Internal:
-            // just a hack, there really isn't a known value
-            // for internal clock, but this may make external clients
-            //happy
-            metricTimePerClock = .005;     
-            break;
         case  ClockRate::Div64:
             metricTimePerClock = .0625 / 4.0;
             break;
@@ -228,7 +169,6 @@ inline void SeqClock::setup(ClockRate inputSetting, float tempoSetting, float sa
 inline std::vector<std::string> SeqClock::getClockRates()
 {
     return {
-        "Internal",
         "x64",
         "x32",
         "x16 64th",

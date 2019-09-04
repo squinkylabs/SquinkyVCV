@@ -7,6 +7,7 @@ class MockMixComposite : public TestComposite
 {
 public:
     static const int numChannels = 4;
+    static const int numGroups = 4;
 
 
     enum ParamIds
@@ -21,6 +22,7 @@ public:
         MUTE3_STATE_PARAM,
 
         CV_MUTE_TOGGLE,
+        NUM_PARAMS
 
     };
 
@@ -34,13 +36,14 @@ public:
 
     enum LightIds
     {
-        MUTE0_LIGHT
+        MUTE0_LIGHT,
+        MUTE1_LIGHT,
+        MUTE2_LIGHT,
+        MUTE3_LIGHT,
+        NUM_LIGHTS
     };
 
 };
-
-
-
 
 // just make it all compile
 static void test0()
@@ -71,8 +74,6 @@ static void testNothing()
         assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, 0);
     }
 }
-
-
 
 static void testParamToggle(int channel)
 {
@@ -109,7 +110,6 @@ static void testParamToggle(int channel)
         const float expectedMuteState = 0;
         assertEQ(comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value, expectedMuteState);
     }
-
 }
 
 static void testParamToggle()
@@ -147,7 +147,6 @@ static void testCVMomentary(int channel)
         const float actualState = comp.params[MockMixComposite::MUTE0_STATE_PARAM + i].value;
         assertEQ(actualState, expectedMuteState);
     }
-
 }
 
 static void testCVMomentary()
@@ -162,8 +161,6 @@ static void testCVToggle(int channel)
 {
     MockMixComposite comp;
     MixHelper< MockMixComposite> helper;
-
-   
 
     comp.params[MockMixComposite::CV_MUTE_TOGGLE].value = 1;
 
@@ -217,6 +214,7 @@ static void testCVToggle()
         testCVToggle(i);
     }
 }
+
 void testMixHelper()
 {
     test0();

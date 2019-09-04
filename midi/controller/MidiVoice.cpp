@@ -36,6 +36,11 @@ float MidiVoice::pitch() const
     return curPitch;
 }
 
+void MidiVoice::_setState(State s)
+{
+    curState = s;
+}
+
 void MidiVoice::setSampleCountForRetrigger(int samples)
 {
     numSamplesInRetrigger = samples;
@@ -124,4 +129,9 @@ void MidiVoice::reset(bool clearGate)
        // printf("gate off from reset call\n");
         setGate(false);             // and stop the playing CV
     }
+}
+
+int MidiVoice::_getIndex() const
+{
+    return index;
 }
