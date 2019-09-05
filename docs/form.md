@@ -6,7 +6,7 @@ Form is a feature packed four channel mixer that can be expanded to any number o
 
 Form is an enhanced version of our Mixer-8, which was based on the AS 8-CH mixer, with some added features. Form and the expanders have diverged enough from the AS mixer that we can't call them clones, although we have retained the equal power pan formulae from the AS mixer.
 
-To the Mixer-8 features, Form adds many more:
+To the Mixer-8 features, Form adds many more features:
 
 * Two stereo aux buses.
 * Aux sends may be post-fader or pre-fader.
@@ -37,7 +37,7 @@ Linear taper is easy to understand - the level will be directly proportional to 
 
 But humans do not perceive loudness linearly, we perceive it  logarithmically. That is why the unit of loudness is "decibel", which is basically the logarithm of the level. But audio does not use log taper controls, because we want the volume to go to zero when we turn it all the way down, and zero volume is negative infinity decibels.
 
-So audio taper was invented. Audio taper is logarithmic through most if its range, becoming linear at the very quiet end. So it responds evenly at moderate to high levels, but becomes linear when quiet so it can cut the sound at zero.
+So audio taper was invented. Ideally audio taper is logarithmic through most if its range, becoming linear at the very quiet end. So it responds evenly at moderate to high levels, but becomes linear when quiet so it can cut the sound at zero.
 
 The channel volumes in Form are log for the top 3/4. At 1/4 the gain is -18 decibels, and it goes linearly to zero below 1/4.
 

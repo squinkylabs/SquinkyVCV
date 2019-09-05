@@ -41,7 +41,7 @@ SequencerModule::SequencerModule()
     sequencer = MidiSequencer::make(song, _settings, seqComp->getAuditionHost());
 }
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/sq11/docs/sq.md";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/sq.md";
 
 struct SequencerWidget : ModuleWidget
 {

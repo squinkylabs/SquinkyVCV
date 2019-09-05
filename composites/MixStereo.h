@@ -285,16 +285,11 @@ inline void MixStereo<TBase>::stepn(int div)
             const float cv = TBase::inputs[group + PAN0_INPUT].value;
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
 
-#if 0
-            unbufferedCV[cvOffsetGainBalance + group * 2] = LookupTable<float>::lookup(*panL, panValue) * groupGain;
-            unbufferedCV[cvOffsetGainBalance + group * 2 + 1] = LookupTable<float>::lookup(*panR, panValue) * groupGain;
-#else
             float rightPan = 1 + panValue;   // 0..2
             rightPan *= .5f;                // 0..1
             float leftPan = 1 - rightPan;
             unbufferedCV[cvOffsetGainBalance + group * 2] = leftPan * groupGain;
             unbufferedCV[cvOffsetGainBalance + group * 2 + 1] = rightPan * groupGain;
-#endif
         }
 
         // Calculate all the send gains
@@ -388,7 +383,6 @@ inline void MixStereo<TBase>::step()
     float lSendA = 0, rSendA = 0;
     float lSendB = 0, rSendB = 0;
 
-   // printf("\nin step:\n ");
     if (expansionInputs) {
         left = expansionInputs[0];
         right = expansionInputs[1];
@@ -426,7 +420,7 @@ inline void MixStereo<TBase>::step()
         assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
         #ifdef _NN
         float channelOutput = 0;
-            if (groupIsMono[group]) {
+            if (groupIsMono[group] || true) {           // mod for artem - pan all the time
                 channelOutput = channelInput * filteredCV.get(channel + cvOffsetGainBalance);
             } else {
                 channelOutput = channelInput * filteredCV.get(group + cvOffsetGain);

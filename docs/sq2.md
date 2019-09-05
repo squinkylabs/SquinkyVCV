@@ -38,7 +38,67 @@ There are some concessions to the current world - it has unlimited undo/redo, an
 
 ## Editing
 
- (see separate doc)
+Editing consists mainly of inserting, deleting, and changing notes. If you use Seq++, you will spend most of your time editing. So it will be a big help to know all the different features that make this fast and easy.
+
+Most editing can be done with the mouse or with the keyboard. Many operations can be done much faster with the keyboard, so it can be very rewarding to learn the keyboard commands. There are not that many of them, but unlike the mouse operations they are very difficult to guess; you need to read the manual.
+
+The settings menu can have important effects on many of the editing commands, so be sure to become familiar with the settings.
+
+### General Information
+
+It’s very easy to forget that Seq++ has features you would expect in DAW software, but wouldn’t expect in a VCV module. Always remember that Seq++ is fully integrated with the undo/redo system in VCV, so any change in note data can be easily undone.
+
+Similarly, it is easy to forget that Seq++ has a clipboard, so it is super easy to move data around, and you may even copy from one instance on Seq++ and paste into a different instance.
+
+Another feature that is easy to forget about is multiple selection. Selected notes show in yellow, and it is easy to select several notes, and they will all display in yellow. Once several notes are selected any edit operation will change all of the selected notes.
+
+One unusual and sometimes awkward feature is that there are two cursors. There is of course the normal mouse cursor that is always available in your operating system. There is also a blinking *edit cursor*, much like an old DOS computer. Often they are in the same location, but often they aren’t. Usually the blinking cursor is controlled by the keyboard, and the mouse cursor is controlled by the mouse. The differences will become apparent with use.
+
+### Editing with the mouse
+
+Using the mouse to edit and move notes is somewhat intuitive, and will be quite familiar if you have used a MIDI editor or DAW. But, as with anything, different DAWs make different choices for common action, so ours may be very familiar, or not.
+
+The basics:
+
+* Double clicking in empty space will insert a note, the length of one grid unit.
+* Double clicking on a note will delete it.
+* Dragging the first third of a note, or group of notes, will move the start time.
+* Dragging the middle third will drag up and down in pitch.
+* Dragging the last third will shorten or lengthen the duration(s). 
+
+Some things to keep in mind:
+
+* The snap to grid option will quantize the start times of new notes, and notes whose start times are dragged.
+* The snap durations to grid option will quantize the duration when durations are dragged.
+* Durations may not be shorted smaller than a grid unit.
+
+It might appear that you are stuck with a two bar sequence that cannot be lengthened, but this is far from true. But you do need to use the keyboard to do it. Pressing the end key, or holding down the right cursor, will move to later bars. If you go to bar 4, for example, and insert a note, the sequence will be automatically lengthened to accommodate it. But for now at least,it is difficult to scroll to these later bars without using the keyboard.
+
+### Editing with the keyboard
+
+There are a bunch of options for moving around in pitch and time, in units of quarter notes, grid units, bars, sixty fourth notes, semitones, octaves. Move to next note or previous note. 
+
+There are also lots of options for inserting notes. Insert half note, quarter note, eighth note, sixteenth note, grid unit. Automatically advance the cursor after inserting a note / or not.
+
+There are lots of options for shifting, stretching and transposing one or more notes by any of those units.
+
+Check out the reference on keyboard commands for more on that.
+
+### Simple examples
+
+(1) Turn Audition on in the context menu. Click on a note to select it. Press Tab and ctrl-Tab to select next and previous note. Hold down the shift key and press tab a few times to select a sequence of notes. The press the cursor up key seven time to transpose the notes up a fifth.
+
+(2) Select a note on the grid by clicking on it with the mouse. Hold down shift and click on a few more notes to expand the selection to multiple notes. Click and hold in the middle of one of the selected notes, and drag up and down to transpose all the selected notes.
+
+These two simple examples show that most things can be done entirely from the keyboard, or entirely with the mouse.
+
+(3) Make a few bars of music. Then use ctrl-a to select all the notes, and ctrl-c to copy them all to the clipboard. Go to a second instance of Seq++ with no music in it. Put the cursor to the start of the first bar and press ctrl-p to paste the music into the new sequence. While the notes are all still selected, press ‘s’ to set the keyboard for editing start time, then press + a few times and see the notes become delayed in time. Press ‘p’ to set pitch editing, and press + a few times to transpose the music by a few semi-tones. Now you have the original music on one sequencer, and a delayed, transposed copy in another.
+
+(4) To insert a measure of eight notes, it’s sometimes easier to insert them all first, then edit the pitch. Assuming you song is in A minor, put the cursor at the beginning of an empty bar, on A. Press the e key eight times to fill the bar with eighth notes on the A pitch. The use the home key to move back to the start of the measure, and type the P key to set the editor for pitch editing. You can use the tab to get to the next note. As you land on each note, shift the pitch to the desired pitch by pressing + to shift up by a semitone, or - to shift down. So to shift up to the minor third (C) press + three time. To shift down to the minor seventh (G) press - twice.
+
+(5) Make a bar full of sixteenth notes, by pressing the x key sixteen times. The pick some notes to remove, by holding down the ctrl key and clicking on the notes to get rid of. The press backspace to remove them. Instant rhythm.
+
+(6) Here’s an easy way to enter a chord sequence - in this case DMaj to EMin. Put the cursor on the pitch “D” that is empty. Press shift-Q to insert a quarter note at D. The shift key will keep the cursor from advancing. Now press the up cursor four times to get to F#, and insert this pitch again with shift-Q. While still holding down the shift, cursor up 3 more semitones to A. Now release the shift key and press Q again. You will have a DMaj chord of quarter notes, and the cursor will have advanced to the next quarter note. Next, select the chord you just inserted by holding down the shift key and clicking on the top and bottom note. Use ctrl-c to copy the chord to the clipboard. Move cursor to a blank region and press ctrl-v to paste a copy of your DMaj chord to a new beat. Now put the editor in pitch edit mode with the P key, and use the tab key to select each of the notes in the copy of the chord you pasted. As you select the notes, use the + key to transpose them up. Transpose the D up 2 to E, transpose the F# up on to G, and transpose the A by two to B.
 
 ## Grids
 
