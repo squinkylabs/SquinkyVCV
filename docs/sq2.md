@@ -5,7 +5,7 @@
 ## Table of contents
 
 [Major features](#Major-Features)\
-[About this Sequence](#About-this-Sequencer)\
+[About this Sequencer](#About-this-Sequencer)\
 [Grids](#Grids)\
 [Editing](#Editing)\
 [Settings](#Settings)\
@@ -68,11 +68,11 @@ The basics:
 
 Some things to keep in mind:
 
-* The snap to grid option will quantize the start times of new notes, and notes whose start times are dragged.
+* The snap to grid option will quantize the cursor position, and notes whose start times are dragged.
 * The snap durations to grid option will quantize the duration when durations are dragged.
 * Durations may not be shorted smaller than a grid unit.
 
-It might appear that you are stuck with a two bar sequence that cannot be lengthened, but this is far from true. But you do need to use the keyboard to do it. Pressing the end key, or holding down the right cursor, will move to later bars. If you go to bar 4, for example, and insert a note, the sequence will be automatically lengthened to accommodate it. But for now at least,it is difficult to scroll to these later bars without using the keyboard.
+It might appear that you are stuck with a two bar sequence that cannot be lengthened, but this is far from true. Pressing the end key, or holding down the right cursor, will move to later bars. If you go to bar 4, for example, and insert a note, the sequence will be automatically lengthened to accommodate it. And there are both keyboard and mouse commands to move the end point to the cursor. But for now at least,it is difficult to scroll to these later bars without using the keyboard.
 
 ### Editing with the keyboard
 
@@ -94,9 +94,9 @@ These two simple examples show that most things can be done entirely from the ke
 
 (3) Make a few bars of music. Then use ctrl-a to select all the notes, and ctrl-c to copy them all to the clipboard. Go to a second instance of Seq++ with no music in it. Put the cursor to the start of the first bar and press ctrl-p to paste the music into the new sequence. While the notes are all still selected, press ‘s’ to set the keyboard for editing start time, then press + a few times and see the notes become delayed in time. Press ‘p’ to set pitch editing, and press + a few times to transpose the music by a few semi-tones. Now you have the original music on one sequencer, and a delayed, transposed copy in another.
 
-(4) To insert a measure of eight notes, it’s sometimes easier to insert them all first, then edit the pitch. Assuming you song is in A minor, put the cursor at the beginning of an empty bar, on A. Press the e key eight times to fill the bar with eighth notes on the A pitch. The use the home key to move back to the start of the measure, and type the P key to set the editor for pitch editing. You can use the tab to get to the next note. As you land on each note, shift the pitch to the desired pitch by pressing + to shift up by a semitone, or - to shift down. So to shift up to the minor third (C) press + three time. To shift down to the minor seventh (G) press - twice.
+(4) To insert a measure of eighth notes, it’s sometimes easier to insert them all first, then edit the pitch. Assuming you song is in A minor, put the cursor at the beginning of an empty bar, on A. Press the e key eight times to fill the bar with eighth notes on the A pitch. Then use the home key to move back to the start of the measure, and type the P key to set the editor for pitch editing. You can use the tab to get to the next note. As you land on each note, shift the pitch to the desired pitch by pressing + to shift up by a semitone, or - to shift down. So to shift up to the minor third (C) press + three time. To shift down to the minor seventh (G) press - twice.
 
-(5) Make a bar full of sixteenth notes, by pressing the x key sixteen times. The pick some notes to remove, by holding down the ctrl key and clicking on the notes to get rid of. The press backspace to remove them. Instant rhythm.
+(5) Make a bar full of sixteenth notes, by pressing the x key sixteen times. Then pick some notes to remove, by holding down the ctrl key and clicking on the notes you want to get rid of. Then press backspace to remove them. Instant rhythm.
 
 (6) Here’s an easy way to enter a chord sequence - in this case DMaj to EMin. Put the cursor on the pitch “D” that is empty. Press shift-Q to insert a quarter note at D. The shift key will keep the cursor from advancing. Now press the up cursor four times to get to F#, and insert this pitch again with shift-Q. While still holding down the shift, cursor up 3 more semitones to A. Now release the shift key and press Q again. You will have a DMaj chord of quarter notes, and the cursor will have advanced to the next quarter note. Next, select the chord you just inserted by holding down the shift key and clicking on the top and bottom note. Use ctrl-c to copy the chord to the clipboard. Move cursor to a blank region and press ctrl-v to paste a copy of your DMaj chord to a new beat. Now put the editor in pitch edit mode with the P key, and use the tab key to select each of the notes in the copy of the chord you pasted. As you select the notes, use the + key to transpose them up. Transpose the D up 2 to E, transpose the F# up on to G, and transpose the A by two to B.
 
