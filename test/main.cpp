@@ -75,6 +75,7 @@ extern void testHighpassFilter();
 extern void calQ();
 extern void testDrumTrigger();
 extern void testAudition();
+extern void testStepRecordInput();
 
 #if 0
 #include <sstream>
@@ -176,6 +177,7 @@ int main(int argc, char ** argv)
     testAudition();
 
     testDrumTrigger();
+    testStepRecordInput();
 
     testManagedPool();
     testLookupTable();

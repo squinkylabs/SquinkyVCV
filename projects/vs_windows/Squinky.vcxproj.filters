@@ -441,6 +441,9 @@
     <ClCompile Include="..\..\test\testStereoMix.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testStepRecordInput.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -816,6 +819,9 @@
       <Filter>Source Files\test</Filter>
     </ClInclude>
     <ClInclude Include="..\..\midi\controller\AuditionLocker.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\StepRecordInput.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
   </ItemGroup>

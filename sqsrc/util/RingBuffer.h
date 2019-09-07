@@ -16,7 +16,8 @@ public:
     SqRingBuffer()
     {
         for (int i = 0; i < SIZE; ++i) {
-            memory[i] = 0;
+            // TODO: put this back?
+          //  memory[i] = 0;
         }
     }
 

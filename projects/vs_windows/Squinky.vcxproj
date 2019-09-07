@@ -110,6 +110,7 @@
     <ClCompile Include="..\..\test\testSlew4.cpp" />
     <ClCompile Include="..\..\test\testSpline.cpp" />
     <ClCompile Include="..\..\test\testStateVariable.cpp" />
+    <ClCompile Include="..\..\test\testStepRecordInput.cpp" />
     <ClCompile Include="..\..\test\testStereoMix.cpp" />
     <ClCompile Include="..\..\test\testStochasticGrammar.cpp" />
     <ClCompile Include="..\..\test\testTestSignal.cpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h" />
     <ClInclude Include="..\..\midi\controller\SeqClock.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
+    <ClInclude Include="..\..\midi\controller\StepRecordInput.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
     <ClInclude Include="..\..\midi\model\ISeqSettings.h" />
     <ClInclude Include="..\..\midi\model\MidiEvent.h" />
