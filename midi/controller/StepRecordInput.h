@@ -1,9 +1,11 @@
 #pragma once
 
 #include "RingBuffer.h"
+#include <assert.h>
 
 class RecordInputData
 {
+public:
     enum class Type {noteOn, allNotesOff };
 
     float pitch=0;
@@ -30,7 +32,9 @@ private:
     TPort& cv;
     TPort& gate;
 
-    SqRingBuffer<RecordInputData, 16> buffer;
+    static const int maxNotes = 16;
+    SqRingBuffer<RecordInputData, maxNotes> buffer;
+    bool gateWasHigh[maxNotes] = {0};
 };
 
 template <typename TPort>
@@ -43,11 +47,43 @@ inline StepRecordInput<TPort>::StepRecordInput(TPort& cv, TPort& gate) :
 template <typename TPort>
 inline bool StepRecordInput<TPort>::poll(RecordInputData* p)
 {
-    return false;
+    assert(p);
+    bool ret = false;
+    if (!buffer.empty()) {
+        *p = buffer.pop();
+        ret = true;
+    }
+    return ret;
 }
 
 template <typename TPort>
 inline void StepRecordInput<TPort>::step()
 {
-
+    bool highBefore = false;
+    bool highAfter = false;
+    for (int i = 0; i < maxNotes; ++i) {
+        highBefore |= gateWasHigh[i];
+        if (i < gate.channels) {
+            bool b = gate.voltages[i] > 5;      // TODO: schmidt
+            highAfter |= b;
+            if (b != gateWasHigh[i]) {
+                if (b) {
+                    // gate just went high
+                    RecordInputData data;
+                    data.type = RecordInputData::Type::noteOn;
+                    data.pitch = cv.voltages[i];
+                    buffer.push(data);
+                } else {
+                    // gate just went low
+                   // assert(false);
+                }
+                gateWasHigh[i] = b;
+            }
+        }
+    }
+    if (highBefore && !highAfter) {
+        RecordInputData data;
+        data.type = RecordInputData::Type::allNotesOff;
+        buffer.push(data);
+    }
 }
