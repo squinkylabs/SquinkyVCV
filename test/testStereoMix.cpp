@@ -100,6 +100,30 @@ static void dumpOut(std::shared_ptr<T> mixer)
     printf("\n");
 }
 
+#if 0
+template <typename T>
+static void dumpPansAndGains(std::shared_ptr<T> mixer)
+{
+    printf("pans:\n");
+    for (int i = 0; i < T::numGroups; ++i) {
+        printf("%.2f ", mixer->inputs[i + T::PAN0_INPUT].value);
+    }
+   
+}
+#endif
+
+template <typename T>
+static void dumpInputs(std::shared_ptr<T> mixer)
+{
+    printf("inputs:\n");
+
+    int x = 0;
+    for (int i = 0; i < T::numChannels; ++i) {
+        printf("%.2f ", mixer->inputs[i + T::AUDIO0_INPUT].value);
+    }
+    printf("\n");
+}
+
 
 static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
 {
@@ -182,19 +206,27 @@ void testChannel(int group, bool useParam)
     //printf("\n** running test group %d useParam %d\n", 0, useParam);
     auto mixer = getMixer<T>();
 
+    assertEQ(mixer->params[T::PAN0_PARAM].value, 0);
+
     const float activeParamValue = useParam ? 1.f : .25f;
     const float activeCVValue = useParam ? 5.f : 10.f;
 
     // zero all inputs, put all channel gains to 1
     for (int i = 0; i < T::numChannels; ++i) {
         mixer->inputs[T::AUDIO0_INPUT + i].value = 0;
+    }
+
+    for (int i = 0; i < T::numGroups; ++i) {
         mixer->params[T::GAIN0_PARAM + i].value = 1;
     }
+
+    assertEQ(mixer->params[T::PAN0_PARAM].value, 0);
 
     // TODO: make left and right inputs different
 
     const int leftChannel = group * 2;
     const int rightChannel = 1 + group * 2;
+
 
     mixer->inputs[T::AUDIO0_INPUT + leftChannel].value = 5.5f;
     mixer->inputs[T::AUDIO0_INPUT + rightChannel].value = 6.5f;
@@ -202,22 +234,31 @@ void testChannel(int group, bool useParam)
     mixer->inputs[T::LEVEL0_INPUT + group].value = activeCVValue;
     mixer->inputs[T::LEVEL0_INPUT + group].active = true;
 
-    for (int i = 0; i < 10; ++i) {
-        mixer->step();           // let mutes settle
-    }
+    assertEQ(mixer->params[T::PAN0_PARAM].value, 0);
+ 
+    step(mixer);
 
-    float atten18Db = 1.0f / (2.0f * 2.0f * 2.0f);
+    const float atten18Db = 1.0f / (2.0f * 2.0f * 2.0f);
+    const float panGain = .5f;
 
     const float exectedInActiveChannelLeft = (useParam) ?
-        (5.5f * .5f) :          // param at 1, cv at 5, gain = .5
-        atten18Db * 5.5f;       // param at .25 is 18db down cv at 10 is units
+        (panGain * 5.5f * .5f) :          // param at 1, cv at 5, gain = .5
+        panGain * atten18Db * 5.5f;       // param at .25 is 18db down cv at 10 is units
 
     const float exectedInActiveChannelRight = (useParam) ?
-        (6.5f * .5f) :          // param at 1, cv at 5, gain = .5
-        atten18Db * 6.5f;       // param at .25 is 18db down cv at 10 is units
+        (panGain * 6.5f * .5f) :          // param at 1, cv at 5, gain = .5
+        panGain * atten18Db * 6.5f;       // param at .25 is 18db down cv at 10 is units
 
-    //dumpUb(mixer);
-    //dumpOut(mixer);
+#if 0
+    printf("group = %d useParam=%d\n", group, useParam);
+    dumpUb(mixer);
+    dumpOut(mixer);
+    dumpInputs(mixer);
+    step(mixer);
+    mixer->step();
+#endif
+
+    assertEQ(mixer->params[T::PAN0_PARAM].value, 0);
 
     for (int gp = 0; gp < T::numGroups; ++gp) {
         const int leftChannel = gp * 2;

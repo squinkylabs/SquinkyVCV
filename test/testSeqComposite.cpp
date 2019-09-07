@@ -128,9 +128,9 @@ static void testBasicGatesSub(std::shared_ptr<Sq> s)
     assertAllGatesLow(*s);
 }
 
-
-
-
+#if 0
+// this test used to assume that seq always started running.
+// not true anymore
 static void testBasicGateNoExplicitStart()
 {
     //printf("skipping testBasicGateNoExplicitStart\n");
@@ -142,6 +142,7 @@ static void testBasicGateNoExplicitStart()
     testBasicGatesSub(s);
 #endif
 }
+#endif
 
 static void testBasicGates()
 {
@@ -473,7 +474,6 @@ static void testSubrangeLoop()
 void testSeqComposite()
 {
     testBasicGates();
-    testBasicGateNoExplicitStart();
     testStopGatesLow();
 
     testRetrigger(true);

@@ -104,11 +104,11 @@ These two simple examples show that most things can be done entirely from the ke
 
 The context menu available by right-clicking in the note grid contains several options for the timing grid. 
 
-The grid has two major effects: (1) grid lines are drawn in between the measure lines to help visually align timing;(2) and many edit operations are affected by the grid setting, in conjunction with the snap to grid option.
+The grid has two major effects: (1) grid lines are drawn in between the measure lines to help visually align timing; and (2) many edit operations are affected by the grid setting, in conjunction with the snap to grid option.
 
 When snap to grid is enabled, [almost] all cursor positioning is quantized to the nearest grid line.
 
-Note that as the grid units get smaller, not all grid lines will be drawn. For example, at the moment only every other grid line is drawn if the grid is set to sixteenth notes.
+Note that as the grid units get smaller, not all grid lines will be drawn. For example, at the moment only every other grid line is drawn if the grid is set to sixteenth notes. This is because the screen would get too cluttered it all the lines were drawn.
 
 Snap duration to grid will ensure that dragging note durations with the mouse will snap the durations. But it will not affect the durations of notes inserted with the keyboard commands (like h, q, and e), since these are already fixed by  the articulation setting. It only affects dragging with the mouse.
 
