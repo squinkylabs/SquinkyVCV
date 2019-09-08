@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RingBuffer.h"
+#include "AtomicRingBuffer.h"
 #include <assert.h>
 
 class RecordInputData
@@ -33,7 +33,7 @@ private:
     TPort& gate;
 
     static const int maxNotes = 16;
-    SqRingBuffer<RecordInputData, maxNotes> buffer;
+    AtomicRingBuffer<RecordInputData, maxNotes> buffer;
     bool gateWasHigh[maxNotes] = {0};
 };
 

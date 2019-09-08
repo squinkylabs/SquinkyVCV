@@ -16,8 +16,7 @@ public:
     SqRingBuffer()
     {
         for (int i = 0; i < SIZE; ++i) {
-            // TODO: put this back?
-          //  memory[i] = 0;
+            memory[i] = 0;
         }
     }
 
@@ -46,7 +45,6 @@ inline void SqRingBuffer<T, SIZE>::push(T value)
     advance(inIndex);
     couldBeFull = true;
 }
-
 
 template <typename T, int SIZE>
 inline T SqRingBuffer<T, SIZE>::pop()

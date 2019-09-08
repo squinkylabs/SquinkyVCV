@@ -228,6 +228,7 @@
     <ClInclude Include="..\..\sqsrc\thread\ThreadServer.h" />
     <ClInclude Include="..\..\sqsrc\thread\ThreadSharedState.h" />
     <ClInclude Include="..\..\sqsrc\util\asserts.h" />
+    <ClInclude Include="..\..\sqsrc\util\AtomicRingBuffer.h" />
     <ClInclude Include="..\..\sqsrc\util\CommChannels.h" />
     <ClInclude Include="..\..\sqsrc\util\Constants.h" />
     <ClInclude Include="..\..\sqsrc\util\Divider.h" />

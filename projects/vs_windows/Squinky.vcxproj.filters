@@ -824,5 +824,8 @@
     <ClInclude Include="..\..\midi\controller\StepRecordInput.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\sqsrc\util\AtomicRingBuffer.h">
+      <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
