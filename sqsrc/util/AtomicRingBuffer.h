@@ -16,6 +16,7 @@ template <typename T, int SIZE>
 class AtomicRingBuffer
 {
 public:
+    AtomicRingBuffer();
     void push(T);
     T pop();
     bool full() const;
@@ -23,7 +24,7 @@ public:
 private:
     T memory[SIZE];
        
-    std::atomic<int> size = 0;  // must change this last, for consistency between threads.
+    std::atomic<int> size;  // must change this last, for consistency between threads.
     int inIndex = 0;
     int outIndex = 0;
 
@@ -32,6 +33,12 @@ private:
       */
     void advance(int &p);
 };
+
+template <typename T, int SIZE>
+inline AtomicRingBuffer<T, SIZE>::AtomicRingBuffer()
+{
+    size = 0;
+}
 
 template <typename T, int SIZE>
 inline void AtomicRingBuffer<T, SIZE>::push(T value)
