@@ -173,6 +173,10 @@ But there are some keys that VCV Rack itself tries very hard to steal from Seq++
 
 That is why for all these keys there are substitute keys that also work, and do not have to fight with VCV for control of the keyboard. Both 4 keys will cursor to the left, and both 6 keys will cursor to the right.
 
+Many key commands take input from the grid size set from the settings menu. For example, the Ins key will insert a note whose value is the current grid unit.
+
+Commands that are mapped to letter keys will usually work with either lower or upper case. In some selection operations, however, the shift key is used to extend a selection.
+
 ## Panel
 
 On the left are a few inputs, outputs, and controls.
@@ -191,7 +195,7 @@ On the left are a few inputs, outputs, and controls.
 
 **Clk** is the eternal clock input.
 
-**Rst** is the reset CV. It is quite compatible with the reset out of "Clocked".
+**Rst** is the reset CV. It is compatible with the reset out of "Clocked".
 
 **Run** is a CV input. Meant to be hooked up to the Run output of Clocked, or similar master clock.
 
@@ -221,12 +225,7 @@ If there are more simultaneous notes being played than may be accommodated by th
 
 ## Keyboard reference
 
-### Sequencer keyboard commands
-
-(move to about keyboar)
-Many key commands take input from the grid size set from the settings menu. Commands that are mapped to letter keys will usually work with either lower or upper case. In some selection operations, however, the shift key is used to extend a selection.
-
-### Misc
+### Misc commands
 
 **n**: Sets the end point of the sequence to the current cursor time. Time is always quantized to the grid, even if snap to grid is off.
 
@@ -240,7 +239,7 @@ For that reason, the numeric keypad (2,4,8,6) can also be used to move the curso
 
 **cursor keypad, 456r, and keypad 2,4,6,8**: Moves cursor in two dimensions. Up and down by semitone, left and right by one grid unit.
 
-**ctrl-cursor, ctrl-456r, and ctrl-2,4,6,8 on keypad**: Moves left and right by a quarter note.
+**ctrl-cursor, ctrl-4,6, and ctrl-4,6 on keypad**: Moves left and right by a quarter note.
 
 **home, end**: Moves one bar earlier or later.
 
@@ -250,7 +249,7 @@ For that reason, the numeric keypad (2,4,8,6) can also be used to move the curso
 
 ### Selecting notes
 
-**ctrl-a** Selects all the events in the track.
+**ctrl-a**: Selects all the events in the track.
 
 **tab**: Select next note.
 
@@ -264,37 +263,37 @@ Moving the cursor onto a note will select it.
 
 ### Inserting and deleting notes
 
-When a note is inserted, its start time and duration will not be quantized, no matter the snap to gird settings. But since most cursor movement **will** qunatize the cursor time when snap to grid is on, notes will naturally tend to be inserted on the grid. But it is possible to move off the grid and then use all the insert commands.
+When a note is inserted, its start time and duration will not be quantized, no matter the snap to gird settings. But since most cursor movement **will** qunatize the cursor time when snap to grid is on, notes will naturally tend to be inserted on the grid. But it is possible to move off the grid and then use any of the insert commands.
 
 After a note is inserted the cursor will be advanced past the note just inserted, unless the shift key is held down.
 
-**Ins or Enter** Inserts a note at the current cursor. Duration will be one grid unit by default, but may be set to whatever you want with the asterisk key.
+**Ins** or **Enter** Inserts a note at the current cursor. Duration will be one grid unit by default, but may be set to whatever you want with the asterisk key.
 
 **Del** Deletes the currently selected notes.
 
-Insert preset note durations. They shortcuts insert a note of a specific duration.
+**Insert preset note durations**. These shortcuts insert a note of a specific duration:
 
-* **w** Whole note.
-* **h** Half note.
-* **q** Quarter note.
-* **e** Eighth note.
-* **x** Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
+* **w**: Whole note.
+* **h**: Half note.
+* **q**: Quarter note.
+* **e**: Eighth note.
+* **x**: Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
 
-* **asterisk** (*) will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse.
+**asterisk** (*): Will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse).
 
-**Very Important**: by default the cursor will advance after inserting a note, making it easier to insert a stream on notes in succession. But if you hold down the shift key the cursor will not move ahead, making it easy to insert chords.
+**Very Important**: By default the cursor will advance after inserting a note, making it easier to insert a stream on notes in succession. But if you hold down the shift key the cursor will not move ahead, making it easy to insert chords.
 
 ### Changing notes
 
-**S, P, D**: sets note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
+**S, P, D**: Set note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
 
 When notes are selected and StartTime or Duration is current edit attribute:
 
-* plus/minus changes by one sixteenth note
+* **plus** and **minus**: Change by one grid unit.
 
-* ], [ changes by a quarter note.
+* **], [**: Change by a quarter note regardless of grid setting.
 
-* <, > change by a sixty-fourth note.
+* **<, >**: Change by a sixty-fourth note.
 
 When note is selected and Pitch is current edit attribute:
 
@@ -303,11 +302,11 @@ When note is selected and Pitch is current edit attribute:
 
 ### Cut/Copy/Paste
 
-**ctrl-x** cut. Removes all the selected notes and puts them on the clipboard. (doesn't work yet).
+**ctrl-x**: Cut. Removes all the selected notes and puts them on the clipboard. (doesn't work yet).
 
-**ctrl-c** copy. Puts a copy of all the selected notes on the clipboard.
+**ctrl-c**: Copy. Puts a copy of all the selected notes on the clipboard.
 
-**ctrl-v** paste. Pastes the contents of the clipboard at the current edit cursor.
+**ctrl-v**: Paste. Pastes the contents of the clipboard at the current edit cursor.
 
 Note that you may paste into a different instance of the sequencer than you copied from, as you would expect.
 
@@ -315,15 +314,15 @@ Note that you may paste into a different instance of the sequencer than you copi
 
 Seq++ uses VCV's undo system, which is available from a mouse menu and from keyboard shortcuts.
 
-**ctrl-z**: undo
+**ctrl-z**: Undo.
 
-**ctrl-y, shift-ctrl-z**: redo
+**ctrl-y, shift-ctrl-z**: Redo.
+
+When Seq++ performs an undoable edit operation, you will see it in VCV's undo menu. It will look something like **Seq++: delete note**, so you will know what you are undoing, and that is was Seq++ that it will be applied to.
 
 ### Help
 
 **F1 key**, when note editor has focus.
-
-**Context menu**, when the module has focus.
 
 ## Mouse reference
 
@@ -331,17 +330,17 @@ Clicking on the note grid will move the blinking edit cursor to the click locati
 
 ### Selecting notes with the mouse
 
-Clicking on a note will select it, and deselect all others.
+**Click** on a note will select it, and deselect all others.
 
-Ctrl-click on a note will toggle its selection state, while leaving any other selected notes selected.
+**Ctrl-click**: on a note will toggle its selection state, while leaving any other selected notes selected.
 
-Shift-click will extent the selection up to the cursor. This means all previously selected notes will stay selected, and all notes between the cursor and the selection will get selected, too.
+Shift-click will extend the selection up to the cursor. This means all previously selected notes will stay selected, and all notes between the cursor and the selection will get selected, too.
 
 ### Inserting and deleting notes
 
 Double clicking on a note will delete it.
 
-Double clicking in an empty location will inserts a note:
+Double clicking on an empty location will inserts a note:
 
 * By default the duration will be one grid unit.
 * You may override the default duration using the asterisk key.
@@ -353,3 +352,7 @@ Transpose: if you click and hold in the middle of a selected note, you can drag 
 Shift: if you click and hold at the start of a selected note, you can drag all the selected notes left and right in time.
 
 Stretch: if you click and hold at the end of a selected note, you can drag all the selected notes left and right in duration.
+
+### Help
+
+Help in all Squinky Labs modules can be accessed from the context menu that appears when you right-click on the panel. This will be the Seq++ help, not the full instruction manual.
