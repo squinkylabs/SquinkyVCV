@@ -44,7 +44,6 @@ static void testOneNote()
     b = sr.poll(&buffer);
     assert(b);
     assert(buffer.type == RecordInputData::Type::allNotesOff);
-
 }
 
 

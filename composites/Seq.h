@@ -37,12 +37,18 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
+    Seq(Module * module, MidiSongPtr song) :
+        TBase(module),
+        runStopProcessor(true),
+        stepRecordInput(inputs[CV_INPUT], inputs[GATE_INPUT])
     {
         init(song);
     }
 
-    Seq(MidiSongPtr song) : TBase(), runStopProcessor(true)
+    Seq(MidiSongPtr song) : 
+        TBase(), 
+        runStopProcessor(true),
+        stepRecordInput(inputs[CV_INPUT], inputs[GATE_INPUT])
     {
         init(song);
     }
@@ -74,6 +80,8 @@ public:
         CLOCK_INPUT,
         RESET_INPUT,
         RUN_INPUT,
+        GATE_INPUT,
+        CV_INPUT,
         NUM_INPUTS
     };
 
@@ -152,6 +160,8 @@ private:
      * called by the divider every 'n' step calls
      */
     void stepn(int n);
+
+    StepRecordInput<typename TBase::Port> stepRecordInput;
 };
 
 template <class TBase>
@@ -245,11 +255,11 @@ void  Seq<TBase>::serviceRunStop()
     TBase::lights[RUN_STOP_LIGHT].value = TBase::params[RUNNING_PARAM].value;
 }
 
-    // may be called from any thread, but meant for UI.
+// may be called from any thread, but meant for UI.
 template <class TBase>
 bool Seq<TBase>::poll(RecordInputData* p)
 {
-    return false;
+    return stepRecordInput.poll(p);
 }
 
 
@@ -258,6 +268,7 @@ template <class TBase>
 void  Seq<TBase>::stepn(int n)
 {
     serviceRunStop();
+    stepRecordInput.step();
     audition->enable(!isRunning() && (TBase::params[AUDITION_PARAM].value > .5f));
     audition->sampleTicksElapsed(n);
     // first process all the clock input params
