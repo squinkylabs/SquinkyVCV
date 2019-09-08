@@ -257,7 +257,7 @@ For that reason, the numeric keypad (2,4,8,6) can also be used to move the curso
 
 **shift-tab**: Extends selection to include the next note.
 
-**ctrl-shift-tab**: extends selection to the previous note.
+**ctrl-shift-tab**: Extends selection to the previous note.
 
 Moving the cursor onto a note will select it.
 
@@ -279,7 +279,7 @@ After a note is inserted the cursor will be advanced past the note just inserted
 * **e**: Eighth note.
 * **x**: Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
 
-**asterisk** (*): Will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse).
+**Asterisk** (*): Will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse).
 
 **Very Important**: By default the cursor will advance after inserting a note, making it easier to insert a stream on notes in succession. But if you hold down the shift key the cursor will not move ahead, making it easy to insert chords.
 
@@ -334,7 +334,7 @@ Clicking on the note grid will move the blinking edit cursor to the click locati
 
 **Ctrl-click**: on a note will toggle its selection state, while leaving any other selected notes selected.
 
-Shift-click will extend the selection up to the cursor. This means all previously selected notes will stay selected, and all notes between the cursor and the selection will get selected, too.
+**Shift-click** will extend the selection up to the cursor. This means all previously selected notes will stay selected, and all notes between the cursor and the selection will get selected, too.
 
 ### Inserting and deleting notes
 
@@ -347,11 +347,11 @@ Double clicking on an empty location will inserts a note:
 
 ### Changing notes
 
-Transpose: if you click and hold in the middle of a selected note, you can drag all the selected notes up and down in pitch.
+**Transpose**: If you click and hold in the middle of a selected note, you can drag all the selected notes up and down in pitch.
 
-Shift: if you click and hold at the start of a selected note, you can drag all the selected notes left and right in time.
+**Shift**: If you click and hold at the start of a selected note, you can drag all the selected notes left and right in time.
 
-Stretch: if you click and hold at the end of a selected note, you can drag all the selected notes left and right in duration.
+**Stretch**: if you click and hold at the end of a selected note, you can drag all the selected notes left and right in duration.
 
 ### Help
 
