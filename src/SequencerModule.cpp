@@ -84,6 +84,7 @@ struct SequencerWidget : ModuleWidget
 
     void addJacks(SequencerModule *module);
     void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
+    void addStepRecord(SequencerModule *module);
     void toggleRunStop(SequencerModule *module);
 
 #ifdef _TIME_DRAWING
@@ -116,7 +117,9 @@ void SequencerWidget::step()
     }
 
     // give this guy a chance to do some processing on the UI thread.
-    MidiKeyboardHandler::onUIThread(_module->seqComp);
+    if (_module) {
+        MidiKeyboardHandler::onUIThread(_module->seqComp);
+    }
 }
 
 void SequencerWidget::toggleRunStop(SequencerModule *module)
@@ -165,6 +168,7 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 
     addControls(module, icomp);
     addJacks(module);
+    addStepRecord(module);
  
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -226,7 +230,6 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     });
     addChild(tog);
    
-
     y = yy;
     float controlDx = 40;
 
@@ -246,6 +249,22 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
     }
+}
+
+void SequencerWidget::addStepRecord(SequencerModule *module)
+{
+    const float jacksDx = 40;
+    const float jacksX = 20;
+    const float jacksY = 230;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 0 * jacksDx, jacksY),
+        module,
+        Comp::CV_INPUT));  
+
+     addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 1 * jacksDx, jacksY),
+        module,
+        Comp::GATE_INPUT));  
 }
 
 void SequencerWidget::addJacks(SequencerModule *module)

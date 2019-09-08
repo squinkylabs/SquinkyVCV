@@ -15,6 +15,10 @@ void MidiKeyboardHandler::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqCo
 {
     RecordInputData data;
     bool isData = seqComp->poll(&data);
+    if (isData) {
+        printf("MidiKeyboardHandler::onUIThread found input\n");
+        fflush(stdout);
+    }
 }
 
 bool MidiKeyboardHandler::doRepeat(unsigned key)

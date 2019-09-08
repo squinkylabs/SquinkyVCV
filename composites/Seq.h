@@ -40,7 +40,7 @@ public:
     Seq(Module * module, MidiSongPtr song) :
         TBase(module),
         runStopProcessor(true),
-        stepRecordInput(inputs[CV_INPUT], inputs[GATE_INPUT])
+        stepRecordInput(Seq<TBase>::inputs[CV_INPUT], Seq<TBase>::inputs[GATE_INPUT])
     {
         init(song);
     }
@@ -48,7 +48,7 @@ public:
     Seq(MidiSongPtr song) : 
         TBase(), 
         runStopProcessor(true),
-        stepRecordInput(inputs[CV_INPUT], inputs[GATE_INPUT])
+        stepRecordInput(Seq<TBase>::inputs[CV_INPUT], Seq<TBase>::inputs[GATE_INPUT])
     {
         init(song);
     }
