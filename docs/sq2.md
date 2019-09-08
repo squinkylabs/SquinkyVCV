@@ -118,18 +118,18 @@ Right-clicking in the note area will bring up the settings menu. This menu consi
 
 Settings:
 
-* Grid settings lets you choose the timing units of the edit grid.
-* *Snap to grid*. When enabled, the edit cursor is usually snapped to the grid, ensuring that notes will be inserted on the grid unless special effort is employed.
-* *Snap duration to grid*. When enabled, dragging note lengths with the mouse will drag onto the nearest grid line.
-* *Audition*. When a note is selected, and the sequencer is not running, the note will be played thought channel 1 so that you can hear what you are editing. Audition is on by default, but may be turned off in the settings menu.
-* *Articulation*. Determines the duration when a note is in inserted. With 100% articulation, a quarter note would take up the entire duration of a quarter note.
+* **Grid settings** lets you choose the timing units of the edit grid.
+* **Snap to grid**: When enabled, the edit cursor is usually snapped to the grid, ensuring that notes will be inserted on the grid unless special effort is employed.
+* **Snap duration to grid**: When enabled, dragging note lengths with the mouse will drag onto the nearest grid line.
+* **Audition**. When a note is selected, and the sequencer is not running, the note will be played thought channel 1 so that you can hear what you are editing. Audition is on by default, but may be turned off in the settings menu.
+* **Articulation**. Determines the duration when a note is in inserted. With 100% articulation, a quarter note would take up the entire duration of a quarter note.
 
 Note that all of the settings are saved with your patch.
 
 Commands:
 
-* *Insert/Delete* note. This menu item changes depending on what is under the cursor. If nothing is there, it will insert a note. If a note is there, it will delete it. (note that double click does that same thing).
-* *Set end point*. Will set the end/loop point of the sequencer to the grid line nearest the cursor.
+* **Insert/Delete** note. This menu item changes depending on what is under the cursor. If nothing is there, it will insert a note. If a note is there, it will delete it. (note that double click does that same thing).
+* **Set end point**. Will set the end/loop point of the sequencer to the grid line nearest the cursor.
 
 ## Adjusting length of sequence
 
