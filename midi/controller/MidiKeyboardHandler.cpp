@@ -7,26 +7,15 @@
 
 #include <assert.h>
 
-// Crazy linker problem - to get perf suite to link I need to put this here.
-#if !defined(__PLUGIN)
-NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b)
-{
-	return nvgRGBA(r,g,b,255);
-}
-
-NVGcolor nvgRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
-{
-	NVGcolor color;
-	// Use longer initialization to suppress warning.
-	color.r = r / 255.0f;
-	color.g = g / 255.0f;
-	color.b = b / 255.0f;
-	color.a = a / 255.0f;
-	return color;
-}
-#endif
 
 #ifdef _SEQ
+
+
+void MidiKeyboardHandler::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp)
+{
+    RecordInputData data;
+    bool isData = seqComp->poll(&data);
+}
 
 bool MidiKeyboardHandler::doRepeat(unsigned key)
 {
@@ -418,5 +407,26 @@ void MidiKeyboardHandler::doMouseClick(MidiSequencerPtr sequencer,
     } else {
         sequencer->editor->toggleSelectionAt(time, pitchCV);
     }
+}
+#endif
+
+
+
+// Crazy linker problem - to get perf suite to link I need to put this here.
+#if !defined(__PLUGIN)
+NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b)
+{
+	return nvgRGBA(r,g,b,255);
+}
+
+NVGcolor nvgRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	NVGcolor color;
+	// Use longer initialization to suppress warning.
+	color.r = r / 255.0f;
+	color.g = g / 255.0f;
+	color.b = b / 255.0f;
+	color.a = a / 255.0f;
+	return color;
 }
 #endif

@@ -19,6 +19,9 @@ using Module = rack::engine::Module;
 class WidgetComposite
 {
 public:
+
+    using Port = rack::engine::Port;
+    
     WidgetComposite(Module * parent) :
         inputs(parent->inputs),
         outputs(parent->outputs),

@@ -70,6 +70,9 @@ struct Output : Port
 class TestComposite
 {
 public:
+
+    using Port = ::Port;
+
     TestComposite() :
         inputs(40),
         outputs(40),

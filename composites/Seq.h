@@ -9,6 +9,8 @@
 #include "IMidiPlayerHost.h"
 #include "MidiAudition.h"
 #include "MidiPlayer2.h"
+#include "StepRecordInput.h"
+
 
 namespace rack {
     namespace engine {
@@ -98,6 +100,11 @@ public:
     {
         runStopRequested = true;
     }
+
+    using sr = StepRecordInput<typename TBase::Port>;
+
+    // may be called from any thread, but meant for UI.
+    bool poll(RecordInputData* p);
 
 
     /** Implement IComposite
@@ -237,6 +244,15 @@ void  Seq<TBase>::serviceRunStop()
     }
     TBase::lights[RUN_STOP_LIGHT].value = TBase::params[RUNNING_PARAM].value;
 }
+
+    // may be called from any thread, but meant for UI.
+template <class TBase>
+bool Seq<TBase>::poll(RecordInputData* p)
+{
+    return false;
+}
+
+
 
 template <class TBase>
 void  Seq<TBase>::stepn(int n)

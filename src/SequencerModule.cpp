@@ -16,6 +16,7 @@
 #include "ctrl/SqToggleLED.h"
 
 #include "seq/SequencerSerializer.h"
+#include "MidiKeyboardHandler.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
 #include "TimeUtils.h"
@@ -72,7 +73,7 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
-    #endif
+#endif
 
     void step() override;
 
@@ -98,6 +99,8 @@ struct SequencerWidget : ModuleWidget
 void SequencerWidget::step()
  {
     ModuleWidget::step();
+
+    // Advance the scroll position
     if (scrollControl && _module && _module->isRunning()) {
         
         const int y = scrollControl->getValue();
@@ -111,6 +114,9 @@ void SequencerWidget::step()
             seq->editor-> advanceCursorToTime(curTime, false);
         }
     }
+
+    // give this guy a chance to do some processing on the UI thread.
+    MidiKeyboardHandler::onUIThread(_module->seqComp);
 }
 
 void SequencerWidget::toggleRunStop(SequencerModule *module)
