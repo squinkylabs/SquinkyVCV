@@ -46,7 +46,6 @@ inline void SqRingBuffer<T, SIZE>::push(T value)
     couldBeFull = true;
 }
 
-
 template <typename T, int SIZE>
 inline T SqRingBuffer<T, SIZE>::pop()
 {

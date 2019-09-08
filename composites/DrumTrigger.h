@@ -124,22 +124,18 @@ inline void DrumTrigger<TBase>::init()
 template <class TBase>
 inline void DrumTrigger<TBase>::step()
 {
-   // printf("\n");
     // iterator over the 8 input channels we monitor
     // Remember: in here 'i' is the input channel,
     // index is the output channel - they are not the same!
 
     int activeInputs = std::min(numTriggerChannels, int(TBase::inputs[GATE_INPUT].channels));
     activeInputs = std::min(activeInputs, int(TBase::inputs[CV_INPUT].channels));
-    for (int i = 0; i < numTriggerChannels; ++i) {
+    for (int i = 0; i < activeInputs; ++i) {
         const float cv = TBase::inputs[CV_INPUT].voltages[i];
-       // printf("cv = %.2f, semi=%d\n", cv, PitchUtils::cvToSemitone(cv));
-      //  fflush(stdout);
         int index = PitchUtils::cvToSemitone(cv) - 48;
         if (index >= 0 && index < numTriggerChannels) {
             // here we have a pitch that we care about
             const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
-         //   printf("index=%d i=%d, gInput = %d raw = %f\n", index, i, gInput, TBase::inputs[GATE_INPUT].voltages[i]);
             if (gInput) {
                 // gate low to high at this output's pitch,
                 // lets raise the gate.

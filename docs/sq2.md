@@ -5,7 +5,7 @@
 ## Table of contents
 
 [Major features](#Major-Features)\
-[About this Sequence](#About-this-Sequencer)\
+[About this Sequencer](#About-this-Sequencer)\
 [Grids](#Grids)\
 [Editing](#Editing)\
 [Settings](#Settings)\
@@ -68,11 +68,11 @@ The basics:
 
 Some things to keep in mind:
 
-* The snap to grid option will quantize the start times of new notes, and notes whose start times are dragged.
+* The snap to grid option will quantize the cursor position, and notes whose start times are dragged.
 * The snap durations to grid option will quantize the duration when durations are dragged.
 * Durations may not be shorted smaller than a grid unit.
 
-It might appear that you are stuck with a two bar sequence that cannot be lengthened, but this is far from true. But you do need to use the keyboard to do it. Pressing the end key, or holding down the right cursor, will move to later bars. If you go to bar 4, for example, and insert a note, the sequence will be automatically lengthened to accommodate it. But for now at least,it is difficult to scroll to these later bars without using the keyboard.
+It might appear that you are stuck with a two bar sequence that cannot be lengthened, but this is far from true. Pressing the end key, or holding down the right cursor, will move to later bars. If you go to bar 4, for example, and insert a note, the sequence will be automatically lengthened to accommodate it. And there are both keyboard and mouse commands to move the end point to the cursor. But for now at least,it is difficult to scroll to these later bars without using the keyboard.
 
 ### Editing with the keyboard
 
@@ -94,9 +94,9 @@ These two simple examples show that most things can be done entirely from the ke
 
 (3) Make a few bars of music. Then use ctrl-a to select all the notes, and ctrl-c to copy them all to the clipboard. Go to a second instance of Seq++ with no music in it. Put the cursor to the start of the first bar and press ctrl-p to paste the music into the new sequence. While the notes are all still selected, press ‘s’ to set the keyboard for editing start time, then press + a few times and see the notes become delayed in time. Press ‘p’ to set pitch editing, and press + a few times to transpose the music by a few semi-tones. Now you have the original music on one sequencer, and a delayed, transposed copy in another.
 
-(4) To insert a measure of eight notes, it’s sometimes easier to insert them all first, then edit the pitch. Assuming you song is in A minor, put the cursor at the beginning of an empty bar, on A. Press the e key eight times to fill the bar with eighth notes on the A pitch. The use the home key to move back to the start of the measure, and type the P key to set the editor for pitch editing. You can use the tab to get to the next note. As you land on each note, shift the pitch to the desired pitch by pressing + to shift up by a semitone, or - to shift down. So to shift up to the minor third (C) press + three time. To shift down to the minor seventh (G) press - twice.
+(4) To insert a measure of eighth notes, it’s sometimes easier to insert them all first, then edit the pitch. Assuming you song is in A minor, put the cursor at the beginning of an empty bar, on A. Press the e key eight times to fill the bar with eighth notes on the A pitch. Then use the home key to move back to the start of the measure, and type the P key to set the editor for pitch editing. You can use the tab to get to the next note. As you land on each note, shift the pitch to the desired pitch by pressing + to shift up by a semitone, or - to shift down. So to shift up to the minor third (C) press + three time. To shift down to the minor seventh (G) press - twice.
 
-(5) Make a bar full of sixteenth notes, by pressing the x key sixteen times. The pick some notes to remove, by holding down the ctrl key and clicking on the notes to get rid of. The press backspace to remove them. Instant rhythm.
+(5) Make a bar full of sixteenth notes, by pressing the x key sixteen times. Then pick some notes to remove, by holding down the ctrl key and clicking on the notes you want to get rid of. Then press backspace to remove them. Instant rhythm.
 
 (6) Here’s an easy way to enter a chord sequence - in this case DMaj to EMin. Put the cursor on the pitch “D” that is empty. Press shift-Q to insert a quarter note at D. The shift key will keep the cursor from advancing. Now press the up cursor four times to get to F#, and insert this pitch again with shift-Q. While still holding down the shift, cursor up 3 more semitones to A. Now release the shift key and press Q again. You will have a DMaj chord of quarter notes, and the cursor will have advanced to the next quarter note. Next, select the chord you just inserted by holding down the shift key and clicking on the top and bottom note. Use ctrl-c to copy the chord to the clipboard. Move cursor to a blank region and press ctrl-v to paste a copy of your DMaj chord to a new beat. Now put the editor in pitch edit mode with the P key, and use the tab key to select each of the notes in the copy of the chord you pasted. As you select the notes, use the + key to transpose them up. Transpose the D up 2 to E, transpose the F# up on to G, and transpose the A by two to B.
 
@@ -104,11 +104,11 @@ These two simple examples show that most things can be done entirely from the ke
 
 The context menu available by right-clicking in the note grid contains several options for the timing grid. 
 
-The grid has two major effects: (1) grid lines are drawn in between the measure lines to help visually align timing;(2) and many edit operations are affected by the grid setting, in conjunction with the snap to grid option.
+The grid has two major effects: (1) grid lines are drawn in between the measure lines to help visually align timing; and (2) many edit operations are affected by the grid setting, in conjunction with the snap to grid option.
 
 When snap to grid is enabled, [almost] all cursor positioning is quantized to the nearest grid line.
 
-Note that as the grid units get smaller, not all grid lines will be drawn. For example, at the moment only every other grid line is drawn if the grid is set to sixteenth notes.
+Note that as the grid units get smaller, not all grid lines will be drawn. For example, at the moment only every other grid line is drawn if the grid is set to sixteenth notes. This is because the screen would get too cluttered it all the lines were drawn.
 
 Snap duration to grid will ensure that dragging note durations with the mouse will snap the durations. But it will not affect the durations of notes inserted with the keyboard commands (like h, q, and e), since these are already fixed by  the articulation setting. It only affects dragging with the mouse.
 
@@ -118,18 +118,18 @@ Right-clicking in the note area will bring up the settings menu. This menu consi
 
 Settings:
 
-* Grid settings lets you choose the timing units of the edit grid.
-* *Snap to grid*. When enabled, the edit cursor is usually snapped to the grid, ensuring that notes will be inserted on the grid unless special effort is employed.
-* *Snap duration to grid*. When enabled, dragging note lengths with the mouse will drag onto the nearest grid line.
-* *Audition*. When a note is selected, and the sequencer is not running, the note will be played thought channel 1 so that you can hear what you are editing. Audition is on by default, but may be turned off in the settings menu.
-* *Articulation*. Determines the duration when a note is in inserted. With 100% articulation, a quarter note would take up the entire duration of a quarter note.
+* **Grid settings** lets you choose the timing units of the edit grid.
+* **Snap to grid**: When enabled, the edit cursor is usually snapped to the grid, ensuring that notes will be inserted on the grid unless special effort is employed.
+* **Snap duration to grid**: When enabled, dragging note lengths with the mouse will drag onto the nearest grid line.
+* **Audition**. When a note is selected, and the sequencer is not running, the note will be played thought channel 1 so that you can hear what you are editing. Audition is on by default, but may be turned off in the settings menu.
+* **Articulation**. Determines the duration when a note is in inserted. With 100% articulation, a quarter note would take up the entire duration of a quarter note.
 
 Note that all of the settings are saved with your patch.
 
 Commands:
 
-* *Insert/Delete* note. This menu item changes depending on what is under the cursor. If nothing is there, it will insert a note. If a note is there, it will delete it. (note that double click does that same thing).
-* *Set end point*. Will set the end/loop point of the sequencer to the grid line nearest the cursor.
+* **Insert/Delete** note. This menu item changes depending on what is under the cursor. If nothing is there, it will insert a note. If a note is there, it will delete it. (note that double click does that same thing).
+* **Set end point**. Will set the end/loop point of the sequencer to the grid line nearest the cursor.
 
 ## Adjusting length of sequence
 
@@ -173,6 +173,10 @@ But there are some keys that VCV Rack itself tries very hard to steal from Seq++
 
 That is why for all these keys there are substitute keys that also work, and do not have to fight with VCV for control of the keyboard. Both 4 keys will cursor to the left, and both 6 keys will cursor to the right.
 
+Many key commands take input from the grid size set from the settings menu. For example, the Ins key will insert a note whose value is the current grid unit.
+
+Commands that are mapped to letter keys will usually work with either lower or upper case. In some selection operations, however, the shift key is used to extend a selection.
+
 ## Panel
 
 On the left are a few inputs, outputs, and controls.
@@ -191,7 +195,7 @@ On the left are a few inputs, outputs, and controls.
 
 **Clk** is the eternal clock input.
 
-**Rst** is the reset CV. It is quite compatible with the reset out of "Clocked".
+**Rst** is the reset CV. It is compatible with the reset out of "Clocked".
 
 **Run** is a CV input. Meant to be hooked up to the Run output of Clocked, or similar master clock.
 
@@ -221,12 +225,7 @@ If there are more simultaneous notes being played than may be accommodated by th
 
 ## Keyboard reference
 
-### Sequencer keyboard commands
-
-(move to about keyboar)
-Many key commands take input from the grid size set from the settings menu. Commands that are mapped to letter keys will usually work with either lower or upper case. In some selection operations, however, the shift key is used to extend a selection.
-
-### Misc
+### Misc commands
 
 **n**: Sets the end point of the sequence to the current cursor time. Time is always quantized to the grid, even if snap to grid is off.
 
@@ -240,7 +239,7 @@ For that reason, the numeric keypad (2,4,8,6) can also be used to move the curso
 
 **cursor keypad, 456r, and keypad 2,4,6,8**: Moves cursor in two dimensions. Up and down by semitone, left and right by one grid unit.
 
-**ctrl-cursor, ctrl-456r, and ctrl-2,4,6,8 on keypad**: Moves left and right by a quarter note.
+**ctrl-cursor, ctrl-4,6, and ctrl-4,6 on keypad**: Moves left and right by a quarter note.
 
 **home, end**: Moves one bar earlier or later.
 
@@ -250,7 +249,7 @@ For that reason, the numeric keypad (2,4,8,6) can also be used to move the curso
 
 ### Selecting notes
 
-**ctrl-a** Selects all the events in the track.
+**ctrl-a**: Selects all the events in the track.
 
 **tab**: Select next note.
 
@@ -258,43 +257,43 @@ For that reason, the numeric keypad (2,4,8,6) can also be used to move the curso
 
 **shift-tab**: Extends selection to include the next note.
 
-**ctrl-shift-tab**: extends selection to the previous note.
+**ctrl-shift-tab**: Extends selection to the previous note.
 
 Moving the cursor onto a note will select it.
 
 ### Inserting and deleting notes
 
-When a note is inserted, its start time and duration will not be quantized, no matter the snap to gird settings. But since most cursor movement **will** qunatize the cursor time when snap to grid is on, notes will naturally tend to be inserted on the grid. But it is possible to move off the grid and then use all the insert commands.
+When a note is inserted, its start time and duration will not be quantized, no matter the snap to gird settings. But since most cursor movement **will** qunatize the cursor time when snap to grid is on, notes will naturally tend to be inserted on the grid. But it is possible to move off the grid and then use any of the insert commands.
 
 After a note is inserted the cursor will be advanced past the note just inserted, unless the shift key is held down.
 
-**Ins or Enter** Inserts a note at the current cursor. Duration will be one grid unit by default, but may be set to whatever you want with the asterisk key.
+**Ins** or **Enter** Inserts a note at the current cursor. Duration will be one grid unit by default, but may be set to whatever you want with the asterisk key.
 
 **Del** Deletes the currently selected notes.
 
-Insert preset note durations. They shortcuts insert a note of a specific duration.
+**Insert preset note durations**. These shortcuts insert a note of a specific duration:
 
-* **w** Whole note.
-* **h** Half note.
-* **q** Quarter note.
-* **e** Eighth note.
-* **x** Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
+* **w**: Whole note.
+* **h**: Half note.
+* **q**: Quarter note.
+* **e**: Eighth note.
+* **x**: Sixteenth note. Note that 's' key is already used for Start time, so 'x' is used for sixteenth note. Ctrl-s will also work.
 
-* **asterisk** (*) will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse.
+**Asterisk** (*): Will take the duration of the note under the cursor and use that as the duration for all subsequent notes inserted without explicit duration (i.e. from the Ins and Enter keys, and from double-clicking the mouse).
 
-**Very Important**: by default the cursor will advance after inserting a note, making it easier to insert a stream on notes in succession. But if you hold down the shift key the cursor will not move ahead, making it easy to insert chords.
+**Very Important**: By default the cursor will advance after inserting a note, making it easier to insert a stream on notes in succession. But if you hold down the shift key the cursor will not move ahead, making it easy to insert chords.
 
 ### Changing notes
 
-**S, P, D**: sets note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
+**S, P, D**: Set note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
 
 When notes are selected and StartTime or Duration is current edit attribute:
 
-* plus/minus changes by one sixteenth note
+* **plus** and **minus**: Change by one grid unit.
 
-* ], [ changes by a quarter note.
+* **], [**: Change by a quarter note regardless of grid setting.
 
-* <, > change by a sixty-fourth note.
+* **<, >**: Change by a sixty-fourth note.
 
 When note is selected and Pitch is current edit attribute:
 
@@ -303,11 +302,11 @@ When note is selected and Pitch is current edit attribute:
 
 ### Cut/Copy/Paste
 
-**ctrl-x** cut. Removes all the selected notes and puts them on the clipboard. (doesn't work yet).
+**ctrl-x**: Cut. Removes all the selected notes and puts them on the clipboard. (doesn't work yet).
 
-**ctrl-c** copy. Puts a copy of all the selected notes on the clipboard.
+**ctrl-c**: Copy. Puts a copy of all the selected notes on the clipboard.
 
-**ctrl-v** paste. Pastes the contents of the clipboard at the current edit cursor.
+**ctrl-v**: Paste. Pastes the contents of the clipboard at the current edit cursor.
 
 Note that you may paste into a different instance of the sequencer than you copied from, as you would expect.
 
@@ -315,15 +314,15 @@ Note that you may paste into a different instance of the sequencer than you copi
 
 Seq++ uses VCV's undo system, which is available from a mouse menu and from keyboard shortcuts.
 
-**ctrl-z**: undo
+**ctrl-z**: Undo.
 
-**ctrl-y, shift-ctrl-z**: redo
+**ctrl-y, shift-ctrl-z**: Redo.
+
+When Seq++ performs an undoable edit operation, you will see it in VCV's undo menu. It will look something like **Seq++: delete note**, so you will know what you are undoing, and that is was Seq++ that it will be applied to.
 
 ### Help
 
 **F1 key**, when note editor has focus.
-
-**Context menu**, when the module has focus.
 
 ## Mouse reference
 
@@ -331,25 +330,29 @@ Clicking on the note grid will move the blinking edit cursor to the click locati
 
 ### Selecting notes with the mouse
 
-Clicking on a note will select it, and deselect all others.
+**Click** on a note will select it, and deselect all others.
 
-Ctrl-click on a note will toggle its selection state, while leaving any other selected notes selected.
+**Ctrl-click**: on a note will toggle its selection state, while leaving any other selected notes selected.
 
-Shift-click will extent the selection up to the cursor. This means all previously selected notes will stay selected, and all notes between the cursor and the selection will get selected, too.
+**Shift-click** will extend the selection up to the cursor. This means all previously selected notes will stay selected, and all notes between the cursor and the selection will get selected, too.
 
 ### Inserting and deleting notes
 
 Double clicking on a note will delete it.
 
-Double clicking in an empty location will inserts a note:
+Double clicking on an empty location will inserts a note:
 
 * By default the duration will be one grid unit.
 * You may override the default duration using the asterisk key.
 
 ### Changing notes
 
-Transpose: if you click and hold in the middle of a selected note, you can drag all the selected notes up and down in pitch.
+**Transpose**: If you click and hold in the middle of a selected note, you can drag all the selected notes up and down in pitch.
 
-Shift: if you click and hold at the start of a selected note, you can drag all the selected notes left and right in time.
+**Shift**: If you click and hold at the start of a selected note, you can drag all the selected notes left and right in time.
 
-Stretch: if you click and hold at the end of a selected note, you can drag all the selected notes left and right in duration.
+**Stretch**: if you click and hold at the end of a selected note, you can drag all the selected notes left and right in duration.
+
+### Help
+
+Help in all Squinky Labs modules can be accessed from the context menu that appears when you right-click on the panel. This will be the Seq++ help, not the full instruction manual.
