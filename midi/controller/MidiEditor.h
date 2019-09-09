@@ -86,6 +86,11 @@ public:
     void updateSelectionForCursor(bool extendCurrent);
 
     MidiNoteEventPtr getNoteUnderCursor();
+
+    /**
+     * returns the amount of time the editor would advance if it interted the default note
+     */
+    float getAdvanceTimeAfterNote();
 private:
     /**
      * The sequencer we will act on.
@@ -120,6 +125,7 @@ private:
 
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);
+    std::pair<float, float> getDefaultNoteDurationAndAdvance();
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;

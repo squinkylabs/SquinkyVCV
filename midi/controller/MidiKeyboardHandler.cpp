@@ -10,15 +10,48 @@
 
 #ifdef _SEQ
 
+MidiKeyboardHandler::StepRecordImp MidiKeyboardHandler::stepRecordImp;
 
-void MidiKeyboardHandler::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp)
+ void MidiKeyboardHandler::StepRecordImp::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
+ {
+    const float time = sequencer->context->cursorTime();
+    sequencer->editor->moveToTimeAndPitch(time, pitchCV);
+    sequencer->editor->insertDefaultNote(false);
+    lastPitch = pitchCV;
+ }
+
+void MidiKeyboardHandler::StepRecordImp::onAllNotesOff(MidiSequencerPtr sequencer)
+{
+    float advanceTime = sequencer->editor->getAdvanceTimeAfterNote();
+    float time = sequencer->context->cursorTime();
+
+    time += advanceTime;
+    sequencer->editor->moveToTimeAndPitch(time, lastPitch);
+}
+
+void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
 {
     RecordInputData data;
     bool isData = seqComp->poll(&data);
     if (isData) {
+        switch (data.type) {
+            case RecordInputData::Type::noteOn:
+                onNoteOn(data.pitch, sequencer);
+                break;
+            case RecordInputData::Type::allNotesOff:
+                onAllNotesOff(sequencer);
+                break;
+            default:
+                assert(false);
+        }
         printf("MidiKeyboardHandler::onUIThread found input\n");
         fflush(stdout);
     }
+}
+
+void MidiKeyboardHandler::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
+{
+    stepRecordImp.onUIThread(seqComp, sequencer);
 }
 
 bool MidiKeyboardHandler::doRepeat(unsigned key)

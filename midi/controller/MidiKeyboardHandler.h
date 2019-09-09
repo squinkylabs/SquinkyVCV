@@ -23,7 +23,7 @@ public:
     static void doMouseClick( MidiSequencerPtr sequencer, float time, float pitchCV,
         bool shiftKey, bool ctrlKey);
 
-    static void onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp);
+    static void onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer);
 private:
     enum class ChangeType { lessThan, plus, bracket };
    
@@ -31,7 +31,13 @@ private:
 
     class StepRecordImp
     {
+    public:
+        void onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer);
+    private:
+        void onNoteOn(float pitch, MidiSequencerPtr sequencer);
+        void onAllNotesOff(MidiSequencerPtr sequencer);
 
+        float lastPitch = 0;
     };
 
     static StepRecordImp stepRecordImp;

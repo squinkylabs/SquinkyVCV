@@ -626,7 +626,7 @@ void MidiEditor::grabDefaultNote()
     }
 }
 
-void MidiEditor::insertDefaultNote(bool advanceAfter)
+std::pair<float, float> MidiEditor::getDefaultNoteDurationAndAdvance()
 {
     float duration = seq()->context->insertNoteDuration;
     float advanceAmount = 0;
@@ -639,29 +639,37 @@ void MidiEditor::insertDefaultNote(bool advanceAfter)
 
         float totalDuration = seq()->context->settings()->getQuarterNotesInGrid();
         duration = totalDuration * artic;
-        if (advanceAfter) {
-            advanceAmount = totalDuration;
-        }
+        advanceAmount = totalDuration;
     } else {
         // this case we have an insert duration
         // need to guess total
-        if (advanceAfter) {
-            float grid = seq()->context->settings()->getQuarterNotesInGrid();
-            advanceAmount = (float) TimeUtils::quantize(duration, grid, false);
-            while (advanceAmount < duration) {
-                advanceAmount += grid;
-            }
+
+        float grid = seq()->context->settings()->getQuarterNotesInGrid();
+        advanceAmount = (float) TimeUtils::quantize(duration, grid, false);
+        while (advanceAmount < duration) {
+            advanceAmount += grid;
         }
     }
-    insertNoteHelper3(duration, advanceAmount);
+    return std::make_pair(duration, advanceAmount);
 }
 
-#if 0
-void MidiEditor::insertNote(float duration, bool advanceAfter)
+
+float MidiEditor::getAdvanceTimeAfterNote()
 {
-    insertNoteHelper2(duration, advanceAfter, true);
+    auto x = getDefaultNoteDurationAndAdvance();
+    return x.second;
 }
-#endif
+
+// TODO: use the above to calc advance
+// ACtually, combine them
+
+void MidiEditor::insertDefaultNote(bool advanceAfter)
+{
+    auto x = getDefaultNoteDurationAndAdvance();
+    float duration = x.first;
+    float advanceAmount = advanceAfter ? x.second : 0;
+     insertNoteHelper3(duration, advanceAmount);
+}
 
 void MidiEditor::deleteNote()
 {
