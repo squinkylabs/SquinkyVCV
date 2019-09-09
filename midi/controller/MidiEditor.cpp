@@ -273,7 +273,6 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
         quantizeGrid = settings->getQuarterNotesInGrid();
     }
 
-
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount, quantizeGrid);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
@@ -550,38 +549,6 @@ void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
     insertNoteHelper2(duration, moveCursorAfter);
 }
 
-#if 0
-void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool was_quantizeDuration)
-{
-    MidiLocker l(seq()->song->lock);
-    const float artic = seq()->context->settings()->articulation();
-    assertGT(artic, .001);
-    assertLT(artic, 1.1);
-
-    const float cursorAdvance = moveCursorAfter ? dur : 0;
-    const float duration = dur * artic;
-
-    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-
-    // let's not insert quantized any more
-    const float unquantizedStart = seq()->context->cursorTime();
-    const float startTime = unquantizedStart;
-
-    note->startTime = startTime;
-    note->pitchCV = seq()->context->cursorPitch();
-    float finalDuration = duration;
-
-    note->duration = finalDuration;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
-
-    seq()->undo->execute(seq(), cmd);
-    seq()->context->setCursorTime(note->startTime + cursorAdvance);
-
-    updateSelectionForCursor(false);
-    seq()->assertValid();
-}
-#endif
-
 void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter)
 {
 
@@ -592,7 +559,6 @@ void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter)
     const float cursorAdvance = moveCursorAfter ? dur : 0;
     const float duration = dur * artic;
     insertNoteHelper3(duration, cursorAdvance, false);
-
 }
 
 void MidiEditor::insertNoteHelper3(float duration, float advanceAmount, bool extendSelection)
@@ -694,7 +660,6 @@ new version of updateSelectionForCursor
 1) find note under cursor
 2) add/replace selection
 */
-
 void MidiEditor::updateSelectionForCursor(bool extendCurrent)
 {
     MidiNoteEventPtr note = getNoteUnderCursor();
@@ -757,7 +722,7 @@ void MidiEditor::extendSelectionToCurrentNote()
 
     // now boundingBox is the final selection area
     // Find all notes in new bounds
-    // terator_pair getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh);
+    // iterator_pair getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh);
     MidiEditorContext::iterator_pair it = seq()->context->getEvents(
         boundingBox.pos.x,
         boundingBox.getRight(),
@@ -888,9 +853,8 @@ void MidiEditor::copy()
     if (track->size() == 0) {
         return;
     }
+    
     // TODO: make helper? Adding a final end event
-
-
     auto it = track->end();
     --it;
     MidiEventPtr lastEvent = it->second;

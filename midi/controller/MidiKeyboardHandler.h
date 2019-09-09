@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MidiEditor.h"
 #include "Seq.h"
 #include "WidgetComposite.h"
 #include <memory>
@@ -29,10 +30,23 @@ private:
    
     static void handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type, bool increase);
 
+    static void handleInsertPresetNote(
+        MidiSequencerPtr sequencer,
+        MidiEditor::Durations,
+        bool advanceAfter);
+
     class StepRecordImp
     {
     public:
         void onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer);
+        
+        /**
+         * returns true if event handled
+         */
+        bool handleInsertPresetNote(
+            MidiSequencerPtr sequencer,
+            MidiEditor::Durations duration, 
+            bool advanceAfter);
     private:
         void onNoteOn(float pitch, MidiSequencerPtr sequencer);
         void onAllNotesOff(MidiSequencerPtr sequencer);

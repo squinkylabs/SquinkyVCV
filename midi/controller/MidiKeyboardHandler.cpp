@@ -63,6 +63,16 @@ void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetCo
     }
 }
 
+bool MidiKeyboardHandler::StepRecordImp::handleInsertPresetNote(
+    MidiSequencerPtr sequencer,
+    MidiEditor::Durations duration, 
+    bool advanceAfter)
+{
+    return false;
+}
+
+//************************************************************************
+
 void MidiKeyboardHandler::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
 {
     stepRecordImp.onUIThread(seqComp, sequencer);
@@ -181,6 +191,19 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 }
 
 extern void sequencerHelp();
+
+
+void MidiKeyboardHandler::handleInsertPresetNote(
+    MidiSequencerPtr sequencer,
+    MidiEditor::Durations duration, 
+    bool advanceAfter)
+{
+    // First, see if step record wants this event.
+    bool handled = stepRecordImp.handleInsertPresetNote(sequencer, duration, advanceAfter);
+    if (!handled) {
+     sequencer->editor->insertPresetNote(duration, advanceAfter);
+    }
+}
 
 bool MidiKeyboardHandler::handle(
     MidiSequencerPtr sequencer,
@@ -330,14 +353,14 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_E:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Eighth, !shift);
+              //  sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth, !shift);
                 handled = true;
-
             }
             break;
         case GLFW_KEY_H:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Half, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Half, !shift);
                 handled = true;
             }
             break;
@@ -353,7 +376,7 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_Q:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Quarter, !shift);
                 handled = true;
             }
             break;
@@ -362,7 +385,7 @@ bool MidiKeyboardHandler::handle(
                 if (!ctrl) {
                     sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
                 } else {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth, !shift);
+                    handleInsertPresetNote(sequencer, MidiEditor::Durations::Sixteenth, !shift);
                 }
                 handled = true;
             }
@@ -377,7 +400,7 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_W:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Whole, !shift);
                 handled = true;
             }
             break;
@@ -387,7 +410,7 @@ bool MidiKeyboardHandler::handle(
                     sequencer->editor->cut();
                     handled = true;
                 } else {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth, !shift);
+                    handleInsertPresetNote(sequencer, MidiEditor::Durations::Sixteenth, !shift);
                     handled = true;
                 }
             }
