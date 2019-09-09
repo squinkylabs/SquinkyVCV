@@ -468,7 +468,7 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     
     // let's use the grid
     seq->context->insertNoteDuration = 0;
-    seq->editor->insertDefaultNote(advanceAfter);
+    seq->editor->insertDefaultNote(advanceAfter, false);
 
     auto it = seq->context->getTrack()->begin();
     assert(it != seq->context->getTrack()->end());

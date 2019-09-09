@@ -89,7 +89,7 @@ bool MouseManager::onDoubleClick()
     if (note) {
         sequencer->editor->deleteNote();
     } else {
-        sequencer->editor->insertDefaultNote(false);
+        sequencer->editor->insertDefaultNote(false, false);
     }
     return true;
 }

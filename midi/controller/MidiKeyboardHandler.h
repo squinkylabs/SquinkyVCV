@@ -38,6 +38,7 @@ private:
         void onAllNotesOff(MidiSequencerPtr sequencer);
 
         float lastPitch = 0;
+        int numNotesActive = 0;
     };
 
     static StepRecordImp stepRecordImp;

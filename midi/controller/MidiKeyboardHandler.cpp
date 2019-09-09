@@ -14,11 +14,24 @@ MidiKeyboardHandler::StepRecordImp MidiKeyboardHandler::stepRecordImp;
 
  void MidiKeyboardHandler::StepRecordImp::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
  {
+     if (numNotesActive == 0) {
+         sequencer->selection->clear();
+     }
     const float time = sequencer->context->cursorTime();
     sequencer->editor->moveToTimeAndPitch(time, pitchCV);
-    sequencer->editor->insertDefaultNote(false);
+    
+    // don't advance after, but do extend selection
+    sequencer->editor->insertDefaultNote(false, true);
+    MidiNoteEventPtr note = sequencer->editor->getNoteUnderCursor();
+    assert(note);
+  
+    if (note) {
+        // not needed
+        sequencer->selection->addToSelection(note, true);
+    }
     lastPitch = pitchCV;
- }
+    ++numNotesActive;  
+}
 
 void MidiKeyboardHandler::StepRecordImp::onAllNotesOff(MidiSequencerPtr sequencer)
 {
@@ -27,6 +40,7 @@ void MidiKeyboardHandler::StepRecordImp::onAllNotesOff(MidiSequencerPtr sequence
 
     time += advanceTime;
     sequencer->editor->moveToTimeAndPitch(time, lastPitch);
+    numNotesActive = 0;
 }
 
 void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
@@ -382,7 +396,7 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_INSERT:
         case GLFW_KEY_ENTER:
             {
-                sequencer->editor->insertDefaultNote(!shift);
+                sequencer->editor->insertDefaultNote(!shift, false);
                 handled = true;
             }
             break;

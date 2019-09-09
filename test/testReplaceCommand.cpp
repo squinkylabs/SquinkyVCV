@@ -180,7 +180,7 @@ static void testInsert()
     note->pitchCV = 1.1f;
     note->duration = 2;
 
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
 
@@ -227,7 +227,7 @@ static void testStartTimeUnquantized()
     note->startTime = 100;
     note->pitchCV = 1.1f;
     note->duration = 2;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
     assertEQ(seq->selection->size(), 1);
@@ -266,7 +266,7 @@ static void testStartTimeQuantized()
     note->startTime = 100;
     note->pitchCV = 1.1f;
     note->duration = 2;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
     assertEQ(seq->selection->size(), 1);
@@ -302,7 +302,7 @@ static void testDuration()
     note->startTime = 10;
     note->pitchCV = 1.1f;
     note->duration = 5;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
 

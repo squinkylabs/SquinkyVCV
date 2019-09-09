@@ -41,7 +41,10 @@ public:
      * static factories for replace commands
      */
     static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq, const char* name);
-    static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq, std::shared_ptr<const MidiNoteEvent>);
+    static ReplaceDataCommandPtr makeInsertNoteCommand(
+        std::shared_ptr<MidiSequencer> seq,
+        std::shared_ptr<const MidiNoteEvent>,
+        bool extendSelection);
     static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta, float quantizeGrid);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, const std::vector<float>&);
@@ -64,6 +67,11 @@ private:
      */
     float newTrackLength=-1;
     float originalTrackLength=-1;
+
+    /**
+     * When we select new events, should we clear first?
+     */
+    bool extendSelection = false;
 
     /**
      * Some operations require the track length to be extended

@@ -63,7 +63,7 @@ public:
     enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
 
     void insertPresetNote(Durations, bool advanceAfter);
-    void insertDefaultNote(bool advanceAfter);
+    void insertDefaultNote(bool advanceAfter, bool extendSelection);
     void deleteNote();
 
     void grabDefaultNote();
@@ -121,7 +121,7 @@ private:
     void setNewCursorPitch(float pitch, bool extendSelection);
     void insertNoteHelper(Durations dur, bool moveCursorAfter);
     void insertNoteHelper2(float dur, bool moveCursorAfter);
-    void insertNoteHelper3(float duration, float advanceAmount);
+    void insertNoteHelper3(float duration, float advanceAmount, bool extendSelection);
 
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);

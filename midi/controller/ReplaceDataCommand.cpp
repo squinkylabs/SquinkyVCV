@@ -70,7 +70,11 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq)
     assert(selection);
     MidiSelectionModelPtr reference = selection->clone();
     assert(reference);
-    selection->clear();
+
+    if (!extendSelection) {
+        selection->clear();
+    }
+    
     for (auto it : addData) {
         auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
         assert(foundIter != mt->end());
@@ -341,8 +345,12 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
     return ret;
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr seq, MidiNoteEventPtrC origNote)
+ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(
+    MidiSequencerPtr seq,
+    MidiNoteEventPtrC origNote,
+    bool extendSelection)
 {
+   // assert(!extendSelection);
     seq->assertValid();
     MidiNoteEventPtr note = origNote->clonen();
 
@@ -364,6 +372,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
         toAdd,
         newDuration);
     ret->name = "insert note";
+    ret->extendSelection = extendSelection;
     return ret;
 }
 

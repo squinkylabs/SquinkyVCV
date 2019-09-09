@@ -591,11 +591,11 @@ void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter)
 
     const float cursorAdvance = moveCursorAfter ? dur : 0;
     const float duration = dur * artic;
-    insertNoteHelper3(duration, cursorAdvance);
+    insertNoteHelper3(duration, cursorAdvance, false);
 
 }
 
-void MidiEditor::insertNoteHelper3(float duration, float advanceAmount)
+void MidiEditor::insertNoteHelper3(float duration, float advanceAmount, bool extendSelection)
 {
     MidiLocker l(seq()->song->lock);
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
@@ -604,12 +604,10 @@ void MidiEditor::insertNoteHelper3(float duration, float advanceAmount)
     note->pitchCV = seq()->context->cursorPitch();
     note->duration = duration;
 
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
-
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note, extendSelection);
     seq()->undo->execute(seq(), cmd);
     seq()->context->setCursorTime(note->startTime + advanceAmount);
-
-    updateSelectionForCursor(false);
+    updateSelectionForCursor(extendSelection);
     seq()->assertValid();
 }
 
@@ -663,12 +661,12 @@ float MidiEditor::getAdvanceTimeAfterNote()
 // TODO: use the above to calc advance
 // ACtually, combine them
 
-void MidiEditor::insertDefaultNote(bool advanceAfter)
+void MidiEditor::insertDefaultNote(bool advanceAfter, bool extendSelection)
 {
     auto x = getDefaultNoteDurationAndAdvance();
     float duration = x.first;
     float advanceAmount = advanceAfter ? x.second : 0;
-     insertNoteHelper3(duration, advanceAmount);
+    insertNoteHelper3(duration, advanceAmount, extendSelection);
 }
 
 void MidiEditor::deleteNote()
