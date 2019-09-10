@@ -19,6 +19,7 @@
 #include "MidiKeyboardHandler.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
+#include "../test/TestSettings.h"
 #include "TimeUtils.h"
 
 #include "SequencerModule.h"
@@ -159,6 +160,12 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
         MidiSequencerPtr seq;
         if (module) {
             seq = module->sequencer;
+        } else {
+            // make enough of a sequence to render
+            MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+            std::shared_ptr<TestSettings> ts = std::make_shared<TestSettings>();
+            std::shared_ptr<ISeqSettings> _settings = std::dynamic_pointer_cast<ISeqSettings>(ts);
+            seq = MidiSequencer::make(song, _settings, nullptr);
         }
         headerDisplay = new AboveNoteGrid(headerPos, headerSize, seq);
         noteDisplay = new NoteDisplay(notePos, noteSize, seq, module);
