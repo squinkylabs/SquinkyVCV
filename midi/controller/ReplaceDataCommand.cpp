@@ -266,15 +266,20 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
     return ret;
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta, bool setDurationAbsolute)
 {
     seq->assertValid();
-    Xform xform = [delta](MidiEventPtr event, int) {
+    Xform xform = [delta, setDurationAbsolute](MidiEventPtr event, int) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
-            note->duration += delta;
-             // arbitrary min limit.
-            note->duration = std::max(.001f, note->duration);
+            if (setDurationAbsolute) {
+                assert(delta > .001f);
+                note->duration = delta;
+            } else {
+                note->duration += delta;
+                 // arbitrary min limit.
+                note->duration = std::max(.001f, note->duration);
+            }
         }
     };
     auto ret = makeChangeNoteCommand(Ops::Duration, seq, xform, true);

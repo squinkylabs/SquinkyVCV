@@ -217,6 +217,22 @@ static void testChangeDuration1()
     seq->assertValid();
 }
 
+static void testSetDuration()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
+    MLockTest l(seq);
+    const float newDuration = 3.456f;
+    seq->editor->setDuration(newDuration);
+
+    firstNote = seq->context->getTrack()->getFirstNote();
+    const float d1 = firstNote->duration;
+    assertEQ(d1, newDuration);
+    seq->assertValid();
+}
+
 static void testChangeDurationTicks()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -586,6 +602,47 @@ static void testInsertPresetNotes()
     testInsertPresetNote(MidiEditor::Durations::Sixteenth, true, .2f);
 }
 
+
+static void testInsertTwoNotes(bool extendSelection)
+{
+    MidiSequencerPtr seq = makeTest(true);
+    assert(seq->selection->empty());
+    const int initialSize = seq->context->getTrack()->size();
+#if 0
+    auto s = seq->context->settings();
+    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
+    assert(ts);
+    ts->_articulation = articulation;
+#endif
+
+
+   // assertEQ(seq->context->cursorTime(), 0);
+   // float pitch = seq->context->cursorPitch();
+    MLockTest l(seq);
+  
+    float pitch = 3;
+    float time = 1.2f;
+
+    seq->editor->moveToTimeAndPitch(time, pitch);
+    seq->context->setCursorPitch(pitch);
+    seq->editor->insertDefaultNote(false, extendSelection);
+
+    pitch = 4;
+    seq->editor->moveToTimeAndPitch(time, pitch);
+    seq->context->setCursorPitch(pitch);
+    seq->editor->insertDefaultNote(false, extendSelection);
+
+    const int expectedSelectionCount = extendSelection ? 2 : 1;
+    assertEQ(seq->selection->size(), expectedSelectionCount);
+}
+
+
+static void testInsertTwoNotes()
+{
+    testInsertTwoNotes(true);
+    testInsertTwoNotes(false);
+}
+
 static void testDelete()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -705,6 +762,7 @@ void testMidiEditorSub(int trackNumber)
 
     testChangeDuration1();
     testChangeDurationTicks();
+    testSetDuration();
 
     testTrans2();
     testTrans3();
@@ -723,6 +781,7 @@ void testMidiEditorSub(int trackNumber)
     testDelete();
     testDelete2();
     testInsertPresetNotes();
+    testInsertTwoNotes();
 
     testChangeTrackLength();
     testChangeTrackLengthNoSnap();

@@ -307,7 +307,7 @@ void MidiEditor::changeDuration(bool ticks, int amount)
 
     float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
 
-    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount, false);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 }
@@ -319,6 +319,17 @@ void MidiEditor::changeDuration(const std::vector<float>& shifts)
     AuditionLocker u(seq()->selection);       // don't audition while shifting
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), shifts);
+    seq()->undo->execute(seq(), cmd);
+    seq()->assertValid();
+}
+
+void MidiEditor::setDuration(float duration)
+{
+    MidiLocker l(seq()->song->lock);
+    AuditionLocker u(seq()->selection);       // don't audition while shifting
+    assert(duration > 0);
+
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), duration, true);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 }

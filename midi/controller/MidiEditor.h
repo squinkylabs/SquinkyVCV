@@ -57,6 +57,7 @@ public:
     void changeStartTime(const std::vector<float>& shifts);
     void changeDuration(bool ticks, int amount);
     void changeDuration(const std::vector<float>& shifts);
+    void setDuration(float duration);
 
     /************* functions that add or remove notes ************/
 
