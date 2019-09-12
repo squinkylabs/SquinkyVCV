@@ -484,8 +484,8 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     
     // let's use the grid
     seq->context->insertNoteDuration = 0;
-    seq->editor->insertDefaultNote(advanceAfter, false);
-
+    float advAmount = seq->editor->insertDefaultNote(advanceAfter, false);
+    assertEQ(advAmount, testGridSize);
     auto it = seq->context->getTrack()->begin();
     assert(it != seq->context->getTrack()->end());
     MidiEventPtr ev = it->second;
@@ -567,7 +567,8 @@ static void testInsertPresetNote(MidiEditor::Durations dur, bool advance, float 
     float pitch = seq->context->cursorPitch();
     MLockTest l(seq);
 
-    seq->editor->insertPresetNote(dur, advance);
+    float advAmount = seq->editor->insertPresetNote(dur, advance);
+    assertEQ(advAmount, getDuration(dur));
 
     auto it = seq->context->getTrack()->begin();
     assert(it != seq->context->getTrack()->end());
@@ -608,16 +609,8 @@ static void testInsertTwoNotes(bool extendSelection)
     MidiSequencerPtr seq = makeTest(true);
     assert(seq->selection->empty());
     const int initialSize = seq->context->getTrack()->size();
-#if 0
-    auto s = seq->context->settings();
-    TestSettings* ts = dynamic_cast<TestSettings*>(s.get());
-    assert(ts);
-    ts->_articulation = articulation;
-#endif
 
 
-   // assertEQ(seq->context->cursorTime(), 0);
-   // float pitch = seq->context->cursorPitch();
     MLockTest l(seq);
   
     float pitch = 3;
@@ -625,7 +618,8 @@ static void testInsertTwoNotes(bool extendSelection)
 
     seq->editor->moveToTimeAndPitch(time, pitch);
     seq->context->setCursorPitch(pitch);
-    seq->editor->insertDefaultNote(false, extendSelection);
+    float advAmount = seq->editor->insertDefaultNote(false, extendSelection);
+    assertEQ(advAmount, .25f);          // default grid
 
     pitch = 4;
     seq->editor->moveToTimeAndPitch(time, pitch);

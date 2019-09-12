@@ -14,6 +14,7 @@ MidiKeyboardHandler::StepRecordImp MidiKeyboardHandler::stepRecordImp;
 
  void MidiKeyboardHandler::StepRecordImp::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
  {
+     printf("StepRecordImp::onNoteOn #=%d\n", numNotesActive);
      if (numNotesActive == 0) {
          sequencer->selection->clear();
      }
@@ -50,6 +51,7 @@ void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetCo
     if (isData) {
         switch (data.type) {
             case RecordInputData::Type::noteOn:
+                printf("will call onNoteOn\n");
                 onNoteOn(data.pitch, sequencer);
                 break;
             case RecordInputData::Type::allNotesOff:
@@ -63,11 +65,21 @@ void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetCo
     }
 }
 
+bool MidiKeyboardHandler::StepRecordImp::isActive() const 
+{
+    return numNotesActive > 0;
+}
+
 bool MidiKeyboardHandler::StepRecordImp::handleInsertPresetNote(
     MidiSequencerPtr sequencer,
     MidiEditor::Durations duration, 
     bool advanceAfter)
 {
+    printf("StepRecordImp::handleInsertPresetNote\n");
+    if (!isActive()) {
+        return false;
+    }
+    assert(false);      // let's do this.
     return false;
 }
 
@@ -198,6 +210,7 @@ void MidiKeyboardHandler::handleInsertPresetNote(
     MidiEditor::Durations duration, 
     bool advanceAfter)
 {
+    printf("MidiKeyboardHandler::handleInsertPresetNote\n");
     // First, see if step record wants this event.
     bool handled = stepRecordImp.handleInsertPresetNote(sequencer, duration, advanceAfter);
     if (!handled) {

@@ -50,6 +50,7 @@ private:
     private:
         void onNoteOn(float pitch, MidiSequencerPtr sequencer);
         void onAllNotesOff(MidiSequencerPtr sequencer);
+        bool isActive() const;
 
         float lastPitch = 0;
         int numNotesActive = 0;

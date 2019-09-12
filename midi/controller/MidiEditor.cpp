@@ -529,7 +529,7 @@ void MidiEditor::toggleSelectionAt(float time, float pitchCV)
 
 }
 
-static float getDuration(MidiEditor::Durations dur)
+float MidiEditor::getDuration(MidiEditor::Durations dur)
 {
     float ret = 0;
     switch (dur) {
@@ -554,10 +554,11 @@ static float getDuration(MidiEditor::Durations dur)
     return ret;
 }
 
-void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
+float MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
 {
     float duration = getDuration(dur);
     insertNoteHelper2(duration, moveCursorAfter);
+    return duration;
 }
 
 void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter)
@@ -588,9 +589,9 @@ void MidiEditor::insertNoteHelper3(float duration, float advanceAmount, bool ext
     seq()->assertValid();
 }
 
-void MidiEditor::insertPresetNote(Durations dur, bool advanceAfter)
+float MidiEditor::insertPresetNote(Durations dur, bool advanceAfter)
 {
-    insertNoteHelper(dur, advanceAfter);
+    return insertNoteHelper(dur, advanceAfter);
 }
 
 void MidiEditor::grabDefaultNote()
@@ -638,12 +639,13 @@ float MidiEditor::getAdvanceTimeAfterNote()
 // TODO: use the above to calc advance
 // ACtually, combine them
 
-void MidiEditor::insertDefaultNote(bool advanceAfter, bool extendSelection)
+float MidiEditor::insertDefaultNote(bool advanceAfter, bool extendSelection)
 {
     auto x = getDefaultNoteDurationAndAdvance();
-    float duration = x.first;
-    float advanceAmount = advanceAfter ? x.second : 0;
+    const float duration = x.first;
+    const float advanceAmount = advanceAfter ? x.second : 0;
     insertNoteHelper3(duration, advanceAmount, extendSelection);
+    return duration;
 }
 
 void MidiEditor::deleteNote()
