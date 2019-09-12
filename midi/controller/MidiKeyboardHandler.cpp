@@ -14,9 +14,11 @@ MidiKeyboardHandler::StepRecordImp MidiKeyboardHandler::stepRecordImp;
 
  void MidiKeyboardHandler::StepRecordImp::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
  {
-     printf("StepRecordImp::onNoteOn #=%d\n", numNotesActive);
      if (numNotesActive == 0) {
+         // first note in a new step.
+         // clear selection and get the default advance time
          sequencer->selection->clear();
+         advanceTime = sequencer->editor->getAdvanceTimeAfterNote();;
      }
     const float time = sequencer->context->cursorTime();
     sequencer->editor->moveToTimeAndPitch(time, pitchCV);
@@ -36,7 +38,7 @@ MidiKeyboardHandler::StepRecordImp MidiKeyboardHandler::stepRecordImp;
 
 void MidiKeyboardHandler::StepRecordImp::onAllNotesOff(MidiSequencerPtr sequencer)
 {
-    float advanceTime = sequencer->editor->getAdvanceTimeAfterNote();
+   // float advanceTime = sequencer->editor->getAdvanceTimeAfterNote();
     float time = sequencer->context->cursorTime();
 
     time += advanceTime;
@@ -51,7 +53,6 @@ void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetCo
     if (isData) {
         switch (data.type) {
             case RecordInputData::Type::noteOn:
-                printf("will call onNoteOn\n");
                 onNoteOn(data.pitch, sequencer);
                 break;
             case RecordInputData::Type::allNotesOff:
@@ -60,8 +61,6 @@ void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetCo
             default:
                 assert(false);
         }
-        printf("MidiKeyboardHandler::onUIThread found input\n");
-        fflush(stdout);
     }
 }
 
@@ -75,12 +74,15 @@ bool MidiKeyboardHandler::StepRecordImp::handleInsertPresetNote(
     MidiEditor::Durations duration, 
     bool advanceAfter)
 {
-    printf("StepRecordImp::handleInsertPresetNote\n");
     if (!isActive()) {
         return false;
     }
-    assert(false);      // let's do this.
-    return false;
+    // 
+    const float artic = sequencer->context->settings()->articulation();
+    advanceTime = MidiEditor::getDuration(duration);
+    float finalDuration =  advanceTime * artic;
+    sequencer->editor->setDuration(finalDuration);
+    return true;
 }
 
 //************************************************************************
@@ -210,7 +212,6 @@ void MidiKeyboardHandler::handleInsertPresetNote(
     MidiEditor::Durations duration, 
     bool advanceAfter)
 {
-    printf("MidiKeyboardHandler::handleInsertPresetNote\n");
     // First, see if step record wants this event.
     bool handled = stepRecordImp.handleInsertPresetNote(sequencer, duration, advanceAfter);
     if (!handled) {

@@ -54,6 +54,7 @@ private:
 
         float lastPitch = 0;
         int numNotesActive = 0;
+        float advanceTime = 0;
     };
 
     static StepRecordImp stepRecordImp;

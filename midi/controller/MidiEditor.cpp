@@ -563,7 +563,6 @@ float MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
 
 void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter)
 {
-
     const float artic = seq()->context->settings()->articulation();
     assertGT(artic, .001);
     assertLT(artic, 1.1);

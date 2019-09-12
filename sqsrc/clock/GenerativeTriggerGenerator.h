@@ -24,7 +24,7 @@ public:
         _buf->delay = _delay;
         ++_buf;
 
-        // then set current dealy to duration of key
+        // then set current delay to duration of key
         _delay = ProductionRuleKeys::getDuration(key);
     }
 
