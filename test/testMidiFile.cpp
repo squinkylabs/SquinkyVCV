@@ -8,7 +8,7 @@ static void test1()
 #if defined(_MSC_VER)
     const char* path = "..\\..\\test\\test1.mid";
 #else
-    const char* path = ".\\test\\test1.mid";
+    const char* path = "./test/test1.mid";
 #endif
     MidiSongPtr song = MidiFileProxy::load(path);
 
