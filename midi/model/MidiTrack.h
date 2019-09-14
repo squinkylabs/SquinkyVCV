@@ -7,7 +7,7 @@
 #include "FilteredIterator.h"
 #include "SqCommand.h"
 
-#include "MidiEvent.h"
+#include "SqMidiEvent.h"
 
 class MidiLock;
 class MidiTrack;

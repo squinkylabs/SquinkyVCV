@@ -1,8 +1,8 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
-#include "MidiEvent.h"
 #include "SqCommand.h"
 
 class MidiEditorContext;
@@ -14,6 +14,7 @@ class MidiSelectionModel;
 class ReplaceDataCommand;
 
 using ReplaceDataCommandPtr = std::shared_ptr<ReplaceDataCommand>;
+using MidiEventPtr = std::shared_ptr<MidiEvent>;
 
 class ReplaceDataCommand : public SqCommand
 {

@@ -133,6 +133,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Source Files\dsp\third-party\midifile">
+      <UniqueIdentifier>{a41ed202-a9b2-4b3c-998d-dddfecad0549}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\dsp\third-party\midifile">
+      <UniqueIdentifier>{be97dd4e-ec25-4d1f-bd8a-c5d964ff8de6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -444,6 +450,27 @@
     <ClCompile Include="..\..\test\testStepRecordInput.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testMidiFile.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiFileProxy.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\midifile\Binasc.cpp">
+      <Filter>Source Files\dsp\third-party\midifile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiEvent.cpp">
+      <Filter>Source Files\dsp\third-party\midifile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiEventList.cpp">
+      <Filter>Source Files\dsp\third-party\midifile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiFile.cpp">
+      <Filter>Source Files\dsp\third-party\midifile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiMessage.cpp">
+      <Filter>Source Files\dsp\third-party\midifile</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -662,9 +689,6 @@
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h">
       <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\midi\model\MidiEvent.h">
-      <Filter>Header Files\midi\model</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\midi\model\MidiSong.h">
       <Filter>Header Files\midi\model</Filter>
     </ClInclude>
@@ -826,6 +850,27 @@
     </ClInclude>
     <ClInclude Include="..\..\sqsrc\util\AtomicRingBuffer.h">
       <Filter>Header Files\sqsrc\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiFileProxy.h">
+      <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\midifile\Binasc.h">
+      <Filter>Header Files\dsp\third-party\midifile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiEventList.h">
+      <Filter>Header Files\dsp\third-party\midifile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiFile.h">
+      <Filter>Header Files\dsp\third-party\midifile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiMessage.h">
+      <Filter>Header Files\dsp\third-party\midifile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiEvent.h">
+      <Filter>Header Files\dsp\third-party\midifile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\model\SqMidiEvent.h">
+      <Filter>Header Files\midi\model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

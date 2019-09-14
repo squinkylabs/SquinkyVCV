@@ -1,7 +1,7 @@
 
 #include "asserts.h"
 #include "MidiEditor.h"
-#include "MidiEvent.h"
+//#include "MidiEvent.h"
 #include "MidiLock.h"
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"

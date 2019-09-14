@@ -1,6 +1,6 @@
 
 
-#include "MidiEvent.h"
+#include "SqMidiEvent.h"
 #include "TimeUtils.h"
 
 #include "asserts.h"

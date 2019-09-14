@@ -76,6 +76,7 @@ extern void calQ();
 extern void testDrumTrigger();
 extern void testAudition();
 extern void testStepRecordInput();
+extern void testMidiFile();
 
 #if 0
 #include <sstream>
@@ -167,6 +168,7 @@ int main(int argc, char ** argv)
     testUndoRedo();
     testMidiViewport();
  
+    testMidiFile();
     testMidiControllers();
     testMidiEditorSelection();
     testMidiEditorNextPrev();
