@@ -14,8 +14,9 @@ MidiSongPtr MidiFileProxy::load(const std::string& filename)
     char buffer[2000];
     _getcwd(buffer, sizeof(buffer));
     printf("cwd = %s\n", buffer);
-    printf("path = %s\n", filename.c_str());
+   
 #endif
+    printf("path = %s\n", filename.c_str());
     bool b = midiFile.read(filename);
     if (!b) {
         printf("open failed\n");
