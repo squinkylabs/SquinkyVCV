@@ -18,6 +18,7 @@ public:
      * Inject a new sequencer into this editor.
      */
     void setSequencer(MidiSequencerPtr seq);
+    void songUpdated();
 
     void draw(const DrawArgs &args) override;
     void step() override;

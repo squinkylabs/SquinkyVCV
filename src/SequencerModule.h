@@ -74,6 +74,9 @@ struct SequencerModule : Module
         return SequencerSerializer::toJson(sequencer);
     }
     virtual void dataFromJson(json_t *root) override;
+
+    // May be called from UI thread
+    void postNewSong(MidiSongPtr s);
 private:
     void setNewSeq(MidiSequencerPtr);
 

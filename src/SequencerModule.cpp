@@ -22,7 +22,9 @@
 #include "../test/TestSettings.h"
 #include "TimeUtils.h"
 
+#include "MidiFileProxy.h"
 #include "SequencerModule.h"
+#include <osdialog.h>
 
 #ifdef _TIME_DRAWING
 static DrawTimer drawTimer("Seq");
@@ -48,7 +50,23 @@ static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mas
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
-    DECLARE_MANUAL("Seq++ manual", helpUrl);
+
+    void appendContextMenu(Menu *theMenu) override 
+    { 
+        rack::ui::MenuLabel *spacerLabel = new rack::ui::MenuLabel(); 
+        theMenu->addChild(spacerLabel); 
+        ManualMenuItem* manual = new ManualMenuItem("Seq++ manual", helpUrl); 
+        theMenu->addChild(manual);  
+
+        SqMenuItem* midifile = new SqMenuItem(
+            []() { return false; },
+            [this]() { this->loadMidiFile(); }
+        );
+        midifile->text = "load midi file";
+        theMenu->addChild(midifile); 
+    }
+
+    void loadMidiFile();
 
     /**
      * Helper to add a text label to this widget
@@ -97,6 +115,35 @@ struct SequencerWidget : ModuleWidget
     }
 #endif
 };
+
+void SequencerWidget::loadMidiFile()
+{
+    static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
+    osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
+    std::string filename;
+    std::string dir;
+	DEFER({
+		osdialog_filters_free(filters);
+	});
+
+	char* pathC = osdialog_file(OSDIALOG_OPEN, dir.c_str(), filename.c_str(), filters);
+    printf("back from open file with path %s\n", pathC);
+    fflush(stdout);
+	if (!pathC) {
+		// Fail silently
+		return;
+	}
+	DEFER({
+		std::free(pathC);
+	});
+
+    MidiSongPtr song = MidiFileProxy::load(pathC);
+    if (song) {
+        _module->postNewSong(song);
+    }
+   
+}
+
 
 void SequencerWidget::step()
  {
@@ -362,6 +409,31 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
         MidiLocker newL(sequencer->song->lock);
         seqComp->setSong(sequencer->song);
     }
+}
+
+void SequencerModule::postNewSong(MidiSongPtr newSong)
+{
+    printf("called set new song\n"); fflush(stdout);
+    newSong->assertValid();
+    MidiSongPtr oldSong = sequencer->song;
+    {
+        // Must lock the songs when swapping them or player 
+        // might glitch (or crash).
+        MidiLocker oldL(oldSong->lock);
+        MidiLocker newL(newSong->lock);
+        seqComp->setSong(newSong);
+
+        sequencer->setNewSong(newSong);
+       // sequencer->song = newSong;
+
+    }
+      if (widget) {
+        widget->noteDisplay->songUpdated();
+        widget->headerDisplay->songUpdated();
+    }
+
+    sequencer->assertValid();
+    printf("leaving set new song\n"); fflush(stdout);
 }
 
 void SequencerModule::onReset()

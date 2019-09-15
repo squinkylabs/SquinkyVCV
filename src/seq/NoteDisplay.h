@@ -25,6 +25,7 @@ public:
      */
     void setSequencer(MidiSequencerPtr seq);
     MidiSequencerPtr getSequencer();
+    void songUpdated();
 private:
     Label* focusLabel = nullptr;
     MidiSequencerPtr sequencer;

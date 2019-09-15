@@ -47,15 +47,20 @@ NoteDisplay::NoteDisplay(
     updateFocus(false);
 }
 
+
+void NoteDisplay::songUpdated()
+{
+    initEditContext();
+    // re-associate seq and mouse manager
+    mouseManager = std::make_shared<MouseManager>(sequencer); 
+}
+
 void NoteDisplay::setSequencer(MidiSequencerPtr seq)
 {
-    assert(seq.get());
+    assert(seq);
     sequencer = seq;
     sequencer->assertValid();
-    initEditContext();
-
-    // re-associate seq and mouse manager
-    mouseManager = std::make_shared<MouseManager>(sequencer);
+    songUpdated();
 }
 
 void NoteDisplay::initEditContext()

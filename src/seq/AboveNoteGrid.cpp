@@ -30,6 +30,10 @@ void AboveNoteGrid::setSequencer(MidiSequencerPtr seq)
     sequencer = seq;
 }
 
+void AboveNoteGrid::songUpdated()
+{
+}
+
 void AboveNoteGrid::step()
 {
     if (!sequencer) {
