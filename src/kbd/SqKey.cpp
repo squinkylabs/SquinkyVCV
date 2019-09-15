@@ -11,7 +11,7 @@
  {
     json_t* keyJ = json_object_get(binding, "key");
     if (!keyJ) {
-        fprintf(stderr, "binding does not key key field: %s\n",
+        fprintf(stderr, "binding does not have key field: %s\n",
             json_dumps(keyJ, 0));
         return nullptr;
     }
@@ -41,11 +41,9 @@
     if (key == 0) {
         fprintf(stderr, "binding does not have valid key: %s\n", keyString.c_str());
     }
-    fprintf(stderr, "just make entry with key = %d\n", key);
     SqKey* r = new SqKey(key, ctrl, shift);
     SqKeyPtr ret(r);
     return ret;
-   // return SqKey(key, ctrl, shift);
  }
 
 bool SqKey::operator< (const SqKey& other) const
@@ -71,5 +69,4 @@ bool SqKey::operator< (const SqKey& other) const
 
     assert(false);
     return false;
-    
 }

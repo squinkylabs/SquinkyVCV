@@ -9,6 +9,7 @@
 
 KeyMapping::KeyMapping(const std::string& configPath)
 {
+    Actions actions;
     fprintf(stderr, "key mapping::key %s\n", configPath.c_str());
     FILE *file = fopen(configPath.c_str(), "r");
     if (!file) {
@@ -29,24 +30,11 @@ KeyMapping::KeyMapping(const std::string& configPath)
             json_t* value;
             json_array_foreach(bindings, index, value) {
                 SqKeyPtr key = SqKey::parse(value);
-#if 0
-                {
-                    SqKeyPtr key2 = SqKey::parse(value);
-                    const bool b = key < key2;
-
-                    SqKey k = *key;
-                    SqKey k2 = *key2;
-                    bool c = k < k2;
-                }
-                #endif
-
-                action act = parseAction(value);
+                Actions::action act = parseAction(actions, value);
                 if (!act || !key) {
                     return;
                 }
                 theMap[*key] = act;
-                fprintf(stderr, "ust added to map, size = %d\n", (int) theMap.size());
-                fprintf(stderr, "finish me\n");
             }
         } else {
             fprintf(stderr, "bindings is not an array\n");
@@ -62,8 +50,20 @@ KeyMapping::KeyMapping(const std::string& configPath)
 };
 
 
-KeyMapping::action KeyMapping::parseAction(json_t* binding)
+Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
 {
-    fprintf(stderr, "parse action is fake\n");
-    return []() {};
+    json_t* keyJ = json_object_get(binding, "action");
+    if (!keyJ) {
+        fprintf(stderr, "binding does not have action field: %s\n",
+            json_dumps(keyJ, 0));
+        return nullptr;
+    }
+    if (!json_is_string(keyJ)) {
+        fprintf(stderr, "binding action is not a string");
+        return nullptr;
+    }
+
+    std::string actionString = json_string_value(keyJ);
+    auto act = actions.getAction(actionString);
+    return act;
 }

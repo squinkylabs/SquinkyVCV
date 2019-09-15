@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Actions.h"
 #include "SqKey.h"
 
-#include <functional>
 #include <map>
 #include <string>
+
+class Actions;
 
 class KeyMapping
 {
@@ -14,12 +16,12 @@ public:
      */
     KeyMapping(const std::string& configPath);
 private:
-    using action = std::function<void(void)>;
-    using container = std::map<SqKey, action>;
+   
+    using container = std::map<SqKey, Actions::action>;
 
     container theMap;
 
 
-    action parseAction(json_t* binding);
+    Actions::action parseAction(Actions&, json_t* binding);
 
 };
