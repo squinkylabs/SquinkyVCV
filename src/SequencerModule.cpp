@@ -22,6 +22,7 @@
 #include "../test/TestSettings.h"
 #include "TimeUtils.h"
 
+#include "KbdManager.h"
 #include "MidiFileProxy.h"
 #include "SequencerModule.h"
 #include <osdialog.h>
@@ -218,6 +219,8 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
         noteDisplay = new NoteDisplay(notePos, noteSize, seq, module);
         addChild(noteDisplay);
         addChild(headerDisplay);
+
+        KbdManager::init();
     }
 
     addControls(module, icomp);
