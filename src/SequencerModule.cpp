@@ -413,7 +413,6 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
 
 void SequencerModule::postNewSong(MidiSongPtr newSong)
 {
-    printf("called set new song\n"); fflush(stdout);
     newSong->assertValid();
     MidiSongPtr oldSong = sequencer->song;
     {
@@ -433,7 +432,6 @@ void SequencerModule::postNewSong(MidiSongPtr newSong)
     }
 
     sequencer->assertValid();
-    printf("leaving set new song\n"); fflush(stdout);
 }
 
 void SequencerModule::onReset()
