@@ -18,6 +18,14 @@ private:
 
     std::map< std::string, action> _map;
 
-    static bool insertDefault(MidiSequencerPtr);
+    /**
+     * all of the actions
+     */
+    static void insertDefault(MidiSequencerPtr);
+    static void moveLeftNormal(MidiSequencerPtr);
+    static void moveUpNormal(MidiSequencerPtr);
+    static void moveDownNormal(MidiSequencerPtr);
+    static void moveRightNormal(MidiSequencerPtr);
+
     
 };

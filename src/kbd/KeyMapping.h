@@ -15,6 +15,7 @@ public:
      * If constructor fails, will return no mappings
      */
     KeyMapping(const std::string& configPath);
+    Actions::action get(const SqKey&);
 private:
    
     using container = std::map<SqKey, Actions::action>;

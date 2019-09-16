@@ -1,9 +1,17 @@
 #include "Actions.h"
 
+#include "MidiSequencer.h"
+#include <assert.h>
+
  Actions::Actions()
  {
      _map = {
-         {"insert.default", insertDefault}
+        {"insert.default", insertDefault},
+
+        {"move.left.normal", moveLeftNormal},
+        {"move.right.normal", moveRightNormal},
+        {"move.up.normal", moveUpNormal},
+        {"move.down.normal", moveDownNormal},
      };
  }
 
@@ -19,9 +27,28 @@
      return a;
  }
 
-
- bool Actions::insertDefault(MidiSequencerPtr)
+ void Actions::insertDefault(MidiSequencerPtr sequencer)
  {
-    fprintf(stderr, "insertDefauls nimp\n");
-    return false;
+    sequencer->editor->insertDefaultNote(true, false);
+ }
+
+ void Actions::moveLeftNormal(MidiSequencerPtr sequencer)
+ {
+    sequencer->editor->advanceCursor(MidiEditor::Advance::GridUnit, -1);  
+ }
+
+ void Actions::moveRightNormal(MidiSequencerPtr sequencer)
+ {
+    sequencer->editor->advanceCursor(MidiEditor::Advance::GridUnit, 1);  
+ }
+
+ 
+ void Actions::moveUpNormal(MidiSequencerPtr sequencer)
+ {
+    sequencer->editor->changeCursorPitch(1);
+ }
+
+ void Actions::moveDownNormal(MidiSequencerPtr sequencer)
+ {
+    sequencer->editor->changeCursorPitch(-1);
  }

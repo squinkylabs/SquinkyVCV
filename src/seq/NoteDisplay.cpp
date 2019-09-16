@@ -46,7 +46,9 @@ NoteDisplay::NoteDisplay(
     focusLabel->color = SqHelper::COLOR_WHITE;
     addChild(focusLabel);
     updateFocus(false);
+#ifdef _USERKB
     kbdManager = std::make_shared<KbdManager>();
+#endif
 }
 
 
@@ -342,6 +344,7 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
 
 bool NoteDisplay::handleKey(int key, int mods, int action)
 {
+    fprintf(stderr, "NoteDisplay::handleKey %d\n", key);
     bool handle = false;
     bool repeat = false;
     switch (action) {
@@ -356,12 +359,17 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
     }
 
     if (repeat) {
+        // TODO: how will we handle repeat in the _USERKB work
         handle = MidiKeyboardHandler::doRepeat(key);
     }
 
     bool handled = false;
     if (handle) {
+#ifdef _USERKB
+        handled = kbdManager->handle(sequencer, key, mods);
+#else
         handled = MidiKeyboardHandler::handle(sequencer, key, mods);
+#endif
         if (handled) {
             rack::APP->event->setSelected(this);
         }

@@ -32,9 +32,11 @@ KeyMapping::KeyMapping(const std::string& configPath)
                 SqKeyPtr key = SqKey::parse(value);
                 Actions::action act = parseAction(actions, value);
                 if (!act || !key) {
-                    return;
+                    fprintf(stderr, "skipping bad entry: %s\n", json_dumps(value, 0));
+                } else {
+                    //fprintf(stderr, "adding entry to map code = %d\n", key->key);
+                    theMap[*key] = act;
                 }
-                theMap[*key] = act;
             }
         } else {
             fprintf(stderr, "bindings is not an array\n");
@@ -43,12 +45,9 @@ KeyMapping::KeyMapping(const std::string& configPath)
         fprintf(stderr, "bindings not found at root\n");
     }
 
-    fprintf(stderr, "must parse json\n");
-
     json_decref(mappingJson);
     fclose(file);
 };
-
 
 Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
 {
@@ -66,4 +65,17 @@ Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
     std::string actionString = json_string_value(keyJ);
     auto act = actions.getAction(actionString);
     return act;
+}
+
+Actions::action KeyMapping::get(const SqKey& key)
+{
+    fprintf(stderr, "looking for key code %d map size = %d\n", key.key, int(theMap.size()));
+    auto it = theMap.find(key);
+    if (it == theMap.end()) {
+         fprintf(stderr, "didn't find\n");
+        return nullptr;
+    } else {
+         fprintf(stderr, "found\n");
+        return it->second;
+    }
 }

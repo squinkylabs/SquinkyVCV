@@ -2,6 +2,12 @@
 #include "KeyMapping.h"
 
 #include "asset.hpp"
+#include "event.hpp"
+
+#include <GLFW/glfw3.h>
+
+KeyMappingPtr KbdManager::defaultMappings;
+KeyMappingPtr KbdManager::userMappings;
 
 KbdManager::KbdManager()
 {
@@ -25,5 +31,25 @@ void KbdManager::init()
     }
 }
 
-KeyMappingPtr KbdManager::defaultMappings;
-KeyMappingPtr KbdManager::userMappings;
+
+ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned mods)
+ {
+    fprintf(stderr, "KbdManager::handle code=%d mods=%d\n", keyCode, mods); fflush(stderr);
+    bool handled = false;
+    const bool shift = (mods & GLFW_MOD_SHIFT);
+    const bool ctrl = (mods & RACK_MOD_CTRL);        // this is command on mac
+    //const bool alt = (mods && GLFW_MOD_ALT);
+    SqKey key(keyCode, ctrl, shift);
+   //  fprintf(stderr, "b KbdManager::handle\n"); fflush(stderr);
+    
+    assert(defaultMappings);
+    Actions::action act = defaultMappings->get(key);
+    fprintf(stderr, "v KbdManager::handle act = %d\n", bool(act)); fflush(stderr);
+    if (act) {
+        fprintf(stderr, "calling act\n");
+       act(sequencer);
+       handled = true;
+    }
+
+    return handled;
+ }
