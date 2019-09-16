@@ -344,7 +344,6 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
 
 bool NoteDisplay::handleKey(int key, int mods, int action)
 {
-    fprintf(stderr, "NoteDisplay::handleKey %d\n", key);
     bool handle = false;
     bool repeat = false;
     switch (action) {

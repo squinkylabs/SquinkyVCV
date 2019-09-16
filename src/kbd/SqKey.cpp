@@ -28,10 +28,12 @@
     std::istringstream f(keyString);
     std::string s;    
 
+//fprintf(stderr, "keyString = %s\n", keyString.c_str());
     int key = 0;
     bool ctrl = false;
     bool shift = false;
-    while (getline(f, s, ';')) {
+    while (getline(f, s, '+')) {
+        //fprintf(stderr, "fragment = %s\n", s.c_str());
         if (s == "ctrl") {
             assert(!ctrl);
             ctrl = true;

@@ -6,6 +6,8 @@
 
 #include <GLFW/glfw3.h>
 
+extern rack::plugin::Plugin *pluginInstance;
+
 KeyMappingPtr KbdManager::defaultMappings;
 KeyMappingPtr KbdManager::userMappings;
 
@@ -21,7 +23,8 @@ void KbdManager::init()
     fflush(stdout);
     // these statics are shared by all instances
     if (!defaultMappings) {
-        std::string keymapPath =  rack::asset::user("seq_default_keys.json");
+        std::string keymapPath = rack::asset::plugin(pluginInstance, "res/seq_default_keys.json");
+        //std::string keymapPath =  rack::asset::user("seq_default_keys.json");
         defaultMappings = std::make_shared<KeyMapping>(keymapPath);
     }
     if (!userMappings) {

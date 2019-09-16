@@ -22,10 +22,18 @@ private:
      * all of the actions
      */
     static void insertDefault(MidiSequencerPtr);
+    static void insertWhole(MidiSequencerPtr);
+    static void insertHalf(MidiSequencerPtr);
+    static void insertQuarter(MidiSequencerPtr);
+    static void insertEighth(MidiSequencerPtr);
+    static void insertSixteenth(MidiSequencerPtr);
+    static void insertWholeAdvance(MidiSequencerPtr);
+    static void insertHalfAdvance(MidiSequencerPtr);
+    static void insertQuarterAdvance(MidiSequencerPtr);
+    static void insertEighthAdvance(MidiSequencerPtr);
+    static void insertSixteenthAdvance(MidiSequencerPtr);
     static void moveLeftNormal(MidiSequencerPtr);
     static void moveUpNormal(MidiSequencerPtr);
     static void moveDownNormal(MidiSequencerPtr);
     static void moveRightNormal(MidiSequencerPtr);
-
-    
 };

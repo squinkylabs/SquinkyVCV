@@ -1,0 +1,34 @@
+{
+    "bindings": [
+    {"key": "insert", "action": "insert.default", "comment": "**** all the note insert"},
+    {"key": "w", "action": "insert.whole.advance"},
+    {"key": "h", "action": "insert.half.advance"},
+    {"key": "q", "action": "insert.quarter.advance"},
+    {"key": "e", "action": "insert.eighth.advance"},
+    {"key": "x", "action": "insert.sixteenth.advance"},
+
+    {"key": "w+shift", "action": "insert.whole"},
+    {"key": "h+shift", "action": "insert.half"},
+    {"key": "q+shift", "action": "insert.quarter"},
+    {"key": "e+shift", "action": "insert.eighth"},
+    {"key": "x+shift", "action": "insert.sixteenth"},
+
+    {"key": "left", "action": "move.left.normal", "comment": "**** all the cursor movement"},
+    {"key": "4", "action": "move.left.normal"},
+    {"key": "numpad4", "action": "move.left.normal"},
+
+    {"key": "right", "action": "move.right.normal"},
+    {"key": "6", "action": "move.right.normal"},
+    {"key": "numpad6", "action": "move.right.normal"},
+
+    {"key": "up", "action": "move.up.normal"},
+    {"key": "5", "action": "move.up.normal"},
+    {"key": "numpad8", "action": "move.up.normal"},
+
+    {"key": "down", "action": "move.down.normal"},
+    {"key": "r", "action": "move.down.normal"},
+    {"key": "numpad2", "action": "move.down.normal"}
+
+
+    ]
+}
