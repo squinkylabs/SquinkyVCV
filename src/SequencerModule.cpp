@@ -219,8 +219,6 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
         noteDisplay = new NoteDisplay(notePos, noteSize, seq, module);
         addChild(noteDisplay);
         addChild(headerDisplay);
-
-        KbdManager::init();
     }
 
     addControls(module, icomp);

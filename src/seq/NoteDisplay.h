@@ -4,6 +4,9 @@
 #include "MidiSequencer.h"
 #include "NoteScreenScale.h"
 
+class KbdManager;
+using KbdManagerPtr = std::shared_ptr<KbdManager>;
+
 /**
  * This class needs some refactoring and renaming.
  * It is really the entire sequencer UI, including the notes.
@@ -32,6 +35,10 @@ private:
     bool cursorState = false;
     int cursorFrameCount = 0;
     bool haveFocus = true;
+#ifdef _USERKB
+    KbdManagerPtr kbdManager;
+#endif
+
     void initEditContext();
 
     std::shared_ptr<class MouseManager> mouseManager;

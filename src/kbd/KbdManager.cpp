@@ -3,6 +3,11 @@
 
 #include "asset.hpp"
 
+KbdManager::KbdManager()
+{
+    init();
+}
+
 void KbdManager::init()
 {
     printf("\n\n settings patch = %s\n", rack::asset::settingsPath.c_str());

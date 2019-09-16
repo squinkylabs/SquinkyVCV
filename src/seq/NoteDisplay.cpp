@@ -11,6 +11,7 @@
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
+#include "KbdManager.h"
 #include "MidiKeyboardHandler.h"
 #include "MouseManager.h"
 #include "NoteScreenScale.h"
@@ -45,6 +46,7 @@ NoteDisplay::NoteDisplay(
     focusLabel->color = SqHelper::COLOR_WHITE;
     addChild(focusLabel);
     updateFocus(false);
+    kbdManager = std::make_shared<KbdManager>();
 }
 
 
