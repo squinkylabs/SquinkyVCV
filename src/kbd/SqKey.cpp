@@ -105,7 +105,18 @@ int SqKey::parseKey(const std::string& key)
         }
     }
 
-    fprintf(stderr, "parseKey(%s) ret %d\n", key.c_str(), ret);
+    if (!ret) {
+        auto x = key.find(',');
+        if (x != std::string::npos) {
+            fprintf(stderr, "key strings must not contain commas\n");
+        }
+        x = key.find('.');
+        if (x != std::string::npos) {
+            fprintf(stderr, "key strings must not contain periods\n");
+        }
+    }
+
+    //fprintf(stderr, "parseKey(%s) ret %d\n", key.c_str(), ret);
     return ret;
 }
 
@@ -128,6 +139,10 @@ int SqKey::parseKey(const std::string& key)
         {"numpad6", GLFW_KEY_KP_6},
         {"numpad7", GLFW_KEY_KP_7},
         {"numpad8", GLFW_KEY_KP_8},
-        {"numpad9", GLFW_KEY_KP_9}
+        {"numpad9", GLFW_KEY_KP_9},
+        {"f1", GLFW_KEY_F1},
+        {"tab", GLFW_KEY_TAB},
+        {"numpad_add", GLFW_KEY_KP_ADD},
+        {"=", GLFW_KEY_EQUAL}
      };
  }

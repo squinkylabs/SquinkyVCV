@@ -18,6 +18,9 @@ private:
 
     std::map< std::string, action> _map;
 
+    enum class ChangeType { small, normal, large };
+    static void handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type, bool increase);
+
     /**
      * all of the actions
      */
@@ -36,4 +39,12 @@ private:
     static void moveUpNormal(MidiSequencerPtr);
     static void moveDownNormal(MidiSequencerPtr);
     static void moveRightNormal(MidiSequencerPtr);
+
+    static void selectPrevious(MidiSequencerPtr);
+    static void selectPreviousExtend(MidiSequencerPtr);
+    static void selectNext(MidiSequencerPtr);
+    static void selectNextExtend(MidiSequencerPtr);
+    static void help(MidiSequencerPtr);
+
+    static void valueIncrementNormal(MidiSequencerPtr);
 };

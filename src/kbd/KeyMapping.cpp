@@ -13,14 +13,14 @@ KeyMapping::KeyMapping(const std::string& configPath)
     fprintf(stderr, "key mapping::key %s\n", configPath.c_str());
     FILE *file = fopen(configPath.c_str(), "r");
     if (!file) {
-        fprintf(stderr, "didn't find %s\n", configPath.c_str());
+        fprintf(stderr, "could not open file: %s\n", configPath.c_str());
         return;
     }
 
     json_error_t error;
 	json_t *mappingJson = json_loadf(file, 0, &error);
     if (!mappingJson) {
-        fprintf(stderr, "could not open json\n"); fflush(stdout);
+        fprintf(stderr, "could not parse json\n"); fflush(stdout);
     }
 
     json_t* bindings = json_object_get(mappingJson, "bindings");

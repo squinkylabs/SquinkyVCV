@@ -37,13 +37,16 @@ void KbdManager::init()
 
  bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned mods)
  {
-    fprintf(stderr, "KbdManager::handle code=%d mods=%d\n", keyCode, mods); fflush(stderr);
+   
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);
     const bool ctrl = (mods & RACK_MOD_CTRL);        // this is command on mac
     //const bool alt = (mods && GLFW_MOD_ALT);
     SqKey key(keyCode, ctrl, shift);
    //  fprintf(stderr, "b KbdManager::handle\n"); fflush(stderr);
+
+    fprintf(stderr, "KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
+    fprintf(stderr, " shift=%d, ctrl=%d\n", shift, ctrl); fflush(stderr);
     
     assert(defaultMappings);
     Actions::action act = defaultMappings->get(key);
