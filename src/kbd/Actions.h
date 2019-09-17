@@ -60,4 +60,13 @@ private:
     static void valueDecrementLarge(ActionContext&);
 
     static void selectAll(ActionContext&);
+
+    static void cut(ActionContext&);
+    static void copy(ActionContext&);
+    static void paste(ActionContext&);
+
+    static void editDuration(ActionContext&);
+    static void editPitch(ActionContext&);
+    static void editStartTime(ActionContext&);
+
 };

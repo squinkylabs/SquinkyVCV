@@ -9,10 +9,10 @@
 #include <sstream>
 
 
- std::map<std::string, int> SqKey::keyString2KeyCode;
+std::map<std::string, int> SqKey::keyString2KeyCode;
 
- SqKeyPtr SqKey::parse(json_t* binding)
- {
+SqKeyPtr SqKey::parse(json_t* binding)
+{
     json_t* keyJ = json_object_get(binding, "key");
     if (!keyJ) {
         fprintf(stderr, "binding does not have key field: %s\n",
@@ -28,12 +28,10 @@
     std::istringstream f(keyString);
     std::string s;    
 
-//fprintf(stderr, "keyString = %s\n", keyString.c_str());
     int key = 0;
     bool ctrl = false;
     bool shift = false;
     while (getline(f, s, '+')) {
-        //fprintf(stderr, "fragment = %s\n", s.c_str());
         if (s == "ctrl") {
             assert(!ctrl);
             ctrl = true;
@@ -52,7 +50,7 @@
     SqKey* r = new SqKey(key, ctrl, shift);
     SqKeyPtr ret(r);
     return ret;
- }
+}
 
 bool SqKey::operator< (const SqKey& other) const
 {
@@ -105,18 +103,6 @@ int SqKey::parseKey(const std::string& key)
         }
     }
 
-    if (!ret) {
-        auto x = key.find(',');
-        if (x != std::string::npos) {
-            fprintf(stderr, "key strings must not contain commas\n");
-        }
-        x = key.find('.');
-        if (x != std::string::npos) {
-            fprintf(stderr, "key strings must not contain periods\n");
-        }
-    }
-
-    //fprintf(stderr, "parseKey(%s) ret %d\n", key.c_str(), ret);
     return ret;
 }
 
@@ -143,6 +129,12 @@ int SqKey::parseKey(const std::string& key)
         {"f1", GLFW_KEY_F1},
         {"tab", GLFW_KEY_TAB},
         {"numpad_add", GLFW_KEY_KP_ADD},
-        {"=", GLFW_KEY_EQUAL}
+        {"numpad_subtract", GLFW_KEY_KP_SUBTRACT},
+        {"=", GLFW_KEY_EQUAL},
+        {"[", GLFW_KEY_LEFT_BRACKET},
+        {"]", GLFW_KEY_RIGHT_BRACKET},
+        {"enter", GLFW_KEY_ENTER},
+        {",", GLFW_KEY_COMMA},
+        {".", GLFW_KEY_PERIOD}
      };
  }

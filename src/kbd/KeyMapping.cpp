@@ -59,9 +59,7 @@ KeyMapping::KeyMapping(const std::string& configPath)
                 if (json_is_string(value)) {
                     std::string key = json_string_value(value);
                     int code = SqKey::parseKey(key);
-                    fprintf(stderr, "found code to process: %d\n", code);
                     ignoreCodes.insert(code);
-                   // processIgnoreCase(code);
                 } else {
                     fprintf(stderr, "bad key in ignore_case: %s\n", json_dumps(value, 0));
                 }
@@ -72,7 +70,6 @@ KeyMapping::KeyMapping(const std::string& configPath)
     }
 
     processIgnoreCase(ignoreCodes);
-
     json_decref(mappingJson);
     fclose(file);
 };
@@ -81,13 +78,12 @@ void KeyMapping::processIgnoreCase(const std::set<int>& codes)
 {
     // look through the mapping for non-shifted key that matches code.
     // If found, add the shifted version.
-
     for (auto it : theMap) {
         //SqKey& key = it->first;
         auto k = it.first;
         SqKey& key = k;
     
-        if (!key.shift && codes.find(key.key) != codes.end()) {
+        if (!key.shift && (codes.find(key.key) != codes.end())) {
             SqKey newKey(key.key, key.ctrl, true);
             const size_t first = theMap.size();
             theMap[newKey] = it.second;

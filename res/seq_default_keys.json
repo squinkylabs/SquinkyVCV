@@ -3,6 +3,9 @@
     {"key": "f1", "action": "help"},
 
     {"key": "insert", "action": "insert.default", "comment": "**** all the note insert"},
+    {"key": "numpad0", "action": "insert.default"},
+    {"key": "enter", "action": "insert.default"},
+
     {"key": "w", "action": "insert.whole.advance"},
     {"key": "h", "action": "insert.half.advance"},
     {"key": "q", "action": "insert.quarter.advance"},
@@ -37,13 +40,23 @@
     {"key": "tab+ctrl+shift", "action":"select.previous.extend"},
     {"key": "a+ctrl", "action": "select.all"},
 
-    {"key": "numpad_add", "action": "value.increment.normal", "comment": " noted value edit commands"},
+    {"key": "numpad_add", "action": "value.increment.normal", "comment": "edit commands"},
     {"key": "=+shift", "action": "value.increment.normal"},
     {"key": "numpad_subtract", "action": "value.decrement.normal"},
     {"key": "[", "action": "value.decrement.large"},
     {"key": "]", "action": "value.increment.large"},
     {"key": ",", "action": "value.decrement.small"},
-    {"key": ".", "action": "value.increment.small"}
+    {"key": ".", "action": "value.increment.small"},
+
+    {"key": "x+ctrl", "action": "cut"},
+    {"key": "c+ctrl", "action": "copy"},
+    {"key": "v+ctrl", "action": "paste"},
+
+    {"key": "s", "action":"edit.start.time"},
+    {"key": "d", "action":"edit.duration"},
+    {"key": "p", "action":"edit.pitch"}
+
+
     
 
 

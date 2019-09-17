@@ -37,7 +37,17 @@ Actions::Actions()
       {"value.increment.large", valueIncrementLarge},
       {"value.decrement.small", valueDecrementSmall},
       {"value.decrement.normal", valueDecrementNormal},
-      {"value.decrement.large", valueDecrementLarge}
+      {"value.decrement.large", valueDecrementLarge},
+
+      {"cut", cut},
+      {"copy", copy},
+      {"paste", paste},
+      {"edit.start.time", editStartTime},
+      {"edit.duration", editDuration},
+      {"edit.pitch", editPitch}
+
+
+
    };
 }
 
@@ -288,4 +298,32 @@ void Actions::valueDecrementNormal(ActionContext& context)
 void Actions::valueDecrementLarge(ActionContext& context)
 {
    handleNoteEditorChange(context.sequencer, ChangeType::large, false);
+}
+
+void Actions::cut(ActionContext& context)
+{
+   context.sequencer->editor->cut();
+}
+void Actions::copy(ActionContext& context)
+{
+    context.sequencer->editor->copy();
+}
+
+void Actions::paste(ActionContext& context)
+{
+   context.sequencer->editor->paste();
+}
+
+void Actions::editDuration(ActionContext& context)
+{
+   context.sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Duration);
+}
+
+void Actions::editPitch(ActionContext& context)
+{
+   context.sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
+}
+void Actions::editStartTime(ActionContext& context)
+{
+   context.sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
 }
