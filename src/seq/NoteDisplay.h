@@ -3,6 +3,7 @@
 
 #include "MidiSequencer.h"
 #include "NoteScreenScale.h"
+#include "Seq.h"
 
 class KbdManager;
 using KbdManagerPtr = std::shared_ptr<KbdManager>;
@@ -29,6 +30,9 @@ public:
     void setSequencer(MidiSequencerPtr seq);
     MidiSequencerPtr getSequencer();
     void songUpdated();
+
+    void onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer);
+
 private:
     Label* focusLabel = nullptr;
     MidiSequencerPtr sequencer;

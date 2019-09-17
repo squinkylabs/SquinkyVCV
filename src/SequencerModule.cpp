@@ -167,7 +167,11 @@ void SequencerWidget::step()
 
     // give this guy a chance to do some processing on the UI thread.
     if (_module) {
+#ifdef _USERKB
+        noteDisplay->onUIThread(_module->seqComp, _module->sequencer);
+#else
         MidiKeyboardHandler::onUIThread(_module->seqComp, _module->sequencer);
+#endif
     }
 }
 

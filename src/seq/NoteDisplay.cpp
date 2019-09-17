@@ -245,6 +245,13 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     }
 }
 
+void NoteDisplay::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
+{
+#ifdef _USERKB
+    kbdManager->onUIThread(seqComp, sequencer);
+#endif
+}
+
 /******************** All V1 keyboard handling here *******************
  *
  */
@@ -341,6 +348,7 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
         OpaqueWidget::onHoverKey(e);
     }
 }
+
 
 bool NoteDisplay::handleKey(int key, int mods, int action)
 {

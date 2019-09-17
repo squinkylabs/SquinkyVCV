@@ -1,5 +1,6 @@
 #include "KbdManager.h"
 #include "KeyMapping.h"
+#include "StepRecorder.h"
 
 #include "asset.hpp"
 #include "event.hpp"
@@ -14,6 +15,7 @@ KeyMappingPtr KbdManager::userMappings;
 KbdManager::KbdManager()
 {
     init();
+    stepRecorder = std::make_shared<StepRecorder>();
 }
 
 void KbdManager::init()
@@ -35,27 +37,32 @@ void KbdManager::init()
 }
 
 
- bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned mods)
- {
-   
+bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned mods)
+    {
+
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);
     const bool ctrl = (mods & RACK_MOD_CTRL);        // this is command on mac
     //const bool alt = (mods && GLFW_MOD_ALT);
     SqKey key(keyCode, ctrl, shift);
-   //  fprintf(stderr, "b KbdManager::handle\n"); fflush(stderr);
+    //  fprintf(stderr, "b KbdManager::handle\n"); fflush(stderr);
 
     fprintf(stderr, "KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
     fprintf(stderr, " shift=%d, ctrl=%d\n", shift, ctrl); fflush(stderr);
-    
+
     assert(defaultMappings);
     Actions::action act = defaultMappings->get(key);
     fprintf(stderr, "v KbdManager::handle act = %d\n", bool(act)); fflush(stderr);
     if (act) {
         fprintf(stderr, "calling act\n");
-       act(sequencer);
-       handled = true;
+        act(sequencer);
+        handled = true;
     }
 
     return handled;
- }
+}
+
+void KbdManager::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
+{
+    stepRecorder->onUIThread(seqComp, sequencer);
+}
