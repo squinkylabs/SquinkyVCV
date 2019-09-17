@@ -51,5 +51,13 @@ private:
     static void selectNextExtend(ActionContext&);
     static void help(ActionContext&);
 
+    static void valueIncrementSmall(ActionContext&);
     static void valueIncrementNormal(ActionContext&);
+    static void valueIncrementLarge(ActionContext&);
+
+    static void valueDecrementSmall(ActionContext&);
+    static void valueDecrementNormal(ActionContext&);
+    static void valueDecrementLarge(ActionContext&);
+
+    static void selectAll(ActionContext&);
 };

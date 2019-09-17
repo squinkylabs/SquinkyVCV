@@ -35,9 +35,18 @@
     {"key": "tab+shift", "action":"select.next.extend"},
     {"key": "tab+ctrl", "action":"select.previous"},
     {"key": "tab+ctrl+shift", "action":"select.previous.extend"},
+    {"key": "a+ctrl", "action": "select.all"},
 
-    {"key": "numpad_add", "action": "value.increment.normal"},
-    {"key": "=+shift", "action": "value.increment.normal"}
+    {"key": "numpad_add", "action": "value.increment.normal", "comment": " noted value edit commands"},
+    {"key": "=+shift", "action": "value.increment.normal"},
+    {"key": "numpad_subtract", "action": "value.decrement.normal"},
+    {"key": "[", "action": "value.decrement.large"},
+    {"key": "]", "action": "value.increment.large"},
+    {"key": ",", "action": "value.decrement.small"},
+    {"key": ".", "action": "value.increment.small"}
+    
+
+
     ],
     "ignore_case": ["up", "down", "left", "right"]
 }

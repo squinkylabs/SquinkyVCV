@@ -30,8 +30,14 @@ Actions::Actions()
       {"select.next.extend", selectNextExtend},
       {"select.previous", selectPrevious},
       {"select.previous.extend", selectPreviousExtend},
+      {"select.all", selectAll},
 
-      {"value.increment.normal", valueIncrementNormal}
+      {"value.increment.small", valueIncrementSmall},
+      {"value.increment.normal", valueIncrementNormal},
+      {"value.increment.large", valueIncrementLarge},
+      {"value.decrement.small", valueDecrementSmall},
+      {"value.decrement.normal", valueDecrementNormal},
+      {"value.decrement.large", valueDecrementLarge}
    };
 }
 
@@ -248,8 +254,38 @@ void Actions::selectNextExtend(ActionContext& context)
    context.sequencer->editor->extendSelectionToNextNote();
 }
 
+void Actions::selectAll(ActionContext& context)
+{
+   context.sequencer->editor->selectAll();
+}
+
 //****************** edit note values
+void Actions::valueIncrementSmall(ActionContext& context)
+{
+   handleNoteEditorChange(context.sequencer, ChangeType::small, true);
+}
+
 void Actions::valueIncrementNormal(ActionContext& context)
 {
    handleNoteEditorChange(context.sequencer, ChangeType::normal, true);
+}
+
+void Actions::valueIncrementLarge(ActionContext& context)
+{
+   handleNoteEditorChange(context.sequencer, ChangeType::large, true);
+}
+
+void Actions::valueDecrementSmall(ActionContext& context)
+{
+   handleNoteEditorChange(context.sequencer, ChangeType::small, false);
+}
+
+void Actions::valueDecrementNormal(ActionContext& context)
+{
+   handleNoteEditorChange(context.sequencer, ChangeType::normal, false);
+}
+
+void Actions::valueDecrementLarge(ActionContext& context)
+{
+   handleNoteEditorChange(context.sequencer, ChangeType::large, false);
 }

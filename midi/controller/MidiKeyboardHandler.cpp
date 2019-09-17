@@ -150,7 +150,7 @@ void MidiKeyboardHandler::handleNoteEditorChange(
             }
             break;
 
-         case MidiEditorContext::NoteAttribute::Duration:
+        case MidiEditorContext::NoteAttribute::Duration:
             {
                 switch(type) {
                     case ChangeType::bracket:
@@ -205,7 +205,6 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 }
 
 extern void sequencerHelp();
-
 
 void MidiKeyboardHandler::handleInsertPresetNote(
     MidiSequencerPtr sequencer,

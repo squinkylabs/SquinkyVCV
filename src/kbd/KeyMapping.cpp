@@ -35,6 +35,10 @@ KeyMapping::KeyMapping(const std::string& configPath)
                     fprintf(stderr, "skipping bad entry: %s\n", json_dumps(value, 0));
                 } else {
                     //fprintf(stderr, "adding entry to map code = %d\n", key->key);
+
+                    if (theMap.find(*key) != theMap.end()) {
+                        fprintf(stderr, "duplicate key mapping %s\n", json_dumps(value, 0));
+                    }
                     theMap[*key] = act;
                 }
             }
