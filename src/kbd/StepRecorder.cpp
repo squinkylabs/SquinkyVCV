@@ -1,3 +1,4 @@
+#include "ISeqSettings.h"
 #include "MidiSequencer.h"
 #include "StepRecorder.h"
 #include "WidgetComposite.h"
@@ -54,4 +55,25 @@ void StepRecorder::onAllNotesOff(MidiSequencerPtr sequencer)
     time += advanceTime;
     sequencer->editor->moveToTimeAndPitch(time, lastPitch);
     numNotesActive = 0;
+}
+
+bool StepRecorder::handleInsertPresetNote(
+    MidiSequencerPtr sequencer,
+    MidiEditor::Durations duration, 
+    bool advanceAfter)
+{
+    if (!isActive()) {
+        return false;
+    }
+    // 
+    const float artic = sequencer->context->settings()->articulation();
+    advanceTime = MidiEditor::getDuration(duration);
+    float finalDuration =  advanceTime * artic;
+    sequencer->editor->setDuration(finalDuration);
+    return true;
+}
+
+bool StepRecorder::isActive() const 
+{
+    return numNotesActive > 0;
 }

@@ -1,10 +1,12 @@
 #pragma once
 
+#include "MidiEditor.h"
 #include <functional>
 #include <map>
 #include <memory>
 #include <string>
 
+class ActionContext;
 class MidiSequencer;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
@@ -12,7 +14,7 @@ class Actions
 {
 public:
     Actions();
-    using action = std::function<void(MidiSequencerPtr)>;
+    using action = std::function<void(ActionContext&)>;
     action getAction(const std::string& name);
 private:
 
@@ -20,31 +22,34 @@ private:
 
     enum class ChangeType { small, normal, large };
     static void handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type, bool increase);
-
+    static void handleInsertPresetNote(
+        ActionContext& context,
+        MidiEditor::Durations duration, 
+        bool advanceAfter);
     /**
      * all of the actions
      */
-    static void insertDefault(MidiSequencerPtr);
-    static void insertWhole(MidiSequencerPtr);
-    static void insertHalf(MidiSequencerPtr);
-    static void insertQuarter(MidiSequencerPtr);
-    static void insertEighth(MidiSequencerPtr);
-    static void insertSixteenth(MidiSequencerPtr);
-    static void insertWholeAdvance(MidiSequencerPtr);
-    static void insertHalfAdvance(MidiSequencerPtr);
-    static void insertQuarterAdvance(MidiSequencerPtr);
-    static void insertEighthAdvance(MidiSequencerPtr);
-    static void insertSixteenthAdvance(MidiSequencerPtr);
-    static void moveLeftNormal(MidiSequencerPtr);
-    static void moveUpNormal(MidiSequencerPtr);
-    static void moveDownNormal(MidiSequencerPtr);
-    static void moveRightNormal(MidiSequencerPtr);
+    static void insertDefault(ActionContext&);
+    static void insertWhole(ActionContext&);
+    static void insertHalf(ActionContext&);
+    static void insertQuarter(ActionContext&);
+    static void insertEighth(ActionContext&);
+    static void insertSixteenth(ActionContext&);
+    static void insertWholeAdvance(ActionContext&);
+    static void insertHalfAdvance(ActionContext&);
+    static void insertQuarterAdvance(ActionContext&);
+    static void insertEighthAdvance(ActionContext&);
+    static void insertSixteenthAdvance(ActionContext&);
+    static void moveLeftNormal(ActionContext&);
+    static void moveUpNormal(ActionContext&);
+    static void moveDownNormal(ActionContext&);
+    static void moveRightNormal(ActionContext&);
 
-    static void selectPrevious(MidiSequencerPtr);
-    static void selectPreviousExtend(MidiSequencerPtr);
-    static void selectNext(MidiSequencerPtr);
-    static void selectNextExtend(MidiSequencerPtr);
-    static void help(MidiSequencerPtr);
+    static void selectPrevious(ActionContext&);
+    static void selectPreviousExtend(ActionContext&);
+    static void selectNext(ActionContext&);
+    static void selectNextExtend(ActionContext&);
+    static void help(ActionContext&);
 
-    static void valueIncrementNormal(MidiSequencerPtr);
+    static void valueIncrementNormal(ActionContext&);
 };

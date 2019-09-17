@@ -1,4 +1,5 @@
 #include "Actions.h"
+#include "ActionContext.h"
 
 #include "MidiSequencer.h"
 #include <assert.h>
@@ -49,16 +50,19 @@ Actions::action Actions::getAction(const std::string& name)
 
 /********************** Note insert ******************************/
 
- static void handleInsertPresetNote(
-    MidiSequencerPtr sequencer,
+ void Actions::handleInsertPresetNote(
+    ActionContext& context,
     MidiEditor::Durations duration, 
     bool advanceAfter)
 {
-    // First, see if step record wants this event.
-   // bool handled = stepRecordImp.handleInsertPresetNote(sequencer, duration, advanceAfter);
-   // if (!handled) {
-     sequencer->editor->insertPresetNote(duration, advanceAfter);
-   // }
+   MidiSequencerPtr sequencer = context.sequencer;
+   assert(sequencer);
+
+   // First, see if step record wants this event.
+   bool handled = context.handleInsertPresetNote(sequencer, duration, advanceAfter);
+   if (!handled) {
+      sequencer->editor->insertPresetNote(duration, advanceAfter);
+   }
 }
 
 void Actions::handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type, bool increase)
@@ -142,110 +146,110 @@ void Actions::handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type
 
 extern void sequencerHelp();
 
-void Actions::help(MidiSequencerPtr sequencer)
+void Actions::help(ActionContext& context)
 {
    sequencerHelp();
 }
 
-void Actions::insertDefault(MidiSequencerPtr sequencer)
+void Actions::insertDefault(ActionContext& context)
 {
-   sequencer->editor->insertDefaultNote(true, false);
+   context.sequencer->editor->insertDefaultNote(true, false);
 }
 
-void Actions::insertHalfAdvance(MidiSequencerPtr sequencer)
+void Actions::insertHalfAdvance(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Half, true);
+   handleInsertPresetNote(context, MidiEditor::Durations::Half, true);
 }
 
-void Actions::insertWholeAdvance(MidiSequencerPtr sequencer)
+void Actions::insertWholeAdvance(ActionContext& context)
 {
-handleInsertPresetNote(sequencer, MidiEditor::Durations::Whole, true);
+   handleInsertPresetNote(context, MidiEditor::Durations::Whole, true);
 }
 
-void Actions::insertQuarterAdvance(MidiSequencerPtr sequencer)
+void Actions::insertQuarterAdvance(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Quarter, true);
+   handleInsertPresetNote(context, MidiEditor::Durations::Quarter, true);
 }
 
-void Actions::insertEighthAdvance(MidiSequencerPtr sequencer)
+void Actions::insertEighthAdvance(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Eighth, true);
+   handleInsertPresetNote(context, MidiEditor::Durations::Eighth, true);
 }
 
-void Actions::insertSixteenthAdvance(MidiSequencerPtr sequencer)
+void Actions::insertSixteenthAdvance(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Sixteenth, true);
+   handleInsertPresetNote(context, MidiEditor::Durations::Sixteenth, true);
 }
 
-void Actions::insertHalf(MidiSequencerPtr sequencer)
+void Actions::insertHalf(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Half, false);
+   handleInsertPresetNote(context, MidiEditor::Durations::Half, false);
 }
 
-void Actions::insertWhole(MidiSequencerPtr sequencer)
+void Actions::insertWhole(ActionContext& context)
 {
-handleInsertPresetNote(sequencer, MidiEditor::Durations::Whole, false);
+handleInsertPresetNote(context, MidiEditor::Durations::Whole, false);
 }
 
-void Actions::insertQuarter(MidiSequencerPtr sequencer)
+void Actions::insertQuarter(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Quarter, false);
+   handleInsertPresetNote(context, MidiEditor::Durations::Quarter, false);
 }
 
-void Actions::insertEighth(MidiSequencerPtr sequencer)
+void Actions::insertEighth(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Eighth, false);
+   handleInsertPresetNote(context, MidiEditor::Durations::Eighth, false);
 }
 
-void Actions::insertSixteenth(MidiSequencerPtr sequencer)
+void Actions::insertSixteenth(ActionContext& context)
 {
-   handleInsertPresetNote(sequencer, MidiEditor::Durations::Sixteenth, false);
+   handleInsertPresetNote(context, MidiEditor::Durations::Sixteenth, false);
 }
 //******************** cursor movement ****************************
 
-void Actions::moveLeftNormal(MidiSequencerPtr sequencer)
+void Actions::moveLeftNormal(ActionContext& context)
 {
-   sequencer->editor->advanceCursor(MidiEditor::Advance::GridUnit, -1);  
+   context.sequencer->editor->advanceCursor(MidiEditor::Advance::GridUnit, -1);  
 }
 
-void Actions::moveRightNormal(MidiSequencerPtr sequencer)
+void Actions::moveRightNormal(ActionContext& context)
 {
-   sequencer->editor->advanceCursor(MidiEditor::Advance::GridUnit, 1);  
+   context.sequencer->editor->advanceCursor(MidiEditor::Advance::GridUnit, 1);  
 }
 
 
-void Actions::moveUpNormal(MidiSequencerPtr sequencer)
+void Actions::moveUpNormal(ActionContext& context)
 {
-   sequencer->editor->changeCursorPitch(1);
+   context.sequencer->editor->changeCursorPitch(1);
 }
 
-void Actions::moveDownNormal(MidiSequencerPtr sequencer)
+void Actions::moveDownNormal(ActionContext& context)
 {
-   sequencer->editor->changeCursorPitch(-1);
+   context.sequencer->editor->changeCursorPitch(-1);
 }
 
 //********************* select next note ************
 
 
-void Actions::selectPrevious(MidiSequencerPtr sequencer)
+void Actions::selectPrevious(ActionContext& context)
 {
-    sequencer->editor->selectNextNote();
+    context.sequencer->editor->selectNextNote();
 }
-void Actions::selectPreviousExtend(MidiSequencerPtr sequencer)
+void Actions::selectPreviousExtend(ActionContext& context)
 {
-   sequencer->editor->extendSelectionToPrevNote();
+   context.sequencer->editor->extendSelectionToPrevNote();
 }
-void Actions::selectNext(MidiSequencerPtr sequencer)
+void Actions::selectNext(ActionContext& context)
 {
-   sequencer->editor->selectNextNote();
+   context.sequencer->editor->selectNextNote();
 }
-void Actions::selectNextExtend(MidiSequencerPtr sequencer)
+void Actions::selectNextExtend(ActionContext& context)
 {
-   sequencer->editor->extendSelectionToNextNote();
+   context.sequencer->editor->extendSelectionToNextNote();
 }
 
 //****************** edit note values
-void Actions::valueIncrementNormal(MidiSequencerPtr sequencer)
+void Actions::valueIncrementNormal(ActionContext& context)
 {
-   handleNoteEditorChange(sequencer, ChangeType::normal, true);
+   handleNoteEditorChange(context.sequencer, ChangeType::normal, true);
 }

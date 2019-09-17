@@ -1,3 +1,4 @@
+#include "ActionContext.h"
 #include "KbdManager.h"
 #include "KeyMapping.h"
 #include "StepRecorder.h"
@@ -54,8 +55,9 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
     Actions::action act = defaultMappings->get(key);
     fprintf(stderr, "v KbdManager::handle act = %d\n", bool(act)); fflush(stderr);
     if (act) {
+        ActionContext ctx(sequencer, stepRecorder);
         fprintf(stderr, "calling act\n");
-        act(sequencer);
+        act(ctx);
         handled = true;
     }
 
