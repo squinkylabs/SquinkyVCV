@@ -45,9 +45,52 @@ KeyMapping::KeyMapping(const std::string& configPath)
         fprintf(stderr, "bindings not found at root\n");
     }
 
+    std::set<int> ignoreCodes;
+    json_t* ignoreCase = json_object_get(mappingJson, "ignore_case");
+    if (ignoreCase) {
+        if (json_is_array(ignoreCase)) {
+            size_t index;
+            json_t* value;
+            json_array_foreach(ignoreCase, index, value) {
+                if (json_is_string(value)) {
+                    std::string key = json_string_value(value);
+                    int code = SqKey::parseKey(key);
+                    fprintf(stderr, "found code to process: %d\n", code);
+                    ignoreCodes.insert(code);
+                   // processIgnoreCase(code);
+                } else {
+                    fprintf(stderr, "bad key in ignore_case: %s\n", json_dumps(value, 0));
+                }
+            }
+        } else {
+            fprintf(stderr, "ignoreCase is not an array\n");
+        }
+    }
+
+    processIgnoreCase(ignoreCodes);
+
     json_decref(mappingJson);
     fclose(file);
 };
+
+void KeyMapping::processIgnoreCase(const std::set<int>& codes)
+{
+    // look through the mapping for non-shifted key that matches code.
+    // If found, add the shifted version.
+
+    for (auto it : theMap) {
+        //SqKey& key = it->first;
+        auto k = it.first;
+        SqKey& key = k;
+    
+        if (!key.shift && codes.find(key.key) != codes.end()) {
+            SqKey newKey(key.key, key.ctrl, true);
+            const size_t first = theMap.size();
+            theMap[newKey] = it.second;
+            assert(theMap.size() == (first + 1));
+        }
+    }
+}
 
 Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
 {
@@ -69,13 +112,10 @@ Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
 
 Actions::action KeyMapping::get(const SqKey& key)
 {
-    fprintf(stderr, "looking for key code %d map size = %d\n", key.key, int(theMap.size()));
     auto it = theMap.find(key);
     if (it == theMap.end()) {
-         fprintf(stderr, "didn't find\n");
         return nullptr;
     } else {
-         fprintf(stderr, "found\n");
         return it->second;
     }
 }

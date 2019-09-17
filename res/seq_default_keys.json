@@ -38,5 +38,6 @@
 
     {"key": "numpad_add", "action": "value.increment.normal"},
     {"key": "=+shift", "action": "value.increment.normal"}
-    ]
+    ],
+    "ignore_case": ["up", "down", "left", "right"]
 }

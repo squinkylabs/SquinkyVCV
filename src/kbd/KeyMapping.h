@@ -4,6 +4,7 @@
 #include "SqKey.h"
 
 #include <map>
+#include <set>
 #include <string>
 
 class Actions;
@@ -16,13 +17,10 @@ public:
      */
     KeyMapping(const std::string& configPath);
     Actions::action get(const SqKey&);
+
 private:
-   
     using container = std::map<SqKey, Actions::action>;
-
     container theMap;
-
-
     Actions::action parseAction(Actions&, json_t* binding);
-
+    void processIgnoreCase(const std::set<int>& ignoreCodes);
 };
