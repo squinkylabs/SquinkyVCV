@@ -1,6 +1,9 @@
 {
     "bindings": [
     {"key": "f1", "action": "help"},
+    {"key": "n", "action": "change.track.length"},
+    {"key": "l", "action": "loop"},
+    
 
     {"key": "insert", "action": "insert.default", "comment": "**** all the note insert"},
     {"key": "numpad0", "action": "insert.default"},
@@ -17,6 +20,12 @@
     {"key": "q+shift", "action": "insert.quarter"},
     {"key": "e+shift", "action": "insert.eighth"},
     {"key": "x+shift", "action": "insert.sixteenth"},
+
+    {"key": "*", "action": "grab.default.note"},
+    {"key": "shift+8", "action": "grab.default.note"},
+    {"key": "delete", "action": "delete.note"},
+    {"key": "backspace", "action": "delete.note"},
+    {"key": "numpad_decimal", "action": "delete.note"},
 
     {"key": "left", "action": "move.left.normal", "comment": "**** all the cursor movement"},
     {"key": "4", "action": "move.left.normal"},

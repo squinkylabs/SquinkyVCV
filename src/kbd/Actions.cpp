@@ -8,6 +8,8 @@ Actions::Actions()
 {
    _map = {
       {"help", help},
+      {"loop", loop},
+      {"change.track.length", changeTrackLength},
       {"insert.default", insertDefault},
       {"insert.whole.advance", insertWholeAdvance},
       {"insert.half.advance", insertHalfAdvance},
@@ -44,7 +46,10 @@ Actions::Actions()
       {"paste", paste},
       {"edit.start.time", editStartTime},
       {"edit.duration", editDuration},
-      {"edit.pitch", editPitch}
+      {"edit.pitch", editPitch},
+
+      {"grab.default.note", grabDefaultNote},
+      {"delete.note", deleteNote}
 
 
 
@@ -323,7 +328,29 @@ void Actions::editPitch(ActionContext& context)
 {
    context.sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::Pitch);
 }
+
 void Actions::editStartTime(ActionContext& context)
 {
    context.sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
+}
+
+void Actions::loop(ActionContext& context)
+{
+   context.sequencer->editor->loop();
+}
+
+void Actions::changeTrackLength(ActionContext& context)
+{
+   context.sequencer->editor->changeTrackLength();
+}
+
+void Actions::deleteNote(ActionContext& context)
+{
+   context.sequencer->editor->deleteNote();
+}
+
+
+void Actions::grabDefaultNote(ActionContext&)
+{
+   assert(false);
 }

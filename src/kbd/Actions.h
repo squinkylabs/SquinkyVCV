@@ -69,4 +69,9 @@ private:
     static void editPitch(ActionContext&);
     static void editStartTime(ActionContext&);
 
+    static void loop(ActionContext&);
+    static void changeTrackLength(ActionContext&);
+
+    static void grabDefaultNote(ActionContext&);
+    static void deleteNote(ActionContext&);
 };

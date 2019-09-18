@@ -135,6 +135,10 @@ int SqKey::parseKey(const std::string& key)
         {"]", GLFW_KEY_RIGHT_BRACKET},
         {"enter", GLFW_KEY_ENTER},
         {",", GLFW_KEY_COMMA},
-        {".", GLFW_KEY_PERIOD}
+        {".", GLFW_KEY_PERIOD},
+        {"*", GLFW_KEY_KP_MULTIPLY},
+        {"delete", GLFW_KEY_DELETE},
+        {"backspace", GLFW_KEY_BACKSPACE},
+        {"numpad_decimal", GLFW_KEY_KP_DECIMAL}
      };
  }
