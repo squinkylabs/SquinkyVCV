@@ -26,6 +26,16 @@ Any text editor may be used for editing JSON files, but we recommend you use one
 
 We use Visual Studio Code for this, although there are many alternatives. The built-in text editor in Ubuntu Linux is decent for this.
 
+If you are unfamiliar with JSON, it may take some trial and error to get your key mappings to work. It isn't important how you indent your files and whether you put things on different lines. Note how the examples in this document tend to use "normal" JSON indenting and line breaking, but the actual [seq_default_keys.json](../res/seq_default_keys.json) has very few line breaks or block indents. We to that to make the files more readable.
+
+## Comments in JSON
+
+If you have worked with JSON before, you probably know there is no legal way to put a comment into a JSON file. But there are some tricks you can use if you want. In our file we make use of the fact that extra properties in a Binding will be ignored, so we sometimes add a dummy property called `comment`, like this:
+
+```json
+  {"key": "numpad_add", "action": "value.increment.normal", "comment": "edit commands"},
+```
+
 ## JSON syntax for key mapping
 
 ### KeyMapping
@@ -75,24 +85,61 @@ Ignore case is an optional section that lets you specify keys that should to the
 
 ```json
 {
-"bindings": [
-    {"key": "up", "action": "move.up.normal"}
-],
-"ignore_case": [
-    "up",
-    "down",
-    "left",
-    "right"]
+    "bindings": [
+        {
+            "key": "up",
+            "action": "move.up.normal"
+        }
+    ],
+    "ignore_case": [
+        "up",
+        "down",
+        "left",
+        "right"
+    ]
 }
 ```
+
 Note that `ignore_case` is purely a convenience feature. The following is a completely equilivilent way to do the same thing without using `ignore_case`:
 
 ```json
 {
 "bindings": [
-    {"key": "up", "action": "move.up.normal"},
-    {"key": "up+shift", "action": "move.up.normal"}
+    {
+        "key": "up",
+        "action": "move.up.normal"
+    },
+    {
+        "key": "up+shift",
+        "action": "move.up.normal"
+    }
 ]
 }
 ```
+
 ### Keys, in detail
+
+As we mentioned above, a Key is a KeyCode with optional modifiers like `shift`. The KeyCode and the modifiers must be separated by a `+`. They may occur in any order.
+
+The allowed modifiers are:
+    * `shift`
+    * `ctrl`
+    * `alt`
+
+Note the on the Macintosh we follow that standard convention that `ctrl` is the `Apple` or `Cmd` key, and the actual `ctrl` key is unused.
+
+Seq++ uses the same key codes as Visual Studio Code, where are:
+
+```
+f1-f19, a-z, 0-9
+`, -, =, [, ], \, ;, ', ,, ., /
+left, up, right, down, pageup, pagedown, end, home
+tab, enter, escape, space, backspace, delete
+pausebreak, capslock, insert
+numpad0-numpad9, numpad_multiply, numpad_add, numpad_separator
+numpad_subtract, numpad_decimal, numpad_divide
+```
+
+In Seq++, they key codes always refer to the physical keys on a US keyboard. So in Seq++ the `a` key is the key on the left of the middle row, just to the right of the Caps Locks key. Even though on a French keyboard this key is called `q`.
+
+You will note also that the number key are completely separate from the numeric keypad. This means that if you can the same function to happen on the `2` key as well as `numpad2`, you must put in two KeyBinding objects, one for each physical key.
