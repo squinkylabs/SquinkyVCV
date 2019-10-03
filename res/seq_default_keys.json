@@ -3,7 +3,6 @@
     {"key": "f1", "action": "help"},
     {"key": "n", "action": "change.track.length"},
     {"key": "l", "action": "loop"},
-    
 
     {"key": "insert", "action": "insert.default", "comment": "**** all the note insert"},
     {"key": "numpad0", "action": "insert.default"},
@@ -64,11 +63,6 @@
     {"key": "s", "action":"edit.start.time"},
     {"key": "d", "action":"edit.duration"},
     {"key": "p", "action":"edit.pitch"}
-
-
-    
-
-
     ],
     "ignore_case": ["up", "down", "left", "right"]
 }
