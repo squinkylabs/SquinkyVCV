@@ -8,6 +8,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include <unistd.h>
+
 extern rack::plugin::Plugin *pluginInstance;
 
 KeyMappingPtr KbdManager::defaultMappings;
@@ -32,7 +34,13 @@ void KbdManager::init()
     }
     if (!userMappings) {
         printf("not reading real files yet\n");
-        //std::string keymapPath =  rack::asset::user("seq_user_keys.json");
+        std::string keymapPath =  rack::asset::user("seq_user_keys.json");
+#ifndef _MSC_VER
+        char buffer[_MAX_PATH];
+        getcwd(buffer, _MAX_PATH);
+        fprintf(stderr, "cwd = %s, key = %s\n", buffer, keymapPath.c_str());
+#endif
+        
         //userMappings = std::make_shared<KeyMapping>(keymapPath);
     }
 }
@@ -46,7 +54,6 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
     const bool ctrl = (mods & RACK_MOD_CTRL);        // this is command on mac
     //const bool alt = (mods && GLFW_MOD_ALT);
     SqKey key(keyCode, ctrl, shift);
-    //  fprintf(stderr, "b KbdManager::handle\n"); fflush(stderr);
 
     fprintf(stderr, "KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
     fprintf(stderr, " shift=%d, ctrl=%d\n", shift, ctrl); fflush(stderr);
