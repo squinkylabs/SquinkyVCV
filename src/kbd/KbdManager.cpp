@@ -30,10 +30,10 @@ void KbdManager::init()
     if (!defaultMappings) {
         std::string keymapPath = rack::asset::plugin(pluginInstance, "res/seq_default_keys.json");
         //std::string keymapPath =  rack::asset::user("seq_default_keys.json");
-        defaultMappings = std::make_shared<KeyMapping>(keymapPath);
+        defaultMappings = KeyMapping::make(keymapPath);
     }
     if (!userMappings) {
-        printf("not reading real files yet\n");
+       // printf("not reading real files yet\n");
         std::string keymapPath =  rack::asset::user("seq_user_keys.json");
 #ifndef _MSC_VER
         char buffer[_MAX_PATH];
@@ -41,7 +41,7 @@ void KbdManager::init()
         fprintf(stderr, "cwd = %s, key = %s\n", buffer, keymapPath.c_str());
 #endif
         
-        //userMappings = std::make_shared<KeyMapping>(keymapPath);
+        userMappings = KeyMapping::make(keymapPath);
     }
 }
 
@@ -55,18 +55,39 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
     //const bool alt = (mods && GLFW_MOD_ALT);
     SqKey key(keyCode, ctrl, shift);
 
-    fprintf(stderr, "KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
+    fprintf(stderr, "\n** KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
     fprintf(stderr, " shift=%d, ctrl=%d\n", shift, ctrl); fflush(stderr);
 
     assert(defaultMappings);
-    Actions::action act = defaultMappings->get(key);
-    fprintf(stderr, "v KbdManager::handle act = %d\n", bool(act)); fflush(stderr);
-    if (act) {
-        ActionContext ctx(sequencer, stepRecorder);
-        fprintf(stderr, "calling act\n");
-        act(ctx);
-        handled = true;
+
+ //fprintf(stderr, " foo 1\n"); fflush(stderr);
+
+    ActionContext ctx(sequencer, stepRecorder);
+     //fprintf(stderr, " foo 2\n"); fflush(stderr);
+    if (userMappings) {
+      //   fprintf(stderr, " foo 3\n"); fflush(stderr);
+        fprintf(stderr, "trying user mapping\n");
+        Actions::action act = userMappings->get(key);
+        if (act) {
+            fprintf(stderr, "calling user act\n");
+            act(ctx);
+            handled = true;
+        }
     }
+//fprintf(stderr, " foo 35\n"); fflush(stderr);
+    if (!handled) {
+ //fprintf(stderr, " foo 4\n"); fflush(stderr);
+        fprintf(stderr, "trying default mapping\n");
+       //  fprintf(stderr, " foo 5\n"); fflush(stderr);
+        Actions::action act = defaultMappings->get(key);
+      //  fprintf(stderr, "v KbdManager::handle act = %d\n", bool(act)); fflush(stderr);
+        if (act) {
+            fprintf(stderr, "calling def act\n");
+            act(ctx);
+            handled = true;
+        }
+    }
+    fprintf(stderr, "KbdManager::handle ret %d\n", handled);
 
     return handled;
 }

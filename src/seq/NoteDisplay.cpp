@@ -352,6 +352,8 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
 
 bool NoteDisplay::handleKey(int key, int mods, int action)
 {
+  //  fprintf(stderr, "\n** NoteDisplay::handleKey, action = %d (press = %d, repeat = %d\n", action,
+  //      GLFW_PRESS, GLFW_REPEAT);
     bool handle = false;
     bool repeat = false;
     switch (action) {
@@ -368,6 +370,9 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
     if (repeat) {
         // TODO: how will we handle repeat in the _USERKB work
         handle = MidiKeyboardHandler::doRepeat(key);
+ #ifdef _USERKB
+    fprintf(stderr, "REPEAT DON:T WORK FOR USER\n")    ;   
+#endif
     }
 
     bool handled = false;
@@ -381,6 +386,7 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
             rack::APP->event->setSelected(this);
         }
     }
+   // fprintf(stderr, "NoteDisplay::handleKey ret = %d\n", handled);
     return handled;
 }
 

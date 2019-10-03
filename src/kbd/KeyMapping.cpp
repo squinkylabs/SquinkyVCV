@@ -7,6 +7,21 @@
 
 #include <stdio.h>
 
+KeyMappingPtr KeyMapping::make(const std::string& configPath)
+{
+    KeyMappingPtr ret( new KeyMapping(configPath));
+    if (!ret->valid()) {
+        ret.reset();
+    }
+    return ret;
+
+}
+
+bool KeyMapping::valid() const
+{
+    return !theMap.empty();
+}
+
 KeyMapping::KeyMapping(const std::string& configPath)
 {
     Actions actions;
@@ -85,7 +100,9 @@ void KeyMapping::processIgnoreCase(const std::set<int>& codes)
     
         if (!key.shift && (codes.find(key.key) != codes.end())) {
             SqKey newKey(key.key, key.ctrl, true);
+#ifdef _DEBUG
             const size_t first = theMap.size();
+#endif
             theMap[newKey] = it.second;
             assert(theMap.size() == (first + 1));
         }
