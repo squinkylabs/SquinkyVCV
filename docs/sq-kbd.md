@@ -18,6 +18,8 @@ Seq++ defines the default keyboard mapping in a file called *seq_default_keys.js
 
 You may create and override file in the VCV Rack folder. This file must be called *seq_user_keys.json*
 
+Here is the built-in [seq_default_keys.json](../res/seq_default_keys.json)
+
 ## Editing JSON files
 
 Any text editor may be used for editing JSON files, but we recommend you use one that understands JSON. And editor like that will tell you when you have made a basic mistake, and will use syntax coloring to indicate the different parts of the JSON.
@@ -48,8 +50,8 @@ So a default KeyMapping has an array of bindings and an array of KeyCodes whose 
 
 ```json
 Binding = {
-    "key": Key,
-    "action": ActionName},
+    "key": "some+key",
+    "action": "some.action"},
 }
 ```
 
@@ -83,3 +85,14 @@ Ignore case is an optional section that lets you specify keys that should to the
     "right"]
 }
 ```
+Note that `ignore_case` is purely a convenience feature. The following is a completely equilivilent way to do the same thing without using `ignore_case`:
+
+```json
+{
+"bindings": [
+    {"key": "up", "action": "move.up.normal"},
+    {"key": "up+shift", "action": "move.up.normal"}
+]
+}
+```
+### Keys, in detail
