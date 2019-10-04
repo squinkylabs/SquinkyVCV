@@ -141,7 +141,7 @@ void KeyMapping::processIgnoreCase(const std::set<int>& codes)
         SqKey& key = k;
     
         if (!key.shift && (codes.find(key.key) != codes.end())) {
-            SqKey newKey(key.key, key.ctrl, true);
+            SqKey newKey(key.key, key.ctrl, true, key.alt);
 #ifdef _DEBUG
             const size_t first = theMap.size();
 #endif

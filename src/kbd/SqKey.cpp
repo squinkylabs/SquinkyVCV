@@ -27,12 +27,15 @@ SqKeyPtr SqKey::parse(json_t* binding)
     int key = 0;
     bool ctrl = false;
     bool shift = false;
+    bool alt = true;
     while (getline(f, s, '+')) {
         if (s == "ctrl") {
             assert(!ctrl);
             ctrl = true;
         } else if (s == "shift") {
             shift = true;
+        } else if (s == "alt") {
+            alt = true;
         } else if ((key = parseKey(s))) {
             //
         } else {
@@ -44,7 +47,7 @@ SqKeyPtr SqKey::parse(json_t* binding)
         WARN("binding does not have valid key: %s\n", keyString.c_str());
         return nullptr;
     }
-    SqKey* r = new SqKey(key, ctrl, shift);
+    SqKey* r = new SqKey(key, ctrl, shift, alt);
     SqKeyPtr ret(r);
     return ret;
 }
