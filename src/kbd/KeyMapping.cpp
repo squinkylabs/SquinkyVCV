@@ -22,6 +22,11 @@ bool KeyMapping::valid() const
     return !theMap.empty();
 }
 
+bool KeyMapping::useDefaults() const
+{
+    return _useDefaults;
+}
+
 KeyMapping::KeyMapping(const std::string& configPath)
 {
     Actions actions;
@@ -37,6 +42,8 @@ KeyMapping::KeyMapping(const std::string& configPath)
     if (!mappingJson) {
         fprintf(stderr, "could not parse json\n"); fflush(stdout);
     }
+
+    //*********** bindings **************
 
     json_t* bindings = json_object_get(mappingJson, "bindings");
     if (bindings) {
@@ -64,6 +71,7 @@ KeyMapping::KeyMapping(const std::string& configPath)
         fprintf(stderr, "bindings not found at root\n");
     }
 
+    //*********** ignore case ************
     std::set<int> ignoreCodes;
     json_t* ignoreCase = json_object_get(mappingJson, "ignore_case");
     if (ignoreCase) {
@@ -85,6 +93,19 @@ KeyMapping::KeyMapping(const std::string& configPath)
     }
 
     processIgnoreCase(ignoreCodes);
+
+    //************ other top level props
+    _useDefaults = true;
+    json_t* useDefaultsJ = json_object_get(mappingJson, "use_defaults");
+    if (useDefaultsJ) {
+        if (json_is_boolean(useDefaultsJ)) {
+            _useDefaults = json_is_true(useDefaultsJ);
+        } else {
+            fprintf(stderr, "use_defaults is not a string\n");
+        }
+    }
+
+
     json_decref(mappingJson);
     fclose(file);
 };

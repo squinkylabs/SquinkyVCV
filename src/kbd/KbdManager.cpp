@@ -60,12 +60,9 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
 
     assert(defaultMappings);
 
- //fprintf(stderr, " foo 1\n"); fflush(stderr);
-
+    bool suppressDefaults = false;
     ActionContext ctx(sequencer, stepRecorder);
-     //fprintf(stderr, " foo 2\n"); fflush(stderr);
     if (userMappings) {
-      //   fprintf(stderr, " foo 3\n"); fflush(stderr);
         fprintf(stderr, "trying user mapping\n");
         Actions::action act = userMappings->get(key);
         if (act) {
@@ -73,14 +70,13 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
             act(ctx);
             handled = true;
         }
+        suppressDefaults = !userMappings->useDefaults();
+
     }
-//fprintf(stderr, " foo 35\n"); fflush(stderr);
-    if (!handled) {
- //fprintf(stderr, " foo 4\n"); fflush(stderr);
+
+    if (!handled && !suppressDefaults) {
         fprintf(stderr, "trying default mapping\n");
-       //  fprintf(stderr, " foo 5\n"); fflush(stderr);
         Actions::action act = defaultMappings->get(key);
-      //  fprintf(stderr, "v KbdManager::handle act = %d\n", bool(act)); fflush(stderr);
         if (act) {
             fprintf(stderr, "calling def act\n");
             act(ctx);

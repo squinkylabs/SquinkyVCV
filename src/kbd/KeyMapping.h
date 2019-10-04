@@ -23,6 +23,7 @@ public:
 
     static KeyMappingPtr make(const std::string& configPath);
     bool valid() const;
+    bool useDefaults() const;
 
 private:
     KeyMapping(const std::string& configPath);
@@ -30,4 +31,6 @@ private:
     container theMap;
     Actions::action parseAction(Actions&, json_t* binding);
     void processIgnoreCase(const std::set<int>& ignoreCodes);
+
+    bool _useDefaults = true;
 };
