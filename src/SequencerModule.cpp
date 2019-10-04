@@ -16,7 +16,9 @@
 #include "ctrl/SqToggleLED.h"
 
 #include "seq/SequencerSerializer.h"
+#ifndef _USERKB
 #include "MidiKeyboardHandler.h"
+#endif
 #include "MidiLock.h"
 #include "MidiSong.h"
 #include "../test/TestSettings.h"

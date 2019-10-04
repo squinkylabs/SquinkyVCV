@@ -12,7 +12,9 @@
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
 #include "KbdManager.h"
+#ifndef _USERKB
 #include "MidiKeyboardHandler.h"
+#endif
 #include "MouseManager.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"

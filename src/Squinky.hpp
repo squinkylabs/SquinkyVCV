@@ -23,7 +23,7 @@
 //#define _CH10
 //#define _LFNB
 #define _MIX_STEREO
-#define _USERKB
+//#define _USERKB
 
 //#define _BLANKMODULE
 

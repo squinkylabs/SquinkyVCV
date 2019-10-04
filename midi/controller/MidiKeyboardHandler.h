@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef _USERKB
 #include "MidiEditor.h"
 #include "Seq.h"
 #include "WidgetComposite.h"
@@ -59,3 +60,4 @@ private:
 
     static StepRecordImp stepRecordImp;
 };
+#endif

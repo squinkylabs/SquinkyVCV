@@ -8,7 +8,7 @@
 #include <assert.h>
 
 
-#ifdef _SEQ
+#if defined(_SEQ) && !defined(_USERKB)
 
 MidiKeyboardHandler::StepRecordImp MidiKeyboardHandler::stepRecordImp;
 
