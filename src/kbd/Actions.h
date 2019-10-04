@@ -74,4 +74,11 @@ private:
 
     static void grabDefaultNote(ActionContext&);
     static void deleteNote(ActionContext&);
+
+    static void moveLeftAll(ActionContext&);
+    static void moveRightAll(ActionContext&);
+    static void moveLeftMeasure(ActionContext&);
+    static void moveRightMeasure(ActionContext&);
+    static void moveUpOctave(ActionContext&);
+    static void moveDownOctave(ActionContext&);
 };

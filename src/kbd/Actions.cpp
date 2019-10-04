@@ -28,6 +28,13 @@ Actions::Actions()
       {"move.up.normal", moveUpNormal},
       {"move.down.normal", moveDownNormal},
 
+      {"move.left.all", moveLeftAll},
+      {"move.right.all", moveRightAll},
+      {"move.left.measure", moveLeftMeasure},
+      {"move.right.measure", moveRightMeasure},
+      {"move.up.octave", moveUpOctave},
+      {"move.down.octave", moveDownOctave},
+
       {"select.next", selectNext},
       {"select.next.extend", selectNextExtend},
       {"select.previous", selectPrevious},
@@ -163,8 +170,6 @@ void Actions::handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type
 
 }
 
-
-
 extern void sequencerHelp();
 
 void Actions::help(ActionContext& context)
@@ -247,6 +252,36 @@ void Actions::moveUpNormal(ActionContext& context)
 void Actions::moveDownNormal(ActionContext& context)
 {
    context.sequencer->editor->changeCursorPitch(-1);
+}
+
+void Actions::moveLeftAll(ActionContext& context)
+{
+    context.sequencer->editor->advanceCursor(MidiEditor::Advance::All, -1);  
+}
+
+void Actions::moveLeftMeasure(ActionContext& context)
+{
+   context.sequencer->editor->advanceCursor(MidiEditor::Advance::Measure, -1); 
+}
+
+void Actions::moveRightAll(ActionContext& context)
+{
+   context.sequencer->editor->advanceCursor(MidiEditor::Advance::All, 1); 
+}
+
+void Actions::moveRightMeasure(ActionContext& context)
+{
+   context.sequencer->editor->advanceCursor(MidiEditor::Advance::Measure, 1); 
+}
+
+void Actions::moveUpOctave(ActionContext& context)
+{
+   context.sequencer->editor->changeCursorPitch(12);
+}
+
+void Actions::moveDownOctave(ActionContext& context)
+{
+   context.sequencer->editor->changeCursorPitch(-12);
 }
 
 //********************* select next note ************

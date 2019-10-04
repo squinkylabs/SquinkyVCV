@@ -30,6 +30,12 @@
     {"key": "4", "action": "move.left.normal"},
     {"key": "numpad4", "action": "move.left.normal"},
 
+    {"key": "home", "action": "move.left.all"},
+    {"key": "home+ctrl", "action": "move.left.measure"},
+    {"key": "end", "action": "move.right.all"},
+    {"key": "end+ctrl", "action": "move.right.measure"},
+
+
     {"key": "right", "action": "move.right.normal"},
     {"key": "6", "action": "move.right.normal"},
     {"key": "numpad6", "action": "move.right.normal"},
@@ -38,9 +44,13 @@
     {"key": "5", "action": "move.up.normal"},
     {"key": "numpad8", "action": "move.up.normal"},
 
+
     {"key": "down", "action": "move.down.normal"},
     {"key": "r", "action": "move.down.normal"},
     {"key": "numpad2", "action": "move.down.normal"},
+
+    {"key": "pageup", "action": "move.up.octave"},
+    {"key": "pagedown", "action": "move.down.octave"},
 
     {"key": "tab", "action":"select.next", "comment": "**** all next/prev note selection"},
     {"key": "tab+shift", "action":"select.next.extend"},
