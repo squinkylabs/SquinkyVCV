@@ -63,7 +63,7 @@ private:
     void drawGrid(NVGcontext *vg);
     void drawBackground(NVGcontext *vg);
 
-    static bool isKeyWeNeedToStealFromRack(int key);
+    bool isKeyWeNeedToStealFromRack(int key);
 
     void onSelect(const event::Select &e) override;
     void onDeselect(const event::Deselect &e) override;

@@ -34,9 +34,17 @@ void KbdManager::init()
     }
 }
 
+bool KbdManager::shouldGrabKeys() const
+{
+    bool ret = true;
+    if (userMappings) {
+        ret = userMappings->grabKeys();
+    }
+    return ret;
+}
 
 bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned mods)
-    {
+{
 
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);

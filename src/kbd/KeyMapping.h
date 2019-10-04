@@ -23,6 +23,7 @@ public:
 
     static KeyMappingPtr make(const std::string& configPath);
     bool useDefaults() const;
+    bool grabKeys() const;
 
 private:
     /**
@@ -35,4 +36,5 @@ private:
     void processIgnoreCase(const std::set<int>& ignoreCodes);
 
     bool _useDefaults = true;
+    bool _grabKeys = true;
 };

@@ -17,6 +17,7 @@ public:
     KbdManager();
     bool handle(MidiSequencerPtr sequencer, unsigned key, unsigned mods);
     void onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer);
+    bool shouldGrabKeys() const;
 
 private:
     StepRecorderPtr stepRecorder;

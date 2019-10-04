@@ -26,6 +26,12 @@ bool KeyMapping::useDefaults() const
     return _useDefaults;
 }
 
+
+bool KeyMapping::grabKeys() const
+{
+    return _grabKeys;
+}
+
 class JSONcloser
 {
 public:
@@ -125,9 +131,22 @@ KeyMapping::KeyMapping(const std::string& configPath)
     json_t* useDefaultsJ = json_object_get(mappingJson, "use_defaults");
     if (useDefaultsJ) {
         if (!json_is_boolean(useDefaultsJ)) {
-            throw (std::runtime_error("use_defaults is not an array"));
+            std::stringstream s;
+            s << "use_defaults is not true or false, is" << json_dumps(useDefaultsJ, 0);
+            throw (std::runtime_error(s.str()));
         }
         _useDefaults = json_is_true(useDefaultsJ);
+    }
+
+    _grabKeys = true;
+    json_t* grabKeysJ = json_object_get(mappingJson, "grab_keys");
+    if (grabKeysJ) {
+        if (!json_is_boolean(grabKeysJ)) {
+            std::stringstream s;
+            s << "grab_keys is not true or false, is" << json_dumps(grabKeysJ, 0);
+            throw (std::runtime_error(s.str()));
+        }
+        _grabKeys = json_is_true(grabKeysJ);
     }
 };
 

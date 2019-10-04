@@ -321,6 +321,12 @@ void NoteDisplay::onSelectKey(const event::SelectKey &e)
 
 bool NoteDisplay::isKeyWeNeedToStealFromRack(int key)
 {
+#ifdef _USERKB
+    if (!kbdManager->shouldGrabKeys())
+    {
+        return false;
+    }
+#endif
     bool isCursor = false;
     switch (key) {
         case GLFW_KEY_LEFT:
