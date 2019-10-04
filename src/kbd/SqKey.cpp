@@ -172,6 +172,8 @@ int SqKey::parseKey(const std::string& key)
         {"delete", GLFW_KEY_DELETE},
         {"backspace", GLFW_KEY_BACKSPACE},
         {"numpad_decimal", GLFW_KEY_KP_DECIMAL},
+        {"numpad_divide", GLFW_KEY_KP_DIVIDE},
+        {"numpad_multiply", GLFW_KEY_KP_MULTIPLY},
         {"pageup", GLFW_KEY_PAGE_UP},
         {"pagedown", GLFW_KEY_PAGE_DOWN},
         {"end", GLFW_KEY_END},
@@ -180,9 +182,5 @@ int SqKey::parseKey(const std::string& key)
         {"space",GLFW_KEY_SPACE},
         {"pausebreak",GLFW_KEY_PAUSE},
         {"capslock",GLFW_KEY_CAPS_LOCK},
-
-  //      tab, enter, escape, space, backspace, delete
-//pausebreak, capslock, insert
-
      };
  }
