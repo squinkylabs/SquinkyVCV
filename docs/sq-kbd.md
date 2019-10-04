@@ -2,8 +2,6 @@
 
 Any of the keyboard assignments in Seq++ may be changed by the user. Anything is possible from just changing a few keys, to completely changing every aspect of the keyboard interface.
 
-## Example
-
 ## Basic concepts
 
 A KeyMapping describes how keys should be handled. One of the most important things in a KayMapping is an array of KeyBindings.
@@ -136,10 +134,22 @@ f1-f19, a-z, 0-9
 left, up, right, down, pageup, pagedown, end, home
 tab, enter, escape, space, backspace, delete
 pausebreak, capslock, insert
-numpad0-numpad9, numpad_multiply, numpad_add, numpad_separator
+numpad0-numpad9, numpad_multiply, numpad_add
 numpad_subtract, numpad_decimal, numpad_divide
 ```
 
 In Seq++, they key codes always refer to the physical keys on a US keyboard. So in Seq++ the `a` key is the key on the left of the middle row, just to the right of the Caps Locks key. Even though on a French keyboard this key is called `q`.
 
 You will note also that the number key are completely separate from the numeric keypad. This means that if you can the same function to happen on the `2` key as well as `numpad2`, you must put in two KeyBinding objects, one for each physical key.
+
+### Other JSON properties, besides bindings
+
+*use_defaults* If this optional property is false, then only your keymap file will be used, and the contents of the built in key mapping will be ignored. If it is true, or not present, then all keys will first go to your mapping, but it a key is not bound in your mapping, then it will be sent to the default mapping.
+
+*grab_keys* If this optional property is false, then Seq++ will not try to grab the cursor keys, and other keys, away from VCV Rack. If you plan on using your own mappings to move the cursor, and your mappings do not use keys that VCV Rack uses, then you should set this to false so that VCV can process keys as it would like to.
+
+## Some suggestions
+
+Start with a very minimal *seq_user_keys.json*, and build it up a little bit at a time. The minimal file that will work just needs to have the *bindings* array with one binding in it.
+
+Run VCV Rack from the command line, and look carefully at the console output as you load an instance of Seq++. Debugging information will be output to the console, and more importantly detailed errors will be logged to the console.
