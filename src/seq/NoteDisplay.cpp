@@ -369,9 +369,11 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
 
     if (repeat) {
         // TODO: how will we handle repeat in the _USERKB work
+       
+#ifdef _USERKB
+        handle = true;
+#else
         handle = MidiKeyboardHandler::doRepeat(key);
- #ifdef _USERKB
-    fprintf(stderr, "REPEAT DON:T WORK FOR USER\n")    ;   
 #endif
     }
 
