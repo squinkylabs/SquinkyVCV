@@ -23,24 +23,13 @@ KbdManager::KbdManager()
 
 void KbdManager::init()
 {
-    printf("\n\n settings patch = %s\n", rack::asset::settingsPath.c_str());
-    printf("asset::user = %s\n\n", rack::asset::user("foo.json").c_str());
-    fflush(stdout);
     // these statics are shared by all instances
     if (!defaultMappings) {
         std::string keymapPath = rack::asset::plugin(pluginInstance, "res/seq_default_keys.json");
-        //std::string keymapPath =  rack::asset::user("seq_default_keys.json");
         defaultMappings = KeyMapping::make(keymapPath);
     }
     if (!userMappings) {
-       // printf("not reading real files yet\n");
-        std::string keymapPath =  rack::asset::user("seq_user_keys.json");
-#ifndef _MSC_VER
-        char buffer[_MAX_PATH];
-        getcwd(buffer, _MAX_PATH);
-        fprintf(stderr, "cwd = %s, key = %s\n", buffer, keymapPath.c_str());
-#endif
-        
+        std::string keymapPath =  rack::asset::user("seq_user_keys.json"); 
         userMappings = KeyMapping::make(keymapPath);
     }
 }

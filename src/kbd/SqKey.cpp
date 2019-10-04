@@ -1,13 +1,10 @@
 
-
 #include "SqKey.h"
 
-#include "jansson.h"
-#include <GLFW/glfw3.h>
+#include "rack.hpp"
 
 #include <assert.h>
 #include <sstream>
-
 
 std::map<std::string, int> SqKey::keyString2KeyCode;
 
@@ -15,12 +12,11 @@ SqKeyPtr SqKey::parse(json_t* binding)
 {
     json_t* keyJ = json_object_get(binding, "key");
     if (!keyJ) {
-        fprintf(stderr, "binding does not have key field: %s\n",
-            json_dumps(keyJ, 0));
+        WARN("Binding does not have key field");
         return nullptr;
     }
     if (!json_is_string(keyJ)) {
-        fprintf(stderr, "binding key is not a string");
+        WARN("Binding key is not a string: %s", json_dumps(keyJ, 0));
         return nullptr;
     }
 
@@ -40,12 +36,13 @@ SqKeyPtr SqKey::parse(json_t* binding)
         } else if ((key = parseKey(s))) {
             //
         } else {
-            fprintf(stderr, "can't parse key fragment %s of %s\n", s.c_str(), keyString.c_str());
+            WARN("can't parse key fragment %s of %s\n", s.c_str(), keyString.c_str());
             return nullptr;
         }
     }
     if (key == 0) {
-        fprintf(stderr, "binding does not have valid key: %s\n", keyString.c_str());
+        WARN("binding does not have valid key: %s\n", keyString.c_str());
+        return nullptr;
     }
     SqKey* r = new SqKey(key, ctrl, shift);
     SqKeyPtr ret(r);

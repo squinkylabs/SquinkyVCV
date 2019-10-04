@@ -6,20 +6,19 @@
 #include "logger.hpp"
 
 #include <stdio.h>
+#include <sstream>
 
 KeyMappingPtr KeyMapping::make(const std::string& configPath)
 {
-    KeyMappingPtr ret( new KeyMapping(configPath));
-    if (!ret->valid()) {
-        ret.reset();
+    KeyMappingPtr ret;
+    try {
+        ret.reset( new KeyMapping(configPath));
+    } catch( std::exception& ex) {
+        std::string errorStr = std::string("Error detected parsing key mapping: ") + ex.what();
+        WARN(errorStr.c_str());
+        assert(!ret);
     }
     return ret;
-
-}
-
-bool KeyMapping::valid() const
-{
-    return !theMap.empty();
 }
 
 bool KeyMapping::useDefaults() const
@@ -27,21 +26,47 @@ bool KeyMapping::useDefaults() const
     return _useDefaults;
 }
 
+class JSONcloser
+{
+public:
+    JSONcloser(json_t* j, FILE* f) :
+        mappingJson(j),
+        fp(f)
+    {
+
+    }
+    ~JSONcloser()
+    {
+        json_decref(mappingJson);
+        fclose(fp);
+    }
+private:
+    json_t * const mappingJson;
+    FILE* const fp;
+};
+
 KeyMapping::KeyMapping(const std::string& configPath)
 {
     Actions actions;
-    fprintf(stderr, "key mapping::key %s\n", configPath.c_str());
+    INFO("parsing key mapping: %s\n", configPath.c_str());
     FILE *file = fopen(configPath.c_str(), "r");
     if (!file) {
-        fprintf(stderr, "could not open file: %s\n", configPath.c_str());
-        return;
+        std::string errorStr("could not open file mapping: ");
+        errorStr += configPath;
+        throw (std::runtime_error(errorStr));
     }
 
     json_error_t error;
 	json_t *mappingJson = json_loadf(file, 0, &error);
     if (!mappingJson) {
-        fprintf(stderr, "could not parse json\n"); fflush(stdout);
+        std::stringstream s;
+        s << "JSON parsing error at ";
+        s <<  error.line << ":" << error.column;
+        s << " " << error.text;
+        fclose(file);
+        throw (std::runtime_error(s.str()));
     }
+    JSONcloser cl(mappingJson, file);
 
     //*********** bindings **************
 
@@ -54,41 +79,42 @@ KeyMapping::KeyMapping(const std::string& configPath)
                 SqKeyPtr key = SqKey::parse(value);
                 Actions::action act = parseAction(actions, value);
                 if (!act || !key) {
-                    fprintf(stderr, "skipping bad entry: %s\n", json_dumps(value, 0));
-                } else {
-                    //fprintf(stderr, "adding entry to map code = %d\n", key->key);
-
-                    if (theMap.find(*key) != theMap.end()) {
-                        fprintf(stderr, "duplicate key mapping %s\n", json_dumps(value, 0));
-                    }
-                    theMap[*key] = act;
+                     std::stringstream s;
+                     s << "Bad binding entry (" << json_dumps(value, 0) << ")";
+                     throw (std::runtime_error(s.str()));
                 }
+                if (theMap.find(*key) != theMap.end()) {
+                    std::stringstream s;
+                    s << "duplicate key mapping: " << json_dumps(value, 0);
+                    throw (std::runtime_error(s.str()));
+                }
+                theMap[*key] = act;
             }
         } else {
-            fprintf(stderr, "bindings is not an array\n");
+            throw (std::runtime_error("bindings is not an array"));
         }
     } else {
-        fprintf(stderr, "bindings not found at root\n");
+        throw (std::runtime_error("bindings not found at root"));
     }
 
     //*********** ignore case ************
     std::set<int> ignoreCodes;
     json_t* ignoreCase = json_object_get(mappingJson, "ignore_case");
     if (ignoreCase) {
-        if (json_is_array(ignoreCase)) {
-            size_t index;
-            json_t* value;
-            json_array_foreach(ignoreCase, index, value) {
-                if (json_is_string(value)) {
-                    std::string key = json_string_value(value);
-                    int code = SqKey::parseKey(key);
-                    ignoreCodes.insert(code);
-                } else {
-                    fprintf(stderr, "bad key in ignore_case: %s\n", json_dumps(value, 0));
-                }
+        if (!json_is_array(ignoreCase)) {
+             throw (std::runtime_error("ignoreCase is not an array"));
+        }
+        size_t index;
+        json_t* value;
+        json_array_foreach(ignoreCase, index, value) {
+            if (!json_is_string(value)) {
+                std::stringstream s;
+                s << "bad key in ignore_case: " <<  json_dumps(value, 0);
+                throw (std::runtime_error(s.str()));
             }
-        } else {
-            fprintf(stderr, "ignoreCase is not an array\n");
+            std::string key = json_string_value(value);
+            int code = SqKey::parseKey(key);
+            ignoreCodes.insert(code);
         }
     }
 
@@ -98,16 +124,11 @@ KeyMapping::KeyMapping(const std::string& configPath)
     _useDefaults = true;
     json_t* useDefaultsJ = json_object_get(mappingJson, "use_defaults");
     if (useDefaultsJ) {
-        if (json_is_boolean(useDefaultsJ)) {
-            _useDefaults = json_is_true(useDefaultsJ);
-        } else {
-            fprintf(stderr, "use_defaults is not a string\n");
+        if (!json_is_boolean(useDefaultsJ)) {
+            throw (std::runtime_error("use_defaults is not an array"));
         }
+        _useDefaults = json_is_true(useDefaultsJ);
     }
-
-
-    json_decref(mappingJson);
-    fclose(file);
 };
 
 void KeyMapping::processIgnoreCase(const std::set<int>& codes)
@@ -134,12 +155,11 @@ Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
 {
     json_t* keyJ = json_object_get(binding, "action");
     if (!keyJ) {
-        fprintf(stderr, "binding does not have action field: %s\n",
-            json_dumps(keyJ, 0));
+        WARN("binding does not have action field: %s\n", json_dumps(keyJ, 0));
         return nullptr;
     }
     if (!json_is_string(keyJ)) {
-        fprintf(stderr, "binding action is not a string");
+        WARN("binding action is not a string: %s\n", json_dumps(keyJ, 0));
         return nullptr;
     }
 

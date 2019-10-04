@@ -16,16 +16,18 @@ class KeyMapping
 {
 public:
     /** 
-     * If constructor fails, will return no mappings
+     * If constructor fails, will return no mappings.
+     * will print diagnostic errors
      */
-   
     Actions::action get(const SqKey&);
 
     static KeyMappingPtr make(const std::string& configPath);
-    bool valid() const;
     bool useDefaults() const;
 
 private:
+    /**
+     * throws std::runtime_exception for parsing errors
+     */
     KeyMapping(const std::string& configPath);
     using container = std::map<SqKey, Actions::action>;
     container theMap;
