@@ -52,18 +52,16 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
     const bool alt = (mods && GLFW_MOD_ALT);
     SqKey key(keyCode, ctrl, shift, alt);
 
-    fprintf(stderr, "\n** KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
-    fprintf(stderr, " shift=%d, ctrl=%d\n", shift, ctrl); fflush(stderr);
+   // fprintf(stderr, "\n** KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
+   // fprintf(stderr, " shift=%d, ctrl=%d\n", shift, ctrl); fflush(stderr);
 
     assert(defaultMappings);
 
     bool suppressDefaults = false;
     ActionContext ctx(sequencer, stepRecorder);
     if (userMappings) {
-        fprintf(stderr, "trying user mapping\n");
         Actions::action act = userMappings->get(key);
         if (act) {
-            fprintf(stderr, "calling user act\n");
             act(ctx);
             handled = true;
         }
@@ -72,15 +70,13 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
     }
 
     if (!handled && !suppressDefaults) {
-        fprintf(stderr, "trying default mapping\n");
         Actions::action act = defaultMappings->get(key);
         if (act) {
-            fprintf(stderr, "calling def act\n");
             act(ctx);
             handled = true;
         }
     }
-    fprintf(stderr, "KbdManager::handle ret %d\n", handled);
+    // fprintf(stderr, "KbdManager::handle ret %d\n", handled);
 
     return handled;
 }

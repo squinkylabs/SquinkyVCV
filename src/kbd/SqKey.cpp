@@ -86,16 +86,19 @@ bool SqKey::operator< (const SqKey& other) const
 
 int SqKey::parseKey(const std::string& key)
 {
+   // INFO("key = %s", key.c_str());
     if (keyString2KeyCode.empty()) {
         initMap();
     }
 
+    // First, look in the map
     int ret = 0;
     auto it = keyString2KeyCode.find(key);
     if (it != keyString2KeyCode.end()) {
         ret = it->second;
     }
 
+    // then look for single digit numbers and letters
     if (!ret && (key.size() == 1)) {
         int k = key[0];
         if (k >= '0' && k <= '9') {
@@ -104,6 +107,25 @@ int SqKey::parseKey(const std::string& key)
 
         if (k >= 'a' && k <= 'z') {
             ret = GLFW_KEY_A + (k - 'a');
+        }
+    }
+
+    // look for function keys
+    if (!ret && (key.size() >= 2) && key[0] == 'f') {
+        // f0..f9
+        if (key.size() == 2) {
+            const int k = key[1];
+            if (k >= '1' && k <= '9') {
+                ret = GLFW_KEY_F1 + (k - '1');
+            }
+        // f10..19
+        } else if (key.size() == 3) {
+            if (key[1] == '1') {
+                const int k = key[2];
+                if (k >= '0' && k <= '9') {
+                    ret = GLFW_KEY_F10 + (k - '0');
+                }
+            }
         }
     }
 
@@ -130,7 +152,6 @@ int SqKey::parseKey(const std::string& key)
         {"numpad7", GLFW_KEY_KP_7},
         {"numpad8", GLFW_KEY_KP_8},
         {"numpad9", GLFW_KEY_KP_9},
-        {"f1", GLFW_KEY_F1},
         {"tab", GLFW_KEY_TAB},
         {"numpad_add", GLFW_KEY_KP_ADD},
         {"numpad_subtract", GLFW_KEY_KP_SUBTRACT},
@@ -141,8 +162,27 @@ int SqKey::parseKey(const std::string& key)
         {",", GLFW_KEY_COMMA},
         {".", GLFW_KEY_PERIOD},
         {"*", GLFW_KEY_KP_MULTIPLY},
+        {"`", GLFW_KEY_GRAVE_ACCENT},
+        {"'", GLFW_KEY_APOSTROPHE},
+        {"-", GLFW_KEY_MINUS},
+        {"\\", GLFW_KEY_BACKSLASH},
+        {"/", GLFW_KEY_SLASH},
+        {";", GLFW_KEY_SEMICOLON},
+         {"-", GLFW_KEY_MINUS},
         {"delete", GLFW_KEY_DELETE},
         {"backspace", GLFW_KEY_BACKSPACE},
-        {"numpad_decimal", GLFW_KEY_KP_DECIMAL}
+        {"numpad_decimal", GLFW_KEY_KP_DECIMAL},
+        {"pageup", GLFW_KEY_PAGE_UP},
+        {"pagedown", GLFW_KEY_PAGE_DOWN},
+        {"end", GLFW_KEY_END},
+        {"home", GLFW_KEY_HOME},
+        {"escape",GLFW_KEY_ESCAPE},
+        {"space",GLFW_KEY_SPACE},
+        {"pausebreak",GLFW_KEY_PAUSE},
+        {"capslock",GLFW_KEY_CAPS_LOCK},
+
+  //      tab, enter, escape, space, backspace, delete
+//pausebreak, capslock, insert
+
      };
  }

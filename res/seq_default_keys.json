@@ -51,6 +51,7 @@
     {"key": "numpad_add", "action": "value.increment.normal", "comment": "edit commands"},
     {"key": "=+shift", "action": "value.increment.normal"},
     {"key": "numpad_subtract", "action": "value.decrement.normal"},
+    {"key": "-", "action": "value.decrement.normal"},
     {"key": "[", "action": "value.decrement.large"},
     {"key": "]", "action": "value.increment.large"},
     {"key": ",", "action": "value.decrement.small"},
