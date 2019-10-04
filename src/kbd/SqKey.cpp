@@ -61,22 +61,26 @@ bool SqKey::operator< (const SqKey& other) const
     if (other.key > this->key) {
         return false;
     }
-    // fprintf(stderr, "b key %c < %c?\n", this->key, other.key); fflush(stderr);
     if (!other.ctrl && this->ctrl) {
         return true;
     }
     if (other.ctrl && !this->ctrl) {
         return false;
     }
-   //  fprintf(stderr, "c key %c < %c?\n", this->key, other.key); fflush(stderr);
-     if (!other.shift && this->shift) {
+    if (!other.shift && this->shift) {
         return true;
     }
     if (other.shift && !this->shift) {
         return false;
     }
+    if (!other.alt && this->alt) {
+        return true;
+    }
+    if (other.alt && !this->alt) {
+        return false;
+    }
 
-    // if they are the sam, we get ere
+    // if they are the same, we get here
     return false;
 }
 
