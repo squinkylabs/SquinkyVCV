@@ -16,7 +16,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Mixer Intro Image](./mixers.png)
 
-[Form](./form.md) is a modular mixer with a ton of features. Channels are added by placing ExFor modules to the right of it. It has two stereo send busses, and anti-pop filters on all CV inputs.
+[Form](./form.md) is a modular mixer with a ton of features. Channels are added by placing expander modules to the left of it. It has two stereo send busses, and anti-pop filters on all CV inputs.
 
 [ExFor](./exfor.md) is the an expander for Form. Each instance of ExFor adds four more channels.
 
