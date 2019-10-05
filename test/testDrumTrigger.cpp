@@ -6,9 +6,18 @@
 
 using DT = DrumTrigger<TestComposite>;
 
+static void step(DT& dt)
+{
+    for (int i = 0; i < 8; ++i) {
+        dt.step();
+    }
+}
+
 static void testInitialState()
 {
     DT dt;
+    dt.init();
+
     dt.inputs[DT::GATE_INPUT].channels = 8;
     dt.step();
     for (int i = 0; i < numTriggerChannels; ++i) {
@@ -21,6 +30,7 @@ static void test1Sub(float initCV)
 {
     // set up with 8 channels of polyphonic input
     DT dt;
+    dt.init();
     dt.inputs[DT::GATE_INPUT].channels = 8;
     dt.inputs[DT::CV_INPUT].channels = 8;
    
@@ -32,16 +42,14 @@ static void test1Sub(float initCV)
     // This is pretty sloppy. just happens we set polyphony to 8 so numTriggerChannels is
     // also the number of input channels.
 
-    fprintf(stderr, "test, initCV = %f\n", initCV);
     for (int i = 0; i < numTriggerChannels; ++i) {
-
-        fprintf(stderr, "test, i = %d\n", i);
         // get the pitch that maps to output channel 'i',
         // set the CV input to that pitch, set the gate active
         const float pitch = DT::base() + PitchUtils::semitone * i;
         dt.inputs[DT::CV_INPUT].voltages[i] = pitch;
         dt.inputs[DT::GATE_INPUT].voltages[i] = 10;
-        dt.step();
+       // dt.step();
+        step(dt);
 
         // should turn on the gate and light for this channel
         assertGT(dt.outputs[DT::GATE0_OUTPUT + i].value, 5);
@@ -49,7 +57,8 @@ static void test1Sub(float initCV)
 
         // turn the gate off for this channel
         dt.inputs[DT::GATE_INPUT].voltages[i] = 0;
-        dt.step();
+       // dt.step();
+        step(dt);
         assertLT(dt.outputs[DT::GATE0_OUTPUT + i].value, 1);
         assertLT(dt.lights[DT::LIGHT0 + i].value, 1);
     }
@@ -69,6 +78,7 @@ static void test2()
 static void testLess()
 {
     DT dt;
+    dt.init();
     dt.inputs[DT::GATE_INPUT].channels = 1;
 
     for (int i = 0; i < numTriggerChannels; ++i) {
@@ -89,6 +99,7 @@ static void testLess()
 static void testGlide()
 {
     DT dt;
+    dt.init();
     dt.inputs[DT::GATE_INPUT].channels = 1;
     dt.inputs[DT::CV_INPUT].channels = 1;
 
@@ -97,12 +108,12 @@ static void testGlide()
     dt.inputs[DT::CV_INPUT].voltages[0] = 0;
     dt.inputs[DT::GATE_INPUT].voltages[0] = 10;
 
-    dt.step();
+    step(dt);
     assertGT(dt.outputs[DT::GATE0_OUTPUT].value, 1);
 
     // now switch pitch to C#
     dt.inputs[DT::CV_INPUT].voltages[0] = 1.f / 12.f;
-    dt.step();
+    step(dt);
 
     // C# is gate1, gate0 should be off
     assertGT(dt.outputs[DT::GATE1_OUTPUT].value, 1);

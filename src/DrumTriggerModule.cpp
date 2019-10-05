@@ -23,7 +23,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    std::shared_ptr<Comp> blank;
+    std::shared_ptr<Comp> drumTrigger;
 private:
 
 };

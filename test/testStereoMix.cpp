@@ -551,11 +551,10 @@ static void _testNorm(int group)
     auto m = getMixer<MixerS>();
     const int chan = group * 2;
 
-    m->inputs[MixerS::AUDIO0_INPUT + chan].active = true;
+    m->inputs[MixerS::AUDIO0_INPUT + chan].channels = 1;
     m->inputs[MixerS::AUDIO0_INPUT + chan].value = 10;
-    m->inputs[MixerS::AUDIO1_INPUT + chan].active = false;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].channels = 0;
     m->inputs[MixerS::AUDIO1_INPUT + chan].value = 0;
-
     m->params[MixerS::GAIN0_PARAM + group].value = 1;
    
 
@@ -580,9 +579,9 @@ static void _testNormPan(int group, bool fullLeft)
     const int chan = group * 2;
     auto m = getMixer<MixerS>();
 
-    m->inputs[MixerS::AUDIO0_INPUT + chan].active = true;
+    m->inputs[MixerS::AUDIO0_INPUT + chan].channels = 1 ;
     m->inputs[MixerS::AUDIO0_INPUT + chan].value = 10;
-    m->inputs[MixerS::AUDIO1_INPUT + chan].active = false;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].channels = 0;
     m->inputs[MixerS::AUDIO1_INPUT + chan].value = 0;
 
     m->params[MixerS::GAIN0_PARAM + group].value = 1;
