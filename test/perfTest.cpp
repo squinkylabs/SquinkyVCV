@@ -262,11 +262,11 @@ static void testEvenOrig()
 {
     EvenVCO_orig<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO_orig<TestComposite>::EVEN_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::SINE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::TRI_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO_orig<TestComposite>::EVEN_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::SINE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::TRI_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::SAW_OUTPUT].channels = 1;
 
     for (int i = 0; i < 100; ++i) lfn.step();
 
@@ -284,11 +284,11 @@ static void testEven()
     EvenVCO<TestComposite> lfn;
 
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 1;
     MeasureTime<float>::run(overheadOutOnly, "Even, all outs", [&lfn]() {
         lfn.step();
         return lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].value;
@@ -299,11 +299,11 @@ static void testEvenEven()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, even only", [&lfn]() {
         lfn.step();
@@ -315,11 +315,11 @@ static void testEvenSin()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, sin only", [&lfn]() {
         lfn.step();
@@ -331,11 +331,11 @@ static void testEvenSaw()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 1;
 
     for (int i = 0; i < 100; ++i) lfn.step();
 
@@ -351,11 +351,11 @@ static void testEvenTri()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, tri only", [&lfn]() {
         lfn.step();
@@ -367,11 +367,11 @@ static void testEvenSq()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, Sq only", [&lfn]() {
         lfn.step();
@@ -383,11 +383,11 @@ static void testEvenSqSaw()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 1;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, Sq Saw", [&lfn]() {
         lfn.step();
@@ -401,7 +401,7 @@ static void testFun()
     FunVCOComposite<TestComposite> lfn;
 
     for (int i = 0; i < lfn.NUM_OUTPUTS; ++i) {
-        lfn.outputs[i].active = true;
+        lfn.outputs[i].channels = 1;
     }
 
     lfn.setSampleRate(44100.f);
@@ -422,7 +422,7 @@ static void testFunNone()
     FunVCOComposite<TestComposite> lfn;
 
     for (int i = 0; i < lfn.NUM_OUTPUTS; ++i) {
-        lfn.outputs[i].active = false;
+        lfn.outputs[i].channels = 0;
     }
 
     lfn.setSampleRate(44100.f);
@@ -437,10 +437,10 @@ static void testFunSaw(bool isAnalog)
 {
     FunVCOComposite<TestComposite> lfn;
 
-    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].channels = 1;
 
     //  oscillator.analog = TBase::params[MODE_PARAM].value > 0.0f;
     lfn.params[FunVCOComposite<TestComposite>::MODE_PARAM].value = isAnalog ? 1.0f : 0.f;
@@ -458,10 +458,10 @@ static void testFunSin(bool isAnalog)
 {
     FunVCOComposite<TestComposite> lfn;
 
-    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].active = true;
-    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].channels = 1;
+    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].channels = 0;
 
     lfn.params[FunVCOComposite<TestComposite>::MODE_PARAM].value = isAnalog ? 1.0f : 0.f;
 
@@ -478,10 +478,10 @@ static void testFunSq()
 {
     FunVCOComposite<TestComposite> lfn;
 
-    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].active = true;
-    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].channels = 1;
+    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].channels = 0;
 
     lfn.setSampleRate(44100.f);
 

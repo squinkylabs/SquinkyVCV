@@ -152,8 +152,8 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
     Shaper<TestComposite> gmr;
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
     gmr.params[Shaper<TestComposite>::PARAM_GAIN].value = gain;        // max gain
-    gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
     const int buffSize = 1 * 1024;
     float buffer[buffSize];
 
@@ -190,8 +190,8 @@ static void testShaper1()
 static void testSplineExtremes()
 {
     Shaper<TestComposite> sp;
-    sp.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sp.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sp.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sp.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
 
     using fp = std::pair<float, float>;
     std::vector< std::pair<float, float> > paramLimits;
@@ -212,8 +212,8 @@ static void testSplineExtremes()
 static void testShaper2d(Shaper<TestComposite>::Shapes shape, float gain, float offset, float input)
 {
     Shaper<TestComposite> sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
     sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
     sh.params[Shaper<TestComposite>::PARAM_GAIN].value = gain; 
     sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = offset;
@@ -262,8 +262,8 @@ static void testShaper2()
 static void testShaper3Sub(Shaper<TestComposite>::Shapes shape)
 {
     Shaper<TestComposite> sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
   
     sh.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;       // turn off oversampling
     sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
@@ -298,8 +298,8 @@ static void testDC()
     using Sh = Shaper<TestComposite>;
 
     Sh sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
     sh.params[Sh::PARAM_SHAPE].value = float(Sh::Shapes::FullWave);
 
     // Will generate sine at fs * .01 (around 400 Hz).
@@ -449,12 +449,12 @@ static void testFiltOutputsRightDisconnect()
     using F = Filt<TestComposite>;
     F f;
     f.init();
-    f.inputs[S::L_AUDIO_INPUT].active = true;
-    f.inputs[S::R_AUDIO_INPUT].active = false;
+    f.inputs[S::L_AUDIO_INPUT].channels = 1;
+    f.inputs[S::R_AUDIO_INPUT].channels = 0;
     f.inputs[S::L_AUDIO_INPUT].value = 10;
     f.inputs[S::R_AUDIO_INPUT].value = 0;
-    f.outputs[S::L_AUDIO_OUTPUT].active = true;
-    f.outputs[S::R_AUDIO_OUTPUT].active = true;
+    f.outputs[S::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[S::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[S::MASTER_VOLUME_PARAM].value = 1;
 
@@ -474,12 +474,12 @@ static void testShaperOutputsLeftDisconnect()
     using S = Shaper<TestComposite>;
     S s;
     f.init();
-    f.inputs[S::L_AUDIO_INPUT].active = false;
-    f.inputs[S::R_AUDIO_INPUT].active = true;
+    f.inputs[S::L_AUDIO_INPUT].channels = 0;
+    f.inputs[S::R_AUDIO_INPUT].channels = 1;
     f.inputs[S::L_AUDIO_INPUT].value = 0;
     f.inputs[S::R_AUDIO_INPUT].value = 10;
-    f.outputs[S::L_AUDIO_OUTPUT].active = true;
-    f.outputs[S::R_AUDIO_OUTPUT].active = true;
+    f.outputs[S::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[S::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[S::MASTER_VOLUME_PARAM].value = 1;
 

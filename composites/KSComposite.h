@@ -93,22 +93,22 @@ inline void KSComposite<TBase>::step()
 
 
     oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].value / 10.0f);
-    oscillator.syncEnabled = TBase::inputs[SYNC_INPUT].active;
+    oscillator.syncEnabled = TBase::inputs[SYNC_INPUT].isConnected();
 
-    oscillator.sawEnabled = TBase::outputs[SAW_OUTPUT].active;
-    oscillator.sinEnabled = TBase::outputs[SIN_OUTPUT].active;
-    oscillator.sqEnabled = TBase::outputs[SQR_OUTPUT].active;
-    oscillator.triEnabled = TBase::outputs[TRI_OUTPUT].active;
+    oscillator.sawEnabled = TBase::outputs[SAW_OUTPUT].isConnected();
+    oscillator.sinEnabled = TBase::outputs[SIN_OUTPUT].isConnected();
+    oscillator.sqEnabled = TBase::outputs[SQR_OUTPUT].isConnected();
+    oscillator.triEnabled = TBase::outputs[TRI_OUTPUT].isConnected();
 
     oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].value, TBase::engineGetSampleTime());
     // Set output
-    if (TBase::outputs[SIN_OUTPUT].active)
+    if (TBase::outputs[SIN_OUTPUT].isConnected())
         TBase::outputs[SIN_OUTPUT].value = 5.0f * oscillator.sin();
-    if (TBase::outputs[TRI_OUTPUT].active)
+    if (TBase::outputs[TRI_OUTPUT].isConnected())
         TBase::outputs[TRI_OUTPUT].value = 5.0f * oscillator.tri();
-    if (TBase::outputs[SAW_OUTPUT].active)
+    if (TBase::outputs[SAW_OUTPUT].isConnected())
         TBase::outputs[SAW_OUTPUT].value = 5.0f * oscillator.saw();
-    if (TBase::outputs[SQR_OUTPUT].active)
+    if (TBase::outputs[SQR_OUTPUT].isConnected())
         TBase::outputs[SQR_OUTPUT].value = 5.0f * oscillator.sqr();
 
 }

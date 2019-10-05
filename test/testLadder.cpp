@@ -388,12 +388,12 @@ static void testFiltOutputsDisconnect()
     using F = Filt<TestComposite>;
     F f;
     f.init();
-    f.inputs[F::L_AUDIO_INPUT].active = true;
-    f.inputs[F::R_AUDIO_INPUT].active = true;
+    f.inputs[F::L_AUDIO_INPUT].channels = 1;
+    f.inputs[F::R_AUDIO_INPUT].channels = 1;
     f.inputs[F::L_AUDIO_INPUT].value = 10;
     f.inputs[F::R_AUDIO_INPUT].value = 10;
-    f.outputs[F::L_AUDIO_OUTPUT].active = true;
-    f.outputs[F::R_AUDIO_OUTPUT].active = true;
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[F::MASTER_VOLUME_PARAM].value = 1;
 
@@ -406,8 +406,8 @@ static void testFiltOutputsDisconnect()
     assertGT(f.outputs[F::R_AUDIO_OUTPUT].value, 1);
 
     // disconnect the inputs
-    f.outputs[F::L_AUDIO_INPUT].active = false;
-    f.outputs[F::R_AUDIO_INPUT].active = false;
+    f.outputs[F::L_AUDIO_INPUT].channels = 0;
+    f.outputs[F::R_AUDIO_INPUT].channels = 0;
 
     for (int i = 0; i < 8; ++i) {
         f.step();
@@ -425,12 +425,12 @@ static void testFiltOutputsRightDisconnect()
     using F = Filt<TestComposite>;
     F f;
     f.init();
-    f.inputs[F::L_AUDIO_INPUT].active = true;
-    f.inputs[F::R_AUDIO_INPUT].active = false;
+    f.inputs[F::L_AUDIO_INPUT].channels = 1;
+    f.inputs[F::R_AUDIO_INPUT].channels = 0;
     f.inputs[F::L_AUDIO_INPUT].value = 10;
     f.inputs[F::R_AUDIO_INPUT].value = 0;
-    f.outputs[F::L_AUDIO_OUTPUT].active = true;
-    f.outputs[F::R_AUDIO_OUTPUT].active = true;
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[F::MASTER_VOLUME_PARAM].value = 1;
 
@@ -450,12 +450,12 @@ static void testFiltOutputsLeftDisconnect()
     using F = Filt<TestComposite>;
     F f;
     f.init();
-    f.inputs[F::L_AUDIO_INPUT].active = false;
-    f.inputs[F::R_AUDIO_INPUT].active = true;
+    f.inputs[F::L_AUDIO_INPUT].channels = 0;
+    f.inputs[F::R_AUDIO_INPUT].channels = 1;
     f.inputs[F::L_AUDIO_INPUT].value = 0;
     f.inputs[F::R_AUDIO_INPUT].value = 10;
-    f.outputs[F::L_AUDIO_OUTPUT].active = true;
-    f.outputs[F::R_AUDIO_OUTPUT].active = true;
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[F::MASTER_VOLUME_PARAM].value = 1;
 

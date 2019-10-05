@@ -117,7 +117,7 @@ void testChannel(int channel, bool useParam)
     m->inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
     m->params[T::GAIN0_PARAM + channel].value = activeParamValue;
     m->inputs[T::LEVEL0_INPUT + channel].value = activeCVValue;
-    m->inputs[T::LEVEL0_INPUT + channel].active = true;
+    m->inputs[T::LEVEL0_INPUT + channel].channels = 1;
 
     step(m);
 

@@ -91,11 +91,11 @@ static void testxEv(float octave, float tune = 0, float pitch1 = 0, float pitch2
     vco.inputs[(int) EVCO::PITCH2_INPUT].value = pitch2;
     vco.inputs[(int) EVCO::FM_INPUT].value = fm;
 
-    vco.outputs[(int) EVCO::SAW_OUTPUT].active = true;
-    vco.outputs[(int) EVCO::EVEN_OUTPUT].active = false;
-    vco.outputs[(int) EVCO::TRI_OUTPUT].active = false;
-    vco.outputs[(int) EVCO::SQUARE_OUTPUT].active = false;
-    vco.outputs[(int) EVCO::SINE_OUTPUT].active = false;
+    vco.outputs[(int) EVCO::SAW_OUTPUT].channels = 1;
+    vco.outputs[(int) EVCO::EVEN_OUTPUT].channels = 0;
+    vco.outputs[(int) EVCO::TRI_OUTPUT].channels = 0;
+    vco.outputs[(int) EVCO::SQUARE_OUTPUT].channels = 0;
+    vco.outputs[(int) EVCO::SINE_OUTPUT].channels = 0;
 
     vco.step();
     const float desired = desiredPitchEv(vco);

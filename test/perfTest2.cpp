@@ -157,9 +157,9 @@ static void testDrumTrigger()
 {
     DT fs;
     fs.init();
-    fs.inputs[DT::CV_INPUT].active = true;
+    fs.inputs[DT::CV_INPUT].channels = 1;
     fs.inputs[DT::CV_INPUT].channels = 8;
-    fs.outputs[DT::GATE0_OUTPUT].active = true;
+    fs.outputs[DT::GATE0_OUTPUT].channels = 1;
     fs.outputs[DT::GATE0_OUTPUT].channels = 8;
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "Polygate", [&fs]() {
@@ -174,8 +174,8 @@ static void testFilt()
 {
     Filter fs;
     fs.init();
-    fs.inputs[Filter::L_AUDIO_INPUT].active = true;
-    fs.outputs[Filter::L_AUDIO_OUTPUT].active = true;
+    fs.inputs[Filter::L_AUDIO_INPUT].channels = 1;
+    fs.outputs[Filter::L_AUDIO_OUTPUT].channels = 1;
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "filt", [&fs]() {
         fs.inputs[Filter::L_AUDIO_INPUT].value = TestBuffers<float>::get();
@@ -188,8 +188,8 @@ static void testFilt2()
 {
     Filter fs;
     fs.init();
-    fs.inputs[Filter::L_AUDIO_INPUT].active = true;
-    fs.outputs[Filter::L_AUDIO_OUTPUT].active = true;
+    fs.inputs[Filter::L_AUDIO_INPUT].channels = 1;
+    fs.outputs[Filter::L_AUDIO_OUTPUT].channels = 1;
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "filt w/mod", [&fs]() {
         fs.inputs[Filter::L_AUDIO_INPUT].value = TestBuffers<float>::get();
