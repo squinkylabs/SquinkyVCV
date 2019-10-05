@@ -34,7 +34,7 @@ struct alignas(32) Port {
 		*/
 		uint8_t channels = 0;
 		/** DEPRECATED. Unstable API. Use isConnected() instead. */
-		uint8_t active;
+		uint8_t _active;
 	};
 	/** For rendering plug lights on cables.
 	Green for positive, red for negative, and blue for polyphonic.

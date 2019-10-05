@@ -215,9 +215,7 @@ private:
 
     MixHelper<Mix4<TBase>> helper;
 
-#ifdef _CHAUDIOTAPER
-     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
-#endif
+    std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
 };
 
 template <class TBase>

@@ -1,14 +1,15 @@
 
-#include "asserts.h"
 #include "MixHelper.h"
+#include "MixPolyHelper.h"
 #include "TestComposite.h"
+
+#include "asserts.h"
 
 class MockMixComposite : public TestComposite
 {
 public:
     static const int numChannels = 4;
     static const int numGroups = 4;
-
 
     enum ParamIds
     {
@@ -215,6 +216,15 @@ static void testCVToggle()
     }
 }
 
+
+static void testPoly0()
+{
+    
+    MockMixComposite comp;
+    MixPolyHelper< MockMixComposite> helper;
+    
+
+}
 void testMixHelper()
 {
     test0();
@@ -222,4 +232,6 @@ void testMixHelper()
     testParamToggle();
     testCVMomentary();
     testCVToggle();
+
+    testPoly0();
 }
