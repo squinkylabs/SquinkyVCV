@@ -1,10 +1,12 @@
 
 #pragma once
 
-#include <assert.h>
-#include <memory>
+#include "Divider.h"
 #include "IComposite.h"
 #include "PitchUtils.h"
+
+#include <assert.h>
+#include <memory>
 
 namespace rack {
     namespace engine {
@@ -97,6 +99,7 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
+    void stepn(int n);
 
     static float base()
     {
@@ -104,32 +107,26 @@ public:
     }
 
 private:
-#if 0
-    class OutputChannelState
-    {
-    public:
-        bool gate = false;
-        int inputChannel = 0;
-        bool gateThisStep = false;      // only true if the gate was set in the latest step call
-    };
+    Divider div;
 
-    // for a given OUTPUT channel:
-    //  gate indicated it that output gate was high
-    //  inputChannel indicates which input made gate high
-    OutputChannelState state[numTriggerChannels];
-
-    void processInput(int ouputChannel, bool gate, int inputChannel);
-#endif
 };
 
 
 template <class TBase>
 inline void DrumTrigger<TBase>::init()
 {
+    div.setup(8, [this] {
+        this->stepn(div.getDiv());
+        });
+}
+template <class TBase>
+inline void DrumTrigger<TBase>::step()
+{
+    div.step();
 }
 
 template <class TBase>
-inline void DrumTrigger<TBase>::step()
+inline void DrumTrigger<TBase>::stepn(int n)
 {
     // for each input channel, the semitone pitch it is at
     int pitches[16] = {-1};
