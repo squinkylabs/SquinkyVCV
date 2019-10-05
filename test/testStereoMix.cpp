@@ -232,7 +232,7 @@ void testChannel(int group, bool useParam)
     mixer->inputs[T::AUDIO0_INPUT + rightChannel].value = 6.5f;
     mixer->params[T::GAIN0_PARAM + group].value = activeParamValue;
     mixer->inputs[T::LEVEL0_INPUT + group].value = activeCVValue;
-    mixer->inputs[T::LEVEL0_INPUT + group].active = true;
+    mixer->inputs[T::LEVEL0_INPUT + group].channels = 1;
 
     assertEQ(mixer->params[T::PAN0_PARAM].value, 0);
  

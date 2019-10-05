@@ -372,10 +372,10 @@ static void testShaperChannelsSub(bool ch0, bool ch1)
 {
     const float input = 10;
     Shaper<TestComposite> sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = ch0;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = ch0;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO1].active = ch1;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO1].active = ch1;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = ch0 ? 1 : 0;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = ch0 ? 1 : 0;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO1].channels = ch1 ? 1 : 0;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO1].channels = ch1 ? 1 : 0;
     sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float)Shaper<TestComposite>::Shapes::FullWave;
     sh.params[Shaper<TestComposite>::PARAM_GAIN].value = 5;
     sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = 0;
