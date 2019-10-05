@@ -9,7 +9,6 @@
 
 const static float defaultMasterGain = 1.002374f;
 
-//using Mixer8 = Mix8<TestComposite>;
 using Mixer4 = Mix4<TestComposite>;
 using MixerM = MixM<TestComposite>;
 
@@ -70,6 +69,11 @@ static std::shared_ptr<T> getMixerBase()
         ret->params[i].value = param.def;
     }
     ret->_disableAntiPop();
+
+    // default to monophonic inputs
+    for (int i = 0; i < T::numChannels; ++i) {
+        ret->inputs[T::AUDIO0_INPUT + i].channels = 1;
+    }
 
     return ret;
 }
@@ -145,8 +149,6 @@ static void testChannel()
 }
 
 //***********************************************************************************
-
-
 
 template <typename T>
 static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
@@ -326,7 +328,6 @@ static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> 
 
 //***************************************************************
 
-// only works for mix8 now
 template <typename T>
 void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
@@ -351,6 +352,37 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
 
     assertClose(outputGetter(m, false), 0, .01);
     assertClose(outputGetter(m, true), 0, .01);
+}
+
+template <typename T>
+void testPolyInputSimple(int polyphony, int inputChannel)
+{
+    auto m = getMixer<T>();
+
+    // zero all inputs, put all channel gains to 1
+    for (int i = 0; i < T::numChannels; ++i) {
+        m->inputs[T::AUDIO0_INPUT + i].value = 0;
+        m->params[T::GAIN0_PARAM + i].value = 1;
+    }
+
+    m->inputs[T::AUDIO0_INPUT + inputChannel].channels = polyphony;
+    m->inputs[T::AUDIO0_INPUT + inputChannel].voltages[0] = 3.4f;
+
+
+    step(m);
+    const float output = m->outputs[T::CHANNEL0_OUTPUT + inputChannel].voltages[0];
+    const float expected = (polyphony == 0) ? 0 : 3.4f / polyphony;
+
+    assertClose(output, expected, .001);
+}
+
+template <typename T>
+void testPolyInputSimple()
+{
+    testPolyInputSimple<T>(1, 0);
+    testPolyInputSimple<T>(2, 3);
+    testPolyInputSimple<T>(3, 2);
+    testPolyInputSimple<T>(0, 0);
 }
 
 void testMix4()
@@ -380,4 +412,7 @@ void testMix4()
 
     testSoloLegacy<Mixer4>(outputGetterMix4);
     testSoloLegacy<MixerM>(outputGetterMixM);
+
+    testPolyInputSimple<MixerM>();
+    testPolyInputSimple<Mixer4>();
 }

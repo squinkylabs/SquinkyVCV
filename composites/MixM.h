@@ -4,6 +4,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "MixHelper.h"
+#include "mixpolyhelper.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
@@ -241,6 +242,7 @@ private:
     const float* expansionInputs = nullptr;
 
     MixHelper<MixM<TBase>> helper;
+    MixPolyHelper<MixM<TBase>> polyHelper;
     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
 };
 
@@ -287,6 +289,7 @@ inline void MixM<TBase>::stepn(int div)
  
     helper.procMixInputs(this);
     helper.procMasterMute(this);
+    polyHelper.updatePolyphony(this);
 
     // round up some scalars the we need for step()
     {
@@ -316,13 +319,8 @@ inline void MixM<TBase>::stepn(int div)
        
         // First let's round up the channel volume
         {
-#ifdef _CHAUDIOTAPER
             const float rawSlider = TBase::params[i + GAIN0_PARAM].value;
             const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
-#else
-            a b why are we here ?
-                const float slider = TBase::params[i + GAIN0_PARAM].value;
-#endif
 
             const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
                 TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
@@ -390,13 +388,11 @@ inline void MixM<TBase>::stepn(int div)
             }
         }
 
-
         // refresh the solo lights
         {
             const float soloValue = TBase::params[i + SOLO0_PARAM].value;
             TBase::lights[i + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
         }
-
     }
     filteredCV.step(unbufferedCV);
 }
@@ -405,8 +401,6 @@ template <class TBase>
 inline void MixM<TBase>::step()
 {
     divider.step();
-
-   // float  buf_channelOuts[4] = {0};        // will hold the signals for the output of each channel
 
     float left = 0, right = 0;              // these variables will be summed up over all channels
     float lSend = 0, rSend = 0;
@@ -422,7 +416,7 @@ inline void MixM<TBase>::step()
     }
 
     for (int i = 0; i < numChannels; ++i) {
-        const float channelInput = TBase::inputs[i + AUDIO0_INPUT].value;
+        const float channelInput = polyHelper.getNormalizedInputSum(this, i);
 
         // sum the channel output to the masters
         left += channelInput * filteredCV.get(i + cvOffsetPanLeft);

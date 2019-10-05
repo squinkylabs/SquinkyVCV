@@ -25,6 +25,8 @@ struct alignas(32) Port {
 		/** Unstable API. Use getVoltage() and setVoltage() instead. */
 		float voltages[PORT_MAX_CHANNELS] = {};
 		/** DEPRECATED. Unstable API. Use getVoltage() and setVoltage() instead. */
+
+        // TODO: get rid of this
 		float value;
 	};
 	union {

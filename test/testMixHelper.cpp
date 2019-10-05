@@ -32,7 +32,12 @@ public:
         MUTE0_INPUT,
         MUTE1_INPUT,
         MUTE2_INPUT,
-        MUTE3_INPUT
+        MUTE3_INPUT,
+
+        AUDIO0_INPUT,
+        AUDIO1_INPUT,
+        AUDIO2_INPUT,
+        AUDIO3_INPUT,
     };
 
     enum LightIds
@@ -219,12 +224,50 @@ static void testCVToggle()
 
 static void testPoly0()
 {
-    
     MockMixComposite comp;
     MixPolyHelper< MockMixComposite> helper;
-    
 
+    helper.updatePolyphony(&comp);
+    helper.getNormalizedInputSum(&comp, 0);
 }
+
+static void testPoly(int channelNumber, int polyphony, float inputLevel)
+{
+    MockMixComposite comp;
+    MixPolyHelper< MockMixComposite> helper;
+
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + channelNumber].channels = polyphony;
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + channelNumber].voltages[0] = inputLevel;
+    helper.updatePolyphony(&comp);
+    const float sum = helper.getNormalizedInputSum(&comp, channelNumber);
+    const float expected = polyphony == 0 ? 0.f : (inputLevel / polyphony);
+    assertClose(sum, expected, .001);
+}
+
+static void testPoly1()
+{
+    testPoly(0, 1, 5.f);
+    testPoly(0, 0, 5.f);
+    for (int i = 0; i < 4; ++i) {
+        testPoly(i, 3, 1.0);
+    }
+}
+
+static void testPoly2()
+{
+    MockMixComposite comp;
+    MixPolyHelper< MockMixComposite> helper;
+
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + 0].channels = 4;
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + 0].voltages[0] = 1;
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + 0].voltages[1] = 2;
+    helper.updatePolyphony(&comp);
+
+    const float sum = helper.getNormalizedInputSum(&comp, 0);
+    const float expected = 3.f / 4.f;
+    assertClose(sum, expected, .001);
+}
+
 void testMixHelper()
 {
     test0();
@@ -233,5 +276,10 @@ void testMixHelper()
     testCVMomentary();
     testCVToggle();
 
+    // tests for poly helper
     testPoly0();
+    testPoly1();
+    testPoly2();
+
+   
 }
