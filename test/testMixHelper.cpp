@@ -134,7 +134,7 @@ static void testCVMomentary(int channel)
     helper.procMixInputs(&comp);
 
     // send it a mute CV
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 10;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(10, 0);
     helper.procMixInputs(&comp);
 
      // check the results - should be muted
@@ -144,7 +144,7 @@ static void testCVMomentary(int channel)
     }
 
     // lower mute CV
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 0;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(0, 0);
     helper.procMixInputs(&comp);
 
      // check the results - should be no longer muted
@@ -174,7 +174,7 @@ static void testCVToggle(int channel)
     helper.procMixInputs(&comp);
 
     // send it cv low to high
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 10;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(10, 0);
     helper.procMixInputs(&comp);
 
     // check the results - should be muted
@@ -193,7 +193,7 @@ static void testCVToggle(int channel)
     }
 
     // lower mute CV
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 0;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(0, 0);
     helper.procMixInputs(&comp);
 
      // since it toggles on leading edge, should still be muted
@@ -204,7 +204,7 @@ static void testCVToggle(int channel)
     }
 
     // now raise again to toggle down
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 10;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(10, 0);
     helper.procMixInputs(&comp);
 
     // check the results - should be un muted

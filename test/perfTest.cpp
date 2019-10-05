@@ -173,12 +173,12 @@ static void testAnimator()
     an.setSampleRate(44100);
     an.init();
 
-    an.inputs[Shifter::AUDIO_INPUT].value = 0;
+    an.inputs[Shifter::AUDIO_INPUT].setVoltage(0, 0);;
 
     MeasureTime<float>::run(overheadInOut, "animator", [&an]() {
-        an.inputs[Shifter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        an.inputs[Shifter::AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         an.step();
-        return an.outputs[Shifter::SIN_OUTPUT].value;
+        return an.outputs[Shifter::SIN_OUTPUT].getVoltage(0);
         }, 1);
 }
 

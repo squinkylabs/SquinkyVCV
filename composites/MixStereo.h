@@ -403,7 +403,7 @@ inline void MixStereo<TBase>::step()
         }
 #endif
         assert(channel + AUDIO0_INPUT < NUM_INPUTS);
-        const float channelInput = TBase::inputs[inputChannel + AUDIO0_INPUT].value;
+        const float channelInput = TBase::inputs[inputChannel + AUDIO0_INPUT].getVoltage(0);
 
         if (isLeft) {
             left += channelInput * filteredCV.get(channel + cvOffsetGainBalance);
@@ -425,7 +425,7 @@ inline void MixStereo<TBase>::step()
             } else {
                 channelOutput = channelInput * filteredCV.get(group + cvOffsetGain);
             }
-            TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelOutput;
+            TBase::outputs[channel + CHANNEL0_OUTPUT].setVoltage(channelOutput, 0);
         #else
             TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
         #endif

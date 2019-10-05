@@ -250,7 +250,7 @@ inline void Mix4<TBase>::stepn(int div)
             const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 
             const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
-                TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+                TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
                 0.0f,
@@ -280,7 +280,7 @@ inline void Mix4<TBase>::stepn(int div)
         // now do the pan calculation
         {
             const float balance = TBase::params[i + PAN0_PARAM].value;
-            const float cv = TBase::inputs[i + PAN0_INPUT].value;
+            const float cv = TBase::inputs[i + PAN0_INPUT].getVoltage(0);
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
             unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
@@ -385,7 +385,7 @@ inline void Mix4<TBase>::step()
         rSend += channelInput * buf_channelSendGainsARight[i];
         rSendb += channelInput * buf_channelSendGainsBRight[i];
 
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(i + cvOffsetGain);
+        TBase::outputs[i + CHANNEL0_OUTPUT].setVoltage(channelInput * filteredCV.get(i + cvOffsetGain), 0);
     }
 
     // output the buses to the expansion port

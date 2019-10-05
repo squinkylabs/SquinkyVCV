@@ -192,11 +192,11 @@ static void testFilt2()
     fs.outputs[Filter::L_AUDIO_OUTPUT].channels = 1;
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "filt w/mod", [&fs]() {
-        fs.inputs[Filter::L_AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.inputs[Filter::L_AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         fs.params[Filter::FC_PARAM].value = TestBuffers<float>::get();
         fs.step();
-        return fs.outputs[Filter::L_AUDIO_OUTPUT].value;
-        }, 1);
+        return fs.outputs[Filter::L_AUDIO_OUTPUT].getVoltage(0);
+     }, 1);
 }
 
 using Mixer8 = Mix8<TestComposite>;
@@ -206,13 +206,13 @@ static void testMix8()
 
     fs.init();
 
-    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+    fs.inputs[fs.AUDIO0_INPUT].setVoltage(0, 0);
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "mix8", [&fs]() {
-        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.inputs[Slewer::INPUT_TRIGGER0].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[Slewer::OUTPUT0].value;
+        return fs.outputs[Slewer::OUTPUT0].getVoltage(0);
       }, 1);
 }
 
@@ -221,13 +221,13 @@ static void testMix4()
 {
     Mixer4 fs;
     fs.init();
-    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+    fs.inputs[fs.AUDIO0_INPUT].setVoltage(0, 0);
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "mix4", [&fs]() {
-        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.inputs[Slewer::INPUT_TRIGGER0].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[Slewer::OUTPUT0].value;
+        return fs.outputs[Slewer::OUTPUT0].getVoltage(0);
         }, 1);
 }
 
@@ -236,13 +236,13 @@ static void testMixStereo()
 {
     MixerSt fs;
     fs.init();
-    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+    fs.inputs[fs.AUDIO0_INPUT].setVoltage(0, 0);
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "mix stereo", [&fs]() {
-        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.inputs[Slewer::INPUT_TRIGGER0].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[Slewer::OUTPUT0].value;
+        return fs.outputs[Slewer::OUTPUT0].getVoltage(0);
         }, 1);
 }
 
@@ -253,13 +253,13 @@ static void testMixM()
 
     fs.init();
 
-    fs.inputs[fs.AUDIO0_INPUT].value = 0;
+    fs.inputs[fs.AUDIO0_INPUT].setVoltage(0, 0);
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "mixM", [&fs]() {
-        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.inputs[Slewer::INPUT_TRIGGER0].setVoltage(TestBuffers<float>::get());
         fs.step();
-        return fs.outputs[Slewer::OUTPUT0].value;
+        return fs.outputs[Slewer::OUTPUT0].getVoltage(0);
         }, 1);
 }
 

@@ -129,9 +129,9 @@ inline void FunVCOComposite<TBase>::step()
     oscillator.soft = TBase::params[SYNC_PARAM].value <= 0.0f;
 
     float pitchFine = 3.0f * sq::quadraticBipolar(TBase::params[FINE_PARAM].value);
-    float pitchCv = 12.0f * TBase::inputs[PITCH_INPUT].value;
+    float pitchCv = 12.0f * TBase::inputs[PITCH_INPUT].getVoltage(0);
     if (SqPort::isConnected(TBase::inputs[FM_INPUT])) {
-        pitchCv += sq::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].value;
+        pitchCv += sq::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].getVoltage(0);
     }
 
     oscillator.setPitch(TBase::params[FREQ_PARAM].value, pitchFine + pitchCv);

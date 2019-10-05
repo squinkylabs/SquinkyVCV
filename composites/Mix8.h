@@ -302,7 +302,7 @@ inline void Mix8<TBase>::stepn(int div)
 
         // TODO: get rid of normalize. if active ? cv : 10;
         const float rawCV = SqPort::isConnected(TBase::inputs[i + LEVEL0_INPUT]) ? 
-             TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+             TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
         const float cv = std::clamp(
             rawCV / 10.0f,
             0.0f,
@@ -322,7 +322,7 @@ inline void Mix8<TBase>::stepn(int div)
     // fill buf_leftPanGains and buf_rightPanGains
     for (int i = 0; i < numChannels; ++i) {
         const float balance = TBase::params[i + PAN0_PARAM].value;
-        const float cv = TBase::inputs[i + PAN0_INPUT].value;
+        const float cv = TBase::inputs[i + PAN0_INPUT].getVoltage(0);
         const float panValue = std::clamp(balance + cv / 5, -1, 1);
         buf_leftPanGains[i] = LookupTable<float>::lookup(*panL, panValue);
         buf_rightPanGains[i] = LookupTable<float>::lookup(*panR, panValue);
@@ -345,7 +345,7 @@ inline void Mix8<TBase>::stepn(int div)
     } else {
         for (int i = 0; i < numChannels; ++i) {
             const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
-                (TBase::inputs[i + MUTE0_INPUT].value > 2));
+                (TBase::inputs[i + MUTE0_INPUT].getVoltage(0) > 2));
             buf_muteInputs[i] = muteActivated ? 0.f : 1.f;
            // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
@@ -373,7 +373,7 @@ inline void Mix8<TBase>::step()
 
     // fill buf_inputs
     for (int i = 0; i < numChannels; ++i) {
-        buf_inputs[i] = TBase::inputs[i + AUDIO0_INPUT].value;
+        buf_inputs[i] = TBase::inputs[i + AUDIO0_INPUT].getVoltage(0);
     }
 
     // compute buf_channelOuts
@@ -393,21 +393,21 @@ inline void Mix8<TBase>::step()
         rSend += buf_channelOuts[i] * buf_rightPanGains[i] * buf_channelSendGains[i];
     }
 
-    left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGain;
-    right += TBase::inputs[RIGHT_RETURN_INPUT].value * buf_auxReturnGain;
+    left += TBase::inputs[LEFT_RETURN_INPUT].getVoltage(0) * buf_auxReturnGain;
+    right += TBase::inputs[RIGHT_RETURN_INPUT].getVoltage(0) * buf_auxReturnGain;
 
     // output the masters
     const float masterMuteValue = antiPop.get(8);
     const float masterGain = buf_masterGain * masterMuteValue;
-    TBase::outputs[LEFT_OUTPUT].value = left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].value;
-    TBase::outputs[RIGHT_OUTPUT].value = right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].value;
+    TBase::outputs[LEFT_OUTPUT].setVoltage(left * masterGain + TBase::inputs[LEFT_EXPAND_INPUT].getVoltage(0), 0);
+    TBase::outputs[RIGHT_OUTPUT].setVoltage(right * masterGain + TBase::inputs[RIGHT_EXPAND_INPUT].getVoltage(0), 0);
 
-    TBase::outputs[LEFT_SEND_OUTPUT].value = lSend;
-    TBase::outputs[RIGHT_SEND_OUTPUT].value = rSend;
+    TBase::outputs[LEFT_SEND_OUTPUT].setVoltage(lSend, 0);
+    TBase::outputs[RIGHT_SEND_OUTPUT].setVoltage(rSend, 0);
 
     // output channel outputs
     for (int i = 0; i < numChannels; ++i) {
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = buf_channelOuts[i];
+        TBase::outputs[i + CHANNEL0_OUTPUT].setVoltage(buf_channelOuts[i], 0);
     }
 }
 

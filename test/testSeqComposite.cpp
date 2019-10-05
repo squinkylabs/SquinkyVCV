@@ -15,9 +15,9 @@ static void stepN(Sq& sq, int numTimes)
 
 static void genOneClock(Sq& sq)
 {
-    sq.inputs[Sq::CLOCK_INPUT].value = 10;
+    sq.inputs[Sq::CLOCK_INPUT].setVoltage(10, 0);
     stepN(sq, 16);
-    sq.inputs[Sq::CLOCK_INPUT].value = 0;
+    sq.inputs[Sq::CLOCK_INPUT].setVoltage(0, 0);
     stepN(sq, 16);
 }
 

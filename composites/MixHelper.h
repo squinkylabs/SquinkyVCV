@@ -110,7 +110,7 @@ inline void MixHelper<TMixComposite>::procOneMute(
     // from fighting the CV. If CV doesn't change, params can win.
     // master has no CV, so will be -1
     if (cvInput >= 0) {
-        inputTriggers[index].go(mixer->inputs[cvInput].value);
+        inputTriggers[index].go(mixer->inputs[cvInput].getVoltage(0));
     }
     const bool inputCVActive = inputTriggers[index].gate();
     // const bool debug

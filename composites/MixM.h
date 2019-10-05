@@ -325,7 +325,7 @@ inline void MixM<TBase>::stepn(int div)
             const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 
             const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
-                TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+                TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
                 0.0f,
@@ -355,7 +355,7 @@ inline void MixM<TBase>::stepn(int div)
         // now do the pan calculation
         {
             const float balance = TBase::params[i + PAN0_PARAM].value;
-            const float cv = TBase::inputs[i + PAN0_INPUT].value;
+            const float cv = TBase::inputs[i + PAN0_INPUT].getVoltage(0);
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
             unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
@@ -430,26 +430,26 @@ inline void MixM<TBase>::step()
         rSend += channelInput * buf_channelSendGainsARight[i];
         rSendb += channelInput * buf_channelSendGainsBRight[i];
 
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(i + cvOffsetGain);
+        TBase::outputs[i + CHANNEL0_OUTPUT].setVoltage(channelInput * filteredCV.get(i + cvOffsetGain), 0);
     }
 
     // add the returns into the master mix
-    left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGainA;
-    right += TBase::inputs[RIGHT_RETURN_INPUT].value * buf_auxReturnGainA;
+    left += TBase::inputs[LEFT_RETURN_INPUT].getVoltage(0) * buf_auxReturnGainA;
+    right += TBase::inputs[RIGHT_RETURN_INPUT].getVoltage(0) * buf_auxReturnGainA;
 
-    left += TBase::inputs[LEFT_RETURNb_INPUT].value * buf_auxReturnGainB;
-    right += TBase::inputs[RIGHT_RETURNb_INPUT].value * buf_auxReturnGainB;
+    left += TBase::inputs[LEFT_RETURNb_INPUT].getVoltage(0) * buf_auxReturnGainB;
+    right += TBase::inputs[RIGHT_RETURNb_INPUT].getVoltage(0) * buf_auxReturnGainB;
 
     // Do send all the master section CV
     const float masterGain = filteredCV.get(cvOffsetMaster);
-    TBase::outputs[LEFT_OUTPUT].value = left * masterGain;
-    TBase::outputs[RIGHT_OUTPUT].value = right * masterGain;
+    TBase::outputs[LEFT_OUTPUT].setVoltage(left * masterGain, 0);
+    TBase::outputs[RIGHT_OUTPUT].setVoltage(right * masterGain, 0);
 
-    TBase::outputs[LEFT_SEND_OUTPUT].value = lSend;
-    TBase::outputs[RIGHT_SEND_OUTPUT].value = rSend;
+    TBase::outputs[LEFT_SEND_OUTPUT].setVoltage(lSend, 0);
+    TBase::outputs[RIGHT_SEND_OUTPUT].setVoltage(rSend, 0);
 
-    TBase::outputs[LEFT_SENDb_OUTPUT].value = lSendb;
-    TBase::outputs[RIGHT_SENDb_OUTPUT].value = rSendb;
+    TBase::outputs[LEFT_SENDb_OUTPUT].setVoltage(lSendb, 0);
+    TBase::outputs[RIGHT_SENDb_OUTPUT].setVoltage(rSendb, 0);
 }
 
 template <class TBase>

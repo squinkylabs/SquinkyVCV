@@ -165,12 +165,12 @@ template <class TBase>
 inline void Slew4<TBase>::updateKnobs()
 {
     const float combinedA = lin(
-        TBase::inputs[INPUT_RISE].value,
+        TBase::inputs[INPUT_RISE].getVoltage(0),
         TBase::params[PARAM_RISE].value,
         1);
 
     const float combinedR = lin(
-        TBase::inputs[INPUT_FALL].value,
+        TBase::inputs[INPUT_FALL].getVoltage(0),
         TBase::params[PARAM_FALL].value,
         1);
 
@@ -204,7 +204,7 @@ inline void Slew4<TBase>::step()
         // if input is patched, it becomes the new normaled input;
         const bool bPatched = SqPort::isConnected(TBase::inputs[i + INPUT_TRIGGER0]);
         if (bPatched) {
-            triggerIn = TBase::inputs[i + INPUT_TRIGGER0].value;
+            triggerIn = TBase::inputs[i + INPUT_TRIGGER0].getVoltage(0);
         }
 
         slewInput[i] = triggerIn;
@@ -221,14 +221,14 @@ inline void Slew4<TBase>::step()
         float inputValue = 10.f;   
 
         if (SqPort::isConnected(TBase::inputs[i + INPUT_AUDIO0])) {
-            inputValue = TBase::inputs[i + INPUT_AUDIO0].value;
+            inputValue = TBase::inputs[i + INPUT_AUDIO0].getVoltage(0);
         } 
-        TBase::outputs[i + OUTPUT0].value = lag.get(i) * inputValue * .1f;
-        sum += TBase::outputs[i + OUTPUT0].value;
+        TBase::outputs[i + OUTPUT0].setVoltage(lag.get(i) * inputValue * .1f, 0);
+        sum += TBase::outputs[i + OUTPUT0].getVoltage(0);
 
-        // normaled output logic: patched outputs get the sum of the unpatched above them.
+        // normaled output logic: patched outputs get the sum of the un-patched above them.
         if (SqPort::isConnected(TBase::outputs[i + OUTPUT_MIX0])) {
-            TBase::outputs[i + OUTPUT_MIX0].value = sum * _outputLevel;
+            TBase::outputs[i + OUTPUT_MIX0].setVoltage(sum * _outputLevel, 0);
             sum = 0;
         }
     }
