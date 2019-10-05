@@ -17,7 +17,14 @@ public:
     static bool isC(float cv);
     static std::string pitch2str(float cv);
     static const char* semi2name(int);
+    static float quantizeToSemi(float cv);
 };
+
+inline float PitchUtils::quantizeToSemi(float cv)
+{
+    auto pitch = cvToPitch(cv);
+    return pitchToCV(pitch.first, pitch.second);
+}
 
 inline const char* PitchUtils::semi2name(int semi)
 {

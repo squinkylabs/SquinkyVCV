@@ -18,6 +18,14 @@ MidiSequencer::MidiSequencer(MidiSongPtr sng, ISeqSettingsPtr setp, IMidiPlayerA
     ++_mdb;
 }
 
+ void MidiSequencer::setNewSong(MidiSongPtr song)
+ {
+     this->song = song;
+
+     // I think only context needs to be updated.
+     this->context->setNewSong(song);
+ }
+
 MidiSequencerPtr MidiSequencer::make(MidiSongPtr song, std::shared_ptr<ISeqSettings> settings, IMidiPlayerAuditionHostPtr audition)
 {
     assert(settings);
@@ -79,3 +87,4 @@ void MidiSequencer::assertSelectionInTrack() const
         MidiEventPtrC y = x.second;
     }
 }
+

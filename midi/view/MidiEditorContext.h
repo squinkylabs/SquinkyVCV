@@ -9,6 +9,8 @@ class MidiSong;
 class MidiSelectionModel;
 class NoteScreenScale;
 
+using MidiSongPtr = std::shared_ptr<MidiSong>;
+
 class MidiEditorContext  : public std::enable_shared_from_this<MidiEditorContext>
 {
 public:
@@ -154,6 +156,8 @@ public:
      * If >=, contains duration
      */
     float insertNoteDuration = 0;
+
+    void setNewSong(MidiSongPtr song);
     
 private:
     float m_cursorTime = 0;

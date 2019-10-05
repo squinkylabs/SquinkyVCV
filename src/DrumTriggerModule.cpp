@@ -23,7 +23,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    std::shared_ptr<Comp> blank;
+    std::shared_ptr<Comp> drumTrigger;
 private:
 
 };
@@ -35,17 +35,17 @@ void DrumTriggerModule::onSampleRateChange()
 DrumTriggerModule::DrumTriggerModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    blank = std::make_shared<Comp>(this);
+    drumTrigger = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
     onSampleRateChange();
-    blank->init();
+    drumTrigger->init();
 }
 
 void DrumTriggerModule::step()
 {
-    blank->step();
+    drumTrigger->step();
 }
 
 ////////////////////

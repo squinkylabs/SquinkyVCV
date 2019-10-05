@@ -19,6 +19,9 @@ using Module = rack::engine::Module;
 class WidgetComposite
 {
 public:
+
+    using Port = rack::engine::Port;
+    
     WidgetComposite(Module * parent) :
         inputs(parent->inputs),
         outputs(parent->outputs),
@@ -32,12 +35,12 @@ public:
     };
     float engineGetSampleRate()
     {
-        return rack::APP->engine->getSampleRate();
+        return APP->engine->getSampleRate();
     }
     
     float engineGetSampleTime()
     {
-        return rack::APP->engine->getSampleTime();
+        return APP->engine->getSampleTime();
     }
 protected:
     std::vector<Input>& inputs;

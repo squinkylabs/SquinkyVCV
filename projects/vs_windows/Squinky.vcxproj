@@ -28,10 +28,16 @@
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.c" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.c" />
+    <ClCompile Include="..\..\dsp\third-party\midifile\Binasc.cpp" />
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiEvent.cpp" />
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiEventList.cpp" />
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiFile.cpp" />
+    <ClCompile Include="..\..\dsp\third-party\midifile\MidiMessage.cpp" />
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiFileProxy.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiLock.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiPlayer2.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiVoice.cpp" />
@@ -89,6 +95,7 @@
     <ClCompile Include="..\..\test\testMidiEditorNextPrev.cpp" />
     <ClCompile Include="..\..\test\testMidiEditorSelection.cpp" />
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
+    <ClCompile Include="..\..\test\testMidiFile.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer2.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
@@ -178,6 +185,11 @@
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.h" />
+    <ClInclude Include="..\..\dsp\third-party\midifile\Binasc.h" />
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiEvent.h" />
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiEventList.h" />
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiFile.h" />
+    <ClInclude Include="..\..\dsp\third-party\midifile\MidiMessage.h" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO.h" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO3.h" />
     <ClInclude Include="..\..\dsp\third-party\src\SQMath.h" />
@@ -197,6 +209,7 @@
     <ClInclude Include="..\..\midi\controller\IMidiPlayerHost.h" />
     <ClInclude Include="..\..\midi\controller\MidiAudition.h" />
     <ClInclude Include="..\..\midi\controller\MidiEditor.h" />
+    <ClInclude Include="..\..\midi\controller\MidiFileProxy.h" />
     <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h" />
     <ClInclude Include="..\..\midi\controller\MidiLock.h" />
     <ClInclude Include="..\..\midi\controller\MidiPlayer2.h" />
@@ -208,7 +221,7 @@
     <ClInclude Include="..\..\midi\controller\StepRecordInput.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
     <ClInclude Include="..\..\midi\model\ISeqSettings.h" />
-    <ClInclude Include="..\..\midi\model\MidiEvent.h" />
+    <ClInclude Include="..\..\midi\model\SqMidiEvent.h" />
     <ClInclude Include="..\..\midi\model\MidiSequencer.h" />
     <ClInclude Include="..\..\midi\model\MidiSong.h" />
     <ClInclude Include="..\..\midi\model\MidiTrack.h" />
@@ -329,7 +342,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -362,7 +375,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

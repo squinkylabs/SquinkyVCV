@@ -16,11 +16,18 @@
 #include "ctrl/SqToggleLED.h"
 
 #include "seq/SequencerSerializer.h"
+#ifndef _USERKB
+#include "MidiKeyboardHandler.h"
+#endif
 #include "MidiLock.h"
 #include "MidiSong.h"
+#include "../test/TestSettings.h"
 #include "TimeUtils.h"
 
+#include "KbdManager.h"
+#include "MidiFileProxy.h"
 #include "SequencerModule.h"
+#include <osdialog.h>
 
 #ifdef _TIME_DRAWING
 static DrawTimer drawTimer("Seq");
@@ -46,7 +53,23 @@ static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mas
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
-    DECLARE_MANUAL("Seq++ manual", helpUrl);
+
+    void appendContextMenu(Menu *theMenu) override 
+    { 
+        rack::ui::MenuLabel *spacerLabel = new rack::ui::MenuLabel(); 
+        theMenu->addChild(spacerLabel); 
+        ManualMenuItem* manual = new ManualMenuItem("Seq++ manual", helpUrl); 
+        theMenu->addChild(manual);  
+
+        SqMenuItem* midifile = new SqMenuItem(
+            []() { return false; },
+            [this]() { this->loadMidiFile(); }
+        );
+        midifile->text = "load midi file";
+        theMenu->addChild(midifile); 
+    }
+
+    void loadMidiFile();
 
     /**
      * Helper to add a text label to this widget
@@ -72,7 +95,7 @@ struct SequencerWidget : ModuleWidget
         addChild(label);
         return label;
     }
-    #endif
+#endif
 
     void step() override;
 
@@ -83,6 +106,7 @@ struct SequencerWidget : ModuleWidget
 
     void addJacks(SequencerModule *module);
     void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
+    void addStepRecord(SequencerModule *module);
     void toggleRunStop(SequencerModule *module);
 
 #ifdef _TIME_DRAWING
@@ -95,9 +119,40 @@ struct SequencerWidget : ModuleWidget
 #endif
 };
 
+void SequencerWidget::loadMidiFile()
+{
+    static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
+    osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
+    std::string filename;
+    std::string dir;
+	DEFER({
+		osdialog_filters_free(filters);
+	});
+
+	char* pathC = osdialog_file(OSDIALOG_OPEN, dir.c_str(), filename.c_str(), filters);
+    printf("back from open file with path %s\n", pathC);
+    fflush(stdout);
+	if (!pathC) {
+		// Fail silently
+		return;
+	}
+	DEFER({
+		std::free(pathC);
+	});
+
+    MidiSongPtr song = MidiFileProxy::load(pathC);
+    if (song) {
+        _module->postNewSong(song);
+    }
+   
+}
+
+
 void SequencerWidget::step()
  {
     ModuleWidget::step();
+
+    // Advance the scroll position
     if (scrollControl && _module && _module->isRunning()) {
         
         const int y = scrollControl->getValue();
@@ -110,6 +165,15 @@ void SequencerWidget::step()
             auto seq = _module->getSeq();
             seq->editor-> advanceCursorToTime(curTime, false);
         }
+    }
+
+    // give this guy a chance to do some processing on the UI thread.
+    if (_module) {
+#ifdef _USERKB
+        noteDisplay->onUIThread(_module->seqComp, _module->sequencer);
+#else
+        MidiKeyboardHandler::onUIThread(_module->seqComp, _module->sequencer);
+#endif
     }
 }
 
@@ -150,6 +214,12 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
         MidiSequencerPtr seq;
         if (module) {
             seq = module->sequencer;
+        } else {
+            // make enough of a sequence to render
+            MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+            std::shared_ptr<TestSettings> ts = std::make_shared<TestSettings>();
+            std::shared_ptr<ISeqSettings> _settings = std::dynamic_pointer_cast<ISeqSettings>(ts);
+            seq = MidiSequencer::make(song, _settings, nullptr);
         }
         headerDisplay = new AboveNoteGrid(headerPos, headerSize, seq);
         noteDisplay = new NoteDisplay(notePos, noteSize, seq, module);
@@ -159,6 +229,7 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 
     addControls(module, icomp);
     addJacks(module);
+    addStepRecord(module);
  
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -220,7 +291,6 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     });
     addChild(tog);
    
-
     y = yy;
     float controlDx = 40;
 
@@ -240,6 +310,22 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
     }
+}
+
+void SequencerWidget::addStepRecord(SequencerModule *module)
+{
+    const float jacksDx = 40;
+    const float jacksX = 20;
+    const float jacksY = 230;
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 0 * jacksDx, jacksY),
+        module,
+        Comp::CV_INPUT));  
+
+     addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 1 * jacksDx, jacksY),
+        module,
+        Comp::GATE_INPUT));  
 }
 
 void SequencerWidget::addJacks(SequencerModule *module)
@@ -330,6 +416,29 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
         MidiLocker newL(sequencer->song->lock);
         seqComp->setSong(sequencer->song);
     }
+}
+
+void SequencerModule::postNewSong(MidiSongPtr newSong)
+{
+    newSong->assertValid();
+    MidiSongPtr oldSong = sequencer->song;
+    {
+        // Must lock the songs when swapping them or player 
+        // might glitch (or crash).
+        MidiLocker oldL(oldSong->lock);
+        MidiLocker newL(newSong->lock);
+        seqComp->setSong(newSong);
+
+        sequencer->setNewSong(newSong);
+       // sequencer->song = newSong;
+
+    }
+      if (widget) {
+        widget->noteDisplay->songUpdated();
+        widget->headerDisplay->songUpdated();
+    }
+
+    sequencer->assertValid();
 }
 
 void SequencerModule::onReset()

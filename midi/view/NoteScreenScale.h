@@ -2,7 +2,7 @@
 
 class MidiEditorContext;
 
-#include "MidiEvent.h"
+#include "SqMidiEvent.h"
 
 /**
  * This class knows how to map between pitch, time, and screen coordinates.

@@ -462,14 +462,53 @@ static void testSubrangeLoop()
     // now step a bit so that we see clock
     stepN(*seq, 4);
 
-   // assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
-    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
-//    sendClockAndStep(*seq, 0);      
+    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);  
 
     // should be back arount to another loops starting in the first bar.
     assertEQ(seq->getPlayPosition(), 4);
 
 }
+
+static void step(std::shared_ptr<Sq> seq)
+{
+    for (int i = 0; i < 16; ++i) {
+        seq->step();
+    }
+}
+
+
+static void testStepRecord()
+{
+    // DrumTrigger<TestComposite>;
+    std::shared_ptr<Sq> seq = makeWith8Clock();
+
+    //StepRecordInput<Port> sr(cv, gate);
+
+    seq->inputs[Sq::GATE_INPUT].channels = 1;
+    seq->inputs[Sq::GATE_INPUT].voltages[0] = 10;
+    seq->inputs[Sq::CV_INPUT].voltages[0] = 2;
+    step(seq);
+
+    RecordInputData buffer;
+    bool b = seq->poll(&buffer);
+    assert(b);
+    assert(buffer.type == RecordInputData::Type::noteOn);
+    assert(buffer.pitch == 2);
+
+    b = seq->poll(&buffer);
+    assert(!b);
+    step(seq);
+    b = seq->poll(&buffer);
+    assert(!b);
+
+    seq->inputs[Sq::GATE_INPUT].voltages[0] = 0;
+    step(seq);
+
+    b = seq->poll(&buffer);
+    assert(b);
+    assert(buffer.type == RecordInputData::Type::allNotesOff);
+}
+
 
 void testSeqComposite()
 {
@@ -482,4 +521,6 @@ void testSeqComposite()
     testResetGatesLow();
     testLoopingQ();
     testSubrangeLoop();
+
+    testStepRecord();
 }

@@ -1,6 +1,6 @@
 
 #include "IMidiPlayerHost.h"
-#include "MidiEvent.h"
+#include "SqMidiEvent.h"
 #include "MidiSelectionModel.h"
 
 #include <assert.h>

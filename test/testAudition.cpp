@@ -1,6 +1,6 @@
 
 #include "MidiAudition.h"
-#include "MidiEvent.h"
+#include "SqMidiEvent.h"
 #include "MidiSelectionModel.h"
 #include "TestAuditionHost.h"
 #include "TestHost2.h"

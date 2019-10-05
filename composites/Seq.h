@@ -9,6 +9,8 @@
 #include "IMidiPlayerHost.h"
 #include "MidiAudition.h"
 #include "MidiPlayer2.h"
+#include "StepRecordInput.h"
+
 
 namespace rack {
     namespace engine {
@@ -35,12 +37,18 @@ public:
     template <class Tx>
     friend class SeqHost;
 
-    Seq(Module * module, MidiSongPtr song) : TBase(module), runStopProcessor(true)
+    Seq(Module * module, MidiSongPtr song) :
+        TBase(module),
+        runStopProcessor(true),
+        stepRecordInput(Seq<TBase>::inputs[CV_INPUT], Seq<TBase>::inputs[GATE_INPUT])
     {
         init(song);
     }
 
-    Seq(MidiSongPtr song) : TBase(), runStopProcessor(true)
+    Seq(MidiSongPtr song) : 
+        TBase(), 
+        runStopProcessor(true),
+        stepRecordInput(Seq<TBase>::inputs[CV_INPUT], Seq<TBase>::inputs[GATE_INPUT])
     {
         init(song);
     }
@@ -72,6 +80,8 @@ public:
         CLOCK_INPUT,
         RESET_INPUT,
         RUN_INPUT,
+        GATE_INPUT,
+        CV_INPUT,
         NUM_INPUTS
     };
 
@@ -98,6 +108,11 @@ public:
     {
         runStopRequested = true;
     }
+
+    using sr = StepRecordInput<typename TBase::Port>;
+
+    // may be called from any thread, but meant for UI.
+    bool poll(RecordInputData* p);
 
 
     /** Implement IComposite
@@ -145,6 +160,8 @@ private:
      * called by the divider every 'n' step calls
      */
     void stepn(int n);
+
+    StepRecordInput<typename TBase::Port> stepRecordInput;
 };
 
 template <class TBase>
@@ -238,10 +255,20 @@ void  Seq<TBase>::serviceRunStop()
     TBase::lights[RUN_STOP_LIGHT].value = TBase::params[RUNNING_PARAM].value;
 }
 
+// may be called from any thread, but meant for UI.
+template <class TBase>
+bool Seq<TBase>::poll(RecordInputData* p)
+{
+    return stepRecordInput.poll(p);
+}
+
+
+
 template <class TBase>
 void  Seq<TBase>::stepn(int n)
 {
     serviceRunStop();
+    stepRecordInput.step();
     audition->enable(!isRunning() && (TBase::params[AUDITION_PARAM].value > .5f));
     audition->sampleTicksElapsed(n);
     // first process all the clock input params

@@ -425,7 +425,7 @@ static void testPrevWhenBeforeStart()
     seq->context->setCursorTime(1);
     
     seq->context->insertNoteDuration = .25f;
-    seq->editor->insertDefaultNote(false);
+    seq->editor->insertDefaultNote(false, false);
     assertEQ(seq->context->getTrack()->size(), 2);
 
     seq->context->setCursorTime(0);             // cursor before all notes

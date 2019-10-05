@@ -15,6 +15,7 @@
 [Keyboard and focus](#Keyboard-and-focus)\
 [Panel](#Panel)\
 [Clocking and playback](#Clocking-and-playback)\
+[User Keyboard Mapping](./sq-kbd.md) \
 [Keyboard reference](#Keyboard-reference)\
 [Mouse reference](#Mouse-reference)
 

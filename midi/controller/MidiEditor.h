@@ -57,13 +57,17 @@ public:
     void changeStartTime(const std::vector<float>& shifts);
     void changeDuration(bool ticks, int amount);
     void changeDuration(const std::vector<float>& shifts);
+    void setDuration(float duration);
 
     /************* functions that add or remove notes ************/
 
     enum class Durations {Whole, Half, Quarter, Eighth, Sixteenth };
 
-    void insertPresetNote(Durations, bool advanceAfter);
-    void insertDefaultNote(bool advanceAfter);
+    /**
+     * returns the amount it would advance.
+     */
+    float insertPresetNote(Durations, bool advanceAfter);
+    float insertDefaultNote(bool advanceAfter, bool extendSelection);
     void deleteNote();
 
     void grabDefaultNote();
@@ -86,6 +90,13 @@ public:
     void updateSelectionForCursor(bool extendCurrent);
 
     MidiNoteEventPtr getNoteUnderCursor();
+
+    static float getDuration(Durations dur);
+
+    /**
+     * returns the amount of time the editor would advance if it interted the default note
+     */
+    float getAdvanceTimeAfterNote();
 private:
     /**
      * The sequencer we will act on.
@@ -114,12 +125,17 @@ private:
     void updateCursor();
     void setCursorToNote(MidiNoteEventPtr note);
     void setNewCursorPitch(float pitch, bool extendSelection);
-    void insertNoteHelper(Durations dur, bool moveCursorAfter);
+
+    /**
+     *Return the amount by which they would advance
+     */
+    float insertNoteHelper(Durations dur, bool moveCursorAfter);
     void insertNoteHelper2(float dur, bool moveCursorAfter);
-    void insertNoteHelper3(float duration, float advanceAmount);
+    void insertNoteHelper3(float duration, float advanceAmount, bool extendSelection);
 
     void extendSelectionToCurrentNote();
     void deleteNoteSub(const char* name);
+    std::pair<float, float> getDefaultNoteDurationAndAdvance();
 };
 
 using MidiEditorPtr = std::shared_ptr<MidiEditor>;

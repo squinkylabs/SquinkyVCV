@@ -7,26 +7,90 @@
 
 #include <assert.h>
 
-// Crazy linker problem - to get perf suite to link I need to put this here.
-#if !defined(__PLUGIN)
-NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b)
-{
-	return nvgRGBA(r,g,b,255);
+
+#if defined(_SEQ) && !defined(_USERKB)
+
+MidiKeyboardHandler::StepRecordImp MidiKeyboardHandler::stepRecordImp;
+
+ void MidiKeyboardHandler::StepRecordImp::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
+ {
+     if (numNotesActive == 0) {
+         // first note in a new step.
+         // clear selection and get the default advance time
+         sequencer->selection->clear();
+         advanceTime = sequencer->editor->getAdvanceTimeAfterNote();;
+     }
+    const float time = sequencer->context->cursorTime();
+    sequencer->editor->moveToTimeAndPitch(time, pitchCV);
+    
+    // don't advance after, but do extend selection
+    sequencer->editor->insertDefaultNote(false, true);
+    MidiNoteEventPtr note = sequencer->editor->getNoteUnderCursor();
+    assert(note);
+  
+    if (note) {
+        // not needed
+        sequencer->selection->addToSelection(note, true);
+    }
+    lastPitch = pitchCV;
+    ++numNotesActive;  
 }
 
-NVGcolor nvgRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+void MidiKeyboardHandler::StepRecordImp::onAllNotesOff(MidiSequencerPtr sequencer)
 {
-	NVGcolor color;
-	// Use longer initialization to suppress warning.
-	color.r = r / 255.0f;
-	color.g = g / 255.0f;
-	color.b = b / 255.0f;
-	color.a = a / 255.0f;
-	return color;
-}
-#endif
+   // float advanceTime = sequencer->editor->getAdvanceTimeAfterNote();
+    float time = sequencer->context->cursorTime();
 
-#ifdef _SEQ
+    time += advanceTime;
+    sequencer->editor->moveToTimeAndPitch(time, lastPitch);
+    numNotesActive = 0;
+}
+
+void MidiKeyboardHandler::StepRecordImp::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
+{
+    RecordInputData data;
+    bool isData = seqComp->poll(&data);
+    if (isData) {
+        switch (data.type) {
+            case RecordInputData::Type::noteOn:
+                onNoteOn(data.pitch, sequencer);
+                break;
+            case RecordInputData::Type::allNotesOff:
+                onAllNotesOff(sequencer);
+                break;
+            default:
+                assert(false);
+        }
+    }
+}
+
+bool MidiKeyboardHandler::StepRecordImp::isActive() const 
+{
+    return numNotesActive > 0;
+}
+
+bool MidiKeyboardHandler::StepRecordImp::handleInsertPresetNote(
+    MidiSequencerPtr sequencer,
+    MidiEditor::Durations duration, 
+    bool advanceAfter)
+{
+    if (!isActive()) {
+        return false;
+    }
+    // 
+    const float artic = sequencer->context->settings()->articulation();
+    advanceTime = MidiEditor::getDuration(duration);
+    float finalDuration =  advanceTime * artic;
+    sequencer->editor->setDuration(finalDuration);
+    return true;
+}
+
+//************************************************************************
+
+void MidiKeyboardHandler::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
+{
+    stepRecordImp.onUIThread(seqComp, sequencer);
+}
 
 bool MidiKeyboardHandler::doRepeat(unsigned key)
 {
@@ -86,7 +150,7 @@ void MidiKeyboardHandler::handleNoteEditorChange(
             }
             break;
 
-         case MidiEditorContext::NoteAttribute::Duration:
+        case MidiEditorContext::NoteAttribute::Duration:
             {
                 switch(type) {
                     case ChangeType::bracket:
@@ -141,6 +205,18 @@ void MidiKeyboardHandler::handleNoteEditorChange(
 }
 
 extern void sequencerHelp();
+
+void MidiKeyboardHandler::handleInsertPresetNote(
+    MidiSequencerPtr sequencer,
+    MidiEditor::Durations duration, 
+    bool advanceAfter)
+{
+    // First, see if step record wants this event.
+    bool handled = stepRecordImp.handleInsertPresetNote(sequencer, duration, advanceAfter);
+    if (!handled) {
+     sequencer->editor->insertPresetNote(duration, advanceAfter);
+    }
+}
 
 bool MidiKeyboardHandler::handle(
     MidiSequencerPtr sequencer,
@@ -290,14 +366,14 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_E:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Eighth, !shift);
+              //  sequencer->editor->insertPresetNote(MidiEditor::Durations::Eighth, !shift);
                 handled = true;
-
             }
             break;
         case GLFW_KEY_H:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Half, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Half, !shift);
                 handled = true;
             }
             break;
@@ -313,7 +389,7 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_Q:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Quarter, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Quarter, !shift);
                 handled = true;
             }
             break;
@@ -322,7 +398,7 @@ bool MidiKeyboardHandler::handle(
                 if (!ctrl) {
                     sequencer->editor->setNoteEditorAttribute(MidiEditorContext::NoteAttribute::StartTime);
                 } else {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth, !shift);
+                    handleInsertPresetNote(sequencer, MidiEditor::Durations::Sixteenth, !shift);
                 }
                 handled = true;
             }
@@ -337,7 +413,7 @@ bool MidiKeyboardHandler::handle(
             break;
         case GLFW_KEY_W:
             {
-                sequencer->editor->insertPresetNote(MidiEditor::Durations::Whole, !shift);
+                handleInsertPresetNote(sequencer, MidiEditor::Durations::Whole, !shift);
                 handled = true;
             }
             break;
@@ -347,7 +423,7 @@ bool MidiKeyboardHandler::handle(
                     sequencer->editor->cut();
                     handled = true;
                 } else {
-                    sequencer->editor->insertPresetNote(MidiEditor::Durations::Sixteenth, !shift);
+                    handleInsertPresetNote(sequencer, MidiEditor::Durations::Sixteenth, !shift);
                     handled = true;
                 }
             }
@@ -356,7 +432,7 @@ bool MidiKeyboardHandler::handle(
         case GLFW_KEY_INSERT:
         case GLFW_KEY_ENTER:
             {
-                sequencer->editor->insertDefaultNote(!shift);
+                sequencer->editor->insertDefaultNote(!shift, false);
                 handled = true;
             }
             break;
@@ -418,5 +494,26 @@ void MidiKeyboardHandler::doMouseClick(MidiSequencerPtr sequencer,
     } else {
         sequencer->editor->toggleSelectionAt(time, pitchCV);
     }
+}
+#endif
+
+
+
+// Crazy linker problem - to get perf suite to link I need to put this here.
+#if !defined(__PLUGIN)
+NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b)
+{
+	return nvgRGBA(r,g,b,255);
+}
+
+NVGcolor nvgRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+	NVGcolor color;
+	// Use longer initialization to suppress warning.
+	color.r = r / 255.0f;
+	color.g = g / 255.0f;
+	color.b = b / 255.0f;
+	color.a = a / 255.0f;
+	return color;
 }
 #endif

@@ -34,10 +34,22 @@ public:
     /** The various classes we collect
      */
     MidiSelectionModelPtr const selection;
-    MidiSongPtr const song;
+
+    /**
+     * This used to be a const ptr, but to load 
+     * midi file we need to set it. But external
+     * code should not do this directly - should use setNewSong()
+     */
+    MidiSongPtr song;
     MidiEditorContextPtr context;
     MidiEditorPtr editor;
     UndoRedoStackPtr undo;
+
+    /**
+     * Accepts a new song, notifying various
+     * children of the new song.
+     */
+    void setNewSong(MidiSongPtr song);
 protected:
 
 private:

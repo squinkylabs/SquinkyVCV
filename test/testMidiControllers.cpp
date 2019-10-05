@@ -1,6 +1,6 @@
 
 #include "IMidiPlayerHost.h"
-#include "MidiEvent.h"
+//#include "MidiEvent.h"
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
 #include "MidiSong.h"

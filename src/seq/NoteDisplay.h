@@ -3,6 +3,10 @@
 
 #include "MidiSequencer.h"
 #include "NoteScreenScale.h"
+#include "Seq.h"
+
+class KbdManager;
+using KbdManagerPtr = std::shared_ptr<KbdManager>;
 
 /**
  * This class needs some refactoring and renaming.
@@ -25,12 +29,20 @@ public:
      */
     void setSequencer(MidiSequencerPtr seq);
     MidiSequencerPtr getSequencer();
+    void songUpdated();
+
+    void onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer);
+
 private:
     Label* focusLabel = nullptr;
     MidiSequencerPtr sequencer;
     bool cursorState = false;
     int cursorFrameCount = 0;
     bool haveFocus = true;
+#ifdef _USERKB
+    KbdManagerPtr kbdManager;
+#endif
+
     void initEditContext();
 
     std::shared_ptr<class MouseManager> mouseManager;
@@ -51,7 +63,7 @@ private:
     void drawGrid(NVGcontext *vg);
     void drawBackground(NVGcontext *vg);
 
-    static bool isKeyWeNeedToStealFromRack(int key);
+    bool isKeyWeNeedToStealFromRack(int key);
 
     void onSelect(const event::Select &e) override;
     void onDeselect(const event::Deselect &e) override;

@@ -28,11 +28,8 @@ void SqGfx::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
 
 void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int size)
 {
-#ifdef __V1x
-    int f = rack::APP->window->uiFont->handle;
-#else
-    int f = rack::gGuiFont->handle;
-#endif
+    int f = APP->window->uiFont->handle;
+
     // It's a hack to hard code color. Change it later.
     nvgFillColor(vg, UIPrefs::DRAG_TEXT_COLOR);
     nvgFontFaceId(vg, f);

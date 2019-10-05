@@ -1,8 +1,8 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
-#include "MidiEvent.h"
 #include "SqCommand.h"
 
 class MidiEditorContext;
@@ -14,6 +14,7 @@ class MidiSelectionModel;
 class ReplaceDataCommand;
 
 using ReplaceDataCommandPtr = std::shared_ptr<ReplaceDataCommand>;
+using MidiEventPtr = std::shared_ptr<MidiEvent>;
 
 class ReplaceDataCommand : public SqCommand
 {
@@ -41,13 +42,21 @@ public:
      * static factories for replace commands
      */
     static ReplaceDataCommandPtr makeDeleteCommand(std::shared_ptr<MidiSequencer> seq, const char* name);
-    static ReplaceDataCommandPtr makeInsertNoteCommand(std::shared_ptr<MidiSequencer> seq, std::shared_ptr<const MidiNoteEvent>);
+    static ReplaceDataCommandPtr makeInsertNoteCommand(
+        std::shared_ptr<MidiSequencer> seq,
+        std::shared_ptr<const MidiNoteEvent>,
+        bool extendSelection);
     static ReplaceDataCommandPtr makeChangePitchCommand(std::shared_ptr<MidiSequencer> seq, int semitones);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, float delta, float quantizeGrid);
     static ReplaceDataCommandPtr makeChangeStartTimeCommand(std::shared_ptr<MidiSequencer> seq, const std::vector<float>&);
     
-    static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq, float delta);
-    static ReplaceDataCommandPtr makeChangeDurationCommand(std::shared_ptr<MidiSequencer> seq,  const std::vector<float>&);
+    static ReplaceDataCommandPtr makeChangeDurationCommand(
+        std::shared_ptr<MidiSequencer> seq,
+        float delta,
+        bool setDurationAbsolute);
+    static ReplaceDataCommandPtr makeChangeDurationCommand(
+        std::shared_ptr<MidiSequencer> seq,  
+        const std::vector<float>&);
     static ReplaceDataCommandPtr makePasteCommand(std::shared_ptr<MidiSequencer> seq);
 
     static ReplaceDataCommandPtr makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength);
@@ -64,6 +73,11 @@ private:
      */
     float newTrackLength=-1;
     float originalTrackLength=-1;
+
+    /**
+     * When we select new events, should we clear first?
+     */
+    bool extendSelection = false;
 
     /**
      * Some operations require the track length to be extended

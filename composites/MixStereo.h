@@ -327,8 +327,8 @@ inline void MixStereo<TBase>::stepn(int div)
         // look for normaled mono channels
         {
 #ifdef _NN
-            const bool lActive = TBase::inputs[group * 2 + AUDIO0_INPUT].active;
-            const bool rActive = TBase::inputs[group * 2 + AUDIO1_INPUT].active;
+            const bool lActive = TBase::inputs[group * 2 + AUDIO0_INPUT].isConnected();
+            const bool rActive = TBase::inputs[group * 2 + AUDIO1_INPUT].isConnected();
             groupIsMono[group] = lActive && !rActive;
 #endif
         }

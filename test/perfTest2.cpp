@@ -1,4 +1,6 @@
 #include "TestComposite.h"
+
+#include "DrumTrigger.h"
 #include "Filt.h"
 #include "LookupTable.h"
 #include "Mix8.h"
@@ -150,6 +152,22 @@ static void testSlew4()
         }, 1);
 }
 
+using DT = DrumTrigger<TestComposite>;
+static void testDrumTrigger()
+{
+    DT fs;
+    fs.init();
+    fs.inputs[DT::CV_INPUT].active = true;
+    fs.inputs[DT::CV_INPUT].channels = 8;
+    fs.outputs[DT::GATE0_OUTPUT].active = true;
+    fs.outputs[DT::GATE0_OUTPUT].channels = 8;
+    assert(overheadInOut >= 0);
+    MeasureTime<float>::run(overheadInOut, "Polygate", [&fs]() {
+        fs.inputs[DT::CV_INPUT].value = TestBuffers<float>::get();
+        fs.step();
+        return fs.outputs[DT::GATE0_OUTPUT].value;
+        }, 1);
+}
 
 using Filter = Filt<TestComposite>;
 static void testFilt()
@@ -244,10 +262,13 @@ static void testMixM()
         return fs.outputs[Slewer::OUTPUT0].value;
         }, 1);
 }
+
 void perfTest2()
 {
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
+
+    testDrumTrigger();
     testFilt();
     testFilt2();
     testSlew4();

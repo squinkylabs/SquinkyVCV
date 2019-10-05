@@ -372,10 +372,10 @@ static void testShaperChannelsSub(bool ch0, bool ch1)
 {
     const float input = 10;
     Shaper<TestComposite> sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = ch0;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = ch0;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO1].active = ch1;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO1].active = ch1;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = ch0 ? 1 : 0;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = ch0 ? 1 : 0;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO1].channels = ch1 ? 1 : 0;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO1].channels = ch1 ? 1 : 0;
     sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float)Shaper<TestComposite>::Shapes::FullWave;
     sh.params[Shaper<TestComposite>::PARAM_GAIN].value = 5;
     sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = 0;
@@ -414,14 +414,12 @@ static void testShaperOutputsDisconnect()
     using S = Shaper<TestComposite>;
     S s;;
    // s.init();
-    s.inputs[S::INPUT_AUDIO0].active = true;
-    s.inputs[S::INPUT_AUDIO1].active = true;
+    s.inputs[S::INPUT_AUDIO0].channels = 1;
+    s.inputs[S::INPUT_AUDIO1].channels = 1;
     s.inputs[S::INPUT_AUDIO0].value = 10;
     s.inputs[S::INPUT_AUDIO1].value = 10;
-    s.outputs[S::OUTPUT_AUDIO0].active = true;
-    s.outputs[S::OUTPUT_AUDIO1].active = true;
-
-   
+    s.outputs[S::OUTPUT_AUDIO0].channels = 1;
+    s.outputs[S::OUTPUT_AUDIO1].channels = 1;
 
     for (int i = 0; i < 50; ++i) {
         s.step();
@@ -432,8 +430,8 @@ static void testShaperOutputsDisconnect()
     assertGT(s.outputs[S::OUTPUT_AUDIO1].value, 1);
 
     // disconnect the inputs
-    s.inputs[S::INPUT_AUDIO0].active = false;
-    s.inputs[S::INPUT_AUDIO1].active = false;
+    s.inputs[S::INPUT_AUDIO0].channels = 0;
+    s.inputs[S::INPUT_AUDIO1].channels = 0;
 
     for (int i = 0; i < 8; ++i) {
         s.step();

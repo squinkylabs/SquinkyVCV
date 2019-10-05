@@ -28,6 +28,12 @@ void MidiEditorContext::setScaler(std::shared_ptr<NoteScreenScale> _scaler)
     scaler->setContext(ctx);
 }
 
+void MidiEditorContext::setNewSong(MidiSongPtr song) 
+{
+    assert(song);
+    _song = song;
+}
+
 void MidiEditorContext::scrollViewportToCursorPitch()
 {
     //printf("scroll v cursor pitch %f, lo = %f hi = %f\n", m_cursorPitch, pitchLow(), pitchHi());
@@ -35,11 +41,8 @@ void MidiEditorContext::scrollViewportToCursorPitch()
         scrollVertically(-1 * PitchUtils::octave);
     }
     while (m_cursorPitch > pitchHigh()) {
-        //printf("will scroll up\n");
         scrollVertically(1 * PitchUtils::octave);
     }
-    //printf("leaving scroll v cursor pitch %f, lo = %f hi = %f\n", m_cursorPitch, pitchLow(), pitchHi());
-    //fflush(stdout);
 }
 
 void MidiEditorContext::assertCursorInViewport() const
@@ -60,7 +63,6 @@ void MidiEditorContext::assertValid() const
     assertGE(m_cursorPitch, -10);
 
     assert(_settings);
-
     assertCursorInViewport();
 }
 
@@ -72,7 +74,9 @@ void MidiEditorContext::scrollVertically(float pitchCV)
 
 MidiSongPtr MidiEditorContext::getSong() const
 {
-    return _song.lock();
+    MidiSongPtr ret =  _song.lock();
+    assert(ret); 
+    return ret;
 }
 
 MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const

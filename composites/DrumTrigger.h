@@ -1,10 +1,12 @@
 
 #pragma once
 
-#include <assert.h>
-#include <memory>
+#include "Divider.h"
 #include "IComposite.h"
 #include "PitchUtils.h"
+
+#include <assert.h>
+#include <memory>
 
 namespace rack {
     namespace engine {
@@ -24,6 +26,9 @@ public:
     int getNumParams() override;
 };
 
+/**
+ * First impl uses 3.5%, so CPU isn't much of an issue
+ */
 template <class TBase>
 class DrumTrigger : public TBase
 {
@@ -94,6 +99,7 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
+    void stepn(int n);
 
     static float base()
     {
@@ -101,64 +107,61 @@ public:
     }
 
 private:
+    Divider div;
 
-    class OutputChannelState
-    {
-    public:
-        bool gate = false;
-        int inputChannel=0;
-    };
-
-    // for a given OUTPUT channel:
-    //  gate indicated it that output gate was high
-    //  inputChannel indicates which input made gate high
-    OutputChannelState state[numTriggerChannels];
 };
 
 
 template <class TBase>
 inline void DrumTrigger<TBase>::init()
 {
+    div.setup(8, [this] {
+        this->stepn(div.getDiv());
+        });
 }
-
 template <class TBase>
 inline void DrumTrigger<TBase>::step()
 {
-    // iterator over the 8 input channels we monitor
-    // Remember: in here 'i' is the input channel,
-    // index is the output channel - they are not the same!
+    div.step();
+}
+
+template <class TBase>
+inline void DrumTrigger<TBase>::stepn(int n)
+{
+    // for each input channel, the semitone pitch it is at
+    int pitches[16] = {-1};
+    bool gates[16] = {false};
 
     int activeInputs = std::min(numTriggerChannels, int(TBase::inputs[GATE_INPUT].channels));
     activeInputs = std::min(activeInputs, int(TBase::inputs[CV_INPUT].channels));
     for (int i = 0; i < activeInputs; ++i) {
         const float cv = TBase::inputs[CV_INPUT].voltages[i];
-        int index = PitchUtils::cvToSemitone(cv) - 48;
-        if (index >= 0 && index < numTriggerChannels) {
-            // here we have a pitch that we care about
-            const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
-            if (gInput) {
-                // gate low to high at this output's pitch,
-                // lets raise the gate.
-                if (!state[index].gate) {
-                    TBase::outputs[GATE0_OUTPUT + index].value = 10;
-                    TBase::lights[LIGHT0 + index].value = 10;
-                    state[index].gate = true;
+        const int index = PitchUtils::cvToSemitone(cv) - 48;
 
-                    // Remember which input made the gate go high.
-                    // Only that one can turn it off
-                    state[index].inputChannel = i;
-                }
-            } else {
-                if (state[index].gate && state[index].inputChannel == i) {
+        // TODO: use schmidt
+        const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 1;
+        pitches[i] = index;
+        gates[i] = gInput;
+    }
 
-                    // If this output is high, and the input that made it 
-                    // high is now low, then go low.
-                    TBase::outputs[GATE0_OUTPUT + index].value = 0;
-                    TBase::lights[LIGHT0 + index].value = 0;
-                    state[index].gate = false;
-                }
+    bool gateOutputs[numTriggerChannels] = {false};
+    for (int inputChannel = 0; inputChannel < activeInputs; ++inputChannel) {
+        const int pitch = pitches[inputChannel];
+
+        // only look at pitches that are in range
+        if (pitch >= 0 && pitch < numTriggerChannels) {
+            const bool gate = gates[inputChannel];
+            if (gate) {
+                gateOutputs[pitch] = true;
             }
         }
+    }
+
+    for (int outputChannel = 0; outputChannel < numTriggerChannels; ++outputChannel) {
+        const bool gate = gateOutputs[outputChannel];
+
+        TBase::outputs[GATE0_OUTPUT + outputChannel].value = gate ? 10.f : 0.f;
+        TBase::lights[LIGHT0 + outputChannel].value = gate ? 10.f : 0.f;
     }
 }
 

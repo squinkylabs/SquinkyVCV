@@ -192,7 +192,7 @@ rack::ui::MenuItem* SeqSettings::makeNoteCommand(SequencerModule* module)
         if (isNote) {
             editor->deleteNote();
         } else {
-            editor->insertDefaultNote(false);
+            editor->insertDefaultNote(false, false);
         }
     };
 

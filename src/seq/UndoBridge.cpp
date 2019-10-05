@@ -42,7 +42,7 @@ private:
     MidiSequencerPtr getSeq()
     {
         MidiSequencerPtr ret;
-        SequencerModule* module = dynamic_cast<SequencerModule *>(rack::APP->engine->getModule(moduleId));
+        SequencerModule* module = dynamic_cast<SequencerModule *>(APP->engine->getModule(moduleId));
         if (!module) {
             fprintf(stderr, "error getting module in undo\n");
             return ret;
@@ -66,7 +66,7 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd
     cmd->execute(seq);
     auto action = new SeqAction("unknown", cmd, moduleId);
 
-    rack::APP->history->push(action);
+    APP->history->push(action);
 }
 
 #endif

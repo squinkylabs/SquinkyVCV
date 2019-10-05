@@ -70,7 +70,11 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq)
     assert(selection);
     MidiSelectionModelPtr reference = selection->clone();
     assert(reference);
-    selection->clear();
+
+    if (!extendSelection) {
+        selection->clear();
+    }
+    
     for (auto it : addData) {
         auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
         assert(foundIter != mt->end());
@@ -262,15 +266,20 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeStartTimeCommand(MidiSequenc
     return ret;
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta)
+ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequencerPtr seq, float delta, bool setDurationAbsolute)
 {
     seq->assertValid();
-    Xform xform = [delta](MidiEventPtr event, int) {
+    Xform xform = [delta, setDurationAbsolute](MidiEventPtr event, int) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
-            note->duration += delta;
-             // arbitrary min limit.
-            note->duration = std::max(.001f, note->duration);
+            if (setDurationAbsolute) {
+                assert(delta > .001f);
+                note->duration = delta;
+            } else {
+                note->duration += delta;
+                 // arbitrary min limit.
+                note->duration = std::max(.001f, note->duration);
+            }
         }
     };
     auto ret = makeChangeNoteCommand(Ops::Duration, seq, xform, true);
@@ -341,8 +350,12 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
     return ret;
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr seq, MidiNoteEventPtrC origNote)
+ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(
+    MidiSequencerPtr seq,
+    MidiNoteEventPtrC origNote,
+    bool extendSelection)
 {
+   // assert(!extendSelection);
     seq->assertValid();
     MidiNoteEventPtr note = origNote->clonen();
 
@@ -364,6 +377,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeInsertNoteCommand(MidiSequencerPtr
         toAdd,
         newDuration);
     ret->name = "insert note";
+    ret->extendSelection = extendSelection;
     return ret;
 }
 

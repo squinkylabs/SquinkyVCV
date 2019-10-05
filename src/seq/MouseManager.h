@@ -47,4 +47,7 @@ private:
 
     std::tuple<bool, float, float> xyToTimePitch(float x, float y) const;
 
+    static void doMouseClick( MidiSequencerPtr sequencer, float time, float pitchCV,
+        bool shiftKey, bool ctrlKey);
+
 };

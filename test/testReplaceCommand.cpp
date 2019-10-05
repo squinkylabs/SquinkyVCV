@@ -180,7 +180,7 @@ static void testInsert()
     note->pitchCV = 1.1f;
     note->duration = 2;
 
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
 
@@ -227,7 +227,7 @@ static void testStartTimeUnquantized()
     note->startTime = 100;
     note->pitchCV = 1.1f;
     note->duration = 2;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
     assertEQ(seq->selection->size(), 1);
@@ -266,7 +266,7 @@ static void testStartTimeQuantized()
     note->startTime = 100;
     note->pitchCV = 1.1f;
     note->duration = 2;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
     assertEQ(seq->selection->size(), 1);
@@ -302,12 +302,12 @@ static void testDuration()
     note->startTime = 10;
     note->pitchCV = 1.1f;
     note->duration = 5;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note);
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
     cmd->execute(seq);
     seq->assertValid();
 
     // now increase dur by 1
-    cmd = ReplaceDataCommand::makeChangeDurationCommand(seq, 1.f);
+    cmd = ReplaceDataCommand::makeChangeDurationCommand(seq, 1.f, false);
     seq->undo->execute(seq, cmd);
     seq->assertValid();
     note = track->getFirstNote();
@@ -325,6 +325,56 @@ static void testDuration()
     seq->assertValid();
     note = track->getFirstNote();
     assertEQ(note->duration, 6.f);
+}
+
+static void testDurationMulti(bool absoluteDuration)
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
+    MidiLocker l(ms->lock);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+     // put a note into it at time 10, dur 5;
+    auto track = seq->context->getTrack();
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->startTime = 10;
+    note->pitchCV = 1.1f;
+    note->duration = 5;
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
+    cmd->execute(seq);
+    seq->assertValid();
+
+    // put a second note into it at time 12, dur 2;
+    note = std::make_shared<MidiNoteEvent>();
+    note->startTime = 11;
+    note->pitchCV = 1.1f;
+    note->duration = 1;
+    cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, true);
+    cmd->execute(seq);
+    seq->assertValid();
+
+    assertEQ(seq->selection->size(), 2);
+
+    // now increase dur by 1 (or set to one)
+    const float expectedDur1 = absoluteDuration ? 1.f : 6.f;
+    const float expectedDur2 = absoluteDuration ? 1.f : 2.f ;
+    cmd = ReplaceDataCommand::makeChangeDurationCommand(seq, 1.f, absoluteDuration);
+    seq->undo->execute(seq, cmd);
+    seq->assertValid();
+    note = track->getFirstNote();
+    assert(note);
+    assertEQ(note->startTime, 10.f);
+    assertEQ(note->duration, expectedDur1);
+
+    note = track->getSecondNote();
+    assert(note);
+    assertEQ(note->startTime, 11.f);
+    assertEQ(note->duration, expectedDur2);
+}
+
+static void testDurationMulti()
+{
+    testDurationMulti(false);
+    testDurationMulti(true);
 }
 
 static void testCut()
@@ -359,5 +409,6 @@ void testReplaceCommand()
     testStartTimeUnquantized();
     testStartTimeQuantized();
     testDuration();
+    testDurationMulti();
     testCut();
 }

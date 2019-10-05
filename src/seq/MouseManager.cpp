@@ -1,5 +1,6 @@
 #include "ISeqSettings.h"
-#include "MidiKeyboardHandler.h"    // TODO: get rid of this
+
+//#include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiSequencer.h"
 #include "MouseManager.h"
 #include "NoteDragger.h"
@@ -30,6 +31,16 @@ std::tuple<bool, float, float> MouseManager::xyToTimePitch(float x, float y) con
         pitchCV = scaler->yToMidiCVPitch(y);
     }
     return std::make_tuple(bInBounds, time, pitchCV);
+}
+
+void MouseManager::doMouseClick(MidiSequencerPtr sequencer, 
+    float time, float pitchCV, bool shiftKey, bool ctrlKey)
+{
+    if (!ctrlKey) {
+        sequencer->editor->selectAt(time, pitchCV, shiftKey);
+    } else {
+        sequencer->editor->toggleSelectionAt(time, pitchCV);
+    }
 }
 
 bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bool shift)
@@ -63,7 +74,7 @@ bool MouseManager::onMouseButton(float x, float y, bool isPressed, bool ctrl, bo
         mouseClickWasIgnored = false;
 
         // now set/extend the selection
-        MidiKeyboardHandler::doMouseClick(
+        doMouseClick(
             sequencer,
             time,
             pitchCV,
@@ -89,7 +100,7 @@ bool MouseManager::onDoubleClick()
     if (note) {
         sequencer->editor->deleteNote();
     } else {
-        sequencer->editor->insertDefaultNote(false);
+        sequencer->editor->insertDefaultNote(false, false);
     }
     return true;
 }

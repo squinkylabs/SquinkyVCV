@@ -1,7 +1,7 @@
 
 #include "asserts.h"
 #include "MidiEditor.h"
-#include "MidiEvent.h"
+//#include "MidiEvent.h"
 #include "MidiLock.h"
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
@@ -214,6 +214,22 @@ static void testChangeDuration1()
     firstNote = seq->context->getTrack()->getFirstNote();
     const float d2 = firstNote->duration;
     assertGT(d2, 0);
+    seq->assertValid();
+}
+
+static void testSetDuration()
+{
+    MidiSequencerPtr seq = makeTest(false);
+    seq->editor->selectNextNote();          // now first is selected
+
+    MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
+    MLockTest l(seq);
+    const float newDuration = 3.456f;
+    seq->editor->setDuration(newDuration);
+
+    firstNote = seq->context->getTrack()->getFirstNote();
+    const float d1 = firstNote->duration;
+    assertEQ(d1, newDuration);
     seq->assertValid();
 }
 
@@ -468,8 +484,8 @@ static void testInsertSub(int advancUnitsBeforeInsert, bool advanceAfter, float 
     
     // let's use the grid
     seq->context->insertNoteDuration = 0;
-    seq->editor->insertDefaultNote(advanceAfter);
-
+    float advAmount = seq->editor->insertDefaultNote(advanceAfter, false);
+    assertEQ(advAmount, testGridSize);
     auto it = seq->context->getTrack()->begin();
     assert(it != seq->context->getTrack()->end());
     MidiEventPtr ev = it->second;
@@ -551,7 +567,8 @@ static void testInsertPresetNote(MidiEditor::Durations dur, bool advance, float 
     float pitch = seq->context->cursorPitch();
     MLockTest l(seq);
 
-    seq->editor->insertPresetNote(dur, advance);
+    float advAmount = seq->editor->insertPresetNote(dur, advance);
+    assertEQ(advAmount, getDuration(dur));
 
     auto it = seq->context->getTrack()->begin();
     assert(it != seq->context->getTrack()->end());
@@ -584,6 +601,40 @@ static void testInsertPresetNotes()
     testInsertPresetNote(MidiEditor::Durations::Whole, true, .1f);
     testInsertPresetNote(MidiEditor::Durations::Eighth, false, 1.01f);
     testInsertPresetNote(MidiEditor::Durations::Sixteenth, true, .2f);
+}
+
+
+static void testInsertTwoNotes(bool extendSelection)
+{
+    MidiSequencerPtr seq = makeTest(true);
+    assert(seq->selection->empty());
+    const int initialSize = seq->context->getTrack()->size();
+
+
+    MLockTest l(seq);
+  
+    float pitch = 3;
+    float time = 1.2f;
+
+    seq->editor->moveToTimeAndPitch(time, pitch);
+    seq->context->setCursorPitch(pitch);
+    float advAmount = seq->editor->insertDefaultNote(false, extendSelection);
+    assertEQ(advAmount, .25f);          // default grid
+
+    pitch = 4;
+    seq->editor->moveToTimeAndPitch(time, pitch);
+    seq->context->setCursorPitch(pitch);
+    seq->editor->insertDefaultNote(false, extendSelection);
+
+    const int expectedSelectionCount = extendSelection ? 2 : 1;
+    assertEQ(seq->selection->size(), expectedSelectionCount);
+}
+
+
+static void testInsertTwoNotes()
+{
+    testInsertTwoNotes(true);
+    testInsertTwoNotes(false);
 }
 
 static void testDelete()
@@ -705,6 +756,7 @@ void testMidiEditorSub(int trackNumber)
 
     testChangeDuration1();
     testChangeDurationTicks();
+    testSetDuration();
 
     testTrans2();
     testTrans3();
@@ -723,6 +775,7 @@ void testMidiEditorSub(int trackNumber)
     testDelete();
     testDelete2();
     testInsertPresetNotes();
+    testInsertTwoNotes();
 
     testChangeTrackLength();
     testChangeTrackLengthNoSnap();

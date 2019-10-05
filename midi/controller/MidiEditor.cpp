@@ -273,7 +273,6 @@ void MidiEditor::changeStartTime(bool ticks, int amount)
         quantizeGrid = settings->getQuarterNotesInGrid();
     }
 
-
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeStartTimeCommand(seq(), advanceAmount, quantizeGrid);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
@@ -308,7 +307,7 @@ void MidiEditor::changeDuration(bool ticks, int amount)
 
     float advanceAmount = amount * (ticks ? (1.f / 16.f) : (1.f / 4.f));
 
-    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount);
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), advanceAmount, false);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 }
@@ -320,6 +319,17 @@ void MidiEditor::changeDuration(const std::vector<float>& shifts)
     AuditionLocker u(seq()->selection);       // don't audition while shifting
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), shifts);
+    seq()->undo->execute(seq(), cmd);
+    seq()->assertValid();
+}
+
+void MidiEditor::setDuration(float duration)
+{
+    MidiLocker l(seq()->song->lock);
+    AuditionLocker u(seq()->selection);       // don't audition while shifting
+    assert(duration > 0);
+
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChangeDurationCommand(seq(), duration, true);
     seq()->undo->execute(seq(), cmd);
     seq()->assertValid();
 }
@@ -519,7 +529,7 @@ void MidiEditor::toggleSelectionAt(float time, float pitchCV)
 
 }
 
-static float getDuration(MidiEditor::Durations dur)
+float MidiEditor::getDuration(MidiEditor::Durations dur)
 {
     float ret = 0;
     switch (dur) {
@@ -544,58 +554,25 @@ static float getDuration(MidiEditor::Durations dur)
     return ret;
 }
 
-void MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
+float MidiEditor::insertNoteHelper(Durations dur, bool moveCursorAfter)
 {
     float duration = getDuration(dur);
     insertNoteHelper2(duration, moveCursorAfter);
+    return duration;
 }
-
-#if 0
-void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter, bool was_quantizeDuration)
-{
-    MidiLocker l(seq()->song->lock);
-    const float artic = seq()->context->settings()->articulation();
-    assertGT(artic, .001);
-    assertLT(artic, 1.1);
-
-    const float cursorAdvance = moveCursorAfter ? dur : 0;
-    const float duration = dur * artic;
-
-    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
-
-    // let's not insert quantized any more
-    const float unquantizedStart = seq()->context->cursorTime();
-    const float startTime = unquantizedStart;
-
-    note->startTime = startTime;
-    note->pitchCV = seq()->context->cursorPitch();
-    float finalDuration = duration;
-
-    note->duration = finalDuration;
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
-
-    seq()->undo->execute(seq(), cmd);
-    seq()->context->setCursorTime(note->startTime + cursorAdvance);
-
-    updateSelectionForCursor(false);
-    seq()->assertValid();
-}
-#endif
 
 void MidiEditor::insertNoteHelper2(float dur, bool moveCursorAfter)
 {
-
     const float artic = seq()->context->settings()->articulation();
     assertGT(artic, .001);
     assertLT(artic, 1.1);
 
     const float cursorAdvance = moveCursorAfter ? dur : 0;
     const float duration = dur * artic;
-    insertNoteHelper3(duration, cursorAdvance);
-
+    insertNoteHelper3(duration, cursorAdvance, false);
 }
 
-void MidiEditor::insertNoteHelper3(float duration, float advanceAmount)
+void MidiEditor::insertNoteHelper3(float duration, float advanceAmount, bool extendSelection)
 {
     MidiLocker l(seq()->song->lock);
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
@@ -604,18 +581,16 @@ void MidiEditor::insertNoteHelper3(float duration, float advanceAmount)
     note->pitchCV = seq()->context->cursorPitch();
     note->duration = duration;
 
-    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note);
-
+    auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note, extendSelection);
     seq()->undo->execute(seq(), cmd);
     seq()->context->setCursorTime(note->startTime + advanceAmount);
-
-    updateSelectionForCursor(false);
+    updateSelectionForCursor(extendSelection);
     seq()->assertValid();
 }
 
-void MidiEditor::insertPresetNote(Durations dur, bool advanceAfter)
+float MidiEditor::insertPresetNote(Durations dur, bool advanceAfter)
 {
-    insertNoteHelper(dur, advanceAfter);
+    return insertNoteHelper(dur, advanceAfter);
 }
 
 void MidiEditor::grabDefaultNote()
@@ -626,7 +601,7 @@ void MidiEditor::grabDefaultNote()
     }
 }
 
-void MidiEditor::insertDefaultNote(bool advanceAfter)
+std::pair<float, float> MidiEditor::getDefaultNoteDurationAndAdvance()
 {
     float duration = seq()->context->insertNoteDuration;
     float advanceAmount = 0;
@@ -639,29 +614,38 @@ void MidiEditor::insertDefaultNote(bool advanceAfter)
 
         float totalDuration = seq()->context->settings()->getQuarterNotesInGrid();
         duration = totalDuration * artic;
-        if (advanceAfter) {
-            advanceAmount = totalDuration;
-        }
+        advanceAmount = totalDuration;
     } else {
         // this case we have an insert duration
         // need to guess total
-        if (advanceAfter) {
-            float grid = seq()->context->settings()->getQuarterNotesInGrid();
-            advanceAmount = (float) TimeUtils::quantize(duration, grid, false);
-            while (advanceAmount < duration) {
-                advanceAmount += grid;
-            }
+
+        float grid = seq()->context->settings()->getQuarterNotesInGrid();
+        advanceAmount = (float) TimeUtils::quantize(duration, grid, false);
+        while (advanceAmount < duration) {
+            advanceAmount += grid;
         }
     }
-    insertNoteHelper3(duration, advanceAmount);
+    return std::make_pair(duration, advanceAmount);
 }
 
-#if 0
-void MidiEditor::insertNote(float duration, bool advanceAfter)
+
+float MidiEditor::getAdvanceTimeAfterNote()
 {
-    insertNoteHelper2(duration, advanceAfter, true);
+    auto x = getDefaultNoteDurationAndAdvance();
+    return x.second;
 }
-#endif
+
+// TODO: use the above to calc advance
+// ACtually, combine them
+
+float MidiEditor::insertDefaultNote(bool advanceAfter, bool extendSelection)
+{
+    auto x = getDefaultNoteDurationAndAdvance();
+    const float duration = x.first;
+    const float advanceAmount = advanceAfter ? x.second : 0;
+    insertNoteHelper3(duration, advanceAmount, extendSelection);
+    return duration;
+}
 
 void MidiEditor::deleteNote()
 {
@@ -688,7 +672,6 @@ new version of updateSelectionForCursor
 1) find note under cursor
 2) add/replace selection
 */
-
 void MidiEditor::updateSelectionForCursor(bool extendCurrent)
 {
     MidiNoteEventPtr note = getNoteUnderCursor();
@@ -751,7 +734,7 @@ void MidiEditor::extendSelectionToCurrentNote()
 
     // now boundingBox is the final selection area
     // Find all notes in new bounds
-    // terator_pair getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh);
+    // iterator_pair getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh);
     MidiEditorContext::iterator_pair it = seq()->context->getEvents(
         boundingBox.pos.x,
         boundingBox.getRight(),
@@ -882,9 +865,8 @@ void MidiEditor::copy()
     if (track->size() == 0) {
         return;
     }
+    
     // TODO: make helper? Adding a final end event
-
-
     auto it = track->end();
     --it;
     MidiEventPtr lastEvent = it->second;

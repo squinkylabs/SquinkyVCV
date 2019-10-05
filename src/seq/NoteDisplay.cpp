@@ -11,7 +11,10 @@
 #include "MidiSequencer.h"
 #include <GLFW/glfw3.h>
 #include "UIPrefs.h"
+#include "KbdManager.h"
+#ifndef _USERKB
 #include "MidiKeyboardHandler.h"
+#endif
 #include "MouseManager.h"
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
@@ -45,17 +48,25 @@ NoteDisplay::NoteDisplay(
     focusLabel->color = SqHelper::COLOR_WHITE;
     addChild(focusLabel);
     updateFocus(false);
+#ifdef _USERKB
+    kbdManager = std::make_shared<KbdManager>();
+#endif
+}
+
+
+void NoteDisplay::songUpdated()
+{
+    initEditContext();
+    // re-associate seq and mouse manager
+    mouseManager = std::make_shared<MouseManager>(sequencer); 
 }
 
 void NoteDisplay::setSequencer(MidiSequencerPtr seq)
 {
-    assert(seq.get());
+    assert(seq);
     sequencer = seq;
     sequencer->assertValid();
-    initEditContext();
-
-    // re-associate seq and mouse manager
-    mouseManager = std::make_shared<MouseManager>(sequencer);
+    songUpdated();
 }
 
 void NoteDisplay::initEditContext()
@@ -236,6 +247,13 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     }
 }
 
+void NoteDisplay::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
+{
+#ifdef _USERKB
+    kbdManager->onUIThread(seqComp, sequencer);
+#endif
+}
+
 /******************** All V1 keyboard handling here *******************
  *
  */
@@ -305,6 +323,12 @@ void NoteDisplay::onSelectKey(const event::SelectKey &e)
 
 bool NoteDisplay::isKeyWeNeedToStealFromRack(int key)
 {
+#ifdef _USERKB
+    if (!kbdManager->shouldGrabKeys())
+    {
+        return false;
+    }
+#endif
     bool isCursor = false;
     switch (key) {
         case GLFW_KEY_LEFT:
@@ -333,8 +357,11 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
     }
 }
 
+
 bool NoteDisplay::handleKey(int key, int mods, int action)
 {
+  //  fprintf(stderr, "\n** NoteDisplay::handleKey, action = %d (press = %d, repeat = %d\n", action,
+  //      GLFW_PRESS, GLFW_REPEAT);
     bool handle = false;
     bool repeat = false;
     switch (action) {
@@ -349,16 +376,27 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
     }
 
     if (repeat) {
+        // TODO: how will we handle repeat in the _USERKB work
+       
+#ifdef _USERKB
+        handle = true;
+#else
         handle = MidiKeyboardHandler::doRepeat(key);
+#endif
     }
 
     bool handled = false;
     if (handle) {
+#ifdef _USERKB
+        handled = kbdManager->handle(sequencer, key, mods);
+#else
         handled = MidiKeyboardHandler::handle(sequencer, key, mods);
+#endif
         if (handled) {
             rack::APP->event->setSelected(this);
         }
     }
+   // fprintf(stderr, "NoteDisplay::handleKey ret = %d\n", handled);
     return handled;
 }
 

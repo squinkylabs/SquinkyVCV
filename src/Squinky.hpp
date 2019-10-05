@@ -23,21 +23,12 @@
 //#define _CH10
 //#define _LFNB
 #define _MIX_STEREO
+#define _USERKB
 
 //#define _BLANKMODULE
 
-#ifndef __V1x
-    #define _CHBG
-    #define _TBOOST
-    #define _BOOTY
-    #define _TREM
-#endif
-
-#if defined(__V1x) && 1
-    #define _MIX4
-    #define _MIXM
-#endif
-
+#define _MIX4
+#define _MIXM
 #define _DTMODULE
 
 using namespace rack;
