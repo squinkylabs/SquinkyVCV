@@ -104,7 +104,7 @@ public:
     }
 
 private:
-
+#if 0
     class OutputChannelState
     {
     public:
@@ -119,6 +119,7 @@ private:
     OutputChannelState state[numTriggerChannels];
 
     void processInput(int ouputChannel, bool gate, int inputChannel);
+#endif
 };
 
 
@@ -127,125 +128,45 @@ inline void DrumTrigger<TBase>::init()
 {
 }
 
-// Q: what is the cireteria for turning off a "dead" channel?
-//          the channel ouput must be high.
-//          but the input channel that made it high now has a different pitch than before,
-//          so it is assigned to a different output channel
-// one way to imp would be to keep track if which channels were set this call to step(),
-// and any outputs that are still high that shouldn't be can get cleared.
-template <class TBase>
-inline void DrumTrigger<TBase>::processInput(int outputChannel, bool gate, int inputChannel)
-{
-    if (gate) {
-        // remmember if someone found the gate high for this output channel
-        state[outputChannel].gateThisStep = gate;
-    }
-   // fprintf(stderr, "set state[%d].gateThisStep = %d\n", outputChannel, gate);
-    if (gate) {
-        // gate low to high at this output's pitch,
-        // lets raise the gate.
-        //    (but we need to see if this the ..,
-        if (!state[outputChannel].gate) {
-            TBase::outputs[GATE0_OUTPUT + outputChannel].value = 10;
-            TBase::lights[LIGHT0 + outputChannel].value = 10;
-            state[outputChannel].gate = true;
-
-            // Remember which input made the gate go high.
-            // Only that one can turn it off
-            state[outputChannel].inputChannel = inputChannel;
-        }
-    } else {
-        if (state[outputChannel].gate && state[outputChannel].inputChannel == inputChannel) {
-
-            // If this output is high, and the input that made it 
-            // high is now low, then go low.
-            TBase::outputs[GATE0_OUTPUT + outputChannel].value = 0;
-            TBase::lights[LIGHT0 + outputChannel].value = 0;
-
-            // TODO: shouldn't this be outputChannel?
-            state[inputChannel].gate = false;
-           // state[outputChannel].gate = false;
-        }
-    }
-}
-
 template <class TBase>
 inline void DrumTrigger<TBase>::step()
 {
-    for (int i = 0; i < numTriggerChannels; ++i) {
-        state[i].gateThisStep = false;
-    }
-    // iterator over the 8 input channels we monitor
-    // Remember: in here 'i' is the input channel,
-    // index is the output channel - they are not the same!
+    // for each input channel, the semitone pitch it is at
+    int pitches[16] = {-1};
+    bool gates[16] = {false};
 
     int activeInputs = std::min(numTriggerChannels, int(TBase::inputs[GATE_INPUT].channels));
     activeInputs = std::min(activeInputs, int(TBase::inputs[CV_INPUT].channels));
     for (int i = 0; i < activeInputs; ++i) {
         const float cv = TBase::inputs[CV_INPUT].voltages[i];
-        int index = PitchUtils::cvToSemitone(cv) - 48;
-        if (index >= 0 && index < numTriggerChannels) {
-             // here we have a pitch that we care about
-            const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
-            processInput(index, gInput, i);
-        }
+        const int index = PitchUtils::cvToSemitone(cv) - 48;
+
+        // TODO: use schmidt
+        const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 1;
+        pitches[i] = index;
+        gates[i] = gInput;
     }
 
-    for (int i = 0; i < numTriggerChannels; ++i) {
-        if (state[i].gate && !state[i].gateThisStep) {
-          //  fprintf(stderr, "new logic kicking in on channel %d\n", i);
-            //assert(false);
+    bool gateOutputs[numTriggerChannels] = {false};
+    for (int inputChannel = 0; inputChannel < activeInputs; ++inputChannel) {
+        const int pitch = pitches[inputChannel];
 
-            // break this out (???)
-            TBase::outputs[GATE0_OUTPUT + i].value = 0;
-            TBase::lights[LIGHT0 + i].value = 0;
-            state[i].gate = false;
-        }
-    }
-}
-
-#if 0 // orig
-template <class TBase>
-inline void DrumTrigger<TBase>::step()
-{
-    // iterator over the 8 input channels we monitor
-    // Remember: in here 'i' is the input channel,
-    // index is the output channel - they are not the same!
-
-    int activeInputs = std::min(numTriggerChannels, int(TBase::inputs[GATE_INPUT].channels));
-    activeInputs = std::min(activeInputs, int(TBase::inputs[CV_INPUT].channels));
-    for (int i = 0; i < activeInputs; ++i) {
-        const float cv = TBase::inputs[CV_INPUT].voltages[i];
-        int index = PitchUtils::cvToSemitone(cv) - 48;
-        if (index >= 0 && index < numTriggerChannels) {
-            // here we have a pitch that we care about
-            const bool gInput = TBase::inputs[GATE_INPUT].voltages[i] > 5;
-            if (gInput) {
-                // gate low to high at this output's pitch,
-                // lets raise the gate.
-                if (!state[index].gate) {
-                    TBase::outputs[GATE0_OUTPUT + index].value = 10;
-                    TBase::lights[LIGHT0 + index].value = 10;
-                    state[index].gate = true;
-
-                    // Remember which input made the gate go high.
-                    // Only that one can turn it off
-                    state[index].inputChannel = i;
-                }
-            } else {
-                if (state[index].gate && state[index].inputChannel == i) {
-
-                    // If this output is high, and the input that made it 
-                    // high is now low, then go low.
-                    TBase::outputs[GATE0_OUTPUT + index].value = 0;
-                    TBase::lights[LIGHT0 + index].value = 0;
-                    state[index].gate = false;
-                }
+        // only look at pitches that are in range
+        if (pitch >= 0 && pitch < numTriggerChannels) {
+            const bool gate = gates[inputChannel];
+            if (gate) {
+                gateOutputs[pitch] = true;
             }
         }
     }
+
+    for (int outputChannel = 0; outputChannel < numTriggerChannels; ++outputChannel) {
+        const bool gate = gateOutputs[outputChannel];
+
+        TBase::outputs[GATE0_OUTPUT + outputChannel].value = gate ? 10.f : 0.f;
+        TBase::lights[LIGHT0 + outputChannel].value = gate ? 10.f : 0.f;
+    }
 }
-#endif
 
 template <class TBase>
 int DrumTriggerDescription<TBase>::getNumParams()
