@@ -52,6 +52,8 @@ public:
 
     template<typename Q>
     friend class MixHelper;
+    template<typename Q>
+    friend class MixPolyHelper;
 
     Mix4(rack::engine::Module * module) : TBase(module)
     {

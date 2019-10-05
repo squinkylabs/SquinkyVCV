@@ -224,32 +224,6 @@ public:
     };
 
  
-
-#if 0   // old ones
-    struct Input
-    {
-        /** Voltage of the port, zero if not plugged in. Read-only by Module */
-        float value = 0.0;
-        /** Whether a wire is plugged in */
-        bool active = false;
-        Light plugLights[2];
-        /** Returns the value if a wire is plugged in, otherwise returns the given default value */
-        float normalize(float normalValue)
-        {
-            return active ? value : normalValue;
-        }
-    };
-
-    struct Output
-    {
-        /** Voltage of the port. Write-only by Module */
-        float value = 0.0;
-        /** Whether a wire is plugged in */
-        bool active = true;
-        Light plugLights[2];
-    };
-#endif
-
     std::vector<Input> inputs;
     std::vector<Output> outputs;
     std::vector<Param> params;

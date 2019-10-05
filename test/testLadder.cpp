@@ -390,8 +390,8 @@ static void testFiltOutputsDisconnect()
     f.init();
     f.inputs[F::L_AUDIO_INPUT].channels = 1;
     f.inputs[F::R_AUDIO_INPUT].channels = 1;
-    f.inputs[F::L_AUDIO_INPUT].value = 10;
-    f.inputs[F::R_AUDIO_INPUT].value = 10;
+    f.inputs[F::L_AUDIO_INPUT].setVoltage(10, 0);
+    f.inputs[F::R_AUDIO_INPUT].setVoltage(10, 0);
     f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
     f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
 
@@ -402,8 +402,8 @@ static void testFiltOutputsDisconnect()
     }
 
     // should be passing DC already
-    assertGT(f.outputs[F::L_AUDIO_OUTPUT].value, 1);
-    assertGT(f.outputs[F::R_AUDIO_OUTPUT].value, 1);
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
+    assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
 
     // disconnect the inputs
     f.outputs[F::L_AUDIO_INPUT].channels = 0;
@@ -414,8 +414,8 @@ static void testFiltOutputsDisconnect()
     }
 
     // disconnected should go to zero.
-    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].value, 0);
-    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].value, 0);
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 0);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 0);
 
 }
 
@@ -427,8 +427,8 @@ static void testFiltOutputsRightDisconnect()
     f.init();
     f.inputs[F::L_AUDIO_INPUT].channels = 1;
     f.inputs[F::R_AUDIO_INPUT].channels = 0;
-    f.inputs[F::L_AUDIO_INPUT].value = 10;
-    f.inputs[F::R_AUDIO_INPUT].value = 0;
+    f.inputs[F::L_AUDIO_INPUT].setVoltage(10, 0);
+    f.inputs[F::R_AUDIO_INPUT].setVoltage(0, 0);
     f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
     f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
 
@@ -439,8 +439,8 @@ static void testFiltOutputsRightDisconnect()
     }
 
     // should be passing DC already
-    assertGT(f.outputs[F::L_AUDIO_OUTPUT].value, 1);
-    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].value, (f.outputs[F::L_AUDIO_OUTPUT].value));
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), (f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0)));
 
 }
 
@@ -452,8 +452,8 @@ static void testFiltOutputsLeftDisconnect()
     f.init();
     f.inputs[F::L_AUDIO_INPUT].channels = 0;
     f.inputs[F::R_AUDIO_INPUT].channels = 1;
-    f.inputs[F::L_AUDIO_INPUT].value = 0;
-    f.inputs[F::R_AUDIO_INPUT].value = 10;
+    f.inputs[F::L_AUDIO_INPUT].setVoltage(0,0);
+    f.inputs[F::R_AUDIO_INPUT].setVoltage(10, 0);
     f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
     f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
 
@@ -464,8 +464,8 @@ static void testFiltOutputsLeftDisconnect()
     }
 
     // should be passing DC already
-    assertGT(f.outputs[F::L_AUDIO_OUTPUT].value, 1);
-    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].value, (f.outputs[F::L_AUDIO_OUTPUT].value));
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), (f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0)));
 
 }
 

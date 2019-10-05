@@ -142,13 +142,13 @@ static void testSlew4()
 
     fs.init();
 
-    fs.inputs[Slewer::INPUT_AUDIO0].value = 0;
+    fs.inputs[Slewer::INPUT_AUDIO0].setVoltage(0, 0);
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "Slade", [&fs]() {
-        fs.inputs[Slewer::INPUT_TRIGGER0].value = TestBuffers<float>::get();
+        fs.inputs[Slewer::INPUT_TRIGGER0].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[Slewer::OUTPUT0].value;
+        return fs.outputs[Slewer::OUTPUT0].getVoltage(0);
         }, 1);
 }
 
@@ -163,9 +163,9 @@ static void testDrumTrigger()
     fs.outputs[DT::GATE0_OUTPUT].channels = 8;
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "Polygate", [&fs]() {
-        fs.inputs[DT::CV_INPUT].value = TestBuffers<float>::get();
+        fs.inputs[DT::CV_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[DT::GATE0_OUTPUT].value;
+        return fs.outputs[DT::GATE0_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -178,9 +178,9 @@ static void testFilt()
     fs.outputs[Filter::L_AUDIO_OUTPUT].channels = 1;
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "filt", [&fs]() {
-        fs.inputs[Filter::L_AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.inputs[Filter::L_AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[Filter::L_AUDIO_OUTPUT].value;
+        return fs.outputs[Filter::L_AUDIO_OUTPUT].getVoltage(0);
         }, 1);
 }
 

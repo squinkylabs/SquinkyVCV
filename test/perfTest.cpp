@@ -156,13 +156,13 @@ static void testShifter()
     fs.setSampleRate(44100);
     fs.init();
 
-    fs.inputs[Shifter::AUDIO_INPUT].value = 0;
+    fs.inputs[Shifter::AUDIO_INPUT].setVoltage(0, 0);
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "shifter", [&fs]() {
-        fs.inputs[Shifter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.inputs[Shifter::AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[Shifter::SIN_OUTPUT].value;
+        return fs.outputs[Shifter::SIN_OUTPUT].getVoltage(0);
         }, 1);
 }
 

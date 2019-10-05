@@ -21,7 +21,7 @@ static void testInitialState()
     dt.inputs[DT::GATE_INPUT].channels = 8;
     dt.step();
     for (int i = 0; i < numTriggerChannels; ++i) {
-        assertLT(dt.outputs[DT::GATE0_OUTPUT + i].value, 1);
+        assertLT(dt.outputs[DT::GATE0_OUTPUT + i].getVoltage(0), 1);
     }
 }
 
@@ -52,14 +52,14 @@ static void test1Sub(float initCV)
         step(dt);
 
         // should turn on the gate and light for this channel
-        assertGT(dt.outputs[DT::GATE0_OUTPUT + i].value, 5);
+        assertGT(dt.outputs[DT::GATE0_OUTPUT + i].getVoltage(0), 5);
         assertGT(dt.lights[DT::LIGHT0 + i].value, 5);
 
         // turn the gate off for this channel
         dt.inputs[DT::GATE_INPUT].voltages[i] = 0;
        // dt.step();
         step(dt);
-        assertLT(dt.outputs[DT::GATE0_OUTPUT + i].value, 1);
+        assertLT(dt.outputs[DT::GATE0_OUTPUT + i].getVoltage(0), 1);
         assertLT(dt.lights[DT::LIGHT0 + i].value, 1);
     }
 }
@@ -93,7 +93,7 @@ static void testLess()
     dt.step();
 
     // should not respond to out of range port number
-    assertLT(dt.outputs[DT::GATE0_OUTPUT + i].value, 1);
+    assertLT(dt.outputs[DT::GATE0_OUTPUT + i].getVoltage(0), 1);
 }
 
 static void testGlide()
@@ -109,15 +109,15 @@ static void testGlide()
     dt.inputs[DT::GATE_INPUT].voltages[0] = 10;
 
     step(dt);
-    assertGT(dt.outputs[DT::GATE0_OUTPUT].value, 1);
+    assertGT(dt.outputs[DT::GATE0_OUTPUT].getVoltage(0), 1);
 
     // now switch pitch to C#
     dt.inputs[DT::CV_INPUT].voltages[0] = 1.f / 12.f;
     step(dt);
 
     // C# is gate1, gate0 should be off
-    assertGT(dt.outputs[DT::GATE1_OUTPUT].value, 1);
-    assertLT(dt.outputs[DT::GATE0_OUTPUT].value, 1);
+    assertGT(dt.outputs[DT::GATE1_OUTPUT].getVoltage(0), 1);
+    assertLT(dt.outputs[DT::GATE0_OUTPUT].getVoltage(0), 1);
 }
 
 

@@ -24,21 +24,21 @@ static void test1()
     fs.setSampleRate(44100);
     fs.init();
 
-    fs.inputs[Shifter::AUDIO_INPUT].value = 0;
-    fs.outputs[Shifter::SIN_OUTPUT].value = 0;
+    fs.inputs[Shifter::AUDIO_INPUT].setVoltage(0, 0);
+    fs.outputs[Shifter::SIN_OUTPUT].setVoltage(0, 0);
 
     // with no input, should have no output
     for (int i = 0; i < 50; ++i) {
         fs.step();
-        assert(fs.outputs[Shifter::SIN_OUTPUT].value == 0);
+        assert(fs.outputs[Shifter::SIN_OUTPUT].getVoltage() == 0);
     }
 
-    fs.inputs[Shifter::AUDIO_INPUT].value = 1;
+    fs.inputs[Shifter::AUDIO_INPUT].setVoltage(1, 0);
     // this should produce output
     for (int i = 0; i < 50; ++i) {
         fs.step();
-        assert(!AudioMath::closeTo(fs.outputs[Shifter::SIN_OUTPUT].value, 0, .00001));
-        assert(!AudioMath::closeTo(fs.outputs[Shifter::COS_OUTPUT].value, 0, .00001));
+        assert(!AudioMath::closeTo(fs.outputs[Shifter::SIN_OUTPUT].getVoltage(0), 0, .00001));
+        assert(!AudioMath::closeTo(fs.outputs[Shifter::COS_OUTPUT].getVoltage(0), 0, .00001));
     }
 }
 

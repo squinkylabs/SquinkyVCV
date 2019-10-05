@@ -18,13 +18,13 @@ static void test0()
     anim.setSampleRate(44100);
     anim.init();
 
-    anim.outputs[Animator::AUDIO_OUTPUT].value = 0;
+    anim.outputs[Animator::AUDIO_OUTPUT].setVoltage(0, 0);
     anim.step();                // prime it
 
                                 // with no input, should have no output
     for (int i = 0; i < 50; ++i) {
         anim.step();
-        assert(anim.outputs[Animator::AUDIO_OUTPUT].value == 0);
+        assert(anim.outputs[Animator::AUDIO_OUTPUT].getVoltage(0) == 0);
     }
 }
 
@@ -37,13 +37,13 @@ static void test1()
     anim.setSampleRate(44100);
     anim.init();
 
-    anim.outputs[Animator::AUDIO_OUTPUT].value = 0;
-    anim.inputs[Animator::AUDIO_INPUT].value = 1;
+    anim.outputs[Animator::AUDIO_OUTPUT].setVoltage(0, 0);
+    anim.inputs[Animator::AUDIO_INPUT].setVoltage(1, 0);
     anim.step();                // prime it
                                 // with  input, should have  output
     for (int i = 0; i < 50; ++i) {
         anim.step();
-        assert(anim.outputs[Animator::AUDIO_OUTPUT].value != 0);
+        assert(anim.outputs[Animator::AUDIO_OUTPUT].getVoltage(0) != 0);
     }
 }
 
@@ -284,13 +284,13 @@ static void testVocalFilter()
     vf.setSampleRate(44100);
     vf.init();
 
-    vf.outputs[VocalFilter<TestComposite>::AUDIO_OUTPUT].value = 0;
-    vf.inputs[VocalFilter<TestComposite>::AUDIO_INPUT].value = 1;
+    vf.outputs[VocalFilter<TestComposite>::AUDIO_OUTPUT].setVoltage(0, 0);
+    vf.inputs[VocalFilter<TestComposite>::AUDIO_INPUT].setVoltage(1, 0);
     vf.step();                // prime it
                                 // with  input, should have  output
     for (int i = 0; i < 50; ++i) {
         vf.step();
-        assert(vf.outputs[VocalFilter<TestComposite>::AUDIO_OUTPUT].value != 0);
+        assert(vf.outputs[VocalFilter<TestComposite>::AUDIO_OUTPUT].getVoltage(0) != 0);
     }
 }
 

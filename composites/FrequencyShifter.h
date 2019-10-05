@@ -128,7 +128,7 @@ inline void FrequencyShifter<TBase>::step()
 
     // Add the knob and the CV value.
     T freqHz;
-    T cvTotal = TBase::params[PITCH_PARAM].value + TBase::inputs[CV_INPUT].value;
+    T cvTotal = TBase::params[PITCH_PARAM].value + TBase::inputs[CV_INPUT].getVoltage(0);
     if (cvTotal > 5) {
         cvTotal = 5;
     }
@@ -152,7 +152,7 @@ inline void FrequencyShifter<TBase>::step()
     SinOscillator<T, true>::runQuadrature(x, y, oscState, oscParams);
 
     // Filter the input through th quadrature filter
-    const T input = TBase::inputs[AUDIO_INPUT].value;
+    const T input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
     const T hilbertSin = BiquadFilter<T>::run(input, hilbertFilterStateSin, hilbertFilterParamsSin);
     const T hilbertCos = BiquadFilter<T>::run(input, hilbertFilterStateCos, hilbertFilterParamsCos);
 
@@ -161,8 +161,8 @@ inline void FrequencyShifter<TBase>::step()
     y *= hilbertCos;
 
     // And combine for final SSB output.
-    TBase::outputs[SIN_OUTPUT].value = x + y;
-    TBase::outputs[COS_OUTPUT].value = x - y;
+    TBase::outputs[SIN_OUTPUT].setVoltage(x + y, 0);
+    TBase::outputs[COS_OUTPUT].setVoltage(x - y, 0);
 }
 
 

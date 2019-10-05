@@ -183,11 +183,11 @@ inline void Filt<TBase>::stepn(int divFactor)
     T fcClipped = 0;
     {
         T freqCV1 = scaleFc(
-            TBase::inputs[CV_INPUT1].value,
+            TBase::inputs[CV_INPUT1].getVoltage(0),
             TBase::params[FC_PARAM].value,
             TBase::params[FC1_TRIM_PARAM].value);
         T freqCV2 = scaleFc(
-            TBase::inputs[CV_INPUT2].value,
+            TBase::inputs[CV_INPUT2].getVoltage(0),
             0,
             TBase::params[FC2_TRIM_PARAM].value);
         T freqCV = freqCV1 + freqCV2 + 6;
@@ -201,7 +201,7 @@ inline void Filt<TBase>::stepn(int divFactor)
     const T vol = TBase::params[MASTER_VOLUME_PARAM].value;
 
     T res = scaleQ(
-        TBase::inputs[Q_INPUT].value,
+        TBase::inputs[Q_INPUT].getVoltage(0),
         TBase::params[Q_PARAM].value,
         TBase::params[Q_TRIM_PARAM].value);
     const T qMiddle = 2.8;
@@ -217,13 +217,13 @@ inline void Filt<TBase>::stepn(int divFactor)
     //********* now the drive 
         // 0..1
     float  gainInput = scaleGain(
-        TBase::inputs[DRIVE_INPUT].value,
+        TBase::inputs[DRIVE_INPUT].getVoltage(0),
         TBase::params[DRIVE_PARAM].value,
         TBase::params[DRIVE_TRIM_PARAM].value);
 
     T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
     const float edge = scaleEdge(
-        TBase::inputs[EDGE_INPUT].value,
+        TBase::inputs[EDGE_INPUT].getVoltage(0),
         TBase::params[EDGE_PARAM].value,
         TBase::params[EDGE_TRIM_PARAM].value);
 
@@ -234,7 +234,7 @@ inline void Filt<TBase>::stepn(int divFactor)
     makeupGain = 1 + bAmt * (res);
 
     T slope = scaleSlope(
-        TBase::inputs[SLOPE_INPUT].value,
+        TBase::inputs[SLOPE_INPUT].getVoltage(0),
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
 
@@ -283,10 +283,10 @@ inline void Filt<TBase>::step()
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
         if (imp.isActive) {
-            const float input = TBase::inputs[L_AUDIO_INPUT+i].value;
+            const float input = TBase::inputs[L_AUDIO_INPUT+i].getVoltage(0);
             imp._f.run(input);
             const float output = (float) imp._f.getOutput();
-            TBase::outputs[L_AUDIO_OUTPUT+i].value = output;
+            TBase::outputs[L_AUDIO_OUTPUT+i].setVoltage(output, 0);
             peak.step(output);
         }
     }
@@ -294,13 +294,13 @@ inline void Filt<TBase>::step()
     // Do special processing for unconnected outputs
     if (!dsp[0].isActive && !dsp[1].isActive) {
         // both sides unpatched - clear output
-        TBase::outputs[L_AUDIO_OUTPUT].value = 0;
-        TBase::outputs[R_AUDIO_OUTPUT].value = 0;
+        TBase::outputs[L_AUDIO_OUTPUT].setVoltage(0, 0);
+        TBase::outputs[R_AUDIO_OUTPUT].setVoltage(0, 0);
     } else if (dsp[0].isActive && !dsp[1].isActive) {
         // left connected, right not r = l
-        TBase::outputs[R_AUDIO_OUTPUT].value = TBase::outputs[L_AUDIO_OUTPUT].value;
+        TBase::outputs[R_AUDIO_OUTPUT].setVoltage(TBase::outputs[L_AUDIO_OUTPUT].getVoltage(0), 0);
     } else if (!dsp[0].isActive && dsp[1].isActive) {
-        TBase::outputs[L_AUDIO_OUTPUT].value = TBase::outputs[R_AUDIO_OUTPUT].value;
+        TBase::outputs[L_AUDIO_OUTPUT].setVoltage(TBase::outputs[R_AUDIO_OUTPUT].getVoltage(0), 0);
     }
 }
 
