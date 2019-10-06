@@ -63,7 +63,7 @@ std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
 
     ret->params[Sq::NUM_VOICES_PARAM].value = float(numVoices - 1);
     ret->params[Sq::CLOCK_INPUT_PARAM].value = float(rate);        
-    ret->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
+    ret->inputs[Sq::CLOCK_INPUT].setVoltage(0, 0);        // clock low
     if (toggleStart) {
         ret->toggleRunStop();                          // start it
     }
@@ -240,9 +240,9 @@ private:
     {
         sampleCount += 1;       
         if (sampleCount >= samplesPerClock) {
-            s->inputs[s->CLOCK_INPUT].value = 10;
+            s->inputs[s->CLOCK_INPUT].setVoltage(10, 0);
             stepN(*s, 16);   // let it get noticed
-            s->inputs[s->CLOCK_INPUT].value = 0;
+            s->inputs[s->CLOCK_INPUT].setVoltage(0, 0);
             stepN(*s, 16);   // let it get noticed
             sampleCount -= samplesPerClock;
             clockOccured = true;
@@ -318,7 +318,7 @@ static void testResetGatesLow()
     assertAllGatesLow(*s);
 
     // after reset the gates should be low
-    s->inputs[Sq::RESET_INPUT].value = 10;
+    s->inputs[Sq::RESET_INPUT].setVoltage(10, 0);
     stepN(*s, 16);
     assertAllGatesLow(*s);
 }
@@ -327,7 +327,7 @@ static void testResetGatesLow()
 
 void sendClockAndStep(Sq& sq, float clockValue)
 {
-    sq.inputs[Sq::CLOCK_INPUT].value = clockValue;
+    sq.inputs[Sq::CLOCK_INPUT].setVoltage(clockValue, 0);
 
     // now step a bit so that we see clock 
     stepN(sq, 4);
@@ -341,7 +341,7 @@ static void testLoopingQ()
 
     seq->params[Sq::NUM_VOICES_PARAM].value = 0;
     seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
-    seq->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
+    seq->inputs[Sq::CLOCK_INPUT].setVoltage(0);        // clock low
 
     // just pause for a bit.
     // we are now "running", but no clocks
@@ -352,8 +352,8 @@ static void testLoopingQ()
     // now start and clock
     // How does this acutally start?
  //   seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
-    seq->inputs[Sq::RUN_INPUT].value = 10;
-    seq->inputs[Sq::CLOCK_INPUT].value = 10;
+    seq->inputs[Sq::RUN_INPUT].setVoltage(10, 0);
+    seq->inputs[Sq::CLOCK_INPUT].setVoltage(10, 0);
     assertAllGatesLow(*seq);
 
     assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
@@ -392,13 +392,13 @@ static void testLoopingQ()
     float expectedCV = 3;
     // now, all notes after this will be "the same"
     for (int i = 0; i < 20; ++i) {
-        assertEQ(seq->inputs[Sq::CLOCK_INPUT].value, 0);        // precondition for loop, clock low
+        assertEQ(seq->inputs[Sq::CLOCK_INPUT].getVoltage(0), 0);        // precondition for loop, clock low
         /* Clock high and step.
          * This will send the player into re-trigger, since notes touch.
          * In re-trigger we hold the prev CV and force the gate low
          */
         sendClockAndStep(*seq, 10);
-        assertEQ(seq->inputs[Sq::CLOCK_INPUT].value, 10);
+        assertEQ(seq->inputs[Sq::CLOCK_INPUT].getVoltage(0), 10);
         expectedPos += .5f;
 
         // loop around one bar
@@ -447,7 +447,7 @@ static void testSubrangeLoop()
 
     seq->params[Sq::NUM_VOICES_PARAM].value = 0;
     seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
-    seq->inputs[Sq::CLOCK_INPUT].value = 0;        // clock low
+    seq->inputs[Sq::CLOCK_INPUT].setVoltage(0, 0);        // clock low
 
     // now step a bit so that we see low inputs (run and clock)
     stepN(*seq, 4);
@@ -456,15 +456,15 @@ static void testSubrangeLoop()
     assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
 
     // now start and clock
-    seq->inputs[Sq::RUN_INPUT].value = 10;
-    seq->inputs[Sq::CLOCK_INPUT].value = 10;
+    seq->inputs[Sq::RUN_INPUT].setVoltage(10, 0);
+    seq->inputs[Sq::CLOCK_INPUT].setVoltage(10, 0);
 
     // now step a bit so that we see clock
     stepN(*seq, 4);
 
     assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);  
 
-    // should be back arount to another loops starting in the first bar.
+    // should be back around to another loops starting in the first bar.
     assertEQ(seq->getPlayPosition(), 4);
 
 }

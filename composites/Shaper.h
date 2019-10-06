@@ -264,7 +264,7 @@ void Shaper<TBase>::processCV()
 
     // 0..1
     _gainInput = scaleGain(
-        TBase::inputs[INPUT_GAIN].value,
+        TBase::inputs[INPUT_GAIN].getVoltage(0),
         TBase::params[PARAM_GAIN].value,
         TBase::params[PARAM_GAIN_TRIM].value);
 
@@ -272,7 +272,7 @@ void Shaper<TBase>::processCV()
 
     // -5 .. 5
     const float offsetInput = scaleOffset(
-        TBase::inputs[INPUT_OFFSET].value,
+        TBase::inputs[INPUT_OFFSET].getVoltage(0),
         TBase::params[PARAM_OFFSET].value,
         TBase::params[PARAM_OFFSET_TRIM].value);
 
@@ -302,7 +302,7 @@ void  Shaper<TBase>::step()
         DSPImp& imp = dsp[i];
         if (imp.isActive) {
             float buffer[maxOversample];
-            float input = TBase::inputs[INPUT_AUDIO0 + i].value;
+            float input = TBase::inputs[INPUT_AUDIO0 + i].getVoltage(0);
 
             // TODO: maybe add offset after gain?
             if (shape != Shapes::AsymSpline) {
@@ -329,20 +329,20 @@ void  Shaper<TBase>::step()
             if (TBase::params[PARAM_ACDC].value < .5) {
                 output = float(BiquadFilter<double>::run(output, imp.dcBlockState, imp.dcBlockParams));
             }
-            TBase::outputs[OUTPUT_AUDIO0 + i].value = output;
+            TBase::outputs[OUTPUT_AUDIO0 + i].setVoltage(output, 0);
         }
     }
 
     // Do special processing for unconnected outputs
     if (!dsp[0].isActive && !dsp[1].isActive) {
         // both sides unpatched - clear output
-        TBase::outputs[OUTPUT_AUDIO0].value = 0;
-        TBase::outputs[OUTPUT_AUDIO1].value = 0;
+        TBase::outputs[OUTPUT_AUDIO0].setVoltage(0, 0);
+        TBase::outputs[OUTPUT_AUDIO1].setVoltage(0, 0);
     } else if (dsp[0].isActive && !dsp[1].isActive) {
         // left connected, right not r = l
-        TBase::outputs[OUTPUT_AUDIO1].value = TBase::outputs[OUTPUT_AUDIO0].value;
+        TBase::outputs[OUTPUT_AUDIO1].setVoltage(TBase::outputs[OUTPUT_AUDIO0].getVoltage(0), 0);
     } else if (!dsp[0].isActive && dsp[1].isActive) {
-        TBase::outputs[OUTPUT_AUDIO0].value = TBase::outputs[OUTPUT_AUDIO1].value;
+        TBase::outputs[OUTPUT_AUDIO0].setVoltage(TBase::outputs[OUTPUT_AUDIO1].getVoltage(0), 0);
     }
 }
 

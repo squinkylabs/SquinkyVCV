@@ -37,12 +37,12 @@ static void testTriggers(int outputNumber)
 
     slew.params[Slew::PARAM_RISE].value = -5;
     slew.params[Slew::PARAM_FALL].value = -5;
-    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].value = 10;       // trigger channel under test
+    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].setVoltage(10, 0);       // trigger channel under test
     slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].channels = 1;
     slew.step();
 
     for (int i = 0; i < 8; ++i) {
-        auto value = slew.outputs[Slew::OUTPUT0 + i].value;
+        auto value = slew.outputs[Slew::OUTPUT0 + i].getVoltage(0);
         if (outputNumber == i) {
              // 1.1 is pretty fast, just picked it by observing lag
             assertClose(value, 1.1, .1);
@@ -84,13 +84,13 @@ static void testMixedOutNormals(int outputNumber)
     // all the trigger inputs being driven at the same time
     for (int i = 0; i < 8; ++i) {
         slew.inputs[Slew::INPUT_TRIGGER0 + i].channels = 1;
-        slew.inputs[Slew::INPUT_TRIGGER0 + i].value = 10;       // trigger all
+        slew.inputs[Slew::INPUT_TRIGGER0 + i].setVoltage(10, 0);       // trigger all
     }
 
     slew.step();
 
     for (int i = 0; i < 8; ++i) {
-        const float value = slew.outputs[Slew::OUTPUT_MIX0 + i].value;
+        const float value = slew.outputs[Slew::OUTPUT_MIX0 + i].getVoltage(0);
         if (outputNumber == i) {
              // we expect the one patched output to have the sum of all above it.
             float expected = 1.19f * (i + 1);
@@ -112,9 +112,9 @@ static void testMixedOutNormals()
 // gate input n triggers output m
 bool gateInputTriggersOutput(Slew& slew, int gateIn, int gateOut)
 {
-    slew.inputs[Slew::INPUT_TRIGGER0 + gateIn].value = 10;
+    slew.inputs[Slew::INPUT_TRIGGER0 + gateIn].setVoltage(10, 0);
     slew.step();
-    bool ret = slew.outputs[Slew::OUTPUT0 + gateOut].value > 1;         // min rise, fall, 1.19 (as above)
+    bool ret = slew.outputs[Slew::OUTPUT0 + gateOut].getVoltage(0) > 1;         // min rise, fall, 1.19 (as above)
     return ret;
 }
 

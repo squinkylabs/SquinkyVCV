@@ -245,7 +245,7 @@ bool Seq<TBase>::isRunning()
 template <class TBase>
 void  Seq<TBase>::serviceRunStop()
 {
-    runStopProcessor.go(TBase::inputs[RUN_INPUT].value);
+    runStopProcessor.go(TBase::inputs[RUN_INPUT].getVoltage(0));
     if (runStopProcessor.trigger() || runStopRequested) { 
         runStopRequested = false;
         bool curValue = isRunning();
@@ -277,10 +277,10 @@ void  Seq<TBase>::stepn(int n)
     clock.setup(clockRate, 0, TBase::engineGetSampleTime());
 
     // and the clock input
-    const float extClock = TBase::inputs[CLOCK_INPUT].value;
+    const float extClock = TBase::inputs[CLOCK_INPUT].getVoltage(0);
 
     // now call the clock 
-    const float reset = TBase::inputs[RESET_INPUT].value;
+    const float reset = TBase::inputs[RESET_INPUT].getVoltage(0);
     const bool running = isRunning();
     int samplesElapsed = n;
 

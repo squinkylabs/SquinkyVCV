@@ -79,7 +79,7 @@ inline void KSComposite<TBase>::step()
     */
 
    // const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
-    const float cv = TBase::inputs[PITCH_INPUT].value;
+    const float cv = TBase::inputs[PITCH_INPUT].getVoltage(0);
     const float finePitch = TBase::params[FINE_PARAM].value / 12.0f;
     const float semiPitch = TBase::params[SEMI_PARAM].value / 12.0f;
     // const float fm = getInput(osc, FM1_INPUT, FM2_INPUT, FM3_INPUT);
@@ -92,7 +92,7 @@ inline void KSComposite<TBase>::step()
     oscillator.setPitch(pitch);
 
 
-    oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].value / 10.0f);
+    oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].getVoltage(0) / 10.0f);
     oscillator.syncEnabled = TBase::inputs[SYNC_INPUT].isConnected();
 
     oscillator.sawEnabled = TBase::outputs[SAW_OUTPUT].isConnected();
@@ -100,15 +100,15 @@ inline void KSComposite<TBase>::step()
     oscillator.sqEnabled = TBase::outputs[SQR_OUTPUT].isConnected();
     oscillator.triEnabled = TBase::outputs[TRI_OUTPUT].isConnected();
 
-    oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].value, TBase::engineGetSampleTime());
+    oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].getVoltage(0), TBase::engineGetSampleTime());
     // Set output
     if (TBase::outputs[SIN_OUTPUT].isConnected())
-        TBase::outputs[SIN_OUTPUT].value = 5.0f * oscillator.sin();
+        TBase::outputs[SIN_OUTPUT].setVoltage(5.0f * oscillator.sin(), 0);
     if (TBase::outputs[TRI_OUTPUT].isConnected())
-        TBase::outputs[TRI_OUTPUT].value = 5.0f * oscillator.tri();
+        TBase::outputs[TRI_OUTPUT].setVoltage(5.0f * oscillator.tri(), 0);
     if (TBase::outputs[SAW_OUTPUT].isConnected())
-        TBase::outputs[SAW_OUTPUT].value = 5.0f * oscillator.saw();
+        TBase::outputs[SAW_OUTPUT].setVoltage(5.0f * oscillator.saw(), 0);
     if (TBase::outputs[SQR_OUTPUT].isConnected())
-        TBase::outputs[SQR_OUTPUT].value = 5.0f * oscillator.sqr();
+        TBase::outputs[SQR_OUTPUT].setVoltage(5.0f * oscillator.sqr(), 0);
 
 }

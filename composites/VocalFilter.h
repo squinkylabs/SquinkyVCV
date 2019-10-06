@@ -174,7 +174,7 @@ inline void VocalFilter<TBase>::stepFilters()
     }
 
     const T fVowel = scaleCV_to_formant(
-        TBase::inputs[FILTER_VOWEL_CV_INPUT].value,
+        TBase::inputs[FILTER_VOWEL_CV_INPUT].getVoltage(0),
         TBase::params[FILTER_VOWEL_PARAM].value,
         TBase::params[FILTER_VOWEL_TRIM_PARAM].value);
 
@@ -197,18 +197,18 @@ inline void VocalFilter<TBase>::stepFilters()
     }
 
     const T bwMultiplier = scaleQ(
-        TBase::inputs[FILTER_Q_CV_INPUT].value,
+        TBase::inputs[FILTER_Q_CV_INPUT].getVoltage(0),
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
 
     const T fPara = scaleFc(
-        TBase::inputs[FILTER_FC_CV_INPUT].value,
+        TBase::inputs[FILTER_FC_CV_INPUT].getVoltage(0),
         TBase::params[FILTER_FC_PARAM].value,
         TBase::params[FILTER_FC_TRIM_PARAM].value);
     // fNow -5..5, log
 
     const T brightness = scaleBrightness(
-        TBase::inputs[FILTER_BRIGHTNESS_INPUT].value,
+        TBase::inputs[FILTER_BRIGHTNESS_INPUT].getVoltage(0),
         TBase::params[FILTER_BRIGHTNESS_PARAM].value,
         TBase::params[FILTER_BRIGHTNESS_TRIM_PARAM].value);
 
@@ -253,30 +253,11 @@ inline void VocalFilter<TBase>::step()
 
 
     T filterMix = 0;
-    const T input = TBase::inputs[AUDIO_INPUT].value;
+    const T input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
     for (int i = 0; i < numFilters; ++i) {
-     //   const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
-     //   const T normalizedBw = bwMultiplier * formantTables.getNormalizedBandwidth(model, i, fVowel);
-
-        // Get the filter gain from the table, but scale by BW to counteract the filters 
-        // gain that tracks Q
-
-        //T gainDB = formantTables.getGain(model, i, fVowel);
-
-        // blend the table with full gain depending on brightness
-        //T modifiedGainDB = (1 - gainDB) * brightness + gainDB;
-
-        // TODO: why is normalizedBW in this equation?
-    //    const T gain = LookupTable<T>::lookup(*db2GainLookup, modifiedGainDB) * normalizedBw;
-
-    //    T fcFinalLog = fcLog + fPara;
-   //     T fcFinal = LookupTable<T>::lookup(*expLookup, fcFinalLog);
-
-     //   filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
-     //   filterParams[i].setNormalizedBandwidth(normalizedBw);
         filterMix += m_gain[i] * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
-    TBase::outputs[AUDIO_OUTPUT].value = 3 * filterMix;
+    TBase::outputs[AUDIO_OUTPUT].setVoltage(3 * filterMix, 0);
 }
 
 template <class TBase>

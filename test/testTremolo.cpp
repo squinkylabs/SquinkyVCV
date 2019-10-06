@@ -10,8 +10,8 @@ static void test0()
     Trem t;
     t.setSampleRate(44100);
     t.init();
-    assertEQ(t.outputs[Trem::SAW_OUTPUT].value, 0);
-    assertEQ(t.outputs[Trem::AUDIO_OUTPUT].value, 0);
+    assertEQ(t.outputs[Trem::SAW_OUTPUT].getVoltage(0), 0);
+    assertEQ(t.outputs[Trem::AUDIO_OUTPUT].getVoltage(0), 0);
     t.step();
 }
 
@@ -28,7 +28,7 @@ static void test1Sub(float skew)
     float min = 100;
     for (int i = 0; i < 5000; ++i) {
         t.step();
-        const float x = t.outputs[Trem::SAW_OUTPUT].value;
+        const float x = t.outputs[Trem::SAW_OUTPUT].getVoltage(0);
         max = std::max(x, max);
         min = std::min(x, min);
     }

@@ -137,7 +137,7 @@ inline void FunVCOComposite<TBase>::step()
     oscillator.setPitch(TBase::params[FREQ_PARAM].value, pitchFine + pitchCv);
 
 
-    oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].value / 10.0f);
+    oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].getVoltage(0) / 10.0f);
     oscillator.syncEnabled = SqPort::isConnected(TBase::inputs[SYNC_INPUT]);
 
 #ifndef _ORIGVCO
@@ -147,15 +147,15 @@ inline void FunVCOComposite<TBase>::step()
     oscillator.triEnabled = SqPort::isConnected(TBase::outputs[TRI_OUTPUT]);
 #endif
 
-    oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].value);
+    oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].getVoltage(0));
     // Set output
     if (SqPort::isConnected(TBase::outputs[SIN_OUTPUT]))
-        TBase::outputs[SIN_OUTPUT].value = 5.0f * oscillator.sin();
+        TBase::outputs[SIN_OUTPUT].setVoltage(5.0f * oscillator.sin(), 0);
     if (SqPort::isConnected(TBase::outputs[TRI_OUTPUT]))
-        TBase::outputs[TRI_OUTPUT].value = 5.0f * oscillator.tri();
+        TBase::outputs[TRI_OUTPUT].setVoltage(5.0f * oscillator.tri(), 0);
     if (SqPort::isConnected(TBase::outputs[SAW_OUTPUT]))
-        TBase::outputs[SAW_OUTPUT].value = 5.0f * oscillator.saw();
+        TBase::outputs[SAW_OUTPUT].setVoltage(5.0f * oscillator.saw(), 0);
     if (SqPort::isConnected(TBase::outputs[SQR_OUTPUT]))
-        TBase::outputs[SQR_OUTPUT].value = 5.0f * oscillator.sqr();
+        TBase::outputs[SQR_OUTPUT].setVoltage(5.0f * oscillator.sqr(), 0);
 
 }

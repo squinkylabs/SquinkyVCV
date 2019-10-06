@@ -49,14 +49,14 @@ float desiredPitchEv(const EVCO& vco)
 }
 #endif
 
-float desiredPitchCh(const CH& vco)
+float desiredPitchCh(CH& vco)
 {
     return desiredPitch(
         vco.params[(int) CH::PARAM_OCTAVE].value,
         vco.params[(int) CH::PARAM_TUNE].value,
-        vco.inputs[(int) CH::CV_INPUT].value,
+        vco.inputs[(int) CH::CV_INPUT].getVoltage(0),
         0,
-        vco.inputs[(int) CH::PITCH_MOD_INPUT].value
+        vco.inputs[(int) CH::PITCH_MOD_INPUT].getVoltage(0)
     );
 
 #if 0
@@ -118,9 +118,9 @@ static void testxCh(float octave, float tune = 0, float pitch1 = 0, float pitch2
 
     vco.params[(int) CH::PARAM_OCTAVE].value = octave;
     vco.params[(int) CH::PARAM_TUNE].value = tune;
-    vco.inputs[(int) CH::CV_INPUT].value = pitch1;
+    vco.inputs[(int) CH::CV_INPUT].setVoltage(pitch1, 0);
   //  vco.inputs[(int) CH::PITCH2_INPUT].value = pitch2;
-    vco.inputs[(int) CH::PITCH_MOD_INPUT].value = fm;
+    vco.inputs[(int) CH::PITCH_MOD_INPUT].setVoltage(fm, 0);
 
 
     vco.step();

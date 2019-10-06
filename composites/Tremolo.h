@@ -169,22 +169,22 @@ inline void Tremolo<TBase>::stepInput()
 
     // second look at knowb and CV
     shape = scale_shape(
-        TBase::inputs[LFO_SHAPE_INPUT].value,
+        TBase::inputs[LFO_SHAPE_INPUT].getVoltage(0),
         TBase::params[LFO_SHAPE_PARAM].value,
         TBase::params[LFO_SHAPE_TRIM_PARAM].value);
 
     skew = scale_skew(
-        TBase::inputs[LFO_SKEW_INPUT].value,
+        TBase::inputs[LFO_SKEW_INPUT].getVoltage(0),
         TBase::params[LFO_SKEW_PARAM].value,
         TBase::params[LFO_SKEW_TRIM_PARAM].value);
 
     phase = scale_phase(
-        TBase::inputs[LFO_PHASE_INPUT].value,
+        TBase::inputs[LFO_PHASE_INPUT].getVoltage(0),
         TBase::params[LFO_PHASE_PARAM].value,
         TBase::params[LFO_PHASE_TRIM_PARAM].value);
 
     modDepth = scale_depth(
-        TBase::inputs[MOD_DEPTH_INPUT].value,
+        TBase::inputs[MOD_DEPTH_INPUT].getVoltage(0),
         TBase::params[MOD_DEPTH_PARAM].value,
         TBase::params[MOD_DEPTH_TRIM_PARAM].value);
 
@@ -217,7 +217,7 @@ inline void Tremolo<TBase>::step()
     }
 
     // First: external clock proc
-    gateTrigger.go(TBase::inputs[CLOCK_INPUT].value);
+    gateTrigger.go(TBase::inputs[CLOCK_INPUT].getVoltage(0));
     if (gateTrigger.trigger()) {
         clock.refClock();
     }
@@ -229,14 +229,14 @@ inline void Tremolo<TBase>::step()
     mod = AsymRampShaper::proc_1(rampShaper, mod);
     mod -= 0.5f;
     // now we have a skewed saw -.5 to .5
-    TBase::outputs[SAW_OUTPUT].value = 10 * mod;
+    TBase::outputs[SAW_OUTPUT].setVoltage(10 * mod, 0);
 
     // TODO: don't scale twice - just get it right the first time
   //  const float shapeMul = std::max(.25f, 10 * shape);
     mod *= shapeMul;
 
     mod = LookupTable<float>::lookup(*tanhLookup.get(), mod);
-    TBase::outputs[LFO_OUTPUT].value = 5 * mod;
+    TBase::outputs[LFO_OUTPUT].setVoltage(5 * mod, 0);
 
 
     // TODO: move this intp input proc
@@ -245,7 +245,7 @@ inline void Tremolo<TBase>::step()
     const float finalMod = gain * mod + 1;      // TODO: this offset by 1 is pretty good, but we 
                                                 // could add an offset control to make it really "chop" off
 
-    TBase::outputs[AUDIO_OUTPUT].value = TBase::inputs[AUDIO_INPUT].value * finalMod;
+    TBase::outputs[AUDIO_OUTPUT].setVoltage(TBase::inputs[AUDIO_INPUT].getVoltage(0) * finalMod, 0);
 }
 
 /*
