@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "CommChannels.h"
@@ -103,6 +104,9 @@ private:
     // This is set by us after executing a request from UI.
     // We use it to track our state
     SoloCommands currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
+
+    void pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft);
+    void processCommandFromBus(uint32_t cmd);
 };
 
 // Remember : "rightModule" is the module to your right
@@ -114,6 +118,54 @@ inline MixerModule::MixerModule()
     rightExpander.consumerMessage = bufferFlopR;
     leftExpander.producerMessage = bufferFlipL;
     leftExpander.consumerMessage = bufferFlopL;
+}
+
+inline void MixerModule::processCommandFromBus(uint32_t cmd)
+{
+    // iI the command is external solo, then we want to turn off all our
+    // channles to let the other module have exclusive solo.
+    // Otherwise the command is CommCommand_ClearAllSolo, and we should
+    // lift all our external overrides.
+    const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
+                SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
+            
+    //printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
+    
+    // clear the UI status, so that UI can again solo in the future
+    currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
+    requestModuleSolo(reqMuteStatus);
+}
+
+inline void MixerModule::pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft)
+{
+    if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
+
+        const auto commCmd = (soloRequestFromUI == SoloCommands::SOLO_NONE) ?
+            CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
+
+
+        // If solo requested, queue up solo commands for both sides    
+        // TODO: these should only be done for exclusive solo 
+        if (pairedRight) {
+            sendRightChannel.send(commCmd);
+        }
+        if (pairedLeft) {
+            sendLeftChannel.send(commCmd);
+        }
+      
+        // tell our own module to solo, if a state change is requested
+        if (soloRequestFromUI != currentSoloStatusFromUI) {
+            //printf("requesting module solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
+            requestModuleSolo(soloRequestFromUI);
+
+            //and update our current state
+            currentSoloStatusFromUI = soloRequestFromUI;
+        }
+
+        // Now that we have processed the command from UI, retire it.
+        soloRequestFromUI = SoloCommands::DO_NOTHING;
+
+    }
 }
 
 // Each time we are called, we want the unit on the left to output
@@ -149,33 +201,7 @@ inline void MixerModule::process(const ProcessArgs &args)
     // set a channel to rx data from the left (case #2, above)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftExpander.module->rightExpander.consumerMessage) : nullptr);
 
-    if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
-        const auto commCmd = (soloRequestFromUI == SoloCommands::SOLO_NONE) ?
-            CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
-
-
-        // If solo requested, queue up solo commands for both sides    
-        // TODO: these should only be done for exclusive solo 
-        if (pairedRight) {
-            sendRightChannel.send(commCmd);
-        }
-        if (pairedLeft) {
-            sendLeftChannel.send(commCmd);
-        }
-      
-        // tell our own module to solo, if a state change is requested
-        if (soloRequestFromUI != currentSoloStatusFromUI) {
-            //printf("requesting module solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
-            requestModuleSolo(soloRequestFromUI);
-
-            //and update our current state
-            currentSoloStatusFromUI = soloRequestFromUI;
-        }
-
-        // Now that we have processed the command from UI, retire it.
-        soloRequestFromUI = SoloCommands::DO_NOTHING;
-
-    }
+    pollAndProccessCommandFromUI(pairedRight, pairedLeft);
 
     if (pairedRight) {
         // #1) Send data to right: use you own right producer buffer.
@@ -187,18 +213,7 @@ inline void MixerModule::process(const ProcessArgs &args)
         uint32_t cmd = receiveRightChannel.rx(inBuf + comBufferLeftCommandOffset);
 
         if (cmd != 0) {
-            // iI the command is external solo, then we want to turn off all our
-            // channles to let the other module have exclusive solo.
-            // Otherwise the command is CommCommand_ClearAllSolo, and we should
-            // lift all our external overrides.
-            const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
-                SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
-            
-            //printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
-            
-            // clear the UI status, so that UI can again solo in the future
-            currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
-            requestModuleSolo(reqMuteStatus);
+            processCommandFromBus(cmd);
             // now relay down to the left
             if (pairedLeft) {
                  sendLeftChannel.send(cmd);
@@ -215,15 +230,7 @@ inline void MixerModule::process(const ProcessArgs &args)
         sendLeftChannel.go(outBuf + comBufferLeftCommandOffset);
         uint32_t cmd = receiveLeftChannel.rx(inBuf + comBufferRightCommandOffset);
         if (cmd != 0) {
-            const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
-                SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
-            
-            //printf("left read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
-
-            // clear the UI status, so that UI can again solo in the future
-            currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
-            requestModuleSolo(reqMuteStatus);
-            // now relay down to the right
+             processCommandFromBus(cmd);
             if (pairedRight) {
                  sendRightChannel.send(cmd);
             }

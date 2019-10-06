@@ -40,39 +40,6 @@ const uint32_t CommCommand_ClearAllSolo = (100 << 16);
 const uint32_t CommCommand_ExternalSolo = (101 << 16); 
 
 /**
- * commands used by mixers for communicating solo info
- * (These are not sent over a comm channel, and don't really belong here)
- */
-enum class SoloCommands {
-    // SOLO_x normal, exclusive solo requested
-    SOLO_0,
-    SOLO_1,
-    SOLO_2,
-    SOLO_3,
-
-    // SOLO_x_MULTI, non-exclusive "multi-solo"
-    SOLO_0_MULTI,
-    SOLO_1_MULTI,
-    SOLO_2_MULTI,
-    SOLO_3_MULTI,
-    
-    /**
-     * (8)
-     * mute all of your channels, because another module is 
-     * requesting an exclusive solo.
-     */
-    SOLO_ALL,
-
-    /**
-     * (9)
-     * remove the solo overrides from all your channels,
-     * because another module stopped soloing
-     */  
-    SOLO_NONE,          
-    DO_NOTHING,
-};
-
-/**
  * CommChannelSend
  * Sends messages from on VCV Module to another
  */
@@ -151,4 +118,38 @@ inline uint32_t CommChannelReceive::rx(const uint32_t * inputBuffer)
         lastCommand = ret;
     }
     return ret;
+};
+
+
+/**
+ * Internal commands used by mixers for communicating solo info.
+ * (These are not sent over a comm channel, and don't really belong here)
+ */
+enum class SoloCommands {
+    // SOLO_x normal, exclusive solo requested
+    SOLO_0,
+    SOLO_1,
+    SOLO_2,
+    SOLO_3,
+
+    // SOLO_x_MULTI, non-exclusive "multi-solo"
+    SOLO_0_MULTI,
+    SOLO_1_MULTI,
+    SOLO_2_MULTI,
+    SOLO_3_MULTI,
+    
+    /**
+     * (8)
+     * mute all of your channels, because another module is 
+     * requesting an exclusive solo.
+     */
+    SOLO_ALL,
+
+    /**
+     * (9)
+     * remove the solo overrides from all your channels,
+     * because another module stopped soloing
+     */  
+    SOLO_NONE,          
+    DO_NOTHING,
 };
