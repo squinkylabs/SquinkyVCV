@@ -20,6 +20,12 @@ public:
         }
     }
 
+    // this constructor does not try to initialize
+    SqRingBuffer(bool b)
+    {
+        assert(!b);
+    }
+
     void push(T);
     T pop();
     bool full() const;

@@ -49,8 +49,8 @@ public:
     virtual void internalProcess() = 0;
 
     /**
-     * Concrete subclass implements this do accept a request
-     * for solo change.
+     * Concrete subclass implements this to accept a request
+     * for solo change. It will be on the audio thread
      */
     virtual void requestModuleSolo(SoloCommands) = 0;
 
@@ -105,8 +105,13 @@ private:
     // We use it to track our state
     SoloCommands currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
 
+    std::shared_ptr<SharedSoloState> sharedSoloState;
+    int moduleIndex = 0;
+    int pingDelayCount = 0;
+
     void pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft);
-    void processCommandFromBus(uint32_t cmd);
+    void processMessageFromBus(const CommChannelMessage& msg);
+    void pollForModulePing(bool pairedLeft);
 };
 
 // Remember : "rightModule" is the module to your right
@@ -114,14 +119,36 @@ private:
 // rack will flip producer and consumer each process tick.
 inline MixerModule::MixerModule()
 {
+    // rightExpander is a field from rack::Module.
     rightExpander.producerMessage = bufferFlipR;
     rightExpander.consumerMessage = bufferFlopR;
     leftExpander.producerMessage = bufferFlipL;
     leftExpander.consumerMessage = bufferFlopL;
 }
 
-inline void MixerModule::processCommandFromBus(uint32_t cmd)
+
+inline void MixerModule::pollForModulePing(bool pairedLeft)
 {
+    if (amMaster()) {
+        if (pingDelayCount-- <= 0) {
+            pingDelayCount = 100;       // poll every 100 samples?
+            if (!sharedSoloState) {
+                // TODO: move this off audio thread?
+                sharedSoloState = std::make_shared<SharedSoloState>();
+            }
+
+            // now, if paired left, send a message to the right
+            if (pairedLeft) {
+                WARN("need to send ping");
+            }
+        }
+    }
+}
+
+inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg)
+{
+    WARN("processCommandFromBus does nothing now");
+    #if 0   // old way
     // iI the command is external solo, then we want to turn off all our
     // channles to let the other module have exclusive solo.
     // Otherwise the command is CommCommand_ClearAllSolo, and we should
@@ -134,12 +161,14 @@ inline void MixerModule::processCommandFromBus(uint32_t cmd)
     // clear the UI status, so that UI can again solo in the future
     currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
     requestModuleSolo(reqMuteStatus);
+    #endif
 }
 
 inline void MixerModule::pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft)
 {
     if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
-
+        WARN("pollAndProccessCommandFromUI does nothing now");
+#if 0
         const auto commCmd = (soloRequestFromUI == SoloCommands::SOLO_NONE) ?
             CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
 
@@ -161,6 +190,7 @@ inline void MixerModule::pollAndProccessCommandFromUI(bool pairedRight, bool pai
             //and update our current state
             currentSoloStatusFromUI = soloRequestFromUI;
         }
+        #endif
 
         // Now that we have processed the command from UI, retire it.
         soloRequestFromUI = SoloCommands::DO_NOTHING;
@@ -201,6 +231,7 @@ inline void MixerModule::process(const ProcessArgs &args)
     // set a channel to rx data from the left (case #2, above)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftExpander.module->rightExpander.consumerMessage) : nullptr);
 
+    pollForModulePing(pairedLeft);
     pollAndProccessCommandFromUI(pairedRight, pairedLeft);
 
     if (pairedRight) {
@@ -209,14 +240,22 @@ inline void MixerModule::process(const ProcessArgs &args)
 
         // #4) Receive data from right: user right's left consumer buffer
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(rightExpander.module->leftExpander.consumerMessage);
-        sendRightChannel.go(outBuf + comBufferRightCommandOffset);
-        uint32_t cmd = receiveRightChannel.rx(inBuf + comBufferLeftCommandOffset);
+        
+        sendRightChannel.go(
+            outBuf + comBufferRightCommandIdOffset,
+            (size_t*)(outBuf + comBufferRightCommandDataOffset));
 
-        if (cmd != 0) {
-            processCommandFromBus(cmd);
+        CommChannelMessage msg;
+        const bool isCommand = receiveRightChannel.rx(
+            inBuf + comBufferLeftCommandIdOffset,
+            (size_t*)(inBuf + comBufferLeftCommandDataOffset),
+            msg);
+
+        if (isCommand) {
+            processMessageFromBus(msg);
             // now relay down to the left
             if (pairedLeft) {
-                 sendLeftChannel.send(cmd);
+                 sendLeftChannel.send(msg);
             }
         }
     }
@@ -227,12 +266,20 @@ inline void MixerModule::process(const ProcessArgs &args)
         
         // #2) Receive data from left:  use left's right consumer buffer
         const uint32_t* inBuf = reinterpret_cast<uint32_t *>(leftExpander.module->rightExpander.consumerMessage);
-        sendLeftChannel.go(outBuf + comBufferLeftCommandOffset);
-        uint32_t cmd = receiveLeftChannel.rx(inBuf + comBufferRightCommandOffset);
-        if (cmd != 0) {
-             processCommandFromBus(cmd);
+        
+        sendLeftChannel.go(
+            outBuf + comBufferLeftCommandIdOffset,
+            (size_t*)(outBuf + comBufferLeftCommandDataOffset));
+        
+        CommChannelMessage msg;
+        const bool isCommand = receiveLeftChannel.rx(
+            inBuf + comBufferRightCommandIdOffset,
+            (size_t*)(inBuf + comBufferRightCommandDataOffset),
+            msg);
+        if (isCommand) {
+            processMessageFromBus(msg);
             if (pairedRight) {
-                 sendRightChannel.send(cmd);
+                 sendRightChannel.send(msg);
             }
         }
     }
@@ -245,7 +292,7 @@ inline void MixerModule::process(const ProcessArgs &args)
     }
     if (pairedLeft) {
         leftExpander.messageFlipRequested = true;
-     }
+    }
 }
 
 
@@ -301,6 +348,7 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
     unSoloAllChannels<Comp>(mod);
     //printf("processExclusiveSolo channel %d, will un-mute module\n", channel); fflush(stdout);
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, 1.f); 
+    WARN("process exclusive solo");
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);    
 }
 
@@ -317,6 +365,7 @@ inline void processMultiSolo(MixerModule* mod, SoloCommands command)
 
     // toggle the solo state of this one 
     eng->setParam(mod, Comp::SOLO0_PARAM + channel, channelIsSoloed ? 0 : 1); 
+     WARN("process multi solo");
     eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);
 }
 
@@ -355,6 +404,7 @@ inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
             //printf("got SOLO_ALL command\n"); fflush(stdout);
             // we should turn off all channels, and clear all solo lights
             unSoloAllChannels<Comp>(mod);
+            INFO("processSoloRequestForModule is shutting off");
             eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 1);
             break;
         default:
