@@ -140,7 +140,7 @@ void  Gray<TBase>::init()
 template <class TBase>
 void  Gray<TBase>::step()
 {
-    gateTrigger.go(TBase::inputs[INPUT_CLOCK].value);
+    gateTrigger.go(TBase::inputs[INPUT_CLOCK].getVoltage(0));
     if (!gateTrigger.trigger()) {
         return;
     }
@@ -153,10 +153,10 @@ void  Gray<TBase>::step()
     for (int i = 0; i < 8; ++i) {
         bool b = g & 1;
         TBase::lights[i + LIGHT_0].value = b ? 10.f : 0.f;
-        TBase::outputs[i + OUTPUT_0].value = b ? 10.f : 0.f;
+        TBase::outputs[i + OUTPUT_0].setVoltage( b ? 10.f : 0.f, 0);
         g >>= 1;
     }
-    TBase::outputs[OUTPUT_MIXED].value = (float) g0 / 25.f;
+    TBase::outputs[OUTPUT_MIXED].setVoltage((float) g0 / 25.f, 0);
 }
 
 template <class TBase>

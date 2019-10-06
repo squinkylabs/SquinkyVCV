@@ -25,22 +25,22 @@ static float gOutputBuffer[8];
 // function that knows how to get left output from a mixerM
 static float outputGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
 {
-    return m->outputs[bRight ? MixerM::RIGHT_OUTPUT : MixerM::LEFT_OUTPUT].value;
+    return m->outputs[bRight ? MixerM::RIGHT_OUTPUT : MixerM::LEFT_OUTPUT].getVoltage(0);
 }
 
 static float auxGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
 {
-    return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].value;
+    return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].getVoltage(0);
 }
 
 static float auxGetterMixMB(std::shared_ptr<MixerM> m, bool bRight)
 {
-    return m->outputs[bRight ? MixerM::RIGHT_SENDb_OUTPUT : MixerM::LEFT_SENDb_OUTPUT].value;
+    return m->outputs[bRight ? MixerM::RIGHT_SENDb_OUTPUT : MixerM::LEFT_SENDb_OUTPUT].getVoltage(0);
 }
 
 static float outputGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
 {
-    return m->outputs[bRight ? Mixer8::RIGHT_OUTPUT : Mixer8::LEFT_OUTPUT].value;
+    return m->outputs[bRight ? Mixer8::RIGHT_OUTPUT : Mixer8::LEFT_OUTPUT].getVoltage(0);
 }
 
 static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
@@ -63,7 +63,7 @@ static float auxGetterMix4B(std::shared_ptr<Mixer4> m, bool bRight)
 
 static float auxGetterMix8(std::shared_ptr<Mixer8> m, bool bRight)
 {
-    return m->outputs[bRight ? Mixer8::RIGHT_SEND_OUTPUT : Mixer8::LEFT_SEND_OUTPUT].value;
+    return m->outputs[bRight ? Mixer8::RIGHT_SEND_OUTPUT : Mixer8::LEFT_SEND_OUTPUT].getVoltage(0);
 }
 
 
@@ -119,16 +119,16 @@ void testChannel(int channel, bool useParam)
 
     // zero all inputs, put all channel gains to 1
     for (int i = 0; i < T::numChannels; ++i) {
-        m.inputs[T::AUDIO0_INPUT + i].value = 0;
+        m.inputs[T::AUDIO0_INPUT + i].setVoltage(0, 0);
         m.params[T::GAIN0_PARAM + i].value = 1;
     }
 
-    auto xx = m.inputs[T::PAN0_INPUT].value;
+    auto xx = m.inputs[T::PAN0_INPUT].getVoltage(0);
     auto yy = m.params[T::PAN0_PARAM].value;
 
-    m.inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
+    m.inputs[T::AUDIO0_INPUT + channel].setVoltage(5.5f, 0);
     m.params[T::GAIN0_PARAM + channel].value = activeParamValue;
-    m.inputs[T::LEVEL0_INPUT + channel].value = activeCVValue;
+    m.inputs[T::LEVEL0_INPUT + channel].setVoltage(activeCVValue, 0);
     m.inputs[T::LEVEL0_INPUT + channel].channels = 1;
 
     for (int i = 0; i < 1000; ++i) {
@@ -139,7 +139,7 @@ void testChannel(int channel, bool useParam)
 
        // auto debugMuteState = m.params[T::MUTE0_STATE_PARAM + i];
         float expected = (i == channel) ? 5.5f : 0;
-        assertClose(m.outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
+        assertClose(m.outputs[T::CHANNEL0_OUTPUT + i].getVoltage(0), expected, .01f);
     }
 }
 
@@ -157,7 +157,7 @@ static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> ou
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
 
     for (int i = 0; i < 1000; ++i) {
@@ -245,7 +245,7 @@ void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     auto m = getMixer<T>();
     m->step();          // let mutes see zero first (startup reset)
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
     m->params[T::MUTE0_PARAM].value = 1;        // mute
     for (int i = 0; i < 1000; ++i) {
@@ -261,7 +261,7 @@ void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     }
     assertGT(outputGetter(m, false), 5);
 
-    m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
+    m->inputs[T::MUTE0_INPUT].setVoltage(10, 0);       //mute with CV
 
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
@@ -276,7 +276,7 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
     m->params[T::SOLO0_PARAM].value = 1;        // solo
 
@@ -384,8 +384,8 @@ template <typename T>
 static void testReturn()
 {
     auto m = getMixer<T>();
-    m->inputs[T::LEFT_RETURN_INPUT].value = 5;
-    m->inputs[T::RIGHT_RETURN_INPUT].value = 6;
+    m->inputs[T::LEFT_RETURN_INPUT].setVoltage(5, 0);
+    m->inputs[T::RIGHT_RETURN_INPUT].setVoltage(6, 0);
 
     m->params[T::RETURN_GAIN_PARAM].value = .75;        // unity gain
     m->params[T::MASTER_VOLUME_PARAM].value = 1;        // gain of 2
@@ -397,8 +397,8 @@ static void testReturn()
     float expectedOutL = 5 * defaultMasterGain * 2.f;
     float expectedOutR = 6 * defaultMasterGain * 2.f;
 
-    float outL = m->outputs[T::LEFT_OUTPUT].value;
-    float outR = m->outputs[T::RIGHT_OUTPUT].value;
+    float outL = m->outputs[T::LEFT_OUTPUT].getVoltage(0);
+    float outR = m->outputs[T::RIGHT_OUTPUT].getVoltage(0);
     assertClose(outL, expectedOutL, .01);
     assertClose(outR, expectedOutR, .01);
 }
@@ -409,7 +409,7 @@ static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> 
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::PAN0_PARAM].value = 0;     // pan in middle
 
     for (int i = 0; i < 1000; ++i) {
@@ -429,15 +429,15 @@ static void testMasterMute()
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::PAN0_PARAM].value = 0;     // straight up
     m->params[T::MASTER_MUTE_PARAM].value = 1;
 
     for (int i = 0; i < 1000; ++i) {
         m->step();           // let mutes settle
     }
-    float outL = m->outputs[T::LEFT_OUTPUT].value;
-    float outR = m->outputs[T::RIGHT_OUTPUT].value;
+    float outL = m->outputs[T::LEFT_OUTPUT].getVoltage(0);
+    float outR = m->outputs[T::RIGHT_OUTPUT].getVoltage(0);
     float expectedOut = 0;
     assertClose(outL, expectedOut, .01);
     assertClose(outR, expectedOut, .01);
@@ -470,13 +470,13 @@ static void testInputExtremes()
 static void testExpansion8()
 {
     auto m = getMixer<Mixer8>();
-    m->inputs[Mixer8::RIGHT_EXPAND_INPUT].value = 5;
-    m->inputs[Mixer8::LEFT_EXPAND_INPUT].value = 6;
+    m->inputs[Mixer8::RIGHT_EXPAND_INPUT].setVoltage(5, 0);
+    m->inputs[Mixer8::LEFT_EXPAND_INPUT].setVoltage(6, 0);
 
     m->step();
 
-    assertEQ(m->outputs[Mixer8::LEFT_OUTPUT].value, 6);
-    assertEQ(m->outputs[Mixer8::RIGHT_OUTPUT].value, 5);
+    assertEQ(m->outputs[Mixer8::LEFT_OUTPUT].getVoltage(0), 6);
+    assertEQ(m->outputs[Mixer8::RIGHT_OUTPUT].getVoltage(0), 5);
 
     assertEQ(Mixer8::LEFT_EXPAND_INPUT + 1, Mixer8::RIGHT_EXPAND_INPUT);
     assertEQ(Mixer8::LEFT_RETURN_INPUT + 1, Mixer8::RIGHT_RETURN_INPUT);
@@ -538,19 +538,19 @@ static void testExpansionM()
 
     const float masterVolMaxGain = 2;
 
-    assertClose(m->outputs[MixerM::LEFT_OUTPUT].value, 1.1f * masterVolMaxGain, .01);
-    assertClose(m->outputs[MixerM::RIGHT_OUTPUT].value, 3.2f * masterVolMaxGain, .01);
-    assertClose(m->outputs[MixerM::LEFT_SEND_OUTPUT].value, 2.2f, .01);
-    assertClose(m->outputs[MixerM::RIGHT_SEND_OUTPUT].value, 3.3f, .01);
+    assertClose(m->outputs[MixerM::LEFT_OUTPUT].getVoltage(0), 1.1f * masterVolMaxGain, .01);
+    assertClose(m->outputs[MixerM::RIGHT_OUTPUT].getVoltage(0), 3.2f * masterVolMaxGain, .01);
+    assertClose(m->outputs[MixerM::LEFT_SEND_OUTPUT].getVoltage(0), 2.2f, .01);
+    assertClose(m->outputs[MixerM::RIGHT_SEND_OUTPUT].getVoltage(0), 3.3f, .01);
 
     // disconnect input
     m->setExpansionInputs(nullptr);
     m->step();
 
-    assertClose(m->outputs[MixerM::LEFT_OUTPUT].value, 0, .01);
-    assertClose(m->outputs[MixerM::RIGHT_OUTPUT].value, 0, .01);
-    assertClose(m->outputs[MixerM::LEFT_SEND_OUTPUT].value, 0, .01);
-    assertClose(m->outputs[MixerM::RIGHT_SEND_OUTPUT].value, 0, .01);
+    assertClose(m->outputs[MixerM::LEFT_OUTPUT].getVoltage(0), 0, .01);
+    assertClose(m->outputs[MixerM::RIGHT_OUTPUT].getVoltage(0), 0, .01);
+    assertClose(m->outputs[MixerM::LEFT_SEND_OUTPUT].getVoltage(0), 0, .01);
+    assertClose(m->outputs[MixerM::RIGHT_SEND_OUTPUT].getVoltage(0), 0, .01);
 }
 
 #if 0

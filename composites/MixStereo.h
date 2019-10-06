@@ -244,7 +244,7 @@ inline void MixStereo<TBase>::stepn(int div)
 
             assert(group + LEVEL0_INPUT < NUM_INPUTS);
             const float rawCV = TBase::inputs[group + LEVEL0_INPUT].isConnected() ?
-                TBase::inputs[group + LEVEL0_INPUT].value : 10.f;
+                TBase::inputs[group + LEVEL0_INPUT].getVoltage(0) : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
                 0.0f,
@@ -282,7 +282,7 @@ inline void MixStereo<TBase>::stepn(int div)
             assert(group + PAN0_PARAM < NUM_PARAMS);
             assert(group + PAN0_INPUT < NUM_INPUTS);
             const float balance = TBase::params[group + PAN0_PARAM].value;
-            const float cv = TBase::inputs[group + PAN0_INPUT].value;
+            const float cv = TBase::inputs[group + PAN0_INPUT].getVoltage(0);
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
 
             float rightPan = 1 + panValue;   // 0..2
@@ -403,7 +403,7 @@ inline void MixStereo<TBase>::step()
         }
 #endif
         assert(channel + AUDIO0_INPUT < NUM_INPUTS);
-        const float channelInput = TBase::inputs[inputChannel + AUDIO0_INPUT].value;
+        const float channelInput = TBase::inputs[inputChannel + AUDIO0_INPUT].getVoltage(0);
 
         if (isLeft) {
             left += channelInput * filteredCV.get(channel + cvOffsetGainBalance);
@@ -425,7 +425,7 @@ inline void MixStereo<TBase>::step()
             } else {
                 channelOutput = channelInput * filteredCV.get(group + cvOffsetGain);
             }
-            TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelOutput;
+            TBase::outputs[channel + CHANNEL0_OUTPUT].setVoltage(channelOutput, 0);
         #else
             TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
         #endif

@@ -84,9 +84,7 @@ void  Daveguide<TBase>::step()
     TBase::outputs[OUTPUT_AUDIO].value = output;
 #endif
     float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value) + TBase::params[TUNE_PARAM].value / 12.0f;
-    pitch += TBase::inputs[CV_INPUT].value;
-    //pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
-    //    taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
+    pitch += TBase::inputs[CV_INPUT].getVoltage(0);
 
     const float q = float(log2(261.626));       // move up to pitch range of even vco
     pitch += q;
@@ -96,16 +94,8 @@ void  Daveguide<TBase>::step()
 
     delay.setDelay(delaySamples);
     delay.setFeedback(.999f);
-   // printf("set delay to %f samples (%f sec)\n", delaySamples, delaySeconds);
-   // fflush(stdout);
 
-    const float input = TBase::inputs[AUDIO_INPUT].value;
+    const float input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
     const float output = delay.run(input);
-    TBase::outputs[AUDIO_OUTPUT].value = output;
-
-
-
-
-
-    // clock.setMultiplier(1); // no mult
+    TBase::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
 }

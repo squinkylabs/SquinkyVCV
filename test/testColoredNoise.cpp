@@ -36,7 +36,7 @@ static void test1()
     bool started = false;
     for (bool done = false; !done; ) {
         cn.step();
-        const float output = cn.outputs[Noise::AUDIO_OUTPUT].value;
+        const float output = cn.outputs[Noise::AUDIO_OUTPUT].getVoltage(0);
         if (output > .1) {
             started = true;
         }

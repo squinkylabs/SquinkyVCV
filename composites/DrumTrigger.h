@@ -160,7 +160,7 @@ inline void DrumTrigger<TBase>::stepn(int n)
     for (int outputChannel = 0; outputChannel < numTriggerChannels; ++outputChannel) {
         const bool gate = gateOutputs[outputChannel];
 
-        TBase::outputs[GATE0_OUTPUT + outputChannel].value = gate ? 10.f : 0.f;
+        TBase::outputs[GATE0_OUTPUT + outputChannel].setVoltage(gate ? 10.f : 0.f, 0);
         TBase::lights[LIGHT0 + outputChannel].value = gate ? 10.f : 0.f;
     }
 }

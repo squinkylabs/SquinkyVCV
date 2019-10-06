@@ -283,7 +283,7 @@ inline void LFNB<TBase>::stepn(int)
 {
     // update the BP filter base on fc,q knobs and cv
     float k = cvLinearScalar(
-        TBase::inputs[FC0_INPUT].value,
+        TBase::inputs[FC0_INPUT].getVoltage(0),
         TBase::params[FC0_PARAM].value,
         TBase::params[FC0_TRIM_PARAM].value);
 
@@ -293,7 +293,7 @@ inline void LFNB<TBase>::stepn(int)
    
 
     float q = qLinearScalar(
-        TBase::inputs[Q0_INPUT].value,
+        TBase::inputs[Q0_INPUT].getVoltage(0),
         TBase::params[Q0_PARAM].value,
         TBase::params[Q0_TRIM_PARAM].value);
 
@@ -307,7 +307,7 @@ inline void LFNB<TBase>::step()
 
     for (int i = 0; i < 2; ++i) {
         float x = channels[i].step();
-        TBase::outputs[AUDIO0_OUTPUT+i].value = (float) x;
+        TBase::outputs[AUDIO0_OUTPUT + i].setVoltage((float) x, 0);
     }
 #if 0
     // Let's only check the inputs every 4 samples. Still plenty fast, but

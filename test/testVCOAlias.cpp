@@ -364,11 +364,11 @@ static void testEven(double normalizedFreq)
     using EVCO = EvenVCO <TestComposite>;
     EVCO vco;
     vco._testFreq = float(sampleRate * normalizedFreq);
-    vco.outputs[EVCO::SAW_OUTPUT].active = true;
-    vco.outputs[EVCO::SINE_OUTPUT].active = false;
-    vco.outputs[EVCO::TRI_OUTPUT].active = false;
-    vco.outputs[EVCO::SQUARE_OUTPUT].active = false;
-    vco.outputs[EVCO::EVEN_OUTPUT].active = false;
+    vco.outputs[EVCO::SAW_OUTPUT].channels = 1;
+    vco.outputs[EVCO::SINE_OUTPUT].channels = 0;
+    vco.outputs[EVCO::TRI_OUTPUT].channels = 0;
+    vco.outputs[EVCO::SQUARE_OUTPUT].channels = 0;
+    vco.outputs[EVCO::EVEN_OUTPUT].channels = 0;
 
     testAlias([&vco]() {
         vco.step();

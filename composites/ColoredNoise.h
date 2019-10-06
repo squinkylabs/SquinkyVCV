@@ -288,7 +288,7 @@ void ColoredNoise<TBase>::serviceAudio()
         messagePool.push(oldMessage);
     }
 
-    TBase::outputs[AUDIO_OUTPUT].value = output;
+    TBase::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
 }
 
 
@@ -306,7 +306,7 @@ void ColoredNoise<TBase>::serviceInputs()
     }
 
     T combinedSlope = cv_scaler(
-        TBase::inputs[SLOPE_CV].value,
+        TBase::inputs[SLOPE_CV].getVoltage(0),
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM].value);
 

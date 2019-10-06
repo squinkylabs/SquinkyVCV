@@ -49,14 +49,14 @@ float desiredPitchEv(const EVCO& vco)
 }
 #endif
 
-float desiredPitchCh(const CH& vco)
+float desiredPitchCh(CH& vco)
 {
     return desiredPitch(
         vco.params[(int) CH::PARAM_OCTAVE].value,
         vco.params[(int) CH::PARAM_TUNE].value,
-        vco.inputs[(int) CH::CV_INPUT].value,
+        vco.inputs[(int) CH::CV_INPUT].getVoltage(0),
         0,
-        vco.inputs[(int) CH::PITCH_MOD_INPUT].value
+        vco.inputs[(int) CH::PITCH_MOD_INPUT].getVoltage(0)
     );
 
 #if 0
@@ -91,11 +91,11 @@ static void testxEv(float octave, float tune = 0, float pitch1 = 0, float pitch2
     vco.inputs[(int) EVCO::PITCH2_INPUT].value = pitch2;
     vco.inputs[(int) EVCO::FM_INPUT].value = fm;
 
-    vco.outputs[(int) EVCO::SAW_OUTPUT].active = true;
-    vco.outputs[(int) EVCO::EVEN_OUTPUT].active = false;
-    vco.outputs[(int) EVCO::TRI_OUTPUT].active = false;
-    vco.outputs[(int) EVCO::SQUARE_OUTPUT].active = false;
-    vco.outputs[(int) EVCO::SINE_OUTPUT].active = false;
+    vco.outputs[(int) EVCO::SAW_OUTPUT].channels = 1;
+    vco.outputs[(int) EVCO::EVEN_OUTPUT].channels = 0;
+    vco.outputs[(int) EVCO::TRI_OUTPUT].channels = 0;
+    vco.outputs[(int) EVCO::SQUARE_OUTPUT].channels = 0;
+    vco.outputs[(int) EVCO::SINE_OUTPUT].channels = 0;
 
     vco.step();
     const float desired = desiredPitchEv(vco);
@@ -118,9 +118,9 @@ static void testxCh(float octave, float tune = 0, float pitch1 = 0, float pitch2
 
     vco.params[(int) CH::PARAM_OCTAVE].value = octave;
     vco.params[(int) CH::PARAM_TUNE].value = tune;
-    vco.inputs[(int) CH::CV_INPUT].value = pitch1;
+    vco.inputs[(int) CH::CV_INPUT].setVoltage(pitch1, 0);
   //  vco.inputs[(int) CH::PITCH2_INPUT].value = pitch2;
-    vco.inputs[(int) CH::PITCH_MOD_INPUT].value = fm;
+    vco.inputs[(int) CH::PITCH_MOD_INPUT].setVoltage(fm, 0);
 
 
     vco.step();

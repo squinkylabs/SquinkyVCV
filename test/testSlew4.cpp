@@ -9,10 +9,10 @@ using Slew = Slew4<TestComposite>;
 static void clearConnections(Slew& slew)
 {
     for (int i = 0; i < 8; ++i) {
-        slew.inputs[Slew::INPUT_TRIGGER0 + i].active = false;
-        slew.inputs[Slew::INPUT_AUDIO1 + i].active = false;
-        slew.outputs[Slew::OUTPUT0 + i].active = false;
-        slew.outputs[Slew::OUTPUT_MIX0 + i].active = false;
+        slew.inputs[Slew::INPUT_TRIGGER0 + i].channels = 0;
+        slew.inputs[Slew::INPUT_AUDIO1 + i].channels = 0;
+        slew.outputs[Slew::OUTPUT0 + i].channels = 0;
+        slew.outputs[Slew::OUTPUT_MIX0 + i].channels = 0;
     }
 }
 
@@ -20,7 +20,7 @@ static void clearConnections(Slew& slew)
 static void activateGateInputs(Slew& slew)
 {
     for (int i = 0; i < 8; ++i) {
-        slew.inputs[Slew::INPUT_TRIGGER0 + i].active = true;
+        slew.inputs[Slew::INPUT_TRIGGER0 + i].channels = 1;
     }
 }
 
@@ -37,12 +37,12 @@ static void testTriggers(int outputNumber)
 
     slew.params[Slew::PARAM_RISE].value = -5;
     slew.params[Slew::PARAM_FALL].value = -5;
-    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].value = 10;       // trigger channel under test
-    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].active = true;
+    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].setVoltage(10, 0);       // trigger channel under test
+    slew.inputs[Slew::INPUT_TRIGGER0 + outputNumber].channels = 1;
     slew.step();
 
     for (int i = 0; i < 8; ++i) {
-        auto value = slew.outputs[Slew::OUTPUT0 + i].value;
+        auto value = slew.outputs[Slew::OUTPUT0 + i].getVoltage(0);
         if (outputNumber == i) {
              // 1.1 is pretty fast, just picked it by observing lag
             assertClose(value, 1.1, .1);
@@ -74,23 +74,23 @@ static void testMixedOutNormals(int outputNumber)
     init(slew);
 
     for (int i = 0; i < 8; ++i) {
-        slew.outputs[Slew::OUTPUT_MIX0 + i].active = (i == outputNumber);       // patch the output under test
+        slew.outputs[Slew::OUTPUT_MIX0 + i].channels = (i == outputNumber) ? 1 : 0;       // patch the output under test
     }
 
     if (outputNumber == 1) {
-        assert(!slew.outputs[Slew::OUTPUT_MIX0].active);
+        assert(!slew.outputs[Slew::OUTPUT_MIX0].isConnected());
     }
 
     // all the trigger inputs being driven at the same time
     for (int i = 0; i < 8; ++i) {
-        slew.inputs[Slew::INPUT_TRIGGER0 + i].active = true;
-        slew.inputs[Slew::INPUT_TRIGGER0 + i].value = 10;       // trigger all
+        slew.inputs[Slew::INPUT_TRIGGER0 + i].channels = 1;
+        slew.inputs[Slew::INPUT_TRIGGER0 + i].setVoltage(10, 0);       // trigger all
     }
 
     slew.step();
 
     for (int i = 0; i < 8; ++i) {
-        const float value = slew.outputs[Slew::OUTPUT_MIX0 + i].value;
+        const float value = slew.outputs[Slew::OUTPUT_MIX0 + i].getVoltage(0);
         if (outputNumber == i) {
              // we expect the one patched output to have the sum of all above it.
             float expected = 1.19f * (i + 1);
@@ -112,9 +112,9 @@ static void testMixedOutNormals()
 // gate input n triggers output m
 bool gateInputTriggersOutput(Slew& slew, int gateIn, int gateOut)
 {
-    slew.inputs[Slew::INPUT_TRIGGER0 + gateIn].value = 10;
+    slew.inputs[Slew::INPUT_TRIGGER0 + gateIn].setVoltage(10, 0);
     slew.step();
-    bool ret = slew.outputs[Slew::OUTPUT0 + gateOut].value > 1;         // min rise, fall, 1.19 (as above)
+    bool ret = slew.outputs[Slew::OUTPUT0 + gateOut].getVoltage(0) > 1;         // min rise, fall, 1.19 (as above)
     return ret;
 }
 
@@ -124,7 +124,7 @@ static void testGateInputs()
     for (int i = 0; i < 8; ++i) {
         Slew slew;
         init(slew);
-        slew.inputs[Slew::INPUT_TRIGGER0 + i].active = true;
+        slew.inputs[Slew::INPUT_TRIGGER0 + i].channels = 1;
         assert(gateInputTriggersOutput(slew, i, i));
     }
 
@@ -135,7 +135,7 @@ static void testGateInputs()
 
          // patch the first input only
         for (int j = 0; j < 8; ++j) {
-            slew.inputs[Slew::INPUT_TRIGGER0 + j].active = (j == 0);
+            slew.inputs[Slew::INPUT_TRIGGER0 + j].channels = (j == 0) ? 1 : 0;
         }     
         assert(gateInputTriggersOutput(slew, 0, i));
     }
@@ -143,16 +143,16 @@ static void testGateInputs()
     {
         Slew slew;
         init(slew);
-        slew.inputs[Slew::INPUT_TRIGGER0].active = true;
-        slew.inputs[Slew::INPUT_TRIGGER1].active = true;
+        slew.inputs[Slew::INPUT_TRIGGER0].channels = 1;
+        slew.inputs[Slew::INPUT_TRIGGER1].channels = 1;
         assert(!gateInputTriggersOutput(slew, 0, 1));
     }
 
     {
         Slew slew;
         init(slew);
-        slew.inputs[Slew::INPUT_TRIGGER0].active = true;
-        slew.inputs[Slew::INPUT_TRIGGER1].active = true;
+        slew.inputs[Slew::INPUT_TRIGGER0].channels = 1;
+        slew.inputs[Slew::INPUT_TRIGGER1].channels = 1;
         assert(!gateInputTriggersOutput(slew, 1, 0));
     }
 }

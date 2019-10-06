@@ -40,10 +40,9 @@ const uint32_t CommCommand_ClearAllSolo = (100 << 16);
 const uint32_t CommCommand_ExternalSolo = (101 << 16); 
 
 /**
- * commands used by mixers for communicating sol info
+ * commands used by mixers for communicating solo info
  * (These are not sent over a comm channel, and don't really belong here)
  */
-
 enum class SoloCommands {
     // SOLO_x normal, exclusive solo requested
     SOLO_0,

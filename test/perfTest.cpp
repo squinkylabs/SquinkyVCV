@@ -156,13 +156,13 @@ static void testShifter()
     fs.setSampleRate(44100);
     fs.init();
 
-    fs.inputs[Shifter::AUDIO_INPUT].value = 0;
+    fs.inputs[Shifter::AUDIO_INPUT].setVoltage(0, 0);
 
     assert(overheadInOut >= 0);
     MeasureTime<float>::run(overheadInOut, "shifter", [&fs]() {
-        fs.inputs[Shifter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        fs.inputs[Shifter::AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         fs.step();
-        return fs.outputs[Shifter::SIN_OUTPUT].value;
+        return fs.outputs[Shifter::SIN_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -173,12 +173,12 @@ static void testAnimator()
     an.setSampleRate(44100);
     an.init();
 
-    an.inputs[Shifter::AUDIO_INPUT].value = 0;
+    an.inputs[Shifter::AUDIO_INPUT].setVoltage(0, 0);;
 
     MeasureTime<float>::run(overheadInOut, "animator", [&an]() {
-        an.inputs[Shifter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        an.inputs[Shifter::AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         an.step();
-        return an.outputs[Shifter::SIN_OUTPUT].value;
+        return an.outputs[Shifter::SIN_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -190,12 +190,12 @@ static void testVocalFilter()
     an.setSampleRate(44100);
     an.init();
 
-    an.inputs[Shifter::AUDIO_INPUT].value = 0;
+    an.inputs[Shifter::AUDIO_INPUT].setVoltage(0, 0);
 
     MeasureTime<float>::run(overheadInOut, "vocal filter", [&an]() {
-        an.inputs[Shifter::AUDIO_INPUT].value = TestBuffers<float>::get();
+        an.inputs[Shifter::AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         an.step();
-        return an.outputs[Shifter::SIN_OUTPUT].value;
+        return an.outputs[Shifter::SIN_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -209,7 +209,7 @@ static void testColors()
 
     MeasureTime<float>::run(overheadInOut, "colors", [&co]() {
         co.step();
-        return co.outputs[Colors::AUDIO_OUTPUT].value;
+        return co.outputs[Colors::AUDIO_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -222,9 +222,9 @@ static void testTremolo()
 
 
     MeasureTime<float>::run(overheadInOut, "trem", [&tr]() {
-        tr.inputs[Trem::AUDIO_INPUT].value = TestBuffers<float>::get();
+        tr.inputs[Trem::AUDIO_INPUT].setVoltage(TestBuffers<float>::get(), 0);
         tr.step();
-        return tr.outputs[Trem::AUDIO_OUTPUT].value;
+        return tr.outputs[Trem::AUDIO_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -237,7 +237,7 @@ static void testLFN()
 
     MeasureTime<float>::run(overheadOutOnly, "lfn", [&lfn]() {
         lfn.step();
-        return lfn.outputs[LFN<TestComposite>::OUTPUT].value;
+        return lfn.outputs[LFN<TestComposite>::OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -254,7 +254,7 @@ static void testLFNB()
 
     MeasureTime<float>::run(overheadOutOnly, "lfnb", [&lfn]() {
         lfn.step();
-        return lfn.outputs[LFNB<TestComposite>::AUDIO0_OUTPUT].value;
+        return lfn.outputs[LFNB<TestComposite>::AUDIO0_OUTPUT].getVoltage(0);
         }, 1);
 }
 #if 0
@@ -262,11 +262,11 @@ static void testEvenOrig()
 {
     EvenVCO_orig<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO_orig<TestComposite>::EVEN_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::SINE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::TRI_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO_orig<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO_orig<TestComposite>::EVEN_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::SINE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::TRI_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO_orig<TestComposite>::SAW_OUTPUT].channels = 1;
 
     for (int i = 0; i < 100; ++i) lfn.step();
 
@@ -284,11 +284,11 @@ static void testEven()
     EvenVCO<TestComposite> lfn;
 
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 1;
     MeasureTime<float>::run(overheadOutOnly, "Even, all outs", [&lfn]() {
         lfn.step();
         return lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].value;
@@ -299,11 +299,11 @@ static void testEvenEven()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, even only", [&lfn]() {
         lfn.step();
@@ -315,11 +315,11 @@ static void testEvenSin()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, sin only", [&lfn]() {
         lfn.step();
@@ -331,11 +331,11 @@ static void testEvenSaw()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 1;
 
     for (int i = 0; i < 100; ++i) lfn.step();
 
@@ -351,11 +351,11 @@ static void testEvenTri()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, tri only", [&lfn]() {
         lfn.step();
@@ -367,11 +367,11 @@ static void testEvenSq()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 0;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, Sq only", [&lfn]() {
         lfn.step();
@@ -383,11 +383,11 @@ static void testEvenSqSaw()
 {
     EvenVCO<TestComposite> lfn;
 
-    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].active = true;
-    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[EvenVCO<TestComposite>::EVEN_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SINE_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[EvenVCO<TestComposite>::SQUARE_OUTPUT].channels = 1;
+    lfn.outputs[EvenVCO<TestComposite>::SAW_OUTPUT].channels = 1;
 
     MeasureTime<float>::run(overheadOutOnly, "Even, Sq Saw", [&lfn]() {
         lfn.step();
@@ -401,7 +401,7 @@ static void testFun()
     FunVCOComposite<TestComposite> lfn;
 
     for (int i = 0; i < lfn.NUM_OUTPUTS; ++i) {
-        lfn.outputs[i].active = true;
+        lfn.outputs[i].channels = 1;
     }
 
     lfn.setSampleRate(44100.f);
@@ -410,10 +410,10 @@ static void testFun()
 
     MeasureTime<float>::run(overheadOutOnly, "Fun all on, digital", [&lfn]() {
         lfn.step();
-        return lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].value +
-            lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].value +
-            lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].value +
-            lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].value;
+        return lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].getVoltage(0) +
+            lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].getVoltage(0) +
+            lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].getVoltage(0) +
+            lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -422,14 +422,14 @@ static void testFunNone()
     FunVCOComposite<TestComposite> lfn;
 
     for (int i = 0; i < lfn.NUM_OUTPUTS; ++i) {
-        lfn.outputs[i].active = false;
+        lfn.outputs[i].channels = 0;
     }
 
     lfn.setSampleRate(44100.f);
 
     MeasureTime<float>::run(overheadOutOnly, "Fun all off", [&lfn]() {
         lfn.step();
-        return lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].value;
+        return lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -437,10 +437,10 @@ static void testFunSaw(bool isAnalog)
 {
     FunVCOComposite<TestComposite> lfn;
 
-    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].active = true;
+    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].channels = 1;
 
     //  oscillator.analog = TBase::params[MODE_PARAM].value > 0.0f;
     lfn.params[FunVCOComposite<TestComposite>::MODE_PARAM].value = isAnalog ? 1.0f : 0.f;
@@ -450,7 +450,7 @@ static void testFunSaw(bool isAnalog)
     std::string title = isAnalog ? "Fun Saw Analog" : "Fun Saw Digital";
     MeasureTime<float>::run(overheadOutOnly, title.c_str(), [&lfn]() {
         lfn.step();
-        return lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].value;
+        return lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -458,10 +458,10 @@ static void testFunSin(bool isAnalog)
 {
     FunVCOComposite<TestComposite> lfn;
 
-    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].active = true;
-    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].channels = 1;
+    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].channels = 0;
 
     lfn.params[FunVCOComposite<TestComposite>::MODE_PARAM].value = isAnalog ? 1.0f : 0.f;
 
@@ -470,7 +470,7 @@ static void testFunSin(bool isAnalog)
     std::string title = isAnalog ? "Fun Sin Analog" : "Fun Sin Digital";
     MeasureTime<float>::run(overheadOutOnly, title.c_str(), [&lfn]() {
         lfn.step();
-        return lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].value;
+        return lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -478,16 +478,16 @@ static void testFunSq()
 {
     FunVCOComposite<TestComposite> lfn;
 
-    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].active = false;
-    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].active = true;
-    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].active = false;
+    lfn.outputs[FunVCOComposite<TestComposite>::SIN_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::TRI_OUTPUT].channels = 0;
+    lfn.outputs[FunVCOComposite<TestComposite>::SQR_OUTPUT].channels = 1;
+    lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].channels = 0;
 
     lfn.setSampleRate(44100.f);
 
     MeasureTime<float>::run(overheadOutOnly, "Fun sq", [&lfn]() {
         lfn.step();
-        return lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].value;
+        return lfn.outputs[FunVCOComposite<TestComposite>::SAW_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -497,7 +497,7 @@ static void testCHBdef()
     std::string name = "chbdef ";
     MeasureTime<float>::run(overheadOutOnly, name.c_str(), [&chb]() {
         chb.step();
-        return chb.outputs[CHB<TestComposite>::MIX_OUTPUT].value;
+        return chb.outputs[CHB<TestComposite>::MIX_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -522,7 +522,7 @@ static void testGMR()
 
     MeasureTime<float>::run(overheadOutOnly, "gmr", [&gmr]() {
         gmr.step();
-        return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].value;
+        return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -535,7 +535,7 @@ static void testDG()
 
     MeasureTime<float>::run(overheadOutOnly, "dg", [&gmr]() {
         gmr.step();
-        return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].value;
+        return gmr.outputs[GMR<TestComposite>::TRIGGER_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -551,9 +551,9 @@ static void testShaper1a()
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::FullWave;
 
     MeasureTime<float>::run(overheadOutOnly, "shaper fw 16X", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = TestBuffers<float>::get();
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(TestBuffers<float>::get(), 0);
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         }, 1);
 }
 
@@ -567,9 +567,9 @@ static void testShaper1b()
     gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 1;
 
     MeasureTime<float>::run(overheadOutOnly, "shaper fw 4X", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = TestBuffers<float>::get();
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(TestBuffers<float>::get(), 0);
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         }, 1);
 }
 
@@ -579,7 +579,7 @@ static void testSuper()
 
     MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
         super.step();
-        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].getVoltage(0);
     }, 1);
 }
 
@@ -590,7 +590,7 @@ static void testSuper2()
     super.params[Super<TestComposite>::CLEAN_PARAM].value = 1;
     MeasureTime<float>::run(overheadOutOnly, "super clean", [&super]() {
         super.step();
-        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].getVoltage(0);
     }, 1);
 }
 
@@ -601,7 +601,7 @@ static void testSuper3()
     super.params[Super<TestComposite>::CLEAN_PARAM].value = 2;
     MeasureTime<float>::run(overheadOutOnly, "super clean 2", [&super]() {
         super.step();
-        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].value;
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].getVoltage(0);
         }, 1);
 }
 #if 0
@@ -632,7 +632,7 @@ static void testKS()
     MeasureTime<float>::run(overheadOutOnly, "ks", [&gmr]() {
        // gmr.inputs[KSComposite<TestComposite>::INPUT_AUDIO].value = TestBuffers<float>::get();
         gmr.step();
-        return gmr.outputs[KSComposite<TestComposite>::SQR_OUTPUT].value;
+        return gmr.outputs[KSComposite<TestComposite>::SQR_OUTPUT].getVoltage(0);
         }, 1);
 }
 
@@ -644,9 +644,9 @@ static void testShaper1c()
     gmr.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;
 
     MeasureTime<float>::run(overheadOutOnly, "shaper fw 1X", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = TestBuffers<float>::get();
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(TestBuffers<float>::get(), 0);
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         }, 1);
 }
 
@@ -660,9 +660,9 @@ static void testShaper2()
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::Crush;
 
     MeasureTime<float>::run(overheadOutOnly, "shaper crush", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = TestBuffers<float>::get();
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(TestBuffers<float>::get(), 0);
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         }, 1);
 }
 
@@ -676,9 +676,9 @@ static void testShaper3()
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::AsymSpline;
 
     MeasureTime<float>::run(overheadOutOnly, "shaper asy", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = TestBuffers<float>::get();
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(TestBuffers<float>::get(), 0);
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         }, 1);
 }
 
@@ -691,9 +691,9 @@ static void testShaper4()
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::Fold;
 
     MeasureTime<float>::run(overheadOutOnly, "folder", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = TestBuffers<float>::get();
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(TestBuffers<float>::get(), 0);
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         }, 1);
 }
 
@@ -706,9 +706,9 @@ static void testShaper5()
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) Shaper<TestComposite>::Shapes::Fold2;
 
     MeasureTime<float>::run(overheadOutOnly, "folder II", [&gmr]() {
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = TestBuffers<float>::get();
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(TestBuffers<float>::get(), 0);
         gmr.step();
-        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        return gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         }, 1);
 }
 #if 0

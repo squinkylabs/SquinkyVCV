@@ -18,16 +18,16 @@ static void test0()
 
     for (int i = 0; i < 10; ++i) {
 
-        gmr.inputs[G::CLOCK_INPUT].value = 0;
+        gmr.inputs[G::CLOCK_INPUT].setVoltage(0, 0);
         for (int i = 0; i < 100; ++i) {
             gmr.step();
-            float out = gmr.outputs[G::TRIGGER_OUTPUT].value;
+            float out = gmr.outputs[G::TRIGGER_OUTPUT].getVoltage(0);
             data.insert(out);
         }
-        gmr.inputs[G::CLOCK_INPUT].value = 10;
+        gmr.inputs[G::CLOCK_INPUT].setVoltage(10, 0);
         for (int i = 0; i < 100; ++i) {
             gmr.step();
-            float out = gmr.outputs[G::TRIGGER_OUTPUT].value;
+            float out = gmr.outputs[G::TRIGGER_OUTPUT].getVoltage(0);
             data.insert(out);
         }
     }

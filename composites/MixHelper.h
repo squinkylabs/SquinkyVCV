@@ -2,9 +2,11 @@
 
 #include "GateTrigger.h"
 
-#define _CHAUDIOTAPER
+#define _CHAUDIOTAPER       // not needed any more?
 
 /**
+ * Does all of the mute and mute CD processing for mixers
+ * 
  * template class must provide:
         MUTE0_PARAM..numGroups
         MUTE0_STATE_PARAM
@@ -47,7 +49,6 @@ private:
         bool cvMuteToggle,
         int cvInput);
 };
-
 
 template <class TMixComposite>
 inline void MixHelper<TMixComposite>::procMixInputs(TMixComposite* mixer)
@@ -109,10 +110,10 @@ inline void MixHelper<TMixComposite>::procOneMute(
     // from fighting the CV. If CV doesn't change, params can win.
     // master has no CV, so will be -1
     if (cvInput >= 0) {
-        inputTriggers[index].go(mixer->inputs[cvInput].value);
+        inputTriggers[index].go(mixer->inputs[cvInput].getVoltage(0));
     }
     const bool inputCVActive = inputTriggers[index].gate();
-   // const bool debug
+    // const bool debug
     if (inputCVActive != cvWasHigh[index]) {
         if (cvMuteToggle) {
             if (inputCVActive) {
@@ -128,6 +129,5 @@ inline void MixHelper<TMixComposite>::procOneMute(
     mixer->params[muteStateParam].value = muted ? 1.f : 0.f;
     mixer->lights[light].value = muted ? 10.f : 0.f;
 }
-//proc1(mixer, muteparam, mutesstatusparam, light)
 
 

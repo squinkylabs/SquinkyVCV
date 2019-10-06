@@ -237,7 +237,7 @@ inline int Super<TBase>::getOversampleRate()
 template <class TBase>
 inline void Super<TBase>::updatePhaseInc()
 {
-    const float cv = TBase::inputs[CV_INPUT].value;
+    const float cv = TBase::inputs[CV_INPUT].getVoltage(0);
 
     const float finePitch = TBase::params[FINE_PARAM].value / 12.0f;
     const float semiPitch = TBase::params[SEMI_PARAM].value / 12.0f;
@@ -248,7 +248,7 @@ inline void Super<TBase>::updatePhaseInc()
 
     pitch += cv;
 
-    const float fm = TBase::inputs[FM_INPUT].value;
+    const float fm = TBase::inputs[FM_INPUT].getVoltage(0);
     const float fmDepth = AudioMath::quadraticBipolar(TBase::params[FM_PARAM].value);
 
     pitch += (fmDepth * fm);
@@ -259,7 +259,7 @@ inline void Super<TBase>::updatePhaseInc()
     globalPhaseInc = TBase::engineGetSampleTime() * freq;
 
     const float rawDetuneValue = scaleDetune(
-        TBase::inputs[DETUNE_INPUT].value,
+        TBase::inputs[DETUNE_INPUT].getVoltage(0),
         TBase::params[DETUNE_PARAM].value,
         TBase::params[DETUNE_TRIM_PARAM].value);
 
@@ -308,7 +308,7 @@ inline void Super<TBase>::updateAudioClassic()
 {
     const float mix = runSaws();
     const float output = hpf.run(mix);
-    TBase::outputs[MAIN_OUTPUT].value = output;
+    TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
 }
 
 template <class TBase>
@@ -322,7 +322,7 @@ inline void Super<TBase>::updateAudioClean()
     }
     //const float output = hpf.run(mix);
     const float output = decimator.process(buffer);
-    TBase::outputs[MAIN_OUTPUT].value = output;
+    TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
 }
 template <class TBase>
 inline void Super<TBase>::updateHPFilters()
@@ -353,7 +353,7 @@ inline void Super<TBase>::step()
 template <class TBase>
 inline void Super<TBase>::updateTrigger()
 {
-    gateTrigger.go(TBase::inputs[TRIGGER_INPUT].value);
+    gateTrigger.go(TBase::inputs[TRIGGER_INPUT].getVoltage(0));
     if (gateTrigger.trigger()) {
         for (int i = 0; i < numSaws; ++i) {
             phase[i] = this->random();
@@ -365,7 +365,7 @@ template <class TBase>
 inline void Super<TBase>::updateMix()
 {
     const float rawMixValue = scaleDetune(
-        TBase::inputs[MIX_INPUT].value,
+        TBase::inputs[MIX_INPUT].getVoltage(0),
         TBase::params[MIX_PARAM].value,
         TBase::params[MIX_TRIM_PARAM].value);
 

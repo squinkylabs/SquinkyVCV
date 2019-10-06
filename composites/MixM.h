@@ -4,6 +4,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "MixHelper.h"
+#include "mixpolyhelper.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
@@ -60,6 +61,8 @@ class MixM : public TBase
 public:
     template<typename Q>
     friend class MixHelper;
+    template<typename Q>
+    friend class MixPolyHelper;
 
     MixM(Module * module) : TBase(module)
     {
@@ -241,9 +244,8 @@ private:
     const float* expansionInputs = nullptr;
 
     MixHelper<MixM<TBase>> helper;
-#ifdef _CHAUDIOTAPER
-     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
-#endif
+    MixPolyHelper<MixM<TBase>> polyHelper;
+    std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
 };
 
 template <class TBase>
@@ -289,6 +291,7 @@ inline void MixM<TBase>::stepn(int div)
  
     helper.procMixInputs(this);
     helper.procMasterMute(this);
+    polyHelper.updatePolyphony(this);
 
     // round up some scalars the we need for step()
     {
@@ -318,16 +321,11 @@ inline void MixM<TBase>::stepn(int div)
        
         // First let's round up the channel volume
         {
-#ifdef _CHAUDIOTAPER
             const float rawSlider = TBase::params[i + GAIN0_PARAM].value;
             const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
-#else
-            a b why are we here ?
-                const float slider = TBase::params[i + GAIN0_PARAM].value;
-#endif
 
             const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
-                TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+                TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
                 0.0f,
@@ -357,7 +355,7 @@ inline void MixM<TBase>::stepn(int div)
         // now do the pan calculation
         {
             const float balance = TBase::params[i + PAN0_PARAM].value;
-            const float cv = TBase::inputs[i + PAN0_INPUT].value;
+            const float cv = TBase::inputs[i + PAN0_INPUT].getVoltage(0);
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
             unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
@@ -392,13 +390,11 @@ inline void MixM<TBase>::stepn(int div)
             }
         }
 
-
         // refresh the solo lights
         {
             const float soloValue = TBase::params[i + SOLO0_PARAM].value;
             TBase::lights[i + SOLO0_LIGHT].value = (soloValue > .5f) ? 10.f : 0.f;
         }
-
     }
     filteredCV.step(unbufferedCV);
 }
@@ -407,8 +403,6 @@ template <class TBase>
 inline void MixM<TBase>::step()
 {
     divider.step();
-
-   // float  buf_channelOuts[4] = {0};        // will hold the signals for the output of each channel
 
     float left = 0, right = 0;              // these variables will be summed up over all channels
     float lSend = 0, rSend = 0;
@@ -424,7 +418,7 @@ inline void MixM<TBase>::step()
     }
 
     for (int i = 0; i < numChannels; ++i) {
-        const float channelInput = TBase::inputs[i + AUDIO0_INPUT].value;
+        const float channelInput = polyHelper.getNormalizedInputSum(this, i);
 
         // sum the channel output to the masters
         left += channelInput * filteredCV.get(i + cvOffsetPanLeft);
@@ -436,26 +430,26 @@ inline void MixM<TBase>::step()
         rSend += channelInput * buf_channelSendGainsARight[i];
         rSendb += channelInput * buf_channelSendGainsBRight[i];
 
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(i + cvOffsetGain);
+        TBase::outputs[i + CHANNEL0_OUTPUT].setVoltage(channelInput * filteredCV.get(i + cvOffsetGain), 0);
     }
 
     // add the returns into the master mix
-    left += TBase::inputs[LEFT_RETURN_INPUT].value * buf_auxReturnGainA;
-    right += TBase::inputs[RIGHT_RETURN_INPUT].value * buf_auxReturnGainA;
+    left += TBase::inputs[LEFT_RETURN_INPUT].getVoltage(0) * buf_auxReturnGainA;
+    right += TBase::inputs[RIGHT_RETURN_INPUT].getVoltage(0) * buf_auxReturnGainA;
 
-    left += TBase::inputs[LEFT_RETURNb_INPUT].value * buf_auxReturnGainB;
-    right += TBase::inputs[RIGHT_RETURNb_INPUT].value * buf_auxReturnGainB;
+    left += TBase::inputs[LEFT_RETURNb_INPUT].getVoltage(0) * buf_auxReturnGainB;
+    right += TBase::inputs[RIGHT_RETURNb_INPUT].getVoltage(0) * buf_auxReturnGainB;
 
     // Do send all the master section CV
     const float masterGain = filteredCV.get(cvOffsetMaster);
-    TBase::outputs[LEFT_OUTPUT].value = left * masterGain;
-    TBase::outputs[RIGHT_OUTPUT].value = right * masterGain;
+    TBase::outputs[LEFT_OUTPUT].setVoltage(left * masterGain, 0);
+    TBase::outputs[RIGHT_OUTPUT].setVoltage(right * masterGain, 0);
 
-    TBase::outputs[LEFT_SEND_OUTPUT].value = lSend;
-    TBase::outputs[RIGHT_SEND_OUTPUT].value = rSend;
+    TBase::outputs[LEFT_SEND_OUTPUT].setVoltage(lSend, 0);
+    TBase::outputs[RIGHT_SEND_OUTPUT].setVoltage(rSend, 0);
 
-    TBase::outputs[LEFT_SENDb_OUTPUT].value = lSendb;
-    TBase::outputs[RIGHT_SENDb_OUTPUT].value = rSendb;
+    TBase::outputs[LEFT_SENDb_OUTPUT].setVoltage(lSendb, 0);
+    TBase::outputs[RIGHT_SENDb_OUTPUT].setVoltage(rSendb, 0);
 }
 
 template <class TBase>

@@ -135,10 +135,10 @@ static void testShaper0()
         assertLT(s.length(), 20);
         gmr.params[Shaper<TestComposite>::PARAM_OFFSET].value = -5;
         for (int i = 0; i < 50; ++i) gmr.step();
-        const float x = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        const float x = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
         gmr.params[Shaper<TestComposite>::PARAM_OFFSET].value = 5;
         for (int i = 0; i < 50; ++i) gmr.step();
-        const float y = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        const float y = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
 
         assertLT(x, 10);
         assertLT(y, 10);
@@ -152,8 +152,8 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
     Shaper<TestComposite> gmr;
     gmr.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
     gmr.params[Shaper<TestComposite>::PARAM_GAIN].value = gain;        // max gain
-    gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
     const int buffSize = 1 * 1024;
     float buffer[buffSize];
 
@@ -161,9 +161,9 @@ static void testShaper1Sub(int shape, float gain, float targetRMS)
     double rms = TestSignal<float>::getRMS(buffer, buffSize);
     for (int i = 0; i < buffSize; ++i) {
         const float x = buffer[i];
-        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = buffer[i];
+        gmr.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(buffer[i], 0);
         gmr.step();
-        buffer[i] = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        buffer[i] = gmr.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
     }
     rms = TestSignal<float>::getRMS(buffer, buffSize);
 
@@ -190,8 +190,8 @@ static void testShaper1()
 static void testSplineExtremes()
 {
     Shaper<TestComposite> sp;
-    sp.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sp.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sp.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sp.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
 
     using fp = std::pair<float, float>;
     std::vector< std::pair<float, float> > paramLimits;
@@ -212,15 +212,15 @@ static void testSplineExtremes()
 static void testShaper2d(Shaper<TestComposite>::Shapes shape, float gain, float offset, float input)
 {
     Shaper<TestComposite> sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
     sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
     sh.params[Shaper<TestComposite>::PARAM_GAIN].value = gain; 
     sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = offset;
     for (int i = 0; i < 100; ++i) {
-        sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = input;
+        sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(input, 0);
         sh.step();
-        const float out = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+        const float out = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
 
         // brief ringing goes > 10
         assert(out < 20 && out > -20);
@@ -262,20 +262,20 @@ static void testShaper2()
 static void testShaper3Sub(Shaper<TestComposite>::Shapes shape)
 {
     Shaper<TestComposite> sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
   
     sh.params[Shaper<TestComposite>::PARAM_OVERSAMPLE].value = 2;       // turn off oversampling
     sh.params[Shaper<TestComposite>::PARAM_SHAPE].value = (float) shape;
     sh.params[Shaper<TestComposite>::PARAM_GAIN].value = -3;            // gain up a bit
     sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = 0;  // no offset
 
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = 0;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(0, 0);
     for (int i = 0; i < 100; ++i) {
 
         sh.step();
     }
-    const float out = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
+    const float out = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
     if (shape != Shaper<TestComposite>::Shapes::Crush) {
         assertEQ(out, 0);
     } else {
@@ -298,8 +298,8 @@ static void testDC()
     using Sh = Shaper<TestComposite>;
 
     Sh sh;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].active = true;
-    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].active = true;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].channels = 1;
+    sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].channels = 1;
     sh.params[Sh::PARAM_SHAPE].value = float(Sh::Shapes::FullWave);
 
     // Will generate sine at fs * .01 (around 400 Hz).
@@ -310,9 +310,9 @@ static void testDC()
     // Run sin through Chebyshevs at specified gain
     auto func = [&sins, &sinp, &sh]() {
         const float sin = SinOscillator<float, false>::run(sins, sinp);
-        sh.inputs[Sh::INPUT_AUDIO0].value = sin;
+        sh.inputs[Sh::INPUT_AUDIO0].setVoltage(sin, 0);
         sh.step();
-        return sh.outputs[Sh::OUTPUT_AUDIO0].value;
+        return sh.outputs[Sh::OUTPUT_AUDIO0].getVoltage(0);
     };
 
     const int bufferSize = 16 * 1024;
@@ -381,14 +381,14 @@ static void testShaperChannelsSub(bool ch0, bool ch1)
     sh.params[Shaper<TestComposite>::PARAM_OFFSET].value = 0;
     sh.params[Shaper<TestComposite>::PARAM_ACDC].value = 1;
 
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].value = input;
-    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO1].value = input;
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO0].setVoltage(input, 0);
+    sh.inputs[Shaper<TestComposite>::INPUT_AUDIO1].setVoltage(input, 0);
 
     for (int i = 0; i < 10; ++i) {
         sh.step();
     }
-    float x0 = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].value;
-    float x1 = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO1].value;
+    float x0 = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO0].getVoltage(0);
+    float x1 = sh.outputs[Shaper<TestComposite>::OUTPUT_AUDIO1].getVoltage(0);
     
     // now that we duplicate mono output to both channels, but need to look for signal
     if (ch0 || ch1) {
@@ -416,8 +416,8 @@ static void testShaperOutputsDisconnect()
    // s.init();
     s.inputs[S::INPUT_AUDIO0].channels = 1;
     s.inputs[S::INPUT_AUDIO1].channels = 1;
-    s.inputs[S::INPUT_AUDIO0].value = 10;
-    s.inputs[S::INPUT_AUDIO1].value = 10;
+    s.inputs[S::INPUT_AUDIO0].setVoltage(10, 0);
+    s.inputs[S::INPUT_AUDIO1].setVoltage(10, 0);
     s.outputs[S::OUTPUT_AUDIO0].channels = 1;
     s.outputs[S::OUTPUT_AUDIO1].channels = 1;
 
@@ -426,8 +426,8 @@ static void testShaperOutputsDisconnect()
     }
 
     // should be passing DC already
-    assertGT(s.outputs[S::OUTPUT_AUDIO0].value, 1);
-    assertGT(s.outputs[S::OUTPUT_AUDIO1].value, 1);
+    assertGT(s.outputs[S::OUTPUT_AUDIO0].getVoltage(0), 1);
+    assertGT(s.outputs[S::OUTPUT_AUDIO1].getVoltage(0), 1);
 
     // disconnect the inputs
     s.inputs[S::INPUT_AUDIO0].channels = 0;
@@ -438,8 +438,8 @@ static void testShaperOutputsDisconnect()
     }
 
     // disconnected should go to zero.
-    assertEQ(s.outputs[S::OUTPUT_AUDIO0].value, 0);
-    assertEQ(s.outputs[S::OUTPUT_AUDIO1].value, 0);
+    assertEQ(s.outputs[S::OUTPUT_AUDIO0].getVoltage(0), 0);
+    assertEQ(s.outputs[S::OUTPUT_AUDIO1].getVoltage(0), 0);
 
 }
 
@@ -449,12 +449,12 @@ static void testFiltOutputsRightDisconnect()
     using F = Filt<TestComposite>;
     F f;
     f.init();
-    f.inputs[S::L_AUDIO_INPUT].active = true;
-    f.inputs[S::R_AUDIO_INPUT].active = false;
+    f.inputs[S::L_AUDIO_INPUT].channels = 1;
+    f.inputs[S::R_AUDIO_INPUT].channels = 0;
     f.inputs[S::L_AUDIO_INPUT].value = 10;
     f.inputs[S::R_AUDIO_INPUT].value = 0;
-    f.outputs[S::L_AUDIO_OUTPUT].active = true;
-    f.outputs[S::R_AUDIO_OUTPUT].active = true;
+    f.outputs[S::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[S::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[S::MASTER_VOLUME_PARAM].value = 1;
 
@@ -474,12 +474,12 @@ static void testShaperOutputsLeftDisconnect()
     using S = Shaper<TestComposite>;
     S s;
     f.init();
-    f.inputs[S::L_AUDIO_INPUT].active = false;
-    f.inputs[S::R_AUDIO_INPUT].active = true;
+    f.inputs[S::L_AUDIO_INPUT].channels = 0;
+    f.inputs[S::R_AUDIO_INPUT].channels = 1;
     f.inputs[S::L_AUDIO_INPUT].value = 0;
     f.inputs[S::R_AUDIO_INPUT].value = 10;
-    f.outputs[S::L_AUDIO_OUTPUT].active = true;
-    f.outputs[S::R_AUDIO_OUTPUT].active = true;
+    f.outputs[S::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[S::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[S::MASTER_VOLUME_PARAM].value = 1;
 

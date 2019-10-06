@@ -5,10 +5,10 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "MixHelper.h"
+#include "mixpolyhelper.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
-
 
 #include <assert.h>
 #include <memory>
@@ -45,7 +45,6 @@ namespace rack {
     13.5 with all the features
 
  */
-
 template <class TBase>
 class Mix4 : public TBase
 {
@@ -53,6 +52,8 @@ public:
 
     template<typename Q>
     friend class MixHelper;
+    template<typename Q>
+    friend class MixPolyHelper;
 
     Mix4(rack::engine::Module * module) : TBase(module)
     {
@@ -214,10 +215,9 @@ private:
     float* expansionOutputs = nullptr;
 
     MixHelper<Mix4<TBase>> helper;
+    MixPolyHelper<Mix4<TBase>> polyHelper;
 
-#ifdef _CHAUDIOTAPER
-     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
-#endif
+    std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
 };
 
 template <class TBase>
@@ -230,6 +230,7 @@ inline void Mix4<TBase>::stepn(int div)
     const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
 
     helper.procMixInputs(this);
+    polyHelper.updatePolyphony(this);
 
     // If the is an external solo, then mute all channels
     bool anySolo = false;
@@ -245,16 +246,11 @@ inline void Mix4<TBase>::stepn(int div)
 
         // First let's round up the channel volume
         {
-#ifdef _CHAUDIOTAPER
             const float rawSlider = TBase::params[i + GAIN0_PARAM].value;
             const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
-#else
-            a b why are we here ?
-                const float slider = TBase::params[i + GAIN0_PARAM].value;
-#endif
 
             const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
-                TBase::inputs[i + LEVEL0_INPUT].value : 10.f;
+                TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
                 0.0f,
@@ -284,15 +280,13 @@ inline void Mix4<TBase>::stepn(int div)
         // now do the pan calculation
         {
             const float balance = TBase::params[i + PAN0_PARAM].value;
-            const float cv = TBase::inputs[i + PAN0_INPUT].value;
+            const float cv = TBase::inputs[i + PAN0_INPUT].getVoltage(0);
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
             unbufferedCV[cvOffsetPanLeft + i] = LookupTable<float>::lookup(*panL, panValue) * channelGain;
             unbufferedCV[cvOffsetPanRight + i] = LookupTable<float>::lookup(*panR, panValue) * channelGain;
         }
 
-
         // TODO: precalc all the send gains
-
         {
             const float muteValue = filteredCV.get(cvOffsetMute + i);
             const float sliderA = TBase::params[i + SEND0_PARAM].value;
@@ -320,7 +314,6 @@ inline void Mix4<TBase>::stepn(int div)
                 buf_channelSendGainsBRight[i] = muteValue * sliderB * (1.f / sqrt(2.f));
             }
         }
-
 
         // refresh the solo lights
         {
@@ -357,9 +350,7 @@ inline void Mix4<TBase>::_disableAntiPop()
 template <class TBase>
 inline void Mix4<TBase>::setupFilters()
 {
-    // 400 was smooth, 100 popped
     const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
-    //printf("using %f, calc=%f\n", x, (1.0f / 100.f)); fflush(stdout);
     filteredCV.setCutoff(x);
 }
 
@@ -367,8 +358,6 @@ template <class TBase>
 inline void Mix4<TBase>::step()
 {
     divider.step();
-
-   // float  buf_channelOuts[4] = {0};        // will hold the signals for the output of each channel
 
     float left = 0, right = 0;              // these variables will be summed up over all channels
     float lSend = 0, rSend = 0;
@@ -384,7 +373,7 @@ inline void Mix4<TBase>::step()
     }
 
     for (int i = 0; i < numChannels; ++i) {
-        const float channelInput = TBase::inputs[i + AUDIO0_INPUT].value;
+        const float channelInput = polyHelper.getNormalizedInputSum(this, i);
 
         // sum the channel output to the masters
         left += channelInput * filteredCV.get(i + cvOffsetPanLeft);
@@ -396,7 +385,7 @@ inline void Mix4<TBase>::step()
         rSend += channelInput * buf_channelSendGainsARight[i];
         rSendb += channelInput * buf_channelSendGainsBRight[i];
 
-        TBase::outputs[i + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(i + cvOffsetGain);
+        TBase::outputs[i + CHANNEL0_OUTPUT].setVoltage(channelInput * filteredCV.get(i + cvOffsetGain), 0);
     }
 
     // output the buses to the expansion port

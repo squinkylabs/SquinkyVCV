@@ -9,7 +9,6 @@
 
 const static float defaultMasterGain = 1.002374f;
 
-//using Mixer8 = Mix8<TestComposite>;
 using Mixer4 = Mix4<TestComposite>;
 using MixerM = MixM<TestComposite>;
 
@@ -27,17 +26,17 @@ static void step(std::shared_ptr<T> mixer)
 // function that knows how to get left output from a mixerM
 static float outputGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
 {
-    return m->outputs[bRight ? MixerM::RIGHT_OUTPUT : MixerM::LEFT_OUTPUT].value;
+    return m->outputs[bRight ? MixerM::RIGHT_OUTPUT : MixerM::LEFT_OUTPUT].getVoltage(0);
 }
 
 static float auxGetterMixM(std::shared_ptr<MixerM> m, bool bRight)
 {
-    return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].value;
+    return m->outputs[bRight ? MixerM::RIGHT_SEND_OUTPUT : MixerM::LEFT_SEND_OUTPUT].getVoltage(0);
 }
 
 static float auxGetterMixMB(std::shared_ptr<MixerM> m, bool bRight)
 {
-    return m->outputs[bRight ? MixerM::RIGHT_SENDb_OUTPUT : MixerM::LEFT_SENDb_OUTPUT].value;
+    return m->outputs[bRight ? MixerM::RIGHT_SENDb_OUTPUT : MixerM::LEFT_SENDb_OUTPUT].getVoltage(0);
 }
 
 static float outputGetterMix4(std::shared_ptr<Mixer4> m, bool bRight)
@@ -70,6 +69,11 @@ static std::shared_ptr<T> getMixerBase()
         ret->params[i].value = param.def;
     }
     ret->_disableAntiPop();
+
+    // default to monophonic inputs
+    for (int i = 0; i < T::numChannels; ++i) {
+        ret->inputs[T::AUDIO0_INPUT + i].channels = 1;
+    }
 
     return ret;
 }
@@ -110,14 +114,14 @@ void testChannel(int channel, bool useParam)
 
     // zero all inputs, put all channel gains to 1
     for (int i = 0; i < T::numChannels; ++i) {
-        m->inputs[T::AUDIO0_INPUT + i].value = 0;
+        m->inputs[T::AUDIO0_INPUT + i].setVoltage(0, 0);
         m->params[T::GAIN0_PARAM + i].value = 1;
     }
 
-    m->inputs[T::AUDIO0_INPUT + channel].value = 5.5f;
+    m->inputs[T::AUDIO0_INPUT + channel].setVoltage(5.5f, 0);
     m->params[T::GAIN0_PARAM + channel].value = activeParamValue;
-    m->inputs[T::LEVEL0_INPUT + channel].value = activeCVValue;
-    m->inputs[T::LEVEL0_INPUT + channel].active = true;
+    m->inputs[T::LEVEL0_INPUT + channel].setVoltage(activeCVValue, 0);
+    m->inputs[T::LEVEL0_INPUT + channel].channels = 1;
 
     step(m);
 
@@ -131,7 +135,7 @@ void testChannel(int channel, bool useParam)
 
        // auto debugMuteState = m.params[T::MUTE0_STATE_PARAM + i];
         float expected = (i == channel) ? exectedInActiveChannel : 0;
-        assertClose(m->outputs[T::CHANNEL0_OUTPUT + i].value, expected, .01f);
+        assertClose(m->outputs[T::CHANNEL0_OUTPUT + i].getVoltage(0), expected, .01f);
     }
 }
 
@@ -146,14 +150,12 @@ static void testChannel()
 
 //***********************************************************************************
 
-
-
 template <typename T>
 static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter, bool side)
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
 
@@ -186,7 +188,7 @@ void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     m->step();          // let mutes see zero first (startup reset)
 
     // now mute input 0
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
     m->params[T::MUTE0_PARAM].value = 1;        // mute
@@ -209,7 +211,7 @@ void testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter
     assertGT(s1, 5);
     assertLT(m->lights[T::MUTE0_LIGHT].value, 5.f);
 
-    m->inputs[T::MUTE0_INPUT].value = 10;       //mute with CV
+    m->inputs[T::MUTE0_INPUT].setVoltage(10, 0);       //mute with CV
 
     step(m);
 
@@ -239,7 +241,7 @@ static void _testAuxOut(
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::GAIN0_PARAM].value = 1;
 
     m->params[T::PAN0_PARAM].value = side ? -1.f : 1.f;     // full left
@@ -310,7 +312,7 @@ static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> 
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = 0;     // pan in middle
 
@@ -326,13 +328,12 @@ static void testPanMiddle(std::function<float(std::shared_ptr<T>, bool bRight)> 
 
 //***************************************************************
 
-// only works for mix8 now
 template <typename T>
 void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> outputGetter)
 {
     auto m = getMixer<T>();
 
-    m->inputs[T::AUDIO0_INPUT].value = 10;
+    m->inputs[T::AUDIO0_INPUT].setVoltage(10, 0);
     m->params[T::GAIN0_PARAM].value = 1;
     m->params[T::PAN0_PARAM].value = -1.f;     // full left
     m->params[T::SOLO0_PARAM].value = 1;        // solo
@@ -351,6 +352,37 @@ void testSoloLegacy(std::function<float(std::shared_ptr<T>, bool bRight)> output
 
     assertClose(outputGetter(m, false), 0, .01);
     assertClose(outputGetter(m, true), 0, .01);
+}
+
+template <typename T>
+void testPolyInputSimple(int polyphony, int inputChannel)
+{
+    auto m = getMixer<T>();
+
+    // zero all inputs, put all channel gains to 1
+    for (int i = 0; i < T::numChannels; ++i) {
+        m->inputs[T::AUDIO0_INPUT + i].setVoltage(0, 0);
+        m->params[T::GAIN0_PARAM + i].value = 1;
+    }
+
+    m->inputs[T::AUDIO0_INPUT + inputChannel].channels = polyphony;
+    m->inputs[T::AUDIO0_INPUT + inputChannel].voltages[0] = 3.4f;
+
+
+    step(m);
+    const float output = m->outputs[T::CHANNEL0_OUTPUT + inputChannel].voltages[0];
+    const float expected = (polyphony == 0) ? 0 : 3.4f / polyphony;
+
+    assertClose(output, expected, .001);
+}
+
+template <typename T>
+void testPolyInputSimple()
+{
+    testPolyInputSimple<T>(1, 0);
+    testPolyInputSimple<T>(2, 3);
+    testPolyInputSimple<T>(3, 2);
+    testPolyInputSimple<T>(0, 0);
 }
 
 void testMix4()
@@ -380,4 +412,7 @@ void testMix4()
 
     testSoloLegacy<Mixer4>(outputGetterMix4);
     testSoloLegacy<MixerM>(outputGetterMixM);
+
+    testPolyInputSimple<MixerM>();
+    testPolyInputSimple<Mixer4>();
 }

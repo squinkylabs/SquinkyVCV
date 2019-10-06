@@ -213,7 +213,7 @@ void testChannel(int group, bool useParam)
 
     // zero all inputs, put all channel gains to 1
     for (int i = 0; i < T::numChannels; ++i) {
-        mixer->inputs[T::AUDIO0_INPUT + i].value = 0;
+        mixer->inputs[T::AUDIO0_INPUT + i].setVoltage(0, 0);
     }
 
     for (int i = 0; i < T::numGroups; ++i) {
@@ -228,10 +228,10 @@ void testChannel(int group, bool useParam)
     const int rightChannel = 1 + group * 2;
 
 
-    mixer->inputs[T::AUDIO0_INPUT + leftChannel].value = 5.5f;
-    mixer->inputs[T::AUDIO0_INPUT + rightChannel].value = 6.5f;
+    mixer->inputs[T::AUDIO0_INPUT + leftChannel].setVoltage(5.5f, 0);
+    mixer->inputs[T::AUDIO0_INPUT + rightChannel].setVoltage(6.5f, 0);
     mixer->params[T::GAIN0_PARAM + group].value = activeParamValue;
-    mixer->inputs[T::LEVEL0_INPUT + group].value = activeCVValue;
+    mixer->inputs[T::LEVEL0_INPUT + group].setVoltage(activeCVValue, 0);
     mixer->inputs[T::LEVEL0_INPUT + group].channels = 1;
 
     assertEQ(mixer->params[T::PAN0_PARAM].value, 0);
@@ -267,8 +267,8 @@ void testChannel(int group, bool useParam)
         float expectedLeft = (gp == group) ? exectedInActiveChannelLeft : 0;
         float expectedRight = (gp == group) ? exectedInActiveChannelRight : 0;
           
-        assertClose(mixer->outputs[leftChannel].value, expectedLeft, .01f);
-        assertClose(mixer->outputs[rightChannel].value, expectedRight, .01f);
+        assertClose(mixer->outputs[leftChannel].getVoltage(0), expectedLeft, .01f);
+        assertClose(mixer->outputs[rightChannel].getVoltage(0), expectedRight, .01f);
     }
 }
 
@@ -316,8 +316,8 @@ static void _testMaster(std::function<float(std::shared_ptr<T>, bool bRight)> ou
     auto m = getMixer<T>();
 
     // put input in both left and right
-    m->inputs[T::AUDIO0_INPUT + channel].value = 7.7f;
-    m->inputs[T::AUDIO0_INPUT + channel + 1].value = 7.7f;
+    m->inputs[T::AUDIO0_INPUT + channel].setVoltage(7.7f, 0);
+    m->inputs[T::AUDIO0_INPUT + channel + 1].setVoltage(7.7f, 0);
 
     m->params[T::GAIN0_PARAM + group].value = 1;
     m->params[T::PAN0_PARAM + group].value = side ? -1.f : 1.f;     // full left or right
@@ -355,7 +355,7 @@ void _testMaster2(std::function<float(std::shared_ptr<T>, bool bRight)> outputGe
 
 
 
-    m->inputs[T::AUDIO0_INPUT + channel].value = 1.3f;
+    m->inputs[T::AUDIO0_INPUT + channel].setVoltage(1.3f, 0);
     m->params[T::GAIN0_PARAM + group].value = 1;
     m->params[T::PAN0_PARAM + group].value = 0;     // middle
 
@@ -380,8 +380,8 @@ void _testAuxOutA(std::function<float(std::shared_ptr<T>, bool bRight)> outputGe
     auto m = getMixer<T>();
 
     const float testValue = 3.3f;
-    m->inputs[T::AUDIO0_INPUT + channel].value = side ? 0 : testValue;
-    m->inputs[T::AUDIO0_INPUT + channel + 1].value = side ? testValue : 0;
+    m->inputs[T::AUDIO0_INPUT + channel].setVoltage(side ? 0 : testValue, 0);
+    m->inputs[T::AUDIO0_INPUT + channel + 1].setVoltage(side ? testValue : 0, 0);
     m->params[T::GAIN0_PARAM + group].value = 1;
     m->params[T::SEND0_PARAM + group].value = 1;
     m->params[T::PAN0_PARAM + group].value = 0;     // middle
@@ -425,8 +425,8 @@ void _testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGette
 
    
     // put 10 in both sides
-    m->inputs[T::AUDIO0_INPUT + channel].value = 10;
-    m->inputs[T::AUDIO0_INPUT + channel + 1].value = 10;
+    m->inputs[T::AUDIO0_INPUT + channel].setVoltage(10, 0);
+    m->inputs[T::AUDIO0_INPUT + channel + 1].setVoltage(10, 0);
     m->params[T::GAIN0_PARAM + group].value = 1;
 
     // pan to extremes
@@ -453,7 +453,7 @@ void _testMute(std::function<float(std::shared_ptr<T>, bool bRight)> outputGette
     assertGT(s1, 5);
     assertLT(m->lights[T::MUTE0_LIGHT + group].value, 5.f);
 
-    m->inputs[T::MUTE0_INPUT + group].value = 10;       //mute with CV
+    m->inputs[T::MUTE0_INPUT + group].setVoltage(10, 0);       //mute with CV
 
     step(m);
 
@@ -552,9 +552,9 @@ static void _testNorm(int group)
     const int chan = group * 2;
 
     m->inputs[MixerS::AUDIO0_INPUT + chan].channels = 1;
-    m->inputs[MixerS::AUDIO0_INPUT + chan].value = 10;
+    m->inputs[MixerS::AUDIO0_INPUT + chan].setVoltage(10, 0);
     m->inputs[MixerS::AUDIO1_INPUT + chan].channels = 0;
-    m->inputs[MixerS::AUDIO1_INPUT + chan].value = 0;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].setVoltage(0, 0);
     m->params[MixerS::GAIN0_PARAM + group].value = 1;
    
 
@@ -563,8 +563,8 @@ static void _testNorm(int group)
 
     // TODO: take into account pan law
     float panGain = .5;
-    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].value, 10 * panGain, .01);
-    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].value, 10 * panGain, .01);
+    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].getVoltage(0), 10 * panGain, .01);
+    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].getVoltage(0), 10 * panGain, .01);
 }
 
 static void testNorm()
@@ -580,9 +580,9 @@ static void _testNormPan(int group, bool fullLeft)
     auto m = getMixer<MixerS>();
 
     m->inputs[MixerS::AUDIO0_INPUT + chan].channels = 1 ;
-    m->inputs[MixerS::AUDIO0_INPUT + chan].value = 10;
+    m->inputs[MixerS::AUDIO0_INPUT + chan].setVoltage(10, 0);
     m->inputs[MixerS::AUDIO1_INPUT + chan].channels = 0;
-    m->inputs[MixerS::AUDIO1_INPUT + chan].value = 0;
+    m->inputs[MixerS::AUDIO1_INPUT + chan].setVoltage(0, 0);
 
     m->params[MixerS::GAIN0_PARAM + group].value = 1;
     m->params[MixerS::PAN0_PARAM + group].value = fullLeft ? -1.f : 1.f;
@@ -593,8 +593,8 @@ static void _testNormPan(int group, bool fullLeft)
 
     const float expectedLeft = fullLeft ? 10.f : 0.f;
     const float expectedRight = fullLeft ? 0.f : 10.f;
-    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].value, expectedLeft, .01);
-    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].value, expectedRight, .01);
+    assertClose(m->outputs[MixerS::CHANNEL0_OUTPUT + chan].getVoltage(0), expectedLeft, .01);
+    assertClose(m->outputs[MixerS::CHANNEL1_OUTPUT + chan].getVoltage(0), expectedRight, .01);
 }
 
 static void testNormPan()

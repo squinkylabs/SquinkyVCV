@@ -264,12 +264,12 @@ template <class TBase>
 inline void CHB<TBase>::updateLagTC()
 {
     const float combinedA = lin(
-        TBase::inputs[RISE_INPUT].value,
+        TBase::inputs[RISE_INPUT].getVoltage(0),
         TBase::params[PARAM_RISE].value,
         1);
 
     const float combinedR = lin(
-        TBase::inputs[FALL_INPUT].value,
+        TBase::inputs[FALL_INPUT].getVoltage(0),
         TBase::params[PARAM_FALL].value,
         1);
     if (combinedA < .1 && combinedR < .1) {
@@ -293,8 +293,8 @@ inline float CHB<TBase>::getInput()
     float pitch = 1.0f + roundf(TBase::params[PARAM_OCTAVE].value) +
         TBase::params[PARAM_SEMIS].value / 12.0f +
         TBase::params[PARAM_TUNE].value / 12.0f;
-    pitch += TBase::inputs[CV_INPUT].value;
-    pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
+    pitch += TBase::inputs[CV_INPUT].getVoltage(0);
+    pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].getVoltage(0) *
         taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
 
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
@@ -306,7 +306,7 @@ inline float CHB<TBase>::getInput()
     }
 
     // Multiply in the Linear FM contribution
-    _freq *= 1.0f + TBase::inputs[LINEAR_FM_INPUT].value * taper(TBase::params[PARAM_LINEAR_FM_TRIM].value);
+    _freq *= 1.0f + TBase::inputs[LINEAR_FM_INPUT].getVoltage(0) * taper(TBase::params[PARAM_LINEAR_FM_TRIM].value);
     float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
 
     Osc::setFrequency(sinParams, time);
@@ -314,11 +314,11 @@ inline float CHB<TBase>::getInput()
     if (cycleCount == 0) {
         // Get the gain from the envelope generator in
         // eGain = {0 .. 10.0f }
-        float eGain = SqPort::isConnected(TBase::inputs[ENV_INPUT]) ? TBase::inputs[ENV_INPUT].value : 10.f;
+        float eGain = SqPort::isConnected(TBase::inputs[ENV_INPUT]) ? TBase::inputs[ENV_INPUT].getVoltage(0) : 10.f;
         isExternalAudio = SqPort::isConnected(TBase::inputs[AUDIO_INPUT]);
 
         const float gainKnobValue = TBase::params[PARAM_EXTGAIN].value;
-        const float gainCVValue = TBase::inputs[GAIN_INPUT].value;
+        const float gainCVValue = TBase::inputs[GAIN_INPUT].getVoltage(0);
         const float gainTrimValue = TBase::params[PARAM_EXTGAIN_TRIM].value;
         const float combinedGain = gainCombiner(gainCVValue, gainKnobValue, gainTrimValue);
 
@@ -330,7 +330,7 @@ inline float CHB<TBase>::getInput()
     }
 
     float input = finalGain * (isExternalAudio ?
-        TBase::inputs[AUDIO_INPUT].value :
+        TBase::inputs[AUDIO_INPUT].getVoltage(0) :
         Osc::run(sinState, sinParams));
 
     checkClipping(input);
@@ -388,7 +388,7 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
 
         // If input connected, scale and multiply with knob value
         if (SqPort::isConnected(TBase::inputs[i + H0_INPUT])) {
-            const float inputCV = TBase::inputs[i + H0_INPUT].value * .1f;
+            const float inputCV = TBase::inputs[i + H0_INPUT].getVoltage(0) * .1f;
             val *= std::max(inputCV, 0.f);
         }
 
@@ -398,12 +398,12 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
     // Second: apply the even and odd knobs
     {
         const float evenCombined = gainCombiner(
-            TBase::inputs[EVEN_INPUT].value,
+            TBase::inputs[EVEN_INPUT].getVoltage(0),
             TBase::params[PARAM_MAG_EVEN].value,
             TBase::params[PARAM_EVEN_TRIM].value);
 
         const float oddCombined = gainCombiner(
-            TBase::inputs[ODD_INPUT].value,
+            TBase::inputs[ODD_INPUT].getVoltage(0),
             TBase::params[PARAM_MAG_ODD].value,
             TBase::params[PARAM_ODD_TRIM].value);
 
@@ -418,7 +418,7 @@ inline void CHB<TBase>::calcVolumes(float * volumes)
     // Third: slope
     {
         const float slope = slopeScale(
-            TBase::inputs[SLOPE_INPUT].value,
+            TBase::inputs[SLOPE_INPUT].getVoltage(0),
             TBase::params[PARAM_SLOPE].value,
             TBase::params[PARAM_SLOPE_TRIM].value);
 
@@ -454,7 +454,7 @@ inline void CHB<TBase>::step()
 
 
     float output = poly.run(input, std::min(finalGain, 1.f));
-    TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
+    TBase::outputs[MIX_OUTPUT].setVoltage(5.0f * output, 0);
 }
 
 

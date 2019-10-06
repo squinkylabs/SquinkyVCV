@@ -318,7 +318,7 @@ inline void LFN<TBase>::step()
             auto paramNum = i + EQ0_PARAM;
             auto cvNum = i + EQ0_INPUT;
             const float gainParamKnob = TBase::params[paramNum].value;
-            const float gainParamCV = TBase::inputs[cvNum].value;
+            const float gainParamCV = TBase::inputs[cvNum].getVoltage(0);
             const float gain = gainScale(gainParamKnob, gainParamCV);
             geq.setGain(i, gain);
         }
@@ -332,6 +332,6 @@ inline void LFN<TBase>::step()
         decimator.acceptData(z);
     }
 
-    TBase::outputs[OUTPUT].value = (float) x;
+    TBase::outputs[OUTPUT].setVoltage((float) x, 0);
 }
 

@@ -203,7 +203,7 @@ inline void VocalAnimator<TBase>::step()
 
     // Now run the filters
     T filterMix = 0;                // Sum the folder outputs here
-    const T input = TBase::inputs[AUDIO_INPUT].value;
+    const T input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
 
     for (int i = 0; i < numFilters; ++i) {
         filterMix += StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
@@ -213,7 +213,7 @@ inline void VocalAnimator<TBase>::step()
 #else
     filterMix *= T(.3);            // attenuate to avoid clip
 #endif
-    TBase::outputs[AUDIO_OUTPUT].value = filterMix;
+    TBase::outputs[AUDIO_OUTPUT].setVoltage(filterMix, 0);
 
 }
 
@@ -241,19 +241,19 @@ inline void VocalAnimator<TBase>::stepModulation()
     };
     // Light up the LEDs with the unscaled Modulator outputs.
     for (int i = LFO0_LIGHT; i <= LFO2_LIGHT; ++i) {
-        TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
+        TBase::outputs[LEDOutputs[i]].setVoltage(modulatorOutput[i], 0);
         TBase::lights[i].value = (modulatorOutput[i]) * .3f;
-        TBase::outputs[LEDOutputs[i]].value = modulatorOutput[i];
+        TBase::outputs[LEDOutputs[i]].setVoltage(modulatorOutput[i], 0);
     }
 
     // Normalize all the parameters out here
     const T qFinal = scaleQ(
-        TBase::inputs[FILTER_Q_CV_INPUT].value,
+        TBase::inputs[FILTER_Q_CV_INPUT].getVoltage(0),
         TBase::params[FILTER_Q_PARAM].value,
         TBase::params[FILTER_Q_TRIM_PARAM].value);
 
     const T fc = scalen5_5(
-        TBase::inputs[FILTER_FC_CV_INPUT].value,
+        TBase::inputs[FILTER_FC_CV_INPUT].getVoltage(0),
         TBase::params[FILTER_FC_PARAM].value,
         TBase::params[FILTER_FC_TRIM_PARAM].value);
 
@@ -262,7 +262,7 @@ inline void VocalAnimator<TBase>::stepModulation()
 
     // cv, knob, trim
     const T baseModDepth = scale0_1(
-        TBase::inputs[FILTER_MOD_DEPTH_CV_INPUT].value,
+        TBase::inputs[FILTER_MOD_DEPTH_CV_INPUT].getVoltage(0),
         TBase::params[FILTER_MOD_DEPTH_PARAM].value,
         TBase::params[FILTER_MOD_DEPTH_TRIM_PARAM].value);
 
@@ -351,7 +351,7 @@ inline void VocalAnimator<TBase>::stepModulation()
 
     // scale by sub-sample rate to lfo rate sounds right.
     const float modRate = modulationSubSample * scalem2_2(
-        TBase::inputs[LFO_RATE_CV_INPUT].value,
+        TBase::inputs[LFO_RATE_CV_INPUT].getVoltage(0),
         TBase::params[LFO_RATE_PARAM].value,
         TBase::params[LFO_RATE_TRIM_PARAM].value);
     modulatorParams.setRateAndSpread(

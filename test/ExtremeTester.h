@@ -3,6 +3,8 @@
 #include "asserts.h"
 #include <vector>
 
+#include "TestComposite.h"
+
 /**
  * Utility class that counts up in binary using an array of ints to hold the bits.
  *
@@ -47,8 +49,25 @@ public:
 
     }
 
-    template <typename Q>
-    void setState(std::vector<Q>& testSignal, const std::vector< std::pair<float, float>>* signalLimits)
+
+
+    void setInputState(std::vector<Input>& testSignal, const std::vector< std::pair<float, float>>* signalLimits)
+    {
+        for (int i = (int) state.size() - 1; i >= 0; --i) {
+            float min = -10.f;
+            float max = 10.f;
+            if (signalLimits) { // here we want to clip these to the possible values of params
+                min = (*signalLimits)[i].first;
+                max = (*signalLimits)[i].second;
+
+                assertNE(min, max);
+                assertGT(max, min);
+            }
+            testSignal[i].setVoltage((state[i] > 0 ? max : min), 0);
+        }
+    }
+
+    void setParamState(std::vector<TestComposite::Param>& testSignal, const std::vector< std::pair<float, float>>* signalLimits)
     {
         for (int i = (int) state.size() - 1; i >= 0; --i) {
             float min = -10.f;
@@ -106,13 +125,13 @@ public:
         BitCounter inputState;
         BitCounter paramsState;
         for (inputState.reset(numInputs); !inputState.isDone(); inputState.next()) {
-            inputState.setState(dut.inputs, nullLimits);
+            inputState.setInputState(dut.inputs, nullLimits);
             for (paramsState.reset(numParams); !paramsState.isDone(); paramsState.next()) {
-                paramsState.setState(dut.params, &paramLimits);
+                paramsState.setParamState(dut.params, &paramLimits);
                 for (int i = 0; i < 100; ++i) {
                     dut.step();
                     for (int j = 0; j < numOutputs; ++j) {
-                        const float out = dut.outputs[j].value;
+                        const float out = dut.outputs[j].getVoltage(0);
                         if (checkOutput) {
                             assertGE(out, -150);
                             assertLE(out, 150);

@@ -1,14 +1,15 @@
 
-#include "asserts.h"
 #include "MixHelper.h"
+#include "MixPolyHelper.h"
 #include "TestComposite.h"
+
+#include "asserts.h"
 
 class MockMixComposite : public TestComposite
 {
 public:
     static const int numChannels = 4;
     static const int numGroups = 4;
-
 
     enum ParamIds
     {
@@ -31,7 +32,12 @@ public:
         MUTE0_INPUT,
         MUTE1_INPUT,
         MUTE2_INPUT,
-        MUTE3_INPUT
+        MUTE3_INPUT,
+
+        AUDIO0_INPUT,
+        AUDIO1_INPUT,
+        AUDIO2_INPUT,
+        AUDIO3_INPUT,
     };
 
     enum LightIds
@@ -128,7 +134,7 @@ static void testCVMomentary(int channel)
     helper.procMixInputs(&comp);
 
     // send it a mute CV
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 10;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(10, 0);
     helper.procMixInputs(&comp);
 
      // check the results - should be muted
@@ -138,7 +144,7 @@ static void testCVMomentary(int channel)
     }
 
     // lower mute CV
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 0;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(0, 0);
     helper.procMixInputs(&comp);
 
      // check the results - should be no longer muted
@@ -168,7 +174,7 @@ static void testCVToggle(int channel)
     helper.procMixInputs(&comp);
 
     // send it cv low to high
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 10;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(10, 0);
     helper.procMixInputs(&comp);
 
     // check the results - should be muted
@@ -187,7 +193,7 @@ static void testCVToggle(int channel)
     }
 
     // lower mute CV
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 0;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(0, 0);
     helper.procMixInputs(&comp);
 
      // since it toggles on leading edge, should still be muted
@@ -198,7 +204,7 @@ static void testCVToggle(int channel)
     }
 
     // now raise again to toggle down
-    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].value = 10;
+    comp.inputs[MockMixComposite::MUTE0_INPUT + channel].setVoltage(10, 0);
     helper.procMixInputs(&comp);
 
     // check the results - should be un muted
@@ -215,6 +221,53 @@ static void testCVToggle()
     }
 }
 
+
+static void testPoly0()
+{
+    MockMixComposite comp;
+    MixPolyHelper< MockMixComposite> helper;
+
+    helper.updatePolyphony(&comp);
+    helper.getNormalizedInputSum(&comp, 0);
+}
+
+static void testPoly(int channelNumber, int polyphony, float inputLevel)
+{
+    MockMixComposite comp;
+    MixPolyHelper< MockMixComposite> helper;
+
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + channelNumber].channels = polyphony;
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + channelNumber].voltages[0] = inputLevel;
+    helper.updatePolyphony(&comp);
+    const float sum = helper.getNormalizedInputSum(&comp, channelNumber);
+    const float expected = polyphony == 0 ? 0.f : (inputLevel / polyphony);
+    assertClose(sum, expected, .001);
+}
+
+static void testPoly1()
+{
+    testPoly(0, 1, 5.f);
+    testPoly(0, 0, 5.f);
+    for (int i = 0; i < 4; ++i) {
+        testPoly(i, 3, 1.0);
+    }
+}
+
+static void testPoly2()
+{
+    MockMixComposite comp;
+    MixPolyHelper< MockMixComposite> helper;
+
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + 0].channels = 4;
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + 0].voltages[0] = 1;
+    comp.inputs[MockMixComposite::AUDIO0_INPUT + 0].voltages[1] = 2;
+    helper.updatePolyphony(&comp);
+
+    const float sum = helper.getNormalizedInputSum(&comp, 0);
+    const float expected = 3.f / 4.f;
+    assertClose(sum, expected, .001);
+}
+
 void testMixHelper()
 {
     test0();
@@ -222,4 +275,11 @@ void testMixHelper()
     testParamToggle();
     testCVMomentary();
     testCVToggle();
+
+    // tests for poly helper
+    testPoly0();
+    testPoly1();
+    testPoly2();
+
+   
 }
