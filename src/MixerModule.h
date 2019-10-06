@@ -77,6 +77,9 @@ protected:
     virtual void setExternalInput(const float*)=0;
     virtual void setExternalOutput(float*)=0;
 
+      // only master should call this
+    void allocateSharedSoloState();
+
 private:
     /**
      * Expanders provide the buffers to talk to (send data to) the module to their right.
@@ -105,13 +108,22 @@ private:
     // We use it to track our state
     SoloCommands currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
 
+    // This guy holds onto a shared solo state, and we pass weak pointers to
+    // him to clients so they can work.
+    std::shared_ptr<SharedSoloStateOwner> sharedSoloStateOwner;
+
+    // both masters and expanders hold onto these.
     std::shared_ptr<SharedSoloState> sharedSoloState;
+
+
     int moduleIndex = 0;
     int pingDelayCount = 0;
 
     void pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft);
-    void processMessageFromBus(const CommChannelMessage& msg);
+    void processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain);
     void pollForModulePing(bool pairedLeft);
+
+  
 };
 
 // Remember : "rightModule" is the module to your right
@@ -126,28 +138,77 @@ inline MixerModule::MixerModule()
     leftExpander.consumerMessage = bufferFlopL;
 }
 
+inline void MixerModule::allocateSharedSoloState()
+{
+    assert(!sharedSoloStateOwner);
+    sharedSoloStateOwner = std::make_shared<SharedSoloStateOwner>();
+    sharedSoloState =  sharedSoloStateOwner->state; 
+}
 
 inline void MixerModule::pollForModulePing(bool pairedLeft)
 {
     if (amMaster()) {
         if (pingDelayCount-- <= 0) {
             pingDelayCount = 100;       // poll every 100 samples?
+            pingDelayCount = 100000;        // for debugging, do less often
+            assert(sharedSoloStateOwner);
+            #if 0
             if (!sharedSoloState) {
                 // TODO: move this off audio thread?
                 sharedSoloState = std::make_shared<SharedSoloState>();
             }
+            #endif
 
             // now, if paired left, send a message to the right
             if (pairedLeft) {
-                WARN("need to send ping");
+                WARN("sending ping");
+
+                // TODO: move this allocation off the audio thread!!
+                SharedSoloStateClient* stateForClient = new SharedSoloStateClient(sharedSoloStateOwner);
+                assert(moduleIndex == 0);
+                stateForClient->moduleNumber = 1;
+                CommChannelMessage msg;
+                msg.commandId = CommCommand_SetSharedState;
+                msg.commandPayload = size_t(stateForClient);
+                sendLeftChannel.send(msg);
             }
         }
     }
 }
 
-inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg)
+inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain)
 {
-    WARN("processCommandFromBus does nothing now");
+    // TODO: why are we getting this?
+    if (msg.commandPayload == 0) {
+        return;
+    }
+
+    switch(msg.commandId) {
+        case CommCommand_SetSharedState:
+        {
+            SharedSoloStateClient* stateForClient = reinterpret_cast<SharedSoloStateClient*>(msg.commandPayload);
+            std::shared_ptr<SharedSoloStateOwner> owner = stateForClient->owner.lock();
+
+            // If then owner has been deleted, then bail
+            if (!owner) {
+                delete stateForClient;
+                sharedSoloState.reset();
+                return;
+            }
+
+            sharedSoloState = owner->state;
+            moduleIndex = stateForClient->moduleNumber++;
+
+            if (isEndOfMessageChain) {
+                delete stateForClient;
+            }
+        }
+            break;
+        default:
+            WARN("no handler for message %x", msg.commandId);
+    }
+  //  WARN("processCommandFromBus does nothing now msg =%x payload=%p this = %p",
+  //   msg.commandId, msg.commandPayload, this);
     #if 0   // old way
     // iI the command is external solo, then we want to turn off all our
     // channles to let the other module have exclusive solo.
@@ -252,7 +313,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             msg);
 
         if (isCommand) {
-            processMessageFromBus(msg);
+            processMessageFromBus(msg, !pairedLeft);
             // now relay down to the left
             if (pairedLeft) {
                  sendLeftChannel.send(msg);
@@ -277,7 +338,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             (size_t*)(inBuf + comBufferRightCommandDataOffset),
             msg);
         if (isCommand) {
-            processMessageFromBus(msg);
+            processMessageFromBus(msg, !pairedRight);
             if (pairedRight) {
                  sendRightChannel.send(msg);
             }

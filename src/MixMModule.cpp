@@ -74,6 +74,8 @@ MixMModule::MixMModule()
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
+    allocateSharedSoloState();
+
     MixM = std::make_shared<Comp>(this);
     MixM->init();
 }

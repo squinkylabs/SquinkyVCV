@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <atomic>
+#include <memory>
 
 /**
  * Command Protocol:
@@ -44,6 +45,8 @@ const int comBufferLeftCommandDataOffset = 1;
 // This command sent when soloing. 
 // Receiver should turn off all channels, as a different module will be soloing.
 //const uint32_t CommCommand_ExternalSolo = (101 << 16); 
+
+const uint32_t CommCommand_SetSharedState = (102 << 16); 
 
 class CommChannelMessage
 {
@@ -142,7 +145,7 @@ inline bool CommChannelReceive::rx(const uint32_t * inputCommandBuffer, const si
  * There is one of these, but all the modules have access to it.
  * They use it to coordinate solo / multi-solo across modules.
  */
-extern int soloStateCount;
+extern int soloStateCount;      // just for debugging
 class SharedSoloState
 {
 public:
@@ -163,6 +166,26 @@ public:
     };
 
     State state[maxModules];
+};
+
+class SharedSoloStateOwner
+{
+public:
+    SharedSoloStateOwner() {
+        state = std::make_shared<SharedSoloState>();
+    }
+    std::shared_ptr<SharedSoloState> state;
+};
+ 
+class SharedSoloStateClient
+{
+public:
+    SharedSoloStateClient(std::shared_ptr<SharedSoloStateOwner> own) {
+        owner = std::weak_ptr<SharedSoloStateOwner>(own);
+    }
+    std::weak_ptr<SharedSoloStateOwner> owner;
+
+    int moduleNumber = 0;
 };
 
 
