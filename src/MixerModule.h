@@ -459,6 +459,7 @@ namespace sqmix {
 template<class Comp>
 inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
 {
+    DEBUG("handleSoloClickFromUI, ctrl = %d\n", ctrl);
     auto state = mixer->getSharedSoloState();
     int myIndex = mixer->getModuleIndex();
     if (!state) {
@@ -480,11 +481,17 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         const int paramNum =  Comp::SOLO0_PARAM + i;
         bool groupWillSolo = false;
         if (i == channel) {
-            groupWillSolo = !groupIsSoloing;
+            // groupWillSolo = !groupIsSoloing;
+            // toggle the one we clicked on
+            eng->setParam(mixer, paramNum, groupIsSoloing ? 0.f : 1.f);
         } else {
-            groupWillSolo = false;
+          
+            if (!ctrl) {
+                // if it's exclusive, turn off other channels
+                eng->setParam(mixer, paramNum, 0.f);     
+            }
         }
-        eng->setParam(mixer, paramNum, groupWillSolo ? 1.f : 0.f);
+       // eng->setParam(mixer, paramNum, groupWillSolo ? 1.f : 0.f);
     }
 
 
