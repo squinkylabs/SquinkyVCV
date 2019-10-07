@@ -40,16 +40,16 @@ public:
     static std::shared_ptr<rack::Svg> loadSvg(const char* path, bool pathIsAbsolute = false) 
     {
         if (pathIsAbsolute) {
-            return rack::APP->window->loadSvg(path);
+            return ::rack::APP->window->loadSvg(path);
         } else {
-            return rack::APP->window->loadSvg(
+            return ::rack::APP->window->loadSvg(
                 SqHelper::assetPlugin(pluginInstance, path));
         }
     }
 
-    static void setPanel(rack::app::ModuleWidget* widget, const char* path)
+    static void setPanel(::rack::app::ModuleWidget* widget, const char* path)
     {
-         widget->setPanel(rack::APP->window->loadSvg(rack::asset::plugin(pluginInstance, path)));
+         widget->setPanel(::rack::APP->window->loadSvg(::rack::asset::plugin(pluginInstance, path)));
     }
 
     static void openBrowser(const char* url)

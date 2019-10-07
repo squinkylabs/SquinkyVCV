@@ -265,7 +265,7 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel)
 {
     
     const int paramNum =  Comp::SOLO0_PARAM + channel;
-    const bool isSoloing = APP->engine->getParam(mixer, paramNum);
+    const bool isSoloing = ::rack::APP->engine->getParam(mixer, paramNum);
     //printf("handleSoloClickFromUI(%d) isSoling = %d\n", channel, isSoloing);
     SoloCommands cmd = isSoloing ? 
         SoloCommands::SOLO_NONE :
@@ -279,7 +279,7 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel)
 template<class Comp>
 inline void unSoloAllChannels(MixerModule* mod)
 {
-    engine::Engine* eng = APP->engine;
+    engine::Engine* eng = ::rack::APP->engine;
     for (int i=0; i < Comp::numGroups; ++i) {
         eng->setParam(mod, i + Comp::SOLO0_PARAM, 0);  
     }
@@ -288,7 +288,7 @@ inline void unSoloAllChannels(MixerModule* mod)
 template<class Comp>
 inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
 {
-    engine::Engine* const eng = APP->engine;
+    engine::Engine* const eng = ::rack::APP->engine;
     const int channel = int(command)- int(SoloCommands::SOLO_0);
     assert(channel >= 0 && channel < Comp::numGroups);
     unSoloAllChannels<Comp>(mod);
@@ -300,7 +300,7 @@ inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
 template<class Comp>
 inline void processMultiSolo(MixerModule* mod, SoloCommands command)
 {
-    engine::Engine* const eng = APP->engine;
+    engine::Engine* const eng = ::rack::APP->engine;
     const int channel = int(command)- int(SoloCommands::SOLO_0_MULTI);
     assert(channel >= 0 && channel < Comp::numGroups);
 
@@ -325,7 +325,7 @@ inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
     //printf("SOLO_NONE = %d, SOLO_ALL = %d\n", (int)SoloCommands::SOLO_NONE, (int)SoloCommands::SOLO_ALL);
     //fflush(stdout);
 
-    engine::Engine* eng = APP->engine;
+    engine::Engine* eng = ::rack::APP->engine;
     switch (command) {
         case SoloCommands::SOLO_0:
         case SoloCommands::SOLO_1:
