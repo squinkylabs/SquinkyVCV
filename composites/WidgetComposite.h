@@ -6,10 +6,10 @@
 #include "app.hpp"
 
 using Input = ::rack::engine::Input;
-using Output = rack::engine::Output;
-using Param = rack::engine::Param;
-using Light = rack::engine::Light;
-using Module = rack::engine::Module;
+using Output = ::rack::engine::Output;
+using Param = ::rack::engine::Param;
+using Light = ::rack::engine::Light;
+using Module = ::rack::engine::Module;
 
 
 /**
@@ -20,9 +20,9 @@ class WidgetComposite
 {
 public:
 
-    using Port = rack::engine::Port;
+    using Port = ::rack::engine::Port;
     
-    WidgetComposite(Module * parent) :
+    WidgetComposite(::rack::Module * parent) :
         inputs(parent->inputs),
         outputs(parent->outputs),
         params(parent->params),
