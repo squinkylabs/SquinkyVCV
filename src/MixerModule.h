@@ -141,15 +141,34 @@ private:
 
     bool pleaseSendSoloChangedMessageOnAudioThread = false;
 
+    /**
+     * module index is the mixer's identity. master is always 0, then it increases by one 
+     * going right to left. module index is the index for "me" in stateForClient.
+     */
     int moduleIndex = 0;
     int pingDelayCount = 0;
+
+    bool haveInitSoloState = false;
 
     void pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft);
     void processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain);
     void pollForModulePing(bool pairedLeft);
     void onSomethingChanged();
+    void initSoloState();
 
 };
+
+inline void dumpState(const char* title,  std::shared_ptr<SharedSoloState> state) {
+    DEBUG("    state: %s", title);
+    DEBUG("        excl=%d,%d,%d", 
+        !!state->state[0].exclusiveSolo,
+        !!state->state[1].exclusiveSolo,
+        !!state->state[2].exclusiveSolo);
+    DEBUG("        multi=%d,%d,%d", 
+        !!state->state[0].multiSolo,
+        !!state->state[1].multiSolo,
+        !!state->state[2].multiSolo);
+}
 
 // Remember : "rightModule" is the module to your right
 // producer and consumer are concepts of the engine, not us.
@@ -169,6 +188,7 @@ inline void MixerModule::allocateSharedSoloState()
     sharedSoloStateOwner = std::make_shared<SharedSoloStateOwner>();
     sharedSoloState =  sharedSoloStateOwner->state; 
     stateForClient = new SharedSoloStateClient(sharedSoloStateOwner);
+   // initSoloState();        // master can do this right now, and only check once.
 }
 
 inline void MixerModule::pollForModulePing(bool pairedLeft)
@@ -177,6 +197,7 @@ inline void MixerModule::pollForModulePing(bool pairedLeft)
     // Only master does this. only master has sharedSoloStateOwner
     if (amMaster()) {
         if (pingDelayCount-- <= 0) {
+            initSoloState();
             pingDelayCount = 100;       // poll every 100 samples?
             //pingDelayCount = 100000;        // for debugging, do less often
             assert(sharedSoloStateOwner);
@@ -198,6 +219,29 @@ inline void MixerModule::pollForModulePing(bool pairedLeft)
 #endif
 }
 
+inline void MixerModule::initSoloState() {
+    if (!sharedSoloState) {
+        WARN("can't init solo yet");
+        return;
+    }
+    if (!haveInitSoloState) {
+        haveInitSoloState = true;
+
+        DEBUG("Init module %d", moduleIndex);
+
+        bool moduleHasSolo = false;
+        for (int group = 0; group < this->getNumGroups(); ++group ) {
+            const int soloParamNum =  this->getSolo0Param() + group;
+            const bool groupIsSoloing = APP->engine->getParam(this, soloParamNum);
+            moduleHasSolo |= groupIsSoloing;
+        }
+
+        sharedSoloState->state[moduleIndex].exclusiveSolo = false;
+        sharedSoloState->state[moduleIndex].multiSolo = moduleHasSolo;
+        dumpState("   after init", sharedSoloState);
+    }
+}
+
 inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain)
 {
     // TODO: why are we getting this?
@@ -214,18 +258,13 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
 
                 // If then owner has been deleted, then bail
                 if (!owner) {
-                  //  delete stateForClient;
                     sharedSoloState.reset();
                     return;
                 }
 
                 sharedSoloState = owner->state;
-               // WARN("setting shared solo from message %d", !!sharedSoloState);
                 moduleIndex = stateForClient->moduleNumber++;
-
-                if (isEndOfMessageChain) {
-                  //  delete stateForClient;
-                }
+                initSoloState();        // make sure we have initialized.
             }
             break;
         case CommCommand_SomethingChanged:
@@ -234,22 +273,6 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
         default:
             WARN("no handler for message %x", msg.commandId);
     }
-  //  WARN("processCommandFromBus does nothing now msg =%x payload=%p this = %p",
-  //   msg.commandId, msg.commandPayload, this);
-    #if 0   // old way
-    // iI the command is external solo, then we want to turn off all our
-    // channles to let the other module have exclusive solo.
-    // Otherwise the command is CommCommand_ClearAllSolo, and we should
-    // lift all our external overrides.
-    const SoloCommands reqMuteStatus = (cmd == CommCommand_ExternalSolo) ? 
-                SoloCommands::SOLO_ALL :  SoloCommands::SOLO_NONE;
-            
-    //printf("right read status change (%d) module=%p \n", (int)reqMuteStatus, this); fflush(stdout);
-    
-    // clear the UI status, so that UI can again solo in the future
-    currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
-    requestModuleSolo(reqMuteStatus);
-    #endif
 }
 
 inline void MixerModule::pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft)
@@ -414,17 +437,7 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
     soloRequestFromUI = command;       // Queue up a request for the audio thread.                                  // TODO: use atomic?
 }
 
-inline void dumpState(const char* title,  std::shared_ptr<SharedSoloState> state) {
-    DEBUG("    state: %s", title);
-    DEBUG("        excl=%d,%d,%d", 
-        !!state->state[0].exclusiveSolo,
-        !!state->state[1].exclusiveSolo,
-        !!state->state[2].exclusiveSolo);
-    DEBUG("        multi=%d,%d,%d", 
-        !!state->state[0].multiSolo,
-        !!state->state[1].multiSolo,
-        !!state->state[2].multiSolo);
-}
+
 
 // called from audio thread
 inline void MixerModule::onSomethingChanged()
