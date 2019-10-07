@@ -382,11 +382,8 @@ inline void MixerModule::process(const ProcessArgs &args)
             sendLeftChannel.send(msg2);
         }
     }
-
-        
+  
     pleaseSendSoloChangedMessageOnAudioThread = false;
-
-
     // Do the audio processing, and handle the left and right audio buses
     internalProcess();
 
@@ -411,6 +408,17 @@ inline void MixerModule::requestSoloFromUI(SoloCommands command)
     soloRequestFromUI = command;       // Queue up a request for the audio thread.                                  // TODO: use atomic?
 }
 
+inline void dumpState(const char* title,  std::shared_ptr<SharedSoloState> state) {
+    DEBUG("    state: %s", title);
+    DEBUG("        excl=%d,%d,%d", 
+        !!state->state[0].exclusiveSolo,
+        !!state->state[1].exclusiveSolo,
+        !!state->state[2].exclusiveSolo);
+    DEBUG("        multi=%d,%d,%d", 
+        !!state->state[0].multiSolo,
+        !!state->state[1].multiSolo,
+        !!state->state[2].multiSolo);
+}
 
 // called from audio thread
 inline void MixerModule::onSomethingChanged()
@@ -426,23 +434,45 @@ inline void MixerModule::onSomethingChanged()
         return;
     }
 
-    bool otherModuleHasExclusive = false;
+    dumpState("start of something changed ", sharedSoloState);
+
+    bool otherModuleHasSolo = false;
+    bool thisModuleHasSolo = false;
+    bool otherModuleHasExclusiveSolo = false;
     for (int i=0; i<SharedSoloState::maxModules; ++i) {
-        if (sharedSoloState->state[i].exclusiveSolo && (i != moduleIndex)) {
-            otherModuleHasExclusive = true;
+        if (i != moduleIndex) {
+            otherModuleHasSolo |= sharedSoloState->state[i].exclusiveSolo;
+            otherModuleHasSolo |= sharedSoloState->state[i].multiSolo;
+            otherModuleHasExclusiveSolo |= sharedSoloState->state[i].exclusiveSolo;
+        } else {
+            thisModuleHasSolo |= sharedSoloState->state[i].exclusiveSolo;
+            thisModuleHasSolo |= sharedSoloState->state[i].multiSolo;
         }
-    }
+     }
+     // case : I have multi and other guy has exclusive
+
+     DEBUG("    on-ch, thissolo = %d othersolo = %d otherexclusive = %d\n",
+        thisModuleHasSolo, 
+        otherModuleHasSolo,
+        otherModuleHasExclusiveSolo);
 
     engine::Engine* eng = APP->engine;
-    eng->setParam(this, getMuteAllParam(), otherModuleHasExclusive ? 1.f : 0.f); 
 
-    if (otherModuleHasExclusive) {
-        DEBUG("on something changed - other module has exclusive");
+    const bool thisModuleShouldMute = 
+        (otherModuleHasSolo && !thisModuleHasSolo) ||
+        otherModuleHasExclusiveSolo;
+    DEBUG("    thisModuleShouldMute = %d", thisModuleShouldMute);
+    eng->setParam(this, getMuteAllParam(), thisModuleShouldMute ? 1.f : 0.f); 
+
+    if (otherModuleHasExclusiveSolo) {
+        DEBUG("    on something changed - other module has exclusive so clear our solos");
         for (int i=0; i< this->getNumGroups(); ++i ) {
             const int paramNum =  this->getSolo0Param() + i;
             eng->setParam(this, paramNum, 0.f);
         }
     }
+
+     dumpState("leave something changed ", sharedSoloState);
 }
 
 /********************************************************
@@ -461,7 +491,7 @@ namespace sqmix {
 template<class Comp>
 inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
 {
-    DEBUG("handleSoloClickFromUI, ctrl = %d\n", ctrl);
+   
     auto state = mixer->getSharedSoloState();
     int myIndex = mixer->getModuleIndex();
     if (!state) {
@@ -472,13 +502,17 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         WARN("too many modules");
         return;
     }
+     DEBUG("** handleSoloClickFromUI, ctrl = %d myIndex = %d\n", ctrl, myIndex);
     // only worry about exclusive, for now
     const int channelParamNum =  Comp::SOLO0_PARAM + channel;
 
     // before processing this button - is the solo on?
     const bool groupIsSoloing = APP->engine->getParam(mixer, channelParamNum);
+    const bool groupIsSoloingAfter = !groupIsSoloing;
     engine::Engine* eng = APP->engine;
 
+    // if any of our groups are soloing, the module must be
+    bool moduleIsSoloingAfter = groupIsSoloingAfter;
     for (int i=0; i< mixer->getNumGroups(); ++i ) {
         const int paramNum =  Comp::SOLO0_PARAM + i;
         if (i == channel) {
@@ -489,6 +523,9 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
             if (!ctrl) {
                 // if it's exclusive, turn off other channels
                 eng->setParam(mixer, paramNum, 0.f);     
+            } else {
+                const bool soloing = APP->engine->getParam(mixer, paramNum);
+                moduleIsSoloingAfter |= soloing;
             }
         }
     }
@@ -499,20 +536,39 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
     // now update the shared state. If we are exclusive we must
     // clear others and set ours.
     // if we were exclusive and un-soloed, we must clear ourlf
-    const bool groupIsSoloingAfter = !groupIsSoloing;
+   
     const bool isExclusive = !ctrl;
+
+    DEBUG("    groupIsSoloingAfter = %d isExclusive = %d moduleSolo=%d", 
+        groupIsSoloingAfter, 
+        isExclusive,
+        moduleIsSoloingAfter);
+
+    dumpState("before update", state);
     for (int i=0; i<SharedSoloState::maxModules; ++i) {
         const bool isMe = (i == myIndex);
-        if (isMe && isExclusive) {
-            // set our own exclusive state to match our solo.
-            state->state[i].exclusiveSolo = groupIsSoloingAfter;
+        if (isMe) {
+            if (isExclusive) {
+                // set our own exclusive state to match our solo.
+                state->state[i].exclusiveSolo = groupIsSoloingAfter;
+                state->state[i].multiSolo = false;
+                DEBUG("set multi[%d] false because isExclusive", i);
+            } else {
+                state->state[i].exclusiveSolo = false;
+                state->state[i].multiSolo = moduleIsSoloingAfter;
+                 DEBUG("set multi[%d] to %d because moduleIsSoloingAfter flag", i, !!state->state[i].multiSolo);
+            }
         }
 
         if (!isMe && isExclusive && groupIsSoloingAfter) {
-            // if we just enabled and exlusive solo, clear everyone else.
+            // if we just enabled and exclusive solo, clear everyone else.
+            DEBUG("   clearing exclusive in module %d", i);
             state->state[i].exclusiveSolo = false;
         }
-    }  
+    }
+
+    dumpState("after update", state);
+
 
     mixer->sendSoloChangedMessageOnAudioThread();
 }
