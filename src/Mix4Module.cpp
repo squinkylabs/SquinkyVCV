@@ -35,7 +35,7 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
-    void requestModuleSolo(SoloCommands) override;
+    //void requestModuleSolo(SoloCommands) override;
     int getNumGroups() const override { return Comp::numGroups; }
     int getMuteAllParam() const override { return Comp::ALL_CHANNELS_OFF_PARAM; }
     int getSolo0Param() const override { return Comp::SOLO0_PARAM; }
@@ -61,12 +61,6 @@ void Mix4Module::setExternalInput(const float* buf)
 void Mix4Module::setExternalOutput(float* buf)
 {
     Mix4->setExpansionOutputs(buf);
-}
-
-void Mix4Module::requestModuleSolo(SoloCommands command)
-{
-    WARN("i gutted  requestModuleSolo");
-   // sqmix::processSoloRequestForModule<Comp>(this, command);
 }
 
 #ifdef __V1x
@@ -226,16 +220,6 @@ void Mix4Widget::makeStrip(
     tog->addSvg("res/SquinkyBezel.svg");
     tog->setHandler( [this, channel](bool ctrlKey) {
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel, ctrlKey);
-#if 0
-         //printf("clicked on channel %d\n", channel);
-        auto soloCommand =  SoloCommands(channel);
-        if (ctrlKey) {
-            soloCommand = SoloCommands(channel + int(SoloCommands::SOLO_0_MULTI));
-        }
-        printf("ui is requesting %f from click handler\n", (int) soloCommand);
-
-        mixModule->requestSoloFromUI(soloCommand);
-#endif
     });
     addChild(tog);
    

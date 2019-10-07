@@ -6,6 +6,8 @@
  * This class manages the communication between
  * misers and mixer expanders.
  * 
+ * The following if for the first version of the mixers. It's all different now.
+ * 
  * How does threading work?
  * We receive solo requests from the UI on the UI thread, but queue those up
  * to handle on the audio thread.
@@ -49,24 +51,10 @@ public:
     virtual void internalProcess() = 0;
 
     /**
-     * Concrete subclass implements this to accept a request
-     * for solo change. It will be on the audio thread
-     */
-    virtual void requestModuleSolo(SoloCommands) = 0;
-
-
-    /**
      * Master module will override this to return true.
      * Let's us (base class) know if we are master or slave.
      */
     virtual bool amMaster() { return false; }
-
-    /**
-     * UI calls this to initiate a solo. UI
-     * will only call with  SoloCommands::SOLO_0..3
-     * (for now)
-     */
-    void requestSoloFromUI(SoloCommands);
 
     std::shared_ptr<SharedSoloState> getSharedSoloState() {
         return sharedSoloState;
@@ -119,13 +107,6 @@ private:
     CommChannelReceive receiveRightChannel;
     CommChannelReceive receiveLeftChannel;
 
-    // This gets set when UI calls us ask us to do something
-    SoloCommands soloRequestFromUI = SoloCommands::DO_NOTHING;
-
-    // This is set by us after executing a request from UI.
-    // We use it to track our state
-    SoloCommands currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
-
     // This guy holds onto a shared solo state, and we pass weak pointers to
     // him to clients so they can work. Only allocated by master.
     std::shared_ptr<SharedSoloStateOwner> sharedSoloStateOwner;
@@ -150,7 +131,6 @@ private:
 
     bool haveInitSoloState = false;
 
-    void pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft);
     void processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain);
     void pollForModulePing(bool pairedLeft);
     void onSomethingChanged();
@@ -158,6 +138,7 @@ private:
 
 };
 
+#if 0
 inline void dumpState(const char* title,  std::shared_ptr<SharedSoloState> state) {
     DEBUG("    state: %s", title);
     DEBUG("        excl=%d,%d,%d", 
@@ -169,6 +150,7 @@ inline void dumpState(const char* title,  std::shared_ptr<SharedSoloState> state
         !!state->state[1].multiSolo,
         !!state->state[2].multiSolo);
 }
+#endif
 
 // Remember : "rightModule" is the module to your right
 // producer and consumer are concepts of the engine, not us.
@@ -193,7 +175,6 @@ inline void MixerModule::allocateSharedSoloState()
 
 inline void MixerModule::pollForModulePing(bool pairedLeft)
 {
-#if 1
     // Only master does this. only master has sharedSoloStateOwner
     if (amMaster()) {
         if (pingDelayCount-- <= 0) {
@@ -216,7 +197,6 @@ inline void MixerModule::pollForModulePing(bool pairedLeft)
             }
         }
     }
-#endif
 }
 
 inline void MixerModule::initSoloState() {
@@ -238,7 +218,7 @@ inline void MixerModule::initSoloState() {
 
         sharedSoloState->state[moduleIndex].exclusiveSolo = false;
         sharedSoloState->state[moduleIndex].multiSolo = moduleHasSolo;
-        dumpState("   after init", sharedSoloState);
+        // dumpState("   after init", sharedSoloState);
     }
 }
 
@@ -272,47 +252,6 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
             break;
         default:
             WARN("no handler for message %x", msg.commandId);
-    }
-}
-
-inline void MixerModule::pollAndProccessCommandFromUI(bool pairedRight, bool pairedLeft)
-{
-    // If there is a request from the UI
-    if (soloRequestFromUI != SoloCommands::DO_NOTHING) {
-#if 0
-        WARN("pollAndProccessCommandFromUI does nothing now");
-#else
-    //  const auto commCmd = (soloRequestFromUI == SoloCommands::SOLO_NONE) ?
-    //      CommCommand_ClearAllSolo : CommCommand_ExternalSolo;
-    CommChannelMessage msg;
-    msg.commandId = CommCommand_SomethingChanged;
-    WARN("why is this still called? this is the old way, yes?");
-
-    // notify everyone that something changed/
-    // TODO: who is going to update the shared status?
-    if (pairedRight) {
-        WARN("relay right");
-        sendRightChannel.send(msg);
-    }
-    if (pairedLeft) {
-        WARN("relay left %x", msg.commandId);
-        sendLeftChannel.send(msg);
-    }
-    
-    // tell our own module to solo, if a state change is requested
-    // TODO: this won't support multi
-    if (soloRequestFromUI != currentSoloStatusFromUI) {
-        //printf("requesting module solo %d from 129\n", (int) soloRequestFromUI); fflush(stdout);
-        requestModuleSolo(soloRequestFromUI);
-
-        //and update our current state
-        currentSoloStatusFromUI = soloRequestFromUI;
-    }
-    #endif
-
-    // Now that we have processed the command from UI, retire it.
-    soloRequestFromUI = SoloCommands::DO_NOTHING;
-
     }
 }
 
@@ -350,7 +289,6 @@ inline void MixerModule::process(const ProcessArgs &args)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftExpander.module->rightExpander.consumerMessage) : nullptr);
 
     pollForModulePing(pairedLeft);
-    pollAndProccessCommandFromUI(pairedRight, pairedLeft);
 
     if (pairedRight) {
         // #1) Send data to right: use you own right producer buffer.
@@ -426,23 +364,11 @@ inline void MixerModule::process(const ProcessArgs &args)
 
 
 
-/**
- * Modules call this directly from their UI event handles.
- * This is where soling command processing starts
- */
-inline void MixerModule::requestSoloFromUI(SoloCommands command)
-{
-    WARN("why is this called now 404");
-    //printf("requestSoloFromUI %d\n", int(command));
-    soloRequestFromUI = command;       // Queue up a request for the audio thread.                                  // TODO: use atomic?
-}
-
-
 
 // called from audio thread
 inline void MixerModule::onSomethingChanged()
 {
-    DEBUG("on something changed");
+  //  DEBUG("on something changed");
     if (!sharedSoloState) {
         WARN("something changed, but no state");
         return;
@@ -453,7 +379,7 @@ inline void MixerModule::onSomethingChanged()
         return;
     }
 
-    dumpState("start of something changed ", sharedSoloState);
+    //dumpState("start of something changed ", sharedSoloState);
 
     bool otherModuleHasSolo = false;
     bool thisModuleHasSolo = false;
@@ -470,28 +396,32 @@ inline void MixerModule::onSomethingChanged()
      }
      // case : I have multi and other guy has exclusive
 
+#if 0
      DEBUG("    on-ch, thissolo = %d othersolo = %d otherexclusive = %d\n",
         thisModuleHasSolo, 
         otherModuleHasSolo,
         otherModuleHasExclusiveSolo);
+#endif
 
     engine::Engine* eng = APP->engine;
 
     const bool thisModuleShouldMute = 
         (otherModuleHasSolo && !thisModuleHasSolo) ||
         otherModuleHasExclusiveSolo;
-    DEBUG("    thisModuleShouldMute = %d", thisModuleShouldMute);
+
+    //DEBUG("    thisModuleShouldMute = %d", thisModuleShouldMute);
+
     eng->setParam(this, getMuteAllParam(), thisModuleShouldMute ? 1.f : 0.f); 
 
     if (otherModuleHasExclusiveSolo) {
-        DEBUG("    on something changed - other module has exclusive so clear our solos");
+       // DEBUG("    on something changed - other module has exclusive so clear our solos");
         for (int i=0; i< this->getNumGroups(); ++i ) {
             const int paramNum =  this->getSolo0Param() + i;
             eng->setParam(this, paramNum, 0.f);
         }
     }
 
-     dumpState("leave something changed ", sharedSoloState);
+    // dumpState("leave something changed ", sharedSoloState);
 }
 
 /********************************************************
@@ -521,7 +451,8 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         WARN("too many modules");
         return;
     }
-     DEBUG("** handleSoloClickFromUI, ctrl = %d myIndex = %d\n", ctrl, myIndex);
+    
+    // DEBUG("** handleSoloClickFromUI, ctrl = %d myIndex = %d\n", ctrl, myIndex);
     // only worry about exclusive, for now
     const int channelParamNum =  Comp::SOLO0_PARAM + channel;
 
@@ -549,21 +480,19 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         }
     }
 
-  
-
     // now update the shared state. If we are exclusive we must
     // clear others and set ours.
     // if we were exclusive and un-soloed, we must clear ourlf
-   
-    const bool isExclusive = !ctrl;
 
+    const bool isExclusive = !ctrl;
+#if 0
     DEBUG("    groupIsSoloingAfter = %d isExclusive = %d moduleSolo=%d", 
         groupIsSoloingAfter, 
         isExclusive,
         moduleIsSoloingAfter);
-
-
     dumpState("before update", state);
+#endif
+
     bool otherModulesHaveMutes = false;
     for (int i=0; i<SharedSoloState::maxModules; ++i) {
         const bool isMe = (i == myIndex);
@@ -572,17 +501,17 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
                 // set our own exclusive state to match our solo.
                 state->state[i].exclusiveSolo = groupIsSoloingAfter;
                 state->state[i].multiSolo = false;
-                DEBUG("set multi[%d] false because isExclusive", i);
+                // DEBUG("set multi[%d] false because isExclusive", i);
             } else {
                 state->state[i].exclusiveSolo = false;
                 state->state[i].multiSolo = moduleIsSoloingAfter;
-                DEBUG("set multi[%d] to %d because moduleIsSoloingAfter flag", i, !!state->state[i].multiSolo);
+                // DEBUG("set multi[%d] to %d because moduleIsSoloingAfter flag", i, !!state->state[i].multiSolo);
             }
         }
 
         if (!isMe && isExclusive && groupIsSoloingAfter) {
             // if we just enabled and exclusive solo, clear everyone else.
-            DEBUG("   clearing exclusive in module %d", i);
+            // DEBUG("   clearing exclusive in module %d", i);
             state->state[i].exclusiveSolo = false;
         }
 
@@ -592,15 +521,13 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         }
     }
 
-    DEBUG("   otherModulesHaveMutes = %d", otherModulesHaveMutes);
+    // DEBUG("   otherModulesHaveMutes = %d", otherModulesHaveMutes);
 
     // un-mute yourself if there are no solos in other module, 
     // or if this module has solo.
     // BUT - should also mute if other module is soloing and we are not
     bool shouldMuteSelf = false;
     if (!otherModulesHaveMutes || moduleIsSoloingAfter) {
-       
-
         shouldMuteSelf = false;
     }
 
@@ -608,115 +535,10 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         shouldMuteSelf = true;
     }
 
-     DEBUG("   shouldMuteSelf %d", shouldMuteSelf);
-
+    // DEBUG("   shouldMuteSelf %d", shouldMuteSelf);
     eng->setParam(mixer, Comp::ALL_CHANNELS_OFF_PARAM, shouldMuteSelf ? 1.f : 0.f); 
 
-
-    dumpState("after update", state);
-
-
+    //dumpState("after update", state);
     mixer->sendSoloChangedMessageOnAudioThread();
 }
-
-#if 0 // old version
-template<class Comp>
-inline void handleSoloClickFromUI(MixerModule* mixer, int channel)
-{
-    
-    const int paramNum =  Comp::SOLO0_PARAM + channel;
-    const bool isSoloing = APP->engine->getParam(mixer, paramNum);
-    //printf("handleSoloClickFromUI(%d) isSoling = %d\n", channel, isSoloing);
-    SoloCommands cmd = isSoloing ? 
-        SoloCommands::SOLO_NONE :
-        SoloCommands(int(SoloCommands::SOLO_0) + channel);
-    mixer->requestSoloFromUI(cmd); 
-}
-
-/**
- * clears all the SOLO params from the composites.
- */
-template<class Comp>
-inline void unSoloAllChannels(MixerModule* mod)
-{
-    engine::Engine* eng = APP->engine;
-    for (int i=0; i < Comp::numGroups; ++i) {
-        eng->setParam(mod, i + Comp::SOLO0_PARAM, 0);  
-    }
-}
-
-template<class Comp>
-inline void processExclusiveSolo(MixerModule* mod, SoloCommands command)
-{
-    engine::Engine* const eng = APP->engine;
-    const int channel = int(command)- int(SoloCommands::SOLO_0);
-    assert(channel >= 0 && channel < Comp::numGroups);
-    unSoloAllChannels<Comp>(mod);
-    //printf("processExclusiveSolo channel %d, will un-mute module\n", channel); fflush(stdout);
-    eng->setParam(mod, Comp::SOLO0_PARAM + channel, 1.f); 
-    WARN("process exclusive solo");
-    eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);    
-}
-
-template<class Comp>
-inline void processMultiSolo(MixerModule* mod, SoloCommands command)
-{
-    engine::Engine* const eng = APP->engine;
-    const int channel = int(command)- int(SoloCommands::SOLO_0_MULTI);
-    assert(channel >= 0 && channel < Comp::numGroups);
-
-    const bool channelIsSoloed = eng->getParam(mod, Comp::SOLO0_PARAM + channel);
-
-    //printf("nprocessMultiSolo(%d), is soloed = %d\n", channel, channelIsSoloed); fflush(stdout);
-
-    // toggle the solo state of this one 
-    eng->setParam(mod, Comp::SOLO0_PARAM + channel, channelIsSoloed ? 0 : 1); 
-     WARN("process multi solo");
-    eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);
-}
-
-/**
- * Called from modules as they process calls into their 
- * requestModuleSolo(SoloCommands command) functions.
- * This will be at the end of the call chain.
- */
-template<class Comp>
-inline void processSoloRequestForModule(MixerModule* mod, SoloCommands command)
-{
-    //printf("processSoloRequestForModule %d mod=%p\n", (int)command, mod); 
-    //printf("SOLO_NONE = %d, SOLO_ALL = %d\n", (int)SoloCommands::SOLO_NONE, (int)SoloCommands::SOLO_ALL);
-    //fflush(stdout);
-
-    engine::Engine* eng = APP->engine;
-    switch (command) {
-        case SoloCommands::SOLO_0:
-        case SoloCommands::SOLO_1:
-        case SoloCommands::SOLO_2:
-        case SoloCommands::SOLO_3:
-            processExclusiveSolo<Comp>(mod, command);   
-            break;
-        case SoloCommands::SOLO_0_MULTI:
-        case SoloCommands::SOLO_1_MULTI:
-        case SoloCommands::SOLO_2_MULTI:
-        case SoloCommands::SOLO_3_MULTI:
-            processMultiSolo<Comp>(mod, command);   
-            break;
-        case SoloCommands::SOLO_NONE:
-            //printf("got SOLO_NONE command\n"); fflush(stdout);
-            unSoloAllChannels<Comp>(mod);
-            eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 0);
-            break;
-        case SoloCommands::SOLO_ALL:
-            //printf("got SOLO_ALL command\n"); fflush(stdout);
-            // we should turn off all channels, and clear all solo lights
-            unSoloAllChannels<Comp>(mod);
-            INFO("processSoloRequestForModule is shutting off");
-            eng->setParam(mod, Comp::ALL_CHANNELS_OFF_PARAM, 1);
-            break;
-        default:
-            printf("processSoloRequestForModule %d, but NIMP (all=8, none=9, nothing=10\n", (int)command); fflush(stdout);     
-   }   
-}
-#endif
-
 }   // end namespace

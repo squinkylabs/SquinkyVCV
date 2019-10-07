@@ -123,8 +123,7 @@ inline void CommChannelSend::go(uint32_t* outputCommandBuffer, size_t* outputDat
             message = messageBuffer.pop();
         }
     }
-    //if (x != 0) printf("output 32: %x\n", x);
-   // *output = x;
+
    *outputCommandBuffer = message.commandId;
    *outputDataBuffer = message.commandPayload;
 }
@@ -157,7 +156,7 @@ public:
     ~SharedSoloState()
     {
         --soloStateCount;
-        fprintf(stderr, "in dtor, solo state count = %d", soloStateCount);
+        //fprintf(stderr, "in dtor, solo state count = %d", soloStateCount);
     }
     static const int maxModules = 16;
     class State
@@ -188,38 +187,4 @@ public:
     std::weak_ptr<SharedSoloStateOwner> owner;
 
     int moduleNumber = 0;
-};
-
-
-/**
- * Internal commands used by mixers for communicating solo info.
- * (These are not sent over a comm channel, and don't really belong here)
- */
-enum class SoloCommands {
-    // SOLO_x normal, exclusive solo requested
-    SOLO_0,
-    SOLO_1,
-    SOLO_2,
-    SOLO_3,
-
-    // SOLO_x_MULTI, non-exclusive "multi-solo"
-    SOLO_0_MULTI,
-    SOLO_1_MULTI,
-    SOLO_2_MULTI,
-    SOLO_3_MULTI,
-    
-    /**
-     * (8)
-     * mute all of your channels, because another module is 
-     * requesting an exclusive solo.
-     */
-    SOLO_ALL,
-
-    /**
-     * (9)
-     * remove the solo overrides from all your channels,
-     * because another module stopped soloing
-     */  
-    SOLO_NONE,          
-    DO_NOTHING,
 };

@@ -35,7 +35,6 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
-    void requestModuleSolo(SoloCommands) override;
     int getNumGroups() const override { return Comp::numGroups; }
     int getMuteAllParam() const override { return Comp::ALL_CHANNELS_OFF_PARAM; }
     int getSolo0Param() const override { return Comp::SOLO0_PARAM; }
@@ -61,12 +60,6 @@ void MixStereoModule::setExternalInput(const float* buf)
 void MixStereoModule::setExternalOutput(float* buf)
 {
     MixStereo->setExpansionOutputs(buf);
-}
-
-void MixStereoModule::requestModuleSolo(SoloCommands command)
-{
-        WARN("i gutted  requestModuleSolo");
-   // sqmix::processSoloRequestForModule<Comp>(this, command);
 }
 
 MixStereoModule::MixStereoModule()

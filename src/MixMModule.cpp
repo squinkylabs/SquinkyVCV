@@ -35,7 +35,6 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
-    void requestModuleSolo( SoloCommands) override;
     int getNumGroups() const override { return Comp::numGroups; }
     int getMuteAllParam() const override { return Comp::ALL_CHANNELS_OFF_PARAM; }
     int getSolo0Param() const override { return Comp::SOLO0_PARAM; }
@@ -47,12 +46,6 @@ private:
     std::shared_ptr<Comp> MixM;
 
 };
-
-void MixMModule::requestModuleSolo(SoloCommands command)
-{
-        WARN("i gutted  requestModuleSolo");
-   // sqmix::processSoloRequestForModule<Comp>(this, command);
-}
 
 void MixMModule::onSampleRateChange()
 {
@@ -424,7 +417,6 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
 
     x = x0 + 15 + 16  + (WIDE * 15);
 
-
     // Big Mute button
     const float mutex = x-11;
     const float mutey = muteY;
@@ -436,17 +428,16 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         Comp::MASTER_MUTE_PARAM);
     addParam(mute);
 
-
     auto light = (createLight<MuteLight<SquinkyLight>>(
         Vec(mutex + 3.2 - 6, mutey + 3 - 21),
         module, Comp::MUTE_MASTER_LIGHT));
     // 30 too big
     light->box.size.x = 26;
+    light->box.size.y = 26;
     addChild(light);
-    //printf("\nlight width = %f\n", light->box.size.x); fflush(stdout);
+    //printf("\nlight width = %f, height = %f\n", light->box.size.x, light->box.size.y); fflush(stdout);
     muteY = y-12;
     
-
     y = volY;
   
     addParam(SqHelper::createParamCentered<Rogan2PSBlue>(
