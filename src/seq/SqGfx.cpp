@@ -1,4 +1,5 @@
 
+#include "rack.hpp"
 #include "SqGfx.h"
 #include "UIPrefs.h"
 
