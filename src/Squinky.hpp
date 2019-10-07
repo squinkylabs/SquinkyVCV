@@ -31,7 +31,7 @@
 #define _MIXM
 #define _DTMODULE
 
-using namespace rack;
+using namespace ::rack;
 
 extern plugin::Plugin *pluginInstance;
 extern Model *modelBootyModule;
