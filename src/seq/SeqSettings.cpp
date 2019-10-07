@@ -141,10 +141,10 @@ SeqSettings::~SeqSettings()
     --_mdb;
 }
 
-void SeqSettings::invokeUI(rack::widget::Widget* parent)
+void SeqSettings::invokeUI (::rack::widget::Widget* parent)
 {
     ::rack::ui::Menu* menu = ::rack::createMenu();
-    menu->addChild(rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
+    menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
     menu->addChild(new GridMenuItem(this));
     menu->addChild(makeSnapItem());
     menu->addChild(makeSnapDurationItem());

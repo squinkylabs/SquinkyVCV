@@ -13,7 +13,7 @@ public:
     virtual ~ISeqSettings()
     {
     }
-    virtual void invokeUI(rack::widget::Widget* parent) = 0;
+    virtual void invokeUI (::rack::widget::Widget* parent) = 0;
 
     /**
      * Grid things

@@ -53,7 +53,7 @@ struct ManualMenuItem : SqMenuItem
  */
 struct  SqMenuItem_BooleanParam2 : ::rack::MenuItem
 {
-    SqMenuItem_BooleanParam2(rack::engine::Module* mod, int id) : 
+    SqMenuItem_BooleanParam2 (::rack::engine::Module* mod, int id) : 
         paramId(id),
         module(mod)
     {   
@@ -83,7 +83,7 @@ private:
 
 struct  SqMenuItem_BooleanParam : ::rack::MenuItem
 {
-    SqMenuItem_BooleanParam(rack::ParamWidget* widget) :
+    SqMenuItem_BooleanParam (::rack::ParamWidget* widget) :
         widget(widget)
     {
     }

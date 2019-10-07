@@ -28,7 +28,7 @@ public:
     {
         widget->setSvg(svg);
     }
-    static void setSvg(rack::app::SvgKnob* knob, std::shared_ptr<::rack::Svg> svg)
+    static void setSvg (::rack::app::SvgKnob* knob, std::shared_ptr<::rack::Svg> svg)
     {
         knob->setSvg(svg);
     }
@@ -56,7 +56,7 @@ public:
     {
         ::rack::system::openBrowser(url);
     }
-    static std::string assetPlugin(rack::plugin::Plugin *plugin, const std::string& filename)
+    static std::string assetPlugin (::rack::plugin::Plugin *plugin, const std::string& filename)
     {
         return ::rack::asset::plugin(plugin, filename);
     } 
@@ -106,13 +106,13 @@ public:
         }
     }
 
-    static float getValue(rack::app::ParamWidget* widget) {
+    static float getValue (::rack::app::ParamWidget* widget) {
         return (widget->paramQuantity) ?
             widget->paramQuantity->getValue() :
             0;
     }
 
-    static void setValue(rack::app::ParamWidget* widget, float v) {
+    static void setValue (::rack::app::ParamWidget* widget, float v) {
         if (widget->paramQuantity) {
             widget->paramQuantity->setValue(v);
         }

@@ -76,7 +76,7 @@ inline void SvgButtonV1::onDragDrop(EventDragDrop &e)
 class SqSvgToggleButton : public SvgButtonV1
 {
 public:
-    SqSvgToggleButton(rack::Widget* = nullptr);
+    SqSvgToggleButton (::rack::Widget* = nullptr);
 
     void onDragStart(EventDragStart &e) override;
 	void onDragEnd(EventDragEnd &e) override;
@@ -91,7 +91,7 @@ private:
     //sw->setSvg(frames[0]);
 };
 
-inline SqSvgToggleButton::SqSvgToggleButton(rack::Widget* delegate)
+inline SqSvgToggleButton::SqSvgToggleButton (::rack::Widget* delegate)
 {
     actionDelegate = delegate;
 }
