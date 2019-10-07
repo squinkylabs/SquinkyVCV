@@ -304,7 +304,7 @@ superWidget::superWidget(SuperModule *module) : semitoneDisplay(module)
     tog->addSvg("res/clean-switch-02.svg");
     tog->addSvg("res/clean-switch-03.svg");
     #else
-    SvgSwitch* tog =  SqHelper::createParam<rack::app::SvgSwitch>(
+    SvgSwitch* tog =  SqHelper::createParam<::rack::app::SvgSwitch>(
         icomp,
         Vec(83, 164),
         module,

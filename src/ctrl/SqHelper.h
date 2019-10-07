@@ -24,11 +24,11 @@ public:
     using SvgWidget = ::rack::widget::SvgWidget;
     using SvgSwitch = ::rack::app::SvgSwitch;
     
-    static void setSvg(SvgWidget* widget, std::shared_ptr<rack::Svg> svg)
+    static void setSvg(SvgWidget* widget, std::shared_ptr<::rack::Svg> svg)
     {
         widget->setSvg(svg);
     }
-    static void setSvg(rack::app::SvgKnob* knob, std::shared_ptr<rack::Svg> svg)
+    static void setSvg(rack::app::SvgKnob* knob, std::shared_ptr<::rack::Svg> svg)
     {
         knob->setSvg(svg);
     }
@@ -37,7 +37,7 @@ public:
      * loads SVG from plugin's assets,
      * unless pathIsAbsolute is ture
      */
-    static std::shared_ptr<rack::Svg> loadSvg(const char* path, bool pathIsAbsolute = false) 
+    static std::shared_ptr<::rack::Svg> loadSvg(const char* path, bool pathIsAbsolute = false) 
     {
         if (pathIsAbsolute) {
             return ::rack::APP->window->loadSvg(path);

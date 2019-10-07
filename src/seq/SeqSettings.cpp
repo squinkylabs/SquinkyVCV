@@ -60,7 +60,7 @@ public:
     {
         ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
-        auto label = ::rack::construct<rack::ui::MenuLabel>(
+        auto label = ::rack::construct<::rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
             "Grids");      // need to do this to size correctly. probably doing something wrong.
         menu->addChild(label);
@@ -96,7 +96,7 @@ public:
     {
         ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
-        auto label = ::rack::construct<rack::ui::MenuLabel>(
+        auto label = ::rack::construct<::rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
             "Articulation");      // need to do this to size correctly. probably doing something wrong.
         menu->addChild(label);
@@ -144,7 +144,7 @@ SeqSettings::~SeqSettings()
 void SeqSettings::invokeUI(rack::widget::Widget* parent)
 {
     ::rack::ui::Menu* menu = ::rack::createMenu();
-    menu->addChild(rack::construct<rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
+    menu->addChild(rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
     menu->addChild(new GridMenuItem(this));
     menu->addChild(makeSnapItem());
     menu->addChild(makeSnapDurationItem());
