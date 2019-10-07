@@ -58,7 +58,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Intro 3 image](./intro-3-110.png)
 
-[Polygate](./polygate.md) is an eight channel gate generator. It takes polyphonic CV and Gate as inputs, and outputs eight mono gate signals. Designed for triggering drums from a polyphonic sequencer, it also has many less obvious uses.
+[Polygate](./dt.md) is an eight channel gate generator. It takes polyphonic CV and Gate as inputs, and outputs eight mono gate signals. Designed for triggering drums from a polyphonic sequencer, it also has many less obvious uses.
 
 [Slade](./slew4.md) has eight identical channels of lag/anti-pop/envelope generator/VCA, and flexible submixing. Very low CPU, as always.
 
