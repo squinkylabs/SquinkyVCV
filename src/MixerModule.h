@@ -39,7 +39,7 @@
  *      perhaps turn off self (if other module is soloing)
  *      
  */
-class MixerModule : public rack::engine::Module
+class MixerModule : public ::rack::engine::Module
 {
 public:
     MixerModule();

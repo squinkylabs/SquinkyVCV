@@ -22,7 +22,7 @@ public:
 
     using Port = ::rack::engine::Port;
     
-    WidgetComposite(::rack::Module * parent) :
+    WidgetComposite(::rack::engine::Module * parent) :
         inputs(parent->inputs),
         outputs(parent->outputs),
         params(parent->params),
