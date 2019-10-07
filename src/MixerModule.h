@@ -530,8 +530,7 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         }
     }
 
-    // in both cases we need to un mute the module
-    eng->setParam(mixer, Comp::ALL_CHANNELS_OFF_PARAM, 0); 
+  
 
     // now update the shared state. If we are exclusive we must
     // clear others and set ours.
@@ -544,7 +543,9 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         isExclusive,
         moduleIsSoloingAfter);
 
+
     dumpState("before update", state);
+    bool otherModulesHaveMutes = false;
     for (int i=0; i<SharedSoloState::maxModules; ++i) {
         const bool isMe = (i == myIndex);
         if (isMe) {
@@ -556,7 +557,7 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
             } else {
                 state->state[i].exclusiveSolo = false;
                 state->state[i].multiSolo = moduleIsSoloingAfter;
-                 DEBUG("set multi[%d] to %d because moduleIsSoloingAfter flag", i, !!state->state[i].multiSolo);
+                DEBUG("set multi[%d] to %d because moduleIsSoloingAfter flag", i, !!state->state[i].multiSolo);
             }
         }
 
@@ -565,7 +566,33 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
             DEBUG("   clearing exclusive in module %d", i);
             state->state[i].exclusiveSolo = false;
         }
+
+        if (!isMe) {
+            otherModulesHaveMutes |= state->state[i].exclusiveSolo;
+            otherModulesHaveMutes |= state->state[i].multiSolo;
+        }
     }
+
+    DEBUG("   otherModulesHaveMutes = %d", otherModulesHaveMutes);
+
+    // un-mute yourself if there are no solos in other module, 
+    // or if this module has solo.
+    // BUT - should also mute if other module is soloing and we are not
+    bool shouldMuteSelf = false;
+    if (!otherModulesHaveMutes || moduleIsSoloingAfter) {
+       
+
+        shouldMuteSelf = false;
+    }
+
+    if (otherModulesHaveMutes && !moduleIsSoloingAfter) {
+        shouldMuteSelf = true;
+    }
+
+     DEBUG("   shouldMuteSelf %d", shouldMuteSelf);
+
+    eng->setParam(mixer, Comp::ALL_CHANNELS_OFF_PARAM, shouldMuteSelf ? 1.f : 0.f); 
+
 
     dumpState("after update", state);
 
