@@ -33,7 +33,7 @@
 
 using namespace rack;
 
-extern rack::plugin::Plugin *pluginInstance;
+extern plugin::Plugin *pluginInstance;
 extern Model *modelBootyModule;
 extern Model *modelColoredNoiseModule;
 extern Model *modelTremoloModule;
