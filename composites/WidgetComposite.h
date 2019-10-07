@@ -5,7 +5,7 @@
 #include "engine/Engine.hpp"
 #include "app.hpp"
 
-using Input = rack::engine::Input;
+using Input = ::rack::engine::Input;
 using Output = rack::engine::Output;
 using Param = rack::engine::Param;
 using Light = rack::engine::Light;
