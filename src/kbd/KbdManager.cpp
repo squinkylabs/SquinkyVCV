@@ -10,7 +10,7 @@
 
 #include <unistd.h>
 
-extern rack::plugin::Plugin *pluginInstance;
+extern ::rack::plugin::Plugin *pluginInstance;
 
 KeyMappingPtr KbdManager::defaultMappings;
 KeyMappingPtr KbdManager::userMappings;
@@ -25,11 +25,11 @@ void KbdManager::init()
 {
     // these statics are shared by all instances
     if (!defaultMappings) {
-        std::string keymapPath = rack::asset::plugin(pluginInstance, "res/seq_default_keys.json");
+        std::string keymapPath = ::rack::asset::plugin(pluginInstance, "res/seq_default_keys.json");
         defaultMappings = KeyMapping::make(keymapPath);
     }
     if (!userMappings) {
-        std::string keymapPath =  rack::asset::user("seq_user_keys.json"); 
+        std::string keymapPath =  ::rack::asset::user("seq_user_keys.json"); 
         userMappings = KeyMapping::make(keymapPath);
     }
 }

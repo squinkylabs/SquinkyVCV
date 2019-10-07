@@ -56,7 +56,7 @@ struct SequencerWidget : ModuleWidget
 
     void appendContextMenu(Menu *theMenu) override 
     { 
-        rack::ui::MenuLabel *spacerLabel = new rack::ui::MenuLabel(); 
+        ::rack::ui::MenuLabel *spacerLabel = new ::rack::ui::MenuLabel(); 
         theMenu->addChild(spacerLabel); 
         ManualMenuItem* manual = new ManualMenuItem("Seq++ manual", helpUrl); 
         theMenu->addChild(manual);  

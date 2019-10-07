@@ -9,7 +9,7 @@
 #include "window.hpp"
 
 // let's back-port the v1 svg button, since that's what our sutf expects
-struct SvgButtonV1 : rack::OpaqueWidget {
+struct SvgButtonV1 : ::rack::OpaqueWidget {
 	rack::FramebufferWidget *fb;
 	CircularShadow *shadow;
 	rack::SVGWidget *sw;
@@ -26,14 +26,14 @@ struct SvgButtonV1 : rack::OpaqueWidget {
 
 inline SvgButtonV1::SvgButtonV1()
 {
-    fb = new rack::FramebufferWidget;
+    fb = new ::rack::FramebufferWidget;
 	addChild(fb);
 
 	shadow = new CircularShadow;
 	fb->addChild(shadow);
-	shadow->box.size = rack::Vec();
+	shadow->box.size = ::rack::Vec();
 
-	sw = new rack::SVGWidget;
+	sw = new ::rack::SVGWidget;
 	fb->addChild(sw);
 }
 
@@ -86,7 +86,7 @@ public:
 private:
     int index = 0;
     void setIndex(int i);
-    rack::Widget* actionDelegate = nullptr;
+    ::rack::Widget* actionDelegate = nullptr;
 
     //sw->setSvg(frames[0]);
 };
@@ -264,7 +264,7 @@ inline void SqSvgParamToggleButton::onDragDrop(EventDragDrop &e)
 
     // normally we tell manager to turn siblings off.
     // control key we don't - allows more than one to be on
-	const bool isControlKey = rack::windowIsModPressed();
+	const bool isControlKey = ::rack::windowIsModPressed();
     if (!isControlKey) {
         if (manager) {
             manager->go(this);

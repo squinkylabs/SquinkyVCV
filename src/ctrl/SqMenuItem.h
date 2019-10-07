@@ -9,10 +9,10 @@
  * This menu item takes generic lambdas,
  * so can be used for anything
  **/
-struct SqMenuItem : rack::MenuItem
+struct SqMenuItem : ::rack::MenuItem
 {
 
-    void onAction(const rack::event::Action &e) override
+    void onAction(const ::rack::event::Action &e) override
     {
         _onActionFn();
     }
@@ -20,7 +20,7 @@ struct SqMenuItem : rack::MenuItem
 
     void step() override
     {
-        rack::MenuItem::step();
+        ::rack::MenuItem::step();
         rightText = CHECKMARK(_isCheckedFn());
     }
 
@@ -51,7 +51,7 @@ struct ManualMenuItem : SqMenuItem
 /**
  * menu item that toggles a boolean param.
  */
-struct  SqMenuItem_BooleanParam2 : rack::MenuItem
+struct  SqMenuItem_BooleanParam2 : ::rack::MenuItem
 {
     SqMenuItem_BooleanParam2(rack::engine::Module* mod, int id) : 
         paramId(id),
@@ -62,7 +62,7 @@ struct  SqMenuItem_BooleanParam2 : rack::MenuItem
     void onAction(const sq::EventAction &e) override
     {
         const float newValue = isOn() ? 0 : 1;
-        rack::appGet()->engine->setParam(module, paramId, newValue); 
+        ::rack::appGet()->engine->setParam(module, paramId, newValue); 
         e.consume(this);
     }
 
@@ -74,14 +74,14 @@ private:
 
     bool isOn()
     {
-        return rack::appGet()->engine->getParam(module, paramId) > .5;
+        return ::rack::appGet()->engine->getParam(module, paramId) > .5;
     }
     const int paramId;
-    rack::engine::Module* const module;
+    ::rack::engine::Module* const module;
 };
 
 
-struct  SqMenuItem_BooleanParam : rack::MenuItem
+struct  SqMenuItem_BooleanParam : ::rack::MenuItem
 {
     SqMenuItem_BooleanParam(rack::ParamWidget* widget) :
         widget(widget)
@@ -115,5 +115,5 @@ private:
 
         return ret;
     }
-    rack::ParamWidget* const widget;
+    ::rack::ParamWidget* const widget;
 };

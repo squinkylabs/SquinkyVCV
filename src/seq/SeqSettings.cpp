@@ -9,7 +9,7 @@ class GridItem
 {
 public:
     GridItem() = delete;
-    static rack::ui::MenuItem* make(SeqSettings::Grids grid, SeqSettings* stt)
+    static ::rack::ui::MenuItem* make(SeqSettings::Grids grid, SeqSettings* stt)
     {
         std::function<bool()> isCheckedFn = [stt, grid]() {
             return stt->curGrid == grid;
@@ -27,7 +27,7 @@ class ArticItem
 {
 public:
     ArticItem() = delete;
-    static rack::ui::MenuItem* make(SeqSettings::Artics artic, SeqSettings* stt)
+    static ::rack::ui::MenuItem* make(SeqSettings::Artics artic, SeqSettings* stt)
     {
         std::function<bool()> isCheckedFn = [stt, artic]() {
             return stt->curArtic == artic;
@@ -45,7 +45,7 @@ public:
 /**
 * GridMenuItem is the whole grid selection sub-menu
 */
-class GridMenuItem : public  rack::ui::MenuItem
+class GridMenuItem : public  ::rack::ui::MenuItem
 {
 public:
     GridMenuItem(SeqSettings* stt) : settings(stt)
@@ -56,16 +56,16 @@ public:
 
     SeqSettings* const settings;
 
-    rack::ui::Menu *createChildMenu() override
+    ::rack::ui::Menu *createChildMenu() override
     {
-        rack::ui::Menu* menu = new rack::ui::Menu();
+        ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
-        auto label = rack::construct<rack::ui::MenuLabel>(
+        auto label = ::rack::construct<rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
             "Grids");      // need to do this to size correctly. probably doing something wrong.
         menu->addChild(label);
 
-        rack::ui::MenuItem* item = GridItem::make(SeqSettings::Grids::quarter, settings);
+        ::rack::ui::MenuItem* item = GridItem::make(SeqSettings::Grids::quarter, settings);
         item->text = "Quarter notes";
         menu->addChild(item);
 
@@ -83,7 +83,7 @@ public:
 
 /**
 */
-class ArticulationMenuItem : public  rack::ui::MenuItem
+class ArticulationMenuItem : public  ::rack::ui::MenuItem
 {
 public:
     ArticulationMenuItem(SeqSettings* stt) : settings(stt)
@@ -92,16 +92,16 @@ public:
         rightText = RIGHT_ARROW;
     }
 
-    rack::ui::Menu *createChildMenu() override
+    ::rack::ui::Menu *createChildMenu() override
     {
-        rack::ui::Menu* menu = new rack::ui::Menu();
+        ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
-        auto label = rack::construct<rack::ui::MenuLabel>(
+        auto label = ::rack::construct<rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
             "Articulation");      // need to do this to size correctly. probably doing something wrong.
         menu->addChild(label);
 
-        rack::ui::MenuItem* item = ArticItem::make(SeqSettings::Artics::tenPercent, settings);
+        ::rack::ui::MenuItem* item = ArticItem::make(SeqSettings::Artics::tenPercent, settings);
         item->text = "10%";
         menu->addChild(item);
 
@@ -143,7 +143,7 @@ SeqSettings::~SeqSettings()
 
 void SeqSettings::invokeUI(rack::widget::Widget* parent)
 {
-    rack::ui::Menu* menu = rack::createMenu();
+    ::rack::ui::Menu* menu = ::rack::createMenu();
     menu->addChild(rack::construct<rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
     menu->addChild(new GridMenuItem(this));
     menu->addChild(makeSnapItem());
@@ -152,7 +152,7 @@ void SeqSettings::invokeUI(rack::widget::Widget* parent)
     menu->addChild(new ArticulationMenuItem(this));
     menu->addChild(makeLoopItem(module));
     // now the commands
-    menu->addChild(new rack::ui::MenuLabel);
+    menu->addChild(new ::rack::ui::MenuLabel);
     menu->addChild(makeNoteCommand(module));
     menu->addChild(makeEndCommand(module));
 }
@@ -219,7 +219,7 @@ rack::ui::MenuItem* SeqSettings::makeEndCommand(SequencerModule* module)
 rack::ui::MenuItem* SeqSettings::makeAuditionItem(SequencerModule* module)
 {
     int id = module->getAuditionParamId();
-    rack::ui::MenuItem* item = new SqMenuItem_BooleanParam2(module, id);
+    ::rack::ui::MenuItem* item = new SqMenuItem_BooleanParam2(module, id);
     item->text = "Audition";
     return item;
 }
@@ -235,7 +235,7 @@ rack::ui::MenuItem* SeqSettings::makeSnapItem()
         snap = !snap;
     };
 
-    rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
+    ::rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
     item->text = "Snap to grid";
     return item;
 }
@@ -251,7 +251,7 @@ rack::ui::MenuItem* SeqSettings::makeSnapDurationItem()
         snap = !snap;
     };
 
-    rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
+    ::rack::ui::MenuItem* item = new SqMenuItem(isCheckedFn, clickFn);
     item->text = "Snap duration to grid";
     return item;
 }

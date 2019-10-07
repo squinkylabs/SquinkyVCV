@@ -13,7 +13,7 @@
 
 #include "../SequencerModule.h"
 
-class SeqAction : public rack::history::ModuleAction
+class SeqAction : public ::rack::history::ModuleAction
 {
 public:
     SeqAction(const std::string& _name, std::shared_ptr<SqCommand> command, int moduleId)

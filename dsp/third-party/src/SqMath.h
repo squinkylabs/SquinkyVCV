@@ -47,39 +47,39 @@
 namespace sq 
 {
 #ifdef __V1x
-    using RCFilter = rack::dsp::RCFilter;
-    using Vec = rack::math::Vec;
-    using Rect = rack::math::Rect;
+    using RCFilter = ::rack::dsp::RCFilter;
+    using Vec = ::rack::math::Vec;
+    using Rect = ::rack::math::Rect;
 #else
-    using RCFilter = rack::RCFilter;
-    using Vec = rack::Vec;
-    using Rect = rack::Rect;
+    using RCFilter = ::rack::RCFilter;
+    using Vec = ::rack::Vec;
+    using Rect = ::rack::Rect;
 #endif
 
 inline float quadraticBipolar(float x)
 {
 #ifdef __V1x
-    return rack::dsp::quadraticBipolar(x);
+    return ::rack::dsp::quadraticBipolar(x);
 #else
-    return rack::quadraticBipolar(x);
+    return ::rack::quadraticBipolar(x);
 #endif
 }
 
 inline float clamp(float a, float b, float c)
 {
     #ifdef __V1x 
-        return rack::math::clamp(a, b, c);
+        return ::rack::math::clamp(a, b, c);
     #else
-        return rack::clamp(a, b, c);
+        return ::rack::clamp(a, b, c);
     #endif
 }
 
 inline float interpolateLinear(float* a, float b)
 {
     #ifdef __V1x
-        return rack::math::interpolateLinear(a, b);
+        return ::rack::math::interpolateLinear(a, b);
     #else
-        return rack::interpolateLinear(a, b);
+        return ::rack::interpolateLinear(a, b);
     #endif
 }
 
@@ -87,9 +87,9 @@ inline float interpolateLinear(float* a, float b)
 inline float rescale(float a, float b, float c, float d, float e)
 {
     #ifdef __V1x
-        return rack::math::rescale(a, b, c, d, e);
+        return ::rack::math::rescale(a, b, c, d, e);
     #else
-        return rack::rescale(a, b, c, d, e);
+        return ::rack::rescale(a, b, c, d, e);
     #endif
 }
 }

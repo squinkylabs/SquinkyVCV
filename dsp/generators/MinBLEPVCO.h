@@ -91,7 +91,7 @@ public:
     }
 
 private:
-    using MinBlep = rack::dsp::MinBlepGenerator<16, 32>;
+    using MinBlep = ::rack::dsp::MinBlepGenerator<16, 32>;
 
     float output = 0;
     Waveform waveform = Waveform::Saw;
@@ -150,7 +150,7 @@ private:
 
 // Let's by lazy and use "using" to solve some v1/v6 issues/
 #ifdef __V1x
-using namespace rack::dsp;
+using namespace ::rack::dsp;
 #else
 using namespace rack;
 #endif

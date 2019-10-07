@@ -41,9 +41,9 @@ public:
         octParameterId = id;
     }
 private:
-    rack::Module* module = ( rack::Module*)1234;
-    rack::Label* semiLabel = nullptr;
-    rack::Label* octLabel = nullptr;
+    ::rack::Module* module = ( ::rack::Module*)1234;
+    ::rack::Label* semiLabel = nullptr;
+    ::rack::Label* octLabel = nullptr;
     float semiXPosition = 0;
     float octXPosition = 0;
     int semiParameterId = -1;

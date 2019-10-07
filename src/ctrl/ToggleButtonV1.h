@@ -8,7 +8,7 @@
 /**
  * An SvgButton, but in stead of being momentary it toggles between values.
  */
-class SqSvgToggleButton : public rack::app::SvgButton
+class SqSvgToggleButton : public ::rack::app::SvgButton
 {
 public:
     SqSvgToggleButton(rack::widget::Widget* = nullptr);
@@ -21,7 +21,7 @@ public:
 private:
     int index = 0;
     void setIndex(int i);
-    rack::widget::Widget* actionDelegate = nullptr;
+    ::rack::widget::Widget* actionDelegate = nullptr;
 };
 
 inline SqSvgToggleButton::SqSvgToggleButton(rack::widget::Widget* delegate)

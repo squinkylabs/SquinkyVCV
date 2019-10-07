@@ -28,7 +28,7 @@ NoteDisplay::NoteDisplay(
     const Vec& pos,
     const Vec& size,
     MidiSequencerPtr seq,
-    rack::engine::Module* mod)
+    ::rack::engine::Module* mod)
 {
     this->box.pos = pos;
     box.size = size;

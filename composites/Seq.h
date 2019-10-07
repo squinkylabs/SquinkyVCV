@@ -17,7 +17,7 @@ namespace rack {
         struct Module;
     }
 }
-using Module = rack::engine::Module;
+using Module = ::rack::engine::Module;
 
 template <class TBase>
 class SeqDescription : public IComposite
