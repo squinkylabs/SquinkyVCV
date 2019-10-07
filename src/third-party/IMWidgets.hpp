@@ -11,7 +11,7 @@
 #include "rack.hpp"
 #include "window.hpp"
 
-using namespace rack;
+using namespace ::rack;
 
 #ifndef __V1x
 
