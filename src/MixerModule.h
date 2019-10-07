@@ -127,8 +127,14 @@ private:
     SoloCommands currentSoloStatusFromUI = SoloCommands::DO_NOTHING;
 
     // This guy holds onto a shared solo state, and we pass weak pointers to
-    // him to clients so they can work.
+    // him to clients so they can work. Only allocated by master.
     std::shared_ptr<SharedSoloStateOwner> sharedSoloStateOwner;
+    
+    // Only for master. This is used to send ping message down.
+    // It is dynamically allocated, but never freed (it leaks).
+    // We can't free it, because we can't know if it is still on use to
+    // send a message down the bus.
+    SharedSoloStateClient* stateForClient = nullptr;
 
     // both masters and expanders hold onto these.
     std::shared_ptr<SharedSoloState> sharedSoloState;
@@ -162,22 +168,22 @@ inline void MixerModule::allocateSharedSoloState()
     assert(!sharedSoloStateOwner);
     sharedSoloStateOwner = std::make_shared<SharedSoloStateOwner>();
     sharedSoloState =  sharedSoloStateOwner->state; 
+    stateForClient = new SharedSoloStateClient(sharedSoloStateOwner);
 }
 
 inline void MixerModule::pollForModulePing(bool pairedLeft)
 {
 #if 1
+    // Only master does this. only master has sharedSoloStateOwner
     if (amMaster()) {
         if (pingDelayCount-- <= 0) {
             pingDelayCount = 100;       // poll every 100 samples?
-          //  pingDelayCount = 100000;        // for debugging, do less often
+            //pingDelayCount = 100000;        // for debugging, do less often
             assert(sharedSoloStateOwner);
+            assert(stateForClient);
 
             // now, if paired left, send a message to the right
             if (pairedLeft) {
-
-                // TODO: move this allocation off the audio thread!!
-                SharedSoloStateClient* stateForClient = new SharedSoloStateClient(sharedSoloStateOwner);
                 assert(moduleIndex == 0);
                 stateForClient->moduleNumber = 1;
                 CommChannelMessage msg;
@@ -189,7 +195,7 @@ inline void MixerModule::pollForModulePing(bool pairedLeft)
             }
         }
     }
-    #endif
+#endif
 }
 
 inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain)
@@ -208,7 +214,7 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
 
                 // If then owner has been deleted, then bail
                 if (!owner) {
-                    delete stateForClient;
+                  //  delete stateForClient;
                     sharedSoloState.reset();
                     return;
                 }
@@ -218,7 +224,7 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
                 moduleIndex = stateForClient->moduleNumber++;
 
                 if (isEndOfMessageChain) {
-                    delete stateForClient;
+                  //  delete stateForClient;
                 }
             }
             break;
