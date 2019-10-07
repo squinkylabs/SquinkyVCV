@@ -47,6 +47,7 @@ const int comBufferLeftCommandDataOffset = 1;
 //const uint32_t CommCommand_ExternalSolo = (101 << 16); 
 
 const uint32_t CommCommand_SetSharedState = (102 << 16); 
+const uint32_t CommCommand_SomethingChanged = (103 << 16); 
 
 class CommChannelMessage
 {
@@ -161,6 +162,7 @@ public:
     static const int maxModules = 16;
     class State
     {
+    public:
         std::atomic<bool> exclusiveSolo = {false};
         std::atomic<bool> multiSolo = {false};
     };
