@@ -13,7 +13,7 @@
 class SemitoneDisplay
 {
 public:
-    SemitoneDisplay(rack::Module* module) :
+    SemitoneDisplay (::rack::Module* module) :
         module(module)
     {
 
@@ -24,7 +24,7 @@ public:
     /**
      * pass in the label component that will be displaying semitones
      */
-    void setSemiLabel(rack::Label* l, int id)
+    void setSemiLabel (::rack::Label* l, int id)
     {
         semiLabel = l;
         semiXPosition = l->box.pos.x;
@@ -34,16 +34,16 @@ public:
     /**
      * pass in the label component that will be displaying octaves
      */
-    void setOctLabel(rack::Label* l, int id)
+    void setOctLabel (::rack::Label* l, int id)
     {
         octLabel = l;
         octXPosition = l->box.pos.x;
         octParameterId = id;
     }
 private:
-    rack::Module* module = ( rack::Module*)1234;
-    rack::Label* semiLabel = nullptr;
-    rack::Label* octLabel = nullptr;
+    ::rack::Module* module = ( ::rack::Module*)1234;
+    ::rack::Label* semiLabel = nullptr;
+    ::rack::Label* octLabel = nullptr;
     float semiXPosition = 0;
     float octXPosition = 0;
     int semiParameterId = -1;

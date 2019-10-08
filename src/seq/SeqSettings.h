@@ -20,7 +20,7 @@ public:
 
     SeqSettings(SequencerModule*);
     ~SeqSettings() override;
-    void invokeUI(rack::widget::Widget* parent) override;
+    void invokeUI (::rack::widget::Widget* parent) override;
 
     /**
      * Grid related settings
@@ -68,10 +68,10 @@ private:
 
     static float grid2Time(Grids);
     static float artic2Number(Artics);
-    rack::ui::MenuItem* makeSnapItem();
-    rack::ui::MenuItem* makeLoopItem(SequencerModule* module);
-    rack::ui::MenuItem* makeSnapDurationItem();
-    rack::ui::MenuItem* makeAuditionItem(SequencerModule*);
-    rack::ui::MenuItem* makeNoteCommand(SequencerModule*);
-    rack::ui::MenuItem* makeEndCommand(SequencerModule*);
+    ::rack::ui::MenuItem* makeSnapItem();
+    ::rack::ui::MenuItem* makeLoopItem(SequencerModule* module);
+    ::rack::ui::MenuItem* makeSnapDurationItem();
+    ::rack::ui::MenuItem* makeAuditionItem(SequencerModule*);
+    ::rack::ui::MenuItem* makeNoteCommand(SequencerModule*);
+    ::rack::ui::MenuItem* makeEndCommand(SequencerModule*);
 };

@@ -14,7 +14,7 @@ namespace rack {
     }
 }
 
-using Module = rack::engine::Module;
+using Module = ::rack::engine::Module;
 
 #define numTriggerChannels 8
 

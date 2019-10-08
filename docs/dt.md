@@ -1,7 +1,12 @@
-# Polygate polphphonic trigger generator
+# Polygate polphphonic gate generator
 
 ![Polygate Panel](./polygate.png)
 
+## TL;DR
+
+Set Seq++ to 8 note polyphony, and hook the CV and gate from Seq++ to Polygate. The outputs of Polygate will go high when Seq++ plays a note in the range C4 to G4.
+
+## Intro
 Converts polyphonic CV/Gate info to 8 monophonic gates.
 
 An obvious use is to take the polyphonic output from a sequencer and use it to trigger up to 8 drum modules. Hook each output of Polygate to a different drum trigger input. This will allow programming drum parts in a grid.
@@ -14,11 +19,11 @@ Polygate is very similar to the VCV MIDI-GATE module, except instead of taking M
 
 ## Basic operation
 
-Polygate responds to pitches in the range of 0V (C) to the G above. This corresponds with C4...G4 in Seq++ and most other sequencers.
+Polygate responds to pitches in the range of 0V to the G above. This corresponds with C4...G4 in Seq++ and most other sequencers.
 
-Each of the 8 gate outputs is activated when a note that matches it's pitch is activated. So the input CV is quantized to semitone, and if the semitone is one of the 8 that Polygate responds to, the gate input is used to set that 345routput.
+Each of the 8 gate outputs is activated when a note that matches it's pitch is activated. So the input CV is quantized to semitone, and if the semitone is one of the 8 that Polygate responds to, the gate input is used to set that output high.
 
-For an easy visualization of this, connect the CV and gate inputs to something that generates CV and GATE. For testing you can use the VCV MIDI-CV module, although as mentioned above, the MIDI-GATE module is better for this particular use case.
+For an easy visualization of this, connect the CV and gate inputs to something that generates CV and gate. For testing you can use the VCV MIDI-CV module, although as mentioned above, the MIDI-GATE module is better for this particular use case.
 
 For most interesting results, set the source to output 8 channels.
 

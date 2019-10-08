@@ -18,8 +18,8 @@ using Comp = FunVCOComposite<WidgetComposite>;
 struct NKK2 : app::SvgSwitch {
 	NKK2() {
         // add all up and all down image, no middle
-		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_0.svg")));
-		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_2.svg")));
+		addFrame(::rack::APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_0.svg")));
+		addFrame(::rack::APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_2.svg")));
 	}
 };
 #else

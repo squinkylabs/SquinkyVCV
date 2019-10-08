@@ -21,7 +21,7 @@ public:
         const Vec& pos,
         const Vec& size,
         MidiSequencerPtr seq,
-        rack::engine::Module* mod);
+        ::rack::engine::Module* mod);
 
 
     /**
