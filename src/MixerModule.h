@@ -203,7 +203,7 @@ inline void MixerModule::pollForModulePing(bool pairedLeft)
 }
 
 #undef WARN
-#define sqWARN(format, ...) rack::logger::log(::rack::logger::WARN_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define sqWARN(format, ...) ::rack::logger::log(::rack::logger::WARN_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
 
 
 inline void MixerModule::initSoloState() {
