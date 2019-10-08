@@ -12,7 +12,6 @@ using Param = ::rack::engine::Param;
 using Light = ::rack::engine::Light;
 using Module = ::rack::engine::Module;
 
-
 /**
  * Base class for composites embedable in a VCV Widget
  * This is used for "real" implementations
@@ -36,12 +35,12 @@ public:
     };
     float engineGetSampleRate()
     {
-        return APP->engine->getSampleRate();
+        return ::rack::appGet()->engine->getSampleRate();
     }
     
     float engineGetSampleTime()
     {
-        return APP->engine->getSampleTime();
+        return ::rack::appGet()->engine->getSampleTime();
     }
 protected:
     std::vector<Input>& inputs;

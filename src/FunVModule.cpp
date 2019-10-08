@@ -14,17 +14,14 @@ using Comp = FunVCOComposite<WidgetComposite>;
  * Two position NKK
  * in V0.6 didn't need this - it just worked
  */
-#ifdef __V1x
+
 struct NKK2 : app::SvgSwitch {
 	NKK2() {
         // add all up and all down image, no middle
-		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_0.svg")));
-		addFrame(APP->window->loadSvg(asset::system("res/ComponentLibrary/NKK_2.svg")));
+		addFrame(::rack::appGet()->window->loadSvg(asset::system("res/ComponentLibrary/NKK_0.svg")));
+		addFrame(::rack::appGet()->window->loadSvg(asset::system("res/ComponentLibrary/NKK_2.svg")));
 	}
 };
-#else
-using NKK2 = NKK;
-#endif
 
 /**
  */
