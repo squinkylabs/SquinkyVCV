@@ -1,6 +1,8 @@
 #pragma once
 
+#include <string>
 #include <memory>
+
 namespace rack {
     namespace widget {
         struct Widget;
@@ -36,6 +38,13 @@ public:
      * 1 = 100%
      */
     virtual float articulation() = 0;
+
+    /**
+     * minor hack: let's keep the midi file path here, too.
+     * (it should really be in global settings).
+     */
+    virtual std::string getMidiFilePath() = 0;
+    virtual void setMidiFilePath(const std::string&) = 0;
 };
 
 using ISeqSettingsPtr = std::shared_ptr<ISeqSettings>;

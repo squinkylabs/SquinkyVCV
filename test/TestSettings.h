@@ -48,6 +48,16 @@ public:
         return _articulation;
     }
 
+    std::string getMidiFilePath() override
+    {
+        return midiFilePath;
+    }
+    void setMidiFilePath(const std::string& s) override
+    {
+        midiFilePath = s;
+    }
+
+    std::string midiFilePath;
     float _articulation = 1;
     float _quartersInGrid = .25;
     bool _snapToGrid = true;

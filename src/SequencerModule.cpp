@@ -119,32 +119,32 @@ struct SequencerWidget : ModuleWidget
 #endif
 };
 
+
+std::string _removeFileName(const std::string s, std::vector<char> separators)
+{
+    // find the eerything up to and including the last separator
+    for (char separator : separators) {
+        auto pos = s.rfind(separator);
+        if (pos != std::string::npos) {
+            return s.substr(0, pos+1);
+        }
+    }
+
+    // if we didn't find any separators, then use empty path
+    return"";   
+}
+
 // windows experiment
+
+std::string removeFileName(const std::string s)
+{
 #ifdef ARCH_WIN
-std::string removeFileName(const std::string s)
-{
-    std::string filePath;
-    auto pos = s.rfind('\\');
-    if (pos != std::string::npos) {
-        filePath = s.substr(0, pos+1);
-        return filePath;
-    }
-
-    pos = s.find(":");
-    if (pos != std::string::npos) {
-        filePath = s.substr(0, pos+1);
-        return filePath;
-    }
-
-    return "";
-}
+    return _removeFileName(s, {'\\', ':'});
 #else
-std::string removeFileName(const std::string s)
-{
-    sqWARN("removeFileName not imp on this OS");
-    return s;
-}
+    return _removeFileName(s, {'/'});
 #endif
+}
+
 
 void SequencerWidget::loadMidiFile()
 {
@@ -171,7 +171,7 @@ void SequencerWidget::loadMidiFile()
 
     std::string temp(pathC);
     std::string fileFolder = removeFileName(temp);
-    //sqDEBUG("path was %s, final = %s", pathC, fileFolder.c_str());
+    sqDEBUG("path was %s, final = %s", pathC, fileFolder.c_str());
     if (song) {
         _module->postNewSong(song, fileFolder);
     }  
@@ -468,6 +468,7 @@ void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFo
     }
 
     sequencer->assertValid();
+    sequencer->context->settings()->setMidiFilePath(fileFolder);
 }
 
 void SequencerModule::onReset()

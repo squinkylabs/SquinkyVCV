@@ -417,3 +417,13 @@ float SeqSettings::articulation()
 {
     return artic2Number(curArtic);
 }
+
+std::string SeqSettings::getMidiFilePath() 
+{
+    return midiFilePath;
+}
+
+void SeqSettings::setMidiFilePath(const std::string& s)
+{
+    midiFilePath = s;
+}

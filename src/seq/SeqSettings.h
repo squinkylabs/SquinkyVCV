@@ -32,6 +32,9 @@ public:
     float quantizeAlways(float, bool allowZero) override;
 
     float articulation() override;
+
+    std::string getMidiFilePath() override;
+    void setMidiFilePath(const std::string&) override;
 private:
     SequencerModule* const module;
 
@@ -65,6 +68,8 @@ private:
 
     bool snapEnabled = true;
     bool snapDurationEnabled = false;
+
+    std::string midiFilePath;
 
     static float grid2Time(Grids);
     static float artic2Number(Artics);
