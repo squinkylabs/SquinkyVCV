@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CommChannels.h"
+#include "rack.hpp"
 /**
  * This class manages the communication between
  * misers and mixer expanders.
