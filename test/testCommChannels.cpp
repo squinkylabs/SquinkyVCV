@@ -117,6 +117,38 @@ static void testRx0()
 }
 
 
+
+static void testRxSingle()
+{
+    CommChannelReceive ch;
+    CommChannelMessage msg;
+    msg.commandId = 33;
+    msg.commandPayload = 55;
+    buffer[0] = 22;
+    payload[0] = 12345678901;
+    
+    bool b = ch.rx(buffer, payload, msg);
+    assert(b);
+    assert(msg.commandId == 22);
+    assert(msg.commandPayload == 12345678901);
+
+    // now zero padding
+    buffer[0] = 0;
+    b = ch.rx(buffer, payload, msg);
+    assert(!b);
+
+    b = ch.rx(buffer, payload, msg);
+    assert(!b);
+
+    buffer[0] = 22;
+    b = ch.rx(buffer, payload, msg);
+    assert(b);
+    assert(msg.commandId == 22);
+    assert(msg.commandPayload == 12345678901);
+
+
+}
+
 static void testRx1()
 {
     CommChannelReceive ch;
@@ -172,5 +204,6 @@ void testCommChannels()
     testRx0();
     testRx1();
     testRxTwoInARowNoZeros();
+    testRxSingle();
 
 }

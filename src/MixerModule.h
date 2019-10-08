@@ -260,9 +260,9 @@ inline void MixerModule::initSoloState() {
 
 inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bool pairedLeft, bool pairedRight)
 {
-    // TODO: why are we getting this?
+    // there was a bug causing these. Now they don't happen
     if (msg.commandId == 0) {
-        // WARN("blowing off ");
+        sqWARN("spurious command");
         return;
     }
 

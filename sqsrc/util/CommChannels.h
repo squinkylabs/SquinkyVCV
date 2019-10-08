@@ -39,13 +39,6 @@ const int comBufferSizeLeft = 3;
 const int comBufferLeftCommandIdOffset = 0;
 const int comBufferLeftCommandDataOffset = 1;
 
-// This command sent when un-soloing. Receiver should clear it's solo status.
-//const uint32_t CommCommand_ClearAllSolo = (100 << 16); 
-
-// This command sent when soloing. 
-// Receiver should turn off all channels, as a different module will be soloing.
-//const uint32_t CommCommand_ExternalSolo = (101 << 16); 
-
 const uint32_t CommCommand_SetSharedState = (102 << 16); 
 const uint32_t CommCommand_SomethingChanged = (103 << 16); 
 const uint32_t CommCommand_RequestSoloState = (104 << 16);
@@ -134,10 +127,15 @@ inline bool CommChannelReceive::rx(const uint32_t * inputCommandBuffer, const si
     bool didReceive = false;
     const uint32_t newCommandId = *inputCommandBuffer;
     if (newCommandId != lastCommand) {
-        msg.commandId = newCommandId;
         lastCommand = newCommandId;
-        msg.commandPayload = *inputDataBuffer;
-        didReceive = true;
+
+        // zero is our spacing mark - never a valid command
+        if (newCommandId != 0) {
+            msg.commandId = newCommandId;
+
+            msg.commandPayload = *inputDataBuffer;
+            didReceive = true;
+        }
     }
     return didReceive;
 };
