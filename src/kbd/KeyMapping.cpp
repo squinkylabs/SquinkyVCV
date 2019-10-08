@@ -1,6 +1,7 @@
 
 #include "KeyMapping.h"
 #include "SqKey.h"
+#include "../ctrl/SqHelper.h"
 
 #include "jansson.h"
 #include "logger.hpp"
@@ -15,7 +16,7 @@ KeyMappingPtr KeyMapping::make(const std::string& configPath)
         ret.reset( new KeyMapping(configPath));
     } catch( std::exception& ex) {
         std::string errorStr = std::string("Error detected parsing key mapping: ") + ex.what();
-        WARN(errorStr.c_str());
+        sqWARN(errorStr.c_str());
         assert(!ret);
     }
     return ret;
@@ -174,11 +175,11 @@ Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
 {
     json_t* keyJ = json_object_get(binding, "action");
     if (!keyJ) {
-        WARN("binding does not have action field: %s\n", json_dumps(keyJ, 0));
+        sqWARN("binding does not have action field: %s\n", json_dumps(keyJ, 0));
         return nullptr;
     }
     if (!json_is_string(keyJ)) {
-        WARN("binding action is not a string: %s\n", json_dumps(keyJ, 0));
+        sqWARN("binding action is not a string: %s\n", json_dumps(keyJ, 0));
         return nullptr;
     }
 

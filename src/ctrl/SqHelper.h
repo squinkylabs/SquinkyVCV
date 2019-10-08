@@ -1,14 +1,21 @@
 #pragma once
 
 /**
- * This is a collection of utilties that work on both VCV 1.0
- * and VCV 0.6.n
+ * This was a collection of utilties that work on both VCV 1.0
+ * and VCV 0.6.n. Now that 1.0 is out, and this code base requires 1.0,
+ * we have removed the 0.6 versions. 
  */
-#include "app.hpp"
+#include "rack.hpp"
 #include "IComposite.h"
-
-#include "engine/Module.hpp"
 #include <string>
+
+#define sqDEFER(code) auto CONCAT(_defer_, __COUNTER__) = ::rack::deferWrapper([&]() code)
+
+#define sqDEBUG(format, ...) ::rack::logger::log(::rack::logger::DEBUG_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define sqINFO(format, ...) ::rack::logger::log(::rack::logger::INFO_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define sqWARN(format, ...) ::rack::logger::log(::rack::logger::WARN_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define sqFATAL(format, ...) ::rack::logger::log(::rack::logger::FATAL_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+
 
 extern ::rack::plugin::Plugin *pluginInstance;
 class SqHelper
