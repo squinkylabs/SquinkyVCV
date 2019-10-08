@@ -119,9 +119,6 @@ struct SequencerWidget : ModuleWidget
 #endif
 };
 
-#define sqDEFER(code) auto CONCAT(_defer_, __COUNTER__) = ::rack::deferWrapper([&]() code)
-
-
 void SequencerWidget::loadMidiFile()
 {
     static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
@@ -129,7 +126,7 @@ void SequencerWidget::loadMidiFile()
     std::string filename;
     std::string dir;
 
-	sqDEFER({
+	DEFER({
 		osdialog_filters_free(filters);
 	});
 
@@ -140,7 +137,7 @@ void SequencerWidget::loadMidiFile()
 		// Fail silently
 		return;
 	}
-	sqDEFER({
+	DEFER({
 		std::free(pathC);
 	});
 
