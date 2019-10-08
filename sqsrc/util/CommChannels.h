@@ -48,6 +48,7 @@ const int comBufferLeftCommandDataOffset = 1;
 
 const uint32_t CommCommand_SetSharedState = (102 << 16); 
 const uint32_t CommCommand_SomethingChanged = (103 << 16); 
+const uint32_t CommCommand_RequestSoloState = (104 << 16);
 
 class CommChannelMessage
 {

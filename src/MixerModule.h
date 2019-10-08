@@ -4,6 +4,10 @@
 #include "CommChannels.h"
 #include "rack.hpp"
 
+#include "ctrl/SqHelper.h"
+
+//#define _LOG
+
 
 /**
  * This class manages the communication between
@@ -128,27 +132,34 @@ private:
     /**
      * module index is the mixer's identity. master is always 0, then it increases by one 
      * going right to left. module index is the index for "me" in stateForClient.
+     * -1 means we don't have index yet.
      */
-    int moduleIndex = 0;
-    int pingDelayCount = 0;
-
+    int moduleIndex = -1;
     bool haveInitSoloState = false;
 
-    void processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain);
-    void pollForModulePing(bool pairedLeft);
+    /**
+     * this keeps us from sending a request every sample.
+     */
+    int pairRequestThrottle = 0;    
+
+    void processMessageFromBus(const CommChannelMessage& msg, bool pairedLeft, bool pairedRight);
+  //  void pollForModulePing(bool pairedLeft);
+    void onRequestSoloState(bool pairedLeft);
+    void pollForNeedsSoloState(bool pairedRight);
+
     void onSomethingChanged();
     void initSoloState();
 
 };
 
-#if 0
+#ifdef _LOG
 inline void dumpState(const char* title,  std::shared_ptr<SharedSoloState> state) {
-    DEBUG("    state: %s", title);
-    DEBUG("        excl=%d,%d,%d", 
+    sqDEBUG("    state: %s", title);
+    sqDEBUG("        excl=%d,%d,%d", 
         !!state->state[0].exclusiveSolo,
         !!state->state[1].exclusiveSolo,
         !!state->state[2].exclusiveSolo);
-    DEBUG("        multi=%d,%d,%d", 
+    sqDEBUG("        multi=%d,%d,%d", 
         !!state->state[0].multiSolo,
         !!state->state[1].multiSolo,
         !!state->state[2].multiSolo);
@@ -176,45 +187,61 @@ inline void MixerModule::allocateSharedSoloState()
    // initSoloState();        // master can do this right now, and only check once.
 }
 
-inline void MixerModule::pollForModulePing(bool pairedLeft)
+inline void MixerModule::pollForNeedsSoloState(bool pairedRight)
 {
-    // Only master does this. only master has sharedSoloStateOwner
     if (amMaster()) {
-        if (pingDelayCount-- <= 0) {
-            initSoloState();
-            pingDelayCount = 100;       // poll every 100 samples?
-            //pingDelayCount = 100000;        // for debugging, do less often
-            assert(sharedSoloStateOwner);
-            assert(stateForClient);
-
-            // now, if paired left, send a message to the right
-            if (pairedLeft) {
-                assert(moduleIndex == 0);
-                stateForClient->moduleNumber = 1;
-                CommChannelMessage msg;
-                msg.commandId = CommCommand_SetSharedState;
-                msg.commandPayload = size_t(stateForClient);
-                sendLeftChannel.send(msg);
-
-               // WARN("setting shared solo from master %d", !!sharedSoloState);
-            }
+        return;     // master makes his own solo state
+    }
+    // check if we just got connected
+    if ((moduleIndex < 0) && pairedRight) {
+        if (pairRequestThrottle-- <= 0) {
+            pairRequestThrottle = 100;
+            CommChannelMessage msg;
+            msg.commandId = CommCommand_RequestSoloState;
+            sendRightChannel.send(msg);
         }
+    }
+
+    if ((moduleIndex >= 0) && !pairedRight) { 
+        moduleIndex = -1;
+        sharedSoloState.reset();
     }
 }
 
-#undef WARN
-#define sqWARN(format, ...) ::rack::logger::log(::rack::logger::WARN_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+inline void MixerModule::onRequestSoloState(bool pairedLeft)
+{
+    // Only master does this. only master has sharedSoloStateOwner
+    if (amMaster()) {
+        moduleIndex = 0;
+        initSoloState();        // this is where master module decides to get 
+                                // shared state in agreement with params
+        assert(sharedSoloStateOwner);
+        assert(stateForClient);
+        assert(sharedSoloState);
 
+        // now, if paired left, send a message to the right
+        if (pairedLeft) {
+            assert(moduleIndex == 0);
+            stateForClient->moduleNumber = 1;
+            CommChannelMessage msg;
+            msg.commandId = CommCommand_SetSharedState;
+            msg.commandPayload = size_t(stateForClient);
+            sendLeftChannel.send(msg);
+        }
+    }
+}
 
 inline void MixerModule::initSoloState() {
     if (!sharedSoloState) {
         sqWARN("can't init solo yet");
         return;
     }
+    if (moduleIndex < 0 || moduleIndex >= SharedSoloState::maxModules) {
+        sqWARN("bad module index in initSoloState");
+        return;
+    }
     if (!haveInitSoloState) {
         haveInitSoloState = true;
-
-        // DEBUG("Init module %d", moduleIndex);
 
         bool moduleHasSolo = false;
         for (int group = 0; group < this->getNumGroups(); ++group ) {
@@ -225,11 +252,13 @@ inline void MixerModule::initSoloState() {
 
         sharedSoloState->state[moduleIndex].exclusiveSolo = false;
         sharedSoloState->state[moduleIndex].multiSolo = moduleHasSolo;
-        // dumpState("   after init", sharedSoloState);
+#ifdef _LOG
+        dumpState("   after init", sharedSoloState);
+#endif
     }
 }
 
-inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bool isEndOfMessageChain)
+inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bool pairedLeft, bool pairedRight)
 {
     // TODO: why are we getting this?
     if (msg.commandId == 0) {
@@ -256,6 +285,9 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
             break;
         case CommCommand_SomethingChanged:
             onSomethingChanged();
+            break;
+        case CommCommand_RequestSoloState:
+            onRequestSoloState(pairedLeft);
             break;
         default:
             sqWARN("no handler for message %x", msg.commandId);
@@ -295,7 +327,8 @@ inline void MixerModule::process(const ProcessArgs &args)
     // set a channel to rx data from the left (case #2, above)
     setExternalInput(pairedLeft ? reinterpret_cast<float *>(leftExpander.module->rightExpander.consumerMessage) : nullptr);
 
-    pollForModulePing(pairedLeft);
+    //pollForModulePing(pairedLeft);
+    pollForNeedsSoloState(pairedRight);
 
     if (pairedRight) {
         // #1) Send data to right: use you own right producer buffer.
@@ -315,7 +348,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             msg);
 
         if (isCommand) {
-            processMessageFromBus(msg, !pairedLeft);
+            processMessageFromBus(msg, pairedLeft, pairedRight);
             // now relay down to the left
             if (pairedLeft) {
                  sendLeftChannel.send(msg);
@@ -345,7 +378,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             (size_t*)(inBuf + comBufferRightCommandDataOffset),
             msg);
         if (isCommand) {
-            processMessageFromBus(msg, !pairedRight);
+            processMessageFromBus(msg, pairedLeft, pairedRight);
             if (pairedRight) {
                  sendRightChannel.send(msg);
             }
@@ -369,20 +402,19 @@ inline void MixerModule::process(const ProcessArgs &args)
     }
 }
 
-
-
-
 // called from audio thread
 inline void MixerModule::onSomethingChanged()
 {
-  //  DEBUG("on something changed");
+#ifdef _LOG
+    sqDEBUG("** on something changed");
+#endif
     if (!sharedSoloState) {
-        sqWARN("something changed, but no state");
+        sqWARN("something changed, but no state module=%d", moduleIndex);
         return;
     }
 
-    if (moduleIndex >= SharedSoloState::maxModules) {
-        sqWARN("too many modules");
+    if (moduleIndex >= SharedSoloState::maxModules || moduleIndex < 0) {
+        sqWARN("too many modules %d", moduleIndex);
         return;
     }
 
@@ -403,8 +435,8 @@ inline void MixerModule::onSomethingChanged()
      }
      // case : I have multi and other guy has exclusive
 
-#if 0
-     DEBUG("    on-ch, thissolo = %d othersolo = %d otherexclusive = %d\n",
+#ifdef _LOG
+    sqDEBUG("    on-ch, thissolo = %d othersolo = %d otherexclusive = %d\n",
         thisModuleHasSolo, 
         otherModuleHasSolo,
         otherModuleHasExclusiveSolo);
@@ -415,20 +447,27 @@ inline void MixerModule::onSomethingChanged()
     const bool thisModuleShouldMute = 
         (otherModuleHasSolo && !thisModuleHasSolo) ||
         otherModuleHasExclusiveSolo;
-
-    //DEBUG("    thisModuleShouldMute = %d", thisModuleShouldMute);
+#ifdef _LOG
+    DEBUG("    thisModuleShouldMute = %d", thisModuleShouldMute);
+#endif
 
     eng->setParam(this, getMuteAllParam(), thisModuleShouldMute ? 1.f : 0.f); 
 
-    if (otherModuleHasExclusiveSolo) {
-       // DEBUG("    on something changed - other module has exclusive so clear our solos");
+    // We need to turn off all of our solo params if we have no solo, or if
+    // someone else has exclusive (that last might not be possible any more)
+    if (otherModuleHasExclusiveSolo || !thisModuleHasSolo) {
+#ifdef _LOG
+        sqDEBUG("    on something changed - clear our solos");
+#endif
         for (int i=0; i< this->getNumGroups(); ++i ) {
             const int paramNum =  this->getSolo0Param() + i;
             eng->setParam(this, paramNum, 0.f);
         }
     }
 
-    // dumpState("leave something changed ", sharedSoloState);
+#ifdef _LOG
+    dumpState("leave something changed ", sharedSoloState);
+#endif
 }
 
 /********************************************************
@@ -451,15 +490,16 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
     auto state = mixer->getSharedSoloState();
     int myIndex = mixer->getModuleIndex();
     if (!state) {
-        sqWARN("can't get shared state");
+        sqWARN("can't get shared state for %d", myIndex);
         return;
     }
     if (myIndex >= SharedSoloState::maxModules) {
         sqWARN("too many modules");
         return;
     }
-    
-    // DEBUG("** handleSoloClickFromUI, ctrl = %d myIndex = %d\n", ctrl, myIndex);
+#ifdef _LOG
+    sqDEBUG("** handleSoloClickFromUI, ctrl = %d myIndex = %d\n", ctrl, myIndex);
+#endif
     // only worry about exclusive, for now
     const int channelParamNum =  Comp::SOLO0_PARAM + channel;
 
@@ -492,8 +532,8 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
     // if we were exclusive and un-soloed, we must clear ourlf
 
     const bool isExclusive = !ctrl;
-#if 0
-    DEBUG("    groupIsSoloingAfter = %d isExclusive = %d moduleSolo=%d", 
+#ifdef _LOG
+    sqDEBUG("    groupIsSoloingAfter = %d isExclusive = %d moduleSolo=%d", 
         groupIsSoloingAfter, 
         isExclusive,
         moduleIsSoloingAfter);
@@ -508,18 +548,26 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
                 // set our own exclusive state to match our solo.
                 state->state[i].exclusiveSolo = groupIsSoloingAfter;
                 state->state[i].multiSolo = false;
-                // DEBUG("set multi[%d] false because isExclusive", i);
+#ifdef _LOG
+                sqDEBUG("set multi[%d] false because isExclusive", i);
+#endif
             } else {
                 state->state[i].exclusiveSolo = false;
                 state->state[i].multiSolo = moduleIsSoloingAfter;
-                // DEBUG("set multi[%d] to %d because moduleIsSoloingAfter flag", i, !!state->state[i].multiSolo);
+#ifdef _LOG
+                sqDEBUG("set multi[%d] to %d because moduleIsSoloingAfter flag", i, !!state->state[i].multiSolo);
+#endif
             }
         }
 
-        if (!isMe && isExclusive && groupIsSoloingAfter) {
+    //    if (!isMe && isExclusive && groupIsSoloingAfter) {
+         if (!isMe && isExclusive) {
             // if we just enabled and exclusive solo, clear everyone else.
-            // DEBUG("   clearing exclusive in module %d", i);
+#ifdef _LOG
+            sqDEBUG("   clearing exclusive (and non)  in module %d (group soloing after = %d)", i, groupIsSoloingAfter);
+#endif
             state->state[i].exclusiveSolo = false;
+            state->state[i].multiSolo = false;
         }
 
         if (!isMe) {
@@ -527,8 +575,9 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
             otherModulesHaveMutes |= state->state[i].multiSolo;
         }
     }
-
-    // DEBUG("   otherModulesHaveMutes = %d", otherModulesHaveMutes);
+#ifdef _LOG
+    sqDEBUG("   otherModulesHaveMutes = %d", otherModulesHaveMutes);
+#endif
 
     // un-mute yourself if there are no solos in other module, 
     // or if this module has solo.
@@ -542,10 +591,12 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
         shouldMuteSelf = true;
     }
 
-    // DEBUG("   shouldMuteSelf %d", shouldMuteSelf);
+    
     eng->setParam(mixer, Comp::ALL_CHANNELS_OFF_PARAM, shouldMuteSelf ? 1.f : 0.f); 
-
-    //dumpState("after update", state);
+#ifdef _LOG
+    sqDEBUG("   shouldMuteSelf %d", shouldMuteSelf);
+    dumpState("after update", state);
+#endif
     mixer->sendSoloChangedMessageOnAudioThread();
 }
 }   // end namespace
