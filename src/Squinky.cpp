@@ -10,7 +10,7 @@ Plugin *pluginInstance = nullptr;
 /**
  * Here we register the whole plugin, which may have more than one module in it.
  */
-void init(rack::Plugin *p)
+void init (::rack::Plugin *p)
 {
     pluginInstance = p;
     p->slug = "squinkylabs-plug1";

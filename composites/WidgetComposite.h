@@ -1,15 +1,16 @@
 #pragma once
 
-#include "engine/Module.hpp"
-#include "engine/Port.hpp"
-#include "engine/Engine.hpp"
-#include "app.hpp"
+#include "rack.hpp"
+//#include "engine/Module.hpp"
+//#include "engine/Port.hpp"
+//#include "engine/Engine.hpp"
+//#include "app.hpp"
 
-using Input = rack::engine::Input;
-using Output = rack::engine::Output;
-using Param = rack::engine::Param;
-using Light = rack::engine::Light;
-using Module = rack::engine::Module;
+using Input = ::rack::engine::Input;
+using Output = ::rack::engine::Output;
+using Param = ::rack::engine::Param;
+using Light = ::rack::engine::Light;
+using Module = ::rack::engine::Module;
 
 
 /**
@@ -20,9 +21,9 @@ class WidgetComposite
 {
 public:
 
-    using Port = rack::engine::Port;
+    using Port = ::rack::engine::Port;
     
-    WidgetComposite(Module * parent) :
+    WidgetComposite(::rack::engine::Module * parent) :
         inputs(parent->inputs),
         outputs(parent->outputs),
         params(parent->params),
@@ -35,12 +36,12 @@ public:
     };
     float engineGetSampleRate()
     {
-        return APP->engine->getSampleRate();
+        return ::rack::APP->engine->getSampleRate();
     }
     
     float engineGetSampleTime()
     {
-        return APP->engine->getSampleTime();
+        return ::rack::APP->engine->getSampleTime();
     }
 protected:
     std::vector<Input>& inputs;

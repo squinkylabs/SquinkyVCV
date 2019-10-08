@@ -8,10 +8,10 @@
 /**
  * An SvgButton, but in stead of being momentary it toggles between values.
  */
-class SqSvgToggleButton : public rack::app::SvgButton
+class SqSvgToggleButton : public ::rack::app::SvgButton
 {
 public:
-    SqSvgToggleButton(rack::widget::Widget* = nullptr);
+    SqSvgToggleButton (::rack::widget::Widget* = nullptr);
     void onDragStart(const event::DragStart &e) override;
     void onDragEnd(const event::DragEnd &e) override;
     void onDragDrop(const event::DragDrop &e) override;
@@ -21,10 +21,10 @@ public:
 private:
     int index = 0;
     void setIndex(int i);
-    rack::widget::Widget* actionDelegate = nullptr;
+    ::rack::widget::Widget* actionDelegate = nullptr;
 };
 
-inline SqSvgToggleButton::SqSvgToggleButton(rack::widget::Widget* delegate)
+inline SqSvgToggleButton::SqSvgToggleButton (::rack::widget::Widget* delegate)
 {
     actionDelegate = delegate;
 }

@@ -28,7 +28,7 @@ extern float sawTable[2048];
 extern float triTable[2048];
 
 // When this is defined, will use Squinky Labs anti-aliasing decimators,
-// rather than  rack::Decimator<>
+// rather than  ::rack::Decimator<>
 #define _USEIIR
 
 template <int OVERSAMPLE, int QUALITY>
@@ -59,10 +59,10 @@ struct VoltageControlledOscillator
     IIRDecimator sawDecimator;
     IIRDecimator sqrDecimator;
 #else
-    rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
-    rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;
-    rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
-    rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
 #endif
     sq::RCFilter sqrFilter;
 
@@ -277,10 +277,10 @@ struct VoltageControlledOscillatorOrig
     bool syncEnabled = false;
     bool syncDirection = false;
 
-    rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
-    rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;
-    rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
-    rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> sawDecimator;
+    ::rack::Decimator<OVERSAMPLE, QUALITY> sqrDecimator;
     RCFilter sqrFilter;
 
     // For analog detuning effect

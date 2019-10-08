@@ -31,7 +31,7 @@ inline void WaveCell::setState(bool b)
     state = b;
 }
 
-class WaveformSwitch : public rack::ParamWidget
+class WaveformSwitch : public ::rack::ParamWidget
 {
 public:
     WaveformSwitch();

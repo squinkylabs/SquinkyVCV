@@ -96,9 +96,9 @@ struct NKK2 : SqHelper::SvgSwitch
 {
     NKK2()
     {
-        addFrame(rack::APP->window->loadSvg(
+        addFrame(::rack::APP->window->loadSvg(
             asset::system("res/ComponentLibrary/NKK_0.svg").c_str()));
-        addFrame(rack::APP->window->loadSvg(
+        addFrame(::rack::APP->window->loadSvg(
             asset::system("res/ComponentLibrary/NKK_2.svg").c_str()));
     }
 };

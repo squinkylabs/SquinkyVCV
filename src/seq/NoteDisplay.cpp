@@ -28,7 +28,7 @@ NoteDisplay::NoteDisplay(
     const Vec& pos,
     const Vec& size,
     MidiSequencerPtr seq,
-    rack::engine::Module* mod)
+    ::rack::engine::Module* mod)
 {
     this->box.pos = pos;
     box.size = size;
@@ -393,7 +393,7 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
         handled = MidiKeyboardHandler::handle(sequencer, key, mods);
 #endif
         if (handled) {
-            rack::APP->event->setSelected(this);
+            ::rack::APP->event->setSelected(this);
         }
     }
    // fprintf(stderr, "NoteDisplay::handleKey ret = %d\n", handled);

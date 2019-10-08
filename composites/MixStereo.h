@@ -54,7 +54,7 @@ public:
     template<typename Q>
     friend class MixHelper;
 
-    MixStereo(rack::engine::Module * module) : TBase(module)
+    MixStereo (::rack::engine::Module * module) : TBase(module)
     {
     }
     MixStereo() : TBase()

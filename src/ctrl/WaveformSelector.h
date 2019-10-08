@@ -20,7 +20,7 @@ public:
     void loadSVG(const char* res, const char* resOn);
 
     const float value;
-    rack::Rect box;
+    ::rack::Rect box;
 
     void dump(const char*);
 private:

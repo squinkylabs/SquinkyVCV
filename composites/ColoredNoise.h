@@ -21,12 +21,12 @@ namespace rack {
         struct Module;
     }
 }
-using Module = rack::engine::Module;
+using Module = ::rack::engine::Module;
 #else
 namespace rack {
     struct Module;
 };
-using Module = rack::Module;
+using Module = ::rack::Module;
 #endif
 
 class NoiseMessage;
