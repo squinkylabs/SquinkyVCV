@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RingBuffer.h"
+#include "AtomicRingBuffer.h"
 
 #include <cstdint>
 #include <atomic>
@@ -70,9 +70,9 @@ public:
      * state machine. 
      */
     void go(uint32_t* outputCommandBuffer, size_t* outputDataBuffer);
-    CommChannelSend() : messageBuffer(false) {}
+    CommChannelSend() : messageBuffer() {}
 private:
-    SqRingBuffer<CommChannelMessage, 4> messageBuffer;
+    AtomicRingBuffer <CommChannelMessage, 4> messageBuffer;
     bool sendingData = false;
     bool sendingZero = false;
     int zeroCount = 0;
