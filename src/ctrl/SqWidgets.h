@@ -205,7 +205,7 @@ struct SquinkyLight : GrayModuleLightWidget {
 struct LEDBezelLG : app::SvgSwitch {
 	LEDBezelLG() {
 		momentary = true;
-		addFrame(::rack::APP->window->loadSvg(asset::plugin(pluginInstance, "res/LEDBezelLG.svg")));
+		addFrame(::rack::appGet()->window->loadSvg(asset::plugin(pluginInstance, "res/LEDBezelLG.svg")));
 	}
 };
 

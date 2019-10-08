@@ -1,5 +1,6 @@
 
 #include "SqKey.h"
+#include "../ctrl/SqHelper.h"
 
 #include "rack.hpp"
 
@@ -12,11 +13,11 @@ SqKeyPtr SqKey::parse(json_t* binding)
 {
     json_t* keyJ = json_object_get(binding, "key");
     if (!keyJ) {
-        WARN("Binding does not have key field");
+        sqWARN("Binding does not have key field");
         return nullptr;
     }
     if (!json_is_string(keyJ)) {
-        WARN("Binding key is not a string: %s", json_dumps(keyJ, 0));
+        sqWARN("Binding key is not a string: %s", json_dumps(keyJ, 0));
         return nullptr;
     }
 
@@ -39,12 +40,12 @@ SqKeyPtr SqKey::parse(json_t* binding)
         } else if ((key = parseKey(s))) {
             //
         } else {
-            WARN("can't parse key fragment %s of %s\n", s.c_str(), keyString.c_str());
+            sqWARN("can't parse key fragment %s of %s\n", s.c_str(), keyString.c_str());
             return nullptr;
         }
     }
     if (key == 0) {
-        WARN("binding does not have valid key: %s\n", keyString.c_str());
+        sqWARN("binding does not have valid key: %s\n", keyString.c_str());
         return nullptr;
     }
     SqKey* r = new SqKey(key, ctrl, shift, alt);

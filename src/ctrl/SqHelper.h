@@ -1,16 +1,21 @@
 #pragma once
 
 /**
- * This is a collection of utilties that work on both VCV 1.0
- * and VCV 0.6.n
+ * This was a collection of utilties that work on both VCV 1.0
+ * and VCV 0.6.n. Now that 1.0 is out, and this code base requires 1.0,
+ * we have removed the 0.6 versions. 
  */
-#include "app.hpp"
+#include "rack.hpp"
 #include "IComposite.h"
-
-#ifdef __V1x
-
-#include "engine/Module.hpp"
 #include <string>
+
+#define sqDEFER(code) auto CONCAT(_defer_, __COUNTER__) = ::rack::deferWrapper([&]() code)
+
+#define sqDEBUG(format, ...) ::rack::logger::log(::rack::logger::DEBUG_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define sqINFO(format, ...) ::rack::logger::log(::rack::logger::INFO_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define sqWARN(format, ...) ::rack::logger::log(::rack::logger::WARN_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define sqFATAL(format, ...) ::rack::logger::log(::rack::logger::FATAL_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+
 
 extern ::rack::plugin::Plugin *pluginInstance;
 class SqHelper
@@ -40,16 +45,16 @@ public:
     static std::shared_ptr<::rack::Svg> loadSvg(const char* path, bool pathIsAbsolute = false) 
     {
         if (pathIsAbsolute) {
-            return ::rack::APP->window->loadSvg(path);
+            return ::rack::appGet()->window->loadSvg(path);
         } else {
-            return ::rack::APP->window->loadSvg(
+            return ::rack::appGet()->window->loadSvg(
                 SqHelper::assetPlugin(pluginInstance, path));
         }
     }
 
     static void setPanel(::rack::app::ModuleWidget* widget, const char* path)
     {
-         widget->setPanel(::rack::APP->window->loadSvg(::rack::asset::plugin(pluginInstance, path)));
+         widget->setPanel(::rack::appGet()->window->loadSvg(::rack::asset::plugin(pluginInstance, path)));
     }
 
     static void openBrowser(const char* url)
@@ -62,11 +67,11 @@ public:
     } 
     static float engineGetSampleRate()
     {
-        return ::rack::APP->engine->getSampleRate();
+        return ::rack::appGet()->engine->getSampleRate();
     }
     static float engineGetSampleTime()
     {
-        return ::rack::APP->engine->getSampleTime();
+        return ::rack::appGet()->engine->getSampleTime();
     }
 
     template <typename T>
@@ -126,112 +131,3 @@ public:
     ManualMenuItem* manual = new ManualMenuItem(TEXT, URL); \
     theMenu->addChild(manual);   \
 }
-
-#else
-
-
-class SqHelper
-{
-public:
-
-    static std::string assetPlugin(Plugin *plugin, const std::string& filename)
-    {
-        return ::rack::assetPlugin(plugin, filename);
-    } 
-    static float engineGetSampleRate()
-    {
-        return ::rack::engineGetSampleRate();
-    }
-
-    static float engineGetSampleTime()
-    {
-        return ::rack::engineGetSampleTime();
-    }
-    static void openBrowser(const char* url)
-    {
-        ::rack::systemOpenBrowser(url);
-    }
-
-   static const NVGcolor COLOR_WHITE;
-   static const NVGcolor COLOR_BLACK;
-
-   template <typename T>
-   static T* createParam(std::shared_ptr<IComposite> composite, const Vec& pos, Module* module, int paramId )
-   {
-       const auto data = composite->getParam(paramId);
-       assert(data.min < data.max);
-       assert(data.def >= data.min);
-       assert(data.def <= data.max);
-       return ::rack::createParam<T>(
-           pos,
-           module, 
-           paramId,
-           data.min, data.max, data.def
-       );
-    }
-
-    template <typename T>
-    static T* createParamCentered(std::shared_ptr<IComposite> composite, const Vec& pos, Module* module, int paramId )
-    {
-        const auto data = composite->getParam(paramId);
-        assert(data.min < data.max);
-        assert(data.def >= data.min);
-        assert(data.def <= data.max);
-        return ::rack::createParamCentered<T>(
-            pos,
-            module, 
-            paramId,
-            data.min, data.max, data.def
-        );
-    }
-
-    static float getValue(ParamWidget* widget) {
-        return widget->value;
-    }
-
-    static void setValue(ParamWidget* widget, float v) {
-        widget->setValue(v);
-    }
-
-    static void setPanel(ModuleWidget* widget, const char* path)
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = widget->box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, path)));
-        widget->addChild(panel);
-    }
-
-    static std::shared_ptr<SVG> loadSvg(const char* path) 
-    {
-        return SVG::load(
-            SqHelper::assetPlugin(pluginInstance, path));
-    }
-
-
-    using SvgWidget = SVGWidget;
-    using SvgSwitch = SVGSwitch;
-    static void setSvg(SvgWidget* widget, std::shared_ptr<SVG> svg)
-    {
-        widget->setSVG(svg);
-    }
-    static void setSvg(SVGKnob* knob, std::shared_ptr<SVG> svg)
-    {
-        knob->setSVG(svg);
-    }
-
-    static bool contains(struct Rect& r, const Vec& pos)
-    {
-        return r.contains(pos);
-    }
-
-};
-
-#define DECLARE_MANUAL(TEXT, URL) Menu* createContextMenu() override \
-{ \
-    ::rack::ui::Menu* theMenu = ModuleWidget::createContextMenu(); \
-    ManualMenuItem* manual = new ManualMenuItem(TEXT, URL); \
-    theMenu->addChild(manual); \
-    return theMenu; \
-}
-
-#endif

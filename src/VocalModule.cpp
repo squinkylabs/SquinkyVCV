@@ -91,28 +91,16 @@ struct MuteLight : BASE
     }
 };
 
-#ifdef __V1x
 struct NKK2 : SqHelper::SvgSwitch
 {
     NKK2()
     {
-        addFrame(::rack::APP->window->loadSvg(
+        addFrame(::rack::appGet()->window->loadSvg(
             asset::system("res/ComponentLibrary/NKK_0.svg").c_str()));
-        addFrame(::rack::APP->window->loadSvg(
+        addFrame(::rack::appGet()->window->loadSvg(
             asset::system("res/ComponentLibrary/NKK_2.svg").c_str()));
     }
 };
-#else
-struct NKK2 : SqHelper::SvgSwitch, ToggleSwitch
-{
-
-    NKK2()
-    {
-        addFrame(SVG::load(assetGlobal("res/ComponentLibrary/NKK_0.svg")));
-        addFrame(SVG::load(assetGlobal("res/ComponentLibrary/NKK_2.svg")));
-    }
-};
-#endif
 
 /**
  * Widget constructor will describe my implementation structure and
