@@ -7,7 +7,7 @@
 
 void StepRecorder::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
 {
-  RecordInputData data;
+    RecordInputData data;
     bool isData = seqComp->poll(&data);
     if (isData) {
         switch (data.type) {
@@ -25,6 +25,7 @@ void StepRecorder::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, Mid
 
 void StepRecorder::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
 {
+    // TODO: if we want to stay in loop, this might be a good place to do it.
     if (numNotesActive == 0) {
         // first note in a new step.
         // clear selection and get the default advance time
@@ -49,11 +50,12 @@ void StepRecorder::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
 
 void StepRecorder::onAllNotesOff(MidiSequencerPtr sequencer)
 {
-   // float advanceTime = sequencer->editor->getAdvanceTimeAfterNote();
+    // now advance the time past the notes we just inserted.
     float time = sequencer->context->cursorTime();
-
     time += advanceTime;
     sequencer->editor->moveToTimeAndPitch(time, lastPitch);
+
+    // and clear out the selection
     numNotesActive = 0;
 }
 
@@ -65,7 +67,9 @@ bool StepRecorder::handleInsertPresetNote(
     if (!isActive()) {
         return false;
     }
-    // 
+
+    // Adjust the duration of all the selected notes to match the preset note
+    // that would have been inserted by the preset note command.
     const float artic = sequencer->context->settings()->articulation();
     advanceTime = MidiEditor::getDuration(duration);
     float finalDuration =  advanceTime * artic;

@@ -1,5 +1,19 @@
 # Change log for Squinky Labs modules
 
+## 1.0.5
+
+Seq++ has MIDI file input.
+
+Seq++ has a step recorder.
+
+Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high.
+
+Seq++ image in the module browser new looks correct, rather than a black blob.
+
+Inputs on ExFor and Form mixers are now polyphonic.
+
+Modular mixers now support multi-solo by control-clicking on the solo buttons.
+
 ## 1.0.4
 
 Three new modules: Seq++, Gateseq, and ExTwo.
