@@ -75,8 +75,12 @@ struct SequencerModule : Module
     }
     virtual void dataFromJson(json_t *root) override;
 
-    // May be called from UI thread
-    void postNewSong(MidiSongPtr s);
+    /**
+     *  May be called from UI thread.
+     *  @param s is the new song to load.
+     *  @param path is the file folder it was loaded from.
+     */
+    void postNewSong(MidiSongPtr s, const std::string& path);
 private:
     void setNewSeq(MidiSequencerPtr);
 

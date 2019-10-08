@@ -119,6 +119,33 @@ struct SequencerWidget : ModuleWidget
 #endif
 };
 
+// windows experiment
+#ifdef ARCH_WIN
+std::string removeFileName(const std::string s)
+{
+    std::string filePath;
+    auto pos = s.rfind('\\');
+    if (pos != std::string::npos) {
+        filePath = s.substr(0, pos+1);
+        return filePath;
+    }
+
+    pos = s.find(":");
+    if (pos != std::string::npos) {
+        filePath = s.substr(0, pos+1);
+        return filePath;
+    }
+
+    return "";
+}
+#else
+std::string removeFileName(const std::string s)
+{
+    sqWARN("removeFileName not imp on this OS");
+    return s;
+}
+#endif
+
 void SequencerWidget::loadMidiFile()
 {
     static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
@@ -131,8 +158,7 @@ void SequencerWidget::loadMidiFile()
 	});
 
 	char* pathC = osdialog_file(OSDIALOG_OPEN, dir.c_str(), filename.c_str(), filters);
-    printf("back from open file with path %s\n", pathC);
-    fflush(stdout);
+  
 	if (!pathC) {
 		// Fail silently
 		return;
@@ -142,10 +168,13 @@ void SequencerWidget::loadMidiFile()
 	});
 
     MidiSongPtr song = MidiFileProxy::load(pathC);
+
+    std::string temp(pathC);
+    std::string fileFolder = removeFileName(temp);
+    //sqDEBUG("path was %s, final = %s", pathC, fileFolder.c_str());
     if (song) {
-        _module->postNewSong(song);
-    }
-   
+        _module->postNewSong(song, fileFolder);
+    }  
 }
 
 void SequencerWidget::step()
@@ -418,7 +447,7 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
     }
 }
 
-void SequencerModule::postNewSong(MidiSongPtr newSong)
+void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFolder)
 {
     newSong->assertValid();
     MidiSongPtr oldSong = sequencer->song;
