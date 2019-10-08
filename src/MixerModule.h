@@ -4,13 +4,14 @@
 #include "CommChannels.h"
 #include "rack.hpp"
 
-namespace rack = ::rack;
+
+
+//namespace rack::logger = ::rack::logger;
 
 namespace rack {
-    namespace logger {
+    namespace logger =  ::rack::logger;
+};
 
-    }
-}
 /**
  * This class manages the communication between
  * misers and mixer expanders.
