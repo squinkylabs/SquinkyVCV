@@ -219,7 +219,7 @@ inline void MixerModule::initSoloState() {
         bool moduleHasSolo = false;
         for (int group = 0; group < this->getNumGroups(); ++group ) {
             const int soloParamNum =  this->getSolo0Param() + group;
-            const bool groupIsSoloing = ::rack::APP->engine->getParam(this, soloParamNum);
+            const bool groupIsSoloing = APP->engine->getParam(this, soloParamNum);
             moduleHasSolo |= groupIsSoloing;
         }
 
@@ -410,7 +410,7 @@ inline void MixerModule::onSomethingChanged()
         otherModuleHasExclusiveSolo);
 #endif
 
-    engine::Engine* eng = ::rack::APP->engine;
+    engine::Engine* eng = APP->engine;
 
     const bool thisModuleShouldMute = 
         (otherModuleHasSolo && !thisModuleHasSolo) ||
@@ -464,9 +464,9 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
     const int channelParamNum =  Comp::SOLO0_PARAM + channel;
 
     // before processing this button - is the solo on?
-    const bool groupIsSoloing = ::rack::APP->engine->getParam(mixer, channelParamNum);
+    const bool groupIsSoloing = APP->engine->getParam(mixer, channelParamNum);
     const bool groupIsSoloingAfter = !groupIsSoloing;
-    engine::Engine* eng = ::rack::APP->engine;
+    engine::Engine* eng = APP->engine;
 
     // if any of our groups are soloing, the module must be
     bool moduleIsSoloingAfter = groupIsSoloingAfter;
@@ -481,7 +481,7 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
                 // if it's exclusive, turn off other channels
                 eng->setParam(mixer, paramNum, 0.f);     
             } else {
-                const bool soloing = ::rack::APP->engine->getParam(mixer, paramNum);
+                const bool soloing = APP->engine->getParam(mixer, paramNum);
                 moduleIsSoloingAfter |= soloing;
             }
         }
