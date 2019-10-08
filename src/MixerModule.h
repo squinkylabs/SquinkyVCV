@@ -5,13 +5,6 @@
 #include "rack.hpp"
 
 
-
-//namespace rack::logger = ::rack::logger;
-
-namespace rack {
-    namespace logger =  ::rack::logger;
-};
-
 /**
  * This class manages the communication between
  * misers and mixer expanders.
@@ -209,15 +202,19 @@ inline void MixerModule::pollForModulePing(bool pairedLeft)
     }
 }
 
+#undef WARN
+#define sqWARN(format, ...) rack::logger::log(::rack::logger::WARN_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
+
+
 inline void MixerModule::initSoloState() {
     if (!sharedSoloState) {
-        WARN("can't init solo yet");
+        sqWARN("can't init solo yet");
         return;
     }
     if (!haveInitSoloState) {
         haveInitSoloState = true;
 
-        DEBUG("Init module %d", moduleIndex);
+        // DEBUG("Init module %d", moduleIndex);
 
         bool moduleHasSolo = false;
         for (int group = 0; group < this->getNumGroups(); ++group ) {
@@ -261,7 +258,7 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
             onSomethingChanged();
             break;
         default:
-            WARN("no handler for message %x", msg.commandId);
+            sqWARN("no handler for message %x", msg.commandId);
     }
 }
 
@@ -380,12 +377,12 @@ inline void MixerModule::onSomethingChanged()
 {
   //  DEBUG("on something changed");
     if (!sharedSoloState) {
-        WARN("something changed, but no state");
+        sqWARN("something changed, but no state");
         return;
     }
 
     if (moduleIndex >= SharedSoloState::maxModules) {
-        WARN("too many modules");
+        sqWARN("too many modules");
         return;
     }
 
@@ -454,11 +451,11 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
     auto state = mixer->getSharedSoloState();
     int myIndex = mixer->getModuleIndex();
     if (!state) {
-        WARN("can't get shared state");
+        sqWARN("can't get shared state");
         return;
     }
     if (myIndex >= SharedSoloState::maxModules) {
-        WARN("too many modules");
+        sqWARN("too many modules");
         return;
     }
     
