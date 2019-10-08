@@ -151,7 +151,9 @@ void SequencerWidget::loadMidiFile()
     static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
     osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
     std::string filename;
-    std::string dir;
+
+    std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
+    sqDEBUG("init open file with %s", dir.c_str());
 
 	sqDEFER({
 		osdialog_filters_free(filters);
