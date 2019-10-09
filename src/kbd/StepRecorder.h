@@ -33,6 +33,7 @@ private:
     void onNoteOn(float pitch, MidiSequencerPtr sequencer);
     void onAllNotesOff(MidiSequencerPtr sequencer);
     bool isActive() const;
+    void adjustForLoop(MidiSequencerPtr sequencer);
 
     float lastPitch = 0;
     int numNotesActive = 0;

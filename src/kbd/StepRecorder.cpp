@@ -1,6 +1,7 @@
 #include "ISeqSettings.h"
 #include "MidiSequencer.h"
 #include "StepRecorder.h"
+#include "../ctrl/SqHelper.h"
 #include "WidgetComposite.h"
 
 #include <assert.h>
@@ -23,8 +24,20 @@ void StepRecorder::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, Mid
     }
 }
 
+void StepRecorder::adjustForLoop(MidiSequencerPtr sequencer)
+{
+    const SubrangeLoop& loop = sequencer->song->getSubrangeLoop();
+    if (loop.enabled) {
+        auto time = sequencer->context->cursorTime() ;
+        if (time < loop.startTime || time >= loop.endTime) {
+            sequencer->editor->advanceCursorToTime(loop.startTime, false);
+        }
+    }
+}
+
 void StepRecorder::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
 {
+    adjustForLoop(sequencer);
     // TODO: if we want to stay in loop, this might be a good place to do it.
     if (numNotesActive == 0) {
         // first note in a new step.
@@ -53,8 +66,16 @@ void StepRecorder::onAllNotesOff(MidiSequencerPtr sequencer)
     // now advance the time past the notes we just inserted.
     float time = sequencer->context->cursorTime();
     time += advanceTime;
-    sequencer->editor->moveToTimeAndPitch(time, lastPitch);
 
+    // constrain to loop
+    const SubrangeLoop& loop = sequencer->song->getSubrangeLoop();
+    if (loop.enabled) {
+        if (time < loop.startTime || time >= loop.endTime) {
+            time = loop.startTime;
+        }
+    }
+
+    sequencer->editor->moveToTimeAndPitch(time, lastPitch);
     // and clear out the selection
     numNotesActive = 0;
 }
