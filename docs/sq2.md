@@ -6,7 +6,7 @@
 
 [Major features](#Major-Features)\
 [About this Sequencer](#About-this-Sequencer)\
-[FAQ](./sq-faq.md)
+[FAQ](./sq-faq.md)\
 [Grids](#Grids)\
 [Editing](#Editing)\
 [Settings](#Settings)\
