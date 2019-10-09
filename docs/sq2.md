@@ -6,6 +6,7 @@
 
 [Major features](#Major-Features)\
 [About this Sequencer](#About-this-Sequencer)\
+[FAQ](./sq-faq.md)
 [Grids](#Grids)\
 [Editing](#Editing)\
 [Settings](#Settings)\
@@ -15,6 +16,8 @@
 [Keyboard and focus](#Keyboard-and-focus)\
 [Panel](#Panel)\
 [Clocking and playback](#Clocking-and-playback)\
+[MIDI file input](#Midi-file-input) \
+[Step recording](#Step-recording) \
 [User Keyboard Mapping](./sq-kbd.md) \
 [Keyboard reference](#Keyboard-reference)\
 [Mouse reference](#Mouse-reference)
@@ -223,6 +226,35 @@ If two notes of the same pitch "touch" each other, such that the end of one note
 If the sequence is set for monophonic, then it should play a proper legato if the notes fully overlap (the second one starts after the first one ends). But remember that quantization may erase this overlap, causing the re-trigger to kick in.
 
 If there are more simultaneous notes being played than may be accommodated by the polyphony setting, then voices will get "stolen" and re-assigned to play the new notes. At the moment Seq++ uses a variation on "last note" assignment. If there is already an idle voice that was playing the new pitch, that voice will be selected. Then the next idle voice (in rotation) will be used, then the first voice will be used.
+
+## MIDI file input
+
+Seq++ will import standard MIDI file. This is an easy way to get track from another piece of software into VCV.
+
+The MIDI file import feature is on the main context menu - the one you get when you right click on the panel (not the note-grid).
+
+The import is very simple. It looks for the first track in the file that has notes on it, and imports the entirety of that track. It only imports notes, and ignores other MIDI data.
+
+## Step recording
+
+Step recording is an ancient sequencer feature that lets you quickly enter music from a musical keyboard without having to worry about playing accurately.
+
+To use step recording in Seq++, patch a CV and Gate to the corresponding inputs of Seq++. The VCV Core module "MIDI-CV" is a good source. Set the source to the degree of polyphony you want - just cranking it to 16 is fine.
+
+Once hooked up, playing a note on the keyboard will insert a note in Seq++ and move the cursor up. The magic is all in how step recording decides what attributes to use for new notes. In many ways, step recording is very similar to entering notes from the computer keyboard.
+
+Here are the rules:
+
+* The pitch of the note will be the pitch of the note on the music keyboard.
+* The start time of the note will be wherever the edit cursor in in Seq++.
+* The duration of the note will be the same as if you inserted from the keyboard - typically the grid time unit modified by the articulation setting. Well, see below for more on this!
+* When the note is released on the MIDI keyboard, Seq++ will advance the cursor by a grid unit.
+
+Of course you can do this with chords. As you press down more notes the notes in Seq++ will stack up, making a chord. The cursor is not advanced until all the notes in the chord are done.
+
+But you can override the duration without changing the grid! Use any of the keys that normally insert a preset note duration, like w,h,q,e,x. This will change the duration of any notes that are still being held down. This feature makes it much easier to enter a series of notes with different metric values.
+
+btw - if you are using step record, but don't know all about editing from the mouse or computer keyboard, you might want to read about those topics. As we said, step recording is very similar to entering music from the computer keyboard.
 
 ## Keyboard reference
 
