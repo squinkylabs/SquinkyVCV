@@ -27,7 +27,6 @@ private:
     typedef float T;
 };
 
-#ifdef __V1x
 VocalFilterModule::VocalFilterModule() :
     vocalFilter(this)
 {
@@ -37,16 +36,6 @@ VocalFilterModule::VocalFilterModule() :
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 }
-#else
-VocalFilterModule::VocalFilterModule() :
-    Module(vocalFilter.NUM_PARAMS, vocalFilter.NUM_INPUTS, vocalFilter.NUM_OUTPUTS, vocalFilter.NUM_LIGHTS),
-    vocalFilter(this)
-{
-    onSampleRateChange();
-    vocalFilter.init();
-}
-
-#endif
 
 void VocalFilterModule::onSampleRateChange()
 {
@@ -173,14 +162,9 @@ void VocalFilterWidget::addModelKnob(std::shared_ptr<IComposite> icomp, VocalFil
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
 VocalFilterWidget::VocalFilterWidget(VocalFilterModule* module)
 {
     setModule(module);
-#else
-VocalFilterWidget::VocalFilterWidget(VocalFilterModule *module) : ModuleWidget(module)
-{
-#endif
 
     box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/formants_panel.svg");

@@ -29,7 +29,6 @@ private:
     typedef float T;
 };
 
-#ifdef __V1x
 VocalModule::VocalModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -37,16 +36,6 @@ VocalModule::VocalModule()
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 
-#else
-VocalModule::VocalModule() :
-    Module(
-    Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS),
-    animator(std::make_shared<Comp>(this))
-{
-#endif
     onSampleRateChange();
     animator->init();
 }
@@ -107,14 +96,10 @@ struct NKK2 : SqHelper::SvgSwitch
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
 VocalWidget::VocalWidget(VocalModule *module)
 {
     setModule(module);
-#else
-VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
-{
-#endif
+
     const float width = 14 * RACK_GRID_WIDTH;
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     this->box.size = Vec(width, RACK_GRID_HEIGHT);
@@ -301,11 +286,5 @@ VocalWidget::VocalWidget(VocalModule *module) : ModuleWidget(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1x
 Model *modelVocalModule = createModel<VocalModule, VocalWidget>("squinkylabs-vocalanimator");
-#else
-Model *modelVocalModule = Model::create<VocalModule, VocalWidget>("Squinky Labs",
-    "squinkylabs-vocalanimator",
-    "Growler: Vocal Animator", EFFECT_TAG, FILTER_TAG, LFO_TAG, RANDOM_TAG);
-#endif
 #endif

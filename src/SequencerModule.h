@@ -7,18 +7,10 @@
 
 class SequencerWidget;
 #include "WidgetComposite.h"
-
-#ifdef __V1x
-    #include "engine/Module.hpp"
-    using Module =  ::rack::engine::Module;
-#else
-    #include "engine.hpp"
-    using Module =  ::rack::Module;
-#endif
+#include "engine/Module.hpp"
+using Module =  ::rack::engine::Module;
 
 #include <atomic>
-
-
 
 struct SequencerModule : Module
 {

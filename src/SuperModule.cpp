@@ -38,7 +38,6 @@ void SuperModule::onSampleRateChange()
 {
 }
 
-#ifdef __V1x
 SuperModule::SuperModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -46,15 +45,6 @@ SuperModule::SuperModule()
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 
-#else
-SuperModule::SuperModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS),
-    super(std::make_shared<Comp>(this))
-{
-#endif
     onSampleRateChange();
     super->init();
 }
