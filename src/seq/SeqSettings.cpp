@@ -294,6 +294,9 @@ float SeqSettings::artic2Number(Artics a)
     case Artics::fiftyPercent:
         artic = .5f;
         break;
+    case Artics::oneHundredPercent:
+        artic = 1.0f;
+        break;
     default:
         assert(false);
     }
