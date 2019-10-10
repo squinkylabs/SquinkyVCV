@@ -162,46 +162,46 @@ If you are going to make a lot of changes, it will be worthwhile to plan it firs
 
 | Action name | Effect |
 | --- | --- |
-|help | open the manual in a new browser |
-|loop | toggle sub-range loop on and off |
-| change.track.length | set track length to cursor location |
-| insert.default | insert the default note at current pitch/time |
-| insert.whole.advance | insert whole note and move cursor after it |
-| insert.half.advance |  insert half note and move cursor after it |
-| insert.quarter.advance |  insert quarter note and move cursor after it |
-| insert.eighth.advance |  insert eighth note and move cursor after it |
-| insert.sixteenth.advance |  insert sixteenth note and move cursor after it |
-| insert.whole | insert whole note, don't move cursor |
-| insert.half | insert half note, don't move cursor |
-| insert.quarter | insert quarter note, don't move cursor |
-| insert.eighth | insert eighth note, don't move cursor |
-| insert.sixteenth | insert sixteenth note, don't move cursor |
-| move.left.normal | move cursor left one grid unit |
-| move.right.normal | move cursor right one grid unit |
-| move.up.normal | move cursor up one semi-tone |
-| move.down.normal | move cursor up one semi-tone |
-| move.left.all | move cursor to the start of the first bar |
-| move.right.all | move cursor to the last bar |
-| move.left.measure | move the cursor left by one bar |
-| move.right.measure | move the cursor right by one bar | |
-| move.up.octave | move the cursor up one octave |
-| move.down.octave | move the cursor down one octave |
-| select.next | select the next note after the currently selected one  |
-| select.next.extend | select the next note, while leaving others selected |
-| select.previous | select the previous note before the currently selected one |
-| select.previous.extend | select the previous note, while leaving others selected |
-| select.all | select all the notes |
-| value.increment.small | add a semi-tone or 64th note  |
-| value.increment.normal | add a semi-tone or a grid unit |
-| value.increment.large | add an octave or four grid units |
-| value.decrement.small | subtract a semi-tone or 64th note |
-| value.decrement.normal | subtract a semi-tone or a grid unit |
-| value.decrement.large | subtract an octave or four grid units |
-| cut | cut |
-| copy | copy |
-| paste | paste |
-| edit.start.time | set the editor to edit note start times |
-| edit.duration | set the editor to edit note durations |
-| edit.pitch | set the editor to edit note pitch |
-| grab.default.note | use the note under the cursor as the default insert note |
-| delete.note | delete the note under the cursor |
+|help | Open the manual in a new browser |
+|loop | Toggle sub-range loop on and off |
+| change.track.length | Set track length to cursor location |
+| insert.default | Insert the default note at current pitch/time |
+| insert.whole.advance | Insert whole note and move cursor after it |
+| insert.half.advance |  Insert half note and move cursor after it |
+| insert.quarter.advance |  Insert quarter note and move cursor after it |
+| insert.eighth.advance |  Insert eighth note and move cursor after it |
+| insert.sixteenth.advance |  Insert sixteenth note and move cursor after it |
+| insert.whole | Insert whole note, don't move cursor |
+| insert.half | Insert half note, don't move cursor |
+| insert.quarter | Insert quarter note, don't move cursor |
+| insert.eighth | Insert eighth note, don't move cursor |
+| insert.sixteenth | Insert sixteenth note, don't move cursor |
+| move.left.normal | Move cursor left one grid unit |
+| move.right.normal | Move cursor right one grid unit |
+| move.up.normal | Move cursor up one semi-tone |
+| move.down.normal | Move cursor up one semi-tone |
+| move.left.all | Move cursor to the start of the first bar |
+| move.right.all | Move cursor to the last bar |
+| move.left.measure | Move the cursor left by one bar |
+| move.right.measure | Move the cursor right by one bar | |
+| move.up.octave | Move the cursor up one octave |
+| move.down.octave | Move the cursor down one octave |
+| select.next | Select the next note after the currently selected one  |
+| select.next.extend | Select the next note, while leaving others selected |
+| select.previous | Select the previous note before the currently selected one |
+| select.previous.extend | Select the previous note, while leaving others selected |
+| select.all | Select all the notes |
+| value.increment.small | Add a semi-tone or 64th note  |
+| value.increment.normal | Add a semi-tone or a grid unit |
+| value.increment.large | Add an octave or four grid units |
+| value.decrement.small | Subtract a semi-tone or 64th note |
+| value.decrement.normal | Subtract a semi-tone or a grid unit |
+| value.decrement.large | Subtract an octave or four grid units |
+| cut | Cut |
+| copy | Copy |
+| paste | Paste |
+| edit.start.time | Set the editor to edit note start times |
+| edit.duration | Set the editor to edit note durations |
+| edit.pitch | Set the editor to edit note pitch |
+| grab.default.note | Use the note under the cursor as the default insert note |
+| delete.note | Delete the note under the cursor |
