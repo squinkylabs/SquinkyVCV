@@ -160,7 +160,8 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
                 assert(voice);
 
                 // play the note
-                double quantizedNoteEnd = TimeUtils::quantize(note->duration + eventStart, quantizeInterval, false);
+                const double durationQuantized = TimeUtils::quantize(note->duration, quantizeInterval, false);  
+                double quantizedNoteEnd = TimeUtils::quantize(durationQuantized + eventStart, quantizeInterval, false);
                 voice->playNote(note->pitchCV, float(eventStart), float(quantizedNoteEnd));
                 ++curEvent;
             }

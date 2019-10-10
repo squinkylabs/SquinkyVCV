@@ -20,7 +20,8 @@ const float quantInterval = .001f;      // very fine to avoid messing up old tes
  * Track has one quarter note at t=0, duration = eighth.
  * End event at quarter note after note
  */
-MidiSongPtr makeSongOneQ(float noteTime, float endTime)
+
+MidiSongPtr makeSongOneNote(float noteTime, float noteDuration, float endTime)
 {
     const float duration = .5;
     assert(endTime >= (noteTime + duration));
@@ -32,7 +33,7 @@ MidiSongPtr makeSongOneQ(float noteTime, float endTime)
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = noteTime;
-    note->duration = .5;
+    note->duration = noteDuration;
     note->pitchCV = 2.f;
     track->insertEvent(note);
     track->insertEnd(endTime);
@@ -41,6 +42,11 @@ MidiSongPtr makeSongOneQ(float noteTime, float endTime)
     assert(p->type == MidiEvent::Type::Note);
 
     return song;
+}
+
+MidiSongPtr makeSongOneQ(float noteTime, float endTime)
+{
+    return makeSongOneNote(noteTime, .5, endTime);
 }
 
 /**
@@ -850,6 +856,136 @@ static void testMidiPlayerLoop3()
     assertEQ(5, host->gateChangeCount);
 }
 
+#if 0
+// song has an eight note starting at time 0
+static void testShortQuantize()
+{
+    // make a one bar song with a single sixteenth note on the first beat
+    MidiSongPtr song = makeSongOneNote(0, .25, 4);      
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    // should not be playing a note now.
+    assert(!host->gateState[0]);
+
+    // let's make quantization coarse (quarter note)
+    // should play our short note as a quarter (don't quantize to zero)
+    const float quantizeInterval = 1;      
+    pl.updateToMetricTime(0, quantizeInterval);
+
+    // should be playing a note now.
+    assert(host->gateState[0]);
+
+    // try again at zero, should still play
+    pl.updateToMetricTime(0, quantizeInterval);
+    assert(host->gateState[0]);
+
+  //  pl.updateToMetricTime(.5, quantizeInterval);
+ //  // should still be playing a note after just and eight note.
+  //  assert(host->gateState[0]);
+
+
+
+    // song is only 1.0 long
+   // float expectedLoopStart = std::floor(time);
+   // assertEQ(pl.getCurrentLoopIterationStart(), expectedLoopStart);
+
+  //  return host;
+}
+#endif
+
+
+MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1, 
+    float noteTime2, float noteDuration2, 
+    float endTime)
+{
+    const float duration = .5;
+    assert(noteTime1 < noteTime2);
+    assert(endTime >= (noteTime2 + noteDuration2));
+
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
+    song->createTrack(0);
+    MidiTrackPtr track = song->getTrack(0);
+
+    {
+        MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+        note->startTime = noteTime1;
+        note->duration = noteDuration1;
+        note->pitchCV = 2.f;
+        track->insertEvent(note);
+    }
+#
+    {
+        MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+        note->startTime = noteTime2;
+        note->duration = noteDuration2;
+        note->pitchCV = 2.2f;
+        track->insertEvent(note);
+    }
+
+    track->insertEnd(endTime);
+
+    MidiEventPtr p = track->begin()->second;
+    assert(p->type == MidiEvent::Type::Note);
+    song->assertValid();
+
+    return song;
+}
+
+/**
+ * will make a track with two adjcent quarter notes, and play it
+ * enough to verify the retrigger between notes.
+ */
+static void _testQuantizedRetrigger2(float durations)
+{
+    // quarters on beat 1, and on beat 2, duration pass in "durations"
+    MidiSongPtr song = makeSongTwoNotes(0, durations,
+        1, durations,
+        4);
+
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.setNumVoices(1);
+    pl.setSampleCountForRetrigger(44);
+
+    // should not be playing a note now.
+    assert(!host->gateState[0]);
+
+    // let's make quantization coarse (quarter note)
+    // should play our short note as a quarter (don't quantize to zero)
+    const float quantizeInterval = 1;
+    pl.updateToMetricTime(0, quantizeInterval);
+    assert(host->gateState[0]);
+
+    // now second clock tick. This should cause a re-trigger, forcing the gate low
+    pl.updateToMetricTime(1, quantizeInterval);
+    assert(!host->gateState[0]);
+
+    // after retrig, gate should go up
+    pl.updateSampleCount(44);
+    assert(host->gateState[0]);
+
+    // beat 3 should have no note
+    pl.updateToMetricTime(2, quantizeInterval);
+    assert(!host->gateState[0]);
+
+    // beat 4 should have no note
+    pl.updateToMetricTime(3, quantizeInterval);
+    assert(!host->gateState[0]);
+
+
+    // loop: beat 1 should have a note
+    pl.updateToMetricTime(4, quantizeInterval);
+    assert(host->gateState[0]);
+}
+
+static void testQuantizedRetrigger2()
+{
+    _testQuantizedRetrigger2(1.0f);
+    _testQuantizedRetrigger2(.25f);
+}
+
 //*******************************tests of MidiPlayer2 **************************************
 void testMidiPlayer2()
 {
@@ -883,4 +1019,5 @@ void testMidiPlayer2()
     testMidiPlayerLoop();
     testMidiPlayerLoop2();
     testMidiPlayerLoop3();
+    testQuantizedRetrigger2();
 }

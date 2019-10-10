@@ -66,7 +66,7 @@ void MidiVoice::updateSampleCount(int samples)
 void MidiVoice::playNote(float pitch, double currentTime, float endTime)
 {
 #ifdef _MLOG
-    printf("\nMidiVoice::playNote curt=%f, end time = %f, lastnot=%f\n", currentTime, endTime, lastNoteOffTime);
+    printf("\nMidiVoice[%d]::playNote curt=%f, end time = %f, lastnot=%f\n", index, currentTime, endTime, lastNoteOffTime);
 #endif
     // do re-triggering, if needed
     if (currentTime == lastNoteOffTime) {
@@ -102,7 +102,7 @@ bool MidiVoice::updateToMetricTime(double metricTime)
     bool ret = false;
     if (noteOffTime >= 0 && noteOffTime <= metricTime) {
 #ifdef _MLOG
-        printf("shutting off note in update, grabbing last = %f (cur NoteOff time) \n", noteOffTime);
+        printf("shutting off note in MidiVoice::updateToMetricTime, grabbing last = %f (cur NoteOff time) \n", noteOffTime);
         printf(" (the note off time was %.2f, metric = %.2f\n", noteOffTime, metricTime);
 #endif
        // printf("gate off in normal update\n");
@@ -119,6 +119,9 @@ bool MidiVoice::updateToMetricTime(double metricTime)
 
 void MidiVoice::reset(bool clearGate)
 {
+#ifdef _MLOG
+    printf("reset midi voice %d, will forget last note off time\n", index);
+#endif    
     noteOffTime = -1;           // the absolute metric time when the 
                                 // currently playing note should stop
     curPitch = -100;            // the pitch of the last note played in this voice

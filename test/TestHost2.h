@@ -1,5 +1,6 @@
 #pragma once
 
+#include "MidiVoice.h"
 
 /**
  * mock host to spy on the voices.
@@ -20,6 +21,9 @@ public:
     }
     void setGate(int voice, bool g) override
     {
+#ifdef _MLOG
+        printf("test host setGate(%d) -> %d\n", voice, g);
+#endif
         assert(voice >= 0 && voice < 16);
         bool bs = gateState[voice];
         bool chg = (bs != g);

@@ -41,7 +41,6 @@ public:
     }
 };
 
-
 /**
 * GridMenuItem is the whole grid selection sub-menu
 */

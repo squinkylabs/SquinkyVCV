@@ -6,6 +6,11 @@ Seq++ has MIDI file input.
 
 Seq++ has a step recorder.
 
+Seq++ bugs:
+
+* Articulation setting of 100% was acting like 85%.
+* Notes were getting dropped when played with coarse clock.
+
 Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high.
 
 Seq++ image in the module browser new looks correct, rather than a black blob.
