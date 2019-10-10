@@ -160,59 +160,48 @@ If you are going to make a lot of changes, it will be worthwhile to plan it firs
 
 ## Actions reference
 
- | Action name | Effect |
- | --- | --- |
- help | open the manual in a new browser
- loop | loop
-
-asdfdsfds
-sdfdsfd
-
-      {"change.track.length", changeTrackLength},
-      {"insert.default", insertDefault},
-      {"insert.whole.advance", insertWholeAdvance},
-      {"insert.half.advance", insertHalfAdvance},
-      {"insert.quarter.advance", insertQuarterAdvance},
-      {"insert.eighth.advance", insertEighthAdvance},
-      {"insert.sixteenth.advance", insertSixteenthAdvance},
-
-      {"insert.whole", insertWhole},
-      {"insert.half", insertHalf},
-      {"insert.quarter", insertQuarter},
-      {"insert.eighth", insertEighth},
-      {"insert.sixteenth", insertSixteenth},
-
-      {"move.left.normal", moveLeftNormal},
-      {"move.right.normal", moveRightNormal},
-      {"move.up.normal", moveUpNormal},
-      {"move.down.normal", moveDownNormal},
-
-      {"move.left.all", moveLeftAll},
-      {"move.right.all", moveRightAll},
-      {"move.left.measure", moveLeftMeasure},
-      {"move.right.measure", moveRightMeasure},
-      {"move.up.octave", moveUpOctave},
-      {"move.down.octave", moveDownOctave},
-
-      {"select.next", selectNext},
-      {"select.next.extend", selectNextExtend},
-      {"select.previous", selectPrevious},
-      {"select.previous.extend", selectPreviousExtend},
-      {"select.all", selectAll},
-
-      {"value.increment.small", valueIncrementSmall},
-      {"value.increment.normal", valueIncrementNormal},
-      {"value.increment.large", valueIncrementLarge},
-      {"value.decrement.small", valueDecrementSmall},
-      {"value.decrement.normal", valueDecrementNormal},
-      {"value.decrement.large", valueDecrementLarge},
-
-      {"cut", cut},
-      {"copy", copy},
-      {"paste", paste},
-      {"edit.start.time", editStartTime},
-      {"edit.duration", editDuration},
-      {"edit.pitch", editPitch},
-
-      {"grab.default.note", grabDefaultNote},
-      {"delete.note", deleteNote}
+| Action name | Effect |
+| --- | --- |
+|help | open the manual in a new browser |
+|loop | toggle sub-range loop on and off |
+| change.track.length | set track length to cursor location |
+| insert.default | insert the default note at current pitch/time |
+| insert.whole.advance | insert whole note and move cursor after it |
+| insert.half.advance |  insert half note and move cursor after it |
+| insert.quarter.advance |  insert quarter note and move cursor after it |
+| insert.eighth.advance |  insert eighth note and move cursor after it |
+| insert.sixteenth.advance |  insert sixteenth note and move cursor after it |
+| insert.whole | insert whole note, don't move cursor |
+| insert.half | insert half note, don't move cursor |
+| insert.quarter | insert quarter note, don't move cursor |
+| insert.eighth | insert eighth note, don't move cursor |
+| insert.sixteenth | insert sixteenth note, don't move cursor |
+| move.left.normal | move cursor left one grid unit |
+| move.right.normal | move cursor right one grid unit |
+| move.up.normal | move cursor up one semi-tone |
+| move.down.normal | move cursor up one semi-tone |
+| move.left.all | move cursor to the start of the first bar |
+| move.right.all | move cursor to the last bar |
+| move.left.measure | move the cursor left by one bar |
+| move.right.measure | move the cursor right by one bar | |
+| move.up.octave | move the cursor up one octave |
+| move.down.octave | move the cursor down one octave |
+| select.next | select the next note after the currently selected one  |
+| select.next.extend | select the next note, while leaving others selected |
+| select.previous | select the previous note before the currently selected one |
+| select.previous.extend | select the previous note, while leaving others selected |
+| select.all | select all the notes |
+| value.increment.small | add a semi-tone or 64th note  |
+| value.increment.normal | add a semi-tone or a grid unit |
+| value.increment.large | add an octave or four grid units |
+| value.decrement.small | subtract a semi-tone or 64th note |
+| value.decrement.normal | subtract a semi-tone or a grid unit |
+| value.decrement.large | subtract an octave or four grid units |
+| cut | cut |
+| copy | copy |
+| paste | paste |
+| edit.start.time | set the editor to edit note start times |
+| edit.duration | set the editor to edit note durations |
+| edit.pitch | set the editor to edit note pitch |
+| grab.default.note | use the note under the cursor as the default insert note |
+| delete.note | delete the note under the cursor |
