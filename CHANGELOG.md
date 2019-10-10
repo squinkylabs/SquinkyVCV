@@ -10,6 +10,7 @@ Seq++ bugs:
 
 * Articulation setting of 100% was acting like 85%.
 * Notes were getting dropped when played with coarse clock.
+* Dragging durations with the mouse were making zero length notes.
 
 Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high.
 

@@ -345,6 +345,12 @@ void NoteDurationDragger::commit()
             DurationShiftPixels = quantizeForDisplay(note->duration, DurationShiftPixels, false);
         }
         float timeshiftAmountMetric = scaler->xToMidiDeltaTime(DurationShiftPixels);
+
+        float finalDuration = note->duration + timeshiftAmountMetric;
+        if (finalDuration < TimeUtils::sixtyFourthNote()) {
+            timeshiftAmountMetric += (TimeUtils::sixtyFourthNote() - finalDuration);
+        }
+
         // printf("timeShiftAmountQuantize = %f, metric = %f\n", timeShiftAmountQuantized, timeshiftAmountMetric);
         shifts.push_back(timeshiftAmountMetric);
         if (std::abs(timeshiftAmountMetric) > .1) {

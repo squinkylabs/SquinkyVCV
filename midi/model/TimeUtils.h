@@ -38,6 +38,11 @@ public:
         return 1;
     }
 
+    static float sixtyFourthNote()
+    {
+        return 1.f / 16.f;  
+    }
+
     static std::tuple<int, int, int> time2bbf(float time)
     {
         const int bar = time2bar(time);
@@ -95,30 +100,5 @@ public:
         }
         return buffer;
     }
-    
-    /**
-     * Quantizes time, rounding a way a grid constrained editor should.
-     * @param time is the time to quantize.
-     * @param deltaTime is how much we want to move the un-quantized time.
-     * @param units is the time unit we want to quantize to.
-     * @returns quantize(time + deltaTime), such that we never quantize "backwards"
-     */
-    #if 0 // no used any more
-    static float quantizeForEdit(float time, float deltaTime, float units)
-    {
-        assert(units > 0);
-        float q = units * std::round((time + deltaTime) / units);
-        if (deltaTime > 0) {
-            if (q < time) {
-                q += units;
-            }
-        } else {
-            if (q > time) {
-                q -= units;
-            }
-        }
-        return q;
-    }
-    #endif
 };
 
