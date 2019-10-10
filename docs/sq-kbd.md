@@ -160,11 +160,14 @@ If you are going to make a lot of changes, it will be worthwhile to plan it firs
 
 ## Actions reference
 
-| Action name | Effect |
-| *********** | ****** |
-| help | open the manual in a new browser |
+ | Action name | Effect |
+ | --- | --- |
+ help | open the manual in a new browser
+ loop | loop
 
-      {"loop", loop},
+asdfdsfds
+sdfdsfd
+
       {"change.track.length", changeTrackLength},
       {"insert.default", insertDefault},
       {"insert.whole.advance", insertWholeAdvance},
