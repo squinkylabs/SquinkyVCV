@@ -5,6 +5,8 @@
 #include "asserts.h"
 #include <filesystem>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 static void test1()
 {
@@ -56,6 +58,7 @@ static void test2()
 {
     char buffer[FILENAME_MAX];
     auto ret = tmpnam_s(buffer, FILENAME_MAX);
+    assert(!ret);
 
     printf("temp file = %s\n", buffer);
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
@@ -63,10 +66,14 @@ static void test2()
     assert(b);
 
     MidiSongPtr song2 = MidiFileProxy::load(buffer);
+    struct stat filestatus;
+    stat(buffer, &filestatus);
+    assertGT(filestatus.st_size, 50);
+    remove(buffer);
     assert(song2);
     compareSongs(song, song2);
-   
 }
+
 void testMidiFile()
 {
     test1();
