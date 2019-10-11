@@ -23,6 +23,35 @@ static void test1()
     assertEQ(track->size(), 3);
 }
 
+
+static void compareSongs(MidiSongPtr song1, MidiSongPtr song2)
+{
+    assertEQ(song2->getTrack(0)->size(), song1->getTrack(0)->size());
+    assertEQ(song1->getHighestTrackNumber(), 0);
+    assertEQ(song2->getHighestTrackNumber(), 0);
+
+    MidiTrack::const_iterator it = song1->getTrack(0)->begin();
+    MidiTrack::const_iterator it2 = song2->getTrack(0)->begin();
+    while (it != song1->getTrack(0)->end()) {
+        assert(it2 != song2->getTrack(0)->end());
+
+        MidiEventPtr ev1 = it->second;
+        MidiEventPtr ev2 = it2->second;
+
+        if (ev1->type == MidiEvent::Type::End) {
+            assert(ev2->type == MidiEvent::Type::End);
+        } else {
+            MidiNoteEventPtr note1 = safe_cast<MidiNoteEvent>(ev1);
+            MidiNoteEventPtr note2 = safe_cast<MidiNoteEvent>(ev2);
+            assert(note2 && note1);
+            assertEQ(note1->startTime, note2->startTime);
+            assertEQ(note1->pitchCV, note2->pitchCV);
+        }
+        ++it;
+        ++it2;
+    }
+}
+
 static void test2()
 {
     char buffer[FILENAME_MAX];
@@ -35,7 +64,8 @@ static void test2()
 
     MidiSongPtr song2 = MidiFileProxy::load(buffer);
     assert(song2);
-    assertEQ(song2->getTrack(0)->size(), song->getTrack(0)->size());
+    compareSongs(song, song2);
+   
 }
 void testMidiFile()
 {

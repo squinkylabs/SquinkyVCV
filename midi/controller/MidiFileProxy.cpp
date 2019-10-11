@@ -31,8 +31,8 @@ bool MidiFileProxy::save(MidiSongPtr song, char* filePath)
             int outputMidiChannel = 0;
             int velocity = 0x3f;
             printf("start tick = %d end tick = %d pitch=%d\n", startTick, endTick, key);
-            midiFile.addNoteOn(outputTkNum, startTick, outputTkNum, key, velocity);
-            midiFile.addNoteOff(outputTkNum, endTick, outputTkNum, key);
+            midiFile.addNoteOn(outputTkNum, startTick, outputMidiChannel, key, velocity);
+            midiFile.addNoteOff(outputTkNum, endTick, outputMidiChannel, key);
         }
     }
     midiFile.sortTracks();
