@@ -11,15 +11,16 @@ Seq++ bugs:
 * Articulation setting of 100% was acting like 85%.
 * Notes were getting dropped when played with coarse clock.
 * Dragging durations with the mouse were making zero length notes.
-* Notes that start in the previous two bars are now drawn.
+* Notes that start in the previous two bars are now drawn [GitHub issue](https://github.com/squinkylabs/SquinkyVCV/issues/112)
+* Notes re-triggering seemingly randomly when there are plenty of voices [GitHub issue](https://github.com/squinkylabs/SquinkyVCV/issues/98)
 
-Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high.
+Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high. [GitHub issue](https://github.com/squinkylabs/SquinkyVCV/issues/105)
 
-Seq++ image in the module browser new looks correct, rather than a black blob.
+Seq++ image in the module browser new looks correct, rather than a black blob. [GitHub issue](https://github.com/squinkylabs/SquinkyVCV/issues/99)
 
-Inputs on ExFor and Form mixers are now polyphonic.
+Inputs on ExFor and Form mixers are now polyphonic. [GitHub issue](https://github.com/squinkylabs/SquinkyVCV/issues/90)
 
-Modular mixers now support multi-solo by control-clicking on the solo buttons.
+Modular mixers now support multi-solo by control-clicking on the solo buttons. [GitHub issue](https://github.com/squinkylabs/SquinkyVCV/issues/88)
 
 ## 1.0.4
 
