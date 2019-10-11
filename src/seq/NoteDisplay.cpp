@@ -5,11 +5,7 @@
 #include "Seq.h"
 
 
-#include "widget/Widget.hpp"
-#include "nanovg.h"
-#include "window.hpp"
 #include "MidiSequencer.h"
-#include <GLFW/glfw3.h>
 #include "UIPrefs.h"
 #include "KbdManager.h"
 #ifndef _USERKB

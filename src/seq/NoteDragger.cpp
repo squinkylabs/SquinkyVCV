@@ -3,9 +3,6 @@
 #include "SqGfx.h"
 #include "WidgetComposite.h"
 
-#include "widget/Widget.hpp"
-#include "app.hpp"
-
 #include "ISeqSettings.h"
 #include "MidiEvent.h"
 #include "MidiSequencer.h"

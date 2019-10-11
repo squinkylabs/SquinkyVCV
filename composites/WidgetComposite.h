@@ -1,10 +1,6 @@
 #pragma once
 
 #include "rack.hpp"
-//#include "engine/Module.hpp"
-//#include "engine/Port.hpp"
-//#include "engine/Engine.hpp"
-//#include "app.hpp"
 
 using Input = ::rack::engine::Input;
 using Output = ::rack::engine::Output;

@@ -8,12 +8,14 @@
 class SequencerWidget;
 #include "WidgetComposite.h"
 
+#if 0
 #ifdef __V1x
     #include "engine/Module.hpp"
     using Module =  ::rack::engine::Module;
 #else
     #include "engine.hpp"
     using Module =  ::rack::Module;
+#endif
 #endif
 
 #include <atomic>

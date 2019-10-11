@@ -246,7 +246,7 @@ template <class TBase>
 inline void  CHB<TBase>::init()
 {
     for (int i = 0; i < polyOrder; ++i) {
-        _octave[i] = log2(float(i + 1));
+        _octave[i] = std::log2(float(i + 1));
     }
     onSampleRateChange();
     lag.setAttack(.1f);
