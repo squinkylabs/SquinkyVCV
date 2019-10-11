@@ -121,7 +121,13 @@ public:
     // TODO: change to const_iterator
     using iterator = filtered_iterator<MidiEvent, MidiTrack::const_iterator>;
     using iterator_pair = std::pair<iterator, iterator>;
-    iterator_pair getEvents() const;
+
+    /**
+     * gets an iterator for all the events in the current edit context.
+     * 
+     * @param preMargin is how much earlier to start before the start of the edit context.
+     */
+    iterator_pair getEvents(float preMargin) const;
     iterator_pair getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh) const;
 
     std::shared_ptr<MidiSong> getSong() const;

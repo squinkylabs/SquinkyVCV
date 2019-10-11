@@ -101,7 +101,8 @@ void NoteDisplay::step()
 
 void NoteDisplay::drawNotes(NVGcontext *vg)
 {
-    MidiEditorContext::iterator_pair it = sequencer->context->getEvents();
+    // Get all the events on the screen, and go back two bar so we get tied notes.
+    MidiEditorContext::iterator_pair it = sequencer->context->getEvents(8.f);
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     const int noteHeight = scaler->noteHeight();
@@ -113,7 +114,6 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
         const float x = scaler->midiTimeToX(*ev);
         const float y = scaler->midiPitchToY(*ev);
         const float width = scaler->midiTimeTodX(ev->duration);
-
         const bool selected = sequencer->selection->isSelected(ev);
         if (!selected || !mouseManager->willDrawSelection()) {
             SqGfx::filledRect(

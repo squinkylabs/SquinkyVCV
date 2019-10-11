@@ -79,9 +79,10 @@ MidiSongPtr MidiEditorContext::getSong() const
     return ret;
 }
 
-MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
+MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float preMargin) const
 {
-    return getEvents(m_startTime, m_endTime, m_pitchLow, m_pitchHigh);
+    const float startTime = std::max(0.f, m_startTime - preMargin);
+    return getEvents(startTime, m_endTime, m_pitchLow, m_pitchHigh);
 }
 
 MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh) const

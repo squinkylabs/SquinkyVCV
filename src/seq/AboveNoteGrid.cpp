@@ -159,7 +159,7 @@ void AboveNoteGrid::updateTimeLabels()
         const int numDigitsDisplayed = isBar ? 1 : 2;
         std::string s = TimeUtils::time2str(time, numDigitsDisplayed);
        // printf("in label update, i = %d, size = %d\n", i, timeLabels.size());
-        assert(timeLabels.size() > i);
+        assert((int) timeLabels.size() > i);
         timeLabels[i]->text = s;
         ++i;
     }
