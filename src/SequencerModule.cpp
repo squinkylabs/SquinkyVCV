@@ -126,6 +126,7 @@ struct SequencerWidget : ModuleWidget
 #endif
 };
 
+#if 0
 std::string _removeFileName(const std::string s, std::vector<char> separators)
 {
     // find the eerything up to and including the last separator
@@ -150,6 +151,7 @@ std::string removeFileName(const std::string s)
     return _removeFileName(s, {'/'});
 #endif
 }
+#endif
 
 void SequencerWidget::saveMidiFile()
 {
@@ -174,8 +176,6 @@ void SequencerWidget::saveMidiFile()
 		std::free(pathC);
 	});
 
-    sqDEBUG("save file = %s", pathC); 
-
 	if (::rack::string::filenameExtension(::rack::string::filename(pathStr)) == "") {
 		pathStr += ".mid";
 	}
@@ -183,7 +183,12 @@ void SequencerWidget::saveMidiFile()
     // TODO: add on file extension
     // TODO: save folder
     bool b = MidiFileProxy::save(_module->sequencer->song, pathStr.c_str());
-    assert(b);
+    if (!b) {
+        sqWARN("unable to write midi file to %s", pathStr.c_str());
+    } else {
+        std::string fileFolder = rack::string::directory(pathStr);
+        _module->sequencer->context->settings()->setMidiFilePath(fileFolder);
+    }
 }
 
 void SequencerWidget::loadMidiFile()
@@ -211,7 +216,7 @@ void SequencerWidget::loadMidiFile()
     MidiSongPtr song = MidiFileProxy::load(pathC);
 
     std::string temp(pathC);
-    std::string fileFolder = removeFileName(temp);
+    std::string fileFolder = rack::string::directory(temp);
     if (song) {
         _module->postNewSong(song, fileFolder);
     }  

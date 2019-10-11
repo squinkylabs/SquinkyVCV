@@ -23,21 +23,20 @@ bool MidiFileProxy::save(MidiSongPtr song, const std::string& filePath)
             int startTick = int(note->startTime * ppq);
             int duration = int(note->duration * ppq);
             int key = PitchUtils::cvToSemitone(note->pitchCV);
-            assert(key >= 0 && key <= 127);
-
-            int endTick = startTick + duration;
-
-            int outputTkNum = 0;
-            int outputMidiChannel = 0;
-            int velocity = 0x3f;
-            printf("start tick = %d end tick = %d pitch=%d\n", startTick, endTick, key);
-            midiFile.addNoteOn(outputTkNum, startTick, outputMidiChannel, key, velocity);
-            midiFile.addNoteOff(outputTkNum, endTick, outputMidiChannel, key);
+            if (key < 0 || key > 127) {
+                fprintf(stderr, "pitch outside MIDI range, not writing to file");
+            } else {
+                const int endTick = startTick + duration;
+                const int outputTkNum = 0;
+                const int outputMidiChannel = 0;
+                const int velocity = 0x3f;
+                midiFile.addNoteOn(outputTkNum, startTick, outputMidiChannel, key, velocity);
+                midiFile.addNoteOff(outputTkNum, endTick, outputMidiChannel, key);
+            }
         }
     }
     midiFile.sortTracks();
     return midiFile.write(filePath);
-    //std::cout << midiFile;
     return false;
 }
 
