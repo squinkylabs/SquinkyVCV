@@ -5,11 +5,47 @@
 #include "MidiSong.h"
 
 //#include <direct.h>
+#include <iostream>
 #include <assert.h>
+
+bool MidiFileProxy::save(MidiSongPtr song, char* filePath)
+{
+    smf::MidiFile midiFile;
+    midiFile.setTPQ(480);
+    const int ppq = midiFile.getTPQ();
+    assert(ppq == 480);
+
+    MidiTrackPtr track = song->getTrack(0);   // for now we always have one track here
+    for (auto it : *track) {
+        MidiEventPtr evt = it.second;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+        if (note) {
+            int startTick = int(note->startTime * ppq);
+            int duration = int(note->duration * ppq);
+            int key = PitchUtils::cvToSemitone(note->pitchCV);
+            assert(key >= 0 && key <= 127);
+
+            int endTick = startTick + duration;
+
+            int outputTkNum = 0;
+            int outputMidiChannel = 0;
+            int velocity = 0x3f;
+            printf("start tick = %d end tick = %d pitch=%d\n", startTick, endTick, key);
+            midiFile.addNoteOn(outputTkNum, startTick, outputTkNum, key, velocity);
+            midiFile.addNoteOff(outputTkNum, endTick, outputTkNum, key);
+        }
+    }
+    midiFile.sortTracks();
+    return midiFile.write(filePath);
+    //std::cout << midiFile;
+    return false;
+}
 
 MidiSongPtr MidiFileProxy::load(const std::string& filename)
 {
     smf::MidiFile midiFile;
+
+
 #if 0
     char buffer[2000];
     _getcwd(buffer, sizeof(buffer));
