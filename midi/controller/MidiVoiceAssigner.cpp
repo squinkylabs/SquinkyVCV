@@ -69,6 +69,10 @@ MidiVoice* MidiVoiceAssigner::getNextReUse(float pitch)
     for (int i = 0; i < numVoices; ++i) {
         if ((voices[i].pitch() == pitch) &&
          (voices[i].state() == MidiVoice::State::Idle)) {
+            // OK, we found an idle voice at the desired pitch
+            if (i == nextVoice) {
+                nextVoice = advance(nextVoice);
+            }
             return voices + i;
         }
     }
@@ -83,5 +87,8 @@ MidiVoice* MidiVoiceAssigner::getNextReUse(float pitch)
         }
     }
 
-    return voices + 0;              // if no idle voices, use the first one. 
+    // If no idle voices, use the next one
+    int i = nextVoice;
+    nextVoice = advance(nextVoice);
+    return voices + i;            
 }

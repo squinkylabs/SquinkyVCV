@@ -472,10 +472,50 @@ static void testVoiceAssignRetrigger()
     assert(p->_getIndex() != p2->_getIndex());
 }
 
+// This case comes from a customer issue: https://github.com/squinkylabs/SquinkyVCV/issues/98
+static void testVoiceAssignBug()
+{
+    MidiVoice vx[3];
+    MidiVoiceAssigner va(vx, 3);
+    TestHost2 th;
+    va.setNumVoices(3);
+    initVoices(vx, 3, &th);
+
+    const float pitch1 = 1;
+    const float pitch2 = 2;
+    const float pitch3 = 3;
+    const float pitch5 = 5;
+
+    MidiVoice* p = va.getNext(pitch1);
+    p->playNote(pitch1, .5, .75);
+    assert(p->_getIndex() == 0);
+    p->updateToMetricTime(.75);
+
+    p = va.getNext(pitch2);
+    p->playNote(pitch2, .75, 1);
+    assert(p->_getIndex() == 1);
+    p->updateToMetricTime(1);
+
+    p = va.getNext(pitch3);
+    p->playNote(pitch3, 1, 1.25);
+    assert(p->_getIndex() == 2);
+    p->updateToMetricTime(1.25);
+
+    // this is zero for two reasons - one, it is next in the rotation.
+    // two, it is that same pitch
+    p = va.getNext(pitch1);
+    p->playNote(pitch1, 1.5, 1.75);
+    assert(p->_getIndex() == 0);
+    p->updateToMetricTime(1.75);
+
+    p = va.getNext(pitch5);
+    p->playNote(pitch5, 1.75, 2);
+    assert(p->_getIndex() != 0);
+}
+
 //********************* test helper functions ************************************************
 
 extern MidiSongPtr makeSongOneQ();
-
 
 // song has an eight note starting at time 0
 static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
@@ -732,16 +772,6 @@ static void testMidiPlayerReset()
     assertEQ(host->lockConflicts, 0);
 }
 
-#if 0   // don't support stop any more
-static void testMidiPlayerStop()
-{
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun3(1, 100);
-    assertEQ(host->gateChangeCount, 0);
-    assertEQ(host->cvChangeCount, 0);
-}
-#endif
-
-
 // four voice assigner, but only two overlapping notes
 static void testMidiPlayerOverlap()
 {
@@ -811,7 +841,6 @@ static void testMidiPlayerLoop2()
     assertEQ(3, host->gateChangeCount);
     assertEQ(pl.getCurrentLoopIterationStart(), 4);
 }
-
 
 static void testMidiPlayerLoop3()
 {
@@ -1006,6 +1035,7 @@ void testMidiPlayer2()
     testVoiceAssignOverlapMono();
     testVoiceAssignRotate();
     testVoiceAssignRetrigger();
+    testVoiceAssignBug();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();
