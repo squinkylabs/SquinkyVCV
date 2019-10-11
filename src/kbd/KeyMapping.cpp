@@ -55,7 +55,7 @@ private:
 KeyMapping::KeyMapping(const std::string& configPath)
 {
     Actions actions;
-    INFO("parsing key mapping: %s\n", configPath.c_str());
+    sqINFO("parsing key mapping: %s\n", configPath.c_str());
     FILE *file = fopen(configPath.c_str(), "r");
     if (!file) {
         std::string errorStr("could not open file mapping: ");

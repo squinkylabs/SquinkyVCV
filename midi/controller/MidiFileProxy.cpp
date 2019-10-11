@@ -8,7 +8,7 @@
 #include <iostream>
 #include <assert.h>
 
-bool MidiFileProxy::save(MidiSongPtr song, char* filePath)
+bool MidiFileProxy::save(MidiSongPtr song, const std::string& filePath)
 {
     smf::MidiFile midiFile;
     midiFile.setTPQ(480);

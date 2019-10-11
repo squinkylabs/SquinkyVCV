@@ -66,9 +66,17 @@ struct SequencerWidget : ModuleWidget
         );
         midifile->text = "load midi file";
         theMenu->addChild(midifile); 
+
+        SqMenuItem* midifileSave = new SqMenuItem(
+            []() { return false; },
+            [this]() { this->saveMidiFile(); }
+        );
+        midifileSave->text = "save midi file";
+        theMenu->addChild(midifileSave); 
     }
 
     void loadMidiFile();
+    void saveMidiFile();
 
     /**
      * Helper to add a text label to this widget
@@ -141,6 +149,41 @@ std::string removeFileName(const std::string s)
 #else
     return _removeFileName(s, {'/'});
 #endif
+}
+
+void SequencerWidget::saveMidiFile()
+{
+    static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
+    osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
+    std::string filename = "Untitled.mid";
+
+    std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
+
+	sqDEFER({
+		osdialog_filters_free(filters);
+	});
+
+	char* pathC = osdialog_file(OSDIALOG_SAVE, dir.c_str(), filename.c_str(), filters);
+  
+	if (!pathC) {
+		// Fail silently
+		return;
+	}
+    std::string pathStr = pathC;;
+	sqDEFER({
+		std::free(pathC);
+	});
+
+    sqDEBUG("save file = %s", pathC); 
+
+	if (::rack::string::filenameExtension(::rack::string::filename(pathStr)) == "") {
+		pathStr += ".mid";
+	}
+
+    // TODO: add on file extension
+    // TODO: save folder
+    bool b = MidiFileProxy::save(_module->sequencer->song, pathStr.c_str());
+    assert(b);
 }
 
 void SequencerWidget::loadMidiFile()

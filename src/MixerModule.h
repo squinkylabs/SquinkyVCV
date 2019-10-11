@@ -353,7 +353,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             if (pairedLeft) {
                  sendLeftChannel.send(msg);
             }
-        } // else WARN("got no command from right");
+        } // else sqWARN("got no command from right");
         if (pleaseSendSoloChangedMessageOnAudioThread) {
             CommChannelMessage msg2;
             msg2.commandId = CommCommand_SomethingChanged;
@@ -448,7 +448,7 @@ inline void MixerModule::onSomethingChanged()
         (otherModuleHasSolo && !thisModuleHasSolo) ||
         otherModuleHasExclusiveSolo;
 #ifdef _LOG
-    DEBUG("    thisModuleShouldMute = %d", thisModuleShouldMute);
+    sqDEBUG("    thisModuleShouldMute = %d", thisModuleShouldMute);
 #endif
 
     eng->setParam(this, getMuteAllParam(), thisModuleShouldMute ? 1.f : 0.f); 
