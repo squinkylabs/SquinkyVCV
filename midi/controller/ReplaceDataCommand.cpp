@@ -33,7 +33,7 @@ ReplaceDataCommand::ReplaceDataCommand(
     assert(song->getTrack(trackNumber));
 }
 
-void ReplaceDataCommand::execute(MidiSequencerPtr seq)
+void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
 {
     assert(seq);
     MidiTrackPtr mt = seq->song->getTrack(trackNumber);
@@ -83,7 +83,7 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq)
     }
 }
 
-void ReplaceDataCommand::undo(MidiSequencerPtr seq)
+void ReplaceDataCommand::undo(MidiSequencerPtr seq, SequencerWidget*)
 {
     assert(seq);
     MidiTrackPtr mt = seq->song->getTrack(trackNumber);

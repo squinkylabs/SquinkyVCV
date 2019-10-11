@@ -25,15 +25,17 @@ public:
     void undo() override
     {
         MidiSequencerPtr seq = getSeq();
-        if (seq) {
-            wrappedCommand->undo(seq);
+        SequencerWidget* wid = getWidget();
+        if (seq && wid) {
+            wrappedCommand->undo(seq, wid);
         }
     }
     void redo() override
     {
         MidiSequencerPtr seq = getSeq();
-        if (seq) {
-            wrappedCommand->execute(seq);
+        SequencerWidget* wid = getWidget();
+        if (seq && wid) {
+            wrappedCommand->execute(seq, wid);
         }
     }
 
@@ -53,6 +55,21 @@ private:
         }
         return ret;
     }
+    SequencerWidget* getWidget()
+    {
+        SequencerModule* module = dynamic_cast<SequencerModule *>(::rack::appGet()->engine->getModule(moduleId));
+        if (!module) {
+            fprintf(stderr, "error getting module in undo\n");
+            return nullptr;
+        }
+        SequencerWidget* widget = module->widget;
+        if (!widget) {
+            fprintf(stderr, "error getting widget in undo\n");
+            return nullptr;
+        }
+        return widget;
+
+    }
 };
 
 void UndoRedoStack::setModuleId(int id)
@@ -63,7 +80,7 @@ void UndoRedoStack::setModuleId(int id)
 void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)
 {
     assert(seq);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     auto action = new SeqAction("unknown", cmd, moduleId);
 
     ::rack::appGet()->history->push(action);

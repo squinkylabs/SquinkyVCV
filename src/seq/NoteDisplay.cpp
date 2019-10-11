@@ -71,6 +71,8 @@ void NoteDisplay::setSequencer(MidiSequencerPtr seq)
 
 void NoteDisplay::initEditContext()
 {
+    assert(sequencer);
+    assert(sequencer->context);
     // hard code view range (for now?)
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);

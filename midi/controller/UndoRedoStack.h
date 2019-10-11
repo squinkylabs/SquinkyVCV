@@ -17,6 +17,7 @@ class UndoRedoStack
 public:
     // execute the command, make undo record
     void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
+    void execute(MidiSequencerPtr, SequencerWidget*, std::shared_ptr<SqCommand>);
     void setModuleId(int);
 private:
     int moduleId=-1;

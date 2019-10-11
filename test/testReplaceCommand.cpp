@@ -97,7 +97,7 @@ static void testTrans()
     assert(firstEvent);
     seq->selection->select(firstEvent);
     auto cmd = ReplaceDataCommand::makeChangePitchCommand(seq, 1);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
 
     firstEvent = seq->context->getTrack()->begin()->second;
     float pitch = safe_cast<MidiNoteEvent>(firstEvent)->pitchCV;
@@ -105,9 +105,9 @@ static void testTrans()
     assertClose(pitch, -.91666, .01);
     seq->assertValid();
 
-    cmd->undo(seq);
+    cmd->undo(seq, nullptr);
     seq->assertValid();
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
 }
 
@@ -122,16 +122,16 @@ static void testTrackLength()
 
     //change to 77 bars
     auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq, 77);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
 
     assertEQ(seq->context->getTrack()->getLength(), 77);
 
-    cmd->undo(seq);
+    cmd->undo(seq, nullptr);
     seq->assertValid();
     assertEQ(seq->context->getTrack()->getLength(), 8);
 
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
     assertEQ(seq->context->getTrack()->getLength(), 77);
 
@@ -148,16 +148,16 @@ static void testTrackLength2()
 
     //change to 1.5 quarter notes
     auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq, 1.5);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
 
     assertEQ(seq->context->getTrack()->getLength(), 1.5);
 
-    cmd->undo(seq);
+    cmd->undo(seq, nullptr);
     seq->assertValid();
     assertEQ(seq->context->getTrack()->getLength(), 4);
 
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
     assertEQ(seq->context->getTrack()->getLength(), 1.5);
 }
@@ -181,7 +181,7 @@ static void testInsert()
     note->duration = 2;
 
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
 
     assertEQ(seq->context->getTrack()->size(), 2);
@@ -205,11 +205,11 @@ static void testInsert()
 
     seq->assertValid();
 
-    cmd->undo(seq);
+    cmd->undo(seq, nullptr);
     assertEQ(initLength, seq->context->getTrack()->getLength());
     seq->assertValid();
 
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     assertEQ(longerLength, seq->context->getTrack()->getLength());
     seq->assertValid();
 }
@@ -228,7 +228,7 @@ static void testStartTimeUnquantized()
     note->pitchCV = 1.1f;
     note->duration = 2;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
     assertEQ(seq->selection->size(), 1);
 
@@ -267,7 +267,7 @@ static void testStartTimeQuantized()
     note->pitchCV = 1.1f;
     note->duration = 2;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
     assertEQ(seq->selection->size(), 1);
 
@@ -303,7 +303,7 @@ static void testDuration()
     note->pitchCV = 1.1f;
     note->duration = 5;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
 
     // now increase dur by 1
@@ -340,7 +340,7 @@ static void testDurationMulti(bool absoluteDuration)
     note->pitchCV = 1.1f;
     note->duration = 5;
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, false);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
 
     // put a second note into it at time 12, dur 2;
@@ -349,7 +349,7 @@ static void testDurationMulti(bool absoluteDuration)
     note->pitchCV = 1.1f;
     note->duration = 1;
     cmd = ReplaceDataCommand::makeInsertNoteCommand(seq, note, true);
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     seq->assertValid();
 
     assertEQ(seq->selection->size(), 2);

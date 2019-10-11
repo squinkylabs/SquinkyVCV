@@ -74,6 +74,14 @@ void MidiSequencer::assertValid() const
     song->assertValid();
     context->assertValid();
     assertSelectionInTrack();
+
+    const int trackNumber = context->getTrackNumber();
+    MidiTrack* track = this->context->getTrack().get();
+    MidiTrack* track2 = this->song->getTrack(trackNumber).get();
+    (void) track;
+    (void) track2;
+    
+    assert(track == track2);
 }
 
 void MidiSequencer::assertSelectionInTrack() const

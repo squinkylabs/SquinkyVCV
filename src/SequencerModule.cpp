@@ -4,6 +4,7 @@
 
 #ifdef _SEQ
 #include "DrawTimer.h"
+#include "NewSongDataCommand.h"
 #include "WidgetComposite.h"
 #include "Seq.h"
 #include "seq/SeqSettings.h"
@@ -23,8 +24,6 @@
 #include "MidiSong.h"
 #include "../test/TestSettings.h"
 #include "TimeUtils.h"
-
-#include "KbdManager.h"
 #include "MidiFileProxy.h"
 #include "SequencerModule.h"
 #include <osdialog.h>
@@ -119,7 +118,6 @@ struct SequencerWidget : ModuleWidget
 #endif
 };
 
-
 std::string _removeFileName(const std::string s, std::vector<char> separators)
 {
     // find the eerything up to and including the last separator
@@ -145,7 +143,6 @@ std::string removeFileName(const std::string s)
 #endif
 }
 
-
 void SequencerWidget::loadMidiFile()
 {
     static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
@@ -153,7 +150,6 @@ void SequencerWidget::loadMidiFile()
     std::string filename;
 
     std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
-    sqDEBUG("init open file with %s", dir.c_str());
 
 	sqDEFER({
 		osdialog_filters_free(filters);
@@ -173,7 +169,6 @@ void SequencerWidget::loadMidiFile()
 
     std::string temp(pathC);
     std::string fileFolder = removeFileName(temp);
-    sqDEBUG("path was %s, final = %s", pathC, fileFolder.c_str());
     if (song) {
         _module->postNewSong(song, fileFolder);
     }  
@@ -451,25 +446,25 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
 
 void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFolder)
 {
-    newSong->assertValid();
-    MidiSongPtr oldSong = sequencer->song;
-    {
-        // Must lock the songs when swapping them or player 
-        // might glitch (or crash).
-        MidiLocker oldL(oldSong->lock);
-        MidiLocker newL(newSong->lock);
-        seqComp->setSong(newSong);
+    auto updater = [](bool set, MidiSequencerPtr seq, MidiSongPtr newSong, SequencerWidget* widget) {
 
-        sequencer->setNewSong(newSong);
-       // sequencer->song = newSong;
+        assert(widget);
+        assert(seq);
+        assert(newSong);
+        if (set && seq) {
+            seq->selection->clear();        // clear so we aren't pointing to notes from prev seq
+            seq->setNewSong(newSong);
+        }
 
-    }
-      if (widget) {
-        widget->noteDisplay->songUpdated();
-        widget->headerDisplay->songUpdated();
-    }
+        if (!set && widget) {
+            widget->noteDisplay->songUpdated();
+            widget->headerDisplay->songUpdated();
+        }
+    };
 
-    sequencer->assertValid();
+    NewSongDataDataCommandPtr cmd = NewSongDataDataCommand::makeLoadMidiFileCommand(newSong, updater);
+    sequencer->undo->execute(sequencer, cmd);
+
     sequencer->context->settings()->setMidiFilePath(fileFolder);
 }
 
