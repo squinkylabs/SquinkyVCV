@@ -23,10 +23,8 @@ NewSongDataDataCommandPtr NewSongDataDataCommand::makeLoadMidiFileCommand(
 
 void NewSongDataDataCommand::execute(MidiSequencerPtr sequencer, SequencerWidget* widget)
 {
- 
     newSong->assertValid();
     oldSong = sequencer->song;
-    fflush(stderr);
     {
         // Must lock the songs when swapping them or player 
         // might glitch (or crash).

@@ -42,6 +42,7 @@ static void compareSongs(MidiSongPtr song1, MidiSongPtr song2)
 
         if (ev1->type == MidiEvent::Type::End) {
             assert(ev2->type == MidiEvent::Type::End);
+            assertEQ(ev1->startTime, ev2->startTime);
         } else {
             MidiNoteEventPtr note1 = safe_cast<MidiNoteEvent>(ev1);
             MidiNoteEventPtr note2 = safe_cast<MidiNoteEvent>(ev2);

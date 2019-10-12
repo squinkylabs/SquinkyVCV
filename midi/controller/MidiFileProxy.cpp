@@ -17,9 +17,11 @@ bool MidiFileProxy::save(MidiSongPtr song, const std::string& filePath)
     assert(ppq == 480);
 
     MidiTrackPtr track = song->getTrack(0);   // for now we always have one track here
+    const int outputTkNum = 0;
     for (auto it : *track) {
         MidiEventPtr evt = it.second;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+        MidiEndEventPtr end = safe_cast<MidiEndEvent>(evt);
         if (note) {
             int startTick = int(note->startTime * ppq);
             int duration = int(note->duration * ppq);
@@ -28,14 +30,20 @@ bool MidiFileProxy::save(MidiSongPtr song, const std::string& filePath)
                 fprintf(stderr, "pitch outside MIDI range, not writing to file");
             } else {
                 const int endTick = startTick + duration;
-                const int outputTkNum = 0;
                 const int outputMidiChannel = 0;
                 const int velocity = 0x3f;
                 midiFile.addNoteOn(outputTkNum, startTick, outputMidiChannel, key, velocity);
                 midiFile.addNoteOff(outputTkNum, endTick, outputMidiChannel, key);
             }
+        } else if (end) {
+            int tick = int(end->startTime * ppq);
+            std::vector<smf::uchar> data;
+            data.push_back(0);
+            assert(data.size() == 1);
+            midiFile.addMetaEvent(outputTkNum, tick, 0x2f, data);
         }
     }
+   
     midiFile.sortTracks();
     return midiFile.write(filePath);
     return false;
@@ -99,10 +107,10 @@ MidiTrackPtr MidiFileProxy::getFirst(MidiSongPtr song, smf::MidiFile& midiFile)
                 newTrack->insertEvent(note);
                 foundNotes = true;
             } else if (evt.isEndOfTrack()) {
-                const float start = double(evt.tick) / ppq;
+                const float start =  float (double(evt.tick) / ppq);
 
                 // quantize end point to 1/16 note, because that's what we support
-                float startq = TimeUtils::quantize(start, .25f, false);
+                float startq = (float) TimeUtils::quantize(start, .25f, false);
                 if (startq < start) {
                     startq += .25f;
                 }
