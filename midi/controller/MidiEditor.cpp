@@ -776,7 +776,18 @@ void MidiEditor::selectAll()
 void MidiEditor::changeTrackLength()
 {
     float endTime = seq()->context->cursorTime();
-    endTime = seq()->context->settings()->quantizeAlways(endTime, false);
+
+    if (seq()->context->settings()->snapToGrid()) {
+        // if snap to grid is on, snap it
+        endTime = seq()->context->settings()->quantizeAlways(endTime, false);
+    } else {
+        // otherwise, snap to 1/16 note
+        const float orig = endTime;
+        endTime = TimeUtils::quantize(endTime, .25f, false);
+        if (endTime < orig) {
+            endTime += .25;
+        }
+    }
     auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq(), endTime);
     seq()->undo->execute(seq(), cmd);
 }
