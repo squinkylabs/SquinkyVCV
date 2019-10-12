@@ -637,6 +637,27 @@ static void testInsertTwoNotes()
     testInsertTwoNotes(false);
 }
 
+static void testInsertMultiBar()
+{
+
+    MidiSequencerPtr seq = makeTest(true);
+    assert(seq->selection->empty());
+
+    MLockTest l(seq);
+
+    float pitch = 3;
+    float time = 0;
+
+    seq->editor->moveToTimeAndPitch(time, pitch);
+    seq->context->setCursorPitch(pitch);
+
+    for (int i = 0; i < 9; ++i) {
+        seq->editor->insertPresetNote(MidiEditor::Durations::Quarter, true);
+    }
+    seq->assertValid();
+    seq->context->assertCursorInViewport();
+}
+
 static void testDelete()
 {
     MidiSequencerPtr seq = makeTest(false);
@@ -776,6 +797,7 @@ void testMidiEditorSub(int trackNumber)
     testDelete2();
     testInsertPresetNotes();
     testInsertTwoNotes();
+    testInsertMultiBar();
 
     testChangeTrackLength();
     testChangeTrackLengthNoSnap();

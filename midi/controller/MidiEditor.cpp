@@ -585,6 +585,10 @@ void MidiEditor::insertNoteHelper3(float duration, float advanceAmount, bool ext
     seq()->undo->execute(seq(), cmd);
     seq()->context->setCursorTime(note->startTime + advanceAmount);
     updateSelectionForCursor(extendSelection);
+
+     // after we change start times, we need to put the cursor on the moved notes
+    seq()->context->setCursorToSelection(seq()->selection);
+    seq()->context->adjustViewportForCursor();
     seq()->assertValid();
 }
 
