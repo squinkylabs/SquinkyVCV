@@ -64,14 +64,14 @@ struct SequencerWidget : ModuleWidget
             []() { return false; },
             [this]() { this->loadMidiFile(); }
         );
-        midifile->text = "load midi file";
+        midifile->text = "Load midi file";
         theMenu->addChild(midifile); 
 
         SqMenuItem* midifileSave = new SqMenuItem(
             []() { return false; },
             [this]() { this->saveMidiFile(); }
         );
-        midifileSave->text = "save midi file";
+        midifileSave->text = "Save midi file";
         theMenu->addChild(midifileSave); 
     }
 
