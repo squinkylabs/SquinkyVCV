@@ -11,8 +11,9 @@ Seq++ bugs:
 * Articulation setting of 100% was acting like 85%.
 * Notes were getting dropped when played with coarse clock.
 * Dragging durations with the mouse were making zero length notes.
-* Notes that start in the previous two bars are now drawn [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/112)
-* Notes re-triggering seemingly randomly when there are plenty of voices [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/98)
+* Notes that start in the previous two bars are now drawn. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/112)
+* Notes re-triggering seemingly randomly when there are plenty of voices. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/98)
+* INserting notes wasn't scrolling the the next bar when it should have. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/113)
 
 Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/105)
 
