@@ -77,6 +77,15 @@ void UndoRedoStack::setModuleId(int id)
     this->moduleId = id;
 }
 
+
+void UndoRedoStack::execute(MidiSequencerPtr seq, SequencerWidget* widget, std::shared_ptr<SqCommand> cmd)
+{
+    assert(seq);
+    cmd->execute(seq, widget);
+    auto action = new SeqAction("unknown", cmd, moduleId);
+
+    ::rack::appGet()->history->push(action);
+}
 void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)
 {
     assert(seq);

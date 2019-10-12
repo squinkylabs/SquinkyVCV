@@ -511,8 +511,7 @@ void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFo
     };
 
     NewSongDataDataCommandPtr cmd = NewSongDataDataCommand::makeLoadMidiFileCommand(newSong, updater);
-    sequencer->undo->execute(sequencer, cmd);
-
+    sequencer->undo->execute(sequencer, widget, cmd);
     sequencer->context->settings()->setMidiFilePath(fileFolder);
 }
 

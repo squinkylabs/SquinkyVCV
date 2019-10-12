@@ -22,7 +22,6 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd
     redoList.clear();   
 }
 
-
 void UndoRedoStack::undo(MidiSequencerPtr seq)
 {
     assert(canUndo());

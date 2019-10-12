@@ -3,6 +3,7 @@
 #include "MidiFileProxy.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
+#include "TimeUtils.h"
 
 //#include <direct.h>
 #include <iostream>
@@ -82,16 +83,13 @@ MidiTrackPtr MidiFileProxy::getFirst(MidiSongPtr song, smf::MidiFile& midiFile)
 
     bool foundNotes = false;
     for (int track = 0; track < tracks; track++) {
-        MidiTrackPtr newTrack = std::make_shared<MidiTrack>(song->lock);
-        //printf("track = %d\n", track);
+        MidiTrackPtr newTrack = std::make_shared<MidiTrack>(song->lock);;
         for (int event = 0; event < midiFile[track].size(); event++) {
             smf::MidiEvent& evt = midiFile[track][event];
             if (evt.isNoteOn()) {
-               // cout << midifile[track][event].getDurationInSeconds();
                 const double dur = double(evt.getTickDuration()) / ppq;
                 const double  start = double(evt.tick) / ppq;
                 const float pitch = PitchUtils::pitchToCV(0, evt.getKeyNumber());
-                //printf("found note on tick %f dur %f\n", start, dur);
 
                 MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
                 note->startTime = float(start);
@@ -101,8 +99,14 @@ MidiTrackPtr MidiFileProxy::getFirst(MidiSongPtr song, smf::MidiFile& midiFile)
                 newTrack->insertEvent(note);
                 foundNotes = true;
             } else if (evt.isEndOfTrack()) {
-                const double start = double(evt.tick) / ppq;
-                newTrack->insertEnd(float(start));
+                const float start = double(evt.tick) / ppq;
+
+                // quantize end point to 1/16 note, because that's what we support
+                float startq = TimeUtils::quantize(start, .25f, false);
+                if (startq < start) {
+                    startq += .25f;
+                }
+                newTrack->insertEnd(startq);
             } else if (evt.isTrackName()) {
                // std::string name = evt.getMetaContent();
                // printf("track name is %s\n", name.c_str());
