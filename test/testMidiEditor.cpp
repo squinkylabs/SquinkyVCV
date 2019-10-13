@@ -720,11 +720,13 @@ static void testChangeTrackLength(bool snap)
     seq->editor->changeTrackLength();
     seq->assertValid();
 
-    assertEQ(seq->context->getTrack()->getLength(), 41);
+    const float expectedLength = snap ? 41.0f : 41.5f;
+
+    assertEQ(seq->context->getTrack()->getLength(), expectedLength);
     seq->undo->undo(seq);
     assertEQ(seq->context->getTrack()->getLength(), initialLength);
     seq->undo->redo(seq);
-    assertEQ(seq->context->getTrack()->getLength(), 41);
+    assertEQ(seq->context->getTrack()->getLength(), expectedLength);
 
     seq->assertValid();
 }

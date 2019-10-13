@@ -72,6 +72,7 @@ public:
         RUNNING_PARAM,              // the invisible param that stores the run 
         NUM_VOICES_PARAM,
         AUDITION_PARAM,
+        STEP_RECORD_PARAM,
         NUM_PARAMS
     };
 
@@ -366,6 +367,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::AUDITION_PARAM:
             ret = {0, 1, 1, "Audition"};
+            break;
+        case Seq<TBase>::STEP_RECORD_PARAM:
+            ret = {0, 1, 1, "Step record enable"};
             break;
         default:
             assert(false);

@@ -781,9 +781,9 @@ void MidiEditor::changeTrackLength()
         // if snap to grid is on, snap it
         endTime = seq()->context->settings()->quantizeAlways(endTime, false);
     } else {
-        // otherwise, snap to 1/16 note
+        // otherwise, snap to 1/16 note, but round up to the next one.
         const float orig = endTime;
-        endTime = TimeUtils::quantize(endTime, .25f, false);
+        endTime = (float) TimeUtils::quantize(endTime, .25f, false);
         if (endTime < orig) {
             endTime += .25;
         }
