@@ -368,6 +368,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     y = yy;
     float controlDx = 40;
 
+    // Scroll button
     {
 #ifdef _LAB
     addLabel(
@@ -384,6 +385,16 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
     }
+
+    // Step record button
+    ToggleButton* b = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(controlX + (2 * controlDx) - 5, y),
+        module,
+        Comp::STEP_RECORD_PARAM);
+    b->addSvg("res/square-button-01.svg");
+    b->addSvg("res/square-button-02.svg");
+    addParam(b);
 }
 
 void SequencerWidget::addStepRecord(SequencerModule *module)
