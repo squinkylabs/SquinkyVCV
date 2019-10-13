@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "Divider.h"
 #include "GateTrigger.h"
 #include "IComposite.h"
 #include "IIRDecimator.h"
@@ -71,13 +72,9 @@ public:
 };
 
 /**
- * orig CPU = 39
- * sub sample => 16
- * beta1 => 16.1
-        17.7 if change pitch every 16 samples.
-
- * beta 3: fix instability
- * made semitone and fine ranges sane.
+ * classic cpu: 14.4
+ * clean: 29.6
+ * clean2: 85.3
  */
 template <class TBase>
 class Super : public TBase
@@ -119,6 +116,7 @@ public:
         MIX_TRIM_PARAM,
         FM_PARAM,
         CLEAN_PARAM,
+        STEREO_MODE_PARAM,
         NUM_PARAMS
     };
 
@@ -135,6 +133,7 @@ public:
     enum OutputIds
     {
         MAIN_OUTPUT,
+        MAIN_OUTPUT_RIGHT,
         NUM_OUTPUTS
     };
 
@@ -155,6 +154,7 @@ private:
     float phase[numSaws] = {0};
     float phaseInc[numSaws] = {0};
     float globalPhaseInc = 0;
+    Divider div;
 
     std::function<float(float)> expLookup =
         ObjectCache<float>::getExp2Ex();
@@ -170,12 +170,13 @@ private:
     void updateAudioClean();
     void updateTrigger();
     void updateMix();
+    void stepn(int);
 
     int getOversampleRate();
 
     AudioMath::RandomUniformFunc random = AudioMath::random();
 
-    int inputSubSampleCounter = 1;
+   // int inputSubSampleCounter = 1;
     const static int inputSubSample = 4;    // only look at knob/cv every 4
 
     // TODO: make static
@@ -205,6 +206,10 @@ private:
 template <class TBase>
 inline void Super<TBase>::init()
 {
+    div.setup(inputSubSample, [this] {
+        this->stepn(div.getDiv());
+     });
+
     scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
 
     const int rate = getOversampleRate();
@@ -324,6 +329,7 @@ inline void Super<TBase>::updateAudioClean()
     const float output = decimator.process(buffer);
     TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
 }
+
 template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
@@ -332,16 +338,19 @@ inline void Super<TBase>::updateHPFilters()
 }
 
 template <class TBase>
+inline void Super<TBase>::stepn(int n)
+{
+    updatePhaseInc();
+    updateHPFilters();
+    updateMix();   
+}
+
+template <class TBase>
 inline void Super<TBase>::step()
 {
+    div.step();
     updateTrigger();
-    if (--inputSubSampleCounter <= 0) {
-        inputSubSampleCounter = inputSubSample;
-        updatePhaseInc();
-        updateHPFilters();
-        updateMix();
-    }
-   // const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
+    
     int rate = getOversampleRate();
     if (rate == 1) {
         updateAudioClassic();
@@ -375,24 +384,12 @@ inline void Super<TBase>::updateMix()
         1.2841f * rawMixValue + 0.044372f;
 }
 
-
 template <class TBase>
 int SuperDescription<TBase>::getNumParams()
 {
     return Super<TBase>::NUM_PARAMS;
 }
 
-/*
-        OCTAVE_PARAM,
-        SEMI_PARAM,
-        FINE_PARAM,
-        DETUNE_PARAM,
-        DETUNE_TRIM_PARAM,
-        MIX_PARAM,
-        MIX_TRIM_PARAM,
-        FM_PARAM,
-        CLEAN_PARAM,
-  */
 template <class TBase>
 inline IComposite::Config SuperDescription<TBase>::getParam(int i)
 {
@@ -424,6 +421,9 @@ inline IComposite::Config SuperDescription<TBase>::getParam(int i)
             break;
         case Super<TBase>::CLEAN_PARAM:
             ret = {0.0f, 2, 0, "Alias suppression amount"};
+            break;
+        case Super<TBase>::STEREO_MODE_PARAM:
+            ret =  {0.0f, 1.0f, 0.0f, "Stereo Mode"};
             break;
         default:
             assert(false);
