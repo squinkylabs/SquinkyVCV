@@ -132,7 +132,7 @@ public:
 
     enum OutputIds
     {
-        MAIN_OUTPUT,
+        MAIN_OUTPUT_LEFT,
         MAIN_OUTPUT_RIGHT,
         NUM_OUTPUTS
     };
@@ -155,6 +155,7 @@ private:
     float phaseInc[numSaws] = {0};
     float globalPhaseInc = 0;
     bool isStereo = false;
+    float sawGainsStereo[2][numSaws];
     Divider div;
 
     std::function<float(float)> expLookup =
@@ -315,7 +316,7 @@ inline void Super<TBase>::updateAudioClassic()
     float left, right;
     runSaws(left, right);
     const float output = hpf.run(left);
-    TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
+    TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(output, 0);
 }
 
 template <class TBase>
@@ -331,7 +332,7 @@ inline void Super<TBase>::updateAudioClean()
     }
     //const float output = hpf.run(mix);
     const float output = decimator.process(buffer);
-    TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
+    TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(output, 0);
 }
 
 template <class TBase>
@@ -344,7 +345,7 @@ inline void Super<TBase>::updateHPFilters()
 template <class TBase>
 inline void Super<TBase>::updateStereo()
 {
-    isStereo = TBase::outputs[MAIN_OUTPUT_RIGHT].isConnected() && TBase::outputs[MAIN_OUTPUT].isConnected(); 
+    isStereo = TBase::outputs[MAIN_OUTPUT_RIGHT].isConnected() && TBase::outputs[MAIN_OUTPUT_LEFT].isConnected(); 
 }
 
 template <class TBase>

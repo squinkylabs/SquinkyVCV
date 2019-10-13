@@ -263,7 +263,7 @@ void superWidget::addJacks(SuperModule *)
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(jackX + 3 * jackDx, jackRow2),
         module,
-        Super<WidgetComposite>::MAIN_OUTPUT));
+        Super<WidgetComposite>::MAIN_OUTPUT_LEFT));
     l = addLabel(
         Vec(jackX + 3 * jackDx - 18, jackRow2 + jackOffsetLabel),
         "Out", SqHelper::COLOR_WHITE);
