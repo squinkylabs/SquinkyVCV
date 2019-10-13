@@ -5,8 +5,8 @@
 
 #include "ToggleManager2.h"
 
-#include "app.hpp"
-#include "window.hpp"
+//#include "app.hpp"
+//#include "window.hpp"
 
 // let's back-port the v1 svg button, since that's what our sutf expects
 struct SvgButtonV1 : ::rack::OpaqueWidget {

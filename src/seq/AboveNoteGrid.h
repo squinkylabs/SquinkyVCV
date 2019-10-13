@@ -1,7 +1,6 @@
 
 
 #include "../Squinky.hpp"
-#include "widget/Widget.hpp"
 #include "MidiEditorContext.h"
 
 class MidiSequencer;

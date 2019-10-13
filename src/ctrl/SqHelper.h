@@ -9,14 +9,6 @@
 #include "IComposite.h"
 #include <string>
 
-#define sqDEFER(code) auto CONCAT(_defer_, __COUNTER__) = ::rack::deferWrapper([&]() code)
-
-#define sqDEBUG(format, ...) ::rack::logger::log(::rack::logger::DEBUG_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define sqINFO(format, ...) ::rack::logger::log(::rack::logger::INFO_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define sqWARN(format, ...) ::rack::logger::log(::rack::logger::WARN_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
-#define sqFATAL(format, ...) ::rack::logger::log(::rack::logger::FATAL_LEVEL, __FILE__, __LINE__, format, ##__VA_ARGS__)
-
-
 extern ::rack::plugin::Plugin *pluginInstance;
 class SqHelper
 {

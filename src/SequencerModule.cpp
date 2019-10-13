@@ -126,7 +126,7 @@ void SequencerWidget::loadMidiFile()
     std::string filename;
     std::string dir;
 
-	sqDEFER({
+	DEFER({
 		osdialog_filters_free(filters);
 	});
 
@@ -137,7 +137,7 @@ void SequencerWidget::loadMidiFile()
 		// Fail silently
 		return;
 	}
-	sqDEFER({
+	DEFER({
 		std::free(pathC);
 	});
 
