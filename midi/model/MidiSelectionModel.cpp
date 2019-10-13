@@ -129,7 +129,6 @@ MidiEventPtr MidiSelectionModel::getLast()
     return ret;
 }
 
-
 class NullAudition : public IMidiPlayerAuditionHost
 {
 public:
@@ -138,6 +137,7 @@ public:
 
     }
 };
+
 MidiSelectionModelPtr MidiSelectionModel::clone() const
 {
     // Clones ones never need to drive audition
