@@ -154,6 +154,7 @@ private:
     float phase[numSaws] = {0};
     float phaseInc[numSaws] = {0};
     float globalPhaseInc = 0;
+    bool isStereo = false;
     Divider div;
 
     std::function<float(float)> expLookup =
@@ -164,12 +165,13 @@ private:
     // knob, cv, trim -> 0..1
     AudioMath::ScaleFun<float> scaleDetune;
 
-    float runSaws();
+    void runSaws(float& left, float& right);
     void updatePhaseInc();
     void updateAudioClassic();
     void updateAudioClean();
     void updateTrigger();
     void updateMix();
+    void updateStereo();
     void stepn(int);
 
     int getOversampleRate();
@@ -288,7 +290,7 @@ inline void Super<TBase>::updatePhaseInc()
 
 
 template <class TBase>
-inline float Super<TBase>::runSaws()
+inline void Super<TBase>::runSaws(float& left, float& right)
 {
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
@@ -300,19 +302,19 @@ inline float Super<TBase>::runSaws()
         assert(phase[i] >= 0);
 
         const float gain = (i == numSaws / 2) ? gainCenter : gainSides;
-      //  mix += phase[i] * gain;
         mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
     }
 
     mix *= 4.5;       // too low 2 too high 10
-    return mix;
+    left = mix;
 }
 
 template <class TBase>
 inline void Super<TBase>::updateAudioClassic()
 {
-    const float mix = runSaws();
-    const float output = hpf.run(mix);
+    float left, right;
+    runSaws(left, right);
+    const float output = hpf.run(left);
     TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
 }
 
@@ -322,8 +324,10 @@ inline void Super<TBase>::updateAudioClean()
     const int bufferSize = getOversampleRate();
     decimator.setup(bufferSize);
     for (int i = 0; i < bufferSize; ++i) {
-        const float mix = runSaws();
-        buffer[i] = mix;
+        //const float mix = runSaws();
+        float left, right;
+        runSaws(left, right);
+        buffer[i] = left;
     }
     //const float output = hpf.run(mix);
     const float output = decimator.process(buffer);
@@ -338,11 +342,18 @@ inline void Super<TBase>::updateHPFilters()
 }
 
 template <class TBase>
+inline void Super<TBase>::updateStereo()
+{
+    isStereo = TBase::outputs[MAIN_OUTPUT_RIGHT].isConnected() && TBase::outputs[MAIN_OUTPUT].isConnected(); 
+}
+
+template <class TBase>
 inline void Super<TBase>::stepn(int n)
 {
     updatePhaseInc();
     updateHPFilters();
-    updateMix();   
+    updateMix();
+    updateStereo();   
 }
 
 template <class TBase>
