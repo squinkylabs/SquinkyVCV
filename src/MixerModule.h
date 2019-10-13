@@ -233,11 +233,11 @@ inline void MixerModule::onRequestSoloState(bool pairedLeft)
 
 inline void MixerModule::initSoloState() {
     if (!sharedSoloState) {
-        sqWARN("can't init solo yet");
+        WARN("can't init solo yet");
         return;
     }
     if (moduleIndex < 0 || moduleIndex >= SharedSoloState::maxModules) {
-        sqWARN("bad module index in initSoloState");
+        WARN("bad module index in initSoloState");
         return;
     }
     if (!haveInitSoloState) {
@@ -262,7 +262,7 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
 {
     // there was a bug causing these. Now they don't happen
     if (msg.commandId == 0) {
-        sqWARN("spurious command");
+        WARN("spurious command");
         return;
     }
 
@@ -290,7 +290,7 @@ inline void MixerModule::processMessageFromBus(const CommChannelMessage& msg, bo
             onRequestSoloState(pairedLeft);
             break;
         default:
-            sqWARN("no handler for message %x", msg.commandId);
+            WARN("no handler for message %x", msg.commandId);
     }
 }
 
@@ -353,7 +353,7 @@ inline void MixerModule::process(const ProcessArgs &args)
             if (pairedLeft) {
                  sendLeftChannel.send(msg);
             }
-        } // else sqWARN("got no command from right");
+        }
         if (pleaseSendSoloChangedMessageOnAudioThread) {
             CommChannelMessage msg2;
             msg2.commandId = CommCommand_SomethingChanged;
@@ -409,12 +409,12 @@ inline void MixerModule::onSomethingChanged()
     sqDEBUG("** on something changed");
 #endif
     if (!sharedSoloState) {
-        sqWARN("something changed, but no state module=%d", moduleIndex);
+        WARN("something changed, but no state module=%d", moduleIndex);
         return;
     }
 
     if (moduleIndex >= SharedSoloState::maxModules || moduleIndex < 0) {
-        sqWARN("too many modules %d", moduleIndex);
+        WARN("too many modules %d", moduleIndex);
         return;
     }
 
@@ -490,11 +490,11 @@ inline void handleSoloClickFromUI(MixerModule* mixer, int channel, bool ctrl)
     auto state = mixer->getSharedSoloState();
     int myIndex = mixer->getModuleIndex();
     if (!state) {
-        sqWARN("can't get shared state for %d", myIndex);
+        WARN("can't get shared state for %d", myIndex);
         return;
     }
     if (myIndex >= SharedSoloState::maxModules) {
-        sqWARN("too many modules");
+        WARN("too many modules");
         return;
     }
 #ifdef _LOG

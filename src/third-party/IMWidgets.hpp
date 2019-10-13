@@ -9,7 +9,7 @@
 #define IM_WIDGETS_HPP
 
 #include "rack.hpp"
-#include "window.hpp"
+//#include "window.hpp"
 
 using namespace ::rack;
 

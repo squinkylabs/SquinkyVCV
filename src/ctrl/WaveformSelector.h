@@ -1,11 +1,6 @@
 #pragma once
 
 #include "SqHelper.h"
-#ifdef __V1x
-#else
-#include "widgets.hpp"
-#include <GLFW/glfw3.h>
-#endif
 
 class ButtonCell
 {

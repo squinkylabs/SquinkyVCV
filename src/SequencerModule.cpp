@@ -161,7 +161,7 @@ void SequencerWidget::saveMidiFile()
 
     std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
 
-	sqDEFER({
+	DEFER({
 		osdialog_filters_free(filters);
 	});
 
@@ -172,7 +172,7 @@ void SequencerWidget::saveMidiFile()
 		return;
 	}
     std::string pathStr = pathC;;
-	sqDEFER({
+	DEFER({
 		std::free(pathC);
 	});
 
@@ -184,7 +184,7 @@ void SequencerWidget::saveMidiFile()
     // TODO: save folder
     bool b = MidiFileProxy::save(_module->sequencer->song, pathStr.c_str());
     if (!b) {
-        sqWARN("unable to write midi file to %s", pathStr.c_str());
+        WARN("unable to write midi file to %s", pathStr.c_str());
     } else {
         std::string fileFolder = rack::string::directory(pathStr);
         _module->sequencer->context->settings()->setMidiFilePath(fileFolder);
@@ -199,7 +199,7 @@ void SequencerWidget::loadMidiFile()
 
     std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
 
-	sqDEFER({
+	DEFER({
 		osdialog_filters_free(filters);
 	});
 
@@ -209,7 +209,7 @@ void SequencerWidget::loadMidiFile()
 		// Fail silently
 		return;
 	}
-	sqDEFER({
+	DEFER({
 		std::free(pathC);
 	});
 

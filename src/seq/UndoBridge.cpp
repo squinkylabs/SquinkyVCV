@@ -7,10 +7,6 @@
 
 #if defined(__USE_VCV_UNDO) && defined(_SEQ)
 
-// VCV includes
-#include "app.hpp"
-#include "history.hpp"
-
 #include "../SequencerModule.h"
 
 class SeqAction : public ::rack::history::ModuleAction

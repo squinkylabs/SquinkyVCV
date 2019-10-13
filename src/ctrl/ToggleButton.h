@@ -5,11 +5,7 @@
 
 #include <memory>
 
-#ifndef __V1x
-#include "window.hpp"
-#endif
-
-
+#include "rack.hpp"
 
 #if 1   // just use SvgSwitch
 

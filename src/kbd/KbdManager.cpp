@@ -1,12 +1,9 @@
+#include "rack.hpp"
 #include "ActionContext.h"
 #include "KbdManager.h"
 #include "KeyMapping.h"
 #include "StepRecorder.h"
 
-#include "asset.hpp"
-#include "event.hpp"
-
-#include <GLFW/glfw3.h>
 
 #include <unistd.h>
 

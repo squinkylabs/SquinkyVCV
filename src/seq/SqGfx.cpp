@@ -3,14 +3,6 @@
 #include "SqGfx.h"
 #include "UIPrefs.h"
 
-#include "nanovg.h"
-#ifdef __V1x
-#include "app.hpp"
-#endif
-
-#include "window.hpp"
-
-
 void SqGfx::strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
 {
     nvgStrokeColor(vg, color);

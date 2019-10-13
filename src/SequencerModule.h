@@ -7,7 +7,6 @@
 
 class SequencerWidget;
 #include "WidgetComposite.h"
-#include "engine/Module.hpp"
 using Module =  ::rack::engine::Module;
 
 #include <atomic>
