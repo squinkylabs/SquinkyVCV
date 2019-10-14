@@ -155,7 +155,13 @@ private:
     float phaseInc[numSaws] = {0};
     float globalPhaseInc = 0;
     bool isStereo = false;
-    float sawGainsStereo[2][numSaws];
+
+    // current left and right gains
+    float sawGainsStereo[2][numSaws] = {
+        {.2},
+        {.2}
+    };
+
     Divider div;
 
     std::function<float(float)> expLookup =
@@ -166,13 +172,18 @@ private:
     // knob, cv, trim -> 0..1
     AudioMath::ScaleFun<float> scaleDetune;
 
-    void runSaws(float& left, float& right);
+    void runSaws(float& left);
+    void runSawsStereo(float& left, float& right);
     void updatePhaseInc();
+
     void updateAudioClassic();
     void updateAudioClean();
+    void updateAudioClassicStereo();
+    void updateAudioCleanStereo();
     void updateTrigger();
     void updateMix();
     void updateStereo();
+    void updateStereoGains();
     void stepn(int);
 
     int getOversampleRate();
@@ -200,10 +211,13 @@ private:
     float gainCenter = 0;
     float gainSides = 0;
 
-    StateVariable4PHP hpf;
+    StateVariable4PHP hpfLeft;
+    StateVariable4PHP hpfRight;
 
-    float buffer[MAX_OVERSAMPLE] = {};
-    IIRDecimator decimator;
+    float bufferLeft[MAX_OVERSAMPLE] = {0};
+    float bufferRight[MAX_OVERSAMPLE] = {0};
+    IIRDecimator decimatorLeft;
+    IIRDecimator decimatorRight;
 };
 
 template <class TBase>
@@ -217,7 +231,8 @@ inline void Super<TBase>::init()
 
     const int rate = getOversampleRate();
     const int decimateDiv = std::max(rate, (int) MAX_OVERSAMPLE);
-    decimator.setup(decimateDiv);
+    decimatorLeft.setup(decimateDiv);
+    decimatorRight.setup(decimateDiv);
 }
 
 template <class TBase>
@@ -291,7 +306,7 @@ inline void Super<TBase>::updatePhaseInc()
 
 
 template <class TBase>
-inline void Super<TBase>::runSaws(float& left, float& right)
+inline void Super<TBase>::runSaws(float& left)
 {
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
@@ -311,35 +326,88 @@ inline void Super<TBase>::runSaws(float& left, float& right)
 }
 
 template <class TBase>
+inline void Super<TBase>::runSawsStereo(float& left, float& right)
+{
+    left = right = 0;
+    for (int i = 0; i < numSaws; ++i) {
+        phase[i] += phaseInc[i];
+        if (phase[i] > 1) {
+            phase[i] -= 1;
+        }
+        assert(phase[i] <= 1);
+        assert(phase[i] >= 0);
+
+        left +=  (phase[i] - .5f) *sawGainsStereo[0][i];
+        right +=  (phase[i] - .5f) *sawGainsStereo[1][i];
+    }
+}
+
+template <class TBase>
 inline void Super<TBase>::updateAudioClassic()
 {
+    float left;
+    runSaws(left);
+
+    const float outputLeft = hpfLeft.run(left);
+    TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(outputLeft, 0);
+    TBase::outputs[MAIN_OUTPUT_RIGHT].setVoltage(outputLeft, 0);
+}
+
+template <class TBase>
+inline void Super<TBase>::updateAudioClassicStereo()
+{
     float left, right;
-    runSaws(left, right);
-    const float output = hpf.run(left);
-    TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(output, 0);
+    runSawsStereo(left, right);
+
+    const float outputLeft = hpfLeft.run(left);
+    const float outputRight = hpfRight.run(right);
+    TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(outputLeft, 0);  
+    TBase::outputs[MAIN_OUTPUT_RIGHT].setVoltage(outputRight, 0);
 }
 
 template <class TBase>
 inline void Super<TBase>::updateAudioClean()
 {
     const int bufferSize = getOversampleRate();
-    decimator.setup(bufferSize);
+    decimatorLeft.setup(bufferSize);
     for (int i = 0; i < bufferSize; ++i) {
-        //const float mix = runSaws();
-        float left, right;
-        runSaws(left, right);
-        buffer[i] = left;
+        float left;
+        runSaws(left);
+        bufferLeft[i] = left;
     }
-    //const float output = hpf.run(mix);
-    const float output = decimator.process(buffer);
+
+    const float output = decimatorLeft.process(bufferLeft);
     TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(output, 0);
+    TBase::outputs[MAIN_OUTPUT_RIGHT].setVoltage(output, 0);
+}
+
+template <class TBase>
+inline void Super<TBase>::updateAudioCleanStereo()
+{
+    const int bufferSize = getOversampleRate();
+    decimatorLeft.setup(bufferSize);
+    decimatorRight.setup(bufferSize);
+    for (int i = 0; i < bufferSize; ++i) {
+        float left, right;
+        runSawsStereo(left, right);
+        bufferLeft[i] = left;
+        bufferRight[i] = right;
+    }
+
+    const float outputLeft = decimatorLeft.process(bufferLeft);
+    const float outputRight = decimatorRight.process(bufferRight);
+    TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(outputLeft, 0);
+    TBase::outputs[MAIN_OUTPUT_RIGHT].setVoltage(outputRight, 0);
 }
 
 template <class TBase>
 inline void Super<TBase>::updateHPFilters()
 {
     const float filterCutoff = std::min(globalPhaseInc, .1f);
-    hpf.setCutoff(filterCutoff);
+    hpfLeft.setCutoff(filterCutoff);
+    if (isStereo) {
+        hpfRight.setCutoff(filterCutoff);
+    }
 }
 
 template <class TBase>
@@ -348,13 +416,43 @@ inline void Super<TBase>::updateStereo()
     isStereo = TBase::outputs[MAIN_OUTPUT_RIGHT].isConnected() && TBase::outputs[MAIN_OUTPUT_LEFT].isConnected(); 
 }
 
+// balance from -1, 1
+static inline float panL(float balance)
+{ // -1...+1
+    float p, inp;
+    inp = balance;
+    p = M_PI * (inp + 1) / 4;
+    return std::cos(p);
+}
+
+static inline float panR(float balance)
+{
+    float p, inp;
+    inp = balance;
+    p = M_PI * (inp + 1) / 4;
+    return std::sin(p);
+}
+
+template <class TBase>
+inline void Super<TBase>::updateStereoGains()
+{
+    for (int i=0; i< numSaws; ++i) 
+    {
+        float position = -1.f + 2.f * (float) i / (float) numSaws; 
+       //  float sawGainsStereo[2][numSaws] = {
+        sawGainsStereo[0][i] = panL(position);
+        sawGainsStereo[1][i] = panR(position);
+    }
+}
+
 template <class TBase>
 inline void Super<TBase>::stepn(int n)
 {
     updatePhaseInc();
     updateHPFilters();
     updateMix();
-    updateStereo();   
+    updateStereo(); 
+    updateStereoGains();  
 }
 
 template <class TBase>
@@ -364,10 +462,14 @@ inline void Super<TBase>::step()
     updateTrigger();
     
     int rate = getOversampleRate();
-    if (rate == 1) {
+    if ((rate == 1) && !isStereo) {
         updateAudioClassic();
-    } else {
+    } else if ((rate == 1) && isStereo) {
+        updateAudioClassic();
+    } else if ((rate != 1) && !isStereo) {
         updateAudioClean();
+    } else {
+        updateAudioCleanStereo();
     }
 }
 

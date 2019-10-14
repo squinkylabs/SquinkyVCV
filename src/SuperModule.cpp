@@ -225,11 +225,11 @@ void superWidget::addJacks(SuperModule *)
     l->fontSize = jackLabelPoints;
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jackX + 3 * jackDx, jackRow1),
+        Vec(jackX + 2 * jackDx, jackRow1),
         module,
         Super<WidgetComposite>::MIX_INPUT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 15, jackRow1 + jackOffsetLabel),
+        Vec(jackX + 2 * jackDx - 15, jackRow1 + jackOffsetLabel),
         "Mix");
     l->fontSize = jackLabelPoints;
 
@@ -266,7 +266,16 @@ void superWidget::addJacks(SuperModule *)
         Super<WidgetComposite>::MAIN_OUTPUT_LEFT));
     l = addLabel(
         Vec(jackX + 3 * jackDx - 18, jackRow2 + jackOffsetLabel),
-        "Out", SqHelper::COLOR_WHITE);
+        "Out L", SqHelper::COLOR_WHITE);
+    l->fontSize = jackLabelPoints;
+
+     addOutput(createOutputCentered<PJ301MPort>(
+        Vec(jackX + 3 * jackDx, jackRow1),
+        module,
+        Super<WidgetComposite>::MAIN_OUTPUT_RIGHT));
+    l = addLabel(
+        Vec(jackX + 3 * jackDx - 18, jackRow1 + jackOffsetLabel),
+        "Out R", SqHelper::COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 }
 
