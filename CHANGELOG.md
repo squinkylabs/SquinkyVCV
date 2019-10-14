@@ -15,6 +15,7 @@ Seq++ bugs:
 * Notes re-triggering seemingly randomly when there are plenty of voices. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/98)
 * Inserting notes wasn't scrolling the the next bar when it should have. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/113)
 * Sometimes the purple track end marker wasn't drawing (depending on grid settings).
+* Stuck notes when stopping seq in the middle and then editing. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/117)
 
 Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/105)
 

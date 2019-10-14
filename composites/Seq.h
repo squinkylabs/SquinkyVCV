@@ -149,6 +149,7 @@ private:
     GateTrigger runStopProcessor;
     void init(MidiSongPtr);
     void serviceRunStop();
+    void allGatesOff();
 
     std::shared_ptr<MidiAudition> audition;
     SeqClock clock;
@@ -289,6 +290,7 @@ void  Seq<TBase>::stepn(int n)
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
         player->reset(true);
+        allGatesOff();          // turn everything off on reset, just in case of stuck notes.
     }
 
     player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
@@ -300,9 +302,7 @@ void  Seq<TBase>::stepn(int n)
     player->setNumVoices(numVoices);
 
     if (!running && wasRunning) {
-        for (int i = 0; i < numVoices; ++i) {
-            TBase::outputs[GATE_OUTPUT].voltages[i] = 0;
-        }
+        allGatesOff();
     }
     wasRunning = running;
 
@@ -314,6 +314,14 @@ void  Seq<TBase>::stepn(int n)
     TBase::lights[GATE_LIGHT].value = isGate;
 
     player->updateSampleCount(n);
+}
+
+template <class TBase>
+inline void Seq<TBase>::allGatesOff()
+{
+    for (int i = 0; i < 16; ++i) {
+        TBase::outputs[GATE_OUTPUT].voltages[i] = 0;
+    }  
 }
 
 template <class TBase>
