@@ -264,13 +264,15 @@ bool Seq<TBase>::poll(RecordInputData* p)
     return stepRecordInput.poll(p);
 }
 
-
-
 template <class TBase>
 void  Seq<TBase>::stepn(int n)
 {
     serviceRunStop();
-    stepRecordInput.step();
+
+    if (TBase::params[STEP_RECORD_PARAM].value > .5f) {
+        stepRecordInput.step();
+    }
+    
     audition->enable(!isRunning() && (TBase::params[AUDITION_PARAM].value > .5f));
     audition->sampleTicksElapsed(n);
     // first process all the clock input params
