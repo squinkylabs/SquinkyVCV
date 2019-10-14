@@ -42,12 +42,13 @@ bool KbdManager::shouldGrabKeys() const
 
 bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned mods)
 {
-
+    DEBUG("KbdManager::handle code %d (q = %d) mods = %x", keyCode, GLFW_KEY_Q, mods);
     bool handled = false;
     const bool shift = (mods & GLFW_MOD_SHIFT);
     const bool ctrl = (mods & RACK_MOD_CTRL);        // this is command on mac
-    const bool alt = (mods && GLFW_MOD_ALT);
+    const bool alt = (mods & GLFW_MOD_ALT);
     SqKey key(keyCode, ctrl, shift, alt);
+    DEBUG("mods parsed to ctrl:%d shift:%d alt:%d", ctrl, shift, alt);
 
    // fprintf(stderr, "\n** KbdManager::handle code=%d mods=%d\n", keyCode, mods); 
    // fprintf(stderr, " shift=%d, ctrl=%d\n", shift, ctrl); fflush(stderr);
@@ -73,6 +74,7 @@ bool KbdManager::handle(MidiSequencerPtr sequencer, unsigned keyCode, unsigned m
             handled = true;
         }
     }
+    DEBUG("in mgs, handled = %d", handled);
     // fprintf(stderr, "KbdManager::handle ret %d\n", handled);
 
     return handled;

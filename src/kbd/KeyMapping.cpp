@@ -85,6 +85,7 @@ KeyMapping::KeyMapping(const std::string& configPath)
             json_t* value;
             json_array_foreach(bindings, index, value) {
                 SqKeyPtr key = SqKey::parse(value);
+                DEBUG("in init key=%d ctrl=%d shift=%d alt=%d", key->key, key->ctrl, key->shift, key->alt);
                 Actions::action act = parseAction(actions, value);
                 if (!act || !key) {
                      std::stringstream s;
@@ -104,6 +105,8 @@ KeyMapping::KeyMapping(const std::string& configPath)
     } else {
         throw (std::runtime_error("bindings not found at root"));
     }
+
+    DEBUG("Keyboard map has %d entries from JSON", theMap.size());
 
     //*********** ignore case ************
     std::set<int> ignoreCodes;
@@ -182,6 +185,7 @@ Actions::action KeyMapping::parseAction(Actions& actions, json_t* binding)
 
     std::string actionString = json_string_value(keyJ);
     auto act = actions.getAction(actionString);
+    DEBUG("parse action %s returned %p\n", actionString.c_str(), act);
     return act;
 }
 
