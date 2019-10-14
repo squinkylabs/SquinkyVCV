@@ -525,7 +525,7 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
     MidiPlayer2 pl(host, song);
 
     // let's make quantization very fine so these old tests don't freak out
-    pl.updateToMetricTime(time, quantInterval);
+    pl.updateToMetricTime(time, quantInterval, true);
 
     // song is only 1.0 long
     float expectedLoopStart = std::floor(time);
@@ -574,35 +574,35 @@ static std::shared_ptr<TestHost2> makeSongOverlapQandRun(float time)
 
     const float quantizationInterval = .25f;        // shouldn't matter for this test...
 
-    pl.updateToMetricTime(.5, quantizationInterval);
+    pl.updateToMetricTime(.5, quantizationInterval, true);
     assert(host->gateChangeCount == 0);
     assert(!host->gateState[0]);
     assert(!host->gateState[1]);
 
 
-    pl.updateToMetricTime(1.5, quantizationInterval);
+    pl.updateToMetricTime(1.5, quantizationInterval, true);
     assert(host->gateChangeCount == 1);
     assert(host->gateState[0]);
     assert(!host->gateState[1]);
 
 
-    pl.updateToMetricTime(2.5, quantizationInterval);
+    pl.updateToMetricTime(2.5, quantizationInterval, true);
     assert(host->gateChangeCount == 2);
     assert(host->gateState[0]);
     assert(host->gateState[1]);
 
 
-    pl.updateToMetricTime(3.5, quantizationInterval);
+    pl.updateToMetricTime(3.5, quantizationInterval, true);
     assert(host->gateChangeCount == 3);
     assert(!host->gateState[0]);
     assert(host->gateState[1]);
 
-    pl.updateToMetricTime(4.5, quantizationInterval);
+    pl.updateToMetricTime(4.5, quantizationInterval, true);
     assert(host->gateChangeCount == 4);
 
 
     assert(time > 4.5);
-    pl.updateToMetricTime(time, quantizationInterval);
+    pl.updateToMetricTime(time, quantizationInterval, true);
 
     return host;
 }
@@ -616,7 +616,7 @@ static std::shared_ptr<TestHost2> makeSongTouchingQandRun(bool exactDuration, fl
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
     pl.setNumVoices(4);
-    pl.updateToMetricTime(time, .25f);
+    pl.updateToMetricTime(time, .25f, true);
     return host;
 
 }
@@ -630,13 +630,13 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
     MidiPlayer2 pl(host, song);
 
 
-    pl.updateToMetricTime(timeBeforeLock, quantInterval);
+    pl.updateToMetricTime(timeBeforeLock, quantInterval, true);
     {
         MidiLocker l(song->lock);
-        pl.updateToMetricTime(timeBeforeLock + timeDuringLock, quantInterval);
+        pl.updateToMetricTime(timeBeforeLock + timeDuringLock, quantInterval, true);
     }
 
-    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock, quantInterval);
+    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock, quantInterval, true);
 
        // song is only 1.0 long
     float expectedLoopStart = std::floor(timeBeforeLock + timeDuringLock + timeAfterLock);
@@ -652,7 +652,7 @@ static void testMidiPlayer0()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(.01f, .25f);
+    pl.updateToMetricTime(.01f, .25f, true);
 }
 
 // test song has an eight note starting at time 0
@@ -743,7 +743,7 @@ static void testMidiPlayerReset()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(100, quantInterval);
+    pl.updateToMetricTime(100, quantInterval, true);
 
 
     assertAllButZeroAreInit(host.get());
@@ -760,7 +760,7 @@ static void testMidiPlayerReset()
     }
 
     // Should play just like it does in test1
-    pl.updateToMetricTime(2 * .24f, quantInterval);
+    pl.updateToMetricTime(2 * .24f, quantInterval, true);
 
 
     assertAllButZeroAreInit(host.get());
@@ -797,14 +797,14 @@ static void testMidiPlayerLoop()
     song->setSubrangeLoop(l);
     assert(song->getSubrangeLoop().enabled);
 
-    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+    pl.updateToMetricTime(0, .5, true);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
     assertEQ(1, host->gateChangeCount);
     assert(host->gateState[0]);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(.9, .5);
+    pl.updateToMetricTime(.9, .5, true);
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
 }
@@ -823,20 +823,20 @@ static void testMidiPlayerLoop2()
     assert(song->getSubrangeLoop().enabled);
 
     assertEQ(pl.getCurrentLoopIterationStart(), 0);
-    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+    pl.updateToMetricTime(0, .5, true);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
     assertEQ(1, host->gateChangeCount);
     assert(host->gateState[0]);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(3.5, .5);   
+    pl.updateToMetricTime(3.5, .5, true);
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
     assertEQ(pl.getCurrentLoopIterationStart(), 0);
 
    // now go to the second time around the loop, should play again.
-    pl.updateToMetricTime(4, .5);
+    pl.updateToMetricTime(4, .5, true);
     assert(host->gateState[0]);
     assertEQ(3, host->gateChangeCount);
     assertEQ(pl.getCurrentLoopIterationStart(), 4);
@@ -855,31 +855,31 @@ static void testMidiPlayerLoop3()
     song->setSubrangeLoop(l);
     assert(song->getSubrangeLoop().enabled);
 
-    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+    pl.updateToMetricTime(0, .5, true);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
     assertEQ(1, host->gateChangeCount);
     assert(host->gateState[0]);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(3.5, .5);
+    pl.updateToMetricTime(3.5, .5, true);
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
 
     // now go to the second time around the loop, should play again.
-    pl.updateToMetricTime(4, .5);
+    pl.updateToMetricTime(4, .5, true);
     assert(host->gateState[0]);
     assertEQ(3, host->gateChangeCount);
     assertEQ(pl.getCurrentLoopIterationStart(), 4);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(4 + 3.5, .5);
+    pl.updateToMetricTime(4 + 3.5, .5, true);
     assert(!host->gateState[0]);
     assertEQ(4, host->gateChangeCount);
     assertEQ(pl.getCurrentLoopIterationStart(), 4);
 
     // now go to the third time around the loop, should play again.
-    pl.updateToMetricTime(4+4, .5);
+    pl.updateToMetricTime(4+4, .5, true);
     assertEQ(pl.getCurrentLoopIterationStart(), 8);
     assert(host->gateState[0]);
     assertEQ(5, host->gateChangeCount);
@@ -984,11 +984,11 @@ static void _testQuantizedRetrigger2(float durations)
     // let's make quantization coarse (quarter note)
     // should play our short note as a quarter (don't quantize to zero)
     const float quantizeInterval = 1;
-    pl.updateToMetricTime(0, quantizeInterval);
+    pl.updateToMetricTime(0, quantizeInterval, true);
     assert(host->gateState[0]);
 
     // now second clock tick. This should cause a re-trigger, forcing the gate low
-    pl.updateToMetricTime(1, quantizeInterval);
+    pl.updateToMetricTime(1, quantizeInterval, true);
     assert(!host->gateState[0]);
 
     // after retrig, gate should go up
@@ -996,16 +996,16 @@ static void _testQuantizedRetrigger2(float durations)
     assert(host->gateState[0]);
 
     // beat 3 should have no note
-    pl.updateToMetricTime(2, quantizeInterval);
+    pl.updateToMetricTime(2, quantizeInterval, true);
     assert(!host->gateState[0]);
 
     // beat 4 should have no note
-    pl.updateToMetricTime(3, quantizeInterval);
+    pl.updateToMetricTime(3, quantizeInterval, true);
     assert(!host->gateState[0]);
 
 
     // loop: beat 1 should have a note
-    pl.updateToMetricTime(4, quantizeInterval);
+    pl.updateToMetricTime(4, quantizeInterval, true);
     assert(host->gateState[0]);
 }
 

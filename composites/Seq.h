@@ -291,7 +291,7 @@ void  Seq<TBase>::stepn(int n)
         player->reset(true);
     }
 
-    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()));
+    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
 
     // copy the current voice number to the poly ports
     const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);

@@ -21,7 +21,7 @@ public:
      * @param quantizationInterval is the amount of metric time in a clock. 
      * So, if the click is a sixteenth note clock, quantizationInterval will be .25
      */
-    void updateToMetricTime(double metricTime, float quantizationInterval);
+    void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
     void setNumVoices(int voices);
 
@@ -55,7 +55,6 @@ private:
     bool isReset = true;
     bool isResetGates = false;
 
-    bool isPlaying = true;
     double currentLoopIterationStart = 0;
     int numVoices=1;
 

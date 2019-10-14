@@ -69,16 +69,18 @@ float MidiPlayer2::getCurrentSubrangeLoopStart() const
     return ret;
 }
 
-void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval)
+void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
 {
 #if defined(_MLOG) && 0
     printf("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
 #endif
     assert(quantizationInterval != 0);
 
-    if (!isPlaying) {
+    if (!running) {
+        // If seq is paused, leave now so we don't act on the dirty flag when stopped.
         return;
     }
+
     const bool acquiredLock = song->lock->playerTryLock();
     if (acquiredLock) {
         if (song->lock->dataModelDirty()) {
@@ -98,7 +100,7 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
     // If we had a conflict and needed to reset, then
     // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
-       //  printf("\n******  player proc reset\n");
+        // printf("\nupdatetometrictimeinternal  player proc reset\n");
         curEvent = track->begin();
         resetAllVoices(isResetGates);
         voiceAssigner.reset();
