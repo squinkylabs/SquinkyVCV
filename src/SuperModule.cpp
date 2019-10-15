@@ -44,7 +44,6 @@ SuperModule::SuperModule()
     super = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
-
     onSampleRateChange();
     super->init();
 }
@@ -77,10 +76,12 @@ struct superWidget : ModuleWidget
         ModuleWidget::step();
     }
 
+    SuperModule* superModule = nullptr;
     void addPitchKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addOtherKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addJacks(SuperModule *);
-    DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+    void appendContextMenu(Menu *menu) override;
+  //  DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
 
@@ -96,6 +97,33 @@ struct superWidget : ModuleWidget
     }
 #endif
 };
+
+
+void superWidget::appendContextMenu(Menu *menu)
+{
+    MenuLabel *spacerLabel = new MenuLabel();
+	menu->addChild(spacerLabel);
+
+    ManualMenuItem* manual = new ManualMenuItem(
+        "Saws manual", 
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+
+    menu->addChild(manual);
+    
+    //   HARD_PAN_PARAM,
+    //    ALTERNATE_PAN_PARAM,
+    MenuLabel *spacerLabel2 = new MenuLabel();
+    menu->addChild(spacerLabel2);
+
+    SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(superModule, Comp::HARD_PAN_PARAM);
+    item->text = "Hard Pan";
+    menu->addChild(item);
+
+     item = new SqMenuItem_BooleanParam2(superModule, Comp::ALTERNATE_PAN_PARAM);
+    item->text = "Alternate Pan";
+    menu->addChild(item);
+
+}
 
 const float col1 = 40;
 const float col2 = 110;
@@ -215,11 +243,11 @@ void superWidget::addJacks(SuperModule *)
     l->fontSize = jackLabelPoints;
 
     addInput(createInputCentered<PJ301MPort>(
-        Vec(jackX + 3 * jackDx, jackRow1),
+        Vec(jackX + 2 * jackDx, jackRow1),
         module,
         Super<WidgetComposite>::MIX_INPUT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 15, jackRow1 + jackOffsetLabel),
+        Vec(jackX + 2 * jackDx - 15, jackRow1 + jackOffsetLabel),
         "Mix");
     l->fontSize = jackLabelPoints;
 
@@ -253,10 +281,19 @@ void superWidget::addJacks(SuperModule *)
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(jackX + 3 * jackDx, jackRow2),
         module,
-        Super<WidgetComposite>::MAIN_OUTPUT));
+        Super<WidgetComposite>::MAIN_OUTPUT_LEFT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 18, jackRow2 + jackOffsetLabel),
-        "Out", SqHelper::COLOR_WHITE);
+        Vec(jackX + 3 * jackDx - 20, jackRow2 + jackOffsetLabel),
+        "Out L", SqHelper::COLOR_WHITE);
+    l->fontSize = jackLabelPoints;
+
+     addOutput(createOutputCentered<PJ301MPort>(
+        Vec(jackX + 3 * jackDx, jackRow1),
+        module,
+        Super<WidgetComposite>::MAIN_OUTPUT_RIGHT));
+    l = addLabel(
+        Vec(jackX + 3 * jackDx - 20, jackRow1 + jackOffsetLabel),
+        "Out R"); // , SqHelper::COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 }
 
@@ -269,6 +306,7 @@ void superWidget::addJacks(SuperModule *)
 superWidget::superWidget(SuperModule *module) : semitoneDisplay(module)
 {
     setModule(module);
+    superModule = module;
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);

@@ -579,7 +579,7 @@ static void testSuper()
 
     MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
         super.step();
-        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].getVoltage(0);
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0);
     }, 1);
 }
 
@@ -590,7 +590,7 @@ static void testSuper2()
     super.params[Super<TestComposite>::CLEAN_PARAM].value = 1;
     MeasureTime<float>::run(overheadOutOnly, "super clean", [&super]() {
         super.step();
-        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].getVoltage(0);
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0);
     }, 1);
 }
 
@@ -601,7 +601,7 @@ static void testSuper3()
     super.params[Super<TestComposite>::CLEAN_PARAM].value = 2;
     MeasureTime<float>::run(overheadOutOnly, "super clean 2", [&super]() {
         super.step();
-        return super.outputs[Super<TestComposite>::MAIN_OUTPUT].getVoltage(0);
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0);
         }, 1);
 }
 #if 0
