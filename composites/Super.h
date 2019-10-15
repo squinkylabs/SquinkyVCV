@@ -9,19 +9,12 @@
 #include "ObjectCache.h"
 #include "StateVariable4PHP.h"
 
-#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;
     }
 }
 using Module = ::rack::engine::Module;
-#else
-namespace rack {
-    struct Module;
-};
-using Module = ::rack::Module;
-#endif
 
 class SawtoothDetuneCurve
 {
@@ -319,6 +312,7 @@ inline void Super<TBase>::runSaws(float& left)
 
         const float gain = (i == numSaws / 2) ? gainCenter : gainSides;
         mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
+
     }
 
     mix *= 4.5;       // too low 2 too high 10
@@ -438,10 +432,14 @@ inline void Super<TBase>::updateStereoGains()
 {
     for (int i=0; i< numSaws; ++i) 
     {
-        float position = -1.f + 2.f * (float) i / (float) numSaws; 
-       //  float sawGainsStereo[2][numSaws] = {
-        sawGainsStereo[0][i] = panL(position);
-        sawGainsStereo[1][i] = panR(position);
+        float position = -1.f + 2.f * (float) i / (float) (numSaws-1); 
+
+        const float monoGain = 4.5 * ((i == numSaws / 2) ? gainCenter : gainSides);
+       
+
+        sawGainsStereo[0][i] = monoGain * panL(position);
+        sawGainsStereo[1][i] = monoGain * panR(position);
+       // printf("g[%d] = %.2f,%.2f\n", i, sawGainsStereo[0][i], sawGainsStereo[1][i]);
     }
 }
 
@@ -465,7 +463,7 @@ inline void Super<TBase>::step()
     if ((rate == 1) && !isStereo) {
         updateAudioClassic();
     } else if ((rate == 1) && isStereo) {
-        updateAudioClassic();
+        updateAudioClassicStereo();
     } else if ((rate != 1) && !isStereo) {
         updateAudioClean();
     } else {

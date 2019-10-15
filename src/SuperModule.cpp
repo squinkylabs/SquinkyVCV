@@ -38,23 +38,12 @@ void SuperModule::onSampleRateChange()
 {
 }
 
-#ifdef __V1x
 SuperModule::SuperModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     super = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
-
-#else
-SuperModule::SuperModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS),
-    super(std::make_shared<Comp>(this))
-{
-#endif
     onSampleRateChange();
     super->init();
 }
@@ -265,7 +254,7 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::MAIN_OUTPUT_LEFT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 18, jackRow2 + jackOffsetLabel),
+        Vec(jackX + 3 * jackDx - 20, jackRow2 + jackOffsetLabel),
         "Out L", SqHelper::COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 
@@ -274,8 +263,8 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::MAIN_OUTPUT_RIGHT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 18, jackRow1 + jackOffsetLabel),
-        "Out R", SqHelper::COLOR_WHITE);
+        Vec(jackX + 3 * jackDx - 20, jackRow1 + jackOffsetLabel),
+        "Out R"); // , SqHelper::COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 }
 
