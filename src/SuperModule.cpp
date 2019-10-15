@@ -76,10 +76,12 @@ struct superWidget : ModuleWidget
         ModuleWidget::step();
     }
 
+    SuperModule* superModule = nullptr;
     void addPitchKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addOtherKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addJacks(SuperModule *);
-    DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+    void appendContextMenu(Menu *menu) override;
+  //  DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
 
@@ -95,6 +97,33 @@ struct superWidget : ModuleWidget
     }
 #endif
 };
+
+
+void superWidget::appendContextMenu(Menu *menu)
+{
+    MenuLabel *spacerLabel = new MenuLabel();
+	menu->addChild(spacerLabel);
+
+    ManualMenuItem* manual = new ManualMenuItem(
+        "Saws manual", 
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+
+    menu->addChild(manual);
+    
+    //   HARD_PAN_PARAM,
+    //    ALTERNATE_PAN_PARAM,
+    MenuLabel *spacerLabel2 = new MenuLabel();
+    menu->addChild(spacerLabel2);
+
+    SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(superModule, Comp::HARD_PAN_PARAM);
+    item->text = "Hard Pan";
+    menu->addChild(item);
+
+     item = new SqMenuItem_BooleanParam2(superModule, Comp::ALTERNATE_PAN_PARAM);
+    item->text = "Alternate Pan";
+    menu->addChild(item);
+
+}
 
 const float col1 = 40;
 const float col2 = 110;
@@ -277,6 +306,7 @@ void superWidget::addJacks(SuperModule *)
 superWidget::superWidget(SuperModule *module) : semitoneDisplay(module)
 {
     setModule(module);
+    superModule = module;
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);

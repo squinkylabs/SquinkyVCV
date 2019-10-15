@@ -110,6 +110,8 @@ public:
         FM_PARAM,
         CLEAN_PARAM,
         STEREO_MODE_PARAM,
+        HARD_PAN_PARAM,
+        ALTERNATE_PAN_PARAM,
         NUM_PARAMS
     };
 
@@ -430,6 +432,8 @@ static inline float panR(float balance)
 template <class TBase>
 inline void Super<TBase>::updateStereoGains()
 {
+    const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
+    const bool alternatePan = TBase::params[ALTERNATE_PAN_PARAM].value > .5;
     for (int i=0; i< numSaws; ++i) 
     {
         float position = -1.f + 2.f * (float) i / (float) (numSaws-1); 
@@ -437,9 +441,34 @@ inline void Super<TBase>::updateStereoGains()
         const float monoGain = 4.5 * ((i == numSaws / 2) ? gainCenter : gainSides);
        
 
-        sawGainsStereo[0][i] = monoGain * panL(position);
-        sawGainsStereo[1][i] = monoGain * panR(position);
-       // printf("g[%d] = %.2f,%.2f\n", i, sawGainsStereo[0][i], sawGainsStereo[1][i]);
+        float l = monoGain * panL(position);
+        float r = monoGain * panR(position);
+
+        if (alternatePan) {
+            if ((i == 1) || (i == 5)) {
+                std::swap(l, r);                
+            }
+        }
+
+        if (hardPan) {
+            if (i != numSaws / 2) {
+                if (l > r) {
+                    l *= 1.1;
+                    r = 0;
+                } else {
+                    r *= 1.1;
+                    l = 0;
+                }
+            }
+        }
+
+        sawGainsStereo[0][i] = l;
+        sawGainsStereo[1][i] = r;
+
+        #if 0
+        if (i == 0) printf("\n");
+        printf("g[%d] = %.2f,%.2f\n", i, sawGainsStereo[0][i], sawGainsStereo[1][i]);
+        #endif
     }
 }
 
@@ -534,9 +563,13 @@ inline IComposite::Config SuperDescription<TBase>::getParam(int i)
         case Super<TBase>::CLEAN_PARAM:
             ret = {0.0f, 2, 0, "Alias suppression amount"};
             break;
-        case Super<TBase>::STEREO_MODE_PARAM:
-            ret =  {0.0f, 1.0f, 0.0f, "Stereo Mode"};
+        case Super<TBase>::HARD_PAN_PARAM:
+            ret =  {0.0f, 1.0f, 0.0f, "Hard Pan"};
             break;
+        case Super<TBase>::ALTERNATE_PAN_PARAM:
+            ret =  {0.0f, 1.0f, 0.0f, "Alternate Pan"};
+            break;
+        
         default:
             assert(false);
     }
