@@ -109,7 +109,6 @@ public:
         MIX_TRIM_PARAM,
         FM_PARAM,
         CLEAN_PARAM,
-        STEREO_MODE_PARAM,
         HARD_PAN_PARAM,
         ALTERNATE_PAN_PARAM,
         NUM_PARAMS
@@ -153,8 +152,8 @@ private:
 
     // current left and right gains
     float sawGainsStereo[2][numSaws] = {
-        {.2},
-        {.2}
+        {.2f},
+        {.2f}
     };
 
     Divider div;
@@ -438,7 +437,7 @@ inline void Super<TBase>::updateStereoGains()
     {
         float position = -1.f + 2.f * (float) i / (float) (numSaws-1); 
 
-        const float monoGain = 4.5 * ((i == numSaws / 2) ? gainCenter : gainSides);
+        const float monoGain = 4.5f * ((i == numSaws / 2) ? gainCenter : gainSides);
        
 
         float l = monoGain * panL(position);
@@ -453,10 +452,10 @@ inline void Super<TBase>::updateStereoGains()
         if (hardPan) {
             if (i != numSaws / 2) {
                 if (l > r) {
-                    l *= 1.1;
+                    l *= 1.1f;
                     r = 0;
                 } else {
-                    r *= 1.1;
+                    r *= 1.1f;
                     l = 0;
                 }
             }
