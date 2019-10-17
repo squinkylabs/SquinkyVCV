@@ -505,14 +505,16 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
 
 void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFolder)
 {
-    auto updater = [](bool set, MidiSequencerPtr seq, MidiSongPtr newSong, SequencerWidget* widget) {
+    std::shared_ptr<Seq<WidgetComposite>> comp = seqComp;
+    auto updater = [comp](bool set, MidiSequencerPtr seq, MidiSongPtr newSong, SequencerWidget* widget) {
 
         assert(widget);
         assert(seq);
         assert(newSong);
         if (set && seq) {
             seq->selection->clear();        // clear so we aren't pointing to notes from prev seq
-            seq->setNewSong(newSong);
+            seq->setNewSong(newSong);       // give the new song to the UI
+            comp->setSong(newSong);         // give the new song to the module / composite
         }
 
         if (!set && widget) {
