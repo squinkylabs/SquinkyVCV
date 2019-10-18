@@ -462,10 +462,15 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
 
 void NoteDisplay::doTest()
 {
+    /*
+      this->box.pos = pos;
+    box.size = size;
+    */
     DEBUG("doTest");
-    InputScreenPtr is = std::make_shared<InputScreen>();
+    InputScreenPtr is = std::make_shared<InputScreen>(box.pos, box.size, sequencer);
     InputScreenSetPtr iss = std::make_shared<InputScreenSet>();
     iss->add(is);
-    iss->show();
+    iss->show(this);
+    static InputScreenSetPtr _getridofme = iss;
 }
 //#endif
