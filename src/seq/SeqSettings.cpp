@@ -140,7 +140,7 @@ SeqSettings::~SeqSettings()
     --_mdb;
 }
 
-void SeqSettings::invokeUI (::rack::widget::Widget* parent)
+::rack::ui::Menu* SeqSettings::invokeUI (::rack::widget::Widget* parent)
 {
     ::rack::ui::Menu* menu = ::rack::createMenu();
     menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
@@ -154,6 +154,7 @@ void SeqSettings::invokeUI (::rack::widget::Widget* parent)
     menu->addChild(new ::rack::ui::MenuLabel);
     menu->addChild(makeNoteCommand(module));
     menu->addChild(makeEndCommand(module));
+    return menu;
 }
 
 rack::ui::MenuItem* SeqSettings::makeLoopItem(SequencerModule* module)

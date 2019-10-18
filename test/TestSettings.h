@@ -8,7 +8,7 @@
 class TestSettings : public ISeqSettings
 {
 public:
-    void invokeUI (::rack::widget::Widget* parent) override
+    ::rack::ui::Menu* invokeUI (::rack::widget::Widget* parent) override
     {
     }
     float getQuarterNotesInGrid() override
