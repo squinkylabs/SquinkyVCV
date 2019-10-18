@@ -1,11 +1,13 @@
 #include "../Squinky.hpp"
 
+//#ifdef _SEQ
 #include "WidgetComposite.h"
 #include "Seq.h"
 
 
 #include "MidiSequencer.h"
 #include "UIPrefs.h"
+#include "InputScreen.h"
 #include "KbdManager.h"
 #ifndef _USERKB
 #include "MidiKeyboardHandler.h"
@@ -14,6 +16,7 @@
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
+#include "../ctrl/SqMenuItem.h"
 #include "TimeUtils.h"
 #include "NoteDisplay.h"
 #include "SeqSettings.h"
@@ -312,14 +315,16 @@ void NoteDisplay::onButton(const event::Button &e)
 
             // now invoke the settings menu
             sequencer->context->settings()->invokeUI(this);
-#ifdef _SCREENS
-            SqMenuItem* mi =  new SqMenuItem(
-                []() { return false; },
-                [this]() { this->doTest(); }
+            auto menu = sequencer->context->settings()->invokeUI(this);
+#ifdef _XFORM
+            SqMenuItem* mi = new SqMenuItem(
+               [](){ return false; },
+               [this](){ doTest(); }
             );
-            mi->text = "test";
+            mi->text = "test screen";
             menu->addChild(mi);
 #endif
+            handled = true;
         }
 
     }
@@ -454,11 +459,13 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
-#include "InputScreen.h"
+
 void NoteDisplay::doTest()
 {
-    InputScreenSetPtr iss = std::make_shared<InputScreenSet>();
+    DEBUG("doTest");
     InputScreenPtr is = std::make_shared<InputScreen>();
+    InputScreenSetPtr iss = std::make_shared<InputScreenSet>();
     iss->add(is);
     iss->show();
 }
+//#endif

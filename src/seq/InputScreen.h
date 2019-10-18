@@ -22,6 +22,7 @@ using InputScreenPtr = std::shared_ptr<InputScreen>;
 class InputScreenSet
 {
 public:
+    ~InputScreenSet();
     void add(InputScreenPtr);
     void show();
 private:
