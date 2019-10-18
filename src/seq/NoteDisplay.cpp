@@ -1,6 +1,5 @@
 #include "../Squinky.hpp"
 
-#ifdef _SEQ
 #include "WidgetComposite.h"
 #include "Seq.h"
 
@@ -18,6 +17,7 @@
 #include "TimeUtils.h"
 #include "NoteDisplay.h"
 #include "SeqSettings.h"
+#include "../ctrl/SqMenuItem.h"
 #include "SqGfx.h"
 
 NoteDisplay::NoteDisplay(
@@ -312,8 +312,16 @@ void NoteDisplay::onButton(const event::Button &e)
 
             // now invoke the settings menu
             sequencer->context->settings()->invokeUI(this);
-            handled = true;
+#ifdef _SCREENS
+            SqMenuItem* mi =  new SqMenuItem(
+                []() { return false; },
+                [this]() { this->doTest(); }
+            );
+            mi->text = "test";
+            menu->addChild(mi);
+#endif
         }
+
     }
     if (handled) {
         e.consume(this);
@@ -321,6 +329,7 @@ void NoteDisplay::onButton(const event::Button &e)
         OpaqueWidget::onButton(e);
     }
 }
+
 
 void NoteDisplay::onSelectKey(const event::SelectKey &e)
 {
@@ -445,4 +454,11 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
-#endif
+#include "InputScreen.h"
+void NoteDisplay::doTest()
+{
+    InputScreenSetPtr iss = std::make_shared<InputScreenSet>();
+    InputScreenPtr is = std::make_shared<InputScreen>();
+    iss->add(is);
+    iss->show();
+}

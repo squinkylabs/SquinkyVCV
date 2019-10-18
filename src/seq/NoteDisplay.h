@@ -77,4 +77,6 @@ private:
     void onDragMove(const event::DragMove &e)  override;
     void onDragDrop(const event::DragDrop &e) override;
     bool handleKey(int key, int mods, int action);
+
+    void doTest();
 };

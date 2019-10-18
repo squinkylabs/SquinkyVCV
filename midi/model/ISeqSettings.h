@@ -3,9 +3,13 @@
 #include <string>
 #include <memory>
 
+
 namespace rack {
     namespace widget {
         struct Widget;
+    }
+    namespace ui {
+        struct Menu;
     }
 }
 
@@ -15,7 +19,7 @@ public:
     virtual ~ISeqSettings()
     {
     }
-    virtual void invokeUI (::rack::widget::Widget* parent) = 0;
+    virtual ::rack::ui::Menu* invokeUI (::rack::widget::Widget* parent) = 0;
 
     /**
      * Grid things

@@ -20,7 +20,11 @@ public:
 
     SeqSettings(SequencerModule*);
     ~SeqSettings() override;
-    void invokeUI (::rack::widget::Widget* parent) override;
+
+    /**
+     * returns the top level menu it builds
+     */
+    ::rack::ui::Menu* invokeUI (::rack::widget::Widget* parent) override;
 
     /**
      * Grid related settings
