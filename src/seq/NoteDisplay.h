@@ -6,7 +6,9 @@
 #include "Seq.h"
 
 class KbdManager;
+class InputScreenSet;
 using KbdManagerPtr = std::shared_ptr<KbdManager>;
+using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
 
 /**
  * This class needs some refactoring and renaming.
@@ -41,6 +43,9 @@ private:
     bool haveFocus = true;
 #ifdef _USERKB
     KbdManagerPtr kbdManager;
+#endif
+#ifdef _XFORM
+    InputScreenSetPtr iss;
 #endif
 
     void initEditContext();

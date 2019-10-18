@@ -316,6 +316,7 @@ void NoteDisplay::onButton(const event::Button &e)
             // now invoke the settings menu
             sequencer->context->settings()->invokeUI(this);
             auto menu = sequencer->context->settings()->invokeUI(this);
+
 #ifdef _XFORM
             SqMenuItem* mi = new SqMenuItem(
                [](){ return false; },
@@ -323,6 +324,8 @@ void NoteDisplay::onButton(const event::Button &e)
             );
             mi->text = "test screen";
             menu->addChild(mi);
+#else
+            (void) menu;
 #endif
             handled = true;
         }
@@ -462,15 +465,22 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
 
 void NoteDisplay::doTest()
 {
+#ifdef _XFORM
     /*
       this->box.pos = pos;
     box.size = size;
     */
-    DEBUG("doTest");
-    InputScreenPtr is = std::make_shared<InputScreen>(box.pos, box.size, sequencer);
-    InputScreenSetPtr iss = std::make_shared<InputScreenSet>();
+
+    auto dismisser = [this]() {
+        iss->dismiss();
+        this->iss.reset();
+    };
+    InputScreenPtr is = std::make_shared<InputScreen>(Vec(0, 0), box.size, sequencer, dismisser);
+
+    // make the screen set, and keep a pointer to it in this
+    iss = std::make_shared<InputScreenSet>();
     iss->add(is);
     iss->show(this);
-    static InputScreenSetPtr _getridofme = iss;
+#endif
 }
 //#endif

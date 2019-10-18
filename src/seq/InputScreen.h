@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include "Rack.hpp"
@@ -18,13 +19,17 @@ struct InputScreen : public ::rack::widget::OpaqueWidget
 public:
    InputScreen(const ::rack::math::Vec& pos,
         const ::rack::math::Vec& size,
-        MidiSequencerPtr seq);
+        MidiSequencerPtr seq,
+        std::function<void()> dismisser);
+    ~InputScreen();
 
     
     void draw(const Widget::DrawArgs &args) override;
+    void onButton(const ::rack::event::Button &e) override;
 
 private:
     MidiSequencerPtr sequencer;
+    std::function<void()> dismisser = nullptr;
 };
 
 using InputScreenPtr = std::shared_ptr<InputScreen>;
@@ -35,8 +40,12 @@ public:
     ~InputScreenSet();
     void add(InputScreenPtr);
     void show(::rack::widget::Widget* parent);
+
+    void dismiss();
 private:
     std::vector<InputScreenPtr> screens;
+    ::rack::widget::Widget* parentWidget = nullptr;
+    int currentScreenIndex = 0;
 };
 
 using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
