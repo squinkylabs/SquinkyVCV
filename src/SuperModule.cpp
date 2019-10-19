@@ -112,17 +112,12 @@ void superWidget::appendContextMenu(Menu *menu)
     
     //   HARD_PAN_PARAM,
     //    ALTERNATE_PAN_PARAM,
-    MenuLabel *spacerLabel2 = new MenuLabel();
-    menu->addChild(spacerLabel2);
+   // MenuLabel *spacerLabel2 = new MenuLabel();
+   // menu->addChild(spacerLabel2);
 
     SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(superModule, Comp::HARD_PAN_PARAM);
     item->text = "Hard Pan";
     menu->addChild(item);
-
-     item = new SqMenuItem_BooleanParam2(superModule, Comp::ALTERNATE_PAN_PARAM);
-    item->text = "Alternate Pan";
-    menu->addChild(item);
-
 }
 
 const float col1 = 40;

@@ -110,7 +110,6 @@ public:
         FM_PARAM,
         CLEAN_PARAM,
         HARD_PAN_PARAM,
-        ALTERNATE_PAN_PARAM,
         NUM_PARAMS
     };
 
@@ -156,6 +155,15 @@ private:
         {.2f}
     };
 
+    float sawGainsNorm[2][numSaws] = {
+        {1.f, .26f, .87f, .71f, .5f, .97f, 0.f},
+        {0.f, .97f, .5f,  .71f, .87f,.26f, 1.f}
+    };
+
+    float sawGainsHardPan[2][numSaws] = {
+        {1.1f, 0.f, 1.1f, 1.f, 0.f, 1.1f, 0.f},
+        {0.f, 1.1f, 0.f,  1.f, 1.1f, 0.f, 1.1f}
+    };
     Divider div;
 
     std::function<float(float)> expLookup =
@@ -411,6 +419,7 @@ inline void Super<TBase>::updateStereo()
     isStereo = TBase::outputs[MAIN_OUTPUT_RIGHT].isConnected() && TBase::outputs[MAIN_OUTPUT_LEFT].isConnected(); 
 }
 
+#if 0
 // balance from -1, 1
 static inline float panL(float balance)
 { // -1...+1
@@ -427,12 +436,69 @@ static inline float panR(float balance)
     p = M_PI * (inp + 1) / 4;
     return std::sin(p);
 }
+#endif
+
+/*
+
+regular:
+
+g[0] = 2.26,0.00 panL=1.00 panR=0.00
+g[1] = 0.58,2.18 panL=0.97 panR=0.26
+g[2] = 1.96,1.13 panL=0.87 panR=0.50
+g[3] = 2.29,2.29 panL=0.71 panR=0.71
+g[4] = 1.13,1.96 panL=0.50 panR=0.87
+g[5] = 2.18,0.58 panL=0.26 panR=0.97
+g[6] = -0.00,2.26 panL=-0.00 panR=1.00
+
+hard:
+
+g[0] = 2.48,0.00 panL=1.00 panR=0.00
+g[1] = 0.00,2.40 panL=0.97 panR=0.26
+g[2] = 2.15,0.00 panL=0.87 panR=0.50
+g[3] = 2.29,2.29 panL=0.71 panR=0.71
+g[4] = 0.00,2.15 panL=0.50 panR=0.87
+g[5] = 2.40,0.00 panL=0.26 panR=0.97
+g[6] = 0.00,2.48 panL=-0.00 panR=1.00
+
+
+*/
 
 template <class TBase>
 inline void Super<TBase>::updateStereoGains()
 {
     const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
-    const bool alternatePan = TBase::params[ALTERNATE_PAN_PARAM].value > .5;
+    for (int i=0; i< numSaws; ++i) 
+    {
+        const float monoGain = 4.5f * ((i == numSaws / 2) ? gainCenter : gainSides);
+       
+        float l = monoGain;
+        float r = monoGain;
+
+        if (!hardPan) {
+            l *=  sawGainsNorm[0][i];
+            r *=  sawGainsNorm[1][i];
+        } else {
+            l *=  sawGainsHardPan[0][i];
+            r *=  sawGainsHardPan[1][i];
+        }
+
+        sawGainsStereo[0][i] = l;
+        sawGainsStereo[1][i] = r;
+
+        #if 0
+        if (i == 0) printf("\n");
+        printf("g[%d] = %.2f,%.2f\n", 
+            i, sawGainsStereo[0][i], sawGainsStereo[1][i]);
+        #endif
+    }
+}
+
+#if 0 // slow way
+template <class TBase>
+inline void Super<TBase>::updateStereoGains()
+{
+    const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
+    const bool alternatePan = true; // TBase::params[ALTERNATE_PAN_PARAM].value > .5;
     for (int i=0; i< numSaws; ++i) 
     {
         float position = -1.f + 2.f * (float) i / (float) (numSaws-1); 
@@ -464,12 +530,14 @@ inline void Super<TBase>::updateStereoGains()
         sawGainsStereo[0][i] = l;
         sawGainsStereo[1][i] = r;
 
-        #if 0
+        #if 1
         if (i == 0) printf("\n");
-        printf("g[%d] = %.2f,%.2f\n", i, sawGainsStereo[0][i], sawGainsStereo[1][i]);
+        printf("g[%d] = %.2f,%.2f panL=%.2f panR=%.2f\n", 
+            i, sawGainsStereo[0][i], sawGainsStereo[1][i], panL(position), panR(position));
         #endif
     }
 }
+#endif
 
 template <class TBase>
 inline void Super<TBase>::stepn(int n)
@@ -565,10 +633,6 @@ inline IComposite::Config SuperDescription<TBase>::getParam(int i)
         case Super<TBase>::HARD_PAN_PARAM:
             ret =  {0.0f, 1.0f, 0.0f, "Hard Pan"};
             break;
-        case Super<TBase>::ALTERNATE_PAN_PARAM:
-            ret =  {0.0f, 1.0f, 0.0f, "Alternate Pan"};
-            break;
-        
         default:
             assert(false);
     }
