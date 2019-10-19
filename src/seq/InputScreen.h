@@ -3,7 +3,7 @@
 #include <functional>
 #include <memory>
 
-#include "Rack.hpp"
+#include "rack.hpp"
 
 #include <widget/FramebufferWidget.hpp>
 
