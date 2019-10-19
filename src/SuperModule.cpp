@@ -133,8 +133,8 @@ const float row2 = 134;
 const float row3 = 220;
 const float row4 = 250;
 
-const float jackRow1 = 290;
-const float jackRow2 = 332;
+const float jackRow1 = 290+2;
+const float jackRow2 = 332+2;
 
 const float labelOffsetBig = -40;
 const float labelOffsetSmall = -32;
@@ -283,7 +283,7 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::MAIN_OUTPUT_LEFT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 20, jackRow2 + jackOffsetLabel),
+        Vec(jackX + 3 * jackDx - 21, jackRow2 + jackOffsetLabel),
         "Out L", SqHelper::COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 
@@ -292,8 +292,8 @@ void superWidget::addJacks(SuperModule *)
         module,
         Super<WidgetComposite>::MAIN_OUTPUT_RIGHT));
     l = addLabel(
-        Vec(jackX + 3 * jackDx - 20, jackRow1 + jackOffsetLabel),
-        "Out R"); // , SqHelper::COLOR_WHITE);
+        Vec(jackX + 3 * jackDx - 21, jackRow1 + jackOffsetLabel),
+        "Out R", SqHelper::COLOR_WHITE);
     l->fontSize = jackLabelPoints;
 }
 
