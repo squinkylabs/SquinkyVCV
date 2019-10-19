@@ -3,6 +3,7 @@
 #include "UIPrefs.h"
 
 #include "../ctrl/ToggleButton.h"
+#include "../ctrl/PopupMenuParamWidgetv1.h"
 
 using Vec = ::rack::math::Vec;
 using Button = ::rack::ui::Button;
@@ -50,6 +51,14 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     ok->setSize(Vec(80, 30));
     this->addChild(ok);   
     ok->handler = dismisser;
+
+    auto pop = new PopupMenuParamWidget();
+    pop->setLabels( {"first", "second", "third"});
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(100, 50));
+    pop->text = "first";
+    this->addChild(pop);
 }
 
 InputScreen::~InputScreen()

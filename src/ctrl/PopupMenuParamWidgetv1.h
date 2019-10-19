@@ -7,7 +7,7 @@
  *  displays the current choice
  */
 
-class PopupMenuParamWidget : public ParamWidget
+class PopupMenuParamWidget : public ::rack::app::ParamWidget
 {
 public:
     std::vector<std::string> labels;
@@ -15,18 +15,18 @@ public:
 
     void setLabels(std::vector<std::string> l) {
         labels = l;
-        event::Change e;
+        ::rack::event::Change e;
         onChange(e);
     }
 
     void draw(const DrawArgs &arg) override;
-    void onButton(const event::Button &e) override;
-    void onChange(const event::Change &e) override;
-    void onAction(const event::Action &e) override;
+    void onButton(const ::rack::event::Button &e) override;
+    void onChange(const ::rack::event::Change &e) override;
+    void onAction(const ::rack::event::Action &e) override;
 };
 
 
-inline void PopupMenuParamWidget::onChange(const event::Change& e) 
+inline void PopupMenuParamWidget::onChange(const ::rack::event::Change& e) 
  {
      if (!this->paramQuantity) {
          return;            // no module
@@ -52,16 +52,16 @@ inline void PopupMenuParamWidget::draw(const DrawArgs &args)
 	bndChoiceButton(args.vg, 0.0, 0.0, box.size.x, box.size.y, BND_CORNER_NONE, state, -1, text.c_str());
 }
 
-inline void PopupMenuParamWidget::onButton(const event::Button &e)
+inline void PopupMenuParamWidget::onButton(const ::rack::event::Button &e)
 {
      if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
-        event::Action ea; 
+        ::rack::event::Action ea; 
         onAction(ea);
         sq::consumeEvent(&e, this);
      }
 }
 
-class PopupMenuItem : public MenuItem
+class PopupMenuItem : public ::rack::ui::MenuItem
 {
 public:
     /**
@@ -79,21 +79,24 @@ public:
     PopupMenuParamWidget* const parent;
 
 
-    void onAction(const event::Action &e) override
+    void onAction(const ::rack::event::Action &e) override
     {
         parent->text = this->text;
-        event::Change ce;
-        parent->paramQuantity->setValue(index);
+        ::rack::event::Change ce;
+        DEBUG("onAction, parent = %p, paramq = %p", parent, parent->paramQuantity);
+        if (parent->paramQuantity) {
+            parent->paramQuantity->setValue(index);
+        }   
         parent->onChange(ce);
     }
 };
 
-inline void PopupMenuParamWidget::onAction(const event::Action &e) 
+inline void PopupMenuParamWidget::onAction(const ::rack::event::Action &e) 
 {
-    Menu* menu = createMenu();
+    ::rack::ui::Menu* menu = ::rack::createMenu();
 
     // is choice button the right base class?
-    menu->box.pos = getAbsoluteOffset(Vec(0, this->box.size.y)).round();
+    menu->box.pos = getAbsoluteOffset(::rack::math::Vec(0, this->box.size.y)).round();
     menu->box.size.x = box.size.x;
     {
         for (int i = 0; i< (int) labels.size(); ++i) {
