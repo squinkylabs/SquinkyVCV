@@ -6,6 +6,12 @@ Seq++ has MIDI file input.
 
 Seq++ has a step recorder.
 
+Inputs on ExFor and Form mixers are now polyphonic. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/90).
+
+Modular mixers now support multi-solo by control-clicking on the solo buttons. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/88).
+
+Saws now has stereo outputs.
+
 Seq++ bugs:
 
 * Articulation setting of 100% was acting like 85%.
@@ -21,9 +27,6 @@ Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with
 
 Seq++ image in the module browser new looks correct, rather than a black blob. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/99)
 
-Inputs on ExFor and Form mixers are now polyphonic. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/90)
-
-Modular mixers now support multi-solo by control-clicking on the solo buttons. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/88)
 
 ## 1.0.4
 

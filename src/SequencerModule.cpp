@@ -313,7 +313,7 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float controlX = 20;
+    const float controlX = 20 - 6;
 
     float y = 50;
 #ifdef _LAB
@@ -326,8 +326,8 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Vec(controlX, y),
         module,
         Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 85;    // width
-    p->box.size.y = 22;     // should set auto like button does
+    p->box.size.x = 85 + 8;    // width
+    p->box.size.y = 22;         // should set auto like button does
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
@@ -342,8 +342,8 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Vec(controlX, y),
         module,
         Comp::NUM_VOICES_PARAM);
-    p->box.size.x = 85;    // width
-    p->box.size.y = 22;     // should set auto like button does
+    p->box.size.x = 85 + 8;     // width
+    p->box.size.y = 22;         // should set auto like button does
     p->setLabels(Comp::getPolyLabels());
     addParam(p);
    
@@ -354,8 +354,12 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         "Run");
 #endif
     y += 20;
+
+    float controlDx = 34;
+
+    // run/stop buttong
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(controlX, y),
+        Vec(controlX + controlDx, y),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
@@ -366,7 +370,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     addChild(tog);
    
     y = yy;
-    float controlDx = 40;
+    
 
     // Scroll button
     {
@@ -378,7 +382,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     y += 20;
     scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(controlX + controlDx, y),
+        Vec(controlX + 2 * controlDx, y),
         module,
         Comp::PLAY_SCROLL_PARAM);
     scrollControl->addSvg("res/square-button-01.svg");
@@ -389,7 +393,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     // Step record button
     ToggleButton* b = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(controlX + (2 * controlDx) - 5, y),
+        Vec(controlX , y),
         module,
         Comp::STEP_RECORD_PARAM);
     b->addSvg("res/square-button-01.svg");
