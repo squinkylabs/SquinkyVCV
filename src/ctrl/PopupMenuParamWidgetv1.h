@@ -54,7 +54,6 @@ inline void PopupMenuParamWidget::draw(const DrawArgs &args)
 
 inline void PopupMenuParamWidget::onButton(const event::Button &e)
 {
-    // for now, let's activate on all mouse clicks
      if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
         event::Action ea; 
         onAction(ea);

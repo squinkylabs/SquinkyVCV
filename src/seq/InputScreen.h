@@ -25,8 +25,11 @@ public:
 
     
     void draw(const Widget::DrawArgs &args) override;
-    void onButton(const ::rack::event::Button &e) override;
 
+    /**
+     * Mouse handler. For debugging since we don't have buttons yet.
+     */
+   // void onButton(const ::rack::event::Button &e) override;
 private:
     MidiSequencerPtr sequencer;
     std::function<void()> dismisser = nullptr;
@@ -46,6 +49,7 @@ private:
     std::vector<InputScreenPtr> screens;
     ::rack::widget::Widget* parentWidget = nullptr;
     int currentScreenIndex = 0;
+    bool isDismissing = false;
 };
 
 using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;

@@ -10,10 +10,10 @@
 #if 1   // just use SvgSwitch
 
 // og->addFrame(SqHelper::loadSvg("res/clean-switch-01.svg"));
-class ToggleButton : public SvgSwitch
+class ToggleButton : public ::rack::app::SvgSwitch
 {
 public:
-    CircularShadow* shadowToDelete = nullptr;
+    ::rack::app::CircularShadow* shadowToDelete = nullptr;
 
     ~ToggleButton()
     {

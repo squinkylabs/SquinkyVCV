@@ -472,6 +472,7 @@ void NoteDisplay::doTest()
     */
 
     auto dismisser = [this]() {
+        DEBUG("Entering the outer dismisser. will dismiss the screen set and delete it");
         iss->dismiss();
         this->iss.reset();
     };
