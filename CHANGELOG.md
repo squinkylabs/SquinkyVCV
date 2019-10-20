@@ -1,5 +1,33 @@
 # Change log for Squinky Labs modules
 
+## 1.0.5
+
+Seq++ has MIDI file input.
+
+Seq++ has a step recorder.
+
+Inputs on ExFor and Form mixers are now polyphonic. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/90).
+
+Modular mixers now support multi-solo by control-clicking on the solo buttons. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/88).
+
+Saws now has stereo outputs.
+
+Seq++ bugs fixed:
+
+* Articulation setting of 100% was acting like 85%.
+* Notes were getting dropped when played with coarse clock.
+* Dragging durations with the mouse were making zero length notes.
+* Notes that start in the previous two bars are now drawn. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/112)
+* Notes re-triggering seemingly randomly when there are plenty of voices. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/98)
+* Inserting notes wasn't scrolling the the next bar when it should have. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/113)
+* Sometimes the purple track end marker wasn't drawing (depending on grid settings).
+* Stuck notes when stopping seq in the middle and then editing. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/117)
+
+Fixed bugs in Polygate that were causing stuck notes when CV inputs changed with gate high. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/105)
+
+Seq++ image in the module browser new looks correct, rather than a black blob. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/99)
+
+
 ## 1.0.4
 
 Three new modules: Seq++, Gateseq, and ExTwo.

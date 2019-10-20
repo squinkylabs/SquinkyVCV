@@ -18,4 +18,5 @@ public:
     MidiFileProxy() = delete;
     static MidiSongPtr load(const std::string& filename);
     static MidiTrackPtr getFirst(MidiSongPtr song, smf::MidiFile&);
+    static bool save(MidiSongPtr song, const std::string& filePath);
 };

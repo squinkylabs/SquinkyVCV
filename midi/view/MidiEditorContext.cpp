@@ -79,9 +79,10 @@ MidiSongPtr MidiEditorContext::getSong() const
     return ret;
 }
 
-MidiEditorContext::iterator_pair MidiEditorContext::getEvents() const
+MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float preMargin) const
 {
-    return getEvents(m_startTime, m_endTime, m_pitchLow, m_pitchHigh);
+    const float startTime = std::max(0.f, m_startTime - preMargin);
+    return getEvents(startTime, m_endTime, m_pitchLow, m_pitchHigh);
 }
 
 MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float timeLow, float timeHigh, float pitchLow, float pitchHigh) const
@@ -90,7 +91,7 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float timeLow, flo
     assert(timeLow >= 0);
     assert(pitchHigh >= pitchLow);
 
-    iterator::filter_func lambda = [this, pitchLow, pitchHigh, timeHigh](MidiTrack::const_iterator ii) {
+    iterator::filter_func lambda = [pitchLow, pitchHigh, timeHigh](MidiTrack::const_iterator ii) {
         const MidiEventPtr me = ii->second;
         bool ret = false;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);

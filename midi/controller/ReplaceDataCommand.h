@@ -19,8 +19,8 @@ using MidiEventPtr = std::shared_ptr<MidiEvent>;
 class ReplaceDataCommand : public SqCommand
 {
 public:
-    virtual void execute(MidiSequencerPtr) override;
-    virtual void undo(MidiSequencerPtr) override;
+    virtual void execute(MidiSequencerPtr, SequencerWidget*) override;
+    virtual void undo(MidiSequencerPtr, SequencerWidget*) override;
 
     // TODO: get rid of obsolete arguments.
     ReplaceDataCommand(

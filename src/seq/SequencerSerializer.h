@@ -2,7 +2,7 @@
 
 #include <memory>
 
-class json_t;
+struct json_t;
 class MidiEvent;
 class MidiNoteEvent;
 class MidiEndEvent;

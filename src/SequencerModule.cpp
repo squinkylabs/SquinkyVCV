@@ -4,6 +4,7 @@
 
 #ifdef _SEQ
 #include "DrawTimer.h"
+#include "NewSongDataCommand.h"
 #include "WidgetComposite.h"
 #include "Seq.h"
 #include "seq/SeqSettings.h"
@@ -23,8 +24,6 @@
 #include "MidiSong.h"
 #include "../test/TestSettings.h"
 #include "TimeUtils.h"
-
-#include "KbdManager.h"
 #include "MidiFileProxy.h"
 #include "SequencerModule.h"
 #include <osdialog.h>
@@ -65,11 +64,19 @@ struct SequencerWidget : ModuleWidget
             []() { return false; },
             [this]() { this->loadMidiFile(); }
         );
-        midifile->text = "load midi file";
+        midifile->text = "Load midi file";
         theMenu->addChild(midifile); 
+
+        SqMenuItem* midifileSave = new SqMenuItem(
+            []() { return false; },
+            [this]() { this->saveMidiFile(); }
+        );
+        midifileSave->text = "Save midi file";
+        theMenu->addChild(midifileSave); 
     }
 
     void loadMidiFile();
+    void saveMidiFile();
 
     /**
      * Helper to add a text label to this widget
@@ -119,20 +126,85 @@ struct SequencerWidget : ModuleWidget
 #endif
 };
 
+#if 0
+std::string _removeFileName(const std::string s, std::vector<char> separators)
+{
+    // find the eerything up to and including the last separator
+    for (char separator : separators) {
+        auto pos = s.rfind(separator);
+        if (pos != std::string::npos) {
+            return s.substr(0, pos+1);
+        }
+    }
+
+    // if we didn't find any separators, then use empty path
+    return"";   
+}
+
+// windows experiment
+
+std::string removeFileName(const std::string s)
+{
+#ifdef ARCH_WIN
+    return _removeFileName(s, {'\\', ':'});
+#else
+    return _removeFileName(s, {'/'});
+#endif
+}
+#endif
+
+void SequencerWidget::saveMidiFile()
+{
+    static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
+    osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
+    std::string filename = "Untitled.mid";
+
+    std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
+
+	DEFER({
+		osdialog_filters_free(filters);
+	});
+
+	char* pathC = osdialog_file(OSDIALOG_SAVE, dir.c_str(), filename.c_str(), filters);
+  
+	if (!pathC) {
+		// Fail silently
+		return;
+	}
+    std::string pathStr = pathC;;
+	DEFER({
+		std::free(pathC);
+	});
+
+	if (::rack::string::filenameExtension(::rack::string::filename(pathStr)) == "") {
+		pathStr += ".mid";
+	}
+
+    // TODO: add on file extension
+    // TODO: save folder
+    bool b = MidiFileProxy::save(_module->sequencer->song, pathStr.c_str());
+    if (!b) {
+        WARN("unable to write midi file to %s", pathStr.c_str());
+    } else {
+        std::string fileFolder = rack::string::directory(pathStr);
+        _module->sequencer->context->settings()->setMidiFilePath(fileFolder);
+    }
+}
+
 void SequencerWidget::loadMidiFile()
 {
     static const char SMF_FILTERS[] = "Standard MIDI file (.mid):mid";
     osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
     std::string filename;
-    std::string dir;
+
+    std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
 
 	DEFER({
 		osdialog_filters_free(filters);
 	});
 
 	char* pathC = osdialog_file(OSDIALOG_OPEN, dir.c_str(), filename.c_str(), filters);
-    printf("back from open file with path %s\n", pathC);
-    fflush(stdout);
+  
 	if (!pathC) {
 		// Fail silently
 		return;
@@ -142,10 +214,12 @@ void SequencerWidget::loadMidiFile()
 	});
 
     MidiSongPtr song = MidiFileProxy::load(pathC);
+
+    std::string temp(pathC);
+    std::string fileFolder = rack::string::directory(temp);
     if (song) {
-        _module->postNewSong(song);
-    }
-   
+        _module->postNewSong(song, fileFolder);
+    }  
 }
 
 void SequencerWidget::step()
@@ -239,7 +313,7 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float controlX = 20;
+    const float controlX = 20 - 6;
 
     float y = 50;
 #ifdef _LAB
@@ -252,8 +326,8 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Vec(controlX, y),
         module,
         Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 85;    // width
-    p->box.size.y = 22;     // should set auto like button does
+    p->box.size.x = 85 + 8;    // width
+    p->box.size.y = 22;         // should set auto like button does
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
@@ -268,8 +342,8 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Vec(controlX, y),
         module,
         Comp::NUM_VOICES_PARAM);
-    p->box.size.x = 85;    // width
-    p->box.size.y = 22;     // should set auto like button does
+    p->box.size.x = 85 + 8;     // width
+    p->box.size.y = 22;         // should set auto like button does
     p->setLabels(Comp::getPolyLabels());
     addParam(p);
    
@@ -280,8 +354,12 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         "Run");
 #endif
     y += 20;
+
+    float controlDx = 34;
+
+    // run/stop buttong
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(controlX, y),
+        Vec(controlX + controlDx, y),
         module,
         Seq<WidgetComposite>::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
@@ -292,8 +370,9 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     addChild(tog);
    
     y = yy;
-    float controlDx = 40;
+    
 
+    // Scroll button
     {
 #ifdef _LAB
     addLabel(
@@ -303,13 +382,23 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     y += 20;
     scrollControl = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(controlX + controlDx, y),
+        Vec(controlX + 2 * controlDx, y),
         module,
         Comp::PLAY_SCROLL_PARAM);
     scrollControl->addSvg("res/square-button-01.svg");
     scrollControl->addSvg("res/square-button-02.svg");
     addParam(scrollControl);
     }
+
+    // Step record button
+    ToggleButton* b = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(controlX , y),
+        module,
+        Comp::STEP_RECORD_PARAM);
+    b->addSvg("res/square-button-01.svg");
+    b->addSvg("res/square-button-02.svg");
+    addParam(b);
 }
 
 void SequencerWidget::addStepRecord(SequencerModule *module)
@@ -418,27 +507,29 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
     }
 }
 
-void SequencerModule::postNewSong(MidiSongPtr newSong)
+void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFolder)
 {
-    newSong->assertValid();
-    MidiSongPtr oldSong = sequencer->song;
-    {
-        // Must lock the songs when swapping them or player 
-        // might glitch (or crash).
-        MidiLocker oldL(oldSong->lock);
-        MidiLocker newL(newSong->lock);
-        seqComp->setSong(newSong);
+    std::shared_ptr<Seq<WidgetComposite>> comp = seqComp;
+    auto updater = [comp](bool set, MidiSequencerPtr seq, MidiSongPtr newSong, SequencerWidget* widget) {
 
-        sequencer->setNewSong(newSong);
-       // sequencer->song = newSong;
+        assert(widget);
+        assert(seq);
+        assert(newSong);
+        if (set && seq) {
+            seq->selection->clear();        // clear so we aren't pointing to notes from prev seq
+            seq->setNewSong(newSong);       // give the new song to the UI
+            comp->setSong(newSong);         // give the new song to the module / composite
+        }
 
-    }
-      if (widget) {
-        widget->noteDisplay->songUpdated();
-        widget->headerDisplay->songUpdated();
-    }
+        if (!set && widget) {
+            widget->noteDisplay->songUpdated();
+            widget->headerDisplay->songUpdated();
+        }
+    };
 
-    sequencer->assertValid();
+    NewSongDataDataCommandPtr cmd = NewSongDataDataCommand::makeLoadMidiFileCommand(newSong, updater);
+    sequencer->undo->execute(sequencer, widget, cmd);
+    sequencer->context->settings()->setMidiFilePath(fileFolder);
 }
 
 void SequencerModule::onReset()

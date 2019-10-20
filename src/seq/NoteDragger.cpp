@@ -287,7 +287,7 @@ void NoteStartDragger::commit()
         if (sequencer->context->settings()->snapToGrid()) {
             timeShiftAmountPixels = quantizeForDisplay(note->startTime, horizontalShiftPix, true);
         }
-        printf("in commit after quantize timeshift = %f\n", timeShiftAmountPixels);  fflush(stdout);
+       // printf("in commit after quantize timeshift = %f\n", timeShiftAmountPixels);  fflush(stdout);
         float timeshiftAmountMetric = scaler->xToMidiDeltaTime(timeShiftAmountPixels);
         shifts.push_back(timeshiftAmountMetric);
         if (std::abs(timeshiftAmountMetric) > .1) {
@@ -342,6 +342,12 @@ void NoteDurationDragger::commit()
             DurationShiftPixels = quantizeForDisplay(note->duration, DurationShiftPixels, false);
         }
         float timeshiftAmountMetric = scaler->xToMidiDeltaTime(DurationShiftPixels);
+
+        float finalDuration = note->duration + timeshiftAmountMetric;
+        if (finalDuration < TimeUtils::sixtyFourthNote()) {
+            timeshiftAmountMetric += (TimeUtils::sixtyFourthNote() - finalDuration);
+        }
+
         // printf("timeShiftAmountQuantize = %f, metric = %f\n", timeShiftAmountQuantized, timeshiftAmountMetric);
         shifts.push_back(timeshiftAmountMetric);
         if (std::abs(timeshiftAmountMetric) > .1) {

@@ -515,9 +515,10 @@ bool MidiFile::write(std::ostream& out) {
 
 	// now write each track.
 	std::vector<uchar> trackdata;
-	uchar endoftrack[4] = {0, 0xff, 0x2f, 0x00};
+	uchar endoftrack[3] = {0xff, 0x2f, 0x00};	// bgf removed the leading zero so we can use real deltas
 	int i, j, k;
 	int size;
+	int deltaForEndOfTrack = 0;
 	for (i=0; i<getNumTracks(); i++) {
 		trackdata.reserve(123456);   // make the track data larger than
 		                             // expected data input
@@ -528,8 +529,8 @@ bool MidiFile::write(std::ostream& out) {
 				continue;
 			}
 			if ((*m_events[i])[j].isEndOfTrack()) {
-				// Suppress end-of-track meta messages (one will be added
-				// automatically after all track data has been written).
+				auto x = (*m_events[i])[j];
+				deltaForEndOfTrack = x.tick;			// bgf remember our tick to end.
 				continue;
 			}
 			writeVLValue((*m_events[i])[j].tick, trackdata);
@@ -558,10 +559,11 @@ bool MidiFile::write(std::ostream& out) {
 		size = (int)trackdata.size();
 		if ((size < 3) || !((trackdata[size-3] == 0xff)
 				&& (trackdata[size-2] == 0x2f))) {
+			writeVLValue(deltaForEndOfTrack, trackdata);	// bgf write the real delta until end
+			
 			trackdata.push_back(endoftrack[0]);
 			trackdata.push_back(endoftrack[1]);
 			trackdata.push_back(endoftrack[2]);
-			trackdata.push_back(endoftrack[3]);
 		}
 
 		// now ready to write to MIDI file.
@@ -2613,7 +2615,7 @@ int MidiFile::extractMidiData(std::istream& input, std::vector<uchar>& array,
 			byte = readByte(input);
 			if (!status()) { return m_rwstatus; }
 			if (byte > 0x7f) {
-				std::cerr << "MIDI data byte too large: " << (int)byte << std::endl;
+				std::cerr << "MIDI 1 data byte too large: " << (int)byte << std::endl;
 				m_rwstatus = false; return m_rwstatus;
 			}
 			array.push_back(byte);
@@ -2621,7 +2623,7 @@ int MidiFile::extractMidiData(std::istream& input, std::vector<uchar>& array,
 				byte = readByte(input);
 				if (!status()) { return m_rwstatus; }
 				if (byte > 0x7f) {
-					std::cerr << "MIDI data byte too large: " << (int)byte << std::endl;
+					std::cerr << "MIDI 3 data byte too large: " << (int)byte << std::endl;
 					m_rwstatus = false; return m_rwstatus;
 				}
 				array.push_back(byte);
@@ -2633,7 +2635,7 @@ int MidiFile::extractMidiData(std::istream& input, std::vector<uchar>& array,
 				byte = readByte(input);
 				if (!status()) { return m_rwstatus; }
 				if (byte > 0x7f) {
-					std::cerr << "MIDI data byte too large: " << (int)byte << std::endl;
+					std::cerr << "MIDI 3 data byte too large: " << (int)byte << std::endl;
 					m_rwstatus = false; return m_rwstatus;
 				}
 				array.push_back(byte);

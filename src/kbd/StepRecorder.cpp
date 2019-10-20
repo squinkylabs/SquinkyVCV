@@ -1,13 +1,14 @@
 #include "ISeqSettings.h"
 #include "MidiSequencer.h"
 #include "StepRecorder.h"
+#include "../ctrl/SqHelper.h"
 #include "WidgetComposite.h"
 
 #include <assert.h>
 
 void StepRecorder::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
 {
-  RecordInputData data;
+    RecordInputData data;
     bool isData = seqComp->poll(&data);
     if (isData) {
         switch (data.type) {
@@ -23,8 +24,21 @@ void StepRecorder::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, Mid
     }
 }
 
+void StepRecorder::adjustForLoop(MidiSequencerPtr sequencer)
+{
+    const SubrangeLoop& loop = sequencer->song->getSubrangeLoop();
+    if (loop.enabled) {
+        auto time = sequencer->context->cursorTime() ;
+        if (time < loop.startTime || time >= loop.endTime) {
+            sequencer->editor->advanceCursorToTime(loop.startTime, false);
+        }
+    }
+}
+
 void StepRecorder::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
 {
+    adjustForLoop(sequencer);
+    // TODO: if we want to stay in loop, this might be a good place to do it.
     if (numNotesActive == 0) {
         // first note in a new step.
         // clear selection and get the default advance time
@@ -49,11 +63,20 @@ void StepRecorder::onNoteOn(float pitchCV, MidiSequencerPtr sequencer)
 
 void StepRecorder::onAllNotesOff(MidiSequencerPtr sequencer)
 {
-   // float advanceTime = sequencer->editor->getAdvanceTimeAfterNote();
+    // now advance the time past the notes we just inserted.
     float time = sequencer->context->cursorTime();
-
     time += advanceTime;
+
+    // constrain to loop
+    const SubrangeLoop& loop = sequencer->song->getSubrangeLoop();
+    if (loop.enabled) {
+        if (time < loop.startTime || time >= loop.endTime) {
+            time = loop.startTime;
+        }
+    }
+
     sequencer->editor->moveToTimeAndPitch(time, lastPitch);
+    // and clear out the selection
     numNotesActive = 0;
 }
 
@@ -65,7 +88,9 @@ bool StepRecorder::handleInsertPresetNote(
     if (!isActive()) {
         return false;
     }
-    // 
+
+    // Adjust the duration of all the selected notes to match the preset note
+    // that would have been inserted by the preset note command.
     const float artic = sequencer->context->settings()->articulation();
     advanceTime = MidiEditor::getDuration(duration);
     float finalDuration =  advanceTime * artic;

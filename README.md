@@ -21,6 +21,7 @@ Beta testing by:
 * [Artem Leonov](https://www.youtube.com/vcvrackideas)
 * [Dave Phillips](https://www.youtube.com/channel/UC4Kw67XwyKACygelcd-D2-g)
 * [Espen Storø](https://www.youtube.com/user/espenstoro)
+* Joop van der Linden
 
 All third party software copyright information is in [LICENSE-dist.txt](./LICENSE-dist.txt)
 

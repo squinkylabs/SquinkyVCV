@@ -138,7 +138,7 @@ void MidiTrack::_dump() const
         //const void* addr = evt.get();
         printf("time = %f, type=%s ", ti, type.c_str());
         if (!pitch.empty()) {
-            printf(pitch.c_str());
+            printf("%s", pitch.c_str());
         }
         //printf(" addr=%p\n", addr);
         printf("\n");
@@ -166,7 +166,7 @@ MidiTrack::iterator_pair MidiTrack::timeRange(MidiEvent::time_t start, MidiEvent
 MidiTrack::note_iterator_pair MidiTrack::timeRangeNotes(MidiEvent::time_t start, MidiEvent::time_t end) const
 {
 
-    note_iterator::filter_func lambda = [this](MidiTrack::const_iterator ii) {
+    note_iterator::filter_func lambda = [](MidiTrack::const_iterator ii) {
         const MidiEventPtr me = ii->second;
         bool ret = false;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);

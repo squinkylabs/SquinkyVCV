@@ -14,6 +14,7 @@ To the Mixer-8 features, Form adds many more features:
 * Volume controls now have audio taper, rather than linear taper.
 * Mute CV can be momentary or toggle.
 * Master and bus returns now have up to +6db gain.
+* Channel inputs are polyphonic.
 
 This manual will use the word *fader*. Fader is an audio term that often refers to the linear travel volume controls found on many mixers. But fader can also apply to regular round volume controls. In the case of Form we use round controls to save panel space without having to make the controls too small to use, but we call them faders.
 
@@ -45,6 +46,8 @@ The channel volumes in Form are log for the top 3/4. At 1/4 the gain is -18 deci
 
 **S**: Solo. Will turn off all the other channels and let the soloed channel play on its own. Soloing one channel will un-solo the other channels. When solo is active it overrides mutes, i.e. if you solo a muted channel it will play. Pressing an active solo button will remove the solo.
 
+Control-click (Command-click on Mac) on a solo button will toggle that channel's solo only. So ctrl-solo is *multi solo*, while regular click is *exclusive solo*. Multi-solo lets you solo more than one channel.
+
 **M** Mute. Silences the muted channel. Note that the larger button on the far right is the master mute.
 
 **AX1, AX2**: Aux send levels. Controls how much of the current channel will be sent to each stereo Aux bus. If the send and return are patched to an echo, for example, Aux will control how much of that channel is sent to the echo.
@@ -59,7 +62,7 @@ Aux is post-fader by default, so any channel settings will also affect the Aux s
 
 **Out**: The channel's direct output. This is always post-mute and post-fader.
 
-**In**: The channel's audio input.
+**In**: The channel's audio input. This input is polyphonic. If the patch cable is carying more than one channel, they will all be mixed together, and the volume normalized.
 
 **M**: Mute control voltages in. These go through the mute anti-pop filters, so sharp gates may be used without pops. They can be momentary or toggle. See section on context menu for more on this. Because the mute CV has a pop filter on it, you can automate the mute with fast gate signal without popping. For example use the outputs from Gray Code to automate them.
 

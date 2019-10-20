@@ -20,7 +20,8 @@ const float quantInterval = .001f;      // very fine to avoid messing up old tes
  * Track has one quarter note at t=0, duration = eighth.
  * End event at quarter note after note
  */
-MidiSongPtr makeSongOneQ(float noteTime, float endTime)
+
+MidiSongPtr makeSongOneNote(float noteTime, float noteDuration, float endTime)
 {
     const float duration = .5;
     assert(endTime >= (noteTime + duration));
@@ -32,7 +33,7 @@ MidiSongPtr makeSongOneQ(float noteTime, float endTime)
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->startTime = noteTime;
-    note->duration = .5;
+    note->duration = noteDuration;
     note->pitchCV = 2.f;
     track->insertEvent(note);
     track->insertEnd(endTime);
@@ -41,6 +42,11 @@ MidiSongPtr makeSongOneQ(float noteTime, float endTime)
     assert(p->type == MidiEvent::Type::Note);
 
     return song;
+}
+
+MidiSongPtr makeSongOneQ(float noteTime, float endTime)
+{
+    return makeSongOneNote(noteTime, .5, endTime);
 }
 
 /**
@@ -466,10 +472,50 @@ static void testVoiceAssignRetrigger()
     assert(p->_getIndex() != p2->_getIndex());
 }
 
+// This case comes from a customer issue: https://github.com/squinkylabs/SquinkyVCV/issues/98
+static void testVoiceAssignBug()
+{
+    MidiVoice vx[3];
+    MidiVoiceAssigner va(vx, 3);
+    TestHost2 th;
+    va.setNumVoices(3);
+    initVoices(vx, 3, &th);
+
+    const float pitch1 = 1;
+    const float pitch2 = 2;
+    const float pitch3 = 3;
+    const float pitch5 = 5;
+
+    MidiVoice* p = va.getNext(pitch1);
+    p->playNote(pitch1, .5, .75);
+    assert(p->_getIndex() == 0);
+    p->updateToMetricTime(.75);
+
+    p = va.getNext(pitch2);
+    p->playNote(pitch2, .75, 1);
+    assert(p->_getIndex() == 1);
+    p->updateToMetricTime(1);
+
+    p = va.getNext(pitch3);
+    p->playNote(pitch3, 1, 1.25);
+    assert(p->_getIndex() == 2);
+    p->updateToMetricTime(1.25);
+
+    // this is zero for two reasons - one, it is next in the rotation.
+    // two, it is that same pitch
+    p = va.getNext(pitch1);
+    p->playNote(pitch1, 1.5, 1.75);
+    assert(p->_getIndex() == 0);
+    p->updateToMetricTime(1.75);
+
+    p = va.getNext(pitch5);
+    p->playNote(pitch5, 1.75, 2);
+    assert(p->_getIndex() != 0);
+}
+
 //********************* test helper functions ************************************************
 
 extern MidiSongPtr makeSongOneQ();
-
 
 // song has an eight note starting at time 0
 static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
@@ -479,7 +525,7 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
     MidiPlayer2 pl(host, song);
 
     // let's make quantization very fine so these old tests don't freak out
-    pl.updateToMetricTime(time, quantInterval);
+    pl.updateToMetricTime(time, quantInterval, true);
 
     // song is only 1.0 long
     float expectedLoopStart = std::floor(time);
@@ -528,35 +574,35 @@ static std::shared_ptr<TestHost2> makeSongOverlapQandRun(float time)
 
     const float quantizationInterval = .25f;        // shouldn't matter for this test...
 
-    pl.updateToMetricTime(.5, quantizationInterval);
+    pl.updateToMetricTime(.5, quantizationInterval, true);
     assert(host->gateChangeCount == 0);
     assert(!host->gateState[0]);
     assert(!host->gateState[1]);
 
 
-    pl.updateToMetricTime(1.5, quantizationInterval);
+    pl.updateToMetricTime(1.5, quantizationInterval, true);
     assert(host->gateChangeCount == 1);
     assert(host->gateState[0]);
     assert(!host->gateState[1]);
 
 
-    pl.updateToMetricTime(2.5, quantizationInterval);
+    pl.updateToMetricTime(2.5, quantizationInterval, true);
     assert(host->gateChangeCount == 2);
     assert(host->gateState[0]);
     assert(host->gateState[1]);
 
 
-    pl.updateToMetricTime(3.5, quantizationInterval);
+    pl.updateToMetricTime(3.5, quantizationInterval, true);
     assert(host->gateChangeCount == 3);
     assert(!host->gateState[0]);
     assert(host->gateState[1]);
 
-    pl.updateToMetricTime(4.5, quantizationInterval);
+    pl.updateToMetricTime(4.5, quantizationInterval, true);
     assert(host->gateChangeCount == 4);
 
 
     assert(time > 4.5);
-    pl.updateToMetricTime(time, quantizationInterval);
+    pl.updateToMetricTime(time, quantizationInterval, true);
 
     return host;
 }
@@ -570,7 +616,7 @@ static std::shared_ptr<TestHost2> makeSongTouchingQandRun(bool exactDuration, fl
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
     pl.setNumVoices(4);
-    pl.updateToMetricTime(time, .25f);
+    pl.updateToMetricTime(time, .25f, true);
     return host;
 
 }
@@ -584,13 +630,13 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
     MidiPlayer2 pl(host, song);
 
 
-    pl.updateToMetricTime(timeBeforeLock, quantInterval);
+    pl.updateToMetricTime(timeBeforeLock, quantInterval, true);
     {
         MidiLocker l(song->lock);
-        pl.updateToMetricTime(timeBeforeLock + timeDuringLock, quantInterval);
+        pl.updateToMetricTime(timeBeforeLock + timeDuringLock, quantInterval, true);
     }
 
-    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock, quantInterval);
+    pl.updateToMetricTime(timeBeforeLock + timeDuringLock + timeAfterLock, quantInterval, true);
 
        // song is only 1.0 long
     float expectedLoopStart = std::floor(timeBeforeLock + timeDuringLock + timeAfterLock);
@@ -606,7 +652,7 @@ static void testMidiPlayer0()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(.01f, .25f);
+    pl.updateToMetricTime(.01f, .25f, true);
 }
 
 // test song has an eight note starting at time 0
@@ -697,7 +743,7 @@ static void testMidiPlayerReset()
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.updateToMetricTime(100, quantInterval);
+    pl.updateToMetricTime(100, quantInterval, true);
 
 
     assertAllButZeroAreInit(host.get());
@@ -714,7 +760,7 @@ static void testMidiPlayerReset()
     }
 
     // Should play just like it does in test1
-    pl.updateToMetricTime(2 * .24f, quantInterval);
+    pl.updateToMetricTime(2 * .24f, quantInterval, true);
 
 
     assertAllButZeroAreInit(host.get());
@@ -725,16 +771,6 @@ static void testMidiPlayerReset()
     assertEQ(host->cvValue[0], 2);
     assertEQ(host->lockConflicts, 0);
 }
-
-#if 0   // don't support stop any more
-static void testMidiPlayerStop()
-{
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun3(1, 100);
-    assertEQ(host->gateChangeCount, 0);
-    assertEQ(host->cvChangeCount, 0);
-}
-#endif
-
 
 // four voice assigner, but only two overlapping notes
 static void testMidiPlayerOverlap()
@@ -761,14 +797,14 @@ static void testMidiPlayerLoop()
     song->setSubrangeLoop(l);
     assert(song->getSubrangeLoop().enabled);
 
-    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+    pl.updateToMetricTime(0, .5, true);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
     assertEQ(1, host->gateChangeCount);
     assert(host->gateState[0]);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(.9, .5);
+    pl.updateToMetricTime(.9, .5, true);
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
 }
@@ -787,25 +823,24 @@ static void testMidiPlayerLoop2()
     assert(song->getSubrangeLoop().enabled);
 
     assertEQ(pl.getCurrentLoopIterationStart(), 0);
-    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+    pl.updateToMetricTime(0, .5, true);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
     assertEQ(1, host->gateChangeCount);
     assert(host->gateState[0]);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(3.5, .5);   
+    pl.updateToMetricTime(3.5, .5, true);
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
     assertEQ(pl.getCurrentLoopIterationStart(), 0);
 
    // now go to the second time around the loop, should play again.
-    pl.updateToMetricTime(4, .5);
+    pl.updateToMetricTime(4, .5, true);
     assert(host->gateState[0]);
     assertEQ(3, host->gateChangeCount);
     assertEQ(pl.getCurrentLoopIterationStart(), 4);
 }
-
 
 static void testMidiPlayerLoop3()
 {
@@ -820,34 +855,164 @@ static void testMidiPlayerLoop3()
     song->setSubrangeLoop(l);
     assert(song->getSubrangeLoop().enabled);
 
-    pl.updateToMetricTime(0, .5);        // send first clock, 1/8 note
+    pl.updateToMetricTime(0, .5, true);        // send first clock, 1/8 note
 
     // Expect one note played on first clock, due to loop start offset
     assertEQ(1, host->gateChangeCount);
     assert(host->gateState[0]);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(3.5, .5);
+    pl.updateToMetricTime(3.5, .5, true);
     assertEQ(2, host->gateChangeCount);
     assert(!host->gateState[0]);
 
     // now go to the second time around the loop, should play again.
-    pl.updateToMetricTime(4, .5);
+    pl.updateToMetricTime(4, .5, true);
     assert(host->gateState[0]);
     assertEQ(3, host->gateChangeCount);
     assertEQ(pl.getCurrentLoopIterationStart(), 4);
 
     // now go to near the end of the first loop. Should be nothing playing
-    pl.updateToMetricTime(4 + 3.5, .5);
+    pl.updateToMetricTime(4 + 3.5, .5, true);
     assert(!host->gateState[0]);
     assertEQ(4, host->gateChangeCount);
     assertEQ(pl.getCurrentLoopIterationStart(), 4);
 
     // now go to the third time around the loop, should play again.
-    pl.updateToMetricTime(4+4, .5);
+    pl.updateToMetricTime(4+4, .5, true);
     assertEQ(pl.getCurrentLoopIterationStart(), 8);
     assert(host->gateState[0]);
     assertEQ(5, host->gateChangeCount);
+}
+
+#if 0
+// song has an eight note starting at time 0
+static void testShortQuantize()
+{
+    // make a one bar song with a single sixteenth note on the first beat
+    MidiSongPtr song = makeSongOneNote(0, .25, 4);      
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+
+    // should not be playing a note now.
+    assert(!host->gateState[0]);
+
+    // let's make quantization coarse (quarter note)
+    // should play our short note as a quarter (don't quantize to zero)
+    const float quantizeInterval = 1;      
+    pl.updateToMetricTime(0, quantizeInterval);
+
+    // should be playing a note now.
+    assert(host->gateState[0]);
+
+    // try again at zero, should still play
+    pl.updateToMetricTime(0, quantizeInterval);
+    assert(host->gateState[0]);
+
+  //  pl.updateToMetricTime(.5, quantizeInterval);
+ //  // should still be playing a note after just and eight note.
+  //  assert(host->gateState[0]);
+
+
+
+    // song is only 1.0 long
+   // float expectedLoopStart = std::floor(time);
+   // assertEQ(pl.getCurrentLoopIterationStart(), expectedLoopStart);
+
+  //  return host;
+}
+#endif
+
+
+MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1, 
+    float noteTime2, float noteDuration2, 
+    float endTime)
+{
+    const float duration = .5;
+    assert(noteTime1 < noteTime2);
+    assert(endTime >= (noteTime2 + noteDuration2));
+
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    MidiLocker l(song->lock);
+    song->createTrack(0);
+    MidiTrackPtr track = song->getTrack(0);
+
+    {
+        MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+        note->startTime = noteTime1;
+        note->duration = noteDuration1;
+        note->pitchCV = 2.f;
+        track->insertEvent(note);
+    }
+#
+    {
+        MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+        note->startTime = noteTime2;
+        note->duration = noteDuration2;
+        note->pitchCV = 2.2f;
+        track->insertEvent(note);
+    }
+
+    track->insertEnd(endTime);
+
+    MidiEventPtr p = track->begin()->second;
+    assert(p->type == MidiEvent::Type::Note);
+    song->assertValid();
+
+    return song;
+}
+
+/**
+ * will make a track with two adjcent quarter notes, and play it
+ * enough to verify the retrigger between notes.
+ */
+static void _testQuantizedRetrigger2(float durations)
+{
+    // quarters on beat 1, and on beat 2, duration pass in "durations"
+    MidiSongPtr song = makeSongTwoNotes(0, durations,
+        1, durations,
+        4);
+
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiPlayer2 pl(host, song);
+    pl.setNumVoices(1);
+    pl.setSampleCountForRetrigger(44);
+
+    // should not be playing a note now.
+    assert(!host->gateState[0]);
+
+    // let's make quantization coarse (quarter note)
+    // should play our short note as a quarter (don't quantize to zero)
+    const float quantizeInterval = 1;
+    pl.updateToMetricTime(0, quantizeInterval, true);
+    assert(host->gateState[0]);
+
+    // now second clock tick. This should cause a re-trigger, forcing the gate low
+    pl.updateToMetricTime(1, quantizeInterval, true);
+    assert(!host->gateState[0]);
+
+    // after retrig, gate should go up
+    pl.updateSampleCount(44);
+    assert(host->gateState[0]);
+
+    // beat 3 should have no note
+    pl.updateToMetricTime(2, quantizeInterval, true);
+    assert(!host->gateState[0]);
+
+    // beat 4 should have no note
+    pl.updateToMetricTime(3, quantizeInterval, true);
+    assert(!host->gateState[0]);
+
+
+    // loop: beat 1 should have a note
+    pl.updateToMetricTime(4, quantizeInterval, true);
+    assert(host->gateState[0]);
+}
+
+static void testQuantizedRetrigger2()
+{
+    _testQuantizedRetrigger2(1.0f);
+    _testQuantizedRetrigger2(.25f);
 }
 
 //*******************************tests of MidiPlayer2 **************************************
@@ -870,6 +1035,7 @@ void testMidiPlayer2()
     testVoiceAssignOverlapMono();
     testVoiceAssignRotate();
     testVoiceAssignRetrigger();
+    testVoiceAssignBug();
 
     testMidiPlayer0();
     testMidiPlayerOneNoteOn();
@@ -883,4 +1049,5 @@ void testMidiPlayer2()
     testMidiPlayerLoop();
     testMidiPlayerLoop2();
     testMidiPlayerLoop3();
+    testQuantizedRetrigger2();
 }

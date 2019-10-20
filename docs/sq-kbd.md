@@ -6,7 +6,7 @@ Any of the keyboard assignments in Seq++ may be changed by the user. Anything is
 
 A KeyMapping describes how keys should be handled. One of the most important things in a KayMapping is an array of KeyBindings.
 
-A KeyBinding relates a specific key on the keyboard with an action to be performed.
+A KeyBinding relates a specific key on the keyboard to an action to be performed.
 
 The data for a KeyMapping is stored in a JSON file. JSON files are probably familiar to VCV users already, as much of the VCV Rack configuration is already stored in JSON files.
 
@@ -14,15 +14,15 @@ The data format for Seq++ KeyMapping files is modeled after the analogous featur
 
 Seq++ defines the default keyboard mapping in a file called *seq_default_keys.json* which is located in the SquinkyLabs/res folder. This file is not user editable, but it is a good example of how to write a KeyMapping file that implements an entire user interface.
 
-You may create and override file in the VCV Rack folder. This file must be called *seq_user_keys.json*
+You may create an override file in the VCV Rack folder. This file must be called *seq_user_keys.json*
 
 Here is the built-in [seq_default_keys.json](../res/seq_default_keys.json)
 
 ## Editing JSON files
 
-Any text editor may be used for editing JSON files, but we recommend you use one that understands JSON. And editor like that will tell you when you have made a basic mistake, and will use syntax coloring to indicate the different parts of the JSON.
+Any text editor may be used for editing JSON files, but we recommend you use one that understands JSON. An editor like that will tell you when you have made a basic mistake, and will use syntax coloring to indicate the different parts of the JSON.
 
-We use Visual Studio Code for this, although there are many alternatives. The built-in text editor in Ubuntu Linux is decent for this.
+We use Visual Studio Code, although there are many alternatives. The built-in text editor in Ubuntu Linux is decent for this.
 
 If you are unfamiliar with JSON, it may take some trial and error to get your key mappings to work. It isn't important how you indent your files and whether you put things on different lines. Note how the examples in this document tend to use "normal" JSON indenting and line breaking, but the actual [seq_default_keys.json](../res/seq_default_keys.json) has very few line breaks or block indents. We to that to make the files more readable.
 
@@ -38,7 +38,7 @@ If you have worked with JSON before, you probably know there is no legal way to 
 
 ### KeyMapping
 
-The KeyMapping files describe a JSON object. The built in KeyMapping is very simple. The user override file has additional options.
+The KeyMapping files describe a JSON object. The built in KeyMapping syntax is very simple. The user override file has additional options.
 
 KeyMapping = {
     "bindings": [
@@ -63,7 +63,7 @@ Binding = {
 }
 ```
 
-So a Binding is an object with a Key to be bound, the name of the action to be performed when that key is activated.
+We see that a Binding is an object with a Key to be bound, and the name of the action to be performed when that key is activated.
 
 Key = KeyCode(+alt)(+ctrl)(+shift)
 
@@ -75,7 +75,7 @@ Here is an example binding:
   {"key": "q+shift", "action": "insert.quarter"}
 ```
 
-here the Key is "q+shift", and the ActionName is "insert.quarter". Thus capital q will inserts a quarter note. At the end of this page is a complete reference of the key names and action names that may be used.
+here the Key is "q+shift", and the ActionName is "insert.quarter". Thus capital q will insert a quarter note. At the end of this page is a complete reference of the key names and action names that may be used.
 
 ### Ignore case
 
@@ -98,7 +98,7 @@ Ignore case is an optional section that lets you specify keys that should to the
 }
 ```
 
-Note that `ignore_case` is purely a convenience feature. The following is a completely equilivilent way to do the same thing without using `ignore_case`:
+Note that `ignore_case` is purely a convenience feature. The following is a completely equivalent way to do the same thing without using `ignore_case`:
 
 ```json
 {
@@ -126,7 +126,7 @@ The allowed modifiers are:
 
 Note the on the Macintosh we follow that standard convention that `ctrl` is the `Apple` or `Cmd` key, and the actual `ctrl` key is unused.
 
-Seq++ uses the same key codes as Visual Studio Code, where are:
+Seq++ uses the same key codes as Visual Studio Code, which are:
 
 ```
 f1-f19, a-z, 0-9
@@ -144,12 +144,64 @@ You will note also that the number key are completely separate from the numeric 
 
 ### Other JSON properties, besides bindings
 
-*use_defaults* If this optional property is false, then only your keymap file will be used, and the contents of the built in key mapping will be ignored. If it is true, or not present, then all keys will first go to your mapping, but it a key is not bound in your mapping, then it will be sent to the default mapping.
+These properties are only valid in your *seq_user_keys.json* file - the are no, and can not, but present in the built-in mappings.
 
-*grab_keys* If this optional property is false, then Seq++ will not try to grab the cursor keys, and other keys, away from VCV Rack. If you plan on using your own mappings to move the cursor, and your mappings do not use keys that VCV Rack uses, then you should set this to false so that VCV can process keys as it would like to.
+*use_defaults* If this optional property is false, then only your keymap file will be used, and the contents of the built-in key mapping will be ignored. If it is true, or not present, then all keys will first go to your mapping, but it a key is not bound in your mapping, then it will be sent to the default mapping.
+
+*grab_keys* If this optional property is false, then Seq++ will not try to grab the cursor keys, or any other keys, away from VCV Rack. If you plan on using your own mappings to move the cursor, and your mappings do not use keys that VCV Rack uses, then you should set this to false so that VCV can process keys as it would like to.
 
 ## Some suggestions
 
 Start with a very minimal *seq_user_keys.json*, and build it up a little bit at a time. The minimal file that will work just needs to have the *bindings* array with one binding in it.
 
 Run VCV Rack from the command line, and look carefully at the console output as you load an instance of Seq++. Debugging information will be output to the console, and more importantly detailed errors will be logged to the console.
+
+If you are going to make a lot of changes, it will be worthwhile to plan it first. There are a lot of commands to move the cursor and insert notes, so it is very easy to run out of convenient keys to use for all the functions. If you don't plan everything ahead of time, it's likely you will code yourself into a corner where there are no good keys "left over" for the remaining actions.
+
+## Actions reference
+
+| Action name | Effect |
+| --- | --- |
+|help | Open the manual in a new browser |
+|loop | Toggle sub-range loop on and off |
+| change.track.length | Set track length to cursor location |
+| insert.default | Insert the default note at current pitch/time |
+| insert.whole.advance | Insert whole note and move cursor after it |
+| insert.half.advance |  Insert half note and move cursor after it |
+| insert.quarter.advance |  Insert quarter note and move cursor after it |
+| insert.eighth.advance |  Insert eighth note and move cursor after it |
+| insert.sixteenth.advance |  Insert sixteenth note and move cursor after it |
+| insert.whole | Insert whole note, don't move cursor |
+| insert.half | Insert half note, don't move cursor |
+| insert.quarter | Insert quarter note, don't move cursor |
+| insert.eighth | Insert eighth note, don't move cursor |
+| insert.sixteenth | Insert sixteenth note, don't move cursor |
+| move.left.normal | Move cursor left one grid unit |
+| move.right.normal | Move cursor right one grid unit |
+| move.up.normal | Move cursor up one semi-tone |
+| move.down.normal | Move cursor up one semi-tone |
+| move.left.all | Move cursor to the start of the first bar |
+| move.right.all | Move cursor to the last bar |
+| move.left.measure | Move the cursor left by one bar |
+| move.right.measure | Move the cursor right by one bar | |
+| move.up.octave | Move the cursor up one octave |
+| move.down.octave | Move the cursor down one octave |
+| select.next | Select the next note after the currently selected one  |
+| select.next.extend | Select the next note, while leaving others selected |
+| select.previous | Select the previous note before the currently selected one |
+| select.previous.extend | Select the previous note, while leaving others selected |
+| select.all | Select all the notes |
+| value.increment.small | Add a semi-tone or 64th note  |
+| value.increment.normal | Add a semi-tone or a grid unit |
+| value.increment.large | Add an octave or four grid units |
+| value.decrement.small | Subtract a semi-tone or 64th note |
+| value.decrement.normal | Subtract a semi-tone or a grid unit |
+| value.decrement.large | Subtract an octave or four grid units |
+| cut | Cut |
+| copy | Copy |
+| paste | Paste |
+| edit.start.time | Set the editor to edit note start times |
+| edit.duration | Set the editor to edit note durations |
+| edit.pitch | Set the editor to edit note pitch |
+| grab.default.note | Use the note under the cursor as the default insert note |
+| delete.note | Delete the note under the cursor |

@@ -2,7 +2,7 @@
 
 ![ExTwo Panel](./extwo.png)
 
-ExTwo is used to add two stereo channels to the Form "master mixer". ExTwo is only functional when it is part of a chain of a Form mixer and some Ex expanders.
+ExTwo is used to add two stereo channels to the Form "master mixer". ExTwo is only really useful when it is part of a chain of a Form mixer and some Ex expanders.
 
 The master Form mixer is always on the right. Then any number of ExTwo and ExFor expanders may be placed to the left.
 
@@ -10,7 +10,7 @@ The ExTwo and the other mixers recognize each other, and automatically connect t
 
 ## Normaled mono mode
 
-If you connect an audio signal to the left input of a stereo channel, and leave the right connected, a special mode will be engaged. The left signal will be sent to both the left and right outputs, and the pan control, aside from controlling the panning to all the stereo busses, will also pan between the two direct ouputs.
+If you connect an audio signal to the left input of a stereo channel, and leave the right connected, a special mode will be engaged. The left signal will be sent to both the left and right outputs, and the pan control, aside from controlling the panning to all the stereo busses, will also pan between the two direct outputs.
 
 So this mode is very similar to a regular mono channel with Form or ExFor, with the additional ability to pan between two direct outputs.
 
@@ -29,6 +29,8 @@ The settings on the context menu will be saved with your patch. The context menu
 ## Channel strip controls
 
 **S**: Solo. Will turn off all the other channels and let the soloed channel play on its own. Soloing one channel will un-solo the other channels. When solo is active it overrides mutes, i.e. if you solo a muted channel it will play. Pressing an active solo button will remove the solo.
+
+Control-click (Mac Command-click) on a solo button will toggle that channel's solo only. So ctrl-solo is *multi solo*, while regular click is *exclusive solo*. Multi-solo lets you solo more than one channel.
 
 **M** Mute. Silences the muted channel. Note that the larger button on the far right is the master mute.
 

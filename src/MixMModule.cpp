@@ -35,7 +35,9 @@ public:
 
     // Override MixerModule
     void internalProcess() override;
-    void requestModuleSolo( SoloCommands) override;
+    int getNumGroups() const override { return Comp::numGroups; }
+    int getMuteAllParam() const override { return Comp::ALL_CHANNELS_OFF_PARAM; }
+    int getSolo0Param() const override { return Comp::SOLO0_PARAM; }
     bool amMaster() override { return true; }
 protected:
     void setExternalInput(const float*) override;
@@ -44,11 +46,6 @@ private:
     std::shared_ptr<Comp> MixM;
 
 };
-
-void MixMModule::requestModuleSolo(SoloCommands command)
-{
-    sqmix::processSoloRequestForModule<Comp>(this, command);
-}
 
 void MixMModule::onSampleRateChange()
 {
@@ -73,6 +70,8 @@ MixMModule::MixMModule()
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
+
+    allocateSharedSoloState();
 
     MixM = std::make_shared<Comp>(this);
     MixM->init();
@@ -148,9 +147,12 @@ void MixMWidget::appendContextMenu(Menu *menu)
     menu->addChild(item);
 }
 
+#ifdef _LABELS
+static const float labelX = 0; 
+#endif
+
 static const float channelX = 42;
 static const float dX = 34;
-static const float labelX = 0; 
 static const float channelY = 350;
 static const float channelDy = 30; 
 static float volY = 0;
@@ -265,8 +267,8 @@ void MixMWidget::makeStrip(
     tog->addSvg(sLed.c_str(), true);
     tog->addSvg("res/SquinkyBezel.svg");
 
-    tog->setHandler( [this, module, channel](bool ctrlKey) {
-        sqmix::handleSoloClickFromUI<Comp>(mixModule, channel);
+    tog->setHandler( [this, channel](bool ctrlKey) {
+        sqmix::handleSoloClickFromUI<Comp>(mixModule, channel, ctrlKey);
     });
     addChild(tog);
 #ifdef _LABELS
@@ -418,7 +420,6 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
 
     x = x0 + 15 + 16  + (WIDE * 15);
 
-
     // Big Mute button
     const float mutex = x-11;
     const float mutey = muteY;
@@ -430,17 +431,16 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
         Comp::MASTER_MUTE_PARAM);
     addParam(mute);
 
-
     auto light = (createLight<MuteLight<SquinkyLight>>(
         Vec(mutex + 3.2 - 6, mutey + 3 - 21),
         module, Comp::MUTE_MASTER_LIGHT));
     // 30 too big
     light->box.size.x = 26;
+    light->box.size.y = 26;
     addChild(light);
-    //printf("\nlight width = %f\n", light->box.size.x); fflush(stdout);
+    //printf("\nlight width = %f, height = %f\n", light->box.size.x, light->box.size.y); fflush(stdout);
     muteY = y-12;
     
-
     y = volY;
   
     addParam(SqHelper::createParamCentered<Rogan2PSBlue>(

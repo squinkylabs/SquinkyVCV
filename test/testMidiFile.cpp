@@ -1,7 +1,14 @@
 
+#define __STDC_WANT_LIB_EXT1__ 1        // to get tempnam_s
 #include "MidiSong.h"
+#include "MidiTrack.h"
 #include "MidiFileProxy.h"
 #include "asserts.h"
+//#include <filesystem>
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 static void test1()
 {
@@ -20,7 +27,67 @@ static void test1()
     assertEQ(track->size(), 3);
 }
 
+
+static void compareSongs(MidiSongPtr song1, MidiSongPtr song2)
+{
+    assertEQ(song2->getTrack(0)->size(), song1->getTrack(0)->size());
+    assertEQ(song1->getHighestTrackNumber(), 0);
+    assertEQ(song2->getHighestTrackNumber(), 0);
+
+    MidiTrack::const_iterator it = song1->getTrack(0)->begin();
+    MidiTrack::const_iterator it2 = song2->getTrack(0)->begin();
+    while (it != song1->getTrack(0)->end()) {
+        assert(it2 != song2->getTrack(0)->end());
+
+        MidiEventPtr ev1 = it->second;
+        MidiEventPtr ev2 = it2->second;
+
+        if (ev1->type == MidiEvent::Type::End) {
+            assert(ev2->type == MidiEvent::Type::End);
+            assertEQ(ev1->startTime, ev2->startTime);
+        } else {
+            MidiNoteEventPtr note1 = safe_cast<MidiNoteEvent>(ev1);
+            MidiNoteEventPtr note2 = safe_cast<MidiNoteEvent>(ev2);
+            assert(note2 && note1);
+            assertEQ(note1->startTime, note2->startTime);
+            assertEQ(note1->pitchCV, note2->pitchCV);
+        }
+        ++it;
+        ++it2;
+    }
+}
+
+#ifndef ARCH_LIN
+#define _TMPNAM
+#endif
+
+// for some reason I can't get tmpnam_s to build
+#ifdef _TMPNAM
+static void test2()
+{
+    char buffer[FILENAME_MAX];
+    auto ret = tmpnam_s(buffer, FILENAME_MAX);
+    assert(!ret);
+
+    printf("temp file = %s\n", buffer);
+    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
+    bool b = MidiFileProxy::save(song, buffer);
+    assert(b);
+
+    MidiSongPtr song2 = MidiFileProxy::load(buffer);
+    struct stat filestatus;
+    stat(buffer, &filestatus);
+    assertGT(filestatus.st_size, 50);
+    remove(buffer);
+    assert(song2);
+    compareSongs(song, song2);
+}
+#endif
+
 void testMidiFile()
 {
     test1();
+#ifdef _TMPNAM
+    test2();
+#endif
 }

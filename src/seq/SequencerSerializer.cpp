@@ -88,6 +88,8 @@ json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
     auto artic = rawSettings->getArticString();
     json_object_set_new(jsonSettings, "articulation", json_string(artic.c_str()));
 
+    json_object_set_new(jsonSettings, "midiFilePath", json_string(rawSettings->midiFilePath.c_str()));
+
     return jsonSettings;
 }
 
@@ -164,6 +166,12 @@ std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
         if (snapDur) {
             bool bSnap = json_boolean_value(snapDur);
             rawSettings->snapDurationEnabled = bSnap;
+        }
+
+        json_t* midiFilePath = json_object_get(data, "midiFilePath");
+        if (midiFilePath) {
+            std::string path = json_string_value(midiFilePath);
+            rawSettings->midiFilePath = path;
         }
     }
     return _settings;

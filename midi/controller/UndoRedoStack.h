@@ -15,8 +15,11 @@ using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 class UndoRedoStack
 {
 public:
+    // It's a bit of a hack to have a version that doesn't require a widget,
+    // But since the widget param is rarely used... 
     // execute the command, make undo record
     void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
+    void execute(MidiSequencerPtr, SequencerWidget*, std::shared_ptr<SqCommand>);
     void setModuleId(int);
 private:
     int moduleId=-1;
@@ -35,8 +38,11 @@ public:
     bool canUndo() const;
     bool canRedo() const;
 
+    // It's a bit of a hack to have a version that doesn't require a widget,
+    // But since the widget param is rarely used... 
     // execute the command, make undo record
     void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
+    void execute(MidiSequencerPtr, SequencerWidget*, std::shared_ptr<SqCommand>);
     void undo(MidiSequencerPtr);
     void redo(MidiSequencerPtr);
 

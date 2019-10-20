@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AtomicRingBuffer.h"
 #include "IMidiPlayerHost.h"
 
 #include <algorithm>
@@ -7,6 +8,7 @@
 
 #if 1
 #define _AUDITION
+// #define _LOG
 #endif
 
 /**
@@ -28,40 +30,22 @@ public:
      */
     void auditionNote(float pitch) override
     {
-#ifdef _AUDITION   // disable in real seq until done
-        //printf("audition note pitch %.2f retig=%d, playing=%d\n", pitch, isRetriggering, isPlaying);
-        if (!enabled) {
-            return;
+        // if queue if full, drop note on the floor. If there's room, queue it
+        // up to play from audio thread
+        if (!noteQueue.full()) {
+            noteQueue.push(pitch);
         }
-
-        if (!isPlaying && !isRetriggering) {
-            // starting a new note
-            playerHost->setCV(0, pitch);
-            playerHost->setGate(0, true);
-            timerSeconds = noteDurationSeconds();
-            isPlaying = true;
-        } else {
-            // play when already playing
-            // we will re-trigger, or at least change pitch
-            pitchToPlayAfterRetrigger = pitch;
-            if (!isRetriggering) {
-                isRetriggering = true;
-                isPlaying = false;
-                timerSeconds = retriggerDurationSeconds();  
-                // printf("audition note retrigger set timer sec to %f\n", timerSeconds);
-                playerHost->setGate(0, false);
-            } 
-        }
-        // printf("leaving audition,  retig=%d, playing=%d\n", isRetriggering, isPlaying);
-#endif
     }
 
+ 
     void sampleTicksElapsed(int ticks)
     {
+        // TODO: would it be possible to stay disabled and stick a note that way?
         if (!enabled) {
             return;
         }
 #ifdef _AUDITION
+        serviceNoteQueue();
         assert(sampleTime > 0);
         assert(sampleTime < .01);
         if (timerSeconds > 0) {
@@ -83,10 +67,14 @@ public:
                     // but turn it off after play duration
                     timerSeconds = noteDurationSeconds();
                     isPlaying = true;
-                   // printf("audition note retrigger end set timer sec to %f\n", timerSeconds);
+#ifdef _LOG
+                    printf("audition note timer retrigger end set timer sec to %f\n", timerSeconds); fflush(stdout);
+#endif
 
                 } else {
-                    //printf("clearing\n");  fflush(stdout);
+#ifdef _LOG
+                    printf("audition timer clearing\n");  fflush(stdout);
+#endif
                     // timer is just timing down for note
                     playerHost->setGate(0, false);
                 }
@@ -134,4 +122,52 @@ private:
     bool isPlaying = false;
     float pitchToPlayAfterRetrigger = 0;
     bool enabled = false;
+    AtomicRingBuffer<float, 4> noteQueue;
+
+    void serviceNoteQueue()
+    {
+        while(!noteQueue.empty()) {
+            float pitch = noteQueue.pop();
+            replayAuditionNoteOnAudioThread(pitch);
+        }
+    }
+
+    void replayAuditionNoteOnAudioThread(float pitch)
+    {
+#ifdef _AUDITION   // disable in real seq until done
+#ifdef _LOG
+        printf("audition note pitch %.2f retig=%d, playing=%d\n", pitch, isRetriggering, isPlaying);
+#endif
+        if (!enabled) {
+            return;
+        }
+
+        if (!isPlaying && !isRetriggering) {
+            // starting a new note
+#ifdef _LOG
+            printf("audition note playing normal at pitch %.2f\n", pitch);
+#endif
+            playerHost->setCV(0, pitch);
+            playerHost->setGate(0, true);
+            timerSeconds = noteDurationSeconds();
+            isPlaying = true;
+        } else {
+            // play when already playing
+            // we will re-trigger, or at least change pitch
+            pitchToPlayAfterRetrigger = pitch;
+            if (!isRetriggering) {
+                isRetriggering = true;
+                isPlaying = false;
+                timerSeconds = retriggerDurationSeconds();  
+#ifdef _LOG
+                printf("audition note retrigger set timer sec to %f\n", timerSeconds);
+#endif
+                playerHost->setGate(0, false);
+            } 
+        }
+#ifdef _LOG
+        printf("leaving audition,  retig=%d, playing=%d\n", isRetriggering, isPlaying); fflush(stdout);
+#endif
+#endif
+    }
 };

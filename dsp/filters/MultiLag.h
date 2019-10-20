@@ -293,7 +293,7 @@ static float sampledKValues[] = {
 
 // Computes filter "l" value for lookup table entries.
 // Input comes from sampledKValuesk
-static float getLValue(int index, float sampleTime, float slowdownFactor)
+static inline float getLValue(int index, float sampleTime, float slowdownFactor)
 {
     assert(index >= 0);
     assert(index <= 11);

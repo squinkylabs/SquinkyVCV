@@ -1,4 +1,5 @@
 # Seq++ Polyphonic piano-roll sequencer
+New features in version 1.0.5: Step record from MIDI keyboard, MIDI file load/save, and user definable keyboard mapping.
 
 ![Seq++ Panel](./seq.png)
 
@@ -6,6 +7,7 @@
 
 [Major features](#Major-Features)\
 [About this Sequencer](#About-this-Sequencer)\
+[FAQ](./sq-faq.md)\
 [Grids](#Grids)\
 [Editing](#Editing)\
 [Settings](#Settings)\
@@ -15,6 +17,8 @@
 [Keyboard and focus](#Keyboard-and-focus)\
 [Panel](#Panel)\
 [Clocking and playback](#Clocking-and-playback)\
+[MIDI file I/O](#Midi-file-io) \
+[Step recording](#Step-recording) \
 [User Keyboard Mapping](./sq-kbd.md) \
 [Keyboard reference](#Keyboard-reference)\
 [Mouse reference](#Mouse-reference)
@@ -23,7 +27,7 @@
 
 Polyphonic sequence of unlimited length.
 Graphic “piano roll” note editor. Undo and redo of every change.
-Notes may be entered and edited with the mouse or the keyboard.
+Notes may be entered and edited with the mouse, PC keyboard, or MIDI keyboard.
 Notes may be edited while the Sequencer is playing.
 Easy to enter and play back “conventional” music.
 
@@ -75,7 +79,7 @@ Some things to keep in mind:
 
 It might appear that you are stuck with a two bar sequence that cannot be lengthened, but this is far from true. Pressing the end key, or holding down the right cursor, will move to later bars. If you go to bar 4, for example, and insert a note, the sequence will be automatically lengthened to accommodate it. And there are both keyboard and mouse commands to move the end point to the cursor. But for now at least,it is difficult to scroll to these later bars without using the keyboard.
 
-### Editing with the keyboard
+### Editing with the PC keyboard
 
 There are a bunch of options for moving around in pitch and time, in units of quarter notes, grid units, bars, sixty fourth notes, semitones, octaves. Move to next note or previous note. 
 
@@ -83,7 +87,7 @@ There are also lots of options for inserting notes. Insert half note, quarter no
 
 There are lots of options for shifting, stretching and transposing one or more notes by any of those units.
 
-Check out the reference on keyboard commands for more on that.
+Check out the [reference on keyboard commands](#Keyboard-reference)\ for more on that.
 
 ### Simple examples
 
@@ -95,11 +99,11 @@ These two simple examples show that most things can be done entirely from the ke
 
 (3) Make a few bars of music. Then use ctrl-a to select all the notes, and ctrl-c to copy them all to the clipboard. Go to a second instance of Seq++ with no music in it. Put the cursor to the start of the first bar and press ctrl-p to paste the music into the new sequence. While the notes are all still selected, press ‘s’ to set the keyboard for editing start time, then press + a few times and see the notes become delayed in time. Press ‘p’ to set pitch editing, and press + a few times to transpose the music by a few semi-tones. Now you have the original music on one sequencer, and a delayed, transposed copy in another.
 
-(4) To insert a measure of eighth notes, it’s sometimes easier to insert them all first, then edit the pitch. Assuming you song is in A minor, put the cursor at the beginning of an empty bar, on A. Press the e key eight times to fill the bar with eighth notes on the A pitch. Then use the home key to move back to the start of the measure, and type the P key to set the editor for pitch editing. You can use the tab to get to the next note. As you land on each note, shift the pitch to the desired pitch by pressing + to shift up by a semitone, or - to shift down. So to shift up to the minor third (C) press + three time. To shift down to the minor seventh (G) press - twice.
+(4) To insert a measure of eighth notes, it’s sometimes easier to insert them all first, then edit the pitch. Assuming you song is in A minor, put the cursor at the beginning of an empty bar, on A. Press the e key eight times to fill the bar with eighth notes on the A pitch. Then use the home key to move back to the start of the measure, and type the p key to set the editor for pitch editing. You can use the tab to get to the next note. As you land on each note, shift the pitch to the desired pitch by pressing + to shift up by a semitone, or - to shift down. So to shift up to the minor third (C) press + three time. To shift down to the minor seventh (G) press - twice.
 
 (5) Make a bar full of sixteenth notes, by pressing the x key sixteen times. Then pick some notes to remove, by holding down the ctrl key and clicking on the notes you want to get rid of. Then press backspace to remove them. Instant rhythm.
 
-(6) Here’s an easy way to enter a chord sequence - in this case DMaj to EMin. Put the cursor on the pitch “D” that is empty. Press shift-Q to insert a quarter note at D. The shift key will keep the cursor from advancing. Now press the up cursor four times to get to F#, and insert this pitch again with shift-Q. While still holding down the shift, cursor up 3 more semitones to A. Now release the shift key and press Q again. You will have a DMaj chord of quarter notes, and the cursor will have advanced to the next quarter note. Next, select the chord you just inserted by holding down the shift key and clicking on the top and bottom note. Use ctrl-c to copy the chord to the clipboard. Move cursor to a blank region and press ctrl-v to paste a copy of your DMaj chord to a new beat. Now put the editor in pitch edit mode with the P key, and use the tab key to select each of the notes in the copy of the chord you pasted. As you select the notes, use the + key to transpose them up. Transpose the D up 2 to E, transpose the F# up on to G, and transpose the A by two to B.
+(6) Here’s an easy way to enter a chord sequence - in this case DMaj to EMin. Put the cursor on the pitch “D” that is empty. Press shift-Q to insert a quarter note at D. The shift key will keep the cursor from advancing. Now press the up cursor four times to get to F#, and insert this pitch again with shift-Q. While still holding down the shift, cursor up 3 more semitones to A. Now release the shift key and press q again. You will have a DMaj chord of quarter notes, and the cursor will have advanced to the next quarter note. Next, select the chord you just inserted by holding down the shift key and clicking on the top and bottom note. Use ctrl-c to copy the chord to the clipboard. Move cursor to a blank region and press ctrl-v to paste a copy of your DMaj chord to a new beat. Now put the editor in pitch edit mode with the p key, and use the tab key to select each of the notes in the copy of the chord you pasted. As you select the notes, use the + key to transpose them up. Transpose the D up 2 to E, transpose the F# up on to G, and transpose the A by two to B.
 
 ## Grids
 
@@ -150,11 +154,11 @@ For example, if the sequence end is at the end of the second bar, and you move t
 
 By default, every time you select a new note (with cursor or keyboard), it plays on the first output channel. This lets you hear the notes as you are editing. If you don’t like this, it may be turned off in the context menu.
 
-Holding down the tab key will let you quickly hear all the notes in your sequence, one at a time.
+Holding down the tab key while auditioning will let you quickly hear all the notes in your sequence, one at a time.
 
 ## Looping and editing while playing
 
-The looping feature lets you play a range of bars, which can be quite useful when you are editing notes and don’t want to play from the start every time. Looping is toggled on and off with the L key. The loop range is always the range shown in the note editor (the two bar range on the screen).
+The looping feature lets you play a range of bars, which can be quite useful when you are editing notes and don’t want to play from the start every time. Looping is toggled on and off with the l key. The loop range is always the range shown in the note editor (the two bar range on the screen).
 
 Looping may be turned on and off while Seq++ is running, and of course you may edit the notes as the sequencer plays. You may also move the loop points in time by moving the edit cursor. Moving by whole bars with the home and end keys is probably the most useful.
 
@@ -166,7 +170,7 @@ While Seq++ is playing you can turn loop on and off, freely move the time range,
 
 Throughout this manual, we refer the the "control key" (ctrl). On the Macintosh, however, we substitute the command key for these functions, as is customary on that platform.
 
-Some keys will repeat if you hold them down, others will not. In general the cursor movement keys and the "nudging" keys (like +) will repeat.
+Keys will repeat if you hold them down.
 
 As mentioned before, the UI is heavily keyboard driven. The module will only respond to the keyboard if the mouse cursor is over the note editor, in which case it will grab the focus as you type. Once the module has focus it keeps it until you click outside. Normally this means that the mouse can move anywhere outside the module, but the keyboard will still control Seq++.
 
@@ -174,9 +178,14 @@ But there are some keys that VCV Rack itself tries very hard to steal from Seq++
 
 That is why for all these keys there are substitute keys that also work, and do not have to fight with VCV for control of the keyboard. Both 4 keys will cursor to the left, and both 6 keys will cursor to the right.
 
+If you find it annoying to have VCV try to steal important keys from you, like cursor movement keys, there are several workarounds:
+
+* There are alternate key to move the cursor, like 4,5,6,2 on the numeric keypad. These are less intuitive, but VCV won't steal them.
+* You can assign whatever keys you like to any function using the [User Keyboard Mapping](./sq-kbd.md) feature.
+
 Many key commands take input from the grid size set from the settings menu. For example, the Ins key will insert a note whose value is the current grid unit.
 
-Commands that are mapped to letter keys will usually work with either lower or upper case. In some selection operations, however, the shift key is used to extend a selection.
+Commands that are mapped to letter keys will usually work with either lower or upper case. In some selection operations, however, the shift key is used to extend a selection. And when inserting notes the shift key will suppress the cursor advance.
 
 ## Panel
 
@@ -194,6 +203,8 @@ On the left are a few inputs, outputs, and controls.
 
 **G** is the gate output. It will be polyphonic if Seq++ is set for more than one voice.
 
+**CV in and Gate in** are the keyboard inputs for step recording.
+
 **Clk** is the eternal clock input.
 
 **Rst** is the reset CV. It is compatible with the reset out of "Clocked".
@@ -207,12 +218,13 @@ Always keep the following in mind:
 * The Clock Rate control only affects playback.
 * The "grid" is merely a graphic overlay drawn on top of the edit window. It has no effect on playback. Ever.
 * If "snap to grid" is enabled, some note editing operations will quantize to the grid, but it will still have no effect at all at playback time.
+* You can avoid confusion by using the finest clock rate, X64. Then use other clock rates for special purposes when the resulting quantization is something you want / expect, of when you have learned more about clocking in Seq++
 
-You will need to plug in a clock source. Almost anything will do - even an LFO. *Clocked* from Impromptu Modular is an excellent choice, so we will describe how to get the best results using Clocked. But many other clock generators will work.
+You will need to patch a clock source to Seq++. Almost anything will do - even an LFO. *Clocked* from Impromptu Modular is an excellent choice, so we will describe how to get the best results using Clocked. But many other clock generators will work.
 
 Connect the clock, run and reset outputs of Clocked to the corresponding inputs of Seq++.
 
-Set Seq++'s clock rate to match the *Ratio* in clocked. So if Clocked is set for X4, set Seq++ to *X4 1/16".
+Set Seq++'s clock rate to match the *Ratio* in clocked. So if Clocked is set for X64, set Seq++ to *X64*.
 
 For DAW workflows, or other times when you want fine timing, use as fine a clock resolution as possible (Clocked X64). To intentionally coarsely-quantize Seq++, use a less fine clock.
 
@@ -223,6 +235,37 @@ If two notes of the same pitch "touch" each other, such that the end of one note
 If the sequence is set for monophonic, then it should play a proper legato if the notes fully overlap (the second one starts after the first one ends). But remember that quantization may erase this overlap, causing the re-trigger to kick in.
 
 If there are more simultaneous notes being played than may be accommodated by the polyphony setting, then voices will get "stolen" and re-assigned to play the new notes. At the moment Seq++ uses a variation on "last note" assignment. If there is already an idle voice that was playing the new pitch, that voice will be selected. Then the next idle voice (in rotation) will be used, then the first voice will be used.
+
+## MIDI file I/O
+
+Seq++ will import and export standard MIDI file. This is an easy way to get track from another piece of software into VCV.
+
+The MIDI file features are on the main context menu - the one you get when you right click on the panel (not the note-grid).
+
+The import is very simple. It looks for the first track in the file that has notes on it, and imports the entirety of that track. It only imports notes, and ignores other MIDI data.
+
+Export saves the entire (single) track in a type-0 MIDI file.
+
+## Step recording
+
+Step recording is an ancient sequencer feature that lets you quickly enter music from a musical keyboard without having to worry about playing accurately.
+
+To use step recording in Seq++, patch a CV and Gate to the corresponding inputs of Seq++. The VCV Core module "MIDI-CV" is a good source. Set the source to the degree of polyphony you want - just cranking it to 16 is fine.
+
+Once hooked up, playing a note on the keyboard will insert a note in Seq++ and move the cursor forward. The magic is all in how step recording decides what attributes to use for new notes. In many ways, step recording is very similar to entering notes from the computer keyboard.
+
+Here are the rules:
+
+* The pitch of the note will be the pitch of the note on the music keyboard.
+* The start time of the note will be wherever the edit cursor in in Seq++.
+* The duration of the note will be the same as if you inserted from the keyboard - typically the grid time unit modified by the articulation setting. Well, see below for more on this!
+* When the note is released on the MIDI keyboard, Seq++ will advance the cursor by a grid unit.
+
+Of course you can do this with chords. As you press down more notes the notes in Seq++ will stack up, making a chord. The cursor is not advanced until all the notes in the chord are done.
+
+But you can override the duration without changing the grid! Use any of the keys that normally insert a preset note duration, like w,h,q,e,x. This will change the duration of any notes that are still being held down. This feature makes it much easier to enter a series of notes with different metric values.
+
+btw - if you are using step record, but don't know all about editing from the mouse or computer keyboard, you might want to read about those topics. As we said, step recording is very similar to entering music from the computer keyboard.
 
 ## Keyboard reference
 
@@ -286,7 +329,7 @@ After a note is inserted the cursor will be advanced past the note just inserted
 
 ### Changing notes
 
-**S, P, D**: Set note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
+**s, p, d**: Set note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
 
 When notes are selected and StartTime or Duration is current edit attribute:
 

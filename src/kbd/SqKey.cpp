@@ -28,7 +28,8 @@ SqKeyPtr SqKey::parse(json_t* binding)
     int key = 0;
     bool ctrl = false;
     bool shift = false;
-    bool alt = true;
+    bool alt = false;
+ 
     while (getline(f, s, '+')) {
         if (s == "ctrl") {
             assert(!ctrl);

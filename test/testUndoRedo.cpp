@@ -8,11 +8,11 @@
 class Cmd : public SqCommand
 {
 public:
-    virtual void execute(MidiSequencerPtr) override
+    virtual void execute(MidiSequencerPtr, SequencerWidget*) override
     {
         ++executeCount;
     }
-    virtual void undo(MidiSequencerPtr) override
+    virtual void undo(MidiSequencerPtr, SequencerWidget*) override
     {
         ++undoCount;
     }

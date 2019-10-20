@@ -1,12 +1,13 @@
 #include "../Squinky.hpp"
 
-#ifdef _SEQ
+//#ifdef _SEQ
 #include "WidgetComposite.h"
 #include "Seq.h"
 
 
 #include "MidiSequencer.h"
 #include "UIPrefs.h"
+#include "InputScreen.h"
 #include "KbdManager.h"
 #ifndef _USERKB
 #include "MidiKeyboardHandler.h"
@@ -15,9 +16,11 @@
 #include "NoteScreenScale.h"
 #include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
+#include "../ctrl/SqMenuItem.h"
 #include "TimeUtils.h"
 #include "NoteDisplay.h"
 #include "SeqSettings.h"
+#include "../ctrl/SqMenuItem.h"
 #include "SqGfx.h"
 
 NoteDisplay::NoteDisplay(
@@ -67,6 +70,8 @@ void NoteDisplay::setSequencer(MidiSequencerPtr seq)
 
 void NoteDisplay::initEditContext()
 {
+    assert(sequencer);
+    assert(sequencer->context);
     // hard code view range (for now?)
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);
@@ -95,7 +100,8 @@ void NoteDisplay::step()
 
 void NoteDisplay::drawNotes(NVGcontext *vg)
 {
-    MidiEditorContext::iterator_pair it = sequencer->context->getEvents();
+    // Get all the events on the screen, and go back two bar so we get tied notes.
+    MidiEditorContext::iterator_pair it = sequencer->context->getEvents(8.f);
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
     const int noteHeight = scaler->noteHeight();
@@ -107,7 +113,6 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
         const float x = scaler->midiTimeToX(*ev);
         const float y = scaler->midiPitchToY(*ev);
         const float width = scaler->midiTimeTodX(ev->duration);
-
         const bool selected = sequencer->selection->isSelected(ev);
         if (!selected || !mouseManager->willDrawSelection()) {
             SqGfx::filledRect(
@@ -125,6 +130,7 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
 
     const float endTime =  sequencer->context->getTrack()->getLength();
     const float endX = scaler->midiTimeToX(endTime);
+    bool drewEnd = false;
 
     //assume two bars, quarter note grid
     const float totalDuration = TimeUtils::bar2time(2);
@@ -136,12 +142,13 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
         deltaDuration *= 2;
     }
 
+    const float y = UIPrefs::topMarginNoteEdit;
+    const float width = 1;
+    const float height = this->box.size.y - y;
+
     for (float relTime = 0; relTime <= totalDuration; relTime += deltaDuration) {
         const float time = relTime + sequencer->context->startTime();
         const float x = scaler->midiTimeToX(time);
-        const float y = UIPrefs::topMarginNoteEdit;
-        float width = 1;
-        float height = this->box.size.y - y;
 
         const bool isBar = (relTime == 0) ||
             (relTime == TimeUtils::bar2time(1)) ||
@@ -150,10 +157,21 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
         NVGcolor color = isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR;
         if (x == endX) {
             color = UIPrefs::GRID_END_COLOR;
+            drewEnd = true;
         }
         SqGfx::filledRect(
             vg,
             color,
+            x, y, width, height);
+    }
+
+    if (!drewEnd &&
+        endTime >= sequencer->context->startTime() &&
+        endTime < sequencer->context->endTime()) {
+        const float  x = scaler->midiTimeToX(endTime);
+        SqGfx::filledRect(
+            vg,
+            UIPrefs::GRID_END_COLOR,
             x, y, width, height);
     }
 }
@@ -297,8 +315,21 @@ void NoteDisplay::onButton(const event::Button &e)
 
             // now invoke the settings menu
             sequencer->context->settings()->invokeUI(this);
+            auto menu = sequencer->context->settings()->invokeUI(this);
+
+#ifdef _XFORM
+            SqMenuItem* mi = new SqMenuItem(
+               [](){ return false; },
+               [this](){ doTest(); }
+            );
+            mi->text = "test screen";
+            menu->addChild(mi);
+#else
+            (void) menu;
+#endif
             handled = true;
         }
+
     }
     if (handled) {
         e.consume(this);
@@ -306,6 +337,7 @@ void NoteDisplay::onButton(const event::Button &e)
         OpaqueWidget::onButton(e);
     }
 }
+
 
 void NoteDisplay::onSelectKey(const event::SelectKey &e)
 {
@@ -430,4 +462,26 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
+
+void NoteDisplay::doTest()
+{
+#ifdef _XFORM
+    /*
+      this->box.pos = pos;
+    box.size = size;
+    */
+
+    auto dismisser = [this]() {
+        DEBUG("Entering the outer dismisser. will dismiss the screen set and delete it");
+        iss->dismiss();
+        this->iss.reset();
+    };
+    InputScreenPtr is = std::make_shared<InputScreen>(Vec(0, 0), box.size, sequencer, dismisser);
+
+    // make the screen set, and keep a pointer to it in this
+    iss = std::make_shared<InputScreenSet>();
+    iss->add(is);
+    iss->show(this);
 #endif
+}
+//#endif

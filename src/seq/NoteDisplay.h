@@ -6,7 +6,9 @@
 #include "Seq.h"
 
 class KbdManager;
+class InputScreenSet;
 using KbdManagerPtr = std::shared_ptr<KbdManager>;
+using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
 
 /**
  * This class needs some refactoring and renaming.
@@ -14,7 +16,7 @@ using KbdManagerPtr = std::shared_ptr<KbdManager>;
  *
  * Pretty soon we should sepparate out the NoteEditor.
  */
-struct NoteDisplay : OpaqueWidget
+class NoteDisplay : public OpaqueWidget
 {
 public:
     NoteDisplay(
@@ -41,6 +43,9 @@ private:
     bool haveFocus = true;
 #ifdef _USERKB
     KbdManagerPtr kbdManager;
+#endif
+#ifdef _XFORM
+    InputScreenSetPtr iss;
 #endif
 
     void initEditContext();
@@ -77,4 +82,6 @@ private:
     void onDragMove(const event::DragMove &e)  override;
     void onDragDrop(const event::DragDrop &e) override;
     bool handleKey(int key, int mods, int action);
+
+    void doTest();
 };

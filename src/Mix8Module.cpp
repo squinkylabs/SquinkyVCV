@@ -12,7 +12,6 @@
 #include "ctrl/SqWidgets.h"
 
 #include "ctrl/ToggleButtonV1.h"
-#include "ctrl/ToggleButtonV6.h"
 #include "ctrl/ToggleManager2.h"
 
 #ifdef _TIME_DRAWING

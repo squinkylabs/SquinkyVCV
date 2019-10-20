@@ -42,6 +42,7 @@
     <ClCompile Include="..\..\midi\controller\MidiPlayer2.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiVoice.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiVoiceAssigner.cpp" />
+    <ClCompile Include="..\..\midi\controller\NewSongDataDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\ReplaceDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
@@ -103,6 +104,7 @@
     <ClCompile Include="..\..\test\testMix4.cpp" />
     <ClCompile Include="..\..\test\testMix8.cpp" />
     <ClCompile Include="..\..\test\testMixHelper.cpp" />
+    <ClCompile Include="..\..\test\testNewSongDataCommand.cpp" />
     <ClCompile Include="..\..\test\testNoteScreenScale.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
@@ -215,6 +217,7 @@
     <ClInclude Include="..\..\midi\controller\MidiPlayer2.h" />
     <ClInclude Include="..\..\midi\controller\MidiVoice.h" />
     <ClInclude Include="..\..\midi\controller\MidiVoiceAssigner.h" />
+    <ClInclude Include="..\..\midi\controller\NewSongDataCommand.h" />
     <ClInclude Include="..\..\midi\controller\ReplaceDataCommand.h" />
     <ClInclude Include="..\..\midi\controller\SeqClock.h" />
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />

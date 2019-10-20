@@ -77,6 +77,7 @@ extern void testDrumTrigger();
 extern void testAudition();
 extern void testStepRecordInput();
 extern void testMidiFile();
+extern void testNewSongDataDataCommand();
 
 #if 0
 #include <sstream>
@@ -165,6 +166,7 @@ int main(int argc, char ** argv)
     testSeqClock();
     testMidiPlayer2();
     testReplaceCommand();
+    testNewSongDataDataCommand();
     testUndoRedo();
     testMidiViewport();
  

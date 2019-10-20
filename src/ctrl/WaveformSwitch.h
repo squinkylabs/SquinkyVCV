@@ -56,7 +56,7 @@ private:
  {
     const float cellWidth = cells[0]->box.size.x;
     const float cellHeight = cells[0]->box.size.y;
-  //  DEBUG("hit test(%.2f, %.2f) r,c= %d,%d  dim=%.2f,%.2f\n", x, y, _row, _col, cellWidth, cellHeight);
+  //  sqDEBUG("hit test(%.2f, %.2f) r,c= %d,%d  dim=%.2f,%.2f\n", x, y, _row, _col, cellWidth, cellHeight);
     if (x < 0 || y < 0) {
         return -1;
     }

@@ -17,17 +17,16 @@ bool UndoRedoStack::canRedo() const
 
 void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)
 {
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);     // only used for unit tests, maybe we can get away with this
     undoList.push_front(cmd);
     redoList.clear();   
 }
-
 
 void UndoRedoStack::undo(MidiSequencerPtr seq)
 {
     assert(canUndo());
     CommandPtr cmd = undoList.front();
-    cmd->undo(seq);
+    cmd->undo(seq, nullptr);
     undoList.pop_front();
 
     redoList.push_front(cmd);
@@ -37,7 +36,7 @@ void UndoRedoStack::redo(MidiSequencerPtr seq)
 {
     assert(canRedo());
     CommandPtr cmd = redoList.front();
-    cmd->execute(seq);
+    cmd->execute(seq, nullptr);
     redoList.pop_front();
 
     undoList.push_front(cmd);

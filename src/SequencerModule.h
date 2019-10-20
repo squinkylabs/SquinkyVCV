@@ -7,29 +7,18 @@
 
 class SequencerWidget;
 #include "WidgetComposite.h"
-
-#if 0
-#ifdef __V1x
-    #include "engine/Module.hpp"
-    using Module =  ::rack::engine::Module;
-#else
-    #include "engine.hpp"
-    using Module =  ::rack::Module;
-#endif
-#endif
+using Module =  ::rack::engine::Module;
 
 #include <atomic>
 
-
-
-struct SequencerModule : Module
+class SequencerModule : public Module
 {
+public:
     SequencerModule();
     std::shared_ptr<Seq<WidgetComposite>> seqComp;
 
     MidiSequencerPtr sequencer;
     SequencerWidget* widget = nullptr;
-
 
     void step() override
     {
@@ -77,11 +66,13 @@ struct SequencerModule : Module
     }
     virtual void dataFromJson(json_t *root) override;
 
-    // May be called from UI thread
-    void postNewSong(MidiSongPtr s);
+    /**
+     *  May be called from UI thread.
+     *  @param s is the new song to load.
+     *  @param path is the file folder it was loaded from.
+     */
+    void postNewSong(MidiSongPtr s, const std::string& path);
 private:
     void setNewSeq(MidiSequencerPtr);
-
-
     std::atomic<bool> runStopRequested;
 };

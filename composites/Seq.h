@@ -72,6 +72,7 @@ public:
         RUNNING_PARAM,              // the invisible param that stores the run 
         NUM_VOICES_PARAM,
         AUDITION_PARAM,
+        STEP_RECORD_PARAM,
         NUM_PARAMS
     };
 
@@ -148,6 +149,7 @@ private:
     GateTrigger runStopProcessor;
     void init(MidiSongPtr);
     void serviceRunStop();
+    void allGatesOff();
 
     std::shared_ptr<MidiAudition> audition;
     SeqClock clock;
@@ -262,13 +264,15 @@ bool Seq<TBase>::poll(RecordInputData* p)
     return stepRecordInput.poll(p);
 }
 
-
-
 template <class TBase>
 void  Seq<TBase>::stepn(int n)
 {
     serviceRunStop();
-    stepRecordInput.step();
+
+    if (TBase::params[STEP_RECORD_PARAM].value > .5f) {
+        stepRecordInput.step();
+    }
+    
     audition->enable(!isRunning() && (TBase::params[AUDITION_PARAM].value > .5f));
     audition->sampleTicksElapsed(n);
     // first process all the clock input params
@@ -288,9 +292,10 @@ void  Seq<TBase>::stepn(int n)
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
         player->reset(true);
+        allGatesOff();          // turn everything off on reset, just in case of stuck notes.
     }
 
-    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()));
+    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
 
     // copy the current voice number to the poly ports
     const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
@@ -299,9 +304,7 @@ void  Seq<TBase>::stepn(int n)
     player->setNumVoices(numVoices);
 
     if (!running && wasRunning) {
-        for (int i = 0; i < numVoices; ++i) {
-            TBase::outputs[GATE_OUTPUT].voltages[i] = 0;
-        }
+        allGatesOff();
     }
     wasRunning = running;
 
@@ -313,6 +316,14 @@ void  Seq<TBase>::stepn(int n)
     TBase::lights[GATE_LIGHT].value = isGate;
 
     player->updateSampleCount(n);
+}
+
+template <class TBase>
+inline void Seq<TBase>::allGatesOff()
+{
+    for (int i = 0; i < 16; ++i) {
+        TBase::outputs[GATE_OUTPUT].voltages[i] = 0;
+    }  
 }
 
 template <class TBase>
@@ -366,6 +377,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::AUDITION_PARAM:
             ret = {0, 1, 1, "Audition"};
+            break;
+        case Seq<TBase>::STEP_RECORD_PARAM:
+            ret = {0, 1, 1, "Step record enable"};
             break;
         default:
             assert(false);

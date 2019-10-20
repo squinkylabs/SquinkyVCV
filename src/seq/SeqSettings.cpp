@@ -41,7 +41,6 @@ public:
     }
 };
 
-
 /**
 * GridMenuItem is the whole grid selection sub-menu
 */
@@ -141,7 +140,7 @@ SeqSettings::~SeqSettings()
     --_mdb;
 }
 
-void SeqSettings::invokeUI (::rack::widget::Widget* parent)
+::rack::ui::Menu* SeqSettings::invokeUI (::rack::widget::Widget* parent)
 {
     ::rack::ui::Menu* menu = ::rack::createMenu();
     menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Seq++ Options"));
@@ -155,6 +154,8 @@ void SeqSettings::invokeUI (::rack::widget::Widget* parent)
     menu->addChild(new ::rack::ui::MenuLabel);
     menu->addChild(makeNoteCommand(module));
     menu->addChild(makeEndCommand(module));
+
+    return menu;
 }
 
 rack::ui::MenuItem* SeqSettings::makeLoopItem(SequencerModule* module)
@@ -294,6 +295,9 @@ float SeqSettings::artic2Number(Artics a)
     case Artics::fiftyPercent:
         artic = .5f;
         break;
+    case Artics::oneHundredPercent:
+        artic = 1.0f;
+        break;
     default:
         assert(false);
     }
@@ -416,4 +420,14 @@ SeqSettings::Artics SeqSettings::articFromString(const std::string& s)
 float SeqSettings::articulation() 
 {
     return artic2Number(curArtic);
+}
+
+std::string SeqSettings::getMidiFilePath() 
+{
+    return midiFilePath;
+}
+
+void SeqSettings::setMidiFilePath(const std::string& s)
+{
+    midiFilePath = s;
 }

@@ -43,7 +43,7 @@ static void testEventAccess()
     vp.setPitchLow(0);
     vp.setPitchHi(10);      // was 80
 
-    auto its = vp.getEvents();
+    auto its = vp.getEvents(0);
     assertEQ(std::distance(its.first, its.second), 1);
 
     assert(its.first != its.second);
@@ -79,7 +79,7 @@ static void testEventFilter()
     vp.setEndTime(110);
     vp.setPitchLow(3);
     vp.setPitchHi(45);
-    auto its = vp.getEvents();
+    auto its = vp.getEvents(0);
     assertEQ(std::distance(its.first, its.second), 1);
 }
 
@@ -104,34 +104,31 @@ static void testDemoSong()
 
     viewport.setPitchRange(note1.pitchCV, note2.pitchCV);
  
-    MidiEditorContext::iterator_pair it = viewport.getEvents();
+    MidiEditorContext::iterator_pair it = viewport.getEvents(0);
     assertEQ(std::distance(it.first, it.second), numNotes);
 
     // try inclusive pitch range
     viewport.setPitchRange(PitchUtils::pitchToCV(3, 0),     // pitch of first note
         PitchUtils::pitchToCV(3, 7));
-    it = viewport.getEvents();
+    it = viewport.getEvents(0);
     assertEQ(std::distance(it.first, it.second), numNotes);
 
     // reduce the pitch range to lose the highest note.
     viewport.setPitchHi(PitchUtils::pitchToCV(3, 7) - .01f);
-    it = viewport.getEvents();
+    it = viewport.getEvents(0);
     assertEQ(std::distance(it.first, it.second), numNotes-1);
 
      // reduce the pitch range to lose the lowest note.
     viewport.setPitchLow(PitchUtils::pitchToCV(3, 0) + .01f);
-    it = viewport.getEvents();
+    it = viewport.getEvents(0);
     assertEQ(std::distance(it.first, it.second), numNotes - 2);
 
     // try inclusive pitch range, but only half the time
     viewport.setPitchRange(PitchUtils::pitchToCV(3, 0),     // pitch of first note
                     PitchUtils::pitchToCV(3, 7));
     viewport.setEndTime(viewport.startTime() + 4);   // one measures
-    it = viewport.getEvents();
+    it = viewport.getEvents(0);
     assertEQ(std::distance(it.first, it.second), numNotes /2);
-
-
-
 }
 
 void testMidiViewport()

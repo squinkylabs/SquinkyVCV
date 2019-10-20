@@ -585,6 +585,10 @@ void MidiEditor::insertNoteHelper3(float duration, float advanceAmount, bool ext
     seq()->undo->execute(seq(), cmd);
     seq()->context->setCursorTime(note->startTime + advanceAmount);
     updateSelectionForCursor(extendSelection);
+
+     // after we change start times, we need to put the cursor on the moved notes
+    seq()->context->setCursorToSelection(seq()->selection);
+    seq()->context->adjustViewportForCursor();
     seq()->assertValid();
 }
 
@@ -772,7 +776,18 @@ void MidiEditor::selectAll()
 void MidiEditor::changeTrackLength()
 {
     float endTime = seq()->context->cursorTime();
-    endTime = seq()->context->settings()->quantizeAlways(endTime, false);
+
+    if (seq()->context->settings()->snapToGrid()) {
+        // if snap to grid is on, snap it
+        endTime = seq()->context->settings()->quantizeAlways(endTime, false);
+    } else {
+        // otherwise, snap to 1/16 note, but round up to the next one.
+        const float orig = endTime;
+        endTime = (float) TimeUtils::quantize(endTime, .25f, false);
+        if (endTime < orig) {
+            endTime += .25;
+        }
+    }
     auto cmd = ReplaceDataCommand::makeMoveEndCommand(seq(), endTime);
     seq()->undo->execute(seq(), cmd);
 }
