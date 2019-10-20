@@ -81,7 +81,7 @@ private:
     float ay_rev = 0;
 
 
-    float unitsPerPix = 1;
+    //float unitsPerPix = 1;
     std::weak_ptr<MidiEditorContext> _context;
     std::shared_ptr<MidiEditorContext> context() const;
 

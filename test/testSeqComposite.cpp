@@ -482,8 +482,7 @@ static void testStepRecord()
     // DrumTrigger<TestComposite>;
     std::shared_ptr<Sq> seq = makeWith8Clock();
 
-    //StepRecordInput<Port> sr(cv, gate);
-
+    seq->params[Sq::STEP_RECORD_PARAM].value = 1;
     seq->inputs[Sq::GATE_INPUT].channels = 1;
     seq->inputs[Sq::GATE_INPUT].voltages[0] = 10;
     seq->inputs[Sq::CV_INPUT].voltages[0] = 2;

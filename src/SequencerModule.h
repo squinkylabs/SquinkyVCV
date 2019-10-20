@@ -11,14 +11,14 @@ using Module =  ::rack::engine::Module;
 
 #include <atomic>
 
-struct SequencerModule : Module
+class SequencerModule : public Module
 {
+public:
     SequencerModule();
     std::shared_ptr<Seq<WidgetComposite>> seqComp;
 
     MidiSequencerPtr sequencer;
     SequencerWidget* widget = nullptr;
-
 
     void step() override
     {
@@ -74,7 +74,5 @@ struct SequencerModule : Module
     void postNewSong(MidiSongPtr s, const std::string& path);
 private:
     void setNewSeq(MidiSequencerPtr);
-
-
     std::atomic<bool> runStopRequested;
 };

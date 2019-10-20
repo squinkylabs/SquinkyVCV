@@ -16,7 +16,7 @@ using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
  *
  * Pretty soon we should sepparate out the NoteEditor.
  */
-struct NoteDisplay : OpaqueWidget
+class NoteDisplay : public OpaqueWidget
 {
 public:
     NoteDisplay(

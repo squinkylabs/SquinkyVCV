@@ -147,9 +147,12 @@ void MixMWidget::appendContextMenu(Menu *menu)
     menu->addChild(item);
 }
 
+#ifdef _LABELS
+static const float labelX = 0; 
+#endif
+
 static const float channelX = 42;
 static const float dX = 34;
-static const float labelX = 0; 
 static const float channelY = 350;
 static const float channelDy = 30; 
 static float volY = 0;
@@ -264,7 +267,7 @@ void MixMWidget::makeStrip(
     tog->addSvg(sLed.c_str(), true);
     tog->addSvg("res/SquinkyBezel.svg");
 
-    tog->setHandler( [this, module, channel](bool ctrlKey) {
+    tog->setHandler( [this, channel](bool ctrlKey) {
         sqmix::handleSoloClickFromUI<Comp>(mixModule, channel, ctrlKey);
     });
     addChild(tog);

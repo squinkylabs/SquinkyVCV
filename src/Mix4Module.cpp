@@ -150,7 +150,7 @@ void Mix4Widget::appendContextMenu(Menu *menu)
 
 static const float channelX = 21;
 static const float dX = 36;
-static const float labelX = 0; 
+
 static const float channelY = 350;
 static const float channelDy = 30;   
 static float volY = 0;

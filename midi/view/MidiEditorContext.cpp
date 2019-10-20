@@ -91,7 +91,7 @@ MidiEditorContext::iterator_pair MidiEditorContext::getEvents(float timeLow, flo
     assert(timeLow >= 0);
     assert(pitchHigh >= pitchLow);
 
-    iterator::filter_func lambda = [this, pitchLow, pitchHigh, timeHigh](MidiTrack::const_iterator ii) {
+    iterator::filter_func lambda = [pitchLow, pitchHigh, timeHigh](MidiTrack::const_iterator ii) {
         const MidiEventPtr me = ii->second;
         bool ret = false;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(me);

@@ -109,11 +109,16 @@ static void testSelectNoteTwiceAuditionsOnce2()
 
 static void testPlaysNote()
 {
+    const float sampleRate = 44100;
+    const float sampleTime = 1.0f / sampleRate;
+
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiAudition a(host);
     a.enable(true);
+    a.setSampleTime(sampleTime);   
 
     a.auditionNote(5);
+    a.sampleTicksElapsed(0);        // make it look at the note queue
 
     assertEQ(host->gateChangeCount, 1);
     assert(host->gateState[0]);
@@ -122,7 +127,6 @@ static void testPlaysNote()
 
 static void testNoteStops()
 {
-    printf("testNoteStops\n");
     const float sampleRate = 44100;
     const float sampleTime = 1.0f / sampleRate;
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
@@ -134,6 +138,8 @@ static void testNoteStops()
     int notEnoughSamples = int(samplesToStop - 10);
 
     a.auditionNote(5);
+    a.sampleTicksElapsed(0);        // make it look at the note queue
+
     assertEQ(host->gateChangeCount, 1);
     assert(host->gateState[0]);
     assertEQ(host->cvValue[0], 5);
@@ -160,6 +166,8 @@ static void testNoteRetrigger()
     int notEnoughSamples = int(samplesToStop / 2.f);
 
     a.auditionNote(5);
+    a.sampleTicksElapsed(0);        // make it look at the note queue
+
     assertEQ(host->gateChangeCount, 1);
     assert(host->gateState[0]);
     assertEQ(host->cvValue[0], 5);
@@ -170,6 +178,7 @@ static void testNoteRetrigger()
 
     // audition note again, should re-trigger
     a.auditionNote(6);
+    a.sampleTicksElapsed(0);
     assertEQ(host->gateChangeCount, 2);
     assert(!host->gateState[0]);
     assertEQ(host->cvValue[0], 5);
@@ -208,6 +217,7 @@ static void testMultiNoteRetrigger()
     int notEnoughSamples = int(samplesToStop / 2.f);
 
     a.auditionNote(5);
+    a.sampleTicksElapsed(0);
     assertEQ(host->gateChangeCount, 1);
     assert(host->gateState[0]);
     assertEQ(host->cvValue[0], 5);
@@ -218,6 +228,7 @@ static void testMultiNoteRetrigger()
 
     // audition note again, should re-trigger
     a.auditionNote(6);
+    a.sampleTicksElapsed(0);
     assertEQ(host->gateChangeCount, 2);
     assert(!host->gateState[0]);
     assertEQ(host->cvValue[0], 5);
@@ -255,11 +266,15 @@ static void testSuppressWhilePlaying()
 
 static void testStartPlayingStopsAudition()
 {
+    const float sampleRate = 44100;
+    const float sampleTime = 1.0f / sampleRate;
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiAudition a(host);
     a.enable(true);
+    a.setSampleTime(sampleTime);
 
     a.auditionNote(5);
+    a.sampleTicksElapsed(0);
 
     assertEQ(host->gateChangeCount, 1);
     assert(host->gateState[0]);
@@ -279,9 +294,12 @@ static void testTwoNotesAtOnce()
     a.setSampleTime(sampleTime);
 
     a.auditionNote(5);
+    a.sampleTicksElapsed(0);
+
     assert(host->gateState[0]);
     // second time should re-trigger
     a.auditionNote(5);
+    a.sampleTicksElapsed(0);
     assert(!host->gateState[0]);
     
     int retrigSamples = 0;

@@ -24,6 +24,7 @@ class IMidiPlayerAuditionHost
 {
 public:
     virtual void auditionNote(float pitch) = 0;
+    virtual ~IMidiPlayerAuditionHost() = default;
 };
 
 using IMidiPlayerAuditionHostPtr = std::shared_ptr<IMidiPlayerAuditionHost>;
