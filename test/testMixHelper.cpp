@@ -1,6 +1,6 @@
 
 #include "MixHelper.h"
-#include "MixPolyHelper.h"
+#include "mixpolyhelper.h"
 #include "TestComposite.h"
 
 #include "asserts.h"
