@@ -238,7 +238,6 @@ inline void MinBLEPVCO::step_saw()
     // see if we jumped
     if (phase != predictedPhase) {
         const float jump = phase - predictedPhase;
-       // printf("%s jump = %f\n", name.c_str(), jump); fflush(stdout);
         if (gotSyncCallback) {
             const float crossing = syncCallbackCrossing;
 

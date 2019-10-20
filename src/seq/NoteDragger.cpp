@@ -287,7 +287,7 @@ void NoteStartDragger::commit()
         if (sequencer->context->settings()->snapToGrid()) {
             timeShiftAmountPixels = quantizeForDisplay(note->startTime, horizontalShiftPix, true);
         }
-        printf("in commit after quantize timeshift = %f\n", timeShiftAmountPixels);  fflush(stdout);
+       // printf("in commit after quantize timeshift = %f\n", timeShiftAmountPixels);  fflush(stdout);
         float timeshiftAmountMetric = scaler->xToMidiDeltaTime(timeShiftAmountPixels);
         shifts.push_back(timeshiftAmountMetric);
         if (std::abs(timeshiftAmountMetric) > .1) {

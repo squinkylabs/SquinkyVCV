@@ -8,7 +8,7 @@
 
 #if 1
 #define _AUDITION
-#define _LOG
+// #define _LOG
 #endif
 
 /**
@@ -159,7 +159,9 @@ private:
                 isRetriggering = true;
                 isPlaying = false;
                 timerSeconds = retriggerDurationSeconds();  
-                 printf("audition note retrigger set timer sec to %f\n", timerSeconds);
+#ifdef _LOG
+                printf("audition note retrigger set timer sec to %f\n", timerSeconds);
+#endif
                 playerHost->setGate(0, false);
             } 
         }

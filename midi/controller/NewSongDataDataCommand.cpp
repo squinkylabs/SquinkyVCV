@@ -50,5 +50,4 @@ void NewSongDataDataCommand::undo(MidiSequencerPtr sequencer, SequencerWidget* w
         updater(true, sequencer, oldSong, widget);
     }
     updater(false, sequencer, oldSong, widget);
-    fflush(stderr);
 }

@@ -46,7 +46,7 @@ The channel volumes in Form are log for the top 3/4. At 1/4 the gain is -18 deci
 
 **S**: Solo. Will turn off all the other channels and let the soloed channel play on its own. Soloing one channel will un-solo the other channels. When solo is active it overrides mutes, i.e. if you solo a muted channel it will play. Pressing an active solo button will remove the solo.
 
-Control-click on a solo button will toggle that channel's solo only. So ctrl-solo is *multi solo*, while regular click is *exclusive solo*. Multi-solo lets you solo more than one channel.
+Control-click (Command-click on Mac) on a solo button will toggle that channel's solo only. So ctrl-solo is *multi solo*, while regular click is *exclusive solo*. Multi-solo lets you solo more than one channel.
 
 **M** Mute. Silences the muted channel. Note that the larger button on the far right is the master mute.
 

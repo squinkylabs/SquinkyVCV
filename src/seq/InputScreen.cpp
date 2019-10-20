@@ -18,7 +18,7 @@ public:
 
     void onDragEnd(const ::rack::event::DragEnd& e) override {
         Button::onDragEnd(e);
-        DEBUG("on DRAG END FOR ME handler = %p", handler);
+        DEBUG("on DRAG END FOR ME handler = %d", bool(handler));
         if (handler) {
             DEBUG("calling handler (ourter dismisser");
             auto tempHandler = handler;
@@ -43,7 +43,7 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     box.size = size;
     sequencer = seq;   
     this->dismisser = _dismisser; 
-    DEBUG("dismisser = %p", _dismisser);
+    DEBUG("dismisser = %d", bool(_dismisser));
 
     auto ok = new Button2();
     ok->text = "OK";
@@ -111,7 +111,7 @@ void InputScreenSet::dismiss()
 
 // we really need to remove screen from parent.
 
-    DEBUG("iss::dismiss about to remove screen from parent scree = %p parent = %p", screen, parentWidget);
+    DEBUG("iss::dismiss about to remove screen from parent scree = %d parent = %d", bool(screen), bool(parentWidget));
     parentWidget->removeChild(screen);
     parentWidget = nullptr;
     currentScreenIndex = 0;

@@ -276,7 +276,6 @@ inline void MixM<TBase>::setupFilters()
 {
     // 400 was smooth, 100 popped
     const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
-    //printf("using %f, calc=%f\n", x, (1.0f / 100.f)); fflush(stdout);
     filteredCV.setCutoff(x);
 }
 
