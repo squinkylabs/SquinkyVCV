@@ -4,6 +4,7 @@
 #include "MidiFileProxy.h"
 #include "asserts.h"
 //#include <filesystem>
+#define __STDC_WANT_LIB_EXT1__ 1        // to get tempnam_s
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
