@@ -12,7 +12,7 @@ Modular mixers now support multi-solo by control-clicking on the solo buttons. [
 
 Saws now has stereo outputs.
 
-Seq++ bugs:
+Seq++ bugs fixed:
 
 * Articulation setting of 100% was acting like 85%.
 * Notes were getting dropped when played with coarse clock.

@@ -1,4 +1,5 @@
 # Seq++ Polyphonic piano-roll sequencer
+New features in version 1.0.5: Step record from MIDI keyboard, MIDI file load/save, and user definable keyboard mapping.
 
 ![Seq++ Panel](./seq.png)
 
@@ -16,7 +17,7 @@
 [Keyboard and focus](#Keyboard-and-focus)\
 [Panel](#Panel)\
 [Clocking and playback](#Clocking-and-playback)\
-[MIDI file input](#Midi-file-input) \
+[MIDI file I/O](#Midi-file-io) \
 [Step recording](#Step-recording) \
 [User Keyboard Mapping](./sq-kbd.md) \
 [Keyboard reference](#Keyboard-reference)\
@@ -217,12 +218,13 @@ Always keep the following in mind:
 * The Clock Rate control only affects playback.
 * The "grid" is merely a graphic overlay drawn on top of the edit window. It has no effect on playback. Ever.
 * If "snap to grid" is enabled, some note editing operations will quantize to the grid, but it will still have no effect at all at playback time.
+* You can avoid confusion by using the finest clock rate, X64. Then use other clock rates for special purposes when the resulting quantization is something you want / expect, of when you have learned more about clocking in Seq++
 
-You will need to plug in a clock source. Almost anything will do - even an LFO. *Clocked* from Impromptu Modular is an excellent choice, so we will describe how to get the best results using Clocked. But many other clock generators will work.
+You will need to patch a clock source to Seq++. Almost anything will do - even an LFO. *Clocked* from Impromptu Modular is an excellent choice, so we will describe how to get the best results using Clocked. But many other clock generators will work.
 
 Connect the clock, run and reset outputs of Clocked to the corresponding inputs of Seq++.
 
-Set Seq++'s clock rate to match the *Ratio* in clocked. So if Clocked is set for X4, set Seq++ to *X4 1/16".
+Set Seq++'s clock rate to match the *Ratio* in clocked. So if Clocked is set for X64, set Seq++ to *X64*.
 
 For DAW workflows, or other times when you want fine timing, use as fine a clock resolution as possible (Clocked X64). To intentionally coarsely-quantize Seq++, use a less fine clock.
 
@@ -234,13 +236,15 @@ If the sequence is set for monophonic, then it should play a proper legato if th
 
 If there are more simultaneous notes being played than may be accommodated by the polyphony setting, then voices will get "stolen" and re-assigned to play the new notes. At the moment Seq++ uses a variation on "last note" assignment. If there is already an idle voice that was playing the new pitch, that voice will be selected. Then the next idle voice (in rotation) will be used, then the first voice will be used.
 
-## MIDI file input
+## MIDI file I/O
 
-Seq++ will import standard MIDI file. This is an easy way to get track from another piece of software into VCV.
+Seq++ will import and export standard MIDI file. This is an easy way to get track from another piece of software into VCV.
 
-The MIDI file import feature is on the main context menu - the one you get when you right click on the panel (not the note-grid).
+The MIDI file features are on the main context menu - the one you get when you right click on the panel (not the note-grid).
 
 The import is very simple. It looks for the first track in the file that has notes on it, and imports the entirety of that track. It only imports notes, and ignores other MIDI data.
+
+Export saves the entire (single) track in a type-0 MIDI file.
 
 ## Step recording
 
@@ -248,7 +252,7 @@ Step recording is an ancient sequencer feature that lets you quickly enter music
 
 To use step recording in Seq++, patch a CV and Gate to the corresponding inputs of Seq++. The VCV Core module "MIDI-CV" is a good source. Set the source to the degree of polyphony you want - just cranking it to 16 is fine.
 
-Once hooked up, playing a note on the keyboard will insert a note in Seq++ and move the cursor up. The magic is all in how step recording decides what attributes to use for new notes. In many ways, step recording is very similar to entering notes from the computer keyboard.
+Once hooked up, playing a note on the keyboard will insert a note in Seq++ and move the cursor forward. The magic is all in how step recording decides what attributes to use for new notes. In many ways, step recording is very similar to entering notes from the computer keyboard.
 
 Here are the rules:
 
@@ -325,7 +329,7 @@ After a note is inserted the cursor will be advanced past the note just inserted
 
 ### Changing notes
 
-**S, P, D**: Set note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
+**s, p, d**: Set note attribute to be edited (Start time, Pitch, and Duration). The current mode is always displayed in the status area above the note grid.
 
 When notes are selected and StartTime or Duration is current edit attribute:
 
