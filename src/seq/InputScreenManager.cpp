@@ -2,6 +2,11 @@
 #include "InputScreen.h"
 #include "InputScreenManager.h"
 
+
+InputScreenManager::InputScreenManager(::rack::math::Vec siz) : size(siz)
+{
+}
+
 InputScreenManager::~InputScreenManager()
 {
     DEBUG("dtor iss");
@@ -9,25 +14,35 @@ InputScreenManager::~InputScreenManager()
   // DEBUG("dtor iss 2");
 }
 
-/*
-const ::rack::math::Vec& pos,
-        const ::rack::math::Vec& size,
-        MidiSequencerPtr seq,
-        std::function<void()> dismisser
-    */
-
- //    InputScreenPtr is = std::make_shared<InputScreen>(Vec(0, 0), box.size, sequencer, dismisser);
-
-
-void InputScreenManager::show(::rack::widget::Widget* parent, Screens, Callback)
+void InputScreenManager::dismiss()
 {
-   // ::rack::widget::Widget* screen = screens[0].get();
-  //  currentScreenIndex = 0;
+    DEBUG("In manager dismiis handler");
+   // parent->clearChildren();
+    //parent = nullptr;
+  //  screen = nullptr;
+
+    screen->clearChildren();
+    parent->removeChild(screen.get());
+    parent = nullptr;
+    screen = nullptr;
+}
+
+void InputScreenManager::show(::rack::widget::Widget* parnt, Screens, Callback)
+{
 
   // hard code to test screen for now
 
-    InputScreenPtr is = std::make_shared<InputScreen>(::rack::math::Vec(0, 0), size, sequencer, dismisser);
+    parent = parnt;
+    auto dismisser = [this]() {
+        DEBUG("in manager::dismisser");
+        this->dismiss();
+    };
+
+    DEBUG("about to make input screen size = %f, %f", size.x, size.y);
+    InputScreenPtr is = std::make_shared<InputScreen>(::rack::math::Vec(0, 0), size, dismisser);
+    screen = is;
    // ::rack::widget::Widget* screen = new InputScreen();
     parent->addChild(is.get());
     parentWidget = parent;
+    DEBUG("leaving scope, will destroy\n");
 }

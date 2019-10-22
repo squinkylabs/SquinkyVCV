@@ -36,12 +36,10 @@ public:
 
 InputScreen::InputScreen(const ::rack::math::Vec& pos,
         const ::rack::math::Vec& size,
-        MidiSequencerPtr seq,
         std::function<void()> _dismisser)
 {
     box.pos = pos;
     box.size = size;
-    sequencer = seq;   
     this->dismisser = _dismisser; 
     DEBUG("dismisser = %d", bool(_dismisser));
 

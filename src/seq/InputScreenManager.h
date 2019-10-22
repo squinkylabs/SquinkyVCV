@@ -30,5 +30,9 @@ public:
      ::rack::widget::Widget* parentWidget = nullptr;
 private:
     const ::rack::math::Vec size;
+    InputScreenPtr screen; 
+    ::rack::widget::Widget* parent = nullptr;
+
+    void dismiss();
 
 };

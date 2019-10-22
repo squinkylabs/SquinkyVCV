@@ -19,7 +19,6 @@ struct InputScreen : public ::rack::widget::OpaqueWidget
 public:
    InputScreen(const ::rack::math::Vec& pos,
         const ::rack::math::Vec& size,
-        MidiSequencerPtr seq,
         std::function<void()> dismisser);
     ~InputScreen();
 
@@ -31,7 +30,7 @@ public:
      */
    // void onButton(const ::rack::event::Button &e) override;
 private:
-    MidiSequencerPtr sequencer;
+   // MidiSequencerPtr sequencer;
     std::function<void()> dismisser = nullptr;
 };
 
