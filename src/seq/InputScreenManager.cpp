@@ -17,14 +17,18 @@ InputScreenManager::~InputScreenManager()
 void InputScreenManager::dismiss()
 {
     DEBUG("In manager dismiis handler");
-   // parent->clearChildren();
-    //parent = nullptr;
-  //  screen = nullptr;
 
-    screen->clearChildren();
-    parent->removeChild(screen.get());
+    auto tempScreen = screen;
+    auto tempParent = parent;
     parent = nullptr;
     screen = nullptr;
+
+    if (tempScreen) {
+        tempScreen->clearChildren();
+    }
+    if (tempParent) {
+        tempParent->removeChild(tempScreen.get());
+    }
 }
 
 void InputScreenManager::show(::rack::widget::Widget* parnt, Screens, Callback)
@@ -41,8 +45,6 @@ void InputScreenManager::show(::rack::widget::Widget* parnt, Screens, Callback)
     DEBUG("about to make input screen size = %f, %f", size.x, size.y);
     InputScreenPtr is = std::make_shared<InputScreen>(::rack::math::Vec(0, 0), size, dismisser);
     screen = is;
-   // ::rack::widget::Widget* screen = new InputScreen();
     parent->addChild(is.get());
     parentWidget = parent;
-    DEBUG("leaving scope, will destroy\n");
 }
