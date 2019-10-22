@@ -8,6 +8,7 @@
 #include "MidiSequencer.h"
 #include "UIPrefs.h"
 #include "InputScreen.h"
+#include "InputScreenManager.h"
 #include "KbdManager.h"
 #ifndef _USERKB
 #include "MidiKeyboardHandler.h"
@@ -49,6 +50,9 @@ NoteDisplay::NoteDisplay(
     updateFocus(false);
 #ifdef _USERKB
     kbdManager = std::make_shared<KbdManager>();
+#endif
+#ifdef _XFORM
+    ism = std::make_shared<InputScreenManager>(box.size);
 #endif
 }
 
@@ -465,7 +469,12 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
 
 void NoteDisplay::doTest()
 {
-#ifdef _XFORM
+    assert(ism);
+    InputScreenManager::Callback cb = [](std::vector<float> results) {
+        DEBUG("in callback from  InputScreenManager passed %d", results.size());
+    };
+    ism->show(InputScreenManager::Screens::test, cb);
+#if 0 // def _XFORM
     /*
       this->box.pos = pos;
     box.size = size;

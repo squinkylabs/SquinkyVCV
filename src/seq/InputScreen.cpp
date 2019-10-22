@@ -87,6 +87,10 @@ void InputScreen::draw(const Widget::DrawArgs &args)
 
 //*********************************************************************
 
+
+
+
+#if 0
 void InputScreenSet::show(::rack::widget::Widget* parent)
 {
     ::rack::widget::Widget* screen = screens[0].get();
@@ -129,3 +133,4 @@ InputScreenSet::~InputScreenSet()
     dismiss();
    DEBUG("dtor iss 2");
 }
+#endif

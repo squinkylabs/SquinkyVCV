@@ -6,9 +6,10 @@
 #include "Seq.h"
 
 class KbdManager;
-class InputScreenSet;
+class InputScreenManager;
 using KbdManagerPtr = std::shared_ptr<KbdManager>;
-using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
+using InputScreenManagerPtr = std::shared_ptr<InputScreenManager>;
+
 
 /**
  * This class needs some refactoring and renaming.
@@ -45,7 +46,7 @@ private:
     KbdManagerPtr kbdManager;
 #endif
 #ifdef _XFORM
-    InputScreenSetPtr iss;
+    InputScreenManagerPtr ism;
 #endif
 
     void initEditContext();

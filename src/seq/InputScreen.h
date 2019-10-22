@@ -35,8 +35,10 @@ private:
     std::function<void()> dismisser = nullptr;
 };
 
+
 using InputScreenPtr = std::shared_ptr<InputScreen>;
 
+#if 0
 class InputScreenSet
 {
 public:
@@ -53,4 +55,6 @@ private:
 };
 
 using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
+#endif
+
 
