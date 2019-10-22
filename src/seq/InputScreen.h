@@ -10,6 +10,7 @@
 
 class InputControl;
 class MidiSequencer;
+struct NVGcolor;
 
 using InputControlPtr = std::shared_ptr<InputControl>;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
@@ -34,9 +35,12 @@ public:
    std::vector<float> getValues() const;
 
 protected:
-    MidiSequencerPtr sequencer;
-    std::function<void()> dismisser = nullptr;
-    std::vector<InputControl*> inputControls;
+   MidiSequencerPtr sequencer;
+   std::function<void()> dismisser = nullptr;
+   std::vector<InputControl*> inputControls;
+
+   void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
+   ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
 };
 
 using InputScreenPtr = std::shared_ptr<InputScreen>;

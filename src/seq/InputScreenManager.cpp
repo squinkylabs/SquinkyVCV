@@ -70,7 +70,7 @@ void InputScreenManager::show(
             is = make<XformInvert>(size, seq, dismisser);
             break;
         default:
-            assert(flase);
+            assert(false);
     }
     screen = is;
     parent->addChild(is.get());

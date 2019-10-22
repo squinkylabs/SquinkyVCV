@@ -8,6 +8,8 @@
 
 using Vec = ::rack::math::Vec;
 using Button = ::rack::ui::Button;
+using Widget = ::rack::widget::Widget;
+using Label = ::rack::ui::Label;
 
 class Button2 : public Button
 {
@@ -86,4 +88,36 @@ void InputScreen::draw(const Widget::DrawArgs &args)
     NVGcontext *vg = args.vg;
     SqGfx::filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
     Widget::draw(args);
+}
+
+const NVGcolor TEXT_COLOR = nvgRGB(0xc0, 0xc0, 0xc0);
+
+Label* InputScreen::addLabel(const Vec& v, const char* str, const NVGcolor& color = TEXT_COLOR)
+{
+    Label* label = new Label();
+    label->box.pos = v;
+    label->text = str;
+    label->color = color;
+    this->addChild(label);
+    return label;
+}
+
+void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
+{
+    DEBUG("add pitch input");
+    float x= pos.x;
+    float y = pos.y;
+    addLabel(Vec(x, y), "Axis", TEXT_COLOR );
+ //   y += 30;
+   // addPitchInput(Vec(x, y), "Axis");
+
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( {"first", "second", "third"});
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(100, 50));
+    pop->text = "first";
+    this->addChild(pop);
+    inputControls.push_back(pop);
+    DEBUG("done add pitch input");
 }
