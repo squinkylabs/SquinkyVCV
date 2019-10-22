@@ -1,9 +1,10 @@
+#include "InputControls.h"
 #include "InputScreen.h"
 #include "SqGfx.h"
 #include "UIPrefs.h"
 
 #include "../ctrl/ToggleButton.h"
-#include "../ctrl/PopupMenuParamWidgetv1.h"
+
 
 using Vec = ::rack::math::Vec;
 using Button = ::rack::ui::Button;
@@ -23,10 +24,7 @@ public:
         // this is my work-around for now
         if (handler) {
             DEBUG("calling handler (ourter dismisser");
-            auto tempHandler = handler;
-           //handler = nullptr;                  // only call it onece
-            tempHandler();
-
+            handler();
         }
 #endif
     }
@@ -54,18 +52,29 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     this->addChild(ok);   
     ok->handler = dismisser;
 
-    auto pop = new PopupMenuParamWidget();
+    auto pop = new InputPopupMenuParamWidget();
     pop->setLabels( {"first", "second", "third"});
     pop->box.size.x = 76;    // width
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(Vec(100, 50));
     pop->text = "first";
     this->addChild(pop);
+    inputControls.push_back(pop);
 }
+
 
 InputScreen::~InputScreen()
 {
     DEBUG("dtor of input screen %p", this);
+}
+
+std::vector<float> InputScreen::getValues() const
+{
+    std::vector<float> ret;
+    for (auto control : inputControls) {
+        ret.push_back(control->getValue());
+    }
+    return ret;
 }
 
 void InputScreen::draw(const Widget::DrawArgs &args)

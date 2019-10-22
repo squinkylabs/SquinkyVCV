@@ -29,31 +29,15 @@ public:
      * Mouse handler. For debugging since we don't have buttons yet.
      */
    // void onButton(const ::rack::event::Button &e) override;
+
+   std::vector<float> getValues() const;
 private:
    // MidiSequencerPtr sequencer;
     std::function<void()> dismisser = nullptr;
+    std::vector<InputControl*> inputControls;
 };
-
 
 using InputScreenPtr = std::shared_ptr<InputScreen>;
 
-#if 0
-class InputScreenSet
-{
-public:
-    ~InputScreenSet();
-    void add(InputScreenPtr);
-    void show(::rack::widget::Widget* parent);
-
-    void dismiss();
-private:
-    std::vector<InputScreenPtr> screens;
-    ::rack::widget::Widget* parentWidget = nullptr;
-    int currentScreenIndex = 0;
-    bool isDismissing = false;
-};
-
-using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
-#endif
 
 

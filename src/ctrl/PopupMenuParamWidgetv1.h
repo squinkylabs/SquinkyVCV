@@ -1,5 +1,9 @@
 #pragma once
 
+#include "SqUI.h"
+#include "rack.hpp"
+
+
 /**
  * UI Widget that does:
  *  functions as a parameter
@@ -28,7 +32,9 @@ public:
 
 inline void PopupMenuParamWidget::onChange(const ::rack::event::Change& e) 
  {
+     DEBUG("PopupMenuParamWidget::onChange");
      if (!this->paramQuantity) {
+         DEBUG("no param quantity");
          return;            // no module
      }
     // process ourself to update the text label
@@ -40,6 +46,7 @@ inline void PopupMenuParamWidget::onChange(const ::rack::event::Change& e)
             return;
         }
         this->text = labels[index];
+        DEBUG("set text %s", this->text.c_str());
     }
 
     // Delegate to base class to change param value
@@ -78,12 +85,11 @@ public:
     const int index;
     PopupMenuParamWidget* const parent;
 
-
     void onAction(const ::rack::event::Action &e) override
     {
         parent->text = this->text;
         ::rack::event::Change ce;
-        //DEBUG("onAction, parent = %p, paramq = %p", parent, parent->paramQuantity);
+        DEBUG("popup onAction, parent = %p, paramq = %p", parent, parent->paramQuantity);
         if (parent->paramQuantity) {
             parent->paramQuantity->setValue(index);
         }   

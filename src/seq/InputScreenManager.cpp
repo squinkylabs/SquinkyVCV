@@ -23,7 +23,13 @@ void InputScreenManager::dismiss()
     parent = nullptr;
     screen = nullptr;
 
+
     if (tempScreen) {
+        auto values = tempScreen->getValues();
+        DEBUG("values size = %d", values.size());
+        for (auto x : values) {
+            DEBUG("value = %.2f", x);
+        }
         tempScreen->clearChildren();
     }
     if (tempParent) {
