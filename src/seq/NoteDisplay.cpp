@@ -473,7 +473,7 @@ void NoteDisplay::doTest()
     InputScreenManager::Callback cb = [](std::vector<float> results) {
         DEBUG("in callback from  InputScreenManager passed %d", results.size());
     };
-    ism->show(this, InputScreenManager::Screens::test, cb);
+    ism->show(this, InputScreenManager::Screens::Invert, cb);
 #if 0 // def _XFORM
     /*
       this->box.pos = pos;

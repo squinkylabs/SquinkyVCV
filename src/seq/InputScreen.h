@@ -31,7 +31,8 @@ public:
    // void onButton(const ::rack::event::Button &e) override;
 
    std::vector<float> getValues() const;
-private:
+
+protected:
    // MidiSequencerPtr sequencer;
     std::function<void()> dismisser = nullptr;
     std::vector<InputControl*> inputControls;

@@ -52,6 +52,7 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     this->addChild(ok);   
     ok->handler = dismisser;
 
+#if 0
     auto pop = new InputPopupMenuParamWidget();
     pop->setLabels( {"first", "second", "third"});
     pop->box.size.x = 76;    // width
@@ -60,6 +61,7 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     pop->text = "first";
     this->addChild(pop);
     inputControls.push_back(pop);
+#endif
 }
 
 

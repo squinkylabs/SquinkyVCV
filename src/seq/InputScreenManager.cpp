@@ -1,5 +1,6 @@
 #include "rack.hpp"
 #include "InputScreen.h"
+#include "XformScreens.h"
 #include "InputScreenManager.h"
 
 
@@ -37,7 +38,14 @@ void InputScreenManager::dismiss()
     }
 }
 
-void InputScreenManager::show(::rack::widget::Widget* parnt, Screens, Callback)
+
+template <class T>
+std::shared_ptr<T> InputScreenManager::make(const ::rack::math::Vec& size, std::function<void()> dismisser)
+{
+    return std::make_shared<T>(::rack::math::Vec(0, 0), size, dismisser);
+}
+
+void InputScreenManager::show(::rack::widget::Widget* parnt, Screens screenId, Callback)
 {
 
   // hard code to test screen for now
@@ -49,7 +57,14 @@ void InputScreenManager::show(::rack::widget::Widget* parnt, Screens, Callback)
     };
 
     DEBUG("about to make input screen size = %f, %f", size.x, size.y);
-    InputScreenPtr is = std::make_shared<InputScreen>(::rack::math::Vec(0, 0), size, dismisser);
+    InputScreenPtr is;
+    switch(screenId) {
+        case Screens::Invert:
+            is = make<XformInvert>(size, dismisser);
+            break;
+        default:
+            assert(flase);
+    }
     screen = is;
     parent->addChild(is.get());
     parentWidget = parent;

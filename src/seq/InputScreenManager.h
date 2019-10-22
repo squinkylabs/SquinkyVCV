@@ -12,7 +12,7 @@ namespace rack {
 class InputScreenManager
 {
 public:
-    enum class Screens { test };
+    enum class Screens { Invert };
     using Callback = std::function<void(std::vector<float>)>;
 
     InputScreenManager(::rack::math::Vec size);
@@ -34,5 +34,9 @@ private:
     ::rack::widget::Widget* parent = nullptr;
 
     void dismiss();
+
+    template <class T>
+    std::shared_ptr<T> make(const ::rack::math::Vec& size, std::function<void()> dismisser);
+    //(::rack::math::Vec(0, 0), size, dismisser);
 
 };
