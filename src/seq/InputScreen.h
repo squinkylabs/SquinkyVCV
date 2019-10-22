@@ -19,6 +19,7 @@ struct InputScreen : public ::rack::widget::OpaqueWidget
 public:
    InputScreen(const ::rack::math::Vec& pos,
         const ::rack::math::Vec& size,
+        MidiSequencerPtr seq,
         std::function<void()> dismisser);
     ~InputScreen();
 
@@ -33,7 +34,7 @@ public:
    std::vector<float> getValues() const;
 
 protected:
-   // MidiSequencerPtr sequencer;
+    MidiSequencerPtr sequencer;
     std::function<void()> dismisser = nullptr;
     std::vector<InputControl*> inputControls;
 };

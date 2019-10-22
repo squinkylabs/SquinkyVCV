@@ -37,8 +37,10 @@ public:
 };
 
 InputScreen::InputScreen(const ::rack::math::Vec& pos,
-        const ::rack::math::Vec& size,
-        std::function<void()> _dismisser)
+    const ::rack::math::Vec& size,
+    MidiSequencerPtr seq,
+    std::function<void()> _dismisser) :
+        sequencer(seq)
 {
     box.pos = pos;
     box.size = size;

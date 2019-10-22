@@ -19,7 +19,8 @@ public:
     /**
      * If you call it while a screen is up the call will be ignored.
      */
-    void show (::rack::widget::Widget* parent, Screens, Callback);
+    // TODO: get rid of callback
+    void show (::rack::widget::Widget* parent, Screens, MidiSequencerPtr, Callback);
 
     /**
      * If you destroy the manager while a screen is up,
@@ -36,7 +37,9 @@ private:
     void dismiss();
 
     template <class T>
-    std::shared_ptr<T> make(const ::rack::math::Vec& size, std::function<void()> dismisser);
-    //(::rack::math::Vec(0, 0), size, dismisser);
+    std::shared_ptr<T> make(
+        const ::rack::math::Vec& size,  
+        MidiSequencerPtr seq, 
+        std::function<void()> dismisser);
 
 };

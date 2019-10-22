@@ -6,7 +6,8 @@ using Vec = ::rack::math::Vec;
 XformInvert::XformInvert(
     const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
-    std::function<void()> dismisser) : InputScreen(pos, size, dismisser)
+     MidiSequencerPtr seq,
+    std::function<void()> dismisser) : InputScreen(pos, size, seq, dismisser)
 {
     auto pop = new InputPopupMenuParamWidget();
     pop->setLabels( {"first", "second", "third"});

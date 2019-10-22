@@ -40,12 +40,19 @@ void InputScreenManager::dismiss()
 
 
 template <class T>
-std::shared_ptr<T> InputScreenManager::make(const ::rack::math::Vec& size, std::function<void()> dismisser)
+std::shared_ptr<T> InputScreenManager::make(
+    const ::rack::math::Vec& size,
+     MidiSequencerPtr seq, 
+    std::function<void()> dismisser)
 {
-    return std::make_shared<T>(::rack::math::Vec(0, 0), size, dismisser);
+    return std::make_shared<T>(::rack::math::Vec(0, 0), size, seq, dismisser);
 }
 
-void InputScreenManager::show(::rack::widget::Widget* parnt, Screens screenId, Callback)
+void InputScreenManager::show(
+    ::rack::widget::Widget* parnt, 
+    Screens screenId,  
+    MidiSequencerPtr seq,
+    Callback)
 {
 
   // hard code to test screen for now
@@ -60,7 +67,7 @@ void InputScreenManager::show(::rack::widget::Widget* parnt, Screens screenId, C
     InputScreenPtr is;
     switch(screenId) {
         case Screens::Invert:
-            is = make<XformInvert>(size, dismisser);
+            is = make<XformInvert>(size, seq, dismisser);
             break;
         default:
             assert(flase);
