@@ -314,7 +314,7 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
 }
 /**
  * makes a track of 8 1/4 notes, each of 1/8 note duration (50%).
- * pitch is ascending in semitones from 3:0 (c)
+ * pitch is ascending in semitones from -1 V
  */
 
 MidiTrackPtr MidiTrack::makeTest1(std::shared_ptr<MidiLock> lock)

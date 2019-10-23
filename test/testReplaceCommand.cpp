@@ -396,6 +396,54 @@ static void testCut()
     assertEQ(origSize, seq->context->getTrack()->size());
 }
 
+
+static void testNoteFilter()
+{
+    printf("testNoteFilter\n");
+    // test seq starts at 3:0 and goes up in semis
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    MidiEventPtr firstEvent = seq->context->getTrack()->getFirstNote();
+    assert(firstEvent);
+    seq->selection->select(firstEvent);
+
+    {
+        MidiTrack::iterator it = seq->context->getTrack()->begin();
+        ++it;
+        MidiEventPtr secondEvent = it->second;
+        float pitch = safe_cast<MidiNoteEvent>(secondEvent)->pitchCV;
+        assertClose(pitch, -1.f + PitchUtils::semitone, .01);
+    }
+
+    auto filter = [](MidiEventPtr p) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
+        if (note) {
+            note->pitchCV = 5.1f;
+        }
+    };
+
+    auto cmd = ReplaceDataCommand::makeFilterNoteCommand("foo", seq, filter);
+    cmd->execute(seq, nullptr);
+
+    firstEvent = seq->context->getTrack()->begin()->second;
+    float pitch = safe_cast<MidiNoteEvent>(firstEvent)->pitchCV;
+    assertClose(pitch, 5.1f, .01);
+
+    MidiTrack::iterator it = seq->context->getTrack()->begin();
+    ++it;
+    MidiEventPtr secondEvent = it->second;
+    pitch = safe_cast<MidiNoteEvent>(secondEvent)->pitchCV;
+    assertClose(pitch, -1.f + PitchUtils::semitone, .01);
+
+    seq->assertValid();
+
+    cmd->undo(seq, nullptr);
+    seq->assertValid();
+    cmd->execute(seq, nullptr);
+    seq->assertValid();
+}
+
 void testReplaceCommand()
 {
     test0();
@@ -411,4 +459,5 @@ void testReplaceCommand()
     testDuration();
     testDurationMulti();
     testCut();
+    testNoteFilter();
 }

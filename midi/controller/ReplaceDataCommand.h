@@ -61,6 +61,14 @@ public:
 
     static ReplaceDataCommandPtr makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength);
 
+    /**
+     * This one works for any XFORM that does a one to one processing of notes.
+     * Since it uses "Legacy" helper, the lambda must process notes in place.
+     */
+    using FilterFunc = std::function<void(MidiEventPtr)>;
+    static ReplaceDataCommandPtr makeFilterNoteCommand(const std::string& name, std::shared_ptr<MidiSequencer> seq, FilterFunc);
+        
+
 private:
 
     int trackNumber;

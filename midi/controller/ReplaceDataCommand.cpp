@@ -213,6 +213,23 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
     return ret;
 }
 
+ReplaceDataCommandPtr ReplaceDataCommand::makeFilterNoteCommand(
+    const std::string& name, 
+    std::shared_ptr<MidiSequencer> seq, 
+    FilterFunc lambda)
+{
+    seq->assertValid(); 
+    Xform xform = [lambda](MidiEventPtr event, int) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            lambda(note);
+        }
+    };
+    auto ret = makeChangeNoteCommand(Ops::Pitch, seq, xform, false);
+    ret->name = name;
+    return ret;
+}
+
 ReplaceDataCommandPtr ReplaceDataCommand::makeChangePitchCommand(MidiSequencerPtr seq, int semitones)
 {
     seq->assertValid();
