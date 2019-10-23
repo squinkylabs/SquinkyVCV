@@ -11,7 +11,7 @@ InputScreenManager::InputScreenManager(::rack::math::Vec siz) : size(siz)
 InputScreenManager::~InputScreenManager()
 {
     DEBUG("dtor iss");
-   // dismiss();
+    dismiss();
   // DEBUG("dtor iss 2");
 }
 

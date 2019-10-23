@@ -51,21 +51,13 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
 
     auto ok = new Button2();
     ok->text = "OK";
-    ok->setPosition( Vec(100, 100));
+    float x = 100;
+    float y = 200;
+    ok->setPosition( Vec(x, y));
     ok->setSize(Vec(80, 30));
     this->addChild(ok);   
     ok->handler = dismisser;
 
-#if 0
-    auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( {"first", "second", "third"});
-    pop->box.size.x = 76;    // width
-    pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(100, 50));
-    pop->text = "first";
-    this->addChild(pop);
-    inputControls.push_back(pop);
-#endif
 }
 
 
@@ -102,22 +94,40 @@ Label* InputScreen::addLabel(const Vec& v, const char* str, const NVGcolor& colo
     return label;
 }
 
+static std::vector<std::string> octaves = {
+    "-3", "-2", "-1", "0", "1", "2", "3", "4", "5", "6", "7"
+};
+
+static std::vector<std::string> semis = {
+    "C", "C#", "D", "D#", "E", "F", "F#", "G"
+};
+
 void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
 {
     DEBUG("add pitch input");
     float x= pos.x;
     float y = pos.y;
     addLabel(Vec(x, y), "Axis", TEXT_COLOR );
- //   y += 30;
-   // addPitchInput(Vec(x, y), "Axis");
+    y += 30;
+
 
     auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( {"first", "second", "third"});
+    pop->setLabels( octaves);
     pop->box.size.x = 76;    // width
     pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(100, 50));
-    pop->text = "first";
+    pop->setPosition(Vec(x, y));
+    pop->text = "0";
     this->addChild(pop);
     inputControls.push_back(pop);
     DEBUG("done add pitch input");
+
+    y += 40;
+    pop = new InputPopupMenuParamWidget();
+    pop->setLabels( semis);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = "C";
+    this->addChild(pop);
+    inputControls.push_back(pop);
 }
