@@ -1,5 +1,6 @@
 #include "InputControls.h"
 #include "InputScreen.h"
+#include "PitchUtils.h"
 #include "SqGfx.h"
 #include "UIPrefs.h"
 
@@ -130,4 +131,13 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     pop->text = "C";
     this->addChild(pop);
     inputControls.push_back(pop);
+}
+
+float InputScreen::getAbsPitchFromInput(int index)
+{
+    assert(inputControls.size() > unsigned(index + 1));
+    int iOctave = int( std::round(inputControls[index]->getValue()));
+    int iSemi = int( std::round(inputControls[index+1]->getValue()));
+
+    return PitchUtils::pitchToCV(iOctave, iSemi);
 }

@@ -8,4 +8,5 @@ public:
         const ::rack::math::Vec& size,
         MidiSequencerPtr seq,
         std::function<void()> _dismisser);
+    void execute() override;
 };

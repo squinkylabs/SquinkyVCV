@@ -31,6 +31,7 @@ void InputScreenManager::dismiss()
         for (auto x : values) {
             DEBUG("value = %.2f", x);
         }
+        tempScreen->execute();
         tempScreen->clearChildren();
     }
     if (tempParent) {

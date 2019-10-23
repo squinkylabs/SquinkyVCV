@@ -22,15 +22,11 @@ public:
         const ::rack::math::Vec& size,
         MidiSequencerPtr seq,
         std::function<void()> dismisser);
-    ~InputScreen();
+   ~InputScreen();
 
     
-    void draw(const Widget::DrawArgs &args) override;
-
-    /**
-     * Mouse handler. For debugging since we don't have buttons yet.
-     */
-   // void onButton(const ::rack::event::Button &e) override;
+   virtual void execute() = 0;
+   void draw(const Widget::DrawArgs &args) override;
 
    std::vector<float> getValues() const;
 
@@ -41,9 +37,7 @@ protected:
 
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
    ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
+   float getAbsPitchFromInput(int index);
 };
 
 using InputScreenPtr = std::shared_ptr<InputScreen>;
-
-
-

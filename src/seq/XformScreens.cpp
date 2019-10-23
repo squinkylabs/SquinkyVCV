@@ -28,20 +28,13 @@ XformInvert::XformInvert(
      MidiSequencerPtr seq,
     std::function<void()> dismisser) : InputScreen(pos, size, seq, dismisser)
 {
-    // TODO: add label to pitch input
     float x = 100;
     float y = 30;
-  //  addLabel(this, Vec(x, y), "Axis" );
- //   y += 30;
     addPitchInput(Vec(x, y), "Axis");
-#if 0
-    auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( {"first", "second", "third"});
-    pop->box.size.x = 76;    // width
-    pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(100, 50));
-    pop->text = "first";
-    this->addChild(pop);
-    inputControls.push_back(pop);
-    #endif
+}
+
+void XformInvert::execute()
+{
+    float p = getAbsPitchFromInput(0);
+    WARN("now we need to invert those notes!");
 }
