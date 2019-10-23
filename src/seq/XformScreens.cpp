@@ -1,5 +1,8 @@
 
 #include "InputControls.h"
+#include "MidiSequencer.h"
+#include "SqMidiEvent.h"
+#include "ReplaceDataCommand.h"
 #include "XformScreens.h"
 
 
@@ -8,18 +11,6 @@
 using Widget = ::rack::widget::Widget;
 using Vec = ::rack::math::Vec;
 using Label = ::rack::ui::Label;
-
-#if 0
-Label* addLabel(Widget* widget, const Vec& v, const char* str, const NVGcolor& color = TEXT_COLOR)
-{
-    Label* label = new Label();
-    label->box.pos = v;
-    label->text = str;
-    label->color = color;
-    widget->addChild(label);
-    return label;
-}
-#endif
 
 //**************************** Invert *********************************
 XformInvert::XformInvert(
@@ -35,6 +26,24 @@ XformInvert::XformInvert(
 
 void XformInvert::execute()
 {
-    float p = getAbsPitchFromInput(0);
+    WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
+    WARN("execute");
+    float pitchAxis = getAbsPitchFromInput(0);
+    auto lambda = [pitchAxis](MidiEventPtr p) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
+        if (note) {
+            WARN("in lambda");
+            note->pitchCV = pitchAxis - note->pitchCV;
+        }
+    };
+
+  
+   
+
     WARN("now we need to invert those notes!");
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
+        "Invert", sequencer, lambda);
+    sequencer->undo->execute(sequencer, cmd);
+
+    fflush(stdout);
 }
