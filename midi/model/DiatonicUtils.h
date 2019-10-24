@@ -47,5 +47,7 @@ public:
     static const int a_ = {10};
     static const int b = {11};
 
+    static std::string getPitchString(int pitch);
+
 
 };

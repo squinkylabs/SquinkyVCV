@@ -23,6 +23,29 @@ bool DiatonicUtils::isNoteInC(int pitch)
     return ret;
 }
 
+static std::vector<std::string> pitchNames = 
+{
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+};
+
+std::string DiatonicUtils::getPitchString(int pitch)
+{
+    if (pitch < 0) {
+        return ("x");
+    }
+    assert(pitch < 12);
+    return pitchNames[pitch];
+}
+
+void DiatonicUtils::_dump(const char* msg, const std::vector<int>& data)
+{
+    printf("dump: %s\n", msg);
+    for (size_t i = 0; i < data.size(); ++i) {
+        printf("[%s]=%s\n", getPitchString(int(i)).c_str(), getPitchString(data[i]).c_str());
+    }
+    printf("\n");
+}
+
 std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 {
     std::vector<int> ret(12);
@@ -30,25 +53,55 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         ret[i] = -1;                    // init to absurd value
     }
 
+    int lastScaleToneXpose = -1;
+
+   
     // first do all the ones that are already in key
     for (int i = 0; i < 12; ++i) {
+        bool chromaticXposeWrapsPitch = false;
+        int chromaticTransposePitch = i + transposeAmount;
+        if (chromaticTransposePitch > DiatonicUtils::b) {
+            chromaticTransposePitch -= 12;
+            chromaticXposeWrapsPitch = true;
+        }
+
         const bool isInC = DiatonicUtils::isNoteInC(i);
-        const bool xposeInC = DiatonicUtils::isNoteInC(i + transposeAmount);
+        const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
 
         // if chromatic xpose keeps in key, use that.
         if (isInC && xposeInC) {
-            ret[i] = i + transposeAmount;
+            ret[i] = chromaticTransposePitch;
+          
         }
 
         if (isInC && !xposeInC) {
-            assert(false);      // can't handle yet
+            int guess = chromaticTransposePitch - 1;
+            assert(lastScaleToneXpose >= 0);
+            if (guess > lastScaleToneXpose) {
+                ret[i] = guess;
+            } else {
+                ret[i] = chromaticTransposePitch + 1;
+            }
+            assert(DiatonicUtils::isNoteInC(ret[i])); 
+        }
+        if (isInC) {
+            lastScaleToneXpose = ret[i];
         }
     }
 
+    _dump("step 1", ret);
+
     // now do all the ones that are not in key
     for (int i = 0; i < 12; ++i) {
+        bool chromaticXposeWrapsPitch = false;
+        int chromaticTransposePitch = i + transposeAmount;
+        if (chromaticTransposePitch > DiatonicUtils::b) {
+            chromaticTransposePitch -= 12;
+            chromaticXposeWrapsPitch = true;
+        }
+
         const bool isInC = DiatonicUtils::isNoteInC(i);
-        const bool xposeInC = DiatonicUtils::isNoteInC(i + transposeAmount);
+        const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
 
         if (!isInC) {
             assert(ret[i] < 0);                 // we haven't filled these in yet
@@ -56,7 +109,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
          // if chromatic xpose keeps in key, use that (for now)
         if (!isInC && xposeInC) {
-            ret[i] = i + transposeAmount;       
+            ret[i] = chromaticTransposePitch;
         }
         if (!isInC && !xposeInC) {
             assert(i > 0);
@@ -70,15 +123,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
 
 
-    _dump("step 1", ret);
+    _dump("final", ret);
     return ret;
 }
 
-void DiatonicUtils::_dump(const char* msg, const std::vector<int>& data)
-{
-    printf("dump: %s\n", msg);
-    for (size_t i = 0; i < data.size(); ++i) {
-        printf("[%zd]=%d, ", i, data[i]);
-    }
-    printf("\n");
-}
