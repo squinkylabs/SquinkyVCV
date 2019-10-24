@@ -13,7 +13,7 @@ class InputScreenManager
 {
 public:
     enum class Screens { Invert };
-    using Callback = std::function<void(std::vector<float>)>;
+    using Callback = std::function<void()>;
 
     InputScreenManager(::rack::math::Vec size);
     /**
@@ -33,6 +33,7 @@ private:
     const ::rack::math::Vec size;
     InputScreenPtr screen; 
     ::rack::widget::Widget* parent = nullptr;
+    Callback callback = nullptr;
 
     void dismiss();
 

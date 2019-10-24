@@ -47,6 +47,7 @@ private:
 #endif
 #ifdef _XFORM
     InputScreenManagerPtr ism;
+    bool enabled = true;                // hack to make event propegation work
 #endif
 
     void initEditContext();

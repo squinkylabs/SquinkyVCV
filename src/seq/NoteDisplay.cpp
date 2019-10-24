@@ -297,7 +297,11 @@ void NoteDisplay::onDragDrop(const event::DragDrop &e)
 void NoteDisplay::onButton(const event::Button &e)
 {
    // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
-
+    OpaqueWidget::onButton(e);
+    if (!enabled) {
+        DEBUG("disp skipping button - disabled");
+        return;
+    }
     bool handled = false;
 
     const bool isPressed = e.action == GLFW_PRESS;
@@ -392,6 +396,9 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
 
 bool NoteDisplay::handleKey(int key, int mods, int action)
 {
+    if (!enabled) {
+        return false;
+    }
   //  fprintf(stderr, "\n** NoteDisplay::handleKey, action = %d (press = %d, repeat = %d\n", action,
   //      GLFW_PRESS, GLFW_REPEAT);
     bool handle = false;
@@ -466,31 +473,14 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
-
 void NoteDisplay::doTest()
 {
     assert(ism);
-    InputScreenManager::Callback cb = [](std::vector<float> results) {
-        DEBUG("in callback from  InputScreenManager passed %d", results.size());
+    InputScreenManager::Callback cb = [this]() {
+        DEBUG("in callback from  InputScreenManager ");
+        this->enabled = true;
     };
+    this->enabled = false;
     ism->show(this, InputScreenManager::Screens::Invert, sequencer, cb);
-#if 0 // def _XFORM
-    /*
-      this->box.pos = pos;
-    box.size = size;
-    */
-
-    auto dismisser = [this]() {
-        DEBUG("Entering the outer dismisser. will dismiss the screen set and delete it");
-        iss->dismiss();
-        this->iss.reset();
-    };
-    InputScreenPtr is = std::make_shared<InputScreen>(Vec(0, 0), box.size, sequencer, dismisser);
-
-    // make the screen set, and keep a pointer to it in this
-    iss = std::make_shared<InputScreenSet>();
-    iss->add(is);
-    iss->show(this);
-#endif
 }
-//#endif
+

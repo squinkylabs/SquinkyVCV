@@ -18,19 +18,23 @@ public:
     // this isn't firing. don't know why
     void onAction(const ::rack::event::Action& e) override {
         DEBUG("onAction from button");
+        if (handler) {
+            handler();
+        }
     }
-
+#if 0
     void onDragEnd(const ::rack::event::DragEnd& e) override {
         Button::onDragEnd(e);
         //DEBUG("on DRAG END FOR ME handler = %d", bool(handler));
-#if 1
+
         // this is my work-around for now
         if (handler) {
             DEBUG("calling handler (ourter dismisser");
             handler();
         }
-#endif
+
     }
+    #endif
 
     ~Button2() {
         DEBUG("dtor of button");

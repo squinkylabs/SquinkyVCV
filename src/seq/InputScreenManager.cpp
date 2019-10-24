@@ -33,6 +33,8 @@ void InputScreenManager::dismiss()
         }
         tempScreen->execute();
         tempScreen->clearChildren();
+        this->callback();
+        callback = nullptr;
     }
     if (tempParent) {
         tempParent->removeChild(tempScreen.get());
@@ -53,11 +55,12 @@ void InputScreenManager::show(
     ::rack::widget::Widget* parnt, 
     Screens screenId,  
     MidiSequencerPtr seq,
-    Callback)
+    Callback cb)
 {
 
   // hard code to test screen for now
 
+    this->callback = cb;
     parent = parnt;
     auto dismisser = [this]() {
         DEBUG("in manager::dismisser");
