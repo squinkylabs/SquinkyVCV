@@ -62,9 +62,7 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     ok->setSize(Vec(80, 30));
     this->addChild(ok);   
     ok->handler = dismisser;
-
 }
-
 
 InputScreen::~InputScreen()
 {

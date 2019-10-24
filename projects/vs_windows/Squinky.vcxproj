@@ -45,6 +45,7 @@
     <ClCompile Include="..\..\midi\controller\NewSongDataDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\ReplaceDataCommand.cpp" />
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
+    <ClCompile Include="..\..\midi\model\DiatonicUtils.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSequencer.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
@@ -72,6 +73,7 @@
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
+    <ClCompile Include="..\..\test\testDiatonicUtils.cpp" />
     <ClCompile Include="..\..\test\testDrumTrigger.cpp" />
     <ClCompile Include="..\..\test\testFFT.cpp" />
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
@@ -223,6 +225,7 @@
     <ClInclude Include="..\..\midi\controller\SqCommand.h" />
     <ClInclude Include="..\..\midi\controller\StepRecordInput.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
+    <ClInclude Include="..\..\midi\model\DiatonicUtils.h" />
     <ClInclude Include="..\..\midi\model\ISeqSettings.h" />
     <ClInclude Include="..\..\midi\model\SqMidiEvent.h" />
     <ClInclude Include="..\..\midi\model\MidiSequencer.h" />

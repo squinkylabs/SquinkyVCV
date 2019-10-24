@@ -78,6 +78,7 @@ extern void testAudition();
 extern void testStepRecordInput();
 extern void testMidiFile();
 extern void testNewSongDataDataCommand();
+extern void testDiatonicUtils();
 
 #if 0
 #include <sstream>
@@ -169,6 +170,7 @@ int main(int argc, char ** argv)
     testNewSongDataDataCommand();
     testUndoRedo();
     testMidiViewport();
+    testDiatonicUtils();
  
     testMidiFile();
     testMidiControllers();

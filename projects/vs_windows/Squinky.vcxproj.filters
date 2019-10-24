@@ -477,6 +477,12 @@
     <ClCompile Include="..\..\test\testNewSongDataCommand.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testDiatonicUtils.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\model\DiatonicUtils.cpp">
+      <Filter>Source Files\midi\model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -880,6 +886,9 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\controller\NewSongDataCommand.h">
       <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\model\DiatonicUtils.h">
+      <Filter>Header Files\midi\model</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
