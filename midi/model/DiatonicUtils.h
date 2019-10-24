@@ -19,7 +19,8 @@ public:
 
     /**
      * Gets a vector of destination pitches after transpose.
-     * @param transposeAmount is in semitones. must be >= 0 and <= 11
+     * @param transposeAmount is in semitones. must be >= 0 and <= 11.
+     * @returns transposed pitch, may be > 11.
      */
     static std::vector<int> getTransposeInC(int transposeAmount);
 
