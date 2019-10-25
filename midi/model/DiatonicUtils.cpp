@@ -31,12 +31,14 @@ static std::vector<std::string> pitchNames =
 std::string DiatonicUtils::getPitchString(int pitch)
 {
     if (pitch < 0) {
+       // printf("convert below zero: %d\n", pitch);
         return ("x");
     }
     assert(pitch < 12);
     return pitchNames[pitch];
 }
 
+#if 0
 void DiatonicUtils::_dump(const char* msg, const std::vector<int>& data)
 {
     printf("dump: %s\n", msg);
@@ -45,17 +47,58 @@ void DiatonicUtils::_dump(const char* msg, const std::vector<int>& data)
     }
     printf("\n");
 }
+#endif
+
+
+std::vector<int> DiatonicUtils::getTransposedPitchesInC(const std::vector<int>& transposes)
+{
+   // printf("in getTransposedPitchesInC\n");
+    std::vector<int> ret(transposes.size());
+    for (int i = 0; i < (int) transposes.size(); ++i) {
+        const int j = transposes[i];
+        ret[i] = (j < -12) ? j : i + transposes[i];
+       // printf("in get transp, %d -> %d\n", i, ret[i]);
+    }
+
+   // for (int i = 0; i < (int) transposes.size(); ++i) {
+   //     printf("in getTransposedPitchesInC i=%d trans=%d final=%d\n", i, transposes[i], ret[i]);
+   // }
+    return ret;
+}
+
+void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& transposes)
+{
+    printf("\n*****dump1: %s\n", msg);
+  
+    std::vector<int> pitches = getTransposedPitchesInC(transposes);
+  //  printf("dump2: %s\n", msg);
+ //   for (size_t i = 0; i < transposes.size(); ++i) {
+ //       printf("transposed pitches[%d] = %d\n", i, pitches[i]);
+ //   }
+ 
+   
+    printf("dump3: %s\n", msg);
+    for (size_t i = 0; i < transposes.size(); ++i) {
+        printf("t[%zd]=%d.  %s => %s\n", 
+            i, transposes[i],
+            getPitchString(int(i)).c_str(),
+            getPitchString(pitches[i]).c_str());
+    }
+    printf("\n");
+}
 
 std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 {
     std::vector<int> ret(12);
+   
+    // init to absurd value
     for (int i = 0; i < 12; ++i) {
-        ret[i] = -1;                    // init to absurd value
+        ret[i] = -24;                    
     }
 
+    _dumpTransposes("init", ret);
     int lastScaleToneXpose = -1;
 
-   
     // first do all the ones that are already in key
     for (int i = 0; i < 12; ++i) {
         bool chromaticXposeWrapsPitch = false;
@@ -64,16 +107,17 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             chromaticTransposePitch -= 12;
             chromaticXposeWrapsPitch = true;
         }
-
+        
         const bool isInC = DiatonicUtils::isNoteInC(i);
         const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
 
         // if chromatic xpose keeps in key, use that.
         if (isInC && xposeInC) {
-            ret[i] = chromaticTransposePitch;
+            ret[i] = transposeAmount;
+            printf("setting ret %d to %d\n", i, transposeAmount);
           
         }
-
+#if 0
         if (isInC && !xposeInC) {
             int guess = chromaticTransposePitch - 1;
             assert(lastScaleToneXpose >= 0);
@@ -87,9 +131,12 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         if (isInC) {
             lastScaleToneXpose = ret[i];
         }
+#endif
     }
 
-    _dump("step 1", ret);
+#if 0
+    _dumpTransposes("step 1", ret);
+
 
     // now do all the ones that are not in key
     for (int i = 0; i < 12; ++i) {
@@ -120,10 +167,10 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             ret[i] = thisXpose;
         }
     }
+#endif
 
 
-
-    _dump("final", ret);
+    _dumpTransposes("final", ret);
     return ret;
 }
 

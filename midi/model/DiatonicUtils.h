@@ -18,17 +18,24 @@ public:
     static bool isNoteInC(int pitch);
 
     /**
-     * Gets a vector of destination pitches after transpose.
+     * Gets a vector of pitch offsets for transpose.
      * @param transposeAmount is in semitones. must be >= 0 and <= 11.
-     * @returns transposed pitch, may be > 11.
+     * @returns transpose semitones
      */
     static std::vector<int> getTransposeInC(int transposeAmount);
+
+    /**
+     * applies transposes to the 12 semitones of chromatic C scale
+     */
+    static std::vector<int> getTransposedPitchesInC(const std::vector<int>& tranposes);
+    
 
     /*****************************************************************
      * Misc util
      */
 
-    static void _dump(const char*, const std::vector<int>&);
+    static void _dumpTransposes(const char*, const std::vector<int>&);
+   // static void _dumpPitches(const char*, const std::vector<int>&);
 
 
     /*****************************************************************
@@ -47,6 +54,9 @@ public:
     static const int a_ = {10};
     static const int b = {11};
 
+    /**
+     * can handle pitches 0..23
+     */
     static std::string getPitchString(int pitch);
 
 
