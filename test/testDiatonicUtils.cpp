@@ -15,21 +15,17 @@ static void assertTransposeValidC(const std::vector<int> _xpose, int amount)
         assertLE(trans, amount + 1);
     }
 
-#if 0
-    int last = -1;
+    int lastPitch = -1;
     for (int i = 0; i < 12; ++i) {
-        int x = xpose[i];
-        assertGE(x, 0);                 // valid entry
-        assertGE(x, last);              // never decreasing
-        last = x;
+        const int x = _xpose[i];
+        assertGE(x, -12);                 // valid entry
 
-        assert(DiatonicUtils::isNoteInC(x));        // hard code to C for now
+        const int thisPitch = i + x;
+        assertGE(thisPitch, lastPitch);              // never decreasing
+        lastPitch = thisPitch;
 
-        // can assert that output is withing a semitone of input + trans
-        assertGE(x, (i + amount - 1));
-        assertLE(x, (i + amount + 1));
+        assert(DiatonicUtils::isNoteInC(thisPitch));        // hard code to C for now
     }
-#endif
 }
 
 

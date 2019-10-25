@@ -165,8 +165,10 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             assert(i > 0);
 
             // let's just go to the same pitch as prev guy (won't always work);
-            int prevXpose = ret[i - 1];
-            int thisXpose = prevXpose;
+            const int prevXpose = ret[i - 1];
+            const int prevPitch = prevXpose + (i-1);
+            const int thisPitch = prevPitch;
+            const int thisXpose = thisPitch - i;
             ret[i] = thisXpose;
         }
     }
