@@ -114,11 +114,11 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
     // first do all the ones that are already in key
     for (int i = 0; i < 12; ++i) {
-        bool chromaticXposeWrapsPitch = false;
+      //  bool chromaticXposeWrapsPitch = false;
         int chromaticTransposePitch = i + transposeAmount;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
-            chromaticXposeWrapsPitch = true;
+          //  chromaticXposeWrapsPitch = true;
         }
         
         const bool isInC = DiatonicUtils::isNoteInC(i);
@@ -165,11 +165,11 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
     // now do all the ones that are not in key
     for (int i = 0; i < 12; ++i) {
-        bool chromaticXposeWrapsPitch = false;
+     //   bool chromaticXposeWrapsPitch = false;
         int chromaticTransposePitch = i + transposeAmount;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
-            chromaticXposeWrapsPitch = true;
+   //         chromaticXposeWrapsPitch = true;
         }
 
         const bool isInC = DiatonicUtils::isNoteInC(i);
