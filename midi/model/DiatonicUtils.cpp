@@ -139,11 +139,15 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         // i.e. two separate scale tones must always xpose to different scale tones.
         if (isInC && !xposeInC) {
             int guessPitch = i + chromaticTransposePitch - 1;
-            assert(lastScaleTone >= 0);
-            if (guessPitch > lastScaleTone) {
-                ret[i] = transposeAmount - 1;
+            if (lastScaleTone >= 0) {
+                if (guessPitch > lastScaleTone) {
+                    ret[i] = transposeAmount - 1;
+                } else {
+                    ret[i] = transposeAmount + 1;
+                }
             } else {
-                ret[i] = transposeAmount + 1;
+                // there was no previous pitch, to just go down
+                ret[i] = transposeAmount - 1;
             }
             assert(DiatonicUtils::isNoteInC(i + ret[i])); 
 

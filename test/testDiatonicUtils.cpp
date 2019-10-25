@@ -56,6 +56,10 @@ static void testTransposeC_1()
 {
     testTransposeC_1(0);
     testTransposeC_1(2);
+    testTransposeC_1(1);
+    for (int i = 0; i < 12; ++i) {
+        testTransposeC_1(i);
+    }
 }
 
 void testDiatonicUtils()
