@@ -117,24 +117,27 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             printf("setting ret %d to %d\n", i, transposeAmount);
           
         }
-#if 0
+
+        // if we were in the key, and chormatic xpose takes us out,
+        // Then make sure we don't grab the same scale tone as a different
+        // step. 
+        // i.e. two separate scale tones must always xpose to different scale tones.
         if (isInC && !xposeInC) {
             int guess = chromaticTransposePitch - 1;
             assert(lastScaleToneXpose >= 0);
             if (guess > lastScaleToneXpose) {
-                ret[i] = guess;
+                ret[i] = i - 1;
             } else {
-                ret[i] = chromaticTransposePitch + 1;
+                ret[i] = i + 1;
             }
             assert(DiatonicUtils::isNoteInC(ret[i])); 
         }
         if (isInC) {
             lastScaleToneXpose = ret[i];
         }
-#endif
     }
 
-#if 0
+
     _dumpTransposes("step 1", ret);
 
 
@@ -151,12 +154,12 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
 
         if (!isInC) {
-            assert(ret[i] < 0);                 // we haven't filled these in yet
+            assert(ret[i] < -12);                 // we haven't filled these in yet
         }
 
          // if chromatic xpose keeps in key, use that (for now)
         if (!isInC && xposeInC) {
-            ret[i] = chromaticTransposePitch;
+            ret[i] = i;
         }
         if (!isInC && !xposeInC) {
             assert(i > 0);
@@ -167,8 +170,6 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             ret[i] = thisXpose;
         }
     }
-#endif
-
 
     _dumpTransposes("final", ret);
     return ret;
