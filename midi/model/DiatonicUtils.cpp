@@ -1,13 +1,22 @@
 #include "DiatonicUtils.h"
 #include <assert.h>
+#include <sstream>
 
 
-bool DiatonicUtils::isNoteInC(int pitch)
+std::pair<int, int> DiatonicUtils::normalizePitch(int pitch)
 {
+    int octave = pitch / 12;
+    pitch -= octave * 12;
+    return std::make_pair(octave, pitch);
+}
+
+bool DiatonicUtils::isNoteInC(int _pitch)
+{
+    auto normPitch = normalizePitch(_pitch);
     bool ret = true;
-    assert(pitch >= DiatonicUtils::c);
-    assert(pitch <= DiatonicUtils::b);
-    switch (pitch) {
+    assert(normPitch.second >= DiatonicUtils::c);
+    assert(normPitch.second <= DiatonicUtils::b);
+    switch (normPitch.second) {
         case DiatonicUtils::c:
         case DiatonicUtils::d:
         case DiatonicUtils::e:
@@ -28,14 +37,18 @@ static std::vector<std::string> pitchNames =
     "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 };
 
-std::string DiatonicUtils::getPitchString(int pitch)
+std::string DiatonicUtils::getPitchString(int _pitch)
 {
-    if (pitch < 0) {
+    auto pitch = normalizePitch(_pitch);
+    if (_pitch < 0) {
        // printf("convert below zero: %d\n", pitch);
         return ("x");
     }
-    assert(pitch < 12);
-    return pitchNames[pitch];
+   
+   // return pitchNames[pitch];
+    std::stringstream s;
+    s << pitch.first << ":" << pitchNames[pitch.second];
+    return s.str();
 }
 
 #if 0
@@ -97,7 +110,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
     }
 
     _dumpTransposes("init", ret);
-    int lastScaleToneXpose = -1;
+    int lastScaleTone = -1;
 
     // first do all the ones that are already in key
     for (int i = 0; i < 12; ++i) {
@@ -115,6 +128,8 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         if (isInC && xposeInC) {
             ret[i] = transposeAmount;
             printf("setting ret %d to %d\n", i, transposeAmount);
+            assert(ret[i] >= transposeAmount - 1);
+            assert(ret[i] <= transposeAmount + 1);
           
         }
 
@@ -123,17 +138,20 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         // step. 
         // i.e. two separate scale tones must always xpose to different scale tones.
         if (isInC && !xposeInC) {
-            int guess = chromaticTransposePitch - 1;
-            assert(lastScaleToneXpose >= 0);
-            if (guess > lastScaleToneXpose) {
-                ret[i] = i - 1;
+            int guessPitch = i + chromaticTransposePitch - 1;
+            assert(lastScaleTone >= 0);
+            if (guessPitch > lastScaleTone) {
+                ret[i] = transposeAmount - 1;
             } else {
-                ret[i] = i + 1;
+                ret[i] = transposeAmount + 1;
             }
-            assert(DiatonicUtils::isNoteInC(ret[i])); 
+            assert(DiatonicUtils::isNoteInC(i + ret[i])); 
+
+            assert(ret[i] >= transposeAmount - 1);
+            assert(ret[i] <= transposeAmount + 1);
         }
         if (isInC) {
-            lastScaleToneXpose = ret[i];
+            lastScaleTone = i + ret[i];
         }
     }
 
@@ -159,7 +177,10 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
          // if chromatic xpose keeps in key, use that (for now)
         if (!isInC && xposeInC) {
-            ret[i] = i;
+            ret[i] = transposeAmount;
+
+            assert(ret[i] >= transposeAmount - 1);
+            assert(ret[i] <= transposeAmount + 1);
         }
         if (!isInC && !xposeInC) {
             assert(i > 0);
@@ -170,7 +191,11 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             const int thisPitch = prevPitch;
             const int thisXpose = thisPitch - i;
             ret[i] = thisXpose;
+
+            assert(ret[i] >= transposeAmount - 1);
+            assert(ret[i] <= transposeAmount + 1);
         }
+       
     }
 
     _dumpTransposes("final", ret);

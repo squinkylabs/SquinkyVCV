@@ -55,7 +55,7 @@ static void testTransposeC_1(int amount)
 static void testTransposeC_1()
 {
     testTransposeC_1(0);
-  //  testTransposeC_1(2);
+    testTransposeC_1(2);
 }
 
 void testDiatonicUtils()

@@ -37,6 +37,11 @@ public:
     static void _dumpTransposes(const char*, const std::vector<int>&);
    // static void _dumpPitches(const char*, const std::vector<int>&);
 
+    /**
+     * returns octave:semi from semi
+     */
+    static std::pair<int, int> normalizePitch(int);
+
 
     /*****************************************************************
      * Constants for the 12 pitches in a chromatic scale
