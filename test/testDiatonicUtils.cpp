@@ -73,9 +73,15 @@ static void testRelativeMajor()
     // since C is already the relative major to A min, no transpose needed
     x = DiatonicUtils::getPitchOffsetRelativeToCMaj(DiatonicUtils::a, DiatonicUtils::Modes::Minor);
     assertEQ(x, 0);
-
-
 };
+
+static void testTransposeC2()
+{
+    int amt = 5;
+    std::vector<int> xpose =  DiatonicUtils::getTranspose(amt , DiatonicUtils::c, DiatonicUtils::Modes::Major);
+    DiatonicUtils::_dumpTransposes("just generated", xpose);
+    assertTransposeValidC(xpose, amt);
+}
 
 
 
@@ -85,5 +91,6 @@ void testDiatonicUtils()
     testIsNoteInC();
     testTransposeC_1();
     testRelativeMajor();
+    testTransposeC2();
 
 }

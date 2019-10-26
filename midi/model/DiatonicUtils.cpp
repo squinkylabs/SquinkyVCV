@@ -206,8 +206,6 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
     return ret;
 }
 
-
-
 int DiatonicUtils::getOffsetToRelativeMaj(Modes mode)
 {
     int ret = 0;
@@ -246,4 +244,21 @@ int DiatonicUtils::getPitchOffsetRelativeToCMaj(int keyRoot, Modes mode)
         ret -= 12;
     }
     return ret;
+}
+
+std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, Modes mode)
+{
+    const int offset = getPitchOffsetRelativeToCMaj(keyRoot, mode);
+    const std::vector<int> xpose = getTransposeInC(transposeAmount);
+    std::vector<int> ret(12);
+    for (int i = 0; i <= 11; ++i) {
+        int pitchInRelMajor = i + offset;
+        auto norm = normalizePitch(pitchInRelMajor);
+        int normP = norm.second;
+        int xposed = xpose[normP];
+        int final = xposed - offset;
+        ret[i] = final;
+    }
+    return ret;
+
 }
