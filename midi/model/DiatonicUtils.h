@@ -26,7 +26,8 @@ public:
     static std::vector<int> getTransposeInC(int transposeAmount);
 
     /**
-     * applies transposes to the 12 semitones of chromatic C scale
+     * Applies transposes to the 12 semitones of chromatic C scale.
+     * Forces output to be in C major
      */
     static std::vector<int> getTransposedPitchesInC(const std::vector<int>& tranposes);
     
@@ -39,7 +40,7 @@ public:
    // static void _dumpPitches(const char*, const std::vector<int>&);
 
     /**
-     * returns octave:semi from semi
+     * returns octave:semi from semi, where semi 0 == C
      */
     static std::pair<int, int> normalizePitch(int);
 
@@ -65,5 +66,40 @@ public:
      */
     static std::string getPitchString(int pitch);
 
+    enum class Modes
+    {
+        Major,
+        Dorian,
+        Phrygian,
+        Lydian,
+        Mixolydian,
+        Minor,
+        Locrian
+    };
+
+    /********************** not constrained to C ***************************/
+
+    /**
+     * Applies transposes to the 12 semitones of chromatic C scale.
+     * Forces output to be in mode.
+     */
+    static std::vector<int> getTranspose(int transposeAmount, int keyRoot, Modes mode);
+
+    /**
+     * Computes relative pitch offset of a mode relative to CMajor.
+     * Example: A Minor.
+     * All the notes in A minor are already in C Major, 
+     * since A is the relative minor of C. So the offset is zero.
+     *
+     * Example: C Minor.
+     * If we transpose +9, we get to A minor, which is CMajor.
+     *
+     */
+    static int getPitchOffsetRelativeToCMaj(int keyRoot, Modes mode);
+
+    /**
+     * returns the number of semitones you must transpose up to get to relative Major
+     */
+    static int getOffsetToRelativeMaj(Modes mode);
 
 };

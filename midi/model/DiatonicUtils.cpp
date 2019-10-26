@@ -206,3 +206,44 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
     return ret;
 }
 
+
+
+int DiatonicUtils::getOffsetToRelativeMaj(Modes mode)
+{
+    int ret = 0;
+    switch (mode) {
+        case Modes::Major:
+            ret = 0;
+            break;
+        case Modes::Dorian:
+            ret = 10;
+            break;
+        case Modes::Phrygian:
+            ret = 8;
+        case Modes::Lydian:
+            ret = 7;
+            break;
+        case Modes::Mixolydian:
+            ret = 5;
+            break;
+        case Modes::Minor:
+            ret = 3;
+            break;
+        case Modes::Locrian:
+            ret = 1;
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+int DiatonicUtils::getPitchOffsetRelativeToCMaj(int keyRoot, Modes mode)
+{
+    int offsetToRelative = getOffsetToRelativeMaj(mode);
+    int ret =  offsetToRelative + keyRoot;
+    if (ret >= 12) {
+        ret -= 12;
+    }
+    return ret;
+}

@@ -62,9 +62,28 @@ static void testTransposeC_1()
     }
 }
 
+static void testRelativeMajor()
+{
+    int x = DiatonicUtils::getOffsetToRelativeMaj(DiatonicUtils::Modes::Major);
+    assertEQ(x, 0);
+    x = DiatonicUtils::getOffsetToRelativeMaj(DiatonicUtils::Modes::Minor);
+    assertEQ(x, 3);
+
+
+    // since C is already the relative major to A min, no transpose needed
+    x = DiatonicUtils::getPitchOffsetRelativeToCMaj(DiatonicUtils::a, DiatonicUtils::Modes::Minor);
+    assertEQ(x, 0);
+
+
+};
+
+
+
+
 void testDiatonicUtils()
 {
     testIsNoteInC();
     testTransposeC_1();
+    testRelativeMajor();
 
 }
