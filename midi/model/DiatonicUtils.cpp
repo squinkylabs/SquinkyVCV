@@ -1,4 +1,5 @@
 #include "DiatonicUtils.h"
+#include "PitchUtils.h"
 #include <assert.h>
 #include <sstream>
 
@@ -102,7 +103,10 @@ void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& tra
 
 std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 {
+    assert(transposeAmount >= 0);
+    assert(transposeAmount < 12);       // callers should normalize out the octaves. Or we should support it?
     std::vector<int> ret(12);
+
    
     // initialize to absurd value
     for (int i = 0; i < 12; ++i) {
@@ -118,6 +122,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
         }
+        assert(chromaticTransposePitch <= DiatonicUtils::b);
         
         const bool isInC = DiatonicUtils::isNoteInC(i);
         const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
@@ -125,7 +130,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         // if chromatic xpose keeps in key, use that.
         if (isInC && xposeInC) {
             ret[i] = transposeAmount;
-            printf("setting ret %d to %d\n", i, transposeAmount);
+           // printf("setting ret %d to %d\n", i, transposeAmount);
             assert(ret[i] >= transposeAmount - 1);
             assert(ret[i] <= transposeAmount + 1);
           
@@ -260,9 +265,24 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
 std::function<float(float)> DiatonicUtils::makeTransposeLambda(
     int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
-    return [](float) {
-        return 0.f;
-    };
+    if (!constrainToKeysig) {
+        const float delta = transposeSemitones * PitchUtils::semitone;
+        return [delta](float input) {
+
+            return input + delta;
+        };
+    } else {
+        auto xposes =  getTranspose(transposeSemitones, keyRoot, mode);
+        _dumpTransposes("making lambda", xposes);
+        return [xposes](float input) {
+            int semi = PitchUtils::cvToSemitone(input);
+            auto normalizedPitch = normalizePitch(semi);
+            const int debug = xposes[normalizedPitch.second];
+            int xposedSemi = xposes[normalizedPitch.second] + semi;
+
+            return PitchUtils::semitoneToCV(xposedSemi);
+        };
+    }
 }
 
 std::function<float(float)> DiatonicUtils::makeInvertLambda(

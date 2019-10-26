@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <cmath>
 #include <string>
 #include <utility>
@@ -11,6 +12,7 @@ public:
     static constexpr float octave = 1.f;
     static std::pair<int, int> cvToPitch(float cv);
     static int cvToSemitone(float cv);
+    static float semitoneToCV(int semitone);
     static int deltaCVToSemitone(float cv);
     static float pitchToCV(int octave, int semi);
     static bool isAccidental(float cv);
@@ -100,6 +102,11 @@ inline  int PitchUtils::cvToSemitone(float cv)
 {
     auto p = cvToPitch(cv);
     return p.first * 12 + p.second;
+}
+
+inline float PitchUtils::semitoneToCV(int semi)
+{
+    return -4.f + semi * semitone;
 }
 
 inline  int PitchUtils::deltaCVToSemitone(float cv)

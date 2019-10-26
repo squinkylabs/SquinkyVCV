@@ -1,4 +1,6 @@
+
 #include "DiatonicUtils.h"
+#include "PitchUtils.h"
 #include "asserts.h"
 
 // simple reality check
@@ -48,6 +50,8 @@ static void testIsNoteInC()
 static void testTransposeC_1(int amount)
 {
     auto x = DiatonicUtils::getTransposeInC(amount);
+    printf("amount = %d\n", amount);
+    DiatonicUtils::_dumpTransposes("test c1", x);
     assertTransposeValidC(x, amount);
 }
 
@@ -60,6 +64,13 @@ static void testTransposeC_1()
     for (int i = 0; i < 12; ++i) {
         testTransposeC_1(i);
     }
+
+    // There is a bug that 2 and 26 go to different scale degrees
+    testTransposeC_1(24);
+    testTransposeC_1(2);
+    testTransposeC_1(26);
+    testTransposeC_1(50);
+
 }
 
 static void testRelativeMajor()
@@ -85,20 +96,74 @@ static void testTransposeC2()
 
 
 
-static void testTransposeLambda()
+static void testTransposeLambdaSemi()
 {
-    auto lambda = DiatonicUtils::makeTransposeLambda(
+    // chromatic, one semi
+    auto lambdaSemi = DiatonicUtils::makeTransposeLambda(
         1,      //int transposeSemitones,
         false,  //bool constrainToKeysig,
         0, DiatonicUtils::Modes::Major);
+
+    float x = lambdaSemi(0);
+    assertClose(x, PitchUtils::semitone, .00001);
+    x = lambdaSemi(1);
+    assertClose(x, 1 + PitchUtils::semitone, .00001);
 }
 
+static void testTransposeLambdaFifth()
+{
+    // chromatic, one semi
+    auto lambdaSemi = DiatonicUtils::makeTransposeLambda(
+        7,      //int transposeSemitones,
+        false,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);
+
+    float x = lambdaSemi(0);
+    assertClose(x, 7 * PitchUtils::semitone, .00001);
+    x = lambdaSemi(1);
+    assertClose(x, 1 + 7 * PitchUtils::semitone, .00001);
+}
+
+static void testTransposeLambdaDiatonicWhole()
+{
+    auto lambdaDiatonicWhole = DiatonicUtils::makeTransposeLambda(
+        2,      //int transposeSemitones,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);        // c major
+
+    //c -> d
+    float x = lambdaDiatonicWhole(0);
+    assertClose(x, DiatonicUtils::d * PitchUtils::semitone, .00001);
+
+    // e -> f
+    x = lambdaDiatonicWhole(DiatonicUtils::e * PitchUtils::semitone);
+    assertClose(x, DiatonicUtils::f * PitchUtils::semitone, .00001);
+}
+
+
+static void testTransposeLambdaDiatonicWholeOct()
+{
+    auto lambdaDiatonicWhole = DiatonicUtils::makeTransposeLambda(
+        2 + 2 * 12,   
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);        // c major
+
+    //c -> d
+    float x = lambdaDiatonicWhole(0);
+    assertClose(x, 2 + DiatonicUtils::d * PitchUtils::semitone, .00001);
+
+    // e -> f
+    x = lambdaDiatonicWhole(DiatonicUtils::e * PitchUtils::semitone);
+    assertClose(x, 2 + DiatonicUtils::f * PitchUtils::semitone, .00001);
+}
 void testDiatonicUtils()
 {
     testIsNoteInC();
     testTransposeC_1();
     testRelativeMajor();
     testTransposeC2();
-    testTransposeLambda();
-
+    testTransposeLambdaSemi();
+    testTransposeLambdaFifth();
+    testTransposeLambdaDiatonicWhole();
+    testTransposeLambdaDiatonicWholeOct();
 }
