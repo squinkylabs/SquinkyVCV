@@ -15,7 +15,7 @@ XformInvert::XformInvert(
     const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
     MidiSequencerPtr seq,
-    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, dismisser)
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Invert Pitch", dismisser)
 {
     int row = 0;
     addPitchInput(Vec(centerColumn, controlRow(row)), "Pitch inversion axis");
@@ -46,7 +46,7 @@ XformTranspose::XformTranspose(
     const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
     MidiSequencerPtr seq,
-    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, dismisser)
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Transpos Pitch", dismisser)
 {
     int row = 0;
     addPitchInput(Vec(centerColumn, controlRow(row)), "Pitch inversion axis");

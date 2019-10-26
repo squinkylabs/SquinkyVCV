@@ -15,18 +15,21 @@ using Label = ::rack::ui::Label;
 InputScreen::InputScreen(const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
     MidiSequencerPtr seq,
+    const std::string& title,
     std::function<void(bool)> _dismisser) :
         sequencer(seq)
 {
     box.pos = pos;
     box.size = size;
     this->dismisser = _dismisser; 
+    if (!title.empty()) {
+        this->addTitle(title);
+    }
     addOkCancel();
 }
 
 InputScreen::~InputScreen()
 {
-
 }
 
 std::vector<float> InputScreen::getValues() const
@@ -54,6 +57,7 @@ void InputScreen::draw(const Widget::DrawArgs &args)
     Widget::draw(args);
 }
 
+// TODO: rename or move this style info
 const NVGcolor TEXT_COLOR = nvgRGB(0xc0, 0xc0, 0xc0);
 
 Label* InputScreen::addLabel(const Vec& v, const char* str, const NVGcolor& color = TEXT_COLOR)
@@ -64,6 +68,15 @@ Label* InputScreen::addLabel(const Vec& v, const char* str, const NVGcolor& colo
     label->color = color;
     this->addChild(label);
     return label;
+}
+
+void InputScreen::addTitle(const std::string& title)
+{
+    const float x = 0;
+    const float y = 20;
+    auto l = addLabel(Vec(x, y), title.c_str(),  TEXT_COLOR);
+    l->box.size.x = this->box.size.x;
+    l->alignment = Label::CENTER_ALIGNMENT;
 }
 
 static std::vector<std::string> octaves = {

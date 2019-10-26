@@ -21,9 +21,10 @@ struct InputScreen : public ::rack::widget::OpaqueWidget
 {
 public:
    InputScreen(const ::rack::math::Vec& pos,
-        const ::rack::math::Vec& size,
-        MidiSequencerPtr seq,
-        std::function<void(bool)> dismisser);
+      const ::rack::math::Vec& size,
+      MidiSequencerPtr seq,
+      const std::string& title,
+      std::function<void(bool)> dismisser);
    ~InputScreen();
 
 
@@ -49,6 +50,7 @@ protected:
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
    void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();
+   void addTitle(const std::string& title);
    ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
    
    
