@@ -104,21 +104,19 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 {
     std::vector<int> ret(12);
    
-    // init to absurd value
+    // initialize to absurd value
     for (int i = 0; i < 12; ++i) {
         ret[i] = -24;                    
     }
 
-    _dumpTransposes("init", ret);
+   //  _dumpTransposes("init", ret);
     int lastScaleTone = -1;
 
     // first do all the ones that are already in key
     for (int i = 0; i < 12; ++i) {
-      //  bool chromaticXposeWrapsPitch = false;
         int chromaticTransposePitch = i + transposeAmount;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
-          //  chromaticXposeWrapsPitch = true;
         }
         
         const bool isInC = DiatonicUtils::isNoteInC(i);
@@ -159,17 +157,13 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
         }
     }
 
-
-    _dumpTransposes("step 1", ret);
-
+    //_dumpTransposes("step 1", ret);
 
     // now do all the ones that are not in key
     for (int i = 0; i < 12; ++i) {
-     //   bool chromaticXposeWrapsPitch = false;
         int chromaticTransposePitch = i + transposeAmount;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
-   //         chromaticXposeWrapsPitch = true;
         }
 
         const bool isInC = DiatonicUtils::isNoteInC(i);
@@ -199,10 +193,9 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             assert(ret[i] >= transposeAmount - 1);
             assert(ret[i] <= transposeAmount + 1);
         }
-       
     }
 
-    _dumpTransposes("final", ret);
+    //_dumpTransposes("final", ret);
     return ret;
 }
 
@@ -218,6 +211,7 @@ int DiatonicUtils::getOffsetToRelativeMaj(Modes mode)
             break;
         case Modes::Phrygian:
             ret = 8;
+            break;
         case Modes::Lydian:
             ret = 7;
             break;
@@ -260,5 +254,4 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
         ret[i] = final;
     }
     return ret;
-
 }

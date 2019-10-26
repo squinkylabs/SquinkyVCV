@@ -74,7 +74,8 @@ void InputScreen::addTitle(const std::string& title)
 {
     const float x = 0;
     const float y = 20;
-    auto l = addLabel(Vec(x, y), title.c_str(),  TEXT_COLOR);
+    std::string titleText = "** " + title + " **";
+    auto l = addLabel(Vec(x, y), titleText.c_str(),  TEXT_COLOR);
     l->box.size.x = this->box.size.x;
     l->alignment = Label::CENTER_ALIGNMENT;
 }
@@ -116,6 +117,55 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     this->addChild(pop);
     inputControls.push_back(pop);
 }
+
+static std::vector<std::string> octavesRel = {
+    "-7 oct", "-6 oct", "-5 oct",
+    "-4 oct", "-3 oct", "-2 oct", "-1 oct",
+    "+0 oct",
+    "+1 oct", "+2 oct", "+3 oct", "+4 oct",
+    "+5 oct", "+6 oct", "+7 oct"
+};
+
+static std::vector<std::string> semisRel = {
+    "-12 semi", "-11 semi", "-10 semi","-9 semi"
+    "-8 semi", "-7 semi", "-6 semi","-5 semi"
+    "-4 semi", "-3 semi", "-2 semi","-1 semi",
+     "-", 
+     "+1 semi", "+2 semi", "+3 semi","+4 semi",
+     "+5 semi", "+6 semi", "+7 semi","+8 semi",
+     "+9 semi","+10 semi","+11 semi", "+12 semi"
+};
+
+void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)
+{
+    float x= 0;
+    float y = pos.y;
+    auto l = addLabel(Vec(x, y), label.c_str(), TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
+
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( octavesRel);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = "+0 oct";
+    this->addChild(pop);
+    inputControls.push_back(pop);
+
+    x += 80;
+    pop = new InputPopupMenuParamWidget();
+    pop->setLabels( semisRel);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = "-";
+    this->addChild(pop);
+    inputControls.push_back(pop);
+}
+
 
 void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
 {
