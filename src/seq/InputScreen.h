@@ -26,7 +26,7 @@ public:
         std::function<void(bool)> dismisser);
    ~InputScreen();
 
-    
+
    /**
     * Execute the editing function.
     * Called after user accepts input.
@@ -47,14 +47,19 @@ protected:
     * Helpers for building up screens
     */
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
-   ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
+   void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();
+   ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
+   
    
    /**
     * Input layout style constants
     */
-   static constexpr float firstControlRow = 170.f;
+   static constexpr float firstControlRow = 70.f;
    static constexpr float controlRowSpacing = 30.f;
+   static constexpr float centerColumn = 170;
+   static constexpr float centerGutter = 10;
+   
    static float controlRow(int index) { return firstControlRow + index * controlRowSpacing; }
    static constexpr float okCancelY = 260.f;
 };

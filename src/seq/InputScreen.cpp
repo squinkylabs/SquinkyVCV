@@ -24,30 +24,6 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     addOkCancel();
 }
 
-void InputScreen::addOkCancel()
-{
-  auto ok = new Button2();
-    ok->text = "OK";
-    float x = 60;
-    float y = 260;
-    ok->setPosition( Vec(x, y));
-    ok->setSize(Vec(80, 22));
-    this->addChild(ok);   
-    ok->handler = [this]() {
-        dismisser(true);
-    };
-
-    auto cancel = new Button2();
-    cancel->handler = [this]() {
-        dismisser(false);
-    };
-    cancel->text = "Cancel";
-    x = 250;
-    cancel->setPosition( Vec(x, y));
-    cancel->setSize(Vec(80, 22));
-    this->addChild(cancel);   
-}
-
 InputScreen::~InputScreen()
 {
 
@@ -60,6 +36,15 @@ std::vector<float> InputScreen::getValues() const
         ret.push_back(control->getValue());
     }
     return ret;
+}
+
+float InputScreen::getAbsPitchFromInput(int index)
+{
+    assert(inputControls.size() > unsigned(index + 1));
+    int iOctave = int( std::round(inputControls[index]->getValue()));
+    int iSemi = int( std::round(inputControls[index+1]->getValue()));
+
+    return PitchUtils::pitchToCV(iOctave, iSemi);
 }
 
 void InputScreen::draw(const Widget::DrawArgs &args)
@@ -86,7 +71,7 @@ static std::vector<std::string> octaves = {
 };
 
 static std::vector<std::string> semis = {
-    "C", "C#", "D", "D#", "E", "F", "F#", "G"
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 };
 
 void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
@@ -99,7 +84,6 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
   
     x = pos.x;
 
-
     auto pop = new InputPopupMenuParamWidget();
     pop->setLabels( octaves);
     pop->box.size.x = 76;    // width
@@ -108,9 +92,7 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     pop->text = "0";
     this->addChild(pop);
     inputControls.push_back(pop);
-    DEBUG("done add pitch input");
 
-    //y += 40;
     x += 80;
     pop = new InputPopupMenuParamWidget();
     pop->setLabels( semis);
@@ -122,11 +104,43 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     inputControls.push_back(pop);
 }
 
-float InputScreen::getAbsPitchFromInput(int index)
+void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
 {
-    assert(inputControls.size() > unsigned(index + 1));
-    int iOctave = int( std::round(inputControls[index]->getValue()));
-    int iSemi = int( std::round(inputControls[index+1]->getValue()));
+    auto check = new CheckBox();
+    check->box.pos = pos;
+    check->box.size = Vec(17, 17);
+    this->addChild(check);
+    inputControls.push_back(check);
 
-    return PitchUtils::pitchToCV(iOctave, iSemi);
+    // rationalize this
+    const NVGcolor TEXT_COLOR = nvgRGB(0xc0, 0xc0, 0xc0);
+
+    auto l = addLabel(Vec(0, pos.y), "Constrain to scale", TEXT_COLOR );
+    l->box.size.x = centerColumn - centerGutter;;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+}
+
+void InputScreen::addOkCancel()
+{
+    auto ok = new Button2();
+    const float y = okCancelY;
+    ok->text = "OK";
+    float x = 60;
+
+    ok->setPosition( Vec(x, y));
+    ok->setSize(Vec(80, 22));
+    this->addChild(ok);   
+    ok->handler = [this]() {
+        dismisser(true);
+    };
+
+    auto cancel = new Button2();
+    cancel->handler = [this]() {
+        dismisser(false);
+    };
+    cancel->text = "Cancel";
+    x = 250;
+    cancel->setPosition( Vec(x, y));
+    cancel->setSize(Vec(80, 22));
+    this->addChild(cancel);   
 }
