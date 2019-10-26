@@ -16,12 +16,17 @@ using Label = ::rack::ui::Label;
 XformInvert::XformInvert(
     const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
-     MidiSequencerPtr seq,
+    MidiSequencerPtr seq,
     std::function<void()> dismisser) : InputScreen(pos, size, seq, dismisser)
 {
     float x = 100;
     float y = 30;
     addPitchInput(Vec(x, y), "Axis");
+
+    auto check = new CheckBox();
+    check->box.pos = Vec(10, 10);
+    check->box.size = Vec(17, 17);
+    this->addChild(check);
 }
 
 void XformInvert::execute()
@@ -37,8 +42,6 @@ void XformInvert::execute()
         }
     };
 
-  
-   
 
     WARN("now we need to invert those notes!");
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(

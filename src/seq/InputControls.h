@@ -1,8 +1,10 @@
 #pragma once
 
+#include "UIPrefs.h"
 #include "../ctrl/PopupMenuParamWidgetv1.h"
 
 #include <functional>
+#include "rack.hpp"
 
 /**
  * A basic button with callback.
@@ -53,4 +55,32 @@ public:
         assert(false);
         return 0;
     }
+};
+
+class CheckBox : public ::rack::widget::OpaqueWidget
+{
+public:
+    void draw(const Widget::DrawArgs &args) override
+    {
+        NVGcontext *const ctx = args.vg;
+
+        nvgShapeAntiAlias(ctx, true);
+
+        nvgBeginPath(ctx);
+        nvgMoveTo(ctx, box.pos.x, box.pos.y);
+        nvgLineTo(ctx, box.pos.x + box.size.x, box.pos.y);
+        nvgLineTo(ctx, box.pos.x + box.size.x, box.pos.y + box.size.y);
+        nvgLineTo(ctx, box.pos.x, box.pos.y + box.size.y);
+        nvgLineTo(ctx, box.pos.x, box.pos.y);
+        
+        nvgStrokeColor(ctx, UIPrefs::TIME_LABEL_COLOR);
+      //  nvgStrokePaint
+        nvgStrokeWidth(ctx, 1);
+
+        nvgStroke(ctx);
+     
+
+
+    }
+
 };
