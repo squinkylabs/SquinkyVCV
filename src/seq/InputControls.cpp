@@ -24,38 +24,52 @@ void CheckBox::draw(const Widget::DrawArgs &args)
     NVGcontext *const ctx = args.vg;
 
     nvgShapeAntiAlias(ctx, true);
+    drawBox(ctx);
+    if (value) {
+        drawX(ctx);
+    }
+ 
+}
 
+
+void CheckBox::drawBox(NVGcontext* ctx)
+{
     nvgBeginPath(ctx);
-#if 1
     nvgMoveTo(ctx, 0, 0);
     nvgLineTo(ctx, box.size.x, 0);
     nvgLineTo(ctx, box.size.x, box.size.y);
     nvgLineTo(ctx, 0, box.size.y);
     nvgLineTo(ctx, 0, 0);
-#else
-    nvgMoveTo(ctx, box.pos.x, box.pos.y);
-    nvgLineTo(ctx, box.pos.x + box.size.x, box.pos.y);
-    nvgLineTo(ctx, box.pos.x + box.size.x, box.pos.y + box.size.y);
-    nvgLineTo(ctx, box.pos.x, box.pos.y + box.size.y);
-    nvgLineTo(ctx, box.pos.x, box.pos.y);
-#endif
-    
     nvgStrokeColor(ctx, UIPrefs::TIME_LABEL_COLOR);
     //  nvgStrokePaint
     nvgStrokeWidth(ctx, 1);
-
     nvgStroke(ctx);
 }
 
-void CheckBox::onDragStart(const ::rack::event::DragStart& e) 
+void CheckBox::drawX(NVGcontext* ctx)
 {
-    DEBUG("start");
+    nvgBeginPath(ctx);
+    nvgStrokeColor(ctx, UIPrefs::TIME_LABEL_COLOR);
+    nvgStrokeWidth(ctx, 1);
+
+    nvgMoveTo(ctx, 0, 0);
+    nvgLineTo(ctx, box.size.x,  box.size.y);
+
+    nvgMoveTo(ctx, box.size.x, 0);
+    nvgLineTo(ctx, 0,  box.size.y);
+ 
+    nvgStroke(ctx);
 }
-void CheckBox::onDragEnd(const ::rack::event::DragEnd& e)
-{
- DEBUG("end");
-}
+
 void CheckBox::onDragDrop(const ::rack::event::DragDrop& e)
 {
- DEBUG("drop");
+    if (e.origin == this) {
+		::rack::event::Action eAction;
+		onAction(eAction);
+	}
+}
+
+void CheckBox::onAction(const ::rack::event::Action& e)
+{
+    value = !value;
 }

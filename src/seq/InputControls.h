@@ -49,14 +49,15 @@ public:
 class CheckBox : public ::rack::widget::OpaqueWidget, public InputControl
 {
 public:
-    void onDragStart(const ::rack::event::DragStart& e) override;
-	void onDragEnd(const ::rack::event::DragEnd& e) override;
+   // void onDragStart(const ::rack::event::DragStart& e) override;
+	//void onDragEnd(const ::rack::event::DragEnd& e) override;
 	void onDragDrop(const ::rack::event::DragDrop& e) override;
     void draw(const Widget::DrawArgs &args) override;
+    void onAction(const ::rack::event::Action& e) override;
 
     float getValue() const override;
 private:
     bool value = false;
-    void drawBorder(const Widget::DrawArgs &args);
-    void drawX(const Widget::DrawArgs &args);
+    void drawBox( NVGcontext *);
+    void drawX( NVGcontext *c);
 };

@@ -88,11 +88,13 @@ static std::vector<std::string> semis = {
 
 void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
 {
-    DEBUG("add pitch input");
-    float x= pos.x;
+    float x= 0;
     float y = pos.y;
-    addLabel(Vec(x, y), "Axis", TEXT_COLOR );
-    y += 30;
+    auto l = addLabel(Vec(x, y), label.c_str(), TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
 
 
     auto pop = new InputPopupMenuParamWidget();

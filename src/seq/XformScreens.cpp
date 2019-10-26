@@ -19,14 +19,27 @@ XformInvert::XformInvert(
     MidiSequencerPtr seq,
     std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, dismisser)
 {
-    float x = 100;
-    float y = 30;
-    addPitchInput(Vec(x, y), "Axis");
+    float x = 170;
+    float y = 40;
+    addPitchInput(Vec(x, y), "Pitch inversion axis");
+
+    y += 30;
 
     auto check = new CheckBox();
-    check->box.pos = Vec(20, 20);
+    check->box.pos = Vec(x, y);
     check->box.size = Vec(17, 17);
     this->addChild(check);
+
+// rationalize this
+    const NVGcolor TEXT_COLOR = nvgRGB(0xc0, 0xc0, 0xc0);
+    x = 0;
+    auto l = addLabel(Vec(x, y), "Constrain to scale", TEXT_COLOR );
+
+    // move these magic numbers.
+    l->box.size.x = 170 - 10;
+    DEBUG("label x = %f, width = %f", l->box.pos.x, l->box.size.x);
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
 }
 
 void XformInvert::execute()
