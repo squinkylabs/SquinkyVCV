@@ -3,16 +3,19 @@
 #include <functional>
 #include <vector>
 
+class InputScreen;
 namespace rack {
     namespace math {
         struct Vec;    
     }
 }
 
+using InputScreenPtr = std::shared_ptr<InputScreen>;
+
 class InputScreenManager
 {
 public:
-    enum class Screens { Invert };
+    enum class Screens { Invert, Transpose };
     using Callback = std::function<void()>;
 
     InputScreenManager(::rack::math::Vec size);
@@ -28,8 +31,10 @@ public:
      */
     ~InputScreenManager();
 
-     ::rack::widget::Widget* parentWidget = nullptr;
+     
+    static std::string xformName(Screens);
 private:
+    ::rack::widget::Widget* parentWidget = nullptr;
     const ::rack::math::Vec size;
     InputScreenPtr screen; 
     ::rack::widget::Widget* parent = nullptr;

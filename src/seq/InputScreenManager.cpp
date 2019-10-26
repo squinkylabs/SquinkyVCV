@@ -73,10 +73,32 @@ void InputScreenManager::show(
         case Screens::Invert:
             is = make<XformInvert>(size, seq, dismisser);
             break;
+        case Screens::Transpose:
+            is = make<XformTranspose>(size, seq, dismisser);
+            break;
         default:
+            WARN("no handler for enum %d", int(screenId));
             assert(false);
     }
     screen = is;
     parent->addChild(is.get());
     parentWidget = parent;
+}
+
+std::string InputScreenManager::xformName(Screens screen)
+{
+    std::string ret;
+    switch (screen) {
+        case Screens::Invert:
+            ret = "Invert";
+            break;
+         case Screens::Transpose:
+            ret = "Transpose";
+            break;
+        default:
+            WARN("no name for enum %d", int(screen));
+            assert(false);
+
+    }
+    return ret;
 }

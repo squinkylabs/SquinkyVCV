@@ -326,12 +326,15 @@ void NoteDisplay::onButton(const event::Button &e)
             auto menu = sequencer->context->settings()->invokeUI(this);
 
 #ifdef _XFORM
+            addXformMenuItems(menu);
+            #if 0
             SqMenuItem* mi = new SqMenuItem(
                [](){ return false; },
                [this](){ doTest(); }
             );
             mi->text = "test screen";
             menu->addChild(mi);
+            #endif
 #else
             (void) menu;
 #endif
@@ -473,14 +476,35 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
-void NoteDisplay::doTest()
+void NoteDisplay::addXformMenuItems(::rack::ui::Menu* menu)
+{
+    addXformMenuItem(menu, InputScreenManager::Screens::Transpose);
+    addXformMenuItem(menu, InputScreenManager::Screens::Invert);
+}
+
+void NoteDisplay::addXformMenuItem(::rack::ui::Menu* menu, InputScreenManager::Screens code)
+{
+    SqMenuItem* mi = new SqMenuItem(
+            [](){ return false; },
+            [this, code](){ doXform(code); }
+        );
+    std::string itemName = InputScreenManager::xformName(code); 
+    itemName = "xform: " + itemName;
+
+    mi->text = itemName;
+    menu->addChild(mi);
+}
+
+void NoteDisplay::doXform(InputScreenManager::Screens screenCode)
 {
     assert(ism);
     InputScreenManager::Callback cb = [this]() {
         DEBUG("in callback from  InputScreenManager ");
-        this->enabled = true;
+        this->enabled = true;           // re-enable UI processing of events
     };
+
+    // as we pop up the xform UI, disable our own processing of UI events.
     this->enabled = false;
-    ism->show(this, InputScreenManager::Screens::Invert, sequencer, cb);
+    ism->show(this, screenCode, sequencer, cb);
 }
 

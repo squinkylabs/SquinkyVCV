@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "InputScreenManager.h"
 #include "MidiSequencer.h"
 #include "NoteScreenScale.h"
 #include "Seq.h"
@@ -85,5 +86,7 @@ private:
     void onDragDrop(const event::DragDrop &e) override;
     bool handleKey(int key, int mods, int action);
 
-    void doTest();
+    void doXform(InputScreenManager::Screens screenCode);
+    void addXformMenuItems(::rack::ui::Menu* menu);
+    void addXformMenuItem(::rack::ui::Menu* menu, InputScreenManager::Screens);
 };

@@ -40,3 +40,34 @@ void XformInvert::execute()
         "Invert", sequencer, lambda);
     sequencer->undo->execute(sequencer, cmd);
 }
+
+
+XformTranspose::XformTranspose(
+    const ::rack::math::Vec& pos,
+    const ::rack::math::Vec& size,
+    MidiSequencerPtr seq,
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, dismisser)
+{
+    int row = 0;
+    addPitchInput(Vec(centerColumn, controlRow(row)), "Pitch inversion axis");
+
+    ++row;
+    addConstrainToScale(Vec(centerColumn, controlRow(row)));
+}
+
+void XformTranspose::execute()
+{
+    WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
+    float transpose = getAbsPitchFromInput(0);
+    auto lambda = [transpose](MidiEventPtr p) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
+        if (note) {
+            WARN("in lambda");
+            note->pitchCV = transpose + note->pitchCV;
+        }
+    };
+
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
+        "Invert", sequencer, lambda);
+    sequencer->undo->execute(sequencer, cmd);
+}
