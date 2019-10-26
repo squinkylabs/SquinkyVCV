@@ -10,14 +10,12 @@ InputScreenManager::InputScreenManager(::rack::math::Vec siz) : size(siz)
 
 InputScreenManager::~InputScreenManager()
 {
-    DEBUG("dtor iss");
-    dismiss();
-  // DEBUG("dtor iss 2");
+    dismiss(false);
 }
 
-void InputScreenManager::dismiss()
+void InputScreenManager::dismiss(bool bOK)
 {
-    DEBUG("In manager dismiis handler");
+    DEBUG("In manager dismiis handler (%d)", bOK);
 
     auto tempScreen = screen;
     auto tempParent = parent;
@@ -31,7 +29,12 @@ void InputScreenManager::dismiss()
         for (auto x : values) {
             DEBUG("value = %.2f", x);
         }
-        tempScreen->execute();
+        if (bOK) {
+            DEBUG("in execute, running xform");
+            tempScreen->execute();
+        } else {
+            DEBUG("in dismiss, skipping due to cancel");
+        }
         tempScreen->clearChildren();
         this->callback();
         callback = nullptr;
@@ -64,7 +67,7 @@ void InputScreenManager::show(
     parent = parnt;
     auto dismisser = [this](bool bOK) {
         DEBUG("in manager::dismisser %d", bOK);
-        this->dismiss();
+        this->dismiss(bOK);
     };
 
     DEBUG("about to make input screen size = %f, %f", size.x, size.y);

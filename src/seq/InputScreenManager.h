@@ -40,7 +40,7 @@ private:
     ::rack::widget::Widget* parent = nullptr;
     Callback callback = nullptr;
 
-    void dismiss();
+    void dismiss(bool bOK);
 
     template <class T>
     std::shared_ptr<T> make(

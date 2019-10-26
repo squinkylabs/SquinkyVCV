@@ -85,6 +85,13 @@ static void testTransposeC2()
 
 
 
+static void testTransposeLambda()
+{
+    auto lambda = DiatonicUtils::makeTransposeLambda(
+        1,      //int transposeSemitones,
+        false,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);
+}
 
 void testDiatonicUtils()
 {
@@ -92,5 +99,6 @@ void testDiatonicUtils()
     testTransposeC_1();
     testRelativeMajor();
     testTransposeC2();
+    testTransposeLambda();
 
 }

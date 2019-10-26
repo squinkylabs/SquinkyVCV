@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -101,5 +102,10 @@ public:
      * returns the number of semitones you must transpose up to get to relative Major
      */
     static int getOffsetToRelativeMaj(Modes mode);
+
+    /********************* xform lambdas ******************************/
+
+    static std::function<float(float)> makeTransposeLambda(int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
+    static std::function<float(float)> makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
 
 };

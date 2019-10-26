@@ -255,3 +255,21 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
     }
     return ret;
 }
+
+
+std::function<float(float)> DiatonicUtils::makeTransposeLambda(
+    int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
+{
+    return [](float) {
+        return 0.f;
+    };
+}
+
+std::function<float(float)> DiatonicUtils::makeInvertLambda(
+    int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
+{
+    return [](float) {
+        return 0.f;
+    };
+}
+
