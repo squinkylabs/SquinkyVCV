@@ -166,6 +166,44 @@ void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::s
     inputControls.push_back(pop);
 }
 
+static std::vector<std::string> roots = {
+    "C", "C#"
+};
+
+static std::vector<std::string> modes = {
+    "Major", "Minor"
+};
+
+void InputScreen::addKeysigInput(const ::rack::math::Vec& pos)
+{
+    float x= 0;
+    float y = pos.y;
+    auto l = addLabel(Vec(x, y), "Key Signature", TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
+
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( roots);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = "C";
+    this->addChild(pop);
+    inputControls.push_back(pop);
+
+    x += 80;
+    pop = new InputPopupMenuParamWidget();
+    pop->setLabels( modes);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = "Major";
+    this->addChild(pop);
+    inputControls.push_back(pop);  
+}
+
 
 void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
 {

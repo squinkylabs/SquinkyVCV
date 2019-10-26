@@ -22,6 +22,8 @@ XformInvert::XformInvert(
 
     ++row;
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
+    row += 2;
+    addKeysigInput(Vec(centerColumn, controlRow(row)));
 }
 
 void XformInvert::execute()
@@ -53,6 +55,9 @@ XformTranspose::XformTranspose(
 
     ++row;
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
+
+    row += 2;
+    addKeysigInput(Vec(centerColumn, controlRow(row)));
 }
 
 void XformTranspose::execute()

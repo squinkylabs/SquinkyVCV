@@ -49,6 +49,7 @@ protected:
     */
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
    void addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label);
+   void addKeysigInput(const ::rack::math::Vec& pos);
    void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();
    void addTitle(const std::string& title);
