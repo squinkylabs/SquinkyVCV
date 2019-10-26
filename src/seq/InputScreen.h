@@ -21,7 +21,7 @@ public:
    InputScreen(const ::rack::math::Vec& pos,
         const ::rack::math::Vec& size,
         MidiSequencerPtr seq,
-        std::function<void()> dismisser);
+        std::function<void(bool)> dismisser);
    ~InputScreen();
 
     
@@ -32,7 +32,7 @@ public:
 
 protected:
    MidiSequencerPtr sequencer;
-   std::function<void()> dismisser = nullptr;
+   std::function<void(bool)> dismisser = nullptr;
    std::vector<InputControl*> inputControls;
 
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);

@@ -45,8 +45,8 @@ void InputScreenManager::dismiss()
 template <class T>
 std::shared_ptr<T> InputScreenManager::make(
     const ::rack::math::Vec& size,
-     MidiSequencerPtr seq, 
-    std::function<void()> dismisser)
+    MidiSequencerPtr seq, 
+    std::function<void(bool)> dismisser)
 {
     return std::make_shared<T>(::rack::math::Vec(0, 0), size, seq, dismisser);
 }
@@ -62,8 +62,8 @@ void InputScreenManager::show(
 
     this->callback = cb;
     parent = parnt;
-    auto dismisser = [this]() {
-        DEBUG("in manager::dismisser");
+    auto dismisser = [this](bool bOK) {
+        DEBUG("in manager::dismisser %d", bOK);
         this->dismiss();
     };
 

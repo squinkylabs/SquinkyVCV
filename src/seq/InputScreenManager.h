@@ -41,6 +41,6 @@ private:
     std::shared_ptr<T> make(
         const ::rack::math::Vec& size,  
         MidiSequencerPtr seq, 
-        std::function<void()> dismisser);
+        std::function<void(bool)> dismisser);
 
 };

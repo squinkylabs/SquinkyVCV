@@ -46,7 +46,7 @@ public:
     float getValue() const override;
 };
 
-class CheckBox : public ::rack::widget::OpaqueWidget
+class CheckBox : public ::rack::widget::OpaqueWidget, public InputControl
 {
 public:
     void onDragStart(const ::rack::event::DragStart& e) override;
@@ -54,7 +54,7 @@ public:
 	void onDragDrop(const ::rack::event::DragDrop& e) override;
     void draw(const Widget::DrawArgs &args) override;
 
-    float getValue() const;
+    float getValue() const override;
 private:
     bool value = false;
     void drawBorder(const Widget::DrawArgs &args);

@@ -15,7 +15,7 @@ using Label = ::rack::ui::Label;
 InputScreen::InputScreen(const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
     MidiSequencerPtr seq,
-    std::function<void()> _dismisser) :
+    std::function<void(bool)> _dismisser) :
         sequencer(seq)
 {
     box.pos = pos;
@@ -25,17 +25,29 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
 
     auto ok = new Button2();
     ok->text = "OK";
-    float x = 100;
-    float y = 200;
+    float x = 60;
+    float y = 260;
     ok->setPosition( Vec(x, y));
-    ok->setSize(Vec(80, 30));
+    ok->setSize(Vec(80, 22));
     this->addChild(ok);   
-    ok->handler = dismisser;
+    ok->handler = [this]() {
+        dismisser(true);
+    };
+
+    auto cancel = new Button2();
+    cancel->handler = [this]() {
+        dismisser(false);
+    };
+    cancel->text = "Cancel";
+    x = 250;
+    cancel->setPosition( Vec(x, y));
+    cancel->setSize(Vec(80, 22));
+    this->addChild(cancel);   
 }
 
 InputScreen::~InputScreen()
 {
-    DEBUG("dtor of input screen %p", this);
+
 }
 
 std::vector<float> InputScreen::getValues() const
@@ -93,7 +105,8 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     inputControls.push_back(pop);
     DEBUG("done add pitch input");
 
-    y += 40;
+    //y += 40;
+    x += 80;
     pop = new InputPopupMenuParamWidget();
     pop->setLabels( semis);
     pop->box.size.x = 76;    // width

@@ -17,7 +17,7 @@ XformInvert::XformInvert(
     const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
     MidiSequencerPtr seq,
-    std::function<void()> dismisser) : InputScreen(pos, size, seq, dismisser)
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, dismisser)
 {
     float x = 100;
     float y = 30;
