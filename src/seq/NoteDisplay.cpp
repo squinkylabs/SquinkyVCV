@@ -299,7 +299,7 @@ void NoteDisplay::onButton(const event::Button &e)
    // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
     OpaqueWidget::onButton(e);
     if (!enabled) {
-        DEBUG("disp skipping button - disabled");
+        //DEBUG("disp skipping button - disabled");
         return;
     }
     bool handled = false;

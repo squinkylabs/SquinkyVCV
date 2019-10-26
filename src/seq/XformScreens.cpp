@@ -24,7 +24,7 @@ XformInvert::XformInvert(
     addPitchInput(Vec(x, y), "Axis");
 
     auto check = new CheckBox();
-    check->box.pos = Vec(10, 10);
+    check->box.pos = Vec(20, 20);
     check->box.size = Vec(17, 17);
     this->addChild(check);
 }
@@ -42,11 +42,7 @@ void XformInvert::execute()
         }
     };
 
-
-    WARN("now we need to invert those notes!");
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Invert", sequencer, lambda);
     sequencer->undo->execute(sequencer, cmd);
-
-    fflush(stdout);
 }

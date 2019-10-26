@@ -43,44 +43,20 @@ public:
 class InputPopupMenuParamWidget : public PopupMenuParamWidget, public InputControl
 {
 public:
-    float getValue() const override
-    {
-        int index = 0;
-        for (auto label : labels) {
-            if (this->text == label) {
-                return index;
-            }
-            ++index;
-        }
-        assert(false);
-        return 0;
-    }
+    float getValue() const override;
 };
 
 class CheckBox : public ::rack::widget::OpaqueWidget
 {
 public:
-    void draw(const Widget::DrawArgs &args) override
-    {
-        NVGcontext *const ctx = args.vg;
+    void onDragStart(const ::rack::event::DragStart& e) override;
+	void onDragEnd(const ::rack::event::DragEnd& e) override;
+	void onDragDrop(const ::rack::event::DragDrop& e) override;
+    void draw(const Widget::DrawArgs &args) override;
 
-        nvgShapeAntiAlias(ctx, true);
-
-        nvgBeginPath(ctx);
-        nvgMoveTo(ctx, box.pos.x, box.pos.y);
-        nvgLineTo(ctx, box.pos.x + box.size.x, box.pos.y);
-        nvgLineTo(ctx, box.pos.x + box.size.x, box.pos.y + box.size.y);
-        nvgLineTo(ctx, box.pos.x, box.pos.y + box.size.y);
-        nvgLineTo(ctx, box.pos.x, box.pos.y);
-        
-        nvgStrokeColor(ctx, UIPrefs::TIME_LABEL_COLOR);
-      //  nvgStrokePaint
-        nvgStrokeWidth(ctx, 1);
-
-        nvgStroke(ctx);
-     
-
-
-    }
-
+    float getValue() const;
+private:
+    bool value = false;
+    void drawBorder(const Widget::DrawArgs &args);
+    void drawX(const Widget::DrawArgs &args);
 };
