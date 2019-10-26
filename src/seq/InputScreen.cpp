@@ -21,9 +21,12 @@ InputScreen::InputScreen(const ::rack::math::Vec& pos,
     box.pos = pos;
     box.size = size;
     this->dismisser = _dismisser; 
-    DEBUG("dismisser = %d", bool(_dismisser));
+    addOkCancel();
+}
 
-    auto ok = new Button2();
+void InputScreen::addOkCancel()
+{
+  auto ok = new Button2();
     ok->text = "OK";
     float x = 60;
     float y = 260;
