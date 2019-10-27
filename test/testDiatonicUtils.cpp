@@ -3,6 +3,8 @@
 #include "PitchUtils.h"
 #include "asserts.h"
 
+#include <sstream>
+
 // simple reality check
 static void assertTransposeValidC(const std::vector<int> _xpose, int amount)
 {
@@ -28,6 +30,19 @@ static void assertTransposeValidC(const std::vector<int> _xpose, int amount)
 
         assert(DiatonicUtils::isNoteInC(thisPitch));        // hard code to C for now
     }
+
+    // verify that scale degree go to scale degrees, and the correct ones
+    for (int i = 0; i < 12; ++i) {
+        const int x = _xpose[i];
+        if (DiatonicUtils::isNoteInC(i)) {
+            const int originalDegree = DiatonicUtils::getScaleDegreeInC(i);
+            const int xposeDegrees = DiatonicUtils::quantizeXposeToScaleDegreeInC(_xpose[i]);
+            const int degreeAfterTranspose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
+
+            const int degreesXposed = degreeAfterTranspose - originalDegree;
+            assertEQ(degreesXposed, degreeAfterTranspose);
+        }
+    }
 }
 
 
@@ -50,8 +65,11 @@ static void testIsNoteInC()
 static void testTransposeC_1(int amount)
 {
     auto x = DiatonicUtils::getTransposeInC(amount);
-    printf("amount = %d\n", amount);
-    DiatonicUtils::_dumpTransposes("test c1", x);
+
+    std::stringstream str;
+    str << "test c1 (" << amount << ")";
+ 
+    DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
     assertTransposeValidC(x, amount);
 }
 
@@ -68,6 +86,9 @@ static void testTransposeC_1()
     // There is a bug that 2 and 26 go to different scale degrees
     testTransposeC_1(24);
     testTransposeC_1(2);
+
+    // TODO: put this bacd.
+ //   testTransposeC_1(-24);
     testTransposeC_1(26);
     testTransposeC_1(50);
 
@@ -156,9 +177,28 @@ static void testTransposeLambdaDiatonicWholeOct()
     x = lambdaDiatonicWhole(DiatonicUtils::e * PitchUtils::semitone);
     assertClose(x, 2 + DiatonicUtils::f * PitchUtils::semitone, .00001);
 }
+
+static void testGetScaleDegreeInC()
+{
+    assertEQ(DiatonicUtils::getScaleDegreeInC(0), 0);
+    assertEQ(DiatonicUtils::getScaleDegreeInC(2), 1);
+    assertEQ(DiatonicUtils::getScaleDegreeInC(4), 2);
+    assertEQ(DiatonicUtils::getScaleDegreeInC(5), 3);
+    assertEQ(DiatonicUtils::getScaleDegreeInC(7), 4);
+    assertEQ(DiatonicUtils::getScaleDegreeInC(9), 5);
+    assertEQ(DiatonicUtils::getScaleDegreeInC(11), 6);
+}
+
+static void testqQuantizeXposeToScaleDegreeInC()
+{
+    assert(false);
+}
+
 void testDiatonicUtils()
 {
     testIsNoteInC();
+    testGetScaleDegreeInC();
+    testqQuantizeXposeToScaleDegreeInC();
     testTransposeC_1();
     testRelativeMajor();
     testTransposeC2();

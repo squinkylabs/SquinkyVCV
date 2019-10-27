@@ -101,10 +101,14 @@ void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& tra
     printf("\n");
 }
 
-std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
+std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
 {
-    assert(transposeAmount >= 0);
-    assert(transposeAmount < 12);       // callers should normalize out the octaves. Or we should support it?
+    auto normalizedTransposeAmount = normalizePitch(_transposeAmount);
+    const int tranposeSemis = normalizedTransposeAmount.second;
+    const int transposeOctaves = normalizedTransposeAmount.first;
+
+    assert(tranposeSemis >= 0);
+    assert(tranposeSemis < 12);       // callers should normalize out the octaves. Or we should support it?
     std::vector<int> ret(12);
 
    
@@ -118,9 +122,10 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
     // first do all the ones that are already in key
     for (int i = 0; i < 12; ++i) {
-        int chromaticTransposePitch = i + transposeAmount;
+        int chromaticTransposePitch = i + tranposeSemis;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
+           // printf("do we need to account for this octave at index %d?\n", i);
         }
         assert(chromaticTransposePitch <= DiatonicUtils::b);
         
@@ -129,10 +134,10 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
         // if chromatic xpose keeps in key, use that.
         if (isInC && xposeInC) {
-            ret[i] = transposeAmount;
+            ret[i] = tranposeSemis;
            // printf("setting ret %d to %d\n", i, transposeAmount);
-            assert(ret[i] >= transposeAmount - 1);
-            assert(ret[i] <= transposeAmount + 1);
+            assert(ret[i] >= tranposeSemis - 1);
+            assert(ret[i] <= tranposeSemis + 1);
           
         }
 
@@ -144,18 +149,18 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             int guessPitch = i + chromaticTransposePitch - 1;
             if (lastScaleTone >= 0) {
                 if (guessPitch > lastScaleTone) {
-                    ret[i] = transposeAmount - 1;
+                    ret[i] = tranposeSemis - 1;
                 } else {
-                    ret[i] = transposeAmount + 1;
+                    ret[i] = tranposeSemis + 1;
                 }
             } else {
                 // there was no previous pitch, to just go down
-                ret[i] = transposeAmount - 1;
+                ret[i] = tranposeSemis - 1;
             }
             assert(DiatonicUtils::isNoteInC(i + ret[i])); 
 
-            assert(ret[i] >= transposeAmount - 1);
-            assert(ret[i] <= transposeAmount + 1);
+            assert(ret[i] >= tranposeSemis - 1);
+            assert(ret[i] <= tranposeSemis + 1);
         }
         if (isInC) {
             lastScaleTone = i + ret[i];
@@ -166,9 +171,10 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
     // now do all the ones that are not in key
     for (int i = 0; i < 12; ++i) {
-        int chromaticTransposePitch = i + transposeAmount;
+        int chromaticTransposePitch = i + tranposeSemis;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
+           // printf("do we need to account for this octave?\n");
         }
 
         const bool isInC = DiatonicUtils::isNoteInC(i);
@@ -180,10 +186,10 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
 
          // if chromatic xpose keeps in key, use that (for now)
         if (!isInC && xposeInC) {
-            ret[i] = transposeAmount;
+            ret[i] = tranposeSemis;
 
-            assert(ret[i] >= transposeAmount - 1);
-            assert(ret[i] <= transposeAmount + 1);
+            assert(ret[i] >= tranposeSemis - 1);
+            assert(ret[i] <= tranposeSemis + 1);
         }
         if (!isInC && !xposeInC) {
             assert(i > 0);
@@ -195,8 +201,15 @@ std::vector<int> DiatonicUtils::getTransposeInC(int transposeAmount)
             const int thisXpose = thisPitch - i;
             ret[i] = thisXpose;
 
-            assert(ret[i] >= transposeAmount - 1);
-            assert(ret[i] <= transposeAmount + 1);
+            assert(ret[i] >= tranposeSemis - 1);
+            assert(ret[i] <= tranposeSemis + 1);
+        }
+    }
+
+    const int shift = transposeOctaves * 12;
+    if (shift) {
+        for (int i = 0; i < 12; ++i) {
+            ret[i] += shift;
         }
     }
 
@@ -292,4 +305,63 @@ std::function<float(float)> DiatonicUtils::makeInvertLambda(
         return 0.f;
     };
 }
+
+
+  /**
+   * converts a chromatic pitch to the "nearest" scale degree in C
+   */
+int DiatonicUtils::quantizeXposeToScaleDegreeInC(int xpose)
+{
+    int ret = 0;
+    return ret;
+}
+
+
+int DiatonicUtils::getScaleDegreeInC(int pitch)
+{
+    int ret = 0;
+    switch (pitch) {
+        case 0:     //c
+            ret = 0;
+            break;
+        case 1:     // c#
+            assert(false);
+            break;
+        case 2:     // D
+            ret = 1;
+            break;
+        case 3:     // D#
+            assert(false);
+            break;
+        case 4:     // E
+            ret = 2;
+            break;
+        case 5:     // F
+            ret = 3;
+            break;
+        case 6:     // F#
+            assert(false);
+            break;
+        case 7:      // G
+            ret = 4;
+            break;
+        case 8:     // G#
+            assert(false);
+            break;
+        case 9:     // A
+            ret = 5;
+            break;
+        case 10: // A#
+            assert(false);
+            break;
+        case 11: // B
+            ret = 6;
+            break;
+
+
+
+    }
+    return ret;
+}
+
 

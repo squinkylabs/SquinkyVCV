@@ -20,6 +20,12 @@ public:
     static bool isNoteInC(int pitch);
 
     /**
+     * Note must be scale degree.
+     * return is 0 for root, 1 for second...
+     */
+    static int getScaleDegreeInC(int pitch);
+
+    /**
      * Gets a vector of pitch offsets for transpose.
      * @param transposeAmount is in semitones. must be >= 0 and <= 11.
      * @returns transpose semitones
@@ -31,6 +37,12 @@ public:
      * Forces output to be in C major
      */
     static std::vector<int> getTransposedPitchesInC(const std::vector<int>& tranposes);
+
+    /**
+     * converts a chromatic transpose to the "nearest" scale degree in C
+     */
+    static int quantizeXposeToScaleDegreeInC(int xpose);
+   
     
 
     /*****************************************************************
