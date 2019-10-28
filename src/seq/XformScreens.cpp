@@ -67,7 +67,7 @@ XformTranspose::XformTranspose(
 void XformTranspose::execute()
 {
     WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
-    const float transpose =  getTransposeAmount(0);
+    const float transpose =  getPitchOffsetAmount(0);
     const bool constrain = getValueBool(2);
     auto keysig = getKeysig(3);
 
@@ -81,7 +81,7 @@ void XformTranspose::execute()
     };
 #endif
 
-    auto lambda = DiatonicUtils::makeInvertLambda(
+    auto lambda = DiatonicUtils::makeTransposeLambda(
         transpose, constrain, keysig.first, keysig.second);
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(

@@ -39,6 +39,7 @@ public:
    std::vector<float> getValues() const;
    float getValue(int index) const;
    bool getValueBool(int index) const;
+   int getValueInt(int index) const;
 
 protected:
    MidiSequencerPtr sequencer;
@@ -48,7 +49,7 @@ protected:
    // Extract values from multiple fields, interpret them
    float getAbsPitchFromInput(int index);
    std::pair<int, DiatonicUtils::Modes> getKeysig(int index);
-   float getTransposeAmount(int index);
+   float getPitchOffsetAmount(int index);
 
    /**
     * Helpers for building up screens

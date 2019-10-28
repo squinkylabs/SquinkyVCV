@@ -51,6 +51,11 @@ bool InputScreen::getValueBool(int index) const
     return getValue(index) > .5 ? true : false;
 }
 
+int InputScreen::getValueInt(int index) const
+{
+    return int (std::round(getValue(index)));
+}
+
 float InputScreen::getAbsPitchFromInput(int index)
 {
     assert(inputControls.size() > unsigned(index + 1));
@@ -58,17 +63,6 @@ float InputScreen::getAbsPitchFromInput(int index)
     int iSemi = int( std::round(inputControls[index+1]->getValue()));
 
     return PitchUtils::pitchToCV(iOctave, iSemi);
-}
-
-float InputScreen::getTransposeAmount(int index)
-{
-    assert(inputControls.size() > unsigned(index + 1));
-    printf("getTransposeAmount nimp\n");
-   // int iOctave = int( std::round(inputControls[index]->getValue()));
-  //  int iSemi = int( std::round(inputControls[index+1]->getValue()));
-
-  //  return PitchUtils::pitchToCV(iOctave, iSemi);
-    return 0;
 }
 
 std::pair<int, DiatonicUtils::Modes> InputScreen::getKeysig(int index)
@@ -156,14 +150,34 @@ static std::vector<std::string> octavesRel = {
 };
 
 static std::vector<std::string> semisRel = {
-    "-12 semi", "-11 semi", "-10 semi","-9 semi"
-    "-8 semi", "-7 semi", "-6 semi","-5 semi"
+    "-12 semi", "-11 semi", "-10 semi","-9 semi",
+    "-8 semi", "-7 semi", "-6 semi","-5 semi",
     "-4 semi", "-3 semi", "-2 semi","-1 semi",
      "-", 
      "+1 semi", "+2 semi", "+3 semi","+4 semi",
      "+5 semi", "+6 semi", "+7 semi","+8 semi",
      "+9 semi","+10 semi","+11 semi", "+12 semi"
 };
+
+float InputScreen::getPitchOffsetAmount(int index)
+{
+   
+    const int middleOctaveIndex = 7;
+    assert(octavesRel[middleOctaveIndex] == "+0 oct");
+    assert(inputControls.size() > unsigned(index + 1));
+    int octaveOffset = getValueInt(index) - middleOctaveIndex;
+
+    const int middleSemiIndex = 12;
+    assert(semisRel[middleSemiIndex] == "-");
+    assert(inputControls.size() > unsigned(index + 1));
+    int semiOffset = getValueInt(index+1) - middleSemiIndex;
+
+    int offset = 12 * octaveOffset + semiOffset;
+
+    DEBUG("oct=%d semi=%d final=%d", octaveOffset, semiOffset, offset);
+    return offset;
+   
+}
 
 void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)
 {
