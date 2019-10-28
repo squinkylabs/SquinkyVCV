@@ -1,4 +1,5 @@
 #include "DiatonicUtils.h"
+#include "SqMidiEvent.h"
 #include "PitchUtils.h"
 #include <assert.h>
 #include <sstream>
@@ -118,7 +119,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
     }
 
    //  _dumpTransposes("init", ret);
-    int lastScaleTone = -1;
+  //  int lastScaleTone = -1;
 
     const int scaleDegreesOfTranspose = quantizeXposeToScaleDegreeInC(transposeSemis);
     // first do all the ones that are already in key
@@ -147,7 +148,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
             ret[i] = delta;
 
 
-            lastScaleTone = i + ret[i];
+         //   lastScaleTone = i + ret[i];
         }
     }
 
@@ -414,16 +415,25 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
 }
 
 
-std::function<float(float)> DiatonicUtils::makeTransposeLambda(
+std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
     int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
+//    MidiEventPtr note = safe_cast<MidiNoteEvent>(event);
     if (!constrainToKeysig) {
         const float delta = transposeSemitones * PitchUtils::semitone;
-        return [delta](float input) {
-
-            return input + delta;
+        return [delta](MidiEventPtr event) {
+            MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+            if (note) {
+                note->pitchCV += delta;
+            }
         };
     } else {
+        return[](MidiEventPtr event)
+        {
+            assert(false);
+        };
+    }
+#if 0
         auto xposes =  getTranspose(transposeSemitones, keyRoot, mode);
         _dumpTransposes("making lambda", xposes);
         return [xposes](float input) {
@@ -435,14 +445,17 @@ std::function<float(float)> DiatonicUtils::makeTransposeLambda(
             return PitchUtils::semitoneToCV(xposedSemi);
         };
     }
+#endif
 }
 
-std::function<float(float)> DiatonicUtils::makeInvertLambda(
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
     int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
-    return [](float) {
-        return 0.f;
+    assert(false);
+    return[](MidiEventPtr event) {
+        assert(false);
     };
+   
 }
 
 int DiatonicUtils::quantizeXposeToScaleDegreeInC(int xpose)

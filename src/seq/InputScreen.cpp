@@ -41,6 +41,16 @@ std::vector<float> InputScreen::getValues() const
     return ret;
 }
 
+float InputScreen::getValue(int index) const
+{
+    return inputControls[index]->getValue();
+}
+
+bool InputScreen::getValueBool(int index) const
+{
+    return getValue(index) > .5 ? true : false;
+}
+
 float InputScreen::getAbsPitchFromInput(int index)
 {
     assert(inputControls.size() > unsigned(index + 1));
@@ -48,6 +58,25 @@ float InputScreen::getAbsPitchFromInput(int index)
     int iSemi = int( std::round(inputControls[index+1]->getValue()));
 
     return PitchUtils::pitchToCV(iOctave, iSemi);
+}
+
+float InputScreen::getTransposeAmount(int index)
+{
+    assert(inputControls.size() > unsigned(index + 1));
+    printf("getTransposeAmount nimp\n");
+   // int iOctave = int( std::round(inputControls[index]->getValue()));
+  //  int iSemi = int( std::round(inputControls[index+1]->getValue()));
+
+  //  return PitchUtils::pitchToCV(iOctave, iSemi);
+    return 0;
+}
+
+std::pair<int, DiatonicUtils::Modes> InputScreen::getKeysig(int index)
+{
+    assert(inputControls.size() > unsigned(index + 1));
+    printf("getTransposeAmount nimp\n");
+    return std::make_pair<int, DiatonicUtils::Modes>(0,DiatonicUtils::Modes::Major);
+    
 }
 
 void InputScreen::draw(const Widget::DrawArgs &args)
@@ -167,11 +196,14 @@ void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::s
 }
 
 static std::vector<std::string> roots = {
-    "C", "C#"
+    "C", "C#", "D", "D#",
+    "E", "F", "F#", "G",
+    "G#",  "A", "A#", "B"
 };
 
 static std::vector<std::string> modes = {
-    "Major", "Minor"
+    "Major", "Dorian", "Phrygian", "Lydian",
+    "Mixolydian", "Minor", "Locrian"
 };
 
 void InputScreen::addKeysigInput(const ::rack::math::Vec& pos)

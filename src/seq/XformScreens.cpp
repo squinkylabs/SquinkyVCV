@@ -30,6 +30,7 @@ void XformInvert::execute()
 {
     WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
     float pitchAxis = getAbsPitchFromInput(0);
+    #if 1
     auto lambda = [pitchAxis](MidiEventPtr p) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
         if (note) {
@@ -37,6 +38,9 @@ void XformInvert::execute()
             note->pitchCV = pitchAxis - note->pitchCV;
         }
     };
+    #else
+    //auto lambda = DiatonicUtils::makeInvertLambda(axis, constrain, root, mode);
+    #endif
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Invert", sequencer, lambda);
@@ -63,7 +67,11 @@ XformTranspose::XformTranspose(
 void XformTranspose::execute()
 {
     WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
-    float transpose = getAbsPitchFromInput(0);
+    const float transpose =  getTransposeAmount(0);
+    const bool constrain = getValueBool(2);
+    auto keysig = getKeysig(3);
+
+#if 0
     auto lambda = [transpose](MidiEventPtr p) {
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
         if (note) {
@@ -71,6 +79,10 @@ void XformTranspose::execute()
             note->pitchCV = transpose + note->pitchCV;
         }
     };
+#endif
+
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        transpose, constrain, keysig.first, keysig.second);
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Invert", sequencer, lambda);

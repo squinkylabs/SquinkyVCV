@@ -1,8 +1,12 @@
 #pragma once
 
+#include <memory>
 #include <functional>
 #include <string>
 #include <vector>
+
+class MidiEvent;
+using MidiEventPtr = std::shared_ptr<MidiEvent>;
 
 /**
  * Pitch representation: c is zero.
@@ -122,7 +126,7 @@ public:
 
     /********************* xform lambdas ******************************/
 
-    static std::function<float(float)> makeTransposeLambda(int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
-    static std::function<float(float)> makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
+    static std::function<void(MidiEventPtr)> makeTransposeLambda(int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
+    static std::function<void(MidiEventPtr)> makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
 
 };

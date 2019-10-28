@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DiatonicUtils.h"
 #include <functional>
 #include <memory>
 
@@ -36,13 +37,18 @@ public:
    void draw(const Widget::DrawArgs &args) override;
 
    std::vector<float> getValues() const;
+   float getValue(int index) const;
+   bool getValueBool(int index) const;
 
 protected:
    MidiSequencerPtr sequencer;
    std::function<void(bool)> dismisser = nullptr;
    std::vector<InputControl*> inputControls;
 
+   // Extract values from multiple fields, interpret them
    float getAbsPitchFromInput(int index);
+   std::pair<int, DiatonicUtils::Modes> getKeysig(int index);
+   float getTransposeAmount(int index);
 
    /**
     * Helpers for building up screens
