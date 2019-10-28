@@ -31,27 +31,35 @@ static void assertTransposeValidC(const std::vector<int> _xpose, int amount)
         assert(DiatonicUtils::isNoteInC(thisPitch));        // hard code to C for now
     }
 
+    auto normalizedAmount = DiatonicUtils::normalizePitch(amount);
+    const int transposeSemis = normalizedAmount.second;
+    const int numDegreesToTranspose = DiatonicUtils::quantizeXposeToScaleDegreeInC(transposeSemis);
+
     // verify that scale degree go to scale degrees, and the correct ones
     for (int i = 0; i < 12; ++i) {
         const int x = _xpose[i];
         if (DiatonicUtils::isNoteInC(i)) {
 
+            printf("\nin loop, i=%d\n", i);
+            // first compute what it should be
             const int originalDegree = DiatonicUtils::getScaleDegreeInC(i);
-            //const int xposeDegrees = DiatonicUtils::quantizeXposeToScaleDegreeInC(_xpose[i]);
-            const int numDegressToExpose = DiatonicUtils::quantizeXposeToScaleDegreeInC(_xpose[i]);
 
+            int expectedDegreeAfterXpose = originalDegree + numDegreesToTranspose;
+            while (expectedDegreeAfterXpose > 6) {
+                expectedDegreeAfterXpose -= 7;
+            }
+            printf("orig degree = %d, xpose deg = %d expected deg after = %d\n",
+                originalDegree, numDegreesToTranspose, expectedDegreeAfterXpose);
+
+            // then look at what it really did
             const int xp = _xpose[i];
             const int x = i + _xpose[i];
-       //     const int degreeAfterTranspose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
-            const int degreeAfterApplyingTransposeArray = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
+            const int actualDgreeAferXpose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
+            printf("xpose amt from array = %d, makes chromatic pitch after xpose %d degree = %d\n",
+                xp, x, actualDgreeAferXpose);
 
-            const int expectedDegreeAfterXpose = originalDegree + numDegressToExpose;
-
-            const int actualDgreeAferXpose = degreeAfterApplyingTransposeArray;
 
             assertEQ(actualDgreeAferXpose, expectedDegreeAfterXpose);
-          //  const int degreesXposed = degreeAfterTranspose - originalDegree;
-          //  assertEQ(degreesXposed, degreeAfterTranspose);
         }
     }
 }
@@ -201,6 +209,10 @@ static void testGetScaleDegreeInC()
     assertEQ(DiatonicUtils::getScaleDegreeInC(7), 4);
     assertEQ(DiatonicUtils::getScaleDegreeInC(9), 5);
     assertEQ(DiatonicUtils::getScaleDegreeInC(11), 6);
+
+    assertEQ(DiatonicUtils::getScaleDegreeInC(12), 0);
+    assertEQ(DiatonicUtils::getScaleDegreeInC(24), 0);
+
 }
 
 static void testqQuantizeXposeToScaleDegreeInC()

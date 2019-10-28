@@ -485,14 +485,17 @@ int DiatonicUtils::quantizeXposeToScaleDegreeInC(int xpose)
 }
 
 
-int DiatonicUtils::getScaleDegreeInC(int pitch)
+int DiatonicUtils::getScaleDegreeInC(int _pitch)
 {
     // let it work from 0.. two octaves
-    if (pitch > 11) {
-        return 7 + getScaleDegreeInC(pitch - 12);
-    }
+    assert(_pitch >= 0);    // never considered neg
+
+  //  if (pitch > 11) {
+  //      return 7 + getScaleDegreeInC(pitch - 12);
+  //  }
+    const int normalizedPitch = normalizePitch(_pitch).second;
     int ret = 0;
-    switch (pitch) {
+    switch (normalizedPitch) {
         case 0:     //c
             ret = 0;
             break;
@@ -531,9 +534,6 @@ int DiatonicUtils::getScaleDegreeInC(int pitch)
             break;
         default:
             assert(false);
-
-
-
     }
     return ret;
 }
