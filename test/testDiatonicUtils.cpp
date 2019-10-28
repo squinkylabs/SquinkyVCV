@@ -35,12 +35,23 @@ static void assertTransposeValidC(const std::vector<int> _xpose, int amount)
     for (int i = 0; i < 12; ++i) {
         const int x = _xpose[i];
         if (DiatonicUtils::isNoteInC(i)) {
-            const int originalDegree = DiatonicUtils::getScaleDegreeInC(i);
-            const int xposeDegrees = DiatonicUtils::quantizeXposeToScaleDegreeInC(_xpose[i]);
-            const int degreeAfterTranspose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
 
-            const int degreesXposed = degreeAfterTranspose - originalDegree;
-            assertEQ(degreesXposed, degreeAfterTranspose);
+            const int originalDegree = DiatonicUtils::getScaleDegreeInC(i);
+            //const int xposeDegrees = DiatonicUtils::quantizeXposeToScaleDegreeInC(_xpose[i]);
+            const int numDegressToExpose = DiatonicUtils::quantizeXposeToScaleDegreeInC(_xpose[i]);
+
+            const int xp = _xpose[i];
+            const int x = i + _xpose[i];
+       //     const int degreeAfterTranspose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
+            const int degreeAfterApplyingTransposeArray = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
+
+            const int expectedDegreeAfterXpose = originalDegree + numDegressToExpose;
+
+            const int actualDgreeAferXpose = degreeAfterApplyingTransposeArray;
+
+            assertEQ(actualDgreeAferXpose, expectedDegreeAfterXpose);
+          //  const int degreesXposed = degreeAfterTranspose - originalDegree;
+          //  assertEQ(degreesXposed, degreeAfterTranspose);
         }
     }
 }
@@ -67,7 +78,7 @@ static void testTransposeC_1(int amount)
     auto x = DiatonicUtils::getTransposeInC(amount);
 
     std::stringstream str;
-    str << "test c1 (" << amount << ")";
+    str << "test c1 (amt=" << amount << ")";
  
     DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
     assertTransposeValidC(x, amount);
@@ -76,6 +87,9 @@ static void testTransposeC_1(int amount)
 
 static void testTransposeC_1()
 {
+    // for debugging, do problematic first
+    testTransposeC_1(2);
+
     testTransposeC_1(0);
     testTransposeC_1(2);
     testTransposeC_1(1);
@@ -191,14 +205,53 @@ static void testGetScaleDegreeInC()
 
 static void testqQuantizeXposeToScaleDegreeInC()
 {
-    assert(false);
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(0), 0);
+
+    // 2nd
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(1), 1);
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(2), 1);
+
+    // 3 rd
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(3), 2);
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(4), 2);
+
+    // 4 th
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(5), 3);
+
+     // 5 th
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(6), 4);       // make tritone be a 5th
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(7), 4);
+
+     // 6 th
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(8), 5);
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(9), 5);
+
+     // 7 th
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(10), 6)
+    assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(11), 6);
 }
 
+static void testGetPitchFromScaleDegree()
+{
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0), 0);         // unison
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(1), 2);         // maj 2
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(2), 4);         //maj 3
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(3), 5);         // 4th
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(4), 7);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(5), 9);         // maj 6
+
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(6), 11);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(7), 12);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(8), 14);
+
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(9), 16);
+}
 void testDiatonicUtils()
 {
     testIsNoteInC();
     testGetScaleDegreeInC();
     testqQuantizeXposeToScaleDegreeInC();
+    testGetPitchFromScaleDegree();
     testTransposeC_1();
     testRelativeMajor();
     testTransposeC2();

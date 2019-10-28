@@ -104,6 +104,107 @@ void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& tra
 std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
 {
     auto normalizedTransposeAmount = normalizePitch(_transposeAmount);
+    const int transposeSemis = normalizedTransposeAmount.second;
+    const int transposeOctaves = normalizedTransposeAmount.first;
+
+    assert(transposeSemis >= 0);
+    assert(transposeSemis < 12);       // callers should normalize out the octaves. Or we should support it?
+    std::vector<int> ret(12);
+
+
+    // initialize to absurd value
+    for (int i = 0; i < 12; ++i) {
+        ret[i] = -24;
+    }
+
+   //  _dumpTransposes("init", ret);
+    int lastScaleTone = -1;
+
+    const int scaleDegreesOfTranspose = quantizeXposeToScaleDegreeInC(transposeSemis);
+    // first do all the ones that are already in key
+    for (int i = 0; i < 12; ++i) {
+        int chromaticTransposePitch = i + transposeSemis;
+        if (chromaticTransposePitch > DiatonicUtils::b) {
+            chromaticTransposePitch -= 12;
+           // printf("do we need to account for this octave at index %d?\n", i);
+        }
+        assert(chromaticTransposePitch <= DiatonicUtils::b);
+
+        const bool isInC = DiatonicUtils::isNoteInC(i);
+        if (isInC) {
+            printf("in scale note %d amt %d\n", i, transposeSemis);
+            // scale by number of degrees, not by chromatic value
+            const int initialScaleDegree = getScaleDegreeInC(i);
+            const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
+            const int pitchAfterQuantize = getPitchFromScaleDegree(scaleDegreeAfterQuantize);
+            printf("initial degree = %d, deg after quantize %d, pitchAfter %d\n",
+                initialScaleDegree, scaleDegreeAfterQuantize, pitchAfterQuantize);
+            if (pitchAfterQuantize > 11) {
+                auto norm = normalizePitch(pitchAfterQuantize);
+                printf(" above normalized = %d:%d\n", norm.first, norm.second);
+            }
+            const int delta = pitchAfterQuantize - i;
+            ret[i] = delta;
+
+
+            lastScaleTone = i + ret[i];
+        }
+    }
+
+    //_dumpTransposes("step 1", ret);
+
+    // now do all the ones that are not in key
+    for (int i = 0; i < 12; ++i) {
+        int chromaticTransposePitch = i + transposeSemis;
+        if (chromaticTransposePitch > DiatonicUtils::b) {
+            chromaticTransposePitch -= 12;
+           // printf("do we need to account for this octave?\n");
+        }
+
+        const bool isInC = DiatonicUtils::isNoteInC(i);
+        const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
+
+        if (!isInC) {
+            assert(ret[i] < -12);                 // we haven't filled these in yet
+        }
+
+         // if chromatic xpose keeps in key, use that (for now)
+        if (!isInC && xposeInC) {
+            ret[i] = transposeSemis;
+
+            assert(ret[i] >= transposeSemis - 1);
+            assert(ret[i] <= transposeSemis + 1);
+        }
+        if (!isInC && !xposeInC) {
+            assert(i > 0);
+
+            // let's just go to the same pitch as prev guy (won't always work);
+            const int prevXpose = ret[i - 1];
+            const int prevPitch = prevXpose + (i - 1);
+            const int thisPitch = prevPitch;
+            const int thisXpose = thisPitch - i;
+            ret[i] = thisXpose;
+
+            assert(ret[i] >= transposeSemis - 1);
+            assert(ret[i] <= transposeSemis + 1);
+        }
+    }
+
+    const int shift = transposeOctaves * 12;
+    if (shift) {
+        for (int i = 0; i < 12; ++i) {
+            ret[i] += shift;
+        }
+    }
+
+    //_dumpTransposes("final", ret);
+    return ret;
+}
+
+#if 0 //first version
+std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
+{
+    auto normalizedTransposeAmount = normalizePitch(_transposeAmount);
     const int tranposeSemis = normalizedTransposeAmount.second;
     const int transposeOctaves = normalizedTransposeAmount.first;
 
@@ -134,6 +235,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
 
         // if chromatic xpose keeps in key, use that.
         if (isInC && xposeInC) {
+            printf("offset %d, was and is in C\n", i);
             ret[i] = tranposeSemis;
            // printf("setting ret %d to %d\n", i, transposeAmount);
             assert(ret[i] >= tranposeSemis - 1);
@@ -146,6 +248,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
         // step. 
         // i.e. two separate scale tones must always xpose to different scale tones.
         if (isInC && !xposeInC) {
+            printf("offset %d, was in c, no longer\n", i);
             int guessPitch = i + chromaticTransposePitch - 1;
             if (lastScaleTone >= 0) {
                 if (guessPitch > lastScaleTone) {
@@ -216,6 +319,7 @@ std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
     //_dumpTransposes("final", ret);
     return ret;
 }
+#endif
 
 int DiatonicUtils::getOffsetToRelativeMaj(Modes mode)
 {
@@ -241,6 +345,41 @@ int DiatonicUtils::getOffsetToRelativeMaj(Modes mode)
             break;
         case Modes::Locrian:
             ret = 1;
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+int DiatonicUtils::getPitchFromScaleDegree(int degree)
+{
+    if (degree > 6) {
+        const int x = getPitchFromScaleDegree(degree - 7);
+        return 12 + x;
+    }
+    int ret = 0;
+    switch (degree) {
+        case 0:
+            ret = 0;            // unison
+            break;
+        case 1:
+            ret = 2;            // maj 2nd
+            break;
+        case 2:
+            ret = 4;            // maj 3rd
+            break;
+        case 3:
+            ret = 5;            // 4th
+            break;
+        case 4:
+            ret = 7;            // 5th
+            break;
+        case 5:
+            ret = 9;            // maj 6
+            break;
+        case 6:
+            ret = 11;           // maj 7
             break;
         default:
             assert(false);
@@ -306,19 +445,52 @@ std::function<float(float)> DiatonicUtils::makeInvertLambda(
     };
 }
 
-
-  /**
-   * converts a chromatic pitch to the "nearest" scale degree in C
-   */
 int DiatonicUtils::quantizeXposeToScaleDegreeInC(int xpose)
 {
     int ret = 0;
+    assert(xpose >= 0);
+    assert(xpose <= 11);
+    switch (xpose) {
+        case 0:
+            ret = 0;
+            break;
+        case 1:
+        case 2:
+            ret = 1;
+            break;
+        case 3:
+        case 4:
+            ret = 2;
+            break;
+        case 5:
+            ret = 3;
+            break;
+        case 6:         // I know - a tritone is not a 5th, but??
+        case 7:
+            ret = 4;
+            break;
+        case 8:
+        case 9:
+            ret = 5;
+            break;
+        case 10:
+        case 11:
+            ret = 6;
+            break;
+        default:
+            assert(false);
+
+    }
     return ret;
 }
 
 
 int DiatonicUtils::getScaleDegreeInC(int pitch)
 {
+    // let it work from 0.. two octaves
+    if (pitch > 11) {
+        return 7 + getScaleDegreeInC(pitch - 12);
+    }
     int ret = 0;
     switch (pitch) {
         case 0:     //c
@@ -357,6 +529,8 @@ int DiatonicUtils::getScaleDegreeInC(int pitch)
         case 11: // B
             ret = 6;
             break;
+        default:
+            assert(false);
 
 
 

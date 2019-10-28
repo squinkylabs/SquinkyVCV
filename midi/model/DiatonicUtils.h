@@ -42,6 +42,11 @@ public:
      * converts a chromatic transpose to the "nearest" scale degree in C
      */
     static int quantizeXposeToScaleDegreeInC(int xpose);
+
+    /** 
+     * accepts degree from 0..12 (two octaves
+     */
+    static int getPitchFromScaleDegree(int degree);
    
     
 
