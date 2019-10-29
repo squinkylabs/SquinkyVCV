@@ -157,9 +157,21 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
             }
             const int delta = pitchAfterQuantize - i;
             ret[i] = delta;
+        }
+    }
 
+    for (int i = 0; i < 12; ++i) {
+        int chromaticTransposePitch = i + transposeSemis;
+        if (chromaticTransposePitch > DiatonicUtils::b) {
+            chromaticTransposePitch -= 12;
+           // printf("do we need to account for this octave?\n");
+        }
 
-         //   lastScaleTone = i + ret[i];
+        const bool isInC = DiatonicUtils::isNoteInC(i);
+        const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
+
+        if (!isInC) {
+            ret[i] = transposeSemis;
         }
     }
     return ret;

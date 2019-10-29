@@ -65,13 +65,70 @@ static void assertTransposeValidC_Quantized(const std::vector<int> _xpose, int a
     }
 }
 
-
 static void assertTransposeValidC_Informed(const std::vector<int> _xpose, int amount)
 {
-    // for now, use the same eval function. Until we can't
-    assertTransposeValidC_Quantized(_xpose, amount);
-    //assert(false);
+    assertEQ(_xpose.size(), 12);
+
+    auto transposedPitches = DiatonicUtils::getTransposedPitchesInC(_xpose);
+
+    // should transpose exact amount +1 1 semi
+    for (int i = 0; i < 12; ++i) {
+        const int trans = _xpose[i];
+        assertGE(trans, amount - 1);
+        assertLE(trans, amount + 1);
+    }
+
+    int lastPitch = -1;
+    for (int i = 0; i < 12; ++i) {
+        const int x = _xpose[i];
+        assertGE(x, -12);                 // valid entry
+
+        const int thisPitch = i + x;
+        assertGE(thisPitch, lastPitch);              // never decreasing
+        lastPitch = thisPitch;
+
+        if (DiatonicUtils::isNoteInC(i)) {
+            // notes in pitch must stay in pitch
+            assert(DiatonicUtils::isNoteInC(thisPitch));
+        }
+    }
+
+    auto normalizedAmount = DiatonicUtils::normalizePitch(amount);
+    const int transposeSemis = normalizedAmount.second;
+    const int numDegreesToTranspose = DiatonicUtils::quantizeXposeToScaleDegreeInC(transposeSemis);
+
+    // verify that scale degree go to scale degrees, and the correct ones
+    for (int i = 0; i < 12; ++i) {
+        const int x = _xpose[i];
+        if (DiatonicUtils::isNoteInC(i)) {
+
+            printf("\nin loop, i=%d\n", i);
+            // first compute what it should be
+            const int originalDegree = DiatonicUtils::getScaleDegreeInC(i);
+
+            int expectedDegreeAfterXpose = originalDegree + numDegreesToTranspose;
+            while (expectedDegreeAfterXpose > 6) {
+                expectedDegreeAfterXpose -= 7;
+            }
+            printf("orig degree = %d, xpose deg = %d expected deg after = %d\n",
+                originalDegree, numDegreesToTranspose, expectedDegreeAfterXpose);
+
+            // then look at what it really did
+            const int xp = _xpose[i];
+            const int x = i + _xpose[i];
+            const int actualDgreeAferXpose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
+            printf("xpose amt from array = %d, makes chromatic pitch after xpose %d degree = %d\n",
+                xp, x, actualDgreeAferXpose);
+
+
+            assertEQ(actualDgreeAferXpose, expectedDegreeAfterXpose);
+        }
+    }
 }
+
+
+
+
 
 static void testIsNoteInC()
 {
