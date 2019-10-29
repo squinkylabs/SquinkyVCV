@@ -101,6 +101,30 @@ std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
     for (int i = 0; i < 12; ++i) {
         ret[i] = -1000;
     }
+
+    auto normalizedAxis = normalizePitch(invertAxis);
+    const int axisSemis = normalizedAxis.second;
+    const int axisOctaves = normalizedAxis.first;
+
+    assert(axisSemis >= 0);
+    assert(axisSemis < 12);       // callers should normalize out the octaves. Or we should support it?
+
+    const int scaleDegreesOfAxis = quantizeXposeToScaleDegreeInC(axisSemis);
+
+    // First do the notes in C
+    for (int i = 0; i < 12; ++i) {
+        const bool isInC = DiatonicUtils::isNoteInC(i);
+        if (isInC) {
+            const int initialScaleDegree = getScaleDegreeInC(i);
+            const int scaleDegreeAfterInvert = scaleDegreesOfAxis - initialScaleDegree;
+            const int pitchAfterInvert = getPitchFromScaleDegree(scaleDegreeAfterInvert);
+
+            const int delta = pitchAfterInvert - i;
+            ret[i] = delta;
+        }
+    }
+
+
     return ret;
 
 }
