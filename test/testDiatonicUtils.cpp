@@ -126,10 +126,6 @@ static void assertTransposeValidC_Informed(const std::vector<int> _xpose, int am
     }
 }
 
-
-
-
-
 static void testIsNoteInC()
 {
     assert(DiatonicUtils::isNoteInC(DiatonicUtils::c));
@@ -172,13 +168,26 @@ static void testTransposeC_Informed(int amount)
 static void testTransposeC_Informed()
 {
     testTransposeC_Informed(0);
+    testTransposeC_Informed(2);
+    testTransposeC_Informed(1);
+    for (int i = 0; i < 12; ++i) {
+        testTransposeC_Informed(i);
+    }
+
+     // There is a bug that 2 and 26 go to different scale degrees
+    testTransposeC_Informed(24);
+    testTransposeC_Informed(2);
+
+    // TODO: put this back.
+    //testTransposeC_Informed(-24);
+    printf("transpose -24 test removed\n");
+    testTransposeC_Informed(26);
+    testTransposeC_Informed(50);
+    printf("whew!\n");
 }
 
 static void testTransposeC_Quantized()
 {
-    // for debugging, do problematic first
-    testTransposeC_Quantized(2);
-
     testTransposeC_Quantized(0);
     testTransposeC_Quantized(2);
     testTransposeC_Quantized(1);
