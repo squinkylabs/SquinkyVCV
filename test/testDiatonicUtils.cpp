@@ -160,7 +160,7 @@ static void testTransposeLambdaSemi()
     assertClose(note->pitchCV, 1 + PitchUtils::semitone, .00001);
 }
 
-#if 0
+#if 1
 static void testTransposeLambdaFifth()
 {
     // chromatic, one semi
@@ -169,10 +169,13 @@ static void testTransposeLambdaFifth()
         false,  //bool constrainToKeysig,
         0, DiatonicUtils::Modes::Major);
 
-    float x = lambdaSemi(0);
-    assertClose(x, 7 * PitchUtils::semitone, .00001);
-    x = lambdaSemi(1);
-    assertClose(x, 1 + 7 * PitchUtils::semitone, .00001);
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambdaSemi(note);
+    assertClose(note->pitchCV, 7 * PitchUtils::semitone, .00001);
+    note->pitchCV = 1;
+    lambdaSemi(note);
+    assertClose(note->pitchCV, 1 + 7 * PitchUtils::semitone, .00001);
 }
 
 static void testTransposeLambdaDiatonicWhole()
@@ -182,13 +185,17 @@ static void testTransposeLambdaDiatonicWhole()
         true,  //bool constrainToKeysig,
         0, DiatonicUtils::Modes::Major);        // c major
 
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
     //c -> d
-    float x = lambdaDiatonicWhole(0);
-    assertClose(x, DiatonicUtils::d * PitchUtils::semitone, .00001);
+    note->pitchCV = 0;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone, .00001);
 
     // e -> f
-    x = lambdaDiatonicWhole(DiatonicUtils::e * PitchUtils::semitone);
-    assertClose(x, DiatonicUtils::f * PitchUtils::semitone, .00001);
+    note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, DiatonicUtils::f * PitchUtils::semitone, .00001);
 }
 
 
@@ -199,13 +206,16 @@ static void testTransposeLambdaDiatonicWholeOct()
         true,  //bool constrainToKeysig,
         0, DiatonicUtils::Modes::Major);        // c major
 
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     //c -> d
-    float x = lambdaDiatonicWhole(0);
-    assertClose(x, 2 + DiatonicUtils::d * PitchUtils::semitone, .00001);
+    note->pitchCV = 0;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, 2 + DiatonicUtils::d * PitchUtils::semitone, .00001);
 
     // e -> f
-    x = lambdaDiatonicWhole(DiatonicUtils::e * PitchUtils::semitone);
-    assertClose(x, 2 + DiatonicUtils::f * PitchUtils::semitone, .00001);
+    note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, 2 + DiatonicUtils::f * PitchUtils::semitone, .00001);
 }
 #endif
 
@@ -278,7 +288,7 @@ void testDiatonicUtils()
     testTransposeC2();
     testTransposeLambdaSemi();
     printf("********* put back the lambda tests\n");
-#if 0
+#if 1
     testTransposeLambdaFifth();
     testTransposeLambdaDiatonicWhole();
     testTransposeLambdaDiatonicWholeOct();

@@ -428,9 +428,18 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
             }
         };
     } else {
-        return[](MidiEventPtr event)
+        auto xposes = getTranspose(transposeSemitones, keyRoot, mode);
+        return[xposes](MidiEventPtr event)
         {
-            assert(false);
+            MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+            if (note) {
+                int semi = PitchUtils::cvToSemitone(note->pitchCV);
+                auto normalizedPitch = normalizePitch(semi);
+                const int debug = xposes[normalizedPitch.second];
+                int xposedSemi = xposes[normalizedPitch.second] + semi;
+
+                note->pitchCV = PitchUtils::semitoneToCV(xposedSemi);
+            }
         };
     }
 #if 0
