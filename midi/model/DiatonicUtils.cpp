@@ -102,7 +102,18 @@ void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& tra
     printf("\n");
 }
 
-std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
+
+std::vector<int> DiatonicUtils::getTransposeInC(int amount, bool quantized)
+{
+    if (quantized) {
+        return getTransposeInCQuantized(amount);
+    } else {
+        assert(false);
+        return {};
+    }
+}
+
+std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)
 {
     auto normalizedTransposeAmount = normalizePitch(_transposeAmount);
     const int transposeSemis = normalizedTransposeAmount.second;
@@ -202,126 +213,6 @@ std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
     return ret;
 }
 
-#if 0 //first version
-std::vector<int> DiatonicUtils::getTransposeInC(int _transposeAmount)
-{
-    auto normalizedTransposeAmount = normalizePitch(_transposeAmount);
-    const int tranposeSemis = normalizedTransposeAmount.second;
-    const int transposeOctaves = normalizedTransposeAmount.first;
-
-    assert(tranposeSemis >= 0);
-    assert(tranposeSemis < 12);       // callers should normalize out the octaves. Or we should support it?
-    std::vector<int> ret(12);
-
-   
-    // initialize to absurd value
-    for (int i = 0; i < 12; ++i) {
-        ret[i] = -24;                    
-    }
-
-   //  _dumpTransposes("init", ret);
-    int lastScaleTone = -1;
-
-    // first do all the ones that are already in key
-    for (int i = 0; i < 12; ++i) {
-        int chromaticTransposePitch = i + tranposeSemis;
-        if (chromaticTransposePitch > DiatonicUtils::b) {
-            chromaticTransposePitch -= 12;
-           // printf("do we need to account for this octave at index %d?\n", i);
-        }
-        assert(chromaticTransposePitch <= DiatonicUtils::b);
-        
-        const bool isInC = DiatonicUtils::isNoteInC(i);
-        const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
-
-        // if chromatic xpose keeps in key, use that.
-        if (isInC && xposeInC) {
-            printf("offset %d, was and is in C\n", i);
-            ret[i] = tranposeSemis;
-           // printf("setting ret %d to %d\n", i, transposeAmount);
-            assert(ret[i] >= tranposeSemis - 1);
-            assert(ret[i] <= tranposeSemis + 1);
-          
-        }
-
-        // if we were in the key, and chormatic xpose takes us out,
-        // Then make sure we don't grab the same scale tone as a different
-        // step. 
-        // i.e. two separate scale tones must always xpose to different scale tones.
-        if (isInC && !xposeInC) {
-            printf("offset %d, was in c, no longer\n", i);
-            int guessPitch = i + chromaticTransposePitch - 1;
-            if (lastScaleTone >= 0) {
-                if (guessPitch > lastScaleTone) {
-                    ret[i] = tranposeSemis - 1;
-                } else {
-                    ret[i] = tranposeSemis + 1;
-                }
-            } else {
-                // there was no previous pitch, to just go down
-                ret[i] = tranposeSemis - 1;
-            }
-            assert(DiatonicUtils::isNoteInC(i + ret[i])); 
-
-            assert(ret[i] >= tranposeSemis - 1);
-            assert(ret[i] <= tranposeSemis + 1);
-        }
-        if (isInC) {
-            lastScaleTone = i + ret[i];
-        }
-    }
-
-    //_dumpTransposes("step 1", ret);
-
-    // now do all the ones that are not in key
-    for (int i = 0; i < 12; ++i) {
-        int chromaticTransposePitch = i + tranposeSemis;
-        if (chromaticTransposePitch > DiatonicUtils::b) {
-            chromaticTransposePitch -= 12;
-           // printf("do we need to account for this octave?\n");
-        }
-
-        const bool isInC = DiatonicUtils::isNoteInC(i);
-        const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
-
-        if (!isInC) {
-            assert(ret[i] < -12);                 // we haven't filled these in yet
-        }
-
-         // if chromatic xpose keeps in key, use that (for now)
-        if (!isInC && xposeInC) {
-            ret[i] = tranposeSemis;
-
-            assert(ret[i] >= tranposeSemis - 1);
-            assert(ret[i] <= tranposeSemis + 1);
-        }
-        if (!isInC && !xposeInC) {
-            assert(i > 0);
-
-            // let's just go to the same pitch as prev guy (won't always work);
-            const int prevXpose = ret[i - 1];
-            const int prevPitch = prevXpose + (i-1);
-            const int thisPitch = prevPitch;
-            const int thisXpose = thisPitch - i;
-            ret[i] = thisXpose;
-
-            assert(ret[i] >= tranposeSemis - 1);
-            assert(ret[i] <= tranposeSemis + 1);
-        }
-    }
-
-    const int shift = transposeOctaves * 12;
-    if (shift) {
-        for (int i = 0; i < 12; ++i) {
-            ret[i] += shift;
-        }
-    }
-
-    //_dumpTransposes("final", ret);
-    return ret;
-}
-#endif
-
 int DiatonicUtils::getOffsetToRelativeMaj(Modes mode)
 {
     int ret = 0;
@@ -398,10 +289,10 @@ int DiatonicUtils::getPitchOffsetRelativeToCMaj(int keyRoot, Modes mode)
     return ret;
 }
 
-std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, Modes mode)
+std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, Modes mode, bool quantize)
 {
     const int offset = getPitchOffsetRelativeToCMaj(keyRoot, mode);
-    const std::vector<int> xpose = getTransposeInC(transposeAmount);
+    const std::vector<int> xpose = getTransposeInC(transposeAmount, quantize);
     std::vector<int> ret(12);
     for (int i = 0; i <= 11; ++i) {
         int pitchInRelMajor = i + offset;
@@ -428,7 +319,8 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
             }
         };
     } else {
-        auto xposes = getTranspose(transposeSemitones, keyRoot, mode);
+        // for now, always make the quantized version (since it works)
+        auto xposes = getTranspose(transposeSemitones, keyRoot, mode, true);
         return[xposes](MidiEventPtr event)
         {
             MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);

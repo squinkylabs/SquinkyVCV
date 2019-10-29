@@ -82,9 +82,9 @@ static void testIsNoteInC()
     assert(DiatonicUtils::isNoteInC(DiatonicUtils::b));
 }
 
-static void testTransposeC_1(int amount)
+static void testTransposeC_Quantized(int amount)
 {
-    auto x = DiatonicUtils::getTransposeInC(amount);
+    auto x = DiatonicUtils::getTransposeInC(amount, true);
 
     std::stringstream str;
     str << "test c1 (amt=" << amount << ")";
@@ -94,26 +94,27 @@ static void testTransposeC_1(int amount)
 }
 
 
-static void testTransposeC_1()
+static void testTransposeC_Quantized()
 {
     // for debugging, do problematic first
-    testTransposeC_1(2);
+    testTransposeC_Quantized(2);
 
-    testTransposeC_1(0);
-    testTransposeC_1(2);
-    testTransposeC_1(1);
+    testTransposeC_Quantized(0);
+    testTransposeC_Quantized(2);
+    testTransposeC_Quantized(1);
     for (int i = 0; i < 12; ++i) {
-        testTransposeC_1(i);
+        testTransposeC_Quantized(i);
     }
 
     // There is a bug that 2 and 26 go to different scale degrees
-    testTransposeC_1(24);
-    testTransposeC_1(2);
+    testTransposeC_Quantized(24);
+    testTransposeC_Quantized(2);
 
-    // TODO: put this bacd.
- //   testTransposeC_1(-24);
-    testTransposeC_1(26);
-    testTransposeC_1(50);
+    // TODO: put this back.
+    //testTransposeC_Quantized(-24);
+    printf("transpose -24 test removed\n");
+    testTransposeC_Quantized(26);
+    testTransposeC_Quantized(50);
 
 }
 
@@ -133,7 +134,7 @@ static void testRelativeMajor()
 static void testTransposeC2()
 {
     int amt = 5;
-    std::vector<int> xpose =  DiatonicUtils::getTranspose(amt , DiatonicUtils::c, DiatonicUtils::Modes::Major);
+    std::vector<int> xpose =  DiatonicUtils::getTranspose(amt , DiatonicUtils::c, DiatonicUtils::Modes::Major, true);
     DiatonicUtils::_dumpTransposes("just generated", xpose);
     assertTransposeValidC(xpose, amt);
 }
@@ -283,7 +284,8 @@ void testDiatonicUtils()
     testGetScaleDegreeInC();
     testqQuantizeXposeToScaleDegreeInC();
     testGetPitchFromScaleDegree();
-    testTransposeC_1();
+    testTransposeC_Quantized();
+   
     testRelativeMajor();
     testTransposeC2();
     testTransposeLambdaSemi();

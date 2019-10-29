@@ -32,9 +32,12 @@ public:
     /**
      * Gets a vector of pitch offsets for transpose.
      * @param transposeAmount is in semitones. must be >= 0 and <= 11.
+     * @param quantize forces all notes to be in scale. when it's false scale notes stay, but non-scale notes
+     *      can go to non-scale pitches
      * @returns transpose semitones
      */
-    static std::vector<int> getTransposeInC(int transposeAmount);
+    static std::vector<int> getTransposeInC(int transposeAmount, bool quantize);
+    static std::vector<int> getTransposeInCQuantized(int _transposeAmount);
 
     /**
      * Applies transposes to the 12 semitones of chromatic C scale.
@@ -59,7 +62,6 @@ public:
      */
 
     static void _dumpTransposes(const char*, const std::vector<int>&);
-   // static void _dumpPitches(const char*, const std::vector<int>&);
 
     /**
      * returns octave:semi from semi, where semi 0 == C
@@ -105,7 +107,7 @@ public:
      * Applies transposes to the 12 semitones of chromatic C scale.
      * Forces output to be in mode.
      */
-    static std::vector<int> getTranspose(int transposeAmount, int keyRoot, Modes mode);
+    static std::vector<int> getTranspose(int transposeAmount, int keyRoot, Modes mode, bool quantize);
 
     /**
      * Computes relative pitch offset of a mode relative to CMajor.
