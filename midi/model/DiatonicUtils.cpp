@@ -108,9 +108,61 @@ std::vector<int> DiatonicUtils::getTransposeInC(int amount, bool quantized)
     if (quantized) {
         return getTransposeInCQuantized(amount);
     } else {
-        assert(false);
-        return {};
+        return getTransposeInCInformed(amount);
     }
+}
+
+
+std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
+{
+    auto normalizedTransposeAmount = normalizePitch(_transposeAmount);
+    const int transposeSemis = normalizedTransposeAmount.second;
+    const int transposeOctaves = normalizedTransposeAmount.first;
+
+    assert(transposeSemis >= 0);
+    assert(transposeSemis < 12);       // callers should normalize out the octaves. Or we should support it?
+    std::vector<int> ret(12);
+
+
+    // initialize to absurd value
+    for (int i = 0; i < 12; ++i) {
+        ret[i] = -24;
+    }
+
+   //  _dumpTransposes("init", ret);
+  //  int lastScaleTone = -1;
+
+    const int scaleDegreesOfTranspose = quantizeXposeToScaleDegreeInC(transposeSemis);
+    // first do all the ones that are already in key
+    for (int i = 0; i < 12; ++i) {
+        int chromaticTransposePitch = i + transposeSemis;
+        if (chromaticTransposePitch > DiatonicUtils::b) {
+            chromaticTransposePitch -= 12;
+           // printf("do we need to account for this octave at index %d?\n", i);
+        }
+        assert(chromaticTransposePitch <= DiatonicUtils::b);
+
+        const bool isInC = DiatonicUtils::isNoteInC(i);
+        if (isInC) {
+            printf("in scale note %d amt %d\n", i, transposeSemis);
+            // scale by number of degrees, not by chromatic value
+            const int initialScaleDegree = getScaleDegreeInC(i);
+            const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
+            const int pitchAfterQuantize = getPitchFromScaleDegree(scaleDegreeAfterQuantize);
+            printf("initial degree = %d, deg after quantize %d, pitchAfter %d\n",
+                initialScaleDegree, scaleDegreeAfterQuantize, pitchAfterQuantize);
+            if (pitchAfterQuantize > 11) {
+                auto norm = normalizePitch(pitchAfterQuantize);
+                printf(" above normalized = %d:%d\n", norm.first, norm.second);
+            }
+            const int delta = pitchAfterQuantize - i;
+            ret[i] = delta;
+
+
+         //   lastScaleTone = i + ret[i];
+        }
+    }
+    return ret;
 }
 
 std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)

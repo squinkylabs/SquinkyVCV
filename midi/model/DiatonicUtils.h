@@ -38,6 +38,7 @@ public:
      */
     static std::vector<int> getTransposeInC(int transposeAmount, bool quantize);
     static std::vector<int> getTransposeInCQuantized(int _transposeAmount);
+    static std::vector<int> getTransposeInCInformed(int _transposeAmount);
 
     /**
      * Applies transposes to the 12 semitones of chromatic C scale.

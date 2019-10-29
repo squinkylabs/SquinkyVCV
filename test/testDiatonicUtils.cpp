@@ -68,7 +68,9 @@ static void assertTransposeValidC_Quantized(const std::vector<int> _xpose, int a
 
 static void assertTransposeValidC_Informed(const std::vector<int> _xpose, int amount)
 {
-    assert(false);
+    // for now, use the same eval function. Until we can't
+    assertTransposeValidC_Quantized(_xpose, amount);
+    //assert(false);
 }
 
 static void testIsNoteInC()
