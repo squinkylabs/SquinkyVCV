@@ -7,7 +7,7 @@
 #include <sstream>
 
 // simple reality check
-static void assertTransposeValidC(const std::vector<int> _xpose, int amount)
+static void assertTransposeValidC_Quantized(const std::vector<int> _xpose, int amount)
 {
     assertEQ(_xpose.size(), 12);
 
@@ -66,6 +66,11 @@ static void assertTransposeValidC(const std::vector<int> _xpose, int amount)
 }
 
 
+static void assertTransposeValidC_Informed(const std::vector<int> _xpose, int amount)
+{
+    assert(false);
+}
+
 static void testIsNoteInC()
 {
     assert(DiatonicUtils::isNoteInC(DiatonicUtils::c));
@@ -87,12 +92,28 @@ static void testTransposeC_Quantized(int amount)
     auto x = DiatonicUtils::getTransposeInC(amount, true);
 
     std::stringstream str;
-    str << "test c1 (amt=" << amount << ")";
+    str << "test c1-quant (amt=" << amount << ")";
  
     DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
-    assertTransposeValidC(x, amount);
+    assertTransposeValidC_Quantized(x, amount);
 }
 
+
+static void testTransposeC_Informed(int amount)
+{
+    auto x = DiatonicUtils::getTransposeInC(amount, false);
+
+    std::stringstream str;
+    str << "test c1-inf (amt=" << amount << ")";
+
+    DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
+    assertTransposeValidC_Informed(x, amount);
+}
+
+static void testTransposeC_Informed()
+{
+    testTransposeC_Informed(0);
+}
 
 static void testTransposeC_Quantized()
 {
@@ -136,7 +157,7 @@ static void testTransposeC2()
     int amt = 5;
     std::vector<int> xpose =  DiatonicUtils::getTranspose(amt , DiatonicUtils::c, DiatonicUtils::Modes::Major, true);
     DiatonicUtils::_dumpTransposes("just generated", xpose);
-    assertTransposeValidC(xpose, amt);
+    assertTransposeValidC_Quantized(xpose, amt);
 }
 
 
@@ -285,6 +306,7 @@ void testDiatonicUtils()
     testqQuantizeXposeToScaleDegreeInC();
     testGetPitchFromScaleDegree();
     testTransposeC_Quantized();
+    testTransposeC_Informed();
    
     testRelativeMajor();
     testTransposeC2();
