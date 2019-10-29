@@ -174,6 +174,13 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
             ret[i] = transposeSemis;
         }
     }
+
+    const int shift = transposeOctaves * 12;
+    if (shift) {
+        for (int i = 0; i < 12; ++i) {
+            ret[i] += shift;
+        }
+    }
     return ret;
 }
 
