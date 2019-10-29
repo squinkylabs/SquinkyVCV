@@ -367,6 +367,29 @@ static void testGetPitchFromScaleDegree()
 
     assertEQ(DiatonicUtils::getPitchFromScaleDegree(9), 16);
 }
+
+static void assertInvertValidInC(const std::vector<int> invert, int axis)
+{
+    assertEQ(invert.size(), 12);
+}
+
+
+static void testInvertInC(int axis)
+{
+    auto x = DiatonicUtils::getInvertInCInformed(axis);
+
+    std::stringstream str;
+    str << "test c1-inv (axis=" << axis << ")";
+
+    DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
+    assertInvertValidInC(x, axis);
+}
+
+static void testInvertInC()
+{
+    testInvertInC(0);
+}
+
 void testDiatonicUtils()
 {
     testIsNoteInC();
@@ -379,10 +402,11 @@ void testDiatonicUtils()
     testRelativeMajor();
     testTransposeC2();
     testTransposeLambdaSemi();
-    printf("********* put back the lambda tests\n");
-#if 1
+
     testTransposeLambdaFifth();
     testTransposeLambdaDiatonicWhole();
     testTransposeLambdaDiatonicWholeOct();
-#endif
+
+    testInvertInC();
+
 }

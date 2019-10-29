@@ -53,18 +53,6 @@ std::string DiatonicUtils::getPitchString(int _pitch)
     return s.str();
 }
 
-#if 0
-void DiatonicUtils::_dump(const char* msg, const std::vector<int>& data)
-{
-    printf("dump: %s\n", msg);
-    for (size_t i = 0; i < data.size(); ++i) {
-        printf("[%s]=%s\n", getPitchString(int(i)).c_str(), getPitchString(data[i]).c_str());
-    }
-    printf("\n");
-}
-#endif
-
-
 std::vector<int> DiatonicUtils::getTransposedPitchesInC(const std::vector<int>& transposes)
 {
    // printf("in getTransposedPitchesInC\n");
@@ -72,12 +60,8 @@ std::vector<int> DiatonicUtils::getTransposedPitchesInC(const std::vector<int>& 
     for (int i = 0; i < (int) transposes.size(); ++i) {
         const int j = transposes[i];
         ret[i] = (j < -12) ? j : i + transposes[i];
-       // printf("in get transp, %d -> %d\n", i, ret[i]);
     }
 
-   // for (int i = 0; i < (int) transposes.size(); ++i) {
-   //     printf("in getTransposedPitchesInC i=%d trans=%d final=%d\n", i, transposes[i], ret[i]);
-   // }
     return ret;
 }
 
@@ -86,13 +70,7 @@ void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& tra
     printf("\n*****dump1: %s\n", msg);
   
     std::vector<int> pitches = getTransposedPitchesInC(transposes);
-  //  printf("dump2: %s\n", msg);
- //   for (size_t i = 0; i < transposes.size(); ++i) {
- //       printf("transposed pitches[%d] = %d\n", i, pitches[i]);
- //   }
- 
    
-    printf("dump3: %s\n", msg);
     for (size_t i = 0; i < transposes.size(); ++i) {
         printf("t[%zd]=%d.  %s => %s\n", 
             i, transposes[i],
@@ -112,6 +90,20 @@ std::vector<int> DiatonicUtils::getTransposeInC(int amount, bool quantized)
     }
 }
 
+
+
+std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
+{
+    std::vector<int> ret(12);
+
+
+ // initialize to absurd value
+    for (int i = 0; i < 12; ++i) {
+        ret[i] = -1000;
+    }
+    return ret;
+
+}
 
 std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
 {
@@ -138,22 +130,17 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
         int chromaticTransposePitch = i + transposeSemis;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
-           // printf("do we need to account for this octave at index %d?\n", i);
         }
         assert(chromaticTransposePitch <= DiatonicUtils::b);
 
         const bool isInC = DiatonicUtils::isNoteInC(i);
         if (isInC) {
-            printf("in scale note %d amt %d\n", i, transposeSemis);
             // scale by number of degrees, not by chromatic value
             const int initialScaleDegree = getScaleDegreeInC(i);
             const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
             const int pitchAfterQuantize = getPitchFromScaleDegree(scaleDegreeAfterQuantize);
-            printf("initial degree = %d, deg after quantize %d, pitchAfter %d\n",
-                initialScaleDegree, scaleDegreeAfterQuantize, pitchAfterQuantize);
             if (pitchAfterQuantize > 11) {
                 auto norm = normalizePitch(pitchAfterQuantize);
-                printf(" above normalized = %d:%d\n", norm.first, norm.second);
             }
             const int delta = pitchAfterQuantize - i;
             ret[i] = delta;
@@ -164,7 +151,6 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
         int chromaticTransposePitch = i + transposeSemis;
         if (chromaticTransposePitch > DiatonicUtils::b) {
             chromaticTransposePitch -= 12;
-           // printf("do we need to account for this octave?\n");
         }
 
         const bool isInC = DiatonicUtils::isNoteInC(i);
@@ -200,9 +186,6 @@ std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)
         ret[i] = -24;
     }
 
-   //  _dumpTransposes("init", ret);
-  //  int lastScaleTone = -1;
-
     const int scaleDegreesOfTranspose = quantizeXposeToScaleDegreeInC(transposeSemis);
     // first do all the ones that are already in key
     for (int i = 0; i < 12; ++i) {
@@ -215,22 +198,16 @@ std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)
 
         const bool isInC = DiatonicUtils::isNoteInC(i);
         if (isInC) {
-            printf("in scale note %d amt %d\n", i, transposeSemis);
             // scale by number of degrees, not by chromatic value
             const int initialScaleDegree = getScaleDegreeInC(i);
             const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
             const int pitchAfterQuantize = getPitchFromScaleDegree(scaleDegreeAfterQuantize);
-            printf("initial degree = %d, deg after quantize %d, pitchAfter %d\n",
-                initialScaleDegree, scaleDegreeAfterQuantize, pitchAfterQuantize);
+
             if (pitchAfterQuantize > 11) {
                 auto norm = normalizePitch(pitchAfterQuantize);
-                printf(" above normalized = %d:%d\n", norm.first, norm.second);
             }
             const int delta = pitchAfterQuantize - i;
             ret[i] = delta;
-
-
-         //   lastScaleTone = i + ret[i];
         }
     }
 

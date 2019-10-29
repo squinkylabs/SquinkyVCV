@@ -40,6 +40,9 @@ public:
     static std::vector<int> getTransposeInCQuantized(int _transposeAmount);
     static std::vector<int> getTransposeInCInformed(int _transposeAmount);
 
+    static std::vector<int> getInvertInCInformed(int invertAxis);
+
+
     /**
      * Applies transposes to the 12 semitones of chromatic C scale.
      * Forces output to be in C major
