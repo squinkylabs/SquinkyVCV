@@ -9,6 +9,11 @@ std::pair<int, int> DiatonicUtils::normalizePitch(int pitch)
 {
     int octave = pitch / 12;
     pitch -= octave * 12;
+    if (pitch < 0) {
+        pitch += 12;
+        octave -= 1;
+    }
+    assert(pitch >= 0 && pitch < 12);
     return std::make_pair(octave, pitch);
 }
 
@@ -42,12 +47,10 @@ static std::vector<std::string> pitchNames =
 std::string DiatonicUtils::getPitchString(int _pitch)
 {
     auto pitch = normalizePitch(_pitch);
-    if (_pitch < 0) {
-       // printf("convert below zero: %d\n", pitch);
+    if (_pitch < -100) {
         return ("x");
     }
    
-   // return pitchNames[pitch];
     std::stringstream s;
     s << pitch.first << ":" << pitchNames[pitch.second];
     return s.str();
@@ -55,11 +58,10 @@ std::string DiatonicUtils::getPitchString(int _pitch)
 
 std::vector<int> DiatonicUtils::getTransposedPitchesInC(const std::vector<int>& transposes)
 {
-   // printf("in getTransposedPitchesInC\n");
     std::vector<int> ret(transposes.size());
     for (int i = 0; i < (int) transposes.size(); ++i) {
         const int j = transposes[i];
-        ret[i] = (j < -12) ? j : i + transposes[i];
+        ret[i] = (j < -1000) ? j : i + transposes[i];
     }
 
     return ret;
@@ -70,6 +72,9 @@ void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& tra
     printf("\n*****dump1: %s\n", msg);
   
     std::vector<int> pitches = getTransposedPitchesInC(transposes);
+    for (size_t i = 0; i < transposes.size(); ++i) {
+        printf("[%d] transpose = %d, pitch=%d\n", (int)i, transposes[i], pitches[i]);
+    }
    
     for (size_t i = 0; i < transposes.size(); ++i) {
         printf("t[%zd]=%d.  %s => %s\n", 
@@ -115,14 +120,36 @@ std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
     for (int i = 0; i < 12; ++i) {
         const bool isInC = DiatonicUtils::isNoteInC(i);
         if (isInC) {
+            bool wrapped = false;
             const int initialScaleDegree = getScaleDegreeInC(i);
-            const int scaleDegreeAfterInvert = scaleDegreesOfAxis - initialScaleDegree;
-            const int pitchAfterInvert = getPitchFromScaleDegree(scaleDegreeAfterInvert);
+            int scaleDegreeAfterInvert = scaleDegreesOfAxis - initialScaleDegree;
+            if (scaleDegreeAfterInvert < 0) {
+                scaleDegreeAfterInvert += 7;    // get them back to non-negative
+                wrapped = true;
+            }
+
+            int pitchAfterInvert = getPitchFromScaleDegree(scaleDegreeAfterInvert);
+            if (wrapped) {
+                pitchAfterInvert -= 12;
+            }
+
+            printf("%d: initdeg=%d inve=%d p=%d\n", i, initialScaleDegree, scaleDegreeAfterInvert, pitchAfterInvert);
 
             const int delta = pitchAfterInvert - i;
             ret[i] = delta;
         }
     }
+
+    for (int i = 0; i < 12; ++i) {
+        const bool isInC = DiatonicUtils::isNoteInC(i);
+        if (!isInC) {
+            int invert = invertAxis - i;
+            printf("[%d] chr -> %d\n", i, invert);
+            const int delta = invert - i;
+            ret[i] = delta;
+        }
+    }
+
 
 
     return ret;
@@ -378,6 +405,43 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
 }
 
 
+std::vector<int> DiatonicUtils::getInvert(int invertAxis, int keyRoot, Modes mode)
+{
+    const int offset = getPitchOffsetRelativeToCMaj(keyRoot, mode);
+    const std::vector<int> invert = getInvertInCInformed(invertAxis);
+    std::vector<int> ret(12);
+    for (int i = 0; i <= 11; ++i) {
+        int pitchInRelMajor = i + offset;
+        auto norm = normalizePitch(pitchInRelMajor);
+        int normP = norm.second;
+        int inverted = invert[normP];
+        int final = inverted - offset;
+        ret[i] = final;
+    }
+    return ret;
+}
+
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
+    int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
+{
+    if (!constrainToKeysig) {
+        const float axis = PitchUtils::semitoneToCV(invertAxisSemitones);
+        return [axis](MidiEventPtr event) {
+            MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+            if (note) {
+                note->pitchCV =  axis - note->pitchCV;
+            }
+        };
+
+    } else {
+        assert(false);
+        return[](MidiEventPtr event) {
+            assert(false);
+        };
+    }
+
+}
+
 std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
     int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
@@ -392,7 +456,7 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
         };
     } else {
         // for now, always make the quantized version (since it works)
-        auto xposes = getTranspose(transposeSemitones, keyRoot, mode, true);
+        auto xposes = getTranspose(transposeSemitones, keyRoot, mode, false);
         return[xposes](MidiEventPtr event)
         {
             MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
@@ -419,16 +483,6 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
         };
     }
 #endif
-}
-
-std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
-    int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
-{
-    assert(false);
-    return[](MidiEventPtr event) {
-        assert(false);
-    };
-   
 }
 
 int DiatonicUtils::quantizeXposeToScaleDegreeInC(int xpose)

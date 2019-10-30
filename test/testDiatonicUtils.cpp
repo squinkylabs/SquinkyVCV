@@ -41,7 +41,7 @@ static void assertTransposeValidC_Quantized(const std::vector<int> _xpose, int a
         const int x = _xpose[i];
         if (DiatonicUtils::isNoteInC(i)) {
 
-            printf("\nin loop, i=%d\n", i);
+          //  printf("\nin loop, i=%d\n", i);
             // first compute what it should be
             const int originalDegree = DiatonicUtils::getScaleDegreeInC(i);
 
@@ -49,15 +49,13 @@ static void assertTransposeValidC_Quantized(const std::vector<int> _xpose, int a
             while (expectedDegreeAfterXpose > 6) {
                 expectedDegreeAfterXpose -= 7;
             }
-            printf("orig degree = %d, xpose deg = %d expected deg after = %d\n",
-                originalDegree, numDegreesToTranspose, expectedDegreeAfterXpose);
+         //   printf("orig degree = %d, xpose deg = %d expected deg after = %d\n", originalDegree, numDegreesToTranspose, expectedDegreeAfterXpose);
 
             // then look at what it really did
             const int xp = _xpose[i];
             const int x = i + _xpose[i];
             const int actualDgreeAferXpose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
-            printf("xpose amt from array = %d, makes chromatic pitch after xpose %d degree = %d\n",
-                xp, x, actualDgreeAferXpose);
+          //  printf("xpose amt from array = %d, makes chromatic pitch after xpose %d degree = %d\n",  xp, x, actualDgreeAferXpose);
 
 
             assertEQ(actualDgreeAferXpose, expectedDegreeAfterXpose);
@@ -228,8 +226,6 @@ static void testTransposeC2()
     assertTransposeValidC_Quantized(xpose, amt);
 }
 
-
-
 static void testTransposeLambdaSemi()
 {
     // chromatic, one semi
@@ -371,6 +367,13 @@ static void testGetPitchFromScaleDegree()
 static void assertInvertValidInC(const std::vector<int> invert, int axis)
 {
     assertEQ(invert.size(), 12);
+    for (int i = 0; i < 12; ++i) {
+        assert(invert[i] > -100);
+        const int inverted = i + invert[i];
+        if (DiatonicUtils::isNoteInC(i))  {
+            assert(DiatonicUtils::isNoteInC(i));
+        }
+    }
 }
 
 
@@ -388,6 +391,38 @@ static void testInvertInC(int axis)
 static void testInvertInC()
 {
     testInvertInC(0);
+    for (int i = 0; i < 11; ++i) {
+        testInvertInC(i);
+    }
+}
+
+static void testInvertLambdaDirection()
+{
+    int axis = 0;
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        axis,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);        // c major
+
+    float lastPitch = 10000;
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    for (int i = -40; i < 40; ++i) {
+        note->pitchCV = PitchUtils::semitoneToCV(i);
+        lambda(note);
+        assert(note->pitchCV > lastPitch);
+        lastPitch = note->pitchCV;
+    }
+}
+
+static void testInvert()
+{
+    int axis = 0;
+    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
+    DiatonicUtils::_dumpTransposes("just generated", invert);
+    assertInvertValidInC(invert, axis);
+
+    assertEQ(invert[0], 0);     // c stays c
+    assert(false);              // finish me
 }
 
 void testDiatonicUtils()
@@ -408,5 +443,9 @@ void testDiatonicUtils()
     testTransposeLambdaDiatonicWholeOct();
 
     testInvertInC();
+    testInvert();
+    testInvertLambdaDirection();
+    
+    
 
 }

@@ -112,6 +112,7 @@ public:
      * Forces output to be in mode.
      */
     static std::vector<int> getTranspose(int transposeAmount, int keyRoot, Modes mode, bool quantize);
+    static std::vector<int> getInvert(int invertAxis, int keyRoot, Modes mode);
 
     /**
      * Computes relative pitch offset of a mode relative to CMajor.
