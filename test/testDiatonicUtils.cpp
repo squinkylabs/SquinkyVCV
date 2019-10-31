@@ -460,6 +460,54 @@ static void testInvertInC()
     }
 }
 
+static void testInvertLambdaChromatic()
+{
+    // let axis be zero volts
+    int axis = PitchUtils::cvToSemitone(0);
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        axis,
+        false,  //bool constrainToKeysig,
+        5, DiatonicUtils::Modes::Major);     
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, 0);
+
+    note->pitchCV = 0 + PitchUtils::semitone;
+    lambda(note);
+    assertEQ(note->pitchCV, -PitchUtils::semitone);
+
+    note->pitchCV = 1 + 3 * PitchUtils::semitone;
+    lambda(note);
+    assertEQ(note->pitchCV, -(1 + 3 * PitchUtils::semitone));
+}
+
+static void testInvertLambdaChromatic2()
+{
+    // let axis be zero volts
+    float axisCV = 4 * PitchUtils::semitone;
+    int axis = PitchUtils::cvToSemitone(axisCV);
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        axis,
+        false,  //bool constrainToKeysig,
+        5, DiatonicUtils::Modes::Major);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = axisCV;
+    lambda(note);
+    assertClose(note->pitchCV, axisCV, .001);
+
+
+    note->pitchCV = axisCV + PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, axisCV -PitchUtils::semitone, .001);
+
+    note->pitchCV = axisCV + 1 + 3 * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV,  axisCV -(1 + 3 * PitchUtils::semitone), .001);
+}
+
 static void testInvertLambdaDirection()
 {
     int axis = 0;
@@ -544,16 +592,10 @@ static void testInvertD()
     assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::f_);
     assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::e);
     assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::d);
-
-    assert(false); // finish me
-#if 0
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g - 12);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
-#endif
+    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::c_);
+    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::b-12);
+    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::a-12);
+    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::g - 2 * 12);
 }
 
 void testDiatonicUtils()
@@ -583,6 +625,8 @@ void testDiatonicUtils()
     testInvertC();
     testInvertC2();
     testInvertD();
+    testInvertLambdaChromatic();
+    testInvertLambdaChromatic2();
   //  testInvertLambdaDirection();
     
     

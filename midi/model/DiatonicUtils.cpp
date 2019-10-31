@@ -423,7 +423,7 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
         return [axis](MidiEventPtr event) {
             MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
             if (note) {
-                note->pitchCV =  axis - note->pitchCV;
+                note->pitchCV =  2 * axis - note->pitchCV;
             }
         };
 
