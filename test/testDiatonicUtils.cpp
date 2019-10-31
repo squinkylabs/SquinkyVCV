@@ -108,15 +108,13 @@ static void assertTransposeValidC_Informed(const std::vector<int> _xpose, int am
             while (expectedDegreeAfterXpose > 6) {
                 expectedDegreeAfterXpose -= 7;
             }
-            printf("orig degree = %d, xpose deg = %d expected deg after = %d\n",
-                originalDegree, numDegreesToTranspose, expectedDegreeAfterXpose);
+         //   printf("orig degree = %d, xpose deg = %d expected deg after = %d\n",              originalDegree, numDegreesToTranspose, expectedDegreeAfterXpose);
 
             // then look at what it really did
             const int xp = _xpose[i];
             const int x = i + _xpose[i];
             const int actualDgreeAferXpose = DiatonicUtils::getScaleDegreeInC(i + _xpose[i]);
-            printf("xpose amt from array = %d, makes chromatic pitch after xpose %d degree = %d\n",
-                xp, x, actualDgreeAferXpose);
+         //   printf("xpose amt from array = %d, makes chromatic pitch after xpose %d degree = %d\n",          xp, x, actualDgreeAferXpose);
 
 
             assertEQ(actualDgreeAferXpose, expectedDegreeAfterXpose);
@@ -147,7 +145,7 @@ static void testTransposeC_Quantized(int amount)
     std::stringstream str;
     str << "test c1-quant (amt=" << amount << ")";
  
-    DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
+    //DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
     assertTransposeValidC_Quantized(x, amount);
 }
 
@@ -159,7 +157,7 @@ static void testTransposeC_Informed(int amount)
     std::stringstream str;
     str << "test c1-inf (amt=" << amount << ")";
 
-    DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
+   // DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
     assertTransposeValidC_Informed(x, amount);
 }
 
@@ -222,9 +220,75 @@ static void testTransposeC2()
 {
     int amt = 5;
     std::vector<int> xpose =  DiatonicUtils::getTranspose(amt , DiatonicUtils::c, DiatonicUtils::Modes::Major, true);
-    DiatonicUtils::_dumpTransposes("just generated", xpose);
+    //DiatonicUtils::_dumpTransposes("just generated", xpose);
     assertTransposeValidC_Quantized(xpose, amt);
 }
+
+static void testTransposeAMinor()
+{
+    int amt = 2;        // xpose a whole step
+    std::vector<int> xpose = DiatonicUtils::getTranspose(amt, DiatonicUtils::a, DiatonicUtils::Modes::Minor, false);
+ //   DiatonicUtils::_dumpTransposes("just generated a minor xpose", xpose);
+
+    // a -> b
+    assertEQ(xpose[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::b);
+    assertEQ(xpose[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::c + 12);
+    assertEQ(xpose[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::d);
+    assertEQ(xpose[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::e);
+    assertEQ(xpose[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::f);
+    assertEQ(xpose[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g);
+
+    assertEQ(xpose[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::a);
+
+}
+
+static void testTransposeDMajor()
+{
+    int amt = 2;        // xpose a whole step
+    std::vector<int> xpose = DiatonicUtils::getTranspose(amt, DiatonicUtils::d, DiatonicUtils::Modes::Major, false);
+    assertEQ(xpose[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::e);
+    assertEQ(xpose[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::f_);
+    assertEQ(xpose[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::g);
+    assertEQ(xpose[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::a);
+    assertEQ(xpose[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::b);
+    assertEQ(xpose[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::c_ + 12);
+    assertEQ(xpose[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::d);
+}
+
+static void testTransposeEPhrygian()
+{
+    int amt = 2;        // xpose a whole step
+    std::vector<int> xpose = DiatonicUtils::getTranspose(amt, DiatonicUtils::e, DiatonicUtils::Modes::Phrygian, false);
+    //DiatonicUtils::_dumpTransposes("just generated e phrygian xpose", xpose);
+
+    // a -> b
+    assertEQ(xpose[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::b);
+    assertEQ(xpose[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::c + 12);
+    assertEQ(xpose[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::d);
+    assertEQ(xpose[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::e);
+    assertEQ(xpose[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::f);
+    assertEQ(xpose[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g);
+
+    assertEQ(xpose[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::a);
+}
+
+
+static void testTransposeEFlat()
+{
+    int amt = 3;        // xpose a third
+    std::vector<int> xpose = DiatonicUtils::getTranspose(amt, DiatonicUtils::d_, DiatonicUtils::Modes::Minor, false);
+    
+    //eflat -> gflat
+    assertEQ(xpose[DiatonicUtils::d_] + DiatonicUtils::d_, DiatonicUtils::f_);
+    assertEQ(xpose[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g_);
+    assertEQ(xpose[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::a_);
+
+    assertEQ(xpose[DiatonicUtils::g_] + DiatonicUtils::g_, DiatonicUtils::b);
+    assertEQ(xpose[DiatonicUtils::a_] + DiatonicUtils::a_, DiatonicUtils::c_+12);
+    assertEQ(xpose[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d_+12);
+
+}
+
 
 static void testTransposeLambdaSemi()
 {
@@ -384,7 +448,7 @@ static void testInvertInC(int axis)
     std::stringstream str;
     str << "test c1-inv (axis=" << axis << ")";
 
-    DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
+   // DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
     assertInvertValidInC(x, axis);
 }
 
@@ -421,8 +485,31 @@ static void testInvert()
     DiatonicUtils::_dumpTransposes("just generated", invert);
     assertInvertValidInC(invert, axis);
 
-    assertEQ(invert[0], 0);     // c stays c
-    assert(false);              // finish me
+    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
+    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
+    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g - 12);
+    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
+    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
+    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
+}
+
+
+static void testInvert2()
+{
+    // try in E flat minot
+    int axis = 3;
+    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::d_, DiatonicUtils::Modes::Minor);
+    DiatonicUtils::_dumpTransposes("just generated e falt minor", invert);
+    assertInvertValidInC(invert, axis);
+
+    assertEQ(invert[DiatonicUtils::d_] + 0 , DiatonicUtils::d_);
+    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
+    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g - 12);
+    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
+    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
+    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
 }
 
 void testDiatonicUtils()
@@ -436,6 +523,10 @@ void testDiatonicUtils()
    
     testRelativeMajor();
     testTransposeC2();
+    testTransposeAMinor();
+    testTransposeEPhrygian();
+    testTransposeDMajor();
+    testTransposeEFlat();
     testTransposeLambdaSemi();
 
     testTransposeLambdaFifth();
@@ -444,7 +535,9 @@ void testDiatonicUtils()
 
     testInvertInC();
     testInvert();
-    testInvertLambdaDirection();
+    printf("put invert tests back\n");
+  //  testInvert2();
+  //  testInvertLambdaDirection();
     
     
 

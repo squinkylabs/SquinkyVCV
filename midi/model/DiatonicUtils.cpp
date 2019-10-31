@@ -70,11 +70,12 @@ std::vector<int> DiatonicUtils::getTransposedPitchesInC(const std::vector<int>& 
 void DiatonicUtils::_dumpTransposes(const char* msg, const std::vector<int>& transposes)
 {
     printf("\n*****dump1: %s\n", msg);
-  
     std::vector<int> pitches = getTransposedPitchesInC(transposes);
+#if 0   
     for (size_t i = 0; i < transposes.size(); ++i) {
         printf("[%d] transpose = %d, pitch=%d\n", (int)i, transposes[i], pitches[i]);
     }
+#endif
    
     for (size_t i = 0; i < transposes.size(); ++i) {
         printf("t[%zd]=%d.  %s => %s\n", 
@@ -100,8 +101,6 @@ std::vector<int> DiatonicUtils::getTransposeInC(int amount, bool quantized)
 std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
 {
     std::vector<int> ret(12);
-
-
  // initialize to absurd value
     for (int i = 0; i < 12; ++i) {
         ret[i] = -1000;
@@ -132,8 +131,7 @@ std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
             if (wrapped) {
                 pitchAfterInvert -= 12;
             }
-
-            printf("%d: initdeg=%d inve=%d p=%d\n", i, initialScaleDegree, scaleDegreeAfterInvert, pitchAfterInvert);
+//            printf("%d: initdeg=%d inve=%d p=%d\n", i, initialScaleDegree, scaleDegreeAfterInvert, pitchAfterInvert);
 
             const int delta = pitchAfterInvert - i;
             ret[i] = delta;
@@ -144,16 +142,13 @@ std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
         const bool isInC = DiatonicUtils::isNoteInC(i);
         if (!isInC) {
             int invert = invertAxis - i;
-            printf("[%d] chr -> %d\n", i, invert);
+        //    printf("[%d] chr -> %d\n", i, invert);
             const int delta = invert - i;
             ret[i] = delta;
         }
     }
 
-
-
     return ret;
-
 }
 
 std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
@@ -166,14 +161,10 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
     assert(transposeSemis < 12);       // callers should normalize out the octaves. Or we should support it?
     std::vector<int> ret(12);
 
-
     // initialize to absurd value
     for (int i = 0; i < 12; ++i) {
         ret[i] = -24;
     }
-
-   //  _dumpTransposes("init", ret);
-  //  int lastScaleTone = -1;
 
     const int scaleDegreesOfTranspose = quantizeXposeToScaleDegreeInC(transposeSemis);
     // first do all the ones that are already in key
@@ -262,8 +253,6 @@ std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)
         }
     }
 
-    //_dumpTransposes("step 1", ret);
-
     // now do all the ones that are not in key
     for (int i = 0; i < 12; ++i) {
         int chromaticTransposePitch = i + transposeSemis;
@@ -308,7 +297,6 @@ std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)
         }
     }
 
-    //_dumpTransposes("final", ret);
     return ret;
 }
 
@@ -393,6 +381,17 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
     const int offset = getPitchOffsetRelativeToCMaj(keyRoot, mode);
     const std::vector<int> xpose = getTransposeInC(transposeAmount, quantize);
     std::vector<int> ret(12);
+
+    for (int sourceIndex = 0; sourceIndex < 12; ++sourceIndex) {
+        int destIndex = sourceIndex + offset;
+        if (destIndex > 11) {
+            destIndex -= 12;
+        }
+
+        ret[destIndex] = xpose[sourceIndex];
+    }
+
+#if 0 // first try. ng
     for (int i = 0; i <= 11; ++i) {
         int pitchInRelMajor = i + offset;
         auto norm = normalizePitch(pitchInRelMajor);
@@ -401,6 +400,7 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
         int final = xposed - offset;
         ret[i] = final;
     }
+#endif
     return ret;
 }
 
