@@ -121,7 +121,8 @@ std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
         if (isInC) {
             bool wrapped = false;
             const int initialScaleDegree = getScaleDegreeInC(i);
-            int scaleDegreeAfterInvert = scaleDegreesOfAxis - initialScaleDegree;
+            int scaleDegreeAfterInvert = 2 * scaleDegreesOfAxis - initialScaleDegree;
+            printf("\ninitial degree = %d, axis degree = %d flipped degree = %d\n", initialScaleDegree, scaleDegreesOfAxis, scaleDegreeAfterInvert);
             if (scaleDegreeAfterInvert < 0) {
                 scaleDegreeAfterInvert += 7;    // get them back to non-negative
                 wrapped = true;
@@ -131,7 +132,7 @@ std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
             if (wrapped) {
                 pitchAfterInvert -= 12;
             }
-//            printf("%d: initdeg=%d inve=%d p=%d\n", i, initialScaleDegree, scaleDegreeAfterInvert, pitchAfterInvert);
+            printf("%d: initdeg=%d deg-aft-inv=%d semi-after-inv=%d\n", i, initialScaleDegree, scaleDegreeAfterInvert, pitchAfterInvert);
 
             const int delta = pitchAfterInvert - i;
             ret[i] = delta;
