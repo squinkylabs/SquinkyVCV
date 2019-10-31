@@ -534,13 +534,18 @@ static void testInvertC2()
 static void testInvertD()
 {
     // try in D Major
-    // rotate on the d
+    // rotate on the E
     int axis = 1;
     std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::d, DiatonicUtils::Modes::Major);
     DiatonicUtils::_dumpTransposes("just generated D maj", invert);
     assertInvertValidInC(invert, axis);
 
-    assertEQ(invert[DiatonicUtils::d] + 0 , DiatonicUtils::d);
+    // D ->  F#
+    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::f_);
+    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::e);
+    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::d);
+
+    assert(false); // finish me
 #if 0
     assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
     assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);

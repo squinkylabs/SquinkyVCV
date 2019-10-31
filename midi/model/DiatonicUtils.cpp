@@ -392,16 +392,6 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
         ret[destIndex] = xpose[sourceIndex];
     }
 
-#if 0 // first try. ng
-    for (int i = 0; i <= 11; ++i) {
-        int pitchInRelMajor = i + offset;
-        auto norm = normalizePitch(pitchInRelMajor);
-        int normP = norm.second;
-        int xposed = xpose[normP];
-        int final = xposed - offset;
-        ret[i] = final;
-    }
-#endif
     return ret;
 }
 
@@ -411,14 +401,17 @@ std::vector<int> DiatonicUtils::getInvert(int invertAxis, int keyRoot, Modes mod
     const int offset = getPitchOffsetRelativeToCMaj(keyRoot, mode);
     const std::vector<int> invert = getInvertInCInformed(invertAxis);
     std::vector<int> ret(12);
-    for (int i = 0; i <= 11; ++i) {
-        int pitchInRelMajor = i + offset;
-        auto norm = normalizePitch(pitchInRelMajor);
-        int normP = norm.second;
-        int inverted = invert[normP];
-        int final = inverted - offset;
-        ret[i] = final;
+
+    for (int sourceIndex = 0; sourceIndex < 12; ++sourceIndex) {
+        int destIndex = sourceIndex + offset;
+        if (destIndex > 11) {
+            destIndex -= 12;
+        }
+
+        ret[destIndex] = invert[sourceIndex];
     }
+
+ 
     return ret;
 }
 
