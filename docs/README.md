@@ -6,7 +6,7 @@ It is also quite easy to clone this repo and build them yourself. In order to do
 
 ## More information for developers
 
-We wrote up some tips on how to write plugins that don't use too much CPU. That informtion is in [Writing Efficient Plugins](efficient-plugins.md).
+We wrote up some tips on how to write plugins that don't use too much CPU. That information is in [Writing Efficient Plugins](efficient-plugins.md).
 
 We documented our experiences optimizing VCO-1. They are in [Notes about the creation of Functional VCO-1](vco-optimization.md).
 
