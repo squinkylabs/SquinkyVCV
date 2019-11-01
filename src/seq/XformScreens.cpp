@@ -1,4 +1,3 @@
-
 #include "InputControls.h"
 #include "MidiSequencer.h"
 #include "SqMidiEvent.h"
@@ -28,25 +27,20 @@ XformInvert::XformInvert(
 
 void XformInvert::execute()
 {
-    WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
-    float pitchAxis = getAbsPitchFromInput(0);
-    #if 1
-    auto lambda = [pitchAxis](MidiEventPtr p) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
-        if (note) {
-            WARN("in lambda");
-            note->pitchCV = pitchAxis - note->pitchCV;
-        }
-    };
-    #else
-    //auto lambda = DiatonicUtils::makeInvertLambda(axis, constrain, root, mode);
-    #endif
+    WARN("Entering xform invert execute our selection has %d notes",  sequencer->selection->size());
+    const float pitchAxisCV = getAbsPitchFromInput(0);
+    const bool constrain = getValueBool(2);
+    const auto keysig = getKeysig(3);
 
+    const int pitchAxisSemitones = PitchUtils::cvToSemitone(pitchAxisCV);
+    DEBUG("pitch axis cv was %.2f, semi = %d", pitchAxisCV, pitchAxisSemitones);
+    
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        pitchAxisSemitones, constrain, keysig.first, keysig.second);
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Invert", sequencer, lambda);
     sequencer->undo->execute(sequencer, cmd);
 }
-
 
 XformTranspose::XformTranspose(
     const ::rack::math::Vec& pos,
@@ -71,20 +65,10 @@ void XformTranspose::execute()
     const bool constrain = getValueBool(2);
     auto keysig = getKeysig(3);
 
-#if 0
-    auto lambda = [transpose](MidiEventPtr p) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
-        if (note) {
-            WARN("in lambda");
-            note->pitchCV = transpose + note->pitchCV;
-        }
-    };
-#endif
-
     auto lambda = DiatonicUtils::makeTransposeLambda(
         transpose, constrain, keysig.first, keysig.second);
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
-        "Invert", sequencer, lambda);
+        "Transpose", sequencer, lambda);
     sequencer->undo->execute(sequencer, cmd);
 }

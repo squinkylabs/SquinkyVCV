@@ -108,7 +108,7 @@ std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
 
     auto normalizedAxis = normalizePitch(invertAxis);
     const int axisSemis = normalizedAxis.second;
-    const int axisOctaves = normalizedAxis.first;
+   // const int axisOctaves = normalizedAxis.first;
 
     assert(axisSemis >= 0);
     assert(axisSemis < 12);       // callers should normalize out the octaves. Or we should support it?
@@ -418,12 +418,16 @@ std::vector<int> DiatonicUtils::getInvert(int invertAxis, int keyRoot, Modes mod
 std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
     int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
+    printf("making lambda, invert semi = %d constrain = %d\n", invertAxisSemitones, constrainToKeysig);
     if (!constrainToKeysig) {
         const float axis = PitchUtils::semitoneToCV(invertAxisSemitones);
+        printf("in chromatic, axis (cv) = %.2f\n", axis);
         return [axis](MidiEventPtr event) {
             MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
             if (note) {
+                printf("  note in pitch = %.2f ", note->pitchCV);
                 note->pitchCV =  2 * axis - note->pitchCV;
+                printf("inverted to %.2f\n", note->pitchCV); fflush(stdout);
             }
         };
     } else {
@@ -435,7 +439,7 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
                 const int semi = PitchUtils::cvToSemitone(note->pitchCV);
                 const auto normalizedPitch = normalizePitch(semi);
                 const int octaveCorrection = normalizedPitch.first - axisOctave;
-                const int debug = inverts[normalizedPitch.second];
+               // const int debug = inverts[normalizedPitch.second];
                 int invertedSemi = inverts[normalizedPitch.second] + semi;
 
                 // not quite right

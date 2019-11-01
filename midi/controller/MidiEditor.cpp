@@ -580,6 +580,7 @@ void MidiEditor::insertNoteHelper3(float duration, float advanceAmount, bool ext
     note->startTime = seq()->context->cursorTime();
     note->pitchCV = seq()->context->cursorPitch();
     note->duration = duration;
+    DEBUG("inserting note at pitch %.2f. c# = %.2f, b= %.2f", note->pitchCV, PitchUtils::semitone, - PitchUtils::semitone);
 
     auto cmd = ReplaceDataCommand::makeInsertNoteCommand(seq(), note, extendSelection);
     seq()->undo->execute(seq(), cmd);

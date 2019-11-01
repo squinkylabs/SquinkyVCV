@@ -58,11 +58,20 @@ int InputScreen::getValueInt(int index) const
 
 float InputScreen::getAbsPitchFromInput(int index)
 {
+    DEBUG("in get abs pitch");
+    // octaves
+    //  "7", "6", "5", "4", "3", "2", "1", "0", "-1", "-2", "-3"
+    // so octave 4 = index 3
+    // ocatve = 7 - index
     assert(inputControls.size() > unsigned(index + 1));
-    int iOctave = int( std::round(inputControls[index]->getValue()));
+    int iOctave = 7 - int( std::round(inputControls[index]->getValue()));
     int iSemi = int( std::round(inputControls[index+1]->getValue()));
+   
 
-    return PitchUtils::pitchToCV(iOctave, iSemi);
+    float ret =  PitchUtils::pitchToCV(iOctave, iSemi);
+
+    DEBUG("ngetAbsPitch got oct=%d semi=%d final out = %.2f", iOctave, iSemi, ret);
+    return ret;
 }
 
 std::pair<int, DiatonicUtils::Modes> InputScreen::getKeysig(int index)
@@ -104,7 +113,7 @@ void InputScreen::addTitle(const std::string& title)
 }
 
 static std::vector<std::string> octaves = {
-    "-3", "-2", "-1", "0", "1", "2", "3", "4", "5", "6", "7"
+    "7", "6", "5", "4", "3", "2", "1", "0", "-1", "-2", "-3"
 };
 
 static std::vector<std::string> semis = {
@@ -142,41 +151,40 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
 }
 
 static std::vector<std::string> octavesRel = {
-    "-7 oct", "-6 oct", "-5 oct",
-    "-4 oct", "-3 oct", "-2 oct", "-1 oct",
+    "+7 oct", "+6 oct", "+5 oct",
+    "+4 oct", "+3 oct", "+2 oct", "+1 oct",
     "+0 oct",
-    "+1 oct", "+2 oct", "+3 oct", "+4 oct",
-    "+5 oct", "+6 oct", "+7 oct"
+    "-1 oct", "-2 oct", "-3 oct", "-4 oct",
+    "-5 oct", "-6 oct", "-7 oct"
 };
 
 static std::vector<std::string> semisRel = {
-    "-12 semi", "-11 semi", "-10 semi","-9 semi",
-    "-8 semi", "-7 semi", "-6 semi","-5 semi",
-    "-4 semi", "-3 semi", "-2 semi","-1 semi",
-     "-", 
-     "+1 semi", "+2 semi", "+3 semi","+4 semi",
-     "+5 semi", "+6 semi", "+7 semi","+8 semi",
-     "+9 semi","+10 semi","+11 semi", "+12 semi"
+    "+12 semi", "+11 semi", "+10 semi","+9 semi",
+    "+8 semi", "+7 semi", "+6 semi","+5 semi",
+    "+4 semi", "+3 semi", "+2 semi","+1 semi",
+     "+0 semi", 
+     "-1 semi", "-2 semi", "-3 semi","-4 semi",
+     "-5 semi", "-6 semi", "-7 semi","-8 semi",
+     "-9 semi","-10 semi","-11 semi", "-12 semi"
 };
 
 float InputScreen::getPitchOffsetAmount(int index)
 {
-   
     const int middleOctaveIndex = 7;
     assert(octavesRel[middleOctaveIndex] == "+0 oct");
     assert(inputControls.size() > unsigned(index + 1));
-    int octaveOffset = getValueInt(index) - middleOctaveIndex;
+
+    int octaveOffset = middleOctaveIndex - getValueInt(index);
 
     const int middleSemiIndex = 12;
-    assert(semisRel[middleSemiIndex] == "-");
+    assert(semisRel[middleSemiIndex] == "+0 semi");
     assert(inputControls.size() > unsigned(index + 1));
-    int semiOffset = getValueInt(index+1) - middleSemiIndex;
+    int semiOffset = middleSemiIndex - getValueInt(index+1);
 
     int offset = 12 * octaveOffset + semiOffset;
 
-    DEBUG("oct=%d semi=%d final=%d", octaveOffset, semiOffset, offset);
+    DEBUG("getPitchOfsetMaoun: oct=%d semi=%d final=%d", octaveOffset, semiOffset, offset);
     return offset;
-   
 }
 
 void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)

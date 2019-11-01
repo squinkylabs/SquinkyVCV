@@ -22,7 +22,6 @@ void InputScreenManager::dismiss(bool bOK)
     parent = nullptr;
     screen = nullptr;
 
-
     if (tempScreen) {
         auto values = tempScreen->getValues();
         DEBUG("values size = %d", values.size());
@@ -60,9 +59,6 @@ void InputScreenManager::show(
     MidiSequencerPtr seq,
     Callback cb)
 {
-
-  // hard code to test screen for now
-
     this->callback = cb;
     parent = parnt;
     auto dismisser = [this](bool bOK) {
