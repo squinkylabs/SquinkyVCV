@@ -289,6 +289,60 @@ static void testTransposeEFlat()
 
 }
 
+static void testInvertLambdaOctaves(bool constrain)
+{
+    const int axisSemitones = PitchUtils::cvToSemitone(0);
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        axisSemitones,      //int invert axis semitions,
+        constrain,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    int i = 0;
+    note->pitchCV = float(i);
+    lambda(note);
+    assertEQ(note->pitchCV, -i);
+
+    i = 1;
+    note->pitchCV = float(i);
+    lambda(note);
+    assertEQ(note->pitchCV, -i);
+
+    for (int i = -3; i < 4; ++i) {
+        note->pitchCV = float(i);
+        lambda(note);
+        assertEQ(note->pitchCV, -i);
+    }
+}
+
+static void testInvertLambdaOctaves()
+{
+    testInvertLambdaOctaves(false);
+    testInvertLambdaOctaves(true);
+}
+
+static void testTransposeLambdaOctaves(bool constrain)
+{
+    auto lambda = DiatonicUtils::makeTransposeLambda(
+        0,      //int transposeSemitones,
+        constrain,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    for (int i = -3; i < 4; ++i) {
+        note->pitchCV = float(i);
+        lambda(note);
+        assertEQ(note->pitchCV, i);
+    }
+}
+
+static void testTransposeLambdaOctaves()
+{
+    testTransposeLambdaOctaves(false);
+    testTransposeLambdaOctaves(true);
+}
 
 static void testTransposeLambdaSemi()
 {
@@ -508,12 +562,12 @@ static void testInvertLambdaChromatic2()
     assertClose(note->pitchCV,  axisCV -(1 + 3 * PitchUtils::semitone), .001);
 }
 
-static void testInvertLambdaDirection()
+static void testInvertLambdaDirection(bool constrain)
 {
     int axis = 0;
     auto lambda = DiatonicUtils::makeInvertLambda(
         axis,
-        true,  //bool constrainToKeysig,
+        constrain,  //bool constrainToKeysig,
         0, DiatonicUtils::Modes::Major);        // c major
 
     float lastPitch = 10000;
@@ -521,11 +575,20 @@ static void testInvertLambdaDirection()
     for (int i = -40; i < 40; ++i) {
         note->pitchCV = PitchUtils::semitoneToCV(i);
         lambda(note);
-        assert(note->pitchCV > lastPitch);
+        if (constrain) {
+            assert(note->pitchCV <= lastPitch);         // can be equal in constrain keysig
+        } else {
+            assert(note->pitchCV < lastPitch);
+        }
         lastPitch = note->pitchCV;
     }
 }
 
+static void testInvertLambdaDirection()
+{
+    testInvertLambdaDirection(true);
+    testInvertLambdaDirection(false);
+}
 static void testInvert()
 {
     int axis = 0;
@@ -558,6 +621,51 @@ static void testInvertC()
     assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
     assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
     assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
+}
+
+static void testInvertLambdaC()
+{
+    // let axis be zero volts (C4)
+    // invert in c maj
+ 
+    const int axisSemitones = PitchUtils::cvToSemitone(0);
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        axisSemitones,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, 0);
+
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::f * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::g * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::f* PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::a * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::e * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::b * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = 1;
+    lambda(note);
+    assertClose(note->pitchCV, -1, .0001);
 }
 
 
@@ -613,11 +721,12 @@ void testDiatonicUtils()
     testTransposeEPhrygian();
     testTransposeDMajor();
     testTransposeEFlat();
-    testTransposeLambdaSemi();
 
+    testTransposeLambdaSemi();
     testTransposeLambdaFifth();
     testTransposeLambdaDiatonicWhole();
     testTransposeLambdaDiatonicWholeOct();
+    testTransposeLambdaOctaves();
 
     testInvertInC();
     testInvert();
@@ -627,8 +736,12 @@ void testDiatonicUtils()
     testInvertD();
     testInvertLambdaChromatic();
     testInvertLambdaChromatic2();
-  //  testInvertLambdaDirection();
+    testInvertLambdaC();
+    testInvertLambdaOctaves();
+
+    printf("put back test testInvertLambdaDirection\n");
+    testInvertLambdaDirection();
     
-    
+    printf("***** Make some lambda tests for octaves!\n");
 
 }

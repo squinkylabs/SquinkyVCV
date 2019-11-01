@@ -426,14 +426,25 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
                 note->pitchCV =  2 * axis - note->pitchCV;
             }
         };
-
     } else {
-        assert(false);
-        return[](MidiEventPtr event) {
-            assert(false);
+        auto inverts = getInvert(invertAxisSemitones, keyRoot, mode);
+        return[inverts, invertAxisSemitones](MidiEventPtr event) {
+            MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+            const int axisOctave = normalizePitch(invertAxisSemitones).first;
+            if (note) {
+                const int semi = PitchUtils::cvToSemitone(note->pitchCV);
+                const auto normalizedPitch = normalizePitch(semi);
+                const int octaveCorrection = normalizedPitch.first - axisOctave;
+                const int debug = inverts[normalizedPitch.second];
+                int invertedSemi = inverts[normalizedPitch.second] + semi;
+
+                // not quite right
+             //   invertedSemi += 2 * octaveCorrection;
+
+                note->pitchCV = PitchUtils::semitoneToCV(invertedSemi) - 2 * octaveCorrection;
+            }
         };
     }
-
 }
 
 std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
@@ -449,34 +460,20 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
             }
         };
     } else {
-        // for now, always make the quantized version (since it works)
+        // for now, always make the non-quantized version (since it works)
         auto xposes = getTranspose(transposeSemitones, keyRoot, mode, false);
         return[xposes](MidiEventPtr event)
         {
             MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
             if (note) {
-                int semi = PitchUtils::cvToSemitone(note->pitchCV);
-                auto normalizedPitch = normalizePitch(semi);
-                const int debug = xposes[normalizedPitch.second];
-                int xposedSemi = xposes[normalizedPitch.second] + semi;
+                const int semi = PitchUtils::cvToSemitone(note->pitchCV);
+                const auto normalizedPitch = normalizePitch(semi);
+                const int xposedSemi = xposes[normalizedPitch.second] + semi;
 
                 note->pitchCV = PitchUtils::semitoneToCV(xposedSemi);
             }
         };
     }
-#if 0
-        auto xposes =  getTranspose(transposeSemitones, keyRoot, mode);
-        _dumpTransposes("making lambda", xposes);
-        return [xposes](float input) {
-            int semi = PitchUtils::cvToSemitone(input);
-            auto normalizedPitch = normalizePitch(semi);
-            const int debug = xposes[normalizedPitch.second];
-            int xposedSemi = xposes[normalizedPitch.second] + semi;
-
-            return PitchUtils::semitoneToCV(xposedSemi);
-        };
-    }
-#endif
 }
 
 int DiatonicUtils::quantizeXposeToScaleDegreeInC(int xpose)
