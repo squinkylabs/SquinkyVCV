@@ -495,7 +495,7 @@ static void assertInvertValidInC(const std::vector<int> invert, int axis)
 }
 
 
-static void testInvertInC(int axis)
+static void testInvertInCInformed(int axis)
 {
     auto x = DiatonicUtils::getInvertInCInformed(axis);
 
@@ -506,12 +506,68 @@ static void testInvertInC(int axis)
     assertInvertValidInC(x, axis);
 }
 
-static void testInvertInC()
+static void testInvertInCInformed()
 {
-    testInvertInC(0);
+    testInvertInCInformed(0);
     for (int i = 0; i < 11; ++i) {
-        testInvertInC(i);
+        testInvertInCInformed(i);
     }
+}
+
+static void testInvertInC2Informed()
+{
+    const int axisSemitones = PitchUtils::cvToSemitone(0);
+    auto invert = DiatonicUtils::getInvertInCInformed(axisSemitones);
+
+    std::stringstream str;
+    str << "test testInvertInC2Informed (axis=" << axisSemitones << ")";
+    DiatonicUtils::_dumpTransposes(str.str().c_str(), invert);
+
+    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
+    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::b - 12);
+    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
+    assertEQ(invert[DiatonicUtils::d_] + DiatonicUtils::d_, DiatonicUtils::a - 12);
+    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g - 12);
+    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::f_ - 12);
+    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
+
+    assertEQ(invert[DiatonicUtils::g_] + DiatonicUtils::g_, DiatonicUtils::e - 12);
+    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
+    assertEQ(invert[DiatonicUtils::a_] + DiatonicUtils::a_, DiatonicUtils::d - 12);
+    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
+
+    // now do the same test with a non-c axis
+   // assert(false);
+}
+
+static void testInvertInC2InformedFAxis()
+{
+    const int axisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::f;
+    auto invert = DiatonicUtils::getInvertInCInformed(axisSemitones);
+
+    std::stringstream str;
+    str << "test testInvertInC2InformedFAxis (axis=" << axisSemitones << ")";
+    DiatonicUtils::_dumpTransposes(str.str().c_str(), invert);
+
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
+    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::e);
+    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::e);
+    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::d);
+    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::c);
+
+    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::b);
+    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::a);
+    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::g);
+  
+#if 0
+   
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
+
+    assert(false);
+#endif
 }
 
 static void testInvertLambdaChromatic()
@@ -589,11 +645,86 @@ static void testInvertLambdaDirection()
     testInvertLambdaDirection(true);
     testInvertLambdaDirection(false);
 }
+
+static void testInvertLambdaSanity(bool constrain, int semitoneAxis, int rootKey, DiatonicUtils::Modes mode)
+{
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        semitoneAxis,
+        constrain,
+        rootKey, mode);
+
+    float lastPitch = 10000;
+    bool firstNote = true;
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    printf("put this back to -40\n !!!!!!!!!!!!");
+    for (int i = 0; i < 40; ++i) {
+
+        // Is this a strange offset?
+        note->pitchCV = PitchUtils::semitoneToCV(i);
+
+        lambda(note);
+        if (!firstNote) {
+            if (constrain) {
+                bool isOk = false;
+                const float deltaFromOneSemitoneDown = note->pitchCV - (lastPitch - PitchUtils::semitone);
+                if (std::abs(deltaFromOneSemitoneDown) < .001) {
+                    printf("is one semi down\n");
+                    isOk = true;
+                }
+                const float deltaFromTwoSemitoneDown = note->pitchCV - (lastPitch - 2 * PitchUtils::semitone);
+                if (std::abs(deltaFromTwoSemitoneDown) < .001) {
+                    printf("is two semi down\n");
+                    isOk = true;
+                }
+                const float deltaFromSamePitch = note->pitchCV - lastPitch;
+                if (std::abs(deltaFromSamePitch) < .001) {
+                    printf("is same\n");            // not sure I'm crazy about this, but for now I'll take it.
+                    isOk = true;
+                }
+
+                // this is failing at axis 0, c maj (the simplest case!);
+                assert(isOk);
+
+               //assertClose(note->pitchCV, lastPitch - PitchUtils::semitone, .001);
+                //assert()
+               // assert(note->pitchCV <= lastPitch);         // can be equal in constrain keysig
+            } else {
+               // assert(note->pitchCV < lastPitch);
+                assertClose(note->pitchCV, lastPitch - PitchUtils::semitone, .001);
+            }
+        }
+        firstNote = false;
+        lastPitch = note->pitchCV;
+    }
+}
+
+static void testInvertLambdaSanity(bool constrain, int semitoneAxis)
+{
+    // spot check some keysigs
+    testInvertLambdaSanity(constrain, semitoneAxis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
+    testInvertLambdaSanity(constrain, semitoneAxis, DiatonicUtils::c, DiatonicUtils::Modes::Minor);
+    testInvertLambdaSanity(constrain, semitoneAxis, DiatonicUtils::f_, DiatonicUtils::Modes::Mixolydian);
+}
+
+static void testInvertLambdaSanity(bool constrain)
+{
+    printf("put this back to -10 !!!!!\n");
+    for (int i = 0; i < 100; ++i) {
+        testInvertLambdaSanity(constrain, i);
+    }
+}
+
+static void testInvertLambdaSanity()
+{
+    testInvertLambdaSanity(false);
+    testInvertLambdaSanity(true);
+}
 static void testInvert()
 {
     int axis = 0;
     std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("just generated", invert);
+    DiatonicUtils::_dumpTransposes("testInvert", invert);
     assertInvertValidInC(invert, axis);
 
     assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
@@ -611,7 +742,7 @@ static void testInvertC()
     // rotate on the c
     int axis = 0;
     std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("just generated C maj", invert);
+    DiatonicUtils::_dumpTransposes("testInvertC", invert);
     assertInvertValidInC(invert, axis);
 
     assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
@@ -634,15 +765,31 @@ static void testInvertLambdaC()
         true,  //bool constrainToKeysig,
         0, DiatonicUtils::Modes::Major);
 
+
+    // C -> C
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->pitchCV = 0;
     lambda(note);
     assertEQ(note->pitchCV, 0);
 
+    // C# -> B
+    printf("finish testInvertLambdaC with chromatic ppitches\n");
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+    // D -> B
     note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
     lambda(note);
     assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
 
+    //new case
+    // D# -> A
+    note->pitchCV = DiatonicUtils::d_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
+
+    // E -> A
     note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
     lambda(note);
     assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
@@ -669,13 +816,188 @@ static void testInvertLambdaC()
 }
 
 
+static void testInvertLambdaCMinor()
+{
+    printf("\n\n !!!!! enter testInvertLambdaCMinor\n");
+
+    const int axisSemitones = PitchUtils::cvToSemitone(0);
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        axisSemitones,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Minor);
+
+
+    // C -> C
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, 0);            // flip around 0
+
+    // C# -> B
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+     // D -> B flat
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a_ * PitchUtils::semitone - 1, .0001);
+
+
+    assert(false);      // finish me
+}
+
+// failing test case from general test.
+// key cminor with axis 0.
+// that test is failing at note 3.
+static void testInvertLambdaCAxis0()
+{
+    printf("\n\n !!!!! enter testInvertLambdaCAxis0\n");
+    // let axis be zero volts (C4)
+    // invert in c maj
+
+    const int axisSemitones = 0;
+    const float axisCV = PitchUtils::semitoneToCV(axisSemitones);
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        axisSemitones,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Minor);
+
+
+    assertEQ(axisCV, -4);
+    // C -> C
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, -8);            // flip around -4
+
+    // C# -> B
+    printf("finish testInvertLambdaC with chromatic pitches\n");
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+    // D -> B
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+    //new case
+    // D# -> A
+    note->pitchCV = DiatonicUtils::d_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
+
+    // E -> A
+    note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::f * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::g * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::f* PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::a * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::e * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::b * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = 1;
+    lambda(note);
+    assertClose(note->pitchCV, -1, .0001);
+}
+
+static void testInvertLambdaCAllAxis()
+{
+    int invertAxisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::c;
+
+    // axis C
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        invertAxisSemitones,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, 0);
+
+    printf("PUT BACK C# test\n");
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    //assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+    //****************************** axis D
+
+    invertAxisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::d;
+    lambda = DiatonicUtils::makeInvertLambda(
+        invertAxisSemitones,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);
+
+    note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = DiatonicUtils::c * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::e * PitchUtils::semitone, .0001);
+
+
+    printf("PUT BACK C# test\n");
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    //assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone, .0001);
+
+    printf("finish the all axis test\n");
+   
+}
+
+static void testInvertC15()
+{
+    // try in C Major
+    // rotate on the D
+    const int axisSemitones = PitchUtils::cvToSemitone(0);
+ //   int axis = 0;
+    std::vector<int> invert = DiatonicUtils::getInvert(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Major);
+    DiatonicUtils::_dumpTransposes("testInvertC15", invert);
+    assertInvertValidInC(invert, axisSemitones);
+
+    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
+    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::b);
+
+    printf("TODO: the rest of 15\n");
+#if 0
+    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::d);
+    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::c);
+    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::b - 12);
+    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::a - 12);
+    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::g - 12);
+    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::f - 12);
+#endif
+}
+
+
+
 static void testInvertC2()
 {
     // try in C Major
     // rotate on the D
     int axis = 2;
     std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("just generated C maj", invert);
+    DiatonicUtils::_dumpTransposes("testInvertC2", invert);
     assertInvertValidInC(invert, axis);
 
     assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::e);
@@ -687,13 +1009,34 @@ static void testInvertC2()
     assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::f-12);
 }
 
+static void testInvertDAxis0()
+{
+    // try in D Major
+    // rotate on the D
+    int axis = 0;
+    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::d, DiatonicUtils::Modes::Major);
+  //  DiatonicUtils::_dumpTransposes("testInvertDAx0", invert);
+    assertInvertValidInC(invert, axis);
+
+    // Look at the in-scale notes
+    // D ->  D
+    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::d);
+    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::c);
+
+    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::d);
+    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::c_);
+    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::b - 12);
+    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::a - 12);
+    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::g - 2 * 12);
+}
+
 static void testInvertD()
 {
     // try in D Major
     // rotate on the E
     int axis = 1;
     std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::d, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("just generated D maj", invert);
+    DiatonicUtils::_dumpTransposes("testInvertD", invert);
     assertInvertValidInC(invert, axis);
 
     // D ->  F#
@@ -708,6 +1051,10 @@ static void testInvertD()
 
 void testDiatonicUtils()
 {
+    // temp - put failing test first
+    testInvertDAxis0();
+
+
     testIsNoteInC();
     testGetScaleDegreeInC();
     testqQuantizeXposeToScaleDegreeInC();
@@ -728,16 +1075,29 @@ void testDiatonicUtils()
     testTransposeLambdaDiatonicWholeOct();
     testTransposeLambdaOctaves();
 
-    testInvertInC();
+    testInvertInCInformed();
+
+    printf("PUT BACK testInvertInC2\n");
+    testInvertInC2Informed();
+    testInvertInC2InformedFAxis();
     testInvert();
     printf("put invert tests back\n");
     testInvertC();
+
+    printf("put back testInvertC15\n");
+  //  testInvertC15();
     testInvertC2();
+
+    testInvertDAxis0();
     testInvertD();
     testInvertLambdaChromatic();
     testInvertLambdaChromatic2();
     testInvertLambdaC();
+    testInvertLambdaCMinor();
+    testInvertLambdaCAxis0();
     testInvertLambdaOctaves();
+    testInvertLambdaCAllAxis();
+    testInvertLambdaSanity();
 
     printf("put back test testInvertLambdaDirection\n");
     testInvertLambdaDirection();

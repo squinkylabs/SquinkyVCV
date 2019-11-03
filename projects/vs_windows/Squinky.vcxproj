@@ -74,6 +74,7 @@
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
     <ClCompile Include="..\..\test\testDiatonicUtils.cpp" />
+    <ClCompile Include="..\..\test\testDiatonicUtils2.cpp" />
     <ClCompile Include="..\..\test\testDrumTrigger.cpp" />
     <ClCompile Include="..\..\test\testFFT.cpp" />
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />

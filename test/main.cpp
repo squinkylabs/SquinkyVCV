@@ -79,6 +79,7 @@ extern void testStepRecordInput();
 extern void testMidiFile();
 extern void testNewSongDataDataCommand();
 extern void testDiatonicUtils();
+extern void testDiatonicUtils2();
 
 #if 0
 #include <sstream>
@@ -170,7 +171,9 @@ int main(int argc, char ** argv)
     testNewSongDataDataCommand();
     testUndoRedo();
     testMidiViewport();
-    testDiatonicUtils();
+    testDiatonicUtils2();
+    printf("Put back testDiatonicUtils\n");
+   // testDiatonicUtils();
  
     testMidiFile();
     testMidiControllers();

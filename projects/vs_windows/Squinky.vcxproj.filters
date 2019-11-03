@@ -483,6 +483,9 @@
     <ClCompile Include="..\..\midi\model\DiatonicUtils.cpp">
       <Filter>Source Files\midi\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testDiatonicUtils2.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
