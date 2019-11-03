@@ -19,6 +19,39 @@ class DiatonicUtils
 public:
 
     /*****************************************************************
+     * Constants for the 12 pitches in a chromatic scale
+     */
+    static const int c = {0};
+    static const int c_ = {1};
+    static const int d = {2};
+    static const int d_ = {3};
+    static const int e = {4};
+    static const int f = {5};
+    static const int f_ = {6};
+    static const int g = {7};
+    static const int g_ = {8};
+    static const int a = {9};
+    static const int a_ = {10};
+    static const int b = {11};
+
+    /**
+     * can handle pitches 0..23
+     */
+    static std::string getPitchString(int pitch);
+
+    enum class Modes
+    {
+        Major,
+        Dorian,
+        Phrygian,
+        Lydian,
+        Mixolydian,
+        Minor,
+        Locrian
+    };
+
+
+    /*****************************************************************
      * Utilities for C Major
      */
     static bool isNoteInC(int pitch);
@@ -28,6 +61,8 @@ public:
      * return is 0 for root, 1 for second...
      */
     static int getScaleDegreeInC(int pitch);
+
+    static int getScaleDegree(int pitch, int key, Modes mode);
 
     /**
      * Gets a vector of pitch offsets for transpose.
@@ -40,7 +75,7 @@ public:
     static std::vector<int> getTransposeInCQuantized(int _transposeAmount);
     static std::vector<int> getTransposeInCInformed(int _transposeAmount);
 
-    static std::vector<int> getInvertInCInformed(int invertAxis);
+    //static std::vector<int> getInvertInCInformed(int invertAxis);
 
 
     /**
@@ -73,38 +108,6 @@ public:
     static std::pair<int, int> normalizePitch(int);
 
 
-    /*****************************************************************
-     * Constants for the 12 pitches in a chromatic scale
-     */
-    static const int c = {0};
-    static const int c_ = {1};
-    static const int d = {2};
-    static const int d_ = {3};
-    static const int e = {4};
-    static const int f = {5};
-    static const int f_ = {6};
-    static const int g = {7};
-    static const int g_ = {8};
-    static const int a = {9};
-    static const int a_ = {10};
-    static const int b = {11};
-
-    /**
-     * can handle pitches 0..23
-     */
-    static std::string getPitchString(int pitch);
-
-    enum class Modes
-    {
-        Major,
-        Dorian,
-        Phrygian,
-        Lydian,
-        Mixolydian,
-        Minor,
-        Locrian
-    };
-
     /********************** not constrained to C ***************************/
 
     /**
@@ -112,7 +115,7 @@ public:
      * Forces output to be in mode.
      */
     static std::vector<int> getTranspose(int transposeAmount, int keyRoot, Modes mode, bool quantize);
-    static std::vector<int> getInvert(int invertAxis, int keyRoot, Modes mode);
+  //  static std::vector<int> getInvert(int invertAxis, int keyRoot, Modes mode);
 
     /**
      * Computes relative pitch offset of a mode relative to CMajor.

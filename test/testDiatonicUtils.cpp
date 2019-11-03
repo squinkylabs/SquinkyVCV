@@ -435,6 +435,12 @@ static void testGetScaleDegreeInC()
 
     assertEQ(DiatonicUtils::getScaleDegreeInC(12), 0);
     assertEQ(DiatonicUtils::getScaleDegreeInC(24), 0);
+}
+
+
+static void testGetScaleDegree()
+{
+    assertEQ(DiatonicUtils::getScaleDegree(0, 0, DiatonicUtils::Modes::Major), 0);
 
 }
 
@@ -492,82 +498,6 @@ static void assertInvertValidInC(const std::vector<int> invert, int axis)
             assert(DiatonicUtils::isNoteInC(i));
         }
     }
-}
-
-
-static void testInvertInCInformed(int axis)
-{
-    auto x = DiatonicUtils::getInvertInCInformed(axis);
-
-    std::stringstream str;
-    str << "test c1-inv (axis=" << axis << ")";
-
-   // DiatonicUtils::_dumpTransposes(str.str().c_str(), x);
-    assertInvertValidInC(x, axis);
-}
-
-static void testInvertInCInformed()
-{
-    testInvertInCInformed(0);
-    for (int i = 0; i < 11; ++i) {
-        testInvertInCInformed(i);
-    }
-}
-
-static void testInvertInC2Informed()
-{
-    const int axisSemitones = PitchUtils::cvToSemitone(0);
-    auto invert = DiatonicUtils::getInvertInCInformed(axisSemitones);
-
-    std::stringstream str;
-    str << "test testInvertInC2Informed (axis=" << axisSemitones << ")";
-    DiatonicUtils::_dumpTransposes(str.str().c_str(), invert);
-
-    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
-    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::b - 12);
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
-    assertEQ(invert[DiatonicUtils::d_] + DiatonicUtils::d_, DiatonicUtils::a - 12);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g - 12);
-    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::f_ - 12);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
-
-    assertEQ(invert[DiatonicUtils::g_] + DiatonicUtils::g_, DiatonicUtils::e - 12);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
-    assertEQ(invert[DiatonicUtils::a_] + DiatonicUtils::a_, DiatonicUtils::d - 12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
-
-    // now do the same test with a non-c axis
-   // assert(false);
-}
-
-static void testInvertInC2InformedFAxis()
-{
-    const int axisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::f;
-    auto invert = DiatonicUtils::getInvertInCInformed(axisSemitones);
-
-    std::stringstream str;
-    str << "test testInvertInC2InformedFAxis (axis=" << axisSemitones << ")";
-    DiatonicUtils::_dumpTransposes(str.str().c_str(), invert);
-
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
-    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::e);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::e);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::d);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::c);
-
-    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::b);
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::a);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::g);
-  
-#if 0
-   
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::f);
-
-    assert(false);
-#endif
 }
 
 static void testInvertLambdaChromatic()
@@ -720,39 +650,7 @@ static void testInvertLambdaSanity()
     testInvertLambdaSanity(false);
     testInvertLambdaSanity(true);
 }
-static void testInvert()
-{
-    int axis = 0;
-    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("testInvert", invert);
-    assertInvertValidInC(invert, axis);
 
-    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g - 12);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
-}
-
-static void testInvertC()
-{
-    // try in C Major
-    // rotate on the c
-    int axis = 0;
-    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("testInvertC", invert);
-    assertInvertValidInC(invert, axis);
-
-    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::b - 12);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::a - 12);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::g - 12);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::f - 12);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::e - 12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::d - 12);
-}
 
 static void testInvertLambdaC()
 {
@@ -965,98 +863,11 @@ static void testInvertLambdaCAllAxis()
    
 }
 
-static void testInvertC15()
-{
-    // try in C Major
-    // rotate on the D
-    const int axisSemitones = PitchUtils::cvToSemitone(0);
- //   int axis = 0;
-    std::vector<int> invert = DiatonicUtils::getInvert(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("testInvertC15", invert);
-    assertInvertValidInC(invert, axisSemitones);
-
-    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::c);
-    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::b);
-
-    printf("TODO: the rest of 15\n");
-#if 0
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::d);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::c);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::b - 12);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::a - 12);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::g - 12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::f - 12);
-#endif
-}
-
-
-
-static void testInvertC2()
-{
-    // try in C Major
-    // rotate on the D
-    int axis = 2;
-    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::c, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("testInvertC2", invert);
-    assertInvertValidInC(invert, axis);
-
-    assertEQ(invert[DiatonicUtils::c] + DiatonicUtils::c, DiatonicUtils::e);
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::d);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::c);
-    assertEQ(invert[DiatonicUtils::f] + DiatonicUtils::f, DiatonicUtils::b-12);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::a-12);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::g-12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::f-12);
-}
-
-static void testInvertDAxis0()
-{
-    // try in D Major
-    // rotate on the D
-    int axis = 0;
-    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::d, DiatonicUtils::Modes::Major);
-  //  DiatonicUtils::_dumpTransposes("testInvertDAx0", invert);
-    assertInvertValidInC(invert, axis);
-
-    // Look at the in-scale notes
-    // D ->  D
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::d);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::c);
-
-    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::d);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::c_);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::b - 12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::a - 12);
-    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::g - 2 * 12);
-}
-
-static void testInvertD()
-{
-    // try in D Major
-    // rotate on the E
-    int axis = 1;
-    std::vector<int> invert = DiatonicUtils::getInvert(axis, DiatonicUtils::d, DiatonicUtils::Modes::Major);
-    DiatonicUtils::_dumpTransposes("testInvertD", invert);
-    assertInvertValidInC(invert, axis);
-
-    // D ->  F#
-    assertEQ(invert[DiatonicUtils::d] + DiatonicUtils::d, DiatonicUtils::f_);
-    assertEQ(invert[DiatonicUtils::e] + DiatonicUtils::e, DiatonicUtils::e);
-    assertEQ(invert[DiatonicUtils::f_] + DiatonicUtils::f_, DiatonicUtils::d);
-    assertEQ(invert[DiatonicUtils::g] + DiatonicUtils::g, DiatonicUtils::c_);
-    assertEQ(invert[DiatonicUtils::a] + DiatonicUtils::a, DiatonicUtils::b-12);
-    assertEQ(invert[DiatonicUtils::b] + DiatonicUtils::b, DiatonicUtils::a-12);
-    assertEQ(invert[DiatonicUtils::c_] + DiatonicUtils::c_, DiatonicUtils::g - 2 * 12);
-}
-
 void testDiatonicUtils()
 {
-    // temp - put failing test first
-    testInvertDAxis0();
-
-
     testIsNoteInC();
     testGetScaleDegreeInC();
+    testGetScaleDegree();
     testqQuantizeXposeToScaleDegreeInC();
     testGetPitchFromScaleDegree();
     testTransposeC_Quantized();
@@ -1075,21 +886,7 @@ void testDiatonicUtils()
     testTransposeLambdaDiatonicWholeOct();
     testTransposeLambdaOctaves();
 
-    testInvertInCInformed();
 
-    printf("PUT BACK testInvertInC2\n");
-    testInvertInC2Informed();
-    testInvertInC2InformedFAxis();
-    testInvert();
-    printf("put invert tests back\n");
-    testInvertC();
-
-    printf("put back testInvertC15\n");
-  //  testInvertC15();
-    testInvertC2();
-
-    testInvertDAxis0();
-    testInvertD();
     testInvertLambdaChromatic();
     testInvertLambdaChromatic2();
     testInvertLambdaC();

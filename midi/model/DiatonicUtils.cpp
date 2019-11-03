@@ -96,81 +96,6 @@ std::vector<int> DiatonicUtils::getTransposeInC(int amount, bool quantized)
     }
 }
 
-
-
-std::vector<int> DiatonicUtils::getInvertInCInformed(int invertAxis)
-{
-    printf("getInvertInCInformed called with axis %d\n", invertAxis);
-    std::vector<int> ret(12);
- // initialize to absurd value
-    for (int i = 0; i < 12; ++i) {
-        ret[i] = -1000;
-    }
-
-    auto normalizedAxis = normalizePitch(invertAxis);
-    const int axisSemis = normalizedAxis.second;
-   // const int axisOctaves = normalizedAxis.first;
-
-    assert(axisSemis >= 0);
-    assert(axisSemis < 12);       // callers should normalize out the octaves. Or we should support it?
-
-    const int scaleDegreesOfAxis = quantizeXposeToScaleDegreeInC(axisSemis);
-
-    // First do the notes in C
-    for (int i = 0; i < 12; ++i) {
-        const bool isInC = DiatonicUtils::isNoteInC(i);
-        if (isInC) {
-            bool wrapped = false;
-            const int initialScaleDegree = getScaleDegreeInC(i);
-            int scaleDegreeAfterInvert = 2 * scaleDegreesOfAxis - initialScaleDegree;
-            printf("\ninitial degree = %d, axis degree = %d flipped degree = %d\n", initialScaleDegree, scaleDegreesOfAxis, scaleDegreeAfterInvert);
-            if (scaleDegreeAfterInvert < 0) {
-                scaleDegreeAfterInvert += 7;    // get them back to non-negative
-                wrapped = true;
-            }
-
-            int pitchAfterInvert = getPitchFromScaleDegree(scaleDegreeAfterInvert);
-            if (wrapped) {
-                pitchAfterInvert -= 12;
-            }
-            printf("%d: initdeg=%d deg-aft-inv=%d semi-after-inv=%d\n", i, initialScaleDegree, scaleDegreeAfterInvert, pitchAfterInvert);
-
-            const int delta = pitchAfterInvert - i;
-            ret[i] = delta;
-        }
-    }
-
-    for (int i = 0; i < 12; ++i) {
-        const bool isInC = DiatonicUtils::isNoteInC(i);
-        if (!isInC) {
-#if 1
-            const int normalizedPitchAxis = normalizePitch(invertAxis).second;
-            const bool shiftOctave = (normalizedPitchAxis == 0);            // test in all axis
-            int invert = normalizePitch(2 * invertAxis - i).second;
-            if (shiftOctave) {
-                invert -= 12;
-            }
-
-            const int delta = invert - i;
-            printf("[%d] chrom -> %d (invert) delta = %d\n", i, invert, delta);
-            ret[i] = delta;
-
-#else
-            // original - only works for axis C
-            int invert = invertAxis - i;
-            invert = normalizePitch(invert).second;     // just keep the semis, to track what the inC ones do
-            invert -= 12;
-            printf("[%d] chr -> %d (invert)\n", i, invert);
-            const int delta = invert - i;
-            ret[i] = delta;
-#endif
-        }
-    }
-    _dumpTransposes("end of getInvertInCInformed", ret);
-
-    return ret;
-}
-
 std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
 {
     auto normalizedTransposeAmount = normalizePitch(_transposeAmount);
@@ -414,52 +339,6 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
     return ret;
 }
 
-
-std::vector<int> DiatonicUtils::getInvert(int invertAxis, int keyRoot, Modes mode)
-{
-    printf("** getInvert axis = %d, key = %d, mode = %d\n", invertAxis, keyRoot, int(mode));
-    const int offset = getPitchOffsetRelativeToCMaj(keyRoot, mode);
-    printf("get invert will rotate around axis with relative pitch offset %d\n", offset);
-    const std::vector<int> invert = getInvertInCInformed(invertAxis);
-    std::vector<int> ret(12);
-
-    const int rootEntryOrig = invert[keyRoot];
-#if 1
-    for (int sourceIndex = 0; sourceIndex < 12; ++sourceIndex) {
-        
-        int destIndex = sourceIndex - offset;
-        if (destIndex < 0) {
-            destIndex += 12;
-        }
-
-        ret[destIndex] = invert[sourceIndex];
-    }
-#else
-    // crap, this is rotating in the wrong direction?
-   
-    for (int sourceIndex = 0; sourceIndex < 12; ++sourceIndex) {
-        int destIndex = sourceIndex + offset;
-        if (destIndex > 11) {
-            destIndex -= 12;
-        }
-        ret[destIndex] = invert[sourceIndex];
-    }
-#endif
-    const int rootEntryRotated = ret[keyRoot];
-    printf("rotate chanced root entry from %d to %d, diff = %d\n", rootEntryOrig, rootEntryRotated, rootEntryOrig - rootEntryRotated);
-    _dumpTransposes("almost end of getInvert, after rotate", ret);
-
-    const int correction = rootEntryOrig - rootEntryRotated;
-    for (int i = 0; i < 12; ++i) {
-        ret[i] += correction;
-    }
-
-    _dumpTransposes("end of getInvert, after correction", ret);
-
-
-    return ret;
-}
-
 std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
     int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
@@ -477,6 +356,10 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
         };
     } else {
         printf("makeInvertLambda about to call getInvert\n");
+        assert(false);
+        return[](MidiEventPtr event) {};
+
+#if 0
         auto inverts = getInvert(invertAxisSemitones, keyRoot, mode);
         for (int i = 0; i < 12; ++i) {
             printf("c inverts[%d] = %d\n", i, inverts[i]);
@@ -495,6 +378,7 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
                 note->pitchCV = PitchUtils::semitoneToCV(invertedSemi) - 2 * octaveCorrection;
             }
         };
+#endif
     }
 }
 
@@ -618,6 +502,11 @@ int DiatonicUtils::getScaleDegreeInC(int _pitch)
             assert(false);
     }
     return ret;
+}
+
+int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
+{
+    return 0;
 }
 
 

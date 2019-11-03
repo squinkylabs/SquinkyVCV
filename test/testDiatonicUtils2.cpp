@@ -26,11 +26,12 @@ static int normalizeDegree(int degree)
     return degree;
 }
 
+// TODO: other axis
+// TODO: other scales
+// TODO: chromatic pitches
 std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(
     int invertAxisSemitones, int keyRoot, DiatonicUtils::Modes mode)
 {
-
-
     auto axisPitch = DiatonicUtils::normalizePitch(invertAxisSemitones);
     int axisOctave = axisPitch.first;
     int axisSemitone = axisPitch.second;
@@ -44,6 +45,7 @@ std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(
             auto pitch = PitchUtils::cvToPitch(note->pitchCV);
             int octave = pitch.first;
             int semitone = pitch.second;
+            assert(DiatonicUtils::isNoteInC(semitone));
             int degree = DiatonicUtils::getScaleDegreeInC(semitone);
 
             int destinationDegree = axisDegree * 2 - degree;
