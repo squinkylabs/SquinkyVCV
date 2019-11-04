@@ -172,8 +172,8 @@ int main(int argc, char ** argv)
     testUndoRedo();
     testMidiViewport();
     testDiatonicUtils2();
-    printf("Put back testDiatonicUtils\n");
-   // testDiatonicUtils();
+
+    testDiatonicUtils();
  
     testMidiFile();
     testMidiControllers();

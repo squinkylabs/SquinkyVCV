@@ -504,9 +504,102 @@ int DiatonicUtils::getScaleDegreeInC(int _pitch)
     return ret;
 }
 
+
+int normalize(int input, int end)
+{
+    int ret = input;
+    while (ret < 0) {
+        ret += end;
+    }
+    while (ret >= end) {
+        ret -= end;
+    }
+    assert(ret >= 0 && ret < end);
+    return ret;
+}
+
+// attempting one that work in relative modes form c maj
+// a) we need to know how many degrees we need to shift to get to CMaj
+// then we fine degree of (pitch) in cmaj, and shift it back down by a
 int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
 {
-    return 0;
+    const int modeOffset = getOffsetToRelativeMaj(mode);
+    assertEQ (normalize(modeOffset + key, 12), 0);
+
+    // modeOffset is semitones we need shift to get to cmaj
+    // what is the scale degrees?
+    // well, what if we go down by modeOffset from C? That would be degees shift to get to scale
+    const int offsetToOtherFromC = normalize(-modeOffset, 12);
+    const int scaleDegreeOffset = getScaleDegreeInC(offsetToOtherFromC);
+
+    const int scaleDegreeInC = getScaleDegreeInC(pitch);    // it better be in C, but it will, since it's a relative
+    const int degree = scaleDegreeInC - scaleDegreeOffset;
+    assert(degree >= 0);
+    return degree;
 }
+
+// this one works in major keys
+#if 0
+int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
+{
+    assert(mode == Modes::Major);
+
+    // how much we need to move up to get into Major
+    //const int modeOffset = getOffsetToRelativeMaj(mode);
+
+
+    // if in mode, move the pitch into cmaj (by adding mode offset),
+    // find degree of (note + mode offset) in C,
+    // that's it
+
+    // how much we need to shift to get to C
+    const int offsetToC = -key;
+
+    const int pitchInC = normalize(pitch + offsetToC, 12);
+    const int ret = getScaleDegreeInC(pitchInC);
+    return ret;
+}
+#endif
+
+// old attempts
+
+#if 0
+int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
+{
+    const int modeOffset = getOffsetToRelativeMaj(mode);
+
+    // how much you need to offset pitch to get it into c
+    const int rootOffset = key;
+    const int totalOffset = modeOffset + rootOffset;
+    int offsetPitch = pitch +totalOffset;
+    while (offsetPitch > 11) {
+        offsetPitch -= 12;
+    }
+
+    const int degreesInOffset = getScaleDegreeInC(totalOffset);
+
+    const int offsetDegree = getScaleDegreeInC(offsetPitch);
+    const int finalDegree = offsetDegree - degreesInOffset;
+
+ //   int rootOffset = key;
+    return getScaleDegreeInC(pitch - rootOffset);
+}
+#endif
+
+#if 0
+int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
+{
+    const int modeOffset = getOffsetToRelativeMaj(mode);
+    const int rootOffset = key;
+    const int offsetPitch = pitch + offset;
+    const int degreesInOffset = getScaleDegreeInC(offset);
+
+    const int offsetDegree = getScaleDegreeInC(offsetPitch);
+    const int finalDegree = offsetDegree - degreesInOffset;
+
+    int rootOffset = key;
+    return getScaleDegreeInC(pitch - rootOffset);
+}
+#endif
 
 
