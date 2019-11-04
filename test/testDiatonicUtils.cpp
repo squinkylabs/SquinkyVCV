@@ -100,7 +100,6 @@ static void assertTransposeValidC_Informed(const std::vector<int> _xpose, int am
         const int x = _xpose[i];
         if (DiatonicUtils::isNoteInC(i)) {
 
-            printf("\nin loop, i=%d\n", i);
             // first compute what it should be
             const int originalDegree = DiatonicUtils::getScaleDegreeInC(i);
 
@@ -440,14 +439,19 @@ static void testGetScaleDegreeInC()
 
 static void testGetScaleDegree()
 {
-#if 1   // these all work with the major version
+
     // C major 
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::c, DiatonicUtils::c, DiatonicUtils::Modes::Major), 0);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::c_, DiatonicUtils::c, DiatonicUtils::Modes::Major), -1);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::d, DiatonicUtils::c, DiatonicUtils::Modes::Major), 1);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::d_, DiatonicUtils::c, DiatonicUtils::Modes::Major), -1);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::e, DiatonicUtils::c, DiatonicUtils::Modes::Major), 2);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::f, DiatonicUtils::c, DiatonicUtils::Modes::Major), 3);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::f_, DiatonicUtils::c, DiatonicUtils::Modes::Major), -1);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::g, DiatonicUtils::c, DiatonicUtils::Modes::Major), 4);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::g_, DiatonicUtils::c, DiatonicUtils::Modes::Major), -1);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::a, DiatonicUtils::c, DiatonicUtils::Modes::Major), 5);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::a_, DiatonicUtils::c, DiatonicUtils::Modes::Major), -1);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::b, DiatonicUtils::c, DiatonicUtils::Modes::Major), 6);
 
     // first note in other major scales
@@ -462,7 +466,7 @@ static void testGetScaleDegree()
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::a, DiatonicUtils::d, DiatonicUtils::Modes::Major), 4);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::b, DiatonicUtils::d, DiatonicUtils::Modes::Major), 5);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::c_, DiatonicUtils::d, DiatonicUtils::Modes::Major), 6);
-#endif
+
 
     // simple modes (whose relative major is C
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::a, DiatonicUtils::a, DiatonicUtils::Modes::Minor), 0);

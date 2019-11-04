@@ -45,6 +45,7 @@ std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(
             auto pitch = PitchUtils::cvToPitch(note->pitchCV);
             int octave = pitch.first;
             int semitone = pitch.second;
+
             assert(DiatonicUtils::isNoteInC(semitone));
             int degree = DiatonicUtils::getScaleDegreeInC(semitone);
 
@@ -63,7 +64,8 @@ std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(
             printf("inverted cv = %.2f chromatic = %.2f\n", destinationPitchCV, temp->pitchCV);
             const float chromaticResult = temp->pitchCV;
 
-            while (destinationPitchCV < (chromaticResult - 3 * PitchUtils::semitone))
+            const float lowerBound = (chromaticResult - 3 * PitchUtils::semitone);
+            while (destinationPitchCV < lowerBound)
             {
                 destinationPitchCV += 1.f;
             }
@@ -141,11 +143,143 @@ static void testCMajAxis0()
    note->pitchCV = DiatonicUtils::c * PitchUtils::semitone - 1;
    lambda(note);
    assertClose(note->pitchCV, DiatonicUtils::c * PitchUtils::semitone + 1, .0001);
+}
+
+
+static void testCMajAxis2()
+{
+    const int axisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::d;
+    auto lambda = makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Major);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    // C -> E
+    note->pitchCV = DiatonicUtils::c * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::e * PitchUtils::semitone, .0001);
+
+    // D -> D
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone, .0001);
+
+    // E -> C
+    note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::c * PitchUtils::semitone, .0001);
+
+     // F -> B
+    note->pitchCV = DiatonicUtils::f * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+     // g->a
+    note->pitchCV = DiatonicUtils::g * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
+
+     // a->g
+    note->pitchCV = DiatonicUtils::a * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g * PitchUtils::semitone - 1, .0001);
+
+     // b -> f
+    note->pitchCV = DiatonicUtils::b * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::f * PitchUtils::semitone - 1, .0001);
+
+    // d2 ->d02   
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone + 1;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone - 1, .0001);
+}
+
+static void testAMinAxis0()
+{
+    const int axisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::a;
+    auto lambda = makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::a, DiatonicUtils::Modes::Minor);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    // A -> A
+    note->pitchCV = DiatonicUtils::a * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone, .0001);
+
+    // B -> G
+    note->pitchCV = DiatonicUtils::b * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g * PitchUtils::semitone, .0001);
+
+    // C -> F
+    note->pitchCV = DiatonicUtils::c * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::f * PitchUtils::semitone + 1, .0001);
+
+     // D -> E
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::e * PitchUtils::semitone + 1, .0001);
+
+     // E->D
+    note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone + 1, .0001);
+
+     // f->c
+    note->pitchCV = DiatonicUtils::f * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::c * PitchUtils::semitone + 1, .0001);
+
+     // g -> b
+    note->pitchCV = DiatonicUtils::g * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone , .0001);
+
+    // a2 ->d02   
+    note->pitchCV = DiatonicUtils::a * PitchUtils::semitone + 1;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
 
 }
+
+
+
+static void testCminorAxis0()
+{
+
+    const int axisSemitones = PitchUtils::cvToSemitone(0);
+    auto lambda = makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Minor);
+
+
+    // C -> C
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, 0);            // flip around 0
+
+    // C# -> B
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+
+     // D -> B flat
+    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a_ * PitchUtils::semitone - 1, .0001);
+
+
+    assert(false);      // finish me
+}
+
+
 
 void testDiatonicUtils2()
 {
     test0();
     testCMajAxis0();
+    testCMajAxis2();
+    testAMinAxis0();
+    printf("add back cminor\n");
+    //testCminorAxis0();
 }

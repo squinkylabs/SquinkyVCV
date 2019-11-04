@@ -540,6 +540,10 @@ int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
     // in that one, offsetToC was -key
     const int offsetToC = -extraOffset;
     const int pitchInC = normalize(pitch + offsetToC, 12);
+
+    if (!isNoteInC(pitchInC)) {
+        return -1;
+    }
     const int scaleDegreeInC = getScaleDegreeInC(pitchInC);
 
     // old code, only for major scales
