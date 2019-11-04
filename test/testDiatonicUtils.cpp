@@ -456,8 +456,14 @@ static void testGetScaleDegree()
 
     // first note in other major scales
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::d, DiatonicUtils::d, DiatonicUtils::Modes::Major), 0);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::d_, DiatonicUtils::d, DiatonicUtils::Modes::Major), -1);
+
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::b, DiatonicUtils::b, DiatonicUtils::Modes::Major), 0);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::c, DiatonicUtils::b, DiatonicUtils::Modes::Major), -1);
+
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::a_, DiatonicUtils::a_, DiatonicUtils::Modes::Major), 0);
+    assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::b, DiatonicUtils::a_, DiatonicUtils::Modes::Major), -1);
+
 
     // a few other minor scale things
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::e, DiatonicUtils::d, DiatonicUtils::Modes::Major), 1);
