@@ -518,9 +518,43 @@ int normalize(int input, int end)
     return ret;
 }
 
-// attempting one that work in relative modes form c maj
+
+
+// attempt at combining them
+int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
+{
+    // offset due to mode note being C
+    const int modeOffset = getOffsetToRelativeMaj(mode);
+
+    // extra offset for root C not being the relative major of 'mode'
+    const int extraOffset = (normalize(modeOffset + key, 12));
+   // assertEQ(normalize(modeOffset + key, 12), 0);
+
+     // modeOffset is semitones we need shift to get to cmaj
+    // what is the scale degrees?
+    // well, what if we go down by modeOffset from C? That would be degees shift to get to scale
+    const int offsetToOtherFromC = normalize(-modeOffset, 12);
+    const int scaleDegreeOffset = getScaleDegreeInC(offsetToOtherFromC);
+
+    //from simple major one
+    // in that one, offsetToC was -key
+    const int offsetToC = -extraOffset;
+    const int pitchInC = normalize(pitch + offsetToC, 12);
+    const int scaleDegreeInC = getScaleDegreeInC(pitchInC);
+
+    // old code, only for major scales
+ //   const int scaleDegreeInC = getScaleDegreeInC(pitch);    // it better be in C, but it will, since it's a relative
+    int degree = scaleDegreeInC - scaleDegreeOffset;
+    //assert(degree >= 0);
+    degree = normalize(degree, 7);
+    return degree;
+
+}
+
+// work in relative modes from c maj
 // a) we need to know how many degrees we need to shift to get to CMaj
 // then we fine degree of (pitch) in cmaj, and shift it back down by a
+#if 0
 int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
 {
     const int modeOffset = getOffsetToRelativeMaj(mode);
@@ -533,10 +567,12 @@ int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
     const int scaleDegreeOffset = getScaleDegreeInC(offsetToOtherFromC);
 
     const int scaleDegreeInC = getScaleDegreeInC(pitch);    // it better be in C, but it will, since it's a relative
-    const int degree = scaleDegreeInC - scaleDegreeOffset;
-    assert(degree >= 0);
+    int degree = scaleDegreeInC - scaleDegreeOffset;
+    //assert(degree >= 0);
+    degree = normalize(degree, 7);
     return degree;
 }
+#endif
 
 // this one works in major keys
 #if 0

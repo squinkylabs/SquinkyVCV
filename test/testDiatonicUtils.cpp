@@ -440,7 +440,7 @@ static void testGetScaleDegreeInC()
 
 static void testGetScaleDegree()
 {
-#if 0   // these all work with the major version
+#if 1   // these all work with the major version
     // C major 
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::c, DiatonicUtils::c, DiatonicUtils::Modes::Major), 0);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::d, DiatonicUtils::c, DiatonicUtils::Modes::Major), 1);
@@ -472,7 +472,7 @@ static void testGetScaleDegree()
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::g, DiatonicUtils::g, DiatonicUtils::Modes::Mixolydian), 0);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::b, DiatonicUtils::b, DiatonicUtils::Modes::Locrian), 0);
 
-    // AMinor
+    // AMinor (relative minor of c)
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::a, DiatonicUtils::a, DiatonicUtils::Modes::Minor), 0);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::b, DiatonicUtils::a, DiatonicUtils::Modes::Minor), 1);
     assertEQ(DiatonicUtils::getScaleDegree(DiatonicUtils::c, DiatonicUtils::a, DiatonicUtils::Modes::Minor), 2);
