@@ -875,12 +875,11 @@ static void testInvertLambdaCMinor()
     assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
 
      // D -> B flat
-    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
     lambda(note);
     assertClose(note->pitchCV, DiatonicUtils::a_ * PitchUtils::semitone - 1, .0001);
 
 
-    assert(false);      // finish me
 }
 
 // failing test case from general test.
@@ -908,26 +907,28 @@ static void testInvertLambdaCAxis0()
     assertEQ(note->pitchCV, -8);            // flip around -4
 
     // C# -> B
-    printf("finish testInvertLambdaC with chromatic pitches\n");
     note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
     lambda(note);
-    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 9, .0001);
 
     // D -> B
     note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
     lambda(note);
-    assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
+    assertClose(note->pitchCV, DiatonicUtils::a_ * PitchUtils::semitone - 9, .0001);
 
     //new case
-    // D# -> A
+    // D# -> g#
     note->pitchCV = DiatonicUtils::d_ * PitchUtils::semitone;
     lambda(note);
-    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
+    assertClose(note->pitchCV, DiatonicUtils::g_ * PitchUtils::semitone - 9, .0001);
 
-    // E -> A
+    // finish these, if we care to
+#if 0
+
+    // E -> G
     note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
     lambda(note);
-    assertClose(note->pitchCV, DiatonicUtils::a * PitchUtils::semitone - 1, .0001);
+    assertClose(note->pitchCV, DiatonicUtils::g * PitchUtils::semitone - 9, .0001);
 
     note->pitchCV = DiatonicUtils::f * PitchUtils::semitone;
     lambda(note);
@@ -944,10 +945,11 @@ static void testInvertLambdaCAxis0()
     note->pitchCV = DiatonicUtils::b * PitchUtils::semitone;
     lambda(note);
     assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone - 1, .0001);
+#endif
 
     note->pitchCV = 1;
     lambda(note);
-    assertClose(note->pitchCV, -1, .0001);
+    assertClose(note->pitchCV, -9, .0001);
 }
 
 static void testInvertLambdaCAllAxis()
@@ -1030,7 +1032,7 @@ void testDiatonicUtils()
     testInvertLambdaChromatic2();
 
     printf("put back all the invert tests\n");
-#if 0
+
     testInvertLambdaC();
     testInvertLambdaCMinor();
     testInvertLambdaCAxis0();
@@ -1040,7 +1042,7 @@ void testDiatonicUtils()
 
     printf("put back test testInvertLambdaDirection\n");
     testInvertLambdaDirection();
-#endif
+
     
     printf("***** Make some lambda tests for octaves!\n");
 

@@ -286,14 +286,11 @@ static void testCminorAxis0()
 
 }
 
-
-
 void testDiatonicUtils2()
 {
     test0();
     testCMajAxis0();
     testCMajAxis2();
     testAMinAxis0();
-    printf("add back cminor\n");
     testCminorAxis0();
 }
