@@ -700,7 +700,7 @@ static void testInvertLambdaDirection(bool constrain)
         note->pitchCV = PitchUtils::semitoneToCV(i);
         lambda(note);
         if (constrain) {
-            assert(note->pitchCV <= lastPitch);         // can be equal in constrain keysig
+            assert(note->pitchCV <= (lastPitch + .0001));         // can be equal in constrain keysig
         } else {
             assert(note->pitchCV < lastPitch);
         }
