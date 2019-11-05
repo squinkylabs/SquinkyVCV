@@ -412,6 +412,27 @@ int DiatonicUtils::getPitchFromScaleDegreeInCLydian(int degree)
 {
     int ret = 0;
     switch (degree) {
+        case 0:
+            ret = 0;
+            break;
+        case 1:
+            ret = 2;
+            break;
+        case 2:
+            ret = 4;
+            break;
+        case 3:
+            ret = 6;        // no 4th, tritone
+            break;
+        case 4:
+            ret = 7;
+            break;
+        case 5:
+            ret = 9;
+            break;
+        case 6:
+            ret = 11;
+            break;
 
     
         default:
@@ -455,6 +476,27 @@ int DiatonicUtils::getPitchFromScaleDegreeInCLocrian(int degree)
 {
     int ret = 0;
     switch (degree) {
+        case 0:
+            ret = 0;
+            break;
+        case 1:
+            ret = 1;        // flat 2
+            break;
+        case 2:
+            ret = 3;        // flat 3;
+            break;
+        case 3:
+            ret = 5;
+            break;
+        case 4:
+            ret = 6;        // no fifth, tritone
+            break;
+        case 5:
+            ret = 8;
+            break;
+        case 6:
+            ret = 10;
+            break;
         default:
             assert(false);
     }
