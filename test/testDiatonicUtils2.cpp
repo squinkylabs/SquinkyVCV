@@ -3,7 +3,7 @@
 
 #include "asserts.h"
 
-std::function<void(MidiEventPtr)> makeInvertLambdaChromatic(int invertAxisSemitones)
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambdaChromatic(int invertAxisSemitones)
 { 
     const float axis = PitchUtils::semitoneToCV(invertAxisSemitones);
     return [axis](MidiEventPtr event) {
@@ -14,22 +14,19 @@ std::function<void(MidiEventPtr)> makeInvertLambdaChromatic(int invertAxisSemito
     };
 }
 
-// this is really dumb!
-static int normalizeDegree(int degree)
+
+
+
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
-    while (degree < 0) {
-        degree += 7;
+    if (constrainToKeysig) {
+        return makeInvertLambdaDiatonic(invertAxisSemitones, keyRoot, mode);
+    } else {
+        return makeInvertLambdaChromatic(invertAxisSemitones);
     }
-    while (degree >= 7) {
-        degree -= 7;
-    }
-    return degree;
 }
 
-// TODO: other axis
-// TODO: other scales
-// TODO: chromatic pitches
-std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambdaDiatonic(
     int invertAxisSemitones, int keyRoot, DiatonicUtils::Modes mode)
 {
     auto axisPitch = DiatonicUtils::normalizePitch(invertAxisSemitones);
@@ -57,10 +54,12 @@ std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(
 
 
             int destinationDegree = axisDegree * 2 - degree;
-            destinationDegree = normalizeDegree(destinationDegree);      // normalize degrees
+            destinationDegree = DiatonicUtils::normalizeDegree(destinationDegree);      // normalize degrees
 
 
-            int destinationPitchSemititones = DiatonicUtils::getPitchFromScaleDegreeInC(destinationDegree);
+           // int destinationPitchSemititones = DiatonicUtils::getPitchFromScaleDegreeInC(destinationDegree);
+            int destinationPitchSemititones = DiatonicUtils::getPitchFromScaleDegree(destinationDegree, keyRoot, mode);
+          //  assert(destinationPitchSemititones == destinationPitchSemititones2);
 
             float destinationPitchCV = PitchUtils::semitoneToCV(destinationPitchSemititones);
 
@@ -91,13 +90,13 @@ std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(
 
 static void test0()
 {
-    auto lambda = makeInvertLambdaDiatonic(0, 0, DiatonicUtils::Modes::Major);
+    auto lambda = DiatonicUtils::makeInvertLambdaDiatonic(0, 0, DiatonicUtils::Modes::Major);
 }
 
 static void testCMajAxis0()
 {
    const int axisSemitones = PitchUtils::cvToSemitone(0);
-   auto lambda = makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Major);
+   auto lambda = DiatonicUtils::makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Major);
 
    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
 
@@ -156,7 +155,7 @@ static void testCMajAxis0()
 static void testCMajAxis2()
 {
     const int axisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::d;
-    auto lambda = makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Major);
+    auto lambda = DiatonicUtils::makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Major);
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
 
@@ -204,7 +203,7 @@ static void testCMajAxis2()
 static void testAMinAxis0()
 {
     const int axisSemitones = PitchUtils::cvToSemitone(0) + DiatonicUtils::a;
-    auto lambda = makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::a, DiatonicUtils::Modes::Minor);
+    auto lambda = DiatonicUtils::makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::a, DiatonicUtils::Modes::Minor);
 
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
 
@@ -251,12 +250,11 @@ static void testAMinAxis0()
 }
 
 
-
 static void testCminorAxis0()
 {
 
     const int axisSemitones = PitchUtils::cvToSemitone(0);
-    auto lambda = makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Minor);
+    auto lambda = DiatonicUtils::makeInvertLambdaDiatonic(axisSemitones, DiatonicUtils::c, DiatonicUtils::Modes::Minor);
 
 
     // C -> C
@@ -270,13 +268,22 @@ static void testCminorAxis0()
     lambda(note);
     assertClose(note->pitchCV, DiatonicUtils::b * PitchUtils::semitone - 1, .0001);
 
-     // D -> B flat
-    note->pitchCV = DiatonicUtils::c_ * PitchUtils::semitone;
+    // D -> B flat
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
     lambda(note);
     assertClose(note->pitchCV, DiatonicUtils::a_ * PitchUtils::semitone - 1, .0001);
 
+     // e flat -> A flat
+    note->pitchCV = DiatonicUtils::d_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g_ * PitchUtils::semitone - 1, .0001);
 
-    assert(false);      // finish me
+      // f -> g
+    note->pitchCV = DiatonicUtils::f * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g * PitchUtils::semitone - 1, .0001);
+   
+
 }
 
 
@@ -286,7 +293,7 @@ void testDiatonicUtils2()
     test0();
     testCMajAxis0();
     testCMajAxis2();
-   // testAMinAxis0();
+    testAMinAxis0();
     printf("add back cminor\n");
-   // testCminorAxis0();
+    testCminorAxis0();
 }

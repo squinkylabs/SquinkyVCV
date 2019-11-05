@@ -533,6 +533,7 @@ std::vector<int> DiatonicUtils::getTranspose(int transposeAmount, int keyRoot, M
     return ret;
 }
 
+#if 0
 std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
     int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
 {
@@ -575,6 +576,7 @@ std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(
 #endif
     }
 }
+#endif
 
 std::function<void(MidiEventPtr)> DiatonicUtils::makeTransposeLambda(
     int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
@@ -698,7 +700,7 @@ int DiatonicUtils::getScaleDegreeInC(int _pitch)
     return ret;
 }
 
-int normalize(int input, int end)
+int DiatonicUtils::normalize(int input, int end)
 {
     int ret = input;
     while (ret < 0) {
@@ -709,6 +711,11 @@ int normalize(int input, int end)
     }
     assert(ret >= 0 && ret < end);
     return ret;
+}
+
+int DiatonicUtils::normalizeDegree(int degree)
+{
+    return normalize(degree, 7);
 }
 
 /*

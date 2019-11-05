@@ -148,5 +148,14 @@ public:
 
     static std::function<void(MidiEventPtr)> makeTransposeLambda(int transposeSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
     static std::function<void(MidiEventPtr)> makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
+    static std::function<void(MidiEventPtr)> makeInvertLambdaChromatic(int invertAxisSemitones);
+    static std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(int invertAxisSemitones, int keyRoot, DiatonicUtils::Modes mode);
 
+    /**
+     * puts input in the range 0..end-1 by 
+     * repeatedly adding or subtracing end
+     */
+    static int normalize(int input, int end);
+
+    static int normalizeDegree(int degree);
 };
