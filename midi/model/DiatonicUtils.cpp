@@ -350,6 +350,27 @@ int DiatonicUtils::getPitchFromScaleDegreeInCDorian(int degree)
 {
     int ret = 0;
     switch (degree) {
+        case 0:
+            ret = 0;
+            break;
+        case 1:
+            ret = 2;
+            break;
+        case 2:         // flat 3rd
+            ret = 3;
+            break;
+        case 3:
+            ret = 5;
+            break;
+        case 4:
+            ret = 7;
+            break;
+        case 5:
+            ret = 9;        // maj 6
+            break;
+        case 6:
+            ret = 10;       // flat 7
+            break;
         default: 
             assert(false);
     }

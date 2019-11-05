@@ -590,6 +590,15 @@ static void testPitchFromScaleDegree()
     assertEQ(DiatonicUtils::getPitchFromScaleDegree(4, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::g);
     assertEQ(DiatonicUtils::getPitchFromScaleDegree(5, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::a);
     assertEQ(DiatonicUtils::getPitchFromScaleDegree(6, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::a_);
+
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0, DiatonicUtils::c, DiatonicUtils::Modes::Dorian), DiatonicUtils::c);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(1, DiatonicUtils::c, DiatonicUtils::Modes::Dorian), DiatonicUtils::d);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(2, DiatonicUtils::c, DiatonicUtils::Modes::Dorian), DiatonicUtils::d_);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(3, DiatonicUtils::c, DiatonicUtils::Modes::Dorian), DiatonicUtils::f);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(4, DiatonicUtils::c, DiatonicUtils::Modes::Dorian), DiatonicUtils::g);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(5, DiatonicUtils::c, DiatonicUtils::Modes::Dorian), DiatonicUtils::a);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(6, DiatonicUtils::c, DiatonicUtils::Modes::Dorian), DiatonicUtils::a_);
+
 }
 
 static void assertInvertValidInC(const std::vector<int> invert, int axis)
