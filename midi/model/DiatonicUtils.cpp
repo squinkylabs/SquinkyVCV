@@ -126,9 +126,6 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
             const int initialScaleDegree = getScaleDegreeInC(i);
             const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
             const int pitchAfterQuantize = getPitchFromScaleDegreeInC(scaleDegreeAfterQuantize);
-            if (pitchAfterQuantize > 11) {
-                auto norm = normalizePitch(pitchAfterQuantize);
-            }
             const int delta = pitchAfterQuantize - i;
             ret[i] = delta;
         }
@@ -141,7 +138,7 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
         }
 
         const bool isInC = DiatonicUtils::isNoteInC(i);
-        const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
+        // const bool xposeInC = DiatonicUtils::isNoteInC(chromaticTransposePitch);
 
         if (!isInC) {
             ret[i] = transposeSemis;
@@ -189,10 +186,6 @@ std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)
             const int initialScaleDegree = getScaleDegreeInC(i);
             const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
             const int pitchAfterQuantize = getPitchFromScaleDegreeInC(scaleDegreeAfterQuantize);
-
-            if (pitchAfterQuantize > 11) {
-                auto norm = normalizePitch(pitchAfterQuantize);
-            }
             const int delta = pitchAfterQuantize - i;
             ret[i] = delta;
         }
@@ -927,5 +920,89 @@ int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
     return getScaleDegreeInC(pitch - rootOffset);
 }
 #endif
+
+
+
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambdaChromatic(int invertAxisSemitones)
+{
+    const float axis = PitchUtils::semitoneToCV(invertAxisSemitones);
+    return [axis](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->pitchCV = 2 * axis - note->pitchCV;
+        }
+    };
+}
+
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode)
+{
+    if (constrainToKeysig) {
+        return makeInvertLambdaDiatonic(invertAxisSemitones, keyRoot, mode);
+    } else {
+        return makeInvertLambdaChromatic(invertAxisSemitones);
+    }
+}
+
+std::function<void(MidiEventPtr)> DiatonicUtils::makeInvertLambdaDiatonic(
+    int invertAxisSemitones, int keyRoot, DiatonicUtils::Modes mode)
+{
+    auto axisPitch = DiatonicUtils::normalizePitch(invertAxisSemitones);
+   // int axisOctave = axisPitch.first;
+    int axisSemitone = axisPitch.second;
+  //  int axisDegree = DiatonicUtils::getScaleDegreeInC(axisSemitone);
+    int axisDegree = DiatonicUtils::getScaleDegree(axisSemitone, keyRoot, mode);
+
+    auto chromaticLambda = makeInvertLambdaChromatic(invertAxisSemitones);
+
+    return [axisDegree, chromaticLambda, keyRoot, mode](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            auto pitch = PitchUtils::cvToPitch(note->pitchCV);
+          //  int octave = pitch.first;
+            int semitone = pitch.second;
+
+           // assert(DiatonicUtils::isNoteInC(semitone));
+          //  int degree = DiatonicUtils::getScaleDegreeInC(semitone);
+            const int degree = DiatonicUtils::getScaleDegree(semitone, keyRoot, mode);
+            if ((degree < 0) || (axisDegree < 0)) {
+                chromaticLambda(note);
+                return;
+            }
+
+
+            int destinationDegree = axisDegree * 2 - degree;
+            destinationDegree = DiatonicUtils::normalizeDegree(destinationDegree);      // normalize degrees
+
+
+           // int destinationPitchSemititones = DiatonicUtils::getPitchFromScaleDegreeInC(destinationDegree);
+            int destinationPitchSemititones = DiatonicUtils::getPitchFromScaleDegree(destinationDegree, keyRoot, mode);
+          //  assert(destinationPitchSemititones == destinationPitchSemititones2);
+
+            float destinationPitchCV = PitchUtils::semitoneToCV(destinationPitchSemititones);
+
+
+            MidiNoteEventPtr temp = std::make_shared<MidiNoteEvent>();;
+            temp->pitchCV = note->pitchCV;
+            chromaticLambda(temp);
+            // printf("inverted cv = %.2f chromatic = %.2f\n", destinationPitchCV, temp->pitchCV);
+            const float chromaticResult = temp->pitchCV;
+
+            const float lowerBound = (chromaticResult - 3 * PitchUtils::semitone);
+            const float upperBound = (chromaticResult + 3 * PitchUtils::semitone);
+            while (destinationPitchCV < lowerBound) {
+                destinationPitchCV += 1.f;
+            }
+            while (destinationPitchCV > upperBound) {
+                destinationPitchCV -= 1.f;
+            }
+
+          //  printf("  note in pitch = %.2f ", note->pitchCV);
+            note->pitchCV = destinationPitchCV;
+          //  printf("inverted to %.2f\n", note->pitchCV); fflush(stdout);
+        }
+    };
+}
+
+
 
 
