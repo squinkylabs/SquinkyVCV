@@ -343,6 +343,46 @@ static void testTransposeLambdaOctaves()
     testTransposeLambdaOctaves(true);
 }
 
+static void testTransposeLambdaCMinor()
+{
+    // up a third
+    auto lambda = DiatonicUtils::makeTransposeLambda(
+        3,      //int transposeSemitones,
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Minor);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+
+    note->pitchCV = DiatonicUtils::c * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d_ * PitchUtils::semitone, .00001);
+
+    note->pitchCV = DiatonicUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::f * PitchUtils::semitone, .00001);
+
+    note->pitchCV = DiatonicUtils::d_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g * PitchUtils::semitone, .00001);
+
+    note->pitchCV = DiatonicUtils::f * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::g_ * PitchUtils::semitone, .00001);
+
+    note->pitchCV = DiatonicUtils::g * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::a_ * PitchUtils::semitone, .00001);
+
+    note->pitchCV = DiatonicUtils::g_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::c * PitchUtils::semitone + 1, .00001);
+
+    note->pitchCV = DiatonicUtils::a_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, DiatonicUtils::d * PitchUtils::semitone + 1, .00001);
+}
+
 static void testTransposeLambdaSemi()
 {
     // chromatic, one semi
@@ -725,40 +765,31 @@ static void testInvertLambdaSanity(bool constrain, int semitoneAxis, int rootKey
     bool firstNote = true;
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
 
-    printf("put this back to -40\n !!!!!!!!!!!!");
-    for (int i = 0; i < 40; ++i) {
-
-        // Is this a strange offset?
+    for (int i = -40; i < 40; ++i) {
         note->pitchCV = PitchUtils::semitoneToCV(i);
-
         lambda(note);
         if (!firstNote) {
             if (constrain) {
                 bool isOk = false;
                 const float deltaFromOneSemitoneDown = note->pitchCV - (lastPitch - PitchUtils::semitone);
                 if (std::abs(deltaFromOneSemitoneDown) < .001) {
-                    printf("is one semi down\n");
+                   // printf("is one semi down\n");
                     isOk = true;
                 }
                 const float deltaFromTwoSemitoneDown = note->pitchCV - (lastPitch - 2 * PitchUtils::semitone);
                 if (std::abs(deltaFromTwoSemitoneDown) < .001) {
-                    printf("is two semi down\n");
+                    //printf("is two semi down\n");
                     isOk = true;
                 }
                 const float deltaFromSamePitch = note->pitchCV - lastPitch;
                 if (std::abs(deltaFromSamePitch) < .001) {
-                    printf("is same\n");            // not sure I'm crazy about this, but for now I'll take it.
+                    //printf("is same\n");            // not sure I'm crazy about this, but for now I'll take it.
                     isOk = true;
                 }
 
                 // this is failing at axis 0, c maj (the simplest case!);
                 assert(isOk);
-
-               //assertClose(note->pitchCV, lastPitch - PitchUtils::semitone, .001);
-                //assert()
-               // assert(note->pitchCV <= lastPitch);         // can be equal in constrain keysig
             } else {
-               // assert(note->pitchCV < lastPitch);
                 assertClose(note->pitchCV, lastPitch - PitchUtils::semitone, .001);
             }
         }
@@ -777,8 +808,8 @@ static void testInvertLambdaSanity(bool constrain, int semitoneAxis)
 
 static void testInvertLambdaSanity(bool constrain)
 {
-    printf("put this back to -10 !!!!!\n");
-    for (int i = 0; i < 100; ++i) {
+  //  printf("put this back to -10 !!!!!\n");
+    for (int i = -10; i < 100; ++i) {
         testInvertLambdaSanity(constrain, i);
     }
 }
@@ -1026,21 +1057,16 @@ void testDiatonicUtils()
     testTransposeLambdaDiatonicWhole();
     testTransposeLambdaDiatonicWholeOct();
     testTransposeLambdaOctaves();
-
+    testTransposeLambdaCMinor();
 
     testInvertLambdaChromatic();
     testInvertLambdaChromatic2();
-
-    printf("put back all the invert tests\n");
-
     testInvertLambdaC();
     testInvertLambdaCMinor();
     testInvertLambdaCAxis0();
     testInvertLambdaOctaves();
     testInvertLambdaCAllAxis();
     testInvertLambdaSanity();
-
-    printf("put back test testInvertLambdaDirection\n");
     testInvertLambdaDirection();
 
     
