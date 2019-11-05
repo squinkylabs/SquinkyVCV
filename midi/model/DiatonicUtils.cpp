@@ -381,6 +381,27 @@ int DiatonicUtils::getPitchFromScaleDegreeInCPhrygian(int degree)
 {
     int ret = 0;
     switch (degree) {
+        case 0:
+            ret = 0;
+            break;
+        case 1:
+            ret = 1;
+            break;
+        case 2:
+            ret = 3;
+            break;
+        case 3:
+            ret = 5;
+            break;
+        case 4:
+            ret = 7;
+            break;
+        case 5:
+            ret = 8;            // flat 6
+            break;
+        case 6:
+            ret = 10;
+            break;
         default:
             assert(false);
     }
@@ -391,6 +412,8 @@ int DiatonicUtils::getPitchFromScaleDegreeInCLydian(int degree)
 {
     int ret = 0;
     switch (degree) {
+
+    
         default:
             assert(false);
     }
@@ -677,6 +700,9 @@ int DiatonicUtils::getPitchFromScaleDegree(int degree, int key, Modes mode)
             break;
         case Modes::Locrian:
             shiftedPitch = getPitchFromScaleDegreeInCLocrian(degree);
+            break;
+        case Modes::Phrygian:
+            shiftedPitch = getPitchFromScaleDegreeInCPhrygian(degree);
             break;
         default:
             assert(false);
