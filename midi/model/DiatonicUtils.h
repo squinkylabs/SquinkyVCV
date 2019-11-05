@@ -92,7 +92,17 @@ public:
     /** 
      * accepts degree from 0..12 (two octaves
      */
-    static int getPitchFromScaleDegree(int degree);
+    static int getPitchFromScaleDegreeInC(int degree);
+    static int getPitchFromScaleDegreeInCMinor(int degree);
+    static int getPitchFromScaleDegreeInCDorian(int degree);
+    static int getPitchFromScaleDegreeInCPhrygian(int degree);
+    static int getPitchFromScaleDegreeInCLydian(int degree);
+    static int getPitchFromScaleDegreeInCMixolydian(int degree);
+    static int getPitchFromScaleDegreeInCLocrian(int degree);
+
+
+
+    static int getPitchFromScaleDegree(int degree, int key, Modes mode);
    
     
 

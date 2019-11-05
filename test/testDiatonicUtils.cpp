@@ -538,20 +538,58 @@ static void testqQuantizeXposeToScaleDegreeInC()
     assertEQ(DiatonicUtils::quantizeXposeToScaleDegreeInC(11), 6);
 }
 
-static void testGetPitchFromScaleDegree()
+static void testgetPitchFromScaleDegreeInC()
 {
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0), 0);         // unison
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(1), 2);         // maj 2
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(2), 4);         //maj 3
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(3), 5);         // 4th
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(4), 7);
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(5), 9);         // maj 6
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(0), 0);         // unison
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(1), 2);         // maj 2
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(2), 4);         //maj 3
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(3), 5);         // 4th
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(4), 7);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(5), 9);         // maj 6
 
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(6), 11);
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(7), 12);
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(8), 14);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(6), 11);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(7), 12);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(8), 14);
 
-    assertEQ(DiatonicUtils::getPitchFromScaleDegree(9), 16);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegreeInC(9), 16);
+}
+
+static void testPitchFromScaleDegree()
+{
+    // CMaj
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0, 0, DiatonicUtils::Modes::Major), DiatonicUtils::c);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(1, 0, DiatonicUtils::Modes::Major), DiatonicUtils::d);
+
+    // Other Maj
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0, DiatonicUtils::d, DiatonicUtils::Modes::Major), DiatonicUtils::d);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(4, DiatonicUtils::d, DiatonicUtils::Modes::Major), DiatonicUtils::a);
+
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0, DiatonicUtils::g, DiatonicUtils::Modes::Major), DiatonicUtils::g);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(2, DiatonicUtils::g, DiatonicUtils::Modes::Major), DiatonicUtils::b);
+
+    // Non-major related
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0, DiatonicUtils::a, DiatonicUtils::Modes::Minor), DiatonicUtils::a);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(1, DiatonicUtils::a, DiatonicUtils::Modes::Minor), DiatonicUtils::b);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(2, DiatonicUtils::a, DiatonicUtils::Modes::Minor), DiatonicUtils::c);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(3, DiatonicUtils::a, DiatonicUtils::Modes::Minor), DiatonicUtils::d);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(4, DiatonicUtils::a, DiatonicUtils::Modes::Minor), DiatonicUtils::e);
+
+    //
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0, DiatonicUtils::c, DiatonicUtils::Modes::Minor), DiatonicUtils::c);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(1, DiatonicUtils::c, DiatonicUtils::Modes::Minor), DiatonicUtils::d);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(2, DiatonicUtils::c, DiatonicUtils::Modes::Minor), DiatonicUtils::d_);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(3, DiatonicUtils::c, DiatonicUtils::Modes::Minor), DiatonicUtils::f);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(4, DiatonicUtils::c, DiatonicUtils::Modes::Minor), DiatonicUtils::g);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(5, DiatonicUtils::c, DiatonicUtils::Modes::Minor), DiatonicUtils::g_);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(6, DiatonicUtils::c, DiatonicUtils::Modes::Minor), DiatonicUtils::a_);
+
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(0, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::c);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(1, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::d);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(2, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::e);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(3, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::f);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(4, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::g);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(5, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::a);
+    assertEQ(DiatonicUtils::getPitchFromScaleDegree(6, DiatonicUtils::c, DiatonicUtils::Modes::Mixolydian), DiatonicUtils::a_);
 }
 
 static void assertInvertValidInC(const std::vector<int> invert, int axis)
@@ -935,7 +973,8 @@ void testDiatonicUtils()
     testGetScaleDegreeInC();
     testGetScaleDegree();
     testqQuantizeXposeToScaleDegreeInC();
-    testGetPitchFromScaleDegree();
+    testgetPitchFromScaleDegreeInC();
+    testPitchFromScaleDegree();
     testTransposeC_Quantized();
     testTransposeC_Informed();
    

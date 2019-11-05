@@ -125,7 +125,7 @@ std::vector<int> DiatonicUtils::getTransposeInCInformed(int _transposeAmount)
             // scale by number of degrees, not by chromatic value
             const int initialScaleDegree = getScaleDegreeInC(i);
             const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
-            const int pitchAfterQuantize = getPitchFromScaleDegree(scaleDegreeAfterQuantize);
+            const int pitchAfterQuantize = getPitchFromScaleDegreeInC(scaleDegreeAfterQuantize);
             if (pitchAfterQuantize > 11) {
                 auto norm = normalizePitch(pitchAfterQuantize);
             }
@@ -188,7 +188,7 @@ std::vector<int> DiatonicUtils::getTransposeInCQuantized(int _transposeAmount)
             // scale by number of degrees, not by chromatic value
             const int initialScaleDegree = getScaleDegreeInC(i);
             const int scaleDegreeAfterQuantize = initialScaleDegree + scaleDegreesOfTranspose;
-            const int pitchAfterQuantize = getPitchFromScaleDegree(scaleDegreeAfterQuantize);
+            const int pitchAfterQuantize = getPitchFromScaleDegreeInC(scaleDegreeAfterQuantize);
 
             if (pitchAfterQuantize > 11) {
                 auto norm = normalizePitch(pitchAfterQuantize);
@@ -276,10 +276,10 @@ int DiatonicUtils::getOffsetToRelativeMaj(Modes mode)
     return ret;
 }
 
-int DiatonicUtils::getPitchFromScaleDegree(int degree)
+int DiatonicUtils::getPitchFromScaleDegreeInC(int degree)
 {
     if (degree > 6) {
-        const int x = getPitchFromScaleDegree(degree - 7);
+        const int x = getPitchFromScaleDegreeInC(degree - 7);
         return 12 + x;
     }
     int ret = 0;
@@ -310,6 +310,114 @@ int DiatonicUtils::getPitchFromScaleDegree(int degree)
     }
     return ret;
 }
+
+int DiatonicUtils::getPitchFromScaleDegreeInCMinor(int degree)
+{
+    if (degree > 6) {
+        const int x = getPitchFromScaleDegreeInCMinor(degree - 7);
+        return 12 + x;
+    }
+    int ret = 0;
+    switch (degree) {
+        case 0:
+            ret = 0;            // unison
+            break;
+        case 1:
+            ret = 2;            // maj 2nd
+            break;
+        case 2:
+            ret = 3;            // min 3rd
+            break;
+        case 3:
+            ret = 5;            // 4th
+            break;
+        case 4:
+            ret = 7;            // 5th
+            break;
+        case 5:
+            ret = 8;            // min 6
+            break;
+        case 6:
+            ret = 10;           // min 7
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+int DiatonicUtils::getPitchFromScaleDegreeInCDorian(int degree)
+{
+    int ret = 0;
+    switch (degree) {
+        default: 
+            assert(false);
+    }
+    return ret;
+}
+
+int DiatonicUtils::getPitchFromScaleDegreeInCPhrygian(int degree)
+{
+    int ret = 0;
+    switch (degree) {
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+int DiatonicUtils::getPitchFromScaleDegreeInCLydian(int degree)
+{
+    int ret = 0;
+    switch (degree) {
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+int DiatonicUtils::getPitchFromScaleDegreeInCMixolydian(int degree)
+{
+    int ret = 0;
+    switch (degree) {
+        case 0:
+            ret = 0;
+            break;
+        case 1:
+            ret = 2;
+            break;
+        case 2:
+            ret = 4;
+            break;
+        case 3:
+            ret = 5;
+            break;
+        case 4:
+            ret = 7;
+            break;
+        case 5: 
+            ret = 9;
+            break;
+        case 6:
+            ret = 10;           // falt 7th
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+int DiatonicUtils::getPitchFromScaleDegreeInCLocrian(int degree)
+{
+    int ret = 0;
+    switch (degree) {
+        default:
+            assert(false);
+    }
+    return ret;
+}
+
+
 
 int DiatonicUtils::getPitchOffsetRelativeToCMaj(int keyRoot, Modes mode)
 {
@@ -504,7 +612,6 @@ int DiatonicUtils::getScaleDegreeInC(int _pitch)
     return ret;
 }
 
-
 int normalize(int input, int end)
 {
     int ret = input;
@@ -518,9 +625,55 @@ int normalize(int input, int end)
     return ret;
 }
 
+/*
+
+  Major,
+        Dorian,
+        Phrygian,
+        Lydian,
+        Mixolydian,
+        Minor,
+        Locrian*/
+
+int DiatonicUtils::getPitchFromScaleDegree(int degree, int key, Modes mode)
+{
+    int shiftedPitch = 0;
+    switch (mode) {
+        case Modes::Major:
+            shiftedPitch = getPitchFromScaleDegreeInC(degree);
+            break;
+        case Modes::Dorian:
+            shiftedPitch = getPitchFromScaleDegreeInCDorian(degree);
+            break;
+        case Modes::Lydian:
+            shiftedPitch = getPitchFromScaleDegreeInCLydian(degree);
+            break;
+        case Modes::Mixolydian:
+            shiftedPitch = getPitchFromScaleDegreeInCMixolydian(degree);
+            break;
+        case Modes::Minor:
+            shiftedPitch = getPitchFromScaleDegreeInCMinor(degree);
+            break;
+        case Modes::Locrian:
+            shiftedPitch = getPitchFromScaleDegreeInCLocrian(degree);
+            break;
+        default:
+            assert(false);
+    }
+    const int pitch = normalize(shiftedPitch + key, 12);
+    return pitch;
+}
 
 
-// attempt at combining them
+
+
+
+
+
+// Pitch to degree:
+// offset pitch to C
+// get the degree in c
+// shift degree by scaleDegree Offset
 int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
 {
     // offset due to mode note being C
@@ -528,15 +681,14 @@ int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
 
     // extra offset for root C not being the relative major of 'mode'
     const int extraOffset = (normalize(modeOffset + key, 12));
-   // assertEQ(normalize(modeOffset + key, 12), 0);
 
-     // modeOffset is semitones we need shift to get to cmaj
-    // what is the scale degrees?
+
+    // modeOffset is semitones we need shift to get to cmaj
     // well, what if we go down by modeOffset from C? That would be degees shift to get to scale
     const int offsetToOtherFromC = normalize(-modeOffset, 12);
     const int scaleDegreeOffset = getScaleDegreeInC(offsetToOtherFromC);
 
-    //from simple major one
+    // from simple major one
     // in that one, offsetToC was -key
     const int offsetToC = -extraOffset;
     const int pitchInC = normalize(pitch + offsetToC, 12);
@@ -546,14 +698,52 @@ int DiatonicUtils::getScaleDegree(int pitch, int key, Modes mode)
     }
     const int scaleDegreeInC = getScaleDegreeInC(pitchInC);
 
-    // old code, only for major scales
- //   const int scaleDegreeInC = getScaleDegreeInC(pitch);    // it better be in C, but it will, since it's a relative
     int degree = scaleDegreeInC - scaleDegreeOffset;
-    //assert(degree >= 0);
+
     degree = normalize(degree, 7);
     return degree;
+}
+
+// try to invert getScaleDegree
+// first shift by scaledegree offset
+#if 0
+int DiatonicUtils::getPitchFromScaleDegree(int degree, int key, Modes mode)
+{
+    // this all bs
+    // Step 1: computer scaleDegree Offset
+        // offset due to mode note being C
+    const int modeOffset = getOffsetToRelativeMaj(mode);
+
+    // extra offset for root C not being the relative major of 'mode'
+    const int extraOffset = (normalize(modeOffset + key, 12));
+    const int offsetToC = -extraOffset;
+
+
+    // modeOffset is semitones we need shift to get to cmaj
+    // well, what if we go down by modeOffset from C? That would be degees shift to get to scale
+    const int offsetToOtherFromC = normalize(-modeOffset, 12);
+    const int scaleDegreeOffset = getScaleDegreeInC(offsetToOtherFromC);
+
+    // WE aren't using extra offset anywhere
+    //
+
+    // this worked for simple cases
+   // int scaleDegreeInC = degree - scaleDegreeOffset;
+    // this is totally wrong, can't invert degee. maybe add offet?
+   // int scaleDegreeInC = scaleDegreeOffset - degree;
+
+    int scaleDegreeInC = degree + scaleDegreeOffset;
+    scaleDegreeInC = normalize(scaleDegreeInC, 7);
+   // assert(scaleDegreeInC >= 0);
+
+    const int pitchInC = getPitchFromScaleDegreeInC(scaleDegreeInC);
+
+    const int pitch = pitchInC - offsetToC;
+
+    return pitch;
 
 }
+#endif
 
 // work in relative modes from c maj
 // a) we need to know how many degrees we need to shift to get to CMaj
