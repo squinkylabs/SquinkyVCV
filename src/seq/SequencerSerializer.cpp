@@ -90,6 +90,11 @@ json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
 
     json_object_set_new(jsonSettings, "midiFilePath", json_string(rawSettings->midiFilePath.c_str()));
 
+    auto keysig = settings->getKeysig();
+
+    json_object_set_new(jsonSettings,  "keysigRoot", json_integer(keysig.first));
+    json_object_set_new(jsonSettings,  "keysigMode", json_integer(int(keysig.second)));
+
     return jsonSettings;
 }
 
@@ -172,6 +177,18 @@ std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
         if (midiFilePath) {
             std::string path = json_string_value(midiFilePath);
             rawSettings->midiFilePath = path;
+        }
+
+        json_t* keysigRoot = json_object_get(data, "keysigRoot");
+        if (keysigRoot) {
+            int root = json_integer_value(keysigRoot);
+            rawSettings->keysigRoot = root;
+        }
+
+        json_t* keysigMode = json_object_get(data, "keysigMode");
+        if (keysigMode) {
+            int mode = json_integer_value(keysigMode);
+            rawSettings->keysigMode = DiatonicUtils::Modes(mode);
         }
     }
     return _settings;
