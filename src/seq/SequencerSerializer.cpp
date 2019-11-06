@@ -6,7 +6,6 @@
 #include "SeqSettings.h"
 #include "jansson.h"
 
-
 json_t *SequencerSerializer::toJson(MidiSequencerPtr inSeq)
 {
     json_t* seq = json_object();
@@ -80,7 +79,6 @@ json_t* SequencerSerializer::toJson(std::shared_ptr<ISeqSettings> settings)
 
     json_object_set_new(jsonSettings, "snapToGrid", json_boolean(settings->snapToGrid()));
     json_object_set_new(jsonSettings, "snapDurationToGrid", json_boolean(settings->snapDurationToGrid()));
-
 
     auto grid = rawSettings->getGridString();
     json_object_set_new(jsonSettings, "grid", json_string(grid.c_str()));

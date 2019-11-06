@@ -322,7 +322,6 @@ void NoteDisplay::onButton(const event::Button &e)
                 isPressed, ctrl, shift);
 
             // now invoke the settings menu
-            sequencer->context->settings()->invokeUI(this);
             auto menu = sequencer->context->settings()->invokeUI(this);
 
 #ifdef _XFORM
@@ -348,7 +347,6 @@ void NoteDisplay::onButton(const event::Button &e)
         OpaqueWidget::onButton(e);
     }
 }
-
 
 void NoteDisplay::onSelectKey(const event::SelectKey &e)
 {
@@ -402,8 +400,7 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
     if (!enabled) {
         return false;
     }
-  //  fprintf(stderr, "\n** NoteDisplay::handleKey, action = %d (press = %d, repeat = %d\n", action,
-  //      GLFW_PRESS, GLFW_REPEAT);
+
     bool handle = false;
     bool repeat = false;
     switch (action) {
@@ -438,7 +435,6 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
             ::rack::appGet()->event->setSelected(this);
         }
     }
-   // fprintf(stderr, "NoteDisplay::handleKey ret = %d\n", handled);
     return handled;
 }
 
