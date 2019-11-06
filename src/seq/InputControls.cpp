@@ -1,11 +1,25 @@
 #include "InputControls.h"
 
 
+
+void InputPopupMenuParamWidget::setValue(float v)
+{
+    int i = int(std::round(v));
+    if (i < 0 || i >= labels.size()) {
+        WARN("popup set value illegal");
+        assert(false);
+        return;
+    }
+    this->text = labels[i];
+}
+
 float InputPopupMenuParamWidget::getValue() const
 {
     int index = 0;
     for (auto label : labels) {
+        DEBUG("comparing label >%s< to this >%s<", label.c_str(), this->text.c_str());
         if (this->text == label) {
+            DEBUG("found match");
             return index;
         }
         ++index;
@@ -17,6 +31,11 @@ float InputPopupMenuParamWidget::getValue() const
 float CheckBox::getValue() const
 {
     return value ? 1.f : 0.f;
+}
+
+void CheckBox::setValue(float v)
+{
+    value = v;
 }
 
 void CheckBox::draw(const Widget::DrawArgs &args)

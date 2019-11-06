@@ -39,6 +39,9 @@ public:
 
     std::string getMidiFilePath() override;
     void setMidiFilePath(const std::string&) override;
+
+    virtual std::pair<int, DiatonicUtils::Modes> getKeysig() override;
+    void setKeysig(int root, DiatonicUtils::Modes mode) override;
 private:
     SequencerModule* const module;
 
@@ -74,6 +77,9 @@ private:
     bool snapDurationEnabled = false;
 
     std::string midiFilePath;
+
+    int keysigRoot = 0;
+    DiatonicUtils::Modes keysigMode = DiatonicUtils::Modes::Minor;
 
     static float grid2Time(Grids);
     static float artic2Number(Artics);

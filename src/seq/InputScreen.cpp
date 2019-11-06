@@ -1,5 +1,7 @@
 #include "InputControls.h"
 #include "InputScreen.h"
+#include "ISeqSettings.h"
+#include "MidiSequencer.h"
 #include "PitchUtils.h"
 #include "SqGfx.h"
 #include "UIPrefs.h"
@@ -64,11 +66,14 @@ float InputScreen::getAbsPitchFromInput(int index)
     // so octave 4 = index 3
     // ocatve = 7 - index
     assert(inputControls.size() > unsigned(index + 1));
-    int iOctave = 7 - int( std::round(inputControls[index]->getValue()));
-    int iSemi = int( std::round(inputControls[index+1]->getValue()));
+  //  int iOctave = 7 - int( std::round(inputControls[index]->getValue()));
+  //  int iSemi = int( std::round(inputControls[index+1]->getValue()));
+
+    const int iOctave = 7 - getValueInt(index);
+    const int iSemi = getValueInt(index + 1);
    
 
-    float ret =  PitchUtils::pitchToCV(iOctave, iSemi);
+    const float ret =  PitchUtils::pitchToCV(iOctave, iSemi);
 
     DEBUG("ngetAbsPitch got oct=%d semi=%d final out = %.2f", iOctave, iSemi, ret);
     return ret;
@@ -77,9 +82,20 @@ float InputScreen::getAbsPitchFromInput(int index)
 std::pair<int, DiatonicUtils::Modes> InputScreen::getKeysig(int index)
 {
     assert(inputControls.size() > unsigned(index + 1));
-    printf("getTransposeAmount nimp\n");
-    return std::make_pair<int, DiatonicUtils::Modes>(0,DiatonicUtils::Modes::Major);
-    
+
+    const int iRoot = getValueInt(index);
+    const int iMode = getValueInt(index+1);
+    const DiatonicUtils::Modes mode = DiatonicUtils::Modes(iMode);
+    DEBUG("get keySig = %d (root) %d (mode)", iRoot, iMode);
+    return std::make_pair(iRoot, mode);
+}
+
+void InputScreen::saveKeysig(int index)
+{
+    auto keysig = getKeysig(index);
+    if (sequencer) {
+        sequencer->context->settings()->setKeysig(keysig.first, keysig.second);
+    }
 }
 
 void InputScreen::draw(const Widget::DrawArgs &args)
@@ -212,7 +228,10 @@ void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::s
     pop->box.size.x = 76;    // width
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(Vec(x, y));
-    pop->text = "-";
+
+    std::string defSemi = "+0 semi";
+    assert(semisRel[12] == defSemi);
+    pop->text = defSemi;
     this->addChild(pop);
     inputControls.push_back(pop);
 }
@@ -228,7 +247,7 @@ static std::vector<std::string> modes = {
     "Mixolydian", "Minor", "Locrian"
 };
 
-void InputScreen::addKeysigInput(const ::rack::math::Vec& pos)
+void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, DiatonicUtils::Modes> keysig)
 {
     float x= 0;
     float y = pos.y;
@@ -246,6 +265,9 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos)
     pop->text = "C";
     this->addChild(pop);
     inputControls.push_back(pop);
+    pop->setValue(keysig.first);
+    DEBUG("just init popup to %d", keysig.first);
+    //DEBUG("we need to init the keysig here");
 
     x += 80;
     pop = new InputPopupMenuParamWidget();
@@ -255,7 +277,9 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos)
     pop->setPosition(Vec(x, y));
     pop->text = "Major";
     this->addChild(pop);
-    inputControls.push_back(pop);  
+    inputControls.push_back(pop);
+    pop->setValue( int(keysig.second)); 
+
 }
 
 

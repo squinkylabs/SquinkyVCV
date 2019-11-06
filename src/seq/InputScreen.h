@@ -56,7 +56,7 @@ protected:
     */
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
    void addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label);
-   void addKeysigInput(const ::rack::math::Vec& pos);
+   void addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, DiatonicUtils::Modes> keysig);
    void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();
    void addTitle(const std::string& title);
@@ -73,6 +73,11 @@ protected:
    
    static float controlRow(int index) { return firstControlRow + index * controlRowSpacing; }
    static constexpr float okCancelY = 260.f;
+
+   /**
+    * gets keysig from index, saves it into Sequencer.
+    */
+   void saveKeysig(int index);
 };
 
 

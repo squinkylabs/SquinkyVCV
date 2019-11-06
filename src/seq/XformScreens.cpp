@@ -1,4 +1,5 @@
 #include "InputControls.h"
+#include "ISeqSettings.h"
 #include "MidiSequencer.h"
 #include "SqMidiEvent.h"
 #include "ReplaceDataCommand.h"
@@ -22,7 +23,9 @@ XformInvert::XformInvert(
     ++row;
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
     row += 2;
-    addKeysigInput(Vec(centerColumn, controlRow(row)));
+
+    auto keysig = seq->context->settings()->getKeysig();
+    addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
 }
 
 void XformInvert::execute()
@@ -31,6 +34,8 @@ void XformInvert::execute()
     const float pitchAxisCV = getAbsPitchFromInput(0);
     const bool constrain = getValueBool(2);
     const auto keysig = getKeysig(3);
+
+    saveKeysig(3);
 
     const int pitchAxisSemitones = PitchUtils::cvToSemitone(pitchAxisCV);
     DEBUG("pitch axis cv was %.2f, semi = %d", pitchAxisCV, pitchAxisSemitones);
@@ -55,7 +60,9 @@ XformTranspose::XformTranspose(
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
 
     row += 2;
-    addKeysigInput(Vec(centerColumn, controlRow(row)));
+    auto keysig = seq->context->settings()->getKeysig();
+    DEBUG("in transpos ctor, keysig = %d,%d", keysig.first, keysig.second);
+    addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
 }
 
 void XformTranspose::execute()
@@ -64,6 +71,8 @@ void XformTranspose::execute()
     const float transpose =  getPitchOffsetAmount(0);
     const bool constrain = getValueBool(2);
     auto keysig = getKeysig(3);
+
+    saveKeysig(3);
 
     auto lambda = DiatonicUtils::makeTransposeLambda(
         transpose, constrain, keysig.first, keysig.second);

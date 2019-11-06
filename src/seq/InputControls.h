@@ -31,6 +31,7 @@ class InputControl
 {
 public:
     virtual float getValue() const = 0;
+    virtual void setValue(float) = 0;
     virtual ~InputControl()
     {
     }
@@ -44,6 +45,7 @@ class InputPopupMenuParamWidget : public PopupMenuParamWidget, public InputContr
 {
 public:
     float getValue() const override;
+    void setValue(float) override;
 };
 
 class CheckBox : public ::rack::widget::OpaqueWidget, public InputControl
@@ -56,6 +58,7 @@ public:
     void onAction(const ::rack::event::Action& e) override;
 
     float getValue() const override;
+    void setValue(float) override;
 private:
     bool value = false;
     void drawBox( NVGcontext *);

@@ -1,7 +1,10 @@
 #pragma once
 
+#include "DiatonicUtils.h"
+
 #include <string>
 #include <memory>
+#include <utility>
 
 
 namespace rack {
@@ -49,6 +52,11 @@ public:
      */
     virtual std::string getMidiFilePath() = 0;
     virtual void setMidiFilePath(const std::string&) = 0;
+
+   // virtual DiatonicUtils::Modes getMode() = 0;
+  //  virtual int getKeysigRoot() = 0;
+    virtual std::pair<int, DiatonicUtils::Modes> getKeysig() = 0;
+    virtual void setKeysig(int root, DiatonicUtils::Modes mode) = 0;
 };
 
 using ISeqSettingsPtr = std::shared_ptr<ISeqSettings>;

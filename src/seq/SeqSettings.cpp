@@ -431,3 +431,15 @@ void SeqSettings::setMidiFilePath(const std::string& s)
 {
     midiFilePath = s;
 }
+
+
+std::pair<int, DiatonicUtils::Modes> SeqSettings::getKeysig()
+{
+    return std::make_pair(keysigRoot, keysigMode);
+}
+
+void SeqSettings::setKeysig(int root, DiatonicUtils::Modes mode)
+{
+    keysigRoot = root;
+    keysigMode = mode;
+}
