@@ -4,6 +4,7 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "SqClipboard.h"
+#include "SqMidiEvent.h"
 #include "TimeUtils.h"
 
 #include <assert.h>
@@ -68,8 +69,8 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
 
     MidiSelectionModelPtr selection = seq->selection;
     assert(selection);
-    MidiSelectionModelPtr reference = selection->clone();
-    assert(reference);
+   // MidiSelectionModelPtr reference = selection->clone();
+   // assert(reference);
 
     if (!extendSelection) {
         selection->clear();
@@ -453,3 +454,58 @@ float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float d
     const float durationRequest = roundedBars * 4;
     return durationRequest;
 }
+
+
+// Algorithm
+
+// clone selection -> clone
+
+// enumerate clone, flip the pitches, using selection is ref
+// to add = clone (as vector)
+// to remove = selection (as vector)
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_ptr<MidiSequencer> seq)
+{
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+ 
+
+    // will transform the cloned selection, and add it
+    auto clonedSelection = seq->selection->clone();
+    printf("selection size = %d\n", (int) seq->selection->size());
+
+
+    MidiSelectionModel::const_reverse_iterator itDest = clonedSelection->rbegin();
+
+
+    for (MidiSelectionModel::const_iterator itSrc = seq->selection->begin(); itSrc != seq->selection->end(); ++itSrc) {
+        MidiEventPtr srcEvent = *itSrc;
+        MidiEventPtr destEvent = *itDest;
+
+        MidiNoteEventPtr destNote = safe_cast<MidiNoteEvent>(destEvent);
+        MidiNoteEventPtr srcNote = safe_cast<MidiNoteEvent>(srcEvent);
+
+        if (srcNote) {
+            printf("copy\n");
+            assert(destNote);
+            destNote->pitchCV = srcNote->pitchCV;
+        }
+        ++itDest;
+    }
+
+    // we will remove all the events in the selection
+    toRemove = seq->selection->asVector();
+    toAdd = clonedSelection->asVector();
+
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "reverse pitches";
+    return ret;
+}
+

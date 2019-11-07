@@ -15,7 +15,7 @@ using InputScreenPtr = std::shared_ptr<InputScreen>;
 class InputScreenManager
 {
 public:
-    enum class Screens { Invert, Transpose };
+    enum class Screens { Invert, Transpose, ReversePitch };
     using Callback = std::function<void()>;
 
     InputScreenManager(::rack::math::Vec size);

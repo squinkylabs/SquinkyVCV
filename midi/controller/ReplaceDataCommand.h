@@ -61,6 +61,7 @@ public:
 
     static ReplaceDataCommandPtr makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength);
 
+    static ReplaceDataCommandPtr makeReversePitchCommand(std::shared_ptr<MidiSequencer> seq);
     /**
      * This one works for any XFORM that does a one to one processing of notes.
      * Since it uses "Legacy" helper, the lambda must process notes in place.

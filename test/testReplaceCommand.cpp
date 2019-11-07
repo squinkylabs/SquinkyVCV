@@ -444,6 +444,35 @@ static void testNoteFilter()
     seq->assertValid();
 }
 
+static void testReversePitch()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    seq->editor->selectAll();
+
+    const int origSize = seq->context->getTrack()->size();
+    MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
+    MidiNoteEventPtr lastNote = seq->context->getTrack()->getLastNote();
+
+    printf("orig pitches are %.2f %.2f\n", firstNote->pitchCV, lastNote->pitchCV);
+
+    assertGT(lastNote->pitchCV, firstNote->pitchCV + .1);
+
+
+    auto cmd = ReplaceDataCommand::makeReversePitchCommand(seq);
+
+    cmd->execute(seq, nullptr);
+    seq->assertValid();
+    assertEQ(seq->context->getTrack()->size(), origSize);
+
+    assertEQ(seq->context->getTrack()->getFirstNote()->pitchCV, lastNote->pitchCV);
+    assertEQ(seq->context->getTrack()->getLastNote()->pitchCV, firstNote->pitchCV);
+
+    cmd->undo(seq, nullptr);
+    seq->assertValid();
+}
+
 void testReplaceCommand()
 {
     test0();
@@ -460,4 +489,5 @@ void testReplaceCommand()
     testDurationMulti();
     testCut();
     testNoteFilter();
+    testReversePitch();
 }

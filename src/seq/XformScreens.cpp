@@ -22,10 +22,17 @@ XformInvert::XformInvert(
 
     ++row;
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
+    inputControls[row]->setCallback( []() {
+        WARN("in unvert callback x[");
+    });
+
     row += 2;
+
+  
 
     auto keysig = seq->context->settings()->getKeysig();
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
+   
 }
 
 void XformInvert::execute()
@@ -53,16 +60,38 @@ XformTranspose::XformTranspose(
     MidiSequencerPtr seq,
     std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Transpose Pitch", dismisser)
 {
+    DEBUG("\n\n************* in ctol of Xftran");
+
+    // Row 0,1 transpose amount
     int row = 0;
     addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount");
-
-    ++row;
-    addConstrainToScale(Vec(centerColumn, controlRow(row)));
-
+    
+    
     row += 2;
+
+    // row 2: constrain
+    addConstrainToScale(Vec(centerColumn, controlRow(row)));
+    DEBUG("set callback on row %d", row);
+    inputControls[row]->setCallback( [this, row]() {
+        // Now I would look at constrain state, and use to update
+        // visibility of keysigs
+        const bool constrain = inputControls[row]->getValue() > .5;
+        inputControls[3]->enable(constrain);
+        inputControls[4]->enable(constrain);
+        WARN("in xpose callback x set constrain %d", constrain);
+    });
+    DEBUG("just added callback to control\n");
+
+  
+    // row 3, 4
+    ++row;
+    bool enableKeysig = false;
     auto keysig = seq->context->settings()->getKeysig();
     DEBUG("in transpos ctor, keysig = %d,%d", keysig.first, keysig.second);
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
+    DEBUG("enable keysig = %d", enableKeysig);
+    inputControls[row]->enable(enableKeysig);
+    inputControls[row+1]->enable(enableKeysig);
 }
 
 void XformTranspose::execute()
@@ -79,5 +108,21 @@ void XformTranspose::execute()
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Transpose", sequencer, lambda);
+    sequencer->undo->execute(sequencer, cmd);
+}
+
+
+XformReversePitch::XformReversePitch(
+    const ::rack::math::Vec& pos,
+    const ::rack::math::Vec& size,
+    MidiSequencerPtr seq,
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Transpose Pitch", dismisser)
+{
+}
+
+
+void XformReversePitch::execute()
+{
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeReversePitchCommand(sequencer);
     sequencer->undo->execute(sequencer, cmd);
 }

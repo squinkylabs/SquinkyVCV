@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <set>
+#include <vector>
 
 class MidiEvent;
 class MidiSelectionModel;
@@ -8,6 +9,7 @@ class IMidiPlayerAuditionHost;
 
 using MidiSelectionModelPtr = std::shared_ptr<MidiSelectionModel>;
 using IMidiPlayerAuditionHostPtr = std::shared_ptr<IMidiPlayerAuditionHost>;
+using MidiEventPtr = std::shared_ptr<MidiEvent>;
 
 /**
  * Central manager for tracking selections in the MidiSong being edited.
@@ -41,9 +43,13 @@ public:
 
     using container = std::set<std::shared_ptr<MidiEvent>, CompareEventPtrs>;
     using const_iterator = container::const_iterator;
+    using const_reverse_iterator = container::const_reverse_iterator;
 
     const_iterator begin() const;
     const_iterator end() const;
+
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator rend() const;
 
     int size() const
     {
@@ -55,6 +61,11 @@ public:
     }
 
     MidiSelectionModelPtr clone() const;
+
+    /**
+     * retrieve all the events in order into a vector
+     */
+    std::vector<MidiEventPtr> asVector() const;
 
     std::shared_ptr<MidiEvent> getLast();
 

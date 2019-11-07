@@ -15,8 +15,6 @@ InputScreenManager::~InputScreenManager()
 
 void InputScreenManager::dismiss(bool bOK)
 {
-    DEBUG("In manager dismiis handler (%d)", bOK);
-
     auto tempScreen = screen;
     auto tempParent = parent;
     parent = nullptr;
@@ -24,15 +22,8 @@ void InputScreenManager::dismiss(bool bOK)
 
     if (tempScreen) {
         auto values = tempScreen->getValues();
-        DEBUG("values size = %d", values.size());
-        for (auto x : values) {
-            DEBUG("value = %.2f", x);
-        }
         if (bOK) {
-            DEBUG("in execute, running xform");
             tempScreen->execute();
-        } else {
-            DEBUG("in dismiss, skipping due to cancel");
         }
         tempScreen->clearChildren();
         this->callback();
@@ -62,7 +53,6 @@ void InputScreenManager::show(
     this->callback = cb;
     parent = parnt;
     auto dismisser = [this](bool bOK) {
-        DEBUG("in manager::dismisser %d", bOK);
         this->dismiss(bOK);
     };
 
@@ -74,6 +64,9 @@ void InputScreenManager::show(
             break;
         case Screens::Transpose:
             is = make<XformTranspose>(size, seq, dismisser);
+            break;
+        case Screens::ReversePitch:
+            is = make<XformReversePitch>(size, seq, dismisser);
             break;
         default:
             WARN("no handler for enum %d", int(screenId));
@@ -91,8 +84,11 @@ std::string InputScreenManager::xformName(Screens screen)
         case Screens::Invert:
             ret = "Invert";
             break;
-         case Screens::Transpose:
+        case Screens::Transpose:
             ret = "Transpose";
+            break;
+        case Screens::ReversePitch:
+            ret = "Reverse Pitch";
             break;
         default:
             WARN("no name for enum %d", int(screen));

@@ -32,9 +32,11 @@ class InputControl
 public:
     virtual float getValue() const = 0;
     virtual void setValue(float) = 0;
+    virtual void enable(bool enabled) = 0;
     virtual ~InputControl()
     {
     }
+    virtual void setCallback(std::function<void(void)>) = 0;
 };
 
 
@@ -46,6 +48,14 @@ class InputPopupMenuParamWidget : public PopupMenuParamWidget, public InputContr
 public:
     float getValue() const override;
     void setValue(float) override;
+    void enable(bool enabled) override;
+    void draw(const Widget::DrawArgs &args) override;
+    void setCallback(std::function<void(void)>) override;
+    
+
+private:
+    bool enabled = true;
+    std::function<void(void)> callback = nullptr;
 };
 
 class CheckBox : public ::rack::widget::OpaqueWidget, public InputControl
@@ -59,8 +69,13 @@ public:
 
     float getValue() const override;
     void setValue(float) override;
+    void enable(bool enabled) override;
+    void setCallback(std::function<void(void)>) override;
 private:
     bool value = false;
+    bool enabled = true;
+    std::function<void(void)> callback = nullptr;
+
     void drawBox( NVGcontext *);
     void drawX( NVGcontext *c);
 };

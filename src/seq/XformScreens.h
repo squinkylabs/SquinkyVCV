@@ -21,3 +21,13 @@ public:
         std::function<void(bool)> _dismisser);
     void execute() override;
 };
+
+class XformReversePitch : public InputScreen
+{
+public:
+    XformReversePitch(const ::rack::math::Vec& pos,
+        const ::rack::math::Vec& size,
+        MidiSequencerPtr seq,
+        std::function<void(bool)> _dismisser);
+    void execute() override;   
+};
