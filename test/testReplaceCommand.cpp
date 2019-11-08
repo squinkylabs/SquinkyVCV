@@ -473,6 +473,25 @@ static void testReversePitch()
     seq->assertValid();
 }
 
+
+static void testChopNotes()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::oneQ1, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    seq->editor->selectAll();
+
+    const int origSize = seq->context->getTrack()->size();
+    assertEQ(origSize, 1+1);
+
+    auto cmd = ReplaceDataCommand::makeChopNoteCommand(seq, 4);
+    cmd->execute(seq, nullptr);
+    assertEQ(seq->context->getTrack()->size(), 4 + 1);
+
+ 
+    seq->assertValid();
+}
+
 void testReplaceCommand()
 {
     test0();
@@ -490,4 +509,5 @@ void testReplaceCommand()
     testCut();
     testNoteFilter();
     testReversePitch();
+    testChopNotes();
 }

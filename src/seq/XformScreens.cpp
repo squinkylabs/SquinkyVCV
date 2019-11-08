@@ -134,14 +134,14 @@ XformChopNotes::XformChopNotes(
     MidiSequencerPtr seq,
     std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Chop Notes", dismisser)
 {
-    int row = 0;
-   // addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount");
-    
+    int row = 0;    
     addNumberChooserInt(Vec(centerColumn, controlRow(row)), "Notes", 2, 11);
 }
 
 
 void XformChopNotes::execute()
 {
-    WARN("imp chop, please");
+    const int numNotes = int( std::round(inputControls[0]->getValue()));
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChopNoteCommand(sequencer, numNotes);
+    sequencer->undo->execute(sequencer, cmd);
 }

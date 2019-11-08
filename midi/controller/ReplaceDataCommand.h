@@ -70,6 +70,8 @@ public:
     static ReplaceDataCommandPtr makeFilterNoteCommand(const std::string& name, std::shared_ptr<MidiSequencer> seq, FilterFunc);
         
 
+    static ReplaceDataCommandPtr makeChopNoteCommand(std::shared_ptr<MidiSequencer>sequencer, int numNotes);
+
 private:
 
     int trackNumber;
