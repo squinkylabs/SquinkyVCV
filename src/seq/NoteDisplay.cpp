@@ -477,6 +477,7 @@ void NoteDisplay::addXformMenuItems(::rack::ui::Menu* menu)
     addXformMenuItem(menu, InputScreenManager::Screens::Transpose);
     addXformMenuItem(menu, InputScreenManager::Screens::Invert);
     addXformMenuItem(menu, InputScreenManager::Screens::ReversePitch);
+    addXformMenuItem(menu, InputScreenManager::Screens::ChopNotes);
 }
 
 void NoteDisplay::addXformMenuItem(::rack::ui::Menu* menu, InputScreenManager::Screens code)

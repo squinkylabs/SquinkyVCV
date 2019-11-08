@@ -68,6 +68,9 @@ void InputScreenManager::show(
         case Screens::ReversePitch:
             is = make<XformReversePitch>(size, seq, dismisser);
             break;
+        case Screens::ChopNotes:
+            is = make<XformChopNotes>(size, seq, dismisser);
+            break;
         default:
             WARN("no handler for enum %d", int(screenId));
             assert(false);
@@ -89,6 +92,9 @@ std::string InputScreenManager::xformName(Screens screen)
             break;
         case Screens::ReversePitch:
             ret = "Reverse Pitch";
+            break;
+        case Screens::ChopNotes:
+            ret = "Chop Notes";
             break;
         default:
             WARN("no name for enum %d", int(screen));

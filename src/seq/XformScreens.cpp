@@ -126,3 +126,22 @@ void XformReversePitch::execute()
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeReversePitchCommand(sequencer);
     sequencer->undo->execute(sequencer, cmd);
 }
+
+
+XformChopNotes::XformChopNotes(
+    const ::rack::math::Vec& pos,
+    const ::rack::math::Vec& size,
+    MidiSequencerPtr seq,
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Chop Notes", dismisser)
+{
+    int row = 0;
+   // addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount");
+    
+    addNumberChooserInt(Vec(centerColumn, controlRow(row)), "Notes", 2, 11);
+}
+
+
+void XformChopNotes::execute()
+{
+    WARN("imp chop, please");
+}

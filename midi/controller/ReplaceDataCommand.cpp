@@ -469,15 +469,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_pt
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 
- 
-
     // will transform the cloned selection, and add it
     auto clonedSelection = seq->selection->clone();
-    printf("selection size = %d\n", (int) seq->selection->size());
-
-
     MidiSelectionModel::const_reverse_iterator itDest = clonedSelection->rbegin();
-
 
     for (MidiSelectionModel::const_iterator itSrc = seq->selection->begin(); itSrc != seq->selection->end(); ++itSrc) {
         MidiEventPtr srcEvent = *itSrc;
@@ -487,7 +481,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_pt
         MidiNoteEventPtr srcNote = safe_cast<MidiNoteEvent>(srcEvent);
 
         if (srcNote) {
-            printf("copy\n");
             assert(destNote);
             destNote->pitchCV = srcNote->pitchCV;
         }

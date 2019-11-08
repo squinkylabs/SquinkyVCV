@@ -282,7 +282,6 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Di
 
 }
 
-
 void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
 {
     auto check = new CheckBox();
@@ -297,6 +296,34 @@ void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
     auto l = addLabel(Vec(0, pos.y), "Constrain to scale", TEXT_COLOR );
     l->box.size.x = centerColumn - centerGutter;;
     l->alignment = Label::RIGHT_ALIGNMENT;
+}
+
+void InputScreen::addNumberChooserInt(const ::rack::math::Vec& pos, const char* str, int nMin, int nMax)
+{
+    float x= 0;
+    float y = pos.y;
+    auto l = addLabel(Vec(x, y), str, TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
+
+    std::vector<std::string> labels;
+    for (int i= nMin; i<= nMax; ++i) {
+        char buf[100];
+        std::string s(itoa(i, buf, 10));
+        labels.push_back(s);
+    }
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( labels);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = labels[0];
+    pop->setValue(0);
+
+    this->addChild(pop);
+    inputControls.push_back(pop);
 }
 
 void InputScreen::addOkCancel()
