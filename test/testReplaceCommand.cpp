@@ -484,11 +484,33 @@ static void testChopNotes()
     const int origSize = seq->context->getTrack()->size();
     assertEQ(origSize, 1+1);
 
+    assertEQ(seq->context->getTrack()->getFirstNote()->startTime, 1);
+    assertEQ(seq->context->getTrack()->getFirstNote()->duration, 1);
+
     auto cmd = ReplaceDataCommand::makeChopNoteCommand(seq, 4);
     cmd->execute(seq, nullptr);
     assertEQ(seq->context->getTrack()->size(), 4 + 1);
 
- 
+    auto it = seq->context->getTrack()->begin();
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->startTime, 1);
+    assertEQ(note->duration, .25f);
+
+    ++it;
+    note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->startTime, 1.25);
+    assertEQ(note->duration, .25f);
+
+    ++it;
+    note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->startTime, 1.5);
+    assertEQ(note->duration, .25f);
+
+    ++it;
+    note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->startTime, 1.75);
+    assertEQ(note->duration, .25f);
+
     seq->assertValid();
 }
 

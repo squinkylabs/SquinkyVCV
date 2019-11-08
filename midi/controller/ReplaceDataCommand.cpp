@@ -502,6 +502,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_pt
     return ret;
 }
 
+#if 0
 static int getDurAsPowerOfTwo16th(float duration)
 {
     float duration16th = 4 * duration;
@@ -511,6 +512,7 @@ static int getDurAsPowerOfTwo16th(float duration)
     printf("input dur was %.2f, num 16 = %d\n", duration, num16);
     return num16;
 }
+#endif
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(std::shared_ptr<MidiSequencer> seq, int numNotes)
 {
@@ -524,20 +526,24 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(std::shared_ptr<Mi
         printf("next note event\n");
         if (note) {
             const float dur = note->duration;
-            const int durTotal = getDurAsPowerOfTwo16th(dur) / 4;
-         
-            for (int i = 0; i < numNotes; ++i) {
+            const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
+
+            if (durTotal > 0) {
+                assert(durTotal > 0);       // todo: skip these?
+
+                for (int i = 0; i < numNotes; ++i) {
 
 
-                MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
-                newNote->startTime = note->startTime + i * durTotal / numNotes;
-                newNote->duration = dur / numNotes;
-                newNote->pitchCV = note->pitchCV;
+                    MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+                    newNote->startTime = note->startTime + i * durTotal / numNotes;
+                    newNote->duration = dur / numNotes;
+                    newNote->pitchCV = note->pitchCV;
 
-                toAdd.push_back(newNote);
+                    toAdd.push_back(newNote);
 
+                }
+                toRemove.push_back(note);
             }
-            toRemove.push_back(note);
 
         }
     }

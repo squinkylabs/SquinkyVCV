@@ -141,7 +141,9 @@ XformChopNotes::XformChopNotes(
 
 void XformChopNotes::execute()
 {
-    const int numNotes = int( std::round(inputControls[0]->getValue()));
+    // TODO: fix this offset
+    const int numNotes = 2 + int( std::round(inputControls[0]->getValue()));
+    DEBUG("num notes from control = %d\n", numNotes);
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChopNoteCommand(sequencer, numNotes);
     sequencer->undo->execute(sequencer, cmd);
 }
