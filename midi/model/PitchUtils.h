@@ -20,7 +20,50 @@ public:
     static std::string pitch2str(float cv);
     static const char* semi2name(int);
     static float quantizeToSemi(float cv);
+
+    /*****************************************************************
+     * Constants for the 12 pitches in a chromatic scale
+     */
+    static const int c = {0};
+    static const int c_ = {1};
+    static const int d = {2};
+    static const int d_ = {3};
+    static const int e = {4};
+    static const int f = {5};
+    static const int f_ = {6};
+    static const int g = {7};
+    static const int g_ = {8};
+    static const int a = {9};
+    static const int a_ = {10};
+    static const int b = {11};
+
+    /**
+     * Normalized Pitch
+     * Semitone is always 0..11
+     */
+    class NormP
+    {
+    public:
+        // ctor takes non-normalized semi
+        NormP(int semitones);   
+        int semi=0;
+        int oct=0;
+    };
 };
+
+inline PitchUtils::NormP::NormP(int pitch)
+{
+    // TODO: make this less stupic
+    int octave = pitch / 12;
+    pitch -= octave * 12;
+    if (pitch < 0) {
+        pitch += 12;
+        octave -= 1;
+    }
+    assert(pitch >= 0 && pitch < 12);
+    semi = pitch;
+    oct = octave;
+}
 
 inline float PitchUtils::quantizeToSemi(float cv)
 {
