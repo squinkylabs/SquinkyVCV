@@ -489,6 +489,12 @@
     <ClCompile Include="..\..\test\testScale.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\midi\model\Scale.cpp">
+      <Filter>Source Files\midi\model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\model\ScaleRelativeNote.cpp">
+      <Filter>Source Files\midi\model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

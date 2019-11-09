@@ -50,6 +50,8 @@
     <ClCompile Include="..\..\midi\model\MidiSequencer.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
+    <ClCompile Include="..\..\midi\model\Scale.cpp" />
+    <ClCompile Include="..\..\midi\model\ScaleRelativeNote.cpp" />
     <ClCompile Include="..\..\midi\model\SqClipboard.cpp" />
     <ClCompile Include="..\..\midi\view\MidiEditorContext.cpp" />
     <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp" />
