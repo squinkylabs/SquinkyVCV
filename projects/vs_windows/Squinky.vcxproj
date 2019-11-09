@@ -115,6 +115,7 @@
     <ClCompile Include="..\..\test\testReplaceCommand.cpp" />
     <ClCompile Include="..\..\test\testRingBuffer.cpp" />
     <ClCompile Include="..\..\test\testSaw.cpp" />
+    <ClCompile Include="..\..\test\testScale.cpp" />
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
@@ -228,6 +229,8 @@
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
     <ClInclude Include="..\..\midi\model\DiatonicUtils.h" />
     <ClInclude Include="..\..\midi\model\ISeqSettings.h" />
+    <ClInclude Include="..\..\midi\model\Scale.h" />
+    <ClInclude Include="..\..\midi\model\ScaleRelativeNote.h" />
     <ClInclude Include="..\..\midi\model\SqMidiEvent.h" />
     <ClInclude Include="..\..\midi\model\MidiSequencer.h" />
     <ClInclude Include="..\..\midi\model\MidiSong.h" />

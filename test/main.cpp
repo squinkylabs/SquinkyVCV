@@ -80,6 +80,7 @@ extern void testMidiFile();
 extern void testNewSongDataDataCommand();
 extern void testDiatonicUtils();
 extern void testDiatonicUtils2();
+extern void testScale();
 
 #if 0
 #include <sstream>
@@ -171,6 +172,7 @@ int main(int argc, char ** argv)
     testNewSongDataDataCommand();
     testUndoRedo();
     testMidiViewport();
+    testScale();
     testDiatonicUtils2();
 
     testDiatonicUtils();
