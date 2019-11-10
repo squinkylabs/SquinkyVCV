@@ -121,9 +121,6 @@ static void testGetScaleRelativeNote3()
     assert(srn->valid);
     assertEQ(srn->degree, 0);
     assertEQ(srn->octave, 4);
-
-
-    
 }
 
 static void testGetSemitone1()
@@ -205,6 +202,43 @@ static void testGetSemitone2()
     assertEQ(p->getSemitone(ScaleRelativeNote(6, 0, p)), PitchUtils::g + 11);
 }
 
+static void testMinor()
+{
+    // E min octave 0
+    auto p = Scale::getScale(Scale::Scales::Minor, PitchUtils::e);
+    assert(p->getScaleRelativeNote(4)->valid);  // e
+    assert(!p->getScaleRelativeNote(5)->valid);  // f
+    assert(p->getScaleRelativeNote(6)->valid);  // f#
+    assert(p->getScaleRelativeNote(7)->valid);  // g
+    assert(!p->getScaleRelativeNote(8)->valid);  // g#
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+    assert(p->getScaleRelativeNote(14)->valid);  // d
+    assert(!p->getScaleRelativeNote(15)->valid);  // d#
+}
+
+
+static void testPhrygian()
+{
+    // E min octave 0
+    auto p = Scale::getScale(Scale::Scales::Phrygian, PitchUtils::e);
+    assert(p->getScaleRelativeNote(4)->valid);  // e
+    assert(p->getScaleRelativeNote(5)->valid);  // f
+    assert(!p->getScaleRelativeNote(6)->valid);  // f#
+    assert(p->getScaleRelativeNote(7)->valid);  // g
+    assert(!p->getScaleRelativeNote(8)->valid);  // g#
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+    assert(p->getScaleRelativeNote(14)->valid);  // d
+    assert(!p->getScaleRelativeNote(15)->valid);  // d#
+}
+
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -216,4 +250,7 @@ void testScale()
 
     testRTBugCases();
     testRoundTrip();
+
+    testMinor();
+    testPhrygian();
 }

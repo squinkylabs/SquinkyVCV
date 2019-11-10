@@ -106,11 +106,17 @@ std::vector<int> Scale::getBasePitches(Scales scale)
     std::vector<int> ret;
     switch(scale) {
         case Scales::Major:
-        ret = {0, 2, 4, 5, 7, 9, 11};
-        break;
-    default:
-        assert(false);
-    }
+            ret = {0, 2, 4, 5, 7, 9, 11};
+            break;
+        case Scales::Minor:
+            ret = {0, 2, 3, 5, 7, 8, 10};
+            break;
+        case Scales::Phrygian:
+            ret = {0, 1, 3, 5, 7, 8, 10};
+            break;
+        default:
+            assert(false);
+     }
     return ret;
 
 }
