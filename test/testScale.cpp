@@ -71,10 +71,11 @@ static void testGetScaleRelativeNote4()
     assertEQ(srn->degree, 2);
     assertEQ(srn->octave, 0);
 
+    // wrap around
     srn = p->getScaleRelativeNote(PitchUtils::c);
     assert(srn->valid);
     assertEQ(srn->degree, 3);
-    assertEQ(srn->octave, 0);
+    assertEQ(srn->octave, -1);
 
     srn = p->getScaleRelativeNote(PitchUtils::c_);
     assert(!srn->valid);
@@ -82,7 +83,7 @@ static void testGetScaleRelativeNote4()
     srn = p->getScaleRelativeNote(PitchUtils::d);
     assert(srn->valid);
     assertEQ(srn->degree, 4);
-    assertEQ(srn->octave, 0);
+    assertEQ(srn->octave, -1);
 
     srn = p->getScaleRelativeNote(PitchUtils::d_);
     assert(!srn->valid);
@@ -90,7 +91,7 @@ static void testGetScaleRelativeNote4()
     srn = p->getScaleRelativeNote(PitchUtils::e);
     assert(srn->valid);
     assertEQ(srn->degree, 5);
-    assertEQ(srn->octave, 0);
+    assertEQ(srn->octave, -1);
 
     srn = p->getScaleRelativeNote(PitchUtils::f);
     assert(!srn->valid);
@@ -98,7 +99,7 @@ static void testGetScaleRelativeNote4()
     srn = p->getScaleRelativeNote(PitchUtils::f_);
     assert(srn->valid);
     assertEQ(srn->degree, 6);
-    assertEQ(srn->octave, 0);
+    assertEQ(srn->octave, -1);
 }
 
 
@@ -168,16 +169,28 @@ static void testRoundTrip()
 
 static void testRTBugCases()
 {
-    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
     {
+        auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+        {
+            ScaleRelativeNotePtr srn = p->getScaleRelativeNote(0);
+            int semi = p->getSemitone(*srn);
+            assertEQ(semi, 0);
+        }
+
+        {
+            ScaleRelativeNotePtr srn2 = p->getScaleRelativeNote(12);
+            int semi2 = p->getSemitone(*srn2);
+            assertEQ(semi2, 12);
+        }
+    }
+
+    {
+        auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c_);
         ScaleRelativeNotePtr srn = p->getScaleRelativeNote(0);
         int semi = p->getSemitone(*srn);
         assertEQ(semi, 0);
     }
 
-    ScaleRelativeNotePtr srn2 = p->getScaleRelativeNote(12);
-    int semi2 = p->getSemitone(*srn2);
-    assertEQ(semi2, 12);
 }
 
 static void testGetSemitone2()

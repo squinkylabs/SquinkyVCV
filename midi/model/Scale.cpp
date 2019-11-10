@@ -68,8 +68,16 @@ ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
     // since these are semi-normaled, lets try the next octave
     it = abs2srn.find(normP.semi + 12);
     if (it != abs2srn.end()) {
+       
+#if 0
         assert(normP.oct == 0);         // surely we need to adjust, also
-        return it->second;
+                                       // in the bug case, oct -1 would be correct
+       // I think we need the above correction, and -1 
+       return it->second;
+#else
+        ScalePtr scale = shared_from_this();
+        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct - 1, scale));
+#endif
     }
 
     // need to make an invalid one
