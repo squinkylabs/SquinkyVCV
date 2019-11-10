@@ -223,7 +223,6 @@ static void testMinor()
 
 static void testPhrygian()
 {
-    // E min octave 0
     auto p = Scale::getScale(Scale::Scales::Phrygian, PitchUtils::e);
     assert(p->getScaleRelativeNote(4)->valid);  // e
     assert(p->getScaleRelativeNote(5)->valid);  // f
@@ -241,7 +240,6 @@ static void testPhrygian()
 
 static void testMixo()
 {
-    // E min octave 0
     auto p = Scale::getScale(Scale::Scales::Mixolydian, PitchUtils::g);
     assert(p->getScaleRelativeNote(7)->valid);  // g
     assert(!p->getScaleRelativeNote(8)->valid);  // g#
@@ -256,6 +254,61 @@ static void testMixo()
     assert(p->getScaleRelativeNote(17)->valid);  // f
     assert(!p->getScaleRelativeNote(18)->valid);  // f#
 }
+
+
+static void testDorian()
+{
+    auto p = Scale::getScale(Scale::Scales::Dorian, PitchUtils::d);
+    assert(p->getScaleRelativeNote(2)->valid);  // D
+    assert(!p->getScaleRelativeNote(3)->valid);  // d#
+    assert(p->getScaleRelativeNote(4)->valid);  // e
+    assert(p->getScaleRelativeNote(5)->valid);  // f
+    assert(!p->getScaleRelativeNote(6)->valid);  // f#
+    assert(p->getScaleRelativeNote(7)->valid);  // g
+    assert(!p->getScaleRelativeNote(8)->valid);  // g#
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+}
+
+
+static void testLydian()
+{
+    auto p = Scale::getScale(Scale::Scales::Lydian, PitchUtils::f);
+    assert(p->getScaleRelativeNote(5)->valid);  // f
+    assert(!p->getScaleRelativeNote(6)->valid);  // f#
+    assert(p->getScaleRelativeNote(7)->valid);  // g
+    assert(!p->getScaleRelativeNote(8)->valid);  // g#
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+    assert(p->getScaleRelativeNote(14)->valid);  // d
+    assert(!p->getScaleRelativeNote(15)->valid);  // d#
+    assert(p->getScaleRelativeNote(16)->valid);  // e
+}
+
+
+static void testLocrian()
+{
+    auto p = Scale::getScale(Scale::Scales::Locrian, PitchUtils::b);
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+    assert(p->getScaleRelativeNote(14)->valid);  // d
+    assert(!p->getScaleRelativeNote(15)->valid);  // d#
+    assert(p->getScaleRelativeNote(16)->valid);  // e
+    assert(p->getScaleRelativeNote(17)->valid);  // f
+    assert(!p->getScaleRelativeNote(18)->valid);  // f#
+    assert(p->getScaleRelativeNote(19)->valid);  // g
+    assert(!p->getScaleRelativeNote(20)->valid);  // g#
+    assert(p->getScaleRelativeNote(21)->valid);  // a
+    assert(!p->getScaleRelativeNote(22)->valid);  // a#
+}
+
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -271,4 +324,7 @@ void testScale()
     testMinor();
     testPhrygian();
     testMixo();
+    testDorian();
+    testLydian();
+    testLocrian();
 }
