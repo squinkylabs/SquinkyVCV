@@ -20,11 +20,13 @@ XformInvert::XformInvert(
     int row = 0;
     addPitchInput(Vec(centerColumn, controlRow(row)), "Pitch inversion axis");
 
+#if 0
     ++row;
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
     inputControls[row]->setCallback( []() {
         WARN("in unvert callback x[");
     });
+    #endif
 
     row += 2;
 
@@ -70,6 +72,7 @@ XformTranspose::XformTranspose(
     row += 2;
 
     // row 2: constrain
+    #if 0
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
     DEBUG("set callback on row %d", row);
     inputControls[row]->setCallback( [this, row]() {
@@ -81,6 +84,7 @@ XformTranspose::XformTranspose(
         WARN("in xpose callback x set constrain %d", constrain);
     });
     DEBUG("just added callback to control\n");
+    #endif
 
   
     // row 3, 4

@@ -2,6 +2,7 @@
 #include "InputScreen.h"
 #include "ISeqSettings.h"
 #include "MidiSequencer.h"
+#include "PitchInputWidget.h"
 #include "PitchUtils.h"
 #include "SqGfx.h"
 #include "UIPrefs.h"
@@ -138,6 +139,12 @@ static std::vector<std::string> semis = {
 
 void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
 {
+    auto p = new PitchInputWidget(pos, box.size, label, false, inputControls);
+    this->addChild(p);
+}
+#if 0 // old way
+void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
+{
     float x= 0;
     float y = pos.y;
     auto l = addLabel(Vec(x, y), label.c_str(), TEXT_COLOR );
@@ -165,6 +172,7 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     this->addChild(pop);
     inputControls.push_back(pop);
 }
+#endif
 
 static std::vector<std::string> octavesRel = {
     "+7 oct", "+6 oct", "+5 oct",
@@ -203,6 +211,14 @@ float InputScreen::getPitchOffsetAmount(int index)
     return offset;
 }
 
+
+void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)
+{
+    auto p = new PitchInputWidget(pos, box.size, label, true, inputControls);
+    this->addChild(p);
+}
+
+#if 0   // old way
 void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)
 {
     float x= 0;
@@ -235,6 +251,7 @@ void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::s
     this->addChild(pop);
     inputControls.push_back(pop);
 }
+#endif
 
 static std::vector<std::string> roots = {
     "C", "C#", "D", "D#",
@@ -282,6 +299,7 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Di
 
 }
 
+#if 0
 void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
 {
     auto check = new CheckBox();
@@ -297,6 +315,7 @@ void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
     l->box.size.x = centerColumn - centerGutter;;
     l->alignment = Label::RIGHT_ALIGNMENT;
 }
+#endif
 
 void InputScreen::addNumberChooserInt(const ::rack::math::Vec& pos, const char* str, int nMin, int nMax)
 {

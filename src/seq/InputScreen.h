@@ -57,7 +57,7 @@ protected:
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
    void addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label);
    void addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, DiatonicUtils::Modes> keysig);
-   void addConstrainToScale(const ::rack::math::Vec& pos);
+   //void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();
    void addTitle(const std::string& title);
    ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
