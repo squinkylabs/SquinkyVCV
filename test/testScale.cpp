@@ -239,6 +239,23 @@ static void testPhrygian()
     assert(!p->getScaleRelativeNote(15)->valid);  // d#
 }
 
+static void testMixo()
+{
+    // E min octave 0
+    auto p = Scale::getScale(Scale::Scales::Mixolydian, PitchUtils::g);
+    assert(p->getScaleRelativeNote(7)->valid);  // g
+    assert(!p->getScaleRelativeNote(8)->valid);  // g#
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+    assert(p->getScaleRelativeNote(14)->valid);  // d
+    assert(!p->getScaleRelativeNote(15)->valid);  // d#
+    assert(p->getScaleRelativeNote(16)->valid);  // e
+    assert(p->getScaleRelativeNote(17)->valid);  // f
+    assert(!p->getScaleRelativeNote(18)->valid);  // f#
+}
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -253,4 +270,5 @@ void testScale()
 
     testMinor();
     testPhrygian();
+    testMixo();
 }
