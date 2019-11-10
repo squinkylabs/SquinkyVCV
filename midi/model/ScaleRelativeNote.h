@@ -16,13 +16,10 @@ public:
 
     }
 
-    bool isSameDegree(const ScaleRelativeNote& other);
-
-    bool isValid() const;
-private:
     const bool valid; 
     const int degree;
     const int octave;
-    ScalePtr scale;
+private:
+    ScalePtr scale;         // do we use this for anything?
 
 };

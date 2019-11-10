@@ -48,7 +48,6 @@ private:
     /**
      *  make from semi-normalized semitones to srn
      * example: 0 is C. 11 is B. so B major would have 11, 13 ....
-     * (or should they be fully normalize? let's try that)
      */
     std::map<int, ScaleRelativeNotePtr> abs2srn;
 

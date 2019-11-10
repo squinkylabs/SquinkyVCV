@@ -14,10 +14,13 @@ void Scale::init(Scales scale, int keyRoot)
     std::vector<int> notes = getBasePitches(scale);
     int degree = 0;
     for (auto it : notes) {
+
         int semi = keyRoot + it;
+#if 0 // let's try not fully norm
         if (semi > 11) {
             semi -= 12;     // todo: use a util for this
         }
+#endif
         // how do we come up with the 
         ScalePtr sc = getptr();
         ScaleRelativeNotePtr srn = std::make_shared<ScaleRelativeNote>(degree, 0, sc);
@@ -35,6 +38,7 @@ ScalePtr Scale::getScale(Scale::Scales scale, int root)
     return ScalePtr(p);
 }
 
+#if 0   // this doesn't work with semi-normaled pitches
 ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
 {
     assert(abs2srn.size());         // was this initialized?
@@ -48,6 +52,29 @@ ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
     }
     return it->second;
 }
+#endif
+
+ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
+{
+    assert(abs2srn.size());         // was this initialized?
+    PitchUtils::NormP normP(semitone);
+
+    auto it = abs2srn.find(normP.semi);
+    if (it != abs2srn.end()) {
+        ScalePtr scale = shared_from_this();
+        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct, scale));
+    }
+
+    // since these are semi-normaled, lets try the next octave
+    it = abs2srn.find(normP.semi + 12);
+    if (it != abs2srn.end()) {
+        assert(normP.oct == 0);         // surely we need to adjust, also
+        return it->second;
+    }
+
+    // need to make an invalid one
+    return ScaleRelativeNotePtr(new ScaleRelativeNote());
+}
 
 int Scale::getSemitone(const ScaleRelativeNote& note)
 {
@@ -55,12 +82,13 @@ int Scale::getSemitone(const ScaleRelativeNote& note)
     for (auto it : abs2srn) {
         int semi = it.first;
         ScaleRelativeNotePtr srn = it.second;
-        if (srn->isSameDegree(note)) {
-            printf("found it!!\n");
-            return semi;
+        if (srn->degree == note.degree) {
+           // printf("found it!!\n");
+           // assert(note.octave == 0);
+            return semi + 12 * note.octave;
         }
     }
-    printf("didn't find it\n");
+    //printf("didn't find it\n");
     return -1;
 }
 

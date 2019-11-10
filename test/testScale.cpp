@@ -9,18 +9,18 @@ static void testGetScaleRelativeNote1()
 {
     // C Maj octave 0
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
-    assert(p->getScaleRelativeNote(0)->isValid());  // C
-    assert(!p->getScaleRelativeNote(1)->isValid());  // C#
-    assert(p->getScaleRelativeNote(2)->isValid());  // D
-    assert(!p->getScaleRelativeNote(3)->isValid());  // D#
-    assert(p->getScaleRelativeNote(4)->isValid());  // E
-    assert(p->getScaleRelativeNote(5)->isValid());  // F
-    assert(!p->getScaleRelativeNote(6)->isValid());  // F#
-    assert(p->getScaleRelativeNote(7)->isValid());  // G
-    assert(!p->getScaleRelativeNote(8)->isValid());  // G#
-    assert(p->getScaleRelativeNote(9)->isValid());  // A
-    assert(!p->getScaleRelativeNote(10)->isValid());  // A#
-    assert(p->getScaleRelativeNote(11)->isValid());  // B
+    assert(p->getScaleRelativeNote(0)->valid);  // C
+    assert(!p->getScaleRelativeNote(1)->valid);  // C#
+    assert(p->getScaleRelativeNote(2)->valid);  // D
+    assert(!p->getScaleRelativeNote(3)->valid);  // D#
+    assert(p->getScaleRelativeNote(4)->valid);  // E
+    assert(p->getScaleRelativeNote(5)->valid);  // F
+    assert(!p->getScaleRelativeNote(6)->valid);  // F#
+    assert(p->getScaleRelativeNote(7)->valid);  // G
+    assert(!p->getScaleRelativeNote(8)->valid);  // G#
+    assert(p->getScaleRelativeNote(9)->valid);  // A
+    assert(!p->getScaleRelativeNote(10)->valid);  // A#
+    assert(p->getScaleRelativeNote(11)->valid);  // B
 }
 
 
@@ -28,27 +28,101 @@ static void testGetScaleRelativeNote2()
 {
     // G Maj octave 0
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::g);
-    assert(p->getScaleRelativeNote(PitchUtils::g)->isValid());
-    assert(!p->getScaleRelativeNote(PitchUtils::g_)->isValid());
-    assert(p->getScaleRelativeNote(PitchUtils::a)->isValid());
-    assert(!p->getScaleRelativeNote(PitchUtils::a_)->isValid());
-    assert(p->getScaleRelativeNote(PitchUtils::b)->isValid());
-    assert(p->getScaleRelativeNote(PitchUtils::c)->isValid());
-    assert(!p->getScaleRelativeNote(PitchUtils::c_)->isValid());
-    assert(p->getScaleRelativeNote(PitchUtils::d)->isValid());
-    assert(!p->getScaleRelativeNote(PitchUtils::d_)->isValid());
-    assert(p->getScaleRelativeNote(PitchUtils::e)->isValid());
-    assert(!p->getScaleRelativeNote(PitchUtils::f)->isValid());
-    assert(p->getScaleRelativeNote(PitchUtils::f_)->isValid());
+    assert(p->getScaleRelativeNote(PitchUtils::g)->valid);
+    assert(!p->getScaleRelativeNote(PitchUtils::g_)->valid);
+    assert(p->getScaleRelativeNote(PitchUtils::a)->valid);
+    assert(!p->getScaleRelativeNote(PitchUtils::a_)->valid);
+    assert(p->getScaleRelativeNote(PitchUtils::b)->valid);
+
+    // I'm pretty sure this C case will be in wrong octave
+    assert(p->getScaleRelativeNote(PitchUtils::c)->valid);
+    assert(!p->getScaleRelativeNote(PitchUtils::c_)->valid);
+    assert(p->getScaleRelativeNote(PitchUtils::d)->valid);
+    assert(!p->getScaleRelativeNote(PitchUtils::d_)->valid);
+    assert(p->getScaleRelativeNote(PitchUtils::e)->valid);
+    assert(!p->getScaleRelativeNote(PitchUtils::f)->valid);
+    assert(p->getScaleRelativeNote(PitchUtils::f_)->valid);
 }
+
+
+static void testGetScaleRelativeNote4()
+{
+    // G Maj octave 0
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::g);
+
+    auto srn = p->getScaleRelativeNote(PitchUtils::g);
+    assert(srn->valid);
+    assertEQ(srn->degree, 0);
+    assertEQ(srn->octave, 0);
+
+    srn = p->getScaleRelativeNote(PitchUtils::g_);
+    assert(!srn->valid);
+
+    srn = p->getScaleRelativeNote(PitchUtils::a);
+    assert(srn->valid);
+    assertEQ(srn->degree, 1);
+    assertEQ(srn->octave, 0);
+
+    srn = p->getScaleRelativeNote(PitchUtils::a_);
+    assert(!srn->valid);
+
+    srn = p->getScaleRelativeNote(PitchUtils::b);
+    assert(srn->valid);
+    assertEQ(srn->degree, 2);
+    assertEQ(srn->octave, 0);
+
+    srn = p->getScaleRelativeNote(PitchUtils::c);
+    assert(srn->valid);
+    assertEQ(srn->degree, 3);
+    assertEQ(srn->octave, 0);
+
+    srn = p->getScaleRelativeNote(PitchUtils::c_);
+    assert(!srn->valid);
+
+    srn = p->getScaleRelativeNote(PitchUtils::d);
+    assert(srn->valid);
+    assertEQ(srn->degree, 4);
+    assertEQ(srn->octave, 0);
+
+    srn = p->getScaleRelativeNote(PitchUtils::d_);
+    assert(!srn->valid);
+
+    srn = p->getScaleRelativeNote(PitchUtils::e);
+    assert(srn->valid);
+    assertEQ(srn->degree, 5);
+    assertEQ(srn->octave, 0);
+
+    srn = p->getScaleRelativeNote(PitchUtils::f);
+    assert(!srn->valid);
+
+    srn = p->getScaleRelativeNote(PitchUtils::f_);
+    assert(srn->valid);
+    assertEQ(srn->degree, 6);
+    assertEQ(srn->octave, 0);
+}
+
 
 static void testGetScaleRelativeNote3()
 {
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
-    assert(p->getScaleRelativeNote(0)->isValid()); 
-    assert(p->getScaleRelativeNote(12)->isValid());
-    assert(p->getScaleRelativeNote(24)->isValid());
-    assert(p->getScaleRelativeNote(48)->isValid());
+
+    auto srn = p->getScaleRelativeNote(0);
+    assert(srn->valid);
+    assertEQ(srn->degree, 0);
+    assertEQ(srn->octave, 0);
+
+    srn = p->getScaleRelativeNote(12);
+    assert(srn->valid);
+    assertEQ(srn->degree, 0);
+    assertEQ(srn->octave, 1);
+
+    srn = p->getScaleRelativeNote(48);
+    assert(srn->valid);
+    assertEQ(srn->degree, 0);
+    assertEQ(srn->octave, 4);
+
+
+    
 }
 
 static void testGetSemitone1()
@@ -63,10 +137,70 @@ static void testGetSemitone1()
     assertEQ(p->getSemitone(ScaleRelativeNote(6, 0, p)), 11);
 }
 
+static void testRoundTrip(ScalePtr scale, int semitone)
+{
+    ScaleRelativeNotePtr srn = scale->getScaleRelativeNote(semitone);
+    if (srn->valid) {
+        // if the note is in key
+        int semi2 = scale->getSemitone(*srn);
+        assertEQ(semi2, semitone);
+    }
+}
+
+static void testRoundTrip(ScalePtr scale)
+{
+    for (int i=0; i< 100; ++i) {
+        testRoundTrip(scale, i);
+    }
+}
+
+static void testRoundTrip(Scale::Scales scale)
+{
+    for (int i=0; i<12; ++i) {
+        auto scaleP = Scale::getScale(scale, i);
+        testRoundTrip(scaleP);
+    }
+}
+static void testRoundTrip()
+{
+    testRoundTrip(Scale::Scales::Major);
+}
+
+static void testRTBugCases()
+{
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    {
+        ScaleRelativeNotePtr srn = p->getScaleRelativeNote(0);
+        int semi = p->getSemitone(*srn);
+        assertEQ(semi, 0);
+    }
+
+    ScaleRelativeNotePtr srn2 = p->getScaleRelativeNote(12);
+    int semi2 = p->getSemitone(*srn2);
+    assertEQ(semi2, 12);
+}
+
+static void testGetSemitone2()
+{
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::g);
+    assertEQ(p->getSemitone(ScaleRelativeNote(0, 0, p)), PitchUtils::g + 0);
+    assertEQ(p->getSemitone(ScaleRelativeNote(1, 0, p)), PitchUtils::g + 2);
+    assertEQ(p->getSemitone(ScaleRelativeNote(2, 0, p)), PitchUtils::g + 4);
+    assertEQ(p->getSemitone(ScaleRelativeNote(3, 0, p)), PitchUtils::g + 5);
+    assertEQ(p->getSemitone(ScaleRelativeNote(4, 0, p)), PitchUtils::g + 7);
+    assertEQ(p->getSemitone(ScaleRelativeNote(5, 0, p)), PitchUtils::g + 9);
+    assertEQ(p->getSemitone(ScaleRelativeNote(6, 0, p)), PitchUtils::g + 11);
+}
+
 void testScale()
 {
     testGetScaleRelativeNote1();
     testGetScaleRelativeNote2();
     testGetScaleRelativeNote3();
+    testGetScaleRelativeNote4();
     testGetSemitone1();
+    testGetSemitone2();
+
+    testRTBugCases();
+    testRoundTrip();
 }
