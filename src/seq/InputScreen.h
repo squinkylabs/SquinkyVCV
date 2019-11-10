@@ -41,6 +41,17 @@ public:
    bool getValueBool(int index) const;
    int getValueInt(int index) const;
 
+   /**
+    * Input layout style constants
+    */
+   static constexpr float firstControlRow = 70.f;
+   static constexpr float controlRowSpacing = 30.f;
+   static constexpr float centerColumn = 170;
+   static constexpr float centerGutter = 10;
+   
+   static float controlRow(int index) { return firstControlRow + index * controlRowSpacing; }
+   static constexpr float okCancelY = 260.f;
+
 protected:
    MidiSequencerPtr sequencer;
    std::function<void(bool)> dismisser = nullptr;
@@ -65,16 +76,7 @@ protected:
    void addNumberChooserInt(const ::rack::math::Vec& v , const char* str, int nMin, int nMax);
    
    
-   /**
-    * Input layout style constants
-    */
-   static constexpr float firstControlRow = 70.f;
-   static constexpr float controlRowSpacing = 30.f;
-   static constexpr float centerColumn = 170;
-   static constexpr float centerGutter = 10;
-   
-   static float controlRow(int index) { return firstControlRow + index * controlRowSpacing; }
-   static constexpr float okCancelY = 260.f;
+
 
    /**
     * gets keysig from index, saves it into Sequencer.

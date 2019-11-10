@@ -23,9 +23,9 @@ float InputPopupMenuParamWidget::getValue() const
 {
     int index = 0;
     for (auto label : labels) {
-        DEBUG("comparing label >%s< to this >%s<", label.c_str(), this->text.c_str());
+       // DEBUG("comparing label >%s< to this >%s<", label.c_str(), this->text.c_str());
         if (this->text == label) {
-            DEBUG("found match");
+         //   DEBUG("found match");
             return index;
         }
         ++index;

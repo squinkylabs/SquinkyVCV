@@ -139,7 +139,11 @@ static std::vector<std::string> semis = {
 
 void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
 {
-    auto p = new PitchInputWidget(pos, box.size, label, false, inputControls);
+    // new way, let's ignore the passed x value
+    // todo: make caller pass correct coord
+    ::rack::math::Vec pos2 = pos;
+    pos2.x = 0;
+    auto p = new PitchInputWidget(pos2, box.size, label, false, inputControls);
     this->addChild(p);
 }
 #if 0 // old way
@@ -214,7 +218,11 @@ float InputScreen::getPitchOffsetAmount(int index)
 
 void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)
 {
-    auto p = new PitchInputWidget(pos, box.size, label, true, inputControls);
+    // new way, let's ignore the passed x value
+    // todo: make caller pass correct coord
+    ::rack::math::Vec pos2 = pos;
+    pos2.x = 0;
+    auto p = new PitchInputWidget(pos2, box.size, label, true, inputControls);
     this->addChild(p);
 }
 

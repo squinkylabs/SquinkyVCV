@@ -35,4 +35,8 @@ private:
     // We have two pitch inputs, and switch them up dependingon "scale relative" setting
     InputPopupMenuParamWidget* chromaticPitchInput = nullptr;
     InputPopupMenuParamWidget* scaleDegreesInput = nullptr;
+
+    // constructor helpers
+    void addMainLabel(const std::string& labelText, const ::rack::math::Vec& pos);
+    void addOctaveControl(const ::rack::math::Vec& pos);
 };
