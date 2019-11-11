@@ -15,7 +15,7 @@ class PopupMenuParamWidget : public ::rack::app::ParamWidget
 {
 public:
     std::vector<std::string> labels;
-    std::string text = {"test"};
+    std::string text = {"pop widget default"};
 
     void setLabels(std::vector<std::string> l) {
         labels = l;

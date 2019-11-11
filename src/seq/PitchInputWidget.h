@@ -31,12 +31,12 @@ private:
         void setCallback(std::function<void(void)>) override;
     };
 
-
-    // We have two pitch inputs, and switch them up dependingon "scale relative" setting
+    // We have two pitch inputs, and switch them up depending on "scale relative" setting
     InputPopupMenuParamWidget* chromaticPitchInput = nullptr;
     InputPopupMenuParamWidget* scaleDegreesInput = nullptr;
+    bool chromatic = true;
 
-    // constructor helpers
+    // ********************  constructor helpers ********************
     void addMainLabel(const std::string& labelText, const ::rack::math::Vec& pos);
     void addOctaveControl(const ::rack::math::Vec& pos);
     void addChromaticSemisControl(const ::rack::math::Vec& pos);
@@ -45,6 +45,7 @@ private:
 
     ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color =  UIPrefs::XFORM_TEXT_COLOR);
 
+    void setChromatic(bool mode);
        // add chromatic semi
 
     // add scale degrees

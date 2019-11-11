@@ -27,40 +27,45 @@ PitchInputWidget::PitchInputWidget(
     inputControls.push_back(new InputControlFacade());
     inputControls.push_back(new InputControlFacade());
 
-
     int row = 0;
-    // add label
-   // float x = InputScreen::centerColumn;
-    //float y = 0;
-    
+
     addMainLabel(label, Vec(InputScreen::centerColumn, row * InputScreen::controlRowSpacing));
-  
-    // add octave
-  
     addOctaveControl(Vec(InputScreen::centerColumn, row * InputScreen::controlRowSpacing));
 
-    addChromaticSemisControl(Vec(InputScreen::centerColumn + 80, row * InputScreen::controlRowSpacing));
-    //addScaleDegreesControl(const ::rack::math::Vec& pos);
+    auto semiPos = Vec(InputScreen::centerColumn + 80, row * InputScreen::controlRowSpacing);
+    addChromaticSemisControl(semiPos);
+    addScaleDegreesControl(semiPos);
+
     ++row;
     addScaleRelativeControl(Vec(InputScreen::centerColumn, row * InputScreen::controlRowSpacing));
 }
 
+void PitchInputWidget::setChromatic(bool mode)
+{
+    DEBUG("setChromatic(%d) current %d", mode, chromatic);
+    if (mode == chromatic) {
+        return;
+    }
+
+    chromatic = mode;
+    if (chromatic) {
+        this->removeChild(scaleDegreesInput);
+        this->addChild(chromaticPitchInput);
+    } else {
+        this->removeChild(chromaticPitchInput);
+        this->addChild(scaleDegreesInput);
+    }
+}
+
+
 void PitchInputWidget::addMainLabel(const std::string& labelText, const ::rack::math::Vec& pos)
 {
-    /*
-    Label* labelCtrl = new Label();
-    labelCtrl->box.pos = Vec(0, pos.y);
-    labelCtrl->text = labelText.c_str();
-    labelCtrl->color = UIPrefs::XFORM_TEXT_COLOR;
-    this->addChild(labelCtrl);
-    */
     auto labelCtrl = addLabel(Vec(0, pos.y), labelText.c_str());
     DEBUG("adding label at %.2f,%.2f", labelCtrl->box.pos.x, labelCtrl->box.pos.y);
 
     labelCtrl->box.size.x = pos.x - 10;
     DEBUG(" label text = %s, size=%.2f,%.2f", labelText.c_str(), labelCtrl->box.size.x, labelCtrl->box.size.y); 
     labelCtrl->alignment = Label::RIGHT_ALIGNMENT;
-
 }
 
 static std::vector<std::string> octavesRel = {
@@ -79,6 +84,14 @@ static std::vector<std::string> semisRel = {
      "-1 semi", "-2 semi", "-3 semi","-4 semi",
      "-5 semi", "-6 semi", "-7 semi","-8 semi",
      "-9 semi","-10 semi","-11 semi", "-12 semi"
+};
+
+static std::vector<std::string> scaleDegreesRel = {
+    "+7 steps", "+6 steps", "+5 steps",
+    "+4 steps", "+3 steps", "+2 steps","+1 step",
+     "+0 steps", 
+     "-1 step", "-2 steps", "-3 steps","-4 steps",
+     "-5 steps", "-6 steps", "-7 steps"
 };
 
 void PitchInputWidget::addOctaveControl(const ::rack::math::Vec& pos)
@@ -102,7 +115,26 @@ void PitchInputWidget::addChromaticSemisControl(const ::rack::math::Vec& pos)
     pop->box.size.x = 76;    // width
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(pos);
-    this->addChild(pop);
+    pop->text = semisRel[12];
+    if (chromatic) {
+        // TODO: other one will leak
+        this->addChild(pop);
+    }
+    chromaticPitchInput = pop;
+}
+
+void PitchInputWidget::addScaleDegreesControl(const ::rack::math::Vec& pos)
+{
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( scaleDegreesRel);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(pos);
+    pop->text = scaleDegreesRel[7];
+    if (!chromatic) {
+        this->addChild(pop);  
+    }
+    scaleDegreesInput = pop;
 }
 
 void PitchInputWidget::addScaleRelativeControl(const ::rack::math::Vec& pos)
@@ -114,7 +146,13 @@ void PitchInputWidget::addScaleRelativeControl(const ::rack::math::Vec& pos)
 
     auto l = addLabel(Vec(0, pos.y), "Relative to scale");
     l->box.size.x = InputScreen::centerColumn - InputScreen::centerGutter;
-    l->alignment = Label::RIGHT_ALIGNMENT;    
+    l->alignment = Label::RIGHT_ALIGNMENT;  
+    check->setCallback([this, check]() {
+        // TODO: also call back to host so can flip keysig on and off
+        DEBUG("in scale relative callback. must flip checkValue = %.2f\n", check->getValue());
+        this->setChromatic(check->getValue() < .5f);
+    });
+    DEBUG("add check, value =  %.2f\n", check->getValue());
 }
 
 Label* PitchInputWidget::addLabel(const Vec& v, const char* str, const NVGcolor& color)
