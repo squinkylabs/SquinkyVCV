@@ -141,8 +141,7 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
 {
     auto srn = this->getScaleRelativeNote(semitone);
     if (!srn->valid) {
-        assert(false);
-        return 0;
+        return transposeInScaleChromatic(semitone, scaleDegreesToTranspose);
     }
 
     int transposedOctave = srn->octave;
@@ -162,4 +161,25 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
     auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave, shared_from_this());
     return this->getSemitone(*srn2);
     
+}
+
+int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
+{
+    assert(!getScaleRelativeNote(semitone)->valid);
+
+// TODO: make this debug only
+    auto srnPrev = getScaleRelativeNote(semitone-1);
+    auto srnNext = getScaleRelativeNote(semitone-1);
+
+    // For all the scales we have so far, notes out of scale are
+    // always surrounded by notes in scale. Not true for all, however.
+    assert(srnPrev->valid && srnNext->valid);
+
+    // If we can fit between these, we will.
+    // If now, we will always round down.
+    int transposePrev = transposeInScale(semitone-1, scaleDegreesToTranspose);
+    int transposeNext = transposeInScale(semitone+1, scaleDegreesToTranspose);
+    return (transposePrev + transposeNext) / 2;
+
+
 }

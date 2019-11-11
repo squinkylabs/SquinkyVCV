@@ -51,6 +51,7 @@ private:
     void init(Scales scale, int keyRoot);
     
     int degreesInScale() const;
+    int transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose);
 
     /**
      *  make from semi-normalized semitones to srn

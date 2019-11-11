@@ -319,6 +319,18 @@ static void testTransposeInScale1()
     assertEQ(xpose, PitchUtils::c + 12);
 }
 
+static void testTransposeInScale2()
+{
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+
+    int xpose = p->transposeInScale(PitchUtils::c_, 1);
+    assertEQ(xpose, PitchUtils::d_);
+
+    xpose = p->transposeInScale(PitchUtils::a_, 1);
+    assertEQ(xpose, PitchUtils::b);
+  
+}
+
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -339,4 +351,5 @@ void testScale()
     testLocrian();
 
     testTransposeInScale1();
+    testTransposeInScale2();
 }
