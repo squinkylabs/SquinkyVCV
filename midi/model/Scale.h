@@ -35,6 +35,12 @@ public:
     // semitones are absolute semis, as used in PitchUtils
     ScaleRelativeNotePtr getScaleRelativeNote(int semitone);
     int getSemitone(const ScaleRelativeNote&);
+
+    /**
+     * Input and output are regular chromatic semitones,
+     * But transpose will be done scale relative
+     */
+    int transposeInScale(int semitone, int scaleDegreesToTranspose);
 private:
     /**
      * To create a Scale, first you must new one,
@@ -44,6 +50,7 @@ private:
     Scale();
     void init(Scales scale, int keyRoot);
     
+    int degreesInScale() const;
 
     /**
      *  make from semi-normalized semitones to srn

@@ -309,6 +309,16 @@ static void testLocrian()
     assert(!p->getScaleRelativeNote(22)->valid);  // a#
 }
 
+static void testTransposeInScale1()
+{
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+
+    int xpose = p->transposeInScale(PitchUtils::c, 1);
+    assertEQ(xpose, PitchUtils::d);
+    xpose = p->transposeInScale(PitchUtils::b, 1);
+    assertEQ(xpose, PitchUtils::c + 12);
+}
+
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -327,4 +337,6 @@ void testScale()
     testDorian();
     testLydian();
     testLocrian();
+
+    testTransposeInScale1();
 }

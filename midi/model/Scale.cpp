@@ -130,5 +130,36 @@ std::vector<int> Scale::getBasePitches(Scales scale)
             assert(false);
      }
     return ret;
+}
 
+ int Scale::degreesInScale() const
+ {
+     return int(abs2srn.size());
+ }
+
+int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
+{
+    auto srn = this->getScaleRelativeNote(semitone);
+    if (!srn->valid) {
+        assert(false);
+        return 0;
+    }
+
+    int transposedOctave = srn->octave;
+    int transposedDegree = srn->degree;
+
+    transposedDegree += scaleDegreesToTranspose;
+    while (transposedDegree >= degreesInScale()) {
+        transposedDegree -= degreesInScale();
+        transposedOctave++;
+    }
+
+    while (transposedDegree < 0) {
+        transposedDegree += degreesInScale();
+        transposedOctave--;
+    }
+
+    auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave, shared_from_this());
+    return this->getSemitone(*srn2);
+    
 }
