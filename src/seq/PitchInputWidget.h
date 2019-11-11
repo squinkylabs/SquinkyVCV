@@ -39,4 +39,15 @@ private:
     // constructor helpers
     void addMainLabel(const std::string& labelText, const ::rack::math::Vec& pos);
     void addOctaveControl(const ::rack::math::Vec& pos);
+    void addChromaticSemisControl(const ::rack::math::Vec& pos);
+    void addScaleDegreesControl(const ::rack::math::Vec& pos);
+    void addScaleRelativeControl(const ::rack::math::Vec& pos);
+
+    ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color =  UIPrefs::XFORM_TEXT_COLOR);
+
+       // add chromatic semi
+
+    // add scale degrees
+
+    // add checkbox
 };
