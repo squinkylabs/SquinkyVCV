@@ -143,7 +143,13 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     // todo: make caller pass correct coord
     ::rack::math::Vec pos2 = pos;
     pos2.x = 0;
-    auto p = new PitchInputWidget(pos2, box.size, label, false);
+
+    
+    ::rack::math::Vec size = box.size;
+    size.y = controlRow(2);
+    DEBUG("add pitch offset abs, height=%.2f ok = %.2f", size.y, okCancelY);
+
+    auto p = new PitchInputWidget(pos2, size, label, false);
     inputControls.push_back(p);
     this->addChild(p);
 }
@@ -223,7 +229,12 @@ void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::s
     // todo: make caller pass correct coord
     ::rack::math::Vec pos2 = pos;
     pos2.x = 0;
-    auto p = new PitchInputWidget(pos2, box.size, label, true);
+
+    ::rack::math::Vec size = box.size;
+    size.y = controlRow(2);
+    DEBUG("add pitch offset, height=%.2f ok = %.2f", size.y, okCancelY);
+
+    auto p = new PitchInputWidget(pos2, size, label, true);
     inputControls.push_back(p);
     this->addChild(p);
 }
