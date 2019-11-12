@@ -186,7 +186,7 @@ std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
         json_t* keysigMode = json_object_get(data, "keysigMode");
         if (keysigMode) {
             int mode = json_integer_value(keysigMode);
-            rawSettings->keysigMode = DiatonicUtils::Modes(mode);
+            rawSettings->keysigMode = Scale::Scales(mode);
         }
     }
     return _settings;

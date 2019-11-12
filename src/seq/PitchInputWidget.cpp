@@ -11,21 +11,13 @@ PitchInputWidget::PitchInputWidget(
     const ::rack::math::Vec& pos, 
     const ::rack::math::Vec& siz,
     const std::string& label, 
-    bool relative,
-    std::vector<InputControl*>& inputControls)
+    bool relative)
 {
     box.pos = pos;
     // TODO: we should set our own height
     box.size = siz;
 
     DEBUG("adding pitch input widget at pos= %.2f,%.2f size=%.2f,%.2f", pos.x, pos.y, siz.x, siz.y);
-
-    // Make the input controls for octave, pitch, and constrain
-    // TODO: these are leaking
-    // TODO2: these are all fakes
-    inputControls.push_back(new InputControlFacade());
-    inputControls.push_back(new InputControlFacade());
-    inputControls.push_back(new InputControlFacade());
 
     int row = 0;
 
@@ -104,6 +96,7 @@ void PitchInputWidget::addOctaveControl(const ::rack::math::Vec& pos)
     pop->setPosition(pos);
     pop->text = "+0 oct";
     this->addChild(pop);
+    octaveInput = pop;
 
     //inputControls.push_back(pop);
 }
@@ -165,27 +158,51 @@ Label* PitchInputWidget::addLabel(const Vec& v, const char* str, const NVGcolor&
     return label;
 }
 
-PitchInputWidget::InputControlFacade::~InputControlFacade()
+bool PitchInputWidget::isChromaticMode() const
 {
-
+    return chromatic;
 }
-float PitchInputWidget::InputControlFacade::getValue() const
+
+int PitchInputWidget::transposeOctaves() const
+{
+    const int middleOctaveIndex = 7;
+    assert(octavesRel[middleOctaveIndex] == "+0 oct");
+    int octaveOffset = middleOctaveIndex - int(std::round(octaveInput->getValue()));
+    return octaveOffset;
+}
+int PitchInputWidget::transposeDegrees() const
+{
+    const int middleDegreeIndex = 7;
+    assert(scaleDegreesRel[middleDegreeIndex] == "+0 steps");
+    int degreesOffset = middleDegreeIndex - int(std::round(scaleDegreesInput->getValue()));
+    return degreesOffset;
+}
+
+int PitchInputWidget::transposeSemis() const
+{
+    const int middleSemiIndex = 12;
+    assert(semisRel[middleSemiIndex] == "+0 semis");
+    int semiOffset = middleSemiIndex - int(std::round(chromaticPitchInput->getValue()));
+    return semiOffset;
+}
+
+float PitchInputWidget::getValue() const
 {
     return 0;
 }
 
-void PitchInputWidget::InputControlFacade::setValue(float) 
+void PitchInputWidget::setValue(float) 
 {
 
 }
 
-void PitchInputWidget::InputControlFacade::enable(bool enabled) 
+void PitchInputWidget::enable(bool enabled) 
 {
 
 }
 
 
-void PitchInputWidget::InputControlFacade::setCallback(std::function<void(void)>) 
+void PitchInputWidget::setCallback(std::function<void(void)>) 
 {
 
 }

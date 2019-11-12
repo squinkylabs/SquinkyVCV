@@ -1,6 +1,8 @@
 #pragma once
 
-#include "DiatonicUtils.h"
+//#include "DiatonicUtils.h"
+#include "Scale.h"
+
 #include <functional>
 #include <memory>
 
@@ -59,7 +61,7 @@ protected:
 
    // Extract values from multiple fields, interpret them
    float getAbsPitchFromInput(int index);
-   std::pair<int, DiatonicUtils::Modes> getKeysig(int index);
+   std::pair<int, Scale::Scales> getKeysig(int index);
    float getPitchOffsetAmount(int index);
 
    /**
@@ -67,7 +69,7 @@ protected:
     */
    void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
    void addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label);
-   void addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, DiatonicUtils::Modes> keysig);
+   void addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Scale::Scales> keysig);
    //void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();
    void addTitle(const std::string& title);

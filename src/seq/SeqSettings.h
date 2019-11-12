@@ -40,8 +40,8 @@ public:
     std::string getMidiFilePath() override;
     void setMidiFilePath(const std::string&) override;
 
-    virtual std::pair<int, DiatonicUtils::Modes> getKeysig() override;
-    void setKeysig(int root, DiatonicUtils::Modes mode) override;
+    virtual std::pair<int, Scale::Scales> getKeysig() override;
+    void setKeysig(int root, Scale::Scales mode) override;
 private:
     SequencerModule* const module;
 
@@ -79,7 +79,7 @@ private:
     std::string midiFilePath;
 
     int keysigRoot = 0;
-    DiatonicUtils::Modes keysigMode = DiatonicUtils::Modes::Minor;
+    Scale::Scales keysigMode = Scale::Scales::Minor;
 
     static float grid2Time(Grids);
     static float artic2Number(Artics);

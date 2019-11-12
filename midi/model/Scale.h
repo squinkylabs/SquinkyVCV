@@ -1,13 +1,18 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <vector>
 
 class Scale;
+class MidiEvent;
 class ScaleRelativeNote;
 using ScalePtr = std::shared_ptr<Scale>;
 using ScaleRelativeNotePtr = std::shared_ptr<ScaleRelativeNote>;
+using MidiEventPtr = std::shared_ptr<MidiEvent>;
+ using XformLambda = std::function<void(MidiEventPtr)>;
+ 
 
 class Scale : public std::enable_shared_from_this<Scale>
 {
@@ -41,6 +46,16 @@ public:
      * But transpose will be done scale relative
      */
     int transposeInScale(int semitone, int scaleDegreesToTranspose);
+
+   
+    static XformLambda makeTransposeLambdaChromatic(int transposeSemitones);
+    static XformLambda makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode);
+
+  // static std::function<void(MidiEventPtr)> makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
+   // static std::function<void(MidiEventPtr)> makeInvertLambdaChromatic(int invertAxisSemitones);
+   // static std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(int invertAxisSemitones, int keyRoot, DiatonicUtils::Modes mode);
+
+    int degreesInScale() const;
 private:
     /**
      * To create a Scale, first you must new one,
@@ -50,7 +65,7 @@ private:
     Scale();
     void init(Scales scale, int keyRoot);
     
-    int degreesInScale() const;
+    
     int transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose);
 
     /**

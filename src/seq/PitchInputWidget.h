@@ -6,7 +6,7 @@ class InputPopupMenuParamWidget;
 #include <vector>
 #include "rack.hpp"
 
-class PitchInputWidget : public ::rack::OpaqueWidget
+class PitchInputWidget : public InputControl, public ::rack::OpaqueWidget
 {
 public:
     /**
@@ -17,9 +17,26 @@ public:
         const ::rack::math::Vec& pos,
         const ::rack::math::Vec& siz,
         const std::string& label, 
-        bool relativePitch,
-        std::vector<InputControl*>& inputControls);
+        bool relativePitch);
+
+    /** In chromatic mode only transposeSemis() may be called.
+     * In scale relative mode, only transposeDegrees may be called.
+     */
+    bool isChromaticMode() const;
+    int transposeDegrees() const;
+    int transposeSemis() const;
+    int transposeOctaves() const;
+
+    /**
+     * Implement enough of InputControls
+     * so we can pretend to be one.
+     */
+    float getValue() const override;
+    void setValue(float) override;
+    void enable(bool enabled) override;
+    void setCallback(std::function<void(void)>) override;
 private:
+/*
     class InputControlFacade : public InputControl
     {
     public:
@@ -30,7 +47,9 @@ private:
     
         void setCallback(std::function<void(void)>) override;
     };
+*/
 
+    InputPopupMenuParamWidget* octaveInput = nullptr;
     // We have two pitch inputs, and switch them up depending on "scale relative" setting
     InputPopupMenuParamWidget* chromaticPitchInput = nullptr;
     InputPopupMenuParamWidget* scaleDegreesInput = nullptr;

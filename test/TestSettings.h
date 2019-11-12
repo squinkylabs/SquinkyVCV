@@ -58,15 +58,13 @@ public:
         midiFilePath = s;
     }
 
-    virtual std::pair<int, DiatonicUtils::Modes> getKeysig() override
+    virtual std::pair<int, Scale::Scales> getKeysig() override
     {
-        return std::make_pair<int, DiatonicUtils::Modes>(0, DiatonicUtils::Modes::Major);
+        return std::make_pair<int, Scale::Scales>(0, Scale::Scales::Major);
     }
-    void setKeysig(int root, DiatonicUtils::Modes mode) override
+    void setKeysig(int root, Scale::Scales mode) override
     {
-
     }
-
 
     std::string midiFilePath;
     float _articulation = 1;

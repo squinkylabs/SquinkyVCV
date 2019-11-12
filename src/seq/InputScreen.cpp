@@ -80,13 +80,13 @@ float InputScreen::getAbsPitchFromInput(int index)
     return ret;
 }
 
-std::pair<int, DiatonicUtils::Modes> InputScreen::getKeysig(int index)
+std::pair<int, Scale::Scales> InputScreen::getKeysig(int index)
 {
     assert(inputControls.size() > unsigned(index + 1));
 
     const int iRoot = getValueInt(index);
     const int iMode = getValueInt(index+1);
-    const DiatonicUtils::Modes mode = DiatonicUtils::Modes(iMode);
+    const Scale::Scales mode = Scale::Scales(iMode);
     DEBUG("get keySig = %d (root) %d (mode)", iRoot, iMode);
     return std::make_pair(iRoot, mode);
 }
@@ -143,7 +143,8 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     // todo: make caller pass correct coord
     ::rack::math::Vec pos2 = pos;
     pos2.x = 0;
-    auto p = new PitchInputWidget(pos2, box.size, label, false, inputControls);
+    auto p = new PitchInputWidget(pos2, box.size, label, false);
+    inputControls.push_back(p);
     this->addChild(p);
 }
 #if 0 // old way
@@ -222,7 +223,8 @@ void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::s
     // todo: make caller pass correct coord
     ::rack::math::Vec pos2 = pos;
     pos2.x = 0;
-    auto p = new PitchInputWidget(pos2, box.size, label, true, inputControls);
+    auto p = new PitchInputWidget(pos2, box.size, label, true);
+    inputControls.push_back(p);
     this->addChild(p);
 }
 
@@ -272,7 +274,7 @@ static std::vector<std::string> modes = {
     "Mixolydian", "Minor", "Locrian"
 };
 
-void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, DiatonicUtils::Modes> keysig)
+void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Scale::Scales> keysig)
 {
     float x= 0;
     float y = pos.y;

@@ -433,12 +433,12 @@ void SeqSettings::setMidiFilePath(const std::string& s)
 }
 
 
-std::pair<int, DiatonicUtils::Modes> SeqSettings::getKeysig()
+std::pair<int, Scale::Scales> SeqSettings::getKeysig()
 {
     return std::make_pair(keysigRoot, keysigMode);
 }
 
-void SeqSettings::setKeysig(int root, DiatonicUtils::Modes mode)
+void SeqSettings::setKeysig(int root, Scale::Scales mode)
 {
     keysigRoot = root;
     keysigMode = mode;

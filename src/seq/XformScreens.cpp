@@ -1,6 +1,8 @@
 #include "InputControls.h"
 #include "ISeqSettings.h"
 #include "MidiSequencer.h"
+#include "PitchInputWidget.h"
+#include "Scale.h"
 #include "SqMidiEvent.h"
 #include "ReplaceDataCommand.h"
 #include "XformScreens.h"
@@ -30,30 +32,41 @@ XformInvert::XformInvert(
 
     row += 2;
 
-  
-
     auto keysig = seq->context->settings()->getKeysig();
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
-   
 }
 
 void XformInvert::execute()
 {
     WARN("Entering xform invert execute our selection has %d notes",  sequencer->selection->size());
+    #if 0   // these come from new widget now
     const float pitchAxisCV = getAbsPitchFromInput(0);
     const bool constrain = getValueBool(2);
     const auto keysig = getKeysig(3);
+    #endif
+    const auto keysig = getKeysig(1);
+    saveKeysig(1);
 
-    saveKeysig(3);
+    PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[0]);
+    assert(widget);
+    if (widget->isChromaticMode()) {
+        int semisToTranspose = widget->transposeSemis();
+        WARN("chromaitc nimp");
+    } else {
+        int scaleDegreesToTranspose = widget->transposeDegrees();
+        WARN("scale relative nimp");
+    }
 
+#if 0
     const int pitchAxisSemitones = PitchUtils::cvToSemitone(pitchAxisCV);
     DEBUG("pitch axis cv was %.2f, semi = %d", pitchAxisCV, pitchAxisSemitones);
-    
+
     auto lambda = DiatonicUtils::makeInvertLambda(
         pitchAxisSemitones, constrain, keysig.first, keysig.second);
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Invert", sequencer, lambda);
     sequencer->undo->execute(sequencer, cmd);
+    #endif
 }
 
 XformTranspose::XformTranspose(
@@ -67,10 +80,8 @@ XformTranspose::XformTranspose(
     // Row 0,1 transpose amount
     int row = 0;
     addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount");
+    DEBUG("after add pitch offset there are %d controls", inputControls.size());
     
-    
-    row += 2;
-
     // row 2: constrain
     #if 0
     addConstrainToScale(Vec(centerColumn, controlRow(row)));
@@ -87,32 +98,59 @@ XformTranspose::XformTranspose(
     #endif
 
   
-    // row 3, 4
-    ++row;
+    // row 2, 3
+    row += 2;      // above takes two rows
+
     bool enableKeysig = false;
     auto keysig = seq->context->settings()->getKeysig();
     DEBUG("in transpos ctor, keysig = %d,%d", keysig.first, keysig.second);
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
     DEBUG("enable keysig = %d", enableKeysig);
-    inputControls[row]->enable(enableKeysig);
-    inputControls[row+1]->enable(enableKeysig);
+    inputControls[1]->enable(enableKeysig);
+    inputControls[2]->enable(enableKeysig);
+
+     DEBUG("end of xform ctor there are %d controls", inputControls.size());
 }
 
 void XformTranspose::execute()
 {
     WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
+     DEBUG("there are %d controls", inputControls.size());
+    #if 0
     const float transpose =  getPitchOffsetAmount(0);
     const bool constrain = getValueBool(2);
-    auto keysig = getKeysig(3);
+    #endif
+   
 
-    saveKeysig(3);
+    XformLambda xform;
+    PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[0]);
+    assert(widget);
+    const bool chromatic = widget->isChromaticMode();
+    const int octave = widget->transposeOctaves();
+    if (chromatic) {
+        const int semitones = widget->transposeSemis();
+        xform = Scale::makeTransposeLambdaChromatic(semitones + 12 * octave);
+    } else {
+        auto keysig = getKeysig(1);
+        saveKeysig(1);
+        ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
 
+        const int scaleDegrees = widget->transposeDegrees() + octave * (1 + scale->degreesInScale());
+        xform = Scale::makeTransposeLambdaScale(scaleDegrees, keysig.first, keysig.second);
+    }
+
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
+        "Transpose", sequencer, xform);
+    sequencer->undo->execute(sequencer, cmd);
+
+#if 0
     auto lambda = DiatonicUtils::makeTransposeLambda(
         transpose, constrain, keysig.first, keysig.second);
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Transpose", sequencer, lambda);
     sequencer->undo->execute(sequencer, cmd);
+    #endif
 }
 
 
