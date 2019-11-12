@@ -320,6 +320,20 @@ static void testTransposeInScale1()
     assertEQ(xpose, PitchUtils::c + 12);
 }
 
+static void testInvertInScale1()
+{
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+  
+    // root, in octave 4
+    int inversionDegree = 0 + p->degreesInScale() * 4;
+
+    // input in octave 4;
+    int semitone = PitchUtils::c + 12 * 4;
+
+    int invert = p->invertInScale(semitone, inversionDegree);
+    assert(invert = semitone);
+}
+
 static void testTransposeInScale2()
 {
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
@@ -487,6 +501,100 @@ static void testInvertLambdaChromatic()
     assertEQ(note->pitchCV, -(1 + 3 * PitchUtils::semitone));
 }
 
+
+static void testInvertLambdaChromatic2()
+{
+    // let axis be zero volts
+    float axisCV = 4 * PitchUtils::semitone;
+    int axis = PitchUtils::cvToSemitone(axisCV);
+   // auto lambda = DiatonicUtils::makeInvertLambda(
+   //     axis,
+   //     false,  //bool constrainToKeysig,
+   //     5, DiatonicUtils::Modes::Major);
+
+    auto lambda = Scale::makeInvertLambdaChromatic(axis);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = axisCV;
+    lambda(note);
+    assertClose(note->pitchCV, axisCV, .001);
+
+
+    note->pitchCV = axisCV + PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, axisCV - PitchUtils::semitone, .001);
+
+    note->pitchCV = axisCV + 1 + 3 * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, axisCV - (1 + 3 * PitchUtils::semitone), .001);
+}
+
+
+static void testInvertLambdaC()
+{
+    // let axis be zero volts (C4)
+    // invert in c maj
+
+  //  const int axisSemitones = PitchUtils::cvToSemitone(0);
+    //auto lambda = DiatonicUtils::makeInvertLambda(
+    //    axisSemitones,
+    //    true,  //bool constrainToKeysig,
+  //     0, DiatonicUtils::Modes::Major);
+
+    const int axisDegrees = 0;  // just a guess?
+    auto lambda = Scale::makeInvertLambdaDiatonic(axisDegrees, PitchUtils::c, Scale::Scales::Major);
+
+
+    // C -> C
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, 0);
+
+    // C# -> B
+    printf("finish testInvertLambdaC with chromatic ppitches\n");
+    note->pitchCV = PitchUtils::c_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::b * PitchUtils::semitone - 1, .0001);
+
+    // D -> B
+    note->pitchCV = PitchUtils::d * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::b * PitchUtils::semitone - 1, .0001);
+
+    //new case
+    // D# -> A
+    note->pitchCV = PitchUtils::d_ * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::a * PitchUtils::semitone - 1, .0001);
+
+    // E -> A
+    note->pitchCV = PitchUtils::e * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::a * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = PitchUtils::f * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::g * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = PitchUtils::g * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::f* PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = PitchUtils::a * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::e * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = PitchUtils::b * PitchUtils::semitone;
+    lambda(note);
+    assertClose(note->pitchCV, PitchUtils::d * PitchUtils::semitone - 1, .0001);
+
+    note->pitchCV = 1;
+    lambda(note);
+    assertClose(note->pitchCV, -1, .0001);
+}
+
+
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -509,6 +617,8 @@ void testScale()
     testTransposeInScale1();
     testTransposeInScale2();
 
+    testInvertInScale1();
+
 
     // these tests ported over from diatonic utils tests
     testTransposeLambdaSemi();
@@ -523,8 +633,8 @@ void testScale()
 
 
     testInvertLambdaChromatic();
-    //testInvertLambdaChromatic2();
-    //testInvertLambdaC();
+    testInvertLambdaChromatic2();
+    testInvertLambdaC();
     //testInvertLambdaCMinor();
     //testInvertLambdaCAxis0();
     //testInvertLambdaOctaves();

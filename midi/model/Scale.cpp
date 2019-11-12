@@ -45,7 +45,7 @@ ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
 
     // since these are semi-normaled, lets try the next octave
     it = abs2srn.find(normP.semi + 12);
-    if (it != abs2srn.end()) {    
+    if (it != abs2srn.end()) {
         ScalePtr scale = shared_from_this();
         return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct - 1, scale));
     }
@@ -74,7 +74,7 @@ int Scale::getSemitone(const ScaleRelativeNote& note)
 std::vector<int> Scale::getBasePitches(Scales scale)
 {
     std::vector<int> ret;
-    switch(scale) {
+    switch (scale) {
         case Scales::Major:
             ret = {0, 2, 4, 5, 7, 9, 11};
             break;
@@ -98,17 +98,17 @@ std::vector<int> Scale::getBasePitches(Scales scale)
             break;
         default:
             assert(false);
-     }
+    }
     return ret;
 }
 
- int Scale::degreesInScale() const
- {
-     return int(abs2srn.size());
- }
+int Scale::degreesInScale() const
+{
+    return int(abs2srn.size());
+}
 
- std::pair<int, int> Scale::normalizeDegree(int degree) 
- {
+std::pair<int, int> Scale::normalizeDegree(int degree)
+{
     int octave = 0;
     while (degree >= degreesInScale()) {
         degree -= degreesInScale();
@@ -120,7 +120,32 @@ std::vector<int> Scale::getBasePitches(Scales scale)
         octave--;
     }
     return std::make_pair(octave, degree);
- }
+}
+
+int Scale::invertInScale(int semitone, int inversionAxisDegree)
+{
+    auto srn = this->getScaleRelativeNote(semitone);
+    if (!srn->valid) {
+        return invertInScaleChromatic(semitone, inversionAxisDegree);
+    }
+
+    int inputDegreeAbs = srn->degree + srn->octave * this->degreesInScale();
+
+    int invertedDegreesAbs = 2 * inversionAxisDegree - inputDegreeAbs;
+
+    auto normalizedInvertedDegreesAbs = normalizeDegree(invertedDegreesAbs);
+
+    ScaleRelativeNote srnInverted(normalizedInvertedDegreesAbs.second, normalizedInvertedDegreesAbs.first, shared_from_this());
+    const int invertedSemitones = this->getSemitone(srnInverted);
+
+    return invertedSemitones;
+}
+
+int Scale::invertInScaleChromatic(int semitone, int inversionDegree)
+{
+    assert(false);
+    return 0;
+}
 
 int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
 {
@@ -133,14 +158,14 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
     int transposedDegree = srn->degree;
 
     transposedDegree += scaleDegreesToTranspose;
-    auto normalizedDegree = normalizeDegree (transposedDegree);
+    auto normalizedDegree = normalizeDegree(transposedDegree);
 
     transposedOctave += normalizedDegree.first;
     transposedDegree = normalizedDegree.second;
-   
+
 
     auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave, shared_from_this());
-    return this->getSemitone(*srn2); 
+    return this->getSemitone(*srn2);
 }
 
 int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
@@ -148,8 +173,8 @@ int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
     assert(!getScaleRelativeNote(semitone)->valid);
 
 // TODO: make this debug only
-    auto srnPrev = getScaleRelativeNote(semitone-1);
-    auto srnNext = getScaleRelativeNote(semitone-1);
+    auto srnPrev = getScaleRelativeNote(semitone - 1);
+    auto srnNext = getScaleRelativeNote(semitone - 1);
 
     // For all the scales we have so far, notes out of scale are
     // always surrounded by notes in scale. Not true for all, however.
@@ -157,8 +182,8 @@ int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
 
     // If we can fit between these, we will.
     // If now, we will always round down.
-    const int transposePrev = transposeInScale(semitone-1, scaleDegreesToTranspose);
-    const int transposeNext = transposeInScale(semitone+1, scaleDegreesToTranspose);
+    const int transposePrev = transposeInScale(semitone - 1, scaleDegreesToTranspose);
+    const int transposeNext = transposeInScale(semitone + 1, scaleDegreesToTranspose);
     return (transposePrev + transposeNext) / 2;
 }
 
@@ -177,20 +202,19 @@ XformLambda Scale::makeTransposeLambdaChromatic(int transposeSemitones)
 XformLambda Scale::makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode)
 {
         //auto xposes = getTranspose(transposeSemitones, keyRoot, mode, false);
-        ScalePtr scale = Scale::getScale(mode, keyRoot);
-        return[scale, scaleDegrees](MidiEventPtr event)
-        {
-            MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
-            if (note) {
-                const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
-                
-                const int xposedSemi = scale->transposeInScale(semitone, scaleDegrees);
-                //const auto normalizedPitch = normalizePitch(semi);
-                //const int xposedSemi = xposes[normalizedPitch.second] + semi;
+    ScalePtr scale = Scale::getScale(mode, keyRoot);
+    return[scale, scaleDegrees](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
 
-                note->pitchCV = PitchUtils::semitoneToCV(xposedSemi);
-            }
-        };
+            const int xposedSemi = scale->transposeInScale(semitone, scaleDegrees);
+            //const auto normalizedPitch = normalizePitch(semi);
+            //const int xposedSemi = xposes[normalizedPitch.second] + semi;
+
+            note->pitchCV = PitchUtils::semitoneToCV(xposedSemi);
+        }
+    };
 }
 
 XformLambda Scale::makeInvertLambdaChromatic(int invertAxisSemitones)
@@ -201,7 +225,7 @@ XformLambda Scale::makeInvertLambdaChromatic(int invertAxisSemitones)
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
             //  printf("  note in pitch = %.2f ", note->pitchCV);
-            note->pitchCV =  2 * axis - note->pitchCV;
+            note->pitchCV = 2 * axis - note->pitchCV;
             //  printf("inverted to %.2f\n", note->pitchCV); fflush(stdout);
         }
     };
@@ -209,7 +233,8 @@ XformLambda Scale::makeInvertLambdaChromatic(int invertAxisSemitones)
 
 XformLambda Scale::makeInvertLambdaDiatonic(int invertAxisdegrees, int keyRoot, Scale::Scales mode)
 {
-  return [](MidiEventPtr event) {
+    assert(false);
+    return [](MidiEventPtr event) {
 
     };
 }

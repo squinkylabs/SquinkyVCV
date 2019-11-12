@@ -47,6 +47,8 @@ public:
      */
     int transposeInScale(int semitone, int scaleDegreesToTranspose);
 
+    int invertInScale(int semitone, int inversionDegree);
+
    
     static XformLambda makeTransposeLambdaChromatic(int transposeSemitones);
     static XformLambda makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode);
@@ -69,8 +71,12 @@ private:
     Scale();
     void init(Scales scale, int keyRoot);
     
-    
+    /**
+     * Handlers for the "in scale" operations for the case
+     * when input is itself not in the scale
+     */
     int transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose);
+    int invertInScaleChromatic(int semitone, int scaleDegreesToTranspose);
 
     /**
      *  make from semi-normalized semitones to srn
