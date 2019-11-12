@@ -464,6 +464,29 @@ static void testTransposeLambdaCMinor()
     assertClose(note->pitchCV, PitchUtils::d * PitchUtils::semitone + 1, .00001);
 }
 
+static void testInvertLambdaChromatic()
+{
+    // let axis be zero volts
+    int axis = PitchUtils::cvToSemitone(0);
+    auto lambda = Scale::makeInvertLambdaChromatic(axis);
+      //  axis,
+      //  false,  //bool constrainToKeysig,
+     //   5, DiatonicUtils::Modes::Major);     
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertEQ(note->pitchCV, 0);
+
+    note->pitchCV = 0 + PitchUtils::semitone;
+    lambda(note);
+    assertEQ(note->pitchCV, -PitchUtils::semitone);
+
+    note->pitchCV = 1 + 3 * PitchUtils::semitone;
+    lambda(note);
+    assertEQ(note->pitchCV, -(1 + 3 * PitchUtils::semitone));
+}
+
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -497,5 +520,16 @@ void testScale()
     testTransposeLambdaOctaves();
     testTransposeLambdaOctavesChromatic();
     testTransposeLambdaCMinor();
+
+
+    testInvertLambdaChromatic();
+    //testInvertLambdaChromatic2();
+    //testInvertLambdaC();
+    //testInvertLambdaCMinor();
+    //testInvertLambdaCAxis0();
+    //testInvertLambdaOctaves();
+    //testInvertLambdaCAllAxis();
+    //testInvertLambdaSanity();
+    //testInvertLambdaDirection();
 
 }

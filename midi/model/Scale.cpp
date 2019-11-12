@@ -192,3 +192,24 @@ XformLambda Scale::makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scale
             }
         };
 }
+
+XformLambda Scale::makeInvertLambdaChromatic(int invertAxisSemitones)
+{
+    const float axis = PitchUtils::semitoneToCV(invertAxisSemitones);
+    // printf("in chromatic, axis (cv) = %.2f\n", axis);
+    return [axis](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            //  printf("  note in pitch = %.2f ", note->pitchCV);
+            note->pitchCV =  2 * axis - note->pitchCV;
+            //  printf("inverted to %.2f\n", note->pitchCV); fflush(stdout);
+        }
+    };
+}
+
+XformLambda Scale::makeInvertLambdaDiatonic(int invertAxisdegrees, int keyRoot, Scale::Scales mode)
+{
+  return [](MidiEventPtr event) {
+
+    };
+}

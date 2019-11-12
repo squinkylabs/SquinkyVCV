@@ -51,9 +51,8 @@ public:
     static XformLambda makeTransposeLambdaChromatic(int transposeSemitones);
     static XformLambda makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode);
 
-  // static std::function<void(MidiEventPtr)> makeInvertLambda(int invertAxisSemitones, bool constrainToKeysig, int keyRoot, Modes mode);
-   // static std::function<void(MidiEventPtr)> makeInvertLambdaChromatic(int invertAxisSemitones);
-   // static std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(int invertAxisSemitones, int keyRoot, DiatonicUtils::Modes mode);
+    static XformLambda makeInvertLambdaChromatic(int invertAxisSemitones);
+    static XformLambda makeInvertLambdaDiatonic(int invertAxisdegrees, int keyRoot, Scale::Scales mode);
 
     int degreesInScale() const;
 
