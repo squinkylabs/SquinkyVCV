@@ -181,7 +181,7 @@ int PitchInputWidget::transposeDegrees() const
 int PitchInputWidget::transposeSemis() const
 {
     const int middleSemiIndex = 12;
-    assert(semisRel[middleSemiIndex] == "+0 semis");
+    assert(semisRel[middleSemiIndex] == "+0 semi");
     int semiOffset = middleSemiIndex - int(std::round(chromaticPitchInput->getValue()));
     return semiOffset;
 }
