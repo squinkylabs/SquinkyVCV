@@ -31,14 +31,6 @@ XformInvert::XformInvert(
     int row = 0;
     addPitchInput(Vec(centerColumn, controlRow(row)), "Pitch inversion axis", keepInScaleCallback);
 
-#if 0
-    ++row;
-    addConstrainToScale(Vec(centerColumn, controlRow(row)));
-    inputControls[row]->setCallback( []() {
-        WARN("in unvert callback x[");
-    });
-    #endif
-
     row += 2;
 
     auto keysig = seq->context->settings()->getKeysig();
@@ -48,11 +40,7 @@ XformInvert::XformInvert(
 void XformInvert::execute()
 {
     WARN("Entering xform invert execute our selection has %d notes",  sequencer->selection->size());
-    #if 0   // these come from new widget now
-    const float pitchAxisCV = getAbsPitchFromInput(0);
-    const bool constrain = getValueBool(2);
-    const auto keysig = getKeysig(3);
-    #endif
+
     const auto keysig = getKeysig(1);
     saveKeysig(1);
 
@@ -75,7 +63,7 @@ void XformInvert::execute()
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Invert", sequencer, lambda);
     sequencer->undo->execute(sequencer, cmd);
-    #endif
+#endif
 }
 
 XformTranspose::XformTranspose(
@@ -98,28 +86,11 @@ XformTranspose::XformTranspose(
         WARN("in xpose callback x set constrain %d", constrain);
     };
 
-
     // Row 0,transpose amount
     int row = 0;
     addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount", keepInScaleCallback);
     DEBUG("after add pitch offset there are %d controls", inputControls.size());
-    
-    // row 2: constrain
-    #if 0
-    addConstrainToScale(Vec(centerColumn, controlRow(row)));
-    DEBUG("set callback on row %d", row);
-    inputControls[row]->setCallback( [this, row]() {
-        // Now I would look at constrain state, and use to update
-        // visibility of keysigs
-        const bool constrain = inputControls[row]->getValue() > .5;
-        inputControls[3]->enable(constrain);
-        inputControls[4]->enable(constrain);
-        WARN("in xpose callback x set constrain %d", constrain);
-    });
-    DEBUG("just added callback to control\n");
-    #endif
-
-  
+      
     // row 2, 3
     row += 2;      // above takes two rows
 
@@ -128,8 +99,11 @@ XformTranspose::XformTranspose(
     DEBUG("in transpos ctor, keysig = %d,%d", keysig.first, keysig.second);
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
     DEBUG("enable keysig = %d", enableKeysig);
-    inputControls[1]->enable(enableKeysig);
-    inputControls[2]->enable(enableKeysig);
+
+    keepInScaleCallback();          // init the keysig visibility
+
+   // inputControls[1]->enable(enableKeysig);
+  //  inputControls[2]->enable(enableKeysig);
 
      DEBUG("end of xform ctor there are %d controls", inputControls.size());
 }
@@ -137,13 +111,8 @@ XformTranspose::XformTranspose(
 void XformTranspose::execute()
 {
     WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
-     DEBUG("there are %d controls", inputControls.size());
-    #if 0
-    const float transpose =  getPitchOffsetAmount(0);
-    const bool constrain = getValueBool(2);
-    #endif
-   
-
+    DEBUG("there are %d controls", inputControls.size());
+ 
     XformLambda xform;
     PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[0]);
     assert(widget);
@@ -164,15 +133,6 @@ void XformTranspose::execute()
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
         "Transpose", sequencer, xform);
     sequencer->undo->execute(sequencer, cmd);
-
-#if 0
-    auto lambda = DiatonicUtils::makeTransposeLambda(
-        transpose, constrain, keysig.first, keysig.second);
-
-    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
-        "Transpose", sequencer, lambda);
-    sequencer->undo->execute(sequencer, cmd);
-    #endif
 }
 
 
