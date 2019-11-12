@@ -1,6 +1,7 @@
 #include "PitchUtils.h"
 #include "Scale.h"
 #include "ScaleRelativeNote.h"
+#include "SqMidiEvent.h"
 
 #include <assert.h>
 
@@ -164,11 +165,30 @@ int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
 
 XformLambda Scale::makeTransposeLambdaChromatic(int transposeSemitones)
 {
-    assert(false);
-    return nullptr;
+    const float delta = transposeSemitones * PitchUtils::semitone;
+    return [delta](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            note->pitchCV += delta;
+        }
+    };
 }
+
 XformLambda Scale::makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode)
 {
-assert(false);
-    return nullptr;
+        //auto xposes = getTranspose(transposeSemitones, keyRoot, mode, false);
+        ScalePtr scale = Scale::getScale(mode, keyRoot);
+        return[scale, scaleDegrees](MidiEventPtr event)
+        {
+            MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+            if (note) {
+                const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
+                
+                const int xposedSemi = scale->transposeInScale(semitone, scaleDegrees);
+                //const auto normalizedPitch = normalizePitch(semi);
+                //const int xposedSemi = xposes[normalizedPitch.second] + semi;
+
+                note->pitchCV = PitchUtils::semitoneToCV(xposedSemi);
+            }
+        };
 }

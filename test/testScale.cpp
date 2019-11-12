@@ -2,6 +2,7 @@
 #include "PitchUtils.h"
 #include "Scale.h"
 #include "ScaleRelativeNote.h"
+#include "SqMidiEvent.h"
 
 #include "asserts.h"
 
@@ -331,6 +332,88 @@ static void testTransposeInScale2()
   
 }
 
+static void testTransposeLambdaSemi()
+{
+    // chromatic, one semi
+    auto lambdaSemi = Scale::makeTransposeLambdaChromatic(1);
+   // auto lambdaSemi = Scale::makeTransposeLambda(
+  //      1,      //int transposeSemitones,
+   //     false,  //bool constrainToKeysig,
+  //      0, DiatonicUtils::Modes::Major);
+
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+
+    lambdaSemi(note);
+    float x = note->pitchCV;
+    assertClose(x, PitchUtils::semitone, .00001);
+
+    note->pitchCV = 1;
+    lambdaSemi(note);
+    assertClose(note->pitchCV, 1 + PitchUtils::semitone, .00001);
+}
+
+
+
+static void testTransposeLambdaFifth()
+{
+    // chromatic, one fifthe
+    auto lambda = Scale::makeTransposeLambdaChromatic(7);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    lambda(note);
+    assertClose(note->pitchCV, 7 * PitchUtils::semitone, .00001);
+    note->pitchCV = 1;
+    lambda(note);
+    assertClose(note->pitchCV, 1 + 7 * PitchUtils::semitone, .00001);
+}
+
+
+static void testTransposeLambdaDiatonicWhole()
+{
+  //  auto lambdaDiatonicWhole = DiatonicUtils::makeTransposeLambda(
+  //      2,      //int transposeSemitones,
+   //     true,  //bool constrainToKeysig,
+   //     0, DiatonicUtils::Modes::Major);        // c major
+
+    auto  lambdaDiatonicWhole = Scale::makeTransposeLambdaScale(1, PitchUtils::c,  Scale::Scales::Major);
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    //c -> d
+    note->pitchCV = 0;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, PitchUtils::d * PitchUtils::semitone, .00001);
+
+    // e -> f
+    note->pitchCV = PitchUtils::e * PitchUtils::semitone;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, PitchUtils::f * PitchUtils::semitone, .00001);
+}
+
+#if 0
+static void testTransposeLambdaDiatonicWholeOct()
+{
+    auto lambdaDiatonicWhole = DiatonicUtils::makeTransposeLambda(
+        2 + 2 * 12,   
+        true,  //bool constrainToKeysig,
+        0, DiatonicUtils::Modes::Major);        // c major
+
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    //c -> d
+    note->pitchCV = 0;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, 2 + DiatonicUtils::d * PitchUtils::semitone, .00001);
+
+    // e -> f
+    note->pitchCV = DiatonicUtils::e * PitchUtils::semitone;
+    lambdaDiatonicWhole(note);
+    assertClose(note->pitchCV, 2 + DiatonicUtils::f * PitchUtils::semitone, .00001);
+}
+#endif
+
 void testScale()
 {
     testGetScaleRelativeNote1();
@@ -352,4 +435,16 @@ void testScale()
 
     testTransposeInScale1();
     testTransposeInScale2();
+
+
+    // these tests ported over from diatonic utils tests
+    testTransposeLambdaSemi();
+
+    testTransposeLambdaFifth();
+
+    testTransposeLambdaDiatonicWhole();
+   // testTransposeLambdaDiatonicWholeOct();
+  //  testTransposeLambdaOctaves();
+  //  testTransposeLambdaCMinor();
+
 }
