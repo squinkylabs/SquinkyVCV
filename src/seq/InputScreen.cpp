@@ -137,7 +137,10 @@ static std::vector<std::string> semis = {
     "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
 };
 
-void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
+void InputScreen::addPitchInput(
+    const ::rack::math::Vec& pos,
+    const std::string& label,
+    std::function<void(void)>callback)
 {
     // new way, let's ignore the passed x value
     // todo: make caller pass correct coord
@@ -150,6 +153,7 @@ void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string&
     DEBUG("add pitch offset abs, height=%.2f ok = %.2f", size.y, okCancelY);
 
     auto p = new PitchInputWidget(pos2, size, label, false);
+    p->setCallback(callback);
     inputControls.push_back(p);
     this->addChild(p);
 }
@@ -223,7 +227,10 @@ float InputScreen::getPitchOffsetAmount(int index)
 }
 
 
-void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)
+void InputScreen::addPitchOffsetInput(
+    const ::rack::math::Vec& pos, 
+    const std::string& label,
+    std::function<void(void)>callback)
 {
     // new way, let's ignore the passed x value
     // todo: make caller pass correct coord
@@ -235,6 +242,7 @@ void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::s
     DEBUG("add pitch offset, height=%.2f ok = %.2f", size.y, okCancelY);
 
     auto p = new PitchInputWidget(pos2, size, label, true);
+    p->setCallback(callback);
     inputControls.push_back(p);
     this->addChild(p);
 }

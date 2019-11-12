@@ -53,7 +53,10 @@ private:
     // We have two pitch inputs, and switch them up depending on "scale relative" setting
     InputPopupMenuParamWidget* chromaticPitchInput = nullptr;
     InputPopupMenuParamWidget* scaleDegreesInput = nullptr;
+    CheckBox* keepInScale = nullptr;
     bool chromatic = true;
+
+    std::function<void(void)> chromaticCb = nullptr;
 
     // ********************  constructor helpers ********************
     void addMainLabel(const std::string& labelText, const ::rack::math::Vec& pos);

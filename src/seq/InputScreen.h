@@ -67,8 +67,15 @@ protected:
    /**
     * Helpers for building up screens
     */
-   void addPitchInput(const ::rack::math::Vec& pos, const std::string& label);
-   void addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label);
+   void addPitchInput(
+      const ::rack::math::Vec& pos, 
+      const std::string& label, 
+      std::function<void(void)>callback);
+   void addPitchOffsetInput(
+      const ::rack::math::Vec& pos,
+      const std::string& label, 
+      std::function<void(void)>callback);
+
    void addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Scale::Scales> keysig);
    //void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();

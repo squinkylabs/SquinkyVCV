@@ -47,6 +47,11 @@ void PitchInputWidget::setChromatic(bool mode)
         this->removeChild(chromaticPitchInput);
         this->addChild(scaleDegreesInput);
     }
+
+
+    if (chromaticCb) {
+        chromaticCb();
+    }
 }
 
 
@@ -146,6 +151,7 @@ void PitchInputWidget::addScaleRelativeControl(const ::rack::math::Vec& pos)
         this->setChromatic(check->getValue() < .5f);
     });
     DEBUG("add check, value =  %.2f\n", check->getValue());
+    this->keepInScale = check;
 }
 
 Label* PitchInputWidget::addLabel(const Vec& v, const char* str, const NVGcolor& color)
@@ -188,7 +194,7 @@ int PitchInputWidget::transposeSemis() const
 
 float PitchInputWidget::getValue() const
 {
-    return 0;
+    return keepInScale->getValue();
 }
 
 void PitchInputWidget::setValue(float) 
@@ -202,9 +208,9 @@ void PitchInputWidget::enable(bool enabled)
 }
 
 
-void PitchInputWidget::setCallback(std::function<void(void)>) 
+void PitchInputWidget::setCallback(std::function<void(void)> cb) 
 {
-
+    chromaticCb = cb;
 }
 
   

@@ -19,8 +19,17 @@ XformInvert::XformInvert(
     MidiSequencerPtr seq,
     std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Invert Pitch", dismisser)
 {
+
+    auto keepInScaleCallback = [this]() {
+        // Now I would look at constrain state, and use to update
+        // visibility of keysigs
+        const bool constrain = inputControls[0]->getValue() > .5;
+        inputControls[1]->enable(constrain);
+        inputControls[2]->enable(constrain);
+        WARN("in xpose callback x set constrain %d", constrain);
+    };
     int row = 0;
-    addPitchInput(Vec(centerColumn, controlRow(row)), "Pitch inversion axis");
+    addPitchInput(Vec(centerColumn, controlRow(row)), "Pitch inversion axis", keepInScaleCallback);
 
 #if 0
     ++row;
@@ -77,9 +86,22 @@ XformTranspose::XformTranspose(
 {
     DEBUG("\n\n************* in ctol of Xftran");
 
-    // Row 0,1 transpose amount
+    // row 0 = transpose amount
+    // row 1 = keysig
+
+    auto keepInScaleCallback = [this]() {
+        // Now I would look at constrain state, and use to update
+        // visibility of keysigs
+        const bool constrain = inputControls[0]->getValue() > .5;
+        inputControls[1]->enable(constrain);
+        inputControls[2]->enable(constrain);
+        WARN("in xpose callback x set constrain %d", constrain);
+    };
+
+
+    // Row 0,transpose amount
     int row = 0;
-    addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount");
+    addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount", keepInScaleCallback);
     DEBUG("after add pitch offset there are %d controls", inputControls.size());
     
     // row 2: constrain
