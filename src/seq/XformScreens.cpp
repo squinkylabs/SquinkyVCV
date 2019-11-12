@@ -135,7 +135,7 @@ void XformTranspose::execute()
         saveKeysig(1);
         ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
 
-        const int scaleDegrees = widget->transposeDegrees() + octave * (1 + scale->degreesInScale());
+        const int scaleDegrees = widget->transposeDegrees() + octave * scale->degreesInScale();
         xform = Scale::makeTransposeLambdaScale(scaleDegrees, keysig.first, keysig.second);
     }
 

@@ -56,6 +56,11 @@ public:
    // static std::function<void(MidiEventPtr)> makeInvertLambdaDiatonic(int invertAxisSemitones, int keyRoot, DiatonicUtils::Modes mode);
 
     int degreesInScale() const;
+
+    /**
+     * returns octave:degree from degree.
+     */
+    std::pair<int, int> normalizeDegree(int);
 private:
     /**
      * To create a Scale, first you must new one,

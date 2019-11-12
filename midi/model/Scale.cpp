@@ -106,6 +106,21 @@ std::vector<int> Scale::getBasePitches(Scales scale)
      return int(abs2srn.size());
  }
 
+ std::pair<int, int> Scale::normalizeDegree(int degree) 
+ {
+    int octave = 0;
+    while (degree >= degreesInScale()) {
+        degree -= degreesInScale();
+        octave++;
+    }
+
+    while (degree < 0) {
+        degree += degreesInScale();
+        octave--;
+    }
+    return std::make_pair(octave, degree);
+ }
+
 int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
 {
     auto srn = this->getScaleRelativeNote(semitone);
@@ -117,17 +132,11 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
     int transposedDegree = srn->degree;
 
     transposedDegree += scaleDegreesToTranspose;
-    while (transposedDegree >= degreesInScale()) {
-        // I think this is wrong!
-        assert(false);
-        transposedDegree -= degreesInScale();
-        transposedOctave++;
-    }
+    auto normalizedDegree = normalizeDegree (transposedDegree);
 
-    while (transposedDegree < 0) {
-        transposedDegree += degreesInScale();
-        transposedOctave--;
-    }
+    transposedOctave += normalizedDegree.first;
+    transposedDegree = normalizedDegree.second;
+   
 
     auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave, shared_from_this());
     return this->getSemitone(*srn2); 
