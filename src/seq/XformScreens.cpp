@@ -44,12 +44,17 @@ void XformInvert::execute()
     const auto keysig = getKeysig(1);
     saveKeysig(1);
 
+    XformLambda xform;
     PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[0]);
     assert(widget);
     if (widget->isChromaticMode()) {
-        int semisToTranspose = widget->transposeSemis();
-        WARN("chromaitc nimp");
+        int axis = widget->absoluteSemis();
+        xform = Scale::makeInvertLambdaChromatic(axis);
     } else {
+        ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+      //  const int semitoneAxis = PitchUtils::cvToSemitone(0);
+      //  auto srnAll = scale->getScaleRelativeNote(semitoneAxis);
+       // const int inversionDegree = scale->octaveAndDegree(srnAll->octave, srnAll->degree);
         int scaleDegreesToTranspose = widget->transposeDegrees();
         WARN("scale relative nimp");
     }
@@ -126,6 +131,7 @@ void XformTranspose::execute()
         saveKeysig(1);
         ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
 
+        // TODO: replace this math with the helper
         const int scaleDegrees = widget->transposeDegrees() + octave * scale->degreesInScale();
         xform = Scale::makeTransposeLambdaScale(scaleDegrees, keysig.first, keysig.second);
     }

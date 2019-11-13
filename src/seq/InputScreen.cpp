@@ -157,6 +157,7 @@ void InputScreen::addPitchInput(
     inputControls.push_back(p);
     this->addChild(p);
 }
+
 #if 0 // old way
 void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
 {

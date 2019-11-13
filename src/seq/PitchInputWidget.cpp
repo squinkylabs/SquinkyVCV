@@ -11,8 +11,9 @@ PitchInputWidget::PitchInputWidget(
     const ::rack::math::Vec& pos, 
     const ::rack::math::Vec& siz,
     const std::string& label, 
-    bool relative)
+    bool relative) : relative(relative)
 {
+    DEBUG("relative = %d", relative);
     box.pos = pos;
     // TODO: we should set our own height
     box.size = siz;
@@ -91,15 +92,33 @@ static std::vector<std::string> scaleDegreesRel = {
      "-5 steps", "-6 steps", "-7 steps"
 };
 
+static std::vector<std::string> semis = {
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+};
+
+static std::vector<std::string> octaves = {
+    "7", "6", "5", "4", "3", "2", "1", "0", "-1", "-2", "-3"
+};
+
+static std::vector<std::string> scaleDegrees = {
+    "step 7", "step 6", "step 5",
+    "step 4", "step 3", "step 2","step 1",
+     "root", 
+     "step -1", "step -2", "step -3","step -4",
+     "step -5", "step -6", "step -7"
+};
+
+
 void PitchInputWidget::addOctaveControl(const ::rack::math::Vec& pos)
 {
     DEBUG("adding octaves at %.2f,%.2f", pos.x, pos.y);
+    std::vector<std::string>& oct = relative ? octavesRel : octaves;
     auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( octavesRel);
+    pop->setLabels(oct);
     pop->box.size.x = 76;    // width
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(pos);
-    pop->text = "+0 oct";
+    pop->text = oct[7];
     this->addChild(pop);
     octaveInput = pop;
 
@@ -108,12 +127,17 @@ void PitchInputWidget::addOctaveControl(const ::rack::math::Vec& pos)
 
 void PitchInputWidget::addChromaticSemisControl(const ::rack::math::Vec& pos)
 {
+ // DEBUG("adding semis, rel = %d")
+    std::vector<std::string>& sem = relative ? semisRel : semis;
     auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( semisRel);
+    pop->setLabels(sem);
     pop->box.size.x = 76;    // width
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(pos);
-    pop->text = semisRel[12];
+
+    const int initIndex = relative ? 12 : 0;
+    pop->text = sem[0];
+    pop->setValue(initIndex);
     if (chromatic) {
         // TODO: other one will leak
         this->addChild(pop);
@@ -124,11 +148,12 @@ void PitchInputWidget::addChromaticSemisControl(const ::rack::math::Vec& pos)
 void PitchInputWidget::addScaleDegreesControl(const ::rack::math::Vec& pos)
 {
     auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( scaleDegreesRel);
+    std::vector<std::string>& deg = relative ? scaleDegreesRel : scaleDegrees; 
+    pop->setLabels(deg);
     pop->box.size.x = 76;    // width
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(pos);
-    pop->text = scaleDegreesRel[7];
+    pop->text = deg[7];
     if (!chromatic) {
         this->addChild(pop);  
     }
@@ -190,6 +215,19 @@ int PitchInputWidget::transposeSemis() const
     assert(semisRel[middleSemiIndex] == "+0 semi");
     int semiOffset = middleSemiIndex - int(std::round(chromaticPitchInput->getValue()));
     return semiOffset;
+}
+
+int PitchInputWidget::absoluteSemis() const
+{
+    return 0;
+}
+int PitchInputWidget::absoluteDegrees() const
+{
+    return 0;
+}
+int PitchInputWidget::absoluteOctaves() const
+{
+    return 0;
 }
 
 float PitchInputWidget::getValue() const

@@ -26,6 +26,9 @@ public:
     int transposeDegrees() const;
     int transposeSemis() const;
     int transposeOctaves() const;
+    int absoluteSemis() const;
+    int absoluteDegrees() const;
+    int absoluteOctaves() const;
 
     /**
      * Implement enough of InputControls
@@ -36,18 +39,6 @@ public:
     void enable(bool enabled) override;
     void setCallback(std::function<void(void)>) override;
 private:
-/*
-    class InputControlFacade : public InputControl
-    {
-    public:
-        float getValue() const override;
-        void setValue(float) override;
-        void enable(bool enabled) override;
-        ~InputControlFacade() override;
-    
-        void setCallback(std::function<void(void)>) override;
-    };
-*/
 
     InputPopupMenuParamWidget* octaveInput = nullptr;
     // We have two pitch inputs, and switch them up depending on "scale relative" setting
@@ -55,6 +46,11 @@ private:
     InputPopupMenuParamWidget* scaleDegreesInput = nullptr;
     CheckBox* keepInScale = nullptr;
     bool chromatic = true;
+
+    /**
+     * what mode we were invoked in
+     */
+    const bool relative;
 
     std::function<void(void)> chromaticCb = nullptr;
 
