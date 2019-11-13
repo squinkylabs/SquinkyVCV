@@ -53,28 +53,18 @@ void XformInvert::execute()
         const int axisTotal = axisSemis + 12 * octave;
         DEBUG("in invert chromatic, asix = %d", axisTotal);
         xform = Scale::makeInvertLambdaChromatic(axisTotal);
-        // xform = Scale::makeTransposeLambdaChromatic(semitones + 12 * octave);
     } else {
         ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
         const int axisDegreesPartial = widget->absoluteDegrees();
-      //  const int semitoneAxis = PitchUtils::cvToSemitone(0);
-      //  auto srnAll = scale->getScaleRelativeNote(semitoneAxis);
-       // const int inversionDegree = scale->octaveAndDegree(srnAll->octave, srnAll->degree);
-       const int axisDegrees = scale->octaveAndDegree(octave, axisDegreesPartial);
+        const int axisDegrees = scale->octaveAndDegree(octave, axisDegreesPartial);
+        xform = Scale::makeInvertLambdaDiatonic(axisDegrees, keysig.first, keysig.second);
      
         WARN("scale relative nimp axis degrees = %d", axisDegrees);
     }
 
-#if 0
-    const int pitchAxisSemitones = PitchUtils::cvToSemitone(pitchAxisCV);
-    DEBUG("pitch axis cv was %.2f, semi = %d", pitchAxisCV, pitchAxisSemitones);
-
-    auto lambda = DiatonicUtils::makeInvertLambda(
-        pitchAxisSemitones, constrain, keysig.first, keysig.second);
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
-        "Invert", sequencer, lambda);
+        "Invert", sequencer, xform);
     sequencer->undo->execute(sequencer, cmd);
-#endif
 }
 
 XformTranspose::XformTranspose(

@@ -216,8 +216,6 @@ int PitchInputWidget::transposeSemis() const
 
 int PitchInputWidget::absoluteSemis() const
 {
-  //  const int middleSemiIndex = 12;
-  //  assert(semis[middleSemiIndex] == "+0 semi");
     const int absSemis = int(std::round(chromaticPitchInput->getValue()));
     DEBUG("returning abs semis = %d", absSemis);
     return absSemis;
