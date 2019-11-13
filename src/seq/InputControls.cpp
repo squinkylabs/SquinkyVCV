@@ -36,8 +36,6 @@ float InputPopupMenuParamWidget::getValue() const
 
 void InputPopupMenuParamWidget::setCallback(std::function<void(void)> cb)
 {
-    DEBUG("InputPopupMenuParamWidget::setCallback");
-    //assert(false);
     callback = cb;
 }
 
@@ -49,7 +47,6 @@ void InputPopupMenuParamWidget::enable(bool b)
 
 void CheckBox::setCallback(std::function<void(void)> cb)
 {
-    DEBUG("checkbox::setCallback called with %d\n", bool(cb));
     callback = cb;
 }
 
@@ -122,10 +119,8 @@ void CheckBox::onDragDrop(const ::rack::event::DragDrop& e)
 
 void CheckBox::onAction(const ::rack::event::Action& e)
 {
-    DEBUG("CheckBox::onAction");
     value = !value;
     if (callback) {
-        DEBUG("CheckBox::onAction wiht cb");
         callback();
     }
 }

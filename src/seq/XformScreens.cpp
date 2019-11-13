@@ -47,16 +47,22 @@ void XformInvert::execute()
     XformLambda xform;
     PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[0]);
     assert(widget);
+    const int octave = widget->absoluteOctaves();
     if (widget->isChromaticMode()) {
-        int axis = widget->absoluteSemis();
-        xform = Scale::makeInvertLambdaChromatic(axis);
+        int axisSemis = widget->absoluteSemis();
+        const int axisTotal = axisSemis + 12 * octave;
+        DEBUG("in invert chromatic, asix = %d", axisTotal);
+        xform = Scale::makeInvertLambdaChromatic(axisTotal);
+        // xform = Scale::makeTransposeLambdaChromatic(semitones + 12 * octave);
     } else {
-        ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+        ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
+        const int axisDegreesPartial = widget->absoluteDegrees();
       //  const int semitoneAxis = PitchUtils::cvToSemitone(0);
       //  auto srnAll = scale->getScaleRelativeNote(semitoneAxis);
        // const int inversionDegree = scale->octaveAndDegree(srnAll->octave, srnAll->degree);
-        int scaleDegreesToTranspose = widget->transposeDegrees();
-        WARN("scale relative nimp");
+       const int axisDegrees = scale->octaveAndDegree(octave, axisDegreesPartial);
+     
+        WARN("scale relative nimp axis degrees = %d", axisDegrees);
     }
 
 #if 0
@@ -77,7 +83,6 @@ XformTranspose::XformTranspose(
     MidiSequencerPtr seq,
     std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Transpose Pitch", dismisser)
 {
-    DEBUG("\n\n************* in ctol of Xftran");
 
     // row 0 = transpose amount
     // row 1 = keysig
@@ -94,7 +99,6 @@ XformTranspose::XformTranspose(
     // Row 0,transpose amount
     int row = 0;
     addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Transpose Amount", keepInScaleCallback);
-    DEBUG("after add pitch offset there are %d controls", inputControls.size());
       
     // row 2, 3
     row += 2;      // above takes two rows
@@ -110,14 +114,10 @@ XformTranspose::XformTranspose(
    // inputControls[1]->enable(enableKeysig);
   //  inputControls[2]->enable(enableKeysig);
 
-     DEBUG("end of xform ctor there are %d controls", inputControls.size());
 }
 
 void XformTranspose::execute()
-{
-    WARN("Entering xform execute our selection has %d notes",  sequencer->selection->size());
-    DEBUG("there are %d controls", inputControls.size());
- 
+{ 
     XformLambda xform;
     PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[0]);
     assert(widget);
@@ -173,7 +173,6 @@ void XformChopNotes::execute()
 {
     // TODO: fix this offset
     const int numNotes = 2 + int( std::round(inputControls[0]->getValue()));
-    DEBUG("num notes from control = %d\n", numNotes);
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChopNoteCommand(sequencer, numNotes);
     sequencer->undo->execute(sequencer, cmd);
 }

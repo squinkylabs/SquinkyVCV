@@ -13,12 +13,10 @@ PitchInputWidget::PitchInputWidget(
     const std::string& label, 
     bool relative) : relative(relative)
 {
-    DEBUG("relative = %d", relative);
+
     box.pos = pos;
     // TODO: we should set our own height
     box.size = siz;
-
-    DEBUG("adding pitch input widget at pos= %.2f,%.2f size=%.2f,%.2f", pos.x, pos.y, siz.x, siz.y);
 
     int row = 0;
 
@@ -35,7 +33,6 @@ PitchInputWidget::PitchInputWidget(
 
 void PitchInputWidget::setChromatic(bool mode)
 {
-    DEBUG("setChromatic(%d) current %d", mode, chromatic);
     if (mode == chromatic) {
         return;
     }
@@ -219,15 +216,27 @@ int PitchInputWidget::transposeSemis() const
 
 int PitchInputWidget::absoluteSemis() const
 {
-    return 0;
+  //  const int middleSemiIndex = 12;
+  //  assert(semis[middleSemiIndex] == "+0 semi");
+    const int absSemis = int(std::round(chromaticPitchInput->getValue()));
+    DEBUG("returning abs semis = %d", absSemis);
+    return absSemis;
 }
+
 int PitchInputWidget::absoluteDegrees() const
 {
-    return 0;
+    const int middleDegreeIndex = 7;
+    assert(scaleDegrees[middleDegreeIndex] == "root");
+    const int absDegrees = middleDegreeIndex - int(std::round(scaleDegreesInput->getValue()));
+    DEBUG("returning abs degress %d", absDegrees);
+    return absDegrees;
 }
 int PitchInputWidget::absoluteOctaves() const
 {
-    return 0;
+    const int middleOctaveIndex = 7;
+    assert(octavesRel[middleOctaveIndex] == "+0 oct");
+    const int absOctave = middleOctaveIndex - int(std::round(octaveInput->getValue()));
+    return absOctave;
 }
 
 float PitchInputWidget::getValue() const

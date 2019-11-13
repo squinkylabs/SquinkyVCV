@@ -56,7 +56,6 @@ void InputScreenManager::show(
         this->dismiss(bOK);
     };
 
-    DEBUG("about to make input screen size = %f, %f", size.x, size.y);
     InputScreenPtr is;
     switch(screenId) {
         case Screens::Invert:
