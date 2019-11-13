@@ -310,6 +310,24 @@ static void testLocrian()
     assert(!p->getScaleRelativeNote(22)->valid);  // a#
 }
 
+
+static void testPentatonic()
+{
+    auto p = Scale::getScale(Scale::Scales::MinorPentatonic, PitchUtils::e);
+    assert(p->getScaleRelativeNote(4)->valid);  // e
+    assert(!p->getScaleRelativeNote(5)->valid);  // f
+    assert(!p->getScaleRelativeNote(6)->valid);  // f#
+    assert(p->getScaleRelativeNote(7)->valid);  // g
+    assert(!p->getScaleRelativeNote(8)->valid);  // g#
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(!p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+    assert(p->getScaleRelativeNote(14)->valid);  // d
+    assert(!p->getScaleRelativeNote(15)->valid);  // d#
+}
+
 static void testTransposeInScale1()
 {
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
@@ -399,6 +417,23 @@ static void testTransposeInScale2()
     xpose = p->transposeInScale(PitchUtils::a_, 1);
     assertEQ(xpose, PitchUtils::b);
   
+}
+
+static void testTransposeInScalePentatonic()
+{
+    auto p = Scale::getScale(Scale::Scales::MinorPentatonic, PitchUtils::e);
+
+    
+    int xpose = p->transposeInScale(PitchUtils::e, 1);
+    assertEQ(xpose, PitchUtils::g);
+
+    xpose = p->transposeInScale(PitchUtils::g, 1);
+    assertEQ(xpose, PitchUtils::a);
+
+    xpose = p->transposeInScale(PitchUtils::f, 1);
+    assertEQ(xpose, PitchUtils::g_);
+
+    assert(false);
 }
 
 static void testTransposeLambdaSemi()
@@ -708,9 +743,11 @@ void testScale()
     testDorian();
     testLydian();
     testLocrian();
+    testPentatonic();
 
     testTransposeInScale1();
     testTransposeInScale2();
+    testTransposeInScalePentatonic();
 
     testInvertInScale1();
     testInvertInScaleOctaves();

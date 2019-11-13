@@ -96,6 +96,9 @@ std::vector<int> Scale::getBasePitches(Scales scale)
         case Scales::Dorian:
             ret = {0, 2, 3, 5, 7, 9, 10};
             break;
+        case Scales::MinorPentatonic:
+            ret = {0, 3, 5, 7, 10};
+            break;
         default:
             assert(false);
     }
@@ -167,13 +170,45 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
     return this->getSemitone(*srn2);
 }
 
+int Scale::transposeInScaleChromatic(int _semitone, int scaleDegreesToTranspose)
+{
+    assert(!getScaleRelativeNote(_semitone)->valid);
+
+    int lowerSemitone = _semitone-1;
+    int higherSemitone = _semitone+1;
+
+    // earch for scale relative that bracket us.
+    // Note that in some scales these can be a whole step away
+    auto srnPrev = getScaleRelativeNote(lowerSemitone);
+    if (!srnPrev->valid) {
+        lowerSemitone--;
+        srnPrev = getScaleRelativeNote(lowerSemitone);
+    }
+
+    auto srnNext = getScaleRelativeNote(higherSemitone);
+    if (!srnNext->valid) {
+        higherSemitone++;
+        srnNext = getScaleRelativeNote(higherSemitone);
+    }
+
+    assert(srnPrev->valid && srnNext->valid);
+
+
+    // If we can fit between these, we will.
+    // If now, we will always round down.
+    const int transposePrev = transposeInScale(lowerSemitone, scaleDegreesToTranspose);
+    const int transposeNext = transposeInScale(higherSemitone, scaleDegreesToTranspose);
+    return (transposePrev + transposeNext) / 2;
+}
+
+#if 0
 int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
 {
     assert(!getScaleRelativeNote(semitone)->valid);
 
-#ifdef DEBUG
+#ifdef _DEBUG
     auto srnPrev = getScaleRelativeNote(semitone - 1);
-    auto srnNext = getScaleRelativeNote(semitone - 1);
+    auto srnNext = getScaleRelativeNote(semitone + 1);
 
     // For all the scales we have so far, notes out of scale are
     // always surrounded by notes in scale. Not true for all, however.
@@ -186,6 +221,7 @@ int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
     const int transposeNext = transposeInScale(semitone + 1, scaleDegreesToTranspose);
     return (transposePrev + transposeNext) / 2;
 }
+#endif
 
 int Scale::invertInScaleChromatic(int semitone, int inversionDegree)
 {

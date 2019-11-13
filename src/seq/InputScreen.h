@@ -60,12 +60,6 @@ protected:
    std::vector<InputControl*> inputControls;
 
    std::pair<int, Scale::Scales> getKeysig(int index);
-   // Extract values from multiple fields, interpret them
-   #if 0
-   float getAbsPitchFromInput(int index);
- 
-   float getPitchOffsetAmount(int index);
-   #endif
 
    /**
     * Helpers for building up screens
@@ -80,13 +74,11 @@ protected:
       std::function<void(void)>callback);
 
    void addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Scale::Scales> keysig);
-   //void addConstrainToScale(const ::rack::math::Vec& pos);
    void addOkCancel();
    void addTitle(const std::string& title);
    ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
 
    void addNumberChooserInt(const ::rack::math::Vec& v , const char* str, int nMin, int nMax);
-   
    
    /**
     * gets keysig from index, saves it into Sequencer.

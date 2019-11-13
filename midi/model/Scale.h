@@ -24,7 +24,8 @@ public:
         Lydian,
         Mixolydian,
         Minor,
-        Locrian
+        Locrian,
+        MinorPentatonic
     };
 
     /**
@@ -36,7 +37,6 @@ public:
         return shared_from_this();
     }
 
-   
     // semitones are absolute semis, as used in PitchUtils
     ScaleRelativeNotePtr getScaleRelativeNote(int semitone);
     int getSemitone(const ScaleRelativeNote&);
@@ -49,7 +49,6 @@ public:
 
     int invertInScale(int semitone, int inversionDegree);
 
-   
     static XformLambda makeTransposeLambdaChromatic(int transposeSemitones);
     static XformLambda makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode);
 

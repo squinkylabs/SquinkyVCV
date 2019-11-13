@@ -11,7 +11,6 @@
 
 
 using Vec = ::rack::math::Vec;
-//using Button = ::rack::ui::Button;
 using Widget = ::rack::widget::Widget;
 using Label = ::rack::ui::Label;
 
@@ -58,29 +57,6 @@ int InputScreen::getValueInt(int index) const
 {
     return int (std::round(getValue(index)));
 }
-
-#if 0
-float InputScreen::getAbsPitchFromInput(int index)
-{
-    DEBUG("in get abs pitch");
-    // octaves
-    //  "7", "6", "5", "4", "3", "2", "1", "0", "-1", "-2", "-3"
-    // so octave 4 = index 3
-    // ocatve = 7 - index
-    assert(inputControls.size() > unsigned(index + 1));
-  //  int iOctave = 7 - int( std::round(inputControls[index]->getValue()));
-  //  int iSemi = int( std::round(inputControls[index+1]->getValue()));
-
-    const int iOctave = 7 - getValueInt(index);
-    const int iSemi = getValueInt(index + 1);
-   
-
-    const float ret =  PitchUtils::pitchToCV(iOctave, iSemi);
-
-    DEBUG("ngetAbsPitch got oct=%d semi=%d final out = %.2f", iOctave, iSemi, ret);
-    return ret;
-}
-#endif
 
 std::pair<int, Scale::Scales> InputScreen::getKeysig(int index)
 {
@@ -131,16 +107,6 @@ void InputScreen::addTitle(const std::string& title)
     l->alignment = Label::CENTER_ALIGNMENT;
 }
 
-#if 0
-static std::vector<std::string> octaves = {
-    "7", "6", "5", "4", "3", "2", "1", "0", "-1", "-2", "-3"
-};
-
-static std::vector<std::string> semis = {
-    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
-};
-#endif
-
 void InputScreen::addPitchInput(
     const ::rack::math::Vec& pos,
     const std::string& label,
@@ -150,8 +116,7 @@ void InputScreen::addPitchInput(
     // todo: make caller pass correct coord
     ::rack::math::Vec pos2 = pos;
     pos2.x = 0;
-
-    
+   
     ::rack::math::Vec size = box.size;
     size.y = controlRow(2);
     DEBUG("add pitch offset abs, height=%.2f ok = %.2f", size.y, okCancelY);
@@ -161,79 +126,6 @@ void InputScreen::addPitchInput(
     inputControls.push_back(p);
     this->addChild(p);
 }
-
-#if 0 // old way
-void InputScreen::addPitchInput(const ::rack::math::Vec& pos, const std::string& label)
-{
-    float x= 0;
-    float y = pos.y;
-    auto l = addLabel(Vec(x, y), label.c_str(), TEXT_COLOR );
-    l->box.size.x = pos.x - 10;
-    l->alignment = Label::RIGHT_ALIGNMENT;
-  
-    x = pos.x;
-
-    auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( octaves);
-    pop->box.size.x = 76;    // width
-    pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(x, y));
-    pop->text = "0";
-    this->addChild(pop);
-    inputControls.push_back(pop);
-
-    x += 80;
-    pop = new InputPopupMenuParamWidget();
-    pop->setLabels( semis);
-    pop->box.size.x = 76;    // width
-    pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(x, y));
-    pop->text = "C";
-    this->addChild(pop);
-    inputControls.push_back(pop);
-}
-#endif
-
-#if 0
-static std::vector<std::string> octavesRel = {
-    "+7 oct", "+6 oct", "+5 oct",
-    "+4 oct", "+3 oct", "+2 oct", "+1 oct",
-    "+0 oct",
-    "-1 oct", "-2 oct", "-3 oct", "-4 oct",
-    "-5 oct", "-6 oct", "-7 oct"
-};
-
-static std::vector<std::string> semisRel = {
-    "+12 semi", "+11 semi", "+10 semi","+9 semi",
-    "+8 semi", "+7 semi", "+6 semi","+5 semi",
-    "+4 semi", "+3 semi", "+2 semi","+1 semi",
-     "+0 semi", 
-     "-1 semi", "-2 semi", "-3 semi","-4 semi",
-     "-5 semi", "-6 semi", "-7 semi","-8 semi",
-     "-9 semi","-10 semi","-11 semi", "-12 semi"
-};
-#endif
-
-#if 0
-float InputScreen::getPitchOffsetAmount(int index)
-{
-    const int middleOctaveIndex = 7;
-    assert(octavesRel[middleOctaveIndex] == "+0 oct");
-    assert(inputControls.size() > unsigned(index + 1));
-
-    int octaveOffset = middleOctaveIndex - getValueInt(index);
-
-    const int middleSemiIndex = 12;
-    assert(semisRel[middleSemiIndex] == "+0 semi");
-    assert(inputControls.size() > unsigned(index + 1));
-    int semiOffset = middleSemiIndex - getValueInt(index+1);
-
-    int offset = 12 * octaveOffset + semiOffset;
-
-    DEBUG("getPitchOfsetMaoun: oct=%d semi=%d final=%d", octaveOffset, semiOffset, offset);
-    return offset;
-}
-#endif
 
 void InputScreen::addPitchOffsetInput(
     const ::rack::math::Vec& pos, 
@@ -255,41 +147,6 @@ void InputScreen::addPitchOffsetInput(
     this->addChild(p);
 }
 
-#if 0   // old way
-void InputScreen::addPitchOffsetInput(const ::rack::math::Vec& pos, const std::string& label)
-{
-    float x= 0;
-    float y = pos.y;
-    auto l = addLabel(Vec(x, y), label.c_str(), TEXT_COLOR );
-    l->box.size.x = pos.x - 10;
-    l->alignment = Label::RIGHT_ALIGNMENT;
-  
-    x = pos.x;
-
-    auto pop = new InputPopupMenuParamWidget();
-    pop->setLabels( octavesRel);
-    pop->box.size.x = 76;    // width
-    pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(x, y));
-    pop->text = "+0 oct";
-    this->addChild(pop);
-    inputControls.push_back(pop);
-
-    x += 80;
-    pop = new InputPopupMenuParamWidget();
-    pop->setLabels( semisRel);
-    pop->box.size.x = 76;    // width
-    pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(x, y));
-
-    std::string defSemi = "+0 semi";
-    assert(semisRel[12] == defSemi);
-    pop->text = defSemi;
-    this->addChild(pop);
-    inputControls.push_back(pop);
-}
-#endif
-
 static std::vector<std::string> roots = {
     "C", "C#", "D", "D#",
     "E", "F", "F#", "G",
@@ -298,7 +155,7 @@ static std::vector<std::string> roots = {
 
 static std::vector<std::string> modes = {
     "Major", "Dorian", "Phrygian", "Lydian",
-    "Mixolydian", "Minor", "Locrian"
+    "Mixolydian", "Minor", "Locrian", "Minor Pentatonic"
 };
 
 void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Scale::Scales> keysig)
@@ -320,8 +177,6 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Sc
     this->addChild(pop);
     inputControls.push_back(pop);
     pop->setValue(keysig.first);
-    DEBUG("just init popup to %d", keysig.first);
-    //DEBUG("we need to init the keysig here");
 
     x += 80;
     pop = new InputPopupMenuParamWidget();
@@ -333,26 +188,7 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Sc
     this->addChild(pop);
     inputControls.push_back(pop);
     pop->setValue( int(keysig.second)); 
-
 }
-
-#if 0
-void InputScreen::addConstrainToScale(const ::rack::math::Vec& pos)
-{
-    auto check = new CheckBox();
-    check->box.pos = pos;
-    check->box.size = Vec(17, 17);
-    this->addChild(check);
-    inputControls.push_back(check);
-
-    // rationalize this
-    const NVGcolor TEXT_COLOR = nvgRGB(0xc0, 0xc0, 0xc0);
-
-    auto l = addLabel(Vec(0, pos.y), "Constrain to scale", TEXT_COLOR );
-    l->box.size.x = centerColumn - centerGutter;;
-    l->alignment = Label::RIGHT_ALIGNMENT;
-}
-#endif
 
 void InputScreen::addNumberChooserInt(const ::rack::math::Vec& pos, const char* str, int nMin, int nMax)
 {

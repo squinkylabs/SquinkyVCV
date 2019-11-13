@@ -39,8 +39,6 @@ XformInvert::XformInvert(
 
 void XformInvert::execute()
 {
-    WARN("Entering xform invert execute our selection has %d notes",  sequencer->selection->size());
-
     const auto keysig = getKeysig(1);
     saveKeysig(1);
 
@@ -51,15 +49,12 @@ void XformInvert::execute()
     if (widget->isChromaticMode()) {
         int axisSemis = widget->absoluteSemis();
         const int axisTotal = axisSemis + 12 * octave;
-        DEBUG("in invert chromatic, asix = %d", axisTotal);
         xform = Scale::makeInvertLambdaChromatic(axisTotal);
     } else {
         ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
         const int axisDegreesPartial = widget->absoluteDegrees();
         const int axisDegrees = scale->octaveAndDegree(octave, axisDegreesPartial);
         xform = Scale::makeInvertLambdaDiatonic(axisDegrees, keysig.first, keysig.second);
-     
-        WARN("scale relative nimp axis degrees = %d", axisDegrees);
     }
 
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
@@ -100,10 +95,6 @@ XformTranspose::XformTranspose(
     DEBUG("enable keysig = %d", enableKeysig);
 
     keepInScaleCallback();          // init the keysig visibility
-
-   // inputControls[1]->enable(enableKeysig);
-  //  inputControls[2]->enable(enableKeysig);
-
 }
 
 void XformTranspose::execute()
@@ -131,22 +122,19 @@ void XformTranspose::execute()
     sequencer->undo->execute(sequencer, cmd);
 }
 
-
 XformReversePitch::XformReversePitch(
     const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
     MidiSequencerPtr seq,
-    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Transpose Pitch", dismisser)
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Reverse Pitch", dismisser)
 {
 }
-
 
 void XformReversePitch::execute()
 {
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeReversePitchCommand(sequencer);
     sequencer->undo->execute(sequencer, cmd);
 }
-
 
 XformChopNotes::XformChopNotes(
     const ::rack::math::Vec& pos,
@@ -157,7 +145,6 @@ XformChopNotes::XformChopNotes(
     int row = 0;    
     addNumberChooserInt(Vec(centerColumn, controlRow(row)), "Notes", 2, 11);
 }
-
 
 void XformChopNotes::execute()
 {
