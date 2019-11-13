@@ -122,6 +122,11 @@ std::pair<int, int> Scale::normalizeDegree(int degree)
     return std::make_pair(octave, degree);
 }
 
+ int Scale::octaveAndDegree(int octave, int degree)
+ {
+     return degree + octave * degreesInScale();
+ }
+
 int Scale::invertInScale(int semitone, int inversionAxisDegree)
 {
     auto srn = this->getScaleRelativeNote(semitone);
@@ -139,12 +144,6 @@ int Scale::invertInScale(int semitone, int inversionAxisDegree)
     const int invertedSemitones = this->getSemitone(srnInverted);
 
     return invertedSemitones;
-}
-
-int Scale::invertInScaleChromatic(int semitone, int inversionDegree)
-{
-    assert(false);
-    return 0;
 }
 
 int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
@@ -172,19 +171,39 @@ int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
 {
     assert(!getScaleRelativeNote(semitone)->valid);
 
-// TODO: make this debug only
+#ifdef DEBUG
     auto srnPrev = getScaleRelativeNote(semitone - 1);
     auto srnNext = getScaleRelativeNote(semitone - 1);
 
     // For all the scales we have so far, notes out of scale are
     // always surrounded by notes in scale. Not true for all, however.
     assert(srnPrev->valid && srnNext->valid);
+#endif
 
     // If we can fit between these, we will.
     // If now, we will always round down.
     const int transposePrev = transposeInScale(semitone - 1, scaleDegreesToTranspose);
     const int transposeNext = transposeInScale(semitone + 1, scaleDegreesToTranspose);
     return (transposePrev + transposeNext) / 2;
+}
+
+int Scale::invertInScaleChromatic(int semitone, int inversionDegree)
+{
+    assert(!getScaleRelativeNote(semitone)->valid);
+#ifdef DEBUG
+    auto srnPrev = getScaleRelativeNote(semitone - 1);
+    auto srnNext = getScaleRelativeNote(semitone - 1);
+
+    // For all the scales we have so far, notes out of scale are
+    // always surrounded by notes in scale. Not true for all, however.
+    assert(srnPrev->valid && srnNext->valid);
+#endif
+
+    // If we can fit between these, we will.
+    // If now, we will always round down.
+    const int invertPrev = invertInScale(semitone - 1, inversionDegree);
+    const int invertNext = invertInScale(semitone + 1, inversionDegree);
+    return (invertPrev + invertNext) / 2;
 }
 
 
@@ -195,24 +214,6 @@ XformLambda Scale::makeTransposeLambdaChromatic(int transposeSemitones)
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
         if (note) {
             note->pitchCV += delta;
-        }
-    };
-}
-
-XformLambda Scale::makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode)
-{
-        //auto xposes = getTranspose(transposeSemitones, keyRoot, mode, false);
-    ScalePtr scale = Scale::getScale(mode, keyRoot);
-    return[scale, scaleDegrees](MidiEventPtr event) {
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
-        if (note) {
-            const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
-
-            const int xposedSemi = scale->transposeInScale(semitone, scaleDegrees);
-            //const auto normalizedPitch = normalizePitch(semi);
-            //const int xposedSemi = xposes[normalizedPitch.second] + semi;
-
-            note->pitchCV = PitchUtils::semitoneToCV(xposedSemi);
         }
     };
 }
@@ -231,10 +232,28 @@ XformLambda Scale::makeInvertLambdaChromatic(int invertAxisSemitones)
     };
 }
 
+XformLambda Scale::makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode)
+{
+    ScalePtr scale = Scale::getScale(mode, keyRoot);
+    return[scale, scaleDegrees](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
+            const int xposedSemi = scale->transposeInScale(semitone, scaleDegrees);
+            note->pitchCV = PitchUtils::semitoneToCV(xposedSemi);
+        }
+    };
+}
+
 XformLambda Scale::makeInvertLambdaDiatonic(int invertAxisdegrees, int keyRoot, Scale::Scales mode)
 {
-    assert(false);
-    return [](MidiEventPtr event) {
-
+    ScalePtr scale = Scale::getScale(mode, keyRoot);
+    return [scale, invertAxisdegrees](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
+            const int invertedSemi = scale->invertInScale(semitone, invertAxisdegrees);
+            note->pitchCV = PitchUtils::semitoneToCV(invertedSemi);
+        }
     };
 }

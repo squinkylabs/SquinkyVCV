@@ -331,7 +331,62 @@ static void testInvertInScale1()
     int semitone = PitchUtils::c + 12 * 4;
 
     int invert = p->invertInScale(semitone, inversionDegree);
-    assert(invert = semitone);
+    assertEQ(invert, semitone);
+
+    int expectedInvert = semitone - 1;
+    semitone++;     // c# 4
+    invert = p->invertInScale(semitone, inversionDegree);
+    assertEQ(invert, expectedInvert);
+}
+
+
+
+static void testInvertInScale15()
+{
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+
+    // root, in octave 4
+    int inversionDegree = 0 + p->degreesInScale() * 4;
+
+    int semitone = PitchUtils::c + 12 * 4;
+    int expectedInvert = semitone;
+
+    // c->c
+    int invert = p->invertInScale(semitone, inversionDegree);
+    assertEQ(invert, expectedInvert);
+
+    // d->b
+    semitone += 2;
+    expectedInvert -= 1;
+    invert = p->invertInScale(semitone, inversionDegree);
+    assertEQ(invert, expectedInvert);
+
+
+    printf("write more cases for testInvertInScale15\n");
+}
+
+static void testInvertInScaleOctaves()
+{
+    auto scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+
+    // root, in octave 0
+    float cvAll = 0;
+    int semitonesAll = PitchUtils::cvToSemitone(cvAll);
+    
+    auto srnAll = scale->getScaleRelativeNote(semitonesAll);
+
+    int inversionDegree = scale->octaveAndDegree(srnAll->octave, srnAll->degree);
+    //int semitone = PitchUtils::c;
+    int expectedInvert = semitonesAll;
+
+     /**
+     * Input and output are regular chromatic semitones,
+     * But transpose will be done scale relative
+     */
+    //   int invertInScale(int semitone, int inversionDegree);
+    int invert = scale->invertInScale(semitonesAll, inversionDegree);
+    assertEQ(invert, expectedInvert);
+  
 }
 
 static void testTransposeInScale2()
@@ -532,17 +587,21 @@ static void testInvertLambdaChromatic2()
 
 static void testInvertLambdaC()
 {
-    // let axis be zero volts (C4)
-    // invert in c maj
+    /**
+    int semitonesAll = PitchUtils::cvToSemitone(cvAll);
 
-  //  const int axisSemitones = PitchUtils::cvToSemitone(0);
-    //auto lambda = DiatonicUtils::makeInvertLambda(
-    //    axisSemitones,
-    //    true,  //bool constrainToKeysig,
-  //     0, DiatonicUtils::Modes::Major);
+    auto srnAll = scale->getScaleRelativeNote(semitonesAll);
 
-    const int axisDegrees = 0;  // just a guess?
-    auto lambda = Scale::makeInvertLambdaDiatonic(axisDegrees, PitchUtils::c, Scale::Scales::Major);
+    int inversionDegree = scale->octaveAndDegree(srnAll->octave, srnAll->degree);
+    */
+
+
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    const int semitoneAxis = PitchUtils::cvToSemitone(0);
+    auto srnAll = scale->getScaleRelativeNote(semitoneAxis);
+    const int inversionDegree = scale->octaveAndDegree(srnAll->octave, srnAll->degree);
+
+    auto lambda = Scale::makeInvertLambdaDiatonic(inversionDegree, PitchUtils::c, Scale::Scales::Major);
 
 
     // C -> C
@@ -552,7 +611,6 @@ static void testInvertLambdaC()
     assertEQ(note->pitchCV, 0);
 
     // C# -> B
-    printf("finish testInvertLambdaC with chromatic ppitches\n");
     note->pitchCV = PitchUtils::c_ * PitchUtils::semitone;
     lambda(note);
     assertClose(note->pitchCV, PitchUtils::b * PitchUtils::semitone - 1, .0001);
@@ -562,11 +620,11 @@ static void testInvertLambdaC()
     lambda(note);
     assertClose(note->pitchCV, PitchUtils::b * PitchUtils::semitone - 1, .0001);
 
-    //new case
+    //new case (fails)
     // D# -> A
     note->pitchCV = PitchUtils::d_ * PitchUtils::semitone;
     lambda(note);
-    assertClose(note->pitchCV, PitchUtils::a * PitchUtils::semitone - 1, .0001);
+    assertClose(note->pitchCV, PitchUtils::a_ * PitchUtils::semitone - 1, .0001);
 
     // E -> A
     note->pitchCV = PitchUtils::e * PitchUtils::semitone;
@@ -595,8 +653,45 @@ static void testInvertLambdaC()
 }
 
 
+static void testDegreeUtils()
+{
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+
+    assertEQ(scale->degreesInScale(), 7);
+
+    auto norm = scale->normalizeDegree(4);
+    assertEQ(norm.first, 0);
+    assertEQ(norm.second, 4);
+
+    norm = scale->normalizeDegree(0);
+    assertEQ(norm.first, 0);
+    assertEQ(norm.second, 0);
+
+    norm = scale->normalizeDegree(7);
+    assertEQ(norm.first, 1);
+    assertEQ(norm.second, 0);
+
+    norm = scale->normalizeDegree(7+5);
+    assertEQ(norm.first, 1);
+    assertEQ(norm.second, 5);
+
+    // down to b
+    norm = scale->normalizeDegree(-1);
+    assertEQ(norm.first, -1);
+    assertEQ(norm.second, 6);
+
+
+    assertEQ(scale->octaveAndDegree(0, 0), 0);
+    assertEQ(scale->octaveAndDegree(0, 3), 3);
+    assertEQ(scale->octaveAndDegree(1, 0), 7);
+    assertEQ(scale->octaveAndDegree(1, 1), 8);
+    assertEQ(scale->octaveAndDegree(3, 0), 3*7);
+}
+
+
 void testScale()
 {
+    testDegreeUtils();
     testGetScaleRelativeNote1();
     testGetScaleRelativeNote2();
     testGetScaleRelativeNote3();
@@ -618,6 +713,9 @@ void testScale()
     testTransposeInScale2();
 
     testInvertInScale1();
+    testInvertInScaleOctaves();
+
+    testInvertInScale15();
 
 
     // these tests ported over from diatonic utils tests

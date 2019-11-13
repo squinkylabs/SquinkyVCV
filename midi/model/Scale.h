@@ -62,6 +62,12 @@ public:
      * returns octave:degree from degree.
      */
     std::pair<int, int> normalizeDegree(int);
+
+    /**
+     * combine octave and degree into non-normalized degree
+     */
+    int octaveAndDegree(int octave, int degree);
+    int octaveAndDegree(const ScaleRelativeNote&);
 private:
     /**
      * To create a Scale, first you must new one,
