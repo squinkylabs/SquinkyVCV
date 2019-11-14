@@ -739,6 +739,123 @@ static void testDegreeUtils()
 }
 
 
+/*
+static void testInvertLambdaSanity(int degreeAxis, int rootKey, DiatonicUtils::Modes mode)
+{
+    auto lambda = DiatonicUtils::makeInvertLambda(
+        semitoneAxis,
+        constrain,
+        rootKey, mode);
+
+    float lastPitch = 10000;
+    bool firstNote = true;
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    for (int i = -40; i < 40; ++i) {
+        note->pitchCV = PitchUtils::semitoneToCV(i);
+        lambda(note);
+        if (!firstNote) {
+            if (constrain) {
+                bool isOk = false;
+                const float deltaFromOneSemitoneDown = note->pitchCV - (lastPitch - PitchUtils::semitone);
+                if (std::abs(deltaFromOneSemitoneDown) < .001) {
+                   // printf("is one semi down\n");
+                    isOk = true;
+                }
+                const float deltaFromTwoSemitoneDown = note->pitchCV - (lastPitch - 2 * PitchUtils::semitone);
+                if (std::abs(deltaFromTwoSemitoneDown) < .001) {
+                    //printf("is two semi down\n");
+                    isOk = true;
+                }
+                const float deltaFromSamePitch = note->pitchCV - lastPitch;
+                if (std::abs(deltaFromSamePitch) < .001) {
+                    //printf("is same\n");            // not sure I'm crazy about this, but for now I'll take it.
+                    isOk = true;
+                }
+
+                // this is failing at axis 0, c maj (the simplest case!);
+                assert(isOk);
+            } else {
+                assertClose(note->pitchCV, lastPitch - PitchUtils::semitone, .001);
+            }
+        }
+        firstNote = false;
+        lastPitch = note->pitchCV;
+    }
+}
+
+*/
+
+static void testInvertLambdaSanity(ScalePtr scale, ScaleRelativeNotePtr srn, int root, Scale::Scales s)
+{
+    if (!srn->valid) {
+        return;
+    }
+    int axisDegree = scale->octaveAndDegree(*srn);
+    auto lambda = scale->makeInvertLambdaDiatonic(axisDegree, root, s);
+
+    float lastPitch = 10000;
+    bool firstNote = true;
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+
+    for (int i = -40; i < 40; ++i) {
+        note->pitchCV = PitchUtils::semitoneToCV(i);
+        lambda(note);
+        if (!firstNote) {
+            if (true) {
+                bool isOk = false;
+                const float deltaFromOneSemitoneDown = note->pitchCV - (lastPitch - PitchUtils::semitone);
+                if (std::abs(deltaFromOneSemitoneDown) < .001) {
+                   // printf("is one semi down\n");
+                    isOk = true;
+                }
+                const float deltaFromTwoSemitoneDown = note->pitchCV - (lastPitch - 2 * PitchUtils::semitone);
+                if (std::abs(deltaFromTwoSemitoneDown) < .001) {
+                    //printf("is two semi down\n");
+                    isOk = true;
+                }
+                const float deltaFromSamePitch = note->pitchCV - lastPitch;
+                if (std::abs(deltaFromSamePitch) < .001) {
+                    //printf("is same\n");            // not sure I'm crazy about this, but for now I'll take it.
+                    isOk = true;
+                }
+
+                // this is failing at axis 0, c maj (the simplest case!);
+                assert(isOk);
+            } else {
+                assertClose(note->pitchCV, lastPitch - PitchUtils::semitone, .001);
+            }
+        }
+        firstNote = false;
+        lastPitch = note->pitchCV;
+    }
+}
+
+static void testInvertLambdaSanity(int root, Scale::Scales s)
+{
+    ScalePtr scale = Scale::getScale(s, root);
+
+    for (int i = -10; i < 100; ++i) {
+        int semitone = i;
+        ScaleRelativeNotePtr srn = scale->getScaleRelativeNote(semitone);
+        srn = scale->getScaleRelativeNote(semitone);
+        testInvertLambdaSanity(scale, srn, root, s);
+
+    }
+}
+static void testInvertLambdaSanity()
+{
+    // spot check some keysigs
+    testInvertLambdaSanity(PitchUtils::c, Scale::Scales::Major);
+    testInvertLambdaSanity(PitchUtils::g_, Scale::Scales::Locrian);
+    testInvertLambdaSanity(PitchUtils::a, Scale::Scales::Major);
+    testInvertLambdaSanity(PitchUtils::g_, Scale::Scales::MinorPentatonic);
+
+}
+
+
+
+
 void testScale()
 {
     testDegreeUtils();
@@ -790,7 +907,7 @@ void testScale()
     //testInvertLambdaCAxis0();
     //testInvertLambdaOctaves();
     //testInvertLambdaCAllAxis();
-    //testInvertLambdaSanity();
+    testInvertLambdaSanity();
     //testInvertLambdaDirection();
 
 }

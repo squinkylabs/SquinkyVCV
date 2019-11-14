@@ -130,6 +130,11 @@ std::pair<int, int> Scale::normalizeDegree(int degree)
      return degree + octave * degreesInScale();
  }
 
+  int Scale::octaveAndDegree(const ScaleRelativeNote& srn)
+ {
+     return octaveAndDegree(srn.octave, srn.degree);
+ }
+
 int Scale::invertInScale(int semitone, int inversionAxisDegree)
 {
     auto srn = this->getScaleRelativeNote(semitone);
