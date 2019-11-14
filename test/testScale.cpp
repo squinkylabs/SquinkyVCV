@@ -433,7 +433,22 @@ static void testTransposeInScalePentatonic()
     xpose = p->transposeInScale(PitchUtils::f, 1);
     assertEQ(xpose, PitchUtils::g_);
 
-    assert(false);
+    printf("add more penta trans?\n");
+   //assert(false);
+}
+
+static void testInvertInScalePentatonic()
+{
+    auto p = Scale::getScale(Scale::Scales::MinorPentatonic, PitchUtils::e);
+
+    int invert = p->invertInScale(PitchUtils::e, 0);
+    assertEQ(invert, PitchUtils::e);
+
+    invert = p->invertInScale(PitchUtils::g, 0);
+    assertEQ(invert, PitchUtils::d);
+
+    invert = p->invertInScale(PitchUtils::f, 0);
+    assertEQ(invert, PitchUtils::d_);
 }
 
 static void testTransposeLambdaSemi()
@@ -751,6 +766,7 @@ void testScale()
 
     testInvertInScale1();
     testInvertInScaleOctaves();
+    testInvertInScalePentatonic();
 
     testInvertInScale15();
 

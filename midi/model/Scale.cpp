@@ -177,7 +177,7 @@ int Scale::transposeInScaleChromatic(int _semitone, int scaleDegreesToTranspose)
     int lowerSemitone = _semitone-1;
     int higherSemitone = _semitone+1;
 
-    // earch for scale relative that bracket us.
+    // search for scale relative that bracket us.
     // Note that in some scales these can be a whole step away
     auto srnPrev = getScaleRelativeNote(lowerSemitone);
     if (!srnPrev->valid) {
@@ -201,44 +201,36 @@ int Scale::transposeInScaleChromatic(int _semitone, int scaleDegreesToTranspose)
     return (transposePrev + transposeNext) / 2;
 }
 
-#if 0
-int Scale::transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose)
+int Scale::invertInScaleChromatic(int _semitone, int inversionDegree)
 {
-    assert(!getScaleRelativeNote(semitone)->valid);
+    assert(!getScaleRelativeNote(_semitone)->valid);
 
-#ifdef _DEBUG
-    auto srnPrev = getScaleRelativeNote(semitone - 1);
-    auto srnNext = getScaleRelativeNote(semitone + 1);
+    int lowerSemitone = _semitone - 1;
+    int higherSemitone = _semitone + 1;
+ 
+    // search for scale relative that bracket us.
+    // Note that in some scales these can be a whole step away
+    auto srnPrev = getScaleRelativeNote(lowerSemitone);
+    if (!srnPrev->valid) {
+        lowerSemitone--;
+        srnPrev = getScaleRelativeNote(lowerSemitone);
+    }
+
+    auto srnNext = getScaleRelativeNote(higherSemitone);
+    if (!srnNext->valid) {
+        higherSemitone++;
+        srnNext = getScaleRelativeNote(higherSemitone);
+    }
 
     // For all the scales we have so far, notes out of scale are
     // always surrounded by notes in scale. Not true for all, however.
     assert(srnPrev->valid && srnNext->valid);
-#endif
+
 
     // If we can fit between these, we will.
     // If now, we will always round down.
-    const int transposePrev = transposeInScale(semitone - 1, scaleDegreesToTranspose);
-    const int transposeNext = transposeInScale(semitone + 1, scaleDegreesToTranspose);
-    return (transposePrev + transposeNext) / 2;
-}
-#endif
-
-int Scale::invertInScaleChromatic(int semitone, int inversionDegree)
-{
-    assert(!getScaleRelativeNote(semitone)->valid);
-#ifdef DEBUG
-    auto srnPrev = getScaleRelativeNote(semitone - 1);
-    auto srnNext = getScaleRelativeNote(semitone - 1);
-
-    // For all the scales we have so far, notes out of scale are
-    // always surrounded by notes in scale. Not true for all, however.
-    assert(srnPrev->valid && srnNext->valid);
-#endif
-
-    // If we can fit between these, we will.
-    // If now, we will always round down.
-    const int invertPrev = invertInScale(semitone - 1, inversionDegree);
-    const int invertNext = invertInScale(semitone + 1, inversionDegree);
+    const int invertPrev = invertInScale(lowerSemitone, inversionDegree);
+    const int invertNext = invertInScale(higherSemitone, inversionDegree);
     return (invertPrev + invertNext) / 2;
 }
 
