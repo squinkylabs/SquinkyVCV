@@ -9,6 +9,8 @@
 
 #include "../ctrl/ToggleButton.h"
 
+#include <stdlib.h>
+
 
 using Vec = ::rack::math::Vec;
 using Widget = ::rack::widget::Widget;

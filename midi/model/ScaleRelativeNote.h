@@ -9,7 +9,7 @@ using ScaleRelativeNotePtr = std::shared_ptr<ScaleRelativeNote>;
 class ScaleRelativeNote
 {
 public:
-    ScaleRelativeNote(int degree, int octave, ScalePtr scale);
+    ScaleRelativeNote(int degree, int octave);
     // This ctor makes an invalid one
     ScaleRelativeNote() : valid(false), degree(-1), octave(0)
     {
@@ -20,6 +20,6 @@ public:
     const int degree;
     const int octave;
 private:
-    ScalePtr scale;         // do we use this for anything?
+  //  ScalePtr scale;         // do we use this for anything?
 
 };

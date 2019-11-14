@@ -1,9 +1,8 @@
 #include "ScaleRelativeNote.h"
 
-ScaleRelativeNote::ScaleRelativeNote(int degree, int octave, ScalePtr scale) :
+ScaleRelativeNote::ScaleRelativeNote(int degree, int octave) :
     degree(degree),
     octave(octave),
-    scale(scale),
     valid(true)
 {
     

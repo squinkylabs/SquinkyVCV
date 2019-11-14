@@ -18,7 +18,7 @@ void Scale::init(Scales scale, int keyRoot)
         const int semi = keyRoot + it;
         // how do we come up with the 
         ScalePtr sc = getptr();
-        ScaleRelativeNotePtr srn = std::make_shared<ScaleRelativeNote>(degree, 0, sc);
+        ScaleRelativeNotePtr srn = std::make_shared<ScaleRelativeNote>(degree, 0);
         abs2srn[semi] = srn;
         ++degree;
     }
@@ -40,14 +40,14 @@ ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
     auto it = abs2srn.find(normP.semi);
     if (it != abs2srn.end()) {
         ScalePtr scale = shared_from_this();
-        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct, scale));
+        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct));
     }
 
     // since these are semi-normaled, lets try the next octave
     it = abs2srn.find(normP.semi + 12);
     if (it != abs2srn.end()) {
         ScalePtr scale = shared_from_this();
-        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct - 1, scale));
+        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct - 1));
     }
 
     // need to make an invalid one
@@ -143,7 +143,7 @@ int Scale::invertInScale(int semitone, int inversionAxisDegree)
 
     auto normalizedInvertedDegreesAbs = normalizeDegree(invertedDegreesAbs);
 
-    ScaleRelativeNote srnInverted(normalizedInvertedDegreesAbs.second, normalizedInvertedDegreesAbs.first, shared_from_this());
+    ScaleRelativeNote srnInverted(normalizedInvertedDegreesAbs.second, normalizedInvertedDegreesAbs.first);
     const int invertedSemitones = this->getSemitone(srnInverted);
 
     return invertedSemitones;
@@ -166,7 +166,7 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
     transposedDegree = normalizedDegree.second;
 
 
-    auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave, shared_from_this());
+    auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave);
     return this->getSemitone(*srn2);
 }
 
