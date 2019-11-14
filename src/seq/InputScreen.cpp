@@ -9,10 +9,6 @@
 
 #include "../ctrl/ToggleButton.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
-
 using Vec = ::rack::math::Vec;
 using Widget = ::rack::widget::Widget;
 using Label = ::rack::ui::Label;
@@ -206,7 +202,8 @@ void InputScreen::addNumberChooserInt(const ::rack::math::Vec& pos, const char* 
     std::vector<std::string> labels;
     for (int i= nMin; i<= nMax; ++i) {
         char buf[100];
-        std::string s(itoa(i, buf, 10));
+        snprintf(buf, sizeof(buf), "%d", i);
+        std::string s(buf);
         labels.push_back(s);
     }
     auto pop = new InputPopupMenuParamWidget();
