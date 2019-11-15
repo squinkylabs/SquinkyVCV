@@ -512,6 +512,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
   //  assert(ornament == Ornament::None);
 //    assert(!scale);
   //  assert(steps == 0);
+    printf("in chop note ornament = %d, scale = %d, steps = %d\n", int(ornament), bool(scale), steps);
+    fflush(stdout);
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 

@@ -192,13 +192,40 @@ XformChopNotes::XformChopNotes(
 
 void XformChopNotes::execute()
 {
+
+   PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[2]);
+    assert(widget);
+
+    int chopSteps = 0;
+    ScalePtr scale;
+
+    const bool chromatic = widget->isChromaticMode();
+    const int octave = widget->transposeOctaves();
+    if (chromatic) {
+        const int semitones = widget->transposeSemis();
+        const int totalSemitones = semitones + 12 * octave;
+        chopSteps = totalSemitones;
+    } else {
+        auto keysig = getKeysig(1);
+        saveKeysig(1);
+        ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
+        DEBUG("got a scale %p", scale.get());
+
+        // TODO: replace this math with the helper
+        const int scaleDegrees = widget->transposeDegrees() + octave * scale->degreesInScale();
+        chopSteps = scaleDegrees;
+    }
+
+
     // TODO: fix this offset
     const int numNotes = 2 + int( std::round(inputControls[0]->getValue()));
+    ReplaceDataCommand::Ornament ornament =  ReplaceDataCommand::Ornament(
+        std::round(inputControls[1]->getValue()));
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChopNoteCommand(
         sequencer, 
         numNotes,  
-        ReplaceDataCommand::Ornament::None, 
-        nullptr, 
-        0);
+        ornament, 
+        scale, 
+        chopSteps);
     sequencer->undo->execute(sequencer, cmd);
 }
