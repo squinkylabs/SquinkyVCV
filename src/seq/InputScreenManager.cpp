@@ -70,6 +70,9 @@ void InputScreenManager::show(
         case Screens::ChopNotes:
             is = make<XformChopNotes>(size, seq, dismisser);
             break;
+        case Screens::QuantizePitch:
+            is = make<XFormQuantizePitch>(size, seq, dismisser);
+            break;
         default:
             WARN("no handler for enum %d", int(screenId));
             assert(false);
@@ -94,6 +97,9 @@ std::string InputScreenManager::xformName(Screens screen)
             break;
         case Screens::ChopNotes:
             ret = "Chop Notes";
+            break;
+        case Screens::QuantizePitch:
+            ret = "Quantize Pitch";
             break;
         default:
             WARN("no name for enum %d", int(screen));

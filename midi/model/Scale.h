@@ -49,11 +49,15 @@ public:
 
     int invertInScale(int semitone, int inversionDegree);
 
+    int quantizeToScale(int semitone);
+
     static XformLambda makeTransposeLambdaChromatic(int transposeSemitones);
     static XformLambda makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode);
 
     static XformLambda makeInvertLambdaChromatic(int invertAxisSemitones);
     static XformLambda makeInvertLambdaDiatonic(int invertAxisdegrees, int keyRoot, Scale::Scales mode);
+
+    static XformLambda makeQuantizePitchLambda(int keyRoot, Scale::Scales mode);
 
     int degreesInScale() const;
 

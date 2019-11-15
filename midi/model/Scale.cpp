@@ -175,6 +175,27 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
     return this->getSemitone(*srn2);
 }
 
+int Scale::quantizeToScale(int semitone)
+{
+    auto srn = this->getScaleRelativeNote(semitone);
+    if (srn->valid) {
+        return semitone;
+    }
+
+    srn = this->getScaleRelativeNote(semitone - 1);
+    if (srn->valid) {
+        return semitone - 1;
+    }
+
+     srn = this->getScaleRelativeNote(semitone + 1);
+    if (srn->valid) {
+        return semitone + 1;
+    }
+
+    assert(false);
+    return 0; 
+}
+
 int Scale::transposeInScaleChromatic(int _semitone, int scaleDegreesToTranspose)
 {
     assert(!getScaleRelativeNote(_semitone)->valid);
@@ -262,6 +283,19 @@ XformLambda Scale::makeInvertLambdaChromatic(int invertAxisSemitones)
             note->pitchCV = 2 * axis - note->pitchCV;
             //  printf("inverted to %.2f\n", note->pitchCV); fflush(stdout);
         }
+    };
+}
+
+XformLambda Scale::makeQuantizePitchLambda(int keyRoot, Scale::Scales mode)
+{
+    ScalePtr scale = Scale::getScale(mode, keyRoot);
+    return [scale](MidiEventPtr event) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
+            const int quantizedSemi = scale->quantizeToScale(semitone);
+            note->pitchCV = PitchUtils::semitoneToCV(quantizedSemi);
+        }      
     };
 }
 

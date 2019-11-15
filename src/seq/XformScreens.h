@@ -41,3 +41,13 @@ public:
         std::function<void(bool)> _dismisser);
     void execute() override;   
 };
+
+class XFormQuantizePitch : public InputScreen
+{
+public:
+    XFormQuantizePitch(const ::rack::math::Vec& pos,
+        const ::rack::math::Vec& size,
+        MidiSequencerPtr seq,
+        std::function<void(bool)> _dismisser);
+    void execute() override;   
+};

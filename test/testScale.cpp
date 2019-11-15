@@ -338,6 +338,22 @@ static void testTransposeInScale1()
     assertEQ(xpose, PitchUtils::c + 12);
 }
 
+
+static void testQuantizeToScale1()
+{
+    auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+
+    int quant = p->quantizeToScale(PitchUtils::c);
+    assertEQ(quant, PitchUtils::c);
+
+    quant = p->quantizeToScale(PitchUtils::d);
+    assertEQ(quant, PitchUtils::d);
+
+    quant = p->quantizeToScale(PitchUtils::c_);
+    assertEQ(quant, PitchUtils::c);
+}
+ 
+
 static void testInvertInScale1()
 {
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
@@ -885,6 +901,7 @@ void testScale()
     testInvertInScalePentatonic();
 
     testInvertInScale15();
+    testQuantizeToScale1();
 
 
     // these tests ported over from diatonic utils tests

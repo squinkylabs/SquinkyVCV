@@ -174,7 +174,7 @@ XformChopNotes::XformChopNotes(
     ++row;
     addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Steps", keepInScaleCallback);
      DEBUG("176Now there are %d controls", inputControls.size());
-#if 1
+
     // control 3, 4 keysig
     row += 2;
     bool enableKeysig = false;
@@ -186,9 +186,8 @@ XformChopNotes::XformChopNotes(
     DEBUG("186Now there are %d controls", inputControls.size());
 
     keepInScaleCallback();          // init the keysig visibility
-#endif
-}
 
+}
 
 void XformChopNotes::execute()
 {
@@ -227,5 +226,28 @@ void XformChopNotes::execute()
         ornament, 
         scale, 
         chopSteps);
+    sequencer->undo->execute(sequencer, cmd);
+}
+
+
+XFormQuantizePitch::XFormQuantizePitch(
+    const ::rack::math::Vec& pos,
+    const ::rack::math::Vec& size,
+    MidiSequencerPtr seq,
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Chop Notes", dismisser)
+{
+    int row = 0;
+    auto keysig = seq->context->settings()->getKeysig();
+    addKeysigInput(Vec(centerColumn, controlRow(row)), keysig); 
+}
+
+void XFormQuantizePitch::execute()
+{
+    auto keysig = getKeysig(0);
+    saveKeysig(0);
+    //scale = Scale::getScale(keysig.second, keysig.first);
+    XformLambda xform = Scale::makeQuantizePitchLambda(keysig.first, keysig.second);
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeFilterNoteCommand(
+        "Quantize Pitch", sequencer, xform);
     sequencer->undo->execute(sequencer, cmd);
 }
