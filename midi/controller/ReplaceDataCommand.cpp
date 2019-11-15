@@ -3,6 +3,7 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "Scale.h"
 #include "SqClipboard.h"
 #include "SqMidiEvent.h"
 #include "TimeUtils.h"
@@ -502,6 +503,57 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_pt
     return ret;
 }
 
+/**************************** CHOP NOTE *************************
+ */
+
+//std::vector<MidiEventPtr> removeData;
+//std::vector<MidiEventPtr> addData;
+using MidiVector = std::vector<MidiEventPtr>;
+
+static void chopNote(MidiNoteEventPtr note, MidiVector& toAdd, MidiVector& toRemove, int numNotes)
+{
+    const float dur = note->duration;
+    const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
+    if (durTotal > 0) {
+        for (int i = 0; i < numNotes; ++i) {
+            MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+            newNote->startTime = note->startTime + i * durTotal / numNotes;
+            newNote->duration = dur / numNotes;     // keep original articulation
+            newNote->pitchCV = note->pitchCV;
+            toAdd.push_back(newNote);
+        }
+        toRemove.push_back(note);
+    }
+}
+
+static void trillNote(MidiNoteEventPtr note, MidiVector& toAdd, MidiVector& toRemove, int numNotes, int semitones)
+{
+    const float dur = note->duration;
+    const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
+    if (durTotal > 0) {
+        for (int i = 0; i < numNotes; ++i) {
+
+            const int semiPitchOffset = (i % 2) ? semitones : 0;
+            MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+            newNote->startTime = note->startTime + i * durTotal / numNotes;
+            newNote->duration = dur / numNotes;     // keep original articulation
+           
+            float pitchCV = note->pitchCV;
+
+            if (semiPitchOffset) {
+                const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+                const int destSemitone = origSemitone + semiPitchOffset;
+                pitchCV = PitchUtils::semitoneToCV(destSemitone);
+            }
+
+            newNote->pitchCV = pitchCV;
+            toAdd.push_back(newNote);
+        }
+        toRemove.push_back(note);
+    }
+}
+
+
 ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
     std::shared_ptr<MidiSequencer> seq, 
     int numNotes,
@@ -523,34 +575,30 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
        
         if (note) {
-            const float dur = note->duration;
-            const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
-            if (durTotal > 0) {
-                for (int i = 0; i < numNotes; ++i) {
-                    int semiPitchOffset = 0;
-                    if (ornament == Ornament::Trill) {
-                        const bool odd = i % 2;
-                        if (odd) {
-                            semiPitchOffset = steps;
-                        }
-                    }
-                    MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
-                    newNote->startTime = note->startTime + i * durTotal / numNotes;
-                    newNote->duration = dur / numNotes;     // keep original articulation
+            if (ornament == Ornament::Trill) {
+                int trillSemis = 0;
+                if (scale) {
+                    const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+                  //  auto srn = scale->getScaleRelativeNote(origSemitone);
+                 //   const int origDegree = scale->octaveAndDegree(*srn);
 
-                    float pitchCV = note->pitchCV;
+                  //  const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
+                    const int xposedSemi = scale->transposeInScale(origSemitone, steps);
 
-                    if (semiPitchOffset) {
-                        const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
-                        const int destSemitone = origSemitone + semiPitchOffset;
-                        pitchCV = PitchUtils::semitoneToCV(destSemitone);
-                    }
-                    
-                    newNote->pitchCV = pitchCV;
-                    toAdd.push_back(newNote);
+                    trillSemis = xposedSemi - origSemitone;
+                    printf("trill semis = %d\n", trillSemis); fflush(stdout);
+
+                    // in scale, steps are degrees
+                  //  const int trillDegree = origDegree + steps;
+                  //  scale->
+                } else {
+                    trillSemis = steps;
                 }
-                toRemove.push_back(note);
+                trillNote(note, toAdd, toRemove, numNotes, trillSemis);
+            } else {
+                chopNote(note, toAdd, toRemove, numNotes);
             }
+
         }
     }
 

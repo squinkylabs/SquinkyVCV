@@ -192,8 +192,7 @@ XformChopNotes::XformChopNotes(
 
 void XformChopNotes::execute()
 {
-
-   PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[2]);
+    PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[2]);
     assert(widget);
 
     int chopSteps = 0;
@@ -202,14 +201,15 @@ void XformChopNotes::execute()
     const bool chromatic = widget->isChromaticMode();
     const int octave = widget->transposeOctaves();
     if (chromatic) {
+        DEBUG("in chromatic chop case");
         const int semitones = widget->transposeSemis();
         const int totalSemitones = semitones + 12 * octave;
         chopSteps = totalSemitones;
     } else {
-        auto keysig = getKeysig(1);
-        saveKeysig(1);
-        ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
-        DEBUG("got a scale %p", scale.get());
+        auto keysig = getKeysig(3);
+        saveKeysig(3);
+        scale = Scale::getScale(keysig.second, keysig.first);
+        DEBUG("keep in scale case got a scale %p", scale.get());
 
         // TODO: replace this math with the helper
         const int scaleDegrees = widget->transposeDegrees() + octave * scale->degreesInScale();
