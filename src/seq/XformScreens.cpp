@@ -145,12 +145,50 @@ XformChopNotes::XformChopNotes(
     MidiSequencerPtr seq,
     std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Chop Notes", dismisser)
 {
+    // row 0, num notes
+    // control 0 :
     int row = 0;    
     addNumberChooserInt(Vec(centerColumn, controlRow(row)), "Notes", 2, 11);
 
+     DEBUG("153 Now there are %d controls", inputControls.size());
+
+    // row 1, ornaments
+    // control 1, ornaments
     ++row;
     addChooser(Vec(centerColumn, controlRow(row)), "Ornament", ornaments);
+     DEBUG("159 Now there are %d controls", inputControls.size());
+
+    // make this re-usable!!!
+    auto keepInScaleCallback = [this]() {
+        // Now I would look at constrain state, and use to update
+        // visibility of keysigs
+        const bool constrain = inputControls[2]->getValue() > .5;
+        inputControls[3]->enable(constrain);
+        inputControls[4]->enable(constrain);
+        WARN("in xpose callback x set constrain %d", constrain);
+    };
+
+
+    // Row 2,3
+    // control 2 is keep in scale
+    ++row;
+    addPitchOffsetInput(Vec(centerColumn, controlRow(row)), "Steps", keepInScaleCallback);
+     DEBUG("176Now there are %d controls", inputControls.size());
+#if 1
+    // control 3, 4 keysig
+    row += 2;
+    bool enableKeysig = false;
+    auto keysig = seq->context->settings()->getKeysig();
+    DEBUG("in transpos ctor, keysig = %d,%d", keysig.first, keysig.second);
+    addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
+    DEBUG("enable keysig = %d", enableKeysig);
+
+    DEBUG("186Now there are %d controls", inputControls.size());
+
+    keepInScaleCallback();          // init the keysig visibility
+#endif
 }
+
 
 void XformChopNotes::execute()
 {

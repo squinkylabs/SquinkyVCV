@@ -509,9 +509,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
     ScalePtr scale,
     int steps)
 {
-    assert(ornament == Ornament::None);
-    assert(!scale);
-    assert(steps == 0);
+  //  assert(ornament == Ornament::None);
+//    assert(!scale);
+  //  assert(steps == 0);
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 
@@ -525,10 +525,26 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
             const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
             if (durTotal > 0) {
                 for (int i = 0; i < numNotes; ++i) {
+                    int semiPitchOffset = 0;
+                    if (ornament == Ornament::Trill) {
+                        const bool odd = i % 2;
+                        if (odd) {
+                            semiPitchOffset = steps;
+                        }
+                    }
                     MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
                     newNote->startTime = note->startTime + i * durTotal / numNotes;
                     newNote->duration = dur / numNotes;     // keep original articulation
-                    newNote->pitchCV = note->pitchCV;
+
+                    float pitchCV = note->pitchCV;
+
+                    if (semiPitchOffset) {
+                        const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+                        const int destSemitone = origSemitone + semiPitchOffset;
+                        pitchCV = PitchUtils::semitoneToCV(destSemitone);
+                    }
+                    
+                    newNote->pitchCV = pitchCV;
                     toAdd.push_back(newNote);
                 }
                 toRemove.push_back(note);
