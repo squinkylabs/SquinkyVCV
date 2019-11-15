@@ -489,7 +489,7 @@ static void testChopNotes(float artic)
     assertEQ(seq->context->getTrack()->getFirstNote()->startTime, 1);
   //  assertEQ(seq->context->getTrack()->getFirstNote()->duration, 1);
 
-    auto cmd = ReplaceDataCommand::makeChopNoteCommand(seq, 4);
+    auto cmd = ReplaceDataCommand::makeChopNoteCommand(seq, 4, ReplaceDataCommand::Ornament::None, nullptr, 0);
     cmd->execute(seq, nullptr);
     assertEQ(seq->context->getTrack()->size(), 4 + 1);
 

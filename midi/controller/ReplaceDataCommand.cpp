@@ -502,8 +502,16 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_pt
     return ret;
 }
 
-ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(std::shared_ptr<MidiSequencer> seq, int numNotes)
+ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
+    std::shared_ptr<MidiSequencer> seq, 
+    int numNotes,
+    Ornament ornament,
+    ScalePtr scale,
+    int steps)
 {
+    assert(ornament == Ornament::None);
+    assert(!scale);
+    assert(steps == 0);
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 

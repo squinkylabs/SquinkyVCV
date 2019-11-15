@@ -189,6 +189,31 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Sc
     pop->setValue( int(keysig.second)); 
 }
 
+void InputScreen::addChooser(
+    const ::rack::math::Vec& pos,
+    const std::string& title,
+    const std::vector<std::string>& choices)
+{
+    float x= 0;
+    float y = pos.y;
+    auto l = addLabel(Vec(x, y), title.c_str(), TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
+
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( choices);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = choices[0];
+    pop->setValue(0);
+
+    this->addChild(pop);
+    inputControls.push_back(pop);
+}
+
 void InputScreen::addNumberChooserInt(const ::rack::math::Vec& pos, const char* str, int nMin, int nMax)
 {
     float x= 0;

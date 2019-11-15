@@ -850,7 +850,6 @@ static void testInvertLambdaSanity()
     testInvertLambdaSanity(PitchUtils::g_, Scale::Scales::Locrian);
     testInvertLambdaSanity(PitchUtils::a, Scale::Scales::Major);
     testInvertLambdaSanity(PitchUtils::g_, Scale::Scales::MinorPentatonic);
-
 }
 
 

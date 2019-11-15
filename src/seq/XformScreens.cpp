@@ -136,6 +136,9 @@ void XformReversePitch::execute()
     sequencer->undo->execute(sequencer, cmd);
 }
 
+std::vector<std::string> ornaments = {
+    "None", "Trill"  
+};
 XformChopNotes::XformChopNotes(
     const ::rack::math::Vec& pos,
     const ::rack::math::Vec& size,
@@ -144,12 +147,20 @@ XformChopNotes::XformChopNotes(
 {
     int row = 0;    
     addNumberChooserInt(Vec(centerColumn, controlRow(row)), "Notes", 2, 11);
+
+    ++row;
+    addChooser(Vec(centerColumn, controlRow(row)), "Ornament", ornaments);
 }
 
 void XformChopNotes::execute()
 {
     // TODO: fix this offset
     const int numNotes = 2 + int( std::round(inputControls[0]->getValue()));
-    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChopNoteCommand(sequencer, numNotes);
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeChopNoteCommand(
+        sequencer, 
+        numNotes,  
+        ReplaceDataCommand::Ornament::None, 
+        nullptr, 
+        0);
     sequencer->undo->execute(sequencer, cmd);
 }

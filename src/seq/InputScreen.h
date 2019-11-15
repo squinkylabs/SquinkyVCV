@@ -77,6 +77,7 @@ protected:
    void addOkCancel();
    void addTitle(const std::string& title);
    ::rack::ui::Label* addLabel(const ::rack::math::Vec& v, const char* str, const NVGcolor& color);
+   void addChooser(const ::rack::math::Vec& v, const std::string& title, const std::vector<std::string>& choices);
 
    void addNumberChooserInt(const ::rack::math::Vec& v , const char* str, int nMin, int nMax);
    

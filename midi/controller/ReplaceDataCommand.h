@@ -12,9 +12,12 @@ class MidiSong;
 class MidiSequencer;
 class MidiSelectionModel;
 class ReplaceDataCommand;
+class Scale;
+
 
 using ReplaceDataCommandPtr = std::shared_ptr<ReplaceDataCommand>;
 using MidiEventPtr = std::shared_ptr<MidiEvent>;
+using ScalePtr = std::shared_ptr<Scale>;
 
 class ReplaceDataCommand : public SqCommand
 {
@@ -70,7 +73,13 @@ public:
     static ReplaceDataCommandPtr makeFilterNoteCommand(const std::string& name, std::shared_ptr<MidiSequencer> seq, FilterFunc);
         
 
-    static ReplaceDataCommandPtr makeChopNoteCommand(std::shared_ptr<MidiSequencer>sequencer, int numNotes);
+    enum class Ornament {None, Trill, Arpeggio, Arpeggio2};
+    static ReplaceDataCommandPtr makeChopNoteCommand(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        int numNotes,
+        Ornament,
+        ScalePtr,
+        int steps);
 
 private:
 
