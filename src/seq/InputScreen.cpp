@@ -154,14 +154,15 @@ static std::vector<std::string> roots = {
 
 static std::vector<std::string> modes = {
     "Major", "Dorian", "Phrygian", "Lydian",
-    "Mixolydian", "Minor", "Locrian", "Minor Pentatonic"
+    "Mixolydian", "Minor", "Locrian", "Minor Pentatonic",
+    "Harmonic Minor", "Diminished", "Dom. Diminished", "Whole Tone"
 };
 
 void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Scale::Scales> keysig)
 {
     float x= 0;
     float y = pos.y;
-    auto l = addLabel(Vec(x, y), "Key Signature", TEXT_COLOR );
+    auto l = addLabel(Vec(x, y), "Scale", TEXT_COLOR );
     l->box.size.x = pos.x - 10;
     l->alignment = Label::RIGHT_ALIGNMENT;
   
@@ -180,7 +181,7 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Sc
     x += 80;
     pop = new InputPopupMenuParamWidget();
     pop->setLabels( modes);
-    pop->box.size.x = 76;    // width
+    pop->box.size.x = 124;    // width (110 too small, 130 too bug)
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(Vec(x, y));
     pop->text = "Major";
