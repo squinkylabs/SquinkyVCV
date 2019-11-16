@@ -99,6 +99,18 @@ std::vector<int> Scale::getBasePitches(Scales scale)
         case Scales::MinorPentatonic:
             ret = {0, 3, 5, 7, 10};
             break;
+        case Scales::HarmonicMinor:
+            ret = {0, 2, 3, 5, 7, 8, 11};
+            break;
+        case Scales::Diminished:
+            ret = {0, 2, 3, 5, 6, 8, 9, 11};
+            break;
+        case Scales::DominantDiminished:
+            ret = {0, 1, 3, 4, 6, 7, 9, 10};
+            break;
+        case Scales::WholeStep:
+            ret = {0, 2, 4, 6, 8, 10};
+            break;
         default:
             assert(false);
     }

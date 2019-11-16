@@ -328,6 +328,78 @@ static void testPentatonic()
     assert(!p->getScaleRelativeNote(15)->valid);  // d#
 }
 
+static void testHarmonicMinor()
+{
+       // E min octave 0
+    auto p = Scale::getScale(Scale::Scales::HarmonicMinor, PitchUtils::e);
+    assert(p->getScaleRelativeNote(4)->valid);  // e
+    assert(!p->getScaleRelativeNote(5)->valid);  // f
+    assert(p->getScaleRelativeNote(6)->valid);  // f#
+    assert(p->getScaleRelativeNote(7)->valid);  // g
+    assert(!p->getScaleRelativeNote(8)->valid);  // g#
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+    assert(!p->getScaleRelativeNote(13)->valid);  // c#
+    assert(!p->getScaleRelativeNote(14)->valid);  // d
+    assert(p->getScaleRelativeNote(15)->valid);  // d#
+}
+static void testDiminished()
+{
+    auto p = Scale::getScale(Scale::Scales::Diminished, PitchUtils::a);
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+
+    assert(!p->getScaleRelativeNote(13)->valid);  // c_
+    assert(p->getScaleRelativeNote(14)->valid);  // d
+    assert(p->getScaleRelativeNote(15)->valid);  // d_
+    assert(!p->getScaleRelativeNote(16)->valid);  // e
+
+    assert(p->getScaleRelativeNote(17)->valid);  // f
+    assert(p->getScaleRelativeNote(18)->valid);  // f_
+    assert(!p->getScaleRelativeNote(19)->valid);  // g
+    assert(p->getScaleRelativeNote(20)->valid);  // g_
+  
+}
+static void testDominantDiminished()
+{
+    auto p = Scale::getScale(Scale::Scales::DominantDiminished, PitchUtils::a);
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(p->getScaleRelativeNote(10)->valid);  // a#
+    assert(!p->getScaleRelativeNote(11)->valid);  // b
+    assert(p->getScaleRelativeNote(12)->valid);  // c
+
+    assert(p->getScaleRelativeNote(13)->valid);  // c_
+    assert(!p->getScaleRelativeNote(14)->valid);  // d
+    assert(p->getScaleRelativeNote(15)->valid);  // d_
+
+    assert(p->getScaleRelativeNote(16)->valid);  // e
+    assert(!p->getScaleRelativeNote(17)->valid);  // f
+    assert(p->getScaleRelativeNote(18)->valid);  // f_
+
+    assert(p->getScaleRelativeNote(19)->valid);  // g
+    assert(!p->getScaleRelativeNote(20)->valid);  // g_
+}
+static void testWholeStep()
+{
+    auto p = Scale::getScale(Scale::Scales::WholeStep, PitchUtils::a);
+    assert(p->getScaleRelativeNote(9)->valid);  // a
+    assert(!p->getScaleRelativeNote(10)->valid);  // a#
+    assert(p->getScaleRelativeNote(11)->valid);  // b
+    assert(!p->getScaleRelativeNote(12)->valid);  // c
+    assert(p->getScaleRelativeNote(13)->valid);  // c_
+    assert(!p->getScaleRelativeNote(14)->valid);  // d
+    assert(p->getScaleRelativeNote(15)->valid);  // d_
+    assert(!p->getScaleRelativeNote(16)->valid);  // e
+    assert(p->getScaleRelativeNote(17)->valid);  // f
+    assert(!p->getScaleRelativeNote(18)->valid);  // f_
+    assert(p->getScaleRelativeNote(19)->valid);  // g
+    assert(!p->getScaleRelativeNote(20)->valid);  // g_
+}
+
 static void testTransposeInScale1()
 {
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
@@ -891,6 +963,10 @@ void testScale()
     testLydian();
     testLocrian();
     testPentatonic();
+    testHarmonicMinor(),
+    testDiminished(),
+    testDominantDiminished(),
+    testWholeStep(),
 
     testTransposeInScale1();
     testTransposeInScale2();

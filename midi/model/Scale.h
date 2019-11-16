@@ -25,7 +25,11 @@ public:
         Mixolydian,
         Minor,
         Locrian,
-        MinorPentatonic
+        MinorPentatonic,
+        HarmonicMinor,
+        Diminished,
+        DominantDiminished,
+        WholeStep
     };
 
     /**
