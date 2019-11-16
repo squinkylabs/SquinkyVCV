@@ -130,7 +130,7 @@ void XformReversePitch::execute()
 }
 
 std::vector<std::string> ornaments = {
-    "None", "Trill"  
+    "None", "Trill", "Arpeggio"  
 };
 
 XformChopNotes::XformChopNotes(

@@ -553,6 +553,43 @@ static void trillNote(MidiNoteEventPtr note, MidiVector& toAdd, MidiVector& toRe
     }
 }
 
+static void arpeggiateNote(
+    MidiNoteEventPtr note, 
+    MidiVector& toAdd, 
+    MidiVector& toRemove, 
+    int numNotes, 
+    ScalePtr scale,
+    int steps)
+{
+   const float dur = note->duration;
+    const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
+    if (durTotal > 0) {
+        for (int i = 0; i < numNotes; ++i) {
+
+            const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+            int semitonePitchOffset = 0;
+            if (scale) {
+                const int stepsToXpose = i * steps;
+                const int xposedSemi = scale->transposeInScale(origSemitone, stepsToXpose);
+                semitonePitchOffset = xposedSemi - origSemitone;
+            } else {
+                semitonePitchOffset = i * steps;
+            }
+
+            MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+            newNote->startTime = note->startTime + i * durTotal / numNotes;
+            newNote->duration = dur / numNotes;     // keep original articulation
+            
+            const int destSemitone = origSemitone + semitonePitchOffset;
+            float pitchCV = PitchUtils::semitoneToCV(destSemitone);
+
+            newNote->pitchCV = pitchCV;
+            toAdd.push_back(newNote);
+        }
+        toRemove.push_back(note);
+    }
+}
+
 
 ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
     std::shared_ptr<MidiSequencer> seq, 
@@ -561,11 +598,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
     ScalePtr scale,
     int steps)
 {
-  //  assert(ornament == Ornament::None);
-//    assert(!scale);
-  //  assert(steps == 0);
-    printf("in chop note ornament = %d, scale = %d, steps = %d\n", int(ornament), bool(scale), steps);
-    fflush(stdout);
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 
@@ -579,22 +611,17 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
                 int trillSemis = 0;
                 if (scale) {
                     const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
-                  //  auto srn = scale->getScaleRelativeNote(origSemitone);
-                 //   const int origDegree = scale->octaveAndDegree(*srn);
-
-                  //  const int semitone = PitchUtils::cvToSemitone(note->pitchCV);
                     const int xposedSemi = scale->transposeInScale(origSemitone, steps);
 
                     trillSemis = xposedSemi - origSemitone;
                     printf("trill semis = %d\n", trillSemis); fflush(stdout);
-
-                    // in scale, steps are degrees
-                  //  const int trillDegree = origDegree + steps;
-                  //  scale->
                 } else {
                     trillSemis = steps;
                 }
                 trillNote(note, toAdd, toRemove, numNotes, trillSemis);
+            } else if (ornament == Ornament::Arpeggio) {
+                arpeggiateNote(note, toAdd, toRemove, numNotes, scale, steps);
+               
             } else {
                 chopNote(note, toAdd, toRemove, numNotes);
             }
