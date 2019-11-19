@@ -4,6 +4,7 @@
 #include "MidiSong.h"
 #include "MidiTrack.h"
 #include "Scale.h"
+#include "ScaleRelativeNote.h"
 #include "SqClipboard.h"
 #include "SqMidiEvent.h"
 #include "TimeUtils.h"
@@ -506,8 +507,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_pt
 /**************************** CHOP NOTE *************************
  */
 
-//std::vector<MidiEventPtr> removeData;
-//std::vector<MidiEventPtr> addData;
 using MidiVector = std::vector<MidiEventPtr>;
 
 static void chopNote(MidiNoteEventPtr note, MidiVector& toAdd, MidiVector& toRemove, int numNotes)
@@ -637,5 +636,64 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
         toRemove,
         toAdd);
     ret->name = "chop notes";
+    return ret;
+}
+
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
+    std::shared_ptr<MidiSequencer> seq, 
+    TriadType type,
+    ScalePtr scale)
+{
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+ printf("in make triads\n");
+        // toAdd will get the new notes derived from chopping.
+    for (MidiSelectionModel::const_iterator it = seq->selection->begin(); it != seq->selection->end(); ++it) {
+        MidiEventPtr event = *it;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+
+        if (note) {
+            const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+            ScaleRelativeNotePtr srn = scale->getScaleRelativeNote(origSemitone);
+            if (srn->valid) {
+                MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
+                MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
+
+                auto octaveAndDegreeThird =  scale->octaveAndDegree(*srn);
+                auto octaveAndDegreeFifth =  scale->octaveAndDegree(*srn);
+                switch(type) {
+                    case TriadType::RootPosition:
+                        octaveAndDegreeThird += 2;
+                        octaveAndDegreeFifth += 4;
+                        break;
+
+                    default:
+                        printf("bad triad type\n"); fflush(stdout);
+                }
+
+                std::pair<int, int> normThird = scale->normalizeDegree(octaveAndDegreeThird);
+                auto srnThird = std::make_shared<ScaleRelativeNote>(normThird.second, normThird.first);
+                third->pitchCV = PitchUtils::semitoneToCV( scale->getSemitone(*srnThird));
+
+                std::pair<int, int> normFifth = scale->normalizeDegree(octaveAndDegreeFifth);
+                auto srnFifth = std::make_shared<ScaleRelativeNote>(normFifth.second, normFifth.first);
+                fifth->pitchCV = PitchUtils::semitoneToCV( scale->getSemitone(*srnFifth));
+              
+                toAdd.push_back(third);
+                toAdd.push_back(fifth);
+            }
+        }
+    }
+
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "make triads";
     return ret;
 }

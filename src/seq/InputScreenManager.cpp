@@ -3,7 +3,6 @@
 #include "XformScreens.h"
 #include "InputScreenManager.h"
 
-
 InputScreenManager::InputScreenManager(::rack::math::Vec siz) : size(siz)
 {
 }
@@ -73,6 +72,9 @@ void InputScreenManager::show(
         case Screens::QuantizePitch:
             is = make<XFormQuantizePitch>(size, seq, dismisser);
             break;
+        case Screens::MakeTriads:
+            is = make<XFormMakeTriads>(size, seq, dismisser);
+            break;
         default:
             WARN("no handler for enum %d", int(screenId));
             assert(false);
@@ -101,10 +103,12 @@ std::string InputScreenManager::xformName(Screens screen)
         case Screens::QuantizePitch:
             ret = "Quantize Pitch";
             break;
+        case Screens::MakeTriads:
+            ret = "Make Triads";
+            break;
         default:
             WARN("no name for enum %d", int(screen));
             assert(false);
-
     }
     return ret;
 }

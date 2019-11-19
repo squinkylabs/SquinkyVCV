@@ -84,7 +84,7 @@ XformTranspose::XformTranspose(
     // row 2, 3
     row += 2;      // above takes two rows
 
-    bool enableKeysig = false;
+   // bool enableKeysig = false;
     auto keysig = seq->context->settings()->getKeysig();
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
     keepInScaleCallback();          // init the keysig visibility
@@ -147,7 +147,7 @@ XformChopNotes::XformChopNotes(
     // row 1, ornaments
     // control 1, ornaments
     ++row;
-    addChooser(Vec(centerColumn, controlRow(row)), "Ornament", ornaments);
+    addChooser(Vec(centerColumn, controlRow(row)), 76, "Ornament", ornaments);
 
     // make this re-usable!!!
     auto keepInScaleCallback = [this]() {
@@ -166,7 +166,7 @@ XformChopNotes::XformChopNotes(
 
     // control 3, 4 keysig
     row += 2;
-    bool enableKeysig = false;
+   // bool enableKeysig = false;
     auto keysig = seq->context->settings()->getKeysig();
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig);
     keepInScaleCallback();          // init the keysig visibility
@@ -232,3 +232,39 @@ void XFormQuantizePitch::execute()
         "Quantize Pitch", sequencer, xform);
     sequencer->undo->execute(sequencer, cmd);
 }
+
+//****************************** Make Triads 
+
+std::vector<std::string> triads = {
+    "Root Position", "First Inversion", "Second Inversion", "Auto"  
+};
+
+
+XFormMakeTriads::XFormMakeTriads(
+    const ::rack::math::Vec& pos,
+    const ::rack::math::Vec& size,
+    MidiSequencerPtr seq,
+    std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Make Triads", dismisser)
+{
+    int row = 0;
+    addChooser(Vec(centerColumn, controlRow(row)), 100, "Triad type", triads);
+    ++row;
+    auto keysig = seq->context->settings()->getKeysig();
+    addKeysigInput(Vec(centerColumn, controlRow(row)), keysig); 
+}
+
+void XFormMakeTriads::execute()
+{
+    auto keysig = getKeysig(0);
+    saveKeysig(1);
+
+    ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
+    ReplaceDataCommand::TriadType triadType =  ReplaceDataCommand::TriadType(
+        std::round(inputControls[1]->getValue()));
+    ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeMakeTriadsCommand(
+        sequencer, 
+        triadType,
+        scale);
+    sequencer->undo->execute(sequencer, cmd);
+}
+

@@ -190,8 +190,10 @@ void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Sc
     pop->setValue( int(keysig.second)); 
 }
 
+// default was 76
 void InputScreen::addChooser(
     const ::rack::math::Vec& pos,
+    int width,
     const std::string& title,
     const std::vector<std::string>& choices)
 {
@@ -205,7 +207,7 @@ void InputScreen::addChooser(
 
     auto pop = new InputPopupMenuParamWidget();
     pop->setLabels( choices);
-    pop->box.size.x = 76;    // width
+    pop->box.size.x = width;    // width
     pop->box.size.y = 22;     // should set auto like button does
     pop->setPosition(Vec(x, y));
     pop->text = choices[0];

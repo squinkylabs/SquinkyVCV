@@ -81,6 +81,11 @@ public:
         ScalePtr,
         int steps);
 
+    enum class TriadType {RootPosition, FirstInversion, SecondInversion, Auto};
+    static ReplaceDataCommandPtr makeMakeTriadsCommand(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        TriadType,
+        ScalePtr);
 private:
 
     int trackNumber;
