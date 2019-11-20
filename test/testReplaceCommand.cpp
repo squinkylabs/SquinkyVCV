@@ -547,6 +547,25 @@ static void testTriads(ReplaceDataCommand::TriadType type)
     cmd->execute(seq, nullptr);
     assertEQ(seq->context->getTrack()->size(), 3 + 1);
 
+    float expectedThird = 0;
+    float expectedFifth = 0;
+    switch (type) {
+        case ReplaceDataCommand::TriadType::RootPosition:
+            expectedThird = 3.0f + 4 * PitchUtils::semitone;
+            expectedFifth = 3.0f + 7 * PitchUtils::semitone;
+            break;
+        case ReplaceDataCommand::TriadType::FirstInversion:
+            expectedThird = 3.0f + 4 * PitchUtils::semitone - 1.f;
+            expectedFifth = 3.0f + 7 * PitchUtils::semitone;
+            break;
+        case ReplaceDataCommand::TriadType::SecondInversion:
+            expectedThird = 3.0f + 4 * PitchUtils::semitone;
+            expectedFifth = 3.0f + 7 * PitchUtils::semitone - 1.f;
+            break;
+        default:
+            assert(false);
+    }
+
     // C
     it = seq->context->getTrack()->begin();
     note = safe_cast<MidiNoteEvent>(it->second);
@@ -555,12 +574,12 @@ static void testTriads(ReplaceDataCommand::TriadType type)
     //E
     ++it;
     note = safe_cast<MidiNoteEvent>(it->second);
-    assertClose(note->pitchCV, 3.0f + 4 * PitchUtils::semitone, .0001f);
+    assertClose(note->pitchCV, expectedThird, .0001f);
 
     // G
     ++it;
     note = safe_cast<MidiNoteEvent>(it->second);
-    assertClose(note->pitchCV, 3.0f + 7 * PitchUtils::semitone, .0001f);
+    assertClose(note->pitchCV, expectedFifth, .0001f);
 
 
 }
@@ -568,6 +587,8 @@ static void testTriads(ReplaceDataCommand::TriadType type)
 static void testTriads()
 {
     testTriads(ReplaceDataCommand::TriadType::RootPosition);
+    testTriads(ReplaceDataCommand::TriadType::FirstInversion);
+    testTriads(ReplaceDataCommand::TriadType::SecondInversion);
 }
 
 void testReplaceCommand()

@@ -677,7 +677,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
                         break;
                     case TriadType::SecondInversion:
                         octaveAndDegreeThird += 2;
-                        octaveAndDegreeFifth += 2;
+                        octaveAndDegreeFifth += 4;
                         octaveShiftFifth = -1;
                         break;
                     default:
