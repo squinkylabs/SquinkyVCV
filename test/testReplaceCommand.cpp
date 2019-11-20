@@ -527,6 +527,49 @@ static void testChopNotes()
     testChopNotes(.85f);
 }
 
+static void testTriads(ReplaceDataCommand::TriadType type)
+{
+
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::oneQ1, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+
+    auto it = seq->context->getTrack()->begin();
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->pitchCV, 3.0f);
+
+    seq->editor->selectAll();
+    const int origSize = seq->context->getTrack()->size();
+    assertEQ(origSize, 1 + 1);
+
+    auto scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    auto cmd = ReplaceDataCommand::makeMakeTriadsCommand(seq, type, scale);
+    cmd->execute(seq, nullptr);
+    assertEQ(seq->context->getTrack()->size(), 3 + 1);
+
+    // C
+    it = seq->context->getTrack()->begin();
+    note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->pitchCV, 3.0f);
+
+    //E
+    ++it;
+    note = safe_cast<MidiNoteEvent>(it->second);
+    assertClose(note->pitchCV, 3.0f + 4 * PitchUtils::semitone, .0001f);
+
+    // G
+    ++it;
+    note = safe_cast<MidiNoteEvent>(it->second);
+    assertClose(note->pitchCV, 3.0f + 7 * PitchUtils::semitone, .0001f);
+
+
+}
+
+static void testTriads()
+{
+    testTriads(ReplaceDataCommand::TriadType::RootPosition);
+}
+
 void testReplaceCommand()
 {
     test0();
@@ -545,4 +588,5 @@ void testReplaceCommand()
     testNoteFilter();
     testReversePitch();
     testChopNotes();
+    testTriads();
 }

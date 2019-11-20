@@ -663,21 +663,35 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
 
                 auto octaveAndDegreeThird =  scale->octaveAndDegree(*srn);
                 auto octaveAndDegreeFifth =  scale->octaveAndDegree(*srn);
+                int octaveShiftThird = 0;
+                int octaveShiftFifth = 0;
                 switch(type) {
                     case TriadType::RootPosition:
                         octaveAndDegreeThird += 2;
                         octaveAndDegreeFifth += 4;
                         break;
-
+                    case TriadType::FirstInversion:
+                        octaveAndDegreeThird += 2;
+                        octaveAndDegreeFifth += 4;
+                        octaveShiftThird = -1;
+                        break;
+                    case TriadType::SecondInversion:
+                        octaveAndDegreeThird += 2;
+                        octaveAndDegreeFifth += 2;
+                        octaveShiftFifth = -1;
+                        break;
                     default:
                         printf("bad triad type\n"); fflush(stdout);
                 }
+                printf("octave and degree 3rd = %d fifth = %d\n", octaveAndDegreeThird, octaveAndDegreeFifth);
 
                 std::pair<int, int> normThird = scale->normalizeDegree(octaveAndDegreeThird);
+                normThird.first += octaveShiftThird;
                 auto srnThird = std::make_shared<ScaleRelativeNote>(normThird.second, normThird.first);
                 third->pitchCV = PitchUtils::semitoneToCV( scale->getSemitone(*srnThird));
 
                 std::pair<int, int> normFifth = scale->normalizeDegree(octaveAndDegreeFifth);
+                normFifth.first += octaveShiftFifth;
                 auto srnFifth = std::make_shared<ScaleRelativeNote>(normFifth.second, normFifth.first);
                 fifth->pitchCV = PitchUtils::semitoneToCV( scale->getSemitone(*srnFifth));
               
