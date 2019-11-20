@@ -587,6 +587,7 @@ static void testTriads(ReplaceDataCommand::TriadType type)
 static void testTriads()
 {
     testTriads(ReplaceDataCommand::TriadType::RootPosition);
+    printf("\nabout to do first inverion\n");
     testTriads(ReplaceDataCommand::TriadType::FirstInversion);
     testTriads(ReplaceDataCommand::TriadType::SecondInversion);
 }

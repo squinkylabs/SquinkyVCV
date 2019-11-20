@@ -247,7 +247,7 @@ XFormMakeTriads::XFormMakeTriads(
     std::function<void(bool)> dismisser) : InputScreen(pos, size, seq, "Make Triads", dismisser)
 {
     int row = 0;
-    addChooser(Vec(centerColumn, controlRow(row)), 100, "Triad type", triads);
+    addChooser(Vec(centerColumn, controlRow(row)), 130, "Triad type", triads);
     ++row;
     auto keysig = seq->context->settings()->getKeysig();
     addKeysigInput(Vec(centerColumn, controlRow(row)), keysig); 
@@ -255,12 +255,12 @@ XFormMakeTriads::XFormMakeTriads(
 
 void XFormMakeTriads::execute()
 {
-    auto keysig = getKeysig(0);
+    auto keysig = getKeysig(1);
     saveKeysig(1);
 
     ScalePtr scale = Scale::getScale(keysig.second, keysig.first);
     ReplaceDataCommand::TriadType triadType =  ReplaceDataCommand::TriadType(
-        std::round(inputControls[1]->getValue()));
+        std::round(inputControls[0]->getValue()));
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeMakeTriadsCommand(
         sequencer, 
         triadType,

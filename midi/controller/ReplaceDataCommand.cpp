@@ -648,8 +648,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 
- printf("in make triads\n");
-        // toAdd will get the new notes derived from chopping.
+    // toAdd will get the new notes derived from chopping.
     for (MidiSelectionModel::const_iterator it = seq->selection->begin(); it != seq->selection->end(); ++it) {
         MidiEventPtr event = *it;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
@@ -661,6 +660,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
                 MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
                 MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
 
+                //printf("orig srn = %d,%d (oct,deg)\n", srn->octave, srn->degree);
                 auto octaveAndDegreeThird =  scale->octaveAndDegree(*srn);
                 auto octaveAndDegreeFifth =  scale->octaveAndDegree(*srn);
                 int octaveShiftThird = 0;
@@ -682,18 +682,31 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
                         break;
                     default:
                         printf("bad triad type\n"); fflush(stdout);
+                        octaveAndDegreeThird += 2;
+                        octaveAndDegreeFifth += 4;
                 }
-                printf("octave and degree 3rd = %d fifth = %d\n", octaveAndDegreeThird, octaveAndDegreeFifth);
+                //printf("octave and degree 3rd = %d fifth = %d\n", octaveAndDegreeThird, octaveAndDegreeFifth);
 
+                /**
+                 * returns octave:degree from degree.
+                 */
                 std::pair<int, int> normThird = scale->normalizeDegree(octaveAndDegreeThird);
+                // printf("norm third = %d, %d (oct,degree)\n", normThird.first, normThird.second);
                 normThird.first += octaveShiftThird;
+                // printf("norm third after = %d, %d\n", normThird.first, normThird.second);
+
+                // ScaleRelativeNote(int degree, int octave);
                 auto srnThird = std::make_shared<ScaleRelativeNote>(normThird.second, normThird.first);
-                third->pitchCV = PitchUtils::semitoneToCV( scale->getSemitone(*srnThird));
+                const int semitoneThird = scale->getSemitone(*srnThird);
+                third->pitchCV = PitchUtils::semitoneToCV( semitoneThird);
 
                 std::pair<int, int> normFifth = scale->normalizeDegree(octaveAndDegreeFifth);
                 normFifth.first += octaveShiftFifth;
                 auto srnFifth = std::make_shared<ScaleRelativeNote>(normFifth.second, normFifth.first);
-                fifth->pitchCV = PitchUtils::semitoneToCV( scale->getSemitone(*srnFifth));
+                const int semitoneFifth = scale->getSemitone(*srnFifth);
+                fifth->pitchCV = PitchUtils::semitoneToCV( semitoneFifth);
+                //printf("chord: %d, %d, %d\n", origSemitone, semitoneThird, semitoneFifth);
+                //fflush(stdout);
               
                 toAdd.push_back(third);
                 toAdd.push_back(fifth);
