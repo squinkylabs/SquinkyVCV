@@ -648,6 +648,20 @@ struct compareC
     }
 };
 
+static void testPitchUtilMidi()
+{
+    const int midiMiddleC = 60;
+    const float vcvMiddleC = 0.f;
+    assertEQ(PitchUtils::midiToCV(midiMiddleC), vcvMiddleC);
+    assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC), midiMiddleC);
+
+
+    assertEQ(PitchUtils::midiToCV(midiMiddleC + 12), vcvMiddleC + 1);
+    assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC + 1), midiMiddleC + 12);
+
+  
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -682,8 +696,6 @@ void  testMidiEvents()
     testPitchUtil1();
     testPitchUtil2();
 
-
-   
-    
+    testPitchUtilMidi();
     assertNoMidi();     // check for leaks
 }

@@ -25,7 +25,7 @@ bool MidiFileProxy::save(MidiSongPtr song, const std::string& filePath)
         if (note) {
             int startTick = int(note->startTime * ppq);
             int duration = int(note->duration * ppq);
-            int key = PitchUtils::cvToSemitone(note->pitchCV);
+            int key = PitchUtils::pitchCVToMidi(note->pitchCV);
             if (key < 0 || key > 127) {
                 fprintf(stderr, "pitch outside MIDI range, not writing to file");
             } else {
@@ -53,14 +53,6 @@ MidiSongPtr MidiFileProxy::load(const std::string& filename)
 {
     smf::MidiFile midiFile;
 
-
-#if 0
-    char buffer[2000];
-    _getcwd(buffer, sizeof(buffer));
-    printf("cwd = %s\n", buffer);
-   printf("path = %s\n", filename.c_str());
-#endif
-    
     bool b = midiFile.read(filename);
     if (!b) {
         printf("open failed\n");
@@ -97,7 +89,7 @@ MidiTrackPtr MidiFileProxy::getFirst(MidiSongPtr song, smf::MidiFile& midiFile)
             if (evt.isNoteOn()) {
                 const double dur = double(evt.getTickDuration()) / ppq;
                 const double  start = double(evt.tick) / ppq;
-                const float pitch = PitchUtils::pitchToCV(0, evt.getKeyNumber());
+                const float pitch = PitchUtils::midiToCV(evt.getKeyNumber());
 
                 MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
                 note->startTime = float(start);

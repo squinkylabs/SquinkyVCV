@@ -8,6 +8,12 @@
 class PitchUtils
 {
 public:
+
+    /**
+     * Note that Seq++ considers 0V to be middle C (as per spec), which is C4
+     * But unfortunately Seq++ considers this pitch to be "48" semitones,
+     * whereas the MIDI spec is 60.
+     */ 
     static constexpr float semitone = 1.f / 12.f;    // one semitone is a 1/12 volt
     static constexpr float octave = 1.f;
     static std::pair<int, int> cvToPitch(float cv);
@@ -20,6 +26,11 @@ public:
     static std::string pitch2str(float cv);
     static const char* semi2name(int);
     static float quantizeToSemi(float cv);
+
+    static float midiToCV(int midiNoteNumber);
+    static int pitchCVToMidi(float pitch);
+
+
 
     /*****************************************************************
      * Constants for the 12 pitches in a chromatic scale
@@ -147,11 +158,21 @@ inline  int PitchUtils::cvToSemitone(float cv)
     return p.first * 12 + p.second;
 }
 
+inline  int PitchUtils::pitchCVToMidi(float cv)
+{
+    auto p = cvToPitch(cv);
+    return p.first * 12 + p.second + 12;;
+}
+
 inline float PitchUtils::semitoneToCV(int semi)
 {
     return -4.f + semi * semitone;
 }
 
+inline float PitchUtils::midiToCV(int semi)
+{
+    return -5.f + semi * semitone;
+}
 inline  int PitchUtils::deltaCVToSemitone(float cv)
 {
     auto p = cvToPitch(cv);

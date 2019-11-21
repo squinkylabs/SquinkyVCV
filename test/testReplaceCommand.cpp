@@ -580,8 +580,6 @@ static void testTriads(ReplaceDataCommand::TriadType type)
     ++it;
     note = safe_cast<MidiNoteEvent>(it->second);
     assertClose(note->pitchCV, expectedFifth, .0001f);
-
-
 }
 
 static void testTriads()
