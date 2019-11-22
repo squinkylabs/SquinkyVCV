@@ -289,7 +289,7 @@ void Actions::moveDownOctave(ActionContext& context)
 
 void Actions::selectPrevious(ActionContext& context)
 {
-    context.sequencer->editor->selectNextNote();
+    context.sequencer->editor->selectPrevNote();
 }
 void Actions::selectPreviousExtend(ActionContext& context)
 {
