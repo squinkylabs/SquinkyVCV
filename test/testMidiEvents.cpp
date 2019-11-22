@@ -655,11 +655,8 @@ static void testPitchUtilMidi()
     assertEQ(PitchUtils::midiToCV(midiMiddleC), vcvMiddleC);
     assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC), midiMiddleC);
 
-
     assertEQ(PitchUtils::midiToCV(midiMiddleC + 12), vcvMiddleC + 1);
     assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC + 1), midiMiddleC + 12);
-
-  
 }
 
 void  testMidiEvents()
