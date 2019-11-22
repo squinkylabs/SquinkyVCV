@@ -42,10 +42,16 @@ static MidiNoteEventPtr selectNextNotePastCursor(bool atCursorOk,
 {
     const auto t = seq->context->cursorTime();
     const auto track = seq->context->getTrack();
+#ifdef _LOG
+    printf("in selectNextNotePastCursor t=%.2f\n", t);
+#endif
 
     // first, seek into track until cursor time.
     MidiTrack::const_iterator it = track->seekToTimeNote(t);
     if (it == track->end()) {
+#ifdef _LOG
+        printf("seeked past end\n");
+#endif
         if (!keepExisting) {
             seq->selection->clear();
         }
@@ -58,6 +64,11 @@ static MidiNoteEventPtr selectNextNotePastCursor(bool atCursorOk,
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
         if (note) {
             seq->selection->addToSelection(note, keepExisting);
+#ifdef _LOG
+            printf("selectNextNotePastCursor added first note to selection at time %.2f #sel=%d\n",
+                note->startTime,
+                seq->selection->size());
+#endif
             return note;
         }
     }
@@ -71,6 +82,9 @@ static MidiNoteEventPtr selectNextNotePastCursor(bool atCursorOk,
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
         if (note) {
             seq->selection->addToSelection(note, keepExisting);
+#ifdef _LOG
+            printf("selectNextNotePastCursor in search found one at %.2f, #sel=%d\n", note->startTime, seq->selection->size());
+#endif
             return note;
         }
     }
@@ -79,6 +93,9 @@ static MidiNoteEventPtr selectNextNotePastCursor(bool atCursorOk,
     MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(bestSoFar->second);
     if (note) {
         seq->selection->addToSelection(note, keepExisting);
+#ifdef _LOG
+        printf("selectNextNotePastCursoraccept last one at %.2f #sel=%d\n", note->startTime, seq->selection->size());
+#endif
     }
     return note;
 }
@@ -147,17 +164,39 @@ static MidiNoteEventPtr selectPrevNoteBeforeCursor(bool atCursorOk,
  * For now we can base everything from cursor. Later, when we do multi-select, will need to be smarter.
  */
 
+
 void MidiEditor::selectNextNote()
 {
+#ifdef _LOG
+    printf("select next note #sel=%d\n", seq()->selection->size());
+#endif
     seq()->assertValid();
 
     MidiTrackPtr track = getTrack();
     assert(track);
+
+    // If nothing is selected, we will accept a note right at cursor. Don't know how we get to that state,
+    // but the thinking is that if we are on a not and it isn't selected, the selectin it is progress.
     const bool acceptCursorTime = seq()->selection->empty();
+
+    // now let's try clearing out all the selection that we want to drop.
+    seq()->selection->clear();
+
+#ifdef _LOG
+    printf("in selecteNextNote, acceptCursorTime=%d, numsel=%d curTime = %.2f\n",
+        acceptCursorTime,
+        seq()->selection->size(),
+        seq()->context->cursorTime());
+#endif
+    
     selectNextNotePastCursor(acceptCursorTime, false, seq());
 
     updateCursor();
     seq()->context->adjustViewportForCursor();
+
+#ifdef _LOG
+    printf("leave select next note\n"); fflush(stdout);
+#endif
 }
 
 void MidiEditor::extendSelectionToNextNote()
@@ -216,6 +255,9 @@ void MidiEditor::setCursorToNote(MidiNoteEventPtr note)
 
 void MidiEditor::updateCursor()
 {
+#ifdef _LOG
+    printf("updateCursor #sel=%d\n", seq()->selection->size());
+#endif
     if (seq()->selection->empty()) {
         return;
     }
@@ -231,11 +273,17 @@ void MidiEditor::updateCursor()
             }
             if ((note->startTime == seq()->context->cursorTime()) &&
                 (note->pitchCV == seq()->context->cursorPitch())) {
+#ifdef _LOG
+                printf("updateCursor accepting current selection #sel=%d\n", seq()->selection->size());
+#endif
                 return;
             }
         }
     }
     setCursorToNote(firstNote);
+#ifdef _LOG
+    printf("updateCursor setting cursor to first note %.2f\n", firstNote->startTime);
+#endif
 }
 
 void MidiEditor::changePitch(int semitones)

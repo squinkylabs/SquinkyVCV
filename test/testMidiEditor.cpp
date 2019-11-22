@@ -448,12 +448,11 @@ static void testCursor6()
 //next note should do something in multi select
 static void testCursor7()
 {
-    printf("**** test cursor 7\n");
+   // printf("\n**** test cursor 7\n");
     MidiSequencerPtr seq = makeTest(false);
 
     assertEQ(seq->context->startTime(), 0);
     seq->assertValid();
-    seq->context->getTrack()->_dump();
 
     // select third note
     seq->editor->selectNextNote();
