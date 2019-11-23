@@ -798,6 +798,16 @@ void testMidiEditorSub(int trackNumber)
 {
     _trackNumber = trackNumber;
 
+    testCursor1();
+    testCursor2();
+    testCursor3();
+    testCursor4();
+    testCursor4b();
+    testCursor5();
+    testCursor6();
+    testCursorNonQuantSnaps();
+    testCursor7();
+
     testTrans1();
     testShiftTime1();
     testShiftTime2();
@@ -813,15 +823,7 @@ void testMidiEditorSub(int trackNumber)
     testTrans3();
     testTransHuge();
 
-    testCursor1();
-    testCursor2();
-    testCursor3();
-    testCursor4();
-    testCursor4b();
-    testCursor5();
-    testCursor6();
-    testCursorNonQuantSnaps();
-    testCursor7();
+  
 
     testInsert();
     testDelete();

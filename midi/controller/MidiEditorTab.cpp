@@ -6,20 +6,172 @@
 #include "MidiEditor.h"
 #include "MidiSequencer.h"
 
+//#define _NEWTAB
+
 
 #if defined(_NEWTAB)
+
+static MidiNoteEventPtr findNextNoteAtOrPastCursorInTime(MidiSequencerPtr seq);
+static MidiNoteEventPtr findPrevNoteAtOrBeforeCursorInTime(MidiSequencerPtr seq);
+//static void addCursorNoteToSelection
+
+
 void MidiEditor::selectNextNote()
 {
+    MidiSequencerPtr sq = seq();
+    sq->assertValid();  
+    const bool isCurorNote = bool(sq->context->getCursorNote());
+    sq->selection->clear();
+
+    MidiNoteEventPtr note;
+    if (isCurorNote) {
+        assert(false);
+    } else {
+        note = findNextNoteAtOrPastCursorInTime(sq);
+    }
+
+    if (note) {
+        // add to selection
+       // addCursorNoteToSelection(sq, note);
+        sq->selection->addToSelection(note, true);
+        assertEQ(sq->selection->size(), 1);
+    }
+
+    sq->context->setCursorNote(note);
+    // now set cursor in context to this note.
+    // note that updateCursor is an old func - may not be quite what we want now
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
 }
+
 void MidiEditor::selectPrevNote()
 {
+    MidiSequencerPtr sq = seq();
+    sq->assertValid();
+    const bool isCurorNote = bool(sq->context->getCursorNote());
+    sq->selection->clear();
+
+    MidiNoteEventPtr note;
+    if (isCurorNote) {
+        assert(false);
+    } else {
+        note = findPrevNoteAtOrBeforeCursorInTime(sq);
+    }
+
+    if (note) {
+    // add to selection
+   // addCursorNoteToSelection(sq, note);
+        sq->selection->addToSelection(note, true);
+        assertEQ(sq->selection->size(), 1);
+    }
+
+    sq->context->setCursorNote(note);
+     // now set cursor in context to this note.
+     // note that updateCursor is an old func - may not be quite what we want now
+    updateCursor();
+    seq()->context->adjustViewportForCursor();
 }
+
 void MidiEditor::extendSelectionToNextNote()
 {
+    assert(false);
 }
+
 void MidiEditor::extendSelectionToPrevNote()
 {
+    assert(false);
 }
+
+
+static MidiNoteEventPtr findNextNoteAtOrPastCursorInTime(MidiSequencerPtr seq)
+{
+    const auto t = seq->context->cursorTime();
+    const auto track = seq->context->getTrack();
+#ifdef _LOG
+    printf("in selectNextNotePastCursor t=%.2f\n", t);
+#endif
+
+    // first, seek into track until cursor time.
+    MidiTrack::const_iterator it = track->seekToTimeNote(t);
+    if (it == track->end()) {
+#ifdef _LOG
+        printf("seeked past end\n");
+#endif
+
+        return nullptr;
+    }
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+    return note;
+}
+
+
+static MidiNoteEventPtr findPrevNoteAtOrBeforeCursorInTime( MidiSequencerPtr seq)
+{
+    const auto t = seq->context->cursorTime();
+    const auto track = seq->context->getTrack();
+
+    // first, seek into track until cursor time.
+    MidiTrack::const_iterator it = track->seekToTimeNote(t);
+
+    if (it == track->end()) {
+        it = track->seekToLastNote();
+        if (it == track->end()) {
+            return nullptr;
+        }
+    }
+
+    while (it->first > t) {
+        if (it == track->begin()) {
+            return nullptr;
+        } else {
+            --it;
+        }
+    }
+
+    assert(it->first <= t);
+
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+    return note;
+
+#if 0
+    // if it came back with a note exactly at cursor time,
+    // check if it's acceptable.
+    if ((it->first < t) || (it->first == t && atCursorOk)) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note) {
+            seq->selection->addToSelection(note, keepExisting);
+            return note;
+        }
+    }
+
+    MidiTrack::const_iterator bestSoFar = it;
+
+    // now either this previous is acceptable, or something before it
+    while (true) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+        if (note && (note->startTime < t)) {
+            seq->selection->addToSelection(note, keepExisting);
+            return note;
+        }
+        if (it == track->begin()) {
+            break;  // give up if we are at start and have found nothing good
+        }
+        --it;       // if nothing good, try previous
+    }
+
+    // If nothing past where we are, it's OK, even if it is at the same time
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(bestSoFar->second);
+    if (note && note->startTime >= t) {
+        note = nullptr;
+    }
+    if (note) {
+        seq->selection->select(bestSoFar->second);
+    }
+    return note;
+#endif
+}
+
+
 #endif
 
 //*********************************************************************************************************
