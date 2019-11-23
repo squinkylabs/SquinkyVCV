@@ -37,6 +37,7 @@
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiEditorTab.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiFileProxy.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiLock.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiPlayer2.cpp" />

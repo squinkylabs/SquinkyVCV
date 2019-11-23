@@ -11,6 +11,8 @@ class NoteScreenScale;
 
 using MidiSongPtr = std::shared_ptr<MidiSong>;
 
+//#define _NEWTAB
+
 class MidiEditorContext  : public std::enable_shared_from_this<MidiEditorContext>
 {
 public:
@@ -164,6 +166,11 @@ public:
     float insertNoteDuration = 0;
 
     void setNewSong(MidiSongPtr song);
+
+#ifdef _NEWTAB
+    MidiNoteEventPtr getCursorNote();
+    void setCursorNote(MidiNoteEventPtr);
+#endif
     
 private:
     float m_cursorTime = 0;
@@ -187,7 +194,9 @@ private:
 
     std::shared_ptr<ISeqSettings> _settings;
 
-   
+#ifdef _NEWTAB
+    std::weak_ptr<MidiNoteEvent> cursorNote;
+#endif
 };
 
 using MidiEditorContextPtr = std::shared_ptr<MidiEditorContext>;

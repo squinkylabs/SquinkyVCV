@@ -495,6 +495,9 @@
     <ClCompile Include="..\..\midi\model\ScaleRelativeNote.cpp">
       <Filter>Source Files\midi\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiEditorTab.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
