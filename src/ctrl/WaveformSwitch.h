@@ -126,6 +126,7 @@ inline WaveformSwitch::WaveformSwitch()
 
 
     // calculate correct size
+    const int last = cells.size() - 1;
     const Vec actualSize( 
         cells[last]->box.pos.x +  cells[last]->box.size.x,
         cells[last]->box.pos.y +  cells[last]->box.size.y
