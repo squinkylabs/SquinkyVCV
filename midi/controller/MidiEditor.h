@@ -94,7 +94,7 @@ public:
     static float getDuration(Durations dur);
 
     /**
-     * returns the amount of time the editor would advance if it interted the default note
+     * returns the amount of time the editor would advance if it inserted the default note
      */
     float getAdvanceTimeAfterNote();
 private:

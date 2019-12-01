@@ -391,6 +391,7 @@ static void testNext4()
 // select next that off way out of viewport
 static void testNextWhenOutsideViewport()
 {
+    // Select the first note, and move it somewhere crash
     MidiSequencerPtr seq = makeTest();
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);
@@ -398,7 +399,6 @@ static void testNextWhenOutsideViewport()
     // Give the (first) note a pitch and start time that are
     // way outside viewport
     seq->editor->changePitch(50);
-
     seq->editor->changeStartTime(false, 50);
 
     assertEQ(seq->selection->size(), 1);
@@ -460,7 +460,11 @@ void testMidiEditorNextPrevSub(int trackNumber)
     testNextInEmptyTrack();
     testPrevInEmptyTrack();
 
+#ifdef _NEWTAB
+    printf("with new alg, what should testNextWhenOutsideViewport do?\n");
+#else
     testNextWhenOutsideViewport();
+#endif
 
     textExtendNoteWhenOneSelected();
 }

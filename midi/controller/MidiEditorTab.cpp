@@ -13,6 +13,8 @@
 
 static MidiNoteEventPtr findNextNoteAtOrPastCursorInTime(MidiSequencerPtr seq);
 static MidiNoteEventPtr findPrevNoteAtOrBeforeCursorInTime(MidiSequencerPtr seq);
+static MidiNoteEventPtr findNextNoteInOrder(MidiSequencerPtr seq);
+static MidiNoteEventPtr findPrevNoteInOrder(MidiSequencerPtr seq);
 //static void addCursorNoteToSelection
 
 
@@ -25,14 +27,14 @@ void MidiEditor::selectNextNote()
 
     MidiNoteEventPtr note;
     if (isCurorNote) {
-        assert(false);
+        //assert(false);
+        note = findNextNoteInOrder(sq);
     } else {
         note = findNextNoteAtOrPastCursorInTime(sq);
     }
 
     if (note) {
         // add to selection
-       // addCursorNoteToSelection(sq, note);
         sq->selection->addToSelection(note, true);
         assertEQ(sq->selection->size(), 1);
     }
@@ -53,7 +55,7 @@ void MidiEditor::selectPrevNote()
 
     MidiNoteEventPtr note;
     if (isCurorNote) {
-        assert(false);
+        note = findPrevNoteInOrder(sq);
     } else {
         note = findPrevNoteAtOrBeforeCursorInTime(sq);
     }
@@ -74,7 +76,33 @@ void MidiEditor::selectPrevNote()
 
 void MidiEditor::extendSelectionToNextNote()
 {
-    assert(false);
+    MidiSequencerPtr sq = seq();
+    sq->assertValid();
+    const bool isCurorNote = bool(sq->context->getCursorNote());
+   // sq->selection->clear();
+
+    MidiNoteEventPtr note;
+    if (isCurorNote) {
+        //assert(false);
+        note = findNextNoteInOrder(sq);
+    } else {
+        note = findNextNoteAtOrPastCursorInTime(sq);
+    }
+
+    if (note) {
+        // add to selection
+        sq->selection->addToSelection(note, true);
+       // assertEQ(sq->selection->size(), 1);
+    }
+
+    sq->context->setCursorNote(note);
+    // now set cursor in context to this note.
+    // note that updateCursor is an old func - may not be quite what we want now
+
+   // updateCursor(); (not right
+    setCursorToNote(note);
+    seq()->context->adjustViewportForCursor();
+
 }
 
 void MidiEditor::extendSelectionToPrevNote()
@@ -82,6 +110,54 @@ void MidiEditor::extendSelectionToPrevNote()
     assert(false);
 }
 
+
+static MidiNoteEventPtr findNextNoteInOrder(MidiSequencerPtr seq)
+{
+    const auto track = seq->context->getTrack();
+    MidiNoteEventPtr curNote = seq->context->getCursorNote();
+    assert(curNote);
+
+    MidiTrack::const_iterator it = track->findEventPointer(curNote);
+    assert(it != track->end());
+
+    ++it;           // next event
+    if (it == track->end()) {
+        return curNote;         // don't go past last note, just stick on it
+    }
+
+    MidiEventPtr evt = it->second;
+
+    // If it's an end event, it will case to null
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+    return note ? note : curNote;
+}
+
+
+static MidiNoteEventPtr findPrevNoteInOrder(MidiSequencerPtr seq)
+{
+    const auto track = seq->context->getTrack();
+    track->_dump();
+
+    MidiNoteEventPtr curNote = seq->context->getCursorNote();
+    assert(curNote);
+
+    MidiTrack::const_iterator it = track->findEventPointer(curNote);
+    assert(it != track->end());
+
+
+    if (it == track->begin()) {
+        return curNote;         // stick on first one, it no others befroe
+    }
+
+    --it;           // prev event
+    MidiEventPtr evt = it->second;
+
+    // If it's an end event, it will case to null
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+    assert(note);
+    return note;
+   // return note ? note : curNote;
+}
 
 static MidiNoteEventPtr findNextNoteAtOrPastCursorInTime(MidiSequencerPtr seq)
 {
