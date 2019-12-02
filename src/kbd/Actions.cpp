@@ -384,8 +384,7 @@ void Actions::deleteNote(ActionContext& context)
    context.sequencer->editor->deleteNote();
 }
 
-
-void Actions::grabDefaultNote(ActionContext&)
+void Actions::grabDefaultNote(ActionContext& context)
 {
-   assert(false);
+   context.sequencer->editor->grabDefaultNote();
 }
