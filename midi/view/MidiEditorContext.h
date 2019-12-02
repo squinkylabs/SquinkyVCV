@@ -11,7 +11,7 @@ class NoteScreenScale;
 
 using MidiSongPtr = std::shared_ptr<MidiSong>;
 
-#define _NEWTAB
+// #define _NEWTAB
 
 class MidiEditorContext  : public std::enable_shared_from_this<MidiEditorContext>
 {

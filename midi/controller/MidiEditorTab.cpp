@@ -6,9 +6,6 @@
 #include "MidiEditor.h"
 #include "MidiSequencer.h"
 
-//#define _NEWTAB
-
-
 #if defined(_NEWTAB)
 
 static MidiNoteEventPtr findNextNoteAtOrPastCursorInTime(MidiSequencerPtr seq);
