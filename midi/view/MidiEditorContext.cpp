@@ -189,9 +189,15 @@ void MidiEditorContext::setCursorToSelection(MidiSelectionModelPtr selection)
 
 
 #ifdef _NEWTAB
-MidiNoteEventPtr MidiEditorContext::getCursorNote()
+MidiNoteEventPtr MidiEditorContext::getCursorNote(MidiSelectionModelPtr selection)
 {
-    return cursorNote.lock();
+    MidiNoteEventPtr selctedCursorNote = cursorNote.lock();
+    if (selctedCursorNote) {
+        if (!selection->isSelected(selctedCursorNote)) {
+            selctedCursorNote = nullptr;
+        }
+    }
+    return selctedCursorNote;
 }
 
 void MidiEditorContext::setCursorNote(MidiNoteEventPtr note)

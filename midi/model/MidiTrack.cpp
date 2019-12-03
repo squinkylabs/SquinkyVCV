@@ -143,6 +143,7 @@ void MidiTrack::_dump() const
         //printf(" addr=%p\n", addr);
         printf("\n");
     }
+    printf("\n");
     fflush(stdout);
 }
 

@@ -76,12 +76,14 @@
 			"name": "Seq++",
 			"description": "DAW-like sequencer",
 			"disabled": false,
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/sq2.md",
 			"tags": ["Sequencer"]
 		},
 		{
 			"slug": "squinkylabs-super",
 			"name": "Saws",
 			"description": "Super saw VCO emulation",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md",
 			"tags": ["VCO"]
 		},
 		{
@@ -101,6 +103,7 @@
 			"slug": "squinkylabs-mix8",
 			"name": "Mixer-8",
 			"description": "8 channel mixer",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/mix8.md",
 			"tags": ["Mixer"]
 		},
 		{
@@ -108,6 +111,7 @@
 			"name": "ExFor",
 			"description": "4 channel mixer expander",
 			"disabled": false,
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/exfor.md",
 			"tags": ["Mixer", "Expander"]
 		},
 		{
@@ -115,12 +119,14 @@
 			"name": "ExTwo",
 			"description": "Two channel stereo mixer expander",
 			"disabled": false,
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/extwo.md",
 			"tags": ["Mixer", "Expander"]
 		},
 		{
 			"slug": "squinkylabs-mixm",
 			"name": "Form",
 			"description": "Mixer master module",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/form.md",
 			"disabled": false,
 			"tags": ["Mixer"]
 		},

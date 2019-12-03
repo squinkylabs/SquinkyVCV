@@ -35,8 +35,10 @@ MidiTrackPtr MidiEditor::getTrack()
 
 void MidiEditor::setCursorToNote(MidiNoteEventPtr note)
 {
-    seq()->context->setCursorTime(note->startTime);
-    seq()->context->setCursorPitch(note->pitchCV);
+    if (note) {
+        seq()->context->setCursorTime(note->startTime);
+        seq()->context->setCursorPitch(note->pitchCV);
+    }
 }
 
 void MidiEditor::updateCursor()
@@ -520,6 +522,9 @@ void MidiEditor::updateSelectionForCursor(bool extendCurrent)
         }
     } else {
         seq()->selection->addToSelection(note, extendCurrent);
+    #ifdef _NEWTAB
+        seq()->context->setCursorNote(note);            // for new selection
+    #endif
     }
 }
 
@@ -527,7 +532,7 @@ MidiNoteEventPtr MidiEditor::getNoteUnderCursor()
 {
     const int cursorSemi = PitchUtils::cvToSemitone(seq()->context->cursorPitch());
 
-   // iterator over all the notes that are in the edit context
+    // iterate over all the notes that are in the edit context
     auto start = seq()->context->startTime();
     auto end = seq()->context->endTime();
     MidiTrack::note_iterator_pair notes = getTrack()->timeRangeNotes(start, end);
