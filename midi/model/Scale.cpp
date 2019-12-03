@@ -16,8 +16,6 @@ void Scale::init(Scales scale, int keyRoot)
     int degree = 0;
     for (auto it : notes) {
         const int semi = keyRoot + it;
-        // how do we come up with the 
-        ScalePtr sc = getptr();
         ScaleRelativeNotePtr srn = std::make_shared<ScaleRelativeNote>(degree, 0);
         abs2srn[semi] = srn;
         ++degree;
@@ -39,14 +37,12 @@ ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
 
     auto it = abs2srn.find(normP.semi);
     if (it != abs2srn.end()) {
-        ScalePtr scale = shared_from_this();
         return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct));
     }
 
     // since these are semi-normaled, lets try the next octave
     it = abs2srn.find(normP.semi + 12);
     if (it != abs2srn.end()) {
-        ScalePtr scale = shared_from_this();
         return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct - 1));
     }
 
@@ -61,12 +57,9 @@ int Scale::getSemitone(const ScaleRelativeNote& note)
         int semi = it.first;
         ScaleRelativeNotePtr srn = it.second;
         if (srn->degree == note.degree) {
-           // printf("found it!!\n");
-           // assert(note.octave == 0);
             return semi + 12 * note.octave;
         }
     }
-    //printf("didn't find it\n");
     return -1;
 }
 

@@ -10,7 +10,7 @@ The ExTwo and the other mixers recognize each other, and automatically connect t
 
 ## Normaled mono mode
 
-If you connect an audio signal to the left input of a stereo channel, and leave the right connected, a special mode will be engaged. The left signal will be sent to both the left and right outputs, and the pan control, aside from controlling the panning to all the stereo busses, will also pan between the two direct outputs.
+If you connect an audio signal to the left input of a stereo channel, and leave the right unconnected, a special mode will be engaged. The left signal will be sent to both the left and right outputs, and the pan control, aside from controlling the panning to all the stereo busses, will also pan between the two direct outputs.
 
 So this mode is very similar to a regular mono channel with Form or ExFor, with the additional ability to pan between two direct outputs.
 

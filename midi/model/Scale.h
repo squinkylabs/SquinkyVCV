@@ -14,7 +14,7 @@ using MidiEventPtr = std::shared_ptr<MidiEvent>;
  using XformLambda = std::function<void(MidiEventPtr)>;
  
 
-class Scale : public std::enable_shared_from_this<Scale>
+class Scale
 {
 public:
     enum class Scales {
@@ -36,10 +36,6 @@ public:
      *  Factory method
      */
     static ScalePtr getScale(Scales, int);
-
-    std::shared_ptr<Scale> getptr() {
-        return shared_from_this();
-    }
 
     // semitones are absolute semis, as used in PitchUtils
     ScaleRelativeNotePtr getScaleRelativeNote(int semitone);

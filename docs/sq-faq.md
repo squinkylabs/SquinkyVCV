@@ -1,5 +1,13 @@
 # Frequently asked questions on Seq++
 
+## What is the easiest way to enter notes?
+
+Loading a MIDI file is the easiest, but that's sort of cheating. As far as entering notes directly in Seq++, using a MIDI keyboard and Seq++'s step record feature is by far the easiest.
+
+After that is entering notes from the computer keyboard. This take a little study to memorize some editing commands, but can also be very quick, and is probably the most powerful.
+
+Lastly is using the mouse. This is perhaps the most intuitive method, but also the slowest. In its present form, the mouse interface is note really recommended for entering an entire sequence.
+
 ## What should I set the clock to?
 
 Set it to X64, and use a suitable high speed clock source. The higher the clock resolution, the more what you hear will correspond to what you see on the screen. Use lower clock settings for special effects.
