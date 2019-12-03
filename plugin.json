@@ -15,60 +15,70 @@
 			"slug": "squinkylabs-ev3",
 			"name": "EV3",
 			"description": "Triple VCO with even waveform",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/ev3.md",
 			"tags": ["VCO", "Multiple"]
 		},
 		{
 			"slug": "squinkylabs-vocalfilter",
 			"name": "Formants",
 			"description": "Singing Vocal Filter",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/formants.md",
 			"tags":  ["Effect", "Filter"]
 		},
 		{
 			"slug": "squinkylabs-lfn",
 			"name": "LFN",
 			"description": "Low frequency random voltage generator",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md",
 			"tags": ["Noise", "Random", "LFO"]
 		},
 		{
 			"slug": "squinkylabs-vocalanimator",
 			"name": "Growler",
 			"description": "Vocal Animator",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/growler.md",
 			"tags":  ["Effect", "Filter"]
 		},
 		{
 			"slug": "squinkylabs-CHB2",
 			"name": "Chebyshev II",
 			"description": "Waveshaper VCO with FM",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md",
 			"tags": ["VCO"]
 		},
 		{
 			"slug": "squinkylabs-shp",
 			"name": "Shaper",
 			"description": "Precision Wave Shaper",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shaper.md",
 			"tags": ["Effect", "Waveshaper", "Distortion"]
 		},
 		{
 			"slug": "squinkylabs-tremolo",
 			"name": "Chopper",
 			"description": "Tremolo with synched LFO",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chopper.md",
 			"tags": ["Clock modulator", "Effect", "LFO"]
 		},
 		{
 			"slug": "squinkylabs-gry",
 			"name": "Gray Code",
 			"description": "Eclectic clock divider",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/gray-code.md",
 			"tags": [ "Clock modulator", "Random", "Logic"]
 		},
 		{
 			"slug": "squinkylabs-coloredNoise",
 			"name": "Colors",
 			"description": "All the colors of noise",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md",
 			"tags": ["Noise"]
 		},
 		{
 			"slug": "squinkylabs-freqshifter",
 			"name": "Booty Shifter",
 			"description": "Frequency Shifter",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shifter.md",
 			"tags": ["Ring Modulator", "effect"]
 		},
 		{
@@ -97,6 +107,7 @@
 			"slug": "squinkylabs-slew4",
 			"name": "Slade",
 			"description": "Octal slew/lag/VCA",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/slew4.md",
 			"tags": ["Slew limiter", "VCA"]
 		},
 		{
@@ -148,18 +159,21 @@
 			"slug": "squinkylabs-filt",
 			"name": "Stairway",
 			"description": "Ladder filter on steroids",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/filter.md",
 			"tags": ["VCF"]
 		},
 		{
 			"slug": "squinkylabs-dt",
 			"name": "Polygate",
 			"description": "Polyphonic gate demultiplexer",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/dt.md",
 			"tags": ["Polyphonic"]
 		},
 		{
 			"slug": "squinkylabs-funv",
 			"name": "Functional VCO-1",
 			"description": "[deprecated] Multi-function VCO with low aliasing",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md",
 			"tags": ["VCO"]
 		}
 	]
