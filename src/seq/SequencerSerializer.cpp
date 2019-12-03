@@ -19,9 +19,10 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong> sng)
 {
     json_t* song = json_object();
 
-    // TODO: more trakcs
     auto tk = sng->getTrack(0);
     json_object_set_new(song, "tk0", toJson(tk));
+
+    json_object_set_new(song, "loop", toJson(sng->getSubrangeLoop()));
 
     return song;
 }
@@ -51,6 +52,15 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiEvent> evt)
 
     assert(false);
     return nullptr;
+}
+
+json_t *SequencerSerializer::toJson(const SubrangeLoop& lp)
+{
+    json_t* loop = json_object();
+    json_object_set_new(loop, "enabled", json_boolean(lp.enabled));
+    json_object_set_new(loop, "startTime", json_boolean(lp.startTime));
+    json_object_set_new(loop, "endTime", json_boolean(lp.endTime));
+    return loop;
 }
 
 json_t *SequencerSerializer::toJson(std::shared_ptr<MidiNoteEvent> n)
@@ -205,6 +215,12 @@ MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)
             json_t* trackJson = json_object_get(data, "tk0");
             MidiTrackPtr track = fromJsonTrack(trackJson, 0, lock);
             song->addTrack(0, track);
+
+            json_t* loopJson = json_object_get(data, "loop");
+            if (loopJson) {
+                std::shared_ptr<SubrangeLoop> loopPtr = fromJsonSubrangeLoop(loopJson);
+                song->setSubrangeLoop(*loopPtr);
+            }
         }
     }
     return song;
@@ -250,6 +266,19 @@ MidiEventPtr SequencerSerializer::fromJsonEvent(json_t *data)
             printf("event type unrecognixed %d\n", type);
     }
     return event;
+}
+
+std::shared_ptr<SubrangeLoop> SequencerSerializer::fromJsonSubrangeLoop(json_t* data)
+{
+    json_t* enableJson = json_object_get(data, "enabled");
+    json_t* startJson = json_object_get(data, "startTime");
+    json_t* endJson = json_object_get(data, "endTime");
+
+    std::shared_ptr<SubrangeLoop> loop = std::make_shared<SubrangeLoop>();
+    loop->enabled = json_boolean_value(enableJson);
+    loop->startTime = json_number_value(startJson);
+    loop->endTime = json_number_value(endJson);
+    return loop;
 }
 
 MidiNoteEventPtr SequencerSerializer::fromJsonNoteEvent(json_t *data)
