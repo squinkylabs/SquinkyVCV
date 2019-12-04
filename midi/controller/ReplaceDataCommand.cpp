@@ -655,14 +655,14 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
 
         if (note) {
             const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
-            ScaleRelativeNotePtr srn = scale->getScaleRelativeNote(origSemitone);
-            if (srn->valid) {
+            ScaleRelativeNote srn = scale->getScaleRelativeNote(origSemitone);
+            if (srn.valid) {
                 MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
                 MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
 
                 //printf("orig srn = %d,%d (oct,deg)\n", srn->octave, srn->degree);
-                auto octaveAndDegreeThird =  scale->octaveAndDegree(*srn);
-                auto octaveAndDegreeFifth =  scale->octaveAndDegree(*srn);
+                auto octaveAndDegreeThird =  scale->octaveAndDegree(srn);
+                auto octaveAndDegreeFifth =  scale->octaveAndDegree(srn);
                 int octaveShiftThird = 0;
                 int octaveShiftFifth = 0;
                 switch(type) {

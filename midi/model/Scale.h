@@ -11,7 +11,7 @@ class ScaleRelativeNote;
 using ScalePtr = std::shared_ptr<Scale>;
 using ScaleRelativeNotePtr = std::shared_ptr<ScaleRelativeNote>;
 using MidiEventPtr = std::shared_ptr<MidiEvent>;
- using XformLambda = std::function<void(MidiEventPtr)>;
+using XformLambda = std::function<void(MidiEventPtr)>;
  
 
 class Scale
@@ -38,18 +38,19 @@ public:
     static ScalePtr getScale(Scales, int);
 
     // semitones are absolute semis, as used in PitchUtils
-    ScaleRelativeNotePtr getScaleRelativeNote(int semitone);
-    int getSemitone(const ScaleRelativeNote&);
+    ScaleRelativeNote getScaleRelativeNote(int semitone) const;
+    ScaleRelativeNotePtr getScaleRelativeNotePtr(int semitone) const;
+    int getSemitone(const ScaleRelativeNote&) const;
 
     /**
      * Input and output are regular chromatic semitones,
      * But transpose will be done scale relative
      */
-    int transposeInScale(int semitone, int scaleDegreesToTranspose);
+    int transposeInScale(int semitone, int scaleDegreesToTranspose) const;
 
-    int invertInScale(int semitone, int inversionDegree);
+    int invertInScale(int semitone, int inversionDegree) const;
 
-    int quantizeToScale(int semitone);
+    int quantizeToScale(int semitone) const;
 
     static XformLambda makeTransposeLambdaChromatic(int transposeSemitones);
     static XformLambda makeTransposeLambdaScale(int scaleDegrees, int keyRoot, Scales mode);
@@ -64,7 +65,7 @@ public:
     /**
      * returns octave:degree from degree.
      */
-    std::pair<int, int> normalizeDegree(int);
+    std::pair<int, int> normalizeDegree(int) const;
 
     /**
      * combine octave and degree into non-normalized degree
@@ -84,8 +85,8 @@ private:
      * Handlers for the "in scale" operations for the case
      * when input is itself not in the scale
      */
-    int transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose);
-    int invertInScaleChromatic(int semitone, int scaleDegreesToTranspose);
+    int transposeInScaleChromatic(int semitone, int scaleDegreesToTranspose) const;
+    int invertInScaleChromatic(int semitone, int scaleDegreesToTranspose) const;
 
     /**
      *  make from semi-normalized semitones to srn

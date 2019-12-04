@@ -30,27 +30,36 @@ ScalePtr Scale::getScale(Scale::Scales scale, int root)
     return ScalePtr(p);
 }
 
-ScaleRelativeNotePtr Scale::getScaleRelativeNote(int semitone)
+ScaleRelativeNotePtr Scale::getScaleRelativeNotePtr(int semitone) const
+{
+    auto srn = getScaleRelativeNote(semitone);
+    ScaleRelativeNotePtr ret = (srn.valid) ?
+        std::make_shared<ScaleRelativeNote>(srn.degree, srn.octave) :
+        std::make_shared<ScaleRelativeNote>();
+    return ret;
+}
+
+ScaleRelativeNote Scale::getScaleRelativeNote(int semitone) const
 {
     assert(abs2srn.size());         // was this initialized?
     PitchUtils::NormP normP(semitone);
 
     auto it = abs2srn.find(normP.semi);
     if (it != abs2srn.end()) {
-        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct));
+        return ScaleRelativeNote(it->second->degree, normP.oct);
     }
 
     // since these are semi-normaled, lets try the next octave
     it = abs2srn.find(normP.semi + 12);
     if (it != abs2srn.end()) {
-        return ScaleRelativeNotePtr(new ScaleRelativeNote(it->second->degree, normP.oct - 1));
+        return ScaleRelativeNote(it->second->degree, normP.oct - 1);
     }
 
-    // need to make an invalid one
-    return ScaleRelativeNotePtr(new ScaleRelativeNote());
+    // return an invalid one
+    return ScaleRelativeNote();
 }
 
-int Scale::getSemitone(const ScaleRelativeNote& note)
+int Scale::getSemitone(const ScaleRelativeNote& note) const
 {
     // TODO: make smarter
     for (auto it : abs2srn) {
@@ -115,7 +124,7 @@ int Scale::degreesInScale() const
     return int(abs2srn.size());
 }
 
-std::pair<int, int> Scale::normalizeDegree(int degree)
+std::pair<int, int> Scale::normalizeDegree(int degree) const
 {
     int octave = 0;
     while (degree >= degreesInScale()) {
@@ -140,14 +149,14 @@ std::pair<int, int> Scale::normalizeDegree(int degree)
      return octaveAndDegree(srn.octave, srn.degree);
  }
 
-int Scale::invertInScale(int semitone, int inversionAxisDegree)
+int Scale::invertInScale(int semitone, int inversionAxisDegree) const
 {
     auto srn = this->getScaleRelativeNote(semitone);
-    if (!srn->valid) {
+    if (!srn.valid) {
         return invertInScaleChromatic(semitone, inversionAxisDegree);
     }
 
-    int inputDegreeAbs = srn->degree + srn->octave * this->degreesInScale();
+    int inputDegreeAbs = srn.degree + srn.octave * this->degreesInScale();
 
     int invertedDegreesAbs = 2 * inversionAxisDegree - inputDegreeAbs;
 
@@ -159,15 +168,15 @@ int Scale::invertInScale(int semitone, int inversionAxisDegree)
     return invertedSemitones;
 }
 
-int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
+int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose) const
 {
     auto srn = this->getScaleRelativeNote(semitone);
-    if (!srn->valid) {
+    if (!srn.valid) {
         return transposeInScaleChromatic(semitone, scaleDegreesToTranspose);
     }
 
-    int transposedOctave = srn->octave;
-    int transposedDegree = srn->degree;
+    int transposedOctave = srn.octave;
+    int transposedDegree = srn.degree;
 
     transposedDegree += scaleDegreesToTranspose;
     auto normalizedDegree = normalizeDegree(transposedDegree);
@@ -180,20 +189,20 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose)
     return this->getSemitone(*srn2);
 }
 
-int Scale::quantizeToScale(int semitone)
+int Scale::quantizeToScale(int semitone) const 
 {
-    auto srn = this->getScaleRelativeNote(semitone);
-    if (srn->valid) {
+    auto srn1 = this->getScaleRelativeNote(semitone);
+    if (srn1.valid) {
         return semitone;
     }
 
-    srn = this->getScaleRelativeNote(semitone - 1);
-    if (srn->valid) {
+    auto srn2 = this->getScaleRelativeNote(semitone - 1);
+    if (srn2.valid) {
         return semitone - 1;
     }
 
-     srn = this->getScaleRelativeNote(semitone + 1);
-    if (srn->valid) {
+    auto srn3 = this->getScaleRelativeNote(semitone + 1);
+    if (srn3.valid) {
         return semitone + 1;
     }
 
@@ -201,56 +210,56 @@ int Scale::quantizeToScale(int semitone)
     return 0; 
 }
 
-int Scale::transposeInScaleChromatic(int _semitone, int scaleDegreesToTranspose)
+int Scale::transposeInScaleChromatic(int _semitone, int scaleDegreesToTranspose) const
 {
-    assert(!getScaleRelativeNote(_semitone)->valid);
+    assert(!getScaleRelativeNote(_semitone).valid);
 
     int lowerSemitone = _semitone-1;
     int higherSemitone = _semitone+1;
 
     // search for scale relative that bracket us.
     // Note that in some scales these can be a whole step away
-    auto srnPrev = getScaleRelativeNote(lowerSemitone);
+    auto srnPrev = getScaleRelativeNotePtr(lowerSemitone);
     if (!srnPrev->valid) {
         lowerSemitone--;
-        srnPrev = getScaleRelativeNote(lowerSemitone);
+        srnPrev = getScaleRelativeNotePtr(lowerSemitone);
     }
 
-    auto srnNext = getScaleRelativeNote(higherSemitone);
+    auto srnNext = getScaleRelativeNotePtr(higherSemitone);
     if (!srnNext->valid) {
         higherSemitone++;
-        srnNext = getScaleRelativeNote(higherSemitone);
+        srnNext = getScaleRelativeNotePtr(higherSemitone);
     }
 
     assert(srnPrev->valid && srnNext->valid);
 
 
     // If we can fit between these, we will.
-    // If now, we will always round down.
+    // If not, we will always round down.
     const int transposePrev = transposeInScale(lowerSemitone, scaleDegreesToTranspose);
     const int transposeNext = transposeInScale(higherSemitone, scaleDegreesToTranspose);
     return (transposePrev + transposeNext) / 2;
 }
 
-int Scale::invertInScaleChromatic(int _semitone, int inversionDegree)
+int Scale::invertInScaleChromatic(int _semitone, int inversionDegree) const
 {
-    assert(!getScaleRelativeNote(_semitone)->valid);
+    assert(!getScaleRelativeNote(_semitone).valid);
 
     int lowerSemitone = _semitone - 1;
     int higherSemitone = _semitone + 1;
  
     // search for scale relative that bracket us.
     // Note that in some scales these can be a whole step away
-    auto srnPrev = getScaleRelativeNote(lowerSemitone);
+    auto srnPrev = getScaleRelativeNotePtr(lowerSemitone);
     if (!srnPrev->valid) {
         lowerSemitone--;
-        srnPrev = getScaleRelativeNote(lowerSemitone);
+        srnPrev = getScaleRelativeNotePtr(lowerSemitone);
     }
 
-    auto srnNext = getScaleRelativeNote(higherSemitone);
+    auto srnNext = getScaleRelativeNotePtr(higherSemitone);
     if (!srnNext->valid) {
         higherSemitone++;
-        srnNext = getScaleRelativeNote(higherSemitone);
+        srnNext = getScaleRelativeNotePtr(higherSemitone);
     }
 
     // For all the scales we have so far, notes out of scale are
