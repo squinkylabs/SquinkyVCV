@@ -16,6 +16,19 @@ TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, Triad::Inver
     ret->notes[0] = rootClone;
     ret->notes[1] = scale->transposeDegrees(root, 2);
     ret->notes[2] = scale->transposeDegrees(root, 4);
+    switch (inversion) {
+        case Inversion::Root:
+            break;
+        case Inversion::First:
+            ret->notes[1] = scale->transposeOctaves(*ret->notes[1], -1);
+            break;
+        case Inversion::Second:
+            ret->notes[2] = scale->transposeOctaves(*ret->notes[2], -1);
+            break;
+        default:
+            assert(false);
+
+    }
     return ret;
 }
 
