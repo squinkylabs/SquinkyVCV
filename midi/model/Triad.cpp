@@ -1,3 +1,4 @@
+#include "PitchUtils.h"
 #include "Scale.h"
 #include "ScaleRelativeNote.h"
 #include "Triad.h"
@@ -39,4 +40,18 @@ void Triad::assertValid() const
         assert(note != nullptr);
         assert(note->valid);
     }
+}
+
+std::vector<float> Triad::toCv(ScalePtr scale) const
+{
+    std::vector<float> ret;
+    int index = 0;
+    for (auto srn : notes) {
+        // we need an srn to cv, right???
+        int semi = scale->getSemitone(*this->get(index));
+        float pitchCV = PitchUtils::semitoneToCV(semi);
+        ret.push_back(pitchCV);
+        ++index;
+    }
+    return ret;
 }

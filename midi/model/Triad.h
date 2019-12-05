@@ -24,6 +24,8 @@ public:
         assert(index >= 0 && index <= 2);
         return notes[index];
     }
+
+    std::vector<float> toCv(ScalePtr scale) const;
 private:
     Triad();
     std::vector<ScaleRelativeNotePtr> notes;

@@ -53,9 +53,31 @@ static void test2()
     assertEQ(triad->get(2)->octave, -1);
 }
 
+
+
+static void test3()
+{
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c);
+    assert(root.valid);
+    TriadPtr triad = Triad::make(scale, root, Triad::Inversion::Root);
+
+    auto cvs = triad->toCv(scale);
+    assertEQ(cvs.size(), 3);
+    triad->assertValid();
+
+    auto expected = PitchUtils::semitoneToCV(PitchUtils::c);
+    assertEQ(cvs[0], expected);
+    expected = PitchUtils::semitoneToCV(PitchUtils::e);
+    assertEQ(cvs[1], expected);
+    expected = PitchUtils::semitoneToCV(PitchUtils::g);
+    assertEQ(cvs[2], expected);
+}
+
 void testTriad()
 {
     test0();
     test1();
     test2();
+    test3();
 }
