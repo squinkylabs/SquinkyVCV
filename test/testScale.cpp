@@ -127,13 +127,13 @@ static void testGetScaleRelativeNote3()
 static void testGetSemitone1()
 {
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
-    assertEQ(p->getSemitone(ScaleRelativeNote(0, 0)), 0);
-    assertEQ(p->getSemitone(ScaleRelativeNote(1, 0)), 2);
-    assertEQ(p->getSemitone(ScaleRelativeNote(2, 0)), 4);
-    assertEQ(p->getSemitone(ScaleRelativeNote(3, 0)), 5);
-    assertEQ(p->getSemitone(ScaleRelativeNote(4, 0)), 7);
-    assertEQ(p->getSemitone(ScaleRelativeNote(5, 0)), 9);
-    assertEQ(p->getSemitone(ScaleRelativeNote(6, 0)), 11);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(0, 0)), 0);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(1, 0)), 2);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(2, 0)), 4);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(3, 0)), 5);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(4, 0)), 7);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(5, 0)), 9);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(6, 0)), 11);
 }
 
 static void testRoundTrip(ScalePtr scale, int semitone)
@@ -193,13 +193,13 @@ static void testRTBugCases()
 static void testGetSemitone2()
 {
     auto p = Scale::getScale(Scale::Scales::Major, PitchUtils::g);
-    assertEQ(p->getSemitone(ScaleRelativeNote(0, 0)), PitchUtils::g + 0);
-    assertEQ(p->getSemitone(ScaleRelativeNote(1, 0)), PitchUtils::g + 2);
-    assertEQ(p->getSemitone(ScaleRelativeNote(2, 0)), PitchUtils::g + 4);
-    assertEQ(p->getSemitone(ScaleRelativeNote(3, 0)), PitchUtils::g + 5);
-    assertEQ(p->getSemitone(ScaleRelativeNote(4, 0)), PitchUtils::g + 7);
-    assertEQ(p->getSemitone(ScaleRelativeNote(5, 0)), PitchUtils::g + 9);
-    assertEQ(p->getSemitone(ScaleRelativeNote(6, 0)), PitchUtils::g + 11);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(0, 0)), PitchUtils::g + 0);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(1, 0)), PitchUtils::g + 2);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(2, 0)), PitchUtils::g + 4);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(3, 0)), PitchUtils::g + 5);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(4, 0)), PitchUtils::g + 7);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(5, 0)), PitchUtils::g + 9);
+    assertEQ(p->getSemitone(ScaleRelativeNote::_testMakeFromDegreeAndOctave(6, 0)), PitchUtils::g + 11);
 }
 
 static void testMinor()

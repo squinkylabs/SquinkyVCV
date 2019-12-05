@@ -12,11 +12,13 @@ Scale::Scale()
 
 void Scale::init(Scales scale, int keyRoot)
 {
+  
     std::vector<int> notes = getBasePitches(scale);
     int degree = 0;
     for (auto it : notes) {
         const int semi = keyRoot + it;
-        ScaleRelativeNotePtr srn = std::make_shared<ScaleRelativeNote>(degree, 0);
+     //  ScaleRelativeNotePtr srn = std::make_shared<ScaleRelativeNote>(degree, 0);
+        ScaleRelativeNotePtr srn(new ScaleRelativeNote(degree, 0));
         abs2srn[semi] = srn;
         ++degree;
     }
@@ -30,6 +32,7 @@ ScalePtr Scale::getScale(Scale::Scales scale, int root)
     return ScalePtr(p);
 }
 
+#if 0
 ScaleRelativeNotePtr Scale::getScaleRelativeNotePtr(int semitone) const
 {
     auto srn = getScaleRelativeNote(semitone);
@@ -38,6 +41,45 @@ ScaleRelativeNotePtr Scale::getScaleRelativeNotePtr(int semitone) const
         std::make_shared<ScaleRelativeNote>();
     return ret;
 }
+#endif
+
+ScaleRelativeNotePtr Scale::getScaleRelativeNotePtr(int semitone) const
+{
+    auto srn = getScaleRelativeNote(semitone);
+    ScaleRelativeNote* rawNote = nullptr;
+
+
+    rawNote = (srn.valid) ? new ScaleRelativeNote(srn.degree, srn.octave) : new ScaleRelativeNote();
+
+    return ScaleRelativeNotePtr(rawNote);
+  //  ScaleRelativeNotePtr ret(rawNote);
+  //  return ret;
+}
+
+ScaleRelativeNotePtr Scale::clone(const ScaleRelativeNote& note)
+{
+    assert(note.valid);
+    return ScaleRelativeNotePtr(new ScaleRelativeNote(note.degree, note.octave));
+}
+
+ScaleRelativeNotePtr Scale::transposeDegrees(const ScaleRelativeNote& note, int degrees)
+{
+    assert(note.valid);
+    int octaveAndDegree = this->octaveAndDegree(note);
+    octaveAndDegree += degrees;
+    std::pair<int, int> normResult = normalizeDegree(octaveAndDegree);
+    return ScaleRelativeNotePtr(new ScaleRelativeNote(normResult.second, normResult.first));
+}
+
+ScaleRelativeNotePtr Scale::transposeOctaves(const ScaleRelativeNote& note, int octaves)
+{
+    assert(note.valid);
+    int octaveAndDegree = this->octaveAndDegree(note);
+    octaveAndDegree += this->degreesInScale() * octaves;
+    std::pair<int, int> normResult = normalizeDegree(octaveAndDegree);
+    return ScaleRelativeNotePtr(new ScaleRelativeNote(normResult.second, normResult.first));
+}
+
 
 ScaleRelativeNote Scale::getScaleRelativeNote(int semitone) const
 {
@@ -185,8 +227,9 @@ int Scale::transposeInScale(int semitone, int scaleDegreesToTranspose) const
     transposedDegree = normalizedDegree.second;
 
 
-    auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave);
-    return this->getSemitone(*srn2);
+   // auto srn2 = std::make_shared<ScaleRelativeNote>(transposedDegree, transposedOctave);
+    ScaleRelativeNote srn2(transposedDegree, transposedOctave);
+    return this->getSemitone(srn2);
 }
 
 int Scale::quantizeToScale(int semitone) const 

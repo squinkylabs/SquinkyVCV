@@ -54,6 +54,7 @@
     <ClCompile Include="..\..\midi\model\Scale.cpp" />
     <ClCompile Include="..\..\midi\model\ScaleRelativeNote.cpp" />
     <ClCompile Include="..\..\midi\model\SqClipboard.cpp" />
+    <ClCompile Include="..\..\midi\model\Triad.cpp" />
     <ClCompile Include="..\..\midi\view\MidiEditorContext.cpp" />
     <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp" />
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp" />
@@ -132,6 +133,7 @@
     <ClCompile Include="..\..\test\testTestSignal.cpp" />
     <ClCompile Include="..\..\test\testThread.cpp" />
     <ClCompile Include="..\..\test\testTremolo.cpp" />
+    <ClCompile Include="..\..\test\testTriad.cpp" />
     <ClCompile Include="..\..\test\testUndoRedo.cpp" />
     <ClCompile Include="..\..\test\testUtils.cpp" />
     <ClCompile Include="..\..\test\testVCO.cpp" />
@@ -242,6 +244,7 @@
     <ClInclude Include="..\..\midi\model\PitchUtils.h" />
     <ClInclude Include="..\..\midi\model\SqClipboard.h" />
     <ClInclude Include="..\..\midi\model\TimeUtils.h" />
+    <ClInclude Include="..\..\midi\model\Triad.h" />
     <ClInclude Include="..\..\midi\view\MidiEditorContext.h" />
     <ClInclude Include="..\..\midi\view\NoteScreenScale.h" />
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h" />

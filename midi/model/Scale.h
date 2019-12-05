@@ -72,6 +72,11 @@ public:
      */
     int octaveAndDegree(int octave, int degree);
     int octaveAndDegree(const ScaleRelativeNote&);
+
+    ScaleRelativeNotePtr transposeDegrees(const ScaleRelativeNote& note, int degrees);
+    ScaleRelativeNotePtr transposeOctaves(const ScaleRelativeNote& note, int octaves);
+    static ScaleRelativeNotePtr clone(const ScaleRelativeNote& note);
+
 private:
     /**
      * To create a Scale, first you must new one,
