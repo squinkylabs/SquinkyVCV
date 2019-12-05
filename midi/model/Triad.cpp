@@ -47,9 +47,7 @@ std::vector<float> Triad::toCv(ScalePtr scale) const
     std::vector<float> ret;
     int index = 0;
     for (auto srn : notes) {
-        // we need an srn to cv, right???
-        int semi = scale->getSemitone(*this->get(index));
-        float pitchCV = PitchUtils::semitoneToCV(semi);
+        float pitchCV = scale->getPitchCV(*this->get(index));
         ret.push_back(pitchCV);
         ++index;
     }

@@ -32,17 +32,6 @@ ScalePtr Scale::getScale(Scale::Scales scale, int root)
     return ScalePtr(p);
 }
 
-#if 0
-ScaleRelativeNotePtr Scale::getScaleRelativeNotePtr(int semitone) const
-{
-    auto srn = getScaleRelativeNote(semitone);
-    ScaleRelativeNotePtr ret = (srn.valid) ?
-        std::make_shared<ScaleRelativeNote>(srn.degree, srn.octave) :
-        std::make_shared<ScaleRelativeNote>();
-    return ret;
-}
-#endif
-
 ScaleRelativeNotePtr Scale::getScaleRelativeNotePtr(int semitone) const
 {
     auto srn = getScaleRelativeNote(semitone);
@@ -100,6 +89,14 @@ ScaleRelativeNote Scale::getScaleRelativeNote(int semitone) const
     // return an invalid one
     return ScaleRelativeNote();
 }
+
+float Scale::getPitchCV(const ScaleRelativeNote& srn) const
+{
+    int semi = this->getSemitone(srn);
+    float pitchCV = PitchUtils::semitoneToCV(semi);
+    return pitchCV;
+}
+    
 
 int Scale::getSemitone(const ScaleRelativeNote& note) const
 {

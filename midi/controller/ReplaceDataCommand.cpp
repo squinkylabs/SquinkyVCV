@@ -675,23 +675,19 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
                 }
                 // make the triad of the correct inversion
                 TriadPtr triad = Triad::make(scale, srn, inversion);
-                assert(srn.degree == triad->get(0)->degree);
-                assert(srn.octave == triad->get(0)->octave);
+                // and convert back to native pitch CV
+                auto cvs = triad->toCv(scale);
+
 
                 // now convert it back to notes
                 MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
                 MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
 
-                const int semitoneThird = scale->getSemitone(*triad->get(1));
-                third->pitchCV = PitchUtils::semitoneToCV(semitoneThird);
-
-                const int semitoneFifth = scale->getSemitone(*triad->get(2));
-                fifth->pitchCV = PitchUtils::semitoneToCV(semitoneFifth);
-
+                assertEQ(cvs[0], note->pitchCV);
+                third->pitchCV = cvs[1];
+                fifth->pitchCV = cvs[2];
                 toAdd.push_back(third);
                 toAdd.push_back(fifth);
-
-               //toAdd.push_back(triad->get(1))
             }
         }
     }

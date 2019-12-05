@@ -41,6 +41,8 @@ public:
     ScaleRelativeNote getScaleRelativeNote(int semitone) const;
     ScaleRelativeNotePtr getScaleRelativeNotePtr(int semitone) const;
     int getSemitone(const ScaleRelativeNote&) const;
+    float getPitchCV(const ScaleRelativeNote&) const;
+    
 
     /**
      * Input and output are regular chromatic semitones,
