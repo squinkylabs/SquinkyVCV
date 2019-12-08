@@ -53,3 +53,62 @@ std::vector<float> Triad::toCv(ScalePtr scale) const
     }
     return ret;
 }
+
+TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad)
+{
+    TriadPtr best = make(scale, root, Inversion::Root);
+    float bestPenalty = ratePair(scale, previousTriad, *best);
+    printf("root penalty = %f\n", bestPenalty);
+
+    TriadPtr candidate = make(scale, root, Inversion::First);
+    float candidatePenalty = ratePair(scale, previousTriad, *candidate);
+
+   printf("first penalty = %f\n", candidatePenalty);
+    if (candidatePenalty < bestPenalty) {
+        best = candidate;
+        bestPenalty = candidatePenalty;
+    }
+
+    candidate = make(scale, root, Inversion::Second);
+    candidatePenalty = ratePair(scale, previousTriad, *candidate);
+
+   printf("seocnd penalty = %f\n", candidatePenalty);
+    if (candidatePenalty < bestPenalty) {
+        best = candidate;
+        bestPenalty = candidatePenalty;
+    }
+    fflush(stdout);
+
+    return best;
+}
+
+float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
+{
+    float penalty = 0;
+
+    const auto firstCvs = first.toCv(scale);
+    const auto secondCvs = second.toCv(scale);
+    if (isParallel(firstCvs, secondCvs)) {
+        penalty += 10;
+    }
+    penalty += sumDistance(firstCvs, secondCvs);
+    return penalty;
+}
+
+bool Triad::isParallel(const std::vector<float>& first, const std::vector<float>& second)
+{
+    assert(first.size() == 3 && second.size() == 3);
+    const bool dir0 = first[0] > second[0];
+    const bool dir1 = first[1] > second[1];
+    const bool dir2 = first[2] > second[2];
+
+    return dir0 == dir1 && dir1 == dir2;
+}
+
+float Triad::sumDistance(const std::vector<float>& first, const std::vector<float>& second)
+{
+    assert(first.size() == 3 && second.size() == 3);
+    return std::abs(first[0] - second[0]) +
+        std::abs(first[1] - second[1]) +
+        std::abs(first[2] - second[2]);
+}

@@ -130,5 +130,14 @@ private:
         std::shared_ptr<MidiSequencer> seq,
         Xform xform,
         bool canChangeLength);
+
+     static ReplaceDataCommandPtr makeMakeTriadsCommandNorm(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        TriadType,
+        ScalePtr);
+     static ReplaceDataCommandPtr makeMakeTriadsCommandAuto(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        TriadType,
+        ScalePtr);
 };
 

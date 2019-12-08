@@ -588,6 +588,26 @@ static void testTriads()
     printf("\nabout to do first inverion\n");
     testTriads(ReplaceDataCommand::TriadType::FirstInversion);
     testTriads(ReplaceDataCommand::TriadType::SecondInversion);
+   
+}
+
+static void testAutoTriads()
+{
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::oneQ1, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    auto it = seq->context->getTrack()->begin();
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->pitchCV, 3.0f);
+
+    seq->editor->selectAll();
+    const int origSize = seq->context->getTrack()->size();
+    assertEQ(origSize, 1 + 1);
+
+    auto scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    auto cmd = ReplaceDataCommand::makeMakeTriadsCommand(seq, ReplaceDataCommand::TriadType::Auto, scale);
+    cmd->execute(seq, nullptr);
+    assertEQ(seq->context->getTrack()->size(), 3 + 1);
 }
 
 void testReplaceCommand()
@@ -609,4 +629,5 @@ void testReplaceCommand()
     testReversePitch();
     testChopNotes();
     testTriads();
+    testAutoTriads();
 }

@@ -74,10 +74,28 @@ static void test3()
     assertEQ(cvs[2], expected);
 }
 
+
+static void test4()
+{
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c);
+    assert(root.valid);
+    TriadPtr firstTriad = Triad::make(scale, root, Triad::Inversion::Root);
+
+    ScaleRelativeNote nextRoot = scale->getScaleRelativeNote(PitchUtils::d);
+    TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad);
+
+    assert(secondTriad);
+    secondTriad->assertValid();
+
+    assert(false);
+}
+
 void testTriad()
 {
     test0();
     test1();
     test2();
     test3();
+    test4();
 }

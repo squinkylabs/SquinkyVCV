@@ -640,7 +640,67 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
     return ret;
 }
 
+
 ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
+    std::shared_ptr<MidiSequencer> seq,
+    TriadType type,
+    ScalePtr scale)
+{
+    ReplaceDataCommandPtr ret = nullptr;
+    switch (type) {
+        case TriadType::RootPosition:
+        case TriadType::FirstInversion:
+        case TriadType::SecondInversion:
+            ret = makeMakeTriadsCommandNorm(seq, type, scale);
+            break;
+        default:
+            assert(false);
+            printf("bad triad type\n"); fflush(stdout);
+            ret = makeMakeTriadsCommandNorm(seq, type, scale);
+            break;
+        case TriadType::Auto:
+            ret = makeMakeTriadsCommandAuto(seq, type, scale);
+    }
+    return ret;
+}
+
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandAuto(
+    std::shared_ptr<MidiSequencer> seq,
+    TriadType type,
+    ScalePtr scale)
+{
+    assert(type == TriadType::Auto);
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+    for (MidiSelectionModel::const_reverse_iterator it = seq->selection->rbegin(); it != seq->selection->rend(); ++it) {
+        MidiEventPtr event = *it;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+
+        if (note) {
+            const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+            ScaleRelativeNote srn = scale->getScaleRelativeNote(origSemitone);
+
+            // only make triads from scale tones
+            if (srn.valid) {
+                assert(false);
+            }
+        }
+    }
+     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "make triads";
+    return ret;
+
+}
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandNorm(
     std::shared_ptr<MidiSequencer> seq,
     TriadType type,
     ScalePtr scale)
