@@ -87,8 +87,6 @@ static void test4()
 
     assert(secondTriad);
     secondTriad->assertValid();
-
-    assert(false);
 }
 
 void testTriad()

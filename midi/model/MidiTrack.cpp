@@ -290,6 +290,9 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
         case TestContent::eightQNotes:
             ret = makeTest1(lock);
             break;
+        case TestContent::eightQNotesCMaj:
+            ret = makeTestCmaj(lock);
+            break;
         case TestContent::empty:
             ret = makeTestEmpty(lock);
             break;
@@ -311,6 +314,7 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
         default:
             assert(false);
     }
+    ret->assertValid();
     return ret;
 }
 /**
@@ -335,6 +339,74 @@ MidiTrackPtr MidiTrack::makeTest1(std::shared_ptr<MidiLock> lock)
     }
 
     track->insertEnd(time);
+    return track;
+}
+
+MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
+{
+    auto track = std::make_shared<MidiTrack>(lock);
+    MidiEvent::time_t time = 0;
+
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        ev->startTime = time;
+        ev->setPitch(3, PitchUtils::c);
+        ev->duration = .5;
+        track->insertEvent(ev);
+    }
+
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(3, PitchUtils::d);
+        track->insertEvent(ev);
+    }
+
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(3, PitchUtils::e);
+        track->insertEvent(ev);
+    }
+
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(3, PitchUtils::f);
+        track->insertEvent(ev);
+    }
+
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(3, PitchUtils::g);
+        track->insertEvent(ev);
+    }
+
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(3, PitchUtils::a);
+        track->insertEvent(ev);
+    }
+
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(3, PitchUtils::b);
+        track->insertEvent(ev);
+    }
+
+
+    track->insertEnd(time + 1);
+
+    track->assertValid();
     return track;
 }
 

@@ -674,6 +674,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandAuto(
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 
+    TriadPtr triad;     // the last one we made
     for (MidiSelectionModel::const_reverse_iterator it = seq->selection->rbegin(); it != seq->selection->rend(); ++it) {
         MidiEventPtr event = *it;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
@@ -683,8 +684,28 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandAuto(
             ScaleRelativeNote srn = scale->getScaleRelativeNote(origSemitone);
 
             // only make triads from scale tones
-            if (srn.valid) {
-                assert(false);
+            if (!srn.valid) {
+                triad = nullptr;            // start over on non-scale
+            } else {
+                toRemove.push_back(event);                  // when we make a triad, remove the orig
+                if (!triad) {
+                    // if we are the first one (from the end), use root
+                    triad = Triad::make(scale, srn, Triad::Inversion::Root);
+                } else {
+                    triad = Triad::make(scale, srn, *triad);
+                }
+
+                auto cvs = triad->toCv(scale);
+                MidiNoteEventPtr root = std::make_shared<MidiNoteEvent>(*note);
+                MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
+                MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
+
+                root->pitchCV = cvs[0];
+                third->pitchCV = cvs[1];
+                fifth->pitchCV = cvs[2];
+                toAdd.push_back(root);
+                toAdd.push_back(third);
+                toAdd.push_back(fifth);
             }
         }
     }
