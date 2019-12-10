@@ -692,7 +692,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandAuto(
                     // if we are the first one (from the end), use root
                     triad = Triad::make(scale, srn, Triad::Inversion::Root);
                 } else {
-                    triad = Triad::make(scale, srn, *triad);
+                    triad = Triad::make(scale, srn, *triad, false);
                 }
 
                 auto cvs = triad->toCv(scale);

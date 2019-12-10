@@ -82,11 +82,73 @@ static void test4()
     assert(root.valid);
     TriadPtr firstTriad = Triad::make(scale, root, Triad::Inversion::Root);
 
+    // our normal finder (no octave switch) does parallel clock chords.
     ScaleRelativeNote nextRoot = scale->getScaleRelativeNote(PitchUtils::d);
-    TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad);
+    TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad, false);
 
     assert(secondTriad);
     secondTriad->assertValid();
+
+    auto cvs = secondTriad->toCv(scale);
+    assertEQ(cvs.size(), 3);
+
+    // we expect to get second inversion short c->d. Both inversions avoid parallel.
+    auto expected0 = PitchUtils::semitoneToCV(PitchUtils::d);
+    assertEQ(cvs[0], expected0);
+    auto expected1 = PitchUtils::semitoneToCV(PitchUtils::f);
+    assertEQ(cvs[1], expected1);
+    auto expected2 = PitchUtils::semitoneToCV(PitchUtils::a) - 1;
+    assertEQ(cvs[2], expected2);
+}
+
+static void test4b()
+{
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::d);
+    assert(root.valid);
+    TriadPtr firstTriad = Triad::make(scale, root, Triad::Inversion::Root);
+
+    // our normal finder (no octave switch) does parallel clock chords.
+    ScaleRelativeNote nextRoot = scale->getScaleRelativeNote(PitchUtils::c);
+    TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad, false);
+
+    assert(secondTriad);
+    secondTriad->assertValid();
+
+    auto cvs = secondTriad->toCv(scale);
+    assertEQ(cvs.size(), 3);
+
+    auto expected0 = PitchUtils::semitoneToCV(PitchUtils::c);
+    assertEQ(cvs[0], expected0);
+    auto expected1 = PitchUtils::semitoneToCV(PitchUtils::e);
+    assertEQ(cvs[1], expected1);
+    auto expected2 = PitchUtils::semitoneToCV(PitchUtils::g);
+    assertEQ(cvs[2], expected2);
+}
+
+static void test5()
+{
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::d);
+    assert(root.valid);
+    TriadPtr firstTriad = Triad::make(scale, root, Triad::Inversion::Root);
+
+    // our normal finder (no octave switch) does parallel clock chords.
+    ScaleRelativeNote nextRoot = scale->getScaleRelativeNote(PitchUtils::c);
+    TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad, true);
+
+    assert(secondTriad);
+    secondTriad->assertValid();
+
+    auto cvs = secondTriad->toCv(scale);
+    assertEQ(cvs.size(), 3);
+
+    auto expected0 = PitchUtils::semitoneToCV(PitchUtils::c) + 1;
+    assertEQ(cvs[0], expected0);
+    auto expected1 = PitchUtils::semitoneToCV(PitchUtils::e);
+    assertEQ(cvs[1], expected1);
+    auto expected2 = PitchUtils::semitoneToCV(PitchUtils::g);
+    assertEQ(cvs[2], expected2);
 }
 
 void testTriad()
@@ -96,4 +158,6 @@ void testTriad()
     test2();
     test3();
     test4();
+    test4b();
+    test5();
 }

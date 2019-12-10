@@ -42,6 +42,12 @@ void Triad::assertValid() const
     }
 }
 
+void Triad::transposeOctave(ScalePtr scale, int index, int octave)
+{
+    auto srn = notes[index];
+    notes[index] = scale->transposeOctaves(*srn, octave);
+}
+
 std::vector<float> Triad::toCv(ScalePtr scale) const
 {
     std::vector<float> ret;
@@ -54,16 +60,66 @@ std::vector<float> Triad::toCv(ScalePtr scale) const
     return ret;
 }
 
-TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad)
+TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad, bool searchOctaves)
+{
+    return searchOctaves ?
+        makeOctaves(scale, root, previousTriad) :
+        makeNorm(scale, root, previousTriad);
+}
+
+TriadPtr Triad::makeOctaves(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad)
 {
     TriadPtr best = make(scale, root, Inversion::Root);
     float bestPenalty = ratePair(scale, previousTriad, *best);
-    printf("root penalty = %f\n", bestPenalty);
 
-    TriadPtr candidate = make(scale, root, Inversion::First);
+    const int beginOctave = -1;
+    const int endOctave = 1;
+    for (int rootOctave = beginOctave; rootOctave <= endOctave; ++rootOctave) {
+        for (int thirdOctave = beginOctave; thirdOctave <= endOctave; ++thirdOctave) {
+            for (int fifthOctave = beginOctave; fifthOctave <= endOctave; ++fifthOctave)
+            {
+                for (int iinv = int(Inversion::Root); iinv <= int(Inversion::Second); ++iinv) {
+                    Inversion inv = Inversion(iinv);
+                    TriadPtr candidate = make(scale, root, Inversion::Root);
+                    candidate->transposeOctave(scale, 0, rootOctave);
+                    candidate->transposeOctave(scale, 1, thirdOctave);
+                    candidate->transposeOctave(scale, 2, fifthOctave);
+                    float candidatePenalty = ratePair(scale, previousTriad, *candidate);
+                  //  printf("root penalty oct %d = %.2f\n", octave, candidatePenalty);
+                    if (candidatePenalty < bestPenalty) {
+                        best = candidate;
+                        bestPenalty = candidatePenalty;
+                    }
+                }
+            }
+        }
+    }
+
+    return best;
+}
+
+
+
+TriadPtr Triad::makeNorm(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad)
+{
+    TriadPtr best = make(scale, root, Inversion::Root);
+    float bestPenalty = ratePair(scale, previousTriad, *best);
+
+
+    //ScaleRelativeNotePtr root = scale->transposeOctaves(_root, octave);
+
+    TriadPtr candidate = make(scale, root, Inversion::Root);
     float candidatePenalty = ratePair(scale, previousTriad, *candidate);
+  
+    if (candidatePenalty < bestPenalty) {
+        best = candidate;
+        bestPenalty = candidatePenalty;
+    }
 
-   printf("first penalty = %f\n", candidatePenalty);
+
+    candidate = make(scale, root, Inversion::First);
+    candidatePenalty = ratePair(scale, previousTriad, *candidate);
+
     if (candidatePenalty < bestPenalty) {
         best = candidate;
         bestPenalty = candidatePenalty;
@@ -72,15 +128,16 @@ TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, const Triad&
     candidate = make(scale, root, Inversion::Second);
     candidatePenalty = ratePair(scale, previousTriad, *candidate);
 
-   printf("seocnd penalty = %f\n", candidatePenalty);
     if (candidatePenalty < bestPenalty) {
         best = candidate;
         bestPenalty = candidatePenalty;
     }
+
     fflush(stdout);
 
     return best;
 }
+
 
 float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
 {
@@ -89,6 +146,7 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
     const auto firstCvs = first.toCv(scale);
     const auto secondCvs = second.toCv(scale);
     if (isParallel(firstCvs, secondCvs)) {
+        printf("is parallel\n");
         penalty += 10;
     }
     penalty += sumDistance(firstCvs, secondCvs);
@@ -102,7 +160,16 @@ bool Triad::isParallel(const std::vector<float>& first, const std::vector<float>
     const bool dir1 = first[1] > second[1];
     const bool dir2 = first[2] > second[2];
 
-    return dir0 == dir1 && dir1 == dir2;
+    bool ret = (dir0 == dir1) && (dir1 == dir2);
+#if 0
+    printf("(%.2f, %.2f) (%.2f, %.2f) (%.2f, %.2f) ret = %d\n",
+        first[0], second[0],
+        first[1], second[1],
+        first[2], second[2],
+        ret);
+#endif
+
+    return ret;
 }
 
 float Triad::sumDistance(const std::vector<float>& first, const std::vector<float>& second)
