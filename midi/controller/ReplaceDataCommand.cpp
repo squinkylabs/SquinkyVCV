@@ -651,6 +651,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
         case TriadType::RootPosition:
         case TriadType::FirstInversion:
         case TriadType::SecondInversion:
+ 
             ret = makeMakeTriadsCommandNorm(seq, type, scale);
             break;
         default:
@@ -658,6 +659,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
             printf("bad triad type\n"); fflush(stdout);
             ret = makeMakeTriadsCommandNorm(seq, type, scale);
             break;
+        case TriadType::Auto2:
         case TriadType::Auto:
             ret = makeMakeTriadsCommandAuto(seq, type, scale);
     }
@@ -670,7 +672,8 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandAuto(
     TriadType type,
     ScalePtr scale)
 {
-    assert(type == TriadType::Auto);
+    assert((type == TriadType::Auto) || (type == TriadType::Auto2));
+    const bool searchOctaves = (type == TriadType::Auto2);
     std::vector<MidiEventPtr> toRemove;
     std::vector<MidiEventPtr> toAdd;
 
@@ -692,7 +695,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandAuto(
                     // if we are the first one (from the end), use root
                     triad = Triad::make(scale, srn, Triad::Inversion::Root);
                 } else {
-                    triad = Triad::make(scale, srn, *triad, false);
+                    triad = Triad::make(scale, srn, *triad, searchOctaves);
                 }
 
                 auto cvs = triad->toCv(scale);

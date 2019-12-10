@@ -628,6 +628,49 @@ static void testAutoTriads()
   //  assertClose(note->pitchCV, expectedFifth, .0001f);
 }
 
+
+
+static void testAutoTriads2()
+{
+    printf("\nenter testAutoTriads\n");
+    MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0);
+    MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
+
+    auto it = seq->context->getTrack()->begin();
+    MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(it->second);
+    assertEQ(note->pitchCV, -1.f);
+
+    seq->editor->selectAll();
+    const int origSize = seq->context->getTrack()->size();
+    assertEQ(origSize, 1 + 7);
+
+    auto scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    auto cmd = ReplaceDataCommand::makeMakeTriadsCommand(seq, ReplaceDataCommand::TriadType::Auto2, scale);
+    cmd->execute(seq, nullptr);
+    assertEQ(seq->context->getTrack()->size(), 3 * 7 + 1);
+
+     // C
+    it = seq->context->getTrack()->begin();
+    note = safe_cast<MidiNoteEvent>(it->second);
+    int expectedSemitone = PitchUtils::c + 12 * 4;
+    int semitone = PitchUtils::cvToSemitone(note->pitchCV);
+    assertEQ(semitone, expectedSemitone);
+
+    //E
+    ++it;
+    note = safe_cast<MidiNoteEvent>(it->second);
+    int expectedThird = PitchUtils::e + 12 * 4;
+    semitone = PitchUtils::cvToSemitone(note->pitchCV);
+    assertEQ(semitone, expectedThird);
+
+    // G
+    ++it;
+    note = safe_cast<MidiNoteEvent>(it->second);
+    int expectedFifth = PitchUtils::g + 12 * 4;
+    semitone = PitchUtils::cvToSemitone(note->pitchCV);
+    assertEQ(semitone, expectedFifth);
+}
+
 void testReplaceCommand()
 {
     test0();
@@ -648,4 +691,5 @@ void testReplaceCommand()
     testChopNotes();
     testTriads();
     testAutoTriads();
+    testAutoTriads2();
 }

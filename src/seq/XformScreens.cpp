@@ -236,7 +236,7 @@ void XFormQuantizePitch::execute()
 //****************************** Make Triads 
 
 std::vector<std::string> triads = {
-    "Root Position", "First Inversion", "Second Inversion", "Auto"  
+    "Root Position", "First Inversion", "Second Inversion", "Auto", "Auto 2"  
 };
 
 

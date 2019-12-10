@@ -78,8 +78,8 @@ TriadPtr Triad::makeOctaves(ScalePtr scale, const ScaleRelativeNote& root, const
         for (int thirdOctave = beginOctave; thirdOctave <= endOctave; ++thirdOctave) {
             for (int fifthOctave = beginOctave; fifthOctave <= endOctave; ++fifthOctave)
             {
-                for (int iinv = int(Inversion::Root); iinv <= int(Inversion::Second); ++iinv) {
-                    Inversion inv = Inversion(iinv);
+               // for (int iinv = int(Inversion::Root); iinv <= int(Inversion::Second); ++iinv) {
+                 //   Inversion inv = Inversion(iinv);
                     TriadPtr candidate = make(scale, root, Inversion::Root);
                     candidate->transposeOctave(scale, 0, rootOctave);
                     candidate->transposeOctave(scale, 1, thirdOctave);
@@ -90,7 +90,7 @@ TriadPtr Triad::makeOctaves(ScalePtr scale, const ScaleRelativeNote& root, const
                         best = candidate;
                         bestPenalty = candidatePenalty;
                     }
-                }
+                //}
             }
         }
     }
@@ -146,7 +146,6 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
     const auto firstCvs = first.toCv(scale);
     const auto secondCvs = second.toCv(scale);
     if (isParallel(firstCvs, secondCvs)) {
-        printf("is parallel\n");
         penalty += 10;
     }
     penalty += sumDistance(firstCvs, secondCvs);
