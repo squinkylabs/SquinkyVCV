@@ -34,6 +34,26 @@ static void testPar1()
     }
 }
 
+
+static void testPar2()
+{
+    printf("testPar2\n");
+    {
+        std::vector<float> first = {1.1f, 2.1f, 3.1f};
+        std::vector<float> second = {1.1f, 2.1f, 3.1f};
+        assert(!Triad::isParallel(first, second));
+        assert(!Triad::isParallel(second, first));
+    }
+#if 0
+    {
+        std::vector<float> first = {1.1f, 2.1f, 3.1f + PitchUtils::semitone / 100};
+        std::vector<float> second = {1.1f, 2.1f, 3.1f};
+        assert(!Triad::isParallel(first, second));
+        assert(!Triad::isParallel(second, first));
+    }
+#endif
+}
+
 static void testMakeRootPos()
 {
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c_);
@@ -183,6 +203,7 @@ static void test5()
 void testTriad()
 {
     testPar1();
+    testPar2();
     testMakeRootPos();
     testMakeFirstPos();
     testMakeSecondPos();

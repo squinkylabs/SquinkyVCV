@@ -62,6 +62,7 @@ std::vector<float> Triad::toCv(ScalePtr scale) const
 
 TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad, bool searchOctaves)
 {
+  //  printf("**** Triad::Make\n");
     return searchOctaves ?
         makeOctaves(scale, root, previousTriad) :
         makeNorm(scale, root, previousTriad);
@@ -155,13 +156,17 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
 bool Triad::isParallel(const std::vector<float>& first, const std::vector<float>& second)
 {
     assert(first.size() == 3 && second.size() == 3);
-    const bool dir0 = first[0] > second[0];
-    const bool dir1 = first[1] > second[1];
-    const bool dir2 = first[2] > second[2];
+    const bool up0 = first[0] < second[0];
+    const bool up1 = first[1] < second[1];
+    const bool up2 = first[2] < second[2];
 
-    bool ret = (dir0 == dir1) && (dir1 == dir2);
+    const bool dn0 = first[0] > second[0];
+    const bool dn1 = first[1] > second[1];
+    const bool dn2 = first[2] > second[2];
+
+    bool ret = (up0 && up1 && up2) || (dn0 && dn1 && dn2);
 #if 0
-    printf("(%.2f, %.2f) (%.2f, %.2f) (%.2f, %.2f) ret = %d\n",
+    printf("isPar (%.2f, %.2f) (%.2f, %.2f) (%.2f, %.2f) ret = %d\n",
         first[0], second[0],
         first[1], second[1],
         first[2], second[2],
