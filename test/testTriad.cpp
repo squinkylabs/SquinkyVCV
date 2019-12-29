@@ -5,7 +5,36 @@
 #include "Triad.h"
 #include "asserts.h"
 
-static void test0()
+static void testPar1()
+{
+    {
+        std::vector<float> first = {1, 2, 3};
+        std::vector<float> second = {1.1f, 2.1f, 3.1f};
+        assert(Triad::isParallel(first, second));
+        assert(Triad::isParallel(second, first));
+    }
+
+    {
+        std::vector<float> first = {1, 2, 3};
+        std::vector<float> second = {1.1f, 2.1f, 2.9f};
+        assert(!Triad::isParallel(first, second));
+        assert(!Triad::isParallel(second, first));
+    }
+    {
+        std::vector<float> first = {1, 2, 3};
+        std::vector<float> second = {1.1f, 1.9f, 3.1f};
+        assert(!Triad::isParallel(first, second));
+        assert(!Triad::isParallel(second, first));
+    }
+    {
+        std::vector<float> first = {1, 2, 3};
+        std::vector<float> second = {.9f, 2.1f, 3.1f};
+        assert(!Triad::isParallel(first, second));
+        assert(!Triad::isParallel(second, first));
+    }
+}
+
+static void testMakeRootPos()
 {
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c_);
     ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c_);
@@ -21,7 +50,7 @@ static void test0()
     assertEQ(triad->get(2)->octave, 0);
 }
 
-static void test1()
+static void testMakeFirstPos()
 {
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c_);
     ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c_);
@@ -37,7 +66,7 @@ static void test1()
     assertEQ(triad->get(2)->octave, 0);
 }
 
-static void test2()
+static void testMakeSecondPos()
 {
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c_);
     ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c_);
@@ -153,9 +182,10 @@ static void test5()
 
 void testTriad()
 {
-    test0();
-    test1();
-    test2();
+    testPar1();
+    testMakeRootPos();
+    testMakeFirstPos();
+    testMakeSecondPos();
     test3();
     test4();
     test4b();
