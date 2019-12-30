@@ -477,15 +477,6 @@
     <ClCompile Include="..\..\test\testNewSongDataCommand.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testDiatonicUtils.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\midi\model\DiatonicUtils.cpp">
-      <Filter>Source Files\midi\model</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\testDiatonicUtils2.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\test\testScale.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
@@ -907,9 +898,6 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\controller\NewSongDataCommand.h">
       <Filter>Header Files\midi\controller</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\midi\model\DiatonicUtils.h">
-      <Filter>Header Files\midi\model</Filter>
     </ClInclude>
     <ClInclude Include="..\..\midi\model\Scale.h">
       <Filter>Header Files\midi\model</Filter>

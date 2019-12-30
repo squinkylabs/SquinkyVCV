@@ -78,8 +78,6 @@ extern void testAudition();
 extern void testStepRecordInput();
 extern void testMidiFile();
 extern void testNewSongDataDataCommand();
-extern void testDiatonicUtils();
-extern void testDiatonicUtils2();
 extern void testScale();
 extern void testTriad();
 
@@ -174,8 +172,6 @@ int main(int argc, char ** argv)
     testUndoRedo();
     testMidiViewport();
     testScale();
-    testDiatonicUtils2();
-    testDiatonicUtils();
     testTriad();
  
     testMidiFile();

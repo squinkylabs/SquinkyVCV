@@ -64,7 +64,7 @@ std::pair<int, Scale::Scales> InputScreen::getKeysig(int index)
     const int iRoot = getValueInt(index);
     const int iMode = getValueInt(index+1);
     const Scale::Scales mode = Scale::Scales(iMode);
-    DEBUG("get keySig = %d (root) %d (mode)", iRoot, iMode);
+  //  DEBUG("get keySig = %d (root) %d (mode)", iRoot, iMode);
     return std::make_pair(iRoot, mode);
 }
 
@@ -118,7 +118,7 @@ void InputScreen::addPitchInput(
    
     ::rack::math::Vec size = box.size;
     size.y = controlRow(2);
-    DEBUG("add pitch offset abs, height=%.2f ok = %.2f", size.y, okCancelY);
+    // DEBUG("add pitch offset abs, height=%.2f ok = %.2f", size.y, okCancelY);
 
     auto p = new PitchInputWidget(pos2, size, label, false);
     p->setCallback(callback);
@@ -138,7 +138,7 @@ void InputScreen::addPitchOffsetInput(
 
     ::rack::math::Vec size = box.size;
     size.y = controlRow(2);
-    DEBUG("add pitch offset, height=%.2f ok = %.2f", size.y, okCancelY);
+    // DEBUG("add pitch offset, height=%.2f ok = %.2f", size.y, okCancelY);
 
     auto p = new PitchInputWidget(pos2, size, label, true);
     p->setCallback(callback);

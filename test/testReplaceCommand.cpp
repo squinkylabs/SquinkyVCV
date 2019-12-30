@@ -585,7 +585,6 @@ static void testTriads(ReplaceDataCommand::TriadType type)
 static void testTriads()
 {
     testTriads(ReplaceDataCommand::TriadType::RootPosition);
-    printf("\nabout to do first inverion\n");
     testTriads(ReplaceDataCommand::TriadType::FirstInversion);
     testTriads(ReplaceDataCommand::TriadType::SecondInversion);
    
@@ -593,7 +592,6 @@ static void testTriads()
 
 static void testAutoTriads()
 {
-    printf("\nenter testAutoTriads\n");
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0);
     MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
 
@@ -632,7 +630,6 @@ static void testAutoTriads()
 
 static void testAutoTriads2()
 {
-    printf("\nenter testAutoTriads\n");
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0);
     MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
 

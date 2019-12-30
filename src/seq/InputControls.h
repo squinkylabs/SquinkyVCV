@@ -14,7 +14,7 @@ class Button2 : public ::rack::ui::Button
 {
 public:
     void onAction(const ::rack::event::Action& e) override {
-        DEBUG("onAction from button");
+        // DEBUG("onAction from button");
         if (handler) {
             handler();
         }

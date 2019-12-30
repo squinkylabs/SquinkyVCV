@@ -11,7 +11,7 @@ void InputPopupMenuParamWidget::draw(const Widget::DrawArgs &args)
 void InputPopupMenuParamWidget::setValue(float v)
 {
     int i = int(std::round(v));
-    if (i < 0 || i >= labels.size()) {
+    if (i < 0 || i >= int(labels.size())) {
         WARN("popup set value illegal");
         assert(false);
         return;

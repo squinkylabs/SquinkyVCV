@@ -62,7 +62,6 @@ std::vector<float> Triad::toCv(ScalePtr scale) const
 
 TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad, bool searchOctaves)
 {
-  //  printf("**** Triad::Make\n");
     return searchOctaves ?
         makeOctaves(scale, root, previousTriad) :
         makeNorm(scale, root, previousTriad);
@@ -147,7 +146,7 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
     const auto firstCvs = first.toCv(scale);
     const auto secondCvs = second.toCv(scale);
     if (isParallel(firstCvs, secondCvs)) {
-        penalty += 10;
+        penalty += 5;           // 10 seemed too high
     }
     penalty += sumDistance(firstCvs, secondCvs);
     return penalty;
