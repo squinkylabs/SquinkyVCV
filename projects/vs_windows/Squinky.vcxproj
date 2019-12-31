@@ -49,6 +49,7 @@
     <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSequencer.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
+    <ClCompile Include="..\..\midi\model\MidiSong4.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
     <ClCompile Include="..\..\midi\model\Scale.cpp" />
     <ClCompile Include="..\..\midi\model\ScaleRelativeNote.cpp" />
@@ -230,6 +231,7 @@
     <ClInclude Include="..\..\midi\controller\StepRecordInput.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
     <ClInclude Include="..\..\midi\model\ISeqSettings.h" />
+    <ClInclude Include="..\..\midi\model\MidiSong4.h" />
     <ClInclude Include="..\..\midi\model\Scale.h" />
     <ClInclude Include="..\..\midi\model\ScaleRelativeNote.h" />
     <ClInclude Include="..\..\midi\model\SqMidiEvent.h" />

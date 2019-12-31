@@ -31,6 +31,8 @@
 #define _MIXM
 #define _DTMODULE
 
+#define _SEQ4
+
 using namespace ::rack;
 
 extern plugin::Plugin *pluginInstance;
@@ -88,6 +90,9 @@ extern Model *modelKSModule;
 #endif
 #ifdef _SEQ
 extern Model *modelSequencerModule;
+#endif
+#ifdef _SEQ4
+extern Model *modelSequencer4Module;
 #endif
 #ifdef _SLEW
 extern Model *modelSlew4Module;

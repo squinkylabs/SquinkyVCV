@@ -107,6 +107,9 @@ void init (::rack::Plugin *p)
 #ifdef _DTMODULE
     p->addModel(modelDrumTriggerModule);
 #endif
+#ifdef _SEQ4
+p->addModel(modelSequencer4Module);
+#endif
 
 
 }

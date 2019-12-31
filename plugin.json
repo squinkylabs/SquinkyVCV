@@ -90,6 +90,14 @@
 			"tags": ["Sequencer"]
 		},
 		{
+			"slug": "squinkylabs-sequencer4",
+			"name": "Seq4x4",
+			"description": "Sequence player",
+			"disabled": true,
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/sq2.md",
+			"tags": ["Sequencer"]
+		},
+		{
 			"slug": "squinkylabs-super",
 			"name": "Saws",
 			"description": "Super saw VCO emulation",
