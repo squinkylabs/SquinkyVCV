@@ -1,11 +1,13 @@
 
 class IMidiPlayerHost4;
 class MidiSong4;
+class MidiTrackPlayer;
 
 #include <memory>
 #include <vector>
-class MidiTrackPlayer;
+
 using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
+using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
 
 class MidiPlayer4
 {
@@ -21,7 +23,17 @@ public:
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
     double getCurrentLoopIterationStart() const;
+
+    /**
+     * resets all internal playback state.
+     * @param clearGate will set the host's gate low, if true
+     */
+    void reset(bool clearGates);
 private:
     std::vector<MidiTrackPlayerPtr> trackPlayers;
+    MidiSong4Ptr song;
+    std::shared_ptr<IMidiPlayerHost4> host;
+
+    void updateToMetricTimeInternal(double, float);
 
 };
