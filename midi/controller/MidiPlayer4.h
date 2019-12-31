@@ -3,6 +3,9 @@ class IMidiPlayerHost4;
 class MidiSong4;
 
 #include <memory>
+#include <vector>
+class MidiTrackPlayer;
+using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
 
 class MidiPlayer4
 {
@@ -18,5 +21,7 @@ public:
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
     double getCurrentLoopIterationStart() const;
+private:
+    std::vector<MidiTrackPlayerPtr> trackPlayers;
 
 };
