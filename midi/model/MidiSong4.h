@@ -15,13 +15,22 @@ public:
     void assertValid() const;
     float getTrackLength(int trackNum) const;
 
-
+    /**
+     * The last argument is optional for template compatibility with tests.
+     * In the future we should get rid of this optional stuff.
+     */
+    void createTrack(int index, int sectionIndex = 0);
     void addTrack(int trackIndex, int sectionIndex, MidiTrackPtr track);
-    MidiTrackPtr getTrack(int trackIndex, int sectionIndex);
-    static MidiSong4Ptr makeTest(MidiTrack::TestContent, int trackIndex, int sectionIndex);
+    MidiTrackPtr getTrack(int trackIndex, int sectionIndex = 0);
 
-private:
+    /**
+     * The last argument is optional for template compatibility with tests/
+     */
+    static MidiSong4Ptr makeTest(MidiTrack::TestContent, int trackIndex, int sectionIndex = 0);
+
     std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
+private:
+    
     MidiTrackPtr tracks[numTracks][numSectionsPerTrack] = {nullptr};
 };
 

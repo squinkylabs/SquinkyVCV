@@ -50,3 +50,9 @@ MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)
     }
     return ret;
  }
+
+  void MidiSong4::createTrack(int index, int sectionIndex)
+  {
+    assert(lock);
+    addTrack(index, sectionIndex, std::make_shared<MidiTrack>(lock));
+  }

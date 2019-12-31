@@ -498,6 +498,9 @@
     <ClCompile Include="..\..\midi\model\MidiSong4.cpp">
       <Filter>Source Files\midi\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiPlayer4.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -913,6 +916,9 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\model\MidiSong4.h">
       <Filter>Header Files\midi\model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MidiPlayer4.h">
+      <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

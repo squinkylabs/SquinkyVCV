@@ -435,12 +435,14 @@ static void testLoopingQ()
     }
 }
 
-extern MidiSongPtr makeSongOneQ(float noteTime, float endTime);
+template <class TSong>
+extern std::shared_ptr<TSong> makeSongOneQ(float noteTime, float endTime);
+
 static void testSubrangeLoop()
 {
     // make a song with one note in the second bar.
     // loop the second bar
-    MidiSongPtr song = makeSongOneQ(4, 100);
+    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
     SubrangeLoop lp(true, 4, 8);
     song->setSubrangeLoop(lp);
     std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
