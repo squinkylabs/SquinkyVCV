@@ -35,3 +35,18 @@ MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)
     song->assertValid();
     return song;
  }
+
+ float MidiSong4::getTrackLength(int trackIndex) const
+ {
+     if (trackIndex < 0 || trackIndex >= numTracks ) {
+        assert(false);
+        return 0;
+    }
+    float ret = 0;
+    for (auto section : tracks[trackIndex]) {
+        if (section) {
+            ret += section->getLength();
+        }
+    }
+    return ret;
+ }

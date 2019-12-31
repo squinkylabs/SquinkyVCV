@@ -13,8 +13,9 @@ public:
     static const int numSectionsPerTrack = 4;
 
     void assertValid() const;
+    float getTrackLength(int trackNum) const;
 
-    // the make UT
+
     void addTrack(int trackIndex, int sectionIndex, MidiTrackPtr track);
     MidiTrackPtr getTrack(int trackIndex, int sectionIndex);
     static MidiSong4Ptr makeTest(MidiTrack::TestContent, int trackIndex, int sectionIndex);
