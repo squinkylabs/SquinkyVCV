@@ -710,6 +710,7 @@ static void testMidiPlayer0()
 template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNoteOn()
 {
+    printf("\n\n****** start test\n");
     std::shared_ptr<THost> host = makeSongOneQandRun<TPlayer, THost, TSong>(2 * .24f);
 
     assertAllButZeroAreInit(host.get());
@@ -1071,8 +1072,10 @@ static void testQuantizedRetrigger2()
 template <class TPlayer, class THost, class TSong>
 static void playerTests()
 {
+    printf("enter templatized tests\n");
     testMidiPlayer0<TPlayer, THost, TSong>();
-    testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
+    //testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
+    printf("leave templatized test\n");
 }
 
 void testMidiPlayer2()
@@ -1100,7 +1103,7 @@ void testMidiPlayer2()
     playerTests<MidiPlayer4, TestHost4, MidiSong4>();
 
    // testMidiPlayer0<MidiPlayer2>();
-  //  testMidiPlayerOneNoteOn();
+    testMidiPlayerOneNoteOn<MidiPlayer2, TestHost2, MidiSong>();
     testMidiPlayerOneNoteOnWithLockContention();
     testMidiPlayerOneNote();
     testMidiPlayerOneNoteLockContention();

@@ -34,6 +34,13 @@ private:
     MidiSong4Ptr song;
     std::shared_ptr<IMidiPlayerHost4> host;
 
+    /**
+     * when starting, or when reset by lock contention
+     */
+    bool isReset = true;
+    bool isResetGates = false;
+
     void updateToMetricTimeInternal(double, float);
+    void resetAllVoices(bool clearGates);
 
 };

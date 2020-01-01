@@ -42,6 +42,7 @@
     <ClCompile Include="..\..\midi\controller\MidiLock.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiPlayer2.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiPlayer4.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiTrackPlayer.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiVoice.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiVoiceAssigner.cpp" />
     <ClCompile Include="..\..\midi\controller\NewSongDataDataCommand.cpp" />

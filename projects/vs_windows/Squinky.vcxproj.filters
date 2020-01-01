@@ -501,6 +501,9 @@
     <ClCompile Include="..\..\midi\controller\MidiPlayer4.cpp">
       <Filter>Source Files\midi\controller</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MidiTrackPlayer.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
