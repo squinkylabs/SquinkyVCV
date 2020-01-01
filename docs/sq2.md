@@ -113,10 +113,11 @@ These two simple examples show that most things can be done entirely from the ke
 The Xforms (short for transforms) are a collection of  "destructive edit operations". They all operate over the selected notes, often transforming a note at one pitch to another pitch.
 
 They all work more or less the same way:
-Select some notes as you normally would in the note grid.
-Pick one of the xforms from the context menu.
-A dialog will come up with settings for that xform. Set them as you like.
-If you press OK, the xform will by applied to the notes you had selected.
+
+1. Select some notes as you normally would in the note grid.
+2. Pick one of the xforms from the context menu.
+3. A dialog will come up with settings for that xform. Set them as you like.
+4. If you press OK, the xform will by applied to the notes you had selected.
 
 Many of the xforms require you to select a scale. The scale is stored in the patch, so once you set it for your patch it should be remembered and you shouldn’t have to re-enter it every time.
 
