@@ -2,7 +2,7 @@
 #include "rack.hpp"
 // #define _TIME_DRAWING
 
- // #define _XFORM
+ #define _XFORM
 
 #define _FUN        // works with 1.0
 #define _LFN
@@ -30,6 +30,8 @@
 #define _MIX4
 #define _MIXM
 #define _DTMODULE
+
+// #define _SEQ4
 
 using namespace ::rack;
 
@@ -88,6 +90,9 @@ extern Model *modelKSModule;
 #endif
 #ifdef _SEQ
 extern Model *modelSequencerModule;
+#endif
+#ifdef _SEQ4
+extern Model *modelSequencer4Module;
 #endif
 #ifdef _SLEW
 extern Model *modelSlew4Module;

@@ -8,6 +8,7 @@
 #include "MidiSequencer.h"
 #include "UIPrefs.h"
 #include "InputScreen.h"
+#include "InputScreenManager.h"
 #include "KbdManager.h"
 #ifndef _USERKB
 #include "MidiKeyboardHandler.h"
@@ -49,6 +50,9 @@ NoteDisplay::NoteDisplay(
     updateFocus(false);
 #ifdef _USERKB
     kbdManager = std::make_shared<KbdManager>();
+#endif
+#ifdef _XFORM
+    ism = std::make_shared<InputScreenManager>(box.size);
 #endif
 }
 
@@ -293,7 +297,11 @@ void NoteDisplay::onDragDrop(const event::DragDrop &e)
 void NoteDisplay::onButton(const event::Button &e)
 {
    // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
-
+    OpaqueWidget::onButton(e);
+    if (!enabled) {
+        //DEBUG("disp skipping button - disabled");
+        return;
+    }
     bool handled = false;
 
     const bool isPressed = e.action == GLFW_PRESS;
@@ -314,16 +322,18 @@ void NoteDisplay::onButton(const event::Button &e)
                 isPressed, ctrl, shift);
 
             // now invoke the settings menu
-            sequencer->context->settings()->invokeUI(this);
             auto menu = sequencer->context->settings()->invokeUI(this);
 
 #ifdef _XFORM
+            addXformMenuItems(menu);
+            #if 0
             SqMenuItem* mi = new SqMenuItem(
                [](){ return false; },
                [this](){ doTest(); }
             );
             mi->text = "test screen";
             menu->addChild(mi);
+            #endif
 #else
             (void) menu;
 #endif
@@ -337,7 +347,6 @@ void NoteDisplay::onButton(const event::Button &e)
         OpaqueWidget::onButton(e);
     }
 }
-
 
 void NoteDisplay::onSelectKey(const event::SelectKey &e)
 {
@@ -388,8 +397,10 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
 
 bool NoteDisplay::handleKey(int key, int mods, int action)
 {
-  //  fprintf(stderr, "\n** NoteDisplay::handleKey, action = %d (press = %d, repeat = %d\n", action,
-  //      GLFW_PRESS, GLFW_REPEAT);
+    if (!enabled) {
+        return false;
+    }
+
     bool handle = false;
     bool repeat = false;
     switch (action) {
@@ -424,7 +435,6 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
             ::rack::appGet()->event->setSelected(this);
         }
     }
-   // fprintf(stderr, "NoteDisplay::handleKey ret = %d\n", handled);
     return handled;
 }
 
@@ -462,26 +472,39 @@ void NoteDisplay::onDragMove(const event::DragMove &e)
     }
 }
 
-
-void NoteDisplay::doTest()
+void NoteDisplay::addXformMenuItems(::rack::ui::Menu* menu)
 {
-#ifdef _XFORM
-    /*
-      this->box.pos = pos;
-    box.size = size;
-    */
-
-    auto dismisser = [this]() {
-        DEBUG("Entering the outer dismisser. will dismiss the screen set and delete it");
-        iss->dismiss();
-        this->iss.reset();
-    };
-    InputScreenPtr is = std::make_shared<InputScreen>(Vec(0, 0), box.size, sequencer, dismisser);
-
-    // make the screen set, and keep a pointer to it in this
-    iss = std::make_shared<InputScreenSet>();
-    iss->add(is);
-    iss->show(this);
-#endif
+    addXformMenuItem(menu, InputScreenManager::Screens::Transpose);
+    addXformMenuItem(menu, InputScreenManager::Screens::Invert);
+    addXformMenuItem(menu, InputScreenManager::Screens::ReversePitch);
+    addXformMenuItem(menu, InputScreenManager::Screens::ChopNotes);
+    addXformMenuItem(menu, InputScreenManager::Screens::QuantizePitch);
+    addXformMenuItem(menu, InputScreenManager::Screens::MakeTriads);
 }
-//#endif
+
+void NoteDisplay::addXformMenuItem(::rack::ui::Menu* menu, InputScreenManager::Screens code)
+{
+    SqMenuItem* mi = new SqMenuItem(
+            [](){ return false; },
+            [this, code](){ doXform(code); }
+        );
+    std::string itemName = InputScreenManager::xformName(code); 
+    itemName = "xform: " + itemName;
+
+    mi->text = itemName;
+    menu->addChild(mi);
+}
+
+void NoteDisplay::doXform(InputScreenManager::Screens screenCode)
+{
+    assert(ism);
+    InputScreenManager::Callback cb = [this]() {
+        // DEBUG("in callback from  InputScreenManager ");
+        this->enabled = true;           // re-enable UI processing of events
+    };
+
+    // as we pop up the xform UI, disable our own processing of UI events.
+    this->enabled = false;
+    ism->show(this, screenCode, sequencer, cb);
+}
+

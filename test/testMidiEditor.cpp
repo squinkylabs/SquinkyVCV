@@ -445,6 +445,34 @@ static void testCursor6()
     assertEQ(seq->context->endTime(), TimeUtils::bar2time(4));
 }
 
+//next note should do something in multi select
+static void testCursor7()
+{
+   // printf("\n**** test cursor 7\n");
+    MidiSequencerPtr seq = makeTest(false);
+
+    assertEQ(seq->context->startTime(), 0);
+    seq->assertValid();
+
+    // select third note
+    seq->editor->selectNextNote();
+    seq->editor->selectNextNote();
+    seq->editor->selectNextNote();
+    assertEQ(seq->selection->size(), 1);
+
+    // now select back to first three
+    seq->editor->extendSelectionToPrevNote();
+    seq->editor->extendSelectionToPrevNote();
+    assertEQ(seq->selection->size(), 3);
+
+    MidiEventPtr evt = *seq->selection->begin();
+    assertEQ(evt->startTime, 0);
+
+    seq->editor->selectNextNote();
+    evt = *seq->selection->begin();
+    assertEQ(seq->selection->size(), 1);
+    assertGT(evt->startTime, 0);
+}
 
 static void testCursorNonQuantSnaps()
 { 
@@ -770,6 +798,16 @@ void testMidiEditorSub(int trackNumber)
 {
     _trackNumber = trackNumber;
 
+    testCursor1();
+    testCursor2();
+    testCursor3();
+    testCursor4();
+    testCursor4b();
+    testCursor5();
+    testCursor6();
+    testCursorNonQuantSnaps();
+    testCursor7();
+
     testTrans1();
     testShiftTime1();
     testShiftTime2();
@@ -785,14 +823,7 @@ void testMidiEditorSub(int trackNumber)
     testTrans3();
     testTransHuge();
 
-    testCursor1();
-    testCursor2();
-    testCursor3();
-    testCursor4();
-    testCursor4b();
-    testCursor5();
-    testCursor6();
-    testCursorNonQuantSnaps();
+  
 
     testInsert();
     testDelete();

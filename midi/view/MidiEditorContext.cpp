@@ -186,3 +186,22 @@ void MidiEditorContext::setCursorToSelection(MidiSelectionModelPtr selection)
         }
     }
 }
+
+
+#ifdef _NEWTAB
+MidiNoteEventPtr MidiEditorContext::getCursorNote(MidiSelectionModelPtr selection)
+{
+    MidiNoteEventPtr selctedCursorNote = cursorNote.lock();
+    if (selctedCursorNote) {
+        if (!selection->isSelected(selctedCursorNote)) {
+            selctedCursorNote = nullptr;
+        }
+    }
+    return selctedCursorNote;
+}
+
+void MidiEditorContext::setCursorNote(MidiNoteEventPtr note)
+{
+    cursorNote = note;
+}
+#endif

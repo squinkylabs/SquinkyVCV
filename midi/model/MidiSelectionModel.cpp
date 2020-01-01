@@ -79,6 +79,17 @@ MidiSelectionModel::const_iterator MidiSelectionModel::end() const
     return selection.end();
 }
 
+
+MidiSelectionModel::const_reverse_iterator MidiSelectionModel::rbegin() const
+{
+    return selection.rbegin();
+}
+
+MidiSelectionModel::const_reverse_iterator MidiSelectionModel::rend() const
+{
+    return selection.rend();
+}
+
 void MidiSelectionModel::clear()
 {
     selection.clear();
@@ -157,6 +168,16 @@ bool MidiSelectionModel::isSelectedDeep(MidiEventPtr evt) const
     });
 
     return it != end();
+}
+
+std::vector<MidiEventPtr> MidiSelectionModel::asVector() const
+{
+    std::vector<MidiEventPtr> ret;
+    for (auto it : selection) {
+        MidiEventPtr event = it;
+        ret.push_back(event);
+    }
+    return ret;
 }
 
 IMidiPlayerAuditionHostPtr MidiSelectionModel::_testGetAudition()

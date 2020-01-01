@@ -1,69 +1,79 @@
+#include "InputControls.h"
 #include "InputScreen.h"
+#include "ISeqSettings.h"
+#include "MidiSequencer.h"
+#include "PitchInputWidget.h"
+#include "PitchUtils.h"
 #include "SqGfx.h"
 #include "UIPrefs.h"
 
 #include "../ctrl/ToggleButton.h"
-#include "../ctrl/PopupMenuParamWidgetv1.h"
 
 using Vec = ::rack::math::Vec;
-using Button = ::rack::ui::Button;
-
-class Button2 : public Button
-{
-public:
-    // this isn't firing. don't know why
-    void onAction(const ::rack::event::Action& e) override {
-        DEBUG("onAction from button");
-    }
-
-    void onDragEnd(const ::rack::event::DragEnd& e) override {
-        Button::onDragEnd(e);
-        DEBUG("on DRAG END FOR ME handler = %d", bool(handler));
-        if (handler) {
-            DEBUG("calling handler (ourter dismisser");
-            auto tempHandler = handler;
-            handler = nullptr;                  // only call it onece
-            tempHandler();
-        }
-    }
-
-    ~Button2() {
-        DEBUG("dtor of button");
-    }
-
-    std::function<void()> handler = nullptr;
-};
+using Widget = ::rack::widget::Widget;
+using Label = ::rack::ui::Label;
 
 InputScreen::InputScreen(const ::rack::math::Vec& pos,
-        const ::rack::math::Vec& size,
-        MidiSequencerPtr seq,
-        std::function<void()> _dismisser)
+    const ::rack::math::Vec& size,
+    MidiSequencerPtr seq,
+    const std::string& title,
+    std::function<void(bool)> _dismisser) :
+        sequencer(seq)
 {
     box.pos = pos;
     box.size = size;
-    sequencer = seq;   
     this->dismisser = _dismisser; 
-    DEBUG("dismisser = %d", bool(_dismisser));
-
-    auto ok = new Button2();
-    ok->text = "OK";
-    ok->setPosition( Vec(100, 100));
-    ok->setSize(Vec(80, 30));
-    this->addChild(ok);   
-    ok->handler = dismisser;
-
-    auto pop = new PopupMenuParamWidget();
-    pop->setLabels( {"first", "second", "third"});
-    pop->box.size.x = 76;    // width
-    pop->box.size.y = 22;     // should set auto like button does
-    pop->setPosition(Vec(100, 50));
-    pop->text = "first";
-    this->addChild(pop);
+    if (!title.empty()) {
+        this->addTitle(title);
+    }
+    addOkCancel();
 }
 
 InputScreen::~InputScreen()
 {
-    DEBUG("dtor of input screen %p", this);
+}
+
+std::vector<float> InputScreen::getValues() const
+{
+    std::vector<float> ret;
+    for (auto control : inputControls) {
+        ret.push_back(control->getValue());
+    }
+    return ret;
+}
+
+float InputScreen::getValue(int index) const
+{
+    return inputControls[index]->getValue();
+}
+
+bool InputScreen::getValueBool(int index) const
+{
+    return getValue(index) > .5 ? true : false;
+}
+
+int InputScreen::getValueInt(int index) const
+{
+    return int (std::round(getValue(index)));
+}
+
+std::pair<int, Scale::Scales> InputScreen::getKeysig(int index)
+{
+    assert(inputControls.size() > unsigned(index + 1));
+
+    const int iRoot = getValueInt(index);
+    const int iMode = getValueInt(index+1);
+    const Scale::Scales mode = Scale::Scales(iMode);
+  //  DEBUG("get keySig = %d (root) %d (mode)", iRoot, iMode);
+    return std::make_pair(iRoot, mode);
+}
+
+void InputScreen::saveKeysig(int index)
+{
+    auto keysig = getKeysig(index);
+    if (sequencer) {
+        sequencer->context->settings()->setKeysig(keysig.first, keysig.second);
+    }
 }
 
 void InputScreen::draw(const Widget::DrawArgs &args)
@@ -73,59 +83,190 @@ void InputScreen::draw(const Widget::DrawArgs &args)
     Widget::draw(args);
 }
 
-#if 0
- void InputScreen::onButton(const ::rack::event::Button &e)
- {
-     Widget::onButton(e);
-    DEBUG("InputScreen::onButton"); fflush(stdout);
-    if (dismisser) {
-        dismisser();
-    } else DEBUG("no dismisser");
-    e.consume(this);
- }
- #endif
+// TODO: rename or move this style info
+const NVGcolor TEXT_COLOR = nvgRGB(0xc0, 0xc0, 0xc0);
 
-//*********************************************************************
-
-void InputScreenSet::show(::rack::widget::Widget* parent)
+Label* InputScreen::addLabel(const Vec& v, const char* str, const NVGcolor& color = TEXT_COLOR)
 {
-    ::rack::widget::Widget* screen = screens[0].get();
-    currentScreenIndex = 0;
-    parent->addChild(screen);
-    parentWidget = parent;
+    Label* label = new Label();
+    label->box.pos = v;
+    label->text = str;
+    label->color = color;
+    this->addChild(label);
+    return label;
 }
 
-void InputScreenSet::dismiss()
+void InputScreen::addTitle(const std::string& title)
 {
-    DEBUG("iss::dismiss");
-    if (isDismissing) {
-        DEBUG("leaving dismiss on re-enter\n");
-        return;
+    const float x = 0;
+    const float y = 20;
+    std::string titleText = "** " + title + " **";
+    auto l = addLabel(Vec(x, y), titleText.c_str(),  TEXT_COLOR);
+    l->box.size.x = this->box.size.x;
+    l->alignment = Label::CENTER_ALIGNMENT;
+}
+
+void InputScreen::addPitchInput(
+    const ::rack::math::Vec& pos,
+    const std::string& label,
+    std::function<void(void)>callback)
+{
+    // new way, let's ignore the passed x value
+    // todo: make caller pass correct coord
+    ::rack::math::Vec pos2 = pos;
+    pos2.x = 0;
+   
+    ::rack::math::Vec size = box.size;
+    size.y = controlRow(2);
+    // DEBUG("add pitch offset abs, height=%.2f ok = %.2f", size.y, okCancelY);
+
+    auto p = new PitchInputWidget(pos2, size, label, false);
+    p->setCallback(callback);
+    inputControls.push_back(p);
+    this->addChild(p);
+}
+
+void InputScreen::addPitchOffsetInput(
+    const ::rack::math::Vec& pos, 
+    const std::string& label,
+    std::function<void(void)>callback)
+{
+    // new way, let's ignore the passed x value
+    // todo: make caller pass correct coord
+    ::rack::math::Vec pos2 = pos;
+    pos2.x = 0;
+
+    ::rack::math::Vec size = box.size;
+    size.y = controlRow(2);
+    // DEBUG("add pitch offset, height=%.2f ok = %.2f", size.y, okCancelY);
+
+    auto p = new PitchInputWidget(pos2, size, label, true);
+    p->setCallback(callback);
+    inputControls.push_back(p);
+    this->addChild(p);
+}
+
+static std::vector<std::string> roots = {
+    "C", "C#", "D", "D#",
+    "E", "F", "F#", "G",
+    "G#",  "A", "A#", "B"
+};
+
+static std::vector<std::string> modes = {
+    "Major", "Dorian", "Phrygian", "Lydian",
+    "Mixolydian", "Minor", "Locrian", "Minor Pentatonic",
+    "Harmonic Minor", "Diminished", "Dom. Diminished", "Whole Tone"
+};
+
+void InputScreen::addKeysigInput(const ::rack::math::Vec& pos, std::pair<int, Scale::Scales> keysig)
+{
+    float x= 0;
+    float y = pos.y;
+    auto l = addLabel(Vec(x, y), "Scale", TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
+
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( roots);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = "C";
+    this->addChild(pop);
+    inputControls.push_back(pop);
+    pop->setValue(keysig.first);
+
+    x += 80;
+    pop = new InputPopupMenuParamWidget();
+    pop->setLabels( modes);
+    pop->box.size.x = 124;    // width (110 too small, 130 too bug)
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = "Major";
+    this->addChild(pop);
+    inputControls.push_back(pop);
+    pop->setValue( int(keysig.second)); 
+}
+
+// default was 76
+void InputScreen::addChooser(
+    const ::rack::math::Vec& pos,
+    int width,
+    const std::string& title,
+    const std::vector<std::string>& choices)
+{
+    float x= 0;
+    float y = pos.y;
+    auto l = addLabel(Vec(x, y), title.c_str(), TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
+
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( choices);
+    pop->box.size.x = width;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = choices[0];
+    pop->setValue(0);
+
+    this->addChild(pop);
+    inputControls.push_back(pop);
+}
+
+void InputScreen::addNumberChooserInt(const ::rack::math::Vec& pos, const char* str, int nMin, int nMax)
+{
+    float x= 0;
+    float y = pos.y;
+    auto l = addLabel(Vec(x, y), str, TEXT_COLOR );
+    l->box.size.x = pos.x - 10;
+    l->alignment = Label::RIGHT_ALIGNMENT;
+  
+    x = pos.x;
+
+    std::vector<std::string> labels;
+    for (int i= nMin; i<= nMax; ++i) {
+        char buf[100];
+        snprintf(buf, sizeof(buf), "%d", i);
+        std::string s(buf);
+        labels.push_back(s);
     }
-    DEBUG("iss::dismiss 15");
-    isDismissing = true;
-    ::rack::widget::Widget* screen = screens[0].get();
+    auto pop = new InputPopupMenuParamWidget();
+    pop->setLabels( labels);
+    pop->box.size.x = 76;    // width
+    pop->box.size.y = 22;     // should set auto like button does
+    pop->setPosition(Vec(x, y));
+    pop->text = labels[0];
+    pop->setValue(0);
 
-    DEBUG("about to clear all the children of my screen");
-    screen->clearChildren();
-
-// we really need to remove screen from parent.
-
-    DEBUG("iss::dismiss about to remove screen from parent scree = %d parent = %d", bool(screen), bool(parentWidget));
-    parentWidget->removeChild(screen);
-    parentWidget = nullptr;
-    currentScreenIndex = 0;
-     DEBUG("iss::dismiss 3");
+    this->addChild(pop);
+    inputControls.push_back(pop);
 }
 
-void InputScreenSet::add(InputScreenPtr is)
+void InputScreen::addOkCancel()
 {
-    screens.push_back(is);
-}
+    auto ok = new Button2();
+    const float y = okCancelY;
+    ok->text = "OK";
+    float x = 60;
 
-InputScreenSet::~InputScreenSet()
-{
-    DEBUG("dtor iss");
-    dismiss();
-   DEBUG("dtor iss 2");
+    ok->setPosition( Vec(x, y));
+    ok->setSize(Vec(80, 22));
+    this->addChild(ok);   
+    ok->handler = [this]() {
+        dismisser(true);
+    };
+
+    auto cancel = new Button2();
+    cancel->handler = [this]() {
+        dismisser(false);
+    };
+    cancel->text = "Cancel";
+    x = 250;
+    cancel->setPosition( Vec(x, y));
+    cancel->setSize(Vec(80, 22));
+    this->addChild(cancel);   
 }

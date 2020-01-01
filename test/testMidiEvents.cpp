@@ -447,26 +447,6 @@ static void testTimeUtil6()
     assert(x == "3");
 }
 
-// simple tests of quantforEdit function
-#if 0   // no longer used
-static void testTimeUtilQuant0()
-{
-    // pre-quantized pass through
-    assertEQ(TimeUtils::quantizeForEdit(0, 1, 1), 1);
-    assertEQ(TimeUtils::quantizeForEdit(5, 1, 1), 6);
-
-    // simple quantize that doesn't care about drag direction
-    assertEQ(TimeUtils::quantizeForEdit(.8f, .1f, 1), 1);
-    assertEQ(TimeUtils::quantizeForEdit(.5f, .1f, 1), 1);
-    assertEQ(TimeUtils::quantizeForEdit(10, -.9f, 1), 9);
-    assertEQ(TimeUtils::quantizeForEdit(10, -.51f, 1), 9);
-
-    // ones that would quantize to other side of home, but we don't want that.
-    assertEQ(TimeUtils::quantizeForEdit(.2f, .1f, 1), 1);
-    assertEQ(TimeUtils::quantizeForEdit(.9f, -.1f, 1), 0);
-}
-#endif
-
 static void testTimeUtilSimpleQuant()
 {
     assertEQ(TimeUtils::quantize(10, 1, true), 10);
@@ -481,7 +461,30 @@ static void testTimeUtilSimpleQuant()
     assertEQ(TimeUtils::quantize(-10, 1, true), -10);
     assertEQ(TimeUtils::quantize(-4, 10, true), 0);
     assertEQ(TimeUtils::quantize(-6, 10, true), -10);
-   
+}
+
+static void testTimeUtilQ16()
+{
+    static float _16th = .25;
+    static float _32nd = _16th / 2;
+    static float _64th = _32nd / 2;
+
+    assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(_16th), _16th);
+    assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(_16th + _64th), 2 * _16th);
+
+    assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(_16th * 1.01f), 2 * _16th);
+
+    // TODO: figure out what to do with shorter notes
+    // If slightly short 16th should probably still be a 16th?
+    // Maybe just base off 32nd?
+  // assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(_16th * .99f), 1);
+
+    assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(2 * _16th), 2 * _16th);
+    assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(3 * _16th), 4 * _16th);
+    assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(5 * _16th), 8 * _16th);
+
+    assertEQ(TimeUtils::getTimeAsPowerOfTwo16th(_64th), 0);
+    
 }
 
 
@@ -645,6 +648,17 @@ struct compareC
     }
 };
 
+static void testPitchUtilMidi()
+{
+    const int midiMiddleC = 60;
+    const float vcvMiddleC = 0.f;
+    assertEQ(PitchUtils::midiToCV(midiMiddleC), vcvMiddleC);
+    assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC), midiMiddleC);
+
+    assertEQ(PitchUtils::midiToCV(midiMiddleC + 12), vcvMiddleC + 1);
+    assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC + 1), midiMiddleC + 12);
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -672,15 +686,13 @@ void  testMidiEvents()
     testTimeUtil4();
     testTimeUtil5();
     testTimeUtil6();
-    //testTimeUtilQuant0();
     testTimeUtilSimpleQuant();
+    testTimeUtilQ16();
 
     testPitchUtil0();
     testPitchUtil1();
     testPitchUtil2();
 
-
-   
-    
+    testPitchUtilMidi();
     assertNoMidi();     // check for leaks
 }

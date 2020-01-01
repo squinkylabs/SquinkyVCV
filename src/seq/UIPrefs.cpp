@@ -23,7 +23,9 @@ const NVGcolor UIPrefs::GRID_END_COLOR = nvgRGB(0xff, 0x0, 0xff);
 // was b0
 const NVGcolor UIPrefs::TIME_LABEL_COLOR = nvgRGB(0xe0, 0xe0, 0xe0);
 const NVGcolor UIPrefs::GRID_CLINE_COLOR = nvgRGB(0x60, 0x60, 0x60);
-const NVGcolor  UIPrefs::STATUS_LABEL_COLOR = nvgRGB(0xe0, 0xe0, 0xe0);
+const NVGcolor UIPrefs::STATUS_LABEL_COLOR = nvgRGB(0xe0, 0xe0, 0xe0);
+
+const NVGcolor UIPrefs::XFORM_TEXT_COLOR = nvgRGB(0xc0, 0xc0, 0xc0);
 
 const float UIPrefs::hMarginsNoteEdit = 2.f;
 const float UIPrefs::topMarginNoteEdit = 0.f;

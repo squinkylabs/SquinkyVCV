@@ -100,5 +100,22 @@ public:
         }
         return buffer;
     }
+
+    /**
+     * Quantizes an amount of time to be an even power of two of a sixteenth note.
+     * Always rounds up, although returns zero if time is less than 16th note.
+     */
+    static float getTimeAsPowerOfTwo16th(float time)
+    {
+        float duration16th = 4 * time;
+        if (duration16th < 1) {
+            return 0;
+        }
+
+        int logTwoInt = int(std::ceil(std::log2(duration16th)));
+        int num16 = int(std::round(std::exp2(logTwoInt)));
+        //printf("input dur was %.2f, num 16 = %d\n", duration, num16);
+        return float(num16) / 4.f;
+    }
 };
 

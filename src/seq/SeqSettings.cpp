@@ -431,3 +431,15 @@ void SeqSettings::setMidiFilePath(const std::string& s)
 {
     midiFilePath = s;
 }
+
+
+std::pair<int, Scale::Scales> SeqSettings::getKeysig()
+{
+    return std::make_pair(keysigRoot, keysigMode);
+}
+
+void SeqSettings::setKeysig(int root, Scale::Scales mode)
+{
+    keysigRoot = root;
+    keysigMode = mode;
+}

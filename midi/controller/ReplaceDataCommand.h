@@ -12,9 +12,12 @@ class MidiSong;
 class MidiSequencer;
 class MidiSelectionModel;
 class ReplaceDataCommand;
+class Scale;
+
 
 using ReplaceDataCommandPtr = std::shared_ptr<ReplaceDataCommand>;
 using MidiEventPtr = std::shared_ptr<MidiEvent>;
+using ScalePtr = std::shared_ptr<Scale>;
 
 class ReplaceDataCommand : public SqCommand
 {
@@ -61,6 +64,28 @@ public:
 
     static ReplaceDataCommandPtr makeMoveEndCommand(std::shared_ptr<MidiSequencer> seq, float newLength);
 
+    static ReplaceDataCommandPtr makeReversePitchCommand(std::shared_ptr<MidiSequencer> seq);
+    /**
+     * This one works for any XFORM that does a one to one processing of notes.
+     * Since it uses "Legacy" helper, the lambda must process notes in place.
+     */
+    using FilterFunc = std::function<void(MidiEventPtr)>;
+    static ReplaceDataCommandPtr makeFilterNoteCommand(const std::string& name, std::shared_ptr<MidiSequencer> seq, FilterFunc);
+        
+
+    enum class Ornament {None, Trill, Arpeggio, Arpeggio2};
+    static ReplaceDataCommandPtr makeChopNoteCommand(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        int numNotes,
+        Ornament,
+        ScalePtr,
+        int steps);
+
+    enum class TriadType {RootPosition, FirstInversion, SecondInversion, Auto, Auto2};
+    static ReplaceDataCommandPtr makeMakeTriadsCommand(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        TriadType,
+        ScalePtr);
 private:
 
     int trackNumber;
@@ -105,5 +130,14 @@ private:
         std::shared_ptr<MidiSequencer> seq,
         Xform xform,
         bool canChangeLength);
+
+     static ReplaceDataCommandPtr makeMakeTriadsCommandNorm(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        TriadType,
+        ScalePtr);
+     static ReplaceDataCommandPtr makeMakeTriadsCommandAuto(
+        std::shared_ptr<MidiSequencer>sequencer, 
+        TriadType,
+        ScalePtr);
 };
 

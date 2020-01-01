@@ -360,6 +360,12 @@ static void testQuantRel()
     assertEQ(PitchUtils::deltaCVToSemitone(-halfSemi - .001f), -1);
 }
 
+static void testPitchRoundTrip()
+{
+    int x = PitchUtils::cvToSemitone(0);
+    assertEQ(PitchUtils::semitoneToCV(x), 0);
+}
+
 static void testExtendSelection()
 {
     auto a = std::make_shared<TestAuditionHost>();
@@ -488,6 +494,7 @@ void testMidiDataModel()
     testSong();
     testQuant();
     testQuantRel();
+    testPitchRoundTrip();
 
     testExtendSelection();
     testAddSelectionSameNote();

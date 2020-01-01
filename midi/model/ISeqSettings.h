@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Scale.h"
+
 #include <string>
 #include <memory>
+#include <utility>
 
 
 namespace rack {
@@ -49,6 +52,9 @@ public:
      */
     virtual std::string getMidiFilePath() = 0;
     virtual void setMidiFilePath(const std::string&) = 0;
+
+    virtual std::pair<int, Scale::Scales> getKeysig() = 0;
+    virtual void setKeysig(int root, Scale::Scales mode) = 0;
 };
 
 using ISeqSettingsPtr = std::shared_ptr<ISeqSettings>;

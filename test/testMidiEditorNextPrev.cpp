@@ -213,7 +213,9 @@ static void testNextPrevSingleNote()
     x = seq->context->cursorTime();
     seq->assertValid();
 
+#ifdef _LOG
     printf("\n-- about to go to next\n");
+#endif
     // select first event
     seq->editor->selectNextNote();
     seq->assertValid();
@@ -391,19 +393,30 @@ static void testNext4()
 // select next that off way out of viewport
 static void testNextWhenOutsideViewport()
 {
+   
+    // Select the first note, and move it somewhere crazy
     MidiSequencerPtr seq = makeTest();
+#ifdef _LOG
+    printf("\n*** testNextWhenOutsideViewport\n");
+    const auto track = seq->context->getTrack();
+    track->_dump();
+#endif
     seq->editor->selectNextNote();
     assertEQ(seq->selection->size(), 1);
 
     // Give the (first) note a pitch and start time that are
     // way outside viewport
     seq->editor->changePitch(50);
-
     seq->editor->changeStartTime(false, 50);
 
     assertEQ(seq->selection->size(), 1);
     seq->assertValid();
     seq->editor->assertCursorInSelection();
+
+#ifdef _LOG
+    printf("after moving first note somewhere crazy\n");
+    track->_dump();
+#endif
 
     seq->editor->selectPrevNote();
     assertEQ(seq->selection->size(), 1);
@@ -436,7 +449,15 @@ static void testPrevWhenBeforeStart()
     assertEQ(seq->context->cursorTime(), 0);
 }
 
-
+// try all the tab things with no notes
+static void testEmpty()
+{
+    MidiSequencerPtr seq = makeTest(true);
+    seq->editor->selectNextNote();
+    seq->editor->extendSelectionToNextNote();
+    seq->editor->selectPrevNote();
+    seq->editor->extendSelectionToPrevNote();
+}
 
 void testMidiEditorNextPrevSub(int trackNumber)
 {
@@ -460,13 +481,20 @@ void testMidiEditorNextPrevSub(int trackNumber)
     testNextInEmptyTrack();
     testPrevInEmptyTrack();
 
+#if defined(_NEWTAB) && false
+    printf("with new alg, what should testNextWhenOutsideViewport do?\n");
+#else
     testNextWhenOutsideViewport();
+#endif
 
     textExtendNoteWhenOneSelected();
 }
 
 void testMidiEditorNextPrev()
 {
+    testEmpty();
+
+    // some multi track ones
     testMidiEditorNextPrevSub(0);
     testMidiEditorNextPrevSub(2);
 
@@ -477,4 +505,5 @@ void testMidiEditorNextPrev()
     textExtendNoteTwicePrevWhenOneSelected();
 
     testPrevWhenBeforeStart();
+ 
 }

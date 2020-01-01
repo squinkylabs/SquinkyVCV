@@ -2,10 +2,14 @@
 #include "IMidiPlayerHost.h"
 #include "MidiLock.h"
 #include "MidiPlayer2.h"
+#include "MidiPlayer4.h"
+
 #include "MidiSong.h"
+#include "MidiSong4.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
 #include "TestHost2.h"
+#include "TestHost4.h"
 
 #include "asserts.h"
 #include <memory>
@@ -20,13 +24,13 @@ const float quantInterval = .001f;      // very fine to avoid messing up old tes
  * Track has one quarter note at t=0, duration = eighth.
  * End event at quarter note after note
  */
-
-MidiSongPtr makeSongOneNote(float noteTime, float noteDuration, float endTime)
+template <class TSong>
+inline std::shared_ptr<TSong> makeSongOneNote(float noteTime, float noteDuration, float endTime)
 {
     const float duration = .5;
     assert(endTime >= (noteTime + duration));
 
-    MidiSongPtr song = std::make_shared<MidiSong>();
+    auto song = std::make_shared<TSong>();
     MidiLocker l(song->lock);
     song->createTrack(0);
     MidiTrackPtr track = song->getTrack(0);
@@ -44,19 +48,33 @@ MidiSongPtr makeSongOneNote(float noteTime, float noteDuration, float endTime)
     return song;
 }
 
-MidiSongPtr makeSongOneQ(float noteTime, float endTime)
+template <class TSong>
+inline std::shared_ptr<TSong> makeSongOneQ(float noteTime, float endTime)
 {
-    return makeSongOneNote(noteTime, .5, endTime);
+    return makeSongOneNote<TSong>(noteTime, .5, endTime);
 }
+
+template std::shared_ptr<MidiSong> makeSongOneQ<MidiSong>(float noteTime, float endTime);
+template std::shared_ptr<MidiSong4> makeSongOneQ<MidiSong4>(float noteTime, float endTime);
+
+
+// TODO: get rid of
+#if 1
+MidiSongPtr makeSongOneQ()
+{
+    return makeSongOneQ<MidiSong>(0, 1);
+}
+#endif
 
 /**
  * Makes a one-track song.
  * Track has one quarter note at t=0, duration = eighth.
  * End event at quarter note end.
  */
-MidiSongPtr makeSongOneQ()
+template <class TSong>
+inline std::shared_ptr<TSong> makeSongOneQ()
 {
-    return makeSongOneQ(0, 1);
+    return makeSongOneQ<TSong>(0, 1);
 }
 
 
@@ -86,6 +104,16 @@ static void testMidiVoiceDefaultState()
     assert(mv.state() == MidiVoice::State::Idle);
 }
 
+template <class THost>
+static void assertAllButZeroAreInit(THost *th)
+{
+    for (int i = 1; i < 16; ++i) {
+        assertLT(th->cvValue[i], -10);
+        assert(!th->gateState[i]);
+    }
+}
+
+// TODO: get rid of non-template version
 static void assertAllButZeroAreInit(TestHost2 *th)
 {
     for (int i = 1; i < 16; ++i) {
@@ -515,9 +543,30 @@ static void testVoiceAssignBug()
 
 //********************* test helper functions ************************************************
 
-extern MidiSongPtr makeSongOneQ();
+//extern MidiSongPtr makeSongOneQ();
+
+//template <class TSong>
+//extern std::shared_ptr<TSong> makeSongOneQ();
 
 // song has an eight note starting at time 0
+template <class TPlayer, class THost, class TSong>
+static std::shared_ptr<THost> makeSongOneQandRun(float time)
+{
+    auto song = makeSongOneQ<TSong>();
+    std::shared_ptr<THost> host = std::make_shared<THost>();
+    TPlayer pl(host, song);
+
+    // let's make quantization very fine so these old tests don't freak out
+    pl.updateToMetricTime(time, quantInterval, true);
+
+    // song is only 1.0 long
+    float expectedLoopStart = std::floor(time);
+    assertEQ(pl.getCurrentLoopIterationStart(), expectedLoopStart);
+
+    return host;
+}
+
+// TODO: get rid of non-template version once player 4 is up
 static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
 {
     MidiSongPtr song = makeSongOneQ();
@@ -647,19 +696,22 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
 
 //***************************** MidiPlayer2 ****************************************
 // test that APIs can be called
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayer0()
 {
-    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
+    auto song = TSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    std::shared_ptr<THost> host = std::make_shared<THost>();
+    TPlayer pl(host, song);
     pl.updateToMetricTime(.01f, .25f, true);
 }
 
 // test song has an eight note starting at time 0
 // just play the first note on, but not the note off
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNoteOn()
 {
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .24f);
+    printf("\n\n****** start test\n");
+    std::shared_ptr<THost> host = makeSongOneQandRun<TPlayer, THost, TSong>(2 * .24f);
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->lockConflicts, 0);
@@ -787,7 +839,7 @@ static void testMidiPlayerOverlap()
 static void testMidiPlayerLoop()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ(4, 100);
+    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -812,7 +864,7 @@ static void testMidiPlayerLoop()
 static void testMidiPlayerLoop2()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ(4, 100);
+    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -845,7 +897,7 @@ static void testMidiPlayerLoop2()
 static void testMidiPlayerLoop3()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ(4, 100);
+    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -944,7 +996,7 @@ MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1,
         note->pitchCV = 2.f;
         track->insertEvent(note);
     }
-#
+
     {
         MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
         note->startTime = noteTime2;
@@ -1016,6 +1068,16 @@ static void testQuantizedRetrigger2()
 }
 
 //*******************************tests of MidiPlayer2 **************************************
+
+template <class TPlayer, class THost, class TSong>
+static void playerTests()
+{
+    printf("enter templatized tests\n");
+    testMidiPlayer0<TPlayer, THost, TSong>();
+    //testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
+    printf("leave templatized test\n");
+}
+
 void testMidiPlayer2()
 {
     test0();
@@ -1037,8 +1099,11 @@ void testMidiPlayer2()
     testVoiceAssignRetrigger();
     testVoiceAssignBug();
 
-    testMidiPlayer0();
-    testMidiPlayerOneNoteOn();
+    playerTests<MidiPlayer2, TestHost2, MidiSong>();
+    playerTests<MidiPlayer4, TestHost4, MidiSong4>();
+
+   // testMidiPlayer0<MidiPlayer2>();
+    testMidiPlayerOneNoteOn<MidiPlayer2, TestHost2, MidiSong>();
     testMidiPlayerOneNoteOnWithLockContention();
     testMidiPlayerOneNote();
     testMidiPlayerOneNoteLockContention();

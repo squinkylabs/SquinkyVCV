@@ -39,6 +39,9 @@ public:
 
     std::string getMidiFilePath() override;
     void setMidiFilePath(const std::string&) override;
+
+    virtual std::pair<int, Scale::Scales> getKeysig() override;
+    void setKeysig(int root, Scale::Scales mode) override;
 private:
     SequencerModule* const module;
 
@@ -74,6 +77,9 @@ private:
     bool snapDurationEnabled = false;
 
     std::string midiFilePath;
+
+    int keysigRoot = 0;
+    Scale::Scales keysigMode = Scale::Scales::Minor;
 
     static float grid2Time(Grids);
     static float artic2Number(Artics);

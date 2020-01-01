@@ -1,4 +1,5 @@
 # Seq++ Polyphonic piano-roll sequencer
+
 New features in version 1.0.5: Step record from MIDI keyboard, MIDI file load/save, and user definable keyboard mapping.
 
 ![Seq++ Panel](./seq.png)
@@ -10,6 +11,7 @@ New features in version 1.0.5: Step record from MIDI keyboard, MIDI file load/sa
 [FAQ](./sq-faq.md)\
 [Grids](#Grids)\
 [Editing](#Editing)\
+[Xforms](#Xforms)\
 [Settings](#Settings)\
 [Adjusting length of sequence](#Adjusting-length-of-sequence)\
 [Auditioning notes](#Auditioning-notes)\
@@ -48,6 +50,7 @@ Editing consists mainly of inserting, deleting, and changing notes. If you use S
 Most editing can be done with the mouse or with the keyboard. Many operations can be done much faster with the keyboard, so it can be very rewarding to learn the keyboard commands. There are not that many of them, but unlike the mouse operations they are very difficult to guess; you need to read the manual.
 
 The settings menu can have important effects on many of the editing commands, so be sure to become familiar with the settings.
+
 
 ### General Information
 
@@ -104,6 +107,20 @@ These two simple examples show that most things can be done entirely from the ke
 (5) Make a bar full of sixteenth notes, by pressing the x key sixteen times. Then pick some notes to remove, by holding down the ctrl key and clicking on the notes you want to get rid of. Then press backspace to remove them. Instant rhythm.
 
 (6) Here’s an easy way to enter a chord sequence - in this case DMaj to EMin. Put the cursor on the pitch “D” that is empty. Press shift-Q to insert a quarter note at D. The shift key will keep the cursor from advancing. Now press the up cursor four times to get to F#, and insert this pitch again with shift-Q. While still holding down the shift, cursor up 3 more semitones to A. Now release the shift key and press q again. You will have a DMaj chord of quarter notes, and the cursor will have advanced to the next quarter note. Next, select the chord you just inserted by holding down the shift key and clicking on the top and bottom note. Use ctrl-c to copy the chord to the clipboard. Move cursor to a blank region and press ctrl-v to paste a copy of your DMaj chord to a new beat. Now put the editor in pitch edit mode with the p key, and use the tab key to select each of the notes in the copy of the chord you pasted. As you select the notes, use the + key to transpose them up. Transpose the D up 2 to E, transpose the F# up on to G, and transpose the A by two to B.
+
+## Xforms
+
+The Xforms (short for transforms) are a collection of  "destructive edit operations". They all operate over the selected notes, often transforming a note at one pitch to another pitch.
+
+They all work more or less the same way:
+Select some notes as you normally would in the note grid.
+Pick one of the xforms from the context menu.
+A dialog will come up with settings for that xform. Set them as you like.
+If you press OK, the xform will by applied to the notes you had selected.
+
+Many of the xforms require you to select a scale. The scale is stored in the patch, so once you set it for your patch it should be remembered and you shouldn’t have to re-enter it every time.
+
+Complete details on each xform are in a separate document: [xforms](./xforms.md)
 
 ## Grids
 

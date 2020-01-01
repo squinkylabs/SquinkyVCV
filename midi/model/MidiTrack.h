@@ -101,6 +101,7 @@ public:
         FourTouchingQuarters,       // a measure with four full-duration quarters
         FourAlmostTouchingQuarters,
         FourTouchingQuartersOct,    // a measure with four full-duration quarters, pitch 3,4,5,6
+        eightQNotesCMaj
     };
     static MidiTrackPtr makeTest(TestContent, std::shared_ptr<MidiLock>);
     std::shared_ptr<MidiLock> lock;
@@ -108,6 +109,7 @@ private:
     container events;
 
     static MidiTrackPtr makeTest1(std::shared_ptr<MidiLock>);
+    static MidiTrackPtr makeTestCmaj(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestEmpty(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestNote123(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestOneQ1(std::shared_ptr<MidiLock>);

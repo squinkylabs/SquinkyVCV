@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "SqHelper.h"
 
 class WaveCell : public SvgWidget
 {
@@ -122,6 +123,15 @@ inline WaveformSwitch::WaveformSwitch()
     addSvg(1, "res/waveforms-6-04.svg", "res/waveforms-6-03.svg");
     addSvg(1, "res/waveforms-6-12.svg", "res/waveforms-6-11.svg");
     addSvg(1, "res/waveforms-6-10.svg", "res/waveforms-6-09.svg");
+
+
+    // calculate correct size
+    const int last = cells.size() - 1;
+    const Vec actualSize( 
+        cells[last]->box.pos.x +  cells[last]->box.size.x,
+        cells[last]->box.pos.y +  cells[last]->box.size.y
+        );
+    this->box.size = actualSize;
 }
 
 void WaveformSwitch::addSvg(int row, const char* resOff, const char* resOn)

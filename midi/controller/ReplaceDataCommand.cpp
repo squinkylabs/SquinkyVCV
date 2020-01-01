@@ -3,8 +3,12 @@
 #include "MidiSequencer.h"
 #include "MidiSong.h"
 #include "MidiTrack.h"
+#include "Scale.h"
+#include "ScaleRelativeNote.h"
 #include "SqClipboard.h"
+#include "SqMidiEvent.h"
 #include "TimeUtils.h"
+#include "Triad.h"
 
 #include <assert.h>
 
@@ -68,8 +72,8 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
 
     MidiSelectionModelPtr selection = seq->selection;
     assert(selection);
-    MidiSelectionModelPtr reference = selection->clone();
-    assert(reference);
+   // MidiSelectionModelPtr reference = selection->clone();
+   // assert(reference);
 
     if (!extendSelection) {
         selection->clear();
@@ -210,6 +214,23 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeNoteCommand(
         toRemove,
         toAdd,
         newTrackLength);
+    return ret;
+}
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeFilterNoteCommand(
+    const std::string& name, 
+    std::shared_ptr<MidiSequencer> seq, 
+    FilterFunc lambda)
+{
+    seq->assertValid(); 
+    Xform xform = [lambda](MidiEventPtr event, int) {
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            lambda(note);
+        }
+    };
+    auto ret = makeChangeNoteCommand(Ops::Pitch, seq, xform, false);
+    ret->name = name;
     return ret;
 }
 
@@ -436,3 +457,393 @@ float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float d
     const float durationRequest = roundedBars * 4;
     return durationRequest;
 }
+
+
+// Algorithm
+
+// clone selection -> clone
+
+// enumerate clone, flip the pitches, using selection is ref
+// to add = clone (as vector)
+// to remove = selection (as vector)
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeReversePitchCommand(std::shared_ptr<MidiSequencer> seq)
+{
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+    // will transform the cloned selection, and add it
+    auto clonedSelection = seq->selection->clone();
+    MidiSelectionModel::const_reverse_iterator itDest = clonedSelection->rbegin();
+
+    for (MidiSelectionModel::const_iterator itSrc = seq->selection->begin(); itSrc != seq->selection->end(); ++itSrc) {
+        MidiEventPtr srcEvent = *itSrc;
+        MidiEventPtr destEvent = *itDest;
+
+        MidiNoteEventPtr destNote = safe_cast<MidiNoteEvent>(destEvent);
+        MidiNoteEventPtr srcNote = safe_cast<MidiNoteEvent>(srcEvent);
+
+        if (srcNote) {
+            assert(destNote);
+            destNote->pitchCV = srcNote->pitchCV;
+        }
+        ++itDest;
+    }
+
+    // we will remove all the events in the selection
+    toRemove = seq->selection->asVector();
+    toAdd = clonedSelection->asVector();
+
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "reverse pitches";
+    return ret;
+}
+
+/**************************** CHOP NOTE *************************
+ */
+
+using MidiVector = std::vector<MidiEventPtr>;
+
+static void chopNote(MidiNoteEventPtr note, MidiVector& toAdd, MidiVector& toRemove, int numNotes)
+{
+    const float dur = note->duration;
+    const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
+    if (durTotal > 0) {
+        for (int i = 0; i < numNotes; ++i) {
+            MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+            newNote->startTime = note->startTime + i * durTotal / numNotes;
+            newNote->duration = dur / numNotes;     // keep original articulation
+            newNote->pitchCV = note->pitchCV;
+            toAdd.push_back(newNote);
+        }
+        toRemove.push_back(note);
+    }
+}
+
+static void trillNote(MidiNoteEventPtr note, MidiVector& toAdd, MidiVector& toRemove, int numNotes, int semitones)
+{
+    const float dur = note->duration;
+    const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
+    if (durTotal > 0) {
+        for (int i = 0; i < numNotes; ++i) {
+
+            const int semiPitchOffset = (i % 2) ? semitones : 0;
+            MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+            newNote->startTime = note->startTime + i * durTotal / numNotes;
+            newNote->duration = dur / numNotes;     // keep original articulation
+           
+            float pitchCV = note->pitchCV;
+
+            if (semiPitchOffset) {
+                const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+                const int destSemitone = origSemitone + semiPitchOffset;
+                pitchCV = PitchUtils::semitoneToCV(destSemitone);
+            }
+
+            newNote->pitchCV = pitchCV;
+            toAdd.push_back(newNote);
+        }
+        toRemove.push_back(note);
+    }
+}
+
+static void arpeggiateNote(
+    MidiNoteEventPtr note, 
+    MidiVector& toAdd, 
+    MidiVector& toRemove, 
+    int numNotes, 
+    ScalePtr scale,
+    int steps)
+{
+   const float dur = note->duration;
+    const float durTotal = TimeUtils::getTimeAsPowerOfTwo16th(dur);
+    if (durTotal > 0) {
+        for (int i = 0; i < numNotes; ++i) {
+
+            const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+            int semitonePitchOffset = 0;
+            if (scale) {
+                const int stepsToXpose = i * steps;
+                const int xposedSemi = scale->transposeInScale(origSemitone, stepsToXpose);
+                semitonePitchOffset = xposedSemi - origSemitone;
+            } else {
+                semitonePitchOffset = i * steps;
+            }
+
+            MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
+            newNote->startTime = note->startTime + i * durTotal / numNotes;
+            newNote->duration = dur / numNotes;     // keep original articulation
+            
+            const int destSemitone = origSemitone + semitonePitchOffset;
+            float pitchCV = PitchUtils::semitoneToCV(destSemitone);
+
+            newNote->pitchCV = pitchCV;
+            toAdd.push_back(newNote);
+        }
+        toRemove.push_back(note);
+    }
+}
+
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
+    std::shared_ptr<MidiSequencer> seq, 
+    int numNotes,
+    Ornament ornament,
+    ScalePtr scale,
+    int steps)
+{
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+    // toAdd will get the new notes derived from chopping.
+    for (MidiSelectionModel::const_iterator it = seq->selection->begin(); it != seq->selection->end(); ++it) {
+        MidiEventPtr event = *it;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+       
+        if (note) {
+            if (ornament == Ornament::Trill) {
+                int trillSemis = 0;
+                if (scale) {
+                    const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+                    const int xposedSemi = scale->transposeInScale(origSemitone, steps);
+
+                    trillSemis = xposedSemi - origSemitone;
+                    printf("trill semis = %d\n", trillSemis); fflush(stdout);
+                } else {
+                    trillSemis = steps;
+                }
+                trillNote(note, toAdd, toRemove, numNotes, trillSemis);
+            } else if (ornament == Ornament::Arpeggio) {
+                arpeggiateNote(note, toAdd, toRemove, numNotes, scale, steps);
+               
+            } else {
+                chopNote(note, toAdd, toRemove, numNotes);
+            }
+
+        }
+    }
+
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "chop notes";
+    return ret;
+}
+
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
+    std::shared_ptr<MidiSequencer> seq,
+    TriadType type,
+    ScalePtr scale)
+{
+    ReplaceDataCommandPtr ret = nullptr;
+    switch (type) {
+        case TriadType::RootPosition:
+        case TriadType::FirstInversion:
+        case TriadType::SecondInversion:
+ 
+            ret = makeMakeTriadsCommandNorm(seq, type, scale);
+            break;
+        default:
+            assert(false);
+            printf("bad triad type\n"); fflush(stdout);
+            ret = makeMakeTriadsCommandNorm(seq, type, scale);
+            break;
+        case TriadType::Auto2:
+        case TriadType::Auto:
+            ret = makeMakeTriadsCommandAuto(seq, type, scale);
+    }
+    return ret;
+}
+
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandAuto(
+    std::shared_ptr<MidiSequencer> seq,
+    TriadType type,
+    ScalePtr scale)
+{
+    assert((type == TriadType::Auto) || (type == TriadType::Auto2));
+    const bool searchOctaves = (type == TriadType::Auto2);
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+    TriadPtr triad;     // the last one we made
+    for (MidiSelectionModel::const_reverse_iterator it = seq->selection->rbegin(); it != seq->selection->rend(); ++it) {
+        MidiEventPtr event = *it;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+
+        if (note) {
+            const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+            ScaleRelativeNote srn = scale->getScaleRelativeNote(origSemitone);
+
+            // only make triads from scale tones
+            if (!srn.valid) {
+                triad = nullptr;            // start over on non-scale
+            } else {
+                toRemove.push_back(event);                  // when we make a triad, remove the orig
+                if (!triad) {
+                    // if we are the first one (from the end), use root
+                    triad = Triad::make(scale, srn, Triad::Inversion::Root);
+                } else {
+                    triad = Triad::make(scale, srn, *triad, searchOctaves);
+                }
+
+                auto cvs = triad->toCv(scale);
+                MidiNoteEventPtr root = std::make_shared<MidiNoteEvent>(*note);
+                MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
+                MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
+
+                root->pitchCV = cvs[0];
+                third->pitchCV = cvs[1];
+                fifth->pitchCV = cvs[2];
+                toAdd.push_back(root);
+                toAdd.push_back(third);
+                toAdd.push_back(fifth);
+            }
+        }
+    }
+     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "make triads";
+    return ret;
+
+}
+
+ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandNorm(
+    std::shared_ptr<MidiSequencer> seq,
+    TriadType type,
+    ScalePtr scale)
+{
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+    for (MidiSelectionModel::const_iterator it = seq->selection->begin(); it != seq->selection->end(); ++it) {
+        MidiEventPtr event = *it;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+
+        if (note) {
+            const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+            ScaleRelativeNote srn = scale->getScaleRelativeNote(origSemitone);
+
+            // only make triads from scale tones
+            if (srn.valid) {
+                Triad::Inversion inversion = Triad::Inversion::Root;
+                switch (type) {
+                    case TriadType::RootPosition:
+                        inversion = Triad::Inversion::Root;
+                        break;
+                    case TriadType::FirstInversion:
+                        inversion = Triad::Inversion::First;
+                        break;
+                    case TriadType::SecondInversion:
+                        inversion = Triad::Inversion::Second;
+                        break;
+                    default:
+                        assert(false);
+                        printf("bad triad type\n"); fflush(stdout);
+                }
+                // make the triad of the correct inversion
+                TriadPtr triad = Triad::make(scale, srn, inversion);
+                // and convert back to native pitch CV
+                auto cvs = triad->toCv(scale);
+
+
+                // now convert it back to notes
+                MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
+                MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
+
+                assertEQ(cvs[0], note->pitchCV);
+                third->pitchCV = cvs[1];
+                fifth->pitchCV = cvs[2];
+                toAdd.push_back(third);
+                toAdd.push_back(fifth);
+            }
+        }
+    }
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "make triads";
+    return ret;
+}
+
+
+#if 0 // second way
+ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommand(
+    std::shared_ptr<MidiSequencer> seq,
+    TriadType type,
+    ScalePtr scale)
+{
+    std::vector<MidiEventPtr> toRemove;
+    std::vector<MidiEventPtr> toAdd;
+
+    for (MidiSelectionModel::const_iterator it = seq->selection->begin(); it != seq->selection->end(); ++it) {
+        MidiEventPtr event = *it;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+
+        if (note) {
+            const int origSemitone = PitchUtils::cvToSemitone(note->pitchCV);
+            ScaleRelativeNote srn = scale->getScaleRelativeNote(origSemitone);
+
+            // only make triads from scale tones
+            if (srn.valid) {
+                // start with third and fifth in first position
+                ScaleRelativeNotePtr srnThird = scale->transposeDegrees(srn, 2);
+                ScaleRelativeNotePtr srnFifth = scale->transposeDegrees(srn, 4);
+                MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
+                MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
+                switch (type) {
+                    case TriadType::RootPosition:
+                        break;
+                    case TriadType::FirstInversion:
+                        srnThird = scale->transposeOctaves(*srnThird, -1);
+                        break;
+                    case TriadType::SecondInversion:
+                        srnFifth = scale->transposeOctaves(*srnFifth, -1);
+                        break;
+                    default:
+                        assert(false);
+                        printf("bad triad type\n"); fflush(stdout);
+                }
+                const int semitoneThird = scale->getSemitone(*srnThird);
+                third->pitchCV = PitchUtils::semitoneToCV(semitoneThird);
+
+                const int semitoneFifth = scale->getSemitone(*srnFifth);
+                fifth->pitchCV = PitchUtils::semitoneToCV(semitoneFifth);
+
+                toAdd.push_back(third);
+                toAdd.push_back(fifth);
+            }
+        }
+    }
+
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd);
+    ret->name = "make triads";
+    return ret;
+}
+#endif

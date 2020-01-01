@@ -1,14 +1,16 @@
 
 #pragma once
 
+#include "InputScreenManager.h"
 #include "MidiSequencer.h"
 #include "NoteScreenScale.h"
 #include "Seq.h"
 
 class KbdManager;
-class InputScreenSet;
+class InputScreenManager;
 using KbdManagerPtr = std::shared_ptr<KbdManager>;
-using InputScreenSetPtr = std::shared_ptr<InputScreenSet>;
+using InputScreenManagerPtr = std::shared_ptr<InputScreenManager>;
+
 
 /**
  * This class needs some refactoring and renaming.
@@ -45,7 +47,8 @@ private:
     KbdManagerPtr kbdManager;
 #endif
 #ifdef _XFORM
-    InputScreenSetPtr iss;
+    InputScreenManagerPtr ism;
+    bool enabled = true;                // hack to make event propegation work
 #endif
 
     void initEditContext();
@@ -83,5 +86,7 @@ private:
     void onDragDrop(const event::DragDrop &e) override;
     bool handleKey(int key, int mods, int action);
 
-    void doTest();
+    void doXform(InputScreenManager::Screens screenCode);
+    void addXformMenuItems(::rack::ui::Menu* menu);
+    void addXformMenuItem(::rack::ui::Menu* menu, InputScreenManager::Screens);
 };

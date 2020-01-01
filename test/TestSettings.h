@@ -58,6 +58,14 @@ public:
         midiFilePath = s;
     }
 
+    virtual std::pair<int, Scale::Scales> getKeysig() override
+    {
+        return std::make_pair<int, Scale::Scales>(0, Scale::Scales::Major);
+    }
+    void setKeysig(int root, Scale::Scales mode) override
+    {
+    }
+
     std::string midiFilePath;
     float _articulation = 1;
     float _quartersInGrid = .25;

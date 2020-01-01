@@ -37,9 +37,12 @@
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiEditorTab.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiFileProxy.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiLock.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiPlayer2.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiPlayer4.cpp" />
+    <ClCompile Include="..\..\midi\controller\MidiTrackPlayer.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiVoice.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiVoiceAssigner.cpp" />
     <ClCompile Include="..\..\midi\controller\NewSongDataDataCommand.cpp" />
@@ -48,8 +51,12 @@
     <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSequencer.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
+    <ClCompile Include="..\..\midi\model\MidiSong4.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
+    <ClCompile Include="..\..\midi\model\Scale.cpp" />
+    <ClCompile Include="..\..\midi\model\ScaleRelativeNote.cpp" />
     <ClCompile Include="..\..\midi\model\SqClipboard.cpp" />
+    <ClCompile Include="..\..\midi\model\Triad.cpp" />
     <ClCompile Include="..\..\midi\view\MidiEditorContext.cpp" />
     <ClCompile Include="..\..\midi\view\NoteScreenScale.cpp" />
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp" />
@@ -112,6 +119,7 @@
     <ClCompile Include="..\..\test\testReplaceCommand.cpp" />
     <ClCompile Include="..\..\test\testRingBuffer.cpp" />
     <ClCompile Include="..\..\test\testSaw.cpp" />
+    <ClCompile Include="..\..\test\testScale.cpp" />
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
@@ -125,6 +133,7 @@
     <ClCompile Include="..\..\test\testTestSignal.cpp" />
     <ClCompile Include="..\..\test\testThread.cpp" />
     <ClCompile Include="..\..\test\testTremolo.cpp" />
+    <ClCompile Include="..\..\test\testTriad.cpp" />
     <ClCompile Include="..\..\test\testUndoRedo.cpp" />
     <ClCompile Include="..\..\test\testUtils.cpp" />
     <ClCompile Include="..\..\test\testVCO.cpp" />
@@ -215,6 +224,7 @@
     <ClInclude Include="..\..\midi\controller\MidiKeyboardHandler.h" />
     <ClInclude Include="..\..\midi\controller\MidiLock.h" />
     <ClInclude Include="..\..\midi\controller\MidiPlayer2.h" />
+    <ClInclude Include="..\..\midi\controller\MidiPlayer4.h" />
     <ClInclude Include="..\..\midi\controller\MidiVoice.h" />
     <ClInclude Include="..\..\midi\controller\MidiVoiceAssigner.h" />
     <ClInclude Include="..\..\midi\controller\NewSongDataCommand.h" />
@@ -224,6 +234,9 @@
     <ClInclude Include="..\..\midi\controller\StepRecordInput.h" />
     <ClInclude Include="..\..\midi\controller\UndoRedoStack.h" />
     <ClInclude Include="..\..\midi\model\ISeqSettings.h" />
+    <ClInclude Include="..\..\midi\model\MidiSong4.h" />
+    <ClInclude Include="..\..\midi\model\Scale.h" />
+    <ClInclude Include="..\..\midi\model\ScaleRelativeNote.h" />
     <ClInclude Include="..\..\midi\model\SqMidiEvent.h" />
     <ClInclude Include="..\..\midi\model\MidiSequencer.h" />
     <ClInclude Include="..\..\midi\model\MidiSong.h" />
@@ -232,6 +245,7 @@
     <ClInclude Include="..\..\midi\model\PitchUtils.h" />
     <ClInclude Include="..\..\midi\model\SqClipboard.h" />
     <ClInclude Include="..\..\midi\model\TimeUtils.h" />
+    <ClInclude Include="..\..\midi\model\Triad.h" />
     <ClInclude Include="..\..\midi\view\MidiEditorContext.h" />
     <ClInclude Include="..\..\midi\view\NoteScreenScale.h" />
     <ClInclude Include="..\..\sqsrc\clock\ClockMult.h" />

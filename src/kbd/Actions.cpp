@@ -289,7 +289,7 @@ void Actions::moveDownOctave(ActionContext& context)
 
 void Actions::selectPrevious(ActionContext& context)
 {
-    context.sequencer->editor->selectNextNote();
+    context.sequencer->editor->selectPrevNote();
 }
 void Actions::selectPreviousExtend(ActionContext& context)
 {
@@ -384,8 +384,7 @@ void Actions::deleteNote(ActionContext& context)
    context.sequencer->editor->deleteNote();
 }
 
-
-void Actions::grabDefaultNote(ActionContext&)
+void Actions::grabDefaultNote(ActionContext& context)
 {
-   assert(false);
+   context.sequencer->editor->grabDefaultNote();
 }

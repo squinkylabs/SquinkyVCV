@@ -26,12 +26,14 @@ private:
     static json_t *toJson(std::shared_ptr<MidiEndEvent>);
     static json_t *toJson(std::shared_ptr<MidiEvent>);
     static json_t *toJson(std::shared_ptr<ISeqSettings>);
+    static json_t *toJson(const SubrangeLoop& loop);
 
     static MidiSongPtr fromJsonSong(json_t *data);
     static MidiTrackPtr fromJsonTrack(json_t *data, int index, std::shared_ptr<MidiLock>);
     static MidiEventPtr fromJsonEvent(json_t *data);
     static MidiNoteEventPtr fromJsonNoteEvent(json_t *data);
     static MidiEndEventPtr fromJsonEndEvent(json_t *data);
+    static std::shared_ptr<SubrangeLoop> fromJsonSubrangeLoop(json_t* data);
     static std::shared_ptr<ISeqSettings> fromJsonSettings(json_t* data, SequencerModule*);
 
     static const int typeNote = 1;

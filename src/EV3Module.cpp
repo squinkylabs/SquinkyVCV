@@ -1,7 +1,6 @@
 #include "Squinky.hpp"
 
 #ifdef _EV3
-#include "ctrl/WaveformSelector.h"
 #include "ctrl/WaveformSwitch.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqMenuItem.h"
@@ -406,19 +405,11 @@ void EV3Widget::makeSection(EV3Module *module, int index, std::shared_ptr<ICompo
     const float y4 = y3 + 43;
     const float xx = x - 12;
 
-#if 1
- addParam(SqHelper::createParam<WaveformSwitch>(
+    addParam(SqHelper::createParam<WaveformSwitch>(
         icomp,
         Vec(xx, y4),
         module,
         Comp::WAVE1_PARAM + delta * index));
-#else
-    addParam(SqHelper::createParam<WaveformSelector>(
-        icomp,
-        Vec(xx, y4),
-        module,
-        Comp::WAVE1_PARAM + delta * index));
-#endif
 }
 
 void EV3Widget::makeSections(EV3Module* module, std::shared_ptr<IComposite> icomp)

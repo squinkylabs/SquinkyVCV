@@ -78,6 +78,8 @@ extern void testAudition();
 extern void testStepRecordInput();
 extern void testMidiFile();
 extern void testNewSongDataDataCommand();
+extern void testScale();
+extern void testTriad();
 
 #if 0
 #include <sstream>
@@ -169,6 +171,8 @@ int main(int argc, char ** argv)
     testNewSongDataDataCommand();
     testUndoRedo();
     testMidiViewport();
+    testScale();
+    testTriad();
  
     testMidiFile();
     testMidiControllers();

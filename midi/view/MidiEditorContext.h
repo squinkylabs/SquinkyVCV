@@ -11,6 +11,8 @@ class NoteScreenScale;
 
 using MidiSongPtr = std::shared_ptr<MidiSong>;
 
+#define _NEWTAB
+
 class MidiEditorContext  : public std::enable_shared_from_this<MidiEditorContext>
 {
 public:
@@ -164,6 +166,21 @@ public:
     float insertNoteDuration = 0;
 
     void setNewSong(MidiSongPtr song);
+
+#ifdef _NEWTAB
+    /**
+     * The cursor note is the note that is (will be)
+     * at the edit cursor.
+     */
+    void setCursorNote(MidiNoteEventPtr);
+
+    /**
+     * Will get the cursor not if it still is in the track,
+     * and still selected.
+     */
+    MidiNoteEventPtr getCursorNote(std::shared_ptr<MidiSelectionModel>);
+    
+#endif
     
 private:
     float m_cursorTime = 0;
@@ -187,7 +204,9 @@ private:
 
     std::shared_ptr<ISeqSettings> _settings;
 
-   
+#ifdef _NEWTAB
+    std::weak_ptr<MidiNoteEvent> cursorNote;
+#endif
 };
 
 using MidiEditorContextPtr = std::shared_ptr<MidiEditorContext>;

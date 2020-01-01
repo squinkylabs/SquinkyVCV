@@ -1,7 +1,9 @@
 #include "MidiLock.h"
 #include "MidiSong.h"
+#include "MidiSong4.h"
 #include "MidiTrack.h"
 #include "SqClipboard.h"
+#include "TimeUtils.h"
 
 #include "asserts.h"
 
@@ -20,22 +22,6 @@ static void test1()
     song->createTrack(10);
     song->getTrack(10)->insertEnd(0);
     assertEQ(song->getHighestTrackNumber(), 10);
-    song->assertValid();
-}
-
-static void test2()
-{
-    MidiSongPtr song = std::make_shared<MidiSong>();
-    song->createTrack(0);
-    assertEQ(song->getHighestTrackNumber(), 0);
-
-    auto track = song->getTrack(0);
-    assert(track);
-
-    for (auto ev : *track) {
-        assert(false);              // there should be no events in the track
-    }
-    track->assertValid();
     song->assertValid();
 }
 
@@ -78,6 +64,29 @@ static void testClip1()
     assert(p);
 }
 
+static void testSong4_1()
+{
+    MidiSong4Ptr song = std::make_shared<MidiSong4>();
+    assertEQ(MidiSong4::numTracks, 4);
+    assertEQ(MidiSong4::numSectionsPerTrack, 4);
+
+    for (int tk = 0; tk < MidiSong4::numTracks; ++tk) {
+        assertEQ(song->getTrackLength(tk), 0.f);
+        for (int sect = 0; sect < MidiSong4::numSectionsPerTrack; ++sect) {
+            assert(song->getTrack(tk, sect) == nullptr);
+        }
+    }
+}
+
+static void testSong4_2()
+{
+    MidiSong4Ptr song = MidiSong4::makeTest(MidiTrack::TestContent::empty, 2, 3);
+    assertEQ(MidiSong4::numTracks, 4);
+    assertEQ(MidiSong4::numSectionsPerTrack, 4);
+    assert(song->getTrack(2, 3) != nullptr);
+    assertEQ(song->getTrackLength(2), TimeUtils::quarterNote() * 8);
+}
+
 void testMidiSong()
 {
     test0();
@@ -85,5 +94,8 @@ void testMidiSong()
     testDefSong();
 
     testClip1();
+
+    testSong4_1();
+    testSong4_2();
     assertNoMidi();     // check for leaks
 }
