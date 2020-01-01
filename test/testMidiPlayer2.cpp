@@ -89,7 +89,7 @@ static void test0()
 
 //************************** MidiVoice tests *********************************************
 
-void initVoices(MidiVoice* voices, int numVoices, IMidiPlayerHost* host)
+void initVoices(MidiVoice* voices, int numVoices, IMidiPlayerHost4* host)
 {
     for (int i = 0; i < numVoices; ++i) {
         voices[i].setHost(host);
@@ -141,7 +141,7 @@ static void testMidiVoicePlayNote()
 static void testMidiVoicePlayNoteVoice2()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv[2];
 
     initVoices(mv, 2, host);
@@ -158,7 +158,7 @@ static void testMidiVoicePlayNoteVoice2()
 static void testMidiVoicePlayNoteOnAndOff()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv;
     initVoices(&mv, 1, host);
 
@@ -176,7 +176,7 @@ static void testMidiVoicePlayNoteOnAndOff()
 static void testMidiVoiceRetrigger()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv;
     initVoices(&mv, 1, host);
 
@@ -197,7 +197,7 @@ static void testMidiVoiceRetrigger()
 static void testMidiVoiceRetrigger2()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv;
     initVoices(&mv, 1, host);
     mv.setSampleCountForRetrigger(100);
@@ -240,7 +240,7 @@ static void basicTestOfVoiceAssigner()
 static void testVoiceAssign2Notes()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv[2];
     initVoices(mv, 2, host);
 
@@ -1074,7 +1074,7 @@ static void playerTests()
 {
     printf("enter templatized tests\n");
     testMidiPlayer0<TPlayer, THost, TSong>();
-    //testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
+    testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
     printf("leave templatized test\n");
 }
 
@@ -1103,7 +1103,7 @@ void testMidiPlayer2()
     playerTests<MidiPlayer4, TestHost4, MidiSong4>();
 
    // testMidiPlayer0<MidiPlayer2>();
-    testMidiPlayerOneNoteOn<MidiPlayer2, TestHost2, MidiSong>();
+   // testMidiPlayerOneNoteOn<MidiPlayer2, TestHost2, MidiSong>();
     testMidiPlayerOneNoteOnWithLockContention();
     testMidiPlayerOneNote();
     testMidiPlayerOneNoteLockContention();

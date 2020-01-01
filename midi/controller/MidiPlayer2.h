@@ -3,7 +3,7 @@
 #include <memory>
 
 class MidiSong;
-class IMidiPlayerHost;
+class IMidiPlayerHost4;
 
 #include "MidiTrack.h"
 #include "MidiVoice.h"
@@ -12,7 +12,7 @@ class IMidiPlayerHost;
 class MidiPlayer2
 {
 public:
-    MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song);
+    MidiPlayer2(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong> song);
     void setSong(std::shared_ptr<MidiSong> song);
 
     /**
@@ -37,7 +37,7 @@ public:
     void updateSampleCount(int numElapsed);
 
 private:
-    std::shared_ptr<IMidiPlayerHost> host;
+    std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong> song;
 
     static const int maxVoices = 16;

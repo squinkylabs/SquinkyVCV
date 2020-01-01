@@ -2,8 +2,7 @@
 
 
 // #define _MLOG
-
-class IMidiPlayerHost;
+class IMidiPlayerHost4;
 
 /**
  * Midi voice represents one "voice" of playback, so typically
@@ -23,7 +22,7 @@ class MidiVoice
 {
 public:
     enum class State {Idle, Playing, ReTriggering };
-    void setHost(IMidiPlayerHost*);
+    void setHost(IMidiPlayerHost4*);
     void setIndex(int);
     void setSampleCountForRetrigger(int samples);
 
@@ -82,10 +81,16 @@ private:
     int retriggerSampleCounter = 0;
     int numSamplesInRetrigger = 0;
 
-    IMidiPlayerHost* host = nullptr;
+    IMidiPlayerHost4* host = nullptr;
 
     State curState = State::Idle;
+
+    /**
+     * Index is the voice number was are associated with, 0..15
+     */
     int index = 0;
+    
+    int track = 0;
 
     void setGate(bool);
     void setCV(float);

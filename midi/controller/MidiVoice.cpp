@@ -10,7 +10,7 @@ MidiVoice::State MidiVoice::state() const
     return curState;
 }
 
-void MidiVoice::setHost(IMidiPlayerHost* ph)
+void MidiVoice::setHost(IMidiPlayerHost4* ph)
 {
     host = ph;
 }
@@ -23,12 +23,12 @@ void MidiVoice::setIndex(int i)
 void MidiVoice::setGate(bool g)
 {
    // printf("mv::setGate(%d) %d\n ", index, g);
-    host->setGate(index, g);
+    host->setGate(index, track, g);
 }
 
 void MidiVoice::setCV(float cv)
 {
-    host->setCV(index, cv);
+    host->setCV(index, track, cv);
 }
 
 float MidiVoice::pitch() const

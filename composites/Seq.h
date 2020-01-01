@@ -167,14 +167,15 @@ private:
 };
 
 template <class TBase>
-class SeqHost : public IMidiPlayerHost
+class SeqHost : public IMidiPlayerHost4
 {
 public:
     SeqHost(Seq<TBase>* s) : seq(s)
     {
     }
-    void setGate(int voice, bool gate) override
+    void setGate(int voice, int track, bool gate) override
     {
+        assert(track == 0);
 #if defined(_MLOG)
         printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
             voice, 
@@ -184,8 +185,9 @@ public:
 #endif
         seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
-    void setCV(int voice, float cv) override
+    void setCV(int voice, int track, float cv) override
     {
+        assert(track == 0);
 #if defined(_MLOG)
         printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
             voice, 
@@ -206,7 +208,7 @@ private:
 template <class TBase>
 void  Seq<TBase>::init(MidiSongPtr song)
 { 
-    std::shared_ptr<IMidiPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
+    std::shared_ptr<IMidiPlayerHost4> host = std::make_shared<SeqHost<TBase>>(this);
     player = std::make_shared<MidiPlayer2>(host, song);
     audition = std::make_shared<MidiAudition>(host);
 

@@ -5,6 +5,7 @@
 /**
  * Implemented by a class that wants to host a Midi Player
  */
+#if 0
 class IMidiPlayerHost
 {
 public:
@@ -15,10 +16,12 @@ public:
 };
 
 using IMidiPlayerHostPtr = std::shared_ptr<IMidiPlayerHost>;
+#endif
 
 
 /**
- * Implemented by a class that wants to host a Midi Player
+ * Implemented by a class that wants to host a Midi Player.
+ * Single track players can ignore the track parameter.
  */
 class IMidiPlayerHost4
 {
@@ -29,7 +32,7 @@ public:
     virtual ~IMidiPlayerHost4() = default;
 };
 
-using IMidiPlayerHostPtr = std::shared_ptr<IMidiPlayerHost>;
+using IMidiPlayerHost4Ptr = std::shared_ptr<IMidiPlayerHost4>;
 
 
 /**
