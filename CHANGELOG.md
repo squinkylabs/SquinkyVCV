@@ -4,6 +4,8 @@
 
 Seq++ new feature - "xforms".
 
+Enhanced FAQ for Seq++.
+
 Seq++ bug fix: Subrange loop now saved with patch. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/127)
 
 Seq++ bug fix: Tab key frequently doesn't work in note grid. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/125)
