@@ -499,7 +499,7 @@ void NoteDisplay::doXform(InputScreenManager::Screens screenCode)
 {
     assert(ism);
     InputScreenManager::Callback cb = [this]() {
-        DEBUG("in callback from  InputScreenManager ");
+        // DEBUG("in callback from  InputScreenManager ");
         this->enabled = true;           // re-enable UI processing of events
     };
 

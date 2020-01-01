@@ -87,7 +87,7 @@ public:
     {
         parent->text = this->text;
         ::rack::event::Change ce;
-        DEBUG("popup onAction, parent = %p, paramq = %p", parent, parent->paramQuantity);
+        // DEBUG("popup onAction, parent = %p, paramq = %p", parent, parent->paramQuantity);
         if (parent->paramQuantity) {
             parent->paramQuantity->setValue(index);
         }   

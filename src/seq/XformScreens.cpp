@@ -37,6 +37,10 @@ XformInvert::XformInvert(
 
 void XformInvert::execute()
 {
+    // don't generate an undo record if nothing to do.
+    if (sequencer->selection->empty()) {
+        return;
+    }
     const auto keysig = getKeysig(1);
     saveKeysig(1);
 
@@ -92,6 +96,10 @@ XformTranspose::XformTranspose(
 
 void XformTranspose::execute()
 { 
+    // don't generate an undo record if nothing to do.
+    if (sequencer->selection->empty()) {
+        return;
+    }
     XformLambda xform;
     PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[0]);
     assert(widget);
@@ -125,6 +133,10 @@ XformReversePitch::XformReversePitch(
 
 void XformReversePitch::execute()
 {
+    // don't generate an undo record if nothing to do.
+    if (sequencer->selection->empty()) {
+        return;
+    }
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makeReversePitchCommand(sequencer);
     sequencer->undo->execute(sequencer, cmd);
 }
@@ -175,6 +187,10 @@ XformChopNotes::XformChopNotes(
 
 void XformChopNotes::execute()
 {
+    // don't generate an undo record if nothing to do.
+    if (sequencer->selection->empty()) {
+        return;
+    }
     PitchInputWidget* widget = dynamic_cast<PitchInputWidget*>(inputControls[2]);
     assert(widget);
 
@@ -224,6 +240,10 @@ XFormQuantizePitch::XFormQuantizePitch(
 
 void XFormQuantizePitch::execute()
 {
+    // don't generate an undo record if nothing to do.
+    if (sequencer->selection->empty()) {
+        return;
+    }
     auto keysig = getKeysig(0);
     saveKeysig(0);
     //scale = Scale::getScale(keysig.second, keysig.first);
@@ -255,6 +275,10 @@ XFormMakeTriads::XFormMakeTriads(
 
 void XFormMakeTriads::execute()
 {
+    // don't generate an undo record if nothing to do.
+    if (sequencer->selection->empty()) {
+        return;
+    }
     auto keysig = getKeysig(1);
     saveKeysig(1);
 

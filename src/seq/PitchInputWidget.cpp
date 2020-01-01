@@ -56,10 +56,10 @@ void PitchInputWidget::setChromatic(bool mode)
 void PitchInputWidget::addMainLabel(const std::string& labelText, const ::rack::math::Vec& pos)
 {
     auto labelCtrl = addLabel(Vec(0, pos.y), labelText.c_str());
-    DEBUG("adding label at %.2f,%.2f", labelCtrl->box.pos.x, labelCtrl->box.pos.y);
+    // DEBUG("adding label at %.2f,%.2f", labelCtrl->box.pos.x, labelCtrl->box.pos.y);
 
     labelCtrl->box.size.x = pos.x - 10;
-    DEBUG(" label text = %s, size=%.2f,%.2f", labelText.c_str(), labelCtrl->box.size.x, labelCtrl->box.size.y); 
+    // DEBUG(" label text = %s, size=%.2f,%.2f", labelText.c_str(), labelCtrl->box.size.x, labelCtrl->box.size.y); 
     labelCtrl->alignment = Label::RIGHT_ALIGNMENT;
 }
 
@@ -108,7 +108,7 @@ static std::vector<std::string> scaleDegrees = {
 
 void PitchInputWidget::addOctaveControl(const ::rack::math::Vec& pos)
 {
-    DEBUG("adding octaves at %.2f,%.2f", pos.x, pos.y);
+    // DEBUG("adding octaves at %.2f,%.2f", pos.x, pos.y);
     std::vector<std::string>& oct = relative ? octavesRel : octaves;
     auto pop = new InputPopupMenuParamWidget();
     pop->setLabels(oct);
@@ -169,10 +169,10 @@ void PitchInputWidget::addScaleRelativeControl(const ::rack::math::Vec& pos)
     l->alignment = Label::RIGHT_ALIGNMENT;  
     check->setCallback([this, check]() {
         // TODO: also call back to host so can flip keysig on and off
-        DEBUG("in scale relative callback. must flip checkValue = %.2f\n", check->getValue());
+        // DEBUG("in scale relative callback. must flip checkValue = %.2f\n", check->getValue());
         this->setChromatic(check->getValue() < .5f);
     });
-    DEBUG("add check, value =  %.2f\n", check->getValue());
+    // DEBUG("add check, value =  %.2f\n", check->getValue());
     this->keepInScale = check;
 }
 
@@ -217,7 +217,7 @@ int PitchInputWidget::transposeSemis() const
 int PitchInputWidget::absoluteSemis() const
 {
     const int absSemis = int(std::round(chromaticPitchInput->getValue()));
-    DEBUG("returning abs semis = %d", absSemis);
+    // DEBUG("returning abs semis = %d", absSemis);
     return absSemis;
 }
 
@@ -226,7 +226,7 @@ int PitchInputWidget::absoluteDegrees() const
     const int middleDegreeIndex = 7;
     assert(scaleDegrees[middleDegreeIndex] == "root");
     const int absDegrees = middleDegreeIndex - int(std::round(scaleDegreesInput->getValue()));
-    DEBUG("returning abs degress %d", absDegrees);
+    // DEBUG("returning abs degress %d", absDegrees);
     return absDegrees;
 }
 int PitchInputWidget::absoluteOctaves() const

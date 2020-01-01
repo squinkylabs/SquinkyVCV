@@ -1,5 +1,21 @@
 # Change log for Squinky Labs modules
 
+## 1.0.6
+
+Seq++ new feature - "xforms".
+
+Seq++ bug fix: Subrange loop now saved with patch. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/127)
+
+Seq++ bug fix: Tab key frequently doesn't work in note grid. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/125)
+
+Seq++ bug fix: Midi File I/O shifts pitch by an octave. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/123)
+
+Mixer bug fix: Typo in manual. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/121)
+
+EV3 bug fix: Tooltip for waveforms comes up in wrong place. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/120)
+
+Seq++ bug fix: Can't reliably change snap to grid settings from context menu. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/119)
+
 ## 1.0.5
 
 Seq++ has MIDI file input.
