@@ -24,6 +24,7 @@ public:
     enum class State {Idle, Playing, ReTriggering };
     void setHost(IMidiPlayerHost4*);
     void setIndex(int);
+    void setTrack(int);
     void setSampleCountForRetrigger(int samples);
 
     /**
@@ -86,10 +87,11 @@ private:
     State curState = State::Idle;
 
     /**
-     * Index is the voice number was are associated with, 0..15
+     * Index is the voice number was are associated with, 0..15.
+     * These can't be const, as we need to have a default ctor.
      */
     int index = 0;
-    
+
     int track = 0;
 
     void setGate(bool);

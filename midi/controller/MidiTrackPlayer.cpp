@@ -2,17 +2,15 @@
 
 #include <stdio.h>
 
-MidiTrackPlayer::MidiTrackPlayer() :
+MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int track) :
   voiceAssigner(voices, 16)
 {
-    printf("mtp nimp\n");
-    #if 0
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
         vx.setHost(host.get());
+        vx.setTrack(track);
         vx.setIndex(i);
     }
-    #endif
 }
 
 void MidiTrackPlayer::resetAllVoices(bool clearGates)

@@ -20,6 +20,11 @@ void MidiVoice::setIndex(int i)
     index = i;
 }
 
+void MidiVoice::setTrack(int i)
+{
+    track = i;
+}
+
 void MidiVoice::setGate(bool g)
 {
    // printf("mv::setGate(%d) %d\n ", index, g);

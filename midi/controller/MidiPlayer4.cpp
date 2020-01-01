@@ -11,7 +11,7 @@ MidiPlayer4::MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr
 {
 //MidiTrackPlayerPtr
     for (int i = 0; i<MidiSong4::numTracks; ++i) {
-        trackPlayers.push_back( std::make_shared<MidiTrackPlayer>());
+        trackPlayers.push_back( std::make_shared<MidiTrackPlayer>(host, i));
     }
 }
 
