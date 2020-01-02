@@ -12,7 +12,9 @@ using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
 class MidiPlayer4
 {
 public:
-     MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
+    MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
+
+    void setSong(std::shared_ptr<MidiSong4> song);
 
          /**
      * Main "play something" function.

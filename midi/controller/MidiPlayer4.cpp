@@ -15,6 +15,11 @@ MidiPlayer4::MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr
     }
 }
 
+void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> song)
+{
+    printf("setSong nimp\n");
+}
+
 void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
 {
 #if defined(_MLOG) && 0
