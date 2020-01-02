@@ -5,13 +5,15 @@
 #include <stdio.h>
 #include <assert.h>
 
-MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int track) :
-  voiceAssigner(voices, 16)
+MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) :
+    song(_song),
+    voiceAssigner(voices, 16),
+    track(song->getTrack(0))
 {
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
         vx.setHost(host.get());
-        vx.setTrack(track);
+        vx.setTrack(trackIndex);
         vx.setIndex(i);
     }
 }
@@ -86,6 +88,20 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
 
 bool MidiTrackPlayer::pollForNoteOff(double metricTime)
 {
-    assert(false);
-    return false;
+    bool didSomething = false;
+    for (int i = 0; i < numVoices; ++i) {
+        bool b = voices[i].updateToMetricTime(metricTime);
+        if (b) {
+            didSomething = true;;
+        }
+    }
+    return didSomething;
+}
+
+void MidiTrackPlayer::reset()
+{
+    assert(track);
+    curEvent = track->begin();
+    voiceAssigner.reset();
+    currentLoopIterationStart = 0;
 }
