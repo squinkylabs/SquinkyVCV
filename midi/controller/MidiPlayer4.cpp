@@ -67,12 +67,12 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
     }
 #endif
      // keep processing events until we are caught up
-    printf("need to modify play once to be in track players\n");
-#if 0
-    while (playOnce(metricTime, quantizationInterval)) {
-
+    for (int i=0; i < MidiSong4::numTracks; ++i) {
+        auto trackPlayer = trackPlayers[i];
+        assert(trackPlayer);
+        while (trackPlayer->playOnce(metricTime, quantizationInterval)) {
+        }
     }
-#endif
 }
 
 double MidiPlayer4::getCurrentLoopIterationStart() const

@@ -1,6 +1,9 @@
 #include "MidiTrackPlayer.h"
+#include "MidiSong4.h"
+#include "TimeUtils.h"
 
 #include <stdio.h>
+#include <assert.h>
 
 MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int track) :
   voiceAssigner(voices, 16)
@@ -19,4 +22,70 @@ void MidiTrackPlayer::resetAllVoices(bool clearGates)
         for (int i = 0; i < numVoices; ++i) {
         voices[i].reset(clearGates);
     }
+}
+
+bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
+{
+  #if defined(_MLOG) && 0
+    printf("MidiPlayer::playOnce metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizeInterval);
+#endif
+    bool didSomething = false;
+
+    didSomething = pollForNoteOff(metricTime);
+    if (didSomething) {
+        return true;
+    }
+
+    // push the start time up by loop start, so that event t==loop start happens at start of loop
+    const double eventStartUnQuantized = (currentLoopIterationStart + curEvent->first);
+
+    // Treat loop end just like track end. loop back around
+    // when we pass then end.
+#if 0   // we don't have subrange loop
+    if (song->getSubrangeLoop().enabled) {
+        auto loopEnd = song->getSubrangeLoop().endTime + currentLoopIterationStart;
+        if (loopEnd <= metricTime) {
+            currentLoopIterationStart += (song->getSubrangeLoop().endTime - song->getSubrangeLoop().startTime);
+            curEvent = track->begin();
+            return true;
+        }
+    }
+#endif
+
+    const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
+    if (eventStart <= metricTime) {
+        MidiEventPtr event = curEvent->second;
+        switch (event->type) {
+            case MidiEvent::Type::Note:
+            {
+                MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+  
+                // find a voice to play
+                MidiVoice* voice = voiceAssigner.getNext(note->pitchCV);
+                assert(voice);
+
+                // play the note
+                const double durationQuantized = TimeUtils::quantize(note->duration, quantizeInterval, false);  
+                double quantizedNoteEnd = TimeUtils::quantize(durationQuantized + eventStart, quantizeInterval, false);
+                voice->playNote(note->pitchCV, float(eventStart), float(quantizedNoteEnd));
+                ++curEvent;
+            }
+            break;
+            case MidiEvent::Type::End:
+                // for now, should loop.
+                currentLoopIterationStart += curEvent->first;
+                curEvent = track->begin();
+                break;
+            default:
+                assert(false);
+        }
+        didSomething = true;
+    }
+    return didSomething;
+}
+
+bool MidiTrackPlayer::pollForNoteOff(double metricTime)
+{
+    assert(false);
+    return false;
 }
