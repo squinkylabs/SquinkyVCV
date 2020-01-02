@@ -8,7 +8,7 @@
 MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) :
     song(_song),
     voiceAssigner(voices, 16),
-    track(song->getTrack(0))
+    track(song->getTrack(trackIndex))                // no, should be getTrack(trackIndex?)
 {
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
@@ -36,6 +36,11 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
     didSomething = pollForNoteOff(metricTime);
     if (didSomething) {
         return true;
+    }
+
+    if (!track) {
+        // TODO: really support these new features. For now, just don't crash.
+        return false;
     }
 
     // push the start time up by loop start, so that event t==loop start happens at start of loop
@@ -100,8 +105,10 @@ bool MidiTrackPlayer::pollForNoteOff(double metricTime)
 
 void MidiTrackPlayer::reset()
 {
-    assert(track);
-    curEvent = track->begin();
+    if (track) {
+        // can we really handle not having a track?
+        curEvent = track->begin();
+    }
     voiceAssigner.reset();
     currentLoopIterationStart = 0;
 }

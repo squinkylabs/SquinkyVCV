@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 
+#include "MidiLock.h"
 #include "MidiTrack.h"
 
 class MidiSong4;
