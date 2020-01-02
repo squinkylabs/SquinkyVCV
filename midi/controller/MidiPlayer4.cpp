@@ -111,3 +111,12 @@ void MidiPlayer4::setNumVoices(int)
 {
     printf("seNumVoices nimp\n");
 }
+
+void MidiPlayer4::setSampleCountForRetrigger(int)
+{
+    printf("setSampleCoundForRetrigger nimp\n");
+}
+void MidiPlayer4::updateSampleCount(int numElapsed)
+{
+    printf("updateSampleCount nimp\n");
+}

@@ -851,7 +851,7 @@ static void testMidiPlayerOverlap()
 static void testMidiPlayerLoop()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
+    auto song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -876,7 +876,7 @@ static void testMidiPlayerLoop()
 static void testMidiPlayerLoop2()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
+    auto song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -909,7 +909,7 @@ static void testMidiPlayerLoop2()
 static void testMidiPlayerLoop3()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
+    auto song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -987,8 +987,8 @@ static void testShortQuantize()
 }
 #endif
 
-
-MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1, 
+template <class TSong>
+std::shared_ptr<TSong> makeSongTwoNotes(float noteTime1, float noteDuration1, 
     float noteTime2, float noteDuration2, 
     float endTime)
 {
@@ -996,7 +996,7 @@ MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1,
     assert(noteTime1 < noteTime2);
     assert(endTime >= (noteTime2 + noteDuration2));
 
-    MidiSongPtr song = std::make_shared<MidiSong>();
+    auto song = std::make_shared<TSong>();
     MidiLocker l(song->lock);
     song->createTrack(0);
     MidiTrackPtr track = song->getTrack(0);
@@ -1030,15 +1030,16 @@ MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1,
  * will make a track with two adjcent quarter notes, and play it
  * enough to verify the retrigger between notes.
  */
+template <class TPlayer, class THost, class TSong>
 static void _testQuantizedRetrigger2(float durations)
 {
     // quarters on beat 1, and on beat 2, duration pass in "durations"
-    MidiSongPtr song = makeSongTwoNotes(0, durations,
+    auto song = makeSongTwoNotes<TSong>(0, durations,
         1, durations,
         4);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
+    TPlayer pl(host, song);
     pl.setNumVoices(1);
     pl.setSampleCountForRetrigger(44);
 
@@ -1073,10 +1074,11 @@ static void _testQuantizedRetrigger2(float durations)
     assert(host->gateState[0]);
 }
 
+template <class TPlayer, class THost, class TSong>
 static void testQuantizedRetrigger2()
 {
-    _testQuantizedRetrigger2(1.0f);
-    _testQuantizedRetrigger2(.25f);
+    _testQuantizedRetrigger2<TPlayer, THost, TSong>(1.0f);
+    _testQuantizedRetrigger2<TPlayer, THost, TSong>(.25f);
 }
 
 //*******************************tests of MidiPlayer2 **************************************
@@ -1093,6 +1095,10 @@ static void playerTests()
     testMidiPlayerOneNoteLoop<TPlayer, THost, TSong>();
     testMidiPlayerReset<TPlayer, THost, TSong>();
     testMidiPlayerOverlap<TPlayer, THost, TSong>();
+  //  testMidiPlayerLoop<TPlayer, THost, TSong>();
+ //   testMidiPlayerLoop2<TPlayer, THost, TSong>();
+ //   testMidiPlayerLoop3<TPlayer, THost, TSong>();
+    testQuantizedRetrigger2<TPlayer, THost, TSong>();
 }
 
 void testMidiPlayer2()
@@ -1119,18 +1125,8 @@ void testMidiPlayer2()
     playerTests<MidiPlayer2, TestHost2, MidiSong>();
     playerTests<MidiPlayer4, TestHost4, MidiSong4>();
 
-   // testMidiPlayer0<MidiPlayer2>();
-   // testMidiPlayerOneNoteOn<MidiPlayer2, TestHost2, MidiSong>();
-//    testMidiPlayerOneNoteOnWithLockContention();
-  //  testMidiPlayerOneNote();
-  //  testMidiPlayerOneNoteLockContention();
-   // testMidiPlayerOneNoteLoop();
-//    testMidiPlayerOneNoteLoopLockContention();
-  //  testMidiPlayerReset();
-
- //   testMidiPlayerOverlap();
+    // loop tests not templatized, because player 4 doesn't have subrange loop
     testMidiPlayerLoop();
     testMidiPlayerLoop2();
     testMidiPlayerLoop3();
-    testQuantizedRetrigger2();
 }

@@ -27,6 +27,8 @@ public:
     double getCurrentLoopIterationStart() const;
 
     void setNumVoices(int);
+    void setSampleCountForRetrigger(int);
+    void updateSampleCount(int numElapsed);
 
     /**
      * resets all internal playback state.
