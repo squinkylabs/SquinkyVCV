@@ -585,10 +585,10 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
 }
 #endif
 
-
-MidiSongPtr makeSongOverlapQ()
+template <class TSong>
+std::shared_ptr<TSong> makeSongOverlapQ()
 {
-    MidiSongPtr song = std::make_shared<MidiSong>();
+    auto song = std::make_shared<TSong>();
     MidiLocker l(song->lock);
     song->createTrack(0);
     MidiTrackPtr track = song->getTrack(0);
@@ -616,11 +616,12 @@ MidiSongPtr makeSongOverlapQ()
     return song;
 }
 
-static std::shared_ptr<TestHost2> makeSongOverlapQandRun(float time)
+template <class TPlayer, class THost, class TSong>
+static std::shared_ptr<THost> makeSongOverlapQandRun(float time)
 {
-    MidiSongPtr song = makeSongOverlapQ();
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
+    auto song = makeSongOverlapQ<TSong>();
+    auto host = std::make_shared<THost>();
+    TPlayer pl(host, song);
     pl.setNumVoices(4);
 
     const float quantizationInterval = .25f;        // shouldn't matter for this test...
@@ -835,9 +836,10 @@ static void testMidiPlayerReset()
 }
 
 // four voice assigner, but only two overlapping notes
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOverlap()
 {
-    std::shared_ptr<TestHost2> host = makeSongOverlapQandRun(5);
+    std::shared_ptr<THost> host = makeSongOverlapQandRun<TPlayer, THost, TSong>(5);
     assertEQ(host->gateChangeCount, 4);
     assert(host->gateState[0] == false);
     assert(host->gateState[1] == false);
@@ -1082,17 +1084,15 @@ static void testQuantizedRetrigger2()
 template <class TPlayer, class THost, class TSong>
 static void playerTests()
 {
-    //printf("enter templatized tests\n");
     testMidiPlayer0<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteOnWithLockContention<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong>();
     testMidiPlayerOneNote<TPlayer, THost, TSong>();
- //  testMidiPlayerOneNoteLockConte
     testMidiPlayerOneNoteLoopLockContention<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteLoop<TPlayer, THost, TSong>();
     testMidiPlayerReset<TPlayer, THost, TSong>();
-    //printf("leave templatized test\n");
+    testMidiPlayerOverlap<TPlayer, THost, TSong>();
 }
 
 void testMidiPlayer2()
@@ -1127,7 +1127,8 @@ void testMidiPlayer2()
    // testMidiPlayerOneNoteLoop();
 //    testMidiPlayerOneNoteLoopLockContention();
   //  testMidiPlayerReset();
-    testMidiPlayerOverlap();
+
+ //   testMidiPlayerOverlap();
     testMidiPlayerLoop();
     testMidiPlayerLoop2();
     testMidiPlayerLoop3();

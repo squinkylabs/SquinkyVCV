@@ -107,3 +107,7 @@ double MidiPlayer4::getCurrentLoopIterationStart() const
     }
 }
  
+void MidiPlayer4::setNumVoices(int)
+{
+    printf("seNumVoices nimp\n");
+}

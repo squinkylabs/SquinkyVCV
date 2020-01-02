@@ -26,6 +26,8 @@ public:
 
     double getCurrentLoopIterationStart() const;
 
+    void setNumVoices(int);
+
     /**
      * resets all internal playback state.
      * @param clearGate will set the host's gate low, if true
