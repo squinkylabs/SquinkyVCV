@@ -19,7 +19,7 @@ public:
             it = -100;
         }
     }
-    void setGate(int voice, int track, bool g) override
+    void setGate(int track, int voice, bool g) override
     {
 #ifdef _MLOG
         printf("test host setGate(%d) -> %d\n", voice, g);
@@ -33,7 +33,7 @@ public:
             gateState[voice] = g;
         }
     }
-    void setCV(int voice, int track, float cv) override
+    void setCV(int track, int voice, float cv) override
     {
         assert(track == 0);
         assert(voice >= 0 && voice < 16);

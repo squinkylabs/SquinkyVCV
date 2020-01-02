@@ -173,7 +173,7 @@ public:
     SeqHost(Seq<TBase>* s) : seq(s)
     {
     }
-    void setGate(int voice, int track, bool gate) override
+    void setGate(int track, int voice, bool gate) override
     {
         assert(track == 0);
 #if defined(_MLOG)
@@ -185,7 +185,7 @@ public:
 #endif
         seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
-    void setCV(int voice, int track, float cv) override
+    void setCV(int track, int voice, float cv) override
     {
         assert(track == 0);
 #if defined(_MLOG)

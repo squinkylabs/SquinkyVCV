@@ -28,12 +28,12 @@ void MidiVoice::setTrack(int i)
 void MidiVoice::setGate(bool g)
 {
    // printf("mv::setGate(%d) %d\n ", index, g);
-    host->setGate(index, track, g);
+    host->setGate(track, index, g);
 }
 
 void MidiVoice::setCV(float cv)
 {
-    host->setCV(index, track, cv);
+    host->setCV(track, index, cv);
 }
 
 float MidiVoice::pitch() const

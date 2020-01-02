@@ -18,6 +18,12 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
     }
 }
 
+void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int trackIndex) 
+{
+    song = newSong;
+    track = song->getTrack(trackIndex);
+}
+
 void MidiTrackPlayer::resetAllVoices(bool clearGates)
 {
     printf("mtp resetAllVoices\n");
@@ -111,4 +117,9 @@ void MidiTrackPlayer::reset()
     }
     voiceAssigner.reset();
     currentLoopIterationStart = 0;
+}
+
+double MidiTrackPlayer::getCurrentLoopIterationStart() const
+{
+    return currentLoopIterationStart;
 }

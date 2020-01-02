@@ -13,6 +13,7 @@ class MidiTrackPlayer
 {
 public:
     MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> song);
+    void setSong(std::shared_ptr<MidiSong4> newSong, int trackIndex);
     void resetAllVoices(bool clearGates);
 
     /**
@@ -22,6 +23,8 @@ public:
     bool playOnce(double metricTime, float quantizeInterval);
 
     void reset();
+    double getCurrentLoopIterationStart() const;
+
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong4> song;

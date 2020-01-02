@@ -15,9 +15,18 @@ MidiPlayer4::MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr
     }
 }
 
-void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> song)
+void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> newSong)
 {
-    printf("setSong nimp\n");
+
+    assert(song->lock->locked());
+    assert(newSong->lock->locked());
+  //  song = newSong;
+  //  track = song->getTrack(0);
+
+    song = newSong;
+    for (int i = 0; i<MidiSong4::numTracks; ++i) {
+        trackPlayers[i]->setSong(song, i);
+    }
 }
 
 void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
@@ -52,7 +61,7 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
     // If we had a conflict and needed to reset, then
     // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
-        printf("\nupdatetometrictimeinternal  player proc reset. We need to do this in the track players?\n");
+        //printf("\nupdatetometrictimeinternal  player proc reset. We need to do this in the track players?\n");
  
         for (int i=0; i < MidiSong4::numTracks; ++i) {
             auto trackPlayer = trackPlayers[i];
@@ -84,10 +93,10 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
     }
 }
 
-double MidiPlayer4::getCurrentLoopIterationStart() const
+double MidiPlayer4::getCurrentLoopIterationStart(int track) const
 {
-    printf("getCurrentLoopIterationStart nimp\n");
-    return 0;
+    auto tkPlayer = trackPlayers[track];
+    return tkPlayer->getCurrentLoopIterationStart();
 }
 
  void MidiPlayer4::reset(bool clearGates)

@@ -24,7 +24,11 @@ public:
      */
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
-    double getCurrentLoopIterationStart() const;
+    /**
+     * loops are independent for each track. Default parameter is only 
+     * provided for compatibilty with old unit tests.
+     */
+    double getCurrentLoopIterationStart(int track = 0) const;
 
     void setNumVoices(int);
     void setSampleCountForRetrigger(int);
