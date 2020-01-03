@@ -1,19 +1,25 @@
 
+#include "MidiSong.h"
+#include "MidiSong4.h"
 #include "Seq.h"
+#include "Seq4.h"
 #include "TestComposite.h"
 
 #include "asserts.h"
 
 using Sq = Seq<TestComposite>;
+using Sq4 = Seq4<TestComposite>;
 
-static void stepN(Sq& sq, int numTimes)
+template <class TSeq>
+static void stepN(TSeq& sq, int numTimes)
 {
     for (int i = 0; i < numTimes; ++i) {
         sq.step();
     }
 }
 
-static void genOneClock(Sq& sq)
+template <class TSeq>
+static void genOneClock(TSeq& sq)
 {
     sq.inputs[Sq::CLOCK_INPUT].setVoltage(10, 0);
     stepN(sq, 16);
@@ -21,7 +27,8 @@ static void genOneClock(Sq& sq)
     stepN(sq, 16);
 }
 
-static void assertAllGatesLow(Sq& sq)
+template <class TSeq>
+static void assertAllGatesLow(TSeq& sq)
 {
     for (int i = 0; i < sq.outputs[Sq::GATE_OUTPUT].channels; ++i) {
         assertEQ(sq.outputs[Sq::GATE_OUTPUT].voltages[i], 0);
@@ -42,15 +49,16 @@ static void initParams(T * composite)
 /**
  * @param clockDiv - 4 for quarter, etc..
  */
-std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
+template <class TSeq, class TSong>
+std::shared_ptr<TSeq> make(SeqClock::ClockRate rate,
     int numVoices, 
     MidiTrack::TestContent testContent,
     bool toggleStart)
 {
     assert(numVoices > 0 && numVoices <= 16);
 
-    auto song = MidiSong::makeTest(testContent, 0);
-    std::shared_ptr<Sq> ret = std::make_shared<Sq>(song);
+    auto song = TSong::makeTest(testContent, 0);
+    auto ret = std::make_shared<TSeq>(song);
 
     // we SHOULD init the params properly for all the tests,
     // but not all work. this is a start.
@@ -74,15 +82,17 @@ std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
 // makes a seq composite set of for external 8th note clock
 // playing 1q song
 
-std::shared_ptr<Sq> makeWith8Clock(bool noteAtTimeZero = false)
+template <class TSeq, class TSong>
+std::shared_ptr<TSeq> makeWith8Clock(bool noteAtTimeZero = false)
 {   //need 8 clock
     MidiTrack::TestContent content = noteAtTimeZero ? 
         MidiTrack::TestContent::eightQNotes :
         MidiTrack::TestContent::oneQ1;
-    return make(SeqClock::ClockRate::Div2, 16, content, true);
+    return make<TSeq, TSong>(SeqClock::ClockRate::Div2, 16, content, true);
 }
 
-static void testBasicGatesSub(std::shared_ptr<Sq> s)
+template <class TSeq>
+static void testBasicGatesSub(std::shared_ptr<TSeq> s)
 {
     float f = s->params[Sq::RUNNING_PARAM].value;
     stepN(*s, 16);
@@ -128,32 +138,17 @@ static void testBasicGatesSub(std::shared_ptr<Sq> s)
     assertAllGatesLow(*s);
 }
 
-#if 0
-// this test used to assume that seq always started running.
-// not true anymore
-static void testBasicGateNoExplicitStart()
-{
-    //printf("skipping testBasicGateNoExplicitStart\n");
-#if 1
-    // OK - running param is not getting set becuase we aren't using the init code.
-    // So why does it work at all?
-    std::shared_ptr<Sq> s = make(SeqClock::ClockRate::Div2, 16, MidiTrack::TestContent::oneQ1, false);
- //   initParams(s.get());
-    testBasicGatesSub(s);
-#endif
-}
-#endif
-
+template <class TSeq, class TSong>
 static void testBasicGates()
 {
-    std::shared_ptr<Sq> s = makeWith8Clock();                          // start it
+    std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, TSong>();                          // start it
     const float f = s->params[Sq::RUNNING_PARAM].value;
-    testBasicGatesSub(s);
+    testBasicGatesSub<TSeq>(s);
 }
 
 static void testStopGatesLow()
 {
-    std::shared_ptr<Sq> s = makeWith8Clock();
+    std::shared_ptr<Sq> s = makeWith8Clock<Sq, MidiSong>();
 
     // step for a while, but with no clock
     stepN(*s, 16);
@@ -262,7 +257,7 @@ private:
 static void testRetrigger(bool exactDuration)
 {
     // 1/16
-    std::shared_ptr<Sq> s = make(SeqClock::ClockRate::Div4, 1,
+    std::shared_ptr<Sq> s = make<Sq, MidiSong>(SeqClock::ClockRate::Div4, 1,
         exactDuration ? MidiTrack::TestContent::FourTouchingQuarters :
         MidiTrack::TestContent::FourAlmostTouchingQuarters,
         true
@@ -299,7 +294,7 @@ static void testRetrigger(bool exactDuration)
 static void testResetGatesLow()
 {
     // make a seq with note at time zero, eight eighth notes
-    std::shared_ptr<Sq> s = makeWith8Clock(true);                          // start it
+    std::shared_ptr<Sq> s = makeWith8Clock<Sq, MidiSong>(true);                          // start it
 
     stepN(*s, 16);
 
@@ -482,7 +477,7 @@ static void step(std::shared_ptr<Sq> seq)
 static void testStepRecord()
 {
     // DrumTrigger<TestComposite>;
-    std::shared_ptr<Sq> seq = makeWith8Clock();
+    std::shared_ptr<Sq> seq = makeWith8Clock<Sq, MidiSong>();
 
     seq->params[Sq::STEP_RECORD_PARAM].value = 1;
     seq->inputs[Sq::GATE_INPUT].channels = 1;
@@ -513,7 +508,8 @@ static void testStepRecord()
 
 void testSeqComposite()
 {
-    testBasicGates();
+    testBasicGates<Sq, MidiSong>();
+    testBasicGates<Sq4, MidiSong4>();
     testStopGatesLow();
 
     testRetrigger(true);

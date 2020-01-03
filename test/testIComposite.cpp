@@ -14,6 +14,7 @@
 #include "MixM.h"
 #include "MixStereo.h"
 #include "Seq.h"
+#include "Seq4.h"
 #include "Shaper.h"
 #include "Slew4.h"
 #include "Super.h"
@@ -60,6 +61,7 @@ void testIComposite()
     test<CHB<TestComposite>>();
     test<Gray<TestComposite>>();
     test<Seq<TestComposite>>();
+    test<Seq4<TestComposite>>();
     test<VocalAnimator<TestComposite>>();
     test<Tremolo<TestComposite>>();
     test<Super<TestComposite>>();

@@ -4,14 +4,15 @@
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
+#include "MidiPlayer4.h"
 
 namespace rack {
     namespace engine {
         struct Module;
     }
 }
-using Module = ::rack::engine::Module;
 
+using Module = ::rack::engine::Module;
 
 template <class TBase>
 class Seq4Description : public IComposite
@@ -26,11 +27,18 @@ class Seq4 : public TBase
 {
 public:
 
-    Seq4(Module * module) : TBase(module)
+    Seq4(Module * module, MidiSong4Ptr song) :
+        TBase(module),
+        runStopProcessor(true)
     {
+        init(song);
     }
-    Seq4() : TBase()
+
+    Seq4(MidiSong4Ptr song) : 
+        TBase(), 
+        runStopProcessor(true)
     {
+        init(song);
     }
 
     /**
@@ -43,22 +51,32 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        CLOCK_INPUT_PARAM,
+        NUM_VOICES_PARAM,
+        RUNNING_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
+        CLOCK_INPUT,
+        RESET_INPUT,
+        RUN_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        // TODO - 1..4
+        CV_OUTPUT,
+        GATE_OUTPUT,
         NUM_OUTPUTS
     };
 
     enum LightIds
     {
+        GATE_LIGHT,
+        RUN_STOP_LIGHT,
         NUM_LIGHTS
     };
 
@@ -74,20 +92,180 @@ public:
      */
     void step() override;
 
+    float getPlayPosition()
+    {
+        assert(false);
+        return 0;
+    }
+
+    
+    /** This should be called on audio thread
+     * (but is it??)
+     */
+    void toggleRunStop()
+    {
+         runStopRequested = true;
+    }
+
+    void onSampleRateChange();
+
 private:
+    GateTrigger runStopProcessor;
+    std::shared_ptr<MidiPlayer4> player;
+    SeqClock clock;
+    Divider div;
+    bool runStopRequested = false;
+    bool wasRunning = false;
+
+    bool isRunning();
+    void init(MidiSong4Ptr);
+    void serviceRunStop();
+    void allGatesOff();
+    /**
+     * called by the divider every 'n' step calls
+     */
+    void stepn(int n);
 
 };
 
+template <class TBase>
+class SeqHost4 : public IMidiPlayerHost4
+{
+public:
+    SeqHost4(Seq4<TBase>* s) : seq(s)
+    {
+    }
+    void setGate(int track, int voice, bool gate) override
+    {
+        assert(track == 0);
+#if defined(_MLOG)
+        printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
+            voice, 
+            gate,
+            seq->outputs[Seq<TBase>::CV_OUTPUT].voltages[voice],
+            seq->getPlayPosition()); fflush(stdout);
+#endif
+        seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
+    }
+    void setCV(int track, int voice, float cv) override
+    {
+        assert(track == 0);
+#if defined(_MLOG)
+        printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
+            voice, 
+            seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] > 5,
+            cv,
+            seq->getPlayPosition()); fflush(stdout);
+#endif
+        seq->outputs[Seq<TBase>::CV_OUTPUT].voltages[voice] = cv;
+    }
+    void onLockFailed() override
+    {
+
+    }
+private:
+    Seq4<TBase>* const seq;
+};
 
 template <class TBase>
-inline void Seq4<TBase>::init()
-{
+void  Seq4<TBase>::init(MidiSong4Ptr song)
+{ 
+    std::shared_ptr<IMidiPlayerHost4> host = std::make_shared<SeqHost4<TBase>>(this);
+    player = std::make_shared<MidiPlayer4>(host, song);
+   // audition = std::make_shared<MidiAudition>(host);
+
+    div.setup(4, [this] {
+        this->stepn(div.getDiv());
+     });
+    onSampleRateChange();
 }
 
+template <class TBase>
+void Seq4<TBase>::onSampleRateChange()
+{
+    float secondsPerRetrigger = 1.f / 1000.f;
+    float samplePerTrigger = secondsPerRetrigger * this->engineGetSampleRate();
+    player->setSampleCountForRetrigger((int) samplePerTrigger);
+  //  audition->setSampleTime(this->engineGetSampleTime());
+}
+
+template <class TBase>
+void  Seq4<TBase>::stepn(int n)
+{
+    assert(false);
+    // serviceRunStop();
+
+#if 0
+    if (TBase::params[STEP_RECORD_PARAM].value > .5f) {
+        stepRecordInput.step();
+    }
+
+    
+    audition->enable(!isRunning() && (TBase::params[AUDITION_PARAM].value > .5f));
+    audition->sampleTicksElapsed(n);
+#endif
+    // first process all the clock input params
+    const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
+    //const float tempo = TBase::params[TEMPO_PARAM].value;
+    clock.setup(clockRate, 0, TBase::engineGetSampleTime());
+
+    // and the clock input
+    const float extClock = TBase::inputs[CLOCK_INPUT].getVoltage(0);
+
+    // now call the clock 
+    const float reset = TBase::inputs[RESET_INPUT].getVoltage(0);
+    const bool running = isRunning();
+    int samplesElapsed = n;
+
+    // Our level sensitive reset will get turned into an edge in here
+    SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
+    if (results.didReset) {
+        player->reset(true);
+        allGatesOff();          // turn everything off on reset, just in case of stuck notes.
+    }
+
+    player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
+
+    // copy the current voice number to the poly ports
+    const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
+    TBase::outputs[CV_OUTPUT].channels = numVoices;
+    TBase::outputs[GATE_OUTPUT].channels = numVoices;
+    player->setNumVoices(numVoices);
+
+    if (!running && wasRunning) {
+        allGatesOff();
+    }
+    wasRunning = running;
+
+    // light the gate LED is any voices playing
+    bool isGate = false;
+    for (int i=0; i<numVoices; ++i) {
+        isGate = isGate || (TBase::outputs[GATE_OUTPUT].voltages[i] > 5);
+    }
+    TBase::lights[GATE_LIGHT].value = isGate;
+
+    player->updateSampleCount(n);
+}
 
 template <class TBase>
 inline void Seq4<TBase>::step()
 {
+    assert(false);
+}
+
+template <class TBase>
+bool Seq4<TBase>::isRunning()
+{
+    return TBase::params[RUNNING_PARAM].value > .5;
+}
+
+template <class TBase>
+inline void Seq4<TBase>::allGatesOff()
+{
+    for (int i = 0; i < 16; ++i) {
+        printf("needs to be for 4 outs\n");
+        TBase::outputs[GATE_OUTPUT].voltages[i] = 0;
+    }  
 }
 
 template <class TBase>
@@ -101,8 +279,14 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Seq4<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case Seq4<TBase>::CLOCK_INPUT_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Clock input"};
+            break;
+        case Seq4<TBase>::RUNNING_PARAM:
+            ret = {0, 1, 0, "Running"};
+            break;
+        case Seq4<TBase>::NUM_VOICES_PARAM:
+            ret = {0, 15, 0, "Polyphony"};
             break;
         default:
             assert(false);
