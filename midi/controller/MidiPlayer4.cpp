@@ -116,16 +116,20 @@ double MidiPlayer4::getCurrentLoopIterationStart(int track) const
     }
 }
  
-void MidiPlayer4::setNumVoices(int)
+void MidiPlayer4::setNumVoices(int numVoices)
 {
-    printf("seNumVoices nimp\n");
+    for (int i = 0; i < MidiSong4::numTracks; ++i) {
+        trackPlayers[i]->setNumVoices(numVoices);
+    }
 }
 
 void MidiPlayer4::setSampleCountForRetrigger(int)
 {
     printf("setSampleCoundForRetrigger nimp\n");
+    assert(false);
 }
 void MidiPlayer4::updateSampleCount(int numElapsed)
 {
     printf("updateSampleCount nimp\n");
+    assert(false);
 }

@@ -24,6 +24,7 @@ public:
 
     void reset();
     double getCurrentLoopIterationStart() const;
+    void setNumVoices(int numVoices);
 
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;

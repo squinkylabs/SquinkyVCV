@@ -18,6 +18,12 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
     }
 }
 
+ void MidiTrackPlayer::setNumVoices(int _numVoices)
+ {
+     this->numVoices = _numVoices;
+     voiceAssigner.setNumVoices(numVoices);
+ }
+
 void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int trackIndex) 
 {
     song = newSong;
