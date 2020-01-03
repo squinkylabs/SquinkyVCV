@@ -15,7 +15,6 @@
 #include <memory>
 #include <vector>
 
-
 const float quantInterval = .001f;      // very fine to avoid messing up old tests. 
                                         // old tests are pre-quantized playback
 
@@ -435,7 +434,6 @@ static void testVoiceAssignRotate()
     const float pitch2 = 1;
     const float pitch3 = 2;
    
-
     // play first note
     vx[0].updateToMetricTime(1);
     vx[1].updateToMetricTime(1);
@@ -446,7 +444,6 @@ static void testVoiceAssignRotate()
 
     p->playNote(pitch1, 1, 3);         // play long note to this voice
     assert(p->state() == MidiVoice::State::Playing);
-
 
     // let first end
     vx[0].updateToMetricTime(5);
@@ -543,11 +540,6 @@ static void testVoiceAssignBug()
 
 //********************* test helper functions ************************************************
 
-//extern MidiSongPtr makeSongOneQ();
-
-//template <class TSong>
-//extern std::shared_ptr<TSong> makeSongOneQ();
-
 // song has an eight note starting at time 0
 template <class TPlayer, class THost, class TSong>
 static std::shared_ptr<THost> makeSongOneQandRun(float time)
@@ -565,25 +557,6 @@ static std::shared_ptr<THost> makeSongOneQandRun(float time)
 
     return host;
 }
-
-// TODO: get rid of non-template version once player 4 is up
-#if 0
-static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
-{
-    MidiSongPtr song = makeSongOneQ();
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
-
-    // let's make quantization very fine so these old tests don't freak out
-    pl.updateToMetricTime(time, quantInterval, true);
-
-    // song is only 1.0 long
-    float expectedLoopStart = std::floor(time);
-    assertEQ(pl.getCurrentLoopIterationStart(), expectedLoopStart);
-    
-    return host;
-}
-#endif
 
 template <class TSong>
 std::shared_ptr<TSong> makeSongOverlapQ()
@@ -670,8 +643,8 @@ static std::shared_ptr<TestHost2> makeSongTouchingQandRun(bool exactDuration, fl
     pl.setNumVoices(4);
     pl.updateToMetricTime(time, .25f, true);
     return host;
-
 }
+
 /**
  * runs a while, generates a lock contention, runs some more
  */
@@ -725,7 +698,6 @@ static void testMidiPlayerOneNoteOn()
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvValue[0], 2);
     assertEQ(host->lockConflicts, 0);
-
 }
 
 // same as test1, but with a lock contention
@@ -808,7 +780,6 @@ static void testMidiPlayerReset()
     TPlayer pl(host, song);
     pl.updateToMetricTime(100, quantInterval, true);
 
-
     assertAllButZeroAreInit(host.get());
     assertEQ(host->gateChangeCount, 0);
     assertEQ(host->gateState[0], false);
@@ -824,7 +795,6 @@ static void testMidiPlayerReset()
 
     // Should play just like it does in test1
     pl.updateToMetricTime(2 * .24f, quantInterval, true);
-
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->lockConflicts, 0);
@@ -1095,9 +1065,6 @@ static void playerTests()
     testMidiPlayerOneNoteLoop<TPlayer, THost, TSong>();
     testMidiPlayerReset<TPlayer, THost, TSong>();
     testMidiPlayerOverlap<TPlayer, THost, TSong>();
-  //  testMidiPlayerLoop<TPlayer, THost, TSong>();
- //   testMidiPlayerLoop2<TPlayer, THost, TSong>();
- //   testMidiPlayerLoop3<TPlayer, THost, TSong>();
     testQuantizedRetrigger2<TPlayer, THost, TSong>();
 }
 
