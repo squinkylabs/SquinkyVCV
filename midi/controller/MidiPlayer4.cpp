@@ -56,13 +56,11 @@ void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterv
 
 void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizationInterval)
 {
-    printf("updateToMetricTimeInternal \n");
     metricTime = TimeUtils::quantize(metricTime, quantizationInterval, true);
     // If we had a conflict and needed to reset, then
     // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
-        //printf("\nupdatetometrictimeinternal  player proc reset. We need to do this in the track players?\n");
- 
+
         for (int i=0; i < MidiSong4::numTracks; ++i) {
             auto trackPlayer = trackPlayers[i];
             trackPlayer->reset();
@@ -101,7 +99,6 @@ double MidiPlayer4::getCurrentLoopIterationStart(int track) const
 
  void MidiPlayer4::reset(bool clearGates)
  {
-    printf("reset nimp\n");
     isReset = true;
     isResetGates = clearGates;
  }
@@ -123,13 +120,20 @@ void MidiPlayer4::setNumVoices(int numVoices)
     }
 }
 
-void MidiPlayer4::setSampleCountForRetrigger(int)
+void MidiPlayer4::setSampleCountForRetrigger(int count)
 {
-    printf("setSampleCoundForRetrigger nimp\n");
-    assert(false);
+     for (int i=0; i < MidiSong4::numTracks; ++i) {
+        auto trackPlayer = trackPlayers[i];
+        assert(trackPlayer);
+        trackPlayer->setSampleCountForRetrigger(count);
+    }
 }
+
 void MidiPlayer4::updateSampleCount(int numElapsed)
 {
-    printf("updateSampleCount nimp\n");
-    assert(false);
+     for (int i=0; i < MidiSong4::numTracks; ++i) {
+        auto trackPlayer = trackPlayers[i];
+        assert(trackPlayer);
+        trackPlayer->updateSampleCount(numElapsed);
+    }
 }

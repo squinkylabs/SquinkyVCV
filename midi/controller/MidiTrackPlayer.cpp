@@ -32,7 +32,6 @@ void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int trackIndex
 
 void MidiTrackPlayer::resetAllVoices(bool clearGates)
 {
-    printf("mtp resetAllVoices\n");
         for (int i = 0; i < numVoices; ++i) {
         voices[i].reset(clearGates);
     }
@@ -128,4 +127,18 @@ void MidiTrackPlayer::reset()
 double MidiTrackPlayer::getCurrentLoopIterationStart() const
 {
     return currentLoopIterationStart;
+}
+
+void MidiTrackPlayer::setSampleCountForRetrigger(int numSamples)
+{
+    for (int i = 0; i < maxVoices; ++i) {
+        voices[i].setSampleCountForRetrigger(numSamples);
+    }
+}
+
+void MidiTrackPlayer::updateSampleCount(int numElapsed)
+{
+    for (int i = 0; i < numVoices; ++i) {
+        voices[i].updateSampleCount(numElapsed);
+    }
 }

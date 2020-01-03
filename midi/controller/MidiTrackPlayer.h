@@ -25,6 +25,8 @@ public:
     void reset();
     double getCurrentLoopIterationStart() const;
     void setNumVoices(int numVoices);
+    void setSampleCountForRetrigger(int);
+    void updateSampleCount(int numElapsed);
 
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;
