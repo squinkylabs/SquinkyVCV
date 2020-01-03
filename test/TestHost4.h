@@ -8,10 +8,6 @@
 class TestHost4 : public IMidiPlayerHost4
 {
 public:
-    TestHost4()
-    {
-        printf("in ctor of test host 4\n");
-    }
     void reset()
     {
         cvChangeCount = 0;
