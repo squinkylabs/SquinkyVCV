@@ -142,10 +142,10 @@ public:
         printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
             voice, 
             gate,
-            seq->outputs[Seq<TBase>::CV_OUTPUT].voltages[voice],
+            seq->outputs[Seq4<TBase>::CV_OUTPUT].voltages[voice],
             seq->getPlayPosition()); fflush(stdout);
 #endif
-        seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
+        seq->outputs[Seq4<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
     void setCV(int track, int voice, float cv) override
     {
@@ -153,11 +153,11 @@ public:
 #if defined(_MLOG)
         printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
             voice, 
-            seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] > 5,
+            seq->outputs[Seq4<TBase>::GATE_OUTPUT].voltages[voice] > 5,
             cv,
             seq->getPlayPosition()); fflush(stdout);
 #endif
-        seq->outputs[Seq<TBase>::CV_OUTPUT].voltages[voice] = cv;
+        seq->outputs[Seq4<TBase>::CV_OUTPUT].voltages[voice] = cv;
     }
     void onLockFailed() override
     {
@@ -192,8 +192,9 @@ void Seq4<TBase>::onSampleRateChange()
 template <class TBase>
 void  Seq4<TBase>::stepn(int n)
 {
-    assert(false);
-    // serviceRunStop();
+
+    printf("stepn #1, %f\n", TBase::params[NUM_VOICES_PARAM].value);
+     serviceRunStop();
 
 #if 0
     if (TBase::params[STEP_RECORD_PARAM].value > .5f) {
@@ -231,6 +232,9 @@ void  Seq4<TBase>::stepn(int n)
     TBase::outputs[CV_OUTPUT].channels = numVoices;
     TBase::outputs[GATE_OUTPUT].channels = numVoices;
     player->setNumVoices(numVoices);
+    printf("in 4 stepn, numVoices = %d channels = %d\n", 
+        numVoices,
+        TBase::outputs[GATE_OUTPUT].channels);
 
     if (!running && wasRunning) {
         allGatesOff();
@@ -248,9 +252,22 @@ void  Seq4<TBase>::stepn(int n)
 }
 
 template <class TBase>
+void  Seq4<TBase>::serviceRunStop()
+{
+    runStopProcessor.go(TBase::inputs[RUN_INPUT].getVoltage(0));
+    if (runStopProcessor.trigger() || runStopRequested) { 
+        runStopRequested = false;
+        bool curValue = isRunning();
+        curValue = !curValue;
+        TBase::params[RUNNING_PARAM].value = curValue ? 1.f : 0.f;
+    }
+    TBase::lights[RUN_STOP_LIGHT].value = TBase::params[RUNNING_PARAM].value;
+}
+
+template <class TBase>
 inline void Seq4<TBase>::step()
 {
-    assert(false);
+    div.step();
 }
 
 template <class TBase>
