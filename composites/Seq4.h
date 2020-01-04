@@ -70,6 +70,10 @@ public:
         // TODO - 1..4
         CV_OUTPUT,
         GATE_OUTPUT,
+        GATE0_OUTPUT = GATE_OUTPUT,
+        GATE1_OUTPUT,
+        GATE2_OUTPUT,
+        GATE3_OUTPUT ,
         NUM_OUTPUTS
     };
 
@@ -288,10 +292,12 @@ bool Seq4<TBase>::isRunning()
 template <class TBase>
 inline void Seq4<TBase>::allGatesOff()
 {
-    for (int i = 0; i < 16; ++i) {
-        printf("needs to be for 4 outs\n");
-        TBase::outputs[GATE_OUTPUT].voltages[i] = 0;
-    }  
+    for (int output=0; output < 4; ++output) {
+        for (int i = 0; i < 16; ++i) {
+            
+            TBase::outputs[GATE0_OUTPUT + output].voltages[i] = 0;
+        }  
+    }
 }
 
 template <class TBase>

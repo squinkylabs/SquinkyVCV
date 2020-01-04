@@ -510,6 +510,64 @@ static void testStepRecord()
 }
 
 template<class TSeq, class TSong>
+static void testGateReset()
+{
+    printf("TEST GATE RESET\n");
+    std::shared_ptr<TSeq> seq = makeWith8Clock<TSeq, TSong>();
+    setGates(seq, true);
+
+    // set it, so will clear gates
+    seq->inputs[TSeq::RESET_INPUT].voltages[0] = 10.f;
+    step(seq);
+    assertGates(seq, false);
+}
+
+template <class TSeq>
+void setGates(std::shared_ptr<TSeq>, bool);
+
+
+template <class TSeq>
+void assertGates(std::shared_ptr<TSeq>, bool);
+
+static void setGates(std::shared_ptr<Sq2> seq, bool state)
+{
+   for (int i = 0; i < 15; ++i) {
+        seq->outputs[Sq2::GATE_OUTPUT].voltages[i] = state ? 10.f : 0.f;
+   }
+}
+
+static void assertGates(std::shared_ptr<Sq2> seq, bool state)
+{
+    for (int i = 0; i < 15; ++i) {
+        float g = seq->outputs[Sq2::GATE_OUTPUT].voltages[i];
+        float expected = state ? 10.f : 0.f;
+        assertEQ(g, expected);
+    }
+}
+
+static void setGates(std::shared_ptr<Sq4> seq, bool state)
+{
+    for (int output = 0; output < 4; ++output) {
+        for (int i = 0; i < 15; ++i) {
+            seq->outputs[Sq4::GATE_OUTPUT + output].voltages[i] = state ? 10.f : 0.f;
+        }
+    }
+}
+
+static void assertGates(std::shared_ptr<Sq4> seq, bool state)
+{
+    for (int output = 0; output < 4; ++output) {
+        for (int i = 0; i < 15; ++i) {
+          
+            float g = seq->outputs[Sq4::GATE_OUTPUT + output].voltages[i];
+
+            float expected = state ? 10.f : 0.f;
+            assertEQ(g, expected);
+        }
+    }
+}
+
+template<class TSeq, class TSong>
 static void testCommon()
 {
     testBasicGates<TSeq, TSong>();
@@ -518,6 +576,7 @@ static void testCommon()
     testRetrigger<TSeq, TSong>(false);
     testResetGatesLow<TSeq, TSong>();
     testLoopingQ<TSeq, TSong>();
+    testGateReset<TSeq, TSong>();
 }
 
 void testSeqComposite()
