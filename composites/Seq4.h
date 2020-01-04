@@ -92,10 +92,24 @@ public:
      */
     void step() override;
 
+    /**
+     * So far, just for test compatibilty with old player
+     */
     float getPlayPosition()
     {
-        assert(false);
-        return 0;
+          // NOTE: this calculation is wrong. need subrange loop start, too
+        double absTime = clock.getCurMetricTime();
+        double loopDuration = player->getCurrentLoopIterationStart();
+
+        // absTime - loop duration is the metric time of the start of the current loop,
+        // if the overall loop starts at t=0
+        double ret = absTime - loopDuration;
+
+#if 0
+        // push it up to take into account subrange looping
+        ret += player->getCurrentSubrangeLoopStart();
+#endif
+        return float(ret);
     }
 
     
@@ -192,8 +206,6 @@ void Seq4<TBase>::onSampleRateChange()
 template <class TBase>
 void  Seq4<TBase>::stepn(int n)
 {
-
-    printf("stepn #1, %f\n", TBase::params[NUM_VOICES_PARAM].value);
      serviceRunStop();
 
 #if 0
@@ -232,9 +244,6 @@ void  Seq4<TBase>::stepn(int n)
     TBase::outputs[CV_OUTPUT].channels = numVoices;
     TBase::outputs[GATE_OUTPUT].channels = numVoices;
     player->setNumVoices(numVoices);
-    printf("in 4 stepn, numVoices = %d channels = %d\n", 
-        numVoices,
-        TBase::outputs[GATE_OUTPUT].channels);
 
     if (!running && wasRunning) {
         allGatesOff();

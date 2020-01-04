@@ -303,9 +303,7 @@ void  Seq<TBase>::stepn(int n)
     const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
     TBase::outputs[CV_OUTPUT].channels = numVoices;
     TBase::outputs[GATE_OUTPUT].channels = numVoices;
-    printf("in 2 stepn, numVoices = %d channels = %d\n", 
-        numVoices,
-        TBase::outputs[GATE_OUTPUT].channels);
+
     player->setNumVoices(numVoices);
 
     if (!running && wasRunning) {
