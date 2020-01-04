@@ -57,7 +57,7 @@ std::shared_ptr<TSeq> make(SeqClock::ClockRate rate,
 {
     assert(numVoices > 0 && numVoices <= 16);
 
-    auto song = TSong::makeTest(testContent, 0);
+    std::shared_ptr <TSong> song = TSong::makeTest(testContent, 0);
     auto ret = std::make_shared<TSeq>(song);
 
     // we SHOULD init the params properly for all the tests,
@@ -149,7 +149,7 @@ static void testBasicGates()
 template <class TSeq, class TSong>
 static void testStopGatesLow()
 {
-    std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, MidiSong>();
+    std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, TSong>();
 
     // step for a while, but with no clock
     stepN(*s, 16);
@@ -331,11 +331,11 @@ void sendClockAndStep(TSeq& sq, float clockValue)
     stepN(sq, 4);
 }
 
-template <class TSeq>
+template <class TSeq, class TSong>
 static void testLoopingQ()
 {
     // 1/8 note clock 4 q
-    auto song = MidiSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
+    auto song = TSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
     std::shared_ptr<TSeq> seq = std::make_shared<TSeq>(song);
     seq->params[TSeq::NUM_VOICES_PARAM].value = 0;
     seq->params[TSeq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
@@ -513,20 +513,18 @@ template<class TSeq, class TSong>
 static void testCommon()
 {
     testBasicGates<TSeq, TSong>();
+    testStopGatesLow<TSeq, TSong>();
+    testRetrigger<TSeq, TSong>(true);
+    testRetrigger<TSeq, TSong>(false);
+    testResetGatesLow<TSeq, TSong>();
+    testLoopingQ<TSeq, TSong>();
 }
 
 void testSeqComposite()
 {
     testCommon<Sq2, MidiSong>();
     testCommon<Sq4, MidiSong4>();
-    testStopGatesLow<Sq2, MidiSong>();
 
-    testRetrigger<Sq2, MidiSong>(true);
-    testRetrigger<Sq2, MidiSong>(false);
-
-    testResetGatesLow<Sq2, MidiSong>();
-    testLoopingQ<Sq2>();
     testSubrangeLoop<Sq2, MidiSong>();
-
     testStepRecord<Sq2>();
 }
