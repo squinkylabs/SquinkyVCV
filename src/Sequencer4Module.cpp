@@ -68,8 +68,16 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     const float buttonSize = 50;
-    S4Button* b = new S4Button(Vec(buttonSize, buttonSize), Vec(30, 40));
-    addChild(b);
+    const float buttonMargin = 10;
+    for (int row = 0; row < MidiSong4::numTracks; ++row) {
+        const float y = 70 + row * (buttonSize + buttonMargin);
+        for (int col = 0; col < MidiSong4::numTracks; ++col) {
+            const float x = 20 + col * (buttonSize + buttonMargin);
+            S4Button* b = new S4Button(Vec(buttonSize, buttonSize), Vec(x, y));
+            addChild(b);
+        }
+    }
+   
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
