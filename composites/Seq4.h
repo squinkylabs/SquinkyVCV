@@ -3,8 +3,14 @@
 
 #include <assert.h>
 #include <memory>
+#include <cmath>
+
+#include "Divider.h"
+#include "GateTrigger.h"
 #include "IComposite.h"
+#include "IMidiPlayerHost.h"
 #include "MidiPlayer4.h"
+#include "SeqClock.h"
 
 namespace rack {
     namespace engine {
@@ -26,7 +32,9 @@ template <class TBase>
 class Seq4 : public TBase
 {
 public:
-
+    template <class Tx>
+    friend class SeqHost4;
+    
     Seq4(Module * module, MidiSong4Ptr song) :
         TBase(module),
         runStopProcessor(true)
@@ -153,6 +161,7 @@ public:
     SeqHost4(Seq4<TBase>* s) : seq(s)
     {
     }
+
     void setGate(int track, int voice, bool gate) override
     {
         assert(track == 0);
@@ -165,6 +174,7 @@ public:
 #endif
         seq->outputs[Seq4<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
+
     void setCV(int track, int voice, float cv) override
     {
         assert(track == 0);

@@ -2,12 +2,14 @@
 #include "Sequencer4Module.h"
 
 #include <sstream>
+#include "MidiSong4.h"
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
 #ifdef _SEQ4
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/S4Button.h"
 
 using Comp = Seq4<WidgetComposite>;
 
@@ -18,7 +20,8 @@ void Sequencer4Module::onSampleRateChange()
 Sequencer4Module::Sequencer4Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    seq4Comp = std::make_shared<Comp>(this);
+    MidiSong4Ptr song = MidiSong4::makeTest(MidiTrack::TestContent::empty, 0);
+    seq4Comp = std::make_shared<Comp>(this, song);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
