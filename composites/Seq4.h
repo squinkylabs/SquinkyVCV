@@ -34,7 +34,7 @@ class Seq4 : public TBase
 public:
     template <class Tx>
     friend class SeqHost4;
-    
+
     Seq4(Module * module, MidiSong4Ptr song) :
         TBase(module),
         runStopProcessor(true)
@@ -55,7 +55,7 @@ public:
     *
     * Only needs to be called once.
     */
-    void init();
+   // void init();
 
     enum ParamIds
     {

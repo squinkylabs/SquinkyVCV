@@ -26,7 +26,7 @@ Sequencer4Module::Sequencer4Module()
     SqHelper::setupParams(icomp, this); 
 
     onSampleRateChange();
-    seq4Comp->init();
+   // seq4Comp->init();
 }
 
 void Sequencer4Module::step()
