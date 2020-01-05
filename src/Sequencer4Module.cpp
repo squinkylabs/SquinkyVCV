@@ -9,7 +9,7 @@
 #ifdef _SEQ4
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/S4Button.h"
+#include "seq/S4Button.h"
 
 using Comp = Seq4<WidgetComposite>;
 
@@ -67,7 +67,8 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
-    S4Button* b = new S4Button(20, Vec(30, 40));
+    const float buttonSize = 50;
+    S4Button* b = new S4Button(Vec(buttonSize, buttonSize), Vec(30, 40));
     addChild(b);
 
     // screws
