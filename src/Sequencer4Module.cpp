@@ -52,6 +52,8 @@ struct Sequencer4Widget : ModuleWidget
         addChild(label);
         return label;
     }
+
+     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
 };
 
 
@@ -75,6 +77,13 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
             const float x = 20 + col * (buttonSize + buttonMargin);
             S4Button* b = new S4Button(Vec(buttonSize, buttonSize), Vec(x, y));
             addChild(b);
+            #if 0
+            b->setHandler([](bool isCtrl) {
+                DEBUG("click handled");
+            });
+            #endif
+
+            b->setHandler(makeButtonHandler(row, col));
         }
     }
    
@@ -84,6 +93,13 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+}
+
+std::function<void(bool isCtrlKey)> Sequencer4Widget::makeButtonHandler(int row, int col)
+{
+    return [row, col, this](bool isCtrl) {
+        DEBUG("click handled, r=%d c=%d", row, col);
+    };
 }
 
 Model *modelSequencer4Module = createModel<Sequencer4Module, Sequencer4Widget>("squinkylabs-sequencer4");
