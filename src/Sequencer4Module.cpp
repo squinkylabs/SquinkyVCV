@@ -67,6 +67,9 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
+    S4Button* b = new S4Button(20, Vec(30, 40));
+    addChild(b);
+
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
