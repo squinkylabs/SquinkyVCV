@@ -4,6 +4,8 @@
 #include "WidgetComposite.h"
 using Module =  ::rack::engine::Module;
 
+#include <atomic>
+
 /**
  */
 class Sequencer4Module : public Module
@@ -20,7 +22,13 @@ public:
     //std::shared_ptr<Comp> blank;
     std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
 
+    void toggleRunStop()
+    {
+        runStopRequested = true;
+    }
+
 private:
+    std::atomic<bool> runStopRequested;
 
 };
 

@@ -134,6 +134,8 @@ public:
     }
 
     void onSampleRateChange();
+    static std::vector<std::string> getClockRates();
+    static std::vector<std::string> getPolyLabels();
 
 private:
     GateTrigger runStopProcessor;
@@ -308,6 +310,22 @@ inline void Seq4<TBase>::allGatesOff()
             TBase::outputs[GATE0_OUTPUT + output].voltages[i] = 0;
         }  
     }
+}
+
+template <class TBase>
+inline std::vector<std::string> Seq4<TBase>::getClockRates()
+{
+    return SeqClock::getClockRates();
+}
+
+template <class TBase>
+inline std::vector<std::string> Seq4<TBase>::getPolyLabels()
+{
+    return { "1", "2", "3", "4",
+        "5", "6", "7", "8",
+        "9", "10", "11", "12",
+        "13", "14", "15", "16",
+    };
 }
 
 template <class TBase>
