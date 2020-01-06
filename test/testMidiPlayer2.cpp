@@ -57,14 +57,6 @@ template std::shared_ptr<MidiSong> makeSongOneQ<MidiSong>(float noteTime, float 
 template std::shared_ptr<MidiSong4> makeSongOneQ<MidiSong4>(float noteTime, float endTime);
 
 
-// TODO: get rid of
-#if 0
-MidiSongPtr makeSongOneQ()
-{
-    return makeSongOneQ<MidiSong>(0, 1);
-}
-#endif
-
 /**
  * Makes a one-track song.
  * Track has one quarter note at t=0, duration = eighth.
@@ -675,13 +667,34 @@ static std::shared_ptr<THost> makeSongOneQandRun2(float timeBeforeLock, float ti
 
 //***************************** MidiPlayer2 ****************************************
 // test that APIs can be called
-template <class TPlayer, class THost, class TSong>
-static void testMidiPlayer0()
+
+template <class TSong>
+void flip(std::shared_ptr<TSong> song);
+
+template <>
+void flip<MidiSong4>(std::shared_ptr<MidiSong4> song)
 {
+    song->_flipTracks();
+    //std::swap(song->tracks[0], song->tracks[1]);
+}
+
+template <>
+void flip<MidiSong>(std::shared_ptr<MidiSong> song)
+{
+    assert(false);
+}
+template <class TPlayer, class THost, class TSong>
+static void testMidiPlayer0(bool flipTracks = false)
+{
+    //assert(!flipTracks);
     auto song = TSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    if (flipTracks) {
+        flip(song);
+    }
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
     pl.updateToMetricTime(.01f, .25f, true);
+    host->assertOneActiveTrack(flipTracks ? 1 : 0);
 }
 
 // test song has an eight note starting at time 0
@@ -1068,6 +1081,11 @@ static void playerTests()
     testQuantizedRetrigger2<TPlayer, THost, TSong>();
 }
 
+static void player4Tests()
+{
+    testMidiPlayer0<MidiPlayer4, TestHost4, MidiSong4>(true);
+}
+
 void testMidiPlayer2()
 {
     test0();
@@ -1091,6 +1109,7 @@ void testMidiPlayer2()
 
     playerTests<MidiPlayer2, TestHost2, MidiSong>();
     playerTests<MidiPlayer4, TestHost4, MidiSong4>();
+    player4Tests();
 
     // loop tests not templatized, because player 4 doesn't have subrange loop
     testMidiPlayerLoop();

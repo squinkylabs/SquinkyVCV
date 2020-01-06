@@ -56,3 +56,8 @@ MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)
     assert(lock);
     addTrack(index, sectionIndex, std::make_shared<MidiTrack>(lock));
   }
+
+  void MidiSong4::_flipTracks()
+  {
+      std::swap(tracks[0], tracks[1]);
+  }

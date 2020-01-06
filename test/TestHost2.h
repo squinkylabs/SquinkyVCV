@@ -8,6 +8,9 @@
 class TestHost2 : public IMidiPlayerHost4
 {
 public:
+    void assertOneActiveTrack(int index) {
+        assertEQ(index, 0);
+    }
     void reset()
     {
         cvChangeCount = 0;

@@ -30,6 +30,8 @@ public:
     static MidiSong4Ptr makeTest(MidiTrack::TestContent, int trackIndex, int sectionIndex = 0);
 
     std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
+
+    void _flipTracks();
 private:
     
     MidiTrackPtr tracks[numTracks][numSectionsPerTrack] = {nullptr};
