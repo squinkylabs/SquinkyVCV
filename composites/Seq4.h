@@ -77,6 +77,10 @@ public:
     {
         // TODO - 1..4
         CV_OUTPUT,
+        CV0_OUTPUT = CV_OUTPUT,
+        CV1_OUTPUT,
+        CV2_OUTPUT,
+        CV3_OUTPUT,
         GATE_OUTPUT,
         GATE0_OUTPUT = GATE_OUTPUT,
         GATE1_OUTPUT,

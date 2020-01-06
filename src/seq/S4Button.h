@@ -40,17 +40,24 @@ public:
      * pass callback here to handle clicking on LED
      */
     using callback = std::function<void(bool isCtrlKey)>;
-    void setHandler(callback);
+    void setClickHandler(callback);
+    using PasteHandler = std::function<void(void)>;
+    void setPasteHandler(PasteHandler);
 
     void onButton(const event::Button &e) override;
     void onDragHover(const event::DragHover &e) override;
     void onDragEnter(const event::DragEnter &e) override;
     void onDragLeave(const event::DragLeave &e) override;
+    void onSelectKey(const event::SelectKey &e) override;
+
 private:
     FramebufferWidget * fw = nullptr;
     S4ButtonDrawer * drawer = nullptr;
-    callback handler = nullptr;
+    callback clickHandler = nullptr;
+    PasteHandler pasteHandler = nullptr;
     bool isDragging = false;
+
+    bool handleKey(int key, int mods, int action);
 };
 
 inline S4Button::S4Button(const Vec& size, const Vec& pos)
@@ -64,11 +71,42 @@ inline S4Button::S4Button(const Vec& size, const Vec& pos)
     fw->addChild(drawer);
 }
 
-inline void S4Button::setHandler(callback h)
+inline bool S4Button::handleKey(int key, int mods, int action)
 {
-    handler = h;
+    bool handled = false;
+
+   // DEBUG("key = %d mode= %x action = %d", key, mods, action);
+   // DEBUG(" v = %d ctrl = %x press = %d", GLFW_KEY_V, RACK_MOD_CTRL, GLFW_PRESS);
+    if ((key == GLFW_KEY_V) && 
+    (mods & RACK_MOD_CTRL) &&
+    (action == GLFW_PRESS)) {
+        handled = true;
+        if (pasteHandler) {
+            DEBUG("calling paste handler");
+            pasteHandler();
+        }
+    }
+    return handled;
+}
+inline void S4Button::onSelectKey(const event::SelectKey &e)
+{
+    bool handled = handleKey(e.key, e.mods, e.action);
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onSelectKey(e);
+    }
 }
 
+inline void S4Button::setClickHandler(callback h)
+{
+    clickHandler = h;
+}
+
+inline void S4Button::setPasteHandler(PasteHandler h)
+{
+    pasteHandler = h;
+}
 
 inline void S4Button::onDragHover(const event::DragHover &e)
 {
@@ -106,8 +144,8 @@ inline void S4Button::onButton(const event::Button &e)
         // OK, process it
         sq::consumeEvent(&e, this);
 
-        if (handler) {
-            handler(ctrlKey);
+        if (clickHandler) {
+            clickHandler(ctrlKey);
         }
     }
 }

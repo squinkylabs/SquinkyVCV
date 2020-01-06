@@ -71,9 +71,18 @@ struct Sequencer4Widget : ModuleWidget
     void addBigButtons();
     void addJacks(Sequencer4Module *module);
     void toggleRunStop(Sequencer4Module *module);
+    //void onButton(const event::Button &e) override;
 
-     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
+    std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
+    std::function<void()> makePasteHandler(int row, int column);
 };
+
+#if 0
+void Sequencer4Widget::onButton(const event::Button &e)
+{
+    ModuleWidget::onButton(e);
+}
+#endif
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -89,11 +98,9 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
-   
     addControls(module, icomp);
     addBigButtons();
     addJacks(module);
-
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -166,23 +173,34 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
         this->toggleRunStop(module);
     });
     addChild(tog);
-   
-
-
 }
 
 void Sequencer4Widget::addBigButtons()
 {
     const float buttonSize = 50;
     const float buttonMargin = 10;
+    const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
         const float y = 70 + row * (buttonSize + buttonMargin);
         for (int col = 0; col < MidiSong4::numTracks; ++col) {
             const float x = 130 + col * (buttonSize + buttonMargin);
             S4Button* b = new S4Button(Vec(buttonSize, buttonSize), Vec(x, y));
             addChild(b);
-            b->setHandler(makeButtonHandler(row, col));
+            b->setClickHandler(makeButtonHandler(row, col));
+            b->setPasteHandler(makePasteHandler(row, col));
         }
+
+        const float jacksY = y + 8;
+        const float jacksDy = 28;
+        
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(jacksX, jacksY),
+            module,
+            Comp::CV0_OUTPUT + row));
+        addOutput(createOutputCentered<PJ301MPort>(
+            Vec(jacksX, jacksY + jacksDy),
+            module,
+            Comp::GATE0_OUTPUT + row));
     }
 }
 
@@ -227,6 +245,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module *module)
         "Run");
 #endif
 
+#if 0
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(jacksX, jacksY2),
         module,
@@ -250,13 +269,21 @@ void Sequencer4Widget::addJacks(Sequencer4Module *module)
         Vec(jacksX + 2 * jacksDx -6 , jacksY2 -6),
         module,
         Comp::GATE_LIGHT));
+#endif
 }
 
 
 std::function<void(bool isCtrlKey)> Sequencer4Widget::makeButtonHandler(int row, int col)
 {
     return [row, col, this](bool isCtrl) {
-        DEBUG("click handled, r=%d c=%d", row, col);
+        DEBUG("NIMP click handled, r=%d c=%d", row, col);
+    };
+}
+
+std::function<void()> Sequencer4Widget::makePasteHandler(int row, int col)
+{
+    return [row, col, this]() {
+        DEBUG("MINP paste handled, r=%d c=%d", row, col);
     };
 }
 
