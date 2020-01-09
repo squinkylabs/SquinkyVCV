@@ -31,6 +31,6 @@ public:
     std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
 private:
     
-    MidiTrackPtr tracks[numTracks][numSectionsPerTrack] = {nullptr};
+    MidiTrackPtr tracks[numTracks][numSectionsPerTrack] = {{nullptr}};
 };
 
