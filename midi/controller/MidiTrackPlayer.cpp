@@ -8,8 +8,11 @@
 MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) :
     song(_song),
     voiceAssigner(voices, 16),
-    track(song->getTrack(trackIndex))                // no, should be getTrack(trackIndex?)
+    track(song->getTrack(trackIndex)),
+    trackIndex(trackIndex),
+    curSectionIndex(0)
 {
+    findFirstTrack();
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
         vx.setHost(host.get());
@@ -24,10 +27,27 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
      voiceAssigner.setNumVoices(numVoices);
  }
 
-void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int trackIndex) 
+void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackIndex) 
 {
     song = newSong;
-    track = song->getTrack(trackIndex);
+    //track = song->getTrack(trackIndex);
+    findFirstTrack();
+    if (!track) {
+        printf("found nothing to play on track %d\n", trackIndex);
+    }
+ //   assert(track);
+    assert(trackIndex == _trackIndex);
+    curSectionIndex = 0;
+}
+
+void MidiTrackPlayer::findFirstTrack()
+{
+    for (int i = 0; i < 4; ++i) {
+        auto track = song->getTrack(trackIndex, i);
+        if (track && track->getLength()) {
+            return;
+        }
+    }
 }
 
 void MidiTrackPlayer::resetAllVoices(bool clearGates)
@@ -50,7 +70,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
     }
 
     if (!track) {
-        // TODO: really support these new features. For now, just don't crash.
+                            // should be possible if we keep int curPlaybackSection
         return false;
     }
 
@@ -92,6 +112,13 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
             case MidiEvent::Type::End:
                 // for now, should loop.
                 currentLoopIterationStart += curEvent->first;
+                track = nullptr;
+                while (!track) {
+                    if (++curSectionIndex > 3) {
+                        curSectionIndex = 0;
+                    }
+                    track = song->getTrack(trackIndex, curSectionIndex);
+                }
                 curEvent = track->begin();
                 break;
             default:
@@ -116,10 +143,13 @@ bool MidiTrackPlayer::pollForNoteOff(double metricTime)
 
 void MidiTrackPlayer::reset()
 {
+    curSectionIndex = 0;
+    track = song->getTrack(trackIndex, 0);
     if (track) {
         // can we really handle not having a track?
         curEvent = track->begin();
     }
+
     voiceAssigner.reset();
     currentLoopIterationStart = 0;
 }

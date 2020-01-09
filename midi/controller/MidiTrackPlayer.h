@@ -32,6 +32,8 @@ private:
     //std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong4> song;
     std::shared_ptr<MidiTrack> track;   // need something like array for song4??
+    const int trackIndex=0;
+    int curSectionIndex = 0;
     /**
      * Variables around voice state
      */
@@ -47,5 +49,6 @@ private:
     MidiTrack::const_iterator curEvent;
 
     bool pollForNoteOff(double metricTime);
+    void findFirstTrack();
 
 };

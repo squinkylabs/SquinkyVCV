@@ -32,6 +32,7 @@ public:
     std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
 
     void _flipTracks();
+    void _flipSections();
 private:
     
     MidiTrackPtr tracks[numTracks][numSectionsPerTrack] = {nullptr};

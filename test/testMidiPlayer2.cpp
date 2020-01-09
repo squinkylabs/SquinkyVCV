@@ -668,33 +668,53 @@ static std::shared_ptr<THost> makeSongOneQandRun2(float timeBeforeLock, float ti
 //***************************** MidiPlayer2 ****************************************
 // test that APIs can be called
 
+enum class Flip
+{
+    none,
+    track,
+    section
+};
+
 template <class TSong>
-void flip(std::shared_ptr<TSong> song);
+void flip(std::shared_ptr<TSong> song, Flip);
 
 template <>
-void flip<MidiSong4>(std::shared_ptr<MidiSong4> song)
+void flip<MidiSong4>(std::shared_ptr<MidiSong4> song, Flip flip)
 {
-    song->_flipTracks();
-    //std::swap(song->tracks[0], song->tracks[1]);
+   // assert(flip == Flip::track);
+    switch (flip) {
+        case Flip::track:
+            song->_flipTracks();
+            break;
+        case Flip::section:
+            song->_flipSections();
+            break;
+        case Flip::none:
+            break;
+        default:
+            assert(false);
+    }
 }
 
 template <>
-void flip<MidiSong>(std::shared_ptr<MidiSong> song)
+void flip<MidiSong>(std::shared_ptr<MidiSong> song, Flip flip)
 {
-    assert(false);
+    assert(flip == Flip::none);
 }
+
 template <class TPlayer, class THost, class TSong>
-static void testMidiPlayer0(bool flipTracks = false)
+static void testMidiPlayer0(Flip flipTracks = Flip::none)
 {
     //assert(!flipTracks);
     auto song = TSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
-    if (flipTracks) {
-        flip(song);
-    }
+    
+    flip(song, flipTracks);
+
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
     pl.updateToMetricTime(.01f, .25f, true);
-    host->assertOneActiveTrack(flipTracks ? 1 : 0);
+
+    host->assertOneActiveTrack(flipTracks == Flip::track ? 1 : 0);
 }
 
 // test song has an eight note starting at time 0
@@ -1083,7 +1103,8 @@ static void playerTests()
 
 static void player4Tests()
 {
-    testMidiPlayer0<MidiPlayer4, TestHost4, MidiSong4>(true);
+    testMidiPlayer0<MidiPlayer4, TestHost4, MidiSong4>(Flip::track);
+    testMidiPlayer0<MidiPlayer4, TestHost4, MidiSong4>(Flip::section);
 }
 
 void testMidiPlayer2()

@@ -61,3 +61,8 @@ MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)
   {
       std::swap(tracks[0], tracks[1]);
   }
+
+    void MidiSong4::_flipSections()
+  {
+      std::swap(tracks[0][0], tracks[0][1]);
+  }
