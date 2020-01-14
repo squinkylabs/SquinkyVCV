@@ -9,6 +9,8 @@ class MidiTrackPlayer;
 using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
 using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
 
+// #define _MLOG
+
 class MidiPlayer4
 {
 public:

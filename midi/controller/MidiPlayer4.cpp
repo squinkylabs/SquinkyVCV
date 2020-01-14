@@ -5,6 +5,7 @@
 #include "MidiTrackPlayer.h"
 #include "TimeUtils.h"
 
+
 MidiPlayer4::MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song) :
     song(song),
     host(host)
@@ -31,8 +32,8 @@ void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> newSong)
 
 void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
 {
-#if defined(_MLOG) && 0
-    printf("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
+#if defined(_MLOG) && 1
+    printf("MidiPlayer4::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
 #endif
     assert(quantizationInterval != 0);
 

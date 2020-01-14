@@ -9,6 +9,8 @@
 class IMidiPlayerHost4;
 class MidiSong4;
 
+// #define _MLOG
+
 class MidiTrackPlayer
 {
 public:
@@ -49,6 +51,6 @@ private:
     MidiTrack::const_iterator curEvent;
 
     bool pollForNoteOff(double metricTime);
-    void findFirstTrack();
+    void findFirstTrackSection();
 
 };

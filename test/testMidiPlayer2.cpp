@@ -705,6 +705,7 @@ void flip<MidiSong>(std::shared_ptr<MidiSong> song, Flip flip)
 template <class TPlayer, class THost, class TSong>
 static void testMidiPlayer0(Flip flipTracks = Flip::none)
 {
+    printf("------ testMidiPlayer0 flip = %d\n", int(flipTracks));
     //assert(!flipTracks);
     auto song = TSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     

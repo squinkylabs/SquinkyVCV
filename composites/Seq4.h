@@ -12,6 +12,8 @@
 #include "MidiPlayer4.h"
 #include "SeqClock.h"
 
+// #define _MLOG
+
 namespace rack {
     namespace engine {
         struct Module;
