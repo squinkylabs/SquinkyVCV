@@ -71,20 +71,8 @@ struct Sequencer4Widget : ModuleWidget
     void addBigButtons();
     void addJacks(Sequencer4Module *module);
     void toggleRunStop(Sequencer4Module *module);
-    //void onButton(const event::Button &e) override;
-#if 0
-    std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
-    std::function<void()> makePasteHandler(int row, int column);
-#endif
     S4ButtonGrid buttonGrid;
 };
-
-#if 0
-void Sequencer4Widget::onButton(const event::Button &e)
-{
-    ModuleWidget::onButton(e);
-}
-#endif
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -179,37 +167,7 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
 
 void Sequencer4Widget::addBigButtons()
 {
-#if 1
     buttonGrid.init(this, module);
-#else
-    const float buttonSize = 50;
-    const float buttonMargin = 10;
-    const float jacksX = 380;
-    for (int row = 0; row < MidiSong4::numTracks; ++row) {
-        const float y = 70 + row * (buttonSize + buttonMargin);
-        for (int col = 0; col < MidiSong4::numTracks; ++col) {
-            const float x = 130 + col * (buttonSize + buttonMargin);
-            S4Button* b = new S4Button(Vec(buttonSize, buttonSize), Vec(x, y));
-            addChild(b);
-            b->setClickHandler(makeButtonHandler(row, col));
-            b->setPasteHandler(makePasteHandler(row, col));
-        }
-
-        DEBUG("y = %.2f", y);
-
-        const float jacksY = y + 8;
-        const float jacksDy = 28;
-        
-        addOutput(createOutputCentered<PJ301MPort>(
-            Vec(jacksX, jacksY),
-            module,
-            Comp::CV0_OUTPUT + row));
-        addOutput(createOutputCentered<PJ301MPort>(
-            Vec(jacksX, jacksY + jacksDy),
-            module,
-            Comp::GATE0_OUTPUT + row));
-    }
-#endif
 }
 
 void Sequencer4Widget::addJacks(Sequencer4Module *module)
@@ -253,49 +211,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module *module)
         "Run");
 #endif
 
-#if 0
-    addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX, jacksY2),
-        module,
-        Comp::CV_OUTPUT));
-#ifdef _LAB
-    addLabel(
-        Vec(labelX+2, jacksY2 + dy),
-        "CV");
-#endif
-
-    addOutput(createOutputCentered<PJ301MPort>(
-        Vec(jacksX + 1 * jacksDx, jacksY2),
-        module,
-        Comp::GATE_OUTPUT));
-#ifdef _LAB
-    addLabel(
-        Vec(labelX + 1 * jacksDx, jacksY2 + dy),
-        "Gate");
-#endif
-    addChild(createLight<MediumLight<GreenLight>>(
-        Vec(jacksX + 2 * jacksDx -6 , jacksY2 -6),
-        module,
-        Comp::GATE_LIGHT));
-#endif
 }
-
-#if 0
-std::function<void(bool isCtrlKey)> Sequencer4Widget::makeButtonHandler(int row, int col)
-{
-    return [row, col, this](bool isCtrl) {
-        DEBUG("NIMP click handled, r=%d c=%d", row, col);
-    };
-}
-
-std::function<void()> Sequencer4Widget::makePasteHandler(int row, int col)
-{
-    return [row, col, this]() {
-        DEBUG("MINP paste handled, r=%d c=%d", row, col);
-    };
-}
-#endif
-
 
 Model *modelSequencer4Module = createModel<Sequencer4Module, Sequencer4Widget>("squinkylabs-sequencer4");
 #endif
