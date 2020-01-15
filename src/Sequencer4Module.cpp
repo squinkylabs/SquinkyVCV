@@ -72,9 +72,11 @@ struct Sequencer4Widget : ModuleWidget
     void addJacks(Sequencer4Module *module);
     void toggleRunStop(Sequencer4Module *module);
     //void onButton(const event::Button &e) override;
-
+#if 0
     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
     std::function<void()> makePasteHandler(int row, int column);
+#endif
+    S4ButtonGrid buttonGrid;
 };
 
 #if 0
@@ -177,6 +179,9 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
 
 void Sequencer4Widget::addBigButtons()
 {
+#if 1
+    buttonGrid.init(this, module);
+#else
     const float buttonSize = 50;
     const float buttonMargin = 10;
     const float jacksX = 380;
@@ -190,6 +195,8 @@ void Sequencer4Widget::addBigButtons()
             b->setPasteHandler(makePasteHandler(row, col));
         }
 
+        DEBUG("y = %.2f", y);
+
         const float jacksY = y + 8;
         const float jacksDy = 28;
         
@@ -202,6 +209,7 @@ void Sequencer4Widget::addBigButtons()
             module,
             Comp::GATE0_OUTPUT + row));
     }
+#endif
 }
 
 void Sequencer4Widget::addJacks(Sequencer4Module *module)
@@ -272,7 +280,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module *module)
 #endif
 }
 
-
+#if 0
 std::function<void(bool isCtrlKey)> Sequencer4Widget::makeButtonHandler(int row, int col)
 {
     return [row, col, this](bool isCtrl) {
@@ -286,6 +294,8 @@ std::function<void()> Sequencer4Widget::makePasteHandler(int row, int col)
         DEBUG("MINP paste handled, r=%d c=%d", row, col);
     };
 }
+#endif
+
 
 Model *modelSequencer4Module = createModel<Sequencer4Module, Sequencer4Widget>("squinkylabs-sequencer4");
 #endif
