@@ -36,6 +36,11 @@ void Sequencer4Module::step()
     seq4Comp->step();
 }
 
+MidiSong4Ptr Sequencer4Module::getSong()
+{
+    return seq4Comp->getSong();
+}
+
 ////////////////////
 // module widget
 ////////////////////
@@ -68,7 +73,7 @@ struct Sequencer4Widget : ModuleWidget
 
     void addControls(Sequencer4Module *module,
         std::shared_ptr<IComposite> icomp);
-    void addBigButtons();
+    void addBigButtons(Sequencer4Module *module);
     void addJacks(Sequencer4Module *module);
     void toggleRunStop(Sequencer4Module *module);
     S4ButtonGrid buttonGrid;
@@ -89,7 +94,7 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     addControls(module, icomp);
-    addBigButtons();
+    addBigButtons(module);
     addJacks(module);
 
     // screws
@@ -143,7 +148,7 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
     addParam(p);
    
     y += 28;
-    const float yy = y;
+ //   const float yy = y;
 #ifdef _LAB
     addLabel(Vec(controlX - 8, y),
         "Run");
@@ -165,15 +170,19 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
     addChild(tog);
 }
 
-void Sequencer4Widget::addBigButtons()
+void Sequencer4Widget::addBigButtons(Sequencer4Module *module)
 {
-    buttonGrid.init(this, module);
+    if (module) {
+        buttonGrid.init(this, module, module->getSong());
+    } else {
+        WARN("make the module browser draw the buttons");
+    }
 }
 
 void Sequencer4Widget::addJacks(Sequencer4Module *module)
 {
     const float jacksY1 = 286-2;
-    const float jacksY2 = 330+2;
+  //  const float jacksY2 = 330+2;
     const float jacksDx = 40;
     const float jacksX = 20;
 #ifdef _LAB

@@ -45,6 +45,11 @@ void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackInde
     curSectionIndex = 0;
 }
 
+MidiSong4Ptr MidiTrackPlayer::getSong()
+{
+    return song;
+}
+
 void MidiTrackPlayer::findFirstTrackSection()
 {
     for (int i = 0; i < 4; ++i) {

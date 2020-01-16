@@ -30,6 +30,11 @@ void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> newSong)
     }
 }
 
+ MidiSong4Ptr MidiPlayer4::getSong()
+{
+    return trackPlayers[0]->getSong();
+}
+
 void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
 {
 #if defined(_MLOG) && 1

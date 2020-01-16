@@ -17,8 +17,9 @@ public:
     MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
 
     void setSong(std::shared_ptr<MidiSong4> song);
+    MidiSong4Ptr getSong();
 
-         /**
+    /**
      * Main "play something" function.
      * @param metricTime is the current time where 1 = quarter note.
      * @param quantizationInterval is the amount of metric time in a clock. 

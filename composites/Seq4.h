@@ -51,6 +51,11 @@ public:
         init(song);
     }
 
+    MidiSong4Ptr getSong()
+    {
+        return player->getSong();
+    }
+
     /**
     * re-calc everything that changes with sample
     * rate. Also everything that depends on baseFrequency.

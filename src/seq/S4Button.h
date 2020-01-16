@@ -2,6 +2,7 @@
 
 //#include "Widget.hpp"
 #include "rack.hpp"
+#include "SqClipboard.h"
 #include "SqGfx.h"
 #include "UIPrefs.h"
 
@@ -35,15 +36,16 @@ inline void S4ButtonDrawer::draw(const DrawArgs &args)
 class S4Button : public ::rack::OpaqueWidget
 {
 public:
-    S4Button(const Vec& size, const Vec& pos);
+    S4Button(const Vec& size, const Vec& pos, int r, int c, MidiSong4Ptr s);
 
         /**
      * pass callback here to handle clicking on LED
      */
     using callback = std::function<void(bool isCtrlKey)>;
     void setClickHandler(callback);
-    using PasteHandler = std::function<void(void)>;
-    void setPasteHandler(PasteHandler);
+  //  using PasteHandler = std::function<void(void)>;
+   // void setPasteHandler(PasteHandler);
+
 
     void onButton(const event::Button &e) override;
     void onDragHover(const event::DragHover &e) override;
@@ -57,14 +59,24 @@ private:
     FramebufferWidget * fw = nullptr;
     S4ButtonDrawer * drawer = nullptr;
     callback clickHandler = nullptr;
-    PasteHandler pasteHandler = nullptr;
+  //  PasteHandler pasteHandler = nullptr;
     bool isDragging = false;
+  
+    const int row;
+    const int col;
+      MidiSong4Ptr song;
 #ifdef _PASTE
     bool handleKey(int key, int mods, int action);
+    void doPaste();
 #endif
 };
 
-inline S4Button::S4Button(const Vec& size, const Vec& pos)
+inline S4Button::S4Button(
+    const Vec& size, 
+    const Vec& pos,
+    int r, 
+    int c, 
+    MidiSong4Ptr s) : row(r), col(c), song(s)
 {
     this->box.size = size;
     this->box.pos = pos;
@@ -90,10 +102,7 @@ inline bool S4Button::handleKey(int key, int mods, int action)
     (!(mods & RACK_MOD_CTRL)) &&
     (action == GLFW_PRESS)) {
         handled = true;
-        if (pasteHandler) {
-            DEBUG("calling paste handler");
-            pasteHandler();
-        }
+        doPaste();
     }
     return handled;
 }
@@ -115,10 +124,12 @@ inline void S4Button::setClickHandler(callback h)
     clickHandler = h;
 }
 
+#if 0
 inline void S4Button::setPasteHandler(PasteHandler h)
 {
     pasteHandler = h;
 }
+#endif
 
 inline void S4Button::onDragHover(const event::DragHover &e)
 {
@@ -162,6 +173,23 @@ inline void S4Button::onButton(const event::Button &e)
     }
 }
 
+inline void S4Button::doPaste()
+{
+    WARN("need to imp doPaste");
+   
+   //MidiTrackPtr track = SqClipboard::getTrackData(); 
+    auto clipData = SqClipboard::getTrackData();
+    if (!clipData) {
+        return;
+    }
+
+    auto offset = clipData->offset;
+    WARN("paste ignores offset %f", offset);
+    MidiTrackPtr track = clipData->track;
+    song->addTrack(row, col, track);
+    WARN("past length = %.2f", track->getLength());
+}
+
 /***************************************************************************
  * 
  * S4ButtonGrid
@@ -177,13 +205,13 @@ using Comp = Seq4<WidgetComposite>;
 class S4ButtonGrid
 {
 public:
-    void init(ModuleWidget* widget, Module* module);
+    void init(ModuleWidget* widget, Module* module, MidiSong4Ptr s);
 private:
     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
-    std::function<void()> makePasteHandler(int row, int column);
+  //  std::function<void()> makePasteHandler(int row, int column);
 };
 
-inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module)
+inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Ptr song)
 {
     const float buttonSize = 50;
     const float buttonMargin = 10;
@@ -192,10 +220,15 @@ inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module)
         const float y = 70 + row * (buttonSize + buttonMargin);
         for (int col = 0; col < MidiSong4::numTracks; ++col) {
             const float x = 130 + col * (buttonSize + buttonMargin);
-            S4Button* b = new S4Button(Vec(buttonSize, buttonSize), Vec(x, y));
+            S4Button* b = new S4Button(
+                Vec(buttonSize, buttonSize), 
+                Vec(x, y),
+                row,
+                col,
+                song);
             parent->addChild(b);
             b->setClickHandler(makeButtonHandler(row, col));
-            b->setPasteHandler(makePasteHandler(row, col));
+ //           b->setPasteHandler(makePasteHandler(row, col));
         }
 
         DEBUG("y = %.2f", y);
@@ -221,10 +254,12 @@ inline std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int r
     };
 }
 
+#if 0
 inline std::function<void()> S4ButtonGrid::makePasteHandler(int row, int col)
 {
     return [row, col, this]() {
         DEBUG("MINP paste handled, r=%d c=%d", row, col);
     };
 }
+#endif
 

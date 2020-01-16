@@ -8,6 +8,7 @@
 
 class IMidiPlayerHost4;
 class MidiSong4;
+class MidiTrack;
 
 // #define _MLOG
 
@@ -29,6 +30,7 @@ public:
     void setNumVoices(int numVoices);
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
+    std::shared_ptr<MidiSong4> getSong();
 
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;
