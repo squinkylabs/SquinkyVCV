@@ -31,8 +31,6 @@ inline void S4ButtonDrawer::draw(const DrawArgs &args)
                 //x, y, width, noteHeight);
 }
 
-#define _PASTE
-
 class S4Button : public ::rack::OpaqueWidget
 {
 public:
@@ -51,9 +49,7 @@ public:
     void onDragHover(const event::DragHover &e) override;
     void onDragEnter(const event::DragEnter &e) override;
     void onDragLeave(const event::DragLeave &e) override;
-#ifdef _PASTE
     void onSelectKey(const event::SelectKey &e) override;
-#endif
 
 private:
     FramebufferWidget * fw = nullptr;
@@ -65,10 +61,8 @@ private:
     const int row;
     const int col;
       MidiSong4Ptr song;
-#ifdef _PASTE
     bool handleKey(int key, int mods, int action);
     void doPaste();
-#endif
 };
 
 inline S4Button::S4Button(
@@ -87,7 +81,6 @@ inline S4Button::S4Button(
     fw->addChild(drawer);
 }
 
-#ifdef _PASTE
 inline bool S4Button::handleKey(int key, int mods, int action)
 {
     bool handled = false;
@@ -107,7 +100,6 @@ inline bool S4Button::handleKey(int key, int mods, int action)
     return handled;
 }
 
-
 inline void S4Button::onSelectKey(const event::SelectKey &e)
 {
     bool handled = handleKey(e.key, e.mods, e.action);
@@ -117,19 +109,11 @@ inline void S4Button::onSelectKey(const event::SelectKey &e)
         OpaqueWidget::onSelectKey(e);
     }
 }
-#endif
 
 inline void S4Button::setClickHandler(callback h)
 {
     clickHandler = h;
 }
-
-#if 0
-inline void S4Button::setPasteHandler(PasteHandler h)
-{
-    pasteHandler = h;
-}
-#endif
 
 inline void S4Button::onDragHover(const event::DragHover &e)
 {
@@ -254,12 +238,4 @@ inline std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int r
     };
 }
 
-#if 0
-inline std::function<void()> S4ButtonGrid::makePasteHandler(int row, int col)
-{
-    return [row, col, this]() {
-        DEBUG("MINP paste handled, r=%d c=%d", row, col);
-    };
-}
-#endif
 
