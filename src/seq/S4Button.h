@@ -6,44 +6,33 @@
 #include "SqGfx.h"
 #include "UIPrefs.h"
 
+class S4Button;
+
 class S4ButtonDrawer : public ::rack::OpaqueWidget
 {
 public:
-    S4ButtonDrawer(const Vec& size, const Vec& pos)
+    S4ButtonDrawer(const Vec& size, const Vec& pos, S4Button* button) :
+        button(button)
     {
         this->box.size=size;
     }
     void draw(const DrawArgs &args) override;
+private:
+    S4Button* const button;
 
 };
-
-
-/**
- * A special purpose button for the 4x4 seq module.
- * Has simple click handling, but lots of dedicated drawing ability
- */
-inline void S4ButtonDrawer::draw(const DrawArgs &args)
-{
-    SqGfx::filledRect(
-                args.vg,
-                UIPrefs::NOTE_COLOR,
-                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
-                //x, y, width, noteHeight);
-}
 
 class S4Button : public ::rack::OpaqueWidget
 {
 public:
     S4Button(const Vec& size, const Vec& pos, int r, int c, MidiSong4Ptr s);
 
-        /**
+    /**
      * pass callback here to handle clicking on LED
      */
     using callback = std::function<void(bool isCtrlKey)>;
     void setClickHandler(callback);
-  //  using PasteHandler = std::function<void(void)>;
-   // void setPasteHandler(PasteHandler);
-
+    void setSelection(bool);
 
     void onButton(const event::Button &e) override;
     void onDragHover(const event::DragHover &e) override;
@@ -51,19 +40,45 @@ public:
     void onDragLeave(const event::DragLeave &e) override;
     void onSelectKey(const event::SelectKey &e) override;
 
+    bool isSelected() const
+    {
+        return _isSelected;
+    }
+
 private:
     FramebufferWidget * fw = nullptr;
     S4ButtonDrawer * drawer = nullptr;
     callback clickHandler = nullptr;
-  //  PasteHandler pasteHandler = nullptr;
     bool isDragging = false;
   
     const int row;
     const int col;
-      MidiSong4Ptr song;
+    MidiSong4Ptr song;
+    bool _isSelected = false;
+
     bool handleKey(int key, int mods, int action);
     void doPaste();
 };
+
+/**
+ * A special purpose button for the 4x4 seq module.
+ * Has simple click handling, but lots of dedicated drawing ability
+ */
+inline void S4ButtonDrawer::draw(const DrawArgs &args)
+{
+    if (button->isSelected()) {
+          SqGfx::filledRect(
+                args.vg,
+                UIPrefs::X4_SELECTION_COLOR,
+                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
+    } else {
+        SqGfx::filledRect(
+                args.vg,
+                UIPrefs::NOTE_COLOR,
+                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
+                //x, y, width, noteHeight);
+    }
+}
 
 inline S4Button::S4Button(
     const Vec& size, 
@@ -77,23 +92,26 @@ inline S4Button::S4Button(
     fw = new FramebufferWidget();
     this->addChild(fw);
 
-    drawer = new S4ButtonDrawer(size, pos);
+    drawer = new S4ButtonDrawer(size, pos, this);
     fw->addChild(drawer);
+}
+
+void S4Button::setSelection(bool sel)
+{
+    if (_isSelected != sel) {
+        _isSelected = sel;
+        fw->dirty = true;
+    }
 }
 
 inline bool S4Button::handleKey(int key, int mods, int action)
 {
     bool handled = false;
-
-   // DEBUG("key = %d mode= %x action = %d", key, mods, action);
-   // DEBUG(" v = %d ctrl = %x press = %d", GLFW_KEY_V, RACK_MOD_CTRL, GLFW_PRESS);
-    
-    // make v (not ctrl-v) to paste
-    // can't use ctrl-v becuase rack steals it (for now)
     
     if ((key == GLFW_KEY_V) && 
-    (!(mods & RACK_MOD_CTRL)) &&
-    (action == GLFW_PRESS)) {
+        (!(mods & RACK_MOD_CTRL)) &&
+        (action == GLFW_PRESS)) {
+
         handled = true;
         doPaste();
     }
@@ -131,7 +149,6 @@ inline void S4Button::onDragLeave(const event::DragLeave &e)
 
 inline void S4Button::onButton(const event::Button &e)
 {
-    //printf("on button %d (l=%d r=%d)\n", e.button, GLFW_MOUSE_BUTTON_LEFT, GLFW_MOUSE_BUTTON_RIGHT); fflush(stdout);
     if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
         // Do we need to consume this key to get dragLeave?
         isDragging = true;
@@ -144,7 +161,6 @@ inline void S4Button::onButton(const event::Button &e)
         const bool ctrlKey = (e.mods & RACK_MOD_CTRL);
 
         if (!isDragging) {
-           // printf("got up when not dragging. will ignore\n"); fflush(stdout);
             return;
         }
 
@@ -183,8 +199,6 @@ inline void S4Button::doPaste()
  * 
  ****************************************************************************/
 using Comp = Seq4<WidgetComposite>;
-//#include "app/ModuleWidget.hpp"
-
 
 class S4ButtonGrid
 {
@@ -192,8 +206,15 @@ public:
     void init(ModuleWidget* widget, Module* module, MidiSong4Ptr s);
 private:
     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
-  //  std::function<void()> makePasteHandler(int row, int column);
+    S4Button* getButton(int row, int col);
+    S4Button* buttons[MidiSong4::numTracks][MidiSong4::numSectionsPerTrack] = {{}};
 };
+
+S4Button* S4ButtonGrid::getButton(int row, int col)
+{
+    assert(row>=0 && row<4 && col>=0 && col<4);
+    return buttons[row][col];
+}
 
 inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Ptr song)
 {
@@ -212,10 +233,8 @@ inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Pt
                 song);
             parent->addChild(b);
             b->setClickHandler(makeButtonHandler(row, col));
- //           b->setPasteHandler(makePasteHandler(row, col));
+            buttons[row][col] = b;
         }
-
-        DEBUG("y = %.2f", y);
 
         const float jacksY = y + 8;
         const float jacksDy = 28;
@@ -234,7 +253,13 @@ inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Pt
 inline std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col)
 {
     return [row, col, this](bool isCtrl) {
-        DEBUG("NIMP click handled, r=%d c=%d", row, col);
+        for (int r = 0; r < MidiSong4::numTracks; ++r) {
+            for (int c = 0; c < MidiSong4::numTracks; ++c) {
+                auto button = getButton(r, c);
+                assert(button);
+                button->setSelection(r==row && c==col);
+            }
+        }  
     };
 }
 
