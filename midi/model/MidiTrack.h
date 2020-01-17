@@ -96,8 +96,8 @@ public:
     {
         eightQNotes,
         empty,
-        oneNote123,         // a single note at time 1.23
-        oneQ1,             // a single quarter note at time 1.0
+        oneNote123,                 // a single note at time 1.23
+        oneQ1,                      // a single quarter note at time 1.0
         FourTouchingQuarters,       // a measure with four full-duration quarters
         FourAlmostTouchingQuarters,
         FourTouchingQuartersOct,    // a measure with four full-duration quarters, pitch 3,4,5,6

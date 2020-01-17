@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IMidiPlayerHost.h"
 #include "MidiVoice.h"
 
 /**

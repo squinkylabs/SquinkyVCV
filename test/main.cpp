@@ -7,6 +7,7 @@
 #include <string>
 
 extern void testMidiPlayer2();
+extern void testMidiPlayer4();
 extern void testBiquad();
 extern void testTestSignal();
 extern void testSaw();
@@ -167,6 +168,7 @@ int main(int argc, char ** argv)
     testMidiSong();
     testSeqClock();
     testMidiPlayer2();
+    testMidiPlayer4();
     testReplaceCommand();
     testNewSongDataDataCommand();
     testUndoRedo();
