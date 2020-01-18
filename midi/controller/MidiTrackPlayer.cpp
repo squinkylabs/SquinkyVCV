@@ -22,6 +22,7 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
 #if defined(_MLOG)
     printf("MidiTrackPlayer::ctor() track = %p index=%d\n", track.get(), trackIndex);
 #endif
+    voiceAssigner.setNumVoices(numVoices);
 }
 
  void MidiTrackPlayer::setNumVoices(int _numVoices)
@@ -56,7 +57,7 @@ void MidiTrackPlayer::findFirstTrackSection()
         track = song->getTrack(trackIndex, i);
         if (track && track->getLength()) {
             curSectionIndex = i;
-            printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
+            // printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
             return;
         }
     }
@@ -71,10 +72,11 @@ void MidiTrackPlayer::resetAllVoices(bool clearGates)
 
 bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
 {
-  #if defined(_MLOG) && 1
+#if defined(_MLOG) && 1
     printf("MidiTrackPlayer::playOnce index=%d metrict=%.2f, quantizInt=%.2f track=%p\n", 
         trackIndex, metricTime, quantizeInterval, track.get());
 #endif
+
     bool didSomething = false;
 
     didSomething = pollForNoteOff(metricTime);
@@ -127,7 +129,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                 double quantizedNoteEnd = TimeUtils::quantize(durationQuantized + eventStart, quantizeInterval, false);
                 voice->playNote(note->pitchCV, float(eventStart), float(quantizedNoteEnd));
                 ++curEvent;
-                printf("just inc curEvent 129\n");
+                // printfprintf("just inc curEvent 129\n");
             }
             break;
             case MidiEvent::Type::End:
@@ -138,7 +140,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                 currentLoopIterationStart += curEvent->first;
                 track = nullptr;
                 while (!track) {
-                    printf("moving to next section \n"); fflush(stdout);
+                    // printf("moving to next section \n"); fflush(stdout);
                     if (++curSectionIndex > 3) {
 
                         curSectionIndex = 0;
@@ -146,7 +148,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                     track = song->getTrack(trackIndex, curSectionIndex);
                 }
                 curEvent = track->begin();
-                 printf("just reset curEvent 146\n");
+                // printf("just reset curEvent 146\n");
                 break;
             default:
                 assert(false);
@@ -181,7 +183,7 @@ void MidiTrackPlayer::reset()
     if (track) {
         // can we really handle not having a track?
         curEvent = track->begin();
-        printf("reset put cur event back\n");
+        //printf("reset put cur event back\n");
     }
 
     voiceAssigner.reset();

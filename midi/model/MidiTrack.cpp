@@ -369,7 +369,9 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::d);
+        ev->duration = .5;
         track->insertEvent(ev);
+        printf("second note dur = %f\n", ev->duration);
     }
 
     // 2
@@ -378,6 +380,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::e);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
@@ -387,6 +390,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::f);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
@@ -396,6 +400,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::g);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
@@ -405,6 +410,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::a);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
@@ -414,6 +420,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::b);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
@@ -423,6 +430,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         time += 1;
         ev->startTime = time;
         ev->setPitch(4, PitchUtils::c);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 

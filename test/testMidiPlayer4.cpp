@@ -47,17 +47,23 @@ static void testTwoSections(int trackNum)
     assertEQ(host->cvValue[0], 7.5f);
     assertEQ(host->gateState[0], false);
 
-    // second section, first note
-    printf("about to cross sections?\n");
+    // second section, first note (c at 0)
     pl.updateToMetricTime(4.1, quantizationInterval, true);
     host->assertOneActiveTrack(trackNum);
     assertEQ(host->gateChangeCount, 3);
 
-    assertEQ(host->gateState[1], true);
-    assertEQ(host->cvValue[1], PitchUtils::pitchToCV(3, PitchUtils::c));
-    // old stuff
-   // assertEQ(host->gateState[0], true);
-    //assertEQ(host->cvValue[0], 1.2);
+   // assertEQ(host->gateState[1], true);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
+
+    // second section, after note (c at 0)
+    pl.updateToMetricTime(4.6, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateChangeCount, 4);
+
+    assertEQ(host->gateState[0], false);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
+
 }
 
 void testMidiPlayer4()
