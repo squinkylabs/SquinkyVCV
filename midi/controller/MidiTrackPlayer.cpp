@@ -126,6 +126,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                 double quantizedNoteEnd = TimeUtils::quantize(durationQuantized + eventStart, quantizeInterval, false);
                 voice->playNote(note->pitchCV, float(eventStart), float(quantizedNoteEnd));
                 ++curEvent;
+                printf("just inc curEvent 129\n");
             }
             break;
             case MidiEvent::Type::End:
@@ -142,6 +143,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                     track = song->getTrack(trackIndex, curSectionIndex);
                 }
                 curEvent = track->begin();
+                 printf("just reset curEvent 146\n");
                 break;
             default:
                 assert(false);
@@ -176,6 +178,7 @@ void MidiTrackPlayer::reset()
     if (track) {
         // can we really handle not having a track?
         curEvent = track->begin();
+        printf("reset put cur event back\n");
     }
 
     voiceAssigner.reset();
