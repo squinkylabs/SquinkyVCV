@@ -56,6 +56,7 @@ void MidiTrackPlayer::findFirstTrackSection()
         track = song->getTrack(trackIndex, i);
         if (track && track->getLength()) {
             curSectionIndex = i;
+            printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
             return;
         }
     }
@@ -137,7 +138,9 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                 currentLoopIterationStart += curEvent->first;
                 track = nullptr;
                 while (!track) {
+                    printf("moving to next section \n"); fflush(stdout);
                     if (++curSectionIndex > 3) {
+
                         curSectionIndex = 0;
                     }
                     track = song->getTrack(trackIndex, curSectionIndex);

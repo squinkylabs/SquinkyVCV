@@ -601,12 +601,12 @@ static void testAutoTriads()
 
     seq->editor->selectAll();
     const int origSize = seq->context->getTrack()->size();
-    assertEQ(origSize, 1 + 7);
+    assertEQ(origSize, 1 + 8);
 
     auto scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
     auto cmd = ReplaceDataCommand::makeMakeTriadsCommand(seq, ReplaceDataCommand::TriadType::Auto, scale);
     cmd->execute(seq, nullptr);
-    assertEQ(seq->context->getTrack()->size(), 3*7 + 1);
+    assertEQ(seq->context->getTrack()->size(), 3*8 + 1);
 
      // C
     it = seq->context->getTrack()->begin();
@@ -626,8 +626,6 @@ static void testAutoTriads()
   //  assertClose(note->pitchCV, expectedFifth, .0001f);
 }
 
-
-
 static void testAutoTriads2()
 {
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0);
@@ -639,12 +637,12 @@ static void testAutoTriads2()
 
     seq->editor->selectAll();
     const int origSize = seq->context->getTrack()->size();
-    assertEQ(origSize, 1 + 7);
+    assertEQ(origSize, 1 + 8);
 
     auto scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
     auto cmd = ReplaceDataCommand::makeMakeTriadsCommand(seq, ReplaceDataCommand::TriadType::Auto2, scale);
     cmd->execute(seq, nullptr);
-    assertEQ(seq->context->getTrack()->size(), 3 * 7 + 1);
+    assertEQ(seq->context->getTrack()->size(), 3 * 8 + 1);
 
      // C
     it = seq->context->getTrack()->begin();

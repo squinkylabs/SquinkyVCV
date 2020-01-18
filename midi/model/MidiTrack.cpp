@@ -354,6 +354,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
     auto track = std::make_shared<MidiTrack>(lock);
     MidiEvent::time_t time = 0;
 
+    // 0
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         ev->startTime = time;
@@ -362,6 +363,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 1
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
@@ -370,6 +372,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 2
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
@@ -378,6 +381,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 3
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
@@ -386,6 +390,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 4
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
@@ -394,6 +399,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 5
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
@@ -402,6 +408,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 6
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
@@ -410,6 +417,14 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 7
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(4, PitchUtils::c);
+        track->insertEvent(ev);
+    }
 
     track->insertEnd(time + 1);
 
