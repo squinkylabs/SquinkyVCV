@@ -371,7 +371,6 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         ev->setPitch(3, PitchUtils::d);
         ev->duration = .5;
         track->insertEvent(ev);
-        printf("second note dur = %f\n", ev->duration);
     }
 
     // 2

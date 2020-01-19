@@ -21,7 +21,6 @@ static MidiSong4Ptr makeSong(int trackNum)
 
 static void testTwoSections(int trackNum)
 {
-    printf("---- testTwoSections \n");
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
@@ -51,18 +50,36 @@ static void testTwoSections(int trackNum)
     pl.updateToMetricTime(4.1, quantizationInterval, true);
     host->assertOneActiveTrack(trackNum);
     assertEQ(host->gateChangeCount, 3);
-
-   // assertEQ(host->gateState[1], true);
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
 
-    // second section, after note (c at 0)
+    // second section, after first note (c at 0)
     pl.updateToMetricTime(4.6, quantizationInterval, true);
     host->assertOneActiveTrack(trackNum);
     assertEQ(host->gateChangeCount, 4);
-
     assertEQ(host->gateState[0], false);
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
+
+    // second section, second note (d at 1)
+    pl.updateToMetricTime(5, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateChangeCount, 5);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::d));
+
+    // second section, after second note (d at 1)
+    pl.updateToMetricTime(5.6, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateChangeCount, 6);
+    assertEQ(host->gateState[0], false);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::d));
+
+    // now all the way to the last note in the last section
+    pl.updateToMetricTime(4 + 7, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+//    assertEQ(host->gateChangeCount, 5);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(4, PitchUtils::c));
 
 }
 
