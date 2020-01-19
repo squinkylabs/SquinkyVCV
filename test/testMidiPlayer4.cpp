@@ -28,10 +28,9 @@ static void testTwoSections(int trackNum)
     // before note, nothing
     const float quantizationInterval = .01f;       
     pl.updateToMetricTime(.8, quantizationInterval, true);
-   // host->assertOneActiveTrack(0);
     assertEQ(host->gateChangeCount, 0);
     assertEQ(host->gateState[0], false);
-
+  
     // after note, 1
     pl.updateToMetricTime(1.1, quantizationInterval, true);
     assertEQ(host->gateChangeCount, 1);
@@ -77,13 +76,46 @@ static void testTwoSections(int trackNum)
     // now all the way to the last note in the last section
     pl.updateToMetricTime(4 + 7, quantizationInterval, true);
     host->assertOneActiveTrack(trackNum);
-//    assertEQ(host->gateChangeCount, 5);
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(4, PitchUtils::c));
+
+}
+
+static void testTwoSectionsLoop()
+{
+    const int trackNum = 0;
+    MidiSong4Ptr song = makeSong(trackNum);
+    std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
+    MidiPlayer4 pl(host, song);
+
+    // go around loop, and back before first note
+    const float loopTime = 4 + 8;
+    const float quantizationInterval = .01f;
+    pl.updateToMetricTime(loopTime + .8, quantizationInterval, true);
+    host->assertOneActiveTrack(0);
+    assertEQ(host->gateState[0], false);
+    const int gate0 = host->gateChangeCount;
+
+     // after note, 1
+    pl.updateToMetricTime(loopTime + 1.1, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, gate0 + 1);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->cvValue[0], 7.5f);
+    assertEQ(host->gateState[0], true);
+
+
+    // after end of note
+    pl.updateToMetricTime(loopTime + 3.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, gate0+2);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->cvValue[0], 7.5f);
+    assertEQ(host->gateState[0], false);
 
 }
 
 void testMidiPlayer4()
 {
     testTwoSections(0);
+    testTwoSections(3);
+    testTwoSectionsLoop();
 }
