@@ -716,7 +716,7 @@ void MidiEditor::copy()
         earliestEventTime = std::min(earliestEventTime, newEvent->startTime);
         firstOne = false;
     }
-    WARN("copy command make new track of size %d\n", track->size());
+   
 #if 1
     auto sourceTrack = seq()->context->getTrack();
     const float sourceLength = sourceTrack->getLength();

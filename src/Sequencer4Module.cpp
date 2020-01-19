@@ -10,8 +10,12 @@
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-#include "seq/S4Button.h"
 #include "ctrl/SqToggleLED.h"
+
+#include "seq/S4Button.h"
+#include "seq/SequencerSerializer.h"
+
+#include "MidiSequencer4.h"
 
 using Comp = Seq4<WidgetComposite>;
 
@@ -39,6 +43,19 @@ void Sequencer4Module::step()
 MidiSong4Ptr Sequencer4Module::getSong()
 {
     return seq4Comp->getSong();
+}
+
+void Sequencer4Module::dataFromJson(json_t *data)
+{
+    MidiSequencer4Ptr newSeq = SequencerSerializer::fromJson(data, this);
+    assert(false); // need to use the data
+    //setNewSeq(newSeq);
+}
+
+json_t* Sequencer4Module::dataToJson()
+{
+   // MidiSong4Ptr song = getSong();
+    return SequencerSerializer::toJson(seq4);
 }
 
 ////////////////////

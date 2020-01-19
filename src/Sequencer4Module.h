@@ -2,7 +2,9 @@
 
 #include "Seq4.h"
 #include "WidgetComposite.h"
+
 using Module =  ::rack::engine::Module;
+class MidiSequencer4;
 
 #include <atomic>
 
@@ -26,7 +28,11 @@ public:
         runStopRequested = true;
     }
     MidiSong4Ptr getSong();
+
+    json_t *dataToJson() override;
+    void dataFromJson(json_t *data) override;
 private:
     std::atomic<bool> runStopRequested;
+    std::shared_ptr<MidiSequencer4> seq4;
 };
 

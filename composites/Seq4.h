@@ -177,28 +177,28 @@ public:
 
     void setGate(int track, int voice, bool gate) override
     {
-        assert(track == 0);
+        assert(track >= 0 && track < 4);
 #if defined(_MLOG)
         printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
             voice, 
             gate,
-            seq->outputs[Seq4<TBase>::CV_OUTPUT].voltages[voice],
+            seq->outputs[Seq4<TBase>::GATE_OUTPUT0 + track].voltages[voice],
             seq->getPlayPosition()); fflush(stdout);
 #endif
-        seq->outputs[Seq4<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
+        seq->outputs[Seq4<TBase>::GATE0_OUTPUT + track].voltages[voice] = gate ? 10.f : 0.f;
     }
 
     void setCV(int track, int voice, float cv) override
     {
-        assert(track == 0);
+        assert(track >= 0 && track < 4);
 #if defined(_MLOG)
         printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
             voice, 
-            seq->outputs[Seq4<TBase>::GATE_OUTPUT].voltages[voice] > 5,
+            seq->outputs[Seq4<TBase>::CV_OUTPUT0 + track].voltages[voice] > 5,
             cv,
             seq->getPlayPosition()); fflush(stdout);
 #endif
-        seq->outputs[Seq4<TBase>::CV_OUTPUT].voltages[voice] = cv;
+        seq->outputs[Seq4<TBase>::CV0_OUTPUT + track].voltages[voice] = cv;
     }
     void onLockFailed() override
     {

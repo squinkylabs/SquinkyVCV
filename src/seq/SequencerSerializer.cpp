@@ -1,16 +1,58 @@
 
 #include "MidiLock.h"
 #include "MidiSequencer.h"
+#include "MidiSequencer4.h"
 #include "../SequencerModule.h"
+#include "../Sequencer4Module.h"
 #include "SequencerSerializer.h"
 #include "SeqSettings.h"
 #include "jansson.h"
+
+/*
+schema for seq++
+  root:
+  {
+      "song": <song>,
+      "settings" <settings>
+  }
+
+  song:
+  {
+      "tk0": <track>,
+      "loop": <loop>
+  }
+
+  for 4X4
+
+  song4:
+  {
+      "tk0_0": <track>,     // format is row_col
+      "tk0_1": <track>,
+      "tkx0_0": <track extra>
+  }
+
+  root4:
+  {
+      "song4": <song4>,
+      "globals4": <globals4>
+  }
+ */
 
 json_t *SequencerSerializer::toJson(MidiSequencerPtr inSeq)
 {
     json_t* seq = json_object();
     json_object_set_new(seq, "song", toJson(inSeq->song));
     json_object_set_new(seq, "settings", toJson(inSeq->context->settings()));
+
+    return seq;
+}
+
+json_t *SequencerSerializer::toJson(MidiSequencer4Ptr inSeq)
+{
+    json_t* seq = json_object();
+    json_object_set_new(seq, "song", toJson(inSeq->song));
+  
+    // todo: globals4
 
     return seq;
 }
@@ -24,6 +66,13 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong> sng)
 
     json_object_set_new(song, "loop", toJson(sng->getSubrangeLoop()));
 
+    return song;
+}
+
+json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong4> sng)
+{
+    json_t* song = json_object();
+    assert(false);
     return song;
 }
 
@@ -143,6 +192,12 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, SequencerModule* mo
 
     MidiSequencerPtr seq = MidiSequencer::make(song, _settings, module->seqComp->getAuditionHost());
     return seq;
+}
+
+MidiSequencer4Ptr SequencerSerializer::fromJson(json_t *data, Sequencer4Module* module)
+{
+    assert(false);
+    return nullptr;
 }
 
 std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(

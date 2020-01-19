@@ -810,7 +810,7 @@ static void testMidiPlayerReset()
     // make empty song, player ets.
     // play it a long time
     auto song = TSong::makeTest(MidiTrack::TestContent::empty, 0);
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
     pl.updateToMetricTime(100, quantInterval, true);
 
@@ -837,6 +837,20 @@ static void testMidiPlayerReset()
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvValue[0], 2);
     assertEQ(host->lockConflicts, 0);
+}
+
+// Kind of a dumb test - just making sure we don't assert or crash
+template <class TPlayer, class THost, class TSong>
+static void testMidiPlayerReset2()
+{
+    // make empty song, player ets.
+    // play it a long time
+    auto song = TSong::makeTest(MidiTrack::TestContent::empty, 0);
+    std::shared_ptr<THost> host = std::make_shared<THost>();
+    TPlayer pl(host, song);
+    pl.updateToMetricTime(100, quantInterval, true);
+    pl.reset(true);
+    pl.updateToMetricTime(1000, quantInterval, true);
 }
 
 // four voice assigner, but only two overlapping notes
@@ -1098,6 +1112,8 @@ static void playerTests()
     testMidiPlayerOneNoteLoopLockContention<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteLoop<TPlayer, THost, TSong>();
     testMidiPlayerReset<TPlayer, THost, TSong>();
+    testMidiPlayerReset2<TPlayer, THost, TSong>();
+
     testMidiPlayerOverlap<TPlayer, THost, TSong>();
     testQuantizedRetrigger2<TPlayer, THost, TSong>();
 }
