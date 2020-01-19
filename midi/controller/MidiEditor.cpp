@@ -716,7 +716,21 @@ void MidiEditor::copy()
         earliestEventTime = std::min(earliestEventTime, newEvent->startTime);
         firstOne = false;
     }
+    WARN("copy command make new track of size %d\n", track->size());
+#if 1
+    auto sourceTrack = seq()->context->getTrack();
+    const float sourceLength = sourceTrack->getLength();
+    track->insertEnd(sourceLength);
 
+    track->assertValid();
+    
+    std::shared_ptr<SqClipboard::Track> clipData = std::make_shared<SqClipboard::Track>();
+    clipData->track = track;
+    clipData->offset = float(earliestEventTime);
+    SqClipboard::putTrackData(clipData);
+#else
+    // don't copy empty track.
+    // for 4x4 we probably want to?
     if (track->size() == 0) {
         return;
     }
@@ -741,9 +755,11 @@ void MidiEditor::copy()
     if (!firstNote) {
         return;             // this won't work if we put non-note data in here.
     }
-
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
+
+#endif
+   
 }
 
 void MidiEditor::paste()

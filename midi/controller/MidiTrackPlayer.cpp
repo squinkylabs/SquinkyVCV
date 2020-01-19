@@ -7,10 +7,10 @@
 
 MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) :
     song(_song),
-    voiceAssigner(voices, 16),
     track(song->getTrack(trackIndex)),
     trackIndex(trackIndex),
-    curSectionIndex(0)
+    curSectionIndex(0),
+    voiceAssigner(voices, 16)
 {
     findFirstTrackSection();
     for (int i = 0; i < 16; ++i) {

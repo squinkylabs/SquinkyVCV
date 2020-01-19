@@ -175,19 +175,17 @@ inline void S4Button::onButton(const event::Button &e)
 
 inline void S4Button::doPaste()
 {
-    WARN("need to imp doPaste");
-   
-   //MidiTrackPtr track = SqClipboard::getTrackData(); 
     auto clipData = SqClipboard::getTrackData();
     if (!clipData) {
+        WARN("no clip data");
         return;
     }
 
-    auto offset = clipData->offset;
-    WARN("paste ignores offset %f", offset);
     MidiTrackPtr track = clipData->track;
     song->addTrack(row, col, track);
     WARN("past length = %.2f", track->getLength());
+    auto fnote = track->getFirstNote();
+    WARN("first note at time t %.2f", fnote->startTime);
 }
 
 /***************************************************************************
