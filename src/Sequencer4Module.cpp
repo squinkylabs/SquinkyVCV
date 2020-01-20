@@ -27,11 +27,13 @@ Sequencer4Module::Sequencer4Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     MidiSong4Ptr song = MidiSong4::makeTest(MidiTrack::TestContent::empty, 0);
+    seq4 = MidiSequencer4::make(song);
     seq4Comp = std::make_shared<Comp>(this, song);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
     onSampleRateChange();
+    assert(seq4);
    // seq4Comp->init();
 }
 
@@ -48,14 +50,37 @@ MidiSong4Ptr Sequencer4Module::getSong()
 void Sequencer4Module::dataFromJson(json_t *data)
 {
     MidiSequencer4Ptr newSeq = SequencerSerializer::fromJson(data, this);
-    assert(false); // need to use the data
-    //setNewSeq(newSeq);
+    setNewSeq(newSeq);
 }
 
 json_t* Sequencer4Module::dataToJson()
 {
-   // MidiSong4Ptr song = getSong();
+    // MidiSong4Ptr song = getSong();
+    printf("module seq = %p\n", seq4.get());
+    assert(seq4);
     return SequencerSerializer::toJson(seq4);
+}
+
+void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq)
+{
+    MidiSong4Ptr oldSong = seq4->song;
+    seq4 = newSeq;
+
+    WARN("need to tell UI about new seq");
+    #if 0
+    if (widget) {
+        widget->noteDisplay->setSequencer(newSeq);
+        widget->headerDisplay->setSequencer(newSeq);
+    }
+    #endif
+
+    {
+        // Must lock the songs when swapping them or player 
+        // might glitch (or crash).
+        MidiLocker oldL(oldSong->lock);
+        MidiLocker newL(seq4->song->lock);
+        seq4Comp->setSong(seq4->song);
+    }
 }
 
 ////////////////////

@@ -5,6 +5,7 @@
 
 using Module =  ::rack::engine::Module;
 class MidiSequencer4;
+using MidiSequencer4Ptr = std::shared_ptr<MidiSequencer4>;
 
 #include <atomic>
 
@@ -34,5 +35,6 @@ public:
 private:
     std::atomic<bool> runStopRequested;
     std::shared_ptr<MidiSequencer4> seq4;
+    void setNewSeq(MidiSequencer4Ptr);
 };
 

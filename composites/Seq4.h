@@ -57,6 +57,11 @@ public:
     }
 
     /**
+     * Set new song, perhaps after loading a new patch
+     */
+    void setSong(MidiSong4Ptr);
+
+    /**
     * re-calc everything that changes with sample
     * rate. Also everything that depends on baseFrequency.
     *
@@ -285,6 +290,12 @@ void  Seq4<TBase>::stepn(int n)
     TBase::lights[GATE_LIGHT].value = isGate;
 
     player->updateSampleCount(n);
+}
+
+template <class TBase>
+void  Seq4<TBase>::setSong(MidiSong4Ptr newSong)
+{
+    player->setSong(newSong);
 }
 
 template <class TBase>

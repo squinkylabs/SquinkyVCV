@@ -50,6 +50,8 @@ json_t *SequencerSerializer::toJson(MidiSequencerPtr inSeq)
 
 json_t *SequencerSerializer::toJson(MidiSequencer4Ptr inSeq)
 {
+    assert(inSeq);
+    WARN("serialize 53 inSeq=%p", inSeq);
     json_t* seq = json_object();
     json_object_set_new(seq, "song4", toJson(inSeq->song));
   
@@ -81,10 +83,13 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong4> sng)
     json_t* song = json_object();
     for (int row=0; row < MidiSong4::numTracks; ++row) {
         for (int col=0; col < MidiSong4::numSectionsPerTrack; ++col) {
-            std::string key = trackTagForSong4(row, col);
+            const std::string key = trackTagForSong4(row, col);
 
             auto tk = sng->getTrack(row, col);
-            json_object_set_new(song, key.c_str(), toJson(tk));
+            if (tk) {
+                // only serialize tracks that exist
+                json_object_set_new(song, key.c_str(), toJson(tk));
+            }
         }
     }
     return song;
@@ -92,7 +97,7 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong4> sng)
 
 std::string SequencerSerializer::trackTagForSong4(int row, int col)
 {
-     std::stringstream str;
+    std::stringstream str;
     str << "tk" << row << "_" << col;
     return str.str(); 
 }
@@ -320,7 +325,10 @@ MidiSong4Ptr SequencerSerializer::fromJsonSong4(json_t *data)
                 for (int col=0; col < MidiSong4::numSectionsPerTrack; ++col) {
                     std::string key = trackTagForSong4(row, col);
                     json_t* trackJson = json_object_get(data, key.c_str());
-                    MidiTrackPtr track = fromJsonTrack(trackJson, 0, lock);
+                    MidiTrackPtr track;
+                    if (trackJson) {
+                        track = fromJsonTrack(trackJson, 0, lock);
+                    }
                     song->addTrack(row, col, track);
 #if 0
                     json_t* loopJson = json_object_get(data, "loop");
