@@ -2,6 +2,7 @@
 #include "MidiLock.h"
 #include "MidiSequencer.h"
 #include "MidiSequencer4.h"
+#include "MidiSong4.h"
 #include "../SequencerModule.h"
 #include "../Sequencer4Module.h"
 #include "SequencerSerializer.h"
@@ -50,7 +51,7 @@ json_t *SequencerSerializer::toJson(MidiSequencerPtr inSeq)
 json_t *SequencerSerializer::toJson(MidiSequencer4Ptr inSeq)
 {
     json_t* seq = json_object();
-    json_object_set_new(seq, "song", toJson(inSeq->song));
+    json_object_set_new(seq, "song4", toJson(inSeq->song));
   
     // todo: globals4
 
@@ -63,17 +64,37 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong> sng)
 
     auto tk = sng->getTrack(0);
     json_object_set_new(song, "tk0", toJson(tk));
-
     json_object_set_new(song, "loop", toJson(sng->getSubrangeLoop()));
 
     return song;
 }
-
+/*
+ song4:
+  {
+      "tk0_0": <track>,     // format is row_col
+      "tk0_1": <track>,
+      "tkx0_0": <track extra>
+  }
+  */
 json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong4> sng)
 {
     json_t* song = json_object();
-    assert(false);
+    for (int row=0; row < MidiSong4::numTracks; ++row) {
+        for (int col=0; col < MidiSong4::numSectionsPerTrack; ++col) {
+            std::string key = trackTagForSong4(row, col);
+
+            auto tk = sng->getTrack(row, col);
+            json_object_set_new(song, key.c_str(), toJson(tk));
+        }
+    }
     return song;
+}
+
+std::string SequencerSerializer::trackTagForSong4(int row, int col)
+{
+     std::stringstream str;
+    str << "tk" << row << "_" << col;
+    return str.str(); 
 }
 
 json_t *SequencerSerializer::toJson(std::shared_ptr<MidiTrack> tk)
@@ -196,8 +217,11 @@ MidiSequencerPtr SequencerSerializer::fromJson(json_t *data, SequencerModule* mo
 
 MidiSequencer4Ptr SequencerSerializer::fromJson(json_t *data, Sequencer4Module* module)
 {
-    assert(false);
-    return nullptr;
+    json_t* songJson = json_object_get(data, "song4");
+    MidiSong4Ptr song = fromJsonSong4(songJson);
+    
+    MidiSequencer4Ptr seq = MidiSequencer4::make(song);
+    return seq;
 }
 
 std::shared_ptr<ISeqSettings> SequencerSerializer::fromJsonSettings(
@@ -275,6 +299,37 @@ MidiSongPtr SequencerSerializer::fromJsonSong(json_t *data)
             if (loopJson) {
                 std::shared_ptr<SubrangeLoop> loopPtr = fromJsonSubrangeLoop(loopJson);
                 song->setSubrangeLoop(*loopPtr);
+            }
+        }
+    }
+    return song;
+}
+
+MidiSong4Ptr SequencerSerializer::fromJsonSong4(json_t *data)
+{
+    MidiSong4Ptr song = std::make_shared<MidiSong4>();
+    MidiLockPtr lock = song->lock;
+    {
+        // We must keep song locked to avoid asserts.
+        // Must always have lock when changing a track.
+        MidiLocker _(lock);
+
+
+        if (data) {
+            for (int row=0; row < MidiSong4::numTracks; ++row) {
+                for (int col=0; col < MidiSong4::numSectionsPerTrack; ++col) {
+                    std::string key = trackTagForSong4(row, col);
+                    json_t* trackJson = json_object_get(data, key.c_str());
+                    MidiTrackPtr track = fromJsonTrack(trackJson, 0, lock);
+                    song->addTrack(row, col, track);
+#if 0
+                    json_t* loopJson = json_object_get(data, "loop");
+                    if (loopJson) {
+                        std::shared_ptr<SubrangeLoop> loopPtr = fromJsonSubrangeLoop(loopJson);
+                        song->setSubrangeLoop(*loopPtr);
+                    }
+#endif
+                }
             }
         }
     }

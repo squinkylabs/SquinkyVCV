@@ -36,6 +36,7 @@ private:
     static json_t *toJson(const SubrangeLoop& loop);
 
     static std::shared_ptr<MidiSong> fromJsonSong(json_t *data);
+    static std::shared_ptr<MidiSong4> fromJsonSong4(json_t *data);
     static MidiTrackPtr fromJsonTrack(json_t *data, int index, std::shared_ptr<MidiLock>);
     static MidiEventPtr fromJsonEvent(json_t *data);
     static MidiNoteEventPtr fromJsonNoteEvent(json_t *data);
@@ -45,4 +46,6 @@ private:
 
     static const int typeNote = 1;
     static const int typeEnd = 2;
+
+    static std::string trackTagForSong4(int row, int col);
 };
