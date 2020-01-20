@@ -34,12 +34,18 @@ Sequencer4Module::Sequencer4Module()
 
     onSampleRateChange();
     assert(seq4);
-   // seq4Comp->init();
+
 }
 
 void Sequencer4Module::step()
 {
+    //sequencer->undo->setModuleId(this->id);
+    if (runStopRequested) {
+        seq4Comp->toggleRunStop();
+        runStopRequested = false;
+    }
     seq4Comp->step();
+
 }
 
 MidiSong4Ptr Sequencer4Module::getSong()
@@ -197,7 +203,7 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
 #endif
     y += 20;
 
-    float controlDx = 34;
+    float controlDx = 0;
 
         // run/stop buttong
     SqToggleLED* tog = (createLight<SqToggleLED>(
@@ -207,6 +213,7 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, module](bool ctrlKey) {
+        printf("run button handler\n"); fflush(stdout);
         this->toggleRunStop(module);
     });
     addChild(tog);
