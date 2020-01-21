@@ -4,6 +4,7 @@
 #include "rack.hpp"
 #include "SqClipboard.h"
 #include "SqGfx.h"
+#include "TimeUtils.h"
 #include "UIPrefs.h"
 
 class S4Button;
@@ -25,6 +26,7 @@ private:
 class S4Button : public ::rack::OpaqueWidget
 {
 public:
+    friend class S4ButtonDrawer;
     S4Button(const Vec& size, const Vec& pos, int r, int c, MidiSong4Ptr s);
 
     /**
@@ -45,6 +47,8 @@ public:
         return _isSelected;
     }
 
+    void step() override;
+
 private:
     FramebufferWidget * fw = nullptr;
     S4ButtonDrawer * drawer = nullptr;
@@ -55,9 +59,14 @@ private:
     const int col;
     MidiSong4Ptr song;
     bool _isSelected = false;
+    std::string contentLength;
 
     bool handleKey(int key, int mods, int action);
     void doPaste();
+    MidiTrackPtr getTrack() const
+    {
+        return song->getTrack(row, col);
+    }
 };
 
 /**
@@ -66,6 +75,7 @@ private:
  */
 inline void S4ButtonDrawer::draw(const DrawArgs &args)
 {
+    auto ctx = args.vg;
     if (button->isSelected()) {
           SqGfx::filledRect(
                 args.vg,
@@ -78,6 +88,10 @@ inline void S4ButtonDrawer::draw(const DrawArgs &args)
                 this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
                 //x, y, width, noteHeight);
     }
+
+    nvgBeginPath(ctx);
+    nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
+    nvgText(ctx, 5, 20, button->contentLength.c_str(), nullptr);
 }
 
 inline S4Button::S4Button(
@@ -100,6 +114,24 @@ void S4Button::setSelection(bool sel)
 {
     if (_isSelected != sel) {
         _isSelected = sel;
+        fw->dirty = true;
+    }
+}
+
+void S4Button::step()
+{
+    ::rack::OpaqueWidget::step();
+
+    auto track = getTrack();
+
+    std::string newLen;
+    if (track) {
+        float length = track->getLength();
+
+        newLen = TimeUtils::time2str(length);
+    } 
+    if (newLen != contentLength) {
+        contentLength = newLen;
         fw->dirty = true;
     }
 }

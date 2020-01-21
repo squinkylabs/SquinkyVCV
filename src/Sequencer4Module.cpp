@@ -61,8 +61,6 @@ void Sequencer4Module::dataFromJson(json_t *data)
 
 json_t* Sequencer4Module::dataToJson()
 {
-    // MidiSong4Ptr song = getSong();
-    printf("module seq = %p\n", seq4.get());
     assert(seq4);
     return SequencerSerializer::toJson(seq4);
 }
@@ -213,7 +211,6 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     tog->setHandler( [this, module](bool ctrlKey) {
-        printf("run button handler\n"); fflush(stdout);
         this->toggleRunStop(module);
     });
     addChild(tog);
