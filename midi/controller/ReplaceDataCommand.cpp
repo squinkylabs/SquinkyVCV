@@ -767,7 +767,7 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandNorm(
                 MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
                 MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
 
-                assertEQ(cvs[0], note->pitchCV);
+                assertClose(cvs[0], note->pitchCV, .0001);
                 third->pitchCV = cvs[1];
                 fifth->pitchCV = cvs[2];
                 toAdd.push_back(third);

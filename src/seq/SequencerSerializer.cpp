@@ -51,7 +51,7 @@ json_t *SequencerSerializer::toJson(MidiSequencerPtr inSeq)
 json_t *SequencerSerializer::toJson(MidiSequencer4Ptr inSeq)
 {
     assert(inSeq);
-    WARN("serialize 53 inSeq=%p", inSeq);
+   // WARN("serialize 53 inSeq=%p", inSeq);
     json_t* seq = json_object();
     json_object_set_new(seq, "song4", toJson(inSeq->song));
   
