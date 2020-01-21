@@ -125,12 +125,14 @@ void S4Button::step()
     auto track = getTrack();
 
     std::string newLen;
+    float length = 0;
     if (track) {
-        float length = track->getLength();
+        length = track->getLength();
 
-        newLen = TimeUtils::time2str(length);
+        newLen = TimeUtils::length2str(length);
     } 
     if (newLen != contentLength) {
+        // DEBUG("updating length %.2f, %s", length, newLen.c_str());
         contentLength = newLen;
         fw->dirty = true;
     }
