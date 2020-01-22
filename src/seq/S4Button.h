@@ -66,6 +66,7 @@ private:
     MidiSong4Ptr song;
     bool _isSelected = false;
     std::string contentLength;
+    int numNotes = 0;
 
     bool handleKey(int key, int mods, int action);
     void doPaste();
@@ -95,9 +96,18 @@ inline void S4ButtonDrawer::draw(const DrawArgs &args)
                 //x, y, width, noteHeight);
     }
 
+   
+    
+
     nvgBeginPath(ctx);
+    nvgFontSize(ctx, 14.f);
     nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
-    nvgText(ctx, 5, 20, button->contentLength.c_str(), nullptr);
+    nvgText(ctx, 5, 15, button->contentLength.c_str(), nullptr);
+    if (button->numNotes > 0) {
+        std::stringstream s;
+        s << button->numNotes;
+        nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
+    }
 }
 
 inline S4Button::S4Button(
@@ -131,17 +141,25 @@ void S4Button::step()
     auto track = getTrack();
 
     std::string newLen;
-    float length = 0;
+    float lengthTime = 0;
+    int newNumNotes = 0;
     if (track) {
-        length = track->getLength();
-
-        newLen = TimeUtils::length2str(length);
+        lengthTime = track->getLength();
+        newLen = TimeUtils::length2str(lengthTime);
+        newNumNotes = track->size() - 1;
     } 
     if (newLen != contentLength) {
         // DEBUG("updating length %.2f, %s", length, newLen.c_str());
         contentLength = newLen;
         fw->dirty = true;
     }
+
+    if (numNotes != newNumNotes) {
+        numNotes = newNumNotes;
+        fw->dirty = true;
+    }
+
+    
 }
 
 inline bool S4Button::handleKey(int key, int mods, int action)
