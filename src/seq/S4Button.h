@@ -6,6 +6,7 @@
 #include "SqGfx.h"
 #include "TimeUtils.h"
 #include "UIPrefs.h"
+#include "MidiSequencer4.h"
 
 class S4Button;
 
@@ -48,6 +49,11 @@ public:
     }
 
     void step() override;
+
+    void setNewSeq(MidiSequencer4Ptr newSeq)
+    {
+        song = newSeq->song;
+    }
 
 private:
     FramebufferWidget * fw = nullptr;
@@ -216,10 +222,14 @@ inline void S4Button::doPaste()
     }
 
     MidiTrackPtr track = clipData->track;
+
+
     song->addTrack(row, col, track);
     WARN("past length = %.2f", track->getLength());
     auto fnote = track->getFirstNote();
     WARN("first note at time t %.2f", fnote->startTime);
+    printf("final song: \n");
+    song->_dump();
 }
 
 /***************************************************************************
@@ -236,6 +246,7 @@ class S4ButtonGrid
 {
 public:
     void init(ModuleWidget* widget, Module* module, MidiSong4Ptr s);
+    void setNewSeq(MidiSequencer4Ptr newSeq);
 private:
     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
     S4Button* getButton(int row, int col);
@@ -246,6 +257,17 @@ S4Button* S4ButtonGrid::getButton(int row, int col)
 {
     assert(row>=0 && row<4 && col>=0 && col<4);
     return buttons[row][col];
+}
+
+inline void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq)
+{
+    for (int row = 0; row < MidiSong4::numTracks; ++row) {
+        for (int col = 0; col < MidiSong4::numTracks; ++col) {   
+        
+            buttons[row][col]->setNewSeq(newSeq);
+        }
+    }
+
 }
 
 inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Ptr song)

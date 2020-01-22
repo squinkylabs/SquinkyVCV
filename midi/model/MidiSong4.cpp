@@ -51,18 +51,33 @@ MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)
     return ret;
  }
 
-  void MidiSong4::createTrack(int index, int sectionIndex)
-  {
+void MidiSong4::createTrack(int index, int sectionIndex)
+{
     assert(lock);
     addTrack(index, sectionIndex, std::make_shared<MidiTrack>(lock));
-  }
+}
 
-  void MidiSong4::_flipTracks()
-  {
-      std::swap(tracks[0], tracks[1]);
-  }
+void MidiSong4::_flipTracks()
+{
+    std::swap(tracks[0], tracks[1]);
+}
 
-    void MidiSong4::_flipSections()
-  {
-      std::swap(tracks[0][0], tracks[0][1]);
-  }
+void MidiSong4::_flipSections()
+{
+    std::swap(tracks[0][0], tracks[0][1]);
+}
+
+void MidiSong4::_dump()
+{
+    printf("song4:\n");
+    for (int tk = 0; tk < numTracks; ++tk) {
+        for (int sec=0; sec < numSectionsPerTrack; ++sec) {
+            auto track = getTrack(tk, sec);
+            if (track) {
+                printf("track %d, section %d:\n", tk, sec);
+                track->_dump();
+            }
+        }
+    }
+    fflush(stdout);
+}

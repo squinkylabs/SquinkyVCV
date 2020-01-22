@@ -65,27 +65,7 @@ json_t* Sequencer4Module::dataToJson()
     return SequencerSerializer::toJson(seq4);
 }
 
-void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq)
-{
-    MidiSong4Ptr oldSong = seq4->song;
-    seq4 = newSeq;
 
-    WARN("need to tell UI about new seq");
-    #if 0
-    if (widget) {
-        widget->noteDisplay->setSequencer(newSeq);
-        widget->headerDisplay->setSequencer(newSeq);
-    }
-    #endif
-
-    {
-        // Must lock the songs when swapping them or player 
-        // might glitch (or crash).
-        MidiLocker oldL(oldSong->lock);
-        MidiLocker newL(seq4->song->lock);
-        seq4Comp->setSong(seq4->song);
-    }
-}
 
 ////////////////////
 // module widget
@@ -117,6 +97,7 @@ struct Sequencer4Widget : ModuleWidget
         return label;
     }
 
+    void setNewSeq(MidiSequencer4Ptr newSeq);
     void addControls(Sequencer4Module *module,
         std::shared_ptr<IComposite> icomp);
     void addBigButtons(Sequencer4Module *module);
@@ -134,6 +115,9 @@ struct Sequencer4Widget : ModuleWidget
 Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
 {
     setModule(module);
+    if (module) {
+        module->widget = this;
+    }
     box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/sq4_panel.svg");
 
@@ -148,6 +132,11 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+}
+
+void Sequencer4Widget::setNewSeq(MidiSequencer4Ptr newSeq)
+{
+    buttonGrid.setNewSeq(newSeq);
 }
 
 void Sequencer4Widget::toggleRunStop(Sequencer4Module *module)
@@ -266,6 +255,28 @@ void Sequencer4Widget::addJacks(Sequencer4Module *module)
         "Run");
 #endif
 
+}
+
+void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq)
+{
+    MidiSong4Ptr oldSong = seq4->song;
+    seq4 = newSeq;
+
+    WARN("need to tell UI about new seq");
+
+    if (widget) {
+        widget->setNewSeq(newSeq);
+        //widget->headerDisplay->setSequencer(newSeq);
+    }
+
+
+    {
+        // Must lock the songs when swapping them or player 
+        // might glitch (or crash).
+        MidiLocker oldL(oldSong->lock);
+        MidiLocker newL(seq4->song->lock);
+        seq4Comp->setSong(seq4->song);
+    }
 }
 
 Model *modelSequencer4Module = createModel<Sequencer4Module, Sequencer4Widget>("squinkylabs-sequencer4");

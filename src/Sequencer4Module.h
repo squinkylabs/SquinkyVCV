@@ -6,6 +6,7 @@
 using Module =  ::rack::engine::Module;
 class MidiSequencer4;
 using MidiSequencer4Ptr = std::shared_ptr<MidiSequencer4>;
+class Sequencer4Widget;
 
 #include <atomic>
 
@@ -32,9 +33,12 @@ public:
 
     json_t *dataToJson() override;
     void dataFromJson(json_t *data) override;
+
+    Sequencer4Widget* widget = nullptr;
 private:
     std::atomic<bool> runStopRequested;
     std::shared_ptr<MidiSequencer4> seq4;
     void setNewSeq(MidiSequencer4Ptr);
+    
 };
 

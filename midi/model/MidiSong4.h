@@ -33,6 +33,7 @@ public:
 
     void _flipTracks();
     void _flipSections();
+    void _dump();
 private:
     
     MidiTrackPtr tracks[numTracks][numSectionsPerTrack] = {{nullptr}};
