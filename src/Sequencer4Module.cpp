@@ -262,13 +262,9 @@ void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq)
     MidiSong4Ptr oldSong = seq4->song;
     seq4 = newSeq;
 
-    WARN("need to tell UI about new seq");
-
     if (widget) {
         widget->setNewSeq(newSeq);
-        //widget->headerDisplay->setSequencer(newSeq);
     }
-
 
     {
         // Must lock the songs when swapping them or player 
