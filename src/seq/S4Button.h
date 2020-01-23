@@ -265,6 +265,8 @@ class S4ButtonGrid
 public:
     void init(ModuleWidget* widget, Module* module, MidiSong4Ptr s);
     void setNewSeq(MidiSequencer4Ptr newSeq);
+    const static int buttonSize = 50.f;
+    const static int buttonMargin = 10;
 private:
     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
     S4Button* getButton(int row, int col);
@@ -290,8 +292,8 @@ inline void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq)
 
 inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Ptr song)
 {
-    const float buttonSize = 50;
-    const float buttonMargin = 10;
+  //  const float buttonSize = 50;
+ //   const float buttonMargin = 10;
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
         const float y = 70 + row * (buttonSize + buttonMargin);

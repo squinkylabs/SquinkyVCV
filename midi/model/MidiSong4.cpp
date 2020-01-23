@@ -1,6 +1,7 @@
 
 #include "MidiLock.h"
 #include "MidiSong4.h"
+#include "MidiTrack4Options.h"
 
 void MidiSong4::assertValid() const
 {
@@ -14,6 +15,7 @@ void MidiSong4::addTrack(int trackIndex, int sectionIndex,  MidiTrackPtr track)
         return;
     }
     tracks[trackIndex][sectionIndex] = track;
+    options[trackIndex][sectionIndex] = std::make_shared<MidiTrack4Options>();
 }
 
 MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)

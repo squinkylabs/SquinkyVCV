@@ -72,7 +72,11 @@ public:
     enum ParamIds
     {
         CLOCK_INPUT_PARAM,
-        NUM_VOICES_PARAM,
+        NUM_VOICES0_PARAM,
+        NUM_VOICES_PARAM = NUM_VOICES0_PARAM,
+        NUM_VOICES1_PARAM,
+        NUM_VOICES2_PARAM,
+        NUM_VOICES3_PARAM,
         RUNNING_PARAM,
         NUM_PARAMS
     };
@@ -362,13 +366,26 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Seq4<TBase>::CLOCK_INPUT_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Clock input"};
+            {     
+            float low = 0;
+            float high = int(SeqClock::ClockRate::NUM_CLOCKS) + 1;
+            ret = {low, high, low, "Clock Rate"};
+            }
             break;
         case Seq4<TBase>::RUNNING_PARAM:
             ret = {0, 1, 0, "Running"};
             break;
-        case Seq4<TBase>::NUM_VOICES_PARAM:
-            ret = {0, 15, 0, "Polyphony"};
+        case Seq4<TBase>::NUM_VOICES0_PARAM:
+            ret = {0, 15, 0, "Polyphony 1"};
+            break;
+        case Seq4<TBase>::NUM_VOICES1_PARAM:
+            ret = {0, 15, 0, "Polyphony 2"};
+            break;
+        case Seq4<TBase>::NUM_VOICES2_PARAM:
+            ret = {0, 15, 0, "Polyphony 3"};
+            break;
+        case Seq4<TBase>::NUM_VOICES3_PARAM:
+            ret = {0, 15, 0, "Polyphony 4"};
             break;
         default:
             assert(false);

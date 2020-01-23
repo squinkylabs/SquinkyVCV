@@ -5,7 +5,11 @@
 #include "MidiTrack.h"
 
 class MidiSong4;
+class MidiTrack4Options;
 using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
+using MidiTrack4OptionsPtr = std::shared_ptr<MidiTrack4Options>;
+
+
 
 class MidiSong4
 {
@@ -23,6 +27,7 @@ public:
     void createTrack(int index, int sectionIndex = 0);
     void addTrack(int trackIndex, int sectionIndex, MidiTrackPtr track);
     MidiTrackPtr getTrack(int trackIndex, int sectionIndex = 0);
+    MidiTrack4OptionsPtr getOptions(int trackIndex, int sectionIndex);
 
     /**
      * The last argument is optional for template compatibility with tests/
@@ -37,5 +42,6 @@ public:
 private:
     
     MidiTrackPtr tracks[numTracks][numSectionsPerTrack] = {{nullptr}};
+    MidiTrack4OptionsPtr options[numTracks][numSectionsPerTrack] = {{nullptr}};
 };
 

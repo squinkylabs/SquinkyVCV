@@ -150,37 +150,42 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
 {
   const float controlX = 20 - 6;
 
-    float y = 50;
+    float y = 20;
 #ifdef _LAB
     addLabelLeft(Vec(controlX - 4, y),
         "Clock rate");
 #endif
     y += 20;
-    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
-        icomp,
-        Vec(controlX, y),
-        module,
-        Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 85 + 8;    // width
-    p->box.size.y = 22;         // should set auto like button does
-    p->setLabels(Comp::getClockRates());
-    addParam(p);
 
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+            icomp,
+            Vec(controlX, y),
+            module,
+            Comp::CLOCK_INPUT_PARAM);
+        p->box.size.x = 85 + 8;    // width
+        p->box.size.y = 22;         // should set auto like button does
+        p->setLabels(Comp::getClockRates());
+        addParam(p);
     y += 28;
-#ifdef _LAB
-    addLabelLeft(Vec(controlX - 4, y),
-        "Polyphony");
-#endif
-    y += 20;
-    p = SqHelper::createParam<PopupMenuParamWidget>(
-        icomp,
-        Vec(controlX, y),
-        module,
-        Comp::NUM_VOICES_PARAM);
-    p->box.size.x = 85 + 8;     // width
-    p->box.size.y = 22;         // should set auto like button does
-    p->setLabels(Comp::getPolyLabels());
-    addParam(p);
+    for (int i=0; i<4; ++i) {
+       
+    #ifdef _LAB
+        addLabelLeft(Vec(controlX - 4, y),
+            "Polyphony");
+    #endif
+       
+        p = SqHelper::createParam<PopupMenuParamWidget>(
+            icomp,
+            Vec(controlX, y),
+            module,
+            Comp::NUM_VOICES0_PARAM + i);
+        p->box.size.x = 85 + 8;     // width
+        p->box.size.y = 22;         // should set auto like button does
+        p->setLabels(Comp::getPolyLabels());
+        addParam(p);
+
+        y += S4ButtonGrid::buttonMargin + S4ButtonGrid::buttonSize; 
+    }
    
     y += 28;
  //   const float yy = y;
@@ -216,7 +221,7 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module *module)
 
 void Sequencer4Widget::addJacks(Sequencer4Module *module)
 {
-    const float jacksY1 = 286-2;
+    const float jacksY1 = 310;
   //  const float jacksY2 = 330+2;
     const float jacksDx = 40;
     const float jacksX = 20;
