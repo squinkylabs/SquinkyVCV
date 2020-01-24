@@ -107,7 +107,7 @@ public:
 
     enum LightIds
     {
-        GATE_LIGHT,
+        //GATE_LIGHT,
         RUN_STOP_LIGHT,
         NUM_LIGHTS
     };
@@ -276,10 +276,12 @@ void  Seq4<TBase>::stepn(int n)
     player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
 
     // copy the current voice number to the poly ports
-    const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
-    TBase::outputs[CV_OUTPUT].channels = numVoices;
-    TBase::outputs[GATE_OUTPUT].channels = numVoices;
-    player->setNumVoices(numVoices);
+    for (int i=0; i<4; ++i) {
+        const int numVoices = (int) std::round(TBase::params[NUM_VOICES0_PARAM].value + 1);
+        TBase::outputs[CV0_OUTPUT + i].channels = numVoices;
+        TBase::outputs[GATE0_OUTPUT + i].channels = numVoices;
+        player->setNumVoices(i, numVoices);
+    }
 
     if (!running && wasRunning) {
         allGatesOff();
@@ -287,11 +289,13 @@ void  Seq4<TBase>::stepn(int n)
     wasRunning = running;
 
     // light the gate LED is any voices playing
+#if 0
     bool isGate = false;
     for (int i=0; i<numVoices; ++i) {
         isGate = isGate || (TBase::outputs[GATE_OUTPUT].voltages[i] > 5);
     }
     TBase::lights[GATE_LIGHT].value = isGate;
+#endif
 
     player->updateSampleCount(n);
 }

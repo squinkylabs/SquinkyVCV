@@ -119,11 +119,15 @@ double MidiPlayer4::getCurrentLoopIterationStart(int track) const
     }
 }
  
-void MidiPlayer4::setNumVoices(int numVoices)
+void MidiPlayer4::setNumVoices(int track, int numVoices)
 {
-    for (int i = 0; i < MidiSong4::numTracks; ++i) {
-        trackPlayers[i]->setNumVoices(numVoices);
-    }
+    // printf("set num vc %d, %d\n", track, numVoices);
+    // fflush(stdout);
+    assert(track>=0 && track < 4);
+    assert(numVoices >=1 && numVoices <= 16);
+  
+    trackPlayers[track]->setNumVoices(numVoices);
+
 }
 
 void MidiPlayer4::setSampleCountForRetrigger(int count)

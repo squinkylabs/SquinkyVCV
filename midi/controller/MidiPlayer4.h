@@ -33,7 +33,7 @@ public:
      */
     double getCurrentLoopIterationStart(int track = 0) const;
 
-    void setNumVoices(int);
+    void setNumVoices(int track, int numVoices);
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
 
