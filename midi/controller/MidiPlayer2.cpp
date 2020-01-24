@@ -34,8 +34,9 @@ void MidiPlayer2::reset(bool clearGates)
     isResetGates = clearGates;
 }
 
-void MidiPlayer2::setNumVoices(int voices)
+void MidiPlayer2::setNumVoices(int track, int voices)
 {
+    assert(track == 0);
     numVoices = voices;
     voiceAssigner.setNumVoices(voices);
 }

@@ -240,12 +240,23 @@ inline void S4Button::doPaste()
     }
 
     MidiTrackPtr track = clipData->track;
+    if (!track) {
+        WARN("no track on clip");
+        return;
+    }
 
-
+    if (!song) {
+        WARN("no song to paste");
+        return;
+    }
     song->addTrack(row, col, track);
     WARN("past length = %.2f", track->getLength());
     auto fnote = track->getFirstNote();
-    WARN("first note at time t %.2f", fnote->startTime);
+    if (fnote) {
+        WARN("first note at time t %.2f", fnote->startTime);
+    } else {
+        WARN("No first note");
+    }
     printf("final song: \n");
     song->_dump();
 }

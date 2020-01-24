@@ -304,7 +304,7 @@ void  Seq<TBase>::stepn(int n)
     TBase::outputs[CV_OUTPUT].channels = numVoices;
     TBase::outputs[GATE_OUTPUT].channels = numVoices;
 
-    player->setNumVoices(numVoices);
+    player->setNumVoices(0, numVoices);
 
     if (!running && wasRunning) {
         allGatesOff();

@@ -587,7 +587,7 @@ static std::shared_ptr<THost> makeSongOverlapQandRun(float time)
     auto song = makeSongOverlapQ<TSong>();
     auto host = std::make_shared<THost>();
     TPlayer pl(host, song);
-    pl.setNumVoices(4);
+    pl.setNumVoices(0, 4);
 
     const float quantizationInterval = .25f;        // shouldn't matter for this test...
 
@@ -632,7 +632,7 @@ static std::shared_ptr<TestHost2> makeSongTouchingQandRun(bool exactDuration, fl
         MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.setNumVoices(4);
+    pl.setNumVoices(0, 4);
     pl.updateToMetricTime(time, .25f, true);
     return host;
 }
@@ -1058,7 +1058,7 @@ static void _testQuantizedRetrigger2(float durations)
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     TPlayer pl(host, song);
-    pl.setNumVoices(1);
+    pl.setNumVoices(0, 1);
     pl.setSampleCountForRetrigger(44);
 
     // should not be playing a note now.

@@ -166,7 +166,7 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
         p->box.size.y = 22;         // should set auto like button does
         p->setLabels(Comp::getClockRates());
         addParam(p);
-    y += 28;
+    y += 42;
     for (int i=0; i<4; ++i) {
        
     #ifdef _LAB
@@ -187,7 +187,7 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
         y += S4ButtonGrid::buttonMargin + S4ButtonGrid::buttonSize; 
     }
    
-    y += 28;
+    y += -20;
  //   const float yy = y;
 #ifdef _LAB
     addLabel(Vec(controlX - 8, y),
@@ -221,10 +221,10 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module *module)
 
 void Sequencer4Widget::addJacks(Sequencer4Module *module)
 {
-    const float jacksY1 = 310;
+    const float jacksY1 = 340;
   //  const float jacksY2 = 330+2;
     const float jacksDx = 40;
-    const float jacksX = 20;
+    const float jacksX = 140;
 #ifdef _LAB
     const float labelX = jacksX - 20;
     const float dy = -32;
