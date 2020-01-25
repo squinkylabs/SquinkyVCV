@@ -130,7 +130,51 @@ static void testTwoSectionsRepeat1()
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
+    // First section, first repeat
+    // before note, nothing
+    const float quantizationInterval = .01f;
+    pl.updateToMetricTime(.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 0);
+    assertEQ(host->gateState[0], false);
+
+    // after note, 1
+    pl.updateToMetricTime(1.1, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 1);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->cvValue[0], 7.5f);
+    assertEQ(host->gateState[0], true);
+
+    // after end of note
+    pl.updateToMetricTime(3.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 2);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->cvValue[0], 7.5f);
+    assertEQ(host->gateState[0], false);
+
+
+    // First section, second repeat
+    // before note, nothing
+
+    pl.updateToMetricTime(4.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 2);
+    assertEQ(host->gateState[0], false);
+#if 0
+    // after note, 1
+    pl.updateToMetricTime(1.1, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 1);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->cvValue[0], 7.5f);
+    assertEQ(host->gateState[0], true);
+
+    // after end of note
+    pl.updateToMetricTime(3.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 2);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->cvValue[0], 7.5f);
+    assertEQ(host->gateState[0], false);
+
     assert(false);
+#endif
 }
 
 void testMidiPlayer4()

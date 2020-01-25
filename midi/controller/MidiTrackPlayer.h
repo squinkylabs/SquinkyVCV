@@ -51,6 +51,7 @@ private:
      */
     double currentLoopIterationStart = 0;
     MidiTrack::const_iterator curEvent;
+    int sectionLoopCounter = 1;
 
     bool pollForNoteOff(double metricTime);
     void findFirstTrackSection();

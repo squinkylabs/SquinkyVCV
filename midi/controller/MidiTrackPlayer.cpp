@@ -1,4 +1,5 @@
 #include "MidiTrackPlayer.h"
+#include "MidiTrack4Options.h"
 #include "MidiSong4.h"
 #include "TimeUtils.h"
 
@@ -6,13 +7,14 @@
 #include <assert.h>
 
 MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) :
-    song(_song),
-    track(song->getTrack(trackIndex)),
+  //  song(_song),
+ //   track(song->getTrack(trackIndex)),
     trackIndex(trackIndex),
     curSectionIndex(0),
     voiceAssigner(voices, 16)
 {
-    findFirstTrackSection();
+  //  findFirstTrackSection();
+    setSong(_song, trackIndex);
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
         vx.setHost(host.get());
@@ -34,16 +36,24 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
 void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackIndex) 
 {
     song = newSong;
+    track = song->getTrack(trackIndex);
+    assert(_trackIndex == trackIndex);      // we don't expect to get re-assigned.
 
     findFirstTrackSection();
+    auto options = song->getOptions(trackIndex, curSectionIndex);
+    if (options) {
+        sectionLoopCounter = options->repeatCount;
+    } else {
+        sectionLoopCounter = 1;
+    }
+    assert(sectionLoopCounter == 1);
 #ifdef _MLOG
     if (!track) {
         printf("found nothing to play on track %d\n", trackIndex);
     }
 #endif
 
-    assert(trackIndex == _trackIndex);
-    curSectionIndex = 0;
+   // curSectionIndex = 0;
 }
 
 MidiSong4Ptr MidiTrackPlayer::getSong()
