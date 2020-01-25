@@ -27,6 +27,14 @@ MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)
     return tracks[trackIndex][sectionIndex];
 }
 
+MidiTrack4OptionsPtr MidiSong4::getOptions(int trackIndex, int sectionIndex)
+{
+     if (trackIndex < 0 || trackIndex >= numTracks || sectionIndex < 0 || sectionIndex >= numSectionsPerTrack) {
+        assert(false);
+        return nullptr;
+    }
+    return options[trackIndex][sectionIndex];
+}
 
  MidiSong4Ptr MidiSong4::makeTest(MidiTrack::TestContent content, int trackIndex, int sectionIndex)
  {

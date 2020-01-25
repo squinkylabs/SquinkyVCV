@@ -1,10 +1,16 @@
 
 #include "MidiPlayer4.h"
 #include "MidiSong4.h"
+#include "MidiTrack4Options.h"
 #include "TestHost4.h"
 
 #include "asserts.h"
 
+/**
+ * Makes a multi section test song.
+ * First section is one bar long, and has one quarter note in it.
+ * Second section is two vars and has 8 1/8 notes in it (c...c)
+ */
 static MidiSong4Ptr makeSong(int trackNum)
 {
     MidiSong4Ptr song = std::make_shared<MidiSong4>();
@@ -113,9 +119,24 @@ static void testTwoSectionsLoop()
 
 }
 
+static void testTwoSectionsRepeat1()
+{
+    const int trackNum = 0;
+    MidiSong4Ptr song = makeSong(trackNum);
+
+    auto options = song->getOptions(0, 0);
+    options->repeatCount = 2;
+
+    std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
+    MidiPlayer4 pl(host, song);
+
+    assert(false);
+}
+
 void testMidiPlayer4()
 {
     testTwoSections(0);
     testTwoSections(3);
     testTwoSectionsLoop();
+    testTwoSectionsRepeat1();
 }
