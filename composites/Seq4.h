@@ -277,7 +277,7 @@ void  Seq4<TBase>::stepn(int n)
 
     // copy the current voice number to the poly ports
     for (int i=0; i<4; ++i) {
-        const int numVoices = (int) std::round(TBase::params[NUM_VOICES0_PARAM].value + 1);
+        const int numVoices = (int) std::round(TBase::params[NUM_VOICES0_PARAM+i].value + 1);
         TBase::outputs[CV0_OUTPUT + i].channels = numVoices;
         TBase::outputs[GATE0_OUTPUT + i].channels = numVoices;
         player->setNumVoices(i, numVoices);
