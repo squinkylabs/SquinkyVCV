@@ -46,7 +46,7 @@ void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackInde
     } else {
         sectionLoopCounter = 1;
     }
-    assert(sectionLoopCounter == 1);
+
 #ifdef _MLOG
     if (!track) {
         printf("found nothing to play on track %d\n", trackIndex);
@@ -148,14 +148,29 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
 #endif
                 // for now, should loop.
                 currentLoopIterationStart += curEvent->first;
-                track = nullptr;
-                while (!track) {
-                    // printf("moving to next section \n"); fflush(stdout);
-                    if (++curSectionIndex > 3) {
 
-                        curSectionIndex = 0;
+
+                sectionLoopCounter--;
+                assert(sectionLoopCounter >= 0);
+                if (sectionLoopCounter > 0) {
+                    // if still repeating this section..
+                    // Then I think all we need to do is reset the pointer.
+                    curEvent = track->begin();
+                } else {
+                    // If we have reached the end of the repetitions of this section,
+                    // then go to the next one.
+                    track = nullptr;
+                    while (!track) {
+                        // printf("moving to next section \n"); fflush(stdout);
+                        if (++curSectionIndex > 3) {
+
+                            curSectionIndex = 0;
+                        }
+                        track = song->getTrack(trackIndex, curSectionIndex);
+                        if (track) {
+                            sectionLoopCounter = song->getOptions(trackIndex, curSectionIndex)->repeatCount;
+                        }
                     }
-                    track = song->getTrack(trackIndex, curSectionIndex);
                 }
                 curEvent = track->begin();
                 // printf("just reset curEvent 146\n");
