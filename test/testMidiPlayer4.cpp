@@ -158,23 +158,54 @@ static void testTwoSectionsRepeat1()
     pl.updateToMetricTime(4.8, quantizationInterval, true);
     assertEQ(host->gateChangeCount, 2);
     assertEQ(host->gateState[0], false);
-#if 0
+
     // after note, 1
-    pl.updateToMetricTime(1.1, quantizationInterval, true);
-    assertEQ(host->gateChangeCount, 1);
+    pl.updateToMetricTime(4 +1.1, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 3);
     host->assertOneActiveTrack(trackNum);
     assertEQ(host->cvValue[0], 7.5f);
     assertEQ(host->gateState[0], true);
 
     // after end of note
-    pl.updateToMetricTime(3.8, quantizationInterval, true);
-    assertEQ(host->gateChangeCount, 2);
+    pl.updateToMetricTime(4 + 3.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 4);
     host->assertOneActiveTrack(trackNum);
     assertEQ(host->cvValue[0], 7.5f);
     assertEQ(host->gateState[0], false);
 
-    assert(false);
-#endif
+    // second section, first note (c at 0)
+    pl.updateToMetricTime(4+ 4.1, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateChangeCount, 5);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
+
+    // second section, after first note (c at 0)
+    pl.updateToMetricTime(4 + 4.6, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateChangeCount, 6);
+    assertEQ(host->gateState[0], false);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
+
+    // second section, second note (d at 1)
+    pl.updateToMetricTime(4 + 5, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateChangeCount, 7);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::d));
+
+    // second section, after second note (d at 1)
+    pl.updateToMetricTime(4 + 5.6, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateChangeCount, 8);
+    assertEQ(host->gateState[0], false);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::d));
+
+    // now all the way to the last note in the last section
+    pl.updateToMetricTime(4 + 4 + 7, quantizationInterval, true);
+    host->assertOneActiveTrack(trackNum);
+    assertEQ(host->gateState[0], true);
+    assertEQ(host->cvValue[0], PitchUtils::pitchToCV(4, PitchUtils::c));
 }
 
 void testMidiPlayer4()

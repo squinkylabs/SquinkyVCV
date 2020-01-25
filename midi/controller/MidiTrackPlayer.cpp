@@ -163,7 +163,6 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                     while (!track) {
                         // printf("moving to next section \n"); fflush(stdout);
                         if (++curSectionIndex > 3) {
-
                             curSectionIndex = 0;
                         }
                         track = song->getTrack(trackIndex, curSectionIndex);
