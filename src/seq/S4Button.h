@@ -257,8 +257,6 @@ inline void S4Button::doPaste()
     } else {
         WARN("No first note");
     }
-    printf("final song: \n");
-    song->_dump();
 }
 
 /***************************************************************************
