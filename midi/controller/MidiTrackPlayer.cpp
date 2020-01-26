@@ -151,12 +151,16 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
 
 
                 sectionLoopCounter--;
-                assert(sectionLoopCounter >= 0);
+              //  assert(sectionLoopCounter >= 0);
                 if (sectionLoopCounter > 0) {
                     // if still repeating this section..
                     // Then I think all we need to do is reset the pointer.
                     curEvent = track->begin();
                 } else {
+                    if (sectionLoopCounter < 0) {
+                        printf("inf not supported yet\n");
+                        fflush(stdout);
+                    }
                     // If we have reached the end of the repetitions of this section,
                     // then go to the next one.
                     track = nullptr;
@@ -212,6 +216,8 @@ void MidiTrackPlayer::reset()
 
     voiceAssigner.reset();
     currentLoopIterationStart = 0;
+    auto options = song->getOptions(trackIndex, curSectionIndex);
+    sectionLoopCounter = options ? options->repeatCount : 1;
 }
 
 double MidiTrackPlayer::getCurrentLoopIterationStart() const

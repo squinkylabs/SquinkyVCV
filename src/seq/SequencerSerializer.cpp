@@ -95,7 +95,6 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong4> sng)
             {
                 const std::string key = optionTagForSong4(row, col);
                 auto opt = sng->getOptions(row, col);
-                WARN("saving song opt = %d", !!opt);
                 if (opt) {
 
                     // only serialize tracks that exist
@@ -160,7 +159,6 @@ json_t* SequencerSerializer::toJson(const SubrangeLoop& lp)
 
  json_t* SequencerSerializer::toJson(std::shared_ptr<MidiTrack4Options> options)
  {
-    WARN("to json options called\n");
     assert(options);
     json_t* opt = json_object();
     json_object_set_new(opt, "repeat", json_integer(options->repeatCount));

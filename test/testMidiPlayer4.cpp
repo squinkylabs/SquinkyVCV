@@ -84,7 +84,6 @@ static void testTwoSections(int trackNum)
     host->assertOneActiveTrack(trackNum);
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(4, PitchUtils::c));
-
 }
 
 static void testTwoSectionsLoop()
@@ -208,10 +207,50 @@ static void testTwoSectionsRepeat1()
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(4, PitchUtils::c));
 }
 
+static void testRepeatReset()
+{
+    const int trackNum = 0;
+    MidiSong4Ptr song = makeSong(trackNum);
+
+    // repeat second section twice.
+    auto options = song->getOptions(0, 1);
+    options->repeatCount = 2;
+    const float quantizationInterval = .01f;
+
+    std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
+    MidiPlayer4 pl(host, song);
+
+
+    // Play the first section, verify it played one note
+    pl.updateToMetricTime(3.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, 2);
+
+    // Play a bit of second section, verify there are "lots of" notes.
+    pl.updateToMetricTime(4 + 1.48f, quantizationInterval, true);
+    assertGT(host->gateChangeCount, 4);
+
+    // now reset the player and repeat
+    pl.reset(true);
+    pl.updateToMetricTime(.2, quantizationInterval, true);
+    const int ct0 = host->gateChangeCount;
+
+    // Play the first section, verify it played one note
+    pl.updateToMetricTime(3.8, quantizationInterval, true);
+    assertEQ(host->gateChangeCount, ct0 + 2);
+
+    // Play a bit of second section, verify there are "lots of" notes.
+    // (due to bug, this will fail, as there is still a stale repeat
+    // count from section 2 before)
+    pl.updateToMetricTime(4 + 1.48f, quantizationInterval, true);
+    assertGT(host->gateChangeCount, ct0 + 4);
+  
+}
+
 void testMidiPlayer4()
 {
     testTwoSections(0);
     testTwoSections(3);
     testTwoSectionsLoop();
     testTwoSectionsRepeat1();
+    testRepeatReset();
 }

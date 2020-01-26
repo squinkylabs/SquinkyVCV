@@ -44,10 +44,11 @@ public:
             &rack::ui::MenuLabel::text,
             "Repeat Count");      
         menu->addChild(label);
-
+#if 0 // we don't support this yet
         ::rack::ui::MenuItem* item = RepeatItem::make(button, 0);
         item->text = "Forever";
         menu->addChild(item);
+#endif
 
         for (int i=1; i<=16; ++i) {
             ::rack::ui::MenuItem* item = RepeatItem::make(button, i);
