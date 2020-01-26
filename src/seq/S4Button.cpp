@@ -1,8 +1,70 @@
 
+#include "MidiTrack4Options.h"
 #include "S4Button.h"
 #include "seq4.h"
 #include "../ctrl/SqUI.h"
+#include "../ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
+
+#include <sstream>
+
+class RepeatItem  : public  ::rack::ui::MenuItem
+{
+public:
+    RepeatItem() = delete;
+    static ::rack::ui::MenuItem* make(S4Button* button, int value)
+    {
+        std::function<bool()> isCheckedFn = [button, value]() {
+            return button->getRepeatCountForUI() == value;
+        };
+
+        std::function<void()> clickFn = []() {
+            //stt->curGrid = grid;
+            WARN("clicked on me");
+        };
+
+        return new SqMenuItem(isCheckedFn, clickFn);
+    }
+
+};
+
+class RepeatCountMenuItem : public  ::rack::ui::MenuItem
+{
+public:
+    RepeatCountMenuItem(S4Button* opt) : button(opt)
+    {
+        text = "repeat count";
+        rightText = RIGHT_ARROW;
+    }
+
+    ::rack::ui::Menu *createChildMenu() override
+    {
+        ::rack::ui::Menu* menu = new ::rack::ui::Menu();
+
+        auto label = ::rack::construct<::rack::ui::MenuLabel>(
+            &rack::ui::MenuLabel::text,
+            "Repeat Count");      
+        menu->addChild(label);
+
+        ::rack::ui::MenuItem* item = RepeatItem::make(button, 0);
+        item->text = "Forever";
+        menu->addChild(item);
+
+        for (int i=1; i<=16; ++i) {
+            ::rack::ui::MenuItem* item = RepeatItem::make(button, i);
+            std::stringstream str;
+            str << i;
+            item->text = str.str();
+            menu->addChild(item);
+        }
+
+        return menu;
+    }
+private:
+    S4Button* const button; 
+};
+
+//*********************** S4Button ************************/
 
  
 MidiTrackPtr S4Button::getTrack() const
@@ -10,9 +72,22 @@ MidiTrackPtr S4Button::getTrack() const
     return song->getTrack(row, col);
 }
 
+ 
+MidiTrack4OptionsPtr S4Button::getOptions() const
+{
+    return song->getOptions(row, col);
+}
 void S4Button::invokeContextMenu()
 {
-    assert(false);
+    WARN("in invokeContextMenu");
+    ::rack::ui::Menu* menu = ::rack::createMenu();
+    menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
+    //menu->addChild(new GridMenuItem(this));
+
+
+    menu->addChild(new RepeatCountMenuItem(this));
+
+    //should we return the menu?
 }
 
 void S4Button::step()
@@ -75,6 +150,7 @@ void S4Button::onButton(const rack::event::Button &e)
 
     // alternate click brings up context menu
     if ((e.button == GLFW_MOUSE_BUTTON_RIGHT) && (e.action == GLFW_PRESS)) {
+        sq::consumeEvent(&e, this);
         invokeContextMenu();
         return;
     }
@@ -106,6 +182,18 @@ void S4Button::doPaste()
         WARN("first note at time t %.2f", fnote->startTime);
     } else {
         WARN("No first note");
+    }
+}
+
+
+int S4Button::getRepeatCountForUI()
+{
+    auto options = getOptions();
+    if (options) {
+        return options->repeatCount;
+    } else {
+        WARN("editing repeats when no data");
+        return 0;
     }
 }
 

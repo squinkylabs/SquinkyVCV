@@ -13,7 +13,9 @@
 
 class S4Button;
 class MidiTrack;
+class MidiTrack4Options;
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;
+using MidiTrack4OptionsPtr = std::shared_ptr<MidiTrack4Options>;
 
 class S4ButtonDrawer : public ::rack::OpaqueWidget
 {
@@ -33,6 +35,7 @@ class S4Button : public ::rack::OpaqueWidget
 {
 public:
     friend class S4ButtonDrawer;
+    friend class RepeatItem;
     S4Button(const rack::math::Vec& size, const rack::math::Vec& pos, int r, int c, MidiSong4Ptr s);
 
     /**
@@ -76,7 +79,10 @@ private:
     bool handleKey(int key, int mods, int action);
     void doPaste();
     MidiTrackPtr getTrack() const;
+    MidiTrack4OptionsPtr getOptions() const;
     void invokeContextMenu();
+
+    int getRepeatCountForUI();
 };
 
 /**
@@ -163,13 +169,6 @@ inline void S4Button::setClickHandler(callback h)
     clickHandler = h;
 }
 
-#if 0
-inline void S4Button::onDragHover(const rack::event::DragHover &e)
-{
-    sq::consumeEvent(&e, this);
-}
-#endif
-
 inline void S4Button::onDragEnter(const rack::event::DragEnter &e)
 {
 }
@@ -179,72 +178,6 @@ inline void S4Button::onDragLeave(const rack::event::DragLeave &e)
     isDragging = false;
 }
 
-#if 0
-inline void S4Button::onButton(const rack::event::Button &e)
-{
-    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
-        // Do we need to consume this key to get dragLeave?
-        isDragging = true;
-        sq::consumeEvent(&e, this);
-        return;
-    }
-
-    // release main button triggers click action
-    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_RELEASE)) {
-        // Command on mac.
-        const bool ctrlKey = (e.mods & RACK_MOD_CTRL);
-
-        if (!isDragging) {
-            return;
-        }
-
-        // OK, process it
-        sq::consumeEvent(&e, this);
-
-        if (clickHandler) {
-            clickHandler(ctrlKey);
-        }
-        return;
-    }
-
-    // alternate click brings up context menu
-    if ((e.button == GLFW_MOUSE_BUTTON_RIGHT) && (e.action == GLFW_PRESS)) {
-        invokeContextMenu();
-        return;
-    }
-
-}
-#endif
-
-#if 0
-inline void S4Button::doPaste()
-{
-    auto clipData = SqClipboard::getTrackData();
-    if (!clipData) {
-        WARN("no clip data");
-        return;
-    }
-
-    MidiTrackPtr track = clipData->track;
-    if (!track) {
-        WARN("no track on clip");
-        return;
-    }
-
-    if (!song) {
-        WARN("no song to paste");
-        return;
-    }
-    song->addTrack(row, col, track);
-    WARN("past length = %.2f", track->getLength());
-    auto fnote = track->getFirstNote();
-    if (fnote) {
-        WARN("first note at time t %.2f", fnote->startTime);
-    } else {
-        WARN("No first note");
-    }
-}
-#endif
 /***************************************************************************
  * 
  * S4ButtonGrid
@@ -254,8 +187,8 @@ inline void S4Button::doPaste()
  * 
  ****************************************************************************/
 
-//using Comp = Seq4<WidgetComposite>;
 #include "MidiSong4.h"
+
 class S4ButtonGrid
 {
 public:
@@ -285,42 +218,6 @@ inline void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq)
     }
 
 }
-
-#if 0
-inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Ptr song)
-{
-  //  const float buttonSize = 50;
- //   const float buttonMargin = 10;
-    const float jacksX = 380;
-    for (int row = 0; row < MidiSong4::numTracks; ++row) {
-        const float y = 70 + row * (buttonSize + buttonMargin);
-        for (int col = 0; col < MidiSong4::numTracks; ++col) {
-            const float x = 130 + col * (buttonSize + buttonMargin);
-            S4Button* b = new S4Button(
-                rack::math::Vec(buttonSize, buttonSize), 
-                rack::math::Vec(x, y),
-                row,
-                col,
-                song);
-            parent->addChild(b);
-            b->setClickHandler(makeButtonHandler(row, col));
-            buttons[row][col] = b;
-        }
-
-        const float jacksY = y + 8;
-        const float jacksDy = 28;
-        
-        parent->addOutput(createOutputCentered<PJ301MPort>(
-            rack::math::Vec(jacksX, jacksY),
-            module,
-            Comp::CV0_OUTPUT + row));
-        parent->addOutput(createOutputCentered<PJ301MPort>(
-            rack::math::Vec(jacksX, jacksY + jacksDy),
-            module,
-            Comp::GATE0_OUTPUT + row));
-    }
-}
-#endif
 
 inline std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col)
 {
