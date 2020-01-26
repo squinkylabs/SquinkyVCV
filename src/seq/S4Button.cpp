@@ -18,9 +18,8 @@ public:
             return button->getRepeatCountForUI() == value;
         };
 
-        std::function<void()> clickFn = []() {
-            //stt->curGrid = grid;
-            WARN("clicked on me");
+        std::function<void()> clickFn = [button, value]() {
+            button->setRepeatCountForUI(value);
         };
 
         return new SqMenuItem(isCheckedFn, clickFn);
@@ -197,7 +196,15 @@ int S4Button::getRepeatCountForUI()
     }
 }
 
-
+void S4Button::setRepeatCountForUI(int ct)
+{
+    auto options = getOptions();
+    if (options) {
+        options->repeatCount = ct;;
+    } else {
+        WARN("editing repeats when no data");
+    }
+}
 /*****************************  ***********************************/
 
 using Comp = Seq4<WidgetComposite>;

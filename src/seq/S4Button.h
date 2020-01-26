@@ -83,6 +83,7 @@ private:
     void invokeContextMenu();
 
     int getRepeatCountForUI();
+    void setRepeatCountForUI(int);
 };
 
 /**
