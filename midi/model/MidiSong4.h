@@ -28,6 +28,7 @@ public:
     void addTrack(int trackIndex, int sectionIndex, MidiTrackPtr track);
     MidiTrackPtr getTrack(int trackIndex, int sectionIndex = 0);
     MidiTrack4OptionsPtr getOptions(int trackIndex, int sectionIndex);
+    void addOptions(int trackIndex, int sectionIndex, MidiTrack4OptionsPtr options);
 
     /**
      * The last argument is optional for template compatibility with tests/

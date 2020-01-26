@@ -14,8 +14,20 @@ void MidiSong4::addTrack(int trackIndex, int sectionIndex,  MidiTrackPtr track)
         assert(false);
         return;
     }
+    // This is pretty hacky - you need to set options after the track
+    
     tracks[trackIndex][sectionIndex] = track;
     options[trackIndex][sectionIndex] = std::make_shared<MidiTrack4Options>();
+}
+
+void MidiSong4::addOptions(int trackIndex, int sectionIndex,  MidiTrack4OptionsPtr ops)
+{
+    if (trackIndex < 0 || trackIndex >= numTracks || sectionIndex < 0 || sectionIndex >= numSectionsPerTrack) {
+        assert(false);
+        return;
+    }
+   
+    options[trackIndex][sectionIndex] = ops;
 }
 
 MidiTrackPtr MidiSong4::getTrack(int trackIndex, int sectionIndex)

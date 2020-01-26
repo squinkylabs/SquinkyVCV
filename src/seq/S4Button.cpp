@@ -71,7 +71,6 @@ MidiTrackPtr S4Button::getTrack() const
     return song->getTrack(row, col);
 }
 
- 
 MidiTrack4OptionsPtr S4Button::getOptions() const
 {
     return song->getOptions(row, col);
@@ -153,7 +152,6 @@ void S4Button::onButton(const rack::event::Button &e)
         invokeContextMenu();
         return;
     }
-
 }
 
 void S4Button::doPaste()
@@ -184,7 +182,6 @@ void S4Button::doPaste()
     }
 }
 
-
 int S4Button::getRepeatCountForUI()
 {
     auto options = getOptions();
@@ -210,8 +207,6 @@ void S4Button::setRepeatCountForUI(int ct)
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module, MidiSong4Ptr song)
 {
-  //  const float buttonSize = 50;
- //   const float buttonMargin = 10;
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
         const float y = 70 + row * (buttonSize + buttonMargin);

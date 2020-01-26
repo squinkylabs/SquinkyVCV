@@ -15,6 +15,9 @@ class ISeqSettings;
 class SequencerModule;
 class Sequencer4Module;
 class SubrangeLoop;
+class MidiTrack4Options;
+
+using MidiTrack4OptionsPtr = std::shared_ptr<MidiTrack4Options>;
 
 class SequencerSerializer
 {
@@ -29,6 +32,7 @@ private:
     static json_t *toJson(std::shared_ptr<MidiSong>);
     static json_t *toJson(std::shared_ptr<MidiSong4>);
     static json_t *toJson(std::shared_ptr<MidiTrack>);
+    static json_t *toJson(std::shared_ptr<MidiTrack4Options>);
     static json_t *toJson(std::shared_ptr<MidiNoteEvent>);
     static json_t *toJson(std::shared_ptr<MidiEndEvent>);
     static json_t *toJson(std::shared_ptr<MidiEvent>);
@@ -38,6 +42,7 @@ private:
     static std::shared_ptr<MidiSong> fromJsonSong(json_t *data);
     static std::shared_ptr<MidiSong4> fromJsonSong4(json_t *data);
     static MidiTrackPtr fromJsonTrack(json_t *data, int index, std::shared_ptr<MidiLock>);
+    static MidiTrack4OptionsPtr fromJsonOptions(json_t* data );
     static MidiEventPtr fromJsonEvent(json_t *data);
     static MidiNoteEventPtr fromJsonNoteEvent(json_t *data);
     static MidiEndEventPtr fromJsonEndEvent(json_t *data);
@@ -48,4 +53,5 @@ private:
     static const int typeEnd = 2;
 
     static std::string trackTagForSong4(int row, int col);
+    static std::string optionTagForSong4(int row, int col);
 };
