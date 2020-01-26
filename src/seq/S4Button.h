@@ -2,18 +2,23 @@
 
 //#include "Widget.hpp"
 #include "rack.hpp"
+#include "math.hpp"
 #include "SqClipboard.h"
 #include "SqGfx.h"
 #include "TimeUtils.h"
 #include "UIPrefs.h"
 #include "MidiSequencer4.h"
 
+#include <functional>
+
 class S4Button;
+class MidiTrack;
+using MidiTrackPtr = std::shared_ptr<MidiTrack>;
 
 class S4ButtonDrawer : public ::rack::OpaqueWidget
 {
 public:
-    S4ButtonDrawer(const Vec& size, const Vec& pos, S4Button* button) :
+    S4ButtonDrawer(const rack::math::Vec& size, const rack::math::Vec& pos, S4Button* button) :
         button(button)
     {
         this->box.size=size;
@@ -28,7 +33,7 @@ class S4Button : public ::rack::OpaqueWidget
 {
 public:
     friend class S4ButtonDrawer;
-    S4Button(const Vec& size, const Vec& pos, int r, int c, MidiSong4Ptr s);
+    S4Button(const rack::math::Vec& size, const rack::math::Vec& pos, int r, int c, MidiSong4Ptr s);
 
     /**
      * pass callback here to handle clicking on LED
@@ -37,11 +42,11 @@ public:
     void setClickHandler(callback);
     void setSelection(bool);
 
-    void onButton(const event::Button &e) override;
-    void onDragHover(const event::DragHover &e) override;
-    void onDragEnter(const event::DragEnter &e) override;
-    void onDragLeave(const event::DragLeave &e) override;
-    void onSelectKey(const event::SelectKey &e) override;
+    void onButton(const rack::event::Button &e) override;
+    void onDragHover(const rack::event::DragHover &e) override;
+    void onDragEnter(const rack::event::DragEnter &e) override;
+    void onDragLeave(const rack::event::DragLeave &e) override;
+    void onSelectKey(const rack::event::SelectKey &e) override;
 
     bool isSelected() const
     {
@@ -56,7 +61,7 @@ public:
     }
 
 private:
-    FramebufferWidget * fw = nullptr;
+    rack::widget::FramebufferWidget * fw = nullptr;
     S4ButtonDrawer * drawer = nullptr;
     callback clickHandler = nullptr;
     bool isDragging = false;
@@ -70,10 +75,8 @@ private:
 
     bool handleKey(int key, int mods, int action);
     void doPaste();
-    MidiTrackPtr getTrack() const
-    {
-        return song->getTrack(row, col);
-    }
+    MidiTrackPtr getTrack() const;
+    void invokeContextMenu();
 };
 
 /**
@@ -96,9 +99,6 @@ inline void S4ButtonDrawer::draw(const DrawArgs &args)
                 //x, y, width, noteHeight);
     }
 
-   
-    
-
     nvgBeginPath(ctx);
     nvgFontSize(ctx, 14.f);
     nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
@@ -111,55 +111,27 @@ inline void S4ButtonDrawer::draw(const DrawArgs &args)
 }
 
 inline S4Button::S4Button(
-    const Vec& size, 
-    const Vec& pos,
+    const rack::math::Vec& size, 
+    const rack::math::Vec& pos,
     int r, 
     int c, 
     MidiSong4Ptr s) : row(r), col(c), song(s)
 {
     this->box.size = size;
     this->box.pos = pos;
-    fw = new FramebufferWidget();
+    fw = new rack::widget::FramebufferWidget();
     this->addChild(fw);
 
     drawer = new S4ButtonDrawer(size, pos, this);
     fw->addChild(drawer);
 }
 
-void S4Button::setSelection(bool sel)
+inline void S4Button::setSelection(bool sel)
 {
     if (_isSelected != sel) {
         _isSelected = sel;
         fw->dirty = true;
     }
-}
-
-void S4Button::step()
-{
-    ::rack::OpaqueWidget::step();
-
-    auto track = getTrack();
-
-    std::string newLen;
-    float lengthTime = 0;
-    int newNumNotes = 0;
-    if (track) {
-        lengthTime = track->getLength();
-        newLen = TimeUtils::length2str(lengthTime);
-        newNumNotes = track->size() - 1;
-    } 
-    if (newLen != contentLength) {
-        // DEBUG("updating length %.2f, %s", length, newLen.c_str());
-        contentLength = newLen;
-        fw->dirty = true;
-    }
-
-    if (numNotes != newNumNotes) {
-        numNotes = newNumNotes;
-        fw->dirty = true;
-    }
-
-    
 }
 
 inline bool S4Button::handleKey(int key, int mods, int action)
@@ -176,7 +148,7 @@ inline bool S4Button::handleKey(int key, int mods, int action)
     return handled;
 }
 
-inline void S4Button::onSelectKey(const event::SelectKey &e)
+inline void S4Button::onSelectKey(const rack::event::SelectKey &e)
 {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
@@ -191,21 +163,24 @@ inline void S4Button::setClickHandler(callback h)
     clickHandler = h;
 }
 
-inline void S4Button::onDragHover(const event::DragHover &e)
+#if 0
+inline void S4Button::onDragHover(const rack::event::DragHover &e)
 {
     sq::consumeEvent(&e, this);
 }
+#endif
 
-inline void S4Button::onDragEnter(const event::DragEnter &e)
+inline void S4Button::onDragEnter(const rack::event::DragEnter &e)
 {
 }
 
-inline void S4Button::onDragLeave(const event::DragLeave &e) 
+inline void S4Button::onDragLeave(const rack::event::DragLeave &e) 
 {
     isDragging = false;
 }
 
-inline void S4Button::onButton(const event::Button &e)
+#if 0
+inline void S4Button::onButton(const rack::event::Button &e)
 {
     if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
         // Do we need to consume this key to get dragLeave?
@@ -214,6 +189,7 @@ inline void S4Button::onButton(const event::Button &e)
         return;
     }
 
+    // release main button triggers click action
     if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_RELEASE)) {
         // Command on mac.
         const bool ctrlKey = (e.mods & RACK_MOD_CTRL);
@@ -228,9 +204,19 @@ inline void S4Button::onButton(const event::Button &e)
         if (clickHandler) {
             clickHandler(ctrlKey);
         }
+        return;
     }
-}
 
+    // alternate click brings up context menu
+    if ((e.button == GLFW_MOUSE_BUTTON_RIGHT) && (e.action == GLFW_PRESS)) {
+        invokeContextMenu();
+        return;
+    }
+
+}
+#endif
+
+#if 0
 inline void S4Button::doPaste()
 {
     auto clipData = SqClipboard::getTrackData();
@@ -258,7 +244,7 @@ inline void S4Button::doPaste()
         WARN("No first note");
     }
 }
-
+#endif
 /***************************************************************************
  * 
  * S4ButtonGrid
@@ -267,12 +253,13 @@ inline void S4Button::doPaste()
  * bridge between the widget and the buttons
  * 
  ****************************************************************************/
-using Comp = Seq4<WidgetComposite>;
 
+//using Comp = Seq4<WidgetComposite>;
+#include "MidiSong4.h"
 class S4ButtonGrid
 {
 public:
-    void init(ModuleWidget* widget, Module* module, MidiSong4Ptr s);
+    void init(rack::app::ModuleWidget* widget, rack::engine::Module* module, MidiSong4Ptr s);
     void setNewSeq(MidiSequencer4Ptr newSeq);
     const static int buttonSize = 50.f;
     const static int buttonMargin = 10;
@@ -282,7 +269,7 @@ private:
     S4Button* buttons[MidiSong4::numTracks][MidiSong4::numSectionsPerTrack] = {{}};
 };
 
-S4Button* S4ButtonGrid::getButton(int row, int col)
+inline S4Button* S4ButtonGrid::getButton(int row, int col)
 {
     assert(row>=0 && row<4 && col>=0 && col<4);
     return buttons[row][col];
@@ -299,6 +286,7 @@ inline void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq)
 
 }
 
+#if 0
 inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Ptr song)
 {
   //  const float buttonSize = 50;
@@ -309,8 +297,8 @@ inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Pt
         for (int col = 0; col < MidiSong4::numTracks; ++col) {
             const float x = 130 + col * (buttonSize + buttonMargin);
             S4Button* b = new S4Button(
-                Vec(buttonSize, buttonSize), 
-                Vec(x, y),
+                rack::math::Vec(buttonSize, buttonSize), 
+                rack::math::Vec(x, y),
                 row,
                 col,
                 song);
@@ -323,15 +311,16 @@ inline void S4ButtonGrid::init(ModuleWidget* parent, Module* module, MidiSong4Pt
         const float jacksDy = 28;
         
         parent->addOutput(createOutputCentered<PJ301MPort>(
-            Vec(jacksX, jacksY),
+            rack::math::Vec(jacksX, jacksY),
             module,
             Comp::CV0_OUTPUT + row));
         parent->addOutput(createOutputCentered<PJ301MPort>(
-            Vec(jacksX, jacksY + jacksDy),
+            rack::math::Vec(jacksX, jacksY + jacksDy),
             module,
             Comp::GATE0_OUTPUT + row));
     }
 }
+#endif
 
 inline std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col)
 {
