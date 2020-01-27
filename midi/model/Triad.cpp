@@ -86,6 +86,20 @@ std::vector<float> Triad::toCv(ScalePtr scale) const
     return ret;
 }
 
+
+std::vector<int> Triad::toSemi(ScalePtr scale) const
+{
+    std::vector<int> ret;
+    int index = 0;
+    for (auto srn : notes) {
+     //   float pitchCV = scale->getPitchCV(*this->get(index));
+        int semi = scale->getSemitone(*this->get(index));
+        ret.push_back(semi);
+        ++index;
+    }
+    return ret;
+}
+
 TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad, bool searchOctaves)
 {
     return searchOctaves ?
@@ -176,18 +190,18 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
 {
     float penalty = 0;
 
-    const auto firstCvs = first.toCv(scale);
-    const auto secondCvs = second.toCv(scale);
+    const auto firstCvs = first.toSemi(scale);
+    const auto secondCvs = second.toSemi(scale);
     if (isParallel(firstCvs, secondCvs)) {
         penalty += 5;           // 10 seemed too high
         printf("rate pair penalty for parallel 5\n");
     }
     penalty += sumDistance(firstCvs, secondCvs);
-    printf("penalty for distance = %f span = %f\n", sumDistance(firstCvs, secondCvs), secondCvs[2] - secondCvs[0]);
+    printf("penalty for distance = %f span = %d\n", sumDistance(firstCvs, secondCvs), secondCvs[2] - secondCvs[0]);
     return penalty;
 }
 
-bool Triad::isParallel(const std::vector<float>& first, const std::vector<float>& second)
+bool Triad::isParallel(const std::vector<int>& first, const std::vector<int>& second)
 {
     assert(first.size() == 3 && second.size() == 3);
     const bool up0 = first[0] < second[0];
@@ -210,12 +224,13 @@ bool Triad::isParallel(const std::vector<float>& first, const std::vector<float>
     return ret;
 }
 
-float Triad::sumDistance(const std::vector<float>& first, const std::vector<float>& second)
+float Triad::sumDistance(const std::vector<int>& first, const std::vector<int>& second)
 {
     assert(first.size() == 3 && second.size() == 3);
-    return std::abs(first[0] - second[0]) +
+    int sum = std::abs(first[0] - second[0]) +
         std::abs(first[1] - second[1]) +
         std::abs(first[2] - second[2]);
+    return float(sum);
 }
 
  void Triad::_dump(const char* title, ScalePtr scale) const

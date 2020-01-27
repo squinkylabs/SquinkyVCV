@@ -8,27 +8,41 @@
 static void testPar1()
 {
     {
-        std::vector<float> first = {1, 2, 3};
-        std::vector<float> second = {1.1f, 2.1f, 3.1f};
+    //    std::vector<float> first = {1, 2, 3};
+    //    std::vector<float> second = {1.1f, 2.1f, 3.1f};
+
+        std::vector<int> first = {3, 6, 9};
+        std::vector<int> second = {4, 7, 10};
         assert(Triad::isParallel(first, second));
         assert(Triad::isParallel(second, first));
     }
 
     {
-        std::vector<float> first = {1, 2, 3};
-        std::vector<float> second = {1.1f, 2.1f, 2.9f};
+     //   std::vector<float> first = {1, 2, 3};
+     //   std::vector<float> second = {1.1f, 2.1f, 2.9f};
+        std::vector<int> first = {3, 6, 9};
+        std::vector<int> second = {4, 7, 8};
+
         assert(!Triad::isParallel(first, second));
         assert(!Triad::isParallel(second, first));
     }
     {
-        std::vector<float> first = {1, 2, 3};
-        std::vector<float> second = {1.1f, 1.9f, 3.1f};
+     //   std::vector<float> first = {1, 2, 3};
+     //   std::vector<float> second = {1.1f, 1.9f, 3.1f};
+
+        std::vector<int> first = {3, 6, 9};
+        std::vector<int> second = {4, 5, 10};
+
+
         assert(!Triad::isParallel(first, second));
         assert(!Triad::isParallel(second, first));
     }
     {
-        std::vector<float> first = {1, 2, 3};
-        std::vector<float> second = {.9f, 2.1f, 3.1f};
+     //   std::vector<float> first = {1, 2, 3};
+    //    std::vector<float> second = {.9f, 2.1f, 3.1f};
+
+        std::vector<int> first = {3, 6, 9};
+        std::vector<int> second = {2, 7, 10};
         assert(!Triad::isParallel(first, second));
         assert(!Triad::isParallel(second, first));
     }
@@ -39,8 +53,11 @@ static void testPar2()
 {
     printf("testPar2\n");
     {
-        std::vector<float> first = {1.1f, 2.1f, 3.1f};
-        std::vector<float> second = {1.1f, 2.1f, 3.1f};
+       // std::vector<float> first = {1.1f, 2.1f, 3.1f};
+     //   std::vector<float> second = {1.1f, 2.1f, 3.1f};
+
+        std::vector<int> first = {3, 6, 9};
+        std::vector<int> second = {3, 6, 9};
         assert(!Triad::isParallel(first, second));
         assert(!Triad::isParallel(second, first));
     }

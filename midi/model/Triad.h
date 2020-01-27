@@ -37,12 +37,14 @@ public:
     void transposeOctave(ScalePtr scale, int index, int octave);
 
     std::vector<float> toCv(ScalePtr scale) const;
+    std::vector<int> toSemi(ScalePtr scale) const;
 
     /**
      * Returns true of the motion from first to second is "parallel".
      * The float vectors are CV (1v / oct).
      */
-    static bool isParallel(const std::vector<float>& first, const std::vector<float>& second);
+    //static bool isParallel(const std::vector<float>& first, const std::vector<float>& second);
+    static bool isParallel(const std::vector<int>& first, const std::vector<int>& second);
 
     void _dump(const char* title, ScalePtr scale) const;
 private:
@@ -52,7 +54,8 @@ private:
     static float ratePair(ScalePtr scale, const Triad& first, const Triad& second);
 
 
-    static float sumDistance(const std::vector<float>& first, const std::vector<float>& second);
+    //static float sumDistance(const std::vector<float>& first, const std::vector<float>& second);
+    static float sumDistance(const std::vector<int>& first, const std::vector<int>& second);
 
     static TriadPtr makeNorm(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad);
     static TriadPtr makeOctaves(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad);
