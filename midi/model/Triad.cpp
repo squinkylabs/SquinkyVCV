@@ -21,10 +21,15 @@ TriadPtr Triad::make(ScalePtr scale, const ScaleRelativeNote& root, Triad::Inver
         case Inversion::Root:
             break;
         case Inversion::First:
-            ret->notes[1] = scale->transposeOctaves(*ret->notes[1], -1);
+        //    ret->notes[1] = scale->transposeOctaves(*ret->notes[1], -1);
+            // make first inversion by mofing root up an octave
+            ret->notes[0] = scale->transposeOctaves(*ret->notes[0], 1);
             break;
         case Inversion::Second:
-            ret->notes[2] = scale->transposeOctaves(*ret->notes[2], -1);
+            // ret->notes[2] = scale->transposeOctaves(*ret->notes[2], -1);
+            // make second inversion by raising 1 and 3 and octave
+            ret->notes[0] = scale->transposeOctaves(*ret->notes[0], 1);
+            ret->notes[1] = scale->transposeOctaves(*ret->notes[1], 1);
             break;
         default:
             assert(false);

@@ -95,15 +95,15 @@ static void testMakeFirstPos()
     TriadPtr triad = Triad::make(scale, root, Triad::Inversion::First);
     triad->assertValid(scale);
 
-    // in first inversion the third goes down, so we expect.
-    // third-1, root, fifth.
+    // in first inversion the root goes up, so we expect.
+    // third, fifth, root+1
     assertEQ(triad->get(0)->degree, 2);
-    assertEQ(triad->get(0)->octave, -1);
-    assertEQ(triad->get(1)->degree, 0);
+    assertEQ(triad->get(0)->octave, 0);
+    assertEQ(triad->get(1)->degree, 4);
     assertEQ(triad->get(1)->octave, 0);
   
-    assertEQ(triad->get(2)->degree, 4);
-    assertEQ(triad->get(2)->octave, 0);
+    assertEQ(triad->get(2)->degree, 0);
+    assertEQ(triad->get(2)->octave, 1);
 }
 
 static void testMakeSecondPos()
@@ -113,15 +113,16 @@ static void testMakeSecondPos()
     assert(root.valid);
     TriadPtr triad = Triad::make(scale, root, Triad::Inversion::Second);
     triad->assertValid(scale);
-    // second pos we lower fifth, so expect
-    // fifth-1, root, third
+
+    // second raise 1 and 3, so expect
+    // fifth, root+1, third+1
 
     assertEQ(triad->get(0)->degree, 4);
-    assertEQ(triad->get(0)->octave, -1);
+    assertEQ(triad->get(0)->octave, 0);
     assertEQ(triad->get(1)->degree, 0);
-    assertEQ(triad->get(1)->octave, 0);
+    assertEQ(triad->get(1)->octave, 1);
     assertEQ(triad->get(2)->degree, 2);
-    assertEQ(triad->get(2)->octave, 0);
+    assertEQ(triad->get(2)->octave, 1);
 }
 
 static void test3()
