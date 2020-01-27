@@ -764,14 +764,32 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandNorm(
 
 
                 // now convert it back to notes
+#if 1
+                // make three new notes for the three notes in the chord;
+                MidiNoteEventPtr a = std::make_shared<MidiNoteEvent>(*note);
+                a->pitchCV = cvs[0];
+                MidiNoteEventPtr b = std::make_shared<MidiNoteEvent>(*note);
+                b->pitchCV = cvs[1];
+                MidiNoteEventPtr c = std::make_shared<MidiNoteEvent>(*note);
+                c->pitchCV = cvs[2];
+
+                toRemove.push_back(note);
+                toAdd.push_back(a);
+                toAdd.push_back(b);
+                toAdd.push_back(c);
+#else
                 MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
                 MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
 
+                // we used to assume the first (root) wouldn't move. But now that we
+                // sort, this isn't true all the time.
+                // Let's remove the old pitch and add all three in.
                 assertClose(cvs[0], note->pitchCV, .0001);
                 third->pitchCV = cvs[1];
                 fifth->pitchCV = cvs[2];
                 toAdd.push_back(third);
                 toAdd.push_back(fifth);
+#endif
             }
         }
     }

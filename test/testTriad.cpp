@@ -60,7 +60,7 @@ static void testMakeRootPos()
     ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c_);
     assert(root.valid);
     TriadPtr triad = Triad::make(scale, root, Triad::Inversion::Root);
-    triad->assertValid();
+    triad->assertValid(scale);
 
     assertEQ(triad->get(0)->degree, 0);
     assertEQ(triad->get(0)->octave, 0);
@@ -76,12 +76,15 @@ static void testMakeFirstPos()
     ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c_);
     assert(root.valid);
     TriadPtr triad = Triad::make(scale, root, Triad::Inversion::First);
-    triad->assertValid();
+    triad->assertValid(scale);
 
-    assertEQ(triad->get(0)->degree, 0);
-    assertEQ(triad->get(0)->octave, 0);
-    assertEQ(triad->get(1)->degree, 2);
-    assertEQ(triad->get(1)->octave, -1);
+    // in first inversion the third goes down, so we expect.
+    // third-1, root, fifth.
+    assertEQ(triad->get(0)->degree, 2);
+    assertEQ(triad->get(0)->octave, -1);
+    assertEQ(triad->get(1)->degree, 0);
+    assertEQ(triad->get(1)->octave, 0);
+  
     assertEQ(triad->get(2)->degree, 4);
     assertEQ(triad->get(2)->octave, 0);
 }
@@ -92,17 +95,17 @@ static void testMakeSecondPos()
     ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c_);
     assert(root.valid);
     TriadPtr triad = Triad::make(scale, root, Triad::Inversion::Second);
-    triad->assertValid();
+    triad->assertValid(scale);
+    // second pos we lower fifth, so expect
+    // fifth-1, root, third
 
-    assertEQ(triad->get(0)->degree, 0);
-    assertEQ(triad->get(0)->octave, 0);
-    assertEQ(triad->get(1)->degree, 2);
+    assertEQ(triad->get(0)->degree, 4);
+    assertEQ(triad->get(0)->octave, -1);
+    assertEQ(triad->get(1)->degree, 0);
     assertEQ(triad->get(1)->octave, 0);
-    assertEQ(triad->get(2)->degree, 4);
-    assertEQ(triad->get(2)->octave, -1);
+    assertEQ(triad->get(2)->degree, 2);
+    assertEQ(triad->get(2)->octave, 0);
 }
-
-
 
 static void test3()
 {
@@ -113,7 +116,7 @@ static void test3()
 
     auto cvs = triad->toCv(scale);
     assertEQ(cvs.size(), 3);
-    triad->assertValid();
+    triad->assertValid(scale);
 
     auto expected = PitchUtils::semitoneToCV(PitchUtils::c);
     assertEQ(cvs[0], expected);
@@ -131,12 +134,12 @@ static void test4()
     assert(root.valid);
     TriadPtr firstTriad = Triad::make(scale, root, Triad::Inversion::Root);
 
-    // our normal finder (no octave switch) does parallel clock chords.
+    // our normal finder (no octave switch) does parallel block chords.
     ScaleRelativeNote nextRoot = scale->getScaleRelativeNote(PitchUtils::d);
     TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad, false);
 
     assert(secondTriad);
-    secondTriad->assertValid();
+    secondTriad->assertValid(scale);
 
     auto cvs = secondTriad->toCv(scale);
     assertEQ(cvs.size(), 3);
@@ -162,7 +165,7 @@ static void test4b()
     TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad, false);
 
     assert(secondTriad);
-    secondTriad->assertValid();
+    secondTriad->assertValid(scale);
 
     auto cvs = secondTriad->toCv(scale);
     assertEQ(cvs.size(), 3);
@@ -187,7 +190,7 @@ static void test5()
     TriadPtr secondTriad = Triad::make(scale, nextRoot, *firstTriad, true);
 
     assert(secondTriad);
-    secondTriad->assertValid();
+    secondTriad->assertValid(scale);
 
     auto cvs = secondTriad->toCv(scale);
     assertEQ(cvs.size(), 3);
@@ -200,6 +203,27 @@ static void test5()
     assertEQ(cvs[2], expected2);
 }
 
+
+static void testCtoF()
+{
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+
+    ScaleRelativeNote rootC = scale->getScaleRelativeNote(PitchUtils::c);
+    assert(rootC.valid);
+    TriadPtr cTriad = Triad::make(scale, rootC, Triad::Inversion::Root);
+
+    ScaleRelativeNote rootF = scale->getScaleRelativeNote(PitchUtils::f);
+    assert(rootF.valid);
+    TriadPtr fTriad = Triad::make(scale, rootF, Triad::Inversion::Second);
+
+    cTriad->_dump("c first", scale);
+    fTriad->_dump("f first", scale);
+
+
+
+    assert(false);  // finish this test, perhaps?
+}
+
 void testTriad()
 {
     testPar1();
@@ -208,7 +232,9 @@ void testTriad()
     testMakeFirstPos();
     testMakeSecondPos();
     test3();
-    test4();
+    printf("add back missing triad tests\n");
+    //test4();
     test4b();
-    test5();
+    // test5();
+    // testCtoF();
 }

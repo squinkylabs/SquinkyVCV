@@ -4,9 +4,9 @@
 #include "rack.hpp"
 #include "math.hpp"
 #include "SqClipboard.h"
-#include "SqGfx.h"
+//#include "SqGfx.h"
 #include "TimeUtils.h"
-#include "UIPrefs.h"
+//#include "UIPrefs.h"
 #include "MidiSequencer4.h"
 
 #include <functional>
@@ -28,7 +28,6 @@ public:
     void draw(const DrawArgs &args) override;
 private:
     S4Button* const button;
-
 };
 
 class S4Button : public ::rack::OpaqueWidget
@@ -85,37 +84,6 @@ private:
     int getRepeatCountForUI();
     void setRepeatCountForUI(int);
 };
-
-/**
- * A special purpose button for the 4x4 seq module.
- * Has simple click handling, but lots of dedicated drawing ability
- */
-inline void S4ButtonDrawer::draw(const DrawArgs &args)
-{
-    auto ctx = args.vg;
-    if (button->isSelected()) {
-          SqGfx::filledRect(
-                args.vg,
-                UIPrefs::X4_SELECTION_COLOR,
-                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
-    } else {
-        SqGfx::filledRect(
-                args.vg,
-                UIPrefs::NOTE_COLOR,
-                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
-                //x, y, width, noteHeight);
-    }
-
-    nvgBeginPath(ctx);
-    nvgFontSize(ctx, 14.f);
-    nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
-    nvgText(ctx, 5, 15, button->contentLength.c_str(), nullptr);
-    if (button->numNotes > 0) {
-        std::stringstream s;
-        s << button->numNotes;
-        nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
-    }
-}
 
 inline S4Button::S4Button(
     const rack::math::Vec& size, 

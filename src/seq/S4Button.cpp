@@ -5,8 +5,13 @@
 #include "../ctrl/SqUI.h"
 #include "../ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
+#include "SqGfx.h"
+#include "TimeUtils.h"
+#include "UIPrefs.h"
 
 #include <sstream>
+
+/****************** sontext menu UI ********************/
 
 class RepeatItem  : public  ::rack::ui::MenuItem
 {
@@ -24,7 +29,6 @@ public:
 
         return new SqMenuItem(isCheckedFn, clickFn);
     }
-
 };
 
 class RepeatCountMenuItem : public  ::rack::ui::MenuItem
@@ -78,11 +82,8 @@ MidiTrack4OptionsPtr S4Button::getOptions() const
 }
 void S4Button::invokeContextMenu()
 {
-    WARN("in invokeContextMenu");
     ::rack::ui::Menu* menu = ::rack::createMenu();
     menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
-    //menu->addChild(new GridMenuItem(this));
-
 
     menu->addChild(new RepeatCountMenuItem(this));
 
@@ -203,7 +204,7 @@ void S4Button::setRepeatCountForUI(int ct)
         WARN("editing repeats when no data");
     }
 }
-/*****************************  ***********************************/
+/***************************** S4ButtonGrid ***********************************/
 
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module, MidiSong4Ptr song)
@@ -237,4 +238,41 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
             Comp::GATE0_OUTPUT + row));
     }
 }
+
+
+
+
+/********************** S4ButtonDrawer ****************/
+
+/**
+ * A special purpose button for the 4x4 seq module.
+ * Has simple click handling, but lots of dedicated drawing ability
+ */
+void S4ButtonDrawer::draw(const DrawArgs &args)
+{
+    auto ctx = args.vg;
+    if (button->isSelected()) {
+          SqGfx::filledRect(
+                args.vg,
+                UIPrefs::X4_SELECTION_COLOR,
+                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
+    } else {
+        SqGfx::filledRect(
+                args.vg,
+                UIPrefs::NOTE_COLOR,
+                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
+                //x, y, width, noteHeight);
+    }
+
+    nvgBeginPath(ctx);
+    nvgFontSize(ctx, 14.f);
+    nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
+    nvgText(ctx, 5, 15, button->contentLength.c_str(), nullptr);
+    if (button->numNotes > 0) {
+        std::stringstream s;
+        s << button->numNotes;
+        nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
+    }
+}
+
 

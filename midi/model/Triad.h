@@ -26,7 +26,7 @@ public:
      */
     static TriadPtr make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad, bool switchOctaves);
 
-    void assertValid() const;
+    void assertValid(ScalePtr) const;
 
     ScaleRelativeNotePtr get(int index) const
     {
@@ -43,6 +43,8 @@ public:
      * The float vectors are CV (1v / oct).
      */
     static bool isParallel(const std::vector<float>& first, const std::vector<float>& second);
+
+    void _dump(const char* title, ScalePtr scale) const;
 private:
     Triad();
     std::vector<ScaleRelativeNotePtr> notes;
@@ -54,5 +56,5 @@ private:
 
     static TriadPtr makeNorm(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad);
     static TriadPtr makeOctaves(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad);
-
+    void sort(ScalePtr);
 };

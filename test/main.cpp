@@ -169,13 +169,13 @@ int main(int argc, char ** argv)
     testSeqClock();
     testMidiPlayer2();
     testMidiPlayer4();
-    testReplaceCommand();
-    testNewSongDataDataCommand();
-    testUndoRedo();
     testMidiViewport();
     testScale();
     testTriad();
- 
+    testReplaceCommand();
+    testNewSongDataDataCommand();
+    testUndoRedo();
+    
     testMidiFile();
     testMidiControllers();
     testMidiEditorSelection();
