@@ -8,9 +8,6 @@
 static void testPar1()
 {
     {
-    //    std::vector<float> first = {1, 2, 3};
-    //    std::vector<float> second = {1.1f, 2.1f, 3.1f};
-
         std::vector<int> first = {3, 6, 9};
         std::vector<int> second = {4, 7, 10};
         assert(Triad::isParallel(first, second));
@@ -18,8 +15,6 @@ static void testPar1()
     }
 
     {
-     //   std::vector<float> first = {1, 2, 3};
-     //   std::vector<float> second = {1.1f, 2.1f, 2.9f};
         std::vector<int> first = {3, 6, 9};
         std::vector<int> second = {4, 7, 8};
 
@@ -27,20 +22,13 @@ static void testPar1()
         assert(!Triad::isParallel(second, first));
     }
     {
-     //   std::vector<float> first = {1, 2, 3};
-     //   std::vector<float> second = {1.1f, 1.9f, 3.1f};
-
         std::vector<int> first = {3, 6, 9};
         std::vector<int> second = {4, 5, 10};
-
 
         assert(!Triad::isParallel(first, second));
         assert(!Triad::isParallel(second, first));
     }
     {
-     //   std::vector<float> first = {1, 2, 3};
-    //    std::vector<float> second = {.9f, 2.1f, 3.1f};
-
         std::vector<int> first = {3, 6, 9};
         std::vector<int> second = {2, 7, 10};
         assert(!Triad::isParallel(first, second));
@@ -51,24 +39,12 @@ static void testPar1()
 
 static void testPar2()
 {
-    printf("testPar2\n");
     {
-       // std::vector<float> first = {1.1f, 2.1f, 3.1f};
-     //   std::vector<float> second = {1.1f, 2.1f, 3.1f};
-
         std::vector<int> first = {3, 6, 9};
         std::vector<int> second = {3, 6, 9};
         assert(!Triad::isParallel(first, second));
         assert(!Triad::isParallel(second, first));
     }
-#if 0
-    {
-        std::vector<float> first = {1.1f, 2.1f, 3.1f + PitchUtils::semitone / 100};
-        std::vector<float> second = {1.1f, 2.1f, 3.1f};
-        assert(!Triad::isParallel(first, second));
-        assert(!Triad::isParallel(second, first));
-    }
-#endif
 }
 
 static void testMakeRootPos()
@@ -145,7 +121,7 @@ static void test3()
 }
 
 
-static void test4()
+static void testCtoD()
 {
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
     ScaleRelativeNote root = scale->getScaleRelativeNote(PitchUtils::c);
@@ -167,7 +143,7 @@ static void test4()
     assertEQ(cvs[0], expected0);
     auto expected1 = PitchUtils::semitoneToCV(PitchUtils::f);
     assertEQ(cvs[1], expected1);
-    auto expected2 = PitchUtils::semitoneToCV(PitchUtils::a) - 1;
+    auto expected2 = PitchUtils::semitoneToCV(PitchUtils::a);
     assertEQ(cvs[2], expected2);
 }
 
@@ -196,6 +172,7 @@ static void test4b()
     assertEQ(cvs[2], expected2);
 }
 
+#if 0
 static void test5()
 {
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
@@ -220,12 +197,11 @@ static void test5()
     auto expected2 = PitchUtils::semitoneToCV(PitchUtils::g);
     assertEQ(cvs[2], expected2);
 }
-
+#endif
 
 
 static void testCtoF()
 {
-    printf("\n***** testCtoF\n");
     // c -> f (Inv II) should be good
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
 
@@ -240,9 +216,6 @@ static void testCtoF()
     assert(rootF.valid);
     TriadPtr fTriad = Triad::make(scale, rootF, Triad::Inversion::Second);
 
-    cTriad->_dump("c first", scale);
-    fTriad->_dump("f first my way", scale);
-
     // this is what I get now 
     TriadPtr fTriad2;
     {
@@ -252,37 +225,22 @@ static void testCtoF()
         notes[0] = ScaleRelativeNote::_testMakeFromDegreeAndOctave2(3, -1);
         notes[1] = ScaleRelativeNote::_testMakeFromDegreeAndOctave2(5, 0);
         notes[2] = ScaleRelativeNote::_testMakeFromDegreeAndOctave2(0, 1);
-        fTriad2->_dump("other", scale);
     }
 
-   // static float ratePair(ScalePtr scale, const Triad& first, const Triad& second);
     float x = Triad::ratePair(scale, *cTriad, *fTriad);
     float y = Triad::ratePair(scale, *cTriad, *fTriad2);
-    printf("mine rates as %f, the bad one as %f\n", x, y);
-
-
-
     assert(x < y);
 }
 
 static void testCtoF2()
 {
-    printf("\n***** testCtoF2\n");
-
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
     ScaleRelativeNote rootC = scale->getScaleRelativeNote(PitchUtils::c);
     assert(rootC.valid);
     TriadPtr cTriad = Triad::make(scale, rootC, Triad::Inversion::Root);
 
     ScaleRelativeNote f = scale->getScaleRelativeNote(PitchUtils::f);
-    //static TriadPtr make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad, bool switchOctaves);
-
-    printf("\nwill try to make F chord to follow C\n");
     TriadPtr second =  Triad::make(scale, f, *cTriad, true);
-
-    cTriad->_dump("root c", scale);
-    second->_dump("to F", scale);
-
 
     auto finalSemis = second->toSemi(scale);
     assertEQ(finalSemis[0], 0);
@@ -298,10 +256,9 @@ void testTriad()
     testMakeFirstPos();
     testMakeSecondPos();
     test3();
-    printf("add back missing triad tests\n");
-    //test4();
+    testCtoD();
     test4b();
-    // test5();
+   // test5();
     testCtoF();
     testCtoF2();
 }

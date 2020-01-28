@@ -160,9 +160,6 @@ TriadPtr Triad::makeNorm(ScalePtr scale, const ScaleRelativeNote& root, const Tr
     TriadPtr best = make(scale, root, Inversion::Root);
     float bestPenalty = ratePair(scale, previousTriad, *best);
 
-
-    //ScaleRelativeNotePtr root = scale->transposeOctaves(_root, octave);
-
     TriadPtr candidate = make(scale, root, Inversion::Root);
     float candidatePenalty = ratePair(scale, previousTriad, *candidate);
   
@@ -170,7 +167,6 @@ TriadPtr Triad::makeNorm(ScalePtr scale, const ScaleRelativeNote& root, const Tr
         best = candidate;
         bestPenalty = candidatePenalty;
     }
-
 
     candidate = make(scale, root, Inversion::First);
     candidatePenalty = ratePair(scale, previousTriad, *candidate);
@@ -187,13 +183,14 @@ TriadPtr Triad::makeNorm(ScalePtr scale, const ScaleRelativeNote& root, const Tr
         best = candidate;
         bestPenalty = candidatePenalty;
     }
-
+#if 0
     printf("\nleaving make norm. final rating prev.next\n");
     previousTriad._dump("prev", scale);
     best->_dump("best", scale);
     ratePair(scale, previousTriad, *best);
     printf("\n");
     fflush(stdout);
+#endif
 
 
     return best;
@@ -207,21 +204,26 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
     assert(first.isSorted(scale));
     assert(second.isSorted(scale));
 
+#if 0
     {
         printf("rating pair: \n");
         first._dump("first", scale);
         second._dump("second", scale);
     }
+#endif
 
     const auto firstCvs = first.toSemi(scale);
     const auto secondCvs = second.toSemi(scale);
     if (isParallel(firstCvs, secondCvs)) {
         penalty += 5;           // 10 seemed too high
-        printf("rate pair penalty for parallel 5\n");
+       // printf("rate pair penalty for parallel 5\n");
     }
     penalty += sumDistance(firstCvs, secondCvs);
+
+#if 0
     printf("penalty for distance = %f span = %d\n", sumDistance(firstCvs, secondCvs), secondCvs[2] - secondCvs[0]);
     printf("total penalty: %f\n\n", penalty);
+#endif
     return penalty;
 }
 

@@ -399,7 +399,6 @@ static void testCut()
 
 static void testNoteFilter()
 {
-    printf("testNoteFilter\n");
     // test seq starts at 3:0 and goes up in semis
     MidiSongPtr ms = MidiSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     MidiSequencerPtr seq = MidiSequencer::make(ms, std::make_shared<TestSettings>(), std::make_shared<TestAuditionHost>());
