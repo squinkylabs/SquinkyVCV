@@ -45,7 +45,6 @@ public:
      * Returns true of the motion from first to second is "parallel".
      * The float vectors are CV (1v / oct).
      */
-    //static bool isParallel(const std::vector<float>& first, const std::vector<float>& second);
     static bool isParallel(const std::vector<int>& first, const std::vector<int>& second);
 
     bool isSorted(ScalePtr scale) const;

@@ -27,7 +27,6 @@ public:
     }
     static ScaleRelativeNotePtr _testMakeFromDegreeAndOctave2(int degree, int octave)
     {
-     //   return std::make_shared<ScaleRelativeNote>(degree, octave);
         auto p = new ScaleRelativeNote(degree, octave);
         return ScaleRelativeNotePtr(p);
     }
