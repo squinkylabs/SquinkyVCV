@@ -21,6 +21,8 @@ public:
      */
     static TriadPtr make(ScalePtr scale, const ScaleRelativeNote& root, Inversion);
 
+
+
     /**
      * makes a triad the "optimally" follows a specified triad
      */
@@ -46,12 +48,15 @@ public:
     //static bool isParallel(const std::vector<float>& first, const std::vector<float>& second);
     static bool isParallel(const std::vector<int>& first, const std::vector<int>& second);
 
+    bool isSorted(ScalePtr scale) const;
     void _dump(const char* title, ScalePtr scale) const;
+    std::vector<ScaleRelativeNotePtr>& _getNotes();
+    static float ratePair(ScalePtr scale, const Triad& first, const Triad& second);
 private:
     Triad();
     std::vector<ScaleRelativeNotePtr> notes;
 
-    static float ratePair(ScalePtr scale, const Triad& first, const Triad& second);
+   
 
 
     //static float sumDistance(const std::vector<float>& first, const std::vector<float>& second);

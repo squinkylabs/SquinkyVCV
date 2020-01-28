@@ -58,6 +58,14 @@ void Triad::sort(ScalePtr scale)
     if (cv[1] > cv[2]) {
         std::swap(notes[1], notes[2]);
     }
+
+    assert(isSorted(scale));
+}
+
+bool Triad::isSorted(ScalePtr scale) const
+{
+    auto semis = this->toSemi(scale);
+    return ( (semis[0] < semis[1]) && (semis[1] < semis[2]));  
 }
 
 void Triad::assertValid(ScalePtr scale) const
@@ -129,6 +137,7 @@ TriadPtr Triad::makeOctaves(ScalePtr scale, const ScaleRelativeNote& root, const
                     candidate->transposeOctave(scale, 0, rootOctave);
                     candidate->transposeOctave(scale, 1, thirdOctave);
                     candidate->transposeOctave(scale, 2, fifthOctave);
+                    candidate->sort(scale);
                     float candidatePenalty = ratePair(scale, previousTriad, *candidate);
                   //  printf("root penalty oct %d = %.2f\n", octave, candidatePenalty);
                     if (candidatePenalty < bestPenalty) {
@@ -195,6 +204,15 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
 {
     float penalty = 0;
 
+    assert(first.isSorted(scale));
+    assert(second.isSorted(scale));
+
+    {
+        printf("rating pair: \n");
+        first._dump("first", scale);
+        second._dump("second", scale);
+    }
+
     const auto firstCvs = first.toSemi(scale);
     const auto secondCvs = second.toSemi(scale);
     if (isParallel(firstCvs, secondCvs)) {
@@ -203,6 +221,7 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
     }
     penalty += sumDistance(firstCvs, secondCvs);
     printf("penalty for distance = %f span = %d\n", sumDistance(firstCvs, secondCvs), secondCvs[2] - secondCvs[0]);
+    printf("total penalty: %f\n\n", penalty);
     return penalty;
 }
 
@@ -241,5 +260,15 @@ float Triad::sumDistance(const std::vector<int>& first, const std::vector<int>& 
  void Triad::_dump(const char* title, ScalePtr scale) const
  {
      auto pitches = this->toCv(scale);
-     printf("triad %s = %.2f, %.2f, %.2f\n", title, pitches[0], pitches[1], pitches[2]);
+     auto semis = this->toSemi(scale);
+     printf("triad %s = %.2f, %.2f, %.2f : %d, %d, %d\n", 
+        title,
+        pitches[0], pitches[1], pitches[2],
+        semis[0], semis[1], semis[2]);
+ }
+
+
+ std::vector<ScaleRelativeNotePtr>& Triad::_getNotes()
+ {
+     return notes;
  }

@@ -222,24 +222,72 @@ static void test5()
 }
 
 
+
 static void testCtoF()
 {
+    printf("\n***** testCtoF\n");
+    // c -> f (Inv II) should be good
     ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
 
+    // Root pos C
     ScaleRelativeNote rootC = scale->getScaleRelativeNote(PitchUtils::c);
     assert(rootC.valid);
     TriadPtr cTriad = Triad::make(scale, rootC, Triad::Inversion::Root);
 
-    ScaleRelativeNote rootF = scale->getScaleRelativeNote(PitchUtils::f);
+
+    // I think it should connect to second inv F, down an octave
+    ScaleRelativeNote rootF = scale->getScaleRelativeNote(PitchUtils::f - 12);
     assert(rootF.valid);
     TriadPtr fTriad = Triad::make(scale, rootF, Triad::Inversion::Second);
 
     cTriad->_dump("c first", scale);
-    fTriad->_dump("f first", scale);
+    fTriad->_dump("f first my way", scale);
+
+    // this is what I get now 
+    TriadPtr fTriad2;
+    {
+        fTriad2 = Triad::make(scale, rootF, Triad::Inversion::First);
+        std::vector<ScaleRelativeNotePtr>& notes = fTriad2->_getNotes();
+
+        notes[0] = ScaleRelativeNote::_testMakeFromDegreeAndOctave2(3, -1);
+        notes[1] = ScaleRelativeNote::_testMakeFromDegreeAndOctave2(5, 0);
+        notes[2] = ScaleRelativeNote::_testMakeFromDegreeAndOctave2(0, 1);
+        fTriad2->_dump("other", scale);
+    }
+
+   // static float ratePair(ScalePtr scale, const Triad& first, const Triad& second);
+    float x = Triad::ratePair(scale, *cTriad, *fTriad);
+    float y = Triad::ratePair(scale, *cTriad, *fTriad2);
+    printf("mine rates as %f, the bad one as %f\n", x, y);
 
 
 
-    assert(false);  // finish this test, perhaps?
+    assert(x < y);
+}
+
+static void testCtoF2()
+{
+    printf("\n***** testCtoF2\n");
+
+    ScalePtr scale = Scale::getScale(Scale::Scales::Major, PitchUtils::c);
+    ScaleRelativeNote rootC = scale->getScaleRelativeNote(PitchUtils::c);
+    assert(rootC.valid);
+    TriadPtr cTriad = Triad::make(scale, rootC, Triad::Inversion::Root);
+
+    ScaleRelativeNote f = scale->getScaleRelativeNote(PitchUtils::f);
+    //static TriadPtr make(ScalePtr scale, const ScaleRelativeNote& root, const Triad& previousTriad, bool switchOctaves);
+
+    printf("\nwill try to make F chord to follow C\n");
+    TriadPtr second =  Triad::make(scale, f, *cTriad, true);
+
+    cTriad->_dump("root c", scale);
+    second->_dump("to F", scale);
+
+
+    auto finalSemis = second->toSemi(scale);
+    assertEQ(finalSemis[0], 0);
+    assertEQ(finalSemis[1], 5);
+    assertEQ(finalSemis[2], 9);
 }
 
 void testTriad()
@@ -254,5 +302,6 @@ void testTriad()
     //test4();
     test4b();
     // test5();
-    // testCtoF();
+    testCtoF();
+    testCtoF2();
 }
