@@ -351,7 +351,6 @@ MidiSong4Ptr SequencerSerializer::fromJsonSong4(json_t *data)
         if (data) {
             for (int row=0; row < MidiSong4::numTracks; ++row) {
                 for (int col=0; col < MidiSong4::numSectionsPerTrack; ++col) {
-
                     {
                         std::string key = trackTagForSong4(row, col);
                         json_t* trackJson = json_object_get(data, key.c_str());
@@ -367,13 +366,26 @@ MidiSong4Ptr SequencerSerializer::fromJsonSong4(json_t *data)
                         MidiTrack4OptionsPtr options;
                         if (optionJson) {
                             options = fromJsonOptions(optionJson);
+                            song->addOptions(row, col, options);
                         }
-                        song->addOptions(row, col, options);
+                        // if there are no options, will have empty ones set above
+                    }
+                    const bool haveTrack = !!song->getTrack(row, col);
+                    const bool haveOptions = !!song->getOptions(row, col);
+
+                    if (haveTrack && !haveOptions) {
+                        WARN("adding missing options");
+                        song->addOptions(row, col, std::make_shared<MidiTrack4Options>());
+                    }
+                    if (!haveTrack && haveOptions) {
+                        WARN("removing extra options");
+                        song->addOptions(row, col, nullptr);
                     }
                 }
             }
         }
     }
+    song->assertValid();
     return song;
 }
 

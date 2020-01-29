@@ -17,7 +17,7 @@ public:
     static const int numTracks = 4;
     static const int numSectionsPerTrack = 4;
 
-    void assertValid() const;
+    void assertValid();
     float getTrackLength(int trackNum) const;
 
     /**

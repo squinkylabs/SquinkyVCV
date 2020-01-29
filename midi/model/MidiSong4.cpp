@@ -3,9 +3,19 @@
 #include "MidiSong4.h"
 #include "MidiTrack4Options.h"
 
-void MidiSong4::assertValid() const
+void MidiSong4::assertValid()
 {
-    // TODO: add stuff
+    for (int track=0; track<numTracks; ++track) {
+        for (int sect=0; sect<numSectionsPerTrack; ++sect) {
+            bool hasTrack = !!this->getTrack(track, sect);
+            bool hasOpt = !!this->getOptions(track, sect);
+            assert(hasTrack == hasOpt);
+            if (hasTrack) {
+                auto tk = this->getTrack(track, sect);
+                tk->assertValid();
+            }
+        }
+    }
 }
 
 void MidiSong4::addTrack(int trackIndex, int sectionIndex,  MidiTrackPtr track)

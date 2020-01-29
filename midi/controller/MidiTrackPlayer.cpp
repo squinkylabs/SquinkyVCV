@@ -145,7 +145,9 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
             case MidiEvent::Type::End:
 #if defined(_MLOG)
                 printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
+                fflush(stdout);
 #endif
+              //  assert(curEvent);
                 // for now, should loop.
                 currentLoopIterationStart += curEvent->first;
 
@@ -155,6 +157,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                 if (sectionLoopCounter > 0) {
                     // if still repeating this section..
                     // Then I think all we need to do is reset the pointer.
+                    assert(track);
                     curEvent = track->begin();
                 } else {
                     if (sectionLoopCounter < 0) {
@@ -165,18 +168,24 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                     // then go to the next one.
                     track = nullptr;
                     while (!track) {
-                        // printf("moving to next section \n"); fflush(stdout);
+
                         if (++curSectionIndex > 3) {
                             curSectionIndex = 0;
                         }
                         track = song->getTrack(trackIndex, curSectionIndex);
                         if (track) {
-                            sectionLoopCounter = song->getOptions(trackIndex, curSectionIndex)->repeatCount;
+                            auto opts = song->getOptions(trackIndex, curSectionIndex);
+                            assert(opts);
+                            if (opts) {
+                                sectionLoopCounter = opts->repeatCount;
+                            } else {
+                                sectionLoopCounter = 1;
+                            }
                         }
                     }
                 }
+                assert(track);
                 curEvent = track->begin();
-                // printf("just reset curEvent 146\n");
                 break;
             default:
                 assert(false);
