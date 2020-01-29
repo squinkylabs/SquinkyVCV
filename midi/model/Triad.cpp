@@ -144,7 +144,6 @@ TriadPtr Triad::makeOctaves(ScalePtr scale, const ScaleRelativeNote& root, const
         }
     }
     
-
     return best;
 }
 
@@ -207,13 +206,22 @@ float Triad::ratePair(ScalePtr scale, const Triad& first, const Triad& second)
     }
 #endif
 
-    const auto firstCvs = first.toSemi(scale);
-    const auto secondCvs = second.toSemi(scale);
-    if (isParallel(firstCvs, secondCvs)) {
-        penalty += 5;           // 10 seemed too high
+    const auto firstSemis = first.toSemi(scale);
+    const auto secondSemis = second.toSemi(scale);
+    if (isParallel(firstSemis, secondSemis)) {
+        penalty += 5; 
        // printf("rate pair penalty for parallel 5\n");
     }
-    penalty += sumDistance(firstCvs, secondCvs);
+
+    // penalize speads that are bigger than a hand
+    int secondSpan = secondSemis[2] - secondSemis[0];
+    if (secondSpan > 10) {
+        penalty += 5;
+    }
+
+
+
+    penalty += sumDistance(firstSemis, secondSemis);
 
 #if 0
     printf("penalty for distance = %f span = %d\n", sumDistance(firstCvs, secondCvs), secondCvs[2] - secondCvs[0]);
