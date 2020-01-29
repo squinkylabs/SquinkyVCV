@@ -25,6 +25,11 @@ public:
     {
         return ScaleRelativeNote(degree, octave);
     }
+    static ScaleRelativeNotePtr _testMakeFromDegreeAndOctave2(int degree, int octave)
+    {
+        auto p = new ScaleRelativeNote(degree, octave);
+        return ScaleRelativeNotePtr(p);
+    }
 private:
   // make ctors private so only scale can make them
   ScaleRelativeNote(int degree, int octave);

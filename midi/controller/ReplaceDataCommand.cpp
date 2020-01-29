@@ -762,16 +762,19 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeMakeTriadsCommandNorm(
                 // and convert back to native pitch CV
                 auto cvs = triad->toCv(scale);
 
-
                 // now convert it back to notes
-                MidiNoteEventPtr third = std::make_shared<MidiNoteEvent>(*note);
-                MidiNoteEventPtr fifth = std::make_shared<MidiNoteEvent>(*note);
+                // make three new notes for the three notes in the chord;
+                MidiNoteEventPtr a = std::make_shared<MidiNoteEvent>(*note);
+                a->pitchCV = cvs[0];
+                MidiNoteEventPtr b = std::make_shared<MidiNoteEvent>(*note);
+                b->pitchCV = cvs[1];
+                MidiNoteEventPtr c = std::make_shared<MidiNoteEvent>(*note);
+                c->pitchCV = cvs[2];
 
-                assertClose(cvs[0], note->pitchCV, .0001);
-                third->pitchCV = cvs[1];
-                fifth->pitchCV = cvs[2];
-                toAdd.push_back(third);
-                toAdd.push_back(fifth);
+                toRemove.push_back(note);
+                toAdd.push_back(a);
+                toAdd.push_back(b);
+                toAdd.push_back(c);
             }
         }
     }
