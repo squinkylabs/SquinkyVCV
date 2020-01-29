@@ -1,7 +1,7 @@
 
 #include "MidiTrack4Options.h"
 #include "S4Button.h"
-#include "seq4.h"
+#include "Seq4.h"
 #include "../ctrl/SqUI.h"
 #include "../ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
