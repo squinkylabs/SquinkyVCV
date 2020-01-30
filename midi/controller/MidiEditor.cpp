@@ -1,5 +1,6 @@
 
 #include "AuditionLocker.h"
+#include "InteropClipboard.h"
 #include "ISeqSettings.h"
 #include "MidiEditor.h"
 #include "MidiEditorContext.h"
@@ -688,11 +689,15 @@ void moveSelectionToClipboard(MidiSequencerPtr seq)
     track->insertEnd(lastT);
     track->assertValid();
 
+#ifdef _OLDCLIP
     std::shared_ptr<SqClipboard::Track> clipData = std::make_shared< SqClipboard::Track>();
     clipData->track = track;
 
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
+#else
+    InteropClipboard::put(track);
+#endif
 }
 
 void MidiEditor::copy()
@@ -717,18 +722,22 @@ void MidiEditor::copy()
         firstOne = false;
     }
    
-#if 1
     auto sourceTrack = seq()->context->getTrack();
     const float sourceLength = sourceTrack->getLength();
     track->insertEnd(sourceLength);
-
     track->assertValid();
+#ifdef _OLDCLIP
+    
     
     std::shared_ptr<SqClipboard::Track> clipData = std::make_shared<SqClipboard::Track>();
     clipData->track = track;
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
 #else
+    InteropClipboard::put(track);
+#endif
+
+#if 0   // old
     // don't copy empty track.
     // for 4x4 we probably want to?
     if (track->size() == 0) {
@@ -764,9 +773,11 @@ void MidiEditor::copy()
 
 void MidiEditor::paste()
 {
+ #ifdef _OLDCLIP
     if (!SqClipboard::getTrackData()) {
         return;
     }
+#endif
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
     seq()->undo->execute(seq(), cmd);
 

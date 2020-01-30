@@ -2,7 +2,7 @@
 
 #include "SqClipboard.h"
 
-
+#ifdef _OLDCLIP
 std::shared_ptr<SqClipboard::Track> SqClipboard::getTrackData()
 {
     return trackData;
@@ -22,3 +22,4 @@ void  SqClipboard::clear()
 //private:
 
 std::shared_ptr<SqClipboard::Track> SqClipboard::trackData;
+#endif

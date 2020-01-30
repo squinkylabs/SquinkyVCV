@@ -1,4 +1,4 @@
-
+#include "InteropClipboard.h"
 #include "MidiTrack4Options.h"
 #include "S4Button.h"
 #include "Seq4.h"
@@ -158,6 +158,7 @@ void S4Button::onButton(const rack::event::Button &e)
 
 void S4Button::doPaste()
 {
+#ifdef _OLDCLIP
     auto clipData = SqClipboard::getTrackData();
     if (!clipData) {
         WARN("no clip data");
@@ -169,6 +170,9 @@ void S4Button::doPaste()
         WARN("no track on clip");
         return;
     }
+#else
+    MidiTrackPtr track = InteropClipboard::get();
+#endif
 
     if (!song) {
         WARN("no song to paste");

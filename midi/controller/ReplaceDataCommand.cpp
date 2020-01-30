@@ -331,8 +331,11 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
 
+
+#ifdef _OLDCLIP
     auto clipData = SqClipboard::getTrackData();
     assert(clipData);
+
 
     // all the selected notes get deleted
     for (auto it : *seq->selection) {
@@ -368,6 +371,10 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
         toAdd,
         newTrackLength);
     ret->name = "paste";
+#else
+    ReplaceDataCommandPtr ret;
+    assert(false);
+#endif
     return ret;
 }
 
