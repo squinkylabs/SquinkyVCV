@@ -9,7 +9,7 @@
 
 void InteropClipboard::put(MidiTrackPtr track)
 {
-    std::string json = trackToJson(track);
+    std::string json = trackToJsonString(track);
     glfwSetClipboardString(APP->window->win, json.c_str());
 }
 
@@ -21,12 +21,25 @@ MidiTrackPtr InteropClipboard::get()
     // Where did we used to get the lock?
     MidiLockPtr lock = std::make_shared<MidiLock>();
     MidiTrackPtr ret = fromJsonStringToTrack(jsonString, lock );
+    return ret;
 }
 
-std::string InteropClipboard::trackToJson(MidiTrackPtr track)
+std::string InteropClipboard::trackToJsonString(MidiTrackPtr track)
 {
-    assert(false);
-    return "";
+    json_t* trackJson = toJson(track);
+    json_t* rackSequence = json_object();
+    json_t* clipboard = json_object();
+
+    // rack sequence has note list
+    json_object_set_new(rackSequence, keyNotes, trackJson);
+
+    // add length
+    // clipboard just has rack Sequence in it
+    json_object_set_new(clipboard, keyVcvRackSequence, rackSequence);
+
+    std::string clipboardString = json_dumps(clipboard, JSON_INDENT(2) | JSON_REAL_PRECISION(9));
+    INFO("clip: %s", clipboardString.c_str());
+    return clipboardString;
 }
 
 #if 1
@@ -108,13 +121,17 @@ json_t *InteropClipboard::toJson(MidiTrackPtr tk)
 
     for (auto ev_iter : *tk) {
         MidiEventPtr ev = ev_iter.second;
-        json_array_append_new(track, toJson(ev));
+        MidiEndEventPtr end = safe_cast<MidiEndEvent>(ev);
+        if (!end) {
+            json_array_append_new(track, toJson(ev));
+        }
     }
     return track;
 }
 
 json_t *InteropClipboard::toJson(MidiEventPtr evt)
 {
+    assert(evt);
     MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
     if (note) {
         return toJson(note);
@@ -122,11 +139,34 @@ json_t *InteropClipboard::toJson(MidiEventPtr evt)
 
     MidiEndEventPtr end = safe_cast<MidiEndEvent>(evt);
     if (end) {
-        return toJson(end);
+        assert(false);
+        return nullptr;
     }
 
     assert(false);
     return nullptr;
 }
+
+json_t *InteropClipboard::toJson(MidiNoteEventPtr n)
+{
+    // We could save a little space by omitting type for notes
+    json_t* note = json_object();
+    json_object_set_new(note, keyType, json_string(keyNote));
+    json_object_set_new(note, keyStart, json_real(n->startTime));
+    json_object_set_new(note, keyPitch, json_real(n->pitchCV));
+    json_object_set_new(note, keyNoteLength, json_real(n->duration));
+    return note;
+}
+
+
+const char* InteropClipboard::keyVcvRackSequence = "vcvrack-sequence";
+const char* InteropClipboard::keyLength = "length";
+const char* InteropClipboard::keyNotes = "notes";
+
+const char* InteropClipboard::keyType = "type";
+const char* InteropClipboard::keyNote = "note";
+const char* InteropClipboard::keyPitch = "pitch";
+const char* InteropClipboard::keyNoteLength = "length";
+const char* InteropClipboard::keyStart = "start";  
 
 
