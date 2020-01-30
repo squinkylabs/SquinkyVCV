@@ -1,3 +1,4 @@
+#include "InteropClipboard.h"
 #include "ReplaceDataCommand.h"
 #include "MidiLock.h"
 #include "MidiSequencer.h"
@@ -372,8 +373,45 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
         newTrackLength);
     ret->name = "paste";
 #else
-    ReplaceDataCommandPtr ret;
-    assert(false);
+    auto clipData = InteropClipboard::get();
+    assert(clipData);
+
+
+    // all the selected notes get deleted
+    for (auto it : *seq->selection) {
+        toRemove.push_back(it);
+    }
+
+    const float insertTime = seq->context->cursorTime();
+  //  const float eventOffsetTime = insertTime - clipData->offset;
+
+    // copy all the notes on the clipboard into the track, but move to insert time
+
+    float newDuration = 0;
+    for (auto it : *clipData) {
+        MidiEventPtr evt = it.second->clone();
+     //   evt->startTime += eventOffsetTime;
+        assert(evt->startTime >= 0);
+        if (evt->type != MidiEvent::Type::End) {
+            toAdd.push_back(evt);
+            newDuration = std::max(newDuration, evt->startTime);
+        }
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+        if (note) {
+            newDuration = std::max(newDuration, note->duration + note->startTime);
+        }
+    }
+    const float newTrackLength = calculateDurationRequest(seq, newDuration);
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        toRemove,
+        toAdd,
+        newTrackLength);
+    ret->name = "paste";
+
 #endif
     return ret;
 }

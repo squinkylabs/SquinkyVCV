@@ -1,7 +1,8 @@
 
 #include "asserts.h"
+
+#include "InteropClipboard.h"
 #include "MidiEditor.h"
-//#include "MidiEvent.h"
 #include "MidiLock.h"
 #include "MidiSelectionModel.h"
 #include "MidiSequencer.h"
@@ -787,11 +788,17 @@ static void testCut()
     seq->undo->undo(seq);
     assertEQ(origSize, seq->context->getTrack()->size());
 
+#ifdef _OLDCLIP
     auto clipData = SqClipboard::getTrackData();
     assertEQ(clipData->offset, 0);
     MidiTrackPtr tk = clipData->track;
-
     assertEQ(tk->size(), origSize);
+#else
+    auto tk = InteropClipboard::get();
+  //  assertEQ(clipData->offset, 0);
+  //  MidiTrackPtr tk = clipData->track;
+    assertEQ(tk->size(), origSize);
+#endif
 }
 
 void testMidiEditorSub(int trackNumber)

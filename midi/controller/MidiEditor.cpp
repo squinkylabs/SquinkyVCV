@@ -777,6 +777,10 @@ void MidiEditor::paste()
     if (!SqClipboard::getTrackData()) {
         return;
     }
+#else
+    if (!InteropClipboard::get()) {
+        return;
+    }
 #endif
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
     seq()->undo->execute(seq(), cmd);

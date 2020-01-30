@@ -1,3 +1,4 @@
+#include "InteropClipboard.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
 #include "MidiSong4.h"
@@ -51,6 +52,7 @@ static void testDefSong()
 
 static void testClip1()
 {
+#ifdef _OLDCLIP
     auto p = SqClipboard::getTrackData();
     assert(!p);
 
@@ -62,6 +64,22 @@ static void testClip1()
 
     p = SqClipboard::getTrackData();
     assert(p);
+#else
+    auto p = InteropClipboard::get();
+    assert(!p);
+
+    std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
+
+   // std::shared_ptr<SqClipboard::Track> t = std::make_shared< SqClipboard::Track>();
+   //t->track = std::make_shared<MidiTrack>(lock);
+
+   MidiTrackPtr t = std::make_shared< MidiTrack>(lock);
+    
+    InteropClipboard::put(t);
+
+    p = InteropClipboard::get();
+    assert(p);
+#endif
 }
 
 static void testSong4_1()
