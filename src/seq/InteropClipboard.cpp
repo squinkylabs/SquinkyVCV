@@ -32,6 +32,7 @@ std::string InteropClipboard::trackToJsonString(MidiTrackPtr track)
 
     // rack sequence has note list
     json_object_set_new(rackSequence, keyNotes, trackJson);
+    json_object_set_new(rackSequence, keyLength, json_real(track->getLength()));
 
     // add length
     // clipboard just has rack Sequence in it
@@ -42,7 +43,6 @@ std::string InteropClipboard::trackToJsonString(MidiTrackPtr track)
     return clipboardString;
 }
 
-#if 1
 MidiTrackPtr InteropClipboard::fromJsonToTrack(json_t *data, MidiLockPtr lock)
 {
     // data here is the track array
@@ -61,7 +61,6 @@ MidiTrackPtr InteropClipboard::fromJsonToTrack(json_t *data, MidiLockPtr lock)
     }
     return track;
 }
-#endif
 
 MidiTrackPtr  InteropClipboard::fromJsonStringToTrack(const std::string& json, MidiLockPtr lock)
 {
