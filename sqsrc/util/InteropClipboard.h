@@ -28,8 +28,7 @@ private:
     static std::string trackToJsonString(MidiTrackPtr);
     static MidiTrackPtr fromJsonStringToTrack(const std::string&, MidiLockPtr lock);
 
-
-    static MidiTrackPtr fromJsonToTrack(json_t* json, MidiLockPtr lock);
+    static MidiTrackPtr fromJsonToTrack(MidiLockPtr lock, json_t* notesJson, float length);
 
     //static MidiTrackPtr  fromJsonStringToTrack(const std::string& json);
     static MidiEventPtr fromJsonEvent(json_t* json);

@@ -375,7 +375,9 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 #else
     auto clipData = InteropClipboard::get();
     assert(clipData);
-
+    printf("paste, here is the track from the clip\n");
+    clipData->_dump();
+    fflush(stdout);
 
     // all the selected notes get deleted
     for (auto it : *seq->selection) {

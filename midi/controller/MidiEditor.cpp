@@ -778,17 +778,20 @@ void MidiEditor::paste()
         return;
     }
 #else
+    // TODO: this will parse twice!
     if (!InteropClipboard::get()) {
         return;
     }
 #endif
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
+    INFO("paste 789");
     seq()->undo->execute(seq(), cmd);
 
     // Am finding that after this cursor pitch is not in view-port
     updateCursor();  
     seq()->context->adjustViewportForCursor();
     seq()->assertValid();
+      INFO("paste 793");
 
     // TODO: what do we select afterwards?
 }

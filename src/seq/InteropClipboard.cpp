@@ -21,9 +21,11 @@ MidiTrackPtr InteropClipboard::get()
     // Where did we used to get the lock?
     MidiLockPtr lock = std::make_shared<MidiLock>();
     MidiTrackPtr ret = fromJsonStringToTrack(jsonString, lock );
+    INFO("returning from get");
     return ret;
 }
 
+// top level
 std::string InteropClipboard::trackToJsonString(MidiTrackPtr track)
 {
     json_t* trackJson = toJson(track);
@@ -43,28 +45,13 @@ std::string InteropClipboard::trackToJsonString(MidiTrackPtr track)
     return clipboardString;
 }
 
-MidiTrackPtr InteropClipboard::fromJsonToTrack(json_t *data, MidiLockPtr lock)
-{
-    // data here is the track array
-    MidiTrackPtr track = std::make_shared<MidiTrack>(lock);
 
-    size_t eventCount = json_array_size(data);
-
-    for (int i = 0; i< int(eventCount); ++i) {
-        json_t *eventJson = json_array_get(data, i);
-        MidiEventPtr event = fromJsonEvent(eventJson);
-        track->insertEvent(event);
-    }
-    if (0 == track->size()) {
-        printf("bad track\n"); fflush(stdout);
-        track->insertEnd(4);            // make a legit blank trac
-    }
-    return track;
-}
-
+// top level
 MidiTrackPtr  InteropClipboard::fromJsonStringToTrack(const std::string& json, MidiLockPtr lock)
 {
+    INFO("will parse json string");
     // parse the string to json
+    // it is a clipboard object, from which we will get track
     json_error_t error;
     json_t* clipJ = json_loads(json.c_str(), 0, &error);
 	if (!clipJ) {
@@ -75,24 +62,87 @@ MidiTrackPtr  InteropClipboard::fromJsonStringToTrack(const std::string& json, M
 		json_decref(clipJ);
 	});
 
+    json_t* clipboardJson = json_object_get(clipJ, keyVcvRackSequence);
+    if (!clipboardJson) {
+        WARN("no clipboard json found at root");
+        return nullptr;
+    }
+    INFO("got clip");
+
+    float length = 0;
+    json_t* notesJson = json_object_get(clipboardJson, keyNotes);
+    json_t* jsonLength = json_object_get(clipboardJson, keyLength);
+    if (jsonLength) {
+        length = json_real_value(jsonLength);
+    }
+
+    if (notesJson && length) {
+
+    } else {
+        WARN("didn't get data");
+        return nullptr;
+    }
+
+
+    /*
+      json_t* keysigMode = json_object_get(data, "keysigMode");
+        if (keysigMode) {
+            int mode = json_integer_value(keysigMode);
+
+            */
+
     // parse the json to track
-   // assert(false);
-   MidiTrackPtr track = fromJsonToTrack(clipJ, lock);
+    //assert(false);
+   MidiTrackPtr track = fromJsonToTrack(lock, notesJson, length);
    return track;
 }
+
+MidiTrackPtr InteropClipboard::fromJsonToTrack(MidiLockPtr lock, json_t *notesJson, float length )
+{
+    // data here is the track array
+    MidiTrackPtr track = std::make_shared<MidiTrack>(lock);
+    assert(track);
+    assert(notesJson);
+    assert(json_is_array(notesJson));
+
+// validate is array?
+    size_t eventCount = json_array_size(notesJson);
+    INFO("to track, count = %d, ignoring passed length %d", eventCount, length);
+
+    for (int i = 0; i< int(eventCount); ++i) {
+        INFO("113");
+        json_t *eventJson = json_array_get(notesJson, i);
+        INFO("115");
+        MidiEventPtr event = fromJsonEvent(eventJson);
+        assert(event);
+        if (event) {
+            INFO("will insert event, evt= %p track = %p", event.get(), track.get());
+            track->insertEvent(event);
+        }
+    }
+
+    if (0 == track->size()) {
+        printf("bad track\n"); fflush(stdout);
+        track->insertEnd(4);            // make a legit blank trac
+    }
+    INFO("returning from to track");
+    return track;
+}
+
 
 MidiEventPtr InteropClipboard::fromJsonEvent(json_t *data)
 {
     MidiEventPtr event;
-    json_t* typeJson = json_object_get(data, "t");
+    json_t* typeJson = json_object_get(data, keyType);
     if (!typeJson) {
-        printf("bad event\n");
+        WARN("bad event");
         return event;
     }
     //double json_number_value(const json_t *json)
     std::string type = json_string_value(typeJson);
     // TODO: use constants
-    if (type == "note") {
+    INFO("type = %s", type.c_str());
+    if (type == keyNote) {
             event = fromJsonNoteEvent(data);
     } else {
         WARN("event type unrecognixed %d\n", type);
@@ -102,17 +152,15 @@ MidiEventPtr InteropClipboard::fromJsonEvent(json_t *data)
 
 MidiNoteEventPtr InteropClipboard::fromJsonNoteEvent(json_t *data)
 {
-    json_t* pitchJson = json_object_get(data, "pitch");
-    json_t* durationJson = json_object_get(data, "length");
-    json_t* startJson = json_object_get(data, "start");
+    json_t* pitchJson = json_object_get(data, keyPitch);
+    json_t* durationJson = json_object_get(data, keyNoteLength);
+    json_t* startJson = json_object_get(data, keyStart);
     MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
     note->pitchCV = json_number_value(pitchJson);
     note->duration = json_number_value(durationJson);
     note->startTime = json_number_value(startJson);
     return note;
 }
-
-
 
 json_t *InteropClipboard::toJson(MidiTrackPtr tk)
 {
