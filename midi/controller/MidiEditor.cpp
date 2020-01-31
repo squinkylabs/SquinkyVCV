@@ -604,14 +604,7 @@ void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
 
 void MidiEditor::selectAll()
 {
-    seq()->selection->clear();
-    MidiTrackPtr track = seq()->context->getTrack();
-    for (auto it : *track) {
-        MidiEventPtr orig = it.second;
-        if (orig->type != MidiEvent::Type::End) {
-            seq()->selection->extendSelection(orig);
-        }
-    }
+    seq()->selection->selectAll(seq()->context->getTrack());
 }
 
 void MidiEditor::changeTrackLength()
@@ -784,14 +777,12 @@ void MidiEditor::paste()
     }
 #endif
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
-    INFO("paste 789");
     seq()->undo->execute(seq(), cmd);
 
     // Am finding that after this cursor pitch is not in view-port
     updateCursor();  
     seq()->context->adjustViewportForCursor();
     seq()->assertValid();
-      INFO("paste 793");
 
     // TODO: what do we select afterwards?
 }

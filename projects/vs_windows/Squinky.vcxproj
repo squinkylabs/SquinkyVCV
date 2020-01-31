@@ -105,6 +105,7 @@
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
     <ClCompile Include="..\..\test\testMidiFile.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer2.cpp" />
+    <ClCompile Include="..\..\test\testMidiSelectionModel.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />

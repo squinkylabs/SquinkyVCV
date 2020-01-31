@@ -273,4 +273,6 @@ void testMidiEditorCCP()
 {
     testMidiEditorCCPSub(0);
     testMidiEditorCCPSub(2);
+    printf("find and fix midi leak\n");
+    //assertNoMidi();
 }
