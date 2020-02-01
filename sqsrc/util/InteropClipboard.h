@@ -23,11 +23,19 @@ public:
      * If selectAll is false, trims the track so first note at time 0,
      * length determined by notes.
      * If true, everything abolute.
+     * 
+     * Note that these high-leel funcs have different implementations in unit test.
      */
     static void put(MidiTrackPtr track, bool selectAll);
     static MidiTrackPtr get();
     static void _clear();
 private:
+    /**
+     *  cross-platform implementation functions.
+     */
+    static MidiTrackPtr getCopyData(MidiTrackPtr track, bool selectAll);
+
+
     // first level functions that convert between json strings
     // and MidiTrack
     static std::string trackToJsonString(MidiTrackPtr);

@@ -12,6 +12,13 @@
 
 
 static MidiTrackPtr testClipData = nullptr;
+
+void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
+{
+    auto temp = getCopyData(t, selectAll);
+    testClipData = temp;
+}
+#if 0
 void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
 {
     t->assertValid();
@@ -55,6 +62,7 @@ void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
     }
     testClipData->assertValid();
 }
+#endif
 
 MidiTrackPtr InteropClipboard::get()
 {
@@ -95,6 +103,7 @@ static void testRawClip2()
     t2->assertValid();
     MidiNoteEventPtr note = t2->getFirstNote();
     assertEQ(note->startTime, 1.23f);
+    assertEQ(t2->getLength(), track->getLength());
 }
 
 static int _trackNumber = 0;
