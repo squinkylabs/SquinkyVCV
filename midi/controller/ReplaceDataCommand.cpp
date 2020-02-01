@@ -73,8 +73,6 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
 
     MidiSelectionModelPtr selection = seq->selection;
     assert(selection);
-   // MidiSelectionModelPtr reference = selection->clone();
-   // assert(reference);
 
     if (!extendSelection) {
         selection->clear();
@@ -329,11 +327,12 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
 ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 {
     seq->assertValid();
-    std::vector<MidiEventPtr> toAdd;
-    std::vector<MidiEventPtr> toRemove;
+  
 
 
 #ifdef _OLDCLIP
+    std::vector<MidiEventPtr> toAdd;
+    std::vector<MidiEventPtr> toRemove;
     auto clipData = SqClipboard::getTrackData();
     assert(clipData);
 
@@ -373,46 +372,22 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
         newTrackLength);
     ret->name = "paste";
 #else
-    auto clipData = InteropClipboard::get();
-#if 0
-    assert(clipData);
-    printf("paste, here is the track from the clip\n");
-    clipData->_dump();
-    fflush(stdout);
-#endif
-
-    // all the selected notes get deleted
-    for (auto it : *seq->selection) {
-        toRemove.push_back(it);
-    }
+   // assert(false);  // move to common code
+    // static PasteData get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
 
     const float insertTime = seq->context->cursorTime();
-  //  const float eventOffsetTime = insertTime - clipData->offset;
-
-    // copy all the notes on the clipboard into the track, but move to insert time
-
-    float newDuration = 0;
-    for (auto it : *clipData) {
-        MidiEventPtr evt = it.second->clone();
-     //   evt->startTime += eventOffsetTime;
-        assert(evt->startTime >= 0);
-        if (evt->type != MidiEvent::Type::End) {
-            toAdd.push_back(evt);
-            newDuration = std::max(newDuration, evt->startTime);
-        }
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
-        if (note) {
-            newDuration = std::max(newDuration, note->duration + note->startTime);
-        }
-    }
-    const float newTrackLength = calculateDurationRequest(seq, newDuration);
+    auto destTrack = seq->context->getTrack();
+    InteropClipboard::PasteData pasteData = InteropClipboard::get(insertTime, destTrack, seq->selection);
+  //  const float newTrackLength = calculateDurationRequest(seq, newDuration);
+    printf("!! need real track duration\n");
+    const float newTrackLength = 100;
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
         seq->context,
         seq->context->getTrackNumber(),
-        toRemove,
-        toAdd,
+        pasteData.toRemove,
+        pasteData.toAdd,
         newTrackLength);
     ret->name = "paste";
 

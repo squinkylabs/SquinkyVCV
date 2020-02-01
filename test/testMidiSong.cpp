@@ -52,15 +52,15 @@ static void testDefSong()
 
 static void testClip1()
 {
-    auto p = InteropClipboard::get();
-    assert(!p);
+    auto empty = InteropClipboard::empty();
+    assert(empty);
 
     std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
     MidiLocker l(lock);
     MidiTrackPtr t = MidiTrack::makeTest(MidiTrack::TestContent::empty, lock);
     InteropClipboard::put(t, false);
-    p = InteropClipboard::get();
-    assert(p);
+    empty = InteropClipboard::empty();
+    assert(!empty);
 }
 
 static void testSong4_1()

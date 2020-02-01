@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 #include <string>
 
 struct json_t;
@@ -8,6 +9,7 @@ class MidiTrack;
 class MidiEvent;
 class MidiNoteEvent;
 class MidiEndEvent;
+class MidiSelectionModel;
 class MidiLock;
 
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;
@@ -15,25 +17,44 @@ using MidiEventPtr = std::shared_ptr<MidiEvent>;
 using MidiNoteEventPtr = std::shared_ptr<MidiNoteEvent>;
 using MidiEndEventPtr = std::shared_ptr<MidiEndEvent>;
 using MidiLockPtr = std::shared_ptr<MidiLock>;
+using MidiSelectionModelPtr = std::shared_ptr<MidiSelectionModel>;
 
 class InteropClipboard
 {
 public:
+    class PasteData
+    {
+    public:
+        std::vector<MidiEventPtr> toAdd;
+        std::vector<MidiEventPtr> toRemove;
+    };
     /**
      * If selectAll is false, trims the track so first note at time 0,
      * length determined by notes.
-     * If true, everything abolute.
+     * If true, everything absolute.
      * 
-     * Note that these high-leel funcs have different implementations in unit test.
+     * Note that these high-level funcs have different implementations in unit test.
      */
     static void put(MidiTrackPtr track, bool selectAll);
-    static MidiTrackPtr get();
+    static bool empty();
+
+    /**
+     * round up the notes to remove and add to implement a
+     * paste here.
+     */
+    static PasteData get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
+
+    //static MidiTrackPtr get();
     static void _clear();
+    static MidiTrackPtr _getRaw();
 private:
     /**
      *  cross-platform implementation functions.
      */
     static MidiTrackPtr getCopyData(MidiTrackPtr track, bool selectAll);
+
+
+    static PasteData getPasteData(float insertTime, MidiTrackPtr clipTrack, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
 
 
     // first level functions that convert between json strings

@@ -7,9 +7,10 @@
 #include "rack.hpp"
 
 
-void InteropClipboard::put(MidiTrackPtr track)
+void InteropClipboard::put(MidiTrackPtr trackOrig, bool selectAll)
 {
-    std::string json = trackToJsonString(track);
+    auto trackToPut = getCopyData(trackOrig, selectAll);
+    std::string json = trackToJsonString(trackToPut);
     glfwSetClipboardString(APP->window->win, json.c_str());
 }
 

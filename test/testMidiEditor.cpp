@@ -794,7 +794,7 @@ static void testCut()
     MidiTrackPtr tk = clipData->track;
     assertEQ(tk->size(), origSize);
 #else
-    auto tk = InteropClipboard::get();
+    auto tk = InteropClipboard::_getRaw();
   //  assertEQ(clipData->offset, 0);
   //  MidiTrackPtr tk = clipData->track;
     assertEQ(tk->size(), origSize);

@@ -4,8 +4,57 @@
 
 #include "InteropClipboard.h"
 #include "MidiLock.h"
+#include "MidiSelectionModel.h"
 #include "MidiTrack.h"
 
+InteropClipboard::PasteData InteropClipboard::getPasteData(
+    float insertTime,
+    MidiTrackPtr clipTrack,
+    MidiTrackPtr destTrack,
+    MidiSelectionModelPtr sel)
+{
+  //   MidiTrackPtr clipData;
+  //  auto clipData = InteropClipboard::get();
+  //  PasteData pd = InteropClipboard::get(MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
+    assert(insertTime >= 0);
+#if 0
+    assert(clipData);
+    printf("paste, here is the track from the clip\n");
+    clipData->_dump();
+    fflush(stdout);
+#endif
+    PasteData pasteData;
+
+    // all the selected notes get deleted
+    for (auto it : *sel) {
+        pasteData.toRemove.push_back(it);
+    }
+
+  //  const float insertTime = seq->context->cursorTime();
+  //  const float eventOffsetTime = insertTime - clipData->offset;
+
+    // copy all the notes on the clipboard into the track, but move to insert time
+
+    float newDuration = 0;
+    for (auto it : *clipTrack) {
+        MidiEventPtr evt = it.second->clone();
+     //   evt->startTime += eventOffsetTime;
+        assert(evt->startTime >= 0);
+        if (evt->type != MidiEvent::Type::End) {
+            pasteData.toAdd.push_back(evt);
+            newDuration = std::max(newDuration, evt->startTime);
+        }
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(evt);
+        if (note) {
+            newDuration = std::max(newDuration, note->duration + note->startTime);
+        }
+    }
+    printf("figure out what track to use for new Duration\n"); 
+    //const float newTrackLength = RweplaceDataCommand::calculateDurationRequest(seq, newDuration);
+   
+
+    return pasteData;
+}
 
 MidiTrackPtr InteropClipboard::getCopyData(MidiTrackPtr track, bool selectAll)
 {

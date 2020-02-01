@@ -773,7 +773,7 @@ void MidiEditor::paste()
     }
 #else
     // TODO: this will parse twice!
-    if (!InteropClipboard::get()) {
+    if (InteropClipboard::empty()) {
         return;
     }
 #endif
