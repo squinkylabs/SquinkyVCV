@@ -116,24 +116,37 @@ static void testRawClip2()
     assertEQ(t2->getLength(), track->getLength());
 }
 
-static void testRawClipPaste()
+static void testRawClipPaste(bool selectAll, float insertTime)
 {
     // put note on clip
     MidiLockPtr lock = std::make_shared<MidiLock>();
     MidiLocker l(lock);
     MidiTrackPtr track = MidiTrack::makeTest(MidiTrack::TestContent::oneNote123, lock);
-    InteropClipboard::put(track, true);
+    InteropClipboard::put(track, selectAll);
 
-
+    float rawTime = InteropClipboard::_getRaw()->getFirstNote()->startTime;
 
     MidiTrackPtr destTrack = MidiTrack::makeTest(MidiTrack::TestContent::empty, lock);
     auto a = std::make_shared<TestAuditionHost>();
     MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(a);
-    InteropClipboard::PasteData data = InteropClipboard::get(0, destTrack, sel);
+    InteropClipboard::PasteData data = InteropClipboard::get(insertTime, destTrack, sel);
 
     assert(data.toRemove.empty());
     assert(!data.toAdd.empty());
+
+    auto firstNoteToAdd = data.toAdd[0];
+    const float expectedStart = insertTime + (selectAll ? 1.23f : 0.f);
+    assertEQ(firstNoteToAdd->startTime, expectedStart)
 }
+
+static void testRawClipPaste()
+{
+    testRawClipPaste(true, 0);
+    testRawClipPaste(false, 0);
+    testRawClipPaste(true, 1);
+    testRawClipPaste(false, 1);
+}
+
 
 static int _trackNumber = 0;
 

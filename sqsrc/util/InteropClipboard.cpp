@@ -13,16 +13,8 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
     MidiTrackPtr destTrack,
     MidiSelectionModelPtr sel)
 {
-  //   MidiTrackPtr clipData;
-  //  auto clipData = InteropClipboard::get();
-  //  PasteData pd = InteropClipboard::get(MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
+
     assert(insertTime >= 0);
-#if 0
-    assert(clipData);
-    printf("paste, here is the track from the clip\n");
-    clipData->_dump();
-    fflush(stdout);
-#endif
     PasteData pasteData;
 
     // all the selected notes get deleted
@@ -33,12 +25,13 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
   //  const float insertTime = seq->context->cursorTime();
   //  const float eventOffsetTime = insertTime - clipData->offset;
 
+    const float eventOffsetTime = insertTime;
     // copy all the notes on the clipboard into the track, but move to insert time
 
     float newDuration = 0;
     for (auto it : *clipTrack) {
         MidiEventPtr evt = it.second->clone();
-     //   evt->startTime += eventOffsetTime;
+        evt->startTime += eventOffsetTime;
         assert(evt->startTime >= 0);
         if (evt->type != MidiEvent::Type::End) {
             pasteData.toAdd.push_back(evt);
