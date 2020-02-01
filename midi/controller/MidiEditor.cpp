@@ -689,7 +689,7 @@ void moveSelectionToClipboard(MidiSequencerPtr seq)
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
 #else
-    InteropClipboard::put(track);
+    InteropClipboard::put(track, seq->selection->isAllSelected());
 #endif
 }
 
@@ -719,6 +719,7 @@ void MidiEditor::copy()
     const float sourceLength = sourceTrack->getLength();
     track->insertEnd(sourceLength);
     track->assertValid();
+
 #ifdef _OLDCLIP
     
     
@@ -727,7 +728,7 @@ void MidiEditor::copy()
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
 #else
-    InteropClipboard::put(track);
+    InteropClipboard::put(track, seq()->selection->isAllSelected());
 #endif
 
 #if 0   // old

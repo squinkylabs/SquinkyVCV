@@ -52,34 +52,15 @@ static void testDefSong()
 
 static void testClip1()
 {
-#ifdef _OLDCLIP
-    auto p = SqClipboard::getTrackData();
-    assert(!p);
-
-    std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
-
-    std::shared_ptr<SqClipboard::Track> t = std::make_shared< SqClipboard::Track>();
-    t->track = std::make_shared<MidiTrack>(lock);
-    SqClipboard::putTrackData(t);
-
-    p = SqClipboard::getTrackData();
-    assert(p);
-#else
     auto p = InteropClipboard::get();
     assert(!p);
 
     std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
-
-   // std::shared_ptr<SqClipboard::Track> t = std::make_shared< SqClipboard::Track>();
-   //t->track = std::make_shared<MidiTrack>(lock);
-
-   MidiTrackPtr t = std::make_shared< MidiTrack>(lock);
-    
-    InteropClipboard::put(t);
-
+    MidiLocker l(lock);
+    MidiTrackPtr t = MidiTrack::makeTest(MidiTrack::TestContent::empty, lock);
+    InteropClipboard::put(t, false);
     p = InteropClipboard::get();
     assert(p);
-#endif
 }
 
 static void testSong4_1()
@@ -115,5 +96,6 @@ void testMidiSong()
 
     testSong4_1();
     testSong4_2();
+    InteropClipboard::_clear();
     assertNoMidi();     // check for leaks
 }

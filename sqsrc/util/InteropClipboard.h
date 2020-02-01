@@ -19,7 +19,12 @@ using MidiLockPtr = std::shared_ptr<MidiLock>;
 class InteropClipboard
 {
 public:
-    static void put(MidiTrackPtr);
+    /**
+     * If selectAll is false, trims the track so first note at time 0,
+     * length determined by notes.
+     * If true, everything abolute.
+     */
+    static void put(MidiTrackPtr track, bool selectAll);
     static MidiTrackPtr get();
     static void _clear();
 private:

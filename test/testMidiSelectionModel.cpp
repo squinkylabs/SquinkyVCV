@@ -173,12 +173,6 @@ static void testSelectionSelectAll2()
     sel.removeFromSelection(note);
     assert(!sel.isAllSelected());
 
-#if 0
-   void select(MidiEventPtr); 
-   void extendSelection(MidiEventPtr);
-    void addToSelection(MidiEventPtr, bool keepExisting);
-    void removeFromSelection(MidiEventPtr);
-#endif
 }
 
 void testMidiSelectionModel()
