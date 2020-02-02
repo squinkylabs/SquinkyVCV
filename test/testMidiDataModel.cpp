@@ -366,114 +366,6 @@ static void testPitchRoundTrip()
     assertEQ(PitchUtils::semitoneToCV(x), 0);
 }
 
-static void testExtendSelection()
-{
-    auto a = std::make_shared<TestAuditionHost>();
-    // put in one, then extend to second one
-    MidiSelectionModel sel(a);
-    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
-    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
-    note1->startTime = 1;
-    note1->pitchCV = 1.1f;
-    note2->startTime = 2;
-    note2->pitchCV = 2.1f;
-
-    assert(sel.empty());
-    assertEQ(sel.size(), 0);
-
-    sel.select(note2);
-    sel.extendSelection(note1);
-
-    assert(!sel.empty());
-    assertEQ(sel.size(), 2);
-
-    // should find the events
-    bool found1 = false;
-    bool found2 = false;
-    for (auto it : sel) {
-        if (it == note1) {
-            found1 = true;
-        }
-        if (it == note2) {
-            found2 = true;
-        }
-    }
-    assert(found1);
-    assert(found2);
-}
-
-static void testAddSelectionSameNote()
-{
-    auto a = std::make_shared<TestAuditionHost>();
-
-    MidiSelectionModel sel(a);
-    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
-    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
-
-    assert(*note1 == *note2);
-
-    sel.select(note1);
-    sel.extendSelection(note2);
-    assertEQ(sel.size(), 1);
-}
-
-static void testSelectionDeep()
-{
-    auto a = std::make_shared<TestAuditionHost>();
-    MidiSelectionModel selOrig(a);
-    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
-    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
-    MidiNoteEventPtr note3 = std::make_shared<MidiNoteEvent>();
-    note1->startTime = 1;
-    note1->pitchCV = 1.1f;
-    note2->startTime = 2;
-    note2->pitchCV = 2.1f;
-    note3->startTime = 3;
-
-    assert(selOrig.empty());
-    assertEQ(selOrig.size(), 0);
-
-    selOrig.select(note2);
-    selOrig.extendSelection(note1);
-
-    assert(!selOrig.empty());
-    assertEQ(selOrig.size(), 2);
-
-    MidiSelectionModelPtr sel = selOrig.clone();
-    assert(sel);
-    assert(sel->size() == selOrig.size());
-
-    assert(sel->isSelectedDeep(note1));
-    assert(sel->isSelectedDeep(note2));
-    assert(!sel->isSelectedDeep(note3));
-}
-
-void testSelectionAddTwice()
-{
-    auto a = std::make_shared<TestAuditionHost>();
-    MidiSelectionModel selOrig(a);
-    MidiNoteEventPtr note1 = std::make_shared<MidiNoteEvent>();
-    MidiNoteEventPtr note2 = std::make_shared<MidiNoteEvent>();
-    note1->startTime = 1;
-    note1->pitchCV = 1.1f;
-    note2->startTime = 2;
-    note2->pitchCV = 2.1f;
-    
-
-    MidiSelectionModel sel(a);
-    sel.extendSelection(note1);
-    sel.extendSelection(note2);
-    assertEQ(sel.size(), 2);
-
-    sel.extendSelection(note1);
-    assertEQ(sel.size(), 2);
-
-    //  clone should be recognized as the same.
-    MidiEventPtr cloneNote1 = note1->clone();
-    sel.extendSelection(cloneNote1);
-    assertEQ(sel.size(), 2);
-}
-
 void testMidiDataModel()
 {
     assertNoMidi();     // check for leaks
@@ -496,10 +388,7 @@ void testMidiDataModel()
     testQuantRel();
     testPitchRoundTrip();
 
-    testExtendSelection();
-    testAddSelectionSameNote();
-    testSelectionDeep();
-    testSelectionAddTwice();
+
 
     assertNoMidi();     // check for leaks
 }

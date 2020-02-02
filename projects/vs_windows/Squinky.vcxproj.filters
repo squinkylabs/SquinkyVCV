@@ -139,6 +139,9 @@
     <Filter Include="Header Files\dsp\third-party\midifile">
       <UniqueIdentifier>{be97dd4e-ec25-4d1f-bd8a-c5d964ff8de6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\sqsrc\util">
+      <UniqueIdentifier>{8cd94f6b-5889-4eee-a9fe-49432b5a171f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -506,6 +509,12 @@
     </ClCompile>
     <ClCompile Include="..\..\test\testMidiPlayer4.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMidiSelectionModel.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\util\InteropClipboard.cpp">
+      <Filter>Source Files\sqsrc\util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

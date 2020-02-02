@@ -3,7 +3,7 @@
 //#include "Widget.hpp"
 #include "rack.hpp"
 #include "math.hpp"
-#include "SqClipboard.h"
+//#include "SqClipboard.h"
 //#include "SqGfx.h"
 #include "TimeUtils.h"
 //#include "UIPrefs.h"

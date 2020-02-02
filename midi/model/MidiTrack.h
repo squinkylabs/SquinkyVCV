@@ -20,6 +20,12 @@ class MidiTrack
 public:
     MidiTrack(std::shared_ptr<MidiLock>);
 
+    /**
+     * this ctor puts an end event at time zero
+     */
+    MidiTrack(std::shared_ptr<MidiLock>, bool);
+
+
     int size() const;
     void assertValid() const;
 

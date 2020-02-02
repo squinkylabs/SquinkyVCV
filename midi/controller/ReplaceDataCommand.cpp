@@ -1,3 +1,4 @@
+#include "InteropClipboard.h"
 #include "ReplaceDataCommand.h"
 #include "MidiLock.h"
 #include "MidiSequencer.h"
@@ -23,9 +24,10 @@ ReplaceDataCommand::ReplaceDataCommand(
     : trackNumber(trackNumber), removeData(inRemove), addData(inAdd), newTrackLength(trackLength)
 {
     assert(song->getTrack(trackNumber));
+    song->getTrack(trackNumber)->assertValid();
+    assertValid();
     originalTrackLength = song->getTrack(trackNumber)->getLength();     /// save off
 }
-
 
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
@@ -35,11 +37,32 @@ ReplaceDataCommand::ReplaceDataCommand(
     : trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
 {
     assert(song->getTrack(trackNumber));
+    song->getTrack(trackNumber)->assertValid();
+    assertValid();
+}
+
+void ReplaceDataCommand::assertValid() const
+{
+#ifdef _DEBUG
+    for (auto x : addData) {
+        MidiEventPtr p = x;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
+        assert(note);
+        note->assertValid();
+    }
+    for (auto x : removeData) {
+        MidiEventPtr p = x;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
+        assert(note);
+        note->assertValid();
+    }
+#endif
 }
 
 void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
 {
     assert(seq);
+    seq->assertValid();
     MidiTrackPtr mt = seq->song->getTrack(trackNumber);
     assert(mt);
     MidiLocker l(mt->lock);
@@ -48,6 +71,7 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
     const bool isNewLengthRequested = (newTrackLength >= 0);
     const bool isNewLengthLonger = (newTrackLength > currentTrackLength);
    
+    mt->assertValid();
     // If we need to make track longer, do it first
     if (isNewLengthRequested && isNewLengthLonger) {
         mt->setLength(newTrackLength);
@@ -72,12 +96,12 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
 
     MidiSelectionModelPtr selection = seq->selection;
     assert(selection);
-   // MidiSelectionModelPtr reference = selection->clone();
-   // assert(reference);
 
     if (!extendSelection) {
         selection->clear();
     }
+
+    seq->assertValid();
     
     for (auto it : addData) {
         auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
@@ -85,6 +109,7 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
         MidiEventPtr evt = foundIter->second;
         selection->extendSelection(evt);
     }
+    seq->assertValid();
 }
 
 void ReplaceDataCommand::undo(MidiSequencerPtr seq, SequencerWidget*)
@@ -323,16 +348,16 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
     ret->name = "change note duration";
     return ret;
 }
-
-
 ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 {
     seq->assertValid();
+  
+#ifdef _OLDCLIP
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
-
     auto clipData = SqClipboard::getTrackData();
     assert(clipData);
+
 
     // all the selected notes get deleted
     for (auto it : *seq->selection) {
@@ -368,6 +393,23 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
         toAdd,
         newTrackLength);
     ret->name = "paste";
+#else
+    const float insertTime = seq->context->cursorTime();
+    auto destTrack = seq->context->getTrack();
+    InteropClipboard::PasteData pasteData = InteropClipboard::get(insertTime, destTrack, seq->selection);
+    const float newTrackLength = calculateDurationRequest(seq, pasteData.requiredTrackLength);
+    pasteData.assertValid();
+    ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
+        seq->song,
+        seq->selection,
+        seq->context,
+        seq->context->getTrackNumber(),
+        pasteData.toRemove,
+        pasteData.toAdd,
+        newTrackLength);
+    ret->name = "paste";
+
+#endif
     return ret;
 }
 
@@ -447,7 +489,12 @@ void ReplaceDataCommand::modifyNotesToFitNewLength(
 
 float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float duration)
 {
-    const float currentDuration = seq->context->getTrack()->getLength();
+    return calculateDurationRequest(seq->context->getTrack(), duration);
+}
+
+float ReplaceDataCommand::calculateDurationRequest(MidiTrackPtr track, float duration)
+{
+    const float currentDuration = track->getLength();
     if (currentDuration >= duration) {
         return -1;                      // Don't need to do anything, long enough
     }
@@ -614,7 +661,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
                     const int xposedSemi = scale->transposeInScale(origSemitone, steps);
 
                     trillSemis = xposedSemi - origSemitone;
-                    printf("trill semis = %d\n", trillSemis); fflush(stdout);
                 } else {
                     trillSemis = steps;
                 }

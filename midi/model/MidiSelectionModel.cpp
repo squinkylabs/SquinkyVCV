@@ -2,6 +2,7 @@
 #include "IMidiPlayerHost.h"
 #include "SqMidiEvent.h"
 #include "MidiSelectionModel.h"
+#include "MidiTrack.h"
 
 #include <assert.h>
 extern int _mdb;
@@ -37,17 +38,20 @@ void MidiSelectionModel::setAuditionSuppressed(bool b)
 
 void MidiSelectionModel::select(std::shared_ptr<MidiEvent> event)
 {
-    selection.clear();
+    clear();
     assert(selection.empty());
     add(event);
 }
+
 void MidiSelectionModel::extendSelection(std::shared_ptr<MidiEvent> event)
 {
+    allIsSelected = false;
     add(event);
 }
 
 void MidiSelectionModel::addToSelection(std::shared_ptr<MidiEvent> event, bool keepExisting)
 {
+    allIsSelected = false;
     auto it = selection.find(event);
     if (it != selection.end()) {
         // if note is already in, then don't clear and re-add
@@ -93,6 +97,7 @@ MidiSelectionModel::const_reverse_iterator MidiSelectionModel::rend() const
 void MidiSelectionModel::clear()
 {
     selection.clear();
+    allIsSelected = false;
 }
 
 void MidiSelectionModel::add(MidiEventPtr evt)
@@ -184,3 +189,20 @@ IMidiPlayerAuditionHostPtr MidiSelectionModel::_testGetAudition()
 {
     return auditionHost;
 }
+
+bool MidiSelectionModel::isAllSelected() const
+{
+    return allIsSelected;
+}
+
+ void MidiSelectionModel::selectAll(MidiTrackPtr track)
+ {
+    clear();
+    for (auto it : *track) {
+        MidiEventPtr orig = it.second;
+        if (orig->type != MidiEvent::Type::End) {
+            extendSelection(orig);
+        }
+    }
+    allIsSelected = true;
+ }

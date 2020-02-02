@@ -65,6 +65,7 @@
     <ClCompile Include="..\..\sqsrc\thread\ThreadClient.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadServer.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadSharedState.cpp" />
+    <ClCompile Include="..\..\sqsrc\util\InteropClipboard.cpp" />
     <ClCompile Include="..\..\test\Analyzer.cpp" />
     <ClCompile Include="..\..\test\calQ.cpp" />
     <ClCompile Include="..\..\test\initPerf.cpp" />
@@ -105,6 +106,7 @@
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
     <ClCompile Include="..\..\test\testMidiFile.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer2.cpp" />
+    <ClCompile Include="..\..\test\testMidiSelectionModel.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />

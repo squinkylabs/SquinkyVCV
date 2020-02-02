@@ -13,7 +13,12 @@ int MidiEvent::_count = 0;
 
 MidiTrack::MidiTrack(std::shared_ptr<MidiLock> l) : lock(l)
 {
+}
 
+
+MidiTrack::MidiTrack(std::shared_ptr<MidiLock> l, bool b) : lock(l)
+{
+    insertEvent( std::make_shared<MidiEndEvent>());
 }
 
 int MidiTrack::size() const
@@ -23,6 +28,8 @@ int MidiTrack::size() const
 
 void MidiTrack::assertValid() const
 {
+#ifdef _DEBUG
+    assert(this);
     int numEnds = 0;
     bool lastIsEnd = false;
     (void) lastIsEnd;
@@ -54,6 +61,7 @@ void MidiTrack::assertValid() const
     assert(lastIsEnd);
     assertEQ(numEnds, 1);
     assertLE(lastEnd, totalDur);
+#endif
 }
 
 void MidiTrack::insertEvent(MidiEventPtr evIn)
@@ -135,12 +143,11 @@ void MidiTrack::_dump() const
                 assert(false);
 
         }
-        //const void* addr = evt.get();
+
         printf("time = %f, type=%s ", ti, type.c_str());
         if (!pitch.empty()) {
             printf("%s", pitch.c_str());
         }
-        //printf(" addr=%p\n", addr);
         printf("\n");
     }
     printf("\n");

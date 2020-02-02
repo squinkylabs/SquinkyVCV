@@ -2,6 +2,8 @@
 
 #include <memory>
 
+
+#ifdef _OLDCLIP
 class SqClipboard
 {
 public:
@@ -24,3 +26,4 @@ public:
 private:
     static std::shared_ptr<Track> trackData;
 };
+#endif

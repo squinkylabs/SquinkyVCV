@@ -1,4 +1,5 @@
 
+#include "InteropClipboard.h"
 #include "MidiLock.h"
 #include "MidiSequencer.h"
 #include "SqClipboard.h"
@@ -6,6 +7,104 @@
 #include "TestSettings.h"
 
 #include <assert.h>
+
+/*********** let's make a test impl of clipboard *****/
+
+
+static MidiTrackPtr testClipData = nullptr;
+
+bool InteropClipboard::empty()
+{
+    return !testClipData;
+}
+
+MidiTrackPtr InteropClipboard::_getRaw()
+{
+    return testClipData;
+}
+
+void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
+{
+    auto temp = getCopyData(t, selectAll);
+    testClipData = temp;
+}
+
+InteropClipboard::PasteData InteropClipboard::get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel)
+{
+    //return testClipData;
+    return getPasteData(insertTime, testClipData, destTrack, sel);
+}
+
+void  InteropClipboard::_clear()
+{
+    testClipData = nullptr;
+}
+
+static void testRawClip1()
+{
+    MidiLockPtr lock = std::make_shared<MidiLock>();
+    MidiLocker l(lock);
+    MidiTrackPtr track = MidiTrack::makeTest(MidiTrack::TestContent::oneNote123, lock);
+    InteropClipboard::put(track, false);
+
+    MidiTrackPtr t2 = InteropClipboard::_getRaw();
+    assert(t2);
+    t2->assertValid();
+    MidiNoteEventPtr note = t2->getFirstNote();
+    assertEQ(note->startTime, 0);
+
+    const float len = t2->getLength();
+    assertEQ(len, note->startTime + note->duration);
+}
+
+static void testRawClip2()
+{
+    MidiLockPtr lock = std::make_shared<MidiLock>();
+    MidiLocker l(lock);
+    MidiTrackPtr track = MidiTrack::makeTest(MidiTrack::TestContent::oneNote123, lock);
+    InteropClipboard::put(track, true);
+
+    MidiTrackPtr t2 = InteropClipboard::_getRaw();
+    assert(t2);
+    t2->assertValid();
+    MidiNoteEventPtr note = t2->getFirstNote();
+    assertEQ(note->startTime, 1.23f);
+    assertEQ(t2->getLength(), track->getLength());
+}
+
+static void testRawClipPaste(bool selectAll, float insertTime)
+{
+    // put note on clip
+    MidiLockPtr lock = std::make_shared<MidiLock>();
+    MidiLocker l(lock);
+    MidiTrackPtr track = MidiTrack::makeTest(MidiTrack::TestContent::oneNote123, lock);
+    InteropClipboard::put(track, selectAll);
+
+    float rawTime = InteropClipboard::_getRaw()->getFirstNote()->startTime;
+
+    MidiTrackPtr destTrack = MidiTrack::makeTest(MidiTrack::TestContent::empty, lock);
+    auto a = std::make_shared<TestAuditionHost>();
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(a);
+    InteropClipboard::PasteData data = InteropClipboard::get(insertTime, destTrack, sel);
+
+    assert(data.toRemove.empty());
+    assert(!data.toAdd.empty());
+
+    auto firstNoteToAdd = data.toAdd[0];
+    const float expectedStart = insertTime + (selectAll ? 1.23f : 0.f);
+    assertEQ(firstNoteToAdd->startTime, expectedStart)
+}
+
+static void testRawClipPaste()
+{
+    testRawClipPaste(true, 0);
+    testRawClipPaste(false, 0);
+    testRawClipPaste(true, 1);
+    testRawClipPaste(false, 1);
+    testRawClipPaste(true, 1000);
+    testRawClipPaste(false, 1000);
+}
+
 
 static int _trackNumber = 0;
 
@@ -34,31 +133,33 @@ static MidiSequencerPtr makeTest(bool empty = false)
 
 static void testCopy1()
 {
-    SqClipboard::clear();
+    InteropClipboard::_clear();
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->getTrack()->size(), 9);
     seq->editor->selectNextNote();          // now first is selected
-  
-    assert(!SqClipboard::getTrackData());
+
+    assertEQ(seq->context->getTrack()->getFirstNote()->startTime, 0);
+
+    assert(InteropClipboard::empty());
     seq->editor->copy();
 
     assertEQ(seq->context->getTrack()->size(), 9);
-    auto clip = SqClipboard::getTrackData();
+    auto clip = InteropClipboard::_getRaw();
     assert(clip);
-    clip->track->assertValid();
-    assertEQ(clip->track->size(), 2);       //just the selected note and the end
-    assertEQ(clip->offset, 0);
+    clip->assertValid();
+    assertEQ(clip->size(), 2);       //just the selected note and the end
+    assertEQ(clip->getFirstNote()->startTime, 0);
 }
 
 static MidiSequencerPtr makeSongPut8NotesOnClip()
 {
-    SqClipboard::clear();
+    InteropClipboard::_clear();
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->getTrack()->size(), 9);
     seq->editor->selectAll();
     seq->context->getTrack()->assertValid();
-
-    assert(!SqClipboard::getTrackData());
+ 
+    assert(InteropClipboard::empty());
     seq->editor->copy();
     return seq;
 }
@@ -67,11 +168,10 @@ static void testCopy2()
 {
     MidiSequencerPtr seq = makeSongPut8NotesOnClip();
     assertEQ(seq->context->getTrack()->size(), 9);
-    auto clip = SqClipboard::getTrackData();
+    auto clip = InteropClipboard::_getRaw();
     assert(clip);
-    clip->track->assertValid();
-    assertEQ(clip->track->size(), 9);       //just the selected note and the end
-    assertEQ(clip->offset, 0);
+    clip->assertValid();
+    assertEQ(clip->size(), 9);       //just the selected note and the end
 }
 
 static void testPaste1()
@@ -88,7 +188,7 @@ static void testPaste1()
 static void testPasteNothingShouldDoNothing()
 {
     MidiSequencerPtr seq = makeSongPut8NotesOnClip();
-    SqClipboard::clear();
+    InteropClipboard::_clear();
     seq->editor->paste();
     assert(!seq->undo->canUndo());
 }
@@ -107,12 +207,14 @@ static void testPasteOntoSelection()
     assert(seq->undo->canUndo());
 }
 
+
+// go back to old version
 static void testPasteTimeSub(float pasteTime)
 {
     // Make a song with a single note at 1.23
     auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
     MidiSequencerPtr seq = MidiSequencer::make(
-        song, 
+        song,
         std::make_shared<TestSettings>(),
         std::make_shared<TestAuditionHost>());
     seq->context->setTrackNumber(_trackNumber);
@@ -128,11 +230,14 @@ static void testPasteTimeSub(float pasteTime)
     // copy one note at zero-relative time to clip
     seq->editor->copy();
 
-    assert(SqClipboard::getTrackData());
-    assertEQ(SqClipboard::getTrackData()->track->size(), 2);
-    float offset = SqClipboard::getTrackData()->offset;
-    assertEQ(offset, 1.23f);
-    
+  
+#if 1
+    assert(!InteropClipboard::empty());
+    assertEQ(InteropClipboard::_getRaw()->size(), 2);
+    //float offset = SqClipboard::getTrackData()->offset;
+    //assertEQ(offset, 1.23f);
+#endif
+
     // clear out the track
     seq->context->getTrack()->deleteEvent(*note);
     seq->selection->clear();
@@ -140,6 +245,86 @@ static void testPasteTimeSub(float pasteTime)
 
     // at this point there will be notes in the selection that don't exist any more
     seq->assertValid();;
+
+    // now paste at pasteTime, with nothing selected in dest
+    if (pasteTime >= 0) {
+        seq->context->setCursorTime(pasteTime);
+        seq->context->adjustViewportForCursor();
+        // NOW NEED TO SCROLL TO CURSOR
+        seq->selection->clear();
+    } else {
+        seq->context->setCursorTime(0);
+    }
+
+    seq->editor->paste();
+    seq->assertValid();
+
+    // note should be at zero time (but not for -1 case, right?
+    MidiNoteEventPtr first = seq->context->getTrack()->getFirstNote();
+    assert(first);
+    if (pasteTime >= 0) {
+        assertEQ(first->startTime, pasteTime);
+    } else {
+        assertEQ(first->startTime, 0);
+    }
+
+}
+
+
+static void testPasteTimeSubNew(float pasteTime)
+{
+
+    // Make a song with a single note at 1.23
+    auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
+    MidiSequencerPtr seq = MidiSequencer::make(
+        song,
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
+    seq->context->setTrackNumber(_trackNumber);
+    seq->assertValid();
+    MidiLocker l(seq->song->lock);
+
+    MidiNoteEventPtr note = seq->context->getTrack()->getFirstNote();
+
+    // Set the cursor to be on the one note, and select it
+    seq->context->setCursorTime(3);     // we don't use cursor here, so set it crazy
+    seq->selection->select(note);
+
+    // copy one note at zero-relative time to clip
+    seq->editor->copy();
+
+
+    auto tempTrack = InteropClipboard::_getRaw();
+    assert(tempTrack);
+    assertEQ(tempTrack->size(), 2);
+
+    MidiTrackPtr clipTrack = std::make_shared<MidiTrack>(seq->song->lock, true);
+    assertEQ(clipTrack->size(), 1);
+    clipTrack->assertValid();
+
+    InteropClipboard::PasteData pasteData = InteropClipboard::get(pasteTime, clipTrack, nullptr);
+   // auto clipTrack = InteropClipboard::get();
+    assert(clipTrack);
+    clipTrack->assertValid();
+
+    assertEQ(pasteData.toAdd.size(), 1);
+
+  
+
+
+    //float offset = SqClipboard::getTrackData()->offset;
+   //assertEQ(offset, 1.23f);
+    auto firstNote = clipTrack->getFirstNote();
+    assert(firstNote);
+    assertEQ(firstNote->startTime, 0);  // time should be relative to first note
+
+    // clear out the track
+    seq->context->getTrack()->deleteEvent(*note);
+    seq->selection->clear();
+    assertEQ(seq->context->getTrack()->size(), 1);
+
+    // at this point there will be notes in the selection that don't exist any more
+    seq->assertValid();
 
     // now paste at pasteTime, with nothing selected in dest
     if (pasteTime >= 0) {
@@ -196,9 +381,21 @@ static void testMidiEditorCCPSub(int tk)
     testPasteTimeSub(-1);
 }
 
+static void testRawClip()
+{
+    testRawClip1();
+    testRawClip2();
+    testRawClipPaste();
+}
+
 
 void testMidiEditorCCP()
 {
+    InteropClipboard::_clear();
+    assertNoMidi();
+    testRawClip();
     testMidiEditorCCPSub(0);
     testMidiEditorCCPSub(2);
+    InteropClipboard::_clear();
+    assertNoMidi();
 }
