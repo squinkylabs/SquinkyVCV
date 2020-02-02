@@ -9,7 +9,7 @@
 bool InteropClipboard::empty()
 {
      const char* jsonString = glfwGetClipboardString(APP->window->win);
-     return bool(jsonString);
+     return !bool(jsonString);
 }
 void InteropClipboard::put(MidiTrackPtr trackOrig, bool selectAll)
 {
@@ -56,7 +56,6 @@ std::string InteropClipboard::trackToJsonString(MidiTrackPtr track)
     return clipboardString;
 }
 
-
 // top level
 MidiTrackPtr  InteropClipboard::fromJsonStringToTrack(const std::string& json, MidiLockPtr lock)
 {
@@ -101,6 +100,7 @@ MidiTrackPtr  InteropClipboard::fromJsonStringToTrack(const std::string& json, M
 MidiTrackPtr InteropClipboard::fromJsonToTrack(MidiLockPtr lock, json_t *notesJson, float length )
 {
     // data here is the track array
+    MidiLocker l(lock);
     MidiTrackPtr track = std::make_shared<MidiTrack>(lock);
     assert(track);
     assert(notesJson);
