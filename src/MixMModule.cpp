@@ -60,7 +60,7 @@ void MixMModule::setExternalInput(const float* buf)
 
 void MixMModule::setExternalOutput(float* buf)
 {
-    // printf("mixm, set external outpu\n"); fflush(stdout);
+
     assert(buf == nullptr);          // expander doesn't have an output expand
 }
 
@@ -438,7 +438,6 @@ void MixMWidget::makeMaster(MixMModule* module, std::shared_ptr<IComposite> icom
     light->box.size.x = 26;
     light->box.size.y = 26;
     addChild(light);
-    //printf("\nlight width = %f, height = %f\n", light->box.size.x, light->box.size.y); fflush(stdout);
     muteY = y-12;
     
     y = volY;

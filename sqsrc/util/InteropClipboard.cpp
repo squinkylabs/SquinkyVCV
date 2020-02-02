@@ -32,7 +32,8 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
     MidiTrackPtr destTrack,
     MidiSelectionModelPtr sel)
 {
-
+    assert(clipTrack);
+    assert(destTrack);
     clipTrack->assertValid();
     destTrack->assertValid();
     assert(insertTime >= 0);
@@ -44,9 +45,6 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
             pasteData.toRemove.push_back(it);
         }
     }
-
-  //  const float insertTime = seq->context->cursorTime();
-  //  const float eventOffsetTime = insertTime - clipData->offset;
 
     const float eventOffsetTime = insertTime;
     // copy all the notes on the clipboard into the track, but move to insert time

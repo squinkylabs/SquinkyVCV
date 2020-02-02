@@ -661,7 +661,6 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChopNoteCommand(
                     const int xposedSemi = scale->transposeInScale(origSemitone, steps);
 
                     trillSemis = xposedSemi - origSemitone;
-                    printf("trill semis = %d\n", trillSemis); fflush(stdout);
                 } else {
                     trillSemis = steps;
                 }
