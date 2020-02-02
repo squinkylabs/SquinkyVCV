@@ -95,7 +95,7 @@ public:
      * return -1;
      */
     static float calculateDurationRequest(std::shared_ptr<MidiSequencer> seq, float duration);
-    static float calculateDurationRequest(std::shared_ptr<MidiTrack> seq, float duration);
+    static float calculateDurationRequest(std::shared_ptr<MidiTrack> track, float duration);
 private:
 
     int trackNumber;

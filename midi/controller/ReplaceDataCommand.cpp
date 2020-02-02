@@ -489,16 +489,7 @@ void ReplaceDataCommand::modifyNotesToFitNewLength(
 
 float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float duration)
 {
-    printf("get rid of calculateDurationRequest\n");
-    const float currentDuration = seq->context->getTrack()->getLength();
-    if (currentDuration >= duration) {
-        return -1;                      // Don't need to do anything, long enough
-    }
-
-    const float needBars = duration / 4.f;
-    const float roundedBars = std::floor(needBars + 1.f);
-    const float durationRequest = roundedBars * 4;
-    return durationRequest;
+    return calculateDurationRequest(seq->context->getTrack(), duration);
 }
 
 float ReplaceDataCommand::calculateDurationRequest(MidiTrackPtr track, float duration)

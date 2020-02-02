@@ -20,62 +20,14 @@ bool InteropClipboard::empty()
 
 MidiTrackPtr InteropClipboard::_getRaw()
 {
-    if (testClipData) {
-        printf("_getRaw will return size %d\n", testClipData->size());
-    }
     return testClipData;
 }
+
 void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
 {
     auto temp = getCopyData(t, selectAll);
     testClipData = temp;
-    printf("putting copy data on clip, size = %d\n", temp->size());
 }
-#if 0
-void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
-{
-    t->assertValid();
-
-    // TODO: move this all to common code
-    float firstTime = 0;
-    float lastTime = 0;
-    
-    if (t->begin() != t->end()) {
-        MidiEventPtr firstEvent = t->begin()->second;
-        if (firstEvent->type != MidiEvent::Type::End) {
-            firstTime = firstEvent->startTime;
-        }
-    }
-
-    MidiLockPtr lock= std::make_shared<MidiLock>();
-    MidiLocker l(lock);
-    testClipData = std::make_shared<MidiTrack>(lock);
-
-    for (auto event : *t) {
-        MidiEventPtr clone = event.second->clone();
-       // const bool isEnd = clone->type == MidiEvent::Type::End;
-
-        if (!selectAll) {
-            clone->startTime -= firstTime;
-        }
-      
-
-        MidiEndEventPtr end = safe_cast<MidiEndEvent>(clone);
-        if (end && !selectAll) {
-            end->startTime = lastTime;
-        }
-        testClipData->insertEvent(clone);
-
-        lastTime = clone->startTime;
-        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(clone);
-        if (note) {
-            lastTime += note->duration;
-        }
-
-    }
-    testClipData->assertValid();
-}
-#endif
 
 InteropClipboard::PasteData InteropClipboard::get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel)
 {
@@ -439,9 +391,11 @@ static void testRawClip()
 
 void testMidiEditorCCP()
 {
+    InteropClipboard::_clear();
+    assertNoMidi();
     testRawClip();
     testMidiEditorCCPSub(0);
     testMidiEditorCCPSub(2);
-    printf("find and fix midi leak\n");
-    //assertNoMidi();
+    InteropClipboard::_clear();
+    assertNoMidi();
 }
