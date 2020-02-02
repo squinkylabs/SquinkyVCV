@@ -6,6 +6,25 @@
 #include "MidiLock.h"
 #include "MidiSelectionModel.h"
 #include "MidiTrack.h"
+#include "ReplaceDataCommand.h"
+
+
+void InteropClipboard::PasteData::assertValid()
+{
+    if (toAdd.empty()) {
+        return;
+    }
+    if (requiredTrackLength < 0) {
+        return;
+    }
+    MidiEventPtr last = toAdd[toAdd.size() - 1];
+    assert(last->startTime <= this->requiredTrackLength);
+    MidiNoteEventPtr lastNote = safe_cast<MidiNoteEvent>(last);
+    assert(lastNote); // true for now
+    if (lastNote) {
+        assert(lastNote->startTime + lastNote->duration <= this->requiredTrackLength);
+    }
+}
 
 InteropClipboard::PasteData InteropClipboard::getPasteData(
     float insertTime,
@@ -14,12 +33,16 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
     MidiSelectionModelPtr sel)
 {
 
+    clipTrack->assertValid();
+    destTrack->assertValid();
     assert(insertTime >= 0);
     PasteData pasteData;
 
     // all the selected notes get deleted
-    for (auto it : *sel) {
-        pasteData.toRemove.push_back(it);
+    if (sel) {
+        for (auto it : *sel) {
+            pasteData.toRemove.push_back(it);
+        }
     }
 
   //  const float insertTime = seq->context->cursorTime();
@@ -42,8 +65,10 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
             newDuration = std::max(newDuration, note->duration + note->startTime);
         }
     }
-    printf("figure out what track to use for new Duration\n"); 
-    //const float newTrackLength = RweplaceDataCommand::calculateDurationRequest(seq, newDuration);
+    // printf("figure out what track to use for new Duration\n"); 
+    const float newTrackLength = ReplaceDataCommand::calculateDurationRequest(destTrack, newDuration);
+    pasteData.requiredTrackLength = newTrackLength;
+    pasteData.assertValid();
    
 
     return pasteData;
@@ -76,7 +101,6 @@ MidiTrackPtr InteropClipboard::getCopyData(MidiTrackPtr track, bool selectAll)
             clone->startTime -= firstTime;
         }
       
-
         MidiEndEventPtr end = safe_cast<MidiEndEvent>(clone);
         if (end && !selectAll) {
             end->startTime = lastTime;

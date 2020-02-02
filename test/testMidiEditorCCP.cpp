@@ -20,12 +20,16 @@ bool InteropClipboard::empty()
 
 MidiTrackPtr InteropClipboard::_getRaw()
 {
+    if (testClipData) {
+        printf("_getRaw will return size %d\n", testClipData->size());
+    }
     return testClipData;
 }
 void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
 {
     auto temp = getCopyData(t, selectAll);
     testClipData = temp;
+    printf("putting copy data on clip, size = %d\n", temp->size());
 }
 #if 0
 void InteropClipboard::put(MidiTrackPtr t, bool selectAll)
@@ -145,6 +149,8 @@ static void testRawClipPaste()
     testRawClipPaste(false, 0);
     testRawClipPaste(true, 1);
     testRawClipPaste(false, 1);
+    testRawClipPaste(true, 1000);
+    testRawClipPaste(false, 1000);
 }
 
 
@@ -249,11 +255,10 @@ static void testPasteOntoSelection()
     assert(seq->undo->canUndo());
 }
 
+
+// go back to old version
 static void testPasteTimeSub(float pasteTime)
 {
-    //assert(false);      // port to new high level clip
-    printf("!!! testPasteTImeSub doesn't work\n");
-#if 0
     // Make a song with a single note at 1.23
     auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
     MidiSequencerPtr seq = MidiSequencer::make(
@@ -273,9 +278,88 @@ static void testPasteTimeSub(float pasteTime)
     // copy one note at zero-relative time to clip
     seq->editor->copy();
 
-    auto clipTrack = InteropClipboard::get();
+  
+#if 1
+    assert(!InteropClipboard::empty());
+    assertEQ(InteropClipboard::_getRaw()->size(), 2);
+    //float offset = SqClipboard::getTrackData()->offset;
+    //assertEQ(offset, 1.23f);
+#endif
+
+    // clear out the track
+    seq->context->getTrack()->deleteEvent(*note);
+    seq->selection->clear();
+    assertEQ(seq->context->getTrack()->size(), 1);
+
+    // at this point there will be notes in the selection that don't exist any more
+    seq->assertValid();;
+
+    // now paste at pasteTime, with nothing selected in dest
+    if (pasteTime >= 0) {
+        seq->context->setCursorTime(pasteTime);
+        seq->context->adjustViewportForCursor();
+        // NOW NEED TO SCROLL TO CURSOR
+        seq->selection->clear();
+    } else {
+        seq->context->setCursorTime(0);
+    }
+
+    seq->editor->paste();
+    seq->assertValid();
+
+    // note should be at zero time (but not for -1 case, right?
+    MidiNoteEventPtr first = seq->context->getTrack()->getFirstNote();
+    assert(first);
+    if (pasteTime >= 0) {
+        assertEQ(first->startTime, pasteTime);
+    } else {
+        assertEQ(first->startTime, 0);
+    }
+
+}
+
+
+static void testPasteTimeSubNew(float pasteTime)
+{
+
+    // Make a song with a single note at 1.23
+    auto song = MidiSong::MidiSong::makeTest(MidiTrack::TestContent::oneNote123, _trackNumber);
+    MidiSequencerPtr seq = MidiSequencer::make(
+        song,
+        std::make_shared<TestSettings>(),
+        std::make_shared<TestAuditionHost>());
+    seq->context->setTrackNumber(_trackNumber);
+    seq->assertValid();
+    MidiLocker l(seq->song->lock);
+
+    MidiNoteEventPtr note = seq->context->getTrack()->getFirstNote();
+
+    // Set the cursor to be on the one note, and select it
+    seq->context->setCursorTime(3);     // we don't use cursor here, so set it crazy
+    seq->selection->select(note);
+
+    // copy one note at zero-relative time to clip
+    seq->editor->copy();
+
+
+    auto tempTrack = InteropClipboard::_getRaw();
+    assert(tempTrack);
+    assertEQ(tempTrack->size(), 2);
+
+    MidiTrackPtr clipTrack = std::make_shared<MidiTrack>(seq->song->lock, true);
+    assertEQ(clipTrack->size(), 1);
+    clipTrack->assertValid();
+
+    InteropClipboard::PasteData pasteData = InteropClipboard::get(pasteTime, clipTrack, nullptr);
+   // auto clipTrack = InteropClipboard::get();
     assert(clipTrack);
-    assertEQ(clipTrack->size(), 2);
+    clipTrack->assertValid();
+
+    assertEQ(pasteData.toAdd.size(), 1);
+
+  
+
+
     //float offset = SqClipboard::getTrackData()->offset;
    //assertEQ(offset, 1.23f);
     auto firstNote = clipTrack->getFirstNote();
@@ -311,7 +395,7 @@ static void testPasteTimeSub(float pasteTime)
     } else {
         assertEQ(first->startTime, 0);
     }
-#endif
+
 }
 
 static void testPasteTime1()

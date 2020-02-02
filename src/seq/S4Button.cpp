@@ -171,16 +171,21 @@ void S4Button::doPaste()
         return;
     }
 #else
-    MidiTrackPtr track = InteropClipboard::get();
+    MidiLocker l(song->lock);
+    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock); 
+
+    //static PasteData get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
+
+    InteropClipboard::PasteData pasteData = InteropClipboard::get(0, destTrack, nullptr );
 #endif
 
     if (!song) {
         WARN("no song to paste");
         return;
     }
-    song->addTrack(row, col, track);
-    WARN("past length = %.2f", track->getLength());
-    auto fnote = track->getFirstNote();
+    song->addTrack(row, col, destTrack);
+    WARN("past length = %.2f", destTrack->getLength());
+    auto fnote = destTrack->getFirstNote();
     if (fnote) {
         WARN("first note at time t %.2f", fnote->startTime);
     } else {

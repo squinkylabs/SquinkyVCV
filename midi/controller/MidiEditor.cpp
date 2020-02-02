@@ -762,7 +762,6 @@ void MidiEditor::copy()
     SqClipboard::putTrackData(clipData);
 
 #endif
-   
 }
 
 void MidiEditor::paste()

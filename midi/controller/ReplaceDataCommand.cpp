@@ -24,9 +24,10 @@ ReplaceDataCommand::ReplaceDataCommand(
     : trackNumber(trackNumber), removeData(inRemove), addData(inAdd), newTrackLength(trackLength)
 {
     assert(song->getTrack(trackNumber));
+    song->getTrack(trackNumber)->assertValid();
+    assertValid();
     originalTrackLength = song->getTrack(trackNumber)->getLength();     /// save off
 }
-
 
 ReplaceDataCommand::ReplaceDataCommand(
     MidiSongPtr song,
@@ -36,11 +37,32 @@ ReplaceDataCommand::ReplaceDataCommand(
     : trackNumber(trackNumber), removeData(inRemove), addData(inAdd)
 {
     assert(song->getTrack(trackNumber));
+    song->getTrack(trackNumber)->assertValid();
+    assertValid();
+}
+
+void ReplaceDataCommand::assertValid() const
+{
+#ifdef _DEBUG
+    for (auto x : addData) {
+        MidiEventPtr p = x;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
+        assert(note);
+        note->assertValid();
+    }
+    for (auto x : removeData) {
+        MidiEventPtr p = x;
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);
+        assert(note);
+        note->assertValid();
+    }
+#endif
 }
 
 void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
 {
     assert(seq);
+    seq->assertValid();
     MidiTrackPtr mt = seq->song->getTrack(trackNumber);
     assert(mt);
     MidiLocker l(mt->lock);
@@ -49,6 +71,7 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
     const bool isNewLengthRequested = (newTrackLength >= 0);
     const bool isNewLengthLonger = (newTrackLength > currentTrackLength);
    
+    mt->assertValid();
     // If we need to make track longer, do it first
     if (isNewLengthRequested && isNewLengthLonger) {
         mt->setLength(newTrackLength);
@@ -77,6 +100,8 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
     if (!extendSelection) {
         selection->clear();
     }
+
+    seq->assertValid();
     
     for (auto it : addData) {
         auto foundIter = mt->findEventDeep(*it);      // find an event in the track that matches the one we just inserted
@@ -84,6 +109,7 @@ void ReplaceDataCommand::execute(MidiSequencerPtr seq, SequencerWidget*)
         MidiEventPtr evt = foundIter->second;
         selection->extendSelection(evt);
     }
+    seq->assertValid();
 }
 
 void ReplaceDataCommand::undo(MidiSequencerPtr seq, SequencerWidget*)
@@ -322,14 +348,10 @@ ReplaceDataCommandPtr ReplaceDataCommand::makeChangeDurationCommand(MidiSequence
     ret->name = "change note duration";
     return ret;
 }
-
-
 ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
 {
     seq->assertValid();
   
-
-
 #ifdef _OLDCLIP
     std::vector<MidiEventPtr> toAdd;
     std::vector<MidiEventPtr> toRemove;
@@ -372,15 +394,11 @@ ReplaceDataCommandPtr ReplaceDataCommand::makePasteCommand(MidiSequencerPtr seq)
         newTrackLength);
     ret->name = "paste";
 #else
-   // assert(false);  // move to common code
-    // static PasteData get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
-
     const float insertTime = seq->context->cursorTime();
     auto destTrack = seq->context->getTrack();
     InteropClipboard::PasteData pasteData = InteropClipboard::get(insertTime, destTrack, seq->selection);
-  //  const float newTrackLength = calculateDurationRequest(seq, newDuration);
-    printf("!! need real track duration\n");
-    const float newTrackLength = 100;
+    const float newTrackLength = calculateDurationRequest(seq, pasteData.requiredTrackLength);
+    pasteData.assertValid();
     ReplaceDataCommandPtr ret = std::make_shared<ReplaceDataCommand>(
         seq->song,
         seq->selection,
@@ -471,7 +489,21 @@ void ReplaceDataCommand::modifyNotesToFitNewLength(
 
 float ReplaceDataCommand::calculateDurationRequest(MidiSequencerPtr seq, float duration)
 {
+    printf("get rid of calculateDurationRequest\n");
     const float currentDuration = seq->context->getTrack()->getLength();
+    if (currentDuration >= duration) {
+        return -1;                      // Don't need to do anything, long enough
+    }
+
+    const float needBars = duration / 4.f;
+    const float roundedBars = std::floor(needBars + 1.f);
+    const float durationRequest = roundedBars * 4;
+    return durationRequest;
+}
+
+float ReplaceDataCommand::calculateDurationRequest(MidiTrackPtr track, float duration)
+{
+    const float currentDuration = track->getLength();
     if (currentDuration >= duration) {
         return -1;                      // Don't need to do anything, long enough
     }

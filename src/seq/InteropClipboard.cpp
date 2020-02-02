@@ -6,7 +6,11 @@
 
 #include "rack.hpp"
 
-
+bool InteropClipboard::empty()
+{
+     const char* jsonString = glfwGetClipboardString(APP->window->win);
+     return bool(jsonString);
+}
 void InteropClipboard::put(MidiTrackPtr trackOrig, bool selectAll)
 {
     auto trackToPut = getCopyData(trackOrig, selectAll);
@@ -14,16 +18,22 @@ void InteropClipboard::put(MidiTrackPtr trackOrig, bool selectAll)
     glfwSetClipboardString(APP->window->win, json.c_str());
 }
 
-MidiTrackPtr InteropClipboard::get()
+InteropClipboard::PasteData InteropClipboard::get(
+    float insertTime,
+    MidiTrackPtr destTrack, 
+    MidiSelectionModelPtr sel)
 {
     const char* jsonString = glfwGetClipboardString(APP->window->win);
 
     // TODO: pass this in from somewhere?
     // Where did we used to get the lock?
     MidiLockPtr lock = std::make_shared<MidiLock>();
-    MidiTrackPtr ret = fromJsonStringToTrack(jsonString, lock );
+    MidiTrackPtr clipTrack = fromJsonStringToTrack(jsonString, lock );
+
+    PasteData pasteData = getPasteData(insertTime, clipTrack, destTrack, sel);
+
     INFO("returning from get");
-    return ret;
+    return pasteData;
 }
 
 // top level
@@ -84,18 +94,8 @@ MidiTrackPtr  InteropClipboard::fromJsonStringToTrack(const std::string& json, M
         return nullptr;
     }
 
-
-    /*
-      json_t* keysigMode = json_object_get(data, "keysigMode");
-        if (keysigMode) {
-            int mode = json_integer_value(keysigMode);
-
-            */
-
-    // parse the json to track
-    //assert(false);
-   MidiTrackPtr track = fromJsonToTrack(lock, notesJson, length);
-   return track;
+    MidiTrackPtr track = fromJsonToTrack(lock, notesJson, length);
+    return track;
 }
 
 MidiTrackPtr InteropClipboard::fromJsonToTrack(MidiLockPtr lock, json_t *notesJson, float length )
@@ -106,7 +106,7 @@ MidiTrackPtr InteropClipboard::fromJsonToTrack(MidiLockPtr lock, json_t *notesJs
     assert(notesJson);
     assert(json_is_array(notesJson));
 
-// validate is array?
+    // validate is array?
     size_t eventCount = json_array_size(notesJson);
     INFO("to track, count = %d, ignoring passed length %d", eventCount, length);
 
@@ -216,5 +216,3 @@ const char* InteropClipboard::keyNote = "note";
 const char* InteropClipboard::keyPitch = "pitch";
 const char* InteropClipboard::keyNoteLength = "length";
 const char* InteropClipboard::keyStart = "start";  
-
-

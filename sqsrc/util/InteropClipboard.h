@@ -27,6 +27,13 @@ public:
     public:
         std::vector<MidiEventPtr> toAdd;
         std::vector<MidiEventPtr> toRemove;
+
+        /**
+         * how long a track would need to be to hold all the toAdd notes
+         */
+        float requiredTrackLength = 0;
+
+        void assertValid();
     };
     /**
      * If selectAll is false, trims the track so first note at time 0,

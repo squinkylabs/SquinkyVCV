@@ -42,9 +42,11 @@ static void test1()
     assert(ms->getTrack(0)->size() == 1);           // just end event
     MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
     assert(newNote);
-    newNote->pitchCV = 12;
+    newNote->pitchCV = 1.2f;
+    newNote->assertValid();
     toAdd.push_back(newNote);
 
+    seq->assertValid();
     CommandPtr cmd = std::make_shared<ReplaceDataCommand>(ms, 0, toRem, toAdd);
     seq->undo->execute(seq, cmd);
 
