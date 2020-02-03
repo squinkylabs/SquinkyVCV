@@ -20,6 +20,7 @@ class MidiSelectionModel
 {
 public:
     MidiSelectionModel(IMidiPlayerAuditionHostPtr);
+    MidiSelectionModel(IMidiPlayerAuditionHostPtr, bool selectAll);
     ~MidiSelectionModel();
 
     /**

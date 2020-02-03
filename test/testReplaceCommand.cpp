@@ -456,7 +456,7 @@ static void testReversePitch()
     MidiNoteEventPtr firstNote = seq->context->getTrack()->getFirstNote();
     MidiNoteEventPtr lastNote = seq->context->getTrack()->getLastNote();
 
-    printf("orig pitches are %.2f %.2f\n", firstNote->pitchCV, lastNote->pitchCV);
+   // printf("orig pitches are %.2f %.2f\n", firstNote->pitchCV, lastNote->pitchCV);
 
     assertGT(lastNote->pitchCV, firstNote->pitchCV + .1);
 

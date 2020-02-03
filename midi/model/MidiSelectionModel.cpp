@@ -11,6 +11,13 @@ MidiSelectionModel::MidiSelectionModel(IMidiPlayerAuditionHostPtr aud) : auditio
     ++_mdb;
 }
 
+MidiSelectionModel::MidiSelectionModel(IMidiPlayerAuditionHostPtr aud, bool selectAll) :
+    auditionHost(aud),
+    allIsSelected(selectAll)
+{
+    ++_mdb;
+}
+
 MidiSelectionModel::~MidiSelectionModel()
 {
     --_mdb;

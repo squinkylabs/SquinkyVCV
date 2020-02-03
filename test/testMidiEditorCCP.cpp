@@ -95,6 +95,55 @@ static void testRawClipPaste(bool selectAll, float insertTime)
     assertEQ(firstNoteToAdd->startTime, expectedStart)
 }
 
+/*
+add these test cases:
+paste into empty track, preserving duration of original track (4x4, and seq++ select all)
+paste into empty track, don't preserver, but do extend
+*/
+static void testScenarios(bool selectAllOnPaste, float pasteOffset)
+{
+    MidiLockPtr lock = std::make_shared<MidiLock>();
+    MidiLocker l(lock);
+    MidiTrackPtr track = std::make_shared<MidiTrack>(lock);
+    
+    MidiNoteEventPtr note = std::make_shared<MidiNoteEvent>();
+    note->pitchCV = 0;
+    note->startTime = 20.1f;
+    note->duration = 99.1f;
+    track->insertEvent(note);
+    track->insertEnd(401);
+    track->_dump();
+    track->assertValid();
+
+    //printf("start time of note: %s\n", TimeUtils::time2str(20.1f).c_str());
+    //printf("end time of note: %s\n", TimeUtils::time2str(20.1f + 99.1f).c_str());
+//printf("end time  %s\n", TimeUtils::time2str(401.f).c_str());
+
+    //auto xx = TimeUtils::time2bbf(20.1f + 99.1f);
+
+    
+    bool selectAll = true;      // in all scenarios we will put the end event on the clip
+    InteropClipboard::put(track, selectAll);
+ 
+    float expectedLength = 1234;
+    if (selectAllOnPaste) {
+        expectedLength = 401;       // end of the clip
+        if (pasteOffset + 119.2 > expectedLength) {
+            auto bars = TimeUtils::time2bar(pasteOffset + 119.2f);
+            expectedLength = float((bars+1) * 4) ;
+        }
+    } else {
+        assert(pasteOffset == 0);
+        expectedLength = 4 * 30;    // we need 30 bar base comfortably hold the note
+
+    }
+    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(lock, true);
+    IMidiPlayerAuditionHostPtr host = std::make_shared<TestAuditionHost>();
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(host, selectAllOnPaste);
+    auto pasteData = InteropClipboard::get(pasteOffset, destTrack, sel);
+    assertEQ(pasteData.requiredTrackLength, expectedLength);
+}
+
 static void testRawClipPaste()
 {
     testRawClipPaste(true, 0);
@@ -103,6 +152,10 @@ static void testRawClipPaste()
     testRawClipPaste(false, 1);
     testRawClipPaste(true, 1000);
     testRawClipPaste(false, 1000);
+
+    testScenarios(false, 0);
+    testScenarios(true, 0);
+    testScenarios(true, 1000);
 }
 
 

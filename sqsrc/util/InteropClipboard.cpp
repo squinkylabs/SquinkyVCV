@@ -34,6 +34,7 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
 {
     assert(clipTrack);
     assert(destTrack);
+    assert(sel);        // used to be optional
     clipTrack->assertValid();
     destTrack->assertValid();
     assert(insertTime >= 0);
@@ -41,11 +42,11 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
     PasteData pasteData;
 
     // all the selected notes get deleted
-    if (sel) {
-        for (auto it : *sel) {
-            pasteData.toRemove.push_back(it);
-        }
+
+    for (auto it : *sel) {
+        pasteData.toRemove.push_back(it);
     }
+
 
     const float eventOffsetTime = insertTime;
     // copy all the notes on the clipboard into the track, but move to insert time
@@ -65,9 +66,22 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
         }
     }
     destTrack->assertValid();
-    
-    const float newTrackLength = ReplaceDataCommand::calculateDurationRequest(destTrack, newDuration);
-    pasteData.requiredTrackLength = newTrackLength;
+
+    if (sel->isAllSelected()) {
+        // if all selected, use the end of the original clip.
+        // But make it long enough to hold everything
+        auto xx = clipTrack->getLength();
+        float newTrackLength = clipTrack->getLength();
+        if (newDuration > newTrackLength) {
+            newTrackLength = ReplaceDataCommand::calculateDurationRequest(destTrack, newDuration);
+        }
+        
+        pasteData.requiredTrackLength = newTrackLength;
+    } else {
+        // If not select all, the make enough room for it, but pad to even bars.   
+        const float newTrackLength = ReplaceDataCommand::calculateDurationRequest(destTrack, newDuration);
+        pasteData.requiredTrackLength = newTrackLength;
+    }
     pasteData.assertValid();
    
     return pasteData;
