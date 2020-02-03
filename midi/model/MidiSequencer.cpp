@@ -66,7 +66,7 @@ MidiSequencer::~MidiSequencer()
 
 void MidiSequencer::assertValid() const
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
     assert(editor);
     assert(undo);
     assert(song);

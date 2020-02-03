@@ -37,6 +37,7 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
     clipTrack->assertValid();
     destTrack->assertValid();
     assert(insertTime >= 0);
+
     PasteData pasteData;
 
     // all the selected notes get deleted
@@ -63,12 +64,12 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
             newDuration = std::max(newDuration, note->duration + note->startTime);
         }
     }
-    // printf("figure out what track to use for new Duration\n"); 
+    destTrack->assertValid();
+    
     const float newTrackLength = ReplaceDataCommand::calculateDurationRequest(destTrack, newDuration);
     pasteData.requiredTrackLength = newTrackLength;
     pasteData.assertValid();
    
-
     return pasteData;
 }
 

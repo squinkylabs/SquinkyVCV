@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 int MidiEvent::_count = 0;
 #endif
 
@@ -28,8 +28,9 @@ int MidiTrack::size() const
 
 void MidiTrack::assertValid() const
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
     assert(this);
+    assert(this->size());
     int numEnds = 0;
     bool lastIsEnd = false;
     (void) lastIsEnd;

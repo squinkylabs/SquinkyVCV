@@ -43,7 +43,7 @@ ReplaceDataCommand::ReplaceDataCommand(
 
 void ReplaceDataCommand::assertValid() const
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
     for (auto x : addData) {
         MidiEventPtr p = x;
         MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(p);

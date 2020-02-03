@@ -39,6 +39,7 @@ InteropClipboard::PasteData InteropClipboard::get(
     }
 
     PasteData pasteData = getPasteData(insertTime, clipTrack, destTrack, sel);
+    printf("getPasteData will return with %d to add\n", pasteData.toAdd.size()); fflush(stdout);
     return pasteData;
 }
 
@@ -112,18 +113,29 @@ MidiTrackPtr InteropClipboard::fromJsonToTrack(MidiLockPtr lock, json_t *notesJs
     // validate is array?
     size_t eventCount = json_array_size(notesJson);
 
+    float lastNoteEnd = 0;  // we don't really want to use this, but for now will keep  
+                            // asserts at bay.
     for (int i = 0; i< int(eventCount); ++i) {
         json_t *eventJson = json_array_get(notesJson, i);
         MidiEventPtr event = fromJsonEvent(eventJson);
         assert(event);
         if (event) {
             track->insertEvent(event);
+            lastNoteEnd = std::max(lastNoteEnd, event->startTime);
+        }
+        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
+        if (note) {
+            lastNoteEnd = std::max(lastNoteEnd, note->startTime + note->duration);
         }
     }
 
     if (0 == track->size()) {
         track->insertEnd(4);            // make a legit blank trac
+    } else {
+        track->insertEnd(lastNoteEnd);
     }
+
+    track->assertValid();
     return track;
 }
 

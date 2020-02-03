@@ -172,11 +172,27 @@ void S4Button::doPaste()
     }
 #else
     MidiLocker l(song->lock);
-    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock); 
-
+    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock, true); 
+    INFO("about to validate new track"); fflush(stdout);
+    destTrack->assertValid();
+    INFO("validated new track"); fflush(stdout);
     //static PasteData get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
 
     InteropClipboard::PasteData pasteData = InteropClipboard::get(0, destTrack, nullptr );
+    // So far, dest track has just been a refernce track for delting notes we might paste
+    // on top of.
+    // now let's put all the data in there (re-use it)
+    assert(destTrack->size() == 1);
+    assert(pasteData.toRemove.empty());
+
+    INFO("returned len = %d", pasteData.requiredTrackLength);
+    destTrack->setLength(pasteData.requiredTrackLength);
+    for (auto n : pasteData.toAdd) {
+        MidiEventPtr event = n;
+        destTrack->insertEvent(n); 
+    }
+    destTrack->assertValid();
+    destTrack->_dump();
 #endif
 
     if (!song) {

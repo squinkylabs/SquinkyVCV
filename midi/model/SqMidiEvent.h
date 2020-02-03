@@ -51,24 +51,24 @@ public:
 
     virtual ~MidiEvent()
     {
-#ifdef _DEBUG
+#ifndef NDEBUG
         --_count;
 #endif
     }
-#ifdef _DEBUG
+#ifndef NDEBUG
     static int _count;      // for debugging - reference count
 #endif
 
 protected:
     MidiEvent()
     {
-#ifdef _DEBUG
+#ifndef NDEBUG
         ++_count;
 #endif
     }
     MidiEvent(const MidiEvent& e)
     {
-#ifdef _DEBUG
+#ifndef NDEBUG
         ++_count;
 #endif
         this->startTime = e.startTime;

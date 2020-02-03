@@ -107,7 +107,7 @@ static void testDelete3()
     MidiLocker l(lock);
     MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
 
-#ifdef _DEBUG
+#ifndef NDEBUG
     assert(MidiEvent::_count > 0);
 #endif
     ev->pitchCV = 44;
