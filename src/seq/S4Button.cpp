@@ -1,5 +1,6 @@
 #include "InteropClipboard.h"
 #include "MidiTrack4Options.h"
+#include "MidiSelectionModel.h"
 #include "S4Button.h"
 #include "Seq4.h"
 #include "../ctrl/SqUI.h"
@@ -84,7 +85,6 @@ void S4Button::invokeContextMenu()
 {
     ::rack::ui::Menu* menu = ::rack::createMenu();
     menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
-
     menu->addChild(new RepeatCountMenuItem(this));
 
     //should we return the menu?
@@ -178,21 +178,24 @@ void S4Button::doPaste()
     INFO("validated new track"); fflush(stdout);
     //static PasteData get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
 
-    InteropClipboard::PasteData pasteData = InteropClipboard::get(0, destTrack, nullptr );
+    // Make a fake selection that will say "select all".
+    // It's a kluge that we need to provide an aution host.
+   
+    MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(nullptr, true);
+    InteropClipboard::PasteData pasteData = InteropClipboard::get(0, destTrack, sel );
     // So far, dest track has just been a refernce track for delting notes we might paste
     // on top of.
     // now let's put all the data in there (re-use it)
     assert(destTrack->size() == 1);
     assert(pasteData.toRemove.empty());
 
-    INFO("returned len = %d", pasteData.requiredTrackLength);
     destTrack->setLength(pasteData.requiredTrackLength);
     for (auto n : pasteData.toAdd) {
         MidiEventPtr event = n;
         destTrack->insertEvent(n); 
     }
     destTrack->assertValid();
-    destTrack->_dump();
+   // destTrack->_dump();
 #endif
 
     if (!song) {
@@ -200,7 +203,7 @@ void S4Button::doPaste()
         return;
     }
     song->addTrack(row, col, destTrack);
-    WARN("past length = %.2f", destTrack->getLength());
+    WARN("paste length in button = %.2f", destTrack->getLength());
     auto fnote = destTrack->getFirstNote();
     if (fnote) {
         WARN("first note at time t %.2f", fnote->startTime);

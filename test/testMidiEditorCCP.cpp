@@ -112,16 +112,8 @@ static void testScenarios(bool selectAllOnPaste, float pasteOffset)
     note->duration = 99.1f;
     track->insertEvent(note);
     track->insertEnd(401);
-    track->_dump();
     track->assertValid();
 
-    //printf("start time of note: %s\n", TimeUtils::time2str(20.1f).c_str());
-    //printf("end time of note: %s\n", TimeUtils::time2str(20.1f + 99.1f).c_str());
-//printf("end time  %s\n", TimeUtils::time2str(401.f).c_str());
-
-    //auto xx = TimeUtils::time2bbf(20.1f + 99.1f);
-
-    
     bool selectAll = true;      // in all scenarios we will put the end event on the clip
     InteropClipboard::put(track, selectAll);
  

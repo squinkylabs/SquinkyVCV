@@ -70,7 +70,6 @@ InteropClipboard::PasteData InteropClipboard::getPasteData(
     if (sel->isAllSelected()) {
         // if all selected, use the end of the original clip.
         // But make it long enough to hold everything
-        auto xx = clipTrack->getLength();
         float newTrackLength = clipTrack->getLength();
         if (newDuration > newTrackLength) {
             newTrackLength = ReplaceDataCommand::calculateDurationRequest(destTrack, newDuration);

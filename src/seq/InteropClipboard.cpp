@@ -11,6 +11,7 @@ bool InteropClipboard::empty()
      const char* jsonString = glfwGetClipboardString(APP->window->win);
      return !bool(jsonString);
 }
+
 void InteropClipboard::put(MidiTrackPtr trackOrig, bool selectAll)
 {
     auto trackToPut = getCopyData(trackOrig, selectAll);
@@ -39,7 +40,7 @@ InteropClipboard::PasteData InteropClipboard::get(
     }
 
     PasteData pasteData = getPasteData(insertTime, clipTrack, destTrack, sel);
-    printf("getPasteData will return with %d to add\n", pasteData.toAdd.size()); fflush(stdout);
+
     return pasteData;
 }
 
@@ -130,9 +131,13 @@ MidiTrackPtr InteropClipboard::fromJsonToTrack(MidiLockPtr lock, json_t *notesJs
     }
 
     if (0 == track->size()) {
-        track->insertEnd(4);            // make a legit blank trac
+        track->insertEnd(0);            // make a legit blank trac
     } else {
         track->insertEnd(lastNoteEnd);
+    }
+
+    if (track->getLength() < length) {
+        track->setLength(length);
     }
 
     track->assertValid();
