@@ -20,6 +20,7 @@ public:
     static const NVGcolor X4_SELECTION_COLOR;
     static const NVGcolor XD_BUTTON_FACE_NORM;
     static const NVGcolor XD_BUTTON_FACE_PLAYING;
+    static const NVGcolor XD_SELECTED_BORDER;
 
     static const float hMarginsNoteEdit;
     static const float topMarginNoteEdit;

@@ -380,15 +380,7 @@ void S4ButtonDrawer::draw(const DrawArgs &args)
     paintButtonBorder(ctx);
     paintButtonText(ctx);
 
-    nvgBeginPath(ctx);
-    nvgFontSize(ctx, 14.f);
-    nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
-    nvgText(ctx, 5, 15, button->contentLength.c_str(), nullptr);
-    if (button->numNotes > 0) {
-        std::stringstream s;
-        s << button->numNotes;
-        nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
-    }
+   
 }
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext *ctx)
@@ -402,11 +394,26 @@ void S4ButtonDrawer::paintButtonFace(NVGcontext *ctx)
 
 void S4ButtonDrawer::paintButtonBorder(NVGcontext *ctx)
 {
+    if (button->isSelected()) {
+        SqGfx::border(
+            ctx, 
+            4,
+            UIPrefs::XD_SELECTED_BORDER,
+            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
 
+    }
 }
 void S4ButtonDrawer::paintButtonText(NVGcontext *ctx)
 {
-
+    nvgBeginPath(ctx);
+    nvgFontSize(ctx, 14.f);
+    nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
+    nvgText(ctx, 5, 15, button->contentLength.c_str(), nullptr);
+    if (button->numNotes > 0) {
+        std::stringstream s;
+        s << button->numNotes;
+        nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
+    }
 }
 
 

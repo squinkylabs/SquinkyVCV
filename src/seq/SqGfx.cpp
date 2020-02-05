@@ -19,6 +19,27 @@ void SqGfx::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
     nvgFill(vg);
 }
 
+void SqGfx::border(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h)
+{
+    nvgFillColor(vg, color);
+    nvgBeginPath(vg);
+    {
+        // left edge
+        nvgRect(vg, 0, 0, thickness, h);
+
+        // bottom edge
+        nvgRect(vg, 0, h - thickness, w, thickness);
+
+        // right edge
+        nvgRect(vg, w - thickness, 0, thickness, h);
+
+        // top edge
+        nvgRect(vg, 0, 0, w, thickness );
+    }
+    nvgFill(vg);
+};
+
+
 void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int size)
 {
     int f = ::rack::appGet()->window->uiFont->handle;
