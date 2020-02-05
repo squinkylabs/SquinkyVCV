@@ -103,13 +103,18 @@ double MidiPlayer4::getCurrentLoopIterationStart(int track) const
     return tkPlayer->getCurrentLoopIterationStart();
 }
 
- void MidiPlayer4::reset(bool clearGates)
- {
+void MidiPlayer4::reset(bool clearGates)
+{
     isReset = true;
     isResetGates = clearGates;
- }
+}
 
- void MidiPlayer4::resetAllVoices(bool clearGates)
+int MidiPlayer4::getSectionIndex(int track) const
+{
+    return trackPlayers[track]->getSectionIndex();
+}
+
+void MidiPlayer4::resetAllVoices(bool clearGates)
 {
     for (int i = 0; i<MidiSong4::numTracks; ++i) {
         auto tkPlayer = trackPlayers[i];

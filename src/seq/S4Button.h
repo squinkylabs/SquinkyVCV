@@ -1,12 +1,10 @@
 #pragma once
 
-//#include "Widget.hpp"
 #include "rack.hpp"
 #include "math.hpp"
-//#include "SqClipboard.h"
-//#include "SqGfx.h"
+#include "Seq4.h"
+#include "WidgetComposite.h"
 #include "TimeUtils.h"
-//#include "UIPrefs.h"
 #include "MidiSequencer4.h"
 
 #include <functional>
@@ -27,6 +25,10 @@ public:
     }
     void draw(const DrawArgs &args) override;
 private:
+    void paintButtonFace(NVGcontext*);
+    void paintButtonBorder(NVGcontext*);
+    void paintButtonText(NVGcontext*);
+
     S4Button* const button;
 };
 
@@ -35,7 +37,12 @@ class S4Button : public ::rack::OpaqueWidget
 public:
     friend class S4ButtonDrawer;
     friend class RepeatItem;
-    S4Button(const rack::math::Vec& size, const rack::math::Vec& pos, int r, int c, MidiSong4Ptr s);
+    friend class EditMenuItems;
+    S4Button(const rack::math::Vec& size,
+        const rack::math::Vec& pos,
+        int r, int c,
+        MidiSong4Ptr s,
+        std::shared_ptr<Seq4<WidgetComposite>> seq4Comp);
 
     /**
      * pass callback here to handle clicking on LED
@@ -64,6 +71,7 @@ public:
 
 private:
     rack::widget::FramebufferWidget * fw = nullptr;
+    std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
     S4ButtonDrawer * drawer = nullptr;
     callback clickHandler = nullptr;
     bool isDragging = false;
@@ -74,6 +82,7 @@ private:
     bool _isSelected = false;
     std::string contentLength;
     int numNotes = 0;
+    bool isPlaying = false;
 
     bool handleKey(int key, int mods, int action);
     void doPaste();
@@ -85,67 +94,6 @@ private:
     void setRepeatCountForUI(int);
 };
 
-inline S4Button::S4Button(
-    const rack::math::Vec& size, 
-    const rack::math::Vec& pos,
-    int r, 
-    int c, 
-    MidiSong4Ptr s) : row(r), col(c), song(s)
-{
-    this->box.size = size;
-    this->box.pos = pos;
-    fw = new rack::widget::FramebufferWidget();
-    this->addChild(fw);
-
-    drawer = new S4ButtonDrawer(size, pos, this);
-    fw->addChild(drawer);
-}
-
-inline void S4Button::setSelection(bool sel)
-{
-    if (_isSelected != sel) {
-        _isSelected = sel;
-        fw->dirty = true;
-    }
-}
-
-inline bool S4Button::handleKey(int key, int mods, int action)
-{
-    bool handled = false;
-    
-    if ((key == GLFW_KEY_V) && 
-        (!(mods & RACK_MOD_CTRL)) &&
-        (action == GLFW_PRESS)) {
-
-        handled = true;
-        doPaste();
-    }
-    return handled;
-}
-
-inline void S4Button::onSelectKey(const rack::event::SelectKey &e)
-{
-    bool handled = handleKey(e.key, e.mods, e.action);
-    if (handled) {
-        e.consume(this);
-    } else {
-        OpaqueWidget::onSelectKey(e);
-    }
-}
-
-inline void S4Button::setClickHandler(callback h)
-{
-    clickHandler = h;
-}
-
-inline void S4Button::onDragEnter(const rack::event::DragEnter &e)
-{
-}
-
-inline void S4Button::onDragLeave(const rack::event::DragLeave &e) 
-{
-    isDragging = false;
-}
 
 /***************************************************************************
  * 
@@ -161,7 +109,11 @@ inline void S4Button::onDragLeave(const rack::event::DragLeave &e)
 class S4ButtonGrid
 {
 public:
-    void init(rack::app::ModuleWidget* widget, rack::engine::Module* module, MidiSong4Ptr s);
+    void init(
+        rack::app::ModuleWidget* widget, 
+        rack::engine::Module* module, 
+        MidiSong4Ptr s,
+        std::shared_ptr<Seq4<WidgetComposite>> seq4Comp);
     void setNewSeq(MidiSequencer4Ptr newSeq);
     const static int buttonSize = 50.f;
     const static int buttonMargin = 10;

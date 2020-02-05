@@ -213,7 +213,7 @@ void Sequencer4Widget::addControls(Sequencer4Module *module,
 void Sequencer4Widget::addBigButtons(Sequencer4Module *module)
 {
     if (module) {
-        buttonGrid.init(this, module, module->getSong());
+        buttonGrid.init(this, module, module->getSong(), module->seq4Comp);
     } else {
         WARN("make the module browser draw the buttons");
     }

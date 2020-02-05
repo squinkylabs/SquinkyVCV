@@ -157,6 +157,11 @@ public:
     static std::vector<std::string> getClockRates();
     static std::vector<std::string> getPolyLabels();
 
+    /**
+     * return 0 if not playing
+     * section number (1..4) if playing
+     */
+    int  getPlayStatus(int track) const;
 private:
     GateTrigger runStopProcessor;
     std::shared_ptr<MidiPlayer4> player;
@@ -165,7 +170,7 @@ private:
     bool runStopRequested = false;
     bool wasRunning = false;
 
-    bool isRunning();
+    bool isRunning() const;
     void init(MidiSong4Ptr);
     void serviceRunStop();
     void allGatesOff();
@@ -326,9 +331,19 @@ inline void Seq4<TBase>::step()
 }
 
 template <class TBase>
-bool Seq4<TBase>::isRunning()
+bool Seq4<TBase>::isRunning() const
 {
     return TBase::params[RUNNING_PARAM].value > .5;
+}
+
+template <class TBase>
+int  Seq4<TBase>::getPlayStatus(int track) const
+{
+    if (!isRunning()) {
+        return 0;
+    }
+
+    return player->getSectionIndex(track);
 }
 
 template <class TBase>

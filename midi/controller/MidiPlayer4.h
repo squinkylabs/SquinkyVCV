@@ -42,6 +42,8 @@ public:
      * @param clearGate will set the host's gate low, if true
      */
     void reset(bool clearGates);
+
+    int getSectionIndex(int track) const;
 private:
     std::vector<MidiTrackPlayerPtr> trackPlayers;
     MidiSong4Ptr song;

@@ -69,6 +69,30 @@ private:
     S4Button* const button; 
 };
 
+class EditMenuItems : public  ::rack::ui::MenuItem
+{
+public:
+    EditMenuItems(S4Button* opt) : button(opt)
+    {
+        text = "edit";
+        rightText = RIGHT_ARROW;
+    }
+    ::rack::ui::Menu *createChildMenu() override
+    {
+        ::rack::ui::Menu* menu = new ::rack::ui::Menu();
+
+         ::rack::ui::MenuItem* item =  new SqMenuItem([]{
+            return false;
+        }, [this]{
+            button->doPaste();
+        });
+        item->text = "paste";
+        menu->addChild(item);
+        return menu;
+    }
+private:
+    S4Button* const button; 
+};
 //*********************** S4Button ************************/
 
  
@@ -81,13 +105,13 @@ MidiTrack4OptionsPtr S4Button::getOptions() const
 {
     return song->getOptions(row, col);
 }
+
 void S4Button::invokeContextMenu()
 {
     ::rack::ui::Menu* menu = ::rack::createMenu();
     menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
+    menu->addChild (new EditMenuItems(this));
     menu->addChild(new RepeatCountMenuItem(this));
-
-    //should we return the menu?
 }
 
 void S4Button::step()
@@ -113,6 +137,13 @@ void S4Button::step()
     if (numNotes != newNumNotes) {
         numNotes = newNumNotes;
         fw->dirty = true;
+    }
+
+    const int playStatus = seq4Comp->getPlayStatus(row);
+    bool iAmPlaying = playStatus == (col + 1);
+    if (iAmPlaying != isPlaying) {
+        isPlaying = iAmPlaying;
+        fw->dirty = true; 
     }
 }
 
@@ -158,19 +189,6 @@ void S4Button::onButton(const rack::event::Button &e)
 
 void S4Button::doPaste()
 {
-#ifdef _OLDCLIP
-    auto clipData = SqClipboard::getTrackData();
-    if (!clipData) {
-        WARN("no clip data");
-        return;
-    }
-
-    MidiTrackPtr track = clipData->track;
-    if (!track) {
-        WARN("no track on clip");
-        return;
-    }
-#else
     MidiLocker l(song->lock);
     MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock, true); 
     INFO("about to validate new track"); fflush(stdout);
@@ -195,21 +213,12 @@ void S4Button::doPaste()
         destTrack->insertEvent(n); 
     }
     destTrack->assertValid();
-   // destTrack->_dump();
-#endif
 
     if (!song) {
         WARN("no song to paste");
         return;
     }
     song->addTrack(row, col, destTrack);
-    WARN("paste length in button = %.2f", destTrack->getLength());
-    auto fnote = destTrack->getFirstNote();
-    if (fnote) {
-        WARN("first note at time t %.2f", fnote->startTime);
-    } else {
-        WARN("No first note");
-    }
 }
 
 int S4Button::getRepeatCountForUI()
@@ -232,10 +241,83 @@ void S4Button::setRepeatCountForUI(int ct)
         WARN("editing repeats when no data");
     }
 }
+
+inline S4Button::S4Button(
+    const rack::math::Vec& size, 
+    const rack::math::Vec& pos,
+    int r, 
+    int c, 
+    MidiSong4Ptr s,
+    std::shared_ptr<Seq4<WidgetComposite>> seq4) : row(r), col(c), song(s), seq4Comp(seq4)
+{
+    this->box.size = size;
+    this->box.pos = pos;
+    fw = new rack::widget::FramebufferWidget();
+    this->addChild(fw);
+
+    drawer = new S4ButtonDrawer(size, pos, this);
+    fw->addChild(drawer);
+}
+
+#if 0
+bool S4Button::isPlaying()
+{
+    return seq4Comp->isRunning();
+}
+#endif
+
+inline void S4Button::setSelection(bool sel)
+{
+    if (_isSelected != sel) {
+        _isSelected = sel;
+        fw->dirty = true;
+    }
+}
+
+inline bool S4Button::handleKey(int key, int mods, int action)
+{
+    bool handled = false;
+    
+    if ((key == GLFW_KEY_V) && 
+        (!(mods & RACK_MOD_CTRL)) &&
+        (action == GLFW_PRESS)) {
+
+        handled = true;
+        doPaste();
+    }
+    return handled;
+}
+
+inline void S4Button::onSelectKey(const rack::event::SelectKey &e)
+{
+    bool handled = handleKey(e.key, e.mods, e.action);
+    if (handled) {
+        e.consume(this);
+    } else {
+        OpaqueWidget::onSelectKey(e);
+    }
+}
+
+inline void S4Button::setClickHandler(callback h)
+{
+    clickHandler = h;
+}
+
+inline void S4Button::onDragEnter(const rack::event::DragEnter &e)
+{
+}
+
+inline void S4Button::onDragLeave(const rack::event::DragLeave &e) 
+{
+    isDragging = false;
+}
+
+
 /***************************** S4ButtonGrid ***********************************/
 
 using Comp = Seq4<WidgetComposite>;
-void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module, MidiSong4Ptr song)
+void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
+    MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> seq4Comp)
 {
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
@@ -247,7 +329,8 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
                 rack::math::Vec(x, y),
                 row,
                 col,
-                song);
+                song,
+                seq4Comp);
             parent->addChild(b);
             b->setClickHandler(makeButtonHandler(row, col));
             buttons[row][col] = b;
@@ -279,6 +362,7 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
 void S4ButtonDrawer::draw(const DrawArgs &args)
 {
     auto ctx = args.vg;
+#if 0
     if (button->isSelected()) {
           SqGfx::filledRect(
                 args.vg,
@@ -291,6 +375,10 @@ void S4ButtonDrawer::draw(const DrawArgs &args)
                 this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
                 //x, y, width, noteHeight);
     }
+#endif
+    paintButtonFace(ctx);
+    paintButtonBorder(ctx);
+    paintButtonText(ctx);
 
     nvgBeginPath(ctx);
     nvgFontSize(ctx, 14.f);
@@ -301,6 +389,24 @@ void S4ButtonDrawer::draw(const DrawArgs &args)
         s << button->numNotes;
         nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
     }
+}
+
+void S4ButtonDrawer::paintButtonFace(NVGcontext *ctx)
+{
+    auto color = button->isPlaying ? UIPrefs::XD_BUTTON_FACE_PLAYING : UIPrefs::XD_BUTTON_FACE_NORM;
+    SqGfx::filledRect(
+        ctx,
+        color,
+        this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
+}
+
+void S4ButtonDrawer::paintButtonBorder(NVGcontext *ctx)
+{
+
+}
+void S4ButtonDrawer::paintButtonText(NVGcontext *ctx)
+{
+
 }
 
 

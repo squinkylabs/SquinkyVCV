@@ -18,6 +18,8 @@ public:
     static const NVGcolor DRAGGED_NOTE_COLOR;
     static const NVGcolor XFORM_TEXT_COLOR;
     static const NVGcolor X4_SELECTION_COLOR;
+    static const NVGcolor XD_BUTTON_FACE_NORM;
+    static const NVGcolor XD_BUTTON_FACE_PLAYING;
 
     static const float hMarginsNoteEdit;
     static const float topMarginNoteEdit;

@@ -32,6 +32,7 @@ public:
     void updateSampleCount(int numElapsed);
     std::shared_ptr<MidiSong4> getSong();
 
+    int getSectionIndex() const;
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong4> song;

@@ -207,6 +207,11 @@ bool MidiTrackPlayer::pollForNoteOff(double metricTime)
     return didSomething;
 }
 
+int MidiTrackPlayer::getSectionIndex() const
+{
+    return curSectionIndex;
+}
+
 void MidiTrackPlayer::reset()
 {
 #if 1 // new version
