@@ -36,7 +36,7 @@ public:
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong4> song;
-    std::shared_ptr<MidiTrack> track;   // need something like array for song4??
+    std::shared_ptr<MidiTrack> curTrack;   // need something like array for song4??
     const int trackIndex=0;
     int curSectionIndex = 0;
     /**

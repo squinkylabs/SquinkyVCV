@@ -7,13 +7,10 @@
 #include <assert.h>
 
 MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) :
-  //  song(_song),
- //   track(song->getTrack(trackIndex)),
     trackIndex(trackIndex),
     curSectionIndex(0),
     voiceAssigner(voices, 16)
 {
-  //  findFirstTrackSection();
     setSong(_song, trackIndex);
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
@@ -36,7 +33,7 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
 void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackIndex) 
 {
     song = newSong;
-    track = song->getTrack(trackIndex);
+    curTrack = song->getTrack(trackIndex);
     assert(_trackIndex == trackIndex);      // we don't expect to get re-assigned.
 
     findFirstTrackSection();
@@ -52,8 +49,6 @@ void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackInde
         printf("found nothing to play on track %d\n", trackIndex);
     }
 #endif
-
-   // curSectionIndex = 0;
 }
 
 MidiSong4Ptr MidiTrackPlayer::getSong()
@@ -64,8 +59,8 @@ MidiSong4Ptr MidiTrackPlayer::getSong()
 void MidiTrackPlayer::findFirstTrackSection()
 {
     for (int i = 0; i < 4; ++i) {
-        track = song->getTrack(trackIndex, i);
-        if (track && track->getLength()) {
+        curTrack = song->getTrack(trackIndex, i);
+        if (curTrack && curTrack->getLength()) {
             curSectionIndex = i;
             // printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
             return;
@@ -94,7 +89,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
         return true;
     }
 
-    if (!track) {
+    if (!curTrack) {
                             // should be possible if we keep int curPlaybackSection
         return false;
     }
@@ -147,18 +142,16 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                 printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
                 fflush(stdout);
 #endif
-              //  assert(curEvent);
                 // for now, should loop.
                 currentLoopIterationStart += curEvent->first;
 
 
                 sectionLoopCounter--;
-              //  assert(sectionLoopCounter >= 0);
                 if (sectionLoopCounter > 0) {
                     // if still repeating this section..
                     // Then I think all we need to do is reset the pointer.
-                    assert(track);
-                    curEvent = track->begin();
+                    assert(curTrack);
+                    curEvent = curTrack->begin();
                 } else {
                     if (sectionLoopCounter < 0) {
                         printf("inf not supported yet\n");
@@ -166,14 +159,14 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                     }
                     // If we have reached the end of the repetitions of this section,
                     // then go to the next one.
-                    track = nullptr;
-                    while (!track) {
+                    curTrack = nullptr;
+                    while (!curTrack) {
 
                         if (++curSectionIndex > 3) {
                             curSectionIndex = 0;
                         }
-                        track = song->getTrack(trackIndex, curSectionIndex);
-                        if (track) {
+                        curTrack = song->getTrack(trackIndex, curSectionIndex);
+                        if (curTrack) {
                             auto opts = song->getOptions(trackIndex, curSectionIndex);
                             assert(opts);
                             if (opts) {
@@ -184,8 +177,8 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                         }
                     }
                 }
-                assert(track);
-                curEvent = track->begin();
+                assert(curTrack);
+                curEvent = curTrack->begin();
                 break;
             default:
                 assert(false);
@@ -209,22 +202,18 @@ bool MidiTrackPlayer::pollForNoteOff(double metricTime)
 
 int MidiTrackPlayer::getSectionIndex() const
 {
-    return curSectionIndex;
+    return curTrack ? curSectionIndex + 1 : 0;
+
 }
 
 void MidiTrackPlayer::reset()
 {
-#if 1 // new version
     findFirstTrackSection();
-#else
-    assert(curSectionIndex == 0);          // should we use cur section index? nothing?
-    curSectionIndex = 0;
-#endif
   
-    track = song->getTrack(trackIndex, curSectionIndex);
-    if (track) {
+    curTrack = song->getTrack(trackIndex, curSectionIndex);
+    if (curTrack) {
         // can we really handle not having a track?
-        curEvent = track->begin();
+        curEvent = curTrack->begin();
         //printf("reset put cur event back\n");
     }
 
