@@ -114,6 +114,7 @@ p->addModel(modelSequencer4Module);
 
 }
 
+const NVGcolor SqHelper::COLOR_GREY = nvgRGB(0x80, 0x80, 0x80);
 const NVGcolor SqHelper::COLOR_WHITE = nvgRGB(0xff, 0xff, 0xff);
 const NVGcolor SqHelper::COLOR_BLACK = nvgRGB(0,0,0);
 const NVGcolor SqHelper::COLOR_SQUINKY = nvgRGB(0x30, 0x7d, 0xee);

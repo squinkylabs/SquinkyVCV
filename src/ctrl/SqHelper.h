@@ -87,6 +87,7 @@ public:
     }
 
     static const NVGcolor COLOR_WHITE;
+    static const NVGcolor COLOR_GREY;
     static const NVGcolor COLOR_BLACK;
     static const NVGcolor COLOR_SQUINKY;
 

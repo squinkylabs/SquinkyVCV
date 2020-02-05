@@ -76,7 +76,7 @@ struct Sequencer4Widget : ModuleWidget
     Sequencer4Widget(Sequencer4Module *);
     DECLARE_MANUAL("Blank Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY)
     {
         Label* label = new Label();
         label->box.pos = v;
@@ -86,7 +86,7 @@ struct Sequencer4Widget : ModuleWidget
         return label;
     }
 
-    Label* addLabelLeft(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
+    Label* addLabelLeft(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY)
     {
         Label* label = new Label();
         label->alignment = Label::LEFT_ALIGNMENT;
