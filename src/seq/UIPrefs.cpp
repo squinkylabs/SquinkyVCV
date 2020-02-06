@@ -31,8 +31,8 @@ const NVGcolor UIPrefs::X4_SELECTION_COLOR = nvgRGB(0x0, 0x0, 0x0);
 
 const NVGcolor UIPrefs::XD_BUTTON_FACE_NORM = nvgRGB(0, 0x40, 0);
 const NVGcolor UIPrefs::XD_BUTTON_FACE_PLAYING = nvgRGB(0, 0x90, 0);
-const NVGcolor UIPrefs::XD_SELECTED_BORDER = nvgRGB(0x80, 0x80, 0x80);
-
+const NVGcolor UIPrefs::XD_SELECTED_BORDER = nvgRGBA(0x80, 0x80, 0x80, 0x80);
+const NVGcolor UIPrefs::XD_NEXT_PLAY_BORDER = nvgRGB(0xc0, 0xc0, 0xc0);
 const float UIPrefs::hMarginsNoteEdit = 2.f;
 const float UIPrefs::topMarginNoteEdit = 0.f;
 const float UIPrefs::timeLabelFontSize = 12.f;

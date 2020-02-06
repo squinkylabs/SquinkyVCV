@@ -21,6 +21,7 @@ public:
     static const NVGcolor XD_BUTTON_FACE_NORM;
     static const NVGcolor XD_BUTTON_FACE_PLAYING;
     static const NVGcolor XD_SELECTED_BORDER;
+    static const NVGcolor XD_NEXT_PLAY_BORDER;
 
     static const float hMarginsNoteEdit;
     static const float topMarginNoteEdit;
