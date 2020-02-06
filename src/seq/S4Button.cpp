@@ -81,13 +81,30 @@ public:
     {
         ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
-         ::rack::ui::MenuItem* item =  new SqMenuItem([]{
+        ::rack::ui::MenuItem* item =  new SqMenuItem([]{
+            return false;
+        }, [this]{
+            button->doCut();
+        });
+        item->text = "cut";
+        menu->addChild(item);
+        ;
+        item = new SqMenuItem([]{
+            return false;
+        }, [this]{
+            button->doCopy();
+        });
+        item->text = "copy";
+        menu->addChild(item);
+        ;
+        item =  new SqMenuItem([]{
             return false;
         }, [this]{
             button->doPaste();
         });
         item->text = "paste";
         menu->addChild(item);
+
         return menu;
     }
 private:
@@ -187,14 +204,25 @@ void S4Button::onButton(const rack::event::Button &e)
     }
 }
 
+void S4Button::doCut()
+{
+    doCopy();
+    song->addTrack(row, col, nullptr);
+}
+
+void S4Button::doCopy()
+{
+    auto track = song->getTrack(row, col);
+    if (track) {
+        InteropClipboard::put(track, true);
+    }
+}
+
 void S4Button::doPaste()
 {
     MidiLocker l(song->lock);
     MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock, true); 
-    INFO("about to validate new track"); fflush(stdout);
     destTrack->assertValid();
-    INFO("validated new track"); fflush(stdout);
-    //static PasteData get(float insertTime, MidiTrackPtr destTrack, MidiSelectionModelPtr sel);
 
     // Make a fake selection that will say "select all".
     // It's a kluge that we need to provide an aution host.
@@ -212,6 +240,7 @@ void S4Button::doPaste()
         MidiEventPtr event = n;
         destTrack->insertEvent(n); 
     }
+
     destTrack->assertValid();
 
     if (!song) {

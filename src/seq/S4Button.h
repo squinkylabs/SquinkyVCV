@@ -85,6 +85,8 @@ private:
     bool isPlaying = false;
 
     bool handleKey(int key, int mods, int action);
+    void doCut();
+    void doCopy();
     void doPaste();
     MidiTrackPtr getTrack() const;
     MidiTrack4OptionsPtr getOptions() const;
