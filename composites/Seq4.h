@@ -162,6 +162,8 @@ public:
      * section number (1..4) if playing
      */
     int  getPlayStatus(int track) const;
+    void setNextSection(int track, int section);
+    int getNextSection(int track) const;
 private:
     GateTrigger runStopProcessor;
     std::shared_ptr<MidiPlayer4> player;
@@ -342,8 +344,19 @@ int  Seq4<TBase>::getPlayStatus(int track) const
     if (!isRunning()) {
         return 0;
     }
+    return player->getSection(track);
+}
 
-    return player->getSectionIndex(track);
+template <class TBase>
+void  Seq4<TBase>::setNextSection(int track, int section)
+{
+    player->setNextSection(track, section);
+}
+
+template <class TBase>
+int  Seq4<TBase>::getNextSection(int track) const
+{
+    return player->getNextSection(track);
 }
 
 template <class TBase>

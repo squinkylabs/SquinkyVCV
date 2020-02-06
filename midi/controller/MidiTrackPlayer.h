@@ -32,13 +32,16 @@ public:
     void updateSampleCount(int numElapsed);
     std::shared_ptr<MidiSong4> getSong();
 
-    int getSectionIndex() const;
+    int getSection() const;
+    void setNextSection(int section);
+    int getNextSection() const;
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong4> song;
     std::shared_ptr<MidiTrack> curTrack;   // need something like array for song4??
     const int trackIndex=0;
     int curSectionIndex = 0;
+    int nextSectionIndex = 0;   // 0 = nothing, 1..4 is active request
     /**
      * Variables around voice state
      */

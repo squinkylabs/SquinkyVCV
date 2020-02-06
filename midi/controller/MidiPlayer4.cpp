@@ -109,9 +109,19 @@ void MidiPlayer4::reset(bool clearGates)
     isResetGates = clearGates;
 }
 
-int MidiPlayer4::getSectionIndex(int track) const
+int MidiPlayer4::getSection(int track) const
 {
-    return trackPlayers[track]->getSectionIndex();
+    return trackPlayers[track]->getSection();
+}
+
+int MidiPlayer4::getNextSection(int track) const
+{
+    return trackPlayers[track]->getNextSection();
+}
+
+void MidiPlayer4::setNextSection(int track, int section)
+{
+    trackPlayers[track]->setNextSection(section);
 }
 
 void MidiPlayer4::resetAllVoices(bool clearGates)

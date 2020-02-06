@@ -43,7 +43,9 @@ public:
      */
     void reset(bool clearGates);
 
-    int getSectionIndex(int track) const;
+    int getSection(int track) const;
+    void setNextSection(int track, int section);
+    int getNextSection(int track) const;
 private:
     std::vector<MidiTrackPlayerPtr> trackPlayers;
     MidiSong4Ptr song;

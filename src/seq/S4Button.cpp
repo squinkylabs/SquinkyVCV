@@ -162,6 +162,12 @@ void S4Button::step()
         isPlaying = iAmPlaying;
         fw->dirty = true; 
     }
+
+    // just a test
+    int x = seq4Comp->getNextSection(row);
+    if (x) {
+        seq4Comp->setNextSection(row, x);
+    }
 }
 
 void S4Button::onDragHover(const rack::event::DragHover &e)

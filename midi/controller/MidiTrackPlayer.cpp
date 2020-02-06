@@ -200,10 +200,20 @@ bool MidiTrackPlayer::pollForNoteOff(double metricTime)
     return didSomething;
 }
 
-int MidiTrackPlayer::getSectionIndex() const
+int MidiTrackPlayer::getSection() const
 {
     return curTrack ? curSectionIndex + 1 : 0;
+}
 
+
+void MidiTrackPlayer::setNextSection(int section)
+{
+    nextSectionIndex = section;
+}
+
+int MidiTrackPlayer::getNextSection() const
+{
+    return nextSectionIndex;
 }
 
 void MidiTrackPlayer::reset()
