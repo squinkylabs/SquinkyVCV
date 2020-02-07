@@ -68,6 +68,51 @@ void MidiTrackPlayer::findFirstTrackSection()
     }
 }
 
+void MidiTrackPlayer::findNextSection()
+{
+    curTrack = nullptr;
+    while (!curTrack) {
+        if (++curSectionIndex > 3) {
+            curSectionIndex = 0;
+        }
+        curTrack = song->getTrack(trackIndex, curSectionIndex);
+        if (curTrack) {
+            auto opts = song->getOptions(trackIndex, curSectionIndex);
+            assert(opts);
+            if (opts) {
+                sectionLoopCounter = opts->repeatCount;
+            } else {
+                sectionLoopCounter = 1;
+            }
+        }
+    }
+}
+
+void MidiTrackPlayer::setNextSection(int section)
+{
+    nextSectionIndex = section;
+    if (nextSectionIndex == 0) {
+        return;     // 0 means nothing selected
+    }
+
+    for (int tries = 0; tries < 4; ++tries) {
+        auto tk = song->getTrack(trackIndex, nextSectionIndex-1); 
+        if (tk && tk->getLength()) {
+            return;
+        }
+        // keep it 1..4
+        if (++nextSectionIndex > 4) {
+            nextSectionIndex = 1;
+        }
+    }
+    nextSectionIndex = 0;
+}
+
+int MidiTrackPlayer::getNextSection() const
+{
+    return nextSectionIndex;
+}
+
 void MidiTrackPlayer::resetAllVoices(bool clearGates)
 {
         for (int i = 0; i < numVoices; ++i) {
@@ -159,6 +204,9 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                     }
                     // If we have reached the end of the repetitions of this section,
                     // then go to the next one.
+                    findNextSection();
+                    assert(curTrack);
+            #if 0
                     curTrack = nullptr;
                     while (!curTrack) {
 
@@ -176,6 +224,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                             }
                         }
                     }
+            #endif
                 }
                 assert(curTrack);
                 curEvent = curTrack->begin();
@@ -203,17 +252,6 @@ bool MidiTrackPlayer::pollForNoteOff(double metricTime)
 int MidiTrackPlayer::getSection() const
 {
     return curTrack ? curSectionIndex + 1 : 0;
-}
-
-
-void MidiTrackPlayer::setNextSection(int section)
-{
-    nextSectionIndex = section;
-}
-
-int MidiTrackPlayer::getNextSection() const
-{
-    return nextSectionIndex;
 }
 
 void MidiTrackPlayer::reset()

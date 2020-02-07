@@ -59,5 +59,6 @@ private:
 
     bool pollForNoteOff(double metricTime);
     void findFirstTrackSection();
+    void findNextSection();
 
 };

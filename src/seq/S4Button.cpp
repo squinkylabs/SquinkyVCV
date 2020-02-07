@@ -444,9 +444,21 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext *ctx)
         width = 2;      // TODO: move to prefs
         draw = true; 
     } else if (button->isSelected() && button->iAmNext) {
-        color = UIPrefs::X4_MIXED_BORDER;
-        width = 2;      // TODO: move to prefs
-        draw = true; 
+        //color = UIPrefs::X4_MIXED_BORDER;
+       // width = 2;      // TODO: move to prefs
+       // draw = true; 
+        SqGfx::hBorder(
+            ctx,
+            2,
+            UIPrefs::X4_NEXT_PLAY_BORDER,
+            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
+        SqGfx::vBorder(
+            ctx,
+            4,
+            UIPrefs::X4_SELECTED_BORDER,
+            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
+
+       draw = false;
     }
 
     if (draw) {

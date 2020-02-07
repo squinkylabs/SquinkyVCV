@@ -19,6 +19,36 @@ void SqGfx::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w
     nvgFill(vg);
 }
 
+void SqGfx::hBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h)
+{
+    nvgFillColor(vg, color);
+    nvgBeginPath(vg);
+    {
+        // bottom edge
+        nvgRect(vg, 0, h - thickness, w, thickness);
+
+        // top edge
+        nvgRect(vg, 0, 0, w, thickness );
+    }
+    nvgFill(vg);
+
+}
+
+void SqGfx::vBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h)
+{
+    nvgFillColor(vg, color);
+    nvgBeginPath(vg);
+    {
+        // left edge
+        nvgRect(vg, 0, 0, thickness, h);
+
+        // right edge
+        nvgRect(vg, w - thickness, 0, thickness, h);
+    }
+    nvgFill(vg);
+
+}
+
 void SqGfx::border(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h)
 {
     nvgFillColor(vg, color);
