@@ -110,6 +110,7 @@ public:
 private:
     S4Button* const button; 
 };
+
 //*********************** S4Button ************************/
 
  
@@ -163,10 +164,11 @@ void S4Button::step()
         fw->dirty = true; 
     }
 
-    // just a test
-    int x = seq4Comp->getNextSection(row);
-    if (x) {
-        seq4Comp->setNextSection(row, x);
+    const int nextSection = seq4Comp->getNextSection(row);
+    bool isNext = (nextSection == (col + 1));
+    if (iAmNext != isNext) {
+        iAmNext = isNext;
+        fw->dirty = true;
     }
 }
 
@@ -294,13 +296,6 @@ inline S4Button::S4Button(
     fw->addChild(drawer);
 }
 
-#if 0
-bool S4Button::isPlaying()
-{
-    return seq4Comp->isRunning();
-}
-#endif
-
 inline void S4Button::setSelection(bool sel)
 {
     if (_isSelected != sel) {
@@ -352,8 +347,9 @@ inline void S4Button::onDragLeave(const rack::event::DragLeave &e)
 
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
-    MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> seq4Comp)
+    MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp)
 {
+    seq4Comp = _seq4Comp;
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
         const float y = 70 + row * (buttonSize + buttonMargin);
@@ -385,6 +381,28 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
     }
 }
 
+void S4ButtonGrid::onClick(bool isCtrl, int row, int col)
+{
+    // first the selection logic
+   for (int r = 0; r < MidiSong4::numTracks; ++r) {
+        for (int c = 0; c < MidiSong4::numTracks; ++c) {
+            auto button = getButton(r, c);
+            assert(button);
+            button->setSelection(r==row && c==col);
+        }
+    }
+    // then the select next second
+    // remember, section is 1..4
+    seq4Comp->setNextSection(row, col + 1);     
+}
+
+std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col)
+{
+    return [this, row, col](bool isCtrl) {
+        this->onClick(isCtrl, row, col);
+    };
+}
+
 
 
 
@@ -397,30 +415,14 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
 void S4ButtonDrawer::draw(const DrawArgs &args)
 {
     auto ctx = args.vg;
-#if 0
-    if (button->isSelected()) {
-          SqGfx::filledRect(
-                args.vg,
-                UIPrefs::X4_SELECTION_COLOR,
-                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
-    } else {
-        SqGfx::filledRect(
-                args.vg,
-                UIPrefs::NOTE_COLOR,
-                this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
-                //x, y, width, noteHeight);
-    }
-#endif
     paintButtonFace(ctx);
     paintButtonBorder(ctx);
     paintButtonText(ctx);
-
-   
 }
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext *ctx)
 {
-    auto color = button->isPlaying ? UIPrefs::XD_BUTTON_FACE_PLAYING : UIPrefs::XD_BUTTON_FACE_NORM;
+    auto color = button->isPlaying ? UIPrefs::X4_BUTTON_FACE_PLAYING : UIPrefs::X4_BUTTON_FACE_NORM;
     SqGfx::filledRect(
         ctx,
         color,
@@ -429,15 +431,33 @@ void S4ButtonDrawer::paintButtonFace(NVGcontext *ctx)
 
 void S4ButtonDrawer::paintButtonBorder(NVGcontext *ctx)
 {
-    if (button->isSelected()) {
+    NVGcolor color;
+    float width = 0;
+    bool draw = false;
+
+    if (button->isSelected() && !button->iAmNext) {
+        color = UIPrefs::X4_SELECTED_BORDER;
+        width = 3;      // TODO: move to prefs
+        draw = true; 
+    } else if (!button->isSelected() && button->iAmNext) {
+        color = UIPrefs::X4_NEXT_PLAY_BORDER;
+        width = 2;      // TODO: move to prefs
+        draw = true; 
+    } else if (button->isSelected() && button->iAmNext) {
+        color = UIPrefs::X4_MIXED_BORDER;
+        width = 2;      // TODO: move to prefs
+        draw = true; 
+    }
+
+    if (draw) {
         SqGfx::border(
             ctx, 
-            4,
-            UIPrefs::XD_SELECTED_BORDER,
+            width,
+            color,
             this->box.pos.x, box.pos.y, box.size.x, box.size.y);
-
     }
 }
+
 void S4ButtonDrawer::paintButtonText(NVGcontext *ctx)
 {
     nvgBeginPath(ctx);

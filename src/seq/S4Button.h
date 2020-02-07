@@ -83,6 +83,7 @@ private:
     std::string contentLength;
     int numNotes = 0;
     bool isPlaying = false;
+    bool iAmNext = false;
 
     bool handleKey(int key, int mods, int action);
     void doCut();
@@ -123,6 +124,9 @@ private:
     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);
     S4Button* getButton(int row, int col);
     S4Button* buttons[MidiSong4::numTracks][MidiSong4::numSectionsPerTrack] = {{}};
+    void onClick(bool isCtrlKey, int row, int col);
+
+    std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
 };
 
 inline S4Button* S4ButtonGrid::getButton(int row, int col)
@@ -139,20 +143,8 @@ inline void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq)
             buttons[row][col]->setNewSeq(newSeq);
         }
     }
-
 }
 
-inline std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col)
-{
-    return [row, col, this](bool isCtrl) {
-        for (int r = 0; r < MidiSong4::numTracks; ++r) {
-            for (int c = 0; c < MidiSong4::numTracks; ++c) {
-                auto button = getButton(r, c);
-                assert(button);
-                button->setSelection(r==row && c==col);
-            }
-        }  
-    };
-}
+
 
 
