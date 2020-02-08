@@ -25,6 +25,7 @@ InteropClipboard::PasteData InteropClipboard::get(
     MidiSelectionModelPtr sel)
 {
     const char* jsonString = glfwGetClipboardString(APP->window->win);
+    INFO("raw clip: %s", jsonString);
     if (!jsonString) {
         WARN("get clip when empty");
         return PasteData();
@@ -109,10 +110,12 @@ MidiTrackPtr InteropClipboard::fromJsonToTrack(MidiLockPtr lock, json_t *notesJs
     MidiTrackPtr track = std::make_shared<MidiTrack>(lock);
     assert(track);
     assert(notesJson);
-    assert(json_is_array(notesJson));
+  
+  //  assert(json_is_array(notesJson));
 
     // validate is array?
     size_t eventCount = json_array_size(notesJson);
+    INFO("is array = %d, eventCoutn = %d", json_is_array(notesJson), eventCount);
 
     float lastNoteEnd = 0;  // we don't really want to use this, but for now will keep  
                             // asserts at bay.

@@ -34,14 +34,30 @@ public:
 
     int getSection() const;
     void setNextSection(int section);
+    int findNextSection(int section) const ;
     int getNextSection() const;
+    void setRunningStatus(bool running)
+    {
+        isPlaying = running;
+    }
 private:
     //std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong4> song;
     std::shared_ptr<MidiTrack> curTrack;   // need something like array for song4??
     const int trackIndex=0;
+
+    /**
+     * cur section index is 0..3, and is the direct index into the
+     * song4 sections array.
+     */
     int curSectionIndex = 0;
-    int nextSectionIndex = 0;   // 0 = nothing, 1..4 is active request
+
+    /**
+     * next section index is different. it is 1..4, where 
+     * 0 means "no request". APIs to get and set this
+     * use the save 1..4 offset index.
+     */
+    int nextSectionIndex = 0;
     /**
      * Variables around voice state
      */
@@ -56,6 +72,7 @@ private:
     double currentLoopIterationStart = 0;
     MidiTrack::const_iterator curEvent;
     int sectionLoopCounter = 1;
+    bool isPlaying = false;             // somtimes we need to know if we are playing
 
     bool pollForNoteOff(double metricTime);
     void findFirstTrackSection();

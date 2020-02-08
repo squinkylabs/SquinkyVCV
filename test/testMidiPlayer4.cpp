@@ -43,6 +43,7 @@ static void testTwoSections(int trackNum)
     host->assertOneActiveTrack(trackNum);
     assertEQ(host->cvValue[0], 7.5f);
     assertEQ(host->gateState[0], true);
+    assertEQ(pl.getSection(trackNum), 1 );              // remember - 1..4
 
     // after end of note
     pl.updateToMetricTime(3.8, quantizationInterval, true);
@@ -57,6 +58,7 @@ static void testTwoSections(int trackNum)
     assertEQ(host->gateChangeCount, 3);
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
+    assertEQ(pl.getSection(trackNum), 2);
 
     // second section, after first note (c at 0)
     pl.updateToMetricTime(4.6, quantizationInterval, true);
@@ -88,14 +90,16 @@ static void testTwoSections(int trackNum)
 
 static void testTwoSectionsStartOnSecond()
 {
-
+    printf("---- testTwoSectionsStartOnSecond\n");
     const int trackNum = 0;
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
     const float quantizationInterval = .01f;
-    pl.setNextSection(trackNum, 2);     // skip the first section
+    pl.setNextSection(trackNum, 2);     // skip the first section 
+                                        // (request index == 1)
+    assertEQ(pl.getNextSection(trackNum), 2);
 #if 0
     // before note, nothing
   ;
@@ -119,10 +123,14 @@ static void testTwoSectionsStartOnSecond()
 #endif
 
     const float startOffset = 4;
+    pl.setRunningStatus(true);
+    printf("test just started\n");
 
     // second section, first note (c at 0)
     pl.updateToMetricTime(4.1 - startOffset, quantizationInterval, true);
+    printf("test clocked first time\n");
 
+    assertEQ(pl.getSection(trackNum), 1);       // we sent 2 to request 1
     assertEQ(host->gateChangeCount, 1);
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
@@ -171,6 +179,7 @@ static void testTwoSectionsLoop()
     pl.updateToMetricTime(loopTime + .8, quantizationInterval, true);
     host->assertOneActiveTrack(0);
     assertEQ(host->gateState[0], false);
+    assertEQ(pl.getSection(trackNum), 1);
     const int gate0 = host->gateChangeCount;
 
      // after note, 1
@@ -346,11 +355,34 @@ static void testSectionEmpty()
     assertEQ(pl.getNextSection(trackNum), 0);
 }
 
+static void testSectionStartOffset()
+{
+    const int trackNum = 0;
+    MidiSong4Ptr song = makeSong(trackNum);
+    std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
+    MidiPlayer4 pl(host, song);
+
+  //  const float quantizationInterval = .01f;
+
+    // when we are stopped, setting next sets current
+    pl.setNextSection(trackNum, 2);
+    assertEQ(pl.getSection(trackNum), 2);
+
+    // when playing, just cue it up, don't go there
+    pl.setRunningStatus(true);
+    pl.setNextSection(trackNum, 1);
+    assertEQ(pl.getSection(trackNum), 2);
+    assertEQ(pl.getNextSection(trackNum), 1);
+
+}
+
 static void testSectionApi()
 {
     testSection12();
     testSectionEmpty();
+    testSectionStartOffset();
 }
+
 void testMidiPlayer4()
 {
     testSectionApi();

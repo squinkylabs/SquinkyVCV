@@ -11,6 +11,7 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
     curSectionIndex(0),
     voiceAssigner(voices, 16)
 {
+    printf("ctor of midi track player set %d\n", curSectionIndex);
     setSong(_song, trackIndex);
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
@@ -62,7 +63,7 @@ void MidiTrackPlayer::findFirstTrackSection()
         curTrack = song->getTrack(trackIndex, i);
         if (curTrack && curTrack->getLength()) {
             curSectionIndex = i;
-            // printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
+             printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
             return;
         }
     }
@@ -75,6 +76,7 @@ void MidiTrackPlayer::findNextSection()
         if (++curSectionIndex > 3) {
             curSectionIndex = 0;
         }
+        printf("find next section just set curSection to %d\n", curSectionIndex);
         curTrack = song->getTrack(trackIndex, curSectionIndex);
         if (curTrack) {
             auto opts = song->getOptions(trackIndex, curSectionIndex);
@@ -90,22 +92,34 @@ void MidiTrackPlayer::findNextSection()
 
 void MidiTrackPlayer::setNextSection(int section)
 {
-    nextSectionIndex = section;
-    if (nextSectionIndex == 0) {
-        return;     // 0 means nothing selected
+    nextSectionIndex = findNextSection(section);
+    if (!isPlaying && nextSectionIndex) {
+        // if we aren't playing, set it in anticipation of starting.
+        // If we are playing, the next end event will advance us
+        curSectionIndex = nextSectionIndex-1;
+           printf("set next section just set curSection to %d\n", curSectionIndex);
+    
+    }
+}
+
+int MidiTrackPlayer::findNextSection(int section) const
+{
+    int nextSection = section;
+    if (nextSection == 0) {
+        return 0;     // 0 means nothing selected
     }
 
     for (int tries = 0; tries < 4; ++tries) {
-        auto tk = song->getTrack(trackIndex, nextSectionIndex-1); 
+        auto tk = song->getTrack(trackIndex, nextSection-1); 
         if (tk && tk->getLength()) {
-            return;
+            return nextSection;
         }
         // keep it 1..4
-        if (++nextSectionIndex > 4) {
-            nextSectionIndex = 1;
+        if (++nextSection > 4) {
+            nextSection = 1;
         }
     }
-    nextSectionIndex = 0;
+    return 0;
 }
 
 int MidiTrackPlayer::getNextSection() const
@@ -206,25 +220,6 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
                     // then go to the next one.
                     findNextSection();
                     assert(curTrack);
-            #if 0
-                    curTrack = nullptr;
-                    while (!curTrack) {
-
-                        if (++curSectionIndex > 3) {
-                            curSectionIndex = 0;
-                        }
-                        curTrack = song->getTrack(trackIndex, curSectionIndex);
-                        if (curTrack) {
-                            auto opts = song->getOptions(trackIndex, curSectionIndex);
-                            assert(opts);
-                            if (opts) {
-                                sectionLoopCounter = opts->repeatCount;
-                            } else {
-                                sectionLoopCounter = 1;
-                            }
-                        }
-                    }
-            #endif
                 }
                 assert(curTrack);
                 curEvent = curTrack->begin();

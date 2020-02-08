@@ -251,15 +251,6 @@ void  Seq4<TBase>::stepn(int n)
 {
      serviceRunStop();
 
-#if 0
-    if (TBase::params[STEP_RECORD_PARAM].value > .5f) {
-        stepRecordInput.step();
-    }
-
-    
-    audition->enable(!isRunning() && (TBase::params[AUDITION_PARAM].value > .5f));
-    audition->sampleTicksElapsed(n);
-#endif
     // first process all the clock input params
     const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
     //const float tempo = TBase::params[TEMPO_PARAM].value;
@@ -335,7 +326,9 @@ inline void Seq4<TBase>::step()
 template <class TBase>
 bool Seq4<TBase>::isRunning() const
 {
-    return TBase::params[RUNNING_PARAM].value > .5;
+    bool running = TBase::params[RUNNING_PARAM].value > .5;
+    player->setRunningStatus(running);
+    return running;
 }
 
 template <class TBase>
