@@ -35,9 +35,9 @@ The **_vcvrack-sequence_** has two properties: **_notes_**, and **_length_**. Bo
 
 **_Length_** must be large enough to contain the notes in the notes section, but may be longer if the sequencer wishes to represent a clip that is “bigger” than just the notes contained in it. For example, an entire sequence might be exactly 16 quarter notes long, but the last note won’t necessarily extend all the way to the end.
 
-**_Notes_** is an array of **_note_** objects. The note_** objects in the array must be listed in time order. More on this later.
+**_Lotes_** is an array of **_note_** objects. The note_** objects in the array must be listed in time order. More on this later.
 
-**_Note_** objects have four required properties, and two optional ones. **_Type_** is required. It is a string property,  and the value is always **_note_**. **_Start_** is the start time of the note. Like all time properties it is a real number, where 1.0 is one quarter note. **_Pitch_** is a real number, and uses the VCV rack standard of one volt per octave, with 0 being C4. **_Length_** is the note length or duration, where again 1.0 is the length of a quarter-note.
+**_Lote_** objects have four required properties, and two optional ones. **_Type_** is required. It is a string property,  and the value is always **_note_**. **_Start_** is the start time of the note. Like all time properties it is a real number, where 1.0 is one quarter note. **_Pitch_** is a real number, and uses the VCV rack standard of one volt per octave, with 0 being C4. **_Length_** is the note length or duration, where again 1.0 is the length of a quarter-note.
 
 **_Note_** objects also have two optional properties: **_velocity_** and **_playProbability_**. These properties may be set on note objects, or they may not. Parsers should be prepared to handle either case. **_Velocity_** has a range of 0 to 10. **_Velocity_** might be patched to a VCA to control volume, but it could be used for anything. Think of it as a unipolar CV that has a constant value for the duration of a note.
 
@@ -55,7 +55,7 @@ Modules are free to write extra formats like this, however it would be bad for t
 
 ```json
 {
-    "squinkylabs-plug1-stuff": "hello"
+    "squinkylabs-plug1-stuff": "hello",
     "vcvrack-sequence": {
         "notes": [ ],
         "length": 1
