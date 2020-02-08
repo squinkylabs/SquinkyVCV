@@ -27,7 +27,7 @@ So, before diving into details, here is a simple example:
 }
 ```
 
-The top level entity is an object. The property names on that object are the names of different clipboard formats. This document describes the contents of the object named **_vcvrack-sequence**, but other interchange formats may defined, and an application may put an object on the clipboard with more than one top-level format property. This is similar to the way clipboards work in other applications. For example, a word processor will typically put its native format on the system clipboard, as well as HTML and plain text.
+The top level entity is an object. The property names on that object are the names of different clipboard formats. This document describes the contents of the object named **_vcvrack-sequence_**, but other interchange formats may defined, and an application may put an object on the clipboard with more than one top-level format property. This is similar to the way clipboards work in other applications. For example, a word processor will typically put its native format on the system clipboard, as well as HTML and plain text.
 
 The *vcvrack-sequence* has two properties: *notes*, and *length*. Both of these are required.
 
