@@ -4,7 +4,8 @@ Entrian, Impromptu Modular, and SquinkyLabs have developed a proposed standard f
 The format is biased towards data that is similar to what might be in a MIDI file – a series of notes with pitches, start times, and durations. Possibly polyphonic. It can be used usefully in modules that don't use that model, however.
 
 At the highest level, the data is a UTF-8 string containing JSON encoded data. VCV is already using this encoding, so the new proposal will not conflict with VCV's existing clipboard code.
-So, before diving into details, here is a simple example:
+
+Before diving into details, here is a simple example:
 ```json
 {
   "vcvrack-sequence": {
@@ -31,15 +32,15 @@ The top level entity is an object. The property names on that object are the nam
 
 The **_vcvrack-sequence_** has two properties: **_notes_**, and **_length_**. Both of these are required.
 
-**_Length_** is a number representing the entire time duration of the sequence. In **_vcvrack-sequence_** time is always representing with metric time, where 1.0 is the duration of a quarter note. Real numbers are used, so time can be finer than just quarter notes. **_Length_** is the duration of the whole clip.
+**_length_** is a number representing the entire time duration of the sequence. In **_vcvrack-sequence_** time is always representing with metric time, where 1.0 is the duration of a quarter note. Real numbers are used, so time can be finer than just quarter notes. **_length_** is the duration of the whole clip.
 
-**_Length_** must be large enough to contain the notes in the notes section, but may be longer if the sequencer wishes to represent a clip that is “bigger” than just the notes contained in it. For example, an entire sequence might be exactly 16 quarter notes long, but the last note won’t necessarily extend all the way to the end.
+**_length_** must be large enough to contain the notes in the notes section, but may be longer if the sequencer wishes to represent a clip that is “bigger” than just the notes contained in it. For example, an entire sequence might be exactly 16 quarter notes long, but the last note won’t necessarily extend all the way to the end.
 
-**_Lotes_** is an array of **_note_** objects. The note_** objects in the array must be listed in time order. More on this later.
+**_notes_** is an array of **_note_** objects. The note_** objects in the array must be listed in time order. More on this later.
 
-**_Lote_** objects have four required properties, and two optional ones. **_Type_** is required. It is a string property,  and the value is always **_note_**. **_Start_** is the start time of the note. Like all time properties it is a real number, where 1.0 is one quarter note. **_Pitch_** is a real number, and uses the VCV rack standard of one volt per octave, with 0 being C4. **_Length_** is the note length or duration, where again 1.0 is the length of a quarter-note.
+**_note_** objects have four required properties, and two optional ones. **_type_** is required. It is a string property,  and the value is always **_note_**. **_start_** is the start time of the note. Like all time properties it is a real number, where 1.0 is one quarter note. **_pitch_** is a real number, and uses the VCV rack standard of one volt per octave, with 0 being C4. **_length_** is the note length or duration, where again 1.0 is the length of a quarter-note.
 
-**_Note_** objects also have two optional properties: **_velocity_** and **_playProbability_**. These properties may be set on note objects, or they may not. Parsers should be prepared to handle either case. **_Velocity_** has a range of 0 to 10. **_Velocity_** might be patched to a VCA to control volume, but it could be used for anything. Think of it as a unipolar CV that has a constant value for the duration of a note.
+**_note_** objects also have two optional properties: **_velocity_** and **_playProbability_**. These properties may be set on note objects, or they may not. Parsers should be prepared to handle either case. **_velocity_** has a range of 0 to 10. **_velocity_** might be patched to a VCA to control volume, but it could be used for anything. Think of it as a unipolar CV that has a constant value for the duration of a note.
 
 **_playProbabilty_** has a value of 0 to 1, and represents the probably that the note in question will play.
 
