@@ -32,6 +32,11 @@ public:
     void updateSampleCount(int numElapsed);
     std::shared_ptr<MidiSong4> getSong();
 
+    /**
+     * For all these API, the section numbers are 1..4
+     * for "next section" that totally makes sense, as 0 means "no request".
+     * for getSection() I don't know what it's that way...
+     */
     int getSection() const;
     void setNextSection(int section);
     int findNextSection(int section) const ;
