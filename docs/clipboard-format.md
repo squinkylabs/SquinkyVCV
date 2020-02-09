@@ -79,6 +79,7 @@ If you write your own proprietary format to the clipboard try to also write a st
 ### Reading from the clipboard
 
 There are at least two issues every dev will need to consider. The first is making sure to correctly parse a well-formed vcvrack-sequence when optional properties are present and when they are not.
+
 The other is what to do if there is mal-formed data on the clipboard. Most devs will probably not want their module to crash if bad data is pasted into it. Luckily the JSON parse in VCV is pretty robust and difficult to crash. A few ideas are:
 
 * Make sure you can handle the case where the JSON parser can’t parse the clipboard. This will be a very common case in the real world. The clipboard might just have text on it.
@@ -86,3 +87,19 @@ The other is what to do if there is mal-formed data on the clipboard. Most devs 
 * When you find something wrong in the clipboard data, it is a nice courtesy to log a message to help others debug their modules. Like WARN(“no notes property in clipboard”) or WARN(“notes is not an array”).
 
 ### documentation
+
+It would be a nice courtesy to users and other developers if modules would document how they interoperate with the portable sequence format. Especially for modules where it might not be obvious how the notes in this format might map the the data structures of other modules.
+
+## sample code for writing a note
+
+Here is a working code fragment that creates a **_note_** object.
+```c++
+json_t* Note::toInteropJson()
+{
+    json_t* rootJ = json_object();
+    json_object_set_new(rootJ, "type", json_string("note"));
+    json_object_set_new(rootJ, "pitch", json_real((_startPitch - 60) / 12.0f));
+    json_object_set_new(rootJ, "length", json_real((float)_duration / ES_PPQ));
+    return rootJ;
+}
+```
