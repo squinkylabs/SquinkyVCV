@@ -89,7 +89,7 @@ MidiTrackPtr  InteropClipboard::fromJsonStringToTrack(const std::string& json, M
     json_t* notesJson = json_object_get(clipboardJson, keyNotes);
     json_t* jsonLength = json_object_get(clipboardJson, keyLength);
     if (jsonLength) {
-        length = json_real_value(jsonLength);
+        length = json_number_value(jsonLength);
     }
 
     if (notesJson && length) {
