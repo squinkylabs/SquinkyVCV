@@ -6,9 +6,11 @@ The format is biased towards data that is similar to what might be in a MIDI fil
 At the highest level, the data is a UTF-8 string containing JSON encoded data. VCV is already using this encoding, so the new proposal will not conflict with VCV's existing clipboard code.
 
 Before diving into details, here is a simple example:
+
 ```json
 {
   "vcvrack-sequence": {
+    "length": 4.0,
     "notes": [
       {
         "type": "note",
@@ -22,8 +24,7 @@ Before diving into details, here is a simple example:
         "pitch": 0.166666627,
         "length": 0.850000024
       }
-    ],
-    "length": 4.0
+    ]
   }
 }
 ```
