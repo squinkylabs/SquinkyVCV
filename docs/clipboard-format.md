@@ -34,11 +34,13 @@ The **_vcvrack-sequence_** has two properties: **_notes_**, and **_length_**. Bo
 
 **_length_** is a number representing the entire time duration of the sequence. In **_vcvrack-sequence_** time is always representing with metric time, where 1.0 is the duration of a quarter note. Real numbers are used, so time can be finer than just quarter notes. **_length_** is the duration of the whole clip.
 
-**_length_** must be large enough to contain the notes in the notes section, but may be longer if the sequencer wishes to represent a clip that is “bigger” than just the notes contained in it. For example, an entire sequence might be exactly 16 quarter notes long, but the last note won’t necessarily extend all the way to the end.
+**_length_** must be large enough to contain the notes in the **_notes_** section, but may be longer if the sequencer wishes to represent a clip that is "bigger" than just the notes contained in it. For example, an entire sequence might be exactly 16 quarter notes long, but the last note won’t necessarily extend all the way to the end.
 
-**_notes_** is an array of **_note_** objects. The note_** objects in the array must be listed in time order. More on this later.
+**_notes_** is an array of **_note_** objects. The **_note_** objects in the array must be listed in time order. More on this later.
 
 **_note_** objects have four required properties, and two optional ones. **_type_** is required. It is a string property,  and the value is always **_note_**. **_start_** is the start time of the note. Like all time properties it is a real number, where 1.0 is one quarter note. **_pitch_** is a real number, and uses the VCV rack standard of one volt per octave, with 0 being C4. **_length_** is the note length or duration, where again 1.0 is the length of a quarter-note.
+
+Is many cases the first **_note_** will have a **_start_** of 0.0. But this need not be the case. For example, in some sequencers a user is able to select a whole bar and copy it. In this case, the **_start_** of the first note will be its start time relative to the start of the bar. In other words, the duration of the entire clipboard will usually be the duration of the source selection, and all **_start_** properties will be relative to the start of the selection.
 
 **_note_** objects also have two optional properties: **_velocity_** and **_playProbability_**. These properties may be set on note objects, or they may not. Parsers should be prepared to handle either case. **_velocity_** has a range of 0 to 10. **_velocity_** might be patched to a VCA to control volume, but it could be used for anything. Think of it as a unipolar CV that has a constant value for the duration of a note.
 
@@ -52,11 +54,11 @@ It is possible that a module will put a polyphonic sequence clip of the clipboar
 
 While this document specifies a schema value of the vcvrack-sequence  property, the proposal allows for other top-level properties besides vcvrack-sequence. We expect that it will be common for some modules to put vcvrack-sequence information on the clipboard, but also put their own format on the clipboard as well. The reader of this clipboard may then pick what data to parse.
 
-Modules are free to write extra formats like this, however it would be bad for two modules to use the same property name but have different meanings. For this reason we suggest that any other top level property names be of the form <module-slug_type>. For example:
+Modules are free to write extra formats like this, however it would be bad for two modules to use the same property name but have different meanings. For this reason we suggest that you use your developer name as a prefix, or even your module slug. For example:
 
 ```json
 {
-    "squinkylabs-plug1-stuff": "hello",
+    "squinkylabs-stuff": "hello",
     "vcvrack-sequence": {
         "notes": [ ],
         "length": 1
@@ -92,14 +94,15 @@ It would be a nice courtesy to users and other developers if modules would docum
 
 ## sample code for writing a note
 
-Here is a working code fragment that creates a **_note_** object.
+Here is a working code fragment that creates a **_note_** object:
+
 ```c++
 json_t* Note::toInteropJson()
 {
     json_t* rootJ = json_object();
     json_object_set_new(rootJ, "type", json_string("note"));
-    json_object_set_new(rootJ, "pitch", json_real((_startPitch - 60) / 12.0f));
-    json_object_set_new(rootJ, "length", json_real((float)_duration / ES_PPQ));
+    json_object_set_new(rootJ, "pitch", json_real(vOct);
+    json_object_set_new(rootJ, "length", json_real(lengthInBeats);
     return rootJ;
 }
 ```
