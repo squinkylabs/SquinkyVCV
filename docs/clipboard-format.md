@@ -1,4 +1,5 @@
 # Portable sequence format
+
 Entrian, Impromptu Modular, and SquinkyLabs have developed a proposed standard for representing note sequences on VCV's clipboard. This allows moving a common subset of sequence data between modules. All three devs have experimental/test builds of their sequencers that support this proposal.
 
 The format is biased towards data that is similar to what might be in a MIDI file – a series of notes with pitches, start times, and durations. Possibly polyphonic. It can be used usefully in modules that don't use that model, however.
@@ -15,14 +16,14 @@ Before diving into details, here is a simple example:
       {
         "type": "note",
         "start": 0.5,
-        "pitch": -4.47034836e-8,
-        "length": 0.850000024
+        "pitch": 0,
+        "length": 0.85
       },
       {
         "type": "note",
         "start": 1.5,
-        "pitch": 0.166666627,
-        "length": 0.850000024
+        "pitch": 0.166666667,
+        "length": 0.85
       }
     ]
   }
@@ -41,7 +42,7 @@ The **_vcvrack-sequence_** has two properties: **_notes_**, and **_length_**. Bo
 
 **_note_** objects have four required properties, and two optional ones. **_type_** is required. It is a string property,  and the value is always **_note_**. **_start_** is the start time of the note. Like all time properties it is a real number, where 1.0 is one quarter note. **_pitch_** is a real number, and uses the VCV rack standard of one volt per octave, with 0 being C4. **_length_** is the note length or duration, where again 1.0 is the length of a quarter-note.
 
-Is many cases the first **_note_** will have a **_start_** of 0.0. But this need not be the case. For example, in some sequencers a user is able to select a whole bar and copy it. In this case, the **_start_** of the first note will be its start time relative to the start of the bar. In other words, the duration of the entire clipboard will usually be the duration of the source selection, and all **_start_** properties will be relative to the start of the selection.
+In many cases the first **_note_** will have a **_start_** of 0.0. But this need not be the case. For example, in some sequencers a user is able to select a whole bar and copy it. In this case, the **_start_** of the first note will be its start time relative to the start of the bar. In other words, the duration of the entire clipboard will usually be the duration of the source selection, and all **_start_** properties will be relative to the start of the selection.
 
 **_note_** objects also have two optional properties: **_velocity_** and **_playProbability_**. These properties may be set on note objects, or they may not. Parsers should be prepared to handle either case. **_velocity_** has a range of 0 to 10. **_velocity_** might be patched to a VCA to control volume, but it could be used for anything. Think of it as a unipolar CV that has a constant value for the duration of a note.
 
@@ -91,7 +92,7 @@ The other is what to do if there is malformed data on the clipboard. Most devs w
 
 ### Documentation
 
-It would be a nice courtesy to users and other developers if modules would document how they interoperate with the portable sequence format. Especially for modules where it might not be obvious how the notes in this format might map the the data structures of other modules.
+It would be a nice courtesy to users and other developers if modules would document how they interoperate with the portable sequence format. Especially for modules where it might not be obvious how the notes in this format might map to the data structures of other modules.
 
 ## Sample code for writing a note
 
