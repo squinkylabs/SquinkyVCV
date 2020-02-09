@@ -1,4 +1,4 @@
-# portable sequence format
+# Portable sequence format
 Entrian, Impromptu Modular, and SquinkyLabs have developed a proposed standard for representing note sequences on VCV's clipboard. This allows moving a common subset of sequence data between modules. All three devs have experimental/test builds of their sequencers that support this proposal.
 
 The format is biased towards data that is similar to what might be in a MIDI file – a series of notes with pitches, start times, and durations. Possibly polyphonic. It can be used usefully in modules that don't use that model, however.
@@ -53,7 +53,7 @@ It is possible that a module will put a polyphonic sequence clip of the clipboar
 
 ## Putting other data on the clipboard
 
-While this document specifies a schema value of the vcvrack-sequence  property, the proposal allows for other top-level properties besides vcvrack-sequence. We expect that it will be common for some modules to put vcvrack-sequence information on the clipboard, but also put their own format on the clipboard as well. The reader of this clipboard may then pick what data to parse.
+While this document specifies a schema value of the **_vcvrack-sequence_**  property, the proposal allows for other top-level properties besides **_vcvrack-sequence_**. We expect that it will be common for some modules to put **_vcvrack-sequence_** information on the clipboard, but also put their own format on the clipboard as well. The reader of this clipboard may then pick what data to parse.
 
 Modules are free to write extra formats like this, however it would be bad for two modules to use the same property name but have different meanings. For this reason we suggest that you use your developer name as a prefix, or even your module slug. For example:
 
@@ -81,19 +81,19 @@ If you write your own proprietary format to the clipboard try to also write a st
 
 ### Reading from the clipboard
 
-There are at least two issues every dev will need to consider. The first is making sure to correctly parse a well-formed vcvrack-sequence when optional properties are present and when they are not.
+There are at least two issues every dev will need to consider. The first is making sure to correctly parse a well-formed **_vcvrack-sequence_** when optional properties are present and when they are not.
 
-The other is what to do if there is mal-formed data on the clipboard. Most devs will probably not want their module to crash if bad data is pasted into it. Luckily the JSON parse in VCV is pretty robust and difficult to crash. A few ideas are:
+The other is what to do if there is malformed data on the clipboard. Most devs will probably not want their module to crash if bad data is pasted into it. Luckily the JSON parser in VCV is pretty robust and difficult to crash. A few ideas are:
 
 * Make sure you can handle the case where the JSON parser can’t parse the clipboard. This will be a very common case in the real world. The clipboard might just have text on it.
 * If you find a missing required property, you might either ignore it and skip over, or refuse to paste the entire thing.
 * When you find something wrong in the clipboard data, it is a nice courtesy to log a message to help others debug their modules. Like WARN(“no notes property in clipboard”) or WARN(“notes is not an array”).
 
-### documentation
+### Documentation
 
 It would be a nice courtesy to users and other developers if modules would document how they interoperate with the portable sequence format. Especially for modules where it might not be obvious how the notes in this format might map the the data structures of other modules.
 
-## sample code for writing a note
+## Sample code for writing a note
 
 Here is a working code fragment that creates a **_note_** object:
 
