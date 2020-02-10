@@ -89,19 +89,7 @@ void MidiTrackPlayer::findNextSection()
     }
 }
 
-void MidiTrackPlayer::setNextSection(int section)
-{
-    nextSectionIndex = findNextSection(section);
-    if (!isPlaying && nextSectionIndex) {
-        // if we aren't playing, set it in anticipation of starting.
-        // If we are playing, the next end event will advance us
-        curSectionIndex = nextSectionIndex-1;
-        // printf("set next section just set curSection to %d\n", curSectionIndex);
-    
-    }
-}
-
-int MidiTrackPlayer::findNextSection(int section) const
+int MidiTrackPlayer::validateSectionRequest(int section) const
 {
     int nextSection = section;
     if (nextSection == 0) {
@@ -109,7 +97,7 @@ int MidiTrackPlayer::findNextSection(int section) const
     }
 
     for (int tries = 0; tries < 4; ++tries) {
-        auto tk = song->getTrack(trackIndex, nextSection-1); 
+        auto tk = song->getTrack(trackIndex, nextSection - 1);
         if (tk && tk->getLength()) {
             return nextSection;
         }
@@ -119,6 +107,18 @@ int MidiTrackPlayer::findNextSection(int section) const
         }
     }
     return 0;
+}
+
+void MidiTrackPlayer::setNextSection(int section)
+{
+    nextSectionIndex = validateSectionRequest(section);
+    if (!isPlaying && nextSectionIndex) {
+        // if we aren't playing, set it in anticipation of starting.
+        // If we are playing, the next end event will advance us
+        curSectionIndex = nextSectionIndex-1;
+        // printf("set next section just set curSection to %d\n", curSectionIndex);
+    
+    }
 }
 
 int MidiTrackPlayer::getNextSection() const
@@ -196,32 +196,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
             }
             break;
             case MidiEvent::Type::End:
-#if defined(_MLOG)
-                printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
-                fflush(stdout);
-#endif
-                // for now, should loop.
-                currentLoopIterationStart += curEvent->first;
-
-
-                sectionLoopCounter--;
-                if (sectionLoopCounter > 0) {
-                    // if still repeating this section..
-                    // Then I think all we need to do is reset the pointer.
-                    assert(curTrack);
-                    curEvent = curTrack->begin();
-                } else {
-                    if (sectionLoopCounter < 0) {
-                        printf("inf not supported yet\n");
-                        fflush(stdout);
-                    }
-                    // If we have reached the end of the repetitions of this section,
-                    // then go to the next one.
-                    findNextSection();
-                    assert(curTrack);
-                }
-                assert(curTrack);
-                curEvent = curTrack->begin();
+                onEndOfTrack();
                 break;
             default:
                 assert(false);
@@ -229,6 +204,47 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
         didSomething = true;
     }
     return didSomething;
+}
+
+void MidiTrackPlayer::onEndOfTrack()
+{
+#if defined(_MLOG)
+    printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
+    fflush(stdout);
+#endif
+    // for now, should loop.
+    currentLoopIterationStart += curEvent->first;
+
+   
+    // If there is a section change queued up, do it.
+    if (nextSectionIndex > 0) {
+        printf("there is a request for a new section: %d\n", nextSectionIndex);
+        const int foundNext = validateSectionRequest(nextSectionIndex);
+        curSectionIndex = foundNext <= 0 ? 0 : foundNext - 1;
+        nextSectionIndex = 0;           // clear the request
+        printf("after find next, cur Index = %d\n ", curSectionIndex);
+
+    }
+
+    // if we just reset sections, we should probably not do this??
+    sectionLoopCounter--;
+    if (sectionLoopCounter > 0) {
+        // if still repeating this section..
+        // Then I think all we need to do is reset the pointer.
+        assert(curTrack);
+        curEvent = curTrack->begin();
+    } else {
+        if (sectionLoopCounter < 0) {
+            printf("inf not supported yet\n");
+            fflush(stdout);
+        }
+        // If we have reached the end of the repetitions of this section,
+        // then go to the next one.
+        findNextSection();
+        assert(curTrack);
+    }
+    assert(curTrack);
+    curEvent = curTrack->begin();
 }
 
 bool MidiTrackPlayer::pollForNoteOff(double metricTime)

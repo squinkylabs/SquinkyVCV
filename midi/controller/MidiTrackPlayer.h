@@ -39,7 +39,16 @@ public:
      */
     int getSection() const;
     void setNextSection(int section);
-    int findNextSection(int section) const ;
+   // int findNextSection(int section) const ;
+
+    /**
+     * @param section is a new requested section (0, 1..4)
+     * @returns valid section request (0,1..4) 
+     *      If section exists, will return section
+     *      otherwise will search forward for one to play.
+     *      Will return 0 if there are no playable sections.
+     */
+    int validateSectionRequest(int section) const ;
     int getNextSection() const;
     void setRunningStatus(bool running)
     {
@@ -82,5 +91,6 @@ private:
     bool pollForNoteOff(double metricTime);
     void findFirstTrackSection();
     void findNextSection();
+    void onEndOfTrack();
 
 };
