@@ -96,7 +96,13 @@ private:
      * to play the next valid section after curSectionIndex
      */
     void setupToPlayNextSection();
-    void setupToPlayDifferentSection();
+
+    /**
+     * As above, will set CurSelectionIndex, and sectionLoopCounter.
+     * @param section is the section + 1 we wish to go to.
+     */
+    void setupToPlayDifferentSection(int section);
+    void setupToPlayCommon();
     void onEndOfTrack();
 
 };
