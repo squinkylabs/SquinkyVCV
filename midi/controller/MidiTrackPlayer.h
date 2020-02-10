@@ -39,7 +39,6 @@ public:
      */
     int getSection() const;
     void setNextSection(int section);
-   // int findNextSection(int section) const ;
 
     /**
      * @param section is a new requested section (0, 1..4)
@@ -55,7 +54,7 @@ public:
         isPlaying = running;
     }
 private:
-    //std::shared_ptr<IMidiPlayerHost4> host;
+
     std::shared_ptr<MidiSong4> song;
     std::shared_ptr<MidiTrack> curTrack;   // need something like array for song4??
     const int trackIndex=0;
@@ -90,7 +89,14 @@ private:
 
     bool pollForNoteOff(double metricTime);
     void findFirstTrackSection();
-    void findNextSection();
+    //void findNextSection();
+
+    /**
+     * will set curSectionIndex, and sectionLoopCounter
+     * to play the next valid section after curSectionIndex
+     */
+    void setupToPlayNextSection();
+    void setupToPlayDifferentSection();
     void onEndOfTrack();
 
 };

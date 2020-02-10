@@ -68,7 +68,7 @@ void MidiTrackPlayer::findFirstTrackSection()
     }
 }
 
-void MidiTrackPlayer::findNextSection()
+void MidiTrackPlayer::setupToPlayNextSection()
 {
     curTrack = nullptr;
     while (!curTrack) {
@@ -224,6 +224,9 @@ void MidiTrackPlayer::onEndOfTrack()
         nextSectionIndex = 0;           // clear the request
         printf("after find next, cur Index = %d\n ", curSectionIndex);
 
+        // we need to fold the above into
+        // setupToPlayDifferentSection
+
     }
 
     // if we just reset sections, we should probably not do this??
@@ -240,7 +243,7 @@ void MidiTrackPlayer::onEndOfTrack()
         }
         // If we have reached the end of the repetitions of this section,
         // then go to the next one.
-        findNextSection();
+        setupToPlayNextSection();
         assert(curTrack);
     }
     assert(curTrack);
