@@ -305,7 +305,7 @@ inline void S4Button::setSelection(bool sel)
         if (_isSelected) {
             MidiTrackPtr tk = song->getTrack(row, col);
             if (tk) {
-                SqRemoteEditor::client_announceData(tk);
+                SqRemoteEditor::clientAnnounceData(tk);
             }
         }
     }

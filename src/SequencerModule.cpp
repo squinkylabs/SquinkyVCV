@@ -53,6 +53,7 @@ static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mas
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
+    ~SequencerWidget();
 
     void appendContextMenu(Menu *theMenu) override 
     { 
@@ -127,34 +128,8 @@ struct SequencerWidget : ModuleWidget
         ModuleWidget::draw(args);
     }
 #endif
+    int token = 0;
 };
-
-#if 0
-std::string _removeFileName(const std::string s, std::vector<char> separators)
-{
-    // find the eerything up to and including the last separator
-    for (char separator : separators) {
-        auto pos = s.rfind(separator);
-        if (pos != std::string::npos) {
-            return s.substr(0, pos+1);
-        }
-    }
-
-    // if we didn't find any separators, then use empty path
-    return"";   
-}
-
-// windows experiment
-
-std::string removeFileName(const std::string s)
-{
-#ifdef ARCH_WIN
-    return _removeFileName(s, {'\\', ':'});
-#else
-    return _removeFileName(s, {'/'});
-#endif
-}
-#endif
 
 void SequencerWidget::saveMidiFile()
 {
@@ -313,20 +288,28 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     
-    SqRemoteEditor::server_register([this](MidiTrackPtr tk) {
+    token = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
        // WARN("Seq++ can't edit remote");
-        WARN("fix this memory leak\n");
-        this->onNewTrack(tk);
+        WARN("in callback for new track this=%p\n", this);
+        if (tk) {
+            this->onNewTrack(tk);
+        }
     });
+}
+
+SequencerWidget::~SequencerWidget()
+{
+    WARN("seq widget dtor");
+    if (token) {
+       SqRemoteEditor::serverUnregister(token); 
+    }
 }
 
 void SequencerWidget::onNewTrack(MidiTrackPtr tk)
 {
+    WARN("in onNewTrack, this=%p, tk=%p", this, tk.get());
     MidiSongPtr song = std::make_shared<MidiSong>();
     song->addTrack(0, tk);
-  //  auto settings = std::make_shared<SeqSettings>(_module);
-   // MidiSequencerPtr newSeq = MidiSequencer::make(song, settings, _module->seqComp->getAuditionHost());
-   // this->_module->setNewSeq(newSeq);
     this->_module->postNewSong(song, "");
 }
 
@@ -548,7 +531,9 @@ void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFo
 
     NewSongDataDataCommandPtr cmd = NewSongDataDataCommand::makeLoadMidiFileCommand(newSong, updater);
     sequencer->undo->execute(sequencer, widget, cmd);
-    sequencer->context->settings()->setMidiFilePath(fileFolder);
+    if (!fileFolder.empty()) {
+        sequencer->context->settings()->setMidiFilePath(fileFolder);
+    }
 }
 
 void SequencerModule::onReset()

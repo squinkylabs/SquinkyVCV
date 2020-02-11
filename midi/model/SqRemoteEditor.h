@@ -11,9 +11,11 @@ class SqRemoteEditor
 {
 public:
     using EditCallback = std::function<void(MidiTrackPtr)>;
-    static void server_register(EditCallback);
+    static int  serverRegister(EditCallback);
+    static void serverUnregister(int);
 
-    static void client_announceData(MidiTrackPtr);
+    static void clientAnnounceData(MidiTrackPtr);
 private:
     static EditCallback callback;
+    static int theToken;
 };
