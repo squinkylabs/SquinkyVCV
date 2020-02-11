@@ -56,7 +56,7 @@ extern int _mdb;        // MIDI reverence count
     actual << std::endl ; \
     assert(false); }
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 #define assertEvCount(x) assertEQ(MidiEvent::_count, x)
 #define assertNoMidi() assertEvCount(0); assertEQ(_mdb, 0)
 #else

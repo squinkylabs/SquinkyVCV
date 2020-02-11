@@ -256,7 +256,6 @@ void MidiTrackPlayer::onEndOfTrack()
    
     // If there is a section change queued up, do it.
     if (nextSectionIndex > 0) {
-        printf("there is a request for a new section: %d\n", nextSectionIndex);
 #if 0
         const int foundNext = validateSectionRequest(nextSectionIndex);
         curSectionIndex = foundNext <= 0 ? 0 : foundNext - 1;

@@ -7,12 +7,13 @@
 #include "../ctrl/SqMenuItem.h"
 #include "WidgetComposite.h"
 #include "SqGfx.h"
+#include "SqRemoteEditor.h"
 #include "TimeUtils.h"
 #include "UIPrefs.h"
 
 #include <sstream>
 
-/****************** sontext menu UI ********************/
+/****************** context menu UI ********************/
 
 class RepeatItem  : public  ::rack::ui::MenuItem
 {
@@ -301,6 +302,12 @@ inline void S4Button::setSelection(bool sel)
     if (_isSelected != sel) {
         _isSelected = sel;
         fw->dirty = true;
+        if (_isSelected) {
+            MidiTrackPtr tk = song->getTrack(row, col);
+            if (tk) {
+                SqRemoteEditor::client_announceData(tk);
+            }
+        }
     }
 }
 

@@ -25,6 +25,7 @@
 #include "../test/TestSettings.h"
 #include "TimeUtils.h"
 #include "MidiFileProxy.h"
+#include "SqRemoteEditor.h"
 #include "SequencerModule.h"
 #include <osdialog.h>
 
@@ -115,6 +116,8 @@ struct SequencerWidget : ModuleWidget
     void addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp);
     void addStepRecord(SequencerModule *module);
     void toggleRunStop(SequencerModule *module);
+
+    void onNewTrack(MidiTrackPtr tk);
 
 #ifdef _TIME_DRAWING
     // Seq: avg = 399.650112, stddev = 78.684572 (us) Quota frac=2.397901
@@ -309,6 +312,22 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    
+    SqRemoteEditor::server_register([this](MidiTrackPtr tk) {
+       // WARN("Seq++ can't edit remote");
+        WARN("fix this memory leak\n");
+        this->onNewTrack(tk);
+    });
+}
+
+void SequencerWidget::onNewTrack(MidiTrackPtr tk)
+{
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    song->addTrack(0, tk);
+  //  auto settings = std::make_shared<SeqSettings>(_module);
+   // MidiSequencerPtr newSeq = MidiSequencer::make(song, settings, _module->seqComp->getAuditionHost());
+   // this->_module->setNewSeq(newSeq);
+    this->_module->postNewSong(song, "");
 }
 
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
