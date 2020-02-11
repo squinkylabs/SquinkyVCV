@@ -302,7 +302,7 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
             ret = makeTestCmaj(lock);
             break;
         case TestContent::empty:
-            ret = makeTestEmpty(lock);
+            ret = makeEmptyTrack(lock);
             break;
         case TestContent::oneNote123:
             ret = makeTestNote123(lock);
@@ -500,7 +500,7 @@ MidiTrackPtr MidiTrack::makeTestFourTouchingQuarters(
     return track;
 }
 
-MidiTrackPtr MidiTrack::makeTestEmpty(std::shared_ptr<MidiLock> lock)
+MidiTrackPtr MidiTrack::makeEmptyTrack(std::shared_ptr<MidiLock> lock)
 {
     auto track = std::make_shared<MidiTrack>(lock);
     track->insertEnd(8.f);                  // make two empty bars

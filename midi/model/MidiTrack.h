@@ -24,6 +24,7 @@ public:
      * this ctor puts an end event at time zero
      */
     MidiTrack(std::shared_ptr<MidiLock>, bool);
+    static MidiTrackPtr makeEmptyTrack( std::shared_ptr<MidiLock>);
 
 
     int size() const;
@@ -118,7 +119,7 @@ private:
 
     static MidiTrackPtr makeTest1(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestCmaj(std::shared_ptr<MidiLock>);
-    static MidiTrackPtr makeTestEmpty(std::shared_ptr<MidiLock>);
+  //  static MidiTrackPtr makeTestEmpty(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestNote123(std::shared_ptr<MidiLock>);
     static MidiTrackPtr makeTestOneQ1(std::shared_ptr<MidiLock>, float pitch);
     static MidiTrackPtr makeTestFourTouchingQuarters(bool exactDuration, std::shared_ptr<MidiLock>, bool spacePitchByOctave, float pitch);

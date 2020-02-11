@@ -304,9 +304,14 @@ inline void S4Button::setSelection(bool sel)
         fw->dirty = true;
         if (_isSelected) {
             MidiTrackPtr tk = song->getTrack(row, col);
-            if (tk) {
-                SqRemoteEditor::clientAnnounceData(tk);
+            if (!tk) {
+                // make a new track on click, if needed
+                MidiLocker l(song->lock);
+                tk = MidiTrack::makeEmptyTrack(song->lock);
+                song->addTrack(row, col, tk);
             }
+
+            SqRemoteEditor::clientAnnounceData(tk);
         }
     }
 }

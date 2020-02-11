@@ -289,8 +289,6 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     
     token = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
-       // WARN("Seq++ can't edit remote");
-        WARN("in callback for new track this=%p\n", this);
         if (tk) {
             this->onNewTrack(tk);
         }
@@ -299,7 +297,6 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 
 SequencerWidget::~SequencerWidget()
 {
-    WARN("seq widget dtor");
     if (token) {
        SqRemoteEditor::serverUnregister(token); 
     }
@@ -307,7 +304,6 @@ SequencerWidget::~SequencerWidget()
 
 void SequencerWidget::onNewTrack(MidiTrackPtr tk)
 {
-    WARN("in onNewTrack, this=%p, tk=%p", this, tk.get());
     MidiSongPtr song = std::make_shared<MidiSong>();
     song->addTrack(0, tk);
     this->_module->postNewSong(song, "");
