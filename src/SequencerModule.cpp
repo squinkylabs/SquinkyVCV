@@ -62,6 +62,13 @@ struct SequencerWidget : ModuleWidget
         ManualMenuItem* manual = new ManualMenuItem("Seq++ manual", helpUrl); 
         theMenu->addChild(manual);  
 
+        ::rack::MenuItem* remoteEdit = new SqMenuItem_BooleanParam2(
+            module,
+            Comp::REMOTE_EDIT_PARAM
+        );
+        remoteEdit->text = "Enable remote editing";
+        theMenu->addChild(remoteEdit);
+
         SqMenuItem* midifile = new SqMenuItem(
             []() { return false; },
             [this]() { this->loadMidiFile(); }
@@ -128,7 +135,9 @@ struct SequencerWidget : ModuleWidget
         ModuleWidget::draw(args);
     }
 #endif
-    int token = 0;
+    int remoteEditToken = 0;
+    bool remoteEditWasEnabled = false;
+    Divider remoteEditDivider;
 };
 
 void SequencerWidget::saveMidiFile()
@@ -203,6 +212,7 @@ void SequencerWidget::loadMidiFile()
 void SequencerWidget::step()
  {
     ModuleWidget::step();
+    remoteEditDivider.step();
 
     // Advance the scroll position
     if (scrollControl && _module && _module->isRunning()) {
@@ -287,18 +297,44 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    
+    #if 0
     token = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
         if (tk) {
             this->onNewTrack(tk);
+        }
+    });
+    #endif
+
+    remoteEditDivider.setup(8, [module, this]() {
+        bool wantRemoteEdit =   ::rack::appGet()->engine->getParam(
+            module, 
+            Comp::REMOTE_EDIT_PARAM) > .5;
+        INFO("want remote = %d enabled = %d", wantRemoteEdit, remoteEditWasEnabled);
+        if (wantRemoteEdit != remoteEditWasEnabled) {
+            remoteEditWasEnabled = wantRemoteEdit;
+            if (wantRemoteEdit) {
+                if (remoteEditToken == 0) {
+
+                    remoteEditToken = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
+                        if (tk) {
+                            this->onNewTrack(tk);
+                        }
+                    });
+                }
+            } else {
+                 if (remoteEditToken) {
+                    SqRemoteEditor::serverUnregister(remoteEditToken);
+                    remoteEditToken = 0; 
+                }
+            }
         }
     });
 }
 
 SequencerWidget::~SequencerWidget()
 {
-    if (token) {
-       SqRemoteEditor::serverUnregister(token); 
+    if (remoteEditToken) {
+       SqRemoteEditor::serverUnregister(remoteEditToken); 
     }
 }
 

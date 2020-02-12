@@ -73,6 +73,7 @@ public:
         NUM_VOICES_PARAM,
         AUDITION_PARAM,
         STEP_RECORD_PARAM,
+        REMOTE_EDIT_PARAM,              // also invisible. Are we enabled for host editing?
         NUM_PARAMS
     };
 
@@ -383,6 +384,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::STEP_RECORD_PARAM:
             ret = {0, 1, 1, "Step record enable"};
+            break;
+        case Seq<TBase>::REMOTE_EDIT_PARAM:
+            ret = {0, 1, 0, "re"};
             break;
         default:
             assert(false);

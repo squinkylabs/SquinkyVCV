@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include <asserts.h>
 #include <functional>
 #include <memory>
 
@@ -18,4 +18,5 @@ public:
 private:
     static EditCallback callback;
     static int theToken;
+    static std::weak_ptr<MidiTrack> lastTrack;
 };
