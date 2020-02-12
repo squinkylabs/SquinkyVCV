@@ -74,7 +74,7 @@ json_t* Sequencer4Module::dataToJson()
 struct Sequencer4Widget : ModuleWidget
 {
     Sequencer4Widget(Sequencer4Module *);
-    DECLARE_MANUAL("Blank Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
+    DECLARE_MANUAL("4X4 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/s44/docs/4x4.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY)
     {
