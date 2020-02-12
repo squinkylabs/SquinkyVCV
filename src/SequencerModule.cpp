@@ -126,6 +126,7 @@ struct SequencerWidget : ModuleWidget
     void toggleRunStop(SequencerModule *module);
 
     void onNewTrack(MidiTrackPtr tk);
+    void setupRemoteEditMenu();
 
 #ifdef _TIME_DRAWING
     // Seq: avg = 399.650112, stddev = 78.684572 (us) Quota frac=2.397901
@@ -297,26 +298,26 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    #if 0
-    token = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
-        if (tk) {
-            this->onNewTrack(tk);
-        }
-    });
-    #endif
 
-    remoteEditDivider.setup(8, [module, this]() {
+    setupRemoteEditMenu();
+}
+
+void SequencerWidget::setupRemoteEditMenu()
+{
+    // poll every 8 frames. save a little CPU.
+    remoteEditDivider.setup(8, [this]() {
+        // Inspect the flag. It's set from menu, and saved in patch as a module param.
         bool wantRemoteEdit =   ::rack::appGet()->engine->getParam(
-            module, 
+            _module, 
             Comp::REMOTE_EDIT_PARAM) > .5;
-        INFO("want remote = %d enabled = %d", wantRemoteEdit, remoteEditWasEnabled);
         if (wantRemoteEdit != remoteEditWasEnabled) {
             remoteEditWasEnabled = wantRemoteEdit;
             if (wantRemoteEdit) {
                 if (remoteEditToken == 0) {
-
+                    // Go register to be a remote editor sever.
                     remoteEditToken = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
                         if (tk) {
+                            // If there is already a client, update to reflect that.
                             this->onNewTrack(tk);
                         }
                     });
@@ -325,6 +326,14 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
                  if (remoteEditToken) {
                     SqRemoteEditor::serverUnregister(remoteEditToken);
                     remoteEditToken = 0; 
+
+                    // When we disconnect, make a new empty song.
+                    // If we didn't we would still have clients track.
+                    MidiSongPtr song = std::make_shared<MidiSong>();
+                    MidiLocker l(song->lock);
+                    MidiTrackPtr track = MidiTrack::makeEmptyTrack(song->lock);
+                    song->addTrack(0, track);
+                    this->_module->postNewSong(song, "");
                 }
             }
         }
