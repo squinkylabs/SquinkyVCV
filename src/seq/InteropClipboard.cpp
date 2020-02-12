@@ -156,7 +156,8 @@ MidiEventPtr InteropClipboard::fromJsonEvent(json_t *data)
     if (type == keyNote) {
             event = fromJsonNoteEvent(data);
     } else {
-        WARN("clipboard: event type unrecognized %s\n", type.c_str());
+        // let's not complain if we find other events we don't know about
+        // WARN("clipboard: event type unrecognized %s\n", type.c_str());
     }
     return event;
 }

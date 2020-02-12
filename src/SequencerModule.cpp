@@ -304,8 +304,12 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
 
 void SequencerWidget::setupRemoteEditMenu()
 {
+
     // poll every 8 frames. save a little CPU.
     remoteEditDivider.setup(8, [this]() {
+        if (!_module) {
+            return;
+        }
         // Inspect the flag. It's set from menu, and saved in patch as a module param.
         bool wantRemoteEdit =   ::rack::appGet()->engine->getParam(
             _module, 
