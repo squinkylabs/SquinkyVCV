@@ -248,6 +248,7 @@ void MidiTrackPlayer::onEndOfTrack()
 {
 #if defined(_MLOG)
     printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
+    printf("sectionLoopCounter = %d nextSectionIndex =%d\n", sectionLoopCounter, nextSectionIndex);
     fflush(stdout);
 #endif
     // for now, should loop.
@@ -263,6 +264,7 @@ void MidiTrackPlayer::onEndOfTrack()
         printf("after find next, cur Index = %d\n ", curSectionIndex);
 #endif
         setupToPlayDifferentSection(nextSectionIndex);
+        nextSectionIndex = 0;
 
         // we need to fold the above into
         // setupToPlayDifferentSection
