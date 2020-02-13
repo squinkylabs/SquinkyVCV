@@ -1,34 +1,27 @@
 #pragma once
 
-#include "rack.hpp"
 #include <functional>
 #include "SqHelper.h"
 #include "SqUI.h"
+#include "rack.hpp"
 
 /**
  * This menu item takes generic lambdas,
  * so can be used for anything
  **/
-struct SqMenuItem : ::rack::MenuItem
-{
-
-    void onAction(const ::rack::event::Action &e) override
-    {
+struct SqMenuItem : ::rack::MenuItem {
+    void onAction(const ::rack::event::Action& e) override {
         _onActionFn();
     }
 
-
-    void step() override
-    {
+    void step() override {
         ::rack::MenuItem::step();
         rightText = CHECKMARK(_isCheckedFn());
     }
 
     SqMenuItem(std::function<bool()> isCheckedFn,
-        std::function<void()> clickFn) :
-        _isCheckedFn(isCheckedFn),
-        _onActionFn(clickFn)
-    {
+               std::function<void()> clickFn) : _isCheckedFn(isCheckedFn),
+                                                _onActionFn(clickFn) {
     }
 
 private:
@@ -36,16 +29,12 @@ private:
     std::function<void()> _onActionFn;
 };
 
-struct SqMenuItemAccel : ::rack::MenuItem
-{
-    void onAction(const ::rack::event::Action &e) override
-    {
+struct SqMenuItemAccel : ::rack::MenuItem {
+    void onAction(const ::rack::event::Action& e) override {
         _onActionFn();
     }
 
-    SqMenuItemAccel(const char* accelLabel, std::function<void()> clickFn) :
-        _onActionFn(clickFn)   
-    {
+    SqMenuItemAccel(const char* accelLabel, std::function<void()> clickFn) : _onActionFn(clickFn) {
         rightText = accelLabel;
     }
 
@@ -53,13 +42,10 @@ private:
     std::function<void()> _onActionFn;
 };
 
-
-struct ManualMenuItem : SqMenuItem
-{
+struct ManualMenuItem : SqMenuItem {
     ManualMenuItem(const char* menuText, const char* url) : SqMenuItem(
-        []() { return false; },
-        [url]() { SqHelper::openBrowser(url); })
-    {
+                                                                []() { return false; },
+                                                                [url]() { SqHelper::openBrowser(url); }) {
         this->text = menuText;
     }
 };
@@ -67,63 +53,50 @@ struct ManualMenuItem : SqMenuItem
 /**
  * menu item that toggles a boolean param.
  */
-struct  SqMenuItem_BooleanParam2 : ::rack::MenuItem
-{
-    SqMenuItem_BooleanParam2 (::rack::engine::Module* mod, int id) : 
-        paramId(id),
-        module(mod)
-    {   
+struct SqMenuItem_BooleanParam2 : ::rack::MenuItem {
+    SqMenuItem_BooleanParam2(::rack::engine::Module* mod, int id) : paramId(id),
+                                                                    module(mod) {
     }
 
-    void onAction(const sq::EventAction &e) override
-    {
+    void onAction(const sq::EventAction& e) override {
         const float newValue = isOn() ? 0 : 1;
-        ::rack::appGet()->engine->setParam(module, paramId, newValue); 
+        ::rack::appGet()->engine->setParam(module, paramId, newValue);
         e.consume(this);
     }
 
-    void step() override
-    {
+    void step() override {
         rightText = CHECKMARK(isOn());
     }
-private:
 
-    bool isOn()
-    {
+private:
+    bool isOn() {
         return ::rack::appGet()->engine->getParam(module, paramId) > .5;
     }
     const int paramId;
     ::rack::engine::Module* const module;
 };
 
-
-struct  SqMenuItem_BooleanParam : ::rack::MenuItem
-{
-    SqMenuItem_BooleanParam (::rack::ParamWidget* widget) :
-        widget(widget)
-    {
+struct SqMenuItem_BooleanParam : ::rack::MenuItem {
+    SqMenuItem_BooleanParam(::rack::ParamWidget* widget) : widget(widget) {
     }
 
-    void onAction(const sq::EventAction &e) override
-    {
+    void onAction(const sq::EventAction& e) override {
         const float newValue = isOn() ? 0 : 1;
-       if (widget->paramQuantity) {
+        if (widget->paramQuantity) {
             widget->paramQuantity->setValue(newValue);
-       }
+        }
 
         sq::EventChange ec;
         widget->onChange(ec);
         e.consume(this);
     }
-    
-    void step() override
-    {
+
+    void step() override {
         rightText = CHECKMARK(isOn());
     }
 
 private:
-    bool isOn()
-    {
+    bool isOn() {
         bool ret = false;
         if (widget->paramQuantity) {
             ret = widget->paramQuantity->getValue() > .5f;

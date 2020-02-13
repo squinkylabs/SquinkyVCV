@@ -19,65 +19,53 @@
 
 using Comp = Seq4<WidgetComposite>;
 
-void Sequencer4Module::onSampleRateChange()
-{
+void Sequencer4Module::onSampleRateChange() {
 }
 
-Sequencer4Module::Sequencer4Module()
-{
+Sequencer4Module::Sequencer4Module() {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     MidiSong4Ptr song = MidiSong4::makeTest(MidiTrack::TestContent::empty, 0);
     seq4 = MidiSequencer4::make(song);
     seq4Comp = std::make_shared<Comp>(this, song);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    SqHelper::setupParams(icomp, this); 
+    SqHelper::setupParams(icomp, this);
 
     onSampleRateChange();
     assert(seq4);
-
 }
 
-void Sequencer4Module::step()
-{
+void Sequencer4Module::step() {
     //sequencer->undo->setModuleId(this->id);
     if (runStopRequested) {
         seq4Comp->toggleRunStop();
         runStopRequested = false;
     }
     seq4Comp->step();
-
 }
 
-MidiSong4Ptr Sequencer4Module::getSong()
-{
+MidiSong4Ptr Sequencer4Module::getSong() {
     return seq4Comp->getSong();
 }
 
-void Sequencer4Module::dataFromJson(json_t *data)
-{
+void Sequencer4Module::dataFromJson(json_t* data) {
     MidiSequencer4Ptr newSeq = SequencerSerializer::fromJson(data, this);
     setNewSeq(newSeq);
 }
 
-json_t* Sequencer4Module::dataToJson()
-{
+json_t* Sequencer4Module::dataToJson() {
     assert(seq4);
     return SequencerSerializer::toJson(seq4);
 }
-
-
 
 ////////////////////
 // module widget
 ////////////////////
 
-struct Sequencer4Widget : ModuleWidget
-{
-    Sequencer4Widget(Sequencer4Module *);
+struct Sequencer4Widget : ModuleWidget {
+    Sequencer4Widget(Sequencer4Module*);
     DECLARE_MANUAL("4X4 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/s44/docs/4x4.md");
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY)
-    {
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY) {
         Label* label = new Label();
         label->box.pos = v;
         label->text = str;
@@ -86,8 +74,7 @@ struct Sequencer4Widget : ModuleWidget
         return label;
     }
 
-    Label* addLabelLeft(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY)
-    {
+    Label* addLabelLeft(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY) {
         Label* label = new Label();
         label->alignment = Label::LEFT_ALIGNMENT;
         label->box.pos = v;
@@ -98,11 +85,11 @@ struct Sequencer4Widget : ModuleWidget
     }
 
     void setNewSeq(MidiSequencer4Ptr newSeq);
-    void addControls(Sequencer4Module *module,
-        std::shared_ptr<IComposite> icomp);
-    void addBigButtons(Sequencer4Module *module);
-    void addJacks(Sequencer4Module *module);
-    void toggleRunStop(Sequencer4Module *module);
+    void addControls(Sequencer4Module* module,
+                     std::shared_ptr<IComposite> icomp);
+    void addBigButtons(Sequencer4Module* module);
+    void addJacks(Sequencer4Module* module);
+    void toggleRunStop(Sequencer4Module* module);
     S4ButtonGrid buttonGrid;
 };
 
@@ -112,8 +99,7 @@ struct Sequencer4Widget : ModuleWidget
  * This is not shared by all modules in the DLL, just one
  */
 
-Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
-{
+Sequencer4Widget::Sequencer4Widget(Sequencer4Module* module) {
     setModule(module);
     if (module) {
         module->widget = this;
@@ -131,87 +117,82 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module *module)
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-void Sequencer4Widget::setNewSeq(MidiSequencer4Ptr newSeq)
-{
+void Sequencer4Widget::setNewSeq(MidiSequencer4Ptr newSeq) {
     buttonGrid.setNewSeq(newSeq);
 }
 
-void Sequencer4Widget::toggleRunStop(Sequencer4Module *module)
-{
+void Sequencer4Widget::toggleRunStop(Sequencer4Module* module) {
     module->toggleRunStop();
 }
 
 #define _LAB
-void Sequencer4Widget::addControls(Sequencer4Module *module,
-        std::shared_ptr<IComposite> icomp)
-{
-  const float controlX = 20 - 6;
+void Sequencer4Widget::addControls(Sequencer4Module* module,
+                                   std::shared_ptr<IComposite> icomp) {
+    const float controlX = 20 - 6;
 
     float y = 20;
 #ifdef _LAB
     addLabelLeft(Vec(controlX - 4, y),
-        "Clock rate");
+                 "Clock rate");
 #endif
     y += 20;
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
-            icomp,
-            Vec(controlX, y),
-            module,
-            Comp::CLOCK_INPUT_PARAM);
-        p->box.size.x = 85 + 8;    // width
-        p->box.size.y = 22;         // should set auto like button does
-        p->setLabels(Comp::getClockRates());
-        addParam(p);
+        icomp,
+        Vec(controlX, y),
+        module,
+        Comp::CLOCK_INPUT_PARAM);
+    p->box.size.x = 85 + 8;  // width
+    p->box.size.y = 22;      // should set auto like button does
+    p->setLabels(Comp::getClockRates());
+    addParam(p);
     y += 42;
-    for (int i=0; i<4; ++i) {
-       
-    #ifdef _LAB
+    for (int i = 0; i < 4; ++i) {
+#ifdef _LAB
         addLabelLeft(Vec(controlX - 4, y),
-            "Polyphony");
-    #endif
-       
+                     "Polyphony");
+#endif
+
         p = SqHelper::createParam<PopupMenuParamWidget>(
             icomp,
             Vec(controlX, y),
             module,
             Comp::NUM_VOICES0_PARAM + i);
-        p->box.size.x = 85 + 8;     // width
-        p->box.size.y = 22;         // should set auto like button does
+        p->box.size.x = 85 + 8;  // width
+        p->box.size.y = 22;      // should set auto like button does
         p->setLabels(Comp::getPolyLabels());
         addParam(p);
 
-        y += S4ButtonGrid::buttonMargin + S4ButtonGrid::buttonSize; 
+        y += S4ButtonGrid::buttonMargin + S4ButtonGrid::buttonSize;
     }
-   
+
     y += -20;
- //   const float yy = y;
+    //   const float yy = y;
 #ifdef _LAB
     addLabel(Vec(controlX - 8, y),
-        "Run");
+             "Run");
 #endif
     y += 20;
 
     float controlDx = 0;
 
-        // run/stop buttong
+    // run/stop buttong
     SqToggleLED* tog = (createLight<SqToggleLED>(
         Vec(controlX + controlDx, y),
         module,
         Comp::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
-    tog->setHandler( [this, module](bool ctrlKey) {
+    tog->setHandler([this, module](bool ctrlKey) {
         this->toggleRunStop(module);
     });
     addChild(tog);
 }
 
-void Sequencer4Widget::addBigButtons(Sequencer4Module *module)
-{
+void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
     if (module) {
         buttonGrid.init(this, module, module->getSong(), module->seq4Comp);
     } else {
@@ -219,10 +200,9 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module *module)
     }
 }
 
-void Sequencer4Widget::addJacks(Sequencer4Module *module)
-{
+void Sequencer4Widget::addJacks(Sequencer4Module* module) {
     const float jacksY1 = 340;
-  //  const float jacksY2 = 330+2;
+    //  const float jacksY2 = 330+2;
     const float jacksDx = 40;
     const float jacksX = 140;
 #ifdef _LAB
@@ -259,11 +239,9 @@ void Sequencer4Widget::addJacks(Sequencer4Module *module)
         Vec(labelX + 1 + 2 * jacksDx, jacksY1 + dy),
         "Run");
 #endif
-
 }
 
-void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq)
-{
+void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq) {
     MidiSong4Ptr oldSong = seq4->song;
     seq4 = newSeq;
 
@@ -272,7 +250,7 @@ void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq)
     }
 
     {
-        // Must lock the songs when swapping them or player 
+        // Must lock the songs when swapping them or player
         // might glitch (or crash).
         MidiLocker oldL(oldSong->lock);
         MidiLocker newL(seq4->song->lock);
@@ -280,6 +258,5 @@ void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq)
     }
 }
 
-Model *modelSequencer4Module = createModel<Sequencer4Module, Sequencer4Widget>("squinkylabs-sequencer4");
+Model* modelSequencer4Module = createModel<Sequencer4Module, Sequencer4Widget>("squinkylabs-sequencer4");
 #endif
-
