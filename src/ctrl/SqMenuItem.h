@@ -36,6 +36,23 @@ private:
     std::function<void()> _onActionFn;
 };
 
+struct SqMenuItemAccel : ::rack::MenuItem
+{
+    void onAction(const ::rack::event::Action &e) override
+    {
+        _onActionFn();
+    }
+
+    SqMenuItemAccel(const char* accelLabel, std::function<void()> clickFn) :
+        _onActionFn(clickFn)   
+    {
+        rightText = accelLabel;
+    }
+
+private:
+    std::function<void()> _onActionFn;
+};
+
 
 struct ManualMenuItem : SqMenuItem
 {
@@ -45,7 +62,6 @@ struct ManualMenuItem : SqMenuItem
     {
         this->text = menuText;
     }
-
 };
 
 /**

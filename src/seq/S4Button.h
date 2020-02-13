@@ -95,6 +95,7 @@ private:
 
     int getRepeatCountForUI();
     void setRepeatCountForUI(int);
+    void otherItems(::rack::ui::Menu* menu);
 };
 
 

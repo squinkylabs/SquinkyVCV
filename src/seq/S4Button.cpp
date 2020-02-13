@@ -82,34 +82,55 @@ public:
     {
         ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
-        ::rack::ui::MenuItem* item =  new SqMenuItem([]{
-            return false;
-        }, [this]{
+        ::rack::ui::MenuItem* item =  new SqMenuItemAccel("X", [this]{
             button->doCut();
         });
-        item->text = "cut";
+        item->text = "Cut";
         menu->addChild(item);
-        ;
-        item = new SqMenuItem([]{
-            return false;
-        }, [this]{
+
+        item = new SqMenuItemAccel("C", [this]{
             button->doCopy();
         });
-        item->text = "copy";
+        item->text = "Copy";
         menu->addChild(item);
-        ;
-        item =  new SqMenuItem([]{
-            return false;
-        }, [this]{
+
+        item =  new SqMenuItemAccel("V", [this]{
             button->doPaste();
         });
-        item->text = "paste";
+        item->text = "Paste";
         menu->addChild(item);
 
         return menu;
     }
 private:
     S4Button* const button; 
+};
+
+
+void S4Button::otherItems(::rack::ui::Menu* menu)
+{
+
+
+    ::rack::ui::MenuLabel *spacerLabel = new ::rack::ui::MenuLabel(); \
+    menu->addChild(spacerLabel); \
+
+    ::rack::ui::MenuItem* item = new SqMenuItemAccel("Click", []() {
+
+    });
+    item->text = "Set next section";
+    menu->addChild(item);
+
+    item = new SqMenuItemAccel("Ctrl+Click", []() {
+
+    });
+    item->text = "Set next clip";
+    menu->addChild(item);
+
+        item = new SqMenuItemAccel("E", []() {
+
+    });
+    item->text = "Edit clip";
+    menu->addChild(item);
 };
 
 //*********************** S4Button ************************/
@@ -131,6 +152,7 @@ void S4Button::invokeContextMenu()
     menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
     menu->addChild (new EditMenuItems(this));
     menu->addChild(new RepeatCountMenuItem(this));
+    otherItems(menu);
 }
 
 void S4Button::step()
