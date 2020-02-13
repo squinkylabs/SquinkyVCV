@@ -1,26 +1,24 @@
-#include "InteropClipboard.h"
-#include "MidiTrack4Options.h"
-#include "MidiSelectionModel.h"
 #include "S4Button.h"
-#include "Seq4.h"
-#include "../ctrl/SqUI.h"
 #include "../ctrl/SqMenuItem.h"
-#include "WidgetComposite.h"
+#include "../ctrl/SqUI.h"
+#include "InteropClipboard.h"
+#include "MidiSelectionModel.h"
+#include "MidiTrack4Options.h"
+#include "Seq4.h"
 #include "SqGfx.h"
 #include "SqRemoteEditor.h"
 #include "TimeUtils.h"
 #include "UIPrefs.h"
+#include "WidgetComposite.h"
 
 #include <sstream>
 
 /****************** context menu UI ********************/
 
-class RepeatItem  : public  ::rack::ui::MenuItem
-{
+class RepeatItem : public ::rack::ui::MenuItem {
 public:
     RepeatItem() = delete;
-    static ::rack::ui::MenuItem* make(S4Button* button, int value)
-    {
+    static ::rack::ui::MenuItem* make(S4Button* button, int value) {
         std::function<bool()> isCheckedFn = [button, value]() {
             return button->getRepeatCountForUI() == value;
         };
@@ -33,30 +31,27 @@ public:
     }
 };
 
-class RepeatCountMenuItem : public  ::rack::ui::MenuItem
-{
+class RepeatCountMenuItem : public ::rack::ui::MenuItem {
 public:
-    RepeatCountMenuItem(S4Button* opt) : button(opt)
-    {
+    RepeatCountMenuItem(S4Button* opt) : button(opt) {
         text = "repeat count";
         rightText = RIGHT_ARROW;
     }
 
-    ::rack::ui::Menu *createChildMenu() override
-    {
+    ::rack::ui::Menu* createChildMenu() override {
         ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
         auto label = ::rack::construct<::rack::ui::MenuLabel>(
             &rack::ui::MenuLabel::text,
-            "Repeat Count");      
+            "Repeat Count");
         menu->addChild(label);
-#if 0 // we don't support this yet
+#if 0  // we don't support this yet
         ::rack::ui::MenuItem* item = RepeatItem::make(button, 0);
         item->text = "Forever";
         menu->addChild(item);
 #endif
 
-        for (int i=1; i<=16; ++i) {
+        for (int i = 1; i <= 16; ++i) {
             ::rack::ui::MenuItem* item = RepeatItem::make(button, i);
             std::stringstream str;
             str << i;
@@ -66,35 +61,33 @@ public:
 
         return menu;
     }
+
 private:
-    S4Button* const button; 
+    S4Button* const button;
 };
 
-class EditMenuItems : public  ::rack::ui::MenuItem
-{
+class EditMenuItems : public ::rack::ui::MenuItem {
 public:
-    EditMenuItems(S4Button* opt) : button(opt)
-    {
+    EditMenuItems(S4Button* opt) : button(opt) {
         text = "edit";
         rightText = RIGHT_ARROW;
     }
-    ::rack::ui::Menu *createChildMenu() override
-    {
+    ::rack::ui::Menu* createChildMenu() override {
         ::rack::ui::Menu* menu = new ::rack::ui::Menu();
 
-        ::rack::ui::MenuItem* item =  new SqMenuItemAccel("X", [this]{
+        ::rack::ui::MenuItem* item = new SqMenuItemAccel("X", [this] {
             button->doCut();
         });
         item->text = "Cut";
         menu->addChild(item);
 
-        item = new SqMenuItemAccel("C", [this]{
+        item = new SqMenuItemAccel("C", [this] {
             button->doCopy();
         });
         item->text = "Copy";
         menu->addChild(item);
 
-        item =  new SqMenuItemAccel("V", [this]{
+        item = new SqMenuItemAccel("V", [this] {
             button->doPaste();
         });
         item->text = "Paste";
@@ -102,61 +95,54 @@ public:
 
         return menu;
     }
+
 private:
-    S4Button* const button; 
+    S4Button* const button;
 };
 
+void S4Button::otherItems(::rack::ui::Menu* menu) {
+    ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
+    menu->addChild(spacerLabel);
 
-void S4Button::otherItems(::rack::ui::Menu* menu)
-{
-
-
-    ::rack::ui::MenuLabel *spacerLabel = new ::rack::ui::MenuLabel(); \
-    menu->addChild(spacerLabel); \
-
-    ::rack::ui::MenuItem* item = new SqMenuItemAccel("Click", []() {
-
+    ::rack::ui::MenuItem* item = new SqMenuItemAccel("Click", [this]() {
+        clickHandler(false);
     });
     item->text = "Set next section";
     menu->addChild(item);
 
-    item = new SqMenuItemAccel("Ctrl+Click", []() {
-
+    item = new SqMenuItemAccel("Ctrl+Click", [this]() {
+        clickHandler(true);
     });
     item->text = "Set next clip";
     menu->addChild(item);
 
-        item = new SqMenuItemAccel("E", []() {
-
+    item = new SqMenuItemAccel("E", [this]() {
+        doEditClip();
     });
+
     item->text = "Edit clip";
     menu->addChild(item);
 };
 
 //*********************** S4Button ************************/
 
- 
-MidiTrackPtr S4Button::getTrack() const
-{
+MidiTrackPtr S4Button::getTrack() const {
     return song->getTrack(row, col);
 }
 
-MidiTrack4OptionsPtr S4Button::getOptions() const
-{
+MidiTrack4OptionsPtr S4Button::getOptions() const {
     return song->getOptions(row, col);
 }
 
-void S4Button::invokeContextMenu()
-{
+void S4Button::invokeContextMenu() {
     ::rack::ui::Menu* menu = ::rack::createMenu();
-    menu->addChild (::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
-    menu->addChild (new EditMenuItems(this));
+    menu->addChild(::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
+    menu->addChild(new EditMenuItems(this));
     menu->addChild(new RepeatCountMenuItem(this));
     otherItems(menu);
 }
 
-void S4Button::step()
-{
+void S4Button::step() {
     ::rack::OpaqueWidget::step();
 
     auto track = getTrack();
@@ -168,7 +154,7 @@ void S4Button::step()
         lengthTime = track->getLength();
         newLen = TimeUtils::length2str(lengthTime);
         newNumNotes = track->size() - 1;
-    } 
+    }
     if (newLen != contentLength) {
         // DEBUG("updating length %.2f, %s", length, newLen.c_str());
         contentLength = newLen;
@@ -184,7 +170,7 @@ void S4Button::step()
     bool iAmPlaying = playStatus == (col + 1);
     if (iAmPlaying != isPlaying) {
         isPlaying = iAmPlaying;
-        fw->dirty = true; 
+        fw->dirty = true;
     }
 
     const int nextSection = seq4Comp->getNextSection(row);
@@ -195,13 +181,11 @@ void S4Button::step()
     }
 }
 
-void S4Button::onDragHover(const rack::event::DragHover &e)
-{
+void S4Button::onDragHover(const rack::event::DragHover& e) {
     sq::consumeEvent(&e, this);
 }
 
-void S4Button::onButton(const rack::event::Button &e)
-{
+void S4Button::onButton(const rack::event::Button& e) {
     if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
         // Do we need to consume this key to get dragLeave?
         isDragging = true;
@@ -235,31 +219,28 @@ void S4Button::onButton(const rack::event::Button &e)
     }
 }
 
-void S4Button::doCut()
-{
+void S4Button::doCut() {
     doCopy();
     song->addTrack(row, col, nullptr);
 }
 
-void S4Button::doCopy()
-{
+void S4Button::doCopy() {
     auto track = song->getTrack(row, col);
     if (track) {
         InteropClipboard::put(track, true);
     }
 }
 
-void S4Button::doPaste()
-{
+void S4Button::doPaste() {
     MidiLocker l(song->lock);
-    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock, true); 
+    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock, true);
     destTrack->assertValid();
 
     // Make a fake selection that will say "select all".
     // It's a kluge that we need to provide an aution host.
-   
+
     MidiSelectionModelPtr sel = std::make_shared<MidiSelectionModel>(nullptr, true);
-    InteropClipboard::PasteData pasteData = InteropClipboard::get(0, destTrack, sel );
+    InteropClipboard::PasteData pasteData = InteropClipboard::get(0, destTrack, sel);
     // So far, dest track has just been a refernce track for delting notes we might paste
     // on top of.
     // now let's put all the data in there (re-use it)
@@ -269,7 +250,7 @@ void S4Button::doPaste()
     destTrack->setLength(pasteData.requiredTrackLength);
     for (auto n : pasteData.toAdd) {
         MidiEventPtr event = n;
-        destTrack->insertEvent(n); 
+        destTrack->insertEvent(n);
     }
 
     destTrack->assertValid();
@@ -281,8 +262,7 @@ void S4Button::doPaste()
     song->addTrack(row, col, destTrack);
 }
 
-int S4Button::getRepeatCountForUI()
-{
+int S4Button::getRepeatCountForUI() {
     auto options = getOptions();
     if (options) {
         return options->repeatCount;
@@ -292,24 +272,24 @@ int S4Button::getRepeatCountForUI()
     }
 }
 
-void S4Button::setRepeatCountForUI(int ct)
-{
+void S4Button::setRepeatCountForUI(int ct) {
     auto options = getOptions();
     if (options) {
-        options->repeatCount = ct;;
+        options->repeatCount = ct;
+        ;
     } else {
         WARN("editing repeats when no data");
     }
 }
 
 inline S4Button::S4Button(
-    const rack::math::Vec& size, 
+    const rack::math::Vec& size,
     const rack::math::Vec& pos,
-    int r, 
-    int c, 
+    int r,
+    int c,
     MidiSong4Ptr s,
-    std::shared_ptr<Seq4<WidgetComposite>> seq4) : row(r), col(c), song(s), seq4Comp(seq4)
-{
+    std::shared_ptr<Seq4<WidgetComposite>> seq4) : row(r), col(c), song(s), seq4Comp(seq4) {
+        
     this->box.size = size;
     this->box.pos = pos;
     fw = new rack::widget::FramebufferWidget();
@@ -319,41 +299,38 @@ inline S4Button::S4Button(
     fw->addChild(drawer);
 }
 
-inline void S4Button::setSelection(bool sel)
-{
+inline void S4Button::doEditClip() {
+    MidiTrackPtr tk = song->getTrack(row, col);
+    if (!tk) {
+        // make a new track on click, if needed
+        MidiLocker l(song->lock);
+        tk = MidiTrack::makeEmptyTrack(song->lock);
+        song->addTrack(row, col, tk);
+    }
+
+    SqRemoteEditor::clientAnnounceData(tk);
+}
+
+inline void S4Button::setSelection(bool sel) {
     if (_isSelected != sel) {
         _isSelected = sel;
         fw->dirty = true;
-        if (_isSelected) {
-            MidiTrackPtr tk = song->getTrack(row, col);
-            if (!tk) {
-                // make a new track on click, if needed
-                MidiLocker l(song->lock);
-                tk = MidiTrack::makeEmptyTrack(song->lock);
-                song->addTrack(row, col, tk);
-            }
-
-            SqRemoteEditor::clientAnnounceData(tk);
-        }
     }
 }
 
-inline bool S4Button::handleKey(int key, int mods, int action)
-{
+inline bool S4Button::handleKey(int key, int mods, int action) {
     bool handled = false;
-    
-    if ((key == GLFW_KEY_V) && 
+
+    if ((key == GLFW_KEY_V) &&
         (!(mods & RACK_MOD_CTRL)) &&
         (action == GLFW_PRESS)) {
-
         handled = true;
         doPaste();
     }
     return handled;
 }
 
-inline void S4Button::onSelectKey(const rack::event::SelectKey &e)
-{
+inline void S4Button::onSelectKey(const rack::event::SelectKey& e) {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
@@ -362,27 +339,22 @@ inline void S4Button::onSelectKey(const rack::event::SelectKey &e)
     }
 }
 
-inline void S4Button::setClickHandler(callback h)
-{
+inline void S4Button::setClickHandler(callback h) {
     clickHandler = h;
 }
 
-inline void S4Button::onDragEnter(const rack::event::DragEnter &e)
-{
+inline void S4Button::onDragEnter(const rack::event::DragEnter& e) {
 }
 
-inline void S4Button::onDragLeave(const rack::event::DragLeave &e) 
-{
+inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
     isDragging = false;
 }
-
 
 /***************************** S4ButtonGrid ***********************************/
 
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
-    MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp)
-{
+                        MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
     seq4Comp = _seq4Comp;
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
@@ -390,7 +362,7 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
         for (int col = 0; col < MidiSong4::numTracks; ++col) {
             const float x = 130 + col * (buttonSize + buttonMargin);
             S4Button* b = new S4Button(
-                rack::math::Vec(buttonSize, buttonSize), 
+                rack::math::Vec(buttonSize, buttonSize),
                 rack::math::Vec(x, y),
                 row,
                 col,
@@ -403,7 +375,7 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
 
         const float jacksY = y + 8;
         const float jacksDy = 28;
-        
+
         parent->addOutput(rack::createOutputCentered<rack::componentlibrary::PJ301MPort>(
             rack::math::Vec(jacksX, jacksY),
             module,
@@ -415,30 +387,35 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
     }
 }
 
-void S4ButtonGrid::onClick(bool isCtrl, int row, int col)
-{
-    // first the selection logic
-   for (int r = 0; r < MidiSong4::numTracks; ++r) {
-        for (int c = 0; c < MidiSong4::numTracks; ++c) {
+void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
+    // select the one we just clicked into
+    for (int r = 0; r < MidiSong4::numTracks; ++r) {
+        for (int c = 0; c < MidiSong4::numSectionsPerTrack; ++c) {
             auto button = getButton(r, c);
             assert(button);
-            button->setSelection(r==row && c==col);
+            button->setSelection(r == row && c == col);
         }
     }
-    // then the select next second
-    // remember, section is 1..4
-    seq4Comp->setNextSection(row, col + 1);     
+
+    if (isCtrl) {
+        // then the select next clip
+        // remember, section is 1..4
+        seq4Comp->setNextSection(row, col + 1);
+    } else {
+        for (int r = 0; r < MidiSong4::numTracks; ++r) {
+            seq4Comp->setNextSection(r, col + 1);
+        }
+    }
+    auto button = getButton(row, col);
+
+    button->doEditClip();
 }
 
-std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col)
-{
+std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col) {
     return [this, row, col](bool isCtrl) {
         this->onClick(isCtrl, row, col);
     };
 }
-
-
-
 
 /********************** S4ButtonDrawer ****************/
 
@@ -446,41 +423,38 @@ std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int
  * A special purpose button for the 4x4 seq module.
  * Has simple click handling, but lots of dedicated drawing ability
  */
-void S4ButtonDrawer::draw(const DrawArgs &args)
-{
+void S4ButtonDrawer::draw(const DrawArgs& args) {
     auto ctx = args.vg;
     paintButtonFace(ctx);
     paintButtonBorder(ctx);
     paintButtonText(ctx);
 }
 
-void S4ButtonDrawer::paintButtonFace(NVGcontext *ctx)
-{
+void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
     auto color = button->isPlaying ? UIPrefs::X4_BUTTON_FACE_PLAYING : UIPrefs::X4_BUTTON_FACE_NORM;
     SqGfx::filledRect(
         ctx,
         color,
-        this->box.pos.x, box.pos.y, box.size.x, box.size.y); 
+        this->box.pos.x, box.pos.y, box.size.x, box.size.y);
 }
 
-void S4ButtonDrawer::paintButtonBorder(NVGcontext *ctx)
-{
+void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
     NVGcolor color;
     float width = 0;
     bool draw = false;
 
     if (button->isSelected() && !button->iAmNext) {
         color = UIPrefs::X4_SELECTED_BORDER;
-        width = 3;      // TODO: move to prefs
-        draw = true; 
+        width = 3;  // TODO: move to prefs
+        draw = true;
     } else if (!button->isSelected() && button->iAmNext) {
         color = UIPrefs::X4_NEXT_PLAY_BORDER;
-        width = 2;      // TODO: move to prefs
-        draw = true; 
+        width = 2;  // TODO: move to prefs
+        draw = true;
     } else if (button->isSelected() && button->iAmNext) {
         //color = UIPrefs::X4_MIXED_BORDER;
-       // width = 2;      // TODO: move to prefs
-       // draw = true; 
+        // width = 2;      // TODO: move to prefs
+        // draw = true;
         SqGfx::hBorder(
             ctx,
             2,
@@ -492,20 +466,19 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext *ctx)
             UIPrefs::X4_SELECTED_BORDER,
             this->box.pos.x, box.pos.y, box.size.x, box.size.y);
 
-       draw = false;
+        draw = false;
     }
 
     if (draw) {
         SqGfx::border(
-            ctx, 
+            ctx,
             width,
             color,
             this->box.pos.x, box.pos.y, box.size.x, box.size.y);
     }
 }
 
-void S4ButtonDrawer::paintButtonText(NVGcontext *ctx)
-{
+void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
     nvgBeginPath(ctx);
     nvgFontSize(ctx, 14.f);
     nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
@@ -516,5 +489,3 @@ void S4ButtonDrawer::paintButtonText(NVGcontext *ctx)
         nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
     }
 }
-
-
