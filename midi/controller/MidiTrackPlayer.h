@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GateTrigger.h"
 #include "MidiTrack.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
@@ -12,9 +13,42 @@ class MidiTrack;
 
 // #define _MLOG
 
+/**
+ * This awful hack is so that both the real plugin and
+ * the unit tests can pass this "Output" struct around
+ */
+#ifdef __PLUGIN
+    namespace rack {
+        namespace engine {
+            struct Input;
+        }
+    }
+#else
+#include "TestComposite.h"
+#endif
+
+
+/**
+ * input port usage
+ * 
+ * 0 = gate: goto next section
+ * 1 = gate: goto prev section
+ * 2 = cv: set section number
+ * 3 = transpose
+ * 4 =play clip 2x/3x/4x... faster (CV)
+ */
+
+
 class MidiTrackPlayer
 {
 public:
+
+#ifdef __PLUGIN
+    using Input = rack::engine::Input;
+#else
+    using Input = ::Input;
+#endif
+
     MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> song);
     void setSong(std::shared_ptr<MidiSong4> newSong, int trackIndex);
     void resetAllVoices(bool clearGates);
@@ -53,6 +87,11 @@ public:
     {
         isPlaying = running;
     }
+
+    void setInputPort(Input* port)
+    {
+        input = port;
+    }
 private:
 
     std::shared_ptr<MidiSong4> song;
@@ -78,6 +117,10 @@ private:
     static const int maxVoices = 16;
     MidiVoice voices[maxVoices];
     MidiVoiceAssigner voiceAssigner;
+
+    Input* input=nullptr;
+    GateTrigger nextSectionTrigger;
+    GateTrigger prevSectionTrigger;
 
     /**
      * variables for playihng a track

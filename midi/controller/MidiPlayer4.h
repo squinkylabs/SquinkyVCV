@@ -9,11 +9,14 @@ class MidiTrackPlayer;
 using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
 using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
 
+#include "MidiTrackPlayer.h"
+
 // #define _MLOG
 
 class MidiPlayer4
 {
 public:
+    using Input = MidiTrackPlayer::Input;
     MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
 
     void setSong(std::shared_ptr<MidiSong4> song);
@@ -48,6 +51,9 @@ public:
     int getSection(int track) const;
     void setNextSection(int track, int section);
     int getNextSection(int track) const;
+
+    void setPorts(Input* ports);
+    
 private:
     std::vector<MidiTrackPlayerPtr> trackPlayers;
     MidiSong4Ptr song;

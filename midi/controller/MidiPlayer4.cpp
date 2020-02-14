@@ -5,6 +5,8 @@
 #include "MidiTrackPlayer.h"
 #include "TimeUtils.h"
 
+#include "engine/Port.hpp"
+
 
 MidiPlayer4::MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song) :
     song(song),
@@ -39,6 +41,13 @@ void MidiPlayer4::setRunningStatus(bool running)
 {
     for (int i = 0; i < MidiSong4::numTracks; ++i) {
         trackPlayers[i]->setRunningStatus(running);
+    }
+}
+
+void MidiPlayer4::setPorts(Input* ports)
+{
+    for (int i = 0; i < MidiSong4::numTracks; ++i) {
+        trackPlayers[i]->setInputPort(ports + i);
     }
 }
 

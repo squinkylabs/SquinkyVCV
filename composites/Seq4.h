@@ -239,6 +239,7 @@ void  Seq4<TBase>::init(MidiSong4Ptr song)
         this->stepn(div.getDiv());
      });
     onSampleRateChange();
+    player->setPorts( TBase::inputs.data() + MOD0_INPUT);
 }
 
 template <class TBase>
