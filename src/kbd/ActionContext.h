@@ -7,18 +7,13 @@
 
 class MidiSequencer;
 
-
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 using StepRecorderPtr = std::shared_ptr<StepRecorder>;
 
-class ActionContext
-{
+class ActionContext {
 public:
-    ActionContext(MidiSequencerPtr s, StepRecorderPtr recorder) : 
-        sequencer(s),
-        stepRecorder(recorder)
-    {
-
+    ActionContext(MidiSequencerPtr s, StepRecorderPtr recorder) : sequencer(s),
+                                                                  stepRecorder(recorder) {
     }
     MidiSequencerPtr sequencer;
 
@@ -27,13 +22,11 @@ public:
      */
     bool handleInsertPresetNote(
         MidiSequencerPtr sequencer,
-        MidiEditor::Durations duration, 
-        bool advanceAfter)
-    {
+        MidiEditor::Durations duration,
+        bool advanceAfter) {
         return stepRecorder->handleInsertPresetNote(sequencer, duration, advanceAfter);
     }
+
 private:
     StepRecorderPtr stepRecorder;
-    
-
 };

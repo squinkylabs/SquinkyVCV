@@ -116,7 +116,7 @@ void S4Button::otherItems(::rack::ui::Menu* menu) {
     item->text = "Set next clip";
     menu->addChild(item);
 
-    item = new SqMenuItemAccel("E", [this]() {
+    item = new SqMenuItemAccel("", [this]() {
         doEditClip();
     });
 
@@ -136,7 +136,7 @@ MidiTrack4OptionsPtr S4Button::getOptions() const {
 
 void S4Button::invokeContextMenu() {
     ::rack::ui::Menu* menu = ::rack::createMenu();
-    menu->addChild(::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "Section Options"));
+    menu->addChild(::rack::construct<::rack::ui::MenuLabel>(&rack::ui::MenuLabel::text, "4X4 Pad Menu"));
     menu->addChild(new EditMenuItems(this));
     menu->addChild(new RepeatCountMenuItem(this));
     otherItems(menu);
@@ -267,7 +267,6 @@ int S4Button::getRepeatCountForUI() {
     if (options) {
         return options->repeatCount;
     } else {
-        WARN("editing repeats when no data");
         return 0;
     }
 }
@@ -276,7 +275,6 @@ void S4Button::setRepeatCountForUI(int ct) {
     auto options = getOptions();
     if (options) {
         options->repeatCount = ct;
-        ;
     } else {
         WARN("editing repeats when no data");
     }
@@ -289,7 +287,6 @@ inline S4Button::S4Button(
     int c,
     MidiSong4Ptr s,
     std::shared_ptr<Seq4<WidgetComposite>> seq4) : row(r), col(c), song(s), seq4Comp(seq4) {
-        
     this->box.size = size;
     this->box.pos = pos;
     fw = new rack::widget::FramebufferWidget();
@@ -321,11 +318,22 @@ inline void S4Button::setSelection(bool sel) {
 inline bool S4Button::handleKey(int key, int mods, int action) {
     bool handled = false;
 
-    if ((key == GLFW_KEY_V) &&
-        (!(mods & RACK_MOD_CTRL)) &&
+    if (!(mods & RACK_MOD_CTRL) &&
         (action == GLFW_PRESS)) {
-        handled = true;
-        doPaste();
+        switch (key) {
+            case GLFW_KEY_X:
+                doCut();
+                handled = true;
+                break;
+            case GLFW_KEY_C:
+                doCopy();
+                handled = true;
+                break;
+            case GLFW_KEY_V:
+                doPaste();
+                handled = true;
+                break;
+        }
     }
     return handled;
 }

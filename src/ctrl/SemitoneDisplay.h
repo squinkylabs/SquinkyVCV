@@ -3,29 +3,23 @@
 
 #include "rack.hpp"
 
-#include <vector>
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
 /**
  * Displays semitones in a Label. Also Octaves.
  */
-class SemitoneDisplay
-{
+class SemitoneDisplay {
 public:
-    SemitoneDisplay (::rack::Module* module) :
-        module(module)
-    {
-
+    SemitoneDisplay(::rack::Module* module) : module(module) {
     }
     void step();
-
 
     /**
      * pass in the label component that will be displaying semitones
      */
-    void setSemiLabel (::rack::Label* l, int id)
-    {
+    void setSemiLabel(::rack::Label* l, int id) {
         semiLabel = l;
         semiXPosition = l->box.pos.x;
         semiParameterId = id;
@@ -34,14 +28,14 @@ public:
     /**
      * pass in the label component that will be displaying octaves
      */
-    void setOctLabel (::rack::Label* l, int id)
-    {
+    void setOctLabel(::rack::Label* l, int id) {
         octLabel = l;
         octXPosition = l->box.pos.x;
         octParameterId = id;
     }
+
 private:
-    ::rack::Module* module = ( ::rack::Module*)1234;
+    ::rack::Module* module = (::rack::Module*)1234;
     ::rack::Label* semiLabel = nullptr;
     ::rack::Label* octLabel = nullptr;
     float semiXPosition = 0;
@@ -64,30 +58,27 @@ private:
         "G#",
         "A",
         "A#",
-        "B"
-    };
+        "B"};
 };
 
-inline void SemitoneDisplay::step()
-{
+inline void SemitoneDisplay::step() {
     if (!module) {
         return;
     }
-    
+
     int curSemi = 0;
     int curOct = 0;
     if (semiParameterId >= 0) {
-        curSemi = (int) std::round(module->params[semiParameterId].value);
+        curSemi = (int)std::round(module->params[semiParameterId].value);
     }
     if (octParameterId >= 0) {
-        curOct = (int) std::round(module->params[octParameterId].value);
+        curOct = (int)std::round(module->params[octParameterId].value);
     }
 
     if (curSemi != lastSemi || curOct != lastOct) {
         lastSemi = curSemi;
         lastOct = curOct;
 
-       
         int semi = lastSemi;
         int oct = lastOct;
         if (semi < 0) {
