@@ -392,6 +392,11 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
             rack::math::Vec(jacksX, jacksY + jacksDy),
             module,
             Comp::GATE0_OUTPUT + row));
+
+        parent->addInput(rack::createInputCentered<rack::componentlibrary::PJ301MPort>(
+            rack::math::Vec(30, jacksY + 1 + jacksDy / 2),
+            module,
+            Comp::MOD0_INPUT + row));
     }
 }
 

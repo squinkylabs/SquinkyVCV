@@ -86,6 +86,10 @@ public:
         CLOCK_INPUT,
         RESET_INPUT,
         RUN_INPUT,
+        MOD0_INPUT,
+        MOD1_INPUT,
+        MOD2_INPUT,
+        MOD3_INPUT,
         NUM_INPUTS
     };
 

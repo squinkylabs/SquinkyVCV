@@ -151,17 +151,16 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     addParam(p);
     y += 42;
     for (int i = 0; i < 4; ++i) {
-#ifdef _LAB
+#if defined(_LAB) && false
         addLabelLeft(Vec(controlX - 4, y),
                      "Polyphony");
 #endif
-
         p = SqHelper::createParam<PopupMenuParamWidget>(
             icomp,
-            Vec(controlX, y),
+            Vec(controlX + 52, y),  // 54 too much 50 too little
             module,
             Comp::NUM_VOICES0_PARAM + i);
-        p->box.size.x = 85 + 8;  // width
+        p->box.size.x = 40;  // width
         p->box.size.y = 22;      // should set auto like button does
         p->setLabels(Comp::getPolyLabels());
         addParam(p);
