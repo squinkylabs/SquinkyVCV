@@ -131,6 +131,7 @@ public:
     /**
      * So far, just for test compatibilty with old player
      */
+    #if 0
     float getPlayPosition()
     {
           // NOTE: this calculation is wrong. need subrange loop start, too
@@ -147,6 +148,7 @@ public:
 #endif
         return float(ret);
     }
+    #endif
 
     
     /** This should be called on audio thread
@@ -168,6 +170,12 @@ public:
     int  getPlayStatus(int track) const;
     void setNextSection(int track, int section);
     int getNextSection(int track) const;
+
+    /**
+     * Provide direct access so we don't have to add a zillion
+     * "pass thru" APIs.
+     */
+    MidiTrackPlayerPtr getTrackPlayer(int track);
 private:
     GateTrigger runStopProcessor;
     std::shared_ptr<MidiPlayer4> player;
@@ -334,6 +342,12 @@ bool Seq4<TBase>::isRunning() const
     bool running = TBase::params[RUNNING_PARAM].value > .5;
     player->setRunningStatus(running);
     return running;
+}
+
+template <class TBase>
+MidiTrackPlayerPtr Seq4<TBase>::getTrackPlayer(int track)
+{
+    return player->getTrackPlayer(track);
 }
 
 template <class TBase>

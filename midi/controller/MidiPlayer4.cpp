@@ -113,11 +113,18 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
     }
 }
 
+MidiTrackPlayerPtr MidiPlayer4::getTrackPlayer(int track)
+{
+    return trackPlayers[track];
+}
+
+#if 0
 double MidiPlayer4::getCurrentLoopIterationStart(int track) const
 {
     auto tkPlayer = trackPlayers[track];
     return tkPlayer->getCurrentLoopIterationStart();
 }
+#endif
 
 void MidiPlayer4::reset(bool clearGates)
 {

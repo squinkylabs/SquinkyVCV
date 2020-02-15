@@ -353,10 +353,12 @@ void MidiTrackPlayer::reset()
     sectionLoopCounter = options ? options->repeatCount : 1;
 }
 
+#if 0
 double MidiTrackPlayer::getCurrentLoopIterationStart() const
 {
     return currentLoopIterationStart;
 }
+#endif
 
 void MidiTrackPlayer::setSampleCountForRetrigger(int numSamples)
 {
@@ -371,3 +373,8 @@ void MidiTrackPlayer::updateSampleCount(int numElapsed)
         voices[i].updateSampleCount(numElapsed);
     }
 }
+
+ int MidiTrackPlayer::getCurrentRepetition()
+ {
+     return 7;      // TODO: make real
+ }

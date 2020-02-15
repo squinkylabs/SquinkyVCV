@@ -34,7 +34,9 @@ public:
      * loops are independent for each track. Default parameter is only 
      * provided for compatibilty with old unit tests.
      */
+#if 0
     double getCurrentLoopIterationStart(int track = 0) const;
+#endif
 
     void setNumVoices(int track, int numVoices);
     void setSampleCountForRetrigger(int);
@@ -54,6 +56,11 @@ public:
 
     void setPorts(Input* ports);
     
+    /**
+     * Provide direct access so we don't have to add a zillion
+     * "pass thru" APIs.
+     */
+    MidiTrackPlayerPtr getTrackPlayer(int track);
 private:
     std::vector<MidiTrackPlayerPtr> trackPlayers;
     MidiSong4Ptr song;

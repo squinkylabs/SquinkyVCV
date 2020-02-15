@@ -91,7 +91,7 @@ std::shared_ptr<TSeq> makeWith8Clock(bool noteAtTimeZero = false)
     return make<TSeq, TSong>(SeqClock::ClockRate::Div2, 16, content, true);
 }
 
-template <class TSeq>
+template <class TSeq, bool hasPlayPosition>
 static void testBasicGatesSub(std::shared_ptr<TSeq> s)
 {
     float f = s->params[TSeq::RUNNING_PARAM].value;
@@ -100,55 +100,67 @@ static void testBasicGatesSub(std::shared_ptr<TSeq> s)
 
     assertEQ(s->outputs[TSeq::GATE_OUTPUT].channels, 16);
     assertAllGatesLow(*s);
-
+#if hasPlayPosition
     auto pos = s->getPlayPosition();
     assertLT(pos, 0);
+#endif
     f = s->params[TSeq::RUNNING_PARAM].value;
 
     // Now give first clock - advance to time zero.
     // There is no note at time zero
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
+#endif
     assertAllGatesLow(*s);
     f = s->params[TSeq::RUNNING_PARAM].value;
 
     // next clock will take us to the first eighth note, where there is no note
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, .5);
+#endif
     assertAllGatesLow(*s);
     f = s->params[TSeq::RUNNING_PARAM].value;
 
     // first real Q note, gate high
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, 1);
+#endif
     assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
     // third real 8th note
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, 1.5);
+#endif
     assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
    
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, 2);
+#endif
     assertAllGatesLow(*s);
 }
 
-template <class TSeq, class TSong>
+template <class TSeq, class TSong, bool hasPlayPosition>
 static void testBasicGates()
 {
     std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, TSong>();                          // start it
     const float f = s->params[TSeq::RUNNING_PARAM].value;
-    testBasicGatesSub<TSeq>(s);
+    testBasicGatesSub<TSeq, hasPlayPosition>(s);
 }
 
-template <class TSeq, class TSong>
+template <class TSeq, class TSong, bool hasPlayPosition>
 static void testStopGatesLow()
 {
+    float pos = 0;
     std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, TSong>();
 
     // step for a while, but with no clock
@@ -156,27 +168,38 @@ static void testStopGatesLow()
 
     assertEQ(s->outputs[TSeq::GATE_OUTPUT].channels, 16);
     assertAllGatesLow(*s);
-    auto pos = s->getPlayPosition();
+
+#if hasPlayPosition
+    pos = s->getPlayPosition();
     assertLT(pos, 0);
+#endif
 
 
     // now give first clock to time zero
     genOneClock(*s);
+
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
+#endif
+
     assertAllGatesLow(*s);
 
 
     // now clock to first eigth
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, .5);
+#endif
     assertAllGatesLow(*s);
 
     // first real Q note, gate high
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, 1);
+#endif
     assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
     s->toggleRunStop();     // STOP
@@ -301,14 +324,19 @@ static void testResetGatesLow()
 
     stepN(*s, 16);
 
-    auto pos = s->getPlayPosition();
+    float pos = 0;
+#if hasPlayPosition
+    pos = s->getPlayPosition();
     assertLT(pos, 0);
+#endif
 
     // first clock to get to time t=0
     // this will play first note
     genOneClock(*s);
+#if hasPlayPosition
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
+#endif
     assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);   // now note playing
 
     s->toggleRunStop();     // STOP
@@ -331,7 +359,7 @@ void sendClockAndStep(TSeq& sq, float clockValue)
     stepN(sq, 4);
 }
 
-template <class TSeq, class TSong>
+template <class TSeq, class TSong, bool hasPlayPosition>
 static void testLoopingQ()
 {
     // 1/8 note clock 4 q
@@ -361,7 +389,9 @@ static void testLoopingQ()
 
     // should be playing the first note
     assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
+#if hasPlayPosition
     assertEQ(seq->getPlayPosition(), 0);
+#endif
     assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 3);
 
     // send the clock low
@@ -374,14 +404,18 @@ static void testLoopingQ()
 
     // We are now just started, on the first tick, playing 3V
 
+#if hasPlayPosition
     assertEQ(seq->getPlayPosition(), 0);
+#endif
     assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 3);
     assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
     // now send clock another clock
     // expect no change, other than advancing an eight note since notes a quarters
     genOneClock(*seq);
+#if hasPlayPosition
     assertEQ(seq->getPlayPosition(), .5);
+#endif
     assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 3);
     assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
@@ -405,8 +439,9 @@ static void testLoopingQ()
             expectedPos -= 4;
             didLoop = true;
         }
-
+#if hasPlayPosition
         assertEQ(seq->getPlayPosition(), expectedPos);
+#endif
         assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], expectedCV);
         assertLT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
@@ -417,7 +452,9 @@ static void testLoopingQ()
         if (didLoop) {
             expectedCV -= 4;
         }
+#if hasPlayPosition
         assertEQ(seq->getPlayPosition(), expectedPos);
+#endif
         assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], expectedCV);
         assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
@@ -427,7 +464,9 @@ static void testLoopingQ()
         // next clock will just get us to middle of same note
         genOneClock(*seq);
         expectedPos += .5f;
+#if hasPlayPosition
         assertEQ(seq->getPlayPosition(), expectedPos);
+#endif
         assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], expectedCV);
         assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
     }
@@ -567,22 +606,22 @@ static void assertGates(std::shared_ptr<Sq4> seq, bool state)
     }
 }
 
-template<class TSeq, class TSong>
+template<class TSeq, class TSong, bool hasPlayPosition>
 static void testCommon()
 {
-    testBasicGates<TSeq, TSong>();
-    testStopGatesLow<TSeq, TSong>();
+    testBasicGates<TSeq, TSong, hasPlayPosition>();
+    testStopGatesLow<TSeq, TSong, hasPlayPosition>();
     testRetrigger<TSeq, TSong>(true);
     testRetrigger<TSeq, TSong>(false);
     testResetGatesLow<TSeq, TSong>();
-    testLoopingQ<TSeq, TSong>();
+    testLoopingQ<TSeq, TSong, hasPlayPosition>();
     testGateReset<TSeq, TSong>();
 }
 
 void testSeqComposite()
 {
-    testCommon<Sq2, MidiSong>();
-    testCommon<Sq4, MidiSong4>();
+    testCommon<Sq2, MidiSong, true>();
+    testCommon<Sq4, MidiSong4, false>();
 
     testSubrangeLoop<Sq2, MidiSong>();
     testStepRecord<Sq2>();

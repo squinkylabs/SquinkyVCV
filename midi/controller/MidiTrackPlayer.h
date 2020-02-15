@@ -60,7 +60,7 @@ public:
     bool playOnce(double metricTime, float quantizeInterval);
 
     void reset();
-    double getCurrentLoopIterationStart() const;
+  //  double getCurrentLoopIterationStart() const;
     void setNumVoices(int numVoices);
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
@@ -92,6 +92,11 @@ public:
     {
         input = port;
     }
+
+    /**
+     * Returns the count in counting up the repeats.
+     */
+    int getCurrentRepetition();
 private:
 
     std::shared_ptr<MidiSong4> song;
@@ -122,8 +127,12 @@ private:
     GateTrigger nextSectionTrigger;
     GateTrigger prevSectionTrigger;
 
+    /***********************************************
+     * variables for playing a track
+     */
+
     /**
-     * variables for playihng a track
+     * abs metric time of start of current section's current loop
      */
     double currentLoopIterationStart = 0;
     MidiTrack::const_iterator curEvent;
