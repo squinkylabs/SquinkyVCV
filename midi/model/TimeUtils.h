@@ -72,28 +72,33 @@ public:
      */
     static std::string time2str(float time)
     {
-        #if 0
-        auto bbf = time2bbf(time);
-        char buffer[256];
-        snprintf(buffer, 256, "%d.%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf), std::get<2>(bbf));
-        return buffer;
-        #endif
         return time2str(time, 3);
+    }
+
+    static std::string length2str(float time)
+    {
+        return time2str(time, 3, false);
     }
 
     static std::string time2str(float time, int digits)
     {
+        return time2str(time, digits, true);
+    }
+
+    static std::string time2str(float time, int digits, bool addOneForHumanReadability)
+    {
         auto bbf = time2bbf(time);
         char buffer[256];
+        const int offset = addOneForHumanReadability ? 1 : 0;
         switch (digits) {
             case 3:
-                snprintf(buffer, 256, "%d.%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf), std::get<2>(bbf));
+                snprintf(buffer, 256, "%d.%d.%d", offset + std::get<0>(bbf), offset + std::get<1>(bbf), std::get<2>(bbf));
                 break;
             case 2:
-                snprintf(buffer, 256, "%d.%d", 1 + std::get<0>(bbf), 1 + std::get<1>(bbf));
+                snprintf(buffer, 256, "%d.%d", offset + std::get<0>(bbf), offset + std::get<1>(bbf));
                 break;
             case 1:
-                snprintf(buffer, 256, "%d", 1 + std::get<0>(bbf));
+                snprintf(buffer, 256, "%d", offset + std::get<0>(bbf));
                 break;
             default:
                 assert(false);

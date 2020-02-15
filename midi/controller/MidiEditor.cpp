@@ -1,5 +1,6 @@
 
 #include "AuditionLocker.h"
+#include "InteropClipboard.h"
 #include "ISeqSettings.h"
 #include "MidiEditor.h"
 #include "MidiEditorContext.h"
@@ -603,14 +604,7 @@ void MidiEditor::setNoteEditorAttribute(MidiEditorContext::NoteAttribute attr)
 
 void MidiEditor::selectAll()
 {
-    seq()->selection->clear();
-    MidiTrackPtr track = seq()->context->getTrack();
-    for (auto it : *track) {
-        MidiEventPtr orig = it.second;
-        if (orig->type != MidiEvent::Type::End) {
-            seq()->selection->extendSelection(orig);
-        }
-    }
+    seq()->selection->selectAll(seq()->context->getTrack());
 }
 
 void MidiEditor::changeTrackLength()
@@ -688,11 +682,15 @@ void moveSelectionToClipboard(MidiSequencerPtr seq)
     track->insertEnd(lastT);
     track->assertValid();
 
+#ifdef _OLDCLIP
     std::shared_ptr<SqClipboard::Track> clipData = std::make_shared< SqClipboard::Track>();
     clipData->track = track;
 
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
+#else
+    InteropClipboard::put(track, seq->selection->isAllSelected());
+#endif
 }
 
 void MidiEditor::copy()
@@ -716,7 +714,26 @@ void MidiEditor::copy()
         earliestEventTime = std::min(earliestEventTime, newEvent->startTime);
         firstOne = false;
     }
+   
+    auto sourceTrack = seq()->context->getTrack();
+    const float sourceLength = sourceTrack->getLength();
+    track->insertEnd(sourceLength);
+    track->assertValid();
 
+#ifdef _OLDCLIP
+    
+    
+    std::shared_ptr<SqClipboard::Track> clipData = std::make_shared<SqClipboard::Track>();
+    clipData->track = track;
+    clipData->offset = float(earliestEventTime);
+    SqClipboard::putTrackData(clipData);
+#else
+    InteropClipboard::put(track, seq()->selection->isAllSelected());
+#endif
+
+#if 0   // old
+    // don't copy empty track.
+    // for 4x4 we probably want to?
     if (track->size() == 0) {
         return;
     }
@@ -741,16 +758,24 @@ void MidiEditor::copy()
     if (!firstNote) {
         return;             // this won't work if we put non-note data in here.
     }
-
     clipData->offset = float(earliestEventTime);
     SqClipboard::putTrackData(clipData);
+
+#endif
 }
 
 void MidiEditor::paste()
 {
+ #ifdef _OLDCLIP
     if (!SqClipboard::getTrackData()) {
         return;
     }
+#else
+    // TODO: this will parse twice!
+    if (InteropClipboard::empty()) {
+        return;
+    }
+#endif
     ReplaceDataCommandPtr cmd = ReplaceDataCommand::makePasteCommand(seq());
     seq()->undo->execute(seq(), cmd);
 

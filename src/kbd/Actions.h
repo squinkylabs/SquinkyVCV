@@ -1,30 +1,31 @@
 #pragma once
 
-#include "MidiEditor.h"
 #include <functional>
 #include <map>
 #include <memory>
 #include <string>
+#include "MidiEditor.h"
 
 class ActionContext;
 class MidiSequencer;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
-class Actions
-{
+class Actions {
 public:
     Actions();
     using action = std::function<void(ActionContext&)>;
     action getAction(const std::string& name);
+
 private:
+    std::map<std::string, action> _map;
 
-    std::map< std::string, action> _map;
-
-    enum class ChangeType { small, normal, large };
+    enum class ChangeType { small,
+                            normal,
+                            large };
     static void handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type, bool increase);
     static void handleInsertPresetNote(
         ActionContext& context,
-        MidiEditor::Durations duration, 
+        MidiEditor::Durations duration,
         bool advanceAfter);
     /**
      * all of the actions

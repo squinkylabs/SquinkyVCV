@@ -25,6 +25,7 @@
 #include "../test/TestSettings.h"
 #include "TimeUtils.h"
 #include "MidiFileProxy.h"
+#include "SqRemoteEditor.h"
 #include "SequencerModule.h"
 #include <osdialog.h>
 
@@ -52,6 +53,7 @@ static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mas
 struct SequencerWidget : ModuleWidget
 {
     SequencerWidget(SequencerModule *);
+    ~SequencerWidget();
 
     void appendContextMenu(Menu *theMenu) override 
     { 
@@ -59,6 +61,13 @@ struct SequencerWidget : ModuleWidget
         theMenu->addChild(spacerLabel); 
         ManualMenuItem* manual = new ManualMenuItem("Seq++ manual", helpUrl); 
         theMenu->addChild(manual);  
+
+        ::rack::MenuItem* remoteEdit = new SqMenuItem_BooleanParam2(
+            module,
+            Comp::REMOTE_EDIT_PARAM
+        );
+        remoteEdit->text = "Enable remote editing";
+        theMenu->addChild(remoteEdit);
 
         SqMenuItem* midifile = new SqMenuItem(
             []() { return false; },
@@ -116,6 +125,9 @@ struct SequencerWidget : ModuleWidget
     void addStepRecord(SequencerModule *module);
     void toggleRunStop(SequencerModule *module);
 
+    void onNewTrack(MidiTrackPtr tk);
+    void setupRemoteEditMenu();
+
 #ifdef _TIME_DRAWING
     // Seq: avg = 399.650112, stddev = 78.684572 (us) Quota frac=2.397901
     void draw(const DrawArgs &args) override
@@ -124,34 +136,10 @@ struct SequencerWidget : ModuleWidget
         ModuleWidget::draw(args);
     }
 #endif
+    int remoteEditToken = 0;
+    bool remoteEditWasEnabled = false;
+    Divider remoteEditDivider;
 };
-
-#if 0
-std::string _removeFileName(const std::string s, std::vector<char> separators)
-{
-    // find the eerything up to and including the last separator
-    for (char separator : separators) {
-        auto pos = s.rfind(separator);
-        if (pos != std::string::npos) {
-            return s.substr(0, pos+1);
-        }
-    }
-
-    // if we didn't find any separators, then use empty path
-    return"";   
-}
-
-// windows experiment
-
-std::string removeFileName(const std::string s)
-{
-#ifdef ARCH_WIN
-    return _removeFileName(s, {'\\', ':'});
-#else
-    return _removeFileName(s, {'/'});
-#endif
-}
-#endif
 
 void SequencerWidget::saveMidiFile()
 {
@@ -225,6 +213,7 @@ void SequencerWidget::loadMidiFile()
 void SequencerWidget::step()
  {
     ModuleWidget::step();
+    remoteEditDivider.step();
 
     // Advance the scroll position
     if (scrollControl && _module && _module->isRunning()) {
@@ -309,6 +298,64 @@ SequencerWidget::SequencerWidget(SequencerModule *module) : _module(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+    setupRemoteEditMenu();
+}
+
+void SequencerWidget::setupRemoteEditMenu()
+{
+
+    // poll every 8 frames. save a little CPU.
+    remoteEditDivider.setup(8, [this]() {
+        if (!_module) {
+            return;
+        }
+        // Inspect the flag. It's set from menu, and saved in patch as a module param.
+        bool wantRemoteEdit =   ::rack::appGet()->engine->getParam(
+            _module, 
+            Comp::REMOTE_EDIT_PARAM) > .5;
+        if (wantRemoteEdit != remoteEditWasEnabled) {
+            remoteEditWasEnabled = wantRemoteEdit;
+            if (wantRemoteEdit) {
+                if (remoteEditToken == 0) {
+                    // Go register to be a remote editor sever.
+                    remoteEditToken = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
+                        if (tk) {
+                            // If there is already a client, update to reflect that.
+                            this->onNewTrack(tk);
+                        }
+                    });
+                }
+            } else {
+                 if (remoteEditToken) {
+                    SqRemoteEditor::serverUnregister(remoteEditToken);
+                    remoteEditToken = 0; 
+
+                    // When we disconnect, make a new empty song.
+                    // If we didn't we would still have clients track.
+                    MidiSongPtr song = std::make_shared<MidiSong>();
+                    MidiLocker l(song->lock);
+                    MidiTrackPtr track = MidiTrack::makeEmptyTrack(song->lock);
+                    song->addTrack(0, track);
+                    this->_module->postNewSong(song, "");
+                }
+            }
+        }
+    });
+}
+
+SequencerWidget::~SequencerWidget()
+{
+    if (remoteEditToken) {
+       SqRemoteEditor::serverUnregister(remoteEditToken); 
+    }
+}
+
+void SequencerWidget::onNewTrack(MidiTrackPtr tk)
+{
+    MidiSongPtr song = std::make_shared<MidiSong>();
+    song->addTrack(0, tk);
+    this->_module->postNewSong(song, "");
 }
 
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
@@ -529,7 +576,9 @@ void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFo
 
     NewSongDataDataCommandPtr cmd = NewSongDataDataCommand::makeLoadMidiFileCommand(newSong, updater);
     sequencer->undo->execute(sequencer, widget, cmd);
-    sequencer->context->settings()->setMidiFilePath(fileFolder);
+    if (!fileFolder.empty()) {
+        sequencer->context->settings()->setMidiFilePath(fileFolder);
+    }
 }
 
 void SequencerModule::onReset()

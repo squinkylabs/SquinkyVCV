@@ -21,7 +21,7 @@ class MidiAudition : public IMidiPlayerAuditionHost
 {
 public:
     
-    MidiAudition(IMidiPlayerHostPtr h) : playerHost(h)
+    MidiAudition(IMidiPlayerHost4Ptr h) : playerHost(h)
     {
     }
 
@@ -61,8 +61,8 @@ public:
                 if (isRetriggering) {
                     //turn the note back on
                     isRetriggering = false;
-                    playerHost->setCV(0, pitchToPlayAfterRetrigger);
-                    playerHost->setGate(0, true);
+                    playerHost->setCV(0, 0, pitchToPlayAfterRetrigger);
+                    playerHost->setGate(0, 0, true);
 
                     // but turn it off after play duration
                     timerSeconds = noteDurationSeconds();
@@ -76,7 +76,7 @@ public:
                     printf("audition timer clearing\n");  fflush(stdout);
 #endif
                     // timer is just timing down for note
-                    playerHost->setGate(0, false);
+                    playerHost->setGate(0, 0, false);
                 }
             }
         }
@@ -90,7 +90,7 @@ public:
 
             // if we just disabled, then shut off audition
             if (!enabled) {
-                playerHost->setGate(0, false);
+                playerHost->setGate(0, 0, false);
             }
             // any time we change from running to not, clear state.
             isPlaying = false;
@@ -115,7 +115,7 @@ public:
         return .001f;
     }
 private:
-    IMidiPlayerHostPtr playerHost;
+    IMidiPlayerHost4Ptr playerHost;
     float sampleTime = 0;
     float timerSeconds = 0;
     bool isRetriggering = false;
@@ -147,8 +147,8 @@ private:
 #ifdef _LOG
             printf("audition note playing normal at pitch %.2f\n", pitch);
 #endif
-            playerHost->setCV(0, pitch);
-            playerHost->setGate(0, true);
+            playerHost->setCV(0, 0, pitch);
+            playerHost->setGate(0, 0, true);
             timerSeconds = noteDurationSeconds();
             isPlaying = true;
         } else {
@@ -162,7 +162,7 @@ private:
 #ifdef _LOG
                 printf("audition note retrigger set timer sec to %f\n", timerSeconds);
 #endif
-                playerHost->setGate(0, false);
+                playerHost->setGate(0, 0, false);
             } 
         }
 #ifdef _LOG

@@ -69,7 +69,7 @@ static void test2()
     auto ret = tmpnam_s(buffer, FILENAME_MAX);
     assert(!ret);
 
-    printf("temp file = %s\n", buffer);
+   // printf("temp file = %s\n", buffer);
     MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
     bool b = MidiFileProxy::save(song, buffer);
     assert(b);

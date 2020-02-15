@@ -65,6 +65,7 @@
     <ClCompile Include="..\..\sqsrc\thread\ThreadClient.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadServer.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadSharedState.cpp" />
+    <ClCompile Include="..\..\sqsrc\util\InteropClipboard.cpp" />
     <ClCompile Include="..\..\test\Analyzer.cpp" />
     <ClCompile Include="..\..\test\calQ.cpp" />
     <ClCompile Include="..\..\test\initPerf.cpp" />
@@ -105,6 +106,7 @@
     <ClCompile Include="..\..\test\testMidiEvents.cpp" />
     <ClCompile Include="..\..\test\testMidiFile.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer2.cpp" />
+    <ClCompile Include="..\..\test\testMidiSelectionModel.cpp" />
     <ClCompile Include="..\..\test\testMidiSong.cpp" />
     <ClCompile Include="..\..\test\TestMidiViewport.cpp" />
     <ClCompile Include="..\..\test\testMinBLEPVCO.cpp" />
@@ -114,6 +116,7 @@
     <ClCompile Include="..\..\test\testNewSongDataCommand.cpp" />
     <ClCompile Include="..\..\test\testNoteScreenScale.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
+    <ClCompile Include="..\..\test\testMidiPlayer4.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
     <ClCompile Include="..\..\test\testRateConversion.cpp" />
     <ClCompile Include="..\..\test\testReplaceCommand.cpp" />
@@ -277,6 +280,7 @@
     <ClInclude Include="..\..\test\SqTime.h" />
     <ClInclude Include="..\..\test\TestAuditionHost.h" />
     <ClInclude Include="..\..\test\TestHost2.h" />
+    <ClInclude Include="..\..\test\TestHost4.h" />
     <ClInclude Include="..\..\test\TestSettings.h" />
     <ClInclude Include="..\..\test\TestSignal.h" />
     <ClInclude Include="..\..\test\TimeStatsCollector.h" />

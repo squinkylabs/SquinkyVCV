@@ -1,30 +1,37 @@
 
+#include "MidiSong.h"
+#include "MidiSong4.h"
 #include "Seq.h"
+#include "Seq4.h"
 #include "TestComposite.h"
 
 #include "asserts.h"
 
-using Sq = Seq<TestComposite>;
+using Sq2 = Seq<TestComposite>;
+using Sq4 = Seq4<TestComposite>;
 
-static void stepN(Sq& sq, int numTimes)
+template <class TSeq>
+static void stepN(TSeq& sq, int numTimes)
 {
     for (int i = 0; i < numTimes; ++i) {
         sq.step();
     }
 }
 
-static void genOneClock(Sq& sq)
+template <class TSeq>
+static void genOneClock(TSeq& sq)
 {
-    sq.inputs[Sq::CLOCK_INPUT].setVoltage(10, 0);
+    sq.inputs[TSeq::CLOCK_INPUT].setVoltage(10, 0);
     stepN(sq, 16);
-    sq.inputs[Sq::CLOCK_INPUT].setVoltage(0, 0);
+    sq.inputs[TSeq::CLOCK_INPUT].setVoltage(0, 0);
     stepN(sq, 16);
 }
 
-static void assertAllGatesLow(Sq& sq)
+template <class TSeq>
+static void assertAllGatesLow(TSeq& sq)
 {
-    for (int i = 0; i < sq.outputs[Sq::GATE_OUTPUT].channels; ++i) {
-        assertEQ(sq.outputs[Sq::GATE_OUTPUT].voltages[i], 0);
+    for (int i = 0; i < sq.outputs[TSeq::GATE_OUTPUT].channels; ++i) {
+        assertEQ(sq.outputs[TSeq::GATE_OUTPUT].voltages[i], 0);
     }
 }
 
@@ -42,15 +49,16 @@ static void initParams(T * composite)
 /**
  * @param clockDiv - 4 for quarter, etc..
  */
-std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
+template <class TSeq, class TSong>
+std::shared_ptr<TSeq> make(SeqClock::ClockRate rate,
     int numVoices, 
     MidiTrack::TestContent testContent,
     bool toggleStart)
 {
     assert(numVoices > 0 && numVoices <= 16);
 
-    auto song = MidiSong::makeTest(testContent, 0);
-    std::shared_ptr<Sq> ret = std::make_shared<Sq>(song);
+    std::shared_ptr <TSong> song = TSong::makeTest(testContent, 0);
+    auto ret = std::make_shared<TSeq>(song);
 
     // we SHOULD init the params properly for all the tests,
     // but not all work. this is a start.
@@ -59,11 +67,11 @@ std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
     }
 
 
-    const float f = ret->params[Sq::RUNNING_PARAM].value;
+    const float f = ret->params[TSeq::RUNNING_PARAM].value;
 
-    ret->params[Sq::NUM_VOICES_PARAM].value = float(numVoices - 1);
-    ret->params[Sq::CLOCK_INPUT_PARAM].value = float(rate);        
-    ret->inputs[Sq::CLOCK_INPUT].setVoltage(0, 0);        // clock low
+    ret->params[TSeq::NUM_VOICES_PARAM].value = float(numVoices - 1);
+    ret->params[TSeq::CLOCK_INPUT_PARAM].value = float(rate);
+    ret->inputs[TSeq::CLOCK_INPUT].setVoltage(0, 0);        // clock low
     if (toggleStart) {
         ret->toggleRunStop();                          // start it
     }
@@ -74,26 +82,28 @@ std::shared_ptr<Sq> make(SeqClock::ClockRate rate,
 // makes a seq composite set of for external 8th note clock
 // playing 1q song
 
-std::shared_ptr<Sq> makeWith8Clock(bool noteAtTimeZero = false)
+template <class TSeq, class TSong>
+std::shared_ptr<TSeq> makeWith8Clock(bool noteAtTimeZero = false)
 {   //need 8 clock
     MidiTrack::TestContent content = noteAtTimeZero ? 
         MidiTrack::TestContent::eightQNotes :
         MidiTrack::TestContent::oneQ1;
-    return make(SeqClock::ClockRate::Div2, 16, content, true);
+    return make<TSeq, TSong>(SeqClock::ClockRate::Div2, 16, content, true);
 }
 
-static void testBasicGatesSub(std::shared_ptr<Sq> s)
+template <class TSeq>
+static void testBasicGatesSub(std::shared_ptr<TSeq> s)
 {
-    float f = s->params[Sq::RUNNING_PARAM].value;
+    float f = s->params[TSeq::RUNNING_PARAM].value;
     stepN(*s, 16);
-    f = s->params[Sq::RUNNING_PARAM].value;
+    f = s->params[TSeq::RUNNING_PARAM].value;
 
-    assertEQ(s->outputs[Sq::GATE_OUTPUT].channels, 16);
+    assertEQ(s->outputs[TSeq::GATE_OUTPUT].channels, 16);
     assertAllGatesLow(*s);
 
     auto pos = s->getPlayPosition();
     assertLT(pos, 0);
-    f = s->params[Sq::RUNNING_PARAM].value;
+    f = s->params[TSeq::RUNNING_PARAM].value;
 
     // Now give first clock - advance to time zero.
     // There is no note at time zero
@@ -101,26 +111,26 @@ static void testBasicGatesSub(std::shared_ptr<Sq> s)
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
     assertAllGatesLow(*s);
-    f = s->params[Sq::RUNNING_PARAM].value;
+    f = s->params[TSeq::RUNNING_PARAM].value;
 
     // next clock will take us to the first eighth note, where there is no note
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, .5);
     assertAllGatesLow(*s);
-    f = s->params[Sq::RUNNING_PARAM].value;
+    f = s->params[TSeq::RUNNING_PARAM].value;
 
     // first real Q note, gate high
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, 1);
-    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
     // third real 8th note
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, 1.5);
-    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
    
     genOneClock(*s);
     pos = s->getPlayPosition();
@@ -128,37 +138,23 @@ static void testBasicGatesSub(std::shared_ptr<Sq> s)
     assertAllGatesLow(*s);
 }
 
-#if 0
-// this test used to assume that seq always started running.
-// not true anymore
-static void testBasicGateNoExplicitStart()
-{
-    //printf("skipping testBasicGateNoExplicitStart\n");
-#if 1
-    // OK - running param is not getting set becuase we aren't using the init code.
-    // So why does it work at all?
-    std::shared_ptr<Sq> s = make(SeqClock::ClockRate::Div2, 16, MidiTrack::TestContent::oneQ1, false);
- //   initParams(s.get());
-    testBasicGatesSub(s);
-#endif
-}
-#endif
-
+template <class TSeq, class TSong>
 static void testBasicGates()
 {
-    std::shared_ptr<Sq> s = makeWith8Clock();                          // start it
-    const float f = s->params[Sq::RUNNING_PARAM].value;
-    testBasicGatesSub(s);
+    std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, TSong>();                          // start it
+    const float f = s->params[TSeq::RUNNING_PARAM].value;
+    testBasicGatesSub<TSeq>(s);
 }
 
+template <class TSeq, class TSong>
 static void testStopGatesLow()
 {
-    std::shared_ptr<Sq> s = makeWith8Clock();
+    std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, TSong>();
 
     // step for a while, but with no clock
     stepN(*s, 16);
 
-    assertEQ(s->outputs[Sq::GATE_OUTPUT].channels, 16);
+    assertEQ(s->outputs[TSeq::GATE_OUTPUT].channels, 16);
     assertAllGatesLow(*s);
     auto pos = s->getPlayPosition();
     assertLT(pos, 0);
@@ -181,18 +177,18 @@ static void testStopGatesLow()
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, 1);
-    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
     s->toggleRunStop();     // STOP
     stepN(*s, 16);
     assertAllGatesLow(*s);
 }
 
-
+template <class TSeq>
 class TestClocker
 {
 public:
-    TestClocker(std::shared_ptr<Sq> seq) : s(seq)
+    TestClocker(std::shared_ptr<TSeq> seq) : s(seq)
     {
             // want samples Per Clokm
             //120 bpm, one q = .5
@@ -234,7 +230,7 @@ public:
     }
 
 private:
-    std::shared_ptr<Sq> s;
+    std::shared_ptr<TSeq> s;
 
     void oneMoreSample()
     {
@@ -259,15 +255,16 @@ private:
     float totalSamples = 0;
 };
 
+template <class TSeq, class TSong>
 static void testRetrigger(bool exactDuration)
 {
     // 1/16
-    std::shared_ptr<Sq> s = make(SeqClock::ClockRate::Div4, 1,
+    std::shared_ptr<TSeq> s = make<TSeq, TSong>(SeqClock::ClockRate::Div4, 1,
         exactDuration ? MidiTrack::TestContent::FourTouchingQuarters :
         MidiTrack::TestContent::FourAlmostTouchingQuarters,
         true
     );
-    TestClocker clock(s);
+    TestClocker<TSeq> clock(s);
     
 
     assert(s->outputs[s->GATE_OUTPUT].voltages[0] < 5);
@@ -296,10 +293,11 @@ static void testRetrigger(bool exactDuration)
 }
 
 
+template <class TSeq, class TSong>
 static void testResetGatesLow()
 {
     // make a seq with note at time zero, eight eighth notes
-    std::shared_ptr<Sq> s = makeWith8Clock(true);                          // start it
+    std::shared_ptr<TSeq> s = makeWith8Clock<TSeq, TSong>(true);                          // start it
 
     stepN(*s, 16);
 
@@ -311,37 +309,37 @@ static void testResetGatesLow()
     genOneClock(*s);
     pos = s->getPlayPosition();
     assertEQ(pos, 0);
-    assertGT(s->outputs[Sq::GATE_OUTPUT].voltages[0], 5);   // now note playing
+    assertGT(s->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);   // now note playing
 
     s->toggleRunStop();     // STOP
     stepN(*s, 16);
     assertAllGatesLow(*s);
 
     // after reset the gates should be low
-    s->inputs[Sq::RESET_INPUT].setVoltage(10, 0);
+    s->inputs[TSeq::RESET_INPUT].setVoltage(10, 0);
     stepN(*s, 16);
     assertAllGatesLow(*s);
 }
 
 
-
-void sendClockAndStep(Sq& sq, float clockValue)
+template <class TSeq>
+void sendClockAndStep(TSeq& sq, float clockValue)
 {
-    sq.inputs[Sq::CLOCK_INPUT].setVoltage(clockValue, 0);
+    sq.inputs[TSeq::CLOCK_INPUT].setVoltage(clockValue, 0);
 
     // now step a bit so that we see clock 
     stepN(sq, 4);
 }
 
+template <class TSeq, class TSong>
 static void testLoopingQ()
 {
     // 1/8 note clock 4 q
-    auto song = MidiSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
-    std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
-
-    seq->params[Sq::NUM_VOICES_PARAM].value = 0;
-    seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
-    seq->inputs[Sq::CLOCK_INPUT].setVoltage(0);        // clock low
+    auto song = TSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
+    std::shared_ptr<TSeq> seq = std::make_shared<TSeq>(song);
+    seq->params[TSeq::NUM_VOICES_PARAM].value = 0;
+    seq->params[TSeq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
+    seq->inputs[TSeq::CLOCK_INPUT].setVoltage(0);        // clock low
 
     // just pause for a bit.
     // we are now "running", but no clocks
@@ -352,19 +350,19 @@ static void testLoopingQ()
     // now start and clock
     // How does this acutally start?
  //   seq->inputs[Sq::RUN_STOP_PARAM].value = 10;
-    seq->inputs[Sq::RUN_INPUT].setVoltage(10, 0);
-    seq->inputs[Sq::CLOCK_INPUT].setVoltage(10, 0);
+    seq->inputs[TSeq::RUN_INPUT].setVoltage(10, 0);
+    seq->inputs[TSeq::CLOCK_INPUT].setVoltage(10, 0);
     assertAllGatesLow(*seq);
 
-    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
+    assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
 
     // now step a bit so that we see clock
     stepN(*seq, 4);
 
     // should be playing the first note
-    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
     assertEQ(seq->getPlayPosition(), 0);
-    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 3);
+    assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 3);
 
     // send the clock low
     sendClockAndStep(*seq, 0);
@@ -377,28 +375,28 @@ static void testLoopingQ()
     // We are now just started, on the first tick, playing 3V
 
     assertEQ(seq->getPlayPosition(), 0);
-    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 3);
-    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 3);
+    assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
     // now send clock another clock
     // expect no change, other than advancing an eight note since notes a quarters
     genOneClock(*seq);
     assertEQ(seq->getPlayPosition(), .5);
-    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 3);
-    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+    assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 3);
+    assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
 
     float expectedPos = .5;
     float expectedCV = 3;
     // now, all notes after this will be "the same"
     for (int i = 0; i < 20; ++i) {
-        assertEQ(seq->inputs[Sq::CLOCK_INPUT].getVoltage(0), 0);        // precondition for loop, clock low
+        assertEQ(seq->inputs[TSeq::CLOCK_INPUT].getVoltage(0), 0);        // precondition for loop, clock low
         /* Clock high and step.
          * This will send the player into re-trigger, since notes touch.
          * In re-trigger we hold the prev CV and force the gate low
          */
         sendClockAndStep(*seq, 10);
-        assertEQ(seq->inputs[Sq::CLOCK_INPUT].getVoltage(0), 10);
+        assertEQ(seq->inputs[TSeq::CLOCK_INPUT].getVoltage(0), 10);
         expectedPos += .5f;
 
         // loop around one bar
@@ -409,8 +407,8 @@ static void testLoopingQ()
         }
 
         assertEQ(seq->getPlayPosition(), expectedPos);
-        assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], expectedCV);
-        assertLT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+        assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], expectedCV);
+        assertLT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
         // now we are at the onset of a new note, but still re-triggering.
         // wait a bit and should see next note
@@ -420,8 +418,8 @@ static void testLoopingQ()
             expectedCV -= 4;
         }
         assertEQ(seq->getPlayPosition(), expectedPos);
-        assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], expectedCV);
-        assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+        assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], expectedCV);
+        assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
         // send clock low
         sendClockAndStep(*seq, 0);
@@ -430,14 +428,15 @@ static void testLoopingQ()
         genOneClock(*seq);
         expectedPos += .5f;
         assertEQ(seq->getPlayPosition(), expectedPos);
-        assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], expectedCV);
-        assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);
+        assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], expectedCV);
+        assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
     }
 }
 
 template <class TSong>
 extern std::shared_ptr<TSong> makeSongOneQ(float noteTime, float endTime);
 
+template <class TSeq, class TSong>
 static void testSubrangeLoop()
 {
     // make a song with one note in the second bar.
@@ -445,49 +444,49 @@ static void testSubrangeLoop()
     MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
     SubrangeLoop lp(true, 4, 8);
     song->setSubrangeLoop(lp);
-    std::shared_ptr<Sq> seq = std::make_shared<Sq>(song);
-
-    seq->params[Sq::NUM_VOICES_PARAM].value = 0;
-    seq->params[Sq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
-    seq->inputs[Sq::CLOCK_INPUT].setVoltage(0, 0);        // clock low
+    std::shared_ptr<TSeq> seq = std::make_shared<TSeq>(song);
+    seq->params[TSeq::NUM_VOICES_PARAM].value = 0;
+    seq->params[TSeq::CLOCK_INPUT_PARAM].value = float(SeqClock::ClockRate::Div2);
+    seq->inputs[TSeq::CLOCK_INPUT].setVoltage(0, 0);        // clock low
 
     // now step a bit so that we see low inputs (run and clock)
     stepN(*seq, 4);
 
     assertAllGatesLow(*seq);
-    assertEQ(seq->outputs[Sq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
+    assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
 
     // now start and clock
-    seq->inputs[Sq::RUN_INPUT].setVoltage(10, 0);
-    seq->inputs[Sq::CLOCK_INPUT].setVoltage(10, 0);
+    seq->inputs[TSeq::RUN_INPUT].setVoltage(10, 0);
+    seq->inputs[TSeq::CLOCK_INPUT].setVoltage(10, 0);
 
     // now step a bit so that we see clock
     stepN(*seq, 4);
 
-    assertGT(seq->outputs[Sq::GATE_OUTPUT].voltages[0], 5);  
+    assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 
     // should be back around to another loops starting in the first bar.
     assertEQ(seq->getPlayPosition(), 4);
 
 }
 
-static void step(std::shared_ptr<Sq> seq)
+template <class TSeq>
+static void step(std::shared_ptr<TSeq> seq)
 {
     for (int i = 0; i < 16; ++i) {
         seq->step();
     }
 }
 
-
+template <class TSeq>
 static void testStepRecord()
 {
     // DrumTrigger<TestComposite>;
-    std::shared_ptr<Sq> seq = makeWith8Clock();
+    std::shared_ptr<TSeq> seq = makeWith8Clock<TSeq, MidiSong>();
 
-    seq->params[Sq::STEP_RECORD_PARAM].value = 1;
-    seq->inputs[Sq::GATE_INPUT].channels = 1;
-    seq->inputs[Sq::GATE_INPUT].voltages[0] = 10;
-    seq->inputs[Sq::CV_INPUT].voltages[0] = 2;
+    seq->params[TSeq::STEP_RECORD_PARAM].value = 1;
+    seq->inputs[TSeq::GATE_INPUT].channels = 1;
+    seq->inputs[TSeq::GATE_INPUT].voltages[0] = 10;
+    seq->inputs[TSeq::CV_INPUT].voltages[0] = 2;
     step(seq);
 
     RecordInputData buffer;
@@ -502,7 +501,7 @@ static void testStepRecord()
     b = seq->poll(&buffer);
     assert(!b);
 
-    seq->inputs[Sq::GATE_INPUT].voltages[0] = 0;
+    seq->inputs[TSeq::GATE_INPUT].voltages[0] = 0;
     step(seq);
 
     b = seq->poll(&buffer);
@@ -510,18 +509,81 @@ static void testStepRecord()
     assert(buffer.type == RecordInputData::Type::allNotesOff);
 }
 
+template<class TSeq, class TSong>
+static void testGateReset()
+{
+    printf("TEST GATE RESET\n");
+    std::shared_ptr<TSeq> seq = makeWith8Clock<TSeq, TSong>();
+    setGates(seq, true);
+
+    // set it, so will clear gates
+    seq->inputs[TSeq::RESET_INPUT].voltages[0] = 10.f;
+    step(seq);
+    assertGates(seq, false);
+}
+
+template <class TSeq>
+void setGates(std::shared_ptr<TSeq>, bool);
+
+
+template <class TSeq>
+void assertGates(std::shared_ptr<TSeq>, bool);
+
+static void setGates(std::shared_ptr<Sq2> seq, bool state)
+{
+   for (int i = 0; i < 15; ++i) {
+        seq->outputs[Sq2::GATE_OUTPUT].voltages[i] = state ? 10.f : 0.f;
+   }
+}
+
+static void assertGates(std::shared_ptr<Sq2> seq, bool state)
+{
+    for (int i = 0; i < 15; ++i) {
+        float g = seq->outputs[Sq2::GATE_OUTPUT].voltages[i];
+        float expected = state ? 10.f : 0.f;
+        assertEQ(g, expected);
+    }
+}
+
+static void setGates(std::shared_ptr<Sq4> seq, bool state)
+{
+    for (int output = 0; output < 4; ++output) {
+        for (int i = 0; i < 15; ++i) {
+            seq->outputs[Sq4::GATE_OUTPUT + output].voltages[i] = state ? 10.f : 0.f;
+        }
+    }
+}
+
+static void assertGates(std::shared_ptr<Sq4> seq, bool state)
+{
+    for (int output = 0; output < 4; ++output) {
+        for (int i = 0; i < 15; ++i) {
+          
+            float g = seq->outputs[Sq4::GATE_OUTPUT + output].voltages[i];
+
+            float expected = state ? 10.f : 0.f;
+            assertEQ(g, expected);
+        }
+    }
+}
+
+template<class TSeq, class TSong>
+static void testCommon()
+{
+    testBasicGates<TSeq, TSong>();
+    testStopGatesLow<TSeq, TSong>();
+    testRetrigger<TSeq, TSong>(true);
+    testRetrigger<TSeq, TSong>(false);
+    testResetGatesLow<TSeq, TSong>();
+    testLoopingQ<TSeq, TSong>();
+    testGateReset<TSeq, TSong>();
+}
 
 void testSeqComposite()
 {
-    testBasicGates();
-    testStopGatesLow();
+    testCommon<Sq2, MidiSong>();
+    testCommon<Sq4, MidiSong4>();
 
-    testRetrigger(true);
-    testRetrigger(false);
-
-    testResetGatesLow();
-    testLoopingQ();
-    testSubrangeLoop();
-
-    testStepRecord();
+    testSubrangeLoop<Sq2, MidiSong>();
+    testStepRecord<Sq2>();
 }

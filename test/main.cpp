@@ -7,6 +7,7 @@
 #include <string>
 
 extern void testMidiPlayer2();
+extern void testMidiPlayer4();
 extern void testBiquad();
 extern void testTestSignal();
 extern void testSaw();
@@ -80,6 +81,7 @@ extern void testMidiFile();
 extern void testNewSongDataDataCommand();
 extern void testScale();
 extern void testTriad();
+extern void testMidiSelectionModel();
 
 #if 0
 #include <sstream>
@@ -164,16 +166,18 @@ int main(int argc, char ** argv)
     testMidiEvents();
     testFilteredIterator();
     testMidiDataModel();
+    testMidiSelectionModel();
     testMidiSong();
     testSeqClock();
     testMidiPlayer2();
-    testReplaceCommand();
-    testNewSongDataDataCommand();
-    testUndoRedo();
+    testMidiPlayer4();
     testMidiViewport();
     testScale();
     testTriad();
- 
+    testReplaceCommand();
+    testNewSongDataDataCommand();
+    testUndoRedo();
+    
     testMidiFile();
     testMidiControllers();
     testMidiEditorSelection();

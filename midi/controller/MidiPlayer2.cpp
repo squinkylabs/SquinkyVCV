@@ -5,7 +5,7 @@
 #include "MidiSong.h"
 #include "TimeUtils.h"
 
-MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song) :
+MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong> song) :
     host(host),
     song(song),
     voiceAssigner(voices, 16),
@@ -34,8 +34,9 @@ void MidiPlayer2::reset(bool clearGates)
     isResetGates = clearGates;
 }
 
-void MidiPlayer2::setNumVoices(int voices)
+void MidiPlayer2::setNumVoices(int track, int voices)
 {
+    assert(track == 0);
     numVoices = voices;
     voiceAssigner.setNumVoices(voices);
 }

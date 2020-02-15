@@ -73,6 +73,7 @@ public:
         NUM_VOICES_PARAM,
         AUDITION_PARAM,
         STEP_RECORD_PARAM,
+        REMOTE_EDIT_PARAM,              // also invisible. Are we enabled for host editing?
         NUM_PARAMS
     };
 
@@ -167,14 +168,15 @@ private:
 };
 
 template <class TBase>
-class SeqHost : public IMidiPlayerHost
+class SeqHost : public IMidiPlayerHost4
 {
 public:
     SeqHost(Seq<TBase>* s) : seq(s)
     {
     }
-    void setGate(int voice, bool gate) override
+    void setGate(int track, int voice, bool gate) override
     {
+        assert(track == 0);
 #if defined(_MLOG)
         printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
             voice, 
@@ -184,8 +186,9 @@ public:
 #endif
         seq->outputs[Seq<TBase>::GATE_OUTPUT].voltages[voice] = gate ? 10.f : 0.f;
     }
-    void setCV(int voice, float cv) override
+    void setCV(int track, int voice, float cv) override
     {
+        assert(track == 0);
 #if defined(_MLOG)
         printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
             voice, 
@@ -206,7 +209,7 @@ private:
 template <class TBase>
 void  Seq<TBase>::init(MidiSongPtr song)
 { 
-    std::shared_ptr<IMidiPlayerHost> host = std::make_shared<SeqHost<TBase>>(this);
+    std::shared_ptr<IMidiPlayerHost4> host = std::make_shared<SeqHost<TBase>>(this);
     player = std::make_shared<MidiPlayer2>(host, song);
     audition = std::make_shared<MidiAudition>(host);
 
@@ -301,7 +304,8 @@ void  Seq<TBase>::stepn(int n)
     const int numVoices = (int) std::round(TBase::params[NUM_VOICES_PARAM].value + 1);
     TBase::outputs[CV_OUTPUT].channels = numVoices;
     TBase::outputs[GATE_OUTPUT].channels = numVoices;
-    player->setNumVoices(numVoices);
+
+    player->setNumVoices(0, numVoices);
 
     if (!running && wasRunning) {
         allGatesOff();
@@ -380,6 +384,9 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             break;
         case Seq<TBase>::STEP_RECORD_PARAM:
             ret = {0, 1, 1, "Step record enable"};
+            break;
+        case Seq<TBase>::REMOTE_EDIT_PARAM:
+            ret = {0, 1, 0, "re"};
             break;
         default:
             assert(false);

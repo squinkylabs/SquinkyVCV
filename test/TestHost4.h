@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IMidiPlayerHost.h"
 #include "MidiVoice.h"
 
 /**
@@ -8,6 +9,13 @@
 class TestHost4 : public IMidiPlayerHost4
 {
 public:
+    void assertOneActiveTrack(int index)
+    {
+        for (int i = 0; i<3; ++i) {
+            assertEQ(trackActive[i], bool(i == index));
+        }
+    }
+    
     void reset()
     {
         cvChangeCount = 0;
@@ -21,6 +29,8 @@ public:
     }
     void setGate(int track, int voice, bool g) override
     {
+       // assert(track == 0);     // just for now!
+       trackActive[track] = true;
 #ifdef _MLOG
         printf("test host setGate(%d) -> %d\n", voice, g);
 #endif
@@ -34,6 +44,8 @@ public:
     }
     void setCV(int track, int voice, float cv) override
     {
+      //  assert(track == 0);     // just for now!
+        trackActive[track] = true;
         assert(voice >= 0 && voice < 16);
         if (cv != cvValue[voice]) {
             ++cvChangeCount;
@@ -60,4 +72,5 @@ public:
         -100,-100,-100,-100,
         -100,-100,-100,-100,
         -100,-100,-100,-100};
+    std::vector<bool> trackActive = {false, false, false, false};
 };

@@ -5,20 +5,56 @@
 #include "MidiTrackPlayer.h"
 #include "TimeUtils.h"
 
+#include "engine/Port.hpp"
+
+
 MidiPlayer4::MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song) :
     song(song),
     host(host)
 {
 //MidiTrackPlayerPtr
     for (int i = 0; i<MidiSong4::numTracks; ++i) {
-        trackPlayers.push_back( std::make_shared<MidiTrackPlayer>());
+        trackPlayers.push_back( std::make_shared<MidiTrackPlayer>(host, i, song));
+    }
+}
+
+void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> newSong)
+{
+
+    assert(song->lock->locked());
+    assert(newSong->lock->locked());
+  //  song = newSong;
+  //  track = song->getTrack(0);
+
+    song = newSong;
+    for (int i = 0; i<MidiSong4::numTracks; ++i) {
+        trackPlayers[i]->setSong(song, i);
+    }
+}
+
+ MidiSong4Ptr MidiPlayer4::getSong()
+{
+    return trackPlayers[0]->getSong();
+}
+
+void MidiPlayer4::setRunningStatus(bool running)
+{
+    for (int i = 0; i < MidiSong4::numTracks; ++i) {
+        trackPlayers[i]->setRunningStatus(running);
+    }
+}
+
+void MidiPlayer4::setPorts(Input* ports)
+{
+    for (int i = 0; i < MidiSong4::numTracks; ++i) {
+        trackPlayers[i]->setInputPort(ports + i);
     }
 }
 
 void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
 {
-#if defined(_MLOG) && 0
-    printf("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
+#if defined(_MLOG) && 1
+    printf("MidiPlayer4::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
 #endif
     assert(quantizationInterval != 0);
 
@@ -42,13 +78,15 @@ void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterv
 
 void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizationInterval)
 {
-    printf("updateToMetricTimeInternal \n");
     metricTime = TimeUtils::quantize(metricTime, quantizationInterval, true);
     // If we had a conflict and needed to reset, then
     // start all over from beginning. Or, if reset initiated by user.
     if (isReset) {
-        printf("\nupdatetometrictimeinternal  player proc reset. We need to do this in the track players?\n");
- 
+
+        for (int i=0; i < MidiSong4::numTracks; ++i) {
+            auto trackPlayer = trackPlayers[i];
+            trackPlayer->reset();
+        }
         // curEvent = track->begin();
         resetAllVoices(isResetGates);
         //voiceAssigner.reset();
@@ -67,28 +105,42 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
     }
 #endif
      // keep processing events until we are caught up
-    printf("need to modify play once to be in track players\n");
-#if 0
-    while (playOnce(metricTime, quantizationInterval)) {
-
+    for (int i=0; i < MidiSong4::numTracks; ++i) {
+        auto trackPlayer = trackPlayers[i];
+        assert(trackPlayer);
+        while (trackPlayer->playOnce(metricTime, quantizationInterval)) {
+        }
     }
-#endif
 }
 
-double MidiPlayer4::getCurrentLoopIterationStart() const
+double MidiPlayer4::getCurrentLoopIterationStart(int track) const
 {
-    printf("getCurrentLoopIterationStart nimp\n");
-    return 0;
+    auto tkPlayer = trackPlayers[track];
+    return tkPlayer->getCurrentLoopIterationStart();
 }
 
- void MidiPlayer4::reset(bool clearGates)
- {
-    printf("reset nimp\n");
+void MidiPlayer4::reset(bool clearGates)
+{
     isReset = true;
     isResetGates = clearGates;
- }
+}
 
- void MidiPlayer4::resetAllVoices(bool clearGates)
+int MidiPlayer4::getSection(int track) const
+{
+    return trackPlayers[track]->getSection();
+}
+
+int MidiPlayer4::getNextSection(int track) const
+{
+    return trackPlayers[track]->getNextSection();
+}
+
+void MidiPlayer4::setNextSection(int track, int section)
+{
+    trackPlayers[track]->setNextSection(section);
+}
+
+void MidiPlayer4::resetAllVoices(bool clearGates)
 {
     for (int i = 0; i<MidiSong4::numTracks; ++i) {
         auto tkPlayer = trackPlayers[i];
@@ -98,3 +150,31 @@ double MidiPlayer4::getCurrentLoopIterationStart() const
     }
 }
  
+void MidiPlayer4::setNumVoices(int track, int numVoices)
+{
+    // printf("set num vc %d, %d\n", track, numVoices);
+    // fflush(stdout);
+    assert(track>=0 && track < 4);
+    assert(numVoices >=1 && numVoices <= 16);
+  
+    trackPlayers[track]->setNumVoices(numVoices);
+
+}
+
+void MidiPlayer4::setSampleCountForRetrigger(int count)
+{
+     for (int i=0; i < MidiSong4::numTracks; ++i) {
+        auto trackPlayer = trackPlayers[i];
+        assert(trackPlayer);
+        trackPlayer->setSampleCountForRetrigger(count);
+    }
+}
+
+void MidiPlayer4::updateSampleCount(int numElapsed)
+{
+     for (int i=0; i < MidiSong4::numTracks; ++i) {
+        auto trackPlayer = trackPlayers[i];
+        assert(trackPlayer);
+        trackPlayer->updateSampleCount(numElapsed);
+    }
+}

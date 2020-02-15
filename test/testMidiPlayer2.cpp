@@ -15,7 +15,6 @@
 #include <memory>
 #include <vector>
 
-
 const float quantInterval = .001f;      // very fine to avoid messing up old tests. 
                                         // old tests are pre-quantized playback
 
@@ -58,14 +57,6 @@ template std::shared_ptr<MidiSong> makeSongOneQ<MidiSong>(float noteTime, float 
 template std::shared_ptr<MidiSong4> makeSongOneQ<MidiSong4>(float noteTime, float endTime);
 
 
-// TODO: get rid of
-#if 1
-MidiSongPtr makeSongOneQ()
-{
-    return makeSongOneQ<MidiSong>(0, 1);
-}
-#endif
-
 /**
  * Makes a one-track song.
  * Track has one quarter note at t=0, duration = eighth.
@@ -89,7 +80,7 @@ static void test0()
 
 //************************** MidiVoice tests *********************************************
 
-void initVoices(MidiVoice* voices, int numVoices, IMidiPlayerHost* host)
+void initVoices(MidiVoice* voices, int numVoices, IMidiPlayerHost4* host)
 {
     for (int i = 0; i < numVoices; ++i) {
         voices[i].setHost(host);
@@ -141,7 +132,7 @@ static void testMidiVoicePlayNote()
 static void testMidiVoicePlayNoteVoice2()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv[2];
 
     initVoices(mv, 2, host);
@@ -158,7 +149,7 @@ static void testMidiVoicePlayNoteVoice2()
 static void testMidiVoicePlayNoteOnAndOff()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv;
     initVoices(&mv, 1, host);
 
@@ -176,7 +167,7 @@ static void testMidiVoicePlayNoteOnAndOff()
 static void testMidiVoiceRetrigger()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv;
     initVoices(&mv, 1, host);
 
@@ -197,7 +188,7 @@ static void testMidiVoiceRetrigger()
 static void testMidiVoiceRetrigger2()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv;
     initVoices(&mv, 1, host);
     mv.setSampleCountForRetrigger(100);
@@ -240,7 +231,7 @@ static void basicTestOfVoiceAssigner()
 static void testVoiceAssign2Notes()
 {
     TestHost2 th;
-    IMidiPlayerHost* host = &th;
+    IMidiPlayerHost4* host = &th;
     MidiVoice mv[2];
     initVoices(mv, 2, host);
 
@@ -435,7 +426,6 @@ static void testVoiceAssignRotate()
     const float pitch2 = 1;
     const float pitch3 = 2;
    
-
     // play first note
     vx[0].updateToMetricTime(1);
     vx[1].updateToMetricTime(1);
@@ -446,7 +436,6 @@ static void testVoiceAssignRotate()
 
     p->playNote(pitch1, 1, 3);         // play long note to this voice
     assert(p->state() == MidiVoice::State::Playing);
-
 
     // let first end
     vx[0].updateToMetricTime(5);
@@ -543,11 +532,6 @@ static void testVoiceAssignBug()
 
 //********************* test helper functions ************************************************
 
-//extern MidiSongPtr makeSongOneQ();
-
-//template <class TSong>
-//extern std::shared_ptr<TSong> makeSongOneQ();
-
 // song has an eight note starting at time 0
 template <class TPlayer, class THost, class TSong>
 static std::shared_ptr<THost> makeSongOneQandRun(float time)
@@ -566,27 +550,10 @@ static std::shared_ptr<THost> makeSongOneQandRun(float time)
     return host;
 }
 
-// TODO: get rid of non-template version once player 4 is up
-static std::shared_ptr<TestHost2> makeSongOneQandRun(float time)
+template <class TSong>
+std::shared_ptr<TSong> makeSongOverlapQ()
 {
-    MidiSongPtr song = makeSongOneQ();
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
-
-    // let's make quantization very fine so these old tests don't freak out
-    pl.updateToMetricTime(time, quantInterval, true);
-
-    // song is only 1.0 long
-    float expectedLoopStart = std::floor(time);
-    assertEQ(pl.getCurrentLoopIterationStart(), expectedLoopStart);
-    
-    return host;
-}
-
-
-MidiSongPtr makeSongOverlapQ()
-{
-    MidiSongPtr song = std::make_shared<MidiSong>();
+    auto song = std::make_shared<TSong>();
     MidiLocker l(song->lock);
     song->createTrack(0);
     MidiTrackPtr track = song->getTrack(0);
@@ -614,12 +581,13 @@ MidiSongPtr makeSongOverlapQ()
     return song;
 }
 
-static std::shared_ptr<TestHost2> makeSongOverlapQandRun(float time)
+template <class TPlayer, class THost, class TSong>
+static std::shared_ptr<THost> makeSongOverlapQandRun(float time)
 {
-    MidiSongPtr song = makeSongOverlapQ();
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
-    pl.setNumVoices(4);
+    auto song = makeSongOverlapQ<TSong>();
+    auto host = std::make_shared<THost>();
+    TPlayer pl(host, song);
+    pl.setNumVoices(0, 4);
 
     const float quantizationInterval = .25f;        // shouldn't matter for this test...
 
@@ -664,19 +632,20 @@ static std::shared_ptr<TestHost2> makeSongTouchingQandRun(bool exactDuration, fl
         MidiSong::makeTest(MidiTrack::TestContent::FourAlmostTouchingQuarters, 0);
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
-    pl.setNumVoices(4);
+    pl.setNumVoices(0, 4);
     pl.updateToMetricTime(time, .25f, true);
     return host;
-
 }
+
 /**
  * runs a while, generates a lock contention, runs some more
  */
-static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
+template <class TPlayer, class THost, class TSong>
+static std::shared_ptr<THost> makeSongOneQandRun2(float timeBeforeLock, float timeDuringLock, float timeAfterLock)
 {
-    MidiSongPtr song = makeSongOneQ();
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
+    auto song = makeSongOneQ<TSong>();
+    auto host = std::make_shared<THost>();
+    TPlayer pl(host, song);
 
 
     pl.updateToMetricTime(timeBeforeLock, quantInterval, true);
@@ -694,15 +663,59 @@ static std::shared_ptr<TestHost2> makeSongOneQandRun2(float timeBeforeLock, floa
     return host;
 }
 
+
+
 //***************************** MidiPlayer2 ****************************************
 // test that APIs can be called
-template <class TPlayer, class THost, class TSong>
-static void testMidiPlayer0()
+
+enum class Flip
 {
+    none,
+    track,
+    section
+};
+
+template <class TSong>
+void flip(std::shared_ptr<TSong> song, Flip);
+
+template <>
+void flip<MidiSong4>(std::shared_ptr<MidiSong4> song, Flip flip)
+{
+   // assert(flip == Flip::track);
+    switch (flip) {
+        case Flip::track:
+            song->_flipTracks();
+            break;
+        case Flip::section:
+            song->_flipSections();
+            break;
+        case Flip::none:
+            break;
+        default:
+            assert(false);
+    }
+}
+
+template <>
+void flip<MidiSong>(std::shared_ptr<MidiSong> song, Flip flip)
+{
+    assert(flip == Flip::none);
+}
+
+template <class TPlayer, class THost, class TSong>
+static void testMidiPlayer0(Flip flipTracks = Flip::none)
+{
+    //printf("------ testMidiPlayer0 flip = %d\n", int(flipTracks));
+
     auto song = TSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
+    
+    flip(song, flipTracks);
+
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
     pl.updateToMetricTime(.01f, .25f, true);
+
+    host->assertOneActiveTrack(flipTracks == Flip::track ? 1 : 0);
 }
 
 // test song has an eight note starting at time 0
@@ -710,7 +723,6 @@ static void testMidiPlayer0()
 template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNoteOn()
 {
-    printf("\n\n****** start test\n");
     std::shared_ptr<THost> host = makeSongOneQandRun<TPlayer, THost, TSong>(2 * .24f);
 
     assertAllButZeroAreInit(host.get());
@@ -720,13 +732,13 @@ static void testMidiPlayerOneNoteOn()
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvValue[0], 2);
     assertEQ(host->lockConflicts, 0);
-
 }
 
 // same as test1, but with a lock contention
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNoteOnWithLockContention()
 {
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun2(2 * .20f, 2 * .01f, 2 * .03f);
+    std::shared_ptr<THost> host = makeSongOneQandRun2<TPlayer, THost, TSong>(2 * .20f, 2 * .01f, 2 * .03f);
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->gateChangeCount, 1);
@@ -738,10 +750,11 @@ static void testMidiPlayerOneNoteOnWithLockContention()
 
 // play the first note on and off
 // test2
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNote()
 {
     // this was wall time (1/4 sec)
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun(.5f);
+    std::shared_ptr<THost> host = makeSongOneQandRun<TPlayer, THost, TSong>(.5f);
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->lockConflicts, 0);
@@ -752,9 +765,10 @@ static void testMidiPlayerOneNote()
 }
 
 // play the first note on and off with lock contention
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNoteLockContention()
 {
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun2(2 * .20f, 2 * .01f, 2 * .04f);
+    std::shared_ptr<THost> host = makeSongOneQandRun2<TPlayer, THost, TSong>(2 * .20f, 2 * .01f, 2 * .04f);
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->lockConflicts, 1);
@@ -765,9 +779,10 @@ static void testMidiPlayerOneNoteLockContention()
 }
 
 // loop around to first note on second time
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNoteLoop()
 {
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun(2 * .51f);
+    std::shared_ptr<THost> host = makeSongOneQandRun<TPlayer, THost, TSong>(2 * .51f);
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->gateChangeCount, 3);
@@ -777,9 +792,10 @@ static void testMidiPlayerOneNoteLoop()
 }
 
 // loop around to first note on second time
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOneNoteLoopLockContention()
 {
-    std::shared_ptr<TestHost2> host = makeSongOneQandRun2(2 * .4f, 2 * .7f, 2 * .4f);
+    std::shared_ptr<THost> host = makeSongOneQandRun2<TPlayer, THost, TSong>(2 * .4f, 2 * .7f, 2 * .4f);
 
     assertAllButZeroAreInit(host.get());
     assertGE(host->gateChangeCount, 3);
@@ -788,15 +804,15 @@ static void testMidiPlayerOneNoteLoopLockContention()
     assertEQ(host->cvValue[0], 2);
 }
 
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerReset()
 {
     // make empty song, player ets.
     // play it a long time
-    MidiSongPtr song = MidiSong::makeTest(MidiTrack::TestContent::empty, 0);
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
+    auto song = TSong::makeTest(MidiTrack::TestContent::empty, 0);
+    std::shared_ptr<THost> host = std::make_shared<THost>();
+    TPlayer pl(host, song);
     pl.updateToMetricTime(100, quantInterval, true);
-
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->gateChangeCount, 0);
@@ -804,7 +820,7 @@ static void testMidiPlayerReset()
     assertEQ(host->cvChangeCount, 0);
 
     // Now set new real song
-    MidiSongPtr newSong = makeSongOneQ();
+    auto newSong = makeSongOneQ<TSong>();
     {
         MidiLocker l1(newSong->lock);
         MidiLocker l2(song->lock);
@@ -813,7 +829,6 @@ static void testMidiPlayerReset()
 
     // Should play just like it does in test1
     pl.updateToMetricTime(2 * .24f, quantInterval, true);
-
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->lockConflicts, 0);
@@ -824,10 +839,25 @@ static void testMidiPlayerReset()
     assertEQ(host->lockConflicts, 0);
 }
 
+// Kind of a dumb test - just making sure we don't assert or crash
+template <class TPlayer, class THost, class TSong>
+static void testMidiPlayerReset2()
+{
+    // make empty song, player ets.
+    // play it a long time
+    auto song = TSong::makeTest(MidiTrack::TestContent::empty, 0);
+    std::shared_ptr<THost> host = std::make_shared<THost>();
+    TPlayer pl(host, song);
+    pl.updateToMetricTime(100, quantInterval, true);
+    pl.reset(true);
+    pl.updateToMetricTime(1000, quantInterval, true);
+}
+
 // four voice assigner, but only two overlapping notes
+template <class TPlayer, class THost, class TSong>
 static void testMidiPlayerOverlap()
 {
-    std::shared_ptr<TestHost2> host = makeSongOverlapQandRun(5);
+    std::shared_ptr<THost> host = makeSongOverlapQandRun<TPlayer, THost, TSong>(5);
     assertEQ(host->gateChangeCount, 4);
     assert(host->gateState[0] == false);
     assert(host->gateState[1] == false);
@@ -839,7 +869,7 @@ static void testMidiPlayerOverlap()
 static void testMidiPlayerLoop()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
+    auto song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -864,7 +894,7 @@ static void testMidiPlayerLoop()
 static void testMidiPlayerLoop2()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
+    auto song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -897,7 +927,7 @@ static void testMidiPlayerLoop2()
 static void testMidiPlayerLoop3()
 {
     // make a song with one note in the second bar
-    MidiSongPtr song = makeSongOneQ<MidiSong>(4, 100);
+    auto song = makeSongOneQ<MidiSong>(4, 100);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiPlayer2 pl(host, song);
@@ -975,8 +1005,8 @@ static void testShortQuantize()
 }
 #endif
 
-
-MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1, 
+template <class TSong>
+std::shared_ptr<TSong> makeSongTwoNotes(float noteTime1, float noteDuration1, 
     float noteTime2, float noteDuration2, 
     float endTime)
 {
@@ -984,7 +1014,7 @@ MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1,
     assert(noteTime1 < noteTime2);
     assert(endTime >= (noteTime2 + noteDuration2));
 
-    MidiSongPtr song = std::make_shared<MidiSong>();
+    auto song = std::make_shared<TSong>();
     MidiLocker l(song->lock);
     song->createTrack(0);
     MidiTrackPtr track = song->getTrack(0);
@@ -1018,16 +1048,17 @@ MidiSongPtr makeSongTwoNotes(float noteTime1, float noteDuration1,
  * will make a track with two adjcent quarter notes, and play it
  * enough to verify the retrigger between notes.
  */
+template <class TPlayer, class THost, class TSong>
 static void _testQuantizedRetrigger2(float durations)
 {
     // quarters on beat 1, and on beat 2, duration pass in "durations"
-    MidiSongPtr song = makeSongTwoNotes(0, durations,
+    auto song = makeSongTwoNotes<TSong>(0, durations,
         1, durations,
         4);
 
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiPlayer2 pl(host, song);
-    pl.setNumVoices(1);
+    TPlayer pl(host, song);
+    pl.setNumVoices(0, 1);
     pl.setSampleCountForRetrigger(44);
 
     // should not be playing a note now.
@@ -1061,10 +1092,11 @@ static void _testQuantizedRetrigger2(float durations)
     assert(host->gateState[0]);
 }
 
+template <class TPlayer, class THost, class TSong>
 static void testQuantizedRetrigger2()
 {
-    _testQuantizedRetrigger2(1.0f);
-    _testQuantizedRetrigger2(.25f);
+    _testQuantizedRetrigger2<TPlayer, THost, TSong>(1.0f);
+    _testQuantizedRetrigger2<TPlayer, THost, TSong>(.25f);
 }
 
 //*******************************tests of MidiPlayer2 **************************************
@@ -1072,10 +1104,24 @@ static void testQuantizedRetrigger2()
 template <class TPlayer, class THost, class TSong>
 static void playerTests()
 {
-    printf("enter templatized tests\n");
     testMidiPlayer0<TPlayer, THost, TSong>();
-    //testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
-    printf("leave templatized test\n");
+    testMidiPlayerOneNoteOn<TPlayer, THost, TSong>();
+    testMidiPlayerOneNoteOnWithLockContention<TPlayer, THost, TSong>();
+    testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong>();
+    testMidiPlayerOneNote<TPlayer, THost, TSong>();
+    testMidiPlayerOneNoteLoopLockContention<TPlayer, THost, TSong>();
+    testMidiPlayerOneNoteLoop<TPlayer, THost, TSong>();
+    testMidiPlayerReset<TPlayer, THost, TSong>();
+    testMidiPlayerReset2<TPlayer, THost, TSong>();
+
+    testMidiPlayerOverlap<TPlayer, THost, TSong>();
+    testQuantizedRetrigger2<TPlayer, THost, TSong>();
+}
+
+static void player4Tests()
+{
+    testMidiPlayer0<MidiPlayer4, TestHost4, MidiSong4>(Flip::track);
+    testMidiPlayer0<MidiPlayer4, TestHost4, MidiSong4>(Flip::section);
 }
 
 void testMidiPlayer2()
@@ -1101,18 +1147,10 @@ void testMidiPlayer2()
 
     playerTests<MidiPlayer2, TestHost2, MidiSong>();
     playerTests<MidiPlayer4, TestHost4, MidiSong4>();
+    player4Tests();
 
-   // testMidiPlayer0<MidiPlayer2>();
-    testMidiPlayerOneNoteOn<MidiPlayer2, TestHost2, MidiSong>();
-    testMidiPlayerOneNoteOnWithLockContention();
-    testMidiPlayerOneNote();
-    testMidiPlayerOneNoteLockContention();
-    testMidiPlayerOneNoteLoop();
-    testMidiPlayerOneNoteLoopLockContention();
-    testMidiPlayerReset();
-    testMidiPlayerOverlap();
+    // loop tests not templatized, because player 4 doesn't have subrange loop
     testMidiPlayerLoop();
     testMidiPlayerLoop2();
     testMidiPlayerLoop3();
-    testQuantizedRetrigger2();
 }

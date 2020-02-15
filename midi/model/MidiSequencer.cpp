@@ -66,6 +66,7 @@ MidiSequencer::~MidiSequencer()
 
 void MidiSequencer::assertValid() const
 {
+#ifndef NDEBUG
     assert(editor);
     assert(undo);
     assert(song);
@@ -82,6 +83,7 @@ void MidiSequencer::assertValid() const
     (void) track2;
     
     assert(track == track2);
+#endif
 }
 
 void MidiSequencer::assertSelectionInTrack() const

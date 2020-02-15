@@ -447,6 +447,21 @@ static void testTimeUtil6()
     assert(x == "3");
 }
 
+static void testTimeUtil7()
+{
+    float l = 8;
+    auto x = TimeUtils::length2str(l);
+    assert(x == "2.0.0");
+
+    l = TimeUtils::quarterNote() + TimeUtils::bar2time(2);
+    x = TimeUtils::length2str(l);
+    assert(x == "2.1.0");
+
+    l += 4.f * TimeUtils::quarterNote() / 100.f;
+    x = TimeUtils::length2str(l);
+    assert(x == "2.1.4");
+}
+
 static void testTimeUtilSimpleQuant()
 {
     assertEQ(TimeUtils::quantize(10, 1, true), 10);
@@ -686,6 +701,7 @@ void  testMidiEvents()
     testTimeUtil4();
     testTimeUtil5();
     testTimeUtil6();
+    testTimeUtil7();
     testTimeUtilSimpleQuant();
     testTimeUtilQ16();
 

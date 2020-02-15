@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 class SequencerModule;
+class SubrangeLoop;
 
 class SeqSettings : public ISeqSettings
 {

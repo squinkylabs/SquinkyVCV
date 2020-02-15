@@ -3,7 +3,7 @@
 #include <memory>
 
 class MidiSong;
-class IMidiPlayerHost;
+class IMidiPlayerHost4;
 
 #include "MidiTrack.h"
 #include "MidiVoice.h"
@@ -12,7 +12,7 @@ class IMidiPlayerHost;
 class MidiPlayer2
 {
 public:
-    MidiPlayer2(std::shared_ptr<IMidiPlayerHost> host, std::shared_ptr<MidiSong> song);
+    MidiPlayer2(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong> song);
     void setSong(std::shared_ptr<MidiSong> song);
 
     /**
@@ -23,7 +23,11 @@ public:
      */
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
-    void setNumVoices(int voices);
+    /**
+     * param trackNumber must be zero.
+     * It's only here so tests for player4 can work with player 2 also.
+     */
+    void setNumVoices(int trackNumber, int voices);
 
     /**
      * resets all internal playback state.
@@ -37,7 +41,7 @@ public:
     void updateSampleCount(int numElapsed);
 
 private:
-    std::shared_ptr<IMidiPlayerHost> host;
+    std::shared_ptr<IMidiPlayerHost4> host;
     std::shared_ptr<MidiSong> song;
 
     static const int maxVoices = 16;

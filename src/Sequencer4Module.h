@@ -2,7 +2,13 @@
 
 #include "Seq4.h"
 #include "WidgetComposite.h"
+
 using Module =  ::rack::engine::Module;
+class MidiSequencer4;
+using MidiSequencer4Ptr = std::shared_ptr<MidiSequencer4>;
+class Sequencer4Widget;
+
+#include <atomic>
 
 /**
  */
@@ -17,10 +23,22 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    //std::shared_ptr<Comp> blank;
     std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
 
-private:
+    void toggleRunStop()
+    {
+        runStopRequested = true;
+    }
+    MidiSong4Ptr getSong();
 
+    json_t *dataToJson() override;
+    void dataFromJson(json_t *data) override;
+
+    Sequencer4Widget* widget = nullptr;
+private:
+    std::atomic<bool> runStopRequested;
+    std::shared_ptr<MidiSequencer4> seq4;
+    void setNewSeq(MidiSequencer4Ptr);
+    
 };
 

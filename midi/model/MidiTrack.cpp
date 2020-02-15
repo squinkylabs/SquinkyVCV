@@ -7,13 +7,18 @@
 #include <stdio.h>
 
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 int MidiEvent::_count = 0;
 #endif
 
 MidiTrack::MidiTrack(std::shared_ptr<MidiLock> l) : lock(l)
 {
+}
 
+
+MidiTrack::MidiTrack(std::shared_ptr<MidiLock> l, bool b) : lock(l)
+{
+    insertEvent( std::make_shared<MidiEndEvent>());
 }
 
 int MidiTrack::size() const
@@ -23,6 +28,9 @@ int MidiTrack::size() const
 
 void MidiTrack::assertValid() const
 {
+#ifndef NDEBUG
+    assert(this);
+    assert(this->size());
     int numEnds = 0;
     bool lastIsEnd = false;
     (void) lastIsEnd;
@@ -54,6 +62,7 @@ void MidiTrack::assertValid() const
     assert(lastIsEnd);
     assertEQ(numEnds, 1);
     assertLE(lastEnd, totalDur);
+#endif
 }
 
 void MidiTrack::insertEvent(MidiEventPtr evIn)
@@ -135,12 +144,11 @@ void MidiTrack::_dump() const
                 assert(false);
 
         }
-        //const void* addr = evt.get();
+
         printf("time = %f, type=%s ", ti, type.c_str());
         if (!pitch.empty()) {
             printf("%s", pitch.c_str());
         }
-        //printf(" addr=%p\n", addr);
         printf("\n");
     }
     printf("\n");
@@ -294,26 +302,33 @@ MidiTrackPtr MidiTrack::makeTest(TestContent content, std::shared_ptr<MidiLock> 
             ret = makeTestCmaj(lock);
             break;
         case TestContent::empty:
-            ret = makeTestEmpty(lock);
+            ret = makeEmptyTrack(lock);
             break;
         case TestContent::oneNote123:
             ret = makeTestNote123(lock);
             break;
         case TestContent::oneQ1:
-            ret = makeTestOneQ1(lock);
+            ret = makeTestOneQ1(lock, 3.0f);
+            break;
+        case TestContent::oneQ1_75:
+            ret = makeTestOneQ1(lock, 7.5f);
             break;
         case TestContent::FourTouchingQuarters:
-            ret = makeTestFourTouchingQuarters(true, lock, false);
+            ret = makeTestFourTouchingQuarters(true, lock, false, 3.f);
             break;
         case TestContent::FourAlmostTouchingQuarters:
-            ret = makeTestFourTouchingQuarters(false, lock, false);
+            ret = makeTestFourTouchingQuarters(false, lock, false, 3.f);
             break;
         case TestContent::FourTouchingQuartersOct:
-            ret = makeTestFourTouchingQuarters(false, lock, true);
+            ret = makeTestFourTouchingQuarters(false, lock, true, 3.f);
+            break;
+        case TestContent::FourAlmostTouchingQuarters_12:
+            ret = makeTestFourTouchingQuarters(false, lock, false, 1.2f);
             break;
         default:
             assert(false);
     }
+    assert(ret);
     ret->assertValid();
     return ret;
 }
@@ -347,6 +362,7 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
     auto track = std::make_shared<MidiTrack>(lock);
     MidiEvent::time_t time = 0;
 
+    // 0
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         ev->startTime = time;
@@ -355,54 +371,75 @@ MidiTrackPtr MidiTrack::makeTestCmaj(std::shared_ptr<MidiLock> lock)
         track->insertEvent(ev);
     }
 
+    // 1
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::d);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
+    // 2
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::e);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
+    // 3
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::f);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
+    // 4
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::g);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
+    // 5
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::a);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
+    // 6
     {
         MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
         time += 1;
         ev->startTime = time;
         ev->setPitch(3, PitchUtils::b);
+        ev->duration = .5;
         track->insertEvent(ev);
     }
 
+    // 7
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        time += 1;
+        ev->startTime = time;
+        ev->setPitch(4, PitchUtils::c);
+        ev->duration = .5;
+        track->insertEvent(ev);
+    }
 
     track->insertEnd(time + 1);
 
@@ -424,14 +461,14 @@ MidiTrackPtr MidiTrack::makeTestNote123(std::shared_ptr<MidiLock> lock)
     return track;
 }
 
-MidiTrackPtr MidiTrack::makeTestOneQ1(std::shared_ptr<MidiLock> lock)
+MidiTrackPtr MidiTrack::makeTestOneQ1(std::shared_ptr<MidiLock> lock, float pitch)
 {
     auto track = std::make_shared<MidiTrack>(lock);
     MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
     const float testTime = 1.;
     newNote->startTime = testTime;
     newNote->duration = 1;
-    newNote->pitchCV = 3.0f;
+    newNote->pitchCV = pitch;
 
     track->insertEvent(newNote);
     track->insertEnd(TimeUtils::bar2time(1));
@@ -441,12 +478,13 @@ MidiTrackPtr MidiTrack::makeTestOneQ1(std::shared_ptr<MidiLock> lock)
 MidiTrackPtr MidiTrack::makeTestFourTouchingQuarters(
     bool exactDuration,
     std::shared_ptr<MidiLock> lock,
-    bool spacePitchesByOctave)
+    bool spacePitchesByOctave,
+    float pitch)
 {
     auto track = std::make_shared<MidiTrack>(lock);
 
     const float duration = exactDuration ? 1.f : .999f;
-    float pitch = 3.f;
+  //  float pitch = 3.f;
     for (int i = 0; i < 4; ++i) {
         MidiNoteEventPtr newNote = std::make_shared<MidiNoteEvent>();
         newNote->startTime = float(i);
@@ -462,7 +500,7 @@ MidiTrackPtr MidiTrack::makeTestFourTouchingQuarters(
     return track;
 }
 
-MidiTrackPtr MidiTrack::makeTestEmpty(std::shared_ptr<MidiLock> lock)
+MidiTrackPtr MidiTrack::makeEmptyTrack(std::shared_ptr<MidiLock> lock)
 {
     auto track = std::make_shared<MidiTrack>(lock);
     track->insertEnd(8.f);                  // make two empty bars

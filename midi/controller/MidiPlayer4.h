@@ -9,12 +9,20 @@ class MidiTrackPlayer;
 using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
 using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
 
+#include "MidiTrackPlayer.h"
+
+// #define _MLOG
+
 class MidiPlayer4
 {
 public:
-     MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
+    using Input = MidiTrackPlayer::Input;
+    MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
 
-         /**
+    void setSong(std::shared_ptr<MidiSong4> song);
+    MidiSong4Ptr getSong();
+
+    /**
      * Main "play something" function.
      * @param metricTime is the current time where 1 = quarter note.
      * @param quantizationInterval is the amount of metric time in a clock. 
@@ -22,13 +30,30 @@ public:
      */
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
-    double getCurrentLoopIterationStart() const;
+    /**
+     * loops are independent for each track. Default parameter is only 
+     * provided for compatibilty with old unit tests.
+     */
+    double getCurrentLoopIterationStart(int track = 0) const;
+
+    void setNumVoices(int track, int numVoices);
+    void setSampleCountForRetrigger(int);
+    void updateSampleCount(int numElapsed);
 
     /**
      * resets all internal playback state.
      * @param clearGate will set the host's gate low, if true
      */
     void reset(bool clearGates);
+
+    void setRunningStatus(bool running);
+
+    int getSection(int track) const;
+    void setNextSection(int track, int section);
+    int getNextSection(int track) const;
+
+    void setPorts(Input* ports);
+    
 private:
     std::vector<MidiTrackPlayerPtr> trackPlayers;
     MidiSong4Ptr song;

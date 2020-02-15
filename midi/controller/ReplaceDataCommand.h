@@ -86,6 +86,16 @@ public:
         std::shared_ptr<MidiSequencer>sequencer, 
         TriadType,
         ScalePtr);
+
+    /**
+     * Some operations require the track length to be extended
+     * to accommodate the edited notes. This function rounds to bar
+     * boundaries; if the result is longer than the current track length,
+     * then that will be returned. If track length already sufficient, will
+     * return -1;
+     */
+    static float calculateDurationRequest(std::shared_ptr<MidiSequencer> seq, float duration);
+    static float calculateDurationRequest(std::shared_ptr<MidiTrack> track, float duration);
 private:
 
     int trackNumber;
@@ -103,15 +113,6 @@ private:
      * When we select new events, should we clear first?
      */
     bool extendSelection = false;
-
-    /**
-     * Some operations require the track length to be extended
-     * to accommodate the edited notes. This function rounds to bar
-     * boundaries; if the result is longer than the current track length,
-     * then that will be returned. If track length already sufficient, will
-     * return -1;
-     */
-    static float calculateDurationRequest(std::shared_ptr<MidiSequencer> seq, float duration);
 
     /**
      * queues up note additions and deletions to make them all fit in a shorter track
@@ -139,5 +140,7 @@ private:
         std::shared_ptr<MidiSequencer>sequencer, 
         TriadType,
         ScalePtr);
+
+    void assertValid() const;
 };
 

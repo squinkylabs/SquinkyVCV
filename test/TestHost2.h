@@ -5,9 +5,12 @@
 /**
  * mock host to spy on the voices.
  */
-class TestHost2 : public IMidiPlayerHost
+class TestHost2 : public IMidiPlayerHost4
 {
 public:
+    void assertOneActiveTrack(int index) {
+        assertEQ(index, 0);
+    }
     void reset()
     {
         cvChangeCount = 0;
@@ -19,11 +22,12 @@ public:
             it = -100;
         }
     }
-    void setGate(int voice, bool g) override
+    void setGate(int track, int voice, bool g) override
     {
 #ifdef _MLOG
         printf("test host setGate(%d) -> %d\n", voice, g);
 #endif
+        assert(track == 0);
         assert(voice >= 0 && voice < 16);
         bool bs = gateState[voice];
         bool chg = (bs != g);
@@ -32,8 +36,9 @@ public:
             gateState[voice] = g;
         }
     }
-    void setCV(int voice, float cv) override
+    void setCV(int track, int voice, float cv) override
     {
+        assert(track == 0);
         assert(voice >= 0 && voice < 16);
         if (cv != cvValue[voice]) {
             ++cvChangeCount;

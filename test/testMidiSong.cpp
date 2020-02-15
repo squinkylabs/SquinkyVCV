@@ -1,3 +1,4 @@
+#include "InteropClipboard.h"
 #include "MidiLock.h"
 #include "MidiSong.h"
 #include "MidiSong4.h"
@@ -51,17 +52,15 @@ static void testDefSong()
 
 static void testClip1()
 {
-    auto p = SqClipboard::getTrackData();
-    assert(!p);
+    auto empty = InteropClipboard::empty();
+    assert(empty);
 
     std::shared_ptr<MidiLock> lock = std::make_shared<MidiLock>();
-
-    std::shared_ptr<SqClipboard::Track> t = std::make_shared< SqClipboard::Track>();
-    t->track = std::make_shared<MidiTrack>(lock);
-    SqClipboard::putTrackData(t);
-
-    p = SqClipboard::getTrackData();
-    assert(p);
+    MidiLocker l(lock);
+    MidiTrackPtr t = MidiTrack::makeTest(MidiTrack::TestContent::empty, lock);
+    InteropClipboard::put(t, false);
+    empty = InteropClipboard::empty();
+    assert(!empty);
 }
 
 static void testSong4_1()
@@ -97,5 +96,6 @@ void testMidiSong()
 
     testSong4_1();
     testSong4_2();
+    InteropClipboard::_clear();
     assertNoMidi();     // check for leaks
 }
