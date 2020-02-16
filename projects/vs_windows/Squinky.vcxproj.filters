@@ -516,6 +516,9 @@
     <ClCompile Include="..\..\sqsrc\util\InteropClipboard.cpp">
       <Filter>Source Files\sqsrc\util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testMidiTrackPlayer.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
