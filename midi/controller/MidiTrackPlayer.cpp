@@ -330,6 +330,7 @@ void MidiTrackPlayer::reset() {
     currentLoopIterationStart = 0;
     auto options = song->getOptions(trackIndex, curSectionIndex);
     sectionLoopCounter = options ? options->repeatCount : 1;
+    totalRepeatCount = sectionLoopCounter; 
 }
 
 #if 0

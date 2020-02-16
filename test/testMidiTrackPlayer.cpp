@@ -46,11 +46,25 @@ static void testLoop1()
     options0->repeatCount = 2;
     const float quantizationInterval = .01f;
     int x = pl.getCurrentRepetition();
-    assertEQ(x, 0);     // when stopped, always zero
-    pl.setRunningStatus(true);  // start it.
+    assertEQ(x, 0);                 // when stopped, always zero
+    pl.reset();                     // for some reason we need to do this before we start
+    pl.setRunningStatus(true);      // start it.
     x = pl.getCurrentRepetition();
-    assertEQ(x, 1);     //now we are playing first time
+    assertEQ(x, 1);                 //now we are playing first time
+    
+    bool played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
+    assert(played);
+    played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
+    assert(played);                        // only one note in first loop (and one note off)
   
+    played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
+    assert(played);                        // and the end event
+
+    played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
+    assert(!played);
+
+    x = pl.getCurrentRepetition();
+    assertEQ(x, 2);                 //now we are playing second time
 }
 
 
