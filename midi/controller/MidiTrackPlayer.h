@@ -60,7 +60,6 @@ public:
     bool playOnce(double metricTime, float quantizeInterval);
 
     void reset();
-  //  double getCurrentLoopIterationStart() const;
     void setNumVoices(int numVoices);
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
@@ -136,7 +135,13 @@ private:
      */
     double currentLoopIterationStart = 0;
     MidiTrack::const_iterator curEvent;
+
+    /**
+     * This counter counts down. when if gets to zero
+     * the section is done.
+     */
     int sectionLoopCounter = 1;
+    int totalRepeatCount = 1;           // what repeat was set to at the start of the section
     bool isPlaying = false;             // somtimes we need to know if we are playing
 
     bool pollForNoteOff(double metricTime);
