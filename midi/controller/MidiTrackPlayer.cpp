@@ -138,17 +138,17 @@ int MidiTrackPlayer::validateSectionRequest(int section) const {
 }
 
 void MidiTrackPlayer::setNextSection(int section) {
-    nextSectionIndex = validateSectionRequest(section);
-    if (!isPlaying && nextSectionIndex) {
+    eventQ.nextSectionIndex = validateSectionRequest(section);
+    if (!isPlaying && eventQ.nextSectionIndex) {
         // if we aren't playing, set it in anticipation of starting.
         // If we are playing, the next end event will advance us
-        curSectionIndex = nextSectionIndex - 1;
+        curSectionIndex = eventQ.nextSectionIndex - 1;
         // printf("set next section just set curSection to %d\n", curSectionIndex);
     }
 }
 
 int MidiTrackPlayer::getNextSection() const {
-    return nextSectionIndex;
+    return eventQ.nextSectionIndex;
 }
 
 void MidiTrackPlayer::resetAllVoices(bool clearGates) {
@@ -237,15 +237,15 @@ void MidiTrackPlayer::onEndOfTrack() {
     currentLoopIterationStart += curEvent->first;
 
     // If there is a section change queued up, do it.
-    if (nextSectionIndex > 0) {
+    if (eventQ.nextSectionIndex > 0) {
 #if 0
         const int foundNext = validateSectionRequest(nextSectionIndex);
         curSectionIndex = foundNext <= 0 ? 0 : foundNext - 1;
         nextSectionIndex = 0;           // clear the request
         printf("after find next, cur Index = %d\n ", curSectionIndex);
 #endif
-        setupToPlayDifferentSection(nextSectionIndex);
-        nextSectionIndex = 0;
+        setupToPlayDifferentSection(eventQ.nextSectionIndex);
+        eventQ.nextSectionIndex = 0;
 
         // we need to fold the above into
         // setupToPlayDifferentSection
@@ -312,7 +312,7 @@ int MidiTrackPlayer::getSection() const {
 void MidiTrackPlayer::reset() {
     // we don't want reset to erase nextSectionIndex, so
     // re-apply it after reset.
-    const int saveSection = nextSectionIndex;
+    const int saveSection = eventQ.nextSectionIndex;
     if (saveSection == 0) {
         findFirstTrackSection();
     } else {

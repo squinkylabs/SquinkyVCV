@@ -18,15 +18,14 @@ class MidiTrack;
  * the unit tests can pass this "Output" struct around
  */
 #ifdef __PLUGIN
-    namespace rack {
-        namespace engine {
-            struct Input;
-        }
-    }
+namespace rack {
+namespace engine {
+struct Input;
+}
+}  // namespace rack
 #else
 #include "TestComposite.h"
 #endif
-
 
 /**
  * input port usage
@@ -38,11 +37,8 @@ class MidiTrack;
  * 4 =play clip 2x/3x/4x... faster (CV)
  */
 
-
-class MidiTrackPlayer
-{
+class MidiTrackPlayer {
 public:
-
 #ifdef __PLUGIN
     using Input = rack::engine::Input;
 #else
@@ -80,15 +76,13 @@ public:
      *      otherwise will search forward for one to play.
      *      Will return 0 if there are no playable sections.
      */
-    int validateSectionRequest(int section) const ;
+    int validateSectionRequest(int section) const;
     int getNextSection() const;
-    void setRunningStatus(bool running)
-    {
+    void setRunningStatus(bool running) {
         isPlaying = running;
     }
 
-    void setInputPort(Input* port)
-    {
+    void setInputPort(Input* port) {
         input = port;
     }
 
@@ -96,11 +90,11 @@ public:
      * Returns the count in counting up the repeats.
      */
     int getCurrentRepetition();
-private:
 
+private:
     std::shared_ptr<MidiSong4> song;
-    std::shared_ptr<MidiTrack> curTrack;   // need something like array for song4??
-    const int trackIndex=0;
+    std::shared_ptr<MidiTrack> curTrack;  // need something like array for song4??
+    const int trackIndex = 0;
 
     /**
      * cur section index is 0..3, and is the direct index into the
@@ -109,20 +103,14 @@ private:
     int curSectionIndex = 0;
 
     /**
-     * next section index is different. it is 1..4, where 
-     * 0 means "no request". APIs to get and set this
-     * use the save 1..4 offset index.
-     */
-    int nextSectionIndex = 0;
-    /**
      * Variables around voice state
      */
-    int numVoices = 1;      // up to 16
+    int numVoices = 1;  // up to 16
     static const int maxVoices = 16;
     MidiVoice voices[maxVoices];
     MidiVoiceAssigner voiceAssigner;
 
-    Input* input=nullptr;
+    Input* input = nullptr;
     GateTrigger nextSectionTrigger;
     GateTrigger prevSectionTrigger;
 
@@ -141,12 +129,11 @@ private:
      * the section is done.
      */
     int sectionLoopCounter = 1;
-    int totalRepeatCount = 1;           // what repeat was set to at the start of the section
-    bool isPlaying = false;             // somtimes we need to know if we are playing
+    int totalRepeatCount = 1;  // what repeat was set to at the start of the section
+    bool isPlaying = false;    // somtimes we need to know if we are playing
 
     bool pollForNoteOff(double metricTime);
     void findFirstTrackSection();
-    //void findNextSection();
 
     /**
      * will set curSectionIndex, and sectionLoopCounter
@@ -162,4 +149,25 @@ private:
     void setupToPlayCommon();
     void onEndOfTrack();
 
+    /**
+     * This is not an event queue at all.
+     * It's a collection of flags and vaues that are queued up.
+     */
+    class EventQ {
+    public:
+        /**
+         * next section index is different. it is 1..4, where 
+         * 0 means "no request". APIs to get and set this
+         * use the save 1..4 offset index.
+         */
+        int nextSectionIndex = 0;
+
+        /**
+         * If false, we wait for next loop iteration to apply queue.
+         * If true, we do "immediately";
+         */
+        bool eventsHappenImmediately = false;
+    };
+
+    EventQ eventQ;
 };
