@@ -378,7 +378,8 @@ MidiSong4Ptr SequencerSerializer::fromJsonSong4(json_t *data)
                         song->addOptions(row, col, std::make_shared<MidiTrack4Options>());
                     }
                     if (!haveTrack && haveOptions) {
-                        WARN("removing extra options");
+                        // this happens from context menu. it's normal.
+                        //WARN("removing extra options");
                         song->addOptions(row, col, nullptr);
                     }
                 }
