@@ -6,9 +6,13 @@
 #include <assert.h>
 #include <stdio.h>
 
-MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) : trackIndex(trackIndex),
-                                                                                                                             curSectionIndex(0),
-                                                                                                                             voiceAssigner(voices, 16) {
+MidiTrackPlayer::MidiTrackPlayer(
+    std::shared_ptr<IMidiPlayerHost4> host,
+    int trackIndex, 
+    std::shared_ptr<MidiSong4> _song) : trackIndex(trackIndex),
+                                        curSectionIndex(0),
+                                        voiceAssigner(voices, 16),
+                                        cv0Trigger(false) {
     setSong(_song, trackIndex);
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
@@ -336,6 +340,7 @@ void MidiTrackPlayer::updateSampleCount(int numElapsed) {
     for (int i = 0; i < numVoices; ++i) {
         voices[i].updateSampleCount(numElapsed);
     }
+    pollForCVChange();
 }
 
 int MidiTrackPlayer::getCurrentRepetition() {
@@ -345,4 +350,17 @@ int MidiTrackPlayer::getCurrentRepetition() {
     }
 
     return totalRepeatCount + 1 - sectionLoopCounter;
+}
+
+void MidiTrackPlayer::pollForCVChange()
+{
+    assert(input);
+    if (input) {
+        // add poling here
+        auto ch0 = input->getVoltage(0);
+        cv0Trigger.go(ch0);
+        if (cv0Trigger.trigger()) {
+            assert(false);
+        }
+    }
 }

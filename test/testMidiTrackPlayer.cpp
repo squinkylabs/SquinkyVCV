@@ -82,11 +82,8 @@ static void testForever()
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 0;              // play forever
     const float quantizationInterval = .01f;
-    printf("about to reset\n");
     pl.reset();                     // for some reason we need to do this before we start
-    printf("about to start\n");
     pl.setRunningStatus(true);      // start it.
-    printf("about to run\n");
 
     // we set it to "forever", so let's see if it can play 100 times.
     for (int iLoop = 0; iLoop < 100; ++iLoop) {
@@ -97,9 +94,51 @@ static void testForever()
     }
 }
 
+static void testSwitchToNext()
+{
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    pl.setInputPort(&inputPort);
+
+    auto options0 = song->getOptions(0, 0);
+    options0->repeatCount = 0;              // play forever
+    const float quantizationInterval = .01f;
+    pl.reset();                     // for some reason we need to do this before we start
+    pl.setRunningStatus(true);      // start it.
+
+
+    double endTime = 0;
+    for (int iLoop = 0; iLoop < 10; ++iLoop) {
+        endTime = 3.9 + iLoop * 4;
+        play(pl, endTime, quantizationInterval);
+        int expectedNotes = 1 + iLoop;
+        assertEQ(2 * expectedNotes, host->gateChangeCount);
+        printf("end time was %.2f\n", endTime);
+    }
+    int x = host->gateChangeCount;
+    inputPort.setVoltage(5, 0);     // send a pulse to channel 0
+    pl.updateSampleCount(4);        // a few more process calls
+
+    // above ends at 38.9
+    // now should move to next
+    auto getChangesBefore = host->gateChangeCount;
+    double t = endTime + 4;          // one more bar
+  //  assert(false);
+    play(pl, t, quantizationInterval);
+    x = host->gateChangeCount;
+
+    // we shoud have switched to the one with 8 notes in the bar.
+    assertEQ(x,  (getChangesBefore + 16));
+
+}
+
 void testMidiTrackPlayer()
 {
     testCanCall();
     testLoop1();
     testForever();
+    testSwitchToNext();
 }

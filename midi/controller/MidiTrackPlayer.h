@@ -148,6 +148,7 @@ private:
     void setupToPlayDifferentSection(int section);
     void setupToPlayCommon();
     void onEndOfTrack();
+    void pollForCVChange();
 
     /**
      * This is not an event queue at all.
@@ -170,4 +171,5 @@ private:
     };
 
     EventQ eventQ;
+    GateTrigger cv0Trigger;
 };
