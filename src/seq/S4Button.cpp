@@ -45,7 +45,7 @@ public:
             &rack::ui::MenuLabel::text,
             "Repeat Count");
         menu->addChild(label);
-#if 0  // we don't support this yet
+#if 1  // we don't support this yet
         ::rack::ui::MenuItem* item = RepeatItem::make(button, 0);
         item->text = "Forever";
         menu->addChild(item);

@@ -24,6 +24,13 @@ static MidiSong4Ptr makeSong(int trackNum)
     return song;
 }
 
+static void play(MidiTrackPlayer& pl, double time, float quantize)
+{
+    while (pl.playOnce(time, quantize)) {
+
+    }
+}
+
 static void testCanCall()
 {
     std::shared_ptr<IMidiPlayerHost4> host = std::make_shared<TestHost2>();
@@ -41,7 +48,6 @@ static void testLoop1()
     MidiSong4Ptr song = makeSong(0);
     MidiTrackPlayer pl(host, 0, song);
 
-    
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 2;
     const float quantizationInterval = .01f;
@@ -67,10 +73,33 @@ static void testLoop1()
     assertEQ(x, 2);                 //now we are playing second time
 }
 
+static void testForever()
+{
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    auto options0 = song->getOptions(0, 0);
+    options0->repeatCount = 0;              // play forever
+    const float quantizationInterval = .01f;
+    printf("about to reset\n");
+    pl.reset();                     // for some reason we need to do this before we start
+    printf("about to start\n");
+    pl.setRunningStatus(true);      // start it.
+    printf("about to run\n");
+
+    // we set it to "forever", so let's see if it can play 100 times.
+    for (int iLoop = 0; iLoop < 100; ++iLoop) {
+        double endTime = 3.9 + iLoop * 4;
+        play(pl, endTime, quantizationInterval);
+        int expectedNotes = 1 + iLoop;
+        assertEQ(2 * expectedNotes, host->gateChangeCount);
+    }
+}
 
 void testMidiTrackPlayer()
 {
     testCanCall();
     testLoop1();
- 
+    testForever();
 }

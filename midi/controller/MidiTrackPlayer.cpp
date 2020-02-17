@@ -251,17 +251,24 @@ void MidiTrackPlayer::onEndOfTrack() {
         // setupToPlayDifferentSection
 
     } else {
-        sectionLoopCounter--;
-        if (sectionLoopCounter > 0) {
+        // counter zero means loop forever
+        bool keepLooping = true;
+        if (sectionLoopCounter == 0) {
+            keepLooping = true;
+        } else {
+            sectionLoopCounter--;
+            printf("at end of measure dec loop to %d\n", sectionLoopCounter);
+            keepLooping = (sectionLoopCounter > 0);
+        }
+
+        if (keepLooping) {
             // if still repeating this section..
             // Then I think all we need to do is reset the pointer.
             assert(curTrack);
             curEvent = curTrack->begin();
         } else {
-            if (sectionLoopCounter < 0) {
-                printf("inf not supported yet\n");
-                fflush(stdout);
-            }
+            assert(sectionLoopCounter >= 0);
+
             // If we have reached the end of the repetitions of this section,
             // then go to the next one.
             setupToPlayNextSection();
@@ -269,26 +276,6 @@ void MidiTrackPlayer::onEndOfTrack() {
         }
     }
 
-#if 0
-
-    // if we just reset sections, we should probably not do this??
-    sectionLoopCounter--;
-    if (sectionLoopCounter > 0) {
-        // if still repeating this section..
-        // Then I think all we need to do is reset the pointer.
-        assert(curTrack);
-        curEvent = curTrack->begin();
-    } else {
-        if (sectionLoopCounter < 0) {
-            printf("inf not supported yet\n");
-            fflush(stdout);
-        }
-        // If we have reached the end of the repetitions of this section,
-        // then go to the next one.
-        setupToPlayNextSection();
-        assert(curTrack);
-    }
-#endif
     assert(curTrack);
     curEvent = curTrack->begin();
 }
