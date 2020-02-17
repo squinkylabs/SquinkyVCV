@@ -21,6 +21,7 @@ class MidiTrack;
 namespace rack {
 namespace engine {
 struct Input;
+struct Param;
 }
 }  // namespace rack
 #else
@@ -40,9 +41,11 @@ struct Input;
 class MidiTrackPlayer {
 public:
 #ifdef __PLUGIN
+    using Param = rack::engine::Param;
     using Input = rack::engine::Input;
 #else
     using Input = ::Input;
+    using Param = ::Param;
 #endif
 
     MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> song);
@@ -82,8 +85,9 @@ public:
         isPlaying = running;
     }
 
-    void setInputPort(Input* port) {
-        input = port;
+    void setPorts(Input* cvInput, Param* triggerImmediate) {
+        input = cvInput;
+        immediateParam = triggerImmediate;
     }
 
     /**
@@ -111,6 +115,7 @@ private:
     MidiVoiceAssigner voiceAssigner;
 
     Input* input = nullptr;
+    Param* immediateParam = nullptr;
     GateTrigger nextSectionTrigger;
     GateTrigger prevSectionTrigger;
 

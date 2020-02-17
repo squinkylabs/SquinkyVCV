@@ -17,6 +17,7 @@ class MidiPlayer4
 {
 public:
     using Input = MidiTrackPlayer::Input;
+    using Param = MidiTrackPlayer::Param;
     MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
 
     void setSong(std::shared_ptr<MidiSong4> song);
@@ -54,7 +55,7 @@ public:
     void setNextSection(int track, int section);
     int getNextSection(int track) const;
 
-    void setPorts(Input* ports);
+    void setPorts(Input* cvInput, Param* triggerImmediate);
     
     /**
      * Provide direct access so we don't have to add a zillion

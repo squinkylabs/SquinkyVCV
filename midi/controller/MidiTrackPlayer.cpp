@@ -3,6 +3,11 @@
 #include "MidiTrack4Options.h"
 #include "TimeUtils.h"
 
+#ifdef __PLUGIN
+#include "engine/Param.hpp"
+#include "engine/Port.hpp"
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 

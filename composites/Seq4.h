@@ -78,6 +78,7 @@ public:
         NUM_VOICES2_PARAM,
         NUM_VOICES3_PARAM,
         RUNNING_PARAM,
+        TRIGGER_IMMEDIATE_PARAM,
         NUM_PARAMS
     };
 
@@ -247,7 +248,7 @@ void  Seq4<TBase>::init(MidiSong4Ptr song)
         this->stepn(div.getDiv());
      });
     onSampleRateChange();
-    player->setPorts( TBase::inputs.data() + MOD0_INPUT);
+    player->setPorts( TBase::inputs.data() + MOD0_INPUT, TBase::params.data() + TRIGGER_IMMEDIATE_PARAM);
 }
 
 template <class TBase>
@@ -430,6 +431,9 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             break;
         case Seq4<TBase>::NUM_VOICES3_PARAM:
             ret = {0, 15, 0, "Polyphony 4"};
+            break;
+        case Seq4<TBase>::TRIGGER_IMMEDIATE_PARAM:
+            ret = {0, 1, 0, "Trigger Immediate"};
             break;
         default:
             assert(false);

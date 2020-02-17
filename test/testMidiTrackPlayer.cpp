@@ -101,7 +101,8 @@ static void testSwitchToNext()
     MidiTrackPlayer pl(host, 0, song);
 
     Input inputPort;
-    pl.setInputPort(&inputPort);
+    Param param;
+    pl.setPorts(&inputPort, &param);
 
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 0;              // play forever
