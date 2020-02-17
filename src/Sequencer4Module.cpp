@@ -63,7 +63,18 @@ json_t* Sequencer4Module::dataToJson() {
 
 struct Sequencer4Widget : ModuleWidget {
     Sequencer4Widget(Sequencer4Module*);
-    DECLARE_MANUAL("4X4 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/s45/docs/4x4.md");
+    void appendContextMenu(Menu* theMenu) override {
+        ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
+        theMenu->addChild(spacerLabel);
+        ManualMenuItem* manual = new ManualMenuItem(
+            "4X4 Manual",
+            "https://github.com/squinkylabs/SquinkyVCV/blob/s45/docs/4x4.md");
+        theMenu->addChild(manual);
+
+        auto item = new SqMenuItem_BooleanParam2(module, Comp::TRIGGER_IMMEDIATE_PARAM);
+        item->text = "Trigger Immediately";
+        theMenu->addChild(item);
+    }
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY) {
         Label* label = new Label();
