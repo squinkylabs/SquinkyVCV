@@ -257,7 +257,6 @@ void MidiTrackPlayer::onEndOfTrack() {
             keepLooping = true;
         } else {
             sectionLoopCounter--;
-            printf("at end of measure dec loop to %d\n", sectionLoopCounter);
             keepLooping = (sectionLoopCounter > 0);
         }
 
