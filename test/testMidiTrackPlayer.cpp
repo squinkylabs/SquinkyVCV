@@ -127,12 +127,65 @@ static void testSwitchToNext()
     // now should move to next
     auto getChangesBefore = host->gateChangeCount;
     double t = endTime + 4;          // one more bar
-  //  assert(false);
+
     play(pl, t, quantizationInterval);
     x = host->gateChangeCount;
 
-    // we shoud have switched to the one with 8 notes in the bar.
-    assertEQ(x,  (getChangesBefore + 16));
+    // we should have switched to the one with 8 notes in two bars.
+    // but we only played the first bar
+    assertEQ(x,  (getChangesBefore + 8));
+
+}
+
+static void testSwitchToNext2()
+{
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    {
+        // set both section to play forever
+        auto options0 = song->getOptions(0, 0);
+        options0->repeatCount = 0;
+        auto options1 = song->getOptions(0, 1);
+        options0->repeatCount = 0;
+    }
+    const float quantizationInterval = .01f;
+    pl.reset();                     // for some reason we need to do this before we start
+    pl.setRunningStatus(true);      // start it.
+
+    // play to middle of first bar
+    play(pl, 2, quantizationInterval);
+    int x = pl.getSection();
+    assertEQ(x, 1);
+
+    // cue up a switch to next section
+    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
+    pl.updateSampleCount(4);        // a few more process calls
+    inputPort.setVoltage(0.f, 0);
+    pl.updateSampleCount(4);
+
+    // play to start of next section
+    play(pl, 4.1, quantizationInterval);
+    x = pl.getSection();
+    assertEQ(x, 2);
+
+
+    // cue up a switch to next section. Since there is no next,
+    // should wrap to first
+    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
+    pl.updateSampleCount(4);        // a few more process calls
+    inputPort.setVoltage(0.f, 0);
+    pl.updateSampleCount(4);
+
+    // play to start of next section
+    play(pl, 4 + 8 + .1, quantizationInterval);
+    x = pl.getSection();
+    assertEQ(x, 1);
 
 }
 
@@ -142,4 +195,5 @@ void testMidiTrackPlayer()
     testLoop1();
     testForever();
     testSwitchToNext();
+    testSwitchToNext2();
 }

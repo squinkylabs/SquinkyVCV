@@ -147,10 +147,12 @@ int MidiTrackPlayer::validateSectionRequest(int section) const {
 }
 
 void MidiTrackPlayer::setNextSection(int section) {
+    // printf("called set next section with %d\n", section);
     eventQ.nextSectionIndex = validateSectionRequest(section);
     if (!isPlaying && eventQ.nextSectionIndex) {
         // if we aren't playing, set it in anticipation of starting.
         // If we are playing, the next end event will advance us
+        // TODO: should we clear the one in the event Q now?
         curSectionIndex = eventQ.nextSectionIndex - 1;
         // printf("set next section just set curSection to %d\n", curSectionIndex);
     }
@@ -359,13 +361,13 @@ int MidiTrackPlayer::getCurrentRepetition() {
 
 void MidiTrackPlayer::pollForCVChange()
 {
-    assert(input);
+    // a lot of unit tests won't set this, so let's handle that
     if (input) {
         // add poling here
         auto ch0 = input->getVoltage(0);
         cv0Trigger.go(ch0);
         if (cv0Trigger.trigger()) {
-            assert(false);
+            setNextSection(curSectionIndex + 2);        // add one for next, another one for the command offset
         }
     }
 }
