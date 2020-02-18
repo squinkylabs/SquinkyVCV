@@ -17,7 +17,8 @@ MidiTrackPlayer::MidiTrackPlayer(
     std::shared_ptr<MidiSong4> _song) : trackIndex(trackIndex),
                                         curSectionIndex(0),
                                         voiceAssigner(voices, 16),
-                                        cv0Trigger(false) {
+                                        cv0Trigger(false),
+                                        cv1Trigger(false) {
     setSong(_song, trackIndex);
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
@@ -335,11 +336,24 @@ void MidiTrackPlayer::pollForCVChange()
 {
     // a lot of unit tests won't set this, so let's handle that
     if (input) {
-        // add poling here
+
         auto ch0 = input->getVoltage(0);
         cv0Trigger.go(ch0);
         if (cv0Trigger.trigger()) {
             setNextSection(curSectionIndex + 2);        // add one for next, another one for the command offset
+        }
+
+        auto ch1 = input->getVoltage(1);
+        cv1Trigger.go(ch1);
+        if (cv1Trigger.trigger()) {
+            // I don't think this will work for section 0
+            //assert(curSectionIndex != 0);
+            int nextClip = curSectionIndex;     // becuase of the offset of 1, this will be prev
+            if (nextClip == 0) {
+                nextClip = 4;
+                assert(false);      // untested?
+            }
+            setNextSection(nextClip);       
         }
     }
 }

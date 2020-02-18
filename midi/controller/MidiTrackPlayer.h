@@ -177,4 +177,5 @@ private:
 
     EventQ eventQ;
     GateTrigger cv0Trigger;
+    GateTrigger cv1Trigger;
 };

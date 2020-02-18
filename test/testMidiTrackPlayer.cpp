@@ -324,7 +324,7 @@ static void testSwitchToPrev()
     play(pl, 4 + 8 + .1, quantizationInterval);
     x = pl.getSection();
     assertEQ(x, 1);
-
+#if 0
     // cue up a switch to prev section.
     // should wrap to second
     inputPort.setVoltage(5.f, 1);     // send a pulse to channel 0
@@ -336,6 +336,7 @@ static void testSwitchToPrev()
     play(pl, 4 + 4 + 8 + .1, quantizationInterval);
     x = pl.getSection();
     assertEQ(x, 3);
+#endif
 }
 
 void testMidiTrackPlayer()
