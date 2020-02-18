@@ -45,8 +45,10 @@ void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackInde
     auto options = song->getOptions(trackIndex, curSectionIndex);
     if (options) {
         sectionLoopCounter = options->repeatCount;
+        printf("in set song, get sectionLoopCounterfrom options %d\n", sectionLoopCounter);
     } else {
         sectionLoopCounter = 1;
+        printf("in set song, get sectionLoopCounter from default %d\n", sectionLoopCounter);
     }
 
 #ifdef _MLOG
@@ -65,7 +67,7 @@ void MidiTrackPlayer::findFirstTrackSection() {
         curTrack = song->getTrack(trackIndex, i);
         if (curTrack && curTrack->getLength()) {
             curSectionIndex = i;
-            // printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
+             printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
             return;
         }
     }
@@ -75,6 +77,8 @@ void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
     curTrack = nullptr;
     int nextSection = validateSectionRequest(section);
     curSectionIndex = (nextSection == 0) ? 0 : nextSection - 1;
+    printf("setupToPlayDifferentSection next=%d\n", nextSection);
+    printf("setupToPlayDifferentSection set index to %d\n", curSectionIndex);
     setupToPlayCommon();
     // assert(false);
 }
@@ -86,8 +90,11 @@ void MidiTrackPlayer::setupToPlayCommon() {
         assert(opts);
         if (opts) {
             sectionLoopCounter = opts->repeatCount;
+            printf("in setup common, get sectionLoopCounter from options %d (tk=%d, sec=%d)\n",
+             sectionLoopCounter, trackIndex, curSectionIndex);
         } else {
             sectionLoopCounter = 1;
+             printf("in setup common, get sectionLoopCounter from defaults %d\n", sectionLoopCounter);
         }
     }
 }
@@ -99,33 +106,11 @@ void MidiTrackPlayer::setupToPlayNextSection() {
         if (++curSectionIndex > 3) {
             curSectionIndex = 0;
         }
+        printf("setupToPlayNExt set curSectionIndex to %d\n", curSectionIndex);
         tk = song->getTrack(trackIndex, curSectionIndex);
     }
     setupToPlayCommon();
 }
-
-#if 0
-void MidiTrackPlayer::setupToPlayNextSection()
-{
-    curTrack = nullptr;
-    while (!curTrack) {
-        if (++curSectionIndex > 3) {
-            curSectionIndex = 0;
-        }
-        // printf("find next section just set curSection to %d\n", curSectionIndex);
-        curTrack = song->getTrack(trackIndex, curSectionIndex);
-        if (curTrack) {
-            auto opts = song->getOptions(trackIndex, curSectionIndex);
-            assert(opts);
-            if (opts) {
-                sectionLoopCounter = opts->repeatCount;
-            } else {
-                sectionLoopCounter = 1;
-            }
-        }
-    }
-}
-#endif
 
 int MidiTrackPlayer::validateSectionRequest(int section) const {
     int nextSection = section;
@@ -154,7 +139,7 @@ void MidiTrackPlayer::setNextSection(int section) {
         // If we are playing, the next end event will advance us
         // TODO: should we clear the one in the event Q now?
         curSectionIndex = eventQ.nextSectionIndex - 1;
-        // printf("set next section just set curSection to %d\n", curSectionIndex);
+        printf("set next section just set curSection to %d\n", curSectionIndex);
     }
 }
 
@@ -188,19 +173,6 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 
     // push the start time up by loop start, so that event t==loop start happens at start of loop
     const double eventStartUnQuantized = (currentLoopIterationStart + curEvent->first);
-
-    // Treat loop end just like track end. loop back around
-    // when we pass then end.
-#if 0  // we don't have subrange loop
-    if (song->getSubrangeLoop().enabled) {
-        auto loopEnd = song->getSubrangeLoop().endTime + currentLoopIterationStart;
-        if (loopEnd <= metricTime) {
-            currentLoopIterationStart += (song->getSubrangeLoop().endTime - song->getSubrangeLoop().startTime);
-            curEvent = track->begin();
-            return true;
-        }
-    }
-#endif
 
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
 
@@ -239,6 +211,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 }
 
 void MidiTrackPlayer::onEndOfTrack() {
+    printf(" MidiTrackPlayer::onEndOfTrack sectionLoopCounter=%d\n", sectionLoopCounter);
 #if defined(_MLOG)
     printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
     printf("sectionLoopCounter = %d nextSectionIndex =%d\n", sectionLoopCounter, nextSectionIndex);
@@ -249,14 +222,11 @@ void MidiTrackPlayer::onEndOfTrack() {
 
     // If there is a section change queued up, do it.
     if (eventQ.nextSectionIndex > 0) {
-#if 0
-        const int foundNext = validateSectionRequest(nextSectionIndex);
-        curSectionIndex = foundNext <= 0 ? 0 : foundNext - 1;
-        nextSectionIndex = 0;           // clear the request
-        printf("after find next, cur Index = %d\n ", curSectionIndex);
-#endif
+        printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
+
         setupToPlayDifferentSection(eventQ.nextSectionIndex);
         eventQ.nextSectionIndex = 0;
+        printf("cleared next section cue\n");
 
         // we need to fold the above into
         // setupToPlayDifferentSection
@@ -269,6 +239,7 @@ void MidiTrackPlayer::onEndOfTrack() {
         } else {
             sectionLoopCounter--;
             keepLooping = (sectionLoopCounter > 0);
+            printf("sectionLoopCounter dec at end %d\n", sectionLoopCounter);
         }
 
         if (keepLooping) {
@@ -328,6 +299,7 @@ void MidiTrackPlayer::reset() {
     auto options = song->getOptions(trackIndex, curSectionIndex);
     sectionLoopCounter = options ? options->repeatCount : 1;
     totalRepeatCount = sectionLoopCounter; 
+    printf("sectionLoopCounter set in rest %d\n", sectionLoopCounter);
 }
 
 #if 0
