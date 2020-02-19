@@ -151,11 +151,17 @@ void S4Button::step() {
     float lengthTime = 0;
     int newNumNotes = 0;
     int repetitionIndex = 1;
+    int newRepeatCount = this->repeatCount;
     if (track) {
         lengthTime = track->getLength();
         newLen = TimeUtils::length2str(lengthTime);
         newNumNotes = track->size() - 1;
         repetitionIndex = seq4Comp->getTrackPlayer(row)->getCurrentRepetition();
+
+        auto options = getOptions();
+        if (options) {
+            newRepeatCount = options->repeatCount;
+        }
     }
     if (newLen != contentLength) {
         // DEBUG("updating length %.2f, %s", length, newLen.c_str());
@@ -170,6 +176,11 @@ void S4Button::step() {
 
     if (repetitionIndex != repetitionNumber) {
         repetitionNumber = repetitionIndex;
+        fw->dirty = true;
+    }
+
+    if (repeatCount != newRepeatCount) {
+        repeatCount = newRepeatCount;
         fw->dirty = true;
     }
 
@@ -485,7 +496,6 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
             4,
             UIPrefs::X4_SELECTED_BORDER,
             this->box.pos.x, box.pos.y, box.size.x, box.size.y);
-
         draw = false;
     }
 
@@ -509,10 +519,16 @@ void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
         nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
     }
     if (!button->contentLength.empty() && (button->repeatCount > 0)) {
+       
         std::stringstream s;
-        s << button->repeatCount;
-        s << "/";
-        s << button->repetitionNumber;
+        if ( button->isPlaying) {
+            s << button->repetitionNumber;
+            s << "/";
+            s << button->repeatCount; 
+        } else {
+            s << " ";
+            s << button->repeatCount; 
+        }
         nvgText(ctx, 5, 45, s.str().c_str(), nullptr);
     }
 }
