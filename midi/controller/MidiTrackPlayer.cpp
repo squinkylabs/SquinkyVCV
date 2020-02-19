@@ -349,7 +349,7 @@ void MidiTrackPlayer::pollForCVChange()
         if (cv1Trigger.trigger()) {
             // I don't think this will work for section 0
             //assert(curSectionIndex != 0);
-            int nextClip = curSectionIndex;     // becuase of the offset of 1, this will be prev
+            int nextClip = curSectionIndex;     // because of the offset of 1, this will be prev
             if (nextClip == 0) {
                 nextClip = 4;
                 assert(false);      // untested?
