@@ -339,6 +339,41 @@ static void testSwitchToPrev()
 #endif
 }
 
+
+static void testRepetition()
+{
+    // make a song with three sections
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    {
+      
+        auto options0 = song->getOptions(0, 0);
+        options0->repeatCount = 1;
+        auto options1 = song->getOptions(0, 1);
+        options1->repeatCount = 4;
+      
+    }
+    const float quantizationInterval = .01f;
+    pl.reset();                     // for some reason we need to do this before we start
+    pl.setRunningStatus(true);      // start it.
+
+    // start first loop
+    play(pl, .5, quantizationInterval);
+    int x = pl.getCurrentRepetition();
+    assertEQ(x, 1);
+
+    // play to second
+    play(pl, 8.5, quantizationInterval);
+    x = pl.getCurrentRepetition();
+    assertEQ(x, 4);
+}
+
 void testMidiTrackPlayer()
 {
     testCanCall();
@@ -348,4 +383,5 @@ void testMidiTrackPlayer()
     testSwitchToNext2();
     testSwitchToNextThenVamp();
     testSwitchToPrev();
+    testRepetition();
 }

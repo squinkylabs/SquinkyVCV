@@ -526,9 +526,9 @@ void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
             s << "/";
             s << button->repeatCount; 
         } else {
-            s << " ";
             s << button->repeatCount; 
         }
+        nvgTextAlign(ctx, NVG_ALIGN_CENTER);
         nvgText(ctx, 5, 45, s.str().c_str(), nullptr);
     }
 }
