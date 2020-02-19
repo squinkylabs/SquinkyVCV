@@ -97,6 +97,7 @@ void MidiTrackPlayer::setupToPlayCommon() {
             // printf("in setup common, get sectionLoopCounter from defaults %d\n", sectionLoopCounter);
         }
     }
+    totalRepeatCount = sectionLoopCounter;
 }
 
 void MidiTrackPlayer::setupToPlayNextSection() {
@@ -327,8 +328,7 @@ int MidiTrackPlayer::getCurrentRepetition() {
     if (!isPlaying) {
         return 0;
     }
-    printf("getCurrentRepetition clip#=%d, totalRep=%d, counter=%d\n",
-        this->curSectionIndex, totalRepeatCount, sectionLoopCounter);
+    // printf("getCurrentRepetition clip#=%d, totalRep=%d, counter=%d\n",     this->curSectionIndex, totalRepeatCount, sectionLoopCounter);
 
     return totalRepeatCount + 1 - sectionLoopCounter;
 }

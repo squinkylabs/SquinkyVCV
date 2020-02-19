@@ -368,10 +368,16 @@ static void testRepetition()
     int x = pl.getCurrentRepetition();
     assertEQ(x, 1);
 
-    // play to second
+    // start of play to second
     play(pl, 8.5, quantizationInterval);
     x = pl.getCurrentRepetition();
-    assertEQ(x, 4);
+    assertEQ(x, 1);
+
+     // second rep of second
+    play(pl, 8 + 8.5, quantizationInterval);
+    x = pl.getCurrentRepetition();
+    assertEQ(x, 2);
+
 }
 
 void testMidiTrackPlayer()

@@ -509,14 +509,15 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
 }
 
 void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
+    nvgTextAlign(ctx, NVG_ALIGN_CENTER);
     nvgBeginPath(ctx);
     nvgFontSize(ctx, 14.f);
     nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
-    nvgText(ctx, 5, 15, button->contentLength.c_str(), nullptr);
+    nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 15, button->contentLength.c_str(), nullptr);
     if (button->numNotes > 0) {
         std::stringstream s;
         s << button->numNotes;
-        nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
+        nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 30, s.str().c_str(), nullptr);
     }
     if (!button->contentLength.empty() && (button->repeatCount > 0)) {
        
@@ -528,7 +529,6 @@ void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
         } else {
             s << button->repeatCount; 
         }
-        nvgTextAlign(ctx, NVG_ALIGN_CENTER);
-        nvgText(ctx, 5, 45, s.str().c_str(), nullptr);
+        nvgText(ctx, S4ButtonGrid::buttonSize / 2, 45, s.str().c_str(), nullptr);
     }
 }
