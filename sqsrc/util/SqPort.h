@@ -1,6 +1,7 @@
 #pragma once
 
 // Helper class to make ports compatible between 0.6 and 1.0
+// GET RID OF THIS
 
 #ifdef __V1x
 class SqPort
@@ -24,12 +25,14 @@ public:
 
 inline bool SqPort::isConnected(Input& input)
 {
-    return input.active;
+   // return input.active;
+    return input.isConnected();
 }
 
 inline bool SqPort::isConnected(Output& output)
 {
-    return output.active;
+   // return output.active;
+    return output.isConnected();
 }
 
 #endif
