@@ -463,6 +463,9 @@ void S4ButtonDrawer::draw(const DrawArgs& args) {
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
     auto color = button->isPlaying ? UIPrefs::X4_BUTTON_FACE_PLAYING : UIPrefs::X4_BUTTON_FACE_NORM;
+    if (button->numNotes == 0) {
+        color = UIPrefs::X4_BUTTON_FACE_NONOTES;
+    }
     SqGfx::filledRect(
         ctx,
         color,
@@ -514,11 +517,13 @@ void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
     nvgFontSize(ctx, 14.f);
     nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
     nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 15, button->contentLength.c_str(), nullptr);
+#if 0 // let's not draw the number notes - try color for that
     if (button->numNotes > 0) {
         std::stringstream s;
         s << button->numNotes;
         nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 30, s.str().c_str(), nullptr);
     }
+#endif
     if (!button->contentLength.empty() && (button->repeatCount > 0)) {
        
         std::stringstream s;

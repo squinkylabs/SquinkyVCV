@@ -12,6 +12,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqToggleLED.h"
 
+#include "seq/ClockFinder.h"
 #include "seq/S4Button.h"
 #include "seq/SequencerSerializer.h"
 
@@ -71,9 +72,18 @@ struct Sequencer4Widget : ModuleWidget {
             "https://github.com/squinkylabs/SquinkyVCV/blob/s45/docs/4x4.md");
         theMenu->addChild(manual);
 
+#if 0 // doesn't work yet
         auto item = new SqMenuItem_BooleanParam2(module, Comp::TRIGGER_IMMEDIATE_PARAM);
         item->text = "Trigger Immediately";
         theMenu->addChild(item);
+#endif
+        auto item = new SqMenuItem( []() { return false; }, [this](){
+
+            ClockFinder::go(this);
+        });
+        item->text = "Clock";
+        theMenu->addChild(item);
+        //ClockFinder::updateMenu(theMenu);
     }
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY) {
