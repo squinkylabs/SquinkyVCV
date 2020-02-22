@@ -7,7 +7,6 @@
 #include "IIRDecimator.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
-#include "SqPort.h"
 
 namespace rack {
     namespace engine {
@@ -278,8 +277,8 @@ void Shaper<TBase>::processCV()
     asymCurveindex = (int) round(sym * 15.1);           // This math belongs in the shaper
 
     for (int i = 0; i < 2; ++i) {
-        dsp[i].isActive = SqPort::isConnected(TBase::inputs[INPUT_AUDIO0 + i]) &&
-            SqPort::isConnected(TBase::outputs[OUTPUT_AUDIO0 + i]);
+        dsp[i].isActive = TBase::inputs[INPUT_AUDIO0 + i].isConnected() &&
+            TBase::outputs[OUTPUT_AUDIO0 + i].isConnected();
     }
 }
 

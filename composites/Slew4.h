@@ -8,7 +8,6 @@
 #include "IComposite.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
-#include "SqPort.h"
 
 namespace rack {
     namespace engine {
@@ -195,7 +194,7 @@ inline void Slew4<TBase>::step()
     float triggerIn = 0;
     for (int i=0; i<8; ++i) {
         // if input is patched, it becomes the new normaled input;
-        const bool bPatched = SqPort::isConnected(TBase::inputs[i + INPUT_TRIGGER0]);
+        const bool bPatched = TBase::inputs[i + INPUT_TRIGGER0].isConnected();
         if (bPatched) {
             triggerIn = TBase::inputs[i + INPUT_TRIGGER0].getVoltage(0);
         }
@@ -213,14 +212,14 @@ inline void Slew4<TBase>::step()
         // else output = lag
         float inputValue = 10.f;   
 
-        if (SqPort::isConnected(TBase::inputs[i + INPUT_AUDIO0])) {
+        if (TBase::inputs[i + INPUT_AUDIO0].isConnected()) {
             inputValue = TBase::inputs[i + INPUT_AUDIO0].getVoltage(0);
         } 
         TBase::outputs[i + OUTPUT0].setVoltage(lag.get(i) * inputValue * .1f, 0);
         sum += TBase::outputs[i + OUTPUT0].getVoltage(0);
 
         // normaled output logic: patched outputs get the sum of the un-patched above them.
-        if (SqPort::isConnected(TBase::outputs[i + OUTPUT_MIX0])) {
+        if (TBase::outputs[i + OUTPUT_MIX0].isConnected()) {
             TBase::outputs[i + OUTPUT_MIX0].setVoltage(sum * _outputLevel, 0);
             sum = 0;
         }

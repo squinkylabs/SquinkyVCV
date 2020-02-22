@@ -7,7 +7,6 @@
 #endif
 #include "ObjectCache.h"
 #include "SqMath.h"
-#include "SqPort.h"
 
 namespace rack {
     namespace engine {
@@ -205,8 +204,8 @@ inline void EV3<TBase>::processWaveforms()
 template <class TBase>
 float EV3<TBase>::getInput(int osc, InputIds in1, InputIds in2, InputIds in3)
 {
-    const bool in2Connected = SqPort::isConnected(TBase::inputs[in2]);
-    const bool in3Connected = SqPort::isConnected(TBase::inputs[in3]);
+    const bool in2Connected = TBase::inputs[in2].isConnected();
+    const bool in3Connected = TBase::inputs[in3].isConnected();
     InputIds id = in1;
     if ((osc == 1) && in2Connected) {
         id = in2;
@@ -312,7 +311,7 @@ inline void EV3<TBase>::processPitchInputs()
         pitch += cv;
 
         float fmCombined = 0;       // The final, scaled, value (post knob
-        if (SqPort::isConnected(TBase::inputs[FM1_INPUT + osc])) {
+        if (TBase::inputs[FM1_INPUT + osc].isConnected()) {
             const float fm = TBase::inputs[FM1_INPUT + osc].value;
             const float fmDepth = AudioMath::quadraticBipolar(TBase::params[FM1_PARAM + delta].value);
             fmCombined = (fmDepth * fm);

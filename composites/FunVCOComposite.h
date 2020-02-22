@@ -2,7 +2,6 @@
 
 #include "FunVCO.h"
 #include "IComposite.h"
-#include "SqPort.h"
 
 template <class TBase>
 class FunDescription : public IComposite
@@ -130,7 +129,7 @@ inline void FunVCOComposite<TBase>::step()
 
     float pitchFine = 3.0f * sq::quadraticBipolar(TBase::params[FINE_PARAM].value);
     float pitchCv = 12.0f * TBase::inputs[PITCH_INPUT].getVoltage(0);
-    if (SqPort::isConnected(TBase::inputs[FM_INPUT])) {
+    if (TBase::inputs[FM_INPUT].isConnected()) {
         pitchCv += sq::quadraticBipolar(TBase::params[FM_PARAM].value) * 12.0f * TBase::inputs[FM_INPUT].getVoltage(0);
     }
 
@@ -138,24 +137,24 @@ inline void FunVCOComposite<TBase>::step()
 
 
     oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].getVoltage(0) / 10.0f);
-    oscillator.syncEnabled = SqPort::isConnected(TBase::inputs[SYNC_INPUT]);
+    oscillator.syncEnabled = TBase::inputs[SYNC_INPUT].isConnected();
 
 #ifndef _ORIGVCO
-    oscillator.sawEnabled = SqPort::isConnected(TBase::outputs[SAW_OUTPUT]);
-    oscillator.sinEnabled = SqPort::isConnected(TBase::outputs[SIN_OUTPUT]);
-    oscillator.sqEnabled = SqPort::isConnected(TBase::outputs[SQR_OUTPUT]);
-    oscillator.triEnabled = SqPort::isConnected(TBase::outputs[TRI_OUTPUT]);
+    oscillator.sawEnabled = TBase::outputs[SAW_OUTPUT].isConnected();
+    oscillator.sinEnabled = TBase::outputs[SIN_OUTPUT].isConnected();
+    oscillator.sqEnabled = TBase::outputs[SQR_OUTPUT].isConnected();
+    oscillator.triEnabled = TBase::outputs[TRI_OUTPUT].isConnected();
 #endif
 
     oscillator.process(TBase::engineGetSampleTime(), TBase::inputs[SYNC_INPUT].getVoltage(0));
     // Set output
-    if (SqPort::isConnected(TBase::outputs[SIN_OUTPUT]))
+    if (TBase::outputs[SIN_OUTPUT].isConnected())
         TBase::outputs[SIN_OUTPUT].setVoltage(5.0f * oscillator.sin(), 0);
-    if (SqPort::isConnected(TBase::outputs[TRI_OUTPUT]))
+    if (TBase::outputs[TRI_OUTPUT].isConnected())
         TBase::outputs[TRI_OUTPUT].setVoltage(5.0f * oscillator.tri(), 0);
-    if (SqPort::isConnected(TBase::outputs[SAW_OUTPUT]))
+    if (TBase::outputs[SAW_OUTPUT].isConnected())
         TBase::outputs[SAW_OUTPUT].setVoltage(5.0f * oscillator.saw(), 0);
-    if (SqPort::isConnected(TBase::outputs[SQR_OUTPUT]))
+    if (TBase::outputs[SQR_OUTPUT].isConnected())
         TBase::outputs[SQR_OUTPUT].setVoltage(5.0f * oscillator.sqr(), 0);
 
 }
