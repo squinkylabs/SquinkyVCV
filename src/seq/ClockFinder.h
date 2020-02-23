@@ -15,7 +15,7 @@ using ModuleWidget = ::rack::app::ModuleWidget;
 class ClockFinder
 {
 public:
-    //static void updateMenu(Menu* theMenu);
-    static void go(ModuleWidget* self);
+
+    static void go(ModuleWidget* self, int clockDivSetting);
 
 };

@@ -4,7 +4,9 @@
 #include "app/CableWidget.hpp"
 #include "app/Scene.hpp"
 #include "app/ModuleWidget.hpp"
+#include "app/ParamWidget.hpp"
 #include "app/PortWidget.hpp"
+#include "engine/Engine.hpp"
 #include "plugin/Model.hpp"
 #include "widget/Widget.hpp"
 
@@ -12,6 +14,8 @@ using ModuleWidget = ::rack::app::ModuleWidget;
 using Model = ::rack::plugin::Model;
 using PortWidget = ::rack::app::PortWidget;
 using CableWidget = ::rack::app::CableWidget;
+using ParamWidget = ::rack::app::ParamWidget;
+using Engine = ::rack::engine::Engine;
 
 static ModuleWidget* findClocked()
 {
@@ -117,13 +121,47 @@ static std::pair<PortWidget*, bool> findBestClockOutput(ModuleWidget* clocked)
         auto port = findClockOutput(clocked, i);
         auto cables = APP->scene->rack->getCablesOnPort(port);
         if (cables.empty()) {
+            INFO("find best found an unused clock");
             return std::make_pair(port, false);
         }
     }
-     return std::make_pair(findClockOutput(clocked, 0), true);
+    INFO("find best clock found none unpatched");
+    return std::make_pair(findClockOutput(clocked, 0), true);
 }
 
-void ClockFinder::go(ModuleWidget* host)
+static ParamWidget* getClockRateParam(ModuleWidget* clocked, int index)
+{
+    for (auto param : clocked->params) {
+        if (!param->paramQuantity) {
+            WARN("param has no quantity");
+            return nullptr;
+        }
+        int id = param->paramQuantity->paramId;
+        if (id == (index + 1)) {
+            return param;
+        }
+    }
+    assert(false);
+    return nullptr;
+}
+
+static float clockDivToClockedParam(int div)
+{
+    float ret = 0;
+    assert(div > 0);
+    if (div <= 16) {
+        ret = div + 1;
+    } else if (div == 32) {
+        ret = 7+17;
+    } else if (div == 64) {
+        ret = 7 + 17 + 9;
+    } else {
+        assert(false);
+    }
+    return ret;
+}
+
+void ClockFinder::go(ModuleWidget* host, int div)
 {
     INFO("Clock Finder");
     ModuleWidget* clockedModule = findClocked();
@@ -154,6 +192,22 @@ void ClockFinder::go(ModuleWidget* host)
         cable->setOutput(outputs[i]);
         cable->setInput(inputs[i]);
         APP->scene->rack->addCable(cable);
+    }
+
+    INFO("alreay patched = %d", clockOutput.second);
+    if (!clockOutput.second) {
+        // if the clock output was empty before us
+        const int clockIndex = clockOutput.first->portId - 1;
+        INFO("sell set clock %d", clockIndex);
+        auto paramWidget = getClockRateParam(clockedModule, clockIndex);
+        INFO("param w = %p", paramWidget);
+        if (paramWidget) {
+            auto module = clockedModule->module;
+            const int paramId = paramWidget->paramQuantity->paramId;
+            const float value = clockDivToClockedParam(div);
+            APP->engine->setParam(module, paramId, value);
+            INFO("just set ration to %.2f", value);
+        }
     }
     INFO("done patching");
 }

@@ -78,8 +78,11 @@ struct Sequencer4Widget : ModuleWidget {
         theMenu->addChild(item);
 #endif
         auto item = new SqMenuItem( []() { return false; }, [this](){
-
-            ClockFinder::go(this);
+           // float rawClockFalue = Comp::CLOCK_INPUT_PARAM
+            float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
+            SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
+            const int div = SeqClock::clockRate2Div(rate);
+            ClockFinder::go(this, div);
         });
         item->text = "Clock";
         theMenu->addChild(item);
