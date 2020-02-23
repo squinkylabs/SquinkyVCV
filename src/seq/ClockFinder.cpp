@@ -44,11 +44,11 @@ static std::vector<PortWidget*> findSeqInputs(ModuleWidget* seq) {
                 ++found;
                 break;
             case 1:
-                ret[1] = input;
+                ret[2] = input;
                 ++found;
                 break;
             case 2:
-                ret[2] = input;
+                ret[1] = input;
                 ++found;
                 break;
          }
@@ -104,7 +104,7 @@ void ClockFinder::go(ModuleWidget* host)
         return;
     }
 
-    if (anyConnected(inputs) || anyConnected(outputs)) {
+    if (anyConnected(inputs)) {
         WARN("not patching, some are already patched\n");
         return;
     }
