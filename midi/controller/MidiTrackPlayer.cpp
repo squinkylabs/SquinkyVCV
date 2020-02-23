@@ -278,14 +278,22 @@ int MidiTrackPlayer::getSection() const {
     return curTrack ? curSectionIndex + 1 : 0;
 }
 
-void MidiTrackPlayer::reset() {
-    // we don't want reset to erase nextSectionIndex, so
-    // re-apply it after reset.
-    const int saveSection = eventQ.nextSectionIndex;
-    if (saveSection == 0) {
+void MidiTrackPlayer::reset(bool resetSectionIndex) {
+
+    printf("for test ignoring new rest\n");
+    resetSectionIndex = false;
+    
+    if (resetSectionIndex) {
         findFirstTrackSection();
     } else {
-        setNextSection(saveSection);
+        // we don't want reset to erase nextSectionIndex, so
+        // re-apply it after reset.
+        const int saveSection = eventQ.nextSectionIndex;
+        if (saveSection == 0) {
+            findFirstTrackSection();
+        } else {
+            setNextSection(saveSection);
+        }
     }
 
     curTrack = song->getTrack(trackIndex, curSectionIndex);

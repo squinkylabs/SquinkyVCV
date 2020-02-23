@@ -58,7 +58,7 @@ public:
      */
     bool playOnce(double metricTime, float quantizeInterval);
 
-    void reset();
+    void reset(bool resetSectionIndex);
     void setNumVoices(int numVoices);
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);

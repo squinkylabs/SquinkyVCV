@@ -72,6 +72,7 @@ private:
      */
     bool isReset = true;
     bool isResetGates = false;
+    bool isResetSectionIndex = false;
 
     void updateToMetricTimeInternal(double, float);
     void resetAllVoices(bool clearGates);

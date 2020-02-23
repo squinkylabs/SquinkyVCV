@@ -85,13 +85,14 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
 
         for (int i=0; i < MidiSong4::numTracks; ++i) {
             auto trackPlayer = trackPlayers[i];
-            trackPlayer->reset();
+            trackPlayer->reset(isResetSectionIndex);
         }
         // curEvent = track->begin();
         resetAllVoices(isResetGates);
         //voiceAssigner.reset();
         isReset = false;
         isResetGates = false;
+        isResetSectionIndex = false;
         // currentLoopIterationStart = 0;
     }
 
@@ -130,6 +131,7 @@ void MidiPlayer4::reset(bool clearGates)
 {
     isReset = true;
     isResetGates = clearGates;
+    isResetSectionIndex = clearGates;
 }
 
 int MidiPlayer4::getSection(int track) const
