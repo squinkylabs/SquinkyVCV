@@ -17,8 +17,10 @@ using CableWidget = ::rack::app::CableWidget;
 using ParamWidget = ::rack::app::ParamWidget;
 using Engine = ::rack::engine::Engine;
 
-static ModuleWidget* findClocked()
+static std::vector<ModuleWidget*> findClocked()
 {
+    std::vector<ModuleWidget*> ret;
+
     const std::string ck("Clocked");
     auto rack = ::rack::appGet()->scene->rack;
     for (::rack::widget::Widget* w2 : rack->moduleContainer->children) {
@@ -26,13 +28,41 @@ static ModuleWidget* findClocked()
         if (modwid) {
             Model* model = modwid->model;
             if (model->slug == ck) {
-                return modwid;
+                ret.push_back(modwid);
             }
         } else {
             WARN("was not a module widget");
         }
     }   
-    return nullptr;
+    return ret;
+}
+
+static double calcDistance(const ModuleWidget* a, const ModuleWidget* b)
+{
+    auto rect = a->box.expand(b->box);
+    const auto x = rect.size.x;
+    const auto y = rect.size.y;
+    return std::sqrt(x * x + y * y);
+}
+
+
+ModuleWidget* findClosestClocked(const ModuleWidget* from)
+{
+    INFO("seq is at %.2f, %.2f", from->box.pos.x, from->box.pos.y);
+    INFO("seq size is %.2f, %.2f", from->box.size.x, from->box.size.y);
+    ModuleWidget* ret = nullptr;
+    std::vector<ModuleWidget*> clockeds = findClocked();
+    double closestDistance = 1000000000000000;
+    for (auto clocked : clockeds) {
+        double distance = calcDistance(clocked, from);
+        INFO("Found one at xy=%.2f, %.2f, dist = %f", clocked->box.pos.x, clocked->box.pos.y);
+        if (distance < closestDistance) {
+            INFO("picking it");
+            closestDistance = distance;
+            ret = clocked;
+        }
+    }
+    return ret;
 }
 
 // TODO: generalize to both seq
@@ -164,7 +194,7 @@ static float clockDivToClockedParam(int div)
 void ClockFinder::go(ModuleWidget* host, int div)
 {
     INFO("Clock Finder");
-    ModuleWidget* clockedModule = findClocked();
+    ModuleWidget* clockedModule = findClosestClocked(host);
     if (!clockedModule) {
         return;
     }
@@ -211,3 +241,4 @@ void ClockFinder::go(ModuleWidget* host, int div)
     }
     INFO("done patching");
 }
+
