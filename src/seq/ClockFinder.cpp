@@ -20,7 +20,6 @@ using Engine = ::rack::engine::Engine;
 static std::vector<ModuleWidget*> findClocked()
 {
     std::vector<ModuleWidget*> ret;
-
     const std::string ck("Clocked");
     auto rack = ::rack::appGet()->scene->rack;
     for (::rack::widget::Widget* w2 : rack->moduleContainer->children) {
@@ -45,19 +44,14 @@ static double calcDistance(const ModuleWidget* a, const ModuleWidget* b)
     return std::sqrt(x * x + y * y);
 }
 
-
 ModuleWidget* findClosestClocked(const ModuleWidget* from)
 {
-    INFO("seq is at %.2f, %.2f", from->box.pos.x, from->box.pos.y);
-    INFO("seq size is %.2f, %.2f", from->box.size.x, from->box.size.y);
     ModuleWidget* ret = nullptr;
     std::vector<ModuleWidget*> clockeds = findClocked();
     double closestDistance = 1000000000000000;
     for (auto clocked : clockeds) {
         double distance = calcDistance(clocked, from);
-        INFO("Found one at xy=%.2f, %.2f, dist = %f", clocked->box.pos.x, clocked->box.pos.y);
         if (distance < closestDistance) {
-            INFO("picking it");
             closestDistance = distance;
             ret = clocked;
         }
@@ -99,12 +93,6 @@ static std::vector<PortWidget*> findClockedOutputs(ModuleWidget* clocked, PortWi
     ret[0] = clock;
     for (auto output : clocked->outputs) {
         switch(output->portId) {
-    #if 0
-            case 1:         // clock 1
-                ret[0] = output;
-                ++found;
-                break;
-    #endif
             case 5:         // run
                 ret[1] = output;
                 ++found;
@@ -151,15 +139,17 @@ static std::pair<PortWidget*, bool> findBestClockOutput(ModuleWidget* clocked)
         auto port = findClockOutput(clocked, i);
         auto cables = APP->scene->rack->getCablesOnPort(port);
         if (cables.empty()) {
-            INFO("find best found an unused clock");
             return std::make_pair(port, false);
         }
     }
-    INFO("find best clock found none unpatched");
     return std::make_pair(findClockOutput(clocked, 0), true);
 }
 
-static ParamWidget* getClockRateParam(ModuleWidget* clocked, int index)
+/**
+ * Given a Clocked module and an index into one of the non-master clocks,
+ * Find it and return the param widget for the ratio knob.
+ */
+static ParamWidget* getClockRatioParam(ModuleWidget* clocked, int index)
 {
     for (auto param : clocked->params) {
         if (!param->paramQuantity) {
@@ -205,13 +195,11 @@ void ClockFinder::go(ModuleWidget* host, int div)
     auto outputs = findClockedOutputs(clockedModule, clockOutput.first);
     auto inputs = findSeqInputs(host);
     if (outputs.size() != 3 || inputs.size() != 3) {
-
         WARN("bad I/O matchup. o=%d, i=%d", outputs.size(), inputs.size());
         return;
     }
 
     if (anyConnected(inputs)) {
-        WARN("not patching, some are already patched\n");
         return;
     }
  
@@ -224,21 +212,17 @@ void ClockFinder::go(ModuleWidget* host, int div)
         APP->scene->rack->addCable(cable);
     }
 
-    INFO("alreay patched = %d", clockOutput.second);
     if (!clockOutput.second) {
-        // if the clock output was empty before us
+        // if the clock output was empty before us, then we can set the
+        // ratio to match the sequencer.
         const int clockIndex = clockOutput.first->portId - 1;
-        INFO("sell set clock %d", clockIndex);
-        auto paramWidget = getClockRateParam(clockedModule, clockIndex);
-        INFO("param w = %p", paramWidget);
+        auto paramWidget = getClockRatioParam(clockedModule, clockIndex);
         if (paramWidget) {
             auto module = clockedModule->module;
             const int paramId = paramWidget->paramQuantity->paramId;
             const float value = clockDivToClockedParam(div);
             APP->engine->setParam(module, paramId, value);
-            INFO("just set ration to %.2f", value);
         }
     }
-    INFO("done patching");
 }
 
