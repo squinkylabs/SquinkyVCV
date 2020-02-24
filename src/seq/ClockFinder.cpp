@@ -181,8 +181,12 @@ static float clockDivToClockedParam(int div)
     return ret;
 }
 
-void ClockFinder::go(ModuleWidget* host, int div)
+void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, int resetInput)
 {
+    // we are hard coded to these values. If module changes, we will have to get smarter/
+    assert(clockInput == 0);
+    assert(runInput == 2);
+    assert(resetInput == 1);
     INFO("Clock Finder");
     ModuleWidget* clockedModule = findClosestClocked(host);
     if (!clockedModule) {

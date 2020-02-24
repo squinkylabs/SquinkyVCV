@@ -10,6 +10,8 @@
 #include "seq/SeqSettings.h"
 #include "seq/NoteDisplay.h"
 #include "seq/AboveNoteGrid.h"
+#include "seq/ClockFinder.h"
+
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/ToggleButton.h"
@@ -60,7 +62,16 @@ struct SequencerWidget : ModuleWidget
         ::rack::ui::MenuLabel *spacerLabel = new ::rack::ui::MenuLabel(); 
         theMenu->addChild(spacerLabel); 
         ManualMenuItem* manual = new ManualMenuItem("Seq++ manual", helpUrl); 
-        theMenu->addChild(manual);  
+        theMenu->addChild(manual); 
+
+        ::rack::MenuItem* item = new SqMenuItem( []() { return false; }, [this](){
+            float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
+            SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
+            const int div = SeqClock::clockRate2Div(rate);
+            ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT);
+        });
+        item->text = "Hookup Clock";
+        theMenu->addChild(item); 
 
         ::rack::MenuItem* remoteEdit = new SqMenuItem_BooleanParam2(
             module,

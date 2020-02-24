@@ -16,6 +16,6 @@ class ClockFinder
 {
 public:
 
-    static void go(ModuleWidget* self, int clockDivSetting);
+    static void go(ModuleWidget* self, int clockDivSetting, int clockInput, int runInput, int resetInput);
 
 };
