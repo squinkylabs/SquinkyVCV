@@ -30,10 +30,9 @@ public:
     int clockOutputIds[3];
     int clockRatioParamIds[3];          // for the three stand-alone, not counting master
     void dump() const;
+
     ClockDescriptor(const ClockDescriptor&)=delete;
     const ClockDescriptor& operator=(const ClockDescriptor&)=delete;
-
-   
 };
 
 static const ClockDescriptor descriptors[] = {
@@ -47,13 +46,13 @@ static const ClockDescriptor descriptors[] = {
     }
 };
 
- void ClockDescriptor::dump() const
-    {
-        assert((this == descriptors + 0) || (this == descriptors + 1)); 
-        INFO("**** dump descriptor %p", this);
-        INFO("    slug = %s", slug.c_str());
-        INFO("    output ids = %d,%d,%d", clockOutputIds[0],clockOutputIds[1],clockOutputIds[2]);
-    }
+void ClockDescriptor::dump() const
+{
+    assert((this == descriptors + 0) || (this == descriptors + 1)); 
+    INFO("**** dump descriptor %p", this);
+    INFO("    slug = %s", slug.c_str());
+    INFO("    output ids = %d,%d,%d", clockOutputIds[0],clockOutputIds[1],clockOutputIds[2]);
+}
 
 static void dumpBoth()
 {
@@ -94,33 +93,23 @@ private:
 };
 
 Clocks::WidgetAndDescriptionS Clocks::findClocks()
-//static std::vector<ModuleWidget*> findClocked()
 {
-    // dumpBoth();
     WidgetAndDescriptionS ret;
-    // const std::string ck("Clocked");
     auto rack = ::rack::appGet()->scene->rack;
     for (::rack::widget::Widget* w2 : rack->moduleContainer->children) {
         ModuleWidget* modwid = dynamic_cast<ModuleWidget *>(w2);
         if (modwid) {
             Model* model = modwid->model;
             for (int i=0; i< numDescriptors; ++i) {
-            //for (auto descriptor : descriptors) {
                 const ClockDescriptor* descriptor = descriptors + i;
                 if (model->slug == descriptor->slug) {
                     ret.push_back( std::make_pair(modwid, descriptor));
-                    INFO("in find clocks, model slug = %s", model->slug.c_str());
-                    INFO("in find clocks, desc slug = %s desc=%p", descriptor->slug.c_str(), descriptor);
-                    descriptor->dump();
-
                 }
             }
         } else {
             WARN("was not a module widget");
         }
     }   
-    INFO("\n");
-   // dumpBoth();
     return ret;
 }
 
@@ -137,20 +126,14 @@ static double calcDistance(const ModuleWidget* a, const ModuleWidget* b)
 Clocks::WidgetAndDescription Clocks::findClosestClocked(const ModuleWidget* from)
 {
     assert(from);
-    INFO("findClosestClocked");
-    dumpBoth();
     WidgetAndDescriptionS clocks = findClocks();
     WidgetAndDescription ret(nullptr, nullptr);
     double closestDistance = 1000000000000000;
     for (auto clock : clocks) {
-        INFO("in  closest loop, des = %s", clock.second->slug.c_str());
-        clock.second->dump();
         double distance = calcDistance(clock.first, from);
         if (distance < closestDistance) {
             closestDistance = distance;
             ret = clock;
-             INFO("in find closest, model slug = %s", clock.first->model->slug.c_str());
-            INFO("in find closest, desc slug = %s desc=%p", clock.second->slug.c_str(), &clock.second);
         }
     }
     return ret;
