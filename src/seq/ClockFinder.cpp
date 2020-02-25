@@ -28,6 +28,7 @@ class ClockDescriptor
 public:
     std::string slug;
     int clockOutputIds[3];
+    int clockRatioParamIds[3];          // for the three stand-alone, not counting master
     void dump() const;
     ClockDescriptor(const ClockDescriptor&)=delete;
     const ClockDescriptor& operator=(const ClockDescriptor&)=delete;
@@ -36,8 +37,14 @@ public:
 };
 
 static const ClockDescriptor descriptors[] = {
-    {"Clocked", {1,2,3}},
-    {"Clocked-Clkd", {1,2,3}}
+    {"Clocked", 
+        {1,2,3},
+        {1,2,3}
+    },
+    {"Clocked-Clkd", 
+        {1,2,3},
+        {0,1,2}
+    }
 };
 
  void ClockDescriptor::dump() const
@@ -75,7 +82,7 @@ public:
 
     static std::vector<PortWidget*> findClockedOutputs(ModuleWidget* clocked, PortWidget* clock);
 
-    static ParamWidget* getRatioParam(ModuleWidget* clocked, int index);
+    static ParamWidget* getRatioParam(WidgetAndDescription clocked, int index);
 private:
     using WidgetAndDescriptionS = std::vector<WidgetAndDescription>;
     static WidgetAndDescriptionS findClocks();
@@ -207,16 +214,16 @@ std::vector<PortWidget*> Clocks::findClockedOutputs(ModuleWidget* clocked, PortW
  * Find it and return the param widget for the ratio knob.
  */
 
-ParamWidget* Clocks::getRatioParam(ModuleWidget* clocked, int index)
+ParamWidget* Clocks::getRatioParam(WidgetAndDescription clocked, int _index)
 {
-    for (auto param : clocked->params) {
+    const int clockRatioParamId = clocked.second->clockRatioParamIds[_index];
+    for (auto param : clocked.first->params) {
         if (!param->paramQuantity) {
             WARN("param has no quantity");
             return nullptr;
         }
-        int id = param->paramQuantity->paramId;
-        // TODO: don't assume plus 1- get from descrip
-        if (id == (index + 1)) {
+        const int id = param->paramQuantity->paramId;
+        if (id == clockRatioParamId) {
             return param;
         }
     }
@@ -335,7 +342,7 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         // if the clock output was empty before us, then we can set the
         // ratio to match the sequencer.
         const int clockIndex = clockOutput.first->portId - 1;
-        auto paramWidget = Clocks::getRatioParam(moduleAndDescription.first, clockIndex);
+        auto paramWidget = Clocks::getRatioParam(moduleAndDescription, clockIndex);
         if (paramWidget) {
             auto module = moduleAndDescription.first->module;
             const int paramId = paramWidget->paramQuantity->paramId;
