@@ -100,11 +100,6 @@ private:
     std::shared_ptr<MidiTrack> curTrack;  // need something like array for song4??
     const int trackIndex = 0;
 
-    /**
-     * cur section index is 0..3, and is the direct index into the
-     * song4 sections array.
-     */
-    int curSectionIndex = 0;
 
     /**
      * Variables around voice state
@@ -114,20 +109,82 @@ private:
     MidiVoice voices[maxVoices];
     MidiVoiceAssigner voiceAssigner;
 
+    /**
+     * VCV Input port for the CV input for track
+     */
     Input* input = nullptr;
-    Param* immediateParam = nullptr;
+    
+    /**
+     * Schmidt triggers for various CV input channels
+     */
     GateTrigger nextSectionTrigger;
     GateTrigger prevSectionTrigger;
 
-    /***********************************************
+    Param* immediateParam = nullptr;        // not imp yet
+
+    /************************************************************************************
      * variables for playing a track
+     * 
+     * Q: In general, when/how should we init the playback vars? Esp curEvent
+     * and curSectionIndex?
+     * ATM it's a little schizophrenic. we mostly change them when we finish playing
+     * a section. But we also init from from reset and setSong().
+     * 
+     * Maybe we need a flag to tell us when to do setup? we sort of use reset() for that now,
+     * but it's not a flag. We could do something like
+     * bool needsReset (or even put it in event Q!!!), as well as
+     * bool needsPlaySetup
+     *      if true, then play calls will check it first. If set, clear and do one-time setup
+     *      set it from reset.
+     * 
+     * Do we want to get away from requiring a reset call to set up playback? Could 
+     * we use isPlaying instead? Sure, we can do that.
+     * But - is there any difference between a reset and a change in playing status? I guess it's
+     * fine to have two API's (setRunningStatus and reset()) to set it, but it's only one thing,
+     * and it should probably live.... in the event Q.
+     * 
+     * can we use event Q for all requests to go to different sections, even the normal playback transitions?
+     * I think so, if we are careful to set the requests before we process them. Oh, but when we are playing back we 
+     * can easily blow through multiple events, so the section changes need to be more lock-step.
+     * Now I'm thinking we can't we need functions to advance it. But they should be very clearly playback functions.
+     * 
+     * In the future, we may not want reset to change sections. but "hard reset" should.
+     * 
+     * How many resets are there:
+     *      setup to play from curent location (edit conflict reset)
+     *      setup to play from the very start (hard reset / reset CV)
+     *      setup to lay from very start (first playback after new song)???
+     * 
+     * If we never hard reset (from cv) when will we ever setup to play?
+     * 
+     * 
+     * Plan:
+     *  rename findFirstTrackSection to something like setupTrackSectionForPlayback.
+     *  move reset requests into the queue
      */
 
     /**
-     * abs metric time of start of current section's current loop
+     * abs metric time of start of current section's current loop.
+     * Do we still uses this? we've changed how looping works..
      */
     double currentLoopIterationStart = 0;
+
+    /**
+     * event iterator that playback uses. Advances each
+     * time an event is played from the track.
+     * We also set it on set song, but maybe that should be queued also?
+     */
     MidiTrack::const_iterator curEvent;
+
+    /**
+     * cur section index is 0..3, and is the direct index into the
+     * song4 sections array.
+     * This variable should not be directly manipulated by UI.
+     * It is typically set by playback code when a measure changes.
+     * It is also set when we set the song, etc... but that's probably a mistake. We should probably 
+     * only queue a change when we set song.
+     */
+    int curSectionIndex = 0;
 
     /**
      * This counter counts down. when if gets to zero
@@ -135,7 +192,12 @@ private:
      */
     int sectionLoopCounter = 1;
     int totalRepeatCount = 1;  // what repeat was set to at the start of the section
-    bool isPlaying = false;    // somtimes we need to know if we are playing
+
+    /**
+     * Sometimes we need to know if we are playing.
+     * This started as an experiment - is it still used?
+     */
+    bool isPlaying = false;    
 
     bool pollForNoteOff(double metricTime);
     void findFirstTrackSection();

@@ -69,7 +69,7 @@ static void testLoop1()
     const float quantizationInterval = .01f;
     int x = pl.getCurrentRepetition();
     assertEQ(x, 0);                 // when stopped, always zero
-    pl.reset();                     // for some reason we need to do this before we start
+    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
     x = pl.getCurrentRepetition();
     assertEQ(x, 1);                 //now we are playing first time
@@ -98,7 +98,7 @@ static void testForever()
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 0;              // play forever
     const float quantizationInterval = .01f;
-    pl.reset();                     // for some reason we need to do this before we start
+    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
     // we set it to "forever", so let's see if it can play 100 times.
@@ -123,7 +123,7 @@ static void testSwitchToNext()
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 0;              // play forever
     const float quantizationInterval = .01f;
-    pl.reset();                     // for some reason we need to do this before we start
+    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
 
@@ -171,7 +171,7 @@ static void testSwitchToNext2()
         options1->repeatCount = 0;
     }
     const float quantizationInterval = .01f;
-    pl.reset();                     // for some reason we need to do this before we start
+    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
     // play to middle of first bar
@@ -225,7 +225,7 @@ static void testSwitchToNextThenVamp()
         options2->repeatCount = 0;
     }
     const float quantizationInterval = .01f;
-    pl.reset();                     // for some reason we need to do this before we start
+    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
     printf("test about to play to 2\n");
@@ -293,7 +293,7 @@ static void testSwitchToPrev()
         options2->repeatCount = 0;
     }
     const float quantizationInterval = .01f;
-    pl.reset();                     // for some reason we need to do this before we start
+    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
     // play to middle of first bar
@@ -360,7 +360,7 @@ static void testRepetition()
       
     }
     const float quantizationInterval = .01f;
-    pl.reset();                     // for some reason we need to do this before we start
+    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
     // start first loop
