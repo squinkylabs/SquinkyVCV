@@ -435,8 +435,10 @@ static void testSectionStartOffset()
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
-  //  const float quantizationInterval = .01f;
-
+    printf("* bring back testSectionStartOffset\n");
+    // It looks like there is an off by one error. was this test always flawed?
+    // Or did getSection uses to add one? We may need to ge verify in master.
+#if 1
     // when we are stopped, setting next sets current
     pl.setNextSectionRequest(trackNum, 2);
     assertEQ(pl.getSection(trackNum), 2);
@@ -446,7 +448,7 @@ static void testSectionStartOffset()
     pl.setNextSectionRequest(trackNum, 1);
     assertEQ(pl.getSection(trackNum), 2);
     assertEQ(pl.getNextSectionRequest(trackNum), 1);
-
+#endif
 }
 
 static void testSectionApi()

@@ -316,7 +316,11 @@ void MidiTrackPlayer::serviceEventQueue()
 
 void MidiTrackPlayer::resetFromQueue(bool resetSectionIndex) {
     assert(playback.inPlayCode);
-    printf("for test ignoring new rest\n");
+
+    static bool firstTime = true;
+    if (firstTime) printf("for test ignoring new rest\n");
+    firstTime = false;
+    
     resetSectionIndex = false;
     
     if (resetSectionIndex) {
