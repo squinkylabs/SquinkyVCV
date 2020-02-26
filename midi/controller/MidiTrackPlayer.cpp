@@ -30,6 +30,7 @@ private:
 void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackIndex) {
     assert(_trackIndex == constTrackIndex);     // we don't expect anyone to change this
     eventQ.newSong = newSong;                   // queue up the song to be moved on next play call
+    uiSong = newSong;                              // and immediately use it as UI song.
 }
 
 // TODO: move this all the playback
@@ -58,16 +59,18 @@ void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackInde
 #endif
 
 
-// TODO: move to playback code section
-int MidiTrackPlayer::validateSectionRequest(int section) const {
+// This can be sued for UI song or playback.song
+int MidiTrackPlayer::validateSectionRequest(int section, std::shared_ptr<MidiSong4> song, int trackNumber) {
+    assert(song);
+   // assert(song ==  playback.inPlayCode ? playback.song : uiSong);
     int nextSection = section;
     if (nextSection == 0) {
         return 0;  // 0 means nothing selected
     }
 
-    assert(playback.song);
+   
     for (int tries = 0; tries < 4; ++tries) {
-        auto tk = playback.song->getTrack(constTrackIndex, nextSection - 1);
+        auto tk = song->getTrack(trackNumber, nextSection - 1);
         if (tk && tk->getLength()) {
             return nextSection;
         }
@@ -155,9 +158,9 @@ void MidiTrackPlayer::setNumVoices(int _numVoices) {
     voiceAssigner.setNumVoices(numVoices);
 }
 
-void MidiTrackPlayer::setNextSection(int section) {
+void MidiTrackPlayer::setNextSectionRequest(int section) {
     // printf("called set next section with %d\n", section);
-    eventQ.nextSectionIndex = validateSectionRequest(section);
+    eventQ.nextSectionIndex = validateSectionRequest(section, uiSong, constTrackIndex);
     if (!isPlaying && eventQ.nextSectionIndex) {
         // if we aren't playing, set it in anticipation of starting.
         // If we are playing, the next end event will advance us
@@ -167,7 +170,7 @@ void MidiTrackPlayer::setNextSection(int section) {
     }
 }
 
-int MidiTrackPlayer::getNextSection() const {
+int MidiTrackPlayer::getNextSectionRequest() const {
     return eventQ.nextSectionIndex;
 }
 
@@ -213,7 +216,7 @@ void MidiTrackPlayer::pollForCVChange()
         auto ch0 = input->getVoltage(0);
         cv0Trigger.go(ch0);
         if (cv0Trigger.trigger()) {
-            setNextSection(playback.curSectionIndex + 2);        // add one for next, another one for the command offset
+            setNextSectionRequest(playback.curSectionIndex + 2);        // add one for next, another one for the command offset
         }
 
         auto ch1 = input->getVoltage(1);
@@ -226,7 +229,7 @@ void MidiTrackPlayer::pollForCVChange()
                 nextClip = 4;
                 assert(false);      // untested?
             }
-            setNextSection(nextClip);       
+            setNextSectionRequest(nextClip);       
         }
     }
 }
@@ -325,7 +328,7 @@ void MidiTrackPlayer::resetFromQueue(bool resetSectionIndex) {
         if (saveSection == 0) {
             setupToPlayFirstTrackSection();
         } else {
-            setNextSection(saveSection);
+            setNextSectionRequest(saveSection);
         }
     }
 
@@ -435,7 +438,7 @@ void MidiTrackPlayer::setupToPlayFirstTrackSection() {
 void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
     assert(playback.inPlayCode);
     curTrack = nullptr;
-    int nextSection = validateSectionRequest(section);
+    int nextSection = validateSectionRequest(section, playback.song, constTrackIndex);
     playback.curSectionIndex = (nextSection == 0) ? 0 : nextSection - 1;
     // printf("setupToPlayDifferentSection next=%d\n", nextSection);
     // printf("setupToPlayDifferentSection set index to %d\n", curSectionIndex);

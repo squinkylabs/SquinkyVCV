@@ -191,7 +191,7 @@ void S4Button::step() {
         fw->dirty = true;
     }
 
-    const int nextSection = seq4Comp->getNextSection(row);
+    const int nextSection = seq4Comp->getNextSectionRequest(row);
     bool isNext = (nextSection == (col + 1));
     if (iAmNext != isNext) {
         iAmNext = isNext;
@@ -431,10 +431,10 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
     if (isCtrl) {
         // then the select next clip
         // remember, section is 1..4
-        seq4Comp->setNextSection(row, col + 1);
+        seq4Comp->setNextSectionRequest(row, col + 1);
     } else {
         for (int r = 0; r < MidiSong4::numTracks; ++r) {
-            seq4Comp->setNextSection(r, col + 1);
+            seq4Comp->setNextSectionRequest(r, col + 1);
         }
     }
     auto button = getButton(row, col);

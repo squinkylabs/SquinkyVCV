@@ -70,17 +70,10 @@ public:
      * for getSection() I don't know what it's that way...
      */
     int getSection() const;
-    void setNextSection(int section);
+    void setNextSectionRequest(int section);
 
-    /**
-     * @param section is a new requested section (0, 1..4)
-     * @returns valid section request (0,1..4) 
-     *      If section exists, will return section
-     *      otherwise will search forward for one to play.
-     *      Will return 0 if there are no playable sections.
-     */
-    int validateSectionRequest(int section) const;
-    int getNextSection() const;
+
+    int getNextSectionRequest() const;
     void setRunningStatus(bool running) {
         isPlaying = running;
     }
@@ -187,7 +180,13 @@ private:
      */
     MidiTrack::const_iterator curEvent;
 
-  
+
+    /**
+     * This is the song UI sets directly and uses for UI purposes.
+     * Often it is the same as playback.song.
+     */
+
+    std::shared_ptr<MidiSong4> uiSong;
 
     /**
      * This counter counts down. when if gets to zero
@@ -222,6 +221,14 @@ private:
     void serviceEventQueue();
     void setSongFromQueue(std::shared_ptr<MidiSong4>);
     void resetFromQueue(bool sectionIndex);
+    /**
+     * @param section is a new requested section (0, 1..4)
+     * @returns valid section request (0,1..4) 
+     *      If section exists, will return section
+     *      otherwise will search forward for one to play.
+     *      Will return 0 if there are no playable sections.
+     */
+    static int validateSectionRequest(int section, std::shared_ptr<MidiSong4> song, int trackNumber);
 
     /**
      * variables only used by playback code.

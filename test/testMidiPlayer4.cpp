@@ -257,9 +257,9 @@ static void testTwoSectionsStartOnSecond()
     MidiPlayer4 pl(host, song);
 
     const float quantizationInterval = .01f;
-    pl.setNextSection(trackNum, 2);     // skip the first section 
+    pl.setNextSectionRequest(trackNum, 2);     // skip the first section 
                                         // (request index == 1)
-    assertEQ(pl.getNextSection(trackNum), 2);
+    assertEQ(pl.getNextSectionRequest(trackNum), 2);
 
     const float startOffset = 4;
     pl.setRunningStatus(true);
@@ -346,7 +346,7 @@ static void testTwoSectionsSwitchToSecond()
     assertEQ(host->gateState[0], false);
 
     // request next section
-    pl.setNextSection(trackNum, 2);     // skip the first section 
+    pl.setNextSectionRequest(trackNum, 2);     // skip the first section 
                                       // (request index == 1)
 
     // verify we are in second pattern
@@ -407,14 +407,14 @@ static void testSection12()
 
   //  const float quantizationInterval = .01f;
 
-    pl.setNextSection(trackNum, 2);   
-    assertEQ(pl.getNextSection(trackNum), 2);
+    pl.setNextSectionRequest(trackNum, 2);   
+    assertEQ(pl.getNextSectionRequest(trackNum), 2);
 
-    pl.setNextSection(trackNum, 1); 
-    assertEQ(pl.getNextSection(trackNum), 1);
+    pl.setNextSectionRequest(trackNum, 1); 
+    assertEQ(pl.getNextSectionRequest(trackNum), 1);
 
-    pl.setNextSection(trackNum, 3);     // empty, so wrap around.
-    assertEQ(pl.getNextSection(trackNum), 1);
+    pl.setNextSectionRequest(trackNum, 3);     // empty, so wrap around.
+    assertEQ(pl.getNextSectionRequest(trackNum), 1);
 }
 
 static void testSectionEmpty()
@@ -424,8 +424,8 @@ static void testSectionEmpty()
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
-    pl.setNextSection(trackNum, 1);
-    assertEQ(pl.getNextSection(trackNum), 0);
+    pl.setNextSectionRequest(trackNum, 1);
+    assertEQ(pl.getNextSectionRequest(trackNum), 0);
 }
 
 static void testSectionStartOffset()
@@ -438,14 +438,14 @@ static void testSectionStartOffset()
   //  const float quantizationInterval = .01f;
 
     // when we are stopped, setting next sets current
-    pl.setNextSection(trackNum, 2);
+    pl.setNextSectionRequest(trackNum, 2);
     assertEQ(pl.getSection(trackNum), 2);
 
     // when playing, just cue it up, don't go there
     pl.setRunningStatus(true);
-    pl.setNextSection(trackNum, 1);
+    pl.setNextSectionRequest(trackNum, 1);
     assertEQ(pl.getSection(trackNum), 2);
-    assertEQ(pl.getNextSection(trackNum), 1);
+    assertEQ(pl.getNextSectionRequest(trackNum), 1);
 
 }
 

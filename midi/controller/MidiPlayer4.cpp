@@ -139,14 +139,14 @@ int MidiPlayer4::getSection(int track) const
     return trackPlayers[track]->getSection();
 }
 
-int MidiPlayer4::getNextSection(int track) const
+int MidiPlayer4::getNextSectionRequest(int track) const
 {
-    return trackPlayers[track]->getNextSection();
+    return trackPlayers[track]->getNextSectionRequest();
 }
 
-void MidiPlayer4::setNextSection(int track, int section)
+void MidiPlayer4::setNextSectionRequest(int track, int section)
 {
-    trackPlayers[track]->setNextSection(section);
+    trackPlayers[track]->setNextSectionRequest(section);
 }
 
 void MidiPlayer4::resetAllVoices(bool clearGates)

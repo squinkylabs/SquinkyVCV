@@ -52,8 +52,8 @@ public:
     void setRunningStatus(bool running);
 
     int getSection(int track) const;
-    void setNextSection(int track, int section);
-    int getNextSection(int track) const;
+    void setNextSectionRequest(int track, int section);
+    int getNextSectionRequest(int track) const;
 
     void setPorts(Input* cvInput, Param* triggerImmediate);
     
