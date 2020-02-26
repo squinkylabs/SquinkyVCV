@@ -98,7 +98,12 @@ public:
 private:
     std::shared_ptr<MidiSong4> song;
     std::shared_ptr<MidiTrack> curTrack;  // need something like array for song4??
-    const int trackIndex = 0;
+
+    /**
+     * Which outer "track" we are assigned to, 0..3.
+     * Unchanging (hence the name).
+     */
+    const int constTrackIndex = 0;
 
 
     /**
@@ -151,15 +156,21 @@ private:
      * In the future, we may not want reset to change sections. but "hard reset" should.
      * 
      * How many resets are there:
-     *      setup to play from curent location (edit conflict reset)
+     *      setup to play from current location (edit conflict reset)
      *      setup to play from the very start (hard reset / reset CV)
      *      setup to lay from very start (first playback after new song)???
      * 
      * If we never hard reset (from cv) when will we ever setup to play?
      * 
+     * Recent ideas: functions to be called during playback, preceded with 'pb'. can assert in PB
+     * (still maybe should put pb variable in a struct?)
+     * 
      * 
      * Plan:
-     *  rename findFirstTrackSection to something like setupTrackSectionForPlayback.
+     *  //rename findFirstTrackSection to something like setupTrackSectionForPlayback.
+     *  make a playback struct
+     *  rename functions
+     * add guard
      *  move reset requests into the queue
      */
 
@@ -176,15 +187,7 @@ private:
      */
     MidiTrack::const_iterator curEvent;
 
-    /**
-     * cur section index is 0..3, and is the direct index into the
-     * song4 sections array.
-     * This variable should not be directly manipulated by UI.
-     * It is typically set by playback code when a measure changes.
-     * It is also set when we set the song, etc... but that's probably a mistake. We should probably 
-     * only queue a change when we set song.
-     */
-    int curSectionIndex = 0;
+  
 
     /**
      * This counter counts down. when if gets to zero
@@ -200,7 +203,7 @@ private:
     bool isPlaying = false;    
 
     bool pollForNoteOff(double metricTime);
-    void findFirstTrackSection();
+    void setupToPlayFirstTrackSection();
 
     /**
      * will set curSectionIndex, and sectionLoopCounter
@@ -218,8 +221,30 @@ private:
     void pollForCVChange();
 
     /**
+     * variables only used by playback code.
+     * Other code not allowed to touch it.
+     */
+    class Playback {
+    public:
+        /**
+         * cur section index is 0..3, and is the direct index into the
+         * song4 sections array.
+         * This variable should not be directly manipulated by UI.
+         * It is typically set by playback code when a measure changes.
+         * It is also set when we set the song, etc... but that's probably a mistake. We should probably 
+         * only queue a change when we set song.
+         */
+        int curSectionIndex = 0;
+
+    };
+
+    /**
      * This is not an event queue at all.
-     * It's a collection of flags and vaues that are queued up.
+     * It's a collection of flags and values that are queued up.
+     * things come in mostly from other plugins proc() calls,
+     * but could come in from UI thread (if we are being sloppy)
+     * 
+     * Will be service by playback code
      */
     class EventQ {
     public:
@@ -238,6 +263,7 @@ private:
     };
 
     EventQ eventQ;
+    Playback playback;
     GateTrigger cv0Trigger;
     GateTrigger cv1Trigger;
 };
