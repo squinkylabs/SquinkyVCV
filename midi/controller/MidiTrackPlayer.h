@@ -236,6 +236,11 @@ private:
          */
         int curSectionIndex = 0;
 
+        /**
+         * Flag to tell when we are running in the context of playback code.
+         */
+        bool inPlayCode = false;
+
     };
 
     /**
