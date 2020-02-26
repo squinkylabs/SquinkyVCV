@@ -96,7 +96,7 @@ public:
     int getCurrentRepetition();
 
 private:
-    std::shared_ptr<MidiSong4> song;
+    
     std::shared_ptr<MidiTrack> curTrack;  // need something like array for song4??
 
     /**
@@ -167,11 +167,11 @@ private:
      * 
      * 
      * Plan:
-     *  //rename findFirstTrackSection to something like setupTrackSectionForPlayback.
-     *  make a playback struct
-     *  rename functions
-     * add guard
-     *  move reset requests into the queue
+     *      X move setSongRequests into the queue
+     *      remove getSong API
+     *      move reset requests into the queue
+     *      get rid of un-necessary reset calls in unit tests()
+     * 
      */
 
     /**
@@ -219,6 +219,9 @@ private:
     void setupToPlayCommon();
     void onEndOfTrack();
     void pollForCVChange();
+    void serviceEventQueue();
+    void setSongFromQueue(std::shared_ptr<MidiSong4>);
+    void resetFromQueue(bool sectionIndex);
 
     /**
      * variables only used by playback code.
@@ -241,6 +244,10 @@ private:
          */
         bool inPlayCode = false;
 
+        /**
+         * The song we are currently playing
+         */
+        std::shared_ptr<MidiSong4> song;
     };
 
     /**
@@ -265,6 +272,13 @@ private:
          * If true, we do "immediately";
          */
         bool eventsHappenImmediately = false;
+
+        /** When UI wants to set a new song, it gets queued here.
+         */
+        std::shared_ptr<MidiSong4> newSong;
+
+        bool reset = false;
+        bool resetSections = false;
     };
 
     EventQ eventQ;
