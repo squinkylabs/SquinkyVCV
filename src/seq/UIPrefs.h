@@ -23,6 +23,7 @@ public:
     static const NVGcolor X4_SELECTED_BORDER;
     static const NVGcolor X4_NEXT_PLAY_BORDER;
     static const NVGcolor X4_MIXED_BORDER;
+    static const NVGcolor X4_BUTTON_FACE_NONOTES;
 
     static const float hMarginsNoteEdit;
     static const float topMarginNoteEdit;

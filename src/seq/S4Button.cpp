@@ -45,7 +45,7 @@ public:
             &rack::ui::MenuLabel::text,
             "Repeat Count");
         menu->addChild(label);
-#if 0  // we don't support this yet
+#if 1  // we don't support this yet
         ::rack::ui::MenuItem* item = RepeatItem::make(button, 0);
         item->text = "Forever";
         menu->addChild(item);
@@ -150,10 +150,18 @@ void S4Button::step() {
     std::string newLen;
     float lengthTime = 0;
     int newNumNotes = 0;
+    int repetitionIndex = 1;
+    int newRepeatCount = this->repeatCount;
     if (track) {
         lengthTime = track->getLength();
         newLen = TimeUtils::length2str(lengthTime);
         newNumNotes = track->size() - 1;
+        repetitionIndex = seq4Comp->getTrackPlayer(row)->getCurrentRepetition();
+
+        auto options = getOptions();
+        if (options) {
+            newRepeatCount = options->repeatCount;
+        }
     }
     if (newLen != contentLength) {
         // DEBUG("updating length %.2f, %s", length, newLen.c_str());
@@ -163,6 +171,16 @@ void S4Button::step() {
 
     if (numNotes != newNumNotes) {
         numNotes = newNumNotes;
+        fw->dirty = true;
+    }
+
+    if (repetitionIndex != repetitionNumber) {
+        repetitionNumber = repetitionIndex;
+        fw->dirty = true;
+    }
+
+    if (repeatCount != newRepeatCount) {
+        repeatCount = newRepeatCount;
         fw->dirty = true;
     }
 
@@ -445,6 +463,9 @@ void S4ButtonDrawer::draw(const DrawArgs& args) {
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
     auto color = button->isPlaying ? UIPrefs::X4_BUTTON_FACE_PLAYING : UIPrefs::X4_BUTTON_FACE_NORM;
+    if (button->numNotes == 0) {
+        color = UIPrefs::X4_BUTTON_FACE_NONOTES;
+    }
     SqGfx::filledRect(
         ctx,
         color,
@@ -478,7 +499,6 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
             4,
             UIPrefs::X4_SELECTED_BORDER,
             this->box.pos.x, box.pos.y, box.size.x, box.size.y);
-
         draw = false;
     }
 
@@ -492,13 +512,28 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
 }
 
 void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
+    nvgTextAlign(ctx, NVG_ALIGN_CENTER);
     nvgBeginPath(ctx);
     nvgFontSize(ctx, 14.f);
     nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
-    nvgText(ctx, 5, 15, button->contentLength.c_str(), nullptr);
+    nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 15, button->contentLength.c_str(), nullptr);
+#if 0 // let's not draw the number notes - try color for that
     if (button->numNotes > 0) {
         std::stringstream s;
         s << button->numNotes;
-        nvgText(ctx, 5, 30, s.str().c_str(), nullptr);
+        nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 30, s.str().c_str(), nullptr);
+    }
+#endif
+    if (!button->contentLength.empty() && (button->repeatCount > 0)) {
+       
+        std::stringstream s;
+        if ( button->isPlaying) {
+            s << button->repetitionNumber;
+            s << "/";
+            s << button->repeatCount; 
+        } else {
+            s << button->repeatCount; 
+        }
+        nvgText(ctx, S4ButtonGrid::buttonSize / 2, 45, s.str().c_str(), nullptr);
     }
 }

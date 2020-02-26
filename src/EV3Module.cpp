@@ -9,8 +9,6 @@
 
 #include "EV3.h"
 #include <sstream>
-
-#include "SqPort.h"
  
 #ifdef _TIME_DRAWING
 static DrawTimer drawTimer("EV3");
@@ -97,7 +95,8 @@ void EV3PitchDisplay::step()
         if (module) {
             oct = module->params[octaveParam].value;
             semi = module->params[semiParam].value;
-            patched = SqPort::isConnected(module->inputs[inputId]);
+            //patched = SqPort::isConnected(module->inputs[inputId]);
+            patched = module->inputs[inputId].isConnected();
         }
         if (semi != lastSemi[i] ||
             oct != lastOctave[i] ||

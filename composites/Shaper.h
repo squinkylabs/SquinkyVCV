@@ -7,21 +7,13 @@
 #include "IIRDecimator.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
-#include "SqPort.h"
 
-#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;
     }
 }
 using Module = ::rack::engine::Module;
-#else
-namespace rack {
-    struct Module;
-};
-using Module = ::rack::Module;
-#endif
 
 template <class TBase>
 class ShaperDescription : public IComposite
@@ -285,8 +277,8 @@ void Shaper<TBase>::processCV()
     asymCurveindex = (int) round(sym * 15.1);           // This math belongs in the shaper
 
     for (int i = 0; i < 2; ++i) {
-        dsp[i].isActive = SqPort::isConnected(TBase::inputs[INPUT_AUDIO0 + i]) &&
-            SqPort::isConnected(TBase::outputs[OUTPUT_AUDIO0 + i]);
+        dsp[i].isActive = TBase::inputs[INPUT_AUDIO0 + i].isConnected() &&
+            TBase::outputs[OUTPUT_AUDIO0 + i].isConnected();
     }
 }
 

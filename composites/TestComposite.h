@@ -195,6 +195,11 @@ struct Output : Port
 {
 };
 
+struct Param
+{
+    float value = 0.0;
+};
+
 
 /**
 * Base class for composites embeddable in a unit test
@@ -206,6 +211,7 @@ class TestComposite
 public:
 
     using Port = ::Port;
+    using Param = ::Param;
 
     TestComposite() :
         inputs(40),
@@ -218,10 +224,7 @@ public:
     virtual ~TestComposite()
     {
     }
-    struct Param
-    {
-        float value = 0.0;
-    };
+
 
  
     std::vector<Input> inputs;

@@ -82,6 +82,7 @@ extern void testNewSongDataDataCommand();
 extern void testScale();
 extern void testTriad();
 extern void testMidiSelectionModel();
+extern void testMidiTrackPlayer();
 
 #if 0
 #include <sstream>
@@ -169,6 +170,7 @@ int main(int argc, char ** argv)
     testMidiSelectionModel();
     testMidiSong();
     testSeqClock();
+    testMidiTrackPlayer();
     testMidiPlayer2();
     testMidiPlayer4();
     testMidiViewport();

@@ -1,1 +1,1 @@
-make _ASSERT=1 __V1x=1 _SEQ=1 -j4
+make _ASSERT=1 __V1x=1 _SEQ=1 -j12

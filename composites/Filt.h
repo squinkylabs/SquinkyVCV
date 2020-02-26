@@ -7,7 +7,6 @@
 #include "LookupTable.h"
 #include "ObjectCache.h"
 #include "PeakDetector.h"
-#include "SqPort.h"
 
 #include <assert.h>
 #include <memory>
@@ -234,8 +233,8 @@ inline void Filt<TBase>::stepn(int divFactor)
     bool didSlopeLeds = false;
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
-        imp.isActive = SqPort::isConnected(TBase::inputs[L_AUDIO_INPUT + i]) &&
-            SqPort::isConnected(TBase::outputs[L_AUDIO_OUTPUT + i]);
+        imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].isConnected() &&
+            TBase::outputs[L_AUDIO_OUTPUT + i].isConnected();
         if (imp.isActive) {
             imp._f.setFreqSpread(spread);
             imp._f.setEdge(edge);

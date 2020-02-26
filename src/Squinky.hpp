@@ -31,7 +31,7 @@
 #define _MIXM
 #define _DTMODULE
 
-//#define _SEQ4
+// #define _SEQ4
 
 using namespace ::rack;
 

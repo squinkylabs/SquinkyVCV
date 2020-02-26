@@ -78,6 +78,7 @@ public:
         NUM_VOICES2_PARAM,
         NUM_VOICES3_PARAM,
         RUNNING_PARAM,
+        TRIGGER_IMMEDIATE_PARAM,
         NUM_PARAMS
     };
 
@@ -131,6 +132,7 @@ public:
     /**
      * So far, just for test compatibilty with old player
      */
+    #if 0
     float getPlayPosition()
     {
           // NOTE: this calculation is wrong. need subrange loop start, too
@@ -147,6 +149,7 @@ public:
 #endif
         return float(ret);
     }
+    #endif
 
     
     /** This should be called on audio thread
@@ -168,6 +171,12 @@ public:
     int  getPlayStatus(int track) const;
     void setNextSection(int track, int section);
     int getNextSection(int track) const;
+
+    /**
+     * Provide direct access so we don't have to add a zillion
+     * "pass thru" APIs.
+     */
+    MidiTrackPlayerPtr getTrackPlayer(int track);
 private:
     GateTrigger runStopProcessor;
     std::shared_ptr<MidiPlayer4> player;
@@ -239,7 +248,7 @@ void  Seq4<TBase>::init(MidiSong4Ptr song)
         this->stepn(div.getDiv());
      });
     onSampleRateChange();
-    player->setPorts( TBase::inputs.data() + MOD0_INPUT);
+    player->setPorts( TBase::inputs.data() + MOD0_INPUT, TBase::params.data() + TRIGGER_IMMEDIATE_PARAM);
 }
 
 template <class TBase>
@@ -337,6 +346,12 @@ bool Seq4<TBase>::isRunning() const
 }
 
 template <class TBase>
+MidiTrackPlayerPtr Seq4<TBase>::getTrackPlayer(int track)
+{
+    return player->getTrackPlayer(track);
+}
+
+template <class TBase>
 int  Seq4<TBase>::getPlayStatus(int track) const
 {
     if (!isRunning()) {
@@ -416,6 +431,9 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             break;
         case Seq4<TBase>::NUM_VOICES3_PARAM:
             ret = {0, 15, 0, "Polyphony 4"};
+            break;
+        case Seq4<TBase>::TRIGGER_IMMEDIATE_PARAM:
+            ret = {0, 1, 0, "Trigger Immediate"};
             break;
         default:
             assert(false);

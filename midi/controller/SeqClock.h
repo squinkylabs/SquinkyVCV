@@ -61,6 +61,8 @@ public:
         return metricTimePerClock;
     }
 
+    static int clockRate2Div(ClockRate);
+
    // void setSampleTime(float);
 private:
     ClockRate clockSetting = ClockRate::Div4;
@@ -133,6 +135,36 @@ inline void SeqClock::reset(bool internalClock)
     curMetricTime = internalClock? 0 : -1;
 }
 
+inline int SeqClock::clockRate2Div(ClockRate r)
+{
+    int ret = 1;
+    switch (r) {
+        case  ClockRate::Div64:
+            ret = 64;
+            break;
+        case  ClockRate::Div32:
+            ret = 32;
+            break;
+        case  ClockRate::Div16:
+            ret = 16;
+            break;
+        case  ClockRate::Div8:
+            ret = 8;
+            break;
+        case  ClockRate::Div4:
+            ret = 4;
+            break;
+        case  ClockRate::Div2:
+            ret = 2;
+            break;
+        case ClockRate::Div1:
+            ret = 1;
+            break;
+        default:
+            assert(false);
+    }
+    return ret;
+}
 inline void SeqClock::setup(ClockRate inputSetting, float, float sampleT)
 {
   //  internalTempo = tempoSetting;

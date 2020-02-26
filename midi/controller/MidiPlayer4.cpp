@@ -44,10 +44,10 @@ void MidiPlayer4::setRunningStatus(bool running)
     }
 }
 
-void MidiPlayer4::setPorts(Input* ports)
+void MidiPlayer4::setPorts(Input* inputPorts, Param* triggerImmediate)
 {
     for (int i = 0; i < MidiSong4::numTracks; ++i) {
-        trackPlayers[i]->setInputPort(ports + i);
+        trackPlayers[i]->setPorts(inputPorts + i, triggerImmediate);
     }
 }
 
@@ -85,13 +85,14 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
 
         for (int i=0; i < MidiSong4::numTracks; ++i) {
             auto trackPlayer = trackPlayers[i];
-            trackPlayer->reset();
+            trackPlayer->reset(isResetSectionIndex);
         }
         // curEvent = track->begin();
         resetAllVoices(isResetGates);
         //voiceAssigner.reset();
         isReset = false;
         isResetGates = false;
+        isResetSectionIndex = false;
         // currentLoopIterationStart = 0;
     }
 
@@ -113,16 +114,24 @@ void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizati
     }
 }
 
+MidiTrackPlayerPtr MidiPlayer4::getTrackPlayer(int track)
+{
+    return trackPlayers[track];
+}
+
+#if 0
 double MidiPlayer4::getCurrentLoopIterationStart(int track) const
 {
     auto tkPlayer = trackPlayers[track];
     return tkPlayer->getCurrentLoopIterationStart();
 }
+#endif
 
 void MidiPlayer4::reset(bool clearGates)
 {
     isReset = true;
     isResetGates = clearGates;
+    isResetSectionIndex = clearGates;
 }
 
 int MidiPlayer4::getSection(int track) const

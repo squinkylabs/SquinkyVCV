@@ -81,11 +81,16 @@ private:
     MidiSong4Ptr song;
     std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
 
+    /**
+     * state variables that affect drawing
+     */
     bool _isSelected = false;
     std::string contentLength;
     int numNotes = 0;
     bool isPlaying = false;
     bool iAmNext = false;
+    int repeatCount = 1;
+    int repetitionNumber = 1;
 
     bool handleKey(int key, int mods, int action);
     void doCut();

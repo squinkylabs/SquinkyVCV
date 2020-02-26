@@ -1,16 +1,24 @@
 #include "MidiTrackPlayer.h"
-#include "MidiTrack4Options.h"
 #include "MidiSong4.h"
+#include "MidiTrack4Options.h"
 #include "TimeUtils.h"
 
-#include <stdio.h>
-#include <assert.h>
+#ifdef __PLUGIN
+#include "engine/Param.hpp"
+#include "engine/Port.hpp"
+#endif
 
-MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> _song) :
-    trackIndex(trackIndex),
-    curSectionIndex(0),
-    voiceAssigner(voices, 16)
-{
+#include <assert.h>
+#include <stdio.h>
+
+MidiTrackPlayer::MidiTrackPlayer(
+    std::shared_ptr<IMidiPlayerHost4> host,
+    int trackIndex, 
+    std::shared_ptr<MidiSong4> _song) : trackIndex(trackIndex),
+                                        curSectionIndex(0),
+                                        voiceAssigner(voices, 16),
+                                        cv0Trigger(false),
+                                        cv1Trigger(false) {
     setSong(_song, trackIndex);
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
@@ -24,24 +32,24 @@ MidiTrackPlayer::MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int tra
     voiceAssigner.setNumVoices(numVoices);
 }
 
- void MidiTrackPlayer::setNumVoices(int _numVoices)
- {
-     this->numVoices = _numVoices;
-     voiceAssigner.setNumVoices(numVoices);
- }
+void MidiTrackPlayer::setNumVoices(int _numVoices) {
+    this->numVoices = _numVoices;
+    voiceAssigner.setNumVoices(numVoices);
+}
 
-void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackIndex) 
-{
+void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackIndex) {
     song = newSong;
     curTrack = song->getTrack(trackIndex);
-    assert(_trackIndex == trackIndex);      // we don't expect to get re-assigned.
+    assert(_trackIndex == trackIndex);  // we don't expect to get re-assigned.
 
     findFirstTrackSection();
     auto options = song->getOptions(trackIndex, curSectionIndex);
     if (options) {
         sectionLoopCounter = options->repeatCount;
+        // printf("in set song, get sectionLoopCounterfrom options %d\n", sectionLoopCounter);
     } else {
         sectionLoopCounter = 1;
+        // printf("in set song, get sectionLoopCounter from default %d\n", sectionLoopCounter);
     }
 
 #ifdef _MLOG
@@ -51,13 +59,11 @@ void MidiTrackPlayer::setSong(std::shared_ptr<MidiSong4> newSong, int _trackInde
 #endif
 }
 
-MidiSong4Ptr MidiTrackPlayer::getSong()
-{
+MidiSong4Ptr MidiTrackPlayer::getSong() {
     return song;
 }
 
-void MidiTrackPlayer::findFirstTrackSection()
-{
+void MidiTrackPlayer::findFirstTrackSection() {
     for (int i = 0; i < 4; ++i) {
         curTrack = song->getTrack(trackIndex, i);
         if (curTrack && curTrack->getLength()) {
@@ -68,70 +74,49 @@ void MidiTrackPlayer::findFirstTrackSection()
     }
 }
 
-void MidiTrackPlayer::setupToPlayDifferentSection(int section)
-{
+void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
     curTrack = nullptr;
     int nextSection = validateSectionRequest(section);
     curSectionIndex = (nextSection == 0) ? 0 : nextSection - 1;
+    // printf("setupToPlayDifferentSection next=%d\n", nextSection);
+    // printf("setupToPlayDifferentSection set index to %d\n", curSectionIndex);
     setupToPlayCommon();
-   // assert(false);
+    // assert(false);
 }
 
-void MidiTrackPlayer::setupToPlayCommon()
-{
+void MidiTrackPlayer::setupToPlayCommon() {
     curTrack = song->getTrack(trackIndex, curSectionIndex);
     if (curTrack) {
         auto opts = song->getOptions(trackIndex, curSectionIndex);
         assert(opts);
         if (opts) {
             sectionLoopCounter = opts->repeatCount;
+            // printf("in setup common, get sectionLoopCounter from options %d (tk=%d, sec=%d)\n", sectionLoopCounter, trackIndex, curSectionIndex);
         } else {
             sectionLoopCounter = 1;
+            // printf("in setup common, get sectionLoopCounter from defaults %d\n", sectionLoopCounter);
         }
-    }  
+    }
+    totalRepeatCount = sectionLoopCounter;
 }
 
-void MidiTrackPlayer::setupToPlayNextSection()
-{
+void MidiTrackPlayer::setupToPlayNextSection() {
     curTrack = nullptr;
     MidiTrackPtr tk = nullptr;
     while (!tk) {
         if (++curSectionIndex > 3) {
             curSectionIndex = 0;
         }
+        // printf("setupToPlayNExt set curSectionIndex to %d\n", curSectionIndex);
         tk = song->getTrack(trackIndex, curSectionIndex);
     }
     setupToPlayCommon();
 }
 
-#if 0
-void MidiTrackPlayer::setupToPlayNextSection()
-{
-    curTrack = nullptr;
-    while (!curTrack) {
-        if (++curSectionIndex > 3) {
-            curSectionIndex = 0;
-        }
-        // printf("find next section just set curSection to %d\n", curSectionIndex);
-        curTrack = song->getTrack(trackIndex, curSectionIndex);
-        if (curTrack) {
-            auto opts = song->getOptions(trackIndex, curSectionIndex);
-            assert(opts);
-            if (opts) {
-                sectionLoopCounter = opts->repeatCount;
-            } else {
-                sectionLoopCounter = 1;
-            }
-        }
-    }
-}
-#endif
-
-int MidiTrackPlayer::validateSectionRequest(int section) const
-{
+int MidiTrackPlayer::validateSectionRequest(int section) const {
     int nextSection = section;
     if (nextSection == 0) {
-        return 0;     // 0 means nothing selected
+        return 0;  // 0 means nothing selected
     }
 
     for (int tries = 0; tries < 4; ++tries) {
@@ -147,35 +132,32 @@ int MidiTrackPlayer::validateSectionRequest(int section) const
     return 0;
 }
 
-void MidiTrackPlayer::setNextSection(int section)
-{
-    nextSectionIndex = validateSectionRequest(section);
-    if (!isPlaying && nextSectionIndex) {
+void MidiTrackPlayer::setNextSection(int section) {
+    // printf("called set next section with %d\n", section);
+    eventQ.nextSectionIndex = validateSectionRequest(section);
+    if (!isPlaying && eventQ.nextSectionIndex) {
         // if we aren't playing, set it in anticipation of starting.
         // If we are playing, the next end event will advance us
-        curSectionIndex = nextSectionIndex-1;
+        // TODO: should we clear the one in the event Q now?
+        curSectionIndex = eventQ.nextSectionIndex - 1;
         // printf("set next section just set curSection to %d\n", curSectionIndex);
-    
     }
 }
 
-int MidiTrackPlayer::getNextSection() const
-{
-    return nextSectionIndex;
+int MidiTrackPlayer::getNextSection() const {
+    return eventQ.nextSectionIndex;
 }
 
-void MidiTrackPlayer::resetAllVoices(bool clearGates)
-{
+void MidiTrackPlayer::resetAllVoices(bool clearGates) {
     for (int i = 0; i < numVoices; ++i) {
         voices[i].reset(clearGates);
     }
 }
 
-bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
-{
+bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 #if defined(_MLOG) && 1
-    printf("MidiTrackPlayer::playOnce index=%d metrict=%.2f, quantizInt=%.2f track=%p\n", 
-        trackIndex, metricTime, quantizeInterval, track.get());
+    printf("MidiTrackPlayer::playOnce index=%d metrict=%.2f, quantizInt=%.2f track=%p\n",
+           trackIndex, metricTime, quantizeInterval, track.get());
 #endif
 
     bool didSomething = false;
@@ -186,25 +168,12 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
     }
 
     if (!curTrack) {
-                            // should be possible if we keep int curPlaybackSection
+        // should be possible if we keep int curPlaybackSection
         return false;
     }
 
     // push the start time up by loop start, so that event t==loop start happens at start of loop
     const double eventStartUnQuantized = (currentLoopIterationStart + curEvent->first);
-
-    // Treat loop end just like track end. loop back around
-    // when we pass then end.
-#if 0   // we don't have subrange loop
-    if (song->getSubrangeLoop().enabled) {
-        auto loopEnd = song->getSubrangeLoop().endTime + currentLoopIterationStart;
-        if (loopEnd <= metricTime) {
-            currentLoopIterationStart += (song->getSubrangeLoop().endTime - song->getSubrangeLoop().startTime);
-            curEvent = track->begin();
-            return true;
-        }
-    }
-#endif
 
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
 
@@ -214,25 +183,23 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
     if (eventStart <= metricTime) {
         MidiEventPtr event = curEvent->second;
         switch (event->type) {
-            case MidiEvent::Type::Note:
-            {
+            case MidiEvent::Type::Note: {
 #if defined(_MLOG)
                 printf("MidiTrackPlayer:playOnce index=%d type = note\n", trackIndex);
 #endif
                 MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
-  
+
                 // find a voice to play
                 MidiVoice* voice = voiceAssigner.getNext(note->pitchCV);
                 assert(voice);
 
                 // play the note
-                const double durationQuantized = TimeUtils::quantize(note->duration, quantizeInterval, false);  
+                const double durationQuantized = TimeUtils::quantize(note->duration, quantizeInterval, false);
                 double quantizedNoteEnd = TimeUtils::quantize(durationQuantized + eventStart, quantizeInterval, false);
                 voice->playNote(note->pitchCV, float(eventStart), float(quantizedNoteEnd));
                 ++curEvent;
                 // printfprintf("just inc curEvent 129\n");
-            }
-            break;
+            } break;
             case MidiEvent::Type::End:
                 onEndOfTrack();
                 break;
@@ -244,8 +211,8 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval)
     return didSomething;
 }
 
-void MidiTrackPlayer::onEndOfTrack()
-{
+void MidiTrackPlayer::onEndOfTrack() {
+    // printf(" MidiTrackPlayer::onEndOfTrack sectionLoopCounter=%d\n", sectionLoopCounter);
 #if defined(_MLOG)
     printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
     printf("sectionLoopCounter = %d nextSectionIndex =%d\n", sectionLoopCounter, nextSectionIndex);
@@ -254,33 +221,36 @@ void MidiTrackPlayer::onEndOfTrack()
     // for now, should loop.
     currentLoopIterationStart += curEvent->first;
 
-   
     // If there is a section change queued up, do it.
-    if (nextSectionIndex > 0) {
-#if 0
-        const int foundNext = validateSectionRequest(nextSectionIndex);
-        curSectionIndex = foundNext <= 0 ? 0 : foundNext - 1;
-        nextSectionIndex = 0;           // clear the request
-        printf("after find next, cur Index = %d\n ", curSectionIndex);
-#endif
-        setupToPlayDifferentSection(nextSectionIndex);
-        nextSectionIndex = 0;
+    if (eventQ.nextSectionIndex > 0) {
+        printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
+
+        setupToPlayDifferentSection(eventQ.nextSectionIndex);
+        eventQ.nextSectionIndex = 0;
+        printf("cleared next section cue\n");
 
         // we need to fold the above into
         // setupToPlayDifferentSection
 
     } else {
-        sectionLoopCounter--;
-        if (sectionLoopCounter > 0) {
+        // counter zero means loop forever
+        bool keepLooping = true;
+        if (sectionLoopCounter == 0) {
+            keepLooping = true;
+        } else {
+            sectionLoopCounter--;
+            keepLooping = (sectionLoopCounter > 0);
+            // printf("sectionLoopCounter dec at end %d\n", sectionLoopCounter);
+        }
+
+        if (keepLooping) {
             // if still repeating this section..
             // Then I think all we need to do is reset the pointer.
             assert(curTrack);
             curEvent = curTrack->begin();
         } else {
-            if (sectionLoopCounter < 0) {
-                printf("inf not supported yet\n");
-                fflush(stdout);
-            }
+            assert(sectionLoopCounter >= 0);
+
             // If we have reached the end of the repetitions of this section,
             // then go to the next one.
             setupToPlayNextSection();
@@ -288,58 +258,44 @@ void MidiTrackPlayer::onEndOfTrack()
         }
     }
 
-#if 0
-
-    // if we just reset sections, we should probably not do this??
-    sectionLoopCounter--;
-    if (sectionLoopCounter > 0) {
-        // if still repeating this section..
-        // Then I think all we need to do is reset the pointer.
-        assert(curTrack);
-        curEvent = curTrack->begin();
-    } else {
-        if (sectionLoopCounter < 0) {
-            printf("inf not supported yet\n");
-            fflush(stdout);
-        }
-        // If we have reached the end of the repetitions of this section,
-        // then go to the next one.
-        setupToPlayNextSection();
-        assert(curTrack);
-    }
-#endif
     assert(curTrack);
     curEvent = curTrack->begin();
 }
 
-bool MidiTrackPlayer::pollForNoteOff(double metricTime)
-{
+bool MidiTrackPlayer::pollForNoteOff(double metricTime) {
     bool didSomething = false;
     for (int i = 0; i < numVoices; ++i) {
         bool b = voices[i].updateToMetricTime(metricTime);
         if (b) {
-            didSomething = true;;
+            didSomething = true;
+            ;
         }
     }
     return didSomething;
 }
 
-int MidiTrackPlayer::getSection() const
-{
+int MidiTrackPlayer::getSection() const {
     return curTrack ? curSectionIndex + 1 : 0;
 }
 
-void MidiTrackPlayer::reset()
-{
-    // we don't want reset to erase nextSectionIndex, so 
-    // re-apply it after reset.
-    const int saveSection = nextSectionIndex;
-    if (saveSection == 0) {
+void MidiTrackPlayer::reset(bool resetSectionIndex) {
+
+    printf("for test ignoring new rest\n");
+    resetSectionIndex = false;
+    
+    if (resetSectionIndex) {
         findFirstTrackSection();
     } else {
-        setNextSection(saveSection);
+        // we don't want reset to erase nextSectionIndex, so
+        // re-apply it after reset.
+        const int saveSection = eventQ.nextSectionIndex;
+        if (saveSection == 0) {
+            findFirstTrackSection();
+        } else {
+            setNextSection(saveSection);
+        }
     }
-  
+
     curTrack = song->getTrack(trackIndex, curSectionIndex);
     if (curTrack) {
         // can we really handle not having a track?
@@ -351,23 +307,62 @@ void MidiTrackPlayer::reset()
     currentLoopIterationStart = 0;
     auto options = song->getOptions(trackIndex, curSectionIndex);
     sectionLoopCounter = options ? options->repeatCount : 1;
+    totalRepeatCount = sectionLoopCounter; 
+    //printf("sectionLoopCounter set in rest %d\n", sectionLoopCounter);
 }
 
+#if 0
 double MidiTrackPlayer::getCurrentLoopIterationStart() const
 {
     return currentLoopIterationStart;
 }
+#endif
 
-void MidiTrackPlayer::setSampleCountForRetrigger(int numSamples)
-{
+void MidiTrackPlayer::setSampleCountForRetrigger(int numSamples) {
     for (int i = 0; i < maxVoices; ++i) {
         voices[i].setSampleCountForRetrigger(numSamples);
     }
 }
 
-void MidiTrackPlayer::updateSampleCount(int numElapsed)
-{
+void MidiTrackPlayer::updateSampleCount(int numElapsed) {
     for (int i = 0; i < numVoices; ++i) {
         voices[i].updateSampleCount(numElapsed);
+    }
+    pollForCVChange();
+}
+
+int MidiTrackPlayer::getCurrentRepetition() {
+    // just return zero if not playing.
+    if (!isPlaying) {
+        return 0;
+    }
+    // printf("getCurrentRepetition clip#=%d, totalRep=%d, counter=%d\n",     this->curSectionIndex, totalRepeatCount, sectionLoopCounter);
+
+    return totalRepeatCount + 1 - sectionLoopCounter;
+}
+
+void MidiTrackPlayer::pollForCVChange()
+{
+    // a lot of unit tests won't set this, so let's handle that
+    if (input) {
+
+        auto ch0 = input->getVoltage(0);
+        cv0Trigger.go(ch0);
+        if (cv0Trigger.trigger()) {
+            setNextSection(curSectionIndex + 2);        // add one for next, another one for the command offset
+        }
+
+        auto ch1 = input->getVoltage(1);
+        cv1Trigger.go(ch1);
+        if (cv1Trigger.trigger()) {
+            // I don't think this will work for section 0
+            //assert(curSectionIndex != 0);
+            int nextClip = curSectionIndex;     // because of the offset of 1, this will be prev
+            if (nextClip == 0) {
+                nextClip = 4;
+                assert(false);      // untested?
+            }
+            setNextSection(nextClip);       
+        }
     }
 }

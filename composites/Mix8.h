@@ -6,25 +6,16 @@
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
-#include "SqPort.h"
 
 #include <assert.h>
 #include <memory>
 
-#ifdef __V1x
 namespace rack {
     namespace engine {
         struct Module;
     }
 }
 using Module = ::rack::engine::Module;
-#else
-namespace rack {
-    struct Module;
-};
-using Module = ::rack::Module;
-#endif
-
 
 template <class TBase>
 class Mix8Description : public IComposite
@@ -301,7 +292,7 @@ inline void Mix8<TBase>::stepn(int div)
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
         // TODO: get rid of normalize. if active ? cv : 10;
-        const float rawCV = SqPort::isConnected(TBase::inputs[i + LEVEL0_INPUT]) ? 
+        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
              TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
         const float cv = std::clamp(
             rawCV / 10.0f,
