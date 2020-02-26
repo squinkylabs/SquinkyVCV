@@ -248,7 +248,7 @@ Set Seq++'s clock rate to match the *Ratio* in clocked. So if Clocked is set for
 
 For DAW workflows, or other times when you want fine timing, use as fine a clock resolution as possible (Clocked X64). To intentionally coarsely-quantize Seq++, use a less fine clock.
 
-If you are using Clocked, or its smaller sibling CLKD, the "Hookup Clock" command found in the main context menu will do all the patching for you. Just set up the Seq++ clock divider to what you want, then select Hookup Clock. Seq++ will automatically find a clock, patch it in, and configure it.
+If you are using Clocked, or its smaller sibling CLKD, the "Hookup Clock" command found in the main context menu will do all the patching for you. Just insert a supported clock module, set up the Seq++ clock divider to what you want, then select Hookup Clock. Seq++ will automatically find a clock, patch it in, and configure it.
 
 When Seq++ quantizes during playback, it should quantize "correctly" - i.e., it should quantize to the **nearest** clock. Both the start time and duration will be quantized.
 
