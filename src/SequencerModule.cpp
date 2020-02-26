@@ -72,13 +72,14 @@ struct SequencerWidget : ModuleWidget
         });
         item->text = "Hookup Clock";
         theMenu->addChild(item); 
-
+#ifdef _SEQ4
         ::rack::MenuItem* remoteEdit = new SqMenuItem_BooleanParam2(
             module,
             Comp::REMOTE_EDIT_PARAM
         );
         remoteEdit->text = "Enable remote editing";
         theMenu->addChild(remoteEdit);
+#endif
 
         SqMenuItem* midifile = new SqMenuItem(
             []() { return false; },

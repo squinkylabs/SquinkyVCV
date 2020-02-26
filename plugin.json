@@ -8,7 +8,7 @@
 	"sourceUrl": "https://github.com/squinkylabs/SquinkyVCV",
 	"manualUrl":  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md",
 	"changelogUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/CHANGELOG.md",
-	"version": "1.0.6",
+	"version": "1.0.7",
 	"modules":
 	[
 		{
@@ -93,7 +93,7 @@
 			"slug": "squinkylabs-sequencer4",
 			"name": "Seq4x4",
 			"description": "Sequence player",
-			"disabled": false,
+			"disabled": true,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/sq2.md",
 			"tags": ["Sequencer", "Polyphonic"]
 		},

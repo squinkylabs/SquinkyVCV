@@ -29,7 +29,7 @@ public:
     std::string slug;
     int clockOutputIds[3];
     int clockRatioParamIds[3];          // for the three stand-alone, not counting master
-    void dump() const;
+   // void dump() const;
 
     ClockDescriptor(const ClockDescriptor&)=delete;
     const ClockDescriptor& operator=(const ClockDescriptor&)=delete;
@@ -46,6 +46,7 @@ static const ClockDescriptor descriptors[] = {
     }
 };
 
+#if 0
 void ClockDescriptor::dump() const
 {
     assert((this == descriptors + 0) || (this == descriptors + 1)); 
@@ -62,6 +63,7 @@ static void dumpBoth()
     INFO("dump both done");
 
 }
+#endif
 
 static const int numDescriptors = sizeof(descriptors) / sizeof(ClockDescriptor);
 
@@ -311,10 +313,10 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         return;
     }
 
-    const NVGcolor color = nvgRGB(0, 0, 0);
+    // const NVGcolor color = nvgRGB(0, 0, 0);
     for (int i=0; i<3; ++i) {
         CableWidget* cable = new CableWidget();
-            cable->color = color;
+        // cable->color = color;
         cable->setOutput(outputs[i]);
         cable->setInput(inputs[i]);
         APP->scene->rack->addCable(cable);
