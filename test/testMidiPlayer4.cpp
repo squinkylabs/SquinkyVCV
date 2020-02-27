@@ -264,9 +264,9 @@ static void testTwoSectionsStartOnSecond()
     const float startOffset = 4;
     pl.setRunningStatus(true);
 
-    // second section, first note (c at 0)
     pl.updateToMetricTime(4.1 - startOffset, quantizationInterval, true);
 
+    // This is failing becuase service event queue isn't looking at next section requests.
     assertEQ(pl.getSection(trackNum), 2);       // we sent 2 to request 1 (2)
     assertEQ(host->gateChangeCount, 1);
     assertEQ(host->gateState[0], true);
@@ -434,6 +434,10 @@ static void testSectionStartOffset()
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+
+    // start up so that we can get a current section
+    // TODO: is there some other way we should "prime the pump"?
+    pl.updateToMetricTime(.1, .1f, true);
 
     printf("* bring back testSectionStartOffset\n");
     // It looks like there is an off by one error. was this test always flawed?

@@ -175,6 +175,9 @@ int MidiTrackPlayer::getNextSectionRequest() const {
 }
 
 int MidiTrackPlayer::getSection() const {
+    // we make sure to return zero when there isn't a curTrack, but that was from the old days.
+    // Now - do we mean not playing? do we mean no uiSong?
+    // Will need to re-vist this
     return curTrack ? playback.curSectionIndex + 1 : 0;
 }
 
