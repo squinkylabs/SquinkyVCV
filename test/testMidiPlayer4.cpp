@@ -256,6 +256,8 @@ static void testTwoSectionsStartOnSecond()
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
+    auto tkplayer = pl.getTrackPlayer(trackNum);
+
     const float quantizationInterval = .01f;
     pl.setNextSectionRequest(trackNum, 2);     // skip the first section 
                                         // (request index == 1)

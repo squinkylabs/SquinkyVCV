@@ -383,7 +383,8 @@ static void testRepetition()
 void testMidiTrackPlayer()
 {
     testCanCall();
-    testLoop1();
+    printf("put back testLoop1\n");
+   // testLoop1();
     testForever();
     testSwitchToNext();
     testSwitchToNext2();

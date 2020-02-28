@@ -719,6 +719,12 @@ static void testMidiPlayer0(Flip flipTracks = Flip::none)
     TPlayer pl(host, song);
     pl.updateToMetricTime(.01f, .25f, true);
 
+    /**
+    Here's why this test is failing with swapped sections.
+    When we setup new song (from Q), we correctly set section index to 1, since 0 is blank.
+    But then we do resetFromQ, and reset from Q always sets us to zero.
+    So either these should be made one, or reset needs to be smarter about which sections.
+    */
     host->assertOneActiveTrack(flipTracks == Flip::track ? 1 : 0);
 }
 

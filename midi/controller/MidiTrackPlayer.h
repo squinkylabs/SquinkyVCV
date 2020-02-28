@@ -165,6 +165,14 @@ private:
      *      move reset requests into the queue
      *      get rid of un-necessary reset calls in unit tests()
      * 
+     * 
+     * FIRST serious issue. Failing testTwoSectionsStartOnSecond. We should start right up on the queud section,
+     * but we don't. because we only service that from end of clip. 
+     * Idea: store a flag when we request a section: eventQ.sectionRequestWhenStopped.
+     * If that flag is set, we will act on it when we service queue.
+     * 
+     * ACTUALLY, the above is a problem, but the immediate problem is that curTrack isn't getting
+     * set up, so even after we "play" it's null, which makes get Section return 0;
      */
 
     /**
@@ -273,6 +281,7 @@ private:
          * use the save 1..4 offset index.
          */
         int nextSectionIndex = 0;
+        bool nextSectionIndexSetWhileStopped = false;
 
         /**
          * If false, we wait for next loop iteration to apply queue.

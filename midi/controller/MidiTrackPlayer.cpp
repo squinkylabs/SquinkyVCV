@@ -160,6 +160,7 @@ void MidiTrackPlayer::setNumVoices(int _numVoices) {
 
 void MidiTrackPlayer::setNextSectionRequest(int section) {
     // printf("called set next section with %d\n", section);
+
     eventQ.nextSectionIndex = validateSectionRequest(section, uiSong, constTrackIndex);
     if (!isPlaying && eventQ.nextSectionIndex) {
         // if we aren't playing, set it in anticipation of starting.
@@ -319,13 +320,29 @@ void MidiTrackPlayer::serviceEventQueue()
 
 void MidiTrackPlayer::resetFromQueue(bool resetSectionIndex) {
     assert(playback.inPlayCode);
-
+#if 0 // for now, let's do nothing from reset
     static bool firstTime = true;
     if (firstTime) printf("for test ignoring new rest\n");
     firstTime = false;
     
     resetSectionIndex = false;
     
+    /** What we really need to do here:
+     * We don't (yet) know what it means to reset while playing, so.
+     * 
+     * if section request while stopped: setup to play from that section
+     * otherwise, do nothing.
+     * But, for now, why not just always set up to play from requested section, regardless?
+     * 
+     * this has another issue - in some unit tests calling setupToPlayDifferentSection
+     * does something bad.
+     */ 
+#if 1
+    const int nextSection = eventQ.nextSectionIndex;
+    eventQ.nextSectionIndex = 0;
+    eventQ.nextSectionIndexSetWhileStopped = false;
+    setupToPlayDifferentSection(nextSection);
+#else
     if (resetSectionIndex) {
         setupToPlayFirstTrackSection();
     } else {
@@ -338,6 +355,7 @@ void MidiTrackPlayer::resetFromQueue(bool resetSectionIndex) {
             setNextSectionRequest(saveSection);
         }
     }
+#endif
 
 
     curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
@@ -353,13 +371,16 @@ void MidiTrackPlayer::resetFromQueue(bool resetSectionIndex) {
     sectionLoopCounter = options ? options->repeatCount : 1;
     totalRepeatCount = sectionLoopCounter; 
     //printf("sectionLoopCounter set in rest %d\n", sectionLoopCounter);
+    #endif
 }
 
 void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
 {
     playback.song = newSong;
 
-    curTrack = playback.song->getTrack(constTrackIndex);
+   // curTrack = playback.song->getTrack(constTrackIndex);
+  //  curEvent = curTrack->begin();
+  //  assert(curEvent != curTrack->end());
 
     setupToPlayFirstTrackSection();
     auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
@@ -369,6 +390,14 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
     } else {
         sectionLoopCounter = 1;
         // printf("in set song, get sectionLoopCounter from default %d\n", sectionLoopCounter);
+    }
+
+    // now that section indicies are set corrctly, let's get event data
+    curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
+    if (curTrack) {
+        // can we really handle not having a track?
+        curEvent = curTrack->begin();
+        //printf("reset put cur event back\n");
     }
 
 #ifdef _MLOG
