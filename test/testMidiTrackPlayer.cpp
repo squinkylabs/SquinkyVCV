@@ -133,7 +133,7 @@ static void testSwitchToNext()
         play(pl, endTime, quantizationInterval);
         int expectedNotes = 1 + iLoop;
         assertEQ(2 * expectedNotes, host->gateChangeCount);
-        printf("end time was %.2f\n", endTime);
+        // printf("end time was %.2f\n", endTime);
     }
     int x = host->gateChangeCount;
     inputPort.setVoltage(5, 0);     // send a pulse to channel 0
@@ -205,7 +205,6 @@ static void testSwitchToNext2()
 
 static void testSwitchToNextThenVamp()
 {
-    printf("---testSwitchToNextThenVamp\n");
     // make a song with three sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiSong4Ptr song = makeSong3(0);
@@ -228,34 +227,26 @@ static void testSwitchToNextThenVamp()
     pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
-    printf("test about to play to 2\n");
     // play to middle of first bar
     play(pl, 2, quantizationInterval);
     int x = pl.getSection();
     assertEQ(x, 1);
 
-    printf("test about to queue up next via cv 2\n");
     // cue up a switch to next section
     inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
     pl.updateSampleCount(4);        // a few more process calls
     inputPort.setVoltage(0.f, 0);
     pl.updateSampleCount(4);
 
-    printf("test about to play to 4.1\n");
-
     // play to start of next section
     play(pl, 4.1, quantizationInterval);
     x = pl.getSection();
-    printf("get section ret %d\n", x);
     assertEQ(x, 2);
 
 
-    printf("test about to play to 12.1\n");
     // play to start of next section (should stick on 2)
     play(pl, 4 + 8 + .1, quantizationInterval);
-    printf("played\n");
     x = pl.getSection();
-    printf("get section ret %d\n", x);
     assertEQ(x, 2);
 #if 0
     // cue up a switch to prev section.
@@ -383,7 +374,7 @@ static void testRepetition()
 void testMidiTrackPlayer()
 {
     testCanCall();
-    printf("put back testLoop1\n");
+    printf("*** put back testLoop1\n");
    // testLoop1();
     testForever();
     testSwitchToNext();

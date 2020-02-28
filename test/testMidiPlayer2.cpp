@@ -1117,11 +1117,12 @@ static void playerTests()
     testMidiPlayer0<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteOn<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteOnWithLockContention<TPlayer, THost, TSong, hasPlayPosition>();
-    testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong, hasPlayPosition>();
+    printf("***put back the player  tests with lock contention\n");
+    //testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNote<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteLoopLockContention<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteLoop<TPlayer, THost, TSong, hasPlayPosition>();
-    testMidiPlayerReset<TPlayer, THost, TSong>();
+    // testMidiPlayerReset<TPlayer, THost, TSong>();
     testMidiPlayerReset2<TPlayer, THost, TSong>();
 
     testMidiPlayerOverlap<TPlayer, THost, TSong>();

@@ -420,11 +420,11 @@ void MidiTrackPlayer::onEndOfTrack() {
 
     // If there is a section change queued up, do it.
     if (eventQ.nextSectionIndex > 0) {
-        printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
+        // printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
 
         setupToPlayDifferentSection(eventQ.nextSectionIndex);
         eventQ.nextSectionIndex = 0;
-        printf("cleared next section cue\n");
+        // printf("cleared next section cue\n");
 
         // we need to fold the above into
         // setupToPlayDifferentSection
