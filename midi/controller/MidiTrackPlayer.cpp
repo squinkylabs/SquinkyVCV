@@ -187,9 +187,13 @@ int MidiTrackPlayer::getCurrentRepetition() {
     if (!isPlaying) {
         return 0;
     }
-    // printf("getCurrentRepetition clip#=%d, totalRep=%d, counter=%d\n",     this->curSectionIndex, totalRepeatCount, sectionLoopCounter);
+    // printf("getCurrentRepetition clip#=%d, totalRep=%d, sectionLoopCounter=%d\n",     playback.curSectionIndex, totalRepeatCount, sectionLoopCounter);
 
-    return totalRepeatCount + 1 - sectionLoopCounter;
+    // sectionLoopCounter counts down to zero,
+    // so that current approaches total repeat count
+    const int ret = totalRepeatCount + 1 - sectionLoopCounter;
+    //printf("getCurrentRepetition will ret %d\n", ret);
+    return ret;
 }
 
 void MidiTrackPlayer::setSampleCountForRetrigger(int numSamples) {
@@ -386,7 +390,7 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
     auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
     if (options) {
         sectionLoopCounter = options->repeatCount;
-        // printf("in set song, get sectionLoopCounterfrom options %d\n", sectionLoopCounter);
+        // printf("in set song, get sectionLoopCounterfrom options %d totalReps = %d\n", sectionLoopCounter, totalRepeatCount);
     } else {
         sectionLoopCounter = 1;
         // printf("in set song, get sectionLoopCounter from default %d\n", sectionLoopCounter);
@@ -431,22 +435,26 @@ void MidiTrackPlayer::onEndOfTrack() {
 
     } else {
         // counter zero means loop forever
+        // printf("at end, no changes queued\n");
         bool keepLooping = true;
         if (sectionLoopCounter == 0) {
             keepLooping = true;
         } else {
             sectionLoopCounter--;
             keepLooping = (sectionLoopCounter > 0);
-            // printf("sectionLoopCounter dec at end %d\n", sectionLoopCounter);
+        // printf("sectionLoopCounter dec at end %d\n", sectionLoopCounter);
         }
 
         if (keepLooping) {
             // if still repeating this section..
-            // Then I think all we need to do is reset the pointer.
+            // Then I think all we need to do is reset the pointer, 
+            // and update the loop counter for the UI
             assert(curTrack);
             curEvent = curTrack->begin();
+            // printf("at end, keep looping set totalRepeatCount to %d\n", totalRepeatCount);
         } else {
             assert(sectionLoopCounter >= 0);
+            // printf("at end, finite loop, but section loop counter now %d\n", sectionLoopCounter);
 
             // If we have reached the end of the repetitions of this section,
             // then go to the next one.
@@ -466,6 +474,10 @@ void MidiTrackPlayer::setupToPlayFirstTrackSection() {
         if (curTrack && curTrack->getLength()) {
             playback.curSectionIndex = i;
             // printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
+
+            // we weren't calling this before, and I think that was
+            // messing up total count (it wasn't initialized)
+            setupToPlayCommon();
             return;
         }
     }
@@ -490,13 +502,14 @@ void MidiTrackPlayer::setupToPlayCommon() {
         assert(opts);
         if (opts) {
             sectionLoopCounter = opts->repeatCount;
-            // printf("in setup common, get sectionLoopCounter from options %d (tk=%d, sec=%d)\n", sectionLoopCounter, constTrackIndex, curSectionIndex);
+            // printf("in setup common, get sectionLoopCounter from options %d (tk=%d, sec=%d)\n", sectionLoopCounter, constTrackIndex, playback.curSectionIndex);
         } else {
             sectionLoopCounter = 1;
             // printf("in setup common, get sectionLoopCounter from defaults %d\n", sectionLoopCounter);
         }
     }
     totalRepeatCount = sectionLoopCounter;
+    // printf("leaving setupToPLayCommon, totalRepeatCount=%d\n", totalRepeatCount);
 }
 
 void MidiTrackPlayer::setupToPlayNextSection() {

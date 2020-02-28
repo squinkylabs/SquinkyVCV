@@ -60,10 +60,12 @@ static void testCanCall()
 
 static void testLoop1()
 {
+    printf("\n----- testLoop1\n");
     std::shared_ptr<IMidiPlayerHost4> host = std::make_shared<TestHost2>();
     MidiSong4Ptr song = makeSong(0);
     MidiTrackPlayer pl(host, 0, song);
 
+    // Set up to loop the first section twice
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 2;
     const float quantizationInterval = .01f;
@@ -71,18 +73,30 @@ static void testLoop1()
     assertEQ(x, 0);                 // when stopped, always zero
     pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
+
+    /* I think the problem here is that we are in a strange state after setting play,
+     * but before first clocks come through. We need to get this stuff into sync
+     */
+
+
+    printf("have reset and everything, but not played\n");
     x = pl.getCurrentRepetition();
     assertEQ(x, 1);                 //now we are playing first time
     
     bool played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
-    assert(played);
-    played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
-    assert(played);                        // only one note in first loop (and one note off)
-  
-    played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
-    assert(played);                        // and the end event
+    printf("just played for first time. should be on first note\n");
 
-    played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
+    assert(played);
+    x = pl.getCurrentRepetition();
+    assertEQ(x, 1);                                     // should still be playing first time
+   
+    played = pl.playOnce(4.1, quantizationInterval);    // play first rep + a bit
+    assert(played);                                     // only one note in first loop (and one note off)
+  
+    played = pl.playOnce(4.1, quantizationInterval);    // play first rep + a bit
+    assert(played);                                     // and the end event
+
+    played = pl.playOnce(4.1, quantizationInterval);    // play first rep + a bit
     assert(!played);
 
     x = pl.getCurrentRepetition();
@@ -374,8 +388,8 @@ static void testRepetition()
 void testMidiTrackPlayer()
 {
     testCanCall();
-    printf("*** put back testLoop1\n");
-   // testLoop1();
+   // printf("*** put back testLoop1\n");
+    testLoop1();
     testForever();
     testSwitchToNext();
     testSwitchToNext2();
