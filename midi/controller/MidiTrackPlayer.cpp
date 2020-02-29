@@ -319,6 +319,9 @@ void MidiTrackPlayer::serviceEventQueue()
         eventQ.reset = false;
         eventQ.resetSections = false;
     }  
+
+    // dumb assert for debugging. want to see stale requests from use as asserts unti l fix.
+    assert(eventQ.nextSectionIndex == 0 || !eventQ.nextSectionIndexSetWhileStopped);
     
 }
 
@@ -413,7 +416,7 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
 
 void MidiTrackPlayer::onEndOfTrack() {
     assert(playback.inPlayCode);
-    // printf(" MidiTrackPlayer::onEndOfTrack sectionLoopCounter=%d\n", sectionLoopCounter);
+ printf(" MidiTrackPlayer::onEndOfTrack sectionLoopCounter=%d\n", sectionLoopCounter);
 #if defined(_MLOG)
     printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
     printf("sectionLoopCounter = %d nextSectionIndex =%d\n", sectionLoopCounter, nextSectionIndex);
@@ -424,7 +427,7 @@ void MidiTrackPlayer::onEndOfTrack() {
 
     // If there is a section change queued up, do it.
     if (eventQ.nextSectionIndex > 0) {
-        // printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
+         printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
 
         setupToPlayDifferentSection(eventQ.nextSectionIndex);
         eventQ.nextSectionIndex = 0;

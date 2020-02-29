@@ -254,6 +254,7 @@ static void testRepeatReset()
 
 static void testTwoSectionsStartOnSecond()
 {
+    printf("\n---- testTwoSectionsStartOnSecond\n");
     const int trackNum = 0;
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
@@ -264,16 +265,39 @@ static void testTwoSectionsStartOnSecond()
     const float quantizationInterval = .01f;
     pl.setNextSectionRequest(trackNum, 2);     // skip the first section 
                                         // (request index == 1)
+    // just for now? If we set while stopped, should happen immediately.
+    // (I'm not sure we should do this, but we do)
+    // Seuper strange to keep it queued, and do it immediately, but we can fix that.
     assertEQ(pl.getNextSectionRequest(trackNum), 2);
+
+    // won't report until running
+   // assertEQ(pl.getSection(trackNum), 2);       // we sent 2 to request 1 (2)
+
+
+    /* ok - here's what's happening:
+        when we called setNextSEctionReq, it put the req in the Q, and it set it immediately on pb.
+        but when we started playing, setting the new song cleared the section we set, and did not look at the Q.
+
+        I think maybe what should happen is that req always goes in Q, never sets immediately.
+        after setting song, we should poll for section changes. normally we find them at end, 
+        but if we find one is there at startup, we should honor it then
+    */
 
     const float startOffset = 4;
     pl.setRunningStatus(true);
+    pl.updateToMetricTime(.1, quantizationInterval, true);
+    assertEQ(pl.getSection(trackNum), 2);
 
     pl.updateToMetricTime(4.1 - startOffset, quantizationInterval, true);
 
     // This is failing becuase service event queue isn't looking at next section requests.
-    printf("*** put back the part of testTwoSectionsStartOnSecond that is failing\n");
-#if 0
+    // ok, so this is a test of starting up with a request queued.
+    // May need to decide what "startup means"?
+    // actually for this test we probably only need to service reqeusts in our normal service routine.
+
+
+    //printf("*** put back the part of testTwoSectionsStartOnSecond that is failing\n");
+#if 1
     assertEQ(pl.getSection(trackNum), 2);       // we sent 2 to request 1 (2)
     assertEQ(host->gateChangeCount, 1);
     assertEQ(host->gateState[0], true);
