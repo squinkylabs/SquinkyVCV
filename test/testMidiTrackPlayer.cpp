@@ -457,10 +457,38 @@ static void testMissingSection()
 
 static void testHardReset()
 {
-    assert(false);
-
+   
     // we should set up, play a little, stop, reset, play again, find we are at start.
+     // make a song with four sections
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong4(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    const float quantizationInterval = .01f;
+    pl.setRunningStatus(true);      // start it.
+  
+
+    pl.setNextSectionRequest(4);
+    assertEQ(pl.getNextSectionRequest(), 4);
+
+    // now service outstanding request
+    pl.playOnce(.1, quantizationInterval);
+    assertEQ(pl.getNextSectionRequest(), 0);
+    assertEQ(pl.getSection(), 4);
+
+    // stop, and reset
+    pl.setRunningStatus(false);
+    pl.reset(true);         // set back to section 1
+
+    // could assert the next is now 1??
+    pl.playOnce(.2, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
 }
+
 void testMidiTrackPlayer()
 {
     testCanCall();
@@ -474,5 +502,4 @@ void testMidiTrackPlayer()
     testRandomSwitch();
     testMissingSection();
     testHardReset();
-
 }
