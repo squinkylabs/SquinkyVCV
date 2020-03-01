@@ -40,6 +40,26 @@ static MidiSong4Ptr makeSong3(int trackNum)
     return song;
 }
 
+
+static MidiSong4Ptr makeSong4(int trackNum)
+{
+    MidiSong4Ptr song = std::make_shared<MidiSong4>();
+    MidiLocker lock(song->lock);
+    MidiTrackPtr clip0 = MidiTrack::makeTest(MidiTrack::TestContent::oneQ1_75, song->lock);
+    MidiTrackPtr clip1 = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
+    MidiTrackPtr clip2 = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
+    MidiTrackPtr clip3 = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
+    assertEQ(clip0->getLength(), 4.f);
+    assertEQ(clip1->getLength(), 8.f);
+
+    song->addTrack(trackNum, 0, clip0);
+    song->addTrack(trackNum, 1, clip1);
+    song->addTrack(trackNum, 2, clip2);
+    song->addTrack(trackNum, 3, clip3);
+    return song;
+}
+
+
 static void play(MidiTrackPlayer& pl, double time, float quantize)
 {
     while (pl.playOnce(time, quantize)) {
@@ -354,7 +374,6 @@ static void testRepetition()
     pl.setPorts(&inputPort, &param);
 
     {
-      
         auto options0 = song->getOptions(0, 0);
         options0->repeatCount = 1;
         auto options1 = song->getOptions(0, 1);
@@ -382,10 +401,69 @@ static void testRepetition()
 
 }
 
+static void testRandomSwitch()
+{
+       // make a song with four sections
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong4(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    const float quantizationInterval = .01f;
+    pl.setRunningStatus(true);      // start it.
+    assertEQ(pl.getNextSectionRequest(), 0);
+
+    pl.setNextSectionRequest(4);
+    assertEQ(pl.getNextSectionRequest(), 4);
+
+    pl.setNextSectionRequest(3);
+    assertEQ(pl.getNextSectionRequest(), 3);
+
+    // not running yet;
+    assertEQ(pl.getSection(), 0);
+
+    // now service outstanding request
+    pl.playOnce(.1, quantizationInterval);
+    assertEQ(pl.getNextSectionRequest(), 0);
+
+    assertEQ(pl.getSection(), 3);
+
+}
+
+static void testMissingSection()
+{
+    // make a song with four sections
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    const float quantizationInterval = .01f;
+    pl.setNextSectionRequest(4);        // doesn't exist
+    assertEQ(pl.getNextSectionRequest(), 1);        // so we wrap around to first
+
+    song->addTrack(0, 0, nullptr);          // let's remove first clip
+
+    pl.playOnce(.1, quantizationInterval); // play a bit to prime the pump
+    assertEQ(pl.getSection(), 2);           // we should skip over the missing one.       
+
+}
+
+static void testHardReset()
+{
+    assert(false);
+
+    // we should set up, play a little, stop, reset, play again, find we are at start.
+}
 void testMidiTrackPlayer()
 {
     testCanCall();
-   // printf("*** put back testLoop1\n");
     testLoop1();
     testForever();
     testSwitchToNext();
@@ -393,4 +471,8 @@ void testMidiTrackPlayer()
     testSwitchToNextThenVamp();
     testSwitchToPrev();
     testRepetition();
+    testRandomSwitch();
+    testMissingSection();
+    testHardReset();
+
 }
