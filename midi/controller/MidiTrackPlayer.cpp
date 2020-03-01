@@ -162,6 +162,7 @@ void MidiTrackPlayer::setNextSectionRequest(int section) {
     // printf("called set next section with %d\n", section);
 
     eventQ.nextSectionIndex = validateSectionRequest(section, uiSong, constTrackIndex);
+#if 0
     if (!isPlaying && eventQ.nextSectionIndex) {
         // if we aren't playing, set it in anticipation of starting.
         // If we are playing, the next end event will advance us
@@ -169,6 +170,7 @@ void MidiTrackPlayer::setNextSectionRequest(int section) {
         playback.curSectionIndex = eventQ.nextSectionIndex - 1;
         // printf("set next section just set curSection to %d\n", curSectionIndex);
     }
+#endif
 }
 
 int MidiTrackPlayer::getNextSectionRequest() const {
@@ -310,15 +312,25 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 void MidiTrackPlayer::serviceEventQueue()
 {
     assert(playback.inPlayCode);
+    bool isNewSong = false;
+
     if (eventQ.newSong) {
         setSongFromQueue(eventQ.newSong);
         eventQ.newSong.reset();
+        isNewSong = true;
     } 
     if (eventQ.reset) {
         resetFromQueue(eventQ.resetSections);
         eventQ.reset = false;
         eventQ.resetSections = false;
-    }  
+    } 
+    if (isNewSong && (eventQ.nextSectionIndex > 0)) {
+        // we picked up a new song, but there is a request for next section
+        const int next = eventQ.nextSectionIndex;
+        eventQ.nextSectionIndex = 0;
+        printf("new code kicking to init song to req section\n");
+        setupToPlayDifferentSection(next);
+    }
 
     // dumb assert for debugging. want to see stale requests from use as asserts unti l fix.
     assert(eventQ.nextSectionIndex == 0 || !eventQ.nextSectionIndexSetWhileStopped);
@@ -489,6 +501,7 @@ void MidiTrackPlayer::setupToPlayFirstTrackSection() {
 void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
     assert(playback.inPlayCode);
     curTrack = nullptr;
+
     int nextSection = validateSectionRequest(section, playback.song, constTrackIndex);
     playback.curSectionIndex = (nextSection == 0) ? 0 : nextSection - 1;
     // printf("setupToPlayDifferentSection next=%d\n", nextSection);
@@ -499,8 +512,12 @@ void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
 
 void MidiTrackPlayer::setupToPlayCommon() {
     assert(playback.inPlayCode);
+    printf("settup common getting track %d, section %d\n", constTrackIndex, playback.curSectionIndex);
     curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
     if (curTrack) {
+        printf("got new track in setupToPlayCommon. here's track\n");
+        curTrack->_dump();
+        curEvent = curTrack->begin();
         auto opts = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
         assert(opts);
         if (opts) {
