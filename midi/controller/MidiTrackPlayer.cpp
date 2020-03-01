@@ -314,16 +314,34 @@ void MidiTrackPlayer::serviceEventQueue()
     assert(playback.inPlayCode);
     bool isNewSong = false;
 
+    // newSong is where we store the song that should be treated as "new"
+    MidiSong4Ptr newSong;
+
     if (eventQ.newSong) {
-        setSongFromQueue(eventQ.newSong);
+        // move the song from the Q to newSong
+        newSong = eventQ.newSong;
         eventQ.newSong.reset();
         isNewSong = true;
     } 
     if (eventQ.reset) {
+        // This doesn't do anything at the moment
         resetFromQueue(eventQ.resetSections);
+
+        // for "hard reset, re-init the whole song. This will take us back to the start";
+        if (eventQ.resetSections) {
+            eventQ.nextSectionIndex = 0;
+            if (!newSong) {
+                newSong = playback.song;
+            }
+        }
         eventQ.reset = false;
         eventQ.resetSections = false;
     } 
+
+    if (newSong) {
+        setSongFromQueue(newSong);
+    }
+
     if (isNewSong && (eventQ.nextSectionIndex > 0)) {
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
