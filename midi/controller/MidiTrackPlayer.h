@@ -74,9 +74,7 @@ public:
 
 
     int getNextSectionRequest() const;
-    void setRunningStatus(bool running) {
-        isPlaying = running;
-    }
+    void setRunningStatus(bool running);
 
     void setPorts(Input* cvInput, Param* triggerImmediate) {
         input = cvInput;
@@ -285,7 +283,7 @@ private:
 
         /**
          * If false, we wait for next loop iteration to apply queue.
-         * If true, we do "immediately";
+         * If true, we do "immediately"; (is this used?)
          */
         bool eventsHappenImmediately = false;
 
@@ -295,6 +293,7 @@ private:
 
         bool reset = false;
         bool resetSections = false;
+        bool startupTriggered = false;
     };
 
     EventQ eventQ;

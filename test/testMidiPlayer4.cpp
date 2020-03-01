@@ -216,7 +216,7 @@ static void testRepeatReset()
     MidiSong4Ptr song = makeSong(trackNum);
 
     // repeat second section twice.
-    auto options = song->getOptions(0, 1);
+    auto options = song->getOptions(trackNum, 1);
     options->repeatCount = 2;
     const float quantizationInterval = .01f;
 
@@ -250,7 +250,26 @@ static void testRepeatReset()
 #endif
 }
 
+ static void testPauseSwitchSectionStart()
+ {
+    const int trackNum = 0;
+    MidiSong4Ptr song = makeSong(trackNum);
+    const float quantizationInterval = .01f;
+    std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
+    MidiPlayer4 pl(host, song);
+    pl.setRunningStatus(true);
 
+    // play first section a bit
+    pl.updateToMetricTime(.1, quantizationInterval, true);
+    assertEQ(pl.getSection(trackNum), 1);
+
+    // now pause and switch sections
+    pl.setRunningStatus(false);
+    pl.setNextSectionRequest(trackNum, 2);
+    pl.setRunningStatus(true);
+    pl.updateToMetricTime(.2, quantizationInterval, true);
+    assertEQ(pl.getSection(trackNum), 2);
+ }
 
 static void testTwoSectionsStartOnSecond()
 {
@@ -510,5 +529,6 @@ void testMidiPlayer4()
     testTwoSectionsLoop();
     testTwoSectionsRepeat1();
     testRepeatReset();
+    testPauseSwitchSectionStart();
 }
    

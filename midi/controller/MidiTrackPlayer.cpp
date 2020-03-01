@@ -244,6 +244,14 @@ void MidiTrackPlayer::pollForCVChange()
     }
 }
 
+ void MidiTrackPlayer::setRunningStatus(bool running) {
+     if (!isPlaying && running) {
+        // just set this on the edge of the change
+        eventQ.startupTriggered = true;
+    }
+    isPlaying = running;
+}
+
 /****************************************** playback code ***********************************************/
 
 
@@ -342,13 +350,18 @@ void MidiTrackPlayer::serviceEventQueue()
         setSongFromQueue(newSong);
     }
 
-    if (isNewSong && (eventQ.nextSectionIndex > 0)) {
+    const bool shouldDoNewSectionImmediately = isNewSong || eventQ.startupTriggered;
+
+    if (shouldDoNewSectionImmediately && (eventQ.nextSectionIndex > 0)) {
+
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
         eventQ.nextSectionIndex = 0;
         // printf("new code kicking to init song to req section\n");
         setupToPlayDifferentSection(next);
     }
+
+    eventQ.startupTriggered = false;
 
     // dumb assert for debugging. want to see stale requests from use as asserts unti l fix.
     assert(eventQ.nextSectionIndex == 0 || !eventQ.nextSectionIndexSetWhileStopped);
