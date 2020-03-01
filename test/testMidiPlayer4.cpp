@@ -236,7 +236,7 @@ static void testRepeatReset()
     pl.updateToMetricTime(.2, quantizationInterval, true);
     const int ct0 = host->gateChangeCount;
 
-    printf("Put back the failing section of testRepeatReset\n");
+    printf("(reset) Put back the failing section of testRepeatReset\n");
 #if 0
     // Play the first section, verify it played one note
     pl.updateToMetricTime(3.8, quantizationInterval, true);
@@ -254,11 +254,10 @@ static void testRepeatReset()
 
 static void testTwoSectionsStartOnSecond()
 {
-    printf("\n---- testTwoSectionsStartOnSecond\n");
+
     const int trackNum = 0;
     MidiSong4Ptr song = makeSong(trackNum);
 
-    song->_dump();
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
@@ -306,16 +305,14 @@ static void testTwoSectionsStartOnSecond()
     // May need to decide what "startup means"?
     // actually for this test we probably only need to service reqeusts in our normal service routine.
 
-
-    //printf("*** put back the part of testTwoSectionsStartOnSecond that is failing\n");
-#if 1
     assertEQ(host->gateChangeCount, 1); // should have played the first note of the section
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
     host->assertOneActiveTrack(trackNum);
-#endif
 
-    printf("finish testTwoSectionsStartOnSecond\n");
+    printf("(maybe) finish testTwoSectionsStartOnSecond\n");
+    // I think this was supposed to be just playing farther.
+    // I don't think I need to finish this
 #if 0
     assert(false);      // the rest needs porting. or something.
 
@@ -404,7 +401,7 @@ static void testTwoSectionsSwitchToSecond()
     assertEQ(host->cvValue[0], PitchUtils::pitchToCV(3, PitchUtils::c));
     host->assertOneActiveTrack(trackNum);
 
-    printf("finish testTwoSectionsSwitchToSecond\n");
+    printf("(maybe) finish testTwoSectionsSwitchToSecond\n");
 #if 0
     assert(false);      // the rest needs porting. or something.
 
@@ -478,23 +475,20 @@ static void testSectionStartOffset()
     MidiPlayer4 pl(host, song);
 
     // start up so that we can get a current section
-    // TODO: is there some other way we should "prime the pump"?
+    // Also - this is pretty strange, we haven't put ourselves in "running" state
     pl.updateToMetricTime(.1, .1f, true);
 
-    printf("* bring back testSectionStartOffset\n");
-    // It looks like there is an off by one error. was this test always flawed?
-    // Or did getSection uses to add one? We may need to ge verify in master.
-#if 0
     // when we are stopped, setting next sets current
+    // (not any more!!)
     pl.setNextSectionRequest(trackNum, 2);
-    assertEQ(pl.getSection(trackNum), 2);
+    assertEQ(pl.getSection(trackNum), 1);           // not playing, so unchanged
+
 
     // when playing, just cue it up, don't go there
     pl.setRunningStatus(true);
     pl.setNextSectionRequest(trackNum, 1);
-    assertEQ(pl.getSection(trackNum), 2);
+    assertEQ(pl.getSection(trackNum), 1);
     assertEQ(pl.getNextSectionRequest(trackNum), 1);
-#endif
 }
 
 static void testSectionApi()

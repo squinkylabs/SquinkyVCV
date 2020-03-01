@@ -78,13 +78,10 @@ static void testLoop1()
      * but before first clocks come through. We need to get this stuff into sync
      */
 
-
-    printf("have reset and everything, but not played\n");
     x = pl.getCurrentRepetition();
     assertEQ(x, 1);                 //now we are playing first time
     
     bool played = pl.playOnce(4.1, quantizationInterval);     // play first rep + a bit
-    printf("just played for first time. should be on first note\n");
 
     assert(played);
     x = pl.getCurrentRepetition();

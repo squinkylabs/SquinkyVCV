@@ -1117,7 +1117,7 @@ static void playerTests()
     testMidiPlayer0<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteOn<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteOnWithLockContention<TPlayer, THost, TSong, hasPlayPosition>();
-    printf("***put back the player  tests with lock contention\n");
+    printf("(reset) ***put back the player  tests with lock contention\n");
     //testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNote<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteLoopLockContention<TPlayer, THost, TSong, hasPlayPosition>();
