@@ -328,7 +328,7 @@ void MidiTrackPlayer::serviceEventQueue()
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
         eventQ.nextSectionIndex = 0;
-        printf("new code kicking to init song to req section\n");
+        // printf("new code kicking to init song to req section\n");
         setupToPlayDifferentSection(next);
     }
 
@@ -428,7 +428,7 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
 
 void MidiTrackPlayer::onEndOfTrack() {
     assert(playback.inPlayCode);
- printf(" MidiTrackPlayer::onEndOfTrack sectionLoopCounter=%d\n", sectionLoopCounter);
+    // printf(" MidiTrackPlayer::onEndOfTrack sectionLoopCounter=%d\n", sectionLoopCounter);
 #if defined(_MLOG)
     printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
     printf("sectionLoopCounter = %d nextSectionIndex =%d\n", sectionLoopCounter, nextSectionIndex);
@@ -439,7 +439,7 @@ void MidiTrackPlayer::onEndOfTrack() {
 
     // If there is a section change queued up, do it.
     if (eventQ.nextSectionIndex > 0) {
-         printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
+        // printf("at end of track, found next section %d\n", eventQ.nextSectionIndex);
 
         setupToPlayDifferentSection(eventQ.nextSectionIndex);
         eventQ.nextSectionIndex = 0;
@@ -512,11 +512,11 @@ void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
 
 void MidiTrackPlayer::setupToPlayCommon() {
     assert(playback.inPlayCode);
-    printf("settup common getting track %d, section %d\n", constTrackIndex, playback.curSectionIndex);
+    // printf("settup common getting track %d, section %d\n", constTrackIndex, playback.curSectionIndex);
     curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
     if (curTrack) {
-        printf("got new track in setupToPlayCommon. here's track\n");
-        curTrack->_dump();
+        // printf("got new track in setupToPlayCommon. here's track\n");
+        // curTrack->_dump();
         curEvent = curTrack->begin();
         auto opts = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
         assert(opts);
