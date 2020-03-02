@@ -458,6 +458,18 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
     b->addSvg("res/square-button-01.svg");
     b->addSvg("res/square-button-02.svg");
     addParam(b);
+
+    // add a hidden running control, just so ClockFinder can find it
+    #if 1
+    auto runWidget = SqHelper::createParam<NullWidget>(
+        icomp,
+        Vec(0, 0),
+        module,
+        Comp::RUNNING_PARAM);
+    runWidget->box.size.x = 0;
+    runWidget->box.size.y = 0;
+    addParam(runWidget);
+    #endif
 }
 
 void SequencerWidget::addStepRecord(SequencerModule *module)

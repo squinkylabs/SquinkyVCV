@@ -10,6 +10,10 @@
 #include "plugin/Model.hpp"
 #include "widget/Widget.hpp"
 
+#include "Seq.h"
+#include "Seq4.h"
+#include "WidgetComposite.h"
+
 using ModuleWidget = ::rack::app::ModuleWidget;
 using Model = ::rack::plugin::Model;
 using PortWidget = ::rack::app::PortWidget;
@@ -29,7 +33,8 @@ public:
     std::string slug;
     int clockOutputIds[3];
     int clockRatioParamIds[3];          // for the three stand-alone, not counting master
-   // void dump() const;
+    int runningParamId;
+    void dump() const;
 
     ClockDescriptor(const ClockDescriptor&)=delete;
     const ClockDescriptor& operator=(const ClockDescriptor&)=delete;
@@ -38,21 +43,24 @@ public:
 static const ClockDescriptor descriptors[] = {
     {"Clocked", 
         {1,2,3},
-        {1,2,3}
+        {1,2,3},
+        {13}
     },
     {"Clocked-Clkd", 
         {1,2,3},
-        {0,1,2}
+        {0,1,2},
+        {6}
     }
 };
 
-#if 0
+#if 1
 void ClockDescriptor::dump() const
 {
     assert((this == descriptors + 0) || (this == descriptors + 1)); 
     INFO("**** dump descriptor %p", this);
     INFO("    slug = %s", slug.c_str());
     INFO("    output ids = %d,%d,%d", clockOutputIds[0],clockOutputIds[1],clockOutputIds[2]);
+    INFO(" runningParamID = %d", runningParamId);
 }
 
 static void dumpBoth()
@@ -84,6 +92,7 @@ public:
     static std::vector<PortWidget*> findClockedOutputs(ModuleWidget* clocked, PortWidget* clock);
 
     static ParamWidget* getRatioParam(WidgetAndDescription clocked, int index);
+    static ParamWidget* getRunningParam(WidgetAndDescription clocked);
 private:
     using WidgetAndDescriptionS = std::vector<WidgetAndDescription>;
     static WidgetAndDescriptionS findClocks();
@@ -216,18 +225,79 @@ ParamWidget* Clocks::getRatioParam(WidgetAndDescription clocked, int _index)
     return nullptr;
 }
 
-class Seq
+class Seqs
 {
 public:
     static std::vector<PortWidget*> findInputs(const ModuleWidget* seq);
     static bool anyConnected(const std::vector<PortWidget*>& ports);
     static float clockDivToClockedParam(int div);
+    static ParamWidget* getRunningParam(ModuleWidget*, bool isSeqPlusPlus);
 };
+
+
+
+static ParamWidget* findParamWidgetForParamId(ModuleWidget* moduleWidget, int paramID)
+{
+    INFO("findParamWidgetForParamId");
+    assert(paramID >= 0);
+    assert(paramID < 20);
+    assert(moduleWidget);
+    assert(moduleWidget->model);
+       INFO("findParamWidgetForParamId2");
+    assert(moduleWidget->model->slug.length());
+      INFO("findParamWidgetForParamId3 len=%d", moduleWidget->model->slug.length());
+    INFO("find param widget id=%d, slug = %s\n", paramID, moduleWidget->model->slug.c_str());
+    for (auto param : moduleWidget->params) {
+        if (!param->paramQuantity) {
+            WARN("param has no quantity");
+            return nullptr;
+        }
+        const int id = param->paramQuantity->paramId;
+        INFO("in loop, found param with ID %d", id);
+        if (id == paramID) {
+            return param;
+        }
+    }
+    assert(false);
+    return nullptr;
+}
+
+ParamWidget*  Clocks::getRunningParam(WidgetAndDescription clocked)
+{
+    INFO("get running");
+    clocked.second->dump();
+    const int paramID = clocked.second->runningParamId;
+    return findParamWidgetForParamId(clocked.first, paramID);
+}
+
+ParamWidget* Seqs::getRunningParam(ModuleWidget* seqWidget, bool isSeqPlusPlus)
+{
+    
+    const int paramID = isSeqPlusPlus ?  int(Seq<WidgetComposite>::RUNNING_PARAM) : int(Seq4<WidgetComposite>::RUNNING_PARAM);
+    return findParamWidgetForParamId(seqWidget, paramID);
+#if 0
+    // refactor into helper "find param from ID"?
+ //   ModuleWidget
+    for (auto param : seqWidget->params) {
+        if (!param->paramQuantity) {
+            WARN("param has no quantity");
+            return nullptr;
+        }
+        const int id = param->paramQuantity->paramId;
+        if (id == paramID) {
+            return param;
+        }
+    }
+    assert(false);
+    return nullptr;
+    #endif
+  
+}
 
 // TODO: generalize to both seq
 // clock, run, reset
 
-std::vector<PortWidget*> Seq::findInputs(const ModuleWidget* seq) {
+std::vector<PortWidget*> Seqs::findInputs(const ModuleWidget* seq) {
     int found = 0;
      std::vector<PortWidget*> ret(3);
 
@@ -250,7 +320,7 @@ std::vector<PortWidget*> Seq::findInputs(const ModuleWidget* seq) {
      return (found == 3 ) ? ret : std::vector<PortWidget*>();
 }
 
-bool Seq::anyConnected(const std::vector<PortWidget*>& ports)
+bool Seqs::anyConnected(const std::vector<PortWidget*>& ports)
 {
     for (auto port : ports) {
         auto cables = APP->scene->rack->getCablesOnPort(port);
@@ -263,7 +333,7 @@ bool Seq::anyConnected(const std::vector<PortWidget*>& ports)
 
 
 // TODO: get this from descriptor - don't assume ratios
-float Seq::clockDivToClockedParam(int div)
+float Seqs::clockDivToClockedParam(int div)
 {
     float ret = 0;
     assert(div > 0);
@@ -280,8 +350,21 @@ float Seq::clockDivToClockedParam(int div)
 }
 
 
+static void setParamOnWidget(ModuleWidget* moduleWidget, ParamWidget* paramWidget, float value)
+{
+    auto module = moduleWidget->module;
+    const int paramId = paramWidget->paramQuantity->paramId;
+    APP->engine->setParam(module, paramId, value);
+}
+
+
+
 void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, int resetInput)
 {
+    dumpBoth();
+    INFO("go. seq slug = %s", host->model->slug.c_str());
+    const bool isSeqPlusPlus = true;
+
     INFO("slug0= %s, slug1=%s", descriptors[0].slug.c_str(), descriptors[1].slug.c_str());
     // we are hard coded to these values. If module changes, we will have to get smarter/
     assert(clockInput == 0);
@@ -301,7 +384,7 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
     assert(outputs.size() == 3);
 
  
-    auto inputs = Seq::findInputs(host);
+    auto inputs = Seqs::findInputs(host);
     assert(inputs.size() == 3);
 
     if (outputs.size() != 3 || inputs.size() != 3) {
@@ -309,7 +392,7 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         return;
     }
 
-    if (Seq::anyConnected(inputs)) {
+    if (Seqs::anyConnected(inputs)) {
         return;
     }
 
@@ -329,13 +412,30 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         const int clockIndex = clockOutput.first->portId - 1;
         auto paramWidget = Clocks::getRatioParam(moduleAndDescription, clockIndex);
         if (paramWidget) {
-            auto module = moduleAndDescription.first->module;
-            const int paramId = paramWidget->paramQuantity->paramId;
-            const float value = Seq::clockDivToClockedParam(div);
-            APP->engine->setParam(module, paramId, value);
+          //  auto module = moduleAndDescription.first->module;
+          //  const int paramId = paramWidget->paramQuantity->paramId;
+            const float value = Seqs::clockDivToClockedParam(div);
+         //   APP->engine->setParam(module, paramId, value);
+            setParamOnWidget(host, paramWidget, value);
         }
     }
 
+    // setParamOnWidget(ParamWidget*, float value)
+
+    // now make everyone running = false;
+    #if 0
+    {
+        auto clockParamWidget = Clocks::getRunningParam(moduleAndDescription);
+        auto seqParamWidget = Seqs::getRunningParam(host, isSeqPlusPlus);
+        assert(clockParamWidget && seqParamWidget);
+        if (seqParamWidget) {
+            setParamOnWidget(host, seqParamWidget, 0);
+        }
+        if (clockParamWidget) {
+            setParamOnWidget(moduleAndDescription.first, clockParamWidget, 1);
+        }
+    }
+    #endif
 }
 
 
