@@ -10,8 +10,8 @@
 #include "plugin/Model.hpp"
 #include "widget/Widget.hpp"
 
-#include "Seq.h"
-#include "Seq4.h"
+// #include "Seq.h"
+// #include "Seq4.h"
 #include "WidgetComposite.h"
 
 using ModuleWidget = ::rack::app::ModuleWidget;
@@ -235,7 +235,7 @@ public:
 };
 
 
-
+#if 0
 static ParamWidget* findParamWidgetForParamId(ModuleWidget* moduleWidget, int paramID)
 {
     INFO("findParamWidgetForParamId");
@@ -274,25 +274,9 @@ ParamWidget* Seqs::getRunningParam(ModuleWidget* seqWidget, bool isSeqPlusPlus)
 {
     
     const int paramID = isSeqPlusPlus ?  int(Seq<WidgetComposite>::RUNNING_PARAM) : int(Seq4<WidgetComposite>::RUNNING_PARAM);
-    return findParamWidgetForParamId(seqWidget, paramID);
-#if 0
-    // refactor into helper "find param from ID"?
- //   ModuleWidget
-    for (auto param : seqWidget->params) {
-        if (!param->paramQuantity) {
-            WARN("param has no quantity");
-            return nullptr;
-        }
-        const int id = param->paramQuantity->paramId;
-        if (id == paramID) {
-            return param;
-        }
-    }
-    assert(false);
-    return nullptr;
-    #endif
-  
+    return findParamWidgetForParamId(seqWidget, paramID);  
 }
+#endif
 
 // TODO: generalize to both seq
 // clock, run, reset
@@ -405,6 +389,7 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         APP->scene->rack->addCable(cable);
     }
 
+    // something in this block is crashing
 
     if (!clockOutput.second) {
         // if the clock output was empty before us, then we can set the
@@ -416,9 +401,12 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
           //  const int paramId = paramWidget->paramQuantity->paramId;
             const float value = Seqs::clockDivToClockedParam(div);
          //   APP->engine->setParam(module, paramId, value);
-            setParamOnWidget(host, paramWidget, value);
+
+        // INFO("skipping set setPram on widget for clock div");
+            setParamOnWidget(moduleAndDescription.first, paramWidget, value);
         }
     }
+
 
     // setParamOnWidget(ParamWidget*, float value)
 
