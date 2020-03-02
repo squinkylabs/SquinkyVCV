@@ -156,7 +156,9 @@ void S4Button::step() {
         lengthTime = track->getLength();
         newLen = TimeUtils::length2str(lengthTime);
         newNumNotes = track->size() - 1;
-        repetitionIndex = seq4Comp->getTrackPlayer(row)->getCurrentRepetition();
+
+        // if no comp, make one up for the module browser
+        repetitionIndex = seq4Comp ? seq4Comp->getTrackPlayer(row)->getCurrentRepetition() : 1;
 
         auto options = getOptions();
         if (options) {
@@ -184,14 +186,14 @@ void S4Button::step() {
         fw->dirty = true;
     }
 
-    const int playStatus = seq4Comp->getPlayStatus(row);
+    const int playStatus = seq4Comp ? seq4Comp->getPlayStatus(row) : 1;
     bool iAmPlaying = playStatus == (col + 1);
     if (iAmPlaying != isPlaying) {
         isPlaying = iAmPlaying;
         fw->dirty = true;
     }
 
-    const int nextSection = seq4Comp->getNextSectionRequest(row);
+    const int nextSection = seq4Comp ? seq4Comp->getNextSectionRequest(row) : 0;
     bool isNext = (nextSection == (col + 1));
     if (iAmNext != isNext) {
         iAmNext = isNext;
@@ -381,6 +383,10 @@ inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
                         MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
+    if (!song) {
+        song = MidiSong4::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0, 0);
+    }
+
     seq4Comp = _seq4Comp;
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {

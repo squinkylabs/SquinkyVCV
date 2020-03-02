@@ -184,6 +184,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
             Vec(controlX + 52, y),  // 54 too much 50 too little
             module,
             Comp::NUM_VOICES0_PARAM + i);
+        p->text = "4";              // default text for the module browser
         p->box.size.x = 40;  // width
         p->box.size.y = 22;      // should set auto like button does
         p->setLabels(Comp::getPolyLabels());
@@ -220,6 +221,8 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
         buttonGrid.init(this, module, module->getSong(), module->seq4Comp);
     } else {
         WARN("make the module browser draw the buttons");
+        
+         buttonGrid.init(this, nullptr, nullptr, nullptr);
     }
 }
 
