@@ -249,6 +249,11 @@ BootyWidget::BootyWidget(BootyModule *module) : ModuleWidget(module)
     if (module) {
         module->rangeChoice = new RangeChoice(&module->shifter->freqRange, Vec(xPos, row2), width);
         addChild(module->rangeChoice);
+    } else {
+        // let's make one, just for the module browser
+        static float dummyRange = 5;
+        auto displayGizmo = new RangeChoice(&dummyRange, Vec(xPos, row2), width);
+        addChild(displayGizmo);
     }
 
     // knob on row 1
