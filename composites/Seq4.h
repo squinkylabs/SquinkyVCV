@@ -418,7 +418,7 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             }
             break;
         case Seq4<TBase>::RUNNING_PARAM:
-            ret = {0, 1, 0, "Running"};
+            ret = {0, 1, 1, "Running"};
             break;
         case Seq4<TBase>::NUM_VOICES0_PARAM:
             ret = {0, 15, 0, "Polyphony 1"};

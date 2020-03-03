@@ -34,6 +34,7 @@ public:
     int clockOutputIds[3];
     int clockRatioParamIds[3];          // for the three stand-alone, not counting master
     int runningParamId;
+    bool runningIsInverted;
     //void dump() const;
 
     ClockDescriptor(const ClockDescriptor&)=delete;
@@ -44,12 +45,14 @@ static const ClockDescriptor descriptors[] = {
     {"Clocked", 
         {1,2,3},
         {1,2,3},
-        {13}
+        {13},
+        {true}
     },
     {"Clocked-Clkd", 
         {1,2,3},
         {0,1,2},
-        {5}
+        {5},
+        {true}
     }
 };
 
@@ -317,6 +320,12 @@ float Seqs::clockDivToClockedParam(int div)
     return ret;
 }
 
+static float getParamFromWidget(ModuleWidget* moduleWidget, ParamWidget* paramWidget) {
+    auto module = moduleWidget->module;
+    const int paramId = paramWidget->paramQuantity->paramId;
+    float ret = APP->engine->getParam(module, paramId);
+    return ret;  
+}
 
 static void setParamOnWidget(ModuleWidget* moduleWidget, ParamWidget* paramWidget, float value)
 {
@@ -384,11 +393,12 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         auto clockParamWidget = Clocks::getRunningParam(moduleAndDescription);
         auto seqParamWidget = Seqs::getRunningParam(host, isSeqPlusPlus);
         assert(clockParamWidget && seqParamWidget);
-        if (seqParamWidget) {
-            setParamOnWidget(host, seqParamWidget, 0);
-        }
-        if (clockParamWidget) {
-            setParamOnWidget(moduleAndDescription.first, clockParamWidget, 1);
+        if (clockParamWidget && seqParamWidget) {
+            bool clockIsRunning = getParamFromWidget(moduleAndDescription.first, clockParamWidget) > .5f;
+            if (moduleAndDescription.second->runningIsInverted) {
+                clockIsRunning = !clockIsRunning;
+            }
+            setParamOnWidget(host, seqParamWidget, clockIsRunning ? 1 : 0);
         }
     }
 }
