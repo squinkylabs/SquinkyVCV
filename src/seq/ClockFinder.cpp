@@ -22,6 +22,14 @@ using ParamWidget = ::rack::app::ParamWidget;
 using Engine = ::rack::engine::Engine;
 
 
+
+static float getParamFromWidget(ModuleWidget* moduleWidget, ParamWidget* paramWidget) {
+    auto module = moduleWidget->module;
+    const int paramId = paramWidget->paramQuantity->paramId;
+    float ret = APP->engine->getParam(module, paramId);
+    return ret;  
+}
+
 /********************************* ALL STUFF ABOUT EXTERNAL CLOCKS **************/
 
 /**
@@ -76,6 +84,15 @@ static void dumpBoth()
 }
 #endif
 
+class Seqs
+{
+public:
+    static std::vector<PortWidget*> findInputs(const ModuleWidget* seq);
+    static bool anyConnected(const std::vector<PortWidget*>& ports);
+    static float clockDivToClockedParam(int div);
+    static ParamWidget* getRunningParam(ModuleWidget*, bool isSeqPlusPlus);
+};
+
 static const int numDescriptors = sizeof(descriptors) / sizeof(ClockDescriptor);
 
 // class that knows about clocks from other manufacturers
@@ -90,7 +107,7 @@ public:
      * return.first will be a non null port widget to use for clock/
      * return.second will be true if the port is already patched
      */
-    static std::pair<PortWidget*, bool> findBestClockOutput(WidgetAndDescription clocked);
+    static std::pair<PortWidget*, bool> findBestClockOutput(WidgetAndDescription clocked, int div);
 
     static std::vector<PortWidget*> findClockedOutputs(ModuleWidget* clocked, PortWidget* clock);
 
@@ -154,9 +171,11 @@ Clocks::WidgetAndDescription Clocks::findClosestClocked(const ModuleWidget* from
 
 /**
  * return.first will be a non null port widget to use for clock/
- * return.second will be true if the port is already patched
+ * return.second will be true if the port is already patched.
+ * 
+ * will try to find an unpatched port
  */
-std::pair<PortWidget*, bool> Clocks::findBestClockOutput(WidgetAndDescription clock)
+std::pair<PortWidget*, bool> Clocks::findBestClockOutput(WidgetAndDescription clock, int div)
 {
     for (int i=0; i<3; ++i) {
         auto port = findClockOutput(clock, i);
@@ -164,11 +183,22 @@ std::pair<PortWidget*, bool> Clocks::findBestClockOutput(WidgetAndDescription cl
         if (cables.empty()) {
             return std::make_pair(port, false);
         }
+
+        // if it's patched, look at the mult. If it's a match, we can use it, too
+         auto paramWidget = getRatioParam(clock, i);
+         if (paramWidget) {
+            const float targetValue = Seqs::clockDivToClockedParam(div);
+            const float actualValue = getParamFromWidget(clock.first, paramWidget);
+
+            if (int(std::round(targetValue)) == int(std::round(actualValue))) {
+                 return std::make_pair(port, true);
+            }
+         }
+
     }
     return std::make_pair(findClockOutput(clock, 0), true);
 }
 
-// index = 0 - clock 1 ... 2 - clock3 (skip master)
 PortWidget* Clocks::findClockOutput(WidgetAndDescription clock, int index)
 {
     const int targetPortId = clock.second->clockOutputIds[index];
@@ -224,15 +254,6 @@ ParamWidget* Clocks::getRatioParam(WidgetAndDescription clocked, int _index)
     assert(false);
     return nullptr;
 }
-
-class Seqs
-{
-public:
-    static std::vector<PortWidget*> findInputs(const ModuleWidget* seq);
-    static bool anyConnected(const std::vector<PortWidget*>& ports);
-    static float clockDivToClockedParam(int div);
-    static ParamWidget* getRunningParam(ModuleWidget*, bool isSeqPlusPlus);
-};
 
 static ParamWidget* findParamWidgetForParamId(ModuleWidget* moduleWidget, int paramID)
 {
@@ -302,7 +323,6 @@ bool Seqs::anyConnected(const std::vector<PortWidget*>& ports)
     return false;
 }
 
-
 // TODO: get this from descriptor - don't assume ratios
 float Seqs::clockDivToClockedParam(int div)
 {
@@ -318,13 +338,6 @@ float Seqs::clockDivToClockedParam(int div)
         assert(false);
     }
     return ret;
-}
-
-static float getParamFromWidget(ModuleWidget* moduleWidget, ParamWidget* paramWidget) {
-    auto module = moduleWidget->module;
-    const int paramId = paramWidget->paramQuantity->paramId;
-    float ret = APP->engine->getParam(module, paramId);
-    return ret;  
 }
 
 static void setParamOnWidget(ModuleWidget* moduleWidget, ParamWidget* paramWidget, float value)
@@ -348,7 +361,9 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         return;
     }
 
-    auto clockOutput = Clocks::findBestClockOutput(moduleAndDescription);
+    INFO("passed div = %d", div);
+
+    auto clockOutput = Clocks::findBestClockOutput(moduleAndDescription, div);
     assert(clockOutput.first != nullptr);
 
     auto outputs = Clocks::findClockedOutputs(moduleAndDescription.first, clockOutput.first);
@@ -374,8 +389,6 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         cable->setInput(inputs[i]);
         APP->scene->rack->addCable(cable);
     }
-
-    // something in this block is crashing
 
     if (!clockOutput.second) {
         // if the clock output was empty before us, then we can set the
