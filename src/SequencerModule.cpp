@@ -68,7 +68,7 @@ struct SequencerWidget : ModuleWidget
             float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
             SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
             const int div = SeqClock::clockRate2Div(rate);
-            ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT);
+            ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT, true);
         });
         item->text = "Hookup Clock";
         theMenu->addChild(item); 

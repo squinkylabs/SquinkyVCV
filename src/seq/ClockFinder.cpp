@@ -113,6 +113,7 @@ public:
 
     static ParamWidget* getRatioParam(WidgetAndDescription clocked, int index);
     static ParamWidget* getRunningParam(WidgetAndDescription clocked);
+    static float getRunningLightValue(WidgetAndDescription clocked);
 private:
     using WidgetAndDescriptionS = std::vector<WidgetAndDescription>;
     static WidgetAndDescriptionS findClocks();
@@ -202,7 +203,6 @@ std::pair<PortWidget*, bool> Clocks::findBestClockOutput(WidgetAndDescription cl
 PortWidget* Clocks::findClockOutput(WidgetAndDescription clock, int index)
 {
     const int targetPortId = clock.second->clockOutputIds[index];
-    INFO("looking for port id %d slug %s", targetPortId, clock.second->slug.c_str());
     for (auto output : clock.first->outputs) {
         if ((output->portId) == targetPortId) {
             return output;
@@ -273,6 +273,25 @@ static ParamWidget* findParamWidgetForParamId(ModuleWidget* moduleWidget, int pa
     return nullptr;
 }
 
+
+// really should return Light*
+static Light findLightForId(ModuleWidget* moduleWidget, int lightID)
+{
+    assert(lightID >= 0);
+    assert(lightID < 20);
+    Module* module = moduleWidget->module;
+
+    Light light = module->lights[lightID];
+    return light;
+}
+
+float Clocks::getRunningLightValue(WidgetAndDescription clocked)
+{
+    const int lightID = 1;     // from clkd source code
+    Light light = findLightForId(clocked.first, lightID);
+    return light.value;
+}
+
 ParamWidget*  Clocks::getRunningParam(WidgetAndDescription clocked)
 {
     const int paramID = clocked.second->runningParamId;
@@ -281,7 +300,6 @@ ParamWidget*  Clocks::getRunningParam(WidgetAndDescription clocked)
 
 ParamWidget* Seqs::getRunningParam(ModuleWidget* seqWidget, bool isSeqPlusPlus)
 {
-    
     const int paramID = isSeqPlusPlus ?  int(Seq<WidgetComposite>::RUNNING_PARAM) : int(Seq4<WidgetComposite>::RUNNING_PARAM);
     return findParamWidgetForParamId(seqWidget, paramID);  
 }
@@ -347,9 +365,9 @@ static void setParamOnWidget(ModuleWidget* moduleWidget, ParamWidget* paramWidge
     APP->engine->setParam(module, paramId, value);
 }
 
-void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, int resetInput)
+void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, int resetInput, bool isSeqPlusPlus)
 {
-    const bool isSeqPlusPlus = true;
+   // const bool isSeqPlusPlus = true;
 
     // we are hard coded to these values. If module changes, we will have to get smarter/
     assert(clockInput == 0);
@@ -360,8 +378,6 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
     if (!moduleAndDescription.first) {
         return;
     }
-
-    INFO("passed div = %d", div);
 
     auto clockOutput = Clocks::findBestClockOutput(moduleAndDescription, div);
     assert(clockOutput.first != nullptr);
@@ -401,16 +417,13 @@ void ClockFinder::go(ModuleWidget* host, int div, int clockInput, int runInput, 
         }
     }
 
-    // now make everyone running = false;
+    // now make Seq agree with clock re: running
     {
-        auto clockParamWidget = Clocks::getRunningParam(moduleAndDescription);
+        const float runLight = Clocks::getRunningLightValue(moduleAndDescription);      
         auto seqParamWidget = Seqs::getRunningParam(host, isSeqPlusPlus);
-        assert(clockParamWidget && seqParamWidget);
-        if (clockParamWidget && seqParamWidget) {
-            bool clockIsRunning = getParamFromWidget(moduleAndDescription.first, clockParamWidget) > .5f;
-            if (moduleAndDescription.second->runningIsInverted) {
-                clockIsRunning = !clockIsRunning;
-            }
+        assert(seqParamWidget);
+        if (seqParamWidget) {
+            bool clockIsRunning = runLight > .5;
             setParamOnWidget(host, seqParamWidget, clockIsRunning ? 1 : 0);
         }
     }
