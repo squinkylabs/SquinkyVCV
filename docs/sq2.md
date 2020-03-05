@@ -127,6 +127,8 @@ Many of the xforms require you to select a scale. The scale is stored in the pat
 
 Complete details on each xform are in a separate document: [xforms](./xforms.md)
 
+We wrote a post with lot of illustrations about XForms on the VCV community site: [here](https://community.vcvrack.com/t/somes-uses-for-the-xform-feature-in-seq).
+
 ## Grids
 
 The context menu available by right-clicking in the note grid contains several options for the timing grid. 

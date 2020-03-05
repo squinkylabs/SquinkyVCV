@@ -25,7 +25,24 @@ If you select one of the diatonic scales, the resulting operations will probably
 
 If one of the other (non-diatonic) scales is selected, like diminished, the results of the Xform may be more mysterious. Note that with the minor pentatonic scale, the first step is a minor 3rd.
 
-The only thing Seq++ knows about scales are the notes that are in them. It does not know how each degree might function in  a harmony. It knows nothing about melodic direction, so it cannot implement a scale like melodic minor that has different notes depending on whether the pitch sequence is rising or falling.
+The only thing Seq++ knows about scales are the notes that are in them. It does not know how each degree might function in a harmony. It knows nothing about melodic direction, so it cannot implement a scale like melodic minor that has different notes depending on whether the pitch sequence is rising or falling.
+
+## Scales
+
+Seq++ had a fairly simple concept of a scale. All scales in Seq++:
+
+* Are made up of pitches from the 12-note even tempered chromatic scale.
+* Repeat every octave.
+
+Other than that, there are no limits. Could Seq++ have a scale made up of C,C#,D,D#,E and no other notes? Sure it could.
+
+## Steps
+
+When "relative to scale" is selected, xforms will ask you to select octaves and steps. But what is a step? One step is the distance from one scale note to to the next. So in the key of C, transposing F up by one step will move it to G, since G is the next step after F. In this case the step is a whole tone. But transposing E up a step will transpose it to F, a semi-tone.
+
+With diatonic scales, you can think of steps as intervals with a different name. Zero steps is unison. One step is a second, two steps are a third, etc.
+
+But let's consider the minor pentatonic. In Em pentatonic, if you transpose E up a step it goes to G. But in this case it's three semi-tones. So in any scale in Seq++, there is always a "step" from one scale note to the next. In diatonic scales that's one or two semitones, but since Seq++ supports other kinds of scales, the number of semitones in a step could be almost anything.
 
 ## Transpose
 
