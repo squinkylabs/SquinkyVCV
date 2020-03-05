@@ -262,6 +262,17 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
            trackIndex, metricTime, quantizeInterval, track.get());
 #endif
 
+#if 0 // productize this, next time we need it
+    static float lastTime = -100;
+    const float delta = .1;
+
+    bool doIt = false;
+    if (metricTime > (lastTime + delta)) {
+        doIt = true;
+        lastTime = metricTime;
+    }
+#endif
+
     // before other playback chores, see if there are any requests
     // we need to honor.
     serviceEventQueue();
@@ -284,7 +295,10 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
 
 #if defined(_MLOG) && 1
-    printf("MidiTrackPlayer::playOnce index=%d eventStart=%.2f\n", trackIndex, eventStart);
+    if (doIt) {
+        printf("MidiTrackPlayer::playOnce index=%d eventStart=%.2f mt=%.2f\n", constTrackIndex, eventStart, metricTime);
+        fflush(stdout);
+    }
 #endif
     if (eventStart <= metricTime) {
         MidiEventPtr event = curEvent->second;
@@ -428,10 +442,6 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
 {
     playback.song = newSong;
 
-   // curTrack = playback.song->getTrack(constTrackIndex);
-  //  curEvent = curTrack->begin();
-  //  assert(curEvent != curTrack->end());
-
     setupToPlayFirstTrackSection();
     auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
     if (options) {
@@ -455,6 +465,8 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
         printf("found nothing to play on track %d\n", trackIndex);
     }
 #endif
+
+    currentLoopIterationStart = 0;
 }
 
 void MidiTrackPlayer::onEndOfTrack() {
