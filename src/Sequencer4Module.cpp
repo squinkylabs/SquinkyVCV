@@ -11,6 +11,7 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqToggleLED.h"
+#include "ctrl/SqWidgets.h"
 
 #include "seq/ClockFinder.h"
 #include "seq/S4Button.h"
@@ -82,7 +83,7 @@ struct Sequencer4Widget : ModuleWidget {
             float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
             SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
             const int div = SeqClock::clockRate2Div(rate);
-            ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT);
+            ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT, false);
         });
         item->text = "Hookup Clock";
         theMenu->addChild(item);
@@ -214,6 +215,19 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
         this->toggleRunStop(module);
     });
     addChild(tog);
+
+
+        // add a hidden running control, just so ClockFinder can find it
+    #if 1
+    auto runWidget = SqHelper::createParam<NullWidget>(
+        icomp,
+        Vec(0, 0),
+        module,
+        Comp::RUNNING_PARAM);
+    runWidget->box.size.x = 0;
+    runWidget->box.size.y = 0;
+    addParam(runWidget);
+    #endif
 }
 
 void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {

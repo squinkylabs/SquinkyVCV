@@ -374,7 +374,7 @@ inline IComposite::Config SeqDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "Scroll during playback"};
             break;
         case Seq<TBase>::RUNNING_PARAM:
-            ret = {0, 1, 0, "Running"};
+            ret = {0, 1, 1, "Running"};
             break;
         case Seq<TBase>::NUM_VOICES_PARAM:
             ret = {0, 15, 0, "Polyphony"};

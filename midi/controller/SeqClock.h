@@ -194,6 +194,7 @@ inline void SeqClock::setup(ClockRate inputSetting, float, float sampleT)
             metricTimePerClock = 1;
             break;
         default:
+            printf("setup clock, reat = %d\n", int(inputSetting)); fflush(stdout);
             assert(false);
     }
 }

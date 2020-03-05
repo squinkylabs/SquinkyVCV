@@ -108,3 +108,11 @@ json_t* Note::toInteropJson()
     return rootJ;
 }
 ```
+
+## VCV Modules that support the portable sequence format
+
+**Entrian:** Entrian Timeline and Entrian Melody (currently in Beta).
+
+**Impromptu Modular:** Foundry, PhraseSeq16/32, SMS16, and BigButtonSeq2.
+
+**SquinkyLabs:** Seq++.
