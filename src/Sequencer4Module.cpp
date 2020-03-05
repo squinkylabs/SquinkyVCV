@@ -217,9 +217,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     });
     addChild(tog);
 
-
-        // add a hidden running control, just so ClockFinder can find it
-    #if 1
+    // add a hidden running control, just so ClockFinder can find it
     auto runWidget = SqHelper::createParam<NullWidget>(
         icomp,
         Vec(0, 0),
@@ -228,7 +226,6 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     runWidget->box.size.x = 0;
     runWidget->box.size.y = 0;
     addParam(runWidget);
-    #endif
 }
 
 void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {

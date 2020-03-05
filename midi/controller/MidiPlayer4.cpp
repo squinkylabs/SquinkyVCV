@@ -39,6 +39,7 @@ void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> newSong)
 
 void MidiPlayer4::setRunningStatus(bool running)
 {
+    assert(this);
     for (int i = 0; i < MidiSong4::numTracks; ++i) {
         trackPlayers[i]->setRunningStatus(running);
     }
