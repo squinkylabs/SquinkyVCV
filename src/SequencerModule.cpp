@@ -39,6 +39,7 @@ using Comp = Seq<WidgetComposite>;
 
 SequencerModule::SequencerModule()
 {
+    runStopRequested = false;
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);

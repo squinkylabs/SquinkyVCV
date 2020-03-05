@@ -25,6 +25,7 @@ void Sequencer4Module::onSampleRateChange() {
 }
 
 Sequencer4Module::Sequencer4Module() {
+    runStopRequested = false;
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     MidiSong4Ptr song = MidiSong4::makeTest(MidiTrack::TestContent::empty, 0);
     seq4 = MidiSequencer4::make(song);
