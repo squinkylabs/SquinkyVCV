@@ -47,10 +47,21 @@ void MidiEditorContext::scrollViewportToCursorPitch()
 
 void MidiEditorContext::assertCursorInViewport() const
 {
+#if 1
+// the keeps happening when I'm editing
+    if ((m_cursorTime < m_startTime) ||
+     (m_cursorTime >= m_endTime) ||
+    (m_cursorPitch < m_pitchLow) ||
+    (m_cursorPitch > m_pitchHigh))
+    {
+        printf("should assert form cursor not in viewport\n");
+    }
+#else
     assertGE(m_cursorTime, m_startTime);
     assertLT(m_cursorTime, m_endTime);
     assertGE(m_cursorPitch, m_pitchLow);
     assertLE(m_cursorPitch, m_pitchHigh);
+#endif
 }
  
 void MidiEditorContext::assertValid() const

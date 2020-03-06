@@ -388,6 +388,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Comp::CLOCK_INPUT_PARAM);
     p->box.size.x = 85 + 8;    // width
     p->box.size.y = 22;         // should set auto like button does
+    p->text = "x64";
     p->setLabels(Comp::getClockRates());
     addParam(p);
 
@@ -404,6 +405,7 @@ void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComp
         Comp::NUM_VOICES_PARAM);
     p->box.size.x = 85 + 8;     // width
     p->box.size.y = 22;         // should set auto like button does
+    p->text = "1";
     p->setLabels(Comp::getPolyLabels());
     addParam(p);
    

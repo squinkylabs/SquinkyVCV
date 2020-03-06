@@ -269,6 +269,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Comp::TYPE_PARAM);
     p->box.size.x = 76;    // width
     p->box.size.y = 22;     // should set auto like button does
+    p->text = "4P LP";
     p->setLabels(Comp::getTypeNames());
     addParam(p);
  
@@ -279,6 +280,7 @@ void FiltWidget::addParams(FiltModule *module, std::shared_ptr<IComposite> icomp
         Comp::VOICING_PARAM);
     p->box.size.x = 80;    // width
     p->box.size.y = 22;     // should set auto like button does
+    p->text = "Transistor";
     p->setLabels(Comp::getVoicingNames());
     addParam(p);
  } 

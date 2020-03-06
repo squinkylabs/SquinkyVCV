@@ -173,6 +173,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
         Comp::CLOCK_INPUT_PARAM);
     p->box.size.x = 85 + 8;  // width
     p->box.size.y = 22;      // should set auto like button does
+    p->text = "x64";
     p->setLabels(Comp::getClockRates());
     addParam(p);
     y += 42;
