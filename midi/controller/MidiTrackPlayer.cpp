@@ -89,6 +89,9 @@ void MidiTrackPlayer::resetAllVoices(bool clearGates) {
 }
 
 void MidiTrackPlayer::reset(bool resetSectionIndex) {
+    if (resetSectionIndex) {
+        eventQ.nextSectionIndex = 0;            // on reset, immediately clear q of next section req
+    }
     eventQ.resetSections = resetSectionIndex;
     eventQ.reset = true;
 }
@@ -331,6 +334,15 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
     return didSomething;
 }
 
+
+/*
+what we want:
+
+if you reset, then start, play everyone from start.
+if you play to middle of 1, the stop, then q3, then start: play from start of 3
+
+so: do hard reset if reset, or new song, or if stepped and any wueue
+ */
 void MidiTrackPlayer::serviceEventQueue()
 {
     assert(playback.inPlayCode);
@@ -351,7 +363,9 @@ void MidiTrackPlayer::serviceEventQueue()
 
         // for "hard reset, re-init the whole song. This will take us back to the start";
         if (eventQ.resetSections) {
-            eventQ.nextSectionIndex = 0;
+
+           // assert(eventQ.nextSectionIndex == 0);   
+           // eventQ.nextSectionIndex = 0;            // this makes us fail on reset -> q section
             if (!newSong) {
                 newSong = playback.song;
             }

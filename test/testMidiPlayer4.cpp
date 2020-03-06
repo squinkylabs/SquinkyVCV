@@ -289,18 +289,6 @@ static void testTwoSectionsStartOnSecond()
     // Since seq isn't running yet, request is just queued.
     assertEQ(pl.getNextSectionRequest(trackNum), 2);
 
-    // won't report until running
-   // assertEQ(pl.getSection(trackNum), 2);       // we sent 2 to request 1 (2)
-
-
-    /* ok - here's what's happening:
-        when we called setNextSEctionReq, it put the req in the Q, and it set it immediately on pb.
-        but when we started playing, setting the new song cleared the section we set, and did not look at the Q.
-
-        I think maybe what should happen is that req always goes in Q, never sets immediately.
-        after setting song, we should poll for section changes. normally we find them at end, 
-        but if we find one is there at startup, we should honor it then
-    */
 
     const float startOffset = 4;
 
@@ -319,10 +307,6 @@ static void testTwoSectionsStartOnSecond()
     // now we have processed the track req and will be playing 2
     assertEQ(pl.getSection(trackNum), 2);
 
-    // This is failing becuase service event queue isn't looking at next section requests.
-    // ok, so this is a test of starting up with a request queued.
-    // May need to decide what "startup means"?
-    // actually for this test we probably only need to service reqeusts in our normal service routine.
 
     assertEQ(host->gateChangeCount, 1); // should have played the first note of the section
     assertEQ(host->gateState[0], true);
@@ -516,8 +500,6 @@ static void testSectionApi()
     testSectionEmpty();
     testSectionStartOffset();
 }
-
-
 
 void testMidiPlayer4()
 {

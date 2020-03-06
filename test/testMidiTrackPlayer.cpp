@@ -41,6 +41,9 @@ static MidiSong4Ptr makeSong3(int trackNum)
 }
 
 
+/*
+    durations = 1,2,2,2
+*/
 static MidiSong4Ptr makeSong4(int trackNum)
 {
     MidiSong4Ptr song = std::make_shared<MidiSong4>();
@@ -457,9 +460,8 @@ static void testMissingSection()
 
 static void testHardReset()
 {
-   
     // we should set up, play a little, stop, reset, play again, find we are at start.
-     // make a song with four sections
+    // make a song with four sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiSong4Ptr song = makeSong4(0);
     MidiTrackPlayer pl(host, 0, song);
@@ -489,6 +491,88 @@ static void testHardReset()
     assertEQ(pl.getSection(), 1);
 }
 
+// static void play(MidiTrackPlayer& pl, double time, float quantize)
+
+static void testPlayThenReset()
+{
+    // make a song with four sections
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong4(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    const float quantizationInterval = .01f;
+    pl.setRunningStatus(true);      // start it.
+
+    // first and part of second
+    play(pl, 3, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+    play(pl, 3.9, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+    play(pl, 4.1, quantizationInterval);
+    assertEQ(pl.getSection(), 2);
+
+    // reset
+    pl.setRunningStatus(false);
+    pl.reset(true);
+    pl.setRunningStatus(true);
+
+    // should first and part of second just like before
+    play(pl, 3, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+    play(pl, 3.9, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+    play(pl, 4.1, quantizationInterval);
+    assertEQ(pl.getSection(), 2);
+
+}
+
+
+static void testPlayThenResetSeek()
+{
+    // make a song with four sections
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong4(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    const float quantizationInterval = .01f;
+    pl.setRunningStatus(true);      // start it.
+
+    // first and part of second
+    play(pl, 3, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+    play(pl, 3.9, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+    play(pl, 4.1, quantizationInterval);
+    assertEQ(pl.getSection(), 2);
+
+    // reset and request last section
+    pl.setRunningStatus(false);
+    pl.reset(true);
+    pl.setNextSectionRequest(4);
+    pl.setRunningStatus(true);                  // will put startup req in queue.
+
+    // now will startup in section 4, which is 2 bars long
+    play(pl, 3, quantizationInterval);        
+    assertEQ(pl.getSection(), 4);
+    play(pl, 3.9, quantizationInterval);
+    assertEQ(pl.getSection(), 4);
+    play(pl, 4.1, quantizationInterval);
+    assertEQ(pl.getSection(), 4);
+    play(pl, 7.9, quantizationInterval);
+    assertEQ(pl.getSection(), 4);
+
+    play(pl, 8.1, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+}
+
 void testMidiTrackPlayer()
 {
     testCanCall();
@@ -502,4 +586,6 @@ void testMidiTrackPlayer()
     testRandomSwitch();
     testMissingSection();
     testHardReset();
+    testPlayThenReset();
+    testPlayThenResetSeek();
 }
