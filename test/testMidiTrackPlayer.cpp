@@ -573,6 +573,40 @@ static void testPlayThenResetSeek()
     assertEQ(pl.getSection(), 1);
 }
 
+static void testPlayPauseSeek()
+{
+    // make a song with four sections 1/2/2/2
+    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    MidiSong4Ptr song = makeSong4(0);
+    MidiTrackPlayer pl(host, 0, song);
+
+    Input inputPort;
+    Param param;
+    pl.setPorts(&inputPort, &param);
+
+    const float quantizationInterval = .01f;
+    pl.setRunningStatus(true);          // start it.
+
+    // play 3/4 of first
+    play(pl, 3, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+
+    pl.setRunningStatus(false);         // pause
+    pl.setNextSectionRequest(4);        // goto last section
+
+    pl.setRunningStatus(true);          // resume
+    play(pl, .1, quantizationInterval); // play a tinny bit
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+    play(pl, .1, quantizationInterval); // play a tinny bit
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+
+    play(pl, 7.9, quantizationInterval); // play most (this section 2 bars)
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+
+    play(pl, 8.1, quantizationInterval); // play most (this section 2 bars)
+    assertEQ(pl.getSection(), 1);       // should be playing requested section
+}
+
 void testMidiTrackPlayer()
 {
     testCanCall();
@@ -588,4 +622,5 @@ void testMidiTrackPlayer()
     testHardReset();
     testPlayThenReset();
     testPlayThenResetSeek();
+    testPlayPauseSeek();
 }
