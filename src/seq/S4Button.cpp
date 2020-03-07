@@ -468,10 +468,25 @@ void S4ButtonDrawer::draw(const DrawArgs& args) {
 }
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
-    auto color = button->isPlaying ? UIPrefs::X4_BUTTON_FACE_PLAYING : UIPrefs::X4_BUTTON_FACE_NORM;
-    if (button->numNotes == 0) {
+
+    NVGcolor color = UIPrefs::X4_BUTTON_FACE_NORM;
+
+    if (button->isPlaying && (button->numNotes > 0)) {
+        // playing, notes
+        color = UIPrefs::X4_BUTTON_FACE_PLAYING;
+    } else if (!button->isPlaying && button->isSelected()) {
+        // not playing, selected
+        color = UIPrefs::X4_BUTTON_FACE_SELECTED;
+    } else if (button->isPlaying && (button->numNotes == 0)) {
+        // playing, no notes
+        color = UIPrefs::X4_BUTTON_FACE_NONOTES_PLAYING;
+    } else if (!button->isPlaying && (button->numNotes > 0)) {
+        // not playing, notes
+        color = UIPrefs::X4_BUTTON_FACE_NORM;
+    } else {
         color = UIPrefs::X4_BUTTON_FACE_NONOTES;
     }
+
     SqGfx::filledRect(
         ctx,
         color,
@@ -479,8 +494,17 @@ void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
 }
 
 void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
-    NVGcolor color;
-    float width = 0;
+   
+    float width = 2;
+
+    if (button->iAmNext) {
+        SqGfx::border(
+            ctx,
+            width,
+            UIPrefs::X4_NEXT_PLAY_BORDER,
+            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
+    }
+    #if 0
     bool draw = false;
 
     if (button->isSelected() && !button->iAmNext) {
@@ -515,6 +539,7 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
             color,
             this->box.pos.x, box.pos.y, box.size.x, box.size.y);
     }
+#endif
 }
 
 void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
