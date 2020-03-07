@@ -92,11 +92,14 @@ void MidiSong4::createTrack(int index, int sectionIndex)
 void MidiSong4::_flipTracks()
 {
     std::swap(tracks[0], tracks[1]);
+    std::swap(options[0], options[1]);
+    
 }
 
 void MidiSong4::_flipSections()
 {
     std::swap(tracks[0][0], tracks[0][1]);
+    std::swap(options[0][0], options[0][1]);
 }
 
 void MidiSong4::_dump()

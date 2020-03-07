@@ -169,8 +169,8 @@ public:
      * section number (1..4) if playing
      */
     int  getPlayStatus(int track) const;
-    void setNextSection(int track, int section);
-    int getNextSection(int track) const;
+    void setNextSectionRequest(int track, int section);
+    int getNextSectionRequest(int track) const;
 
     /**
      * Provide direct access so we don't have to add a zillion
@@ -361,15 +361,15 @@ int  Seq4<TBase>::getPlayStatus(int track) const
 }
 
 template <class TBase>
-void  Seq4<TBase>::setNextSection(int track, int section)
+void  Seq4<TBase>::setNextSectionRequest(int track, int section)
 {
-    player->setNextSection(track, section);
+    player->setNextSectionRequest(track, section);
 }
 
 template <class TBase>
-int  Seq4<TBase>::getNextSection(int track) const
+int  Seq4<TBase>::getNextSectionRequest(int track) const
 {
-    return player->getNextSection(track);
+    return player->getNextSectionRequest(track);
 }
 
 template <class TBase>

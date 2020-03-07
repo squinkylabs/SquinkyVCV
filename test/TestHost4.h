@@ -11,9 +11,23 @@ class TestHost4 : public IMidiPlayerHost4
 public:
     void assertOneActiveTrack(int index)
     {
+        assertEQ(trackActive.size(), 4);
+        const int numTrackActive = getNumActiveTracks();
+        assertEQ(numTrackActive, 1);
         for (int i = 0; i<3; ++i) {
             assertEQ(trackActive[i], bool(i == index));
         }
+    }
+
+    int getNumActiveTracks()
+    {
+        int ret = 0;
+        for (auto tk : trackActive) {
+            if (tk) {
+                ++ret;
+            }
+        }
+        return ret;
     }
     
     void reset()

@@ -32,6 +32,8 @@ const NVGcolor UIPrefs::X4_SELECTION_COLOR = nvgRGB(0x0, 0x0, 0x0);
 const NVGcolor UIPrefs::X4_BUTTON_FACE_NORM = nvgRGB(0, 0x40, 0);
 const NVGcolor UIPrefs::X4_BUTTON_FACE_PLAYING = nvgRGB(0, 0x90, 0);
 const NVGcolor UIPrefs::X4_BUTTON_FACE_NONOTES = nvgRGB(0x20, 0x20, 0x20);
+const NVGcolor UIPrefs::X4_BUTTON_FACE_NONOTES_PLAYING = nvgRGB(0x40, 0x40, 0x40);
+const NVGcolor UIPrefs::X4_BUTTON_FACE_SELECTED =  nvgRGB(0x50, 0, 0x50);
 
 const NVGcolor UIPrefs::X4_SELECTED_BORDER = nvgRGBA(0x80, 0x80, 0x80, 0x80);
 const NVGcolor UIPrefs::X4_NEXT_PLAY_BORDER = nvgRGB(0xe0, 0xe0, 0xe0);

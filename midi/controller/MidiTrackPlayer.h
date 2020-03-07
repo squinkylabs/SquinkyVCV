@@ -70,20 +70,11 @@ public:
      * for getSection() I don't know what it's that way...
      */
     int getSection() const;
-    void setNextSection(int section);
+    void setNextSectionRequest(int section);
 
-    /**
-     * @param section is a new requested section (0, 1..4)
-     * @returns valid section request (0,1..4) 
-     *      If section exists, will return section
-     *      otherwise will search forward for one to play.
-     *      Will return 0 if there are no playable sections.
-     */
-    int validateSectionRequest(int section) const;
-    int getNextSection() const;
-    void setRunningStatus(bool running) {
-        isPlaying = running;
-    }
+
+    int getNextSectionRequest() const;
+    void setRunningStatus(bool running);
 
     void setPorts(Input* cvInput, Param* triggerImmediate) {
         input = cvInput;
@@ -96,9 +87,14 @@ public:
     int getCurrentRepetition();
 
 private:
-    std::shared_ptr<MidiSong4> song;
+    
     std::shared_ptr<MidiTrack> curTrack;  // need something like array for song4??
-    const int trackIndex = 0;
+
+    /**
+     * Which outer "track" we are assigned to, 0..3.
+     * Unchanging (hence the name).
+     */
+    const int constTrackIndex = 0;
 
 
     /**
@@ -151,16 +147,30 @@ private:
      * In the future, we may not want reset to change sections. but "hard reset" should.
      * 
      * How many resets are there:
-     *      setup to play from curent location (edit conflict reset)
+     *      setup to play from current location (edit conflict reset)
      *      setup to play from the very start (hard reset / reset CV)
      *      setup to lay from very start (first playback after new song)???
      * 
      * If we never hard reset (from cv) when will we ever setup to play?
      * 
+     * Recent ideas: functions to be called during playback, preceded with 'pb'. can assert in PB
+     * (still maybe should put pb variable in a struct?)
+     * 
      * 
      * Plan:
-     *  rename findFirstTrackSection to something like setupTrackSectionForPlayback.
-     *  move reset requests into the queue
+     *      X move setSongRequests into the queue
+     *      remove getSong API
+     *      move reset requests into the queue
+     *      get rid of un-necessary reset calls in unit tests()
+     * 
+     * 
+     * FIRST serious issue. Failing testTwoSectionsStartOnSecond. We should start right up on the queud section,
+     * but we don't. because we only service that from end of clip. 
+     * Idea: store a flag when we request a section: eventQ.sectionRequestWhenStopped.
+     * If that flag is set, we will act on it when we service queue.
+     * 
+     * ACTUALLY, the above is a problem, but the immediate problem is that curTrack isn't getting
+     * set up, so even after we "play" it's null, which makes get Section return 0;
      */
 
     /**
@@ -176,15 +186,13 @@ private:
      */
     MidiTrack::const_iterator curEvent;
 
+
     /**
-     * cur section index is 0..3, and is the direct index into the
-     * song4 sections array.
-     * This variable should not be directly manipulated by UI.
-     * It is typically set by playback code when a measure changes.
-     * It is also set when we set the song, etc... but that's probably a mistake. We should probably 
-     * only queue a change when we set song.
+     * This is the song UI sets directly and uses for UI purposes.
+     * Often it is the same as playback.song.
      */
-    int curSectionIndex = 0;
+
+    std::shared_ptr<MidiSong4> uiSong;
 
     /**
      * This counter counts down. when if gets to zero
@@ -200,7 +208,7 @@ private:
     bool isPlaying = false;    
 
     bool pollForNoteOff(double metricTime);
-    void findFirstTrackSection();
+    void setupToPlayFirstTrackSection();
 
     /**
      * will set curSectionIndex, and sectionLoopCounter
@@ -216,10 +224,52 @@ private:
     void setupToPlayCommon();
     void onEndOfTrack();
     void pollForCVChange();
+    void serviceEventQueue();
+    void setSongFromQueue(std::shared_ptr<MidiSong4>);
+    void resetFromQueue(bool sectionIndex);
+    /**
+     * @param section is a new requested section (0, 1..4)
+     * @returns valid section request (0,1..4) 
+     *      If section exists, will return section
+     *      otherwise will search forward for one to play.
+     *      Will return 0 if there are no playable sections.
+     */
+    static int validateSectionRequest(int section, std::shared_ptr<MidiSong4> song, int trackNumber);
+
+    /**
+     * variables only used by playback code.
+     * Other code not allowed to touch it.
+     */
+    class Playback {
+    public:
+        /**
+         * cur section index is 0..3, and is the direct index into the
+         * song4 sections array.
+         * This variable should not be directly manipulated by UI.
+         * It is typically set by playback code when a measure changes.
+         * It is also set when we set the song, etc... but that's probably a mistake. We should probably 
+         * only queue a change when we set song.
+         */
+        int curSectionIndex = 0;
+
+        /**
+         * Flag to tell when we are running in the context of playback code.
+         */
+        bool inPlayCode = false;
+
+        /**
+         * The song we are currently playing
+         */
+        std::shared_ptr<MidiSong4> song;
+    };
 
     /**
      * This is not an event queue at all.
-     * It's a collection of flags and vaues that are queued up.
+     * It's a collection of flags and values that are queued up.
+     * things come in mostly from other plugins proc() calls,
+     * but could come in from UI thread (if we are being sloppy)
+     * 
+     * Will be service by playback code
      */
     class EventQ {
     public:
@@ -229,15 +279,25 @@ private:
          * use the save 1..4 offset index.
          */
         int nextSectionIndex = 0;
+        bool nextSectionIndexSetWhileStopped = false;
 
         /**
          * If false, we wait for next loop iteration to apply queue.
-         * If true, we do "immediately";
+         * If true, we do "immediately"; (is this used?)
          */
         bool eventsHappenImmediately = false;
+
+        /** When UI wants to set a new song, it gets queued here.
+         */
+        std::shared_ptr<MidiSong4> newSong;
+
+        bool reset = false;
+        bool resetSections = false;
+        bool startupTriggered = false;
     };
 
     EventQ eventQ;
+    Playback playback;
     GateTrigger cv0Trigger;
     GateTrigger cv1Trigger;
 };

@@ -53,14 +53,14 @@ static const ClockDescriptor descriptors[] = {
     {"Clocked", 
         {1,2,3},
         {1,2,3},
-        {13},
-        {true}
+        13,
+        true
     },
     {"Clocked-Clkd", 
         {1,2,3},
         {0,1,2},
-        {5},
-        {true}
+        5,
+        true
     }
 };
 

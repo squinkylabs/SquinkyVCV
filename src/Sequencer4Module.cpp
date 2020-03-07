@@ -25,6 +25,7 @@ void Sequencer4Module::onSampleRateChange() {
 }
 
 Sequencer4Module::Sequencer4Module() {
+    runStopRequested = false;
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     MidiSong4Ptr song = MidiSong4::makeTest(MidiTrack::TestContent::empty, 0);
     seq4 = MidiSequencer4::make(song);
@@ -172,6 +173,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
         Comp::CLOCK_INPUT_PARAM);
     p->box.size.x = 85 + 8;  // width
     p->box.size.y = 22;      // should set auto like button does
+    p->text = "x64";
     p->setLabels(Comp::getClockRates());
     addParam(p);
     y += 42;
@@ -185,6 +187,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
             Vec(controlX + 52, y),  // 54 too much 50 too little
             module,
             Comp::NUM_VOICES0_PARAM + i);
+        p->text = "4";              // default text for the module browser
         p->box.size.x = 40;  // width
         p->box.size.y = 22;      // should set auto like button does
         p->setLabels(Comp::getPolyLabels());
@@ -215,9 +218,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     });
     addChild(tog);
 
-
-        // add a hidden running control, just so ClockFinder can find it
-    #if 1
+    // add a hidden running control, just so ClockFinder can find it
     auto runWidget = SqHelper::createParam<NullWidget>(
         icomp,
         Vec(0, 0),
@@ -226,7 +227,6 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     runWidget->box.size.x = 0;
     runWidget->box.size.y = 0;
     addParam(runWidget);
-    #endif
 }
 
 void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
@@ -234,6 +234,8 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
         buttonGrid.init(this, module, module->getSong(), module->seq4Comp);
     } else {
         WARN("make the module browser draw the buttons");
+        
+         buttonGrid.init(this, nullptr, nullptr, nullptr);
     }
 }
 

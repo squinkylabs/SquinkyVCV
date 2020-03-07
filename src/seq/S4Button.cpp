@@ -156,7 +156,9 @@ void S4Button::step() {
         lengthTime = track->getLength();
         newLen = TimeUtils::length2str(lengthTime);
         newNumNotes = track->size() - 1;
-        repetitionIndex = seq4Comp->getTrackPlayer(row)->getCurrentRepetition();
+
+        // if no comp, make one up for the module browser
+        repetitionIndex = seq4Comp ? seq4Comp->getTrackPlayer(row)->getCurrentRepetition() : 1;
 
         auto options = getOptions();
         if (options) {
@@ -184,14 +186,14 @@ void S4Button::step() {
         fw->dirty = true;
     }
 
-    const int playStatus = seq4Comp->getPlayStatus(row);
+    const int playStatus = seq4Comp ? seq4Comp->getPlayStatus(row) : 1;
     bool iAmPlaying = playStatus == (col + 1);
     if (iAmPlaying != isPlaying) {
         isPlaying = iAmPlaying;
         fw->dirty = true;
     }
 
-    const int nextSection = seq4Comp->getNextSection(row);
+    const int nextSection = seq4Comp ? seq4Comp->getNextSectionRequest(row) : 0;
     bool isNext = (nextSection == (col + 1));
     if (iAmNext != isNext) {
         iAmNext = isNext;
@@ -381,6 +383,10 @@ inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
                         MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
+    if (!song) {
+        song = MidiSong4::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0, 0);
+    }
+
     seq4Comp = _seq4Comp;
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
@@ -431,10 +437,10 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
     if (isCtrl) {
         // then the select next clip
         // remember, section is 1..4
-        seq4Comp->setNextSection(row, col + 1);
+        seq4Comp->setNextSectionRequest(row, col + 1);
     } else {
         for (int r = 0; r < MidiSong4::numTracks; ++r) {
-            seq4Comp->setNextSection(r, col + 1);
+            seq4Comp->setNextSectionRequest(r, col + 1);
         }
     }
     auto button = getButton(row, col);
@@ -462,10 +468,27 @@ void S4ButtonDrawer::draw(const DrawArgs& args) {
 }
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
-    auto color = button->isPlaying ? UIPrefs::X4_BUTTON_FACE_PLAYING : UIPrefs::X4_BUTTON_FACE_NORM;
-    if (button->numNotes == 0) {
+
+    NVGcolor color = UIPrefs::X4_BUTTON_FACE_NORM;
+
+    if (button->isPlaying && (button->numNotes > 0)) {
+        // playing, notes
+        color = UIPrefs::X4_BUTTON_FACE_PLAYING;
+    } else if (!button->isPlaying && button->isSelected()) {
+        // not playing, selected
+        color = UIPrefs::X4_BUTTON_FACE_SELECTED;
+    } else if (button->isPlaying && (button->numNotes == 0)) {
+        // playing, no notes
+        color = UIPrefs::X4_BUTTON_FACE_NONOTES_PLAYING;
+    } else if (!button->isPlaying && (button->numNotes > 0)) {
+        // not playing, notes
+        color = UIPrefs::X4_BUTTON_FACE_NORM;
+  //  } else if (button->isSelected() && (button->numNotes <= 0)) {
+ //       color = UIPrefs::X4_BUTTON_FACE_NONOTES_SELECTED
+    } else {
         color = UIPrefs::X4_BUTTON_FACE_NONOTES;
     }
+
     SqGfx::filledRect(
         ctx,
         color,
@@ -473,8 +496,17 @@ void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
 }
 
 void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
-    NVGcolor color;
-    float width = 0;
+   
+    float width = 2;
+
+    if (button->iAmNext) {
+        SqGfx::border(
+            ctx,
+            width,
+            UIPrefs::X4_NEXT_PLAY_BORDER,
+            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
+    }
+    #if 0
     bool draw = false;
 
     if (button->isSelected() && !button->iAmNext) {
@@ -509,6 +541,7 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
             color,
             this->box.pos.x, box.pos.y, box.size.x, box.size.y);
     }
+#endif
 }
 
 void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {

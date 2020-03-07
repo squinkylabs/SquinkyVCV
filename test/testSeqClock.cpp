@@ -498,7 +498,7 @@ void testSeqClock()
 
     //testSimpleReset();
    // testSimpleResetIgnoreClock();
-    printf("!!!! put back clock reset tests\n");        // since I disable clock lockout after reset 
+    printf("(eventually) put back clock reset tests\n");        // since I disable clock lockout after reset 
                                                         // these tests are wrong
 
     testResetIgnoreClock();
