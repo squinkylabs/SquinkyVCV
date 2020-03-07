@@ -44,7 +44,7 @@ static MidiSong4Ptr makeSong3(int trackNum)
 /*
     durations = 1,2,2,2
 */
-static MidiSong4Ptr makeSong4(int trackNum)
+MidiSong4Ptr makeTestSong4(int trackNum)
 {
     MidiSong4Ptr song = std::make_shared<MidiSong4>();
     MidiLocker lock(song->lock);
@@ -408,7 +408,7 @@ static void testRandomSwitch()
 {
        // make a song with four sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiSong4Ptr song = makeSong4(0);
+    MidiSong4Ptr song = makeTestSong4(0);
     MidiTrackPlayer pl(host, 0, song);
 
     Input inputPort;
@@ -463,7 +463,7 @@ static void testHardReset()
     // we should set up, play a little, stop, reset, play again, find we are at start.
     // make a song with four sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiSong4Ptr song = makeSong4(0);
+    MidiSong4Ptr song = makeTestSong4(0);
     MidiTrackPlayer pl(host, 0, song);
 
     Input inputPort;
@@ -497,7 +497,7 @@ static void testPlayThenReset()
 {
     // make a song with four sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiSong4Ptr song = makeSong4(0);
+    MidiSong4Ptr song = makeTestSong4(0);
     MidiTrackPlayer pl(host, 0, song);
 
     Input inputPort;
@@ -535,7 +535,7 @@ static void testPlayThenResetSeek()
 {
     // make a song with four sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiSong4Ptr song = makeSong4(0);
+    MidiSong4Ptr song = makeTestSong4(0);
     MidiTrackPlayer pl(host, 0, song);
 
     Input inputPort;
@@ -573,11 +573,14 @@ static void testPlayThenResetSeek()
     assertEQ(pl.getSection(), 1);
 }
 
+extern float lastTime;
 static void testPlayPauseSeek()
 {
+    lastTime = -100;
+    printf("\n--- testPlayPauseSeek\n");
     // make a song with four sections 1/2/2/2
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiSong4Ptr song = makeSong4(0);
+    MidiSong4Ptr song = makeTestSong4(0);
     MidiTrackPlayer pl(host, 0, song);
 
     Input inputPort;
@@ -591,8 +594,12 @@ static void testPlayPauseSeek()
     play(pl, 3, quantizationInterval);
     assertEQ(pl.getSection(), 1);
 
+    printf("test will pause and seek\n");
     pl.setRunningStatus(false);         // pause
     pl.setNextSectionRequest(4);        // goto last section
+
+    printf("test will resume\n");
+    lastTime = -100;
 
     pl.setRunningStatus(true);          // resume
     play(pl, .1, quantizationInterval); // play a tinny bit
@@ -605,6 +612,8 @@ static void testPlayPauseSeek()
 
     play(pl, 8.1, quantizationInterval); // play most (this section 2 bars)
     assertEQ(pl.getSection(), 1);       // should be playing requested section
+
+  //  assert(false);
 }
 
 void testMidiTrackPlayer()

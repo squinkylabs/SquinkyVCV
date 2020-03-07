@@ -63,6 +63,7 @@ extern void testNoteScreenScale();
 extern void testMidiEditorCCP();
 extern void testMidiEditorSelection();
 extern void testSeqComposite();
+extern void testSeqComposite4();
 extern void testVec();
 extern void testSeqClock();
 extern void testMix8();
@@ -188,6 +189,7 @@ int main(int argc, char ** argv)
     testMidiEditorCCP();
     testNoteScreenScale();
     testSeqComposite();
+    testSeqComposite4();
     testAudition();
 
     testDrumTrigger();

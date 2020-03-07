@@ -126,6 +126,7 @@
     <ClCompile Include="..\..\test\testScale.cpp" />
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite.cpp" />
+    <ClCompile Include="..\..\test\testSeqComposite4.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
     <ClCompile Include="..\..\test\testSlew4.cpp" />
