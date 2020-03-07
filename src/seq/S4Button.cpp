@@ -483,6 +483,8 @@ void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
     } else if (!button->isPlaying && (button->numNotes > 0)) {
         // not playing, notes
         color = UIPrefs::X4_BUTTON_FACE_NORM;
+  //  } else if (button->isSelected() && (button->numNotes <= 0)) {
+ //       color = UIPrefs::X4_BUTTON_FACE_NONOTES_SELECTED
     } else {
         color = UIPrefs::X4_BUTTON_FACE_NONOTES;
     }
