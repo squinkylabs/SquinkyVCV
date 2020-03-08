@@ -164,26 +164,34 @@ here's the test that passes for track player
 
 
 */
-
+extern float lastTime;
 static void testPauseSwitchSectionStart()
 {
+    printf("\n--- testSeqComposite4 testPauseSwitchSectionStart\n");
+    lastTime = -100;
+
     const int tkNum = 0;
     const auto rate = SeqClock::ClockRate::Div64;
     Sq4Ptr comp = make(rate, 4, true, tkNum);
     MidiTrackPlayerPtr pl = comp->getTrackPlayer(tkNum);
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), true);
+    printf("--- test just started, now will play\n");
 
     // play to third quarter note
     play(comp, rate, 3.f);
     assertEQ(pl->getSection(), 1);          // first section is 1
 
+    printf("--- test about to pause\n");
     comp->toggleRunStop();                  // pause it
+    lastTime = -100;
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), false);
 
     comp->setNextSectionRequest(tkNum, 4);  // goto last section
 
+    lastTime = -100;
+    printf("test about to resume\n");
     comp->toggleRunStop();                  // resume it
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), true);
