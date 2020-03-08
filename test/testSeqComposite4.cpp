@@ -8,6 +8,7 @@ extern MidiSong4Ptr makeTestSong4(int trackNum);
 
 
 using Sq4 = Seq4<TestComposite>;
+using Sq4Ptr = std::shared_ptr<Sq4>;
 
 // TODO: move to a general UTIL
 template <typename T>
@@ -56,10 +57,79 @@ std::shared_ptr<Sq4> make(SeqClock::ClockRate rate,
 }
 
 
+/*
 
+here's the test that passes for track player
+
+
+   // play 3/4 of first
+    play(pl, 3, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+
+    printf("test will pause and seek\n");
+    pl.setRunningStatus(false);         // pause
+    pl.setNextSectionRequest(4);        // goto last section
+
+    printf("test will resume\n");
+    lastTime = -100;
+
+    pl.setRunningStatus(true);          // resume
+    play(pl, .1, quantizationInterval); // play a tinny bit
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+    play(pl, .1, quantizationInterval); // play a tinny bit
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+
+    play(pl, 7.9, quantizationInterval); // play most (this section 2 bars)
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+
+    play(pl, 8.1, quantizationInterval); // play most (this section 2 bars)
+    assertEQ(pl.getSection(), 1);       // should be playing requested section
+
+
+*/
+
+
+static void stepN(Sq4Ptr sq, int numTimes)
+{
+    for (int i = 0; i < numTimes; ++i) {
+        sq->step();
+    }
+}
+
+
+static void genOneClock(Sq4Ptr sq)
+{
+    sq->inputs[Sq4::CLOCK_INPUT].setVoltage(10, 0);
+    stepN(sq, 16);
+    sq->inputs[Sq4::CLOCK_INPUT].setVoltage(0, 0);
+    stepN(sq, 16);
+}
+
+static void play(std::shared_ptr<Sq4> comp, SeqClock::ClockRate rate, float quarterNotes)
+{
+    assert(rate == SeqClock::ClockRate::Div64);
+    const int clocks = int(64.f * quarterNotes);
+    for (int i = 0; i < clocks; ++i) {
+        genOneClock(comp);
+    }
+}
+
+// test seq is 1,2,2,2 bars
+// very basic test to make sure our scffolding works
 static void test0()
 {
-    std::shared_ptr<Sq4> comp = make(SeqClock::ClockRate::Div64, 4, false, 0);
+    const int tkNum = 0;
+    const auto rate = SeqClock::ClockRate::Div64;
+    Sq4Ptr comp = make(rate, 4, true, tkNum);
+    MidiTrackPlayerPtr pl = comp->getTrackPlayer(tkNum);
+
+    // play to third quarter note
+    play(comp, rate, 3.f);
+    assertEQ(pl->getSection(), 1);      // first section is 1
+
+    // play start of next section
+    play(comp, rate, 1.1f);
+    assertEQ(pl->getSection(), 2); 
 }
 
 
