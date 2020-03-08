@@ -190,7 +190,13 @@ static void testPauseSwitchSectionStart()
 
     // .1 didn't work
     play(comp, rate, .1f);                  // play a tinnny bit to prime
-    assertEQ(pl->getSection(), 4);         
+    assertEQ(pl->getSection(), 4);          // should be in new section
+
+    // 5 made it go over, 4 ok
+    play(comp, rate, 5.f); // play most (this section 2 bars)
+    assertEQ(pl->getSection(), 4);       // should be playing requested section
+
+
     printf("finish me!!\n");
 
 }
