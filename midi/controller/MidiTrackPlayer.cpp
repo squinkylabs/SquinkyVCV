@@ -247,6 +247,10 @@ void MidiTrackPlayer::pollForCVChange()
     }
 }
 
+bool  MidiTrackPlayer::_getRunningStatus() const {
+    return isPlaying;
+}
+
  void MidiTrackPlayer::setRunningStatus(bool running) {
      if (!isPlaying && running) {
         // just set this on the edge of the change

@@ -57,36 +57,7 @@ std::shared_ptr<Sq4> make(SeqClock::ClockRate rate,
 }
 
 
-/*
 
-here's the test that passes for track player
-
-
-   // play 3/4 of first
-    play(pl, 3, quantizationInterval);
-    assertEQ(pl.getSection(), 1);
-
-    printf("test will pause and seek\n");
-    pl.setRunningStatus(false);         // pause
-    pl.setNextSectionRequest(4);        // goto last section
-
-    printf("test will resume\n");
-    lastTime = -100;
-
-    pl.setRunningStatus(true);          // resume
-    play(pl, .1, quantizationInterval); // play a tinny bit
-    assertEQ(pl.getSection(), 4);       // should be playing requested section
-    play(pl, .1, quantizationInterval); // play a tinny bit
-    assertEQ(pl.getSection(), 4);       // should be playing requested section
-
-    play(pl, 7.9, quantizationInterval); // play most (this section 2 bars)
-    assertEQ(pl.getSection(), 4);       // should be playing requested section
-
-    play(pl, 8.1, quantizationInterval); // play most (this section 2 bars)
-    assertEQ(pl.getSection(), 1);       // should be playing requested section
-
-
-*/
 
 
 static void stepN(Sq4Ptr sq, int numTimes)
@@ -123,18 +94,110 @@ static void test0()
     Sq4Ptr comp = make(rate, 4, true, tkNum);
     MidiTrackPlayerPtr pl = comp->getTrackPlayer(tkNum);
 
+    stepN(comp, 16);
+    assertEQ(pl->_getRunningStatus(), true);
+
+
     // play to third quarter note
     play(comp, rate, 3.f);
     assertEQ(pl->getSection(), 1);      // first section is 1
 
-    // play start of next section
+    // play just past start of next section
     play(comp, rate, 1.1f);
     assertEQ(pl->getSection(), 2); 
 }
 
 
+
+// test seq is 1,2,2,2 bars
+static void testPause()
+{
+    const int tkNum = 0;
+    const auto rate = SeqClock::ClockRate::Div64;
+    Sq4Ptr comp = make(rate, 4, true, tkNum);
+    MidiTrackPlayerPtr pl = comp->getTrackPlayer(tkNum);
+
+    stepN(comp, 16);
+    assertEQ(pl->_getRunningStatus(), true);
+
+    // play to third quarter note
+    play(comp, rate, 3.f);
+    assertEQ(pl->getSection(), 1);      // first section is 1
+
+    comp->toggleRunStop();              // pause it
+    stepN(comp, 16);
+    assertEQ(pl->_getRunningStatus(), false);
+
+    play(comp, rate, 2.f);              // would be section 2, if not paused.
+    assertEQ(pl->getSection(), 1);
+}
+
+
+
+/*
+
+here's the test that passes for track player
+
+
+   // play 3/4 of first
+    play(pl, 3, quantizationInterval);
+    assertEQ(pl.getSection(), 1);
+
+    printf("test will pause and seek\n");
+    pl.setRunningStatus(false);         // pause
+    pl.setNextSectionRequest(4);        // goto last section
+
+    printf("test will resume\n");
+    lastTime = -100;
+
+    pl.setRunningStatus(true);          // resume
+    play(pl, .1, quantizationInterval); // play a tinny bit
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+    play(pl, .1, quantizationInterval); // play a tinny bit
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+
+    play(pl, 7.9, quantizationInterval); // play most (this section 2 bars)
+    assertEQ(pl.getSection(), 4);       // should be playing requested section
+
+    play(pl, 8.1, quantizationInterval); // play most (this section 2 bars)
+    assertEQ(pl.getSection(), 1);       // should be playing requested section
+
+
+*/
+
+static void testPauseSwitchSectionStart()
+{
+    const int tkNum = 0;
+    const auto rate = SeqClock::ClockRate::Div64;
+    Sq4Ptr comp = make(rate, 4, true, tkNum);
+    MidiTrackPlayerPtr pl = comp->getTrackPlayer(tkNum);
+    stepN(comp, 16);
+    assertEQ(pl->_getRunningStatus(), true);
+
+    // play to third quarter note
+    play(comp, rate, 3.f);
+    assertEQ(pl->getSection(), 1);          // first section is 1
+
+    comp->toggleRunStop();                  // pause it
+    stepN(comp, 16);
+    assertEQ(pl->_getRunningStatus(), false);
+
+    comp->setNextSectionRequest(tkNum, 4);  // goto last section
+
+    comp->toggleRunStop();                  // resume it
+    stepN(comp, 16);
+    assertEQ(pl->_getRunningStatus(), true);
+
+    // .1 didn't work
+    play(comp, rate, .1f);                  // play a tinnny bit to prime
+    assertEQ(pl->getSection(), 4);         
+    printf("finish me!!\n");
+
+}
+
 void testSeqComposite4()
 {
-
     test0();
+    testPause();
+    testPauseSwitchSectionStart();
 }

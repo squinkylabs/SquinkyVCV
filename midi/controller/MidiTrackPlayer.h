@@ -75,6 +75,7 @@ public:
 
     int getNextSectionRequest() const;
     void setRunningStatus(bool running);
+    bool _getRunningStatus() const;
 
     void setPorts(Input* cvInput, Param* triggerImmediate) {
         input = cvInput;
