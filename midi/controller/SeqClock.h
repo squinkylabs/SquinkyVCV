@@ -84,7 +84,6 @@ inline SeqClock::SeqClock() :
 {
     resetLockout.setDelayMs(1);
     resetLockout.setSampleTime(1.f / 44100.f);
-    printf("in ctor of clock, time = %f\n", curMetricTime);
 }
 
 inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externalClock, bool runStop, float reset)
@@ -100,7 +99,6 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
        
         // go back to start. For correct start, go negative, so that first clock plays first note
         curMetricTime = -1;
-        printf("update saw reset time = %f\n", curMetricTime);
         // reset the clock so that high clock can gen another clock
         clockProcessor.reset();
     }
@@ -112,7 +110,6 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
         results.totalElapsedTime = curMetricTime;
         return results;
     }
-    printf("update while runningt time = %f\n", curMetricTime);
 
     // ignore external clock during lockout
     if (resetLockout.hasFired()) {
@@ -131,7 +128,6 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
     }
 
     results.totalElapsedTime = curMetricTime;
-    printf("leaving update with time = %f\n", curMetricTime);
     return results;
 }
 
@@ -139,7 +135,6 @@ inline void SeqClock::reset(bool internalClock)
 {
     double temp = curMetricTime; 
     curMetricTime = internalClock? 0 : -1;
-    printf("in SeqCLock::reset (%d) curT was %f, now is %f\n", internalClock, temp, curMetricTime);
 }
 
 inline int SeqClock::clockRate2Div(ClockRate r)

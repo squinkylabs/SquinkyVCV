@@ -539,6 +539,7 @@ static std::shared_ptr<THost> makeSongOneQandRun(float time)
     auto song = makeSongOneQ<TSong>();
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
+    pl.step();
 
     // let's make quantization very fine so these old tests don't freak out
     pl.updateToMetricTime(time, quantInterval, true);
@@ -590,6 +591,7 @@ static std::shared_ptr<THost> makeSongOverlapQandRun(float time)
     auto host = std::make_shared<THost>();
     TPlayer pl(host, song);
     pl.setNumVoices(0, 4);
+    pl.step();
 
     const float quantizationInterval = .25f;        // shouldn't matter for this test...
 
@@ -648,6 +650,7 @@ static std::shared_ptr<THost> makeSongOneQandRun2(float timeBeforeLock, float ti
     auto song = makeSongOneQ<TSong>();
     auto host = std::make_shared<THost>();
     TPlayer pl(host, song);
+    pl.step();
 
 
     pl.updateToMetricTime(timeBeforeLock, quantInterval, true);
@@ -717,6 +720,7 @@ static void testMidiPlayer0(Flip flipTracks = Flip::none)
 
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
+    pl.step();
     pl.updateToMetricTime(.01f, .25f, true);
 
     /**
@@ -1070,6 +1074,7 @@ static void _testQuantizedRetrigger2(float durations)
     TPlayer pl(host, song);
     pl.setNumVoices(0, 1);
     pl.setSampleCountForRetrigger(44);
+    pl.step();
 
     // should not be playing a note now.
     assert(!host->gateState[0]);

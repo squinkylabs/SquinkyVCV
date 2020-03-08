@@ -30,6 +30,7 @@ static void testTwoSections(int trackNum)
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+    pl.step();
 
     // before note, nothing
     const float quantizationInterval = .01f;       
@@ -94,6 +95,7 @@ static void testTwoSectionsLoop()
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+    pl.step();
 
     // go around loop, and back before first note
     const float loopTime = 4 + 8;
@@ -131,6 +133,7 @@ static void testTwoSectionsRepeat1()
 
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+
 
     // First section, first repeat
     // before note, nothing
@@ -266,7 +269,9 @@ static void testRepeatReset()
     // now pause and switch sections
     pl.setRunningStatus(false);
     pl.setNextSectionRequest(trackNum, 2);
+    pl.step();
     pl.setRunningStatus(true);
+    pl.step();
     pl.updateToMetricTime(.2, quantizationInterval, true);
     assertEQ(pl.getSection(trackNum), 2);
  }
@@ -294,6 +299,7 @@ static void testTwoSectionsStartOnSecond()
 
     // let's play just a teeny bit to start up, and make the player switch to the requested track
     pl.setRunningStatus(true);
+    pl.step();
     // pl.updateToMetricTime(.1, quantizationInterval, true);
 
     
@@ -366,6 +372,7 @@ static void testTwoSectionsSwitchToSecond()
 
   
     pl.setRunningStatus(true);
+    pl.step();
 
     // determine we are playing section 1
     const float quantizationInterval = .01f;
@@ -476,6 +483,7 @@ static void testSectionStartOffset()
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+    pl.step();
 
     // start up so that we can get a current section
     // Also - this is pretty strange, we haven't put ourselves in "running" state

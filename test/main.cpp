@@ -261,7 +261,7 @@ int main(int argc, char ** argv)
 
     testFilterDesign();
 #else
-    printf("disabled lots of tests for MS\n");
+    printf("disabled lots of tests for MS (or MIDI ONLY)\n");
 #endif
     testFinalLeaks();
 

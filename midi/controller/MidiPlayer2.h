@@ -23,6 +23,9 @@ public:
      */
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
+    // Does nothing - just here so player2 can look like player 4 in tests
+    void step() {}
+
     /**
      * param trackNumber must be zero.
      * It's only here so tests for player4 can work with player 2 also.

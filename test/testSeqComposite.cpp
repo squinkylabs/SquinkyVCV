@@ -431,7 +431,6 @@ static void testLoopingQ()
     float expectedCV = 3;
     // now, all notes after this will be "the same"
     for (int i = 0; i < 20; ++i) {
-        printf(">> test in loop (%d)\n", i);
         assertEQ(seq->inputs[TSeq::CLOCK_INPUT].getVoltage(0), 0);        // precondition for loop, clock low
         /* Clock high and step.
          * This will send the player into re-trigger, since notes touch.
@@ -472,7 +471,6 @@ static void testLoopingQ()
         // next clock will just get us to middle of same note
         genOneClock(*seq);
         expectedPos += .5f;
-        printf("in test loop, expectedPos = %.2f\n", expectedPos); fflush(stdout);
 #if hasPlayPosition
         assertEQ(seq->getPlayPosition(), expectedPos);
 #endif

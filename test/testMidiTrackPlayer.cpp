@@ -681,6 +681,7 @@ static void testPlayPauseSeek()
     lastTime = -100;
 
     pl.setRunningStatus(true);          // resume
+    pl.step();
     play(pl, .1, quantizationInterval); // play a tinny bit
     assertEQ(pl.getSection(), 4);       // should be playing requested section
     play(pl, .1, quantizationInterval); // play a tinny bit

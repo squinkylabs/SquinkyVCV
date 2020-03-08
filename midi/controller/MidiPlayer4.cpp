@@ -12,10 +12,10 @@ MidiPlayer4::MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr
     song(song),
     host(host)
 {
-//MidiTrackPlayerPtr
     for (int i = 0; i<MidiSong4::numTracks; ++i) {
         trackPlayers.push_back( std::make_shared<MidiTrackPlayer>(host, i, song));
     }
+    step();         // let's get the song registered, etc.. will at least make old tests happy.
 }
 
 void MidiPlayer4::setSong(std::shared_ptr<MidiSong4> newSong)

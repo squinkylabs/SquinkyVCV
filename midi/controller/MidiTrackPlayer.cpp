@@ -274,7 +274,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
            trackIndex, metricTime, quantizeInterval, track.get());
 #endif
 
-#if 1 // productize this, next time we need it
+#if 0 // productize this, next time we need it
    // static float lastTime = -100;
     const float delta = .1f;
 
@@ -307,7 +307,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
 
-#if defined(_MLOG) || 1
+#if defined(_MLOG) || 0
     if (doIt) {
         printf("MidiTrackPlayer::playOnce index=%d eventStart=%.2f mt=%.2f\n", constTrackIndex, eventStart, metricTime);
         fflush(stdout);
@@ -366,16 +366,16 @@ void MidiTrackPlayer::serviceEventQueue()
         newSong = eventQ.newSong;
         eventQ.newSong.reset();
         isNewSong = true;
-        printf("serviceQ new song\n");
+        // ("serviceQ new song\n");
     } 
     if (eventQ.reset) {
         // This doesn't do anything at the moment
         resetFromQueue(eventQ.resetSections);
 
-        printf("serviceQ reset\n");
+        // printf("serviceQ reset\n");
         // for "hard reset, re-init the whole song. This will take us back to the start";
         if (eventQ.resetSections) {
-            printf("serviceQ resetSections\n");
+            // printf("serviceQ resetSections\n");
            // assert(eventQ.nextSectionIndex == 0);   
            // eventQ.nextSectionIndex = 0;            // this makes us fail on reset -> q section
             if (!newSong) {
@@ -387,7 +387,7 @@ void MidiTrackPlayer::serviceEventQueue()
     } 
 
     if (newSong) {
-        printf("serviceQ setSongFromQ\n");
+        // printf("serviceQ setSongFromQ\n");
         setSongFromQueue(newSong);
     }
 
@@ -398,7 +398,7 @@ void MidiTrackPlayer::serviceEventQueue()
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
         eventQ.nextSectionIndex = 0;
-        printf("serviceQ setting up to play different section %d\n", next);
+        // printf("serviceQ setting up to play different section %d\n", next);
         setupToPlayDifferentSection(next);
     }
 
@@ -499,7 +499,6 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
 
 void MidiTrackPlayer::onEndOfTrack() {
     assert(playback.inPlayCode);
-    printf(" MidiTrackPlayer::onEndOfTrack sectionLoopCounter=%d\n", sectionLoopCounter);
 #if defined(_MLOG)
     printf("MidiTrackPlayer:playOnce index=%d type = end\n", trackIndex);
     printf("sectionLoopCounter = %d nextSectionIndex =%d\n", sectionLoopCounter, nextSectionIndex);

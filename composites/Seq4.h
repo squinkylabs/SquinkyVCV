@@ -236,13 +236,7 @@ public:
     }
     void resetClock() override
     {
-        printf("host got resetCLock request\n");
-    #if 1
         seq->resetClock();
-        printf("did reset\n");
-    #else
-        printf("ignoring it\n");
-    #endif
     }
 private:
     Seq4<TBase>* const seq;
@@ -398,8 +392,6 @@ inline void Seq4<TBase>::allGatesOff()
 template <class TBase>
 inline void Seq4<TBase>::resetClock()
 {
-   // assert(false);
-    printf("Seq4 calling clock reset\n");
     clock.reset(false);
 }
 
