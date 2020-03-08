@@ -46,13 +46,21 @@ public:
             cvValue[voice] = cv;
         }
     }
+
     void onLockFailed() override
     {
         ++lockConflicts;
     }
 
+    void resetClock() override
+    {
+        // won't reset anything, but remember we were called
+       ++numClockResets;
+    }
+
     int cvChangeCount = 0;
     int gateChangeCount = 0;
+    int numClockResets = 0;
 
     int lockConflicts = 0;
 

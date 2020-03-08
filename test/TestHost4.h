@@ -32,6 +32,7 @@ public:
     
     void reset()
     {
+        assert(false);
         cvChangeCount = 0;
         gateChangeCount = 0;
         for (auto it : gateState) {
@@ -71,10 +72,16 @@ public:
         ++lockConflicts;
     }
 
+    void resetClock() override
+    {
+        ++numClockResets;
+    }
+
     int cvChangeCount = 0;
     int gateChangeCount = 0;
 
     int lockConflicts = 0;
+    int numClockResets = 0;
 
     std::vector<bool> gateState = {
         false, false, false, false,

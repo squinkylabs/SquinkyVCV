@@ -1,3 +1,4 @@
+#include "IMidiPlayerHost.h"
 #include "MidiTrackPlayer.h"
 #include "MidiSong4.h"
 #include "MidiTrack4Options.h"
@@ -142,7 +143,8 @@ MidiTrackPlayer::MidiTrackPlayer(
     std::shared_ptr<MidiSong4> _song) : constTrackIndex(trackIndex),
                                         voiceAssigner(voices, 16),
                                         cv0Trigger(false),
-                                        cv1Trigger(false) {
+                                        cv1Trigger(false),
+                                        host(host) {
     setSong(_song, trackIndex);
     for (int i = 0; i < 16; ++i) {
         MidiVoice& vx = voices[i];
@@ -165,15 +167,6 @@ void MidiTrackPlayer::setNextSectionRequest(int section) {
     // printf("called set next section with %d\n", section);
 
     eventQ.nextSectionIndex = validateSectionRequest(section, uiSong, constTrackIndex);
-#if 0
-    if (!isPlaying && eventQ.nextSectionIndex) {
-        // if we aren't playing, set it in anticipation of starting.
-        // If we are playing, the next end event will advance us
-        // TODO: should we clear the one in the event Q now?
-        playback.curSectionIndex = eventQ.nextSectionIndex - 1;
-        // printf("set next section just set curSection to %d\n", curSectionIndex);
-    }
-#endif
 }
 
 int MidiTrackPlayer::getNextSectionRequest() const {
@@ -260,7 +253,17 @@ bool  MidiTrackPlayer::_getRunningStatus() const {
 }
 
 /****************************************** playback code ***********************************************/
- float lastTime = -100;
+
+
+void MidiTrackPlayer::step()
+{
+    PlayTracker tracker(playback.inPlayCode);
+    // before other playback chores, see if there are any requests
+    // we need to honor.
+    serviceEventQueue();
+}
+
+float lastTime = -100;  // for debug printing
 
 bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
     PlayTracker tracker(playback.inPlayCode);
@@ -285,7 +288,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 
     // before other playback chores, see if there are any requests
     // we need to honor.
-    serviceEventQueue();
+   // serviceEventQueue();
 
     bool didSomething = false;
 
@@ -489,6 +492,7 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
         printf("found nothing to play on track %d\n", trackIndex);
     }
 #endif
+    host->resetClock();
 
     currentLoopIterationStart = 0;
 }

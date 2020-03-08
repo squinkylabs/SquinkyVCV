@@ -189,6 +189,7 @@ private:
     void init(MidiSong4Ptr);
     void serviceRunStop();
     void allGatesOff();
+    void resetClock();
     /**
      * called by the divider every 'n' step calls
      */
@@ -233,6 +234,16 @@ public:
     {
 
     }
+    void resetClock() override
+    {
+        printf("host got resetCLock request\n");
+    #if 1
+        seq->resetClock();
+        printf("did reset\n");
+    #else
+        printf("ignoring it\n");
+    #endif
+    }
 private:
     Seq4<TBase>* const seq;
 };
@@ -263,7 +274,8 @@ void Seq4<TBase>::onSampleRateChange()
 template <class TBase>
 void  Seq4<TBase>::stepn(int n)
 {
-     serviceRunStop();
+    player->step();
+    serviceRunStop();
 
     // first process all the clock input params
     const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
@@ -381,6 +393,14 @@ inline void Seq4<TBase>::allGatesOff()
             TBase::outputs[GATE0_OUTPUT + output].voltages[i] = 0;
         }  
     }
+}
+
+template <class TBase>
+inline void Seq4<TBase>::resetClock()
+{
+   // assert(false);
+    printf("Seq4 calling clock reset\n");
+    clock.reset(false);
 }
 
 template <class TBase>

@@ -359,9 +359,12 @@ void sendClockAndStep(TSeq& sq, float clockValue)
     stepN(sq, 4);
 }
 
+extern float lastTime;
 template <class TSeq, class TSong, bool hasPlayPosition>
 static void testLoopingQ()
 {
+    printf("\n------ testLoopingQ\n");
+    lastTime = 0;
     // 1/8 note clock 4 q
     auto song = TSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
     std::shared_ptr<TSeq> seq = std::make_shared<TSeq>(song);
@@ -384,9 +387,11 @@ static void testLoopingQ()
 
     assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
 
+    printf(">> test about to send first real clock\n");
     // now step a bit so that we see clock
     stepN(*seq, 4);
 
+    printf(">> test sent first real clock\n");
     // should be playing the first note
     assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 #if hasPlayPosition
@@ -396,6 +401,8 @@ static void testLoopingQ()
 
     // send the clock low
     sendClockAndStep(*seq, 0);
+
+    printf(">> test 405\n");
 
     /* What we need to do (at least on the real clocks) is:
      * send the clock, note that gate is now low, and cv is same
@@ -424,6 +431,7 @@ static void testLoopingQ()
     float expectedCV = 3;
     // now, all notes after this will be "the same"
     for (int i = 0; i < 20; ++i) {
+        printf(">> test in loop (%d)\n", i);
         assertEQ(seq->inputs[TSeq::CLOCK_INPUT].getVoltage(0), 0);        // precondition for loop, clock low
         /* Clock high and step.
          * This will send the player into re-trigger, since notes touch.
@@ -464,6 +472,7 @@ static void testLoopingQ()
         // next clock will just get us to middle of same note
         genOneClock(*seq);
         expectedPos += .5f;
+        printf("in test loop, expectedPos = %.2f\n", expectedPos); fflush(stdout);
 #if hasPlayPosition
         assertEQ(seq->getPlayPosition(), expectedPos);
 #endif

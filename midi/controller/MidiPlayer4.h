@@ -31,6 +31,12 @@ public:
      */
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
+    /** 
+     * Called on the auto thread over and over.
+     * Gives us a chance to do some work before updateToMetricTime gets called again.
+     */
+    void step();
+
     /**
      * loops are independent for each track. Default parameter is only 
      * provided for compatibilty with old unit tests.

@@ -52,6 +52,13 @@ void MidiPlayer4::setPorts(Input* inputPorts, Param* triggerImmediate)
     }
 }
 
+void MidiPlayer4::step()
+{
+ for (int i = 0; i < MidiSong4::numTracks; ++i) {
+        trackPlayers[i]->step();
+    }
+}
+
 void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
 {
 #if defined(_MLOG) && 1

@@ -202,6 +202,11 @@ public:
     {
 
     }
+
+    void resetClock() override
+    {
+        assert(false);
+    }
 private:
     Seq<TBase>* const seq;
 };

@@ -58,6 +58,11 @@ public:
      */
     bool playOnce(double metricTime, float quantizeInterval);
 
+    /** 
+     * Called on the auto thread over and over.
+     * Gives us a chance to do some work before playOnce gets called again.
+     */
+    void step();
     void reset(bool resetSectionIndex);
     void setNumVoices(int numVoices);
     void setSampleCountForRetrigger(int);
@@ -90,6 +95,7 @@ public:
 private:
     
     std::shared_ptr<MidiTrack> curTrack;  // need something like array for song4??
+    std::shared_ptr<IMidiPlayerHost4> host;
 
     /**
      * Which outer "track" we are assigned to, 0..3.
