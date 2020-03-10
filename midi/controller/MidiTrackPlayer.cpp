@@ -249,6 +249,11 @@ bool  MidiTrackPlayer::_getRunningStatus() const {
  void MidiTrackPlayer::setRunningStatus(bool running) {
      if (!isPlaying && running) {
         // just set this on the edge of the change
+#ifdef _LOGX
+         if (constTrackIndex == 0) {
+             printf("just set eventQ.startupTriggered nextSection=%d\n", eventQ.nextSectionIndex);
+         }
+#endif
         eventQ.startupTriggered = true;
     }
     isPlaying = running;
@@ -321,8 +326,15 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
         MidiEventPtr event = curEvent->second;
         switch (event->type) {
             case MidiEvent::Type::Note: {
-#if defined(_MLOG)
-                printf("MidiTrackPlayer:playOnce index=%d type = note\n", trackIndex);
+#ifdef _LOGX
+                {
+                    if (constTrackIndex == 0) {
+                        MidiEventPtr ev = curEvent->second;
+                        MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+                        assert(note);
+                        printf("MidiTrackPlayer:playOnce.pitch = %.2f\n", note->pitchCV);
+                    }
+                }
 #endif
                 MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(event);
 
@@ -403,8 +415,10 @@ void MidiTrackPlayer::serviceEventQueue()
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
         eventQ.nextSectionIndex = 0;
-#if 0
+#ifdef _LOGX
+           
         if (constTrackIndex == 0) {
+            printf("service Q just reset nextSectionIndex\n");
             printf("serviceQ setting up to play different section %d\n", next);
             void* cep = curEvent->second.get();
             printf("before, eventTime = %.2f eventaddr=%p\n",  curEvent->first, cep);
@@ -418,7 +432,7 @@ void MidiTrackPlayer::serviceEventQueue()
         // set curTrack, curEvent, loop Counter, and reset clock
         setPlaybackTrackFromSongAndSection();
 
-#if 0
+#ifdef _LOGX
         if (constTrackIndex == 0) {
             void* cep = curEvent->second.get();
             printf("after reset clock, eventTime = %.2f eventaddr=%p\n",  curEvent->first, cep);
@@ -495,33 +509,6 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
 
     setupToPlayFirstTrackSection();
     setPlaybackTrackFromSongAndSection();
-#if 0
-    auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
-    if (options) {
-        sectionLoopCounter = options->repeatCount;
-        // printf("in set song, get sectionLoopCounterfrom options %d totalReps = %d\n", sectionLoopCounter, totalRepeatCount);
-    } else {
-        sectionLoopCounter = 1;
-        // printf("in set song, get sectionLoopCounter from default %d\n", sectionLoopCounter);
-    }
-
-    // now that section indicies are set correctly, let's get event data
-    curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
-    if (curTrack) {
-        // can we really handle not having a track?
-        curEvent = curTrack->begin();
-        //printf("reset put cur event back\n");
-    }
-
-#ifdef _MLOG
-    if (!track) {
-        printf("found nothing to play on track %d\n", trackIndex);
-    }
-#endif
-    host->resetClock();
-
-    currentLoopIterationStart = 0;
-#endif
 }
 
 void MidiTrackPlayer::setPlaybackTrackFromSongAndSection()
@@ -540,7 +527,19 @@ void MidiTrackPlayer::setPlaybackTrackFromSongAndSection()
     if (curTrack) {
         // can we really handle not having a track?
         curEvent = curTrack->begin();
-        //printf("reset put cur event back\n");
+#ifdef _LOGX
+        if (constTrackIndex == 0)
+        {
+            
+            MidiEventPtr ev = curEvent->second;
+            MidiNoteEventPtr note = safe_cast<MidiNoteEvent>(ev);
+            if (note) {
+                assert(note);
+                printf("reset put cur event back. pitch = %.2f\n", note->pitchCV);
+            }
+            else printf("first event note note\n");
+        }
+#endif
     }
 
 #ifdef _MLOG

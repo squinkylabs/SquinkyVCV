@@ -193,27 +193,33 @@ static void testPauseSwitchSectionStart()
     printf(">> test setting request for section 4\n");
     comp->setNextSectionRequest(tkNum, 4);  // goto last section (#4)
     stepN(comp, 16);
-    printf(">> just set requ while paused and the stepped\n");
+    printf(">> just set request for #4 while paused and then stepped\n");
 
     lastTime = -100;
     printf(">> test about to resume\n");
+    lastTime = -100;
     comp->toggleRunStop();                  // resume it
+    lastTime = -100;
     stepN(comp, 16);
+    lastTime = -100;
     assertEQ(pl->_getRunningStatus(), true);
     printf(">> test resumed and then stepped 16\n");
+
+    /* This issue here is that this test wants stepN to just call the track player's step() function to service the queue.
+    * but really it's going to run the clock, aslo.
+    */
 
     // .1 didn't work
     play(comp, rate, .1f);                  // play a tinnny bit to prime
     printf(">> just played first bit of section 4\n");
     assertEQ(pl->getSection(), 4);          // should be in new section
 
-    {
-        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
-        ev->startTime = 0;
-        ev->setPitch(3, PitchUtils::c);
-        printf("first pitch is cmaj should be %.2f\n", ev->pitchCV);
-    }
-    assertEQ(comp->outputs[comp->CV0_OUTPUT].value, PitchUtils::c);
+    // should be playing the first note of the next section now. note that it
+    // will have rotated to the next voice
+    const float expectedPitch = PitchUtils::pitchToCV(3, PitchUtils::c);
+    assertGT(comp->outputs[comp->GATE0_OUTPUT].getVoltage(1), 5);
+    assertLT(comp->outputs[comp->GATE0_OUTPUT].getVoltage(0), 1);
+    assertEQ(comp->outputs[comp->CV0_OUTPUT].getVoltage(1), expectedPitch);
 
     printf(">> test will now play longer\n");
     // 5 made it go over, 4 ok
