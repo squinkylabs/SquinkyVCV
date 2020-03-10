@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define _LOGX
+// #define _LOGX
 
 class PlayTracker
 {
@@ -372,19 +372,17 @@ void MidiTrackPlayer::serviceEventQueue()
         newSong = eventQ.newSong;
         eventQ.newSong.reset();
         isNewSong = true;
-        printf("serviceQ new song\n");
+        // printf("serviceQ new song\n");
     } 
 
     if (eventQ.reset) {
         // This doesn't do anything at the moment
         resetFromQueue(eventQ.resetSections);
 
-         printf("serviceQ reset\n");
+         //printf("serviceQ reset\n");
         // for "hard reset, re-init the whole song. This will take us back to the start";
         if (eventQ.resetSections) {
-             printf("serviceQ resetSections\n");
-           // assert(eventQ.nextSectionIndex == 0);   
-           // eventQ.nextSectionIndex = 0;            // this makes us fail on reset -> q section
+           //  printf("serviceQ resetSections\n");
             if (!newSong) {
                 newSong = playback.song;
             }
@@ -394,7 +392,7 @@ void MidiTrackPlayer::serviceEventQueue()
     } 
 
     if (newSong) {
-        printf("serviceQ setSongFromQ\n");
+        // printf("serviceQ setSongFromQ\n");
         setSongFromQueue(newSong);
     }
 
@@ -405,24 +403,27 @@ void MidiTrackPlayer::serviceEventQueue()
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
         eventQ.nextSectionIndex = 0;
+#if 0
         if (constTrackIndex == 0) {
             printf("serviceQ setting up to play different section %d\n", next);
             void* cep = curEvent->second.get();
             printf("before, eventTime = %.2f eventaddr=%p\n",  curEvent->first, cep);
         }
+#endif
         setupToPlayDifferentSection(next);
         if (constTrackIndex == 0) {
-            printf("since new section immediate, will reset clock\n");
+         //   printf("since new section immediate, will reset clock\n");
         }
-        //host->resetClock();
 
         // set curTrack, curEvent, loop Counter, and reset clock
         setPlaybackTrackFromSongAndSection();
 
+#if 0
         if (constTrackIndex == 0) {
             void* cep = curEvent->second.get();
             printf("after reset clock, eventTime = %.2f eventaddr=%p\n",  curEvent->first, cep);
         }
+#endif
     }
 
     eventQ.startupTriggered = false;

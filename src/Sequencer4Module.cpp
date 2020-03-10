@@ -71,7 +71,7 @@ struct Sequencer4Widget : ModuleWidget {
         theMenu->addChild(spacerLabel);
         ManualMenuItem* manual = new ManualMenuItem(
             "4X4 Manual",
-            "https://github.com/squinkylabs/SquinkyVCV/blob/s45/docs/4x4.md");
+            "https://github.com/squinkylabs/SquinkyVCV/blob/s52/docs/4x4.md");
         theMenu->addChild(manual);
 
 #if 0 // doesn't work yet
