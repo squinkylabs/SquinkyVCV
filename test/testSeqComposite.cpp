@@ -363,7 +363,6 @@ extern float lastTime;
 template <class TSeq, class TSong, bool hasPlayPosition>
 static void testLoopingQ()
 {
-    printf("\n------ testLoopingQ\n");
     lastTime = 0;
     // 1/8 note clock 4 q
     auto song = TSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
@@ -387,11 +386,9 @@ static void testLoopingQ()
 
     assertEQ(seq->outputs[TSeq::CV_OUTPUT].voltages[0], 0);       // no pitch until start
 
-    printf(">> test about to send first real clock\n");
     // now step a bit so that we see clock
     stepN(*seq, 4);
 
-    printf(">> test sent first real clock\n");
     // should be playing the first note
     assertGT(seq->outputs[TSeq::GATE_OUTPUT].voltages[0], 5);
 #if hasPlayPosition
@@ -401,8 +398,6 @@ static void testLoopingQ()
 
     // send the clock low
     sendClockAndStep(*seq, 0);
-
-    printf(">> test 405\n");
 
     /* What we need to do (at least on the real clocks) is:
      * send the clock, note that gate is now low, and cv is same

@@ -133,6 +133,7 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
 
 inline void SeqClock::reset(bool internalClock)
 {
+    printf("SeqCLock::reeset\n");
     curMetricTime = internalClock? 0 : -1;
 }
 

@@ -233,6 +233,12 @@ private:
     void pollForCVChange();
     void serviceEventQueue();
     void setSongFromQueue(std::shared_ptr<MidiSong4>);
+
+    /**
+     * Based on current song and section,
+     * set curTrack, curEvent, loop Counter, and reset clock
+     */
+    void setPlaybackTrackFromSongAndSection();
     void resetFromQueue(bool sectionIndex);
     /**
      * @param section is a new requested section (0, 1..4)

@@ -12,6 +12,8 @@
 #include <assert.h>
 #include <stdio.h>
 
+#define _LOGX
+
 class PlayTracker
 {
 public:
@@ -274,9 +276,9 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
            trackIndex, metricTime, quantizeInterval, track.get());
 #endif
 
-#if 0 // productize this, next time we need it
+#ifdef _LOGX // productize this, next time we need it
    // static float lastTime = -100;
-    const float delta = .1f;
+    const float delta = .2f;
 
     bool doIt = false;
    // printf("MidiTrackPlayer::playOnce(%.2f) target = %.2f\n", metricTime, (lastTime + delta));
@@ -307,9 +309,11 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
 
-#if defined(_MLOG) || 0
+#if defined(_LOGX)
+
     if (doIt) {
-        printf("MidiTrackPlayer::playOnce index=%d eventStart=%.2f mt=%.2f\n", constTrackIndex, eventStart, metricTime);
+        printf("MidiTrackPlayer::playOnce index=%d eventStart=%.2f mt=%.2f loopStart=%.2f\n",
+            constTrackIndex, eventStart, metricTime, currentLoopIterationStart);
         fflush(stdout);
     }
 #endif
@@ -358,6 +362,8 @@ void MidiTrackPlayer::serviceEventQueue()
     assert(playback.inPlayCode);
     bool isNewSong = false;
 
+   // printf("serviceEventQueue\n");
+
     // newSong is where we store the song that should be treated as "new"
     MidiSong4Ptr newSong;
 
@@ -366,16 +372,17 @@ void MidiTrackPlayer::serviceEventQueue()
         newSong = eventQ.newSong;
         eventQ.newSong.reset();
         isNewSong = true;
-        // ("serviceQ new song\n");
+        printf("serviceQ new song\n");
     } 
+
     if (eventQ.reset) {
         // This doesn't do anything at the moment
         resetFromQueue(eventQ.resetSections);
 
-        // printf("serviceQ reset\n");
+         printf("serviceQ reset\n");
         // for "hard reset, re-init the whole song. This will take us back to the start";
         if (eventQ.resetSections) {
-            // printf("serviceQ resetSections\n");
+             printf("serviceQ resetSections\n");
            // assert(eventQ.nextSectionIndex == 0);   
            // eventQ.nextSectionIndex = 0;            // this makes us fail on reset -> q section
             if (!newSong) {
@@ -387,7 +394,7 @@ void MidiTrackPlayer::serviceEventQueue()
     } 
 
     if (newSong) {
-        // printf("serviceQ setSongFromQ\n");
+        printf("serviceQ setSongFromQ\n");
         setSongFromQueue(newSong);
     }
 
@@ -398,8 +405,24 @@ void MidiTrackPlayer::serviceEventQueue()
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
         eventQ.nextSectionIndex = 0;
-        // printf("serviceQ setting up to play different section %d\n", next);
+        if (constTrackIndex == 0) {
+            printf("serviceQ setting up to play different section %d\n", next);
+            void* cep = curEvent->second.get();
+            printf("before, eventTime = %.2f eventaddr=%p\n",  curEvent->first, cep);
+        }
         setupToPlayDifferentSection(next);
+        if (constTrackIndex == 0) {
+            printf("since new section immediate, will reset clock\n");
+        }
+        //host->resetClock();
+
+        // set curTrack, curEvent, loop Counter, and reset clock
+        setPlaybackTrackFromSongAndSection();
+
+        if (constTrackIndex == 0) {
+            void* cep = curEvent->second.get();
+            printf("after reset clock, eventTime = %.2f eventaddr=%p\n",  curEvent->first, cep);
+        }
     }
 
     eventQ.startupTriggered = false;
@@ -470,6 +493,8 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
     playback.song = newSong;
 
     setupToPlayFirstTrackSection();
+    setPlaybackTrackFromSongAndSection();
+#if 0
     auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
     if (options) {
         sectionLoopCounter = options->repeatCount;
@@ -479,7 +504,37 @@ void MidiTrackPlayer::setSongFromQueue(std::shared_ptr<MidiSong4> newSong)
         // printf("in set song, get sectionLoopCounter from default %d\n", sectionLoopCounter);
     }
 
-    // now that section indicies are set corrctly, let's get event data
+    // now that section indicies are set correctly, let's get event data
+    curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
+    if (curTrack) {
+        // can we really handle not having a track?
+        curEvent = curTrack->begin();
+        //printf("reset put cur event back\n");
+    }
+
+#ifdef _MLOG
+    if (!track) {
+        printf("found nothing to play on track %d\n", trackIndex);
+    }
+#endif
+    host->resetClock();
+
+    currentLoopIterationStart = 0;
+#endif
+}
+
+void MidiTrackPlayer::setPlaybackTrackFromSongAndSection()
+{
+    auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
+    if (options) {
+        sectionLoopCounter = options->repeatCount;
+        // printf("in set song, get sectionLoopCounterfrom options %d totalReps = %d\n", sectionLoopCounter, totalRepeatCount);
+    } else {
+        sectionLoopCounter = 1;
+        // printf("in set song, get sectionLoopCounter from default %d\n", sectionLoopCounter);
+    }
+
+    // now that section indicies are set correctly, let's get event data
     curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
     if (curTrack) {
         // can we really handle not having a track?

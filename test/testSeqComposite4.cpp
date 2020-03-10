@@ -162,6 +162,8 @@ here's the test that passes for track player
     play(pl, 8.1, quantizationInterval); // play most (this section 2 bars)
     assertEQ(pl.getSection(), 1);       // should be playing requested section
 
+    song is:::
+    oneQ1_75, eightQNotesCMaj, eightQNotesCMaj
 
 */
 extern float lastTime;
@@ -176,44 +178,51 @@ static void testPauseSwitchSectionStart()
     MidiTrackPlayerPtr pl = comp->getTrackPlayer(tkNum);
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), true);
-    printf("--- test just started, now will play\n");
+    printf(">> test just started, now will play\n");
 
     // play to third quarter note
     play(comp, rate, 3.f);
     assertEQ(pl->getSection(), 1);          // first section is 1
 
-    printf("--- test about to pause\n");
+    printf(">> test about to pause\n");
     comp->toggleRunStop();                  // pause it
     lastTime = -100;
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), false);
 
-    comp->setNextSectionRequest(tkNum, 4);  // goto last section
+    printf(">> test setting request for section 4\n");
+    comp->setNextSectionRequest(tkNum, 4);  // goto last section (#4)
+    stepN(comp, 16);
+    printf(">> just set requ while paused and the stepped\n");
 
     lastTime = -100;
-    printf("test about to resume\n");
+    printf(">> test about to resume\n");
     comp->toggleRunStop();                  // resume it
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), true);
+    printf(">> test resumed and then stepped 16\n");
 
     // .1 didn't work
     play(comp, rate, .1f);                  // play a tinnny bit to prime
+    printf(">> just played first bit of section 4\n");
     assertEQ(pl->getSection(), 4);          // should be in new section
 
+    {
+        MidiNoteEventPtr ev = std::make_shared<MidiNoteEvent>();
+        ev->startTime = 0;
+        ev->setPitch(3, PitchUtils::c);
+        printf("first pitch is cmaj should be %.2f\n", ev->pitchCV);
+    }
+    assertEQ(comp->outputs[comp->CV0_OUTPUT].value, PitchUtils::c);
+
+    printf(">> test will now play longer\n");
     // 5 made it go over, 4 ok
     play(comp, rate, 5.f); // play most (this section 2 bars)
-    //assertEQ(pl->getSection(), 4);       // should be playing requested section
+    assertEQ(pl->getSection(), 4);       // should be playing requested section still
 
 
-    printf("testPauseSwitchSectionStart: finish me!!\n");
+    printf(">> testPauseSwitchSectionStart: finish me!!\n");
 
-    /*
-    Maybe to fix this bug:
-        add to host interface resetTime();
-        when we load new song from Q, we should send a reset to the host.
-        when host gets reset, it should reset the seq clock.
-        cna we test this in the host tests.
-    */
 }
 
 void testSeqComposite4()
