@@ -95,7 +95,7 @@ static void testLoop1()
     const float quantizationInterval = .01f;
     int x = pl.getCurrentRepetition();
     assertEQ(x, 0);                 // when stopped, always zero
-    pl.reset(false);                     // for some reason we need to do this before we start
+
     pl.setRunningStatus(true);      // start it.
 
     pl.step();                      // let player process event queue before playgin
@@ -135,7 +135,6 @@ static void testForever()
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 0;              // play forever
     const float quantizationInterval = .01f;
-    pl.reset(false);                        // for some reason we need to do this before we start
     pl.setRunningStatus(true);              // start it.
 
     pl.step();
@@ -162,7 +161,6 @@ static void testSwitchToNext()
     auto options0 = song->getOptions(0, 0);
     options0->repeatCount = 0;              // play forever
     const float quantizationInterval = .01f;
-    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
 
     pl.step();
@@ -212,7 +210,6 @@ static void testSwitchToNext2()
         options1->repeatCount = 0;
     }
     const float quantizationInterval = .01f;
-    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
     pl.step();
 
@@ -266,7 +263,6 @@ static void testSwitchToNextThenVamp()
         options2->repeatCount = 0;
     }
     const float quantizationInterval = .01f;
-    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
     pl.step();
 
@@ -327,7 +323,6 @@ static void testSwitchToPrev()
         options2->repeatCount = 0;
     }
     const float quantizationInterval = .01f;
-    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
     pl.step();
 
@@ -394,7 +389,6 @@ static void testRepetition()
       
     }
     const float quantizationInterval = .01f;
-    pl.reset(false);                     // for some reason we need to do this before we start
     pl.setRunningStatus(true);      // start it.
     pl.step();
 
