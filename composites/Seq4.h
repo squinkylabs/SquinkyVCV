@@ -79,6 +79,22 @@ public:
         NUM_VOICES3_PARAM,
         RUNNING_PARAM,
         TRIGGER_IMMEDIATE_PARAM,
+        PADSELECT0_PARAM,
+        PADSELECT1_PARAM,
+        PADSELECT2_PARAM,
+        PADSELECT3_PARAM,
+        PADSELECT4_PARAM,
+        PADSELECT5_PARAM,
+        PADSELECT6_PARAM,
+        PADSELECT7_PARAM,
+        PADSELECT8_PARAM,
+        PADSELECT9_PARAM,
+        PADSELECT10_PARAM,
+        PADSELECT11_PARAM,
+        PADSELECT12_PARAM,
+        PADSELECT13_PARAM,
+        PADSELECT14_PARAM,
+        PADSELECT15_PARAM,
         NUM_PARAMS
     };
 
@@ -446,6 +462,54 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             break;
         case Seq4<TBase>::TRIGGER_IMMEDIATE_PARAM:
             ret = {0, 1, 0, "Trigger Immediate"};
+            break;
+        case Seq4<TBase>::PADSELECT0_PARAM:
+            ret = { 0, 1, 0, "Select 1" };       
+            break;
+        case Seq4<TBase>::PADSELECT1_PARAM:
+            ret = { 0, 1, 0, "Select 2" };
+            break;
+        case Seq4<TBase>::PADSELECT2_PARAM:
+            ret = { 0, 1, 0, "Select 3" };
+            break;
+        case Seq4<TBase>::PADSELECT3_PARAM:
+            ret = { 0, 1, 0, "Select 4" };
+            break;
+        case Seq4<TBase>::PADSELECT4_PARAM:
+            ret = { 0, 1, 0, "Select 5" };
+            break;
+        case Seq4<TBase>::PADSELECT5_PARAM:
+            ret = { 0, 1, 0, "Select 6" };
+            break;
+        case Seq4<TBase>::PADSELECT6_PARAM:
+            ret = { 0, 1, 0, "Select 7" };
+            break;
+        case Seq4<TBase>::PADSELECT7_PARAM:
+            ret = { 0, 1, 0, "Select 8" };
+            break;
+        case Seq4<TBase>::PADSELECT8_PARAM:
+            ret = { 0, 1, 0, "Select 9" };
+            break;
+        case Seq4<TBase>::PADSELECT9_PARAM:
+            ret = { 0, 1, 0, "Select 10" };
+            break;
+        case Seq4<TBase>::PADSELECT10_PARAM:
+            ret = { 0, 1, 0, "Select 11" };
+            break;
+        case Seq4<TBase>::PADSELECT11_PARAM:
+            ret = { 0, 1, 0, "Select 12" };
+            break;
+        case Seq4<TBase>::PADSELECT12_PARAM:
+            ret = { 0, 1, 0, "Select 13" };
+            break;
+        case Seq4<TBase>::PADSELECT13_PARAM:
+            ret = { 0, 1, 0, "Select 14" };
+            break;
+        case Seq4<TBase>::PADSELECT14_PARAM:
+            ret = { 0, 1, 0, "Select 15" };
+            break;
+        case Seq4<TBase>::PADSELECT15_PARAM:
+            ret = { 0, 1, 0, "Select 16" };
             break;
         default:
             assert(false);
