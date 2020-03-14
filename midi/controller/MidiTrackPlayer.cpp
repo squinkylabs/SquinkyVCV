@@ -179,7 +179,7 @@ int MidiTrackPlayer::getSection() const {
     // we make sure to return zero when there isn't a curTrack, but that was from the old days.
     // Now - do we mean not playing? do we mean no uiSong?
     // Will need to re-vist this
-    return curTrack ? playback.curSectionIndex + 1 : 0;
+    return playback.curTrack ? playback.curSectionIndex + 1 : 0;
 }
 
 int MidiTrackPlayer::getCurrentRepetition() {
@@ -304,13 +304,13 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
         return true;
     }
 
-    if (!curTrack) {
+    if (!playback.curTrack) {
         // should be possible if we keep int curPlaybackSection
         return false;
     }
 
     // push the start time up by loop start, so that event t==loop start happens at start of loop
-    const double eventStartUnQuantized = (currentLoopIterationStart + curEvent->first);
+    const double eventStartUnQuantized = (playback.currentLoopIterationStart + playback.curEvent->first);
 
     const double eventStart = TimeUtils::quantize(eventStartUnQuantized, quantizeInterval, true);
 
@@ -323,7 +323,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
     }
 #endif
     if (eventStart <= metricTime) {
-        MidiEventPtr event = curEvent->second;
+        MidiEventPtr event = playback.curEvent->second;
         switch (event->type) {
             case MidiEvent::Type::Note: {
 #ifdef _LOGX
@@ -346,7 +346,7 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
                 const double durationQuantized = TimeUtils::quantize(note->duration, quantizeInterval, false);
                 double quantizedNoteEnd = TimeUtils::quantize(durationQuantized + eventStart, quantizeInterval, false);
                 voice->playNote(note->pitchCV, float(eventStart), float(quantizedNoteEnd));
-                ++curEvent;
+                ++playback.curEvent;
                 // printfprintf("just inc curEvent 129\n");
             } break;
             case MidiEvent::Type::End:
@@ -523,10 +523,10 @@ void MidiTrackPlayer::setPlaybackTrackFromSongAndSection()
     }
 
     // now that section indicies are set correctly, let's get event data
-    curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
-    if (curTrack) {
+    playback.curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
+    if (playback.curTrack) {
         // can we really handle not having a track?
-        curEvent = curTrack->begin();
+        playback.curEvent = playback.curTrack->begin();
 #ifdef _LOGX
         if (constTrackIndex == 0)
         {
@@ -549,7 +549,7 @@ void MidiTrackPlayer::setPlaybackTrackFromSongAndSection()
 #endif
     host->resetClock();
 
-    currentLoopIterationStart = 0;
+    playback.currentLoopIterationStart = 0;
 }
 
 void MidiTrackPlayer::onEndOfTrack() {
@@ -560,7 +560,7 @@ void MidiTrackPlayer::onEndOfTrack() {
     fflush(stdout);
 #endif
     // for now, should loop.
-    currentLoopIterationStart += curEvent->first;
+    playback.currentLoopIterationStart += playback.curEvent->first;
 
     // If there is a section change queued up, do it.
     if (eventQ.nextSectionIndex > 0) {
@@ -589,8 +589,8 @@ void MidiTrackPlayer::onEndOfTrack() {
             // if still repeating this section..
             // Then I think all we need to do is reset the pointer, 
             // and update the loop counter for the UI
-            assert(curTrack);
-            curEvent = curTrack->begin();
+            assert(playback.curTrack);
+            playback.curEvent = playback.curTrack->begin();
             // printf("at end, keep looping set totalRepeatCount to %d\n", totalRepeatCount);
         } else {
             assert(sectionLoopCounter >= 0);
@@ -599,19 +599,19 @@ void MidiTrackPlayer::onEndOfTrack() {
             // If we have reached the end of the repetitions of this section,
             // then go to the next one.
             setupToPlayNextSection();
-            assert(curTrack);
+            assert(playback.curTrack);
         }
     }
 
-    assert(curTrack);
-    curEvent = curTrack->begin();
+    assert(playback.curTrack);
+    playback.curEvent = playback.curTrack->begin();
 }
 
 void MidiTrackPlayer::setupToPlayFirstTrackSection() {
     assert(playback.inPlayCode);
     for (int i = 0; i < 4; ++i) {
-        curTrack = playback.song->getTrack(constTrackIndex, i);
-        if (curTrack && curTrack->getLength()) {
+        playback.curTrack = playback.song->getTrack(constTrackIndex, i);
+        if (playback.curTrack && playback.curTrack->getLength()) {
             playback.curSectionIndex = i;
             // printf("findFirstTrackSection found %d\n", curSectionIndex); fflush(stdout);
 
@@ -625,7 +625,7 @@ void MidiTrackPlayer::setupToPlayFirstTrackSection() {
 
 void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
     assert(playback.inPlayCode);
-    curTrack = nullptr;
+    playback.curTrack = nullptr;
 
     int nextSection = validateSectionRequest(section, playback.song, constTrackIndex);
     playback.curSectionIndex = (nextSection == 0) ? 0 : nextSection - 1;
@@ -638,11 +638,11 @@ void MidiTrackPlayer::setupToPlayDifferentSection(int section) {
 void MidiTrackPlayer::setupToPlayCommon() {
     assert(playback.inPlayCode);
     // printf("settup common getting track %d, section %d\n", constTrackIndex, playback.curSectionIndex);
-    curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
-    if (curTrack) {
+    playback.curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
+    if (playback.curTrack) {
         // printf("got new track in setupToPlayCommon. here's track\n");
         // curTrack->_dump();
-        curEvent = curTrack->begin();
+        playback.curEvent = playback.curTrack->begin();
         auto opts = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
         assert(opts);
         if (opts) {
@@ -659,7 +659,7 @@ void MidiTrackPlayer::setupToPlayCommon() {
 
 void MidiTrackPlayer::setupToPlayNextSection() {
     assert(playback.inPlayCode);
-    curTrack = nullptr;
+    playback.curTrack = nullptr;
     MidiTrackPtr tk = nullptr;
     while (!tk) {
         if (++playback.curSectionIndex > 3) {
