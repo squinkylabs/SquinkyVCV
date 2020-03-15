@@ -142,10 +142,12 @@ void S4Button::invokeContextMenu() {
     otherItems(menu);
 }
 
+#if 0 // experiment
  void S4Button::draw(const   ::rack::widget::Widget::DrawArgs& args)
  {
      drawer->draw(args);        // delegate the drawing down to the drawer.
  }
+ #endif
 
 void S4Button::step() {
     auto track = getTrack();
@@ -316,13 +318,29 @@ inline S4Button::S4Button(
     MidiSong4Ptr s,
     std::shared_ptr<Seq4<WidgetComposite>> seq4) : row(r), col(c), song(s), seq4Comp(seq4) {
 
-    INFO("ctor of button, pos %.2f, %.2f", pos.x, pos.y);
-    this->box.size = size;
-    this->box.pos = pos;
     fw = new rack::widget::FramebufferWidget();
     this->addChild(fw);
 
-    drawer = new S4ButtonDrawer(size, pos, this);
+    INFO("\nctor of button, pos %.2f, %.2f", pos.x, pos.y);
+    INFO("ctor of button, siz %.2f, %.2f", size.x, size.y);
+    INFO(" button = %p\n", this);
+    this->box.size = size;
+    this->box.pos = pos;
+    
+   
+   // should we do it first?
+  //  this->addChild(fw);
+
+    S4ButtonDrawer* drawer = new S4ButtonDrawer(size, this);
+    INFO("got back drawer = %p", drawer);
+    INFO("drawer1 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
+    fw->addChild(drawer);
+
+    INFO("add child fb for s4 button size = %f,%f", fw->box.size.x, fw->box.size.y);
+    INFO("drawer2 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
+   
+  // should we do it after?
+  
 }
 
 inline void S4Button::doEditClip() {
@@ -508,6 +526,10 @@ std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int
 
 /********************** S4ButtonDrawer ****************/
 
+S4ButtonDrawer::S4ButtonDrawer(const rack::math::Vec& size, S4Button* button) : button(button) {
+    this->box.size = size;
+}
+
 /**
  * A special purpose button for the 4x4 seq module.
  * Has simple click handling, but lots of dedicated drawing ability
@@ -515,8 +537,8 @@ std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int
 void S4ButtonDrawer::draw(const ::rack::widget::Widget::DrawArgs& args) {
     auto ctx = args.vg;
     paintButtonFace(ctx);
- //   paintButtonBorder(ctx);
- //   paintButtonText(ctx);
+    paintButtonBorder(ctx);
+    paintButtonText(ctx);
 }
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
@@ -542,12 +564,12 @@ void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
     }
 
     // just for test.
-    color = UIPrefs::NOTE_COLOR;
+   // color = UIPrefs::NOTE_COLOR;
 
     SqGfx::filledRect(
         ctx,
         color,
-        pos.x, pos.y, size.x, size.y);
+        box.pos.x, box.pos.y, box.size.x, box.size.y);
 }
 
 void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
@@ -559,7 +581,7 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
             ctx,
             width,
             UIPrefs::X4_NEXT_PLAY_BORDER,
-            pos.x, pos.y,size.x, size.y);
+            box.pos.x, box.pos.y, box.size.x, box.size.y);
     }
     #if 0
     bool draw = false;

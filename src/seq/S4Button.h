@@ -15,16 +15,12 @@ class MidiTrack4Options;
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;
 using MidiTrack4OptionsPtr = std::shared_ptr<MidiTrack4Options>;
 
-class S4ButtonDrawer  {
+class S4ButtonDrawer : public ::rack::OpaqueWidget  {
 public:
 
-    // TODO: rationalize this, now that drawer is not in tree
-    S4ButtonDrawer(const rack::math::Vec& size, const rack::math::Vec& pos, S4Button* button) : button(button) {
-        this->size = size;
-        this->pos = pos;
-        INFO("making drawer, size=%.2f, %.2f pos = %.2f, %.2f", size.x, size.y, pos.x, pos.y);
-    }
-    void draw(const   ::rack::widget::Widget::DrawArgs& args);
+    // TODO: remove pos if we aren't using it.
+    S4ButtonDrawer(const rack::math::Vec& size, S4Button* button);
+    void draw(const DrawArgs& args) override;
 
 private:
     void paintButtonFace(NVGcontext*);
@@ -32,8 +28,8 @@ private:
     void paintButtonText(NVGcontext*);
 
     S4Button* const button;
-    rack::math::Vec size;
-    rack::math::Vec pos;
+ //   rack::math::Vec size;
+  //  rack::math::Vec pos;
 };
 
 class S4Button : public ::rack::app::ParamWidget {
@@ -54,7 +50,7 @@ public:
     void setClickHandler(callback);
     //   void setEditHander(std::function<void()>);
     void setSelection(bool);
-    void draw(const DrawArgs &arg) override;
+
 
 #if 0   // maybe this is messing up tooltip
     void onButton(const rack::event::Button& e) override;
@@ -79,7 +75,7 @@ public:
 private:
     rack::widget::FramebufferWidget* fw = nullptr;
    
-    S4ButtonDrawer* drawer = nullptr;
+ //   S4ButtonDrawer* drawer = nullptr;
     callback clickHandler = nullptr;
     // std::function<void()> editHandler = nullptr;
     bool isDragging = false;
