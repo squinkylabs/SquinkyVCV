@@ -17,8 +17,6 @@ using MidiTrack4OptionsPtr = std::shared_ptr<MidiTrack4Options>;
 
 class S4ButtonDrawer : public ::rack::OpaqueWidget  {
 public:
-
-    // TODO: remove pos if we aren't using it.
     S4ButtonDrawer(const rack::math::Vec& size, S4Button* button);
     void draw(const DrawArgs& args) override;
 
@@ -28,8 +26,6 @@ private:
     void paintButtonText(NVGcontext*);
 
     S4Button* const button;
- //   rack::math::Vec size;
-  //  rack::math::Vec pos;
 };
 
 class S4Button : public ::rack::app::ParamWidget {
@@ -41,25 +37,20 @@ public:
              const rack::math::Vec& pos,
              int r, int c,
              MidiSong4Ptr s,
-             std::shared_ptr<Seq4<WidgetComposite>> seq4Comp);
+             std::shared_ptr<Seq4<WidgetComposite>> seq4Comp,
+             ::rack::engine::Module* theModule);
 
     /**
      * pass callback here to handle clicking on LED
      */
     using callback = std::function<void(bool isCtrlKey)>;
     void setClickHandler(callback);
-    //   void setEditHander(std::function<void()>);
     void setSelection(bool);
 
-
-#if 1   // maybe this is messing up tooltip
-    void onButton(const rack::event::Button& e) override;
-
     void onDragHover(const rack::event::DragHover& e) override;
-    void onDragEnter(const rack::event::DragEnter& e) override;
-    void onDragLeave(const rack::event::DragLeave& e) override;
+    void onButton(const rack::event::Button& e) override;
+    void onDragStart(const rack::event::DragStart& e) override;
     void onSelectKey(const rack::event::SelectKey& e) override;
-#endif
     bool isSelected() const {
         return _isSelected;
     }
@@ -75,12 +66,9 @@ public:
 private:
     rack::widget::FramebufferWidget* fw = nullptr;
    
- //   S4ButtonDrawer* drawer = nullptr;
     callback clickHandler = nullptr;
-    // std::function<void()> editHandler = nullptr;
     bool isDragging = false;
 
-//  row(r), col(c), song(s), seq4Comp(seq4
     const int row;
     const int col;
     MidiSong4Ptr song;
@@ -96,12 +84,15 @@ private:
     bool iAmNext = false;
     int repeatCount = 1;
     int repetitionNumber = 1;
+    ::rack::engine::Module* const module;
+    const int selectParamId;
+    bool lastSelectParamState = false;
+    bool mouseButtonIsControlKey = false;;
 
     bool handleKey(int key, int mods, int action);
     void doCut();
     void doCopy();
     void doPaste();
-    //  void doEditClip();
     MidiTrackPtr getTrack() const;
     MidiTrack4OptionsPtr getOptions() const;
     void invokeContextMenu();
@@ -109,6 +100,7 @@ private:
     int getRepeatCountForUI();
     void setRepeatCountForUI(int);
     void otherItems(::rack::ui::Menu* menu);
+    void pollForParamChange();
 };
 
 /***************************************************************************

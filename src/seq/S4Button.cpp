@@ -195,47 +195,29 @@ void S4Button::step() {
         iAmNext = isNext;
         fw->dirty = true;
     }
+    pollForParamChange();
 
     ::rack::app::ParamWidget::step();
 }
 
-void S4Button::onDragHover(const rack::event::DragHover& e) {
-    sq::consumeEvent(&e, this);
+void S4Button::pollForParamChange()
+{
+    if (!module) {
+        return;
+    }
+   
+    const bool paramIsOn = ::rack::appGet()->engine->getParam(module, selectParamId) > .5;
+    if (paramIsOn != lastSelectParamState) {
+        if (paramIsOn) {
+            // treat this like a control click
+            if (clickHandler) {
+                clickHandler(true);
+            }
+        }
+        lastSelectParamState = paramIsOn;
+    }
 }
 
-void S4Button::onButton(const rack::event::Button& e) {
-    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS)) {
-        // Do we need to consume this key to get dragLeave?
-        isDragging = true;
-        sq::consumeEvent(&e, this);
-        return;
-    }
-
-    // release main button triggers click action
-    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_RELEASE)) {
-        // Command on mac.
-        const bool ctrlKey = (e.mods & RACK_MOD_CTRL);
-
-        if (!isDragging) {
-            return;
-        }
-
-        // OK, process it
-        sq::consumeEvent(&e, this);
-
-        if (clickHandler) {
-            clickHandler(ctrlKey);
-        }
-        return;
-    }
-
-    // alternate click brings up context menu
-    if ((e.button == GLFW_MOUSE_BUTTON_RIGHT) && (e.action == GLFW_PRESS)) {
-        sq::consumeEvent(&e, this);
-        invokeContextMenu();
-        return;
-    }
-}
 
 void S4Button::doCut() {
     doCopy();
@@ -304,7 +286,11 @@ inline S4Button::S4Button(
     int r,
     int c,
     MidiSong4Ptr s,
-    std::shared_ptr<Seq4<WidgetComposite>> seq4) : row(r), col(c), song(s), seq4Comp(seq4) {
+    std::shared_ptr<Seq4<WidgetComposite>> seq4,
+    ::rack::engine::Module* theModule) : row(r), col(c), song(s), seq4Comp(seq4),
+    module(theModule),
+    selectParamId(Seq4<WidgetComposite>::PADSELECT0_PARAM + col + row * MidiSong4::numSectionsPerTrack)
+{
 
     fw = new rack::widget::FramebufferWidget();
     this->addChild(fw);
@@ -346,8 +332,6 @@ inline void S4Button::setSelection(bool sel) {
 inline bool S4Button::handleKey(int key, int mods, int action) {
     bool handled = false;
 
-    INFO(" S4Button::handleKey paramQuant = %p", paramQuantity);
-
     if (!(mods & RACK_MOD_CTRL) &&
         (action == GLFW_PRESS)) {
         switch (key) {
@@ -368,21 +352,89 @@ inline bool S4Button::handleKey(int key, int mods, int action) {
     return handled;
 }
 
+void S4Button::onDragHover(const rack::event::DragHover& e) {
+    sq::consumeEvent(&e, this);
+}
+
+#if 1
+void S4Button::onButton(const rack::event::Button& e) {
+
+    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS) && (e.mods & RACK_MOD_CTRL)) {
+        mouseButtonIsControlKey = true;
+        sq::consumeEvent(&e, this);
+        return;
+    }
+    mouseButtonIsControlKey = false;
+
+     // alternate click brings up context menu
+    if ((e.button == GLFW_MOUSE_BUTTON_RIGHT) && (e.action == GLFW_PRESS)) {
+        sq::consumeEvent(&e, this);
+        invokeContextMenu();
+        return;
+    }
+
+
+    ::rack::app::ParamWidget::onButton(e);
+}
+#endif
+
+void S4Button::onDragStart(const rack::event::DragStart& e) {
+
+    if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
+         if (clickHandler) {
+            clickHandler(mouseButtonIsControlKey);
+        }
+    }
+    mouseButtonIsControlKey = false;
+
+#if 0
+    // release main button triggers click action
+    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_RELEASE)) {
+        // Command on mac.
+        const bool ctrlKey = (e.mods & RACK_MOD_CTRL);
+
+        if (!isDragging) {
+            return;
+        }
+
+        // OK, process it
+        sq::consumeEvent(&e, this);
+
+        if (clickHandler) {
+            clickHandler(ctrlKey);
+        }
+        return;
+    }
+
+    // alternate click brings up context menu
+    if ((e.button == GLFW_MOUSE_BUTTON_RIGHT) && (e.action == GLFW_PRESS)) {
+        sq::consumeEvent(&e, this);
+        invokeContextMenu();
+        return;
+    }
+    #endif
+}
+
+
+
+
 inline void S4Button::onSelectKey(const rack::event::SelectKey& e) {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
     } else {
-        OpaqueWidget::onSelectKey(e);
+        ParamWidget::onSelectKey(e);
     }
 }
 
+#if 0
 inline void S4Button::onDragEnter(const rack::event::DragEnter& e) {
 }
 
 inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
     isDragging = false;
 }
+#endif
 
 inline void S4Button::setClickHandler(callback h) {
     clickHandler = h;
@@ -415,7 +467,8 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
                 row,
                 col,
                 song,
-                seq4Comp);
+                seq4Comp,
+                module);
 
 #if 1   // param widget way
             if (module) {
