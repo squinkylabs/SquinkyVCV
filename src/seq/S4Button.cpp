@@ -142,9 +142,12 @@ void S4Button::invokeContextMenu() {
     otherItems(menu);
 }
 
-void S4Button::step() {
-    ::rack::OpaqueWidget::step();
+ void S4Button::draw(const   ::rack::widget::Widget::DrawArgs& args)
+ {
+     drawer->draw(args);        // delegate the drawing down to the drawer.
+ }
 
+void S4Button::step() {
     auto track = getTrack();
 
     std::string newLen;
@@ -199,8 +202,11 @@ void S4Button::step() {
         iAmNext = isNext;
         fw->dirty = true;
     }
+
+    ::rack::app::ParamWidget::step();
 }
 
+#if 0
 void S4Button::onDragHover(const rack::event::DragHover& e) {
     sq::consumeEvent(&e, this);
 }
@@ -238,6 +244,8 @@ void S4Button::onButton(const rack::event::Button& e) {
         return;
     }
 }
+#endif
+
 
 void S4Button::doCut() {
     doCopy();
@@ -307,13 +315,14 @@ inline S4Button::S4Button(
     int c,
     MidiSong4Ptr s,
     std::shared_ptr<Seq4<WidgetComposite>> seq4) : row(r), col(c), song(s), seq4Comp(seq4) {
+
+    INFO("ctor of button, pos %.2f, %.2f", pos.x, pos.y);
     this->box.size = size;
     this->box.pos = pos;
     fw = new rack::widget::FramebufferWidget();
     this->addChild(fw);
 
     drawer = new S4ButtonDrawer(size, pos, this);
-    fw->addChild(drawer);
 }
 
 inline void S4Button::doEditClip() {
@@ -338,6 +347,8 @@ inline void S4Button::setSelection(bool sel) {
 inline bool S4Button::handleKey(int key, int mods, int action) {
     bool handled = false;
 
+    INFO(" S4Button::handleKey paramQuant = %p", paramQuantity);
+
     if (!(mods & RACK_MOD_CTRL) &&
         (action == GLFW_PRESS)) {
         switch (key) {
@@ -358,6 +369,7 @@ inline bool S4Button::handleKey(int key, int mods, int action) {
     return handled;
 }
 
+#if 0
 inline void S4Button::onSelectKey(const rack::event::SelectKey& e) {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
@@ -367,15 +379,16 @@ inline void S4Button::onSelectKey(const rack::event::SelectKey& e) {
     }
 }
 
-inline void S4Button::setClickHandler(callback h) {
-    clickHandler = h;
-}
-
 inline void S4Button::onDragEnter(const rack::event::DragEnter& e) {
 }
 
 inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
     isDragging = false;
+}
+#endif
+
+inline void S4Button::setClickHandler(callback h) {
+    clickHandler = h;
 }
 
 /***************************** S4ButtonGrid ***********************************/
@@ -383,26 +396,65 @@ inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
                         MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
+    INFO("button::init 394");
     if (!song) {
         song = MidiSong4::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0, 0);
     }
+ 
+   // std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     seq4Comp = _seq4Comp;
     const float jacksX = 380;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
         const float y = 70 + row * (buttonSize + buttonMargin);
-        for (int col = 0; col < MidiSong4::numTracks; ++col) {
+        for (int col = 0; col < MidiSong4::numSectionsPerTrack; ++col) {
             const float x = 130 + col * (buttonSize + buttonMargin);
-            S4Button* b = new S4Button(
+            const int padNumber = row * MidiSong4::numSectionsPerTrack + col;
+
+
+            S4Button* button = new S4Button(
                 rack::math::Vec(buttonSize, buttonSize),
                 rack::math::Vec(x, y),
                 row,
                 col,
                 song,
                 seq4Comp);
+
+
+                /*
+                
+template <class TParamWidget>
+TParamWidget* createParam(math::Vec pos, engine::Module* module, int paramId) {
+	TParamWidget* o = new TParamWidget;
+	o->box.pos = pos;
+	if (module) {
+		o->paramQuantity = module->paramQuantities[paramId];
+	}
+	return o;b
+}
+*/
+           // if (padNumber==0)            INFO("S4Button 430 %d modeule=%p button=%p", padNumber, module, button);
+#if 1   
+            if (module) {
+                button->paramQuantity = module->paramQuantities[Comp::PADSELECT0_PARAM + padNumber];
+                 if (padNumber==0) {
+              //  INFO("added pq=%p, from param=%d pad=%d", button->paramQuantity, Comp::PADSELECT0_PARAM + padNumber, padNumber);
+              //  INFO("min=%f max = %f param=%p", button->paramQuantity->minValue, button->paramQuantity->maxValue,                    button->paramQuantity->getParam());
+                 }
+                    
+            }
+             if (padNumber==0) {
+            INFO("making button x=%.2f, box.pos.x=%.2f ", x, button->box.pos.x);
+            INFO("button type=%s parent=%s, %p", typeid(button).name(), typeid(parent).name(), parent);
+             }
+            parent->addParam(button);
+#else
+           
             parent->addChild(b);
-            b->setClickHandler(makeButtonHandler(row, col));
-            buttons[row][col] = b;
+#endif
+            
+            button->setClickHandler(makeButtonHandler(row, col));
+            buttons[row][col] = button;
         }
 
         const float jacksY = y + 8;
@@ -460,11 +512,11 @@ std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int
  * A special purpose button for the 4x4 seq module.
  * Has simple click handling, but lots of dedicated drawing ability
  */
-void S4ButtonDrawer::draw(const DrawArgs& args) {
+void S4ButtonDrawer::draw(const ::rack::widget::Widget::DrawArgs& args) {
     auto ctx = args.vg;
     paintButtonFace(ctx);
-    paintButtonBorder(ctx);
-    paintButtonText(ctx);
+ //   paintButtonBorder(ctx);
+ //   paintButtonText(ctx);
 }
 
 void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
@@ -489,10 +541,13 @@ void S4ButtonDrawer::paintButtonFace(NVGcontext* ctx) {
         color = UIPrefs::X4_BUTTON_FACE_NONOTES;
     }
 
+    // just for test.
+    color = UIPrefs::NOTE_COLOR;
+
     SqGfx::filledRect(
         ctx,
         color,
-        this->box.pos.x, box.pos.y, box.size.x, box.size.y);
+        pos.x, pos.y, size.x, size.y);
 }
 
 void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
@@ -504,7 +559,7 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
             ctx,
             width,
             UIPrefs::X4_NEXT_PLAY_BORDER,
-            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
+            pos.x, pos.y,size.x, size.y);
     }
     #if 0
     bool draw = false;

@@ -15,12 +15,16 @@ class MidiTrack4Options;
 using MidiTrackPtr = std::shared_ptr<MidiTrack>;
 using MidiTrack4OptionsPtr = std::shared_ptr<MidiTrack4Options>;
 
-class S4ButtonDrawer : public ::rack::OpaqueWidget {
+class S4ButtonDrawer  {
 public:
+
+    // TODO: rationalize this, now that drawer is not in tree
     S4ButtonDrawer(const rack::math::Vec& size, const rack::math::Vec& pos, S4Button* button) : button(button) {
-        this->box.size = size;
+        this->size = size;
+        this->pos = pos;
+        INFO("making drawer, size=%.2f, %.2f pos = %.2f, %.2f", size.x, size.y, pos.x, pos.y);
     }
-    void draw(const DrawArgs& args) override;
+    void draw(const   ::rack::widget::Widget::DrawArgs& args);
 
 private:
     void paintButtonFace(NVGcontext*);
@@ -28,9 +32,11 @@ private:
     void paintButtonText(NVGcontext*);
 
     S4Button* const button;
+    rack::math::Vec size;
+    rack::math::Vec pos;
 };
 
-class S4Button : public ::rack::OpaqueWidget {
+class S4Button : public ::rack::app::ParamWidget {
 public:
     friend class S4ButtonDrawer;
     friend class RepeatItem;
@@ -48,13 +54,16 @@ public:
     void setClickHandler(callback);
     //   void setEditHander(std::function<void()>);
     void setSelection(bool);
+    void draw(const DrawArgs &arg) override;
 
+#if 0   // maybe this is messing up tooltip
     void onButton(const rack::event::Button& e) override;
+
     void onDragHover(const rack::event::DragHover& e) override;
     void onDragEnter(const rack::event::DragEnter& e) override;
     void onDragLeave(const rack::event::DragLeave& e) override;
     void onSelectKey(const rack::event::SelectKey& e) override;
-
+#endif
     bool isSelected() const {
         return _isSelected;
     }
