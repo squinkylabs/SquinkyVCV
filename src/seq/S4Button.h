@@ -52,7 +52,7 @@ public:
     void setSelection(bool);
 
 
-#if 0   // maybe this is messing up tooltip
+#if 1   // maybe this is messing up tooltip
     void onButton(const rack::event::Button& e) override;
 
     void onDragHover(const rack::event::DragHover& e) override;

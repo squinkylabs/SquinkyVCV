@@ -45,11 +45,9 @@ public:
             &rack::ui::MenuLabel::text,
             "Repeat Count");
         menu->addChild(label);
-#if 1  // we don't support this yet
         ::rack::ui::MenuItem* item = RepeatItem::make(button, 0);
         item->text = "Forever";
         menu->addChild(item);
-#endif
 
         for (int i = 1; i <= 16; ++i) {
             ::rack::ui::MenuItem* item = RepeatItem::make(button, i);
@@ -142,13 +140,6 @@ void S4Button::invokeContextMenu() {
     otherItems(menu);
 }
 
-#if 0 // experiment
- void S4Button::draw(const   ::rack::widget::Widget::DrawArgs& args)
- {
-     drawer->draw(args);        // delegate the drawing down to the drawer.
- }
- #endif
-
 void S4Button::step() {
     auto track = getTrack();
 
@@ -208,7 +199,6 @@ void S4Button::step() {
     ::rack::app::ParamWidget::step();
 }
 
-#if 0
 void S4Button::onDragHover(const rack::event::DragHover& e) {
     sq::consumeEvent(&e, this);
 }
@@ -246,8 +236,6 @@ void S4Button::onButton(const rack::event::Button& e) {
         return;
     }
 }
-#endif
-
 
 void S4Button::doCut() {
     doCopy();
@@ -321,26 +309,19 @@ inline S4Button::S4Button(
     fw = new rack::widget::FramebufferWidget();
     this->addChild(fw);
 
-    INFO("\nctor of button, pos %.2f, %.2f", pos.x, pos.y);
-    INFO("ctor of button, siz %.2f, %.2f", size.x, size.y);
-    INFO(" button = %p\n", this);
-    this->box.size = size;
-    this->box.pos = pos;
-    
-   
-   // should we do it first?
-  //  this->addChild(fw);
-
     S4ButtonDrawer* drawer = new S4ButtonDrawer(size, this);
-    INFO("got back drawer = %p", drawer);
-    INFO("drawer1 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
+    // INFO("got back drawer = %p", drawer);
+    // INFO("drawer1 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
     fw->addChild(drawer);
 
-    INFO("add child fb for s4 button size = %f,%f", fw->box.size.x, fw->box.size.y);
-    INFO("drawer2 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
-   
-  // should we do it after?
-  
+    // INFO("add child fb for s4 button size = %f,%f", fw->box.size.x, fw->box.size.y);
+    // INFO("drawer2 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
+
+    // INFO("\nctor of button, pos %.2f, %.2f", pos.x, pos.y);
+    // INFO("ctor of button, siz %.2f, %.2f", size.x, size.y);
+    // INFO(" button = %p\n", this);
+    this->box.size = size;
+    this->box.pos = pos;
 }
 
 inline void S4Button::doEditClip() {
@@ -387,7 +368,6 @@ inline bool S4Button::handleKey(int key, int mods, int action) {
     return handled;
 }
 
-#if 0
 inline void S4Button::onSelectKey(const rack::event::SelectKey& e) {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
@@ -403,7 +383,6 @@ inline void S4Button::onDragEnter(const rack::event::DragEnter& e) {
 inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
     isDragging = false;
 }
-#endif
 
 inline void S4Button::setClickHandler(callback h) {
     clickHandler = h;
@@ -438,21 +417,7 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
                 song,
                 seq4Comp);
 
-
-                /*
-                
-template <class TParamWidget>
-TParamWidget* createParam(math::Vec pos, engine::Module* module, int paramId) {
-	TParamWidget* o = new TParamWidget;
-	o->box.pos = pos;
-	if (module) {
-		o->paramQuantity = module->paramQuantities[paramId];
-	}
-	return o;b
-}
-*/
-           // if (padNumber==0)            INFO("S4Button 430 %d modeule=%p button=%p", padNumber, module, button);
-#if 1   
+#if 1   // param widget way
             if (module) {
                 button->paramQuantity = module->paramQuantities[Comp::PADSELECT0_PARAM + padNumber];
                  if (padNumber==0) {
@@ -583,42 +548,6 @@ void S4ButtonDrawer::paintButtonBorder(NVGcontext* ctx) {
             UIPrefs::X4_NEXT_PLAY_BORDER,
             box.pos.x, box.pos.y, box.size.x, box.size.y);
     }
-    #if 0
-    bool draw = false;
-
-    if (button->isSelected() && !button->iAmNext) {
-        color = UIPrefs::X4_SELECTED_BORDER;
-        width = 3;  // TODO: move to prefs
-        draw = true;
-    } else if (!button->isSelected() && button->iAmNext) {
-        color = UIPrefs::X4_NEXT_PLAY_BORDER;
-        width = 2;  // TODO: move to prefs
-        draw = true;
-    } else if (button->isSelected() && button->iAmNext) {
-        //color = UIPrefs::X4_MIXED_BORDER;
-        // width = 2;      // TODO: move to prefs
-        // draw = true;
-        SqGfx::hBorder(
-            ctx,
-            2,
-            UIPrefs::X4_NEXT_PLAY_BORDER,
-            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
-        SqGfx::vBorder(
-            ctx,
-            4,
-            UIPrefs::X4_SELECTED_BORDER,
-            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
-        draw = false;
-    }
-
-    if (draw) {
-        SqGfx::border(
-            ctx,
-            width,
-            color,
-            this->box.pos.x, box.pos.y, box.size.x, box.size.y);
-    }
-#endif
 }
 
 void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
@@ -627,15 +556,8 @@ void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
     nvgFontSize(ctx, 14.f);
     nvgFillColor(ctx, UIPrefs::TIME_LABEL_COLOR);
     nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 15, button->contentLength.c_str(), nullptr);
-#if 0 // let's not draw the number notes - try color for that
-    if (button->numNotes > 0) {
-        std::stringstream s;
-        s << button->numNotes;
-        nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 30, s.str().c_str(), nullptr);
-    }
-#endif
+
     if (!button->contentLength.empty() && (button->repeatCount > 0)) {
-       
         std::stringstream s;
         if ( button->isPlaying) {
             s << button->repetitionNumber;
