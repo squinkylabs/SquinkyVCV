@@ -79,7 +79,7 @@ public:
         NUM_VOICES3_PARAM,
         RUNNING_PARAM,
         TRIGGER_IMMEDIATE_PARAM,
-        PADSELECT0_PARAM,
+        PADSELECT0_PARAM,           // these pad select params are only used for automation
         PADSELECT1_PARAM,
         PADSELECT2_PARAM,
         PADSELECT3_PARAM,
@@ -107,6 +107,8 @@ public:
         MOD1_INPUT,
         MOD2_INPUT,
         MOD3_INPUT,
+        SELECT_CV_INPUT,
+        SELECT_GATE_INPUT,
         NUM_INPUTS
     };
 
@@ -206,10 +208,13 @@ private:
     void serviceRunStop();
     void allGatesOff();
     void resetClock();
+    void serviceSelCV();
     /**
      * called by the divider every 'n' step calls
      */
     void stepn(int n);
+
+    bool lastGate[16] = {false};
 
 };
 
@@ -282,10 +287,35 @@ void Seq4<TBase>::onSampleRateChange()
 }
 
 template <class TBase>
+void  Seq4<TBase>::serviceSelCV()
+{
+  
+    const int activeChannels = std::min(TBase::inputs[SELECT_CV_INPUT].getChannels(), TBase::inputs[SELECT_GATE_INPUT].getChannels()); 
+    
+    for (int i=0; i < activeChannels; ++i) {
+
+        const bool gate =  TBase::inputs[SELECT_GATE_INPUT].getVoltage(i) > 2;
+
+        // printf("gate[%d] = %.2f\n", i, TBase::inputs[SELECT_GATE_INPUT].getVoltage(i));
+         fflush(stdout);
+        if (gate != lastGate[i]) {
+              printf("sel %d\n", gate); fflush(stdout);
+            lastGate[i] = gate;
+            if (gate) {
+                const float cv = TBase::inputs[SELECT_CV_INPUT].getVoltage(i);
+                auto pitch = PitchUtils::cvToPitch(cv);
+                printf("octave = %d, semi=%d\n", pitch.first, pitch.second); fflush(stdout);
+            }
+        }
+    }
+}
+
+template <class TBase>
 void  Seq4<TBase>::stepn(int n)
 {
     player->step();
     serviceRunStop();
+    serviceSelCV();
 
     // first process all the clock input params
     const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
