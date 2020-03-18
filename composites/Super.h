@@ -221,7 +221,7 @@ private:
     IIRDecimator decimatorLeft;
     IIRDecimator decimatorRight;
 
-    SuperDsp dsp[16];   // maximum 16 channels
+ //   SuperDsp dsp[16];   // maximum 16 channels
     SuperDspCommon dspCommon;
 };
 
