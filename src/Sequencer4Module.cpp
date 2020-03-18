@@ -278,6 +278,26 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         Vec(labelX + 1 + 2 * jacksDx, jacksY1 + dy),
         "Run");
 #endif
+
+   addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 4 * jacksDx, jacksY1),
+        module,
+        Comp::SELECT_CV_INPUT));
+#ifdef _LAB
+    addLabel(
+        Vec(labelX - 7 + 4 * jacksDx, jacksY1 + dy),
+        "Sel CV");
+#endif
+  addInput(createInputCentered<PJ301MPort>(
+        Vec(jacksX + 5 * jacksDx, jacksY1),
+        module,
+        Comp::SELECT_GATE_INPUT));
+#ifdef _LAB
+    addLabel(
+        Vec(labelX - 3 + 5 * jacksDx, jacksY1 + dy),
+        "Sel Gate");
+#endif
+
 }
 
 void Sequencer4Module::setNewSeq(MidiSequencer4Ptr newSeq) {

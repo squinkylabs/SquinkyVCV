@@ -295,16 +295,20 @@ void  Seq4<TBase>::serviceSelCV()
     for (int i=0; i < activeChannels; ++i) {
 
         const bool gate =  TBase::inputs[SELECT_GATE_INPUT].getVoltage(i) > 2;
-
-        // printf("gate[%d] = %.2f\n", i, TBase::inputs[SELECT_GATE_INPUT].getVoltage(i));
-         fflush(stdout);
         if (gate != lastGate[i]) {
-              printf("sel %d\n", gate); fflush(stdout);
             lastGate[i] = gate;
             if (gate) {
                 const float cv = TBase::inputs[SELECT_CV_INPUT].getVoltage(i);
                 auto pitch = PitchUtils::cvToPitch(cv);
-                printf("octave = %d, semi=%d\n", pitch.first, pitch.second); fflush(stdout);
+                if (pitch.first == 2) {
+                     const int pad = pitch.second;
+                     if (pad <= 15) { 
+                        const int track = pad / 4;
+                        const int section = 1 + pad - track * 4;
+                        // printf("pad = %d track=%d sec=%d\n", pad, track, section); fflush(stdout);
+                        setNextSectionRequest(track, section);
+                     }
+                }
             }
         }
     }
@@ -319,7 +323,6 @@ void  Seq4<TBase>::stepn(int n)
 
     // first process all the clock input params
     const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
-    //const float tempo = TBase::params[TEMPO_PARAM].value;
     clock.setup(clockRate, 0, TBase::engineGetSampleTime());
 
     // and the clock input
