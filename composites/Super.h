@@ -7,7 +7,7 @@
 #include "GateTrigger.h"
 #include "IComposite.h"
 
-#include "NonUniformLookupTable.h"
+
 #include "ObjectCache.h"
 #include "StateVariable4PHP.h"
 
@@ -18,45 +18,6 @@ namespace rack {
     }
 }
 using Module = ::rack::engine::Module;
-
-class SawtoothDetuneCurve
-{
-public:
-    /**
-    * @param depth is "detune" knob. 0..1
-    * returns a number such that freq = detuneFactor * initialFreq
-    */
-    float getDetuneFactor(float depth)
-    {
-        return NonUniformLookupTable<float>::lookup(table, depth);
-    }
-
-    SawtoothDetuneCurve()
-    {
-        // this data is pretty regular - could use uniform table
-        using T = NonUniformLookupTable<float>;
-        T::addPoint(table, 0, 0);
-        T::addPoint(table, .0551f, .00967f);
-        T::addPoint(table, .118f, .022f);
-        T::addPoint(table, .181f, .04f);
-        T::addPoint(table, .244f, .0467f);
-        T::addPoint(table, .307f, .059f);
-
-        T::addPoint(table, .37f, .0714f);
-        T::addPoint(table, .433f, .0838f);
-        T::addPoint(table, .496f, .0967f);
-        T::addPoint(table, .559f, .121f);
-        T::addPoint(table, .622f, .147f);
-        T::addPoint(table, .748f, .243f);
-        T::addPoint(table, .811f, .293f);
-        T::addPoint(table, .874f, .343f);
-        T::addPoint(table, .937f, .392f);
-        T::addPoint(table, 1, 1);
-        NonUniformLookupTable<float>::finalize(table);
-    }
-private:
-    NonUniformLookupTableParams<float> table;
-};
 
 template <class TBase>
 class SuperDescription : public IComposite
@@ -144,13 +105,14 @@ public:
 
 private:
     //static const unsigned int MAX_OVERSAMPLE = 16;
-    static const int numSaws = 7;
+ //   static const int numSaws = 7;
 
-    float phase[numSaws] = {0};
-    float phaseInc[numSaws] = {0};
-    float globalPhaseInc = 0;
+ //   float phase[numSaws] = {0};
+ //   float phaseInc[numSaws] = {0};
+ //   float globalPhaseInc = 0;
     bool isStereo = false;
 
+#if 0
     // current left and right gains
     float sawGainsStereo[2][numSaws] = {
         {.2f},
@@ -166,15 +128,18 @@ private:
         {1.1f, 0.f, 1.1f, 1.f, 0.f, 1.1f, 0.f},
         {0.f, 1.1f, 0.f,  1.f, 1.1f, 0.f, 1.1f}
     };
+#endif
     Divider div;
 
+#if 0
     std::function<float(float)> expLookup =
         ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
+        #endif
 
     // knob, cv, trim -> 0..1
-    AudioMath::ScaleFun<float> scaleDetune;
+  //  AudioMath::ScaleFun<float> scaleDetune;
 
     void runSaws(float& left);
     void runSawsStereo(float& left, float& right);
@@ -197,16 +162,6 @@ private:
    // int inputSubSampleCounter = 1;
     const static int inputSubSample = 4;    // only look at knob/cv every 4
 
-    // TODO: make static
-    float const detuneFactors[numSaws] = {
-        .89f,
-        .94f,
-        .98f,
-        1.f,
-        1.02f,
-        1.06f,
-        1.107f
-    };
 
     void updateHPFilters();
 
@@ -234,7 +189,8 @@ inline void Super<TBase>::init()
         this->stepn(div.getDiv());
      });
 
-    scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
+    dspCommon.init();
+ //   scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
 
     const int rate = getOversampleRate();
     const int decimateDiv = std::max(rate, (int) SuperDspCommon::MAX_OVERSAMPLE);
@@ -265,6 +221,9 @@ inline int Super<TBase>::getOversampleRate()
     assert(rate <= (int)SuperDspCommon::MAX_OVERSAMPLE);
     return rate;
 }
+
+
+
 
 #if 0
 template <class TBase>
@@ -315,7 +274,7 @@ inline void Super<TBase>::updatePhaseInc()
 }
 #endif
 
-
+#if 0
 template <class TBase>
 inline void Super<TBase>::runSaws(float& left)
 {
@@ -337,6 +296,7 @@ inline void Super<TBase>::runSaws(float& left)
     left = mix;
 }
 
+
 template <class TBase>
 inline void Super<TBase>::runSawsStereo(float& left, float& right)
 {
@@ -353,6 +313,7 @@ inline void Super<TBase>::runSawsStereo(float& left, float& right)
         right +=  (phase[i] - .5f) *sawGainsStereo[1][i];
     }
 }
+#endif
 
 #if 0 // move to dsp
 template <class TBase>
@@ -456,6 +417,7 @@ g[6] = 0.00,2.48 panL=-0.00 panR=1.00
 
 */
 
+#if 0
 template <class TBase>
 inline void Super<TBase>::updateStereoGains()
 {
@@ -485,57 +447,35 @@ inline void Super<TBase>::updateStereoGains()
         #endif
     }
 }
-
-#if 0 // slow way
-template <class TBase>
-inline void Super<TBase>::updateStereoGains()
-{
-    const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
-    const bool alternatePan = true; // TBase::params[ALTERNATE_PAN_PARAM].value > .5;
-    for (int i=0; i< numSaws; ++i) 
-    {
-        float position = -1.f + 2.f * (float) i / (float) (numSaws-1); 
-
-        const float monoGain = 4.5f * ((i == numSaws / 2) ? gainCenter : gainSides);
-       
-
-        float l = monoGain * panL(position);
-        float r = monoGain * panR(position);
-
-        if (alternatePan) {
-            if ((i == 1) || (i == 5)) {
-                std::swap(l, r);                
-            }
-        }
-
-        if (hardPan) {
-            if (i != numSaws / 2) {
-                if (l > r) {
-                    l *= 1.1f;
-                    r = 0;
-                } else {
-                    r *= 1.1f;
-                    l = 0;
-                }
-            }
-        }
-
-        sawGainsStereo[0][i] = l;
-        sawGainsStereo[1][i] = r;
-
-        #if 1
-        if (i == 0) printf("\n");
-        printf("g[%d] = %.2f,%.2f panL=%.2f panR=%.2f\n", 
-            i, sawGainsStereo[0][i], sawGainsStereo[1][i], panL(position), panR(position));
-        #endif
-    }
-}
 #endif
 
 template <class TBase>
 inline void Super<TBase>::stepn(int n)
 {
-    assert(false);  // move this stuff to dsp
+ //   assert(false);  // move this stuff to dsp
+
+    // TODO: real values
+    float fineTuneParam = 0;
+    float semiParam = 0;
+    float octaveParam =0;
+    float fmInput =0;
+    float fmParam =0;
+    float detuneInput =0; 
+    float detuneParam =0;
+    float detuneTrimParam =0;
+    int oversampleRate = 1;
+    float sampleTime = 1;
+    float cv = 0;
+
+
+    for (int i=0; i< dspCommon.numChannels; ++i) {
+
+// void stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
+//        float fmParam, float detuneInput, float detuneParam, float detuneTrimParam );
+        dspCommon.stepn(n, i,  oversampleRate, sampleTime, cv, fineTuneParam, semiParam, octaveParam, fmInput,
+            fmParam, detuneInput, detuneParam, detuneTrimParam);
+    }
+
 
 #if 0
     updatePhaseInc();
@@ -544,7 +484,7 @@ inline void Super<TBase>::stepn(int n)
     updateStereo(); 
     updateStereoGains();  
 #endif
-    dspCommon.stepn(n);
+  //  dspCommon.stepn(n);
 }
 
 template <class TBase>
