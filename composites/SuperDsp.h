@@ -5,6 +5,22 @@
 #include "IIRDecimator.h"
 #include "NonUniformLookupTable.h"
 
+/**
+ * This awful hack is so that both the real plugin and
+ * the unit tests can pass this "Output" struct around
+ */
+#ifdef __PLUGIN
+namespace rack {
+namespace engine {
+struct Input;
+struct Param;
+struct Output;
+}
+}  // namespace rack
+#else
+#include "TestComposite.h"
+#endif
+
 
 
 class SawtoothDetuneCurve
@@ -54,11 +70,21 @@ private:
 class SuperDsp
 {
 public:
+#ifdef __PLUGIN
+    using Param = rack::engine::Param;
+    using Input = rack::engine::Input;
+#else
+    using Output = ::Output;
+    //using Input = ::Input;
+    //using Param = ::Param;
+#endif
     void init();
     /**
      * divisor is 4 for 4X oversampling, etc.
      */
     void setupDecimationRatio(int divisor);
+
+    void step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
 
    // void updatePhaseInc();
     void updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
@@ -129,7 +155,12 @@ inline void SuperDsp::setupDecimationRatio(int decimateDiv)
     decimatorRight.setup(decimateDiv);
 }
 
-inline void SuperDsp:: updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
+inline void SuperDsp::step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut)
+{
+    assert(false);
+}
+
+inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
         float fmParam, float detuneCVInput, float detuneParam, float detuneTrimParam )
 {
    // const float cv = TBase::inputs[CV_INPUT].getVoltage(0);
@@ -176,24 +207,24 @@ inline void SuperDsp:: updatePhaseInc(int oversampleRate, float sampleTime, floa
     }
 }
 
-inline void SuperDsp:: updateHPFilters()
+inline void SuperDsp::updateHPFilters()
 {
-    assert(false);
+    printf("todo: updateHPFilters\n");
 }
 
-inline void SuperDsp:: updateMix()
+inline void SuperDsp::updateMix()
 {
-    assert(false);
+    printf("todo: updateMix\n");
 }
 
-inline void SuperDsp:: updateStereo()
+inline void SuperDsp::updateStereo()
 {
-    assert(false);
+    printf("todo: updateStereo\n");
 }
  
 inline void SuperDsp::updateStereoGains()
 {
-    assert(false);
+    printf("todo: updateStereoGains\n");
 }
 
 
@@ -214,14 +245,16 @@ public:
     /**
      * called every sample to calc audio.
      */
-    void step();
+    void step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
 
      /**
-     * called every 'nn' sample to calc CV.
+     * called every 'n' sample to calc CV.
+     * must be called for each active channel.
      */
-
     void stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
         float fmParam, float detuneInput, float detuneParam, float detuneTrimParam );
+
+   
 
      int numChannels = 1;
 private:
@@ -255,9 +288,11 @@ inline void SuperDspCommon::setupDecimationRatio(int divisor)
     }
 }
 
-inline  void SuperDspCommon::step()
+inline  void SuperDspCommon::step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut)
 {
- assert(false);
+     for (int i=0; i<numChannels; ++i) {
+        dsp[i].step(isStereo, leftOut, rightOut);
+    }    
 }
 
 inline  void SuperDspCommon::stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
