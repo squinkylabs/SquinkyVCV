@@ -2,7 +2,7 @@
 #pragma once
 
 
-
+#include "IIRDecimator.h"
 
 /**
  * the signal processing for one channel
@@ -16,12 +16,15 @@ public:
      */
     void setupDecimationRatio(int divisor);
 private:
+    IIRDecimator decimatorLeft;
+    IIRDecimator decimatorRight;
   
 };
 
-inline void SuperDsp:: setupDecimationRatio(int divisor)
+inline void SuperDsp:: setupDecimationRatio(int decimateDiv)
 {
-    assert(false);
+    decimatorLeft.setup(decimateDiv);
+    decimatorRight.setup(decimateDiv);
 }
 
 // The processing params that can be 

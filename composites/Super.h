@@ -1,14 +1,16 @@
 
 #pragma once
 
+#include "SuperDsp.h"
+
 #include "Divider.h"
 #include "GateTrigger.h"
 #include "IComposite.h"
-#include "IIRDecimator.h"
+
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
 #include "StateVariable4PHP.h"
-#include "SuperDsp.h"
+
 
 namespace rack {
     namespace engine {
