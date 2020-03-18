@@ -469,9 +469,6 @@ inline void Super<TBase>::stepn(int n)
 
 
     for (int i=0; i< dspCommon.numChannels; ++i) {
-
-// void stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
-//        float fmParam, float detuneInput, float detuneParam, float detuneTrimParam );
         dspCommon.stepn(n, i,  oversampleRate, sampleTime, cv, fineTuneParam, semiParam, octaveParam, fmInput,
             fmParam, detuneInput, detuneParam, detuneTrimParam);
     }

@@ -98,7 +98,7 @@ private:
     IIRDecimator decimatorRight;
 
    
-
+    int oversampleRate = 1;
     static const int numSaws = 7;
     float globalPhaseInc=0;
     float phase[numSaws] = {0};
@@ -141,6 +141,11 @@ private:
         ObjectCache<float>::getAudioTaper();
      AudioMath::ScaleFun<float> scaleDetune;
     SawtoothDetuneCurve detuneCurve;
+
+    void updateAudioClassic();
+    void updateAudioClean();
+    void updateAudioClassicStereo();
+    void updateAudioCleanStereo();
   
 };
 
@@ -153,11 +158,40 @@ inline void SuperDsp::setupDecimationRatio(int decimateDiv)
 {
     decimatorLeft.setup(decimateDiv);
     decimatorRight.setup(decimateDiv);
+    oversampleRate = decimateDiv;
 }
 
 inline void SuperDsp::step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut)
 {
-    assert(false);
+    if ((oversampleRate == 1) && !isStereo) {
+        updateAudioClassic();
+    } else if ((oversampleRate == 1) && isStereo) {
+        updateAudioClassicStereo();
+    } else if ((oversampleRate != 1) && !isStereo) {
+        updateAudioClean();
+    } else {
+        updateAudioCleanStereo();
+    }
+}
+
+inline void SuperDsp::updateAudioClassic()
+{
+    printf("update audio classic\n");
+}
+
+inline void SuperDsp::updateAudioClean()
+{
+    printf("update audio clean\n");
+}
+
+inline void SuperDsp::updateAudioClassicStereo()
+{
+    printf("update audio cs\n");
+}
+
+inline void SuperDsp::updateAudioCleanStereo()
+{
+    printf("update audio clean s\n");
 }
 
 inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,

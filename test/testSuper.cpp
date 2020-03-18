@@ -13,7 +13,19 @@ static void test0()
 
 }
 
+static void testOutput()
+{
+    Comp super;
+    super.init();
+    for (int i = 0; i < 50; ++i) {
+        super.step();
+    }
+    float x = super.outputs[Comp::MAIN_OUTPUT_LEFT].getVoltage(0);
+    assertNE(x, 0);
+}
+
 void testSuper()
 {
     test0();
+    testOutput();
 }
