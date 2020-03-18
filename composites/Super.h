@@ -8,6 +8,7 @@
 #include "NonUniformLookupTable.h"
 #include "ObjectCache.h"
 #include "StateVariable4PHP.h"
+#include "SuperDsp.h"
 
 namespace rack {
     namespace engine {
@@ -54,7 +55,6 @@ public:
 private:
     NonUniformLookupTableParams<float> table;
 };
-
 
 template <class TBase>
 class SuperDescription : public IComposite
@@ -141,7 +141,7 @@ public:
     void step() override;
 
 private:
-    static const unsigned int MAX_OVERSAMPLE = 16;
+    //static const unsigned int MAX_OVERSAMPLE = 16;
     static const int numSaws = 7;
 
     float phase[numSaws] = {0};
@@ -176,14 +176,14 @@ private:
 
     void runSaws(float& left);
     void runSawsStereo(float& left, float& right);
-    void updatePhaseInc();
+  //  void updatePhaseInc();
 
-    void updateAudioClassic();
-    void updateAudioClean();
-    void updateAudioClassicStereo();
-    void updateAudioCleanStereo();
-    void updateTrigger();
-    void updateMix();
+ //   void updateAudioClassic();
+ //   void updateAudioClean();
+  //  void updateAudioClassicStereo();
+ //   void updateAudioCleanStereo();
+ //   void updateTrigger();
+ //   void updateMix();
     void updateStereo();
     void updateStereoGains();
     void stepn(int);
@@ -216,10 +216,13 @@ private:
     StateVariable4PHP hpfLeft;
     StateVariable4PHP hpfRight;
 
-    float bufferLeft[MAX_OVERSAMPLE] = {0};
-    float bufferRight[MAX_OVERSAMPLE] = {0};
+   // float bufferLeft[MAX_OVERSAMPLE] = {0};
+ //   float bufferRight[MAX_OVERSAMPLE] = {0};
     IIRDecimator decimatorLeft;
     IIRDecimator decimatorRight;
+
+    SuperDsp dsp[16];   // maximum 16 channels
+    SuperDspCommon dspCommon;
 };
 
 template <class TBase>
@@ -232,9 +235,11 @@ inline void Super<TBase>::init()
     scaleDetune = AudioMath::makeLinearScaler<float>(0, 1);
 
     const int rate = getOversampleRate();
-    const int decimateDiv = std::max(rate, (int) MAX_OVERSAMPLE);
-    decimatorLeft.setup(decimateDiv);
-    decimatorRight.setup(decimateDiv);
+    const int decimateDiv = std::max(rate, (int) SuperDspCommon::MAX_OVERSAMPLE);
+
+    dspCommon.setupDecimationRatio(decimateDiv);
+   // decimatorLeft.setup(decimateDiv);
+  //  decimatorRight.setup(decimateDiv);
 }
 
 template <class TBase>
@@ -255,10 +260,11 @@ inline int Super<TBase>::getOversampleRate()
         default:
             assert(false);
     }
-    assert(rate <= (int) MAX_OVERSAMPLE);
+    assert(rate <= (int)SuperDspCommon::MAX_OVERSAMPLE);
     return rate;
 }
 
+#if 0
 template <class TBase>
 inline void Super<TBase>::updatePhaseInc()
 {
@@ -305,6 +311,7 @@ inline void Super<TBase>::updatePhaseInc()
         phaseInc[i] = phaseIncI;
     }
 }
+#endif
 
 
 template <class TBase>
@@ -345,6 +352,7 @@ inline void Super<TBase>::runSawsStereo(float& left, float& right)
     }
 }
 
+#if 0 // move to dsp
 template <class TBase>
 inline void Super<TBase>::updateAudioClassic()
 {
@@ -367,6 +375,7 @@ inline void Super<TBase>::updateAudioClassicStereo()
     TBase::outputs[MAIN_OUTPUT_LEFT].setVoltage(outputLeft, 0);  
     TBase::outputs[MAIN_OUTPUT_RIGHT].setVoltage(outputRight, 0);
 }
+
 
 template <class TBase>
 inline void Super<TBase>::updateAudioClean()
@@ -412,31 +421,13 @@ inline void Super<TBase>::updateHPFilters()
         hpfRight.setCutoff(filterCutoff);
     }
 }
+#endif
 
 template <class TBase>
 inline void Super<TBase>::updateStereo()
 {
     isStereo = TBase::outputs[MAIN_OUTPUT_RIGHT].isConnected() && TBase::outputs[MAIN_OUTPUT_LEFT].isConnected(); 
 }
-
-#if 0
-// balance from -1, 1
-static inline float panL(float balance)
-{ // -1...+1
-    float p, inp;
-    inp = balance;
-    p = M_PI * (inp + 1) / 4;
-    return std::cos(p);
-}
-
-static inline float panR(float balance)
-{
-    float p, inp;
-    inp = balance;
-    p = M_PI * (inp + 1) / 4;
-    return std::sin(p);
-}
-#endif
 
 /*
 
@@ -542,17 +533,25 @@ inline void Super<TBase>::updateStereoGains()
 template <class TBase>
 inline void Super<TBase>::stepn(int n)
 {
+    assert(false);  // move this stuff to dsp
+
+#if 0
     updatePhaseInc();
     updateHPFilters();
     updateMix();
     updateStereo(); 
     updateStereoGains();  
+#endif
+    dspCommon.stepn(n);
 }
 
 template <class TBase>
 inline void Super<TBase>::step()
 {
     div.step();
+
+    dspCommon.step();
+#if 0
     updateTrigger();
     
     int rate = getOversampleRate();
@@ -565,8 +564,10 @@ inline void Super<TBase>::step()
     } else {
         updateAudioCleanStereo();
     }
+    #endif
 }
 
+#if 0
 template <class TBase>
 inline void Super<TBase>::updateTrigger()
 {
@@ -591,6 +592,7 @@ inline void Super<TBase>::updateMix()
     gainSides = -0.73764f * rawMixValue * rawMixValue +
         1.2841f * rawMixValue + 0.044372f;
 }
+#endif
 
 template <class TBase>
 int SuperDescription<TBase>::getNumParams()
