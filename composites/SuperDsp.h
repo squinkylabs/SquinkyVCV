@@ -71,8 +71,9 @@ class SuperDsp
 {
 public:
 #ifdef __PLUGIN
-    using Param = rack::engine::Param;
-    using Input = rack::engine::Input;
+   // using Param = rack::engine::Param;
+   // using Input = rack::engine::Input;
+    using Output = rack::engine::Output;
 #else
     using Output = ::Output;
     //using Input = ::Input;
@@ -297,7 +298,9 @@ inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float
 
 inline void SuperDsp::updateHPFilters()
 {
+    #ifdef _DEBUG
     printf("todo: updateHPFilters\n");
+    #endif
 }
 
 inline void SuperDsp::updateMix(float mixInput, float mixParam, float mixTrimParam)
@@ -318,12 +321,16 @@ inline void SuperDsp::updateMix(float mixInput, float mixParam, float mixTrimPar
 
 inline void SuperDsp::updateStereo()
 {
+ #ifdef _DEBUG
     printf("todo: updateStereo\n");
+        #endif
 }
  
 inline void SuperDsp::updateStereoGains()
 {
+        #ifdef _DEBUG
     printf("todo: updateStereoGains\n");
+    #endif
 }
 
 

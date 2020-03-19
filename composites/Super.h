@@ -496,7 +496,10 @@ inline void Super<TBase>::step()
     div.step();
 
     dspCommon.step(isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT]);
+#ifdef _DEBUG
     printf("we need update trigger back in comp\n");
+    #endif
+    
 #if 0
     updateTrigger();
     
