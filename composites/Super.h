@@ -455,20 +455,22 @@ inline void Super<TBase>::stepn(int n)
  //   assert(false);  // move this stuff to dsp
 
     // TODO: real values
-    float fineTuneParam = 0;
-    float semiParam = 0;
-    float octaveParam =0;
-    float fmInput =0;
-    float fmParam =0;
-    float detuneInput =0; 
-    float detuneParam =0;
-    float detuneTrimParam =0;
+    float fineTuneParam =  TBase::params[FINE_PARAM].value;
+    float semiParam =  TBase::params[SEMI_PARAM].value;
+    float octaveParam =  TBase::params[OCTAVE_PARAM].value;
+
+    // TODO: this should be poly
+    float fmInput =  TBase::inputs[FM_INPUT].getVoltage(0);
+    float fmParam =  TBase::params[FM_PARAM].value;
+    float detuneInput = TBase::inputs[FM_INPUT].getVoltage(0);
+    float detuneParam = TBase::params[DETUNE_PARAM].value;
+    float detuneTrimParam = TBase::params[DETUNE_TRIM_PARAM].value;
     int oversampleRate = 1;
     float sampleTime = 1;
     float cv = 0;
-    float mixInput =0;
-    float mixParam = 0;
-    float mixTrimParam = 0;
+    float mixInput = TBase::inputs[MIX_INPUT].getVoltage(0);
+    float mixParam = TBase::params[MIX_PARAM].value;
+    float mixTrimParam = TBase::params[MIX_TRIM_PARAM].value;
 
 
     for (int i=0; i< dspCommon.numChannels; ++i) {
