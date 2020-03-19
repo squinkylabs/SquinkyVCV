@@ -21,6 +21,7 @@ static void testOutput()
         super.step();
     }
     float x = super.outputs[Comp::MAIN_OUTPUT_LEFT].getVoltage(0);
+    super.step();
     assertNE(x, 0);
 }
 

@@ -165,18 +165,18 @@ private:
 
     void updateHPFilters();
 
-    SawtoothDetuneCurve detuneCurve;
+ //   SawtoothDetuneCurve detuneCurve;
     GateTrigger gateTrigger;
-    float gainCenter = 0;
-    float gainSides = 0;
+  //  float gainCenter = 0;
+ //   float gainSides = 0;
 
-    StateVariable4PHP hpfLeft;
-    StateVariable4PHP hpfRight;
+  //  StateVariable4PHP hpfLeft;
+  //  StateVariable4PHP hpfRight;
 
    // float bufferLeft[MAX_OVERSAMPLE] = {0};
  //   float bufferRight[MAX_OVERSAMPLE] = {0};
-    IIRDecimator decimatorLeft;
-    IIRDecimator decimatorRight;
+ //   IIRDecimator decimatorLeft;
+  //  IIRDecimator decimatorRight;
 
  //   SuperDsp dsp[16];   // maximum 16 channels
     SuperDspCommon dspCommon;
@@ -466,11 +466,15 @@ inline void Super<TBase>::stepn(int n)
     int oversampleRate = 1;
     float sampleTime = 1;
     float cv = 0;
+    float mixInput =0;
+    float mixParam = 0;
+    float mixTrimParam = 0;
 
 
     for (int i=0; i< dspCommon.numChannels; ++i) {
         dspCommon.stepn(n, i,  oversampleRate, sampleTime, cv, fineTuneParam, semiParam, octaveParam, fmInput,
-            fmParam, detuneInput, detuneParam, detuneTrimParam);
+            fmParam, detuneInput, detuneParam, detuneTrimParam,
+            mixInput, mixParam, mixTrimParam);
     }
 
 
