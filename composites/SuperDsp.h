@@ -216,6 +216,7 @@ inline void SuperDsp::runSaws(float& left)
 {
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
+        assert(phaseInc[i] > 0 && phaseInc[i] < .1);        // just for debugging
         phase[i] += phaseInc[i];
         if (phase[i] > 1) {
             phase[i] -= 1;
@@ -272,6 +273,8 @@ inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float
     pitch += q;
     const float freq = expLookup(pitch);
     globalPhaseInc = sampleTime * freq;
+    assert(sampleTime < .01);
+     assert(globalPhaseInc > 0 && globalPhaseInc < .4);      // just for debuggin
 
     const float rawDetuneValue = scaleDetune(
         detuneCVInput,
@@ -288,10 +291,14 @@ inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float
         float detune = (detuneFactors[i] - 1) * detuneInput;
         detune += 1;
         float phaseIncI = globalPhaseInc * detune;
+
+        assert(globalPhaseInc > 0 && globalPhaseInc < .4);      // just for debuggin
+        
         phaseIncI = std::min(phaseIncI, .4f);         // limit so saws don't go crazy
         if (oversampleRate > 1) {
             phaseIncI /= oversampleRate;
         }
+        assert(phaseIncI > 0 && phaseIncI < .1);   
         phaseInc[i] = phaseIncI;
     }
 }

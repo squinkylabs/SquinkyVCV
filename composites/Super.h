@@ -465,9 +465,11 @@ inline void Super<TBase>::stepn(int n)
     float detuneInput = TBase::inputs[FM_INPUT].getVoltage(0);
     float detuneParam = TBase::params[DETUNE_PARAM].value;
     float detuneTrimParam = TBase::params[DETUNE_TRIM_PARAM].value;
-    int oversampleRate = 1;
-    float sampleTime = 1;
-    float cv = 0;
+    int oversampleRate = getOversampleRate();
+    float sampleTime = TBase::engineGetSampleTime();
+   
+    // TODO: this toally should be poly
+    float cv = TBase::inputs[CV_INPUT].getVoltage(0);
     float mixInput = TBase::inputs[MIX_INPUT].getVoltage(0);
     float mixParam = TBase::params[MIX_PARAM].value;
     float mixTrimParam = TBase::params[MIX_TRIM_PARAM].value;
