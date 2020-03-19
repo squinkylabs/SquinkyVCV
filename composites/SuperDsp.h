@@ -149,7 +149,7 @@ private:
     void updateAudioClassic(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
     void updateAudioClean(int channel, float* buffer, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
     void updateAudioClassicStereo(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
-    void updateAudioCleanStereo(int channel, float* buffer, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
+    void updateAudioCleanStereo(int channel, float* bufferLeft, float* bufferRight, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
     void runSaws(float& left);
     void runSawsStereo(float& left, float& right);
   
@@ -176,7 +176,7 @@ inline void SuperDsp::step(int channel, int oversampleRate, bool isStereo, float
     } else if ((oversampleRate != 1) && !isStereo) {
         updateAudioClean(channel, bufferLeft, leftOut, rightOut, oversampleRate);
     } else {
-        updateAudioCleanStereo(channel, bufferLeft, leftOut, rightOut, oversampleRate);
+        updateAudioCleanStereo(channel, bufferLeft, bufferRight, leftOut, rightOut, oversampleRate);
     }
 }
 
@@ -221,10 +221,22 @@ inline void SuperDsp::updateAudioClassicStereo(int channel, SuperDsp::Output& le
     rightOut.setVoltage(outputRight, channel);
 }
 
-inline void SuperDsp::updateAudioCleanStereo(int channel, float* buffer, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate)
+inline void SuperDsp::updateAudioCleanStereo(int channel, float* bufferLeft, float* bufferRight, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate)
 {
-    printf("update audio clean s\n");
-     assert(false);
+    const int bufferSize = oversampleRate;
+    decimatorLeft.setup(bufferSize);
+    decimatorRight.setup(bufferSize);
+    for (int i = 0; i < bufferSize; ++i) {
+        float left, right;
+        runSawsStereo(left, right);
+        bufferLeft[i] = left;
+        bufferRight[i] = right;
+    }
+
+    const float outputLeft = decimatorLeft.process(bufferLeft);
+    const float outputRight = decimatorRight.process(bufferRight);
+    leftOut.setVoltage(outputLeft, 0);
+    rightOut.setVoltage(outputRight, 0);
 }
 
 
