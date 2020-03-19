@@ -4,6 +4,7 @@
 
 #include "IIRDecimator.h"
 #include "NonUniformLookupTable.h"
+#include "StateVariable4PHP.h"
 
 /**
  * This awful hack is so that both the real plugin and
@@ -90,16 +91,15 @@ public:
    // void updatePhaseInc();
     void updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
         float fmParam, float detuneInput, float detuneParam, float detuneTrimParam );
-    void updateHPFilters();
+    void updateHPFilters(bool isStereo);
     void updateMix(float mixInput, float mixParam, float mixTrimParam);
-    void updateStereo(); 
-    void updateStereoGains();
+    void updateStereoGains(bool hardPan);
 private:
     IIRDecimator decimatorLeft;
     IIRDecimator decimatorRight;
+    StateVariable4PHP hpfLeft;
+    StateVariable4PHP hpfRight;
 
-   
-   // int m_oversampleRate = 1;
     static const int numSaws = 7;
     float globalPhaseInc=0;
     float phase[numSaws] = {0};
@@ -186,8 +186,8 @@ inline void SuperDsp::updateAudioClassic(int channel, SuperDsp::Output& leftOut,
     runSaws(left);
 
     // TODO: put back hpf !!!!!
-   // const float outputLeft = hpfLeft.run(left);
-    const float output = left;
+    const float output = hpfLeft.run(left);
+  //  const float output = left;
     leftOut.setVoltage(output, channel);
     rightOut.setVoltage(output, channel);
 }
@@ -213,10 +213,10 @@ inline void SuperDsp::updateAudioClassicStereo(int channel, SuperDsp::Output& le
     runSawsStereo(left, right);
 
     // TODO: put back the hpf
-    //const float outputLeft = hpfLeft.run(left);
-    //const float outputRight = hpfRight.run(right);
-    const float outputLeft = left;
-    const float outputRight = right;
+    const float outputLeft = hpfLeft.run(left);
+    const float outputRight = hpfRight.run(right);
+    //const float outputLeft = left;
+   // const float outputRight = right;
     leftOut.setVoltage(outputLeft, channel);  
     rightOut.setVoltage(outputRight, channel);
 }
@@ -336,11 +336,13 @@ inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float
     }
 }
 
-inline void SuperDsp::updateHPFilters()
+inline void SuperDsp::updateHPFilters(bool isStereo)
 {
-    #ifdef _DEBUG
-    printf("todo: updateHPFilters\n");
-    #endif
+    const float filterCutoff = std::min(globalPhaseInc, .1f);
+    hpfLeft.setCutoff(filterCutoff);
+    if (isStereo) {
+        hpfRight.setCutoff(filterCutoff);
+    }
 }
 
 inline void SuperDsp::updateMix(float mixInput, float mixParam, float mixTrimParam)
@@ -358,19 +360,35 @@ inline void SuperDsp::updateMix(float mixInput, float mixParam, float mixTrimPar
         1.2841f * rawMixValue + 0.044372f;
 
 }
-
-inline void SuperDsp::updateStereo()
-{
- #ifdef _DEBUG
-    printf("todo: updateStereo\n");
-        #endif
-}
  
-inline void SuperDsp::updateStereoGains()
+inline void SuperDsp::updateStereoGains(bool hardPan)
 {
-        #ifdef _DEBUG
-    printf("todo: updateStereoGains\n");
-    #endif
+   // const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
+    for (int i = 0; i < numSaws; ++i)
+    {
+        const float monoGain = 4.5f * ((i == numSaws / 2) ? gainCenter : gainSides);
+
+        float l = monoGain;
+        float r = monoGain;
+
+        if (!hardPan) {
+            l *= sawGainsNorm[0][i];
+            r *= sawGainsNorm[1][i];
+        }
+        else {
+            l *= sawGainsHardPan[0][i];
+            r *= sawGainsHardPan[1][i];
+        }
+
+        sawGainsStereo[0][i] = l;
+        sawGainsStereo[1][i] = r;
+
+#if 0
+        if (i == 0) printf("\n");
+        printf("g[%d] = %.2f,%.2f\n",
+            i, sawGainsStereo[0][i], sawGainsStereo[1][i]);
+#endif
+    }
 }
 
 
@@ -399,7 +417,9 @@ public:
      */
     void stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
         float fmParam, float detuneInput, float detuneParam, float detuneTrimParam,
-        float mixInput, float mixParam, float mixTrimPara );
+        float mixInput, float mixParam, float mixTrimPara,
+        bool isStereo,
+        bool hardPan);
 
    
 
@@ -445,16 +465,14 @@ inline  void SuperDspCommon::step(bool isStereo, SuperDsp::Output& leftOut, Supe
 
 inline  void SuperDspCommon::stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
         float fmParam, float detuneInput, float detuneParam, float detuneTrimParam,
-        float mixInput, float mixParam, float mixTrimParam)
+        float mixInput, float mixParam, float mixTrimParam,
+        bool isStereo,
+        bool hardPan)
 {
     SuperDsp& d = dsp[index];
 
-    //     void updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
-   //     float fmParam, float detuneInput, float detuneParam, float detuneTrimParam );
     d.updatePhaseInc(oversampleRate, sampleTime, cv, fineTuneParam, semiParam, octaveParam, fmInput, fmParam, detuneInput, detuneParam, detuneTrimParam);
-    d.updateHPFilters();
+    d.updateHPFilters(isStereo);
     d.updateMix(mixInput, mixParam, mixTrimParam);
-    d.updateStereo(); 
-    d.updateStereoGains();
-
+    d.updateStereoGains(hardPan);
 }

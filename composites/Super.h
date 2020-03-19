@@ -7,9 +7,8 @@
 #include "GateTrigger.h"
 #include "IComposite.h"
 
-
 #include "ObjectCache.h"
-#include "StateVariable4PHP.h"
+
 
 
 namespace rack {
@@ -219,7 +218,7 @@ inline int Super<TBase>::getOversampleRate()
             assert(false);
     }
     assert(rate <= (int)SuperDspCommon::MAX_OVERSAMPLE);
-    printf("setting = %d, rate = %d\n", setting, rate);
+    // printf("setting = %d, rate = %d\n", setting, rate);
     return rate;
 }
 
@@ -473,12 +472,15 @@ inline void Super<TBase>::stepn(int n)
     float mixInput = TBase::inputs[MIX_INPUT].getVoltage(0);
     float mixParam = TBase::params[MIX_PARAM].value;
     float mixTrimParam = TBase::params[MIX_TRIM_PARAM].value;
+    const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
 
 
     for (int i=0; i< dspCommon.numChannels; ++i) {
         dspCommon.stepn(n, i,  oversampleRate, sampleTime, cv, fineTuneParam, semiParam, octaveParam, fmInput,
             fmParam, detuneInput, detuneParam, detuneTrimParam,
-            mixInput, mixParam, mixTrimParam);
+            mixInput, mixParam, mixTrimParam,
+            isStereo,
+            hardPan);
     }
 
 
