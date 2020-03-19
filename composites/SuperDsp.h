@@ -148,8 +148,8 @@ private:
 
     void updateAudioClassic(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
     void updateAudioClean(int channel, float* buffer, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
-    void updateAudioClassicStereo();
-    void updateAudioCleanStereo();
+    void updateAudioClassicStereo(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
+    void updateAudioCleanStereo(int channel, float* buffer, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
     void runSaws(float& left);
     void runSawsStereo(float& left, float& right);
   
@@ -169,16 +169,14 @@ inline void SuperDsp::setupDecimationRatio(int decimateDiv)
 
 inline void SuperDsp::step(int channel, int oversampleRate, bool isStereo, float* bufferLeft, float* bufferRight, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut)
 {
-    assert(oversampleRate == 1);
-    printf("step, overs=%d st=%d\n", oversampleRate, isStereo);
     if ((oversampleRate == 1) && !isStereo) {
         updateAudioClassic(channel, leftOut, rightOut);
     } else if ((oversampleRate == 1) && isStereo) {
-        updateAudioClassicStereo();
+        updateAudioClassicStereo(channel, leftOut, rightOut);
     } else if ((oversampleRate != 1) && !isStereo) {
         updateAudioClean(channel, bufferLeft, leftOut, rightOut, oversampleRate);
     } else {
-        updateAudioCleanStereo();
+        updateAudioCleanStereo(channel, bufferLeft, leftOut, rightOut, oversampleRate);
     }
 }
 
@@ -198,7 +196,6 @@ inline void SuperDsp::updateAudioClean(int channel, float* buffer, SuperDsp::Out
 {
     const int bufferSize = oversampleRate;
     decimatorLeft.setup(bufferSize);
-    assert(false);
     for (int i = 0; i < bufferSize; ++i) {
         float left;
         runSaws(left);
@@ -208,16 +205,23 @@ inline void SuperDsp::updateAudioClean(int channel, float* buffer, SuperDsp::Out
     const float output = decimatorLeft.process(buffer);
     leftOut.setVoltage(output, channel);
     rightOut.setVoltage(output, channel);
-    printf("clean\n");
 }
 
-inline void SuperDsp::updateAudioClassicStereo()
+inline void SuperDsp::updateAudioClassicStereo(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut)
 {
-    printf("update audio cs\n");
-     assert(false);
+    float left, right;
+    runSawsStereo(left, right);
+
+    // TODO: put back the hpf
+    //const float outputLeft = hpfLeft.run(left);
+    //const float outputRight = hpfRight.run(right);
+    const float outputLeft = left;
+    const float outputRight = right;
+    leftOut.setVoltage(outputLeft, channel);  
+    rightOut.setVoltage(outputRight, channel);
 }
 
-inline void SuperDsp::updateAudioCleanStereo()
+inline void SuperDsp::updateAudioCleanStereo(int channel, float* buffer, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate)
 {
     printf("update audio clean s\n");
      assert(false);

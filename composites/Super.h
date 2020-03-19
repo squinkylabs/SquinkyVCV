@@ -453,9 +453,8 @@ inline void Super<TBase>::updateStereoGains()
 template <class TBase>
 inline void Super<TBase>::stepn(int n)
 {
- //   assert(false);  // move this stuff to dsp
+    updateStereo();
 
-    // TODO: real values
     float fineTuneParam =  TBase::params[FINE_PARAM].value;
     float semiParam =  TBase::params[SEMI_PARAM].value;
     float octaveParam =  TBase::params[OCTAVE_PARAM].value;

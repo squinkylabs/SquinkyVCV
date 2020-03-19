@@ -13,20 +13,34 @@ static void test0()
 
 }
 
-static void testOutput()
+static void testOutput(bool stereo, int mode)
 {
+    assert(mode >= 0 && mode <= 2);
     Comp super;
     super.init();
+    super.params[Comp::CLEAN_PARAM].value = float(mode);
+
+    if (stereo) {
+        super.outputs[Comp::MAIN_OUTPUT_LEFT].channels = 1;
+        super.outputs[Comp::MAIN_OUTPUT_RIGHT].channels = 1;
+
+        bool isStereo = super.outputs[Comp::MAIN_OUTPUT_RIGHT].isConnected() && super.outputs[Comp::MAIN_OUTPUT_LEFT].isConnected();
+        assert(isStereo);
+    }
     for (int i = 0; i < 50; ++i) {
         super.step();
     }
-    float x = super.outputs[Comp::MAIN_OUTPUT_LEFT].getVoltage(0);
-    super.step();
-    assertNE(x, 0);
+    assertNE(super.outputs[Comp::MAIN_OUTPUT_LEFT].getVoltage(0), 0);
+    assertNE(super.outputs[Comp::MAIN_OUTPUT_RIGHT].getVoltage(0), 0);
 }
 
 void testSuper()
 {
     test0();
-    testOutput();
+    testOutput(false, 0);       // classic mono
+    testOutput(false, 1);       // 4x mono
+    testOutput(false, 2);       // 16x mono
+    testOutput(true, 0);       // classic mono
+    testOutput(true, 1);       // 4x mono
+    testOutput(true, 2);       // 16x mono
 }
