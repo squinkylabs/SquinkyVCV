@@ -219,6 +219,7 @@ inline int Super<TBase>::getOversampleRate()
             assert(false);
     }
     assert(rate <= (int)SuperDspCommon::MAX_OVERSAMPLE);
+    printf("setting = %d, rate = %d\n", setting, rate);
     return rate;
 }
 
@@ -497,7 +498,8 @@ inline void Super<TBase>::step()
 {
     div.step();
 
-    dspCommon.step(isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT]);
+    int rate = getOversampleRate();
+    dspCommon.step(isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT], rate);
 #ifdef _DEBUG
     printf("we need update trigger back in comp\n");
     #endif
