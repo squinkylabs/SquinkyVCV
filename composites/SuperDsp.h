@@ -258,7 +258,9 @@ inline void SuperDsp::runSaws(float& left)
 {
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
-        assert(phaseInc[i] > 0 && phaseInc[i] < .1);        // just for debugging
+        // maybe this is just a startup issue?
+     //   printf("phaseInc[%d] = %f this=%p\n", i, phaseInc[i], this); fflush(stdout);
+     //   assert(phaseInc[i] > 0 && phaseInc[i] < .1);        // just for debugging
         phase[i] += phaseInc[i];
         if (phase[i] > 1) {
             phase[i] -= 1;
@@ -267,7 +269,8 @@ inline void SuperDsp::runSaws(float& left)
         assert(phase[i] >= 0);
 
         const float gain = (i == numSaws / 2) ? gainCenter : gainSides;
-        assert(gain > 0);       // just for debugging?
+      //  printf("gain = %f\n", gain);
+    //    assert(gain > 0);       // just for debugging?
         mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
 
     }
@@ -430,12 +433,12 @@ public:
      /**
      * divisor is 4 for 4X oversampling, etc.
      */
-    void setupDecimationRatio(int divisor);
+    void setupDecimationRatio(int divisor, int numChannels);
 
     /**
      * called every sample to calc audio.
      */
-    void step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut,
+    void step(int numChannels, bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut,
         int oversampleRate, SuperDsp::Input& triggerInput);
 
      /**
@@ -451,7 +454,7 @@ public:
 
    
 
-     int numChannels = 1;
+     //int numChannels = 1;
 private:
     float bufferLeft[MAX_OVERSAMPLE] = {0};
     float bufferRight[MAX_OVERSAMPLE] = {0};
@@ -462,28 +465,24 @@ private:
         ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
-    
-
-   // using lambda = std::function<void(SuperDsp&)>;
-  //  void forEach(lambda);
 };
 
 
 inline void SuperDspCommon::init()
 {
-    for (int i=0; i<numChannels; ++i) {
+    for (int i=0; i<16; ++i) {
         dsp[i].init();
     }    
 }
 
-inline void SuperDspCommon::setupDecimationRatio(int divisor)
+inline void SuperDspCommon::setupDecimationRatio(int divisor, int numChannels)
 {
     for (int i=0; i<numChannels; ++i) {
         dsp[i].setupDecimationRatio(divisor);
     }
 }
 
-inline  void SuperDspCommon::step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut,
+inline  void SuperDspCommon::step(int numChannels, bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut,
     int oversampleRate, SuperDsp::Input& triggerInput)
 {
      for (int i=0; i<numChannels; ++i) {

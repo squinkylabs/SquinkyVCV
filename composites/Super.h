@@ -194,7 +194,7 @@ inline void Super<TBase>::init()
     const int rate = getOversampleRate();
     const int decimateDiv = std::max(rate, (int) SuperDspCommon::MAX_OVERSAMPLE);
 
-    dspCommon.setupDecimationRatio(decimateDiv);
+    dspCommon.setupDecimationRatio(decimateDiv, 16);
    // decimatorLeft.setup(decimateDiv);
   //  decimatorRight.setup(decimateDiv);
 }
@@ -483,9 +483,9 @@ inline void Super<TBase>::stepn(int n)
         bool isStereo,
         bool hardPan);
         */
-    SuperDsp::Input& cvInput = TBase::inputs[CV_INPUT];
-
-    for (int i=0; i< dspCommon.numChannels; ++i) {
+   
+    const int numChannels = TBase::inputs[CV_INPUT].channels;
+    for (int i=0; i< numChannels; ++i) {
         dspCommon.stepn(n, i,  oversampleRate, sampleTime, TBase::inputs[CV_INPUT],
             fineTuneParam, semiParam, octaveParam, TBase::inputs[FM_INPUT],
             fmParam, TBase::inputs[FM_INPUT], detuneParam, detuneTrimParam,
@@ -494,6 +494,12 @@ inline void Super<TBase>::stepn(int n)
             hardPan);
     }
 
+    const int numOutputChannels = std::max(1, numChannels);
+
+    TBase::outputs[MAIN_OUTPUT_LEFT].setChannels(numOutputChannels);
+    TBase::outputs[MAIN_OUTPUT_RIGHT].setChannels(numOutputChannels);
+    //const int xx = TBase::outputs[MAIN_OUTPUT_LEFT].getChannels();
+    //printf("setting output chan to %d are %d\n", numOutputChannels, xx);
 
 #if 0
     updatePhaseInc();
@@ -514,8 +520,10 @@ inline void Super<TBase>::step()
 
     // this also needs to be poly
     //cont bool trigger = gateTrigger.go(TBase::inputs[TRIGGER_INPUT].getVoltage(0));
+
+    const int numChannels = TBase::inputs[CV_INPUT].channels;
     
-    dspCommon.step(isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT],
+    dspCommon.step(numChannels,isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT],
         rate,
         TBase::inputs[TRIGGER_INPUT]);
     
