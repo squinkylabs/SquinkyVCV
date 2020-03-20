@@ -91,11 +91,11 @@ public:
     void step(int channel, int oversampleRate, bool isStereo, float* bufferLeft, float* bufferRight,
         Output& leftOut, Output& rightOut, Input& triggerInput);
 
-   // void updatePhaseInc();
-    void updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
-        float fmParam, float detuneInput, float detuneParam, float detuneTrimParam );
+    void updatePhaseInc(int channel, int oversampleRate, float sampleTime, SuperDsp::Input& cvInput, 
+        float fineTuneParam, float semiParam, float octaveParam, SuperDsp::Input& fmInput,
+        float fmParam, SuperDsp::Input& detuneInput, float detuneParam, float detuneTrimParam );
     void updateHPFilters(bool isStereo);
-    void updateMix(float mixInput, float mixParam, float mixTrimParam);
+    void updateMix(int channel, SuperDsp::Input& mixInput, float mixParam, float mixTrimParam);
     void updateStereoGains(bool hardPan);
 private:
     IIRDecimator decimatorLeft;
@@ -292,8 +292,9 @@ inline void SuperDsp::runSawsStereo(float& left, float& right)
     }
 }
 
-inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
-        float fmParam, float detuneCVInput, float detuneParam, float detuneTrimParam )
+inline void SuperDsp::updatePhaseInc(int channel, int oversampleRate, float sampleTime, SuperDsp::Input& cvInput,
+    float fineTuneParam, float semiParam, float octaveParam, SuperDsp::Input& fmInput,
+    float fmParam, SuperDsp::Input& detuneCVInput, float detuneParam, float detuneTrimParam )
 {
    // const float cv = TBase::inputs[CV_INPUT].getVoltage(0);
 
@@ -304,10 +305,10 @@ inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float
         semiPitch +
         finePitch;
 
-    pitch += cv;
+    pitch += cvInput.getPolyVoltage(channel);
    // printf("initial cv = %.2f from fine=%.2f, semi=%.2f, oct=%.2f cv = %.2f\n", pitch, finePitch, semiPitch, octaveParam, cv );
 
-    const float fm = fmInput;
+    const float fm = fmInput.getPolyVoltage(channel);
     const float fmDepth = AudioMath::quadraticBipolar(fmParam);
 
     pitch += (fmDepth * fm);
@@ -323,7 +324,7 @@ inline void SuperDsp::updatePhaseInc(int oversampleRate, float sampleTime, float
   //  printf("final global phase inc = %f sampleRate = %f\n", globalPhaseInc, 1.f / sampleTime);
 
     const float rawDetuneValue = scaleDetune(
-        detuneCVInput,
+        detuneCVInput.getPolyVoltage(channel),
         detuneParam,
         detuneTrimParam);
 
@@ -370,11 +371,11 @@ inline void SuperDsp::updateTrigger(Input& input, int channel)
     }
 }
 
-inline void SuperDsp::updateMix(float mixInput, float mixParam, float mixTrimParam)
+inline void SuperDsp::updateMix(int channel, SuperDsp::Input& mixInput, float mixParam, float mixTrimParam)
 {
 
     const float rawMixValue = scaleDetune(
-        mixInput,
+        mixInput.getPolyVoltage(channel),
         mixParam,
         mixTrimParam);
 
@@ -441,9 +442,10 @@ public:
      * called every 'n' sample to calc CV.
      * must be called for each active channel.
      */
-    void stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
-        float fmParam, float detuneInput, float detuneParam, float detuneTrimParam,
-        float mixInput, float mixParam, float mixTrimPara,
+    void stepn(int n, int index, int oversampleRate, float sampleTime, SuperDsp::Input& cvInput,
+        float fineTuneParam, float semiParam, float octaveParam, SuperDsp::Input& fmInput,
+        float fmParam, SuperDsp::Input& detuneInput, float detuneParam, float detuneTrimParam,
+        SuperDsp::Input& mixInput, float mixParam, float mixTrimPara,
         bool isStereo,
         bool hardPan);
 
@@ -489,16 +491,17 @@ inline  void SuperDspCommon::step(bool isStereo, SuperDsp::Output& leftOut, Supe
     }    
 }
 
-inline  void SuperDspCommon::stepn(int n, int index, int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
-        float fmParam, float detuneInput, float detuneParam, float detuneTrimParam,
-        float mixInput, float mixParam, float mixTrimParam,
-        bool isStereo,
-        bool hardPan)
+inline  void SuperDspCommon::stepn(int n, int channel, int oversampleRate, float sampleTime, SuperDsp::Input& cvInput,
+    float fineTuneParam, float semiParam, float octaveParam, SuperDsp::Input& fmInput,
+    float fmParam, SuperDsp::Input& detuneInput, float detuneParam, float detuneTrimParam,
+    SuperDsp::Input& mixInput, float mixParam, float mixTrimParam,
+    bool isStereo,
+    bool hardPan)
 {
-    SuperDsp& d = dsp[index];
+    SuperDsp& d = dsp[channel];
 
-    d.updatePhaseInc(oversampleRate, sampleTime, cv, fineTuneParam, semiParam, octaveParam, fmInput, fmParam, detuneInput, detuneParam, detuneTrimParam);
+    d.updatePhaseInc(channel, oversampleRate, sampleTime, cvInput, fineTuneParam, semiParam, octaveParam, fmInput, fmParam, detuneInput, detuneParam, detuneTrimParam);
     d.updateHPFilters(isStereo);
-    d.updateMix(mixInput, mixParam, mixTrimParam);
+    d.updateMix(channel, mixInput, mixParam, mixTrimParam);
     d.updateStereoGains(hardPan);
 }

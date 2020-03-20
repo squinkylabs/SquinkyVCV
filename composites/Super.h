@@ -454,31 +454,42 @@ inline void Super<TBase>::stepn(int n)
 {
     updateStereo();
 
+    int oversampleRate = getOversampleRate();
+    float sampleTime = TBase::engineGetSampleTime();
+
+    // The params
     float fineTuneParam =  TBase::params[FINE_PARAM].value;
     float semiParam =  TBase::params[SEMI_PARAM].value;
     float octaveParam =  TBase::params[OCTAVE_PARAM].value;
-
-    // TODO: this should be poly
-    float fmInput =  TBase::inputs[FM_INPUT].getVoltage(0);
-    float fmParam =  TBase::params[FM_PARAM].value;
-    float detuneInput = TBase::inputs[FM_INPUT].getVoltage(0);
+    float fmParam = TBase::params[FM_PARAM].value;
     float detuneParam = TBase::params[DETUNE_PARAM].value;
     float detuneTrimParam = TBase::params[DETUNE_TRIM_PARAM].value;
-    int oversampleRate = getOversampleRate();
-    float sampleTime = TBase::engineGetSampleTime();
-   
-    // TODO: this toally should be poly
-    float cv = TBase::inputs[CV_INPUT].getVoltage(0);
-    float mixInput = TBase::inputs[MIX_INPUT].getVoltage(0);
     float mixParam = TBase::params[MIX_PARAM].value;
     float mixTrimParam = TBase::params[MIX_TRIM_PARAM].value;
     const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
 
+    // The Inputs
+    // TODO: this should be poly
+  //  float fmInput =  TBase::inputs[FM_INPUT].getVoltage(0);
+ //   float detuneInput = TBase::inputs[FM_INPUT].getVoltage(0);
+  //  float cv = TBase::inputs[CV_INPUT].getVoltage(0);
+ //   float mixInput = TBase::inputs[MIX_INPUT].getVoltage(0);
+
+    /*
+    void stepn(int n, int index, int oversampleRate, float sampleTime, SuperDsp::Input & cvInput,
+        float fineTuneParam, float semiParam, float octaveParam, SuperDsp::Input & fmInput,
+        float fmParam, SuperDsp::Input & detuneInput, float detuneParam, float detuneTrimParam,
+        float mixInput, float mixParam, float mixTrimPara,
+        bool isStereo,
+        bool hardPan);
+        */
+    SuperDsp::Input& cvInput = TBase::inputs[CV_INPUT];
 
     for (int i=0; i< dspCommon.numChannels; ++i) {
-        dspCommon.stepn(n, i,  oversampleRate, sampleTime, cv, fineTuneParam, semiParam, octaveParam, fmInput,
-            fmParam, detuneInput, detuneParam, detuneTrimParam,
-            mixInput, mixParam, mixTrimParam,
+        dspCommon.stepn(n, i,  oversampleRate, sampleTime, TBase::inputs[CV_INPUT],
+            fineTuneParam, semiParam, octaveParam, TBase::inputs[FM_INPUT],
+            fmParam, TBase::inputs[FM_INPUT], detuneParam, detuneTrimParam,
+            TBase::inputs[MIX_INPUT], mixParam, mixTrimParam,
             isStereo,
             hardPan);
     }
