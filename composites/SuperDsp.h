@@ -64,7 +64,6 @@ private:
     NonUniformLookupTableParams<float> table;
 };
 
-
 /**
  * the signal processing for one channel
  * of saws
@@ -73,7 +72,6 @@ class SuperDsp
 {
 public:
 #ifdef __PLUGIN
-   // using Param = rack::engine::Param;
     using Input = rack::engine::Input;
     using Output = rack::engine::Output;
 #else
@@ -140,8 +138,6 @@ private:
         1.107f
     };
 
-
-
     // TODO: we don't need 16 of these!!!
     // this could all be global
     std::function<float(float)> expLookup =
@@ -199,9 +195,7 @@ inline void SuperDsp::updateAudioClassic(int channel, SuperDsp::Output& leftOut,
     float left;
     runSaws(left);
 
-    // TODO: put back hpf !!!!!
     const float output = hpfLeft.run(left);
-  //  const float output = left;
     leftOut.setVoltage(output, channel);
     rightOut.setVoltage(output, channel);
 }
@@ -226,11 +220,8 @@ inline void SuperDsp::updateAudioClassicStereo(int channel, SuperDsp::Output& le
     float left, right;
     runSawsStereo(left, right);
 
-    // TODO: put back the hpf
     const float outputLeft = hpfLeft.run(left);
     const float outputRight = hpfRight.run(right);
-    //const float outputLeft = left;
-   // const float outputRight = right;
     leftOut.setVoltage(outputLeft, channel);  
     rightOut.setVoltage(outputRight, channel);
 }
@@ -258,9 +249,6 @@ inline void SuperDsp::runSaws(float& left)
 {
     float mix = 0;
     for (int i = 0; i < numSaws; ++i) {
-        // maybe this is just a startup issue?
-     //   printf("phaseInc[%d] = %f this=%p\n", i, phaseInc[i], this); fflush(stdout);
-     //   assert(phaseInc[i] > 0 && phaseInc[i] < .1);        // just for debugging
         phase[i] += phaseInc[i];
         if (phase[i] > 1) {
             phase[i] -= 1;
@@ -269,8 +257,6 @@ inline void SuperDsp::runSaws(float& left)
         assert(phase[i] >= 0);
 
         const float gain = (i == numSaws / 2) ? gainCenter : gainSides;
-      //  printf("gain = %f\n", gain);
-    //    assert(gain > 0);       // just for debugging?
         mix += (phase[i] - .5f) * gain;        // experiment to get rid of DC
 
     }
@@ -299,8 +285,6 @@ inline void SuperDsp::updatePhaseInc(int channel, int oversampleRate, float samp
     float fineTuneParam, float semiParam, float octaveParam, SuperDsp::Input& fmInput,
     float fmParam, SuperDsp::Input& detuneCVInput, float detuneParam, float detuneTrimParam )
 {
-   // const float cv = TBase::inputs[CV_INPUT].getVoltage(0);
-
     const float finePitch = fineTuneParam / 12.0f;
     const float semiPitch = semiParam / 12.0f;
 
@@ -309,7 +293,6 @@ inline void SuperDsp::updatePhaseInc(int channel, int oversampleRate, float samp
         finePitch;
 
     pitch += cvInput.getPolyVoltage(channel);
-   // printf("initial cv = %.2f from fine=%.2f, semi=%.2f, oct=%.2f cv = %.2f\n", pitch, finePitch, semiPitch, octaveParam, cv );
 
     const float fm = fmInput.getPolyVoltage(channel);
     const float fmDepth = AudioMath::quadraticBipolar(fmParam);
@@ -319,12 +302,9 @@ inline void SuperDsp::updatePhaseInc(int channel, int oversampleRate, float samp
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     const float freq = expLookup(pitch);
-  //  printf("in update, final freq = %.2f from pitch cv of %.2f\n", freq, pitch); fflush(stdout);
     globalPhaseInc = sampleTime * freq;
     assert(sampleTime < .01);
      assert(globalPhaseInc > 0 && globalPhaseInc < .4);      // just for debuggin
-
-  //  printf("final global phase inc = %f sampleRate = %f\n", globalPhaseInc, 1.f / sampleTime);
 
     const float rawDetuneValue = scaleDetune(
         detuneCVInput.getPolyVoltage(channel),
@@ -332,10 +312,6 @@ inline void SuperDsp::updatePhaseInc(int channel, int oversampleRate, float samp
         detuneTrimParam);
 
     const float detuneInput = detuneCurve.getDetuneFactor(rawDetuneValue);
-
-
-   // const bool classic = TBase::params[CLEAN_PARAM].value < .5f;
-   // const int oversampleRate = oversampleRate();
 
     for (int i = 0; i < numSaws; ++i) {
         float detune = (detuneFactors[i] - 1) * detuneInput;
@@ -350,7 +326,6 @@ inline void SuperDsp::updatePhaseInc(int channel, int oversampleRate, float samp
         }
         assert(phaseIncI > 0 && phaseIncI < .1);   
         phaseInc[i] = phaseIncI;
-      //  printf("ph[%d] = %f\n", i, phaseIncI);
     }
 }
 
@@ -382,17 +357,42 @@ inline void SuperDsp::updateMix(int channel, SuperDsp::Input& mixInput, float mi
         mixParam,
         mixTrimParam);
 
-
     gainCenter = -0.55366f * rawMixValue + 0.99785f;
 
     gainSides = -0.73764f * rawMixValue * rawMixValue +
         1.2841f * rawMixValue + 0.044372f;
 
 }
+
+
+
+/*
+
+regular:
+
+g[0] = 2.26,0.00 panL=1.00 panR=0.00
+g[1] = 0.58,2.18 panL=0.97 panR=0.26
+g[2] = 1.96,1.13 panL=0.87 panR=0.50
+g[3] = 2.29,2.29 panL=0.71 panR=0.71
+g[4] = 1.13,1.96 panL=0.50 panR=0.87
+g[5] = 2.18,0.58 panL=0.26 panR=0.97
+g[6] = -0.00,2.26 panL=-0.00 panR=1.00
+
+hard:
+
+g[0] = 2.48,0.00 panL=1.00 panR=0.00
+g[1] = 0.00,2.40 panL=0.97 panR=0.26
+g[2] = 2.15,0.00 panL=0.87 panR=0.50
+g[3] = 2.29,2.29 panL=0.71 panR=0.71
+g[4] = 0.00,2.15 panL=0.50 panR=0.87
+g[5] = 2.40,0.00 panL=0.26 panR=0.97
+g[6] = 0.00,2.48 panL=-0.00 panR=1.00
+
+
+*/
  
 inline void SuperDsp::updateStereoGains(bool hardPan)
 {
-   // const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
     for (int i = 0; i < numSaws; ++i)
     {
         const float monoGain = 4.5f * ((i == numSaws / 2) ? gainCenter : gainSides);
@@ -411,12 +411,6 @@ inline void SuperDsp::updateStereoGains(bool hardPan)
 
         sawGainsStereo[0][i] = l;
         sawGainsStereo[1][i] = r;
-
-#if 0
-        if (i == 0) printf("\n");
-        printf("g[%d] = %.2f,%.2f\n",
-            i, sawGainsStereo[0][i], sawGainsStereo[1][i]);
-#endif
     }
 }
 
@@ -452,9 +446,6 @@ public:
         bool isStereo,
         bool hardPan);
 
-   
-
-     //int numChannels = 1;
 private:
     float bufferLeft[MAX_OVERSAMPLE] = {0};
     float bufferRight[MAX_OVERSAMPLE] = {0};
