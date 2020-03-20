@@ -4,7 +4,7 @@
 #include "SuperDsp.h"
 
 #include "Divider.h"
-#include "GateTrigger.h"
+//#include "GateTrigger.h"
 #include "IComposite.h"
 
 #include "ObjectCache.h"
@@ -36,11 +36,11 @@ class Super : public TBase
 {
 public:
 
-    Super(Module * module) : TBase(module), gateTrigger(true)
+    Super(Module* module) : TBase(module)
     {
         init();
     }
-    Super() : TBase(), gateTrigger(true)
+    Super() : TBase()
     {
         init();
     }
@@ -156,7 +156,7 @@ private:
 
     int getOversampleRate();
 
-    AudioMath::RandomUniformFunc random = AudioMath::random();
+  //  AudioMath::RandomUniformFunc random = AudioMath::random();
 
    // int inputSubSampleCounter = 1;
     const static int inputSubSample = 4;    // only look at knob/cv every 4
@@ -165,7 +165,7 @@ private:
     void updateHPFilters();
 
  //   SawtoothDetuneCurve detuneCurve;
-    GateTrigger gateTrigger;
+ //   GateTrigger gateTrigger;
   //  float gainCenter = 0;
  //   float gainSides = 0;
 
@@ -499,11 +499,14 @@ inline void Super<TBase>::step()
 {
     div.step();
 
-    int rate = getOversampleRate();
-    dspCommon.step(isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT], rate);
-#ifdef _DEBUG
-    printf("we need update trigger back in comp\n");
-    #endif
+    const int rate = getOversampleRate();
+
+    // this also needs to be poly
+    //cont bool trigger = gateTrigger.go(TBase::inputs[TRIGGER_INPUT].getVoltage(0));
+    
+    dspCommon.step(isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT],
+        rate,
+        TBase::inputs[TRIGGER_INPUT]);
     
 #if 0
     updateTrigger();

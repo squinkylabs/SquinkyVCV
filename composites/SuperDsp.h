@@ -2,6 +2,7 @@
 #pragma once
 
 
+#include "GateTrigger.h"
 #include "IIRDecimator.h"
 #include "NonUniformLookupTable.h"
 #include "StateVariable4PHP.h"
@@ -9,6 +10,8 @@
 /**
  * This awful hack is so that both the real plugin and
  * the unit tests can pass this "Output" struct around
+ * 
+ * TODO: move to a common include file??
  */
 #ifdef __PLUGIN
 namespace rack {
@@ -21,8 +24,6 @@ struct Output;
 #else
 #include "TestComposite.h"
 #endif
-
-
 
 class SawtoothDetuneCurve
 {
@@ -73,20 +74,22 @@ class SuperDsp
 public:
 #ifdef __PLUGIN
    // using Param = rack::engine::Param;
-   // using Input = rack::engine::Input;
+    using Input = rack::engine::Input;
     using Output = rack::engine::Output;
 #else
     using Output = ::Output;
-    //using Input = ::Input;
+    using Input = ::Input;
     //using Param = ::Param;
 #endif
+    SuperDsp();
     void init();
     /**
      * divisor is 4 for 4X oversampling, etc.
      */
     void setupDecimationRatio(int divisor);
 
-    void step(int channel, int oversampleRate, bool isStereo, float* bufferLeft, float* bufferRight, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
+    void step(int channel, int oversampleRate, bool isStereo, float* bufferLeft, float* bufferRight,
+        Output& leftOut, Output& rightOut, Input& triggerInput);
 
    // void updatePhaseInc();
     void updatePhaseInc(int oversampleRate, float sampleTime, float cv, float fineTuneParam, float semiParam, float octaveParam, float fmInput,
@@ -99,6 +102,8 @@ private:
     IIRDecimator decimatorRight;
     StateVariable4PHP hpfLeft;
     StateVariable4PHP hpfRight;
+    GateTrigger gateTrigger;
+    
 
     static const int numSaws = 7;
     float globalPhaseInc=0;
@@ -145,15 +150,21 @@ private:
         ObjectCache<float>::getAudioTaper();
      AudioMath::ScaleFun<float> scaleDetune;
     SawtoothDetuneCurve detuneCurve;
+    AudioMath::RandomUniformFunc random = AudioMath::random();
 
     void updateAudioClassic(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
+    void updateTrigger(Input& triggerInput, int channel);
     void updateAudioClean(int channel, float* buffer, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
     void updateAudioClassicStereo(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
     void updateAudioCleanStereo(int channel, float* bufferLeft, float* bufferRight, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
     void runSaws(float& left);
     void runSawsStereo(float& left, float& right);
-  
 };
+
+
+inline SuperDsp::SuperDsp() : gateTrigger(true)
+{
+}
 
 inline void SuperDsp::init()
 {
@@ -167,7 +178,9 @@ inline void SuperDsp::setupDecimationRatio(int decimateDiv)
     decimatorRight.setup(decimateDiv);
 }
 
-inline void SuperDsp::step(int channel, int oversampleRate, bool isStereo, float* bufferLeft, float* bufferRight, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut)
+inline void SuperDsp::step(int channel, int oversampleRate, bool isStereo, float* bufferLeft, float* bufferRight,
+    SuperDsp::Output& leftOut, SuperDsp::Output& rightOut,
+    Input& triggerInput)
 {
     if ((oversampleRate == 1) && !isStereo) {
         updateAudioClassic(channel, leftOut, rightOut);
@@ -178,6 +191,7 @@ inline void SuperDsp::step(int channel, int oversampleRate, bool isStereo, float
     } else {
         updateAudioCleanStereo(channel, bufferLeft, bufferRight, leftOut, rightOut, oversampleRate);
     }
+    updateTrigger(triggerInput, channel);
 }
 
 inline void SuperDsp::updateAudioClassic(int channel, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut)
@@ -345,6 +359,17 @@ inline void SuperDsp::updateHPFilters(bool isStereo)
     }
 }
 
+inline void SuperDsp::updateTrigger(Input& input, int channel)
+{
+    const float triggerInput = input.getPolyVoltage(channel);
+    gateTrigger.go(triggerInput);
+    if (gateTrigger.trigger()) {
+        for (int i = 0; i < numSaws; ++i) {
+            phase[i] = this->random();
+        }
+    }
+}
+
 inline void SuperDsp::updateMix(float mixInput, float mixParam, float mixTrimParam)
 {
 
@@ -409,7 +434,8 @@ public:
     /**
      * called every sample to calc audio.
      */
-    void step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate);
+    void step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut,
+        int oversampleRate, SuperDsp::Input& triggerInput);
 
      /**
      * called every 'n' sample to calc CV.
@@ -455,11 +481,11 @@ inline void SuperDspCommon::setupDecimationRatio(int divisor)
     }
 }
 
-inline  void SuperDspCommon::step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut, int oversampleRate)
+inline  void SuperDspCommon::step(bool isStereo, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut,
+    int oversampleRate, SuperDsp::Input& triggerInput)
 {
      for (int i=0; i<numChannels; ++i) {
-         //  void step(int channel, bool isStereo, float* bufferLeft, float* bufferRight, SuperDsp::Output& leftOut, SuperDsp::Output& rightOut);
-        dsp[i].step(i, oversampleRate, isStereo, bufferLeft, bufferRight, leftOut, rightOut);
+        dsp[i].step(i, oversampleRate, isStereo, bufferLeft, bufferRight, leftOut, rightOut, triggerInput);
     }    
 }
 
