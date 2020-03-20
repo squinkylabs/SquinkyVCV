@@ -83,6 +83,7 @@ extern void testScale();
 extern void testTriad();
 extern void testMidiSelectionModel();
 extern void testMidiTrackPlayer();
+extern void testSuper();
 
 #if 0
 #include <sstream>
@@ -107,7 +108,7 @@ static void xx()
 }
 #endif
 
-#define _MIDIONLY
+// #define _MIDIONLY
 
 int main(int argc, char ** argv)
 {
@@ -156,6 +157,8 @@ int main(int argc, char ** argv)
         perfTest();
         return 0;
     }
+
+    testSuper();                // move this later
 
     testAudioMath();
     testRingBuffer();
