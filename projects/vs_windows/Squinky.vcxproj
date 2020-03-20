@@ -135,6 +135,7 @@
     <ClCompile Include="..\..\test\testStepRecordInput.cpp" />
     <ClCompile Include="..\..\test\testStereoMix.cpp" />
     <ClCompile Include="..\..\test\testStochasticGrammar.cpp" />
+    <ClCompile Include="..\..\test\testSuper.cpp" />
     <ClCompile Include="..\..\test\testTestSignal.cpp" />
     <ClCompile Include="..\..\test\testThread.cpp" />
     <ClCompile Include="..\..\test\testTremolo.cpp" />

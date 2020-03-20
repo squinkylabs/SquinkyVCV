@@ -25,7 +25,6 @@ static void testInitialState()
     }
 }
 
-
 static void test1Sub(float initCV)
 {
     // set up with 8 channels of polyphonic input
