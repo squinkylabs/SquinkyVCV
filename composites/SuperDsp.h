@@ -240,8 +240,8 @@ inline void SuperDsp::updateAudioCleanStereo(int channel, float* bufferLeft, flo
 
     const float outputLeft = decimatorLeft.process(bufferLeft);
     const float outputRight = decimatorRight.process(bufferRight);
-    leftOut.setVoltage(outputLeft, 0);
-    rightOut.setVoltage(outputRight, 0);
+    leftOut.setVoltage(outputLeft, channel);
+    rightOut.setVoltage(outputRight, channel);
 }
 
 
