@@ -132,44 +132,9 @@ static void testPause()
     assertEQ(pl->getSection(), 1);
 }
 
-
-
-/*
-
-here's the test that passes for track player
-
-
-   // play 3/4 of first
-    play(pl, 3, quantizationInterval);
-    assertEQ(pl.getSection(), 1);
-
-    printf("test will pause and seek\n");
-    pl.setRunningStatus(false);         // pause
-    pl.setNextSectionRequest(4);        // goto last section
-
-    printf("test will resume\n");
-    lastTime = -100;
-
-    pl.setRunningStatus(true);          // resume
-    play(pl, .1, quantizationInterval); // play a tinny bit
-    assertEQ(pl.getSection(), 4);       // should be playing requested section
-    play(pl, .1, quantizationInterval); // play a tinny bit
-    assertEQ(pl.getSection(), 4);       // should be playing requested section
-
-    play(pl, 7.9, quantizationInterval); // play most (this section 2 bars)
-    assertEQ(pl.getSection(), 4);       // should be playing requested section
-
-    play(pl, 8.1, quantizationInterval); // play most (this section 2 bars)
-    assertEQ(pl.getSection(), 1);       // should be playing requested section
-
-    song is:::
-    oneQ1_75, eightQNotesCMaj, eightQNotesCMaj
-
-*/
 extern float lastTime;
 static void testPauseSwitchSectionStart()
 {
-    printf("\n--- testSeqComposite4 testPauseSwitchSectionStart\n");
     lastTime = -100;
 
     const int tkNum = 0;
@@ -178,40 +143,31 @@ static void testPauseSwitchSectionStart()
     MidiTrackPlayerPtr pl = comp->getTrackPlayer(tkNum);
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), true);
-    printf(">> test just started, now will play\n");
 
     // play to third quarter note
     play(comp, rate, 3.f);
     assertEQ(pl->getSection(), 1);          // first section is 1
 
-    printf(">> test about to pause\n");
     comp->toggleRunStop();                  // pause it
     lastTime = -100;
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), false);
 
-    printf(">> test setting request for section 4\n");
     comp->setNextSectionRequest(tkNum, 4);  // goto last section (#4)
     stepN(comp, 16);
-    printf(">> just set request for #4 while paused and then stepped\n");
 
-    lastTime = -100;
-    printf(">> test about to resume\n");
     lastTime = -100;
     comp->toggleRunStop();                  // resume it
     lastTime = -100;
     stepN(comp, 16);
     lastTime = -100;
     assertEQ(pl->_getRunningStatus(), true);
-    printf(">> test resumed and then stepped 16\n");
 
     /* This issue here is that this test wants stepN to just call the track player's step() function to service the queue.
-    * but really it's going to run the clock, aslo.
-    */
+     * but really it's going to run the clock, aslo.
+     */
 
-    // .1 didn't work
     play(comp, rate, .1f);                  // play a tinnny bit to prime
-    printf(">> just played first bit of section 4\n");
     assertEQ(pl->getSection(), 4);          // should be in new section
 
     // should be playing the first note of the next section now. note that it
@@ -221,8 +177,6 @@ static void testPauseSwitchSectionStart()
     assertLT(comp->outputs[comp->GATE0_OUTPUT].getVoltage(0), 1);
     assertEQ(comp->outputs[comp->CV0_OUTPUT].getVoltage(1), expectedPitch);
 
-    printf(">> test will now play longer\n");
-    // 5 made it go over, 4 ok
     play(comp, rate, 5.f); // play most (this section 2 bars)
     assertEQ(pl->getSection(), 4);       // should be playing requested section still
 

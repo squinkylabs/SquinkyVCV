@@ -652,7 +652,6 @@ extern float lastTime;
 static void testPlayPauseSeek()
 {
     lastTime = -100;
-    printf("\n--- testPlayPauseSeek\n");
     // make a song with four sections 1/2/2/2
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiSong4Ptr song = makeTestSong4(0);
@@ -670,11 +669,9 @@ static void testPlayPauseSeek()
     play(pl, 3, quantizationInterval);
     assertEQ(pl.getSection(), 1);
 
-    printf("test will pause and seek\n");
     pl.setRunningStatus(false);         // pause
     pl.setNextSectionRequest(4);        // goto last section
 
-    printf("test will resume\n");
     lastTime = -100;
 
     pl.setRunningStatus(true);          // resume
