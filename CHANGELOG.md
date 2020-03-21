@@ -10,6 +10,14 @@ Seq++ enhancement: The "auto" versions of the make triad command work a little b
 
 Seq++ bug fix: Make triads now uses the normal voicings for chord inversions [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/132)
 
+## 1.0.8
+
+Saws is now polyphonic.
+
+## 1.0.7
+
+"Hookup Clock" feature to patch compatible clocks into Seq++.
+
 ## 1.0.6
 
 Seq++ new feature - "xforms".

@@ -1,5 +1,5 @@
 # Saws
-Emulation of Roland Super-Saw, with stereo outputs and optional anti-aliasing.
+Emulation of Roland Super-Saw, with stereo outputs and optional anti-aliasing. Now fully polyphonic.
 
 Super-Saw can make huge sounds while using very little CPU.
 
@@ -24,6 +24,8 @@ We have attempted to implement the Super-Saw as closely as possible, and have ad
 If both the left and right outputs are patched, Saws will generate stereo by panning the 7 sawtooth oscillators across the stereo field.
 
 In classic mode, stereo operation takes almost no extra CPU. In the versions with less aliasing, stereo will take about twice as much CPU.
+
+Make sure not to patch both outputs if you do not intend to use them. If you only listen to one side of stereo it won't sound as good as just using mono.
 
 ## The controls
 
@@ -62,6 +64,10 @@ While the classic Super-Saw sound is very rich and animated, the aliasing can ma
 We don't expect many users will go for the "Clean 2" setting. It uses quite a bit more CPU than "Clean 1", and it is quite difficult to hear the difference.
 
 To give a subtle sense of rhythmic pulsing, you may of course run a clock or LFO into the trigger input.
+
+## A note about polyphony
+
+The implementation of polyphony is fairly conventional. The number of channels coming into the V/8 input determines the number of "voices" that saws will generate. All of the other CV inputs may be fully polyphonic also. But if you patch a mono VC into any of the inputs of Saws then it will apply to all the voices in Saws.
 
 ## Additional information
 
