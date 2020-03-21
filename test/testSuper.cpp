@@ -54,10 +54,10 @@ void testSuper()
     testOutput(false, 0);       // classic mono
     testOutput(false, 1);       // 4x mono
     testOutput(false, 2);       // 16x mono
-    testOutput(true, 0);       // classic stereo
-    testOutput(true, 1);       // 4x stereo
-    testOutput(true, 2);       // 16x stereo
-    testOutput(false, 0, 1);       // classic mono, channel2
-    testOutput(false, 0, 3);       // classic mono, channel4
-    testOutput(true, 2, 3);       // clean stereo, channel4
+    testOutput(true, 0);        // classic stereo
+    testOutput(true, 1);        // 4x stereo
+    testOutput(true, 2);        // 16x stereo
+    testOutput(false, 0, 1);    // classic mono, channel2
+    testOutput(false, 0, 3);    // classic mono, channel4
+    testOutput(true, 2, 3);     // clean stereo, channel4
 }
