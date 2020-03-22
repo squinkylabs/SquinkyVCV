@@ -278,7 +278,6 @@ static void testRepeatReset()
 
 static void testTwoSectionsStartOnSecond()
 {
-
     const int trackNum = 0;
     MidiSong4Ptr song = makeSong(trackNum);
 
@@ -293,7 +292,6 @@ static void testTwoSectionsStartOnSecond()
 
     // Since seq isn't running yet, request is just queued.
     assertEQ(pl.getNextSectionRequest(trackNum), 2);
-
 
     const float startOffset = 4;
 
@@ -365,12 +363,6 @@ static void testTwoSectionsSwitchToSecond()
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
-
- //   pl.setNextSection(trackNum, 2);     // skip the first section 
-                                        // (request index == 1)
-   // assertEQ(pl.getNextSection(trackNum), 2);
-
-  
     pl.setRunningStatus(true);
     pl.step();
 
@@ -400,8 +392,6 @@ static void testTwoSectionsSwitchToSecond()
 
     // verify we are in second pattern
  
-
-
     // second section, first note (c at 0)
     pl.updateToMetricTime(4.1, quantizationInterval, true);
 
@@ -454,8 +444,6 @@ static void testSection12()
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
-  //  const float quantizationInterval = .01f;
-
     pl.setNextSectionRequest(trackNum, 2);   
     assertEQ(pl.getNextSectionRequest(trackNum), 2);
 
@@ -493,7 +481,6 @@ static void testSectionStartOffset()
     // (not any more!!)
     pl.setNextSectionRequest(trackNum, 2);
     assertEQ(pl.getSection(trackNum), 1);           // not playing, so unchanged
-
 
     // when playing, just cue it up, don't go there
     pl.setRunningStatus(true);

@@ -92,6 +92,11 @@ public:
      */
     int getCurrentRepetition();
 
+    class MidiVoiceAssigner& _getVoiceAssigner()
+    {
+        return voiceAssigner;
+    }
+
 private:
     
    

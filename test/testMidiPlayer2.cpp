@@ -781,7 +781,6 @@ static void testMidiPlayerOneNote()
 template <class TPlayer, class THost, class TSong, bool hasPlayPosition>
 static void testMidiPlayerOneNoteLockContention()
 {
-    printf("\n---- testMidiPlayerOneNoteLockContention\n");
     std::shared_ptr<THost> host = makeSongOneQandRun2<TPlayer, THost, TSong, hasPlayPosition>(2 * .20f, 2 * .01f, 2 * .04f);
 
     assertAllButZeroAreInit(host.get());
