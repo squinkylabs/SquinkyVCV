@@ -161,7 +161,11 @@ private:
     void setupToPlayCommon();
     void onEndOfTrack();
     void pollForCVChange();
-    void serviceEventQueue();
+
+    /**
+     * returns true if clock was reset
+     */
+    bool serviceEventQueue();
     void setSongFromQueue(std::shared_ptr<MidiSong4>);
 
     /**
@@ -178,6 +182,8 @@ private:
      *      Will return 0 if there are no playable sections.
      */
     static int validateSectionRequest(int section, std::shared_ptr<MidiSong4> song, int trackNumber);
+
+    void dumpCurEvent(const char*);
 
     /**
      * variables only used by playback code.

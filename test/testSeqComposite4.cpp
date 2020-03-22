@@ -56,17 +56,12 @@ std::shared_ptr<Sq4> make(SeqClock::ClockRate rate,
     return ret;
 }
 
-
-
-
-
 static void stepN(Sq4Ptr sq, int numTimes)
 {
     for (int i = 0; i < numTimes; ++i) {
         sq->step();
     }
 }
-
 
 static void genOneClock(Sq4Ptr sq)
 {
@@ -132,6 +127,24 @@ static void testPause()
     assertEQ(pl->getSection(), 1);
 }
 
+
+/*
+Here's what's in the test song. number of bars is 1,2,2,2
+MidiSong4Ptr makeTestSong4(int trackNum)
+{
+    MidiSong4Ptr song = std::make_shared<MidiSong4>();
+    MidiLocker lock(song->lock);
+    MidiTrackPtr clip0 = MidiTrack::makeTest(MidiTrack::TestContent::oneQ1_75, song->lock);
+    MidiTrackPtr clip1 = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
+    MidiTrackPtr clip2 = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
+    MidiTrackPtr clip3 = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
+
+we are failing this test, becuase after we switch section, playback still seems to be playing
+ section 0, instead of 3
+
+ No, actually what is happening is that we are playing sec 3, but still at metric time == 3.
+ If we pause and change sections, we porbably need to reset metric time.
+*/
 extern float lastTime;
 static void testPauseSwitchSectionStart()
 {
@@ -144,9 +157,16 @@ static void testPauseSwitchSectionStart()
     stepN(comp, 16);
     assertEQ(pl->_getRunningStatus(), true);
 
-    // play to third quarter note
-    play(comp, rate, 3.f);
+    // play to first q note at 1.0, at pitch 7.5
+    play(comp, rate, 1.2f);
+    assertEQ(pl->getSection(), 1);          // first section is 1                                      
+    assertGT(comp->outputs[comp->GATE0_OUTPUT].getVoltage(0), 5);
+    assertEQ(comp->outputs[comp->CV0_OUTPUT].getVoltage(0), 7.5f);
+
+    // play to third quarter note of first pattern. there shouldn't be anything playing there.
+    play(comp, rate, 3.f - 1.2f);
     assertEQ(pl->getSection(), 1);          // first section is 1
+    assertLT(comp->outputs[comp->GATE0_OUTPUT].getVoltage(0), 5);
 
     comp->toggleRunStop();                  // pause it
     lastTime = -100;
@@ -154,17 +174,21 @@ static void testPauseSwitchSectionStart()
     assertEQ(pl->_getRunningStatus(), false);
 
     comp->setNextSectionRequest(tkNum, 4);  // goto last section (#4)
+
     stepN(comp, 16);
 
     lastTime = -100;
+
     comp->toggleRunStop();                  // resume it
+
     lastTime = -100;
     stepN(comp, 16);
+
     lastTime = -100;
     assertEQ(pl->_getRunningStatus(), true);
 
     /* This issue here is that this test wants stepN to just call the track player's step() function to service the queue.
-     * but really it's going to run the clock, aslo.
+     * but really it's going to run the clock, also.
      */
 
     play(comp, rate, .1f);                  // play a tinnny bit to prime
@@ -179,10 +203,6 @@ static void testPauseSwitchSectionStart()
 
     play(comp, rate, 5.f); // play most (this section 2 bars)
     assertEQ(pl->getSection(), 4);       // should be playing requested section still
-
-
-    printf(">> testPauseSwitchSectionStart: finish me!!\n");
-
 }
 
 void testSeqComposite4()

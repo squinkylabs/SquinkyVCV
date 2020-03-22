@@ -275,7 +275,6 @@ float lastTime = -100;  // for debug printing
 bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
     PlayTracker tracker(playback.inPlayCode);
 
-  
 #if defined(_MLOG) && 1
     printf("MidiTrackPlayer::playOnce index=%d metrict=%.2f, quantizInt=%.2f track=%p\n",
            trackIndex, metricTime, quantizeInterval, track.get());
@@ -294,8 +293,16 @@ bool MidiTrackPlayer::playOnce(double metricTime, float quantizeInterval) {
 #endif
 
     // before other playback chores, see if there are any requests
-    // we need to honor.
-   // serviceEventQueue();
+    // we need to honor. In normal situation this is not really needed, but it
+    // helps with some unit tests.
+    // new bug: we service the event queue from here, and there is a chance we will reset the clock. 
+    // if we reset the clock, then the metric time passed here is bogus.
+    // So - we could just return false after servicing the event queue, so that we will
+    // blow out of the current metric time frame.
+    bool bReset = serviceEventQueue();
+    if (bReset) {
+        return false;
+    }
 
     bool didSomething = false;
 
@@ -369,12 +376,13 @@ if you play to middle of 1, the stop, then q3, then start: play from start of 3
 
 so: do hard reset if reset, or new song, or if stepped and any wueue
  */
-void MidiTrackPlayer::serviceEventQueue()
+bool MidiTrackPlayer::serviceEventQueue()
 {
     assert(playback.inPlayCode);
+    bool resetClock = false;
     bool isNewSong = false;
 
-   // printf("serviceEventQueue\n");
+    //printf("serviceEventQueue\n");
 
     // newSong is where we store the song that should be treated as "new"
     MidiSong4Ptr newSong;
@@ -411,7 +419,6 @@ void MidiTrackPlayer::serviceEventQueue()
     const bool shouldDoNewSectionImmediately = isNewSong || eventQ.startupTriggered;
 
     if (shouldDoNewSectionImmediately && (eventQ.nextSectionIndex > 0)) {
-
         // we picked up a new song, but there is a request for next section
         const int next = eventQ.nextSectionIndex;
         eventQ.nextSectionIndex = 0;
@@ -431,6 +438,7 @@ void MidiTrackPlayer::serviceEventQueue()
 
         // set curTrack, curEvent, loop Counter, and reset clock
         setPlaybackTrackFromSongAndSection();
+        resetClock = true;
 
 #ifdef _LOGX
         if (constTrackIndex == 0) {
@@ -444,11 +452,31 @@ void MidiTrackPlayer::serviceEventQueue()
 
     // dumb assert for debugging. want to see stale requests from use as asserts unti l fix.
     assert(eventQ.nextSectionIndex == 0 || !eventQ.nextSectionIndexSetWhileStopped);
-    
+    return resetClock;
 }
 
 void MidiTrackPlayer::resetFromQueue(bool resetSectionIndex) {
     assert(playback.inPlayCode);
+
+    // for new, let's ignore resetSectionIndex. I have a feeling it's an obsolete concept.
+    // Let's make a new UT for reset.
+
+    // reset data iterators to start.
+    playback.curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
+    if (playback.curTrack) {
+        // can we really handle not having a track?
+        playback.curEvent = playback.curTrack->begin();
+        //printf("reset put cur event back\n");
+    }
+
+    voiceAssigner.reset();
+ //   currentLoopIterationStart = 0;
+
+    // for now let's ignore section loop counts
+  //  auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
+  //  sectionLoopCounter = options ? options->repeatCount : 1;
+  //  totalRepeatCount = sectionLoopCounter; 
+
 #if 0 // for now, let's do nothing from reset
     static bool firstTime = true;
     if (firstTime) printf("for test ignoring new rest\n");
@@ -621,6 +649,11 @@ void MidiTrackPlayer::setupToPlayFirstTrackSection() {
             return;
         }
     }
+}
+
+void MidiTrackPlayer::dumpCurEvent(const char* msg)
+{
+    printf("dumpCurEvent: %s tkIndex=%d, time=%.2f, evtp=%p\n", msg, constTrackIndex, playback.curEvent->first, playback.curEvent->second.get());
 }
 
 void MidiTrackPlayer::setupToPlayDifferentSection(int section) {

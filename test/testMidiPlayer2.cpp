@@ -652,7 +652,6 @@ static std::shared_ptr<THost> makeSongOneQandRun2(float timeBeforeLock, float ti
     TPlayer pl(host, song);
     pl.step();
 
-
     pl.updateToMetricTime(timeBeforeLock, quantInterval, true);
     {
         MidiLocker l(song->lock);
@@ -782,6 +781,7 @@ static void testMidiPlayerOneNote()
 template <class TPlayer, class THost, class TSong, bool hasPlayPosition>
 static void testMidiPlayerOneNoteLockContention()
 {
+    printf("\n---- testMidiPlayerOneNoteLockContention\n");
     std::shared_ptr<THost> host = makeSongOneQandRun2<TPlayer, THost, TSong, hasPlayPosition>(2 * .20f, 2 * .01f, 2 * .04f);
 
     assertAllButZeroAreInit(host.get());
@@ -1122,12 +1122,13 @@ static void playerTests()
     testMidiPlayer0<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteOn<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteOnWithLockContention<TPlayer, THost, TSong, hasPlayPosition>();
-    printf("(reset) ***put back the player  tests with lock contention\n");
-    //testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong, hasPlayPosition>();
+    // printf("(reset) ***put back the player  tests with lock contention\n");
+
+    testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNote<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteLoopLockContention<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteLoop<TPlayer, THost, TSong, hasPlayPosition>();
-    // testMidiPlayerReset<TPlayer, THost, TSong>();
+    testMidiPlayerReset<TPlayer, THost, TSong>();
     testMidiPlayerReset2<TPlayer, THost, TSong>();
 
     testMidiPlayerOverlap<TPlayer, THost, TSong>();

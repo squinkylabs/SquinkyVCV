@@ -159,7 +159,7 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    testSuper();                // move this later
+
 
     testAudioMath();
     testRingBuffer();
@@ -234,6 +234,7 @@ int main(int argc, char ** argv)
     //testLowpassFilter();
     testLadder();
     testHighpassFilter();
+    testSuper();
  
 #if 0
     printf("skipping lots of tests\n");
