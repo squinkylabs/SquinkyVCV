@@ -99,44 +99,6 @@ void MidiTrackPlayer::reset(bool resetSectionIndex) {
     eventQ.reset = true;
 }
 
-// this probably won't even work until we put it in playback.
-#if 0
-void MidiTrackPlayer::reset(bool resetSectionIndex) {
-
-    printf("for test ignoring new rest\n");
-    resetSectionIndex = false;
-    
-    if (resetSectionIndex) {
-        setupToPlayFirstTrackSection();
-    } else {
-        // we don't want reset to erase nextSectionIndex, so
-        // re-apply it after reset.
-        const int saveSection = eventQ.nextSectionIndex;
-        if (saveSection == 0) {
-            setupToPlayFirstTrackSection();
-        } else {
-            setNextSection(saveSection);
-        }
-    }
-
-
-    curTrack = playback.song->getTrack(constTrackIndex, playback.curSectionIndex);
-    if (curTrack) {
-        // can we really handle not having a track?
-        curEvent = curTrack->begin();
-        //printf("reset put cur event back\n");
-    }
-
-    voiceAssigner.reset();
-    currentLoopIterationStart = 0;
-    auto options = playback.song->getOptions(constTrackIndex, playback.curSectionIndex);
-    sectionLoopCounter = options ? options->repeatCount : 1;
-    totalRepeatCount = sectionLoopCounter; 
-    //printf("sectionLoopCounter set in rest %d\n", sectionLoopCounter);
-}
-#endif
-
-
 /*********************************** code possibly called from UI thread ***********************/
 
 MidiTrackPlayer::MidiTrackPlayer(
