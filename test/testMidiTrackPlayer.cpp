@@ -84,7 +84,6 @@ static void testCanCall()
 
 static void testLoop1()
 {
-    printf("\n----- testLoop1\n");
     std::shared_ptr<IMidiPlayerHost4> host = std::make_shared<TestHost2>();
     MidiSong4Ptr song = makeSong(0);
     MidiTrackPlayer pl(host, 0, song);
