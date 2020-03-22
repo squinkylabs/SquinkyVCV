@@ -83,6 +83,34 @@ public:
     int lockConflicts = 0;
     int numClockResets = 0;
 
+    int numGates() const
+    {
+        int ret = 0;
+        for (int i=0; i<16; ++i) {
+            if (gateState[i]) {
+                ++ret;
+            }
+        }
+        return ret;
+    }
+
+    bool onlyOneGate(int channel) const
+    {
+        if (numGates() != 1) {
+            return false;
+        }
+
+        for (int i=0; i<16; ++i) {
+            if (gateState[i]) {
+                if (i != channel) {
+                    return false;
+                }
+            }
+        }
+        return true;
+
+    }
+
     std::vector<bool> gateState = {
         false, false, false, false,
         false, false, false, false,

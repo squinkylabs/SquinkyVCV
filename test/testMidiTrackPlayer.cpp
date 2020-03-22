@@ -3,6 +3,7 @@
 #include "MidiTrack4Options.h"
 #include "MidiTrackPlayer.h"
 #include "TestHost2.h"
+#include "TestHost4.h"
 #include "asserts.h"
 
 /**
@@ -706,7 +707,7 @@ MidiSong4Ptr makeTestSong4(int trackNum)
 static void testLockGates()
 {
     // make a song with four sections 1/2/2/2
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
+    std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiSong4Ptr song = makeTestSong4(0);
     MidiTrackPlayer pl(host, 0, song);
     pl.setNumVoices(4);
@@ -720,47 +721,24 @@ static void testLockGates()
     MidiVoice* vx = pl._getVoiceAssigner().getNext(-3);     // first reserve a voice for test,
                                                             // but let it end before irst note in seq
     vx->playNote(-3, 0, .5);
-    assertEQ(host->gateState[0], true);
-    assertEQ(host->gateState[1], false);
-    assertEQ(host->gateState[2], false);
-    assertEQ(host->gateState[3], false);
-
-
-
+    assert(host->onlyOneGate(0));
+    
     // to note in bar 1.
     // since we already used voice 0, it will be in voice 1
     play(pl, 1.1f, quantizationInterval);
-
-    // should be playing in voice 0
-    assertEQ(host->gateState[0], false);
-    assertEQ(host->gateState[1], true);
-    assertEQ(host->gateState[2], false);
-    assertEQ(host->gateState[3], false);
+    assert(host->onlyOneGate(1));
 
     pl.reset(false);
     pl.resetAllVoices(true);
     pl.step();
 
-
     // verify reset cleared gates
-    assertEQ(host->gateState[0], false);
-    assertEQ(host->gateState[1], false);
-    assertEQ(host->gateState[2], false);
-    assertEQ(host->gateState[3], false);
+    assertEQ(host->numGates(), 0);
 
     play(pl, 1.2f, quantizationInterval);
 
-    for (int i = 0; i < 4; ++i) {
-        bool b = host->gateState[i];
-        printf("gate[%d] = %d\n", i, b);
-    }
-
     // verify that we start at 0 now (after reset, can be different voices)
-    assertEQ(host->gateState[0], true);
-    assertEQ(host->gateState[1], false);
-    assertEQ(host->gateState[2], false);
-    assertEQ(host->gateState[3], false);
-
+    assert(host->onlyOneGate(0));
 }
 
 void testMidiTrackPlayer()
