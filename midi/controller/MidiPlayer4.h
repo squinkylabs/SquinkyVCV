@@ -37,14 +37,6 @@ public:
      */
     void step();
 
-    /**
-     * loops are independent for each track. Default parameter is only 
-     * provided for compatibilty with old unit tests.
-     */
-#if 0
-    double getCurrentLoopIterationStart(int track = 0) const;
-#endif
-
     void setNumVoices(int track, int numVoices);
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
@@ -53,7 +45,7 @@ public:
      * resets all internal playback state.
      * @param clearGate will set the host's gate low, if true
      */
-    void reset(bool clearGates);
+    void reset(bool clearGates, bool resetSectionIndex);
 
     void setRunningStatus(bool running);
 

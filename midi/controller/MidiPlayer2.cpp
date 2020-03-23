@@ -28,7 +28,7 @@ void MidiPlayer2::setSong(std::shared_ptr<MidiSong> newSong)
     track = song->getTrack(0);
 }
 
-void MidiPlayer2::reset(bool clearGates)
+void MidiPlayer2::reset(bool clearGates, bool)
 {
     isReset = true;
     isResetGates = clearGates;

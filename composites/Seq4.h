@@ -336,7 +336,7 @@ void  Seq4<TBase>::stepn(int n)
     // Our level sensitive reset will get turned into an edge in here
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
-        player->reset(true);
+        player->reset(true, true);
         allGatesOff();          // turn everything off on reset, just in case of stuck notes.
     }
 

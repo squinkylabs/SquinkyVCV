@@ -63,7 +63,7 @@ public:
      * Gives us a chance to do some work before playOnce gets called again.
      */
     void step();
-    void reset(bool resetSectionIndex);
+    void reset(bool resetGates, bool resetSectionIndex);
     void setNumVoices(int numVoices);
     void setSampleCountForRetrigger(int);
     void updateSampleCount(int numElapsed);
@@ -262,6 +262,7 @@ private:
 
         bool reset = false;
         bool resetSections = false;
+        bool resetGates = false;
         bool startupTriggered = false;
     };
 

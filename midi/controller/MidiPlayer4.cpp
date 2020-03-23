@@ -70,16 +70,27 @@ void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterv
         // If seq is paused, leave now so we don't act on the dirty flag when stopped.
         return;
     }
+#if 0
+    static double lastMt = 0;
+    static int seq = 0;
+    if (metricTime > (lastMt + .65)) {
+        lastMt = metricTime;
+        // printf("forcing debug reset %d\n", seq++);  fflush(stdout);
+        reset(true, false);
+    }
+#endif
 
     const bool acquiredLock = song->lock->playerTryLock();
     if (acquiredLock) {
         if (song->lock->dataModelDirty()) {
-            reset(false);
+            reset(true, false);         // reset all the gates. we need to do this, because we
+                                        // only replay the current section, so we are probably at a 
+                                        // different rotation when reset, than when played straight
         }
         updateToMetricTimeInternal(metricTime, quantizationInterval);
         song->lock->playerUnlock();
     } else {
-        reset(false);
+        reset(true, false);
         host->onLockFailed();
     }
 }
@@ -87,32 +98,21 @@ void MidiPlayer4::updateToMetricTime(double metricTime, float quantizationInterv
 void MidiPlayer4::updateToMetricTimeInternal(double metricTime, float quantizationInterval)
 {
     metricTime = TimeUtils::quantize(metricTime, quantizationInterval, true);
-    // If we had a conflict and needed to reset, then
-    // start all over from beginning. Or, if reset initiated by user.
+    // If user (cv) has requested a reset
     if (isReset) {
 
         for (int i=0; i < MidiSong4::numTracks; ++i) {
             auto trackPlayer = trackPlayers[i];
-            trackPlayer->reset(isResetSectionIndex);
+            trackPlayer->reset(isResetGates, isResetSectionIndex);
         }
-        // curEvent = track->begin();
-        resetAllVoices(isResetGates);
-        //voiceAssigner.reset();
+
+        resetAllVoices(isResetGates);       // we've always done this. It's a little weird to do it here,
+                                            // but maybe belt and suspenders?
         isReset = false;
         isResetGates = false;
         isResetSectionIndex = false;
-        // currentLoopIterationStart = 0;
     }
 
-
-    // To implement loop start, we just push metric time up to where we want to start.
-    // TODO: skip over initial stuff?
-#if 0   // player 4 has no subrange, right?
-    if (song->getSubrangeLoop().enabled) {
-   // if (loopParams && loopParams.load()->enabled) {
-        metricTime += song->getSubrangeLoop().startTime;
-    }
-#endif
      // keep processing events until we are caught up
     for (int i=0; i < MidiSong4::numTracks; ++i) {
         auto trackPlayer = trackPlayers[i];
@@ -127,19 +127,11 @@ MidiTrackPlayerPtr MidiPlayer4::getTrackPlayer(int track)
     return trackPlayers[track];
 }
 
-#if 0
-double MidiPlayer4::getCurrentLoopIterationStart(int track) const
-{
-    auto tkPlayer = trackPlayers[track];
-    return tkPlayer->getCurrentLoopIterationStart();
-}
-#endif
-
-void MidiPlayer4::reset(bool clearGates)
+void MidiPlayer4::reset(bool clearGates, bool resetSectionIndex)
 {
     isReset = true;
     isResetGates = clearGates;
-    isResetSectionIndex = clearGates;
+    isResetSectionIndex = resetSectionIndex;
 }
 
 int MidiPlayer4::getSection(int track) const

@@ -91,11 +91,13 @@ void MidiTrackPlayer::resetAllVoices(bool clearGates) {
     }
 }
 
-void MidiTrackPlayer::reset(bool resetSectionIndex) {
+void MidiTrackPlayer::reset(bool resetGates, bool resetSectionIndex) {
     if (resetSectionIndex) {
         eventQ.nextSectionIndex = 0;            // on reset, immediately clear q of next section req
     }
+
     eventQ.resetSections = resetSectionIndex;
+    eventQ.resetGates = resetGates;
     eventQ.reset = true;
 }
 

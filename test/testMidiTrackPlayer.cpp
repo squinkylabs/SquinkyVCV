@@ -504,7 +504,7 @@ static void testHardResetOrig()
 
     // stop, and reset
     pl.setRunningStatus(false);
-    pl.reset(true);         // set back to section 1
+    pl.reset(false, true);         // set back to section 1
 
     // could assert the next is now 1??
     pl.playOnce(.2, quantizationInterval);
@@ -543,7 +543,7 @@ static void testHardReset()
 
     // stop, and reset
     pl.setRunningStatus(false);
-    pl.reset(true);         // set back to section 1
+    pl.reset(false, true);         // set back to section 1
     pl.step();
 
     // could assert the next is now 1??
@@ -580,7 +580,7 @@ static void testPlayThenReset()
     // reset
     pl.setRunningStatus(false);
     pl.step();
-    pl.reset(true);
+    pl.reset(false, true);
     pl.step();
     pl.setRunningStatus(true);
     pl.step();
@@ -623,7 +623,7 @@ static void testPlayThenResetSeek()
     // reset and request last section
     pl.setRunningStatus(false);
     pl.step();
-    pl.reset(true);
+    pl.reset(false, true);
     pl.setNextSectionRequest(4);
     pl.setRunningStatus(true);                  // will put startup req in queue.
 
@@ -728,7 +728,7 @@ static void testLockGates()
     play(pl, 1.1f, quantizationInterval);
     assert(host->onlyOneGate(1));
 
-    pl.reset(false);
+    pl.reset(false, false);
     pl.resetAllVoices(true);
     pl.step();
 

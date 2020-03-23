@@ -28,7 +28,7 @@ public:
 #ifdef _MLOG
         printf("test host setGate(%d) -> %d\n", voice, g);
 #endif
-        assert(track == 0);
+        assert(track == 0 || !g);       // if we have events on unexpected tracks, they are just gate off from reset
         assert(voice >= 0 && voice < 16);
         bool bs = gateState[voice];
         bool chg = (bs != g);

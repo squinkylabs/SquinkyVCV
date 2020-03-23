@@ -35,8 +35,9 @@ public:
     /**
      * resets all internal playback state.
      * @param clearGate will set the host's gate low, if true
+     * @param dummy is just to satisfy templatized unit tests
      */
-    void reset(bool clearGates);
+    void reset(bool clearGates, bool dummy = false);
     double getCurrentLoopIterationStart() const;
     float getCurrentSubrangeLoopStart() const;
 

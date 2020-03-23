@@ -235,7 +235,7 @@ static void testRepeatReset()
     assertGT(host->gateChangeCount, 4);
 
     // now reset the player and repeat
-    pl.reset(true);
+    pl.reset(true, true);
     pl.updateToMetricTime(.2, quantizationInterval, true);
     const int ct0 = host->gateChangeCount;
 
@@ -480,8 +480,8 @@ static void testLockGates()
     }
     //about to play after reset
     pl.updateToMetricTime(4.1, quantizationInterval, true);
-    printf("*********** re-enable testLockGates when bug fixed\n");
-   // assertEQ(host->numGates(), 1);
+    // printf("*********** re-enable testLockGates when bug fixed\n");
+    assertEQ(host->numGates(), 1);
  
 }
 

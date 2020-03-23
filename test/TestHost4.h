@@ -44,8 +44,10 @@ public:
     }
     void setGate(int track, int voice, bool g) override
     {
-       // assert(track == 0);     // just for now!
-       trackActive[track] = true;
+
+        if (g) {
+            trackActive[track] = true;  // gate off doesn't make a track active
+        }
 #ifdef _MLOG
         printf("test host setGate(%d) -> %d\n", voice, g);
 #endif
