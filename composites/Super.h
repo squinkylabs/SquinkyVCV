@@ -116,7 +116,7 @@ inline void Super<TBase>::init()
         this->stepn(div.getDiv());
      });
 
-    dspCommon.init();
+    // dspCommon.init();
 
     const int rate = getOversampleRate();
     const int decimateDiv = std::max(rate, (int) SuperDspCommon::MAX_OVERSAMPLE);

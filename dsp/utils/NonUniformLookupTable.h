@@ -35,7 +35,7 @@ public:
     NonUniformLookupTable() = delete;
     static void addPoint(NonUniformLookupTableParams<T>& params, T x, T y);
     static void finalize(NonUniformLookupTableParams<T>& params);
-    static T lookup(NonUniformLookupTableParams<T>& params, T x);
+    static T lookup(const NonUniformLookupTableParams<T>& params, T x);
 };
 
 template <typename T>
@@ -74,7 +74,7 @@ inline void NonUniformLookupTable<T>::finalize(NonUniformLookupTableParams<T>& p
 
 
 template <typename T>
-inline T NonUniformLookupTable<T>::lookup(NonUniformLookupTableParams<T>& params, T x)
+inline T NonUniformLookupTable<T>::lookup(const NonUniformLookupTableParams<T>& params, T x)
 {
     assert(params.isFinalized);
     assert(!params.entries.empty());

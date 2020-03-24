@@ -45,7 +45,7 @@ void MidiPlayer4::setRunningStatus(bool running)
     }
 }
 
-void MidiPlayer4::setPorts(Input* inputPorts, Param* triggerImmediate)
+void MidiPlayer4::setPorts(SqInput* inputPorts, SqParam* triggerImmediate)
 {
     for (int i = 0; i < MidiSong4::numTracks; ++i) {
         trackPlayers[i]->setPorts(inputPorts + i, triggerImmediate);

@@ -4,6 +4,7 @@
 #include "MidiTrack.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
+#include "SqPort.h"
 
 #include <memory>
 
@@ -13,20 +14,6 @@ class MidiTrack;
 
 // #define _MLOG
 
-/**
- * This awful hack is so that both the real plugin and
- * the unit tests can pass this "Output" struct around
- */
-#ifdef __PLUGIN
-namespace rack {
-namespace engine {
-struct Input;
-struct Param;
-}
-}  // namespace rack
-#else
-#include "TestComposite.h"
-#endif
 
 /**
  * input port usage
@@ -40,14 +27,6 @@ struct Param;
 
 class MidiTrackPlayer {
 public:
-#ifdef __PLUGIN
-    using Param = rack::engine::Param;
-    using Input = rack::engine::Input;
-#else
-    using Input = ::Input;
-    using Param = ::Param;
-#endif
-
     MidiTrackPlayer(std::shared_ptr<IMidiPlayerHost4> host, int trackIndex, std::shared_ptr<MidiSong4> song);
     void setSong(std::shared_ptr<MidiSong4> newSong, int trackIndex);
     void resetAllVoices(bool clearGates);
@@ -82,7 +61,7 @@ public:
     void setRunningStatus(bool running);
     bool _getRunningStatus() const;
 
-    void setPorts(Input* cvInput, Param* triggerImmediate) {
+    void setPorts(SqInput* cvInput, SqParam* triggerImmediate) {
         input = cvInput;
         immediateParam = triggerImmediate;
     }
@@ -120,7 +99,7 @@ private:
     /**
      * VCV Input port for the CV input for track
      */
-    Input* input = nullptr;
+    SqInput* input = nullptr;
     
     /**
      * Schmidt triggers for various CV input channels
@@ -128,7 +107,7 @@ private:
     GateTrigger nextSectionTrigger;
     GateTrigger prevSectionTrigger;
 
-    Param* immediateParam = nullptr;        // not imp yet
+    SqParam* immediateParam = nullptr;        // not imp yet
 
     /**
      * This is the song UI sets directly and uses for UI purposes.

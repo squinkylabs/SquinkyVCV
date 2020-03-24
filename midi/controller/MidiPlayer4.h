@@ -10,14 +10,13 @@ using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
 using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
 
 #include "MidiTrackPlayer.h"
+#include "SqPort.h"
 
 // #define _MLOG
 
 class MidiPlayer4
 {
 public:
-    using Input = MidiTrackPlayer::Input;
-    using Param = MidiTrackPlayer::Param;
     MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
 
     void setSong(std::shared_ptr<MidiSong4> song);
@@ -53,7 +52,7 @@ public:
     void setNextSectionRequest(int track, int section);
     int getNextSectionRequest(int track) const;
 
-    void setPorts(Input* cvInput, Param* triggerImmediate);
+    void setPorts(SqInput* cvInput, SqParam* triggerImmediate);
     
     /**
      * Provide direct access so we don't have to add a zillion
