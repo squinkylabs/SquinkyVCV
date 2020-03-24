@@ -33,7 +33,8 @@ MidiSequencer4Ptr make()
 static void test1()
 {
     MidiSequencer4Ptr seq = make();
-    Command4Ptr cmd = MakeEmptyTrackCommand4::create(seq, 0, 0, 1);
+    Command4Ptr cmd = MakeEmptyTrackCommand4::createAddTrack(seq, 0, 0, 1);
+    assertEQ(cmd->name, "add section");
     cmd->execute(seq, nullptr);
     assert(!seq->undo->canUndo());
     assert(!seq->undo->canRedo());
@@ -48,25 +49,53 @@ static void test1()
 static void test2()
 {
     MidiSequencer4Ptr seq = make();
-    Command4Ptr cmd = MakeEmptyTrackCommand4::create(seq, 0, 0, TimeUtils::bar2time(2));
+    Command4Ptr cmd = MakeEmptyTrackCommand4::createAddTrack(seq, 0, 0, TimeUtils::bar2time(2));
 
     assert(!seq->song->getTrack(0, 0));
    
+    // running the command should make a track
     seq->undo->execute4(seq, cmd);
     assert(seq->song->getTrack(0, 0));
 
+    // after undo, track should be gone
     assert(seq->undo->canUndo());
     assert(!seq->undo->canRedo());
     seq->undo->undo4(seq);
     assert(!seq->song->getTrack(0, 0));
 
 
+    // redo should make the track again
     seq->undo->redo4(seq);
     assert(seq->song->getTrack(0, 0));
 }
+
+
+static void test3()
+{
+    MidiSequencer4Ptr seq = make();
+
+    // first make a track
+    Command4Ptr cmd = MakeEmptyTrackCommand4::createAddTrack(seq, 0, 0, TimeUtils::bar2time(2));
+    seq->undo->execute4(seq, cmd);
+    assert(seq->song->getTrack(0, 0));
+
+    cmd = MakeEmptyTrackCommand4::createRemoveTrack(seq, 0, 0, TimeUtils::bar2time(2));
+    assertEQ(cmd->name, "remove section");
+    seq->undo->execute4(seq, cmd);
+    assert(!seq->song->getTrack(0, 0));
+
+    seq->undo->undo4(seq);
+    assert(seq->song->getTrack(0, 0));
+
+    seq->undo->redo4(seq);
+    assert(!seq->song->getTrack(0, 0));
+
+}
+
 
 void testEditCommands4()
 {
     test1();
     test2();
+    test3();
 }
