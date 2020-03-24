@@ -85,6 +85,7 @@ extern void testTriad();
 extern void testMidiSelectionModel();
 extern void testMidiTrackPlayer();
 extern void testSuper();
+extern void testEditCommands4();
 
 #if 0
 #include <sstream>
@@ -201,6 +202,7 @@ int main(int argc, char ** argv)
     testManagedPool();
     testLookupTable();
     testObjectCache();
+    testEditCommands4();
     testMultiLag();
     testSlew4();   
     testMixHelper();
