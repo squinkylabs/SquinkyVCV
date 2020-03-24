@@ -3,12 +3,10 @@
 #include "MakeEmptyTrackCommand4.h"
 #include "MidiSequencer4.h"
 #include "MidiSong4.h"
+#include "TimeUtils.h"
 #include "UndoRedoStack.h"
 
-static void test0()
-{
-    Command4Ptr cmd = MakeEmptyTrackCommand4::create();
-}
+
 
 /*
 
@@ -35,19 +33,40 @@ MidiSequencer4Ptr make()
 static void test1()
 {
     MidiSequencer4Ptr seq = make();
-    Command4Ptr cmd = MakeEmptyTrackCommand4::create();
+    Command4Ptr cmd = MakeEmptyTrackCommand4::create(seq, 0, 0, 1);
     cmd->execute(seq, nullptr);
     assert(!seq->undo->canUndo());
     assert(!seq->undo->canRedo());
-    seq->undo->execute(seq, cmd);
+    seq->undo->execute4(seq, cmd);
 
     assert(seq->undo->canUndo());
     assert(!seq->undo->canRedo());
-    seq->undo->execute(seq, cmd);
+    seq->undo->undo4(seq);
+}
+
+
+static void test2()
+{
+    MidiSequencer4Ptr seq = make();
+    Command4Ptr cmd = MakeEmptyTrackCommand4::create(seq, 0, 0, TimeUtils::bar2time(2));
+
+    assert(!seq->song->getTrack(0, 0));
+   
+    seq->undo->execute4(seq, cmd);
+    assert(seq->song->getTrack(0, 0));
+
+    assert(seq->undo->canUndo());
+    assert(!seq->undo->canRedo());
+    seq->undo->undo4(seq);
+    assert(!seq->song->getTrack(0, 0));
+
+
+    seq->undo->redo4(seq);
+    assert(seq->song->getTrack(0, 0));
 }
 
 void testEditCommands4()
 {
-    test0();
     test1();
+    test2();
 }

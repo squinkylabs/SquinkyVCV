@@ -44,10 +44,12 @@ public:
     // But since the widget param is rarely used... 
     // execute the command, make undo record
     void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
-    void execute(MidiSequencer4Ptr, std::shared_ptr<Sq4Command>);
+    void execute4(MidiSequencer4Ptr, std::shared_ptr<Sq4Command>);
     void execute(MidiSequencerPtr, SequencerWidget*, std::shared_ptr<SqCommand>);
     void undo(MidiSequencerPtr);
     void redo(MidiSequencerPtr);
+    void undo4(MidiSequencer4Ptr);
+    void redo4(MidiSequencer4Ptr);
 
 private:
 
