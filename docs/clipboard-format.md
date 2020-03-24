@@ -113,6 +113,6 @@ json_t* Note::toInteropJson()
 
 **Entrian:** Entrian Timeline and Entrian Melody.
 
-**Impromptu Modular:** Foundry, PhraseSeq16/32, SMS16, and BigButtonSeq2.
+**Impromptu Modular:** ChordKey, Foundry, FourView, PhraseSeq16/32, SMS16, and BigButtonSeq2.
 
 **SquinkyLabs:** Seq++.
