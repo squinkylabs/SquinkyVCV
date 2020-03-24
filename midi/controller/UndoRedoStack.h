@@ -3,6 +3,8 @@
 #include <memory>
 
 class SqCommand;
+class Sq4Command;
+class SequencerWidget;
 class MidiSequencer;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
@@ -42,14 +44,19 @@ public:
     // But since the widget param is rarely used... 
     // execute the command, make undo record
     void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
+    void execute(MidiSequencer4Ptr, std::shared_ptr<Sq4Command>);
     void execute(MidiSequencerPtr, SequencerWidget*, std::shared_ptr<SqCommand>);
     void undo(MidiSequencerPtr);
     void redo(MidiSequencerPtr);
 
 private:
 
+    // It doesn't really "work" to have lists of differnt types of commands,
+    // but it's only for test. And in any case only one can have data at a time.
     std::list<std::shared_ptr<SqCommand>> undoList;
     std::list<std::shared_ptr<SqCommand>> redoList;
+    std::list<std::shared_ptr<Sq4Command>> undo4List;
+    std::list<std::shared_ptr<Sq4Command>> redo4List;
 
 };
 

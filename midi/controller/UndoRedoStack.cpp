@@ -7,12 +7,12 @@
 #ifndef __USE_VCV_UNDO
 bool UndoRedoStack::canUndo() const
 {
-    return !undoList.empty();
+    return !undoList.empty() || !undo4List.empty();
 }
 
 bool UndoRedoStack::canRedo() const
 {
-    return !redoList.empty();
+    return !redoList.empty() || !redo4List.empty();
 }
 
 void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd)
@@ -20,6 +20,13 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd
     cmd->execute(seq, nullptr);     // only used for unit tests, maybe we can get away with this
     undoList.push_front(cmd);
     redoList.clear();   
+}
+
+void UndoRedoStack::execute(MidiSequencer4Ptr seq, std::shared_ptr<Sq4Command> cmd)
+{
+    cmd->execute(seq, nullptr);     // only used for unit tests, maybe we can get away with this
+    undo4List.push_front(cmd);
+    redo4List.clear();   
 }
 
 void UndoRedoStack::undo(MidiSequencerPtr seq)

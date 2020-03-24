@@ -9,9 +9,9 @@ Command4Ptr MakeEmptyTrackCommand4::create()
 
 void MakeEmptyTrackCommand4::execute(MidiSequencer4Ptr seq, Sequencer4Widget* widget)
 {
-    assert(false);
+    printf("MakeEmptyTrackCommand4::execute does nothing\n");
 }
 void MakeEmptyTrackCommand4::undo(MidiSequencer4Ptr seq, Sequencer4Widget*)
 {
-    assert(false);
+    printf("MakeEmptyTrackCommand4::undo does nothing\n");
 }
