@@ -25,7 +25,7 @@ public:
     virtual ~Sq4Command() {}
     virtual void execute(MidiSequencer4Ptr seq, Sequencer4Widget* widget) = 0;
     virtual void undo(MidiSequencer4Ptr seq, Sequencer4Widget*) = 0;
-    std::string name = "Seq++";
+    std::string name = "4X4++";
 };
 
 using CommandPtr = std::shared_ptr<SqCommand>;

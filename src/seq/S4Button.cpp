@@ -391,36 +391,7 @@ void S4Button::onDragStart(const rack::event::DragStart& e) {
         }
     }
     mouseButtonIsControlKey = false;
-
-#if 0
-    // release main button triggers click action
-    if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_RELEASE)) {
-        // Command on mac.
-        const bool ctrlKey = (e.mods & RACK_MOD_CTRL);
-
-        if (!isDragging) {
-            return;
-        }
-
-        // OK, process it
-        sq::consumeEvent(&e, this);
-
-        if (clickHandler) {
-            clickHandler(ctrlKey);
-        }
-        return;
-    }
-
-    // alternate click brings up context menu
-    if ((e.button == GLFW_MOUSE_BUTTON_RIGHT) && (e.action == GLFW_PRESS)) {
-        sq::consumeEvent(&e, this);
-        invokeContextMenu();
-        return;
-    }
-    #endif
 }
-
-
 
 
 inline void S4Button::onSelectKey(const rack::event::SelectKey& e) {
@@ -431,15 +402,6 @@ inline void S4Button::onSelectKey(const rack::event::SelectKey& e) {
         ParamWidget::onSelectKey(e);
     }
 }
-
-#if 0
-inline void S4Button::onDragEnter(const rack::event::DragEnter& e) {
-}
-
-inline void S4Button::onDragLeave(const rack::event::DragLeave& e) {
-    isDragging = false;
-}
-#endif
 
 inline void S4Button::setClickHandler(callback h) {
     clickHandler = h;
