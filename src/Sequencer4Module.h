@@ -29,7 +29,7 @@ public:
     {
         runStopRequested = true;
     }
-    MidiSong4Ptr getSong();
+    MidiSequencer4Ptr getSequencer();
 
     json_t *dataToJson() override;
     void dataFromJson(json_t *data) override;

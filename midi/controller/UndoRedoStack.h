@@ -5,8 +5,11 @@
 class SqCommand;
 class Sq4Command;
 class SequencerWidget;
+class Sequencer4Widget;
 class MidiSequencer;
+class MidiSequencer4;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
+using MidiSequencer4Ptr = std::shared_ptr<MidiSequencer4>;
 
 #if defined(__PLUGIN) && defined(__V1x)
 #define __USE_VCV_UNDO
@@ -22,6 +25,8 @@ public:
     // execute the command, make undo record
     void execute(MidiSequencerPtr, std::shared_ptr<SqCommand>);
     void execute(MidiSequencerPtr, SequencerWidget*, std::shared_ptr<SqCommand>);
+    void execute4(MidiSequencer4Ptr, std::shared_ptr<Sq4Command>);
+    void execute4(MidiSequencer4Ptr, Sequencer4Widget*, std::shared_ptr<Sq4Command>);
     void setModuleId(int);
 private:
     int moduleId=-1;

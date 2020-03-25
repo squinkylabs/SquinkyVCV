@@ -17,6 +17,8 @@ public:
     SequencerModule();
     std::shared_ptr<Seq<WidgetComposite>> seqComp;
 
+    MidiSequencerPtr getSequencer() { return sequencer; }
+
     MidiSequencerPtr sequencer;
     SequencerWidget* widget = nullptr;
 

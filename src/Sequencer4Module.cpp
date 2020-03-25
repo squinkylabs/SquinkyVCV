@@ -4,6 +4,7 @@
 #include <sstream>
 #include "MidiSong4.h"
 #include "Squinky.hpp"
+#include "UndoRedoStack.h"
 #include "WidgetComposite.h"
 
 #ifdef _SEQ4
@@ -38,7 +39,9 @@ Sequencer4Module::Sequencer4Module() {
 }
 
 void Sequencer4Module::step() {
-    //sequencer->undo->setModuleId(this->id);
+    if (seq4) {
+        seq4->undo->setModuleId(this->id);
+    }
     if (runStopRequested) {
         seq4Comp->toggleRunStop();
         runStopRequested = false;
@@ -46,8 +49,10 @@ void Sequencer4Module::step() {
     seq4Comp->step();
 }
 
-MidiSong4Ptr Sequencer4Module::getSong() {
-    return seq4Comp->getSong();
+MidiSequencer4Ptr Sequencer4Module::getSequencer() {
+    assert(seq4);
+    assert(seq4->song);
+    return seq4;
 }
 
 void Sequencer4Module::dataFromJson(json_t* data) {
@@ -231,7 +236,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
 
 void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
     if (module) {
-        buttonGrid.init(this, module, module->getSong(), module->seq4Comp);
+        buttonGrid.init(this, module, module->getSequencer(), module->seq4Comp);
     } else {
         WARN("make the module browser draw the buttons");
         

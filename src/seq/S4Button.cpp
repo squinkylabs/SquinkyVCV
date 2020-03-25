@@ -2,6 +2,7 @@
 #include "../ctrl/SqMenuItem.h"
 #include "../ctrl/SqUI.h"
 #include "InteropClipboard.h"
+#include "MakeEmptyTrackCommand4.h"
 #include "MidiSelectionModel.h"
 #include "MidiTrack4Options.h"
 #include "Seq4.h"
@@ -9,6 +10,7 @@
 #include "SqRemoteEditor.h"
 #include "TimeUtils.h"
 #include "UIPrefs.h"
+#include "UndoRedoStack.h"
 #include "WidgetComposite.h"
 
 #include <sstream>
@@ -125,11 +127,11 @@ void S4Button::otherItems(::rack::ui::Menu* menu) {
 //*********************** S4Button ************************/
 
 MidiTrackPtr S4Button::getTrack() const {
-    return song->getTrack(row, col);
+    return seq->song->getTrack(row, col);
 }
 
 MidiTrack4OptionsPtr S4Button::getOptions() const {
-    return song->getOptions(row, col);
+    return seq->song->getOptions(row, col);
 }
 
 void S4Button::invokeContextMenu() {
@@ -221,19 +223,22 @@ void S4Button::pollForParamChange()
 
 void S4Button::doCut() {
     doCopy();
-    song->addTrack(row, col, nullptr);
+    Command4Ptr cmd = MakeEmptyTrackCommand4::createRemoveTrack(seq, row, col, TimeUtils::bar2time(2));
+    seq->undo->execute4(seq, cmd);
+    //seq->undo->
+    //song->addTrack(row, col, nullptr);
 }
 
 void S4Button::doCopy() {
-    auto track = song->getTrack(row, col);
+    auto track = seq->song->getTrack(row, col);
     if (track) {
         InteropClipboard::put(track, true);
     }
 }
 
 void S4Button::doPaste() {
-    MidiLocker l(song->lock);
-    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(song->lock, true);
+    MidiLocker l(seq->song->lock);
+    MidiTrackPtr destTrack = std::make_shared<MidiTrack>(seq->song->lock, true);
     destTrack->assertValid();
 
     // Make a fake selection that will say "select all".
@@ -255,11 +260,11 @@ void S4Button::doPaste() {
 
     destTrack->assertValid();
 
-    if (!song) {
+    if (!seq->song) {
         WARN("no song to paste");
         return;
     }
-    song->addTrack(row, col, destTrack);
+    seq->song->addTrack(row, col, destTrack);
 }
 
 int S4Button::getRepeatCountForUI() {
@@ -285,9 +290,9 @@ inline S4Button::S4Button(
     const rack::math::Vec& pos,
     int r,
     int c,
-    MidiSong4Ptr s,
+    MidiSequencer4Ptr s,
     std::shared_ptr<Seq4<WidgetComposite>> seq4,
-    ::rack::engine::Module* theModule) : row(r), col(c), song(s), seq4Comp(seq4),
+    ::rack::engine::Module* theModule) : row(r), col(c), seq(s), seq4Comp(seq4),
     module(theModule),
     selectParamId(Seq4<WidgetComposite>::PADSELECT0_PARAM + col + row * MidiSong4::numSectionsPerTrack)
 {
@@ -311,12 +316,12 @@ inline S4Button::S4Button(
 }
 
 inline void S4Button::doEditClip() {
-    MidiTrackPtr tk = song->getTrack(row, col);
+    MidiTrackPtr tk = seq->song->getTrack(row, col);
     if (!tk) {
         // make a new track on click, if needed
-        MidiLocker l(song->lock);
-        tk = MidiTrack::makeEmptyTrack(song->lock);
-        song->addTrack(row, col, tk);
+        MidiLocker l(seq->song->lock);
+        tk = MidiTrack::makeEmptyTrack(seq->song->lock);
+        seq->song->addTrack(row, col, tk);
     }
 
     SqRemoteEditor::clientAnnounceData(tk);
@@ -444,10 +449,11 @@ inline void S4Button::setClickHandler(callback h) {
 
 using Comp = Seq4<WidgetComposite>;
 void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
-                        MidiSong4Ptr song, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
+                        MidiSequencer4Ptr seq, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
     INFO("button::init 394");
-    if (!song) {
-        song = MidiSong4::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0, 0);
+    assert(seq);
+    if (!seq->song) {
+        seq->song = MidiSong4::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0, 0);
     }
  
    // std::shared_ptr<IComposite> icomp = Comp::getDescription();
@@ -466,7 +472,7 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
                 rack::math::Vec(x, y),
                 row,
                 col,
-                song,
+                seq,
                 seq4Comp,
                 module);
 

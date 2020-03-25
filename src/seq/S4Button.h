@@ -36,7 +36,7 @@ public:
     S4Button(const rack::math::Vec& size,
              const rack::math::Vec& pos,
              int r, int c,
-             MidiSong4Ptr s,
+             MidiSequencer4Ptr s,
              std::shared_ptr<Seq4<WidgetComposite>> seq4Comp,
              ::rack::engine::Module* theModule);
 
@@ -58,7 +58,8 @@ public:
     void step() override;
 
     void setNewSeq(MidiSequencer4Ptr newSeq) {
-        song = newSeq->song;
+        //song = newSeq->song;
+        seq = newSeq;
     }
 
     void doEditClip();
@@ -71,7 +72,8 @@ private:
 
     const int row;
     const int col;
-    MidiSong4Ptr song;
+    //MidiSong4Ptr song;
+    MidiSequencer4Ptr seq;
     std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
 
     /**
@@ -119,7 +121,7 @@ public:
     void init(
         rack::app::ModuleWidget* widget,
         rack::engine::Module* module,
-        MidiSong4Ptr s,
+        MidiSequencer4Ptr seq,
         std::shared_ptr<Seq4<WidgetComposite>> seq4Comp);
     void setNewSeq(MidiSequencer4Ptr newSeq);
     const static int buttonSize = 50.f;

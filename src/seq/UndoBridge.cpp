@@ -8,11 +8,72 @@
 #if defined(__USE_VCV_UNDO) && defined(_SEQ)
 
 #include "../SequencerModule.h"
+#include "../Sequencer4Module.h"
 
+template<class SequencerPtr, class Command, class Module, class Widget>
 class SeqAction : public ::rack::history::ModuleAction
 {
 public:
-    SeqAction(const std::string& _name, std::shared_ptr<SqCommand> command, int moduleId)
+    SeqAction(const std::string& _name, std::shared_ptr<Command> command, int moduleId)
+    {
+        wrappedCommand = command;
+        this->name = "Seq++: " + wrappedCommand->name;
+        this->moduleId = moduleId;
+    }
+    void undo() override
+    {
+        SequencerPtr seq = getSeq();
+        Widget* wid = getWidget();
+        if (seq && wid) {
+            wrappedCommand->undo(seq, wid);
+        }
+    }
+    void redo() override
+    {
+        SequencerPtr seq = getSeq();
+        Widget* wid = getWidget();
+        if (seq && wid) {
+            wrappedCommand->execute(seq, wid);
+        }
+    }
+
+private:
+    std::shared_ptr<Command> wrappedCommand;
+    SequencerPtr getSeq()
+    {
+        SequencerPtr ret;
+        Module* module = dynamic_cast<Module *>(::rack::appGet()->engine->getModule(moduleId));
+        if (!module) {
+            fprintf(stderr, "error getting module in undo\n");
+            return ret;
+        }
+        ret = module->getSequencer();
+        if (!ret) {
+            fprintf(stderr, "error getting sequencer in undo\n");
+        }
+        return ret;
+    }
+    Widget* getWidget()
+    {
+        Module* module = dynamic_cast<Module *>(::rack::appGet()->engine->getModule(moduleId));
+        if (!module) {
+            fprintf(stderr, "error getting module in undo\n");
+            return nullptr;
+        }
+        Widget* widget = module->widget;
+        if (!widget) {
+            fprintf(stderr, "error getting widget in undo\n");
+            return nullptr;
+        }
+        return widget;
+    }
+};
+
+
+class SeqActionOrig : public ::rack::history::ModuleAction
+{
+public:
+    SeqActionOrig(const std::string& _name, std::shared_ptr<SqCommand> command, int moduleId)
     {
         wrappedCommand = command;
         this->name = "Seq++: " + wrappedCommand->name;
@@ -64,21 +125,47 @@ private:
             return nullptr;
         }
         return widget;
-
     }
 };
 
+using SeqAction1 = SeqAction<MidiSequencerPtr, SqCommand, SequencerModule, SequencerWidget>;
+using SeqAction4 = SeqAction<MidiSequencer4Ptr, Sq4Command, Sequencer4Module, Sequencer4Widget>;
+
 void UndoRedoStack::setModuleId(int id)
 {
+   // INFO("UndoRedoStack::setModuleId id=%x this=%p", id, this);
     this->moduleId = id;
 }
+
+
+void UndoRedoStack::execute4(MidiSequencer4Ptr seq, Sequencer4Widget* widget, std::shared_ptr<Sq4Command> cmd)
+{
+    assert(seq);
+    cmd->execute(seq, widget);
+    auto action = new SeqAction4("unknown", cmd, moduleId);
+
+    ::rack::appGet()->history->push(action);
+}
+
+void UndoRedoStack::execute4(MidiSequencer4Ptr seq, std::shared_ptr<Sq4Command> cmd)
+{
+    assert(seq);
+    cmd->execute(seq, nullptr);
+    auto action = new SeqAction4("unknown", cmd, moduleId);
+
+    ::rack::appGet()->history->push(action);
+}
+
+
+//  // template<class Sequencer, class Command, class Module>
+
 
 
 void UndoRedoStack::execute(MidiSequencerPtr seq, SequencerWidget* widget, std::shared_ptr<SqCommand> cmd)
 {
     assert(seq);
     cmd->execute(seq, widget);
-    auto action = new SeqAction("unknown", cmd, moduleId);
+    auto action = new SeqAction1("unknown", cmd, moduleId);
 
     ::rack::appGet()->history->push(action);
 }
@@ -86,13 +173,12 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd
 {
     assert(seq);
     cmd->execute(seq, nullptr);
-    auto action = new SeqAction("unknown", cmd, moduleId);
+    auto action = new SeqAction1("unknown", cmd, moduleId);
 
     ::rack::appGet()->history->push(action);
 }
 
 #endif
-
 
 #if defined(__USE_VCV_UNDO) && !defined(_SEQ)
 
