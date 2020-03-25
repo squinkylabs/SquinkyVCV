@@ -15,8 +15,9 @@
 #include "ctrl/SqWidgets.h"
 
 #include "seq/ClockFinder.h"
-#include "seq/S4Button.h"
+//#include "seq/S4Button.h"
 #include "seq/SequencerSerializer.h"
+#include "seq/S4ButtonGrid.h"
 
 #include "MidiSequencer4.h"
 
