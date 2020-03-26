@@ -21,8 +21,9 @@ class S4Button;
 
 class S4ButtonGrid {
 public:
+    friend class S4ButtonClickCommand;
     void init(
-        rack::app::ModuleWidget* widget,
+        Sequencer4Widget* widget,
         rack::engine::Module* module,
         MidiSequencer4Ptr seq,
         std::shared_ptr<Seq4<WidgetComposite>> seq4Comp);
@@ -38,4 +39,7 @@ private:
     // void onEditClip();
 
     std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
+    std::shared_ptr<MidiSequencer4> seq;
+    Sequencer4Widget*  widget = nullptr;
+    
 };

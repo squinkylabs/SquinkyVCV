@@ -1,7 +1,9 @@
 
+#include "MidiSequencer4.h"
 #include "S4ButtonGrid.h"
 #include "S4Button.h"
 #include "Seq4.h"
+#include "UndoRedoStack.h"
 #include "../Sequencer4Widget.h"
 
 S4Button* S4ButtonGrid::getButton(int row, int col) {
@@ -10,6 +12,7 @@ S4Button* S4ButtonGrid::getButton(int row, int col) {
 }
 
 void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq) {
+    seq = newSeq;
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
         for (int col = 0; col < MidiSong4::numTracks; ++col) {
             buttons[row][col]->setNewSeq(newSeq);
@@ -21,10 +24,22 @@ void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq) {
 /***************************** S4ButtonGrid ***********************************/
 
 using Comp = Seq4<WidgetComposite>;
-void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* module,
-                        MidiSequencer4Ptr seq, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
-    INFO("button::init 394");
-    assert(seq);
+void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
+                        MidiSequencer4Ptr _seq, std::shared_ptr<Seq4<WidgetComposite>> _seq4Comp) {
+    widget = parent;
+    seq = _seq;
+
+    MidiSong4Ptr song;
+    if (seq) {
+        song = seq->song;
+    } else {
+        song =  MidiSong4::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0, 0);
+    }
+
+    if (!seq) {
+       seq = MidiSequencer4::make(song);
+    }
+
     if (!seq->song) {
         seq->song = MidiSong4::makeTest(MidiTrack::TestContent::eightQNotesCMaj, 0, 0);
     }
@@ -98,19 +113,32 @@ public:
     {
 
     }
+
     void execute(MidiSequencer4Ptr seq, Sequencer4Widget* widget) override
     {
-        WARN("NIMP S4 execute");
         assert(widget);
 
         // we always need to get a fresh pointer - can't store in undo object
         std::shared_ptr<S4ButtonGrid> grid = widget->getButtonGrid();
         assert(grid);
+       // select the one we just clicked into
+        for (int r = 0; r < MidiSong4::numTracks; ++r) {
+            for (int c = 0; c < MidiSong4::numSectionsPerTrack; ++c) {
+                auto button = grid->getButton(r, c);
+                assert(button);
+                button->setSelection(r == rowToSelect && c == colToSelect);
+            }
+        }
+ 
+        auto button = grid->getButton(rowToSelect, colToSelect);
+        button->doEditClip();
     }
+    
     void undo(MidiSequencer4Ptr seq, Sequencer4Widget*) override
     {
          WARN("NIMP S4 undo");
     }
+
 private:
     const int rowToSelect;
     const int colToSelect;
@@ -118,6 +146,9 @@ private:
 
 void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
     Command4Ptr cmd = std::make_shared<S4ButtonClickCommand>(row, col);
+    assert(widget);
+    seq->undo->execute4(seq, widget, cmd);
+#if 0
     // select the one we just clicked into
     for (int r = 0; r < MidiSong4::numTracks; ++r) {
         for (int c = 0; c < MidiSong4::numSectionsPerTrack; ++c) {
@@ -126,7 +157,9 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
             button->setSelection(r == row && c == col);
         }
     }
+#endif
 
+    // we still do our own selection of next section, outside of unto
     if (isCtrl) {
         // then the select next clip
         // remember, section is 1..4
@@ -136,9 +169,9 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
             seq4Comp->setNextSectionRequest(r, col + 1);
         }
     }
-    auto button = getButton(row, col);
+  //  auto button = getButton(row, col);
 
-    button->doEditClip();
+  //  button->doEditClip();
 }
 
 std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col) {
