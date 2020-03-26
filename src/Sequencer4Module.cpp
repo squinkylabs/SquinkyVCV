@@ -1,5 +1,6 @@
 
 #include "Sequencer4Module.h"
+#include "Sequencer4Widget.h"
 
 #include <sstream>
 #include "MidiSong4.h"
@@ -66,64 +67,6 @@ json_t* Sequencer4Module::dataToJson() {
     return SequencerSerializer::toJson(seq4);
 }
 
-////////////////////
-// module widget
-////////////////////
-
-struct Sequencer4Widget : ModuleWidget {
-    Sequencer4Widget(Sequencer4Module*);
-    void appendContextMenu(Menu* theMenu) override {
-        ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
-        theMenu->addChild(spacerLabel);
-        ManualMenuItem* manual = new ManualMenuItem(
-            "4X4 Manual",
-            "https://github.com/squinkylabs/SquinkyVCV/blob/s53/docs/4x4.md");
-        theMenu->addChild(manual);
-
-#if 0 // doesn't work yet
-        auto item = new SqMenuItem_BooleanParam2(module, Comp::TRIGGER_IMMEDIATE_PARAM);
-        item->text = "Trigger Immediately";
-        theMenu->addChild(item);
-#endif
-        auto item = new SqMenuItem( []() { return false; }, [this](){
-           // float rawClockFalue = Comp::CLOCK_INPUT_PARAM
-            float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
-            SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
-            const int div = SeqClock::clockRate2Div(rate);
-            ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT, false);
-        });
-        item->text = "Hookup Clock";
-        theMenu->addChild(item);
-        //ClockFinder::updateMenu(theMenu);
-    }
-
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY) {
-        Label* label = new Label();
-        label->box.pos = v;
-        label->text = str;
-        label->color = color;
-        addChild(label);
-        return label;
-    }
-
-    Label* addLabelLeft(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_GREY) {
-        Label* label = new Label();
-        label->alignment = Label::LEFT_ALIGNMENT;
-        label->box.pos = v;
-        label->text = str;
-        label->color = color;
-        addChild(label);
-        return label;
-    }
-
-    void setNewSeq(MidiSequencer4Ptr newSeq);
-    void addControls(Sequencer4Module* module,
-                     std::shared_ptr<IComposite> icomp);
-    void addBigButtons(Sequencer4Module* module);
-    void addJacks(Sequencer4Module* module);
-    void toggleRunStop(Sequencer4Module* module);
-    S4ButtonGrid buttonGrid;
-};
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -136,6 +79,8 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module* module) {
     if (module) {
         module->widget = this;
     }
+    buttonGrid = std::make_shared<S4ButtonGrid>();
+
     box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/sq4_panel.svg");
 
@@ -152,8 +97,33 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module* module) {
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+void Sequencer4Widget::appendContextMenu(Menu* theMenu) {
+    ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
+    theMenu->addChild(spacerLabel);
+    ManualMenuItem* manual = new ManualMenuItem(
+        "4X4 Manual",
+        "https://github.com/squinkylabs/SquinkyVCV/blob/s53/docs/4x4.md");
+    theMenu->addChild(manual);
+
+#if 0 // doesn't work yet
+    auto item = new SqMenuItem_BooleanParam2(module, Comp::TRIGGER_IMMEDIATE_PARAM);
+    item->text = "Trigger Immediately";
+    theMenu->addChild(item);
+#endif
+    auto item = new SqMenuItem( []() { return false; }, [this](){
+        // float rawClockFalue = Comp::CLOCK_INPUT_PARAM
+        float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
+        SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
+        const int div = SeqClock::clockRate2Div(rate);
+        ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT, false);
+    });
+    item->text = "Hookup Clock";
+    theMenu->addChild(item);
+    //ClockFinder::updateMenu(theMenu);
+}
+
 void Sequencer4Widget::setNewSeq(MidiSequencer4Ptr newSeq) {
-    buttonGrid.setNewSeq(newSeq);
+    buttonGrid->setNewSeq(newSeq);
 }
 
 void Sequencer4Widget::toggleRunStop(Sequencer4Module* module) {
@@ -237,11 +207,10 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
 
 void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
     if (module) {
-        buttonGrid.init(this, module, module->getSequencer(), module->seq4Comp);
+        buttonGrid->init(this, module, module->getSequencer(), module->seq4Comp);
     } else {
         WARN("make the module browser draw the buttons");
-        
-         buttonGrid.init(this, nullptr, nullptr, nullptr);
+        buttonGrid->init(this, nullptr, nullptr, nullptr);
     }
 }
 

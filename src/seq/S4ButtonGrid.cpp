@@ -2,6 +2,7 @@
 #include "S4ButtonGrid.h"
 #include "S4Button.h"
 #include "Seq4.h"
+#include "../Sequencer4Widget.h"
 
 S4Button* S4ButtonGrid::getButton(int row, int col) {
     assert(row >= 0 && row < 4 && col >= 0 && col < 4);
@@ -90,7 +91,33 @@ void S4ButtonGrid::init(rack::app::ModuleWidget* parent, rack::engine::Module* m
     }
 }
 
+class S4ButtonClickCommand : public Sq4Command
+{
+public:
+    S4ButtonClickCommand(int row, int col) : rowToSelect(row), colToSelect(col) 
+    {
+
+    }
+    void execute(MidiSequencer4Ptr seq, Sequencer4Widget* widget) override
+    {
+        WARN("NIMP S4 execute");
+        assert(widget);
+
+        // we always need to get a fresh pointer - can't store in undo object
+        std::shared_ptr<S4ButtonGrid> grid = widget->getButtonGrid();
+        assert(grid);
+    }
+    void undo(MidiSequencer4Ptr seq, Sequencer4Widget*) override
+    {
+         WARN("NIMP S4 undo");
+    }
+private:
+    const int rowToSelect;
+    const int colToSelect;
+};
+
 void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
+    Command4Ptr cmd = std::make_shared<S4ButtonClickCommand>(row, col);
     // select the one we just clicked into
     for (int r = 0; r < MidiSong4::numTracks; ++r) {
         for (int c = 0; c < MidiSong4::numSectionsPerTrack; ++c) {
