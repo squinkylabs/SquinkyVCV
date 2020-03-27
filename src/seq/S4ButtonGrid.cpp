@@ -116,16 +116,20 @@ public:
 
     void execute(MidiSequencer4Ptr seq, Sequencer4Widget* widget) override
     {
-        assert(widget);
-
         // we always need to get a fresh pointer - can't store in undo object
+        assert(widget);
         std::shared_ptr<S4ButtonGrid> grid = widget->getButtonGrid();
         assert(grid);
+
        // select the one we just clicked into
         for (int r = 0; r < MidiSong4::numTracks; ++r) {
             for (int c = 0; c < MidiSong4::numSectionsPerTrack; ++c) {
                 auto button = grid->getButton(r, c);
                 assert(button);
+                if (button->isSelected()) {
+                    origRowSelected = r;
+                    origColSelected = c;
+                }
                 button->setSelection(r == rowToSelect && c == colToSelect);
             }
         }
@@ -134,18 +138,42 @@ public:
         button->doEditClip();
     }
     
-    void undo(MidiSequencer4Ptr seq, Sequencer4Widget*) override
+    void undo(MidiSequencer4Ptr seq, Sequencer4Widget* widget) override
     {
-         WARN("NIMP S4 undo");
+        // we always need to get a fresh pointer - can't store in undo object
+        assert(widget);
+        std::shared_ptr<S4ButtonGrid> grid = widget->getButtonGrid();
+        assert(grid);
+
+        // first restore the edited track
+        if (origColSelected >= 0 && origRowSelected >= 0) {
+            auto button = grid->getButton(origRowSelected, origColSelected);
+            assert(button);
+            button->doEditClip();
+        }
+
+        // unset the selection we set before
+        auto button = grid->getButton(rowToSelect, colToSelect);
+        button->setSelection(false);
+
+        // and select the original
+        if (origRowSelected >= 0 && origColSelected >= 0) {
+            button = grid->getButton(origRowSelected, origColSelected);
+            button->setSelection(true);
+        }
+
     }
 
 private:
     const int rowToSelect;
     const int colToSelect;
+    int origRowSelected = -1;
+    int origColSelected = -1;
 };
 
 void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
     Command4Ptr cmd = std::make_shared<S4ButtonClickCommand>(row, col);
+    cmd->name = "click";
     assert(widget);
     seq->undo->execute4(seq, widget, cmd);
 #if 0

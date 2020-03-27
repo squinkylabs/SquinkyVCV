@@ -14,10 +14,10 @@ template<class SequencerPtr, class Command, class Module, class Widget>
 class SeqAction : public ::rack::history::ModuleAction
 {
 public:
-    SeqAction(const std::string& _name, std::shared_ptr<Command> command, int moduleId)
+    SeqAction(const std::string& _name, std::shared_ptr<Command> command, int moduleId, const std::string& moduleName)
     {
         wrappedCommand = command;
-        this->name = "Seq++: " + wrappedCommand->name;
+        this->name = moduleName + ": " + wrappedCommand->name;
         this->moduleId = moduleId;
     }
     void undo() override
@@ -142,7 +142,7 @@ void UndoRedoStack::execute4(MidiSequencer4Ptr seq, Sequencer4Widget* widget, st
 {
     assert(seq);
     cmd->execute(seq, widget);
-    auto action = new SeqAction4("unknown", cmd, moduleId);
+    auto action = new SeqAction4("unknown", cmd, moduleId, "4X4");
 
     ::rack::appGet()->history->push(action);
 }
@@ -151,7 +151,7 @@ void UndoRedoStack::execute4(MidiSequencer4Ptr seq, std::shared_ptr<Sq4Command> 
 {
     assert(seq);
     cmd->execute(seq, nullptr);
-    auto action = new SeqAction4("unknown", cmd, moduleId);
+    auto action = new SeqAction4("unknown", cmd, moduleId, "4X4");
 
     ::rack::appGet()->history->push(action);
 }
@@ -165,7 +165,7 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, SequencerWidget* widget, std::
 {
     assert(seq);
     cmd->execute(seq, widget);
-    auto action = new SeqAction1("unknown", cmd, moduleId);
+    auto action = new SeqAction1("unknown", cmd, moduleId, "Seq++");
 
     ::rack::appGet()->history->push(action);
 }
@@ -173,7 +173,7 @@ void UndoRedoStack::execute(MidiSequencerPtr seq, std::shared_ptr<SqCommand> cmd
 {
     assert(seq);
     cmd->execute(seq, nullptr);
-    auto action = new SeqAction1("unknown", cmd, moduleId);
+    auto action = new SeqAction1("unknown", cmd, moduleId, "Seq++");
 
     ::rack::appGet()->history->push(action);
 }
