@@ -72,8 +72,9 @@ public:
      *  May be called from UI thread.
      *  @param s is the new song to load.
      *  @param path is the file folder it was loaded from.
+     *  @param doUndo determines if we make a new undo event or not.
      */
-    void postNewSong(MidiSongPtr s, const std::string& path);
+    void postNewSong(MidiSongPtr s, const std::string& path, bool doUndo);
 private:
     void setNewSeq(MidiSequencerPtr);
     std::atomic<bool> runStopRequested;

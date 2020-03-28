@@ -1,3 +1,4 @@
+#include "../Squinky.hpp"
 #include "S4Button.h"
 #include "S4ButtonGrid.h"
 #include "../ctrl/SqMenuItem.h"
@@ -16,6 +17,8 @@
 #include "WidgetComposite.h"
 
 #include <sstream>
+
+#ifdef _SEQ4
 
 /****************** context menu UI ********************/
 
@@ -319,6 +322,7 @@ S4Button::S4Button(
 
 void S4Button::doEditClip() {
     MidiTrackPtr tk = seq->song->getTrack(row, col);
+    INFO("S4Button::doEditClip getting track from %d, %d", row, col);
     if (!tk) {
         // make a new track on click, if needed
         MidiLocker l(seq->song->lock);
@@ -489,3 +493,5 @@ void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
         nvgText(ctx, S4ButtonGrid::buttonSize / 2, 45, s.str().c_str(), nullptr);
     }
 }
+
+#endif

@@ -1,5 +1,9 @@
 # Change log for Squinky Labs modules
 
+## 1.0.8
+
+Saws is now polyphonic.
+
 ## 1.0.7
 
 Seq++ now supports the "portable sequence format", so you can cut and paste notes between Seq++ and other sequencers that support it.
@@ -9,12 +13,6 @@ Seq++ added the "Hookup Clock" command to patch and configure clocks from Improm
 Seq++ enhancement: The "auto" versions of the make triad command work a little better, and are more likely to come up with decent voice leading.
 
 Seq++ bug fix: Make triads now uses the normal voicings for chord inversions [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/132)
-
-## 1.0.8
-
-Saws is now polyphonic.
-
-## 1.0.7
 
 "Hookup Clock" feature to patch compatible clocks into Seq++.
 

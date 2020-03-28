@@ -119,6 +119,8 @@ void ReplaceDataCommand::undo(MidiSequencerPtr seq, SequencerWidget*)
     assert(mt);
     MidiLocker l(mt->lock);
 
+    printf("ReplaceDataCommand::undo\n"); fflush(stdout);
+
     // we may need to change length back to originalTrackLength
     const float currentTrackLength = mt->getLength();
     const bool isNewLengthRequested = (originalTrackLength >= 0);

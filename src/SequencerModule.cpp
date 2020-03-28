@@ -219,7 +219,8 @@ void SequencerWidget::loadMidiFile()
     std::string temp(pathC);
     std::string fileFolder = rack::string::directory(temp);
     if (song) {
-        _module->postNewSong(song, fileFolder);
+        // Seq++ doesn't make undo events for external modules.
+        _module->postNewSong(song, fileFolder, false);
     }  
 }
 
@@ -335,6 +336,7 @@ void SequencerWidget::setupRemoteEditMenu()
                     remoteEditToken = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
                         if (tk) {
                             // If there is already a client, update to reflect that.
+                            INFO("Seq++ remote edit switching to track %p\n", tk.get());
                             this->onNewTrack(tk);
                         }
                     });
@@ -350,7 +352,7 @@ void SequencerWidget::setupRemoteEditMenu()
                     MidiLocker l(song->lock);
                     MidiTrackPtr track = MidiTrack::makeEmptyTrack(song->lock);
                     song->addTrack(0, track);
-                    this->_module->postNewSong(song, "");
+                    this->_module->postNewSong(song, "", false);
                 }
             }
         }
@@ -368,7 +370,7 @@ void SequencerWidget::onNewTrack(MidiTrackPtr tk)
 {
     MidiSongPtr song = std::make_shared<MidiSong>();
     song->addTrack(0, tk);
-    this->_module->postNewSong(song, "");
+    this->_module->postNewSong(song, "", false);
 }
 
 void SequencerWidget::addControls(SequencerModule *module, std::shared_ptr<IComposite> icomp)
@@ -581,7 +583,7 @@ void SequencerModule::setNewSeq(MidiSequencerPtr newSeq)
     }
 }
 
-void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFolder)
+void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFolder, bool doUndo)
 {
     std::shared_ptr<Seq<WidgetComposite>> comp = seqComp;
     auto updater = [comp](bool set, MidiSequencerPtr seq, MidiSongPtr newSong, SequencerWidget* widget) {
@@ -602,7 +604,12 @@ void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFo
     };
 
     NewSongDataDataCommandPtr cmd = NewSongDataDataCommand::makeLoadMidiFileCommand(newSong, updater);
-    sequencer->undo->execute(sequencer, widget, cmd);
+    if (doUndo) {
+        sequencer->undo->execute(sequencer, widget, cmd);
+    } else {
+        INFO("host setting new song, no undo");
+        cmd->execute(sequencer, widget);
+    }
     if (!fileFolder.empty()) {
         sequencer->context->settings()->setMidiFilePath(fileFolder);
     }

@@ -1,4 +1,5 @@
 
+#include "../Squinky.hpp"
 #include "SqCommand.h"
 #include "UndoRedoStack.h"
 
@@ -69,67 +70,10 @@ private:
     }
 };
 
-
-class SeqActionOrig : public ::rack::history::ModuleAction
-{
-public:
-    SeqActionOrig(const std::string& _name, std::shared_ptr<SqCommand> command, int moduleId)
-    {
-        wrappedCommand = command;
-        this->name = "Seq++: " + wrappedCommand->name;
-        this->moduleId = moduleId;
-    }
-    void undo() override
-    {
-        MidiSequencerPtr seq = getSeq();
-        SequencerWidget* wid = getWidget();
-        if (seq && wid) {
-            wrappedCommand->undo(seq, wid);
-        }
-    }
-    void redo() override
-    {
-        MidiSequencerPtr seq = getSeq();
-        SequencerWidget* wid = getWidget();
-        if (seq && wid) {
-            wrappedCommand->execute(seq, wid);
-        }
-    }
-
-private:
-    std::shared_ptr<SqCommand> wrappedCommand;
-    MidiSequencerPtr getSeq()
-    {
-        MidiSequencerPtr ret;
-        SequencerModule* module = dynamic_cast<SequencerModule *>(::rack::appGet()->engine->getModule(moduleId));
-        if (!module) {
-            fprintf(stderr, "error getting module in undo\n");
-            return ret;
-        }
-        ret = module->sequencer;
-        if (!ret) {
-            fprintf(stderr, "error getting sequencer in undo\n");
-        }
-        return ret;
-    }
-    SequencerWidget* getWidget()
-    {
-        SequencerModule* module = dynamic_cast<SequencerModule *>(::rack::appGet()->engine->getModule(moduleId));
-        if (!module) {
-            fprintf(stderr, "error getting module in undo\n");
-            return nullptr;
-        }
-        SequencerWidget* widget = module->widget;
-        if (!widget) {
-            fprintf(stderr, "error getting widget in undo\n");
-            return nullptr;
-        }
-        return widget;
-    }
-};
-
 using SeqAction1 = SeqAction<MidiSequencerPtr, SqCommand, SequencerModule, SequencerWidget>;
+#ifdef _SEQ4
 using SeqAction4 = SeqAction<MidiSequencer4Ptr, Sq4Command, Sequencer4Module, Sequencer4Widget>;
+#endif
 
 void UndoRedoStack::setModuleId(int id)
 {
@@ -137,7 +81,7 @@ void UndoRedoStack::setModuleId(int id)
     this->moduleId = id;
 }
 
-
+#ifdef _SEQ4
 void UndoRedoStack::execute4(MidiSequencer4Ptr seq, Sequencer4Widget* widget, std::shared_ptr<Sq4Command> cmd)
 {
     assert(seq);
@@ -155,11 +99,7 @@ void UndoRedoStack::execute4(MidiSequencer4Ptr seq, std::shared_ptr<Sq4Command> 
 
     ::rack::appGet()->history->push(action);
 }
-
-
-//  // template<class Sequencer, class Command, class Module>
-
-
+#endif
 
 void UndoRedoStack::execute(MidiSequencerPtr seq, SequencerWidget* widget, std::shared_ptr<SqCommand> cmd)
 {

@@ -1,10 +1,13 @@
 
+#include "../Squinky.hpp"
 #include "MidiSequencer4.h"
 #include "S4ButtonGrid.h"
 #include "S4Button.h"
 #include "Seq4.h"
 #include "UndoRedoStack.h"
 #include "../Sequencer4Widget.h"
+
+#ifdef _SEQ4
 
 S4Button* S4ButtonGrid::getButton(int row, int col) {
     assert(row >= 0 && row < 4 && col >= 0 && col < 4);
@@ -145,22 +148,27 @@ public:
         std::shared_ptr<S4ButtonGrid> grid = widget->getButtonGrid();
         assert(grid);
 
+        INFO("S4ButtonClickCommand::undo ==== %p", this);
         // first restore the edited track
         if (origColSelected >= 0 && origRowSelected >= 0) {
             auto button = grid->getButton(origRowSelected, origColSelected);
             assert(button);
+            INFO("S4ButtonClickCommand::undo setting edit to %d,%d",origRowSelected, origColSelected);
             button->doEditClip();
         }
 
         // unset the selection we set before
         auto button = grid->getButton(rowToSelect, colToSelect);
         button->setSelection(false);
+        INFO("S4ButtonClickCommand::undo un-setting edit from %d,%d", rowToSelect, colToSelect);
 
         // and select the original
         if (origRowSelected >= 0 && origColSelected >= 0) {
             button = grid->getButton(origRowSelected, origColSelected);
             button->setSelection(true);
+            INFO("S4ButtonClickCommand::undo setting sel to %d,%d", origRowSelected, origColSelected);
         }
+        INFO("S4ButtonClickCommand::undo (exit) ==== %p", this);
 
     }
 
@@ -207,3 +215,5 @@ std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int
         this->onClick(isCtrl, row, col);
     };
 }
+
+#endif
