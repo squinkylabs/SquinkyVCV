@@ -20,7 +20,9 @@ class MidiTrack;
  * 
  * 0 = gate: goto next section
  * 1 = gate: goto prev section
- * 2 = cv: set section number
+ * 2 = [cv: set section number]
+ * 
+ * won't do:
  * 3 = transpose
  * 4 =play clip 2x/3x/4x... faster (CV)
  */

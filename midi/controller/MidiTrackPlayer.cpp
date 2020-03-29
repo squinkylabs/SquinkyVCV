@@ -203,6 +203,13 @@ void MidiTrackPlayer::pollForCVChange()
             }
             setNextSectionRequest(nextClip);       
         }
+        {
+            const float ch2 = input->getVoltage(2);
+            const int quantized = int( std::round(ch2));
+            if (quantized > 0 && quantized <= 4) {
+                setNextSectionRequest(quantized);
+            }
+        }
     }
 }
 
