@@ -306,23 +306,14 @@ S4Button::S4Button(
     this->addChild(fw);
 
     S4ButtonDrawer* drawer = new S4ButtonDrawer(size, this);
-    // INFO("got back drawer = %p", drawer);
-    // INFO("drawer1 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
     fw->addChild(drawer);
 
-    // INFO("add child fb for s4 button size = %f,%f", fw->box.size.x, fw->box.size.y);
-    // INFO("drawer2 size = %f, %f", drawer->box.size.x, drawer->box.size.y);
-
-    // INFO("\nctor of button, pos %.2f, %.2f", pos.x, pos.y);
-    // INFO("ctor of button, siz %.2f, %.2f", size.x, size.y);
-    // INFO(" button = %p\n", this);
     this->box.size = size;
     this->box.pos = pos;
 }
 
 void S4Button::doEditClip() {
     MidiTrackPtr tk = seq->song->getTrack(row, col);
-    INFO("S4Button::doEditClip getting track from %d, %d", row, col);
     if (!tk) {
         // make a new track on click, if needed
         MidiLocker l(seq->song->lock);

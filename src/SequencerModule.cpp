@@ -336,7 +336,7 @@ void SequencerWidget::setupRemoteEditMenu()
                     remoteEditToken = SqRemoteEditor::serverRegister([this](MidiTrackPtr tk) {
                         if (tk) {
                             // If there is already a client, update to reflect that.
-                            INFO("Seq++ remote edit switching to track %p\n", tk.get());
+                            // INFO("Seq++ remote edit switching to track %p\n", tk.get());
                             this->onNewTrack(tk);
                         }
                     });
@@ -607,7 +607,6 @@ void SequencerModule::postNewSong(MidiSongPtr newSong, const std::string& fileFo
     if (doUndo) {
         sequencer->undo->execute(sequencer, widget, cmd);
     } else {
-        INFO("host setting new song, no undo");
         cmd->execute(sequencer, widget);
     }
     if (!fileFolder.empty()) {
