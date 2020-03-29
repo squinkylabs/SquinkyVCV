@@ -97,6 +97,13 @@ public:
      */
     void step() override;
 
+    /** 
+     * just for testing
+     */
+    SuperDsp& _getDsp(int n) {
+        return dspCommon._getDsp(n);
+    }
+
 private:
     bool isStereo = false;
     Divider div;
@@ -171,11 +178,11 @@ inline void Super<TBase>::stepn(int n)
     float mixTrimParam = TBase::params[MIX_TRIM_PARAM].value;
     const bool hardPan = TBase::params[HARD_PAN_PARAM].value > .5;
 
-    const int numChannels = TBase::inputs[CV_INPUT].channels;
+    const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT].channels);
     for (int i=0; i< numChannels; ++i) {
         dspCommon.stepn(n, i,  oversampleRate, sampleTime, TBase::inputs[CV_INPUT],
             fineTuneParam, semiParam, octaveParam, TBase::inputs[FM_INPUT],
-            fmParam, TBase::inputs[FM_INPUT], detuneParam, detuneTrimParam,
+            fmParam, TBase::inputs[DETUNE_INPUT], detuneParam, detuneTrimParam,
             TBase::inputs[MIX_INPUT], mixParam, mixTrimParam,
             isStereo,
             hardPan);
@@ -191,14 +198,10 @@ template <class TBase>
 inline void Super<TBase>::step()
 {
     div.step();
-
     const int rate = getOversampleRate();
 
-    // this also needs to be poly
-    //cont bool trigger = gateTrigger.go(TBase::inputs[TRIGGER_INPUT].getVoltage(0));
-
-    const int numChannels = TBase::inputs[CV_INPUT].channels;
-    
+    // even unpatched we run 1 channel
+    const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT].channels);
     dspCommon.step(numChannels,isStereo, TBase::outputs[MAIN_OUTPUT_LEFT], TBase::outputs[MAIN_OUTPUT_RIGHT],
         rate,
         TBase::inputs[TRIGGER_INPUT]);

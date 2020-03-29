@@ -85,6 +85,9 @@ public:
     void updateHPFilters(bool isStereo);
     void updateMix(const SuperDpsCommonData& data, int channel, SqInput& mixInput, float mixParam, float mixTrimParam);
     void updateStereoGains(bool hardPan);
+
+    int _stepCalls = 0;
+    int _updatePhaseIncCalls = 0;
 private:
     IIRDecimator decimatorLeft;
     IIRDecimator decimatorRight;
@@ -153,6 +156,7 @@ inline void SuperDsp::step(const SuperDpsCommonData& data,
     SqOutput& leftOut, SqOutput& rightOut,
     Input& triggerInput)
 {
+    ++_stepCalls;
     if ((oversampleRate == 1) && !isStereo) {
         updateAudioClassic(channel, leftOut, rightOut);
     } else if ((oversampleRate == 1) && isStereo) {
@@ -261,6 +265,7 @@ inline void SuperDsp::updatePhaseInc(const SuperDpsCommonData& data,
     float fineTuneParam, float semiParam, float octaveParam, SqInput& fmInput,
     float fmParam, SqInput& detuneCVInput, float detuneParam, float detuneTrimParam )
 {
+    ++_updatePhaseIncCalls;
     const float finePitch = fineTuneParam / 12.0f;
     const float semiPitch = semiParam / 12.0f;
 
@@ -271,13 +276,17 @@ inline void SuperDsp::updatePhaseInc(const SuperDpsCommonData& data,
     pitch += cvInput.getPolyVoltage(channel);
 
     const float fm = fmInput.getPolyVoltage(channel);
+   
     const float fmDepth = AudioMath::quadraticBipolar(fmParam);
-
+    // printf("fm cv = %.2f depth=%.2f\n", fm, fmDepth);
+    // printf("address of fm input in dsp =%p\n", &fmInput);
     pitch += (fmDepth * fm);
+    // printf("final pitch[%d] = %.2f\n", channel, pitch);
 
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     pitch += q;
     const float freq = data.expLookup(pitch);
+    // printf("final pitch[%d] = %.2f freq=%.2f\n", channel, pitch, freq);
     globalPhaseInc = sampleTime * freq;
     assert(sampleTime < .01);
      assert(globalPhaseInc > 0 && globalPhaseInc < .4);      // just for debuggin
@@ -288,9 +297,17 @@ inline void SuperDsp::updatePhaseInc(const SuperDpsCommonData& data,
         detuneTrimParam);
 
     const float detuneInput = data.detuneCurve.getDetuneFactor(rawDetuneValue);
+#if 0
+    printf("detuneCV = %.2f param =%.2f trim=%.2f final=%.2f\n",
+        detuneCVInput.getPolyVoltage(channel),
+        detuneParam,
+        detuneTrimParam,
+        detuneInput);
+#endif
 
     for (int i = 0; i < numSaws; ++i) {
         float detune = (detuneFactors[i] - 1) * detuneInput;
+
         detune += 1;
         float phaseIncI = globalPhaseInc * detune;
 
@@ -393,6 +410,10 @@ public:
         bool isStereo,
         bool hardPan);
 
+    SuperDsp& _getDsp(unsigned n) {
+        assert(n <16);
+        return dsp[n];
+    }
 private:
     float bufferLeft[MAX_OVERSAMPLE] = {0};
     float bufferRight[MAX_OVERSAMPLE] = {0};
