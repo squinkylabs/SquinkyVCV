@@ -177,6 +177,7 @@ template <class TBase>
 inline void Filt<TBase>::stepn(int divFactor)
 {
     const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT1].channels);
+#if 0
     T fcClipped = 0;
     {
         T freqCV1 = scaleFc(
@@ -194,8 +195,10 @@ inline void Filt<TBase>::stepn(int divFactor)
         fcClipped = std::min(normFc, T(.48));
         fcClipped = std::max(fcClipped, T(.0000001));
     }
+     const T vol = TBase::params[MASTER_VOLUME_PARAM].value;
+    #endif
 
-    const T vol = TBase::params[MASTER_VOLUME_PARAM].value;
+   
 
     T res = scaleQ(
         TBase::inputs[Q_INPUT].getVoltage(0),
@@ -235,10 +238,15 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
     #if 1
-        filters.stepn(numChannels,
+    /*
+        SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
+            float fcParam, float fc1TrimParam, float fc2TrimParam);
+            */
+        filters.stepn( TBase::engineGetSampleTime(), numChannels,
             TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
-            TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT]
-        );
+            TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
+            TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
+            TBase::params[MASTER_VOLUME_PARAM].value);
     #else
 
     bool didSlopeLeds = false;
