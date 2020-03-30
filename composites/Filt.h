@@ -81,8 +81,8 @@ public:
 
     enum InputIds
     {
-        L_AUDIO_INPUT,
-        R_AUDIO_INPUT,
+        L_AUDIO_INPUT,          // In poly mode, this is the only input we care about.
+        R_AUDIO_INPUT,      
         CV_INPUT1,
         CV_INPUT2,
         Q_INPUT,
@@ -94,7 +94,7 @@ public:
 
     enum OutputIds
     {
-        L_AUDIO_OUTPUT,
+        L_AUDIO_OUTPUT,         // In poly mode, this is the only output we care about.
         R_AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
@@ -140,6 +140,7 @@ public:
     }
 
 private:
+#if 0   // old way
     class DSPImp
     {
     public:
@@ -147,6 +148,7 @@ private:
         bool isActive = false;
     };
     DSPImp dsp[2];
+    #endif
     LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
@@ -231,6 +233,9 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::inputs[SLOPE_INPUT].getVoltage(0),
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
+    #if 1
+        filters.stepn();
+    #else
 
     bool didSlopeLeds = false;
     for (int i = 0; i < 2; ++i) {
@@ -259,6 +264,7 @@ inline void Filt<TBase>::stepn(int divFactor)
             }
         }
     }
+    #endif
 
     // now update level LEDs
     peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
@@ -267,6 +273,13 @@ inline void Filt<TBase>::stepn(int divFactor)
     TBase::lights[Filt<TBase>::VOL2_LIGHT].value = (level >= 3.5) ? .8f : .2f;
     TBase::lights[Filt<TBase>::VOL1_LIGHT].value = (level >= 1.75) ? .8f : .2f;
     TBase::lights[Filt<TBase>::VOL0_LIGHT].value = (level >= .87) ? .8f : .2f;
+
+
+    // the main inputs and outpus are polyphonic.
+    // copy the channel number
+    const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT1].channels);
+    TBase::outputs[L_AUDIO_OUTPUT].setChannels(numChannels);
+   // TBase::outputs[R_AUDIO_OUTPUT].setChannels(numChannels);
     
 }
 
@@ -274,6 +287,9 @@ template <class TBase>
 inline void Filt<TBase>::step()
 {
     div.step();
+    #if 1
+    filters.step();
+    #else
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
         if (imp.isActive) {
@@ -296,6 +312,7 @@ inline void Filt<TBase>::step()
     } else if (!dsp[0].isActive && dsp[1].isActive) {
         TBase::outputs[L_AUDIO_OUTPUT].setVoltage(TBase::outputs[R_AUDIO_OUTPUT].getVoltage(0), 0);
     }
+    #endif
 }
 
 template <class TBase>
