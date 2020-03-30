@@ -3,23 +3,6 @@
 #include <memory>
 
 /**
- * Implemented by a class that wants to host a Midi Player
- */
-#if 0
-class IMidiPlayerHost
-{
-public:
-    virtual void setGate(int voice, bool gate) = 0;
-    virtual void setCV(int voice, float pitch) = 0;
-    virtual void onLockFailed() = 0;
-    virtual ~IMidiPlayerHost() = default;
-};
-
-using IMidiPlayerHostPtr = std::shared_ptr<IMidiPlayerHost>;
-#endif
-
-
-/**
  * Implemented by a class that wants to host a Midi Player.
  * Single track players can ignore the track parameter.
  */
@@ -29,6 +12,12 @@ public:
     virtual void setGate(int track, int voice, bool gate) = 0;
     virtual void setCV(int track, int voice, float pitch) = 0;
     virtual void onLockFailed() = 0;
+
+    /**
+     * when player calls resetCLock, host must actually 
+     * go and reset the clock.
+     */
+    virtual void resetClock() = 0;
     virtual ~IMidiPlayerHost4() = default;
 };
 

@@ -32,7 +32,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 [Chebyshev Waveshaper VCO](../docs/chebyshev.md) can make sounds like no other VCO. It contains a VCO, ten polynomial wave-shapers, and one clipper/folder. Among other things, it is a **harmonic oscillator**.
 
-[Saws](./saws.md) is an emulation of the legendary Roland Super-Saw from the JP-8000.
+[Saws](./saws.md) is an polyphonic emulation of the legendary Roland Super-Saw from the JP-8000.
 
 [Colors](./colors.md) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. And all the colors in between.
 

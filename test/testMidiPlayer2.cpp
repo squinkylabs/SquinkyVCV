@@ -539,6 +539,7 @@ static std::shared_ptr<THost> makeSongOneQandRun(float time)
     auto song = makeSongOneQ<TSong>();
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
+    pl.step();
 
     // let's make quantization very fine so these old tests don't freak out
     pl.updateToMetricTime(time, quantInterval, true);
@@ -590,6 +591,7 @@ static std::shared_ptr<THost> makeSongOverlapQandRun(float time)
     auto host = std::make_shared<THost>();
     TPlayer pl(host, song);
     pl.setNumVoices(0, 4);
+    pl.step();
 
     const float quantizationInterval = .25f;        // shouldn't matter for this test...
 
@@ -648,7 +650,7 @@ static std::shared_ptr<THost> makeSongOneQandRun2(float timeBeforeLock, float ti
     auto song = makeSongOneQ<TSong>();
     auto host = std::make_shared<THost>();
     TPlayer pl(host, song);
-
+    pl.step();
 
     pl.updateToMetricTime(timeBeforeLock, quantInterval, true);
     {
@@ -709,14 +711,13 @@ void flip<MidiSong>(std::shared_ptr<MidiSong> song, Flip flip)
 template <class TPlayer, class THost, class TSong>
 static void testMidiPlayer0(Flip flipTracks = Flip::none)
 {
-    //printf("------ testMidiPlayer0 flip = %d\n", int(flipTracks));
-
     auto song = TSong::makeTest(MidiTrack::TestContent::eightQNotes, 0);
     
     flip(song, flipTracks);
 
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
+    pl.step();
     pl.updateToMetricTime(.01f, .25f, true);
 
     /**
@@ -746,12 +747,13 @@ static void testMidiPlayerOneNoteOn()
 
 // same as test1, but with a lock contention
 template <class TPlayer, class THost, class TSong, bool hasPlayPosition>
-static void testMidiPlayerOneNoteOnWithLockContention()
+static void testMidiPlayerOneNoteOnWithLockContention(bool isSeq4)
 {
     std::shared_ptr<THost> host = makeSongOneQandRun2<TPlayer, THost, TSong, hasPlayPosition>(2 * .20f, 2 * .01f, 2 * .03f);
 
+    const int expectedGateCount = isSeq4 ? 3 : 1;         // seq 4 clears gates on dirty
     assertAllButZeroAreInit(host.get());
-    assertEQ(host->gateChangeCount, 1);
+    assertEQ(host->gateChangeCount, expectedGateCount);
     assertEQ(host->gateState[0], true);
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvValue[0], 2);
@@ -776,13 +778,14 @@ static void testMidiPlayerOneNote()
 
 // play the first note on and off with lock contention
 template <class TPlayer, class THost, class TSong, bool hasPlayPosition>
-static void testMidiPlayerOneNoteLockContention()
+static void testMidiPlayerOneNoteLockContention(bool isSeq4)
 {
     std::shared_ptr<THost> host = makeSongOneQandRun2<TPlayer, THost, TSong, hasPlayPosition>(2 * .20f, 2 * .01f, 2 * .04f);
+    const int expectedGateCount = isSeq4 ? 4 : 2;         // seq 4 clears gates on dirty
 
     assertAllButZeroAreInit(host.get());
     assertEQ(host->lockConflicts, 1);
-    assertEQ(host->gateChangeCount, 2);
+    assertEQ(host->gateChangeCount, expectedGateCount);
     assertEQ(host->gateState[0], false);
     assertEQ(host->cvChangeCount, 1);
     assertEQ(host->cvValue[0], 2);
@@ -859,7 +862,7 @@ static void testMidiPlayerReset2()
     std::shared_ptr<THost> host = std::make_shared<THost>();
     TPlayer pl(host, song);
     pl.updateToMetricTime(100, quantInterval, true);
-    pl.reset(true);
+    pl.reset(true, true);
     pl.updateToMetricTime(1000, quantInterval, true);
 }
 
@@ -1070,6 +1073,7 @@ static void _testQuantizedRetrigger2(float durations)
     TPlayer pl(host, song);
     pl.setNumVoices(0, 1);
     pl.setSampleCountForRetrigger(44);
+    pl.step();
 
     // should not be playing a note now.
     assert(!host->gateState[0]);
@@ -1112,17 +1116,18 @@ static void testQuantizedRetrigger2()
 //*******************************tests of MidiPlayer2 **************************************
 
 template <class TPlayer, class THost, class TSong, bool hasPlayPosition>
-static void playerTests()
+static void playerTests(bool isSeq4)
 {
     testMidiPlayer0<TPlayer, THost, TSong>();
     testMidiPlayerOneNoteOn<TPlayer, THost, TSong, hasPlayPosition>();
-    testMidiPlayerOneNoteOnWithLockContention<TPlayer, THost, TSong, hasPlayPosition>();
-    printf("(reset) ***put back the player  tests with lock contention\n");
-    //testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong, hasPlayPosition>();
+    testMidiPlayerOneNoteOnWithLockContention<TPlayer, THost, TSong, hasPlayPosition>(isSeq4);
+    // printf("(reset) ***put back the player  tests with lock contention\n");
+
+    testMidiPlayerOneNoteLockContention<TPlayer, THost, TSong, hasPlayPosition>(isSeq4);
     testMidiPlayerOneNote<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteLoopLockContention<TPlayer, THost, TSong, hasPlayPosition>();
     testMidiPlayerOneNoteLoop<TPlayer, THost, TSong, hasPlayPosition>();
-    // testMidiPlayerReset<TPlayer, THost, TSong>();
+    testMidiPlayerReset<TPlayer, THost, TSong>();
     testMidiPlayerReset2<TPlayer, THost, TSong>();
 
     testMidiPlayerOverlap<TPlayer, THost, TSong>();
@@ -1156,8 +1161,8 @@ void testMidiPlayer2()
     testVoiceAssignRetrigger();
     testVoiceAssignBug();
 
-    playerTests<MidiPlayer2, TestHost2, MidiSong, true>();
-    playerTests<MidiPlayer4, TestHost4, MidiSong4, false>();
+    playerTests<MidiPlayer2, TestHost2, MidiSong, true>(false);
+    playerTests<MidiPlayer4, TestHost4, MidiSong4, false>(true);
     player4Tests();
 
     // loop tests not templatized, because player 4 doesn't have subrange loop

@@ -63,6 +63,7 @@ extern void testNoteScreenScale();
 extern void testMidiEditorCCP();
 extern void testMidiEditorSelection();
 extern void testSeqComposite();
+extern void testSeqComposite4();
 extern void testVec();
 extern void testSeqClock();
 extern void testMix8();
@@ -84,6 +85,7 @@ extern void testTriad();
 extern void testMidiSelectionModel();
 extern void testMidiTrackPlayer();
 extern void testSuper();
+extern void testEditCommands4();
 
 #if 0
 #include <sstream>
@@ -158,7 +160,7 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    testSuper();                // move this later
+
 
     testAudioMath();
     testRingBuffer();
@@ -191,6 +193,7 @@ int main(int argc, char ** argv)
     testMidiEditorCCP();
     testNoteScreenScale();
     testSeqComposite();
+    testSeqComposite4();
     testAudition();
 
     testDrumTrigger();
@@ -199,6 +202,7 @@ int main(int argc, char ** argv)
     testManagedPool();
     testLookupTable();
     testObjectCache();
+    testEditCommands4();
     testMultiLag();
     testSlew4();   
     testMixHelper();
@@ -232,6 +236,7 @@ int main(int argc, char ** argv)
     //testLowpassFilter();
     testLadder();
     testHighpassFilter();
+    testSuper();
  
 #if 0
     printf("skipping lots of tests\n");
@@ -262,7 +267,7 @@ int main(int argc, char ** argv)
 
     testFilterDesign();
 #else
-    printf("disabled lots of tests for MS\n");
+    printf("disabled lots of tests for MS (or MIDI ONLY)\n");
 #endif
     testFinalLeaks();
 

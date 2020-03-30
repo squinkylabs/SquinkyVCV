@@ -1,8 +1,8 @@
 
 #include "MidiSequencer4.h"
+#include "UndoRedoStack.h"
 
-
-MidiSequencer4::MidiSequencer4(MidiSong4Ptr s) : song(s)
+MidiSequencer4::MidiSequencer4(MidiSong4Ptr s) : song(s), undo(std::make_shared<UndoRedoStack>())
 {
 
 }

@@ -79,6 +79,22 @@ public:
         NUM_VOICES3_PARAM,
         RUNNING_PARAM,
         TRIGGER_IMMEDIATE_PARAM,
+        PADSELECT0_PARAM,           // these pad select params are only used for automation
+        PADSELECT1_PARAM,
+        PADSELECT2_PARAM,
+        PADSELECT3_PARAM,
+        PADSELECT4_PARAM,
+        PADSELECT5_PARAM,
+        PADSELECT6_PARAM,
+        PADSELECT7_PARAM,
+        PADSELECT8_PARAM,
+        PADSELECT9_PARAM,
+        PADSELECT10_PARAM,
+        PADSELECT11_PARAM,
+        PADSELECT12_PARAM,
+        PADSELECT13_PARAM,
+        PADSELECT14_PARAM,
+        PADSELECT15_PARAM,
         NUM_PARAMS
     };
 
@@ -91,6 +107,8 @@ public:
         MOD1_INPUT,
         MOD2_INPUT,
         MOD3_INPUT,
+        SELECT_CV_INPUT,
+        SELECT_GATE_INPUT,
         NUM_INPUTS
     };
 
@@ -189,10 +207,14 @@ private:
     void init(MidiSong4Ptr);
     void serviceRunStop();
     void allGatesOff();
+    void resetClock();
+    void serviceSelCV();
     /**
      * called by the divider every 'n' step calls
      */
     void stepn(int n);
+
+    bool lastGate[16] = {false};
 
 };
 
@@ -233,6 +255,10 @@ public:
     {
 
     }
+    void resetClock() override
+    {
+        seq->resetClock();
+    }
 private:
     Seq4<TBase>* const seq;
 };
@@ -261,13 +287,42 @@ void Seq4<TBase>::onSampleRateChange()
 }
 
 template <class TBase>
+void  Seq4<TBase>::serviceSelCV()
+{
+  
+    const int activeChannels = std::min(TBase::inputs[SELECT_CV_INPUT].getChannels(), TBase::inputs[SELECT_GATE_INPUT].getChannels()); 
+    
+    for (int i=0; i < activeChannels; ++i) {
+
+        const bool gate =  TBase::inputs[SELECT_GATE_INPUT].getVoltage(i) > 2;
+        if (gate != lastGate[i]) {
+            lastGate[i] = gate;
+            if (gate) {
+                const float cv = TBase::inputs[SELECT_CV_INPUT].getVoltage(i);
+                auto pitch = PitchUtils::cvToPitch(cv);
+                if (pitch.first == 2) {
+                     const int pad = pitch.second;
+                     if (pad <= 15) { 
+                        const int track = pad / 4;
+                        const int section = 1 + pad - track * 4;
+                        // printf("pad = %d track=%d sec=%d\n", pad, track, section); fflush(stdout);
+                        setNextSectionRequest(track, section);
+                     }
+                }
+            }
+        }
+    }
+}
+
+template <class TBase>
 void  Seq4<TBase>::stepn(int n)
 {
-     serviceRunStop();
+    player->step();
+    serviceRunStop();
+    serviceSelCV();
 
     // first process all the clock input params
     const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
-    //const float tempo = TBase::params[TEMPO_PARAM].value;
     clock.setup(clockRate, 0, TBase::engineGetSampleTime());
 
     // and the clock input
@@ -281,7 +336,7 @@ void  Seq4<TBase>::stepn(int n)
     // Our level sensitive reset will get turned into an edge in here
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
-        player->reset(true);
+        player->reset(true, true);
         allGatesOff();          // turn everything off on reset, just in case of stuck notes.
     }
 
@@ -384,6 +439,12 @@ inline void Seq4<TBase>::allGatesOff()
 }
 
 template <class TBase>
+inline void Seq4<TBase>::resetClock()
+{
+    clock.reset(false);
+}
+
+template <class TBase>
 inline std::vector<std::string> Seq4<TBase>::getClockRates()
 {
     return SeqClock::getClockRates();
@@ -434,6 +495,54 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             break;
         case Seq4<TBase>::TRIGGER_IMMEDIATE_PARAM:
             ret = {0, 1, 0, "Trigger Immediate"};
+            break;
+        case Seq4<TBase>::PADSELECT0_PARAM:
+            ret = { 0, 1, 0, "Select 1" };       
+            break;
+        case Seq4<TBase>::PADSELECT1_PARAM:
+            ret = { 0, 1, 0, "Select 2" };
+            break;
+        case Seq4<TBase>::PADSELECT2_PARAM:
+            ret = { 0, 1, 0, "Select 3" };
+            break;
+        case Seq4<TBase>::PADSELECT3_PARAM:
+            ret = { 0, 1, 0, "Select 4" };
+            break;
+        case Seq4<TBase>::PADSELECT4_PARAM:
+            ret = { 0, 1, 0, "Select 5" };
+            break;
+        case Seq4<TBase>::PADSELECT5_PARAM:
+            ret = { 0, 1, 0, "Select 6" };
+            break;
+        case Seq4<TBase>::PADSELECT6_PARAM:
+            ret = { 0, 1, 0, "Select 7" };
+            break;
+        case Seq4<TBase>::PADSELECT7_PARAM:
+            ret = { 0, 1, 0, "Select 8" };
+            break;
+        case Seq4<TBase>::PADSELECT8_PARAM:
+            ret = { 0, 1, 0, "Select 9" };
+            break;
+        case Seq4<TBase>::PADSELECT9_PARAM:
+            ret = { 0, 1, 0, "Select 10" };
+            break;
+        case Seq4<TBase>::PADSELECT10_PARAM:
+            ret = { 0, 1, 0, "Select 11" };
+            break;
+        case Seq4<TBase>::PADSELECT11_PARAM:
+            ret = { 0, 1, 0, "Select 12" };
+            break;
+        case Seq4<TBase>::PADSELECT12_PARAM:
+            ret = { 0, 1, 0, "Select 13" };
+            break;
+        case Seq4<TBase>::PADSELECT13_PARAM:
+            ret = { 0, 1, 0, "Select 14" };
+            break;
+        case Seq4<TBase>::PADSELECT14_PARAM:
+            ret = { 0, 1, 0, "Select 15" };
+            break;
+        case Seq4<TBase>::PADSELECT15_PARAM:
+            ret = { 0, 1, 0, "Select 16" };
             break;
         default:
             assert(false);

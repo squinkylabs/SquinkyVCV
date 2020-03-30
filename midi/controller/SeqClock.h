@@ -91,13 +91,14 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
     ClockResults results;
     // if stopped, don't do anything
 
+    
     resetProcessor.go(reset);
     results.didReset = resetProcessor.trigger();
     if (results.didReset) {
         resetLockout.set();
+       
         // go back to start. For correct start, go negative, so that first clock plays first note
         curMetricTime = -1;
-
         // reset the clock so that high clock can gen another clock
         clockProcessor.reset();
     }
@@ -132,6 +133,9 @@ inline SeqClock::ClockResults SeqClock::update(int samplesElapsed, float externa
 
 inline void SeqClock::reset(bool internalClock)
 {
+#ifdef _LOGX
+     printf("SeqCLock::reeset\n");
+#endif
     curMetricTime = internalClock? 0 : -1;
 }
 

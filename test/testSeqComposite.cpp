@@ -359,9 +359,11 @@ void sendClockAndStep(TSeq& sq, float clockValue)
     stepN(sq, 4);
 }
 
+extern float lastTime;
 template <class TSeq, class TSong, bool hasPlayPosition>
 static void testLoopingQ()
 {
+    lastTime = 0;
     // 1/8 note clock 4 q
     auto song = TSong::makeTest(MidiTrack::TestContent::FourTouchingQuartersOct, 0);
     std::shared_ptr<TSeq> seq = std::make_shared<TSeq>(song);

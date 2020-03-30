@@ -102,7 +102,7 @@
 			"name": "Saws",
 			"description": "Super saw VCO emulation",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md",
-			"tags": ["VCO"]
+			"tags": ["VCO", "Polyphonic"]
 		},
 		{
 			"slug": "squinkylabs-blank",

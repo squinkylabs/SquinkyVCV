@@ -519,8 +519,20 @@
     <ClCompile Include="..\..\test\testMidiTrackPlayer.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testSeqComposite4.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\test\testSuper.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testEditCommands4.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\controller\MakeEmptyTrackCommand4.cpp">
+      <Filter>Source Files\midi\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\midi\model\MidiSequencer4.cpp">
+      <Filter>Source Files\midi\model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -943,6 +955,9 @@
     </ClInclude>
     <ClInclude Include="..\..\test\TestHost4.h">
       <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\midi\controller\MakeEmptyTrackCommand4.h">
+      <Filter>Header Files\midi\controller</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

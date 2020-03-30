@@ -55,7 +55,6 @@ Most editing can be done with the mouse or with the keyboard. Many operations ca
 
 The settings menu can have important effects on many of the editing commands, so be sure to become familiar with the settings.
 
-
 ### General Information
 
 It’s very easy to forget that Seq++ has features you would expect in DAW software, but wouldn’t expect in a VCV module. Always remember that Seq++ is fully integrated with the undo/redo system in VCV, so any change in note data can be easily undone.

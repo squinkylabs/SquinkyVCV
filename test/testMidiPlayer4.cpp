@@ -30,6 +30,7 @@ static void testTwoSections(int trackNum)
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+    pl.step();
 
     // before note, nothing
     const float quantizationInterval = .01f;       
@@ -94,6 +95,7 @@ static void testTwoSectionsLoop()
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+    pl.step();
 
     // go around loop, and back before first note
     const float loopTime = 4 + 8;
@@ -131,6 +133,7 @@ static void testTwoSectionsRepeat1()
 
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+
 
     // First section, first repeat
     // before note, nothing
@@ -232,7 +235,7 @@ static void testRepeatReset()
     assertGT(host->gateChangeCount, 4);
 
     // now reset the player and repeat
-    pl.reset(true);
+    pl.reset(true, true);
     pl.updateToMetricTime(.2, quantizationInterval, true);
     const int ct0 = host->gateChangeCount;
 
@@ -266,14 +269,15 @@ static void testRepeatReset()
     // now pause and switch sections
     pl.setRunningStatus(false);
     pl.setNextSectionRequest(trackNum, 2);
+    pl.step();
     pl.setRunningStatus(true);
+    pl.step();
     pl.updateToMetricTime(.2, quantizationInterval, true);
     assertEQ(pl.getSection(trackNum), 2);
  }
 
 static void testTwoSectionsStartOnSecond()
 {
-
     const int trackNum = 0;
     MidiSong4Ptr song = makeSong(trackNum);
 
@@ -289,11 +293,11 @@ static void testTwoSectionsStartOnSecond()
     // Since seq isn't running yet, request is just queued.
     assertEQ(pl.getNextSectionRequest(trackNum), 2);
 
-
     const float startOffset = 4;
 
     // let's play just a teeny bit to start up, and make the player switch to the requested track
     pl.setRunningStatus(true);
+    pl.step();
     // pl.updateToMetricTime(.1, quantizationInterval, true);
 
     
@@ -359,13 +363,8 @@ static void testTwoSectionsSwitchToSecond()
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
 
-
- //   pl.setNextSection(trackNum, 2);     // skip the first section 
-                                        // (request index == 1)
-   // assertEQ(pl.getNextSection(trackNum), 2);
-
-  
     pl.setRunningStatus(true);
+    pl.step();
 
     // determine we are playing section 1
     const float quantizationInterval = .01f;
@@ -393,8 +392,6 @@ static void testTwoSectionsSwitchToSecond()
 
     // verify we are in second pattern
  
-
-
     // second section, first note (c at 0)
     pl.updateToMetricTime(4.1, quantizationInterval, true);
 
@@ -438,6 +435,57 @@ static void testTwoSectionsSwitchToSecond()
 }
 
 
+static void testLockGates()
+{
+    printf("\n---- testLockGates\n");
+    const int trackNum = 0;
+    MidiSong4Ptr song = makeSong(trackNum);
+#if 0
+    auto option = song->getOptions(trackNum, 0);
+    assert(option);
+    option->repeatCount = 10;                       // make the first section repeat a long time
+#endif
+    std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
+    MidiPlayer4 pl(host, song);
+    pl.setNumVoices(trackNum, 4);
+
+
+    const float quantizationInterval = .01f;
+    pl.setRunningStatus(true);          // start it
+    pl.step();
+
+    printf("about to play first\n");
+
+    // first, play the note in the first section
+    pl.updateToMetricTime(1.0f, quantizationInterval, true);
+    printf("played first note\n");
+    assert(host->onlyOneGate(0));
+    assertEQ(host->cvValue[0], 7.5f);
+    assertEQ(pl.getSection(trackNum), 1);           // remember, first section is 1, not 0
+
+    // second, play to first note in second section.
+    // expect it to move to the next voice for this note.
+    pl.updateToMetricTime(4.f, quantizationInterval, true);
+    printf("played second note\n");
+    assertEQ(pl.getSection(trackNum), 2);
+    assert(host->onlyOneGate(1));
+    assertEQ(host->cvValue[1], PitchUtils::pitchToCV(3, PitchUtils::c));
+
+    // now force a reset
+    printf("about to reset\n");
+    {
+        MidiLocker l(song->lock);
+        //song->lock.
+       // pl.updateToMetricTime(4.1, quantizationInterval, true);
+    }
+    //about to play after reset
+    pl.updateToMetricTime(4.1, quantizationInterval, true);
+    // printf("*********** re-enable testLockGates when bug fixed\n");
+    assertEQ(host->numGates(), 1);
+ 
+}
+
+
 //**************** API tests *******
 
 static void testSection12()
@@ -446,8 +494,6 @@ static void testSection12()
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
-
-  //  const float quantizationInterval = .01f;
 
     pl.setNextSectionRequest(trackNum, 2);   
     assertEQ(pl.getNextSectionRequest(trackNum), 2);
@@ -476,6 +522,7 @@ static void testSectionStartOffset()
     MidiSong4Ptr song = makeSong(trackNum);
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
+    pl.step();
 
     // start up so that we can get a current section
     // Also - this is pretty strange, we haven't put ourselves in "running" state
@@ -485,7 +532,6 @@ static void testSectionStartOffset()
     // (not any more!!)
     pl.setNextSectionRequest(trackNum, 2);
     assertEQ(pl.getSection(trackNum), 1);           // not playing, so unchanged
-
 
     // when playing, just cue it up, don't go there
     pl.setRunningStatus(true);
@@ -501,6 +547,7 @@ static void testSectionApi()
     testSectionStartOffset();
 }
 
+
 void testMidiPlayer4()
 {
     testSectionApi();
@@ -512,5 +559,6 @@ void testMidiPlayer4()
     testTwoSectionsRepeat1();
     testRepeatReset();
     testPauseSwitchSectionStart();
+    testLockGates();
 }
    

@@ -10,14 +10,13 @@ using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
 using MidiSong4Ptr = std::shared_ptr<MidiSong4>;
 
 #include "MidiTrackPlayer.h"
+#include "SqPort.h"
 
 // #define _MLOG
 
 class MidiPlayer4
 {
 public:
-    using Input = MidiTrackPlayer::Input;
-    using Param = MidiTrackPlayer::Param;
     MidiPlayer4(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong4> song);
 
     void setSong(std::shared_ptr<MidiSong4> song);
@@ -31,13 +30,11 @@ public:
      */
     void updateToMetricTime(double metricTime, float quantizationInterval, bool running);
 
-    /**
-     * loops are independent for each track. Default parameter is only 
-     * provided for compatibilty with old unit tests.
+    /** 
+     * Called on the auto thread over and over.
+     * Gives us a chance to do some work before updateToMetricTime gets called again.
      */
-#if 0
-    double getCurrentLoopIterationStart(int track = 0) const;
-#endif
+    void step();
 
     void setNumVoices(int track, int numVoices);
     void setSampleCountForRetrigger(int);
@@ -47,7 +44,7 @@ public:
      * resets all internal playback state.
      * @param clearGate will set the host's gate low, if true
      */
-    void reset(bool clearGates);
+    void reset(bool clearGates, bool resetSectionIndex);
 
     void setRunningStatus(bool running);
 
@@ -55,7 +52,7 @@ public:
     void setNextSectionRequest(int track, int section);
     int getNextSectionRequest(int track) const;
 
-    void setPorts(Input* cvInput, Param* triggerImmediate);
+    void setPorts(SqInput* cvInput, SqParam* triggerImmediate);
     
     /**
      * Provide direct access so we don't have to add a zillion

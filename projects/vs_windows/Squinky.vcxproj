@@ -36,6 +36,7 @@
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
+    <ClCompile Include="..\..\midi\controller\MakeEmptyTrackCommand4.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditorTab.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiFileProxy.cpp" />
@@ -50,6 +51,7 @@
     <ClCompile Include="..\..\midi\controller\UndoRedoStack.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSelectionModel.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSequencer.cpp" />
+    <ClCompile Include="..\..\midi\model\MidiSequencer4.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong.cpp" />
     <ClCompile Include="..\..\midi\model\MidiSong4.cpp" />
     <ClCompile Include="..\..\midi\model\MidiTrack.cpp" />
@@ -81,6 +83,7 @@
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
     <ClCompile Include="..\..\test\testDrumTrigger.cpp" />
+    <ClCompile Include="..\..\test\testEditCommands4.cpp" />
     <ClCompile Include="..\..\test\testFFT.cpp" />
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
     <ClCompile Include="..\..\test\testAnalyzer.cpp" />
@@ -126,6 +129,7 @@
     <ClCompile Include="..\..\test\testScale.cpp" />
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite.cpp" />
+    <ClCompile Include="..\..\test\testSeqComposite4.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
     <ClCompile Include="..\..\test\testSlew4.cpp" />
@@ -223,6 +227,7 @@
     <ClInclude Include="..\..\dsp\utils\poly.h" />
     <ClInclude Include="..\..\midi\controller\AuditionLocker.h" />
     <ClInclude Include="..\..\midi\controller\IMidiPlayerHost.h" />
+    <ClInclude Include="..\..\midi\controller\MakeEmptyTrackCommand4.h" />
     <ClInclude Include="..\..\midi\controller\MidiAudition.h" />
     <ClInclude Include="..\..\midi\controller\MidiEditor.h" />
     <ClInclude Include="..\..\midi\controller\MidiFileProxy.h" />

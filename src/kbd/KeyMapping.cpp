@@ -7,6 +7,7 @@
 //#include "jansson.h"
 //#include "logger.hpp"
 
+#include <system_error>
 #include <stdio.h>
 #include <sstream>
 
@@ -19,6 +20,8 @@ KeyMappingPtr KeyMapping::make(const std::string& configPath)
         std::string errorStr = std::string("Error detected parsing key mapping: ") + ex.what();
         WARN(errorStr.c_str());
         assert(!ret);
+    } catch( int x) {
+      //  INFO("user has no key mapping");
     }
     return ret;
 }
@@ -56,12 +59,13 @@ private:
 KeyMapping::KeyMapping(const std::string& configPath)
 {
     Actions actions;
-    INFO("parsing key mapping: %s\n", configPath.c_str());
+    // INFO("parsing key mapping: %s\n", configPath.c_str());
     FILE *file = fopen(configPath.c_str(), "r");
     if (!file) {
-        std::string errorStr("could not open file mapping: ");
-        errorStr += configPath;
-        throw (std::runtime_error(errorStr));
+       // std::string errorStr("could not open file mapping: ");
+      //  errorStr += configPath;
+        // a bit of a hack,but just throw "some other thing" for expected error
+        throw int(12);
     }
 
     json_error_t error;
