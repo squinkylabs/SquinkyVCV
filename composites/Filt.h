@@ -235,7 +235,10 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
     #if 1
-        filters.stepn(numChannels);
+        filters.stepn(numChannels,
+            TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
+            TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT]
+        );
     #else
 
     bool didSlopeLeds = false;
