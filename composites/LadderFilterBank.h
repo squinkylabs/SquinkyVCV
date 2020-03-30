@@ -13,7 +13,8 @@ public:
             float fcParam, float fc1TrimParam, float fc2TrimParam,
             T volume,
             float qParam, float qTrimParam, float makeupGainParam,
-            typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing);
+            typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing,
+            float driveParam, float driveTrim);
            
     void step(int numChannels, bool stereoMode,
          SqInput& audioInput,  SqOutput& audioOutput);
@@ -21,6 +22,8 @@ private:
     LadderFilter<T> filters[16];
 
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
+    AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
+    std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
 
     AudioMath::ScaleFun<float> scaleFc = AudioMath::makeScalerWithBipolarAudioTrim(-5, 5);
     AudioMath::ScaleFun<float> scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(0, 4);
@@ -34,11 +37,13 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
     float fcParam, float fc1TrimParam, float fc2TrimParam,
     T volume,
     float qParam, float qTrimParam, float makeupGainParam,
-    typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing)
+    typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing,
+    float driveParam, float driveTrimParam)
 {
     for (int channel=0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
-        
+        filt.setType(type);
+        filt.setVoicing(voicing);
         // filter Fc calc
         {
             T fcClipped = 0;
@@ -81,7 +86,18 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
 
         }
 
-        filt.setType(type);
+        // gain
+        {
+            float  gainInput = scaleGain(
+                driveInput.getVoltage(0),
+                driveParam,
+                driveTrimParam);
+
+            T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+            filt.setGain(gain);
+        }
+
+       
     }
     
 }

@@ -148,7 +148,7 @@ private:
         bool isActive = false;
     };
     DSPImp dsp[2];
-    #endif
+#endif
     LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
@@ -217,12 +217,14 @@ inline void Filt<TBase>::stepn(int divFactor)
 
     //********* now the drive 
         // 0..1
+#if 0
     float  gainInput = scaleGain(
         TBase::inputs[DRIVE_INPUT].getVoltage(0),
         TBase::params[DRIVE_PARAM].value,
         TBase::params[DRIVE_TRIM_PARAM].value);
 
     T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
+#endif
     const float edge = scaleEdge(
         TBase::inputs[EDGE_INPUT].getVoltage(0),
         TBase::params[EDGE_PARAM].value,
@@ -254,7 +256,8 @@ inline void Filt<TBase>::stepn(int divFactor)
             TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
             TBase::params[MASTER_VOLUME_PARAM].value,
             TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value,
-            type, voicing
+            type, voicing,
+             TBase::params[DRIVE_PARAM].value,  TBase::params[DRIVE_TRIM_PARAM].value
             );
     #else
 
