@@ -4,6 +4,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "LadderFilter.h"
+#include "LadderFilterBank.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
 #include "PeakDetector.h"
@@ -146,6 +147,7 @@ private:
         bool isActive = false;
     };
     DSPImp dsp[2];
+    LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
