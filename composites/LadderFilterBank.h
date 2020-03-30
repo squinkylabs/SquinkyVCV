@@ -7,11 +7,13 @@ template <typename T>
 class LadderFilterBank
 {
 public:
+   // using Type = typename LadderFilter<T>::Types;
     void stepn(float sampleTime, int numChannels,
         SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
             float fcParam, float fc1TrimParam, float fc2TrimParam,
             T volume,
-            float qParam, float qTrimParam, float makeupGainParam);
+            float qParam, float qTrimParam, float makeupGainParam,
+            typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing);
            
     void step(int numChannels, bool stereoMode,
          SqInput& audioInput,  SqOutput& audioOutput);
@@ -31,7 +33,8 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
     SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
     float fcParam, float fc1TrimParam, float fc2TrimParam,
     T volume,
-    float qParam, float qTrimParam, float makeupGainParam)
+    float qParam, float qTrimParam, float makeupGainParam,
+    typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing)
 {
     for (int channel=0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
@@ -77,6 +80,8 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
             filt.setBassMakeupGain(makeupGain);
 
         }
+
+        filt.setType(type);
     }
     
 }

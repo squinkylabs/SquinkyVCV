@@ -253,7 +253,8 @@ inline void Filt<TBase>::stepn(int divFactor)
             TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
             TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
             TBase::params[MASTER_VOLUME_PARAM].value,
-            TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value
+            TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value,
+            type, voicing
             );
     #else
 
