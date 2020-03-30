@@ -10,7 +10,8 @@ public:
     void stepn(float sampleTime, int numChannels,
         SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
             float fcParam, float fc1TrimParam, float fc2TrimParam,
-            float volume);
+            T volume,
+            float qParam, float qTrimParam, float makeupGainParam);
            
     void step(int numChannels, bool stereoMode,
          SqInput& audioInput,  SqOutput& audioOutput);
@@ -29,11 +30,13 @@ template <typename T>
 void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
     SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
     float fcParam, float fc1TrimParam, float fc2TrimParam,
-    float volume)
+    T volume,
+    float qParam, float qTrimParam, float makeupGainParam)
 {
     for (int channel=0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
         
+        // filter Fc calc
         {
             T fcClipped = 0;
             T freqCV1 = scaleFc(
@@ -51,6 +54,28 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
             fcClipped = std::min(normFc, T(.48));
             fcClipped = std::max(fcClipped, T(.0000001));
             filt.setNormalizedFc(fcClipped);
+        }
+
+        // q and makeup gain
+        {
+            T res = scaleQ(
+                qInput.getVoltage(0),
+                qParam,
+                qTrimParam);
+            const T qMiddle = 2.8;
+            res = (res < 2) ?
+                (res * qMiddle / 2) :
+                .5 * (res - 2) * (4 - qMiddle) + qMiddle;
+
+            if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
+
+            T bAmt = makeupGainParam;
+            T makeupGain = 1;
+            makeupGain = 1 + bAmt * (res);
+
+            filt.setFeedback(res);
+            filt.setBassMakeupGain(makeupGain);
+
         }
     }
     

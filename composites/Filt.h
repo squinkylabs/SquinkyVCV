@@ -199,7 +199,7 @@ inline void Filt<TBase>::stepn(int divFactor)
     #endif
 
    
-
+#if 0
     T res = scaleQ(
         TBase::inputs[Q_INPUT].getVoltage(0),
         TBase::params[Q_PARAM].value,
@@ -210,6 +210,7 @@ inline void Filt<TBase>::stepn(int divFactor)
         .5 * (res - 2) * (4 - qMiddle) + qMiddle;
 
     if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
+#endif
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
@@ -229,9 +230,11 @@ inline void Filt<TBase>::stepn(int divFactor)
 
     float spread = TBase::params[SPREAD_PARAM].value;
 
+#if 0
     T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
     T makeupGain = 1;
     makeupGain = 1 + bAmt * (res);
+#endif
 
     T slope = scaleSlope(
         TBase::inputs[SLOPE_INPUT].getVoltage(0),
@@ -239,14 +242,19 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[SLOPE_TRIM_PARAM].value);
     #if 1
     /*
+    void stepn(float sampleTime, int numChannels,
         SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
-            float fcParam, float fc1TrimParam, float fc2TrimParam);
-            */
+            float fcParam, float fc1TrimParam, float fc2TrimParam,
+            T volume,
+        SqInput& qInput, float qParam, float qTrimParam, f makeupGainParam);
+        */
         filters.stepn( TBase::engineGetSampleTime(), numChannels,
             TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
             TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
             TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
-            TBase::params[MASTER_VOLUME_PARAM].value);
+            TBase::params[MASTER_VOLUME_PARAM].value,
+            TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value
+            );
     #else
 
     bool didSlopeLeds = false;
