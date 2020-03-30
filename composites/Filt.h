@@ -176,6 +176,7 @@ inline void Filt<TBase>::init()
 template <class TBase>
 inline void Filt<TBase>::stepn(int divFactor)
 {
+    const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT1].channels);
     T fcClipped = 0;
     {
         T freqCV1 = scaleFc(
@@ -234,7 +235,7 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
     #if 1
-        filters.stepn();
+        filters.stepn(numChannels);
     #else
 
     bool didSlopeLeds = false;
@@ -277,7 +278,7 @@ inline void Filt<TBase>::stepn(int divFactor)
 
     // the main inputs and outpus are polyphonic.
     // copy the channel number
-    const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT1].channels);
+  
     TBase::outputs[L_AUDIO_OUTPUT].setChannels(numChannels);
    // TBase::outputs[R_AUDIO_OUTPUT].setChannels(numChannels);
     
@@ -286,9 +287,16 @@ inline void Filt<TBase>::stepn(int divFactor)
 template <class TBase>
 inline void Filt<TBase>::step()
 {
+    /*  void step(int numChannels, int channel, bool stereoMode,
+         SqInput& audioInput,  SqOutput& audioOutput);
+         */
+  
     div.step();
     #if 1
-    filters.step();
+    const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT1].channels);
+    const bool stereo = false;  // FIXIT
+    filters.step(numChannels, stereo,
+         TBase::inputs[L_AUDIO_INPUT],  TBase::outputs[L_AUDIO_OUTPUT]);
     #else
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
