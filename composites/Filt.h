@@ -155,6 +155,7 @@ private:
     LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
+    bool isStereo = false;
     #if 0
   
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
@@ -182,122 +183,27 @@ template <class TBase>
 inline void Filt<TBase>::stepn(int divFactor)
 {
     const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT1].channels);
-#if 0
-    T fcClipped = 0;
-    {
-        T freqCV1 = scaleFc(
-            TBase::inputs[CV_INPUT1].getVoltage(0),
-            TBase::params[FC_PARAM].value,
-            TBase::params[FC1_TRIM_PARAM].value);
-        T freqCV2 = scaleFc(
-            TBase::inputs[CV_INPUT2].getVoltage(0),
-            0,
-            TBase::params[FC2_TRIM_PARAM].value);
-        T freqCV = freqCV1 + freqCV2 + 6;
-        const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
-        const T normFc = fc * TBase::engineGetSampleTime();
 
-        fcClipped = std::min(normFc, T(.48));
-        fcClipped = std::max(fcClipped, T(.0000001));
-    }
-     const T vol = TBase::params[MASTER_VOLUME_PARAM].value;
-    #endif
-
-   
-#if 0
-    T res = scaleQ(
-        TBase::inputs[Q_INPUT].getVoltage(0),
-        TBase::params[Q_PARAM].value,
-        TBase::params[Q_TRIM_PARAM].value);
-    const T qMiddle = 2.8;
-    res = (res < 2) ?
-        (res * qMiddle / 2) :
-        .5 * (res - 2) * (4 - qMiddle) + qMiddle;
-
-    if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
-#endif
+    isStereo = (numChannels == 1) &&
+        (TBase::outputs[L_AUDIO_OUTPUT].isConnected()) &&
+        (TBase::outputs[R_AUDIO_OUTPUT].isConnected());
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
 
-    //********* now the drive 
-        // 0..1
-#if 0
-    float  gainInput = scaleGain(
-        TBase::inputs[DRIVE_INPUT].getVoltage(0),
-        TBase::params[DRIVE_PARAM].value,
-        TBase::params[DRIVE_TRIM_PARAM].value);
-
-    T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
-
-    const float edge = scaleEdge(
-        TBase::inputs[EDGE_INPUT].getVoltage(0),
-        TBase::params[EDGE_PARAM].value,
-        TBase::params[EDGE_TRIM_PARAM].value);
-
-    float spread = TBase::params[SPREAD_PARAM].value;
-#endif
-#if 0
-    T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
-    T makeupGain = 1;
-    makeupGain = 1 + bAmt * (res);
-
-
-    T slope = scaleSlope(
-        TBase::inputs[SLOPE_INPUT].getVoltage(0),
-        TBase::params[SLOPE_PARAM].value,
-        TBase::params[SLOPE_TRIM_PARAM].value);
-#endif
-    #if 1
-    /*
-    void stepn(float sampleTime, int numChannels,
-        SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
-            float fcParam, float fc1TrimParam, float fc2TrimParam,
-            T volume,
-        SqInput& qInput, float qParam, float qTrimParam, f makeupGainParam);
-        */
-        filters.stepn( TBase::engineGetSampleTime(), numChannels,
-            TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
-            TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
-            TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
-            TBase::params[MASTER_VOLUME_PARAM].value,
-            TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value,
-            type, voicing,
-            TBase::params[DRIVE_PARAM].value,  TBase::params[DRIVE_TRIM_PARAM].value,
-            TBase::params[EDGE_PARAM].value,  TBase::params[EDGE_TRIM_PARAM].value,
-            TBase::params[SLOPE_PARAM].value, TBase::params[SLOPE_TRIM_PARAM].value,
-            TBase::params[SPREAD_PARAM].value
-            );
-    #else
-
-    bool didSlopeLeds = false;
-    for (int i = 0; i < 2; ++i) {
-        DSPImp& imp = dsp[i];
-        imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].isConnected() &&
-            TBase::outputs[L_AUDIO_OUTPUT + i].isConnected();
-        if (imp.isActive) {
-            imp._f.setFreqSpread(spread);
-            imp._f.setEdge(edge);
-            imp._f.setGain(gain);
-            imp._f.setVoicing(voicing);
-            imp._f.setType(type);
-            imp._f.setFeedback(res);
-            imp._f.setNormalizedFc(fcClipped);
-            imp._f.setBassMakeupGain(makeupGain);
-            imp._f.setSlope(slope);
-            imp._f.setVolume(vol);
-            if (!didSlopeLeds) {
-                didSlopeLeds = true;
-                for (int i = 0; i < 4; ++i) {
-                    float s = imp._f.getLEDValue(i);
-                    s *= 2.5;
-                    s = s * s;
-                    TBase::lights[i + Filt<TBase>::SLOPE0_LIGHT].value = s;
-                }
-            }
-        }
-    }
-    #endif
+    filters.stepn( TBase::engineGetSampleTime(), numChannels,
+        TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
+        TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
+        TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
+        TBase::params[MASTER_VOLUME_PARAM].value,
+        TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value,
+        type, voicing,
+        TBase::params[DRIVE_PARAM].value,  TBase::params[DRIVE_TRIM_PARAM].value,
+        TBase::params[EDGE_PARAM].value,  TBase::params[EDGE_TRIM_PARAM].value,
+        TBase::params[SLOPE_PARAM].value, TBase::params[SLOPE_TRIM_PARAM].value,
+        TBase::params[SPREAD_PARAM].value
+    );
+  
 
     // now update level LEDs
     peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
@@ -319,17 +225,15 @@ inline void Filt<TBase>::stepn(int divFactor)
 template <class TBase>
 inline void Filt<TBase>::step()
 {
-    /*  void step(int numChannels, int channel, bool stereoMode,
-         SqInput& audioInput,  SqOutput& audioOutput);
-         */
-  
+
     div.step();
     #if 1
     const int numChannels = std::max<int>(1, TBase::inputs[CV_INPUT1].channels);
-    const bool stereo = false;  // FIXIT
-    filters.step(numChannels, stereo,
+
+    filters.step(numChannels, isStereo,
          TBase::inputs[L_AUDIO_INPUT],  TBase::outputs[L_AUDIO_OUTPUT]);
     #else
+
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
         if (imp.isActive) {
