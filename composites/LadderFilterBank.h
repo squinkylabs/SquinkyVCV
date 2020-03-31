@@ -48,6 +48,7 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
 {
     for (int channel=0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
+        
         filt.setType(type);
         filt.setVoicing(voicing);
         // filter Fc calc
@@ -69,8 +70,6 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
             fcClipped = std::max(fcClipped, T(.0000001));
             filt.setNormalizedFc(fcClipped);
         }
-
-        // q and makeup gain
         {
             T res = scaleQ(
                 qInput.getPolyVoltage(0),
@@ -91,8 +90,6 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
             filt.setBassMakeupGain(makeupGain);
 
         }
-
-        // gain
         {
             float  gainInput = scaleGain(
                 driveInput.getPolyVoltage(channel),
@@ -115,13 +112,11 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
                 slopeInput.getPolyVoltage(channel),
                 slopeParam,
                 slopeTrim);
+            filt.setSlope(slope);
 
         }
         filt.setFreqSpread(spreadParam);
-
-       
-    }
-    
+    } 
 }
 
 template <typename T>

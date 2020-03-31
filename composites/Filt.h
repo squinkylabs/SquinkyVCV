@@ -140,6 +140,9 @@ public:
     }
 
 private:
+
+
+    void stepn(int);
 #if 0   // old way
     class DSPImp
     {
@@ -152,6 +155,8 @@ private:
     LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
+    #if 0
+  
     std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
@@ -160,8 +165,8 @@ private:
     AudioMath::ScaleFun<float> scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(0, 4);
     AudioMath::ScaleFun<float> scaleSlope = AudioMath::makeScalerWithBipolarAudioTrim(0, 3);
     AudioMath::ScaleFun<float> scaleEdge = AudioMath::makeScalerWithBipolarAudioTrim(0, 1);
+    #endif
 
-    void stepn(int);
 };
 
 
@@ -224,24 +229,25 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[DRIVE_TRIM_PARAM].value);
 
     T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
-#endif
+
     const float edge = scaleEdge(
         TBase::inputs[EDGE_INPUT].getVoltage(0),
         TBase::params[EDGE_PARAM].value,
         TBase::params[EDGE_TRIM_PARAM].value);
 
     float spread = TBase::params[SPREAD_PARAM].value;
-
+#endif
 #if 0
     T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
     T makeupGain = 1;
     makeupGain = 1 + bAmt * (res);
-#endif
+
 
     T slope = scaleSlope(
         TBase::inputs[SLOPE_INPUT].getVoltage(0),
         TBase::params[SLOPE_PARAM].value,
         TBase::params[SLOPE_TRIM_PARAM].value);
+#endif
     #if 1
     /*
     void stepn(float sampleTime, int numChannels,
