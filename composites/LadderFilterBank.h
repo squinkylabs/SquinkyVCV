@@ -14,7 +14,10 @@ public:
             T volume,
             float qParam, float qTrimParam, float makeupGainParam,
             typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing,
-            float driveParam, float driveTrim);
+            float driveParam, float driveTrim,
+            float edgeParam, float edgeTrim,
+            float slopeParam, float slopeTrim,
+            float spread);
            
     void step(int numChannels, bool stereoMode,
          SqInput& audioInput,  SqOutput& audioOutput);
@@ -38,7 +41,10 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
     T volume,
     float qParam, float qTrimParam, float makeupGainParam,
     typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing,
-    float driveParam, float driveTrimParam)
+    float driveParam, float driveTrimParam,
+    float edgeParam, float edgeTrim,
+    float slopeParam, float slopeTrim,
+    float spreadParam)
 {
     for (int channel=0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
@@ -48,11 +54,11 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
         {
             T fcClipped = 0;
             T freqCV1 = scaleFc(
-                fc1Input.getVoltage(channel),
+                fc1Input.getPolyVoltage(channel),
                 fcParam,
                 fc1TrimParam);
             T freqCV2 = scaleFc(
-                fc2Input.getVoltage(channel),
+                fc2Input.getPolyVoltage(channel),
                 0,
                 fc2TrimParam);          // note: test second inputs
             T freqCV = freqCV1 + freqCV2 + 6;
@@ -67,7 +73,7 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
         // q and makeup gain
         {
             T res = scaleQ(
-                qInput.getVoltage(0),
+                qInput.getPolyVoltage(0),
                 qParam,
                 qTrimParam);
             const T qMiddle = 2.8;
@@ -89,13 +95,29 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
         // gain
         {
             float  gainInput = scaleGain(
-                driveInput.getVoltage(0),
+                driveInput.getPolyVoltage(channel),
                 driveParam,
                 driveTrimParam);
 
             T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
             filt.setGain(gain);
         }
+        {
+            const float edge = scaleEdge(
+                edgeInput.getVoltage(channel),
+                edgeParam,
+                edgeTrim);
+            filt.setEdge(edge);
+
+        }
+        {  
+            T slope = scaleSlope(
+                slopeInput.getPolyVoltage(channel),
+                slopeParam,
+                slopeTrim);
+
+        }
+        filt.setFreqSpread(spreadParam);
 
        
     }
