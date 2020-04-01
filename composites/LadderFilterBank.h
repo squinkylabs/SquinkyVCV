@@ -149,16 +149,21 @@ inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
         LadderFilter<T>& filt = filters[channel];
 
         float input = audioInput.getVoltage(channel);
-        if (mode == Modes::stereo) {
-            if (channel == 1) {
-                assert(inputForChannel1);
-                // for legacy stereo mode, dsp1 gets input from right input
-                input = inputForChannel1->getVoltage(0);
-            }
-            assert(numChannels == 2);
-        }
-        else {
-            assert(mode == Modes::normal);
+        switch (mode) {
+            case Modes::stereo:
+                if (channel == 1) {
+                    assert(inputForChannel1);
+                    // for legacy stereo mode, dsp1 gets input from right input
+                    input = inputForChannel1->getVoltage(0);
+                }
+                assert(numChannels == 2);
+                break;
+            case Modes::normal:
+            case Modes::leftOnly:
+                break;
+            default:
+                assert(false);
+            
         }
 
        

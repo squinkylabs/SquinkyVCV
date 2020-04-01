@@ -170,6 +170,7 @@ inline void Filt<TBase>::stepn(int divFactor)
     int numChannels = std::max<int>(1, TBase::inputs[L_AUDIO_INPUT].channels);
     switch (mode) {
         case LadderFilterBank<T>::Modes::normal:
+        case LadderFilterBank<T>::Modes::leftOnly:
             break;
         case LadderFilterBank<T>::Modes::stereo:
             if (numChannels == 1) {                   // only do ste
@@ -265,6 +266,7 @@ inline void Filt<TBase>::step()
     SqInput* inputForChannel1 = nullptr;
     switch (mode) {
         case LadderFilterBank<T>::Modes::normal:
+        case LadderFilterBank<T>::Modes::leftOnly:
             break;
         case LadderFilterBank<T>::Modes::stereo:
             if (numChannels == 1) {                   // only do stereo if left hooked up mono
@@ -293,10 +295,16 @@ inline void Filt<TBase>::step()
         break;
     case LadderFilterBank<T>::Modes::stereo:
         // copy the r output from poly port to  mono R out
-    {
-        const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(1);
-        TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
-    }
+        {
+            const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(1);
+            TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
+        }
+        break;
+    case LadderFilterBank<T>::Modes::leftOnly:
+        {
+            const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(0);
+            TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
+        }
         break;
     default:
         assert(false);
