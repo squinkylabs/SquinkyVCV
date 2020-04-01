@@ -2,12 +2,19 @@
 #include "LadderFilter.h"
 
 #include "SqPort.h"
+#include <string>
 
 template <typename T>
 class LadderFilterBank
 {
 public:
-   // using Type = typename LadderFilter<T>::Types;
+
+    enum class Modes {
+        normal,         // mono, poly. R out == L out
+        stereo,         // in L -> out L, in R -> out R
+        leftOnly,       // in L -> out L, out R
+        rightOnly       // in R -> out L, out R
+    };
     void stepn(float sampleTime, int numChannels,
         SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
             float fcParam, float fc1TrimParam, float fc2TrimParam,
@@ -18,9 +25,21 @@ public:
             float edgeParam, float edgeTrim,
             float slopeParam, float slopeTrim,
             float spread);
-           
-    void step(int numChannels, bool stereoMode,
-         SqInput& audioInput,  SqOutput& audioOutput);
+    
+    /**
+     * inputForChannel0 and 1 are optional.
+     * They will be null except for special modes.
+     */
+    void step(int numChannels, Modes mode,
+        SqInput& audioInput,  SqOutput& audioOutput,
+        SqInput* inputForChannel0, SqInput* inputForChannel1);
+
+    void _dump(int channel, const std::string& label) {
+        std::stringstream s;
+        s << label;
+        s << "[" << channel << "] ";
+        filters[channel]._dump(s.str());
+    }
 private:
     LadderFilter<T> filters[16];
 
@@ -35,7 +54,7 @@ private:
 };
 
 template <typename T>
-void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
+inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
     SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
     float fcParam, float fc1TrimParam, float fc2TrimParam,
     T volume,
@@ -120,16 +139,31 @@ void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
 }
 
 template <typename T>
-void LadderFilterBank<T>::step(int numChannels, bool stereoMode,
-         SqInput& audioInput,  SqOutput& audioOutput)
+inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
+         SqInput& audioInput,  SqOutput& audioOutput,
+         SqInput* inputForChannel0, SqInput* inputForChannel1)
 {
-    assert(!stereoMode);
+    //assert(mode == Modes::normal);
+
     for (int channel=0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
 
-        const float input =audioInput.getVoltage(channel);
-            filt.run(input);
-            const float output = (float) filt.getOutput();
-            audioOutput.setVoltage(output, channel);
+        float input = audioInput.getVoltage(channel);
+        if (mode == Modes::stereo) {
+            if (channel == 1) {
+                assert(inputForChannel1);
+                // for legacy stereo mode, dsp1 gets input from right input
+                input = inputForChannel1->getVoltage(0);
+            }
+            assert(numChannels == 2);
+        }
+        else {
+            assert(mode == Modes::normal);
+        }
+
+       
+        filt.run(input);
+        const float output = (float) filt.getOutput();
+        audioOutput.setVoltage(output, channel);
     }
 }
