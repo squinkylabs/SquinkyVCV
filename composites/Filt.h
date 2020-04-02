@@ -153,6 +153,7 @@ private:
     PeakDetector peak;
    // bool isStereo = false;
    LadderFilterBank<T>::Modes mode = LadderFilterBank<T>::Modes::normal;
+   int getNumChannels();
 };
 
 
@@ -167,10 +168,11 @@ inline void Filt<TBase>::init()
 template <class TBase>
 inline void Filt<TBase>::stepn(int divFactor)
 {
-    int numChannels = std::max<int>(1, TBase::inputs[L_AUDIO_INPUT].channels);
+    int numChannels = getNumChannels();
     switch (mode) {
         case LadderFilterBank<T>::Modes::normal:
         case LadderFilterBank<T>::Modes::leftOnly:
+        case LadderFilterBank<T>::Modes::rightOnly:
             break;
         case LadderFilterBank<T>::Modes::stereo:
             if (numChannels == 1) {                   // only do ste
@@ -254,19 +256,37 @@ inline void Filt<TBase>::stepn(int divFactor)
     
 }
 
+//template <class TBase>
+//inline int Filt<TBase>::getNumChannels()
+
+template <class TBase>
+inline int Filt<TBase>::getNumChannels()
+{
+    int numChannels = TBase::inputs[L_AUDIO_INPUT].channels;
+    if (numChannels == 0) {
+        numChannels = TBase::inputs[R_AUDIO_INPUT].channels;
+    }
+    return numChannels;
+}
+
 template <class TBase>
 inline void Filt<TBase>::step()
 {
 
     div.step();
 
-    int numChannels = TBase::inputs[L_AUDIO_INPUT].channels;
+    int numChannels = getNumChannels();
+
+
 
     SqInput* inputForChannel0 = nullptr;
     SqInput* inputForChannel1 = nullptr;
     switch (mode) {
         case LadderFilterBank<T>::Modes::normal:
         case LadderFilterBank<T>::Modes::leftOnly:
+            break;
+        case LadderFilterBank<T>::Modes::rightOnly:
+            inputForChannel0 = &TBase::inputs[R_AUDIO_INPUT];
             break;
         case LadderFilterBank<T>::Modes::stereo:
             if (numChannels == 1) {                   // only do stereo if left hooked up mono
@@ -300,6 +320,7 @@ inline void Filt<TBase>::step()
             TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
         }
         break;
+    case LadderFilterBank<T>::Modes::rightOnly:
     case LadderFilterBank<T>::Modes::leftOnly:
         {
             const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(0);

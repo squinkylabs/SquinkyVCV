@@ -158,6 +158,10 @@ inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
                 }
                 assert(numChannels == 2);
                 break;
+            case Modes::rightOnly:
+                assert(channel == 0);
+                input = inputForChannel0->getVoltage(0);
+                break;
             case Modes::normal:
             case Modes::leftOnly:
                 break;
