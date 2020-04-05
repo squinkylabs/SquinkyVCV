@@ -145,13 +145,10 @@ public:
     }
 
 private:
-
-
     void stepn(int);
     LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
-   // bool isStereo = false;
    LadderFilterBank<T>::Modes mode = LadderFilterBank<T>::Modes::normal;
    int getNumChannels();
 };
