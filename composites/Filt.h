@@ -213,7 +213,6 @@ inline void Filt<TBase>::stepn(int divFactor)
         TBase::params[SLOPE_PARAM].value, TBase::params[SLOPE_TRIM_PARAM].value,
         TBase::params[SPREAD_PARAM].value
     );
-  
 
     // now update level LEDs
     peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
@@ -253,13 +252,9 @@ inline int Filt<TBase>::getNumChannels()
 template <class TBase>
 inline void Filt<TBase>::step()
 {
-
     div.step();
 
     int numChannels = getNumChannels();
-
-
-
     SqInput* inputForChannel0 = nullptr;
     SqInput* inputForChannel1 = nullptr;
     switch (mode) {
@@ -381,12 +376,6 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::EDGE_TRIM_PARAM:
             ret = {-1, 1, 0, "Edge trim"};
             break;
-            
-#if 0
-        case Filt<TBase>::BASS_MAKEUP_TYPE_PARAM:
-            ret = {0, 2, 1, "Bass Makeup"};
-            break;
-#endif
         default:
             assert(false);
     }

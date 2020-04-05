@@ -76,6 +76,8 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
         
         filt.setType(type);
         filt.setVoicing(voicing);
+        filt.setVolume(volume);
+
         // filter Fc calc
         {
             T fcClipped = 0;
@@ -107,9 +109,8 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
 
             if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
 
-            T bAmt = makeupGainParam;
-            T makeupGain = 1;
-            makeupGain = 1 + bAmt * (res);
+            const T bAmt = makeupGainParam;
+            const T makeupGain = 1 + bAmt * (res);
 
             filt.setFeedback(res);
             filt.setBassMakeupGain(makeupGain);
