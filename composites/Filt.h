@@ -223,13 +223,18 @@ inline void Filt<TBase>::stepn(int divFactor)
     TBase::lights[Filt<TBase>::VOL1_LIGHT].value = (level >= 1.75) ? .8f : .2f;
     TBase::lights[Filt<TBase>::VOL0_LIGHT].value = (level >= .87) ? .8f : .2f;
 
+    // update the slope LEDs from the first filter stage
+    for (int i = 0; i < 4; ++i) {
+       // float s = imp._f.getLEDValue(i);
+        float s = filters.get(0).getLEDValue(i);
+        s *= 2.5;
+        s = s * s;
+        TBase::lights[i + Filt<TBase>::SLOPE0_LIGHT].value = s;
+    }
 
-    // the main inputs and outpus are polyphonic.
+    // the main inputs and outputs are polyphonic.
     // copy the channel number
-  
-    TBase::outputs[L_AUDIO_OUTPUT].setChannels(numChannels);
-   // TBase::outputs[R_AUDIO_OUTPUT].setChannels(numChannels);
-    
+    TBase::outputs[L_AUDIO_OUTPUT].setChannels(numChannels);    
 }
 
 //template <class TBase>

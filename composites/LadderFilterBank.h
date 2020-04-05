@@ -40,6 +40,9 @@ public:
         s << "[" << channel << "] ";
         filters[channel]._dump(s.str());
     }
+    const LadderFilter<T>& get(int channel) {
+        return filters[channel];
+    }
 private:
     LadderFilter<T> filters[16];
 

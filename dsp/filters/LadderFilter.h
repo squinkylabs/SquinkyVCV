@@ -114,7 +114,7 @@ public:
     void setSlope(T);       // 0..3. only works in 4 pole
     void setVolume(T vol);  // 0..1
 
-    float getLEDValue(int tapNumber);
+    float getLEDValue(int tapNumber) const;
 
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
@@ -232,7 +232,7 @@ inline void LadderFilter<T>::_dump(const std::string& s)
 }
 
 template <typename T>
-inline float LadderFilter<T>::getLEDValue(int tapNumber)
+inline float LadderFilter<T>::getLEDValue(int tapNumber) const
 {
     T ret =  (type == Types::_4PLP) ? stageTaps[tapNumber] : 0;  
     return float(ret);
