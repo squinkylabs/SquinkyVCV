@@ -114,7 +114,7 @@ public:
     void setSlope(T);       // 0..3. only works in 4 pole
     void setVolume(T vol);  // 0..1
 
-    float getLEDValue(int tapNumber);
+    float getLEDValue(int tapNumber) const;
 
     static std::vector<std::string> getTypeNames();
     static std::vector<std::string> getVoicingNames();
@@ -125,6 +125,7 @@ public:
         _disableQComp = true;
     }
 
+    void _dump(const std::string&);
 private:
     TrapezoidalLowpass<T> lpfs[4];
     EdgeTables edgeLookup;
@@ -179,6 +180,7 @@ private:
     IIRDecimator down;
 
     AsymWaveShaper shaper;
+    T _lastInput = 0;
 
     void runBufferClassic(float* buffer, int);
     void runBufferClip2(float* buffer, int);
@@ -194,7 +196,7 @@ private:
     void initQLookup();
 
 
-    void dump(const char* p);
+   // void dump(const char* p);
     T getGfromNormFreq(T nf) const;
 };
 
@@ -208,10 +210,10 @@ LadderFilter<T>::LadderFilter()
 }
 
 template <typename T>
-inline void LadderFilter<T>::dump(const char* p)
+inline void LadderFilter<T>::_dump(const std::string& s)
 {
 #if 0
-    printf("\ndump %s\n", p);
+    printf("\ndump %s\n", s.c_str());
     printf("norm freq = %.2f, @44 = %.2f\n", lastNormalizedFc, lastNormalizedFc * 44100.0f);
     printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", adjustedFeedback, gain, rawEdge, slope);
     printf("filt:_g=%f,  bgain=%.2f bypassFirst=%d\n", _g, bassMakeupGain, bypassFirstStage);
@@ -222,12 +224,15 @@ inline void LadderFilter<T>::dump(const char* p)
             stageFreqOffsets[i],
             stageG[i]);
     }
+    printf("volume = %f %f fina: %f\n", volume, lastVolume, finalVolume);
+    printf("mixedOutput =%f bassMakeupGain=%f\n", mixedOutput, bassMakeupGain);
+    printf("last input = %f\n", _lastInput);
     fflush(stdout);
 #endif
 }
 
 template <typename T>
-inline float LadderFilter<T>::getLEDValue(int tapNumber)
+inline float LadderFilter<T>::getLEDValue(int tapNumber) const
 {
     T ret =  (type == Types::_4PLP) ? stageTaps[tapNumber] : 0;  
     return float(ret);
@@ -312,7 +317,7 @@ inline void LadderFilter<T>::setNormalizedFc(T input)
     _g = getGfromNormFreq(input);
     updateFilter();
     updateFeedback();
-    dump("setnormfc");
+    _dump("setnormfc");
 }
 
 template <typename T>
@@ -322,7 +327,7 @@ void LadderFilter<T>::setBassMakeupGain(T g)
     assert(g < 10);     // tends to be
     if (g != bassMakeupGain) {
         bassMakeupGain = g;
-        dump("setBassG");
+        _dump("setBassG");
     }
 }
 
@@ -331,7 +336,7 @@ void LadderFilter<T>::setGain(T g)
 {
     if (g != gain) {
         gain = g;
-        dump("set gain");
+        _dump("set gain");
     }
 }
 
@@ -363,7 +368,7 @@ void LadderFilter<T>::updateFilter()
         stageG[0] = getGfromNormFreq(T(.9));
     }
 
-    dump("update");
+    _dump("update");
 }
 
 template <typename T>
@@ -376,7 +381,7 @@ void LadderFilter<T>::setEdge(T e)
     assert(e <= 1 && e >= 0);
 
     updateStageGains();   
-    dump("set edge");
+    _dump("set edge");
 }
 
 template <typename T>
@@ -518,7 +523,7 @@ void LadderFilter<T>::setType(Types t)
     updateFilter();
     updateSlope();
     updateStageGains();         // many filter types turn off the edge
-    dump("set type");
+    _dump("set type");
 }
 
 template <typename T>
@@ -535,7 +540,7 @@ inline void LadderFilter<T>::setFeedback(T f)
     }
     requestedFeedback = f;
     updateFeedback();
-    dump("feedback");
+    _dump("feedback");
 }
 
 template <typename T>
@@ -593,6 +598,7 @@ inline void LadderFilter<T>::updateFeedback()
 template <typename T>
 inline void LadderFilter<T>::run(T input)
 {
+    _lastInput = input;
     input *= gain;
     float buffer[oversampleRate];
     up.process(buffer, (float) input);

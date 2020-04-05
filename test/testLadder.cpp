@@ -383,6 +383,131 @@ static void testEdge0(bool is4PLP)
     }
 }
 
+
+static void testFiltOutputPoly()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 6;
+
+    for (int i = 0; i < 6; ++i) {
+        f.inputs[F::L_AUDIO_INPUT].setVoltage(10, i);
+    }
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;          // I think this is the initial patched state
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 6);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 0);
+
+    // should be passing DC already
+   // for (int i = 0; i < 6; ++i) {
+    for (int i = 5; i >= 0; --i) {
+        f._dump(i, "test");
+        assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(i), 1);
+    }
+
+
+    // disconnect the inputs
+    f.inputs[F::L_AUDIO_INPUT].channels = 0;
+    for (int i = 0; i < 8; ++i) {
+        f.step();
+    }
+
+    // disconnected should go to zero.
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 0);
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 0);
+}
+
+static void testFiltOutputStereo()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 1;
+    f.inputs[F::R_AUDIO_INPUT].channels = 1;
+
+
+    f.inputs[F::L_AUDIO_INPUT].setVoltage(10);
+    f.inputs[F::R_AUDIO_INPUT].setVoltage(10);
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;          // I think this is the initial patched state
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 1);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].channels, 1);
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
+    assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
+
+}
+
+static void testFiltOutputLeftOnly()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 1;
+    f.inputs[F::R_AUDIO_INPUT].channels = 0;
+
+
+    f.inputs[F::L_AUDIO_INPUT].setVoltage(10);
+   // f.inputs[F::R_AUDIO_INPUT].setVoltage(10);
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;          // I think this is the initial patched state
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 1);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].channels, 1);
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
+    assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
+}
+
+static void testFiltOutputRightOnly()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 0;
+    f.inputs[F::R_AUDIO_INPUT].channels = 1;
+
+
+    f.inputs[F::R_AUDIO_INPUT].setVoltage(10);
+  
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;          // I think this is the initial patched state
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
+
+    f.params[F::MASTER_VOLUME_PARAM].value = 1;
+
+    for (int i = 0; i < 50; ++i) {
+        f.step();
+    }
+
+    assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 1);
+    assertEQ(f.outputs[F::R_AUDIO_OUTPUT].channels, 1);
+    assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
+    assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
+}
+
+
 static void testFiltOutputsDisconnect()
 {
     using F = Filt<TestComposite>;
@@ -406,8 +531,8 @@ static void testFiltOutputsDisconnect()
     assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
 
     // disconnect the inputs
-    f.outputs[F::L_AUDIO_INPUT].channels = 0;
-    f.outputs[F::R_AUDIO_INPUT].channels = 0;
+    f.inputs[F::L_AUDIO_INPUT].channels = 0;
+    f.inputs[F::R_AUDIO_INPUT].channels = 0;
 
     for (int i = 0; i < 8; ++i) {
         f.step();
@@ -422,6 +547,7 @@ static void testFiltOutputsDisconnect()
 
 static void testFiltOutputsRightDisconnect()
 {
+    assert(false);          // this may no longer be valid
     using F = Filt<TestComposite>;
     F f;
     f.init();
@@ -499,7 +625,15 @@ void testLadder()
     testPeak1();
     testPeak2();
 
+    testFiltOutputPoly();
+    testFiltOutputStereo();
+    testFiltOutputLeftOnly();
+    testFiltOutputRightOnly();
+
+    // the following are bad tests
+#if 0
     testFiltOutputsDisconnect();
     testFiltOutputsRightDisconnect();
     testFiltOutputsLeftDisconnect();
+#endif
 }

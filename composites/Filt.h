@@ -4,12 +4,14 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "LadderFilter.h"
+#include "LadderFilterBank.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
 #include "PeakDetector.h"
 
 #include <assert.h>
 #include <memory>
+#include <string>
 
 namespace rack {
     namespace engine {
@@ -80,8 +82,8 @@ public:
 
     enum InputIds
     {
-        L_AUDIO_INPUT,
-        R_AUDIO_INPUT,
+        L_AUDIO_INPUT,          // In poly mode, this is the only input we care about.
+        R_AUDIO_INPUT,      
         CV_INPUT1,
         CV_INPUT2,
         Q_INPUT,
@@ -93,7 +95,7 @@ public:
 
     enum OutputIds
     {
-        L_AUDIO_OUTPUT,
+        L_AUDIO_OUTPUT,         // In poly mode, this is the only output we care about.
         R_AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
@@ -138,26 +140,17 @@ public:
         return peak.get();
     }
 
+    void _dump(int channel, const std::string& s) {
+        filters._dump(channel, s);
+    }
+
 private:
-    class DSPImp
-    {
-    public:
-        LadderFilter<T> _f;
-        bool isActive = false;
-    };
-    DSPImp dsp[2];
+    void stepn(int);
+    LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
-    std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
-    AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
-    std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
-
-    AudioMath::ScaleFun<float> scaleFc = AudioMath::makeScalerWithBipolarAudioTrim(-5, 5);
-    AudioMath::ScaleFun<float> scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(0, 4);
-    AudioMath::ScaleFun<float> scaleSlope = AudioMath::makeScalerWithBipolarAudioTrim(0, 3);
-    AudioMath::ScaleFun<float> scaleEdge = AudioMath::makeScalerWithBipolarAudioTrim(0, 1);
-
-    void stepn(int);
+   LadderFilterBank<T>::Modes mode = LadderFilterBank<T>::Modes::normal;
+   int getNumChannels();
 };
 
 
@@ -172,91 +165,54 @@ inline void Filt<TBase>::init()
 template <class TBase>
 inline void Filt<TBase>::stepn(int divFactor)
 {
-    T fcClipped = 0;
-    {
-        T freqCV1 = scaleFc(
-            TBase::inputs[CV_INPUT1].getVoltage(0),
-            TBase::params[FC_PARAM].value,
-            TBase::params[FC1_TRIM_PARAM].value);
-        T freqCV2 = scaleFc(
-            TBase::inputs[CV_INPUT2].getVoltage(0),
-            0,
-            TBase::params[FC2_TRIM_PARAM].value);
-        T freqCV = freqCV1 + freqCV2 + 6;
-        const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
-        const T normFc = fc * TBase::engineGetSampleTime();
-
-        fcClipped = std::min(normFc, T(.48));
-        fcClipped = std::max(fcClipped, T(.0000001));
+    int numChannels = getNumChannels();
+    switch (mode) {
+        case LadderFilterBank<T>::Modes::normal:
+        case LadderFilterBank<T>::Modes::leftOnly:
+        case LadderFilterBank<T>::Modes::rightOnly:
+            break;
+        case LadderFilterBank<T>::Modes::stereo:
+            if (numChannels == 1) {                   // only do ste
+                numChannels = 2;
+            }
+            break;
+        default:
+            assert(false);
     }
 
-    const T vol = TBase::params[MASTER_VOLUME_PARAM].value;
+    const bool li = TBase::inputs[L_AUDIO_INPUT].isConnected();
+    const bool ri = TBase::inputs[R_AUDIO_INPUT].isConnected();
+    const bool lo = TBase::outputs[L_AUDIO_OUTPUT].isConnected();
+    const bool ro = TBase::outputs[R_AUDIO_OUTPUT].isConnected();
 
-    T res = scaleQ(
-        TBase::inputs[Q_INPUT].getVoltage(0),
-        TBase::params[Q_PARAM].value,
-        TBase::params[Q_TRIM_PARAM].value);
-    const T qMiddle = 2.8;
-    res = (res < 2) ?
-        (res * qMiddle / 2) :
-        .5 * (res - 2) * (4 - qMiddle) + qMiddle;
-
-    if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
+    // Decode the modes. If normally number of channels is not 1, it can't be 
+    mode = LadderFilterBank<T>::Modes::normal;
+    if (numChannels == 1) {
+        if (li && ri && lo && ro) {
+            mode =  LadderFilterBank<T>::Modes::stereo;
+        } else if (li && !ri && lo && ro) {
+            // do we need lo here? if only right was connected we would still do this, yes?
+            mode =  LadderFilterBank<T>::Modes::leftOnly;
+        } else if (!li && ri && lo && ro) {
+            mode =  LadderFilterBank<T>::Modes::rightOnly;
+        }       
+    }
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
 
-    //********* now the drive 
-        // 0..1
-    float  gainInput = scaleGain(
-        TBase::inputs[DRIVE_INPUT].getVoltage(0),
-        TBase::params[DRIVE_PARAM].value,
-        TBase::params[DRIVE_TRIM_PARAM].value);
-
-    T gain = T(.15) + 4 * LookupTable<float>::lookup(*audioTaper, gainInput, false);
-    const float edge = scaleEdge(
-        TBase::inputs[EDGE_INPUT].getVoltage(0),
-        TBase::params[EDGE_PARAM].value,
-        TBase::params[EDGE_TRIM_PARAM].value);
-
-    float spread = TBase::params[SPREAD_PARAM].value;
-
-    T bAmt = TBase::params[BASS_MAKEUP_PARAM].value;
-    T makeupGain = 1;
-    makeupGain = 1 + bAmt * (res);
-
-    T slope = scaleSlope(
-        TBase::inputs[SLOPE_INPUT].getVoltage(0),
-        TBase::params[SLOPE_PARAM].value,
-        TBase::params[SLOPE_TRIM_PARAM].value);
-
-    bool didSlopeLeds = false;
-    for (int i = 0; i < 2; ++i) {
-        DSPImp& imp = dsp[i];
-        imp.isActive = TBase::inputs[L_AUDIO_INPUT + i].isConnected() &&
-            TBase::outputs[L_AUDIO_OUTPUT + i].isConnected();
-        if (imp.isActive) {
-            imp._f.setFreqSpread(spread);
-            imp._f.setEdge(edge);
-            imp._f.setGain(gain);
-            imp._f.setVoicing(voicing);
-            imp._f.setType(type);
-            imp._f.setFeedback(res);
-            imp._f.setNormalizedFc(fcClipped);
-            imp._f.setBassMakeupGain(makeupGain);
-            imp._f.setSlope(slope);
-            imp._f.setVolume(vol);
-            if (!didSlopeLeds) {
-                didSlopeLeds = true;
-                for (int i = 0; i < 4; ++i) {
-                    float s = imp._f.getLEDValue(i);
-                    s *= 2.5;
-                    s = s * s;
-                    TBase::lights[i + Filt<TBase>::SLOPE0_LIGHT].value = s;
-                }
-            }
-        }
-    }
+    filters.stepn( TBase::engineGetSampleTime(), numChannels,
+        TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
+        TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
+        TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
+        TBase::params[MASTER_VOLUME_PARAM].value,
+        TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value,
+        type, voicing,
+        TBase::params[DRIVE_PARAM].value,  TBase::params[DRIVE_TRIM_PARAM].value,
+        TBase::params[EDGE_PARAM].value,  TBase::params[EDGE_TRIM_PARAM].value,
+        TBase::params[SLOPE_PARAM].value, TBase::params[SLOPE_TRIM_PARAM].value,
+        TBase::params[SPREAD_PARAM].value
+    );
 
     // now update level LEDs
     peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
@@ -265,34 +221,91 @@ inline void Filt<TBase>::stepn(int divFactor)
     TBase::lights[Filt<TBase>::VOL2_LIGHT].value = (level >= 3.5) ? .8f : .2f;
     TBase::lights[Filt<TBase>::VOL1_LIGHT].value = (level >= 1.75) ? .8f : .2f;
     TBase::lights[Filt<TBase>::VOL0_LIGHT].value = (level >= .87) ? .8f : .2f;
-    
+
+    // update the slope LEDs from the first filter stage
+    for (int i = 0; i < 4; ++i) {
+       // float s = imp._f.getLEDValue(i);
+        float s = filters.get(0).getLEDValue(i);
+        s *= 2.5;
+        s = s * s;
+        TBase::lights[i + Filt<TBase>::SLOPE0_LIGHT].value = s;
+    }
+
+    // the main inputs and outputs are polyphonic.
+    // copy the channel number
+    TBase::outputs[L_AUDIO_OUTPUT].setChannels(numChannels);    
+}
+
+//template <class TBase>
+//inline int Filt<TBase>::getNumChannels()
+
+template <class TBase>
+inline int Filt<TBase>::getNumChannels()
+{
+    int numChannels = TBase::inputs[L_AUDIO_INPUT].channels;
+    if (numChannels == 0) {
+        numChannels = TBase::inputs[R_AUDIO_INPUT].channels;
+    }
+    return numChannels;
 }
 
 template <class TBase>
 inline void Filt<TBase>::step()
 {
     div.step();
-    for (int i = 0; i < 2; ++i) {
-        DSPImp& imp = dsp[i];
-        if (imp.isActive) {
-            const float input = TBase::inputs[L_AUDIO_INPUT+i].getVoltage(0);
-            imp._f.run(input);
-            const float output = (float) imp._f.getOutput();
-            TBase::outputs[L_AUDIO_OUTPUT+i].setVoltage(output, 0);
-            peak.step(output);
+
+    int numChannels = getNumChannels();
+    SqInput* inputForChannel0 = nullptr;
+    SqInput* inputForChannel1 = nullptr;
+    switch (mode) {
+        case LadderFilterBank<T>::Modes::normal:
+        case LadderFilterBank<T>::Modes::leftOnly:
+            break;
+        case LadderFilterBank<T>::Modes::rightOnly:
+            inputForChannel0 = &TBase::inputs[R_AUDIO_INPUT];
+            break;
+        case LadderFilterBank<T>::Modes::stereo:
+            if (numChannels == 1) {                   // only do stereo if left hooked up mono
+                numChannels = 2;
+                inputForChannel1 = &TBase::inputs[R_AUDIO_INPUT];
+            }
+            break;
+        default:
+            assert(false);
+    }
+
+    filters.step(numChannels, mode,
+        TBase::inputs[L_AUDIO_INPUT],  TBase::outputs[L_AUDIO_OUTPUT],
+        inputForChannel0, inputForChannel1,
+        peak);
+
+    // if audio, clear out 
+    if (numChannels == 0) {
+        for (int i = 0; i < TBase::outputs[L_AUDIO_OUTPUT].channels; ++i) {
+            TBase::outputs[L_AUDIO_OUTPUT].setVoltage(0, i);
         }
     }
 
-    // Do special processing for unconnected outputs
-    if (!dsp[0].isActive && !dsp[1].isActive) {
-        // both sides unpatched - clear output
-        TBase::outputs[L_AUDIO_OUTPUT].setVoltage(0, 0);
+    switch (mode) {
+    case LadderFilterBank<T>::Modes::normal:
         TBase::outputs[R_AUDIO_OUTPUT].setVoltage(0, 0);
-    } else if (dsp[0].isActive && !dsp[1].isActive) {
-        // left connected, right not r = l
-        TBase::outputs[R_AUDIO_OUTPUT].setVoltage(TBase::outputs[L_AUDIO_OUTPUT].getVoltage(0), 0);
-    } else if (!dsp[0].isActive && dsp[1].isActive) {
-        TBase::outputs[L_AUDIO_OUTPUT].setVoltage(TBase::outputs[R_AUDIO_OUTPUT].getVoltage(0), 0);
+        break;
+    case LadderFilterBank<T>::Modes::stereo:
+        // copy the r output from poly port to  mono R out
+        {
+            const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(1);
+            TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
+        }
+        break;
+    case LadderFilterBank<T>::Modes::rightOnly:
+    case LadderFilterBank<T>::Modes::leftOnly:
+        {
+            const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(0);
+            TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
+        }
+        break;
+    default:
+        assert(false);
     }
 }
 
@@ -363,12 +376,6 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::EDGE_TRIM_PARAM:
             ret = {-1, 1, 0, "Edge trim"};
             break;
-            
-#if 0
-        case Filt<TBase>::BASS_MAKEUP_TYPE_PARAM:
-            ret = {0, 2, 1, "Bass Makeup"};
-            break;
-#endif
         default:
             assert(false);
     }
