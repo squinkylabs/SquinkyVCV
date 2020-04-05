@@ -127,7 +127,7 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
         }
         {
             const float edge = scaleEdge(
-                edgeInput.getVoltage(channel),
+                edgeInput.getPolyVoltage(channel),
                 edgeParam,
                 edgeTrim);
             filt.setEdge(edge);
