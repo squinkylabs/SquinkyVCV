@@ -212,7 +212,7 @@ LadderFilter<T>::LadderFilter()
 template <typename T>
 inline void LadderFilter<T>::_dump(const std::string& s)
 {
-#if 1
+#if 0
     printf("\ndump %s\n", s.c_str());
     printf("norm freq = %.2f, @44 = %.2f\n", lastNormalizedFc, lastNormalizedFc * 44100.0f);
     printf("feedback=%.2f, gain=%.2f edge=%.2f slope=%.2f\n", adjustedFeedback, gain, rawEdge, slope);

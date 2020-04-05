@@ -183,44 +183,23 @@ inline void Filt<TBase>::stepn(int divFactor)
             assert(false);
     }
 
-/*
-  enum class Modes {
-        normal,         // mono, poly. R out == L out
-        stereo,         // in L -> out L, in R -> out R
-        leftOnly,       // in L -> out L, out R
-        rightOnly       // in R -> out L, out R
-    };
-    */
-
     const bool li = TBase::inputs[L_AUDIO_INPUT].isConnected();
     const bool ri = TBase::inputs[R_AUDIO_INPUT].isConnected();
     const bool lo = TBase::outputs[L_AUDIO_OUTPUT].isConnected();
     const bool ro = TBase::outputs[R_AUDIO_OUTPUT].isConnected();
 
-    // Decode the modes. If normaly number of channels is not 1, it can't be 
-     mode = LadderFilterBank<T>::Modes::normal;
+    // Decode the modes. If normally number of channels is not 1, it can't be 
+    mode = LadderFilterBank<T>::Modes::normal;
     if (numChannels == 1) {
-        if (TBase::inputs[L_AUDIO_INPUT].isConnected() &&
-            TBase::inputs[R_AUDIO_INPUT].isConnected() &&
-            TBase::outputs[L_AUDIO_OUTPUT].isConnected() &&
-            TBase::outputs[R_AUDIO_OUTPUT].isConnected()) {
-                mode =  LadderFilterBank<T>::Modes::stereo;
-        } else if (TBase::inputs[L_AUDIO_INPUT].isConnected() &&
-            !TBase::inputs[R_AUDIO_INPUT].isConnected() &&
-            TBase::outputs[L_AUDIO_OUTPUT].isConnected() &&
-            TBase::outputs[R_AUDIO_OUTPUT].isConnected()) {
-                 mode =  LadderFilterBank<T>::Modes::leftOnly;
-        } else if (!TBase::inputs[L_AUDIO_INPUT].isConnected() &&
-            TBase::outputs[!R_AUDIO_INPUT].isConnected() &&
-            TBase::outputs[L_AUDIO_OUTPUT].isConnected() &&
-            TBase::outputs[R_AUDIO_OUTPUT].isConnected()) {
-                mode =  LadderFilterBank<T>::Modes::rightOnly;
+        if (li && ri && lo && ro) {
+            mode =  LadderFilterBank<T>::Modes::stereo;
+        } else if (li && !ri && lo && ro) {
+            // do we need lo here? if only right was connected we would still do this, yes?
+            mode =  LadderFilterBank<T>::Modes::leftOnly;
+        } else if (!li && ri && lo && ro) {
+            mode =  LadderFilterBank<T>::Modes::rightOnly;
         }       
     }
-
-  //  isStereo = (numChannels == 1) &&
-  //      (TBase::outputs[L_AUDIO_OUTPUT].isConnected()) &&
-   //     (TBase::outputs[R_AUDIO_OUTPUT].isConnected());
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
