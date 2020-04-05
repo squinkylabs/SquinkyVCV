@@ -281,7 +281,8 @@ inline void Filt<TBase>::step()
 
     filters.step(numChannels, mode,
         TBase::inputs[L_AUDIO_INPUT],  TBase::outputs[L_AUDIO_OUTPUT],
-        inputForChannel0, inputForChannel1);
+        inputForChannel0, inputForChannel1,
+        peak);
 
     // if audio, clear out 
     if (numChannels == 0) {

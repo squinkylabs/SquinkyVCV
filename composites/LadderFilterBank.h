@@ -1,8 +1,10 @@
 #pragma once
 #include "LadderFilter.h"
-
+#include "PeakDetector.h"
 #include "SqPort.h"
 #include <string>
+
+
 
 template <typename T>
 class LadderFilterBank
@@ -32,7 +34,8 @@ public:
      */
     void step(int numChannels, Modes mode,
         SqInput& audioInput,  SqOutput& audioOutput,
-        SqInput* inputForChannel0, SqInput* inputForChannel1);
+        SqInput* inputForChannel0, SqInput* inputForChannel1,
+        PeakDetector& peak);
 
     void _dump(int channel, const std::string& label) {
         std::stringstream s;
@@ -144,7 +147,8 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
 template <typename T>
 inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
          SqInput& audioInput,  SqOutput& audioOutput,
-         SqInput* inputForChannel0, SqInput* inputForChannel1)
+         SqInput* inputForChannel0, SqInput* inputForChannel1,
+         PeakDetector& peak)
 {
     //assert(mode == Modes::normal);
 
@@ -177,5 +181,7 @@ inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
         filt.run(input);
         const float output = (float) filt.getOutput();
         audioOutput.setVoltage(output, channel);
+
+        peak.step(output);
     }
 }
