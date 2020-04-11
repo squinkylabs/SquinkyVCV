@@ -6,6 +6,7 @@
 #include "Seq4.h"
 #include "UndoRedoStack.h"
 #include "../Sequencer4Widget.h"
+#include "../ctrl/SqWidgets.h"
 
 #ifdef _SEQ4
 
@@ -23,7 +24,25 @@ void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq) {
     }
 }
 
+#if 0
 
+class SqOutputJack : public app::SvgPort {
+public:
+	SqOutputJack() {
+	//	setSvg(SqHelper::loadSvg("res/jack-24.svg"));
+    setSvg(SqHelper::loadSvg("res/jack-24-in.svg"));
+	}
+};
+
+class SqOutputJack2 : public app::SvgPort {
+public:
+	SqOutputJack2() {
+	//	setSvg(SqHelper::loadSvg("res/jack-24.svg"));
+    setSvg(SqHelper::loadSvg("res/jack-24-out.svg"));
+	}
+};
+
+#endif
 /***************************** S4ButtonGrid ***********************************/
 
 using Comp = Seq4<WidgetComposite>;
@@ -63,9 +82,9 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
                 rack::math::Vec(x, y),
                 row,
                 col,
-                seq,
-                seq4Comp,
-                module);
+            seq,
+            seq4Comp,
+            module);
 
 #if 1   // param widget way
             if (module) {
@@ -93,16 +112,16 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
         const float jacksY = y + 8;
         const float jacksDy = 28;
 
-        parent->addOutput(rack::createOutputCentered<rack::componentlibrary::PJ301MPort>(
+        parent->addOutput(rack::createOutputCentered<SqOutputJack>(
             rack::math::Vec(jacksX, jacksY),
             module,
             Comp::CV0_OUTPUT + row));
-        parent->addOutput(rack::createOutputCentered<rack::componentlibrary::PJ301MPort>(
+        parent->addOutput(rack::createOutputCentered<SqOutputJack>(
             rack::math::Vec(jacksX, jacksY + jacksDy),
             module,
             Comp::GATE0_OUTPUT + row));
 
-        parent->addInput(rack::createInputCentered<rack::componentlibrary::PJ301MPort>(
+        parent->addInput(rack::createInputCentered<SqInputJack>(
             rack::math::Vec(30, jacksY + 1 + jacksDy / 2),
             module,
             Comp::MOD0_INPUT + row));

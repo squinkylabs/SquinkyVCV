@@ -95,6 +95,11 @@ public:
         PADSELECT13_PARAM,
         PADSELECT14_PARAM,
         PADSELECT15_PARAM,
+        CV_FUNCTION0_PARAM,
+        CV_FUNCTION_PARAM = CV_FUNCTION0_PARAM,
+        CV_FUNCTION1_PARAM,
+        CV_FUNCTION2_PARAM,
+        CV_FUNCTION3_PARAM,
         NUM_PARAMS
     };
 
@@ -543,6 +548,18 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             break;
         case Seq4<TBase>::PADSELECT15_PARAM:
             ret = { 0, 1, 0, "Select 16" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION0_PARAM:
+            ret = { 0, 3, 0, "CV1 function" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION1_PARAM:
+            ret = { 0, 3, 0, "CV2 function" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION2_PARAM:
+            ret = { 0, 3, 0, "CV3 function" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION3_PARAM:
+            ret = { 0, 3, 0, "CV4 function" };
             break;
         default:
             assert(false);

@@ -48,6 +48,20 @@ struct BlueToggle : public SvgSwitch
     }
 };
 
+class SqOutputJack : public app::SvgPort {
+public:
+	SqOutputJack() {
+        setSvg(SqHelper::loadSvg("res/jack-24-out.svg"));
+	}
+};
+
+class SqInputJack : public app::SvgPort {
+public:
+	SqInputJack() {
+        setSvg(SqHelper::loadSvg("res/jack-24-in.svg"));
+	}
+};
+
 /**
  * A very basic momentary push button.
  */

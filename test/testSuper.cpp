@@ -70,7 +70,7 @@ static void stepn(CompPtr comp, int n)
 
 static void testRun(int numChannels)
 {
-    printf("TestRun %d\n", numChannels);
+   // printf("TestRun %d\n", numChannels);
     CompPtr comp = makeSaw();
     comp->inputs[Comp::CV_INPUT].channels = numChannels;
     stepn(comp, 16);
