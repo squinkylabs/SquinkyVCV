@@ -186,6 +186,7 @@ public:
     void onSampleRateChange();
     static std::vector<std::string> getClockRates();
     static std::vector<std::string> getPolyLabels();
+    static std::vector<std::string> getCVFunctionLabels();
 
     /**
      * return 0 if not playing
@@ -465,6 +466,16 @@ inline std::vector<std::string> Seq4<TBase>::getPolyLabels()
     };
 }
 
+template <class TBase>
+inline std::vector<std::string> Seq4<TBase>::getCVFunctionLabels()
+{
+    return { 
+        "Poly",
+        "Next",
+        "Prev",
+        "Set"
+    };
+}
 template <class TBase>
 int Seq4Description<TBase>::getNumParams()
 {

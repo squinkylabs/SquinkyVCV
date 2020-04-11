@@ -152,22 +152,36 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     p->text = "x64";
     p->setLabels(Comp::getClockRates());
     addParam(p);
-    y += 42;
+    y += 32;
     for (int i = 0; i < 4; ++i) {
 #if defined(_LAB) && false
         addLabelLeft(Vec(controlX - 4, y),
                      "Polyphony");
 #endif
+        const float yVoices = y + 25;
         p = SqHelper::createParam<PopupMenuParamWidget>(
             icomp,
-            Vec(controlX + 52, y),  // 54 too much 50 too little
+            Vec(controlX + 48 + 2, yVoices),
             module,
             Comp::NUM_VOICES0_PARAM + i);
         p->text = "4";              // default text for the module browser
-        p->box.size.x = 40;  // width
-        p->box.size.y = 22;      // should set auto like button does
+        p->box.size.x = 38;  // width
+        p->box.size.y = 20;      // should set auto like button does
         p->setLabels(Comp::getPolyLabels());
         addParam(p);
+
+        const float yFunctions = y;
+        p = SqHelper::createParam<PopupMenuParamWidget>(
+            icomp,
+            Vec(controlX + 48 - 8, yFunctions),  // 54 too much 50 too little
+            module,
+            Comp::CV_FUNCTION_PARAM + i);
+        p->text = "Poly";              // default text for the module browser
+        p->box.size.x = 48;  // width
+        p->box.size.y = 22;      // should set auto like button does
+        p->setLabels(Comp::getCVFunctionLabels());
+        addParam(p);
+
 
         y += S4ButtonGrid::buttonMargin + S4ButtonGrid::buttonSize;
     }

@@ -205,9 +205,18 @@ static void testPauseSwitchSectionStart()
     assertEQ(pl->getSection(), 4);       // should be playing requested section still
 }
 
+static void testLabels()
+{
+    auto x = Sq4::getPolyLabels();
+    assert(x.size() == 16);
+    x = Sq4::getCVFunctionLabels();
+    assert(x.size() == 4);
+}
+
 void testSeqComposite4()
 {
     test0();
     testPause();
     testPauseSwitchSectionStart();
+    testLabels();
 }
