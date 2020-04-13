@@ -396,6 +396,7 @@ static void testFiltOutputPoly()
     }
 
     f.outputs[F::L_AUDIO_OUTPUT].channels = 1;          // I think this is the initial patched state
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
 
     f.params[F::MASTER_VOLUME_PARAM].value = 1;
 
@@ -404,6 +405,7 @@ static void testFiltOutputPoly()
     }
 
     assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 6);
+  //  assertEQ(f.outputs[F::R_AUDIO_OUTPUT].channels, 6);
     assertEQ(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 0);
 
     // should be passing DC already
@@ -451,6 +453,14 @@ static void testFiltOutputStereo()
     assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
     assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
 
+    // bug in stereo mode - number of channels is unstable
+    for (int i = 0; i < 20; ++i) {
+        f.step();
+         assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 1);
+        assertEQ(f.outputs[F::R_AUDIO_OUTPUT].channels, 1);
+        assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
+        assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
+    }
 }
 
 static void testFiltOutputLeftOnly()
