@@ -561,16 +561,16 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             ret = { 0, 1, 0, "Select 16" };
             break;
         case Seq4<TBase>::CV_FUNCTION0_PARAM:
-            ret = { 0, 3, 0, "CV1 function" };
+            ret = { 0, 3, 1, "CV1 function" };
             break;
         case Seq4<TBase>::CV_FUNCTION1_PARAM:
-            ret = { 0, 3, 0, "CV2 function" };
+            ret = { 0, 3, 1, "CV2 function" };
             break;
         case Seq4<TBase>::CV_FUNCTION2_PARAM:
-            ret = { 0, 3, 0, "CV3 function" };
+            ret = { 0, 3, 1, "CV3 function" };
             break;
         case Seq4<TBase>::CV_FUNCTION3_PARAM:
-            ret = { 0, 3, 0, "CV4 function" };
+            ret = { 0, 3, 1, "CV4 function" };
             break;
         default:
             assert(false);

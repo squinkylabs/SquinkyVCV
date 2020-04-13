@@ -88,17 +88,8 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
 
 #if 1   // param widget way
             if (module) {
-                button->paramQuantity = module->paramQuantities[Comp::PADSELECT0_PARAM + padNumber];
-                 if (padNumber==0) {
-              //  INFO("added pq=%p, from param=%d pad=%d", button->paramQuantity, Comp::PADSELECT0_PARAM + padNumber, padNumber);
-              //  INFO("min=%f max = %f param=%p", button->paramQuantity->minValue, button->paramQuantity->maxValue,                    button->paramQuantity->getParam());
-                 }
-                    
+                button->paramQuantity = module->paramQuantities[Comp::PADSELECT0_PARAM + padNumber];       
             }
-             if (padNumber==0) {
-            INFO("making button x=%.2f, box.pos.x=%.2f ", x, button->box.pos.x);
-            INFO("button type=%s parent=%s, %p", typeid(button).name(), typeid(parent).name(), parent);
-             }
             parent->addParam(button);
 #else
            
@@ -167,28 +158,22 @@ public:
         std::shared_ptr<S4ButtonGrid> grid = widget->getButtonGrid();
         assert(grid);
 
-        INFO("S4ButtonClickCommand::undo ==== %p", this);
         // first restore the edited track
         if (origColSelected >= 0 && origRowSelected >= 0) {
             auto button = grid->getButton(origRowSelected, origColSelected);
             assert(button);
-            INFO("S4ButtonClickCommand::undo setting edit to %d,%d",origRowSelected, origColSelected);
             button->doEditClip();
         }
 
         // unset the selection we set before
         auto button = grid->getButton(rowToSelect, colToSelect);
         button->setSelection(false);
-        INFO("S4ButtonClickCommand::undo un-setting edit from %d,%d", rowToSelect, colToSelect);
 
         // and select the original
         if (origRowSelected >= 0 && origColSelected >= 0) {
             button = grid->getButton(origRowSelected, origColSelected);
             button->setSelection(true);
-            INFO("S4ButtonClickCommand::undo setting sel to %d,%d", origRowSelected, origColSelected);
         }
-        INFO("S4ButtonClickCommand::undo (exit) ==== %p", this);
-
     }
 
 private:
@@ -203,16 +188,6 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
     cmd->name = "click";
     assert(widget);
     seq->undo->execute4(seq, widget, cmd);
-#if 0
-    // select the one we just clicked into
-    for (int r = 0; r < MidiSong4::numTracks; ++r) {
-        for (int c = 0; c < MidiSong4::numSectionsPerTrack; ++c) {
-            auto button = getButton(r, c);
-            assert(button);
-            button->setSelection(r == row && c == col);
-        }
-    }
-#endif
 
     // we still do our own selection of next section, outside of unto
     if (isCtrl) {
@@ -224,9 +199,6 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
             seq4Comp->setNextSectionRequest(r, col + 1);
         }
     }
-  //  auto button = getButton(row, col);
-
-  //  button->doEditClip();
 }
 
 std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col) {

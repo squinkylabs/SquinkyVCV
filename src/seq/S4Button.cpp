@@ -358,7 +358,7 @@ void S4Button::onDragHover(const rack::event::DragHover& e) {
     sq::consumeEvent(&e, this);
 }
 
-#if 1
+
 void S4Button::onButton(const rack::event::Button& e) {
 
     if ((e.button == GLFW_MOUSE_BUTTON_LEFT) && (e.action == GLFW_PRESS) && (e.mods & RACK_MOD_CTRL)) {
@@ -378,7 +378,7 @@ void S4Button::onButton(const rack::event::Button& e) {
 
     ::rack::app::ParamWidget::onButton(e);
 }
-#endif
+
 
 void S4Button::onDragStart(const rack::event::DragStart& e) {
 
@@ -408,6 +408,17 @@ void S4Button::setClickHandler(callback h) {
 
 S4ButtonDrawer::S4ButtonDrawer(const rack::math::Vec& size, S4Button* button) : button(button) {
     this->box.size = size;
+}
+
+// We need to delegate enter and leave to the button, so that
+// tooltips will work.
+void S4ButtonDrawer::onEnter(const rack::event::Enter& e) {
+    button->onEnter(e);
+}
+
+void S4ButtonDrawer::onLeave(const rack::event::Leave& e) 
+{
+    button->onLeave(e);
 }
 
 /**

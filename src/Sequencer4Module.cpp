@@ -21,11 +21,66 @@
 #include "seq/S4ButtonGrid.h"
 
 #include "MidiSequencer4.h"
+#include "MidiSong4.h"
 
 using Comp = Seq4<WidgetComposite>;
 
 void Sequencer4Module::onSampleRateChange() {
 }
+
+//------------- define some custom param quantities for better tooltips -----
+
+class CVSelectParamQuantity : public ParamQuantity
+{
+public:
+    CVSelectParamQuantity( const ParamQuantity& other) {
+        ParamQuantity* base = this;
+        *base = other;
+    }
+    std::string getDisplayValueString() override {
+        const unsigned int index = (unsigned int)(std::round(getValue()));
+        const std::vector<std::string>& labels = Comp::getCVFunctionLabels();
+        std::string ret;
+        switch(index) {
+            case 0:
+               ret = "Polyphonic (next, prev, set)";
+               break;
+            case 1:
+                ret = "Next section in track";
+                break;
+            case 2:
+                ret = "Previous section in track";
+                break;
+
+            case 3:
+                ret = "Set section from CV";
+                break;
+            default:
+                assert(false);
+        }
+        return ret;
+    }
+};
+
+class PadParamQuantity  : public ParamQuantity
+{
+public:
+    PadParamQuantity( const ParamQuantity& other, int tk, int sect) : track(tk), section(sect) {
+        ParamQuantity* base = this;
+        *base = other;
+    }
+    std::string getDisplayValueString() override { return ""; }
+    std::string getLabel() override { 
+        std::stringstream s;
+        s << "click: all tk -> section " << section;
+        s << "; ctrl-click: track " << track;
+        s << " -> section " << section;
+        return s.str();
+    }
+private:
+    const int track;
+    const int section;
+};
 
 Sequencer4Module::Sequencer4Module() {
     runStopRequested = false;
@@ -35,6 +90,37 @@ Sequencer4Module::Sequencer4Module() {
     seq4Comp = std::make_shared<Comp>(this, song);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
+
+    for (int i=0; i<4; ++i) {
+        {
+            assert(this->paramQuantities.size() == Comp::NUM_PARAMS);
+            auto orig = this->paramQuantities[Comp::CV_FUNCTION_PARAM + i];
+            auto p = new CVSelectParamQuantity(*orig);
+    
+            delete orig;
+            this->paramQuantities[Comp::CV_FUNCTION_PARAM + i] = p;
+        }
+        {
+             this->paramQuantities[Comp::NUM_VOICES_PARAM + i]->displayOffset += 1;
+        }
+    }
+
+
+    for (int track=0; track<MidiSong4::numTracks; ++track) {
+        for (int section = 0; section < MidiSong4::numSectionsPerTrack; ++section) {
+
+            const int index = track * MidiSong4::numSectionsPerTrack + section;
+            auto orig = this->paramQuantities[Comp::PADSELECT0_PARAM + index];
+            assert(this->paramQuantities.size() == Comp::NUM_PARAMS);
+            auto p = new PadParamQuantity(*orig, track, section);
+
+            delete orig;
+            this->paramQuantities[Comp::PADSELECT0_PARAM + index] = p;
+        }
+
+    }
+
+
 
     onSampleRateChange();
     assert(seq4);
