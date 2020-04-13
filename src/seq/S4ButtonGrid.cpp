@@ -24,25 +24,6 @@ void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq) {
     }
 }
 
-#if 0
-
-class SqOutputJack : public app::SvgPort {
-public:
-	SqOutputJack() {
-	//	setSvg(SqHelper::loadSvg("res/jack-24.svg"));
-    setSvg(SqHelper::loadSvg("res/jack-24-in.svg"));
-	}
-};
-
-class SqOutputJack2 : public app::SvgPort {
-public:
-	SqOutputJack2() {
-	//	setSvg(SqHelper::loadSvg("res/jack-24.svg"));
-    setSvg(SqHelper::loadSvg("res/jack-24-out.svg"));
-	}
-};
-
-#endif
 /***************************** S4ButtonGrid ***********************************/
 
 using Comp = Seq4<WidgetComposite>;
@@ -103,19 +84,39 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
         const float jacksY = y + 8;
         const float jacksDy = 28;
 
-        parent->addOutput(rack::createOutputCentered<SqOutputJack>(
-            rack::math::Vec(jacksX, jacksY),
-            module,
-            Comp::CV0_OUTPUT + row));
-        parent->addOutput(rack::createOutputCentered<SqOutputJack>(
-            rack::math::Vec(jacksX, jacksY + jacksDy),
-            module,
-            Comp::GATE0_OUTPUT + row));
+        {
+            std::stringstream s;
+            s << "Track " << row + 1 << " CV out";
+            SqOutputJack* oj = rack::createOutputCentered<SqOutputJack>(
+                rack::math::Vec(jacksX, jacksY),
+                module,
+                Comp::CV0_OUTPUT + row);
+            oj->setTooltip(s.str());
+            parent->addOutput(oj);
+        }
 
-        parent->addInput(rack::createInputCentered<SqInputJack>(
-            rack::math::Vec(30, jacksY + 1 + jacksDy / 2),
-            module,
-            Comp::MOD0_INPUT + row));
+       
+        {
+            std::stringstream s;
+            s << "Track " << row + 1 << " Gate out";
+            SqOutputJack* oj = createOutputCentered<SqOutputJack>(
+                rack::math::Vec(jacksX, jacksY + jacksDy),
+                module,
+                Comp::GATE0_OUTPUT + row);
+            oj->setTooltip(s.str());
+            parent->addOutput(oj);
+        }
+
+        {
+            std::stringstream s;
+            s << "Track " << row + 1 << " section selector CV in";
+            SqInputJack* ij = rack::createInputCentered<SqInputJack>(
+                rack::math::Vec(30, jacksY + 1 + jacksDy / 2),
+                module,
+                Comp::MOD0_INPUT + row);
+            ij->setTooltip(s.str());
+            parent->addInput(ij);
+        }
     }
 }
 
