@@ -144,13 +144,33 @@ public:
         filters._dump(channel, s);
     }
 
+    /**
+     * processingVars are updated based on the input and output connections.
+     * They are updated every 'n' samples, but used every sample.
+     */
+    class ProcessingVars {
+    public:
+        int numFiltersActive = 0;
+        int leftOutputChannels = 0;
+        int rightOutputChannels = 0;
+        LadderFilterBank<T>::Modes mode = LadderFilterBank<T>::Modes::normal;
+        SqInput* inputForChannel0 = nullptr;
+        SqInput* inputForChannel1 = nullptr;
+    };
+
+    const ProcessingVars& _getProcVars() {
+        return processingVars;
+    }
+
 private:
     void stepn(int);
     LadderFilterBank<T> filters;
     Divider div;
     PeakDetector peak;
-   LadderFilterBank<T>::Modes mode = LadderFilterBank<T>::Modes::normal;
-   int getNumChannels();
+
+
+    ProcessingVars processingVars;
+    void setupProcessingVars();
 };
 
 
@@ -162,9 +182,73 @@ inline void Filt<TBase>::init()
         });
 }
 
+
+/*
+  int numChannels = getNumChannels();
+    SqInput* inputForChannel0 = nullptr;
+    SqInput* inputForChannel1 = nullptr;
+    switch (mode) {
+        case LadderFilterBank<T>::Modes::normal:
+        case LadderFilterBank<T>::Modes::leftOnly:
+            break;
+        case LadderFilterBank<T>::Modes::rightOnly:
+            inputForChannel0 = &TBase::inputs[R_AUDIO_INPUT];
+            break;
+        case LadderFilterBank<T>::Modes::stereo:
+            if (numChannels == 1) {                   // only do stereo if left hooked up mono
+                numChannels = 2;
+                inputForChannel1 = &TBase::inputs[R_AUDIO_INPUT];
+            }
+            break;
+        default:
+            assert(false
+*/
+
+template <class TBase>
+inline void Filt<TBase>::setupProcessingVars()
+{
+    // in nomrmal poly mode, we use one dsp per channel in the left input.
+    // but of only right input connected, we still need one.
+    processingVars.numFiltersActive =  TBase::inputs[L_AUDIO_INPUT].channels;
+    if (processingVars.numFiltersActive == 0) {
+        processingVars.numFiltersActive = TBase::inputs[R_AUDIO_INPUT].channels;
+    }
+
+    const bool li = TBase::inputs[L_AUDIO_INPUT].isConnected();
+    const bool ri = TBase::inputs[R_AUDIO_INPUT].isConnected();
+    const bool lo = TBase::outputs[L_AUDIO_OUTPUT].isConnected();
+    const bool ro = TBase::outputs[R_AUDIO_OUTPUT].isConnected();
+
+    // Decode the modes. "weird" modes only possible with one filter
+    processingVars.mode = LadderFilterBank<T>::Modes::normal;
+    processingVars.leftOutputChannels = processingVars.numFiltersActive;
+    processingVars.rightOutputChannels = 1;
+    processingVars.inputForChannel0 = nullptr;
+    processingVars.inputForChannel1 = nullptr;
+
+    if (processingVars.numFiltersActive == 1) {
+        if (li && ri && lo && ro) {
+            processingVars.mode = LadderFilterBank<T>::Modes::stereo;
+            processingVars.inputForChannel1 = &TBase::inputs[R_AUDIO_INPUT];
+            processingVars.numFiltersActive = 2;
+        }
+        else if (li && !ri && lo && ro) {
+            // do we need lo here? if only right was connected we would still do this, yes?
+            processingVars.mode = LadderFilterBank<T>::Modes::leftOnly;
+        }
+        else if (!li && ri && lo && ro) {
+            processingVars.mode = LadderFilterBank<T>::Modes::rightOnly;
+            processingVars.inputForChannel0 = &TBase::inputs[R_AUDIO_INPUT];
+        }
+    }
+
+}
+
 template <class TBase>
 inline void Filt<TBase>::stepn(int divFactor)
 {
+    setupProcessingVars();
+#if 0
     int numChannels = getNumChannels();
     switch (mode) {
         case LadderFilterBank<T>::Modes::normal:
@@ -179,6 +263,7 @@ inline void Filt<TBase>::stepn(int divFactor)
         default:
             assert(false);
     }
+
 
     const bool li = TBase::inputs[L_AUDIO_INPUT].isConnected();
     const bool ri = TBase::inputs[R_AUDIO_INPUT].isConnected();
@@ -197,11 +282,12 @@ inline void Filt<TBase>::stepn(int divFactor)
             mode =  LadderFilterBank<T>::Modes::rightOnly;
         }       
     }
+#endif
 
     const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
     const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
 
-    filters.stepn( TBase::engineGetSampleTime(), numChannels,
+    filters.stepn( TBase::engineGetSampleTime(), processingVars.numFiltersActive,
         TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
         TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
         TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
@@ -233,27 +319,17 @@ inline void Filt<TBase>::stepn(int divFactor)
 
     // the main inputs and outputs are polyphonic.
     // copy the channel number
-    TBase::outputs[L_AUDIO_OUTPUT].setChannels(numChannels);    
+    TBase::outputs[L_AUDIO_OUTPUT].setChannels(processingVars.leftOutputChannels);
 }
 
-//template <class TBase>
-//inline int Filt<TBase>::getNumChannels()
 
-template <class TBase>
-inline int Filt<TBase>::getNumChannels()
-{
-    int numChannels = TBase::inputs[L_AUDIO_INPUT].channels;
-    if (numChannels == 0) {
-        numChannels = TBase::inputs[R_AUDIO_INPUT].channels;
-    }
-    return numChannels;
-}
 
 template <class TBase>
 inline void Filt<TBase>::step()
 {
     div.step();
 
+#if 0
     int numChannels = getNumChannels();
     SqInput* inputForChannel0 = nullptr;
     SqInput* inputForChannel1 = nullptr;
@@ -273,20 +349,41 @@ inline void Filt<TBase>::step()
         default:
             assert(false);
     }
+#endif
 
-    filters.step(numChannels, mode,
+    if (LadderFilterBank<T>::Modes::stereo == processingVars.mode) assert(processingVars.numFiltersActive == 2);
+
+#if 0
+    SqInput* inputForChannel0 = nullptr;
+    SqInput* inputForChannel1 = nullptr;
+    switch (mode) {
+        case LadderFilterBank<T>::Modes::normal:
+        case LadderFilterBank<T>::Modes::leftOnly:
+            break;
+        case LadderFilterBank<T>::Modes::rightOnly:
+            inputForChannel0 = &TBase::inputs[R_AUDIO_INPUT];
+            break;
+        case LadderFilterBank<T>::Modes::stereo:
+            inputForChannel1 = &TBase::inputs[R_AUDIO_INPUT];
+            break;
+        default:
+            assert(false);
+    }
+#endif
+
+    filters.step(processingVars.numFiltersActive, processingVars.mode,
         TBase::inputs[L_AUDIO_INPUT],  TBase::outputs[L_AUDIO_OUTPUT],
-        inputForChannel0, inputForChannel1,
+        processingVars.inputForChannel0, processingVars.inputForChannel1,
         peak);
 
     // if audio, clear out 
-    if (numChannels == 0) {
+    if (processingVars.numFiltersActive == 0) {
         for (int i = 0; i < TBase::outputs[L_AUDIO_OUTPUT].channels; ++i) {
             TBase::outputs[L_AUDIO_OUTPUT].setVoltage(0, i);
         }
     }
 
-    switch (mode) {
+    switch (processingVars.mode) {
     case LadderFilterBank<T>::Modes::normal:
         TBase::outputs[R_AUDIO_OUTPUT].setVoltage(0, 0);
         break;

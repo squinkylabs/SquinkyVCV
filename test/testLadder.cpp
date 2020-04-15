@@ -456,7 +456,7 @@ static void testFiltOutputStereo()
     // bug in stereo mode - number of channels is unstable
     for (int i = 0; i < 20; ++i) {
         f.step();
-         assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 1);
+        assertEQ(f.outputs[F::L_AUDIO_OUTPUT].channels, 1);
         assertEQ(f.outputs[F::R_AUDIO_OUTPUT].channels, 1);
         assertGT(f.outputs[F::L_AUDIO_OUTPUT].getVoltage(0), 1);
         assertGT(f.outputs[F::R_AUDIO_OUTPUT].getVoltage(0), 1);
@@ -606,6 +606,102 @@ static void testFiltOutputsLeftDisconnect()
 }
 
 
+
+static void stepF(Filt<TestComposite>& f) {
+    for (int i = 0; i < 60; ++i) {
+        f.step();
+    }
+}
+
+//#include "LadderFilterBank.h"
+
+static void testProcVarsStereo()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 1;
+    f.inputs[F::R_AUDIO_INPUT].channels = 1;
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
+
+    stepF(f);
+
+    const Filt<TestComposite>::ProcessingVars& x = f._getProcVars();
+    assert(x.mode == LadderFilterBank<double>::Modes::stereo);
+    assert(x.inputForChannel0 == nullptr);
+    assert(x.inputForChannel1 != nullptr);
+    assertEQ(x.leftOutputChannels, 1);
+    assertEQ(x.numFiltersActive , 2);
+    assertEQ(x.rightOutputChannels, 1);
+}
+
+static void testProcVarsPoly()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 12;
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
+
+    stepF(f);
+
+    const Filt<TestComposite>::ProcessingVars& x = f._getProcVars();
+    assert(x.mode == LadderFilterBank<double>::Modes::normal);
+    assert(x.inputForChannel0 == nullptr);
+    assert(x.inputForChannel1 == nullptr);
+    assertEQ(x.leftOutputChannels, 12);
+    assertEQ(x.numFiltersActive, 12);
+    assertEQ(x.rightOutputChannels, 1);
+}
+
+static void testProcVarsL()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 1;
+    f.inputs[F::R_AUDIO_INPUT].channels = 0;
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
+
+    stepF(f);
+
+    const Filt<TestComposite>::ProcessingVars& x = f._getProcVars();
+    assert(x.mode == LadderFilterBank<double>::Modes::leftOnly);
+    assert(x.inputForChannel0 == nullptr);
+    assert(x.inputForChannel1 == nullptr);
+    assertEQ(x.leftOutputChannels, 1);
+    assertEQ(x.numFiltersActive, 1);
+    assertEQ(x.rightOutputChannels, 1);
+}
+
+static void testProcVarsR()
+{
+    using F = Filt<TestComposite>;
+    F f;
+    f.init();
+    f.inputs[F::L_AUDIO_INPUT].channels = 0;
+    f.inputs[F::R_AUDIO_INPUT].channels = 1;
+
+    f.outputs[F::L_AUDIO_OUTPUT].channels = 1;
+    f.outputs[F::R_AUDIO_OUTPUT].channels = 1;
+
+    stepF(f);
+
+    const Filt<TestComposite>::ProcessingVars& x = f._getProcVars();
+    assert(x.mode == LadderFilterBank<double>::Modes::rightOnly);
+    assert(x.inputForChannel0 != nullptr);
+    assert(x.inputForChannel1 == nullptr);
+    assertEQ(x.leftOutputChannels, 1);
+    assertEQ(x.numFiltersActive, 1);
+    assertEQ(x.rightOutputChannels, 1);
+}
+
 void testLadder()
 {
     testEdgeInMiddleUnity(true);
@@ -634,6 +730,11 @@ void testLadder()
     testPeak0();
     testPeak1();
     testPeak2();
+
+    testProcVarsPoly();
+    testProcVarsStereo();
+    testProcVarsL();
+    testProcVarsR();
 
     testFiltOutputPoly();
     testFiltOutputStereo();
