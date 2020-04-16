@@ -324,7 +324,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
     const float dy = -32;
 #endif
 
-    addInput(createInputCentered<PJ301MPort>(
+    addInput(createInputCentered<SqInputJack>(
         Vec(jacksX + 0 * jacksDx, jacksY1),
         module,
         Comp::CLOCK_INPUT));
@@ -334,7 +334,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         "Clk");
 #endif
 
-    addInput(createInputCentered<PJ301MPort>(
+    addInput(createInputCentered<SqInputJack>(
         Vec(jacksX + 1 * jacksDx, jacksY1),
         module,
         Comp::RESET_INPUT));
@@ -344,7 +344,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         "Reset");
 #endif
 
-    addInput(createInputCentered<PJ301MPort>(
+    addInput(createInputCentered<SqInputJack>(
         Vec(jacksX + 2 * jacksDx, jacksY1),
         module,
         Comp::RUN_INPUT));
@@ -354,7 +354,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         "Run");
 #endif
 
-   addInput(createInputCentered<PJ301MPort>(
+   addInput(createInputCentered<SqInputJack>(
         Vec(jacksX + 4 * jacksDx, jacksY1),
         module,
         Comp::SELECT_CV_INPUT));
@@ -363,7 +363,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         Vec(labelX - 7 + 4 * jacksDx, jacksY1 + dy),
         "Sel CV");
 #endif
-  addInput(createInputCentered<PJ301MPort>(
+  addInput(createInputCentered<SqInputJack>(
         Vec(jacksX + 5 * jacksDx, jacksY1),
         module,
         Comp::SELECT_GATE_INPUT));

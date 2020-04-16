@@ -151,8 +151,6 @@ inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
          SqInput* inputForChannel0, SqInput* inputForChannel1,
          PeakDetector& peak)
 {
-    //assert(mode == Modes::normal);
-
     for (int channel=0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
 
@@ -175,14 +173,11 @@ inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
                 break;
             default:
                 assert(false);
-            
         }
 
-       
         filt.run(input);
         const float output = (float) filt.getOutput();
         audioOutput.setVoltage(output, channel);
-
         peak.step(output);
     }
 }

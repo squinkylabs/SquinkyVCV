@@ -84,7 +84,7 @@ private:
 class SqOutputJack : public SqPortBase {
 public:
 	SqOutputJack() {
-        setSvg(SqHelper::loadSvg("res/jack-24-out.svg"));
+        setSvg(SqHelper::loadSvg("res/jack-24-medium.svg"));
 	}
 
 };
@@ -92,7 +92,7 @@ public:
 class SqInputJack : public SqPortBase {
 public:
 	SqInputJack() {
-        setSvg(SqHelper::loadSvg("res/jack-24-in.svg"));
+        setSvg(SqHelper::loadSvg("res/jack-24-light.svg"));
 	}
 };
 
