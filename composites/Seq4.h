@@ -10,6 +10,7 @@
 #include "IComposite.h"
 #include "IMidiPlayerHost.h"
 #include "MidiPlayer4.h"
+#include "MidiSong4.h"
 #include "SeqClock.h"
 
 // #define _MLOG
@@ -151,29 +152,6 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
-
-    /**
-     * So far, just for test compatibilty with old player
-     */
-    #if 0
-    float getPlayPosition()
-    {
-          // NOTE: this calculation is wrong. need subrange loop start, too
-        double absTime = clock.getCurMetricTime();
-        double loopDuration = player->getCurrentLoopIterationStart();
-
-        // absTime - loop duration is the metric time of the start of the current loop,
-        // if the overall loop starts at t=0
-        double ret = absTime - loopDuration;
-
-#if 0
-        // push it up to take into account subrange looping
-        ret += player->getCurrentSubrangeLoopStart();
-#endif
-        return float(ret);
-    }
-    #endif
-
     
     /** This should be called on audio thread
      * (but is it??)
@@ -349,11 +327,15 @@ void  Seq4<TBase>::stepn(int n)
     player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
 
     // copy the current voice number to the poly ports
-    for (int i=0; i<4; ++i) {
+    for (int i=0; i<MidiSong4::numTracks; ++i) {
         const int numVoices = (int) std::round(TBase::params[NUM_VOICES0_PARAM+i].value + 1);
         TBase::outputs[CV0_OUTPUT + i].channels = numVoices;
         TBase::outputs[GATE0_OUTPUT + i].channels = numVoices;
         player->setNumVoices(i, numVoices);
+
+        const float cvMode = TBase::params[CV_FUNCTION_PARAM + i].value; 
+        MidiTrackPlayer::CVInputMode mode = MidiTrackPlayer::CVInputMode( std::round(cvMode)); 
+        getTrackPlayer(i)->setCVInputMode(mode);
     }
 
     if (!running && wasRunning) {

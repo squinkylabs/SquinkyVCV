@@ -16,7 +16,6 @@
 #include "ctrl/SqWidgets.h"
 
 #include "seq/ClockFinder.h"
-//#include "seq/S4Button.h"
 #include "seq/SequencerSerializer.h"
 #include "seq/S4ButtonGrid.h"
 
@@ -105,7 +104,6 @@ Sequencer4Module::Sequencer4Module() {
         }
     }
 
-
     for (int track=0; track<MidiSong4::numTracks; ++track) {
         for (int section = 0; section < MidiSong4::numSectionsPerTrack; ++section) {
 
@@ -119,8 +117,6 @@ Sequencer4Module::Sequencer4Module() {
         }
 
     }
-
-
 
     onSampleRateChange();
     assert(seq4);
@@ -159,7 +155,6 @@ json_t* Sequencer4Module::dataToJson() {
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-
 Sequencer4Widget::Sequencer4Widget(Sequencer4Module* module) {
     setModule(module);
     if (module) {
@@ -205,7 +200,6 @@ void Sequencer4Widget::appendContextMenu(Menu* theMenu) {
     });
     item->text = "Hookup Clock";
     theMenu->addChild(item);
-    //ClockFinder::updateMenu(theMenu);
 }
 
 void Sequencer4Widget::setNewSeq(MidiSequencer4Ptr newSeq) {
@@ -216,14 +210,9 @@ void Sequencer4Widget::toggleRunStop(Sequencer4Module* module) {
     module->toggleRunStop();
 }
 
-
-// const float runButtonX = 200;
-
 // #define _LAB
 void Sequencer4Widget::addControls(Sequencer4Module* module,
                                    std::shared_ptr<IComposite> icomp) {
-  //  const float controlX = 20 - 6;
-
 
 #ifdef _LAB
     addLabelLeft(Vec(20, y),
@@ -241,7 +230,6 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     p->text = "x64";
     p->setLabels(Comp::getClockRates());
     addParam(p);
-   // y += 32;
 
     float y = 53;
     float x = 12;
@@ -256,7 +244,6 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
         addLabelLeft(Vec(controlX - 4, y),
                      "Polyphony");
 #endif
-     //   const float yVoices = y + 25;
         p = SqHelper::createParam<PopupMenuParamWidget>(
             icomp,
             Vec(x + poly_dx, y + poly_dy),
@@ -268,7 +255,6 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
         p->setLabels(Comp::getPolyLabels());
         addParam(p);
 
-     //   const float yFunctions = y;
         p = SqHelper::createParam<PopupMenuParamWidget>(
             icomp,
             Vec(x + func_dx, y + func_dy),  // 54 too much 50 too little
@@ -280,19 +266,15 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
         p->setLabels(Comp::getCVFunctionLabels());
         addParam(p);
 
-
         y += S4ButtonGrid::buttonMargin + S4ButtonGrid::buttonSize;
     }
 
     y += -20;
-    //   const float yy = y;
 #ifdef _LAB
     addLabel(Vec(20 - 8, y),
              "Run");
 #endif
     y += 20;
-
-  //  float controlDx = 0;
 
     // run/stop buttong
     SqToggleLED* tog = (createLight<SqToggleLED>(
@@ -328,9 +310,6 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
 
 void Sequencer4Widget::addJacks(Sequencer4Module* module) {
     const float jacksY1 = 337;
-    //  const float jacksY2 = 330+2;
-  //  const float jacksDx = 40;
-   // const float jacksX = 140;
 #ifdef _LAB
     const float labelX = jacksX - 20;
     const float dy = -32;

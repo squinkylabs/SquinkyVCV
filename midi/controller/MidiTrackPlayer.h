@@ -68,6 +68,17 @@ public:
         immediateParam = triggerImmediate;
     }
 
+    enum class CVInputMode {
+        Poly,
+        Next,
+        Prev,
+        Abs
+    };
+
+    void setCVInputMode(CVInputMode mode) {
+        cvInputMode = mode;
+    }
+
     /**
      * Returns the count in counting up the repeats.
      */
@@ -88,6 +99,8 @@ private:
      * Unchanging (hence the name).
      */
     const int constTrackIndex = 0;
+
+    CVInputMode cvInputMode = CVInputMode::Poly;
 
 
     /**
