@@ -399,8 +399,6 @@ static void testCVNextNotPoly()
     pl->setNextSectionRequest(2);
     assertEQ(pl->getNextSectionRequest(), 2);
 
-
-
     // cue up a switch to prev section.
     // but on the poly channels. should be ignored 
     // since we aren't in poly mode
@@ -410,9 +408,50 @@ static void testCVNextNotPoly()
     pl->updateSampleCount(4);
 
     assertEQ(pl->getNextSectionRequest(), 2);
-
 }
 
+static void testCVSwitchToPrev()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Prev);
+    const float quantizationInterval = .01f;
+
+    // request bar set
+    pl->setNextSectionRequest(2);
+    assertEQ(pl->getNextSectionRequest(), 2);
+
+    // now play up to request
+    play(*pl, 4.1, quantizationInterval);
+
+    // cue up a switch to prev section.
+ 
+    inputPort.setVoltage(5.f, 0);
+    pl->updateSampleCount(4);
+    inputPort.setVoltage(0.f, 0);
+    pl->updateSampleCount(4);
+
+    assertEQ(pl->getNextSectionRequest(), 1);
+}
+
+static void testCVSwitchToAbs()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Abs);
+    const float quantizationInterval = .01f;
+
+    // play to middle of first bar
+    play(*pl, 2, quantizationInterval);
+    int x = pl->getSection();
+    assertEQ(x, 1);
+
+    for (int i = 0; i < MidiSong4::numSectionsPerTrack; ++i) {
+        inputPort.setVoltage(float(i+1), 0);
+        pl->updateSampleCount(4);
+        assertEQ(pl->getNextSectionRequest(), i+1);
+    }
+}
 
 static void testCVPolySwitchToAbs()
 {
@@ -797,6 +836,8 @@ void testMidiTrackPlayer()
     testCVPolySwitchToAbs();
 
     testCVSwitchToNext();
+    testCVSwitchToPrev();
+    testCVSwitchToAbs();
     testCVNextNotPoly();
 
     testRepetition();
