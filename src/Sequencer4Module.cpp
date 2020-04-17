@@ -168,7 +168,7 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module* module) {
     buttonGrid = std::make_shared<S4ButtonGrid>();
 
     box.size = Vec(12 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/sq4_panel.svg");
+   SqHelper::setPanel(this, "res/4x4.svg");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
@@ -216,21 +216,21 @@ void Sequencer4Widget::toggleRunStop(Sequencer4Module* module) {
     module->toggleRunStop();
 }
 
-#define _LAB
+// #define _LAB
 void Sequencer4Widget::addControls(Sequencer4Module* module,
                                    std::shared_ptr<IComposite> icomp) {
-    const float controlX = 20 - 6;
+  //  const float controlX = 20 - 6;
 
     float y = 20;
 #ifdef _LAB
-    addLabelLeft(Vec(controlX - 4, y),
+    addLabelLeft(Vec(20, y),
                  "Clock rate");
 #endif
     y += 20;
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(controlX, y),
+        Vec(20, y),
         module,
         Comp::CLOCK_INPUT_PARAM);
     p->box.size.x = 85 + 8;  // width
@@ -238,16 +238,25 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     p->text = "x64";
     p->setLabels(Comp::getClockRates());
     addParam(p);
-    y += 32;
+   // y += 32;
+
+    y = 53;
+    float x = 12;
+
+    const int poly_dy = 0;
+    const int poly_dx = 43;
+    const int func_dy = 33;
+    const int func_dx = 33;
+
     for (int i = 0; i < 4; ++i) {
 #if defined(_LAB) && false
         addLabelLeft(Vec(controlX - 4, y),
                      "Polyphony");
 #endif
-        const float yVoices = y + 25;
+     //   const float yVoices = y + 25;
         p = SqHelper::createParam<PopupMenuParamWidget>(
             icomp,
-            Vec(controlX + 48 + 2, yVoices),
+            Vec(x + poly_dx, y + poly_dy),
             module,
             Comp::NUM_VOICES0_PARAM + i);
         p->text = "4";              // default text for the module browser
@@ -256,10 +265,10 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
         p->setLabels(Comp::getPolyLabels());
         addParam(p);
 
-        const float yFunctions = y;
+     //   const float yFunctions = y;
         p = SqHelper::createParam<PopupMenuParamWidget>(
             icomp,
-            Vec(controlX + 48 - 8, yFunctions),  // 54 too much 50 too little
+            Vec(x + func_dx, y + func_dy),  // 54 too much 50 too little
             module,
             Comp::CV_FUNCTION_PARAM + i);
         p->text = "Poly";              // default text for the module browser
@@ -275,7 +284,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     y += -20;
     //   const float yy = y;
 #ifdef _LAB
-    addLabel(Vec(controlX - 8, y),
+    addLabel(Vec(20 - 8, y),
              "Run");
 #endif
     y += 20;
@@ -284,7 +293,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
 
     // run/stop buttong
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(controlX + controlDx, y),
+        Vec(20 + controlDx, y),
         module,
         Comp::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");

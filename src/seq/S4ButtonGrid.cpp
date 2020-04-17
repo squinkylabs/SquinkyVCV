@@ -50,11 +50,11 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
    // std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     seq4Comp = _seq4Comp;
-    const float jacksX = 380;
+ 
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
-        const float y = 70 + row * (buttonSize + buttonMargin);
+        const float y = grid_y + row * (buttonSize + buttonMargin);
         for (int col = 0; col < MidiSong4::numSectionsPerTrack; ++col) {
-            const float x = 130 + col * (buttonSize + buttonMargin);
+            const float x = grid_x + col * (buttonSize + buttonMargin);
             const int padNumber = row * MidiSong4::numSectionsPerTrack + col;
 
 
@@ -81,14 +81,21 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
             buttons[row][col] = button;
         }
 
-        const float jacksY = y + 8;
-        const float jacksDy = 28;
+    //    const float jacksY = y + 8;
+    //    const float jacksDy = 28;
+
+        const float jacksX1 = 12;
+        const float jacksX2 = 368;
+        const float cv_out_dy = 0;
+        const float gate_out_dy = 28;
+        const float cv_in_dy = 0;
+       // const float output
 
         {
             std::stringstream s;
             s << "Track " << row + 1 << " CV out";
-            SqOutputJack* oj = rack::createOutputCentered<SqOutputJack>(
-                rack::math::Vec(jacksX, jacksY),
+            SqOutputJack* oj = rack::createOutput<SqOutputJack>(
+                rack::math::Vec(jacksX2, y + cv_out_dy),
                 module,
                 Comp::CV0_OUTPUT + row);
             oj->setTooltip(s.str());
@@ -99,8 +106,8 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
         {
             std::stringstream s;
             s << "Track " << row + 1 << " Gate out";
-            SqOutputJack* oj = createOutputCentered<SqOutputJack>(
-                rack::math::Vec(jacksX, jacksY + jacksDy),
+            SqOutputJack* oj = createOutput<SqOutputJack>(
+                rack::math::Vec(jacksX2, y + gate_out_dy),
                 module,
                 Comp::GATE0_OUTPUT + row);
             oj->setTooltip(s.str());
@@ -110,8 +117,8 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
         {
             std::stringstream s;
             s << "Track " << row + 1 << " section selector CV in";
-            SqInputJack* ij = rack::createInputCentered<SqInputJack>(
-                rack::math::Vec(30, jacksY + 1 + jacksDy / 2),
+            SqInputJack* ij = rack::createInput<SqInputJack>(
+                rack::math::Vec(jacksX1, y + cv_in_dy ),
                 module,
                 Comp::MOD0_INPUT + row);
             ij->setTooltip(s.str());
