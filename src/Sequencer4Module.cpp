@@ -221,16 +221,16 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
                                    std::shared_ptr<IComposite> icomp) {
   //  const float controlX = 20 - 6;
 
-    float y = 20;
+
 #ifdef _LAB
     addLabelLeft(Vec(20, y),
                  "Clock rate");
 #endif
-    y += 20;
-
+  
+    const float y_bottom = 337;
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(20, y),
+        Vec(20, y_bottom),
         module,
         Comp::CLOCK_INPUT_PARAM);
     p->box.size.x = 85 + 8;  // width
@@ -240,7 +240,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     addParam(p);
    // y += 32;
 
-    y = 53;
+    float y = 53;
     float x = 12;
 
     const int poly_dy = 0;
@@ -324,7 +324,7 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
 }
 
 void Sequencer4Widget::addJacks(Sequencer4Module* module) {
-    const float jacksY1 = 340;
+    const float jacksY1 = 337;
     //  const float jacksY2 = 330+2;
     const float jacksDx = 40;
     const float jacksX = 140;
@@ -333,7 +333,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
     const float dy = -32;
 #endif
 
-    addInput(createInputCentered<SqInputJack>(
+    addInput(createInput<SqInputJack>(
         Vec(jacksX + 0 * jacksDx, jacksY1),
         module,
         Comp::CLOCK_INPUT));
@@ -343,7 +343,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         "Clk");
 #endif
 
-    addInput(createInputCentered<SqInputJack>(
+    addInput(createInput<SqInputJack>(
         Vec(jacksX + 1 * jacksDx, jacksY1),
         module,
         Comp::RESET_INPUT));
@@ -353,7 +353,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         "Reset");
 #endif
 
-    addInput(createInputCentered<SqInputJack>(
+    addInput(createInput<SqInputJack>(
         Vec(jacksX + 2 * jacksDx, jacksY1),
         module,
         Comp::RUN_INPUT));
@@ -363,7 +363,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         "Run");
 #endif
 
-   addInput(createInputCentered<SqInputJack>(
+   addInput(createInput<SqInputJack>(
         Vec(jacksX + 4 * jacksDx, jacksY1),
         module,
         Comp::SELECT_CV_INPUT));
@@ -372,7 +372,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         Vec(labelX - 7 + 4 * jacksDx, jacksY1 + dy),
         "Sel CV");
 #endif
-  addInput(createInputCentered<SqInputJack>(
+  addInput(createInput<SqInputJack>(
         Vec(jacksX + 5 * jacksDx, jacksY1),
         module,
         Comp::SELECT_GATE_INPUT));
