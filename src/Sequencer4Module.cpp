@@ -216,6 +216,9 @@ void Sequencer4Widget::toggleRunStop(Sequencer4Module* module) {
     module->toggleRunStop();
 }
 
+
+// const float runButtonX = 200;
+
 // #define _LAB
 void Sequencer4Widget::addControls(Sequencer4Module* module,
                                    std::shared_ptr<IComposite> icomp) {
@@ -230,10 +233,10 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
     const float y_bottom = 337;
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(20, y_bottom),
+        Vec(34, y_bottom),
         module,
         Comp::CLOCK_INPUT_PARAM);
-    p->box.size.x = 85 + 8;  // width
+    p->box.size.x = 48;  // width
     p->box.size.y = 22;      // should set auto like button does
     p->text = "x64";
     p->setLabels(Comp::getClockRates());
@@ -289,11 +292,11 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
 #endif
     y += 20;
 
-    float controlDx = 0;
+  //  float controlDx = 0;
 
     // run/stop buttong
     SqToggleLED* tog = (createLight<SqToggleLED>(
-        Vec(20 + controlDx, y),
+        Vec(237, y_bottom),
         module,
         Comp::RUN_STOP_LIGHT));
     tog->addSvg("res/square-button-01.svg");
@@ -326,15 +329,15 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
 void Sequencer4Widget::addJacks(Sequencer4Module* module) {
     const float jacksY1 = 337;
     //  const float jacksY2 = 330+2;
-    const float jacksDx = 40;
-    const float jacksX = 140;
+  //  const float jacksDx = 40;
+   // const float jacksX = 140;
 #ifdef _LAB
     const float labelX = jacksX - 20;
     const float dy = -32;
 #endif
 
     addInput(createInput<SqInputJack>(
-        Vec(jacksX + 0 * jacksDx, jacksY1),
+        Vec(101, jacksY1),
         module,
         Comp::CLOCK_INPUT));
 #ifdef _LAB
@@ -344,7 +347,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
 #endif
 
     addInput(createInput<SqInputJack>(
-        Vec(jacksX + 1 * jacksDx, jacksY1),
+        Vec(145, jacksY1),
         module,
         Comp::RESET_INPUT));
 #ifdef _LAB
@@ -354,7 +357,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
 #endif
 
     addInput(createInput<SqInputJack>(
-        Vec(jacksX + 2 * jacksDx, jacksY1),
+        Vec(189, jacksY1),
         module,
         Comp::RUN_INPUT));
 #ifdef _LAB
@@ -364,7 +367,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
 #endif
 
    addInput(createInput<SqInputJack>(
-        Vec(jacksX + 4 * jacksDx, jacksY1),
+        Vec(296, jacksY1),
         module,
         Comp::SELECT_CV_INPUT));
 #ifdef _LAB
@@ -373,7 +376,7 @@ void Sequencer4Widget::addJacks(Sequencer4Module* module) {
         "Sel CV");
 #endif
   addInput(createInput<SqInputJack>(
-        Vec(jacksX + 5 * jacksDx, jacksY1),
+        Vec(344, jacksY1),
         module,
         Comp::SELECT_GATE_INPUT));
 #ifdef _LAB
