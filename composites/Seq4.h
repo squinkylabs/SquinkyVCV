@@ -274,7 +274,7 @@ void Seq4<TBase>::onSampleRateChange()
 template <class TBase>
 void  Seq4<TBase>::serviceSelCV()
 {
-    const int baseOctave = int( std::round(params[CV_SELECT_OCTAVE_PARAM].value));
+    const int baseOctave = int( std::round(TBase::params[CV_SELECT_OCTAVE_PARAM].value));
     const int activeChannels = std::min(TBase::inputs[SELECT_CV_INPUT].getChannels(), TBase::inputs[SELECT_GATE_INPUT].getChannels()); 
     //printf("in service, base octave = %d\n", baseOctave);
     
