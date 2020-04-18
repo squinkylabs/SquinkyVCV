@@ -101,6 +101,7 @@ public:
         CV_FUNCTION1_PARAM,
         CV_FUNCTION2_PARAM,
         CV_FUNCTION3_PARAM,
+        CV_SELECT_OCTAVE_PARAM,
         NUM_PARAMS
     };
 
@@ -273,8 +274,9 @@ void Seq4<TBase>::onSampleRateChange()
 template <class TBase>
 void  Seq4<TBase>::serviceSelCV()
 {
-  
+    const int baseOctave = int( std::round(params[CV_SELECT_OCTAVE_PARAM].value));
     const int activeChannels = std::min(TBase::inputs[SELECT_CV_INPUT].getChannels(), TBase::inputs[SELECT_GATE_INPUT].getChannels()); 
+    //printf("in service, base octave = %d\n", baseOctave);
     
     for (int i=0; i < activeChannels; ++i) {
 
@@ -284,7 +286,14 @@ void  Seq4<TBase>::serviceSelCV()
             if (gate) {
                 const float cv = TBase::inputs[SELECT_CV_INPUT].getVoltage(i);
                 auto pitch = PitchUtils::cvToPitch(cv);
-                if (pitch.first == 2) {
+
+                // normalize if one octave higher
+
+                if (pitch.first == (baseOctave+1)) {
+                    pitch.first = baseOctave;
+                    pitch.second += 12;
+                }
+                if (pitch.first == baseOctave) {
                      const int pad = pitch.second;
                      if (pad <= 15) { 
                         const int track = pad / 4;
@@ -553,6 +562,9 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             break;
         case Seq4<TBase>::CV_FUNCTION3_PARAM:
             ret = { 0, 3, 1, "CV4 function" };
+            break;
+        case Seq4<TBase>::CV_SELECT_OCTAVE_PARAM:
+            ret = {0, 10, 2, "Select CV octave"};
             break;
         default:
             assert(false);
