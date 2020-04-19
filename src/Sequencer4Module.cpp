@@ -115,7 +115,6 @@ Sequencer4Module::Sequencer4Module() {
             delete orig;
             this->paramQuantities[Comp::PADSELECT0_PARAM + index] = p;
         }
-
     }
 
     onSampleRateChange();
@@ -149,7 +148,6 @@ json_t* Sequencer4Module::dataToJson() {
     return SequencerSerializer::toJson(seq4);
 }
 
-
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -178,6 +176,53 @@ Sequencer4Widget::Sequencer4Widget(Sequencer4Module* module) {
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
+
+class BaseOctaveItem : public ::rack::ui::MenuItem {
+public:
+    BaseOctaveItem() = delete;
+    static ::rack::ui::MenuItem* make(Sequencer4Module* module, int value) {
+        std::function<bool()> isCheckedFn = [module, value]() {
+            float x = ::rack::appGet()->engine->getParam(module, Comp::CV_SELECT_OCTAVE_PARAM);
+            const int octave = int(std::round(x));
+            return octave == value;
+        };
+
+        std::function<void()> clickFn = [module, value]() {
+             ::rack::appGet()->engine->setParam(module,  Comp::CV_SELECT_OCTAVE_PARAM, value);
+        };
+
+        return new SqMenuItem(isCheckedFn, clickFn);
+    }
+};
+
+class BaseOctaveMenuItem : public ::rack::ui::MenuItem {
+public:
+    BaseOctaveMenuItem(Sequencer4Module* module) : module(module) {
+    }
+    ::rack::ui::Menu* createChildMenu() override {
+        ::rack::ui::Menu* menu = new ::rack::ui::Menu();
+
+        auto label = ::rack::construct<::rack::ui::MenuLabel>(
+            &rack::ui::MenuLabel::text,
+            "Base octave"
+        );
+        menu->addChild(label);
+
+        for (int i = 1; i <= 16; ++i) {
+            ::rack::ui::MenuItem* item = BaseOctaveItem::make(module, i);
+            std::stringstream str;
+            str << i;
+            item->text = str.str();
+            menu->addChild(item);
+        }
+
+        return menu;
+    }
+private:
+    Sequencer4Module* const module;
+
+};
+
 void Sequencer4Widget::appendContextMenu(Menu* theMenu) {
     ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
     theMenu->addChild(spacerLabel);
@@ -191,15 +236,26 @@ void Sequencer4Widget::appendContextMenu(Menu* theMenu) {
     item->text = "Trigger Immediately";
     theMenu->addChild(item);
 #endif
-    auto item = new SqMenuItem( []() { return false; }, [this](){
-        // float rawClockFalue = Comp::CLOCK_INPUT_PARAM
-        float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
-        SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
-        const int div = SeqClock::clockRate2Div(rate);
-        ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT, false);
-    });
-    item->text = "Hookup Clock";
-    theMenu->addChild(item);
+    {
+        auto item = new SqMenuItem( []() { return false; }, [this](){
+            // float rawClockFalue = Comp::CLOCK_INPUT_PARAM
+            float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
+            SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
+            const int div = SeqClock::clockRate2Div(rate);
+            ClockFinder::go(this, div, Comp::CLOCK_INPUT, Comp::RUN_INPUT, Comp::RESET_INPUT, false);
+        });
+        item->text = "Hookup Clock";
+        theMenu->addChild(item);
+    }
+    {
+        Sequencer4Module* sModule = dynamic_cast<Sequencer4Module*>(module);
+        assert(sModule);
+        auto item = new BaseOctaveMenuItem(sModule);
+        item->text = "CV select base octave";
+        theMenu->addChild(item);
+
+    }
+   
 }
 
 void Sequencer4Widget::setNewSeq(MidiSequencer4Ptr newSeq) {
