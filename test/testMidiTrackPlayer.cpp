@@ -255,7 +255,7 @@ static void testSwitchToNext2()
 
 using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
 
-static MidiTrackPlayerPtr makePlayeForCVTest(Input& inputPort, Param& param, MidiTrackPlayer::CVInputMode mode)
+static MidiTrackPlayerPtr makePlayerForCVTest(Input& inputPort, Param& param, MidiTrackPlayer::CVInputMode mode)
 {
     // make a song with three sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
@@ -287,7 +287,7 @@ static void testCVPolySwitchToNextThenVamp()
 {
     Input inputPort;
     Param param;
-    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
     const float quantizationInterval = .01f;
 
     // play to middle of first bar
@@ -317,7 +317,7 @@ static void testCVSwitchToNext()
 {
     Input inputPort;
     Param param;
-    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Next);
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Next);
     const float quantizationInterval = .01f;
 
     // play to middle of first bar
@@ -354,7 +354,7 @@ static void testCVPolySwitchToPrev()
 {
     Input inputPort;
     Param param;
-    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
     const float quantizationInterval = .01f;
 
     // play to middle of first bar
@@ -392,7 +392,7 @@ static void testCVNextNotPoly()
 {
     Input inputPort;
     Param param;
-    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Next);
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Next);
     const float quantizationInterval = .01f;
 
     // request bar set
@@ -414,7 +414,7 @@ static void testCVSwitchToPrev()
 {
     Input inputPort;
     Param param;
-    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Prev);
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Prev);
     const float quantizationInterval = .01f;
 
     // request bar set
@@ -438,7 +438,7 @@ static void testCVSwitchToAbs()
 {
     Input inputPort;
     Param param;
-    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Abs);
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Abs);
     const float quantizationInterval = .01f;
 
     // play to middle of first bar
@@ -457,7 +457,7 @@ static void testCVPolySwitchToAbs()
 {
     Input inputPort;
     Param param;
-    MidiTrackPlayerPtr pl = makePlayeForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
     const float quantizationInterval = .01f;
 
     // play to middle of first bar
