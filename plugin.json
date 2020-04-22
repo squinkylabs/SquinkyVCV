@@ -168,7 +168,7 @@
 			"name": "Stairway",
 			"description": "Ladder filter on steroids",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/filter.md",
-			"tags": ["VCF"]
+			"tags": ["VCF", "Polyphonic", "Distortion"]
 		},
 		{
 			"slug": "squinkylabs-dt",

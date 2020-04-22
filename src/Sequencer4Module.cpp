@@ -292,7 +292,7 @@ void Sequencer4Widget::addControls(Sequencer4Module* module,
 
     const int poly_dy = 0;
     const int poly_dx = 43;
-    const int func_dy = 33;
+    const int func_dy = 31;
     const int func_dx = 33;
 
     for (int i = 0; i < 4; ++i) {
