@@ -1,7 +1,7 @@
 
 # Stairway ladder
 
-Ladder VCF with influences from Moog, Oberheim, Rossum and others.
+Polyphonic ladder VCF with influences from Moog, Oberheim, Rossum and others.
 
 ![Stairway Panel](./stairway.png)
 
@@ -30,6 +30,10 @@ Also, adding a lot of distortion starts to make the filter act less like a filte
 The *Voicing* control selects different wave-shapers between the filter stages, and some of these are quite different sounding. Some of them will generate even harmonics as well as odd. The standard transistor ladder has very little even harmonic content.
 
 Lastly, the CV inputs labeled "CV1" and "CV2" both modulate the filter cutoff. More about this below.
+
+## A note about polyphony
+
+The implementation of polyphony is fairly conventional. The number of channels coming into the left audio input determines the number of channels that Stairway will process. All of the other CV inputs may be fully polyphonic also. But if you patch a mono CV into any of the inputs of Stairway then it will apply to all the filters.
 
 ## Controls
 
@@ -68,6 +72,8 @@ The two inputs labeled "CV1" and "CV2" both control the cutoff frequency of the 
 There are two sets on inputs and outputs. They share the same settings, so are convenient for processing stereo signals. A channel will only use CPU resources if both its input and output are patched.
 
 If only one input is patched, both outputs will have the same mono signal. If both inputs and outputs are patched, then Stairway will have two independent channels.
+
+Stereo and polyphony are mutually exclusive. Stereo mode deals with two monophonic channels, left and right. When used polyphonically there are up to 16 channels in the left input and output, and the right is inactive.
 
 ## Suggestions
 
