@@ -6,7 +6,7 @@ The module title in the description of each module is a link the the documentati
 
 The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notice that the word *Changelog* in the previous sentence is a link to the changelog);
 
-# Seq++
+# Sequencers
 
 ![Seq++ Image](./seqs.png)
 
