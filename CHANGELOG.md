@@ -2,7 +2,9 @@
 
 ## 1.0.8
 
+New sequencer module: 4X4.
 Saws is now polyphonic.
+Stairway is now polyphonic.
 
 ## 1.0.7
 

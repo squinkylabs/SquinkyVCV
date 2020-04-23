@@ -8,9 +8,11 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 # Seq++
 
-![Seq++ Image](./seq.png)
+![Seq++ Image](./seqs.png)
 
 [Seq++](./sq2.md) is a polyphonic sequencer that provides "DAW-like" music editing in a VCV module. May be used for composing "traditional" music, for triggering patch changes from a timeline, and many other uses.
+
+[4X4](./4x4.md) is a four track polyphonic sequencer. It may be used to enhance the sequencing experience with Seq++ or as it's own real-time sequence queueing controller. 
 
 # Mixers
 
