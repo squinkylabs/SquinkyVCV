@@ -24,6 +24,7 @@
 //#define _LFNB
 #define _MIX_STEREO
 #define _USERKB
+#define _CHAOS
 
 //#define _BLANKMODULE
 
@@ -114,6 +115,9 @@ extern Model *modelFiltModule;
 #endif
 #ifdef _DTMODULE
 extern Model* modelDrumTriggerModule;
+#endif
+#ifdef _CHAOS
+extern Model* modelChaosKittyModule;
 #endif
 
 

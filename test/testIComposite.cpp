@@ -1,5 +1,6 @@
 #include "TestComposite.h"
 #include "Blank.h"
+#include "ChaosKitty.h"
 #include "CHB.h"
 #include "ColoredNoise.h"
 #include "FrequencyShifter.h"
@@ -78,5 +79,6 @@ void testIComposite()
     test<LFNB<TestComposite>>();
     test<Filt<TestComposite>>();
     test<DrumTrigger<TestComposite>>();
+    test<ChaosKitty<TestComposite>>();
 
 }

@@ -110,6 +110,9 @@ void init (::rack::Plugin *p)
 #ifdef _SEQ4
 p->addModel(modelSequencer4Module);
 #endif
+#ifdef _CHAOS
+p->addModel(modelChaosKittyModule);
+#endif
 
 
 }
