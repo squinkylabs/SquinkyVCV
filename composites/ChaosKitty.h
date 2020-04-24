@@ -54,6 +54,7 @@ public:
 
     enum OutputIds
     {
+        MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 

@@ -81,6 +81,12 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
+    
+    addOutput(createOutputCentered<PJ301MPort>(
+        Vec(70, 300),
+        module,
+        Comp::MAIN_OUTPUT));
+
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -88,6 +94,6 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-Model *modelChaosKittyModule = createModel<ChaosKittyModule, ChaosKittyWidget>("squinkylabs-blank");
+Model *modelChaosKittyModule = createModel<ChaosKittyModule, ChaosKittyWidget>("squinkylabs-chaoskitty");
 #endif
 

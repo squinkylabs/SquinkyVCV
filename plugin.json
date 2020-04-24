@@ -183,6 +183,13 @@
 			"description": "[deprecated] Multi-function VCO with low aliasing",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md",
 			"tags": ["VCO"]
+		},
+		{
+			"slug": "squinkylabs-chaoskitty",
+			"name": "Chaos Kitty",
+			"description": "thing",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md",
+			"tags": ["VCO"]
 		}
 	]
 }
