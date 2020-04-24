@@ -40,6 +40,7 @@ ChaosKittyModule::ChaosKittyModule()
     SqHelper::setupParams(icomp, this); 
 
     onSampleRateChange();
+    INFO("calling comp init");
     blank->init();
 }
 
@@ -81,7 +82,42 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
+    const float xInput = 40;
+    const float xTrim = 80;
+    const float xParam = 180;
+
+
+    // row 1: chaos
+
+    const float yRow1 = 100;
     
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(xInput, yRow1),
+        module,
+        Comp::CHAOS_INPUT));
+
+    Rogan1PSBlue* chaosParam = SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(xParam, yRow1),
+        module, 
+        Comp::CHAOS_PARAM);
+    //oct->snap = true;
+    //oct->smooth = false;
+    addParam(chaosParam);
+
+    auto p = SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(xTrim, yRow1),
+        module,
+        Comp::CHAOS_TRIM_PARAM);
+    addParam(p);
+
+
+    // *************************************************
+
+
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(70, 300),
         module,

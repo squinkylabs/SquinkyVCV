@@ -1,9 +1,12 @@
 
 #pragma once
 
+#include "AudioMath.h"
+#include "Divider.h"
+#include "IComposite.h"
+
 #include <assert.h>
 #include <memory>
-#include "IComposite.h"
 
 namespace rack {
     namespace engine {
@@ -21,6 +24,23 @@ public:
     int getNumParams() override;
 };
 
+class Kitty1
+{
+public:
+    float step() {
+        const float next = g * x * (1 - x);
+        x = next;
+      //  printf("%f\n", x);fflush(stdout);
+        return float(5 * (next - .5));
+    }
+    void setG(float _g) {
+        g = _g;
+    }
+private:
+    float x = .5f;
+    float g = 3.9f; 
+};
+
 template <class TBase>
 class ChaosKitty : public TBase
 {
@@ -28,9 +48,11 @@ public:
 
     ChaosKitty(Module * module) : TBase(module)
     {
+        printf("chaos ctr 1\n"); fflush(stdout);
     }
     ChaosKitty() : TBase()
     {
+        printf("chaos ctr 2\n"); fflush(stdout);
     }
 
     /**
@@ -43,12 +65,14 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        CHAOS_PARAM,
+        CHAOS_TRIM_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
+        CHAOS_INPUT,
         NUM_INPUTS
     };
 
@@ -76,19 +100,40 @@ public:
     void step() override;
 
 private:
+    Kitty1 kitty1;
+    AudioMath::ScaleFun<float> scaleChaos;
 
+    Divider div;
+    void stepn(int);
 };
 
 
 template <class TBase>
 inline void ChaosKitty<TBase>::init()
 {
+    div.setup(4, [this] {
+        this->stepn(div.getDiv());
+     });
+
+    scaleChaos = AudioMath::makeLinearScaler<float>(3.5, 4);
 }
 
+template <class TBase>
+inline void ChaosKitty<TBase>::stepn(int n) {
+    const float g  = scaleChaos(
+        TBase::inputs[CHAOS_INPUT].getVoltage(0),
+        TBase::params[CHAOS_PARAM].value,
+        TBase::params[CHAOS_TRIM_PARAM].value);
+    kitty1.setG(g);
+}
 
 template <class TBase>
 inline void ChaosKitty<TBase>::step()
 {
+    const float f = kitty1.step();
+    TBase::outputs[MAIN_OUTPUT].setVoltage(f, 0);
+
+    div.step();
 }
 
 template <class TBase>
@@ -102,8 +147,11 @@ inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case ChaosKitty<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case ChaosKitty<TBase>::CHAOS_PARAM:
+            ret = {-5, 5, 0, "Chaos"};
+            break;
+        case ChaosKitty<TBase>::CHAOS_TRIM_PARAM:
+            ret = {-1, 1, 0, "Chaos trim"};
             break;
         default:
             assert(false);
