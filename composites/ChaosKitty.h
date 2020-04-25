@@ -6,6 +6,7 @@
 #include "Divider.h"
 #include "FractionalDelay.h"
 #include "IComposite.h"
+#include "ObjectCache.h"
 
 #include <assert.h>
 #include <algorithm>
@@ -59,6 +60,7 @@ public:
         CHAOS_TRIM_PARAM,
         CHAOS2_PARAM,
         CHAOS2_TRIM_PARAM,
+        OCTAVE_PARAM,
         TYPE_PARAM,
         NUM_PARAMS
     };
@@ -67,6 +69,7 @@ public:
     {
         CHAOS_INPUT,
         CHAOS2_INPUT,
+        V8_INPUT,
         NUM_INPUTS
     };
 
@@ -102,13 +105,13 @@ private:
     Types type = Types::SimpleChaoticNoise;
     SimpleChaoticNoise simpleChaoticNoise;
     ResonantNoise resonantNoise;
-  //  Kitty2 kitty2;
- //   Kitty3 kitty3;
-  //  Kitty4 kitty4;
     AudioMath::ScaleFun<float> scaleChaos;
 
     Divider div;
     void stepn(int);
+    void updatePitch();
+
+     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 };
 
 
@@ -136,6 +139,8 @@ inline void ChaosKitty<TBase>::stepn(int n) {
   //  printf("g = %.2f\n", g); fflush(stdout);
     simpleChaoticNoise.setG(g);
     resonantNoise.setG(g);
+
+    updatePitch();
 #if 0
 
     float k2 = TBase::params[CHAOS_PARAM].value * .001;
@@ -164,6 +169,21 @@ inline void ChaosKitty<TBase>::step()
 }
 
 template <class TBase>
+inline void ChaosKitty<TBase>::updatePitch()
+{
+    float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value); // + TBase::params[TUNE_PARAM].value / 12.0f;
+    pitch += TBase::inputs[V8_INPUT].getVoltage(0);
+
+    const float q = float(log2(261.626));       // move up to pitch range of even vco
+    pitch += q;
+    const float _freq = expLookup(pitch);
+    const float delaySeconds = 1.0f / _freq;
+    float delaySamples = delaySeconds * TBase::engineGetSampleRate();
+
+    resonantNoise.setDelaySamples(delaySamples);
+}
+
+template <class TBase>
 int ChaosKittyDescription<TBase>::getNumParams()
 {
     return ChaosKitty<TBase>::NUM_PARAMS;
@@ -187,7 +207,10 @@ inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
             ret = { -1, 1, 0, "Chaos 2 trim" };
             break;
         case ChaosKitty<TBase>::TYPE_PARAM:
-            ret = { 0, 3, 0, "type" };
+            ret = { 0, 1, 0, "type" };
+            break;
+        case ChaosKitty<TBase>::OCTAVE_PARAM:
+            ret = {-5, 5, 0, "octave"};
             break;
         default:
             assert(false);

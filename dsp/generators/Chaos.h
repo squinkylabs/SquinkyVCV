@@ -33,6 +33,11 @@ public:
         delay.setDelay(200);
         delay.setFeedback(-.97f);
     }
+
+    void setDelaySamples(float s) {
+        delay.setDelay(s);
+    }
+
     float step() {
         // first, do feedback chaos gen
         const float next = g * x * (1 - x);
@@ -40,8 +45,9 @@ public:
 
         float x2 = delay.run(x);
 
-        bool print = false;
+      
 #if 0
+    bool print = false;
 
         if (ct < 100000) {
             if (0 == (ct % 400)) {

@@ -114,6 +114,13 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Comp::CHAOS2_PARAM);
     addParam(chaos2Param);
 
+    Rogan1PSBlue* octaveParam = SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(50, 300),
+        module, 
+        Comp::OCTAVE_PARAM);
+    addParam(octaveParam);
+
     auto p = SqHelper::createParamCentered<Trimpot>(
         icomp,
         Vec(xTrim, yRow1),
@@ -131,7 +138,6 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
     popup->box.size.x = 76;    // width
     popup->box.size.y = 22;     // should set auto like button does
     popup->text = "noise";
-   // std::vector<std::string> labels = {"1", "2", "3", "4"};
     popup->setLabels(Comp::typeLabels());
     addParam(popup);
 
@@ -143,6 +149,11 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Vec(140, 340),
         module,
         Comp::MAIN_OUTPUT));
+    
+    addInput(createInputCentered<PJ301MPort>(
+        Vec(40, 340),
+        module,
+        Comp::V8_INPUT));
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

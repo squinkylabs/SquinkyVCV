@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <assert.h>
 #include <memory>
 
@@ -25,6 +26,7 @@ public:
     void setDelay(float samples)
     {
         assert(samples < numSamples);
+        samples = std::min<float>(numSamples, samples);
         delayTime = samples;
     }
     float run(float input)
