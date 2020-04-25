@@ -86,6 +86,7 @@ extern void testMidiSelectionModel();
 extern void testMidiTrackPlayer();
 extern void testSuper();
 extern void testEditCommands4();
+extern void testChaos();
 
 #if 0
 #include <sstream>
@@ -173,6 +174,7 @@ int main(int argc, char ** argv)
     testFilteredIterator();
     testMidiDataModel();
     testMidiSelectionModel();
+    testChaos();
     testMidiSong();
     testSeqClock();
     testMidiTrackPlayer();

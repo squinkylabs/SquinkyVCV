@@ -36,6 +36,10 @@ public:
     void setG(float _g) {
         g = _g;
     }
+
+    float _getG() const {
+        return g;
+    }
 private:
     float x = .5f;
     float g = 3.9f; 
@@ -98,6 +102,10 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
+
+    float _getG() const {
+        return kitty1._getG();
+    }
 
 private:
     Kitty1 kitty1;

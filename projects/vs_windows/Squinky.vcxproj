@@ -78,6 +78,7 @@
     <ClCompile Include="..\..\test\testAudition.cpp" />
     <ClCompile Include="..\..\test\testBiquad.cpp" />
     <ClCompile Include="..\..\test\testButterLookup.cpp" />
+    <ClCompile Include="..\..\test\testChaos.cpp" />
     <ClCompile Include="..\..\test\testClockMult.cpp" />
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
