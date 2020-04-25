@@ -63,21 +63,12 @@ void Mix4Module::setExternalOutput(float* buf)
     Mix4->setExpansionOutputs(buf);
 }
 
-#ifdef __V1x
 Mix4Module::Mix4Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
-#else
-Mix4Module::Mix4Module()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS)
-{
-#endif
     Mix4 = std::make_shared<Comp>(this);
     Mix4->init();
 }
@@ -261,14 +252,10 @@ void Mix4Widget::makeStrip(
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
+
 Mix4Widget::Mix4Widget(Mix4Module *module)
 {
     setModule(module);
-#else
-Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
-{
-#endif
     mixModule = module;
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix4_panel.svg");
@@ -285,14 +272,6 @@ Mix4Widget::Mix4Widget(Mix4Module *module) : ModuleWidget(module)
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-
-#ifdef __V1x
 Model *modelMix4Module = createModel<Mix4Module, Mix4Widget>("squinkylabs-mix4");
-#else
-Model *modelMix4Module = Model::create<Mix4Module,
-    Mix4Widget>("Squinky Labs",
-    "squinkylabs-mix4",
-    "-- Mix4 --", RANDOM_TAG);
-#endif
 #endif
 

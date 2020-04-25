@@ -496,14 +496,6 @@ MixMWidget::MixMWidget(MixMModule *module)
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-
-#ifdef __V1x
 Model *modelMixMModule = createModel<MixMModule, MixMWidget>("squinkylabs-mixm");
-#else
-Model *modelMixMModule = Model::create<MixMModule,
-    MixMWidget>("Squinky Labs",
-    "squinkylabs-mixm",
-    "-- MixM --", RANDOM_TAG);
-#endif
 #endif
 

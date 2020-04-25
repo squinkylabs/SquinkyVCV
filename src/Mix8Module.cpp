@@ -20,9 +20,6 @@ static DrawTimer drawTimer("Mix8");
 
 using Comp = Mix8<WidgetComposite>;
 using Manager = ToggleManager2<SqSvgParamToggleButton>;
-#ifndef __V1x
-using Svg = SVG;
-#endif
 /**
  */
 struct Mix8Module : Module
@@ -45,21 +42,13 @@ void Mix8Module::onSampleRateChange()
 {
 }
 
-#ifdef __V1x
 Mix8Module::Mix8Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
-#else
-Mix8Module::Mix8Module()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS)
-{
-#endif
+
     Mix8 = std::make_shared<Comp>(this);
     onSampleRateChange();
     Mix8->init();
@@ -350,14 +339,9 @@ void Mix8Widget::makeMaster(Mix8Module* module, std::shared_ptr<IComposite> icom
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
 Mix8Widget::Mix8Widget(Mix8Module *module)
 {
     setModule(module);
-#else
-Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
-{
-#endif
     box.size = Vec(26 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/mix8_panel.svg");
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
@@ -375,14 +359,6 @@ Mix8Widget::Mix8Widget(Mix8Module *module) : ModuleWidget(module)
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-
-#ifdef __V1x
 Model *modelMix8Module = createModel<Mix8Module, Mix8Widget>("squinkylabs-mix8");
-#else
-Model *modelMix8Module = Model::create<Mix8Module,
-    Mix8Widget>("Squinky Labs",
-    "squinkylabs-mix8",
-    "Mixer-8", MIXER_TAG);
-#endif
 #endif
 

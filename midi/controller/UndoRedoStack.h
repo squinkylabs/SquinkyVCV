@@ -11,7 +11,7 @@ class MidiSequencer4;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 using MidiSequencer4Ptr = std::shared_ptr<MidiSequencer4>;
 
-#if defined(__PLUGIN) && defined(__V1x)
+#if defined(__PLUGIN)
 #define __USE_VCV_UNDO
 #endif
 

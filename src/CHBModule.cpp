@@ -35,23 +35,12 @@ public:
 private:
 };
 
-#ifdef __V1x
 CHBModule::CHBModule() : chb(this)
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 }
-#else
-CHBModule::CHBModule()
-    : Module(chb.NUM_PARAMS,
-    chb.NUM_INPUTS,
-    chb.NUM_OUTPUTS,
-    chb.NUM_LIGHTS),
-    chb(this)
-{
-}
-#endif
 
 void CHBModule::step()
 {
@@ -460,7 +449,7 @@ void CHBWidget::resetMe(CHBModule *module)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
+
 CHBWidget::CHBWidget(CHBModule *module) :
   //  numHarmonics(module->chb.numHarmonics),
     module(module),
@@ -470,14 +459,6 @@ CHBWidget::CHBWidget(CHBModule *module) :
         numHarmonics = module->chb.numHarmonics;
     }
     setModule(module);
-#else
-CHBWidget::CHBWidget(CHBModule *module) :
-    ModuleWidget(module),
-    numHarmonics(module->chb.numHarmonics),
-    module(module),
-    semitoneDisplay(module)
-{
-#endif
 
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     {
@@ -513,14 +494,6 @@ CHBWidget::CHBWidget(CHBModule *module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1x
 Model *modelCHBModule = createModel<CHBModule, CHBWidget>(
     "squinkylabs-CHB2");
-#else
-Model *modelCHBModule = Model::create<CHBModule,
-    CHBWidget>("Squinky Labs",
-    "squinkylabs-CHB2",
-    "Chebyshev II: Waveshaper VCO", EFFECT_TAG, OSCILLATOR_TAG, WAVESHAPER_TAG);
-#endif
-
 #endif
