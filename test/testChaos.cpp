@@ -18,7 +18,19 @@ static void test1()
     assertG(g);
 }
 
+static void testLabels()
+{
+    
+    auto l = Comp::typeLabels();
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
+    auto type = icomp->getParam(Comp::TYPE_PARAM);
+    assertEQ(type.min, 0);
+    assertEQ(type.max, l.size()-1);
+}
+
 void testChaos()
 {
     test1();
+    testLabels();
 }

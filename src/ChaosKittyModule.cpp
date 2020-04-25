@@ -130,9 +130,9 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Comp::TYPE_PARAM);
     popup->box.size.x = 76;    // width
     popup->box.size.y = 22;     // should set auto like button does
-    popup->text = "1";
-    std::vector<std::string> labels = {"1", "2"};
-    popup->setLabels(labels);
+    popup->text = "noise";
+   // std::vector<std::string> labels = {"1", "2", "3", "4"};
+    popup->setLabels(Comp::typeLabels());
     addParam(popup);
 
 

@@ -2,12 +2,16 @@
 #pragma once
 
 #include "AudioMath.h"
+#include "Chaos.h"
 #include "Divider.h"
+#include "FractionalDelay.h"
 #include "IComposite.h"
 
 #include <assert.h>
 #include <algorithm>
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace rack {
     namespace engine {
@@ -25,61 +29,6 @@ public:
     int getNumParams() override;
 };
 
-class Kitty1
-{
-public:
-    float step() {
-        const float next = g * x * (1 - x);
-        x = next;
-      //  printf("%f\n", x);fflush(stdout);
-        return float(5 * (next - .5));
-    }
-    void setG(float _g) {
-        if (_g >= 4) {
-            g = 3.99999f;
-        }
-        g = _g;
-    }
-
-    float _getG() const {
-        return g;
-    }
-private:
-    float x = .5f;
-    float g = 3.9f; 
-};
-
-class Kitty2
-{
-public:
-    float step() {
-        double xNext = std::sin(a * y) - std::cos(b * x);
-        double yNext = std::sin(c * x) - std::cos(d * y);
-
-        x = xNext;
-        y = yNext;
-
-        return x;
-    }
-private:
-    double x = 1;
-    double y = 1;
-
-#if 0
-    double a = 1.641;
-    double b = 1.902;
-    double c = .316;
-    double d = 1.525;
-#endif
-
-#if 1
-    double a = -0.827;
-    double b = -1.637;
-    double c = 1.659;
-    double d = -0.943;
-#endif
-};
-
 template <class TBase>
 class ChaosKitty : public TBase
 {
@@ -90,6 +39,10 @@ public:
     }
     ChaosKitty() : TBase()
     {
+    }
+
+    static std::vector<std::string> typeLabels() {
+        return { "noise", "pitched" };
     }
 
     /**
@@ -141,14 +94,17 @@ public:
     void step() override;
 
     float _getG() const {
-        return kitty1._getG();
+        return simpleChaoticNoise._getG();
     }
 
 private:
-    enum class Types {kitty1, kitty2};
-    Types type = Types::kitty1;
-    Kitty1 kitty1;
-    Kitty2 kitty2;
+    enum class Types { SimpleChaoticNoise, ResonantNoise};
+    Types type = Types::SimpleChaoticNoise;
+    SimpleChaoticNoise simpleChaoticNoise;
+    ResonantNoise resonantNoise;
+  //  Kitty2 kitty2;
+ //   Kitty3 kitty3;
+  //  Kitty4 kitty4;
     AudioMath::ScaleFun<float> scaleChaos;
 
     Divider div;
@@ -178,19 +134,26 @@ inline void ChaosKitty<TBase>::stepn(int n) {
         TBase::params[CHAOS_PARAM].value,
         TBase::params[CHAOS_TRIM_PARAM].value);
   //  printf("g = %.2f\n", g); fflush(stdout);
-    kitty1.setG(g);
+    simpleChaoticNoise.setG(g);
+    resonantNoise.setG(g);
+#if 0
 
-    
+    float k2 = TBase::params[CHAOS_PARAM].value * .001;
+    kitty2.setDelta(k2);
+    kitty4.setDelta(k2);
+#endif
 }
 
 template <class TBase>
 inline void ChaosKitty<TBase>::step()
 {
     float output = 0;
-    if (type == Types::kitty1) {
-        output = kitty1.step();
-    } else if (type == Types::kitty2) {
-        output = kitty2.step();
+    if (type == Types::SimpleChaoticNoise) {
+        output = simpleChaoticNoise.step();
+    } else if (type == Types::ResonantNoise) {
+        output = resonantNoise.step();
+    } else {
+       // assert(false);
     }
 
     output = std::min(output, 5.f);
@@ -224,7 +187,7 @@ inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
             ret = { -1, 1, 0, "Chaos 2 trim" };
             break;
         case ChaosKitty<TBase>::TYPE_PARAM:
-            ret = { -0, 1, 0, "type" };
+            ret = { 0, 3, 0, "type" };
             break;
         default:
             assert(false);
