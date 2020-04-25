@@ -34,6 +34,9 @@ public:
         return float(5 * (next - .5));
     }
     void setG(float _g) {
+        if (_g >= 4) {
+            g = 3.99999;
+        }
         g = _g;
     }
 
@@ -128,10 +131,12 @@ inline void ChaosKitty<TBase>::init()
 
 template <class TBase>
 inline void ChaosKitty<TBase>::stepn(int n) {
+    const float chaosCV = TBase::inputs[CHAOS_INPUT].getVoltage(0) / 10.f;
     const float g  = scaleChaos(
-        TBase::inputs[CHAOS_INPUT].getVoltage(0),
+        chaosCV,
         TBase::params[CHAOS_PARAM].value,
         TBase::params[CHAOS_TRIM_PARAM].value);
+  //  printf("g = %.2f\n", g); fflush(stdout);
     kitty1.setG(g);
 }
 
