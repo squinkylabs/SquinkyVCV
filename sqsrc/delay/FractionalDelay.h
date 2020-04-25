@@ -83,6 +83,10 @@ public:
     }
 
     float run(float);
+
+    virtual float processFeedback(float in) {
+        return in;
+    }
 private:
   //  FractionalDelay delay;
     float feedback = 0;

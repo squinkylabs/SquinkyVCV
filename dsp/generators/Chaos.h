@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FractionalDelay.h"
+#include "LowpassFilter.h"
 
 class SimpleChaoticNoise
 {
@@ -26,6 +27,27 @@ private:
     float g = 3.9f; 
 };
 
+class ResonatorWithFilters : public RecirculatingFractionalDelay
+{
+public:
+    ResonatorWithFilters(int maxSamples) : RecirculatingFractionalDelay(maxSamples) {
+
+    }
+    float processFeedback(float input) override {
+        return LowpassFilter<float>::run(input, lpfState, lpfParams);
+    }
+    void setFreqHz(float freq, float sampleRate) {
+        const float delaySeconds = 1.0f / freq;
+        float delaySamples = delaySeconds * sampleRate;
+        setDelay(delaySamples);
+        // printf("set cutoff %f\n", freq / sampleRate);
+        LowpassFilter<float>::setCutoff(lpfParams, 6 * freq / sampleRate);
+    }
+private:
+    LowpassFilterParams<float> lpfParams;
+    LowpassFilterState<float> lpfState;
+};
+
 class ResonantNoise
 {
 public:
@@ -33,10 +55,22 @@ public:
         delay.setDelay(200);
         delay.setFeedback(-.97f);
     }
-
+#if 0
     void setDelaySamples(float s) {
         delay.setDelay(s);
     }
+#endif
+    void setFreqHz(float freq, float sampleRate) {
+        delay.setFreqHz(freq, sampleRate);
+    }
+#if 0
+    void setFreqHz(float freq, float sampleRate) {
+        const float delaySeconds = 1.0f / freq;
+        float delaySamples = delaySeconds * sampleRate;
+     //   delay.setDelay(delaySamples);
+       // LowpassFilter<float>::setCutoff(lpfParams, freq / sampleRate);
+    }
+    #endif
 
     float step() {
         // first, do feedback chaos gen
@@ -77,7 +111,8 @@ private:
     float g = 3.9f;
     int ct = 0;
 
-    RecirculatingFractionalDelay delay;
+    ResonatorWithFilters delay;
+  
 };
 
 //************************** failures *******************

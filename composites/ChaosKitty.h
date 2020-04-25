@@ -177,10 +177,14 @@ inline void ChaosKitty<TBase>::updatePitch()
     const float q = float(log2(261.626));       // move up to pitch range of even vco
     pitch += q;
     const float _freq = expLookup(pitch);
+    #if 1
+    resonantNoise.setFreqHz(_freq, TBase::engineGetSampleRate());
+    #else
     const float delaySeconds = 1.0f / _freq;
     float delaySamples = delaySeconds * TBase::engineGetSampleRate();
 
     resonantNoise.setDelaySamples(delaySamples);
+    #endif
 }
 
 template <class TBase>
