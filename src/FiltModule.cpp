@@ -39,24 +39,12 @@ void FiltModule::onSampleRateChange()
 {
 }
 
-
-#ifdef __V1x
 FiltModule::FiltModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     filt = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
-#else
-FiltModule::FiltModule()
-    : Module(
-        Comp::NUM_PARAMS,
-        Comp::NUM_INPUTS,
-        Comp::NUM_OUTPUTS,
-        Comp::NUM_LIGHTS)
-{
-    filt = std::make_shared<Comp>(this);
-#endif
     onSampleRateChange();
     filt->init();
 }

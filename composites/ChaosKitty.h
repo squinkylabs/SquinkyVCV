@@ -35,7 +35,7 @@ public:
     }
     void setG(float _g) {
         if (_g >= 4) {
-            g = 3.99999;
+            g = 3.99999f;
         }
         g = _g;
     }
@@ -74,12 +74,16 @@ public:
     {
         CHAOS_PARAM,
         CHAOS_TRIM_PARAM,
+        CHAOS2_PARAM,
+        CHAOS2_TRIM_PARAM,
+        TYPE_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
         CHAOS_INPUT,
+        CHAOS2_INPUT,
         NUM_INPUTS
     };
 
@@ -163,8 +167,17 @@ inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
         case ChaosKitty<TBase>::CHAOS_PARAM:
             ret = {-5, 5, 0, "Chaos"};
             break;
+        case ChaosKitty<TBase>::CHAOS2_PARAM:
+            ret = { -5, 5, 0, "Chaos 2" };
+            break;
         case ChaosKitty<TBase>::CHAOS_TRIM_PARAM:
             ret = {-1, 1, 0, "Chaos trim"};
+            break;
+        case ChaosKitty<TBase>::CHAOS2_TRIM_PARAM:
+            ret = { -1, 1, 0, "Chaos 2 trim" };
+            break;
+        case ChaosKitty<TBase>::TYPE_PARAM:
+            ret = { -0, 1, 0, "type" };
             break;
         default:
             assert(false);

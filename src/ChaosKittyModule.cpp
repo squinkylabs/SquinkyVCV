@@ -7,6 +7,7 @@
 #include "ChaosKitty.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/PopupMenuParamWidgetv1.h"
 
 using Comp = ChaosKitty<WidgetComposite>;
 
@@ -86,13 +87,14 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
 
     const float xInput = 40;
     const float xTrim = 80;
-    const float xParam = 180;
+    const float xParam = 140;
 
 
     // row 1: chaos
 
-    const float yRow1 = 100;
-    
+    const float yRow1 = 140;
+    const float yRow2 = 200;
+
     addInput(createInputCentered<PJ301MPort>(
         Vec(xInput, yRow1),
         module,
@@ -103,9 +105,14 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Vec(xParam, yRow1),
         module, 
         Comp::CHAOS_PARAM);
-    //oct->snap = true;
-    //oct->smooth = false;
     addParam(chaosParam);
+
+    Rogan1PSBlue* chaos2Param = SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(xParam, yRow2),
+        module, 
+        Comp::CHAOS2_PARAM);
+    addParam(chaos2Param);
 
     auto p = SqHelper::createParamCentered<Trimpot>(
         icomp,
@@ -114,12 +121,26 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Comp::CHAOS_TRIM_PARAM);
     addParam(p);
 
+    // *************************************************
+
+    PopupMenuParamWidget* popup = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(50, 60),
+        module,
+        Comp::TYPE_PARAM);
+    popup->box.size.x = 76;    // width
+    popup->box.size.y = 22;     // should set auto like button does
+    popup->text = "1";
+    std::vector<std::string> labels = {"1", "2"};
+    popup->setLabels(labels);
+    addParam(popup);
+
 
     // *************************************************
 
 
     addOutput(createOutputCentered<PJ301MPort>(
-        Vec(70, 300),
+        Vec(140, 340),
         module,
         Comp::MAIN_OUTPUT));
 
