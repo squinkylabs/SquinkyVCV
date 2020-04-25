@@ -2,51 +2,6 @@
 
 #include "FractionalDelay.h"
 
-class ResonantNoise
-{
-public:
-    ResonantNoise() : delay(2000) {
-        delay.setDelay(300);
-    }
-    float step() {
-        float delayOut = delay.run(x);
-        if (delayOut == 0) {
-            delayOut = .5;
-        }
-        x = g * delayOut * (1 - delayOut);
-
-        bool print = false;
-#if 1
-        if (ct < 10000) { 
-            if (0 == (ct % 100)) {
-                print = true;
-                printf("k3 iter %d, delay = %.2f, x = %.2f\n", ct, delayOut, x);
-            }
-           
-        }
-         ++ct;
-#endif
-
-        x -= (float)(delayOut * .9) ;    // let's recirc a little
-        if (print) {
-            printf("x with fedbck = %.2f\n", x);
-        }
-        return x;
-    }
-    void setG(float _g) {
-        if (_g >= 4) {
-            g = 3.99999f;
-        }
-        g = _g;
-    }
-private:
-    float x = .5f;
-    float g = 3.9f;
-    int ct = 0;
-
-    FractionalDelay delay;
-};
-
 class SimpleChaoticNoise
 {
 public:
@@ -71,17 +26,11 @@ private:
     float g = 3.9f; 
 };
 
-
-//************************** failures *******************
-
-#if 0
-
-
-class Kitty3
+class ResonantNoise
 {
 public:
-    Kitty3() : delay(2000) {
-        delay.setDelay(300);
+    ResonantNoise() : delay(2000) {
+        delay.setDelay(200);
         delay.setFeedback(-.97f);
     }
     float step() {
@@ -94,17 +43,17 @@ public:
         bool print = false;
 #if 0
 
-        if (ct < 100000) { 
+        if (ct < 100000) {
             if (0 == (ct % 400)) {
                 print = true;
                 printf("k3 iter %d, delay = %.2f\n", ct, x2);
             }
-           
+
         }
-         ++ct;
+        ++ct;
 #endif
 
-     
+
         return float(2 * (x2 - .5));
     }
     void setG(float _g) {
@@ -119,11 +68,65 @@ public:
     }
 private:
     float x = .5f;
-    float g = 3.9f; 
+    float g = 3.9f;
     int ct = 0;
 
     RecirculatingFractionalDelay delay;
 };
+
+//************************** failures *******************
+
+#if 0
+
+
+class ResonantNoiseNG
+{
+public:
+    ResonantNoise() : delay(2000) {
+        delay.setDelay(300);
+    }
+    float step() {
+        float delayOut = delay.run(x);
+        if (delayOut == 0) {
+            delayOut = .5;
+        }
+        x = g * delayOut * (1 - delayOut);
+
+        bool print = false;
+#if 1
+        if (ct < 10000) {
+            if (0 == (ct % 100)) {
+                print = true;
+                printf("k3 iter %d, delay = %.2f, x = %.2f g = %.2f\n", ct, delayOut, x, g);
+            }
+
+        }
+        ++ct;
+#endif
+
+        x -= (float)(delayOut * .9);    // let's recirc a little
+        if (print) {
+            printf("x with fedbck = %.2f\n", x);
+        }
+        return x;
+    }
+    void setG(float _g) {
+        if (_g >= 4) {
+            g = 3.99999f;
+        }
+        g = _g;
+    }
+private:
+    float x = .5f;
+    float g = 3.9f;
+    int ct = 0;
+
+    FractionalDelay delay;
+};
+
+
+
+
 
 
 
