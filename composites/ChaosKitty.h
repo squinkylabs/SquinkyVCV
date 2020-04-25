@@ -6,6 +6,7 @@
 #include "IComposite.h"
 
 #include <assert.h>
+#include <algorithm>
 #include <memory>
 
 namespace rack {
@@ -48,6 +49,37 @@ private:
     float g = 3.9f; 
 };
 
+class Kitty2
+{
+public:
+    float step() {
+        double xNext = std::sin(a * y) - std::cos(b * x);
+        double yNext = std::sin(c * x) - std::cos(d * y);
+
+        x = xNext;
+        y = yNext;
+
+        return x;
+    }
+private:
+    double x = 1;
+    double y = 1;
+
+#if 0
+    double a = 1.641;
+    double b = 1.902;
+    double c = .316;
+    double d = 1.525;
+#endif
+
+#if 1
+    double a = -0.827;
+    double b = -1.637;
+    double c = 1.659;
+    double d = -0.943;
+#endif
+};
+
 template <class TBase>
 class ChaosKitty : public TBase
 {
@@ -55,11 +87,9 @@ public:
 
     ChaosKitty(Module * module) : TBase(module)
     {
-        printf("chaos ctr 1\n"); fflush(stdout);
     }
     ChaosKitty() : TBase()
     {
-        printf("chaos ctr 2\n"); fflush(stdout);
     }
 
     /**
@@ -115,7 +145,10 @@ public:
     }
 
 private:
+    enum class Types {kitty1, kitty2};
+    Types type = Types::kitty1;
     Kitty1 kitty1;
+    Kitty2 kitty2;
     AudioMath::ScaleFun<float> scaleChaos;
 
     Divider div;
@@ -135,6 +168,10 @@ inline void ChaosKitty<TBase>::init()
 
 template <class TBase>
 inline void ChaosKitty<TBase>::stepn(int n) {
+    type = Types(int(std::round(TBase::params[TYPE_PARAM].value)));
+   // printf("type = %d, value = %.2f\n", type, TBase::params[TYPE_PARAM].value);
+   //  fflush(stdout);;
+
     const float chaosCV = TBase::inputs[CHAOS_INPUT].getVoltage(0) / 10.f;
     const float g  = scaleChaos(
         chaosCV,
@@ -142,13 +179,23 @@ inline void ChaosKitty<TBase>::stepn(int n) {
         TBase::params[CHAOS_TRIM_PARAM].value);
   //  printf("g = %.2f\n", g); fflush(stdout);
     kitty1.setG(g);
+
+    
 }
 
 template <class TBase>
 inline void ChaosKitty<TBase>::step()
 {
-    const float f = kitty1.step();
-    TBase::outputs[MAIN_OUTPUT].setVoltage(f, 0);
+    float output = 0;
+    if (type == Types::kitty1) {
+        output = kitty1.step();
+    } else if (type == Types::kitty2) {
+        output = kitty2.step();
+    }
+
+    output = std::min(output, 5.f);
+    output = std::max(output, -5.f);
+    TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
 
     div.step();
 }
