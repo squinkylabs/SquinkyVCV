@@ -24,30 +24,32 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    std::shared_ptr<Comp> blank;
+    std::shared_ptr<Comp> comp;
 private:
 
 };
 
 void ChaosKittyModule::onSampleRateChange()
 {
+    INFO("ChaosKittyModule::onSampleRateChange");
+    comp->onSampleRateChange(SqHelper::engineGetSampleRate(), SqHelper::engineGetSampleTime());
 }
 
 ChaosKittyModule::ChaosKittyModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    blank = std::make_shared<Comp>(this);
+    comp = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
+    INFO("ChaosKittyModule::ChaosKittyModule( will call onSamplRateChange");
     onSampleRateChange();
-    INFO("calling comp init");
-    blank->init();
+    comp->init();
 }
 
 void ChaosKittyModule::step()
 {
-    blank->step();
+    comp->step();
 }
 
 ////////////////////

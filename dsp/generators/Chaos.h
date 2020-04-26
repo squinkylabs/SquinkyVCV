@@ -1,16 +1,21 @@
 #pragma once
 
+#include "BiquadState.h"
+#include "BiquadFilter.h"
+#include "ButterworthFilterDesigner.h"
 #include "FractionalDelay.h"
 #include "LowpassFilter.h"
-
 
 class ChaosGen1
 {
 public:
     float step() {
+        assert(configured);
         const float next = g * x * (1 - x);
         x = next;
-        return float(5 * (next - .5));
+         // add a ton of DC, just to test the filter
+        const double result = 10 * BiquadFilter<double>::run(next, dcBlockState, dcBlockParams);
+        return float(result);
     }
 
     void setG(float _g) {
@@ -20,13 +25,25 @@ public:
         g = _g;
     }
 
-    void onSampleRateChange()
+    void onSampleRateChange(float rate, float sampleTime)
     {
+        const float cutoffHz = 20.f;
+        float fcNormalized = cutoffHz * sampleTime;
+        assert((fcNormalized > 0) && (fcNormalized < .1));
+
+        ButterworthFilterDesigner<double>::designFourPoleHighpass(dcBlockParams, fcNormalized);
+        configured = true;
     }
 
 private:
     float x = .5f;
     float g = 3.9f; 
+    int ct = 0;
+
+    BiquadParams<double, 2> dcBlockParams;
+    BiquadState<double, 2> dcBlockState;
+    bool configured = false;
+
 };
 
 class SimpleChaoticNoise
@@ -38,6 +55,9 @@ public:
     void setG(float g) {
         generator.setG(g);
     }
+    void onSampleRateChange(float rate, float time) {
+        generator.onSampleRateChange(rate, time);
+    }
 private:
     ChaosGen1 generator;
 };
@@ -48,6 +68,8 @@ class ResonatorWithFilters : public RecirculatingFractionalDelay
 public:
     ResonatorWithFilters(int maxSamples) : RecirculatingFractionalDelay(maxSamples) {
     }
+
+    
 
     float processFeedback(float input) override {
       //  input = LowpassFilter<float>::run(input, lpfState, lpfParams);
@@ -99,11 +121,17 @@ public:
         delay.setFeedback(-.99f);
     }
 
+    void onSampleRateChange(float rate, float time) {
+        chaos.onSampleRateChange(rate, time);
+        sampleRate = rate;
+        sampleTime = time;
+    }
+
     /**
      * brightness = 0..1
      * resonance = 0..1
      */
-    void set(float freqHz, float sampleRate, float brightness, float resonance) {
+    void set(float freqHz, float brightness, float resonance) {
         makeupGain = delay.set(freqHz, sampleRate, brightness, resonance);
     }
    
@@ -125,6 +153,8 @@ private:
     float makeupGain = 1;
     ChaosGen1 chaos;
     ResonatorWithFilters delay;
+    float sampleRate = 44100;
+    float sampleTime = 1.f / 44100;
 };
 
 //************************** failures *******************

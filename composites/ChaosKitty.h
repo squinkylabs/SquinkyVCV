@@ -98,6 +98,8 @@ public:
      */
     void step() override;
 
+    void onSampleRateChange(float rate, float time);
+
 private:
     enum class Types { SimpleChaoticNoise, ResonantNoise};
     Types type = Types::SimpleChaoticNoise;
@@ -111,6 +113,16 @@ private:
 
      std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 };
+
+
+template <class TBase>
+inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time)
+{
+    assert(rate > 10000);
+    assert(time < .1);
+    simpleChaoticNoise.onSampleRateChange(rate, time);
+    resonantNoise.onSampleRateChange(rate, time);
+}
 
 
 template <class TBase>
@@ -179,7 +191,7 @@ inline void ChaosKitty<TBase>::updatePitch()
 #if 1
     float brightness = TBase::params[BRIGHTNESS_PARAM].value;
     float resonance = TBase::params[RESONANCE_PARAM].value;
-    resonantNoise.set(_freq, TBase::engineGetSampleRate(), brightness, resonance);
+    resonantNoise.set(_freq, brightness, resonance);
 #else
     resonantNoise.setFreqHz(_freq, TBase::engineGetSampleRate());
 #endif
