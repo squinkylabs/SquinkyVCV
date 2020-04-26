@@ -437,14 +437,9 @@ static void testTwoSectionsSwitchToSecond()
 
 static void testLockGates()
 {
-    printf("\n---- testLockGates\n");
     const int trackNum = 0;
     MidiSong4Ptr song = makeSong(trackNum);
-#if 0
-    auto option = song->getOptions(trackNum, 0);
-    assert(option);
-    option->repeatCount = 10;                       // make the first section repeat a long time
-#endif
+
     std::shared_ptr<TestHost4> host = std::make_shared<TestHost4>();
     MidiPlayer4 pl(host, song);
     pl.setNumVoices(trackNum, 4);
@@ -454,11 +449,8 @@ static void testLockGates()
     pl.setRunningStatus(true);          // start it
     pl.step();
 
-    printf("about to play first\n");
-
     // first, play the note in the first section
     pl.updateToMetricTime(1.0f, quantizationInterval, true);
-    printf("played first note\n");
     assert(host->onlyOneGate(0));
     assertEQ(host->cvValue[0], 7.5f);
     assertEQ(pl.getSection(trackNum), 1);           // remember, first section is 1, not 0
@@ -466,13 +458,11 @@ static void testLockGates()
     // second, play to first note in second section.
     // expect it to move to the next voice for this note.
     pl.updateToMetricTime(4.f, quantizationInterval, true);
-    printf("played second note\n");
     assertEQ(pl.getSection(trackNum), 2);
     assert(host->onlyOneGate(1));
     assertEQ(host->cvValue[1], PitchUtils::pitchToCV(3, PitchUtils::c));
 
     // now force a reset
-    printf("about to reset\n");
     {
         MidiLocker l(song->lock);
         //song->lock.
@@ -480,9 +470,7 @@ static void testLockGates()
     }
     //about to play after reset
     pl.updateToMetricTime(4.1, quantizationInterval, true);
-    // printf("*********** re-enable testLockGates when bug fixed\n");
     assertEQ(host->numGates(), 1);
- 
 }
 
 

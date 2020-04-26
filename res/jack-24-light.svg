@@ -1,0 +1,15 @@
+<svg id="jack-24-light" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_1" data-name="Rectangle 1" width="24" height="24"/>
+    </clipPath>
+  </defs>
+  <g id="jack-24-in" clip-path="url(#clip-path)">
+    <circle id="Ellipse_1" data-name="Ellipse 1" cx="12" cy="12" r="12"/>
+    <circle id="Ellipse_2" data-name="Ellipse 2" cx="11.5" cy="11.5" r="11.5" transform="translate(0.5 0.5)" fill="#b0b0b0"/>
+    <circle id="Ellipse_3" data-name="Ellipse 3" cx="8.5" cy="8.5" r="8.5" transform="translate(3.5 3.5)" fill="#383838"/>
+    <circle id="Ellipse_4" data-name="Ellipse 4" cx="7.5" cy="7.5" r="7.5" transform="translate(4.5 4.5)"/>
+    <circle id="Ellipse_5" data-name="Ellipse 5" cx="6.5" cy="6.5" r="6.5" transform="translate(5.5 5.5)" fill="#d0d0d0"/>
+    <circle id="Ellipse_6" data-name="Ellipse 6" cx="4.5" cy="4.5" r="4.5" transform="translate(7.5 7.5)"/>
+  </g>
+</svg>

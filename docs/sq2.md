@@ -2,6 +2,7 @@
 
 New features:
 
+* 1.0.8: Functions as a remote editor for 4X4.
 * 1.0.7: Clipboard interchange with other Sequencers, single command clock hookup.
 * 1.0.6: Xforms for creative edits like chop notes, make triads, and transpose within scale.
 * 1.0.5: Step record from MIDI keyboard, MIDI file load/save, and user definable keyboard mapping.

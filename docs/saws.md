@@ -27,6 +27,8 @@ In classic mode, stereo operation takes almost no extra CPU. In the versions wit
 
 Make sure not to patch both outputs if you do not intend to use them. If you only listen to one side of stereo it won't sound as good as just using mono.
 
+Stereo works with polyphony, too. In these patches both the left and right outputs are polyphonic.
+
 ## The controls
 
 The pitch is controller by the signal patched into the **V/8 input**.
@@ -67,7 +69,7 @@ To give a subtle sense of rhythmic pulsing, you may of course run a clock or LFO
 
 ## A note about polyphony
 
-The implementation of polyphony is fairly conventional. The number of channels coming into the V/8 input determines the number of "voices" that saws will generate. All of the other CV inputs may be fully polyphonic also. But if you patch a mono VC into any of the inputs of Saws then it will apply to all the voices in Saws.
+The implementation of polyphony is fairly conventional. The number of channels coming into the V/8 input determines the number of "voices" that saws will generate. All of the other CV inputs may be fully polyphonic also. But if you patch a mono CV into any of the inputs of Saws then it will apply to all the voices in Saws.
 
 ## Additional information
 

@@ -6,6 +6,7 @@
 #include "Seq4.h"
 #include "UndoRedoStack.h"
 #include "../Sequencer4Widget.h"
+#include "../ctrl/SqWidgets.h"
 
 #ifdef _SEQ4
 
@@ -22,7 +23,6 @@ void S4ButtonGrid::setNewSeq(MidiSequencer4Ptr newSeq) {
         }
     }
 }
-
 
 /***************************** S4ButtonGrid ***********************************/
 
@@ -50,11 +50,11 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
    // std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     seq4Comp = _seq4Comp;
-    const float jacksX = 380;
+ 
     for (int row = 0; row < MidiSong4::numTracks; ++row) {
-        const float y = 70 + row * (buttonSize + buttonMargin);
+        const float y = grid_y + row * (buttonSize + buttonMargin);
         for (int col = 0; col < MidiSong4::numSectionsPerTrack; ++col) {
-            const float x = 130 + col * (buttonSize + buttonMargin);
+            const float x = grid_x + col * (buttonSize + buttonMargin);
             const int padNumber = row * MidiSong4::numSectionsPerTrack + col;
 
 
@@ -63,23 +63,14 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
                 rack::math::Vec(x, y),
                 row,
                 col,
-                seq,
-                seq4Comp,
-                module);
+            seq,
+            seq4Comp,
+            module);
 
 #if 1   // param widget way
             if (module) {
-                button->paramQuantity = module->paramQuantities[Comp::PADSELECT0_PARAM + padNumber];
-                 if (padNumber==0) {
-              //  INFO("added pq=%p, from param=%d pad=%d", button->paramQuantity, Comp::PADSELECT0_PARAM + padNumber, padNumber);
-              //  INFO("min=%f max = %f param=%p", button->paramQuantity->minValue, button->paramQuantity->maxValue,                    button->paramQuantity->getParam());
-                 }
-                    
+                button->paramQuantity = module->paramQuantities[Comp::PADSELECT0_PARAM + padNumber];       
             }
-             if (padNumber==0) {
-            INFO("making button x=%.2f, box.pos.x=%.2f ", x, button->box.pos.x);
-            INFO("button type=%s parent=%s, %p", typeid(button).name(), typeid(parent).name(), parent);
-             }
             parent->addParam(button);
 #else
            
@@ -90,22 +81,49 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
             buttons[row][col] = button;
         }
 
-        const float jacksY = y + 8;
-        const float jacksDy = 28;
+    //    const float jacksY = y + 8;
+    //    const float jacksDy = 28;
 
-        parent->addOutput(rack::createOutputCentered<rack::componentlibrary::PJ301MPort>(
-            rack::math::Vec(jacksX, jacksY),
-            module,
-            Comp::CV0_OUTPUT + row));
-        parent->addOutput(rack::createOutputCentered<rack::componentlibrary::PJ301MPort>(
-            rack::math::Vec(jacksX, jacksY + jacksDy),
-            module,
-            Comp::GATE0_OUTPUT + row));
+        const float jacksX1 = 12;
+        const float jacksX2 = 368;
+        const float cv_out_dy = 0;
+        const float gate_out_dy = 28;
+        const float cv_in_dy = 0;
+       // const float output
 
-        parent->addInput(rack::createInputCentered<rack::componentlibrary::PJ301MPort>(
-            rack::math::Vec(30, jacksY + 1 + jacksDy / 2),
-            module,
-            Comp::MOD0_INPUT + row));
+        {
+            std::stringstream s;
+            s << "Track " << row + 1 << " CV out";
+            SqOutputJack* oj = rack::createOutput<SqOutputJack>(
+                rack::math::Vec(jacksX2, y + cv_out_dy),
+                module,
+                Comp::CV0_OUTPUT + row);
+            oj->setTooltip(s.str());
+            parent->addOutput(oj);
+        }
+
+       
+        {
+            std::stringstream s;
+            s << "Track " << row + 1 << " Gate out";
+            SqOutputJack* oj = createOutput<SqOutputJack>(
+                rack::math::Vec(jacksX2, y + gate_out_dy),
+                module,
+                Comp::GATE0_OUTPUT + row);
+            oj->setTooltip(s.str());
+            parent->addOutput(oj);
+        }
+
+        {
+            std::stringstream s;
+            s << "Track " << row + 1 << " section selector CV in";
+            SqInputJack* ij = rack::createInput<SqInputJack>(
+                rack::math::Vec(jacksX1, y + cv_in_dy ),
+                module,
+                Comp::MOD0_INPUT + row);
+            ij->setTooltip(s.str());
+            parent->addInput(ij);
+        }
     }
 }
 
@@ -148,28 +166,22 @@ public:
         std::shared_ptr<S4ButtonGrid> grid = widget->getButtonGrid();
         assert(grid);
 
-        INFO("S4ButtonClickCommand::undo ==== %p", this);
         // first restore the edited track
         if (origColSelected >= 0 && origRowSelected >= 0) {
             auto button = grid->getButton(origRowSelected, origColSelected);
             assert(button);
-            INFO("S4ButtonClickCommand::undo setting edit to %d,%d",origRowSelected, origColSelected);
             button->doEditClip();
         }
 
         // unset the selection we set before
         auto button = grid->getButton(rowToSelect, colToSelect);
         button->setSelection(false);
-        INFO("S4ButtonClickCommand::undo un-setting edit from %d,%d", rowToSelect, colToSelect);
 
         // and select the original
         if (origRowSelected >= 0 && origColSelected >= 0) {
             button = grid->getButton(origRowSelected, origColSelected);
             button->setSelection(true);
-            INFO("S4ButtonClickCommand::undo setting sel to %d,%d", origRowSelected, origColSelected);
         }
-        INFO("S4ButtonClickCommand::undo (exit) ==== %p", this);
-
     }
 
 private:
@@ -184,16 +196,6 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
     cmd->name = "click";
     assert(widget);
     seq->undo->execute4(seq, widget, cmd);
-#if 0
-    // select the one we just clicked into
-    for (int r = 0; r < MidiSong4::numTracks; ++r) {
-        for (int c = 0; c < MidiSong4::numSectionsPerTrack; ++c) {
-            auto button = getButton(r, c);
-            assert(button);
-            button->setSelection(r == row && c == col);
-        }
-    }
-#endif
 
     // we still do our own selection of next section, outside of unto
     if (isCtrl) {
@@ -205,9 +207,6 @@ void S4ButtonGrid::onClick(bool isCtrl, int row, int col) {
             seq4Comp->setNextSectionRequest(r, col + 1);
         }
     }
-  //  auto button = getButton(row, col);
-
-  //  button->doEditClip();
 }
 
 std::function<void(bool isCtrlKey)> S4ButtonGrid::makeButtonHandler(int row, int col) {
