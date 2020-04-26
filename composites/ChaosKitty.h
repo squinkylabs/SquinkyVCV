@@ -98,10 +98,6 @@ public:
      */
     void step() override;
 
-    float _getG() const {
-        return simpleChaoticNoise._getG();
-    }
-
 private:
     enum class Types { SimpleChaoticNoise, ResonantNoise};
     Types type = Types::SimpleChaoticNoise;

@@ -3,15 +3,16 @@
 #include "FractionalDelay.h"
 #include "LowpassFilter.h"
 
-class SimpleChaoticNoise
+
+class ChaosGen1
 {
 public:
     float step() {
         const float next = g * x * (1 - x);
         x = next;
-      //  printf("%f\n", x);fflush(stdout);
         return float(5 * (next - .5));
     }
+
     void setG(float _g) {
         if (_g >= 4) {
             g = 3.99999f;
@@ -19,50 +20,65 @@ public:
         g = _g;
     }
 
-    float _getG() const {
-        return g;
+    void onSampleRateChange()
+    {
     }
+
 private:
     float x = .5f;
     float g = 3.9f; 
 };
+
+class SimpleChaoticNoise
+{
+public:
+    float step() {
+        return generator.step();
+    }
+    void setG(float g) {
+        generator.setG(g);
+    }
+private:
+    ChaosGen1 generator;
+};
+
 
 class ResonatorWithFilters : public RecirculatingFractionalDelay
 {
 public:
     ResonatorWithFilters(int maxSamples) : RecirculatingFractionalDelay(maxSamples) {
     }
+
     float processFeedback(float input) override {
-        return LowpassFilter<float>::run(input, lpfState, lpfParams);
+      //  input = LowpassFilter<float>::run(input, lpfState, lpfParams);
+        return std::min(10.f, std::max(-10.f, input));
+      // return input;
+        //return LowpassFilter<float>::run(input, lpfState, lpfParams);
     }
-#if 0
-    void setFreqHz(float freq, float sampleRate) {
-        const float delaySeconds = 1.0f / freq;
-        float delaySamples = delaySeconds * sampleRate;
-        setDelay(delaySamples);
-        // printf("set cutoff %f\n", freq / sampleRate);
-        LowpassFilter<float>::setCutoff(lpfParams, 6 * freq / sampleRate);
-    }
-    #endif
+
 
     /**
      * brightness = 0..1
      * resonance = 0..1
+     * 
+     * returns the makeup gain
      */
-    void set(float freqHz, float sampleRate, float brightness, float resonance) {
+    float set(float freqHz, float sampleRate, float brightness, float resonance) {
         const float delaySeconds = 1.0f / freqHz;
         float delaySamples = delaySeconds * sampleRate;
         setDelay(delaySamples);
       
-        float cutoff = brightnessFunc(brightness) * freqHz / sampleRate;
+        float cutoff = float(brightnessFunc(brightness) * freqHz / sampleRate);
         cutoff = std::min(cutoff, .4f);
         LowpassFilter<float>::setCutoff(lpfParams, cutoff);
 
         // printf("set cutoff %f\n", cutoff);
 
-        float reso = resonanceFunc(resonance); 
+        float reso = float(resonanceFunc(resonance)); 
         setFeedback(-reso);
         // printf("set fc %f, reo %f\n", cutoff, reso); fflush(stdout);
+      //  gain = 1 / (1 - reso);
+      return 10 * (1 - reso);
     }
 private:
     LowpassFilterParams<float> lpfParams;
@@ -71,7 +87,7 @@ private:
     // AudioMath::makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
     // brighness is the Fc multiplier
     std::function<double(double)> brightnessFunc =  AudioMath::makeFunc_Exp(0, 1, 1, 20);
-    std::function<double(double)> resonanceFunc =  AudioMath::makeFunc_Exp(0, 1, .9, .999);
+    std::function<double(double)> resonanceFunc =  AudioMath::makeFunc_Exp(0, 1, .9, .9999);
 
 };
 
@@ -88,33 +104,26 @@ public:
      * resonance = 0..1
      */
     void set(float freqHz, float sampleRate, float brightness, float resonance) {
-        delay.set(freqHz, sampleRate, brightness, resonance);
+        makeupGain = delay.set(freqHz, sampleRate, brightness, resonance);
     }
    
+    void setG(float g) {
+        chaos.setG(g);
+    }
 
     float step() {
         // first, do feedback chaos gen
-        const float next = g * x * (1 - x);
-        x = next;
+       // const float next = g * x * (1 - x);
+      //  x = next;
+        const float x = chaos.step();
 
         float x2 = delay.run(x);
-        return float(2 * (x2 - .5));
+        return float(2 * makeupGain * (x2 - .5));
     }
-    void setG(float _g) {
-        if (_g >= 4) {
-            g = 3.99999f;
-        }
-        g = _g;
-    }
-
-    float _getG() const {
-        return g;
-    }
+    
 private:
-    float x = .5f;
-    float g = 3.9f;
-    int ct = 0;
-
+    float makeupGain = 1;
+    ChaosGen1 chaos;
     ResonatorWithFilters delay;
 };
 

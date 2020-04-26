@@ -10,13 +10,6 @@ void assertG(float g) {
     assert(g < 4);
 }
 
-static void test1()
-{
-    Comp kitty;
-    const float g = kitty._getG();
-
-    assertG(g);
-}
 
 static void testLabels()
 {
@@ -31,6 +24,5 @@ static void testLabels()
 
 void testChaos()
 {
-    test1();
     testLabels();
 }

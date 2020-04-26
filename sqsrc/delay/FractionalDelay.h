@@ -77,8 +77,8 @@ public:
 #endif
     void setFeedback(float in_feedback)
     {
-        assert(feedback < 1);
-        assert(feedback > -1);
+      //  assert(feedback < 1);
+      //  assert(feedback > -1);
         feedback = in_feedback;
     }
 
