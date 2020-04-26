@@ -138,25 +138,16 @@ inline void ChaosKitty<TBase>::init()
 template <class TBase>
 inline void ChaosKitty<TBase>::stepn(int n) {
     type = Types(int(std::round(TBase::params[TYPE_PARAM].value)));
-   // printf("type = %d, value = %.2f\n", type, TBase::params[TYPE_PARAM].value);
-   //  fflush(stdout);;
 
     const float chaosCV = TBase::inputs[CHAOS_INPUT].getVoltage(0) / 10.f;
     const float g  = scaleChaos(
         chaosCV,
         TBase::params[CHAOS_PARAM].value,
         TBase::params[CHAOS_TRIM_PARAM].value);
-  //  printf("g = %.2f\n", g); fflush(stdout);
     simpleChaoticNoise.setG(g);
     resonantNoise.setG(g);
 
     updatePitch();
-#if 0
-
-    float k2 = TBase::params[CHAOS_PARAM].value * .001;
-    kitty2.setDelta(k2);
-    kitty4.setDelta(k2);
-#endif
 }
 
 template <class TBase>
@@ -188,14 +179,9 @@ inline void ChaosKitty<TBase>::updatePitch()
     pitch += q;
     const float _freq = expLookup(pitch);
 
-#if 1
     float brightness = TBase::params[BRIGHTNESS_PARAM].value;
     float resonance = TBase::params[RESONANCE_PARAM].value;
     resonantNoise.set(_freq, brightness, resonance);
-#else
-    resonantNoise.setFreqHz(_freq, TBase::engineGetSampleRate());
-#endif
-
 }
 
 template <class TBase>

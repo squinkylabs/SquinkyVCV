@@ -46,6 +46,11 @@ protected:
      * send the next input to the delay line
      */
     void setInput(float);
+
+    /**
+     * The size of the delay line, in samples
+     */
+    const int numSamples;
 private:
     /**
      * get delay output with integer (non-fractional) delay time
@@ -55,10 +60,7 @@ private:
     double delayTime = 0;
     int inputPointerIndex = 0;
 
-    /**
-     * The size of the delay line, in samples
-     */
-    const int numSamples;
+  
 
     float* delayMemory;
 };
