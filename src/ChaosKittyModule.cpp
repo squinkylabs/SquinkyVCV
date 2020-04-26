@@ -92,34 +92,42 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
 
     // row 1: chaos
 
+    const float dy = 60;
     const float yRow1 = 140;
-    const float yRow2 = 200;
+    const float yRow2 = yRow1 + dy;
+    const float yRow3 = yRow1 + 2 * dy;
 
     addInput(createInputCentered<PJ301MPort>(
         Vec(xInput, yRow1),
         module,
         Comp::CHAOS_INPUT));
 
-    Rogan1PSBlue* chaosParam = SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(xParam, yRow1),
         module, 
-        Comp::CHAOS_PARAM);
-    addParam(chaosParam);
+        Comp::CHAOS_PARAM));
+ //   addParam(chaosParam);
 
-    Rogan1PSBlue* chaos2Param = SqHelper::createParamCentered<Rogan1PSBlue>(
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(xParam, yRow2),
         module, 
-        Comp::CHAOS2_PARAM);
-    addParam(chaos2Param);
+        Comp::BRIGHTNESS_PARAM));
 
-    Rogan1PSBlue* octaveParam = SqHelper::createParamCentered<Rogan1PSBlue>(
+      addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+        icomp,
+        Vec(xParam, yRow3),
+        module, 
+        Comp::RESONANCE_PARAM));
+  //  addParam(chaos2Param);
+
+    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(50, 300),
         module, 
-        Comp::OCTAVE_PARAM);
-    addParam(octaveParam);
+        Comp::OCTAVE_PARAM));
+
 
     auto p = SqHelper::createParamCentered<Trimpot>(
         icomp,

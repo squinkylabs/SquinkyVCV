@@ -26,7 +26,7 @@ public:
     void setDelay(float samples)
     {
         assert(samples < numSamples);
-        samples = std::min<float>(numSamples, samples);
+        samples = std::min<float>(float(numSamples), samples);
         delayTime = samples;
     }
     float run(float input)

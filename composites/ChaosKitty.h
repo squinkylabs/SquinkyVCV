@@ -62,6 +62,8 @@ public:
         CHAOS2_TRIM_PARAM,
         OCTAVE_PARAM,
         TYPE_PARAM,
+        BRIGHTNESS_PARAM,
+        RESONANCE_PARAM,
         NUM_PARAMS
     };
 
@@ -177,14 +179,15 @@ inline void ChaosKitty<TBase>::updatePitch()
     const float q = float(log2(261.626));       // move up to pitch range of even vco
     pitch += q;
     const float _freq = expLookup(pitch);
-    #if 1
-    resonantNoise.setFreqHz(_freq, TBase::engineGetSampleRate());
-    #else
-    const float delaySeconds = 1.0f / _freq;
-    float delaySamples = delaySeconds * TBase::engineGetSampleRate();
 
-    resonantNoise.setDelaySamples(delaySamples);
-    #endif
+#if 1
+    float brightness = TBase::params[BRIGHTNESS_PARAM].value;
+    float resonance = TBase::params[RESONANCE_PARAM].value;
+    resonantNoise.set(_freq, TBase::engineGetSampleRate(), brightness, resonance);
+#else
+    resonantNoise.setFreqHz(_freq, TBase::engineGetSampleRate());
+#endif
+
 }
 
 template <class TBase>
@@ -215,6 +218,12 @@ inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
             break;
         case ChaosKitty<TBase>::OCTAVE_PARAM:
             ret = {-5, 5, 0, "octave"};
+            break;
+        case ChaosKitty<TBase>::BRIGHTNESS_PARAM:
+            ret = {0, 1, .5, "brightness"};
+            break;
+        case ChaosKitty<TBase>::RESONANCE_PARAM:
+            ret = {0, 1, .5, "resonance"};
             break;
         default:
             assert(false);

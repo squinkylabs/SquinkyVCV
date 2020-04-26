@@ -31,11 +31,11 @@ class ResonatorWithFilters : public RecirculatingFractionalDelay
 {
 public:
     ResonatorWithFilters(int maxSamples) : RecirculatingFractionalDelay(maxSamples) {
-
     }
     float processFeedback(float input) override {
         return LowpassFilter<float>::run(input, lpfState, lpfParams);
     }
+#if 0
     void setFreqHz(float freq, float sampleRate) {
         const float delaySeconds = 1.0f / freq;
         float delaySamples = delaySeconds * sampleRate;
@@ -43,9 +43,36 @@ public:
         // printf("set cutoff %f\n", freq / sampleRate);
         LowpassFilter<float>::setCutoff(lpfParams, 6 * freq / sampleRate);
     }
+    #endif
+
+    /**
+     * brightness = 0..1
+     * resonance = 0..1
+     */
+    void set(float freqHz, float sampleRate, float brightness, float resonance) {
+        const float delaySeconds = 1.0f / freqHz;
+        float delaySamples = delaySeconds * sampleRate;
+        setDelay(delaySamples);
+      
+        float cutoff = brightnessFunc(brightness) * freqHz / sampleRate;
+        cutoff = std::min(cutoff, .4f);
+        LowpassFilter<float>::setCutoff(lpfParams, cutoff);
+
+        // printf("set cutoff %f\n", cutoff);
+
+        float reso = resonanceFunc(resonance); 
+        setFeedback(-reso);
+        // printf("set fc %f, reo %f\n", cutoff, reso); fflush(stdout);
+    }
 private:
     LowpassFilterParams<float> lpfParams;
     LowpassFilterState<float> lpfState;
+
+    // AudioMath::makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
+    // brighness is the Fc multiplier
+    std::function<double(double)> brightnessFunc =  AudioMath::makeFunc_Exp(0, 1, 1, 20);
+    std::function<double(double)> resonanceFunc =  AudioMath::makeFunc_Exp(0, 1, .9, .999);
+
 };
 
 class ResonantNoise
@@ -53,24 +80,17 @@ class ResonantNoise
 public:
     ResonantNoise() : delay(2000) {
         delay.setDelay(200);
-        delay.setFeedback(-.97f);
+        delay.setFeedback(-.99f);
     }
-#if 0
-    void setDelaySamples(float s) {
-        delay.setDelay(s);
+
+    /**
+     * brightness = 0..1
+     * resonance = 0..1
+     */
+    void set(float freqHz, float sampleRate, float brightness, float resonance) {
+        delay.set(freqHz, sampleRate, brightness, resonance);
     }
-#endif
-    void setFreqHz(float freq, float sampleRate) {
-        delay.setFreqHz(freq, sampleRate);
-    }
-#if 0
-    void setFreqHz(float freq, float sampleRate) {
-        const float delaySeconds = 1.0f / freq;
-        float delaySamples = delaySeconds * sampleRate;
-     //   delay.setDelay(delaySamples);
-       // LowpassFilter<float>::setCutoff(lpfParams, freq / sampleRate);
-    }
-    #endif
+   
 
     float step() {
         // first, do feedback chaos gen
@@ -78,22 +98,6 @@ public:
         x = next;
 
         float x2 = delay.run(x);
-
-      
-#if 0
-    bool print = false;
-
-        if (ct < 100000) {
-            if (0 == (ct % 400)) {
-                print = true;
-                printf("k3 iter %d, delay = %.2f\n", ct, x2);
-            }
-
-        }
-        ++ct;
-#endif
-
-
         return float(2 * (x2 - .5));
     }
     void setG(float _g) {
@@ -112,7 +116,6 @@ private:
     int ct = 0;
 
     ResonatorWithFilters delay;
-  
 };
 
 //************************** failures *******************
