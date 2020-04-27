@@ -5,6 +5,7 @@
 #include "ButterworthFilterDesigner.h"
 #include "FractionalDelay.h"
 #include "LowpassFilter.h"
+#include "ObjectCache.h"
 
 class ChaosGen1
 {
@@ -146,4 +147,32 @@ private:
     ResonatorWithFilters delay;
     float sampleRate = 44100;
     float sampleTime = 1.f / 44100;
+};
+
+class CircleMap
+{
+public:
+    float step() {
+     //   xn = xn−1 + Ω − K/2π sin(xn−1) % 2π
+     
+        // this isn't correct.
+        float next = xn + phaseInc - sin(k / (2 *AudioMath::Pi));
+         while (next > (2 *AudioMath::Pi)) {
+            next -= (2 *AudioMath::Pi);
+        }
+        while (next < 0) {
+            next += (2 *AudioMath::Pi);
+        }
+        xn = next;
+
+        return sin(next);
+    }
+private:
+    float k = 0;
+    //float phase = 0;
+    float xn = 0;
+    float phaseInc = .005;
+
+   // std::shared_ptr<LookupTableParams<float>> sinLookup = ObjectCache<float>::getSinLookup();
+
 };
