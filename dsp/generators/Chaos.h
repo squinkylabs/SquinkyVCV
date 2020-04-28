@@ -153,11 +153,29 @@ class CircleMap
 {
 public:
     float step() {
+        const float two_pi = (2 *AudioMath::Pi);
+        const float j =  k / two_pi;
+        float xn_p1 = xn + phaseInc - j * sin( two_pi * xn);
+
+        while (xn_p1 > 1) {
+            xn_p1 -= 1;
+        }
+        while (xn_p1 < 0) {
+            xn_p1 += 1;
+        }
+
+        xn = xn_p1;
+        return sin(two_pi * xn_p1);
+    }
+#if 0
+    float step() {
      //   xn = xn−1 + Ω − K/2π sin(xn−1) % 2π
      
         // this isn't correct.
-        float next = xn + phaseInc - sin(k / (2 *AudioMath::Pi));
-         while (next > (2 *AudioMath::Pi)) {
+        // float next = xn + phaseInc - sin(k / (2 *AudioMath::Pi));
+    
+        float next = xn + phaseInc - (k / (2 *AudioMath::Pi)) * sin(xn);
+        while (next > (2 *AudioMath::Pi)) {
             next -= (2 *AudioMath::Pi);
         }
         while (next < 0) {
@@ -165,13 +183,25 @@ public:
         }
         xn = next;
 
+
         return sin(next);
     }
+#endif
+
+    void setChaos(float _k) {
+       // k = _k * 10;
+    }
 private:
-    float k = 0;
+// k = 123 pi = .7 ok
+// k 123 .07 semi tonal? .007 alos
+// k = 61 ng
+// k = 100 ok
+// 50 ok, 25 12.5
+    float k = 12.5;
     //float phase = 0;
     float xn = 0;
-    float phaseInc = .005;
+    float phaseInc = .007;
+    int ct = 0;
 
    // std::shared_ptr<LookupTableParams<float>> sinLookup = ObjectCache<float>::getSinLookup();
 

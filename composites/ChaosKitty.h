@@ -43,7 +43,7 @@ public:
     }
 
     static std::vector<std::string> typeLabels() {
-        return { "noise", "pitched" };
+        return { "noise", "pitched", "circle" };
     }
 
     /**
@@ -101,11 +101,12 @@ public:
     void onSampleRateChange(float rate, float time);
 
 private:
-    enum class Types { SimpleChaoticNoise, ResonantNoise};
+    enum class Types { SimpleChaoticNoise, ResonantNoise, Circle};
     Types type = Types::SimpleChaoticNoise;
     SimpleChaoticNoise simpleChaoticNoise;
     ResonantNoise resonantNoise;
     AudioMath::ScaleFun<float> scaleChaos;
+    CircleMap circleMap;
 
     Divider div;
     void stepn(int);
@@ -146,7 +147,10 @@ inline void ChaosKitty<TBase>::stepn(int n) {
         TBase::params[CHAOS_TRIM_PARAM].value);
     simpleChaoticNoise.setG(g);
     resonantNoise.setG(g);
+    
 
+    float x = TBase::params[CHAOS_PARAM].value + 5;
+    circleMap.setChaos(x);
     updatePitch();
 }
 
@@ -158,7 +162,9 @@ inline void ChaosKitty<TBase>::step()
         output = simpleChaoticNoise.step();
     } else if (type == Types::ResonantNoise) {
         output = resonantNoise.step();
-    } else {
+    } else if (type == Types::Circle) {
+        output = circleMap.step();
+    }else {
        // assert(false);
     }
 
@@ -208,7 +214,7 @@ inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
             ret = { -1, 1, 0, "Chaos 2 trim" };
             break;
         case ChaosKitty<TBase>::TYPE_PARAM:
-            ret = { 0, 1, 0, "type" };
+            ret = { 0, 2, 0, "type" };
             break;
         case ChaosKitty<TBase>::OCTAVE_PARAM:
             ret = {-5, 5, 0, "octave"};
