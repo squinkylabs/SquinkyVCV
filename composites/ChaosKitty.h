@@ -106,7 +106,9 @@ private:
     SimpleChaoticNoise simpleChaoticNoise;
     ResonantNoise resonantNoise;
     AudioMath::ScaleFun<float> scaleChaos;
+
     CircleMap circleMap;
+    AudioMath::ScaleFun<float> scaleKCircleMap;
 
     Divider div;
     void stepn(int);
@@ -123,6 +125,7 @@ inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time)
     assert(time < .1);
     simpleChaoticNoise.onSampleRateChange(rate, time);
     resonantNoise.onSampleRateChange(rate, time);
+    circleMap.onSampleRateChange(rate, time);
 }
 
 
@@ -134,6 +137,7 @@ inline void ChaosKitty<TBase>::init()
      });
 
     scaleChaos = AudioMath::makeLinearScaler<float>(3.5, 4);
+    scaleKCircleMap = AudioMath::makeLinearScaler<float>(1.2, 75);
 }
 
 template <class TBase>
@@ -149,8 +153,14 @@ inline void ChaosKitty<TBase>::stepn(int n) {
     resonantNoise.setG(g);
     
 
-    float x = TBase::params[CHAOS_PARAM].value + 5;
+    float x = scaleKCircleMap(
+        chaosCV,
+        TBase::params[CHAOS_PARAM].value,
+        TBase::params[CHAOS_TRIM_PARAM].value);   
     circleMap.setChaos(x);
+
+
+
     updatePitch();
 }
 
@@ -168,8 +178,8 @@ inline void ChaosKitty<TBase>::step()
        // assert(false);
     }
 
-    output = std::min(output, 5.f);
-    output = std::max(output, -5.f);
+    output = std::min(output, 8.f);
+    output = std::max(output, -8.f);
     TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
 
     div.step();
@@ -188,6 +198,8 @@ inline void ChaosKitty<TBase>::updatePitch()
     float brightness = TBase::params[BRIGHTNESS_PARAM].value;
     float resonance = TBase::params[RESONANCE_PARAM].value;
     resonantNoise.set(_freq, brightness, resonance);
+
+    circleMap.setFreq(_freq);
 }
 
 template <class TBase>

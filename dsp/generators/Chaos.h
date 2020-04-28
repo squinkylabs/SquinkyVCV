@@ -165,33 +165,21 @@ public:
         }
 
         xn = xn_p1;
-        return sin(two_pi * xn_p1);
+        float output = sin(two_pi * xn_p1);
+        return output * 5;
     }
-#if 0
-    float step() {
-     //   xn = xn−1 + Ω − K/2π sin(xn−1) % 2π
-     
-        // this isn't correct.
-        // float next = xn + phaseInc - sin(k / (2 *AudioMath::Pi));
-    
-        float next = xn + phaseInc - (k / (2 *AudioMath::Pi)) * sin(xn);
-        while (next > (2 *AudioMath::Pi)) {
-            next -= (2 *AudioMath::Pi);
-        }
-        while (next < 0) {
-            next += (2 *AudioMath::Pi);
-        }
-        xn = next;
 
-
-        return sin(next);
+    void setFreq(float f) {
+        phaseInc = f * sampleTime;
     }
-#endif
-
     void setChaos(float _k) {
-       // k = _k * 10;
+        k = _k;
+    }
+    void onSampleRateChange(float rate, float time) {
+        sampleTime = time;
     }
 private:
+    float sampleTime = 1.f / 44100;
 // k = 123 pi = .7 ok
 // k 123 .07 semi tonal? .007 alos
 // k = 61 ng
