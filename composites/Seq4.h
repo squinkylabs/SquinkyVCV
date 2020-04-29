@@ -10,6 +10,7 @@
 #include "IComposite.h"
 #include "IMidiPlayerHost.h"
 #include "MidiPlayer4.h"
+#include "MidiSong4.h"
 #include "SeqClock.h"
 
 // #define _MLOG
@@ -95,6 +96,12 @@ public:
         PADSELECT13_PARAM,
         PADSELECT14_PARAM,
         PADSELECT15_PARAM,
+        CV_FUNCTION0_PARAM,
+        CV_FUNCTION_PARAM = CV_FUNCTION0_PARAM,
+        CV_FUNCTION1_PARAM,
+        CV_FUNCTION2_PARAM,
+        CV_FUNCTION3_PARAM,
+        CV_SELECT_OCTAVE_PARAM,
         NUM_PARAMS
     };
 
@@ -146,29 +153,6 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
-
-    /**
-     * So far, just for test compatibilty with old player
-     */
-    #if 0
-    float getPlayPosition()
-    {
-          // NOTE: this calculation is wrong. need subrange loop start, too
-        double absTime = clock.getCurMetricTime();
-        double loopDuration = player->getCurrentLoopIterationStart();
-
-        // absTime - loop duration is the metric time of the start of the current loop,
-        // if the overall loop starts at t=0
-        double ret = absTime - loopDuration;
-
-#if 0
-        // push it up to take into account subrange looping
-        ret += player->getCurrentSubrangeLoopStart();
-#endif
-        return float(ret);
-    }
-    #endif
-
     
     /** This should be called on audio thread
      * (but is it??)
@@ -181,6 +165,7 @@ public:
     void onSampleRateChange();
     static std::vector<std::string> getClockRates();
     static std::vector<std::string> getPolyLabels();
+    static std::vector<std::string> getCVFunctionLabels();
 
     /**
      * return 0 if not playing
@@ -289,8 +274,9 @@ void Seq4<TBase>::onSampleRateChange()
 template <class TBase>
 void  Seq4<TBase>::serviceSelCV()
 {
-  
+    const int baseOctave = int( std::round(TBase::params[CV_SELECT_OCTAVE_PARAM].value));
     const int activeChannels = std::min(TBase::inputs[SELECT_CV_INPUT].getChannels(), TBase::inputs[SELECT_GATE_INPUT].getChannels()); 
+    //printf("in service, base octave = %d\n", baseOctave);
     
     for (int i=0; i < activeChannels; ++i) {
 
@@ -300,7 +286,14 @@ void  Seq4<TBase>::serviceSelCV()
             if (gate) {
                 const float cv = TBase::inputs[SELECT_CV_INPUT].getVoltage(i);
                 auto pitch = PitchUtils::cvToPitch(cv);
-                if (pitch.first == 2) {
+
+                // normalize if one octave higher
+
+                if (pitch.first == (baseOctave+1)) {
+                    pitch.first = baseOctave;
+                    pitch.second += 12;
+                }
+                if (pitch.first == baseOctave) {
                      const int pad = pitch.second;
                      if (pad <= 15) { 
                         const int track = pad / 4;
@@ -343,11 +336,15 @@ void  Seq4<TBase>::stepn(int n)
     player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
 
     // copy the current voice number to the poly ports
-    for (int i=0; i<4; ++i) {
+    for (int i=0; i<MidiSong4::numTracks; ++i) {
         const int numVoices = (int) std::round(TBase::params[NUM_VOICES0_PARAM+i].value + 1);
         TBase::outputs[CV0_OUTPUT + i].channels = numVoices;
         TBase::outputs[GATE0_OUTPUT + i].channels = numVoices;
         player->setNumVoices(i, numVoices);
+
+        const float cvMode = TBase::params[CV_FUNCTION_PARAM + i].value; 
+        MidiTrackPlayer::CVInputMode mode = MidiTrackPlayer::CVInputMode( std::round(cvMode)); 
+        getTrackPlayer(i)->setCVInputMode(mode);
     }
 
     if (!running && wasRunning) {
@@ -461,6 +458,16 @@ inline std::vector<std::string> Seq4<TBase>::getPolyLabels()
 }
 
 template <class TBase>
+inline std::vector<std::string> Seq4<TBase>::getCVFunctionLabels()
+{
+    return { 
+        "Poly",
+        "Next",
+        "Prev",
+        "Set"
+    };
+}
+template <class TBase>
 int Seq4Description<TBase>::getNumParams()
 {
     return Seq4<TBase>::NUM_PARAMS;
@@ -543,6 +550,21 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             break;
         case Seq4<TBase>::PADSELECT15_PARAM:
             ret = { 0, 1, 0, "Select 16" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION0_PARAM:
+            ret = { 0, 3, 1, "CV1 function" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION1_PARAM:
+            ret = { 0, 3, 1, "CV2 function" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION2_PARAM:
+            ret = { 0, 3, 1, "CV3 function" };
+            break;
+        case Seq4<TBase>::CV_FUNCTION3_PARAM:
+            ret = { 0, 3, 1, "CV4 function" };
+            break;
+        case Seq4<TBase>::CV_SELECT_OCTAVE_PARAM:
+            ret = {0, 10, 2, "Select CV octave"};
             break;
         default:
             assert(false);

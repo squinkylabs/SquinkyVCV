@@ -252,131 +252,18 @@ static void testSwitchToNext2()
     assertEQ(x, 1);
 }
 
-static void testSwitchToNextThenVamp()
+
+using MidiTrackPlayerPtr = std::shared_ptr<MidiTrackPlayer>;
+
+static MidiTrackPlayerPtr makePlayerForCVTest(Input& inputPort, Param& param, MidiTrackPlayer::CVInputMode mode)
 {
     // make a song with three sections
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiSong4Ptr song = makeSong3(0);
-    MidiTrackPlayer pl(host, 0, song);
-
-    Input inputPort;
-    Param param;
-    pl.setPorts(&inputPort, &param);
-
-    {
-        // set all section to play forever
-        auto options0 = song->getOptions(0, 0);
-        options0->repeatCount = 0;
-        auto options1 = song->getOptions(0, 1);
-        options1->repeatCount = 0;
-        auto options2 = song->getOptions(0, 2);
-        options2->repeatCount = 0;
-    }
-    const float quantizationInterval = .01f;
-    pl.setRunningStatus(true);      // start it.
-    pl.step();
-
-    // play to middle of first bar
-    play(pl, 2, quantizationInterval);
-    int x = pl.getSection();
-    assertEQ(x, 1);
-
-    // cue up a switch to next section
-    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
-    pl.updateSampleCount(4);        // a few more process calls
-    inputPort.setVoltage(0.f, 0);
-    pl.updateSampleCount(4);
-
-    // play to start of next section
-    play(pl, 4.1, quantizationInterval);
-    x = pl.getSection();
-    assertEQ(x, 2);
-
-
-    // play to start of next section (should stick on 2)
-    play(pl, 4 + 8 + .1, quantizationInterval);
-    x = pl.getSection();
-    assertEQ(x, 2);
-#if 0
-    // cue up a switch to prev section.
-    // should wrap to second
-    inputPort.setVoltage(5.f, 1);     // send a pulse to channel 0
-    pl.updateSampleCount(4);        // a few more process calls
-    inputPort.setVoltage(0.f, 1);
-    pl.updateSampleCount(4);
-
-      // play to start of next section
-    play(pl, 4 + 4 + 8 + .1, quantizationInterval);
-    x = pl.getSection();
-    assertEQ(x, 3);
-#endif
-}
-
-static void testSwitchToPrev()
-{
-    // make a song with three sections
-    std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
-    MidiSong4Ptr song = makeSong3(0);
-    MidiTrackPlayer pl(host, 0, song);
-
-    Input inputPort;
-    Param param;
-    pl.setPorts(&inputPort, &param);
-
-    {
-        // set all section to play forever
-        auto options0 = song->getOptions(0, 0);
-        options0->repeatCount = 0;
-        auto options1 = song->getOptions(0, 1);
-        options1->repeatCount = 0;
-        auto options2 = song->getOptions(0, 2);
-        options2->repeatCount = 0;
-    }
-    const float quantizationInterval = .01f;
-    pl.setRunningStatus(true);      // start it.
-    pl.step();
-
-    // play to middle of first bar
-    play(pl, 2, quantizationInterval);
-    int x = pl.getSection();
-    assertEQ(x, 1);
-
-    // cue up a switch to next section
-    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
-    pl.updateSampleCount(4);        // a few more process calls
-    inputPort.setVoltage(0.f, 0);
-    pl.updateSampleCount(4);
-
-    // play to start of next section
-    play(pl, 4.1, quantizationInterval);
-    x = pl.getSection();
-    assertEQ(x, 2);
-
-
-    // cue up a switch to prev section.
-    // should go back to first
-    inputPort.setVoltage(5.f, 1);     // send a pulse to channel 0
-    pl.updateSampleCount(4);        // a few more process calls
-    inputPort.setVoltage(0.f, 1);
-    pl.updateSampleCount(4);
-    assertEQ(pl.getNextSectionRequest(), 1);
-
-    // play to start of next section (back to 1)
-    play(pl, 4 + 8 + .1, quantizationInterval);
-    x = pl.getSection();
-    assertEQ(x, 1);
-}
-
-static void testSwitchToAbs()
-{
-     // make a song with three sections
     std::shared_ptr<TestHost2> host = std::make_shared<TestHost2>();
     MidiSong4Ptr song = makeSong4(0);
-    MidiTrackPlayer pl(host, 0, song);
+    MidiTrackPlayerPtr pl = std::make_shared<MidiTrackPlayer>(host, 0, song);
 
-    Input inputPort;
-    Param param;
-    pl.setPorts(&inputPort, &param);
+    pl->setPorts(&inputPort, &param);
+    pl->setCVInputMode(mode);
 
     {
         // set all section to play forever
@@ -389,13 +276,193 @@ static void testSwitchToAbs()
         auto options3 = song->getOptions(0, 3);
         options3->repeatCount = 0;
     }
+    pl->setRunningStatus(true);      // start it.
+    pl->step();
+    return pl;
+}
+
+
+
+static void testCVPolySwitchToNextThenVamp()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
     const float quantizationInterval = .01f;
-    pl.setRunningStatus(true);      // start it.
-    pl.step();
 
     // play to middle of first bar
-    play(pl, 2, quantizationInterval);
-    int x = pl.getSection();
+    play(*pl, 2, quantizationInterval);
+    int x = pl->getSection();
+    assertEQ(x, 1);
+
+    // cue up a switch to next section
+    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
+    pl->updateSampleCount(4);        // a few more process calls
+    inputPort.setVoltage(0.f, 0);
+    pl->updateSampleCount(4);
+
+    // play to start of next section
+    play(*pl, 4.1, quantizationInterval);
+    x = pl->getSection();
+    assertEQ(x, 2);
+
+
+    // play to start of next section (should stick on 2)
+    play(*pl, 4 + 8 + .1, quantizationInterval);
+    x = pl->getSection();
+    assertEQ(x, 2);
+}
+
+static void testCVSwitchToNext()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Next);
+    const float quantizationInterval = .01f;
+
+    // play to middle of first bar
+    play(*pl, 2, quantizationInterval);
+    int x = pl->getSection();
+    assertEQ(x, 1);
+
+    // cue up a switch to next section
+    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
+    pl->updateSampleCount(4);        // a few more process calls
+    inputPort.setVoltage(0.f, 0);
+    pl->updateSampleCount(4);
+
+    // play to start of next section
+    play(*pl, 4.1, quantizationInterval);
+    x = pl->getSection();
+    assertEQ(x, 2);
+
+
+    // cue up a switch to next section.
+    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
+    pl->updateSampleCount(4);        // a few more process calls
+    inputPort.setVoltage(0.f, 0);
+    pl->updateSampleCount(4);
+    assertEQ(pl->getNextSectionRequest(), 3);
+
+    // play to start of next section 
+    play(*pl, 4 + 8 + .1, quantizationInterval);
+    x = pl->getSection();
+    assertEQ(x, 3);
+}
+
+static void testCVPolySwitchToPrev()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
+    const float quantizationInterval = .01f;
+
+    // play to middle of first bar
+    play(*pl, 2, quantizationInterval);
+    int x = pl->getSection();
+    assertEQ(x, 1);
+
+    // cue up a switch to next section
+    inputPort.setVoltage(5.f, 0);     // send a pulse to channel 0
+    pl->updateSampleCount(4);        // a few more process calls
+    inputPort.setVoltage(0.f, 0);
+    pl->updateSampleCount(4);
+
+    // play to start of next section
+    play(*pl, 4.1, quantizationInterval);
+    x = pl->getSection();
+    assertEQ(x, 2);
+
+
+    // cue up a switch to prev section.
+    // should go back to first
+    inputPort.setVoltage(5.f, 1);     // send a pulse to channel 0
+    pl->updateSampleCount(4);        // a few more process calls
+    inputPort.setVoltage(0.f, 1);
+    pl->updateSampleCount(4);
+    assertEQ(pl->getNextSectionRequest(), 1);
+
+    // play to start of next section (back to 1)
+    play(*pl, 4 + 8 + .1, quantizationInterval);
+    x = pl->getSection();
+    assertEQ(x, 1);
+}
+
+static void testCVNextNotPoly()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Next);
+    const float quantizationInterval = .01f;
+
+    // request bar set
+    pl->setNextSectionRequest(2);
+    assertEQ(pl->getNextSectionRequest(), 2);
+
+    // cue up a switch to prev section.
+    // but on the poly channels. should be ignored 
+    // since we aren't in poly mode
+    inputPort.setVoltage(5.f, 1);     
+    pl->updateSampleCount(4);       
+    inputPort.setVoltage(0.f, 1);
+    pl->updateSampleCount(4);
+
+    assertEQ(pl->getNextSectionRequest(), 2);
+}
+
+static void testCVSwitchToPrev()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Prev);
+    const float quantizationInterval = .01f;
+
+    // request bar set
+    pl->setNextSectionRequest(2);
+    assertEQ(pl->getNextSectionRequest(), 2);
+
+    // now play up to request
+    play(*pl, 4.1, quantizationInterval);
+
+    // cue up a switch to prev section.
+ 
+    inputPort.setVoltage(5.f, 0);
+    pl->updateSampleCount(4);
+    inputPort.setVoltage(0.f, 0);
+    pl->updateSampleCount(4);
+
+    assertEQ(pl->getNextSectionRequest(), 1);
+}
+
+static void testCVSwitchToAbs()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Abs);
+    const float quantizationInterval = .01f;
+
+    // play to middle of first bar
+    play(*pl, 2, quantizationInterval);
+    int x = pl->getSection();
+    assertEQ(x, 1);
+
+    for (int i = 0; i < MidiSong4::numSectionsPerTrack; ++i) {
+        inputPort.setVoltage(float(i+1), 0);
+        pl->updateSampleCount(4);
+        assertEQ(pl->getNextSectionRequest(), i+1);
+    }
+}
+
+static void testCVPolySwitchToAbs()
+{
+    Input inputPort;
+    Param param;
+    MidiTrackPlayerPtr pl = makePlayerForCVTest(inputPort, param, MidiTrackPlayer::CVInputMode::Poly);
+    const float quantizationInterval = .01f;
+
+    // play to middle of first bar
+    play(*pl, 2, quantizationInterval);
+    int x = pl->getSection();
     assertEQ(x, 1);
 
     inputPort.setVoltage(0.f, 1);
@@ -403,12 +470,10 @@ static void testSwitchToAbs()
     // cue up a switch to third section.
     for (int i = 0; i < MidiSong4::numSectionsPerTrack; ++i) {
         inputPort.setVoltage(float(i+1), 2);
-        pl.updateSampleCount(4);
-        assertEQ(pl.getNextSectionRequest(), i+1);
+        pl->updateSampleCount(4);
+        assertEQ(pl->getNextSectionRequest(), i+1);
     }
-
 }
-
 
 static void testRepetition()
 {
@@ -426,7 +491,7 @@ static void testRepetition()
         options0->repeatCount = 1;
         auto options1 = song->getOptions(0, 1);
         options1->repeatCount = 4;
-      
+ 
     }
     const float quantizationInterval = .01f;
     pl.setRunningStatus(true);      // start it.
@@ -722,19 +787,6 @@ static void testPlayPauseSeek()
     assertEQ(pl.getSection(), 1);       // should be playing requested section
 }
 
-/*
-/*
-    durations = 1,2,2,2
-
-MidiSong4Ptr makeTestSong4(int trackNum)
-{
-    MidiSong4Ptr song = std::make_shared<MidiSong4>();
-    MidiLocker lock(song->lock);
-    MidiTrackPtr clip0 = MidiTrack::makeTest(MidiTrack::TestContent::oneQ1_75, song->lock);
-    MidiTrackPtr clip1 = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
-*/
-
-
 static void testLockGates()
 {
     // make a song with four sections 1/2/2/2
@@ -779,9 +831,15 @@ void testMidiTrackPlayer()
     testForever();
     testSwitchToNext();
     testSwitchToNext2();
-    testSwitchToNextThenVamp();
-    testSwitchToPrev();
-    testSwitchToAbs();
+    testCVPolySwitchToNextThenVamp();
+    testCVPolySwitchToPrev();
+    testCVPolySwitchToAbs();
+
+    testCVSwitchToNext();
+    testCVSwitchToPrev();
+    testCVSwitchToAbs();
+    testCVNextNotPoly();
+
     testRepetition();
     testRandomSwitch();
     testMissingSection();

@@ -6,11 +6,13 @@ The module title in the description of each module is a link the the documentati
 
 The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notice that the word *Changelog* in the previous sentence is a link to the changelog);
 
-# Seq++
+# Sequencers
 
-![Seq++ Image](./seq.png)
+![Seq++ Image](./seqs.png)
 
 [Seq++](./sq2.md) is a polyphonic sequencer that provides "DAW-like" music editing in a VCV module. May be used for composing "traditional" music, for triggering patch changes from a timeline, and many other uses.
+
+[4X4](./4x4.md) is a four track polyphonic sequencer. It may be used to enhance the sequencing experience with Seq++ or as it's own real-time sequence queueing controller. 
 
 # Mixers
 
@@ -42,7 +44,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Intro 2 image](./intro-2-110.png)
 
-[Stairway](./filter.md). Ladder filter with an enormous range of over-driven and clean sounds. Combines features from Moog, Oberheim, and Rossum filters and adds some some of our own, including four independent wave shapers.
+[Stairway](./filter.md). Polyphonic ladder filter with an enormous range of over-driven and clean sounds. Combines features from Moog, Oberheim, and Rossum filters and adds some some of our own, including four independent wave shapers.
 
 [Shaper](./shaper.md). Yet another wave shaper. But unlike most, this one has almost no aliasing distortion. And a few new shapes that sound nice.
 

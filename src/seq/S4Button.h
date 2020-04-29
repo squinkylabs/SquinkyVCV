@@ -20,6 +20,9 @@ public:
     S4ButtonDrawer(const rack::math::Vec& size, S4Button* button);
     void draw(const DrawArgs& args) override;
 
+    void onEnter(const rack::event::Enter& e) override;
+	void onLeave(const rack::event::Leave& e) override;
+
 private:
     void paintButtonFace(NVGcontext*);
     void paintButtonBorder(NVGcontext*);
@@ -58,7 +61,6 @@ public:
     void step() override;
 
     void setNewSeq(MidiSequencer4Ptr newSeq) {
-        //song = newSeq->song;
         seq = newSeq;
     }
 
@@ -72,7 +74,6 @@ private:
 
     const int row;
     const int col;
-    //MidiSong4Ptr song;
     MidiSequencer4Ptr seq;
     std::shared_ptr<Seq4<WidgetComposite>> seq4Comp;
 

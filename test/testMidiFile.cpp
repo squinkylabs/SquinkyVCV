@@ -87,7 +87,7 @@ static void test2()
 void testMidiFile()
 {
     test1();
-#ifdef _TMPNAM
+#if defined(_TMPNAM) && defined(_MSC_VER)
     test2();
 #endif
 }

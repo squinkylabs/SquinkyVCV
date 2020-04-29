@@ -185,30 +185,70 @@ void MidiTrackPlayer::pollForCVChange()
     // a lot of unit tests won't set this, so let's handle that
     if (input) {
 
-        auto ch0 = input->getVoltage(0);
-        cv0Trigger.go(ch0);
-        if (cv0Trigger.trigger()) {
-            setNextSectionRequest(playback.curSectionIndex + 2);        // add one for next, another one for the command offset
-        }
+        switch(cvInputMode) {
+            case CVInputMode::Next:
+                {  
+                    auto v = input->getVoltage(0);
+                    cv0Trigger.go(v);
+                    if (cv0Trigger.trigger()) {
+                        setNextSectionRequest(playback.curSectionIndex + 2);        // add one for next, another one for the command offset
+                    }
+                }
+                break;
+            case CVInputMode::Prev:
+                {
+                    auto v = input->getVoltage(0);
+                    cv1Trigger.go(v);
+                    if (cv1Trigger.trigger()) {
+                        int nextClip = playback.curSectionIndex;     // because of the offset of 1, this will be prev
+                        if (nextClip == 0) {
+                            nextClip = 4;
+                            assert(false);      // untested?
+                        }
+                        setNextSectionRequest(nextClip);
+                    }
+                }
+                break;
+            case CVInputMode::Abs:
+                {
+                    const float v = input->getVoltage(0);
+                    const int quantized = int(std::round(v));
+                    if (quantized > 0 && quantized <= 4) {
+                        setNextSectionRequest(quantized);
+                    }
+                }
+                break;
+            case CVInputMode::Poly:
+            {
+                auto ch0 = input->getVoltage(0);
+                cv0Trigger.go(ch0);
+                if (cv0Trigger.trigger()) {
+                    setNextSectionRequest(playback.curSectionIndex + 2);        // add one for next, another one for the command offset
+                }
 
-        auto ch1 = input->getVoltage(1);
-        cv1Trigger.go(ch1);
-        if (cv1Trigger.trigger()) {
-            // I don't think this will work for section 0
-            //assert(curSectionIndex != 0);
-            int nextClip = playback.curSectionIndex;     // because of the offset of 1, this will be prev
-            if (nextClip == 0) {
-                nextClip = 4;
-                assert(false);      // untested?
+                auto ch1 = input->getVoltage(1);
+                cv1Trigger.go(ch1);
+                if (cv1Trigger.trigger()) {
+                    // I don't think this will work for section 0
+                    //assert(curSectionIndex != 0);
+                    int nextClip = playback.curSectionIndex;     // because of the offset of 1, this will be prev
+                    if (nextClip == 0) {
+                        nextClip = 4;
+                        assert(false);      // untested?
+                    }
+                    setNextSectionRequest(nextClip);       
+                }
+                {
+                    const float ch2 = input->getVoltage(2);
+                    const int quantized = int( std::round(ch2));
+                    if (quantized > 0 && quantized <= 4) {
+                        setNextSectionRequest(quantized);
+                    }
+                }
             }
-            setNextSectionRequest(nextClip);       
-        }
-        {
-            const float ch2 = input->getVoltage(2);
-            const int quantized = int( std::round(ch2));
-            if (quantized > 0 && quantized <= 4) {
-                setNextSectionRequest(quantized);
-            }
+            break;
+            default:
+                assert(0);
         }
     }
 }

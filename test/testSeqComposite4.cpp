@@ -21,6 +21,24 @@ static void initParams(T* composite)
     }
 }
 
+
+
+MidiSong4Ptr makeTestSongAll()
+{
+    MidiSong4Ptr song = std::make_shared<MidiSong4>();
+    MidiLocker lock(song->lock);
+    MidiTrackPtr clip = MidiTrack::makeTest(MidiTrack::TestContent::eightQNotesCMaj, song->lock);
+
+    // same clipt everywhere is a little hinky, but will work for this test.
+    for (int i = 0; i < 4; ++i) {
+        song->addTrack(i, 0, clip);
+        song->addTrack(i, 1, clip);
+        song->addTrack(i, 2, clip);
+        song->addTrack(i, 3, clip);
+    }
+    return song;
+}
+
 /**
  * adapted from one in testSeqComposite
  * @param clockDiv - 4 for quarter, etc..
@@ -32,8 +50,9 @@ std::shared_ptr<Sq4> make(SeqClock::ClockRate rate,
     int trackNum)
 {
     assert(numVoices > 0 && numVoices <= 16);
+    // assert(trackNum >= 0);
 
-    std::shared_ptr <MidiSong4> song = makeTestSong4(trackNum);
+    std::shared_ptr <MidiSong4> song = (trackNum >= 0) ? makeTestSong4(trackNum) : makeTestSongAll();
 
     auto ret = std::make_shared<Sq4>(song);
 
@@ -205,9 +224,140 @@ static void testPauseSwitchSectionStart()
     assertEQ(pl->getSection(), 4);       // should be playing requested section still
 }
 
+ static void testSelectSectionWithCV(int cOctave, int sectionToSelect)
+ {
+    // printf("\n--- testSelectSectionWithCV oct=%d, selection=%d\n", cOctave, sectionToSelect);
+    const auto rate = SeqClock::ClockRate::Div64;
+    Sq4Ptr comp = make(rate, 4, true, -1);
+
+    play(comp, rate, .1f);                  // play a tinny bit to prime
+
+    // there should be no active track requests
+    for (int i=0; i<MidiSong4::numTracks; ++i) {
+        assertEQ(comp->getNextSectionRequest(i), 0);
+    }
+
+    comp->params[comp->CV_SELECT_OCTAVE_PARAM].value = float(cOctave);
+    comp->inputs[comp->SELECT_CV_INPUT].channels = 1;
+    comp->inputs[comp->SELECT_GATE_INPUT].channels = 1;
+    comp->inputs[comp->SELECT_CV_INPUT].setVoltage(2, 0);
+    comp->inputs[comp->SELECT_GATE_INPUT].setVoltage(10, 0);
+
+    // set no gate in channel 0
+    comp->inputs[comp->SELECT_CV_INPUT].setVoltage(-2, 0);
+    comp->inputs[comp->SELECT_GATE_INPUT].setVoltage(0, 0);
+
+    play(comp, rate, .2f);
+    float cv = PitchUtils::pitchToCV(cOctave, sectionToSelect);
+    const int row = sectionToSelect / MidiSong4::numTracks;
+    const int col = sectionToSelect % MidiSong4::numTracks;
+    //printf("in test row=%d col=%d\n", row, col);
+
+    assert(comp->getSong()->getTrack(row, col));
+
+
+    // gate a c4
+    comp->inputs[comp->SELECT_CV_INPUT].setVoltage(cv, 0);
+    comp->inputs[comp->SELECT_GATE_INPUT].setVoltage(10, 0);
+    play(comp, rate, .3f);
+
+    // now check that the correct section is requested
+
+    for (int r = 0; r < MidiSong4::numTracks; ++r) {
+        const int expectedRequest = (r == row) ? col + 1 : 0;
+        assertEQ(comp->getNextSectionRequest(r), expectedRequest);
+    }
+ }
+
+static void testSelectSectionWithCV()
+{
+    assertEQ(MidiSong4::numTracks, 4);
+    assertEQ(MidiSong4::numSectionsPerTrack, 4);
+
+
+   for (int octave = 0; octave < 10; ++ octave) {
+        for (int i=0; i<16; ++i) {
+            testSelectSectionWithCV(octave, i);
+        }
+    }
+
+}
+
+static void testSelectSectionWithCVPoly()
+{
+    printf("\n--- testSelectSectionWithCVPoly\n");
+    const auto rate = SeqClock::ClockRate::Div64;
+    Sq4Ptr comp = make(rate, 4, true, -1);
+
+    play(comp, rate, .1f);                  // play a tinny bit to prime
+
+    // there should be no active track requests
+    for (int i = 0; i < MidiSong4::numTracks; ++i) {
+        assertEQ(comp->getNextSectionRequest(i), 0);
+    }
+
+    const int cOctave = 2;
+
+    comp->params[comp->CV_SELECT_OCTAVE_PARAM].value = float(cOctave);
+    comp->inputs[comp->SELECT_CV_INPUT].channels = 4;
+    comp->inputs[comp->SELECT_GATE_INPUT].channels = 4;
+
+    for (int i = 0; i < 4; ++i) {
+        comp->inputs[comp->SELECT_CV_INPUT].setVoltage(-2, i);
+        comp->inputs[comp->SELECT_GATE_INPUT].setVoltage(0, i);
+    }
+
+    // set no gate in channel 0
+    comp->inputs[comp->SELECT_CV_INPUT].setVoltage(-2, 0);
+    comp->inputs[comp->SELECT_GATE_INPUT].setVoltage(0, 0);
+
+    play(comp, rate, .2f);
+    const int target = 2;       // want req for section 2 (zero based)
+
+    float cvArray[4];
+
+    cvArray[0] = PitchUtils::pitchToCV(cOctave, target);
+    cvArray[1]= PitchUtils::pitchToCV(cOctave, target + 4);
+    cvArray[2] = PitchUtils::pitchToCV(cOctave, target + 2 * 4);
+    cvArray[3] = PitchUtils::pitchToCV(cOctave, target + 3 * 4);
+   // const int row = sectionToSelect / MidiSong4::numTracks;
+   // const int col = sectionToSelect % MidiSong4::numTracks;
+    //printf("in test row=%d col=%d\n", row, col);
+
+   // assert(comp->getSong()->getTrack(row, col));
+
+
+
+    /// now play all 4 triggers
+    for (int i = 0; i < 4; ++i) {
+        comp->inputs[comp->SELECT_CV_INPUT].setVoltage(cvArray[i], i);
+        comp->inputs[comp->SELECT_GATE_INPUT].setVoltage(10, i);
+    }
+    play(comp, rate, .3f);
+
+    // now check that the correct section is requested
+
+    for (int r = 0; r < MidiSong4::numTracks; ++r) {
+        const int expectedRequest = 3;
+        assertEQ(comp->getNextSectionRequest(r), expectedRequest);
+    }
+}
+
+
+static void testLabels()
+{
+    auto x = Sq4::getPolyLabels();
+    assert(x.size() == 16);
+    x = Sq4::getCVFunctionLabels();
+    assert(x.size() == 4);
+}
+
 void testSeqComposite4()
 {
     test0();
     testPause();
     testPauseSwitchSectionStart();
+    testLabels();
+    testSelectSectionWithCV();
+    testSelectSectionWithCVPoly();
 }

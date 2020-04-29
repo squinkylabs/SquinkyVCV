@@ -49,11 +49,9 @@ void MakeEmptyTrackCommand4::undo(MidiSequencer4Ptr seq, Sequencer4Widget* widge
 {
   
     if (addTrackFlag) {
-        printf("MakeEmptyTrackCommand4::undo removing track"); fflush(stdout);
         removeTrack(seq, widget);
     }
     else {
-        printf("MakeEmptyTrackCommand4::undo removing track"); fflush(stdout);
         addTrack(seq, widget);
     };
 }

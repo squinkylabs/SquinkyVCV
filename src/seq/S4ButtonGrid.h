@@ -28,8 +28,10 @@ public:
         MidiSequencer4Ptr seq,
         std::shared_ptr<Seq4<WidgetComposite>> seq4Comp);
     void setNewSeq(MidiSequencer4Ptr newSeq);
-    const static int buttonSize = 50.f;
-    const static int buttonMargin = 10;
+    const static int buttonSize = 52.f;
+    const static int buttonMargin = 12;
+    const static int grid_x = 100;
+    const static int grid_y = 53;
 
 private:
     std::function<void(bool isCtrlKey)> makeButtonHandler(int row, int column);

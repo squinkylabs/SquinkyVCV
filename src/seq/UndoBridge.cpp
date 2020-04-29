@@ -77,7 +77,6 @@ using SeqAction4 = SeqAction<MidiSequencer4Ptr, Sq4Command, Sequencer4Module, Se
 
 void UndoRedoStack::setModuleId(int id)
 {
-   // INFO("UndoRedoStack::setModuleId id=%x this=%p", id, this);
     this->moduleId = id;
 }
 
