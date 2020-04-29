@@ -95,7 +95,7 @@ public:
         float reso = float(resonanceFunc(resonance)); 
         setFeedback(reso);
       //  gain = 1 / (1 - reso);
-      return .1;
+      return .1f;
     }
 private:
     LowpassFilterParams<float> lpfParams;
@@ -188,7 +188,7 @@ private:
     float k = 12.5;
     //float phase = 0;
     float xn = 0;
-    float phaseInc = .007;
+    float phaseInc = .007f;
     int ct = 0;
 
    // std::shared_ptr<LookupTableParams<float>> sinLookup = ObjectCache<float>::getSinLookup();

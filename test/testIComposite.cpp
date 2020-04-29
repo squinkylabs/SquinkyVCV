@@ -23,6 +23,7 @@
 #include "Tremolo.h"
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
+#include "daveguide.h"
 
 #include "asserts.h"
 #include <set>
@@ -80,5 +81,6 @@ void testIComposite()
     test<Filt<TestComposite>>();
     test<DrumTrigger<TestComposite>>();
     test<ChaosKitty<TestComposite>>();
+    test<Daveguide<TestComposite>>();
 
 }
