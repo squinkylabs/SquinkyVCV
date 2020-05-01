@@ -97,6 +97,41 @@ static void testRoundTrip()
     }
 }
 
+static void testPolar1()
+{
+    const float piOver4 = float(AudioMath::Pi / 4);
+    std::complex<float> c(1, 1);
+    float phase = std::arg(c);
+    assertEQ(phase, piOver4);
+
+    std::complex<float> c2(0, 0);
+    float phase2 = std::arg(c2);
+    assertEQ(phase2, 0);
+}
+
+static void testPolar2()
+{
+   // FFTDataReal real(16);
+   // real.toPolar();
+    
+    FFTDataCpx complex(16);
+    assertEQ(complex.isPolar(), false);
+    for (int i = 0; i < 16; ++i) {
+        complex.set(i, std::complex<float>(1, 1));
+    }
+    complex.toPolar();
+    assertEQ(complex.isPolar(), true);
+
+    const float piOver4 = float(AudioMath::Pi / 4);
+    const float sqrt2 = std::sqrt(1.f);
+    for (int i = 0; i < 16; ++i) {
+        auto magAndPhase = complex.getMagAndPhase(i);
+        assertEQ(magAndPhase.first, sqrt2);
+        assertEQ(magAndPhase.second, piOver4);
+    }
+
+  
+}
 
 static void testNoiseFormula()
 {
@@ -272,6 +307,8 @@ static void testBlueNoise(float corner = 0)
     }
 }
 
+
+
 void testFFT()
 {
     assertEQ(FFTDataReal::_count, 0);
@@ -287,5 +324,7 @@ void testFFT()
     testBlueNoise();
     testBlueNoise(8000.f);
     testWhiteNoiseRT();
+    testPolar1();
+    testPolar2();
     testFinalLeaks();
 }

@@ -40,9 +40,24 @@ public:
         return std::abs(buffer[bin]);
     }
 
+    bool isPolar() const {
+        assert(false);
+        return false;
+    }
+
+    void toPolar() {
+        assert(false);
+    }
+
+    std::pair<float, float> getMagAndPhase(int bin) const {
+        assert(false);
+        return std::make_pair(0.f, 0.f);
+    }
+
     static int _count;
 private:
     std::vector<T> buffer;
+    bool _isPolar = false;
 
     /**
     * we store this without type so that clients don't need
@@ -89,4 +104,23 @@ inline void FFTData<T>::set(int index, T value)
 {
     assert(index < (int) buffer.size() && index >= 0);
     buffer[index] = value;
+}
+
+/**
+ * Template specializations for polar. only supported for complex
+ */
+inline bool FFTData<cpx>::isPolar() const {
+    return _isPolar;
+
+}
+
+inline void FFTData<cpx>::toPolar() {
+    assert(!_isPolar);
+    _isPolar = true;
+}
+
+ inline std::pair<float, float> FFTData<cpx>::getMagAndPhase(int bin) const {
+    assert(_isPolar);
+    cpx temp = get(bin);
+    return std::make_pair(temp.real(), temp.imag());
 }

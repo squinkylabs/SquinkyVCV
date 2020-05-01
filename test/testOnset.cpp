@@ -1,5 +1,6 @@
 
 #include "asserts.h"
+#include "FFTData.h"
 
 #include <vector>
 
@@ -13,12 +14,14 @@ public:
     void captureSample(float data)
     {
         if (inputIndex < inputBuffer.size()) {
-            inputBuffer[inputIndex++] = data;
+           // inputBuffer[inputIndex++] = data;
+            inputBuffer.set(inputIndex++, data);
         }
-         if (inputIndex == inputBuffer.size())  {
-             haveData = true;
-             inputIndex = 0;
-         }
+
+        if (inputIndex == inputBuffer.size())  {
+            haveData = true;
+            inputIndex = 0;
+        }
 
     }
 
@@ -34,7 +37,7 @@ public:
         return std::make_pair(hadData, false);
     }
 private:
-    std::vector<float> inputBuffer;
+    FFTDataReal inputBuffer;
     int inputIndex = 0;
     bool haveData = false;
 };
