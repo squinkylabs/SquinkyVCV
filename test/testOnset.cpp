@@ -10,8 +10,15 @@ public:
     {
     }
 
-    void captureSample(float)
+    void captureSample(float data)
     {
+        if (inputIndex < inputBuffer.size()) {
+            inputBuffer[inputIndex++] = data;
+        }
+         if (inputIndex == inputBuffer.size())  {
+             haveData = true;
+             inputIndex = 0;
+         }
 
     }
 
@@ -22,10 +29,13 @@ public:
      */
     std::pair<bool, bool> wasOnset()
     {
-        return std::make_pair<bool, bool>(false, false);
+        bool hadData = haveData;
+        haveData = false;
+        return std::make_pair(hadData, false);
     }
 private:
     std::vector<float> inputBuffer;
+    int inputIndex = 0;
     bool haveData = false;
 };
 
@@ -47,6 +57,7 @@ static void test1()
    
     o.captureSample(0);
     assertEQ(o.wasOnset().first, true);
+    assertEQ(o.wasOnset().first, false);
 
    
 }
