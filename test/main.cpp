@@ -87,6 +87,7 @@ extern void testMidiTrackPlayer();
 extern void testSuper();
 extern void testEditCommands4();
 extern void testChaos();
+extern void testOnset();
 
 #if 0
 #include <sstream>
@@ -166,6 +167,7 @@ int main(int argc, char ** argv)
     testAudioMath();
     testRingBuffer();
     testGateTrigger();
+    testOnset();
 
     testIComposite();
     testVec();

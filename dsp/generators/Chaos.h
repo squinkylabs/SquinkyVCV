@@ -85,7 +85,7 @@ public:
     float set(float freqHz, float sampleRate, float brightness, float resonance) {
         const float delaySeconds = 1.0f / freqHz;
         float delaySamples = delaySeconds * sampleRate;
-        delaySamples = std::min(int(delaySamples), numSamples-1);
+        delaySamples = std::min(delaySamples, float(numSamples-1));
         setDelay(delaySamples);
       
         float cutoff = float(brightnessFunc(brightness) * freqHz / sampleRate);
@@ -153,7 +153,7 @@ class CircleMap
 {
 public:
     float step() {
-        const float two_pi = (2 *AudioMath::Pi);
+        const float two_pi = float(2 *AudioMath::Pi);
         const float j =  k / two_pi;
         float xn_p1 = xn + phaseInc - j * sin( two_pi * xn);
 
