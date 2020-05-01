@@ -110,7 +110,10 @@ void  Daveguide<TBase>::step()
     float delaySamples = delaySeconds * TBase::engineGetSampleRate();
 
     delay.setDelay(delaySamples);
-    delay.setFeedback(.999f);
+    // .999 -> 48 db peak to trough
+    // .99  ->36 db
+    // .9 = 24 db
+    delay.setFeedback(.9999f);
 
     const float input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
     const float output = delay.run(input);
