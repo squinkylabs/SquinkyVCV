@@ -540,6 +540,9 @@
     <ClCompile Include="..\..\test\testOnset.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\fft\FFTUtils.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -964,6 +967,9 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\controller\MakeEmptyTrackCommand4.h">
       <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\fft\FFTUtils.h">
+      <Filter>Header Files\dsp\fft</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
