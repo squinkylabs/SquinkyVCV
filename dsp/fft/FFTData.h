@@ -116,7 +116,14 @@ inline bool FFTData<cpx>::isPolar() const {
 
 inline void FFTData<cpx>::toPolar() {
     assert(!_isPolar);
-    _isPolar = true;
+   
+    for (int i=0; i< size(); ++i) {
+        cpx x = get(i);
+        float mag = std::abs(x);
+        float phase = std::arg(x);
+        set(i, cpx(mag, phase));
+    }
+     _isPolar = true;
 }
 
  inline std::pair<float, float> FFTData<cpx>::getMagAndPhase(int bin) const {

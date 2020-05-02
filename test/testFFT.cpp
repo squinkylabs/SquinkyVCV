@@ -123,7 +123,7 @@ static void testPolar2()
     assertEQ(complex.isPolar(), true);
 
     const float piOver4 = float(AudioMath::Pi / 4);
-    const float sqrt2 = std::sqrt(1.f);
+    const float sqrt2 = std::sqrt(2.f);
     for (int i = 0; i < 16; ++i) {
         auto magAndPhase = complex.getMagAndPhase(i);
         assertEQ(magAndPhase.first, sqrt2);
