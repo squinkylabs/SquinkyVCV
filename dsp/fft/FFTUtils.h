@@ -14,7 +14,8 @@ class FFTUtils
 {
 public:
     class Stats {
-
+    public:
+        double largestPhaseJump = 0;
     };
     using Generator = std::function<float()>;
     static void getStats(Stats&, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c);

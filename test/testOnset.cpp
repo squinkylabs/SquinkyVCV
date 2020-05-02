@@ -250,18 +250,41 @@ static void testAnalyze1()
     assertEQ(biggestBin, sinBin);
 }
 
-static void testAnalyze2()
-{
-    //static void getStats(Stats&, const FFTDataCpx & a, const FFTDataCpx & b, const FFTDataCpx & c);
-    FFTUtils::Generator gen = FFTUtils::makeSineGenerator(32);
+static FFTUtils::Stats analyzeHelper(bool jumpPhase) {
+
+    const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
+    if (jumpPhase) printf("will jump at %d\n", sampleToJumpAt);
+    FFTUtils::Generator gen = jumpPhase ?
+        FFTUtils::makeSineGeneratorPhaseJump(32, sampleToJumpAt, .5)
+        : FFTUtils::makeSineGenerator(32);
+
+    printf("about to gen fft\n");
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
     assertEQ(result.size(), 3);
+    printf("generated\n");
     for (auto frame : result) {
         frame->toPolar();
     }
 
     FFTUtils::Stats stats;
     FFTUtils::getStats(stats, *result[0], *result[1], *result[2]);
+    return stats;
+}
+
+static void testAnalyze2()
+{
+    printf("*** a2\n");
+     FFTUtils::Stats stats = analyzeHelper(false); 
+     assertEQ(stats.largestPhaseJump, 0);
+}
+
+static void testAnalyze3()
+{
+    printf("*** a3\n");
+     FFTUtils::Stats stats = analyzeHelper(true); 
+
+
+     assertClose(stats.largestPhaseJump, AudioMath::Pi, .001);
 }
 
 void testOnset()
@@ -275,4 +298,5 @@ void testOnset()
     testGenerateSinJump();
     testAnalyze1();
     testAnalyze2();
+    testAnalyze3();
 }
