@@ -2,17 +2,27 @@
 #include "FFTUtils.h"
 #include "AudioMath.h"
 
+class GeneratorImp
+{
+public:
+    GeneratorImp(double periodInSamples) : phaseInc(1.0 / periodInSamples)
+    {
+    }
+    double phase = 0;
+    const double phaseInc;
+};
 FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples)
 {
+    std::shared_ptr<GeneratorImp> impl = std::make_shared<GeneratorImp>(periodInSamples);
     printf("making regular generator\n");
     double phaseInc = 1.f / periodInSamples;
-    Generator g =  [phaseInc]() {
+    Generator g =  [impl]() {
         // TODO: get rid of static
-        static double phase = 0;
-        double ret =  std::sin(phase * 2.f * float(AudioMath::Pi));
-        phase += phaseInc;
-        if (phase >= 1) {
-            phase -= 1;
+        // static double phase = 0;
+        double ret =  std::sin(impl->phase * 2.f * float(AudioMath::Pi));
+        impl->phase += impl->phaseInc;
+        if (impl->phase >= 1) {
+            impl->phase -= 1;
         }
         return ret;
     };
@@ -35,7 +45,6 @@ public:
     const double phaseInc;
     int delayCounter;
     const double discontinuity;
-
 };
 FFTUtils::Generator FFTUtils::makeSinGeneratorPhaseJump(double periodInSamples, int delay, double discontinuity)
 {
