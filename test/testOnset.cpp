@@ -1,5 +1,6 @@
 
 #include "asserts.h"
+#include "FFT.h"
 #include "FFTData.h"
 
 #include <vector>
@@ -14,9 +15,22 @@ public:
 
     };
     static void getStats(Stats&, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c);
-    static std::vector< FFTDataRealPtr> generateData(int numSamples, int frameSize, std::function<float()> generator);
-
+    static std::vector<FFTDataRealPtr> generateData(int numSamples, int frameSize, std::function<float()> generator);
+    static std::vector<FFTDataCpxPtr> generateFFTs(int numSamples, int frameSize, std::function<float()> generator);
 };
+
+std::vector< FFTDataCpxPtr> FFTUtils::generateFFTs(int numSamples, int frameSize, std::function<float()> generator)
+{
+    auto data = generateData(numSamples, frameSize, generator);
+    std::vector<FFTDataCpxPtr> ret;
+    for (auto buffer : data) {
+        // static bool forward(FFTDataCpx* out, const FFTDataReal& in);
+        FFTDataCpxPtr  fft = std::make_shared<FFTDataCpx>(frameSize);
+        FFT::forward(fft.get(), *buffer);
+        ret.push_back(fft);
+    }
+    return ret;
+}
 
 std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSize, std::function<float()> generator)
 {
@@ -99,14 +113,14 @@ static void test1()
     assertEQ(o.wasOnset().first, false);
 }
 
-static void test2()
+static void testGenerateData()
 {
     auto result = FFTUtils::generateData(1024, 512, []() { return 0.f; });
     assertEQ(result.size(), 2);
 }
 
 
-static void test3()
+static void testGenerateData2()
 {
     auto result = FFTUtils::generateData(1, 512, []() { return 1.f; });
     assertEQ(result.size(), 1);
@@ -115,6 +129,12 @@ static void test3()
     assertEQ(buffer->get(1), 0.f);
 }
 
+static void testGenerateFFT()
+{
+    auto result = FFTUtils::generateFFTs(1024, 512, []() { return 1.f; });
+    assertEQ(result.size(), 2);
+}
+   
 /* next test. need to make three mag phase frames. analyzie
  */
 
@@ -122,6 +142,7 @@ void testOnset()
 {
     test0();
     test1();
-    test2();
-    test3();
+    testGenerateData();
+    testGenerateData2();
+    testGenerateFFT();
 }
