@@ -9,6 +9,7 @@ public:
     AudioMath() = delete;       // we are only static
     static const double Pi;
     static const double Pi_2;       // Pi / 2
+    static const double _2Pi;
     static const double Ln2;
     static const double Ln10;
     static const double E;

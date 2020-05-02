@@ -3,100 +3,7 @@
 
 #include "FFTUtils.h"
 
-#if 0
-/**
- * some utils for modules, some for testing...
- */
-class FFTUtils
-{
-public:
-    class Stats {
-
-    };
-    using Generator = std::function<float()>;
-    static void getStats(Stats&, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c);
-    static std::vector<FFTDataRealPtr> generateData(int numSamples, int frameSize, Generator generator);
-    static std::vector<FFTDataCpxPtr> generateFFTs(int numSamples, int frameSize, Generator generator);
-
-    static Generator makeSineGenerator(float periodInSamples);
-
-    /**
-     * Discontinuity 0..1, where 1 is two pi
-     */
-    static Generator makeSineGeneratorPhaseJump(float periodInSamples, int delay, float discontinuity);
-
-};
-
-FFTUtils::Generator FFTUtils::makeSineGenerator(float periodInSamples)
-{
-    float phaseInc = 1.f / periodInSamples;
-    Generator g =  [phaseInc]() {
-        static float phase = 0;
-        float ret =  std::sin(phase * 2.f * float(AudioMath::Pi));
-        phase += phaseInc;
-        if (phase >= 1) {
-            phase -= 1;
-        }
-        return ret;
-    };
-    return g;
-}
-
-FFTUtils::Generator FFTUtils::makeSineGeneratorPhaseJump(float periodInSamples, int delay, float discontinuity)
-{
-   // float phaseInc = 1.f / periodInSamples;
-    Generator g = [periodInSamples, delay, discontinuity]() {
-        static int delayCounter = delay;
-        static float phase = 0;
-        const static float phaseInc = 1.f / periodInSamples;
-        float ret = std::sin(phase * 2.f * float(AudioMath::Pi));
-        phase += phaseInc;
-        if (--delayCounter == 0) {
-            phase += discontinuity;
-        }
-        if (phase >= 1) {
-            phase -= 1;
-        }
-        return ret;
-    };
-    return g;
-}
-
-std::vector< FFTDataCpxPtr> FFTUtils::generateFFTs(int numSamples, int frameSize, std::function<float()> generator)
-{
-    auto data = generateData(numSamples, frameSize, generator);
-    std::vector<FFTDataCpxPtr> ret;
-    for (auto buffer : data) {
-        FFTDataCpxPtr  fft = std::make_shared<FFTDataCpx>(frameSize);
-        FFT::forward(fft.get(), *buffer);
-        ret.push_back(fft);
-    }
-    return ret;
-}
-
-std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSize, std::function<float()> generator)
-{
-    std::vector< FFTDataRealPtr> ret;
-    FFTDataRealPtr buffer;
-    int index = 0;
-    while (numSamples--) {
-        if (!buffer) {
-            buffer = std::make_shared<FFTDataReal>(frameSize);
-            ret.push_back(buffer);
-            index = 0;
-        }
-        float x = generator();
-        buffer->set(index, x);
-        ++index;
-        if (index >= frameSize) {
-            buffer.reset();
-        }
-    }
-    return ret;
-}
-#endif
-
-//***********************************************************************************************
+// ***********************************************************************************************
 
 class OnsetDetector
 {
@@ -183,10 +90,10 @@ static void testGenerateSin()
     FFTUtils::Generator gen = FFTUtils::makeSinGenerator(8);
    
     for (int i = 0; i < 10; ++i) {
-        float x = gen();
+        double x = gen();
         assertEQ(x, 0);
         x = gen();
-        assertEQ(x, 1.f / std::sqrt(2.f));
+        assertClose(x, 1.f / std::sqrt(2.f), .001);
         x = gen();
         assertEQ(x, 1.f);
         x = gen();
@@ -205,10 +112,10 @@ static void testGenerateSin()
 static void testGenerateSinJump()
 {
     const int sampleToJumpAt = 3;
-    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, sampleToJumpAt, .5);
+    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, sampleToJumpAt, AudioMath::Pi);
 
     // sfirst three like sin
-    float x = gen();
+    double x = gen();
     assertEQ(x, 0);
     x = gen();
     assertEQ(x, 1.f / std::sqrt(2.f));
@@ -296,7 +203,7 @@ static void testAnalyze2()
 {
     printf("*** a2\n");
      FFTUtils::Stats stats = analyzeHelper(false); 
-     assertEQ(stats.largestPhaseJump, 0);
+     assertClose(stats.largestPhaseJump, 0, .001);
 }
 
 static void testAnalyze3()
@@ -308,10 +215,49 @@ static void testAnalyze3()
      assertClose(stats.largestPhaseJump, AudioMath::Pi, .001);
 }
 
+static void testPhaseAngleUtilIsNormalized()
+{
+    for (int i = 0; i < 7; ++i) {
+        assert(PhaseAngleUtil::isNormalized(i));
+    }
+    assert(PhaseAngleUtil::isNormalized(AudioMath::_2Pi - .001));
+    assert(!PhaseAngleUtil::isNormalized(AudioMath::_2Pi + .001));
+    assert(!PhaseAngleUtil::isNormalized(7));
+    assert(!PhaseAngleUtil::isNormalized(-1));
+
+}
+
+static void testPhaseAngleUtilINormalize()
+{
+    
+    assertClose(PhaseAngleUtil::normalize(AudioMath::_2Pi + .001), .001, .00001);
+
+     for (int i = 0; i < 7; ++i) {
+        assertEQ(PhaseAngleUtil::normalize(i), i);
+    }
+    assertEQ(PhaseAngleUtil::normalize(AudioMath::_2Pi - .001), AudioMath::_2Pi - .001);
+    assertClose(PhaseAngleUtil::normalize(AudioMath::_2Pi + .001), .001, .00001);
+    assertEQ(PhaseAngleUtil::normalize(7), 7 - AudioMath::_2Pi);
+    assertEQ(PhaseAngleUtil::normalize(-1), AudioMath::_2Pi - 1);
+
+}
+
+static void testPhaseAngleUtilIDistance()
+{
+    assertEQ(PhaseAngleUtil::distance(1, 1), 0);
+    assertEQ(PhaseAngleUtil::distance(100, 100), 0);
+    assertEQ(PhaseAngleUtil::distance(1, -1), 2);
+    assertEQ(PhaseAngleUtil::distance(-1, 1), AudioMath::_2Pi -2);
+}
+
 void testOnset()
 {
     test0();
     test1();
+    testPhaseAngleUtilIsNormalized();
+    testPhaseAngleUtilINormalize();
+    testPhaseAngleUtilIDistance();
+
     testGenerateData();
     testGenerateData2();
     testGenerateFFT();
