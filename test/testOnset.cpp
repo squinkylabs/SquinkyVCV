@@ -59,7 +59,6 @@ public:
             haveData = true;
             inputIndex = 0;
         }
-
     }
 
     /**
@@ -102,9 +101,18 @@ static void test1()
 
 static void test2()
 {
-    //static std::vector< FFTDataRealPtr> generateData(int numSamples, int frameSize, std::function<float()> generator);
     auto result = FFTUtils::generateData(1024, 512, []() { return 0.f; });
     assertEQ(result.size(), 2);
+}
+
+
+static void test3()
+{
+    auto result = FFTUtils::generateData(1, 512, []() { return 1.f; });
+    assertEQ(result.size(), 1);
+    FFTDataRealPtr buffer = result[0];
+    assertEQ(buffer->get(0), 1.f);
+    assertEQ(buffer->get(1), 0.f);
 }
 
 /* next test. need to make three mag phase frames. analyzie
@@ -115,5 +123,5 @@ void testOnset()
     test0();
     test1();
     test2();
-
+    test3();
 }
