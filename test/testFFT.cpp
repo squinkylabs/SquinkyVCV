@@ -129,8 +129,6 @@ static void testPolar2()
         assertEQ(magAndPhase.first, sqrt2);
         assertEQ(magAndPhase.second, piOver4);
     }
-
-  
 }
 
 static void testNoiseFormula()

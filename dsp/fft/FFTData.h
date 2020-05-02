@@ -71,6 +71,8 @@ private:
 
 using FFTDataReal = FFTData<float>;
 using FFTDataCpx = FFTData<cpx>;
+using FFTDataRealPtr = std::shared_ptr<FFTDataReal>;
+using FFTDataCpxPtr = std::shared_ptr<FFTDataCpx>;
 
 template<typename T> int FFTData<T>::_count = 0;
 

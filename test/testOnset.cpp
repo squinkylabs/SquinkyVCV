@@ -4,6 +4,43 @@
 
 #include <vector>
 
+/**
+ * some utils for modules, some for testing...
+ */
+class FFTUtils
+{
+public:
+    class Stats {
+
+    };
+    static void getStats(Stats&, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c);
+    static std::vector< FFTDataRealPtr> generateData(int numSamples, int frameSize, std::function<float()> generator);
+
+};
+
+std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSize, std::function<float()> generator)
+{
+    std::vector< FFTDataRealPtr> ret;
+    FFTDataRealPtr buffer;
+    int index = 0;
+    while (numSamples--) {
+        if (!buffer) {
+            buffer = std::make_shared<FFTDataReal>(frameSize);
+            ret.push_back(buffer);
+            index = 0;
+        }
+        float x = generator();
+        buffer->set(index, x);
+        ++index;
+        if (index >= frameSize) {
+            buffer.reset();
+        }
+    }
+    return ret;
+}
+
+//***********************************************************************************************
+
 class OnsetDetector
 {
 public:
@@ -61,13 +98,22 @@ static void test1()
     o.captureSample(0);
     assertEQ(o.wasOnset().first, true);
     assertEQ(o.wasOnset().first, false);
-
-   
 }
+
+static void test2()
+{
+    //static std::vector< FFTDataRealPtr> generateData(int numSamples, int frameSize, std::function<float()> generator);
+    auto result = FFTUtils::generateData(1024, 512, []() { return 0.f; });
+    assertEQ(result.size(), 2);
+}
+
+/* next test. need to make three mag phase frames. analyzie
+ */
 
 void testOnset()
 {
     test0();
     test1();
+    test2();
 
 }
