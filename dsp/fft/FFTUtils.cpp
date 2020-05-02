@@ -2,13 +2,14 @@
 #include "FFTUtils.h"
 #include "AudioMath.h"
 
-FFTUtils::Generator FFTUtils::makeSineGenerator(float periodInSamples)
+FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples)
 {
     printf("making regular generator\n");
-    float phaseInc = 1.f / periodInSamples;
+    double phaseInc = 1.f / periodInSamples;
     Generator g =  [phaseInc]() {
-        static float phase = 0;
-        float ret =  std::sin(phase * 2.f * float(AudioMath::Pi));
+        // TODO: get rid of static
+        static double phase = 0;
+        double ret =  std::sin(phase * 2.f * float(AudioMath::Pi));
         phase += phaseInc;
         if (phase >= 1) {
             phase -= 1;
@@ -19,10 +20,10 @@ FFTUtils::Generator FFTUtils::makeSineGenerator(float periodInSamples)
 }
 
 
-class GeneratorImp
+class GeneratorJumpImp
 {
 public:
-    GeneratorImp(float periodInSamples, int delay, float _discontinuity) : 
+    GeneratorJumpImp(double periodInSamples, int delay, double _discontinuity) : 
         delayCounter(delay), 
         phaseInc(1.0 / periodInSamples),
         discontinuity(_discontinuity)
@@ -36,12 +37,12 @@ public:
     const double discontinuity;
 
 };
-FFTUtils::Generator FFTUtils::makeSineGeneratorPhaseJump(float periodInSamples, int delay, float discontinuity)
+FFTUtils::Generator FFTUtils::makeSinGeneratorPhaseJump(double periodInSamples, int delay, double discontinuity)
 {
     printf("making generator with delay = %d, disc = %f\n", delay, discontinuity);
    // float phaseInc = 1.f / periodInSamples;
 
-    std::shared_ptr<GeneratorImp> impl = std::make_shared<GeneratorImp>(periodInSamples, delay, discontinuity);
+    std::shared_ptr<GeneratorJumpImp> impl = std::make_shared<GeneratorJumpImp>(periodInSamples, delay, discontinuity);
     Generator g = [impl]() {
     //    static int delayCounter = delay;
       //  printf("in the lambda, delayctr = %d\n", delayCounter);
@@ -62,7 +63,7 @@ FFTUtils::Generator FFTUtils::makeSineGeneratorPhaseJump(float periodInSamples, 
     return g;
 }
 
-std::vector< FFTDataCpxPtr> FFTUtils::generateFFTs(int numSamples, int frameSize, std::function<float()> generator)
+std::vector< FFTDataCpxPtr> FFTUtils::generateFFTs(int numSamples, int frameSize, std::function<double()> generator)
 {
     auto data = generateData(numSamples, frameSize, generator);
     std::vector<FFTDataCpxPtr> ret;
@@ -74,7 +75,7 @@ std::vector< FFTDataCpxPtr> FFTUtils::generateFFTs(int numSamples, int frameSize
     return ret;
 }
 
-std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSize, std::function<float()> generator)
+std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSize, std::function<double()> generator)
 {
     std::vector< FFTDataRealPtr> ret;
     FFTDataRealPtr buffer;
@@ -85,7 +86,7 @@ std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSiz
             ret.push_back(buffer);
             index = 0;
         }
-        float x = generator();
+        float x = (float) generator();
         buffer->set(index, x);
         ++index;
         if (index >= frameSize) {

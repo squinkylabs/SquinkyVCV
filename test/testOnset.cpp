@@ -180,7 +180,7 @@ static void testGenerateFFT()
 
 static void testGenerateSin()
 {
-    FFTUtils::Generator gen = FFTUtils::makeSineGenerator(8);
+    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(8);
    
     for (int i = 0; i < 10; ++i) {
         float x = gen();
@@ -190,7 +190,7 @@ static void testGenerateSin()
         x = gen();
         assertEQ(x, 1.f);
         x = gen();
-        assertEQ(x, 1.f / std::sqrt(2.f));
+        assertClose(x, 1.f / std::sqrt(2.f), .001);
         x = gen();
         assertClose(x, 0, .0001);
         x = gen();
@@ -205,7 +205,7 @@ static void testGenerateSin()
 static void testGenerateSinJump()
 {
     const int sampleToJumpAt = 3;
-    FFTUtils::Generator gen = FFTUtils::makeSineGeneratorPhaseJump(8, sampleToJumpAt, .5);
+    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, sampleToJumpAt, .5);
 
     // sfirst three like sin
     float x = gen();
@@ -220,17 +220,11 @@ static void testGenerateSinJump()
     assertClose(x, -1.f / std::sqrt(2.f), .0001);
 }
 
-/* next test. need to make three mag phase frames. analyzie
- * good status to have:
- *      max phase discontinuity
- */
-
-static void testAnalyze1()
+static void testAnalyzePureSin()
 {
-    //const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
-
+    printf("\ntestAnalyzePureSin\n");
     // fairly high freq sine wave at even freq.
-    FFTUtils::Generator gen = FFTUtils::makeSineGenerator(32);
+    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(32);
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
     assertEQ(result.size(), 3);
 
@@ -244,19 +238,46 @@ static void testAnalyze1()
         if (x.first > biggest) {
             biggest = x.first;
             biggestBin = i;
-            printf("biggest bin=%d val=%f ph=%f\n", i, biggest, x.second);
+            printf("captured big bin %d mag=%f hase = %f\n", i, x.first, x.second);
         }
+        if (x.first > .01) printf("info bin %d mag=%f hase = %f\n", i, x.first, x.second);
     }
     assertEQ(biggestBin, sinBin);
 }
 
+static void testAnalyzePureSinInBetweenPitch()
+{
+    printf("\ntestAnalyzePureSinInBetweenPitch\n");
+    // fairly high freq sine wave at a freq in-betten even period
+    double period = 512 / 16.5;
+    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(period);
+    auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
+    assertEQ(result.size(), 3);
+
+    int sinBin = 512 / 32;
+
+    result[0]->toPolar();
+    float biggest = 0;
+    int biggestBin = -1;
+    for (int i = 0; i < 512; ++i) {
+        auto x = result[0]->getMagAndPhase(i);
+        if (x.first > biggest) {
+            biggest = x.first;
+            biggestBin = i;
+            //printf("captured big bin %d mag=%f hase = %f\n", i, x.first, x.second);
+        }
+      //  if (x.first > .01) printf("info bin %d mag=%f hase = %f\n", i, x.first, x.second);
+    }
+
+    assertEQ(biggestBin, sinBin);
+}
 static FFTUtils::Stats analyzeHelper(bool jumpPhase) {
 
     const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
     if (jumpPhase) printf("will jump at %d\n", sampleToJumpAt);
     FFTUtils::Generator gen = jumpPhase ?
-        FFTUtils::makeSineGeneratorPhaseJump(32, sampleToJumpAt, .5)
-        : FFTUtils::makeSineGenerator(32);
+        FFTUtils::makeSinGeneratorPhaseJump(32, sampleToJumpAt, .5)
+        : FFTUtils::makeSinGenerator(32);
 
     printf("about to gen fft\n");
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
@@ -296,7 +317,8 @@ void testOnset()
     testGenerateFFT();
     testGenerateSin();
     testGenerateSinJump();
-    testAnalyze1();
+    testAnalyzePureSin();
+    testAnalyzePureSinInBetweenPitch();
     testAnalyze2();
     testAnalyze3();
 }
