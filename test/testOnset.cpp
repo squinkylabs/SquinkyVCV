@@ -14,17 +14,32 @@ public:
     class Stats {
 
     };
+    using Generator = std::function<float()>;
     static void getStats(Stats&, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c);
-    static std::vector<FFTDataRealPtr> generateData(int numSamples, int frameSize, std::function<float()> generator);
-    static std::vector<FFTDataCpxPtr> generateFFTs(int numSamples, int frameSize, std::function<float()> generator);
+    static std::vector<FFTDataRealPtr> generateData(int numSamples, int frameSize, Generator generator);
+    static std::vector<FFTDataCpxPtr> generateFFTs(int numSamples, int frameSize, Generator generator);
+
+    static Generator makeSineGenerator(float periodInSamples);
+
 };
+
+FFTUtils::Generator FFTUtils::makeSineGenerator(float periodInSamples)
+{
+    float phaseInc = 1.f / periodInSamples;
+    Generator g =  [phaseInc]() {
+        static float phase = 0;
+        float ret =  std::sin(phase * 2.f * float(AudioMath::Pi));
+        phase += phaseInc;
+        return ret;
+    };
+    return g;
+}
 
 std::vector< FFTDataCpxPtr> FFTUtils::generateFFTs(int numSamples, int frameSize, std::function<float()> generator)
 {
     auto data = generateData(numSamples, frameSize, generator);
     std::vector<FFTDataCpxPtr> ret;
     for (auto buffer : data) {
-        // static bool forward(FFTDataCpx* out, const FFTDataReal& in);
         FFTDataCpxPtr  fft = std::make_shared<FFTDataCpx>(frameSize);
         FFT::forward(fft.get(), *buffer);
         ret.push_back(fft);
@@ -134,6 +149,31 @@ static void testGenerateFFT()
     auto result = FFTUtils::generateFFTs(1024, 512, []() { return 1.f; });
     assertEQ(result.size(), 2);
 }
+
+static void testGenerateSin()
+{
+    FFTUtils::Generator gen = FFTUtils::makeSineGenerator(8);
+    float x = gen();
+    assertEQ(x, 0);
+    x = gen();
+    assertEQ(x, 1.f / std::sqrt(2.f));
+    x = gen();
+    assertEQ(x, 1.f);
+    x = gen();
+    assertEQ(x, 1.f / std::sqrt(2.f));
+    x = gen();
+    assertClose(x, 0, .0001);
+    x = gen();
+    assertClose(x, -1.f / std::sqrt(2.f), .0001);
+    x = gen();
+    assertEQ(x, -1.f );
+    x = gen();
+    assertClose(x, -1.f / std::sqrt(2.f), .0001);
+
+    x = gen();
+    assertClose(x, 0, .0001);
+
+}
    
 /* next test. need to make three mag phase frames. analyzie
  */
@@ -145,4 +185,5 @@ void testOnset()
     testGenerateData();
     testGenerateData2();
     testGenerateFFT();
+    testGenerateSin();
 }
