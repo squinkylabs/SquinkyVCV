@@ -29,7 +29,7 @@ public:
      * xxx Discontinuity 0..1, where 1 is two pi
      * NO - discontinuity is in radians
      */
-    static Generator makeSinGeneratorPhaseJump(double periodInSamples, int delay, double discontinuityRadians);
+    static Generator makeSinGeneratorPhaseJump(double periodInSamples, double initialPhase, int delay, double discontinuityRadians);
 
 };
 

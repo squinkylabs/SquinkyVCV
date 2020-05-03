@@ -123,7 +123,7 @@ static void testGenerateSinInitPhase()
 static void testGenerateSinJump()
 {
     const int sampleToJumpAt = 3;
-    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, sampleToJumpAt, AudioMath::Pi);
+    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, 0, sampleToJumpAt, AudioMath::Pi);
 
     // sfirst three like sin
     double x = gen();
@@ -136,6 +136,26 @@ static void testGenerateSinJump()
     // and jump 180 degrees
     x = gen();
     assertClose(x, -1.f / std::sqrt(2.f), .0001);
+}
+
+static void testGenerateSinJumpInitialPhase()
+{
+    const int sampleToJumpAt = 2;
+    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, AudioMath::Pi_2, sampleToJumpAt, AudioMath::Pi);
+
+    // sfirst two like sin
+    double x = gen();
+    assertEQ(x, 1);
+    x = gen();
+    assertEQ(x, 1.f / std::sqrt(2.f));
+
+    // and jump 180 degrees
+    x = gen();
+    assertClose(x, 0, .001);
+
+    x = gen();
+    assertClose(x, 1.f / std::sqrt(2.f), .001);
+  
 }
 
 static void testAnalyzePureSin()
@@ -194,7 +214,7 @@ static FFTUtils::Stats analyzeHelper(bool jumpPhase) {
     const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
     if (jumpPhase) printf("will jump at %d\n", sampleToJumpAt);
     FFTUtils::Generator gen = jumpPhase ?
-        FFTUtils::makeSinGeneratorPhaseJump(32, sampleToJumpAt, .5)
+        FFTUtils::makeSinGeneratorPhaseJump(32, 0, sampleToJumpAt, .5)
         : FFTUtils::makeSinGenerator(32, 0);
 
     printf("about to gen fft\n");
@@ -274,6 +294,7 @@ void testOnset()
     testGenerateSin();
     testGenerateSinInitPhase();
     testGenerateSinJump();
+    testGenerateSinJumpInitialPhase();
     testAnalyzePureSin();
     testAnalyzePureSinInBetweenPitch();
     testAnalyze2();

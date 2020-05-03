@@ -35,7 +35,8 @@ FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples, double in
 class GeneratorJumpImp
 {
 public:
-    GeneratorJumpImp(double periodInSamples, int delay, double _discontinuity) : 
+    GeneratorJumpImp(double periodInSamples, double initialPhase, int delay, double _discontinuity) : 
+        phase(initialPhase),
         delayCounter(delay), 
         phaseInc(AudioMath::_2Pi / periodInSamples),
         discontinuity(_discontinuity)
@@ -48,11 +49,11 @@ public:
     const double discontinuity;
 };
 
-FFTUtils::Generator FFTUtils::makeSinGeneratorPhaseJump(double periodInSamples, int delay, double discontinuity)
+FFTUtils::Generator FFTUtils::makeSinGeneratorPhaseJump(double periodInSamples, double initialPhase, int delay, double discontinuity)
 {
     printf("making generator with delay = %d, disc = %f\n", delay, discontinuity);
 
-    std::shared_ptr<GeneratorJumpImp> impl = std::make_shared<GeneratorJumpImp>(periodInSamples, delay, discontinuity);
+    std::shared_ptr<GeneratorJumpImp> impl = std::make_shared<GeneratorJumpImp>(periodInSamples, initialPhase, delay, discontinuity);
     Generator g = [impl]() {
         double ret = std::sin(impl->phase);
         impl->phase += impl->phaseInc;
