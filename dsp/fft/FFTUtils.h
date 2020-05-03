@@ -23,7 +23,7 @@ public:
     static std::vector<FFTDataRealPtr> generateData(int numSamples, int frameSize, Generator generator);
     static std::vector<FFTDataCpxPtr> generateFFTs(int numSamples, int frameSize, Generator generator);
 
-    static Generator makeSinGenerator(double periodInSamples);
+    static Generator makeSinGenerator(double periodInSamples, double initialPhase);
 
     /**
      * xxx Discontinuity 0..1, where 1 is two pi

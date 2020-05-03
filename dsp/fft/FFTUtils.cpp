@@ -12,8 +12,9 @@ public:
     const double phaseInc;
 };
 
-FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples)
+FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples, double initialPhase)
 {
+    assert(initialPhase == 0);
     std::shared_ptr<GeneratorImp> impl = std::make_shared<GeneratorImp>(periodInSamples);
     printf("making regular generator\n");
     double phaseInc = 1.f / periodInSamples;
@@ -112,20 +113,13 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
         auto mpb = b.getMagAndPhase(bin);
         auto mpc = c.getMagAndPhase(bin);
 
-        //assert(PhaseAngleUtil::isNormalized(mpa.second));
-      //  assert(PhaseAngleUtil::isNormalized(mpb.second));
-       // assert(PhaseAngleUtil::isNormalized(mpc.second));
-
         const double phaseDiff0 = PhaseAngleUtil::distance(mpb.second, mpa.second);
         const double phaseDiff1 = PhaseAngleUtil::distance(mpc.second, mpb.second);
-     //   double phaseDiff0 = b.getMagAndPhase(bin).second - a.getMagAndPhase(bin).second;
-    //    double phaseDiff1 = c.getMagAndPhase(bin).second - b.getMagAndPhase(bin).second;
 
         const double mag = mpa.first;
         if (mag > .01) {
             printf("bin %d mag %f ph = %f, %f, %f\n", bin, mag,mpa.second, mpb.second, mpc.second);
         }
-      //  double jump = std::abs(phaseDiff1 - phaseDiff0);
         const double jump = PhaseAngleUtil::distance(phaseDiff1,  phaseDiff0);
         biggestJump = std::max(jump, biggestJump);
     }
