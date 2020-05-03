@@ -1,6 +1,7 @@
 #pragma once
 
 #include <complex>
+#include <memory>
 #include <vector>
 #include <assert.h>
 
@@ -111,11 +112,13 @@ inline void FFTData<T>::set(int index, T value)
 /**
  * Template specializations for polar. only supported for complex
  */
+template <>
 inline bool FFTData<cpx>::isPolar() const {
     return _isPolar;
 
 }
 
+template <>
 inline void FFTData<cpx>::toPolar() {
     assert(!_isPolar);
    
@@ -128,7 +131,8 @@ inline void FFTData<cpx>::toPolar() {
      _isPolar = true;
 }
 
- inline std::pair<float, float> FFTData<cpx>::getMagAndPhase(int bin) const {
+template <>
+inline std::pair<float, float> FFTData<cpx>::getMagAndPhase(int bin) const {
     assert(_isPolar);
     cpx temp = get(bin);
     return std::make_pair(temp.real(), temp.imag());

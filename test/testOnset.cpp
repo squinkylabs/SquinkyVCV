@@ -232,15 +232,6 @@ static FFTUtils::Stats analyzeHelper(int sampleToJumpAt, double initialPhase, do
     return stats;
 }
 
-static void testAnalyzeJump()
-{
-    const int sampleToJumpAt = 1024 + 512 / 2;
-    printf("\n*** test 3\n");
-     FFTUtils::Stats stats = analyzeHelper(sampleToJumpAt, 0, 32);
-     assertClose(stats.largestPhaseJump, .25, .001);        // just took the result as a "known good"
-}
-
-
 static void testAnalyzeNoJump()
 {
     printf("\n*** test 2\n");
@@ -264,6 +255,81 @@ static void testAnalyzeNoJump()
     assertGE(stats.largestPhaseJump, 0);
     assertLT(stats.largestPhaseJump, .03);
 }
+
+/**
+ * sampleOffsetForDiscontinuity is where in the third fft bit we will jump the phase
+ */
+static void testAnalyzeJump(int sampleOffsetForDiscontinuity)
+{
+    assert(sampleOffsetForDiscontinuity > 0);
+    assert(sampleOffsetForDiscontinuity < 512);
+
+    FFTUtils::Stats stats = analyzeHelper(1024 + sampleOffsetForDiscontinuity, 0, 32);
+
+    // jump is max at start of bin. Almost no effect later.
+    // I have no idea why it's coming out as .5
+    double expectedJump = .5 * double(512 - sampleOffsetForDiscontinuity) / 512.0;
+    assertClose(stats.largestPhaseJump, expectedJump, .01);
+
+}
+
+static void testAnalyzeJump()
+{
+    testAnalyzeJump(5);
+    testAnalyzeJump(512 /2);
+    testAnalyzeJump(512 / 3);
+    testAnalyzeJump(512 / 4);
+    testAnalyzeJump(400);
+    testAnalyzeJump(508);
+#if 1
+    //just looking for number to see what's reasonable
+    float minPhaseJumpExpected = .25f;
+    float maxPhaseJumpExpected = .5f;
+
+
+
+    printf("\n*** test 7\n");
+    FFTUtils::Stats stats = analyzeHelper(1024 + 512 / 2, 0, 32);
+    assertGT(stats.largestPhaseJump, minPhaseJumpExpected); 
+    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
+    
+    printf("\n*** test 8\n");
+    stats = analyzeHelper(1024 + 512 / 3, 0, 32);
+    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
+    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
+
+    printf("\n*** test 9\n");
+    stats = analyzeHelper(1024 + 512 / 4, 0, 32);
+    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
+    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
+
+    printf("\n*** test 10\n");
+    // This one has  the discontinuity right at the start
+    stats = analyzeHelper(1024 + 5, 0, 32);
+    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
+    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
+#endif
+   
+#if 0
+    printf("\n*** test 11\n");
+    // This one has the disc closer to the end
+
+    // only .1 here
+    stats = analyzeHelper(1024 + 400, 0, 32);
+    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
+    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
+
+
+    printf("\n*** test 11\n");
+    // This one has the disc even closer to the end
+
+    // only .1 here
+    stats = analyzeHelper(1024 + 508, 0, 32);
+    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
+    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
+#endif
+}
+
 
 static void testPhaseAngleUtilIsNormalized()
 {
