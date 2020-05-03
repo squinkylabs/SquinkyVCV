@@ -176,16 +176,15 @@ static void testAnalyzePureSin()
         if (x.first > biggest) {
             biggest = x.first;
             biggestBin = i;
-            printf("captured big bin %d mag=%f hase = %f\n", i, x.first, x.second);
+           // printf("captured big bin %d mag=%f hase = %f\n", i, x.first, x.second);
         }
-        if (x.first > .01) printf("info bin %d mag=%f hase = %f\n", i, x.first, x.second);
+       // if (x.first > .01) printf("info bin %d mag=%f hase = %f\n", i, x.first, x.second);
     }
     assertEQ(biggestBin, sinBin);
 }
 
 static void testAnalyzePureSinInBetweenPitch()
 {
-    printf("\ntestAnalyzePureSinInBetweenPitch\n");
     // fairly high freq sine wave at a freq in-betten even period
     double period = 512 / 16.5;
     FFTUtils::Generator gen = FFTUtils::makeSinGenerator(period, 0);
@@ -202,20 +201,23 @@ static void testAnalyzePureSinInBetweenPitch()
         if (x.first > biggest) {
             biggest = x.first;
             biggestBin = i;
-            //printf("captured big bin %d mag=%f hase = %f\n", i, x.first, x.second);
         }
-      //  if (x.first > .01) printf("info bin %d mag=%f hase = %f\n", i, x.first, x.second);
     }
 
     assertEQ(biggestBin, sinBin);
 }
-static FFTUtils::Stats analyzeHelper(bool jumpPhase) {
 
-    const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
+/**
+ * generates three frames of various test signal.
+ */
+static FFTUtils::Stats analyzeHelper(int sampleToJumpAt, double initialPhase, double periodInSamples)
+{
+    const bool jumpPhase = sampleToJumpAt > 0;
+  //  const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
     if (jumpPhase) printf("will jump at %d\n", sampleToJumpAt);
     FFTUtils::Generator gen = jumpPhase ?
-        FFTUtils::makeSinGeneratorPhaseJump(32, 0, sampleToJumpAt, .5)
-        : FFTUtils::makeSinGenerator(32, 0);
+        FFTUtils::makeSinGeneratorPhaseJump(periodInSamples, initialPhase, sampleToJumpAt, .5)
+        : FFTUtils::makeSinGenerator(periodInSamples, initialPhase);
 
     printf("about to gen fft\n");
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
@@ -230,20 +232,37 @@ static FFTUtils::Stats analyzeHelper(bool jumpPhase) {
     return stats;
 }
 
-static void testAnalyze2()
+static void testAnalyzeJump()
 {
-    printf("*** a2\n");
-     FFTUtils::Stats stats = analyzeHelper(false); 
-     assertClose(stats.largestPhaseJump, 0, .001);
+    const int sampleToJumpAt = 1024 + 512 / 2;
+    printf("\n*** test 3\n");
+     FFTUtils::Stats stats = analyzeHelper(sampleToJumpAt, 0, 32);
+     assertClose(stats.largestPhaseJump, .25, .001);        // just took the result as a "known good"
 }
 
-static void testAnalyze3()
+
+static void testAnalyzeNoJump()
 {
-    printf("*** a3\n");
-     FFTUtils::Stats stats = analyzeHelper(true); 
+    printf("\n*** test 2\n");
+    FFTUtils::Stats stats = analyzeHelper(false, 0, 32);
+    assertClose(stats.largestPhaseJump, 0, .001);
 
+    printf("\n*** test 4\n");
+    // no jump, shifted initial phase.
+    stats = analyzeHelper(false, AudioMath::Pi, 32);
+    assertClose(stats.largestPhaseJump, 0, .001);
 
-     assertClose(stats.largestPhaseJump, AudioMath::Pi, .001);
+    printf("\n*** test 5\n");
+    // no jump, but shifted and "in between" freq
+    stats = analyzeHelper(false, AudioMath::Pi, 79);
+    assertGE(stats.largestPhaseJump, 0);
+    assertLT(stats.largestPhaseJump, .03);
+
+    printf("\n*** test 6\n");
+    // no jump or shift, but "in between" freq
+    stats = analyzeHelper(false, 0, 79);
+    assertGE(stats.largestPhaseJump, 0);
+    assertLT(stats.largestPhaseJump, .03);
 }
 
 static void testPhaseAngleUtilIsNormalized()
@@ -277,7 +296,9 @@ static void testPhaseAngleUtilIDistance()
     assertEQ(PhaseAngleUtil::distance(1, -1), 2);
     assertEQ(PhaseAngleUtil::distance(-1, 1), -2);
 
-   // assert(false);      // some more, please
+    const double delta = .001;
+    assertClose(PhaseAngleUtil::distance(AudioMath::Pi_2 - delta, AudioMath::Pi_2 + delta), -2 * delta, .00001);
+    assertClose(PhaseAngleUtil::distance(AudioMath::Pi_2 + delta, AudioMath::Pi_2 - delta), 2 * delta, .00001);
 }
 
 void testOnset()
@@ -297,6 +318,6 @@ void testOnset()
     testGenerateSinJumpInitialPhase();
     testAnalyzePureSin();
     testAnalyzePureSinInBetweenPitch();
-    testAnalyze2();
-    testAnalyze3();
+    testAnalyzeNoJump();
+    testAnalyzeJump();
 }

@@ -109,6 +109,9 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
     assert(a.isPolar() && b.isPolar() && c.isPolar());
 
     double biggestJump = 0;
+    double magSum = 0;
+    double weightedJumpSum = 0;
+    
     for (int bin = 0; bin < a.size(); ++bin) {
 
         auto mpa = a.getMagAndPhase(bin);
@@ -119,12 +122,54 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
         const double phaseDiff1 = PhaseAngleUtil::distance(mpc.second, mpb.second);
 
         const double mag = mpa.first;
-        if (mag > .01) {
-            printf("bin %d mag %f ph = %f, %f, %f\n", bin, mag,mpa.second, mpb.second, mpc.second);
+        const double jump = std::abs(PhaseAngleUtil::distance(phaseDiff1,  phaseDiff0));
+
+        if (mag > .005) {
+            printf("bin %d mag %f jump=%.2f, ph = %.2f, %.2f, %.2f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
         }
+        assert(mag >= 0);
+        magSum += mag;
+        weightedJumpSum += (jump * mag);
+
+    }
+    printf("total shift %f mag %f\n", weightedJumpSum, magSum);
+    double totalJump = (magSum > 0) ? weightedJumpSum / magSum : 0;
+    stats.largestPhaseJump = totalJump;
+    
+}
+
+#if 0 // firset version
+void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c)
+{
+    printf("** getStats\n");
+    assert(a.size() == b.size());
+    assert(a.size() == c.size());
+    assert(a.isPolar() && b.isPolar() && c.isPolar());
+
+    double biggestJump = 0;
+    for (int bin = 0; bin < a.size(); ++bin) {
+
+        auto mpa = a.getMagAndPhase(bin);
+        auto mpb = b.getMagAndPhase(bin);
+        auto mpc = c.getMagAndPhase(bin);
+
+        const double phaseDiff0 = PhaseAngleUtil::distance(mpb.second, mpa.second);
+        const double phaseDiff1 = PhaseAngleUtil::distance(mpc.second, mpb.second);
+
+        const double mag = mpa.first;
         const double jump = PhaseAngleUtil::distance(phaseDiff1,  phaseDiff0);
+
+        if (mag > .01) {
+            printf("bin %d mag %f jump=%.2f, ph = %.2f, %.2f, %.2f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
+        }
+       
+        if (biggestJump < jump) {
+            printf("new biggest jump %.2f at bin %d\n", jump, bin);
+        }
         biggestJump = std::max(jump, biggestJump);
+        
     }
     stats.largestPhaseJump = biggestJump;
     
 }
+#endif
