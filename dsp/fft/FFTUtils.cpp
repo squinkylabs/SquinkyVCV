@@ -5,7 +5,9 @@
 class GeneratorImp
 {
 public:
-    GeneratorImp(double periodInSamples) : phaseInc(AudioMath::_2Pi / periodInSamples)
+    GeneratorImp(double periodInSamples, double initialPhase) : 
+        phaseInc(AudioMath::_2Pi / periodInSamples), 
+        phaseRadians(initialPhase)
     {
     }
     double phaseRadians = 0;
@@ -14,8 +16,7 @@ public:
 
 FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples, double initialPhase)
 {
-    assert(initialPhase == 0);
-    std::shared_ptr<GeneratorImp> impl = std::make_shared<GeneratorImp>(periodInSamples);
+    std::shared_ptr<GeneratorImp> impl = std::make_shared<GeneratorImp>(periodInSamples, initialPhase);
     printf("making regular generator\n");
     double phaseInc = 1.f / periodInSamples;
     Generator g =  [impl]() {

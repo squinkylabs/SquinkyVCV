@@ -108,6 +108,17 @@ static void testGenerateSin()
         assertClose(x, -1.f / std::sqrt(2.f), .0001);
     }
 }
+
+static void testGenerateSinInitPhase()
+{
+    // start at 90 degrees
+    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(8, AudioMath::Pi_2);
+
+    double x = gen();
+    assertEQ(x, 1);
+    x = gen();
+    assertClose(x, 1.f / std::sqrt(2.f), .001);
+}
    
 static void testGenerateSinJump()
 {
@@ -261,6 +272,7 @@ void testOnset()
     testGenerateData2();
     testGenerateFFT();
     testGenerateSin();
+    testGenerateSinInitPhase();
     testGenerateSinJump();
     testAnalyzePureSin();
     testAnalyzePureSinInBetweenPitch();
