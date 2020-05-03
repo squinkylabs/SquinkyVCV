@@ -40,13 +40,13 @@ class PhaseAngleUtil
 {
 public:
     static bool isNormalized(double phase) {
-        return phase >= 0 && phase < AudioMath::_2Pi;
+        return phase > -AudioMath::Pi && phase < AudioMath::Pi;
     }
     static double normalize(double phase) {
-        while(phase <= 0) {
+        while(phase <= -AudioMath::Pi) {
             phase += AudioMath::_2Pi;
         }
-        while(phase >= AudioMath::_2Pi) {
+        while(phase >= AudioMath::Pi) {
             phase -= AudioMath::_2Pi;
         }
         assert(isNormalized(phase));

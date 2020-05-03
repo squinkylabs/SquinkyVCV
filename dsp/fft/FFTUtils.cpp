@@ -112,8 +112,8 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
         auto mpb = b.getMagAndPhase(bin);
         auto mpc = c.getMagAndPhase(bin);
 
-       // assert(PhaseAngleUtil::isNormalized(mpa.second));
-       // assert(PhaseAngleUtil::isNormalized(mpb.second));
+        //assert(PhaseAngleUtil::isNormalized(mpa.second));
+      //  assert(PhaseAngleUtil::isNormalized(mpb.second));
        // assert(PhaseAngleUtil::isNormalized(mpc.second));
 
         const double phaseDiff0 = PhaseAngleUtil::distance(mpb.second, mpa.second);

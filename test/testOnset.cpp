@@ -217,29 +217,26 @@ static void testAnalyze3()
 
 static void testPhaseAngleUtilIsNormalized()
 {
-    for (int i = 0; i < 7; ++i) {
+    for (int i = -3; i < 3; ++i) {
         assert(PhaseAngleUtil::isNormalized(i));
     }
-    assert(PhaseAngleUtil::isNormalized(AudioMath::_2Pi - .001));
-    assert(!PhaseAngleUtil::isNormalized(AudioMath::_2Pi + .001));
+    assert(PhaseAngleUtil::isNormalized(AudioMath::Pi - .001));
+    assert(!PhaseAngleUtil::isNormalized(AudioMath::Pi + .001));
     assert(!PhaseAngleUtil::isNormalized(7));
-    assert(!PhaseAngleUtil::isNormalized(-1));
-
+    assert(PhaseAngleUtil::isNormalized(-1));
 }
 
 static void testPhaseAngleUtilINormalize()
 {
-    
     assertClose(PhaseAngleUtil::normalize(AudioMath::_2Pi + .001), .001, .00001);
 
-     for (int i = 0; i < 7; ++i) {
+     for (int i = -3; i < 3; ++i) {
         assertEQ(PhaseAngleUtil::normalize(i), i);
     }
-    assertEQ(PhaseAngleUtil::normalize(AudioMath::_2Pi - .001), AudioMath::_2Pi - .001);
+    assertEQ(PhaseAngleUtil::normalize(AudioMath::Pi - .001), AudioMath::Pi - .001);
     assertClose(PhaseAngleUtil::normalize(AudioMath::_2Pi + .001), .001, .00001);
     assertEQ(PhaseAngleUtil::normalize(7), 7 - AudioMath::_2Pi);
-    assertEQ(PhaseAngleUtil::normalize(-1), AudioMath::_2Pi - 1);
-
+    assertEQ(PhaseAngleUtil::normalize(-4), AudioMath::_2Pi - 4);
 }
 
 static void testPhaseAngleUtilIDistance()
@@ -247,7 +244,9 @@ static void testPhaseAngleUtilIDistance()
     assertEQ(PhaseAngleUtil::distance(1, 1), 0);
     assertEQ(PhaseAngleUtil::distance(100, 100), 0);
     assertEQ(PhaseAngleUtil::distance(1, -1), 2);
-    assertEQ(PhaseAngleUtil::distance(-1, 1), AudioMath::_2Pi -2);
+    assertEQ(PhaseAngleUtil::distance(-1, 1), -2);
+
+   // assert(false);      // some more, please
 }
 
 void testOnset()
