@@ -2,6 +2,7 @@
 #include "asserts.h"
 
 #include "FFTUtils.h"
+#include "SqWaveFile.h"
 
 // ***********************************************************************************************
 
@@ -214,15 +215,13 @@ static FFTUtils::Stats analyzeHelper(int sampleToJumpAt, double initialPhase, do
 {
     const bool jumpPhase = sampleToJumpAt > 0;
   //  const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
-    if (jumpPhase) printf("will jump at %d\n", sampleToJumpAt);
+  //  if (jumpPhase) printf("will jump at %d\n", sampleToJumpAt);
     FFTUtils::Generator gen = jumpPhase ?
         FFTUtils::makeSinGeneratorPhaseJump(periodInSamples, initialPhase, sampleToJumpAt, .5)
         : FFTUtils::makeSinGenerator(periodInSamples, initialPhase);
 
-    printf("about to gen fft\n");
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
     assertEQ(result.size(), 3);
-    printf("generated\n");
     for (auto frame : result) {
         frame->toPolar();
     }
@@ -234,22 +233,18 @@ static FFTUtils::Stats analyzeHelper(int sampleToJumpAt, double initialPhase, do
 
 static void testAnalyzeNoJump()
 {
-    printf("\n*** test 2\n");
     FFTUtils::Stats stats = analyzeHelper(false, 0, 32);
     assertClose(stats.largestPhaseJump, 0, .001);
 
-    printf("\n*** test 4\n");
     // no jump, shifted initial phase.
     stats = analyzeHelper(false, AudioMath::Pi, 32);
     assertClose(stats.largestPhaseJump, 0, .001);
 
-    printf("\n*** test 5\n");
     // no jump, but shifted and "in between" freq
     stats = analyzeHelper(false, AudioMath::Pi, 79);
     assertGE(stats.largestPhaseJump, 0);
     assertLT(stats.largestPhaseJump, .03);
 
-    printf("\n*** test 6\n");
     // no jump or shift, but "in between" freq
     stats = analyzeHelper(false, 0, 79);
     assertGE(stats.largestPhaseJump, 0);
@@ -267,10 +262,9 @@ static void testAnalyzeJump(int sampleOffsetForDiscontinuity)
     FFTUtils::Stats stats = analyzeHelper(1024 + sampleOffsetForDiscontinuity, 0, 32);
 
     // jump is max at start of bin. Almost no effect later.
-    // I have no idea why it's coming out as .5
+    // .5 is the max phase shift, becuase that's what we pass to the sin generator
     double expectedJump = .5 * double(512 - sampleOffsetForDiscontinuity) / 512.0;
     assertClose(stats.largestPhaseJump, expectedJump, .01);
-
 }
 
 static void testAnalyzeJump()
@@ -281,53 +275,6 @@ static void testAnalyzeJump()
     testAnalyzeJump(512 / 4);
     testAnalyzeJump(400);
     testAnalyzeJump(508);
-#if 1
-    //just looking for number to see what's reasonable
-    float minPhaseJumpExpected = .25f;
-    float maxPhaseJumpExpected = .5f;
-
-
-
-    printf("\n*** test 7\n");
-    FFTUtils::Stats stats = analyzeHelper(1024 + 512 / 2, 0, 32);
-    assertGT(stats.largestPhaseJump, minPhaseJumpExpected); 
-    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
-    
-    printf("\n*** test 8\n");
-    stats = analyzeHelper(1024 + 512 / 3, 0, 32);
-    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
-    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
-
-    printf("\n*** test 9\n");
-    stats = analyzeHelper(1024 + 512 / 4, 0, 32);
-    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
-    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
-
-    printf("\n*** test 10\n");
-    // This one has  the discontinuity right at the start
-    stats = analyzeHelper(1024 + 5, 0, 32);
-    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
-    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
-#endif
-   
-#if 0
-    printf("\n*** test 11\n");
-    // This one has the disc closer to the end
-
-    // only .1 here
-    stats = analyzeHelper(1024 + 400, 0, 32);
-    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
-    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
-
-
-    printf("\n*** test 11\n");
-    // This one has the disc even closer to the end
-
-    // only .1 here
-    stats = analyzeHelper(1024 + 508, 0, 32);
-    assertGT(stats.largestPhaseJump, minPhaseJumpExpected);
-    assertLT(stats.largestPhaseJump, maxPhaseJumpExpected);
-#endif
 }
 
 
@@ -367,6 +314,20 @@ static void testPhaseAngleUtilIDistance()
     assertClose(PhaseAngleUtil::distance(AudioMath::Pi_2 + delta, AudioMath::Pi_2 - delta), 2 * delta, .00001);
 }
 
+static void testWaveFile()
+{
+    SqWaveFile wave;
+    bool b = wave.load("multi-note.wav");
+    assert(b);
+    int size = wave.size();
+    assert(size > 100);
+    for (int i = 0; i < size; ++i) {
+        float x = wave.getAt(i);
+        assert(x <= 1);
+        assert(x >= -1);
+    }
+}
+
 void testOnset()
 {
     test0();
@@ -386,4 +347,6 @@ void testOnset()
     testAnalyzePureSinInBetweenPitch();
     testAnalyzeNoJump();
     testAnalyzeJump();
+
+    testWaveFile();
 }

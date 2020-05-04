@@ -142,6 +142,9 @@
     <Filter Include="Source Files\sqsrc\util">
       <UniqueIdentifier>{8cd94f6b-5889-4eee-a9fe-49432b5a171f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\test\util">
+      <UniqueIdentifier>{165aa4af-b0c2-44a1-9d95-c9ea710f67e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -542,6 +545,9 @@
     </ClCompile>
     <ClCompile Include="..\..\dsp\fft\FFTUtils.cpp">
       <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\util\SqWaveFile.cpp">
+      <Filter>Source Files\test\util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

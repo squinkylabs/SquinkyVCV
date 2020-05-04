@@ -17,7 +17,6 @@ public:
 FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples, double initialPhase)
 {
     std::shared_ptr<GeneratorImp> impl = std::make_shared<GeneratorImp>(periodInSamples, initialPhase);
-    printf("making regular generator\n");
     double phaseInc = 1.f / periodInSamples;
     Generator g =  [impl]() {
         // TODO: get rid of static
@@ -51,8 +50,6 @@ public:
 
 FFTUtils::Generator FFTUtils::makeSinGeneratorPhaseJump(double periodInSamples, double initialPhase, int delay, double discontinuity)
 {
-    printf("making generator with delay = %d, disc = %f\n", delay, discontinuity);
-
     std::shared_ptr<GeneratorJumpImp> impl = std::make_shared<GeneratorJumpImp>(periodInSamples, initialPhase, delay, discontinuity);
     Generator g = [impl]() {
         double ret = std::sin(impl->phase);
@@ -103,7 +100,6 @@ std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSiz
 
 void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c)
 {
-    printf("** getStats\n");
     assert(a.size() == b.size());
     assert(a.size() == c.size());
     assert(a.isPolar() && b.isPolar() && c.isPolar());
@@ -125,51 +121,15 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
         const double jump = std::abs(PhaseAngleUtil::distance(phaseDiff1,  phaseDiff0));
 
         if (mag > .005) {
-            printf("bin %d mag %f jump=%.2f, ph = %.2f, %.2f, %.2f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
+         //   printf("bin %d mag %f jump=%.2f, ph = %.2f, %.2f, %.2f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
         }
         assert(mag >= 0);
         magSum += mag;
         weightedJumpSum += (jump * mag);
 
     }
-    printf("total shift %f mag %f\n", weightedJumpSum, magSum);
+   // printf("total shift %f mag %f\n", weightedJumpSum, magSum);
     double totalJump = (magSum > 0) ? weightedJumpSum / magSum : 0;
     stats.largestPhaseJump = totalJump;
     
 }
-
-#if 0 // firset version
-void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c)
-{
-    printf("** getStats\n");
-    assert(a.size() == b.size());
-    assert(a.size() == c.size());
-    assert(a.isPolar() && b.isPolar() && c.isPolar());
-
-    double biggestJump = 0;
-    for (int bin = 0; bin < a.size(); ++bin) {
-
-        auto mpa = a.getMagAndPhase(bin);
-        auto mpb = b.getMagAndPhase(bin);
-        auto mpc = c.getMagAndPhase(bin);
-
-        const double phaseDiff0 = PhaseAngleUtil::distance(mpb.second, mpa.second);
-        const double phaseDiff1 = PhaseAngleUtil::distance(mpc.second, mpb.second);
-
-        const double mag = mpa.first;
-        const double jump = PhaseAngleUtil::distance(phaseDiff1,  phaseDiff0);
-
-        if (mag > .01) {
-            printf("bin %d mag %f jump=%.2f, ph = %.2f, %.2f, %.2f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
-        }
-       
-        if (biggestJump < jump) {
-            printf("new biggest jump %.2f at bin %d\n", jump, bin);
-        }
-        biggestJump = std::max(jump, biggestJump);
-        
-    }
-    stats.largestPhaseJump = biggestJump;
-    
-}
-#endif
