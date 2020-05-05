@@ -1,5 +1,7 @@
+
 #include "OnsetDetector.h"
-bool OnsetDetector::step()
+
+bool OnsetDetector::step(float)
 {
     return false;
 }

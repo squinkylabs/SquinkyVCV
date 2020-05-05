@@ -3,6 +3,6 @@
 class OnsetDetector
 {
 public:
-    bool step();
+    bool step(float);
 private:
 };

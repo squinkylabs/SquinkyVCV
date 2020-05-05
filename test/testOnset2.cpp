@@ -8,8 +8,17 @@
 
 using generator = std::function<float(void)>;
 
-int findFirstOnset(generator, int size)
+int findFirstOnset(generator g, int size)
 {
+    OnsetDetector o;
+    int index = 0;
+    while (size--) {
+        ++index;
+        const float x = g();
+        if (o.step(x)) {
+            return index;
+        }
+    }
     return -1;
 }
 
@@ -38,7 +47,7 @@ generator makeStepGenerator(int stepPos)
 static void test0()
 {
     OnsetDetector o;
-    o.step();
+    o.step(0);
 }
 
 static void testStepGen()
