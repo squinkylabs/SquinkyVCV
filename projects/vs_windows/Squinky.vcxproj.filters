@@ -552,6 +552,9 @@
     <ClCompile Include="..\..\test\testOnset2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\fft\OnsetDetector.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

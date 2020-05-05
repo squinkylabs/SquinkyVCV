@@ -4,7 +4,7 @@
 static void test0()
 {
     OnsetDetector o;
-    (void) o;
+    o.step();
 }
 
 void testOnset2()

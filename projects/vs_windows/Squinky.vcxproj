@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\dsp\fft\FFTCrossFader.cpp" />
     <ClCompile Include="..\..\dsp\fft\FFTData.cpp" />
     <ClCompile Include="..\..\dsp\fft\FFTUtils.cpp" />
+    <ClCompile Include="..\..\dsp\fft\OnsetDetector.cpp" />
     <ClCompile Include="..\..\dsp\filters\ButterworthFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp" />
     <ClCompile Include="..\..\dsp\filters\HilbertFilterDesigner.cpp" />
