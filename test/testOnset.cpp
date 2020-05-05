@@ -2,10 +2,12 @@
 #include "asserts.h"
 
 #include "FFTUtils.h"
+#include "OnsetDetector.h"
 #include "SqWaveFile.h"
 
 // ***********************************************************************************************
 
+#if 0
 class OnsetDetector
 {
 public:
@@ -43,6 +45,9 @@ private:
     bool haveData = false;
 };
 
+
+
+
 static void test0()
 {
     OnsetDetector o(512);
@@ -63,6 +68,7 @@ static void test1()
     assertEQ(o.wasOnset().first, true);
     assertEQ(o.wasOnset().first, false);
 }
+#endif
 
 static void testGenerateData()
 {
@@ -328,10 +334,38 @@ static void testWaveFile()
     }
 }
 
+class TestOnsetDetector
+{
+public:
+    static void test1()
+    {
+        OnsetDetector o;
+        assertEQ(o.curFrame, 0);
+        assertEQ(o.nextFrame(), 1);
+        assertEQ(o.prevFrame(), 2);
+        assertEQ(o.prevPrevFrame(), 1);
+
+        o.curFrame = 1;
+        assertEQ(o.nextFrame(), 2);
+        assertEQ(o.prevFrame(), 0);
+        assertEQ(o.prevPrevFrame(), 2);
+        
+        o.curFrame = 2;
+        assertEQ(o.nextFrame(), 0);
+        assertEQ(o.prevFrame(), 1);
+        assertEQ(o.prevPrevFrame(), 0);
+    }
+};
+
+ static void testOnsetDetector()
+ {
+    TestOnsetDetector::test1();
+ }
+
 void testOnset()
 {
-    test0();
-    test1();
+  //  test0();
+  //  test1();
     testPhaseAngleUtilIsNormalized();
     testPhaseAngleUtilINormalize();
     testPhaseAngleUtilIDistance();
@@ -349,4 +383,5 @@ void testOnset()
     testAnalyzeJump();
 
     testWaveFile();
+    testOnsetDetector();
 }
