@@ -18,6 +18,8 @@ private:
     std::shared_ptr<FFTDataReal> fftFrames[3];
     int curFrame = 0;
     int indexInFrame = 0;
+    int numFullFrames = 0;
+    void analyze();
 
     int nextFrame();
     int prevFrame();

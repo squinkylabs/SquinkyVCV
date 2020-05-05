@@ -130,6 +130,6 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
     }
    // printf("total shift %f mag %f\n", weightedJumpSum, magSum);
     double totalJump = (magSum > 0) ? weightedJumpSum / magSum : 0;
-    stats.largestPhaseJump = totalJump;
+    stats.averagePhaseJump = totalJump;
     
 }

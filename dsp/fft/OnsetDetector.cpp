@@ -34,9 +34,19 @@ bool OnsetDetector::step(float inputData)
     //int curFrame = 0;
     //int indexInFrame = 0;
     fftFrames[curFrame]->set(indexInFrame, inputData);
-    if (+indexInFrame >= frameSize) {
+    if (++indexInFrame >= frameSize) {
+        numFullFrames++;
+        analyze();
         curFrame = nextFrame();
         indexInFrame = 0;
     }
     return false;
+}
+
+void OnsetDetector::analyze()
+{
+    if (numFullFrames < 2) {
+        return;
+    }
+    assert(false);
 }

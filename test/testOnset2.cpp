@@ -67,7 +67,7 @@ static void testStepGen()
 static void testOnsetDetectPulse()
 {
     printf("**************** testOnsetDetectPulse gutted\n");
-#if 0
+#if 1
     int x = findFirstOnset(makeStepGenerator(512 * 5 + 256), 512 * 8);
     const int actualOnset = 512 * 5 + 256;
     assertEQ(x, actualOnset);

@@ -240,21 +240,21 @@ static FFTUtils::Stats analyzeHelper(int sampleToJumpAt, double initialPhase, do
 static void testAnalyzeNoJump()
 {
     FFTUtils::Stats stats = analyzeHelper(false, 0, 32);
-    assertClose(stats.largestPhaseJump, 0, .001);
+    assertClose(stats.averagePhaseJump, 0, .001);
 
     // no jump, shifted initial phase.
     stats = analyzeHelper(false, AudioMath::Pi, 32);
-    assertClose(stats.largestPhaseJump, 0, .001);
+    assertClose(stats.averagePhaseJump, 0, .001);
 
     // no jump, but shifted and "in between" freq
     stats = analyzeHelper(false, AudioMath::Pi, 79);
-    assertGE(stats.largestPhaseJump, 0);
-    assertLT(stats.largestPhaseJump, .03);
+    assertGE(stats.averagePhaseJump, 0);
+    assertLT(stats.averagePhaseJump, .03);
 
     // no jump or shift, but "in between" freq
     stats = analyzeHelper(false, 0, 79);
-    assertGE(stats.largestPhaseJump, 0);
-    assertLT(stats.largestPhaseJump, .03);
+    assertGE(stats.averagePhaseJump, 0);
+    assertLT(stats.averagePhaseJump, .03);
 }
 
 /**
@@ -270,7 +270,7 @@ static void testAnalyzeJump(int sampleOffsetForDiscontinuity)
     // jump is max at start of bin. Almost no effect later.
     // .5 is the max phase shift, becuase that's what we pass to the sin generator
     double expectedJump = .5 * double(512 - sampleOffsetForDiscontinuity) / 512.0;
-    assertClose(stats.largestPhaseJump, expectedJump, .01);
+    assertClose(stats.averagePhaseJump, expectedJump, .01);
 }
 
 static void testAnalyzeJump()
