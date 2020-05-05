@@ -88,6 +88,7 @@ extern void testSuper();
 extern void testEditCommands4();
 extern void testChaos();
 extern void testOnset();
+extern void testOnset2();
 
 #if 0
 #include <sstream>
@@ -168,6 +169,7 @@ int main(int argc, char ** argv)
     testRingBuffer();
     testGateTrigger();
     testOnset();
+    testOnset2();
 
     testIComposite();
     testVec();

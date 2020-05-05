@@ -549,6 +549,9 @@
     <ClCompile Include="..\..\test\util\SqWaveFile.cpp">
       <Filter>Source Files\test\util</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testOnset2.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

@@ -124,6 +124,7 @@
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer4.cpp" />
     <ClCompile Include="..\..\test\testOnset.cpp" />
+    <ClCompile Include="..\..\test\testOnset2.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
     <ClCompile Include="..\..\test\testRateConversion.cpp" />
     <ClCompile Include="..\..\test\testReplaceCommand.cpp" />
