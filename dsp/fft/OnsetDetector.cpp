@@ -2,11 +2,13 @@
 #include "OnsetDetector.h"
 
 #include "FFTData.h"
+#include "FFTUtils.h"
 
 OnsetDetector::OnsetDetector()
 {
     for (int i=0; i<numFrames; ++i) {
         fftFrames[i] = std::make_shared<FFTDataReal>(frameSize);
+        fftFramesAnalyzed[i] = std::make_shared<FFTDataCpx>(frameSize);
     }
 }
 
@@ -36,6 +38,9 @@ bool OnsetDetector::step(float inputData)
     fftFrames[curFrame]->set(indexInFrame, inputData);
     if (++indexInFrame >= frameSize) {
         numFullFrames++;
+        // now take fft into cpx
+        FFT::forward(fftFramesAnalyzed[curFrame].get(), *fftFrames[curFrame]);
+        fftFramesAnalyzed[curFrame]->toPolar();
         analyze();
         curFrame = nextFrame();
         indexInFrame = 0;
@@ -45,8 +50,10 @@ bool OnsetDetector::step(float inputData)
 
 void OnsetDetector::analyze()
 {
-    if (numFullFrames < 2) {
+    if (numFullFrames < 3) {
         return;
     }
+    FFTUtils::Stats stats;
+    FFTUtils::getStats(stats, *fftFramesAnalyzed[prevPrevFrame()], *fftFramesAnalyzed[prevFrame()], *fftFramesAnalyzed[curFrame]);
     assert(false);
 }

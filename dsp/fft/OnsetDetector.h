@@ -15,7 +15,8 @@ public:
 private:
     static const int numFrames = 3;
     static const int frameSize = 512;
-    std::shared_ptr<FFTDataReal> fftFrames[3];
+    std::shared_ptr<FFTDataReal> fftFrames[numFrames];
+    std::shared_ptr<FFTDataCpx> fftFramesAnalyzed[numFrames];
     int curFrame = 0;
     int indexInFrame = 0;
     int numFullFrames = 0;
