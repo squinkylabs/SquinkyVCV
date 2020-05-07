@@ -55,6 +55,10 @@ public:
         return std::make_pair(0.f, 0.f);
     }
 
+    void reset() {
+        _isPolar = false;
+    }
+
     static int _count;
 private:
     std::vector<T> buffer;

@@ -20,6 +20,8 @@ private:
     int curFrame = 0;
     int indexInFrame = 0;
     int numFullFrames = 0;
+
+    bool triggered = false;
     void analyze();
 
     int nextFrame();
