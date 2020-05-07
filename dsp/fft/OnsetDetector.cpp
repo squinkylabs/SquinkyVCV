@@ -33,17 +33,15 @@ int OnsetDetector::prevPrevFrame()
 
 bool OnsetDetector::step(float inputData)
 {
-    //int curFrame = 0;
-    //int indexInFrame = 0;
     fftFrames[curFrame]->set(indexInFrame, inputData);
     if (++indexInFrame >= frameSize) {
         numFullFrames++;
         // now take fft into cpx
         FFT::forward(fftFramesAnalyzed[curFrame].get(), *fftFrames[curFrame]);
-        printf("will do to polar on %d\n", curFrame);
         fftFramesAnalyzed[curFrame]->toPolar();
         analyze();
         curFrame = nextFrame();
+
         indexInFrame = 0;
     }
     return triggered;
@@ -51,17 +49,17 @@ bool OnsetDetector::step(float inputData)
 
 void OnsetDetector::analyze()
 {
-    printf("enter analyze, ff=%d\n", numFullFrames);
+    //printf("enter analyze, ff=%d\n", numFullFrames);
     if (numFullFrames < 3) {
         return;
     }
     FFTUtils::Stats stats;
     FFTUtils::getStats(stats, *fftFramesAnalyzed[prevPrevFrame()], *fftFramesAnalyzed[prevFrame()], *fftFramesAnalyzed[curFrame]);
-    printf("analyze frame, jump = %f\n", stats.averagePhaseJump);
+    //printf("analyze frame, jump = %f\n", stats.averagePhaseJump);
     if (stats.averagePhaseJump > .1) {
         triggered = true;
     }
-    printf("will clear polary on %d\n", prevPrevFrame());
+    //printf("will clear polary on %d\n", prevPrevFrame());
     fftFramesAnalyzed[prevPrevFrame()]->reset();
  
 }

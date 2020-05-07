@@ -334,6 +334,20 @@ static void testWaveFile()
     }
 }
 
+static void testWaveFile2()
+{
+    SqWaveFile wave;
+    bool b = wave.loadTest(SqWaveFile::TestFiles::SingleShortNote);
+    assert(b);
+    int size = wave.size();
+    assert(size > 0);
+
+    b = wave.loadTest(SqWaveFile::TestFiles::MultiNote);
+    assert(b);
+    size = wave.size();
+    assert(size > 0);
+}
+
 class TestOnsetDetector
 {
 public:
@@ -383,5 +397,6 @@ void testOnset()
     testAnalyzeJump();
 
     testWaveFile();
+    testWaveFile2();
     testOnsetDetector();
 }

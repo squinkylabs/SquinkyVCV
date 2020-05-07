@@ -5,8 +5,14 @@
 class SqWaveFile
 {
 public:
+
+    enum class TestFiles {
+        SingleShortNote,        // simplest test
+        MultiNote               // retriggering same pitch
+    };
     SqWaveFile();
     bool load(const std::string& path);
+    bool loadTest(TestFiles);
     float getAt(int index) const
     {
         return data[index];

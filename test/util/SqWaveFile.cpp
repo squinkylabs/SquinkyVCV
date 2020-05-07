@@ -33,3 +33,19 @@ bool SqWaveFile::load(const std::string& path)
     drwav_uninit(&wav);
     return retValue;
 }
+
+ bool SqWaveFile::loadTest(TestFiles testFile)
+ {
+     std::string name;
+     switch(testFile) {
+         case TestFiles::MultiNote:
+            name = "multi-note.wav";
+            break;
+        case TestFiles::SingleShortNote:
+            name = "single-short-note.wav";
+            break;
+        default:
+            assert(false);
+     }
+     return load(name);
+ }
