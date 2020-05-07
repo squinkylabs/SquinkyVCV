@@ -12,16 +12,31 @@ using generator = std::function<float(void)>;
 
 int findFirstOnset(generator g, int size)
 {
+    // TODO: use these
+   // bool sawActive = false;
+    bool isActive = false;
+    bool triggerCount = 0;
+    int firstOnset = -1;
+
     OnsetDetector o;
     int index = 0;
     while (size--) {
         ++index;
         const float x = g();
-        if (o.step(x)) {
-            return index;
-        }
+        const bool detected = o.step(x);
+
+        bool newTrigger = detected && !isActive;
+        isActive = detected;
+        ++triggerCount;
+        assert(triggerCount == 1);
+
+        if (newTrigger && firstOnset < 0) {
+            firstOnset = index;
+        }      
     }
-    return -1;
+    assert(!isActive);      // we want to see the detector go low
+    assertEQ(triggerCount, 1);
+    return firstOnset;
 }
 
 const int stepDur = 100;
@@ -66,9 +81,9 @@ static void testStepGen()
 
 static void testOnsetDetectPulse()
 {
-    int x = findFirstOnset(makeStepGenerator(512 * 5 + 256), 512 * 8);
+    // let the test run long enough to see the pulse go low.
+    int x = findFirstOnset(makeStepGenerator(512 * 5 + 256), 512 * 9);
     const int actualOnset = int(OnsetDetector::frameSize * 5.5);
-
     const int minOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 5;
     const int maxOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 6;
     assertGE(x, minOnset);
