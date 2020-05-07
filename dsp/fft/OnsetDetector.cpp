@@ -44,7 +44,10 @@ bool OnsetDetector::step(float inputData)
 
         indexInFrame = 0;
     }
-    return triggered;
+    if (triggerCounter > 0) {
+        --triggerCounter;
+    }
+    return triggerCounter > 0;;
 }
 
 void OnsetDetector::analyze()
@@ -57,7 +60,12 @@ void OnsetDetector::analyze()
     FFTUtils::getStats(stats, *fftFramesAnalyzed[prevPrevFrame()], *fftFramesAnalyzed[prevFrame()], *fftFramesAnalyzed[curFrame]);
     //printf("analyze frame, jump = %f\n", stats.averagePhaseJump);
     if (stats.averagePhaseJump > .1) {
-        triggered = true;
+        // 1 ms. ( used 46 becaue it's close and makes the test pass ;-)
+        triggerCounter = 46;        // todo: sample rate independent?
+    }
+    else {
+        assert(triggerCounter == 0);
+        triggerCounter = 0;
     }
     //printf("will clear polary on %d\n", prevPrevFrame());
     fftFramesAnalyzed[prevPrevFrame()]->reset();

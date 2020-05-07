@@ -24,7 +24,8 @@ private:
     int indexInFrame = 0;
     int numFullFrames = 0;
 
-    bool triggered = false;
+  //  bool triggered = false;
+    int triggerCounter = 0;
     void analyze();
 
     int nextFrame();

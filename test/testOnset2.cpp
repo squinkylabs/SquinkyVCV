@@ -10,13 +10,18 @@
 
 using generator = std::function<float(void)>;
 
+
+/**
+ * find the first onset and returns it.
+ * has various assertions an the trigger.
+ * asserts if not exactly one trigger.
+ */
 int findFirstOnset(generator g, int size)
 {
-    // TODO: use these
-   // bool sawActive = false;
     bool isActive = false;
     bool triggerCount = 0;
     int firstOnset = -1;
+    int triggerDuration = 0;
 
     OnsetDetector o;
     int index = 0;
@@ -30,12 +35,21 @@ int findFirstOnset(generator g, int size)
         ++triggerCount;
         assert(triggerCount == 1);
 
+        if (newTrigger) {
+            triggerDuration = -1;
+        }
+
         if (newTrigger && firstOnset < 0) {
             firstOnset = index;
-        }      
+        }     
+
+        if (isActive) {
+            triggerDuration++;
+        }
     }
     assert(!isActive);      // we want to see the detector go low
     assertEQ(triggerCount, 1);
+    assertEQ(triggerDuration, 44);
     return firstOnset;
 }
 
