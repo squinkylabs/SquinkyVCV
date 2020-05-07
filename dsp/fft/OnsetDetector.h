@@ -12,9 +12,12 @@ public:
     friend class TestOnsetDetector;
     OnsetDetector();
     bool step(float);
+
+    static const int frameSize = 512;
+    static const int preroll = 2 * frameSize;
 private:
     static const int numFrames = 3;
-    static const int frameSize = 512;
+   
     std::shared_ptr<FFTDataReal> fftFrames[numFrames];
     std::shared_ptr<FFTDataCpx> fftFramesAnalyzed[numFrames];
     int curFrame = 0;

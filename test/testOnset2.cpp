@@ -66,12 +66,13 @@ static void testStepGen()
 
 static void testOnsetDetectPulse()
 {
-    printf("**************** testOnsetDetectPulse gutted\n");
-#if 1
     int x = findFirstOnset(makeStepGenerator(512 * 5 + 256), 512 * 8);
-    const int actualOnset = 512 * 5 + 256;
-    assertEQ(x, actualOnset);
-#endif
+    const int actualOnset = int(OnsetDetector::frameSize * 5.5);
+
+    const int minOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 5;
+    const int maxOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 6;
+    assertGE(x, minOnset);
+    assertLE(x, maxOnset);
 }
 
 void testOnset2()

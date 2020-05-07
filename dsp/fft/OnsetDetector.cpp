@@ -46,7 +46,7 @@ bool OnsetDetector::step(float inputData)
         curFrame = nextFrame();
         indexInFrame = 0;
     }
-    return false;
+    return triggered;
 }
 
 void OnsetDetector::analyze()
