@@ -58,7 +58,7 @@ void OnsetDetector::analyze()
     }
     FFTUtils::Stats stats;
     FFTUtils::getStats(stats, *fftFramesAnalyzed[prevPrevFrame()], *fftFramesAnalyzed[prevFrame()], *fftFramesAnalyzed[curFrame]);
-    //printf("analyze frame, jump = %f\n", stats.averagePhaseJump);
+    printf("analyze frame, jump = %f\n", stats.averagePhaseJump);
     if (stats.averagePhaseJump > .1) {
         // 1 ms. ( used 46 becaue it's close and makes the test pass ;-)
         triggerCounter = 46;        // todo: sample rate independent?

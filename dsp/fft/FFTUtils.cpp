@@ -121,7 +121,7 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
         const double jump = std::abs(PhaseAngleUtil::distance(phaseDiff1,  phaseDiff0));
 
         if (mag > .005) {
-         //   printf("bin %d mag %f jump=%.2f, ph = %.2f, %.2f, %.2f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
+            printf("bin %d mag %f jump=%.2f, ph = %.2f, %.2f, %.2f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
         }
         assert(mag >= 0);
         magSum += mag;
