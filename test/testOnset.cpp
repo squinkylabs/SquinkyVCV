@@ -4,6 +4,7 @@
 #include "FFTUtils.h"
 #include "OnsetDetector.h"
 #include "SqWaveFile.h"
+#include "TestGenerators.h"
 
 // ***********************************************************************************************
 
@@ -94,7 +95,7 @@ static void testGenerateFFT()
 
 static void testGenerateSin()
 {
-    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(8, 0);
+    FFTUtils::Generator gen = TestGenerators::makeSinGenerator(8, 0);
    
     for (int i = 0; i < 10; ++i) {
         double x = gen();
@@ -119,7 +120,7 @@ static void testGenerateSin()
 static void testGenerateSinInitPhase()
 {
     // start at 90 degrees
-    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(8, AudioMath::Pi_2);
+    FFTUtils::Generator gen = TestGenerators::makeSinGenerator(8, AudioMath::Pi_2);
 
     double x = gen();
     assertEQ(x, 1);
@@ -130,7 +131,7 @@ static void testGenerateSinInitPhase()
 static void testGenerateSinJump()
 {
     const int sampleToJumpAt = 3;
-    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, 0, sampleToJumpAt, AudioMath::Pi);
+    FFTUtils::Generator gen = TestGenerators::makeSinGeneratorPhaseJump(8, 0, sampleToJumpAt, AudioMath::Pi);
 
     // sfirst three like sin
     double x = gen();
@@ -148,7 +149,7 @@ static void testGenerateSinJump()
 static void testGenerateSinJumpInitialPhase()
 {
     const int sampleToJumpAt = 2;
-    FFTUtils::Generator gen = FFTUtils::makeSinGeneratorPhaseJump(8, AudioMath::Pi_2, sampleToJumpAt, AudioMath::Pi);
+    FFTUtils::Generator gen = TestGenerators::makeSinGeneratorPhaseJump(8, AudioMath::Pi_2, sampleToJumpAt, AudioMath::Pi);
 
     // sfirst two like sin
     double x = gen();
@@ -169,7 +170,7 @@ static void testAnalyzePureSin()
 {
     printf("\ntestAnalyzePureSin\n");
     // fairly high freq sine wave at even freq.
-    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(32, 0);
+    FFTUtils::Generator gen = TestGenerators::makeSinGenerator(32, 0);
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
     assertEQ(result.size(), 3);
 
@@ -194,7 +195,7 @@ static void testAnalyzePureSinInBetweenPitch()
 {
     // fairly high freq sine wave at a freq in-betten even period
     double period = 512 / 16.5;
-    FFTUtils::Generator gen = FFTUtils::makeSinGenerator(period, 0);
+    FFTUtils::Generator gen = TestGenerators::makeSinGenerator(period, 0);
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
     assertEQ(result.size(), 3);
 
@@ -222,9 +223,9 @@ static FFTUtils::Stats analyzeHelper(int sampleToJumpAt, double initialPhase, do
     const bool jumpPhase = sampleToJumpAt > 0;
   //  const int sampleToJumpAt = 1024 + 512 / 2;  // in middle of third
   //  if (jumpPhase) printf("will jump at %d\n", sampleToJumpAt);
-    FFTUtils::Generator gen = jumpPhase ?
-        FFTUtils::makeSinGeneratorPhaseJump(periodInSamples, initialPhase, sampleToJumpAt, .5)
-        : FFTUtils::makeSinGenerator(periodInSamples, initialPhase);
+    TestGenerators::Generator gen = jumpPhase ?
+        TestGenerators::makeSinGeneratorPhaseJump(periodInSamples, initialPhase, sampleToJumpAt, .5)
+        : TestGenerators::makeSinGenerator(periodInSamples, initialPhase);
 
     auto result = FFTUtils::generateFFTs(512 * 3, 512, gen);
     assertEQ(result.size(), 3);

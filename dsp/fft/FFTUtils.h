@@ -20,9 +20,12 @@ public:
     };
     using Generator = std::function<double()>;
     static void getStats(Stats&, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c);
+
+
     static std::vector<FFTDataRealPtr> generateData(int numSamples, int frameSize, Generator generator);
     static std::vector<FFTDataCpxPtr> generateFFTs(int numSamples, int frameSize, Generator generator);
-
+ 
+    #if 0 // move to test geneartors
     static Generator makeSinGenerator(double periodInSamples, double initialPhase);
 
     /**
@@ -30,6 +33,8 @@ public:
      * NO - discontinuity is in radians
      */
     static Generator makeSinGeneratorPhaseJump(double periodInSamples, double initialPhase, int delay, double discontinuityRadians);
+    #endif
+
 
 };
 

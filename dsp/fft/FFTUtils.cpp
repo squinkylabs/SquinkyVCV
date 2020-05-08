@@ -2,6 +2,7 @@
 #include "FFTUtils.h"
 #include "AudioMath.h"
 
+#if 0
 class GeneratorImp
 {
 public:
@@ -13,6 +14,7 @@ public:
     double phaseRadians = 0;
     const double phaseInc;
 };
+
 
 FFTUtils::Generator FFTUtils::makeSinGenerator(double periodInSamples, double initialPhase)
 {
@@ -64,6 +66,7 @@ FFTUtils::Generator FFTUtils::makeSinGeneratorPhaseJump(double periodInSamples, 
     };
     return g;
 }
+#endif
 
 std::vector< FFTDataCpxPtr> FFTUtils::generateFFTs(int numSamples, int frameSize, std::function<double()> generator)
 {

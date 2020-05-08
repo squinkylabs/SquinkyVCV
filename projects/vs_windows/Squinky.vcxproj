@@ -97,6 +97,7 @@
     <ClCompile Include="..\..\test\testFinalLeaks.cpp" />
     <ClCompile Include="..\..\test\testFrequencyShifter.cpp" />
     <ClCompile Include="..\..\test\testGateTrigger.cpp" />
+    <ClCompile Include="..\..\test\TestGenerators.cpp" />
     <ClCompile Include="..\..\test\testGMR.cpp" />
     <ClCompile Include="..\..\test\testHighpassFilter.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
@@ -293,6 +294,7 @@
     <ClInclude Include="..\..\test\MLockTest.h" />
     <ClInclude Include="..\..\test\SqTime.h" />
     <ClInclude Include="..\..\test\TestAuditionHost.h" />
+    <ClInclude Include="..\..\test\TestGenearators.h" />
     <ClInclude Include="..\..\test\TestHost2.h" />
     <ClInclude Include="..\..\test\TestHost4.h" />
     <ClInclude Include="..\..\test\TestSettings.h" />
