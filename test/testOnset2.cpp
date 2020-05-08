@@ -62,104 +62,6 @@ int findFirstOnset(TestGenerators::Generator g, int size, int numTriggersExpecte
     return firstOnset;
 }
 
-
-const int stepDur = 100;
-const int stepTail = 1024;
-
-#if 0
-
-
-generator makeStepGenerator(int stepPos)
-{
-    std::shared_ptr<int> counter = std::make_shared<int>(0);
-    return [counter, stepPos]() {
-        float ret = -1;
-       
-        if (*counter < stepPos) {
-            ret = 0;
-        } else if (*counter < stepPos + stepDur) {
-            ret = 1;
-        } else {
-            ret = 0;
-        }
-        ++* counter;
-       
-        return ret;
-    };
-}
-
-generator makeSteppedSinGenerator(int stepPos, double normalizedFreq, double stepGain)
-{
-    assert(stepGain > 1);
-    static float lastOut = 0;
-
-    std::shared_ptr<int> counter = std::make_shared<int>(0);
-    std::shared_ptr<double> phase = std::make_shared<double>(0);
-
-    return [counter, stepPos, phase, normalizedFreq, stepGain]() {
-
-        *phase += normalizedFreq;
-        if (*phase >= AudioMath::_2Pi) {
-            *phase -= AudioMath::_2Pi;
-        }
-
-        double gain = 1;
-
-        if (*counter < stepPos) {
-            gain = 1 / stepGain;
-        }
-        else if (*counter < stepPos + stepDur) {
-            gain = 1;
-        }
-        else {
-            gain = 1 / stepGain;
-        }
-        ++* counter;
-
-#if 0
-        if (*counter < 100) {
-            printf("ph = %.2f sin= %.2f will ret %.2f\n",
-                *phase,
-                std::sin(*phase),
-                (gain * std::sin(*phase)));
-        }
-#endif
-        float ret = float(gain * std::sin(*phase));
-        assert(ret < 1);
-        assert(ret > -1);
-
-        assertLT(fabs(ret - lastOut) , .04);
-        lastOut = ret;
-
-        return ret;
-    };
-}
-
-generator makeSinGenerator(double normalizedFreq)
-{
-
-    static float lastOut = 0;
-    assert(normalizedFreq < AudioMath::Pi);
-    assert(normalizedFreq > 0);
-
-    std::shared_ptr<double> phase = std::make_shared<double>(0);
-
-    return [phase, normalizedFreq]() {
-
-        *phase += normalizedFreq;
-        if (*phase >= AudioMath::_2Pi) {
-            *phase -= AudioMath::_2Pi;
-        }
-
-        double ret = std::sin(*phase);
-        assert(ret <= 1);
-        assert(ret >= -1);
-
-        return float(ret);
-    };
-}
-#endif
-
 static void test0()
 {
     OnsetDetector o;
@@ -171,10 +73,10 @@ static void testStepGen()
     // want a sin that is an even multiple of
     
     TestGenerators::Generator g = TestGenerators::makeStepGenerator(1500);
-    const int totalLen = 1500 + stepDur + stepTail;
+    const int totalLen = 1500 + TestGenerators::stepDur + TestGenerators::stepTail;
     for (int i = 0; i < totalLen; ++i) {
         float expectedOut = i < 1500 ? 0.f : 1.f;
-        expectedOut = (i >= 1500 + stepDur) ? 0 : expectedOut;
+        expectedOut = (i >= 1500 + TestGenerators::stepDur) ? 0 : expectedOut;
 
         assertEQ(g(), expectedOut);
     }
