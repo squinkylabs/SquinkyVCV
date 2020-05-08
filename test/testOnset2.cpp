@@ -16,10 +16,10 @@ using generator = std::function<float(void)>;
  * has various assertions an the trigger.
  * asserts if not exactly one trigger.
  */
-int findFirstOnset(generator g, int size)
+int findFirstOnset(generator g, int size, int numTriggersExpected)
 {
     bool isActive = false;
-    bool triggerCount = 0;
+    int triggerCount = 0;
     int firstOnset = -1;
     int triggerDuration = 0;
 
@@ -29,11 +29,16 @@ int findFirstOnset(generator g, int size)
         ++index;
         const float x = g();
         const bool detected = o.step(x);
+        //if (detected) printf("DETECTED\n");
 
-        bool newTrigger = detected && !isActive;
+        const bool newTrigger = detected && !isActive;
         isActive = detected;
-        ++triggerCount;
-        assert(triggerCount == 1);
+
+        if (newTrigger) {
+            ++triggerCount;
+            assert(triggerCount == 1);
+        }
+      
 
         if (newTrigger) {
             triggerDuration = -1;
@@ -48,8 +53,11 @@ int findFirstOnset(generator g, int size)
         }
     }
     assert(!isActive);      // we want to see the detector go low
-    assertEQ(triggerCount, 1);
-    assertEQ(triggerDuration, 44);
+    assertEQ(triggerCount, numTriggersExpected);
+
+    if (numTriggersExpected) {
+        assertEQ(triggerDuration, 44);
+    }
     return firstOnset;
 }
 
@@ -90,7 +98,6 @@ generator makeSteppedSinGenerator(int stepPos, double normalizedFreq, double ste
             *phase -= AudioMath::_2Pi;
         }
 
-
         double gain = 1;
 
         if (*counter < stepPos) {
@@ -120,10 +127,32 @@ generator makeSteppedSinGenerator(int stepPos, double normalizedFreq, double ste
         lastOut = ret;
 
         return ret;
-
     };
 }
 
+generator makeSinGenerator(double normalizedFreq)
+{
+
+    static float lastOut = 0;
+    assert(normalizedFreq < AudioMath::Pi);
+    assert(normalizedFreq > 0);
+
+    std::shared_ptr<double> phase = std::make_shared<double>(0);
+
+    return [phase, normalizedFreq]() {
+
+        *phase += normalizedFreq;
+        if (*phase >= AudioMath::_2Pi) {
+            *phase -= AudioMath::_2Pi;
+        }
+
+        double ret = std::sin(*phase);
+        assert(ret <= 1);
+        assert(ret >= -1);
+
+        return float(ret);
+    };
+}
 
 
 static void test0()
@@ -134,6 +163,7 @@ static void test0()
 
 static void testStepGen()
 {
+    // want a sin that is an even multiple of
     
     generator g = makeStepGenerator(1500);
     const int totalLen = 1500 + stepDur + stepTail;
@@ -145,11 +175,28 @@ static void testStepGen()
     }
 }
 
+static void testOnsetSin()
+{
+    printf("\n\n*** test onset sin\n");
+
+    // 512/10 is even, works
+     double period = 512 / 10.3;
+    double freq = 1.0 / period;
+    freq *= AudioMath::_2Pi;
+
+   // double freq = .02;
+    int x = findFirstOnset(
+        makeSinGenerator(freq),
+        512 * 3,
+        0);
+    assertLT(x, 0);
+}
+
 static void testOnsetDetectPulse()
 {
     printf("\n**** pulse\n");
     // let the test run long enough to see the pulse go low.
-    int x = findFirstOnset(makeStepGenerator(512 * 5 + 256), 512 * 9);
+    int x = findFirstOnset(makeStepGenerator(512 * 5 + 256), 512 * 9, 1);
     const int actualOnset = int(OnsetDetector::frameSize * 5.5);
     const int minOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 5;
     const int maxOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 6;
@@ -163,6 +210,7 @@ static void testOnsetDetectStep()
     printf("\n**** step\n");
     // let the test run long enough to see the pulse go low.
 
+    // try to find a freq so that the phase doesn't jump at the step
     int firstSectionLength = 512 * 5 + 256;
 
 
@@ -183,7 +231,8 @@ static void testOnsetDetectStep()
     
     int x = findFirstOnset(
         makeSteppedSinGenerator(512 * 5 + 256, freq, 8),
-        512 * 9);
+        512 * 9,
+        1);
     const int actualOnset = int(OnsetDetector::frameSize * 5.5);
     const int minOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 5;
     const int maxOnset = OnsetDetector::preroll + OnsetDetector::frameSize * 6;
@@ -195,6 +244,7 @@ void testOnset2()
 {
     test0();
     testStepGen();
-    testOnsetDetectPulse();
-    testOnsetDetectStep();
+    testOnsetSin();
+    //testOnsetDetectPulse();
+   // testOnsetDetectStep();
 }

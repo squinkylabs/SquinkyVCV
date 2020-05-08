@@ -38,6 +38,7 @@ bool OnsetDetector::step(float inputData)
         numFullFrames++;
         // now take fft into cpx
         FFT::forward(fftFramesAnalyzed[curFrame].get(), *fftFrames[curFrame]);
+        printf("about to analyze frame %d\n", curFrame);
         fftFramesAnalyzed[curFrame]->toPolar();
         analyze();
         curFrame = nextFrame();
@@ -52,8 +53,9 @@ bool OnsetDetector::step(float inputData)
 
 void OnsetDetector::analyze()
 {
-    //printf("enter analyze, ff=%d\n", numFullFrames);
+    printf("enter analyze, ff=%d\n", numFullFrames);
     if (numFullFrames < 3) {
+        printf("still priming\n");
         return;
     }
     FFTUtils::Stats stats;

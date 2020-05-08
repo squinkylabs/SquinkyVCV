@@ -100,6 +100,7 @@ std::vector< FFTDataRealPtr> FFTUtils::generateData(int numSamples, int frameSiz
 
 void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, const FFTDataCpx& c)
 {
+    printf("fftUtils::getStats\n");
     assert(a.size() == b.size());
     assert(a.size() == c.size());
     assert(a.isPolar() && b.isPolar() && c.isPolar());
@@ -128,7 +129,7 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
         weightedJumpSum += (jump * mag);
 
     }
-   // printf("total shift %f mag %f\n", weightedJumpSum, magSum);
+    printf("total shift %f mag %f\n", weightedJumpSum, magSum);
     double totalJump = (magSum > 0) ? weightedJumpSum / magSum : 0;
     stats.averagePhaseJump = totalJump;
     
