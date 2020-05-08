@@ -2,6 +2,8 @@
 #include "TestGenerators.h"
 
 #include "AudioMath.h"
+
+#include "asserts.h"
 #include <memory>
 
 class GeneratorImp
@@ -65,4 +67,94 @@ TestGenerators::Generator TestGenerators::makeSinGeneratorPhaseJump(double perio
         return float(ret);
     };
     return g;
+}
+
+
+TestGenerators::Generator TestGenerators::makeStepGenerator(int stepPos)
+{
+    std::shared_ptr<int> counter = std::make_shared<int>(0);
+    return [counter, stepPos]() {
+        float ret = -1;
+       
+        if (*counter < stepPos) {
+            ret = 0;
+        } else if (*counter < stepPos + TestGenerators::stepDur) {
+            ret = 1;
+        } else {
+            ret = 0;
+        }
+        ++* counter;
+       
+        return ret;
+    };
+}
+
+TestGenerators::Generator TestGenerators::makeSteppedSinGenerator(int stepPos, double normalizedFreq, double stepGain)
+{
+    assert(stepGain > 1);
+    static float lastOut = 0;
+
+    std::shared_ptr<int> counter = std::make_shared<int>(0);
+    std::shared_ptr<double> phase = std::make_shared<double>(0);
+
+    return [counter, stepPos, phase, normalizedFreq, stepGain]() {
+
+        *phase += normalizedFreq;
+        if (*phase >= AudioMath::_2Pi) {
+            *phase -= AudioMath::_2Pi;
+        }
+
+        double gain = 1;
+
+        if (*counter < stepPos) {
+            gain = 1 / stepGain;
+        }
+        else if (*counter < stepPos + stepDur) {
+            gain = 1;
+        }
+        else {
+            gain = 1 / stepGain;
+        }
+        ++* counter;
+
+#if 0
+        if (*counter < 100) {
+            printf("ph = %.2f sin= %.2f will ret %.2f\n",
+                *phase,
+                std::sin(*phase),
+                (gain * std::sin(*phase)));
+        }
+#endif
+        float ret = float(gain * std::sin(*phase));
+        assert(ret < 1);
+        assert(ret > -1);
+
+        assertLT(fabs(ret - lastOut) , .04);
+        lastOut = ret;
+
+        return ret;
+    };
+}
+
+TestGenerators::Generator TestGenerators::makeSinGenerator(double normalizedFreq)
+{
+    static float lastOut = 0;
+    assert(normalizedFreq < AudioMath::Pi);
+    assert(normalizedFreq > 0);
+
+    std::shared_ptr<double> phase = std::make_shared<double>(0);
+
+    return [phase, normalizedFreq]() {
+
+        *phase += normalizedFreq;
+        if (*phase >= AudioMath::_2Pi) {
+            *phase -= AudioMath::_2Pi;
+        }
+
+        double ret = std::sin(*phase);
+        assert(ret <= 1);
+        assert(ret >= -1);
+
+        return float(ret);
+    };
 }
