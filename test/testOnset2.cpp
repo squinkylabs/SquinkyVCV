@@ -88,7 +88,7 @@ static void testOnsetSin()
 
     // 512/10 is even, works
     // TODO: two tests
-     double period = 512 / 10.3;
+    double period = 512 / 10.3;
     double freq = 1.0 / period;
     freq *= AudioMath::_2Pi;
 
@@ -153,7 +153,7 @@ void testOnset2()
     test0();
     testStepGen();
     printf("REMOVED FAILING SIN TEST TEMPORARILY");
-    //testOnsetSin();
+    testOnsetSin();
     //testOnsetDetectPulse();
    // testOnsetDetectStep();
 }

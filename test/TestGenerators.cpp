@@ -14,14 +14,21 @@ public:
         phaseRadians(initialPhase)
     {
     }
+    ~GeneratorImp() {
+        printf("biggest sin jump = %f\n", biggestJump);
+    }
     double phaseRadians = 0;
     const double phaseInc;
+
+    // for debugging
+    double biggestJump = 0;
+    double lastOutput = 0;
 };
 
 TestGenerators::Generator TestGenerators::makeSinGenerator(double periodInSamples, double initialPhase)
 {
     std::shared_ptr<GeneratorImp> impl = std::make_shared<GeneratorImp>(periodInSamples, initialPhase);
-    double phaseInc = 1.f / periodInSamples;
+    printf("in  TestGenerators::makeSinGenerator periodin samp = %f phaseInc = %f\n", periodInSamples, impl->phaseInc);
     Generator g =  [impl]() {
         // TODO: get rid of static
         // static double phase = 0;
@@ -30,6 +37,8 @@ TestGenerators::Generator TestGenerators::makeSinGenerator(double periodInSample
         if (impl->phaseRadians >= AudioMath::_2Pi) {
             impl->phaseRadians -= AudioMath::_2Pi;
         }
+        double jump = std::abs(ret - impl->lastOutput);
+        impl->biggestJump = std::max(jump, impl->biggestJump);
         return ret;
     };
     return g;
@@ -52,6 +61,7 @@ public:
     const double discontinuity;
 };
 
+// TODO: this is a saw, not a sin
 TestGenerators::Generator TestGenerators::makeSinGeneratorPhaseJump(double periodInSamples, double initialPhase, int delay, double discontinuity)
 {
     std::shared_ptr<GeneratorJumpImp> impl = std::make_shared<GeneratorJumpImp>(periodInSamples, initialPhase, delay, discontinuity);
@@ -89,6 +99,7 @@ TestGenerators::Generator TestGenerators::makeStepGenerator(int stepPos)
     };
 }
 
+// TODO: this is a saw generator
 TestGenerators::Generator TestGenerators::makeSteppedSinGenerator(int stepPos, double normalizedFreq, double stepGain)
 {
     assert(stepGain > 1);
@@ -136,18 +147,87 @@ TestGenerators::Generator TestGenerators::makeSteppedSinGenerator(int stepPos, d
     };
 }
 
+#if 1
+
+
+class Osc3
+{
+public:
+    Osc3(double freq) {
+        setFreq(freq);
+    }
+    void setFreq(double t)
+    {
+        assert(t > 0 && t < .51);
+        //   tapWeight = t * (1.0 / AudioMath::Pi);
+        tapWeight = 2 * sin(t);
+    }
+    double gen()
+    {
+        const double x = zX + tapWeight * zY;
+        const double y = -(tapWeight * x) + zY;
+
+        zX = x;
+        zY = y;
+        return zX;
+    }
+
+ //   const double k = sqrt(2);
+
+    double zX = 1;
+    double zY = 1;
+    double tapWeight = .1;
+};
+
+class Old
+{
+public:
+    Old(double freq) 
+    {
+        A = 2 * std::cos(freq);
+        yn_minus_one = -std::sin(freq);
+        yn_minus_two = -std::sin(2 * freq);
+    }
+    double gen()
+    {
+        double y = (A * yn_minus_one) - yn_minus_two;
+        yn_minus_two = yn_minus_one;
+        yn_minus_one = y;
+        return y;
+    }
+private:
+    double yn_minus_one = 0;
+    double yn_minus_two = 0;
+    double A = 0;
+};
+
+TestGenerators::Generator TestGenerators::makeSinGenerator(double freqRadians)
+{
+    static float lastOut = 0;
+    assert(freqRadians < AudioMath::Pi);
+    assert(freqRadians > 0);
+
+    std::shared_ptr<Old> imp = std::make_shared<Old>(freqRadians);
+    return [imp]() {
+        return imp->gen();
+    };
+}
+
+#else
+// first version - standard phase accumulator
 TestGenerators::Generator TestGenerators::makeSinGenerator(double normalizedFreq)
 {
     static float lastOut = 0;
     assert(normalizedFreq < AudioMath::Pi);
     assert(normalizedFreq > 0);
 
+    printf("in makeSinGenerator phase inc IS normFreq = %f\n", normalizedFreq);
     std::shared_ptr<double> phase = std::make_shared<double>(0);
 
     return [phase, normalizedFreq]() {
 
         *phase += normalizedFreq;
-        if (*phase >= AudioMath::_2Pi) {
+        if (*phase > AudioMath::_2Pi) {
             *phase -= AudioMath::_2Pi;
         }
 
@@ -158,3 +238,4 @@ TestGenerators::Generator TestGenerators::makeSinGenerator(double normalizedFreq
         return float(ret);
     };
 }
+#endif
