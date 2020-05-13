@@ -86,6 +86,11 @@ WVCOWidget::WVCOWidget(WVCOModule *module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+
+     addOutput(createOutputCentered<PJ301MPort>(
+        Vec(140, 340),
+        module,
+        Comp::MAIN_OUTPUT));
 }
 
 Model *modelWVCOModule = createModel<WVCOModule, WVCOWidget>("squinkylabs-wvco");

@@ -26,9 +26,15 @@ public:
 class WVCODsp
 {
 public:
-    float_4 step() {
-        return float_4::zero();
+    float_4 step(float_4 freq) {
+        phaseAcc += freq;
+
+		// Wrap phase
+		phaseAcc -= simd::floor(phaseAcc);
+        return phaseAcc;
     }
+private:
+    float_4 phaseAcc;
 };
 
 template <class TBase>
@@ -103,7 +109,7 @@ inline void WVCO<TBase>::step()
 {
     for (int bank=0; bank<4; ++bank) {
         const int channel = 4 * bank;
-        float_4 v = dsp[bank].step();
+        float_4 v = dsp[bank].step(.005);
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, channel);
     }
 }
