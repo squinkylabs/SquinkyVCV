@@ -147,7 +147,7 @@ TestGenerators::Generator TestGenerators::makeSteppedSinGenerator(int stepPos, d
     };
 }
 
-#if 1
+#if 0
 
 
 class Osc3
@@ -231,7 +231,7 @@ TestGenerators::Generator TestGenerators::makeSinGenerator(double normalizedFreq
             *phase -= AudioMath::_2Pi;
         }
 
-        double ret = std::sin(*phase);
+        double ret = std::cos(*phase);
         assert(ret <= 1);
         assert(ret >= -1);
 

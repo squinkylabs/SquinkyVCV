@@ -134,7 +134,8 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
         const double jump = std::abs(PhaseAngleUtil::distance(phaseDiff1,  phaseDiff0));
 
        // if (print) {
-        if (mag > .01) {
+        //if (mag > .01) {
+        if (bin == 10) {
             printf("bin %d mag %f jump=%f, ph = %f, %f, %f\n", bin, mag, jump, mpa.second, mpb.second, mpc.second);
            // printf("   first dif = %.2f, second dif = %.2f\n", phaseDiff0, phaseDiff1);
             //printf(" ph (norm to +-1) = %.2f, %.2f, %.2f\n", mpa.second / AudioMath::Pi, mpb.second / AudioMath::Pi, mpc.second / AudioMath::Pi);

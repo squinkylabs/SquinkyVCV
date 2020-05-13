@@ -197,6 +197,13 @@
 			"description": "thing",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md",
 			"tags": ["VCO"]
+		},
+		{
+			"slug": "squinkylabs-wvco",
+			"name": "wvco",
+			"description": "thing",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md",
+			"tags": ["VCO"]
 		}
 	]
 }

@@ -34,6 +34,7 @@
 #define _DTMODULE
 
 #define _SEQ4
+#define _WVCO
 
 using namespace ::rack;
 
@@ -119,6 +120,9 @@ extern Model* modelDrumTriggerModule;
 #endif
 #ifdef _CHAOS
 extern Model* modelChaosKittyModule;
+#endif
+#ifdef _WVCO
+extern Model *modelWVCOModule;
 #endif
 
 

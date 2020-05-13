@@ -239,7 +239,7 @@ static FFTUtils::Stats analyzeHelper(int sampleToJumpAt, double initialPhase, do
 }
 
 
- #define _USE2
+// #define _USE2
 // let's use the new sin generator here, becuase:
 //  a) the old one is a saw
 //  b) this will make it easier to find out what's going on in testOnset2
@@ -261,14 +261,31 @@ static void testAnalyzeNoJump2b()
     // at 10.05 bin 9 is .02 mag, jump = .02
     // at 10.1, bin 9 is .-5 mag juimp = .07
     // at 10.3  bin 9 is  .1 mag, jump = .17
-    double period = 512 / 10.3;
+    // eed
+    // 10.02 is ok
+
+    // let's look at the main (10) band over 20 frames
+    // at 10.0 it's perfect
+    // at 10.02 jump is .0000nnn
+    // 10.05 .000nn
+    // 10.1 .00nnn
+    // 10.2 .0n
+    // 10.025 .0n
+    // 10.3 .05
+    // 10.4 0.n
+    // 10.5 perfect (??) but mag .3
+
+    // conclusion - bin10 looks pretty good. need to look more at bin 9.
+    double period = 512 / 10.6;
     double freq = 1.0 / period;
     freq *= AudioMath::_2Pi;
 
     TestGenerators::Generator gen = TestGenerators::makeSinGenerator(freq);
 
-    auto result = FFTUtils::generateFFTs(512 * 5, 512, gen);
-    assertEQ(result.size(), 5);
+    const int numFrames = 20;
+
+    auto result = FFTUtils::generateFFTs(512 * numFrames, 512, gen);
+    assertEQ(result.size(), numFrames);
     FFTUtils::Stats stats;
 
 #if defined _USE2
@@ -282,12 +299,11 @@ static void testAnalyzeNoJump2b()
     for (auto frame : result) {
         frame->toPolar();
     }
-     printf("\nfirst analyze frame:\n");
-    FFTUtils::getStats(stats, *result[0], *result[1], *result[2]);
-     printf("\nsecond analyze frame:\n");
-    FFTUtils::getStats(stats, *result[1], *result[2], *result[3]);
-     printf("\nthird analyze frame:\n");
-    FFTUtils::getStats(stats, *result[2], *result[3], *result[4]);
+    for (int i = 0; i < numFrames - 2; ++i) {
+        printf("\nframe %d analysis: \n", i);
+        FFTUtils::getStats(stats, *result[0+i], *result[1+i], *result[2+i]);
+    }
+
 #endif
 
    
@@ -445,31 +461,38 @@ public:
     TestOnsetDetector::test1();
  }
 
-#if 0
+#if 1
  static void testing()
  {
      const double pi2 = AudioMath::_2Pi;
      printf("pi = %.2f 2pi=%.2f\n", AudioMath::Pi, pi2);
      // bin 9 mag 0.100510 jump = 0.170600, ph = -0.570886, 1.200053, -3.141593
      // bin 10 mag 0.430429 jump = 0.036878, ph = -0.615644, 1.244535, 3.141593
-    const double ph0 = -0.570886;
-    const double ph1 = 1.200053;
+    double ph0 = -0.570886;
+    double ph1 = 1.200053;
     
-    const double ph2 = -3.141593;
-    const double ph2p = ph2 + pi2;
+    double ph2 = -3.141593;
+    double ph2p = ph2 + pi2;
 
     printf("ph0 ph1 ph2: %.2f, %.2f, %.2f ->  %.2f, %.2f ->%.2f\n", ph0, ph1, ph2, ph1 - ph0, ph2 - ph1, ph2 - 2* ph1 + ph0);
     printf("ph0 ph1 ph2p: %.2f, %.2f, %.2f ->  %.2f, %.2f ->%.2f\n", ph0, ph1, ph2p, ph1 - ph0, ph2p - ph1, ph2p - 2 * ph1 + ph0);
-    assert(false);
+
+    ph0 = -ph0;
+    ph1 = -ph1;
+    ph2 = -ph2;
+    printf("neg ph0 ph1 ph2: %.2f, %.2f, %.2f ->  %.2f, %.2f ->%.2f\n", ph0, ph1, ph2, ph1 - ph0, ph2 - ph1, ph2 - 2 * ph1 + ph0);
+    printf("neg ph0 ph1 ph2: %.2f, %.2f, %.2f ->  %.2f, %.2f ->%.2f\n", ph0, ph1, ph2, ph1 - ph0, ph2 - ph1, ph2 - 2 * ph1 + ph0);
+   // assert(false);
 
  }
 #endif
 
 void testOnset()
 {
+#if 0
   //  test0();
   //  test1();
- //   testing();
+    testing();
     testPhaseAngleUtilIsNormalized();
     testPhaseAngleUtilINormalize();
     testPhaseAngleUtilIDistance();
@@ -493,4 +516,5 @@ void testOnset()
     testWaveFile();
     testWaveFile2();
     testOnsetDetector();
+#endif
 }

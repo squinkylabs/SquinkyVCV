@@ -24,6 +24,7 @@
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
 #include "daveguide.h"
+#include "WVCO.h"
 
 #include "asserts.h"
 #include <set>
@@ -82,5 +83,6 @@ void testIComposite()
     test<DrumTrigger<TestComposite>>();
     test<ChaosKitty<TestComposite>>();
     test<Daveguide<TestComposite>>();
+    test<WVCO<TestComposite>>();
 
 }

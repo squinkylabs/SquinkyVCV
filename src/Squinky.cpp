@@ -113,6 +113,9 @@ p->addModel(modelSequencer4Module);
 #ifdef _CHAOS
 p->addModel(modelChaosKittyModule);
 #endif
+#ifdef _WVCO
+p->addModel(modelWVCOModule);
+#endif
 
 
 }
