@@ -185,15 +185,13 @@ static void testFoldNegative()
 
 #ifndef _MSC_VER
 
-static float_4 z;
-static int32_4 z2;
+//static float_4 z;
+//static int32_4 z2;
 
 #define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )
-#define simd_assertTrue(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
+#define simd_assert(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
+//#define simd_assertEQ(x, y) ( assertEQ( (x[0]), (y[0]))   )
 
-//#define simd_assertFalse(x) assert(false)
-
-//#define simd_assertFalse(x) assert(false)
 
 static void testFoldSSE()
 {
@@ -202,8 +200,17 @@ static void testFoldSSE()
     auto yn = x != float_4::zero();
 
     simd_assertFalse(yn);       // should pass
-    simd_assertTrue(y);
-#if 0
+    simd_assert(y);
+
+    const float_4 z = SimdBlocks::fold(0) == float_4::zero();
+    simd_assert(z);
+    simd_assert( float_4(SimdBlocks::fold(0) == float_4::zero()));
+    //simd_assertEQ( SimdBlocks::fold(0), float_4::zero() );
+
+    simd_assert( float_4(SimdBlocks::fold(.5) == float_4(.5)));
+
+ 
+#if 1
    // simd_assertFalse(y);        // should assert
     // y == float_4(0);
     int32_4 yy(y);
@@ -214,8 +221,8 @@ static void testFoldSSE()
     fprintf(stderr, "y0= %x  yn0= %x\n", (int) y[0], (int) yn[0]);
     fflush(stderr);
 
-    z = y;
-    z2 = xx;
+   // z = y;
+   // z2 = xx;
 #endif
 
 
