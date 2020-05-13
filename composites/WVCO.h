@@ -5,6 +5,8 @@
 #include <memory>
 #include "IComposite.h"
 
+using float_4 = rack::simd::float_4;
+
 namespace rack {
     namespace engine {
         struct Module;
@@ -19,6 +21,14 @@ class WVCODescription : public IComposite
 public:
     Config getParam(int i) override;
     int getNumParams() override;
+};
+
+class WVCODsp
+{
+public:
+    float_4 step() {
+        return float_4::zero();
+    }
 };
 
 template <class TBase>
@@ -77,6 +87,8 @@ public:
 
 private:
 
+    WVCODsp dsp[4];
+
 };
 
 
@@ -89,6 +101,11 @@ inline void WVCO<TBase>::init()
 template <class TBase>
 inline void WVCO<TBase>::step()
 {
+    for (int bank=0; bank<4; ++bank) {
+        const int channel = 4 * bank;
+        float_4 v = dsp[bank].step();
+        WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, channel);
+    }
 }
 
 template <class TBase>
