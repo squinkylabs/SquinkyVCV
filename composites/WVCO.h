@@ -3,6 +3,9 @@
 
 #include <assert.h>
 #include <memory>
+//#include "functions.hpp"
+#include <simd/vector.hpp>
+#include <simd/functions.hpp>
 #include "IComposite.h"
 
 using float_4 = rack::simd::float_4;
@@ -40,7 +43,7 @@ public:
         }
 
 		// Wrap phase
-		phaseAcc -= simd::floor(phaseAcc);
+		phaseAcc -= rack::simd::floor(phaseAcc);
 
         const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
         float_4 s = rack::simd::sin(phaseAcc * twoPi);

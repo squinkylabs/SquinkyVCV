@@ -6,6 +6,10 @@
 #include "AudioMath.h"
 #include "LookupTableFactory.h"
 
+#ifndef _MSC_VER
+#include "SimdBlocks.h"
+#endif
+
 using namespace std;
 
 static void test0()
@@ -179,6 +183,45 @@ static void testFoldNegative()
     }
 }
 
+#ifndef _MSC_VER
+
+static float_4 z;
+static int32_4 z2;
+
+#define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )
+#define simd_assertTrue(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
+
+//#define simd_assertFalse(x) assert(false)
+
+//#define simd_assertFalse(x) assert(false)
+
+static void testFoldSSE()
+{
+    auto x = SimdBlocks::fold(0); 
+    auto y = x == float_4::zero(); 
+    auto yn = x != float_4::zero();
+
+    simd_assertFalse(yn);       // should pass
+    simd_assertTrue(y);
+#if 0
+   // simd_assertFalse(y);        // should assert
+    // y == float_4(0);
+    int32_4 yy(y);
+    int32_t xx = y[0];
+    
+    fprintf(stderr, "simd == gives %f float, or %x,%x, %x, %x int\n", y[0], yy[0], yy[1], yy[2], yy[3]);
+    fprintf(stderr, "bool coerced = %x\n", xx);
+    fprintf(stderr, "y0= %x  yn0= %x\n", (int) y[0], (int) yn[0]);
+    fflush(stderr);
+
+    z = y;
+    z2 = xx;
+#endif
+
+
+}
+#endif
+
 static void testNormalizeProduct()
 {
     float data1[] = {1, 1, 1, 1};
@@ -220,4 +263,8 @@ void testAudioMath()
     testFoldNegative();
     testNormalizeProduct();
     testDistributeEvenly();
+#ifndef _MSC_VER
+    testFoldSSE();
+#endif
+
 }
