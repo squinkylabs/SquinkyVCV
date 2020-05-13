@@ -112,6 +112,8 @@ inline void WVCO<TBase>::step()
         float_4 v = dsp[bank].step(.005);
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, channel);
     }
+    // why can't I set to 16?
+    WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(15);
 }
 
 template <class TBase>
