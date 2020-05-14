@@ -1,6 +1,8 @@
 #pragma once
 #include "SqTime.h"
 
+#include <cstdio>
+
 /**
  * Unfinished time class. Meant to be inserted into other code (like VCV Rack).
  * Averages states over time.

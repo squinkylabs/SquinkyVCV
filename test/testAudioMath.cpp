@@ -190,7 +190,7 @@ static void testFoldSSE()
     // a few well know fixed values for sanity
     simd_assertEQ(SimdBlocks::fold(0), float_4(0));
     simd_assertEQ(SimdBlocks::fold(.5), float_4(.5));
-    simd_assertEQ(SimdBlocks::fold(-.5), float_4(-.5));
+    simd_assertEQ(SimdBlocks::fold(-.5), float_4(-.5)); 
     simd_assertEQ(SimdBlocks::fold(.9), float_4(.9));
     simd_assertEQ(SimdBlocks::fold(-.9), float_4(-.9));     
     simd_assertClose(SimdBlocks::fold(1.2), float_4(.8), .0001); 

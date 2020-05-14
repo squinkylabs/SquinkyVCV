@@ -146,7 +146,7 @@ int main(int argc, char ** argv)
     // Want to be sure we are testing the case we care about.
     assert(sizeof(size_t) == 8);
 
-    if (runShaperGen) {
+if (runShaperGen) {
         testSpline(true);
         return 0;
     }
@@ -158,8 +158,9 @@ int main(int argc, char ** argv)
 
     if (runPerf) {
         initPerf();
-        perfTest2();
+
         perfTest();
+        perfTest2();
         return 0;
     }
 

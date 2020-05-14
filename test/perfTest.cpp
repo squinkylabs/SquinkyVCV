@@ -26,6 +26,7 @@
 #include "Super.h"
 #include "KSComposite.h"
 #include "Seq.h"
+#include "WVCO.h"
 
 extern double overheadInOut;
 extern double overheadOutOnly;
@@ -573,6 +574,27 @@ static void testShaper1b()
         }, 1);
 }
 
+#ifndef _MSC_VER
+static void testWVCOPoly()
+{
+    WVCO<TestComposite> wvco;
+
+    wvco.inputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].channels = 8;
+    wvco.inputs[Super<TestComposite>::CV_INPUT].channels = 8;
+    MeasureTime<float>::run(overheadOutOnly, "wvco poly 8", [&wvco]() {
+        wvco.step();
+        return wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0) + 
+            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(1) + 
+            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(2) + 
+            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(3) + 
+            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(4) + 
+            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(5) + 
+            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(6) + 
+            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(7);
+    }, 1);
+}
+#endif
+
 static void testSuper()
 {
     Super<TestComposite> super;
@@ -580,6 +602,26 @@ static void testSuper()
     MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0);
+    }, 1);
+}
+
+
+static void testSuperPoly()
+{
+    Super<TestComposite> super;
+
+    super.inputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].channels = 8;
+    super.inputs[Super<TestComposite>::CV_INPUT].channels = 8;
+    MeasureTime<float>::run(overheadOutOnly, "super poly 8", [&super]() {
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(1) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(2) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(3) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(4) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(5) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(6) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(7);
     }, 1);
 }
 
@@ -592,7 +634,7 @@ static void testSuperStereo()
     MeasureTime<float>::run(overheadOutOnly, "super stereo", [&super]() {
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0) +
-        super.outputs[Super<TestComposite>::MAIN_OUTPUT_RIGHT].getVoltage(0); 
+        super.outputs[Super<TestComposite>::MAIN_OUTPUT_RIGHT].getVoltage(1); 
     }, 1);
 }
 
@@ -867,18 +909,24 @@ void perfTest()
     testShifter();
     testGMR();
 #endif
-    testLFN();
-    testLFNB();
+  
 
-
-    testCHBdef();
+#ifndef _MSC_VER
+    testWVCOPoly();
+#endif
     testSuper();
+    testSuperPoly();
     testSuperStereo();
     testSuper2();
     testSuper2Stereo();
     testSuper3();
   //  testKS();
   //  testShaper1a();
+    testLFN();
+    testLFNB();
+
+
+    testCHBdef();
 #if 0
     testShaper1b();
     testShaper1c();

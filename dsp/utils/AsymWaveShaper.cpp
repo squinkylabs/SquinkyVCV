@@ -1,5 +1,6 @@
 
 #include "AsymWaveShaper.h"
+#include <cstdio>
 
 
 extern float symmetry_table_0[];

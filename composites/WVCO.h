@@ -6,6 +6,11 @@
 //#include "functions.hpp"
 #include <simd/vector.hpp>
 #include <simd/functions.hpp>
+
+
+
+#ifndef _MSC_VER
+#include "SimdBlocks.h"
 #include "IComposite.h"
 
 using float_4 = rack::simd::float_4;
@@ -30,27 +35,21 @@ class WVCODsp
 {
 public:
     float_4 step(float_4 freq) {
-        static int times =0;
-        times++;
-       
-        
+
+               
         phaseAcc += freq;
 
-        const int limit = 0;
-         if (times < limit) {
-            printf("freq = %.2f, %.2f, %.2f, %.2f\n", freq[0], freq[1], freq[2], freq[3]);
-            printf("ph = %.2f, %.2f, %.2f, %.2f\n", phaseAcc[0], phaseAcc[1], phaseAcc[2], phaseAcc[3]);
-        }
 
 		// Wrap phase
 		phaseAcc -= rack::simd::floor(phaseAcc);
 
         const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
         float_4 s = rack::simd::sin(phaseAcc * twoPi);
-      // float_4 s = phaseAcc;
-         if (times < limit) {
-            printf("s = %.2f, %.2f, %.2f, %.2f\n", s[0], s[1], s[2], s[3]);
-         }
+
+        s *= 5;
+
+        s = SimdBlocks::fold(s);
+
         return s;
     }
 private:
@@ -155,5 +154,6 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
     }
     return ret;
 }
+#endif
 
 
