@@ -188,22 +188,25 @@ static void testFoldNegative()
 //static float_4 z;
 //static int32_4 z2;
 
-#define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )
-#define simd_assert(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
+// #define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )
+// #define simd_assert(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
 //#define simd_assertEQ(x, y) ( assertEQ( (x[0]), (y[0]))   )
 
 //void simd_assertEQ(const float_4&, const float_4&); 
-#define simd_assertEQ(a, b) assertEQEx(a[0], b[0], "simd0"); \
-    assertEQEx(a[1], b[1], "simd1"); \
-    assertEQEx(a[2], b[2], "simd2"); \
-    assertEQEx(a[3], b[3], "simd3");
 
 static void testFoldSSE()
 {
-    simd_assertEQ(SimdBlocks::fold(0), float_4(0));
+  //  simd_assertEQ(SimdBlocks::fold(0), float_4(0));
+  printf("\n at 1 \n\n");
     simd_assertEQ(SimdBlocks::fold(.5), float_4(.5));
+ printf("\n leave 1 \n\n");
+  //  simd_assertEQ(SimdBlocks::fold(-.5), float_4(-.5));
+    #if 0
     simd_assertEQ(SimdBlocks::fold(.9), float_4(.9));
-    simd_assertEQ(SimdBlocks::fold(1.2), float_4(.8)); 
+    simd_assertEQ(SimdBlocks::fold(-.9), float_4(-.9));     
+    simd_assertClose(SimdBlocks::fold(1.2), float_4(.8), .0001); 
+    simd_assertClose(SimdBlocks::fold(-1.2), float_4(-.8), .0001); 
+    #endif
 }
 #endif
 

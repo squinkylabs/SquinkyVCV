@@ -64,3 +64,34 @@ extern int _mdb;        // MIDI reverence count
 #define assertNoMidi()  ((void)0)
 #endif
 // leave space after macro
+
+
+#ifndef _MSC_VER
+
+// these ones are anything not zero is true. is that valid?
+#define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )
+#define simd_assert(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
+
+#define simd_assertEQ(a, b) assertEQEx(a[0], b[0], "simd0"); \
+    assertEQEx(a[1], b[1], "simd1"); \
+    assertEQEx(a[2], b[2], "simd2"); \
+    assertEQEx(a[3], b[3], "simd3");
+
+#define simd_assertClose(a, b, c) assertClose(a[0], b[0], c); \
+    assertClose(a[1], b[1], c); \
+    assertClose(a[2], b[2], c); \
+    assertClose(a[3], b[3], c);
+
+// mask must be 0 or all ones
+#define assertMask(m) \
+    if (m != 0 && (unsigned int)(m) != 0xffffffff) { printf("dword is not mask: %x\n", (unsigned int) m); fflush(stdout); } \
+    assert(m == 0 || (unsigned int)(m) == 0xffffffff);
+
+#define simd_assertMask(x) \
+    assertMask(x[0]); \
+    assertMask(x[1]); \
+    assertMask(x[2]); \
+    assertMask(x[3]);
+
+
+#endif
