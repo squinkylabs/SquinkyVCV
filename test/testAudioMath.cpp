@@ -192,40 +192,18 @@ static void testFoldNegative()
 #define simd_assert(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
 //#define simd_assertEQ(x, y) ( assertEQ( (x[0]), (y[0]))   )
 
+//void simd_assertEQ(const float_4&, const float_4&); 
+#define simd_assertEQ(a, b) assertEQEx(a[0], b[0], "simd0"); \
+    assertEQEx(a[1], b[1], "simd1"); \
+    assertEQEx(a[2], b[2], "simd2"); \
+    assertEQEx(a[3], b[3], "simd3");
 
 static void testFoldSSE()
 {
-    auto x = SimdBlocks::fold(0); 
-    auto y = x == float_4::zero(); 
-    auto yn = x != float_4::zero();
-
-    simd_assertFalse(yn);       // should pass
-    simd_assert(y);
-
-    const float_4 z = SimdBlocks::fold(0) == float_4::zero();
-    simd_assert(z);
-    simd_assert( float_4(SimdBlocks::fold(0) == float_4::zero()));
-    //simd_assertEQ( SimdBlocks::fold(0), float_4::zero() );
-
-    simd_assert( float_4(SimdBlocks::fold(.5) == float_4(.5)));
-
- 
-#if 1
-   // simd_assertFalse(y);        // should assert
-    // y == float_4(0);
-    int32_4 yy(y);
-    int32_t xx = y[0];
-    
-    fprintf(stderr, "simd == gives %f float, or %x,%x, %x, %x int\n", y[0], yy[0], yy[1], yy[2], yy[3]);
-    fprintf(stderr, "bool coerced = %x\n", xx);
-    fprintf(stderr, "y0= %x  yn0= %x\n", (int) y[0], (int) yn[0]);
-    fflush(stderr);
-
-   // z = y;
-   // z2 = xx;
-#endif
-
-
+    simd_assertEQ(SimdBlocks::fold(0), float_4(0));
+    simd_assertEQ(SimdBlocks::fold(.5), float_4(.5));
+    simd_assertEQ(SimdBlocks::fold(.9), float_4(.9));
+    simd_assertEQ(SimdBlocks::fold(1.2), float_4(.8)); 
 }
 #endif
 
