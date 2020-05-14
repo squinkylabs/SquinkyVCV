@@ -185,28 +185,40 @@ static void testFoldNegative()
 
 #ifndef _MSC_VER
 
-//static float_4 z;
-//static int32_4 z2;
-
-// #define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )
-// #define simd_assert(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
-//#define simd_assertEQ(x, y) ( assertEQ( (x[0]), (y[0]))   )
-
-//void simd_assertEQ(const float_4&, const float_4&); 
-
 static void testFoldSSE()
 {
-  //  simd_assertEQ(SimdBlocks::fold(0), float_4(0));
-  printf("\n at 1 \n\n");
+    // a few well know fixed values for sanity
+    simd_assertEQ(SimdBlocks::fold(0), float_4(0));
     simd_assertEQ(SimdBlocks::fold(.5), float_4(.5));
- printf("\n leave 1 \n\n");
-  //  simd_assertEQ(SimdBlocks::fold(-.5), float_4(-.5));
-    #if 0
+    simd_assertEQ(SimdBlocks::fold(-.5), float_4(-.5));
     simd_assertEQ(SimdBlocks::fold(.9), float_4(.9));
     simd_assertEQ(SimdBlocks::fold(-.9), float_4(-.9));     
     simd_assertClose(SimdBlocks::fold(1.2), float_4(.8), .0001); 
     simd_assertClose(SimdBlocks::fold(-1.2), float_4(-.8), .0001); 
-    #endif
+}
+
+static void testFoldSSE2()
+{
+    const float deltaX = 0.05f;
+    for (float x = -15; x < 15; x += deltaX) {
+        const float y = AudioMath::fold(x);
+        const float_4 y4 = SimdBlocks::fold(x);
+        simd_assertClose(y4, float_4(y), .0001);
+    }
+}
+
+static void testFoldSSE3()
+{
+    const float test[4] = {.1, 2.3, -1, -40.3};
+    float output[4] = {0,0,0,0};
+
+    float_4 input = float_4::load(test);
+    float_4 temp = SimdBlocks::fold(input);
+    temp.store(output);
+    
+    for (int i=0; i<4; ++i) {
+        assertClose(output[i], AudioMath::fold(test[i]), .0001);
+    }
 }
 #endif
 
@@ -253,6 +265,8 @@ void testAudioMath()
     testDistributeEvenly();
 #ifndef _MSC_VER
     testFoldSSE();
+    testFoldSSE2();
+    testFoldSSE3();
 #endif
 
 }
