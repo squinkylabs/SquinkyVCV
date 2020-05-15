@@ -9,6 +9,7 @@
 extern void testMidiPlayer2();
 extern void testMidiPlayer4();
 extern void testBiquad();
+extern void simd_testBiquad();
 extern void testTestSignal();
 extern void testSaw();
 extern void testLookupTable();
@@ -172,6 +173,9 @@ if (runShaperGen) {
     testOnset();
     testOnset2();
 
+    testBiquad();
+    simd_testBiquad();
+
     testIComposite();
     testVec();
     testCommChannels();
@@ -220,7 +224,7 @@ if (runShaperGen) {
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
     testTestSignal();
-    testBiquad();
+   
     testSaw();
     testClockMult();
     testDelay();

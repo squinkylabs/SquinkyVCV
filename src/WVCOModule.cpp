@@ -79,7 +79,7 @@ WVCOWidget::WVCOWidget(WVCOModule *module)
 {
     setModule(module);
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/wvco_panel.svg");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

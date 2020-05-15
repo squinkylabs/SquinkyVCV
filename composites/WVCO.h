@@ -45,7 +45,6 @@ public:
 
         const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
         float_4 s = rack::simd::sin(phaseAcc * twoPi);
-
         s *= 5;
 
         s = SimdBlocks::fold(s);
