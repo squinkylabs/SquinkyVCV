@@ -10,10 +10,23 @@
 
 
 #ifndef _MSC_VER
+#include "ObjectCache.h"
 #include "SimdBlocks.h"
 #include "IComposite.h"
 
 using float_4 = rack::simd::float_4;
+
+
+#ifndef _CLAMP
+#define _CLAMP
+namespace std {
+    inline float clamp(float v, float lo, float hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+}
+#endif
 
 namespace rack {
     namespace engine {
@@ -34,7 +47,8 @@ public:
 class WVCODsp
 {
 public:
-    float_4 step(float_4 freq) {  
+    enum class WaveForm {Sine, Fold, SawTri};
+    float_4 step(float_4 freq, WaveForm wf) {  
         phaseAcc += freq;
 		// Wrap phase
 		phaseAcc -= rack::simd::floor(phaseAcc);
@@ -43,7 +57,11 @@ public:
         float_4 s = rack::simd::sin(phaseAcc * twoPi);
         s *= 5;
 
-        s = SimdBlocks::fold(s);
+        if (wf == WaveForm::Fold) {
+           // printf("folding\n"); fflush(stdout);
+            s = SimdBlocks::fold(s);
+            s *= 5;
+        }
 
         return s;
     }
@@ -131,6 +149,9 @@ public:
 private:
 
     WVCODsp dsp[4];
+    std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
+
+    float_4 getOscFreq(int bank);
 
 };
 
@@ -140,17 +161,78 @@ inline void WVCO<TBase>::init()
 {
 }
 
+
+template <class TBase>
+inline float_4 WVCO<TBase>::getOscFreq(int bank)
+{
+    float_4 freq;
+
+    const float basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +      
+        TBase::params[FINE_TUNE_PARAM].value / 12.0f;
+    for (int i=0; i<4; ++i) {
+        const int channel = bank * 4 + i;
+
+        float pitch = basePitch;
+        pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
+
+     //   if ((i == 0) && bank == 0)
+     //       printf("base pitch = %f, cv = %f\n", basePitch, TBase::inputs[VOCT_INPUT].getVoltage(channel));
+
+        // TODO: modulation
+        //pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].getVoltage(0) *
+        //    taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
+
+        const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
+
+        pitch += q;
+        float _freq = expLookup(pitch);
+
+       // if ((i == 0) && bank == 0)
+       //     printf("q = %f, now _freq - %f\n", q, _freq);
+        
+        const int freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
+        _freq *= freqMultiplier;
+       
+
+        const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
+        freq[i] = time;
+
+       // if (i == 0 && bank==0) {
+       //     printf("pitch = %f mult=%d freq = %f time=%f\n", pitch, freqMultiplier, _freq, time);
+       // }
+    }
+    return freq;
+}
+
 template <class TBase>
 inline void WVCO<TBase>::step()
 {
-    for (int bank=0; bank<4; ++bank) {
-        const int channel = 4 * bank;
-        float_4 v = dsp[bank].step(.005);       // was .005
-        WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, channel);
+    // get wavform from UI
+    WVCODsp::WaveForm wf;
+    int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
+    wf = WVCODsp::WaveForm(wfFromUI);
+
+    // get pitch from params.
+   // const int octave = (int) std::round(TBase::params[_PARAM].value);
+  //  float pitchCV = octave - 3;
+
+
+    
+    const int numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(numChannels);
+
+    int numBanks = numChannels / 4;
+    if (numChannels > numBanks * 4) {
+        numBanks++;
     }
-    // why can't I set to 16?
-    WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(15);
+    for (int bank=0; bank < numBanks; ++bank) {
+        const float_4 freq = getOscFreq(bank);
+        const int baseChannel = 4 * bank;
+        float_4 v = dsp[bank].step(freq, wf);       // was .005
+        WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
+    }
 }
+
 
 template <class TBase>
 int WVCODescription<TBase>::getNumParams()
@@ -164,7 +246,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case WVCO<TBase>::OCTAVE_PARAM:
-            ret = {0.f, 10.0f, 0, "[nimp] Octave"};
+            ret = {0.f, 10.0f, 0, "Octave"};
             break;
         case WVCO<TBase>::FREQUENCY_MULTIPLIER_PARAM:
             ret = {1.f, 16.0f, 1, "[nimp] Freq Ratio"};
@@ -182,7 +264,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 0, "[nimp] Shape Mod"};
             break;
         case WVCO<TBase>::WAVE_SHAPE_PARAM:
-            ret = {-1.0f, 1.0f, 0, "[nimp] Wave Shape"};
+            ret = {0, 2, 0, "[nimp] Wave Shape"};
             break;
         case WVCO<TBase>::FEEDBACK_PARAM:
             ret = {0, 100, 0, "[nimp] FM feedback depth"};

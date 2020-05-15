@@ -91,14 +91,14 @@ const float labelAboveKnob = 20;
 void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
 
     // first row
-    addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX1, knobY1),
         module,
         Comp::OCTAVE_PARAM));
     addLabel(Vec(knobX1 - 10, knobY1 - labelAboveKnob), "Octave");
 
-    addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX2, knobY1),
         module,
@@ -128,12 +128,12 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
     addLabel(Vec(knobX1 - 10, knobY2 - labelAboveKnob), "LFM-0");
 
 #if 1
-    addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX2, knobY2),
         module,
         Comp::WAVE_SHAPE_PARAM));
-    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Wvfm.");
+    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Wvfm");
 
 #else
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
