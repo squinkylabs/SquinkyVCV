@@ -136,8 +136,6 @@ static void testCompare(int index) {
         float x = BiquadFilter<float>::run(1, scalarState, scalarParams);
         float_4 x_4 = BiquadFilter<float_4>::run(1, vectorState, vectorParams);
 
-        printf("i=%d scalar = %f, vec = %s\n", index, x, toStr(x_4).c_str());
-        
         for (int j=0; j<4; ++j) {
             if (j == index) {
                 assertClose(x, x_4[j], .0001);
@@ -145,7 +143,6 @@ static void testCompare(int index) {
                 assertLT(x_4[j], x / 2);
             }
         }
-
     }
 }
 
