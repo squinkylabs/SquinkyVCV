@@ -174,7 +174,9 @@ if (runShaperGen) {
     testOnset2();
 
     testBiquad();
+#ifndef _MSC_VER
     simd_testBiquad();
+#endif
 
     testIComposite();
     testVec();

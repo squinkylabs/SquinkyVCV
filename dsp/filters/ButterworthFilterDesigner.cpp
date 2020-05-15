@@ -124,13 +124,31 @@ template class ButterworthFilterDesigner<float>;
 #if 1
 #include <simd/vector.hpp>
 #include <simd/functions.hpp>
-//template class ButterworthFilterDesigner<rack::simd::float_4>;
-//template <typename rack::simd::float_4>
+
+static void setVectorElementFromScalar(
+    BiquadParams<rack::simd::float_4, 3>& dest,
+    const BiquadParams<float, 3>& src,
+    int index)
+{
+    for (int i=0; i<3; ++i) {
+        dest.A1(i)[index] = src.A1(i);
+        dest.A2(i)[index] = src.A2(i);
+        dest.B0(i)[index] = src.B0(i);
+        dest.B1(i)[index] = src.B1(i);
+        dest.B2(i)[index] = src.B2(i);
+        
+    }
+} 
+
 template <>
 void ButterworthFilterDesigner<rack::simd::float_4>::designSixPoleLowpass(
     BiquadParams<rack::simd::float_4, 3>& outParams,
     rack::simd::float_4 frequency)
 {
-    printf("6 pole lowpass sse if fake\n");
+    for (int i=0; i<4; ++i) {
+        BiquadParams<float, 3> scalarParams;
+        ButterworthFilterDesigner<float>::designSixPoleLowpass(scalarParams, frequency[i]);
+       setVectorElementFromScalar(outParams, scalarParams, i);
+    }
 }
 #endif
