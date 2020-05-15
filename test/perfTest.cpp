@@ -574,7 +574,32 @@ static void testShaper1b()
         }, 1);
 }
 
+
+static void testBiquad()
+{
+    BiquadParams<float, 3> params;
+    BiquadState<float, 3> state;
+    ButterworthFilterDesigner<float>::designSixPoleLowpass(params, .1);
+   
+    MeasureTime<float>::run(overheadInOut, "6p LP", [&state, &params]() {
+        float d = BiquadFilter<float>::run(TestBuffers<float>::get(), state, params);
+        return d;
+        }, 1);
+}
+
 #ifndef _MSC_VER
+
+static void simd_testBiquad()
+{
+    BiquadParams<float_4, 3> params;
+    BiquadState<float_4, 3> state;
+    ButterworthFilterDesigner<float_4>::designSixPoleLowpass(params, .1);
+   
+    MeasureTime<float>::run(overheadInOut, "6p LP x4 simd", [&state, &params]() {
+        float_4 d = BiquadFilter<float_4>::run(TestBuffers<float>::get(), state, params);
+        return d[0];
+        }, 1);
+}
 static void testWVCOPoly()
 {
     WVCO<TestComposite> wvco;
@@ -911,8 +936,11 @@ void perfTest()
 #endif
   
 
+    testBiquad();
 #ifndef _MSC_VER
+    simd_testBiquad();
     testWVCOPoly();
+    
 #endif
     testSuper();
     testSuperPoly();
