@@ -121,6 +121,12 @@ public:
      */
     void step() override;
 
+
+    static std::vector<std::string> getWaveformNames()
+    {
+        return {"Sine", "Folder", "Saw/T"};
+    }
+
 private:
 
     WVCODsp dsp[4];
