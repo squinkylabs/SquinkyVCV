@@ -83,6 +83,7 @@ const float knobX4 = knobLeftEdge + 3 * knobDeltaX;
 const float knobY1 = 60;
 const float knobDeltaY = 70;
 const float knobY2 = knobY1 + 1 *  knobDeltaY;
+const float knobY3 = knobY1 + 2 *  knobDeltaY;
 
 const float labelAboveKnob = 20;
 
@@ -125,23 +126,43 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::LINEAR_FM_DEPTH_PARAM));
     addLabel(Vec(knobX1 - 10, knobY2 - labelAboveKnob), "LFM-0");
 
+#if 1
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX2, knobY2),
+        module,
+        Comp::WAVE_SHAPE_PARAM));
+    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Wvfm.");
+
+#else
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(knobX2, knobY2),
         module,
         Comp::WAVE_SHAPE_PARAM);
-    p->box.size.x = 60;    // width
+    p->box.size.x = 50;    // width
     p->box.size.y = 22;     // should set auto like button does
     p->text = "Sine";
     p->setLabels(Comp::getWaveformNames());
     addParam(p);
+#endif
 
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX3, knobY2),
+        module,
+        Comp::WAVESHAPE_GAIN_PARAM));
+    addLabel(Vec(knobX3 - 10, knobY2 - labelAboveKnob), "Shape");
+
+    // third row
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX4, knobY2),
         module,
-        Comp::WAVESHAPE_GAIN_PARAM));
-    addLabel(Vec(knobX4 - 10, knobY2 - labelAboveKnob), "Shape");
+        Comp::FEEDBACK_PARAM));
+    addLabel(Vec(knobX4 - 10, knobY2 - labelAboveKnob), "Fbck");
+
+    
 
 }
 
