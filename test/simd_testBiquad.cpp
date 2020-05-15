@@ -12,9 +12,6 @@
 #include "BiquadParams.h"
 #include "BiquadParams.h"
 #include "BiquadState.h"
-//#include "simd_BiquadState.h"
-//#include "simd_BiquadParams.h"
-//#include "simd_BiquadFilter.h"
 
 #include <simd/vector.hpp>
 #include <simd/functions.hpp>
@@ -54,13 +51,11 @@ static void testParam_0()
 {
     BiquadParams<T, N> p;
     for (int i = 0; i < N; ++i) {
-
         simd_assertEQ(p.A1(0), float_4(0));
         simd_assertEQ(p.A2(0), float_4(0));
         simd_assertEQ(p.B0(0), float_4(0));
         simd_assertEQ(p.B1(0), float_4(0));
         simd_assertEQ(p.B2(0), float_4(0));
-
     }
 
     p.A1(0) = 1;
@@ -75,7 +70,6 @@ static void testParam_0()
     simd_assertEQ(p.B1(0), float_4(11));
     simd_assertEQ(p.B2(0), float_4(12));
 
-
     if (N > 1) {
         p.A1(N - 1) = 111;
         p.A2(N - 1) = 112;
@@ -88,8 +82,6 @@ static void testParam_0()
         simd_assertEQ(p.B0(N-1), float_4(1110));
         simd_assertEQ(p.B1(N-1), float_4(1111));
         simd_assertEQ(p.B2(N-1), float_4(1112));
-
-
     }
 
     simd_assertEQ(p.A1(0), float_4(1));
@@ -125,28 +117,54 @@ static void testBasicDesigner2()
     simd_assertNE(p.B2(0), float_4::zero());
 }
 
-#if 0
+static void testCompare(int index) {
+    BiquadParams<float_4, 3> vectorParams; 
+    BiquadParams<float, 3> scalarParams;
 
-// test that filter designer does something (more than just generate zero
-template<typename T>
-static void testBasicDesigner3()
-{
-    BiquadParams<T, 2> p;
-    ButterworthFilterDesigner<T>::designThreePoleLowpass(p, T(.1));
-    assert(p.A1(0) != 0);
-    assert(p.A2(0) != 0);
-    assert(p.B1(0) != 0);
-    assert(p.B2(0) != 0);
-    assert(p.B0(0) != 0);
+    BiquadState<float_4, 3> vectorState; 
+    BiquadState<float, 3> scalarState; 
+   
+    float scalarFreq = .1;
+    float_4 vectorFreq = float_4(.00001);
+
+    vectorFreq[index] = scalarFreq;
+
+    ButterworthFilterDesigner<float>::designSixPoleLowpass(scalarParams, scalarFreq);
+    ButterworthFilterDesigner<float_4>::designSixPoleLowpass(vectorParams, vectorFreq);
+
+    for (int i = 0; i < 100; ++i) {
+        float x = BiquadFilter<float>::run(1, scalarState, scalarParams);
+        float_4 x_4 = BiquadFilter<float_4>::run(1, vectorState, vectorParams);
+
+        printf("i=%d scalar = %f, vec = %s\n", index, x, toStr(x_4).c_str());
+        
+        for (int j=0; j<4; ++j) {
+            if (j == index) {
+                assertClose(x, x_4[j], .0001);
+            } else {
+                assertLT(x_4[j], x / 2);
+            }
+        }
+
+    }
 }
 
+static void testCompare()
+{
+    for (int i=0; i<4; ++i) {
+        testCompare(i);
+    }
+}
+
+
+#if 0
 // test that filter does something
 template<typename T>
 static void testBasicFilter2()
 {
-    BiquadParams<T, 1> params;
-    BiquadState<T, 1> state;
-    ButterworthFilterDesigner<T>::designTwoPoleLowpass(params, T(.1));
+    BiquadParams<T, 3> params;
+    BiquadState<T, 3> state;
+    ButterworthFilterDesigner<T>::designSixPoleLowpass(params, T(.1));
 
     T lastValue = -1;
 
@@ -155,14 +173,20 @@ static void testBasicFilter2()
         T temp = BiquadFilter<T>::run(1, state, params);
         if (i < 5) {
             // the first 5 are strictly increasing and below 1
-            assert(temp < 1);
-            assert(temp > lastValue);
+           // assert(temp < 1);
+           // assert(temp > lastValue);
+            simd_assertLT(temp, float_4(1));
+            simd_assertGT(temp, lastValue);
         } else if (i < 10) {
             // the next are all overshoot
-            assert(temp > 1 && temp < 1.05);
+            //assert(temp > 1 && temp < 1.05);
+            simd_assertGT(temp, float_4(1));
+            simd_assertLT(temp, float_4(1.05));
         } else if (i > 50) {
             //settled
-            assert(temp > .999 && temp < 1.001);
+            //assert(temp > .999 && temp < 1.001);
+            simd_assertGT(temp, float_4(.999));
+            simd_assertLT(temp, float_4(1.001));
         }
 
         lastValue = temp;
@@ -171,6 +195,7 @@ static void testBasicFilter2()
     (void) val;
 
 }
+
 
 // test that filter does something
 template<typename T>
@@ -212,12 +237,14 @@ void simd_testBiquad()
     test2<float_4>();
 
     testBasicDesigner2<float_4>();
+    testCompare();
 #if 0
+  testBasicFilter2<float_4>();
     testBasicDesigner2<float>();
     testBasicDesigner3<double>();
     testBasicDesigner3<float>();
 
-    testBasicFilter2<double>();
+
     testBasicFilter2<float>();
     testBasicFilter3<double>();
     testBasicFilter3<float>();

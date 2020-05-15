@@ -15,18 +15,7 @@ public:
 };
 
 
-inline std::string toStr(const float_4& x) {
-    std::stringstream s;
-    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
-    return s.str();
-}
 
-
-inline std::string toStr(const int32_4& x) {
-    std::stringstream s;
-    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
-    return s.str();
-}
 
 /*
  static inline float fold(float x)

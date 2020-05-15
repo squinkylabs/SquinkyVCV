@@ -68,6 +68,27 @@ extern int _mdb;        // MIDI reverence count
 
 #ifndef _MSC_VER
 
+#include <simd/vector.hpp>
+#include <simd/functions.hpp>
+
+using float_4 = rack::simd::float_4;
+using int32_4 = rack::simd::int32_4;
+
+inline std::string toStr(const float_4& x) {
+    std::stringstream s;
+    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
+    return s.str();
+}
+
+
+inline std::string toStr(const int32_4& x) {
+    std::stringstream s;
+    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
+    return s.str();
+}
+
+
+
 // these ones are anything not zero is true. is that valid?
 #define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )
 #define simd_assert(x) (  assert ((int(x[0]) != 0) && (int(x[1]) != 0) && (int(x[2]) != 0) && (int(x[3]) != 0)) )
@@ -98,5 +119,16 @@ extern int _mdb;        // MIDI reverence count
     assertMask(x[2]); \
     assertMask(x[3]);
 
+#define simd_assertLT(a, b) \
+    assertLT(a[0], b[0]); \
+    assertLT(a[1], b[1]); \
+    assertLT(a[2], b[2]); \
+    assertLT(a[3], b[3]); 
+
+#define simd_assertGT(a, b) \
+    assertGT(a[0], b[0]); \
+    assertGT(a[1], b[1]); \
+    assertGT(a[2], b[2]); \
+    assertGT(a[3], b[3]); 
 
 #endif
