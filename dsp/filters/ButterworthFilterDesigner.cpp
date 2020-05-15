@@ -120,3 +120,17 @@ void ButterworthFilterDesigner<T>::designEightPoleElliptic(BiquadParams<T, 4>& o
 // Or put all in header
 template class ButterworthFilterDesigner<double>;
 template class ButterworthFilterDesigner<float>;
+
+#if 1
+#include <simd/vector.hpp>
+#include <simd/functions.hpp>
+//template class ButterworthFilterDesigner<rack::simd::float_4>;
+//template <typename rack::simd::float_4>
+template <>
+void ButterworthFilterDesigner<rack::simd::float_4>::designSixPoleLowpass(
+    BiquadParams<rack::simd::float_4, 3>& outParams,
+    rack::simd::float_4 frequency)
+{
+    printf("6 pole lowpass sse if fake\n");
+}
+#endif

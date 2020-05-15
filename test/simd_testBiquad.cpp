@@ -48,17 +48,19 @@ static void testState_0()
     simd_assertEQ(p.z1(0), float_4(6));
 }
 
-#if 0
+
 template<typename T, int N>
 static void testParam_0()
 {
     BiquadParams<T, N> p;
     for (int i = 0; i < N; ++i) {
-        assert(p.A2(i) == 0);
-        assert(p.A1(i) == 0);
-        assert(p.B0(i) == 0);
-        assert(p.B1(i) == 0);
-        assert(p.B2(i) == 0);
+
+        simd_assertEQ(p.A1(0), float_4(0));
+        simd_assertEQ(p.A2(0), float_4(0));
+        simd_assertEQ(p.B0(0), float_4(0));
+        simd_assertEQ(p.B1(0), float_4(0));
+        simd_assertEQ(p.B2(0), float_4(0));
+
     }
 
     p.A1(0) = 1;
@@ -67,11 +69,12 @@ static void testParam_0()
     p.B1(0) = 11;
     p.B2(0) = 12;
 
-    assert(p.A1(0) == 1);
-    assert(p.A2(0) == 2);
-    assert(p.B0(0) == 10);
-    assert(p.B1(0) == 11);
-    assert(p.B2(0) == 12);
+    simd_assertEQ(p.A1(0), float_4(1));
+    simd_assertEQ(p.A2(0), float_4(2));
+    simd_assertEQ(p.B0(0), float_4(10));
+    simd_assertEQ(p.B1(0), float_4(11));
+    simd_assertEQ(p.B2(0), float_4(12));
+
 
     if (N > 1) {
         p.A1(N - 1) = 111;
@@ -80,42 +83,49 @@ static void testParam_0()
         p.B1(N - 1) = 1111;
         p.B2(N - 1) = 1112;
 
-        assert(p.A1(N - 1) == 111);
-        assert(p.A2(N - 1) == 112);
-        assert(p.B0(N - 1) == 1110);
-        assert(p.B1(N - 1) == 1111);
-        assert(p.B2(N - 1) == 1112);
+        simd_assertEQ(p.A1(N-1), float_4(111));
+        simd_assertEQ(p.A2(N-1), float_4(112));
+        simd_assertEQ(p.B0(N-1), float_4(1110));
+        simd_assertEQ(p.B1(N-1), float_4(1111));
+        simd_assertEQ(p.B2(N-1), float_4(1112));
+
+
     }
 
-    assert(p.A1(0) == 1);
-    assert(p.A2(0) == 2);
-    assert(p.B0(0) == 10);
-    assert(p.B1(0) == 11);
-    assert(p.B2(0) == 12);
+    simd_assertEQ(p.A1(0), float_4(1));
+    simd_assertEQ(p.A2(0), float_4(2));
+    simd_assertEQ(p.B0(0), float_4(10));
+    simd_assertEQ(p.B1(0), float_4(11));
+    simd_assertEQ(p.B2(0), float_4(12));
 }
+
 
 template<typename T>
 static void test2()
 {
-    BiquadParams<T, 2> p;
-    ButterworthFilterDesigner<T>::designThreePoleLowpass(p, T(.1));
-    BiquadState<T, 2> s;
+    BiquadParams<T, 3> p;
+    ButterworthFilterDesigner<T>::designSixPoleLowpass(p, T(.1));
+    BiquadState<T, 3> s;
     T d = BiquadFilter<T>::run(0, s, p);
     (void) d;
 }
+
+
 
 // test that filter designer does something (more than just generate zero
 template<typename T>
 static void testBasicDesigner2()
 {
-    BiquadParams<T, 1> p;
-    ButterworthFilterDesigner<T>::designTwoPoleLowpass(p, T(.1));
-    assert(p.A1(0) != 0);
-    assert(p.A2(0) != 0);
-    assert(p.B1(0) != 0);
-    assert(p.B2(0) != 0);
-    assert(p.B0(0) != 0);
+    BiquadParams<T, 3> p;
+    ButterworthFilterDesigner<T>::designSixPoleLowpass(p, T(.1));
+    simd_assertNE(p.A1(0), float_4::zero());
+    simd_assertNE(p.A2(0), float_4::zero());
+    simd_assertNE(p.B0(0), float_4::zero());
+    simd_assertNE(p.B1(0), float_4::zero());
+    simd_assertNE(p.B2(0), float_4::zero());
 }
+
+#if 0
 
 // test that filter designer does something (more than just generate zero
 template<typename T>
@@ -197,12 +207,12 @@ static void testBasicFilter3()
 void simd_testBiquad()
 {
     testState_0<float_4, 8>();
+    testParam_0<float_4, 4>();
 
+    test2<float_4>();
+
+    testBasicDesigner2<float_4>();
 #if 0
-    test2<float>();
-    test2<double>();
-
-    testBasicDesigner2<double>();
     testBasicDesigner2<float>();
     testBasicDesigner3<double>();
     testBasicDesigner3<float>();

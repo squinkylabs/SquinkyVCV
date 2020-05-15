@@ -77,6 +77,11 @@ extern int _mdb;        // MIDI reverence count
     assertEQEx(a[2], b[2], "simd2"); \
     assertEQEx(a[3], b[3], "simd3");
 
+#define simd_assertNE(a, b) assertNEEx(a[0], b[0], "simd0"); \
+    assertNEEx(a[1], b[1], "simd1"); \
+    assertNEEx(a[2], b[2], "simd2"); \
+    assertNEEx(a[3], b[3], "simd3");
+
 #define simd_assertClose(a, b, c) assertClose(a[0], b[0], c); \
     assertClose(a[1], b[1], c); \
     assertClose(a[2], b[2], c); \
