@@ -95,6 +95,7 @@ public:
         VOCT_INPUT,
         FM_INPUT,
         LINEAR_FM_INPUT,
+        GATE_INPUT,
         NUM_INPUTS
     };
 
@@ -163,40 +164,40 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case WVCO<TBase>::OCTAVE_PARAM:
-            ret = {0.f, 10.0f, 0, "Octave"};
+            ret = {0.f, 10.0f, 0, "[nimp] Octave"};
             break;
         case WVCO<TBase>::FREQUENCY_MULTIPLIER_PARAM:
-            ret = {1.f, 16.0f, 1, "Freq Ratio"};
+            ret = {1.f, 16.0f, 1, "[nimp] Freq Ratio"};
             break;
         case WVCO<TBase>::FINE_TUNE_PARAM:
-            ret = {-12.0f, 12.0f, 0, "Fine Tune"};
+            ret = {-12.0f, 12.0f, 0, "[nimp] Fine Tune"};
             break;
         case WVCO<TBase>::FM_DEPTH_PARAM:
-         ret = {.0f, 100.0f, 0, "Freq Mod"};
+         ret = {.0f, 100.0f, 0, "[nimp] Freq Mod"};
             break;
         case WVCO<TBase>::LINEAR_FM_DEPTH_PARAM:
-            ret = {0, 100, 0, "Through-zero FM depth"};
+            ret = {0, 100, 0, "[nimp] Through-zero FM depth"};
             break;
         case WVCO<TBase>::WAVESHAPE_GAIN_PARAM:
-            ret = {0, 100, 0, "Shape Mod"};
+            ret = {0, 100, 0, "[nimp] Shape Mod"};
             break;
         case WVCO<TBase>::WAVE_SHAPE_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Wave Shape"};
+            ret = {-1.0f, 1.0f, 0, "[nimp] Wave Shape"};
             break;
         case WVCO<TBase>::FEEDBACK_PARAM:
-            ret = {0, 100, 0, "FM feedback depth"};
+            ret = {0, 100, 0, "[nimp] FM feedback depth"};
             break;
         case WVCO<TBase>::ATTACK_PARAM:
-            ret = {0, 100, 0, "Attck"};
+            ret = {0, 100, 0, "[nimp] Attck"};
             break;
         case WVCO<TBase>::DECAY_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Decay"};
+            ret = {-1.0f, 1.0f, 0, "[nimp] Decay"};
             break;
         case WVCO<TBase>::SUSTAIN_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Sustain"};
+            ret = {-1.0f, 1.0f, 0, "[nimp] Sustain"};
             break;
         case WVCO<TBase>::RELEASE_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Release"};
+            ret = {-1.0f, 1.0f, 0, "[nimp] Release"};
             break;
         default:
             assert(false);

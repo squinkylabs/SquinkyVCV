@@ -71,6 +71,7 @@ struct WVCOWidget : ModuleWidget
     }
 
     void addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp);
+    void addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 const float knobLeftEdge = 24;
@@ -162,9 +163,59 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::FEEDBACK_PARAM));
     addLabel(Vec(knobX4 - 10, knobY2 - labelAboveKnob), "Fbck");
 
-    
-
 }
+
+const float jacksX1 = 24;
+const float jacksDeltaX = 38;
+const float jacksX2 = jacksX1 + 1 * jacksDeltaX;
+const float jacksX3 = jacksX1 + 2 * jacksDeltaX;
+const float jacksX4 = jacksX1 + 3 * jacksDeltaX;
+const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
+
+const float jacksY1 = 260;
+const float jacksY2 = jacksY1 + 46;
+#if 0
+  FM_INPUT,
+        LINEAR_FM_INPUT,
+        GATE_INPUT,
+        #endif
+
+void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX1, jacksY1),
+        module,
+        Comp::VOCT_INPUT));
+    addLabel(Vec(jacksX1 - 10, jacksY1 - labelAboveKnob), "V/8");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX2, jacksY1),
+        module,
+        Comp::FM_INPUT));
+    addLabel(Vec(jacksX2 - 10, jacksY1 - labelAboveKnob), "Mod");
+
+     addInput(createInput<PJ301MPort>(
+        Vec(jacksX3, jacksY1),
+        module,
+        Comp::LINEAR_FM_INPUT));
+    addLabel(Vec(jacksX3 - 10, jacksY1 - labelAboveKnob), "LFM-0");
+
+     addInput(createInput<PJ301MPort>(
+        Vec(jacksX4, jacksY1),
+        module,
+        Comp::GATE_INPUT));
+    addLabel(Vec(jacksX4 - 10, jacksY1 - labelAboveKnob), "Gate");
+    
+    // second row
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jacksX1, jacksY2),
+        module,
+        Comp::MAIN_OUTPUT));
+    addLabel(Vec(jacksX1 - 10, jacksY2 - labelAboveKnob), "Out");
+}
+
+
+
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -187,11 +238,8 @@ WVCOWidget::WVCOWidget(WVCOModule *module)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     addKnobs(module, icomp);
+    addJacks(module, icomp);
 
-    addOutput(createOutputCentered<PJ301MPort>(
-        Vec(140, 340),
-        module,
-        Comp::MAIN_OUTPUT));
 }
 
 Model *modelWVCOModule = createModel<WVCOModule, WVCOWidget>("squinkylabs-wvco");
