@@ -5,6 +5,7 @@
 
 #ifdef _WVCO
 #include "WVCO.h"
+#include "ctrl/SqWidgets.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 
@@ -66,8 +67,39 @@ struct WVCOWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp);
 };
 
+const float knobLeftEdge = 24;
+const float knobDeltaX = 46;
+const float knobX1 = knobLeftEdge;
+const float knobX2 = knobLeftEdge + 1 * knobDeltaX;
+const float knobX3 = knobLeftEdge + 2 * knobDeltaX;
+const float knobX4 = knobLeftEdge + 3 * knobDeltaX;
+
+const float knobY1 = 60;
+const float knobDeltaY = 50;
+const float knobY2 = knobY1 + 1 *  knobDeltaY;
+
+const float labelAboveKnob = 20;
+
+void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
+
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX1, knobY1),
+        module,
+        Comp::OCTAVE_PARAM));
+    addLabel(Vec(knobX1 - 10, knobY1 - labelAboveKnob), "Octave");
+
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX2, knobY1),
+        module,
+        Comp::FREQUENCY_MULTIPLIER_PARAM));
+    addLabel(Vec(knobX2 - 10, knobY1 - labelAboveKnob), "Ratio");
+}
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -87,7 +119,11 @@ WVCOWidget::WVCOWidget(WVCOModule *module)
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
-     addOutput(createOutputCentered<PJ301MPort>(
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+
+    addKnobs(module, icomp);
+
+    addOutput(createOutputCentered<PJ301MPort>(
         Vec(140, 340),
         module,
         Comp::MAIN_OUTPUT));
