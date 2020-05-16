@@ -68,30 +68,32 @@ class WVCODsp
 public:
     enum class WaveForm {Sine, Fold, SawTri};
     float_4 step() {  
+        const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
+
         phaseAcc += normalizedFreq;
 		// Wrap phase
 		phaseAcc -= rack::simd::floor(phaseAcc);
 
-        const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
+        float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
+
+       
        
         float_4 s;
         if (waveform == WaveForm::Fold) {
-            s = rack::simd::sin(phaseAcc * twoPi);
+            s = rack::simd::sin(phase * twoPi);
             s *= (shapeAdjust * 10);
             s = SimdBlocks::fold(s);
             s *= 5;
         } else if (waveform == WaveForm::SawTri) {
+            // TODO: move this into helper
             float_4 k = .5 + shapeAdjust / 2;
-           // k = std::min(k, float_4(.99));
-           // TODO: make up a min/max
-           //printf("shapeAdj = %s, k = %s, a=%s, b=%s\n", toStr(shapeAdjust).c_str(), toStr(k).c_str(), toStr(a).c_str(), toStr(b).c_str());
-
-            float_4 x = phaseAcc;
+            float_4 x = phase;
+            simd_assertGE(x, float_4(0));
+            simd_assertLE(x, float_4(1));
             s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
-            printf("k = %s\n  x = %s\n s = %s\n", 
-                toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
+            // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
         } else if (waveform == WaveForm::Sine) {
-            s = rack::simd::sin(phaseAcc * twoPi);
+            s = rack::simd::sin(phase * twoPi);
         }
         return s;
     }
@@ -107,6 +109,7 @@ public:
     float_4 aRight = 0;            // y = ax + b for second half of tri
     float_4 bRight = 0;
     float_4 aLeft = 0;
+    float_4 feedback = 0;
 private:
     float_4 phaseAcc = float_4::zero();
 };
@@ -198,7 +201,8 @@ private:
     float basePitch;        // all the knobs, no cv. units are volts
     int numChannels = 1;      // 1..16
     int freqMultiplier = 1;
-    float baseShapeGain = 0;    // 0..10
+    float baseShapeGain = 0;    // 0..1 -> re-do this!
+    float baseFeedback = 0;
 
     float_4 getOscFreq(int bank);
 
@@ -244,6 +248,8 @@ inline void WVCO<TBase>::stepm()
     for (int bank=0; bank < numBanks; ++bank) {
         dsp[bank].waveform = wf;
     }
+
+    baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
 }
 
 template <class TBase>
@@ -273,13 +279,10 @@ inline void WVCO<TBase>::stepn()
         dsp[bank].normalizedFreq = freq;
         dsp[bank].shapeAdjust = baseShapeGain;
 
-        printf("base shape gain = %f\n", baseShapeGain); fflush(stdout);
+        // printf("base shape gain = %f\n", baseShapeGain); fflush(stdout);
         baseShapeGain = std::clamp(baseShapeGain, .01, .99);
         assert(baseShapeGain < 1);
         assert(baseShapeGain > 0);
-       // dsp[bank].aRight = 1 / (baseShapeGain - 1);
-      //  dsp[bank].bRight = 0 - dsp[bank].aRight;
-      //  dsp[bank].aLeft = 1.f /  baseShapeGain;
 
         float k = .5 + baseShapeGain / 2;
         float a, b;
@@ -290,6 +293,7 @@ inline void WVCO<TBase>::stepn()
         dsp[bank].aRight = a;
         dsp[bank].bRight = b;
 
+#if 0
         simd_assertSame(dsp[bank].aLeft);
         simd_assertSame(dsp[bank].aRight);
         simd_assertSame(dsp[bank].bRight);
@@ -297,6 +301,8 @@ inline void WVCO<TBase>::stepn()
             toStr(dsp[bank].aLeft).c_str(), 
             toStr(dsp[bank].aRight).c_str(), 
             toStr(dsp[bank].bRight).c_str()); 
+#endif
+        dsp[bank].feedback = baseFeedback * 4;
 
     }
 }

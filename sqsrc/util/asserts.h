@@ -125,11 +125,23 @@ inline std::string toStr(const int32_4& x) {
     assertLT(a[2], b[2]); \
     assertLT(a[3], b[3]); 
 
+#define simd_assertLE(a, b) \
+    assertLE(a[0], b[0]); \
+    assertLE(a[1], b[1]); \
+    assertLE(a[2], b[2]); \
+    assertLE(a[3], b[3]); 
+
 #define simd_assertGT(a, b) \
     assertGT(a[0], b[0]); \
     assertGT(a[1], b[1]); \
     assertGT(a[2], b[2]); \
     assertGT(a[3], b[3]); 
+
+#define simd_assertGE(a, b) \
+    assertGE(a[0], b[0]); \
+    assertGE(a[1], b[1]); \
+    assertGE(a[2], b[2]); \
+    assertGE(a[3], b[3]); 
 
 #define simd_assertSame(a) \
     assertEQ(a[0], a[1]); \
