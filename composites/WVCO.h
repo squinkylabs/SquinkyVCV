@@ -82,12 +82,17 @@ public:
     float_4 step() {
          __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
 
-        float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
-        phase = SimdBlocks::wrapPhase01(phase);
-        phaseAcc = phase;
+       // float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
+       // phase += fmInput;
+
+        // don't need to wrap - inner loop will take care of it.
+      //  phase = SimdBlocks::wrapPhase01(phase);
+      //  phaseAcc = phase;
+
+        float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
 
         for (int i=0; i< oversampleRate; ++i) {
-            stepOversampled(i);
+            stepOversampled(i, phaseMod);
         }
         if (oversampleRate == 1) {
             return buffer[0];
@@ -97,7 +102,7 @@ public:
         }
     }
 
-    void stepOversampled(int bufferIndex)
+    void stepOversampled(int bufferIndex, float_4 phaseModulation)
     {
         float_4 s;
         phaseAcc += normalizedFreq;
@@ -107,24 +112,27 @@ public:
 
         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
 
+        float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
+
+
         // this should go outside the loop.
      //   float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
 
         if (waveform == WaveForm::Fold) {
-            s = rack::simd::sin(phaseAcc * twoPi);
+            s = rack::simd::sin(phase * twoPi);
             s *= (shapeAdjust * 10);
             s = SimdBlocks::fold(s);
             s *= 5;
         } else if (waveform == WaveForm::SawTri) {
             // TODO: move this into helper
             float_4 k = .5 + shapeAdjust / 2;
-            float_4 x = phaseAcc;
+            float_4 x = phase;
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
             s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
             // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
         } else if (waveform == WaveForm::Sine) {
-            s = rack::simd::sin(phaseAcc * twoPi);
+            s = rack::simd::sin(phase * twoPi);
         }
         buffer[bufferIndex] = s;
     }

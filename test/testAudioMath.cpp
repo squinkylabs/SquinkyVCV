@@ -241,6 +241,9 @@ static void testWrapPhase2()
     simd_assertClose(SimdBlocks::wrapPhase01(1.9), float_4(0.9), .00001);
 
     simd_assertClose(SimdBlocks::wrapPhase01(1000.9), float_4(0.9), .0001);
+
+    simd_assertEQ(SimdBlocks::wrapPhase01(-.1), float_4(.9));
+
 }
 #endif
 
