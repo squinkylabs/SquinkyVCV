@@ -70,9 +70,61 @@ public:
     enum class WaveForm {Sine, Fold, SawTri};
     
     static const int oversampleRate = 4;
+  //  static const __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+
+ //   static const double twop = 2.0 * 3.141592653589793238;
+  //  static float_4 twoPi(twop);
+    float_4 buffer[oversampleRate];
     WVCODsp() {
         downsampler.setup(oversampleRate);
     }
+
+    float_4 step() {
+        for (int i=0; i< oversampleRate; ++i) {
+            stepOversampled(i);
+        }
+        if (oversampleRate == 1) {
+            return buffer[0];
+        } else {
+            float_4 finalSample = downsampler.process(buffer);
+            return finalSample;
+        }
+    }
+
+    void stepOversampled(int bufferIndex)
+    {
+        float_4 s;
+        phaseAcc += normalizedFreq;
+        // Wrap phase
+        phaseAcc -= rack::simd::floor(phaseAcc);
+
+        __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+
+        // this should go outside the loop.
+        float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
+
+        if (waveform == WaveForm::Fold) {
+            s = rack::simd::sin(phase * twoPi);
+            s *= (shapeAdjust * 10);
+            s = SimdBlocks::fold(s);
+            s *= 5;
+        } else if (waveform == WaveForm::SawTri) {
+            // TODO: move this into helper
+            float_4 k = .5 + shapeAdjust / 2;
+            float_4 x = phase;
+            simd_assertGE(x, float_4(0));
+            simd_assertLE(x, float_4(1));
+            s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
+            // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
+        } else if (waveform == WaveForm::Sine) {
+            s = rack::simd::sin(phase * twoPi);
+        }
+        buffer[bufferIndex] = s;
+    }
+
+    
+
+#if 0
     float_4 step() {  
         
         const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
@@ -86,6 +138,7 @@ public:
             // Wrap phase
             phaseAcc -= rack::simd::floor(phaseAcc);
 
+            // this should go outside the loop.
             float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
 
             if (waveform == WaveForm::Fold) {
@@ -113,6 +166,7 @@ public:
             return finalSample;
         }
     }
+    #endif
 
 
     // public variables. The composite will set these on us,
@@ -343,7 +397,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case WVCO<TBase>::OCTAVE_PARAM:
-            ret = {0.f, 10.0f, 0, "Octave"};
+            ret = {0.f, 10.0f, 4, "Octave"};
             break;
         case WVCO<TBase>::FREQUENCY_MULTIPLIER_PARAM:
             ret = {1.f, 16.0f, 1, "Freq Ratio"};

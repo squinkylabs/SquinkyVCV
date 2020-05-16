@@ -640,7 +640,7 @@ static void testSuperPoly()
 
     super.inputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].channels = 8;
     super.inputs[Super<TestComposite>::CV_INPUT].channels = 8;
-    MeasureTime<float>::run(overheadOutOnly, "super poly 8", [&super]() {
+    MeasureTime<float>::run(overheadOutOnly, "super poly 8 1X", [&super]() {
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0) + 
             super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(1) + 
@@ -937,14 +937,13 @@ void perfTest()
     testShifter();
     testGMR();
 #endif
-  
+#ifndef _MSC_VER
+    testWVCOPoly();
+    simd_testBiquad();
+#endif  
 
     testBiquad();
-#ifndef _MSC_VER
-    simd_testBiquad();
-    testWVCOPoly();
-    
-#endif
+
     testSuper();
     testSuperPoly();
     testSuperStereo();
