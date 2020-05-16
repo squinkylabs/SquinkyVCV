@@ -174,6 +174,7 @@ public:
 
     // f / fs
     float_4 normalizedFreq = float_4::zero();
+    float_4 fmInput = float_4::zero();
 
     WaveForm waveform;
     float_4 shapeAdjust = 1;    // 0..1
@@ -181,6 +182,7 @@ public:
     float_4 bRight = 0;
     float_4 aLeft = 0;
     float_4 feedback = 0;
+
 private:
     float_4 phaseAcc = float_4::zero();
     IIRDecimator<float_4> downsampler;
@@ -370,15 +372,20 @@ inline void WVCO<TBase>::stepn()
 template <class TBase>
 inline void WVCO<TBase>::step()
 {
+    // clock the sub-sample rate tasks
     divn.step();
     divm.step();
 
+    // run the sample loop and write audi
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
         numBanks++;
     }
     for (int bank=0; bank < numBanks; ++bank) {
         const int baseChannel = 4 * bank;
+        rack::engine::Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
+        float_4 fmInput = port.getPolyVoltageSimd<float_4>(baseChannel);
+        dsp[bank].fmInput = fmInput;
         float_4 v = dsp[bank].step(); 
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
     }
