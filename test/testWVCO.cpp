@@ -1,5 +1,6 @@
 
 #include "WVCO.h"
+#include "TestComposite.h"
 #include "asserts.h"
 
 
@@ -37,9 +38,32 @@ static void testTriFormula2()
     }
 }
 
+static void testPumpData()
+{
+    WVCO<TestComposite> wvco;
+
+    wvco.init();
+    wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 8;
+    wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 8;
+    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = 0;
+
+    wvco.step();
+    float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(1);
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(2);
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(3);
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(4);
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(5); 
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(6);
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(7);
+
+    assertGE(x , -10);
+    assertLE(x , 10);
+}
 
 void testWVCO()
 {
     testTriFormula();
     testTriFormula2();
+    testPumpData();
 }

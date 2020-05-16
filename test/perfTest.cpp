@@ -600,22 +600,25 @@ static void simd_testBiquad()
         return d[0];
         }, 1);
 }
+
 static void testWVCOPoly()
 {
     WVCO<TestComposite> wvco;
 
-    wvco.inputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].channels = 8;
-    wvco.inputs[Super<TestComposite>::CV_INPUT].channels = 8;
+    wvco.init();
+    wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 8;
+    wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 8;
+    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = 0;
     MeasureTime<float>::run(overheadOutOnly, "wvco poly 8", [&wvco]() {
         wvco.step();
-        return wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0) + 
-            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(1) + 
-            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(2) + 
-            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(3) + 
-            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(4) + 
-            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(5) + 
-            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(6) + 
-            wvco.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(7);
+        return wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(1) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(2) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(3) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(4) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(5) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(6) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(7);
     }, 1);
 }
 #endif

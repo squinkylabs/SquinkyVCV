@@ -88,9 +88,6 @@ public:
 
             float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
 
-        
-        
-           
             if (waveform == WaveForm::Fold) {
                 s = rack::simd::sin(phase * twoPi);
                 s *= (shapeAdjust * 10);
@@ -212,7 +209,6 @@ public:
     }
 
 private:
-
     Divider divn;
     Divider divm;
     WVCODsp dsp[4];
@@ -313,18 +309,7 @@ inline void WVCO<TBase>::stepn()
 
         dsp[bank].aRight = a;
         dsp[bank].bRight = b;
-
-#if 0
-        simd_assertSame(dsp[bank].aLeft);
-        simd_assertSame(dsp[bank].aRight);
-        simd_assertSame(dsp[bank].bRight);
-        printf("computed aL= %s\n aR=%s\n bR-%s\n", 
-            toStr(dsp[bank].aLeft).c_str(), 
-            toStr(dsp[bank].aRight).c_str(), 
-            toStr(dsp[bank].bRight).c_str()); 
-#endif
         dsp[bank].feedback = baseFeedback * 4;
-
     }
 }
 
