@@ -34,8 +34,8 @@ namespace rack {
         struct Module;
     }
 }
-using Module = ::rack::engine::Module;
 
+using Module = ::rack::engine::Module;
 
 template <class TBase>
 class WVCODescription : public IComposite
@@ -56,7 +56,7 @@ public:
 
         const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
         float_4 s = rack::simd::sin(phaseAcc * twoPi);
-        s *= 5;
+        s *= shapeGain;
 
         if (waveform == WaveForm::Fold) {
             s = SimdBlocks::fold(s);
@@ -72,6 +72,7 @@ public:
     float_4 normalizedFreq = float_4::zero();
 
     WaveForm waveform;
+    float shapeGain = 1;    // 0..10
 private:
     float_4 phaseAcc = float_4::zero();
 };
@@ -160,9 +161,10 @@ private:
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 
     // variables to stash processed knobs and other input
-    float basePitch;        // all the knobs, no cv
+    float basePitch;        // all the knobs, no cv. units are volts
     int numChannels = 1;      // 1..16
     int freqMultiplier = 1;
+    float baseShapeGain = 0;    // 0..10
 
     float_4 getOscFreq(int bank);
 
@@ -180,7 +182,6 @@ inline void WVCO<TBase>::init()
      divm.setup(16, [this]() {
         stepm();
     });
-
 }
 
 template <class TBase>
@@ -200,6 +201,8 @@ inline void WVCO<TBase>::stepm()
     int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
+    baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 10;
+
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
         numBanks++;
@@ -207,7 +210,6 @@ inline void WVCO<TBase>::stepm()
     for (int bank=0; bank < numBanks; ++bank) {
         dsp[bank].waveform = wf;
     }
-
 }
 
 template <class TBase>
@@ -235,6 +237,7 @@ inline void WVCO<TBase>::stepn()
         }
 
         dsp[bank].normalizedFreq = freq;
+        dsp[bank].shapeGain = baseShapeGain;
     }
 }
 

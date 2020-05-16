@@ -51,13 +51,11 @@ template<typename T, bool frequencyCanBeNegative>
 inline T SawOscillator<T, frequencyCanBeNegative>::runTri(SawOscillatorState<T>& state, const SawOscillatorParams<T>& params)
 {
     T output = 4 * runSaw(state, params);    // Saw 0...4
-  //  printf("in tri, 4x = %f ", output);
     if (output > 3) {
         output -= 4;
     } else if (output > 1) {
         output = 2 - output;
     }
-  //  printf("final = %f \n", output);
     return output;
 }
 
