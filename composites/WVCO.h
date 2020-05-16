@@ -13,6 +13,7 @@
 #include "ObjectCache.h"
 #include "SimdBlocks.h"
 #include "IComposite.h"
+#include "Divider.h"
 
 using float_4 = rack::simd::float_4;
 
@@ -48,8 +49,8 @@ class WVCODsp
 {
 public:
     enum class WaveForm {Sine, Fold, SawTri};
-    float_4 step(float_4 freq, WaveForm wf) {  
-        phaseAcc += freq;
+    float_4 step() {  
+        phaseAcc += normalizedFreq;
 		// Wrap phase
 		phaseAcc -= rack::simd::floor(phaseAcc);
 
@@ -57,14 +58,20 @@ public:
         float_4 s = rack::simd::sin(phaseAcc * twoPi);
         s *= 5;
 
-        if (wf == WaveForm::Fold) {
-           // printf("folding\n"); fflush(stdout);
+        if (waveform == WaveForm::Fold) {
             s = SimdBlocks::fold(s);
             s *= 5;
         }
-
         return s;
     }
+
+    // public variables. The composite will set these on us,
+    // and we will use them to generate audio.
+
+    // f / fs
+    float_4 normalizedFreq = float_4::zero();
+
+    WaveForm waveform;
 private:
     float_4 phaseAcc = float_4::zero();
 };
@@ -140,7 +147,6 @@ public:
      */
     void step() override;
 
-
     static std::vector<std::string> getWaveformNames()
     {
         return {"Sine", "Folder", "Saw/T"};
@@ -148,87 +154,103 @@ public:
 
 private:
 
+    Divider divn;
+    Divider divm;
     WVCODsp dsp[4];
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 
+    // variables to stash processed knobs and other input
+    float basePitch;        // all the knobs, no cv
+    int numChannels = 1;      // 1..16
+    int freqMultiplier = 1;
+
     float_4 getOscFreq(int bank);
 
+    void stepn();
+    void stepm();
 };
 
 
 template <class TBase>
 inline void WVCO<TBase>::init()
 {
-}
+    divn.setup(4, [this]() {
+        stepn();
+    });
+     divm.setup(16, [this]() {
+        stepm();
+    });
 
-
-template <class TBase>
-inline float_4 WVCO<TBase>::getOscFreq(int bank)
-{
-    float_4 freq;
-
-    const float basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +      
-        TBase::params[FINE_TUNE_PARAM].value / 12.0f;
-    for (int i=0; i<4; ++i) {
-        const int channel = bank * 4 + i;
-
-        float pitch = basePitch;
-        pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
-
-     //   if ((i == 0) && bank == 0)
-     //       printf("base pitch = %f, cv = %f\n", basePitch, TBase::inputs[VOCT_INPUT].getVoltage(channel));
-
-        // TODO: modulation
-        //pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].getVoltage(0) *
-        //    taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
-
-        const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
-
-        pitch += q;
-        float _freq = expLookup(pitch);
-
-       // if ((i == 0) && bank == 0)
-       //     printf("q = %f, now _freq - %f\n", q, _freq);
-        
-        const int freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
-        _freq *= freqMultiplier;
-       
-
-        const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
-        freq[i] = time;
-
-       // if (i == 0 && bank==0) {
-       //     printf("pitch = %f mult=%d freq = %f time=%f\n", pitch, freqMultiplier, _freq, time);
-       // }
-    }
-    return freq;
 }
 
 template <class TBase>
-inline void WVCO<TBase>::step()
+inline void WVCO<TBase>::stepm()
 {
-    // get wavform from UI
-    WVCODsp::WaveForm wf;
-    int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
-    wf = WVCODsp::WaveForm(wfFromUI);
-
-    // get pitch from params.
-   // const int octave = (int) std::round(TBase::params[_PARAM].value);
-  //  float pitchCV = octave - 3;
-
-
-    
-    const int numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(numChannels);
+
+    basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +      
+        TBase::params[FINE_TUNE_PARAM].value / 12.0f;
+
+    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
+    basePitch += q;
+
+    freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
+
+    int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
+    WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
         numBanks++;
     }
     for (int bank=0; bank < numBanks; ++bank) {
-        const float_4 freq = getOscFreq(bank);
+        dsp[bank].waveform = wf;
+    }
+
+}
+
+template <class TBase>
+inline void WVCO<TBase>::stepn()
+{
+    // update the pitch of every vco
+    int numBanks = numChannels / 4;
+    if (numChannels > numBanks * 4) {
+        numBanks++;
+    }
+    for (int bank=0; bank < numBanks; ++bank) {
+
+        float_4 freq;
+        for (int i=0; i<4; ++i) {
+            const int channel = bank * 4 + i;
+
+            float pitch = basePitch;
+            pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
+
+            float _freq = expLookup(pitch);
+            _freq *= freqMultiplier;
+
+            const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
+            freq[i] = time;
+        }
+
+        dsp[bank].normalizedFreq = freq;
+    }
+}
+
+template <class TBase>
+inline void WVCO<TBase>::step()
+{
+    divn.step();
+    divm.step();
+
+    int numBanks = numChannels / 4;
+    if (numChannels > numBanks * 4) {
+        numBanks++;
+    }
+    for (int bank=0; bank < numBanks; ++bank) {
         const int baseChannel = 4 * bank;
-        float_4 v = dsp[bank].step(freq, wf);       // was .005
+        float_4 v = dsp[bank].step(); 
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
     }
 }
