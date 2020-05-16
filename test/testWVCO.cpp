@@ -1,10 +1,7 @@
 
-#include "WVCO.h"
 #include "TestComposite.h"
+#include "WVCO.h"
 #include "asserts.h"
-
-
-
 
 static void testTriFormula()
 {

@@ -12,8 +12,16 @@ class SimdBlocks
 {
 public:
     static float_4 fold(float_4);
+    static float_4 wrapPhase01(float_4 phase);
 };
 
+inline float_4 SimdBlocks::wrapPhase01(float_4 x)
+{
+     x -= rack::simd::floor(x);
+     simd_assertGE(x, float_4(0));
+     simd_assertLE(x, float_4(1));
+     return x;
+}
 
 
 
@@ -32,9 +40,6 @@ public:
         return fold;
     }
 */
-
-
-
 
 inline float_4 SimdBlocks::fold(float_4 x)
 {

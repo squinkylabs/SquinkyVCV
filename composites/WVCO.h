@@ -80,6 +80,12 @@ public:
     }
 
     float_4 step() {
+         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+
+        float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
+        phase = SimdBlocks::wrapPhase01(phase);
+        phaseAcc = phase;
+
         for (int i=0; i< oversampleRate; ++i) {
             stepOversampled(i);
         }
@@ -96,78 +102,32 @@ public:
         float_4 s;
         phaseAcc += normalizedFreq;
         // Wrap phase
-        phaseAcc -= rack::simd::floor(phaseAcc);
+        //phaseAcc -= rack::simd::floor(phaseAcc);
+        phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
 
         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
 
         // this should go outside the loop.
-        float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
+     //   float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
 
         if (waveform == WaveForm::Fold) {
-            s = rack::simd::sin(phase * twoPi);
+            s = rack::simd::sin(phaseAcc * twoPi);
             s *= (shapeAdjust * 10);
             s = SimdBlocks::fold(s);
             s *= 5;
         } else if (waveform == WaveForm::SawTri) {
             // TODO: move this into helper
             float_4 k = .5 + shapeAdjust / 2;
-            float_4 x = phase;
+            float_4 x = phaseAcc;
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
             s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
             // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
         } else if (waveform == WaveForm::Sine) {
-            s = rack::simd::sin(phase * twoPi);
+            s = rack::simd::sin(phaseAcc * twoPi);
         }
         buffer[bufferIndex] = s;
     }
-
-    
-
-#if 0
-    float_4 step() {  
-        
-        const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
-
-        float_4 buffer[oversampleRate];
-
-        // inner loop is oversampled
-        for (int i=0; i< oversampleRate; ++i) {
-            float_4 s;
-            phaseAcc += normalizedFreq;
-            // Wrap phase
-            phaseAcc -= rack::simd::floor(phaseAcc);
-
-            // this should go outside the loop.
-            float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
-
-            if (waveform == WaveForm::Fold) {
-                s = rack::simd::sin(phase * twoPi);
-                s *= (shapeAdjust * 10);
-                s = SimdBlocks::fold(s);
-                s *= 5;
-            } else if (waveform == WaveForm::SawTri) {
-                // TODO: move this into helper
-                float_4 k = .5 + shapeAdjust / 2;
-                float_4 x = phase;
-                simd_assertGE(x, float_4(0));
-                simd_assertLE(x, float_4(1));
-                s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
-                // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
-            } else if (waveform == WaveForm::Sine) {
-                s = rack::simd::sin(phase * twoPi);
-            }
-            buffer[i] = s;
-        }
-        if (oversampleRate == 1) {
-            return buffer[0];
-        } else {
-            float_4 finalSample = downsampler.process(buffer);
-            return finalSample;
-        }
-    }
-    #endif
-
 
     // public variables. The composite will set these on us,
     // and we will use them to generate audio.
@@ -383,7 +343,8 @@ inline void WVCO<TBase>::step()
     }
     for (int bank=0; bank < numBanks; ++bank) {
         const int baseChannel = 4 * bank;
-        rack::engine::Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
+       // rack::engine::Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
+        Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
         float_4 fmInput = port.getPolyVoltageSimd<float_4>(baseChannel);
         dsp[bank].fmInput = fmInput;
         float_4 v = dsp[bank].step(); 

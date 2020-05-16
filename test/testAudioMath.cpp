@@ -220,6 +220,28 @@ static void testFoldSSE3()
         assertClose(output[i], AudioMath::fold(test[i]), .0001);
     }
 }
+
+static void testWrapPhase()
+{
+    for (float x=0; x < 10; x+= .1) {
+        float_4 x4(x);
+        simd_assertGE(SimdBlocks::wrapPhase01(x4), float_4(0));
+        simd_assertLE(SimdBlocks::wrapPhase01(x4), float_4(1));
+    }
+}
+
+static void testWrapPhase2()
+{
+    simd_assertEQ(SimdBlocks::wrapPhase01(0), float_4(0));
+    simd_assertEQ(SimdBlocks::wrapPhase01(0.1), float_4(0.1));
+    simd_assertEQ(SimdBlocks::wrapPhase01(0.9), float_4(0.9));
+
+    simd_assertEQ(SimdBlocks::wrapPhase01(1.0), float_4(0));
+    simd_assertClose(SimdBlocks::wrapPhase01(1.2), float_4(0.2), .00001);
+    simd_assertClose(SimdBlocks::wrapPhase01(1.9), float_4(0.9), .00001);
+
+    simd_assertClose(SimdBlocks::wrapPhase01(1000.9), float_4(0.9), .0001);
+}
 #endif
 
 static void testNormalizeProduct()
@@ -267,6 +289,8 @@ void testAudioMath()
     testFoldSSE();
     testFoldSSE2();
     testFoldSSE3();
+    testWrapPhase();
+    testWrapPhase2();
 #endif
 
 }
