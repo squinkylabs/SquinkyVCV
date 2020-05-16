@@ -13,6 +13,72 @@
 
 using Comp = WVCO<WidgetComposite>;
 
+
+#if 0
+class CVSelectParamQuantity : public ParamQuantity
+{
+public:
+    CVSelectParamQuantity( const ParamQuantity& other) {
+        ParamQuantity* base = this;
+        *base = other;
+    }
+    std::string getDisplayValueString() override {
+        const unsigned int index = (unsigned int)(std::round(getValue()));
+        const std::vector<std::string>& labels = Comp::getCVFunctionLabels();
+        std::string ret;
+        switch(index) {
+            case 0:
+               ret = "Polyphonic (next, prev, set)";
+               break;
+            case 1:
+                ret = "Next section in track";
+                break;
+            case 2:
+                ret = "Previous section in track";
+                break;
+
+            case 3:
+                ret = "Set section from CV";
+                break;
+            default:
+                assert(false);
+        }
+        return ret;
+    }
+};
+#endif
+
+class DiscreteParamQuantity : public ParamQuantity {
+public:
+    DiscreteParamQuantity(const ParamQuantity& other, const std::vector<std::string>& str) : strings(str) {
+        ParamQuantity* base = this;
+        *base = other;
+    }
+
+    std::string getDisplayValueString() override {
+        const unsigned int index = (unsigned int)(std::round(getValue()));
+        if (index < strings.size()) {
+            return strings[index];
+        } else {
+            assert(false);
+            return "error";
+        }
+        
+    }
+private:
+    std::vector<std::string> strings;
+};
+
+inline void subsituteDiscreteParamQuantity(const std::vector<std::string>& strings, Module& module, unsigned int paramNumber) {
+    auto orig = module.paramQuantities[paramNumber];
+
+     auto p = new DiscreteParamQuantity(*orig, strings);
+    
+    delete orig;
+    module.paramQuantities[paramNumber] = p;
+}
+
+
 /**
  */
 struct WVCOModule : Module
@@ -26,7 +92,7 @@ public:
     void step() override;
     void onSampleRateChange() override;
 
-    std::shared_ptr<Comp> blank;
+    std::shared_ptr<Comp> wvco;
 private:
 
 };
@@ -38,17 +104,20 @@ void WVCOModule::onSampleRateChange()
 WVCOModule::WVCOModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    blank = std::make_shared<Comp>(this);
+    wvco = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
     onSampleRateChange();
-    blank->init();
+    wvco->init();
+
+   // ParamQuantity* newWaveform = new DiscreteParamQuantity();
+    subsituteDiscreteParamQuantity(Comp::getWaveformNames(), *this, Comp::WAVE_SHAPE_PARAM);
 }
 
 void WVCOModule::step()
 {
-    blank->step();
+    wvco->step();
 }
 
 ////////////////////
