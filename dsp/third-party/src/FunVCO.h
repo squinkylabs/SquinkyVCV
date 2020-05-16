@@ -54,10 +54,10 @@ struct VoltageControlledOscillator
     bool triEnabled = false;
 
 #ifdef _USEIIR
-    IIRDecimator sinDecimator;
-    IIRDecimator triDecimator;
-    IIRDecimator sawDecimator;
-    IIRDecimator sqrDecimator;
+    IIRDecimator<float> sinDecimator;
+    IIRDecimator<float> triDecimator;
+    IIRDecimator<float> sawDecimator;
+    IIRDecimator<float> sqrDecimator;
 #else
     ::rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
     ::rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;

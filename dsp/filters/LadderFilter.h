@@ -177,7 +177,7 @@ private:
 
     static const int oversampleRate = 4;
     IIRUpsampler up;
-    IIRDecimator down;
+    IIRDecimator<float> down;
 
     AsymWaveShaper shaper;
     T _lastInput = 0;

@@ -17,6 +17,8 @@
 #include <simd/vector.hpp>
 #include <simd/functions.hpp>
 
+using float_4 = rack::simd::float_4;
+
 
 #if defined(_MSC_VER)
 #pragma warning (pop)

@@ -1,10 +1,16 @@
 
 #include <assert.h>
 
+#ifndef _MSC_VER 
+#include "simd.h"
+#endif
+
 #include "AudioMath.h"
 #include "ButterworthFilterDesigner.h"
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
+
+
 
 template <typename T>
 std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getBipolarAudioTaper()
@@ -166,30 +172,30 @@ std::function<T(T)> ObjectCache<T>::getExp2Ex()
 }
 
 template <typename T>
-std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float normalizedFc)
+std::shared_ptr<BiquadParams<T, 3>> ObjectCache<T>::get6PLPParams(float normalizedFc)
 {
     const int div = (int) std::round(1.0 / normalizedFc);
     if (div == 64) {
-        std::shared_ptr < BiquadParams<float, 3>> ret = lowpass64.lock();
+        std::shared_ptr < BiquadParams<T, 3>> ret = lowpass64.lock();
         if (!ret) {
-            ret = std::make_shared<BiquadParams<float, 3>>();
-            ButterworthFilterDesigner<float>::designSixPoleLowpass(*ret, normalizedFc);
+            ret = std::make_shared<BiquadParams<T, 3>>();
+            ButterworthFilterDesigner<T>::designSixPoleLowpass(*ret, normalizedFc);
             lowpass64 = ret;
         }
         return ret;
     } else if (div == 16) {
-        std::shared_ptr < BiquadParams<float, 3>> ret = lowpass16.lock();
+        std::shared_ptr < BiquadParams<T, 3>> ret = lowpass16.lock();
         if (!ret) {
-            ret = std::make_shared<BiquadParams<float, 3>>();
-            ButterworthFilterDesigner<float>::designSixPoleLowpass(*ret, normalizedFc);
+            ret = std::make_shared<BiquadParams<T, 3>>();
+            ButterworthFilterDesigner<T>::designSixPoleLowpass(*ret, normalizedFc);
             lowpass16 = ret;
         }
         return ret;
     } else if (div == 32) {
-        std::shared_ptr < BiquadParams<float, 3>> ret = lowpass32.lock();
+        std::shared_ptr < BiquadParams<T, 3>> ret = lowpass32.lock();
         if (!ret) {
-            ret = std::make_shared<BiquadParams<float, 3>>();
-            ButterworthFilterDesigner<float>::designSixPoleLowpass(*ret, normalizedFc);
+            ret = std::make_shared<BiquadParams<T, 3>>();
+            ButterworthFilterDesigner<T>::designSixPoleLowpass(*ret, normalizedFc);
             lowpass32 = ret;
         }
         return ret;
@@ -201,11 +207,11 @@ std::shared_ptr<BiquadParams<float, 3>> ObjectCache<T>::get6PLPParams(float norm
 
 // The weak pointers that hold our singletons.
 template <typename T>
-std::weak_ptr< BiquadParams<float, 3> >  ObjectCache<T>::lowpass64;
+std::weak_ptr< BiquadParams<T, 3> >  ObjectCache<T>::lowpass64;
 template <typename T>
-std::weak_ptr< BiquadParams<float, 3> >  ObjectCache<T>::lowpass32;
+std::weak_ptr< BiquadParams<T, 3> >  ObjectCache<T>::lowpass32;
 template <typename T>
-std::weak_ptr< BiquadParams<float, 3> >  ObjectCache<T>::lowpass16;
+std::weak_ptr< BiquadParams<T, 3> >  ObjectCache<T>::lowpass16;
 
 template <typename T>
 std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::bipolarAudioTaper;
@@ -243,3 +249,8 @@ std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::mixerPanR;
 // Explicit instantiation, so we can put implementation into .cpp file
 template class ObjectCache<double>;
 template class ObjectCache<float>;
+
+#ifndef _MSC_VER 
+    // we don't want to do the entire object cache in simd, but we do need this:
+    template std::shared_ptr<BiquadParams<float_4, 3>>  ObjectCache<float_4>::get6PLPParams(float normalizedFc);
+#endif

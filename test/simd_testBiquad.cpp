@@ -12,6 +12,7 @@
 #include "BiquadParams.h"
 #include "BiquadParams.h"
 #include "BiquadState.h"
+#include "IIRDecimator.h"
 
 #include <simd/vector.hpp>
 #include <simd/functions.hpp>
@@ -44,7 +45,6 @@ static void testState_0()
     simd_assertEQ(p.z0(0), float_4(5));
     simd_assertEQ(p.z1(0), float_4(6));
 }
-
 
 template<typename T, int N>
 static void testParam_0()
@@ -153,7 +153,6 @@ static void testCompare()
     }
 }
 
-
 #if 0
 // test that filter does something
 template<typename T>
@@ -226,6 +225,47 @@ static void testBasicFilter3()
 #endif
 
 
+// test that the functions can be called
+static void testBasicDecimator0()
+{
+    float_4 buffer[16];
+
+    IIRDecimator<float_4> dec;
+    dec.setup(16);
+    dec.process(buffer);
+}
+
+// test 0 -> 0
+static void testBasicDecimator1()
+{
+    float_4 buffer[16] = {0};
+
+    IIRDecimator<float_4> dec;
+    dec.setup(16);
+
+    const float_4 x = dec.process(buffer);
+    simd_assertEQ(x, float_4(0));
+}
+
+
+
+// test 10 -> 10
+static void testBasicDecimator2()
+{
+    float_4 buffer[16] = {10 * 16};
+
+    IIRDecimator<float_4> dec;
+    dec.setup(16);
+
+    float_4 x;
+    for (int i = 0; i < 100; ++i) {
+        x = dec.process(buffer);
+    }
+    simd_assertClose(x, float_4(10), .01);
+    simd_assertSame(x);
+}
+
+
 void simd_testBiquad()
 {
     testState_0<float_4, 8>();
@@ -235,6 +275,10 @@ void simd_testBiquad()
 
     testBasicDesigner2<float_4>();
     testCompare();
+
+    testBasicDecimator0();
+    testBasicDecimator1();
+    testBasicDecimator2();
 #if 0
   testBasicFilter2<float_4>();
     testBasicDesigner2<float>();

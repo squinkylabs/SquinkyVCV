@@ -579,7 +579,7 @@ static void testBiquad()
 {
     BiquadParams<float, 3> params;
     BiquadState<float, 3> state;
-    ButterworthFilterDesigner<float>::designSixPoleLowpass(params, .1);
+    ButterworthFilterDesigner<float>::designSixPoleLowpass(params, .1f);
    
     MeasureTime<float>::run(overheadInOut, "6p LP", [&state, &params]() {
         float d = BiquadFilter<float>::run(TestBuffers<float>::get(), state, params);

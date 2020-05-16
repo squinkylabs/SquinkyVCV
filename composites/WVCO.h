@@ -14,6 +14,7 @@
 #include "ObjectCache.h"
 #include "SimdBlocks.h"
 #include "IComposite.h"
+#include "IIRDecimator.h"
 #include "Divider.h"
 
 using float_4 = rack::simd::float_4;
@@ -67,36 +68,55 @@ class WVCODsp
 {
 public:
     enum class WaveForm {Sine, Fold, SawTri};
+    
+    static const int oversampleRate = 4;
+    WVCODsp() {
+        downsampler.setup(oversampleRate);
+    }
     float_4 step() {  
+        
         const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
 
-        phaseAcc += normalizedFreq;
-		// Wrap phase
-		phaseAcc -= rack::simd::floor(phaseAcc);
+        float_4 buffer[oversampleRate];
 
-        float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
+        // inner loop is oversampled
+        for (int i=0; i< oversampleRate; ++i) {
+            float_4 s;
+            phaseAcc += normalizedFreq;
+            // Wrap phase
+            phaseAcc -= rack::simd::floor(phaseAcc);
 
-       
-       
-        float_4 s;
-        if (waveform == WaveForm::Fold) {
-            s = rack::simd::sin(phase * twoPi);
-            s *= (shapeAdjust * 10);
-            s = SimdBlocks::fold(s);
-            s *= 5;
-        } else if (waveform == WaveForm::SawTri) {
-            // TODO: move this into helper
-            float_4 k = .5 + shapeAdjust / 2;
-            float_4 x = phase;
-            simd_assertGE(x, float_4(0));
-            simd_assertLE(x, float_4(1));
-            s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
-            // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
-        } else if (waveform == WaveForm::Sine) {
-            s = rack::simd::sin(phase * twoPi);
+            float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
+
+        
+        
+           
+            if (waveform == WaveForm::Fold) {
+                s = rack::simd::sin(phase * twoPi);
+                s *= (shapeAdjust * 10);
+                s = SimdBlocks::fold(s);
+                s *= 5;
+            } else if (waveform == WaveForm::SawTri) {
+                // TODO: move this into helper
+                float_4 k = .5 + shapeAdjust / 2;
+                float_4 x = phase;
+                simd_assertGE(x, float_4(0));
+                simd_assertLE(x, float_4(1));
+                s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
+                // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
+            } else if (waveform == WaveForm::Sine) {
+                s = rack::simd::sin(phase * twoPi);
+            }
+            buffer[i] = s;
         }
-        return s;
+        if (oversampleRate == 1) {
+            return buffer[0];
+        } else {
+            float_4 finalSample = downsampler.process(buffer);
+            return finalSample;
+        }
     }
+
 
     // public variables. The composite will set these on us,
     // and we will use them to generate audio.
@@ -112,6 +132,7 @@ public:
     float_4 feedback = 0;
 private:
     float_4 phaseAcc = float_4::zero();
+    IIRDecimator<float_4> downsampler;
 };
 
 template <class TBase>
@@ -276,7 +297,7 @@ inline void WVCO<TBase>::stepn()
             freq[i] = time;
         }
 
-        dsp[bank].normalizedFreq = freq;
+        dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
         dsp[bank].shapeAdjust = baseShapeGain;
 
         // printf("base shape gain = %f\n", baseShapeGain); fflush(stdout);
