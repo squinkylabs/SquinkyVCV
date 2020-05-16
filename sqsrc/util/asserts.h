@@ -131,4 +131,9 @@ inline std::string toStr(const int32_4& x) {
     assertGT(a[2], b[2]); \
     assertGT(a[3], b[3]); 
 
+#define simd_assertSame(a) \
+    assertEQ(a[0], a[1]); \
+    assertEQ(a[0], a[2]); \
+    assertEQ(a[0], a[3]); 
+
 #endif

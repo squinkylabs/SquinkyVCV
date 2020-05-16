@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <memory>
+#include <vector>
 //#include "functions.hpp"
 #include <simd/vector.hpp>
 #include <simd/functions.hpp>
@@ -45,6 +46,23 @@ public:
     int getNumParams() override;
 };
 
+
+class TriFormula
+{
+public:
+    static void getLeftA(float& outA, float k)
+    {
+        assert(k < 1);
+        assert(k > 0);
+        outA = 1 / k;
+    }
+    static void getRightAandB(float& outA, float& outB, float k)
+    {
+        outA = 1 / (k - 1);
+        outB = -outA;
+    }
+};
+
 class WVCODsp
 {
 public:
@@ -55,12 +73,25 @@ public:
 		phaseAcc -= rack::simd::floor(phaseAcc);
 
         const __m128 twoPi = _mm_set_ps1(2 * 3.141592653589793238);
-        float_4 s = rack::simd::sin(phaseAcc * twoPi);
-        s *= shapeGain;
-
+       
+        float_4 s;
         if (waveform == WaveForm::Fold) {
+            s = rack::simd::sin(phaseAcc * twoPi);
+            s *= (shapeAdjust * 10);
             s = SimdBlocks::fold(s);
             s *= 5;
+        } else if (waveform == WaveForm::SawTri) {
+            float_4 k = .5 + shapeAdjust / 2;
+           // k = std::min(k, float_4(.99));
+           // TODO: make up a min/max
+           //printf("shapeAdj = %s, k = %s, a=%s, b=%s\n", toStr(shapeAdjust).c_str(), toStr(k).c_str(), toStr(a).c_str(), toStr(b).c_str());
+
+            float_4 x = phaseAcc;
+            s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
+            printf("k = %s\n  x = %s\n s = %s\n", 
+                toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
+        } else if (waveform == WaveForm::Sine) {
+            s = rack::simd::sin(phaseAcc * twoPi);
         }
         return s;
     }
@@ -72,7 +103,10 @@ public:
     float_4 normalizedFreq = float_4::zero();
 
     WaveForm waveform;
-    float shapeGain = 1;    // 0..10
+    float_4 shapeAdjust = 1;    // 0..1
+    float_4 aRight = 0;            // y = ax + b for second half of tri
+    float_4 bRight = 0;
+    float_4 aLeft = 0;
 private:
     float_4 phaseAcc = float_4::zero();
 };
@@ -201,7 +235,7 @@ inline void WVCO<TBase>::stepm()
     int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
-    baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 10;
+    baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
 
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
@@ -237,7 +271,33 @@ inline void WVCO<TBase>::stepn()
         }
 
         dsp[bank].normalizedFreq = freq;
-        dsp[bank].shapeGain = baseShapeGain;
+        dsp[bank].shapeAdjust = baseShapeGain;
+
+        printf("base shape gain = %f\n", baseShapeGain); fflush(stdout);
+        baseShapeGain = std::clamp(baseShapeGain, .01, .99);
+        assert(baseShapeGain < 1);
+        assert(baseShapeGain > 0);
+       // dsp[bank].aRight = 1 / (baseShapeGain - 1);
+      //  dsp[bank].bRight = 0 - dsp[bank].aRight;
+      //  dsp[bank].aLeft = 1.f /  baseShapeGain;
+
+        float k = .5 + baseShapeGain / 2;
+        float a, b;
+        TriFormula::getLeftA(a, k);
+        dsp[bank].aLeft = a;
+        TriFormula::getRightAandB(a, b, k);
+
+        dsp[bank].aRight = a;
+        dsp[bank].bRight = b;
+
+        simd_assertSame(dsp[bank].aLeft);
+        simd_assertSame(dsp[bank].aRight);
+        simd_assertSame(dsp[bank].bRight);
+        printf("computed aL= %s\n aR=%s\n bR-%s\n", 
+            toStr(dsp[bank].aLeft).c_str(), 
+            toStr(dsp[bank].aRight).c_str(), 
+            toStr(dsp[bank].bRight).c_str()); 
+
     }
 }
 

@@ -90,6 +90,7 @@ extern void testEditCommands4();
 extern void testChaos();
 extern void testOnset();
 extern void testOnset2();
+extern void testWVCO();
 
 #if 0
 #include <sstream>
@@ -176,6 +177,7 @@ if (runShaperGen) {
     testBiquad();
 #ifndef _MSC_VER
     simd_testBiquad();
+    testWVCO();
 #endif
 
     testIComposite();
