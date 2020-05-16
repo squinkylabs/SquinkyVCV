@@ -81,15 +81,8 @@ public:
 
     float_4 step() {
          __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
-
-       // float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
-       // phase += fmInput;
-
-        // don't need to wrap - inner loop will take care of it.
-      //  phase = SimdBlocks::wrapPhase01(phase);
-      //  phaseAcc = phase;
-
         float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
+        phaseMod += fmInput;
 
         for (int i=0; i< oversampleRate; ++i) {
             stepOversampled(i, phaseMod);
@@ -106,17 +99,11 @@ public:
     {
         float_4 s;
         phaseAcc += normalizedFreq;
-        // Wrap phase
-        //phaseAcc -= rack::simd::floor(phaseAcc);
         phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
 
         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
 
         float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
-
-
-        // this should go outside the loop.
-     //   float_4 phase = phaseAcc + (feedback * rack::simd::sin(phaseAcc * twoPi));
 
         if (waveform == WaveForm::Fold) {
             s = rack::simd::sin(phase * twoPi);
@@ -130,7 +117,6 @@ public:
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
             s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
-            // printf("k = %s\n  x = %s\n s = %s\n",  toStr(k).c_str(), toStr(x).c_str(), toStr(s).c_str());
         } else if (waveform == WaveForm::Sine) {
             s = rack::simd::sin(phase * twoPi);
         }
@@ -354,7 +340,8 @@ inline void WVCO<TBase>::step()
        // rack::engine::Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
         Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
         float_4 fmInput = port.getPolyVoltageSimd<float_4>(baseChannel);
-        dsp[bank].fmInput = fmInput;
+        auto fmInputScaling = WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .01;
+        dsp[bank].fmInput = fmInput * fmInputScaling;
         float_4 v = dsp[bank].step(); 
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
     }
