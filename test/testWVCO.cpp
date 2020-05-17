@@ -1,7 +1,7 @@
 
 #include "TestComposite.h"
 #include "WVCO.h"
-#include "ADSR4.h"
+#include "ADSR16.h"
 #include "asserts.h"
 
 static void testTriFormula()
@@ -36,26 +36,27 @@ static void testTriFormula2()
 
 static void testADSR0()
 {
-    ADSR4 adsr;
+    ADSR16 adsr;
     adsr.setA(0);
     adsr.setD(0);
     adsr.setS(0);
     adsr.setR(0);
-    adsr.step(0); 
+    adsr.step(0,0,0,0); 
 }
 
 static void testADSR1()
 {
     // very fast envelope
-    ADSR4 adsr;
+    ADSR16 adsr;
     adsr.setA(0);
     adsr.setD(0);
     adsr.setS(1);
-    adsr.setR(0);
+    adsr.setR(0); 
 
     // gat it, should get something out
     float_4 high(2);
-    float_4 out = adsr.step(high); 
+    adsr.step(high, high, high, high);
+    float_4 out = adsr.env[0]; 
     simd_assertGT(out, float_4(1));
 }
 
