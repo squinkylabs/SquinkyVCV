@@ -43,7 +43,16 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        OCTAVE1_PARAM,
+        OCTAVE2_PARAM,
+        SEMI1_PARAM,
+        SEMI2_PARAM,
+        FINE1_PARAM,
+        FINE2_PARAM,
+        SUB1_TUNE_PARAM,
+        SUB2_TUNE_PARAM,
+        SUB1_LEVEL_PARAM,
+        SUB2_LEVEL_PARAM,
         NUM_PARAMS
     };
 
@@ -101,8 +110,35 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Sub<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case Sub<TBase>::OCTAVE1_PARAM:
+            ret = {0, 10, 4, "VCO 1 octave"};
+            break;
+        case Sub<TBase>::OCTAVE2_PARAM:
+            ret = {0, 10, 4, "VCO 2 octave"};
+            break;
+        case Sub<TBase>::SEMI1_PARAM:
+            ret = {-12, 12, 0, "VCO 1 semitone"};
+            break;
+        case Sub<TBase>::SEMI2_PARAM:
+            ret = {-12, 12, 0, "VCO 2 semitone"};
+            break;
+        case Sub<TBase>::FINE1_PARAM:
+            ret = {-1, 1, 0, "VCO 1 fine tune"};
+            break;
+        case Sub<TBase>::FINE2_PARAM:
+            ret = {-1, 1, 0, "VCO 2 fine tune"};
+            break;
+        case Sub<TBase>::SUB1_TUNE_PARAM:
+            ret = {-1, 1, 0, "VCO 1 subharmonic divisor"};
+            break;
+        case Sub<TBase>::SUB2_TUNE_PARAM:
+            ret = {-1, 1, 0, "VCO 2 subharmonic divisor"};
+            break;
+        case Sub<TBase>::SUB1_LEVEL_PARAM:
+            ret = {-1, 1, 0, "VCO 1 subharmonic level"};
+            break;
+        case Sub<TBase>::SUB2_LEVEL_PARAM:
+            ret = {-1, 1, 0, "VCO 2 subharmonic level"};
             break;
         default:
             assert(false);

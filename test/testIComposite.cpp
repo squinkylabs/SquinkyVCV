@@ -27,6 +27,7 @@
 #ifndef _MSC_VER
 #include "WVCO.h"
 #endif
+#include "Sub.h"
 
 #include "asserts.h"
 #include <set>
