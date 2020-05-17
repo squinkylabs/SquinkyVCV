@@ -51,13 +51,13 @@ static void testADSR1()
     adsr.setA(0);
     adsr.setD(0);
     adsr.setS(1);
-    adsr.setR(0); 
+    adsr.setR(0);
 
     // gat it, should get something out
     float_4 high(2);
     adsr.step(high, high, high, high);
     float_4 out = adsr.env[0]; 
-    simd_assertGT(out, float_4(1));
+    simd_assertGT(out, float_4(1)); 
 }
 
 static void testPumpData()
