@@ -135,20 +135,31 @@ static void testHilbert()
         }, 1);
 }
 
-#if 0
-static void testExpRange()
+
+
+
+static void simd_testSin()
 {
-    using T = float;
-    LookupTableParams<T> table;
-    LookupTableFactory<T>::makeExp2(table);
+    MeasureTime<float>::run(overheadInOut, "sin simd approx X4", []() {
+        float_4 x(TestBuffers<float>::get());
+        float d = rack::simd::sin(x)[0];
+        return d;
 
-    MeasureTime<T>::run("exp lookup", [&table]() {
+        }, 1);
 
-        T d = LookupTable<T>::lookup(table, TestBuffers<T>::get());
+}
+
+
+
+static void testSinLookup()
+{
+    auto params = ObjectCache<float>::getSinLookup();
+    MeasureTime<float>::run(overheadInOut, "sin table lookup", [params]() {
+        float d = LookupTable<float>::lookup(*params, TestBuffers<float>::get());
         return d;
         }, 1);
 }
-#endif
+
 
 static void testShifter()
 {
@@ -938,8 +949,11 @@ void perfTest()
     testGMR();
 #endif
 #ifndef _MSC_VER
+  
     testWVCOPoly();
     simd_testBiquad();
+      testSinLookup();
+    simd_testSin();
 #endif  
 
     testBiquad();

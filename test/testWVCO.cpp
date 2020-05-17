@@ -1,6 +1,7 @@
 
 #include "TestComposite.h"
 #include "WVCO.h"
+#include "ADSR4.h"
 #include "asserts.h"
 
 static void testTriFormula()
@@ -30,9 +31,12 @@ static void testTriFormula2()
         TriFormula::getRightAandB(a, b, k);
         assertEQ(k * a + b, 1);
         assertEQ(1.f *a + b, 0);
-
-
     }
+}
+
+static void testADSR()
+{
+    ADSR4 adsr;
 }
 
 static void testPumpData()
@@ -63,4 +67,5 @@ void testWVCO()
     testTriFormula();
     testTriFormula2();
     testPumpData();
+    testADSR();
 }

@@ -1,6 +1,44 @@
 
 #pragma once
 
+/**
+ * 
+ * 5/17 stock : 123.5
+ * -march=native: 100 
+ * -finline-limit=n: 103.5
+ * -finline-limit=500000 -finline-functions-called-once: 103.6
+ *  flatten on step() -finline-limit=500000 -finline-functions-called-once: 102
+ *  -flto and all linlines
+ * all the above: 77
+ * 
+ * gcc options to try:
+ * 
+ * -flto
+ * (nc with ?) -fwhole-program
+ * -finline-funciton
+ * -march=native or skylake
+
+ * static int max(int x, int y) __attribute__((always_inline));
+static int max(int x, int y)
+{
+
+-finline-functions-called-once
+
+--forceinline
+
+__forceinline static int max(int x, int y)
+
+-finline-limit=n
+
+__attribute__ ((flatten))
+
+conclusions, round 1:
+march native is significant, but why? It's not generating avx, is it? (more to do)
+inline options make a difference. unclear which to use, although inline-limit is easy
+float -> float_4 isn't free.
+
+ */
+
 #include <assert.h>
 #include <memory>
 #include <vector>
