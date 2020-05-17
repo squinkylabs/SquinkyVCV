@@ -41,23 +41,47 @@ static void testADSR0()
     adsr.setD(0);
     adsr.setS(0);
     adsr.setR(0);
-    adsr.step(0,0,0,0); 
+    float_4 gates[4];
+    const float sampleTime = 1.f / 44100.f;
+    adsr.step(gates, sampleTime); 
 }
 
 static void testADSR1()
-{
+{ 
+       const float sampleTime = 1.f / 44100.f;
     // very fast envelope
     ADSR16 adsr;
     adsr.setA(0);
     adsr.setD(0);
-    adsr.setS(1);
-    adsr.setR(0);
+    adsr.setS(1); 
+    adsr.setR(0); 
+    adsr.setNumChannels(4);
 
-    // gat it, should get something out
-    float_4 high(2);
-    adsr.step(high, high, high, high);
+  
+    float_4 gates[4] = {0};
+   // high[0] = float_4::mask();
+
+
+    printf("\n** step low **\n");
+ 
+    for (int i=0; i<5; ++i) {
+        printf("\nstep %d *****\n", i);
+        adsr.step(gates, sampleTime);
+    }
+
+    printf("\n** step high **\n"); 
+
+    gates[0] = float_4::mask(); 
+
+    for (int i=0; i<5; ++i) {
+        printf("\nstep %d *****\n", i);
+        adsr.step(gates, sampleTime); 
+    }
+   
+   // should have attacked a bit
     float_4 out = adsr.env[0]; 
-    simd_assertGT(out, float_4(1)); 
+    simd_assertGT(out, float_4(.1));  
+
 }
 
 static void testPumpData()

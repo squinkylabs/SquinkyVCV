@@ -74,18 +74,8 @@ extern int _mdb;        // MIDI reverence count
 using float_4 = rack::simd::float_4;
 using int32_4 = rack::simd::int32_4;
 
-inline std::string toStr(const float_4& x) {
-    std::stringstream s;
-    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
-    return s.str();
-}
 
 
-inline std::string toStr(const int32_4& x) {
-    std::stringstream s;
-    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
-    return s.str();
-}
 
 
 
@@ -110,8 +100,8 @@ inline std::string toStr(const int32_4& x) {
 
 // mask must be 0 or all ones
 #define assertMask(m) \
-    if (m != 0 && (unsigned int)(m) != 0xffffffff) { printf("dword is not mask: %x\n", (unsigned int) m); fflush(stdout); } \
-    assert(m == 0 || (unsigned int)(m) == 0xffffffff);
+    if (((unsigned int) m != 0) && (unsigned int)(m) != 0xffffffff) { printf("dword is not mask: %x\n", (unsigned int) m); fflush(stdout); } \
+    assert((unsigned int) m == 0 || (unsigned int)(m) == 0xffffffff);
 
 #define simd_assertMask(x) \
     assertMask(x[0]); \
@@ -147,5 +137,30 @@ inline std::string toStr(const int32_4& x) {
     assertEQ(a[0], a[1]); \
     assertEQ(a[0], a[2]); \
     assertEQ(a[0], a[3]); 
+
+
+inline std::string toStr(const float_4& x) {
+    std::stringstream s;
+    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
+    return s.str();
+}
+
+
+inline std::string toStr(const int32_4& x) {
+    std::stringstream s;
+    s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
+    return s.str();
+}
+
+inline std::string toStrM(const float_4& x) {
+    simd_assertMask(x);
+    int32_4 i = x;
+    std::stringstream s;
+    s << (i[0] ? "t" : "f") <<
+     ", " << (i[1] ? "t" : "f") <<
+     ", " << (i[2] ? "t" : "f") << 
+     ", " << (i[3]  ? "t" : "f");
+    return s.str();
+}
 
 #endif

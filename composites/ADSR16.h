@@ -20,8 +20,12 @@ public:
 
     /* v > 1 = on
      */
-    //setGate(float_4 gates);
-    void step(float_4 gates0, float_4 gates1, float_4 gates2, float_4 gates3);
+    void step(const float_4* gates, float sampleTime);
+    void setNumChannels(int ch) {
+        channels = ch;
+    }
+
+    // 0..1
     float_4 env[4] = {0.f};
 private:
 	float_4 attacking [4] = {float_4::zero()};
@@ -36,10 +40,48 @@ private:
     const float MAX_TIME = 10.f;
     const float LAMBDA_BASE = MAX_TIME / MIN_TIME;
 
+    int channels = 0;
+
 };
 
-inline void  ADSR16::step(float_4 gates0, float_4 gates1, float_4 gates2, float_4 gates3)
+inline void  ADSR16::step(const float_4* gates, float sampleTime)
 { 
+    //float_4 gate[4];
+    for (int c = 0; c < channels; c += 4) {
+        simd_assertMask(gates[c/4]);
+       // gate[c / 4] = inputs[GATE_INPUT].getVoltageSimd<float_4>(c) >= 1.f;
+
+        // we don't have trigger inputRetrigger
+        // float_4 triggered = trigger[c / 4].process(inputs[TRIG_INPUT].getPolyVoltageSimd<float_4>(c));
+        // attacking[c / 4] = simd::ifelse(triggered, float_4::mask(), attacking[c / 4]);
+
+		// Get target and lambda for exponential decay
+		const float attackTarget = 1.2f;
+		float_4 target = rack::simd::ifelse(gates[c / 4], rack::simd::ifelse(attacking[c / 4], attackTarget, sustain[c / 4]), 0.f);
+		float_4 lambda = rack::simd::ifelse(gates[c / 4], rack::simd::ifelse(attacking[c / 4], attackLambda[c / 4], decayLambda[c / 4]), releaseLambda[c / 4]);
+
+        float_4 g = gates[c/4];
+        printf("gattes[%d] = %s\ntarg=%s\nlamd=%s\nenv=%s\nattacking=%s\n",
+            c, 
+            toStrM(g).c_str(),
+            toStr(target).c_str(),
+            toStr(lambda).c_str(),
+            toStr(env[c/4]).c_str(),
+            toStrM(attacking[c/4]).c_str()
+        );
+
+		// Adjust env
+		env[c / 4] += (target - env[c / 4]) * lambda * sampleTime;
+
+		// Turn off attacking state if envelope is HIGH
+		attacking[c / 4] = rack::simd::ifelse(env[c / 4] >= 1.f, float_4::zero(), attacking[c / 4]);
+
+		// Turn on attacking state if gate is LOW
+		attacking[c / 4] = rack::simd::ifelse(gates[c / 4], attacking[c / 4], float_4::mask());
+
+		// Set output
+		//outputs[ENVELOPE_OUTPUT].setVoltageSimd(10.f * env[c / 4], c);
+    }
 }
 
 /*
@@ -73,9 +115,10 @@ inline void ADSR16::setD(float decay)
     decayLambda  = rack::simd::pow(LAMBDA_BASE, -x) / MIN_TIME;
 }
 
-inline void ADSR16::setS(float attacksMilliseconds)
+inline void ADSR16::setS(float sust)
 {
-   
+    float_4 x = rack::simd::clamp(sust, 0.f, 1.f);
+    sustain = x;
 }
 
 inline void ADSR16::setR(float release)
