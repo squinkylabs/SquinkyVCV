@@ -35,6 +35,7 @@
 
 #define _SEQ4
 #define _WVCO
+#define _SUB
 
 using namespace ::rack;
 
@@ -124,6 +125,8 @@ extern Model* modelChaosKittyModule;
 #ifdef _WVCO
 extern Model *modelWVCOModule;
 #endif
-
+#ifdef _SUB
+extern Model *modelSubModule;
+#endif
 
 

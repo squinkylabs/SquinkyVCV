@@ -116,6 +116,9 @@ p->addModel(modelChaosKittyModule);
 #ifdef _WVCO
 p->addModel(modelWVCOModule);
 #endif
+#ifdef _SUB
+p->addModel(modelSubModule);
+#endif
 
 
 }

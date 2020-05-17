@@ -88,6 +88,7 @@ void testIComposite()
 
 #ifndef _MSC_VER
     test<WVCO<TestComposite>>();
+    test<Sub<TestComposite>>();
 #endif
 
 }
