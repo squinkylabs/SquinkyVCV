@@ -37,6 +37,11 @@ static void testTriFormula2()
 static void testADSR()
 {
     ADSR4 adsr;
+    adsr.setA(0);
+    adsr.setD(0);
+    adsr.setS(0);
+    adsr.setR(0);
+    adsr.step(0); 
 }
 
 static void testPumpData()
