@@ -217,6 +217,11 @@ public:
         DECAY_PARAM,
         SUSTAIN_PARAM,
         RELEASE_PARAM,
+
+        ADSR_SHAPE_PARAM,
+        ADSR_FBCK_PARAM,
+        ADSR_OUTPUT_LEVEL_PARAM,
+        ADSR_LFM_DEPTH_PARAM,
         
         NUM_PARAMS
     };
@@ -227,6 +232,7 @@ public:
         FM_INPUT,
         LINEAR_FM_INPUT,
         GATE_INPUT,
+        SYNC_INPUT,
         NUM_INPUTS
     };
 
@@ -437,6 +443,18 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             break;
         case WVCO<TBase>::OUTPUT_LEVEL_PARAM:
             ret = {0, 100, 50, "[nimp] Level"};
+            break;
+        case WVCO<TBase>::ADSR_SHAPE_PARAM:
+            ret = {0, 100, 0, "[nimp] ADSR->shape"};
+            break;
+        case WVCO<TBase>::ADSR_FBCK_PARAM:
+         ret = {0, 1, 00, "[nimp] ADSR->Feedback"};
+            break;
+        case WVCO<TBase>::ADSR_OUTPUT_LEVEL_PARAM:
+         ret = {0, 1, 0, "[nimp] ADRS->Output Level"};
+            break;
+        case WVCO<TBase>::ADSR_LFM_DEPTH_PARAM:
+         ret = {0, 1, 0, "[nimp] ARSR->FM Depth"};
             break;
         default:
             assert(false);

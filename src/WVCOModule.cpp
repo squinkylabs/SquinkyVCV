@@ -269,7 +269,7 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Vec(knobX4, knobY4),
         module,
         Comp::OUTPUT_LEVEL_PARAM));
-    addLabel(Vec(knobX4 + 2, knobY4 - labelAboveKnob), "Level");
+    addLabel(Vec(knobX4 - 10, knobY4 - labelAboveKnob), "Level");
 }
 
 const float jacksX1 = 24;
@@ -296,6 +296,12 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::GATE_INPUT));
     addLabel(Vec(jacksX2 - 10, jacksY1 - labelAboveKnob), "Gate");
 
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX3, jacksY1),
+        module,
+        Comp::LINEAR_FM_INPUT));
+    addLabel(Vec(jacksX3 - 10, jacksY1 - labelAboveKnob), "LFM-0");
+
 
     // second row
     addOutput(createOutput<PJ301MPort>(
@@ -310,11 +316,12 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::FM_INPUT));
     addLabel(Vec(jacksX2 - 10, jacksY2 - labelAboveKnob), "Mod");
 
-     addInput(createInput<PJ301MPort>(
-        Vec(jacksX3, jacksY1),
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX3, jacksY2),
         module,
-        Comp::LINEAR_FM_INPUT));
-    addLabel(Vec(jacksX3 - 10, jacksY1 - labelAboveKnob), "LFM-0");
+        Comp::SYNC_INPUT));
+    addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Sync");
+
     
 
  
