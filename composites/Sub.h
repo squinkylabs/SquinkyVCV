@@ -1,9 +1,12 @@
 
 #pragma once
 
+#include "Divider.h"
+#include "SubVCO.h"
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
+
 
 namespace rack {
     namespace engine {
@@ -58,11 +61,13 @@ public:
 
     enum InputIds
     {
+        VOCT_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -85,18 +90,44 @@ public:
 
 private:
 
+    VoltageControlledOscillator<16, 16, float_4> oscillators[4];
+    int numChannels = 1;
+    Divider divn;
+    void stepn();
+
 };
 
 
 template <class TBase>
 inline void Sub<TBase>::init()
 {
+    divn.setup(4, [this]() {
+        this->stepn();
+    });
 }
 
+template <class TBase>
+inline void Sub<TBase>::stepn()
+{
+    numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numChannels);
+}
 
 template <class TBase>
 inline void Sub<TBase>::step()
 {
+    divn.step();
+    // look at controls and update VCO
+
+    // run the audio
+ 
+    int numBanks = numChannels / 4;
+    if (numChannels > numBanks * 4) {
+        numBanks++;
+    }
+    for (int bank=0; bank < numBanks; ++bank) {
+        const int baseChannel = 4 * bank;
+    }
 }
 
 template <class TBase>
