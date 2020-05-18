@@ -115,8 +115,9 @@ inline void Sub<TBase>::stepn()
 
 
     // This is very wrong, in so many ways.
-    float pitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value - 5;
-    float pitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value - 5;
+    // pitch is in volts
+    float pitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
+    float pitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
     float_4 combinedPitch(0);
     combinedPitch[0] = pitch1;
     combinedPitch[1] = pitch2;

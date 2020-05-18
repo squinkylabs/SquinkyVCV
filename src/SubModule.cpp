@@ -97,7 +97,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp)
         Comp::OCTAVE1_PARAM));
     addLabel(Vec(knobX1 - 10, knobY1 - labelAboveKnob), "Octave");
 
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
+    addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX2, knobY1),
         module,
