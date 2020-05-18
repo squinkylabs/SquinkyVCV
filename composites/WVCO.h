@@ -210,6 +210,8 @@ public:
         WAVESHAPE_GAIN_PARAM,
         WAVE_SHAPE_PARAM,
         FEEDBACK_PARAM,
+        OUTPUT_LEVEL_PARAM,
+
 
         ATTACK_PARAM,
         DECAY_PARAM,
@@ -432,6 +434,9 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             break;
         case WVCO<TBase>::RELEASE_PARAM:
             ret = {-1.0f, 1.0f, 0, "[nimp] Release"};
+            break;
+        case WVCO<TBase>::OUTPUT_LEVEL_PARAM:
+            ret = {0, 100, 50, "[nimp] Level"};
             break;
         default:
             assert(false);

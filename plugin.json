@@ -195,6 +195,7 @@
 			"slug": "squinkylabs-dvg",
 			"name": "dg",
 			"description": "thing",
+			"disabled": true,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/functional-vco-1.md",
 			"tags": ["VCO"]
 		},

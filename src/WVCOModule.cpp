@@ -154,6 +154,7 @@ const float knobY1 = 60;
 const float knobDeltaY = 70;
 const float knobY2 = knobY1 + 1 *  knobDeltaY;
 const float knobY3 = knobY1 + 2 *  knobDeltaY;
+const float knobY4 = knobY1 + 3 *  knobDeltaY;
 
 const float labelAboveKnob = 20;
 
@@ -262,6 +263,13 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::RELEASE_PARAM));
     addLabel(Vec(knobX4 + 2, knobY3 - labelAboveKnob), "R");
 
+    // fourth row
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX4, knobY4),
+        module,
+        Comp::OUTPUT_LEVEL_PARAM));
+    addLabel(Vec(knobX4 + 2, knobY4 - labelAboveKnob), "Level");
 }
 
 const float jacksX1 = 24;
@@ -285,27 +293,31 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
     addInput(createInput<PJ301MPort>(
         Vec(jacksX2, jacksY1),
         module,
-        Comp::FM_INPUT));
-    addLabel(Vec(jacksX2 - 10, jacksY1 - labelAboveKnob), "Mod");
-
-     addInput(createInput<PJ301MPort>(
-        Vec(jacksX3, jacksY1),
-        module,
-        Comp::LINEAR_FM_INPUT));
-    addLabel(Vec(jacksX3 - 10, jacksY1 - labelAboveKnob), "LFM-0");
-
-     addInput(createInput<PJ301MPort>(
-        Vec(jacksX4, jacksY1),
-        module,
         Comp::GATE_INPUT));
-    addLabel(Vec(jacksX4 - 10, jacksY1 - labelAboveKnob), "Gate");
-    
+    addLabel(Vec(jacksX2 - 10, jacksY1 - labelAboveKnob), "Gate");
+
+
     // second row
     addOutput(createOutput<PJ301MPort>(
         Vec(jacksX1, jacksY2),
         module,
         Comp::MAIN_OUTPUT));
     addLabel(Vec(jacksX1 - 10, jacksY2 - labelAboveKnob), "Out");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX2, jacksY2),
+        module,
+        Comp::FM_INPUT));
+    addLabel(Vec(jacksX2 - 10, jacksY2 - labelAboveKnob), "Mod");
+
+     addInput(createInput<PJ301MPort>(
+        Vec(jacksX3, jacksY1),
+        module,
+        Comp::LINEAR_FM_INPUT));
+    addLabel(Vec(jacksX3 - 10, jacksY1 - labelAboveKnob), "LFM-0");
+    
+
+ 
 }
 
 
