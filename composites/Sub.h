@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "asserts.h"
 #include "Divider.h"
 #include "SubVCO.h"
 #include <assert.h>
@@ -114,12 +115,13 @@ inline void Sub<TBase>::stepn()
 
 
     // This is very wrong, in so many ways.
-    float pitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value;
-    float pitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value;
-    float_4 combinedPitch;
+    float pitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value - 5;
+    float pitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value - 5;
+    float_4 combinedPitch(0);
     combinedPitch[0] = pitch1;
     combinedPitch[1] = pitch2;
 
+  //  printf("set bank0 to %s\n", toStr(combinedPitch).c_str());
     oscillators[0].setPitch(combinedPitch);
 
 }
@@ -144,10 +146,17 @@ inline void Sub<TBase>::step()
         // now, what do do with the output? to now lets grab pairs
         // of saws and add them
         float_4 saws = oscillators[bank].saw();
-        float pair = saws[0]+ saws[1];  
+        //float pair = saws[0]+ saws[1];  
+        float pair = saws[0];
+       // printf("writing to channel %d\n", channel);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+
+        // for easier testing, just one vco
+        #if 0
         pair = saws[2]+ saws[3];  
+        printf("and writing to channel %d\n", channel);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+        #endif
     }
 }
 
