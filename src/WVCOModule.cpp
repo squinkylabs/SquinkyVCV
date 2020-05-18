@@ -273,11 +273,6 @@ const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
 
 const float jacksY1 = 276;
 const float jacksY2 = jacksY1 + 46;
-#if 0
-  FM_INPUT,
-        LINEAR_FM_INPUT,
-        GATE_INPUT,
-        #endif
 
 void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
 

@@ -48,8 +48,8 @@ public:
     {
         OCTAVE1_PARAM,
         OCTAVE2_PARAM,
-        SEMI1_PARAM,
-        SEMI2_PARAM,
+     //   SEMI1_PARAM,
+     //   SEMI2_PARAM,
         FINE1_PARAM,
         FINE2_PARAM,
         SUB1_TUNE_PARAM,
@@ -111,6 +111,17 @@ inline void Sub<TBase>::stepn()
 {
     numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numChannels);
+
+
+    // This is very wrong, in so many ways.
+    float pitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value;
+    float pitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value;
+    float_4 combinedPitch;
+    combinedPitch[0] = pitch1;
+    combinedPitch[1] = pitch2;
+
+    oscillators[0].setPitch(combinedPitch);
+
 }
 
 template <class TBase>
@@ -121,12 +132,22 @@ inline void Sub<TBase>::step()
 
     // run the audio
  
-    int numBanks = numChannels / 4;
-    if (numChannels > numBanks * 4) {
+    const int numVCO = numChannels * 2;
+    int numBanks = numVCO / 4;
+    if (numVCO > numBanks * 4) {
         numBanks++;
     }
+    const float sampleTime = TBase::engineGetSampleTime();
+    int channel = 0;
     for (int bank=0; bank < numBanks; ++bank) {
-        const int baseChannel = 4 * bank;
+        oscillators[bank].process(sampleTime, 0);
+        // now, what do do with the output? to now lets grab pairs
+        // of saws and add them
+        float_4 saws = oscillators[bank].saw();
+        float pair = saws[0]+ saws[1];  
+        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+        pair = saws[2]+ saws[3];  
+        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
     }
 }
 
@@ -147,12 +168,14 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::OCTAVE2_PARAM:
             ret = {0, 10, 4, "VCO 2 octave"};
             break;
+#if 0
         case Sub<TBase>::SEMI1_PARAM:
             ret = {-12, 12, 0, "VCO 1 semitone"};
             break;
         case Sub<TBase>::SEMI2_PARAM:
             ret = {-12, 12, 0, "VCO 2 semitone"};
             break;
+#endif
         case Sub<TBase>::FINE1_PARAM:
             ret = {-1, 1, 0, "VCO 1 fine tune"};
             break;

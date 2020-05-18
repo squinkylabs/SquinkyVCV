@@ -8,6 +8,27 @@
 #include "simd.h"
 
 
+// Accurate only on [0, 1]
+template <typename T>
+T sin2pi_pade_05_7_6(T x) {
+	x -= 0.5f;
+	return (T(-6.28319) * x + T(35.353) * simd::pow(x, 3) - T(44.9043) * simd::pow(x, 5) + T(16.0951) * simd::pow(x, 7))
+	       / (1 + T(0.953136) * simd::pow(x, 2) + T(0.430238) * simd::pow(x, 4) + T(0.0981408) * simd::pow(x, 6));
+}
+
+template <typename T>
+T sin2pi_pade_05_5_4(T x) {
+	x -= 0.5f;
+	return (T(-6.283185307) * x + T(33.19863968) * simd::pow(x, 3) - T(32.44191367) * simd::pow(x, 5))
+	       / (1 + T(1.296008659) * simd::pow(x, 2) + T(0.7028072946) * simd::pow(x, 4));
+}
+
+// TODO: move out of global scope
+template <typename T>
+T expCurve(T x) {
+	return (3 + x * (-13 + 5 * x)) / (3 + 2 * x);
+}
+
 template <int OVERSAMPLE, int QUALITY, typename T>
 struct VoltageControlledOscillator {
 
