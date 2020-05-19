@@ -16,10 +16,7 @@ extern int _mdb;        // MIDI reverence count
 #define assertEQEx(actual, expected, msg) if (actual != expected) { \
     std::cout << "assertEq failed " << msg << " actual value =" << \
     actual << " expected=" << expected << std::endl << std::flush; \
-    }
-   
-   
-   // assert(false); }
+    assert(false); }
 
 #define assertEQ(actual, expected) assertEQEx(actual, expected, "")
 

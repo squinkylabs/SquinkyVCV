@@ -60,7 +60,9 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
 		float_4 target = rack::simd::ifelse(gates[c / 4], rack::simd::ifelse(attacking[c / 4], attackTarget, sustain[c / 4]), 0.f);
 		float_4 lambda = rack::simd::ifelse(gates[c / 4], rack::simd::ifelse(attacking[c / 4], attackLambda[c / 4], decayLambda[c / 4]), releaseLambda[c / 4]);
 
-        float_4 g = gates[c/4];
+       
+    #if 0
+     float_4 g = gates[c/4];
         printf("gattes[%d] = %s\ntarg=%s\nlamd=%s\nenv=%s\nattacking=%s\n",
             c, 
             toStrM(g).c_str(),
@@ -69,6 +71,7 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
             toStr(env[c/4]).c_str(),
             toStrM(attacking[c/4]).c_str()
         );
+        #endif
 
 		// Adjust env
 		env[c / 4] += (target - env[c / 4]) * lambda * sampleTime;

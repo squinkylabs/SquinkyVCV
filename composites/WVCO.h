@@ -146,8 +146,11 @@ public:
         if (waveform == WaveForm::Fold) {
             s = rack::simd::sin(phase * twoPi);
             s *= (shapeAdjust * 10);
+           // printf("shape adjust = %s\n", toStr(shapeAdjust).c_str());
             s = SimdBlocks::fold(s);
+           //  printf("fold out= %s\n", toStr(s).c_str());
             s *= 5;
+           //   printf("final out= %s\n", toStr(s).c_str());
         } else if (waveform == WaveForm::SawTri) {
             // TODO: move this into helper
             float_4 k = .5 + shapeAdjust / 2;
@@ -157,6 +160,7 @@ public:
             s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
         } else if (waveform == WaveForm::Sine) {
             s = rack::simd::sin(phase * twoPi);
+            s *= 5;
         }
         buffer[bufferIndex] = s;
     }
@@ -313,6 +317,7 @@ inline void WVCO<TBase>::stepm()
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
+    //printf("baseShapegain set to %f from param %f\n", baseShapeGain,TBase::params[WAVESHAPE_GAIN_PARAM].value);
 
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
@@ -350,14 +355,15 @@ inline void WVCO<TBase>::stepn()
         }
 
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-        dsp[bank].shapeAdjust = baseShapeGain;
+        dsp[bank].shapeAdjust = baseShapeGain;    
+       // printf("shapeAdjust set from base out= %s\n", toStr(dsp[bank].shapeAdjust).c_str());
 
-        // printf("base shape gain = %f\n", baseShapeGain); fflush(stdout);
-        baseShapeGain = std::clamp(baseShapeGain, .01, .99);
-        assert(baseShapeGain < 1);
-        assert(baseShapeGain > 0);
+        // now let's compute triangle params
+        const float shapeGain =  std::clamp(baseShapeGain, .01, .99); 
+        assert(shapeGain < 1);
+        assert(shapeGain > 0);
 
-        float k = .5 + baseShapeGain / 2;
+        float k = .5 + shapeGain / 2;
         float a, b;
         TriFormula::getLeftA(a, k);
         dsp[bank].aLeft = a;

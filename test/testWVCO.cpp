@@ -17,8 +17,6 @@ static void testTriFormula()
     TriFormula::getRightAandB(a, b, .5);
     assertEQ(a, -2);
     assertEQ(b, 2);
-
-
 }
 
 static void testTriFormula2()
@@ -62,82 +60,108 @@ static void testADSR1()
    // high[0] = float_4::mask();
 
 
-    printf("\n** step low **\n");
+  //  printf("\n** step low **\n");
  
     for (int i=0; i<5; ++i) {
-        printf("\nstep %d *****\n", i);
+       // printf("\nstep %d *****\n", i);
         adsr.step(gates, sampleTime);
     }
-
-    printf("\n** step high **\n"); 
+ 
+   // printf("\n** step high **\n"); 
 
     gates[0] = float_4::mask(); 
 
-    for (int i=0; i<5; ++i) {
-        printf("\nstep %d *****\n", i);
+    for (int i=0; i<5; ++i) { 
+      //  printf("\nstep %d *****\n", i); 
         adsr.step(gates, sampleTime); 
     }
-   
-   // should have attacked a bit
+    
+   // should have attacked a bit 
     float_4 out = adsr.env[0]; 
-    simd_assertGT(out, float_4(.1));  
+    simd_assertGT(out, float_4(.1)); 
 
 }
 
 static void testPumpData()
 {
-    WVCO<TestComposite> wvco;
+    WVCO<TestComposite> wvco;  
 
-    wvco.init();
+    wvco.init(); 
     wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 8;
     wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 8;
     wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = 0;
 
-    wvco.step();
+    wvco.step(); 
     float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
-    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(1);
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(1); 
     wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(2);
-    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(3);
+    wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(3); 
     wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(4);
     wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(5); 
     wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(6);
     wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(7);
-
+ 
     assertGE(x , -10);
-    assertLE(x , 10);
+    assertLE(x , 10); 
+} 
+
+// TODO: move these to utils
+template <class T>
+void initComposite(T& comp)
+{
+    comp.init(); 
+    auto icomp = comp.getDescription();
+    for (int i = 0; i < icomp->getNumParams(); ++i) {
+        auto param = icomp->getParam(i);
+        comp.params[i].value = param.def;
+    }
 }
 
-static void testOutput()
-{
-    WVCO<TestComposite> wvco;
+static void testOutput(int waveForm) 
+{ 
+    assertGE(waveForm, 0); 
+    assertLE(waveForm, 2); 
+    WVCO<TestComposite> wvco; 
 
-printf("test output\n"); fflush(stdout);
-    wvco.init();
+    initComposite(wvco);
     wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 1;
     wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 1;
     wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 9;
-    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = 0;
+    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = waveForm;
+    wvco.params[WVCO<TestComposite>::WAVESHAPE_GAIN_PARAM].value  = .5;
+
 
     float positive = -100;
-    float negative = 100;
-    float sum = 0;
-    const int iterations = 1000;
-    for (int i=0; i < iterations; ++i) {
+    float negative = 100; 
+    float sum = 0; 
+    const int iterations = 10000;  
+    for (int i=0; i < iterations; ++i) {  
         wvco.step();
         float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
-        positive = std::max(positive, x);
-        negative = std::min(negative, x);
-    }
-
-    assertEQ(positive, 5.f);
-    assertEQ(negative, 5.f);
+        positive = std::max(positive, x); 
+        negative = std::min(negative, x);  
+    } 
+ 
+    printf("wf =%d after min=%f max=%f av=%f\n", waveForm, negative, positive, sum);
+ 
+    assertClose(positive, 5.f, .1);
+    assertClose(negative, -5.f, .1); 
     sum /= iterations;
     assertEQ(sum, 0);
+    printf("done with test output\n");
 
+}
+
+static void testOutput() 
+{
+    testOutput(0);
+    testOutput(1);
+    testOutput(2);
 }
 
 void testWVCO()
 {
+ 
     testTriFormula();
     testTriFormula2();
     testPumpData();
