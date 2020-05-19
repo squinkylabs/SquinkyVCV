@@ -146,11 +146,8 @@ public:
         if (waveform == WaveForm::Fold) {
             s = rack::simd::sin(phase * twoPi);
             s *= (shapeAdjust * 10);
-           // printf("shape adjust = %s\n", toStr(shapeAdjust).c_str());
             s = SimdBlocks::fold(s);
-           //  printf("fold out= %s\n", toStr(s).c_str());
-            s *= 5;
-           //   printf("final out= %s\n", toStr(s).c_str());
+            s *= (5.f * 5.f / 5.6f);        // why do we need this correction?
         } else if (waveform == WaveForm::SawTri) {
             // TODO: move this into helper
             float_4 k = .5 + shapeAdjust / 2;
@@ -158,6 +155,8 @@ public:
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
             s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
+            s -= .5f;           // center it
+            s *= 10;            // andfix range
         } else if (waveform == WaveForm::Sine) {
             s = rack::simd::sin(phase * twoPi);
             s *= 5;

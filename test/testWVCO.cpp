@@ -126,9 +126,9 @@ static void testOutput(int waveForm)
     initComposite(wvco);
     wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 1;
     wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 1;
-    wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 9;
+    wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 6;       // 7 was ok
     wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = waveForm;
-    wvco.params[WVCO<TestComposite>::WAVESHAPE_GAIN_PARAM].value  = .5;
+    wvco.params[WVCO<TestComposite>::WAVESHAPE_GAIN_PARAM].value  = 50;
 
 
     float positive = -100;
@@ -138,18 +138,17 @@ static void testOutput(int waveForm)
     for (int i=0; i < iterations; ++i) {  
         wvco.step();
         float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
+        sum += x;
         positive = std::max(positive, x); 
         negative = std::min(negative, x);  
     } 
  
-    printf("wf =%d after min=%f max=%f av=%f\n", waveForm, negative, positive, sum);
+    printf("wf =%d after min=%f max=%f av (before norm)=%f after=%f\n", waveForm, negative, positive, sum, sum / iterations);
  
-    assertClose(positive, 5.f, .1);
-    assertClose(negative, -5.f, .1); 
+    assertClose(positive, 5.f, 1);
+    assertClose(negative, -5.f, 1); 
     sum /= iterations;
-    assertEQ(sum, 0);
-    printf("done with test output\n");
-
+    assertClose(sum, 0, .01);
 }
 
 static void testOutput() 
