@@ -136,7 +136,7 @@ static void testHilbert()
 }
 
 
-
+#ifndef _MSC_VER 
 
 static void simd_testSin()
 {
@@ -148,6 +148,7 @@ static void simd_testSin()
         }, 1);
 
 }
+#endif
 
 
 

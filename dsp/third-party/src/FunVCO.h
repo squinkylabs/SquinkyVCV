@@ -32,7 +32,7 @@ extern float triTable[2048];
 #define _USEIIR
 
 template <int OVERSAMPLE, int QUALITY>
-struct VoltageControlledOscillator
+struct VoltageControlledOscillator1
 {
     float sampleTime = 0;
     bool analog = false;

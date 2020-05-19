@@ -77,7 +77,7 @@ private:
 #ifdef _ORIGVCO
     VoltageControlledOscillatorOrig<16, 16> oscillator;
 #else
-    VoltageControlledOscillator<16, 16> oscillator;
+    VoltageControlledOscillator1<16, 16> oscillator;
 #endif
 };
 

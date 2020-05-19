@@ -5,7 +5,12 @@
 
 #pragma once
 
+#ifndef _MSC_VER 
 #include "simd.h"
+#include "dsp/minblep.hpp"
+#include "dsp/approx.hpp"
+
+using namespace rack;		// normally I don't like "using", but this is third party code...
 
 
 // Accurate only on [0, 1]
@@ -254,4 +259,7 @@ struct VoltageControlledOscillator {
 		return simd::sin(2 * T(M_PI) * phase);
 	}
 };
+
+#endif
+
 

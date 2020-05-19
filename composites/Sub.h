@@ -1,6 +1,7 @@
 
 #pragma once
 
+#ifndef _MSC_VER 
 #include "asserts.h"
 #include "Divider.h"
 #include "SubVCO.h"
@@ -209,5 +210,7 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
     }
     return ret;
 }
+#endif
+
 
 
