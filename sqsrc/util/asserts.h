@@ -15,14 +15,17 @@ extern int _mdb;        // MIDI reverence count
 
 #define assertEQEx(actual, expected, msg) if (actual != expected) { \
     std::cout << "assertEq failed " << msg << " actual value =" << \
-    actual << " expected=" << expected << std::endl; \
-    assert(false); }
+    actual << " expected=" << expected << std::endl << std::flush; \
+    }
+   
+   
+   // assert(false); }
 
 #define assertEQ(actual, expected) assertEQEx(actual, expected, "")
 
 #define assertNEEx(actual, expected, msg) if (actual == expected) { \
     std::cout << "assertNE failed " << msg << " did not expect " << \
-    actual << " to be == to " << expected << std::endl; \
+    actual << " to be == to " << expected << std::endl << std::flush; \
     assert(false); }
 
 #define assertNE(actual, expected) assertNEEx(actual, expected, "")
@@ -36,24 +39,24 @@ extern int _mdb;        // MIDI reverence count
 // assert less than
 #define assertLT(actual, expected) if ( actual >= expected) { \
     std::cout << "assertLt " << expected << " actual value = " << \
-    actual << std::endl ; \
+    actual << std::endl  << std::flush; \
     assert(false); }
 
 // assert less than or equal to
 #define assertLE(actual, expected) if ( actual > expected) { \
     std::cout << "assertLE " << expected << " actual value = " << \
-    actual << std::endl ; \
+    actual << std::endl  << std::flush; \
     assert(false); }
 
 // assert greater than 
 #define assertGT(actual, expected) if ( actual <= expected) { \
     std::cout << "assertGT " << expected << " actual value = " << \
-    actual << std::endl ; \
+    actual << std::endl  << std::flush; \
     assert(false); }
 // assert greater than or equal to
 #define assertGE(actual, expected) if ( actual < expected) { \
     std::cout << "assertGE " << expected << " actual value = " << \
-    actual << std::endl ; \
+    actual << std::endl  << std::flush; \
     assert(false); }
 
 #ifndef NDEBUG
@@ -73,11 +76,6 @@ extern int _mdb;        // MIDI reverence count
 
 using float_4 = rack::simd::float_4;
 using int32_4 = rack::simd::int32_4;
-
-
-
-
-
 
 // these ones are anything not zero is true. is that valid?
 #define simd_assertFalse(x) (  assert ((int(x[0]) == 0) && (int(x[1]) == 0) && (int(x[2]) == 0) && (int(x[3]) == 0)) )

@@ -107,6 +107,35 @@ static void testPumpData()
     assertLE(x , 10);
 }
 
+static void testOutput()
+{
+    WVCO<TestComposite> wvco;
+
+printf("test output\n"); fflush(stdout);
+    wvco.init();
+    wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 1;
+    wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 1;
+    wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 9;
+    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = 0;
+
+    float positive = -100;
+    float negative = 100;
+    float sum = 0;
+    const int iterations = 1000;
+    for (int i=0; i < iterations; ++i) {
+        wvco.step();
+        float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
+        positive = std::max(positive, x);
+        negative = std::min(negative, x);
+    }
+
+    assertEQ(positive, 5.f);
+    assertEQ(negative, 5.f);
+    sum /= iterations;
+    assertEQ(sum, 0);
+
+}
+
 void testWVCO()
 {
     testTriFormula();
@@ -114,4 +143,6 @@ void testWVCO()
     testPumpData();
     testADSR0();
     testADSR1();
+
+    testOutput();
 }
