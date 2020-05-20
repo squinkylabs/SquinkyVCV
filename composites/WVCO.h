@@ -280,6 +280,10 @@ private:
     float baseShapeGain = 0;    // 0..1 -> re-do this!
     float baseFeedback = 0;
     float baseOutputLevel = 1;  // 0..1
+    bool enableAdsrLevel = false;
+    bool enableAdsrFeedback = false;
+    bool enableAdsrFM = false;
+    bool enableAdsrShape = false;
 
     float_4 getOscFreq(int bank);
 
@@ -345,6 +349,11 @@ inline void WVCO<TBase>::stepm()
     adsr.setS(TBase::params[SUSTAIN_PARAM].value);
     adsr.setR(TBase::params[RELEASE_PARAM].value);
     adsr.setNumChannels(numChannels);
+
+    enableAdsrLevel = TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5;
+    enableAdsrFeedback = TBase::params[ADSR_FBCK_PARAM].value > .5;
+    enableAdsrFM = TBase::params[ADSR_LFM_DEPTH_PARAM].value > .5;
+    enableAdsrShape = TBase::params[ADSR_SHAPE_PARAM].value > .5;
 }
 
 template <class TBase>
@@ -373,9 +382,6 @@ inline void WVCO<TBase>::stepn()
             }
             gates[i] = gate;
         }
-       // const float_4* gp = gates + 0;
-       // adsr.step(gp, TBase::engineGetSampleTime());
-      // printf("calling adsr step\n");
        adsr.step(gates, TBase::engineGetSampleTime());
     }
      // update the pitch of every vco
@@ -424,15 +430,13 @@ inline void WVCO<TBase>::stepn()
 
         // for now, let's assume adsr on
         // TODO: move stuff to stepm that can go there.
-#if 1
-        if (TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5) {
-            dsp[bank].outputLevel = adsr.env[bank];
+
+        if (enableAdsrLevel) {
+            dsp[bank].outputLevel = adsr.env[bank] * baseOutputLevel;
         } else {
             dsp[bank].outputLevel = baseOutputLevel;    
         }
-#else
-        dsp[bank].outputLevel = baseOutputLevel;
-#endif
+
     }
 }
 
