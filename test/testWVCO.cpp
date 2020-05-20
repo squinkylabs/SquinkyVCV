@@ -4,6 +4,8 @@
 #include "ADSR16.h"
 #include "asserts.h"
 
+using Comp = WVCO<TestComposite>;
+
 static void testTriFormula()
 {
     float a;
@@ -136,8 +138,17 @@ void initComposite(T& comp)
     }
 }
 
-static void testOutputLevels(int waveForm, float __levelValue, float expectedLevel) 
+/**
+ * init func called first.
+ * then run a while 
+ * then call runFunc
+ * then run real test
+ */
+static void testOutputLevels(int waveForm, float levelValue, float expectedLevel, 
+    std::function<void(Comp&)> initFunc,
+    std::function<void(Comp&)> runFunc)
 { 
+    printf("test output levels()\n"); fflush(stdout);
     assertGE(waveForm, 0); 
     assertLE(waveForm, 2); 
     WVCO<TestComposite> wvco; 
@@ -145,10 +156,12 @@ static void testOutputLevels(int waveForm, float __levelValue, float expectedLev
     initComposite(wvco);
     wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 1;
     wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 1;
-    wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 6;       // 7 was ok
+    wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 4;       // 7 was ok
     wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = waveForm;
     wvco.params[WVCO<TestComposite>::WAVESHAPE_GAIN_PARAM].value  = 50;
+    wvco.params[WVCO<TestComposite>::OUTPUT_LEVEL_PARAM].value  = levelValue;
 
+ printf("test output levels2, set output level to %f\n", levelValue); fflush(stdout);
     float positive = -100;
     float negative = 100; 
     float sum = 0; 
@@ -166,31 +179,55 @@ static void testOutputLevels(int waveForm, float __levelValue, float expectedLev
     assertClose(positive, expectedLevel, 1);
     assertClose(negative, -expectedLevel, 1); 
     sum /= iterations;
-    assertClose(sum, 0, .01);
+    assertClose(sum, 0, .03);
 }
-
 
 
 static void testLevelControl()
 {
-       printf("\n---- testLevel 1\n");
+    try {
+       printf("\n---- testLevelControl1 1\n");
     //expect 5 v with full level
-    testOutputLevels(0, 100, 5); 
+    testOutputLevels(0, 100, 5, nullptr, nullptr); 
 
-         printf("\n---- testLevel 1b\n");
+         printf("\n---- testLevelControl 1b\n");
     //expect 5 v with full level
-    testOutputLevels(0, 100, 5); 
-       printf("\n---- testLevel 2\n");
-    testOutputLevels(0, 0, 0); 
+    testOutputLevels(0, 100, 5, nullptr, nullptr); 
+       printf("\n---- testLevelControl 2\n");
+
+    // expects zero when level off
+    testOutputLevels(0, 0, 0, nullptr, nullptr); 
+    } catch (std::exception& ex) {
+ 
+        printf("exception, %s\n", ex.what());
+    }
 }
 
 
 static void testOutputLevels() 
 {
     printf("\n---- testOutputLevel\n"); fflush(stdout);
-    testOutputLevels(0, 100, 5);
-    testOutputLevels(1, 100, 5);
-    testOutputLevels(2, 100, 5);
+    testOutputLevels(0, 100, 5, nullptr, nullptr);
+      printf("\n---- testOutputLevelb\n"); fflush(stdout);
+    testOutputLevels(1, 100, 5, nullptr, nullptr);
+      printf("\n---- testOutputLevelc\n"); fflush(stdout);
+    testOutputLevels(2, 100, 5, nullptr, nullptr);
+      printf("\n---- testOutputLeveld\n"); fflush(stdout);
+}
+
+static void testEnvLevel()
+{
+    #if 1
+     printf("\n---- testEnvLevel\n"); fflush(stdout);
+    std::function<void(Comp&)> initFunc = [](Comp& comp) {
+        comp.inputs[Comp::GATE_INPUT].setVoltage(0, 0);         // gate low
+        comp.params[Comp::ADSR_OUTPUT_LEVEL_PARAM].value = 1;   // adsr controls level
+    };
+    // no gate, expect no output
+    testOutputLevels(0, 100, 0, initFunc, nullptr);
+
+    assert(false);
+    #endif
 }
 
 void testWVCO()
@@ -205,4 +242,5 @@ void testWVCO()
 
     testOutputLevels();
     testLevelControl();
+    testEnvLevel();
 }

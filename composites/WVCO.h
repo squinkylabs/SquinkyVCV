@@ -271,7 +271,7 @@ private:
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 
     // variables to stash processed knobs and other input
-    float basePitch;        // all the knobs, no cv. units are volts
+    float basePitch = 0;        // all the knobs, no cv. units are volts
     int numChannels = 1;      // 1..16
     int freqMultiplier = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
@@ -307,6 +307,16 @@ inline void WVCO<TBase>::stepm()
 
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     basePitch += q;
+    if (basePitch > 10) {
+        printf("base=%f, oct = %f, fine=%f q = %f\n",
+            basePitch,
+            TBase::params[OCTAVE_PARAM].value,
+            TBase::params[FINE_TUNE_PARAM].value,
+            q);
+        fflush(stdout);
+
+    }
+    assert(basePitch < 10);
 
     freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
 
@@ -345,7 +355,14 @@ inline void WVCO<TBase>::stepn()
             float pitch = basePitch;
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
-            // printf("looking up pitch %f\n", pitch);
+            if (pitch > 10) {
+                printf("looking up pitch %f\n", pitch);
+                printf("base pitch = %f, cv = %f\n", basePitch, TBase::inputs[VOCT_INPUT].getVoltage(channel));
+                fflush(stdout);
+                assert(false);
+                // we should actually clip this, not assert
+            }
+
             float _freq = expLookup(pitch);
             _freq *= freqMultiplier;
 
