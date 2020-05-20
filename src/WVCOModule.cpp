@@ -149,56 +149,46 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::FINE_TUNE_PARAM));
     addLabel(Vec(knobX3 - 10, knobY1 - labelAboveKnob), "Fine");
 
-    addParam(SqHelper::createParam<Blue30Knob>(
+//
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX4, knobY1),
         module,
-        Comp::FM_DEPTH_PARAM));
-    addLabel(Vec(knobX4 - 10, knobY1 - labelAboveKnob), "Mod");
+        Comp::WAVE_SHAPE_PARAM));
+    addLabel(Vec(knobX4 - 10, knobY1 - labelAboveKnob), "Wvfm");
 
     // second row
+    // 1 level
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX1, knobY2),
         module,
+        Comp::OUTPUT_LEVEL_PARAM));
+    addLabel(Vec(knobX1 - 10, knobY2 - labelAboveKnob), "Level");
+
+    // 2 fm-0
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX2, knobY2),
+        module,
         Comp::LINEAR_FM_DEPTH_PARAM));
-    addLabel(Vec(knobX1 - 10, knobY2 - labelAboveKnob), "LFM-0");
-
-#if 1
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
-        icomp,
-        Vec(knobX2, knobY2),
-        module,
-        Comp::WAVE_SHAPE_PARAM));
-    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Wvfm");
-
-#else
-    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
-        icomp,
-        Vec(knobX2, knobY2),
-        module,
-        Comp::WAVE_SHAPE_PARAM);
-    p->box.size.x = 50;    // width
-    p->box.size.y = 22;     // should set auto like button does
-    p->text = "Sine";
-    p->setLabels(Comp::getWaveformNames());
-    addParam(p);
-#endif
-
+    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "LFM-0");
+  
+  // 3 fbck
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX3, knobY2),
         module,
-        Comp::WAVESHAPE_GAIN_PARAM));
-    addLabel(Vec(knobX3 - 10, knobY2 - labelAboveKnob), "Shape");
+        Comp::FEEDBACK_PARAM));
+    addLabel(Vec(knobX3 - 10, knobY2 - labelAboveKnob), "Fbck");
 
-  
+    // 4 SHAPE
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX4, knobY2),
         module,
-        Comp::FEEDBACK_PARAM));
-    addLabel(Vec(knobX4 - 10, knobY2 - labelAboveKnob), "Fbck");
+        Comp::WAVESHAPE_GAIN_PARAM));
+    addLabel(Vec(knobX4 - 10, knobY2 - labelAboveKnob), "Shape");
 
 
     // third row
@@ -231,12 +221,13 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
     addLabel(Vec(knobX4 + 2, knobY3 - labelAboveKnob), "R");
 
     // fourth row
+    //PITCH MOD
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX4, knobY4),
         module,
-        Comp::OUTPUT_LEVEL_PARAM));
-    addLabel(Vec(knobX4 - 10, knobY4 - labelAboveKnob), "Level");
+        Comp::FM_DEPTH_PARAM));
+    addLabel(Vec(knobX4 - 10, knobY4 - labelAboveKnob), "Mod");
 }
 
 class SqBlueButton : public ToggleButton 
@@ -253,23 +244,24 @@ const float switchRow = knobY2 + 35;
 const float buttonXShift = 2;
 
 void WVCOWidget::addButtons(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
+
     addParam(SqHelper::createParam<SqBlueButton>(
         icomp,
         Vec(knobX1 + buttonXShift, switchRow),
         module,
-        Comp::ADSR_FBCK_PARAM));
+        Comp::ADSR_OUTPUT_LEVEL_PARAM));
 
     addParam(SqHelper::createParam<SqBlueButton>(
         icomp,
         Vec(knobX2 + buttonXShift, switchRow),
         module,
         Comp::ADSR_LFM_DEPTH_PARAM));
-
+   
     addParam(SqHelper::createParam<SqBlueButton>(
         icomp,
         Vec(knobX3 + buttonXShift, switchRow),
         module,
-        Comp::ADSR_OUTPUT_LEVEL_PARAM));
+        Comp::ADSR_FBCK_PARAM));
 
     addParam(SqHelper::createParam<SqBlueButton>(
         icomp,
