@@ -426,7 +426,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 0, "[nimp] Through-zero FM depth"};
             break;
         case WVCO<TBase>::WAVESHAPE_GAIN_PARAM:
-            ret = {0, 100, 0, "Shape Mod"};
+            ret = {0, 100, 20, "Shape Mod"};
             break;
         case WVCO<TBase>::WAVE_SHAPE_PARAM:
             ret = {0, 2, 0, "Wave Shape"};

@@ -240,8 +240,8 @@ public:
     }
 };
 
-const float switchRow = knobY2 + 35;
-const float buttonXShift = 2;
+const float switchRow = knobY2 + 38;
+const float buttonXShift = 3;
 
 void WVCOWidget::addButtons(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
 
