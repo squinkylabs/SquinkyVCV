@@ -57,29 +57,48 @@ static void testADSR1()
 
   
     float_4 gates[4] = {0};
-   // high[0] = float_4::mask();
 
-
-  //  printf("\n** step low **\n");
- 
     for (int i=0; i<5; ++i) {
-       // printf("\nstep %d *****\n", i);
         adsr.step(gates, sampleTime);
     }
- 
-   // printf("\n** step high **\n"); 
 
     gates[0] = float_4::mask(); 
 
-    for (int i=0; i<5; ++i) { 
-      //  printf("\nstep %d *****\n", i); 
+    for (int i=0; i<5; ++i) {  
         adsr.step(gates, sampleTime); 
     }
     
    // should have attacked a bit 
     float_4 out = adsr.env[0]; 
     simd_assertGT(out, float_4(.1)); 
+}
 
+static void testADSR2()
+{ 
+    const float sampleTime = 1.f / 44100.f;
+    // very fast envelope
+    ADSR16 adsr;
+    adsr.setA(0);
+    adsr.setD(0);
+    adsr.setS(1); 
+    adsr.setR(0); 
+    adsr.setNumChannels(4);
+
+    float_4 gates[4] = {0};
+
+    for (int i=0; i<5; ++i) {
+        adsr.step(gates, sampleTime);
+    }
+
+    gates[0] = float_4::mask(); 
+
+    for (int i=0; i<500; ++i) {  
+        adsr.step(gates, sampleTime); 
+    }
+    
+   // should reach steady sustain max
+    float_4 out = adsr.env[0]; 
+    simd_assertClose(out, float_4(1), .01);
 }
 
 static void testPumpData()
@@ -117,7 +136,7 @@ void initComposite(T& comp)
     }
 }
 
-static void testOutput(int waveForm) 
+static void testOutputLevels(int waveForm, float __levelValue, float expectedLevel) 
 { 
     assertGE(waveForm, 0); 
     assertLE(waveForm, 2); 
@@ -129,7 +148,6 @@ static void testOutput(int waveForm)
     wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 6;       // 7 was ok
     wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = waveForm;
     wvco.params[WVCO<TestComposite>::WAVESHAPE_GAIN_PARAM].value  = 50;
-
 
     float positive = -100;
     float negative = 100; 
@@ -145,17 +163,34 @@ static void testOutput(int waveForm)
  
     printf("wf =%d after min=%f max=%f av (before norm)=%f after=%f\n", waveForm, negative, positive, sum, sum / iterations);
  
-    assertClose(positive, 5.f, 1);
-    assertClose(negative, -5.f, 1); 
+    assertClose(positive, expectedLevel, 1);
+    assertClose(negative, -expectedLevel, 1); 
     sum /= iterations;
     assertClose(sum, 0, .01);
 }
 
-static void testOutput() 
+
+
+static void testLevelControl()
 {
-    testOutput(0);
-    testOutput(1);
-    testOutput(2);
+       printf("\n---- testLevel 1\n");
+    //expect 5 v with full level
+    testOutputLevels(0, 100, 5); 
+
+         printf("\n---- testLevel 1b\n");
+    //expect 5 v with full level
+    testOutputLevels(0, 100, 5); 
+       printf("\n---- testLevel 2\n");
+    testOutputLevels(0, 0, 0); 
+}
+
+
+static void testOutputLevels() 
+{
+    printf("\n---- testOutputLevel\n"); fflush(stdout);
+    testOutputLevels(0, 100, 5);
+    testOutputLevels(1, 100, 5);
+    testOutputLevels(2, 100, 5);
 }
 
 void testWVCO()
@@ -166,6 +201,8 @@ void testWVCO()
     testPumpData();
     testADSR0();
     testADSR1();
+    testADSR2();
 
-    testOutput();
+    testOutputLevels();
+    testLevelControl();
 }

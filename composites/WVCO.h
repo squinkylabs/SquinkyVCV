@@ -108,10 +108,6 @@ public:
     enum class WaveForm {Sine, Fold, SawTri};
     
     static const int oversampleRate = 4;
-  //  static const __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
-
- //   static const double twop = 2.0 * 3.141592653589793238;
-  //  static float_4 twoPi(twop);
     float_4 buffer[oversampleRate];
     WVCODsp() {
         downsampler.setup(oversampleRate);
@@ -126,10 +122,10 @@ public:
             stepOversampled(i, phaseMod);
         }
         if (oversampleRate == 1) {
-            return buffer[0];
+            return buffer[0] * outputLevel;
         } else {
             float_4 finalSample = downsampler.process(buffer);
-            return finalSample;
+            return finalSample * outputLevel;
         }
     }
 
@@ -177,6 +173,7 @@ public:
     float_4 bRight = 0;
     float_4 aLeft = 0;
     float_4 feedback = 0;
+    float_4 outputLevel = 1;
 
 private:
     float_4 phaseAcc = float_4::zero();
@@ -279,6 +276,7 @@ private:
     int freqMultiplier = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
     float baseFeedback = 0;
+    float baseOutputLevel = 1;  // 0..1
 
     float_4 getOscFreq(int bank);
 
@@ -327,6 +325,7 @@ inline void WVCO<TBase>::stepm()
     }
 
     baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
+    baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
 }
 
 template <class TBase>
@@ -346,6 +345,7 @@ inline void WVCO<TBase>::stepn()
             float pitch = basePitch;
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
+            // printf("looking up pitch %f\n", pitch);
             float _freq = expLookup(pitch);
             _freq *= freqMultiplier;
 
@@ -371,6 +371,8 @@ inline void WVCO<TBase>::stepn()
         dsp[bank].aRight = a;
         dsp[bank].bRight = b;
         dsp[bank].feedback = baseFeedback * 4;
+
+        dsp[bank].outputLevel = baseOutputLevel;
     }
 }
 
