@@ -49,6 +49,7 @@ float -> float_4 isn't free.
 
 
 #ifndef _MSC_VER
+#include "ADSR16.h"
 #include "ObjectCache.h"
 #include "SimdBlocks.h"
 #include "IComposite.h"
@@ -268,6 +269,8 @@ private:
     Divider divn;
     Divider divm;
     WVCODsp dsp[4];
+    ADSR16 adsr;
+
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 
     // variables to stash processed knobs and other input
@@ -336,16 +339,46 @@ inline void WVCO<TBase>::stepm()
 
     baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
     baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
+
+    adsr.setA(TBase::params[ATTACK_PARAM].value);
+    adsr.setD(TBase::params[DECAY_PARAM].value);
+    adsr.setS(TBase::params[SUSTAIN_PARAM].value);
+    adsr.setR(TBase::params[RELEASE_PARAM].value);
+    adsr.setNumChannels(numChannels);
 }
 
 template <class TBase>
 inline void WVCO<TBase>::stepn()
 {
-    // update the pitch of every vco
+
+   
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
         numBanks++;
     }
+
+        // ADSR stuff
+    {
+        // This could be optimized easily
+        const int32_t msk = ~0;
+        float_4 gates[4];
+        for (int i=0; i<4; ++i) {
+            float_4 gate = float_4::zero();
+            for (int j=0; j<4; ++j) {
+                // use simd!!
+                bool g =TBase::inputs[GATE_INPUT].getVoltage(i*4 + j) > 1;
+                if (g) {
+                    gate[j] = msk;
+                }
+            }
+            gates[i] = gate;
+        }
+       // const float_4* gp = gates + 0;
+       // adsr.step(gp, TBase::engineGetSampleTime());
+      // printf("calling adsr step\n");
+       adsr.step(gates, TBase::engineGetSampleTime());
+    }
+     // update the pitch of every vco
     for (int bank=0; bank < numBanks; ++bank) {
 
         float_4 freq;
@@ -389,7 +422,17 @@ inline void WVCO<TBase>::stepn()
         dsp[bank].bRight = b;
         dsp[bank].feedback = baseFeedback * 4;
 
+        // for now, let's assume adsr on
+        // TODO: move stuff to stepm that can go there.
+#if 1
+        if (TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5) {
+            dsp[bank].outputLevel = adsr.env[bank];
+        } else {
+            dsp[bank].outputLevel = baseOutputLevel;    
+        }
+#else
         dsp[bank].outputLevel = baseOutputLevel;
+#endif
     }
 }
 

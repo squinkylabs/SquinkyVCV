@@ -5,6 +5,7 @@
 #pragma once
 
 #include "simd.h"
+#include "asserts.h"
 
 class ADSR16
 {
@@ -50,6 +51,7 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
     for (int c = 0; c < channels; c += 4) {
         simd_assertMask(gates[c/4]);
        // gate[c / 4] = inputs[GATE_INPUT].getVoltageSimd<float_4>(c) >= 1.f;
+  
 
         // we don't have trigger inputRetrigger
         // float_4 triggered = trigger[c / 4].process(inputs[TRIG_INPUT].getPolyVoltageSimd<float_4>(c));
@@ -59,9 +61,11 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
 		const float attackTarget = 1.2f;
 		float_4 target = rack::simd::ifelse(gates[c / 4], rack::simd::ifelse(attacking[c / 4], attackTarget, sustain[c / 4]), 0.f);
 		float_4 lambda = rack::simd::ifelse(gates[c / 4], rack::simd::ifelse(attacking[c / 4], attackLambda[c / 4], decayLambda[c / 4]), releaseLambda[c / 4]);
-
-       
-    #if 0
+   #if 0
+       if (c == 0) {
+           printf("gates[0] = %s\n", toStr(gates[c/4]).c_str());
+       }
+ 
      float_4 g = gates[c/4];
         printf("gattes[%d] = %s\ntarg=%s\nlamd=%s\nenv=%s\nattacking=%s\n",
             c, 
