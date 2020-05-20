@@ -9,44 +9,10 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/ToggleButton.h"
 
 
 using Comp = WVCO<WidgetComposite>;
-
-
-#if 0
-class CVSelectParamQuantity : public ParamQuantity
-{
-public:
-    CVSelectParamQuantity( const ParamQuantity& other) {
-        ParamQuantity* base = this;
-        *base = other;
-    }
-    std::string getDisplayValueString() override {
-        const unsigned int index = (unsigned int)(std::round(getValue()));
-        const std::vector<std::string>& labels = Comp::getCVFunctionLabels();
-        std::string ret;
-        switch(index) {
-            case 0:
-               ret = "Polyphonic (next, prev, set)";
-               break;
-            case 1:
-                ret = "Next section in track";
-                break;
-            case 2:
-                ret = "Previous section in track";
-                break;
-
-            case 3:
-                ret = "Set section from CV";
-                break;
-            default:
-                assert(false);
-        }
-        return ret;
-    }
-};
-#endif
 
 class DiscreteParamQuantity : public ParamQuantity {
 public:
@@ -141,6 +107,7 @@ struct WVCOWidget : ModuleWidget
 
     void addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp);
     void addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp);
+    void addButtons(WVCOModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 const float knobLeftEdge = 24;
@@ -153,7 +120,7 @@ const float knobX4 = knobLeftEdge + 3 * knobDeltaX;
 const float knobY1 = 60;
 const float knobDeltaY = 70;
 const float knobY2 = knobY1 + 1 *  knobDeltaY;
-const float knobY3 = knobY1 + 2 *  knobDeltaY;
+const float knobY3 = 14 + knobY1 + 2 *  knobDeltaY;
 const float knobY4 = knobY1 + 3 *  knobDeltaY;
 
 const float labelAboveKnob = 20;
@@ -272,6 +239,45 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
     addLabel(Vec(knobX4 - 10, knobY4 - labelAboveKnob), "Level");
 }
 
+class SqBlueButton : public ToggleButton 
+{
+public:
+    SqBlueButton()
+    {
+        addSvg("res/square-button-01.svg");
+        addSvg("res/square-button-02.svg");
+    }
+};
+
+const float switchRow = knobY2 + 35;
+const float buttonXShift = 2;
+
+void WVCOWidget::addButtons(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
+    addParam(SqHelper::createParam<SqBlueButton>(
+        icomp,
+        Vec(knobX1 + buttonXShift, switchRow),
+        module,
+        Comp::ADSR_FBCK_PARAM));
+
+    addParam(SqHelper::createParam<SqBlueButton>(
+        icomp,
+        Vec(knobX2 + buttonXShift, switchRow),
+        module,
+        Comp::ADSR_LFM_DEPTH_PARAM));
+
+    addParam(SqHelper::createParam<SqBlueButton>(
+        icomp,
+        Vec(knobX3 + buttonXShift, switchRow),
+        module,
+        Comp::ADSR_OUTPUT_LEVEL_PARAM));
+
+    addParam(SqHelper::createParam<SqBlueButton>(
+        icomp,
+        Vec(knobX4 + buttonXShift, switchRow),
+        module,
+        Comp::ADSR_SHAPE_PARAM));
+}
+
 const float jacksX1 = 24;
 const float jacksDeltaX = 38;
 const float jacksX2 = jacksX1 + 1 * jacksDeltaX;
@@ -321,10 +327,6 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::SYNC_INPUT));
     addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Sync");
-
-    
-
- 
 }
 
 
@@ -346,11 +348,12 @@ WVCOWidget::WVCOWidget(WVCOModule *module)
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     addKnobs(module, icomp);
+    addButtons(module, icomp);
     addJacks(module, icomp);
 
 }
