@@ -179,14 +179,6 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::OCTAVE2_PARAM:
             ret = {0, 10, 4, "VCO 2 octave"};
             break;
-#if 0
-        case Sub<TBase>::SEMI1_PARAM:
-            ret = {-12, 12, 0, "VCO 1 semitone"};
-            break;
-        case Sub<TBase>::SEMI2_PARAM:
-            ret = {-12, 12, 0, "VCO 2 semitone"};
-            break;
-#endif
         case Sub<TBase>::FINE1_PARAM:
             ret = {-1, 1, 0, "VCO 1 fine tune"};
             break;

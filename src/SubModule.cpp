@@ -95,29 +95,57 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp)
         Vec(knobX1, knobY1),
         module,
         Comp::OCTAVE1_PARAM));
-    addLabel(Vec(knobX1 - 10, knobY1 - labelAboveKnob), "Octave");
+    addLabel(Vec(knobX1 - 13, knobY1 - labelAboveKnob), "Octave");
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX2, knobY1),
         module,
         Comp::FINE1_PARAM));
-    addLabel(Vec(knobX2 - 10, knobY1 - labelAboveKnob), "Fine");
+    addLabel(Vec(knobX2 - 4, knobY1 - labelAboveKnob), "Fine");
 
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX3, knobY1),
         module,
         Comp::OCTAVE2_PARAM));
-    addLabel(Vec(knobX3 - 10, knobY1 - labelAboveKnob), "Octave");
+    addLabel(Vec(knobX3 - 13, knobY1 - labelAboveKnob), "Octave");
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX4, knobY1),
         module,
         Comp::FINE2_PARAM));
-    addLabel(Vec(knobX4 - 10, knobY1 - labelAboveKnob), "Fine");
+    addLabel(Vec(knobX4 - 4, knobY1 - labelAboveKnob), "Fine");
+
+    // second row
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(knobX1, knobY2),
+        module,
+        Comp::SUB1_TUNE_PARAM));
+    addLabel(Vec(knobX1 - 4, knobY2 - labelAboveKnob), "Div");
+
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX2, knobY2),
+        module,
+        Comp::SUB1_LEVEL_PARAM));
+    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Amt");
  
+  addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(knobX3, knobY2),
+        module,
+        Comp::SUB2_TUNE_PARAM));
+    addLabel(Vec(knobX3 - 4, knobY2 - labelAboveKnob), "Div");
+
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX4, knobY2),
+        module,
+        Comp::SUB2_LEVEL_PARAM));
+    addLabel(Vec(knobX4 - 4, knobY2 - labelAboveKnob), "Amt");
 }
 
 const float jacksX1 = 24;
@@ -156,8 +184,9 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
 SubWidget::SubWidget(SubModule *module)
 {
     setModule(module);
+
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/wvco_panel.svg");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
