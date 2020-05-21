@@ -160,6 +160,10 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = waveForm;
     wvco.params[WVCO<TestComposite>::WAVESHAPE_GAIN_PARAM].value  = 50;
     wvco.params[WVCO<TestComposite>::OUTPUT_LEVEL_PARAM].value  = levelValue;
+    if (initFunc) {
+        initFunc(wvco);
+    }
+    assert(runFunc == nullptr);
 
  printf("test output levels2, set output level to %f\n", levelValue); fflush(stdout);
     float positive = -100;
@@ -217,22 +221,18 @@ static void testOutputLevels()
 
 static void testEnvLevel()
 {
-    #if 1
-     printf("\n---- testEnvLevel\n"); fflush(stdout);
     std::function<void(Comp&)> initFunc = [](Comp& comp) {
         comp.inputs[Comp::GATE_INPUT].setVoltage(0, 0);         // gate low
+       // ADSR_OUTPUT_LEVEL_PARAM
         comp.params[Comp::ADSR_OUTPUT_LEVEL_PARAM].value = 1;   // adsr controls level
     };
-    // no gate, expect no output
+    // no gate, expect no output. even with level all the ways
     testOutputLevels(0, 100, 0, initFunc, nullptr);
-
-    assert(false);
-    #endif
 }
 
 void testWVCO()
 {
- 
+ #if 0
     testTriFormula();
     testTriFormula2();
     testPumpData();
@@ -242,5 +242,6 @@ void testWVCO()
 
     testOutputLevels();
     testLevelControl();
+    #endif
     testEnvLevel();
 }

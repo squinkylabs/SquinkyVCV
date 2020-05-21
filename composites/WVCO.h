@@ -42,7 +42,6 @@ float -> float_4 isn't free.
 #include <assert.h>
 #include <memory>
 #include <vector>
-//#include "functions.hpp"
 #include <simd/vector.hpp>
 #include <simd/functions.hpp>
 
@@ -213,7 +212,6 @@ public:
         FEEDBACK_PARAM,
         OUTPUT_LEVEL_PARAM,
 
-
         ATTACK_PARAM,
         DECAY_PARAM,
         SUSTAIN_PARAM,
@@ -331,7 +329,6 @@ inline void WVCO<TBase>::stepm()
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
-    //printf("baseShapegain set to %f from param %f\n", baseShapeGain,TBase::params[WAVESHAPE_GAIN_PARAM].value);
 
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
@@ -359,14 +356,12 @@ inline void WVCO<TBase>::stepm()
 template <class TBase>
 inline void WVCO<TBase>::stepn()
 {
-
-   
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
         numBanks++;
     }
 
-        // ADSR stuff
+    // ADSR stuff
     {
         // This could be optimized easily
         const int32_t msk = ~0;
@@ -384,6 +379,7 @@ inline void WVCO<TBase>::stepn()
         }
        adsr.step(gates, TBase::engineGetSampleTime());
     }
+
      // update the pitch of every vco
     for (int bank=0; bank < numBanks; ++bank) {
 
@@ -392,6 +388,7 @@ inline void WVCO<TBase>::stepn()
             const int channel = bank * 4 + i;
 
             float pitch = basePitch;
+            // use SIMD here?
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
             if (pitch > 10) {
@@ -411,7 +408,6 @@ inline void WVCO<TBase>::stepn()
 
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
         dsp[bank].shapeAdjust = baseShapeGain;    
-       // printf("shapeAdjust set from base out= %s\n", toStr(dsp[bank].shapeAdjust).c_str());
 
         // now let's compute triangle params
         const float shapeGain =  std::clamp(baseShapeGain, .01, .99); 
@@ -426,17 +422,20 @@ inline void WVCO<TBase>::stepn()
 
         dsp[bank].aRight = a;
         dsp[bank].bRight = b;
-        dsp[bank].feedback = baseFeedback * 4;
+        
 
-        // for now, let's assume adsr on
-        // TODO: move stuff to stepm that can go there.
+        if (enableAdsrFeedback) {
+            dsp[bank].feedback = baseFeedback * 3 * adsr.env[bank]; 
+        } else {
+            dsp[bank].feedback = baseFeedback * 3;
+        }
 
+        // TODO: add CV (use getNormalPolyVoltage)
         if (enableAdsrLevel) {
             dsp[bank].outputLevel = adsr.env[bank] * baseOutputLevel;
         } else {
             dsp[bank].outputLevel = baseOutputLevel;    
         }
-
     }
 }
 
@@ -454,7 +453,6 @@ inline void WVCO<TBase>::step()
     }
     for (int bank=0; bank < numBanks; ++bank) {
         const int baseChannel = 4 * bank;
-       // rack::engine::Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
         Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
         float_4 fmInput = port.getPolyVoltageSimd<float_4>(baseChannel);
         auto fmInputScaling = WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .01;
@@ -463,7 +461,6 @@ inline void WVCO<TBase>::step()
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
     }
 }
-
 
 template <class TBase>
 int WVCODescription<TBase>::getNumParams()
