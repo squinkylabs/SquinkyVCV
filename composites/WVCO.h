@@ -89,13 +89,13 @@ public:
 class TriFormula
 {
 public:
-    static void getLeftA(float& outA, float k)
+    static void getLeftA(float_4& outA, float_4 k)
     {
-        assert(k < 1);
-        assert(k > 0);
+        simd_assertLT(k, float_4(1));
+        simd_assertGT(k, float_4(0));
         outA = 1 / k;
     }
-    static void getRightAandB(float& outA, float& outB, float k)
+    static void getRightAandB(float_4& outA, float_4& outB, float_4 k)
     {
         outA = 1 / (k - 1);
         outB = -outA;
@@ -382,7 +382,6 @@ inline void WVCO<TBase>::stepn()
 
      // update the pitch of every vco
     for (int bank=0; bank < numBanks; ++bank) {
-
         float_4 freq;
         for (int i=0; i<4; ++i) {
             const int channel = bank * 4 + i;
@@ -406,16 +405,20 @@ inline void WVCO<TBase>::stepn()
             freq[i] = time;
         }
 
+        float_4 envMult = (enableAdsrShape) ? adsr.env[bank] : 1;
+
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-        dsp[bank].shapeAdjust = baseShapeGain;    
+        dsp[bank].shapeAdjust = baseShapeGain * envMult;    
+
 
         // now let's compute triangle params
-        const float shapeGain =  std::clamp(baseShapeGain, .01, .99); 
-        assert(shapeGain < 1);
-        assert(shapeGain > 0);
+      //  const float shapeGain =  std::clamp(baseShapeGain * envMult, .01, .99); 
+        const float_4 shapeGain = simd::clamp(baseShapeGain * envMult, .01, .99);
+        simd_assertLT(shapeGain, float_4(1));
+        simd_assertGT(shapeGain, float_4(0));
 
-        float k = .5 + shapeGain / 2;
-        float a, b;
+        float_4 k = .5 + shapeGain / 2;
+        float_4 a, b;
         TriFormula::getLeftA(a, k);
         dsp[bank].aLeft = a;
         TriFormula::getRightAandB(a, b, k);
@@ -455,7 +458,13 @@ inline void WVCO<TBase>::step()
         const int baseChannel = 4 * bank;
         Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
         float_4 fmInput = port.getPolyVoltageSimd<float_4>(baseChannel);
-        auto fmInputScaling = WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .01;
+
+        float_4 fmInputScaling;
+        if (enableAdsrFM) {
+            fmInputScaling = adsr.env[bank] * (WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003);
+        } else {
+            fmInputScaling = WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003;
+        }
         dsp[bank].fmInput = fmInput * fmInputScaling;
         float_4 v = dsp[bank].step(); 
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
@@ -498,31 +507,31 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 0, "FM feedback depth"};
             break;
         case WVCO<TBase>::ATTACK_PARAM:
-            ret = {0, 100, 0, "[nimp] Attck"};
+            ret = {0, 100, 0, "Attck"};
             break;
         case WVCO<TBase>::DECAY_PARAM:
-            ret = {-1.0f, 1.0f, 0, "[nimp] Decay"};
+            ret = {-1.0f, 1.0f, 0, "Decay"};
             break;
         case WVCO<TBase>::SUSTAIN_PARAM:
-            ret = {-1.0f, 1.0f, 0, "[nimp] Sustain"};
+            ret = {-1.0f, 1.0f, 0, "Sustain"};
             break;
         case WVCO<TBase>::RELEASE_PARAM:
-            ret = {-1.0f, 1.0f, 0, "[nimp] Release"};
+            ret = {-1.0f, 1.0f, 0, "Release"};
             break;
         case WVCO<TBase>::OUTPUT_LEVEL_PARAM:
-            ret = {0, 100, 50, "[nimp] Level"};
+            ret = {0, 100, 50, "Level"};
             break;
         case WVCO<TBase>::ADSR_SHAPE_PARAM:
-            ret = {0, 100, 0, "[nimp] ADSR->shape"};
+            ret = {0, 1, 0, "ADSR->shape"};
             break;
         case WVCO<TBase>::ADSR_FBCK_PARAM:
-         ret = {0, 1, 00, "[nimp] ADSR->Feedback"};
+         ret = {0, 1, 00, "ADSR->Feedback"};
             break;
         case WVCO<TBase>::ADSR_OUTPUT_LEVEL_PARAM:
-         ret = {0, 1, 0, "[nimp] ADRS->Output Level"};
+         ret = {0, 1, 0, "ADRS->Output Level"};
             break;
         case WVCO<TBase>::ADSR_LFM_DEPTH_PARAM:
-         ret = {0, 1, 0, "[nimp] ARSR->FM Depth"};
+         ret = {0, 1, 0, "ARSR->FM Depth"};
             break;
         default:
             assert(false);
