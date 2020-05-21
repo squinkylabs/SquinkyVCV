@@ -8,31 +8,37 @@ using Comp = WVCO<TestComposite>;
 
 static void testTriFormula()
 {
-    float a;
-    float b;
-    TriFormula::getLeftA(a, .5);
-    assertEQ(a, 2);
+    float_4 a;
+    float_4 b;
+    TriFormula::getLeftA(a, float_4(.5));
+    simd_assertEQ(a, float_4(2));
 
     TriFormula::getLeftA(a, .1);
-    assertEQ(a, 10);
+    simd_assertEQ(a, float_4(10));
 
     TriFormula::getRightAandB(a, b, .5);
-    assertEQ(a, -2);
-    assertEQ(b, 2);
+    simd_assertEQ(a, float_4(-2));
+    simd_assertEQ(b, float_4(2));
 }
+
 
 static void testTriFormula2()
 {
-    for (float k = .1; k < 1; k += .09f) {
-        float a, b;
+    for (float _k = .1; _k < 1; _k += .09f) {
+        float_4 k = _k;
+      
+        float_4 a, b;
         TriFormula::getLeftA(a, k);
-        assertEQ(k * a, 1);
-
+  
+        simd_assertEQ((k * a), float_4(1));
+   
         TriFormula::getRightAandB(a, b, k);
-        assertEQ(k * a + b, 1);
-        assertEQ(1.f *a + b, 0);
+        simd_assertEQ((k * a + b), float_4(1));
+        simd_assertEQ((1.f *a + b), float_4(0));
+
     }
 }
+
 
 static void testADSR0()
 {
@@ -46,9 +52,12 @@ static void testADSR0()
     adsr.step(gates, sampleTime); 
 }
 
+
+
+
 static void testADSR1()
 { 
-       const float sampleTime = 1.f / 44100.f;
+    const float sampleTime = 1.f / 44100.f;
     // very fast envelope
     ADSR16 adsr;
     adsr.setA(0);
@@ -102,6 +111,9 @@ static void testADSR2()
     float_4 out = adsr.env[0]; 
     simd_assertClose(out, float_4(1), .01);
 }
+
+
+#if 1
 
 static void testPumpData()
 {
@@ -245,3 +257,5 @@ void testWVCO()
     #endif
     testEnvLevel();
 }
+
+#endif

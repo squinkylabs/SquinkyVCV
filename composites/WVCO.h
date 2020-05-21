@@ -42,12 +42,12 @@ float -> float_4 isn't free.
 #include <assert.h>
 #include <memory>
 #include <vector>
-#include <simd/vector.hpp>
-#include <simd/functions.hpp>
+
 
 
 
 #ifndef _MSC_VER
+#include "simd.h"
 #include "ADSR16.h"
 #include "ObjectCache.h"
 #include "SimdBlocks.h"
@@ -413,7 +413,7 @@ inline void WVCO<TBase>::stepn()
 
         // now let's compute triangle params
       //  const float shapeGain =  std::clamp(baseShapeGain * envMult, .01, .99); 
-        const float_4 shapeGain = simd::clamp(baseShapeGain * envMult, .01, .99);
+        const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
         simd_assertLT(shapeGain, float_4(1));
         simd_assertGT(shapeGain, float_4(0));
 
