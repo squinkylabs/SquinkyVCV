@@ -159,25 +159,19 @@ inline void Sub<TBase>::step()
     // look at controls and update VCO
 
     // run the audio
-
     const float sampleTime = TBase::engineGetSampleTime();
     int channel = 0;
     for (int bank=0; bank < numBanks; ++bank) {
         oscillators[bank].process(sampleTime, 0);
+
         // now, what do do with the output? to now lets grab pairs
         // of saws and add them
         float_4 saws = oscillators[bank].saw();
         float pair = saws[0]+ saws[1];  
-      //  float pair = saws[0];
-       // printf("writing to channel %d\n", channel);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
 
-        // for easier testing, just one vco
-        #if 0
         pair = saws[2]+ saws[3];  
-        printf("and writing to channel %d\n", channel);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
-        #endif
     }
 }
 
