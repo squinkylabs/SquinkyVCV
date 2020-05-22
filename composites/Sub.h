@@ -92,7 +92,7 @@ public:
 
 private:
 
-    VoltageControlledOscillator<16, 16, float_4> oscillators[4];
+    VoltageControlledOscillator<16, 16, float_4, int32_4> oscillators[4];
 
     /**
      * number of oscillator pairs

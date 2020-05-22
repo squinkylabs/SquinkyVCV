@@ -35,17 +35,17 @@ static void testSub1()
     sub.step();
 }
 
-static void testSubLevel()
+static void testSubLevel(bool sub)
 {
-    VoltageControlledOscillator<16, 16, float_4> osc;
+    VoltageControlledOscillator<16, 16, float_4, int32_t> osc;
     osc.channels = 1;
     const float deltaTime = 1.f / 44100.f;
    //float_4 deltaTime( 1.f / 44100.f);
     osc.setPitch(2);
 
-    std::function<float()> lambda = [&osc, deltaTime]() {
+    std::function<float()> lambda = [&osc, deltaTime, sub]() {
         osc.process(deltaTime, 0);
-        return osc.saw()[0];
+        return sub ? osc.sub()[0] : osc.saw()[0];
     };
 
 
@@ -60,5 +60,6 @@ void testSub()
 {
    // testSub0();
     testSub1();
-    testSubLevel();
+    testSubLevel(false);
+    testSubLevel(true);
 }

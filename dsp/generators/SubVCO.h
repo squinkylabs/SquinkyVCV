@@ -35,7 +35,11 @@ T expCurve(T x) {
 	return (3 + x * (-13 + 5 * x)) / (3 + 2 * x);
 }
 
-template <int OVERSAMPLE, int QUALITY, typename T>
+/**
+ * T is the sample type (usually float or float_4)
+ * I is the integer type (usually int or int32_4)
+ */
+template <int OVERSAMPLE, int QUALITY, typename T, typename I>
 struct VoltageControlledOscillator {
 
 
@@ -70,8 +74,8 @@ struct VoltageControlledOscillator {
 	T sawValue = 0.f;
 	T triValue = 0.f;
 	T sinValue = 0.f;
-	T subCounter = 0.f;
-	T subDivisionAmount = 16.f;
+	I subCounter = 0;
+	I subDivisionAmount = 16;
 	T subValue = 0.f;
 	T subFreq;
 
