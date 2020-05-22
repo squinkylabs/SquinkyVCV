@@ -1,14 +1,16 @@
 
+#include "tutil.h"
 #include "asserts.h"
 
 #include "Sub.h"
 #include "TestComposite.h"
-#include "tutil.h"
+
 
 using Comp = Sub<TestComposite>;
 
 
 extern bool _logvco;
+#if 0
 static void testSub0()
 {
     printf("test sub!!!\n");  
@@ -25,6 +27,7 @@ static void testSub0()
     fflush(stdout);
 }
 
+#endif
 static void testSub1()
 {
     Comp sub;
@@ -32,8 +35,30 @@ static void testSub1()
     sub.step();
 }
 
+static void testSubLevel()
+{
+    VoltageControlledOscillator<16, 16, float_4> osc;
+    osc.channels = 1;
+    const float deltaTime = 1.f / 44100.f;
+   //float_4 deltaTime( 1.f / 44100.f);
+    osc.setPitch(2);
+
+    std::function<float()> lambda = [&osc, deltaTime]() {
+        osc.process(deltaTime, 0);
+        return osc.saw()[0];
+    };
+
+
+    auto stats = getSignalStats(1000, lambda);
+
+    assertClose(std::get<0>(stats), -1.2, .1);      // min
+    assertClose(std::get<1>(stats), 1, .1);       // max
+    assertClose(std::get<2>(stats), .1, .1);       // average
+}
+
 void testSub()
 {
    // testSub0();
     testSub1();
+    testSubLevel();
 }

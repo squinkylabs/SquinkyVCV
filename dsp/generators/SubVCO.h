@@ -38,9 +38,11 @@ T expCurve(T x) {
 template <int OVERSAMPLE, int QUALITY, typename T>
 struct VoltageControlledOscillator {
 
-    // API added by Squinky Labs
-    void setSubDivisor(int div);
-    T sub();
+
+   // void setSubDivisor(int div);
+    T sub() {
+		return subValue;
+	}
 
 
     // Below here is from Fundamental VCO
@@ -52,6 +54,7 @@ struct VoltageControlledOscillator {
 
 	T lastSyncValue = 0.f;
 	T phase = 0.f;
+	T subPhase = 0;			// like phase, but for the subharmonic
 	T freq;
 	T pulseWidth = 0.5f;
 	T syncDirection = 1.f;
@@ -67,6 +70,16 @@ struct VoltageControlledOscillator {
 	T sawValue = 0.f;
 	T triValue = 0.f;
 	T sinValue = 0.f;
+	T subCounter = 0.f;
+	T subDivisionAmount = 16.f;
+	T subValue = 0.f;
+	T subFreq;
+
+	void setSubDivisor(T div) {
+		subDivisionAmount = div;
+		subCounter = 0.f;
+		subFreq = freq / div;
+	}
 
 	void setPitch(T pitch) {
 		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
@@ -80,6 +93,8 @@ struct VoltageControlledOscillator {
 	void process(float deltaTime, T syncValue) {
 		// Advance phase
 		T deltaPhase = simd::clamp(freq * deltaTime, 1e-6f, 0.35f);
+		T deltaSubPhase = simd::clamp(subFreq * deltaTime, 1e-6f, 0.35f);
+
 		if (soft) {
 			// Reverse direction
 			deltaPhase *= syncDirection;
@@ -91,6 +106,12 @@ struct VoltageControlledOscillator {
 		phase += deltaPhase;
 		// Wrap phase
 		phase -= simd::floor(phase);
+
+		// we don't wrap this phase - the sync does it
+		subPhase += deltaSubPhase;
+
+		simd_assertLT(subPhase, T(10));
+ 
 
 		// Jump sqr when crossing 0, or 1 if backwards
 		T wrapPhase = (syncDirection == -1.f) & 1.f;
@@ -121,10 +142,8 @@ struct VoltageControlledOscillator {
 			}
 		}
 
-		// Jump saw when crossing 0.5
-		
-		T halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;
-		
+		// Jump saw when crossing 0.5	
+		T halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;	
 		int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
 		if (_logvco) {
 			printf("phase=%f, dp=%f hCross = %f hm=%d\n", phase[0], deltaPhase[0], halfCrossing[0], halfMask);

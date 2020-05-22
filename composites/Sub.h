@@ -167,10 +167,11 @@ inline void Sub<TBase>::step()
         // now, what do do with the output? to now lets grab pairs
         // of saws and add them
         float_4 saws = oscillators[bank].saw();
-        float pair = saws[0]+ saws[1];  
+        float_4 subs = oscillators[bank].sub();
+        float pair = saws[0]+ saws[1] + subs[0] + subs[1]; 
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
 
-        pair = saws[2]+ saws[3];  
+        pair = saws[2]+ saws[3] + subs[2] + subs[3];   
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
     }
 }
