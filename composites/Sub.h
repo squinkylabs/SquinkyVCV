@@ -93,7 +93,14 @@ public:
 private:
 
     VoltageControlledOscillator<16, 16, float_4> oscillators[4];
+
+    /**
+     * number of oscillator pairs
+     */
     int numChannels = 1;
+    int numBanks = 1;
+   // float basePitch1 = 0;
+  //  float basePitch2 = 0;
     Divider divn;
     void stepn();
 
@@ -114,21 +121,35 @@ inline void Sub<TBase>::init()
 template <class TBase>
 inline void Sub<TBase>::stepn()
 {
+    // much of this could be done less often.
+    // many vars could be float_4
+
     numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numChannels);
+
+    const int numVCO = numChannels * 2;
+    numBanks = numVCO / 4;
+    if (numVCO > numBanks * 4) {
+        numBanks++;
+    }
 
 
     // This is very wrong, in so many ways.
     // pitch is in volts
-    float pitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
-    float pitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
-    float_4 combinedPitch(0);
-    combinedPitch[0] = pitch1;
-    combinedPitch[1] = pitch2;
+    const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
+    const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
 
-  //  printf("set bank0 to %s\n", toStr(combinedPitch).c_str());
-    oscillators[0].setPitch(combinedPitch);
+    for (int bank = 0; bank < numBanks; ++bank) {
+        float_4 combinedPitch(0);
+        // TODO: add pitch CV
+        combinedPitch[0] = basePitch1;
+        combinedPitch[1] = basePitch2;
 
+        combinedPitch[2] = basePitch1;
+        combinedPitch[3] = basePitch2;
+
+        oscillators[bank].setPitch(combinedPitch);
+    }
 }
 
 template <class TBase>
@@ -138,12 +159,7 @@ inline void Sub<TBase>::step()
     // look at controls and update VCO
 
     // run the audio
- 
-    const int numVCO = numChannels * 2;
-    int numBanks = numVCO / 4;
-    if (numVCO > numBanks * 4) {
-        numBanks++;
-    }
+
     const float sampleTime = TBase::engineGetSampleTime();
     int channel = 0;
     for (int bank=0; bank < numBanks; ++bank) {
