@@ -9,9 +9,10 @@
 #include "simd.h"
 #include "dsp/minblep.hpp"
 #include "dsp/approx.hpp"
+#include "dsp/filter.hpp"
 
 using namespace rack;		// normally I don't like "using", but this is third party code...
-
+extern bool _logvco;
 
 // Accurate only on [0, 1]
 template <typename T>
@@ -55,7 +56,7 @@ struct VoltageControlledOscillator {
 	T pulseWidth = 0.5f;
 	T syncDirection = 1.f;
 
-	dsp::TRCFilter<T> sqrFilter;
+	rack::dsp::TRCFilter<T> sqrFilter;
 
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sqrMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
@@ -121,15 +122,27 @@ struct VoltageControlledOscillator {
 		}
 
 		// Jump saw when crossing 0.5
+		
 		T halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;
+		
 		int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
+		if (_logvco) {
+			printf("phase=%f, dp=%f hCross = %f hm=%d\n", phase[0], deltaPhase[0], halfCrossing[0], halfMask);
+		}
+		assert(channels > 0);
 		if (halfMask) {
 			for (int i = 0; i < channels; i++) {
+				if (_logvco) {
+					printf("i=%d, <<=%d and=%d\n", i, 1 << i,  (halfMask & (1 << i)));
+				}
 				if (halfMask & (1 << i)) {
 					T mask = simd::movemaskInverse<T>(1 << i);
 					float p = halfCrossing[i] - 1.f;
 					T x = mask & (-2.f * syncDirection);
 					sawMinBlep.insertDiscontinuity(p, x);
+					if (_logvco) {
+						printf("** insert disc(%f, %f)\n", p, x[0]);
+					}
 				}
 			}
 		}

@@ -242,9 +242,27 @@ static void testEnvLevel()
     testOutputLevels(0, 100, 0, initFunc, nullptr);
 }
 
+#include "SubVCO.h"
+extern bool _logvco;
+static void testSub()
+{
+    printf("test sub!!!\n");  
+    VoltageControlledOscillator<16, 16, float_4> osc;
+
+    const float deltaTime = 1.f / 44100.f;
+    osc.setPitch(1);
+    osc.channels = 1;
+    for (int i=0; i<100; ++i) {
+        osc.process(deltaTime, 0);
+        auto x = osc.saw();
+        printf("%f: from saw\n\n", x[0]);
+    }
+    fflush(stdout);
+}
+
 void testWVCO()
 {
- #if 0
+    testSub();  
     testTriFormula();
     testTriFormula2();
     testPumpData();
@@ -254,7 +272,7 @@ void testWVCO()
 
     testOutputLevels();
     testLevelControl();
-    #endif
+ 
     testEnvLevel();
 }
 
