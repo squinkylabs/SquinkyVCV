@@ -167,8 +167,8 @@ inline void Sub<TBase>::step()
         // now, what do do with the output? to now lets grab pairs
         // of saws and add them
         float_4 saws = oscillators[bank].saw();
-        //float pair = saws[0]+ saws[1];  
-        float pair = saws[0];
+        float pair = saws[0]+ saws[1];  
+      //  float pair = saws[0];
        // printf("writing to channel %d\n", channel);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
 
