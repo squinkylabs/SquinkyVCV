@@ -91,6 +91,7 @@ extern void testChaos();
 extern void testOnset();
 extern void testOnset2();
 extern void testWVCO();
+extern void testSub();
 
 #if 0
 #include <sstream>
@@ -176,6 +177,7 @@ if (runShaperGen) {
 
     testBiquad();
 #ifndef _MSC_VER
+    testSub();
     simd_testBiquad();
     testWVCO();
 #endif

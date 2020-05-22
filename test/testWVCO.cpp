@@ -1,8 +1,10 @@
 
+#include "tutil.h"
 #include "TestComposite.h"
 #include "WVCO.h"
 #include "ADSR16.h"
 #include "asserts.h"
+
 
 using Comp = WVCO<TestComposite>;
 
@@ -138,17 +140,7 @@ static void testPumpData()
     assertLE(x , 10); 
 } 
 
-// TODO: move these to utils
-template <class T>
-void initComposite(T& comp)
-{
-    comp.init(); 
-    auto icomp = comp.getDescription();
-    for (int i = 0; i < icomp->getNumParams(); ++i) {
-        auto param = icomp->getParam(i);
-        comp.params[i].value = param.def;
-    }
-}
+
 
 /**
  * init func called first.
@@ -242,27 +234,9 @@ static void testEnvLevel()
     testOutputLevels(0, 100, 0, initFunc, nullptr);
 }
 
-#include "SubVCO.h"
-extern bool _logvco;
-static void testSub()
-{
-    printf("test sub!!!\n");  
-    VoltageControlledOscillator<16, 16, float_4> osc;
-
-    const float deltaTime = 1.f / 44100.f;
-    osc.setPitch(1);
-    osc.channels = 1;
-    for (int i=0; i<100; ++i) {
-        osc.process(deltaTime, 0);
-        auto x = osc.saw();
-        printf("%f: from saw\n\n", x[0]);
-    }
-    fflush(stdout);
-}
 
 void testWVCO()
 {
-    testSub();  
     testTriFormula();
     testTriFormula2();
     testPumpData();

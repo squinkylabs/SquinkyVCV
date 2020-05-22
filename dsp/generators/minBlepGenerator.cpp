@@ -79,8 +79,6 @@ static const float minBlep16_16[512] = {
 void minBlepImpulse(int z, int o, float* output) {
     assert(z == 16);
     assert(o == 16);
-    printf("minBlepImpulse called with %d, %d\n", z, o);
-
     // std::memcpy(output, x, n * sizeof(float));
     for (int i=0; i<512; ++i) {
         output[i] = minBlep16_16[i];

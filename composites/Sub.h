@@ -106,6 +106,9 @@ inline void Sub<TBase>::init()
     divn.setup(4, [this]() {
         this->stepn();
     });
+
+
+    oscillators[0].channels = 1;     // Totally idiotic.
 }
 
 template <class TBase>
