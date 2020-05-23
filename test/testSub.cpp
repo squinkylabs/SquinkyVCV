@@ -40,7 +40,6 @@ static void testSubLevel(bool sub)
     VoltageControlledOscillator<16, 16, float_4, int32_4> osc;
     osc.channels = 1;
     const float deltaTime = 1.f / 44100.f;
-   //float_4 deltaTime( 1.f / 44100.f);
     osc.setPitch(2);
     osc.setSubDivisor(4);
 
@@ -50,8 +49,8 @@ static void testSubLevel(bool sub)
     };
 
 
-    auto stats = getSignalStats(1000, lambda);
-    printf("stats ret %f, %f, %f\n", std::get<0>(stats), std::get<1>(stats), std::get<2>(stats));
+    auto stats = getSignalStats(10000, lambda);
+    // printf("stats ret %f, %f, %f\n", std::get<0>(stats), std::get<1>(stats), std::get<2>(stats));
 
     if (sub) {
         assertClose(std::get<1>(stats), 1, .2);       // max
@@ -70,6 +69,56 @@ static void resetChan(Comp& sub) {
     sub._get(0).channels = 2;
     sub._get(0).channels = 3;
 }
+
+
+/**
+ * conclusions:
+ * 
+ * when vec <> memory,  vec[0] is the lowest (first) memory address
+ * float_4(a,b,c,d) will put a in vec[0];
+ * float_vec1 > float_vec2 puts 1 is the sign bit of the elements, but does not set all the bits.
+ * movemask(t,f,f,f) returns 1 (as one would expect)
+ * float_4::mask doesn't work.
+ * 
+ */
+#if 0
+static void experiment()
+{
+    float test[] = {1,2,3,4,5,6,7,8}; 
+    float_4 a = float_4::load(test);
+    printf("test arrary from mem: %s\n", toStr(a).c_str());
+    printf("a[0] = %f\n", a[0]);
+
+    //	int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
+    float_4 b(0);
+    b[0] = 2;
+    printf("test vec = %s\n", toStr(b).c_str());
+    float_4 c = (b > 1);
+     printf("test (b > 1) = %s\n", toStr(c).c_str());
+    int32_4 d = c;
+    printf("test (b > 1) hex = %s\n", toStrHex(d).c_str());
+    printf("as mask: %s\n", toStrM(c).c_str());
+
+    int mask = simd::movemask(c);
+    printf("movemask %x\n", mask);
+
+    float_4 e(1,2,3,4);
+    printf("made from discrete ctor: %s\n", toStr(e).c_str());
+
+    float_4 allone = float_4::mask();
+    int32_4 allone2 = int32_4::mask();
+    float_4 allone3 = allone2;
+    printf("simd::mask = %s\n", toStrHex(allone ).c_str());
+    printf("simd::mask2 = %s\n", toStr(allone2).c_str());
+    printf("simd::mask3 = %s\n", toStr(allone3).c_str());
+
+    mask = simd::movemask(allone2);
+    printf("all mask bits int = %x\n", mask);
+    mask = simd::movemask(allone3);
+    printf("all mask bits float = %x\n", mask);
+    exit(0);
+}
+#endif
 
 static void testChannels()
 {
@@ -151,10 +200,10 @@ static void testChannels()
 
 void testSub()
 {
-   // testSub0();
+  //  experiment();
     testChannels();
     testSub1();
     testSubLevel(false);
-    testSubLevel(true);
+   // testSubLevel(true);
     
 }

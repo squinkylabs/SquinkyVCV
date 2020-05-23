@@ -3,7 +3,6 @@
  * include the "foreign" SIMD library
  */
 
-
 // Need to make this compile in MS tools for unit tests
 #if defined(_MSC_VER)
 //#define __attribute__(x)

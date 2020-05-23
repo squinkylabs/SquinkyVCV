@@ -152,7 +152,7 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     std::function<void(Comp&)> initFunc,
     std::function<void(Comp&)> runFunc)
 { 
-    printf("test output levels()\n"); fflush(stdout);
+  //  printf("test output levels()\n"); fflush(stdout);
     assertGE(waveForm, 0); 
     assertLE(waveForm, 2); 
     WVCO<TestComposite> wvco; 
@@ -169,7 +169,7 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     }
     assert(runFunc == nullptr);
 
- printf("test output levels2, set output level to %f\n", levelValue); fflush(stdout);
+ // printf("test output levels2, set output level to %f\n", levelValue); fflush(stdout);
     float positive = -100;
     float negative = 100; 
     float sum = 0; 
@@ -182,8 +182,6 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
         negative = std::min(negative, x);  
     } 
  
-    printf("wf =%d after min=%f max=%f av (before norm)=%f after=%f\n", waveForm, negative, positive, sum, sum / iterations);
- 
     assertClose(positive, expectedLevel, 1);
     assertClose(negative, -expectedLevel, 1); 
     sum /= iterations;
@@ -194,14 +192,11 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
 static void testLevelControl()
 {
     try {
-       printf("\n---- testLevelControl1 1\n");
     //expect 5 v with full level
     testOutputLevels(0, 100, 5, nullptr, nullptr); 
 
-         printf("\n---- testLevelControl 1b\n");
     //expect 5 v with full level
     testOutputLevels(0, 100, 5, nullptr, nullptr); 
-       printf("\n---- testLevelControl 2\n");
 
     // expects zero when level off
     testOutputLevels(0, 0, 0, nullptr, nullptr); 
@@ -214,13 +209,9 @@ static void testLevelControl()
 
 static void testOutputLevels() 
 {
-    printf("\n---- testOutputLevel\n"); fflush(stdout);
     testOutputLevels(0, 100, 5, nullptr, nullptr);
-      printf("\n---- testOutputLevelb\n"); fflush(stdout);
     testOutputLevels(1, 100, 5, nullptr, nullptr);
-      printf("\n---- testOutputLevelc\n"); fflush(stdout);
     testOutputLevels(2, 100, 5, nullptr, nullptr);
-      printf("\n---- testOutputLeveld\n"); fflush(stdout);
 }
 
 static void testEnvLevel()

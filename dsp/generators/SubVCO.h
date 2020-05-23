@@ -76,19 +76,34 @@ struct VoltageControlledOscillator {
 	T triValue = 0.f;
 	T sinValue = 0.f;
 	I subCounter = 1;
-	I subDivisionAmount = 4;
+	I subDivisionAmount = 100;
 	T subValue = 0.f;
 	T subFreq;			// freq /subdivamount
 
+	int debugCtr = 0;
+
 	void setSubDivisor(I div) {
+		// should this check be done externally?
 		auto mask = simd::movemask(div != subDivisionAmount);
 		if (mask) {
+			debugCtr = 0;
 			subDivisionAmount = div;
 			subCounter = ifelse( subCounter < 1, 1, subCounter);
 			subFreq = freq / div;
+			#if 0
 			printf("\nsetSubDivisor(%s)\n", toStr(div).c_str());
 			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq).c_str());
 			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase).c_str());
+			#endif
+
+			// Let's keep sub from overflowing by
+			// setting freq of unused ones to zero
+			for (int i = 0; i < 4; ++i) {
+				if (i >= channels) {
+					subFreq[i] = 0;
+					// printf("set freq to zero on %d\n", i);
+				}
+			}
 		}
 	}
 
@@ -122,17 +137,26 @@ struct VoltageControlledOscillator {
 		// we don't wrap this phase - the sync does it
 		subPhase += deltaSubPhase;
 
-		if (subPhase[0] > 10 || subPhase[1] > 10 || subPhase[2] > 10 || subPhase[3] > 10) {
-			printf("subPhase overflow\n");
-			printf(" sub = %s\n", toStr(subPhase).c_str());
+		const float overflow = 2;
+		if (subPhase[0] > overflow || subPhase[1] > overflow || subPhase[2] > overflow || subPhase[3] > overflow) {
+			printf("\nsubPhase overflow sample %d\n", debugCtr);
+			printf(" subPhase = %s\n", toStr(subPhase).c_str());
+			printf("regular phase = %s\n", toStr(phase).c_str());
 			printf(" delta sub = %s\n", toStr(deltaSubPhase).c_str());
+			printf(" delta regular = %s\n", toStr(deltaPhase).c_str());
+
 			printf(" div = %s\n", toStr(subDivisionAmount).c_str());
 			printf(" ctr = %s\n", toStr(subCounter).c_str());
 			printf("channels = %d\n", channels);
+			
+			
+		//	subPhase = 0;			// ULTRA HACK
+		//	printf("ovf forcing to 0\n");
 			fflush(stdout);
+			assert(false);
 		}
 
-		simd_assertLT(subPhase, T(10));
+		simd_assertLT(subPhase, T(overflow));
  
 
 		// Jump sqr when crossing 0, or 1 if backwards
@@ -147,21 +171,10 @@ struct VoltageControlledOscillator {
 					float p = wrapCrossing[i] - 1.f;
 					T x = mask & (2.f * syncDirection);
 					sqrMinBlep.insertDiscontinuity(p, x);
-
-					assertGT(subCounter[0], 0);
-					subCounter[i]--;
-					if (subCounter[i] == 0) {
-						subCounter[i] = subDivisionAmount[i];
-						if (_logvco || 1) {
-							printf("subPhase[i] hit %f, will reset 0 delta = %f\n", subPhase[i], deltaSubPhase[0]);
-							printf("  regular delta phase = %f\n", deltaPhase[0]);
-						}
-						subPhase[i] = 0;
-					}
-					
 				}
 			}
 		}
+		++debugCtr;
 
 		// Jump sqr when crossing `pulseWidth`
 		T pulseCrossing = (pulseWidth - (phase - deltaPhase)) / deltaPhase;
@@ -196,6 +209,20 @@ struct VoltageControlledOscillator {
 					sawMinBlep.insertDiscontinuity(p, x);
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
+					}
+					assertGT(subCounter[0], 0);
+					subCounter[i]--;
+					if (subCounter[i] == 0) {
+						subCounter[i] = subDivisionAmount[i];
+						if (_logvco) {
+							printf("subPhase[%d] hit %f, will reset 0 delta = %f\n", i, subPhase[i], deltaSubPhase[i]);
+							printf("  delta phase = %f phase = %f\n", deltaPhase[i], phase[i]);
+							printf("  sample %d i=%d\n", debugCtr, i);
+							printf("  all subPhase: %s\n", toStr(subPhase).c_str());
+							printf("  all phase(trigger): %s\n", toStr(subPhase).c_str());
+						}
+						subPhase[i] = 0;
+						// printf(" leaving reset sub phase with subPhase =%s\n", toStr(subPhase).c_str());
 					}
 				}
 			}

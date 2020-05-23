@@ -147,6 +147,12 @@ inline std::string toStr(const int32_4& x) {
     return s.str();
 }
 
+inline std::string toStrHex(const int32_4& x) {
+    std::stringstream s;
+    s << std::hex << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
+    return s.str();
+}
+
 inline std::string toStrM(const float_4& x) {
     simd_assertMask(x);
     int32_4 i = x;
