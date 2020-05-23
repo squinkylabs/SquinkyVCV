@@ -37,11 +37,12 @@ static void testSub1()
 
 static void testSubLevel(bool sub)
 {
-    VoltageControlledOscillator<16, 16, float_4, int32_t> osc;
+    VoltageControlledOscillator<16, 16, float_4, int32_4> osc;
     osc.channels = 1;
     const float deltaTime = 1.f / 44100.f;
    //float_4 deltaTime( 1.f / 44100.f);
     osc.setPitch(2);
+    osc.setSubDivisor(4);
 
     std::function<float()> lambda = [&osc, deltaTime, sub]() {
         osc.process(deltaTime, 0);
@@ -50,10 +51,17 @@ static void testSubLevel(bool sub)
 
 
     auto stats = getSignalStats(1000, lambda);
+    printf("stats ret %f, %f, %f\n", std::get<0>(stats), std::get<1>(stats), std::get<2>(stats));
 
-    assertClose(std::get<0>(stats), -1.2, .1);      // min
-    assertClose(std::get<1>(stats), 1, .1);       // max
-    assertClose(std::get<2>(stats), .1, .1);       // average
+    if (sub) {
+        assertClose(std::get<1>(stats), 1, .2);       // max
+        assertClose(std::get<0>(stats), -1, .2);      // min
+        assertClose(std::get<2>(stats), .1, .1);       // average
+    } else {
+        assertClose(std::get<1>(stats), 1, .1);       // max
+        assertClose(std::get<0>(stats), -1.2, .1);      // min
+        assertClose(std::get<2>(stats), .1, .1);       // average
+    }
 }
 
 void testSub()

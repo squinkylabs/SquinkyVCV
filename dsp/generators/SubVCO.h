@@ -45,6 +45,7 @@ struct VoltageControlledOscillator {
 
    // void setSubDivisor(int div);
     T sub() {
+		//printf("sub() returning %s\n", toStr(subValue).c_str());
 		return subValue;
 	}
 
@@ -74,14 +75,14 @@ struct VoltageControlledOscillator {
 	T sawValue = 0.f;
 	T triValue = 0.f;
 	T sinValue = 0.f;
-	I subCounter = 0;
-	I subDivisionAmount = 16;
+	I subCounter = 1;
+	I subDivisionAmount = 4;
 	T subValue = 0.f;
-	T subFreq;
+	T subFreq;			// freq /subdivamount
 
-	void setSubDivisor(T div) {
+	void setSubDivisor(I div) {
 		subDivisionAmount = div;
-		subCounter = 0.f;
+		subCounter = ifelse( subCounter < 1, 1, subCounter);
 		subFreq = freq / div;
 	}
 
@@ -107,6 +108,7 @@ struct VoltageControlledOscillator {
 			// Reset back to forward
 			syncDirection = 1.f;
 		}
+
 		phase += deltaPhase;
 		// Wrap phase
 		phase -= simd::floor(phase);
@@ -124,10 +126,23 @@ struct VoltageControlledOscillator {
 		if (wrapMask) {
 			for (int i = 0; i < channels; i++) {
 				if (wrapMask & (1 << i)) {
+					// ok, this VCO here is wrapping
 					T mask = simd::movemaskInverse<T>(1 << i);
 					float p = wrapCrossing[i] - 1.f;
 					T x = mask & (2.f * syncDirection);
 					sqrMinBlep.insertDiscontinuity(p, x);
+
+					assertGT(subCounter[0], 0);
+					subCounter[i]--;
+					if (subCounter[i] == 0) {
+						subCounter[i] = subDivisionAmount[i];
+						if (_logvco) {
+							printf("subPhase[i] hit %f, will reset 0 delta = %f\n", subPhase[i], deltaSubPhase[0]);
+							printf("  regular delta phase = %f\n", deltaPhase[0]);
+						}
+						subPhase[i] = 0;
+					}
+					
 				}
 			}
 		}
@@ -218,6 +233,9 @@ struct VoltageControlledOscillator {
 		// Saw
 		sawValue = saw(phase);
 		sawValue += sawMinBlep.process();
+
+		subValue = saw(subPhase);
+		//printf("subValue = %s\n", toStr(subValue).c_str());
 
 		// Tri
 		triValue = tri(phase);
