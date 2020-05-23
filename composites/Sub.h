@@ -90,6 +90,10 @@ public:
      */
     void step() override;
 
+    void stepn();
+    const VoltageControlledOscillator<16, 16, float_4, int32_4>& _get(int n) {
+        return oscillators[n];
+    } 
 private:
 
     VoltageControlledOscillator<16, 16, float_4, int32_4> oscillators[4];
@@ -102,7 +106,7 @@ private:
    // float basePitch1 = 0;
   //  float basePitch2 = 0;
     Divider divn;
-    void stepn();
+  
 
 };
 
@@ -116,6 +120,7 @@ inline void Sub<TBase>::init()
 
 
     oscillators[0].channels = 1;     // Totally idiotic.
+    printf("set osc0 chan to 1\n"); fflush(stdout);
 }
 
 template <class TBase>
@@ -132,6 +137,7 @@ inline void Sub<TBase>::stepn()
     if (numVCO > numBanks * 4) {
         numBanks++;
     }
+    printf("num channels = %d num VCO=%d\n", numChannels, numVCO);
 
 
     // This is very wrong, in so many ways.
@@ -149,7 +155,16 @@ inline void Sub<TBase>::stepn()
         combinedPitch[3] = basePitch2;
 
         oscillators[bank].setPitch(combinedPitch);
+        oscillators[bank].setSubDivisor(4); 
     }
+
+
+    oscillators[0].channels = numChannels >= 2 ? 4 : numChannels * 2;
+    oscillators[1].channels = numChannels >= 4 ? 4 : (numChannels - 2) * 2;
+    oscillators[2].channels = numChannels >= 6 ? 4 : (numChannels - 4) * 2;
+    oscillators[3].channels = numChannels >= 8 ? 4 : (numChannels - 6) * 2;
+
+
 }
 
 template <class TBase>
@@ -162,6 +177,7 @@ inline void Sub<TBase>::step()
     const float sampleTime = TBase::engineGetSampleTime();
     int channel = 0;
     for (int bank=0; bank < numBanks; ++bank) {
+        printf("calling osc proc bank = %d\n", bank); fflush(stdout);
         oscillators[bank].process(sampleTime, 0);
 
         // now, what do do with the output? to now lets grab pairs

@@ -64,10 +64,23 @@ static void testSubLevel(bool sub)
     }
 }
 
+static void testChannels()
+{
+    Comp sub;
+    initComposite(sub);
+    sub.stepn();
+
+    assertEQ(sub._get(0).channels, 2);
+    // wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 1;
+    //assert(false);
+}
+
 void testSub()
 {
    // testSub0();
+    testChannels();
     testSub1();
     testSubLevel(false);
     testSubLevel(true);
+    
 }
