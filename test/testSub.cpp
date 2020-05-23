@@ -64,15 +64,89 @@ static void testSubLevel(bool sub)
     }
 }
 
+static void resetChan(Comp& sub) {
+    sub._get(0).channels = 0;
+    sub._get(0).channels = 1;
+    sub._get(0).channels = 2;
+    sub._get(0).channels = 3;
+}
 static void testChannels()
 {
     Comp sub;
     initComposite(sub);
-    sub.stepn();
 
+    sub.inputs[Comp::VOCT_INPUT].channels = 0;
+    resetChan(sub);
+    sub.stepn();
     assertEQ(sub._get(0).channels, 2);
-    // wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 1;
-    //assert(false);
+    assertEQ(sub._get(1).channels, 0);
+    assertEQ(sub._get(2).channels, 0);
+    assertEQ(sub._get(3).channels, 0);
+
+    sub.inputs[Comp::VOCT_INPUT].channels = 1;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 2);
+    assertEQ(sub._get(1).channels, 0);
+    assertEQ(sub._get(2).channels, 0);
+    assertEQ(sub._get(3).channels, 0);
+
+    sub.inputs[Comp::VOCT_INPUT].channels = 2;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 4);
+    assertEQ(sub._get(1).channels, 0);
+    assertEQ(sub._get(2).channels, 0);
+    assertEQ(sub._get(3).channels, 0);
+
+    sub.inputs[Comp::VOCT_INPUT].channels = 3;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 4);
+    assertEQ(sub._get(1).channels, 2);
+    assertEQ(sub._get(2).channels, 0);
+    assertEQ(sub._get(3).channels, 0);
+
+    sub.inputs[Comp::VOCT_INPUT].channels = 4;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 4);
+    assertEQ(sub._get(1).channels, 4);
+    assertEQ(sub._get(2).channels, 0);
+    assertEQ(sub._get(3).channels, 0);
+
+      sub.inputs[Comp::VOCT_INPUT].channels = 5;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 4);
+    assertEQ(sub._get(1).channels, 4);
+    assertEQ(sub._get(2).channels, 2);
+    assertEQ(sub._get(3).channels, 0);
+
+      sub.inputs[Comp::VOCT_INPUT].channels = 6;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 4);
+    assertEQ(sub._get(1).channels, 4);
+    assertEQ(sub._get(2).channels, 4);
+    assertEQ(sub._get(3).channels, 0);
+
+    sub.inputs[Comp::VOCT_INPUT].channels = 7;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 4);
+    assertEQ(sub._get(1).channels, 4);
+    assertEQ(sub._get(2).channels, 4);
+    assertEQ(sub._get(3).channels, 2);
+
+     sub.inputs[Comp::VOCT_INPUT].channels = 8;
+    resetChan(sub);
+    sub.stepn();
+    assertEQ(sub._get(0).channels, 4);
+    assertEQ(sub._get(1).channels, 4);
+    assertEQ(sub._get(2).channels, 4);
+    assertEQ(sub._get(3).channels, 4);
+
 }
 
 void testSub()

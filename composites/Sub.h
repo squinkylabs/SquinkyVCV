@@ -91,7 +91,7 @@ public:
     void step() override;
 
     void stepn();
-    const VoltageControlledOscillator<16, 16, float_4, int32_4>& _get(int n) {
+    VoltageControlledOscillator<16, 16, float_4, int32_4>& _get(int n) {
         return oscillators[n];
     } 
 private:
@@ -120,7 +120,6 @@ inline void Sub<TBase>::init()
 
 
     oscillators[0].channels = 1;     // Totally idiotic.
-    printf("set osc0 chan to 1\n"); fflush(stdout);
 }
 
 template <class TBase>
@@ -137,8 +136,6 @@ inline void Sub<TBase>::stepn()
     if (numVCO > numBanks * 4) {
         numBanks++;
     }
-    printf("num channels = %d num VCO=%d\n", numChannels, numVCO);
-
 
     // This is very wrong, in so many ways.
     // pitch is in volts
@@ -158,13 +155,29 @@ inline void Sub<TBase>::stepn()
         oscillators[bank].setSubDivisor(4); 
     }
 
+    oscillators[0].channels = 0;
+    oscillators[0].channels = 0;
+    oscillators[0].channels = 0;
+    oscillators[0].channels = 0;
 
-    oscillators[0].channels = numChannels >= 2 ? 4 : numChannels * 2;
-    oscillators[1].channels = numChannels >= 4 ? 4 : (numChannels - 2) * 2;
-    oscillators[2].channels = numChannels >= 6 ? 4 : (numChannels - 4) * 2;
-    oscillators[3].channels = numChannels >= 8 ? 4 : (numChannels - 6) * 2;
+    if (numChannels <= 2 ) {
+        oscillators[0].channels = numChannels * 2;    
+    } else if (numChannels <= 4) {
+        oscillators[0].channels = 4;
+        oscillators[1].channels = (numChannels-2) * 2;
+    } else if (numChannels <= 6) {
+        oscillators[0].channels = 4;
+        oscillators[1].channels = 4;
+        oscillators[2].channels = (numChannels-4) * 2;
+    } else if (numChannels <= 8) {
+        oscillators[0].channels = 4;
+        oscillators[1].channels = 4;
+        oscillators[2].channels = 4;
+        oscillators[3].channels = (numChannels-6) * 2;
 
-
+    } else {
+        assert(false);
+    }
 }
 
 template <class TBase>
