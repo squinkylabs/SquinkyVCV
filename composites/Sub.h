@@ -190,7 +190,7 @@ inline void Sub<TBase>::step()
     const float sampleTime = TBase::engineGetSampleTime();
     int channel = 0;
     for (int bank=0; bank < numBanks; ++bank) {
-        printf("calling osc proc bank = %d\n", bank); fflush(stdout);
+        //printf("calling osc proc bank = %d\n", bank); fflush(stdout);
         oscillators[bank].process(sampleTime, 0);
 
         // now, what do do with the output? to now lets grab pairs

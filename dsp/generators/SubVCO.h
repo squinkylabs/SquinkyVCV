@@ -81,9 +81,15 @@ struct VoltageControlledOscillator {
 	T subFreq;			// freq /subdivamount
 
 	void setSubDivisor(I div) {
-		subDivisionAmount = div;
-		subCounter = ifelse( subCounter < 1, 1, subCounter);
-		subFreq = freq / div;
+		auto mask = simd::movemask(div != subDivisionAmount);
+		if (mask) {
+			subDivisionAmount = div;
+			subCounter = ifelse( subCounter < 1, 1, subCounter);
+			subFreq = freq / div;
+			printf("\nsetSubDivisor(%s)\n", toStr(div).c_str());
+			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq).c_str());
+			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase).c_str());
+		}
 	}
 
 	void setPitch(T pitch) {
@@ -116,6 +122,16 @@ struct VoltageControlledOscillator {
 		// we don't wrap this phase - the sync does it
 		subPhase += deltaSubPhase;
 
+		if (subPhase[0] > 10 || subPhase[1] > 10 || subPhase[2] > 10 || subPhase[3] > 10) {
+			printf("subPhase overflow\n");
+			printf(" sub = %s\n", toStr(subPhase).c_str());
+			printf(" delta sub = %s\n", toStr(deltaSubPhase).c_str());
+			printf(" div = %s\n", toStr(subDivisionAmount).c_str());
+			printf(" ctr = %s\n", toStr(subCounter).c_str());
+			printf("channels = %d\n", channels);
+			fflush(stdout);
+		}
+
 		simd_assertLT(subPhase, T(10));
  
 
@@ -136,7 +152,7 @@ struct VoltageControlledOscillator {
 					subCounter[i]--;
 					if (subCounter[i] == 0) {
 						subCounter[i] = subDivisionAmount[i];
-						if (_logvco) {
+						if (_logvco || 1) {
 							printf("subPhase[i] hit %f, will reset 0 delta = %f\n", subPhase[i], deltaSubPhase[0]);
 							printf("  regular delta phase = %f\n", deltaPhase[0]);
 						}

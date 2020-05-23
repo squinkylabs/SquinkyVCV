@@ -70,6 +70,7 @@ static void resetChan(Comp& sub) {
     sub._get(0).channels = 2;
     sub._get(0).channels = 3;
 }
+
 static void testChannels()
 {
     Comp sub;
@@ -115,7 +116,7 @@ static void testChannels()
     assertEQ(sub._get(2).channels, 0);
     assertEQ(sub._get(3).channels, 0);
 
-      sub.inputs[Comp::VOCT_INPUT].channels = 5;
+    sub.inputs[Comp::VOCT_INPUT].channels = 5;
     resetChan(sub);
     sub.stepn();
     assertEQ(sub._get(0).channels, 4);
@@ -123,7 +124,7 @@ static void testChannels()
     assertEQ(sub._get(2).channels, 2);
     assertEQ(sub._get(3).channels, 0);
 
-      sub.inputs[Comp::VOCT_INPUT].channels = 6;
+    sub.inputs[Comp::VOCT_INPUT].channels = 6;
     resetChan(sub);
     sub.stepn();
     assertEQ(sub._get(0).channels, 4);
@@ -146,7 +147,6 @@ static void testChannels()
     assertEQ(sub._get(1).channels, 4);
     assertEQ(sub._get(2).channels, 4);
     assertEQ(sub._get(3).channels, 4);
-
 }
 
 void testSub()
