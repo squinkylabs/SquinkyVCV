@@ -101,7 +101,7 @@ private:
     /**
      * number of oscillator pairs
      */
-    int numChannels = 1;
+    int numDualChannels = 1;
     int numBanks = 1;
    // float basePitch1 = 0;
   //  float basePitch2 = 0;
@@ -118,8 +118,12 @@ inline void Sub<TBase>::init()
         this->stepn();
     });
 
+    for (int i=0; i<4; ++i) {
+        oscillators[i].index = i;
+    }
 
-    oscillators[0].channels = 1;     // Totally idiotic.
+
+   // oscillators[0].channels = 1;     // Totally idiotic.
 }
 
 template <class TBase>
@@ -128,14 +132,36 @@ inline void Sub<TBase>::stepn()
     // much of this could be done less often.
     // many vars could be float_4
 
-    numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
-    Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numChannels);
+    numDualChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numDualChannels);
 
-    const int numVCO = numChannels * 2;
+    const int numVCO = numDualChannels * 2;
     numBanks = numVCO / 4;
     if (numVCO > numBanks * 4) {
         numBanks++;
     }
+
+    // Figure out how many active channels per VCO
+    // TODO: imp smarter and/or do less often
+    int activeChannels[4] = {0};
+     if (numDualChannels <= 2 ) {
+        activeChannels[0] = numDualChannels * 2;    
+    } else if (numDualChannels <= 4) {
+        activeChannels[0] = 4;
+        activeChannels[1] = (numDualChannels-2) * 2;
+    } else if (numDualChannels <= 6) {
+        activeChannels[0] = 4;
+        activeChannels[1] = 4;
+        activeChannels[2] = (numDualChannels-4) * 2;
+    } else if (numDualChannels <= 8) {
+        activeChannels[0] = 4;
+        activeChannels[1] = 4;
+        activeChannels[2] = 4;
+        activeChannels[3] = (numDualChannels-6) * 2;
+    } else {
+        assert(false);
+    }
+
 
     // This is very wrong, in so many ways.
     // pitch is in volts
@@ -151,32 +177,13 @@ inline void Sub<TBase>::stepn()
         combinedPitch[2] = basePitch1;
         combinedPitch[3] = basePitch2;
 
-        oscillators[bank].setPitch(combinedPitch);
-        oscillators[bank].setSubDivisor(4); 
+        oscillators[bank].setupSub(activeChannels[bank], combinedPitch, 4);
     }
 
-    oscillators[0].channels = 0;
-    oscillators[0].channels = 0;
-    oscillators[0].channels = 0;
-    oscillators[0].channels = 0;
+    for (int bank = numBanks; bank < 4; ++bank) {
+     //   printf("makeup setup bank %d will call setupSub\n", bank);
+        oscillators[bank].setupSub(activeChannels[bank], float_4(0), 4);
 
-    if (numChannels <= 2 ) {
-        oscillators[0].channels = numChannels * 2;    
-    } else if (numChannels <= 4) {
-        oscillators[0].channels = 4;
-        oscillators[1].channels = (numChannels-2) * 2;
-    } else if (numChannels <= 6) {
-        oscillators[0].channels = 4;
-        oscillators[1].channels = 4;
-        oscillators[2].channels = (numChannels-4) * 2;
-    } else if (numChannels <= 8) {
-        oscillators[0].channels = 4;
-        oscillators[1].channels = 4;
-        oscillators[2].channels = 4;
-        oscillators[3].channels = (numChannels-6) * 2;
-
-    } else {
-        assert(false);
     }
 }
 
@@ -189,6 +196,8 @@ inline void Sub<TBase>::step()
     // run the audio
     const float sampleTime = TBase::engineGetSampleTime();
     int channel = 0;
+
+    // TODO: let's only process the ones we use
     for (int bank=0; bank < numBanks; ++bank) {
         //printf("calling osc proc bank = %d\n", bank); fflush(stdout);
         oscillators[bank].process(sampleTime, 0);
@@ -197,11 +206,18 @@ inline void Sub<TBase>::step()
         // of saws and add them
         float_4 saws = oscillators[bank].saw();
         float_4 subs = oscillators[bank].sub();
-        float pair = saws[0]+ saws[1] + subs[0] + subs[1]; 
+
+        // just vco 1
+        //float pair = saws[0] * .3 + subs[0];
+        // just vco 2
+        float pair = saws[1] * .3 + subs[1];
+
+      // both
+        //float pair = saws[0]+ saws[1] + subs[0] + subs[1]; 
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
 
-        pair = saws[2]+ saws[3] + subs[2] + subs[3];   
-        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+     //   pair = saws[2]+ saws[3] + subs[2] + subs[3];   
+     //   Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
     }
 }
 

@@ -55,7 +55,7 @@ struct VoltageControlledOscillator {
 	bool soft = false;
 	bool syncEnabled = false;
 	// For optimizing in serial code
-	int channels = 0;
+	int _channels = 0;
 
 	T lastSyncValue = 0.f;
 	T phase = 0.f;
@@ -81,7 +81,51 @@ struct VoltageControlledOscillator {
 	T subFreq;			// freq /subdivamount
 
 	int debugCtr = 0;
+	int index=-1;		// just for debugging
 
+	void setupSub(int channels, T pitch, I subDivisor)
+	{
+	//	printf("\n********* in setup sub index = %d\n", index);
+		assert(index >= 0);
+		static int printCount = 0;
+
+		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+		_channels = channels;
+		assert(channels >= 0 && channels <= 4);
+		simd_assertGT(subDivisor, int32_4(0));
+		simd_assertLE(subDivisor, int32_4(32));
+		debugCtr = 0;
+		subDivisionAmount = subDivisor;
+		subCounter = ifelse( subCounter < 1, 1, subCounter);
+		subFreq = freq / subDivisionAmount;
+		
+		if (printCount < 10) {
+			printf(" setSub %d sub=(%s)\n", index, toStr(subDivisionAmount).c_str());
+			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq).c_str());
+			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase).c_str());
+			printf(" channels = %d\n", channels);
+		}
+		
+
+
+
+		// Let's keep sub from overflowing by
+		// setting freq of unused ones to zero
+		for (int i = 0; i < 4; ++i) {
+			if (i >= channels) {
+				subFreq[i] = 0;
+				subPhase[i] = 0;
+				if (printCount < 10) {
+					printf("set freq to zero on vco %d\n", i);
+				}
+			}
+		}
+		if (printCount < 10) {
+			printf("**** leaving setupSub\n\n");
+		}
+		++printCount;
+	}
+#if 0
 	void setSubDivisor(I div) {
 		// should this check be done externally?
 		auto mask = simd::movemask(div != subDivisionAmount);
@@ -90,10 +134,11 @@ struct VoltageControlledOscillator {
 			subDivisionAmount = div;
 			subCounter = ifelse( subCounter < 1, 1, subCounter);
 			subFreq = freq / div;
-			#if 0
+			#if 1
 			printf("\nsetSubDivisor(%s)\n", toStr(div).c_str());
 			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq).c_str());
 			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase).c_str());
+			printf(" channels = %d\n", channels);
 			#endif
 
 			// Let's keep sub from overflowing by
@@ -101,7 +146,7 @@ struct VoltageControlledOscillator {
 			for (int i = 0; i < 4; ++i) {
 				if (i >= channels) {
 					subFreq[i] = 0;
-					// printf("set freq to zero on %d\n", i);
+					printf("set freq to zero on %d\n", i);
 				}
 			}
 		}
@@ -110,6 +155,7 @@ struct VoltageControlledOscillator {
 	void setPitch(T pitch) {
 		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
 	}
+	#endif
 
 	void setPulseWidth(T pulseWidth) {
 		const float pwMin = 0.01f;
@@ -147,16 +193,16 @@ struct VoltageControlledOscillator {
 
 			printf(" div = %s\n", toStr(subDivisionAmount).c_str());
 			printf(" ctr = %s\n", toStr(subCounter).c_str());
-			printf("channels = %d\n", channels);
+			printf("channels = %d\n", _channels);
 			
 			
 		//	subPhase = 0;			// ULTRA HACK
 		//	printf("ovf forcing to 0\n");
 			fflush(stdout);
-			assert(false);
+		//	assert(false);
 		}
 
-		simd_assertLT(subPhase, T(overflow));
+		//simd_assertLT(subPhase, T(overflow));
  
 
 		// Jump sqr when crossing 0, or 1 if backwards
@@ -164,7 +210,7 @@ struct VoltageControlledOscillator {
 		T wrapCrossing = (wrapPhase - (phase - deltaPhase)) / deltaPhase;
 		int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
 		if (wrapMask) {
-			for (int i = 0; i < channels; i++) {
+			for (int i = 0; i < _channels; i++) {
 				if (wrapMask & (1 << i)) {
 					// ok, this VCO here is wrapping
 					T mask = simd::movemaskInverse<T>(1 << i);
@@ -180,7 +226,7 @@ struct VoltageControlledOscillator {
 		T pulseCrossing = (pulseWidth - (phase - deltaPhase)) / deltaPhase;
 		int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
 		if (pulseMask) {
-			for (int i = 0; i < channels; i++) {
+			for (int i = 0; i < _channels; i++) {
 				if (pulseMask & (1 << i)) {
 					T mask = simd::movemaskInverse<T>(1 << i);
 					float p = pulseCrossing[i] - 1.f;
@@ -196,9 +242,12 @@ struct VoltageControlledOscillator {
 		if (_logvco) {
 			printf("phase=%f, dp=%f hCross = %f hm=%d\n", phase[0], deltaPhase[0], halfCrossing[0], halfMask);
 		}
-		assert(channels > 0);
+		if (_channels <= 0) {
+			printf("channels %d in vco %d\n",_channels, index); fflush(stdout);
+			assert(_channels > 0);
+		}
 		if (halfMask) {
-			for (int i = 0; i < channels; i++) {
+			for (int i = 0; i < _channels; i++) {
 				if (_logvco) {
 					printf("i=%d, <<=%d and=%d\n", i, 1 << i,  (halfMask & (1 << i)));
 				}
@@ -210,7 +259,7 @@ struct VoltageControlledOscillator {
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
 					}
-					assertGT(subCounter[0], 0);
+					assertGT(subCounter[i], 0);
 					subCounter[i]--;
 					if (subCounter[i] == 0) {
 						subCounter[i] = subDivisionAmount[i];
@@ -220,9 +269,14 @@ struct VoltageControlledOscillator {
 							printf("  sample %d i=%d\n", debugCtr, i);
 							printf("  all subPhase: %s\n", toStr(subPhase).c_str());
 							printf("  all phase(trigger): %s\n", toStr(subPhase).c_str());
+							printf(" all freq = %s\n", toStr(freq).c_str());
+							printf(" all sub freq = %s\n", toStr(subFreq).c_str());
+							printf(" all deltaPhase = %s\n", toStr(deltaPhase).c_str());
 						}
 						subPhase[i] = 0;
-						// printf(" leaving reset sub phase with subPhase =%s\n", toStr(subPhase).c_str());
+						if (_logvco) {
+							printf(" leaving reset sub phase %d with subPhase =%s\n", i, toStr(subPhase).c_str());
+						}
 					}
 				}
 			}
@@ -243,7 +297,7 @@ struct VoltageControlledOscillator {
 				else {
 					T newPhase = simd::ifelse(sync, (1.f - syncCrossing) * deltaPhase, phase);
 					// Insert minBLEP for sync
-					for (int i = 0; i < channels; i++) {
+					for (int i = 0; i < _channels; i++) {
 						if (syncMask & (1 << i)) {
 							T mask = simd::movemaskInverse<T>(1 << i);
 							float p = syncCrossing[i] - 1.f;

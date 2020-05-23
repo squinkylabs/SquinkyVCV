@@ -35,17 +35,20 @@ static void testSub1()
     sub.step();
 }
 
-static void testSubLevel(bool sub)
+static void testSubLevel(bool sub, int vcoNumber)
 {
+    printf("testSubLEvel vco=%d sub = %d\n", vcoNumber, sub );
+    assert(vcoNumber >= 0 && vcoNumber <= 1);       // only implemented these two values
+
     VoltageControlledOscillator<16, 16, float_4, int32_4> osc;
-    osc.channels = 1;
+    osc.channels = (vcoNumber == 0) ? 1 : 2;
     const float deltaTime = 1.f / 44100.f;
     osc.setPitch(2);
     osc.setSubDivisor(4);
 
-    std::function<float()> lambda = [&osc, deltaTime, sub]() {
+    std::function<float()> lambda = [&osc, deltaTime, sub, vcoNumber]() {
         osc.process(deltaTime, 0);
-        return sub ? osc.sub()[0] : osc.saw()[0];
+        return sub ? osc.sub()[vcoNumber] : osc.saw()[vcoNumber];
     };
 
 
@@ -203,7 +206,9 @@ void testSub()
   //  experiment();
     testChannels();
     testSub1();
-    testSubLevel(false);
-   // testSubLevel(true);
+    testSubLevel(false, 0);
+    testSubLevel(false, 1);
+    testSubLevel(true, 0);
+     testSubLevel(true, 1);
     
 }
