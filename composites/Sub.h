@@ -56,8 +56,9 @@ public:
         FINE2_PARAM,
         SUB1_TUNE_PARAM,
         SUB2_TUNE_PARAM,
-        SUB1_LEVEL_PARAM,
-        SUB2_LEVEL_PARAM,
+       // SUB1_LEVEL_PARAM,
+      //  SUB2_LEVEL_PARAM,
+        SUB_FADE_PARAM,
         NUM_PARAMS
     };
 
@@ -208,6 +209,11 @@ inline void Sub<TBase>::step()
     const float sampleTime = TBase::engineGetSampleTime();
     int channel = 0;
 
+    float fade = Sub<TBase>::params[SUB_FADE_PARAM].value;
+    float subGain = fade / 100;
+    float sawGain = 1 - subGain;
+
+
     // TODO: let's only process the ones we use
     for (int bank=0; bank < numBanks; ++bank) {
         //printf("calling osc proc bank = %d\n", bank); fflush(stdout);
@@ -216,12 +222,15 @@ inline void Sub<TBase>::step()
         // now, what do do with the output? to now lets grab pairs
         // of saws and add them.
         // TODO: make poly so it works
-        float_4 saws = oscillators[bank].saw();
-        float_4 subs = oscillators[bank].sub();
+        float_4 saws = oscillators[bank].saw() * sawGain;
+        float_4 subs = oscillators[bank].sub() * subGain;
 
-        //float pair = saws[2]+ saws[3] + subs[2] + subs[3];  
+        
         float pair = subs[0] + saws[0] + subs[1] + saws[1];
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+
+        pair = saws[2]+ saws[3] + subs[2] + subs[3]; 
+        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++); 
     }
 }
 
@@ -254,12 +263,17 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::SUB2_TUNE_PARAM:
             ret = {2, 32, 4, "VCO 2 subharmonic divisor"};
             break;
+        case Sub<TBase>::SUB_FADE_PARAM:
+            ret = {0, 100, 50, "Sub / main balance"};
+            break;
+#if 0
         case Sub<TBase>::SUB1_LEVEL_PARAM:
             ret = {-1, 1, 0, "VCO 1 subharmonic level"};
             break;
         case Sub<TBase>::SUB2_LEVEL_PARAM:
             ret = {-1, 1, 0, "VCO 2 subharmonic level"};
             break;
+#endif
         default:
             assert(false);
     }

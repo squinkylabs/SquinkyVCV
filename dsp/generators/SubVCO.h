@@ -87,7 +87,7 @@ struct VoltageControlledOscillator {
 	{
 	//	printf("\n********* in setup sub index = %d\n", index);
 		assert(index >= 0);
-		static int printCount = 0;
+		static int printCount = 20;		// turn off printing
 
 		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
 		_channels = channels;

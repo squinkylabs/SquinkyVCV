@@ -130,8 +130,8 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp)
         icomp,
         Vec(knobX2, knobY2),
         module,
-        Comp::SUB1_LEVEL_PARAM));
-    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Amt");
+        Comp::SUB_FADE_PARAM));
+    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Fade");
  
   addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
@@ -139,13 +139,14 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::SUB2_TUNE_PARAM));
     addLabel(Vec(knobX3 - 4, knobY2 - labelAboveKnob), "Div");
-
+#if 0
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX4, knobY2),
         module,
         Comp::SUB2_LEVEL_PARAM));
     addLabel(Vec(knobX4 - 4, knobY2 - labelAboveKnob), "Amt");
+    #endif
 }
 
 const float jacksX1 = 24;
