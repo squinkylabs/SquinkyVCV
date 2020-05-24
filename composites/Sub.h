@@ -168,6 +168,9 @@ inline void Sub<TBase>::stepn()
     const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
     const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
 
+    const int div1 = int( std::round(Sub<TBase>::params[SUB1_TUNE_PARAM].value));
+    const int div2 = int( std::round(Sub<TBase>::params[SUB2_TUNE_PARAM].value));
+
     for (int bank = 0; bank < numBanks; ++bank) {
         float_4 combinedPitch(0);
         // TODO: add pitch CV
@@ -177,7 +180,13 @@ inline void Sub<TBase>::stepn()
         combinedPitch[2] = basePitch1;
         combinedPitch[3] = basePitch2;
 
-        oscillators[bank].setupSub(activeChannels[bank], combinedPitch, 4);
+        int32_4 divisor;
+        divisor[0] = div1;
+        divisor[1] = div2;
+        divisor[2] = div1;
+        divisor[3] = div2;
+
+        oscillators[bank].setupSub(activeChannels[bank], combinedPitch, divisor);
     }
 
     for (int bank = numBanks; bank < 4; ++bank) {
@@ -214,9 +223,9 @@ inline void Sub<TBase>::step()
 
       // both
         //float pair = saws[0]+ saws[1] + subs[0] + subs[1]; 
-        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+       // Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
 
-     //   pair = saws[2]+ saws[3] + subs[2] + subs[3];   
+        pair = saws[2]+ saws[3] + subs[2] + subs[3];   
      //   Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
     }
 }
@@ -245,10 +254,10 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             ret = {-1, 1, 0, "VCO 2 fine tune"};
             break;
         case Sub<TBase>::SUB1_TUNE_PARAM:
-            ret = {-1, 1, 0, "VCO 1 subharmonic divisor"};
+            ret = {2, 32, 4, "VCO 1 subharmonic divisor"};
             break;
         case Sub<TBase>::SUB2_TUNE_PARAM:
-            ret = {-1, 1, 0, "VCO 2 subharmonic divisor"};
+            ret = {2, 32, 4, "VCO 2 subharmonic divisor"};
             break;
         case Sub<TBase>::SUB1_LEVEL_PARAM:
             ret = {-1, 1, 0, "VCO 1 subharmonic level"};
