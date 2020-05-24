@@ -164,32 +164,40 @@ inline void Sub<TBase>::stepn()
     }
 
 
-    // This is very wrong, in so many ways.
     // pitch is in volts
     const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
     const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
+    float_4 combinedPitch(0);
+    // TODO: add pitch CV
+    combinedPitch[0] = basePitch1;
+    combinedPitch[1] = basePitch2;
+
+    combinedPitch[2] = basePitch1;
+    combinedPitch[3] = basePitch2;
 
     // can remove this crap once we get rid of old test patches
     const int div1 = std::max(2, int( std::round(Sub<TBase>::params[SUB1_TUNE_PARAM].value)));
     const int div2 =  std::max(2, int( std::round(Sub<TBase>::params[SUB2_TUNE_PARAM].value)));
-    // printf("Sub seeing up div to %d, %d\n", div1, div2); fflush(stdout);
+     int32_4 divisor;
+    divisor[0] = div1;
+    divisor[1] = div2;
+    divisor[2] = div1;
+    divisor[3] = div2;
 
+    int channel = 0;
     for (int bank = 0; bank < numBanks; ++bank) {
-        float_4 combinedPitch(0);
-        // TODO: add pitch CV
-        combinedPitch[0] = basePitch1;
-        combinedPitch[1] = basePitch2;
+        const float cv0 = Sub<TBase>::inputs[VOCT_INPUT].getVoltage(channel);
+        ++channel;
+        float_4 pitch = combinedPitch;
+        pitch[0] += cv0;
+        pitch[1] += cv0;
 
-        combinedPitch[2] = basePitch1;
-        combinedPitch[3] = basePitch2;
-
-        int32_4 divisor;
-        divisor[0] = div1;
-        divisor[1] = div2;
-        divisor[2] = div1;
-        divisor[3] = div2;
-
-        oscillators[bank].setupSub(activeChannels[bank], combinedPitch, divisor);
+        const float cv1 = Sub<TBase>::inputs[VOCT_INPUT].getVoltage(channel);
+        ++channel;
+        pitch[2] += cv1;
+        pitch[3] += cv1;
+        
+        oscillators[bank].setupSub(activeChannels[bank], pitch, divisor);
     }
 
     for (int bank = numBanks; bank < 4; ++bank) {
@@ -207,14 +215,15 @@ inline void Sub<TBase>::step()
 
     // run the audio
     const float sampleTime = TBase::engineGetSampleTime();
-    int channel = 0;
+    
 
     float fade = Sub<TBase>::params[SUB_FADE_PARAM].value;
     float subGain = fade / 100;
     float sawGain = 1 - subGain;
 
 
-    // TODO: let's only process the ones we use
+    // Prepare the mixed output and send it out.
+    int channel = 0; 
     for (int bank=0; bank < numBanks; ++bank) {
         //printf("calling osc proc bank = %d\n", bank); fflush(stdout);
         oscillators[bank].process(sampleTime, 0);
