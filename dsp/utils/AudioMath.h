@@ -1,4 +1,6 @@
 #pragma once
+
+#include <assert.h>
 #include <cmath>
 #include <functional>
 #include <algorithm>
@@ -117,8 +119,6 @@ public:
     {
         assert(knobx1 > knobx0);
         assert(y1 > y0);
-        const T cvx0 = -5;
-        const T cvx1 = 5;
 
         // ok,here's the equations for this:
         // f(knob, cv) = ak * knob + av * cv + b    // linear eq of two variables

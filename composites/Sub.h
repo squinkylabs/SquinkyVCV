@@ -3,6 +3,7 @@
 
 #ifndef _MSC_VER 
 #include "asserts.h"
+#include "AudioMath.h"
 #include "Divider.h"
 #include "SubVCO.h"
 #include <assert.h>
@@ -59,12 +60,16 @@ public:
        // SUB1_LEVEL_PARAM,
       //  SUB2_LEVEL_PARAM,
         SUB_FADE_PARAM,
+        SUB1_TUNE_TRIM_PARAM,
+        SUB2_TUNE_TRIM_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
         VOCT_INPUT,
+        SUB1_TUNE_INPUT,
+        SUB2_TUNE_INPUT,
         NUM_INPUTS
     };
 
@@ -98,6 +103,7 @@ public:
 private:
 
     VoltageControlledOscillator<16, 16, float_4, int32_4> oscillators[4];
+    AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(2, 32, 2, 32);
 
     /**
      * number of oscillator pairs
@@ -168,17 +174,32 @@ inline void Sub<TBase>::stepn()
     const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
     const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
     float_4 combinedPitch(0);
-    // TODO: add pitch CV
+
     combinedPitch[0] = basePitch1;
     combinedPitch[1] = basePitch2;
 
     combinedPitch[2] = basePitch1;
     combinedPitch[3] = basePitch2;
 
+//divScaleFn(cv, knob, trim)
+    const float div1Rawf = divScaleFn(
+        Sub<TBase>::inputs[SUB1_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[SUB1_TUNE_PARAM].value,
+        Sub<TBase>::params[SUB1_TUNE_TRIM_PARAM].value
+    );
+    const float div2Rawf = divScaleFn(
+        Sub<TBase>::inputs[SUB2_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[SUB2_TUNE_PARAM].value,
+        Sub<TBase>::params[SUB2_TUNE_TRIM_PARAM].value
+    );
+
+    const int div1Raw = int( std::round(div1Rawf));
+    const int div2Raw = int( std::round(div2Rawf));
+
     // can remove this crap once we get rid of old test patches
-    const int div1 = std::max(2, int( std::round(Sub<TBase>::params[SUB1_TUNE_PARAM].value)));
-    const int div2 =  std::max(2, int( std::round(Sub<TBase>::params[SUB2_TUNE_PARAM].value)));
-     int32_4 divisor;
+    const int div1 = std::max(2, div1Raw);
+    const int div2 = std::max(2, div2Raw);
+    int32_4 divisor;
     divisor[0] = div1;
     divisor[1] = div2;
     divisor[2] = div1;
@@ -275,6 +296,13 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::SUB_FADE_PARAM:
             ret = {0, 100, 50, "Sub / main balance"};
             break;
+        case Sub<TBase>::SUB1_TUNE_TRIM_PARAM:
+            ret = {-1, 1, 1, "divider 1 CV trim"};
+            break;
+        case Sub<TBase>::SUB2_TUNE_TRIM_PARAM:
+            ret = {-1, 1, 1, "divider 2 CV trim"};
+            break;
+       
 #if 0
         case Sub<TBase>::SUB1_LEVEL_PARAM:
             ret = {-1, 1, 0, "VCO 1 subharmonic level"};
