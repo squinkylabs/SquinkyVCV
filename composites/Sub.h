@@ -168,8 +168,10 @@ inline void Sub<TBase>::stepn()
     const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
     const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
 
-    const int div1 = int( std::round(Sub<TBase>::params[SUB1_TUNE_PARAM].value));
-    const int div2 = int( std::round(Sub<TBase>::params[SUB2_TUNE_PARAM].value));
+    // can remove this crap once we get rid of old test patches
+    const int div1 = std::max(2, int( std::round(Sub<TBase>::params[SUB1_TUNE_PARAM].value)));
+    const int div2 =  std::max(2, int( std::round(Sub<TBase>::params[SUB2_TUNE_PARAM].value)));
+    // printf("Sub seeing up div to %d, %d\n", div1, div2); fflush(stdout);
 
     for (int bank = 0; bank < numBanks; ++bank) {
         float_4 combinedPitch(0);
@@ -212,21 +214,14 @@ inline void Sub<TBase>::step()
         oscillators[bank].process(sampleTime, 0);
 
         // now, what do do with the output? to now lets grab pairs
-        // of saws and add them
+        // of saws and add them.
+        // TODO: make poly so it works
         float_4 saws = oscillators[bank].saw();
         float_4 subs = oscillators[bank].sub();
 
-        // just vco 1
-        //float pair = saws[0] * .3 + subs[0];
-        // just vco 2
-        float pair = saws[1] * .3 + subs[1];
-
-      // both
-        //float pair = saws[0]+ saws[1] + subs[0] + subs[1]; 
-       // Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
-
-        pair = saws[2]+ saws[3] + subs[2] + subs[3];   
-     //   Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+        //float pair = saws[2]+ saws[3] + subs[2] + subs[3];  
+        float pair = subs[0] + saws[0] + subs[1] + saws[1];
+        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
     }
 }
 

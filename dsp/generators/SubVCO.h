@@ -106,9 +106,6 @@ struct VoltageControlledOscillator {
 			printf(" channels = %d\n", channels);
 		}
 		
-
-
-
 		// Let's keep sub from overflowing by
 		// setting freq of unused ones to zero
 		for (int i = 0; i < 4; ++i) {
@@ -125,37 +122,6 @@ struct VoltageControlledOscillator {
 		}
 		++printCount;
 	}
-#if 0
-	void setSubDivisor(I div) {
-		// should this check be done externally?
-		auto mask = simd::movemask(div != subDivisionAmount);
-		if (mask) {
-			debugCtr = 0;
-			subDivisionAmount = div;
-			subCounter = ifelse( subCounter < 1, 1, subCounter);
-			subFreq = freq / div;
-			#if 1
-			printf("\nsetSubDivisor(%s)\n", toStr(div).c_str());
-			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq).c_str());
-			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase).c_str());
-			printf(" channels = %d\n", channels);
-			#endif
-
-			// Let's keep sub from overflowing by
-			// setting freq of unused ones to zero
-			for (int i = 0; i < 4; ++i) {
-				if (i >= channels) {
-					subFreq[i] = 0;
-					printf("set freq to zero on %d\n", i);
-				}
-			}
-		}
-	}
-
-	void setPitch(T pitch) {
-		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
-	}
-	#endif
 
 	void setPulseWidth(T pulseWidth) {
 		const float pwMin = 0.01f;
@@ -263,6 +229,7 @@ struct VoltageControlledOscillator {
 					subCounter[i]--;
 					if (subCounter[i] == 0) {
 						subCounter[i] = subDivisionAmount[i];
+						// printf("sub[%d] rolled over, set counter to %d\n", index, subCounter[i]);
 						if (_logvco) {
 							printf("subPhase[%d] hit %f, will reset 0 delta = %f\n", i, subPhase[i], deltaSubPhase[i]);
 							printf("  delta phase = %f phase = %f\n", deltaPhase[i], phase[i]);
