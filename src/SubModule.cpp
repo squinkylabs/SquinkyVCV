@@ -82,9 +82,12 @@ const float knobX4 = knobLeftEdge + 3 * knobDeltaX;
 const float knobY1 = 60;
 const float knobDeltaY = 70;
 const float knobY2 = knobY1 + 1 *  knobDeltaY;
-const float knobY3 = knobY1 + 2 *  knobDeltaY;
+const float knobY3 = knobY1 + 2 *  knobDeltaY - 12;
 
 const float labelAboveKnob = 20;
+
+const float knobX1Trim = knobX1 + 14;
+const float knobX3Trim = knobX1Trim + + 2 * knobDeltaX;;
 
 void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp)
 {
@@ -147,6 +150,18 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp)
         Comp::SUB2_LEVEL_PARAM));
     addLabel(Vec(knobX4 - 4, knobY2 - labelAboveKnob), "Amt");
     #endif
+
+    // trims
+    addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(knobX1Trim, knobY3),
+        module,
+        Comp::SUB1_TUNE_TRIM_PARAM));
+      addParam(SqHelper::createParamCentered<Trimpot>(
+        icomp,
+        Vec(knobX3Trim, knobY3),
+        module,
+        Comp::SUB2_TUNE_TRIM_PARAM));
 }
 
 const float jacksX1 = 24;
@@ -156,22 +171,35 @@ const float jacksX3 = jacksX1 + 2 * jacksDeltaX;
 const float jacksX4 = jacksX1 + 3 * jacksDeltaX;
 const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
 
-const float jacksY1 = 276;
-const float jacksY2 = jacksY1 + 46;
+const float jacksY1 = 230;
+const float jacksY2 = 300;
+
+const float jacksX1Top = 28;
+const float jacksX3Top = jacksX1Top + 2 * knobDeltaX;
 
 void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
 {
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX1, jacksY1),
+        Vec(jacksX1Top, jacksY1),
+        module,
+        Comp::SUB1_TUNE_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX3Top, jacksY1),
+        module,
+        Comp::SUB2_TUNE_INPUT));
+ //   addLabel(Vec(jacksX1Top - 10, jacksY1 - labelAboveKnob), "Div 1");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX1, jacksY2),
         module,
         Comp::VOCT_INPUT));
-    addLabel(Vec(jacksX1 - 10, jacksY1 - labelAboveKnob), "V/8");
+    addLabel(Vec(jacksX1 - 10, jacksY2 - labelAboveKnob), "V/8");
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jacksX2, jacksY1),
+        Vec(jacksX2, jacksY2),
         module,
         Comp::MAIN_OUTPUT));
-    addLabel(Vec(jacksX2 - 10, jacksY1 - labelAboveKnob), "Out");
+    addLabel(Vec(jacksX2 - 10, jacksY2 - labelAboveKnob), "Out");
 }
 
 
