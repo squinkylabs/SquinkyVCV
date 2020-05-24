@@ -63,14 +63,19 @@ static void testAudioTaper()
     assertClose(f(0), 0, .001);
 }
 
-static void testScaler()
-{
-    AudioMath::ScaleFun<float> f = AudioMath::makeLinearScaler<float>(3, 4);
+
+// Tests both linear scalers with domain -5..5 for
+// both knob and CV
+static void testScalerSub(bool useScaler2)
+{ 
+    AudioMath::ScaleFun<float> f = useScaler2 ?
+        AudioMath::makeLinearScaler2<float>(-5, 5, 3, 4) :
+        AudioMath::makeLinearScaler<float>(3, 4);
     // scale(cv, knob, trim
 
     // knob comes through only shifted
     assertEQ(f(0, -5, 0), 3.);
-    assertEQ(f(0, 5, 0), 4.);
+    assertEQ(f(0, 5, 0), 4.); 
     assertEQ(f(0, 0, 0), 3.5);
 
     // cv also come through, it trim up
@@ -78,7 +83,9 @@ static void testScaler()
     assertEQ(f(5, 0, 1), 4.);
     assertEQ(f(0, 0, 1), 3.5);
 
+    // (T cv, T knob, T trim)
     // no cv if trim 0
+    // knob in middle
     assertEQ(f(-5, 0, 0), 3.5);
 
     // neg trim inverts cv
@@ -87,6 +94,54 @@ static void testScaler()
 
     // trim half way
     assertEQ(f(5, 0, .5), 3.75);
+
+    // way down, should clip
+    assertEQ(f(-5, -5, 1), 3);
+    // way up, should clip
+    assertEQ(f(5, 5, 1), 4);
+}
+
+static void testScaler()
+{
+
+    // temp - for debugging
+  
+    // a = .1 b = 3.5
+    auto xx = AudioMath::makeLinearScaler<float>(3, 4);
+
+    // both a .1, b = 3.5
+    auto yy= AudioMath::makeLinearScaler2<float>(-5, 5, 3, 4);
+
+    xx(-5, 0, 0);
+    yy(-5, 0, 0);
+  
+
+
+    testScalerSub(false);
+}
+
+static void testScaler2()
+{
+    testScalerSub(true);
+}
+
+static void testScaler3()
+{
+    // (T cv, T knob, T trim)
+    AudioMath::ScaleFun<float> f = AudioMath::makeLinearScaler2<float>(1, 31, 3, 4);
+    // knob comes through shifted and scaled
+    assertEQ(f(0, 1, 0), 3.);
+    assertEQ(f(0, 31, 0), 4.);
+    assertEQ(f(0, 16, 0), 3.5);
+
+     // cv also come through, if trim up
+    assertEQ(f(-5, 1, 1), 3.);      // cv at min, knob at min will go below min, clip
+    assertEQ(f(5, 31, 1), 4.);      // cv at max, knob at max, will to above, clip
+
+    // could use some more tests here....
+  //  assertEQ(f(0, 1, 1), 3.5);
+
+
 }
 
 static void testBipolarAudioScaler()
@@ -281,6 +336,8 @@ void testAudioMath()
     test3();
     testAudioTaper();
     testScaler();
+    testScaler2();
+    testScaler3();
     testBipolarAudioScaler();
     testAudioScaler();
     testAudioScaler2();

@@ -108,6 +108,39 @@ public:
     }
 
     /**
+     * just like makeLinearScaler, but knob domain specified, too
+     * CV domain still -5..5
+     * trim -1..1
+     */
+    template <typename T>
+    static ScaleFun<T> makeLinearScaler2(T knobx0, T knobx1, T y0, T y1)
+    {
+        assert(knobx1 > knobx0);
+        assert(y1 > y0);
+        const T cvx0 = -5;
+        const T cvx1 = 5;
+
+        // ok,here's the equations for this:
+        // f(knob, cv) = ak * knob + av * cv + b    // linear eq of two variables
+        // f(x0, 0) = y0                    // from requrements
+        // f(x1, 0) = y1
+        // f(xbar, 5) = y1              // from req. xbar = .5 * (x0 + x1)
+
+        const T ak = (y1 - y0) / (knobx1 - knobx0);
+        const T b = y0 - ak * knobx0;
+        const double avd = .2 * (y1 - b) - .1 * ak * (knobx1 + knobx0);
+        const T av = T(avd);
+
+        return [ak, av, b, y1, y0](T cv, T knob, T trim) {
+            T ret =  ak * knob + av * cv * trim + b;
+            ret = std::max<T>(ret, y0);
+            ret = std::min<T>(ret, y1);
+            return ret;
+        };
+    }
+
+
+    /**
      * Generates a scale function for an audio taper attenuverter.
      * Details the same as makeLinearScaler except that the CV
      * scaling will be exponential for most values, becoming
