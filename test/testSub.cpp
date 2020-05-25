@@ -40,11 +40,11 @@ static void testSubLevel(bool sub, int vcoNumber)
     printf("testSubLEvel vco=%d sub = %d\n", vcoNumber, sub );
     assert(vcoNumber >= 0 && vcoNumber <= 1);       // only implemented these two values
 
-    VoltageControlledOscillator<16, 16, float_4, int32_4> osc;
+    VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> osc;
     osc.index = 0;
   int channels = (vcoNumber == 0) ? 1 : 2;
     const float deltaTime = 1.f / 44100.f;
-    osc.setupSub(channels, float_4(2), int32_4(4));
+    osc.setupSub(channels, rack::simd::float_4(2), rack::simd::int32_4(4));
     std::function<float()> lambda = [&osc, deltaTime, sub, vcoNumber]() {
         osc.process(deltaTime, 0);
         return sub ? osc.sub()[vcoNumber] : osc.saw()[vcoNumber];

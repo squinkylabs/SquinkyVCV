@@ -100,12 +100,12 @@ public:
     void step() override;
 
     void stepn();
-    VoltageControlledOscillator<16, 16, float_4, int32_4>& _get(int n) {
+    VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4>& _get(int n) {
         return oscillators[n];
     } 
 private:
 
-    VoltageControlledOscillator<16, 16, float_4, int32_4> oscillators[4];
+    VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> oscillators[4];
     AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(2, 32, 2, 32);
 
     /**
@@ -202,7 +202,7 @@ inline void Sub<TBase>::stepn()
     // can remove this crap once we get rid of old test patches
     const int div1 = std::max(2, div1Raw);
     const int div2 = std::max(2, div2Raw);
-    int32_4 divisor;
+    rack::simd::int32_4 divisor;
     divisor[0] = div1;
     divisor[1] = div2;
     divisor[2] = div1;

@@ -12,6 +12,31 @@ extern int _mdb;        // MIDI reverence count
  * Will print information on failure, then generate a "real" assertion
  */
 
+// make all our assserts do nothing with debug is off
+#ifdef NDEBUG
+//#define assert(_Expression) ((void)0)
+
+#define assertEQ(_Experssion1, _Expression2) ((void)0)
+#define assertNE(_Experssion1, _Expression2) ((void)0)
+#define assertLE(_Experssion1, _Expression2) ((void)0)
+#define assertLT(_Experssion1, _Expression2) ((void)0)
+#define assertGT(_Experssion1, _Expression2) ((void)0)
+#define assertGE(_Experssion1, _Expression2) ((void)0)
+#define assertClose(_Experssion1, _Expression2, _Expression3) ((void)0)
+#define assertEvCount(x)  ((void)0)
+#define assertNoMidi()  ((void)0)
+
+#define simd_assertEQ(_Experssion1, _Expression2) ((void)0)
+#define simd_assertNE(_Experssion1, _Expression2) ((void)0)
+#define simd_assertSame(_Experssion1) ((void)0)
+#define simd_assertGT(_Experssion1, _Expression2) ((void)0)
+#define simd_assertGE(_Experssion1, _Expression2) ((void)0)
+#define simd_assertLT(_Experssion1, _Expression2) ((void)0)
+#define simd_assertLE(_Experssion1, _Expression2) ((void)0)
+#define simd_assertMask(_Experssion1) ((void)0)
+#define simd_assertClose(_Experssion1, _Expression2, _Expression3) ((void)0)
+
+#else
 
 #define assertEQEx(actual, expected, msg) if (actual != expected) { \
     std::cout << "assertEq failed " << msg << " actual value =" << \
@@ -56,13 +81,10 @@ extern int _mdb;        // MIDI reverence count
     actual << std::endl  << std::flush; \
     assert(false); }
 
-#ifndef NDEBUG
+
 #define assertEvCount(x) assertEQ(MidiEvent::_count, x)
 #define assertNoMidi() assertEvCount(0); assertEQ(_mdb, 0)
-#else
-#define assertEvCount(x)  ((void)0)
-#define assertNoMidi()  ((void)0)
-#endif
+
 // leave space after macro
 
 
@@ -133,13 +155,11 @@ using int32_4 = rack::simd::int32_4;
     assertEQ(a[0], a[2]); \
     assertEQ(a[0], a[3]); 
 
-
 inline std::string toStr(const float_4& x) {
     std::stringstream s;
     s << x[0] << ", " << x[1] << ", " << x[2] << ", " << x[3];
     return s.str();
 }
-
 
 inline std::string toStr(const int32_4& x) {
     std::stringstream s;
@@ -163,5 +183,5 @@ inline std::string toStrM(const float_4& x) {
      ", " << (i[3]  ? "t" : "f");
     return s.str();
 }
-
-#endif
+#endif  // MS
+#endif  // NDEBUG

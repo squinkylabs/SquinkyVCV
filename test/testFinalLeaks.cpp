@@ -15,5 +15,5 @@ void testFinalLeaks()
     assertEQ(ThreadSharedState::_dbgCount, 0);
     assertEQ(ThreadServer::_instanceCount, 0);
     assertEQ(_numLookupParams, 0);
-    assertEQ(_numBiquads, 0)
+    assertEQ(_numBiquads, 0);
 }

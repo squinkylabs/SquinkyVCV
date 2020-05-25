@@ -99,12 +99,14 @@ struct VoltageControlledOscillator {
 		subCounter = ifelse( subCounter < 1, 1, subCounter);
 		subFreq = freq / subDivisionAmount;
 		
+#ifndef NDEBUG
 		if (printCount < 10) {
 			printf(" setSub %d sub=(%s)\n", index, toStr(subDivisionAmount).c_str());
 			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq).c_str());
 			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase).c_str());
 			printf(" channels = %d\n", channels);
 		}
+#endif
 		
 		// Let's keep sub from overflowing by
 		// setting freq of unused ones to zero
@@ -150,6 +152,7 @@ struct VoltageControlledOscillator {
 		subPhase += deltaSubPhase;
 
 		const float overflow = 2;
+#ifndef NDEBUG
 		if (subPhase[0] > overflow || subPhase[1] > overflow || subPhase[2] > overflow || subPhase[3] > overflow) {
 			printf("\nsubPhase overflow sample %d\n", debugCtr);
 			printf(" subPhase = %s\n", toStr(subPhase).c_str());
@@ -167,6 +170,7 @@ struct VoltageControlledOscillator {
 			fflush(stdout);
 		//	assert(false);
 		}
+#endif
 
 		//simd_assertLT(subPhase, T(overflow));
  
@@ -230,6 +234,7 @@ struct VoltageControlledOscillator {
 					if (subCounter[i] == 0) {
 						subCounter[i] = subDivisionAmount[i];
 						// printf("sub[%d] rolled over, set counter to %d\n", index, subCounter[i]);
+#ifndef NDEBUG
 						if (_logvco) {
 							printf("subPhase[%d] hit %f, will reset 0 delta = %f\n", i, subPhase[i], deltaSubPhase[i]);
 							printf("  delta phase = %f phase = %f\n", deltaPhase[i], phase[i]);
@@ -240,10 +245,13 @@ struct VoltageControlledOscillator {
 							printf(" all sub freq = %s\n", toStr(subFreq).c_str());
 							printf(" all deltaPhase = %s\n", toStr(deltaPhase).c_str());
 						}
+#endif
 						subPhase[i] = 0;
+#ifndef NDEBUG
 						if (_logvco) {
 							printf(" leaving reset sub phase %d with subPhase =%s\n", i, toStr(subPhase).c_str());
 						}
+#endif
 					}
 				}
 			}

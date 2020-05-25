@@ -316,7 +316,7 @@ static void testDuration()
     assert(note);
 
     assertEQ(note->startTime, 10.f);
-    assertEQ(note->duration, 6.f)
+    assertEQ(note->duration, 6.f);
 
     seq->undo->undo(seq);
     seq->assertValid();

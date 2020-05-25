@@ -4,7 +4,9 @@
 /**
  * 
  * 5/25 : 8 channels = 135%
- * 2,005,168 bytes in reduced plugn
+ * 2,005,168 bytes in reduced plugin
+ * 
+ * down to 96% with re-written asserts
  * 
  * 5/17 stock : 123.5
  * -march=native: 100 

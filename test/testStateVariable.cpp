@@ -106,7 +106,7 @@ static void testSetBandwidth()
     assertEQ(params.getNormalizedBandwidth(), T(.5));
 
     params.setQ(10);
-    assertEQ(params.getNormalizedBandwidth(), T(.1))
+    assertEQ(params.getNormalizedBandwidth(), T(.1));
 }
 
 template <typename T>
