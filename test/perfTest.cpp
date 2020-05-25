@@ -26,7 +26,11 @@
 #include "Super.h"
 #include "KSComposite.h"
 #include "Seq.h"
+
+#ifndef _MSC_VER
 #include "WVCO.h"
+#include "Sub.h"
+#endif
 
 extern double overheadInOut;
 extern double overheadOutOnly;
@@ -633,6 +637,21 @@ static void testWVCOPoly()
             wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(7);
     }, 1);
 }
+
+static void testSubMono()
+{
+    Sub<TestComposite> sub;
+
+    sub.init();
+    sub.inputs[Sub<TestComposite>::MAIN_OUTPUT].channels = 8;
+    sub.inputs[Sub<TestComposite>::VOCT_INPUT].channels = 8;
+
+    MeasureTime<float>::run(overheadOutOnly, "Sub mono", [&sub]() {
+        sub.step();
+        return sub.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0);
+    }, 1);
+}
+
 #endif
 
 static void testSuper()
@@ -952,8 +971,9 @@ void perfTest()
 #ifndef _MSC_VER
   
     testWVCOPoly();
+    testSubMono();
     simd_testBiquad();
-      testSinLookup();
+    testSinLookup();
     simd_testSin();
 #endif  
 

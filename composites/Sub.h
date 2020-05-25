@@ -10,6 +10,9 @@
 #include <memory>
 #include "IComposite.h"
 
+/**
+ * 5.25: cpu usage 1 chnael = 71%
+ */
 
 namespace rack {
     namespace engine {

@@ -3,6 +3,9 @@
 
 /**
  * 
+ * 5/25 : 8 channels = 135%
+ * 2,005,168 bytes in reduced plugn
+ * 
  * 5/17 stock : 123.5
  * -march=native: 100 
  * -finline-limit=n: 103.5
