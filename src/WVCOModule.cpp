@@ -336,6 +336,8 @@ WVCOWidget::WVCOWidget(WVCOModule *module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/wvco_panel.svg");
 
+    addLabel(Vec(60, 14), "Kitchen Sink");
+
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));

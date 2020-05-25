@@ -85,6 +85,8 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
+    addLabel(Vec(60, 14), "Chaos Kitty");
+
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
 
     const float xInput = 40;
