@@ -141,7 +141,8 @@ public:
 
         if (waveform == WaveForm::Fold) {
             s = rack::simd::sin(phase * twoPi);
-            s *= (shapeAdjust * 10);
+            float_4 adj = ifelse( shapeAdjust < float_4(.095), float_4(.095), shapeAdjust);   // keep adj above .1
+            s *= (adj * 10);
             s = SimdBlocks::fold(s);
             s *= (5.f * 5.f / 5.6f);        // why do we need this correction?
         } else if (waveform == WaveForm::SawTri) {
@@ -312,16 +313,25 @@ inline void WVCO<TBase>::stepm()
 
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     basePitch += q;
-    if (basePitch > 10) {
-        printf("base=%f, oct = %f, fine=%f q = %f\n",
-            basePitch,
-            TBase::params[OCTAVE_PARAM].value,
-            TBase::params[FINE_TUNE_PARAM].value,
-            q);
-        fflush(stdout);
 
+#if 0
+    {
+        static int last = -1;
+        if ( std::abs(basePitch - last) > .2) {
+        //if (basePitch != last) {
+            printf("base != last. diff = %f\n", basePitch - last);
+            printf("base=%f, oct = %f, fine=%f q = %f\n",
+                basePitch,
+                TBase::params[OCTAVE_PARAM].value,
+                TBase::params[FINE_TUNE_PARAM].value,
+                q);
+            last = basePitch;
+            fflush(stdout);
+        }
     }
-    assert(basePitch < 10);
+    #endif
+
+    //assert(basePitch < 10);
 
     freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
 
@@ -390,6 +400,7 @@ inline void WVCO<TBase>::stepn()
             // use SIMD here?
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
+#if 0 // put this back if we know that the range of pitch really is
             if (pitch > 10) {
                 printf("looking up pitch %f\n", pitch);
                 printf("base pitch = %f, cv = %f\n", basePitch, TBase::inputs[VOCT_INPUT].getVoltage(channel));
@@ -397,6 +408,7 @@ inline void WVCO<TBase>::stepn()
                 assert(false);
                 // we should actually clip this, not assert
             }
+    #endif
 
             float _freq = expLookup(pitch);
             _freq *= freqMultiplier;
