@@ -416,7 +416,7 @@ inline void WVCO<TBase>::stepn()
         }
 
         float_4 envMult = (enableAdsrShape) ? adsr.env[bank] : 1;
-        simd_assertLE( envMult, float_4(1));
+        simd_assertLE( envMult, float_4(2));
         simd_assertGE(envMult, float_4(0)); 
 
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
@@ -425,12 +425,12 @@ inline void WVCO<TBase>::stepn()
         assertLE( baseShapeGain, 1);
         assertGE( baseShapeGain, 0);   
 
-        simd_assertLE( dsp[bank].shapeAdjust, float_4(1));
+        simd_assertLE( dsp[bank].shapeAdjust, float_4(2));
         simd_assertGE( dsp[bank].shapeAdjust, float_4(0));   
 
         // now let's compute triangle params
         const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
-        simd_assertLT(shapeGain, float_4(1));
+        simd_assertLT(shapeGain, float_4(2));
         simd_assertGT(shapeGain, float_4(0));
 
         float_4 k = .5 + shapeGain / 2;
