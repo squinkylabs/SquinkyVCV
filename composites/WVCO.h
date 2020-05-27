@@ -387,17 +387,29 @@ inline void WVCO<TBase>::stepn()
         numBanks++;
     }
 
+   static int x = 0;
     // round up all the gates and run the ADSR;
     {
         float_4 gates[4];
         for (int i=0; i<4; ++i) {
-            float_4 gate = (TBase::inputs[GATE_INPUT].getPolyVoltage(i*4) > float_4(1));
+            Port& p = TBase::inputs[GATE_INPUT];
+            float_4 g = p.getVoltageSimd<float_4>(i * 4);
+            float_4 gate = (g > float_4(1));
             simd_assertMask(gate);
             gates[i] = gate;
+#if 0
+            if (x == 0 && i==0) {
+                printf("\nsending gate to adsr %s\n", toStrLiteral(gate).c_str());
+                printf("poly gate cv = %s\n", toStr(
+                    g
+                    ).c_str());
+            }
+#endif
         }
        adsr.step(gates, TBase::engineGetSampleTime());
     }
 
+    // TODO: make this faster, and/or do less often
      // update the pitch of every vco
     for (int bank=0; bank < numBanks; ++bank) {
         float_4 freq;
@@ -450,10 +462,22 @@ inline void WVCO<TBase>::stepn()
 
         // TODO: add CV (use getNormalPolyVoltage)
         if (enableAdsrLevel) {
+         
+          
             dsp[bank].outputLevel = adsr.env[bank] * baseOutputLevel;
+#if 0
+              if (x == 0) {
+                printf("update level with env %s\n", toStr(adsr.env[bank]).c_str());
+                printf("finaly output %s\n", toStr(dsp[bank].outputLevel).c_str());
+            }
+#endif
         } else {
             dsp[bank].outputLevel = baseOutputLevel;    
         }
+    }
+    x++;
+    if (x > 1000) {
+        x = 0;
     }
 }
 
