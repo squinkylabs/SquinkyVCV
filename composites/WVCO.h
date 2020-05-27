@@ -7,6 +7,7 @@
  * 2,005,168 bytes in reduced plugin
  * 
  * down to 96% with re-written asserts
+ * first try update envelopes audio rate: 136
  * 
  * 5/17 stock : 123.5
  * -march=native: 100 
@@ -309,7 +310,7 @@ private:
 template <class TBase>
 inline void WVCO<TBase>::init()
 {
-    divn.setup(4, [this]() {
+    divn.setup(1, [this]() {
         stepn();
     });
      divm.setup(16, [this]() {
