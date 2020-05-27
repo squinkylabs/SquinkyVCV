@@ -41,15 +41,11 @@ conclusions, round 1:
 march native is significant, but why? It's not generating avx, is it? (more to do)
 inline options make a difference. unclear which to use, although inline-limit is easy
 float -> float_4 isn't free.
-
  */
 
 #include <assert.h>
 #include <memory>
 #include <vector>
-
-
-
 
 #ifndef _MSC_VER
 #include "simd.h"
@@ -61,7 +57,6 @@ float -> float_4 isn't free.
 #include "Divider.h"
 
 using float_4 = rack::simd::float_4;
-
 
 #ifndef _CLAMP
 #define _CLAMP
@@ -89,7 +84,6 @@ public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
-
 
 class TriFormula
 {
@@ -144,10 +138,16 @@ public:
 
         float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
 
+        float_4 s_orig = float_4(0);
+
         if (waveform == WaveForm::Fold) {
             s = rack::simd::sin(phase * twoPi);
-            float_4 adj = ifelse( shapeAdjust < float_4(.095), float_4(.095), shapeAdjust);   // keep adj above .1
+          
+            // TODO: scale, don't clip
+            float_4 adj = SimdBlocks::ifelse( shapeAdjust < float_4(.095), float_4(.095), shapeAdjust);   // keep adj above .1
+           // float_4 adj = shapeAdjust;
             s *= (adj * 10);
+            s_orig = s;
             s = SimdBlocks::fold(s);
             s *= (5.f * 5.f / 5.6f);        // why do we need this correction?
         } else if (waveform == WaveForm::SawTri) {
@@ -156,13 +156,23 @@ public:
             float_4 x = phase;
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
-            s = ifelse( x < k, x * aLeft,  aRight * x + bRight);
+            s = SimdBlocks::ifelse( x < k, x * aLeft,  aRight * x + bRight);
             s -= .5f;           // center it
             s *= 10;            // andfix range
         } else if (waveform == WaveForm::Sine) {
             s = rack::simd::sin(phase * twoPi);
             s *= 5;
         }
+
+        // these are firing with folder and an ADSR on shape.
+#ifndef NDEBUG
+        if (s[0] > 20 || s[0] < -20) {
+            printf("assert will fire. s_orig was %s\n", toStr(s_orig).c_str());
+            printf("shapeAdjust was %s\n", toStr(shapeAdjust).c_str());
+        }
+        simd_assertLT(s, float_4(20));
+        simd_assertGT(s, float_4(-20));
+#endif
         buffer[bufferIndex] = s;
     }
 
@@ -376,20 +386,12 @@ inline void WVCO<TBase>::stepn()
         numBanks++;
     }
 
-    // ADSR stuff
+    // round up all the gates and run the ADSR;
     {
-        // This could be optimized easily
-        const int32_t msk = ~0;
         float_4 gates[4];
         for (int i=0; i<4; ++i) {
-            float_4 gate = float_4::zero();
-            for (int j=0; j<4; ++j) {
-                // use simd!!
-                bool g =TBase::inputs[GATE_INPUT].getVoltage(i*4 + j) > 1;
-                if (g) {
-                    gate[j] = msk;
-                }
-            }
+            float_4 gate = (TBase::inputs[GATE_INPUT].getPolyVoltage(i*4) > float_4(1));
+            simd_assertMask(gate);
             gates[i] = gate;
         }
        adsr.step(gates, TBase::engineGetSampleTime());
@@ -405,16 +407,6 @@ inline void WVCO<TBase>::stepn()
             // use SIMD here?
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
-#if 0 // put this back if we know that the range of pitch really is
-            if (pitch > 10) {
-                printf("looking up pitch %f\n", pitch);
-                printf("base pitch = %f, cv = %f\n", basePitch, TBase::inputs[VOCT_INPUT].getVoltage(channel));
-                fflush(stdout);
-                assert(false);
-                // we should actually clip this, not assert
-            }
-    #endif
-
             float _freq = expLookup(pitch);
             _freq *= freqMultiplier;
 
@@ -423,13 +415,19 @@ inline void WVCO<TBase>::stepn()
         }
 
         float_4 envMult = (enableAdsrShape) ? adsr.env[bank] : 1;
+        simd_assertLE( envMult, float_4(1));
+        simd_assertGE(envMult, float_4(0)); 
 
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-        dsp[bank].shapeAdjust = baseShapeGain * envMult;    
+        dsp[bank].shapeAdjust = baseShapeGain * envMult; 
 
+        assertLE( baseShapeGain, 1);
+        assertGE( baseShapeGain, 0);   
+
+        simd_assertLE( dsp[bank].shapeAdjust, float_4(1));
+        simd_assertGE( dsp[bank].shapeAdjust, float_4(0));   
 
         // now let's compute triangle params
-      //  const float shapeGain =  std::clamp(baseShapeGain * envMult, .01, .99); 
         const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
         simd_assertLT(shapeGain, float_4(1));
         simd_assertGT(shapeGain, float_4(0));
@@ -443,7 +441,6 @@ inline void WVCO<TBase>::stepn()
         dsp[bank].aRight = a;
         dsp[bank].bRight = b;
         
-
         if (enableAdsrFeedback) {
             dsp[bank].feedback = baseFeedback * 3 * adsr.env[bank]; 
         } else {
@@ -556,5 +553,3 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
     return ret;
 }
 #endif
-
-

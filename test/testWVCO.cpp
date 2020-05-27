@@ -54,9 +54,6 @@ static void testADSR0()
     adsr.step(gates, sampleTime); 
 }
 
-
-
-
 static void testADSR1()
 { 
     const float sampleTime = 1.f / 44100.f;
@@ -68,7 +65,6 @@ static void testADSR1()
     adsr.setR(0); 
     adsr.setNumChannels(4);
 
-  
     float_4 gates[4] = {0};
 
     for (int i=0; i<5; ++i) {
@@ -76,11 +72,9 @@ static void testADSR1()
     }
 
     gates[0] = float_4::mask(); 
-
     for (int i=0; i<5; ++i) {  
         adsr.step(gates, sampleTime); 
     }
-    
    // should have attacked a bit 
     float_4 out = adsr.env[0]; 
     simd_assertGT(out, float_4(.1)); 
@@ -112,6 +106,61 @@ static void testADSR2()
    // should reach steady sustain max
     float_4 out = adsr.env[0]; 
     simd_assertClose(out, float_4(1), .01);
+}
+
+static void testADSR3()
+{
+    ADSR16 adsr;
+    for (int i=0; i<4; ++i) {
+        simd_assertEQ(adsr.env[i], float_4(0));
+    }
+}
+
+static void testADSRSingle(int num)
+{
+    assertGE(num, 0);
+    assertLE(num, 15);
+
+    const float sampleTime = 1.f / 44100.f;
+    // very fast envelope
+    ADSR16 adsr;
+    adsr.setA(0);
+    adsr.setD(0);
+    adsr.setS(1); 
+    adsr.setR(0); 
+    adsr.setNumChannels(16);
+
+    float_4 gates[4] = {0};
+
+    for (int i=0; i<5; ++i) {
+        adsr.step(gates, sampleTime);
+    }
+
+    const int bank = num / 4;
+    const int index = num - 4 * bank;
+    const float singleMask = float_4::mask()[0];
+    gates[bank][index] = singleMask;
+
+    for (int i=0; i<500; ++i) {  
+        adsr.step(gates, sampleTime); 
+    }
+    
+    for (int i = 0; i<16; ++i) {
+        float expected = (i == num) ? 1.f : 0.f;
+
+        const int bank = i / 4;
+        const int index = i - 4 * bank;
+        float actual = adsr.env[bank][index];
+
+        assertClose(actual, expected, .01);
+    }
+}
+
+static void testADSRSingle()
+{
+    for (int i=0; i<16; ++i) {
+        testADSRSingle(i);
+    }
 }
 
 
@@ -234,6 +283,8 @@ void testWVCO()
     testADSR0();
     testADSR1();
     testADSR2();
+    testADSR3();
+    testADSRSingle();
 
     testOutputLevels();
     testLevelControl();

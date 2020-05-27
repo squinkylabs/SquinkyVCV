@@ -90,8 +90,7 @@ static void testScalerSub(bool useScaler2)
 
     // neg trim inverts cv
     assertEQ(f(-5, 0, -1), 4.);
-
-
+    
     // trim half way
     assertEQ(f(5, 0, .5), 3.75);
 
@@ -104,8 +103,6 @@ static void testScalerSub(bool useScaler2)
 static void testScaler()
 {
 
-    // temp - for debugging
-  
     // a = .1 b = 3.5
     auto xx = AudioMath::makeLinearScaler<float>(3, 4);
 
@@ -115,8 +112,6 @@ static void testScaler()
     xx(-5, 0, 0);
     yy(-5, 0, 0);
   
-
-
     testScalerSub(false);
 }
 
@@ -140,8 +135,6 @@ static void testScaler3()
 
     // could use some more tests here....
   //  assertEQ(f(0, 1, 1), 3.5);
-
-
 }
 
 static void testBipolarAudioScaler()
@@ -191,7 +184,6 @@ static void testAudioScaler()
     assertEQ(f(-2.5, 0), 3.0f + kneeGain);
 }
 
-
 static void testAudioScaler2()
 {
     AudioMath::SimpleScaleFun<float> f = AudioMath::makeSimpleScalerAudioTaper(0, 20);
@@ -210,8 +202,6 @@ static void testAudioScaler2()
     assertEQ(f(5, 0), 20);
     assertEQ(f(-2.5, 0), 20 * kneeGain);
 }
-
-
 
 static void testFold()
 {
@@ -239,6 +229,7 @@ static void testFoldNegative()
 }
 
 #ifndef _MSC_VER
+void pr(float_4 x);
 
 static void testFoldSSE()
 {
@@ -247,8 +238,8 @@ static void testFoldSSE()
     simd_assertEQ(SimdBlocks::fold(.5), float_4(.5));
     simd_assertEQ(SimdBlocks::fold(-.5), float_4(-.5)); 
     simd_assertEQ(SimdBlocks::fold(.9), float_4(.9));
-    simd_assertEQ(SimdBlocks::fold(-.9), float_4(-.9));     
-    simd_assertClose(SimdBlocks::fold(1.2), float_4(.8), .0001); 
+    simd_assertEQ(SimdBlocks::fold(-.9), float_4(-.9));    
+    simd_assertClose(SimdBlocks::fold(1.2), float_4(.8), .0001);
     simd_assertClose(SimdBlocks::fold(-1.2), float_4(-.8), .0001); 
 }
 

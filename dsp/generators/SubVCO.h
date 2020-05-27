@@ -7,6 +7,7 @@
 
 #ifndef _MSC_VER 
 #include "simd.h"
+#include "SimdBlocks.h"
 #include "dsp/minblep.hpp"
 #include "dsp/approx.hpp"
 #include "dsp/filter.hpp"
@@ -92,11 +93,12 @@ struct VoltageControlledOscillator {
 		freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
 		_channels = channels;
 		assert(channels >= 0 && channels <= 4);
+	//	printf("channels in this sub = %d\n", channels);
 		simd_assertGT(subDivisor, int32_4(0));
 		simd_assertLE(subDivisor, int32_4(32));
 		debugCtr = 0;
 		subDivisionAmount = subDivisor;
-		subCounter = ifelse( subCounter < 1, 1, subCounter);
+		subCounter = SimdBlocks::ifelse( subCounter < 1, 1, subCounter);
 		subFreq = freq / subDivisionAmount;
 		
 #ifndef NDEBUG
@@ -267,10 +269,10 @@ struct VoltageControlledOscillator {
 			int syncMask = simd::movemask(sync);
 			if (syncMask) {
 				if (soft) {
-					syncDirection = simd::ifelse(sync, -syncDirection, syncDirection);
+					syncDirection = SimdBlocks::ifelse(sync, -syncDirection, syncDirection);
 				}
 				else {
-					T newPhase = simd::ifelse(sync, (1.f - syncCrossing) * deltaPhase, phase);
+					T newPhase = SimdBlocks::ifelse(sync, (1.f - syncCrossing) * deltaPhase, phase);
 					// Insert minBLEP for sync
 					for (int i = 0; i < _channels; i++) {
 						if (syncMask & (1 << i)) {
@@ -323,9 +325,9 @@ struct VoltageControlledOscillator {
 		if (analog) {
 			// Quadratic approximation of sine, slightly richer harmonics
 			T halfPhase = (phase < 0.5f);
-			T x = phase - simd::ifelse(halfPhase, 0.25f, 0.75f);
+			T x = phase - SimdBlocks::ifelse(halfPhase, T(0.25f), T(0.75f));
 			v = 1.f - 16.f * simd::pow(x, 2);
-			v *= simd::ifelse(halfPhase, 1.f, -1.f);
+			v *= SimdBlocks::ifelse(halfPhase, T(1.f), T(-1.f));
 		}
 		else {
 			v = sin2pi_pade_05_5_4(phase);
@@ -346,7 +348,7 @@ struct VoltageControlledOscillator {
 			T halfX = (x >= 0.5f);
 			x *= 2;
 			x -= simd::trunc(x);
-			v = expCurve(x) * simd::ifelse(halfX, 1.f, -1.f);
+			v = expCurve(x) * SimdBlocks::ifelse(halfX, T(1.f), T(-1.f));
 		}
 		else {
 			v = 1 - 4 * simd::fmin(simd::fabs(phase - 0.25f), simd::fabs(phase - 1.25f));
@@ -374,7 +376,7 @@ struct VoltageControlledOscillator {
 	}
 
 	T sqr(T phase) {
-		T v = simd::ifelse(phase < pulseWidth, 1.f, -1.f);
+		T v = SimdBlocks::ifelse(phase < pulseWidth, T(1.f), T(-1.f));
 		return v;
 	}
 	T sqr() {

@@ -92,6 +92,7 @@ extern void testOnset();
 extern void testOnset2();
 extern void testWVCO();
 extern void testSub();
+extern void testSimd();
 
 #if 0
 #include <sstream>
@@ -167,7 +168,9 @@ if (runShaperGen) {
         return 0;
     }
 
-
+#ifndef _MSC_VER
+    testSimd();
+#endif
 
     testAudioMath();
     testRingBuffer();

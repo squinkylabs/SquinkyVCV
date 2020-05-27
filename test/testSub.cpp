@@ -10,24 +10,7 @@ using Comp = Sub<TestComposite>;
 
 
 extern bool _logvco;
-#if 0
-static void testSub0()
-{
-    printf("test sub!!!\n");  
-    VoltageControlledOscillator<16, 16, float_4> osc;
 
-    const float deltaTime = 1.f / 44100.f;
-    osc.setPitch(1);
-    osc.channels = 1;
-    for (int i=0; i<100; ++i) {
-        osc.process(deltaTime, 0);
-        auto x = osc.saw();
-        printf("%f: from saw\n\n", x[0]);
-    }
-    fflush(stdout);
-}
-
-#endif
 static void testSub1()
 {
     Comp sub;
@@ -37,7 +20,6 @@ static void testSub1()
 
 static void testSubLevel(bool sub, int vcoNumber)
 {
-    printf("testSubLEvel vco=%d sub = %d\n", vcoNumber, sub );
     assert(vcoNumber >= 0 && vcoNumber <= 1);       // only implemented these two values
 
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> osc;

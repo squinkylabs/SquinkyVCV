@@ -116,39 +116,88 @@ using int32_4 = rack::simd::int32_4;
     assertClose(a[3], b[3], c);
 
 // mask must be 0 or all ones
+#if 0   // is this used? it looks wrong
 #define assertMask(m) \
     if (((unsigned int) m != 0) && (unsigned int)(m) != 0xffffffff) { printf("dword is not mask: %x\n", (unsigned int) m); fflush(stdout); } \
     assert((unsigned int) m == 0 || (unsigned int)(m) == 0xffffffff);
+#endif
+
+/** returns true if m is a valid mask for vector operations expecting a mask
+ *
+ */
+inline bool isMask(float_4 m)
+{
+    float_4 nm = ~m;
+    return (
+        (m[0]==0 || nm[0]==0) && 
+        (m[1]==0 || nm[1]==0) && 
+        (m[2]==0 || nm[2]==0) && 
+        (m[3]==0 || nm[3]==0)
+    );
+}
+
+std::string toStrLiteral(const float_4& x);
+std::string toStr(const float_4& x);
+std::string toStr(const int32_4& x);
+inline void printBadMask(float_4 m) {
+    printf("asserts.h: not a valid float_4 mask: %s\n", toStr(m).c_str());
+    printf("asserts.h: not a valid float_4 mask: literal %s\n", toStrLiteral(m).c_str());
+    fflush(stdout);
+}
+
+inline void printBadMask(int32_4 m) {
+    printf("asserts.h: not a valid int32_4 mask: %s\n", toStr(m).c_str());
+    fflush(stdout);
+}
+
+inline bool isMask(int32_4 m)
+{
+    int32_4 nm = ~m;
+    return (
+        (m[0]==0 || nm[0]==0) && 
+        (m[1]==0 || nm[1]==0) && 
+        (m[2]==0 || nm[2]==0) && 
+        (m[3]==0 || nm[3]==0)
+    );
+}
 
 #define simd_assertMask(x) \
-    assertMask(x[0]); \
-    assertMask(x[1]); \
-    assertMask(x[2]); \
-    assertMask(x[3]);
-
-#define simd_assertLT(a, b) \
-    assertLT(a[0], b[0]); \
-    assertLT(a[1], b[1]); \
-    assertLT(a[2], b[2]); \
-    assertLT(a[3], b[3]); 
-
-#define simd_assertLE(a, b) \
-    assertLE(a[0], b[0]); \
-    assertLE(a[1], b[1]); \
-    assertLE(a[2], b[2]); \
-    assertLE(a[3], b[3]); 
+    if (!isMask(x)) {   \
+        printBadMask(x);    \
+        assert(false); \
+    }
 
 #define simd_assertGT(a, b) \
-    assertGT(a[0], b[0]); \
-    assertGT(a[1], b[1]); \
-    assertGT(a[2], b[2]); \
-    assertGT(a[3], b[3]); 
+    if ((b[0] >= a[0]) || (b[1] >= a[1]) || (b[2] >= a[2]) || (b[3] >= a[3])) { \
+        printf("simd_assertGT(<%s>, <%s>) failed\n", toStr(a).c_str(), toStr(b).c_str()); \
+        fflush(stdout); \
+        assert(false); \
+    }
 
 #define simd_assertGE(a, b) \
-    assertGE(a[0], b[0]); \
-    assertGE(a[1], b[1]); \
-    assertGE(a[2], b[2]); \
-    assertGE(a[3], b[3]); 
+    if ((b[0] > a[0]) || (b[1] > a[1]) || (b[2] > a[2]) || (b[3] > a[3])) { \
+        printf("simd_assertGE(<%s>, <%s>) failed\n", toStr(a).c_str(), toStr(b).c_str()); \
+        fflush(stdout); \
+        assert(false); \
+    }
+
+#define simd_assertLT(a, b) \
+    if ((b[0] <= a[0]) || (b[1] <= a[1]) || (b[2] <= a[2]) || (b[3] <= a[3])) { \
+        printf("simd_assertLT(<%s>, <%s>) failed\n", toStr(a).c_str(), toStr(b).c_str()); \
+        fflush(stdout); \
+        assert(false); \
+    }
+
+#define simd_assertLE(a, b) \
+    if ((b[0] < a[0]) || (b[1] < a[1]) || (b[2] < a[2]) || (b[3] < a[3])) { \
+        printf("simd_assertLE(<%s>, <%s>) failed\n", toStr(a).c_str(), toStr(b).c_str()); \
+        fflush(stdout); \
+        assert(false); \
+    }
+
+#define simd_assertBetween(a, low, high) \
+    simd_assertGE((a), (low)); \
+    simd_assertLE((a), (high));
 
 #define simd_assertSame(a) \
     assertEQ(a[0], a[1]); \
@@ -181,6 +230,26 @@ inline std::string toStrM(const float_4& x) {
      ", " << (i[1] ? "t" : "f") <<
      ", " << (i[2] ? "t" : "f") << 
      ", " << (i[3]  ? "t" : "f");
+    return s.str();
+}
+
+inline std::string toStrLiteral(const float_4& x)
+{
+    std::stringstream s;
+    const float* p = &x[0]; 
+    const int* pi;
+
+    pi = reinterpret_cast<const int*>(p);
+    s <<  std::hex << "0=" << *pi; 
+    ++p;
+    pi = reinterpret_cast<const int*>(p);
+    s << " 1=" << *pi; 
+    ++p;
+    pi = reinterpret_cast<const int*>(p);
+    s << " 2=" << *pi; 
+    ++p;
+    pi = reinterpret_cast<const int*>(p);
+    s << " 3=" << *pi; 
     return s.str();
 }
 #endif  // MS
