@@ -71,6 +71,7 @@ struct VoltageControlledOscillator {
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> triMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sinMinBlep;
+	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep;
 
 	T sqrValue = 0.f;
 	T sawValue = 0.f;
@@ -153,8 +154,10 @@ struct VoltageControlledOscillator {
 		// we don't wrap this phase - the sync does it
 		subPhase += deltaSubPhase;
 
-		const float overflow = 2;
-#ifndef NDEBUG
+	
+#if 0
+			const float overflow = 2;
+//#ifndef NDEBUG
 		if (subPhase[0] > overflow || subPhase[1] > overflow || subPhase[2] > overflow || subPhase[3] > overflow) {
 			printf("\nsubPhase overflow sample %d\n", debugCtr);
 			printf(" subPhase = %s\n", toStr(subPhase).c_str());
@@ -211,7 +214,7 @@ struct VoltageControlledOscillator {
 		// Jump saw when crossing 0.5	
 		T halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;	
 		int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
-		if (_logvco) {
+		if (_logvco && 0) {
 			printf("phase=%f, dp=%f hCross = %f hm=%d\n", phase[0], deltaPhase[0], halfCrossing[0], halfMask);
 		}
 		if (_channels <= 0) {
@@ -224,7 +227,7 @@ struct VoltageControlledOscillator {
 					printf("i=%d, <<=%d and=%d\n", i, 1 << i,  (halfMask & (1 << i)));
 				}
 				if (halfMask & (1 << i)) {
-					T mask = simd::movemaskInverse<T>(1 << i);
+					const T mask = simd::movemaskInverse<T>(1 << i);
 					float p = halfCrossing[i] - 1.f;
 					T x = mask & (-2.f * syncDirection);
 					sawMinBlep.insertDiscontinuity(p, x);
@@ -235,7 +238,6 @@ struct VoltageControlledOscillator {
 					subCounter[i]--;
 					if (subCounter[i] == 0) {
 						subCounter[i] = subDivisionAmount[i];
-						// printf("sub[%d] rolled over, set counter to %d\n", index, subCounter[i]);
 #ifndef NDEBUG
 						if (_logvco) {
 							printf("subPhase[%d] hit %f, will reset 0 delta = %f\n", i, subPhase[i], deltaSubPhase[i]);
@@ -248,7 +250,9 @@ struct VoltageControlledOscillator {
 							printf(" all deltaPhase = %s\n", toStr(deltaPhase).c_str());
 						}
 #endif
+						T xs = mask & ((-1.f ) * subPhase);
 						subPhase[i] = 0;
+					 	subMinBlep.insertDiscontinuity(p, xs);
 #ifndef NDEBUG
 						if (_logvco) {
 							printf(" leaving reset sub phase %d with subPhase =%s\n", i, toStr(subPhase).c_str());
@@ -308,8 +312,8 @@ struct VoltageControlledOscillator {
 		sawValue = saw(phase);
 		sawValue += sawMinBlep.process();
 
-		subValue = saw(subPhase);
-		//printf("subValue = %s\n", toStr(subValue).c_str());
+		subValue = (subPhase * float_4(2.f)) + float_4(-1.f);
+		subValue += subMinBlep.process();
 
 		// Tri
 		triValue = tri(phase);
