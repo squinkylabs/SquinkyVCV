@@ -13,6 +13,8 @@ class SimdBlocks
 public:
     static float_4 fold(float_4);
     static float_4 wrapPhase01(float_4 phase);
+    static float_4 min(float_4 a, float_4 b);
+    static float_4 max(float_4 a, float_4 b);
     static float_4 ifelse(float_4 mask, float_4 a, float_4 b) {
         simd_assertMask(mask);
         return rack::simd::ifelse(mask, a, b);      
@@ -36,6 +38,15 @@ inline float_4 SimdBlocks::wrapPhase01(float_4 x)
      simd_assertGE(x, float_4(0));
      simd_assertLE(x, float_4(1));
      return x;
+}
+
+inline float_4 SimdBlocks::min(float_4 a, float_4 b)
+{
+    return ifelse(a < b, a, b);
+}
+inline float_4 SimdBlocks::max(float_4 a, float_4 b)
+{
+    return ifelse(a > b, a, b);
 }
 
 // put back here once it works.

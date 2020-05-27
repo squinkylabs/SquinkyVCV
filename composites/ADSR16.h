@@ -58,7 +58,7 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
 		float_4 target = SimdBlocks::ifelse(gates[c / 4], SimdBlocks::ifelse(attacking[c / 4], attackTarget, sustain), float_4::zero());
 		float_4 lambda = SimdBlocks::ifelse(gates[c / 4], SimdBlocks::ifelse(attacking[c / 4], attackLambda, decayLambda), releaseLambda);
 
-#ifndef NDEBUG
+#if 0
 
         float_4 at = attacking[c / 4];
         simd_assertMask(at);

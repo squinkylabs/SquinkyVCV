@@ -114,8 +114,8 @@ static void testMask()
     c1 = one > 0;
     simd_assertMask(c1);
 
-    float_4 xx(0);
-    SimdBlocks::fold(xx);
+float_4 xx(0);
+  SimdBlocks::fold(xx);
 }
 
 
@@ -128,10 +128,17 @@ static void testMaskInt()
     assert(isMask(nm));
 }
 
+static void testMinMax()
+{
+    float_4 x = SimdBlocks::min( float_4(1,2,3,4), float_4(2, 1, 5, 3));
+    assertEQ(x[0], 1);
+}
+
 void testSimd()
 {
     testAsserts();
     testMask();
     testMaskInt();
+    testMinMax();
 }
 #endif
