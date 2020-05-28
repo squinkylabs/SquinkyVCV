@@ -19,9 +19,10 @@ public:
     void setD(float);
     void setS(float);
     void setR(float );
-    void setSnap(bool b)
-    {
+    void setSnap(bool b) {
         snap = b;
+        clipValue = float_4(snap ? .75 : 1);
+        makeupGain = float_4(snap ? 1.33f : 1); 
     }
 
     /* v > 1 = on
@@ -31,9 +32,10 @@ public:
         channels = ch;
     }
 
-    // 0..1
-    float_4 env[4] = {0.f};
+    float_4 get(int bank) const;
 private:
+ // 0..1
+    float_4 env[4] = {0.f};
 	float_4 attacking [4] = {float_4::zero()};
 	
     // for ADSR16, there is no CV input, so don't need separate lambdas
@@ -42,6 +44,11 @@ private:
 	float_4 decayLambda = float_4::zero();
 	float_4 releaseLambda = float_4::zero();
 	float_4 sustain = float_4::zero();
+
+    /* These two do something when snap is on
+     */
+    float_4 clipValue = float_4(1);
+    float_4 makeupGain = float_4(1);
 
     // 1 ms orig, but I measure as 2. I guess depends 
     // how you define it.
@@ -53,13 +60,23 @@ private:
     bool snap = false;
 
     void set(float_4&output, float input);
-
 };
+
+inline float_4 ADSR16::get(int bank) const
+{
+#if 0
+    printf("\nin get, raw env = %s\n", toStr(env[bank]).c_str());
+    printf("in get,clip = %s\n", toStr(clipValue).c_str());
+    printf("in get,makeup = %s\n", toStr(makeupGain).c_str());
+    printf("in get,ret = %s\n", toStr(makeupGain * SimdBlocks::min(env[bank], clipValue)).c_str());
+#endif
+    return makeupGain * SimdBlocks::min(env[bank], clipValue);
+}
 
 inline void  ADSR16::step(const float_4* gates, float sampleTime)
 { 
-    float max = snap ? (.5 * (1 + sustain[0]) : 2);
-    float_4 maxLimit(max);
+  //  float max = snap ? (.5 * (1 + sustain[0]) : 2);
+ //   float_4 maxLimit(max);
    // printf("max limit = %s\n", toStr(maxLimit).c_str());
     for (int c = 0; c < channels; c += 4) {
         simd_assertMask(gates[c/4]);
@@ -68,51 +85,13 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
 		float_4 target = SimdBlocks::ifelse(gates[c / 4], SimdBlocks::ifelse(attacking[c / 4], attackTarget, sustain), float_4::zero());
 		float_4 lambda = SimdBlocks::ifelse(gates[c / 4], SimdBlocks::ifelse(attacking[c / 4], attackLambda, decayLambda), releaseLambda);
 
-#if 0
-
-        float_4 at = attacking[c / 4];
-        simd_assertMask(at);
-
-        float_4 xx = attackLambda[c / 4];
-        float_4 yy = decayLambda[c / 4];
-        float_4 zz = releaseLambda[c / 4];
-
-        simd_assertBetween(xx, float_4(-10000),float_4(10000) );
-        simd_assertBetween(yy, float_4(-10000),float_4(10000) );
-        simd_assertBetween(zz, float_4(-10000),float_4(10000) );
-
-        if (lambda[0] > 10000) {
-            printf("lambda overflow gates=%s\n", toStr(gates[c/4]).c_str());
-            printf("lambda overflow al=%s\n", toStr(xx).c_str());
-            printf("lambda overflow dl=%s\n", toStr(yy).c_str());
-            printf("lambda overflow rl=%s\n", toStr(zz).c_str());
-        }
-        simd_assertBetween(lambda, float_4(-10000),float_4(10000) );
-
-        
-       if (c == 0) {
-           printf("gates[0] = %s\n", toStr(gates[c/4]).c_str());
-       }
- 
-     float_4 g = gates[c/4];
-        printf("gattes[%d] = %s\ntarg=%s\nlamd=%s\nenv=%s\nattacking=%s\n",
-            c, 
-            toStrM(g).c_str(),
-            toStr(target).c_str(),
-            toStr(lambda).c_str(),
-            toStr(env[c/4]).c_str(),
-            toStrM(attacking[c/4]).c_str()
-        );
-#endif
-
-		// Adjust env
-		env[c / 4] += (target - env[c / 4]) * lambda * sampleTime;
-        env[c / 4] = SimdBlocks::min(maxLimit, env[c / 4]);
-
         // don't know what reasonable values are here...
         simd_assertLE( env[c / 4], float_4(2));
         simd_assertGE( env[c / 4], float_4(0)); 
         simd_assertMask(attacking[c / 4]);
+
+        // Adjust env
+		env[c / 4] += (target - env[c / 4]) * lambda * sampleTime;
 
 		// Turn off attacking state if envelope is HIGH
 		attacking[c / 4] = SimdBlocks::ifelse(env[c / 4] >= 1.f, float_4::zero(), attacking[c / 4]);

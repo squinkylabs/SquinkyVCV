@@ -78,7 +78,7 @@ static std::pair<int, bool> measureAttack(ADSR16& adsr, float_4* gates, int inde
     int sample = 0;
     for (bool done=false; !done; ++sample ) {
         adsr.step(gates, sampleTime);
-        const float env = adsr.env[0][0];
+        const float env = adsr.get(0)[0];
        // printf("env[%d] = %f\n", sample, env); fflush(stdout);
         if (env < last) {
             retval.first = sample;
@@ -142,7 +142,7 @@ static void testADSR1()
         adsr.step(gates, sampleTime); 
     }
    // should have attacked a bit 
-    float_4 out = adsr.env[0]; 
+    float_4 out = adsr.get(0); 
     simd_assertGT(out, float_4(.1)); 
 }
 
@@ -166,16 +166,23 @@ static void testADSR2()
     }
     
    // should reach steady sustain max
-    float_4 out = adsr.env[0]; 
+    float_4 out = adsr.get(0); 
     simd_assertClose(out, float_4(1), .01);
+}
+
+static void testADSR3(bool snap)
+{
+    ADSR16 adsr;
+    adsr.setSnap(snap);
+    for (int i=0; i<4; ++i) {
+        simd_assertEQ(adsr.get(i), float_4(0));
+    }
 }
 
 static void testADSR3()
 {
-    ADSR16 adsr;
-    for (int i=0; i<4; ++i) {
-        simd_assertEQ(adsr.env[i], float_4(0));
-    }
+    testADSR3(false); 
+    testADSR3(true);
 }
 
 static void testADSRSingle(int num)
@@ -212,7 +219,7 @@ static void testADSRSingle(int num)
 
         const int bank = i / 4;
         const int index = i - 4 * bank;
-        float actual = adsr.env[bank][index];
+        float actual = adsr.get(bank)[index];
 
         assertClose(actual, expected, .01);
     }
@@ -280,11 +287,13 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
 
     float positive = -100;
     float negative = 100; 
-    float sum = 0; 
-    const int iterations = 10000;  
+    float sum = 0;
+    const int iterations = 10000; 
+    // const int iterations = 100; 
     for (int i=0; i < iterations; ++i) {  
         wvco.step();
         float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
+       // printf("output 0 = %f\n", x);
         sum += x;
         positive = std::max(positive, x); 
         negative = std::min(negative, x);  

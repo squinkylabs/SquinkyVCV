@@ -125,6 +125,7 @@ public:
             return buffer[0] * outputLevel;
         } else {
             float_4 finalSample = downsampler.process(buffer);
+            // printf("dsp step using output level %s\n", toStr(outputLevel).c_str());
             return finalSample * outputLevel;
         }
     }
@@ -428,7 +429,7 @@ inline void WVCO<TBase>::stepn()
             freq[i] = time;
         }
 
-        float_4 envMult = (enableAdsrShape) ? adsr.env[bank] : 1;
+        float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
         simd_assertLE( envMult, float_4(2));
         simd_assertGE(envMult, float_4(0)); 
 
@@ -456,16 +457,14 @@ inline void WVCO<TBase>::stepn()
         dsp[bank].bRight = b;
         
         if (enableAdsrFeedback) {
-            dsp[bank].feedback = baseFeedback * 3 * adsr.env[bank]; 
+            dsp[bank].feedback = baseFeedback * 3 * adsr.get(bank); 
         } else {
             dsp[bank].feedback = baseFeedback * 3;
         }
 
         // TODO: add CV (use getNormalPolyVoltage)
         if (enableAdsrLevel) {
-         
-          
-            dsp[bank].outputLevel = adsr.env[bank] * baseOutputLevel;
+            dsp[bank].outputLevel = adsr.get(bank) * baseOutputLevel;
 #if 0
               if (x == 0) {
                 printf("update level with env %s\n", toStr(adsr.env[bank]).c_str());
@@ -473,7 +472,7 @@ inline void WVCO<TBase>::stepn()
             }
 #endif
         } else {
-            dsp[bank].outputLevel = baseOutputLevel;    
+            dsp[bank].outputLevel = float_4(baseOutputLevel);    
         }
     }
     x++;
@@ -501,7 +500,7 @@ inline void WVCO<TBase>::step()
 
         float_4 fmInputScaling;
         if (enableAdsrFM) {
-            fmInputScaling = adsr.env[bank] * (WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003);
+            fmInputScaling = adsr.get(bank) * (WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003);
         } else {
             fmInputScaling = WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003;
         }
