@@ -93,8 +93,9 @@ void WVCOModule::step()
 struct WVCOWidget : ModuleWidget
 {
     WVCOWidget(WVCOModule *);
-    DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
+   // DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
 
+    void appendContextMenu(Menu *menu) override;
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
@@ -108,7 +109,26 @@ struct WVCOWidget : ModuleWidget
     void addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp);
     void addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp);
     void addButtons(WVCOModule *module, std::shared_ptr<IComposite> icomp);
+
+    WVCOModule* module = nullptr;
 };
+
+void WVCOWidget::appendContextMenu(Menu *menu)
+{
+    MenuLabel *spacerLabel = new MenuLabel();
+	menu->addChild(spacerLabel);
+
+    ManualMenuItem* manual = new ManualMenuItem(
+        "ExFor manual",
+        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/exfor.md");
+    menu->addChild(manual);
+    
+    MenuLabel *spacerLabel2 = new MenuLabel();
+    menu->addChild(spacerLabel2);
+    SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(module, Comp::SNAP_PARAM);
+    item->text = "Envelope \"Snap\"";
+    menu->addChild(item);
+}
 
 const float knobLeftEdge = 24;
 const float knobDeltaX = 46;
@@ -330,7 +350,7 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
  * This is not shared by all modules in the DLL, just one
  */
 
-WVCOWidget::WVCOWidget(WVCOModule *module)
+WVCOWidget::WVCOWidget(WVCOModule *mod) : module(mod)
 {
     setModule(module);
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);

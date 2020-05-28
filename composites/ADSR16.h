@@ -58,7 +58,7 @@ private:
 
 inline void  ADSR16::step(const float_4* gates, float sampleTime)
 { 
-    float max = snap ? .5 * (1 + sustain[0]) : 2;
+    float max = snap ? (.5 * (1 + sustain[0]) : 2);
     float_4 maxLimit(max);
    // printf("max limit = %s\n", toStr(maxLimit).c_str());
     for (int c = 0; c < channels; c += 4) {

@@ -238,7 +238,7 @@ public:
         ADSR_FBCK_PARAM,
         ADSR_OUTPUT_LEVEL_PARAM,
         ADSR_LFM_DEPTH_PARAM,
-        
+        SNAP_PARAM,
         NUM_PARAMS
     };
 
@@ -371,6 +371,7 @@ inline void WVCO<TBase>::stepm()
     adsr.setD(TBase::params[DECAY_PARAM].value * .01);
     adsr.setS(TBase::params[SUSTAIN_PARAM].value * .01);
     adsr.setR(TBase::params[RELEASE_PARAM].value * .01);
+    adsr.setSnap( TBase::params[SNAP_PARAM].value > .5f);
     adsr.setNumChannels(numChannels);
 
     enableAdsrLevel = TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5;
@@ -571,6 +572,9 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             break;
         case WVCO<TBase>::ADSR_LFM_DEPTH_PARAM:
          ret = {0, 1, 0, "ARSR->FM Depth"};
+            break;
+        case WVCO<TBase>::SNAP_PARAM:
+            ret = {0, 1, 1, "ARSR Snap"};
             break;
         default:
             assert(false);
