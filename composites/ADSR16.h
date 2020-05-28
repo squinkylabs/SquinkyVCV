@@ -11,14 +11,18 @@
 class ADSR16
 {
 public:
-    /** All times in milliseocnds. (no they aren't! more TBD)
+    /** adsr 0..1
      *  sustain is 0..1
      * 
      */
-    void setA(float attacksMilliseconds);
-    void setD(float decaysMilliseconds);
-    void setS(float sustains);
-    void setR(float releasesMilliseconds);
+    void setA(float);
+    void setD(float);
+    void setS(float);
+    void setR(float );
+    void setSnap(bool b)
+    {
+        snap = b;
+    }
 
     /* v > 1 = on
      */
@@ -39,13 +43,14 @@ private:
 	float_4 releaseLambda = float_4::zero();
 	float_4 sustain = float_4::zero();
 
-// 1 ms orig, but I measure as 2
-  //  const float MIN_TIME = 1e-3f;
+    // 1 ms orig, but I measure as 2. I guess depends 
+    // how you define it.
     const float MIN_TIME = .5e-3f;
     const float MAX_TIME = 10.f;
     const float LAMBDA_BASE = MAX_TIME / MIN_TIME;
 
     int channels = 0;
+    bool snap = false;
 
     void set(float_4&output, float input);
 
@@ -53,6 +58,9 @@ private:
 
 inline void  ADSR16::step(const float_4* gates, float sampleTime)
 { 
+    float max = snap ? .5 * (1 + sustain[0]) : 2;
+    float_4 maxLimit(max);
+   // printf("max limit = %s\n", toStr(maxLimit).c_str());
     for (int c = 0; c < channels; c += 4) {
         simd_assertMask(gates[c/4]);
 		// Get target and lambda for exponential decay
@@ -99,6 +107,7 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
 
 		// Adjust env
 		env[c / 4] += (target - env[c / 4]) * lambda * sampleTime;
+        env[c / 4] = SimdBlocks::min(maxLimit, env[c / 4]);
 
         // don't know what reasonable values are here...
         simd_assertLE( env[c / 4], float_4(2));

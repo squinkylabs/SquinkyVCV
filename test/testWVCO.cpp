@@ -79,11 +79,14 @@ static std::pair<int, bool> measureAttack(ADSR16& adsr, float_4* gates, int inde
     for (bool done=false; !done; ++sample ) {
         adsr.step(gates, sampleTime);
         const float env = adsr.env[0][0];
+       // printf("env[%d] = %f\n", sample, env); fflush(stdout);
         if (env < last) {
             retval.first = sample;
             done = true;
         } else if (env == last) {
-            assert(false);
+           retval.first = sample;
+           retval.second = true;
+           done = true;
         } else {
 
         }
@@ -103,6 +106,22 @@ static void testADSRAttack()
     auto x = measureAttack(adsr, gates, 0);
     assertEQ(x.first, 39);
     assert(!x.second);
+}
+
+static void testADSRSnap()
+{
+    printf(" test snap -------------\n");
+    ADSR16 adsr;
+    setFast4(adsr);
+    float_4 gates[4]; 
+    setGate(gates, 0);
+    adsr.setSnap(true);
+    auto x = measureAttack(adsr, gates, 0);
+
+    // mith minimoog snap it will hit final value sooner
+    // and will be flat
+    assertEQ(x.first, 22);
+    assert(x.second);
 }
 
 static void testADSR1()
@@ -133,10 +152,7 @@ static void testADSR2()
     // very fast envelope
     ADSR16 adsr;
     setFast4(adsr);
-  //  adsr.setA(0);
- //   adsr.setD(0);
-    adsr.setS(1); 
-  // adsr.setR(0); 
+    adsr.setS(1);  
     float_4 gates[4] = {0};
 
     for (int i=0; i<5; ++i) {
@@ -236,7 +252,6 @@ static void testPumpData()
 } 
 
 
-
 /**
  * init func called first.
  * then run a while 
@@ -247,7 +262,6 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     std::function<void(Comp&)> initFunc,
     std::function<void(Comp&)> runFunc)
 { 
-  //  printf("test output levels()\n"); fflush(stdout);
     assertGE(waveForm, 0); 
     assertLE(waveForm, 2); 
     WVCO<TestComposite> wvco; 
@@ -264,7 +278,6 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     }
     assert(runFunc == nullptr);
 
- // printf("test output levels2, set output level to %f\n", levelValue); fflush(stdout);
     float positive = -100;
     float negative = 100; 
     float sum = 0; 
@@ -332,6 +345,7 @@ void testWVCO()
     testADSR3();
     testADSRSingle();
     testADSRAttack();
+    testADSRSnap();
 
     testOutputLevels();
     testLevelControl();
