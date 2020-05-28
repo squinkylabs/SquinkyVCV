@@ -41,17 +41,68 @@ static void testTriFormula2()
     }
 }
 
-
-static void testADSR0()
+static void setFast4(ADSR16& adsr) 
 {
-    ADSR16 adsr;
     adsr.setA(0);
     adsr.setD(0);
-    adsr.setS(0);
-    adsr.setR(0);
-    float_4 gates[4];
+    adsr.setS(.5); 
+    adsr.setR(0);  
+    adsr.setNumChannels(4);
+}
+
+void setGate( float_4* gates, int index)
+{
+    const float singleMask = float_4::mask()[0];
+   // gates[bank][index] = singleMask;
+    for (int i=0; i<16; ++i) {
+        const int bank = i / 4;
+        const int index = i - 4 * bank;
+
+        float value = (i == index) ? singleMask : 0;
+        gates[bank][index] = value;
+    }
+}
+
+static std::pair<int, bool> measureAttack(ADSR16& adsr, float_4* gates, int index)
+{
     const float sampleTime = 1.f / 44100.f;
-    adsr.step(gates, sampleTime); 
+
+    float_4 primeGates[4] = {0};
+    for (int i=0; i<5; ++i) {
+        adsr.step(primeGates, sampleTime);
+    }
+
+    auto retval = std::make_pair(0, false);
+    assert(index == 0);
+    float last = -100;
+    int sample = 0;
+    for (bool done=false; !done; ++sample ) {
+        adsr.step(gates, sampleTime);
+        const float env = adsr.env[0][0];
+        if (env < last) {
+            retval.first = sample;
+            done = true;
+        } else if (env == last) {
+            assert(false);
+        } else {
+
+        }
+        last = env;
+        assert(sample < 1000);
+    }
+    
+    return retval;
+}
+
+static void testADSRAttack()
+{
+    ADSR16 adsr;
+    setFast4(adsr);
+    float_4 gates[4]; 
+    setGate(gates, 0);
+    auto x = measureAttack(adsr, gates, 0);
+    assertEQ(x.first, 39);
+    assert(!x.second);
 }
 
 static void testADSR1()
@@ -59,11 +110,7 @@ static void testADSR1()
     const float sampleTime = 1.f / 44100.f;
     // very fast envelope
     ADSR16 adsr;
-    adsr.setA(0);
-    adsr.setD(0);
-    adsr.setS(1); 
-    adsr.setR(0); 
-    adsr.setNumChannels(4);
+    setFast4(adsr);
 
     float_4 gates[4] = {0};
 
@@ -85,12 +132,11 @@ static void testADSR2()
     const float sampleTime = 1.f / 44100.f;
     // very fast envelope
     ADSR16 adsr;
-    adsr.setA(0);
-    adsr.setD(0);
+    setFast4(adsr);
+  //  adsr.setA(0);
+ //   adsr.setD(0);
     adsr.setS(1); 
-    adsr.setR(0); 
-    adsr.setNumChannels(4);
-
+  // adsr.setR(0); 
     float_4 gates[4] = {0};
 
     for (int i=0; i<5; ++i) {
@@ -280,11 +326,12 @@ void testWVCO()
     testTriFormula();
     testTriFormula2();
     testPumpData();
-    testADSR0();
+  //  testADSR0();
     testADSR1();
     testADSR2();
     testADSR3();
     testADSRSingle();
+    testADSRAttack();
 
     testOutputLevels();
     testLevelControl();

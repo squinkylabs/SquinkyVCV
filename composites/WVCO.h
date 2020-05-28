@@ -367,10 +367,10 @@ inline void WVCO<TBase>::stepm()
     baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
     baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
 
-    adsr.setA(TBase::params[ATTACK_PARAM].value);
-    adsr.setD(TBase::params[DECAY_PARAM].value);
-    adsr.setS(TBase::params[SUSTAIN_PARAM].value);
-    adsr.setR(TBase::params[RELEASE_PARAM].value);
+    adsr.setA(TBase::params[ATTACK_PARAM].value * .01);
+    adsr.setD(TBase::params[DECAY_PARAM].value * .01);
+    adsr.setS(TBase::params[SUSTAIN_PARAM].value * .01);
+    adsr.setR(TBase::params[RELEASE_PARAM].value * .01);
     adsr.setNumChannels(numChannels);
 
     enableAdsrLevel = TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5;
@@ -546,16 +546,16 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 0, "FM feedback depth"};
             break;
         case WVCO<TBase>::ATTACK_PARAM:
-            ret = {0, 100, 0, "Attck"};
+            ret = {0, 100, 50, "Attck"};
             break;
         case WVCO<TBase>::DECAY_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Decay"};
+            ret = {0, 100, 50, "Decay"};
             break;
         case WVCO<TBase>::SUSTAIN_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Sustain"};
+            ret = {0, 100, 50, "Sustain"};
             break;
         case WVCO<TBase>::RELEASE_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Release"};
+            ret = {0, 100, 50, "Release"};
             break;
         case WVCO<TBase>::OUTPUT_LEVEL_PARAM:
             ret = {0, 100, 50, "Level"};

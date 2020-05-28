@@ -39,7 +39,9 @@ private:
 	float_4 releaseLambda = float_4::zero();
 	float_4 sustain = float_4::zero();
 
-    const float MIN_TIME = 1e-3f;
+// 1 ms orig, but I measure as 2
+  //  const float MIN_TIME = 1e-3f;
+    const float MIN_TIME = .5e-3f;
     const float MAX_TIME = 10.f;
     const float LAMBDA_BASE = MAX_TIME / MIN_TIME;
 
@@ -115,6 +117,8 @@ inline void  ADSR16::step(const float_4* gates, float sampleTime)
 
 inline void ADSR16::set(float_4&output, float input)
 {
+    assert(input >=0);
+    assert(input <= 1);
     float_4 x = rack::simd::clamp(input, 0.f, 1.f);
     output  = rack::simd::pow(LAMBDA_BASE, -x) / MIN_TIME;  
 }
@@ -131,6 +135,8 @@ inline void ADSR16::setD(float decay)
 
 inline void ADSR16::setS(float sust)
 {
+    assert(sust >=0);
+    assert(sust <= 1);
     float_4 x = rack::simd::clamp(sust, 0.f, 1.f);
     sustain = x;
 }
