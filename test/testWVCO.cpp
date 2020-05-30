@@ -37,16 +37,13 @@ static void testTriFormula2()
         TriFormula::getRightAandB(a, b, k);
         simd_assertEQ((k * a + b), float_4(1));
         simd_assertEQ((1.f *a + b), float_4(0));
-
     }
 }
 
-static void setFast4(ADSR16& adsr) 
+static void setFast4(ADSR16& adsr, float k = 1) 
 {
-    adsr.setA(0);
-    adsr.setD(0);
-    adsr.setS(.5); 
-    adsr.setR(0);  
+    adsr.setParams(0, 0, .5, 0, k);
+
     adsr.setNumChannels(4);
 }
 
@@ -112,10 +109,10 @@ static void testADSRSnap()
 {
     printf(" test snap -------------\n");
     ADSR16 adsr;
-    setFast4(adsr);
+    setFast4(adsr, .5);
     float_4 gates[4]; 
     setGate(gates, 0);
-    adsr.setSnap(true);
+   // adsr.setSnap(true);
     auto x = measureAttack(adsr, gates, 0);
 
     // mith minimoog snap it will hit final value sooner
@@ -151,8 +148,11 @@ static void testADSR2()
     const float sampleTime = 1.f / 44100.f;
     // very fast envelope
     ADSR16 adsr;
-    setFast4(adsr);
-    adsr.setS(1);  
+  // setFast4(adsr);
+  //  adsr.setS(1);  
+   adsr.setParams(0, 0, 1.f, 0, 1);
+   adsr.setNumChannels(1);
+
     float_4 gates[4] = {0};
 
     for (int i=0; i<5; ++i) {
@@ -160,10 +160,10 @@ static void testADSR2()
     }
 
     gates[0] = float_4::mask(); 
-
     for (int i=0; i<500; ++i) {  
         adsr.step(gates, sampleTime); 
     }
+    fflush(stdout);
     
    // should reach steady sustain max
     float_4 out = adsr.get(0); 
@@ -173,7 +173,10 @@ static void testADSR2()
 static void testADSR3(bool snap)
 {
     ADSR16 adsr;
-    adsr.setSnap(snap);
+    // adsr.setSnap(snap);
+    float k = snap ? .5 : 1;
+    adsr.setParams(0,0, .5, 0, k);
+
     for (int i=0; i<4; ++i) {
         simd_assertEQ(adsr.get(i), float_4(0));
     }
@@ -193,10 +196,11 @@ static void testADSRSingle(int num)
     const float sampleTime = 1.f / 44100.f;
     // very fast envelope
     ADSR16 adsr;
-    adsr.setA(0);
-    adsr.setD(0);
-    adsr.setS(1); 
-    adsr.setR(0); 
+    adsr.setParams(0, 1, 1, 0, 1);
+    //adsr.setA(0);
+   // adsr.setD(0);
+   // adsr.setS(1); 
+   // adsr.setR(0); 
     adsr.setNumChannels(16);
 
     float_4 gates[4] = {0};
@@ -348,17 +352,15 @@ void testWVCO()
     testTriFormula();
     testTriFormula2();
     testPumpData();
-  //  testADSR0();
     testADSR1();
     testADSR2();
     testADSR3();
     testADSRSingle();
     testADSRAttack();
     testADSRSnap();
-
     testOutputLevels();
     testLevelControl();
- 
+
     testEnvLevel();
 }
 

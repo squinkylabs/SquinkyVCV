@@ -240,6 +240,7 @@ public:
         ADSR_OUTPUT_LEVEL_PARAM,
         ADSR_LFM_DEPTH_PARAM,
         SNAP_PARAM,
+        SNAP2_PARAM,
         NUM_PARAMS
     };
 
@@ -311,6 +312,7 @@ private:
 template <class TBase>
 inline void WVCO<TBase>::init()
 {
+    adsr.setNumChannels(1);         // just to prime the pump, will write true value later
     divn.setup(1, [this]() {
         stepn();
     });
@@ -368,11 +370,33 @@ inline void WVCO<TBase>::stepm()
     baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
     baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
 
+#if 1
+    const bool snap = TBase::params[SNAP_PARAM].value > .5f;
+    const bool snap2 = TBase::params[SNAP2_PARAM].value > .5f;
+
+    float k = 1;
+    if (snap || snap2) {
+        k = .6;
+    }
+     if (snap && snap2) {
+        k = .3;
+    }
+ 
+    adsr.setParams(
+        TBase::params[ATTACK_PARAM].value * .01,
+        TBase::params[DECAY_PARAM].value * .01,
+        TBase::params[SUSTAIN_PARAM].value * .01,
+        TBase::params[RELEASE_PARAM].value * .01,
+        k
+    ) ;
+#else
+
     adsr.setA(TBase::params[ATTACK_PARAM].value * .01);
     adsr.setD(TBase::params[DECAY_PARAM].value * .01);
     adsr.setS(TBase::params[SUSTAIN_PARAM].value * .01);
     adsr.setR(TBase::params[RELEASE_PARAM].value * .01);
     adsr.setSnap( TBase::params[SNAP_PARAM].value > .5f);
+#endif
     adsr.setNumChannels(numChannels);
 
     enableAdsrLevel = TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5;
@@ -574,6 +598,9 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             break;
         case WVCO<TBase>::SNAP_PARAM:
             ret = {0, 1, 1, "ARSR Snap"};
+            break;
+         case WVCO<TBase>::SNAP2_PARAM:
+            ret = {0, 1, 1, "ARSR Snap2"};
             break;
         default:
             assert(false);

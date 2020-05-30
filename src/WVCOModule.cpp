@@ -128,6 +128,9 @@ void WVCOWidget::appendContextMenu(Menu *menu)
     SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(module, Comp::SNAP_PARAM);
     item->text = "Envelope \"Snap\"";
     menu->addChild(item);
+    item = new SqMenuItem_BooleanParam2(module, Comp::SNAP2_PARAM);
+    item->text = "Extra Envelope \"Snap\"";
+    menu->addChild(item);
 }
 
 const float knobLeftEdge = 24;
