@@ -41,17 +41,9 @@ T expCurve(T x) {
  * I is the integer type (usually int or int32_4)
  */
 template <int OVERSAMPLE, int QUALITY, typename T, typename I>
-struct VoltageControlledOscillator {
+struct VoltageControlledOscillator
+{
 
-
-   // void setSubDivisor(int div);
-    T sub() {
-		//printf("sub() returning %s\n", toStr(subValue).c_str());
-		return subValue;
-	}
-
-
-    // Below here is from Fundamental VCO
 	bool analog = false;
 	bool soft = false;
 	bool syncEnabled = false;
@@ -60,7 +52,7 @@ struct VoltageControlledOscillator {
 
 	T lastSyncValue = 0.f;
 	T phase = 0.f;
-	T subPhase = 0;			// like phase, but for the subharmonic
+	T subPhase[2] = {0, 0};			// like phase, but for the subharmonic
 	T freq;
 	T pulseWidth = 0.5f;
 	T syncDirection = 1.f;
@@ -71,21 +63,24 @@ struct VoltageControlledOscillator {
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> triMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sinMinBlep;
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep;
+	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep0;
+	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep1;
 
 	T sqrValue = 0.f;
 	T sawValue = 0.f;
 	T triValue = 0.f;
 	T sinValue = 0.f;
-	I subCounter = 1;
-	I subDivisionAmount = 100;
-	T subValue = 0.f;
-	T subFreq;			// freq /subdivamount
+
+	// subs are all two element arrays A and B
+	I subCounter[2] = {1};
+	I subDivisionAmount[2] = {100};
+	T subValue[2] = {0.f};
+	T subFreq[2] = {0};			// freq /subdivamount
 
 	int debugCtr = 0;
 	int index=-1;		// just for debugging
 
-	void setupSub(int channels, T pitch, I subDivisor)
+	void setupSub(int channels, T pitch, I subDivisorA, I subDivisorB)
 	{
 	//	printf("\n********* in setup sub index = %d\n", index);
 		assert(index >= 0);
@@ -95,12 +90,20 @@ struct VoltageControlledOscillator {
 		_channels = channels;
 		assert(channels >= 0 && channels <= 4);
 	//	printf("channels in this sub = %d\n", channels);
-		simd_assertGT(subDivisor, int32_4(0));
-		simd_assertLE(subDivisor, int32_4(32));
+		simd_assertGT(subDivisorA, int32_4(0));
+		simd_assertLE(subDivisorA, int32_4(16));
+		simd_assertGT(subDivisorB, int32_4(0));
+		simd_assertLE(subDivisorB, int32_4(16));
 		debugCtr = 0;
-		subDivisionAmount = subDivisor;
-		subCounter = SimdBlocks::ifelse( subCounter < 1, 1, subCounter);
-		subFreq = freq / subDivisionAmount;
+		subDivisionAmount[0] = subDivisorA;
+		subDivisionAmount[1] = subDivisorB;
+
+		// TODO: this reset here is what glitche, yes?
+		subCounter[0] = SimdBlocks::ifelse( subCounter[0] < 1, 1, subCounter[0]);
+		subCounter[1] = SimdBlocks::ifelse( subCounter[1] < 1, 1, subCounter[1]);
+
+		subFreq[0] = freq / subDivisionAmount[0];
+		subFreq[1] = freq / subDivisionAmount[1];
 		
 #ifndef NDEBUG
 		if (printCount < 10) {
@@ -115,8 +118,10 @@ struct VoltageControlledOscillator {
 		// setting freq of unused ones to zero
 		for (int i = 0; i < 4; ++i) {
 			if (i >= channels) {
-				subFreq[i] = 0;
-				subPhase[i] = 0;
+				subFreq[0][i] = 0;
+				subFreq[1][i] = 0;
+				subPhase[0][i] = 0;
+				subPhase[1][i] = 0;
 				if (printCount < 10) {
 					printf("set freq to zero on vco %d\n", i);
 				}
@@ -136,7 +141,11 @@ struct VoltageControlledOscillator {
 	void process(float deltaTime, T syncValue) {
 		// Advance phase
 		T deltaPhase = simd::clamp(freq * deltaTime, 1e-6f, 0.35f);
-		T deltaSubPhase = simd::clamp(subFreq * deltaTime, 1e-6f, 0.35f);
+
+		T deltaSubPhase[2];
+		deltaSubPhase[0] = simd::clamp(subFreq[0] * deltaTime, 1e-6f, 0.35f);
+		deltaSubPhase[1] = simd::clamp(subFreq[1] * deltaTime, 1e-6f, 0.35f);
+
 
 		if (soft) {
 			// Reverse direction
@@ -152,7 +161,8 @@ struct VoltageControlledOscillator {
 		phase -= simd::floor(phase);
 
 		// we don't wrap this phase - the sync does it
-		subPhase += deltaSubPhase;
+		subPhase[0] += deltaSubPhase[0];
+		subPhase[1] += deltaSubPhase[1];
 
 	
 #if 0
@@ -234,6 +244,8 @@ struct VoltageControlledOscillator {
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
 					}
+					assert(false);
+/* old way, with one sub
 					assertGT(subCounter[i], 0);
 					subCounter[i]--;
 					if (subCounter[i] == 0) {
@@ -259,6 +271,7 @@ struct VoltageControlledOscillator {
 						}
 #endif
 					}
+*/
 				}
 			}
 		}
@@ -312,8 +325,10 @@ struct VoltageControlledOscillator {
 		sawValue = saw(phase);
 		sawValue += sawMinBlep.process();
 
-		subValue = (subPhase * float_4(2.f)) + float_4(-1.f);
-		subValue += subMinBlep.process();
+		subValue[0] = (subPhase[0] * float_4(2.f)) + float_4(-1.f);
+		subValue[0] += subMinBlep0.process();
+		subValue[1] = (subPhase[1] * float_4(2.f)) + float_4(-1.f);
+		subValue[1] += subMinBlep1.process();
 
 		// Tri
 		triValue = tri(phase);
@@ -377,6 +392,12 @@ struct VoltageControlledOscillator {
 	}
 	T saw() {
 		return sawValue;
+	}
+
+    T sub(int side) {
+		assert(side >= 0 && side <= 1);
+		//printf("sub() returning %s\n", toStr(subValue).c_str());
+		return subValue[side];
 	}
 
 	T sqr(T phase) {

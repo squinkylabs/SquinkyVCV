@@ -217,11 +217,8 @@ inline void Sub<TBase>::stepn()
     divisor[3] = div2;
 #else
 // fake - just for now
-  rack::simd::int32_4 divisor;
-    divisor[0] = 4;
-    divisor[1] = 4;
-    divisor[2] = 4;
-    divisor[3] = 4;
+    rack::simd::int32_4 divisorA(4, 4, 4, 4);
+    rack::simd::int32_4 divisorB = divisorA;
 #endif
 
     int channel = 0;
@@ -237,12 +234,12 @@ inline void Sub<TBase>::stepn()
         pitch[2] += cv1;
         pitch[3] += cv1;
         
-        oscillators[bank].setupSub(activeChannels[bank], pitch, divisor);
+        oscillators[bank].setupSub(activeChannels[bank], pitch, divisorA, divisorB);
     }
 
     for (int bank = numBanks; bank < 4; ++bank) {
      //   printf("makeup setup bank %d will call setupSub\n", bank);
-        oscillators[bank].setupSub(activeChannels[bank], float_4(0), 4);
+        oscillators[bank].setupSub(activeChannels[bank], float_4(0), 4, 4);
 
     }
 }
@@ -274,7 +271,9 @@ inline void Sub<TBase>::step()
         // of saws and add them.
         // TODO: make poly so it works
         float_4 saws = oscillators[bank].saw() * sawGain;
-        float_4 subs = oscillators[bank].sub() * subGain;
+
+    // UGH - make this work for both
+        float_4 subs = oscillators[bank].sub(0) * subGain;
 
         
         float pair = subs[0] + saws[0] + subs[1] + saws[1];
@@ -291,24 +290,6 @@ int SubDescription<TBase>::getNumParams()
     return Sub<TBase>::NUM_PARAMS;
 }
 
-
-/*
-  OCTAVE1_PARAM,
-        OCTAVE2_PARAM,
-        FINE1_PARAM,
-        FINE2_PARAM,
-        SUB1A_TUNE_PARAM,
-        SUB2A_TUNE_PARAM,
-        SUB1B_TUNE_PARAM,
-        SUB2B_TUNE_PARAM,
-
-        VCO1_LEVEL,
-        VCO2_LEVEL,
-        SUB1A_LEVEL,
-        SUB1B_LEVEL,
-        SUB2A_LEVEL,
-        SUB2B_LEVEL,
-*/
 template <class TBase>
 inline IComposite::Config SubDescription<TBase>::getParam(int i)
 {
@@ -338,26 +319,12 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::SUB2B_TUNE_PARAM:
             ret = {1, 16, 4, "VCO 2 subharmonic B divisor"};
             break;
-#if 0
-        case Sub<TBase>::SUB_FADE_PARAM:
-            ret = {0, 100, 50, "Sub / main balance"};
-            break;
-
-        case Sub<TBase>::SUB1_TUNE_TRIM_PARAM:
-            ret = {-1, 1, 1, "divider 1 CV trim"};
-            break;
-        case Sub<TBase>::SUB2_TUNE_TRIM_PARAM:
-            ret = {-1, 1, 1, "divider 2 CV trim"};
-            break;
-    #endif
-       
         case Sub<TBase>::VCO1_LEVEL_PARAM:
             ret = {0, 1, .5, "VCO 1 level"};
             break;
         case Sub<TBase>::VCO2_LEVEL_PARAM:
             ret = {0, 1, .5, "VCO 2 level"};
             break;
-
         case Sub<TBase>::SUB1A_LEVEL_PARAM:
             ret = {0, 1, .5, "VCO 1 subharmonic A level"};
             break;
@@ -370,7 +337,6 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::SUB2B_LEVEL_PARAM:
             ret = {0, 1, .5, "VCO 2 subharmonic B level"};
             break;
-
         case Sub<TBase>::WAVEFORM1_PARAM:
             ret = {0, 2, 0, "VCO 1 waveform"};
             break;

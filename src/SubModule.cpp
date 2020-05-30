@@ -117,7 +117,6 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
     addLabel(Vec(knobX2+xOffset - 4, knobY1 - labelAboveKnob), 
         side ? "Fine 2" : "Fine 1");
 
-
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(knobX3Trim+xOffset - 18, knobY1 + 4),
@@ -171,55 +170,6 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
     addLabel(Vec(knobX3+xOffset - 4, knobY3 - labelAboveKnob), 
         side ? "Div 2B" : "Div 1B");
 
-#if 0
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
-        icomp,
-        Vec(knobX3, knobY1),
-        module,
-        Comp::OCTAVE2_PARAM));
-    addLabel(Vec(knobX3 - 13, knobY1 - labelAboveKnob), "Octave");
-
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX4, knobY1),
-        module,
-        Comp::FINE2_PARAM));
-    addLabel(Vec(knobX4 - 4, knobY1 - labelAboveKnob), "Fine");
-
-    // second row
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
-        icomp,
-        Vec(knobX1, knobY2),
-        module,
-        Comp::SUB1_TUNE_PARAM));
-    addLabel(Vec(knobX1 - 4, knobY2 - labelAboveKnob), "Div");
-
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX2, knobY2),
-        module,
-        Comp::SUB_FADE_PARAM));
-    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Fade");
- 
-  addParam(SqHelper::createParam<Blue30SnapKnob>(
-        icomp,
-        Vec(knobX3, knobY2),
-        module,
-        Comp::SUB2_TUNE_PARAM));
-    addLabel(Vec(knobX3 - 4, knobY2 - labelAboveKnob), "Div");
-
-    // trims
-    addParam(SqHelper::createParamCentered<Trimpot>(
-        icomp,
-        Vec(knobX1Trim, knobY3),
-        module,
-        Comp::SUB1_TUNE_TRIM_PARAM));
-      addParam(SqHelper::createParamCentered<Trimpot>(
-        icomp,
-        Vec(knobX3Trim, knobY3),
-        module,
-        Comp::SUB2_TUNE_TRIM_PARAM));
-#endif
 }
 
 const float jacksX1 = 24;
