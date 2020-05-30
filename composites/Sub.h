@@ -50,21 +50,25 @@ public:
     */
     void init();
 
+    // 
     enum ParamIds
     {
         OCTAVE1_PARAM,
         OCTAVE2_PARAM,
-     //   SEMI1_PARAM,
-     //   SEMI2_PARAM,
         FINE1_PARAM,
         FINE2_PARAM,
-        SUB1_TUNE_PARAM,
-        SUB2_TUNE_PARAM,
-       // SUB1_LEVEL_PARAM,
-      //  SUB2_LEVEL_PARAM,
-        SUB_FADE_PARAM,
-        SUB1_TUNE_TRIM_PARAM,
-        SUB2_TUNE_TRIM_PARAM,
+        SUB1A_TUNE_PARAM,
+        SUB2A_TUNE_PARAM,
+        SUB1B_TUNE_PARAM,
+        SUB2B_TUNE_PARAM,
+
+        VCO1_LEVEL_PARAM,
+        VCO2_LEVEL_PARAM,
+        SUB1A_LEVEL_PARAM,
+        SUB2A_LEVEL_PARAM,
+        SUB1B_LEVEL_PARAM,
+        SUB2B_LEVEL_PARAM,
+
         NUM_PARAMS
     };
 
@@ -184,6 +188,7 @@ inline void Sub<TBase>::stepn()
     combinedPitch[2] = basePitch1;
     combinedPitch[3] = basePitch2;
 
+#if 0
 //divScaleFn(cv, knob, trim)
     const float div1Rawf = divScaleFn(
         Sub<TBase>::inputs[SUB1_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
@@ -207,6 +212,14 @@ inline void Sub<TBase>::stepn()
     divisor[1] = div2;
     divisor[2] = div1;
     divisor[3] = div2;
+#else
+// fake - just for now
+  rack::simd::int32_4 divisor;
+    divisor[0] = 4;
+    divisor[1] = 4;
+    divisor[2] = 4;
+    divisor[3] = 4;
+#endif
 
     int channel = 0;
     for (int bank = 0; bank < numBanks; ++bank) {
@@ -241,7 +254,9 @@ inline void Sub<TBase>::step()
     const float sampleTime = TBase::engineGetSampleTime();
     
 
-    float fade = Sub<TBase>::params[SUB_FADE_PARAM].value;
+  //  float fade = Sub<TBase>::params[SUB_FADE_PARAM].value;
+  // just for now!
+    float fade = .5;
     float subGain = fade / 100;
     float sawGain = 1 - subGain;
 
@@ -273,6 +288,24 @@ int SubDescription<TBase>::getNumParams()
     return Sub<TBase>::NUM_PARAMS;
 }
 
+
+/*
+  OCTAVE1_PARAM,
+        OCTAVE2_PARAM,
+        FINE1_PARAM,
+        FINE2_PARAM,
+        SUB1A_TUNE_PARAM,
+        SUB2A_TUNE_PARAM,
+        SUB1B_TUNE_PARAM,
+        SUB2B_TUNE_PARAM,
+
+        VCO1_LEVEL,
+        VCO2_LEVEL,
+        SUB1A_LEVEL,
+        SUB1B_LEVEL,
+        SUB2A_LEVEL,
+        SUB2B_LEVEL,
+*/
 template <class TBase>
 inline IComposite::Config SubDescription<TBase>::getParam(int i)
 {
@@ -290,30 +323,51 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::FINE2_PARAM:
             ret = {-1, 1, 0, "VCO 2 fine tune"};
             break;
-        case Sub<TBase>::SUB1_TUNE_PARAM:
-            ret = {2, 32, 4, "VCO 1 subharmonic divisor"};
+        case Sub<TBase>::SUB1A_TUNE_PARAM:
+            ret = {1, 16, 4, "VCO 1 subharmonic A divisor"};
             break;
-        case Sub<TBase>::SUB2_TUNE_PARAM:
-            ret = {2, 32, 4, "VCO 2 subharmonic divisor"};
+        case Sub<TBase>::SUB2A_TUNE_PARAM:
+            ret = {1, 16, 4, "VCO 2 subharmonic A divisor"};
             break;
+        case Sub<TBase>::SUB1B_TUNE_PARAM:
+            ret = {1, 16, 4, "VCO 1 subharmonic B divisor"};
+            break;
+        case Sub<TBase>::SUB2B_TUNE_PARAM:
+            ret = {1, 16, 4, "VCO 2 subharmonic B divisor"};
+            break;
+#if 0
         case Sub<TBase>::SUB_FADE_PARAM:
             ret = {0, 100, 50, "Sub / main balance"};
             break;
+
         case Sub<TBase>::SUB1_TUNE_TRIM_PARAM:
             ret = {-1, 1, 1, "divider 1 CV trim"};
             break;
         case Sub<TBase>::SUB2_TUNE_TRIM_PARAM:
             ret = {-1, 1, 1, "divider 2 CV trim"};
             break;
+    #endif
        
-#if 0
-        case Sub<TBase>::SUB1_LEVEL_PARAM:
-            ret = {-1, 1, 0, "VCO 1 subharmonic level"};
+        case Sub<TBase>::VCO1_LEVEL_PARAM:
+            ret = {0, 1, .5, "VCO 1 level"};
             break;
-        case Sub<TBase>::SUB2_LEVEL_PARAM:
-            ret = {-1, 1, 0, "VCO 2 subharmonic level"};
+        case Sub<TBase>::VCO2_LEVEL_PARAM:
+            ret = {0, 1, .5, "VCO 2 level"};
             break;
-#endif
+
+        case Sub<TBase>::SUB1A_LEVEL_PARAM:
+            ret = {0, 1, .5, "VCO 1 subharmonic A level"};
+            break;
+        case Sub<TBase>::SUB2A_LEVEL_PARAM:
+            ret = {0, 1, .5, "VCO 2 subharmonic A level"};
+            break;
+        case Sub<TBase>::SUB1B_LEVEL_PARAM:
+            ret = {0, 1, .5, "VCO 1 subharmonic B level"};
+            break;
+        case Sub<TBase>::SUB2B_LEVEL_PARAM:
+            ret = {0, 1, .5, "VCO 2 subharmonic B level"};
+            break;
+
         default:
             assert(false);
     }
