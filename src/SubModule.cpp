@@ -8,6 +8,7 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
+#include "ctrl/PopupMenuParamWidgetv1.h"
 
 using Comp = Sub<WidgetComposite>;
 
@@ -72,7 +73,7 @@ struct SubWidget : ModuleWidget
     void addJacks(SubModule *module, std::shared_ptr<IComposite> icomp);
 };
 
-const float knobLeftEdge = 20;
+const float knobLeftEdge = 18;
 const float knobDeltaX = 46;
 const float knobX1 = knobLeftEdge;
 const float knobX2 = knobLeftEdge + 1 * knobDeltaX;
@@ -115,6 +116,20 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Comp::FINE1_PARAM + side));
     addLabel(Vec(knobX2+xOffset - 4, knobY1 - labelAboveKnob), 
         side ? "Fine 2" : "Fine 1");
+
+
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(knobX3Trim+xOffset - 18, knobY1 + 4),
+        module,
+        Comp::WAVEFORM1_PARAM + side);
+    p->box.size.x = 44;  // width
+    p->box.size.y = 22;      // should set auto like button does
+    p->text = "Saw";
+    p->setLabels( {"Saw", "Sq", "Mix"});
+    addParam(p);
+
+    // second row
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -220,7 +235,7 @@ const float jacksY2 = 322; // 330; //300;
 const float jacksX1Top = 28;
 const float jacksX3Top = jacksX1Top + 2 * knobDeltaX;
 
-#if 0
+
 void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
 {
     addInput(createInput<PJ301MPort>(
@@ -245,7 +260,7 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
         Comp::MAIN_OUTPUT));
     addLabel(Vec(jacksX2 - 10, jacksY2 - labelAboveKnob), "Out");
 }
-#endif
+
 
 
 
@@ -262,7 +277,7 @@ SubWidget::SubWidget(SubModule *module)
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/wvco_panel.svg");
 
-    addLabel(Vec(60, 14), "Substitute");
+    addLabel(Vec(100, 14), "Substitute");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -274,7 +289,7 @@ SubWidget::SubWidget(SubModule *module)
 
     addKnobs(module, icomp, 0);
     addKnobs(module, icomp, 1);
-    //addJacks(module, icomp);
+    addJacks(module, icomp);
 }
 
 Model *modelSubModule = createModel<SubModule, SubWidget>("squinkylabs-sub");

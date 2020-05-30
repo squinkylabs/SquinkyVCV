@@ -69,6 +69,9 @@ public:
         SUB1B_LEVEL_PARAM,
         SUB2B_LEVEL_PARAM,
 
+        WAVEFORM1_PARAM,
+        WAVEFORM2_PARAM,
+
         NUM_PARAMS
     };
 
@@ -368,6 +371,12 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             ret = {0, 1, .5, "VCO 2 subharmonic B level"};
             break;
 
+        case Sub<TBase>::WAVEFORM1_PARAM:
+            ret = {0, 2, 0, "VCO 1 waveform"};
+            break;
+        case Sub<TBase>::WAVEFORM2_PARAM:
+            ret = {0, 2, 0, "VCO 2 waveform"};
+            break;
         default:
             assert(false);
     }
