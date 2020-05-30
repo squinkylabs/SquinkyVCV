@@ -107,9 +107,9 @@ struct VoltageControlledOscillator
 		
 #ifndef NDEBUG
 		if (printCount < 10) {
-			printf(" setSub %d sub=(%s)\n", index, toStr(subDivisionAmount).c_str());
-			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq).c_str());
-			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase).c_str());
+			printf(" setSub %d sub=(%s)\n", index, toStr(subDivisionAmount[0]).c_str());
+			printf(" freq = %s, subFreq=%s\n", toStr(freq).c_str(), toStr(subFreq[0]).c_str());
+			printf(" phase = %s, subPhase=%s\n", toStr(phase).c_str(), toStr(subPhase[0]).c_str());
 			printf(" channels = %d\n", channels);
 		}
 #endif
@@ -244,6 +244,7 @@ struct VoltageControlledOscillator
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
 					}
+					// Implement the new  dual subs
 					assert(false);
 /* old way, with one sub
 					assertGT(subCounter[i], 0);

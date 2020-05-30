@@ -18,18 +18,19 @@ static void testSub1()
     sub.step();
 }
 
-static void testSubLevel(bool sub, int vcoNumber)
+static void testSubLevel(bool sub, int vcoNumber, int side)
 {
+    assert(side >= 0 && side <= 1);
     assert(vcoNumber >= 0 && vcoNumber <= 1);       // only implemented these two values
 
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> osc;
     osc.index = 0;
-  int channels = (vcoNumber == 0) ? 1 : 2;
+    int channels = (vcoNumber == 0) ? 1 : 2;
     const float deltaTime = 1.f / 44100.f;
-    osc.setupSub(channels, rack::simd::float_4(2), rack::simd::int32_4(4));
-    std::function<float()> lambda = [&osc, deltaTime, sub, vcoNumber]() {
+    osc.setupSub(channels, rack::simd::float_4(2), rack::simd::int32_4(4), rack::simd::int32_4(4));
+    std::function<float()> lambda = [&osc, deltaTime, sub, vcoNumber, side]() {
         osc.process(deltaTime, 0);
-        return sub ? osc.sub()[vcoNumber] : osc.saw()[vcoNumber];
+        return sub ? osc.sub(side)[vcoNumber] : osc.saw()[vcoNumber];
     };
 
 
@@ -187,8 +188,14 @@ void testSub()
   //  experiment();
     testChannels();
     testSub1();
-    testSubLevel(false, 0);
-    testSubLevel(false, 1);
-    testSubLevel(true, 0);
-    testSubLevel(true, 1);
+
+    testSubLevel(false, 0, 0);
+    testSubLevel(false, 1, 0);
+    testSubLevel(true, 0, 0);
+    testSubLevel(true, 1, 0);
+
+    testSubLevel(false, 0, 1);
+    testSubLevel(false, 1, 1);
+    testSubLevel(true, 0, 1);
+    testSubLevel(true, 1, 1);
 }
