@@ -66,14 +66,12 @@ public:
         SUB2A_TUNE_TRIM_PARAM,
         SUB1B_TUNE_TRIM_PARAM,
         SUB2B_TUNE_TRIM_PARAM,
-
         VCO1_LEVEL_PARAM,
         VCO2_LEVEL_PARAM,
         SUB1A_LEVEL_PARAM,
         SUB2A_LEVEL_PARAM,
         SUB1B_LEVEL_PARAM,
         SUB2B_LEVEL_PARAM,
-
         WAVEFORM1_PARAM,
         WAVEFORM2_PARAM,
 
@@ -145,6 +143,7 @@ private:
 
     void computeGains();
     void computeDivisors(int32_4& divaOut, int32_4& divbOut);
+    void setupWaveforms();
   
 
 };
@@ -183,7 +182,6 @@ inline void Sub<TBase>::computeGains()
         Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value);
     subB1Gain = LookupTable<float>::lookup(audioTaper,
         Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value);
-
 }
 
 template <class TBase>
@@ -196,32 +194,22 @@ inline void Sub<TBase>::computeDivisors(
         Sub<TBase>::params[SUB1A_TUNE_TRIM_PARAM].value
     );
    
-
     const float div1BRawf = divScaleFn(
         Sub<TBase>::inputs[SUB1B_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
         Sub<TBase>::params[SUB1B_TUNE_PARAM].value,
         Sub<TBase>::params[SUB1B_TUNE_TRIM_PARAM].value
     );
-
     const float div2ARawf = divScaleFn(
         Sub<TBase>::inputs[SUB2A_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
         Sub<TBase>::params[SUB2A_TUNE_PARAM].value,
         Sub<TBase>::params[SUB2A_TUNE_TRIM_PARAM].value
     );
 
-
     const float div2BRawf = divScaleFn(
         Sub<TBase>::inputs[SUB2B_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
         Sub<TBase>::params[SUB2B_TUNE_PARAM].value,
         Sub<TBase>::params[SUB2B_TUNE_TRIM_PARAM].value
     );
-
-
-#if 0
-    printf("divs = %f, %f\n", div1ARawf, div1BRawf);
-    printf("1 smd = %s\n", toStr(divaOut).c_str());
-    fflush(stdout);
-#endif
 
     divaOut[0] = int(div1ARawf);
     divaOut[1] = int(div2ARawf);
@@ -232,10 +220,35 @@ inline void Sub<TBase>::computeDivisors(
     divbOut[1] = int(div2BRawf);
     divbOut[2] = int(div1BRawf);
     divbOut[3] = int(div2BRawf);
+}
 
-    //divaOut = int32_4(div1ARawf);
-    //divbOut = int32_4(div1BRawf);
-   
+template <class TBase>
+inline void Sub<TBase>::setupWaveforms() {
+    // for now use vco1 for both
+    int wf = int (std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM1_PARAM].value));
+    bool mainIsSaw = true;
+    bool subIsSaw = true;
+    switch(wf) {
+        case 0:
+            mainIsSaw = true;
+            subIsSaw = true;
+            break;
+        case 1:
+            mainIsSaw = false;
+            subIsSaw = false;
+            break;
+        case 2:
+            mainIsSaw = false;
+            subIsSaw = true;
+            break;
+        default:
+            assert(0);
+    }
+
+    for (int bank = 0; bank < 4; ++bank) {
+         oscillators[bank].setWaveform(mainIsSaw, subIsSaw);
+    }
+
 }
   
 
@@ -243,6 +256,7 @@ template <class TBase>
 inline void Sub<TBase>::stepn()
 {
     computeGains();
+    setupWaveforms();
     // much of this could be done less often.
     // many vars could be float_4
 
@@ -288,38 +302,9 @@ inline void Sub<TBase>::stepn()
     combinedPitch[2] = basePitch1;
     combinedPitch[3] = basePitch2;
 
-#if 0
-//divScaleFn(cv, knob, trim)
-    const float div1Rawf = divScaleFn(
-        Sub<TBase>::inputs[SUB1_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
-        Sub<TBase>::params[SUB1_TUNE_PARAM].value,
-        Sub<TBase>::params[SUB1_TUNE_TRIM_PARAM].value
-    );
-    const float div2Rawf = divScaleFn(
-        Sub<TBase>::inputs[SUB2_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
-        Sub<TBase>::params[SUB2_TUNE_PARAM].value,
-        Sub<TBase>::params[SUB2_TUNE_TRIM_PARAM].value
-    );
-
-    const int div1Raw = int( std::round(div1Rawf));
-    const int div2Raw = int( std::round(div2Rawf));
-
-    // can remove this crap once we get rid of old test patches
-    const int div1 = std::max(2, div1Raw);
-    const int div2 = std::max(2, div2Raw);
-    rack::simd::int32_4 divisor;
-    divisor[0] = div1;
-    divisor[1] = div2;
-    divisor[2] = div1;
-    divisor[3] = div2;
-#else
-// fake - just for now
-   // rack::simd::int32_4 divisorA(4, 4, 4, 4);
-   // rack::simd::int32_4 divisorB = divisorA;
    rack::simd::int32_4 divisorA;
    rack::simd::int32_4 divisorB;
    computeDivisors(divisorA, divisorB);
-#endif
 
     int channel = 0;
     for (int bank = 0; bank < numBanks; ++bank) {
@@ -353,34 +338,27 @@ inline void Sub<TBase>::step()
     // run the audio
     const float sampleTime = TBase::engineGetSampleTime();
     
-
-  //  float fade = Sub<TBase>::params[SUB_FADE_PARAM].value;
-  // just for now!
-
-
-
     // Prepare the mixed output and send it out.
     int channel = 0; 
     for (int bank=0; bank < numBanks; ++bank) {
-        //printf("calling osc proc bank = %d\n", bank); fflush(stdout);
         oscillators[bank].process(sampleTime, 0);
 
         // now, what do do with the output? to now lets grab pairs
         // of saws and add them.
         // TODO: make poly so it works
-        float_4 saws = oscillators[bank].saw();
+        float_4 mains = oscillators[bank].main();
         float_4 subs0 = oscillators[bank].sub(0);
         float_4 subs1 = oscillators[bank].sub(1);
 
-        const float mixed0 = saws[0] * vco0Gain +
-            saws[1] * vco1Gain +
+        const float mixed0 = mains[0] * vco0Gain +
+            mains[1] * vco1Gain +
             subs0[0] * subA0Gain +
             subs0[1] * subA1Gain +
             subs1[0] * subB0Gain +
             subs1[1] * subB1Gain;
 
-         const float mixed1 = saws[2] * vco0Gain +
-            saws[3] * vco1Gain +
+         const float mixed1 = mains[2] * vco0Gain +
+            mains[3] * vco1Gain +
             subs0[2] * subA0Gain +
             subs0[3] * subA1Gain +
             subs1[2] * subB0Gain +

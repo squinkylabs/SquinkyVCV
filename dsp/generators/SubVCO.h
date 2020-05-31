@@ -59,15 +59,16 @@ struct VoltageControlledOscillator
 
 	rack::dsp::TRCFilter<T> sqrFilter;
 
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sqrMinBlep;
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
+	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sqrMinBlep;
+	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
+	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> mainMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> triMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sinMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep[2];
-	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep1;
 
-	T sqrValue = 0.f;
-	T sawValue = 0.f;
+	T mainValue = 0.f;	// square or saw, depends on waveform setting
+	//T sqrValue = 0.f;
+	//T sawValue = 0.f;
 	T triValue = 0.f;
 	T sinValue = 0.f;
 
@@ -77,8 +78,17 @@ struct VoltageControlledOscillator
 	T subValue[2] = { T(0), T(0)};
 	T subFreq[2] = {T(0), T(0)};			// freq /subdivamount
 
+	bool mainIsSaw = true;
+	bool subIsSaw = true;
+
 	int debugCtr = 0;
 	int index=-1;		// just for debugging
+
+	void setWaveform(bool mainSaw, bool subSaw)
+	{
+		mainIsSaw = mainSaw;
+		subIsSaw = subSaw;
+	}
 
 	void setupSub(int channels, T pitch, I subDivisorA, I subDivisorB)
 	{
@@ -206,7 +216,10 @@ struct VoltageControlledOscillator
 					T mask = simd::movemaskInverse<T>(1 << i);
 					float p = wrapCrossing[i] - 1.f;
 					T x = mask & (2.f * syncDirection);
-					sqrMinBlep.insertDiscontinuity(p, x);
+					if (!mainIsSaw) {
+						// if square wave, doing min blep for square
+						mainMinBlep.insertDiscontinuity(p, x);
+					}
 				}
 			}
 		}
@@ -221,7 +234,9 @@ struct VoltageControlledOscillator
 					T mask = simd::movemaskInverse<T>(1 << i);
 					float p = pulseCrossing[i] - 1.f;
 					T x = mask & (-2.f * syncDirection);
-					sqrMinBlep.insertDiscontinuity(p, x);
+					if (!mainIsSaw) {
+						mainMinBlep.insertDiscontinuity(p, x);
+					}
 				}
 			}
 		}
@@ -248,7 +263,9 @@ struct VoltageControlledOscillator
 					const T mask = simd::movemaskInverse<T>(1 << channelNumber);
 					float p = halfCrossing[channelNumber] - 1.f;
 					T x = mask & (-2.f * syncDirection);
-					sawMinBlep.insertDiscontinuity(p, x);
+					if (mainIsSaw) {
+						mainMinBlep.insertDiscontinuity(p, x);
+					}
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
 					}
@@ -306,6 +323,7 @@ struct VoltageControlledOscillator
 
 		// Detect sync
 		// Might be NAN or outside of [0, 1) range
+	#if 0 // no sync
 		if (syncEnabled) {
 			T deltaSync = syncValue - lastSyncValue;
 			T syncCrossing = -lastSyncValue / deltaSync;
@@ -338,11 +356,15 @@ struct VoltageControlledOscillator
 				}
 			}
 		}
+	#endif
 
+		mainValue = (mainIsSaw) ? saw(phase) : sqr(phase);
+		mainValue += mainMinBlep.process();
 		// Square
-		sqrValue = sqr(phase);
-		sqrValue += sqrMinBlep.process();
+	//	sqrValue = sqr(phase);
+	//	sqrValue += sqrMinBlep.process();
 
+#if 0
 		if (analog) {
 			sqrFilter.setCutoffFreq(20.f * deltaTime);
 			sqrFilter.process(sqrValue);
@@ -352,12 +374,14 @@ struct VoltageControlledOscillator
 		// Saw
 		sawValue = saw(phase);
 		sawValue += sawMinBlep.process();
+#endif
 
 		subValue[0] = (subPhase[0] * float_4(2.f)) + float_4(-1.f);
 		subValue[0] += subMinBlep[0].process();
 		subValue[1] = (subPhase[1] * float_4(2.f)) + float_4(-1.f);
 		subValue[1] += subMinBlep[1].process();
 
+#if 0
 		// Tri
 		triValue = tri(phase);
 		triValue += triMinBlep.process();
@@ -365,8 +389,10 @@ struct VoltageControlledOscillator
 		// Sin
 		sinValue = sin(phase);
 		sinValue += sinMinBlep.process();
+#endif
 	}
 
+#if 0
 	T sin(T phase) {
 		T v;
 		if (analog) {
@@ -405,6 +431,7 @@ struct VoltageControlledOscillator
 	T tri() {
 		return triValue;
 	}
+#endif
 
 	T saw(T phase) {
 		T v;
@@ -418,10 +445,15 @@ struct VoltageControlledOscillator
 		}
 		return v;
 	}
+#if 0
 	T saw() {
 		return sawValue;
 	}
+#endif
 
+	T main() {
+		return mainValue;
+	}
     T sub(int side) {
 		assert(side >= 0 && side <= 1);
 		//printf("sub() returning %s\n", toStr(subValue).c_str());
@@ -432,9 +464,11 @@ struct VoltageControlledOscillator
 		T v = SimdBlocks::ifelse(phase < pulseWidth, T(1.f), T(-1.f));
 		return v;
 	}
+#if 0
 	T sqr() {
 		return sqrValue;
 	}
+	#endif
 
 	T light() {
 		return simd::sin(2 * T(M_PI) * phase);
