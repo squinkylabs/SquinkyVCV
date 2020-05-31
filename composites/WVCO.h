@@ -102,6 +102,10 @@ public:
     }
 };
 
+/**
+ * SIMD FM VCO block
+ * implements 4 VCOs
+ */
 class WVCODsp
 {
 public:
@@ -178,6 +182,10 @@ public:
         buffer[bufferIndex] = s;
     }
 
+    void setSyncEnable(bool f) {
+        syncEnabled = f;
+    }
+
     // public variables. The composite will set these on us,
     // and we will use them to generate audio.
 
@@ -195,7 +203,10 @@ public:
 
 private:
     float_4 phaseAcc = float_4::zero();
+    float_4 lastSyncValue = float_4::zero();
     IIRDecimator<float_4> downsampler;
+
+    bool syncEnabled = false;
 };
 
 template <class TBase>
@@ -358,6 +369,7 @@ inline void WVCO<TBase>::stepm()
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
+    const bool sync = TBase::inputs[SYNC_INPUT].isConnected();
 
     int numBanks = numChannels / 4;
     if (numChannels > numBanks * 4) {
@@ -365,6 +377,7 @@ inline void WVCO<TBase>::stepm()
     }
     for (int bank=0; bank < numBanks; ++bank) {
         dsp[bank].waveform = wf;
+        dsp[bank].setSyncEnable(sync);
     }
 
     baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
@@ -403,6 +416,7 @@ inline void WVCO<TBase>::stepm()
     enableAdsrFeedback = TBase::params[ADSR_FBCK_PARAM].value > .5;
     enableAdsrFM = TBase::params[ADSR_LFM_DEPTH_PARAM].value > .5;
     enableAdsrShape = TBase::params[ADSR_SHAPE_PARAM].value > .5;
+
 }
 
 template <class TBase>
