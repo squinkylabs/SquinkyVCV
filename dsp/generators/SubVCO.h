@@ -63,8 +63,8 @@ struct VoltageControlledOscillator
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> triMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sinMinBlep;
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep0;
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep1;
+	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep[2];
+	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep1;
 
 	T sqrValue = 0.f;
 	T sawValue = 0.f;
@@ -72,10 +72,10 @@ struct VoltageControlledOscillator
 	T sinValue = 0.f;
 
 	// subs are all two element arrays A and B
-	I subCounter[2] = {1};
-	I subDivisionAmount[2] = {100};
-	T subValue[2] = {0.f};
-	T subFreq[2] = {0};			// freq /subdivamount
+	I subCounter[2] = {I(1), I(1)};
+	I subDivisionAmount[2] = {I(100), I(100)};
+	T subValue[2] = { T(0), T(0)};
+	T subFreq[2] = {T(0), T(0)};			// freq /subdivamount
 
 	int debugCtr = 0;
 	int index=-1;		// just for debugging
@@ -130,6 +130,8 @@ struct VoltageControlledOscillator
 		if (printCount < 10) {
 			printf("**** leaving setupSub\n\n");
 		}
+		//printf("leaving setup, counter0 = %s\n", toStr(subCounter[0]).c_str());
+		//printf("leaving setup, counter1 = %s\n", toStr(subCounter[1]).c_str());
 		++printCount;
 	}
 
@@ -139,6 +141,9 @@ struct VoltageControlledOscillator
 	}
 
 	void process(float deltaTime, T syncValue) {
+
+	//	printf("process, counter0 = %s\n", toStr(subCounter[0]).c_str());
+	//	printf("proces, counter1 = %s\n", toStr(subCounter[1]).c_str());
 		// Advance phase
 		T deltaPhase = simd::clamp(freq * deltaTime, 1e-6f, 0.35f);
 
@@ -232,20 +237,42 @@ struct VoltageControlledOscillator
 			assert(_channels > 0);
 		}
 		if (halfMask) {
-			for (int i = 0; i < _channels; i++) {
+			//printf("\nhlafMask, counter0 = %s\n", toStr(subCounter[0]).c_str());
+			//printf("halfMask, counter1 = %s\n", toStr(subCounter[1]).c_str());
+			// TODO: can _channels be  >= 4? If so, I don't think this will work
+			for (int channelNumber = 0; channelNumber < _channels; channelNumber++) {
 				if (_logvco) {
-					printf("i=%d, <<=%d and=%d\n", i, 1 << i,  (halfMask & (1 << i)));
+					printf("i=%d, <<=%d and=%d\n", channelNumber, 1 << channelNumber,  (halfMask & (1 << channelNumber)));
 				}
-				if (halfMask & (1 << i)) {
-					const T mask = simd::movemaskInverse<T>(1 << i);
-					float p = halfCrossing[i] - 1.f;
+				if (halfMask & (1 << channelNumber)) {
+					const T mask = simd::movemaskInverse<T>(1 << channelNumber);
+					float p = halfCrossing[channelNumber] - 1.f;
 					T x = mask & (-2.f * syncDirection);
 					sawMinBlep.insertDiscontinuity(p, x);
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
 					}
 					// Implement the new  dual subs
-					assert(false);
+					for (int subIndex = 0; subIndex <= 1; ++subIndex) {
+						//printf("innerloop, counter0 = %s\n", toStr(subCounter[0]).c_str());
+						//printf("innerloop, counter1 = %s\n", toStr(subCounter[1]).c_str());
+						assertGT(subCounter[subIndex][channelNumber], 0);
+						subCounter[subIndex][channelNumber]--;
+						//printf("after, counter0 = %s\n", toStr(subCounter[0]).c_str());
+						//printf("afetr, counter1 = %s\n", toStr(subCounter[1]).c_str());
+						if (subCounter[subIndex][channelNumber] == 0) {
+							subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
+
+							//printf("now, counter0 = %s\n", toStr(subCounter[0]).c_str());
+							//printf("now, counter1 = %s\n", toStr(subCounter[1]).c_str());
+
+							T xs = mask & ((-1.f ) * subPhase[subIndex]);
+							subPhase[subIndex][channelNumber] = 0;
+					 		subMinBlep[subIndex].insertDiscontinuity(p, xs);
+						}
+
+					}
+				
 /* old way, with one sub
 					assertGT(subCounter[i], 0);
 					subCounter[i]--;
@@ -327,9 +354,9 @@ struct VoltageControlledOscillator
 		sawValue += sawMinBlep.process();
 
 		subValue[0] = (subPhase[0] * float_4(2.f)) + float_4(-1.f);
-		subValue[0] += subMinBlep0.process();
+		subValue[0] += subMinBlep[0].process();
 		subValue[1] = (subPhase[1] * float_4(2.f)) + float_4(-1.f);
-		subValue[1] += subMinBlep1.process();
+		subValue[1] += subMinBlep[1].process();
 
 		// Tri
 		triValue = tri(phase);
