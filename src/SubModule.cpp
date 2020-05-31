@@ -191,11 +191,11 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
     addInput(createInput<PJ301MPort>(
         Vec(jacksX1Top, jacksY1),
         module,
-        Comp::SUB1_TUNE_INPUT));
+        Comp::SUB1A_TUNE_INPUT));
     addInput(createInput<PJ301MPort>(
         Vec(jacksX3Top, jacksY1),
         module,
-        Comp::SUB2_TUNE_INPUT));
+        Comp::SUB2A_TUNE_INPUT));
  //   addLabel(Vec(jacksX1Top - 10, jacksY1 - labelAboveKnob), "Div 1");
 
     addInput(createInput<PJ301MPort>(

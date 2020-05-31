@@ -62,6 +62,10 @@ public:
         SUB2A_TUNE_PARAM,
         SUB1B_TUNE_PARAM,
         SUB2B_TUNE_PARAM,
+        SUB1A_TUNE_TRIM_PARAM,
+        SUB2A_TUNE_TRIM_PARAM,
+        SUB1B_TUNE_TRIM_PARAM,
+        SUB2B_TUNE_TRIM_PARAM,
 
         VCO1_LEVEL_PARAM,
         VCO2_LEVEL_PARAM,
@@ -79,8 +83,11 @@ public:
     enum InputIds
     {
         VOCT_INPUT,
-        SUB1_TUNE_INPUT,
-        SUB2_TUNE_INPUT,
+        SUB1A_TUNE_INPUT,
+        SUB2A_TUNE_INPUT,
+        SUB1B_TUNE_INPUT,
+        SUB2B_TUNE_INPUT,
+
         NUM_INPUTS
     };
 
@@ -114,7 +121,7 @@ public:
 private:
 
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> oscillators[4];
-    AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(2, 32, 2, 32);
+    AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(1, 16, 1, 16);
      
     LookupTableParams<float> audioTaper;
    // std::function<double(double)> autoTaper = AudioMath::makeFunc_AudioTaper(AudioMath::audioTaperKnee());
@@ -137,6 +144,7 @@ private:
     float subB1Gain = .2;
 
     void computeGains();
+    void computeDivisors(int32_4& divaOut, int32_4& divbOut);
   
 
 };
@@ -177,6 +185,29 @@ inline void Sub<TBase>::computeGains()
         Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value);
 
 }
+
+template <class TBase>
+inline void Sub<TBase>::computeDivisors(int32_4& divaOut, int32_4& divbOut)
+{
+    const float div1ARawf = divScaleFn(
+        Sub<TBase>::inputs[SUB1A_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[SUB1A_TUNE_PARAM].value,
+        Sub<TBase>::params[SUB1A_TUNE_TRIM_PARAM].value
+    );
+    divaOut = int32_4(div1ARawf);
+
+    const float div1BRawf = divScaleFn(
+        Sub<TBase>::inputs[SUB1B_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[SUB1B_TUNE_PARAM].value,
+        Sub<TBase>::params[SUB1B_TUNE_TRIM_PARAM].value
+    );
+    printf("divs = %f, %f\n", div1ARawf, div1BRawf);
+    printf("1 smd = %s\n", toStr(divaOut).c_str());
+    fflush(stdout);
+    divbOut = int32_4(div1BRawf);
+   
+}
+  
 
 template <class TBase>
 inline void Sub<TBase>::stepn()
@@ -253,8 +284,11 @@ inline void Sub<TBase>::stepn()
     divisor[3] = div2;
 #else
 // fake - just for now
-    rack::simd::int32_4 divisorA(4, 4, 4, 4);
-    rack::simd::int32_4 divisorB = divisorA;
+   // rack::simd::int32_4 divisorA(4, 4, 4, 4);
+   // rack::simd::int32_4 divisorB = divisorA;
+   rack::simd::int32_4 divisorA;
+   rack::simd::int32_4 divisorB;
+   computeDivisors(divisorA, divisorB);
 #endif
 
     int channel = 0;
@@ -385,6 +419,18 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             break;
         case Sub<TBase>::WAVEFORM2_PARAM:
             ret = {0, 2, 0, "VCO 2 waveform"};
+            break;
+        case Sub<TBase>::SUB1A_TUNE_TRIM_PARAM:
+            ret = {-1, 1, 1, "VCO 1 sub A trim"};
+            break;
+        case Sub<TBase>::SUB1B_TUNE_TRIM_PARAM:
+            ret = {-1, 1, 1, "VCO 1 sub V trim"};
+            break;
+        case Sub<TBase>::SUB2A_TUNE_TRIM_PARAM:
+            ret = {-1, 1, 1, "VCO 2 sub A trim"};
+            break;
+        case Sub<TBase>::SUB2B_TUNE_TRIM_PARAM:
+            ret = {-1, 1, 1, "VCO 2 sub B trim"};
             break;
         default:
             assert(false);
