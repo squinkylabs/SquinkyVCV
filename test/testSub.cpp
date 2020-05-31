@@ -30,7 +30,7 @@ static void testSubLevel(bool sub, int vcoNumber, int side)
     osc.setupSub(channels, rack::simd::float_4(2), rack::simd::int32_4(4), rack::simd::int32_4(4));
     std::function<float()> lambda = [&osc, deltaTime, sub, vcoNumber, side]() {
         osc.process(deltaTime, 0);
-        return sub ? osc.sub(side)[vcoNumber] : osc.saw()[vcoNumber];
+        return sub ? osc.sub(side)[vcoNumber] : osc.main()[vcoNumber];
     };
 
 

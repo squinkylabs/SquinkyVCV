@@ -62,15 +62,15 @@ struct VoltageControlledOscillator
 	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sqrMinBlep;
 	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> mainMinBlep;
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> triMinBlep;
-	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sinMinBlep;
+	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> triMinBlep;
+	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sinMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep[2];
 
 	T mainValue = 0.f;	// square or saw, depends on waveform setting
 	//T sqrValue = 0.f;
 	//T sawValue = 0.f;
-	T triValue = 0.f;
-	T sinValue = 0.f;
+	//T triValue = 0.f;
+	//T sinValue = 0.f;
 
 	// subs are all two element arrays A and B
 	I subCounter[2] = {I(1), I(1)};
