@@ -119,6 +119,7 @@ public:
 
     float_4 step(float_4 syncValue) {
 
+        bool synced = false;
         int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
         float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
         if (syncEnabled) {
@@ -130,9 +131,36 @@ public:
 
             const float_4 justCrossed = syncValueGTZero & lastSyncValueLEZero;
             simd_assertMask(justCrossed);
+            int m = simd::movemask(justCrossed);
 
-            assert(false);      // finish me
-    #if 0
+            // If any crossed
+            if (m) {
+                float_4 deltaSync = syncValue - lastSyncValue;
+                syncCrossing = float_4(1.f) - syncValue / deltaSync;
+                syncCrossing *= float_4(oversampleRate);
+                //syncIndex = syncCrossing;
+                float_4 syncIndexF = SimdBlocks::ifelse(justCrossed, syncCrossing, float_4(-1));
+                syncIndex = syncIndexF;
+                synced = true;
+#if 0
+                printf("got a crossing. justCrossed = %s\n", toStr(justCrossed).c_str());
+                printf("deltaSync = %s\n", toStr(deltaSync).c_str());
+                printf("syncValue = %s\n", toStr(syncValue).c_str());
+                printf("lastSyncValue = %s\n", toStr(lastSyncValue).c_str());
+                printf("syncCrossing = %s\n", toStr(syncCrossing).c_str());
+                printf("syncIndexF = %s\n", toStr(syncIndexF).c_str());
+                printf("syncIndex = %s\n", toStr(syncIndex).c_str());
+                fflush(stdout);
+               //  assert(false);      // finish me
+#endif
+            }
+            // now make a 
+            lastSyncValue = syncValue;
+        }
+
+
+           
+    #if 0   // old scalare code
             if (syncValue > 0.0f && lastSyncValue <= 0.0f) {
                 float deltaSync = syncValue - lastSyncValue;
                 syncCrossing = 1.0f - syncValue / deltaSync;
@@ -141,16 +169,31 @@ public:
                 syncCrossing -= syncIndex;
             }
             lastSyncValue = syncValue;
-    #endif
-        }
 
+            lastSyncValue = syncValue;
+        }
+    #endif
 
          __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
         float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
         phaseMod += fmInput;
 
         for (int i=0; i< oversampleRate; ++i) {
-            stepOversampled(i, phaseMod);
+           
+          //  int32_t syncNowInt = SimdBlocks::ifelse(syncIndex == int32_4(0), int32_4::mask(), int32_4::zero());
+          //  simd_assertMask(syncNowInt);
+          //  float_4 syncNow = syncNowInt;
+           // imd_assertMask(syncNow);
+            float_4 syncNow =  float_4(syncIndex) == float_4::zero();
+            simd_assertMask(syncNow);
+#if 0
+             if (synced) {
+                printf("overloop %d index=%s\n", i, toStr(syncIndex).c_str());
+                printf("syncNow = %s\n", toStr(syncNow).c_str());
+            }
+#endif
+            stepOversampled(i, phaseMod, syncNow);
+            syncIndex -= int32_t(1);
         }
         if (oversampleRate == 1) {
             return buffer[0] * outputLevel;
@@ -161,17 +204,20 @@ public:
         }
     }
 
-    void stepOversampled(int bufferIndex, float_4 phaseModulation)
+    void stepOversampled(int bufferIndex, float_4 phaseModulation, float_4 syncNow)
     {
         float_4 s;
         phaseAcc += normalizedFreq;
         phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
+        phaseAcc = SimdBlocks::ifelse(syncNow, float_4::zero(), phaseAcc);
 
         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
 
         float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
 
         float_4 s_orig = float_4(0);
+
+       // phase = SimdBlocks::ifelse(syncNow, float_4::zero(), phase);
 
         if (waveform == WaveForm::Fold) {
             s = rack::simd::sin(phase * twoPi);
