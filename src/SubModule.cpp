@@ -84,6 +84,7 @@ const float knobY1 = 60;
 const float knobDeltaY = 70;
 const float knobY2 = knobY1 + 1 *  knobDeltaY;
 const float knobY3 = knobY1 + 2 *  knobDeltaY - 12;
+const float knobY4 = knobY3 + 50;
 
 const float labelAboveKnob = 20;
 
@@ -91,6 +92,7 @@ const float knobX1Trim = knobX1 + 14;
 const float knobX3Trim = knobX1Trim + + 2 * knobDeltaX;;
 
 const float knob2XOffset = 144;
+const float trimXOffset = 5;
 
 /** 
  * side = 0 for left / 1
@@ -162,13 +164,27 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
     addLabel(Vec(knobX2+xOffset - 4, knobY3 - labelAboveKnob), 
         side ? "Div 2A" : "Div 1A");
 
-     addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX3+xOffset, knobY3),
         module,
         Comp::SUB1B_TUNE_PARAM + side));
     addLabel(Vec(knobX3+xOffset - 4, knobY3 - labelAboveKnob), 
         side ? "Div 2B" : "Div 1B");
+
+
+    // trimmers
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(knobX2+xOffset+trimXOffset, knobY4),
+        module,
+        Comp::SUB1A_TUNE_TRIM_PARAM+ side));
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(knobX3+xOffset+trimXOffset, knobY4),
+        module,
+        Comp::SUB1B_TUNE_TRIM_PARAM+ side));
+    
 
 }
 
@@ -182,20 +198,31 @@ const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
 const float jacksY1 = 274; // 230;
 const float jacksY2 = 322; // 330; //300;
 
-const float jacksX1Top = 28;
-const float jacksX3Top = jacksX1Top + 2 * knobDeltaX;
+//const float jacksX1Top = 28;
+//const float jacksX3Top = jacksX1Top + 2 * knobDeltaX;
 
 
+const float jackOffsetX = 3;
 void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
 {
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX1Top, jacksY1),
+        Vec(knobX2+jackOffsetX, jacksY1),
         module,
         Comp::SUB1A_TUNE_INPUT));
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX3Top, jacksY1),
+        Vec(knobX3+jackOffsetX, jacksY1),
+        module,
+        Comp::SUB1B_TUNE_INPUT));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(knobX2+knob2XOffset+jackOffsetX, jacksY1),
         module,
         Comp::SUB2A_TUNE_INPUT));
+    addInput(createInput<PJ301MPort>(
+        Vec(knobX3+knob2XOffset+jackOffsetX, jacksY1),
+        module,
+        Comp::SUB2B_TUNE_INPUT));
+// knob2XOffset
  //   addLabel(Vec(jacksX1Top - 10, jacksY1 - labelAboveKnob), "Div 1");
 
     addInput(createInput<PJ301MPort>(
