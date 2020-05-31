@@ -101,6 +101,7 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
     const float yRow2 = yRow1 + dy;
     const float yRow3 = yRow1 + 2 * dy;
 
+    addLabel( Vec(xTrim-30, yRow1 - 40), "Chaos" );
     addInput(createInputCentered<PJ301MPort>(
         Vec(xInput, yRow1),
         module,
@@ -128,7 +129,7 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
-        Vec(50, 300),
+        Vec(40, 240),
         module, 
         Comp::OCTAVE_PARAM));
 
@@ -161,11 +162,13 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Vec(140, 340),
         module,
         Comp::MAIN_OUTPUT));
+    addLabel( Vec(130, 310), "Out");
     
     addInput(createInputCentered<PJ301MPort>(
         Vec(40, 340),
         module,
         Comp::V8_INPUT));
+    addLabel( Vec(40, 310), "V/8 in");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
