@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
+#include "LookupTableFactory.h"
 
 /**
  * 5.25: cpu usage 1 chnael = 71%
@@ -114,6 +115,9 @@ private:
 
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> oscillators[4];
     AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(2, 32, 2, 32);
+     
+    LookupTableParams<float> audioTaperParams;
+   // std::function<double(double)> autoTaper = AudioMath::makeFunc_AudioTaper(AudioMath::audioTaperKnee());
 
     /**
      * number of oscillator pairs
@@ -123,6 +127,16 @@ private:
    // float basePitch1 = 0;
   //  float basePitch2 = 0;
     Divider divn;
+
+    float vco0Gain = .2;
+    float subA0Gain = .2;
+    float subB0Gain = .2;
+
+    float vco1Gain = .2;
+    float subA1Gain = .2;
+    float subB1Gain = .2;
+
+    void computeGains();
   
 
 };
@@ -131,6 +145,7 @@ private:
 template <class TBase>
 inline void Sub<TBase>::init()
 {
+    LookupTableFactory<float>::makeAudioTaper(audioTaperParams);
     divn.setup(4, [this]() {
         this->stepn();
     });
@@ -144,8 +159,31 @@ inline void Sub<TBase>::init()
 }
 
 template <class TBase>
+inline void Sub<TBase>::computeGains()
+{
+
+    /*
+      SUB1A_LEVEL_PARAM,
+        SUB2A_LEVEL_PARAM,
+        SUB1B_LEVEL_PARAM,
+        SUB2B_LEVEL_PARAM,
+        */
+    vco0Gain = Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value;
+    subA0Gain = Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value;
+    subB0Gain = Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value;
+
+    vco1Gain = Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value;
+    subA1Gain = Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value;
+    subB1Gain = Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value;
+
+    printf("leaving compute, g=%f,%f,%f,%f,%f,%f\n", vco0Gain, subA0Gain, subB0Gain,
+        vco1Gain,subA1Gain, subB1Gain);
+}
+
+template <class TBase>
 inline void Sub<TBase>::stepn()
 {
+    computeGains();
     // much of this could be done less often.
     // many vars could be float_4
 
@@ -256,9 +294,7 @@ inline void Sub<TBase>::step()
 
   //  float fade = Sub<TBase>::params[SUB_FADE_PARAM].value;
   // just for now!
-    float fade = .5;
-    float subGain = fade / 100;
-    float sawGain = 1 - subGain;
+
 
 
     // Prepare the mixed output and send it out.
@@ -270,17 +306,26 @@ inline void Sub<TBase>::step()
         // now, what do do with the output? to now lets grab pairs
         // of saws and add them.
         // TODO: make poly so it works
-        float_4 saws = oscillators[bank].saw() * sawGain;
+        float_4 saws = oscillators[bank].saw();
+        float_4 subs0 = oscillators[bank].sub(0);
+        float_4 subs1 = oscillators[bank].sub(1);
 
-    // UGH - make this work for both
-        float_4 subs = oscillators[bank].sub(0) * subGain;
+        const float mixed0 = saws[0] * vco0Gain +
+            saws[1] * vco1Gain +
+            subs0[0] * subA0Gain +
+            subs0[1] * subA1Gain +
+            subs1[0] * subB0Gain +
+            subs1[1] * subB1Gain;
 
-        
-        float pair = subs[0] + saws[0] + subs[1] + saws[1];
-        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++);
+         const float mixed1 = saws[2] * vco0Gain +
+            saws[3] * vco1Gain +
+            subs0[2] * subA0Gain +
+            subs0[3] * subA1Gain +
+            subs1[2] * subB0Gain +
+            subs1[3] * subB1Gain;
 
-        pair = saws[2]+ saws[3] + subs[2] + subs[3]; 
-        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(pair, channel++); 
+        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channel++);
+        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed1, channel++); 
     }
 }
 

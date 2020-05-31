@@ -150,7 +150,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         icomp,
         Vec(knobX3+xOffset, knobY2),
         module,
-        Comp::SUB2A_LEVEL_PARAM + side));
+        Comp::SUB1B_LEVEL_PARAM + side));
     addLabel(Vec(knobX3+xOffset - 8, knobY2 - labelAboveKnob), 
         side ? "Sub 2B" : "Sub 1B");
 
