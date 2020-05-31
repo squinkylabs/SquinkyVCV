@@ -187,24 +187,54 @@ inline void Sub<TBase>::computeGains()
 }
 
 template <class TBase>
-inline void Sub<TBase>::computeDivisors(int32_4& divaOut, int32_4& divbOut)
+inline void Sub<TBase>::computeDivisors(
+    int32_4& divaOut, int32_4& divbOut)
 {
     const float div1ARawf = divScaleFn(
         Sub<TBase>::inputs[SUB1A_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
         Sub<TBase>::params[SUB1A_TUNE_PARAM].value,
         Sub<TBase>::params[SUB1A_TUNE_TRIM_PARAM].value
     );
-    divaOut = int32_4(div1ARawf);
+   
 
     const float div1BRawf = divScaleFn(
         Sub<TBase>::inputs[SUB1B_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
         Sub<TBase>::params[SUB1B_TUNE_PARAM].value,
         Sub<TBase>::params[SUB1B_TUNE_TRIM_PARAM].value
     );
+
+    const float div2ARawf = divScaleFn(
+        Sub<TBase>::inputs[SUB2A_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[SUB2A_TUNE_PARAM].value,
+        Sub<TBase>::params[SUB2A_TUNE_TRIM_PARAM].value
+    );
+
+
+    const float div2BRawf = divScaleFn(
+        Sub<TBase>::inputs[SUB2B_TUNE_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[SUB2B_TUNE_PARAM].value,
+        Sub<TBase>::params[SUB2B_TUNE_TRIM_PARAM].value
+    );
+
+
+#if 0
     printf("divs = %f, %f\n", div1ARawf, div1BRawf);
     printf("1 smd = %s\n", toStr(divaOut).c_str());
     fflush(stdout);
-    divbOut = int32_4(div1BRawf);
+#endif
+
+    divaOut[0] = int(div1ARawf);
+    divaOut[1] = int(div2ARawf);
+    divaOut[2] = int(div1ARawf);
+    divaOut[3] = int(div2ARawf);
+
+    divbOut[0] = int(div1BRawf);
+    divbOut[1] = int(div2BRawf);
+    divbOut[2] = int(div1BRawf);
+    divbOut[3] = int(div2BRawf);
+
+    //divaOut = int32_4(div1ARawf);
+    //divbOut = int32_4(div1BRawf);
    
 }
   
