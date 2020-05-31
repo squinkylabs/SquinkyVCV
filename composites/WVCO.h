@@ -117,7 +117,34 @@ public:
         downsampler.setup(oversampleRate);
     }
 
-    float_4 step() {
+    float_4 step(float_4 syncValue) {
+
+        int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
+        float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
+        if (syncEnabled) {
+            syncValue -= float_4(0.01f);
+            const float_4 syncValueGTZero = syncValue > float_4::zero();
+            const float_4 lastSyncValueLEZero = lastSyncValue <= float_4::zero();
+            simd_assertMask(syncValueGTZero);
+            simd_assertMask(lastSyncValueLEZero);
+
+            const float_4 justCrossed = syncValueGTZero & lastSyncValueLEZero;
+            simd_assertMask(justCrossed);
+
+            assert(false);      // finish me
+    #if 0
+            if (syncValue > 0.0f && lastSyncValue <= 0.0f) {
+                float deltaSync = syncValue - lastSyncValue;
+                syncCrossing = 1.0f - syncValue / deltaSync;
+                syncCrossing *= OVERSAMPLE;
+                syncIndex = (int) syncCrossing;
+                syncCrossing -= syncIndex;
+            }
+            lastSyncValue = syncValue;
+    #endif
+        }
+
+
          __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
         float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
         phaseMod += fmInput;
@@ -543,7 +570,10 @@ inline void WVCO<TBase>::step()
             fmInputScaling = WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003;
         }
         dsp[bank].fmInput = fmInput * fmInputScaling;
-        float_4 v = dsp[bank].step(); 
+
+        port = WVCO<TBase>::inputs[SYNC_INPUT];
+        const float_4 syncInput = port.getPolyVoltageSimd<float_4>(baseChannel);
+        float_4 v = dsp[bank].step(syncInput); 
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
     }
 }
