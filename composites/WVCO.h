@@ -131,7 +131,7 @@ public:
 
             const float_4 justCrossed = syncValueGTZero & lastSyncValueLEZero;
             simd_assertMask(justCrossed);
-            int m = simd::movemask(justCrossed);
+            int m = rack::simd::movemask(justCrossed);
 
             // If any crossed
             if (m) {
