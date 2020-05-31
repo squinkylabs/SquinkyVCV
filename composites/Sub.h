@@ -116,7 +116,7 @@ private:
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> oscillators[4];
     AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(2, 32, 2, 32);
      
-    LookupTableParams<float> audioTaperParams;
+    LookupTableParams<float> audioTaper;
    // std::function<double(double)> autoTaper = AudioMath::makeFunc_AudioTaper(AudioMath::audioTaperKnee());
 
     /**
@@ -145,7 +145,7 @@ private:
 template <class TBase>
 inline void Sub<TBase>::init()
 {
-    LookupTableFactory<float>::makeAudioTaper(audioTaperParams);
+    LookupTableFactory<float>::makeAudioTaper(audioTaper);
     divn.setup(4, [this]() {
         this->stepn();
     });
@@ -161,23 +161,21 @@ inline void Sub<TBase>::init()
 template <class TBase>
 inline void Sub<TBase>::computeGains()
 {
+    //LookupTable<float>::lookup(audioTaper, Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value);
+    vco0Gain = LookupTable<float>::lookup(audioTaper,
+        Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value);
+    subA0Gain = LookupTable<float>::lookup(audioTaper, 
+        Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value);
+    subB0Gain = LookupTable<float>::lookup(audioTaper,
+        Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value);
 
-    /*
-      SUB1A_LEVEL_PARAM,
-        SUB2A_LEVEL_PARAM,
-        SUB1B_LEVEL_PARAM,
-        SUB2B_LEVEL_PARAM,
-        */
-    vco0Gain = Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value;
-    subA0Gain = Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value;
-    subB0Gain = Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value;
+    vco1Gain = LookupTable<float>::lookup(audioTaper,
+        Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value);
+    subA1Gain = LookupTable<float>::lookup(audioTaper,
+        Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value);
+    subB1Gain = LookupTable<float>::lookup(audioTaper,
+        Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value);
 
-    vco1Gain = Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value;
-    subA1Gain = Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value;
-    subB1Gain = Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value;
-
-    printf("leaving compute, g=%f,%f,%f,%f,%f,%f\n", vco0Gain, subA0Gain, subB0Gain,
-        vco1Gain,subA1Gain, subB1Gain);
 }
 
 template <class TBase>
