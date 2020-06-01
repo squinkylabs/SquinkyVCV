@@ -70,5 +70,7 @@ ifdef ARCH_WIN
 	FLAGS += -fmax-errors=5
 endif
 
+FLAGS += -finline-limit=500000 -finline-functions-called-once -flto
+
 include test.mk
 

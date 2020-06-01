@@ -619,6 +619,7 @@ static void simd_testBiquad()
 
 static void testWVCOPoly()
 {
+    printf("starting poly svco\n"); fflush(stdout);
     WVCO<TestComposite> wvco;
 
     wvco.init();

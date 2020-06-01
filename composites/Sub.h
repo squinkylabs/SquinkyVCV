@@ -12,7 +12,8 @@
 #include "LookupTableFactory.h"
 
 /**
- * 5.25: cpu usage 1 chnael = 71%
+ * 5/31 feature complete (almost)  48%
+ * 5.25: cpu usage 1 chnael = 51%
  */
 
 namespace rack {

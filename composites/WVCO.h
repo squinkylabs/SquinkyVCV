@@ -2,6 +2,21 @@
 #pragma once
 
 /**
+ * 5/31: feature complete:
+ *  8channels 148%
+ * 
+ * -finline-limit=500000  down to 144.7
+ * down to 66 if step is gutted. so let's make an optimized step.
+ * (removing adsr inner only took down to 64). SO, asside from inner loop, there must be a lot of bs to get rid of
+ * instead of gutting step, just gutted oversampled part. that gives 97. so optimize at step level seems sensible.
+ * however, minimal inner loop is still 136. same when I add flatten.
+ * 
+ * removing the optimzied sine takes back to 67, so the loop is gnarly
+ * it's 110 with the filter removed, 82 with sine and filter removed
+ * so - inner loops = 70 (40 filter, 30 sine)
+ * 
+ * 
+ * 
  * 
  * 5/25 : 8 channels = 135%
  * 2,005,168 bytes in reduced plugin
@@ -117,8 +132,37 @@ public:
         downsampler.setup(oversampleRate);
     }
 
+    float_4 stepSin() {
+       //printf("stepsin opt\n");
+#if 1
+        int bufferIndex;
+
+        __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+        float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
+        phaseMod += fmInput;
+
+    
+        for (bufferIndex = 0; bufferIndex < oversampleRate; ++bufferIndex) {
+            phaseAcc += normalizedFreq;
+            phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
+            float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseMod);
+            float_4 s = rack::simd::sin(phase * twoPi);
+            s *= 5;
+            buffer[bufferIndex] = s;
+        }
+        float_4 finalSample = downsampler.process(buffer);
+        return finalSample * outputLevel;
+    #else   
+        return 0;
+    #endif
+    }
+    
     float_4 step(float_4 syncValue) {
 
+        if (!syncEnabled &&  (waveform == WaveForm::Sine)) {
+            return stepSin();
+        }
+       // printf("not doing ops. sy=%d wv = %d\n", syncEnabled, waveform);
         bool synced = false;
         int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
         float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
@@ -160,20 +204,6 @@ public:
 
 
            
-    #if 0   // old scalare code
-            if (syncValue > 0.0f && lastSyncValue <= 0.0f) {
-                float deltaSync = syncValue - lastSyncValue;
-                syncCrossing = 1.0f - syncValue / deltaSync;
-                syncCrossing *= OVERSAMPLE;
-                syncIndex = (int) syncCrossing;
-                syncCrossing -= syncIndex;
-            }
-            lastSyncValue = syncValue;
-
-            lastSyncValue = syncValue;
-        }
-    #endif
-
          __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
         float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
         phaseMod += fmInput;
@@ -257,6 +287,7 @@ public:
 
     void setSyncEnable(bool f) {
         syncEnabled = f;
+        // printf("set sync enabled to %d\n", syncEnabled);
     }
 
     // public variables. The composite will set these on us,
@@ -359,6 +390,7 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
+     __attribute__((flatten))
     void step() override;
 
     static std::vector<std::string> getWaveformNames()
@@ -519,7 +551,7 @@ inline void WVCO<TBase>::stepn()
             }
 #endif
         }
-       adsr.step(gates, TBase::engineGetSampleTime());
+        adsr.step(gates, TBase::engineGetSampleTime());
     }
 
     // TODO: make this faster, and/or do less often
@@ -592,8 +624,9 @@ inline void WVCO<TBase>::stepn()
     }
 }
 
+
 template <class TBase>
-inline void WVCO<TBase>::step()
+inline void  __attribute__((flatten)) WVCO<TBase>::step()
 {
     // clock the sub-sample rate tasks
     divn.step();
@@ -618,6 +651,7 @@ inline void WVCO<TBase>::step()
         dsp[bank].fmInput = fmInput * fmInputScaling;
 
         port = WVCO<TBase>::inputs[SYNC_INPUT];
+      //  const bool isConnected = port.isConnected();
         const float_4 syncInput = port.getPolyVoltageSimd<float_4>(baseChannel);
         float_4 v = dsp[bank].step(syncInput); 
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
