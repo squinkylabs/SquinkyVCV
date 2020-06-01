@@ -93,6 +93,7 @@ extern void testOnset2();
 extern void testWVCO();
 extern void testSub();
 extern void testSimd();
+extern void testSimdLookup();
 
 #if 0
 #include <sstream>
@@ -170,6 +171,7 @@ if (runShaperGen) {
 
 #ifndef _MSC_VER
     testSimd();
+    testSimdLookup();
 #endif
 
     testAudioMath();
