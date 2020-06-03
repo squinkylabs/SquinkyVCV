@@ -140,7 +140,36 @@ static void testHilbert()
 }
 
 
+#include "LookupTable.h"
+#include <memory>
+// stolen from imp in ObjectCache
+std::shared_ptr<LookupTableParams<float>> makeSinTable()
+{
+    auto ret = std::make_shared<LookupTableParams<float>>();
+    std::function<double(double)> f = AudioMath::makeFunc_Sin();
+        // Used to use 4096, but 512 gives about 92db  snr, so let's save memory
+    LookupTable<float>::init(*ret, 512, 0, 1, f);
+    return ret;
+}
+
+
+
 #ifndef _MSC_VER 
+
+inline float_4 sine2(float_4 x)
+{
+    
+ float_4 z = x * x;
+    float_4 y = float_4(-3.83529298765307E2);
+    y *= z;
+    y += float_4(4.08026246380375E2);
+    y *= z;
+    y += float_4(-2.06708511201999E2);
+    y *= z;
+    y += float_4(3.14159265358979E1);
+    y *= x;
+    return y;
+}
 
 static void simd_testSin()
 {
@@ -150,7 +179,25 @@ static void simd_testSin()
         return d;
 
         }, 1);
+}
 
+static void testSinLookupf()
+{
+    auto params = makeSinTable();
+    MeasureTime<float>::run(overheadInOut, "sin table lookup f", [params]() {
+        float d = LookupTable<float>::lookup(*params, TestBuffers<float>::get());
+        return d;
+        }, 1);
+}
+
+static void testSinLookupSimd()
+{
+    auto params = makeSinTable();
+    MeasureTime<float>::run(overheadInOut, "sin table lookup simd", [params]() {
+       // float_4 d =  lookupSimd(*params, TestBuffers<float>::get(), true); //LookupTable<float>::lookup(*params, TestBuffers<float>::get());
+        float_4 d = sine2(TestBuffers<float>::get());
+        return d[2];
+        }, 1);
 }
 #endif
 
@@ -975,6 +1022,8 @@ void perfTest()
     testSubMono();
     simd_testBiquad();
     testSinLookup();
+    testSinLookupf();
+    testSinLookupSimd();
     simd_testSin();
 #endif  
 
