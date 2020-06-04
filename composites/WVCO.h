@@ -129,6 +129,7 @@ public:
     
     static const int oversampleRate = 4;
     float_4 buffer[oversampleRate];
+    float_4 lastOutput = float_4(0);
     WVCODsp() {
         downsampler.setup(oversampleRate);
     }
@@ -139,8 +140,11 @@ public:
         int bufferIndex;
 
         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+        // experiments - try fast approx -> fine
+        // try using last output to avoid re-calc
     //    float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
-        float_4 phaseMod = (feedback * SimdBlocks::sinTwoPi(phaseAcc * twoPi));
+    //    float_4 phaseMod = (feedback * SimdBlocks::sinTwoPi(phaseAcc * twoPi));
+        float_4 phaseMod = (feedback * lastOutput);
         phaseMod += fmInput;
 
     
@@ -154,6 +158,7 @@ public:
             buffer[bufferIndex] = s;
         }
         float_4 finalSample = downsampler.process(buffer);
+        lastOutput = finalSample;
         return finalSample * outputLevel;
     #else   
         return 0;
