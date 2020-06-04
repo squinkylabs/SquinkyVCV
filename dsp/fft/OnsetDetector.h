@@ -13,8 +13,8 @@ public:
     OnsetDetector();
     bool step(float);
 
-    static const int frameSize = 512;
-    static const int preroll = 2 * frameSize;
+    static const int frameSize;
+    static const int preroll;
 private:
     static const int numFrames = 3;
    

@@ -4,6 +4,11 @@
 #include "FFTData.h"
 #include "FFTUtils.h"
 
+
+
+const int OnsetDetector::frameSize = {512};
+const int OnsetDetector::preroll = {2 * frameSize};
+
 OnsetDetector::OnsetDetector()
 {
     for (int i=0; i<numFrames; ++i) {
