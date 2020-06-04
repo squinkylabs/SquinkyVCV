@@ -2,6 +2,7 @@
 #pragma once
 
 /**
+ * 6/4 use new sine approximation, down to 124%
  * 5/31: feature complete:
  *  8channels 148%
  * 
@@ -138,7 +139,8 @@ public:
         int bufferIndex;
 
         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
-        float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
+    //    float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
+        float_4 phaseMod = (feedback * SimdBlocks::sinTwoPi(phaseAcc * twoPi));
         phaseMod += fmInput;
 
     
@@ -146,7 +148,8 @@ public:
             phaseAcc += normalizedFreq;
             phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
             float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseMod);
-            float_4 s = rack::simd::sin(phase * twoPi);
+            //float_4 s = rack::simd::sin(phase * twoPi);
+            float_4 s = SimdBlocks::sinTwoPi(phase * twoPi);
             s *= 5;
             buffer[bufferIndex] = s;
         }
@@ -163,7 +166,7 @@ public:
             return stepSin();
         }
        // printf("not doing ops. sy=%d wv = %d\n", syncEnabled, waveform);
-        bool synced = false;
+      //  bool synced = false;
         int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
         float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
         if (syncEnabled) {
@@ -185,8 +188,9 @@ public:
                 //syncIndex = syncCrossing;
                 float_4 syncIndexF = SimdBlocks::ifelse(justCrossed, syncCrossing, float_4(-1));
                 syncIndex = syncIndexF;
-                synced = true;
+               
 #if 0
+                synced = true;
                 printf("got a crossing. justCrossed = %s\n", toStr(justCrossed).c_str());
                 printf("deltaSync = %s\n", toStr(deltaSync).c_str());
                 printf("syncValue = %s\n", toStr(syncValue).c_str());

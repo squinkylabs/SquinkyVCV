@@ -13,6 +13,14 @@ class SimdBlocks
 public:
     static float_4 fold(float_4);
     static float_4 wrapPhase01(float_4 phase);
+
+    /*
+    * only accurate for 0 <= x <= two
+    */
+    static float_4 sinTwoPi(float_4 _x);
+
+
+
     static float_4 min(float_4 a, float_4 b);
     static float_4 max(float_4 a, float_4 b);
     static float_4 ifelse(float_4 mask, float_4 a, float_4 b) {
@@ -71,4 +79,26 @@ inline float_4 SimdBlocks::fold(float_4 x)
     float_4 oddFold = (0 - x) + (2.f * phase);
     auto ret = SimdBlocks::ifelse(isEvenMask, evenFold, oddFold);
     return ret;
+}
+
+/*
+ * only accurate for 0 <= x <= two
+ */
+inline float_4 SimdBlocks::sinTwoPi(float_4 _x) {
+    const static float twoPi = 2 * 3.141592653589793238;
+    const static float pi =  3.141592653589793238;
+    _x -= SimdBlocks::ifelse((_x > float_4(pi)), float_4(twoPi), float_4::zero()); 
+
+    float_4 xneg = _x < float_4::zero();
+    float_4 xOffset = SimdBlocks::ifelse(xneg, float_4(pi / 2.f), float_4(-pi  / 2.f));
+    xOffset += _x;
+    float_4 xSquared = xOffset * xOffset;
+    float_4 ret = xSquared * float_4(1.f / 24.f);
+    float_4 correction = ret * xSquared *  float_4(.02 / .254);
+    ret += float_4(-.5);
+    ret *= xSquared;
+    ret += float_4(1.f);
+
+    ret -= correction;
+    return SimdBlocks::ifelse(xneg, -ret, ret);    
 }

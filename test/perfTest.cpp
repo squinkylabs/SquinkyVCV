@@ -156,19 +156,28 @@ std::shared_ptr<LookupTableParams<float>> makeSinTable()
 
 #ifndef _MSC_VER 
 
-inline float_4 sine2(float_4 x)
+static float pi =  3.141592653589793238;
+inline float_4 sine2(float_4 _x)
 {
-    
- float_4 z = x * x;
-    float_4 y = float_4(-3.83529298765307E2);
-    y *= z;
-    y += float_4(4.08026246380375E2);
-    y *= z;
-    y += float_4(-2.06708511201999E2);
-    y *= z;
-    y += float_4(3.14159265358979E1);
-    y *= x;
-    return y;
+    float_4 xneg = _x < float_4::zero();
+    float_4 xOffset = SimdBlocks::ifelse(xneg, float_4(pi / 2.f), float_4(-pi  / 2.f));
+    xOffset += _x;
+    float_4 xSquared = xOffset * xOffset;
+#if 0
+    printf("\n*** in simdsin(%s) xsq=%s\n xoff=%s\n",
+        toStr(_x).c_str(),
+        toStr(xSquared).c_str(),
+        toStr(xOffset).c_str());
+#endif
+
+    float_4 ret = xSquared * float_4(1.f / 24.f);
+    float_4 correction = ret * xSquared *  float_4(.02 / .254);
+    ret += float_4(-.5);
+    ret *= xSquared;
+    ret += float_4(1.f);
+
+    ret -= correction;
+    return SimdBlocks::ifelse(xneg, -ret, ret); 
 }
 
 static void simd_testSin()
@@ -193,7 +202,7 @@ static void testSinLookupf()
 static void testSinLookupSimd()
 {
     auto params = makeSinTable();
-    MeasureTime<float>::run(overheadInOut, "sin table lookup simd", [params]() {
+    MeasureTime<float>::run(overheadInOut, "sin approx bgf simd", [params]() {
        // float_4 d =  lookupSimd(*params, TestBuffers<float>::get(), true); //LookupTable<float>::lookup(*params, TestBuffers<float>::get());
         float_4 d = sine2(TestBuffers<float>::get());
         return d[2];
