@@ -166,19 +166,10 @@ public:
     #endif
     }
 #endif
-    
-    float_4 step(float_4 syncValue) {
 
-#ifdef _OPTSIN
-        if (!syncEnabled &&  (waveform == WaveForm::Sine)) {
-            return stepSin();
-        }
-#endif
-       // printf("not doing ops. sy=%d wv = %d\n", syncEnabled, waveform);
-      //  bool synced = false;
-        int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
-        float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
+    void doSync(float_4 syncValue, int32_4& syncIndex)   {
         if (syncEnabled) {
+            float_4 syncCrossing = float_4::zero();
             syncValue -= float_4(0.01f);
             const float_4 syncValueGTZero = syncValue > float_4::zero();
             const float_4 lastSyncValueLEZero = lastSyncValue <= float_4::zero();
@@ -214,9 +205,21 @@ public:
             // now make a 
             lastSyncValue = syncValue;
         }
+    }
+    
+    float_4 step(float_4 syncValue) {
 
+#ifdef _OPTSIN
+        if (!syncEnabled &&  (waveform == WaveForm::Sine)) {
+            return stepSin();
+        }
+#endif
+       // printf("not doing ops. sy=%d wv = %d\n", syncEnabled, waveform);
+      //  bool synced = false;
+        int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
+      //  float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
+        doSync(syncValue, syncIndex);
 
-           
          __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
         float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
         phaseMod += fmInput;
