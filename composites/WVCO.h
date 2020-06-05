@@ -134,6 +134,7 @@ public:
         downsampler.setup(oversampleRate);
     }
 
+#ifdef _OPTSIN
     float_4 stepSin() {
        //printf("stepsin opt\n");
 #if 1
@@ -164,12 +165,15 @@ public:
         return 0;
     #endif
     }
+#endif
     
     float_4 step(float_4 syncValue) {
 
+#ifdef _OPTSIN
         if (!syncEnabled &&  (waveform == WaveForm::Sine)) {
             return stepSin();
         }
+#endif
        // printf("not doing ops. sy=%d wv = %d\n", syncEnabled, waveform);
       //  bool synced = false;
         int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
