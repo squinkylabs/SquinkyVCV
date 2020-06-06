@@ -204,20 +204,13 @@ public:
        // printf("not doing ops. sy=%d wv = %d\n", syncEnabled, waveform);
       //  bool synced = false;
         int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
-      //  float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
         doSync(syncValue, syncIndex);
 
-       //  __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
-        // float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
         float_4 phaseMod = (feedback * lastOutput);
         phaseMod += fmInput;
 
         for (int i=0; i< oversampleRate; ++i) {
-           
-          //  int32_t syncNowInt = SimdBlocks::ifelse(syncIndex == int32_4(0), int32_4::mask(), int32_4::zero());
-          //  simd_assertMask(syncNowInt);
-          //  float_4 syncNow = syncNowInt;
-           // imd_assertMask(syncNow);
+    
             float_4 syncNow =  float_4(syncIndex) == float_4::zero();
             simd_assertMask(syncNow);
 
@@ -242,55 +235,26 @@ public:
         phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
         phaseAcc = SimdBlocks::ifelse(syncNow, float_4::zero(), phaseAcc);
 
-       // __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
         float_4 twoPi (2 * 3.141592653589793238);
 
         float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
-
-      //  float_4 s_orig = float_4(0);
-
-       // phase = SimdBlocks::ifelse(syncNow, float_4::zero(), phase);
-
         if (waveform == WaveForm::Fold) {
-         //   s = rack::simd::sin(phase * twoPi);
-          
-            // TODO: scale, don't clip
-          //  float_4 adj = SimdBlocks::ifelse( shapeAdjust < float_4(.095), float_4(.095), shapeAdjust);   // keep adj above .1
-          //  float
-           // float_4 adj = shapeAdjust;
-         //   float_4 adj = sh
-         //   s *= (adj * 10);
+
             s = SimdBlocks::sinTwoPi(phase * twoPi);
             s *= correctedWaveShapeMultiplier;
-          //  s_orig = s;
             s = SimdBlocks::fold(s);
-         //   s *= (5.f * 5.f / 5.6f);        // why do we need this correction?
         } else if (waveform == WaveForm::SawTri) {
-            // TODO: move this into helper
-           // float_4 k = .5 + shapeAdjust / 2;
             float_4 k = correctedWaveShapeMultiplier;
             float_4 x = phase;
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
             s = SimdBlocks::ifelse( x < k, x * aLeft,  aRight * x + bRight);
-         //   s -= .5f;           // center it
-          //  s *= 10;            // andfix range
         } else if (waveform == WaveForm::Sine) {
             s = SimdBlocks::sinTwoPi(phase * twoPi);
-          //  s *= 5;
         } else {
             s = 0;
         }
 
-        // these are firing with folder and an ADSR on shape.
-#if 0
-        if (s[0] > 20 || s[0] < -20) {
-            printf("assert will fire. s_orig was %s\n", toStr(s_orig).c_str());
-            printf("shapeAdjust was %s\n", toStr(shapeAdjust).c_str());
-        }
-        simd_assertLT(s, float_4(20));
-        simd_assertGT(s, float_4(-20));
-#endif
         buffer[bufferIndex] = s;
     }
 
@@ -307,9 +271,6 @@ public:
     float_4 fmInput = float_4::zero();
 
     WaveForm waveform;
-   // float_4 shapeAdjust = 1;    // 0..1
-  //  float_4 waveShapePreShift = 0;      // this will be added to waveform before shape lookup
-  //  float_4 waveShapePreMultiply = 1;
     float_4 correctedWaveShapeMultiplier = 1;
     
     float_4 aRight = 0;            // y = ax + b for second half of tri
@@ -464,25 +425,6 @@ inline void WVCO<TBase>::stepm()
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     basePitch += q;
 
-#if 0
-    {
-        static int last = -1;
-        if ( std::abs(basePitch - last) > .2) {
-        //if (basePitch != last) {
-            printf("base != last. diff = %f\n", basePitch - last);
-            printf("base=%f, oct = %f, fine=%f q = %f\n",
-                basePitch,
-                TBase::params[OCTAVE_PARAM].value,
-                TBase::params[FINE_TUNE_PARAM].value,
-                q);
-            last = basePitch;
-            fflush(stdout);
-        }
-    }
-    #endif
-
-    //assert(basePitch < 10);
-
     freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
 
     int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
@@ -525,8 +467,6 @@ inline void WVCO<TBase>::stepm()
             assert(0);
     }
 
-
-#if 1
     const bool snap = TBase::params[SNAP_PARAM].value > .5f;
     const bool snap2 = TBase::params[SNAP2_PARAM].value > .5f;
 
@@ -545,14 +485,7 @@ inline void WVCO<TBase>::stepm()
         TBase::params[RELEASE_PARAM].value * .01,
         k
     ) ;
-#else
 
-    adsr.setA(TBase::params[ATTACK_PARAM].value * .01);
-    adsr.setD(TBase::params[DECAY_PARAM].value * .01);
-    adsr.setS(TBase::params[SUSTAIN_PARAM].value * .01);
-    adsr.setR(TBase::params[RELEASE_PARAM].value * .01);
-    adsr.setSnap( TBase::params[SNAP_PARAM].value > .5f);
-#endif
     adsr.setNumChannels(numChannels);
 
     enableAdsrLevel = TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5;
