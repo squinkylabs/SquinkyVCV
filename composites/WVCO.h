@@ -242,27 +242,33 @@ public:
         phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
         phaseAcc = SimdBlocks::ifelse(syncNow, float_4::zero(), phaseAcc);
 
-        __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+       // __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+        float_4 twoPi (2 * 3.141592653589793238);
 
         float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
 
-        float_4 s_orig = float_4(0);
+      //  float_4 s_orig = float_4(0);
 
        // phase = SimdBlocks::ifelse(syncNow, float_4::zero(), phase);
 
         if (waveform == WaveForm::Fold) {
-            s = rack::simd::sin(phase * twoPi);
+         //   s = rack::simd::sin(phase * twoPi);
           
             // TODO: scale, don't clip
-            float_4 adj = SimdBlocks::ifelse( shapeAdjust < float_4(.095), float_4(.095), shapeAdjust);   // keep adj above .1
+          //  float_4 adj = SimdBlocks::ifelse( shapeAdjust < float_4(.095), float_4(.095), shapeAdjust);   // keep adj above .1
+          //  float
            // float_4 adj = shapeAdjust;
-            s *= (adj * 10);
-            s_orig = s;
+         //   float_4 adj = sh
+         //   s *= (adj * 10);
+            s = SimdBlocks::sinTwoPi(phase * twoPi);
+            s *= correctedWaveShapeMultiplier;
+          //  s_orig = s;
             s = SimdBlocks::fold(s);
          //   s *= (5.f * 5.f / 5.6f);        // why do we need this correction?
         } else if (waveform == WaveForm::SawTri) {
             // TODO: move this into helper
-            float_4 k = .5 + shapeAdjust / 2;
+           // float_4 k = .5 + shapeAdjust / 2;
+            float_4 k = correctedWaveShapeMultiplier;
             float_4 x = phase;
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
@@ -272,10 +278,12 @@ public:
         } else if (waveform == WaveForm::Sine) {
             s = SimdBlocks::sinTwoPi(phase * twoPi);
           //  s *= 5;
+        } else {
+            s = 0;
         }
 
         // these are firing with folder and an ADSR on shape.
-#ifndef NDEBUG
+#if 0
         if (s[0] > 20 || s[0] < -20) {
             printf("assert will fire. s_orig was %s\n", toStr(s_orig).c_str());
             printf("shapeAdjust was %s\n", toStr(shapeAdjust).c_str());
@@ -299,7 +307,11 @@ public:
     float_4 fmInput = float_4::zero();
 
     WaveForm waveform;
-    float_4 shapeAdjust = 1;    // 0..1
+   // float_4 shapeAdjust = 1;    // 0..1
+  //  float_4 waveShapePreShift = 0;      // this will be added to waveform before shape lookup
+  //  float_4 waveShapePreMultiply = 1;
+    float_4 correctedWaveShapeMultiplier = 1;
+    
     float_4 aRight = 0;            // y = ax + b for second half of tri
     float_4 bRight = 0;
     float_4 aLeft = 0;
@@ -494,6 +506,8 @@ inline void WVCO<TBase>::stepm()
     baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
 
     // Sine, Fold, SawTri
+    // find the correct offset and gains to apply the waveformat
+    // get thet them nomalized
     switch (wf) {
         case WVCODsp::WaveForm::Sine:
             baseOffset = 0;
@@ -510,6 +524,7 @@ inline void WVCO<TBase>::stepm()
         default:
             assert(0);
     }
+
 
 #if 1
     const bool snap = TBase::params[SNAP_PARAM].value > .5f;
@@ -600,13 +615,45 @@ inline void WVCO<TBase>::stepn()
         simd_assertGE(envMult, float_4(0)); 
 
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-        dsp[bank].shapeAdjust = baseShapeGain * envMult; 
+       
+       
+      
+      // moved the calculations that were done at oversample rate here,
+      // but there is still a lot stuff that doesn't have to be done at sample rate.
+       // dsp[bank].shapeAdjust = baseShapeGain * envMult; 
+        float_4 correctedWaveShapeMultiplier = baseShapeGain * envMult;
+        switch(dsp[bank].waveform) {
+            case WVCODsp::WaveForm::Sine:
+                break;
+            case WVCODsp::WaveForm::Fold:
+                correctedWaveShapeMultiplier += float_4(.095);
+                correctedWaveShapeMultiplier *= 10;
+                break;
+            case WVCODsp::WaveForm::SawTri:
+                correctedWaveShapeMultiplier = .5 + correctedWaveShapeMultiplier / 2;
+                break;
+        //    default:
+            // done't assert - sometimes we get here before waveform is initialized
+               // assert(false);
+        }
+        dsp[bank].correctedWaveShapeMultiplier = correctedWaveShapeMultiplier;
+
+#if 0
+        // TODO: move this into helper
+           // float_4 k = .5 + shapeAdjust / 2;
+            float_4 k = correctedWaveShapeMultiplier;
+            float_4 x = phase;
+            simd_assertGE(x, float_4(0));
+            simd_assertLE(x, float_4(1));
+            s = SimdBlocks::ifelse( x < k, x * aLeft,  aRight * x + bRight);
+#endif
+
 
         assertLE( baseShapeGain, 1);
         assertGE( baseShapeGain, 0);   
 
-        simd_assertLE( dsp[bank].shapeAdjust, float_4(2));
-        simd_assertGE( dsp[bank].shapeAdjust, float_4(0));   
+      //  simd_assertLE( dsp[bank].shapeAdjust, float_4(2));
+     //   simd_assertGE( dsp[bank].shapeAdjust, float_4(0));   
 
         // now let's compute triangle params
         const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
