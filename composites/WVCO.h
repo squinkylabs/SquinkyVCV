@@ -141,10 +141,6 @@ public:
         int bufferIndex;
 
         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
-        // experiments - try fast approx -> fine
-        // try using last output to avoid re-calc
-    //    float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
-    //    float_4 phaseMod = (feedback * SimdBlocks::sinTwoPi(phaseAcc * twoPi));
         float_4 phaseMod = (feedback * lastOutput);
         phaseMod += fmInput;
 
@@ -153,7 +149,6 @@ public:
             phaseAcc += normalizedFreq;
             phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
             float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseMod);
-            //float_4 s = rack::simd::sin(phase * twoPi);
             float_4 s = SimdBlocks::sinTwoPi(phase * twoPi);
             s *= 5;
             buffer[bufferIndex] = s;

@@ -356,7 +356,7 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
 WVCOWidget::WVCOWidget(WVCOModule *mod) : module(mod)
 {
     setModule(module);
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    box.size = Vec(14 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/wvco_panel.svg");
 
     addLabel(Vec(60, 14), "Kitchen Sink");
