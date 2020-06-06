@@ -273,6 +273,7 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     std::function<void(Comp&)> initFunc,
     std::function<void(Comp&)> runFunc)
 { 
+    printf("--- testOutputLevels %d\n", waveForm); fflush(stdout);
     assertGE(waveForm, 0); 
     assertLE(waveForm, 2); 
     WVCO<TestComposite> wvco; 
@@ -291,7 +292,7 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
 
     float positive = -100;
     float negative = 100; 
-    float sum = 0;
+    float sum = 0; 
     const int iterations = 10000; 
     // const int iterations = 100; 
     for (int i=0; i < iterations; ++i) {  
@@ -303,10 +304,13 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
         negative = std::min(negative, x);  
     } 
  
+   printf("apos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
     assertClose(positive, expectedLevel, 1);
     assertClose(negative, -expectedLevel, 1); 
     sum /= iterations;
-    assertClose(sum, 0, .03);
+     printf("pos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
+    assertClose(sum, 0, .03); 
+    printf("--- leave testOutputLevels %d\n", waveForm);
 }
 
 

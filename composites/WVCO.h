@@ -188,19 +188,6 @@ public:
                 //syncIndex = syncCrossing;
                 float_4 syncIndexF = SimdBlocks::ifelse(justCrossed, syncCrossing, float_4(-1));
                 syncIndex = syncIndexF;
-               
-#if 0
-                synced = true;
-                printf("got a crossing. justCrossed = %s\n", toStr(justCrossed).c_str());
-                printf("deltaSync = %s\n", toStr(deltaSync).c_str());
-                printf("syncValue = %s\n", toStr(syncValue).c_str());
-                printf("lastSyncValue = %s\n", toStr(lastSyncValue).c_str());
-                printf("syncCrossing = %s\n", toStr(syncCrossing).c_str());
-                printf("syncIndexF = %s\n", toStr(syncIndexF).c_str());
-                printf("syncIndex = %s\n", toStr(syncIndex).c_str());
-                fflush(stdout);
-               //  assert(false);      // finish me
-#endif
             }
             // now make a 
             lastSyncValue = syncValue;
@@ -232,12 +219,7 @@ public:
            // imd_assertMask(syncNow);
             float_4 syncNow =  float_4(syncIndex) == float_4::zero();
             simd_assertMask(syncNow);
-#if 0
-             if (synced) {
-                printf("overloop %d index=%s\n", i, toStr(syncIndex).c_str());
-                printf("syncNow = %s\n", toStr(syncNow).c_str());
-            }
-#endif
+
             stepOversampled(i, phaseMod, syncNow);
             syncIndex -= int32_t(1);
         }
@@ -246,6 +228,7 @@ public:
         } else {
             float_4 finalSample = downsampler.process(buffer);
             // printf("dsp step using output level %s\n", toStr(outputLevel).c_str());
+            finalSample += waveformOffset;
             return finalSample * outputLevel;
         }
     }
@@ -274,7 +257,7 @@ public:
             s *= (adj * 10);
             s_orig = s;
             s = SimdBlocks::fold(s);
-            s *= (5.f * 5.f / 5.6f);        // why do we need this correction?
+         //   s *= (5.f * 5.f / 5.6f);        // why do we need this correction?
         } else if (waveform == WaveForm::SawTri) {
             // TODO: move this into helper
             float_4 k = .5 + shapeAdjust / 2;
@@ -282,11 +265,11 @@ public:
             simd_assertGE(x, float_4(0));
             simd_assertLE(x, float_4(1));
             s = SimdBlocks::ifelse( x < k, x * aLeft,  aRight * x + bRight);
-            s -= .5f;           // center it
-            s *= 10;            // andfix range
+         //   s -= .5f;           // center it
+          //  s *= 10;            // andfix range
         } else if (waveform == WaveForm::Sine) {
-            s = rack::simd::sin(phase * twoPi);
-            s *= 5;
+            s = SimdBlocks::sinTwoPi(phase * twoPi);
+          //  s *= 5;
         }
 
         // these are firing with folder and an ADSR on shape.
@@ -320,6 +303,7 @@ public:
     float_4 aLeft = 0;
     float_4 feedback = 0;
     float_4 outputLevel = 1;
+    float_4 waveformOffset = 0;
 
 private:
     float_4 phaseAcc = float_4::zero();
@@ -428,7 +412,8 @@ private:
     int freqMultiplier = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
     float baseFeedback = 0;
-    float baseOutputLevel = 1;  // 0..1
+    float baseOutputLevel = 1;  // 0..x
+    float baseOffset = 0;
     bool enableAdsrLevel = false;
     bool enableAdsrFeedback = false;
     bool enableAdsrFM = false;
@@ -499,10 +484,29 @@ inline void WVCO<TBase>::stepm()
     for (int bank=0; bank < numBanks; ++bank) {
         dsp[bank].waveform = wf;
         dsp[bank].setSyncEnable(sync);
+        dsp[bank].waveformOffset = baseOffset;
     }
 
     baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
     baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
+
+    // Sine, Fold, SawTri
+    switch (wf) {
+        case WVCODsp::WaveForm::Sine:
+            baseOffset = 0;
+            baseOutputLevel *= 5;
+            break;
+        case WVCODsp::WaveForm::Fold:
+            baseOffset = 0;
+            baseOutputLevel *=  (5.f * 5.f / 5.6f);
+            break;
+        case WVCODsp::WaveForm::SawTri:
+            baseOffset = -.5f; 
+            baseOutputLevel *= 10;
+            break;
+        default:
+            assert(0);
+    }
 
 #if 1
     const bool snap = TBase::params[SNAP_PARAM].value > .5f;
