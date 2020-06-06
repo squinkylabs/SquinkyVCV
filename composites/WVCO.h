@@ -208,7 +208,8 @@ public:
         doSync(syncValue, syncIndex);
 
          __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
-        float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
+        // float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
+        float_4 phaseMod = (feedback * lastOutput);
         phaseMod += fmInput;
 
         for (int i=0; i< oversampleRate; ++i) {
@@ -229,6 +230,7 @@ public:
             float_4 finalSample = downsampler.process(buffer);
             // printf("dsp step using output level %s\n", toStr(outputLevel).c_str());
             finalSample += waveformOffset;
+            lastOutput = finalSample;
             return finalSample * outputLevel;
         }
     }
