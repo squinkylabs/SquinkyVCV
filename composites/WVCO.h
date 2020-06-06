@@ -207,7 +207,7 @@ public:
       //  float_4 syncCrossing = float_4::zero(); // Offset that sync occurs [0.0f, 1.0f)
         doSync(syncValue, syncIndex);
 
-         __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
+       //  __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
         // float_4 phaseMod = (feedback * rack::simd::sin(phaseAcc * twoPi));
         float_4 phaseMod = (feedback * lastOutput);
         phaseMod += fmInput;
@@ -708,7 +708,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 0, "Through-zero FM depth"};
             break;
         case WVCO<TBase>::WAVESHAPE_GAIN_PARAM:
-            ret = {0, 100, 20, "Shape Mod"};
+            ret = {0, 100, 0, "Shape Mod"};
             break;
         case WVCO<TBase>::WAVE_SHAPE_PARAM:
             ret = {0, 2, 0, "Wave Shape"};
@@ -729,13 +729,13 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 50, "Release"};
             break;
         case WVCO<TBase>::OUTPUT_LEVEL_PARAM:
-            ret = {0, 100, 50, "Level"};
+            ret = {0, 100, 100, "Level"};
             break;
         case WVCO<TBase>::ADSR_SHAPE_PARAM:
             ret = {0, 1, 0, "ADSR->shape"};
             break;
         case WVCO<TBase>::ADSR_FBCK_PARAM:
-         ret = {0, 1, 00, "ADSR->Feedback"};
+         ret = {0, 1, 0, "ADSR->Feedback"};
             break;
         case WVCO<TBase>::ADSR_OUTPUT_LEVEL_PARAM:
          ret = {0, 1, 0, "ADRS->Output Level"};
