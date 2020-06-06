@@ -489,7 +489,8 @@ inline void WVCO<TBase>::stepm()
         dsp[bank].waveformOffset = baseOffset;
     }
 
-    baseFeedback =  TBase::params[FEEDBACK_PARAM].value / 100.f;
+    // these numbers here are just values found by experimenting - no math.
+    baseFeedback =  TBase::params[FEEDBACK_PARAM].value * 2.f / 1000.f;
     baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
 
     // Sine, Fold, SawTri
