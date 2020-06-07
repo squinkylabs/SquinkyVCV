@@ -156,7 +156,8 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
     addLabel(Vec(knobX3+xOffset - 8, knobY2 - labelAboveKnob), 
         side ? "Sub 2B" : "Sub 1B");
 
-    addParam(SqHelper::createParam<Blue30Knob>(
+//Blue30SnapKnob
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX2+xOffset, knobY3),
         module,
@@ -164,7 +165,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
     addLabel(Vec(knobX2+xOffset - 4, knobY3 - labelAboveKnob), 
         side ? "Div 2A" : "Div 1A");
 
-    addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX3+xOffset, knobY3),
         module,
@@ -252,7 +253,7 @@ SubWidget::SubWidget(SubModule *module)
     setModule(module);
 
     box.size = Vec(20 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/wvco_panel.svg");
+    SqHelper::setPanel(this, "res/sub_panel.svg");
 
     addLabel(Vec(100, 14), "Substitute");
 

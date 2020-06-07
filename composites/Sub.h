@@ -406,22 +406,22 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             ret = {1, 16, 4, "VCO 2 subharmonic B divisor"};
             break;
         case Sub<TBase>::VCO1_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 1 level"};
+            ret = {0, 1, 1, "VCO 1 level"};
             break;
         case Sub<TBase>::VCO2_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 2 level"};
+            ret = {0, 1, 1, "VCO 2 level"};
             break;
         case Sub<TBase>::SUB1A_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 1 subharmonic A level"};
+            ret = {0, 1, 0, "VCO 1 subharmonic A level"};
             break;
         case Sub<TBase>::SUB2A_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 2 subharmonic A level"};
+            ret = {0, 1, 0, "VCO 2 subharmonic A level"};
             break;
         case Sub<TBase>::SUB1B_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 1 subharmonic B level"};
+            ret = {0, 1, 0, "VCO 1 subharmonic B level"};
             break;
         case Sub<TBase>::SUB2B_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 2 subharmonic B level"};
+            ret = {0, 1, 0, "VCO 2 subharmonic B level"};
             break;
         case Sub<TBase>::WAVEFORM1_PARAM:
             ret = {0, 2, 0, "VCO 1 waveform"};
