@@ -67,6 +67,7 @@ float -> float_4 isn't free.
 #ifndef _MSC_VER
 #include "simd.h"
 #include "ADSR16.h"
+#include "LookupTable.h"
 #include "ObjectCache.h"
 #include "SimdBlocks.h"
 #include "IComposite.h"
@@ -375,6 +376,7 @@ private:
     ADSR16 adsr;
 
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
+    std::shared_ptr<LookupTableParams<float>>  audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
 
     // variables to stash processed knobs and other input
     float basePitch = 0;        // all the knobs, no cv. units are volts
@@ -531,6 +533,12 @@ inline void WVCO<TBase>::stepn()
             // use SIMD here?
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
+         //   const float depth  =audioTaperLookup(TBase::params[FM_DEPTH_PARAM].value * .01f);
+            const float depth = .3 * LookupTable<float>::lookup(
+                *audioTaperLookupParams, 
+                TBase::params[FM_DEPTH_PARAM].value * .01f);
+            pitch += TBase::inputs[FM_INPUT].getVoltage(channel) * depth;
+               
             float _freq = expLookup(pitch);
             _freq *= freqMultiplier;
 
@@ -677,7 +685,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {-12.0f, 12.0f, 0, "Fine Tune"};
             break;
         case WVCO<TBase>::FM_DEPTH_PARAM:
-         ret = {.0f, 100.0f, 0, "[nimp] Freq Mod"};
+         ret = {.0f, 100.0f, 0, "Freq Mod"};
             break;
         case WVCO<TBase>::LINEAR_FM_DEPTH_PARAM:
             ret = {0, 100, 0, "Through-zero FM depth"};
