@@ -430,16 +430,16 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             ret = {0, 2, 0, "VCO 2 waveform"};
             break;
         case Sub<TBase>::SUB1A_TUNE_TRIM_PARAM:
-            ret = {-1, 1, 1, "VCO 1 sub A trim"};
+            ret = {-1, 1, 0, "VCO 1 sub A trim"};
             break;
         case Sub<TBase>::SUB1B_TUNE_TRIM_PARAM:
-            ret = {-1, 1, 1, "VCO 1 sub V trim"};
+            ret = {-1, 1, 0, "VCO 1 sub V trim"};
             break;
         case Sub<TBase>::SUB2A_TUNE_TRIM_PARAM:
-            ret = {-1, 1, 1, "VCO 2 sub A trim"};
+            ret = {-1, 1, 0, "VCO 2 sub A trim"};
             break;
         case Sub<TBase>::SUB2B_TUNE_TRIM_PARAM:
-            ret = {-1, 1, 1, "VCO 2 sub B trim"};
+            ret = {-1, 1, 0, "VCO 2 sub B trim"};
             break;
         default:
             assert(false);
