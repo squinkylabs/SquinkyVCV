@@ -59,18 +59,10 @@ struct VoltageControlledOscillator
 
 	rack::dsp::TRCFilter<T> sqrFilter;
 
-	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sqrMinBlep;
-	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sawMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> mainMinBlep;
-	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> triMinBlep;
-	//dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> sinMinBlep;
 	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep[2];
 
 	T mainValue = 0.f;	// square or saw, depends on waveform setting
-	//T sqrValue = 0.f;
-	//T sawValue = 0.f;
-	//T triValue = 0.f;
-	//T sinValue = 0.f;
 
 	// subs are all two element arrays A and B
 	I subCounter[2] = {I(1), I(1)};
@@ -175,7 +167,7 @@ struct VoltageControlledOscillator
 		// Wrap phase
 		phase -= simd::floor(phase);
 
-		// we don't wrap this phase - the sync does it
+		// we don't wrap this phase - the phase sync to master osc does it for us
 		subPhase[0] += deltaSubPhase[0];
 		subPhase[1] += deltaSubPhase[1];
 
@@ -201,8 +193,6 @@ struct VoltageControlledOscillator
 		//	assert(false);
 		}
 #endif
-
-		//simd_assertLT(subPhase, T(overflow));
  
 
 		// Jump sqr when crossing 0, or 1 if backwards
@@ -242,6 +232,8 @@ struct VoltageControlledOscillator
 		}
 
 		// Jump saw when crossing 0.5	
+		// Since we are basing the subs off the saw, a lot of stuff goes on here
+
 		T halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;	
 		int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
 		if (_logvco && 0) {
@@ -287,76 +279,10 @@ struct VoltageControlledOscillator
 							subPhase[subIndex][channelNumber] = 0;
 					 		subMinBlep[subIndex].insertDiscontinuity(p, xs);
 						}
-
 					}
-				
-/* old way, with one sub
-					assertGT(subCounter[i], 0);
-					subCounter[i]--;
-					if (subCounter[i] == 0) {
-						subCounter[i] = subDivisionAmount[i];
-#ifndef NDEBUG
-						if (_logvco) {
-							printf("subPhase[%d] hit %f, will reset 0 delta = %f\n", i, subPhase[i], deltaSubPhase[i]);
-							printf("  delta phase = %f phase = %f\n", deltaPhase[i], phase[i]);
-							printf("  sample %d i=%d\n", debugCtr, i);
-							printf("  all subPhase: %s\n", toStr(subPhase).c_str());
-							printf("  all phase(trigger): %s\n", toStr(subPhase).c_str());
-							printf(" all freq = %s\n", toStr(freq).c_str());
-							printf(" all sub freq = %s\n", toStr(subFreq).c_str());
-							printf(" all deltaPhase = %s\n", toStr(deltaPhase).c_str());
-						}
-#endif
-						T xs = mask & ((-1.f ) * subPhase);
-						subPhase[i] = 0;
-					 	subMinBlep.insertDiscontinuity(p, xs);
-#ifndef NDEBUG
-						if (_logvco) {
-							printf(" leaving reset sub phase %d with subPhase =%s\n", i, toStr(subPhase).c_str());
-						}
-#endif
-					}
-*/
 				}
 			}
 		}
-
-		// Detect sync
-		// Might be NAN or outside of [0, 1) range
-	#if 0 // no sync
-		if (syncEnabled) {
-			T deltaSync = syncValue - lastSyncValue;
-			T syncCrossing = -lastSyncValue / deltaSync;
-			lastSyncValue = syncValue;
-			T sync = (0.f < syncCrossing) & (syncCrossing <= 1.f) & (syncValue >= 0.f);
-			int syncMask = simd::movemask(sync);
-			if (syncMask) {
-				if (soft) {
-					syncDirection = SimdBlocks::ifelse(sync, -syncDirection, syncDirection);
-				}
-				else {
-					T newPhase = SimdBlocks::ifelse(sync, (1.f - syncCrossing) * deltaPhase, phase);
-					// Insert minBLEP for sync
-					for (int i = 0; i < _channels; i++) {
-						if (syncMask & (1 << i)) {
-							T mask = simd::movemaskInverse<T>(1 << i);
-							float p = syncCrossing[i] - 1.f;
-							T x;
-							x = mask & (sqr(newPhase) - sqr(phase));
-							sqrMinBlep.insertDiscontinuity(p, x);
-							x = mask & (saw(newPhase) - saw(phase));
-							sawMinBlep.insertDiscontinuity(p, x);
-							x = mask & (tri(newPhase) - tri(phase));
-							triMinBlep.insertDiscontinuity(p, x);
-							x = mask & (sin(newPhase) - sin(phase));
-							sinMinBlep.insertDiscontinuity(p, x);
-						}
-					}
-					phase = newPhase;
-				}
-			}
-		}
-	#endif
 
 		mainValue = (mainIsSaw) ? saw(phase) : sqr(phase);
 		mainValue += mainMinBlep.process();
@@ -364,74 +290,11 @@ struct VoltageControlledOscillator
 	//	sqrValue = sqr(phase);
 	//	sqrValue += sqrMinBlep.process();
 
-#if 0
-		if (analog) {
-			sqrFilter.setCutoffFreq(20.f * deltaTime);
-			sqrFilter.process(sqrValue);
-			sqrValue = sqrFilter.highpass() * 0.95f;
-		}
-
-		// Saw
-		sawValue = saw(phase);
-		sawValue += sawMinBlep.process();
-#endif
-
 		subValue[0] = (subPhase[0] * float_4(2.f)) + float_4(-1.f);
 		subValue[0] += subMinBlep[0].process();
 		subValue[1] = (subPhase[1] * float_4(2.f)) + float_4(-1.f);
 		subValue[1] += subMinBlep[1].process();
-
-#if 0
-		// Tri
-		triValue = tri(phase);
-		triValue += triMinBlep.process();
-
-		// Sin
-		sinValue = sin(phase);
-		sinValue += sinMinBlep.process();
-#endif
 	}
-
-#if 0
-	T sin(T phase) {
-		T v;
-		if (analog) {
-			// Quadratic approximation of sine, slightly richer harmonics
-			T halfPhase = (phase < 0.5f);
-			T x = phase - SimdBlocks::ifelse(halfPhase, T(0.25f), T(0.75f));
-			v = 1.f - 16.f * simd::pow(x, 2);
-			v *= SimdBlocks::ifelse(halfPhase, T(1.f), T(-1.f));
-		}
-		else {
-			v = sin2pi_pade_05_5_4(phase);
-			// v = sin2pi_pade_05_7_6(phase);
-			// v = simd::sin(2 * T(M_PI) * phase);
-		}
-		return v;
-	}
-	T sin() {
-		return sinValue;
-	}
-
-	T tri(T phase) {
-		T v;
-		if (analog) {
-			T x = phase + 0.25f;
-			x -= simd::trunc(x);
-			T halfX = (x >= 0.5f);
-			x *= 2;
-			x -= simd::trunc(x);
-			v = expCurve(x) * SimdBlocks::ifelse(halfX, T(1.f), T(-1.f));
-		}
-		else {
-			v = 1 - 4 * simd::fmin(simd::fabs(phase - 0.25f), simd::fabs(phase - 1.25f));
-		}
-		return v;
-	}
-	T tri() {
-		return triValue;
-	}
-#endif
 
 	T saw(T phase) {
 		T v;
@@ -445,11 +308,6 @@ struct VoltageControlledOscillator
 		}
 		return v;
 	}
-#if 0
-	T saw() {
-		return sawValue;
-	}
-#endif
 
 	T main() {
 		return mainValue;
@@ -464,11 +322,6 @@ struct VoltageControlledOscillator
 		T v = SimdBlocks::ifelse(phase < pulseWidth, T(1.f), T(-1.f));
 		return v;
 	}
-#if 0
-	T sqr() {
-		return sqrValue;
-	}
-	#endif
 
 	T light() {
 		return simd::sin(2 * T(M_PI) * phase);
