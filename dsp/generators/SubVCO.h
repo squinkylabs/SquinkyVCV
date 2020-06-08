@@ -45,6 +45,8 @@ public:
 		return subValue[side];
 	}
 private:
+	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> mainMinBlep;
+	dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T> subMinBlep[2];
 	T mainValue = 0;
 
 	// subs are all two element arrays A and B
@@ -122,8 +124,142 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setWaveform(T mainSaw, T s
 template <int OV, int Q, typename T, typename I>
 inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T syncValue)
 {
-	assert(false);
+	assert(_channels > 0);
+
+	// compute delta phase for this processing tick
+	// TODO: do we need to do all this clamping every time?
+	T deltaPhase = simd::clamp(freq * deltaTime, 1e-6f, 0.35f);
+	T deltaSubPhase[2];
+	deltaSubPhase[0] = simd::clamp(subFreq[0] * deltaTime, 1e-6f, 0.35f);
+	deltaSubPhase[1] = simd::clamp(subFreq[1] * deltaTime, 1e-6f, 0.35f);
+
+	// Advance the phase of everyone.
+	// Don't wrap any - we will do them all at once later
+	phase += deltaPhase;
+	subPhase[0] += deltaSubPhase[0];
+	subPhase[1] += deltaSubPhase[1];
+
+	// Now might be a good time to add min-bleps for square waves
+
+
+
+
+// orig
+//		T halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;	
+//		int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
+
+	// When the main phase goes past one - time to re-sync eveyrone
+
+
+//	T phaseOverflow = (phase > T(1));
+//	simd_assertMask(phaseOverflow);
+//	int phaseOverflowMask = simd::movemask(phaseOverflow);
+
+	// If main saw crosses 1.0 in this sample, then oneCrossing will be between
+	// zero and 1. It is isn't, then it doesn't cross this sample
+	T oneCrossing = (1.f - (phase - deltaPhase)) / deltaPhase;	
+
+	// of 0 crossed, will have 1
+	// 1 -> 2
+	// 2 -> 4
+	// 3 -> 8
+	int oneCrossMask =  simd::movemask((0 < oneCrossing) & (oneCrossing <= 1.f));
+
+	if (oneCrossMask) {
+		for (int channelNumber = 0; channelNumber < _channels; channelNumber++) {
+
+			if (oneCrossMask & (1 << channelNumber)) {
+				T crossingMask = simd::movemaskInverse<T>(1 << channelNumber);
+
+				// do we need saw?
+				//T sawCrossingMask = crossingMask & mainIsSaw;
+				float p = oneCrossing[channelNumber] - 1.f;
+
+				// used to only do for saw, since square has own case.
+				//T x = sawCrossingMask & (-2.f * syncDirection);
+				// TODO: are we still generating -1..+1? why not...?
+				T x =  oneCrossMask & (-2.f * syncDirection);
+				mainMinBlep.insertDiscontinuity(p, x);
+			//	printf("insert main discont\n");
+
+			//	if (_logvco) {
+			//		printf("** insert disc(%f, %f)\n", p, x[0]);
+			//	}
+				// Implement the new  dual subs
+				for (int subIndex = 0; subIndex <= 1; ++subIndex) {
+					assertGT(subCounter[subIndex][channelNumber], 0);
+					subCounter[subIndex][channelNumber]--;
+					if (subCounter[subIndex][channelNumber] == 0) {
+						subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
+
+						T xs = crossingMask & ((-1.f ) * subPhase[subIndex]);
+						subPhase[subIndex][channelNumber] = 0;
+
+						// just an experiment
+					//	subPhase[subIndex] += deltaSubPhase[subIndex];
+				//		subPhase[0] += deltaSubPhase[0];
+//	subPhase[1] += deltaSubPhase[1];
+						subMinBlep[subIndex].insertDiscontinuity(p, xs);
+				//		 printf("insert sub %d discont\n", subIndex);
+					}
+				}
+
+			//	T mainSquare
+			}
+		}
+	}
+
+	mainValue = phase;
+
 }
+
+/*
+	if (halfMask) {
+			// TODO: can _channels be  >= 4? If so, I don't think this will work
+			for (int channelNumber = 0; channelNumber < _channels; channelNumber++) {
+				if (_logvco) {
+					printf("i=%d, <<=%d and=%d\n", channelNumber, 1 << channelNumber,  (halfMask & (1 << channelNumber)));
+				}
+				if (halfMask & (1 << channelNumber)) {
+					T crossingMask = simd::movemaskInverse<T>(1 << channelNumber);
+
+					// do we need saw?
+					T sawCrossingMask = crossingMask & mainIsSaw;
+					float p = halfCrossing[channelNumber] - 1.f;
+
+					// used to only do for saw, since square has own case.
+					//T x = sawCrossingMask & (-2.f * syncDirection);
+					T x =  crossingMask & (-2.f * syncDirection);
+					mainMinBlep.insertDiscontinuity(p, x);
+				//	printf("insert main discont\n");
+
+					if (_logvco) {
+						printf("** insert disc(%f, %f)\n", p, x[0]);
+					}
+					// Implement the new  dual subs
+					for (int subIndex = 0; subIndex <= 1; ++subIndex) {
+						assertGT(subCounter[subIndex][channelNumber], 0);
+						subCounter[subIndex][channelNumber]--;
+						if (subCounter[subIndex][channelNumber] == 0) {
+							subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
+
+							T xs = crossingMask & ((-1.f ) * subPhase[subIndex]);
+							subPhase[subIndex][channelNumber] = 0;
+
+							// just an experiment
+						//	subPhase[subIndex] += deltaSubPhase[subIndex];
+					//		subPhase[0] += deltaSubPhase[0];
+	//	subPhase[1] += deltaSubPhase[1];
+					 		subMinBlep[subIndex].insertDiscontinuity(p, xs);
+					//		 printf("insert sub %d discont\n", subIndex);
+						}
+					}
+
+				//	T mainSquare
+				}
+			}
+		}
+*/
 
 
 
