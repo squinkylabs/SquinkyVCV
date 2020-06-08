@@ -176,7 +176,7 @@ struct VoltageControlledOscillator
 		deltaSubPhase[0] = simd::clamp(subFreq[0] * deltaTime, 1e-6f, 0.35f);
 		deltaSubPhase[1] = simd::clamp(subFreq[1] * deltaTime, 1e-6f, 0.35f);
 
-
+#if 0
 		if (soft) {
 			// Reverse direction
 			deltaPhase *= syncDirection;
@@ -185,6 +185,7 @@ struct VoltageControlledOscillator
 			// Reset back to forward
 			syncDirection = 1.f;
 		}
+	#endif
 
 		phase += deltaPhase;
 		// Wrap phase
@@ -219,6 +220,8 @@ struct VoltageControlledOscillator
  
 
 		// Jump sqr when crossing 0, or 1 if backwards
+		// min blop for rising edge of sq
+		#if 1
 		T wrapPhase = (syncDirection == -1.f) & 1.f;
 		T wrapCrossing = (wrapPhase - (phase - deltaPhase)) / deltaPhase;
 		int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
@@ -239,6 +242,7 @@ struct VoltageControlledOscillator
 				}
 			}
 		}
+		#endif
 		++debugCtr;
 
 		// Jump sqr when crossing `pulseWidth`
@@ -279,10 +283,11 @@ struct VoltageControlledOscillator
 					printf("i=%d, <<=%d and=%d\n", channelNumber, 1 << channelNumber,  (halfMask & (1 << channelNumber)));
 				}
 				if (halfMask & (1 << channelNumber)) {
-					T mask = simd::movemaskInverse<T>(1 << channelNumber);
-					mask &= mainIsSaw;
+					T crossingMask = simd::movemaskInverse<T>(1 << channelNumber);
+				//	mask &= mainIsSaw;			// now mask only set for index that reset, and is saw
+					T sawCrossingMask = crossingMask & mainIsSaw;
 					float p = halfCrossing[channelNumber] - 1.f;
-					T x = mask & (-2.f * syncDirection);
+					T x = sawCrossingMask & (-2.f * syncDirection);
 				//	if (mainIsSaw) {
 						mainMinBlep.insertDiscontinuity(p, x);
 				//	}
@@ -303,7 +308,7 @@ struct VoltageControlledOscillator
 							//printf("now, counter0 = %s\n", toStr(subCounter[0]).c_str());
 							//printf("now, counter1 = %s\n", toStr(subCounter[1]).c_str());
 
-							T xs = mask & ((-1.f ) * subPhase[subIndex]);
+							T xs = sawCrossingMask & ((-1.f ) * subPhase[subIndex]);
 							subPhase[subIndex][channelNumber] = 0;
 					 		subMinBlep[subIndex].insertDiscontinuity(p, xs);
 						}
