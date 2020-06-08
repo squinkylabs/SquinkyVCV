@@ -15,6 +15,120 @@
 using namespace rack;		// normally I don't like "using", but this is third party code...
 extern bool _logvco;
 
+/**
+ * T is the sample type (usually float or float_4)
+ * I is the integer type (usually int or int32_4)
+ */
+template <int OVERSAMPLE, int QUALITY, typename T, typename I>
+class VoltageControlledOscillator
+{
+public:
+	int index=-1;		// just for debugging
+
+	/**
+	 * sets the waveformat for main VCO and for the two subs
+	 * parameters are proper mask vectors
+	 */
+	void setWaveform(T mainSaw, T subSaw);
+
+	/**
+	 * Set num channels and all pitches for VCO.
+	 * note that most of the parameters are vectors
+	 */
+	void setupSub(int channels, T pitch, I subDivisorA, I subDivisorB);
+
+	void process(float deltaTime, T syncValue);
+	T main() const {
+		return mainValue;
+	}
+    T sub(int side) const {
+		return subValue[side];
+	}
+private:
+	T mainValue = 0;
+
+	// subs are all two element arrays A and B
+	I subCounter[2] = {I(1), I(1)};
+	I subDivisionAmount[2] = {I(100), I(100)};
+	T subValue[2] = { T(0), T(0)};
+	T subFreq[2] = {T(0), T(0)};			// freq /subdivamount
+	T subPhase[2] = {0, 0};			// like phase, but for the subharmonic
+
+	T mainIsSaw = float_4::mask();
+	T mainIsNotSaw = 0;
+	T subIsSaw = float_4::mask();
+	T subIsNotSaw = 0;
+
+	bool syncEnabled = false;
+	// For optimizing in serial code
+	int _channels = 0;
+
+	T lastSyncValue = 0.f;
+	T phase = 0.f;
+	
+	T freq;
+	T pulseWidth = 0.5f;
+	const T syncDirection = 1.f;
+};
+
+template <int OV, int Q, typename T, typename I>
+inline void VoltageControlledOscillator<OV, Q, T, I>::setupSub(int channels, T pitch, I subDivisorA, I subDivisorB)
+{
+	//	printf("\n********* in setup sub index = %d\n", index);
+	assert(index >= 0);
+
+	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+	_channels = channels;
+	assert(channels >= 0 && channels <= 4);
+	simd_assertGT(subDivisorA, int32_4(0));
+	simd_assertLE(subDivisorA, int32_4(16));
+	simd_assertGT(subDivisorB, int32_4(0));
+	simd_assertLE(subDivisorB, int32_4(16));
+	subDivisionAmount[0] = subDivisorA;
+	subDivisionAmount[1] = subDivisorB;
+
+	// TODO: this reset here is what glitche, yes?
+	subCounter[0] = SimdBlocks::ifelse( subCounter[0] < 1, 1, subCounter[0]);
+	subCounter[1] = SimdBlocks::ifelse( subCounter[1] < 1, 1, subCounter[1]);
+
+	subFreq[0] = freq / subDivisionAmount[0];
+	subFreq[1] = freq / subDivisionAmount[1];
+	
+	// Let's keep sub from overflowing by
+	// setting freq of unused ones to zero
+	for (int i = 0; i < 4; ++i) {
+		if (i >= channels) {
+			subFreq[0][i] = 0;
+			subFreq[1][i] = 0;
+			subPhase[0][i] = 0;
+			subPhase[1][i] = 0;
+		}
+	}
+}
+
+template <int OV, int Q, typename T, typename I>
+inline void VoltageControlledOscillator<OV, Q, T, I>::setWaveform(T mainSaw, T subSaw)
+{
+	simd_assertMask(mainSaw);
+	simd_assertMask(subSaw);
+//	printf("mainisSw = %d for %p\n", mainSaw, this); fflush(stdout);
+	mainIsSaw = mainSaw;
+	subIsSaw = subSaw;
+
+	mainIsNotSaw = mainIsSaw ^ float_4::mask();
+	subIsNotSaw = subIsSaw ^ float_4::mask();
+}
+
+template <int OV, int Q, typename T, typename I>
+inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T syncValue)
+{
+	assert(false);
+}
+
+
+
+#if 0 // old version
+
 // Accurate only on [0, 1]
 template <typename T>
 T sin2pi_pade_05_7_6(T x) {
@@ -165,6 +279,7 @@ struct VoltageControlledOscillator
 		this->pulseWidth = simd::clamp(pulseWidth, pwMin, 1.f - pwMin);
 	}
 
+	// This was first one
 	void doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw,
 		dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T>& minBlep, int id) const
 	{
@@ -175,8 +290,10 @@ struct VoltageControlledOscillator
 				if (wrapMask & (1 << i)) {
 					// ok, this VCO here is wrapping
 					const T lowToHighMask = simd::movemaskInverse<T>(1 << i);
+					simd_assertMask(lowToHighMask);
 
 					// "new" way of preventing saw from getting into sq minblep
+					// TODO: remove the word "main" -> it's not correct any more
 					const T mainLowToHighMask = lowToHighMask & notSaw;
 					float p = wrapCrossing[i] - 1.f;
 					T x = mainLowToHighMask & (2.f * syncDirection);
@@ -186,6 +303,27 @@ struct VoltageControlledOscillator
 				}
 			}
 		}
+	}
+
+	void doSquareHighToLowMinblep(T deltaPhase, T phase, T notSaw,
+		dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T>& minBlep, int id) const
+	{
+		T pulseCrossing = (pulseWidth - (phase - deltaPhase)) / deltaPhase;
+		int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
+		if (pulseMask) {
+			for (int i = 0; i < _channels; i++) {
+				if (pulseMask & (1 << i)) {
+					T highToLowMask = simd::movemaskInverse<T>(1 << i);
+					// mask &= mainIsNotSaw;
+					const T mainHighToLowMask = highToLowMask & notSaw;
+					float p = pulseCrossing[i] - 1.f;
+					T x = mainHighToLowMask & (-2.f * syncDirection);
+				//	if (!mainIsSaw) {
+						minBlep.insertDiscontinuity(p, x);
+				//	}
+				}
+			}
+		}	
 	}
 
 	void process(float deltaTime, T syncValue) {
@@ -198,6 +336,16 @@ struct VoltageControlledOscillator
 		T deltaSubPhase[2];
 		deltaSubPhase[0] = simd::clamp(subFreq[0] * deltaTime, 1e-6f, 0.35f);
 		deltaSubPhase[1] = simd::clamp(subFreq[1] * deltaTime, 1e-6f, 0.35f);
+
+#if 0	// doing up here make it unaligned by a sampe = very bad
+		doSquareLowToHighMinblep(deltaPhase, phase, mainIsNotSaw, mainMinBlep, 100);
+		doSquareLowToHighMinblep(deltaSubPhase[0], subPhase[0], subIsNotSaw, subMinBlep[0], 101);
+		doSquareLowToHighMinblep(deltaSubPhase[1], subPhase[1], subIsNotSaw, subMinBlep[1], 102);
+
+	//if (phase[0] < deltaPhase[0]) printf("phase < delta\n");
+	//	if (subPhase[0][0] < deltaSubPhase[0][0]) printf("sub 0 phase < delta\n");
+	//	if (subPhase[1][0] < deltaSubPhase[1][0]) printf("sub 1 phase < delta\n");
+#endif
 
 #if 0
 		if (soft) {
@@ -219,40 +367,26 @@ struct VoltageControlledOscillator
 		subPhase[1] += deltaSubPhase[1];
 
 	
-#if 0
-			const float overflow = 2;
-//#ifndef NDEBUG
-		if (subPhase[0] > overflow || subPhase[1] > overflow || subPhase[2] > overflow || subPhase[3] > overflow) {
-			printf("\nsubPhase overflow sample %d\n", debugCtr);
-			printf(" subPhase = %s\n", toStr(subPhase).c_str());
-			printf("regular phase = %s\n", toStr(phase).c_str());
-			printf(" delta sub = %s\n", toStr(deltaSubPhase).c_str());
-			printf(" delta regular = %s\n", toStr(deltaPhase).c_str());
-
-			printf(" div = %s\n", toStr(subDivisionAmount).c_str());
-			printf(" ctr = %s\n", toStr(subCounter).c_str());
-			printf("channels = %d\n", _channels);
-			
-			
-		//	subPhase = 0;			// ULTRA HACK
-		//	printf("ovf forcing to 0\n");
-			fflush(stdout);
-		//	assert(false);
-		}
-#endif
- 
-
 		// Jump sqr when crossing 0, or 1 if backwards
 		// min blop for rising edge of sq
-
+		
+# if 1 // doing here makes the main square look right
+		// it does what's the leading edge on the scope
 		doSquareLowToHighMinblep(deltaPhase, phase, mainIsNotSaw, mainMinBlep, 100);
-		doSquareLowToHighMinblep(deltaSubPhase[0], subPhase[0], subIsNotSaw, subMinBlep[0], 101);
-		doSquareLowToHighMinblep(deltaSubPhase[1], subPhase[1], subIsNotSaw, subMinBlep[1], 102);
+	//	doSquareLowToHighMinblep(deltaSubPhase[0], subPhase[0], subIsNotSaw, subMinBlep[0], 101);
+	//	doSquareLowToHighMinblep(deltaSubPhase[1], subPhase[1], subIsNotSaw, subMinBlep[1], 102);
+#endif
 
-		//if (phase[0] < deltaPhase[0]) printf("phase < delta\n");
-		if (subPhase[0][0] < deltaSubPhase[0][0]) printf("sub 0 phase < delta\n");
-		if (subPhase[1][0] < deltaSubPhase[1][0]) printf("sub 1 phase < delta\n");
+		// doing here makes the falling edge of the subs look right
 #if 0
+		doSquareHighToLowMinblep(deltaPhase, phase, mainIsNotSaw, mainMinBlep, 100);
+		doSquareHighToLowMinblep(deltaSubPhase[0], subPhase[0], subIsNotSaw, subMinBlep[0], 101);
+		doSquareHighToLowMinblep(deltaSubPhase[1], subPhase[1], subIsNotSaw, subMinBlep[1], 102);
+#endif
+
+
+	
+#if 0 // just debuggin
 		static float maxPhase = -1;
 		static float minPhase = 2;
 		static float maxSubPhase = -1;
@@ -342,6 +476,8 @@ struct VoltageControlledOscillator
 				}
 				if (halfMask & (1 << channelNumber)) {
 					T crossingMask = simd::movemaskInverse<T>(1 << channelNumber);
+
+					// do we need saw?
 					T sawCrossingMask = crossingMask & mainIsSaw;
 					float p = halfCrossing[channelNumber] - 1.f;
 
@@ -349,6 +485,7 @@ struct VoltageControlledOscillator
 					//T x = sawCrossingMask & (-2.f * syncDirection);
 					T x =  crossingMask & (-2.f * syncDirection);
 					mainMinBlep.insertDiscontinuity(p, x);
+				//	printf("insert main discont\n");
 
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
@@ -360,9 +497,15 @@ struct VoltageControlledOscillator
 						if (subCounter[subIndex][channelNumber] == 0) {
 							subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
 
-							T xs = sawCrossingMask & ((-1.f ) * subPhase[subIndex]);
+							T xs = crossingMask & ((-1.f ) * subPhase[subIndex]);
 							subPhase[subIndex][channelNumber] = 0;
+
+							// just an experiment
+						//	subPhase[subIndex] += deltaSubPhase[subIndex];
+					//		subPhase[0] += deltaSubPhase[0];
+	//	subPhase[1] += deltaSubPhase[1];
 					 		subMinBlep[subIndex].insertDiscontinuity(p, xs);
+					//		 printf("insert sub %d discont\n", subIndex);
 						}
 					}
 
@@ -426,6 +569,7 @@ struct VoltageControlledOscillator
 		return simd::sin(2 * T(M_PI) * phase);
 	}
 };
+#endif
 
 #endif
 
