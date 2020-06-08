@@ -70,17 +70,40 @@ struct VoltageControlledOscillator
 	T subValue[2] = { T(0), T(0)};
 	T subFreq[2] = {T(0), T(0)};			// freq /subdivamount
 
-	bool mainIsSaw = true;
-	bool subIsSaw = true;
+	T mainIsSaw = float_4::mask();
+	T mainIsNotSaw = 0;
+	T subIsSaw = float_4::mask();
+	T subIsNotSaw = 0;
 
 	int debugCtr = 0;
 	int index=-1;		// just for debugging
 
-	void setWaveform(bool mainSaw, bool subSaw)
+	void setWaveform(T mainSaw, T subSaw)
 	{
+		simd_assertMask(mainSaw);
+		simd_assertMask(subSaw);
+	//	printf("mainisSw = %d for %p\n", mainSaw, this); fflush(stdout);
 		mainIsSaw = mainSaw;
 		subIsSaw = subSaw;
+
+		mainIsNotSaw = mainIsSaw ^ float_4::mask();
+		subIsNotSaw = subIsSaw ^ float_4::mask();
+	#if 0
+	printf("setWaveform mainisSw = %s\n  subSaw= %s\n !mainsaw=%s\n, !mainsub=%s\n", 
+		toStr(mainIsSaw).c_str(),
+		toStr(subIsSaw).c_str(),
+		toStr(mainIsNotSaw).c_str(),
+		toStr(subIsNotSaw).c_str());
+		fflush(stdout);
+
+		
+		simd_assertMask(mainIsSaw);
+		simd_assertMask(subIsSaw);
+		simd_assertMask(mainIsNotSaw);
+		simd_assertMask(subIsNotSaw);
+#endif		
 	}
+
 
 	void setupSub(int channels, T pitch, I subDivisorA, I subDivisorB)
 	{
@@ -204,12 +227,15 @@ struct VoltageControlledOscillator
 				if (wrapMask & (1 << i)) {
 					// ok, this VCO here is wrapping
 					T mask = simd::movemaskInverse<T>(1 << i);
+
+					// "new" way of preventing saw from getting into sq minblep
+					mask &= mainIsNotSaw;
 					float p = wrapCrossing[i] - 1.f;
 					T x = mask & (2.f * syncDirection);
-					if (!mainIsSaw) {
+				//	if (!mainIsSaw) {
 						// if square wave, doing min blep for square
 						mainMinBlep.insertDiscontinuity(p, x);
-					}
+				//	}
 				}
 			}
 		}
@@ -222,11 +248,12 @@ struct VoltageControlledOscillator
 			for (int i = 0; i < _channels; i++) {
 				if (pulseMask & (1 << i)) {
 					T mask = simd::movemaskInverse<T>(1 << i);
+					mask &= mainIsNotSaw;
 					float p = pulseCrossing[i] - 1.f;
 					T x = mask & (-2.f * syncDirection);
-					if (!mainIsSaw) {
+				//	if (!mainIsSaw) {
 						mainMinBlep.insertDiscontinuity(p, x);
-					}
+				//	}
 				}
 			}
 		}
@@ -252,12 +279,13 @@ struct VoltageControlledOscillator
 					printf("i=%d, <<=%d and=%d\n", channelNumber, 1 << channelNumber,  (halfMask & (1 << channelNumber)));
 				}
 				if (halfMask & (1 << channelNumber)) {
-					const T mask = simd::movemaskInverse<T>(1 << channelNumber);
+					T mask = simd::movemaskInverse<T>(1 << channelNumber);
+					mask &= mainIsSaw;
 					float p = halfCrossing[channelNumber] - 1.f;
 					T x = mask & (-2.f * syncDirection);
-					if (mainIsSaw) {
+				//	if (mainIsSaw) {
 						mainMinBlep.insertDiscontinuity(p, x);
-					}
+				//	}
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
 					}
@@ -284,11 +312,15 @@ struct VoltageControlledOscillator
 			}
 		}
 
-		mainValue = (mainIsSaw) ? saw(phase) : sqr(phase);
+		//printf("compute main value, saw = %s osc=%p\n", toStr(mainIsSaw).c_str(), this); fflush(stdout);
+
+		// hard code square make eveyrone square
+		// hard code saw makes both saw, but you can see that VCO A (zero) responds
+		// to UI by putting the min blep in the right place
+		
+	//	mainValue = (mainIsSaw) ? saw(phase) : sqr(phase);
+		mainValue = SimdBlocks::ifelse(mainIsSaw, saw(phase), sqr(phase));
 		mainValue += mainMinBlep.process();
-		// Square
-	//	sqrValue = sqr(phase);
-	//	sqrValue += sqrMinBlep.process();
 
 		subValue[0] = (subPhase[0] * float_4(2.f)) + float_4(-1.f);
 		subValue[0] += subMinBlep[0].process();

@@ -10,6 +10,7 @@
 #include <memory>
 #include "IComposite.h"
 #include "LookupTableFactory.h"
+#include "simd.h"
 
 /**
  * 5/31 feature complete (almost)  48%
@@ -223,12 +224,9 @@ inline void Sub<TBase>::computeDivisors(
     divbOut[3] = int(div2BRawf);
 }
 
-template <class TBase>
-inline void Sub<TBase>::setupWaveforms() {
-    // for now use vco1 for both
-    int wf = int (std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM1_PARAM].value));
-    bool mainIsSaw = true;
-    bool subIsSaw = true;
+
+
+inline void parseWF(int wf, bool& mainIsSaw, bool& subIsSaw) {
     switch(wf) {
         case 0:
             mainIsSaw = true;
@@ -245,11 +243,66 @@ inline void Sub<TBase>::setupWaveforms() {
         default:
             assert(0);
     }
+}
 
-    for (int bank = 0; bank < 4; ++bank) {
-         oscillators[bank].setWaveform(mainIsSaw, subIsSaw);
+
+// TODO: implement this smart (SIMD) and move
+inline float_4 bitfieldToMask(int x)
+{
+    float_4 y = float_4::zero();
+    int bit = 1;
+    float_4 mask = float_4::mask();
+    for (int index = 0 ; index < 4; ++index) {
+        if (x & bit) {
+            y[index] = mask[0];
+        }
+        bit <<= 1;
+    }
+    return y;
+}
+
+template <class TBase>
+inline void Sub<TBase>::setupWaveforms() {
+    // for now use vco1 for both
+    int wf = int (std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM1_PARAM].value));
+    bool mainAIsSaw = true;
+    bool subAIsSaw = true;
+    parseWF(wf, mainAIsSaw, subAIsSaw);
+
+    wf = int (std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM2_PARAM].value));
+    bool mainBIsSaw = true;
+    bool subBIsSaw = true;
+    parseWF(wf, mainBIsSaw, subBIsSaw);
+
+ //   printf("amain=%d asub=%d bmain=%d bsub=%d\n", mainAIsSaw, subAIsSaw, mainBIsSaw, subBIsSaw);
+ //   fflush(stdout);
+
+    // ok, remember A and B 0 are two vcos, so each bank is only 2 voices
+    int mainIsSawBitMask = 0;
+    int subIsSawBitMask = 0;
+    if (mainAIsSaw) {
+        mainIsSawBitMask |= (1 | 4);
+    }
+    if (mainBIsSaw) {
+        mainIsSawBitMask |= (2 | 8);
+    }
+    if (subAIsSaw) {
+        subIsSawBitMask |= (1 | 4);
+    }
+    if (subBIsSaw) {
+        subIsSawBitMask |= (2 | 8);
     }
 
+ //   printf("in setup waveform mainIsSawBitMask=%x\n subIsSawBitMask=%x\n",mainIsSawBitMask,     subIsSawBitMask);
+
+
+    float_4 mainIsSawMask = bitfieldToMask(mainIsSawBitMask);
+    float_4 subIsSawMask = bitfieldToMask(subIsSawBitMask);
+    // printf("in setup waveform main is saw mask: %s\n subIsSawMask: %s\n",    toStr(mainIsSawMask).c_str(),toStr(subIsSawMask).c_str());
+
+    for (int bank = 0; bank < 4; ++bank) {
+        oscillators[bank].setWaveform(mainIsSawMask, subIsSawMask);
+    }
 }
   
 
