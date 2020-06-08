@@ -55,7 +55,7 @@ struct VoltageControlledOscillator
 	T subPhase[2] = {0, 0};			// like phase, but for the subharmonic
 	T freq;
 	T pulseWidth = 0.5f;
-	T syncDirection = 1.f;
+	const T syncDirection = 1.f;
 
 	rack::dsp::TRCFilter<T> sqrFilter;
 
@@ -165,6 +165,29 @@ struct VoltageControlledOscillator
 		this->pulseWidth = simd::clamp(pulseWidth, pwMin, 1.f - pwMin);
 	}
 
+	void doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw,
+		dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T>& minBlep, int id) const
+	{
+		T wrapCrossing = (deltaPhase - phase ) / deltaPhase;
+		int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
+		if (wrapMask) {
+			for (int i = 0; i < _channels; i++) {
+				if (wrapMask & (1 << i)) {
+					// ok, this VCO here is wrapping
+					const T lowToHighMask = simd::movemaskInverse<T>(1 << i);
+
+					// "new" way of preventing saw from getting into sq minblep
+					const T mainLowToHighMask = lowToHighMask & notSaw;
+					float p = wrapCrossing[i] - 1.f;
+					T x = mainLowToHighMask & (2.f * syncDirection);
+					minBlep.insertDiscontinuity(p, x);
+				//	printf("insert minBlep[%d] x = %s\n", id, toStr(x).c_str());
+				//	printf("index = %d, phase was %s\n", i, toStr(phase).c_str());
+				}
+			}
+		}
+	}
+
 	void process(float deltaTime, T syncValue) {
 
 	//	printf("process, counter0 = %s\n", toStr(subCounter[0]).c_str());
@@ -221,31 +244,67 @@ struct VoltageControlledOscillator
 
 		// Jump sqr when crossing 0, or 1 if backwards
 		// min blop for rising edge of sq
-		#if 1
-		T wrapPhase = (syncDirection == -1.f) & 1.f;
-		T wrapCrossing = (wrapPhase - (phase - deltaPhase)) / deltaPhase;
+
+		doSquareLowToHighMinblep(deltaPhase, phase, mainIsNotSaw, mainMinBlep, 100);
+		doSquareLowToHighMinblep(deltaSubPhase[0], subPhase[0], subIsNotSaw, subMinBlep[0], 101);
+		doSquareLowToHighMinblep(deltaSubPhase[1], subPhase[1], subIsNotSaw, subMinBlep[1], 102);
+
+		//if (phase[0] < deltaPhase[0]) printf("phase < delta\n");
+		if (subPhase[0][0] < deltaSubPhase[0][0]) printf("sub 0 phase < delta\n");
+		if (subPhase[1][0] < deltaSubPhase[1][0]) printf("sub 1 phase < delta\n");
+#if 0
+		static float maxPhase = -1;
+		static float minPhase = 2;
+		static float maxSubPhase = -1;
+		static float minSubPhase = 2;
+		if (phase[0] > maxPhase) {
+			maxPhase = phase[0];
+		//	printf("max phase = %f\n", maxPhase);
+		}
+		if (phase[0] < minPhase) {
+			minPhase = phase[0];
+		//	printf("min phase = %f\n", minPhase);
+		}
+		if (subPhase[0][0] > maxSubPhase) {
+			maxSubPhase = subPhase[0][0];
+			// get up to almost 1
+		//	printf("max subphase = %f\n", maxPhase);
+		}
+		if (subPhase[0][0] < minSubPhase) {
+			minSubPhase =subPhase[0][0];
+			// gets down to .005
+			printf("min subphase = %f\n", minPhase);
+		}
+#endif
+
+
+#if 0
+		T wrapCrossing = (deltaPhase - phase ) / deltaPhase;
 		int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
 		if (wrapMask) {
 			for (int i = 0; i < _channels; i++) {
 				if (wrapMask & (1 << i)) {
 					// ok, this VCO here is wrapping
-					T mask = simd::movemaskInverse<T>(1 << i);
+					const T lowToHighMask = simd::movemaskInverse<T>(1 << i);
 
 					// "new" way of preventing saw from getting into sq minblep
-					mask &= mainIsNotSaw;
+					const T mainLowToHighMask = lowToHighMask & mainIsNotSaw;
 					float p = wrapCrossing[i] - 1.f;
-					T x = mask & (2.f * syncDirection);
-				//	if (!mainIsSaw) {
-						// if square wave, doing min blep for square
-						mainMinBlep.insertDiscontinuity(p, x);
-				//	}
+					T x = mainLowToHighMask & (2.f * syncDirection);
+					mainMinBlep.insertDiscontinuity(p, x);
+
+					//const T subLowToHighMask= lowToHighMask & subIsNotSaw;
+
 				}
 			}
 		}
-		#endif
+	#endif
+
 		++debugCtr;
 
 		// Jump sqr when crossing `pulseWidth`
+		// falling edge (don't need this, we can do in saw corrins routine where we do others)
+	#if 0
 		T pulseCrossing = (pulseWidth - (phase - deltaPhase)) / deltaPhase;
 		int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
 		if (pulseMask) {
@@ -261,6 +320,7 @@ struct VoltageControlledOscillator
 				}
 			}
 		}
+	#endif
 
 		// Jump saw when crossing 0.5	
 		// Since we are basing the subs off the saw, a lot of stuff goes on here
@@ -275,8 +335,6 @@ struct VoltageControlledOscillator
 			assert(_channels > 0);
 		}
 		if (halfMask) {
-			//printf("\nhlafMask, counter0 = %s\n", toStr(subCounter[0]).c_str());
-			//printf("halfMask, counter1 = %s\n", toStr(subCounter[1]).c_str());
 			// TODO: can _channels be  >= 4? If so, I don't think this will work
 			for (int channelNumber = 0; channelNumber < _channels; channelNumber++) {
 				if (_logvco) {
@@ -284,35 +342,31 @@ struct VoltageControlledOscillator
 				}
 				if (halfMask & (1 << channelNumber)) {
 					T crossingMask = simd::movemaskInverse<T>(1 << channelNumber);
-				//	mask &= mainIsSaw;			// now mask only set for index that reset, and is saw
 					T sawCrossingMask = crossingMask & mainIsSaw;
 					float p = halfCrossing[channelNumber] - 1.f;
-					T x = sawCrossingMask & (-2.f * syncDirection);
-				//	if (mainIsSaw) {
-						mainMinBlep.insertDiscontinuity(p, x);
-				//	}
+
+					// used to only do for saw, since square has own case.
+					//T x = sawCrossingMask & (-2.f * syncDirection);
+					T x =  crossingMask & (-2.f * syncDirection);
+					mainMinBlep.insertDiscontinuity(p, x);
+
 					if (_logvco) {
 						printf("** insert disc(%f, %f)\n", p, x[0]);
 					}
 					// Implement the new  dual subs
 					for (int subIndex = 0; subIndex <= 1; ++subIndex) {
-						//printf("innerloop, counter0 = %s\n", toStr(subCounter[0]).c_str());
-						//printf("innerloop, counter1 = %s\n", toStr(subCounter[1]).c_str());
 						assertGT(subCounter[subIndex][channelNumber], 0);
 						subCounter[subIndex][channelNumber]--;
-						//printf("after, counter0 = %s\n", toStr(subCounter[0]).c_str());
-						//printf("afetr, counter1 = %s\n", toStr(subCounter[1]).c_str());
 						if (subCounter[subIndex][channelNumber] == 0) {
 							subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
-
-							//printf("now, counter0 = %s\n", toStr(subCounter[0]).c_str());
-							//printf("now, counter1 = %s\n", toStr(subCounter[1]).c_str());
 
 							T xs = sawCrossingMask & ((-1.f ) * subPhase[subIndex]);
 							subPhase[subIndex][channelNumber] = 0;
 					 		subMinBlep[subIndex].insertDiscontinuity(p, xs);
 						}
 					}
+
+				//	T mainSquare
 				}
 			}
 		}
@@ -327,9 +381,17 @@ struct VoltageControlledOscillator
 		mainValue = SimdBlocks::ifelse(mainIsSaw, saw(phase), sqr(phase));
 		mainValue += mainMinBlep.process();
 
-		subValue[0] = (subPhase[0] * float_4(2.f)) + float_4(-1.f);
+		//subValue[0] = (subPhase[0] * float_4(2.f)) + float_4(-1.f);
+		subValue[0] = SimdBlocks::ifelse(
+			subIsSaw, 
+			(subPhase[0] * float_4(2.f)) + float_4(-1.f),
+			sqr(subPhase[0]));
 		subValue[0] += subMinBlep[0].process();
-		subValue[1] = (subPhase[1] * float_4(2.f)) + float_4(-1.f);
+
+		subValue[1] =  SimdBlocks::ifelse(
+			subIsSaw, 
+			(subPhase[1] * float_4(2.f)) + float_4(-1.f),
+			sqr(subPhase[1]));
 		subValue[1] += subMinBlep[1].process();
 	}
 
