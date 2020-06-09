@@ -74,7 +74,8 @@ private:
 	T pulseWidth = 0.5f;
 	const T syncDirection = 1.f;
 
-	static T saw(T phase, MinBlep&);
+	static T saw(T phase, T minBlepValue);
+	static T sqr(T phase, T minBlepValue);
 };
 
 template <int OV, int Q, typename T, typename I>
@@ -195,14 +196,6 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 				mainMinBlep.insertDiscontinuity(p, x);
 
 				
-
-				
-			//	printf("insert main discont\n");
-
-			//	if (_logvco) {
-			//		printf("** insert disc(%f, %f)\n", p, x[0]);
-			//	}
-				// Implement the new  dual subs
 				for (int subIndex = 0; subIndex <= 1; ++subIndex) {
 					assertGT(subCounter[subIndex][channelNumber], 0);
 					subCounter[subIndex][channelNumber]--;
@@ -210,22 +203,8 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 						subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
 
 						T xs = crossingMask & ((-2.f ) * subPhase[subIndex]);
-
-						//printf("BEFORE sub phase adjust = %s\n", toStr(subPhase[subIndex]).c_str());
-					//	subPhase[subIndex][channelNumber] -= 1;
 						subPhase[subIndex][channelNumber] = 0;
-						//printf("after sub phase adjust = %s\n", toStr(subPhase[subIndex]).c_str());
-
-						// just an experiment
-					//	subPhase[subIndex] += deltaSubPhase[subIndex];
-				//		subPhase[0] += deltaSubPhase[0];
-//	subPhase[1] += deltaSubPhase[1];
-
-						// let's ignore min blep for now
 						subMinBlep[subIndex].insertDiscontinuity(p, xs);
-
-
-				//		 printf("insert sub %d discont\n", subIndex);
 					}
 				}
 
@@ -239,23 +218,31 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 		phase = SimdBlocks::ifelse(overflowMask, phase - 1, phase);
 	}
 
-	
+	T mainBleps = mainMinBlep.process();
+	T subBleps0 = subMinBlep[0].process();
+	T subBleps1 = subMinBlep[1].process();
 
-	
-	mainValue = saw(phase, mainMinBlep);
+	//mainValue = saw(phase, mainBleps);
+	mainValue = SimdBlocks::ifelse( mainIsSaw, saw(phase, mainBleps), sqr(phase, mainBleps));
 
-	subValue[0] = saw(subPhase[0], subMinBlep[0]);
-	subValue[1] = saw(subPhase[1], subMinBlep[1]);
-
+	subValue[0] = saw(subPhase[0], subBleps0);
+	subValue[1] = saw(subPhase[1], subBleps1);
 }
 
 template <int OV, int Q, typename T, typename I>
-inline T VoltageControlledOscillator<OV, Q, T, I>::saw(T phase, MinBlep& blep)
+inline T VoltageControlledOscillator<OV, Q, T, I>::saw(T phase, T blepValue)
 {
-	simd_assertLT(phase, T(20));
-	simd_assertGT(phase, T(-20));
-	return (phase * 2.f - 1.f) + blep.process();
+//	simd_assertLT(phase, T(20));
+//	simd_assertGT(phase, T(-20));
+	return (phase * 2.f - 1.f) + blepValue;
 	//return blep.process();
+}
+
+template <int OV, int Q, typename T, typename I>
+inline T VoltageControlledOscillator<OV, Q, T, I>::sqr(T phase, T blepValue)
+{
+	T temp = SimdBlocks::ifelse(phase > .5f, T(1.f), T(-1.f));
+	return temp + blepValue;
 }
 
 #else
