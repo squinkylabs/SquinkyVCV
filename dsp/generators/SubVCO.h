@@ -188,7 +188,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 				//T x = sawCrossingMask & (-2.f * syncDirection);
 				// TODO: are we still generating -1..+1? why not...?
 				// not that even so instead of 2 is should be 2 -phase or something
-				T x =  oneCrossMask & (-2.f * syncDirection);
+				T x =  crossingMask & (-2.f * syncDirection);
 				mainMinBlep.insertDiscontinuity(p, x);
 
 				
@@ -231,8 +231,10 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 		phase = SimdBlocks::ifelse(overflowMask, phase - 1, phase);
 	}
 
+	simd_assertLT(phase, T(2));
+	simd_assertGT(phase, T(-2));
 	mainValue = phase * 2.f - 1.f;
-	//mainValue += mainMinBlep.process();
+	mainValue += mainMinBlep.process();
 
 }
 #else
