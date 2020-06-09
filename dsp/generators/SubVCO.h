@@ -15,6 +15,7 @@
 using namespace rack;		// normally I don't like "using", but this is third party code...
 extern bool _logvco;
 
+#if 1
 /**
  * T is the sample type (usually float or float_4)
  * I is the integer type (usually int or int32_4)
@@ -80,6 +81,12 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setupSub(int channels, T p
 	assert(index >= 0);
 
 	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+#if 0
+	printf("\nin setup sub[%d] freq = %s\nfrom pitch= %s\n",
+		index,
+		toStr(freq).c_str(),
+		toStr(pitch).c_str());
+#endif
 	_channels = channels;
 	assert(channels >= 0 && channels <= 4);
 	simd_assertGT(subDivisorA, int32_4(0));
@@ -90,8 +97,8 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setupSub(int channels, T p
 	subDivisionAmount[1] = subDivisorB;
 
 	// TODO: this reset here is what glitche, yes?
-	subCounter[0] = SimdBlocks::ifelse( subCounter[0] < 1, 1, subCounter[0]);
-	subCounter[1] = SimdBlocks::ifelse( subCounter[1] < 1, 1, subCounter[1]);
+	//subCounter[0] = SimdBlocks::ifelse( subCounter[0] < 1, 1, subCounter[0]);
+	//subCounter[1] = SimdBlocks::ifelse( subCounter[1] < 1, 1, subCounter[1]);
 
 	subFreq[0] = freq / subDivisionAmount[0];
 	subFreq[1] = freq / subDivisionAmount[1];
@@ -142,7 +149,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 	// Now might be a good time to add min-bleps for square waves
 
 
-
+//	printf("phase = %s\n", toStr(phase).c_str());
 
 // orig
 //		T halfCrossing = (0.5f - (phase - deltaPhase)) / deltaPhase;	
@@ -157,7 +164,9 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 
 	// If main saw crosses 1.0 in this sample, then oneCrossing will be between
 	// zero and 1. It is isn't, then it doesn't cross this sample
+
 	T oneCrossing = (1.f - (phase - deltaPhase)) / deltaPhase;	
+
 
 	// of 0 crossed, will have 1
 	// 1 -> 2
@@ -178,8 +187,13 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 				// used to only do for saw, since square has own case.
 				//T x = sawCrossingMask & (-2.f * syncDirection);
 				// TODO: are we still generating -1..+1? why not...?
+				// not that even so instead of 2 is should be 2 -phase or something
 				T x =  oneCrossMask & (-2.f * syncDirection);
 				mainMinBlep.insertDiscontinuity(p, x);
+
+				
+
+				
 			//	printf("insert main discont\n");
 
 			//	if (_logvco) {
@@ -192,14 +206,18 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 					if (subCounter[subIndex][channelNumber] == 0) {
 						subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
 
-						T xs = crossingMask & ((-1.f ) * subPhase[subIndex]);
+					//	T xs = crossingMask & ((-1.f ) * subPhase[subIndex]);
 						subPhase[subIndex][channelNumber] = 0;
 
 						// just an experiment
 					//	subPhase[subIndex] += deltaSubPhase[subIndex];
 				//		subPhase[0] += deltaSubPhase[0];
 //	subPhase[1] += deltaSubPhase[1];
-						subMinBlep[subIndex].insertDiscontinuity(p, xs);
+
+						// let's ignore min blep for now
+						//subMinBlep[subIndex].insertDiscontinuity(p, xs);
+
+
 				//		 printf("insert sub %d discont\n", subIndex);
 					}
 				}
@@ -207,11 +225,17 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 			//	T mainSquare
 			}
 		}
+
+		// all the saws that overflow get set to zero
+		const T overflowMask = (phase > T(1));
+		phase = SimdBlocks::ifelse(overflowMask, phase - 1, phase);
 	}
 
-	mainValue = phase;
+	mainValue = phase * 2.f - 1.f;
+	//mainValue += mainMinBlep.process();
 
 }
+#else
 
 /*
 	if (halfMask) {
@@ -263,7 +287,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 
 
 
-#if 0 // old version
+//#if 0 // old version
 
 // Accurate only on [0, 1]
 template <typename T>
@@ -620,7 +644,7 @@ struct VoltageControlledOscillator
 					// used to only do for saw, since square has own case.
 					//T x = sawCrossingMask & (-2.f * syncDirection);
 					T x =  crossingMask & (-2.f * syncDirection);
-					mainMinBlep.insertDiscontinuity(p, x);
+				//	mainMinBlep.insertDiscontinuity(p, x);
 				//	printf("insert main discont\n");
 
 					if (_logvco) {
