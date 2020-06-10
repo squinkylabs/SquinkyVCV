@@ -211,6 +211,7 @@ public:
             simd_assertMask(syncNow);
 
             stepOversampled(i, phaseMod, syncNow);
+            // buffer[i] = 0;
             syncIndex -= int32_t(1);
         }
         if (oversampleRate == 1) {
