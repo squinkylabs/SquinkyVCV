@@ -45,6 +45,9 @@ public:
     T sub(int side) const {
 		return subValue[side];
 	}
+
+		// For optimizing in serial code
+	int _channels = 0;
 private:
 	using MinBlep = dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T>;
 	MinBlep mainMinBlep;
@@ -64,8 +67,7 @@ private:
 	T subIsNotSaw = 0;
 
 	bool syncEnabled = false;
-	// For optimizing in serial code
-	int _channels = 0;
+
 
 	T lastSyncValue = 0.f;
 	T phase = 0.f;

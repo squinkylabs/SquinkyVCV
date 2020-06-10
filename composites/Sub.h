@@ -15,6 +15,7 @@
 /**
  * 5/31 feature complete (almost)  48%
  * 5.25: cpu usage 1 chnael = 51%
+ * 6/9 after re-write 40
  */
 
 namespace rack {
