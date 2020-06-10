@@ -76,6 +76,8 @@ private:
 
 	static T saw(T phase, T minBlepValue);
 	static T sqr(T phase, T minBlepValue);
+	void doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw, MinBlep& minBlep, int id) const;
+
 };
 
 template <int OV, int Q, typename T, typename I>
@@ -132,6 +134,61 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setWaveform(T mainSaw, T s
 	subIsNotSaw = subIsSaw ^ float_4::mask();
 }
 
+#if 0
+	// This was first one
+template <int OV, int Q, typename T, typename I>
+inline void VoltageControlledOscillator<OV, Q, T, I>::doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw,
+	MinBlep& minBlep, int id) const
+{
+	T wrapCrossing = (deltaPhase - phase ) / deltaPhase;
+	int wrapMask = simd::movemask((0 < wrapCrossing) & (wrapCrossing <= 1.f));
+	if (wrapMask) {
+		for (int i = 0; i < _channels; i++) {
+			if (wrapMask & (1 << i)) {
+				// ok, this VCO here is wrapping
+				const T lowToHighMask = simd::movemaskInverse<T>(1 << i);
+				simd_assertMask(lowToHighMask);
+
+				// "new" way of preventing saw from getting into sq minblep
+				// TODO: remove the word "main" -> it's not correct any more
+				const T mainLowToHighMask = lowToHighMask & notSaw;
+				float p = wrapCrossing[i] - 1.f;
+				T x = mainLowToHighMask & (2.f * syncDirection);
+				minBlep.insertDiscontinuity(p, x);
+			//	printf("insert minBlep[%d] x = %s\n", id, toStr(x).c_str());
+			//	printf("index = %d, phase was %s\n", i, toStr(phase).c_str());
+			}
+		}
+	}
+}
+#endif
+
+// FKA doSquareHighToLowMinblep 
+template <int OV, int Q, typename T, typename I>
+inline void VoltageControlledOscillator<OV, Q, T, I>::doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw,
+	MinBlep& minBlep, int id) const
+{
+	// spike jumps to 2v
+	//T pulseCrossing = (pulseWidth + deltaPhase - phase) / deltaPhase;
+	T pulseCrossing = (pulseWidth + 1.f * deltaPhase - phase) / deltaPhase;
+	int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
+	if (pulseMask) {
+		for (int i = 0; i < _channels; i++) {
+			if (pulseMask & (1 << i)) {
+				T highToLowMask = simd::movemaskInverse<T>(1 << i);
+				// mask &= mainIsNotSaw;
+				const T mainHighToLowMask = highToLowMask & notSaw;
+				float p = pulseCrossing[i] - 1.f;
+				T x = mainHighToLowMask & (2.f * syncDirection);
+			//	if (!mainIsSaw) {
+					minBlep.insertDiscontinuity(p, x);
+			//	}
+			}
+		}
+	}	
+}
+
+
 template <int OV, int Q, typename T, typename I>
 inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T syncValue)
 {
@@ -151,6 +208,13 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 	subPhase[1] += deltaSubPhase[1];
 
 	// Now might be a good time to add min-bleps for square waves
+
+# if 1 // doing here makes the main square look right
+		// it does what's the leading edge on the scope
+		doSquareLowToHighMinblep(deltaPhase, phase, mainIsNotSaw, mainMinBlep, 100);
+	//	doSquareLowToHighMinblep(deltaSubPhase[0], subPhase[0], subIsNotSaw, subMinBlep[0], 101);
+	//	doSquareLowToHighMinblep(deltaSubPhase[1], subPhase[1], subIsNotSaw, subMinBlep[1], 102);
+#endif
 
 
 //	printf("phase = %s\n", toStr(phase).c_str());
@@ -202,6 +266,8 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 					if (subCounter[subIndex][channelNumber] == 0) {
 						subCounter[subIndex][channelNumber] = subDivisionAmount[subIndex][channelNumber];
 
+						// note: this value of "2" is a little inaccurate for subs.
+						// almost the same at low-normal freq
 						T xs = crossingMask & ((-2.f ) * subPhase[subIndex]);
 						subPhase[subIndex][channelNumber] = 0;
 						subMinBlep[subIndex].insertDiscontinuity(p, xs);
