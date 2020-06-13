@@ -338,6 +338,9 @@ public:
         LINEAR_FM_INPUT,
         GATE_INPUT,
         SYNC_INPUT,
+        SHAPE_INPUT,
+        DEPTH_INPUT,
+        FEEDBACK_INPUT,
         NUM_INPUTS
     };
 

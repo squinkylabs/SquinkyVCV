@@ -245,12 +245,12 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
 
     // fourth row
     //PITCH MOD
-    addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(knobX4, knobY4),
+        Vec(knobX4 + 10, knobY4 + 10),
         module,
         Comp::FM_DEPTH_PARAM));
-    addLabel(Vec(knobX4 - 10, knobY4 - labelAboveKnob), "Mod");
+    //addLabel(Vec(knobX4 , knobY4 - labelAboveKnob), "Mod");
 }
 
 class SqBlueButton : public ToggleButton 
@@ -323,6 +323,12 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::LINEAR_FM_INPUT));
     addLabel(Vec(jacksX3 - 10, jacksY1 - labelAboveKnob), "LFM-0");
 
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX4, jacksY1),
+        module,
+        Comp::DEPTH_INPUT));
+    addLabel(Vec(jacksX4 - 10, jacksY1 - labelAboveKnob), "Depth");
+
 
     // second row
     addOutput(createOutput<PJ301MPort>(
@@ -342,6 +348,18 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::SYNC_INPUT));
     addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Sync");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX4, jacksY2),
+        module,
+        Comp::FEEDBACK_INPUT));
+    addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Fdbck");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX5, jacksY2),
+        module,
+        Comp::SHAPE_INPUT));
+    addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Shape");
 }
 
 
