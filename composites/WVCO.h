@@ -65,14 +65,15 @@ float -> float_4 isn't free.
 #include <vector>
 
 #ifndef _MSC_VER
-#include "simd.h"
 #include "ADSR16.h"
+#include "WVCODsp.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
-#include "SimdBlocks.h"
+
 #include "IComposite.h"
-#include "IIRDecimator.h"
+
 #include "Divider.h"
+
 
 using float_4 = rack::simd::float_4;
 
@@ -117,172 +118,6 @@ public:
         outA = 1 / (k - 1);
         outB = -outA;
     }
-};
-
-/**
- * SIMD FM VCO block
- * implements 4 VCOs
- */
-class WVCODsp
-{
-public:
-    enum class WaveForm {Sine, Fold, SawTri};
-    
-    static const int oversampleRate = 4;
-    float_4 buffer[oversampleRate];
-    float_4 lastOutput = float_4(0);
-    WVCODsp() {
-        downsampler.setup(oversampleRate);
-    }
-
-#ifdef _OPTSIN
-    float_4 stepSin() {
-       //printf("stepsin opt\n");
-#if 1
-        int bufferIndex;
-
-        __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
-        float_4 phaseMod = (feedback * lastOutput);
-        phaseMod += fmInput;
-
-    
-        for (bufferIndex = 0; bufferIndex < oversampleRate; ++bufferIndex) {
-            phaseAcc += normalizedFreq;
-            phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
-            float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseMod);
-            float_4 s = SimdBlocks::sinTwoPi(phase * twoPi);
-            s *= 5;
-            buffer[bufferIndex] = s;
-        }
-        float_4 finalSample = downsampler.process(buffer);
-        lastOutput = finalSample;
-        return finalSample * outputLevel;
-    #else   
-        return 0;
-    #endif
-    }
-#endif
-
-    void doSync(float_4 syncValue, int32_4& syncIndex)   {
-        if (syncEnabled) {
-            float_4 syncCrossing = float_4::zero();
-            syncValue -= float_4(0.01f);
-            const float_4 syncValueGTZero = syncValue > float_4::zero();
-            const float_4 lastSyncValueLEZero = lastSyncValue <= float_4::zero();
-            simd_assertMask(syncValueGTZero);
-            simd_assertMask(lastSyncValueLEZero);
-
-            const float_4 justCrossed = syncValueGTZero & lastSyncValueLEZero;
-            simd_assertMask(justCrossed);
-            int m = rack::simd::movemask(justCrossed);
-
-            // If any crossed
-            if (m) {
-                float_4 deltaSync = syncValue - lastSyncValue;
-                syncCrossing = float_4(1.f) - syncValue / deltaSync;
-                syncCrossing *= float_4(oversampleRate);
-                //syncIndex = syncCrossing;
-                float_4 syncIndexF = SimdBlocks::ifelse(justCrossed, syncCrossing, float_4(-1));
-                syncIndex = syncIndexF;
-            }
-            // now make a 
-            lastSyncValue = syncValue;
-        }
-    }
-    
-    float_4 step(float_4 syncValue) {
-
-#ifdef _OPTSIN
-        if (!syncEnabled &&  (waveform == WaveForm::Sine)) {
-            return stepSin();
-        }
-#endif
-       // printf("not doing ops. sy=%d wv = %d\n", syncEnabled, waveform);
-      //  bool synced = false;
-        int32_4 syncIndex = int32_t(-1); // Index in the oversample loop where sync occurs [0, OVERSAMPLE)
-        doSync(syncValue, syncIndex);
-
-        float_4 phaseMod = (feedback * lastOutput);
-        phaseMod += fmInput;
-
-        for (int i=0; i< oversampleRate; ++i) {
-    
-            float_4 syncNow =  float_4(syncIndex) == float_4::zero();
-            simd_assertMask(syncNow);
-
-            stepOversampled(i, phaseMod, syncNow);
-            // buffer[i] = 0;
-            syncIndex -= int32_t(1);
-        }
-        if (oversampleRate == 1) {
-            return buffer[0] * outputLevel;
-        } else {
-            float_4 finalSample = downsampler.process(buffer);
-            // printf("dsp step using output level %s\n", toStr(outputLevel).c_str());
-            finalSample += waveformOffset;
-            lastOutput = finalSample;
-            return finalSample * outputLevel;
-        }
-    }
-
-    void stepOversampled(int bufferIndex, float_4 phaseModulation, float_4 syncNow)
-    {
-        float_4 s;
-        phaseAcc += normalizedFreq;
-        phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
-        phaseAcc = SimdBlocks::ifelse(syncNow, float_4::zero(), phaseAcc);
-
-        float_4 twoPi (2 * 3.141592653589793238);
-
-        float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
-        if (waveform == WaveForm::Fold) {
-
-            s = SimdBlocks::sinTwoPi(phase * twoPi);
-            s *= correctedWaveShapeMultiplier;
-            s = SimdBlocks::fold(s);
-        } else if (waveform == WaveForm::SawTri) {
-            float_4 k = correctedWaveShapeMultiplier;
-            float_4 x = phase;
-            simd_assertGE(x, float_4(0));
-            simd_assertLE(x, float_4(1));
-            s = SimdBlocks::ifelse( x < k, x * aLeft,  aRight * x + bRight);
-        } else if (waveform == WaveForm::Sine) {
-            s = SimdBlocks::sinTwoPi(phase * twoPi);
-        } else {
-            s = 0;
-        }
-
-        buffer[bufferIndex] = s;
-    }
-
-    void setSyncEnable(bool f) {
-        syncEnabled = f;
-        // printf("set sync enabled to %d\n", syncEnabled);
-    }
-
-    // public variables. The composite will set these on us,
-    // and we will use them to generate audio.
-
-    // f / fs
-    float_4 normalizedFreq = float_4::zero();
-    float_4 fmInput = float_4::zero();
-
-    WaveForm waveform;
-    float_4 correctedWaveShapeMultiplier = 1;
-    
-    float_4 aRight = 0;            // y = ax + b for second half of tri
-    float_4 bRight = 0;
-    float_4 aLeft = 0;
-    float_4 feedback = 0;
-    float_4 outputLevel = 1;
-    float_4 waveformOffset = 0;
-
-private:
-    float_4 phaseAcc = float_4::zero();
-    float_4 lastSyncValue = float_4::zero();
-    IIRDecimator<float_4> downsampler;
-
-    bool syncEnabled = false;
 };
 
 template <class TBase>
@@ -383,8 +218,10 @@ private:
     std::shared_ptr<LookupTableParams<float>>  audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
 
     // variables to stash processed knobs and other input
-    float basePitch = 0;        // all the knobs, no cv. units are volts
-    int numChannels = 1;      // 1..16
+    // variables with _m suffix updated every m period
+    float_4 basePitch_m = 0;        // all the knobs, no cv. units are volts
+    int numChannels_m = 1;      // 1..16
+
     int freqMultiplier = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
     float baseFeedback = 0;
@@ -397,7 +234,19 @@ private:
 
     float_4 getOscFreq(int bank);
 
-    void stepn();
+    /**
+     * This was originally a regular /4 stepn, but
+     * I started doing it at X 1.
+     * Now need to refactor
+     */
+    void stepn_fullRate();
+
+    void stepn_lowerRate();
+
+    /**
+     * This is called "very infrequently"
+     * Currently every 16 samples, but could go lower. for knobs and such
+     */
     void stepm();
 };
 
@@ -406,8 +255,8 @@ template <class TBase>
 inline void WVCO<TBase>::init()
 {
     adsr.setNumChannels(1);         // just to prime the pump, will write true value later
-    divn.setup(1, [this]() {
-        stepn();
+    divn.setup(4, [this]() {
+        stepn_lowerRate();
     });
      divm.setup(16, [this]() {
         stepm();
@@ -417,14 +266,15 @@ inline void WVCO<TBase>::init()
 template <class TBase>
 inline void WVCO<TBase>::stepm()
 {
-    numChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
-    WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(numChannels);
+    numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(numChannels_m);
 
-    basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +      
+    float basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +      
         TBase::params[FINE_TUNE_PARAM].value / 12.0f;
 
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     basePitch += q;
+    basePitch_m = float_4(basePitch);
 
     freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
 
@@ -434,8 +284,8 @@ inline void WVCO<TBase>::stepm()
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
     const bool sync = TBase::inputs[SYNC_INPUT].isConnected();
 
-    int numBanks = numChannels / 4;
-    if (numChannels > numBanks * 4) {
+    int numBanks = numChannels_m / 4;
+    if (numChannels_m > numBanks * 4) {
         numBanks++;
     }
     for (int bank=0; bank < numBanks; ++bank) {
@@ -487,20 +337,25 @@ inline void WVCO<TBase>::stepm()
         k
     ) ;
 
-    adsr.setNumChannels(numChannels);
+    adsr.setNumChannels(numChannels_m);
 
     enableAdsrLevel = TBase::params[ADSR_OUTPUT_LEVEL_PARAM].value > .5;
     enableAdsrFeedback = TBase::params[ADSR_FBCK_PARAM].value > .5;
     enableAdsrFM = TBase::params[ADSR_LFM_DEPTH_PARAM].value > .5;
     enableAdsrShape = TBase::params[ADSR_SHAPE_PARAM].value > .5;
+}
+
+template <class TBase>
+inline void WVCO<TBase>::stepn_lowerRate()
+{
 
 }
 
 template <class TBase>
-inline void WVCO<TBase>::stepn()
+inline void WVCO<TBase>::stepn_fullRate()
 {
-    int numBanks = numChannels / 4;
-    if (numChannels > numBanks * 4) {
+    int numBanks = numChannels_m / 4;
+    if (numChannels_m > numBanks * 4) {
         numBanks++;
     }
 
@@ -533,7 +388,7 @@ inline void WVCO<TBase>::stepn()
         for (int i=0; i<4; ++i) {
             const int channel = bank * 4 + i;
 
-            float pitch = basePitch;
+            float pitch = basePitch_m[0];
             // use SIMD here?
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
@@ -642,9 +497,13 @@ inline void  __attribute__((flatten)) WVCO<TBase>::step()
     divn.step();
     divm.step();
 
+    stepn_fullRate();
+
     // run the sample loop and write audi
-    int numBanks = numChannels / 4;
-    if (numChannels > numBanks * 4) {
+
+    // todo - cache numBanks_m
+    int numBanks = numChannels_m / 4;
+    if (numChannels_m > numBanks * 4) {
         numBanks++;
     }
     for (int bank=0; bank < numBanks; ++bank) {
