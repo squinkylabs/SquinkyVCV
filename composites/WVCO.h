@@ -2,6 +2,7 @@
 #pragma once
 
 /**
+ * optimize for no sync or fm: 84.7
  * add missing CV, clean up: 86.1
  * do shape calcs at reduced rate 87.4
  * 6/13 start to refactor 86.8% (gates at full rate). 
@@ -229,6 +230,8 @@ private:
     float_4 baseFmDepth_m = 0;
     bool fmDepthConnected_m = false;
     bool feedbackConnected_m = false;
+    bool fmInputConnected_m = false;
+    bool syncInputConnected_m = false;
 
     float_4 freqMultiplier_m = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
@@ -311,6 +314,14 @@ inline void WVCO<TBase>::stepm()
     {
         Port& feedbackPort = WVCO<TBase>::inputs[FEEDBACK_INPUT];
         feedbackConnected_m = feedbackPort.isConnected();
+    }
+    {
+        Port& fmInputPort = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
+        fmInputConnected_m = fmInputPort.isConnected();
+    }
+    {
+        Port& syncInputPort = WVCO<TBase>::inputs[SYNC_INPUT];
+        syncInputConnected_m = syncInputPort.isConnected(); 
     }
 
   
@@ -497,7 +508,7 @@ inline void WVCO<TBase>::stepn_lowerRate()
 }
 
 template <class TBase>
-inline void WVCO<TBase>::stepn_fullRate()
+inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
 {
     assert(numBanks_m > 0);
 
@@ -520,9 +531,6 @@ inline void WVCO<TBase>::stepn_fullRate()
     // ----------------------------------------------------------------------------
     // now update all the DSP params.
     // This is the new, cleaner version.
-    // Legacy version is below
-
-
     for (int bank=0; bank < numBanks_m; ++bank) {
         
         float_4 feedbackAmount = baseFeedback_m;;  
@@ -531,7 +539,7 @@ inline void WVCO<TBase>::stepn_fullRate()
         }
         if (feedbackConnected_m) {
             Port& feedbackPort = WVCO<TBase>::inputs[FEEDBACK_INPUT];
-            feedbackAmount *= feedbackPort.getPolyVoltageSimd<float_4>(bank * 4);
+            feedbackAmount *= feedbackPort.getPolyVoltageSimd<float_4>(bank * 4) * float_4(.1);
         }
         dsp[bank].feedback = feedbackAmount;
 
@@ -554,28 +562,39 @@ inline void  __attribute__((flatten)) WVCO<TBase>::step()
     stepn_fullRate();
     assert(numBanks_m > 0);
 
-    // TODO: don't do this if fm input port not connected. sync also
-    for (int bank=0; bank < numBanks_m; ++bank) {
-        const int baseChannel = 4 * bank;
-        Port& fmInputPort = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
-        float_4 fmInput = fmInputPort.getPolyVoltageSimd<float_4>(baseChannel);
-
-        //TODO:much of this could be done in stepn
-        // TODO: add depth CV
-        float_4 fmInputScaling = baseFmDepth_m;
-        if (enableAdsrFM) {
-            fmInputScaling *= adsr.get(bank);
+    // this could even be moves out of the "every sample" loop
+    if (!syncInputConnected_m && !fmInputConnected_m) {
+        for (int bank=0; bank < numBanks_m; ++bank) {
+            const int baseChannel = 4 * bank;
+            dsp[bank].fmInput = 0;
+            float_4 v =dsp[bank].step( float_4::zero());
+            WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
         }
-        if (fmDepthConnected_m) {
-            Port& depthPort = WVCO<TBase>::inputs[LINEAR_FM_DEPTH_INPUT];
-            fmInputScaling *= depthPort.getPolyVoltageSimd<float_4>(baseChannel);
-        }
-        dsp[bank].fmInput = fmInput * fmInputScaling;
+    } else {
 
-        Port& syncPort = WVCO<TBase>::inputs[SYNC_INPUT];
-        const float_4 syncInput = syncPort.getPolyVoltageSimd<float_4>(baseChannel);
-        float_4 v = dsp[bank].step(syncInput); 
-        WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
+        // TODO: don't do this if fm input port not connected. sync also
+        for (int bank=0; bank < numBanks_m; ++bank) {
+            const int baseChannel = 4 * bank;
+            Port& fmInputPort = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
+            float_4 fmInput = fmInputPort.getPolyVoltageSimd<float_4>(baseChannel);
+
+            // TODO:much of this could be done in stepn
+            // TODO: add depth CV
+            float_4 fmInputScaling = baseFmDepth_m;
+            if (enableAdsrFM) {
+                fmInputScaling *= adsr.get(bank);
+            }
+            if (fmDepthConnected_m) {
+                Port& depthPort = WVCO<TBase>::inputs[LINEAR_FM_DEPTH_INPUT];
+                fmInputScaling *= depthPort.getPolyVoltageSimd<float_4>(baseChannel) * float_4(.1f);
+            }
+            dsp[bank].fmInput = fmInput * fmInputScaling;
+
+            Port& syncPort = WVCO<TBase>::inputs[SYNC_INPUT];
+            const float_4 syncInput = syncPort.getPolyVoltageSimd<float_4>(baseChannel);
+            float_4 v = dsp[bank].step(syncInput); 
+            WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
+        }
     }
 }
 
