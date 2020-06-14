@@ -2,9 +2,11 @@
 #pragma once
 
 /**
+ * 6/13 start to refactor 86.8% (gates at full rate). 
  * 6/4 use new sine approximation, down to 124%
  * 5/31: feature complete:
  *  8channels 148%
+ 
  * 
  * -finline-limit=500000  down to 144.7
  * down to 66 if step is gutted. so let's make an optimized step.
@@ -222,10 +224,7 @@ private:
     float_4 basePitch_m = 0;        // all the knobs, no cv. units are volts
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 1;     // 1..4
-
-    // this is all of the freq calc except for FM input, 
-    // which must be done at sample rate.
-    //float_4 freq_n[4] = {100, 100, 100, 100};
+    float_4 depth_m;                // exp mode depth from knob
 
     int freqMultiplier = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
@@ -291,6 +290,11 @@ inline void WVCO<TBase>::stepm()
     const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
     basePitch += q;
     basePitch_m = float_4(basePitch);
+
+    depth_m = .3 * LookupTable<float>::lookup(
+                *audioTaperLookupParams, 
+                TBase::params[FM_DEPTH_PARAM].value * .01f);
+
 
     freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
 
@@ -358,7 +362,6 @@ inline void WVCO<TBase>::stepm()
     enableAdsrShape = TBase::params[ADSR_SHAPE_PARAM].value > .5;
 }
 
-#if 1
 template <class TBase>
 inline void WVCO<TBase>::updateFreq_n()
 {
@@ -371,38 +374,16 @@ inline void WVCO<TBase>::updateFreq_n()
             // use SIMD here?
             pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
 
-#if 1  // move out of loop
-         //   const float depth  =audioTaperLookup(TBase::params[FM_DEPTH_PARAM].value * .01f);
-            const float depth = .3 * LookupTable<float>::lookup(
-                *audioTaperLookupParams, 
-                TBase::params[FM_DEPTH_PARAM].value * .01f);
-            pitch += TBase::inputs[FM_INPUT].getVoltage(channel) * depth;
-#endif
-               
+            pitch += TBase::inputs[FM_INPUT].getPolyVoltage(channel) * depth_m[0];               
             float _freq = expLookup(pitch);
-          //  freq[i] = _freq;
-
-
             _freq *= freqMultiplier;
-
             const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
-
             freq[i] = time;
         }
-
-      //  float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
-      //  simd_assertLE( envMult, float_4(2));
-      //  simd_assertGE(envMult, float_4(0)); 
-
-    //    freq_n[bank] = freq / WVCODsp::oversampleRate;
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-      //    dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-
-        // do this later, too
-       // dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
     }
 }
-#endif
+
 
 template <class TBase>
 inline void WVCO<TBase>::stepn_lowerRate()
@@ -415,13 +396,13 @@ inline void WVCO<TBase>::stepn_fullRate()
 {
     assert(numBanks_m > 0);
 
-   
-
     static int x = 0;
+
 
     //--------------------------------------------------------------------
     // round up all the gates and run the ADSR;
     {
+        // can do gates is lower rate (but it's no better)
         float_4 gates[4];
         for (int i=0; i<4; ++i) {
             Port& p = TBase::inputs[GATE_INPUT];
@@ -429,18 +410,12 @@ inline void WVCO<TBase>::stepn_fullRate()
             float_4 gate = (g > float_4(1));
             simd_assertMask(gate);
             gates[i] = gate;
-#if 0
-            if (x == 0 && i==0) {
-                printf("\nsending gate to adsr %s\n", toStrLiteral(gate).c_str());
-                printf("poly gate cv = %s\n", toStr(
-                    g
-                    ).c_str());
-            }
-#endif
         }
-    //    printf("\ngates = %s\n", toStr(gates[0]).c_str());
+
         adsr.step(gates, TBase::engineGetSampleTime());
     }
+    
+
 
     // ----------------------------------------------------------------------------
     // now update all the DSP params.
@@ -465,42 +440,15 @@ inline void WVCO<TBase>::stepn_fullRate()
      // This is the legacy version
     for (int bank=0; bank < numBanks_m; ++bank) {
 
-    #if 0
-        float_4 freq;
-        for (int i=0; i<4; ++i) {
-            const int channel = bank * 4 + i;
-
-            float pitch = basePitch_m[0];
-            // use SIMD here?
-            pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
-
-         //   const float depth  =audioTaperLookup(TBase::params[FM_DEPTH_PARAM].value * .01f);
-            const float depth = .3 * LookupTable<float>::lookup(
-                *audioTaperLookupParams, 
-                TBase::params[FM_DEPTH_PARAM].value * .01f);
-            pitch += TBase::inputs[FM_INPUT].getVoltage(channel) * depth;
-               
-            float _freq = expLookup(pitch);
-            _freq *= freqMultiplier;
-
-            const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
-            freq[i] = time;
-        }
-        if (bank == 0) {
-        //    printf("in step freq = %s\n", toStr(freq).c_str());
-        }
-
-      
-
-        dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-    #endif
 
         float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
         simd_assertLE( envMult, float_4(2));
         simd_assertGE(envMult, float_4(0)); 
        
        
-      
+     // (one easy thing would ge to do this whole block a 'n' rate)
+     // that should be fast enough for shape modulation
+
       // moved the calculations that were done at oversample rate here,
       // but there is still a lot stuff that doesn't have to be done at sample rate.
        // dsp[bank].shapeAdjust = baseShapeGain * envMult; 
@@ -521,23 +469,14 @@ inline void WVCO<TBase>::stepn_fullRate()
         }
         dsp[bank].correctedWaveShapeMultiplier = correctedWaveShapeMultiplier;
 
-#if 0
-        // TODO: move this into helper
-           // float_4 k = .5 + shapeAdjust / 2;
-            float_4 k = correctedWaveShapeMultiplier;
-            float_4 x = phase;
-            simd_assertGE(x, float_4(0));
-            simd_assertLE(x, float_4(1));
-            s = SimdBlocks::ifelse( x < k, x * aLeft,  aRight * x + bRight);
-#endif
-
-
         assertLE( baseShapeGain, 1);
         assertGE( baseShapeGain, 0);   
 
       //  simd_assertLE( dsp[bank].shapeAdjust, float_4(2));
      //   simd_assertGE( dsp[bank].shapeAdjust, float_4(0));   
 
+
+        // could to this at 'n' rate, and only it triangle
         // now let's compute triangle params
         const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
         simd_assertLT(shapeGain, float_4(2));
@@ -551,6 +490,7 @@ inline void WVCO<TBase>::stepn_fullRate()
 
         dsp[bank].aRight = a;
         dsp[bank].bRight = b;
+        
         
         if (enableAdsrFeedback) {
             dsp[bank].feedback = baseFeedback * 3 * adsr.get(bank); 
