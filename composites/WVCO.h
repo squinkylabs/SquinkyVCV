@@ -2,7 +2,8 @@
 #pragma once
 
 /**
- * do shape calcs at reduced rate 84.4
+ * add missing CV, clean up: 86.1
+ * do shape calcs at reduced rate 87.4
  * 6/13 start to refactor 86.8% (gates at full rate). 
  * 6/4 use new sine approximation, down to 124%
  * 5/31: feature complete:
@@ -176,7 +177,7 @@ public:
         GATE_INPUT,
         SYNC_INPUT,
         SHAPE_INPUT,
-        DEPTH_INPUT,
+        LINEAR_FM_DEPTH_INPUT,
         FEEDBACK_INPUT,
         NUM_INPUTS
     };
@@ -225,12 +226,15 @@ private:
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 1;     // 1..4
     float_4 depth_m;                // exp mode depth from knob
+    float_4 baseFmDepth_m = 0;
+    bool fmDepthConnected_m = false;
+    bool feedbackConnected_m = false;
 
-    int freqMultiplier = 1;
+    float_4 freqMultiplier_m = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
-    float baseFeedback = 0;
-    float baseOutputLevel = 1;  // 0..x
-    float baseOffset = 0;
+    float_4 baseFeedback_m = 0;
+    float_4 baseOutputLevel_m = 1;  // 0..x
+    float_4 baseOffset_m = 0;
     bool enableAdsrLevel = false;
     bool enableAdsrFeedback = false;
     bool enableAdsrFM = false;
@@ -297,7 +301,19 @@ inline void WVCO<TBase>::stepm()
                 TBase::params[FM_DEPTH_PARAM].value * .01f);
 
 
-    freqMultiplier = int(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
+    freqMultiplier_m =  float_4(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
+
+    baseFmDepth_m = float_4(WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003);
+    {
+        Port& depthCVPort = WVCO<TBase>::inputs[LINEAR_FM_DEPTH_INPUT];
+        fmDepthConnected_m = depthCVPort.isConnected();
+    }
+    {
+        Port& feedbackPort = WVCO<TBase>::inputs[FEEDBACK_INPUT];
+        feedbackConnected_m = feedbackPort.isConnected();
+    }
+
+  
 
     int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
@@ -309,28 +325,28 @@ inline void WVCO<TBase>::stepm()
     for (int bank=0; bank < numBanks_m; ++bank) {
         dsp[bank].waveform = wf;
         dsp[bank].setSyncEnable(sync);
-        dsp[bank].waveformOffset = baseOffset;
+        dsp[bank].waveformOffset = baseOffset_m;
     }
 
     // these numbers here are just values found by experimenting - no math.
-    baseFeedback =  TBase::params[FEEDBACK_PARAM].value * 2.f / 1000.f;
-    baseOutputLevel =  TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f;
+    baseFeedback_m =  float_4(3.f * TBase::params[FEEDBACK_PARAM].value * 2.f / 1000.f);
+    baseOutputLevel_m =  float_4(TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f);
 
     // Sine, Fold, SawTri
     // find the correct offset and gains to apply the waveformat
     // get thet them nomalized
     switch (wf) {
         case WVCODsp::WaveForm::Sine:
-            baseOffset = 0;
-            baseOutputLevel *= 5;
+            baseOffset_m = 0;
+            baseOutputLevel_m *= 5;
             break;
         case WVCODsp::WaveForm::Fold:
-            baseOffset = 0;
-            baseOutputLevel *=  (5.f * 5.f / 5.6f);
+            baseOffset_m = 0;
+            baseOutputLevel_m *=  (5.f * 5.f / 5.6f);
             break;
         case WVCODsp::WaveForm::SawTri:
-            baseOffset = -.5f; 
-            baseOutputLevel *= 10;
+            baseOffset_m = -.5f; 
+            baseOutputLevel_m *= 10;
             break;
         default:
             assert(0);
@@ -368,6 +384,34 @@ inline void WVCO<TBase>::updateFreq_n()
 {
     for (int bank=0; bank < numBanks_m; ++bank) {
         float_4 freq=0;
+
+        const int baseChannel = bank;
+
+        float_4 pitch = basePitch_m;
+        // use SIMD here?
+        Port& v8Port = TBase::inputs[VOCT_INPUT]; 
+        pitch += v8Port.getPolyVoltageSimd<float_4>(baseChannel);
+
+        Port& fmInputPort = TBase::inputs[FM_INPUT];
+        pitch += fmInputPort.getPolyVoltage(baseChannel) * depth_m; 
+        for (int i=0; i<4; ++i) { 
+             freq[i] = expLookup(pitch[i]);      
+        }       
+     //   float _freq = expLookup(pitch);
+        freq *= freqMultiplier_m;
+        float_4 time = rack::simd::clamp(freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
+        freq = time;
+    
+        dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
+    }
+}
+
+#if 0 // scalar version works
+template <class TBase>
+inline void WVCO<TBase>::updateFreq_n()
+{
+    for (int bank=0; bank < numBanks_m; ++bank) {
+        float_4 freq=0;
         for (int i=0; i<4; ++i) {
             const int channel = bank * 4 + i;
 
@@ -384,6 +428,7 @@ inline void WVCO<TBase>::updateFreq_n()
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
     }
 }
+#endif
 
 template <class TBase>
 inline void WVCO<TBase>::updateShapes_n()
@@ -456,9 +501,6 @@ inline void WVCO<TBase>::stepn_fullRate()
 {
     assert(numBanks_m > 0);
 
-    static int x = 0;
-
-
     //--------------------------------------------------------------------
     // round up all the gates and run the ADSR;
     {
@@ -479,37 +521,25 @@ inline void WVCO<TBase>::stepn_fullRate()
     // now update all the DSP params.
     // This is the new, cleaner version.
     // Legacy version is below
-#if 0
-    for (int bank=0; bank < numBanks_m; ++bank) {
-       // float_4 freq;
-        for (int i=0; i<4; ++i) {
-            const int channel = bank * 4 + i;
-        }
 
-    }
-#endif
 
-    // TODO: make this faster, and/or do less often
-     // update the pitch of every vco
-     // This is the legacy version
     for (int bank=0; bank < numBanks_m; ++bank) {
         
+        float_4 feedbackAmount = baseFeedback_m;;  
         if (enableAdsrFeedback) {
-            dsp[bank].feedback = baseFeedback * 3 * adsr.get(bank); 
-        } else {
-            dsp[bank].feedback = baseFeedback * 3;
+            feedbackAmount *= adsr.get(bank); 
         }
+        if (feedbackConnected_m) {
+            Port& feedbackPort = WVCO<TBase>::inputs[FEEDBACK_INPUT];
+            feedbackAmount *= feedbackPort.getPolyVoltageSimd<float_4>(bank * 4);
+        }
+        dsp[bank].feedback = feedbackAmount;
 
         // TODO: add CV (use getNormalPolyVoltage)
+         dsp[bank].outputLevel = baseOutputLevel_m;    
         if (enableAdsrLevel) {
-            dsp[bank].outputLevel = adsr.get(bank) * baseOutputLevel;
-        } else {
-            dsp[bank].outputLevel = float_4(baseOutputLevel);    
-        }
-    }
-    x++;
-    if (x > 1000) {
-        x = 0;
+            dsp[bank].outputLevel *= adsr.get(bank);
+        } 
     }
 }
 
@@ -522,27 +552,28 @@ inline void  __attribute__((flatten)) WVCO<TBase>::step()
     divm.step();
 
     stepn_fullRate();
-
-    // run the sample loop and write audi
     assert(numBanks_m > 0);
-    // todo - cache numBanks_m
 
+    // TODO: don't do this if fm input port not connected. sync also
     for (int bank=0; bank < numBanks_m; ++bank) {
         const int baseChannel = 4 * bank;
-        Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
-        float_4 fmInput = port.getPolyVoltageSimd<float_4>(baseChannel);
+        Port& fmInputPort = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
+        float_4 fmInput = fmInputPort.getPolyVoltageSimd<float_4>(baseChannel);
 
-        float_4 fmInputScaling;
+        //TODO:much of this could be done in stepn
+        // TODO: add depth CV
+        float_4 fmInputScaling = baseFmDepth_m;
         if (enableAdsrFM) {
-            fmInputScaling = adsr.get(bank) * (WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003);
-        } else {
-            fmInputScaling = WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003;
+            fmInputScaling *= adsr.get(bank);
+        }
+        if (fmDepthConnected_m) {
+            Port& depthPort = WVCO<TBase>::inputs[LINEAR_FM_DEPTH_INPUT];
+            fmInputScaling *= depthPort.getPolyVoltageSimd<float_4>(baseChannel);
         }
         dsp[bank].fmInput = fmInput * fmInputScaling;
 
-        port = WVCO<TBase>::inputs[SYNC_INPUT];
-      //  const bool isConnected = port.isConnected();
-        const float_4 syncInput = port.getPolyVoltageSimd<float_4>(baseChannel);
+        Port& syncPort = WVCO<TBase>::inputs[SYNC_INPUT];
+        const float_4 syncInput = syncPort.getPolyVoltageSimd<float_4>(baseChannel);
         float_4 v = dsp[bank].step(syncInput); 
         WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
     }

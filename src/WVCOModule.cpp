@@ -326,7 +326,7 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
     addInput(createInput<PJ301MPort>(
         Vec(jacksX4, jacksY1),
         module,
-        Comp::DEPTH_INPUT));
+        Comp::LINEAR_FM_DEPTH_INPUT));
     addLabel(Vec(jacksX4 - 10, jacksY1 - labelAboveKnob), "Depth");
 
 
