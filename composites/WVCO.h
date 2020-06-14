@@ -551,7 +551,6 @@ inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
     }
 }
 
-
 template <class TBase>
 inline void  __attribute__((flatten)) WVCO<TBase>::step()
 {

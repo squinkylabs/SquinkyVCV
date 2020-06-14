@@ -94,6 +94,7 @@ extern void testWVCO();
 extern void testSub();
 extern void testSimd();
 extern void testSimdLookup();
+extern void testSimpleQuantizer();
 
 #if 0
 #include <sstream>
@@ -186,6 +187,7 @@ if (runShaperGen) {
     simd_testBiquad();
     testWVCO();
 #endif
+    testSimpleQuantizer();
 
     testIComposite();
     testVec();

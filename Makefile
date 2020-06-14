@@ -71,7 +71,7 @@ ifdef ARCH_WIN
 endif
 
 #  -flto
-FLAGS += -finline-limit=500000 -finline-functions-called-once
+FLAGS += -finline-limit=500000 -finline-functions-called-once 
 
 include test.mk
 
