@@ -2,6 +2,7 @@
 #pragma once
 
 /**
+ * do shape calcs at reduced rate 84.4
  * 6/13 start to refactor 86.8% (gates at full rate). 
  * 6/4 use new sine approximation, down to 124%
  * 5/31: feature complete:
@@ -75,7 +76,6 @@ float -> float_4 isn't free.
 #include "IComposite.h"
 
 #include "Divider.h"
-
 
 using float_4 = rack::simd::float_4;
 
@@ -258,6 +258,7 @@ private:
      * send to DSPs
      */
     void updateFreq_n();
+    void updateShapes_n();
 };
 
 
@@ -384,11 +385,70 @@ inline void WVCO<TBase>::updateFreq_n()
     }
 }
 
+template <class TBase>
+inline void WVCO<TBase>::updateShapes_n()
+{
+    for (int bank=0; bank < numBanks_m; ++bank) {
+        const int baseChannel = bank * 4;
+
+
+        float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
+        simd_assertLE( envMult, float_4(2));
+        simd_assertGE(envMult, float_4(0)); 
+       
+        float_4 baseGain = baseShapeGain;
+        Port& port = TBase::inputs[WAVESHAPE_GAIN_PARAM];
+        if (port.isConnected()) {
+            baseGain *= port.getPolyVoltageSimd<float_4>(baseChannel);
+        }
+        float_4 correctedWaveShapeMultiplier = baseGain * envMult;
+        switch(dsp[bank].waveform) {
+            case WVCODsp::WaveForm::Sine:
+                break;
+            case WVCODsp::WaveForm::Fold:
+                correctedWaveShapeMultiplier += float_4(.095);
+                correctedWaveShapeMultiplier *= 10;
+                break;
+            case WVCODsp::WaveForm::SawTri:
+                correctedWaveShapeMultiplier = .5 + correctedWaveShapeMultiplier / 2;
+                break;
+        //    default:
+            // done't assert - sometimes we get here before waveform is initialized
+               // assert(false);
+        }
+        dsp[bank].correctedWaveShapeMultiplier = correctedWaveShapeMultiplier;
+
+        assertLE( baseShapeGain, 1);
+        assertGE( baseShapeGain, 0);   
+
+
+        // we could spit this triangle calc it we aren't triangle,
+        // but it doesn't take very long.
+
+        // could to this at 'n' rate, and only it triangle
+        // now let's compute triangle params
+        const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
+        simd_assertLT(shapeGain, float_4(2));
+        simd_assertGT(shapeGain, float_4(0));
+
+        float_4 k = .5 + shapeGain / 2;
+        float_4 a, b;
+        TriFormula::getLeftA(a, k);
+        dsp[bank].aLeft = a;
+        TriFormula::getRightAandB(a, b, k);
+
+        dsp[bank].aRight = a;
+        dsp[bank].bRight = b;
+    }
+
+}
+
 
 template <class TBase>
 inline void WVCO<TBase>::stepn_lowerRate()
 {
-    updateFreq_n();    // combine the
+    updateFreq_n();    
+    updateShapes_n();
 }
 
 template <class TBase>
@@ -415,8 +475,6 @@ inline void WVCO<TBase>::stepn_fullRate()
         adsr.step(gates, TBase::engineGetSampleTime());
     }
     
-
-
     // ----------------------------------------------------------------------------
     // now update all the DSP params.
     // This is the new, cleaner version.
@@ -431,66 +489,10 @@ inline void WVCO<TBase>::stepn_fullRate()
     }
 #endif
 
-
-
-       
-
     // TODO: make this faster, and/or do less often
      // update the pitch of every vco
      // This is the legacy version
     for (int bank=0; bank < numBanks_m; ++bank) {
-
-
-        float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
-        simd_assertLE( envMult, float_4(2));
-        simd_assertGE(envMult, float_4(0)); 
-       
-       
-     // (one easy thing would ge to do this whole block a 'n' rate)
-     // that should be fast enough for shape modulation
-
-      // moved the calculations that were done at oversample rate here,
-      // but there is still a lot stuff that doesn't have to be done at sample rate.
-       // dsp[bank].shapeAdjust = baseShapeGain * envMult; 
-        float_4 correctedWaveShapeMultiplier = baseShapeGain * envMult;
-        switch(dsp[bank].waveform) {
-            case WVCODsp::WaveForm::Sine:
-                break;
-            case WVCODsp::WaveForm::Fold:
-                correctedWaveShapeMultiplier += float_4(.095);
-                correctedWaveShapeMultiplier *= 10;
-                break;
-            case WVCODsp::WaveForm::SawTri:
-                correctedWaveShapeMultiplier = .5 + correctedWaveShapeMultiplier / 2;
-                break;
-        //    default:
-            // done't assert - sometimes we get here before waveform is initialized
-               // assert(false);
-        }
-        dsp[bank].correctedWaveShapeMultiplier = correctedWaveShapeMultiplier;
-
-        assertLE( baseShapeGain, 1);
-        assertGE( baseShapeGain, 0);   
-
-      //  simd_assertLE( dsp[bank].shapeAdjust, float_4(2));
-     //   simd_assertGE( dsp[bank].shapeAdjust, float_4(0));   
-
-
-        // could to this at 'n' rate, and only it triangle
-        // now let's compute triangle params
-        const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
-        simd_assertLT(shapeGain, float_4(2));
-        simd_assertGT(shapeGain, float_4(0));
-
-        float_4 k = .5 + shapeGain / 2;
-        float_4 a, b;
-        TriFormula::getLeftA(a, k);
-        dsp[bank].aLeft = a;
-        TriFormula::getRightAandB(a, b, k);
-
-        dsp[bank].aRight = a;
-        dsp[bank].bRight = b;
-        
         
         if (enableAdsrFeedback) {
             dsp[bank].feedback = baseFeedback * 3 * adsr.get(bank); 
@@ -501,12 +503,6 @@ inline void WVCO<TBase>::stepn_fullRate()
         // TODO: add CV (use getNormalPolyVoltage)
         if (enableAdsrLevel) {
             dsp[bank].outputLevel = adsr.get(bank) * baseOutputLevel;
-#if 0
-              if (x == 0) {
-                printf("update level with env %s\n", toStr(adsr.env[bank]).c_str());
-                printf("finaly output %s\n", toStr(dsp[bank].outputLevel).c_str());
-            }
-#endif
         } else {
             dsp[bank].outputLevel = float_4(baseOutputLevel);    
         }
