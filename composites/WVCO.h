@@ -221,6 +221,11 @@ private:
     // variables with _m suffix updated every m period
     float_4 basePitch_m = 0;        // all the knobs, no cv. units are volts
     int numChannels_m = 1;      // 1..16
+    int numBanks_m = 1;     // 1..4
+
+    // this is all of the freq calc except for FM input, 
+    // which must be done at sample rate.
+    //float_4 freq_n[4] = {100, 100, 100, 100};
 
     int freqMultiplier = 1;
     float baseShapeGain = 0;    // 0..1 -> re-do this!
@@ -248,6 +253,12 @@ private:
      * Currently every 16 samples, but could go lower. for knobs and such
      */
     void stepm();
+
+    /**
+     * combine CV with knobs (basePitch_m),
+     * send to DSPs
+     */
+    void updateFreq_n();
 };
 
 
@@ -269,6 +280,11 @@ inline void WVCO<TBase>::stepm()
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(numChannels_m);
 
+    numBanks_m = numChannels_m / 4;
+    if (numChannels_m > numBanks_m * 4) {
+        numBanks_m++;
+    }
+
     float basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +      
         TBase::params[FINE_TUNE_PARAM].value / 12.0f;
 
@@ -284,11 +300,8 @@ inline void WVCO<TBase>::stepm()
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
     const bool sync = TBase::inputs[SYNC_INPUT].isConnected();
 
-    int numBanks = numChannels_m / 4;
-    if (numChannels_m > numBanks * 4) {
-        numBanks++;
-    }
-    for (int bank=0; bank < numBanks; ++bank) {
+
+    for (int bank=0; bank < numBanks_m; ++bank) {
         dsp[bank].waveform = wf;
         dsp[bank].setSyncEnable(sync);
         dsp[bank].waveformOffset = baseOffset;
@@ -345,21 +358,68 @@ inline void WVCO<TBase>::stepm()
     enableAdsrShape = TBase::params[ADSR_SHAPE_PARAM].value > .5;
 }
 
+#if 1
+template <class TBase>
+inline void WVCO<TBase>::updateFreq_n()
+{
+    for (int bank=0; bank < numBanks_m; ++bank) {
+        float_4 freq=0;
+        for (int i=0; i<4; ++i) {
+            const int channel = bank * 4 + i;
+
+            float pitch = basePitch_m[0];
+            // use SIMD here?
+            pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
+
+#if 1  // move out of loop
+         //   const float depth  =audioTaperLookup(TBase::params[FM_DEPTH_PARAM].value * .01f);
+            const float depth = .3 * LookupTable<float>::lookup(
+                *audioTaperLookupParams, 
+                TBase::params[FM_DEPTH_PARAM].value * .01f);
+            pitch += TBase::inputs[FM_INPUT].getVoltage(channel) * depth;
+#endif
+               
+            float _freq = expLookup(pitch);
+          //  freq[i] = _freq;
+
+
+            _freq *= freqMultiplier;
+
+            const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
+
+            freq[i] = time;
+        }
+
+      //  float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
+      //  simd_assertLE( envMult, float_4(2));
+      //  simd_assertGE(envMult, float_4(0)); 
+
+    //    freq_n[bank] = freq / WVCODsp::oversampleRate;
+        dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
+      //    dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
+
+        // do this later, too
+       // dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
+    }
+}
+#endif
+
 template <class TBase>
 inline void WVCO<TBase>::stepn_lowerRate()
 {
-
+    updateFreq_n();    // combine the
 }
 
 template <class TBase>
 inline void WVCO<TBase>::stepn_fullRate()
 {
-    int numBanks = numChannels_m / 4;
-    if (numChannels_m > numBanks * 4) {
-        numBanks++;
-    }
+    assert(numBanks_m > 0);
 
-   static int x = 0;
+   
+
+    static int x = 0;
+
+    //--------------------------------------------------------------------
     // round up all the gates and run the ADSR;
     {
         float_4 gates[4];
@@ -378,12 +438,34 @@ inline void WVCO<TBase>::stepn_fullRate()
             }
 #endif
         }
+    //    printf("\ngates = %s\n", toStr(gates[0]).c_str());
         adsr.step(gates, TBase::engineGetSampleTime());
     }
 
+    // ----------------------------------------------------------------------------
+    // now update all the DSP params.
+    // This is the new, cleaner version.
+    // Legacy version is below
+#if 0
+    for (int bank=0; bank < numBanks_m; ++bank) {
+       // float_4 freq;
+        for (int i=0; i<4; ++i) {
+            const int channel = bank * 4 + i;
+        }
+
+    }
+#endif
+
+
+
+       
+
     // TODO: make this faster, and/or do less often
      // update the pitch of every vco
-    for (int bank=0; bank < numBanks; ++bank) {
+     // This is the legacy version
+    for (int bank=0; bank < numBanks_m; ++bank) {
+
+    #if 0
         float_4 freq;
         for (int i=0; i<4; ++i) {
             const int channel = bank * 4 + i;
@@ -404,12 +486,18 @@ inline void WVCO<TBase>::stepn_fullRate()
             const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
             freq[i] = time;
         }
+        if (bank == 0) {
+        //    printf("in step freq = %s\n", toStr(freq).c_str());
+        }
+
+      
+
+        dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
+    #endif
 
         float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
         simd_assertLE( envMult, float_4(2));
         simd_assertGE(envMult, float_4(0)); 
-
-        dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
        
        
       
@@ -500,13 +588,10 @@ inline void  __attribute__((flatten)) WVCO<TBase>::step()
     stepn_fullRate();
 
     // run the sample loop and write audi
-
+    assert(numBanks_m > 0);
     // todo - cache numBanks_m
-    int numBanks = numChannels_m / 4;
-    if (numChannels_m > numBanks * 4) {
-        numBanks++;
-    }
-    for (int bank=0; bank < numBanks; ++bank) {
+
+    for (int bank=0; bank < numBanks_m; ++bank) {
         const int baseChannel = 4 * bank;
         Port& port = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
         float_4 fmInput = port.getPolyVoltageSimd<float_4>(baseChannel);
