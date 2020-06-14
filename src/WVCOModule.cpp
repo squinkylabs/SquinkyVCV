@@ -353,13 +353,13 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Vec(jacksX4, jacksY2),
         module,
         Comp::FEEDBACK_INPUT));
-    addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Fdbck");
+    addLabel(Vec(jacksX4 - 10, jacksY2 - labelAboveKnob), "Fdbck");
 
     addInput(createInput<PJ301MPort>(
         Vec(jacksX5, jacksY2),
         module,
         Comp::SHAPE_INPUT));
-    addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Shape");
+    addLabel(Vec(jacksX5 - 10, jacksY2 - labelAboveKnob), "Shape");
 }
 
 
