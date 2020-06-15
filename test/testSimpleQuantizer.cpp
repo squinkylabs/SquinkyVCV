@@ -6,7 +6,8 @@
 
 std::shared_ptr<SimpleQuantizer> makeTest(SimpleQuantizer::Scales = SimpleQuantizer::Scales::_12Even)
 {
-    SimpleQuantizer* ptr = new SimpleQuantizer({ SimpleQuantizer::Scales::_12Even }, SimpleQuantizer::Scales::_12Even);
+    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even };
+    SimpleQuantizer* ptr = new SimpleQuantizer(scales, SimpleQuantizer::Scales::_12Even);
     return std::shared_ptr<SimpleQuantizer>(ptr);
 }
 
@@ -29,8 +30,26 @@ static void testSimpleQuanizer12Even()
     }
 }
 
+static void testSimpleQuanizer8Even()
+{
+    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even,  SimpleQuantizer::Scales::_8Even };
+    SimpleQuantizer* p = new SimpleQuantizer(scales,
+        SimpleQuantizer::Scales::_8Even);
+    auto q =  std::shared_ptr<SimpleQuantizer>(p);
+
+    const float s = PitchUtils::semitone;
+
+    assertClose(q->quantize(0), 0, .0001);
+    assertClose(q->quantize(2), 2, .0001);
+    assertClose(q->quantize(1), 0, .0001);      // minor 2dn q down
+
+    
+}
+
+
 void testSimpleQuantizer()
 {
     testSimpleQuanizer0();
     testSimpleQuanizer12Even();
+    testSimpleQuanizer8Even();
 }
