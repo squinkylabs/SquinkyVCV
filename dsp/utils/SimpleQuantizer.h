@@ -25,6 +25,6 @@ private:
     std::set<float> pitches_8even;
     std::set<float> pitches_12just;
     std::set<float> pitches_8just;
-    std::set<float>& cur_set = pitches_12even;
+    std::set<float>* cur_set = &pitches_12even;
     using iterator = std::set<float>::iterator; 
 };

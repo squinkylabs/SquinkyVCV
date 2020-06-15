@@ -50,29 +50,22 @@ SimpleQuantizer::SimpleQuantizer(std::vector<SimpleQuantizer::Scales>& scales, S
 
     setScale(scale);
 
+    assert(pitches_12even.size() == 12+1);
+    assert(pitches_12just.size() == 12+1);
+    assert(pitches_8even.size() == 8);
+    assert(pitches_8just.size() == 8);
+
 }
-/*
-12 could be 1/1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 9/5, 15/18, 2/1
-(e.g. C=1/1, D=9/8, E=5/4, F=4/3,
-G = 3/2, A=5/3, B=15/8, C=2/1, etc.).
-
-
-*/
-
 
 float SimpleQuantizer::quantize(float _input)
 {
-    // This will quantize - dont' want that
-   // std::pair<int, int> x = PitchUtils::cvToPitch(input);
-  //  int octave = x.first;
-  //  int semi = x.second;
     float octave = std::floor(_input);
     float fractionalInput = _input - octave;
     
     // let's find a table element less than or equal to us
-    iterator itLow = cur_set.lower_bound(fractionalInput);
+    iterator itLow = cur_set->lower_bound(fractionalInput);
     iterator itHigh = itLow;
-    if (*itLow > fractionalInput && itLow != cur_set.begin()) {
+    if (*itLow > fractionalInput && itLow != cur_set->begin()) {
         --itLow;
     }
     assert(*itLow <= fractionalInput);
@@ -108,19 +101,20 @@ void SimpleQuantizer::setScale(SimpleQuantizer::Scales scale)
 {
     switch(scale) {
         case  Scales::_12Even:
-            cur_set = pitches_12even;
+            cur_set = &pitches_12even;
             break;
         case  Scales::_8Even:
-            cur_set = pitches_8even;
+            cur_set = &pitches_8even;
             break;
         case Scales::_12Just:
-            cur_set = pitches_12just;
+            cur_set = &pitches_12just;
             break;
         case  Scales::_8Just:
-            cur_set = pitches_8just;
+            cur_set = &pitches_8just;
             break;
         default:
             assert(false);
     }
-    assert(!cur_set.empty());
+    assert(cur_set);
+    assert(!cur_set->empty());
 }
