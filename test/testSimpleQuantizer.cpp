@@ -39,10 +39,20 @@ static void testSimpleQuanizer8Even()
 
     const float s = PitchUtils::semitone;
 
-    assertClose(q->quantize(0), 0, .0001);
-    assertClose(q->quantize(2 * s), 2 * s, .0001);
-    assertClose(q->quantize(1 * s), 0, .0001);      // minor 2dn q down
+    assertClose(q->quantize(0), 0, .0001);              // C
+    assertClose(q->quantize(2 * s), 2 * s, .0001);      // D
+    assertClose(q->quantize(4 * s), 4 * s, .0001);      // E
+    assertClose(q->quantize(5 * s), 5 * s, .0001);      // F
+    assertClose(q->quantize(7 * s), 7 * s, .0001);      // G
+    assertClose(q->quantize(9 * s), 9 * s, .0001);      // A
+    assertClose(q->quantize(11 * s), 11 * s, .0001);    // B
+    assertClose(q->quantize(12 * s), 12 * s, .0001);    // C
 
+    assertClose(q->quantize(1 * s), 0, .0001);      // C#
+    assertClose(q->quantize(3 * s), 2 * s, .0001);      // D#
+    assertClose(q->quantize(6 * s), 5 * s, .0001);      // F#
+    assertClose(q->quantize(8 * s), 7 * s, .0001);      // C#
+    assertClose(q->quantize(10 * s), 9 * s, .0001);      // C#
     
 }
 

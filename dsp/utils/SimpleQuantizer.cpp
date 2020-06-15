@@ -78,12 +78,19 @@ float SimpleQuantizer::quantize(float _input)
         const float lo = *itLow;
         const float hi = *itHigh;
 
+        const float slopAmount = PitchUtils::semitone * .1f;     // if we are right in between, favor rounding down
         const float deltaLo = fractionalInput - lo;
         const float deltaHi = hi - fractionalInput;
         assert(deltaLo >= 0);
         assert(deltaHi >= 0);
-        
-        fraction = (deltaHi < deltaLo) ? hi : lo;
+
+        // if we are super close to the middle, round down.
+        if (std::abs(deltaHi - deltaLo) < slopAmount) {
+            fraction = lo;
+        }
+        else {
+            fraction = (deltaHi < deltaLo) ? hi : lo;
+        }
     }
 
     return (float)octave + fraction;
