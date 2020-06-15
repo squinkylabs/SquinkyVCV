@@ -11,14 +11,23 @@ std::shared_ptr<SimpleQuantizer> makeTest(SimpleQuantizer::Scales = SimpleQuanti
     return std::shared_ptr<SimpleQuantizer>(ptr);
 }
 
-static void testSimpleQuanizer0()
+static void testSimpleQuanizerOctave(SimpleQuantizer::Scales scale)
 {
     auto q = makeTest();
+    q->setScale(scale);
     //SimpleQuantizer q({ SimpleQuantizer::Scales::_12Even }, SimpleQuantizer::Scales::_12Even);
     assertEQ(q->quantize(0), 0);
     assertEQ(q->quantize(1), 1);
     assertEQ(q->quantize(-1), -1);
     assertEQ(q->quantize(10), 10);
+}
+
+static void testSimpleQuanizerOctave() 
+{
+    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_12Even);
+    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_8Even);
+    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_12Just);
+    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_8Just);
 }
 
 static void testSimpleQuanizer12Even()
@@ -59,7 +68,7 @@ static void testSimpleQuanizer8Even()
 
 void testSimpleQuantizer()
 {
-    testSimpleQuanizer0();
+    testSimpleQuanizerOctave();
     testSimpleQuanizer12Even();
     testSimpleQuanizer8Even();
 }

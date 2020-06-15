@@ -24,34 +24,41 @@ SimpleQuantizer::SimpleQuantizer(std::vector<SimpleQuantizer::Scales>& scales, S
     pitches_8even.insert(11 * s);        // B
     pitches_8even.insert(12 * s);        // C2
 
-    switch (scale) {
-    case Scales::_12Even:
-        cur_set = pitches_12even;
-        break;
-    case Scales::_8Even:
-        cur_set = pitches_8even;
-        break;
-    default:
-        assert(false);
-    }
+    //
+    pitches_8just.insert(1.f/1 - 1);
+    pitches_8just.insert(9.f/8 - 1);
+    pitches_8just.insert(5.f /4 - 1);
+    pitches_8just.insert(4.f /3 - 1);
+    pitches_8just.insert(3.f /2 - 1);
+    pitches_8just.insert(5.f /3 - 1);
+    pitches_8just.insert(15.f /8 - 1);
+    pitches_8just.insert(2.f/1 - 1);
 
+    pitches_12just.insert(1.f/1 - 1);
+    pitches_12just.insert(16.f / 15 - 1);
+    pitches_12just.insert(9.f / 8 - 1);
+    pitches_12just.insert(6.f / 5 - 1);
+    pitches_12just.insert(5.f / 4 - 1);
+    pitches_12just.insert(4.f / 3 - 1);
+    pitches_12just.insert(45.f / 32 - 1);
+    pitches_12just.insert(3.f / 2 - 1);
+    pitches_12just.insert(8.f / 5 - 1);
+    pitches_12just.insert(5.f / 3 - 1);
+    pitches_12just.insert(9.f / 5 - 1);
+    pitches_12just.insert(15.f / 18 - 1);
+    pitches_12just.insert(2.f / 1 - 1);
+
+    setScale(scale);
 
 }
+/*
+12 could be 1/1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 9/5, 15/18, 2/1
+(e.g. C=1/1, D=9/8, E=5/4, F=4/3,
+G = 3/2, A=5/3, B=15/8, C=2/1, etc.).
 
-#if 0
-float SimpleQuantizer::quantize(float input)
-{
-    std::pair<int, int> x = PitchUtils::cvToPitch(input);
-    int octave = x.first;
-    int semi = x.second;
-    
-    //assert(semi == 0);
 
-    // 0v is c4
-    // this will only work for 12E
-    return (float)octave - 4 + semi * PitchUtils::semitone;
-}
-#endif
+*/
+
 
 float SimpleQuantizer::quantize(float _input)
 {
@@ -94,8 +101,26 @@ float SimpleQuantizer::quantize(float _input)
     }
 
     return (float)octave + fraction;
+}
 
 
-
-    
+void SimpleQuantizer::setScale(SimpleQuantizer::Scales scale)
+{
+    switch(scale) {
+        case  Scales::_12Even:
+            cur_set = pitches_12even;
+            break;
+        case  Scales::_8Even:
+            cur_set = pitches_8even;
+            break;
+        case Scales::_12Just:
+            cur_set = pitches_12just;
+            break;
+        case  Scales::_8Just:
+            cur_set = pitches_8just;
+            break;
+        default:
+            assert(false);
+    }
+    assert(!cur_set.empty());
 }
