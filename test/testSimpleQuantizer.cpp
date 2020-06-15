@@ -40,8 +40,8 @@ static void testSimpleQuanizer8Even()
     const float s = PitchUtils::semitone;
 
     assertClose(q->quantize(0), 0, .0001);
-    assertClose(q->quantize(2), 2, .0001);
-    assertClose(q->quantize(1), 0, .0001);      // minor 2dn q down
+    assertClose(q->quantize(2 * s), 2 * s, .0001);
+    assertClose(q->quantize(1 * s), 0, .0001);      // minor 2dn q down
 
     
 }

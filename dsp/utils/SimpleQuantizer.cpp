@@ -75,7 +75,15 @@ float SimpleQuantizer::quantize(float _input)
     if (itLow == itHigh) {
         fraction = *itLow;
     } else {
-        assert(false);
+        const float lo = *itLow;
+        const float hi = *itHigh;
+
+        const float deltaLo = fractionalInput - lo;
+        const float deltaHi = hi - fractionalInput;
+        assert(deltaLo >= 0);
+        assert(deltaHi >= 0);
+        
+        fraction = (deltaHi < deltaLo) ? hi : lo;
     }
 
     return (float)octave + fraction;
