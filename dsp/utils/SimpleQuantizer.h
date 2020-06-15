@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <set>
 #include <vector>
 
 class SimpleQuantizer
@@ -18,4 +19,5 @@ public:
 
     float quantize(float);
 private:
+    std::set<float> pitches;
 };
