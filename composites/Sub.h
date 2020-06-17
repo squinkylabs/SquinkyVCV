@@ -118,6 +118,7 @@ public:
     void step() override;
 
     void stepn();
+    void stepm();
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4>& _get(int n) {
         return oscillators[n];
     } 
@@ -137,6 +138,7 @@ private:
     int numBanks = 1;
 
     Divider divn;
+    Divider divm;
 
     float vco0Gain = .2;
     float subA0Gain = .2;
@@ -146,6 +148,8 @@ private:
     float subA1Gain = .2;
     float subB1Gain = .2;
 
+
+    int activeChannels_m[4] = {0};
     void computeGains();
     void computeDivisors(int32_4& divaOut, int32_4& divbOut);
     void setupWaveforms();
@@ -160,10 +164,13 @@ inline void Sub<TBase>::init()
         this->stepn();
     });
 
+    divm.setup(16, [this]() {
+        this->stepm();
+    });
+
     for (int i=0; i<4; ++i) {
         oscillators[i].index = i;
     }
-
 
     std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even };
     quantizer = std::make_shared<SimpleQuantizer>(scales,  SimpleQuantizer::Scales::_off);
@@ -306,16 +313,11 @@ inline void Sub<TBase>::setupWaveforms() {
         oscillators[bank].setWaveform(mainIsSawMask, subIsSawMask);
     }
 }
-  
 
 template <class TBase>
-inline void Sub<TBase>::stepn()
+inline void Sub<TBase>::stepm()
 {
-    computeGains();
     setupWaveforms();
-    // much of this could be done less often.
-    // many vars could be float_4
-
     numDualChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numDualChannels);
 
@@ -325,28 +327,38 @@ inline void Sub<TBase>::stepn()
         numBanks++;
     }
 
+
     // Figure out how many active channels per VCO
     // TODO: imp smarter and/or do less often
-    int activeChannels[4] = {0};
-     if (numDualChannels <= 2 ) {
-        activeChannels[0] = numDualChannels * 2;    
+    activeChannels_m[0] = 0;
+    activeChannels_m[1] = 0;
+    activeChannels_m[2] = 0;
+    activeChannels_m[3] = 0;
+
+    if (numDualChannels <= 2 ) {
+        activeChannels_m[0] = numDualChannels * 2;    
     } else if (numDualChannels <= 4) {
-        activeChannels[0] = 4;
-        activeChannels[1] = (numDualChannels-2) * 2;
+        activeChannels_m[0] = 4;
+        activeChannels_m[1] = (numDualChannels-2) * 2;
     } else if (numDualChannels <= 6) {
-        activeChannels[0] = 4;
-        activeChannels[1] = 4;
-        activeChannels[2] = (numDualChannels-4) * 2;
+        activeChannels_m[0] = 4;
+        activeChannels_m[1] = 4;
+        activeChannels_m[2] = (numDualChannels-4) * 2;
     } else if (numDualChannels <= 8) {
-        activeChannels[0] = 4;
-        activeChannels[1] = 4;
-        activeChannels[2] = 4;
-        activeChannels[3] = (numDualChannels-6) * 2;
+        activeChannels_m[0] = 4;
+        activeChannels_m[1] = 4;
+        activeChannels_m[2] = 4;
+        activeChannels_m[3] = (numDualChannels-6) * 2;
     } else {
         assert(false);
     }
+}  
 
-
+template <class TBase>
+inline void Sub<TBase>::stepn()
+{
+    computeGains();
+   
     // pitch is in volts
     const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
     const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
@@ -375,13 +387,11 @@ inline void Sub<TBase>::stepn()
         pitch[2] += cv1;
         pitch[3] += cv1;
         
-        oscillators[bank].setupSub(activeChannels[bank], pitch, divisorA, divisorB);
+        oscillators[bank].setupSub(activeChannels_m[bank], pitch, divisorA, divisorB);
     }
 
     for (int bank = numBanks; bank < 4; ++bank) {
-     //   printf("makeup setup bank %d will call setupSub\n", bank);
-        oscillators[bank].setupSub(activeChannels[bank], float_4(0), 4, 4);
-
+        oscillators[bank].setupSub(activeChannels_m[bank], float_4(0), 4, 4);
     }
 }
 
