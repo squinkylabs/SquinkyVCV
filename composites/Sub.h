@@ -11,6 +11,7 @@
 #include "IComposite.h"
 #include "LookupTableFactory.h"
 #include "simd.h"
+#include "SimpleQuantizer.h"
 
 /**
  * 5/31 feature complete (almost)  48%
@@ -77,6 +78,7 @@ public:
         SUB2B_LEVEL_PARAM,
         WAVEFORM1_PARAM,
         WAVEFORM2_PARAM,
+        QUANTIZER_SCALE_PARAM,
 
         NUM_PARAMS
     };
@@ -121,6 +123,7 @@ public:
     } 
 private:
 
+    std::shared_ptr<SimpleQuantizer> quantizer;
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> oscillators[4];
     AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(1, 16, 1, 16);
      
@@ -132,8 +135,7 @@ private:
      */
     int numDualChannels = 1;
     int numBanks = 1;
-   // float basePitch1 = 0;
-  //  float basePitch2 = 0;
+
     Divider divn;
 
     float vco0Gain = .2;
@@ -147,8 +149,6 @@ private:
     void computeGains();
     void computeDivisors(int32_4& divaOut, int32_4& divbOut);
     void setupWaveforms();
-  
-
 };
 
 
@@ -165,7 +165,8 @@ inline void Sub<TBase>::init()
     }
 
 
-   // oscillators[0].channels = 1;     // Totally idiotic.
+    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even };
+    quantizer = std::make_shared<SimpleQuantizer>(scales,  SimpleQuantizer::Scales::_off);
 }
 
 template <class TBase>
@@ -494,6 +495,9 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             break;
         case Sub<TBase>::SUB2B_TUNE_TRIM_PARAM:
             ret = {-1, 1, 0, "VCO 2 sub B trim"};
+            break;
+        case Sub<TBase>::QUANTIZER_SCALE_PARAM:
+            ret = {0, 4, 0, "Quantizer Scale"};
             break;
         default:
             assert(false);

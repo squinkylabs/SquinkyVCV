@@ -4,10 +4,10 @@
 #include "SimpleQuantizer.h"
 
 
-std::shared_ptr<SimpleQuantizer> makeTest(SimpleQuantizer::Scales = SimpleQuantizer::Scales::_12Even)
+std::shared_ptr<SimpleQuantizer> makeTest(SimpleQuantizer::Scales scale = SimpleQuantizer::Scales::_12Even)
 {
     std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even };
-    SimpleQuantizer* ptr = new SimpleQuantizer(scales, SimpleQuantizer::Scales::_12Even);
+    SimpleQuantizer* ptr = new SimpleQuantizer(scales, scale);
     return std::shared_ptr<SimpleQuantizer>(ptr);
 }
 
@@ -65,10 +65,22 @@ static void testSimpleQuanizer8Even()
     
 }
 
+static  void testSimpleQuanizerOff()
+{
+    auto q = makeTest(SimpleQuantizer::Scales::_off);
+
+    assertEQ(q->quantize(0), 0);
+    assertEQ(q->quantize(.1f), .1f);
+    assertEQ(q->quantize(.01f), .01f);
+    assertEQ(q->quantize(9.999f), 9.999f);
+}
+
 
 void testSimpleQuantizer()
 {
     testSimpleQuanizerOctave();
     testSimpleQuanizer12Even();
     testSimpleQuanizer8Even();
+    testSimpleQuanizerOff();
+
 }

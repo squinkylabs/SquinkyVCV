@@ -8,6 +8,7 @@ class SimpleQuantizer
 {
 public:
     enum class Scales {
+        _off,
         _12Even,
         _8Even,
         _12Just,

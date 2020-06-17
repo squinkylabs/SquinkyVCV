@@ -9,6 +9,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/ToggleButton.h"
 
 using Comp = Sub<WidgetComposite>;
 
@@ -261,7 +262,37 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::MAIN_OUTPUT));
     addLabel(Vec(jacksMiddle - 10, jacksY2 - labelAboveKnob), "Out");
+
+
+    #if 1
+
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(middle -24, 206),
+        module,
+        Comp::QUANTIZER_SCALE_PARAM);
+    p->box.size.x = 48;  // width
+    p->box.size.y = 22;   
+    p->text = "Off";
+    p->setLabels( {"Off", "12ET", "7ET", "12JI", "7JI"});
+    addParam(p);
+
+    #else
+
+    auto tog = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(123-20, 206 - 13),
+        module,
+        Comp::QUANTIZER_SCALE_PARAM);
+    tog->addSvg("res/quant-12e.svg");
+    tog->addSvg("res/quant-12e.svg");
+    tog->addSvg("res/quant-12e.svg");
+    tog->addSvg("res/quant-12e.svg");
+    addParam(tog);
+    #endif
 }
+
+
 
 
 

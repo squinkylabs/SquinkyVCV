@@ -59,6 +59,9 @@ SimpleQuantizer::SimpleQuantizer(std::vector<SimpleQuantizer::Scales>& scales, S
 
 float SimpleQuantizer::quantize(float _input)
 {
+    if (!cur_set) {
+        return _input;
+    }
     float octave = std::floor(_input);
     float fractionalInput = _input - octave;
     
@@ -112,9 +115,12 @@ void SimpleQuantizer::setScale(SimpleQuantizer::Scales scale)
         case  Scales::_8Just:
             cur_set = &pitches_8just;
             break;
+        case Scales::_off:
+            cur_set = nullptr;
+            break;
         default:
             assert(false);
     }
-    assert(cur_set);
-    assert(!cur_set->empty());
+ 
+    assert(!cur_set || !cur_set->empty());
 }
