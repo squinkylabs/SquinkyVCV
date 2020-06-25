@@ -129,7 +129,6 @@ private:
     AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(1, 16, 1, 16);
      
     LookupTableParams<float> audioTaper;
-   // std::function<double(double)> autoTaper = AudioMath::makeFunc_AudioTaper(AudioMath::audioTaperKnee());
 
     /**
      * number of oscillator pairs
@@ -317,6 +316,7 @@ inline void Sub<TBase>::setupWaveforms() {
 template <class TBase>
 inline void Sub<TBase>::stepm()
 {
+  
     setupWaveforms();
     numDualChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numDualChannels);
@@ -326,7 +326,6 @@ inline void Sub<TBase>::stepm()
     if (numVCO > numBanks * 4) {
         numBanks++;
     }
-
 
     // Figure out how many active channels per VCO
     // TODO: imp smarter and/or do less often
@@ -358,8 +357,9 @@ template <class TBase>
 inline void Sub<TBase>::stepn()
 {
     computeGains();
-   
-    // pitch is in volts
+
+    // get the base pitch in volts from the 2X2 pitch knobs.
+    // Jam it into one float_4 <A,B,A,B>
     const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
     const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
     float_4 combinedPitch(0);
@@ -370,19 +370,20 @@ inline void Sub<TBase>::stepn()
     combinedPitch[2] = basePitch1;
     combinedPitch[3] = basePitch2;
 
-   rack::simd::int32_4 divisorA;
-   rack::simd::int32_4 divisorB;
-   computeDivisors(divisorA, divisorB);
+    rack::simd::int32_4 divisorA;
+    rack::simd::int32_4 divisorB;
+    computeDivisors(divisorA, divisorB);
 
+    // Now loop thought all VCOs, combining the individual CV with the
     int channel = 0;
     for (int bank = 0; bank < numBanks; ++bank) {
-        const float cv0 = Sub<TBase>::inputs[VOCT_INPUT].getVoltage(channel);
+        const float cv0 = quantizer->quantize(Sub<TBase>::inputs[VOCT_INPUT].getVoltage(channel));
         ++channel;
         float_4 pitch = combinedPitch;
         pitch[0] += cv0;
         pitch[1] += cv0;
 
-        const float cv1 = Sub<TBase>::inputs[VOCT_INPUT].getVoltage(channel);
+        const float cv1 = quantizer->quantize(Sub<TBase>::inputs[VOCT_INPUT].getVoltage(channel));
         ++channel;
         pitch[2] += cv1;
         pitch[3] += cv1;
@@ -398,6 +399,7 @@ inline void Sub<TBase>::stepn()
 template <class TBase>
 inline void Sub<TBase>::step()
 {
+    divm.step();
     divn.step();
     // look at controls and update VCO
 
