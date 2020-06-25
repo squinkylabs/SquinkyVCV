@@ -152,6 +152,7 @@ private:
     void computeGains();
     void computeDivisors(int32_4& divaOut, int32_4& divbOut);
     void setupWaveforms();
+    void setupQuantizer();
 };
 
 
@@ -230,6 +231,13 @@ inline void Sub<TBase>::computeDivisors(
     divbOut[1] = int(div2BRawf);
     divbOut[2] = int(div1BRawf);
     divbOut[3] = int(div2BRawf);
+}
+
+template <class TBase>
+inline void Sub<TBase>::setupQuantizer()
+{
+    int scale = int(std::round(Sub<TBase>::params[QUANTIZER_SCALE_PARAM].value));
+    quantizer->setScale( SimpleQuantizer::Scales(scale));
 }
 
 
@@ -316,7 +324,7 @@ inline void Sub<TBase>::setupWaveforms() {
 template <class TBase>
 inline void Sub<TBase>::stepm()
 {
-  
+    setupQuantizer();
     setupWaveforms();
     numDualChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numDualChannels);
