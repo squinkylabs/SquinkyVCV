@@ -119,8 +119,8 @@ void WVCOWidget::appendContextMenu(Menu *menu)
 	menu->addChild(spacerLabel);
 
     ManualMenuItem* manual = new ManualMenuItem(
-        "ExFor manual",
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/exfor.md");
+        "Kitchen Sink manual",
+        "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/kitchen-sink.md");
     menu->addChild(manual);
     
     MenuLabel *spacerLabel2 = new MenuLabel();
@@ -374,7 +374,7 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
 WVCOWidget::WVCOWidget(WVCOModule *mod) : module(mod)
 {
     setModule(module);
-    box.size = Vec(14 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+  //  box.size = Vec(14 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/wvco_panel.svg");
 
     addLabel(Vec(60, 14), "Kitchen Sink");
