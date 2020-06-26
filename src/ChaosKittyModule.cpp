@@ -82,7 +82,7 @@ struct ChaosKittyWidget : ModuleWidget
 ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
 {
     setModule(module);
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
+    // box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     addLabel(Vec(60, 14), "Chaos Kitty");
@@ -92,7 +92,6 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
     const float xInput = 40;
     const float xTrim = 80;
     const float xParam = 140;
-
 
     // row 1: chaos
 
@@ -112,7 +111,6 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Vec(xParam, yRow1),
         module, 
         Comp::CHAOS_PARAM));
- //   addParam(chaosParam);
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
@@ -125,14 +123,12 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         Vec(xParam, yRow3),
         module, 
         Comp::RESONANCE_PARAM));
-  //  addParam(chaos2Param);
 
     addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(40, 240),
         module, 
         Comp::OCTAVE_PARAM));
-
 
     auto p = SqHelper::createParamCentered<Trimpot>(
         icomp,
@@ -156,7 +152,6 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
 
 
     // *************************************************
-
 
     addOutput(createOutputCentered<PJ301MPort>(
         Vec(140, 340),

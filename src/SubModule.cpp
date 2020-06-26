@@ -307,7 +307,7 @@ SubWidget::SubWidget(SubModule *module)
 {
     setModule(module);
 
-    box.size = Vec(totalWidth, RACK_GRID_HEIGHT);
+    // box.size = Vec(totalWidth, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/sub_panel.svg");
 
     addLabel(Vec(150, 14), "Substitute");
