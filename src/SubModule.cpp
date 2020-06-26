@@ -58,7 +58,7 @@ void SubModule::step()
 struct SubWidget : ModuleWidget
 {
     SubWidget(SubModule *);
-    DECLARE_MANUAL("Substitute Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md");
+    DECLARE_MANUAL("Substitute manual", "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
