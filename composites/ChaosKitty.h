@@ -208,9 +208,18 @@ inline void ChaosKitty<TBase>::updatePitch()
     float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value); // + TBase::params[TUNE_PARAM].value / 12.0f;
     pitch += TBase::inputs[V8_INPUT].getVoltage(0);
 
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
+    const float q = float(std::log2(261.626));       // move up to pitch range of even vco
     pitch += q;
     const float _freq = expLookup(pitch);
+    #if 0
+    {
+        static float lastFreq;
+        if (_freq != lastFreq) {
+            printf("will now set to freq %f\n", _freq); fflush(stdout);
+            lastFreq = _freq;
+        }
+    }
+    #endif
 
     float brightness = TBase::params[BRIGHTNESS_PARAM].value;
     float resonance = TBase::params[RESONANCE_PARAM].value;

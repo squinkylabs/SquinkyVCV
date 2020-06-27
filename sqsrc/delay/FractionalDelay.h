@@ -25,8 +25,9 @@ public:
 
     void setDelay(float samples)
     {
-        assert(samples < numSamples);
-        samples = std::min<float>(float(numSamples), samples);
+        // assert(samples < numSamples);
+        // leave 3 for padding for the cubic interp
+        samples = std::min<float>(float(numSamples) - 3, samples);
         delayTime = samples;
     }
     float run(float input)

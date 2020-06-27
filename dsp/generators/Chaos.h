@@ -70,14 +70,14 @@ public:
     }
 
     float processFeedback(float input) override {
-        //  input = LowpassFilter<float>::run(input, lpfState, lpfParams);
-        return std::min(10.f, std::max(-10.f, input));
-        // return input;
-        //return LowpassFilter<float>::run(input, lpfState, lpfParams);
+        // clip the input
+        input = std::min(10.f, std::max(-10.f, input));
+        return LowpassFilter<float>::run(input, lpfState, lpfParams);
     }
 
     /**
      * brightness = 0..1
+     * 
      * resonance = 0..1
      * 
      * returns the makeup gain
@@ -85,7 +85,17 @@ public:
     float set(float freqHz, float sampleRate, float brightness, float resonance) {
         const float delaySeconds = 1.0f / freqHz;
         float delaySamples = delaySeconds * sampleRate;
-        delaySamples = std::min(delaySamples, float(numSamples-1));
+        delaySamples = std::min(delaySamples, float(numSamples-3));
+    #if 0
+        {
+            static float lastd;
+            if (delaySamples != lastd) {
+                printf("reso chaos set freq=%f, delayse = %f delay samp = %f\n", freqHz, delaySeconds, delaySamples);
+                fflush(stdout);
+                lastd = delaySamples;
+            }
+        }
+    #endif
         setDelay(delaySamples);
       
         float cutoff = float(brightnessFunc(brightness) * freqHz / sampleRate);
@@ -93,6 +103,17 @@ public:
         LowpassFilter<float>::setCutoff(lpfParams, cutoff);
 
         float reso = float(resonanceFunc(resonance)); 
+#if 0
+         {
+            static float x;
+            if (resonance != x) {
+                printf("reso chaos set resonance=%f, fb=%f\n", resonance, reso);
+                fflush(stdout);
+                x = resonance;
+            }
+        }
+    #endif
+
         setFeedback(reso);
       //  gain = 1 / (1 - reso);
       return .1f;
@@ -104,6 +125,7 @@ private:
     // brighness is the Fc multiplier
     std::function<double(double)> brightnessFunc =  AudioMath::makeFunc_Exp(0, 1, 1, 20);
     std::function<double(double)> resonanceFunc =  AudioMath::makeFunc_Exp(0, 1, .9, .9999);
+    // std::function<double(double)> resonanceFunc =  AudioMath::makeFunc_Exp(0, 1, .8, 1.01);
 
 };
 
