@@ -120,7 +120,6 @@ private:
      std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 };
 
-
 template <class TBase>
 inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time)
 {
@@ -130,7 +129,6 @@ inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time)
     resonantNoise.onSampleRateChange(rate, time);
     circleMap.onSampleRateChange(rate, time);
 }
-
 
 template <class TBase>
 inline void ChaosKitty<TBase>::init()
@@ -148,10 +146,6 @@ inline void ChaosKitty<TBase>::init()
 
 template <class TBase>
 inline void ChaosKitty<TBase>::stepm(int n) {
-
-#if 0
-    gainAdjust = 1;
-#else
     if (type == Types::SimpleChaoticNoise) {
         gainAdjust = 5.f / 3.5f;
     } else if (type == Types::ResonantNoise) {
@@ -162,7 +156,6 @@ inline void ChaosKitty<TBase>::stepm(int n) {
         gainAdjust = 0;
        // assert(false);
     }
-#endif
 }
 
 template <class TBase>
@@ -200,7 +193,6 @@ inline void ChaosKitty<TBase>::step()
         output *= circleMap.step();
     }else {
         output = 0;
-       // assert(false);
     }
 
     output = std::min(output, 8.f);

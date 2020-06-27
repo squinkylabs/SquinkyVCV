@@ -124,11 +124,14 @@ ChaosKittyWidget::ChaosKittyWidget(ChaosKittyModule *module)
         module, 
         Comp::RESONANCE_PARAM));
 
-    addParam(SqHelper::createParamCentered<Rogan1PSBlue>(
+    auto octaveControl = SqHelper::createParamCentered<Rogan1PSBlue>(
         icomp,
         Vec(40, 240),
         module, 
-        Comp::OCTAVE_PARAM));
+        Comp::OCTAVE_PARAM);
+    octaveControl->snap = true;
+    octaveControl->smooth = false;
+    addParam(octaveControl);
 
     auto p = SqHelper::createParamCentered<Trimpot>(
         icomp,
