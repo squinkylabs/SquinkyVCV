@@ -110,9 +110,12 @@ private:
     CircleMap circleMap;
     AudioMath::ScaleFun<float> scaleKCircleMap;
 
-    Divider div;
+    Divider divn;
+    Divider divm;
     void stepn(int);
+    void stepm(int);
     void updatePitch();
+    float gainAdjust = 1;
 
      std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 };
@@ -132,12 +135,34 @@ inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time)
 template <class TBase>
 inline void ChaosKitty<TBase>::init()
 {
-    div.setup(4, [this] {
-        this->stepn(div.getDiv());
-     });
+    divn.setup(4, [this] {
+        this->stepn(divn.getDiv());
+    });
+    divm.setup(16, [this] {
+        this->stepm(divm.getDiv());
+    });
 
     scaleChaos = AudioMath::makeLinearScaler<float>(3.5, 4);
     scaleKCircleMap = AudioMath::makeLinearScaler<float>(1.2, 75);
+}
+
+template <class TBase>
+inline void ChaosKitty<TBase>::stepm(int n) {
+
+#if 0
+    gainAdjust = 1;
+#else
+    if (type == Types::SimpleChaoticNoise) {
+        gainAdjust = 5.f / 3.5f;
+    } else if (type == Types::ResonantNoise) {
+        gainAdjust = 5.f / 2.f;
+    } else if (type == Types::Circle) {
+        gainAdjust = 1;
+    }else {
+        gainAdjust = 0;
+       // assert(false);
+    }
+#endif
 }
 
 template <class TBase>
@@ -152,14 +177,11 @@ inline void ChaosKitty<TBase>::stepn(int n) {
     simpleChaoticNoise.setG(g);
     resonantNoise.setG(g);
     
-
     float x = scaleKCircleMap(
         chaosCV,
         TBase::params[CHAOS_PARAM].value,
         TBase::params[CHAOS_TRIM_PARAM].value);   
     circleMap.setChaos(x);
-
-
 
     updatePitch();
 }
@@ -167,14 +189,17 @@ inline void ChaosKitty<TBase>::stepn(int n) {
 template <class TBase>
 inline void ChaosKitty<TBase>::step()
 {
-    float output = 0;
+    divm.step();
+    divn.step();
+    float output = gainAdjust;
     if (type == Types::SimpleChaoticNoise) {
-        output = simpleChaoticNoise.step();
+        output *= simpleChaoticNoise.step();
     } else if (type == Types::ResonantNoise) {
-        output = resonantNoise.step();
+        output *= resonantNoise.step();
     } else if (type == Types::Circle) {
-        output = circleMap.step();
+        output *= circleMap.step();
     }else {
+        output = 0;
        // assert(false);
     }
 
@@ -182,7 +207,7 @@ inline void ChaosKitty<TBase>::step()
     output = std::max(output, -8.f);
     TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
 
-    div.step();
+  
 }
 
 template <class TBase>

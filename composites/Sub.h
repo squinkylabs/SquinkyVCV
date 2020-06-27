@@ -440,6 +440,11 @@ inline void Sub<TBase>::step()
             subs1[2] * subB0Gain +
             subs1[3] * subB1Gain;
 
+        assert(mixed0 < 10);
+        assert(mixed0 > -10);
+        assert(mixed1 < 10);
+        assert(mixed1 > -10);
+
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channel++);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed1, channel++); 
     }
