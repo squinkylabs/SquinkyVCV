@@ -456,6 +456,7 @@ inline void WVCO<TBase>::updateShapes_n()
         Port& port = TBase::inputs[WAVESHAPE_GAIN_PARAM];
         if (port.isConnected()) {
             baseGain *= port.getPolyVoltageSimd<float_4>(baseChannel);
+            baseGain *= float_4(.1f);
         }
         float_4 correctedWaveShapeMultiplier = baseGain * envMult;
         switch(dsp[bank].waveform) {
@@ -468,9 +469,6 @@ inline void WVCO<TBase>::updateShapes_n()
             case WVCODsp::WaveForm::SawTri:
                 correctedWaveShapeMultiplier = .5 + correctedWaveShapeMultiplier / 2;
                 break;
-        //    default:
-            // done't assert - sometimes we get here before waveform is initialized
-               // assert(false);
         }
         dsp[bank].correctedWaveShapeMultiplier = correctedWaveShapeMultiplier;
 
@@ -544,7 +542,7 @@ inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
         dsp[bank].feedback = feedbackAmount;
 
         // TODO: add CV (use getNormalPolyVoltage)
-         dsp[bank].outputLevel = baseOutputLevel_m;    
+        dsp[bank].outputLevel = baseOutputLevel_m;    
         if (enableAdsrLevel) {
             dsp[bank].outputLevel *= adsr.get(bank);
         } 
