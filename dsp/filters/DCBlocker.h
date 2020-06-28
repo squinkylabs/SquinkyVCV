@@ -29,7 +29,7 @@ inline void DCBlocker::setSampleTime(float sampleTime)
 {
     haveSetSampleTime = true;
     float fcNormalized = cutoffHz * sampleTime;
-    assert((fcNormalized > 0) && (fcNormalized < .1));
+    assert((fcNormalized > 0) && (fcNormalized < .2));
   
     ButterworthFilterDesigner<double>::designFourPoleHighpass(dcBlockParams, fcNormalized);
 }

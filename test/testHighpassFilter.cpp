@@ -88,8 +88,7 @@ static void testDCBlocker2()
     assertLT(output, 1);
 }
 
-//template<typename T>
-//static std::pair<T, T> getHighpassStats(std::function<float(float)> filter, T FcExpected)
+
 static void testHighpass3()
 {
     TrapezoidalHighpass<float> hp;
@@ -112,6 +111,28 @@ static void testHighpass3()
     assertClose(std::get<1>(x), -6, 1);
 }
 
+static void testDCBlocker3()
+{
+    const float normalizeFc = .1f;
+    const float expectedFc = normalizeFc * sampleRate;
+    DCBlocker bl(expectedFc);
+    bl.setSampleTime(1.f / 44100.f);
+
+
+  //  std::shared_ptr<NonUniformLookupTableParams<float>> fs2gLookup = makeTrapFilter_Lookup<float>();
+  //  const float g2 = NonUniformLookupTable<float>::lookup(*fs2gLookup, normalizeFc);
+
+
+    auto filter = [&bl](float input) {
+        auto output = bl.step(input);
+        return output;
+    };
+
+    auto x = getHighpassStats(filter, expectedFc);
+    assertClose(std::get<0>(x), expectedFc, 500);
+    assertClose(std::get<1>(x), -6, 1);
+}
+
 void testHighpassFilter()
 {
     testHighpass0();
@@ -122,4 +143,5 @@ void testHighpassFilter()
     testDCBlocker0();
     testDCBlocker1();
     testDCBlocker2();
+    testDCBlocker3();
 }
