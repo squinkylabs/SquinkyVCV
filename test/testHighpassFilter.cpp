@@ -1,5 +1,6 @@
 
 #include "Analyzer.h"
+#include "DCBlocker.h"
 #include "TrapezoidalLowpass.h"
 
 #include "asserts.h"
@@ -39,6 +40,13 @@ static void testHighpass0()
     hp.run(.1f, .1f);
 }
 
+static void testDCBlocker0()
+{
+    DCBlocker bl(20);
+    bl.setSampleTime(1.f / 44100.f);
+    bl.step(0);
+}
+
 static void testHighpass1()
 {
     TrapezoidalHighpass<float> hp;
@@ -48,12 +56,34 @@ static void testHighpass1()
 }
 
 
+static void testDCBlocker1()
+{
+    DCBlocker bl(20);
+    bl.setSampleTime(1.f / 44100.f);
+    assertEQ(bl.step(0), 0);
+}
+
+
 static void testHighpass2()
 {
     TrapezoidalHighpass<float> hp;
     const float g2 = .1f;
     const float input = 1;
     float output = hp.run(input, g2);
+    assertGT(output, 0);
+    assertLT(output, 1);
+}
+
+static void testDCBlocker2()
+{
+   // TrapezoidalHighpass<float> hp;
+   // const float g2 = .1f;
+   // const float input = 1;
+   // float output = hp.run(input, g2);
+    DCBlocker bl(20);
+    bl.setSampleTime(1.f / 44100.f);
+    const float output = bl.step(1);
+
     assertGT(output, 0);
     assertLT(output, 1);
 }
@@ -88,4 +118,8 @@ void testHighpassFilter()
     testHighpass1();
     testHighpass2();
     testHighpass3();
+
+    testDCBlocker0();
+    testDCBlocker1();
+    testDCBlocker2();
 }
