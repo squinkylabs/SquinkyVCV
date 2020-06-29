@@ -225,7 +225,7 @@ static void testSub2()
     }
     for (size_t j = 0; j<comps.size(); ++j) {
         auto sub = comps[j];
-        for (int i=0; i<1000000; ++i) {
+        for (int i=0; i<10000; ++i) {
             sub->step();
         }
     }

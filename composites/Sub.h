@@ -14,6 +14,7 @@
 #include "SimpleQuantizer.h"
 
 /**
+ * 6/29 put in brute force wrapping to fix bugs 53%
  * 5/31 feature complete (almost)  48%
  * 5.25: cpu usage 1 chnael = 51%
  * 6/9 after re-write 40
@@ -442,6 +443,21 @@ inline void Sub<TBase>::step()
 
 
         const float limit = 10;
+#ifndef NDEBUG
+        if ( (mixed0 >= limit) ||
+        (mixed0 <= -limit) ||
+        (mixed1 >= limit) ||
+        (mixed1 <= -limit)) {
+            printf("will assert, mixed = %f, %f\n", mixed0, mixed1);
+            printf("mains = %s\n", toStr(mains).c_str());
+            printf("subs0 = %s\n", toStr(subs0).c_str());
+            printf("subs1 = %s\n", toStr(subs1).c_str());
+            printf("gain = %f,%f,%f,%f,%f,%f\n",
+                vco0Gain, vco1Gain, subA0Gain, subA1Gain, subB0Gain, subB1Gain);
+            fflush(stdout);
+        }
+#endif
+
         assert(mixed0 < limit);
         assert(mixed0 > -limit);
         assert(mixed1 < limit);

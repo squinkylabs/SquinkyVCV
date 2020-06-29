@@ -156,6 +156,12 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::doSquareLowToHighMinblep(T
 	}	
 }
 
+template<typename T>
+inline void wrapVCOPhase(float_4& phase) {
+	T overflowMask = (phase > T(1));
+	phase = SimdBlocks::ifelse(overflowMask, phase - 1, phase);
+}
+
 template <int OV, int Q, typename T, typename I>
 inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T syncValue)
 {
@@ -175,7 +181,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 
 	simd_assertLE(mainPhase, float_4(2));	
 	simd_assertGT(mainPhase, float_4(0));
-	
+
 	subPhase[0] += deltaSubPhase[0];
 	subPhase[1] += deltaSubPhase[1];
 
@@ -254,11 +260,21 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 	// We used to do this "wrap around" logic only when oneCrossMask told us to.
 	// But every now and then one would slip through the cracks. So for now we
 	// run it every time. We could do something smarter, if we need to.
+	// note that subs need this, too. When they work right they get reset to zero, 
+	// rather than -= 1. Need to re-thinking here
 
 	// old comment:  all the saws that overflow get set to zero
 	// we can do scalar, above, and probably save CPU
-	const T overflowMask = (mainPhase > T(1));
-	mainPhase = SimdBlocks::ifelse(overflowMask, mainPhase - 1, mainPhase);
+	wrapVCOPhase<T>(mainPhase);
+	wrapVCOPhase<T>(subPhase[0]);
+	wrapVCOPhase<T>(subPhase[1]);
+	#if 0
+	{
+		T overflowMask = (mainPhase > T(1));
+		mainPhase = SimdBlocks::ifelse(overflowMask, mainPhase - 1, mainPhase);
+	
+	}
+	#endif
 	simd_assertLE(mainPhase, float_4(1));
 
 	const T mainBleps = mainMinBlep.process();
