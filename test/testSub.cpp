@@ -10,6 +10,15 @@ using Comp = Sub<TestComposite>;
 
 
 extern bool _logvco;
+/*
+    auto ret = std::make_shared<T>();
+    ret->init();
+    auto icomp = ret->getDescription();
+    for (int i = 0; i < icomp->getNumParams(); ++i) {
+        auto param = icomp->getParam(i);
+        ret->params[i].value = param.def;
+    }
+    */
 
 static void testSub1()
 {
@@ -201,11 +210,34 @@ static void testChannels()
     assertEQ(sub._get(3)._channels, 4);
 }
 
+static void testSub2()
+{
+    printf("enter test sub 2\n"); fflush(stdout);
+  //  Comp sub;
+    std::vector<std::shared_ptr<Comp>> comps;
+    for (int i=0; i<10; ++i) {
+        std::shared_ptr<Comp> sub = std::make_shared<Comp>();
+   
+       // sub->onSampleRateChange();
+        sub->init();
+        initComposite(*sub);
+        comps.push_back(sub);
+    }
+    for (size_t j = 0; j<comps.size(); ++j) {
+        auto sub = comps[j];
+        for (int i=0; i<1000000; ++i) {
+            sub->step();
+        }
+    }
+     printf("exit test sub 2\n"); fflush(stdout);
+}
+
 void testSub()
 {
   //  experiment();
     testChannels();
     testSub1();
+    testSub2();
 
     testSubLevel(false, 0, 0);
     testSubLevel(false, 1, 0);
