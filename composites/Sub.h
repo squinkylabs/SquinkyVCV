@@ -55,7 +55,6 @@ public:
     * Only needs to be called once.
     */
     void init();
-
     // 
     enum ParamIds
     {
@@ -147,7 +146,6 @@ private:
     float vco1Gain = .2;
     float subA1Gain = .2;
     float subB1Gain = .2;
-
 
     int activeChannels_m[4] = {0};
     void computeGains();
@@ -261,7 +259,6 @@ inline void parseWF(int wf, bool& mainIsSaw, bool& subIsSaw) {
             assert(0);
     }
 }
-
 
 // TODO: implement this smart (SIMD) and move
 inline float_4 bitfieldToMask(int x)
@@ -442,8 +439,9 @@ inline void Sub<TBase>::step()
             subs1[3] * subB1Gain;
 
 
-        const float limit = 10;
+        
 #ifndef NDEBUG
+        const float limit = 10;
         if ( (mixed0 >= limit) ||
         (mixed0 <= -limit) ||
         (mixed1 >= limit) ||
