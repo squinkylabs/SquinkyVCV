@@ -440,24 +440,8 @@ inline void Sub<TBase>::step()
             subs1[2] * subB0Gain +
             subs1[3] * subB1Gain;
 
-        static bool firstTime = true;
-        const float limit = 10;
-        if ( (mixed0 >= limit/2) ||
-            (mixed0 <= -limit/2) ||
-            (mixed1 >= limit/2) ||
-            (mixed1 <= -limit/2) ||
-            firstTime) {
-                printf(firstTime ? "fist time\n" : "about to crash\n");
-                printf("mixed0 = %f, mixed1 = %f\n", mixed0, mixed1);
-                printf("mains = %f, %f %f %f\n", mains[0],  mains[1],  mains[2],  mains[3]);
-                printf("SUBS0= %s\n", toStr(subs0).c_str());
-                printf("SUBS1= %s\n", toStr(subs1).c_str());
-                printf("gains = %f %f, %f,%f,%f,%f\n", vco0Gain, vco1Gain, 
-                    subA0Gain, subA1Gain, subB0Gain, subB1Gain);
-                fflush(stdout);
-                firstTime = false;
-            }
 
+        const float limit = 10;
         assert(mixed0 < limit);
         assert(mixed0 > -limit);
         assert(mixed1 < limit);

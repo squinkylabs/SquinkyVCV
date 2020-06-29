@@ -294,7 +294,6 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     float negative = 100; 
     float sum = 0; 
     const int iterations = 10000; 
-    // const int iterations = 100; 
     for (int i=0; i < iterations; ++i) {  
         wvco.step();
         float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
@@ -304,13 +303,13 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
         negative = std::min(negative, x);  
     } 
  
-   printf("apos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
+    // printf("apos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
     assertClose(positive, expectedLevel, 1);
     assertClose(negative, -expectedLevel, 1); 
     sum /= iterations;
-     printf("pos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
+    // printf("pos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
     assertClose(sum, 0, .03); 
-    printf("--- leave testOutputLevels %d\n", waveForm);
+    // printf("--- leave testOutputLevels %d\n", waveForm);
 }
 
 
