@@ -71,8 +71,9 @@ struct SubWidget : ModuleWidget
     }
 
     void addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, int side);
-    void addJacks(SubModule *module, std::shared_ptr<IComposite> icomp);
+    void addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, int side);
     void addMiddleControls(SubModule *module, std::shared_ptr<IComposite> icomp);
+    void addMiddleJacks(SubModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 const float knobLeftEdge = 18;
@@ -127,25 +128,19 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Comp::OCTAVE1_PARAM + side));
     addLabel(Vec(xfunc(knobX1, side) - 13, knobY1 - labelAboveKnob), "Octave");
 
-    addParam(SqHelper::createParam<Blue30Knob>(
+     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(xfunc(knobX2, side), knobY1),
         module,
-        Comp::FINE1_PARAM + side));
-    addLabel(Vec(xfunc(knobX2, side) - 3, knobY1 - labelAboveKnob),  "Fine");
+        Comp::SEMITONE1_PARAM + side));
+    addLabel(Vec(xfunc(knobX2, side) - 3, knobY1 - labelAboveKnob),  "Semi");
 
-#if 0
-    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+    addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(xfunc(knobX3Trim, side), knobY1 + 4),
+        Vec(xfunc(knobX3, side), knobY1),
         module,
-        Comp::WAVEFORM1_PARAM + side);
-    p->box.size.x = 44;  // width
-    p->box.size.y = 22;      // should set auto like button does
-    p->text = "Saw";
-    p->setLabels( {"Saw", "Sq", "Mix"});
-    addParam(p);
-    #endif
+        Comp::FINE1_PARAM + side));
+    addLabel(Vec(xfunc(knobX3, side) - 3, knobY1 - labelAboveKnob),  "Fine");
 
     // second row
 
@@ -260,7 +255,7 @@ const float jacksY2 = 322; // 330; //300;
 
 
 const float jackOffsetX = 3;
-void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
+void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, int side)
 {
     auto xfunc = [](float xOrig, int side) {
         if (side == 0) {
@@ -270,15 +265,17 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
             return totalWidth - (xOrig + 28);
         }
     };
-    addInput(createInput<PJ301MPort>(
-        Vec(knobX2+jackOffsetX, jacksY1),
-        module,
-        Comp::SUB1A_TUNE_INPUT));
-    addInput(createInput<PJ301MPort>(
-        Vec(knobX3+jackOffsetX, jacksY1),
-        module,
-        Comp::SUB1B_TUNE_INPUT));
 
+    //-------------- first row -------------------
+    addInput(createInput<PJ301MPort>(
+        Vec(xfunc(knobX2, side), jacksY1),
+        module,
+        Comp::SUB1A_TUNE_INPUT+side));
+    addInput(createInput<PJ301MPort>(
+        Vec(xfunc(knobX3, side), jacksY1),
+        module,
+        Comp::SUB1B_TUNE_INPUT+side));
+#if 0
     addInput(createInput<PJ301MPort>(
         Vec(xfunc(knobX2, 1), jacksY1),
         module,
@@ -287,8 +284,22 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
         Vec(xfunc(knobX3, 1), jacksY1),
         module,
         Comp::SUB2B_TUNE_INPUT));
+#endif
+
+    //------------------ second row ------------------
+}
+#if 0
+    addInput(createInput<PJ301MPort>(
+        Vec(knobX1+jackOffsetX, jacksY2),
+        module,
+        Comp::MAIN1_LEVEL_INPUT));
+    addLabel(Vec(xfunc(knobX3, side) - 6, knobY3 - labelAboveKnob), 
+        "Div B");
+#endif
 
 
+
+void SubWidget::addMiddleJacks(SubModule *module, std::shared_ptr<IComposite> icomp) {
     const float jacksMiddle = middle - 10;
     // middle ones
     addInput(createInput<PJ301MPort>(
@@ -334,7 +345,8 @@ SubWidget::SubWidget(SubModule *module)
 
     addKnobs(module, icomp, 0);
     addKnobs(module, icomp, 1);
-    addJacks(module, icomp);
+    addJacks(module, icomp, 0);
+    addJacks(module, icomp, 1);
     addMiddleControls(module, icomp);
 }
 
