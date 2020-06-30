@@ -77,9 +77,12 @@ public:
         SUB1B_LEVEL_PARAM,
         SUB2B_LEVEL_PARAM,
         WAVEFORM1_PARAM,
-        WAVEFORM2_PARAM,
+        WAVEFORM2_PARAM, 
         QUANTIZER_SCALE_PARAM,
-
+        SEMITONE1_PARAM,
+        SEMITONE2_PARAM,
+        PULSEWIDTH1_PARAM,
+        PULSEWIDTH2_PARAM,
         NUM_PARAMS
     };
 
@@ -90,7 +93,12 @@ public:
         SUB2A_TUNE_INPUT,
         SUB1B_TUNE_INPUT,
         SUB2B_TUNE_INPUT,
-
+        MAIN1_LEVEL_INPUT,
+        MAIN2_LEVEL_INPUT,
+        SUB1A_LEVEL_INPUT,
+        SUB2A_LEVEL_INPUT,
+        SUB1B_LEVEL_INPUT,
+        SUB2B_LEVEL_INPUT,
         NUM_INPUTS
     };
 
@@ -488,6 +496,18 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             break;
         case Sub<TBase>::FINE2_PARAM:
             ret = {-1, 1, 0, "VCO 2 fine tune"};
+            break;
+        case Sub<TBase>::SEMITONE1_PARAM:
+            ret = {-11, 11, 0, "VCO 1 semitone offset"};
+            break;
+        case Sub<TBase>::SEMITONE2_PARAM:
+            ret = {-11, 11, 0, "VCO 2 semitone offset"};
+            break;
+        case Sub<TBase>::PULSEWIDTH1_PARAM:
+            ret = {0, 100, 50, "VCO 1 pulse width"};
+            break;
+        case Sub<TBase>::PULSEWIDTH2_PARAM:
+            ret = {0, 100, 50, "VCO 2 pulse width"};
             break;
         case Sub<TBase>::SUB1A_TUNE_PARAM:
             ret = {1, 16, 4, "VCO 1 subharmonic A divisor"};

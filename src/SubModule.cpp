@@ -72,6 +72,7 @@ struct SubWidget : ModuleWidget
 
     void addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, int side);
     void addJacks(SubModule *module, std::shared_ptr<IComposite> icomp);
+    void addMiddleControls(SubModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 const float knobLeftEdge = 18;
@@ -133,6 +134,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Comp::FINE1_PARAM + side));
     addLabel(Vec(xfunc(knobX2, side) - 3, knobY1 - labelAboveKnob),  "Fine");
 
+#if 0
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         Vec(xfunc(knobX3Trim, side), knobY1 + 4),
@@ -143,6 +145,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
     p->text = "Saw";
     p->setLabels( {"Saw", "Sq", "Mix"});
     addParam(p);
+    #endif
 
     // second row
 
@@ -202,6 +205,46 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Comp::SUB1B_TUNE_TRIM_PARAM+ side));
 }
 
+
+const float xMiddleSel = middle -24;
+void SubWidget::addMiddleControls(SubModule *module, std::shared_ptr<IComposite> icomp)
+{
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(xMiddleSel, 206),
+        module,
+        Comp::QUANTIZER_SCALE_PARAM);
+    p->box.size.x = 48;  // width
+    p->box.size.y = 22;   
+    p->text = "Off";
+    p->setLabels( {"Off", "12ET", "7ET", "12JI", "7JI"});
+    addParam(p);
+
+    int side = 0;
+    p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(xMiddleSel, knobY1 - 10),
+        module,
+        Comp::WAVEFORM1_PARAM + side);
+    p->box.size.x = 44;  // width
+    p->box.size.y = 22;      // should set auto like button does
+    p->text = "Saw";
+    p->setLabels( {"Saw", "Sq", "Mix"});
+    addParam(p);
+
+    side = 1;
+    p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(xMiddleSel, knobY1 + 20),
+        module,
+        Comp::WAVEFORM1_PARAM + side);
+    p->box.size.x = 44;  // width
+    p->box.size.y = 22;      // should set auto like button does
+    p->text = "Saw";
+    p->setLabels( {"Saw", "Sq", "Mix"});
+    addParam(p);
+}
+
 const float jacksX1 = 24;
 const float jacksDeltaX = 38;
 const float jacksX2 = jacksX1 + 1 * jacksDeltaX;
@@ -244,9 +287,6 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
         Vec(xfunc(knobX3, 1), jacksY1),
         module,
         Comp::SUB2B_TUNE_INPUT));
-// knob2XOffset
- //   addLabel(Vec(jacksX1Top - 10, jacksY1 - labelAboveKnob), "Div 1");
-
 
 
     const float jacksMiddle = middle - 10;
@@ -262,34 +302,6 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::MAIN_OUTPUT));
     addLabel(Vec(jacksMiddle - 7, jacksY2 - labelAboveKnob), "Out");
-
-
-    #if 1
-
-    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
-        icomp,
-        Vec(middle -24, 206),
-        module,
-        Comp::QUANTIZER_SCALE_PARAM);
-    p->box.size.x = 48;  // width
-    p->box.size.y = 22;   
-    p->text = "Off";
-    p->setLabels( {"Off", "12ET", "7ET", "12JI", "7JI"});
-    addParam(p);
-
-    #else
-
-    auto tog = SqHelper::createParam<ToggleButton>(
-        icomp,
-        Vec(123-20, 206 - 13),
-        module,
-        Comp::QUANTIZER_SCALE_PARAM);
-    tog->addSvg("res/quant-12e.svg");
-    tog->addSvg("res/quant-12e.svg");
-    tog->addSvg("res/quant-12e.svg");
-    tog->addSvg("res/quant-12e.svg");
-    addParam(tog);
-    #endif
 }
 
 
@@ -323,6 +335,7 @@ SubWidget::SubWidget(SubModule *module)
     addKnobs(module, icomp, 0);
     addKnobs(module, icomp, 1);
     addJacks(module, icomp);
+    addMiddleControls(module, icomp);
 }
 
 Model *modelSubModule = createModel<SubModule, SubWidget>("squinkylabs-sub");
