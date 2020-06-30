@@ -83,6 +83,8 @@ public:
         SEMITONE2_PARAM,
         PULSEWIDTH1_PARAM,
         PULSEWIDTH2_PARAM,
+        PULSEWIDTH1_TRIM_PARAM,
+        PULSEWIDTH2_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -99,6 +101,8 @@ public:
         SUB2A_LEVEL_INPUT,
         SUB1B_LEVEL_INPUT,
         SUB2B_LEVEL_INPUT,
+        PWM1_INPUT,
+        PWM2_INPUT,
         NUM_INPUTS
     };
 
@@ -317,11 +321,9 @@ inline void Sub<TBase>::setupWaveforms() {
 
  //   printf("in setup waveform mainIsSawBitMask=%x\n subIsSawBitMask=%x\n",mainIsSawBitMask,     subIsSawBitMask);
 
-
     float_4 mainIsSawMask = bitfieldToMask(mainIsSawBitMask);
     float_4 subIsSawMask = bitfieldToMask(subIsSawBitMask);
     // printf("in setup waveform main is saw mask: %s\n subIsSawMask: %s\n",    toStr(mainIsSawMask).c_str(),toStr(subIsSawMask).c_str());
-
     for (int bank = 0; bank < 4; ++bank) {
         oscillators[bank].setWaveform(mainIsSawMask, subIsSawMask);
     }
@@ -446,8 +448,6 @@ inline void Sub<TBase>::step()
             subs1[2] * subB0Gain +
             subs1[3] * subB1Gain;
 
-
-        
 #ifndef NDEBUG
         const float limit = 10;
         if ( (mixed0 >= limit) ||
@@ -508,6 +508,12 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             break;
         case Sub<TBase>::PULSEWIDTH2_PARAM:
             ret = {0, 100, 50, "VCO 2 pulse width"};
+            break;
+        case Sub<TBase>::PULSEWIDTH1_TRIM_PARAM:
+            ret = {-1, 1, 0, "VCO 1 pwm trim"};
+            break;
+        case Sub<TBase>::PULSEWIDTH2_TRIM_PARAM:
+            ret = {-1, 1, 0, "VCO 2 pwm trim"};
             break;
         case Sub<TBase>::SUB1A_TUNE_PARAM:
             ret = {1, 16, 4, "VCO 1 subharmonic A divisor"};

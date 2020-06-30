@@ -134,8 +134,6 @@ static void testDCBlockerFallsToZero()
     DCBlocker bl(20);
     bl.setSampleTime(1.f / 44100.f);
 
-
-
     float output = bl.step(0);
     assertEQ(output, 0);
     for (int i = 0; i < 10000; ++i) {

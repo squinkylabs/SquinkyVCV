@@ -169,7 +169,14 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         "Sub B");
 
 
-//Blue30SnapKnob
+    //----------------------- third row --------------------------
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(xfunc(knobX1, side), knobY3),
+        module,
+        Comp::PULSEWIDTH1_PARAM + side));
+    addLabel(Vec(xfunc(knobX1, side) - 6, knobY3 - labelAboveKnob), 
+        "PW"); 
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(xfunc(knobX2, side), knobY3),
@@ -190,14 +197,19 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
     // trimmers
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
+        Vec(xfunc(knobX1+1, side) +trimXOffset, knobY4),
+        module,
+        Comp::PULSEWIDTH1_TRIM_PARAM + side));
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
         Vec(xfunc(knobX2+1, side) +trimXOffset, knobY4),
         module,
-        Comp::SUB1A_TUNE_TRIM_PARAM+ side));
+        Comp::SUB1A_TUNE_TRIM_PARAM + side));
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
         Vec(xfunc(knobX3+1, side) +trimXOffset, knobY4),
         module,
-        Comp::SUB1B_TUNE_TRIM_PARAM+ side));
+        Comp::SUB1B_TUNE_TRIM_PARAM + side));
 }
 
 
@@ -250,10 +262,6 @@ const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
 const float jacksY1 = 274; // 230;
 const float jacksY2 = 322; // 330; //300;
 
-//const float jacksX1Top = 28;
-//const float jacksX3Top = jacksX1Top + 2 * knobDeltaX;
-
-
 const float jackOffsetX = 3;
 void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, int side)
 {
@@ -268,6 +276,11 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, i
 
     //-------------- first row -------------------
     addInput(createInput<PJ301MPort>(
+        Vec(xfunc(knobX1, side), jacksY1),
+        module,
+        Comp::PWM1_INPUT+side));
+
+    addInput(createInput<PJ301MPort>(
         Vec(xfunc(knobX2, side), jacksY1),
         module,
         Comp::SUB1A_TUNE_INPUT+side));
@@ -275,29 +288,30 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Vec(xfunc(knobX3, side), jacksY1),
         module,
         Comp::SUB1B_TUNE_INPUT+side));
-#if 0
-    addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX2, 1), jacksY1),
-        module,
-        Comp::SUB2A_TUNE_INPUT));
-    addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX3, 1), jacksY1),
-        module,
-        Comp::SUB2B_TUNE_INPUT));
-#endif
 
     //------------------ second row ------------------
-}
-#if 0
     addInput(createInput<PJ301MPort>(
-        Vec(knobX1+jackOffsetX, jacksY2),
+        Vec(xfunc(knobX1, side), jacksY2),
         module,
-        Comp::MAIN1_LEVEL_INPUT));
-    addLabel(Vec(xfunc(knobX3, side) - 6, knobY3 - labelAboveKnob), 
-        "Div B");
-#endif
+        Comp::MAIN1_LEVEL_INPUT+side));
+    addLabel(Vec(xfunc(knobX1, side) - 6, jacksY2 - labelAboveKnob), 
+        "Vol");
 
+    addInput(createInput<PJ301MPort>(
+        Vec(xfunc(knobX2, side), jacksY2),
+        module,
+        Comp::SUB1A_LEVEL_INPUT+side));
+    addLabel(Vec(xfunc(knobX2, side) - 6, jacksY2 - labelAboveKnob), 
+        "Sub A");
 
+    addInput(createInput<PJ301MPort>(
+        Vec(xfunc(knobX3, side), jacksY2),
+        module,
+        Comp::SUB1B_LEVEL_INPUT+side));
+    addLabel(Vec(xfunc(knobX3, side) - 6, jacksY2 - labelAboveKnob), 
+        "Sub B");
+
+}
 
 void SubWidget::addMiddleJacks(SubModule *module, std::shared_ptr<IComposite> icomp) {
     const float jacksMiddle = middle - 10;
@@ -315,17 +329,11 @@ void SubWidget::addMiddleJacks(SubModule *module, std::shared_ptr<IComposite> ic
     addLabel(Vec(jacksMiddle - 7, jacksY2 - labelAboveKnob), "Out");
 }
 
-
-
-
-
-
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-
 SubWidget::SubWidget(SubModule *module)
 {
     setModule(module);
@@ -333,7 +341,7 @@ SubWidget::SubWidget(SubModule *module)
     // box.size = Vec(totalWidth, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/sub_panel.svg");
 
-    addLabel(Vec(150, 14), "Substitute");
+    addLabel(Vec(140, 14), "Substitute");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -348,6 +356,7 @@ SubWidget::SubWidget(SubModule *module)
     addJacks(module, icomp, 0);
     addJacks(module, icomp, 1);
     addMiddleControls(module, icomp);
+    addMiddleJacks(module, icomp);
 }
 
 Model *modelSubModule = createModel<SubModule, SubWidget>("squinkylabs-sub");
