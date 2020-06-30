@@ -93,8 +93,6 @@ void WVCOModule::step()
 struct WVCOWidget : ModuleWidget
 {
     WVCOWidget(WVCOModule *);
-   // DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/booty-shifter.md");
-
     void appendContextMenu(Menu *menu) override;
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

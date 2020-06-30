@@ -85,6 +85,7 @@ public:
         PULSEWIDTH2_PARAM,
         PULSEWIDTH1_TRIM_PARAM,
         PULSEWIDTH2_TRIM_PARAM,
+        AGC_PARAM,
         NUM_PARAMS
     };
 
@@ -565,6 +566,9 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             break;
         case Sub<TBase>::QUANTIZER_SCALE_PARAM:
             ret = {0, 4, 0, "Quantizer Scale"};
+            break;
+         case Sub<TBase>::AGC_PARAM:
+            ret = {0, 1, 0, "agc"};
             break;
         default:
             assert(false);

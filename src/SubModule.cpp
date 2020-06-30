@@ -58,7 +58,8 @@ void SubModule::step()
 struct SubWidget : ModuleWidget
 {
     SubWidget(SubModule *);
-    DECLARE_MANUAL("Substitute manual", "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md");
+    void appendContextMenu(Menu *menu) override;
+   // DECLARE_MANUAL("Substitute manual", "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -75,6 +76,23 @@ struct SubWidget : ModuleWidget
     void addMiddleControls(SubModule *module, std::shared_ptr<IComposite> icomp);
     void addMiddleJacks(SubModule *module, std::shared_ptr<IComposite> icomp);
 };
+
+void SubWidget::appendContextMenu(Menu *menu)
+{
+    MenuLabel *spacerLabel = new MenuLabel();
+	menu->addChild(spacerLabel);
+
+    ManualMenuItem* manual = new ManualMenuItem(
+        "Substitute manual",
+        "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md");
+    menu->addChild(manual);
+    
+  //  MenuLabel *spacerLabel2 = new MenuLabel();
+  //  menu->addChild(spacerLabel2);
+    SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(module, Comp::AGC_PARAM);
+    item->text = "AGC";
+    menu->addChild(item);
+}
 
 const float knobLeftEdge = 18;
 const float knobDeltaX = 46;
