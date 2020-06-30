@@ -131,7 +131,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Vec(xfunc(knobX2, side), knobY1),
         module,
         Comp::FINE1_PARAM + side));
-    addLabel(Vec(xfunc(knobX2, side) - 4, knobY1 - labelAboveKnob),  "Fine");
+    addLabel(Vec(xfunc(knobX2, side) - 3, knobY1 - labelAboveKnob),  "Fine");
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
@@ -151,7 +151,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Vec(xfunc(knobX1, side), knobY2),
         module,
         Comp::VCO1_LEVEL_PARAM + side));
-    addLabel(Vec(xfunc(knobX1, side) - 8, knobY2 - labelAboveKnob), 
+    addLabel(Vec(xfunc(knobX1, side) - 4, knobY2 - labelAboveKnob), 
         "Vol");
 
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -177,7 +177,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Vec(xfunc(knobX2, side), knobY3),
         module,
         Comp::SUB1A_TUNE_PARAM + side));
-    addLabel(Vec(xfunc(knobX2, side) - 4, knobY3 - labelAboveKnob), 
+    addLabel(Vec(xfunc(knobX2, side) - 6, knobY3 - labelAboveKnob), 
         "Div A");
 
     addParam(SqHelper::createParam<Blue30SnapKnob>(
@@ -185,19 +185,19 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         Vec(xfunc(knobX3, side), knobY3),
         module,
         Comp::SUB1B_TUNE_PARAM + side));
-    addLabel(Vec(xfunc(knobX3, side) - 4, knobY3 - labelAboveKnob), 
+    addLabel(Vec(xfunc(knobX3, side) - 6, knobY3 - labelAboveKnob), 
         "Div B");
 
 
     // trimmers
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(xfunc(knobX2, side) +trimXOffset, knobY4),
+        Vec(xfunc(knobX2+1, side) +trimXOffset, knobY4),
         module,
         Comp::SUB1A_TUNE_TRIM_PARAM+ side));
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(xfunc(knobX3, side) +trimXOffset, knobY4),
+        Vec(xfunc(knobX3+1, side) +trimXOffset, knobY4),
         module,
         Comp::SUB1B_TUNE_TRIM_PARAM+ side));
 }
@@ -255,13 +255,13 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp)
         Vec(jacksMiddle, jacksY1),
         module,
         Comp::VOCT_INPUT));
-    addLabel(Vec(jacksMiddle - 10, jacksY1 - labelAboveKnob), "V/8");
+    addLabel(Vec(jacksMiddle - 10, jacksY1 - labelAboveKnob), "V/Oct");
 
     addOutput(createOutput<PJ301MPort>(
         Vec(jacksMiddle, jacksY2),
         module,
         Comp::MAIN_OUTPUT));
-    addLabel(Vec(jacksMiddle - 10, jacksY2 - labelAboveKnob), "Out");
+    addLabel(Vec(jacksMiddle - 7, jacksY2 - labelAboveKnob), "Out");
 
 
     #if 1

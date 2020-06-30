@@ -201,7 +201,7 @@
 		},
 		{
 			"slug": "squinkylabs-wvco",
-			"name": "Kitchen Sink",
+			"name": "FM Kitchen Sink",
 			"description": "Many function VCO",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck1/docs/kitchen-sink.md",
 			"tags": ["VCO", "Polyphonic"]

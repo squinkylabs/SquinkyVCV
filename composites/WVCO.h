@@ -631,7 +631,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 0, "FM feedback depth"};
             break;
         case WVCO<TBase>::ATTACK_PARAM:
-            ret = {0, 100, 50, "Attck"};
+            ret = {0, 100, 50, "Attack"};
             break;
         case WVCO<TBase>::DECAY_PARAM:
             ret = {0, 100, 50, "Decay"};
@@ -652,13 +652,13 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
          ret = {0, 1, 0, "ADSR->Feedback"};
             break;
         case WVCO<TBase>::ADSR_OUTPUT_LEVEL_PARAM:
-         ret = {0, 1, 0, "ADRS->Output Level"};
+         ret = {0, 1, 0, "ADSR->Output Level"};
             break;
         case WVCO<TBase>::ADSR_LFM_DEPTH_PARAM:
-         ret = {0, 1, 0, "ARSR->FM Depth"};
+         ret = {0, 1, 0, "ADSR->FM Depth"};
             break;
         case WVCO<TBase>::SNAP_PARAM:
-            ret = {0, 1, 1, "ARSR Snap"};
+            ret = {0, 1, 1, "ADSR Snap"};
             break;
          case WVCO<TBase>::SNAP2_PARAM:
             ret = {0, 1, 1, "ARSR Snap2"};
