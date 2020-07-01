@@ -14,6 +14,7 @@
 #include "SimpleQuantizer.h"
 
 /**
+ * 7/1: actually, all numbers below are for 8 voice. 1 is 19%
  * 6/29 put in brute force wrapping to fix bugs 53%
  * 5/31 feature complete (almost)  48%
  * 5.25: cpu usage 1 chnael = 51%
@@ -442,15 +443,10 @@ inline void Sub<TBase>::step()
             subs1[0] * subB0Gain +
             subs1[1] * subB1Gain;
 
-         const float mixed1 = mains[2] * vco0Gain +
-            mains[3] * vco1Gain +
-            subs0[2] * subA0Gain +
-            subs0[3] * subA1Gain +
-            subs1[2] * subB0Gain +
-            subs1[3] * subB1Gain;
-
-#ifndef NDEBUG
-        const float limit = 10;
+     
+            const float limit = 10;
+#if 0 // ndef NDEBUG
+      
         if ( (mixed0 >= limit) ||
         (mixed0 <= -limit) ||
         (mixed1 >= limit) ||
@@ -464,14 +460,27 @@ inline void Sub<TBase>::step()
             fflush(stdout);
         }
 #endif
-
         assert(mixed0 < limit);
         assert(mixed0 > -limit);
-        assert(mixed1 < limit);
-        assert(mixed1 > -limit);
-
+     
+      //  printf("outputting %d first\n", channel);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channel++);
-        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed1, channel++); 
+
+        if (channel < numDualChannels) {
+            const float mixed1 = mains[2] * vco0Gain +
+            mains[3] * vco1Gain +
+            subs0[2] * subA0Gain +
+            subs0[3] * subA1Gain +
+            subs1[2] * subB0Gain +
+            subs1[3] * subB1Gain;
+
+            assert(mixed1 < limit);
+            assert(mixed1 > -limit);
+
+          //  printf("outputting %d second\n", channel);
+            Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed1, channel++); 
+        }
+      //  fflush(stdout);
     }
 }
 

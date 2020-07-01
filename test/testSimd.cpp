@@ -135,22 +135,17 @@ static void testMinMax()
 }
 
 
-// __m128 _mm_shuffle_ps (__m128 a, __m128 b, unsigned int imm8)
-
+// If we ever want to use it, we should move these functions
 float_4 deinterlace_low(const float_4& x, const float_4& y) {
     const int mask =  (0 << 0) | (2 << 2) | (0 << 4) | (2 << 6);
-    printf("mask = %x\n", mask);
     float_4 ret = _mm_shuffle_ps(x.v, y.v, mask);
-    printf("after ps, ret = %s\n", toStr(ret).c_str());
     fflush(stdout);
     return ret;
 }
 
 float_4 deinterlace_high(const float_4& x, const float_4& y) {
     const int mask =  (1 << 0) | (3 << 2) | (1 << 4) | (3 << 6);
-    printf("mask = %x\n", mask);
     float_4 ret = _mm_shuffle_ps(x.v, y.v, mask);
-    printf("after ps, ret = %s\n", toStr(ret).c_str());
     fflush(stdout);
     return ret;
 }
@@ -190,6 +185,5 @@ void testSimd()
     testMinMax();
     testDeInterleaveLow();
     testDeInterleaveHigh();
-
 }
 #endif

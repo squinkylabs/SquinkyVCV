@@ -700,8 +700,8 @@ static void testSubMono()
     Sub<TestComposite> sub;
 
     sub.init();
-    sub.inputs[Sub<TestComposite>::MAIN_OUTPUT].channels = 8;
-    sub.inputs[Sub<TestComposite>::VOCT_INPUT].channels = 8;
+    sub.inputs[Sub<TestComposite>::MAIN_OUTPUT].channels = 1;
+    sub.inputs[Sub<TestComposite>::VOCT_INPUT].channels = 1;
 
     MeasureTime<float>::run(overheadOutOnly, "Sub mono", [&sub]() {
         sub.step();
@@ -709,6 +709,19 @@ static void testSubMono()
     }, 1);
 }
 
+static void testSubPoly()
+{
+    Sub<TestComposite> sub;
+
+    sub.init();
+    sub.inputs[Sub<TestComposite>::MAIN_OUTPUT].channels = 8;
+    sub.inputs[Sub<TestComposite>::VOCT_INPUT].channels = 8;
+
+    MeasureTime<float>::run(overheadOutOnly, "Sub poly 8", [&sub]() {
+        sub.step();
+        return sub.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0);
+    }, 1);
+}
 #endif
 
 static void testSuper()
@@ -1029,6 +1042,7 @@ void perfTest()
   
     testWVCOPoly();
     testSubMono();
+    testSubPoly();
     simd_testBiquad();
     testSinLookup();
     testSinLookupf();
