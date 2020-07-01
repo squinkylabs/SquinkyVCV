@@ -9,6 +9,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/SemitoneDisplay.h"
 #include "ctrl/ToggleButton.h"
 
 using Comp = Sub<WidgetComposite>;
@@ -57,9 +58,17 @@ void SubModule::step()
 
 struct SubWidget : ModuleWidget
 {
+    SemitoneDisplay semitoneDisplay1;
+    SemitoneDisplay semitoneDisplay2;
+
     SubWidget(SubModule *);
     void appendContextMenu(Menu *menu) override;
-   // DECLARE_MANUAL("Substitute manual", "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md");
+    void step() override
+    {
+        ModuleWidget::step();
+        semitoneDisplay1.step();
+        semitoneDisplay2.step();
+    }
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -70,6 +79,8 @@ struct SubWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+
 
     void addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, int side);
     void addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, int side);
@@ -138,20 +149,27 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
         }
     };
 
+    SemitoneDisplay& semiDisp = side ? semitoneDisplay2 : semitoneDisplay1;
     // first row
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(xfunc(knobX1, side), knobY1),
         module,
         Comp::OCTAVE1_PARAM + side));
-    addLabel(Vec(xfunc(knobX1, side) - 13, knobY1 - labelAboveKnob), "Octave");
+    //addLabel(Vec(xfunc(knobX1, side) - 13, knobY1 - labelAboveKnob), "Octave");
+    semiDisp.setOctLabel(
+        addLabel(Vec(xfunc(knobX1, side) - 8, knobY1 - labelAboveKnob), "Octave"),
+        Comp::OCTAVE1_PARAM + side);
 
-     addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(xfunc(knobX2, side), knobY1),
         module,
         Comp::SEMITONE1_PARAM + side));
-    addLabel(Vec(xfunc(knobX2, side) - 3, knobY1 - labelAboveKnob),  "Semi");
+    //addLabel(Vec(xfunc(knobX2, side) - 3, knobY1 - labelAboveKnob),  "Semi");
+    semiDisp.setSemiLabel(
+        addLabel(Vec(xfunc(knobX2, side) - 13, knobY1 - labelAboveKnob), "Semi"),
+        Comp::SEMITONE1_PARAM + side);
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -352,8 +370,12 @@ void SubWidget::addMiddleJacks(SubModule *module, std::shared_ptr<IComposite> ic
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-SubWidget::SubWidget(SubModule *module)
+SubWidget::SubWidget(SubModule *module) :   
+    semitoneDisplay1(module), semitoneDisplay2(module)
 {
+    semitoneDisplay1.octaveDisplayOffset = -5;
+    semitoneDisplay2.octaveDisplayOffset = -5;
+
     setModule(module);
 
     // box.size = Vec(totalWidth, RACK_GRID_HEIGHT);

@@ -466,8 +466,14 @@ inline void Sub<TBase>::stepn()
 
     // get the base pitch in volts from the 2X2 pitch knobs.
     // Jam it into one float_4 <A,B,A,B>
-    const float basePitch1 = Sub<TBase>::params[OCTAVE1_PARAM].value + Sub<TBase>::params[FINE1_PARAM].value - 4;
-    const float basePitch2 = Sub<TBase>::params[OCTAVE2_PARAM].value + Sub<TBase>::params[FINE2_PARAM].value - 4;
+    const float basePitch1 = 
+        Sub<TBase>::params[OCTAVE1_PARAM].value +
+        Sub<TBase>::params[SEMITONE1_PARAM].value / 12.f +
+        Sub<TBase>::params[FINE1_PARAM].value - 4;
+    const float basePitch2 = 
+        Sub<TBase>::params[OCTAVE2_PARAM].value + 
+        Sub<TBase>::params[SEMITONE2_PARAM].value / 12.f +
+        Sub<TBase>::params[FINE2_PARAM].value - 4;
     float_4 combinedPitch(0);
 
     combinedPitch[0] = basePitch1;
