@@ -277,7 +277,7 @@ const float jacksX3 = jacksX1 + 2 * jacksDeltaX;
 const float jacksX4 = jacksX1 + 3 * jacksDeltaX;
 const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
 
-const float jacksY1 = 274; // 230;
+const float jacksY1 = 264; // 230;
 const float jacksY2 = 322; // 330; //300;
 
 const float jackOffsetX = 3;

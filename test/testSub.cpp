@@ -232,12 +232,185 @@ static void testSub2()
      printf("exit test sub 2\n"); fflush(stdout);
 }
 
+
+static void stepn(Comp& comp) {
+    for (int i=0; i<20; ++i) {
+        comp.step();
+    }
+}
+
+/*
+
+   VCO1_LEVEL_PARAM,
+        VCO2_LEVEL_PARAM,
+        SUB1A_LEVEL_PARAM,
+        SUB2A_LEVEL_PARAM,
+        SUB1B_LEVEL_PARAM,
+        SUB2B_LEVEL_PARAM,
+*/
+static void zeroMix(Comp& comp) {
+    comp.params[Comp::VCO1_LEVEL_PARAM].value = 0;
+    comp.params[Comp::VCO2_LEVEL_PARAM].value = 0;
+    comp.params[Comp::SUB1A_LEVEL_PARAM].value = 0;
+    comp.params[Comp::SUB1B_LEVEL_PARAM].value = 0;
+    comp.params[Comp::SUB2A_LEVEL_PARAM].value = 0;
+    comp.params[Comp::SUB2B_LEVEL_PARAM].value = 0;
+}
+
+static void testMix1()
+{
+    Comp sub;
+    initComposite(sub);
+    zeroMix(sub);
+    stepn(sub);
+
+    assertEQ(sub.mixParams.params[0].vcoGain, 0);
+    assertEQ(sub.mixParams.params[0].subAGain, 0);
+    assertEQ(sub.mixParams.params[0].subBGain, 0);
+
+    assertEQ(sub.mixParams.params[1].vcoGain, 0);
+    assertEQ(sub.mixParams.params[1].subAGain, 0);
+    assertEQ(sub.mixParams.params[1].subBGain, 0);
+
+    assertEQ(sub.mixParams.params[2].vcoGain, 0);
+    assertEQ(sub.mixParams.params[3].vcoGain, 0);
+}
+
+
+static void testMixVco1Knob()
+{
+    Comp sub;
+    initComposite(sub);
+    zeroMix(sub);
+    sub.params[Comp::VCO1_LEVEL_PARAM].value = 100;
+    stepn(sub);
+    assertEQ(sub.mixParams.params[0].subAGain, 0);
+    assertEQ(sub.mixParams.params[0].subBGain, 0);
+    assertEQ(sub.mixParams.params[1].vcoGain, 0);
+    assertEQ(sub.mixParams.params[1].subAGain, 0);
+    assertEQ(sub.mixParams.params[1].subBGain, 0);
+    assertEQ(sub.mixParams.params[0].vcoGain, 1);
+
+    // knob should affect all the VCO1, all channels
+    assertEQ(sub.mixParams.params[2].vcoGain, 1);
+    assertEQ(sub.mixParams.params[3].vcoGain, 0);
+
+    assertEQ(sub.mixParams.params[14].vcoGain, 1);
+    assertEQ(sub.mixParams.params[15].vcoGain, 0);
+}
+
+static void testMixVco2Knob()
+{
+    Comp sub;
+    initComposite(sub);
+    zeroMix(sub);
+    sub.params[Comp::VCO2_LEVEL_PARAM].value = 100;
+    stepn(sub);
+    assertEQ(sub.mixParams.params[0].vcoGain, 0);
+    assertEQ(sub.mixParams.params[1].vcoGain, 1);
+
+    // knob should affect all the VCO1, all channels
+    assertEQ(sub.mixParams.params[3].vcoGain, 1);
+    assertEQ(sub.mixParams.params[4].vcoGain, 0);
+    assertEQ(sub.mixParams.params[15].vcoGain, 1);
+    assertEQ(sub.mixParams.params[14].vcoGain, 0);
+}
+
+static void testMixVcoSub1AKnob()
+{
+    Comp sub;
+    initComposite(sub);
+    zeroMix(sub);
+    sub.params[Comp::SUB1A_LEVEL_PARAM].value = 100;
+    stepn(sub);
+    assertEQ(sub.mixParams.params[0].subAGain, 1);
+    assertEQ(sub.mixParams.params[1].subAGain, 0);
+
+    // knob should affect all the VCO1, all channels
+    assertEQ(sub.mixParams.params[3].subAGain, 0);
+    assertEQ(sub.mixParams.params[4].subAGain, 1);
+    assertEQ(sub.mixParams.params[15].subAGain, 0);
+    assertEQ(sub.mixParams.params[14].subAGain, 1);
+}
+
+static void testMixCVvco1()
+{
+    Comp sub;
+    initComposite(sub);
+    zeroMix(sub);
+    sub.params[Comp::VCO1_LEVEL_PARAM].value = 100;
+    sub.inputs[Comp::MAIN1_LEVEL_INPUT].channels = 1;
+    sub.inputs[Comp::MAIN1_LEVEL_INPUT].setVoltage(10, 0);      // 10 v on channel 0
+    sub.inputs[Comp::MAIN1_LEVEL_INPUT].setChannels(8);
+    assert(sub.inputs[Comp::MAIN1_LEVEL_INPUT].isConnected());
+    stepn(sub);
+    assertEQ(sub.mixParams.params[0].vcoGain, 1);
+    assertEQ(sub.mixParams.params[1].vcoGain, 0);
+
+    // CV not all channels
+    assertEQ(sub.mixParams.params[2].vcoGain, 0);
+    assertEQ(sub.mixParams.params[3].vcoGain, 0);
+    assertEQ(sub.mixParams.params[4].vcoGain, 0);
+    assertEQ(sub.mixParams.params[14].vcoGain, 0);
+}
+
+static void testMixCVvco2()
+{
+    Comp sub;
+    initComposite(sub);
+    zeroMix(sub);
+    sub.params[Comp::VCO2_LEVEL_PARAM].value = 100;
+    sub.inputs[Comp::MAIN2_LEVEL_INPUT].channels = 1;
+    sub.inputs[Comp::MAIN2_LEVEL_INPUT].setVoltage(10, 0);      // 10 v on channel 0
+    sub.inputs[Comp::MAIN2_LEVEL_INPUT].setChannels(8);
+    assert(sub.inputs[Comp::MAIN2_LEVEL_INPUT].isConnected());
+    stepn(sub);
+    assertEQ(sub.mixParams.params[0].vcoGain, 0);
+    assertEQ(sub.mixParams.params[1].vcoGain, 1);
+
+    // CV not all channels
+    assertEQ(sub.mixParams.params[2].vcoGain, 0);
+    assertEQ(sub.mixParams.params[3].vcoGain, 0);
+    assertEQ(sub.mixParams.params[4].vcoGain, 0);
+    assertEQ(sub.mixParams.params[14].vcoGain, 0);
+}
+
+static void testComp1()
+{
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    assertEQ(icomp->getParam(Comp::VCO1_LEVEL_PARAM).min, 0);
+    assertEQ(icomp->getParam(Comp::VCO2_LEVEL_PARAM).min, 0);
+    assertEQ(icomp->getParam(Comp::SUB1A_LEVEL_PARAM).min, 0);
+    assertEQ(icomp->getParam(Comp::SUB1B_LEVEL_PARAM).min, 0);
+    assertEQ(icomp->getParam(Comp::SUB2A_LEVEL_PARAM).min, 0);
+    assertEQ(icomp->getParam(Comp::SUB2B_LEVEL_PARAM).min, 0);
+
+    assertEQ(icomp->getParam(Comp::VCO1_LEVEL_PARAM).max, 100);
+    assertEQ(icomp->getParam(Comp::VCO2_LEVEL_PARAM).max, 100);
+    assertEQ(icomp->getParam(Comp::SUB1A_LEVEL_PARAM).max, 100);
+    assertEQ(icomp->getParam(Comp::SUB1B_LEVEL_PARAM).max, 100);
+    assertEQ(icomp->getParam(Comp::SUB2A_LEVEL_PARAM).max, 100);
+    assertEQ(icomp->getParam(Comp::SUB2B_LEVEL_PARAM).max, 100);
+}
+
 void testSub()
 {
+    printf("\n\n ------ CV test ----\n"); fflush(stdout);
+  
   //  experiment();
     testChannels();
     testSub1();
     testSub2();
+
+    testMix1();
+    testMixVco1Knob();
+    testMixVco2Knob();
+    testMixVcoSub1AKnob();
+
+    testMixCVvco1();
+    testMixCVvco2();
+
+    testComp1();
 
     testSubLevel(false, 0, 0);
     testSubLevel(false, 1, 0);
@@ -250,4 +423,6 @@ void testSub()
     testSubLevel(false, 1, 1);
   //  testSubLevel(true, 0, 1);
   //  testSubLevel(true, 1, 1);
+
+
 }

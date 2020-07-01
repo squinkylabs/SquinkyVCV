@@ -12,6 +12,7 @@
 #include "LookupTableFactory.h"
 #include "simd.h"
 #include "SimpleQuantizer.h"
+#include "SqPort.h"
 
 /**
  * 7/1: actually, all numbers below are for 8 voice. 1 is 19%
@@ -35,6 +36,32 @@ class SubDescription : public IComposite
 public:
     Config getParam(int i) override;
     int getNumParams() override;
+};
+
+/** This holds all the processed values for One of the two VCOs,
+ * but it is poly so it hold for all of them
+ * Values are derived from knobs and CV
+ */
+class MixParams
+{
+public:
+    float vcoGain = 0;
+    float subAGain = 0;
+    float subBGain = 0;
+};
+
+/**
+ * index is vco0, side0
+ *          vco0, side1
+ *          vco1, size0
+ *           ......
+ * 
+ * to it alternates left/right as it marches through all 8 pairs
+ */
+class MixParamsAll
+{
+public:
+    MixParams params[16] = {};
 };
 
 template <class TBase>
@@ -136,6 +163,8 @@ public:
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4>& _get(int n) {
         return oscillators[n];
     } 
+
+    MixParamsAll mixParams;
 private:
 
     std::shared_ptr<SimpleQuantizer> quantizer;
@@ -153,19 +182,16 @@ private:
     Divider divn;
     Divider divm;
 
-    float vco0Gain = .2;
-    float subA0Gain = .2;
-    float subB0Gain = .2;
 
-    float vco1Gain = .2;
-    float subA1Gain = .2;
-    float subB1Gain = .2;
 
     int activeChannels_m[4] = {0};
     void computeGains();
     void computeDivisors(int32_4& divaOut, int32_4& divbOut);
     void setupWaveforms();
     void setupQuantizer();
+
+  //  void computeGain(MixParams& outParams, float mainKnob, const Port& mainCV);
+    float computeGain(float knobValue, SqInput& cv, int pairChannel);
 };
 
 
@@ -189,9 +215,68 @@ inline void Sub<TBase>::init()
     quantizer = std::make_shared<SimpleQuantizer>(scales,  SimpleQuantizer::Scales::_off);
 }
 
+
+template <class TBase>
+inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChannel)
+{
+  //  printf("in compute, passed knob=%f cv is connected = %d\n", knobValue, cv.isConnected());
+    float value = LookupTable<float>::lookup(audioTaper, knobValue * .01f);
+   // printf("after lookup: %f\n", value);
+    value *= cv.isConnected() ? cv.getPolyVoltage(pairChannel) : 10;
+    value *= .1;
+    //printf("final: %f\n", value);
+    return value;
+}
+
 template <class TBase>
 inline void Sub<TBase>::computeGains()
 {
+    int vcoNumber = 0;
+    int channelPairNumber = 0;
+
+    // init for this vco
+    while (channelPairNumber < 8) {
+        mixParams.params[vcoNumber].vcoGain = computeGain(
+            Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value,  
+            Sub<TBase>::inputs[MAIN1_LEVEL_INPUT],
+            channelPairNumber);
+        mixParams.params[vcoNumber].subAGain = computeGain(
+            Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value,  
+            Sub<TBase>::inputs[SUB1A_LEVEL_INPUT],
+            channelPairNumber);
+        mixParams.params[vcoNumber].subBGain = computeGain(
+            Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value,  
+            Sub<TBase>::inputs[SUB1B_LEVEL_INPUT],
+            channelPairNumber);
+
+       // printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
+        
+        ++vcoNumber;
+        mixParams.params[vcoNumber].vcoGain = computeGain(
+            Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value,  
+            Sub<TBase>::inputs[MAIN2_LEVEL_INPUT],
+            channelPairNumber);
+        mixParams.params[vcoNumber].subAGain = computeGain(
+            Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value,  
+            Sub<TBase>::inputs[SUB2A_LEVEL_INPUT],
+            channelPairNumber);
+        mixParams.params[vcoNumber].subBGain = computeGain(
+            Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value,  
+            Sub<TBase>::inputs[SUB2B_LEVEL_INPUT],
+            channelPairNumber);
+      //  printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
+
+        ++vcoNumber;
+        ++channelPairNumber;
+    }
+}
+
+
+#if 0 // old way, no CV
+template <class TBase>
+inline void Sub<TBase>::computeGains()
+{
+
     //LookupTable<float>::lookup(audioTaper, Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value);
     vco0Gain = LookupTable<float>::lookup(audioTaper,
         Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value);
@@ -206,7 +291,10 @@ inline void Sub<TBase>::computeGains()
         Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value);
     subB1Gain = LookupTable<float>::lookup(audioTaper,
         Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value);
+
 }
+#endif
+
 
 template <class TBase>
 inline void Sub<TBase>::computeDivisors(
@@ -414,6 +502,68 @@ inline void Sub<TBase>::stepn()
     }
 }
 
+// new version, poly mix (when it works)
+template <class TBase>
+inline void Sub<TBase>::step()
+{
+
+    divm.step();
+    divn.step();
+    // look at controls and update VCO
+
+    // run the audio
+    const float sampleTime = TBase::engineGetSampleTime();
+    
+    // Prepare the mixed output and send it out.
+    int vcoNumber = 0;
+    int channelPairNumber = 0;
+    for (int bank=0; bank < numBanks; ++bank) {
+        oscillators[bank].process(sampleTime, 0);
+
+        // now, what do do with the output? to now lets grab pairs
+        // of saws and add them.
+        // TODO: make poly so it works
+        const float_4 mains = oscillators[bank].main();
+        const float_4 subs0 = oscillators[bank].sub(0);
+        const float_4 subs1 = oscillators[bank].sub(1);
+
+        const MixParams& params0 = this->mixParams.params[vcoNumber++];
+        const MixParams& params1 = this->mixParams.params[vcoNumber++];
+
+        const float mixed0 = mains[0] * params0.vcoGain +
+            mains[1] * params1.vcoGain +
+            subs0[0] * params0.subAGain +
+            subs0[1] * params1.subAGain +
+            subs1[0] * params0.subBGain +
+            subs1[1] * params1.subBGain;
+        
+        const float limit = 10;
+        assert(mixed0 < limit);
+        assert(mixed0 > -limit);
+
+        Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
+
+         if (channelPairNumber < numDualChannels) {
+            const MixParams& params0 = this->mixParams.params[vcoNumber++];
+            const MixParams& params1 = this->mixParams.params[vcoNumber++];
+
+            const float mixed0 = mains[2] * params0.vcoGain +
+                mains[3] * params1.vcoGain +
+                subs0[2] * params0.subAGain +
+                subs0[3] * params1.subAGain +
+                subs1[2] * params0.subBGain +
+                subs1[3] * params1.subBGain;
+            
+            const float limit = 10;
+            assert(mixed0 < limit);
+            assert(mixed0 > -limit);
+
+            Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
+        }
+    }
+}
+
+#if 0   // old version, levels not poly
 template <class TBase>
 inline void Sub<TBase>::step()
 {
@@ -483,6 +633,7 @@ inline void Sub<TBase>::step()
       //  fflush(stdout);
     }
 }
+#endif
 
 template <class TBase>
 int SubDescription<TBase>::getNumParams()
@@ -538,22 +689,22 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             ret = {1, 16, 4, "VCO 2 subharmonic B divisor"};
             break;
         case Sub<TBase>::VCO1_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 1 level"};
+            ret = {0, 100, 50, "VCO 1 level"};
             break;
         case Sub<TBase>::VCO2_LEVEL_PARAM:
-            ret = {0, 1, .5, "VCO 2 level"};
+            ret = {0, 100, 50, "VCO 2 level"};
             break;
         case Sub<TBase>::SUB1A_LEVEL_PARAM:
-            ret = {0, 1, 0, "VCO 1 subharmonic A level"};
+            ret = {0, 100, 0, "VCO 1 subharmonic A level"};
             break;
         case Sub<TBase>::SUB2A_LEVEL_PARAM:
-            ret = {0, 1, 0, "VCO 2 subharmonic A level"};
+            ret = {0, 100, 0, "VCO 2 subharmonic A level"};
             break;
         case Sub<TBase>::SUB1B_LEVEL_PARAM:
-            ret = {0, 1, 0, "VCO 1 subharmonic B level"};
+            ret = {0, 100, 0, "VCO 1 subharmonic B level"};
             break;
         case Sub<TBase>::SUB2B_LEVEL_PARAM:
-            ret = {0, 1, 0, "VCO 2 subharmonic B level"};
+            ret = {0, 100, 0, "VCO 2 subharmonic B level"};
             break;
         case Sub<TBase>::WAVEFORM1_PARAM:
             ret = {0, 2, 0, "VCO 1 waveform"};
