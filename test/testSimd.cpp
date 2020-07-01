@@ -146,7 +146,15 @@ float_4 deinterlace_low(const float_4& x, const float_4& y) {
     return ret;
 }
 
-static void testDeInterleave()
+float_4 deinterlace_high(const float_4& x, const float_4& y) {
+    const int mask =  (1 << 0) | (3 << 2) | (1 << 4) | (3 << 6);
+    printf("mask = %x\n", mask);
+    float_4 ret = _mm_shuffle_ps(x.v, y.v, mask);
+    printf("after ps, ret = %s\n", toStr(ret).c_str());
+    fflush(stdout);
+    return ret;
+}
+static void testDeInterleaveLow()
 {
     float_4 x(1,2,3, 4);
     float_4 y(110, 120, 130, 140);
@@ -160,12 +168,28 @@ static void testDeInterleave()
     assertEQ(z[3], y[2]);
 }
 
+static void testDeInterleaveHigh()
+{
+    float_4 x(1,2,3, 4);
+    float_4 y(110, 120, 130, 140);
+
+    assertEQ(x[0], 1);
+    float_4 z = deinterlace_high(x, y);
+
+    assertEQ(z[0], x[1]);
+    assertEQ(z[1], x[3]);
+    assertEQ(z[2], y[1]);
+    assertEQ(z[3], y[3]);
+}
+
 void testSimd()
 {
     testAsserts();
     testMask();
     testMaskInt();
     testMinMax();
-    testDeInterleave();
+    testDeInterleaveLow();
+    testDeInterleaveHigh();
+
 }
 #endif
