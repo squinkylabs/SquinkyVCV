@@ -333,9 +333,6 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::SHAPE_INPUT));
     addLabel(Vec(jacksX5 - 12, jacksY1 - labelAboveKnob), "Shape");
 
-    
-  
-
     //----------------------------- second row -----------------------
     addInput(createInput<PJ301MPort>(
         Vec(jacksX1, jacksY2),
@@ -367,70 +364,6 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Comp::MAIN_OUTPUT));
     addLabel(Vec(jacksX5 - 7, jacksY2 - labelAboveKnob), "Out");
 }
-
-#if 0 // orig
-void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX1, jacksY1),
-        module,
-        Comp::VOCT_INPUT));
-    addLabel(Vec(jacksX1 - 10, jacksY1 - labelAboveKnob), "V/8");
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX2, jacksY1),
-        module,
-        Comp::GATE_INPUT));
-    addLabel(Vec(jacksX2 - 10, jacksY1 - labelAboveKnob), "Gate");
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX3, jacksY1),
-        module,
-        Comp::LINEAR_FM_INPUT));
-    addLabel(Vec(jacksX3 - 10, jacksY1 - labelAboveKnob), "LFM-0");
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX4, jacksY1),
-        module,
-        Comp::LINEAR_FM_DEPTH_INPUT));
-    addLabel(Vec(jacksX4 - 10, jacksY1 - labelAboveKnob), "Depth");
-
-
-    // second row
-    addOutput(createOutput<PJ301MPort>(
-        Vec(jacksX1, jacksY2),
-        module,
-        Comp::MAIN_OUTPUT));
-    addLabel(Vec(jacksX1 - 10, jacksY2 - labelAboveKnob), "Out");
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX2, jacksY2),
-        module,
-        Comp::FM_INPUT));
-    addLabel(Vec(jacksX2 - 10, jacksY2 - labelAboveKnob), "Mod");
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX3, jacksY2),
-        module,
-        Comp::SYNC_INPUT));
-    addLabel(Vec(jacksX3 - 10, jacksY2 - labelAboveKnob), "Sync");
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX4, jacksY2),
-        module,
-        Comp::FEEDBACK_INPUT));
-    addLabel(Vec(jacksX4 - 10, jacksY2 - labelAboveKnob), "Fdbck");
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jacksX5, jacksY2),
-        module,
-        Comp::SHAPE_INPUT));
-    addLabel(Vec(jacksX5 - 10, jacksY2 - labelAboveKnob), "Shape");
-}
-#endif
-
-
-
 
 /**
  * Widget constructor will describe my implementation structure and

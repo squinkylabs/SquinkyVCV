@@ -15,6 +15,7 @@
 #include "SqPort.h"
 
 /**
+ * only update n if patched, otherwise m: 18/56
  * don't calc mix for unused channels: 20/71
  * 7/1 poly mix cv 37 / 71.
  * 7/1: actually, all numbers below are for 8 voice. 1 is 19%
@@ -180,6 +181,8 @@ private:
      */
     int numDualChannels = 1;
     int numBanks = 1;
+    bool vco1HasMixCV = false;
+    bool vco2HasMixCV = false;
 
     Divider divn;
     Divider divm;
@@ -187,7 +190,7 @@ private:
 
 
     int activeChannels_m[4] = {0};
-    void computeGains();
+    void computeGains(bool doOne, bool doTwo);
     void computeDivisors(int32_4& divaOut, int32_4& divbOut);
     void setupWaveforms();
     void setupQuantizer();
@@ -231,7 +234,7 @@ inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChann
 }
 
 template <class TBase>
-inline void Sub<TBase>::computeGains()
+inline void Sub<TBase>::computeGains(bool doOne, bool doTwo)
 {
     int vcoNumber = 0;
     int channelPairNumber = 0;
@@ -239,34 +242,39 @@ inline void Sub<TBase>::computeGains()
     // init for this vco
     // TODO: don't do all 8 if not used
     while (channelPairNumber < numDualChannels) {
-        mixParams.params[vcoNumber].vcoGain = computeGain(
-            Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value,  
-            Sub<TBase>::inputs[MAIN1_LEVEL_INPUT],
-            channelPairNumber);
-        mixParams.params[vcoNumber].subAGain = computeGain(
-            Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value,  
-            Sub<TBase>::inputs[SUB1A_LEVEL_INPUT],
-            channelPairNumber);
-        mixParams.params[vcoNumber].subBGain = computeGain(
-            Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value,  
-            Sub<TBase>::inputs[SUB1B_LEVEL_INPUT],
-            channelPairNumber);
+        if (doOne) {
+            mixParams.params[vcoNumber].vcoGain = computeGain(
+                Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value,  
+                Sub<TBase>::inputs[MAIN1_LEVEL_INPUT],
+                channelPairNumber);
+            mixParams.params[vcoNumber].subAGain = computeGain(
+                Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value,  
+                Sub<TBase>::inputs[SUB1A_LEVEL_INPUT],
+                channelPairNumber);
+            mixParams.params[vcoNumber].subBGain = computeGain(
+                Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value,  
+                Sub<TBase>::inputs[SUB1B_LEVEL_INPUT],
+                channelPairNumber);
+        }
 
        // printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
         
         ++vcoNumber;
-        mixParams.params[vcoNumber].vcoGain = computeGain(
-            Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value,  
-            Sub<TBase>::inputs[MAIN2_LEVEL_INPUT],
-            channelPairNumber);
-        mixParams.params[vcoNumber].subAGain = computeGain(
-            Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value,  
-            Sub<TBase>::inputs[SUB2A_LEVEL_INPUT],
-            channelPairNumber);
-        mixParams.params[vcoNumber].subBGain = computeGain(
-            Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value,  
-            Sub<TBase>::inputs[SUB2B_LEVEL_INPUT],
-            channelPairNumber);
+
+        if (doTwo) {
+            mixParams.params[vcoNumber].vcoGain = computeGain(
+                Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value,  
+                Sub<TBase>::inputs[MAIN2_LEVEL_INPUT],
+                channelPairNumber);
+            mixParams.params[vcoNumber].subAGain = computeGain(
+                Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value,  
+                Sub<TBase>::inputs[SUB2A_LEVEL_INPUT],
+                channelPairNumber);
+            mixParams.params[vcoNumber].subBGain = computeGain(
+                Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value,  
+                Sub<TBase>::inputs[SUB2B_LEVEL_INPUT],
+                channelPairNumber);
+        }
       //  printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
 
         ++vcoNumber;
@@ -435,12 +443,30 @@ inline void Sub<TBase>::stepm()
     } else {
         assert(false);
     }
+
+    // figure out who has mix inputs patched
+    vco1HasMixCV =  Sub<TBase>::inputs[Sub<TBase>::MAIN1_LEVEL_INPUT].isConnected() ||
+        Sub<TBase>::inputs[Sub<TBase>::SUB1A_LEVEL_INPUT].isConnected() ||
+        Sub<TBase>::inputs[Sub<TBase>::SUB1B_LEVEL_INPUT].isConnected();
+
+    vco1HasMixCV =  Sub<TBase>::inputs[Sub<TBase>::MAIN1_LEVEL_INPUT].isConnected() ||
+        Sub<TBase>::inputs[Sub<TBase>::SUB1A_LEVEL_INPUT].isConnected() ||
+        Sub<TBase>::inputs[Sub<TBase>::SUB1B_LEVEL_INPUT].isConnected();
+
+    // do the gain update for anyone who has no CV
+    if (!vco1HasMixCV || !vco2HasMixCV) {
+        computeGains(!vco1HasMixCV, !vco2HasMixCV);
+    }
+
 }  
 
 template <class TBase>
 inline void Sub<TBase>::stepn()
 {
-    computeGains();
+    // if either side has a CV connected, then update that now
+    if (vco1HasMixCV || vco2HasMixCV) {
+        computeGains(vco1HasMixCV, vco2HasMixCV);
+    }
 
     // get the base pitch in volts from the 2X2 pitch knobs.
     // Jam it into one float_4 <A,B,A,B>
