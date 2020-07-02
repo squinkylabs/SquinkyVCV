@@ -2,6 +2,11 @@
 #pragma once
 
 /**
+ * 7/2 same number. if m=160 (instead of 16) : 80.8
+ *  if n=40 (instead of 4) : 67
+ * conclusion: no point in optimizing m path. could get a little from n path,
+ * but not much.
+ * 
  * optimize for no sync or fm: 84.7
  * add missing CV, clean up: 86.1
  * do shape calcs at reduced rate 87.4
@@ -417,30 +422,6 @@ inline void WVCO<TBase>::updateFreq_n()
     }
 }
 
-#if 0 // scalar version works
-template <class TBase>
-inline void WVCO<TBase>::updateFreq_n()
-{
-    for (int bank=0; bank < numBanks_m; ++bank) {
-        float_4 freq=0;
-        for (int i=0; i<4; ++i) {
-            const int channel = bank * 4 + i;
-
-            float pitch = basePitch_m[0];
-            // use SIMD here?
-            pitch += TBase::inputs[VOCT_INPUT].getVoltage(channel);
-
-            pitch += TBase::inputs[FM_INPUT].getPolyVoltage(channel) * depth_m[0];               
-            float _freq = expLookup(pitch);
-            _freq *= freqMultiplier;
-            const float time = std::clamp(_freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
-            freq[i] = time;
-        }
-        dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
-    }
-}
-#endif
-
 template <class TBase>
 inline void WVCO<TBase>::updateShapes_n()
 {
@@ -453,10 +434,11 @@ inline void WVCO<TBase>::updateShapes_n()
         simd_assertGE(envMult, float_4(0)); 
        
         float_4 baseGain = baseShapeGain;
-        Port& port = TBase::inputs[WAVESHAPE_GAIN_PARAM];
+        Port& port = TBase::inputs[SHAPE_INPUT];
         if (port.isConnected()) {
             baseGain *= port.getPolyVoltageSimd<float_4>(baseChannel);
             baseGain *= float_4(.1f);
+            baseGain = rack::simd::clamp(baseGain, 0, 1);
         }
         float_4 correctedWaveShapeMultiplier = baseGain * envMult;
         switch(dsp[bank].waveform) {
@@ -481,22 +463,22 @@ inline void WVCO<TBase>::updateShapes_n()
 
         // could to this at 'n' rate, and only it triangle
         // now let's compute triangle params
-        const float_4 shapeGain = rack::simd::clamp(baseShapeGain * envMult, .01, .99);
-        simd_assertLT(shapeGain, float_4(2));
-        simd_assertGT(shapeGain, float_4(0));
+        if (dsp[bank].waveform == WVCODsp::WaveForm::SawTri) {
+            const float_4 shapeGain = rack::simd::clamp(baseGain * envMult, .01, .99);
+            simd_assertLT(shapeGain, float_4(2));
+            simd_assertGT(shapeGain, float_4(0));
 
-        float_4 k = .5 + shapeGain / 2;
-        float_4 a, b;
-        TriFormula::getLeftA(a, k);
-        dsp[bank].aLeft = a;
-        TriFormula::getRightAandB(a, b, k);
+            float_4 k = .5 + shapeGain / 2;
+            float_4 a, b;
+            TriFormula::getLeftA(a, k);
+            dsp[bank].aLeft = a;
+            TriFormula::getRightAandB(a, b, k);
 
-        dsp[bank].aRight = a;
-        dsp[bank].bRight = b;
+            dsp[bank].aRight = a;
+            dsp[bank].bRight = b;
+        }
     }
-
 }
-
 
 template <class TBase>
 inline void WVCO<TBase>::stepn_lowerRate()
