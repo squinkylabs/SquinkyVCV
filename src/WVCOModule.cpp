@@ -194,7 +194,7 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Vec(knobX2, knobY2),
         module,
         Comp::LINEAR_FM_DEPTH_PARAM));
-    addLabel(Vec(knobX2 - 9, knobY2 - labelAboveKnob), "LFM-0");
+    addLabel(Vec(knobX2 - 10, knobY2 - labelAboveKnob), "Depth");
   
   // 3 fbck
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -350,7 +350,7 @@ void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp)
         Vec(jacksX3, jacksY2),
         module,
         Comp::LINEAR_FM_INPUT));
-    addLabel(Vec(jacksX3 - 12, jacksY2 - labelAboveKnob), "LFM-0");
+    addLabel(Vec(jacksX3 - 6, jacksY2 - labelAboveKnob), "LFM");
 
     addInput(createInput<PJ301MPort>(
         Vec(jacksX4, jacksY2),

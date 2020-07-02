@@ -520,6 +520,7 @@ inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
         if (feedbackConnected_m) {
             Port& feedbackPort = WVCO<TBase>::inputs[FEEDBACK_INPUT];
             feedbackAmount *= feedbackPort.getPolyVoltageSimd<float_4>(bank * 4) * float_4(.1);
+            feedbackAmount = rack::simd::clamp(feedbackAmount, float_4(0), float_4(1));
         }
         dsp[bank].feedback = feedbackAmount;
 
@@ -566,6 +567,7 @@ inline void  __attribute__((flatten)) WVCO<TBase>::step()
             if (fmDepthConnected_m) {
                 Port& depthPort = WVCO<TBase>::inputs[LINEAR_FM_DEPTH_INPUT];
                 fmInputScaling *= depthPort.getPolyVoltageSimd<float_4>(baseChannel) * float_4(.1f);
+                fmInputScaling = rack::simd::clamp(fmInputScaling, float_4(0), float_4(1));
             }
             dsp[bank].fmInput = fmInput * fmInputScaling;
 
