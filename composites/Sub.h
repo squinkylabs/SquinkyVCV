@@ -15,6 +15,8 @@
 #include "SqPort.h"
 
 /**
+ * don't calc mix for unused channels: 20/71
+ * 7/1 poly mix cv 37 / 71.
  * 7/1: actually, all numbers below are for 8 voice. 1 is 19%
  * 6/29 put in brute force wrapping to fix bugs 53%
  * 5/31 feature complete (almost)  48%
@@ -235,7 +237,8 @@ inline void Sub<TBase>::computeGains()
     int channelPairNumber = 0;
 
     // init for this vco
-    while (channelPairNumber < 8) {
+    // TODO: don't do all 8 if not used
+    while (channelPairNumber < numDualChannels) {
         mixParams.params[vcoNumber].vcoGain = computeGain(
             Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value,  
             Sub<TBase>::inputs[MAIN1_LEVEL_INPUT],
@@ -270,31 +273,6 @@ inline void Sub<TBase>::computeGains()
         ++channelPairNumber;
     }
 }
-
-
-#if 0 // old way, no CV
-template <class TBase>
-inline void Sub<TBase>::computeGains()
-{
-
-    //LookupTable<float>::lookup(audioTaper, Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value);
-    vco0Gain = LookupTable<float>::lookup(audioTaper,
-        Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value);
-    subA0Gain = LookupTable<float>::lookup(audioTaper, 
-        Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value);
-    subB0Gain = LookupTable<float>::lookup(audioTaper,
-        Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value);
-
-    vco1Gain = LookupTable<float>::lookup(audioTaper,
-        Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value);
-    subA1Gain = LookupTable<float>::lookup(audioTaper,
-        Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value);
-    subB1Gain = LookupTable<float>::lookup(audioTaper,
-        Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value);
-
-}
-#endif
-
 
 template <class TBase>
 inline void Sub<TBase>::computeDivisors(

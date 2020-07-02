@@ -283,6 +283,7 @@ static void testMixVco1Knob()
     initComposite(sub);
     zeroMix(sub);
     sub.params[Comp::VCO1_LEVEL_PARAM].value = 100;
+    sub.inputs[Comp::VOCT_INPUT].channels = 8;  // this test requires poly
     stepn(sub);
     assertEQ(sub.mixParams.params[0].subAGain, 0);
     assertEQ(sub.mixParams.params[0].subBGain, 0);
@@ -305,6 +306,7 @@ static void testMixVco2Knob()
     initComposite(sub);
     zeroMix(sub);
     sub.params[Comp::VCO2_LEVEL_PARAM].value = 100;
+    sub.inputs[Comp::VOCT_INPUT].channels = 8;  // this test requires poly
     stepn(sub);
     assertEQ(sub.mixParams.params[0].vcoGain, 0);
     assertEQ(sub.mixParams.params[1].vcoGain, 1);
@@ -322,6 +324,7 @@ static void testMixVcoSub1AKnob()
     initComposite(sub);
     zeroMix(sub);
     sub.params[Comp::SUB1A_LEVEL_PARAM].value = 100;
+    sub.inputs[Comp::VOCT_INPUT].channels = 8;  // this test requires poly
     stepn(sub);
     assertEQ(sub.mixParams.params[0].subAGain, 1);
     assertEQ(sub.mixParams.params[1].subAGain, 0);
@@ -338,6 +341,7 @@ static void testMixCVvco1()
     Comp sub;
     initComposite(sub);
     zeroMix(sub);
+    sub.inputs[Comp::VOCT_INPUT].channels = 8;  // this test requires poly
     sub.params[Comp::VCO1_LEVEL_PARAM].value = 100;
     sub.inputs[Comp::MAIN1_LEVEL_INPUT].channels = 1;
     sub.inputs[Comp::MAIN1_LEVEL_INPUT].setVoltage(10, 0);      // 10 v on channel 0
@@ -359,6 +363,7 @@ static void testMixCVvco2()
     Comp sub;
     initComposite(sub);
     zeroMix(sub);
+    sub.inputs[Comp::VOCT_INPUT].channels = 8;  // this test requires poly
     sub.params[Comp::VCO2_LEVEL_PARAM].value = 100;
     sub.inputs[Comp::MAIN2_LEVEL_INPUT].channels = 1;
     sub.inputs[Comp::MAIN2_LEVEL_INPUT].setVoltage(10, 0);      // 10 v on channel 0
