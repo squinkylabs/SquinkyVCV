@@ -46,6 +46,12 @@ public:
 		return subValue[side];
 	}
 
+	void setPW(float_4 pw) {
+		simd_assertLE(pw, float_4(1));
+		simd_assertGE(pw, float_4(0));
+		pulseWidth = pw;
+	}
+
 	int _channels = 0;
 private:
 	using MinBlep = dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T>;
@@ -76,7 +82,7 @@ private:
 	const T syncDirection = 1.f;
 
 	static T saw(T phase, T minBlepValue);
-	static T sqr(T phase, T minBlepValue);
+	static T sqr(T phase, T minBlepValue, T pwValue);
 	void doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw, MinBlep& minBlep, int id) const;
 
 };
@@ -281,9 +287,9 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 	const T subBleps0 = subMinBlep[0].process();
 	const T subBleps1 = subMinBlep[1].process();
 
-	mainValue = SimdBlocks::ifelse(mainIsSaw, saw(mainPhase, mainBleps), sqr(mainPhase, mainBleps));
-	subValue[0] = SimdBlocks::ifelse(subIsSaw, saw(subPhase[0], subBleps0), sqr(subPhase[0], subBleps0));
-	subValue[1] = SimdBlocks::ifelse(subIsSaw, saw(subPhase[1], subBleps1), sqr(subPhase[1], subBleps1));
+	mainValue = SimdBlocks::ifelse(mainIsSaw, saw(mainPhase, mainBleps), sqr(mainPhase, mainBleps, pulseWidth));
+	subValue[0] = SimdBlocks::ifelse(subIsSaw, saw(subPhase[0], subBleps0), sqr(subPhase[0], subBleps0, pulseWidth));
+	subValue[1] = SimdBlocks::ifelse(subIsSaw, saw(subPhase[1], subBleps1), sqr(subPhase[1], subBleps1, pulseWidth));
 
 	simd_assertLT(mainPhase, float_4(1.5));
 }
@@ -295,9 +301,10 @@ inline T VoltageControlledOscillator<OV, Q, T, I>::saw(T phase, T blepValue)
 }
 
 template <int OV, int Q, typename T, typename I>
-inline T VoltageControlledOscillator<OV, Q, T, I>::sqr(T phase, T blepValue)
+inline T VoltageControlledOscillator<OV, Q, T, I>::sqr(T phase, T blepValue, T pwValue)
 {
-	T temp = SimdBlocks::ifelse(phase > .5f, T(1.f), T(-1.f));
+//	T temp = SimdBlocks::ifelse(phase > .5f, T(1.f), T(-1.f));
+	T temp = SimdBlocks::ifelse(phase > pwValue, T(1.f), T(-1.f));
 	return temp + blepValue;
 }
 

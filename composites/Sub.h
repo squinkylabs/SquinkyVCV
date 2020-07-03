@@ -173,6 +173,7 @@ private:
     std::shared_ptr<SimpleQuantizer> quantizer;
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> oscillators[4];
     AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(1, 16, 1, 16);
+    AudioMath::ScaleFun<float> pwScaleFn = AudioMath::makeLinearScaler2<float>(0, 100, 0, 1);
      
     LookupTableParams<float> audioTaper;
 
@@ -194,6 +195,7 @@ private:
     void computeDivisors(int32_4& divaOut, int32_4& divbOut);
     void setupWaveforms();
     void setupQuantizer();
+    float_4 computePW(int bank);
 
   //  void computeGain(MixParams& outParams, float mainKnob, const Port& mainCV);
     float computeGain(float knobValue, SqInput& cv, int pairChannel);
@@ -280,6 +282,30 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo)
         ++vcoNumber;
         ++channelPairNumber;
     }
+}
+
+template <class TBase>
+inline float_4 Sub<TBase>::computePW(int bank) 
+{
+ // PULSEWIDTH1_PARAM
+    // TODO: poly mod
+    const float pw1 = pwScaleFn(
+        Sub<TBase>::inputs[PWM1_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[PULSEWIDTH1_PARAM].value,
+        Sub<TBase>::params[PULSEWIDTH1_TRIM_PARAM].value
+    );
+
+    const float pw2 = pwScaleFn(
+        Sub<TBase>::inputs[PWM2_INPUT].getVoltage(0),      // TODO: poly mod
+        Sub<TBase>::params[PULSEWIDTH2_PARAM].value,
+        Sub<TBase>::params[PULSEWIDTH2_TRIM_PARAM].value
+    );
+    float_4 ret;
+    ret[0] = pw1;
+    ret[1] = pw2;
+    ret[2] = pw1;
+    ret[3] = pw2;
+    return ret;
 }
 
 template <class TBase>
@@ -510,6 +536,11 @@ inline void Sub<TBase>::stepn()
     for (int bank = numBanks; bank < 4; ++bank) {
         oscillators[bank].setupSub(activeChannels_m[bank], float_4(0), 4, 4);
     }
+
+     for (int bank = 0; bank < numBanks; ++bank) {
+        float_4 pw = computePW(bank);
+        oscillators[bank].setPW(pw);
+     }
 }
 
 // new version, poly mix (when it works)
