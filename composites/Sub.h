@@ -196,9 +196,11 @@ private:
     void setupWaveforms();
     void setupQuantizer();
     float_4 computePW(int bank);
+  //  float computePWSub(float knobValue, SqInput& cv, int pairChannel) const;
+    float computePWSub(ParamIds knobId, ParamIds trimId, InputIds port, int pairChannel) const;
 
   //  void computeGain(MixParams& outParams, float mainKnob, const Port& mainCV);
-    float computeGain(float knobValue, SqInput& cv, int pairChannel);
+    float computeGain(float knobValue, SqInput& cv, int pairChannel) const;
 };
 
 
@@ -220,19 +222,6 @@ inline void Sub<TBase>::init()
 
     std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even };
     quantizer = std::make_shared<SimpleQuantizer>(scales,  SimpleQuantizer::Scales::_off);
-}
-
-
-template <class TBase>
-inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChannel)
-{
-  //  printf("in compute, passed knob=%f cv is connected = %d\n", knobValue, cv.isConnected());
-    float value = LookupTable<float>::lookup(audioTaper, knobValue * .01f);
-   // printf("after lookup: %f\n", value);
-    value *= cv.isConnected() ? cv.getPolyVoltage(pairChannel) : 10;
-    value *= .1;
-    //printf("final: %f\n", value);
-    return value;
 }
 
 template <class TBase>
@@ -258,9 +247,7 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo)
                 Sub<TBase>::inputs[SUB1B_LEVEL_INPUT],
                 channelPairNumber);
         }
-
-       // printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
-        
+       // printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);     
         ++vcoNumber;
 
         if (doTwo) {
@@ -278,33 +265,45 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo)
                 channelPairNumber);
         }
       //  printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
-
         ++vcoNumber;
         ++channelPairNumber;
     }
 }
 
 template <class TBase>
+inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChannel) const
+{
+  //  printf("in compute, passed knob=%f cv is connected = %d\n", knobValue, cv.isConnected());
+    float value = LookupTable<float>::lookup(audioTaper, knobValue * .01f);
+   // printf("after lookup: %f\n", value);
+    value *= cv.isConnected() ? cv.getPolyVoltage(pairChannel) : 10;
+    value *= .1;
+    //printf("final: %f\n", value);
+    return value;
+}
+
+template <class TBase>
+inline float  Sub<TBase>::computePWSub(ParamIds knobId, ParamIds trimId, InputIds port, int pairChannel) const
+{
+  //  const float cv =  port.getPolyVoltage(pairChannel);
+    const float pw =  pwScaleFn(
+        Sub<TBase>::inputs[port].getPolyVoltage(pairChannel),
+        Sub<TBase>::params[knobId].value,
+        Sub<TBase>::params[trimId].value
+    );
+    return pw;
+}
+
+template <class TBase>
 inline float_4 Sub<TBase>::computePW(int bank) 
 {
- // PULSEWIDTH1_PARAM
-    // TODO: poly mod
-    const float pw1 = pwScaleFn(
-        Sub<TBase>::inputs[PWM1_INPUT].getVoltage(0),      // TODO: poly mod
-        Sub<TBase>::params[PULSEWIDTH1_PARAM].value,
-        Sub<TBase>::params[PULSEWIDTH1_TRIM_PARAM].value
-    );
-
-    const float pw2 = pwScaleFn(
-        Sub<TBase>::inputs[PWM2_INPUT].getVoltage(0),      // TODO: poly mod
-        Sub<TBase>::params[PULSEWIDTH2_PARAM].value,
-        Sub<TBase>::params[PULSEWIDTH2_TRIM_PARAM].value
-    );
     float_4 ret;
-    ret[0] = pw1;
-    ret[1] = pw2;
-    ret[2] = pw1;
-    ret[3] = pw2;
+    int channelPair = bank / 2;
+    ret[0] = computePWSub(PULSEWIDTH1_PARAM, PULSEWIDTH1_TRIM_PARAM, PWM1_INPUT, channelPair);
+    ret[1] = computePWSub(PULSEWIDTH2_PARAM, PULSEWIDTH2_TRIM_PARAM, PWM2_INPUT, channelPair);
+    channelPair++;
+    ret[2] = computePWSub(PULSEWIDTH1_PARAM, PULSEWIDTH1_TRIM_PARAM, PWM1_INPUT, channelPair);
+    ret[3] = computePWSub(PULSEWIDTH2_PARAM, PULSEWIDTH2_TRIM_PARAM, PWM2_INPUT, channelPair);
     return ret;
 }
 
