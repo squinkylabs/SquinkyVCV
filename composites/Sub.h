@@ -240,7 +240,7 @@ template <class TBase>
 inline void Sub<TBase>::normalizeVolume(float& a, float& b, float& c)
 {
     float sum = a + b + c;
-    float comp = 10;        // if quiet, boost by 10x
+    float comp = 7;        // if quiet, boost by this
     if (sum > .5) {
         comp *= (.5 / sum);
     }
