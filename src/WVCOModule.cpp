@@ -55,6 +55,7 @@ public:
         Module* otherModule = getLeftMatchingModule(hostModule); 
         ModuleWidget* otherModuleWidget = getWidgetForModule(otherModule);
         patchVOct(otherModuleWidget, hostWidget);
+        patchModulator(otherModuleWidget, hostWidget);
     }
 
     static bool shouldShowMenu(Module* hostModule) 
@@ -68,11 +69,26 @@ private:
         return !cables.empty();
     }
 
+    static void patchModulator(ModuleWidget* otherModuleWidget, ModuleWidget* myModuleWidget) {
+        auto myFMPort = getInput(myModuleWidget, Comp::LINEAR_FM_INPUT);
+        if (isPortPatched(myFMPort)) {
+            WARN("my FM input already connected\n");
+            return;
+        }
+        auto otherOutput = getOutput(otherModuleWidget, Comp::MAIN_OUTPUT);
+
+        assert(myFMPort->type == PortWidget::INPUT);
+        assert(otherOutput->type == PortWidget::OUTPUT);
+
+         //   (output, input)
+        patchBetweenPorts(otherOutput, myFMPort);
+    }
+
     static void patchVOct(ModuleWidget* otherModuleWidget, ModuleWidget* myModuleWidget) {
         auto myVOctPort = getInput(myModuleWidget, Comp::VOCT_INPUT);
 
         if (!isPortPatched(myVOctPort)) {
-            INFO("my voct not connected\n");
+            WARN("my voct not connected\n");
             return;
         }
         auto otherVOctPort = getInput(otherModuleWidget, Comp::VOCT_INPUT);
@@ -81,8 +97,6 @@ private:
             WARN("other V/Oct port already patched");
             return;
         }
-        WARN("finish patch voct");
-        //patchBetweenPorts();
         PortWidget* source = getOutputThatConnectsToThisInput(myVOctPort);
         patchBetweenPorts(source, otherVOctPort);
     }
@@ -140,6 +154,15 @@ private:
         for (PortWidget* input : moduleWidget->inputs) {
             if (input->portId == portId) {
                 return input;
+            }
+        }
+        return nullptr;
+    }
+
+    static PortWidget* getOutput(ModuleWidget* moduleWidget, int portId) {
+        for (PortWidget* output : moduleWidget->outputs) {
+            if (output->portId == portId) {
+                return output;
             }
         }
         return nullptr;
