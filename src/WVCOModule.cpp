@@ -77,11 +77,14 @@ private:
         }
         auto otherVOctPort = getInput(otherModuleWidget, Comp::VOCT_INPUT);
 
-         if (!isPortPatched(otherVOctPort)) {
+         if (isPortPatched(otherVOctPort)) {
             WARN("other V/Oct port already patched");
             return;
         }
-        WARN("finifhs patch v oct");
+        WARN("finish patch voct");
+        //patchBetweenPorts();
+        PortWidget* source = getOutputThatConnectsToThisInput(myVOctPort);
+        patchBetweenPorts(source, otherVOctPort);
     }
 
     static Module* getLeftMatchingModule(Module* myModule) {
@@ -97,6 +100,17 @@ private:
         return left;
     }
 
+    static PortWidget* getOutputThatConnectsToThisInput(PortWidget* thisInput) {
+        assert(thisInput->type == PortWidget::INPUT);
+        auto cables = APP->scene->rack->getCablesOnPort(thisInput);
+        assert(cables.size() == 1);
+        auto cable = cables.begin();
+        CableWidget* cw = *cable;
+        PortWidget* ret =  cw->outputPort;
+        assert(ret->type == PortWidget::OUTPUT);
+        return ret;
+    }
+
     static ModuleWidget* getWidgetForModule(Module* module) {
         auto rack = ::rack::appGet()->scene->rack;
         for (Widget* w2 : rack->moduleContainer->children) {
@@ -108,6 +122,18 @@ private:
             }
         }
         return nullptr;
+    }
+
+    static void patchBetweenPorts(PortWidget* output, PortWidget* input) {
+        if (isPortPatched(input)) {
+            WARN("can't patch to input that is already patched");
+            return;
+        }
+        CableWidget* cable = new CableWidget();
+        // cable->color = color;
+        cable->setOutput(output);
+        cable->setInput(input);
+        APP->scene->rack->addCable(cable);
     }
 
     static PortWidget* getInput(ModuleWidget* moduleWidget, int portId) {
