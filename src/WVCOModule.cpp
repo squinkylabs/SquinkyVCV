@@ -44,6 +44,34 @@ inline void subsituteDiscreteParamQuantity(const std::vector<std::string>& strin
     module.paramQuantities[paramNumber] = p;
 }
 
+/**
+ * This guy knows how to go out an patch in other instances
+ */
+class WvcoPatcher
+{
+public:
+    static void go(ModuleWidget* hostWidget, Module* hostModule)
+    {
+
+    }
+    static bool shouldShowMenu(Module* hostModule) 
+    {
+        printf("should show called\n");  fflush(stdout);
+        auto shouldShow = false;
+        auto leftExpander = hostModule->leftExpander;
+        if (leftExpander.module) {
+            auto leftModule = leftExpander.module;
+            if (leftModule->model == hostModule->model) {
+                // There is a copy of me to my left
+                shouldShow = true;
+
+            }
+        }
+        printf("should show ret %d\n", shouldShow); fflush(stdout);
+        return shouldShow;
+    }
+};
+
 
 /**
  */
@@ -77,7 +105,6 @@ WVCOModule::WVCOModule()
     onSampleRateChange();
     wvco->init();
 
-   // ParamQuantity* newWaveform = new DiscreteParamQuantity();
     subsituteDiscreteParamQuantity(Comp::getWaveformNames(), *this, Comp::WAVE_SHAPE_PARAM);
 }
 
@@ -129,6 +156,23 @@ void WVCOWidget::appendContextMenu(Menu *menu)
     item = new SqMenuItem_BooleanParam2(module, Comp::SNAP2_PARAM);
     item->text = "Extra Envelope \"Snap\"";
     menu->addChild(item);
+
+    {
+        if (WvcoPatcher::shouldShowMenu(module)) {
+            auto item = new SqMenuItem( []() { return false; }, [this](){
+                // float rawClockFalue = Comp::CLOCK_INPUT_PARAM
+            //  float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
+            //  SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
+            //   const int div = SeqClock::clockRate2Div(rate);
+                assert(module);
+                WvcoPatcher::go(this, module);
+            });
+
+            item->text = "Hookup Modulator";
+            menu->addChild(item);
+        }
+        
+    }
 }
 
 const float knobLeftEdge = 24;
