@@ -180,9 +180,7 @@ public:
     } 
 
     MixParamsAll mixParams;
-
-    static void normalizeVolume(float&, float&, float&);
-
+    static void normalizeVolume(float&, float&, float&, float&, float&, float&);
 private:
 
     std::shared_ptr<SimpleQuantizer> quantizer;
@@ -197,9 +195,12 @@ private:
      */
     int numDualChannels = 1;
     int numBanks = 1;
-    bool vco1HasMixCV = false;
-    bool vco2HasMixCV = false;
-    bool agcEnabled = false;
+  //  bool vco1HasMixCV = false;
+  //  bool vco2HasMixCV = false;
+    bool shouldUpdateVco1Often_m = false;
+    bool shouldUpdateVco2Often_m = false;
+
+    bool agcEnabled_m = false;
 
     Divider divn;
     Divider divm;
@@ -237,16 +238,19 @@ inline void Sub<TBase>::init()
 
 
 template <class TBase>
-inline void Sub<TBase>::normalizeVolume(float& a, float& b, float& c)
+inline void Sub<TBase>::normalizeVolume(float& a, float& b, float& c, float& d, float& e, float& f)
 {
-    float sum = a + b + c;
-    float comp = 7;        // if quiet, boost by this
-    if (sum > .5) {
-        comp *= (.5 / sum);
+    float sum = a + b + c + d + e + f;
+    float comp = 5;        // if quiet, boost by this
+    if (sum > 1) {
+        comp *= (1.f / sum);
     }
     a *= comp;
     b *= comp;
     c *= comp;
+    d *= comp;
+    e *= comp;
+    f *= comp;
 }
 
 template <class TBase>
@@ -254,6 +258,9 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
 {
     int vcoNumber = 0;
     int channelPairNumber = 0;
+
+    assert(!agc || (doOne == doTwo));
+    assert(doOne || doTwo);
 
     // init for this vco
     // TODO: don't do all 8 if not used
@@ -271,11 +278,6 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
                 Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value,  
                 Sub<TBase>::inputs[SUB1B_LEVEL_INPUT],
                 channelPairNumber);
-            if (agc) {
-                normalizeVolume(mixParams.params[vcoNumber].vcoGain,
-                    mixParams.params[vcoNumber].subAGain,
-                    mixParams.params[vcoNumber].subBGain);
-            }
         }
         if (vcoNumber == 0) {
        // printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);     
@@ -295,13 +297,18 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
                 Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value,  
                 Sub<TBase>::inputs[SUB2B_LEVEL_INPUT],
                 channelPairNumber);
-            if (agc) {
-                normalizeVolume(mixParams.params[vcoNumber].vcoGain,
-                    mixParams.params[vcoNumber].subAGain,
-                    mixParams.params[vcoNumber].subBGain);
-            }
         }
       //  printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
+        
+         if (agc) {
+            normalizeVolume(
+                mixParams.params[vcoNumber-1].vcoGain,
+                mixParams.params[vcoNumber-1].subAGain,
+                mixParams.params[vcoNumber-1].subBGain,
+                mixParams.params[vcoNumber].vcoGain,
+                mixParams.params[vcoNumber].subAGain,
+                mixParams.params[vcoNumber].subBGain);
+        }
         ++vcoNumber;
         ++channelPairNumber;
     }
@@ -496,29 +503,34 @@ inline void Sub<TBase>::stepm()
     }
 
     // figure out who has mix inputs patched
-    vco1HasMixCV =  Sub<TBase>::inputs[Sub<TBase>::MAIN1_LEVEL_INPUT].isConnected() ||
+    shouldUpdateVco1Often_m =  Sub<TBase>::inputs[Sub<TBase>::MAIN1_LEVEL_INPUT].isConnected() ||
         Sub<TBase>::inputs[Sub<TBase>::SUB1A_LEVEL_INPUT].isConnected() ||
         Sub<TBase>::inputs[Sub<TBase>::SUB1B_LEVEL_INPUT].isConnected();
 
-    vco1HasMixCV =  Sub<TBase>::inputs[Sub<TBase>::MAIN1_LEVEL_INPUT].isConnected() ||
-        Sub<TBase>::inputs[Sub<TBase>::SUB1A_LEVEL_INPUT].isConnected() ||
-        Sub<TBase>::inputs[Sub<TBase>::SUB1B_LEVEL_INPUT].isConnected();
+    shouldUpdateVco2Often_m =  Sub<TBase>::inputs[Sub<TBase>::MAIN2_LEVEL_INPUT].isConnected() ||
+        Sub<TBase>::inputs[Sub<TBase>::SUB2A_LEVEL_INPUT].isConnected() ||
+        Sub<TBase>::inputs[Sub<TBase>::SUB2B_LEVEL_INPUT].isConnected();
 
-    agcEnabled = Sub<TBase>::params[Sub<TBase>::AGC_PARAM].value > .5f;
+    agcEnabled_m = Sub<TBase>::params[Sub<TBase>::AGC_PARAM].value > .5f;
 
-    // do the gain update for anyone who has no CV
-    if (!vco1HasMixCV || !vco2HasMixCV) {
-        computeGains(!vco1HasMixCV, !vco2HasMixCV, agcEnabled);
+    // if AGC is on, we need to update both VCOs at the same time
+    if (agcEnabled_m && (shouldUpdateVco1Often_m || shouldUpdateVco2Often_m)) {
+        shouldUpdateVco1Often_m = true;
+        shouldUpdateVco2Often_m = true;
     }
 
+    // do the gain update for anyone who has no CV
+    if (!shouldUpdateVco1Often_m || !shouldUpdateVco2Often_m) {
+        computeGains(!shouldUpdateVco1Often_m, !shouldUpdateVco2Often_m, agcEnabled_m);
+    }
 }  
 
 template <class TBase>
 inline void Sub<TBase>::stepn()
 {
     // if either side has a CV connected, then update that now
-    if (vco1HasMixCV || vco2HasMixCV) {
-        computeGains(vco1HasMixCV, vco2HasMixCV, agcEnabled);
+    if (shouldUpdateVco1Often_m || shouldUpdateVco2Often_m) {
+        computeGains(shouldUpdateVco1Often_m, shouldUpdateVco2Often_m, agcEnabled_m);
     }
 
     // get the base pitch in volts from the 2X2 pitch knobs.
@@ -600,34 +612,34 @@ inline void Sub<TBase>::step()
         const MixParams& params0 = this->mixParams.params[vcoNumber++];
         const MixParams& params1 = this->mixParams.params[vcoNumber++];
 
-        const float mixed0 = mains[0] * params0.vcoGain +
+        float mixed0 = mains[0] * params0.vcoGain +
             mains[1] * params1.vcoGain +
             subs0[0] * params0.subAGain +
             subs0[1] * params1.subAGain +
             subs1[0] * params0.subBGain +
             subs1[1] * params1.subBGain;
         
-        const float limit = 10;
+        const float limit = 15;
         assert(mixed0 < limit);
         assert(mixed0 > -limit);
 
+        mixed0 = std::clamp(mixed0, -10, 10);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
 
-         if (channelPairNumber < numDualChannels) {
+        if (channelPairNumber < numDualChannels) {
             const MixParams& params0 = this->mixParams.params[vcoNumber++];
             const MixParams& params1 = this->mixParams.params[vcoNumber++];
 
-            const float mixed0 = mains[2] * params0.vcoGain +
+            float mixed0 = mains[2] * params0.vcoGain +
                 mains[3] * params1.vcoGain +
                 subs0[2] * params0.subAGain +
                 subs0[3] * params1.subAGain +
                 subs1[2] * params0.subBGain +
                 subs1[3] * params1.subBGain;
             
-            const float limit = 10;
             assert(mixed0 < limit);
             assert(mixed0 > -limit);
-
+            std::clamp(mixed0, -10, 10);
             Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
         }
     }
@@ -759,10 +771,10 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
             ret = {1, 16, 4, "VCO 2 subharmonic B divisor"};
             break;
         case Sub<TBase>::VCO1_LEVEL_PARAM:
-            ret = {0, 100, 50, "VCO 1 level"};
+            ret = {0, 100, 75, "VCO 1 level"};
             break;
         case Sub<TBase>::VCO2_LEVEL_PARAM:
-            ret = {0, 100, 50, "VCO 2 level"};
+            ret = {0, 100, 75, "VCO 2 level"};
             break;
         case Sub<TBase>::SUB1A_LEVEL_PARAM:
             ret = {0, 100, 0, "VCO 1 subharmonic A level"};
