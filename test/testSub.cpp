@@ -398,6 +398,40 @@ static void testComp1()
     assertEQ(icomp->getParam(Comp::SUB2B_LEVEL_PARAM).max, 100);
 }
 
+static void testNormalize1()
+{
+    float a=0, b=0, c=.5; 
+    Comp::normalizeVolume(a, b, c);
+    assertEQ(a, 0);
+    assertEQ(b, 0);
+    assertEQ(c, 5);         // 5 is the nominal gain
+
+    a = .25;
+    b = .25;
+    c = 0;
+    Comp::normalizeVolume(a, b, c);
+    assertEQ(a, 2.5);
+    assertEQ(b, 2.5);
+    assertEQ(c, 0);         // 5 is the nominal gain
+
+    a = .1;
+    b = 0;
+    c = 0;
+    Comp::normalizeVolume(a, b, c);
+    assertEQ(a, 1);
+    assertEQ(b, 0);
+    assertEQ(c, 0);         // 5 is the nominal gain
+
+    a = 1;
+    b = 1;
+    c = 1;
+    Comp::normalizeVolume(a, b, c);
+    assertEQ(a, 5.f / 3.f);
+    assertEQ(b, 5.f / 3.f);
+    assertEQ(c, 5.f / 3.f);         // 5 is the nominal gain
+
+}
+
 void testSub()
 {
     printf("\n\n ------ CV test ----\n"); fflush(stdout);
@@ -416,6 +450,7 @@ void testSub()
     testMixCVvco2();
 
     testComp1();
+    testNormalize1();
 
     testSubLevel(false, 0, 0);
     testSubLevel(false, 1, 0);
