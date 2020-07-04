@@ -52,23 +52,71 @@ class WvcoPatcher
 public:
     static void go(ModuleWidget* hostWidget, Module* hostModule)
     {
-
+        Module* otherModule = getLeftMatchingModule(hostModule); 
+        ModuleWidget* otherModuleWidget = getWidgetForModule(otherModule);
+        patchVOct(otherModuleWidget, hostWidget);
     }
+
     static bool shouldShowMenu(Module* hostModule) 
     {
-        printf("should show called\n");  fflush(stdout);
-        auto shouldShow = false;
-        auto leftExpander = hostModule->leftExpander;
+        return bool( getLeftMatchingModule(hostModule));
+    }
+private:
+
+    static bool isPortPatched(PortWidget* portWidget) {
+        auto cables = APP->scene->rack->getCablesOnPort(portWidget);
+        return !cables.empty();
+    }
+
+    static void patchVOct(ModuleWidget* otherModuleWidget, ModuleWidget* myModuleWidget) {
+        auto myVOctPort = getInput(myModuleWidget, Comp::VOCT_INPUT);
+
+        if (!isPortPatched(myVOctPort)) {
+            INFO("my voct not connected\n");
+            return;
+        }
+        auto otherVOctPort = getInput(otherModuleWidget, Comp::VOCT_INPUT);
+
+         if (!isPortPatched(otherVOctPort)) {
+            WARN("other V/Oct port already patched");
+            return;
+        }
+        WARN("finifhs patch v oct");
+    }
+
+    static Module* getLeftMatchingModule(Module* myModule) {
+        Module* left = nullptr;
+        auto leftExpander = myModule->leftExpander;
         if (leftExpander.module) {
             auto leftModule = leftExpander.module;
-            if (leftModule->model == hostModule->model) {
+            if (leftModule->model == myModule->model) {
                 // There is a copy of me to my left
-                shouldShow = true;
-
+                left = leftModule;
             }
         }
-        printf("should show ret %d\n", shouldShow); fflush(stdout);
-        return shouldShow;
+        return left;
+    }
+
+    static ModuleWidget* getWidgetForModule(Module* module) {
+        auto rack = ::rack::appGet()->scene->rack;
+        for (Widget* w2 : rack->moduleContainer->children) {
+            ModuleWidget* modwid = dynamic_cast<ModuleWidget *>(w2);
+            if (modwid) {
+                if (modwid->module == module) {
+                    return modwid;
+                }
+            }
+        }
+        return nullptr;
+    }
+
+    static PortWidget* getInput(ModuleWidget* moduleWidget, int portId) {
+        for (PortWidget* input : moduleWidget->inputs) {
+            if (input->portId == portId) {
+                return input;
+            }
+        }
+        return nullptr;
     }
 };
 
