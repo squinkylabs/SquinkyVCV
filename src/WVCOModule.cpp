@@ -55,6 +55,7 @@ public:
         Module* otherModule = getLeftMatchingModule(hostModule); 
         ModuleWidget* otherModuleWidget = getWidgetForModule(otherModule);
         patchVOct(otherModuleWidget, hostWidget);
+        patchGate(otherModuleWidget, hostWidget);
         patchModulator(otherModuleWidget, hostWidget);
     }
 
@@ -88,7 +89,7 @@ private:
         auto myVOctPort = getInput(myModuleWidget, Comp::VOCT_INPUT);
 
         if (!isPortPatched(myVOctPort)) {
-            WARN("my voct not connected\n");
+            WARN("my V/Oct not connected\n");
             return;
         }
         auto otherVOctPort = getInput(otherModuleWidget, Comp::VOCT_INPUT);
@@ -99,6 +100,23 @@ private:
         }
         PortWidget* source = getOutputThatConnectsToThisInput(myVOctPort);
         patchBetweenPorts(source, otherVOctPort);
+    }
+
+    static void patchGate(ModuleWidget* otherModuleWidget, ModuleWidget* myModuleWidget) {
+        auto myGatePort = getInput(myModuleWidget, Comp::GATE_INPUT);
+
+        if (!isPortPatched(myGatePort)) {
+            WARN("my gate not connected\n");
+            return;
+        }
+        auto otherGatePort = getInput(otherModuleWidget, Comp::GATE_INPUT);
+
+         if (isPortPatched(otherGatePort)) {
+            WARN("other gate port already patched");
+            return;
+        }
+        PortWidget* source = getOutputThatConnectsToThisInput(myGatePort);
+        patchBetweenPorts(source, otherGatePort);
     }
 
     static Module* getLeftMatchingModule(Module* myModule) {
