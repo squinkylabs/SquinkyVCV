@@ -214,7 +214,7 @@ public:
 
     static std::vector<std::string> getWaveformNames()
     {
-        return {"Sine", "Folder", "Saw/T"};
+        return {"Sine", "Wave folder", "Saw<>Triangle"};
     }
 
 private:
@@ -370,12 +370,13 @@ inline void WVCO<TBase>::stepm()
 
     const bool snap = TBase::params[SNAP_PARAM].value > .5f;
     const bool snap2 = TBase::params[SNAP2_PARAM].value > .5f;
+    const bool snap3 = TBase::params[SNAP_PARAM].value > 1.5f;
 
     float k = 1;
     if (snap || snap2) {
         k = .6;
     }
-     if (snap && snap2) {
+     if (snap3 || (snap && snap2)) {
         k = .3;
     }
  
@@ -594,58 +595,58 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0.f, 10.0f, 4, "Octave"};
             break;
         case WVCO<TBase>::FREQUENCY_MULTIPLIER_PARAM:
-            ret = {1.f, 16.0f, 1, "Freq Ratio"};
+            ret = {1.f, 16.0f, 1, "Frequency ratio"};
             break;
         case WVCO<TBase>::FINE_TUNE_PARAM:
-            ret = {-12.0f, 12.0f, 0, "Fine Tune"};
+            ret = {-12.0f, 12.0f, 0, "Fine tune"};
             break;
         case WVCO<TBase>::FM_DEPTH_PARAM:
-         ret = {.0f, 100.0f, 0, "Freq Mod"};
+         ret = {.0f, 100.0f, 0, "Frequency modulation"};
             break;
         case WVCO<TBase>::LINEAR_FM_DEPTH_PARAM:
             ret = {0, 100, 0, "Through-zero FM depth"};
             break;
         case WVCO<TBase>::WAVESHAPE_GAIN_PARAM:
-            ret = {0, 100, 0, "Shape Mod"};
+            ret = {0, 100, 0, "Shape modulation"};
             break;
         case WVCO<TBase>::WAVE_SHAPE_PARAM:
-            ret = {0, 2, 0, "Wave Shape"};
+            ret = {0, 2, 0, "Wave shape"};
             break;
         case WVCO<TBase>::FEEDBACK_PARAM:
             ret = {0, 100, 0, "FM feedback depth"};
             break;
         case WVCO<TBase>::ATTACK_PARAM:
-            ret = {0, 100, 50, "Attack"};
+            ret = {0, 100, 50, "ADSR Attack"};
             break;
         case WVCO<TBase>::DECAY_PARAM:
-            ret = {0, 100, 50, "Decay"};
+            ret = {0, 100, 50, "ADSR Decay"};
             break;
         case WVCO<TBase>::SUSTAIN_PARAM:
-            ret = {0, 100, 50, "Sustain"};
+            ret = {0, 100, 50, "ADSR Sustain"};
             break;
         case WVCO<TBase>::RELEASE_PARAM:
-            ret = {0, 100, 50, "Release"};
+            ret = {0, 100, 50, "ADSR Release"};
             break;
         case WVCO<TBase>::OUTPUT_LEVEL_PARAM:
-            ret = {0, 100, 100, "Level"};
+            ret = {0, 100, 100, "Output level"};
             break;
         case WVCO<TBase>::ADSR_SHAPE_PARAM:
             ret = {0, 1, 0, "ADSR->shape"};
             break;
         case WVCO<TBase>::ADSR_FBCK_PARAM:
-         ret = {0, 1, 0, "ADSR->Feedback"};
+         ret = {0, 1, 0, "ADSR->feedback"};
             break;
         case WVCO<TBase>::ADSR_OUTPUT_LEVEL_PARAM:
-         ret = {0, 1, 0, "ADSR->Output Level"};
+         ret = {0, 1, 0, "ADSR->output Level"};
             break;
         case WVCO<TBase>::ADSR_LFM_DEPTH_PARAM:
          ret = {0, 1, 0, "ADSR->FM Depth"};
             break;
         case WVCO<TBase>::SNAP_PARAM:
-            ret = {0, 1, 1, "ADSR Snap"};
+            ret = {0, 2, 0, "ADSR Snap"};
             break;
          case WVCO<TBase>::SNAP2_PARAM:
-            ret = {0, 1, 1, "ARSR Snap2"};
+            ret = {0, 1, 0, "ARSR Snap2"};
             break;
         default:
             assert(false);

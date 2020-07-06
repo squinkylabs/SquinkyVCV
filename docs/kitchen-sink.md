@@ -57,7 +57,15 @@ Note that all CV input are polyphonic, so individual VCOs can be modulated. If t
 
 **V/Oct CV** Polyphonic Pitch (in volts per octave) input CV. The CV in each channel will determine the base pitch of the VCO for that channel. Also, the number of channels present in the V/Oct input will determine the number of active channels or voices. For example, if a four channel CV is patched into V/Oct, the Kitchen-sink will generate four VCOs.
 
-**FM**
+**Octave knob** sets the base pitch of the VCO, and allows adjustments up and down in even octave steps.
+
+**Ratio knob** multiplies the base pitch of the VCO by an even integer (1, 2, 3). very useful for setting pitch of the  carrier VCO, as the carrier is often an even multiple of the modulator frequency.
+
+**Fine knob** adjusts the CPU pitch up or down by up to an octave.
+
+**Wave control** controls the wave shaper, and has three settings, "sine", "folder", and "Saw/T".
+
+**Level knob**
 **Depth**
 **LFM**
 ****

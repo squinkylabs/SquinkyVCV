@@ -95,7 +95,7 @@ private:
         auto otherVOctPort = getInput(otherModuleWidget, Comp::VOCT_INPUT);
 
          if (isPortPatched(otherVOctPort)) {
-            WARN("other V/Oct port already patched");
+        WARN("othersub V/Oct port already patched");
             return;
         }
         PortWidget* source = getOutputThatConnectsToThisInput(myVOctPort);
@@ -331,11 +331,26 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
     addLabel(Vec(knobX3 - 4, knobY1 - labelAboveKnob), "Fine");
 
 //
+#if 1
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(knobX4-7, knobY1+4),
+        module,
+        Comp::WAVE_SHAPE_PARAM);
+    p->box.size.x = 48;  // width
+    p->box.size.y = 22;   
+    p->text = "Off";
+    p->setLabels( {"sine", "fold", "T/S"});
+    addParam(p);
+#else
+    // knob
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX4, knobY1),
         module,
         Comp::WAVE_SHAPE_PARAM));
+   
+#endif
     addLabel(Vec(knobX4 - 8, knobY1 - labelAboveKnob), "Wave");
 
     // second row
@@ -373,6 +388,15 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
 
 
     // third row
+
+#if 1
+    addParam(SqHelper::createParam<CKSSThree>(
+        icomp,
+        Vec(5, knobY3),
+        module,
+        Comp::SNAP_PARAM));
+#endif
+
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX1, knobY3),
