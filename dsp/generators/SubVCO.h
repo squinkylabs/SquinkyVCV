@@ -219,6 +219,11 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 
 	T oneCrossing = (1.f - (mainPhase - deltaPhase)) / deltaPhase;	
 
+	// OK, we have looked at mainPhase, so now we can do the wrap through zero now.
+	// We will do saws laster
+	wrapVCOPhase<T>(mainPhase);
+
+
 
 	// of 0 crossed, will have 1
 	// 1 -> 2
@@ -251,11 +256,20 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 
 						// note: this value of "2" is a little inaccurate for subs.
 						// almost the same at low-normal freq
-
-					// this is perfect for saw
-					//	T xs = crossingMask & ((-2.f ) * subPhase[subIndex]);
+						// this is perfect for saw
+						//	T xs = crossingMask & ((-2.f ) * subPhase[subIndex]);
 					 	T xs = crossingMask & T(-2.f);
+#if 1	// new, clean way
+						{
+							const float temp = mainPhase[channelNumber];
+							const float divisor = subDivisionAmount[subIndex][channelNumber];
+							const float newPhase = temp / divisor;
+							subPhase[subIndex][channelNumber] = newPhase;
+
+						} 
+#else
 						subPhase[subIndex][channelNumber] = 0;
+#endif
 						subMinBlep[subIndex].insertDiscontinuity(p, xs);
 					}
 				}
@@ -271,7 +285,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 
 	// old comment:  all the saws that overflow get set to zero
 	// we can do scalar, above, and probably save CPU
-	wrapVCOPhase<T>(mainPhase);
+	//wrapVCOPhase<T>(mainPhase);
 	wrapVCOPhase<T>(subPhase[0]);
 	wrapVCOPhase<T>(subPhase[1]);
 	#if 0
