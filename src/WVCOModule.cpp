@@ -263,6 +263,7 @@ void WVCOWidget::appendContextMenu(Menu *menu)
         "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/kitchen-sink.md");
     menu->addChild(manual);
     
+#if 0
     MenuLabel *spacerLabel2 = new MenuLabel();
     menu->addChild(spacerLabel2);
     SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(module, Comp::SNAP_PARAM);
@@ -271,14 +272,11 @@ void WVCOWidget::appendContextMenu(Menu *menu)
     item = new SqMenuItem_BooleanParam2(module, Comp::SNAP2_PARAM);
     item->text = "Extra Envelope \"Snap\"";
     menu->addChild(item);
+#endif
 
     {
         if (WvcoPatcher::shouldShowMenu(module)) {
             auto item = new SqMenuItem( []() { return false; }, [this](){
-                // float rawClockFalue = Comp::CLOCK_INPUT_PARAM
-            //  float rawClockValue = ::rack::appGet()->engine->getParam(module, Comp::CLOCK_INPUT_PARAM);
-            //  SeqClock::ClockRate rate =  SeqClock::ClockRate(int(std::round(rawClockValue)));
-            //   const int div = SeqClock::clockRate2Div(rate);
                 assert(module);
                 WvcoPatcher::go(this, module);
             });
@@ -286,7 +284,6 @@ void WVCOWidget::appendContextMenu(Menu *menu)
             item->text = "Hookup Modulator";
             menu->addChild(item);
         }
-        
     }
 }
 
@@ -303,7 +300,6 @@ const float knobY2 = knobY1 + 1 *  knobDeltaY;
 const float knobY3 = 14 + knobY1 + 2 *  knobDeltaY;
 const float trimY = knobY3 + 66;
 const float trimX = knobX2 - 4;
-
 const float labelAboveKnob = 20;
 
 void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
@@ -427,13 +423,12 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
 
     // fourth row
     //PITCH MOD
-    #if 1
+#if 1
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
         Vec(trimX, trimY),
         module,
         Comp::FM_DEPTH_PARAM));
-    //addLabel(Vec(knobX4 , knobY4 - labelAboveKnob), "Mod");
 #endif
 }
 
@@ -486,8 +481,6 @@ const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
 
 const float jacksY1 = 276;
 const float jacksY2 = jacksY1 + 46;
-
-
 
 void WVCOWidget::addJacks(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
 

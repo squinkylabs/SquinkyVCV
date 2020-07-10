@@ -11,11 +11,21 @@ Like the Moog unit each "voice" has two fundamentals, and each fundamental has t
 
 There is a waveform control that’s the same as the Moog Square, saw, and a mixture.
 
-By their nature, the subharmonics will often be somewhat out of tune with an equal tempered scale. It’s probably best to read the Moog manual or watch a demo to learn more about this, and why you might want to use a just intonation quantizer.
+By their nature, the subharmonics will often be somewhat out of tune with an equal tempered scale. We attempt to explain this in the section below about harmony. Other information can be found in the Moog manual or by watching a demo to learn more about this, and why you might want to use a just intonation quantizer.
 
-The built in quantizer will quantize what comes in the V/Oct input. Like the Moog, the scale of the quantizer is always based on "C". If you want to get other keys you need to offset the CV, then re-tune it with the pitch  controls. It could be that we want the ability to just set the root note directly.
+The built in quantizer will quantize what comes in the V/Oct input. Like the Moog, the scale of the quantizer is always based on "C". If you want to get other keys you need to offset the CV, then re-tune it with the pitch  controls.
 
-Main limitations: Glitches when you sweep the VCO division rate. Only 8 voices of polyphony.
+## The basic architecture
+
+One of the unusual things about this VCO is that each "voice" always has a pair of VCOs which we call 1 and 2. There is a full set of control and CV for each VCO in the Pair. They are completely independent except for two crucial things.
+
+There is only V/Oct per voice. So the 1 and 2 VCOs see the same V/Oct input, if the input is monophonic it will drive both VCO 1 and 2.
+
+Also, there is a single output that 1 and 2 are mixed into. So the output is a six input mixer that mixes all size of the VCOs and sub in the pair.
+
+The main (fundamental) VCO has a choice of waveform: Saw or Sq for Sawtooth and Square. Note that Sq is not limited to a square - the PW control and PWM input let you change the pulse width.
+
+Each VCO in the pair also has two subhamonics available. The subharmonics are derived directly from the main VCO - they will always be an exact integer division of the main VCO output.
 
 ## A bit about the harmony
 
@@ -71,3 +81,13 @@ For the 12 note scale we used:
 * sixth: 5/3.
 * minor seventh: 9/5.
 * seventh: 15/8.
+
+## The controls
+
+**Oct, Semi, and Fine** combine to set the initial pitch of the VCO and the subharmonics derived from that VCO.
+
+**Waveform**
+
+**Vol** the volume of the fundamental waveform.
+
+## The jack

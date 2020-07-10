@@ -171,7 +171,7 @@ public:
         ADSR_OUTPUT_LEVEL_PARAM,
         ADSR_LFM_DEPTH_PARAM,
         SNAP_PARAM,
-        SNAP2_PARAM,
+        SNAP2_PARAM,                // This is unused now
         NUM_PARAMS
     };
 
@@ -214,7 +214,7 @@ public:
 
     static std::vector<std::string> getWaveformNames()
     {
-        return {"Sine", "Wave folder", "Saw<>Triangle"};
+        return {"Sine", "Wave folder", "Triangle<>Saw"};
     }
 
 private:
@@ -595,7 +595,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0.f, 10.0f, 4, "Octave"};
             break;
         case WVCO<TBase>::FREQUENCY_MULTIPLIER_PARAM:
-            ret = {1.f, 16.0f, 1, "Frequency ratio"};
+            ret = {1.f, 16.0f, 1, "Frequency Ratio"};
             break;
         case WVCO<TBase>::FINE_TUNE_PARAM:
             ret = {-12.0f, 12.0f, 0, "Fine tune"};
@@ -604,7 +604,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
          ret = {.0f, 100.0f, 0, "Frequency modulation"};
             break;
         case WVCO<TBase>::LINEAR_FM_DEPTH_PARAM:
-            ret = {0, 100, 0, "Through-zero FM depth"};
+            ret = {0, 100, 0, "Through-zero FM Depth"};
             break;
         case WVCO<TBase>::WAVESHAPE_GAIN_PARAM:
             ret = {0, 100, 0, "Shape modulation"};
@@ -613,7 +613,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 2, 0, "Wave shape"};
             break;
         case WVCO<TBase>::FEEDBACK_PARAM:
-            ret = {0, 100, 0, "FM feedback depth"};
+            ret = {0, 100, 0, "FM Feedback depth"};
             break;
         case WVCO<TBase>::ATTACK_PARAM:
             ret = {0, 100, 50, "ADSR Attack"};
@@ -628,24 +628,24 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 100, 50, "ADSR Release"};
             break;
         case WVCO<TBase>::OUTPUT_LEVEL_PARAM:
-            ret = {0, 100, 100, "Output level"};
+            ret = {0, 100, 100, "output Level"};
             break;
         case WVCO<TBase>::ADSR_SHAPE_PARAM:
-            ret = {0, 1, 0, "ADSR->shape"};
+            ret = {0, 1, 0, "ADSR->Shape"};
             break;
         case WVCO<TBase>::ADSR_FBCK_PARAM:
-         ret = {0, 1, 0, "ADSR->feedback"};
+         ret = {0, 1, 0, "ADSR->Feedback"};
             break;
         case WVCO<TBase>::ADSR_OUTPUT_LEVEL_PARAM:
          ret = {0, 1, 0, "ADSR->output Level"};
             break;
         case WVCO<TBase>::ADSR_LFM_DEPTH_PARAM:
-         ret = {0, 1, 0, "ADSR->FM Depth"};
+         ret = {0, 1, 0, "ADSR->LFM Depth"};
             break;
         case WVCO<TBase>::SNAP_PARAM:
             ret = {0, 2, 0, "ADSR Snap"};
             break;
-         case WVCO<TBase>::SNAP2_PARAM:
+        case WVCO<TBase>::SNAP2_PARAM:
             ret = {0, 1, 0, "ARSR Snap2"};
             break;
         default:

@@ -57,11 +57,7 @@ This will save a ton of time if you are doing two or more operators of FM.
 
 If two kitchen-sinks are next to each other, the one on the right will have a new item in its context menu: "hookup modulator". The command will "reach into" the module to the left and patch it up to be an FM modulator. The module on the right will be the carrier.
 
-## The controls and input jacks
-
-**Gate CV** Polyphonic gate input CV. The CV in each channel is the gate to the ADSR for that channel.
-
-**V/Oct CV** Polyphonic Pitch (in volts per octave) input CV. The CV in each channel will determine the base pitch of the VCO for that channel. Also, the number of channels present in the V/Oct input will determine the number of active channels or voices. For example, if a four channel CV is patched into V/Oct, the Kitchen-sink will generate four VCOs.
+## The controls
 
 **Octave knob** sets the base pitch of the VCO, and allows adjustments up and down in even octave steps.
 
@@ -79,12 +75,35 @@ If two kitchen-sinks are next to each other, the one on the right will have a ne
 
 **ADSR->Depth switch** will apply the ADSR to the depth knob.
 
-**LFM** is the input jack for the FM modulator. To do two (or more) operator FM, a modulator signal must be patched into the LFM input. Then the depth control will set the LFM depth. Without a signal in the LFM input the only FM that can be done is with the feedback path.
-
 **Fdbck knob** determines how much of the VCOs sine wave output is sent back to the modulator input. While feedback FM is not as sophisticated as multi-operator FM, it has it's uses. And it's one of several ways a single kitchen-sink can produce dynamic timbres.
 
-**Sync input** a second VCO may be patched into the sync input to generate the classic VCO sync sound. If you use the sync input, remember that the sync input will be the modulator, and it works best if it is lower in pitch than kitchen sync.
+**ADSR->Fbck switch**  will apply the ADSR to the Fbck knob.
+
+**Shape knob** does different things depending on the setting of the Wave control. For the wave-folder weveform, the shape controls the amount of folding. Increasing will introduce more and more harmonics. For the Triangle<>Saw waveform it will be a triangle when the knob is all the way down, and gradually will morph to a sawtooth as the shape is increased. For the sin waveform it does nothing.
+
+**ADSR->shape switch**  will apply the ADSR to the Shape knob.
+
+**Snap switch** controls the amount of "snap" in the ADSR. Snap mimics the shape of the Mood envelope generators. settings are 0 for no snap (normal adsr) 1 for a bit of snap, and 2 for more snap. See text above for more on snap.
+
+**A, D, S, R knobs** control the Attack, Decay, Sustain, and Release of the internal ADSR.
 
 **Mod knob** The mod knob controls the pitch modulation depth. Not super useful when using as part of a multi operator FM patch, but useful with the wave-shaper and the other waveforms.
 
-**Mod input** The exponential FM input. A typical use would be to patch an LFO here to create a vibrato effect. Note that there is an attenuverter above the mod input that may be used to scale and/or invert the modulation.
+**FM knob** is a small attenuverter above the FM jack. It controls the amount of the FM signal to apply to the VCO pitch.
+
+## The input jacks
+
+**Gate CV** Polyphonic gate input CV. The CV in each channel is the gate to the ADSR for that channel.
+
+**V/Oct CV** Polyphonic Pitch (in volts per octave) input CV. The CV in each channel will determine the base pitch of the VCO for that channel. Also, the number of channels present in the V/Oct input will determine the number of active channels or voices. For example, if a four channel CV is patched into V/Oct, the Kitchen-sink will generate four VCOs.
+
+**FM input** The exponential FM input. A typical use would be to patch an LFO here to create a vibrato effect. Note that there is an attenuverter above the mod input that may be used to scale and/or invert the modulation.
+
+**Depth** is the Linear FM depth CV. It combines with the Depth knob and the ADSR->Depth switch to control the amount of through zero linear FM.
+
+**LFM** is the input jack for the FM modulator. To do two (or more) operator FM, a modulator signal must be patched into the LFM input. Then the depth control will set the LFM depth. Without a signal in the LFM input the only FM that can be done is with the feedback path.
+
+**Fbck** input is combined with the Fbck knob and the ADSR->Fbck swtich
+**Sync input** a second VCO may be patched into the sync input to generate the classic VCO sync sound. If you use the sync input, remember that the sync input will be the modulator, and it works best if it is lower in pitch than kitchen sync.
+
+
