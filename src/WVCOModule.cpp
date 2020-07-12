@@ -437,8 +437,8 @@ class SqBlueButton : public ToggleButton
 public:
     SqBlueButton()
     {
-        addSvg("res/square-button-01.svg");
-        addSvg("res/square-button-02.svg");
+        addSvg("res/oval-button-up.svg");
+        addSvg("res/oval-button-down.svg");
     }
 };
 

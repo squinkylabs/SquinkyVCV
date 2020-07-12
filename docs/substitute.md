@@ -1,11 +1,6 @@
 # Substitute
 
-Substitute is a copy of the VCOs from the Moog Subharmonicon. It’s not finished, but it’s pretty close now. It’s implemented from the Fundamental VCO-1, which has been heavily modified to generate the subs. This VCO has very low aliasing. So, unlike the divisions you would get with a typical divider, there is almost no aliasing in these subs.
-
-Oh, except there is a pretty bad bug that while the Sawtooth subs are very clean, the square wave subs have a lot of digital grunge in them. I'd like to get rid of it, but so far have not been able to.
-
-
-At this point it might be best to consult the Moog manual or a video to learn about this gizmo.
+Substitute is a copy of the VCOs from the Moog Subharmonicon. It’s adapted from the Fundamental VCO-1, which has been heavily modified to generate the subs. This VCO has very low aliasing. So, unlike the divisions you would get with a typical divider, there is almost no aliasing in these subs.
 
 Like the Moog unit each "voice" has two fundamentals, and each fundamental has two subharmonics.
 
@@ -21,7 +16,7 @@ One of the unusual things about this VCO is that each "voice" always has a pair 
 
 There is only V/Oct per voice. So the 1 and 2 VCOs see the same V/Oct input, if the input is monophonic it will drive both VCO 1 and 2.
 
-Also, there is a single output that 1 and 2 are mixed into. So the output is a six input mixer that mixes all size of the VCOs and sub in the pair.
+Also, there is a single output that 1 and 2 are mixed into. So the output is a six input mixer that mixes all size of the VCOs and subs in the pair.
 
 The main (fundamental) VCO has a choice of waveform: Saw or Sq for Sawtooth and Square. Note that Sq is not limited to a square - the PW control and PWM input let you change the pulse width.
 
@@ -41,11 +36,11 @@ While it's fine to just use this gizmo to get giant bass sounds with lots of sub
 
 We are used to normal harmonics that occur at even multiples of the fundamental, 2X is an octave up, 3X is an octave and a perfect fifth, 5X is two octaves and a perfect major third, etc... Of course in the 12 tone equal tempered tuning system the actual frequencies of fifths and thirds isn't the same as the "perfect" intervals, but they are "close enough for classical".
 
-The subharmonics, however, are a different story. They do not occur much in nature. Some of them are at even octaves below the fundamental, but the rest of them are at pitches that can be quite far from any interval in the 12 tone equal tempered scale. The result is that if you tune the VCOs up to a high enough pitch, and set the subs to 1/5 or anything other than even octaves, the note will be out of tune. In general the farther you go down into the subs, the more out of tune they are. Often quite out of tune!
+The subharmonics, however, are a different story. They do not occur much in nature. Some of them are at even octaves below the fundamental, but the rest of them are at pitches that can be quite far from any interval in the 12 tone equal tempered scale. The result is that if you tune the VCOs up to a high enough pitch, and set the subs to 1/5 or anything other than even octaves, the subharmonic will be out of tune. In general the farther you go down into the subs, the more out of tune they are. Often quite out of tune!
 
 But - these out of tune subharmonics are in many cases "in tune" in a Just Intoned scale! That's why there is a just intoned quantizer included.
 
-So it you use the quantizer set to just intonation (7 or 12 tones), all those "out of tune" subharmonics aren't out of tune any more. But they will be out of tune with other instruments or patches that are in equal tempered.
+So it you use the quantizer set to just intonation (7 or 12 tones), all those "out of tune" subharmonics aren't out of tune any more. But they will be out of tune with other instruments or patches that are in equal tempered tuning.
 
 That gives some obvious choices when using Substitute:
 
@@ -86,8 +81,20 @@ For the 12 note scale we used:
 
 **Oct, Semi, and Fine** combine to set the initial pitch of the VCO and the subharmonics derived from that VCO.
 
-**Waveform**
+**Waveform** is independent per side, so there is one selector per side. When set to saw
 
-**Vol** the volume of the fundamental waveform.
+**Vol** the volume of the fundamental waveform. Mix is square for the fundamental and sawtooth for the subs.
 
-## The jack
+**Sub A and B** the volume for the two subharmonics.
+
+**PW** sets the pulse with for any VCOs on that side that are set to square.
+
+**Div A and B** the frequency ratio between the sub and the fundamental. For example, "3" means that the frequency of the sub is one third of the fundamental.
+
+**The row of small knobs** are attenuverters that scale and invert the CV inputs below them.
+
+## The jacks
+
+The lower row of jack have six CV input to control the mixing of the 6 VCO source, and the audio output.
+
+The upper row of jacks feed attenuverters and the get added to the knobs above that. The vertical lines show which jack is associated with which knob and attenuverter.
