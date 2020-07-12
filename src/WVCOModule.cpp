@@ -302,6 +302,25 @@ const float trimY = knobY3 + 66;
 const float trimX = knobX2 - 4;
 const float labelAboveKnob = 20;
 
+class SqBlueButton : public ToggleButton 
+{
+public:
+    SqBlueButton()
+    {
+        addSvg("res/oval-button-up.svg");
+        addSvg("res/oval-button-down.svg");
+    }
+};
+
+struct SqTrimpot24 : app::SvgKnob {
+	SqTrimpot24() {
+		minAngle = -0.75 * M_PI;
+		maxAngle = 0.75 * M_PI;
+	//	setSvg(APP->window->loadSvg(asset::system("res/ComponentLibrary/Trimpot.svg")));
+        setSvg(SqHelper::loadSvg("res/trimpot-24.svg"));
+	}
+};
+
 void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
 
     // first row
@@ -424,23 +443,13 @@ void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp)
     // fourth row
     //PITCH MOD
 #if 1
-    addParam(SqHelper::createParam<Trimpot>(
+    addParam(SqHelper::createParam<SqTrimpot24>(
         icomp,
         Vec(trimX, trimY),
         module,
         Comp::FM_DEPTH_PARAM));
 #endif
 }
-
-class SqBlueButton : public ToggleButton 
-{
-public:
-    SqBlueButton()
-    {
-        addSvg("res/oval-button-up.svg");
-        addSvg("res/oval-button-down.svg");
-    }
-};
 
 const float switchRow = knobY2 + 38;
 const float buttonXShift = 3;
