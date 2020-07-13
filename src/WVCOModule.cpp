@@ -317,13 +317,7 @@ public:
     }
 };
 
-struct SqTrimpot24 : app::SvgKnob {
-	SqTrimpot24() {
-		minAngle = -0.75 * M_PI;
-		maxAngle = 0.75 * M_PI;
-        setSvg(SqHelper::loadSvg("res/trimpot-24.svg"));
-	}
-};
+
 
 void WVCOWidget::addKnobs(WVCOModule *module, std::shared_ptr<IComposite> icomp) {
 

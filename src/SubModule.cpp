@@ -70,15 +70,18 @@ struct SubWidget : ModuleWidget
         semitoneDisplay2.step();
     }
 
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
+
+    Label* addLabelx(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
         label->box.pos = v;
         label->text = str;
         label->color = color;
+        label->fontSize = 14;
         addChild(label);
         return label;
     }
+
 
 
 
@@ -107,16 +110,20 @@ void SubWidget::appendContextMenu(Menu *menu)
 
 const float knobLeftEdge = 18;
 const float knobDeltaX = 46;
-const float knobX1 = knobLeftEdge;
-const float knobX2 = knobLeftEdge + 1 * knobDeltaX;
-const float knobX3 = knobLeftEdge + 2 * knobDeltaX;
-const float knobX4 = knobLeftEdge + 3 * knobDeltaX;
+const float knobX1 = 14;
+const float knobX2 =62;
+const float knobX3 = 110;
+//const float knobX4 = knobLeftEdge + 3 * knobDeltaX;
 
-const float knobY1 = 60;
+const float knobX4 = 218;
+const float knobX5 = 266;
+const float knobX6 = 314;
+
+const float knobY1 = 55;
 const float knobDeltaY = 70;
-const float knobY2 = knobY1 + 1 *  knobDeltaY;
-const float knobY3 = knobY1 + 2 *  knobDeltaY - 12;
-const float knobY4 = knobY3 + 50;
+const float knobY2 = 115;
+const float knobY3 = 178;
+const float knobY4 = 229;
 
 const float labelAboveKnob = 20;
 
@@ -132,6 +139,19 @@ const float widthHP = 24;
 const float totalWidth = widthHP * RACK_GRID_WIDTH;
 const float middle = totalWidth / 2;
 
+
+const float jacksX1 = 17;
+//const float jacksDeltaX = 38;
+const float jacksX2 = 65;
+const float jacksX3 = 112.5;
+const float jacksX4 = 221;
+const float jacksX5 = 269;
+const float jacksX6 = 317.5;
+
+const float jacksY1 = 270; 
+const float jacksY2 = 328; 
+
+const float jackOffsetX = 3;
 /** 
  * side = 0 for left / 1
  *      1 for right / 2
@@ -140,7 +160,7 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
 {
     assert(side >= 0 && side <= 1);
    // const float xOffset = side ? knob2XOffset : 0;
-
+#if 0
     auto xfunc = [](float xOrig, int side) {
         if (side == 0) {
             return xOrig;
@@ -148,102 +168,97 @@ void SubWidget::addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, i
             return totalWidth - (xOrig + 30);
         }
     };
+#endif
 
     SemitoneDisplay& semiDisp = side ? semitoneDisplay2 : semitoneDisplay1;
     // first row
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(xfunc(knobX1, side), knobY1),
+        Vec(side ? knobX6 : knobX1, knobY1),
         module,
         Comp::OCTAVE1_PARAM + side));
     //addLabel(Vec(xfunc(knobX1, side) - 13, knobY1 - labelAboveKnob), "Octave");
     semiDisp.setOctLabel(
-        addLabel(Vec(xfunc(knobX1, side) - 8, knobY1 - labelAboveKnob), "Octave"),
+        addLabelx(Vec(side ? 311 : 11, 35), "Octave"),
         Comp::OCTAVE1_PARAM + side);
 
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(xfunc(knobX2, side), knobY1),
+        Vec(side ? knobX5 : knobX2, knobY1),
         module,
         Comp::SEMITONE1_PARAM + side));
     //addLabel(Vec(xfunc(knobX2, side) - 3, knobY1 - labelAboveKnob),  "Semi");
     semiDisp.setSemiLabel(
-        addLabel(Vec(xfunc(knobX2, side) - 13, knobY1 - labelAboveKnob), "Semi"),
+        addLabelx(Vec(side ? 262 : 49, knobY1 - labelAboveKnob), "Semi"),
         Comp::SEMITONE1_PARAM + side);
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(xfunc(knobX3, side), knobY1),
+        Vec(side ? knobX4 : knobX3, knobY1),
         module,
         Comp::FINE1_PARAM + side));
-    addLabel(Vec(xfunc(knobX3, side) - 3, knobY1 - labelAboveKnob),  "Fine");
+    //addLabel(Vec(xfunc(knobX3, side) - 3, knobY1 - labelAboveKnob),  "Fine");
 
     // second row
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(xfunc(knobX1, side), knobY2),
+        Vec(side ? knobX6 : knobX1, knobY2),
         module,
         Comp::VCO1_LEVEL_PARAM + side));
-    addLabel(Vec(xfunc(knobX1, side) - 4, knobY2 - labelAboveKnob), 
-        "Vol");
+    //addLabel(Vec(xfunc(knobX1, side) - 4, knobY2 - labelAboveKnob),    "Vol");
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(xfunc(knobX2, side), knobY2),
+        Vec(side ? knobX5 : knobX2, knobY2),
         module,
         Comp::SUB1A_LEVEL_PARAM + side));
-    addLabel(Vec(xfunc(knobX2, side) - 8, knobY2 - labelAboveKnob), 
-        "Sub A");
+    //addLabel(Vec(xfunc(knobX2, side) - 8, knobY2 - labelAboveKnob),   "Sub A");
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(xfunc(knobX3, side), knobY2),
+        Vec(side ? knobX4 : knobX3, knobY2),
         module,
         Comp::SUB1B_LEVEL_PARAM + side));
-    addLabel(Vec(xfunc(knobX3, side) - 8, knobY2 - labelAboveKnob), 
-        "Sub B");
+    //addLabel(Vec(xfunc(knobX3, side) - 8, knobY2 - labelAboveKnob),   "Sub B");
 
 
     //----------------------- third row --------------------------
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(xfunc(knobX1, side), knobY3),
+        Vec(side ? knobX6 : knobX1, knobY3),
         module,
         Comp::PULSEWIDTH1_PARAM + side));
-    addLabel(Vec(xfunc(knobX1, side) - 6, knobY3 - labelAboveKnob), 
-        "PW"); 
+    //addLabel(Vec(xfunc(knobX1, side) - 6, knobY3 - labelAboveKnob),       "PW"); 
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(xfunc(knobX2, side), knobY3),
+        Vec(side ? knobX5 : knobX2, knobY3),
         module,
         Comp::SUB1A_TUNE_PARAM + side));
-    addLabel(Vec(xfunc(knobX2, side) - 6, knobY3 - labelAboveKnob), 
-        "Div A");
+    //addLabel(Vec(xfunc(knobX2, side) - 6, knobY3 - labelAboveKnob),   "Div A");
 
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(xfunc(knobX3, side), knobY3),
+        Vec(side ? knobX4 : knobX3, knobY3),
         module,
         Comp::SUB1B_TUNE_PARAM + side));
-    addLabel(Vec(xfunc(knobX3, side) - 6, knobY3 - labelAboveKnob), 
-        "Div B");
+    //addLabel(Vec(xfunc(knobX3, side) - 6, knobY3 - labelAboveKnob),   "Div B");
 
 
     // trimmers
-    addParam(SqHelper::createParam<Trimpot>(
+    addParam(SqHelper::createParam<SqTrimpot24>(
         icomp,
-        Vec(xfunc(knobX1+1, side) +trimXOffset, knobY4),
+        Vec(side ? jacksX6 : jacksX1, knobY4),
         module,
         Comp::PULSEWIDTH1_TRIM_PARAM + side));
-    addParam(SqHelper::createParam<Trimpot>(
+    addParam(SqHelper::createParam<SqTrimpot24>(
         icomp,
-        Vec(xfunc(knobX2+1, side) +trimXOffset, knobY4),
+        Vec(side ? jacksX5 : jacksX2, knobY4),
         module,
         Comp::SUB1A_TUNE_TRIM_PARAM + side));
-    addParam(SqHelper::createParam<Trimpot>(
+    addParam(SqHelper::createParam<SqTrimpot24>(
         icomp,
-        Vec(xfunc(knobX3+1, side) +trimXOffset, knobY4),
+        Vec(side ? jacksX4 : jacksX3, knobY4),
         module,
         Comp::SUB1B_TUNE_TRIM_PARAM + side));
 }
@@ -288,19 +303,10 @@ void SubWidget::addMiddleControls(SubModule *module, std::shared_ptr<IComposite>
     addParam(p);
 }
 
-const float jacksX1 = 24;
-const float jacksDeltaX = 38;
-const float jacksX2 = jacksX1 + 1 * jacksDeltaX;
-const float jacksX3 = jacksX1 + 2 * jacksDeltaX;
-const float jacksX4 = jacksX1 + 3 * jacksDeltaX;
-const float jacksX5 = jacksX1 + 4 * jacksDeltaX;
 
-const float jacksY1 = 264; // 230;
-const float jacksY2 = 322; // 330; //300;
-
-const float jackOffsetX = 3;
 void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, int side)
 {
+    #if 0
     auto xfunc = [](float xOrig, int side) {
         if (side == 0) {
             return xOrig;
@@ -309,60 +315,58 @@ void SubWidget::addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, i
             return totalWidth - (xOrig + 28);
         }
     };
+    #endif
 
     //-------------- first row -------------------
     addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX1, side), jacksY1),
+        Vec(side ? jacksX6 : jacksX1, jacksY1),
         module,
         Comp::PWM1_INPUT+side));
 
     addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX2, side), jacksY1),
+        Vec(side ? jacksX5 : jacksX2, jacksY1),
         module,
         Comp::SUB1A_TUNE_INPUT+side));
     addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX3, side), jacksY1),
+        Vec(side ? jacksX4 : jacksX3, jacksY1),
         module,
         Comp::SUB1B_TUNE_INPUT+side));
 
     //------------------ second row ------------------
     addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX1, side), jacksY2),
+        Vec(side ? jacksX6 : jacksX1, jacksY2),
         module,
         Comp::MAIN1_LEVEL_INPUT+side));
-    addLabel(Vec(xfunc(knobX1, side) - 6, jacksY2 - labelAboveKnob), 
-        "Vol");
+    //addLabel(Vec(xfunc(knobX1, side) - 6, jacksY2 - labelAboveKnob),       "Vol");
 
     addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX2, side), jacksY2),
+        Vec(side ? jacksX5 : jacksX2, jacksY2),
         module,
         Comp::SUB1A_LEVEL_INPUT+side));
-    addLabel(Vec(xfunc(knobX2, side) - 6, jacksY2 - labelAboveKnob), 
-        "Sub A");
+    //addLabel(Vec(xfunc(knobX2, side) - 6, jacksY2 - labelAboveKnob),     "Sub A");
 
     addInput(createInput<PJ301MPort>(
-        Vec(xfunc(knobX3, side), jacksY2),
+        Vec(side ? jacksX4 : jacksX3, jacksY2),
         module,
         Comp::SUB1B_LEVEL_INPUT+side));
-    addLabel(Vec(xfunc(knobX3, side) - 6, jacksY2 - labelAboveKnob), 
-        "Sub B");
+    //addLabel(Vec(xfunc(knobX3, side) - 6, jacksY2 - labelAboveKnob),      "Sub B");
 
 }
 
 void SubWidget::addMiddleJacks(SubModule *module, std::shared_ptr<IComposite> icomp) {
-    const float jacksMiddle = middle - 10;
+    const float jacksMiddle = 168;
     // middle ones
     addInput(createInput<PJ301MPort>(
         Vec(jacksMiddle, jacksY1),
         module,
         Comp::VOCT_INPUT));
-    addLabel(Vec(jacksMiddle - 10, jacksY1 - labelAboveKnob), "V/Oct");
+    //addLabel(Vec(jacksMiddle - 10, jacksY1 - labelAboveKnob), "V/Oct");
 
     addOutput(createOutput<PJ301MPort>(
         Vec(jacksMiddle, jacksY2),
         module,
         Comp::MAIN_OUTPUT));
-    addLabel(Vec(jacksMiddle - 7, jacksY2 - labelAboveKnob), "Out");
+    //addLabel(Vec(jacksMiddle - 7, jacksY2 - labelAboveKnob), "Out");
 }
 
 /**
@@ -379,9 +383,9 @@ SubWidget::SubWidget(SubModule *module) :
     setModule(module);
 
     // box.size = Vec(totalWidth, RACK_GRID_HEIGHT);
-    SqHelper::setPanel(this, "res/sub_panel.svg");
+    SqHelper::setPanel(this, "res/substitute-panel.svg");
 
-    addLabel(Vec(140, 14), "Substitute");
+    //addLabel(Vec(140, 14), "Substitute");
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
