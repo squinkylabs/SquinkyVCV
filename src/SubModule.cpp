@@ -143,12 +143,12 @@ const float middle = totalWidth / 2;
 const float jacksX1 = 17;
 //const float jacksDeltaX = 38;
 const float jacksX2 = 65;
-const float jacksX3 = 112.5;
+const float jacksX3 = 113;
 const float jacksX4 = 221;
 const float jacksX5 = 269;
-const float jacksX6 = 317.5;
+const float jacksX6 = 317;
 
-const float jacksY1 = 270; 
+const float jacksY1 = 268; 
 const float jacksY2 = 328; 
 
 const float jackOffsetX = 3;
