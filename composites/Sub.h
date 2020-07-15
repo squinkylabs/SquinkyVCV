@@ -241,9 +241,11 @@ template <class TBase>
 inline void Sub<TBase>::normalizeVolume(float& a, float& b, float& c, float& d, float& e, float& f)
 {
     float sum = a + b + c + d + e + f;
-    float comp = 5;        // if quiet, boost by this
-    if (sum > 1) {
-        comp *= (1.f / sum);
+    float comp = 4;        // if quiet, boost by this
+
+    const float threshold = 1;      // was 1
+    if (sum > threshold) {
+        comp *= (threshold / sum);
     }
     a *= comp;
     b *= comp;
@@ -308,6 +310,19 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
                 mixParams.params[vcoNumber].vcoGain,
                 mixParams.params[vcoNumber].subAGain,
                 mixParams.params[vcoNumber].subBGain);
+        } else {
+            // This stuff could all be done in normal knob scaling code.
+            const float normBoost = 2;
+            if (doOne) {
+                mixParams.params[vcoNumber-1].vcoGain *= normBoost;
+                mixParams.params[vcoNumber-1].subAGain *= normBoost;
+                mixParams.params[vcoNumber-1].subBGain *= normBoost;
+            }
+            if (doTwo) {
+                mixParams.params[vcoNumber].vcoGain *= normBoost;
+                mixParams.params[vcoNumber].subAGain *= normBoost;
+                mixParams.params[vcoNumber].subBGain *= normBoost;
+            }
         }
         ++vcoNumber;
         ++channelPairNumber;
