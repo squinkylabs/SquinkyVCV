@@ -126,7 +126,7 @@ void MixStereoWidget::appendContextMenu(Menu *menu)
 
     ManualMenuItem* manual = new ManualMenuItem(
         "ExTwo manual",
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/extwo.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/extwo.md");
     menu->addChild(manual);
     
     MenuLabel *spacerLabel2 = new MenuLabel();

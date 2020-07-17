@@ -144,23 +144,23 @@ Running your plugin outside of VCV Rack
 Taking accurate repeatable measurements.
 Fooling your compiler into not optimizing your plugin code away.
 This last one is a little non-intuitive, but if you run your code in a test harness, the compiler may see that you are always putting in zero for the input, or aren’t using the output. In that case it may realize the plugin isn’t doing anything, and generate no code for it.
-Here is our measurement framework: <https://github.com/squinkylabs/SquinkyVCV/blob/master/test/MeasureTime.h>
+Here is our measurement framework: <https://github.com/squinkylabs/SquinkyVCV/blob/main/test/MeasureTime.h>
 You can see it used in this perf suite to test Booty Shifter: <https://github.com/squinkylabs/SquinkyVCV/blob/0fd0143ed8ddfefdd00a1fd346fe0758d7307672/test/perfTest.cpp#L168>
-We have a strange coding style that lets us build the same code as a plugin or as a standalone testable class. There’s more info here <https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/unit-test.md>
+We have a strange coding style that lets us build the same code as a plugin or as a standalone testable class. There’s more info here <https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/unit-test.md>
 
 ### Lookup table
 
-The interpolating lookup we use in all our modules is here: <https://github.com/squinkylabs/SquinkyVCV/blob/master/dsp/utils/LookupTable.h>
-Here’s a simple unit test that shows how to use the lookup table to do sines: <https://github.com/squinkylabs/SquinkyVCV/blob/master/test/testLookupTable.cpp#L49>
+The interpolating lookup we use in all our modules is here: <https://github.com/squinkylabs/SquinkyVCV/blob/main/dsp/utils/LookupTable.h>
+Here’s a simple unit test that shows how to use the lookup table to do sines: <https://github.com/squinkylabs/SquinkyVCV/blob/main/test/testLookupTable.cpp#L49>
 
 ### SSE
 
-Here’s the lag generator from Chebyshev. It uses SSE2 instructions to process four channels in the time it would otherwise take to do a single channel. <https://github.com/squinkylabs/SquinkyVCV/blob/master/dsp/filters/MultiLag.h#L101>
+Here’s the lag generator from Chebyshev. It uses SSE2 instructions to process four channels in the time it would otherwise take to do a single channel. <https://github.com/squinkylabs/SquinkyVCV/blob/main/dsp/filters/MultiLag.h#L101>
 
 ### Don’t process knobs and CV every step call
 
-Here’s a place in Chebyshev where we only update some things every four samples. <https://github.com/squinkylabs/SquinkyVCV/blob/master/composites/CHB.h#L415>
+Here’s a place in Chebyshev where we only update some things every four samples. <https://github.com/squinkylabs/SquinkyVCV/blob/main/composites/CHB.h#L415>
 
 ### Process low frequency stuff at a lower sample rate
 
-In LFN we have a multiband graphic equalizer that would use a lot of CPU if run at the full sample rate. So we run at perhaps 1/20 of the sample rate, then user a simple filter to smoothly bring it back up to full rate. <https://github.com/squinkylabs/SquinkyVCV/blob/master/composites/LFN.h#L313>
+In LFN we have a multiband graphic equalizer that would use a lot of CPU if run at the full sample rate. So we run at perhaps 1/20 of the sample rate, then user a simple filter to smoothly bring it back up to full rate. <https://github.com/squinkylabs/SquinkyVCV/blob/main/composites/LFN.h#L313>

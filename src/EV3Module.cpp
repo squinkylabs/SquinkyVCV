@@ -297,7 +297,7 @@ struct EV3Widget : ModuleWidget
     }
 
     void step() override;
-    DECLARE_MANUAL("EV3 manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/ev3.md");
+    DECLARE_MANUAL("EV3 manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/ev3.md");
 
     EV3PitchDisplay pitchDisplay;
     EV3Module* const module;

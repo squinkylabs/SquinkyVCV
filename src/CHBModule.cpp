@@ -89,7 +89,7 @@ struct CHBWidget : ModuleWidget
     }
 #endif
 
-    DECLARE_MANUAL("Chebyshev manual",  "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/chebyshev.md");
+    DECLARE_MANUAL("Chebyshev manual",  "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/chebyshev.md");
 private:
     void addHarmonics(CHBModule *module, std::shared_ptr<IComposite>);
     void addRow1(CHBModule *module, std::shared_ptr<IComposite>);

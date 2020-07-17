@@ -193,7 +193,7 @@ struct RangeChoice : ChoiceButton
 struct BootyWidget : ModuleWidget
 {
     BootyWidget(BootyModule *);
-    DECLARE_MANUAL("Booty Shifter manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/shifter.md");
+    DECLARE_MANUAL("Booty Shifter manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/shifter.md");
 
 #ifdef _TIME_DRAWING
     // Booty: avg = 30.679601, stddev = 10.568395 (us) Quota frac=0.184078

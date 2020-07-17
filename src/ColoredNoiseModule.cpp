@@ -72,7 +72,7 @@ struct ColoredNoiseWidget : ModuleWidget
     Label * slopeLabel;
     Label * signLabel;
 
-    DECLARE_MANUAL("Colors manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/colors.md");
+    DECLARE_MANUAL("Colors manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/colors.md");
 
 
 #ifdef _TIME_DRAWING

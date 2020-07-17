@@ -67,7 +67,7 @@ inline Menu* VocalFilterWidget::createContextMenu()
 {
     Menu* theMenu = ModuleWidget::createContextMenu();
     ManualMenuItem* manual = new ManualMenuItem(
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/formants.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/formants.md");
     theMenu->addChild(manual);
     return theMenu;
 }

@@ -142,7 +142,7 @@ void LFNWidget::appendContextMenu(Menu* theMenu)
 {
     MenuLabel *spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
-    ManualMenuItem* manual = new ManualMenuItem("LFN manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
+    ManualMenuItem* manual = new ManualMenuItem("LFN manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/lfn.md");
     theMenu->addChild(manual);
     
 

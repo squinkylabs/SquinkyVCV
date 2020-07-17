@@ -58,7 +58,7 @@ void VocalModule::step()
 struct VocalWidget : ModuleWidget
 {
     VocalWidget(VocalModule *);
-    DECLARE_MANUAL("Growler manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/growler.md");
+    DECLARE_MANUAL("Growler manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/growler.md");
 
 
 #ifdef _TIME_DRAWING

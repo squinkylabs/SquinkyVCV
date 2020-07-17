@@ -61,7 +61,7 @@ void FiltModule::step()
 struct FiltWidget : ModuleWidget
 {
     FiltWidget(FiltModule *);
-    DECLARE_MANUAL("Stairway manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/filter.md");
+    DECLARE_MANUAL("Stairway manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/filter.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

@@ -66,7 +66,7 @@ void Mix8Module::step()
 struct Mix8Widget : ModuleWidget
 {
     Mix8Widget(Mix8Module *);
-    DECLARE_MANUAL("Mixer-8 manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/mix8.md");
+    DECLARE_MANUAL("Mixer-8 manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/mix8.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

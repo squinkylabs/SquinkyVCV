@@ -81,7 +81,7 @@ struct superWidget : ModuleWidget
     void addOtherKnobs(SuperModule *, std::shared_ptr<IComposite>);
     void addJacks(SuperModule *);
     void appendContextMenu(Menu *menu) override;
-  //  DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+  //  DECLARE_MANUAL("Saws manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/saws.md");
 
     SemitoneDisplay semitoneDisplay;
 
@@ -106,7 +106,7 @@ void superWidget::appendContextMenu(Menu *menu)
 
     ManualMenuItem* manual = new ManualMenuItem(
         "Saws manual", 
-        "https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/saws.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/saws.md");
 
     menu->addChild(manual);
     
