@@ -186,6 +186,7 @@
 		},
 		{
 			"slug": "squinkylabs-chaoskitty",
+			"disabled": true,
 			"name": "Chaos Kitty",
 			"description": "thing",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/chaos-kitty.md",

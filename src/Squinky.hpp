@@ -24,7 +24,7 @@
 //#define _LFNB
 #define _MIX_STEREO
 #define _USERKB
-#define _CHAOS
+//#define _CHAOS
 //#define _DG
 
 //#define _BLANKMODULE
