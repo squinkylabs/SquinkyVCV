@@ -1,5 +1,10 @@
 # Change log for Squinky Labs modules
 
+## 1.0.9
+
+New module: Kitchen-Sink
+New module: Substitute
+
 ## 1.0.8
 
 New sequencer module: 4X4.

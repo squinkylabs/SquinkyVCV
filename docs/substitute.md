@@ -50,6 +50,14 @@ That gives some obvious choices when using Substitute:
 
 There are many others - that's just a taste.
 
+## A note on volume
+
+With six VCOs feeding a mixer there can be a great variation in volume if you aren't careful. You may find as you bring in subs and such the volume can creep up and up. That's fine, but there is an option to control this automatically: the AGC option in the context menu.
+
+The AGC acts like a very aggressive peak limiter. Once you turn up some of the volumes you will hit a max, and it won't go over that.
+
+On the other hand, if you are setting up elaborate modulations of the mixer inputs, you many not want the heavy hand of the AGC, so feel free to use it or not as you see fit.
+
 ## Reference - the notes of the just intoned scales we used
 
 For the seven note scale we used:
