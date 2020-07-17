@@ -1,7 +1,6 @@
 
 #include "AsymWaveShaper.h"
-#include <stdio.h>
-
+#include <cstdio>
 
 extern float symmetry_table_0[];
 extern float symmetry_table_1[];
@@ -39,7 +38,6 @@ float * lookup_tables[16] = {
     symmetry_table_15,
 };
 
-
 AsymWaveShaper::AsymWaveShaper()
 {
     for (int i = 0; i < iSymmetryTables; ++i) {
@@ -75,7 +73,6 @@ void AsymWaveShaper::genTableValues(const Spline& spline, int numPoints)
         }
     }
 }
-
 
 void AsymWaveShaper::genTable(int index, double symmetry)
 {

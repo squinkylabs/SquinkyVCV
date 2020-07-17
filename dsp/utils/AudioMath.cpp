@@ -12,6 +12,7 @@ const double AudioMath::Pi_2 = 1.5707963267948966192313216916397514420986;
 const double AudioMath::Ln2 = 0.693147180559945309417;
 const double AudioMath::Ln10 = 2.30258509299404568402;
 const double AudioMath::E = 2.71828182845904523536;
+const double AudioMath::_2Pi = 2.0 * Pi;
 
 std::function<double(double)> AudioMath::makeFunc_Sin()
 {

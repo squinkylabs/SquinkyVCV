@@ -34,6 +34,7 @@ public:
         octParameterId = id;
     }
 
+    int octaveDisplayOffset = 0;
 private:
     ::rack::Module* module = (::rack::Module*)1234;
     ::rack::Label* semiLabel = nullptr;
@@ -45,6 +46,8 @@ private:
 
     int lastSemi = 100;
     int lastOct = 100;
+
+    
 
     const std::vector<std::string> names = {
         "C",
@@ -73,6 +76,7 @@ inline void SemitoneDisplay::step() {
     }
     if (octParameterId >= 0) {
         curOct = (int)std::round(module->params[octParameterId].value);
+        curOct += octaveDisplayOffset;
     }
 
     if (curSemi != lastSemi || curOct != lastOct) {

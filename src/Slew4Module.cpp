@@ -39,23 +39,13 @@ void Slew4Module::onSampleRateChange()
     slew->onSampleRateChange();
 }
 
-
-#ifdef __V1x
 Slew4Module::Slew4Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     slew = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
-#else
-Slew4Module::Slew4Module()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS),
-    slew( std::make_shared<Comp>(this))
-{
-#endif
+
     onSampleRateChange();
     slew->init();
 }
@@ -105,14 +95,9 @@ struct Slew4Widget : ModuleWidget
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
 Slew4Widget::Slew4Widget(Slew4Module *module)
 {
     setModule(module);
-#else
-Slew4Widget::Slew4Widget(Slew4Module *module) : ModuleWidget(module)
-{
-#endif
     
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
@@ -205,14 +190,6 @@ void Slew4Widget::addScrews()
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-
-#ifdef __V1x
 Model *modelSlew4Module = createModel<Slew4Module, Slew4Widget>("squinkylabs-slew4");
-#else
-Model *modelSlew4Module = Model::create<Slew4Module,
-    Slew4Widget>("Squinky Labs",
-    "squinkylabs-slew4",
-    "Slade: Octal slew/lag with mixing", SLEW_LIMITER_TAG);
-#endif
 #endif
 

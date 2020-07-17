@@ -227,7 +227,7 @@ void Sequencer4Widget::appendContextMenu(Menu* theMenu) {
     ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
     theMenu->addChild(spacerLabel);
     ManualMenuItem* manual = new ManualMenuItem(
-        "4X4 Manual",
+        "4X4 manual",
         "https://github.com/squinkylabs/SquinkyVCV/blob/s53/docs/4x4.md");
     theMenu->addChild(manual);
 

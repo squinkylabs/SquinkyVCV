@@ -89,8 +89,8 @@ public:
     int _stepCalls = 0;
     int _updatePhaseIncCalls = 0;
 private:
-    IIRDecimator decimatorLeft;
-    IIRDecimator decimatorRight;
+    IIRDecimator<float> decimatorLeft;
+    IIRDecimator<float> decimatorRight;
     StateVariable4PHP hpfLeft;
     StateVariable4PHP hpfRight;
     GateTrigger gateTrigger;

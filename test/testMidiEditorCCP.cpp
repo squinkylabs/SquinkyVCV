@@ -92,7 +92,7 @@ static void testRawClipPaste(bool selectAll, float insertTime)
 
     auto firstNoteToAdd = data.toAdd[0];
     const float expectedStart = insertTime + (selectAll ? 1.23f : 0.f);
-    assertEQ(firstNoteToAdd->startTime, expectedStart)
+    assertEQ(firstNoteToAdd->startTime, expectedStart);
 }
 
 /*

@@ -30,7 +30,6 @@ public:
 private:
 };
 
-#ifdef __V1x
 GrayModule::GrayModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
@@ -40,16 +39,6 @@ GrayModule::GrayModule()
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 }
-#else
-GrayModule::GrayModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS),
-    gray(std::make_shared<Comp>(this))
-{
-}
-#endif
 
 void GrayModule::step()
 {
@@ -116,15 +105,10 @@ inline void GrayWidget::addBits(GrayModule *module)
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
+
 GrayWidget::GrayWidget(GrayModule *module)
 {
     setModule(module);
-#else
-GrayWidget::GrayWidget(GrayModule *module) :
-    ModuleWidget(module)
-{
-#endif
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/gray.svg");
@@ -156,13 +140,6 @@ GrayWidget::GrayWidget(GrayModule *module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1x
 Model *modelGrayModule = createModel<GrayModule,
     GrayWidget>("squinkylabs-gry");
-#else
-Model *modelGrayModule = Model::create<GrayModule,
-    GrayWidget>("Squinky Labs",
-    "squinkylabs-gry",
-    "Gray Code: Eclectic clock divider", CLOCK_MODULATOR_TAG, RANDOM_TAG);
-#endif
 #endif

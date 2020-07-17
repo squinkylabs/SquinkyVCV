@@ -1,6 +1,7 @@
 #pragma once
 
 #include <complex>
+#include <memory>
 #include <vector>
 #include <assert.h>
 
@@ -40,9 +41,28 @@ public:
         return std::abs(buffer[bin]);
     }
 
+    bool isPolar() const {
+        assert(false);
+        return false;
+    }
+
+    void toPolar() {
+        assert(false);
+    }
+
+    std::pair<float, float> getMagAndPhase(int bin) const {
+        assert(false);
+        return std::make_pair(0.f, 0.f);
+    }
+
+    void reset() {
+        _isPolar = false;
+    }
+
     static int _count;
 private:
     std::vector<T> buffer;
+    bool _isPolar = false;
 
     /**
     * we store this without type so that clients don't need
@@ -56,6 +76,8 @@ private:
 
 using FFTDataReal = FFTData<float>;
 using FFTDataCpx = FFTData<cpx>;
+using FFTDataRealPtr = std::shared_ptr<FFTDataReal>;
+using FFTDataCpxPtr = std::shared_ptr<FFTDataCpx>;
 
 template<typename T> int FFTData<T>::_count = 0;
 
@@ -89,4 +111,33 @@ inline void FFTData<T>::set(int index, T value)
 {
     assert(index < (int) buffer.size() && index >= 0);
     buffer[index] = value;
+}
+
+/**
+ * Template specializations for polar. only supported for complex
+ */
+template <>
+inline bool FFTData<cpx>::isPolar() const {
+    return _isPolar;
+
+}
+
+template <>
+inline void FFTData<cpx>::toPolar() {
+    assert(!_isPolar);
+   
+    for (int i=0; i< size(); ++i) {
+        cpx x = get(i);
+        float mag = std::abs(x);
+        float phase = std::arg(x);
+        set(i, cpx(mag, phase));
+    }
+     _isPolar = true;
+}
+
+template <>
+inline std::pair<float, float> FFTData<cpx>::getMagAndPhase(int bin) const {
+    assert(_isPolar);
+    cpx temp = get(bin);
+    return std::make_pair(temp.real(), temp.imag());
 }

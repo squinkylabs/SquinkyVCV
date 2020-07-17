@@ -35,11 +35,14 @@ public:
 
     void dump() const;
 
+
+    void setFromScalar(int index, const BiquadParams<float, N>& scalarParams);
+
     /**
      * Direct access for the rare client that
      * wants to see taps as a straight array.
      */
-    T getAtIndex(int index);
+    T getAtIndex(int index) const;
     void setAtIndex(T x, int index);
 
     /**
@@ -153,7 +156,7 @@ inline T& BiquadParams<T, N>::A2(int stage)
 }
 
 template <typename T, int N>
-inline T BiquadParams<T, N>::getAtIndex(int index)
+inline T BiquadParams<T, N>::getAtIndex(int index) const
 {
     assert(index < N * 5);
     return _taps[index];

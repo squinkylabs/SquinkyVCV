@@ -24,6 +24,8 @@
 //#define _LFNB
 #define _MIX_STEREO
 #define _USERKB
+#define _CHAOS
+//#define _DG
 
 //#define _BLANKMODULE
 
@@ -32,6 +34,8 @@
 #define _DTMODULE
 
 #define _SEQ4
+#define _WVCO
+#define _SUB
 
 using namespace ::rack;
 
@@ -115,6 +119,14 @@ extern Model *modelFiltModule;
 #ifdef _DTMODULE
 extern Model* modelDrumTriggerModule;
 #endif
-
+#ifdef _CHAOS
+extern Model* modelChaosKittyModule;
+#endif
+#ifdef _WVCO
+extern Model *modelWVCOModule;
+#endif
+#ifdef _SUB
+extern Model *modelSubModule;
+#endif
 
 

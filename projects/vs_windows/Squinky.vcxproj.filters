@@ -534,6 +534,33 @@
     <ClCompile Include="..\..\midi\model\MidiSequencer4.cpp">
       <Filter>Source Files\midi\model</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testChaos.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testOnset.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\fft\FFTUtils.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testOnset2.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\fft\OnsetDetector.cpp">
+      <Filter>Source Files\dsp\fft</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\SqWaveFile.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\TestGenerators.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testSimpleQuantizer.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\utils\SimpleQuantizer.cpp">
+      <Filter>Source Files\dsp\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -958,6 +985,12 @@
     </ClInclude>
     <ClInclude Include="..\..\midi\controller\MakeEmptyTrackCommand4.h">
       <Filter>Header Files\midi\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\fft\FFTUtils.h">
+      <Filter>Header Files\dsp\fft</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\TestGenearators.h">
+      <Filter>Source Files\test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

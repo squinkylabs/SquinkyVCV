@@ -153,7 +153,7 @@ private:
         BiquadState<Thpf, 2> dcBlockState;
 
         IIRUpsampler up;
-        IIRDecimator dec;
+        IIRDecimator<float> dec;
 
         bool isActive = false;
     };

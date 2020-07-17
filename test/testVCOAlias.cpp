@@ -405,7 +405,7 @@ static void testAliasFun(double normalizedFreq)
     double freq = Analyzer::makeEvenPeriod(sampleRate * normalizedFreq, sampleRate, numSamples);
     printHeader("Fun Mine", sampleRate * normalizedFreq, freq);
 
-    VoltageControlledOscillator<16, 16> vco;
+    VoltageControlledOscillator1<16, 16> vco;
     vco.freq = float(sampleRate * normalizedFreq);
     vco.sampleTime = 1.0f / sampleRate;
 

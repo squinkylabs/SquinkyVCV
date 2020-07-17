@@ -22,6 +22,7 @@ void ButterworthFilterDesigner<T>::designEightPoleLowpass(BiquadParams<T, 4>& ou
 template <typename T>
 void ButterworthFilterDesigner<T>::designSixPoleLowpass(BiquadParams<T, 3>& outParams, T frequency)
 {
+    assert(frequency > 0);
     using Filter = Dsp::ButterLowPass<6, 1>;
     std::unique_ptr<Filter> lp6(new Filter());      // std::make_unique is not until C++14
     lp6->SetupAs(frequency);
@@ -120,3 +121,35 @@ void ButterworthFilterDesigner<T>::designEightPoleElliptic(BiquadParams<T, 4>& o
 // Or put all in header
 template class ButterworthFilterDesigner<double>;
 template class ButterworthFilterDesigner<float>;
+
+#if 1
+#include <simd/vector.hpp>
+#include <simd/functions.hpp>
+
+static void setVectorElementFromScalar(
+    BiquadParams<rack::simd::float_4, 3>& dest,
+    const BiquadParams<float, 3>& src,
+    int index)
+{
+    for (int i=0; i<3; ++i) {
+        dest.A1(i)[index] = src.A1(i);
+        dest.A2(i)[index] = src.A2(i);
+        dest.B0(i)[index] = src.B0(i);
+        dest.B1(i)[index] = src.B1(i);
+        dest.B2(i)[index] = src.B2(i);
+        
+    }
+} 
+
+template <>
+void ButterworthFilterDesigner<rack::simd::float_4>::designSixPoleLowpass(
+    BiquadParams<rack::simd::float_4, 3>& outParams,
+    rack::simd::float_4 frequency)
+{
+    for (int i=0; i<4; ++i) {
+        BiquadParams<float, 3> scalarParams;
+        ButterworthFilterDesigner<float>::designSixPoleLowpass(scalarParams, frequency[i]);
+       setVectorElementFromScalar(outParams, scalarParams, i);
+    }
+}
+#endif

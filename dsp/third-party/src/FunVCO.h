@@ -32,7 +32,7 @@ extern float triTable[2048];
 #define _USEIIR
 
 template <int OVERSAMPLE, int QUALITY>
-struct VoltageControlledOscillator
+struct VoltageControlledOscillator1
 {
     float sampleTime = 0;
     bool analog = false;
@@ -54,10 +54,10 @@ struct VoltageControlledOscillator
     bool triEnabled = false;
 
 #ifdef _USEIIR
-    IIRDecimator sinDecimator;
-    IIRDecimator triDecimator;
-    IIRDecimator sawDecimator;
-    IIRDecimator sqrDecimator;
+    IIRDecimator<float> sinDecimator;
+    IIRDecimator<float> triDecimator;
+    IIRDecimator<float> sawDecimator;
+    IIRDecimator<float> sqrDecimator;
 #else
     ::rack::Decimator<OVERSAMPLE, QUALITY> sinDecimator;
     ::rack::Decimator<OVERSAMPLE, QUALITY> triDecimator;

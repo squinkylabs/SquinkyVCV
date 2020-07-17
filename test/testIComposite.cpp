@@ -1,5 +1,6 @@
 #include "TestComposite.h"
 #include "Blank.h"
+#include "ChaosKitty.h"
 #include "CHB.h"
 #include "ColoredNoise.h"
 #include "FrequencyShifter.h"
@@ -22,6 +23,11 @@
 #include "Tremolo.h"
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
+#include "daveguide.h"
+#ifndef _MSC_VER
+#include "WVCO.h"
+#endif
+#include "Sub.h"
 
 #include "asserts.h"
 #include <set>
@@ -78,5 +84,12 @@ void testIComposite()
     test<LFNB<TestComposite>>();
     test<Filt<TestComposite>>();
     test<DrumTrigger<TestComposite>>();
+    test<ChaosKitty<TestComposite>>();
+    test<Daveguide<TestComposite>>();
+
+#ifndef _MSC_VER
+    test<WVCO<TestComposite>>();
+    test<Sub<TestComposite>>();
+#endif
 
 }

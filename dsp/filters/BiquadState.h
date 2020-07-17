@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <assert.h>
 extern int _numBiquads;
 
 /**

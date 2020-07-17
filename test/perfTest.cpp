@@ -27,6 +27,11 @@
 #include "KSComposite.h"
 #include "Seq.h"
 
+#ifndef _MSC_VER
+#include "WVCO.h"
+#include "Sub.h"
+#endif
+
 extern double overheadInOut;
 extern double overheadOutOnly;
 
@@ -134,20 +139,88 @@ static void testHilbert()
         }, 1);
 }
 
-#if 0
-static void testExpRange()
+
+#include "LookupTable.h"
+#include <memory>
+// stolen from imp in ObjectCache
+std::shared_ptr<LookupTableParams<float>> makeSinTable()
 {
-    using T = float;
-    LookupTableParams<T> table;
-    LookupTableFactory<T>::makeExp2(table);
+    auto ret = std::make_shared<LookupTableParams<float>>();
+    std::function<double(double)> f = AudioMath::makeFunc_Sin();
+        // Used to use 4096, but 512 gives about 92db  snr, so let's save memory
+    LookupTable<float>::init(*ret, 512, 0, 1, f);
+    return ret;
+}
 
-    MeasureTime<T>::run("exp lookup", [&table]() {
 
-        T d = LookupTable<T>::lookup(table, TestBuffers<T>::get());
+
+#ifndef _MSC_VER 
+
+static float pi =  3.141592653589793238;
+inline float_4 sine2(float_4 _x)
+{
+    float_4 xneg = _x < float_4::zero();
+    float_4 xOffset = SimdBlocks::ifelse(xneg, float_4(pi / 2.f), float_4(-pi  / 2.f));
+    xOffset += _x;
+    float_4 xSquared = xOffset * xOffset;
+#if 0
+    printf("\n*** in simdsin(%s) xsq=%s\n xoff=%s\n",
+        toStr(_x).c_str(),
+        toStr(xSquared).c_str(),
+        toStr(xOffset).c_str());
+#endif
+
+    float_4 ret = xSquared * float_4(1.f / 24.f);
+    float_4 correction = ret * xSquared *  float_4(.02 / .254);
+    ret += float_4(-.5);
+    ret *= xSquared;
+    ret += float_4(1.f);
+
+    ret -= correction;
+    return SimdBlocks::ifelse(xneg, -ret, ret); 
+}
+
+static void simd_testSin()
+{
+    MeasureTime<float>::run(overheadInOut, "sin simd approx X4", []() {
+        float_4 x(TestBuffers<float>::get());
+        float d = rack::simd::sin(x)[0];
+        return d;
+
+        }, 1);
+}
+
+static void testSinLookupf()
+{
+    auto params = makeSinTable();
+    MeasureTime<float>::run(overheadInOut, "sin table lookup f", [params]() {
+        float d = LookupTable<float>::lookup(*params, TestBuffers<float>::get());
         return d;
         }, 1);
 }
+
+static void testSinLookupSimd()
+{
+    auto params = makeSinTable();
+    MeasureTime<float>::run(overheadInOut, "sin approx bgf simd", [params]() {
+       // float_4 d =  lookupSimd(*params, TestBuffers<float>::get(), true); //LookupTable<float>::lookup(*params, TestBuffers<float>::get());
+        float_4 d = sine2(TestBuffers<float>::get());
+        return d[2];
+        }, 1);
+}
 #endif
+
+
+
+static void testSinLookup()
+{
+    auto params = ObjectCache<float>::getSinLookup();
+    MeasureTime<float>::run(overheadInOut, "sin table lookup", [params]() {
+        float d = LookupTable<float>::lookup(*params, TestBuffers<float>::get());
+        return d;
+        }, 1);
+}
+
 
 static void testShifter()
 {
@@ -573,6 +646,84 @@ static void testShaper1b()
         }, 1);
 }
 
+
+static void testBiquad()
+{
+    BiquadParams<float, 3> params;
+    BiquadState<float, 3> state;
+    ButterworthFilterDesigner<float>::designSixPoleLowpass(params, .1f);
+   
+    MeasureTime<float>::run(overheadInOut, "6p LP", [&state, &params]() {
+        float d = BiquadFilter<float>::run(TestBuffers<float>::get(), state, params);
+        return d;
+        }, 1);
+}
+
+#ifndef _MSC_VER
+
+static void simd_testBiquad()
+{
+    BiquadParams<float_4, 3> params;
+    BiquadState<float_4, 3> state;
+    ButterworthFilterDesigner<float_4>::designSixPoleLowpass(params, .1);
+   
+    MeasureTime<float>::run(overheadInOut, "6p LP x4 simd", [&state, &params]() {
+        float_4 d = BiquadFilter<float_4>::run(TestBuffers<float>::get(), state, params);
+        return d[0];
+        }, 1);
+}
+
+static void testWVCOPoly()
+{
+    printf("starting poly svco\n"); fflush(stdout);
+    WVCO<TestComposite> wvco;
+
+    wvco.init();
+    wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 8;
+    wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 8;
+    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = 0;
+    MeasureTime<float>::run(overheadOutOnly, "wvco poly 8", [&wvco]() {
+        wvco.step();
+        return wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(1) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(2) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(3) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(4) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(5) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(6) + 
+            wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(7);
+    }, 1);
+}
+
+static void testSubMono()
+{
+    Sub<TestComposite> sub;
+
+    sub.init();
+    sub.inputs[Sub<TestComposite>::MAIN_OUTPUT].channels = 1;
+    sub.inputs[Sub<TestComposite>::VOCT_INPUT].channels = 1;
+
+    MeasureTime<float>::run(overheadOutOnly, "Sub mono", [&sub]() {
+        sub.step();
+        return sub.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0);
+    }, 1);
+}
+
+static void testSubPoly()
+{
+    Sub<TestComposite> sub;
+
+    sub.init();
+    sub.inputs[Sub<TestComposite>::MAIN_OUTPUT].channels = 8;
+    sub.inputs[Sub<TestComposite>::VOCT_INPUT].channels = 8;
+
+    MeasureTime<float>::run(overheadOutOnly, "Sub poly 8", [&sub]() {
+        sub.step();
+        return sub.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0);
+    }, 1);
+}
+#endif
+
 static void testSuper()
 {
     Super<TestComposite> super;
@@ -580,6 +731,26 @@ static void testSuper()
     MeasureTime<float>::run(overheadOutOnly, "super", [&super]() {
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0);
+    }, 1);
+}
+
+
+static void testSuperPoly()
+{
+    Super<TestComposite> super;
+
+    super.inputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].channels = 8;
+    super.inputs[Super<TestComposite>::CV_INPUT].channels = 8;
+    MeasureTime<float>::run(overheadOutOnly, "super poly 8 1X", [&super]() {
+        super.step();
+        return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(1) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(2) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(3) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(4) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(5) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(6) + 
+            super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(7);
     }, 1);
 }
 
@@ -592,7 +763,7 @@ static void testSuperStereo()
     MeasureTime<float>::run(overheadOutOnly, "super stereo", [&super]() {
         super.step();
         return super.outputs[Super<TestComposite>::MAIN_OUTPUT_LEFT].getVoltage(0) +
-        super.outputs[Super<TestComposite>::MAIN_OUTPUT_RIGHT].getVoltage(0); 
+        super.outputs[Super<TestComposite>::MAIN_OUTPUT_RIGHT].getVoltage(1); 
     }, 1);
 }
 
@@ -867,18 +1038,33 @@ void perfTest()
     testShifter();
     testGMR();
 #endif
-    testLFN();
-    testLFNB();
+#ifndef _MSC_VER
+  
+    testWVCOPoly();
+    testSubMono();
+    testSubPoly();
+    simd_testBiquad();
+    testSinLookup();
+    testSinLookupf();
+    testSinLookupSimd();
+    simd_testSin();
+#endif  
 
+    testBiquad();
 
-    testCHBdef();
     testSuper();
+    testSuperPoly();
     testSuperStereo();
     testSuper2();
     testSuper2Stereo();
     testSuper3();
   //  testKS();
   //  testShaper1a();
+    testLFN();
+    testLFNB();
+
+
+    testCHBdef();
 #if 0
     testShaper1b();
     testShaper1c();

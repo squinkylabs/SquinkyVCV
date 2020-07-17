@@ -10,6 +10,7 @@
  * Takes a signal at a higher sample rate, and reduces it to a lower
  * sample rate without adding (much) aliasing.
  */
+template <typename T>
 class IIRDecimator
 {
 public:
@@ -24,7 +25,7 @@ public:
             oversample = oversampleFactor;
 
             // Set out IIR filter to be a six pole butterworth lowpass and the magic frequency.
-            params = ObjectCache<float>::get6PLPParams(1.f / (4.0f * oversample));
+            params = ObjectCache<T>::get6PLPParams(1.f / (4.0f * oversample));
         }
     }
 
@@ -34,13 +35,13 @@ public:
      *
      * return value is a single sample
      */
-    float process(const float * input)
+    T process(const T * input)
     {
-        float x = 0;
+        T x = 0;
         for (int i = 0; i < oversample; ++i) {
             // The key here is to filter out all the frequencies that will
             // be higher than the destination Nyquist frequency.
-            x = BiquadFilter<float>::run(input[i], state, *params);
+            x = BiquadFilter<T>::run(input[i], state, *params);
         }
         // Note that we return just the last sample, and ignore the others.
         // Decimator is supposed to only keep one out of 'n' samples. We could 
@@ -59,6 +60,6 @@ private:
     /**
      * "standard" Squinky Labs Biquad filter data.
      */
-    std::shared_ptr<BiquadParams<float, 3>> params;
-    BiquadState<float, 3> state;
+    std::shared_ptr<BiquadParams<T, 3>> params;
+    BiquadState<T, 3> state;
 };

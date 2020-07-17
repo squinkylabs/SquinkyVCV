@@ -36,22 +36,12 @@ void TremoloModule::onSampleRateChange()
     tremolo->setSampleRate(rate);
 }
 
-#ifdef __V1x
 TremoloModule::TremoloModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     tremolo = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
-#else
-TremoloModule::TremoloModule()
-    : Module(Comp::NUM_PARAMS,
-    Comp::NUM_INPUTS,
-    Comp::NUM_OUTPUTS,
-    Comp::NUM_LIGHTS),
-    tremolo(std::make_shared<Comp>(this))
-{
-#endif
 
     onSampleRateChange();
     tremolo->init();
@@ -256,14 +246,9 @@ void TremoloWidget::addMainSection(TremoloModule *module, std::shared_ptr<ICompo
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
 TremoloWidget::TremoloWidget(TremoloModule *module)
 {
     setModule(module);
-#else
-TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
-{
-#endif
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/trem_panel.svg");
@@ -279,14 +264,7 @@ TremoloWidget::TremoloWidget(TremoloModule *module) : ModuleWidget(module)
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-#ifdef __V1x
 Model *modelTremoloModule = createModel<TremoloModule,
     TremoloWidget>("squinkylabs-tremolo");
-#else
-Model *modelTremoloModule = Model::create<TremoloModule,
-    TremoloWidget>("Squinky Labs",
-    "squinkylabs-tremolo",
-    "Chopper: Tremolo", EFFECT_TAG, LFO_TAG, CLOCK_MODULATOR_TAG);
-#endif
 #endif
 

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <clipPath id="clip-custom_1">
+      <rect width="24" height="24"/>
+    </clipPath>
+  </defs>
+  <g id="custom_1" data-name="custom – 1" clip-path="url(#clip-custom_1)">
+    <rect width="24" height="24" fill="#fff"/>
+    <g id="Rectangle_1" data-name="Rectangle 1" fill="#fff" stroke="#707070" stroke-linejoin="round" stroke-width="1">
+      <rect width="24" height="24" rx="2" stroke="none"/>
+      <rect x="0.5" y="0.5" width="23" height="23" rx="1.5" fill="none"/>
+    </g>
+    <text id="_12" data-name="12" transform="translate(4 12)" fill="#707070" font-size="14" font-family="Roboto-Light, Roboto" font-weight="300"><tspan x="0" y="0">12</tspan></text>
+    <text id="ET" transform="translate(5 22)" fill="#707070" font-size="14" font-family="Roboto-Light, Roboto" font-weight="300"><tspan x="0" y="0">ET</tspan></text>
+  </g>
+</svg>

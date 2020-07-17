@@ -282,7 +282,8 @@ inline void MixM<TBase>::setupFilters()
 template <class TBase>
 inline void MixM<TBase>::stepn(int div)
 {
-    float unbufferedCV[cvOffsetMaster + 1] = {0};
+    // Add enough passing for a whole 4 element vector
+    float unbufferedCV[cvOffsetMaster + 4] = {0};
 
     const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
     const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;

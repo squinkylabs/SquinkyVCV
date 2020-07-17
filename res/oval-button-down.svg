@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="30" height="13" viewBox="0 0 30 13">
+  <defs>
+    <clipPath id="clip-oval-button-down">
+      <rect width="30" height="13"/>
+    </clipPath>
+  </defs>
+  <g id="oval-button-down" clip-path="url(#clip-oval-button-down)">
+    <g id="oval-button">
+      <g id="Rectangle_5" data-name="Rectangle 5" fill="#307dee" stroke="#000" stroke-width="1">
+        <rect width="30" height="13" rx="6.5" stroke="none"/>
+        <rect x="0.5" y="0.5" width="29" height="12" rx="6" fill="none"/>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -31,23 +31,12 @@ public:
 private:
 };
 
-#ifdef __V1x
 ShaperModule::ShaperModule() : shaper(this)
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 }
-#else
-ShaperModule::ShaperModule()
-    : Module(shaper.NUM_PARAMS,
-    shaper.NUM_INPUTS,
-    shaper.NUM_OUTPUTS,
-    shaper.NUM_LIGHTS),
-    shaper(this)
-{
-}
-#endif
 
 void ShaperModule::step()
 {
@@ -150,15 +139,9 @@ void ShaperWidget::addSelector(ShaperModule* module, std::shared_ptr<IComposite>
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
 ShaperWidget::ShaperWidget(ShaperModule* module)
 {
     setModule(module);
-#else
-ShaperWidget::ShaperWidget(ShaperModule* module) :
-    ModuleWidget(module)
-{
-#endif
     box.size = Vec(10 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/shaper.svg");
 
@@ -253,14 +236,7 @@ ShaperWidget::ShaperWidget(ShaperModule* module) :
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH))); 
 }
 
-#ifdef __V1x
 Model *modelShaperModule = createModel<ShaperModule, ShaperWidget>(
     "squinkylabs-shp");
-#else
-Model *modelShaperModule = Model::create<ShaperModule,
-    ShaperWidget>("Squinky Labs",
-    "squinkylabs-shp",
-    "Shaper: Precision Wave Shaper", WAVESHAPER_TAG, DISTORTION_TAG, DUAL_TAG);
-#endif
 #endif
 

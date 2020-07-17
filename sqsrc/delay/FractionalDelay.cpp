@@ -92,6 +92,7 @@ float RecirculatingFractionalDelay::run(float input)
 {
     float output = getOutput();
     input += (output * feedback);
+    input = processFeedback(input);         // subclass may override and do additional DSP
     setInput(input);
     return output;
 }

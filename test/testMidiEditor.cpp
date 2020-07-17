@@ -291,7 +291,7 @@ static void testCursor1()
 {
     MidiSequencerPtr seq = makeTest(false);
     assertEQ(seq->context->cursorTime(), 0);
-    assertEQ(seq->context->cursorPitch(), 0)
+    assertEQ(seq->context->cursorPitch(), 0);
     assertEQ(seq->context->startTime(), 0);
 }
 

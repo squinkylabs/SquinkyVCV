@@ -39,7 +39,6 @@ void LFNModule::onSampleRateChange()
     lfn.setSampleTime(SqHelper::engineGetSampleTime());
 }
 
-#ifdef __V1x
 LFNModule::LFNModule() : lfn(this)
 {
     config(lfn.NUM_PARAMS,lfn.NUM_INPUTS,lfn.NUM_OUTPUTS,lfn.NUM_LIGHTS);
@@ -48,18 +47,6 @@ LFNModule::LFNModule() : lfn(this)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 }
-#else
-LFNModule::LFNModule()
-    : Module(lfn.NUM_PARAMS,
-    lfn.NUM_INPUTS,
-    lfn.NUM_OUTPUTS,
-    lfn.NUM_LIGHTS),
-    lfn(this)
-{
-    onSampleRateChange();
-    lfn.init();
-}
-#endif
 
 void LFNModule::step()
 {
@@ -109,12 +96,7 @@ struct LFNWidget : ModuleWidget
         ModuleWidget::step();
     }
 
-#ifdef __V1x
     void appendContextMenu(Menu *menu) override;
-#else
-    Menu* createContextMenu() override;
-#endif
-
     void addStage(int i);
 
     LFNLabelUpdater updater;
@@ -156,7 +138,6 @@ void LFNWidget::addStage(int index)
         module, Comp::EQ0_INPUT + index));
 }
 
-#ifdef __V1x
 void LFNWidget::appendContextMenu(Menu* theMenu) 
 {
     MenuLabel *spacerLabel = new MenuLabel();
@@ -170,37 +151,16 @@ void LFNWidget::appendContextMenu(Menu* theMenu)
     item->text = "Extra Low Frequency";
     theMenu->addChild(item);
 }
-#else
-inline Menu* LFNWidget::createContextMenu()
-{
-    Menu* theMenu = ModuleWidget::createContextMenu();
-
-    ManualMenuItem* manual = new ManualMenuItem("https://github.com/squinkylabs/SquinkyVCV/blob/master/docs/lfn.md");
-    theMenu->addChild(manual);
-    
-    MenuLabel *spacerLabel = new MenuLabel();
-    theMenu->addChild(spacerLabel);
-    SqMenuItem_BooleanParam * item = new SqMenuItem_BooleanParam(
-        xlfnWidget);
-    item->text = "Extra Low Frequency";
-    theMenu->addChild(item);
-    return theMenu;
-}
-#endif
 
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-#ifdef __V1x
+
 LFNWidget::LFNWidget(LFNModule *module) : module(module)
 {
     setModule(module);
-#else
-LFNWidget::LFNWidget(LFNModule *module) : ModuleWidget(module), module(module)
-{
-#endif
     box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/lfn_panel.svg");
 
@@ -266,14 +226,7 @@ void LFNLabelUpdater::update(struct LFNWidget& widget)
     }
 }
 
-#ifndef __V1x
-Model *modelLFNModule = Model::create<LFNModule,
-    LFNWidget>("Squinky Labs",
-    "squinkylabs-lfn",
-    "LFN: Random Voltages", NOISE_TAG, RANDOM_TAG, LFO_TAG);
-#else
 Model *modelLFNModule = createModel<LFNModule, LFNWidget>(
     "squinkylabs-lfn");
-#endif
 
 #endif

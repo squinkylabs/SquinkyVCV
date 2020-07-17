@@ -50,7 +50,7 @@ public:
      */
     static std::shared_ptr<LookupTableParams<T>> getTanh5();
 
-    static std::shared_ptr<BiquadParams<float, 3>> get6PLPParams(float normalizedFc);
+    static std::shared_ptr<BiquadParams<T, 3>> get6PLPParams(float normalizedFc);
 
 private:
     /**
@@ -67,9 +67,9 @@ private:
     static std::weak_ptr<LookupTableParams<T>> db2Gain;
     static std::weak_ptr<LookupTableParams<T>> tanh5;
 
-    static std::weak_ptr< BiquadParams<float, 3>> lowpass64;
-    static std::weak_ptr< BiquadParams<float, 3>> lowpass32; 
-    static std::weak_ptr< BiquadParams<float, 3>> lowpass16;
+    static std::weak_ptr< BiquadParams<T, 3>> lowpass64;
+    static std::weak_ptr< BiquadParams<T, 3>> lowpass32; 
+    static std::weak_ptr< BiquadParams<T, 3>> lowpass16;
 
     static std::weak_ptr<LookupTableParams<T>> mixerPanL;
     static std::weak_ptr<LookupTableParams<T>> mixerPanR;

@@ -22,6 +22,8 @@
     <ClCompile Include="..\..\dsp\fft\FFT.cpp" />
     <ClCompile Include="..\..\dsp\fft\FFTCrossFader.cpp" />
     <ClCompile Include="..\..\dsp\fft\FFTData.cpp" />
+    <ClCompile Include="..\..\dsp\fft\FFTUtils.cpp" />
+    <ClCompile Include="..\..\dsp\fft\OnsetDetector.cpp" />
     <ClCompile Include="..\..\dsp\filters\ButterworthFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp" />
     <ClCompile Include="..\..\dsp\filters\HilbertFilterDesigner.cpp" />
@@ -36,6 +38,7 @@
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
+    <ClCompile Include="..\..\dsp\utils\SimpleQuantizer.cpp" />
     <ClCompile Include="..\..\midi\controller\MakeEmptyTrackCommand4.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditorTab.cpp" />
@@ -74,10 +77,12 @@
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
     <ClCompile Include="..\..\test\perfTest2.cpp" />
+    <ClCompile Include="..\..\test\SqWaveFile.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
     <ClCompile Include="..\..\test\testAudition.cpp" />
     <ClCompile Include="..\..\test\testBiquad.cpp" />
     <ClCompile Include="..\..\test\testButterLookup.cpp" />
+    <ClCompile Include="..\..\test\testChaos.cpp" />
     <ClCompile Include="..\..\test\testClockMult.cpp" />
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
@@ -93,6 +98,7 @@
     <ClCompile Include="..\..\test\testFinalLeaks.cpp" />
     <ClCompile Include="..\..\test\testFrequencyShifter.cpp" />
     <ClCompile Include="..\..\test\testGateTrigger.cpp" />
+    <ClCompile Include="..\..\test\TestGenerators.cpp" />
     <ClCompile Include="..\..\test\testGMR.cpp" />
     <ClCompile Include="..\..\test\testHighpassFilter.cpp" />
     <ClCompile Include="..\..\test\testHilbert.cpp" />
@@ -121,6 +127,8 @@
     <ClCompile Include="..\..\test\testNoteScreenScale.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer4.cpp" />
+    <ClCompile Include="..\..\test\testOnset.cpp" />
+    <ClCompile Include="..\..\test\testOnset2.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
     <ClCompile Include="..\..\test\testRateConversion.cpp" />
     <ClCompile Include="..\..\test\testReplaceCommand.cpp" />
@@ -130,6 +138,7 @@
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite4.cpp" />
+    <ClCompile Include="..\..\test\testSimpleQuantizer.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
     <ClCompile Include="..\..\test\testSlew4.cpp" />
@@ -183,6 +192,7 @@
     <ClInclude Include="..\..\dsp\fft\FFT.h" />
     <ClInclude Include="..\..\dsp\fft\FFTCrossFader.h" />
     <ClInclude Include="..\..\dsp\fft\FFTData.h" />
+    <ClInclude Include="..\..\dsp\fft\FFTUtils.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadFilter.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadParams.h" />
     <ClInclude Include="..\..\dsp\filters\BiquadState.h" />
@@ -286,6 +296,7 @@
     <ClInclude Include="..\..\test\MLockTest.h" />
     <ClInclude Include="..\..\test\SqTime.h" />
     <ClInclude Include="..\..\test\TestAuditionHost.h" />
+    <ClInclude Include="..\..\test\TestGenearators.h" />
     <ClInclude Include="..\..\test\TestHost2.h" />
     <ClInclude Include="..\..\test\TestHost4.h" />
     <ClInclude Include="..\..\test\TestSettings.h" />
@@ -370,7 +381,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -403,7 +414,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

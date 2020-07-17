@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <assert.h>
 #include <memory>
 
@@ -24,7 +25,9 @@ public:
 
     void setDelay(float samples)
     {
-        assert(samples < numSamples);
+        // assert(samples < numSamples);
+        // leave 3 for padding for the cubic interp
+        samples = std::min<float>(float(numSamples) - 3, samples);
         delayTime = samples;
     }
     float run(float input)
@@ -44,6 +47,11 @@ protected:
      * send the next input to the delay line
      */
     void setInput(float);
+
+    /**
+     * The size of the delay line, in samples
+     */
+    const int numSamples;
 private:
     /**
      * get delay output with integer (non-fractional) delay time
@@ -53,10 +61,7 @@ private:
     double delayTime = 0;
     int inputPointerIndex = 0;
 
-    /**
-     * The size of the delay line, in samples
-     */
-    const int numSamples;
+  
 
     float* delayMemory;
 };
@@ -75,12 +80,16 @@ public:
 #endif
     void setFeedback(float in_feedback)
     {
-        assert(feedback < 1);
-        assert(feedback > -1);
+      //  assert(feedback < 1);
+      //  assert(feedback > -1);
         feedback = in_feedback;
     }
 
     float run(float);
+
+    virtual float processFeedback(float in) {
+        return in;
+    }
 private:
   //  FractionalDelay delay;
     float feedback = 0;

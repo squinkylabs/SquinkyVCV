@@ -1,8 +1,5 @@
 #pragma once
 
-#ifdef __V1x
-
-//#include "app/SvgButton.hpp"
 #include "ToggleManager2.h"
 
 /**
@@ -212,4 +209,3 @@ inline void SqSvgParamToggleButton::onDragDrop(const event::DragDrop &e)
     const float value = getValue();
     SqHelper::setValue(this, value);
  }
- #endif

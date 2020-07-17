@@ -1,5 +1,10 @@
 # Squinky Labs style guide
 
+## 4X4 colors
+
+dark background is #202020
+label text is roboto regular 14 #a0a0a0
+
 ## Colors
 
 The standard blue is #307dee (48, 125, 238)

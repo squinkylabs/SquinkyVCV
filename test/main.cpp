@@ -9,6 +9,7 @@
 extern void testMidiPlayer2();
 extern void testMidiPlayer4();
 extern void testBiquad();
+extern void simd_testBiquad();
 extern void testTestSignal();
 extern void testSaw();
 extern void testLookupTable();
@@ -86,6 +87,14 @@ extern void testMidiSelectionModel();
 extern void testMidiTrackPlayer();
 extern void testSuper();
 extern void testEditCommands4();
+extern void testChaos();
+extern void testOnset();
+extern void testOnset2();
+extern void testWVCO();
+extern void testSub();
+extern void testSimd();
+extern void testSimdLookup();
+extern void testSimpleQuantizer();
 
 #if 0
 #include <sstream>
@@ -143,7 +152,7 @@ int main(int argc, char ** argv)
     // Want to be sure we are testing the case we care about.
     assert(sizeof(size_t) == 8);
 
-    if (runShaperGen) {
+if (runShaperGen) {
         testSpline(true);
         return 0;
     }
@@ -155,16 +164,30 @@ int main(int argc, char ** argv)
 
     if (runPerf) {
         initPerf();
-        perfTest2();
+
         perfTest();
+        perfTest2();
         return 0;
     }
 
-
+#ifndef _MSC_VER
+    testSimd();
+    testSimdLookup();
+#endif
 
     testAudioMath();
     testRingBuffer();
     testGateTrigger();
+    testOnset();
+    testOnset2();
+
+    testBiquad();
+#ifndef _MSC_VER
+    testSub();
+    simd_testBiquad();
+    testWVCO();
+#endif
+    testSimpleQuantizer();
 
     testIComposite();
     testVec();
@@ -173,6 +196,7 @@ int main(int argc, char ** argv)
     testFilteredIterator();
     testMidiDataModel();
     testMidiSelectionModel();
+    testChaos();
     testMidiSong();
     testSeqClock();
     testMidiTrackPlayer();
@@ -213,7 +237,7 @@ int main(int argc, char ** argv)
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
     testTestSignal();
-    testBiquad();
+   
     testSaw();
     testClockMult();
     testDelay();

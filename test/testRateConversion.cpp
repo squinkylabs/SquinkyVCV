@@ -4,7 +4,7 @@
 
 #include "asserts.h"
 
-static void setup(IIRUpsampler& up, IIRDecimator& dec)
+static void setup(IIRUpsampler& up, IIRDecimator<float>& dec)
 {
    // float cutoff = .25 / 16;
     up.setup(16);
@@ -17,7 +17,7 @@ static void test0()
     float buffer[16];
 
     IIRUpsampler up;
-    IIRDecimator dec;
+    IIRDecimator<float> dec;
     setup(up, dec);
   
     up.process(buffer, 0);
@@ -30,7 +30,7 @@ static void test1()
     float buffer[16];
 
     IIRUpsampler up;
-    IIRDecimator dec;
+    IIRDecimator<float> dec;
     setup(up, dec);
 
     up.process(buffer, 0);
@@ -44,7 +44,7 @@ static void test2()
     float buffer[16];
 
     IIRUpsampler up;
-    IIRDecimator dec;
+    IIRDecimator<float> dec;
     setup(up, dec);
 
     float x;

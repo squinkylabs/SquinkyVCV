@@ -6,6 +6,10 @@
 #include "AudioMath.h"
 #include "LookupTableFactory.h"
 
+#ifndef _MSC_VER
+#include "SimdBlocks.h"
+#endif
+
 using namespace std;
 
 static void test0()
@@ -59,14 +63,19 @@ static void testAudioTaper()
     assertClose(f(0), 0, .001);
 }
 
-static void testScaler()
-{
-    AudioMath::ScaleFun<float> f = AudioMath::makeLinearScaler<float>(3, 4);
+
+// Tests both linear scalers with domain -5..5 for
+// both knob and CV
+static void testScalerSub(bool useScaler2)
+{ 
+    AudioMath::ScaleFun<float> f = useScaler2 ?
+        AudioMath::makeLinearScaler2<float>(-5, 5, 3, 4) :
+        AudioMath::makeLinearScaler<float>(3, 4);
     // scale(cv, knob, trim
 
     // knob comes through only shifted
     assertEQ(f(0, -5, 0), 3.);
-    assertEQ(f(0, 5, 0), 4.);
+    assertEQ(f(0, 5, 0), 4.); 
     assertEQ(f(0, 0, 0), 3.5);
 
     // cv also come through, it trim up
@@ -74,15 +83,58 @@ static void testScaler()
     assertEQ(f(5, 0, 1), 4.);
     assertEQ(f(0, 0, 1), 3.5);
 
+    // (T cv, T knob, T trim)
     // no cv if trim 0
+    // knob in middle
     assertEQ(f(-5, 0, 0), 3.5);
 
     // neg trim inverts cv
     assertEQ(f(-5, 0, -1), 4.);
-
-
+    
     // trim half way
     assertEQ(f(5, 0, .5), 3.75);
+
+    // way down, should clip
+    assertEQ(f(-5, -5, 1), 3);
+    // way up, should clip
+    assertEQ(f(5, 5, 1), 4);
+}
+
+static void testScaler()
+{
+
+    // a = .1 b = 3.5
+    auto xx = AudioMath::makeLinearScaler<float>(3, 4);
+
+    // both a .1, b = 3.5
+    auto yy= AudioMath::makeLinearScaler2<float>(-5, 5, 3, 4);
+
+    xx(-5, 0, 0);
+    yy(-5, 0, 0);
+  
+    testScalerSub(false);
+}
+
+static void testScaler2()
+{
+    testScalerSub(true);
+}
+
+static void testScaler3()
+{
+    // (T cv, T knob, T trim)
+    AudioMath::ScaleFun<float> f = AudioMath::makeLinearScaler2<float>(1, 31, 3, 4);
+    // knob comes through shifted and scaled
+    assertEQ(f(0, 1, 0), 3.);
+    assertEQ(f(0, 31, 0), 4.);
+    assertEQ(f(0, 16, 0), 3.5);
+
+     // cv also come through, if trim up
+    assertEQ(f(-5, 1, 1), 3.);      // cv at min, knob at min will go below min, clip
+    assertEQ(f(5, 31, 1), 4.);      // cv at max, knob at max, will to above, clip
+
+    // could use some more tests here....
+  //  assertEQ(f(0, 1, 1), 3.5);
 }
 
 static void testBipolarAudioScaler()
@@ -132,7 +184,6 @@ static void testAudioScaler()
     assertEQ(f(-2.5, 0), 3.0f + kneeGain);
 }
 
-
 static void testAudioScaler2()
 {
     AudioMath::SimpleScaleFun<float> f = AudioMath::makeSimpleScalerAudioTaper(0, 20);
@@ -151,8 +202,6 @@ static void testAudioScaler2()
     assertEQ(f(5, 0), 20);
     assertEQ(f(-2.5, 0), 20 * kneeGain);
 }
-
-
 
 static void testFold()
 {
@@ -178,6 +227,71 @@ static void testFoldNegative()
         assertLE(absChange, deltaX + .0001f);
     }
 }
+
+#ifndef _MSC_VER
+void pr(float_4 x);
+
+static void testFoldSSE()
+{
+    // a few well know fixed values for sanity
+    simd_assertEQ(SimdBlocks::fold(0), float_4(0));
+    simd_assertEQ(SimdBlocks::fold(.5), float_4(.5));
+    simd_assertEQ(SimdBlocks::fold(-.5), float_4(-.5)); 
+    simd_assertEQ(SimdBlocks::fold(.9), float_4(.9));
+    simd_assertEQ(SimdBlocks::fold(-.9), float_4(-.9));    
+    simd_assertClose(SimdBlocks::fold(1.2), float_4(.8), .0001);
+    simd_assertClose(SimdBlocks::fold(-1.2), float_4(-.8), .0001); 
+}
+
+static void testFoldSSE2()
+{
+    const float deltaX = 0.05f;
+    for (float x = -15; x < 15; x += deltaX) {
+        const float y = AudioMath::fold(x);
+        const float_4 y4 = SimdBlocks::fold(x);
+        simd_assertClose(y4, float_4(y), .0001);
+    }
+}
+
+static void testFoldSSE3()
+{
+    const float test[4] = {.1, 2.3, -1, -40.3};
+    float output[4] = {0,0,0,0};
+
+    float_4 input = float_4::load(test);
+    float_4 temp = SimdBlocks::fold(input);
+    temp.store(output);
+    
+    for (int i=0; i<4; ++i) {
+        assertClose(output[i], AudioMath::fold(test[i]), .0001);
+    }
+}
+
+static void testWrapPhase()
+{
+    for (float x=0; x < 10; x+= .1) {
+        float_4 x4(x);
+        simd_assertGE(SimdBlocks::wrapPhase01(x4), float_4(0));
+        simd_assertLE(SimdBlocks::wrapPhase01(x4), float_4(1));
+    }
+}
+
+static void testWrapPhase2()
+{
+    simd_assertEQ(SimdBlocks::wrapPhase01(0), float_4(0));
+    simd_assertEQ(SimdBlocks::wrapPhase01(0.1), float_4(0.1));
+    simd_assertEQ(SimdBlocks::wrapPhase01(0.9), float_4(0.9));
+
+    simd_assertEQ(SimdBlocks::wrapPhase01(1.0), float_4(0));
+    simd_assertClose(SimdBlocks::wrapPhase01(1.2), float_4(0.2), .00001);
+    simd_assertClose(SimdBlocks::wrapPhase01(1.9), float_4(0.9), .00001);
+
+    simd_assertClose(SimdBlocks::wrapPhase01(1000.9), float_4(0.9), .0001);
+
+    simd_assertEQ(SimdBlocks::wrapPhase01(-.1), float_4(.9));
+
+}
+#endif
 
 static void testNormalizeProduct()
 {
@@ -213,6 +327,8 @@ void testAudioMath()
     test3();
     testAudioTaper();
     testScaler();
+    testScaler2();
+    testScaler3();
     testBipolarAudioScaler();
     testAudioScaler();
     testAudioScaler2();
@@ -220,4 +336,12 @@ void testAudioMath()
     testFoldNegative();
     testNormalizeProduct();
     testDistributeEvenly();
+#ifndef _MSC_VER
+    testFoldSSE();
+    testFoldSSE2();
+    testFoldSSE3();
+    testWrapPhase();
+    testWrapPhase2();
+#endif
+
 }
