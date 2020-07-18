@@ -1,6 +1,8 @@
 # Substitute
 
-Substitute is a copy of the VCOs from the Moog Subharmonicon. It’s adapted from the Fundamental VCO-1, which has been heavily modified to generate the subs. This VCO has very low aliasing. So, unlike the divisions you would get with a typical divider, there is almost no aliasing in these subs.
+![substitute](./substitute.png)
+
+Substitute is inspired by the VCOs from the Moog Subharmonicon. It’s adapted from the Fundamental VCO-1, which has been heavily modified to generate the subs. This VCO has very low aliasing. So, unlike the divisions you would get with a typical divider, there is almost no aliasing in these subs.
 
 Like the Moog unit each "voice" has two fundamentals, and each fundamental has two subharmonics.
 
