@@ -6,6 +6,24 @@ The module title in the description of each module is a link the the documentati
 
 The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notice that the word *Changelog* in the previous sentence is a link to the changelog);
 
+# Things that make sound
+
+![Intro 1 image](./intro-1-110.png)
+
+[Kitchen Sink](./kitchen-sink.md) is a one operator FM module with the additions on a waves-shaper on the output, and a hard sync input.
+
+[Substitute](./substitute.md) is an homage to the VCO section of the Subharmonium. It has two VCOs per voice, each with two subharmonics, and a just intonation quantizer.
+
+[EV3](./ev3.md) is three VCOs in a single module. Each of the three VCOs is a clone of Befaco's EvenVCO, with oscillator sync added. Like EvenVCO, it sounds good, uses little CPU, and has very little aliasing distortion.
+
+[Chebyshev Waveshaper VCO](../docs/chebyshev.md) can make sounds like no other VCO. It contains a VCO, ten polynomial wave-shapers, and one clipper/folder. Among other things, it is a **harmonic oscillator**.
+
+[Saws](./saws.md) is an polyphonic emulation of the legendary Roland Super-Saw from the JP-8000.
+
+[Colors](./colors.md) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. And all the colors in between.
+
+[Functional VCO-1](./functional-vco-1.md) [deprecated] is an improved version of the Fundamental VCO-1 version 0.6. Now that Fundamental VCO-1 1.0 is so much improved, there is no reason to use Functional VCO-1.
+
 # Sequencers
 
 ![Seq++ Image](./seqs.png)
@@ -26,19 +44,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 [Mixer-8](./mix8.md) is our clone of the AS 8-CH mixer, with more features and 1/10 the CPU usage.
 
-# Things that make sound
 
-![Intro 1 image](./intro-1-110.png)
-
-[EV3](./ev3.md) is three VCOs in a single module. Each of the three VCOs is a clone of Befaco's EvenVCO, with oscillator sync added. Like EvenVCO, it sounds good, uses little CPU, and has very little aliasing distortion.
-
-[Chebyshev Waveshaper VCO](../docs/chebyshev.md) can make sounds like no other VCO. It contains a VCO, ten polynomial wave-shapers, and one clipper/folder. Among other things, it is a **harmonic oscillator**.
-
-[Saws](./saws.md) is an polyphonic emulation of the legendary Roland Super-Saw from the JP-8000.
-
-[Colors](./colors.md) is a colored noise generator. It can generate all the common **"colors"** of noise, including white, pink, red, blue, and violet. And all the colors in between.
-
-[Functional VCO-1](./functional-vco-1.md) [deprecated] is an improved version of the Fundamental VCO-1 version 0.6. Now that Fundamental VCO-1 1.0 is so much improved, there is no reason to use Functional VCO-1.
 
 # Things that process sound
 

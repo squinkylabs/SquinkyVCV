@@ -1,5 +1,7 @@
 # Kitchen Sink
 
+![kitchen sink](./kitchen-sink.png)
+
 This VCO contains a sinewave oscillator that can do "through zero linear FM", with an ADSR, a wave-shaper, and a bunch of VCAs. If you are familiar with the FM OP VCO, it's a lot like that, with the addition of the wave-shaper and a VCO sync input.
 
 The ability to do FM along with other classic forms of synthesis gives quite a wide palette of sounds that would typically require many more modules to achieve.
