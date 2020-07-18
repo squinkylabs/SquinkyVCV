@@ -10,7 +10,7 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Intro 1 image](./intro-1-110.png)
 
-[Kitchen Sink](./kitchen-sing.md) is a one operator FM module with the additions on a waves-shaper on the output, and a hard sync input.
+[Kitchen Sink](./kitchen-sink.md) is a one operator FM module with the additions on a waves-shaper on the output, and a hard sync input.
 
 [Substitute](./substitute.md) is an homage to the VCO section of the Subharmonium. It has two VCOs per voice, each with two subharmonics, and a just intonation quantizer.
 
