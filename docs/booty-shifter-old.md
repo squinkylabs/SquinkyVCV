@@ -1,6 +1,6 @@
 # Table of contents
 
-[Chebyshev Waveshaper VCO](../docs/chebyshev.md) Click on link to go to Chbeyshev manual.
+[Chebyshev Waveshaper VCO](../docs/chebyshev.md) Click on link to go to Chebyshev manual.
 
 [Functional VCO-1](#fun) Is an improved version of the Fundamental-VCO1.
 
