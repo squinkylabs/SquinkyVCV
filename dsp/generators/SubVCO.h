@@ -40,10 +40,12 @@ public:
 
 	void process(float deltaTime, T syncValue);
 	T main() const {
-		return mainValue;
+		//printf("main=%f off=%f, comb=%f\n", mainValue, mainDCOffset, mainValue + mainDCOffset);
+		return mainValue + mainDCOffset;
+		//return mainValue;
 	}
     T sub(int side) const {
-		return subValue[side];
+		return subValue[side] + subDCOffset[side];
 	}
 
 	void setPW(float_4 pw) {
@@ -53,6 +55,15 @@ public:
 	}
 
 	int _channels = 0;
+
+	T _getFreq() const {
+		return freq;
+	}
+
+	/**
+	 * must be called after all other setXX methods.
+	 */
+	void computeOffsetCorrection(float sampleTime);
 private:
 	using MinBlep = dsp::MinBlepGenerator<QUALITY, OVERSAMPLE, T>;
 	MinBlep mainMinBlep;
@@ -70,9 +81,10 @@ private:
 	T mainIsNotSaw = 0;
 	T subIsSaw = float_4::mask();
 	T subIsNotSaw = 0;
+	T mainDCOffset = 0;
+	T subDCOffset[2] = {};
 
 	bool syncEnabled = false;
-
 
 	T lastSyncValue = 0.f;
 	T mainPhase = 0.f;
@@ -84,16 +96,16 @@ private:
 	static T saw(T phase, T minBlepValue);
 	static T sqr(T phase, T minBlepValue, T pwValue);
 	void doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw, MinBlep& minBlep, int id) const;
-
 };
 
 template <int OV, int Q, typename T, typename I>
 inline void VoltageControlledOscillator<OV, Q, T, I>::setupSub(int channels, T pitch, I subDivisorA, I subDivisorB)
 {
-	//	printf("\n********* in setup sub index = %d\n", index);
+	
 	assert(index >= 0);
 
 	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+//	printf("\n********* in setup sub index = %d pitch=%s converted to freq=%s\n", index, toStr(pitch).c_str(), toStr(freq).c_str());
 #if 0
 	printf("\nin setup sub[%d] freq = %s\nfrom pitch= %s\n",
 		index,
@@ -108,10 +120,6 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setupSub(int channels, T p
 	simd_assertLE(subDivisorB, int32_4(16));
 	subDivisionAmount[0] = subDivisorA;
 	subDivisionAmount[1] = subDivisorB;
-
-	// TODO: this reset here is what glitche, yes?
-	//subCounter[0] = SimdBlocks::ifelse( subCounter[0] < 1, 1, subCounter[0]);
-	//subCounter[1] = SimdBlocks::ifelse( subCounter[1] < 1, 1, subCounter[1]);
 
 	subFreq[0] = freq / subDivisionAmount[0];
 	subFreq[1] = freq / subDivisionAmount[1];
@@ -133,7 +141,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setWaveform(T mainSaw, T s
 {
 	simd_assertMask(mainSaw);
 	simd_assertMask(subSaw);
-//	printf("mainisSw = %d for %p\n", mainSaw, this); fflush(stdout);
+
 	mainIsSaw = mainSaw;
 	subIsSaw = subSaw;
 
@@ -141,7 +149,17 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setWaveform(T mainSaw, T s
 	subIsNotSaw = subIsSaw ^ float_4::mask();
 }
 
-// FKA doSquareHighToLowMinblep 
+template <int OV, int Q, typename T, typename I>
+inline void VoltageControlledOscillator<OV, Q, T, I>::computeOffsetCorrection(float sampleTime)
+{
+	const float sawCorrect = 5.698 * sampleTime * -1;
+	const T pwCorrect((pulseWidth * 2)- 1);
+	mainDCOffset = SimdBlocks::ifelse(mainIsSaw, sawCorrect * freq, pwCorrect );
+	subDCOffset[0] =  SimdBlocks::ifelse(subIsSaw, sawCorrect * subFreq[0], pwCorrect );
+	subDCOffset[1] =  SimdBlocks::ifelse(subIsSaw, sawCorrect * subFreq[1], pwCorrect );
+	//printf("main dc offset = %s\n", toStr(mainDCOffset).c_str());
+}
+
 template <int OV, int Q, typename T, typename I>
 inline void VoltageControlledOscillator<OV, Q, T, I>::doSquareLowToHighMinblep(T deltaPhase, T phase, T notSaw,
 	MinBlep& minBlep, int id) const
@@ -184,6 +202,12 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 	// Don't wrap any - we will do them all at once later
 
 	mainPhase += deltaPhase;
+#if 0
+	static int xx = 0;
+	if (++xx < 20) {
+		printf("main phase = %f after add %f\n", mainPhase[0], deltaPhase[0]);
+	}
+#endif
 
 	simd_assertLE(mainPhase, float_4(2));	
 	simd_assertGT(mainPhase, float_4(0));
