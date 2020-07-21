@@ -172,6 +172,7 @@ if (runShaperGen) {
     }
 
 #ifndef _MSC_VER
+testDC();
     testSimd();
     testSimdLookup();
 #endif
@@ -184,7 +185,6 @@ if (runShaperGen) {
 
     testBiquad();
 #ifndef _MSC_VER
-    testDC();
     testSub();
     simd_testBiquad();
     testWVCO();

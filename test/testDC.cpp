@@ -17,23 +17,49 @@ float vcoProfiler(bool highToLow, int minimumSamples, oscillator osc)
     double sum = 0;
     int samples = 0;
     bool firstCross = true;
+    bool secondCross = true;
+
+   // int pct = 0;
 
 
     while(!done) {
         float x = osc();
+        #if 0
+        if (++pct < 20) {
+            printf("osc[%d] = %f\n", ct, x);
+        }
+        #endif
+
+        // 1 worked ok, but failed at 01
+        const float delta = .5;
         bool crossed = highToLow ? 
-            (x < (last - .5)) :
-            (x > (last + .5));
+            (x < (last - delta)) :
+            (x > (last + delta));
 
         if (crossed) {
+        #if 0
+            if (samples < 100 || firstCross || secondCross) {
+                printf("\n**crossed at samples = %d, x=%f, last=%f\n", samples, x, last);
+                printf("first = %d, second=%d\n", firstCross, secondCross);
+            }
+        #endif
             if (firstCross) {
+              //  printf("first cross at %d\n", samples);
                 firstCross = false;
                 sum = 0;
                 samples = 0;
             } else {
+                if (secondCross && (samples > 3)) {
+                    secondCross = false;
+                    printf("at second cross, period = %d\n", samples);
+                    fflush(stdout);
+                    assert(samples > 3);
+                }
+
                 done = samples > minimumSamples;
             }
         }
+
         if (ct > minimumSamples * 2) {
             assert(false);
             done = true;
@@ -73,7 +99,10 @@ oscillator makeFake(float freq) {
     return osc;
 }
 
-oscillator makeSubSaw(float freq) {
+std::pair<oscillator, float>
+ makeSubSaw(float freq) {
+//oscillator makeSubSaw(float freq) {
+    printf("make sub saw called with freq = %f\n", freq);
     std::shared_ptr<subvco> osc = std::make_shared<subvco>();
     //float_4 mainIsSawMask = bitfieldToMask(0xf);
     osc->index = 0;
@@ -81,18 +110,25 @@ oscillator makeSubSaw(float freq) {
     osc->setWaveform(mask,mask);
     osc->setupSub(4, float_4(freq), int32_4(2), int32_4(2));
 
+    const float sampleTime = 1.f / 44100.f;
+    osc->computeOffsetCorrection(sampleTime);
+
     float deltaTime = 1.f / 44100.f;
 
     oscillator ret = [osc, deltaTime]() {
         osc->process(deltaTime, float_4(0));
         return osc->main()[0];
     };
-    return ret;
+    //return ret;
+    const float f = osc->_getFreq()[0];
+    return std::make_pair(ret, f);
 }
 
-oscillator makeSubSq(float freq, float pw) {
+
+/// second is the freq
+std::pair<oscillator, float>
+makeSubSq(float freq, float pw) {
     std::shared_ptr<subvco> osc = std::make_shared<subvco>();
-    //float_4 mainIsSawMask = bitfieldToMask(0xf);
     osc->index = 0;
     float_4 mask = float_4::zero();
     simd_assertMask(mask);
@@ -100,129 +136,67 @@ oscillator makeSubSq(float freq, float pw) {
     osc->setupSub(4, float_4(freq), int32_4(2), int32_4(2));
     osc->setPW(float_4(pw));
 
+    const float sampleTime = 1.f / 44100.f;
+    osc->computeOffsetCorrection(sampleTime);
+
     float deltaTime = 1.f / 44100.f;
 
     oscillator ret = [osc, deltaTime]() {
         osc->process(deltaTime, float_4(0));
         return osc->main()[0];
     };
-    return ret;
-}
-static void testDC0()
-{
-    auto osc = makeFake (.01);
-    float x = vcoProfiler(true, 41000 * 100, osc);
-    printf("final dc0 = %f\n", x);
-    fflush(stdout);
-    assertLE(std::abs(x), .001);
-}
-
-static void testDCSaw1()
-{
-    printf("start testDCSaw1\n");
-    fflush(stdout);    
-    auto osc = makeSubSaw (.01);
-    float x = vcoProfiler(true, 41000 * 100, osc);
-    printf("final dc subsaw .01 = %f\n", x);
-    fflush(stdout);
-}
-
-static void testDCSaw2()
-{
-    printf("start testDCSaw2\n");
-    fflush(stdout);    
-    auto osc = makeSubSaw (.001);
-    float x = vcoProfiler(true, 41000 * 100, osc);
-    printf("final dc subsaw .001 = %f\n", x);
-    fflush(stdout);
-}
-
-static void testDCSaw3()
-{
-    printf("start testDCSaw3\n");
-    fflush(stdout);    
-    auto osc = makeSubSaw (.04);
-    float x = vcoProfiler(true, 41000 * 100, osc);
-    printf("final dc subsaw .04 = %f\n", x);
-    fflush(stdout);
+    const float f = osc->_getFreq()[0];
+    return std::make_pair(ret, f);
 }
 
 
-static void testDCSaw4()
-{
-    printf("start testDCSaw4\n");
-    fflush(stdout);    
-    auto osc = makeSubSaw (.0001);
-    float x = vcoProfiler(true, 41000 * 100, osc);
-    printf("final dc subsaw4 .00001 = %f\n", x);
-    fflush(stdout);
+
+static void doSawTest(float pitch) {
+    auto temp = makeSubSaw (pitch);
+    float x = vcoProfiler(true, 41000 * 100, temp.first);
+
+    const float normFreq = temp.second / 44100.f; 
+    assertLT(x, .001);
 }
 
-static void testDCSaw5()
-{
-    printf("start testSaw5\n");
-    fflush(stdout);    
-    auto osc = makeSubSaw (.0001);
-    float x = vcoProfiler2(41000 * 100, osc);
-    printf("final simple dc subsaw4 .00001 = %f\n", x);
-    fflush(stdout);
+static void saws() {
+    #if 0
+    // wanted -4, ng
+    for (int i=-4; i<5; ++i) {
+        doSawTest(i);
+    }
+    #endif
+
+    doSawTest(0);
+    doSawTest(3);
 }
 
 
-static void testDCSaw6()
-{
-    printf("start testSaw6\n");
-    fflush(stdout);    
-    auto osc = makeSubSaw (.00001);
-    float x = vcoProfiler2(41000 * 100, osc);
-    printf("final simple dc subsaw4 .000001 = %f\n", x);
-    fflush(stdout);
+
+static void doSqTest(float pitch, float pw) {
+  //  printf("\n\n*************************** start sq test(%f, %f)\n", pitch, pw);
+  //  fflush(stdout);    
+    auto temp = makeSubSq (pitch, pw);
+    float x = vcoProfiler(true, 41000 * 100, temp.first);
+
+ //   const float normFreq = temp.second / 44100.f;
+    assertLT(x, .001);
 }
 
-static void testDCSq1()
-{
-    printf("start testDCSq1\n");
-    fflush(stdout);    
-    auto osc = makeSubSq (.04, .5);
-    float x = vcoProfiler(true, 41000 * 100, osc);
-    printf("final dc sub sq .04 = %f\n", x);
-    fflush(stdout);
-}
 
-static void testDCPw1()
-{
-    printf("start testDCPw1\n");
-    fflush(stdout);    
-    auto osc = makeSubSq (.04, .1);
-    float x = vcoProfiler(true, 41000 * 100, osc);
-    printf("final dc sub pw .04 = %f\n", x);
-    fflush(stdout);
-}
-
+static void pulses() {
+    // wanted -4, ng
 #if 0
-static void testDC0()
-{
-    float phase = 0;
-    oscillator osc = [&phase]() {
-        phase += .01;
-        if (phase > 1) {
-            phase -= 1;
-        }
-        return phase - .5f;
-    };
-    vcoProfiler(true, 41000, osc);
-}
+    for (float pw=0; pw < 1; pw += .1) {
+        doSqTest(0, pw);
+
+    }
 #endif
+ doSqTest(0, .5f);
+}
 
 void testDC()
 {
-    testDC0();
-    testDCSaw1();
-    testDCSaw2();
-    testDCSaw3();
-    testDCSaw4();
-    testDCSaw5();
-    testDCSaw6();
-    testDCSq1();
-    testDCPw1();
+    saws();
+    pulses();
 }

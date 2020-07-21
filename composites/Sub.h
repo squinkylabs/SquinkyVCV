@@ -543,6 +543,7 @@ inline void Sub<TBase>::stepm()
 template <class TBase>
 inline void Sub<TBase>::stepn()
 {
+    //printf("stepn numBanks = %d\n", numBanks);
     // if either side has a CV connected, then update that now
     if (shouldUpdateVco1Often_m || shouldUpdateVco2Often_m) {
         computeGains(shouldUpdateVco1Often_m, shouldUpdateVco2Often_m, agcEnabled_m);
@@ -593,9 +594,12 @@ inline void Sub<TBase>::stepn()
         oscillators[bank].setupSub(activeChannels_m[bank], float_4(0), 4, 4);
     }
 
-     for (int bank = 0; bank < numBanks; ++bank) {
+    const float sampleTime = TBase::engineGetSampleTime();
+    for (int bank = 0; bank < numBanks; ++bank) {
+        //printf("will compute offset bank %d\n", bank); fflush(stdout);
         float_4 pw = computePW(bank);
         oscillators[bank].setPW(pw);
+        oscillators[bank].computeOffsetCorrection(sampleTime);
      }
 }
 
