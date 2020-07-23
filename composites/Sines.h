@@ -105,6 +105,7 @@ inline void Sines<TBase>::init()
 template <class TBase>
 inline void Sines<TBase>::stepn()
 {
+    printf("in stepn\n"); fflush(stdout);
     const float semi = PitchUtils::semitone;
     float pitches[12] = {
         -1, 0, 7 * semi, 1,
@@ -112,17 +113,24 @@ inline void Sines<TBase>::stepn()
         3, 0, 0, 0};
     
     float_4 pitch;
-    pitch.load(pitches);
+    pitch = float_4::load(pitches);
+    printf("loaded pitches %s\n", toStr(pitch).c_str());
+    fflush(stdout);
     sines[0].setPitch(pitch);
-    pitch.load(pitches + 4);
+
+    float* p = pitches + 4;
+    pitch = float_4::load(p);
     sines[1].setPitch(pitch);
-    pitch.load(pitches + 8);
+
+    p = pitches + 8;
+    pitch = float_4::load(p);
     sines[2].setPitch(pitch);
 }
 
 template <class TBase>
 inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    divn.step();
     T sum;
     T deltaT(args.sampleTime);
     sum = sines[0].process(deltaT);

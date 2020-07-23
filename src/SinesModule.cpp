@@ -40,6 +40,7 @@ SinesModule::SinesModule()
     SqHelper::setupParams(icomp, this); 
 
     onSampleRateChange();
+    printf("CALLING INIT\n"); fflush(stdout);
     blank->init();
 }
 
