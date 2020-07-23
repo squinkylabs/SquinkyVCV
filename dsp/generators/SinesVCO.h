@@ -26,8 +26,8 @@ template <typename T>
 inline void SinesVCO<T>::setPitch(T pitch)
 {
 	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
-    printf("set pitch %s made freq %s\n", toStr(pitch).c_str(), toStr(freq).c_str());
-    fflush(stdout);
+  //  printf("set pitch %s made freq %s\n", toStr(pitch).c_str(), toStr(freq).c_str());
+  //  fflush(stdout);
 }
 
  static float_4 twoPi = 2 * 3.141592653589793238;
