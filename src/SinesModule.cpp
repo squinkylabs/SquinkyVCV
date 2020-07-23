@@ -66,7 +66,32 @@ struct SinesWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+
+    void addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp);
 };
+
+
+void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)
+{
+    addInput(createInput<PJ301MPort>(
+        Vec(50, 340),
+        module,
+        Comp::V_OCT_INPUT));
+    addLabel( Vec(44, 320), "V/Oct");
+
+    addInput(createInput<PJ301MPort>(
+        Vec(90, 340),
+        module,
+        Comp::GATE_INPUT));
+    addLabel( Vec(84, 320), "Gate");
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(130, 340),
+        module,
+        Comp::V_OCT_INPUT));
+    addLabel( Vec(124, 320), "Out");
+}
 
 
 /**
@@ -79,6 +104,9 @@ SinesWidget::SinesWidget(SinesModule *module)
 {
     setModule(module);
     SqHelper::setPanel(this, "res/blank_panel.svg");
+
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    addJacks(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
