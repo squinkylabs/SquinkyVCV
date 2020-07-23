@@ -213,6 +213,13 @@
 			"description": "Subharmonic VCO",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md",
 			"tags": ["VCO", "Polyphonic"]
+		},
+		{
+			"slug": "squinkylabs-sines",
+			"name": "sines",
+			"description": "sines",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/sines.md",
+			"tags": ["VCO", "Polyphonic"]
 		}
 	]
 }
