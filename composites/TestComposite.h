@@ -225,7 +225,10 @@ public:
     {
     }
 
-
+	struct ProcessArgs {
+		float sampleRate;
+		float sampleTime;
+	};
  
     std::vector<Input> inputs;
     std::vector<Output> outputs;
@@ -245,4 +248,9 @@ public:
     virtual void step()
     {
     }
+
+	virtual void process(const ProcessArgs& args)
+	{
+		
+	}
 };
