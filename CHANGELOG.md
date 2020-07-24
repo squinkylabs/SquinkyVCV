@@ -1,5 +1,15 @@
 # Change log for Squinky Labs modules
 
+## 1.0.10
+
+Bug fix: Kitchen Sink plays wrong pitches when polyphony greater than four.
+
+Bug fix: DC offset on sawtooth output from Substitute. Offset increases with frequency, becoming quite large at 1kHz.
+
+Bug fix:  DC offset on pulse wave output from Substitute. Offset increases as the pulses get narrower, becoming quite large at very narrow width.
+
+Documentation fix: Various documentation pages were displaying older versions.
+
 ## 1.0.9
 
 New module: Kitchen-Sink
