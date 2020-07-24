@@ -265,7 +265,7 @@ void WVCOWidget::appendContextMenu(Menu *menu)
 
     ManualMenuItem* manual = new ManualMenuItem(
         "Kitchen Sink manual",
-        "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/kitchen-sink.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/kitchen-sink.md");
     menu->addChild(manual);
     
 #if 0

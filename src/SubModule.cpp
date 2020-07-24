@@ -98,7 +98,7 @@ void SubWidget::appendContextMenu(Menu *menu)
 
     ManualMenuItem* manual = new ManualMenuItem(
         "Substitute manual",
-        "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/substitute.md");
     menu->addChild(manual);
     
   //  MenuLabel *spacerLabel2 = new MenuLabel();

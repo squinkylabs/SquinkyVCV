@@ -189,7 +189,7 @@
 			"disabled": true,
 			"name": "Chaos Kitty",
 			"description": "thing",
-			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/chaos-kitty.md",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/chaos-kitty.md",
 			"tags": ["VCO"]
 		},
 		{
@@ -204,14 +204,14 @@
 			"slug": "squinkylabs-wvco",
 			"name": "FM Kitchen Sink",
 			"description": "Many function VCO",
-			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck1/docs/kitchen-sink.md",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/kitchen-sink.md",
 			"tags": ["VCO", "Polyphonic"]
 		},
 		{
 			"slug": "squinkylabs-sub",
 			"name": "Substitute",
 			"description": "Subharmonic VCO",
-			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/substitute.md",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/substitute.md",
 			"tags": ["VCO", "Polyphonic"]
 		}
 	]
