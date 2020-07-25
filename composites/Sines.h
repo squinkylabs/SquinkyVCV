@@ -112,18 +112,23 @@ inline void Sines<TBase>::stepn()
         1 + 7 * semi, 2, 2 + 4 * semi, 2 + 7 * semi,
         3, 0, 0, 0};
     
-    float_4 pitch;
-    pitch = float_4::load(pitches);
+    const float cv = Sines<TBase>::inputs[V_OCT_INPUT].getVoltage(0);
+    float_4 basePitch(cv);
+
+    float_4 pitch = basePitch;
+    pitch += float_4::load(pitches);
   //  printf("loaded pitches %s\n", toStr(pitch).c_str());
  //   fflush(stdout);
     sines[0].setPitch(pitch);
 
     float* p = pitches + 4;
-    pitch = float_4::load(p);
+    pitch = basePitch;
+    pitch += float_4::load(p);
     sines[1].setPitch(pitch);
 
     p = pitches + 8;
-    pitch = float_4::load(p);
+    pitch = basePitch;
+    pitch += float_4::load(p);
     sines[2].setPitch(pitch);
 }
 
@@ -131,6 +136,8 @@ template <class TBase>
 inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     divn.step();
+
+
     T sum;
     T deltaT(args.sampleTime);
     sum = sines[0].process(deltaT);
