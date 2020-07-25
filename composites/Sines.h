@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "ADSR4.h"
 #include "Divider.h"
 #include "IComposite.h"
 #include "PitchUtils.h"
@@ -86,6 +87,7 @@ public:
 private:
 
     SinesVCO<T> sines[3];
+    ADSR4 adsr;
     
     Divider divn;
 
