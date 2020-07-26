@@ -192,6 +192,8 @@ inline void Sines<TBase>::stepn()
             gates[i] = gate;
         }
         */
+
+//#define _LOG
 template <class TBase>
 inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 {
@@ -206,8 +208,8 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const int adsrBank = vx / 4;
         const int adsrBankOffset = vx - (adsrBank * 4);
-        const bool newAdsrBank = (adsrBank != lastAdsrBank);
-        lastAdsrBank = adsrBank;
+     //   const bool newAdsrBank = (adsrBank != lastAdsrBank);
+     //   lastAdsrBank = adsrBank;
         const int baseSineIndex = numSinesPerVoices * vx;
 
         // for each voice we must compute all the sines for that voice.
@@ -231,11 +233,12 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
         #ifdef _LOG
         printf("--- LOOKING FOR blocke, vx = %d newadsr bank = %d\n", vx, newAdsrBank);
         #endif
-        if (newAdsrBank && (vx != 0)) {
+       // if (newAdsrBank && (vx != 0)) {
+        if (adsrBankOffset == 3) {
             outputNow = true;
-            bankToOutput = adsrBank - 1;
+            bankToOutput = adsrBank;
             #ifdef _LOG
-            printf("first case fired bto=%d\n", bankToOutput);
+            printf("first case fired (block full) bto=%d\n", bankToOutput);
             #endif
  
         }
