@@ -68,17 +68,15 @@ struct SinesWidget : ModuleWidget
         return label;
     }
 
-
     void addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp);
 };
-
 
 void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     addInput(createInput<PJ301MPort>(
         Vec(50, 340),
         module,
-        Comp::V_OCT_INPUT));
+        Comp::VOCT_INPUT));
     addLabel( Vec(44, 320), "V/Oct");
 
     addInput(createInput<PJ301MPort>(
@@ -90,10 +88,9 @@ void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icom
     addOutput(createOutput<PJ301MPort>(
         Vec(130, 340),
         module,
-        Comp::V_OCT_INPUT));
+        Comp::MAIN_OUTPUT));
     addLabel( Vec(124, 320), "Out");
 }
-
 
 /**
  * Widget constructor will describe my implementation structure and
