@@ -69,7 +69,29 @@ struct SinesWidget : ModuleWidget
     }
 
     void addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp);
+    void addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp);
+    	
+
 };
+
+template <typename TLightBase = RedLight>
+struct LEDLightSliderFixed : LEDLightSlider<TLightBase> {
+	LEDLightSliderFixed() {
+		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/LEDSliderHandle.svg")));
+	}
+};
+
+void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
+{
+    float drawbarX = 20;
+    float drawbarDX = 20;
+    float drawbarY = 100;
+    for (int i = 0; i < 9; ++i) {
+        addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
+            Vec(drawbarX + i * drawbarDX, drawbarY), 
+            module, Comp::DRAWBAR1_PARAM + i, Comp::DRAWBAR1_LIGHT + i));
+    }
+}
 
 void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
@@ -105,6 +127,7 @@ SinesWidget::SinesWidget(SinesModule *module)
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
+    addDrawbars(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

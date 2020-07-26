@@ -61,7 +61,15 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        DRAWBAR1_PARAM,
+        DRAWBAR2_PARAM,
+        DRAWBAR3_PARAM,
+        DRAWBAR4_PARAM,
+        DRAWBAR5_PARAM,
+        DRAWBAR6_PARAM,
+        DRAWBAR7_PARAM,
+        DRAWBAR8_PARAM,
+        DRAWBAR9_PARAM,
         NUM_PARAMS
     };
 
@@ -80,6 +88,15 @@ public:
 
     enum LightIds
     {
+        DRAWBAR1_LIGHT,
+        DRAWBAR2_LIGHT,
+        DRAWBAR3_LIGHT,
+        DRAWBAR4_LIGHT,
+        DRAWBAR5_LIGHT,
+        DRAWBAR6_LIGHT,
+        DRAWBAR7_LIGHT,
+        DRAWBAR8_LIGHT,
+        DRAWBAR9_LIGHT,
         NUM_LIGHTS
     };
 
@@ -110,6 +127,7 @@ private:
     ADSR4 percAdsr[numEgPercussion];
 
     int numChannels_m = 1;      // 1..16
+    float volumeNorm = 1;
     
     Divider divn;
     Divider divm;
@@ -140,6 +158,10 @@ inline void Sines<TBase>::init()
         float t = .05;
         percAdsr[i].setParams(t, .4, 1, t);     
     }
+
+    for (int i = 0; i < NUM_LIGHTS; ++i) {
+        Sines<TBase>::lights[i].setBrightness(3.f);
+    }
 }
 
 template <class TBase>
@@ -147,6 +169,8 @@ inline void Sines<TBase>::stepm()
 {
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sines<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
+
+    volumeNorm = 1.f / float(numChannels_m);
 
 }
 
@@ -180,19 +204,6 @@ inline void Sines<TBase>::stepn()
     }
 }
 
-
-/*
-        // can do gates is lower rate (but it's no better)
-        float_4 gates[4];
-        for (int i=0; i<4; ++i) {
-            Port& p = TBase::inputs[GATE_INPUT];
-            float_4 g = p.getVoltageSimd<float_4>(i * 4);
-            float_4 gate = (g > float_4(1));
-            simd_assertMask(gate);
-            gates[i] = gate;
-        }
-        */
-
 //#define _LOG
 template <class TBase>
 inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
@@ -202,7 +213,7 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 
     const T deltaT(args.sampleTime);
     
-    int lastAdsrBank = -1;
+ //   int lastAdsrBank = -1;
     float_4 sines4 = 0;
 
     for (int vx = 0; vx < numChannels_m; ++vx) {
@@ -269,49 +280,13 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 #endif
             //s = clamp(s, -10.f, 10.f);
             // WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
+            sines4 *= volumeNorm;
             Sines<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(sines4, bankToOutput * 4);
 
             sines4 = 0;
         }
     }
 }
-
-
-#if 0
-template <class TBase>
-inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
-{
-    divn.step();
-    divm.step();
-
-    const T deltaT(args.sampleTime);
-    
-
-    for (int vx = 0; vx < numChannels_m; ++vx) {
-        const int baseSineIndex = numSinesPerVoices * vx;
-
-        T sum;
-        sum = sines[baseSineIndex + 0].process(deltaT);
-        sum += sines[baseSineIndex + 1].process(deltaT);
-
-        float s = sum[0] + sum[1] + sum[2] + sum[3];
-        s += sines[baseSineIndex + 2].process(deltaT)[0];
-
-        bool gate = Sines<TBase>::inputs[GATE_INPUT].getVoltage(vx) > 1;
-        float_4 g4(0);
-        if (gate) {
-            g4 = float_4::mask();
-        }
-    //  printf("g4 is %s\n", toStr(g4).c_str()); fflush(stdout);
-        float_4 env = noramAdsr[0].step(g4, args.sampleTime);
-
-        s *= env[0];
-        s *= .3;
-        s = clamp(s, -10.f, 10.f);
-        Sines<TBase>::outputs[MAIN_OUTPUT].setVoltage(s, 0);
-    }
-}
-#endif
 
 template <class TBase>
 int SinesDescription<TBase>::getNumParams()
@@ -324,8 +299,32 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Sines<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case Sines<TBase>::DRAWBAR1_PARAM:
+            ret = {0.f, 8.0f, 8, "16'"};            // brown
+            break;
+        case Sines<TBase>::DRAWBAR2_PARAM:
+            ret = {0.f, 8.0f, 8, "5 1/3'"};         //brown (g above middle c)
+            break;
+        case Sines<TBase>::DRAWBAR3_PARAM:          // white (MIDDLE c)
+            ret = {0.f, 8.0f, 8, "8'"};
+            break;
+        case Sines<TBase>::DRAWBAR4_PARAM:
+            ret = {0.f, 8.0f, 8, "4'"};             // white C above middle C
+            break;
+        case Sines<TBase>::DRAWBAR5_PARAM:          // black . G ocatve and half a bove middle C
+            ret = {0.f, 8.0f, 8, "2 2/3'"};
+            break;
+        case Sines<TBase>::DRAWBAR6_PARAM:          // white C two oct above middle c 
+            ret = {0.f, 8.0f, 8, "2'"};
+            break;
+        case Sines<TBase>::DRAWBAR7_PARAM:          // black E above c + 2 oct.       
+            ret = {0.f, 8.0f, 8, "1 3/5"};
+            break;
+        case Sines<TBase>::DRAWBAR8_PARAM:          // black g 2+ oct above middle C
+            ret = {0.f, 8.0f, 8, "1 1/3'"};
+            break;
+        case Sines<TBase>::DRAWBAR9_PARAM:          //white
+            ret = {0.f, 8.0f, 8, "1'"};
             break;
         default:
             assert(false);
