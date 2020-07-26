@@ -7,8 +7,20 @@
 #include "PitchUtils.h"
 #include "SinesVCO.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <memory>
+
+#ifndef _CLAMP
+#define _CLAMP
+namespace std {
+    inline float clamp(float v, float lo, float hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+}
+#endif
 
 namespace rack {
     namespace engine {
@@ -85,9 +97,16 @@ public:
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
+    static const int numVoices = 16;
+    static const int numDrawbars = 9;
+    static const int numDrawbars4 = 12;    // round up 
+    static const int numSines = numVoices * numDrawbars4 / 4;
+    static const int numEgNorm = numVoices / 4;
+    static const int numEgPercussion = numEgNorm;
 
-    SinesVCO<T> sines[3];
-    ADSR4 adsr;
+    SinesVCO<T> sines[numSines];
+    ADSR4 noramAdsr[numEgNorm];
+    ADSR4 percAdsr[numEgPercussion];
     
     Divider divn;
 
@@ -102,6 +121,17 @@ inline void Sines<TBase>::init()
     divn.setup(4, [this]() {
         this->stepn();
     });
+
+    // 1 was insnely slow and broken
+    // .1 is ok .3 is slow
+    for (int i = 0; i < numEgNorm; ++i) {
+        float t = .05;
+        noramAdsr[i].setParams(t, t, 1, t);     
+    }
+    for (int i = 0; i < numEgPercussion; ++i) {
+        float t = .05;
+        percAdsr[i].setParams(t, .4, 1, t);     
+    }
 }
 
 template <class TBase>
@@ -146,9 +176,16 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
     s += sines[2].process(deltaT)[0];
 
     bool gate = Sines<TBase>::inputs[GATE_INPUT].getVoltage(0) > 1;
-    if (!gate) {
-        s = 0;
+    float_4 g4(0);
+    if (gate) {
+        g4 = float_4::mask();
     }
+  //  printf("g4 is %s\n", toStr(g4).c_str()); fflush(stdout);
+    float_4 env = noramAdsr[0].step(g4, args.sampleTime);
+
+    s *= env[0];
+    s *= .3;
+    s = clamp(s, -10.f, 10.f);
     Sines<TBase>::outputs[MAIN_OUTPUT].setVoltage(s, 0);
 }
 
