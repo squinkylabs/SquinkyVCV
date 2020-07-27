@@ -135,6 +135,8 @@ private:
     void stepn();
     void stepm();
 
+    static float drawbarPitches[12];
+
 };
 
 
@@ -178,10 +180,7 @@ template <class TBase>
 inline void Sines<TBase>::stepn()
 {
     const float semi = PitchUtils::semitone;
-    static const float pitches[12] = {
-        -1, 0, 7 * semi, 1,
-        1 + 7 * semi, 2, 2 + 4 * semi, 2 + 7 * semi,
-        3, 0, 0, 0};
+ 
     
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const float cv = Sines<TBase>::inputs[VOCT_INPUT].getVoltage(vx);
@@ -189,15 +188,15 @@ inline void Sines<TBase>::stepn()
         float_4 basePitch(cv);
 
         float_4 pitch = basePitch;
-        pitch += float_4::load(pitches);
+        pitch += float_4::load(drawbarPitches);
         sines[baseSineIndex].setPitch(pitch);
 
-        const float* p = pitches + 4;
+        const float* p = drawbarPitches + 4;
         pitch = basePitch;
         pitch += float_4::load(p);
         sines[baseSineIndex + 1].setPitch(pitch);
 
-        p = pitches + 8;
+        p = drawbarPitches + 8;
         pitch = basePitch;
         pitch += float_4::load(p);
         sines[baseSineIndex + 2].setPitch(pitch);
@@ -213,14 +212,11 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 
     const T deltaT(args.sampleTime);
     
- //   int lastAdsrBank = -1;
     float_4 sines4 = 0;
 
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const int adsrBank = vx / 4;
         const int adsrBankOffset = vx - (adsrBank * 4);
-     //   const bool newAdsrBank = (adsrBank != lastAdsrBank);
-     //   lastAdsrBank = adsrBank;
         const int baseSineIndex = numSinesPerVoices * vx;
 
         // for each voice we must compute all the sines for that voice.
@@ -331,5 +327,18 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
     }
     return ret;
 }
+
+template <class TBase>
+inline float Sines<TBase>::drawbarPitches[12] = {
+        //16, 5 1/3,                  8, 4
+        -1, 7 * PitchUtils::semitone, 0, 1,
+
+         // 2 2/3,                      2, 1 3/5,                       1 1/3
+         1 + 7 * PitchUtils::semitone, 2, 2 + 4 * PitchUtils::semitone, 2 + 7 * PitchUtils::semitone,
+
+         // 1
+         3, 0, 0, 0
+
+};
 
 
