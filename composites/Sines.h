@@ -264,11 +264,11 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
         // Add them all together into sum, which will be the non-percussion
         //mix of all drawbars.
         T sum;
-        sum = sines[baseSineIndex + 0].process(deltaT);
-        sum += sines[baseSineIndex + 1].process(deltaT);
+        sum = sines[baseSineIndex + 0].process(deltaT) *  drawbarVolumes[0];
+        sum += sines[baseSineIndex + 1].process(deltaT) *  drawbarVolumes[1];
 
         float s = sum[0] + sum[1] + sum[2] + sum[3];
-        s += sines[baseSineIndex + 2].process(deltaT)[0];
+        s += sines[baseSineIndex + 2].process(deltaT)[0] *  drawbarVolumes[2][0];
         sines4[adsrBankOffset] = s;
 
         // after each block of [up to] 4 voices, run the ADSRs
@@ -310,6 +310,7 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
             simd_assertMask(gate4);
             float_4 normEnv = normAdsr[bankToOutput].step(gate4, args.sampleTime);
             sines4 *= normEnv;
+          //  sines4 *= drawbarVolumes[bankToOutput];
 #ifdef _LOG
             printf("polyGate = %s\n", toStr(gate4).c_str());
             printf("env = %s outCh=%d\n\n", toStr(normEnv).c_str(), bankToOutput * 4);
