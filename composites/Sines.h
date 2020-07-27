@@ -134,8 +134,10 @@ private:
 
     void stepn();
     void stepm();
+    void computeDrawbars();
 
     static float drawbarPitches[12];
+    float_4 drawbarVolumes[numDrawbars4 / 4] = {};
 
 };
 
@@ -167,21 +169,60 @@ inline void Sines<TBase>::init()
 }
 
 template <class TBase>
+inline void Sines<TBase>::computeDrawbars()
+{
+    float power = 0;
+
+    float gains[numDrawbars];
+
+    for (int i=0; i<numDrawbars; ++i) {
+        float slider = Sines<TBase>::params[DRAWBAR1_PARAM + i].value;
+        // 8 is 0db, 7 -is -3db 0 is off
+        float sliderDb = (slider < .5) ? -100 : (slider - 8) * 3;
+
+        float sliderPower = std::pow(10.f, sliderDb / 10.f);
+        gains[i] = std::sqrt(sliderPower);
+   //     printf("slider[%d] valu=%f, db = %f, power=%f gain=%f\n", i, slider, sliderDb, sliderPower, gains[i]);
+        power += sliderPower;
+      
+    }
+    // printf("total power = %f\n", power); fflush(stdout);
+
+    float gainComp = 1;
+    if (power > 1) {
+        // printf("total power = %f sqrt=%f\n", power, std::sqrt(power));
+        gainComp  = 1.f / std::sqrt(power);
+    }
+    //printf("gaincomp = %f\n", gainComp);
+
+    drawbarVolumes[2] = 0;
+    for (int i=0; i<numDrawbars; ++i) {
+        int bank = i / 4;
+        int offset = i - (bank * 4);
+        drawbarVolumes[bank][offset] = gains[i] * gainComp;
+        //printf("dr gain[%d] = %f\n", i, drawbarVolumes[bank][offset]);
+    }
+
+#ifdef _LOG
+    for (int i=0; i<3; ++i) {
+        printf("simd[%d] = %s\n", i, toStr(drawbarVolumes[i]).c_str());
+    }
+#endif
+}
+
+template <class TBase>
 inline void Sines<TBase>::stepm()
 {
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sines<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
 
     volumeNorm = 1.f / float(numChannels_m);
-
+    computeDrawbars();
 }
 
 template <class TBase>
 inline void Sines<TBase>::stepn()
 {
-    const float semi = PitchUtils::semitone;
- 
-    
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const float cv = Sines<TBase>::inputs[VOCT_INPUT].getVoltage(vx);
         const int baseSineIndex = numSinesPerVoices * vx;
@@ -332,10 +373,8 @@ template <class TBase>
 inline float Sines<TBase>::drawbarPitches[12] = {
         //16, 5 1/3,                  8, 4
         -1, 7 * PitchUtils::semitone, 0, 1,
-
          // 2 2/3,                      2, 1 3/5,                       1 1/3
          1 + 7 * PitchUtils::semitone, 2, 2 + 4 * PitchUtils::semitone, 2 + 7 * PitchUtils::semitone,
-
          // 1
          3, 0, 0, 0
 
