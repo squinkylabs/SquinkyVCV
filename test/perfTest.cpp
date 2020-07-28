@@ -30,6 +30,7 @@
 #ifndef _MSC_VER
 #include "WVCO.h"
 #include "Sub.h"
+#include "Sines.h"
 #endif
 
 extern double overheadInOut;
@@ -695,6 +696,66 @@ static void testWVCOPoly()
     }, 1);
 }
 
+static void testOrgan1()
+{
+    printf("starting organ 1\n"); fflush(stdout);
+    Sines<TestComposite> sines;
+
+    sines.init();
+    sines.inputs[Sines<TestComposite>::MAIN_OUTPUT].channels = 1;
+    sines.inputs[Sines<TestComposite>::VOCT_INPUT].channels = 1;
+    sines.inputs[Sines<TestComposite>::GATE_INPUT].channels = 1;
+
+    Sines<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "organ 1", [&sines, args]() {
+        sines.process(args);
+        return sines.outputs[Sines<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
+static void testOrgan4()
+{
+    printf("starting organ 4\n"); fflush(stdout);
+    Sines<TestComposite> sines;
+
+    sines.init();
+    sines.inputs[Sines<TestComposite>::MAIN_OUTPUT].channels = 1;
+    sines.inputs[Sines<TestComposite>::VOCT_INPUT].channels = 4;
+    sines.inputs[Sines<TestComposite>::GATE_INPUT].channels = 4;
+
+     Sines<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "organ 4", [&sines, args]() {
+        sines.process(args);
+        return sines.outputs[Sines<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
+static void testOrgan12()
+{
+    printf("starting organ 12\n"); fflush(stdout);
+    Sines<TestComposite> sines;
+
+    sines.init();
+    sines.inputs[Sines<TestComposite>::MAIN_OUTPUT].channels = 1;
+    sines.inputs[Sines<TestComposite>::VOCT_INPUT].channels = 12;
+    sines.inputs[Sines<TestComposite>::GATE_INPUT].channels = 12;
+
+     Sines<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "organ 12", [&sines, args]() {
+        sines.process(args);
+        return sines.outputs[Sines<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
 static void testSubMono()
 {
     Sub<TestComposite> sub;
@@ -1039,7 +1100,11 @@ void perfTest()
     testGMR();
 #endif
 #ifndef _MSC_VER
-  
+    testOrgan1();
+    testOrgan4();
+    testOrgan12();
+    testSuper();
+    testSuperPoly();
     testWVCOPoly();
     testSubMono();
     testSubPoly();
@@ -1052,8 +1117,7 @@ void perfTest()
 
     testBiquad();
 
-    testSuper();
-    testSuperPoly();
+  
     testSuperStereo();
     testSuper2();
     testSuper2Stereo();
