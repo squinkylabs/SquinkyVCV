@@ -70,6 +70,8 @@ public:
         DRAWBAR7_PARAM,
         DRAWBAR8_PARAM,
         DRAWBAR9_PARAM,
+        PERCUSSION1_PARAM,
+        PERCUSSION2_PARAM,
         NUM_PARAMS
     };
 
@@ -97,6 +99,8 @@ public:
         DRAWBAR7_LIGHT,
         DRAWBAR8_LIGHT,
         DRAWBAR9_LIGHT,
+        PERCUSSION1_LIGHT,
+        PERCUSSION2_LIGHT,
         NUM_LIGHTS
     };
 
@@ -364,6 +368,12 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
         case Sines<TBase>::DRAWBAR9_PARAM:          //white
             ret = {0.f, 8.0f, 8, "1'"};
             break;
+        case Sines<TBase>::PERCUSSION1_PARAM:
+             ret = {0.f, 8.0f, 0, "Perc 1"};
+             break;
+        case Sines<TBase>::PERCUSSION2_PARAM:
+             ret = {0.f, 8.0f, 0, "Perc 2"};
+             break;
         default:
             assert(false);
     }

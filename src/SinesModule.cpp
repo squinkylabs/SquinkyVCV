@@ -91,6 +91,13 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
             Vec(drawbarX + i * drawbarDX, drawbarY), 
             module, Comp::DRAWBAR1_PARAM + i, Comp::DRAWBAR1_LIGHT + i));
     }
+
+    addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
+            Vec(drawbarX + 10 * drawbarDX, drawbarY), 
+            module, Comp::PERCUSSION1_PARAM, Comp::PERCUSSION1_LIGHT ));
+    addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
+            Vec(drawbarX + 11 * drawbarDX, drawbarY), 
+            module, Comp::PERCUSSION2_PARAM, Comp::PERCUSSION2_LIGHT ));
 }
 
 void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)
