@@ -39,6 +39,7 @@ public:
 };
 
 /**
+ * add percussion: 14.6 /41/5
  * Perf 7/28 mono: 12.5% 4vx: 37.8
  * 
  */
