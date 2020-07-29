@@ -56,7 +56,7 @@ void SinesModule::process(const ProcessArgs& args)
 struct SinesWidget : ModuleWidget
 {
     SinesWidget(SinesModule *);
-    DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/og/docs/og.md");
+    DECLARE_MANUAL("Organ Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/og/docs/og.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
