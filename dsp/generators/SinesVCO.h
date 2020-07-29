@@ -17,9 +17,13 @@ public:
      */
     void setPitch(T f);
     T process(T deltaT);
+    T get() const {
+        return output;
+    }
 private:
     T phase = 0;
     T freq = 0;
+    T output;
 };
 
 template <typename T>
@@ -40,5 +44,6 @@ inline T SinesVCO<T>::process(T deltaT)
     phase += deltaPhase;
     // printf("in process, phase=%s\n", toStr(phase).c_str());
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-    return SimdBlocks::sinTwoPi(phase * twoPi);
+    output = SimdBlocks::sinTwoPi(phase * twoPi);
+    return output;
 }

@@ -38,6 +38,11 @@ public:
     int getNumParams() override;
 };
 
+/**
+ * Perf 7/28 mono: 12.5% 4vx: 37.8
+ * 
+ */
+
 template <class TBase>
 class Sines : public TBase
 {
@@ -142,6 +147,7 @@ private:
 
     static float drawbarPitches[12];
     float_4 drawbarVolumes[numDrawbars4 / 4] = {};
+    float_4 percussionVolumes[numDrawbars4 / 4] = {};
 
 };
 
@@ -164,13 +170,25 @@ inline void Sines<TBase>::init()
     }
     for (int i = 0; i < numEgPercussion; ++i) {
         float t = .05;
-        percAdsr[i].setParams(t, .4, 1, t);     
+        percAdsr[i].setParams(t, .6, 0, t);     
     }
 
     for (int i = 0; i < NUM_LIGHTS; ++i) {
         Sines<TBase>::lights[i].setBrightness(3.f);
     }
 }
+
+static float gainFromSlider(float slider)
+{
+    float sliderDb = (slider < .5) ? -100 : (slider - 8) * 3;
+
+    float sliderPower = std::pow(10.f, sliderDb / 10.f);
+    float ret = std::sqrt(sliderPower);
+    return ret;
+}
+
+
+//#define _LOG
 
 template <class TBase>
 inline void Sines<TBase>::computeDrawbars()
@@ -207,9 +225,14 @@ inline void Sines<TBase>::computeDrawbars()
         //printf("dr gain[%d] = %f\n", i, drawbarVolumes[bank][offset]);
     }
 
+    percussionVolumes[1][0] = gainFromSlider( Sines<TBase>::params[PERCUSSION1_PARAM ].value);
+    percussionVolumes[0][3] = gainFromSlider( Sines<TBase>::params[PERCUSSION2_PARAM ].value);
+
+
 #ifdef _LOG
     for (int i=0; i<3; ++i) {
-        printf("simd[%d] = %s\n", i, toStr(drawbarVolumes[i]).c_str());
+        printf("drawbar[%d] = %s\n", i, toStr(drawbarVolumes[i]).c_str());
+        printf("perc[%d] = %s\n", i, toStr(percussionVolumes[i]).c_str());
     }
 #endif
 }
@@ -248,7 +271,6 @@ inline void Sines<TBase>::stepn()
     }
 }
 
-//#define _LOG
 template <class TBase>
 inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 {
@@ -258,6 +280,7 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
     const T deltaT(args.sampleTime);
     
     float_4 sines4 = 0;
+    float_4 percSines4 = 0;
 
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const int adsrBank = vx / 4;
@@ -275,6 +298,11 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
         s += sines[baseSineIndex + 2].process(deltaT)[0] *  drawbarVolumes[2][0];
         sines4[adsrBankOffset] = s;
 
+        sum = sines[baseSineIndex + 0].get() *  percussionVolumes[0];
+        sum += sines[baseSineIndex + 1].get() *  percussionVolumes[1];
+        s = sum[0] + sum[1] + sum[2] + sum[3];
+        percSines4[adsrBankOffset] = s;
+
         // after each block of [up to] 4 voices, run the ADSRs
         bool outputNow = false;
         int bankToOutput = 0;
@@ -283,7 +311,8 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
         // previous bank.
 
         #ifdef _LOG
-        printf("--- LOOKING FOR blocke, vx = %d newadsr bank = %d\n", vx, newAdsrBank);
+        printf("sines4=%s pert=%s\n", toStr(sines4).c_str(), toStr(percSines4).c_str());
+        printf("--- LOOKING FOR blocke, vx = %d adsr bank = %d\n", vx, adsrBank);
         #endif
        // if (newAdsrBank && (vx != 0)) {
         if (adsrBankOffset == 3) {
@@ -323,9 +352,21 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
             //s = clamp(s, -10.f, 10.f);
             // WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
             sines4 *= volumeNorm;
+
+            float_4 percEnv = percAdsr[bankToOutput].step(gate4, args.sampleTime);
+#ifdef _LOG
+            printf("perf env = %s, percsines3=%s\n", toStr(percEnv).c_str(), toStr(percSines4).c_str());
+#endif
+            percSines4 *= percEnv;
+            sines4 += percSines4;
+
+#ifdef _LOG
+            printf("after combine, sp4=%s, s4=%s\n", toStr(percSines4).c_str(), toStr(sines4).c_str());
+#endif
             Sines<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(sines4, bankToOutput * 4);
 
             sines4 = 0;
+            percSines4 = 0;
         }
     }
 }
