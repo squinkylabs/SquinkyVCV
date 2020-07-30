@@ -164,16 +164,7 @@ inline void Sines<TBase>::init()
         this->stepm();
     });
 
-    // 1 was insnely slow and broken
-    // .1 is ok .3 is slow
-    for (int i = 0; i < numEgNorm; ++i) {
-        float t = .05;
-        normAdsr[i].setParams(t, t, 1, t);     
-    }
-    for (int i = 0; i < numEgPercussion; ++i) {
-        float t = .05;
-        percAdsr[i].setParams(t, .6, 0, t);     
-    }
+
 
     for (int i = 0; i < NUM_LIGHTS; ++i) {
         Sines<TBase>::lights[i].setBrightness(3.f);
@@ -270,6 +261,20 @@ inline void Sines<TBase>::stepn()
         pitch = basePitch;
         pitch += float_4::load(p);
         sines[baseSineIndex + 2].setPitch(pitch);
+    }
+
+    // 1 was insnely slow and broken
+    // .1 is ok .3 is slow
+    for (int i = 0; i < numEgNorm; ++i) {
+        float t = .05;
+        normAdsr[i].setParams(t, t, 1, t);     
+    }
+
+    const float decay = (Sines<TBase>::params[DECAY_PARAM].value > .5) ? .5 : .7;
+    //printf("decay = %f, value=%f\n", decay, Sines<TBase>::params[DECAY_PARAM].value); 
+    for (int i = 0; i < numEgPercussion; ++i) {
+        float t = .05;
+        percAdsr[i].setParams(t, decay, 0, t);     
     }
 }
 
