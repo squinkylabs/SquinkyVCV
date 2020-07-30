@@ -78,6 +78,7 @@ public:
         DRAWBAR9_PARAM,
         PERCUSSION1_PARAM,
         PERCUSSION2_PARAM,
+        DECAY_PARAM,
         NUM_PARAMS
     };
 
@@ -415,6 +416,9 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
              break;
         case Sines<TBase>::PERCUSSION2_PARAM:
              ret = {0.f, 8.0f, 0, "Perc 2"};
+             break;
+        case Sines<TBase>::DECAY_PARAM:
+             ret = {0.f, 1.0f, 1, "Perc Decay"};
              break;
         default:
             assert(false);

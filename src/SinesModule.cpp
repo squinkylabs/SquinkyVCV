@@ -70,8 +70,7 @@ struct SinesWidget : ModuleWidget
 
     void addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp);
     void addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp);
-    	
-
+    void addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 template <typename TLightBase = RedLight>
@@ -81,11 +80,26 @@ struct LEDLightSliderFixed : LEDLightSlider<TLightBase> {
 	}
 };
 
+void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp)
+{
+    const float col = 50;
+    const float row = 150;
+    addParam(SqHelper::createParamCentered<CKSS>(
+        icomp,
+        Vec(col, row),
+        module,
+       Comp::DECAY_PARAM));
+    auto l = addLabel(Vec(col - 18, row - 30), "fast");
+    l->fontSize = 11;
+    l = addLabel(Vec(col - 17, row + 10), "slow");
+    l->fontSize = 11;
+}
+
 void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     float drawbarX = 20;
     float drawbarDX = 20;
-    float drawbarY = 100;
+    float drawbarY = 240;
     for (int i = 0; i < 9; ++i) {
         addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
             Vec(drawbarX + i * drawbarDX, drawbarY), 
@@ -135,6 +149,7 @@ SinesWidget::SinesWidget(SinesModule *module)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
     addDrawbars(module, icomp);
+    addOtherControls(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
