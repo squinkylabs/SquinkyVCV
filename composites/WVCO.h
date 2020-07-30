@@ -402,7 +402,7 @@ inline void WVCO<TBase>::updateFreq_n()
     for (int bank=0; bank < numBanks_m; ++bank) {
         float_4 freq=0;
 
-        const int baseChannel = bank;
+        const int baseChannel = 4 * bank;
 
         float_4 pitch = basePitch_m;
         // use SIMD here?

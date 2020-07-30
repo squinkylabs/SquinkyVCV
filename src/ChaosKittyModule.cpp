@@ -59,7 +59,7 @@ void ChaosKittyModule::step()
 struct ChaosKittyWidget : ModuleWidget
 {
     ChaosKittyWidget(ChaosKittyModule *);
-    DECLARE_MANUAL("Chaos Kitty manual", "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/chaos-kitty.md");
+    DECLARE_MANUAL("Chaos Kitty manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/chaos-kitty.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
