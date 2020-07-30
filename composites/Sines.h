@@ -39,7 +39,11 @@ public:
 };
 
 /**
- * add percussion: 14.6 /41/5
+ * set n to 16: 12.7 / 37.8 (some improvement, but not massive)
+ * set m to 64, no change/
+ * fixed, back to 14.6 / 41
+ * percussion decay 120 / 148
+ * add percussion: 14.6 /41.5
  * Perf 7/28 mono: 12.5% 4vx: 37.8
  * 
  */
@@ -151,6 +155,7 @@ private:
     float_4 drawbarVolumes[numDrawbars4 / 4] = {};
     float_4 percussionVolumes[numDrawbars4 / 4] = {};
 
+    float lastDecay = 0;
 };
 
 
@@ -163,8 +168,6 @@ inline void Sines<TBase>::init()
     divm.setup(16, [this]() {
         this->stepm();
     });
-
-
 
     for (int i = 0; i < NUM_LIGHTS; ++i) {
         Sines<TBase>::lights[i].setBrightness(3.f);
@@ -263,18 +266,24 @@ inline void Sines<TBase>::stepn()
         sines[baseSineIndex + 2].setPitch(pitch);
     }
 
-    // 1 was insnely slow and broken
-    // .1 is ok .3 is slow
-    for (int i = 0; i < numEgNorm; ++i) {
-        float t = .05;
-        normAdsr[i].setParams(t, t, 1, t);     
-    }
 
+    // this could easily be done in stepm, also, but with this change check it should be ok.
     const float decay = (Sines<TBase>::params[DECAY_PARAM].value > .5) ? .5 : .7;
-    //printf("decay = %f, value=%f\n", decay, Sines<TBase>::params[DECAY_PARAM].value); 
-    for (int i = 0; i < numEgPercussion; ++i) {
-        float t = .05;
-        percAdsr[i].setParams(t, decay, 0, t);     
+    if (decay != lastDecay) {
+        lastDecay = decay;
+        // 1 was insnely slow and broken
+        // .1 is ok .3 is slow
+        for (int i = 0; i < numEgNorm; ++i) {
+            float t = .05;
+            normAdsr[i].setParams(t, t, 1, t);     
+        }
+
+    
+        //printf("decay = %f, value=%f\n", decay, Sines<TBase>::params[DECAY_PARAM].value); 
+        for (int i = 0; i < numEgPercussion; ++i) {
+            float t = .05;
+            percAdsr[i].setParams(t, decay, 0, t);     
+        }
     }
 }
 
