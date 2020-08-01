@@ -187,6 +187,12 @@ void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icom
         module,
         Comp::MAIN_OUTPUT));
     addLabel( Vec(124, 320), "Out");
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(160, 340),
+        module,
+        Comp::DEBUG_OUTPUT));
+    addLabel( Vec(160, 320), "Debug");
 }
 
 /**

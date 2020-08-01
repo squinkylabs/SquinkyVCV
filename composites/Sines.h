@@ -101,6 +101,7 @@ public:
     enum OutputIds
     {
         MAIN_OUTPUT,
+        DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -286,13 +287,14 @@ inline void Sines<TBase>::stepn()
         switch(keyClickParamInt) {
             case 0:
                 // .05 clicks, .5 is super slow
+                // .1 clicks a little
                 t = .1;
                 break;
             case 1:
                 t = .005;
                 break;
             case 2:
-                t = .0005;
+                t = 0;
                 break;
             default:
                 assert(false);
@@ -302,11 +304,19 @@ inline void Sines<TBase>::stepn()
 
   
         for (int i = 0; i < numEgNorm; ++i) {
-            normAdsr[i].setParams(t, t, 1, t);     
+           // normAdsr[i].setParams(t, t, 1, t);   
+            normAdsr[i].setA(t, true);
+            normAdsr[i].setD(t, false);
+            normAdsr[i].setS(1);
+            normAdsr[i].setR(t, false);
         }
 
         for (int i = 0; i < numEgPercussion; ++i) {
-            percAdsr[i].setParams(t, decay, 0, t);     
+          //  percAdsr[i].setParams(t, decay, 0, t); 
+            percAdsr[i].setA(t, true); 
+            percAdsr[i].setD(decay, false);    
+            percAdsr[i].setS(0);    
+            percAdsr[i].setR(t, false);       
         }
     }
 }
@@ -321,6 +331,7 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
     
     float_4 sines4 = 0;
     float_4 percSines4 = 0;
+
 
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const int adsrBank = vx / 4;
@@ -383,6 +394,12 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
             simd_assertMask(gate4);
             float_4 normEnv = normAdsr[bankToOutput].step(gate4, args.sampleTime);
             sines4 *= normEnv;
+#ifndef NDEBUG
+            if (vx == 0) {
+                TBase::outputs[DEBUG_OUTPUT].setVoltage(normEnv[0], 0);
+            }
+#endif
+
           //  sines4 *= drawbarVolumes[bankToOutput];
 #ifdef _LOG
             printf("polyGate = %s\n", toStr(gate4).c_str());
