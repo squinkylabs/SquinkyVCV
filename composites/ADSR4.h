@@ -18,11 +18,11 @@ public:
      */
 #if 1 
 // the first param is the usual time constant exp mapping
-// the fast param speeds everything up by X
-    void setA(float, bool fast);
-    void setD(float, bool fast);
+// the mult param speeds everything up by a factor of mult;
+    void setA(float, float mult);
+    void setD(float, float mult);
     void setS(float);
-    void setR(float, bool fast );
+    void setR(float, float mult);
 #else
     void setParams(float a, float d, float s, float r);
 #endif
@@ -53,7 +53,7 @@ private:
     int channels = 0;
 //bool snap = false;
 
-    void setLambda(float_4&output, float input, bool fast);
+    void setLambda(float_4&output, float input, float mult);
 };
 
 #if 0
@@ -96,28 +96,26 @@ inline float_4 ADSR4::step(const float_4& gates, float sampleTime)
     return env;
 }
 
-inline void ADSR4::setLambda(float_4&output, float input, bool fast)
+inline void ADSR4::setLambda(float_4&output, float input, float mult)
 {
     assert(input >= -.01);
     assert(input <= 1);
     float_4 x = rack::simd::clamp(input, 0.f, 1.f);
     output  = rack::simd::pow(LAMBDA_BASE, -x) / MIN_TIME; 
-    if (fast) {
-        output *= float_4(10);
-    } 
+    output *= float_4(mult); 
     printf("set lambda input=%f, output=%f\n", input, output[0]); fflush(stdout);
 }
 
 
-inline void ADSR4::setA(float t, bool fast)
+inline void ADSR4::setA(float t, float mult)
 {
-    setLambda(attackLambda, t, fast);
+    setLambda(attackLambda, t, mult);
 }
 
 
-inline void ADSR4::setD(float t, bool fast)
+inline void ADSR4::setD(float t, float mult)
 {
-    setLambda(decayLambda, t, fast);
+    setLambda(decayLambda, t, mult);
 }
 
 
@@ -128,9 +126,9 @@ inline void ADSR4::setS(float s)
 }
 
 
-inline void ADSR4::setR(float t, bool fast)
+inline void ADSR4::setR(float t, float mult)
 {
-    setLambda(releaseLambda, t, fast);
+    setLambda(releaseLambda, t, mult);
 }
 
 #if 0

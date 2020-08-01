@@ -283,40 +283,46 @@ inline void Sines<TBase>::stepn()
         lastKeyclickParamInt = keyClickParamInt;
 
         const float decay =  decayParamBool ? .5 : .7;
-        float t = .001;
+        //float t = .001;
+
+        float attack = 0;
+        float release = 0;
+        float attackMult = 1;
+        float releaseMult = 1;
         switch(keyClickParamInt) {
             case 0:
-                // .05 clicks, .5 is super slow
-                // .1 clicks a little
-                t = .1;
+                // .1, .15 is good
+                attack = 0;
+                release = .125;
+                attackMult = 1;
+                releaseMult = 1;
                 break;
             case 1:
-                t = .005;
+              // t = .005;
                 break;
             case 2:
-                t = 0;
+              //  t = 0;
                 break;
             default:
                 assert(false);
         }
 
-        printf("updating adsr with t = %f\n", t); fflush(stdout);
+       // printf("updating adsr with t = %f\n", t); fflush(stdout);
 
   
+        const float mult = 5;
         for (int i = 0; i < numEgNorm; ++i) {
-           // normAdsr[i].setParams(t, t, 1, t);   
-            normAdsr[i].setA(t, true);
-            normAdsr[i].setD(t, false);
+            normAdsr[i].setA(attack, attackMult);
+            normAdsr[i].setD(release, releaseMult);
             normAdsr[i].setS(1);
-            normAdsr[i].setR(t, false);
+            normAdsr[i].setR(release, releaseMult);
         }
 
         for (int i = 0; i < numEgPercussion; ++i) {
-          //  percAdsr[i].setParams(t, decay, 0, t); 
-            percAdsr[i].setA(t, true); 
-            percAdsr[i].setD(decay, false);    
+            percAdsr[i].setA(attack, attackMult); 
+            percAdsr[i].setD(decay, 1);    
             percAdsr[i].setS(0);    
-            percAdsr[i].setR(t, false);       
+            percAdsr[i].setR(release, releaseMult);       
         }
     }
 }
