@@ -123,6 +123,38 @@ static void compare3()
     assertClose(maxErr, 0, .03);
 }
 
+float secondOrder(float x)
+{
+    // c=3/4=0.75
+    const float c = 0.75f;
+
+    return (2 - 4 * c) * x * x + c + x;
+}
+
+static void compareSecond()
+{
+    double maxErr = 0;
+    double xErr = -100;
+    // x += .01
+    for (double x = 0; x<= twoPi; x += .2) {
+        double s = std::sin(x);
+      //  float_4 d = SimdBlocks::sinTwoPi(x);
+        float d = secondOrder(x);
+        printf("y = %f, approx = %f\n", s, d);
+
+       // float_4 d2 = simdSinTwoPi(x);
+
+        double err = std::abs(s - d);
+        if (err > maxErr) {
+            maxErr = err;
+            xErr = x;
+        }
+    }
+    printf("0..twopi. max err=%f at x=%f\n", maxErr, xErr);
+    assertClose(maxErr, 0, .03);
+}
+
+
 #if 0
 static void both(float x)
 {
@@ -186,4 +218,5 @@ void testSimdLookup()
     compare();
     compare3();
   //  compare2();
+    compareSecond();
 }

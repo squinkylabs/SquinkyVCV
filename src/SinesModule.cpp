@@ -10,6 +10,27 @@
 
 using Comp = Sines<WidgetComposite>;
 
+class Drawbar : public app::SvgSlider {
+public:
+    Drawbar() {
+        WARN("loading drawbar svg");
+        math::Vec margin = math::Vec(3.5, 3.5);
+     //   maxHandlePos = math::Vec(-1, -2).plus(margin);
+	//	minHandlePos = math::Vec(-1, 87).plus(margin);
+
+        maxHandlePos = math::Vec(0, -100);
+		minHandlePos = math::Vec(-1, 0);;
+        setBackgroundSvg(APP->window->loadSvg(asset::system("res/ComponentLibrary/BefacoSlidePot.svg")));
+		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/drawbar.svg")));
+        background->box.pos = margin;
+        this->box.size.x = 29;
+        this->box.size.y = 105;
+      
+	}
+    // math::Vec minHandlePos, maxHandlePos;
+
+};
+
 /**
  */
 struct SinesModule : Module
@@ -76,7 +97,8 @@ struct SinesWidget : ModuleWidget
 template <typename TLightBase = RedLight>
 struct LEDLightSliderFixed : LEDLightSlider<TLightBase> {
 	LEDLightSliderFixed() {
-		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/LEDSliderHandle.svg")));
+		//this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/LEDSliderHandle.svg")));
+        this->setHandleSvg(APP->window->loadSvg(asset::system("res/ComponentLibrary/LEDSliderHandle.svg")));
 	}
 };
 
@@ -93,6 +115,14 @@ void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposi
     l->fontSize = 11;
     l = addLabel(Vec(col - 17, row + 10), "slow");
     l->fontSize = 11;
+
+    float keyclickX = col + 40;
+    addParam(SqHelper::createParamCentered<CKSSThree>(
+        icomp,
+        Vec(keyclickX, row),
+        module,
+        Comp::KEYCLICK_PARAM));
+    addLabel(Vec(keyclickX - 18, row - 30), "click");
 }
 
 void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
@@ -100,6 +130,7 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
     float drawbarX = 20;
     float drawbarDX = 20;
     float drawbarY = 240;
+#if 1
     for (int i = 0; i < 9; ++i) {
         addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
             Vec(drawbarX + i * drawbarDX, drawbarY), 
@@ -112,6 +143,29 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
     addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
             Vec(drawbarX + 11 * drawbarDX, drawbarY), 
             module, Comp::PERCUSSION2_PARAM, Comp::PERCUSSION2_LIGHT ));
+
+#elif 0
+    WARN("about to add new drawbar");
+    auto drawbar = SqHelper::createParam<Drawbar>(
+        icomp,
+        Vec(drawbarX, drawbarY),
+        module,
+        Comp::DRAWBAR1_PARAM);
+  
+
+    addParam(drawbar);
+    WARN("drawbar x = %f y=%f", drawbar->box.pos.x, drawbar->box.pos.y );
+ WARN("drawbar w = %f h=%f", drawbar->box.size.x, drawbar->box.size.y );
+  
+    WARN("did it");
+#else
+    addParam(SqHelper::createParam<BefacoSlidePot>(
+        icomp,
+        Vec(drawbarX, drawbarY),
+        module,
+        Comp::DRAWBAR1_PARAM)
+    );
+#endif
 }
 
 void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)

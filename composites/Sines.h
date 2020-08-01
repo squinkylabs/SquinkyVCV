@@ -39,8 +39,12 @@ public:
 };
 
 /**
+ * with parabolic sine aprox: 11.3/28.9
+ * use floor instead of comp: 16.1 /47
+ * make sineVCO do nothing: 6.6, 10.8
  * set n to 16: 12.7 / 37.8 (some improvement, but not massive)
  * set m to 64, no change/
+ * 
  * fixed, back to 14.6 / 41
  * percussion decay 120 / 148
  * add percussion: 14.6 /41.5
@@ -83,6 +87,7 @@ public:
         PERCUSSION1_PARAM,
         PERCUSSION2_PARAM,
         DECAY_PARAM,
+        KEYCLICK_PARAM,
         NUM_PARAMS
     };
 
@@ -155,7 +160,8 @@ private:
     float_4 drawbarVolumes[numDrawbars4 / 4] = {};
     float_4 percussionVolumes[numDrawbars4 / 4] = {};
 
-    float lastDecay = 0;
+    bool lastDecayParamBool = false;
+    int lastKeyclickParamInt = -1;
 };
 
 
@@ -267,21 +273,39 @@ inline void Sines<TBase>::stepn()
     }
 
 
+    const bool decayParamBool = Sines<TBase>::params[DECAY_PARAM].value > .5; 
+    const int keyClickParamInt = int( std::round(Sines<TBase>::params[KEYCLICK_PARAM].value)); 
     // this could easily be done in stepm, also, but with this change check it should be ok.
-    const float decay = (Sines<TBase>::params[DECAY_PARAM].value > .5) ? .5 : .7;
-    if (decay != lastDecay) {
-        lastDecay = decay;
-        // 1 was insnely slow and broken
-        // .1 is ok .3 is slow
+    if ((lastDecayParamBool != decayParamBool) || (lastKeyclickParamInt != keyClickParamInt)) {
+
+        lastDecayParamBool = decayParamBool;
+        lastKeyclickParamInt = keyClickParamInt;
+
+        const float decay =  decayParamBool ? .5 : .7;
+        float t = .001;
+        switch(keyClickParamInt) {
+            case 0:
+                // .05 clicks, .5 is super slow
+                t = .1;
+                break;
+            case 1:
+                t = .005;
+                break;
+            case 2:
+                t = .0005;
+                break;
+            default:
+                assert(false);
+        }
+
+        printf("updating adsr with t = %f\n", t); fflush(stdout);
+
+  
         for (int i = 0; i < numEgNorm; ++i) {
-            float t = .05;
             normAdsr[i].setParams(t, t, 1, t);     
         }
 
-    
-        //printf("decay = %f, value=%f\n", decay, Sines<TBase>::params[DECAY_PARAM].value); 
         for (int i = 0; i < numEgPercussion; ++i) {
-            float t = .05;
             percAdsr[i].setParams(t, decay, 0, t);     
         }
     }
@@ -432,7 +456,10 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
              ret = {0.f, 8.0f, 0, "Perc 2"};
              break;
         case Sines<TBase>::DECAY_PARAM:
-             ret = {0.f, 1.0f, 1, "Perc Decay"};
+             ret = {0.f, 1.0f, 1, "Perc decay"};
+             break;
+        case Sines<TBase>::KEYCLICK_PARAM:
+             ret = {0.f, 2.0f, 0, "Key click"};
              break;
         default:
             assert(false);
