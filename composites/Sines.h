@@ -283,7 +283,6 @@ inline void Sines<TBase>::stepn()
         lastKeyclickParamInt = keyClickParamInt;
 
         const float decay =  decayParamBool ? .5 : .7;
-        //float t = .001;
 
         float attack = 0;
         float release = 0;
@@ -298,19 +297,21 @@ inline void Sines<TBase>::stepn()
                 releaseMult = 1;
                 break;
             case 1:
-              // t = .005;
+                attack = 0;
+                release = 0;
+                attackMult = 2;
+                releaseMult = 1;
                 break;
             case 2:
-              //  t = 0;
+                attack = 0;
+                release = 0;
+                attackMult = 10;
+                releaseMult = 2;
                 break;
             default:
                 assert(false);
         }
 
-       // printf("updating adsr with t = %f\n", t); fflush(stdout);
-
-  
-        const float mult = 5;
         for (int i = 0; i < numEgNorm; ++i) {
             normAdsr[i].setA(attack, attackMult);
             normAdsr[i].setD(release, releaseMult);

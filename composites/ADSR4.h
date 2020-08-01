@@ -103,7 +103,7 @@ inline void ADSR4::setLambda(float_4&output, float input, float mult)
     float_4 x = rack::simd::clamp(input, 0.f, 1.f);
     output  = rack::simd::pow(LAMBDA_BASE, -x) / MIN_TIME; 
     output *= float_4(mult); 
-    printf("set lambda input=%f, output=%f\n", input, output[0]); fflush(stdout);
+    // printf("set lambda input=%f, output=%f\n", input, output[0]); fflush(stdout);
 }
 
 
