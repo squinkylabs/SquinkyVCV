@@ -10,18 +10,26 @@
 
 using Comp = Sines<WidgetComposite>;
 
+#define _DRAWBAR
+
+#ifdef _DRAWBAR
 class Drawbar : public app::SvgSlider {
 public:
     Drawbar() {
         WARN("loading drawbar svg");
         math::Vec margin = math::Vec(3.5, 3.5);
-     //   maxHandlePos = math::Vec(-1, -2).plus(margin);
-	//	minHandlePos = math::Vec(-1, 87).plus(margin);
 
-        maxHandlePos = math::Vec(0, -100);
-		minHandlePos = math::Vec(-1, 0);;
-        setBackgroundSvg(APP->window->loadSvg(asset::system("res/ComponentLibrary/BefacoSlidePot.svg")));
-		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/drawbar.svg")));
+        // borowed frmo sdk
+       // maxHandlePos = math::Vec(-1, -2).plus(margin);
+	//	minHandlePos = math::Vec(-1, 87).plus(margin);
+        maxHandlePos = math::Vec(-7, -2).plus(margin);
+		minHandlePos = math::Vec(-7, 87).plus(margin);
+
+        // my hacking
+       // maxHandlePos = math::Vec(0, -100);
+		//minHandlePos = math::Vec(-1, 0);;
+        setBackgroundSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scaletx.svg")));
+		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/blue-handle.svg")));
         background->box.pos = margin;
         this->box.size.x = 29;
         this->box.size.y = 105;
@@ -30,6 +38,7 @@ public:
     // math::Vec minHandlePos, maxHandlePos;
 
 };
+#endif
 
 /**
  */
@@ -130,7 +139,7 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
     float drawbarX = 20;
     float drawbarDX = 20;
     float drawbarY = 240;
-#if 1
+#ifndef _DRAWBAR
     for (int i = 0; i < 9; ++i) {
         addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
             Vec(drawbarX + i * drawbarDX, drawbarY), 
@@ -144,7 +153,7 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
             Vec(drawbarX + 11 * drawbarDX, drawbarY), 
             module, Comp::PERCUSSION2_PARAM, Comp::PERCUSSION2_LIGHT ));
 
-#elif 0
+#elif 1
     WARN("about to add new drawbar");
     auto drawbar = SqHelper::createParam<Drawbar>(
         icomp,
