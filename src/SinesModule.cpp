@@ -7,6 +7,7 @@
 #include "Sines.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqWidgets.h"
 
 using Comp = Sines<WidgetComposite>;
 
@@ -15,21 +16,21 @@ using Comp = Sines<WidgetComposite>;
 #ifdef _DRAWBAR
 class Drawbar : public app::SvgSlider {
 public:
-    Drawbar() {
+    Drawbar(const std::string& handleName) {
         WARN("loading drawbar svg");
         math::Vec margin = math::Vec(3.5, 3.5);
 
         // borowed frmo sdk
        // maxHandlePos = math::Vec(-1, -2).plus(margin);
 	//	minHandlePos = math::Vec(-1, 87).plus(margin);
-        maxHandlePos = math::Vec(-7, -2).plus(margin);
-		minHandlePos = math::Vec(-7, 87).plus(margin);
+        maxHandlePos = math::Vec(-7, 10).plus(margin);
+		minHandlePos = math::Vec(-7, 90).plus(margin);
 
         // my hacking
        // maxHandlePos = math::Vec(0, -100);
 		//minHandlePos = math::Vec(-1, 0);;
         setBackgroundSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scaletx.svg")));
-		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/blue-handle.svg")));
+		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, handleName.c_str())));
         background->box.pos = margin;
         this->box.size.x = 29;
         this->box.size.y = 105;
@@ -134,6 +135,65 @@ void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposi
     addLabel(Vec(keyclickX - 18, row - 30), "click");
 }
 
+
+#ifdef _DRAWBAR
+void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
+{
+    float drawbarX = 7;
+    float drawbarDX = 29;
+    float drawbarY = 190;
+    float row1 = 81;
+
+    for (int i = 0; i < 9; ++i) {
+        std::string handleName;
+        switch(i) {
+            case 0:
+            case 1:
+                handleName = "res/blue-handle.svg";
+                break;
+            case 2:
+            case 3:
+            case 5:
+            case 8:
+                handleName = "res/white-handle.svg";
+                break;
+            case 4:
+            case 6:
+            case 7:
+                handleName = "res/black-handle.svg";
+                break;
+            default:
+                assert(false);
+        }
+        auto drawbar = new Drawbar(handleName);
+        drawbar->box.pos = Vec(drawbarX + i * drawbarDX, drawbarY);
+        if (module) {
+            drawbar->paramQuantity = module->paramQuantities[Comp::DRAWBAR1_PARAM +i];
+        }
+        /*
+        auto drawbar2 = SqHelper::createParam<Drawbar>(
+            icomp,
+            Vec(drawbarX, drawbarY),
+            module,
+            Comp::DRAWBAR1_PARAM);
+        */
+    
+
+        addParam(drawbar);
+    }
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(160, row1),
+        module,  Comp::PERCUSSION1_PARAM ));
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(200, row1),
+        module,  Comp::PERCUSSION2_PARAM ));
+
+}
+#else
+
+
 void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     float drawbarX = 20;
@@ -176,6 +236,7 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
     );
 #endif
 }
+#endif
 
 void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
