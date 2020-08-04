@@ -88,6 +88,8 @@ public:
         PERCUSSION2_PARAM,
         DECAY_PARAM,
         KEYCLICK_PARAM,
+        ATTACK_PARAM,
+        RELEASE_PARAM,
         NUM_PARAMS
     };
 
@@ -95,29 +97,27 @@ public:
     {
         VOCT_INPUT,
         GATE_INPUT,
+        DRAWBAR1_INPUT,
+        DRAWBAR2_INPUT,
+        DRAWBAR3_INPUT,
+        DRAWBAR4_INPUT,
+        DRAWBAR5_INPUT,
+        DRAWBAR6_INPUT,
+        DRAWBAR7_INPUT,
+        DRAWBAR8_INPUT,
+        DRAWBAR9_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
         MAIN_OUTPUT,
-        DEBUG_OUTPUT,
+       // DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
     enum LightIds
     {
-        DRAWBAR1_LIGHT,
-        DRAWBAR2_LIGHT,
-        DRAWBAR3_LIGHT,
-        DRAWBAR4_LIGHT,
-        DRAWBAR5_LIGHT,
-        DRAWBAR6_LIGHT,
-        DRAWBAR7_LIGHT,
-        DRAWBAR8_LIGHT,
-        DRAWBAR9_LIGHT,
-        PERCUSSION1_LIGHT,
-        PERCUSSION2_LIGHT,
         NUM_LIGHTS
     };
 
@@ -297,12 +297,14 @@ inline void Sines<TBase>::stepn()
                 releaseMult = 1;
                 break;
             case 1:
+#if 0
                 attack = 0;
                 release = 0;
                 attackMult = 2;
                 releaseMult = 1;
                 break;
             case 2:
+#endif
                 attack = 0;
                 release = 0;
                 attackMult = 10;
@@ -401,7 +403,7 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
             simd_assertMask(gate4);
             float_4 normEnv = normAdsr[bankToOutput].step(gate4, args.sampleTime);
             sines4 *= normEnv;
-#ifndef NDEBUG
+#if 0
             if (vx == 0) {
                 TBase::outputs[DEBUG_OUTPUT].setVoltage(normEnv[0], 0);
             }
@@ -483,7 +485,13 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
              ret = {0.f, 1.0f, 1, "Perc decay"};
              break;
         case Sines<TBase>::KEYCLICK_PARAM:
-             ret = {0.f, 2.0f, 0, "Key click"};
+             ret = {0.f, 1.0f, 0, "Key click"};
+             break;
+        case Sines<TBase>::ATTACK_PARAM:
+            ret = {0.f, 100.0f, 0, "Attack"};
+             break;
+        case Sines<TBase>::RELEASE_PARAM:
+            ret = {0.f, 100.0f, 0, "Release"};
              break;
         default:
             assert(false);

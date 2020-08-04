@@ -104,31 +104,30 @@ struct LEDLightSliderFixed : LEDLightSlider<TLightBase> {
 	}
 };
 
+static float topRow = 81;
 void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float col = 50;
-    const float row = 150;
-    addParam(SqHelper::createParamCentered<CKSS>(
+    const float col = 163;
+   // const float row = 81;
+    addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(col, row),
+        Vec(col, topRow + 5),
         module,
        Comp::DECAY_PARAM));
-    auto l = addLabel(Vec(col - 18, row - 30), "fast");
+    auto l = addLabel(Vec(col - 34, topRow ), "fast");
     l->fontSize = 11;
-    l = addLabel(Vec(col - 17, row + 10), "slow");
+    l = addLabel(Vec(col - 34, topRow + 10), "slow");
     l->fontSize = 11;
 
-    float keyclickX = col + 40;
-    addParam(SqHelper::createParamCentered<CKSSThree>(
+    float keyclickX = 75;
+    addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(keyclickX, row),
+        Vec(keyclickX, topRow + 5),
         module,
         Comp::KEYCLICK_PARAM));
-    addLabel(Vec(keyclickX - 18, row - 30), "click");
+    addLabel(Vec(keyclickX - 34, topRow), "click");
 }
 
-
-#ifdef _DRAWBAR
 
 const char* handles[] = {
     "res/blue-handle-16.svg",
@@ -145,100 +144,72 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
 {
     float drawbarX = 7;
     float drawbarDX = 29;
-    float drawbarY = 190;
-    float row1 = 81;
+    //float drawbarY = 190;
+    float drawbarY = 136;
+  //  float row1 = 81;
 
     for (int i = 0; i < 9; ++i) {
-        std::string handleName = handles[i];P
+        std::string handleName = handles[i];
         auto drawbar = new Drawbar(handleName);
-        drawbar->box.pos = Vec(drawbarX + i * drawbarDX, drawbarY);
+        float x = drawbarX + i * drawbarDX;
+        drawbar->box.pos = Vec(x, drawbarY);
         if (module) {
             drawbar->paramQuantity = module->paramQuantities[Comp::DRAWBAR1_PARAM +i];
         }
         addParam(drawbar);
+
+        
+        addInput(createInput<PJ301MPort>(
+            Vec(x, 261),
+            module,
+            Comp::DRAWBAR1_INPUT + i));
+
     }
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(160, row1),
-        module,  Comp::PERCUSSION1_PARAM ));
+        Vec(190, topRow),
+        module,  Comp::PERCUSSION1_PARAM));
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(200, row1),
-        module,  Comp::PERCUSSION2_PARAM ));
+        Vec(233, topRow),
+        module,  Comp::PERCUSSION2_PARAM));
 
 }
-#else
-
-
-void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
-{
-    float drawbarX = 20;
-    float drawbarDX = 20;
-    float drawbarY = 240;
-#ifndef _DRAWBAR
-    for (int i = 0; i < 9; ++i) {
-        addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
-            Vec(drawbarX + i * drawbarDX, drawbarY), 
-            module, Comp::DRAWBAR1_PARAM + i, Comp::DRAWBAR1_LIGHT + i));
-    }
-
-    addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
-            Vec(drawbarX + 10 * drawbarDX, drawbarY), 
-            module, Comp::PERCUSSION1_PARAM, Comp::PERCUSSION1_LIGHT ));
-    addParam(createLightParamCentered<LEDLightSliderFixed<GreenLight>>( 
-            Vec(drawbarX + 11 * drawbarDX, drawbarY), 
-            module, Comp::PERCUSSION2_PARAM, Comp::PERCUSSION2_LIGHT ));
-
-#elif 1
-    WARN("about to add new drawbar");
-    auto drawbar = SqHelper::createParam<Drawbar>(
-        icomp,
-        Vec(drawbarX, drawbarY),
-        module,
-        Comp::DRAWBAR1_PARAM);
-  
-
-    addParam(drawbar);
-    WARN("drawbar x = %f y=%f", drawbar->box.pos.x, drawbar->box.pos.y );
- WARN("drawbar w = %f h=%f", drawbar->box.size.x, drawbar->box.size.y );
-  
-    WARN("did it");
-#else
-    addParam(SqHelper::createParam<BefacoSlidePot>(
-        icomp,
-        Vec(drawbarX, drawbarY),
-        module,
-        Comp::DRAWBAR1_PARAM)
-    );
-#endif
-}
-#endif
 
 void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     addInput(createInput<PJ301MPort>(
-        Vec(50, 340),
+        Vec(107, 322),
         module,
         Comp::VOCT_INPUT));
-    addLabel( Vec(44, 320), "V/Oct");
+    addLabel( Vec(107, 304), "V/Oct");
 
     addInput(createInput<PJ301MPort>(
-        Vec(90, 340),
+        Vec(167, 322),
         module,
         Comp::GATE_INPUT));
-    addLabel( Vec(84, 320), "Gate");
+    addLabel( Vec(167, 304), "Gate");
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(130, 340),
+        Vec(225, 322),
         module,
         Comp::MAIN_OUTPUT));
-    addLabel( Vec(124, 320), "Out");
-
+    addLabel( Vec(225, 304), "Out");
+#if 0
     addOutput(createOutput<PJ301MPort>(
         Vec(160, 340),
         module,
         Comp::DEBUG_OUTPUT));
     addLabel( Vec(160, 320), "Debug");
+#endif
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(11, 319),
+        module,  Comp::ATTACK_PARAM));
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(55, 319),
+        module,  Comp::RELEASE_PARAM));
 }
 
 /**
