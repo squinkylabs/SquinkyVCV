@@ -1,0 +1,62 @@
+{
+  "id": 8,
+  "plugin": "squinkylabs-plug1",
+  "version": "1.0.10",
+  "model": "squinkylabs-sines",
+  "params": [
+    {
+      "id": 0,
+      "value": 6.0319972
+    },
+    {
+      "id": 1,
+      "value": 8.0
+    },
+    {
+      "id": 2,
+      "value": 5.85600376
+    },
+    {
+      "id": 3,
+      "value": 5.11200237
+    },
+    {
+      "id": 4,
+      "value": 0.0
+    },
+    {
+      "id": 5,
+      "value": 4.0800004
+    },
+    {
+      "id": 6,
+      "value": 4.03200102
+    },
+    {
+      "id": 7,
+      "value": 0.00799970329
+    },
+    {
+      "id": 8,
+      "value": 3.04799986
+    },
+    {
+      "id": 9,
+      "value": 0.0
+    },
+    {
+      "id": 10,
+      "value": 1.78799903
+    },
+    {
+      "id": 11,
+      "value": 0.0
+    },
+    {
+      "id": 12,
+      "value": 0.0
+    }
+  ],
+  "leftModuleId": 2,
+  "rightModuleId": 13
+}

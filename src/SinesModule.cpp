@@ -20,24 +20,16 @@ public:
         WARN("loading drawbar svg");
         math::Vec margin = math::Vec(3.5, 3.5);
 
-        // borowed frmo sdk
-       // maxHandlePos = math::Vec(-1, -2).plus(margin);
-	//	minHandlePos = math::Vec(-1, 87).plus(margin);
         maxHandlePos = math::Vec(-7, 10).plus(margin);
 		minHandlePos = math::Vec(-7, 90).plus(margin);
 
-        // my hacking
-       // maxHandlePos = math::Vec(0, -100);
-		//minHandlePos = math::Vec(-1, 0);;
         setBackgroundSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/scaletx.svg")));
 		this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, handleName.c_str())));
         background->box.pos = margin;
         this->box.size.x = 29;
-        this->box.size.y = 105;
+        this->box.size.y = 120;
       
 	}
-    // math::Vec minHandlePos, maxHandlePos;
-
 };
 #endif
 
@@ -137,6 +129,18 @@ void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposi
 
 
 #ifdef _DRAWBAR
+
+const char* handles[] = {
+    "res/blue-handle-16.svg",
+    "res/blue-handle-513.svg",
+    "res/white-handle-8.svg",
+    "res/white-handle-4.svg",
+    "res/black-handle-223.svg",
+    "res/white-handle-2.svg",
+    "res/black-handle-135.svg",
+    "res/black-handle-113.svg",
+    "res/white-handle-1.svg"
+};
 void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     float drawbarX = 7;
@@ -145,40 +149,12 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
     float row1 = 81;
 
     for (int i = 0; i < 9; ++i) {
-        std::string handleName;
-        switch(i) {
-            case 0:
-            case 1:
-                handleName = "res/blue-handle.svg";
-                break;
-            case 2:
-            case 3:
-            case 5:
-            case 8:
-                handleName = "res/white-handle.svg";
-                break;
-            case 4:
-            case 6:
-            case 7:
-                handleName = "res/black-handle.svg";
-                break;
-            default:
-                assert(false);
-        }
+        std::string handleName = handles[i];P
         auto drawbar = new Drawbar(handleName);
         drawbar->box.pos = Vec(drawbarX + i * drawbarDX, drawbarY);
         if (module) {
             drawbar->paramQuantity = module->paramQuantities[Comp::DRAWBAR1_PARAM +i];
         }
-        /*
-        auto drawbar2 = SqHelper::createParam<Drawbar>(
-            icomp,
-            Vec(drawbarX, drawbarY),
-            module,
-            Comp::DRAWBAR1_PARAM);
-        */
-    
-
         addParam(drawbar);
     }
     addParam(SqHelper::createParam<Blue30Knob>(
