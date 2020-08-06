@@ -39,7 +39,7 @@ public:
 };
 
 /**
- * with parabolic sine aprox: 11.3/28.9
+ * with parabolic sine aprox: 11.3/28.9 (but this could alias - need to be smarter)
  * use floor instead of comp: 16.1 /47
  * make sineVCO do nothing: 6.6, 10.8
  * set n to 16: 12.7 / 37.8 (some improvement, but not massive)
@@ -112,7 +112,6 @@ public:
     enum OutputIds
     {
         MAIN_OUTPUT,
-       // DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -233,7 +232,6 @@ inline void Sines<TBase>::computeDrawbars()
     percussionVolumes[1][0] = gainFromSlider( Sines<TBase>::params[PERCUSSION1_PARAM ].value);
     percussionVolumes[0][3] = gainFromSlider( Sines<TBase>::params[PERCUSSION2_PARAM ].value);
 
-
 #ifdef _LOG
     for (int i=0; i<3; ++i) {
         printf("drawbar[%d] = %s\n", i, toStr(drawbarVolumes[i]).c_str());
@@ -274,7 +272,6 @@ inline void Sines<TBase>::stepn()
         pitch += float_4::load(p);
         sines[baseSineIndex + 2].setPitch(pitch);
     }
-
 
     const bool decayParamBool = Sines<TBase>::params[DECAY_PARAM].value > .5; 
     const int keyClickParamInt = int( std::round(Sines<TBase>::params[KEYCLICK_PARAM].value)); 
@@ -363,21 +360,13 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
         bool outputNow = false;
         int bankToOutput = 0;
 
+        const bool gateConnected = TBase::inputs[GATE_INPUT].isConnected();
+
         // If we fill up a whole block, output it now - it's the voltages from the
         // previous bank.
-
-        #ifdef _LOG
-        printf("sines4=%s pert=%s\n", toStr(sines4).c_str(), toStr(percSines4).c_str());
-        printf("--- LOOKING FOR blocke, vx = %d adsr bank = %d\n", vx, adsrBank);
-        #endif
-       // if (newAdsrBank && (vx != 0)) {
         if (adsrBankOffset == 3) {
             outputNow = true;
             bankToOutput = adsrBank;
-            #ifdef _LOG
-            printf("first case fired (block full) bto=%d\n", bankToOutput);
-            #endif
- 
         }
 
         // If it's the last voice and we only have a partial block, output - it's the voltages
@@ -385,48 +374,28 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
         else if (vx == (numChannels_m - 1)) {
             outputNow = true;
             bankToOutput = adsrBank;
-#ifdef _LOG
-             printf("second case fired bto=%d\n", bankToOutput);
-#endif
         }
-        if (outputNow) {
-#ifdef _LOG
-            printf("output on vx=%d adsrbank=%d bankToOuput=%d\n sines sum=%s\n", vx, adsrBank, bankToOutput, toStr(sines4).c_str());
-#endif
-            Port& p = TBase::inputs[GATE_INPUT];
-            float_4 g = p.getVoltageSimd<float_4>(bankToOutput * 4);
-            float_4 gate4 = (g > float_4(1));
-            simd_assertMask(gate4);
-            float_4 normEnv = normAdsr[bankToOutput].step(gate4, args.sampleTime);
-            sines4 *= normEnv;
-#if 0
-            if (vx == 0) {
-                TBase::outputs[DEBUG_OUTPUT].setVoltage(normEnv[0], 0);
-            }
-#endif
 
-          //  sines4 *= drawbarVolumes[bankToOutput];
-#ifdef _LOG
-            printf("polyGate = %s\n", toStr(gate4).c_str());
-            printf("env = %s outCh=%d\n\n", toStr(normEnv).c_str(), bankToOutput * 4);
-            fflush(stdout);
-#endif
-            //s = clamp(s, -10.f, 10.f);
-            // WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
+        float_4 gate4 = 0;
+        if (outputNow) {
+            if (gateConnected) {
+                Port& p = TBase::inputs[GATE_INPUT];
+                float_4 g = p.getVoltageSimd<float_4>(bankToOutput * 4);
+                gate4 = (g > float_4(1));
+                simd_assertMask(gate4);
+                float_4 normEnv = normAdsr[bankToOutput].step(gate4, args.sampleTime);
+                sines4 *= normEnv;
+            }
+
             sines4 *= volumeNorm;
 
-            float_4 percEnv = percAdsr[bankToOutput].step(gate4, args.sampleTime);
-#ifdef _LOG
-            printf("perf env = %s, percsines3=%s\n", toStr(percEnv).c_str(), toStr(percSines4).c_str());
-#endif
-            percSines4 *= percEnv;
+            if (gateConnected) {
+                float_4 percEnv = percAdsr[bankToOutput].step(gate4, args.sampleTime);
+                percSines4 *= percEnv;
+            }
             sines4 += percSines4;
 
-#ifdef _LOG
-            printf("after combine, sp4=%s, s4=%s\n", toStr(percSines4).c_str(), toStr(sines4).c_str());
-#endif
             Sines<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(sines4, bankToOutput * 4);
-
             sines4 = 0;
             percSines4 = 0;
         }

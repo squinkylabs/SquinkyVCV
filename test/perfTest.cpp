@@ -736,6 +736,26 @@ static void testOrgan4()
     }, 1);
 }
 
+static void testOrgan4VCO()
+{
+    printf("starting organ 4 VCO\n"); fflush(stdout);
+    Sines<TestComposite> sines;
+
+    sines.init();
+    sines.inputs[Sines<TestComposite>::MAIN_OUTPUT].channels = 1;
+    sines.inputs[Sines<TestComposite>::VOCT_INPUT].channels = 4;
+   //sines.inputs[Sines<TestComposite>::GATE_INPUT].channels = 4;
+
+     Sines<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "organ 4VCO", [&sines, args]() {
+        sines.process(args);
+        return sines.outputs[Sines<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
 static void testOrgan12()
 {
     printf("starting organ 12\n"); fflush(stdout);
@@ -1102,6 +1122,7 @@ void perfTest()
 #ifndef _MSC_VER
     testOrgan1();
     testOrgan4();
+     testOrgan4VCO();
     testOrgan12();
     testSuper();
     testSuperPoly();
