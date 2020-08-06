@@ -163,6 +163,8 @@ private:
 
     bool lastDecayParamBool = false;
     int lastKeyclickParamInt = -1;
+    float lastAttack = -1;
+    float lastRelease = -1;
 };
 
 
@@ -276,42 +278,36 @@ inline void Sines<TBase>::stepn()
 
     const bool decayParamBool = Sines<TBase>::params[DECAY_PARAM].value > .5; 
     const int keyClickParamInt = int( std::round(Sines<TBase>::params[KEYCLICK_PARAM].value)); 
+    const float attackParam =  Sines<TBase>::params[ATTACK_PARAM].value;
+    const float releaseParam =  Sines<TBase>::params[RELEASE_PARAM].value;
     // this could easily be done in stepm, also, but with this change check it should be ok.
-    if ((lastDecayParamBool != decayParamBool) || (lastKeyclickParamInt != keyClickParamInt)) {
+    if ((lastDecayParamBool != decayParamBool) || 
+        (lastKeyclickParamInt != keyClickParamInt) ||
+        (lastAttack != attackParam) ||
+        (lastRelease != releaseParam)
+        ) {
 
         lastDecayParamBool = decayParamBool;
         lastKeyclickParamInt = keyClickParamInt;
+        lastAttack = attackParam;
+        lastRelease = releaseParam;
 
         const float decay =  decayParamBool ? .5 : .7;
 
-        float attack = 0;
-        float release = 0;
+        float attack = attackParam / 100.f;
+        float release = releaseParam / 100.f;
         float attackMult = 1;
         float releaseMult = 1;
-        switch(keyClickParamInt) {
-            case 0:
-                // .1, .15 is good
-                attack = 0;
-                release = .125;
-                attackMult = 1;
-                releaseMult = 1;
-                break;
-            case 1:
-#if 0
-                attack = 0;
-                release = 0;
-                attackMult = 2;
-                releaseMult = 1;
-                break;
-            case 2:
-#endif
-                attack = 0;
-                release = 0;
+        
+        if (keyClickParamInt) {
+            if (attackParam < .1) {
+                attack = 0;           
                 attackMult = 10;
+            }
+            if (releaseParam < .1) {
+                release = 0;
                 releaseMult = 2;
-                break;
-            default:
-                assert(false);
+            }
         }
 
         for (int i = 0; i < numEgNorm; ++i) {
