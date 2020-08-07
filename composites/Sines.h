@@ -236,21 +236,15 @@ inline void Sines<TBase>::computeBaseDrawbars_m()
 template <class TBase>
 inline void Sines<TBase>::computeFinalDrawbars_n()
 {
-    for (int i=0; i<4; ++i) {
+    for (int i=0; i<numDrawbars; ++i) {
+        int bank = i / 4;
+        int offset = i - (bank * 4);
+
         bool connected = Sines<TBase>::inputs[DRAWBAR1_INPUT + i].isConnected();
-        finalDrawbarVolumes_n[0][i] = baseDrawbarVolumes_m[0][i] * 
+        finalDrawbarVolumes_n[bank][offset] = baseDrawbarVolumes_m[bank][offset] * 
             (connected ? Sines<TBase>::inputs[DRAWBAR1_INPUT + i].getVoltage(0) : 10);
 
-        connected = Sines<TBase>::inputs[DRAWBAR5_INPUT + i].isConnected();
-        finalDrawbarVolumes_n[1][i] = baseDrawbarVolumes_m[1][i] * 
-            (connected ? Sines<TBase>::inputs[DRAWBAR5_INPUT + i].getVoltage(0) : 10);
     }
-
-    bool connected = Sines<TBase>::inputs[DRAWBAR9_INPUT].isConnected();
-    finalDrawbarVolumes_n[2][0] = baseDrawbarVolumes_m[2][0] * 
-            (connected ? Sines<TBase>::inputs[DRAWBAR9_INPUT].getVoltage(0) : 10);
-
-  //  finalDrawbarVolumes_n[2][3] = finalDrawbarVolumes_n[2][0];
 
     for (int i=0; i<3; ++i) {
         float_4 x = finalDrawbarVolumes_n[i];
@@ -259,20 +253,6 @@ inline void Sines<TBase>::computeFinalDrawbars_n()
 
         finalPercussionVolumes_n[i] = basePercussionVolumes_m[i];     
     }
-#if 0
-    finalDrawbarVolumes_n[0] *= float_4(.1);
-    finalDrawbarVolumes_n[1] *= float_4(.1);
-    finalDrawbarVolumes_n[2] *= float_4(.1);
-
-    finalPercussionVolumes_n[0] = basePercussionVolumes_m[0];
-    finalPercussionVolumes_n[1] = basePercussionVolumes_m[1];
-    finalPercussionVolumes_n[2] = basePercussionVolumes_m[2];
-#endif
-
- //   printf("array size = %d\n", numDrawbars4 / 4);
- //   printf(" base=%f conn=%d final=%s\n", baseDrawbarVolumes_m[2][0], connected, toStr(finalDrawbarVolumes_n[2]).c_str()); fflush(stdout);
-
-   
 }
 
 template <class TBase>
