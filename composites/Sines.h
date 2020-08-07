@@ -39,6 +39,7 @@ public:
 };
 
 /**
+ * reality check before drawbar CV: 15.0 / 42.1
  * with parabolic sine aprox: 11.3/28.9 (but this could alias - need to be smarter)
  * use floor instead of comp: 16.1 /47
  * make sineVCO do nothing: 6.6, 10.8
@@ -154,11 +155,15 @@ private:
 
     void stepn();
     void stepm();
-    void computeDrawbars();
+    void computeBaseDrawbars_m();
+    void computeFinalDrawbars_n();
 
     static float drawbarPitches[12];
-    float_4 drawbarVolumes[numDrawbars4 / 4] = {};
-    float_4 percussionVolumes[numDrawbars4 / 4] = {};
+    float_4 baseDrawbarVolumes_m[numDrawbars4 / 4] = {};
+    float_4 basePercussionVolumes_m[numDrawbars4 / 4] = {};
+
+    float_4 finalDrawbarVolumes_n[numDrawbars4 / 4] = {};
+    float_4 finalPercussionVolumes_n[numDrawbars4 / 4] = {};
 
     bool lastDecayParamBool = false;
     int lastKeyclickParamInt = -1;
@@ -195,7 +200,7 @@ static float gainFromSlider(float slider)
 //#define _LOG
 
 template <class TBase>
-inline void Sines<TBase>::computeDrawbars()
+inline void Sines<TBase>::computeBaseDrawbars_m()
 {
     float power = 0;
 
@@ -208,36 +213,66 @@ inline void Sines<TBase>::computeDrawbars()
 
         float sliderPower = std::pow(10.f, sliderDb / 10.f);
         gains[i] = std::sqrt(sliderPower);
-   //     printf("slider[%d] valu=%f, db = %f, power=%f gain=%f\n", i, slider, sliderDb, sliderPower, gains[i]);
         power += sliderPower;
-      
+    
     }
-    // printf("total power = %f\n", power); fflush(stdout);
 
     float gainComp = 1;
     if (power > 1) {
-        // printf("total power = %f sqrt=%f\n", power, std::sqrt(power));
         gainComp  = 1.f / std::sqrt(power);
     }
-    //printf("gaincomp = %f\n", gainComp);
 
-    drawbarVolumes[2] = 0;
+    baseDrawbarVolumes_m[2] = 0;
     for (int i=0; i<numDrawbars; ++i) {
         int bank = i / 4;
         int offset = i - (bank * 4);
-        drawbarVolumes[bank][offset] = gains[i] * gainComp;
-        //printf("dr gain[%d] = %f\n", i, drawbarVolumes[bank][offset]);
+        baseDrawbarVolumes_m[bank][offset] = gains[i] * gainComp;
     }
 
-    percussionVolumes[1][0] = gainFromSlider( Sines<TBase>::params[PERCUSSION1_PARAM ].value);
-    percussionVolumes[0][3] = gainFromSlider( Sines<TBase>::params[PERCUSSION2_PARAM ].value);
+    basePercussionVolumes_m[1][0] = gainFromSlider( Sines<TBase>::params[PERCUSSION1_PARAM ].value);
+    basePercussionVolumes_m[0][3] = gainFromSlider( Sines<TBase>::params[PERCUSSION2_PARAM ].value);
+}
 
-#ifdef _LOG
+template <class TBase>
+inline void Sines<TBase>::computeFinalDrawbars_n()
+{
+    for (int i=0; i<4; ++i) {
+        bool connected = Sines<TBase>::inputs[DRAWBAR1_INPUT + i].isConnected();
+        finalDrawbarVolumes_n[0][i] = baseDrawbarVolumes_m[0][i] * 
+            (connected ? Sines<TBase>::inputs[DRAWBAR1_INPUT + i].getVoltage(0) : 10);
+
+        connected = Sines<TBase>::inputs[DRAWBAR5_INPUT + i].isConnected();
+        finalDrawbarVolumes_n[1][i] = baseDrawbarVolumes_m[1][i] * 
+            (connected ? Sines<TBase>::inputs[DRAWBAR5_INPUT + i].getVoltage(0) : 10);
+    }
+
+    bool connected = Sines<TBase>::inputs[DRAWBAR9_INPUT].isConnected();
+    finalDrawbarVolumes_n[2][0] = baseDrawbarVolumes_m[2][0] * 
+            (connected ? Sines<TBase>::inputs[DRAWBAR9_INPUT].getVoltage(0) : 10);
+
+  //  finalDrawbarVolumes_n[2][3] = finalDrawbarVolumes_n[2][0];
+
     for (int i=0; i<3; ++i) {
-        printf("drawbar[%d] = %s\n", i, toStr(drawbarVolumes[i]).c_str());
-        printf("perc[%d] = %s\n", i, toStr(percussionVolumes[i]).c_str());
+        float_4 x = finalDrawbarVolumes_n[i];
+        x = SimdBlocks::ifelse(x < 0, 0, x); 
+        finalDrawbarVolumes_n[i] = x * float_4(.1);
+
+        finalPercussionVolumes_n[i] = basePercussionVolumes_m[i];     
     }
+#if 0
+    finalDrawbarVolumes_n[0] *= float_4(.1);
+    finalDrawbarVolumes_n[1] *= float_4(.1);
+    finalDrawbarVolumes_n[2] *= float_4(.1);
+
+    finalPercussionVolumes_n[0] = basePercussionVolumes_m[0];
+    finalPercussionVolumes_n[1] = basePercussionVolumes_m[1];
+    finalPercussionVolumes_n[2] = basePercussionVolumes_m[2];
 #endif
+
+ //   printf("array size = %d\n", numDrawbars4 / 4);
+ //   printf(" base=%f conn=%d final=%s\n", baseDrawbarVolumes_m[2][0], connected, toStr(finalDrawbarVolumes_n[2]).c_str()); fflush(stdout);
+
+   
 }
 
 template <class TBase>
@@ -247,12 +282,14 @@ inline void Sines<TBase>::stepm()
     Sines<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
 
     volumeNorm = 1.f / float(numChannels_m);
-    computeDrawbars();
+    computeBaseDrawbars_m();
 }
 
 template <class TBase>
 inline void Sines<TBase>::stepn()
 {
+    computeFinalDrawbars_n();
+
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const float cv = Sines<TBase>::inputs[VOCT_INPUT].getVoltage(vx);
         const int baseSineIndex = numSinesPerVoices * vx;
@@ -335,6 +372,7 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
     float_4 percSines4 = 0;
 
 
+// are we doing this 4 x times?
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const int adsrBank = vx / 4;
         const int adsrBankOffset = vx - (adsrBank * 4);
@@ -344,15 +382,15 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
         // Add them all together into sum, which will be the non-percussion
         //mix of all drawbars.
         T sum;
-        sum = sines[baseSineIndex + 0].process(deltaT) *  drawbarVolumes[0];
-        sum += sines[baseSineIndex + 1].process(deltaT) *  drawbarVolumes[1];
+        sum = sines[baseSineIndex + 0].process(deltaT) *  finalDrawbarVolumes_n[0];
+        sum += sines[baseSineIndex + 1].process(deltaT) *  finalDrawbarVolumes_n[1];
 
         float s = sum[0] + sum[1] + sum[2] + sum[3];
-        s += sines[baseSineIndex + 2].process(deltaT)[0] *  drawbarVolumes[2][0];
+        s += sines[baseSineIndex + 2].process(deltaT)[0] *  finalDrawbarVolumes_n[2][0];
         sines4[adsrBankOffset] = s;
 
-        sum = sines[baseSineIndex + 0].get() *  percussionVolumes[0];
-        sum += sines[baseSineIndex + 1].get() *  percussionVolumes[1];
+        sum = sines[baseSineIndex + 0].get() *  finalPercussionVolumes_n[0];
+        sum += sines[baseSineIndex + 1].get() *  finalPercussionVolumes_n[1];
         s = sum[0] + sum[1] + sum[2] + sum[3];
         percSines4[adsrBankOffset] = s;
 
@@ -467,7 +505,7 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
 template <class TBase>
 inline float Sines<TBase>::drawbarPitches[12] = {
         //16, 5 1/3,                  8, 4
-        -1, 7 * PitchUtils::semitone, 0, 1,
+        -1, -1 + 7 * PitchUtils::semitone, 0, 1,
          // 2 2/3,                      2, 1 3/5,                       1 1/3
          1 + 7 * PitchUtils::semitone, 2, 2 + 4 * PitchUtils::semitone, 2 + 7 * PitchUtils::semitone,
          // 1
