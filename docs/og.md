@@ -27,7 +27,7 @@ The Hammond uses a color coding to classify the drawbars. While the Hammond uses
 
 The major "non Hammond" feature we added are the two knobs to control the attack and release of the envelopes. While this is not at all authentic, it does allow you to approximate the sound of the traditional "swell" pedal. And it allows an expanded palette of sounds without going too far away from the original.
 
-The percussion section is sliightly more versatile that the Hammond percussion. A real Hammond has four switches to control percussion: on/off, normal/soft, fast/slow, third/second. Organ four replaces on/off, normal/soft and third/second with the volume controls. One is the volume for the second harmonic, the other is the volume for the third harmonic.
+The percussion section is slightly more versatile that the Hammond percussion. A real Hammond has four switches to control percussion: on/off, normal/soft, fast/slow, third/second. Organ four replaces on/off, normal/soft and third/second with the volume controls. One is the volume for the second harmonic, the other is the volume for the third harmonic.
 
 And we did not emulate the way Hammond percussion "steals" tones from the drawbars.
 

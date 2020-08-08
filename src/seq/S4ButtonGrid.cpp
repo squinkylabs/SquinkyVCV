@@ -81,15 +81,11 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
             buttons[row][col] = button;
         }
 
-    //    const float jacksY = y + 8;
-    //    const float jacksDy = 28;
-
         const float jacksX1 = 12;
         const float jacksX2 = 368;
         const float cv_out_dy = 0;
         const float gate_out_dy = 28;
         const float cv_in_dy = 0;
-       // const float output
 
         {
             std::stringstream s;

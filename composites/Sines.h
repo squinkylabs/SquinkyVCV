@@ -432,49 +432,49 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Sines<TBase>::DRAWBAR1_PARAM:
-            ret = {0.f, 8.0f, 8, "16'"};            // brown
+            ret = {0.f, 8.0f, 8, "16' volume"};            // brown
             break;
         case Sines<TBase>::DRAWBAR2_PARAM:
-            ret = {0.f, 8.0f, 8, "5 1/3'"};         //brown (g above middle c)
+            ret = {0.f, 8.0f, 8, "5 1/3' volume"};         //brown (g above middle c)
             break;
         case Sines<TBase>::DRAWBAR3_PARAM:          // white (MIDDLE c)
-            ret = {0.f, 8.0f, 8, "8'"};
+            ret = {0.f, 8.0f, 8, "8' volume"};
             break;
         case Sines<TBase>::DRAWBAR4_PARAM:
-            ret = {0.f, 8.0f, 8, "4'"};             // white C above middle C
+            ret = {0.f, 8.0f, 8, "4' volume"};             // white C above middle C
             break;
-        case Sines<TBase>::DRAWBAR5_PARAM:          // black . G ocatve and half a bove middle C
-            ret = {0.f, 8.0f, 8, "2 2/3'"};
+        case Sines<TBase>::DRAWBAR5_PARAM:          // black . G octave and half above middle C
+            ret = {0.f, 8.0f, 8, "2 2/3' volume"};
             break;
         case Sines<TBase>::DRAWBAR6_PARAM:          // white C two oct above middle c 
-            ret = {0.f, 8.0f, 8, "2'"};
+            ret = {0.f, 8.0f, 8, "2' volume"};
             break;
         case Sines<TBase>::DRAWBAR7_PARAM:          // black E above c + 2 oct.       
-            ret = {0.f, 8.0f, 8, "1 3/5"};
+            ret = {0.f, 8.0f, 8, "1 3/5' volume"};
             break;
         case Sines<TBase>::DRAWBAR8_PARAM:          // black g 2+ oct above middle C
-            ret = {0.f, 8.0f, 8, "1 1/3'"};
+            ret = {0.f, 8.0f, 8, "1 1/3' volume"};
             break;
         case Sines<TBase>::DRAWBAR9_PARAM:          //white
-            ret = {0.f, 8.0f, 8, "1'"};
+            ret = {0.f, 8.0f, 8, "1' volume"};
             break;
         case Sines<TBase>::PERCUSSION1_PARAM:
-             ret = {0.f, 8.0f, 0, "Perc 1"};
+             ret = {0.f, 8.0f, 0, "2 2/3' percussion volume"};
              break;
         case Sines<TBase>::PERCUSSION2_PARAM:
-             ret = {0.f, 8.0f, 0, "Perc 2"};
+             ret = {0.f, 8.0f, 0, "4' percussion volume"};
              break;
         case Sines<TBase>::DECAY_PARAM:
-             ret = {0.f, 1.0f, 1, "Perc decay"};
+             ret = {0.f, 1.0f, 1, "percussion decay time"};
              break;
         case Sines<TBase>::KEYCLICK_PARAM:
-             ret = {0.f, 1.0f, 0, "Key click"};
+             ret = {0.f, 1.0f, 0, "key click"};
              break;
         case Sines<TBase>::ATTACK_PARAM:
-            ret = {0.f, 100.0f, 0, "Attack"};
+            ret = {0.f, 100.0f, 0, "attack time"};
              break;
         case Sines<TBase>::RELEASE_PARAM:
-            ret = {0.f, 100.0f, 0, "Release"};
+            ret = {0.f, 100.0f, 0, "release time"};
              break;
         default:
             assert(false);

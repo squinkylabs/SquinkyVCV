@@ -33,6 +33,51 @@ public:
 };
 #endif
 
+
+class SQParamQuantity : public ParamQuantity {
+public:
+    SQParamQuantity( const ParamQuantity& other) {
+        // I forget how this works. I think it copies the entire guts of the 
+        // old param quantity into us, so we don't need to. but we still keep
+        // our own vtable to override getDisplayValueString.
+        ParamQuantity* base = this;
+        *base = other;
+    }
+    std::string getDisplayValueString() override = 0;
+};
+
+class PercSpeedParamQuantity : public SQParamQuantity {
+public:
+    PercSpeedParamQuantity(const ParamQuantity& other) : SQParamQuantity(other) {}
+    std::string getDisplayValueString() override {
+        const bool fast = getValue() > .5f;
+        return fast ? "fast" : "slow";
+    }
+};
+
+
+class OnOffParamQuantity : public SQParamQuantity {
+public:
+    OnOffParamQuantity(const ParamQuantity& other) : SQParamQuantity(other) {}
+    std::string getDisplayValueString() override {
+        const bool b = getValue() > .5f;
+        return b ? "on" : "off";
+    }
+};
+
+/**
+ * generic helper for substituting a custom ParamQuantity
+ * for the default one.
+ */
+template <typename T>
+static void changeParamQuantity(Module* module, int paramNumber) {
+    auto orig = module->paramQuantities[paramNumber];
+    auto p = new T(*orig);
+
+    delete orig;
+    module->paramQuantities[paramNumber] = p;
+}
+
 /**
  */
 struct SinesModule : Module
@@ -61,6 +106,11 @@ SinesModule::SinesModule()
     blank = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
+
+    // put in custom tooltips.
+    assert(this->paramQuantities.size() == Comp::NUM_PARAMS);
+    changeParamQuantity<PercSpeedParamQuantity>(this, Comp::DECAY_PARAM);
+    changeParamQuantity<OnOffParamQuantity>(this, Comp::KEYCLICK_PARAM);
 
     onSampleRateChange();
     printf("CALLING INIT\n"); fflush(stdout);
@@ -96,20 +146,22 @@ struct SinesWidget : ModuleWidget
     void addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp);
 };
 
+#if 0
 template <typename TLightBase = RedLight>
 struct LEDLightSliderFixed : LEDLightSlider<TLightBase> {
 	LEDLightSliderFixed() {
-		//this->setHandleSvg(APP->window->loadSvg(asset::plugin(pluginInstance, "res/LEDSliderHandle.svg")));
         this->setHandleSvg(APP->window->loadSvg(asset::system("res/ComponentLibrary/LEDSliderHandle.svg")));
 	}
 };
+#endif
 
 static float topRow = 81;
 void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float col = 163;
-   // const float row = 81;
-    addParam(SqHelper::createParam<CKSS>(
+
+
+   addParam(SqHelper::createParam<CKSS>(
         icomp,
         Vec(col, topRow + 5),
         module,
@@ -127,7 +179,6 @@ void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposi
         Comp::KEYCLICK_PARAM));
     addLabel(Vec(keyclickX - 34, topRow), "click");
 }
-
 
 const char* handles[] = {
     "res/blue-handle-16.svg",
@@ -173,7 +224,6 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
         icomp,
         Vec(233, topRow),
         module,  Comp::PERCUSSION2_PARAM));
-
 }
 
 void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icomp)
@@ -195,13 +245,7 @@ void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icom
         module,
         Comp::MAIN_OUTPUT));
     addLabel( Vec(225, 304), "Out");
-#if 0
-    addOutput(createOutput<PJ301MPort>(
-        Vec(160, 340),
-        module,
-        Comp::DEBUG_OUTPUT));
-    addLabel( Vec(160, 320), "Debug");
-#endif
+
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(11, 319),
