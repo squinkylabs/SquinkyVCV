@@ -39,6 +39,7 @@ public:
 };
 
 /**
+ * 16.1 / 43.3 after CV
  * reality check before drawbar CV: 15.0 / 42.1
  * with parabolic sine aprox: 11.3/28.9 (but this could alias - need to be smarter)
  * use floor instead of comp: 16.1 /47
@@ -107,6 +108,8 @@ public:
         DRAWBAR7_INPUT,
         DRAWBAR8_INPUT,
         DRAWBAR9_INPUT,
+        ATTACK_INPUT,
+        RELEASE_INPUT,
         NUM_INPUTS
     };
 
@@ -131,7 +134,6 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
-    //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
@@ -158,7 +160,8 @@ private:
     void computeBaseDrawbars_m();
     void computeFinalDrawbars_n();
 
-    static float drawbarPitches[12];
+    const float* getDrawbarPitches() const;
+//static float drawbarPitches[12];
     float_4 baseDrawbarVolumes_m[numDrawbars4 / 4] = {};
     float_4 basePercussionVolumes_m[numDrawbars4 / 4] = {};
 
@@ -167,8 +170,10 @@ private:
 
     bool lastDecayParamBool = false;
     int lastKeyclickParamInt = -1;
-    float lastAttack = -1;
-    float lastRelease = -1;
+    float lastAttackParam = -1;
+    float lastReleaseParam = -1;
+    float lastAttackCV = 0;
+    float lastReleaseCV = 0;
 };
 
 
@@ -265,11 +270,25 @@ inline void Sines<TBase>::stepm()
     computeBaseDrawbars_m();
 }
 
+/**
+ * input: param = {0..100}
+ *      cv = {-10..10}
+ * 
+ * output 0..1
+ */
+inline float combineEnvelopeParamAndCV(float param, float cv) {
+    float temp = param + 10 * cv;   // -100..+200
+    temp *= 1.f / 100.f;    // -1 .. 2
+    temp = std::clamp(temp, 0.f, 1.f);
+    return temp;
+}
+
 template <class TBase>
 inline void Sines<TBase>::stepn()
 {
     computeFinalDrawbars_n();
 
+    const float* drawbarPitches = getDrawbarPitches();
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const float cv = Sines<TBase>::inputs[VOCT_INPUT].getVoltage(vx);
         const int baseSineIndex = numSinesPerVoices * vx;
@@ -294,31 +313,37 @@ inline void Sines<TBase>::stepn()
     const int keyClickParamInt = int( std::round(Sines<TBase>::params[KEYCLICK_PARAM].value)); 
     const float attackParam =  Sines<TBase>::params[ATTACK_PARAM].value;
     const float releaseParam =  Sines<TBase>::params[RELEASE_PARAM].value;
+    const float attackCV = Sines<TBase>::inputs[ATTACK_INPUT].getVoltage(0);
+    const float releaseCV = Sines<TBase>::inputs[RELEASE_INPUT].getVoltage(0);
     // this could easily be done in stepm, also, but with this change check it should be ok.
     if ((lastDecayParamBool != decayParamBool) || 
         (lastKeyclickParamInt != keyClickParamInt) ||
-        (lastAttack != attackParam) ||
-        (lastRelease != releaseParam)
+        (lastAttackParam != attackParam) ||
+        (lastReleaseParam != releaseParam) ||
+        (lastAttackCV != attackCV) ||
+        (lastReleaseCV != releaseCV)
         ) {
 
         lastDecayParamBool = decayParamBool;
         lastKeyclickParamInt = keyClickParamInt;
-        lastAttack = attackParam;
-        lastRelease = releaseParam;
+        lastAttackParam = attackParam;
+        lastReleaseParam = releaseParam;
+        lastReleaseCV = releaseCV;
+        lastAttackCV = attackCV;
 
         const float decay =  decayParamBool ? .5 : .7;
 
-        float attack = attackParam / 100.f;
-        float release = releaseParam / 100.f;
+        float attack = combineEnvelopeParamAndCV(attackParam, attackCV);
+        float release = combineEnvelopeParamAndCV(releaseParam, releaseCV);
         float attackMult = 1;
         float releaseMult = 1;
         
         if (keyClickParamInt) {
-            if (attackParam < .1) {
+            if (attack < .1) {
                 attack = 0;           
                 attackMult = 10;
             }
-            if (releaseParam < .1) {
+            if (release < .1) {
                 release = 0;
                 releaseMult = 2;
             }
@@ -483,14 +508,16 @@ inline IComposite::Config SinesDescription<TBase>::getParam(int i)
 }
 
 template <class TBase>
-inline float Sines<TBase>::drawbarPitches[12] = {
-        //16, 5 1/3,                  8, 4
+inline const float* Sines<TBase>::getDrawbarPitches() const {
+    static float values[12] = {
+   //16, 5 1/3,                  8, 4
         -1, -1 + 7 * PitchUtils::semitone, 0, 1,
          // 2 2/3,                      2, 1 3/5,                       1 1/3
          1 + 7 * PitchUtils::semitone, 2, 2 + 4 * PitchUtils::semitone, 2 + 7 * PitchUtils::semitone,
          // 1
-         3, 0, 0, 0
+         3, 0, 0, 0};
+    return values;
+}
 
-};
 
 

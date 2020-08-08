@@ -248,12 +248,21 @@ void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icom
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(11, 319),
+        Vec(11, 295),
         module,  Comp::ATTACK_PARAM));
+    addInput(createInput<PJ301MPort>(
+        Vec(13, 335),
+        module,
+        Comp::ATTACK_INPUT));
+
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(55, 319),
+        Vec(55, 295),
         module,  Comp::RELEASE_PARAM));
+    addInput(createInput<PJ301MPort>(
+        Vec(57, 335),
+        module,
+        Comp::RELEASE_INPUT));
 }
 
 /**
