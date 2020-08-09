@@ -141,29 +141,27 @@ struct SinesWidget : ModuleWidget
     void addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp);
 };
 
-static float topRow = 81;
+//static float topRow = 81;
 void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float col = 163;
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(col, topRow + 5),
+        Vec(110, 81),
         module,
        Comp::DECAY_PARAM));
+
+
+    addParam(SqHelper::createParam<CKSS>(
+        icomp,
+        Vec(161, 81),
+        module,
+        Comp::KEYCLICK_PARAM));
+
 #ifdef _LABEL
     auto l = addLabel(Vec(col - 34, topRow ), "fast");
     l->fontSize = 11;
     l = addLabel(Vec(col - 34, topRow + 10), "slow");
     l->fontSize = 11;
-#endif
-
-    float keyclickX = 75;
-    addParam(SqHelper::createParam<CKSS>(
-        icomp,
-        Vec(keyclickX, topRow + 5),
-        module,
-        Comp::KEYCLICK_PARAM));
-#ifdef _LABEL
     addLabel(Vec(keyclickX - 34, topRow), "click");
 #endif
 }
@@ -182,14 +180,16 @@ const char* handles[] = {
 
 void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
-    float drawbarX = 7;
+    float drawbarX = 6;
     float drawbarDX = 29;
-    float drawbarY = 136;
+    float drawbarY = 132;
 
     for (int i = 0; i < 9; ++i) {
         std::string handleName = handles[i];
         auto drawbar = new Drawbar(handleName);
         float x = drawbarX + i * drawbarDX;
+        const float inputX = x;
+        x += 4;
         drawbar->box.pos = Vec(x, drawbarY);
         if (module) {
             drawbar->paramQuantity = module->paramQuantities[Comp::DRAWBAR1_PARAM +i];
@@ -197,18 +197,18 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
         addParam(drawbar);
 
         addInput(createInput<PJ301MPort>(
-            Vec(x, 261),
+            Vec(inputX, 265),
             module,
             Comp::DRAWBAR1_INPUT + i));
-
     }
+
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(190, topRow),
+        Vec(188, 81),
         module,  Comp::PERCUSSION1_PARAM));
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(233, topRow),
+        Vec(231, 81),
         module,  Comp::PERCUSSION2_PARAM));
 }
 
@@ -220,12 +220,12 @@ void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icom
         Comp::VOCT_INPUT));
 
     addInput(createInput<PJ301MPort>(
-        Vec(167, 322),
+        Vec(166-1, 322),
         module,
         Comp::GATE_INPUT));
     
     addOutput(createOutput<PJ301MPort>(
-        Vec(225, 322),
+        Vec(225-1, 322),
         module,
         Comp::MAIN_OUTPUT));
    
