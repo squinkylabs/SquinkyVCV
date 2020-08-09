@@ -10,18 +10,21 @@ It's easy to get started. Patch a polyphonic pitch CV to the V/Oct input, patch 
 
 Like a real organ, Organ-3 sounds really good when processed by a "Leslie" effect. The Surge Rotary is a very good one, although there are probably others.
 
+Make sure to use the tooltips to find out what the controls do. The panel labels are rather sparse, but the tooltips are very detailed.
+
 ## Organ basics
 
 The Hammond organs are a primitive form of additive synthesis. There are nine sine-waves for each key (or voice) that are fixed in tuning to approximate the lower harmonics of a musical tone (and some sub-harmonics). The controls for the volume of these sine-waves are called drawbars. Mixing the tones in various ratios allows the organ to produce different timbres.
 
 The Hammond uses a color coding to classify the drawbars. While the Hammond uses brown, black, and white we used "Squinky Blue" instead of brown. The drawbars are named after organ "footages", where the length of an organ pipe would determine the pitch. 8' is considered the "fundamental" and is at pitch C4. So the drwabars are, from left to right:
 
-* 16', blue. Sub-octave, "Bourdon". One octave below the fundamental. C3.
-* 5 1/3', blue. third harmonic down an octave, "Quint". G4.
-* 8', white. fundamental, "Principal". C4.
-* 4', white, second harmonic, "Octave". C5.
-* 2 2/3', black, "Nazard". Third harmonic. G5.
-* 2', white, "Blockflöte". Fourth harmonic, C6.
+* **16'**, blue. Sub-octave, "Bourdon". One octave below the fundamental. C3.
+* **5 1/3'**, blue. third harmonic down an octave, "Quint". G4.
+* **8'**, white. fundamental, "Principal". C4.
+* **4'**, white, second harmonic, "Octave". C5.
+* **2 2/3'**, black, "Nazard". Third harmonic. G5.
+* **2'**, white, "Block flöte". Fourth harmonic, C6.
+* **1'**, white, "Siff flöte". Fifth harmonic, C7/
 
 ## Non-Hammond features we added
 
@@ -41,47 +44,22 @@ Organ-3 ships with a selection of "factory presets". These can be found on the c
 
 We have categorized them by name, so the first word should say what the preset is:
 
-* basics. These are commonly recommended starting points for various genres of pop, rock and jazz.
+* **basics.** These are commonly recommended starting points for various genres of pop, rock and jazz.
 
-* songs. These are presets that are supposed to approximate the Hammond sound of various well known Hammond sounds. 
+* **songs.** These are presets that are supposed to approximate the Hammond sound of various well known Hammond sounds. 
 
-* strings, reeds, etc. These are setting that are supposed to mimic the sounds of other organs. In most cases they sound little like the instruments they are named for, as organs can't really synthesize these instruments well.
+* **strings, reeds, etc.** These are setting that are supposed to mimic the sounds of other organs. In most cases they sound little like the instruments they are named for, as organs can't really synthesize these instruments well.
 
 ## Reference
 
+**Nine Drawbars.** The nine sliders in the middle of the panel are a mixer of different harmonics and sub-harmonics. The respond more or less like the drawbars on the Hammond. Moving them one number will be about 3db of volume change.
 
-# old stuff
+**Percussion Volume** There are two knobs at the upper right that control how much of the "percussion" sound will come through. There is one knob for the second harmonic percussion, and one knob for the third harmonic percussion. On a normal Hammond this is and either/or choice - here you can mix both of them.
 
-Note: you must hook up the gate input for sound to come out. This module is a full instrument with its own (simple )envelope generators.
+**Percussion Speed** Controls what we would call the "decay time" of the percussion envelopes. There are two settings - fast and slow.
 
-Working:
+**Attack and Release knobs** Controls the attack and release time of the main envelope generators. On organs both of these are usually very fast, but an organ usually has a "swell" pedal to allow fade in and fade out. Here it's easier and more versatile to just have attack and release controls.
 
-* 16 voice polyphonic.
-* All the normal drawbars.
-* Percussion (partially).
-* Reasonable CPU usage.
+**Key Click** On/off switch. Mechanical organs often made an audible click when keys are pressed or released. The click is produced by instantly gating a sine-wave on or off, similar to the way a bad mixer will pop when you mute it. When keyclick is on we set the envelopes as fast as possible, when off we slow them down just enough so they don't click.
 
-Not working:
-
-* No control of percussion decay time.
-
-Known bugs:
-
-* If any of the harmonics get above 40 k the audio goes insane.
-
-Will do:
-
-* Percussion decay time.
-* tune the attack and release to make them faster without clicking.
-* probably add some control over "key click". Won't sound exactly like a Hammond though.
-* CV control of the drawbars, although probably not polyphonic.
-* Probably make some presets.
-* Will try to reduce the CPU usage.
-* Probably a mode where the internal envelope generators are turned off so it acts like a poly VCO, rather than a synth voice.
-
-Could:
-
-* Add pitch modulation input.
-* Add tuning controls and/or pitch modulation CV
-* Have other envelopes besides "Hammond" ones.
-* Have all the drawbar harmonics available as percussion harmonics, too.
+If you set the attack and release to something slow you will not be able to get a key click.
