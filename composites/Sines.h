@@ -39,6 +39,7 @@ public:
 };
 
 /**
+ * more cv, limit pitch: 16.7 / 45.9
  * 16.1 / 43.3 after CV
  * reality check before drawbar CV: 15.0 / 42.1
  * with parabolic sine aprox: 11.3/28.9 (but this could alias - need to be smarter)
@@ -161,7 +162,7 @@ private:
     void computeFinalDrawbars_n();
 
     const float* getDrawbarPitches() const;
-//static float drawbarPitches[12];
+
     float_4 baseDrawbarVolumes_m[numDrawbars4 / 4] = {};
     float_4 basePercussionVolumes_m[numDrawbars4 / 4] = {};
 
@@ -219,7 +220,6 @@ inline void Sines<TBase>::computeBaseDrawbars_m()
         float sliderPower = std::pow(10.f, sliderDb / 10.f);
         gains[i] = std::sqrt(sliderPower);
         power += sliderPower;
-    
     }
 
     float gainComp = 1;
@@ -266,7 +266,7 @@ inline void Sines<TBase>::stepm()
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sines<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
 
-    volumeNorm = 1.f / float(numChannels_m);
+    volumeNorm = 4.f / std::sqrt( float(numChannels_m));
     computeBaseDrawbars_m();
 }
 
@@ -289,6 +289,7 @@ inline void Sines<TBase>::stepn()
     computeFinalDrawbars_n();
 
     const float* drawbarPitches = getDrawbarPitches();
+    const float sampleRate = TBase::engineGetSampleRate();
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const float cv = Sines<TBase>::inputs[VOCT_INPUT].getVoltage(vx);
         const int baseSineIndex = numSinesPerVoices * vx;
@@ -296,17 +297,17 @@ inline void Sines<TBase>::stepn()
 
         float_4 pitch = basePitch;
         pitch += float_4::load(drawbarPitches);
-        sines[baseSineIndex].setPitch(pitch);
+        sines[baseSineIndex].setPitch(pitch, sampleRate);
 
         const float* p = drawbarPitches + 4;
         pitch = basePitch;
         pitch += float_4::load(p);
-        sines[baseSineIndex + 1].setPitch(pitch);
+        sines[baseSineIndex + 1].setPitch(pitch, sampleRate);
 
         p = drawbarPitches + 8;
         pitch = basePitch;
         pitch += float_4::load(p);
-        sines[baseSineIndex + 2].setPitch(pitch);
+        sines[baseSineIndex + 2].setPitch(pitch, sampleRate);
     }
 
     const bool decayParamBool = Sines<TBase>::params[DECAY_PARAM].value > .5; 
@@ -376,8 +377,6 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
     float_4 sines4 = 0;
     float_4 percSines4 = 0;
 
-
-// are we doing this 4 x times?
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const int adsrBank = vx / 4;
         const int adsrBankOffset = vx - (adsrBank * 4);

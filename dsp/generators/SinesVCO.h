@@ -34,7 +34,7 @@ public:
     /** Units are standard volts.
      * 0 = C4
      */
-    void setPitch(T f);
+    void setPitch(T f, float sampleRate);
     T process(T deltaT);
     T get() const {
         return output;
@@ -46,46 +46,28 @@ private:
 };
 
 template <typename T>
-inline void SinesVCO<T>::setPitch(T pitch)
+inline void SinesVCO<T>::setPitch(T pitch, float sampleRate)
 {
+    float highPitchLimit = sampleRate * .47f;
+   
 	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
-  //  printf("set pitch %s made freq %s\n", toStr(pitch).c_str(), toStr(freq).c_str());
-  //  fflush(stdout);
+
+    for (int i=0; i<4; ++i) {
+        if (freq[i] > highPitchLimit) {
+            freq[i] = 0;
+            phase[i] = 0;
+        }
+    }
 }
 
- static float_4 twoPi = 2 * 3.141592653589793238;
+static float_4 twoPi = 2 * 3.141592653589793238;
 
-#if 1
 template <typename T>
 inline T SinesVCO<T>::process(T deltaT)
 {
-    /// printf("in process, freq=%s\n", toStr(freq).c_str());
     const T deltaPhase = freq * deltaT;
     phase += deltaPhase;
-    // printf("in process, phase=%s\n", toStr(phase).c_str());
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
     output = SimdBlocks::sinTwoPi(phase * twoPi);
     return output;
 }
-#elif 1
-template <typename T>
-inline T SinesVCO<T>::process(T deltaT)
-{
-    /// printf("in process, freq=%s\n", toStr(freq).c_str());
-    const T deltaPhase = freq * deltaT;
-    phase += deltaPhase;
-    // printf("in process, phase=%s\n", toStr(phase).c_str());
-    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-   // output = SimdBlocks::sinTwoPi(phase * twoPi);
-    output = secondOrderApprox(phase);
-    return output;
-}
-
-#else
-template <typename T>
-inline T SinesVCO<T>::process(T deltaT)
-{
-    output = 0;
-    return output;
-}
-#endif

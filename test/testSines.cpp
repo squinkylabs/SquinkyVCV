@@ -20,7 +20,7 @@ static void testSines1()
     SinesVCO<float_4> v;
     float_4 pitch(0);
     pitch[1] = 2;
-    v.setPitch(pitch);
+    v.setPitch(pitch, 44100.f);
     float_4 deltaT = 1.f / 44100.f;
     float_4 x = v.process(deltaT);
 
