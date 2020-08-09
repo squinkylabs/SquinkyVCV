@@ -11,9 +11,6 @@
 
 using Comp = Sines<WidgetComposite>;
 
-#define _DRAWBAR
-
-#ifdef _DRAWBAR
 class Drawbar : public app::SvgSlider {
 public:
     Drawbar(const std::string& handleName) {
@@ -31,8 +28,6 @@ public:
       
 	}
 };
-#endif
-
 
 class SQParamQuantity : public ParamQuantity {
 public:
@@ -146,30 +141,21 @@ struct SinesWidget : ModuleWidget
     void addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp);
 };
 
-#if 0
-template <typename TLightBase = RedLight>
-struct LEDLightSliderFixed : LEDLightSlider<TLightBase> {
-	LEDLightSliderFixed() {
-        this->setHandleSvg(APP->window->loadSvg(asset::system("res/ComponentLibrary/LEDSliderHandle.svg")));
-	}
-};
-#endif
-
 static float topRow = 81;
 void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float col = 163;
-
-
-   addParam(SqHelper::createParam<CKSS>(
+    addParam(SqHelper::createParam<CKSS>(
         icomp,
         Vec(col, topRow + 5),
         module,
        Comp::DECAY_PARAM));
+#ifdef _LABEL
     auto l = addLabel(Vec(col - 34, topRow ), "fast");
     l->fontSize = 11;
     l = addLabel(Vec(col - 34, topRow + 10), "slow");
     l->fontSize = 11;
+#endif
 
     float keyclickX = 75;
     addParam(SqHelper::createParam<CKSS>(
@@ -177,7 +163,9 @@ void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposi
         Vec(keyclickX, topRow + 5),
         module,
         Comp::KEYCLICK_PARAM));
+#ifdef _LABEL
     addLabel(Vec(keyclickX - 34, topRow), "click");
+#endif
 }
 
 const char* handles[] = {
@@ -191,13 +179,12 @@ const char* handles[] = {
     "res/black-handle-113.svg",
     "res/white-handle-1.svg"
 };
+
 void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> icomp)
 {
     float drawbarX = 7;
     float drawbarDX = 29;
-    //float drawbarY = 190;
     float drawbarY = 136;
-  //  float row1 = 81;
 
     for (int i = 0; i < 9; ++i) {
         std::string handleName = handles[i];
@@ -209,7 +196,6 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
         }
         addParam(drawbar);
 
-        
         addInput(createInput<PJ301MPort>(
             Vec(x, 261),
             module,
@@ -232,37 +218,42 @@ void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icom
         Vec(107, 322),
         module,
         Comp::VOCT_INPUT));
-    addLabel( Vec(107, 304), "V/Oct");
 
     addInput(createInput<PJ301MPort>(
         Vec(167, 322),
         module,
         Comp::GATE_INPUT));
-    addLabel( Vec(167, 304), "Gate");
-
+    
     addOutput(createOutput<PJ301MPort>(
         Vec(225, 322),
         module,
         Comp::MAIN_OUTPUT));
-    addLabel( Vec(225, 304), "Out");
-
+   
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(11, 295),
+        Vec(11, 81),
         module,  Comp::ATTACK_PARAM));
+
     addInput(createInput<PJ301MPort>(
-        Vec(13, 335),
+        Vec(24, 322),
         module,
         Comp::ATTACK_INPUT));
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(55, 295),
+        Vec(55, 81),
         module,  Comp::RELEASE_PARAM));
+
     addInput(createInput<PJ301MPort>(
-        Vec(57, 335),
+        Vec(63, 322),
         module,
         Comp::RELEASE_INPUT));
+
+#ifdef _LABEL
+    addLabel( Vec(107, 304), "V/Oct");
+    addLabel( Vec(167, 304), "Gate");
+    addLabel( Vec(225, 304), "Out");
+#endif
 }
 
 /**
@@ -270,11 +261,10 @@ void SinesWidget::addJacks(SinesModule *module, std::shared_ptr<IComposite> icom
  * provide meta-data.
  * This is not shared by all modules in the DLL, just one
  */
-
 SinesWidget::SinesWidget(SinesModule *module)
 {
     setModule(module);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/sines-panel.svg");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
