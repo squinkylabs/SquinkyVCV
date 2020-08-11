@@ -151,7 +151,7 @@ private:
     ADSR4 percAdsr[numEgPercussion];
 
     int numChannels_m = 1;      // 1..16
-    float volumeNorm = 1;
+    float volumeNorm_m = 1;
     
     Divider divn;
     Divider divm;
@@ -205,6 +205,8 @@ static float gainFromSlider(float slider)
 
 //#define _LOG
 
+//#define _XX
+
 template <class TBase>
 inline void Sines<TBase>::computeBaseDrawbars_m()
 {
@@ -218,7 +220,7 @@ inline void Sines<TBase>::computeBaseDrawbars_m()
         float sliderDb = (slider < .5) ? -100 : (slider - 8) * 3;
 
         float sliderPower = std::pow(10.f, sliderDb / 10.f);
-        gains[i] = std::sqrt(sliderPower);
+        gains[i] = (slider < .5) ? 0 : std::sqrt(sliderPower);
         power += sliderPower;
     }
 
@@ -266,7 +268,7 @@ inline void Sines<TBase>::stepm()
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sines<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
 
-    volumeNorm = 4.f / std::sqrt( float(numChannels_m));
+    volumeNorm_m = 3.f / std::sqrt( float(numChannels_m));
     computeBaseDrawbars_m();
 }
 
@@ -366,6 +368,18 @@ inline void Sines<TBase>::stepn()
     }
 }
 
+#ifdef _XX
+
+template <class TBase>
+inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
+{
+    divn.step();
+    divm.step();
+
+    const T deltaT(args.sampleTime);
+}
+#else
+
 template <class TBase>
 inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
 {
@@ -376,7 +390,12 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
     
     float_4 sines4 = 0;
     float_4 percSines4 = 0;
-
+#if 0
+    printf("draw 0 = %s perc 0 = %s\n", 
+        toStr(finalDrawbarVolumes_n[0]).c_str(),
+        toStr(finalPercussionVolumes_n[0]).c_str()
+        ); fflush(stdout);
+#endif
     for (int vx = 0; vx < numChannels_m; ++vx) {
         const int adsrBank = vx / 4;
         const int adsrBankOffset = vx - (adsrBank * 4);
@@ -429,20 +448,35 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
                 sines4 *= normEnv;
             }
 
-            sines4 *= volumeNorm;
+           // sines4 *= volumeNorm_m;
 
             if (gateConnected) {
                 float_4 percEnv = percAdsr[bankToOutput].step(gate4, args.sampleTime);
                 percSines4 *= percEnv;
+                percSines4 *= float_4(10.f);
             }
+
             sines4 += percSines4;
+            sines4 *= volumeNorm_m;
 
             Sines<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(sines4, bankToOutput * 4);
+#if 0
+            static float mx = 0;
+            for (int i=0; i<4; ++i) {
+                float x = std::max(mx, std::abs(sines4[i]));
+                if ( x > mx) {
+                    mx = x;
+                    printf("max = %f\n", mx); fflush(stdout);
+                }
+            }
+#endif
+
             sines4 = 0;
             percSines4 = 0;
         }
     }
 }
+#endif
 
 template <class TBase>
 int SinesDescription<TBase>::getNumParams()

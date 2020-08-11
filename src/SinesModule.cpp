@@ -146,14 +146,13 @@ void SinesWidget::addOtherControls(SinesModule *module, std::shared_ptr<IComposi
 {
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(110, 81),
+        Vec(161, 81),
         module,
        Comp::DECAY_PARAM));
 
-
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(161, 81),
+        Vec(110, 81),
         module,
         Comp::KEYCLICK_PARAM));
 
@@ -204,11 +203,11 @@ void SinesWidget::addDrawbars(SinesModule *module, std::shared_ptr<IComposite> i
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(188, 81),
+        Vec(231, 81),
         module,  Comp::PERCUSSION1_PARAM));
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(231, 81),
+        Vec(188, 81),
         module,  Comp::PERCUSSION2_PARAM));
 }
 
