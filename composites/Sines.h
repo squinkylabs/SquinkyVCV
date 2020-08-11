@@ -350,6 +350,12 @@ inline void Sines<TBase>::stepn()
                 release = 0;
                 releaseMult = 2;
             }
+        } else {
+            // .05 slight click?
+            attack = std::max(attack, .07f);
+
+            // .1 not enough
+            release = std::max(release, .15f);
         }
 
         for (int i = 0; i < numEgNorm; ++i) {
