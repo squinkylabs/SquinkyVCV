@@ -69,6 +69,14 @@ public:
     {
         normalizedFreq = std::clamp(f, 1e-6f, 0.5f);
         sampleTime = st;
+
+
+        const float sawCorrect = -4.6125;
+        sawDCComp = normalizedFreq * sawCorrect;
+        evenDCComp = 2 * sawDCComp;
+
+      //  printf("set dccomp to %f based on normf = %f\n", sawDCComp, normalizedFreq); fflush(stdout);
+
     }
 
     void setWaveform(Waveform);
@@ -146,6 +154,9 @@ private:
     std::string name;
     bool lastSq = false;
     bool isSqHigh() const;
+
+    float sawDCComp = 0;
+    float evenDCComp = 0;
 };
 
 // Let's by lazy and use "using" to solve some v1/v6 issues/
@@ -260,7 +271,9 @@ inline void MinBLEPVCO::step_saw()
     totalPhase += aMinBLEP.process();
     totalPhase += syncMinBLEP.process();
     float saw = -1.0 + 2.0 * totalPhase;
+    saw += sawDCComp;
     output = 5.0*saw;
+   // output = saw;
 
     gotSyncCallback = false;
 }
@@ -512,6 +525,7 @@ inline void MinBLEPVCO::step_even()
     const float sine = sineLook(phase);
     float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
     doubleSaw += aMinBLEP.process();
+    doubleSaw += evenDCComp;
     float even = 0.55 * (doubleSaw + 1.27 * sine);
     even += syncMinBLEP.process();
 
