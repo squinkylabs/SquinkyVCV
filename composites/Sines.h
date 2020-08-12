@@ -39,6 +39,7 @@ public:
 };
 
 /**
+ * final (?) with clippers and new volume 16.0 / 46.9
  * more cv, limit pitch: 16.7 / 45.9
  * 16.1 / 43.3 after CV
  * reality check before drawbar CV: 15.0 / 42.1
@@ -268,7 +269,8 @@ inline void Sines<TBase>::stepm()
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Sines<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
 
-    volumeNorm_m = 3.f / std::sqrt( float(numChannels_m));
+    //volumeNorm_m = 2.f / std::sqrt( float(numChannels_m));
+    volumeNorm_m = 1;
     computeBaseDrawbars_m();
 }
 
@@ -454,16 +456,15 @@ inline void Sines<TBase>::process(const typename TBase::ProcessArgs& args)
                 sines4 *= normEnv;
             }
 
-           // sines4 *= volumeNorm_m;
-
             if (gateConnected) {
                 float_4 percEnv = percAdsr[bankToOutput].step(gate4, args.sampleTime);
                 percSines4 *= percEnv;
-                percSines4 *= float_4(10.f);
+                percSines4 *= float_4(6.f);
             }
 
             sines4 += percSines4;
             sines4 *= volumeNorm_m;
+            sines4 = rack::simd::clamp(sines4, -10, 10);
 
             Sines<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(sines4, bankToOutput * 4);
 #if 0
