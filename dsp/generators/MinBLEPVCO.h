@@ -70,15 +70,9 @@ public:
         normalizedFreq = std::clamp(f, 1e-6f, 0.5f);
         sampleTime = st;
 
-
         const float sawCorrect = -4.6125;
         sawDCComp = normalizedFreq * sawCorrect;
         evenDCComp = 2 * sawDCComp;
-
-      
-
-      //  printf("set dccomp to %f based on normf = %f\n", sawDCComp, normalizedFreq); fflush(stdout);
-
     }
 
     void setWaveform(Waveform);
@@ -253,8 +247,7 @@ inline void MinBLEPVCO::step_saw()
         if (gotSyncCallback) {
             const float crossing = syncCallbackCrossing;
 
-
-	    /** Places a discontinuity with magnitude `x` at -1 < p <= 0 relative to the current frame */
+	        /** Places a discontinuity with magnitude `x` at -1 < p <= 0 relative to the current frame */
             syncMinBLEP.insertDiscontinuity(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
