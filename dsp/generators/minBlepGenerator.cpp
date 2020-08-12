@@ -4,6 +4,7 @@
 
 bool _logvco = false;
 
+#ifndef __PLUGIN        // This implementation only for testing. For real plugin we link VCV code.
 namespace rack {
 namespace dsp {
 
@@ -86,4 +87,5 @@ void minBlepImpulse(int z, int o, float* output) {
 }
 }
 }
+#endif
 

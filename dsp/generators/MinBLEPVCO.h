@@ -69,6 +69,10 @@ public:
     {
         normalizedFreq = std::clamp(f, 1e-6f, 0.5f);
         sampleTime = st;
+
+        const float sawCorrect = -4.6125;
+        sawDCComp = normalizedFreq * sawCorrect;
+        evenDCComp = 2 * sawDCComp;
     }
 
     void setWaveform(Waveform);
@@ -146,6 +150,10 @@ private:
     std::string name;
     bool lastSq = false;
     bool isSqHigh() const;
+
+    float sawDCComp = 0;
+    float evenDCComp = 0;
+    float pulseDCComp = 0;
 };
 
 // Let's by lazy and use "using" to solve some v1/v6 issues/
@@ -176,6 +184,7 @@ inline void MinBLEPVCO::setWaveform(Waveform wf)
 inline void MinBLEPVCO::setPulseWidth(float pw)
 {
     pulseWidth = pw;
+    pulseDCComp = pw * 2 - 1;
 }
 
 inline void MinBLEPVCO::step()
@@ -238,11 +247,8 @@ inline void MinBLEPVCO::step_saw()
         if (gotSyncCallback) {
             const float crossing = syncCallbackCrossing;
 
-
-	/** Places a discontinuity with magnitude `x` at -1 < p <= 0 relative to the current frame */
-	//void insertDiscontinuity(float p, T x) {
+	        /** Places a discontinuity with magnitude `x` at -1 < p <= 0 relative to the current frame */
             syncMinBLEP.insertDiscontinuity(crossing, jump);
-           // syncMinBLEP.jump(crossing, jump);
             if (syncCallback) {
                 syncCallback(crossing);
             }
@@ -260,8 +266,8 @@ inline void MinBLEPVCO::step_saw()
     totalPhase += aMinBLEP.process();
     totalPhase += syncMinBLEP.process();
     float saw = -1.0 + 2.0 * totalPhase;
+    saw += sawDCComp;
     output = 5.0*saw;
-
     gotSyncCallback = false;
 }
 
@@ -315,6 +321,7 @@ inline void MinBLEPVCO::step_sq()
     square += bMinBLEP.process();
     square += syncMinBLEP.process();
 
+    square += pulseDCComp;
     output = 5.0*square;
 
     gotSyncCallback = false;
@@ -458,14 +465,6 @@ inline void MinBLEPVCO::step_even()
 
         // Figure out where our sub-sample phase should be after reset
         const float newPhase = .5 + excess;
-      //  const float jump = -2.f * (phase - newPhase);
-#ifdef _LOG 
-        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
-            phase, newPhase,
-            excess,
-            syncCallbackCrossing, jump);
-#endif
-      //  syncMinBLEP.jump(syncCallbackCrossing, jump);
         syncJump = evenLook(newPhase) - evenLook(this->phase);
         this->phase = newPhase;
     }
@@ -506,78 +505,18 @@ inline void MinBLEPVCO::step_even()
         aMinBLEP.insertDiscontinuity(crossing, jump);
     }
 
-    
     // note that non-sync minBLEP is added to double saw,
     // but for sync it's added to even. 
     const float sine = sineLook(phase);
     float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
     doubleSaw += aMinBLEP.process();
+    doubleSaw += evenDCComp;
     float even = 0.55 * (doubleSaw + 1.27 * sine);
     even += syncMinBLEP.process();
 
     output = 5.0*even;
     gotSyncCallback = false;
 }
-#if 0 // old way
-inline void MinBLEPVCO::step_even()
-{
-    if (gotSyncCallback) {
-        gotSyncCallback = false;
-
-        // All calculations based on slave sync discontinuity happening at 
-        // the same sub-sample as the mater discontinuity.
-
-        // First, figure out how much excess phase we are going to have after reset
-        const float excess = -syncCallbackCrossing * normalizedFreq;
-
-        // Figure out where our sub-sample phase should be after reset
-        const float newPhase = .5 + excess;
-        const float jump = -2.f * (phase - newPhase);
-#ifdef _LOG 
-        printf("%s: got sync ph=%.2f nph=%.2f excess=%.2f send cross %.2f jump %.2f \n", name.c_str(),
-            phase, newPhase,
-            excess,
-            syncCallbackCrossing, jump);
-#endif
-        syncMinBLEP.jump(syncCallbackCrossing, jump);
-        this->phase = newPhase;
-        return;
-    }
-    float oldPhase = phase;
-    phase += normalizedFreq;
-
-    if (oldPhase < 0.5 && phase >= 0.5) {
-        float crossing = -(phase - 0.5) / normalizedFreq;
-        aMinBLEP.jump(crossing, -2.0);
-    }
-
-    // Reset phase if at end of cycle
-    if (phase >= 1.0) {
-        phase -= 1.0;
-        float crossing = -phase / normalizedFreq;
-        aMinBLEP.jump(crossing, -2.0);
-        if (syncCallback) {
-            syncCallback(crossing);
-        }
-    }
-
-    //sine = -cosf(2*AudioMath::Pi * phase);
-    // want cosine, but only have sine lookup
-    float adjPhase = phase + .25f;
-    if (adjPhase >= 1) {
-        adjPhase -= 1;
-    }
-    const float sine = -LookupTable<float>::lookup(*sinLookup, adjPhase, true);
-
-    float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
-    doubleSaw += aMinBLEP.shift();
-    doubleSaw += syncMinBLEP.shift();
-    const float even = 0.55 * (doubleSaw + 1.27 * sine);
-
-    //TBase::outputs[SINE_OUTPUT].value = 5.0*sine;
-    output = 5.0*even;
-}
-#endif
 
 #if defined(_MSC_VER)
 #pragma warning (pop)
