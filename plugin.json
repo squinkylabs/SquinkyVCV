@@ -220,6 +220,13 @@
 			"description": "Hammond organ emulator",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/sines.md",
 			"tags": ["VCO", "Polyphonic", "Hardware", "Synth voice"]
+		},
+		{
+			"slug": "squinkylabs-basic",
+			"name": "Basic VCO",
+			"description": "x",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/basic/docs/basic.md",
+			"tags": ["VCO", "Polyphonic"]
 		}
 	]
 }

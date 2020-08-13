@@ -132,5 +132,6 @@ extern Model *modelSubModule;
 #ifdef _SINES
 extern Model *modelSinesModule;
 #endif
+extern Model *modelBasicModule;
 
 
