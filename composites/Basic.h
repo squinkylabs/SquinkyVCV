@@ -1,9 +1,11 @@
 
 #pragma once
 
+#include "BasicVCO.h"
+#include "IComposite.h"
+
 #include <assert.h>
 #include <memory>
-#include "IComposite.h"
 
 namespace rack {
     namespace engine {
@@ -76,6 +78,8 @@ public:
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
+
+    BasicVCO vcos[4];
 
 };
 
