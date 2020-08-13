@@ -108,11 +108,8 @@ BasicWidget::BasicWidget(BasicModule *module)
     addJacks(module, icomp);
     addControls(module, icomp);
 
-    // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
- //   addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-   // addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelBasicModule = createModel<BasicModule, BasicWidget>("squinkylabs-basic");
