@@ -66,8 +66,22 @@ struct BasicWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addJacks(BasicModule *module, std::shared_ptr<IComposite> icomp);
 };
 
+void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icomp)
+{
+    addInput(createInput<PJ301MPort>(
+        Vec(10, 290),
+        module,
+        Comp::VOCT_INPUT));
+
+     addOutput(createOutput<PJ301MPort>(
+        Vec(10, 330),
+        module,
+        Comp::MAIN_OUTPUT));
+};
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -78,13 +92,16 @@ struct BasicWidget : ModuleWidget
 BasicWidget::BasicWidget(BasicModule *module)
 {
     setModule(module);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/basic-panel.svg");
+
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    addJacks(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+ //   addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+   // addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelBasicModule = createModel<BasicModule, BasicWidget>("squinkylabs-basic");

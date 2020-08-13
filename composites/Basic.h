@@ -51,11 +51,13 @@ public:
 
     enum InputIds
     {
+        VOCT_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 
