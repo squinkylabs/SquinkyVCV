@@ -205,7 +205,7 @@
 			"name": "FM Kitchen Sink",
 			"description": "Many function VCO",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/kitchen-sink.md",
-			"tags": ["VCO", "Polyphonic"]
+			"tags": ["VCO", "Polyphonic", "Synth voice"]
 		},
 		{
 			"slug": "squinkylabs-sub",
@@ -213,6 +213,13 @@
 			"description": "Subharmonic VCO",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/substitute.md",
 			"tags": ["VCO", "Polyphonic"]
+		},
+		{
+			"slug": "squinkylabs-sines",
+			"name": "Organ Three",
+			"description": "Hammond organ emulator",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/sines.md",
+			"tags": ["VCO", "Polyphonic", "Hardware", "Synth voice"]
 		}
 	]
 }

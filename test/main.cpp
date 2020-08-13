@@ -96,6 +96,7 @@ extern void testSimd();
 extern void testSimdLookup();
 extern void testSimpleQuantizer();
 extern void testDC();
+extern void testSines();
 
 #if 0
 #include <sstream>
@@ -172,7 +173,8 @@ if (runShaperGen) {
     }
 
 #ifndef _MSC_VER
-testDC();
+    testSines();
+    testDC();
     testSimd();
     testSimdLookup();
 #endif

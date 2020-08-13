@@ -20,7 +20,7 @@ public:
      *
      * Overrides of Module functions
      */
-    void step() override;
+    void process(const ProcessArgs& args) override;
     void onSampleRateChange() override;
 
     std::shared_ptr<Comp> blank;
@@ -43,9 +43,9 @@ BlankModule::BlankModule()
     blank->init();
 }
 
-void BlankModule::step()
+void BlankModule::process(const ProcessArgs& args)
 {
-    blank->step();
+    blank->process(args);
 }
 
 ////////////////////
@@ -78,7 +78,6 @@ struct BlankWidget : ModuleWidget
 BlankWidget::BlankWidget(BlankModule *module)
 {
     setModule(module);
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     // screws

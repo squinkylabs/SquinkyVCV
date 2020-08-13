@@ -50,7 +50,6 @@ public:
             case 2:
                 ret = "Previous section in track";
                 break;
-
             case 3:
                 ret = "Set section from CV";
                 break;
@@ -359,7 +358,6 @@ void Sequencer4Widget::addBigButtons(Sequencer4Module* module) {
     if (module) {
         buttonGrid->init(this, module, module->getSequencer(), module->seq4Comp);
     } else {
-        WARN("make the module browser draw the buttons");
         buttonGrid->init(this, nullptr, nullptr, nullptr);
     }
 }

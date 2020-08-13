@@ -1,5 +1,16 @@
 # Change log for Squinky Labs modules
 
+## 1.0.11
+
+New module: Organ Three
+
+Bug Fixes in Ev3:
+
+* It was completely broken in 1.0.10
+* Fixed DC offset in Sawtooth output.
+* Fixed DC offset in Even output.
+* Fixed enormous DC offset in pulse/sq output.
+
 ## 1.0.10
 
 Bug fix: Kitchen Sink plays wrong pitches when polyphony greater than four.

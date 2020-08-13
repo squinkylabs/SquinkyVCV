@@ -119,6 +119,9 @@ p->addModel(modelWVCOModule);
 #ifdef _SUB
 p->addModel(modelSubModule);
 #endif
+#ifdef _SINES
+p->addModel(modelSinesModule);
+#endif
 
 
 }

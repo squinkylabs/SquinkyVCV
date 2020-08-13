@@ -17,6 +17,7 @@ class WidgetComposite
 public:
 
     using Port = ::rack::engine::Port;
+    using ProcessArgs = ::rack::engine::Module::ProcessArgs;
     
     WidgetComposite(::rack::engine::Module * parent) :
         inputs(parent->inputs),
@@ -29,6 +30,10 @@ public:
     virtual void step()
     {
     };
+    virtual void process(const ProcessArgs& args)
+	{
+		
+	}
     float engineGetSampleRate()
     {
         return ::rack::appGet()->engine->getSampleRate();
@@ -39,6 +44,8 @@ public:
         return ::rack::appGet()->engine->getSampleTime();
     }
 protected:
+    // These are references that point to the parent (real ones).
+    // They are connected in the ctor
     std::vector<Input>& inputs;
     std::vector<Output>& outputs;
     std::vector<Param>& params;

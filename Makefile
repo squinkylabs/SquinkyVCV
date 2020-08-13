@@ -1,7 +1,7 @@
 
 SLUG = squinkylabs-plug1
 
-VERSION = 1.0.10
+VERSION = 1.0.11
 
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
@@ -49,10 +49,8 @@ SOURCES += $(wildcard src/third-party/*.cpp)
 SOURCES += $(wildcard src/seq/*.cpp)
 SOURCES += $(wildcard src/kbd/*.cpp)
 
-
-# Add files to the ZIP package when running `make dist`
-# The compiled plugin is automatically added.
-DISTRIBUTABLES += $(wildcard LICENSE*) res
+# include res and presets folder
+DISTRIBUTABLES += $(wildcard LICENSE*) res presets
 
 # If RACK_DIR is not defined when calling the Makefile, default to two levels above
 RACK_DIR ?= ../..

@@ -72,7 +72,8 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
-    void step() override;
+    //void step() override;
+    void process(const typename TBase::ProcessArgs& args) override;
 
 private:
 
@@ -84,9 +85,8 @@ inline void Blank<TBase>::init()
 {
 }
 
-
 template <class TBase>
-inline void Blank<TBase>::step()
+inline void Blank<TBase>::process(const typename TBase::ProcessArgs& args)
 {
 }
 

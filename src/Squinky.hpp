@@ -36,6 +36,7 @@
 #define _SEQ4
 #define _WVCO
 #define _SUB
+#define _SINES
 
 using namespace ::rack;
 
@@ -127,6 +128,9 @@ extern Model *modelWVCOModule;
 #endif
 #ifdef _SUB
 extern Model *modelSubModule;
+#endif
+#ifdef _SINES
+extern Model *modelSinesModule;
 #endif
 
 
