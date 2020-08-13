@@ -29,6 +29,16 @@ class Basic : public TBase
 {
 public:
 
+    enum class Waves
+    {
+        SIN,
+        TRI,
+        SAW,
+        SQUARE,
+        EVEN,
+        END     // just a marker
+    };
+
     Basic(Module * module) : TBase(module)
     {
     }
@@ -46,7 +56,7 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        WAVEFORM_PARAM,
         NUM_PARAMS
     };
 
@@ -84,6 +94,7 @@ private:
 
     BasicVCO vcos[4];
     int numChannels_m = 1;      // 1..16
+    int numBanks_m = 0;
     
     Divider divn;
     Divider divm;
@@ -108,11 +119,27 @@ inline void Basic<TBase>::init()
 template <class TBase>
 inline void Basic<TBase>::stepm()
 {
+    numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    Basic<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
+
+    numBanks_m = (numChannels_m / 4);
+    numBanks_m +=((numChannels_m %4) == 0) ? 0 : 1;
+
+    for (int i=0; i<numBanks_m; ++i) {
+        vcos[i].setWaveform((BasicVCO::Waveform)(int)TBase::params[WAVEFORM_PARAM].value);
+    }
 }
 
 template <class TBase>
 inline void Basic<TBase>::stepn()
 {
+    const float sampleRate = TBase::engineGetSampleRate();
+    for (int bank = 0; bank < numBanks_m; ++ bank) {
+        const int baseIndex = bank * 4;
+        Port& p = TBase::inputs[VOCT_INPUT];
+        const float_4 cv = p.getVoltageSimd<float_4>(baseIndex);
+        vcos[bank].setPitch(cv, sampleRate);
+    }
 }
 
 template <class TBase>
@@ -120,6 +147,10 @@ inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     divn.step();
     divm.step();
+
+    for (int bank = 0; bank < numBanks_m; ++ bank) {
+        vcos[bank].process(args.sampleTime);
+    }
 }
 
 template <class TBase>
@@ -131,10 +162,13 @@ int BasicDescription<TBase>::getNumParams()
 template <class TBase>
 inline IComposite::Config BasicDescription<TBase>::getParam(int i)
 {
+    const float numWaves = (float) Basic<TBase>::Waves::END;
+    const float defWave = (float) Basic<TBase>::Waves::SIN;
     Config ret(0, 1, 0, "");
+
     switch (i) {
-        case Basic<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case Basic<TBase>::WAVEFORM_PARAM:
+            ret = {0.0f, numWaves, defWave, "Waveform"};
             break;
         default:
             assert(false);

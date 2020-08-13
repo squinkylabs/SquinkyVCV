@@ -7,6 +7,7 @@
 #include "Basic.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqWidgets.h"
 
 using Comp = Basic<WidgetComposite>;
 
@@ -68,6 +69,7 @@ struct BasicWidget : ModuleWidget
     }
 
     void addJacks(BasicModule *module, std::shared_ptr<IComposite> icomp);
+    void addControls(BasicModule *module, std::shared_ptr<IComposite> icomp);
 };
 
 void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icomp)
@@ -83,6 +85,14 @@ void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icom
         Comp::MAIN_OUTPUT));
 };
 
+void BasicWidget::addControls(BasicModule *module, std::shared_ptr<IComposite> icomp)
+{
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(7, 60),
+        module,  Comp::WAVEFORM_PARAM));
+}
+
 /**
  * Widget constructor will describe my implementation structure and
  * provide meta-data.
@@ -96,6 +106,7 @@ BasicWidget::BasicWidget(BasicModule *module)
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
+    addControls(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
