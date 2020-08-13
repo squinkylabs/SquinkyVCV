@@ -17,8 +17,11 @@ public:
     };
 
     void setWaveform(Waveform);
-    float_4 process(float deltaTime);
+ //   float_4 process(float deltaTime);
     void setPitch(float_4 f, float sampleRate);
+
+    using  pfunc = float_4 (BasicVCO::*)(float deltaTime);
+    pfunc getProcPointer();
 private:
     dsp::MinBlepGenerator<16, 16, float_4> minBlep;
     float_4 phase = {};
@@ -39,11 +42,18 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleRate)
 	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
 }
 
+#if 0
 inline float_4 BasicVCO::process(float deltaTime)
 {
     return processSaw(deltaTime);
 }
+#endif
 
+
+inline  BasicVCO::pfunc BasicVCO::getProcPointer()
+{
+    return processSaw;
+}
 
 inline float_4 BasicVCO::processSaw(float deltaTime)
 {

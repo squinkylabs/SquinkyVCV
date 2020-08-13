@@ -148,8 +148,13 @@ inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
     divn.step();
     divm.step();
 
+    // TODO: move this into step_m
+    BasicVCO::pfunc pp = vcos[0].getProcPointer();
+
     for (int bank = 0; bank < numBanks_m; ++ bank) {
-        float_4 output = vcos[bank].process(args.sampleTime);
+      //  float_4 output = vcos[bank].process(args.sampleTime);
+      float_4 output = ((&vcos[bank])->*pp)(args.sampleTime);
+     // pp();
         Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
     }
 }
