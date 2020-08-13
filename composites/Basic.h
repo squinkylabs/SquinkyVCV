@@ -2,6 +2,7 @@
 #pragma once
 
 #include "BasicVCO.h"
+#include "Divider.h"
 #include "IComposite.h"
 
 #include <assert.h>
@@ -82,6 +83,13 @@ public:
 private:
 
     BasicVCO vcos[4];
+    int numChannels_m = 1;      // 1..16
+    
+    Divider divn;
+    Divider divm;
+
+    void stepn();
+    void stepm();
 
 };
 
@@ -89,11 +97,29 @@ private:
 template <class TBase>
 inline void Basic<TBase>::init()
 {
+    divn.setup(4, [this]() {
+        this->stepn();
+    });
+    divm.setup(16, [this]() {
+        this->stepm();
+    });
+}
+
+template <class TBase>
+inline void Basic<TBase>::stepm()
+{
+}
+
+template <class TBase>
+inline void Basic<TBase>::stepn()
+{
 }
 
 template <class TBase>
 inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    divn.step();
+    divm.step();
 }
 
 template <class TBase>
