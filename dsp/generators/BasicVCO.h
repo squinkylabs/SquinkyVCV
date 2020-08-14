@@ -82,7 +82,9 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
 {
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
-    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+
+    // TODO: we should do floor here
+  //  phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
 
     // TODO
     const int channels = 4;
@@ -100,16 +102,40 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
 				float p = pulseCrossing[i] - 1.f;
 				float_4 x = mainHighToLowMask & (2.f * syncDirection);
 				minBlep.insertDiscontinuity(p, x);
+                // we hit this
+             //   printf("low to hign\n");  fflush(stdout);
 			}
 		}
-	}	
+	}
+
+    float_4 oneCrossing = (1.f - (phase - deltaPhase)) / deltaPhase;	
+    int oneCrossMask =  simd::movemask((0 < oneCrossing) & (oneCrossing <= 1.f));
+
+	if (oneCrossMask) {
+		for (int channelNumber = 0; channelNumber < channels; channelNumber++) {
+			if (oneCrossMask & (1 << channelNumber)) {
+				float_4 crossingMask = simd::movemaskInverse<float_4>(1 << channelNumber);
+
+				// do we need saw?
+				//T sawCrossingMask = crossingMask & mainIsSaw;
+				float p = oneCrossing[channelNumber] - 1.f;
+
+				// used to only do for saw, since square has own case.
+				//T x = sawCrossingMask & (-2.f * syncDirection);
+				// TODO: are we still generating -1..+1? why not...?
+				// not that even so instead of 2 is should be 2 -phase or something
+				float_4 x =  crossingMask & (-2.f * syncDirection);
+				minBlep.insertDiscontinuity(p, x);
+            }
+        }
+    }
+
+    phase -= simd::floor(phase);
+
 
     const float_4 blepValue = minBlep.process();
    	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
 	return temp + blepValue;
-
-
-    // now need high to low
 }
 
 inline float_4 BasicVCO::processSaw(float deltaTime)
