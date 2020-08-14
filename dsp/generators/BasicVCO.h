@@ -43,8 +43,8 @@ private:
     float_4 processTri(float deltaTime);
     float_4 processEven(float deltaTime);
 
-    void doSquareLowToHighMinblep(float_4 deltaPhase);
-    void doSquareHighToLowMinblep(float crossingThreshold, float_4 deltaPhase);
+    void doSquareLowToHighMinblep(float_4 samplePoint, float_4 deltaPhase);
+    void doSquareHighToLowMinblep(float_4 samplePoint, float crossingThreshold, float_4 deltaPhase);
     
 
 };
@@ -98,7 +98,7 @@ inline  BasicVCO::pfunc BasicVCO::getProcPointer()
 }
 
 
-inline void BasicVCO::doSquareLowToHighMinblep(float_4 deltaPhase)
+inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 deltaPhase)
 {
     const float_4 syncDirection = 1.f;
     const int channels = 4;
@@ -112,6 +112,8 @@ inline void BasicVCO::doSquareLowToHighMinblep(float_4 deltaPhase)
 				// mask &= mainIsNotSaw;
 				const float_4 mainHighToLowMask = highToLowMask;
 				float p = pulseCrossing[i] - 1.f;
+ //printf("in lohi, th=%f, p = %f\n", 1.f, p);
+
 				float_4 x = mainHighToLowMask & (2.f * syncDirection);
 				minBlep.insertDiscontinuity(p, x);
                 // we hit this
@@ -125,7 +127,7 @@ inline void BasicVCO::doSquareLowToHighMinblep(float_4 deltaPhase)
 //// float_4 halfCrossing = (0.5f - (phase -  deltaPhase)) /  deltaPhase;
 //    int halfMask = rack::simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
 
-inline void BasicVCO::doSquareHighToLowMinblep(float crossingThreshold, float_4 deltaPhase)
+inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase,float crossingThreshold, float_4 deltaPhase)
 {
     const int channels = 4;
     const float_4 syncDirection = 1;
@@ -140,6 +142,9 @@ inline void BasicVCO::doSquareHighToLowMinblep(float crossingThreshold, float_4 
 				// do we need saw?
 				//T sawCrossingMask = crossingMask & mainIsSaw;
 				float p = oneCrossing[channelNumber] - 1.f;
+
+                // ok, it's all over the place
+              //  printf("in hi lo, th=%f, p = %f\n", crossingThreshold, p);
 
 				// used to only do for saw, since square has own case.
 				//T x = sawCrossingMask & (-2.f * syncDirection);
@@ -157,61 +162,9 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
 
-    // TODO: we should do floor here
-  //  phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-
-    // TODO
-    doSquareLowToHighMinblep(deltaPhase);
-    doSquareHighToLowMinblep(1, deltaPhase);
-    #if 0
-    const int channels = 4;
-    const float_4 syncDirection = 1.f;
-
-    // from sub, doSquareLowToHighMinblep
-    float_4 pulseCrossing = (pulseWidth + deltaPhase - phase) / deltaPhase;
-	int pulseMask = rack::simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
-	if (pulseMask) {
-		for (int i = 0; i < channels; i++) {
-			if (pulseMask & (1 << i)) {
-				float_4 highToLowMask = rack::simd::movemaskInverse<float_4>(1 << i);
-				// mask &= mainIsNotSaw;
-				const float_4 mainHighToLowMask = highToLowMask;
-				float p = pulseCrossing[i] - 1.f;
-				float_4 x = mainHighToLowMask & (2.f * syncDirection);
-				minBlep.insertDiscontinuity(p, x);
-                // we hit this
-             //   printf("low to hign\n");  fflush(stdout);
-			}
-		}
-	}
-    #endif
-
-#if 0
- const int channels = 4;
-    const float_4 syncDirection = 1;
-    float_4 oneCrossing = (1.f - (phase - deltaPhase)) / deltaPhase;	
-    int oneCrossMask =  rack::simd::movemask((0 < oneCrossing) & (oneCrossing <= 1.f));
-
-	if (oneCrossMask) {
-		for (int channelNumber = 0; channelNumber < channels; channelNumber++) {
-			if (oneCrossMask & (1 << channelNumber)) {
-				float_4 crossingMask = rack::simd::movemaskInverse<float_4>(1 << channelNumber);
-
-				// do we need saw?
-				//T sawCrossingMask = crossingMask & mainIsSaw;
-				float p = oneCrossing[channelNumber] - 1.f;
-
-				// used to only do for saw, since square has own case.
-				//T x = sawCrossingMask & (-2.f * syncDirection);
-				// TODO: are we still generating -1..+1? why not...?
-				// not that even so instead of 2 is should be 2 -phase or something
-				float_4 x =  crossingMask & (-2.f * syncDirection);
-				minBlep.insertDiscontinuity(p, x);
-            }
-        }
-    }
-    #endif
-
+    doSquareLowToHighMinblep(phase, deltaPhase);
+    doSquareHighToLowMinblep(phase, 1, deltaPhase);
+ 
     phase -= rack::simd::floor(phase);
 
     const float_4 blepValue = minBlep.process();
@@ -225,27 +178,9 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     phase += deltaPhase;
    // phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
 
-     doSquareHighToLowMinblep(.5, deltaPhase);
+     doSquareHighToLowMinblep(phase, .5, deltaPhase);
      phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-     #if 0
 
-    // TODO: get real num active channels
-    const int relativeChannel = 4;
-
-
-    float_4 halfCrossing = (0.5f - (phase -  deltaPhase)) /  deltaPhase;
-    int halfMask = rack::simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
-    if (halfMask) {
-        for (int subChannel=0; subChannel < relativeChannel; ++subChannel) {
-            if (halfMask & (1 << subChannel)) {
-                float_4 mask = rack::simd::movemaskInverse<float_4>(1 << subChannel);
-                float jumpPhase = halfCrossing[subChannel] - 1.f;
-                float_4 jumpAmount = mask & -2.f;
-                minBlep.insertDiscontinuity(jumpPhase, jumpAmount);
-            }
-        }
-    }
-    #endif
 
     auto minBlepValue = minBlep.process();
     float_4 rawSaw = phase + float_4(.5f);
@@ -282,7 +217,27 @@ inline float_4 BasicVCO::processEven(float deltaTime)
 {
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
+   // phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+
+    float_4 doubleSaw = SimdBlocks::ifelse((phase < 0.5) , (-1.0 + 4.0*phase) , (-1.0 + 4.0*(phase - 0.5)));
+  //  doSquareHighToLowMinblep(doubleSaw, .5, deltaPhase);
+    doSquareHighToLowMinblep(phase, 1, deltaPhase);
+    doSquareHighToLowMinblep(phase, .5, deltaPhase);
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
 
-    return phase;
+    // now phase has a 0..1 saw
+
+
+    auto minBlepValue =  2 * minBlep.process();
+  //  float_4 rawSaw = phase + float_4(.5f);
+ //   rawSaw -= rack::simd::trunc(rawSaw);
+
+ //   float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
+ //  float_4 doubleSaw = SimdBlocks::ifelse((phase < 0.5) , (-1.0 + 4.0*phase) , (-1.0 + 4.0*(phase - 0.5)));
+    return doubleSaw + minBlepValue; 
+#if 0
+    rawSaw = 2 * rawSaw - 1;
+    rawSaw += minBlepValue;
+    rawSaw += sawOffsetDCComp;
+#endif
 }

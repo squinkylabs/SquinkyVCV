@@ -60,6 +60,8 @@ public:
     */
     void init();
 
+    static std::string getLabel(Waves);
+
     enum ParamIds
     {
         WAVEFORM_PARAM,
@@ -109,6 +111,22 @@ private:
     void stepm();
 
 };
+
+
+template <class TBase>
+inline std::string Basic<TBase>::getLabel(Waves wf)
+{
+    switch(wf) {
+        case Waves::SIN: return "sin";
+        case Waves::TRI: return "tri";
+        case Waves::SAW: return "saw";
+        case Waves::SQUARE: return "square";
+        case Waves::EVEN: return "even";
+        case Waves::END:
+        default: assert(false); return "unk";
+
+    }
+}
 
 
 template <class TBase>

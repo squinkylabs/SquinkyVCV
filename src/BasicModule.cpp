@@ -7,6 +7,7 @@
 #include "Basic.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqTooltips.h"
 #include "ctrl/SqWidgets.h"
 
 using Comp = Basic<WidgetComposite>;
@@ -23,15 +24,23 @@ public:
      */
     void process(const ProcessArgs& args) override;
     void onSampleRateChange() override;
-
     std::shared_ptr<Comp> basic;
 private:
-
 };
 
 void BasicModule::onSampleRateChange()
 {
 }
+
+
+class WaveformParamQuantity : public SqTooltips::SQParamQuantity {
+public:
+    WaveformParamQuantity(const ParamQuantity& other) : SqTooltips::SQParamQuantity(other) {}
+    std::string getDisplayValueString() override {
+        const Comp::Waves wf = Comp::Waves (std::round(getValue()));
+        return Comp::getLabel(wf);
+    }
+};
 
 BasicModule::BasicModule()
 {
@@ -39,6 +48,8 @@ BasicModule::BasicModule()
     basic = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
+
+    SqTooltips::changeParamQuantity<WaveformParamQuantity>(this, Comp::WAVEFORM_PARAM);
 
     onSampleRateChange();
     basic->init();
