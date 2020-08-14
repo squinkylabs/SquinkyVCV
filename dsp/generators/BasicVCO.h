@@ -28,9 +28,11 @@ private:
     float_4 freq = {};
     Waveform wf = Waveform::SIN;
     float_4 sawOffsetDCComp = {};
+    float_4 pulseWidth = 0.5f;
 
     float_4 processSaw(float deltaTime);
     float_4 processSin(float deltaTime);
+    float_4 processPulse(float deltaTime);
 
 };
 
@@ -65,8 +67,49 @@ inline  BasicVCO::pfunc BasicVCO::getProcPointer()
     switch(wf) {
         case Waveform::SIN:
             ret = processSin;
+            break;
+        case Waveform::SAW:
+            ret = processSaw;
+            break;
+         case Waveform::SQUARE:
+            ret = processPulse;
+            break;
     } 
     return ret;
+}
+
+inline float_4 BasicVCO::processPulse(float deltaTime)
+{
+    const float_4 deltaPhase = freq * deltaTime;
+    phase += deltaPhase;
+    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+
+    // TODO
+    const int channels = 4;
+    const float_4 syncDirection = 1.f;
+
+    // from sub, doSquareLowToHighMinblep
+    float_4 pulseCrossing = (pulseWidth + deltaPhase - phase) / deltaPhase;
+	int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
+	if (pulseMask) {
+		for (int i = 0; i < channels; i++) {
+			if (pulseMask & (1 << i)) {
+				float_4 highToLowMask = simd::movemaskInverse<float_4>(1 << i);
+				// mask &= mainIsNotSaw;
+				const float_4 mainHighToLowMask = highToLowMask;
+				float p = pulseCrossing[i] - 1.f;
+				float_4 x = mainHighToLowMask & (2.f * syncDirection);
+				minBlep.insertDiscontinuity(p, x);
+			}
+		}
+	}	
+
+    const float_4 blepValue = minBlep.process();
+   	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
+	return temp + blepValue;
+
+
+    // now need high to low
 }
 
 inline float_4 BasicVCO::processSaw(float deltaTime)
