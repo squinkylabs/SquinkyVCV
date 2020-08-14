@@ -33,6 +33,7 @@ private:
     float_4 processSaw(float deltaTime);
     float_4 processSin(float deltaTime);
     float_4 processPulse(float deltaTime);
+    float_4 processTri(float deltaTime);
 
 };
 
@@ -73,6 +74,9 @@ inline  BasicVCO::pfunc BasicVCO::getProcPointer()
             break;
          case Waveform::SQUARE:
             ret = processPulse;
+            break;
+        case Waveform::TRI:
+            ret = processTri;
             break;
     } 
     return ret;
@@ -182,4 +186,13 @@ inline float_4 BasicVCO::processSin(float deltaTime)
    // TODO: minblep
     const static float_4 twoPi = 2 * 3.141592653589793238;
     return SimdBlocks::sinTwoPi(phase * twoPi);
+}
+
+inline float_4 BasicVCO::processTri(float deltaTime)
+{
+    const float_4 deltaPhase = freq * deltaTime;
+    phase += deltaPhase;
+    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+    return 1 - 4 * simd::fmin(simd::fabs(phase - 0.25f), simd::fabs(phase - 1.25f));
+
 }
