@@ -18,7 +18,7 @@ public:
 
     void setWaveform(Waveform);
  //   float_4 process(float deltaTime);
-    void setPitch(float_4 f, float sampleRate);
+    void setPitch(float_4 f, float sampleTime);
 
     using  pfunc = float_4 (BasicVCO::*)(float deltaTime);
     pfunc getProcPointer();
@@ -26,7 +26,8 @@ private:
     dsp::MinBlepGenerator<16, 16, float_4> minBlep;
     float_4 phase = {};
     float_4 freq = {};
-     Waveform wf = Waveform::SIN;
+    Waveform wf = Waveform::SIN;
+    float_4 sawOffsetDCComp = {};
 
     float_4 processSaw(float deltaTime);
     float_4 processSin(float deltaTime);
@@ -38,12 +39,16 @@ inline void BasicVCO::setWaveform(Waveform w)
     wf = w;
 }
 
-inline void BasicVCO::setPitch(float_4 pitch, float sampleRate)
+inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
 {
     // TODO: clamp / limit
   //  float highPitchLimit = sampleRate * .47f;
    
 	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+
+    const float sawCorrect = -5.698;
+    const float_4 normalizedFreq = float_4(sampleTime) * freq;
+    sawOffsetDCComp = normalizedFreq * float_4(sawCorrect);
 }
 
 #if 0
@@ -88,15 +93,11 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     }
 
     auto minBlepValue = minBlep.process();
-   // output = SimdBlocks::sinTwoPi(phase * twoPi);
-
-   // TODO: scale, normalize, dc comp
-   // TODO: minblep
-
     float_4 rawSaw = phase + float_4(.5f);
     rawSaw -= simd::trunc(rawSaw);
     rawSaw = 2 * rawSaw - 1;
     rawSaw += minBlepValue;
+    rawSaw += sawOffsetDCComp;
 
     return rawSaw;
 }

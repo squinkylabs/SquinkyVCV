@@ -133,12 +133,12 @@ inline void Basic<TBase>::stepm()
 template <class TBase>
 inline void Basic<TBase>::stepn()
 {
-    const float sampleRate = TBase::engineGetSampleRate();
+    const float sampleTime = TBase::engineGetSampleTime();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[VOCT_INPUT];
         const float_4 cv = p.getVoltageSimd<float_4>(baseIndex);
-        vcos[bank].setPitch(cv, sampleRate);
+        vcos[bank].setPitch(cv, sampleTime);
     }
 }
 
