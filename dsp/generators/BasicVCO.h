@@ -2,6 +2,11 @@
 
 #include "simd.h"
 #include "SimdBlocks.h"
+#include "engine/Port.hpp"
+#include "dsp/approx.hpp"
+#include "dsp/minblep.hpp"
+#include "simd/vector.hpp"
+
 
 class BasicVCO
 {
@@ -23,7 +28,7 @@ public:
     using  pfunc = float_4 (BasicVCO::*)(float deltaTime);
     pfunc getProcPointer();
 private:
-    dsp::MinBlepGenerator<16, 16, float_4> minBlep;
+    rack::dsp::MinBlepGenerator<16, 16, float_4> minBlep;
     float_4 phase = {};
     float_4 freq = {};
     Waveform wf = Waveform::SIN;
@@ -47,7 +52,7 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
     // TODO: clamp / limit
   //  float highPitchLimit = sampleRate * .47f;
    
-	freq = dsp::FREQ_C4 * dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+	freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
 
     const float sawCorrect = -5.698;
     const float_4 normalizedFreq = float_4(sampleTime) * freq;
@@ -96,11 +101,11 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
 
     // from sub, doSquareLowToHighMinblep
     float_4 pulseCrossing = (pulseWidth + deltaPhase - phase) / deltaPhase;
-	int pulseMask = simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
+	int pulseMask = rack::simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
 	if (pulseMask) {
 		for (int i = 0; i < channels; i++) {
 			if (pulseMask & (1 << i)) {
-				float_4 highToLowMask = simd::movemaskInverse<float_4>(1 << i);
+				float_4 highToLowMask = rack::simd::movemaskInverse<float_4>(1 << i);
 				// mask &= mainIsNotSaw;
 				const float_4 mainHighToLowMask = highToLowMask;
 				float p = pulseCrossing[i] - 1.f;
@@ -113,12 +118,12 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
 	}
 
     float_4 oneCrossing = (1.f - (phase - deltaPhase)) / deltaPhase;	
-    int oneCrossMask =  simd::movemask((0 < oneCrossing) & (oneCrossing <= 1.f));
+    int oneCrossMask =  rack::simd::movemask((0 < oneCrossing) & (oneCrossing <= 1.f));
 
 	if (oneCrossMask) {
 		for (int channelNumber = 0; channelNumber < channels; channelNumber++) {
 			if (oneCrossMask & (1 << channelNumber)) {
-				float_4 crossingMask = simd::movemaskInverse<float_4>(1 << channelNumber);
+				float_4 crossingMask = rack::simd::movemaskInverse<float_4>(1 << channelNumber);
 
 				// do we need saw?
 				//T sawCrossingMask = crossingMask & mainIsSaw;
@@ -134,8 +139,7 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
         }
     }
 
-    phase -= simd::floor(phase);
-
+    phase -= rack::simd::floor(phase);
 
     const float_4 blepValue = minBlep.process();
    	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
@@ -153,11 +157,11 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
 
 
     float_4 halfCrossing = (0.5f - (phase -  deltaPhase)) /  deltaPhase;
-    int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
+    int halfMask = rack::simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
     if (halfMask) {
         for (int subChannel=0; subChannel < relativeChannel; ++subChannel) {
             if (halfMask & (1 << subChannel)) {
-                float_4 mask = simd::movemaskInverse<float_4>(1 << subChannel);
+                float_4 mask = rack::simd::movemaskInverse<float_4>(1 << subChannel);
                 float jumpPhase = halfCrossing[subChannel] - 1.f;
                 float_4 jumpAmount = mask & -2.f;
                 minBlep.insertDiscontinuity(jumpPhase, jumpAmount);
@@ -167,7 +171,7 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
 
     auto minBlepValue = minBlep.process();
     float_4 rawSaw = phase + float_4(.5f);
-    rawSaw -= simd::trunc(rawSaw);
+    rawSaw -= rack::simd::trunc(rawSaw);
     rawSaw = 2 * rawSaw - 1;
     rawSaw += minBlepValue;
     rawSaw += sawOffsetDCComp;
@@ -193,6 +197,5 @@ inline float_4 BasicVCO::processTri(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-    return 1 - 4 * simd::fmin(simd::fabs(phase - 0.25f), simd::fabs(phase - 1.25f));
-
+    return 1 - 4 * rack::simd::fmin(rack::simd::fabs(phase - 0.25f), rack::simd::fabs(phase - 1.25f));
 }

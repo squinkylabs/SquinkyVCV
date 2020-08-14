@@ -3,7 +3,9 @@
 #include <cmath>
 #include <limits>
 
+#include "TestComposite.h"
 #include "AudioMath.h"
+#include "Basic.h"
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
 #include "BiquadState.h"
@@ -696,6 +698,26 @@ static void testWVCOPoly()
     }, 1);
 }
 
+static void testBasic1()
+{
+    printf("starting basic 1\n"); fflush(stdout);
+    Basic<TestComposite> vco;
+
+    vco.init();
+    vco.inputs[Basic<TestComposite>::MAIN_OUTPUT].channels = 1;
+    vco.inputs[Basic<TestComposite>::VOCT_INPUT].channels = 1;
+
+
+    Basic<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "basic 1", [&vco, args]() {
+        vco.process(args);
+        return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
 static void testOrgan1()
 {
     printf("starting organ 1\n"); fflush(stdout);
@@ -1120,6 +1142,7 @@ void perfTest()
     testGMR();
 #endif
 #ifndef _MSC_VER
+    testBasic1();
     testOrgan1();
     testOrgan4();
      testOrgan4VCO();
