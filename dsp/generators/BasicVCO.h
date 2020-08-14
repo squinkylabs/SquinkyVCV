@@ -69,6 +69,25 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+
+    // TODO: get real num active channels
+    const int relativeChannel = 4;
+
+
+    float_4 halfCrossing = (0.5f - (phase -  deltaPhase)) /  deltaPhase;
+    int halfMask = simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
+    if (halfMask) {
+        for (int subChannel=0; subChannel < relativeChannel; ++subChannel) {
+            if (halfMask & (1 << subChannel)) {
+                float_4 mask = simd::movemaskInverse<float_4>(1 << subChannel);
+                float jumpPhase = halfCrossing[subChannel] - 1.f;
+                float_4 jumpAmount = mask & -2.f;
+                minBlep.insertDiscontinuity(jumpPhase, jumpAmount);
+            }
+        }
+    }
+
+    auto minBlepValue = minBlep.process();
    // output = SimdBlocks::sinTwoPi(phase * twoPi);
 
    // TODO: scale, normalize, dc comp
@@ -77,6 +96,7 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     float_4 rawSaw = phase + float_4(.5f);
     rawSaw -= simd::trunc(rawSaw);
     rawSaw = 2 * rawSaw - 1;
+    rawSaw += minBlepValue;
 
     return rawSaw;
 }
