@@ -7,6 +7,7 @@
 #include "dsp/minblep.hpp"
 #include "simd/vector.hpp"
 
+// #define _VCOJUMP
 
 class BasicVCO
 {
@@ -22,14 +23,17 @@ public:
     };
 
     void setWaveform(Waveform);
- //   float_4 process(float deltaTime);
+
     void setPitch(float_4 f, float sampleTime);
 
+#ifdef _VCOJUMP
     using  pfunc = float_4 (BasicVCO::*)(float deltaTime);
     pfunc getProcPointer();
+#else
+    float_4 process(float deltaTime);
+#endif
 private:
     using MinBlep = rack::dsp::MinBlepGenerator<16, 16, float_4>; 
-  //  rack::dsp::MinBlepGenerator<16, 16, float_4> minBlep;
     MinBlep minBlep;
     float_4 phase = {};
     float_4 freq = {};
@@ -57,7 +61,7 @@ inline void BasicVCO::setWaveform(Waveform w)
 inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
 {
     // TODO: clamp / limit
-  //  float highPitchLimit = sampleRate * .47f;
+    //  float highPitchLimit = sampleRate * .47f;
    
 	freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
 
@@ -66,14 +70,8 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
     sawOffsetDCComp = normalizedFreq * float_4(sawCorrect);
 }
 
-#if 0
-inline float_4 BasicVCO::process(float deltaTime)
-{
-    return processSaw(deltaTime);
-}
-#endif
 
-
+#ifdef _VCOJUMP
 inline  BasicVCO::pfunc BasicVCO::getProcPointer()
 {
     auto ret = processSaw;
@@ -93,41 +91,65 @@ inline  BasicVCO::pfunc BasicVCO::getProcPointer()
         case Waveform::EVEN:
             ret = processEven;
             break;
+        case Waveform::END:
+        default:
+            ret = processEven;
+            assert(false);
+            break;  
     } 
     return ret;
 }
+#else
+inline float_4 BasicVCO::process(float deltaTime)
+{
+    switch(wf) {
+        case Waveform::SIN:
+            return processSin(deltaTime);
+            break;
+        case Waveform::SAW:
+            return processSaw(deltaTime);
+            break;
+         case Waveform::SQUARE:
+            return processPulse(deltaTime);
+            break;
+        case Waveform::TRI:
+            return processTri(deltaTime);
+            break;
+        case Waveform::EVEN:
+            return processEven(deltaTime);
+            break;
+        case Waveform::END:
+        default:
+            return processEven(deltaTime);
+            assert(false);
+            break;  
+    } 
+    return processSaw(deltaTime);
+}
+#endif
 
 
 inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 deltaPhase)
 {
     const float_4 syncDirection = 1.f;
     const int channels = 4;
-   // from sub, doSquareLowToHighMinblep
+
     float_4 pulseCrossing = (pulseWidth + deltaPhase - phase) / deltaPhase;
 	int pulseMask = rack::simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
 	if (pulseMask) {
 		for (int i = 0; i < channels; i++) {
 			if (pulseMask & (1 << i)) {
 				float_4 highToLowMask = rack::simd::movemaskInverse<float_4>(1 << i);
-				// mask &= mainIsNotSaw;
 				const float_4 mainHighToLowMask = highToLowMask;
 				float p = pulseCrossing[i] - 1.f;
- //printf("in lohi, th=%f, p = %f\n", 1.f, p);
-
 				float_4 x = mainHighToLowMask & (2.f * syncDirection);
 				minBlep.insertDiscontinuity(p, x);
-                // we hit this
-             //   printf("low to hign\n");  fflush(stdout);
 			}
 		}
 	}
 }
 
-
-//// float_4 halfCrossing = (0.5f - (phase -  deltaPhase)) /  deltaPhase;
-//    int halfMask = rack::simd::movemask((0 < halfCrossing) & (halfCrossing <= 1.f));
-
-inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase,float crossingThreshold, float_4 deltaPhase)
+inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase, float crossingThreshold, float_4 deltaPhase)
 {
     const int channels = 4;
     const float_4 syncDirection = 1;
@@ -138,23 +160,35 @@ inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase,float crossingThres
 		for (int channelNumber = 0; channelNumber < channels; channelNumber++) {
 			if (oneCrossMask & (1 << channelNumber)) {
 				float_4 crossingMask = rack::simd::movemaskInverse<float_4>(1 << channelNumber);
-
-				// do we need saw?
-				//T sawCrossingMask = crossingMask & mainIsSaw;
 				float p = oneCrossing[channelNumber] - 1.f;
-
-                // ok, it's all over the place
-              //  printf("in hi lo, th=%f, p = %f\n", crossingThreshold, p);
-
-				// used to only do for saw, since square has own case.
-				//T x = sawCrossingMask & (-2.f * syncDirection);
-				// TODO: are we still generating -1..+1? why not...?
-				// not that even so instead of 2 is should be 2 -phase or something
 				float_4 x =  crossingMask & (-2.f * syncDirection);
 				minBlep.insertDiscontinuity(p, x);
             }
         }
     }
+}
+
+inline float_4 BasicVCO::processEven(float deltaTime)
+{
+    const float_4 deltaPhase = freq * deltaTime;
+    phase += deltaPhase;
+
+    // do the min blep detect before wrap
+    doSquareHighToLowMinblep(phase, 1, deltaPhase);
+    doSquareHighToLowMinblep(phase, .5, deltaPhase);
+    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+
+    // double saw will fall from +1 to -1 when the saw is at .5, and at 1
+    float_4 doubleSaw = SimdBlocks::ifelse((phase < 0.5) , (-1.0 + 4.0*phase) , (-1.0 + 4.0*(phase - 0.5)));
+
+    const static float_4 twoPi = 2 * 3.141592653589793238;
+    float_4 shiftedSaw = phase + .25;
+    shiftedSaw = SimdBlocks::ifelse( (shiftedSaw > 1) , shiftedSaw -1, shiftedSaw);
+    float_4 fundamental = SimdBlocks::sinTwoPi(shiftedSaw * twoPi);
+
+    doubleSaw += minBlep.process();
+    float_4 even = float_4(0.55f) * (doubleSaw + 1.27 * fundamental);
+    return even;
 }
 
 inline float_4 BasicVCO::processPulse(float deltaTime)
@@ -176,7 +210,6 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
 {
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
-   // phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
 
      doSquareHighToLowMinblep(phase, .5, deltaPhase);
      phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
@@ -211,33 +244,4 @@ inline float_4 BasicVCO::processTri(float deltaTime)
     phase += deltaPhase;
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
     return 1 - 4 * rack::simd::fmin(rack::simd::fabs(phase - 0.25f), rack::simd::fabs(phase - 1.25f));
-}
-
-inline float_4 BasicVCO::processEven(float deltaTime)
-{
-    const float_4 deltaPhase = freq * deltaTime;
-    phase += deltaPhase;
-   // phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-
-    float_4 doubleSaw = SimdBlocks::ifelse((phase < 0.5) , (-1.0 + 4.0*phase) , (-1.0 + 4.0*(phase - 0.5)));
-  //  doSquareHighToLowMinblep(doubleSaw, .5, deltaPhase);
-    doSquareHighToLowMinblep(phase, 1, deltaPhase);
-    doSquareHighToLowMinblep(phase, .5, deltaPhase);
-    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-
-    // now phase has a 0..1 saw
-
-
-    auto minBlepValue =  2 * minBlep.process();
-  //  float_4 rawSaw = phase + float_4(.5f);
- //   rawSaw -= rack::simd::trunc(rawSaw);
-
- //   float doubleSaw = (phase < 0.5) ? (-1.0 + 4.0*phase) : (-1.0 + 4.0*(phase - 0.5));
- //  float_4 doubleSaw = SimdBlocks::ifelse((phase < 0.5) , (-1.0 + 4.0*phase) , (-1.0 + 4.0*(phase - 0.5)));
-    return doubleSaw + minBlepValue; 
-#if 0
-    rawSaw = 2 * rawSaw - 1;
-    rawSaw += minBlepValue;
-    rawSaw += sawOffsetDCComp;
-#endif
 }

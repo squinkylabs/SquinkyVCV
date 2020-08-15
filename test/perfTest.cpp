@@ -706,6 +706,7 @@ static void testBasic1()
     vco.init();
     vco.inputs[Basic<TestComposite>::MAIN_OUTPUT].channels = 1;
     vco.inputs[Basic<TestComposite>::VOCT_INPUT].channels = 1;
+    vco.params[Basic<TestComposite>::WAVEFORM_PARAM].value = float(Basic<TestComposite>::Waves::TRI);
 
 
     Basic<TestComposite>::ProcessArgs args;

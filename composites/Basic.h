@@ -27,8 +27,12 @@ public:
 };
 
 /**
- * Initial perf:
- *      1 saw, 5.95
+ * with switch:
+ *      1 saw 6.16
+ *      1 tri 4.78
+ *   with jumo:
+ *      1 tri : 3.73
+ *      1 saw, 6.2
  */
 template <class TBase>
 class Basic : public TBase
@@ -173,14 +177,20 @@ inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
     divm.step();
 
     // TODO: move this into step_m
+#ifdef _VCOJUMP
     BasicVCO::pfunc pp = vcos[0].getProcPointer();
 
     for (int bank = 0; bank < numBanks_m; ++ bank) {
-      //  float_4 output = vcos[bank].process(args.sampleTime);
-      float_4 output = ((&vcos[bank])->*pp)(args.sampleTime);
-     // pp();
+        //  float_4 output = vcos[bank].process(args.sampleTime);
+        float_4 output = ((&vcos[bank])->*pp)(args.sampleTime);
         Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
     }
+#else
+    for (int bank = 0; bank < numBanks_m; ++ bank) {
+        float_4 output = vcos[bank].process(args.sampleTime);
+        Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
+    }
+#endif
 }
 
 template <class TBase>
