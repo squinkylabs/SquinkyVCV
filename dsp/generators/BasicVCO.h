@@ -19,6 +19,7 @@ public:
         SAW,
         SQUARE,
         EVEN,
+        SIN_CLEAN,
         END     // just a marker
     };
 
@@ -38,19 +39,21 @@ private:
     float_4 phase = {};
     float_4 freq = {};
     Waveform wf = Waveform::SIN;
+    float_4 integrator = {};
     float_4 sawOffsetDCComp = {};
     float_4 pulseWidth = 0.5f;
+  //  double dblphase = 0;
+    int32_t intPhase = 0;
 
     float_4 processSaw(float deltaTime);
     float_4 processSin(float deltaTime);
     float_4 processPulse(float deltaTime);
     float_4 processTri(float deltaTime);
     float_4 processEven(float deltaTime);
+    float_4 processSinClean(float deltaTime);
 
     void doSquareLowToHighMinblep(float_4 samplePoint, float_4 deltaPhase);
     void doSquareHighToLowMinblep(float_4 samplePoint, float crossingThreshold, float_4 deltaPhase);
-    
-
 };
 
 inline void BasicVCO::setWaveform(Waveform w)
@@ -117,6 +120,9 @@ inline float_4 BasicVCO::process(float deltaTime)
             break;
         case Waveform::EVEN:
             return processEven(deltaTime);
+            break;
+        case Waveform::SIN_CLEAN:
+            return processSinClean(deltaTime);
             break;
         case Waveform::END:
         default:
@@ -235,8 +241,67 @@ inline float_4 BasicVCO::processSin(float deltaTime)
    // TODO: scale, normalize, dc comp
    // TODO: minblep
     const static float_4 twoPi = 2 * 3.141592653589793238;
-    return SimdBlocks::sinTwoPi(phase * twoPi);
+    return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
 }
+
+
+inline float_4 BasicVCO::processSinClean(float deltaTime)
+{
+    const int ovr = 32;
+    const float_4 deltaPhase = freq * deltaTime / ovr;
+    float_4 avg = 0;
+   
+    for (int i=0; i<ovr; ++i) {
+        phase += deltaPhase;
+        avg += deltaPhase;
+    }
+ //   printf("at 1, avg=%f\n", avg[0]);
+
+
+
+    avg /= ovr;
+    avg += phase;
+    avg -= simd::floor(avg);
+    //  printf("at 3, avg=%f\n", avg[0]);
+    phase -= simd::floor(phase);
+
+  //  return avg;
+
+    const static double twoPi = 2 * 3.141592653589793238;
+    const float ret = 5 * std::sin(avg[0] * twoPi); 
+    return float_4(ret);
+}
+
+#if 0
+inline float_4 BasicVCO::processSinClean(float deltaTime)
+{
+    const int delta = std::numeric_limits<int32_t>::max() / 100;
+    intPhase += delta;
+    double d = double(intPhase) / double(std::numeric_limits<int32_t>::max());
+
+    double ramp0_1 = (d + 1) / 2;
+
+    const static double twoPi = 2 * 3.141592653589793238;
+    return 5 * std::sin(ramp0_1 * twoPi);
+    //return float_4( d);
+
+    #if 0
+    const double deltaPhase = freq[0] * double(deltaTime);
+    dblphase += deltaPhase;
+    if (dblphase >= 1) {
+        dblphase -= 1;
+    }
+   // phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+   // output = SimdBlocks::sinTwoPi(phase * twoPi);
+
+   // TODO: scale, normalize, dc comp
+   // TODO: minblep
+    const static double twoPi = 2 * 3.141592653589793238;
+    return 5 * std::sin(dblphase * twoPi);
+    #endif
+
+}
+#endif
 
 inline float_4 BasicVCO::processTri(float deltaTime)
 {

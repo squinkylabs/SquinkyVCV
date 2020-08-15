@@ -5,7 +5,7 @@
 
 #include "TestComposite.h"
 #include "AudioMath.h"
-#include "Basic.h"
+
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
 #include "BiquadState.h"
@@ -33,6 +33,7 @@
 #include "WVCO.h"
 #include "Sub.h"
 #include "Sines.h"
+#include "Basic.h"
 #endif
 
 extern double overheadInOut;
@@ -122,10 +123,6 @@ static void test1()
         }, 1);
 }
 #endif
-
-
-
-
 
 template <typename T>
 static void testHilbert()

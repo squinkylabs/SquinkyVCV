@@ -46,6 +46,7 @@ public:
         SAW,
         SQUARE,
         EVEN,
+        SIN_CLEAN,
         END     // just a marker
     };
 
@@ -120,14 +121,16 @@ private:
 template <class TBase>
 inline std::string Basic<TBase>::getLabel(Waves wf)
 {
+   // printf("get label %d\n", wf);
     switch(wf) {
         case Waves::SIN: return "sin";
         case Waves::TRI: return "tri";
         case Waves::SAW: return "saw";
         case Waves::SQUARE: return "square";
         case Waves::EVEN: return "even";
+        case Waves::SIN_CLEAN: return "sin clean";
         case Waves::END:
-        default: assert(false); return "unk";
+        default:  assert(false); return "unk";
 
     }
 }
@@ -204,11 +207,12 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
 {
     const float numWaves = (float) Basic<TBase>::Waves::END;
     const float defWave = (float) Basic<TBase>::Waves::SIN;
+   // printf("in ger des, numWave = ")
     Config ret(0, 1, 0, "");
 
     switch (i) {
         case Basic<TBase>::WAVEFORM_PARAM:
-            ret = {0.0f, numWaves, defWave, "Waveform"};
+            ret = {0.0f, numWaves-1, defWave, "Waveform"};
             break;
         default:
             assert(false);
