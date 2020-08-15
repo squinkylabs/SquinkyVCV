@@ -123,6 +123,16 @@ void BasicWidget::addControls(BasicModule *module, std::shared_ptr<IComposite> i
         icomp,
         Vec(knobX, knobY + 4 * dy),
         module,  Comp::FM_PARAM));
+
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(21, 210),
+        module,  Comp::PW_PARAM));
+
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(4, 228.),
+        module,  Comp::PWM_PARAM));
 }
 
 /**

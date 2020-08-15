@@ -223,25 +223,25 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
     switch (i) {
 
         case Basic<TBase>::OCTAVE_PARAM:
-            ret = {0, 10, 4, "Octave"};
+            ret = {0, 10, 4, "Octave (nimp)"};
             break;
         case Basic<TBase>::SEMI_PARAM:
-             ret = {-11.f, 11.0f, 0.f, "Semitone transpose"};
+             ret = {-11.f, 11.0f, 0.f, "Semitone transpose (nimp)"};
             break;
         case Basic<TBase>::FINE_PARAM:
-            ret = {-1.0f, 1, 0, "fine tune"};
+            ret = {-1.0f, 1, 0, "fine tune (nimp)"};
             break;
         case Basic<TBase>::FM_PARAM:
-            ret = {0.0f, 100, 0, "FM"};
+            ret = {0.0f, 100, 0, "FM (nimp)"};
             break;
         case Basic<TBase>::WAVEFORM_PARAM:
             ret = {0.0f, numWaves-1, defWave, "Waveform"};
             break;  
         case Basic<TBase>::PW_PARAM:
-            ret = {0.0f, 100, 50, "Waveform"};
+            ret = {0.0f, 100, 50, "pulse width (nimp)"};
             break;
             case Basic<TBase>::PWM_PARAM:
-            ret = {-100.0f, 100, 0, "Waveform"};
+            ret = {-100.0f, 100, 0, "pulse width modulation depth (nimp)"};
             break;
         default:
             assert(false);
