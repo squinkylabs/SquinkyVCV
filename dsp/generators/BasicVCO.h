@@ -9,7 +9,7 @@
 
 #include "ObjectCache.h"
 
-// #define _VCOJUMP
+//#define _VCOJUMP
 
 class BasicVCO
 {
@@ -22,6 +22,7 @@ public:
         SQUARE,
         EVEN,
         SIN_CLEAN,
+        TRI_CLEAN,
         END     // just a marker
     };
 
@@ -44,11 +45,9 @@ private:
     float_4 integrator = {};
     float_4 sawOffsetDCComp = {};
     float_4 pulseWidth = 0.5f;
-  //  double dblphase = 0;
- //   int32_t intPhase = 0;
 
-     /**
-    * References to shared lookup tables.
+    /**
+    * Reference to shared lookup tables.
     * Destructor will free them automatically.
     */
     std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
@@ -59,6 +58,7 @@ private:
     float_4 processTri(float deltaTime);
     float_4 processEven(float deltaTime);
     float_4 processSinClean(float deltaTime);
+    float_4 processTriClean(float deltaTime);
 
     void doSquareLowToHighMinblep(float_4 samplePoint, float_4 deltaPhase);
     void doSquareHighToLowMinblep(float_4 samplePoint, float crossingThreshold, float_4 deltaPhase);
@@ -72,8 +72,7 @@ inline void BasicVCO::setWaveform(Waveform w)
 inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
 {
     // TODO: clamp / limit
-    //  float highPitchLimit = sampleRate * .47f;
-   
+    //  float highPitchLimit = sampleRate * .47f;  
 	freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
 
     const float sawCorrect = -5.698;
@@ -101,6 +100,12 @@ inline  BasicVCO::pfunc BasicVCO::getProcPointer()
             break;
         case Waveform::EVEN:
             ret = processEven;
+            break;
+        case Waveform::SIN_CLEAN:
+            ret = processSinClean;
+            break;
+         case Waveform::TRI_CLEAN:
+            ret =  processTriClean;
             break;
         case Waveform::END:
         default:
@@ -131,6 +136,9 @@ inline float_4 BasicVCO::process(float deltaTime)
             break;
         case Waveform::SIN_CLEAN:
             return processSinClean(deltaTime);
+            break;
+         case Waveform::TRI_CLEAN:
+            return processTriClean(deltaTime);
             break;
         case Waveform::END:
         default:
@@ -225,9 +233,8 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
 
-     doSquareHighToLowMinblep(phase, .5, deltaPhase);
-     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-
+    doSquareHighToLowMinblep(phase, .5, deltaPhase);
+    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
 
     auto minBlepValue = minBlep.process();
     float_4 rawSaw = phase + float_4(.5f);
@@ -238,7 +245,6 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
 
     return rawSaw;
 }
-
 
 // from VCV Fundamental-1 VCO
 template <typename T>
@@ -253,31 +259,14 @@ inline float_4 BasicVCO::processSin(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-   // output = SimdBlocks::sinTwoPi(phase * twoPi);
-
-   // TODO: scale, normalize, dc comp
-   // TODO: minblep
- //   const static float_4 twoPi = 2 * 3.141592653589793238;
- //   return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
     return 5 * sin2pi_pade_05_5_4(phase);
 }
-
-
 
 inline float_4 BasicVCO::processSinClean(float deltaTime)
 {
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-   // output = SimdBlocks::sinTwoPi(phase * twoPi);
-    
-   // return LookupTable<float>::lookup(*sinLookup, adjPhase, true);
-
-   // TODO: scale, normalize, dc comp
-   // TODO: minblep
-  //  const static float_4 twoPi = 2 * 3.141592653589793238;
-  //  return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
- //   return 5 * sin2pi_pade_05_5_4(phase);
     float_4 output;
   
     for (int i=0; i<4; ++i) {
@@ -286,30 +275,10 @@ inline float_4 BasicVCO::processSinClean(float deltaTime)
     return 5 * output;
 }
 
-
-#if 0
-// std::sin is very pure, but it uses 19X CPU
-inline float_4 BasicVCO::processSinClean(float deltaTime)
+inline float_4 BasicVCO::processTriClean(float deltaTime)
 {
-    const float_4 deltaPhase = freq * deltaTime;
-    phase += deltaPhase;
-    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-   // output = SimdBlocks::sinTwoPi(phase * twoPi);
-
-   // TODO: scale, normalize, dc comp
-   // TODO: minblep
-    const static float_4 twoPi = 2 * 3.141592653589793238;
-  //  return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
- //   return 5 * sin2pi_pade_05_5_4(phase);
-    float_4 output;
-    float_4 x= phase * twoPi;
-    for (int i=0; i<4; ++i) {
-        output[i] = std::sin(x [i]);
-    }
-    return 5 * output;
+    return 0;
 }
-#endif
-
 
 inline float_4 BasicVCO::processTri(float deltaTime)
 {

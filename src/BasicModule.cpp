@@ -90,7 +90,7 @@ void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icom
         module,
         Comp::VOCT_INPUT));
 
-     addOutput(createOutput<PJ301MPort>(
+    addOutput(createOutput<PJ301MPort>(
         Vec(10, 330),
         module,
         Comp::MAIN_OUTPUT));
@@ -98,10 +98,31 @@ void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icom
 
 void BasicWidget::addControls(BasicModule *module, std::shared_ptr<IComposite> icomp)
 {
+    const float knobX = 12;
+    const float knobY = 12;
+    const float dy = 39;
+
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(7, 60),
+        Vec(knobX, knobY + 0 * dy),
+        module,  Comp::OCTAVE_PARAM));
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(knobX, knobY + 1 * dy),
+        module,  Comp::SEMI_PARAM));
+     addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 2 * dy),
+        module,  Comp::FINE_PARAM));
+
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(knobX, knobY + 3 * dy),
         module,  Comp::WAVEFORM_PARAM));
+     addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(knobX, knobY + 4 * dy),
+        module,  Comp::FM_PARAM));
 }
 
 /**

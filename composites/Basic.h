@@ -47,6 +47,7 @@ public:
         SQUARE,
         EVEN,
         SIN_CLEAN,
+        TRI_CLEAN,
         END     // just a marker
     };
 
@@ -69,6 +70,12 @@ public:
 
     enum ParamIds
     {
+        OCTAVE_PARAM,
+        SEMI_PARAM,
+        FINE_PARAM,
+        FM_PARAM,
+        PW_PARAM,
+        PWM_PARAM,
         WAVEFORM_PARAM,
         NUM_PARAMS
     };
@@ -76,6 +83,8 @@ public:
     enum InputIds
     {
         VOCT_INPUT,
+        PWM_INPUT,
+        FM_INPUT,
         NUM_INPUTS
     };
 
@@ -129,6 +138,7 @@ inline std::string Basic<TBase>::getLabel(Waves wf)
         case Waves::SQUARE: return "square";
         case Waves::EVEN: return "even";
         case Waves::SIN_CLEAN: return "sin clean";
+        case Waves::TRI_CLEAN: return "tri clean (nimp)";
         case Waves::END:
         default:  assert(false); return "unk";
 
@@ -211,8 +221,27 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
 
     switch (i) {
+
+        case Basic<TBase>::OCTAVE_PARAM:
+            ret = {0, 10, 4, "Octave"};
+            break;
+        case Basic<TBase>::SEMI_PARAM:
+             ret = {-11.f, 11.0f, 0.f, "Semitone transpose"};
+            break;
+        case Basic<TBase>::FINE_PARAM:
+            ret = {-1.0f, 1, 0, "fine tune"};
+            break;
+        case Basic<TBase>::FM_PARAM:
+            ret = {0.0f, 100, 0, "FM"};
+            break;
         case Basic<TBase>::WAVEFORM_PARAM:
             ret = {0.0f, numWaves-1, defWave, "Waveform"};
+            break;  
+        case Basic<TBase>::PW_PARAM:
+            ret = {0.0f, 100, 50, "Waveform"};
+            break;
+            case Basic<TBase>::PWM_PARAM:
+            ret = {-100.0f, 100, 0, "Waveform"};
             break;
         default:
             assert(false);
