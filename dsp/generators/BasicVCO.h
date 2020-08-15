@@ -7,6 +7,8 @@
 #include "dsp/minblep.hpp"
 #include "simd/vector.hpp"
 
+#include "ObjectCache.h"
+
 // #define _VCOJUMP
 
 class BasicVCO
@@ -43,7 +45,13 @@ private:
     float_4 sawOffsetDCComp = {};
     float_4 pulseWidth = 0.5f;
   //  double dblphase = 0;
-    int32_t intPhase = 0;
+ //   int32_t intPhase = 0;
+
+     /**
+    * References to shared lookup tables.
+    * Destructor will free them automatically.
+    */
+    std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
 
     float_4 processSaw(float deltaTime);
     float_4 processSin(float deltaTime);
@@ -231,6 +239,15 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     return rawSaw;
 }
 
+
+// from VCV Fundamental-1 VCO
+template <typename T>
+T sin2pi_pade_05_5_4(T x) {
+	x -= 0.5f;
+	return (T(-6.283185307) * x + T(33.19863968) * simd::pow(x, 3) - T(32.44191367) * simd::pow(x, 5))
+	       / (1 + T(1.296008659) * simd::pow(x, 2) + T(0.7028072946) * simd::pow(x, 4));
+}
+
 inline float_4 BasicVCO::processSin(float deltaTime)
 {
     const float_4 deltaPhase = freq * deltaTime;
@@ -240,68 +257,59 @@ inline float_4 BasicVCO::processSin(float deltaTime)
 
    // TODO: scale, normalize, dc comp
    // TODO: minblep
-    const static float_4 twoPi = 2 * 3.141592653589793238;
-    return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
+ //   const static float_4 twoPi = 2 * 3.141592653589793238;
+ //   return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
+    return 5 * sin2pi_pade_05_5_4(phase);
 }
+
 
 
 inline float_4 BasicVCO::processSinClean(float deltaTime)
 {
-    const int ovr = 32;
-    const float_4 deltaPhase = freq * deltaTime / ovr;
-    float_4 avg = 0;
-   
-    for (int i=0; i<ovr; ++i) {
-        phase += deltaPhase;
-        avg += deltaPhase;
+    const float_4 deltaPhase = freq * deltaTime;
+    phase += deltaPhase;
+    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+   // output = SimdBlocks::sinTwoPi(phase * twoPi);
+    
+   // return LookupTable<float>::lookup(*sinLookup, adjPhase, true);
+
+   // TODO: scale, normalize, dc comp
+   // TODO: minblep
+  //  const static float_4 twoPi = 2 * 3.141592653589793238;
+  //  return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
+ //   return 5 * sin2pi_pade_05_5_4(phase);
+    float_4 output;
+  
+    for (int i=0; i<4; ++i) {
+        output[i] = LookupTable<float>::lookup(*sinLookup, phase[i], true);
     }
- //   printf("at 1, avg=%f\n", avg[0]);
-
-
-
-    avg /= ovr;
-    avg += phase;
-    avg -= simd::floor(avg);
-    //  printf("at 3, avg=%f\n", avg[0]);
-    phase -= simd::floor(phase);
-
-  //  return avg;
-
-    const static double twoPi = 2 * 3.141592653589793238;
-    const float ret = 5 * std::sin(avg[0] * twoPi); 
-    return float_4(ret);
+    return 5 * output;
 }
+
 
 #if 0
+// std::sin is very pure, but it uses 19X CPU
 inline float_4 BasicVCO::processSinClean(float deltaTime)
 {
-    const int delta = std::numeric_limits<int32_t>::max() / 100;
-    intPhase += delta;
-    double d = double(intPhase) / double(std::numeric_limits<int32_t>::max());
-
-    double ramp0_1 = (d + 1) / 2;
-
-    const static double twoPi = 2 * 3.141592653589793238;
-    return 5 * std::sin(ramp0_1 * twoPi);
-    //return float_4( d);
-
-    #if 0
-    const double deltaPhase = freq[0] * double(deltaTime);
-    dblphase += deltaPhase;
-    if (dblphase >= 1) {
-        dblphase -= 1;
-    }
-   // phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
+    const float_4 deltaPhase = freq * deltaTime;
+    phase += deltaPhase;
+    phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
    // output = SimdBlocks::sinTwoPi(phase * twoPi);
 
    // TODO: scale, normalize, dc comp
    // TODO: minblep
-    const static double twoPi = 2 * 3.141592653589793238;
-    return 5 * std::sin(dblphase * twoPi);
-    #endif
-
+    const static float_4 twoPi = 2 * 3.141592653589793238;
+  //  return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
+ //   return 5 * sin2pi_pade_05_5_4(phase);
+    float_4 output;
+    float_4 x= phase * twoPi;
+    for (int i=0; i<4; ++i) {
+        output[i] = std::sin(x [i]);
+    }
+    return 5 * output;
 }
 #endif
+
 
 inline float_4 BasicVCO::processTri(float deltaTime)
 {

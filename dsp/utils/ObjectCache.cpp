@@ -58,7 +58,9 @@ std::shared_ptr<LookupTableParams<T>> ObjectCache<T>::getSinLookup()
         ret = std::make_shared<LookupTableParams<T>>();
         std::function<double(double)> f = AudioMath::makeFunc_Sin();
         // Used to use 4096, but 512 gives about 92db  snr, so let's save memory
-        LookupTable<T>::init(*ret, 512, 0, 1, f);
+        // working on high purity BasicVCO. move up to 2k to get rid of slight
+        // High-frequency junk (very, very low);
+        LookupTable<T>::init(*ret, 2 * 1024, 0, 1, f);
         sinLookupTable = ret;
     }
     return ret;
