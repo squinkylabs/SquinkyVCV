@@ -26,22 +26,26 @@ public:
         END     // just a marker
     };
 
-    void setWaveform(Waveform);
+    ;
 
     void setPitch(float_4 f, float sampleTime);
+    void setPw(float_4);
 
 #ifdef _VCOJUMP
     using  processFunction = float_4 (BasicVCO::*)(float deltaTime);
-    processFunction getProcPointer();
+    processFunction getProcPointer(Waveform);
 #else
+    void setWaveform(Waveform);
     float_4 process(float deltaTime);
+private:
+    Waveform wf = Waveform::SIN;
 #endif
 private:
     using MinBlep = rack::dsp::MinBlepGenerator<16, 16, float_4>; 
     MinBlep minBlep;
     float_4 phase = {};
     float_4 freq = {};
-    Waveform wf = Waveform::SIN;
+
     float_4 integrator = {};
     float_4 sawOffsetDCComp = {};
     float_4 pulseWidth = 0.5f;
@@ -64,9 +68,18 @@ private:
     void doSquareHighToLowMinblep(float_4 samplePoint, float crossingThreshold, float_4 deltaPhase);
 };
 
+
+#ifndef _VCOJUMP
 inline void BasicVCO::setWaveform(Waveform w)
 {
     wf = w;
+}
+#endif
+
+
+inline void BasicVCO::setPw(float_4 pw) 
+{
+    pulseWidth = pw;
 }
 
 inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
@@ -82,7 +95,7 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
 
 
 #ifdef _VCOJUMP
-inline  BasicVCO::processFunction BasicVCO::getProcPointer()
+inline  BasicVCO::processFunction BasicVCO::getProcPointer(Waveform wf)
 {
     auto ret = processSaw;
     switch(wf) {

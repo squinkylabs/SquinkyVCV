@@ -118,6 +118,8 @@ private:
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 0;
     float basePitch_m = 0;
+    float basePw_m = 0;
+    float basePwm_m = 0;
     
     BasicVCO::processFunction pProcess = nullptr;
 
@@ -129,6 +131,8 @@ private:
 
     void updatePitch();
     void updateBasePitch();
+    void updatePwm();
+    void updateBasePwm();
 
 };
 
@@ -171,15 +175,25 @@ inline void Basic<TBase>::stepm()
     numBanks_m = (numChannels_m / 4);
     numBanks_m +=((numChannels_m %4) == 0) ? 0 : 1;
 
+#ifdef _VCOJUMP
+    auto wf = BasicVCO::Waveform((int)TBase::params[WAVEFORM_PARAM].value);
+    pProcess = vcos[0].getProcPointer(wf);
+#else
     for (int i=0; i<numBanks_m; ++i) {
         vcos[i].setWaveform((BasicVCO::Waveform)(int)TBase::params[WAVEFORM_PARAM].value);
     }
+#endif
 
     updateBasePitch();
-    #ifdef _VCOJUMP
-    pProcess = vcos[0].getProcPointer();
-    #endif
+    updateBasePwm();
+}
 
+template <class TBase>
+inline void Basic<TBase>::updateBasePwm()
+{
+    // 0..1
+    basePw_m = Basic<TBase>::params[PW_PARAM].value / 100.f;
+    basePwm_m = Basic<TBase>::params[PWM_PARAM].value;
 }
 
 
@@ -196,6 +210,24 @@ template <class TBase>
 inline void Basic<TBase>::stepn()
 {
     updatePitch();
+    updatePwm();
+}
+
+template <class TBase>
+inline void Basic<TBase>::updatePwm()
+{
+  //  const float sampleTime = TBase::engineGetSampleTime();
+    for (int bank = 0; bank < numBanks_m; ++ bank) {
+        const int baseIndex = bank * 4;
+        Port& p = TBase::inputs[PWM_INPUT];
+        // this should be poly?
+        const float_4 pwmSignal = p.getVoltageSimd<float_4>(baseIndex);
+
+        float_4 combinedPW = pwmSignal * basePwm_m + basePw_m;
+        combinedPW = simd::clamp(combinedPW, 0, 1);
+      //  const float_4 totalCV = cv + basePitch_m;
+        vcos[bank].setPw(combinedPW);
+    }
 }
 
 template <class TBase>
@@ -210,7 +242,6 @@ inline void Basic<TBase>::updatePitch()
         vcos[bank].setPitch(totalCV, sampleTime);
     }
 }
-
 template <class TBase>
 inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
 {
