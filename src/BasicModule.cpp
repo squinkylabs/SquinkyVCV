@@ -85,13 +85,27 @@ struct BasicWidget : ModuleWidget
 
 void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icomp)
 {
+    const float jackX = 14;
+    const float jackY = 249;
+    const float dy = 30;
+
     addInput(createInput<PJ301MPort>(
-        Vec(10, 290),
+        Vec(jackX, jackY + 0 * dy),
+        module,
+        Comp::PWM_INPUT));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 1 * dy),
+        module,
+        Comp::FM_INPUT)); 
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 2 * dy),
         module,
         Comp::VOCT_INPUT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(10, 330),
+        Vec(jackX, jackY + 3 * dy),
         module,
         Comp::MAIN_OUTPUT));
 };

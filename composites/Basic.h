@@ -189,7 +189,7 @@ inline void Basic<TBase>::updateBasePitch()
     basePitch_m = 
         Basic<TBase>::params[OCTAVE_PARAM].value +
         Basic<TBase>::params[SEMITONE_PARAM].value / 12.f +
-        Basic<TBase>::params[FINE_PARAM].value - 4;
+        Basic<TBase>::params[FINE_PARAM].value / 12 - 4;
 }
 
 template <class TBase>
@@ -206,9 +206,7 @@ inline void Basic<TBase>::updatePitch()
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[VOCT_INPUT];
         const float_4 cv = p.getVoltageSimd<float_4>(baseIndex);
-
         const float_4 totalCV = cv + basePitch_m;
-
         vcos[bank].setPitch(totalCV, sampleTime);
     }
 }
@@ -219,9 +217,7 @@ inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
     divn.step();
     divm.step();
 
-    // TODO: move this into step_m
 #ifdef _VCOJUMP
-  
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         //  float_4 output = vcos[bank].process(args.sampleTime);
         float_4 output = ((&vcos[bank])->*pProcess)(args.sampleTime);
@@ -248,15 +244,14 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
     const float defWave = (float) Basic<TBase>::Waves::SIN;
     Config ret(0, 1, 0, "");
     switch (i) {
-
         case Basic<TBase>::OCTAVE_PARAM:
-            ret = {0, 10, 4, "Octave (nimp)"};
+            ret = {0, 10, 4, "Octave"};
             break;
         case Basic<TBase>::SEMITONE_PARAM:
-             ret = {-11.f, 11.0f, 0.f, "Semitone transpose (nimp)"};
+             ret = {-11.f, 11.0f, 0.f, "Semitone transpose"};
             break;
         case Basic<TBase>::FINE_PARAM:
-            ret = {-1.0f, 1, 0, "fine tune (nimp)"};
+            ret = {-1.0f, 1, 0, "fine tune"};
             break;
         case Basic<TBase>::FM_PARAM:
             ret = {0.0f, 100, 0, "FM (nimp)"};
