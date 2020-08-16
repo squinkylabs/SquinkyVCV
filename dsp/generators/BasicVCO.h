@@ -49,6 +49,8 @@ private:
     float_4 integrator = {};
     float_4 sawOffsetDCComp = {};
     float_4 pulseWidth = 0.5f;
+    float_4 curSampleTime = {};
+    float_4 triIntegrator = {};
 
     /**
     * Reference to shared lookup tables.
@@ -91,6 +93,8 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
     const float sawCorrect = -5.698;
     const float_4 normalizedFreq = float_4(sampleTime) * freq;
     sawOffsetDCComp = normalizedFreq * float_4(sawCorrect);
+
+    curSampleTime = sampleTime;
 }
 
 
@@ -226,7 +230,7 @@ inline float_4 BasicVCO::processEven(float deltaTime)
     return even;
 }
 
-inline float_4 BasicVCO::processPulse(float deltaTime)
+inline float_4 BasicVCO::processTriClean(float deltaTime)
 {
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
@@ -235,10 +239,36 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
     doSquareHighToLowMinblep(phase, 1, deltaPhase);
  
     phase -= rack::simd::floor(phase);
+    const float_4 blepValue = minBlep.process();
+    
+   	float_4 triSquare = SimdBlocks::ifelse(phase > .5, float_4(1.f), float_4(-1.f));
+	//return temp + blepValue;
+    triSquare += blepValue;
+
+       // Integrate square for triangle
+    //   printf("in loop, freq = %f, sample time = %f delta = %f\n", freq[0], curSampleTime[0], deltaTime);
+    triIntegrator += 4.0 * triSquare * deltaPhase;
+    triIntegrator *= (1.0 - 40.0 * curSampleTime);      // TODO: use delta time, get rid of curSampleTime
+
+    return 5.0*triIntegrator;
+}
+
+inline float_4 BasicVCO::processPulse(float deltaTime)
+{
+    const float_4 deltaPhase = freq * deltaTime;
+    phase += deltaPhase;
+
+// how can this work with variable PQ?
+    doSquareLowToHighMinblep(phase, deltaPhase);
+    doSquareHighToLowMinblep(phase, 1, deltaPhase);
+ 
+    phase -= rack::simd::floor(phase);
 
     const float_4 blepValue = minBlep.process();
+  // const float_4 blepValue = 0;
    	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
 	return temp + blepValue;
+   //return blepValue;
 }
 
 inline float_4 BasicVCO::processSaw(float deltaTime)
@@ -286,11 +316,6 @@ inline float_4 BasicVCO::processSinClean(float deltaTime)
         output[i] = LookupTable<float>::lookup(*sinLookup, phase[i], true);
     }
     return 5 * output;
-}
-
-inline float_4 BasicVCO::processTriClean(float deltaTime)
-{
-    return 0;
 }
 
 inline float_4 BasicVCO::processTri(float deltaTime)
