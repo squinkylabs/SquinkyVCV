@@ -118,6 +118,7 @@ private:
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 0;
     float basePitch_m = 0;
+    float basePitchMod_m = 0;
     float basePw_m = 0;
     float basePwm_m = 0;
     
@@ -206,6 +207,8 @@ inline void Basic<TBase>::updateBasePitch()
         Basic<TBase>::params[OCTAVE_PARAM].value +
         Basic<TBase>::params[SEMITONE_PARAM].value / 12.f +
         Basic<TBase>::params[FINE_PARAM].value / 12 - 4;
+
+    basePitchMod_m =  Basic<TBase>::params[FM_PARAM].value / 100;
 }
 
 template <class TBase>
@@ -230,8 +233,6 @@ inline void Basic<TBase>::updatePwm()
             printf("signal = %f basePw_m = %f\n", pwmSignal[0], basePw_m);
         }
 #endif
-
-
         combinedPW = simd::clamp(combinedPW, 0, 1);
         vcos[bank].setPw(combinedPW);
     }
@@ -247,11 +248,9 @@ inline void Basic<TBase>::updatePitch()
         const float_4 pitchCV = p.getVoltageSimd<float_4>(baseIndex);
 
         p = TBase::inputs[FM_INPUT];
-        const float_4 fmInput = p.getPolyVoltageSimd<float_4>(baseIndex) * basePwm_m;
+        const float_4 fmInput = p.getPolyVoltageSimd<float_4>(baseIndex) * basePitchMod_m;
         const float_4 totalCV = pitchCV + basePitch_m + fmInput;
         vcos[bank].setPitch(totalCV, sampleTime);
-
-
     }
 }
 template <class TBase>
