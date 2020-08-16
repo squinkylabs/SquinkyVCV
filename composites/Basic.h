@@ -193,7 +193,9 @@ inline void Basic<TBase>::updateBasePwm()
 {
     // 0..1
     basePw_m = Basic<TBase>::params[PW_PARAM].value / 100.f;
-    basePwm_m = Basic<TBase>::params[PWM_PARAM].value;
+
+    // -1..1
+    basePwm_m = Basic<TBase>::params[PWM_PARAM].value / 100.f;
 }
 
 
@@ -216,16 +218,21 @@ inline void Basic<TBase>::stepn()
 template <class TBase>
 inline void Basic<TBase>::updatePwm()
 {
-  //  const float sampleTime = TBase::engineGetSampleTime();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[PWM_INPUT];
-        // this should be poly?
-        const float_4 pwmSignal = p.getVoltageSimd<float_4>(baseIndex);
 
+        const float_4 pwmSignal = p.getPolyVoltageSimd<float_4>(baseIndex) * .1;
         float_4 combinedPW = pwmSignal * basePwm_m + basePw_m;
+#if 0
+  if (bank == 0) {
+            printf("\ncombinedPW = %f basePWM_m = %f\n", combinedPW[0], basePwm_m);
+            printf("signal = %f basePw_m = %f\n", pwmSignal[0], basePw_m);
+        }
+#endif
+
+
         combinedPW = simd::clamp(combinedPW, 0, 1);
-      //  const float_4 totalCV = cv + basePitch_m;
         vcos[bank].setPw(combinedPW);
     }
 }
@@ -237,9 +244,14 @@ inline void Basic<TBase>::updatePitch()
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[VOCT_INPUT];
-        const float_4 cv = p.getVoltageSimd<float_4>(baseIndex);
-        const float_4 totalCV = cv + basePitch_m;
+        const float_4 pitchCV = p.getVoltageSimd<float_4>(baseIndex);
+
+        p = TBase::inputs[FM_INPUT];
+        const float_4 fmInput = p.getPolyVoltageSimd<float_4>(baseIndex) * basePwm_m;
+        const float_4 totalCV = pitchCV + basePitch_m + fmInput;
         vcos[bank].setPitch(totalCV, sampleTime);
+
+
     }
 }
 template <class TBase>
