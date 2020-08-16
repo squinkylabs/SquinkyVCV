@@ -113,7 +113,6 @@ public:
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
-
     BasicVCO vcos[4];
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 0;
@@ -134,7 +133,6 @@ private:
     void updateBasePitch();
     void updatePwm();
     void updateBasePwm();
-
 };
 
 
