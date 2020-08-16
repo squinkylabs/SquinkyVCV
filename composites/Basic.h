@@ -147,7 +147,7 @@ inline std::string Basic<TBase>::getLabel(Waves wf)
         case Waves::SQUARE: return "square";
         case Waves::EVEN: return "even";
         case Waves::SIN_CLEAN: return "sin clean";
-        case Waves::TRI_CLEAN: return "tri clean (nimp)";
+        case Waves::TRI_CLEAN: return "tri clean";
         case Waves::END:
         default:  assert(false); return "unk";
     }
@@ -294,13 +294,13 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
             ret = {-1.0f, 1, 0, "fine tune"};
             break;
         case Basic<TBase>::FM_PARAM:
-            ret = {0.0f, 100, 0, "FM (nimp)"};
+            ret = {0.0f, 100, 0, "FM"};
             break;
         case Basic<TBase>::WAVEFORM_PARAM:
             ret = {0.0f, numWaves-1, defWave, "Waveform"};
             break;  
         case Basic<TBase>::PW_PARAM:
-            ret = {0.0f, 100, 50, "pulse width (nimp)"};
+            ret = {0.0f, 100, 50, "pulse width"};
             break;
             case Basic<TBase>::PWM_PARAM:
             ret = {-100.0f, 100, 0, "pulse width modulation depth (nimp)"};

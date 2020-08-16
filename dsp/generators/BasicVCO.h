@@ -66,8 +66,8 @@ private:
     float_4 processSinClean(float deltaTime);
     float_4 processTriClean(float deltaTime);
 
-    void doSquareLowToHighMinblep(float_4 samplePoint, float_4 deltaPhase);
-    void doSquareHighToLowMinblep(float_4 samplePoint, float crossingThreshold, float_4 deltaPhase);
+    void doSquareLowToHighMinblep(float_4 samplePoint, float_4 crossingThreshold, float_4 deltaPhase);
+    void doSquareHighToLowMinblep(float_4 samplePoint, float_4 crossingThreshold, float_4 deltaPhase);
 };
 
 
@@ -168,12 +168,12 @@ inline float_4 BasicVCO::process(float deltaTime)
 #endif
 
 
-inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 deltaPhase)
+inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 crossingThreshold, float_4 deltaPhase)
 {
     const float_4 syncDirection = 1.f;
     const int channels = 4;
 
-    float_4 pulseCrossing = (pulseWidth + deltaPhase - phase) / deltaPhase;
+    float_4 pulseCrossing = (crossingThreshold + deltaPhase - phase) / deltaPhase;
 	int pulseMask = rack::simd::movemask((0 < pulseCrossing) & (pulseCrossing <= 1.f));
 	if (pulseMask) {
 		for (int i = 0; i < channels; i++) {
@@ -188,7 +188,7 @@ inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 deltaPhase
 	}
 }
 
-inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase, float crossingThreshold, float_4 deltaPhase)
+inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase, float_4 crossingThreshold, float_4 deltaPhase)
 {
     const int channels = 4;
     const float_4 syncDirection = 1;
@@ -235,12 +235,12 @@ inline float_4 BasicVCO::processTriClean(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
 
-    doSquareLowToHighMinblep(phase, deltaPhase);
-    doSquareHighToLowMinblep(phase, 1, deltaPhase);
+    doSquareLowToHighMinblep(phase, .5f, deltaPhase);
+    doSquareHighToLowMinblep(phase, 1.f, deltaPhase);
  
     phase -= rack::simd::floor(phase);
     const float_4 blepValue = minBlep.process();
-    
+
    	float_4 triSquare = SimdBlocks::ifelse(phase > .5, float_4(1.f), float_4(-1.f));
 	//return temp + blepValue;
     triSquare += blepValue;
@@ -259,7 +259,7 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
     phase += deltaPhase;
 
 // how can this work with variable PQ?
-    doSquareLowToHighMinblep(phase, deltaPhase);
+    doSquareLowToHighMinblep(phase, pulseWidth, deltaPhase);
     doSquareHighToLowMinblep(phase, 1, deltaPhase);
  
     phase -= rack::simd::floor(phase);
