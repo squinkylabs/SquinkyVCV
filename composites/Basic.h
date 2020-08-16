@@ -71,7 +71,7 @@ public:
     enum ParamIds
     {
         OCTAVE_PARAM,
-        SEMI_PARAM,
+        SEMITONE_PARAM,
         FINE_PARAM,
         FM_PARAM,
         PW_PARAM,
@@ -117,12 +117,18 @@ private:
     BasicVCO vcos[4];
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 0;
+    float basePitch_m = 0;
     
+    BasicVCO::processFunction pProcess = nullptr;
+
     Divider divn;
     Divider divm;
 
     void stepn();
     void stepm();
+
+    void updatePitch();
+    void updateBasePitch();
 
 };
 
@@ -141,7 +147,6 @@ inline std::string Basic<TBase>::getLabel(Waves wf)
         case Waves::TRI_CLEAN: return "tri clean (nimp)";
         case Waves::END:
         default:  assert(false); return "unk";
-
     }
 }
 
@@ -169,17 +174,42 @@ inline void Basic<TBase>::stepm()
     for (int i=0; i<numBanks_m; ++i) {
         vcos[i].setWaveform((BasicVCO::Waveform)(int)TBase::params[WAVEFORM_PARAM].value);
     }
+
+    updateBasePitch();
+    #ifdef _VCOJUMP
+    pProcess = vcos[0].getProcPointer();
+    #endif
+
+}
+
+
+template <class TBase>
+inline void Basic<TBase>::updateBasePitch()
+{
+    basePitch_m = 
+        Basic<TBase>::params[OCTAVE_PARAM].value +
+        Basic<TBase>::params[SEMITONE_PARAM].value / 12.f +
+        Basic<TBase>::params[FINE_PARAM].value - 4;
 }
 
 template <class TBase>
 inline void Basic<TBase>::stepn()
+{
+    updatePitch();
+}
+
+template <class TBase>
+inline void Basic<TBase>::updatePitch()
 {
     const float sampleTime = TBase::engineGetSampleTime();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[VOCT_INPUT];
         const float_4 cv = p.getVoltageSimd<float_4>(baseIndex);
-        vcos[bank].setPitch(cv, sampleTime);
+
+        const float_4 totalCV = cv + basePitch_m;
+
+        vcos[bank].setPitch(totalCV, sampleTime);
     }
 }
 
@@ -191,11 +221,10 @@ inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
 
     // TODO: move this into step_m
 #ifdef _VCOJUMP
-    BasicVCO::pfunc pp = vcos[0].getProcPointer();
-
+  
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         //  float_4 output = vcos[bank].process(args.sampleTime);
-        float_4 output = ((&vcos[bank])->*pp)(args.sampleTime);
+        float_4 output = ((&vcos[bank])->*pProcess)(args.sampleTime);
         Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
     }
 #else
@@ -217,15 +246,13 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
 {
     const float numWaves = (float) Basic<TBase>::Waves::END;
     const float defWave = (float) Basic<TBase>::Waves::SIN;
-   // printf("in ger des, numWave = ")
     Config ret(0, 1, 0, "");
-
     switch (i) {
 
         case Basic<TBase>::OCTAVE_PARAM:
             ret = {0, 10, 4, "Octave (nimp)"};
             break;
-        case Basic<TBase>::SEMI_PARAM:
+        case Basic<TBase>::SEMITONE_PARAM:
              ret = {-11.f, 11.0f, 0.f, "Semitone transpose (nimp)"};
             break;
         case Basic<TBase>::FINE_PARAM:

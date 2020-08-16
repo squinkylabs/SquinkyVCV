@@ -9,7 +9,7 @@
 
 #include "ObjectCache.h"
 
-//#define _VCOJUMP
+#define _VCOJUMP
 
 class BasicVCO
 {
@@ -31,8 +31,8 @@ public:
     void setPitch(float_4 f, float sampleTime);
 
 #ifdef _VCOJUMP
-    using  pfunc = float_4 (BasicVCO::*)(float deltaTime);
-    pfunc getProcPointer();
+    using  processFunction = float_4 (BasicVCO::*)(float deltaTime);
+    processFunction getProcPointer();
 #else
     float_4 process(float deltaTime);
 #endif
@@ -82,7 +82,7 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
 
 
 #ifdef _VCOJUMP
-inline  BasicVCO::pfunc BasicVCO::getProcPointer()
+inline  BasicVCO::processFunction BasicVCO::getProcPointer()
 {
     auto ret = processSaw;
     switch(wf) {
