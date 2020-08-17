@@ -122,6 +122,7 @@ private:
     float basePwm_m = 0;
     
     BasicVCO::processFunction pProcess = nullptr;
+    std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache<float>::getBipolarAudioTaper();
 
     Divider divn;
     Divider divm;
@@ -194,7 +195,9 @@ inline void Basic<TBase>::updateBasePwm()
     basePw_m = Basic<TBase>::params[PW_PARAM].value / 100.f;
 
     // -1..1
-    basePwm_m = Basic<TBase>::params[PWM_PARAM].value / 100.f;
+    auto rawTrim = Basic<TBase>::params[PWM_PARAM].value / 100.f;
+    auto taperedTrim = LookupTable<float>::lookup(*lookup, rawTrim);
+    basePwm_m = taperedTrim; 
 }
 
 
@@ -206,7 +209,9 @@ inline void Basic<TBase>::updateBasePitch()
         Basic<TBase>::params[SEMITONE_PARAM].value / 12.f +
         Basic<TBase>::params[FINE_PARAM].value / 12 - 4;
 
-    basePitchMod_m =  Basic<TBase>::params[FM_PARAM].value / 100;
+    auto rawTrim =  Basic<TBase>::params[FM_PARAM].value / 100;
+    auto taperedTrim = LookupTable<float>::lookup(*lookup, rawTrim);
+    basePitchMod_m = taperedTrim; 
 }
 
 template <class TBase>
@@ -294,7 +299,7 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
             ret = {-1.0f, 1, 0, "fine tune"};
             break;
         case Basic<TBase>::FM_PARAM:
-            ret = {0.0f, 100, 0, "FM"};
+            ret = {-100.0f, 100, 0, "FM"};
             break;
         case Basic<TBase>::WAVEFORM_PARAM:
             ret = {0.0f, numWaves-1, defWave, "Waveform"};
@@ -302,8 +307,8 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
         case Basic<TBase>::PW_PARAM:
             ret = {0.0f, 100, 50, "pulse width"};
             break;
-            case Basic<TBase>::PWM_PARAM:
-            ret = {-100.0f, 100, 0, "pulse width modulation depth (nimp)"};
+        case Basic<TBase>::PWM_PARAM:
+            ret = {-100.0f, 100, 0, "pulse width modulation depth"};
             break;
         default:
             assert(false);
