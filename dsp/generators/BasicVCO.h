@@ -26,8 +26,6 @@ public:
         END     // just a marker
     };
 
-    ;
-
     void setPitch(float_4 f, float sampleTime);
     void setPw(float_4);
 
@@ -46,10 +44,10 @@ private:
     float_4 phase = {};
     float_4 freq = {};
 
-    float_4 integrator = {};
+ //   float_4 integrator = {};
     float_4 sawOffsetDCComp = {};
+    float_4 pulseOffsetDCComp = {};
     float_4 pulseWidth = 0.5f;
-    float_4 curSampleTime = {};
     float_4 triIntegrator = {};
 
     /**
@@ -82,6 +80,7 @@ inline void BasicVCO::setWaveform(Waveform w)
 inline void BasicVCO::setPw(float_4 pw) 
 {
     pulseWidth = pw;
+    pulseOffsetDCComp = ((pw * 2)- 1);
 }
 
 inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
@@ -93,10 +92,7 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
     const float sawCorrect = -5.698;
     const float_4 normalizedFreq = float_4(sampleTime) * freq;
     sawOffsetDCComp = normalizedFreq * float_4(sawCorrect);
-
-    curSampleTime = sampleTime;
 }
-
 
 #ifdef _VCOJUMP
 inline  BasicVCO::processFunction BasicVCO::getProcPointer(Waveform wf)
@@ -167,7 +163,6 @@ inline float_4 BasicVCO::process(float deltaTime)
 }
 #endif
 
-
 inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 crossingThreshold, float_4 deltaPhase)
 {
     const float_4 syncDirection = 1.f;
@@ -207,6 +202,15 @@ inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase, float_4 crossingTh
     }
 }
 
+// from VCV Fundamental-1 VCO
+template <typename T>
+T sin2pi_pade_05_5_4(T x) {
+	x -= 0.5f;
+	return (T(-6.283185307) * x + T(33.19863968) * simd::pow(x, 3) - T(32.44191367) * simd::pow(x, 5))
+	       / (1 + T(1.296008659) * simd::pow(x, 2) + T(0.7028072946) * simd::pow(x, 4));
+}
+
+
 inline float_4 BasicVCO::processEven(float deltaTime)
 {
     const float_4 deltaPhase = freq * deltaTime;
@@ -220,13 +224,14 @@ inline float_4 BasicVCO::processEven(float deltaTime)
     // double saw will fall from +1 to -1 when the saw is at .5, and at 1
     float_4 doubleSaw = SimdBlocks::ifelse((phase < 0.5) , (-1.0 + 4.0*phase) , (-1.0 + 4.0*(phase - 0.5)));
 
-    const static float_4 twoPi = 2 * 3.141592653589793238;
+    // shift from sin to cos to match waveform of EvenVCO
     float_4 shiftedSaw = phase + .25;
     shiftedSaw = SimdBlocks::ifelse( (shiftedSaw > 1) , shiftedSaw -1, shiftedSaw);
-    float_4 fundamental = SimdBlocks::sinTwoPi(shiftedSaw * twoPi);
+    float_4 fundamental = sin2pi_pade_05_5_4(shiftedSaw);
 
     doubleSaw += minBlep.process();
-    float_4 even = float_4(0.55f) * (doubleSaw + 1.27 * fundamental);
+    doubleSaw += 2 * sawOffsetDCComp; 
+    float_4 even = float_4(4 * 0.55f) * (doubleSaw + 1.27 * fundamental);
     return even;
 }
 
@@ -242,13 +247,11 @@ inline float_4 BasicVCO::processTriClean(float deltaTime)
     const float_4 blepValue = minBlep.process();
 
    	float_4 triSquare = SimdBlocks::ifelse(phase > .5, float_4(1.f), float_4(-1.f));
-	//return temp + blepValue;
     triSquare += blepValue;
 
-       // Integrate square for triangle
-    //   printf("in loop, freq = %f, sample time = %f delta = %f\n", freq[0], curSampleTime[0], deltaTime);
+    // Integrate square for triangle
     triIntegrator += 4.0 * triSquare * deltaPhase;
-    triIntegrator *= (1.0 - 40.0 * curSampleTime);      // TODO: use delta time, get rid of curSampleTime
+    triIntegrator *= (1.0 - 40.0 * deltaTime); 
 
     return 5.0*triIntegrator;
 }
@@ -258,17 +261,15 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
 
-// how can this work with variable PQ?
     doSquareLowToHighMinblep(phase, pulseWidth, deltaPhase);
     doSquareHighToLowMinblep(phase, 1, deltaPhase);
  
     phase -= rack::simd::floor(phase);
 
     const float_4 blepValue = minBlep.process();
-  // const float_4 blepValue = 0;
    	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
-	return temp + blepValue;
-   //return blepValue;
+    temp += pulseOffsetDCComp;
+	return 5 * (temp + blepValue);
 }
 
 inline float_4 BasicVCO::processSaw(float deltaTime)
@@ -289,13 +290,6 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     return rawSaw;
 }
 
-// from VCV Fundamental-1 VCO
-template <typename T>
-T sin2pi_pade_05_5_4(T x) {
-	x -= 0.5f;
-	return (T(-6.283185307) * x + T(33.19863968) * simd::pow(x, 3) - T(32.44191367) * simd::pow(x, 5))
-	       / (1 + T(1.296008659) * simd::pow(x, 2) + T(0.7028072946) * simd::pow(x, 4));
-}
 
 inline float_4 BasicVCO::processSin(float deltaTime)
 {
