@@ -113,7 +113,7 @@ void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icom
 void BasicWidget::addControls(BasicModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float knobX = 12;
-    const float knobY = 12;
+    const float knobY = 21;
     const float dy = 39;
 
     addParam(SqHelper::createParam<Blue30SnapKnob>(
@@ -136,12 +136,12 @@ void BasicWidget::addControls(BasicModule *module, std::shared_ptr<IComposite> i
      addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX, knobY + 4 * dy),
-        module,  Comp::FM_PARAM));
+        module,  Comp::PW_PARAM));
 
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
         Vec(21, 210),
-        module,  Comp::PW_PARAM));
+        module,  Comp::FM_PARAM));
 
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
