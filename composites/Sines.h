@@ -551,7 +551,7 @@ template <class TBase>
 inline const float* Sines<TBase>::getDrawbarPitches() const {
     static float values[12] = {
    //16, 5 1/3,                  8, 4
-        -1, -1 + 7 * PitchUtils::semitone, 0, 1,
+        -1, 0 + 7 * PitchUtils::semitone, 0, 1,
          // 2 2/3,                      2, 1 3/5,                       1 1/3
          1 + 7 * PitchUtils::semitone, 2, 2 + 4 * PitchUtils::semitone, 2 + 7 * PitchUtils::semitone,
          // 1
