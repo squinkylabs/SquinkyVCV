@@ -17,7 +17,6 @@ Screen shots in the manual are taken at 110%.
 
 ## Buttons
 
-Text is 14 point Myriad Pro.
 
 Rectangle height is 25 pix.
 

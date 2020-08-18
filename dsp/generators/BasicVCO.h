@@ -232,7 +232,7 @@ inline float_4 BasicVCO::processEven(float deltaTime)
 
     doubleSaw += minBlep.process();
     doubleSaw += 2 * sawOffsetDCComp; 
-    float_4 even = float_4(4 * 0.55f) * (doubleSaw + 1.27 * fundamental);
+    float_4 even = float_4(4 * 0.55f * 1.4f) * (doubleSaw + 1.27 * fundamental);
     return even;
 }
 
@@ -254,7 +254,7 @@ inline float_4 BasicVCO::processTriClean(float deltaTime)
     triIntegrator += 4.0 * triSquare * deltaPhase;
     triIntegrator *= (1.0 - 40.0 * deltaTime); 
 
-    return 5.0*triIntegrator;
+    return 5.0f * 1.25f * triIntegrator;
 }
 
 inline float_4 BasicVCO::processPulse(float deltaTime)
@@ -270,7 +270,7 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
     const float_4 blepValue = minBlep.process();
    	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
     temp += pulseOffsetDCComp;
-	return 5 * (temp + blepValue);
+	return 5 * .8f * (temp + blepValue);
 }
 
 inline float_4 BasicVCO::processSaw(float deltaTime)
@@ -288,7 +288,7 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
     rawSaw += minBlepValue;
     rawSaw += sawOffsetDCComp;
 
-    return rawSaw;
+    return 5 * rawSaw;
 }
 
 
@@ -318,5 +318,6 @@ inline float_4 BasicVCO::processTri(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-    return 1 - 4 * rack::simd::fmin(rack::simd::fabs(phase - 0.25f), rack::simd::fabs(phase - 1.25f));
+    float_4 temp = 1 - 4 * rack::simd::fmin(rack::simd::fabs(phase - 0.25f), rack::simd::fabs(phase - 1.25f));
+    return 5 * temp;
 }
