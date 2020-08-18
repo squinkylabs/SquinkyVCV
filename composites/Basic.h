@@ -122,7 +122,7 @@ private:
     float basePwm_m = 0;
     
     BasicVCO::processFunction pProcess = nullptr;
-    std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache<float>::getBipolarAudioTaper();
+    std::shared_ptr<LookupTableParams<float>> bipolarAudioLookup = ObjectCache<float>::getBipolarAudioTaper();
 
     Divider divn;
     Divider divm;
@@ -183,7 +183,6 @@ inline void Basic<TBase>::stepm()
         vcos[i].setWaveform((BasicVCO::Waveform)(int)TBase::params[WAVEFORM_PARAM].value);
     }
 #endif
-
     updateBasePitch();
     updateBasePwm();
 }
@@ -196,7 +195,7 @@ inline void Basic<TBase>::updateBasePwm()
 
     // -1..1
     auto rawTrim = Basic<TBase>::params[PWM_PARAM].value / 100.f;
-    auto taperedTrim = LookupTable<float>::lookup(*lookup, rawTrim);
+    auto taperedTrim = LookupTable<float>::lookup(*bipolarAudioLookup, rawTrim);
     basePwm_m = taperedTrim; 
 }
 
@@ -210,8 +209,16 @@ inline void Basic<TBase>::updateBasePitch()
         Basic<TBase>::params[FINE_PARAM].value / 12 - 4;
 
     auto rawTrim =  Basic<TBase>::params[FM_PARAM].value / 100;
-    auto taperedTrim = LookupTable<float>::lookup(*lookup, rawTrim);
+    auto taperedTrim = LookupTable<float>::lookup(*bipolarAudioLookup, rawTrim);
     basePitchMod_m = taperedTrim; 
+  //  printf("basePitch = %f, mod = %f\n", basePitch_m, basePitchMod_m);
+
+        // they both seem to key off fm - no one watch voct?
+#if 0
+    printf("voct connected = %d, fm=%d\n", 
+        TBase::inputs[VOCT_INPUT].isConnected(),
+        TBase::inputs[FM_INPUT].isConnected());
+#endif
 }
 
 template <class TBase>
@@ -236,7 +243,7 @@ inline void Basic<TBase>::updatePwm()
             printf("signal = %f basePw_m = %f\n", pwmSignal[0], basePw_m);
         }
 #endif
-        combinedPW = simd::clamp(combinedPW, 0, 1);
+        combinedPW = rack::simd::clamp(combinedPW, 0, 1);
         vcos[bank].setPw(combinedPW);
     }
 }
@@ -247,11 +254,11 @@ inline void Basic<TBase>::updatePitch()
     const float sampleTime = TBase::engineGetSampleTime();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
-        Port& p = TBase::inputs[VOCT_INPUT];
-        const float_4 pitchCV = p.getVoltageSimd<float_4>(baseIndex);
+        Port& pVoct = TBase::inputs[VOCT_INPUT];
+        const float_4 pitchCV = pVoct.getVoltageSimd<float_4>(baseIndex);
 
-        p = TBase::inputs[FM_INPUT];
-        const float_4 fmInput = p.getPolyVoltageSimd<float_4>(baseIndex) * basePitchMod_m;
+        Port& pFM = TBase::inputs[FM_INPUT];
+        const float_4 fmInput = pFM.getPolyVoltageSimd<float_4>(baseIndex) * basePitchMod_m;
         const float_4 totalCV = pitchCV + basePitch_m + fmInput;
         vcos[bank].setPitch(totalCV, sampleTime);
     }

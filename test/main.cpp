@@ -171,6 +171,8 @@ if (runShaperGen) {
         perfTest2();
         return 0;
     }
+    
+    testIComposite();
 
 #ifndef _MSC_VER
     testSines();
@@ -194,7 +196,7 @@ if (runShaperGen) {
 #endif
     testSimpleQuantizer();
 
-    testIComposite();
+  
     testVec();
     testCommChannels();
     testMidiEvents();
