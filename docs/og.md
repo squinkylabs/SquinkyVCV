@@ -1,5 +1,9 @@
 # Organ-Three
 
+Organ-Three is a single module polyphonic synthesizer, inspired by the Hammond organs. Like all Squinky Labs modules is has almost no digital artifacts, and uses very little CPU.
+
+![Organ Three Panel](./organ-three.png)
+
 Organ-Three is a polyphonic "Organ" module based on the Hammond tone-wheel organs. Most of the features are features available on Hammond organs, although we have added a couple features of our own.
 
 Although it may be used as a VCO, Organ-Three is a full polyphonic synthesizer voice, meaning it does not need to be patched with VCAs, envelope generators, or filters.
