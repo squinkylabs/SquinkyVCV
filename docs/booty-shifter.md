@@ -10,6 +10,8 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Intro 1 image](./intro-1-110.png)
 
+[Organ Three](./og.md) is a polyphonic "Organ" module based on the Hammond tone-wheel organs.
+
 [Kitchen Sink](./kitchen-sink.md) is a one operator FM module with the additions on a waves-shaper on the output, and a hard sync input.
 
 [Substitute](./substitute.md) is an homage to the VCO section of the Subharmonium. It has two VCOs per voice, each with two subharmonics, and a just intonation quantizer.
@@ -43,8 +45,6 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 [ExTwo](./extwo.md) is the newest expander for Form. Each instance adds two stereo channels.
 
 [Mixer-8](./mix8.md) is our clone of the AS 8-CH mixer, with more features and 1/10 the CPU usage.
-
-
 
 # Things that process sound
 
