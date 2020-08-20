@@ -27,6 +27,10 @@ public:
 };
 
 /**
+ * 8/19:
+ *      1 tri   4.2
+ *      1 saw   5.8
+ *      1 sq    6.1
  * with switch:
  *      1 saw 6.16
  *      1 tri 4.78
@@ -252,6 +256,7 @@ template <class TBase>
 inline void Basic<TBase>::updatePitch()
 {
     const float sampleTime = TBase::engineGetSampleTime();
+    const float sampleRate = TBase::engineGetSampleRate();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
         Port& pVoct = TBase::inputs[VOCT_INPUT];
@@ -260,7 +265,7 @@ inline void Basic<TBase>::updatePitch()
         Port& pFM = TBase::inputs[FM_INPUT];
         const float_4 fmInput = pFM.getPolyVoltageSimd<float_4>(baseIndex) * basePitchMod_m;
         const float_4 totalCV = pitchCV + basePitch_m + fmInput;
-        vcos[bank].setPitch(totalCV, sampleTime);
+        vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
     }
 }
 template <class TBase>

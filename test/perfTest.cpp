@@ -697,7 +697,7 @@ static void testWVCOPoly()
 
 static void testBasic1()
 {
-    printf("starting basic 1\n"); fflush(stdout);
+    printf("starting basic tri 1\n"); fflush(stdout);
     Basic<TestComposite> vco;
 
     vco.init();
@@ -710,12 +710,53 @@ static void testBasic1()
     args.sampleTime = 1.f / 44100.f;
     args.sampleRate = 44199;
 
-    MeasureTime<float>::run(overheadOutOnly, "basic 1", [&vco, args]() {
+    MeasureTime<float>::run(overheadOutOnly, "basic 1 tri", [&vco, args]() {
         vco.process(args);
         return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
     }, 1);
 }
 
+static void testBasic2()
+{
+    printf("starting basic saw 1\n"); fflush(stdout);
+    Basic<TestComposite> vco;
+
+    vco.init();
+    vco.inputs[Basic<TestComposite>::MAIN_OUTPUT].channels = 1;
+    vco.inputs[Basic<TestComposite>::VOCT_INPUT].channels = 1;
+    vco.params[Basic<TestComposite>::WAVEFORM_PARAM].value = float(Basic<TestComposite>::Waves::SAW);
+
+
+    Basic<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "basic 1 saw", [&vco, args]() {
+        vco.process(args);
+        return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
+static void testBasic3()
+{
+    printf("starting basic square\n"); fflush(stdout);
+    Basic<TestComposite> vco;
+
+    vco.init();
+    vco.inputs[Basic<TestComposite>::MAIN_OUTPUT].channels = 1;
+    vco.inputs[Basic<TestComposite>::VOCT_INPUT].channels = 1;
+    vco.params[Basic<TestComposite>::WAVEFORM_PARAM].value = float(Basic<TestComposite>::Waves::SQUARE);
+
+
+    Basic<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "basic square", [&vco, args]() {
+        vco.process(args);
+        return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
 static void testOrgan1()
 {
     printf("starting organ 1\n"); fflush(stdout);
@@ -1141,6 +1182,8 @@ void perfTest()
 #endif
 #ifndef _MSC_VER
     testBasic1();
+    testBasic2();
+    testBasic3();
     testOrgan1();
     testOrgan4();
      testOrgan4VCO();

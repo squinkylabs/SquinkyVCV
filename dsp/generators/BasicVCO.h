@@ -27,7 +27,7 @@ public:
         END     // just a marker
     };
 
-    void setPitch(float_4 f, float sampleTime);
+    void setPitch(float_4 f, float sampleTime, float sampleRate);
     void setPw(float_4);
 
 #ifdef _VCOJUMP
@@ -45,10 +45,10 @@ private:
     float_4 phase = {};
     float_4 freq = {};
 
- //   float_4 integrator = {};
     float_4 sawOffsetDCComp = {};
     float_4 pulseOffsetDCComp = {};
-    float_4 pulseWidth = 0.5f;
+    float_4 currentPulseWidth = 0.5f;
+    float_4 nextPulseWidth = .5f;
     float_4 triIntegrator = {};
 
     /**
@@ -80,15 +80,23 @@ inline void BasicVCO::setWaveform(Waveform w)
 
 inline void BasicVCO::setPw(float_4 pw) 
 {
-    pulseWidth = pw;
+    nextPulseWidth = pw;
     pulseOffsetDCComp = ((pw * 2)- 1);
 }
 
-inline void BasicVCO::setPitch(float_4 pitch, float sampleTime)
+inline void BasicVCO::setPitch(float_4 pitch, float sampleTime, float sampleRate)
 {
+    float_4 fmax(sampleRate * .45);
+    float_4 fmin(.1f);
+    
     // TODO: clamp / limit
     //  float highPitchLimit = sampleRate * .47f;  
 	freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+    freq = rack::simd::clamp(freq, fmin, fmax);
+
+
+  //  printf("setPitch %s, %f\n", toStr(pitch).c_str(), sampleTime);
+  //  printf("freq = %s\n", toStr(freq).c_str());
 
     const float sawCorrect = -5.698;
     const float_4 normalizedFreq = float_4(sampleTime) * freq;
@@ -176,11 +184,11 @@ public:
     }
     void go(float x) {
         if (x > maxb) {
-            printf("%s new max = %f\n", s.c_str(), x); fflush(stdout);
+         //   printf("%s new max = %f\n", s.c_str(), x); fflush(stdout);
             maxb = x;
         }
         if (x < minb) {
-            printf("%s new min = %f\n", s.c_str(), x); fflush(stdout);
+          //  printf("%s new min = %f\n", s.c_str(), x); fflush(stdout);
             minb= x;
         }
         assert(x > minlimit);
@@ -196,7 +204,7 @@ private:
 };
 
 
-//static MinMaxTester tester1("output", -3.5, 3.5);
+//static MinMaxTester tester1("output", -2.2, 2.2);
 
 //static MinMaxTester minb1("blep1", -3.5, 3.5);
 //static MinMaxTester minb2("blep2", -3.5, 3.5);
@@ -315,26 +323,16 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
 
-//printf("process pulse begin %f\n", deltaPhase[0]);
-    doSquareLowToHighMinblep(phase, pulseWidth, deltaPhase);
+    doSquareLowToHighMinblep(phase, currentPulseWidth, deltaPhase);
     doSquareHighToLowMinblep(phase, 1, deltaPhase);
  
-    // TODO: is it really correct to reset the phase before output?
-    // Check other waveforms, too.
+    currentPulseWidth = SimdBlocks::ifelse( phase >= 1, nextPulseWidth, currentPulseWidth);
     phase -= rack::simd::floor(phase);
 
     const float_4 blepValue = minBlep.process();
-
-    
-   // tester1.go(blepValue[0]);
-
-    //const float_4 blepValue = 0;
-   	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
+   	float_4 temp = SimdBlocks::ifelse(phase > currentPulseWidth, float_4(1.f), float_4(-1.f));
     temp += pulseOffsetDCComp;
-//printf("process pulse end\n");
-	//return 5 * .8f * (temp + blepValue);
-    return 5 * .8f * (blepValue);
-
+	return 5 * .8f * (temp + blepValue);
 }
 
 inline float_4 BasicVCO::processSaw(float deltaTime)
