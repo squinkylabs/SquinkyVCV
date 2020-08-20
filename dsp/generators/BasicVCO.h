@@ -164,6 +164,44 @@ inline float_4 BasicVCO::process(float deltaTime)
 }
 #endif
 
+class MinMaxTester
+{
+public:
+    MinMaxTester(const std::string& name, float minLimit, float maxLimit) : 
+        s(name),
+        minlimit(minLimit),
+        maxlimit(maxLimit)
+    {
+
+    }
+    void go(float x) {
+        if (x > maxb) {
+            printf("%s new max = %f\n", s.c_str(), x); fflush(stdout);
+            maxb = x;
+        }
+        if (x < minb) {
+            printf("%s new min = %f\n", s.c_str(), x); fflush(stdout);
+            minb= x;
+        }
+        assert(x > minlimit);
+        assert(x < maxlimit);
+    }
+private:
+    float maxb=-100;
+    float minb=100;
+     const std::string s;
+    const float minlimit;
+    const float maxlimit;
+   
+};
+
+
+//static MinMaxTester tester1("output", -3.5, 3.5);
+
+//static MinMaxTester minb1("blep1", -3.5, 3.5);
+//static MinMaxTester minb2("blep2", -3.5, 3.5);
+
+
 inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 crossingThreshold, float_4 deltaPhase)
 {
     const float_4 syncDirection = 1.f;
@@ -179,6 +217,15 @@ inline void BasicVCO::doSquareLowToHighMinblep(float_4 phase, float_4 crossingTh
 				float p = pulseCrossing[i] - 1.f;
 				float_4 x = mainHighToLowMask & (2.f * syncDirection);
 				minBlep.insertDiscontinuity(p, x);
+#if 0
+                if (i == 0) {
+                    printf("doSquareLowToHighMinblep th=%f pulseCross = %f\n", 
+                        crossingThreshold[0], 
+                        pulseCrossing[0]);
+                    printf("phase = %f, deltaPhase = %f\n", phase[0], deltaPhase[0]);
+                }
+               // minb1.go(p);
+#endif
 			}
 		}
 	}
@@ -198,6 +245,12 @@ inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase, float_4 crossingTh
 				float p = oneCrossing[channelNumber] - 1.f;
 				float_4 x =  crossingMask & (-2.f * syncDirection);
 				minBlep.insertDiscontinuity(p, x);
+#if 0
+                if (channelNumber == 0) {
+                    printf("doSquareHighToLowMinblep\n");
+                }
+              //  minb2.go(p);
+#endif
             }
         }
     }
@@ -262,15 +315,26 @@ inline float_4 BasicVCO::processPulse(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
 
+//printf("process pulse begin %f\n", deltaPhase[0]);
     doSquareLowToHighMinblep(phase, pulseWidth, deltaPhase);
     doSquareHighToLowMinblep(phase, 1, deltaPhase);
  
+    // TODO: is it really correct to reset the phase before output?
+    // Check other waveforms, too.
     phase -= rack::simd::floor(phase);
 
     const float_4 blepValue = minBlep.process();
+
+    
+   // tester1.go(blepValue[0]);
+
+    //const float_4 blepValue = 0;
    	float_4 temp = SimdBlocks::ifelse(phase > pulseWidth, float_4(1.f), float_4(-1.f));
     temp += pulseOffsetDCComp;
-	return 5 * .8f * (temp + blepValue);
+//printf("process pulse end\n");
+	//return 5 * .8f * (temp + blepValue);
+    return 5 * .8f * (blepValue);
+
 }
 
 inline float_4 BasicVCO::processSaw(float deltaTime)

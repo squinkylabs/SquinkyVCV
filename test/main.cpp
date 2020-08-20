@@ -97,6 +97,7 @@ extern void testSimdLookup();
 extern void testSimpleQuantizer();
 extern void testDC();
 extern void testSines();
+extern void testBasic();
 
 #if 0
 #include <sstream>
@@ -175,10 +176,12 @@ if (runShaperGen) {
     testIComposite();
 
 #ifndef _MSC_VER
+    testBasic();
     testSines();
     testDC();
     testSimd();
     testSimdLookup();
+   
 #endif
 
     testAudioMath();
