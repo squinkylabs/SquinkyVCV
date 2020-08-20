@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <memory>
-#include "GateTrigger.h"
 #include "IComposite.h"
 
 namespace rack {
@@ -27,11 +26,11 @@ class DividerX : public TBase
 {
 public:
 
-    DividerX(Module * module) : TBase(module),  inputProcessing(false)
+    DividerX(Module * module) : TBase(module)
     {
     }
 
-    DividerX() : TBase(),  inputProcessing(false)
+    DividerX() : TBase()
     {
     }
 
@@ -79,10 +78,15 @@ public:
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
-    GateTrigger inputProcessing;
+    using T = float;
+  //  GateTrigger inputProcessing;
+    T lastClockValue = 0;
     int counter = 0;
     bool state = false;
+
+    dsp::MinBlepGenerator<16, 16, T> minBlep;
 };
+
 
 template <class TBase>
 inline void DividerX<TBase>::init()
@@ -92,9 +96,27 @@ inline void DividerX<TBase>::init()
 template <class TBase>
 inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 {
-    float x = TBase::inputs[MAIN_INPUT].getVoltage(0);
-    inputProcessing.go(x);
-    if (inputProcessing.trigger()) {
+    T inputClock = TBase::inputs[MAIN_INPUT].getVoltage(0);
+
+    T deltaClock = inputClock - lastClockValue;
+	T clockCrossing = -lastClockValue / deltaClock;
+    lastClockValue = inputClock;
+
+    bool newClock =  (0.f < clockCrossing) & (clockCrossing <= 1.f) & (inputClock >= 0.f);
+    if (newClock) {
+        if (--counter < 0) {
+            counter = 0;
+            state = !state;
+        }
+    }
+
+    float v = state ?  5 : -5;
+
+    TBase::outputs[FIRST_OUTPUT].setVoltage(v, 0);
+
+#if 0
+    if (inputPcValue / deltaSync;
+			rocessing.trigger()) {
         if (--counter < 0) {
             counter = 0;
             state = !state;
@@ -104,6 +126,7 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
         }
 
     }
+#endif
 }
 
 template <class TBase>
