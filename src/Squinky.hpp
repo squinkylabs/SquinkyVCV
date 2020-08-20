@@ -133,5 +133,6 @@ extern Model *modelSubModule;
 extern Model *modelSinesModule;
 #endif
 extern Model *modelBasicModule;
+extern Model *modelDividerXModule;
 
 

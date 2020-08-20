@@ -123,6 +123,7 @@ p->addModel(modelSubModule);
 p->addModel(modelSinesModule);
 #endif
 p->addModel(modelBasicModule);
+p->addModel(modelDividerXModule);
 
 
 }
