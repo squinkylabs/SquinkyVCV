@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <memory>
+#include "GateTrigger.h"
 #include "IComposite.h"
 
 namespace rack {
@@ -26,10 +27,11 @@ class DividerX : public TBase
 {
 public:
 
-    DividerX(Module * module) : TBase(module)
+    DividerX(Module * module) : TBase(module),  inputProcessing(false)
     {
     }
-    DividerX() : TBase()
+
+    DividerX() : TBase(),  inputProcessing(false)
     {
     }
 
@@ -49,11 +51,13 @@ public:
 
     enum InputIds
     {
+        MAIN_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        FIRST_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -72,13 +76,13 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
-    //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
-
+    GateTrigger inputProcessing;
+    int counter = 0;
+    bool state = false;
 };
-
 
 template <class TBase>
 inline void DividerX<TBase>::init()
@@ -88,6 +92,18 @@ inline void DividerX<TBase>::init()
 template <class TBase>
 inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    float x = TBase::inputs[MAIN_INPUT].getVoltage(0);
+    inputProcessing.go(x);
+    if (inputProcessing.trigger()) {
+        if (--counter < 0) {
+            counter = 0;
+            state = !state;
+            float v = state ? 1 : -1;
+            v *= 5;
+            TBase::outputs[FIRST_OUTPUT].setVoltage(v, 0);
+        }
+
+    }
 }
 
 template <class TBase>

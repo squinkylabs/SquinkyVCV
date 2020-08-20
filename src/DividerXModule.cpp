@@ -66,7 +66,27 @@ struct DividerXWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addJacks(DividerXModule *module, std::shared_ptr<IComposite> icomp);
+    void addControls(DividerXModule *module, std::shared_ptr<IComposite> icomp);
 };
+
+void DividerXWidget::addJacks(DividerXModule *module, std::shared_ptr<IComposite> icomp)
+{
+    const float jackX = 14;
+    const float jackY = 249;
+    const float dy = 30;
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 0 * dy),
+        module,
+        Comp::MAIN_INPUT));
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX, jackY + 1 * dy),
+        module,
+        Comp::FIRST_OUTPUT)); 
+}
 
 
 /**
@@ -78,13 +98,14 @@ struct DividerXWidget : ModuleWidget
 DividerXWidget::DividerXWidget(DividerXModule *module)
 {
     setModule(module);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/dividerx-panel.svg");
+
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    addJacks(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelDividerXModule = createModel<DividerXModule, DividerXWidget>("squinkylabs-dividerx");
