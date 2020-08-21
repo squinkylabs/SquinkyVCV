@@ -26,7 +26,20 @@ public:
     int getNumParams() override;
 };
 
+
 /**
+ * 8/21 : fix linker options, only update pitch when it changes:
+ *      1 sin   4.7
+ *      1 tri   4.0
+ *      1 sw    4.8
+ *      1 sq    5.3
+ * 
+ * with n=4, and no pitch update, it's even faster than n = 16;
+ * 8/20:  normal, then with n = 16, then normal with CV changes every sample. 
+ *      1 sin   5.6         4.1 
+ *      1 tri   4.3         2.8     5.1
+ *      1 sw    5.8         4.6
+ *      1 sq    6.1         4.7     6.2
  * 8/19:
  *      1 tri   4.2
  *      1 saw   5.8

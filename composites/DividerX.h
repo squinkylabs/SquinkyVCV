@@ -102,15 +102,28 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 	T clockCrossing = -lastClockValue / deltaClock;
     lastClockValue = inputClock;
 
+    float waveForm =  state ? 1 : -1;
     bool newClock =  (0.f < clockCrossing) & (clockCrossing <= 1.f) & (inputClock >= 0.f);
     if (newClock) {
+        float p = clockCrossing - 1.f;
+        float x = state ? 2 : -2;
+    //    waveForm = x * .5;          // capture the value before we flip
+   // printf("p=%f x = %f\n", p, x);
+        minBlep.insertDiscontinuity(p, x);
         if (--counter < 0) {
             counter = 0;
             state = !state;
+            waveForm *= -1;
         }
+       
     }
 
-    float v = state ?  5 : -5;
+  // waveForm =  state ? 1 : -1;
+
+  //  float v = state ?  1 : -1;
+    float v = waveForm;
+    v -= minBlep.process();
+    v *= 5;
 
     TBase::outputs[FIRST_OUTPUT].setVoltage(v, 0);
 

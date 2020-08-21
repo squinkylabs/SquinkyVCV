@@ -50,6 +50,7 @@ private:
     float_4 currentPulseWidth = 0.5f;
     float_4 nextPulseWidth = .5f;
     float_4 triIntegrator = {};
+    float_4 lastPitch = {-100};
 
     /**
     * Reference to shared lookup tables.
@@ -86,6 +87,13 @@ inline void BasicVCO::setPw(float_4 pw)
 
 inline void BasicVCO::setPitch(float_4 pitch, float sampleTime, float sampleRate)
 {
+    const int pitchChangeMask =  rack::simd::movemask(pitch != lastPitch);
+    if (!pitchChangeMask) {
+        // if no change, don't re-compute
+        return;
+    }
+
+    lastPitch = pitch;
     float_4 fmax(sampleRate * .45);
     float_4 fmin(.1f);
     
