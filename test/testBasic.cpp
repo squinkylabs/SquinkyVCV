@@ -63,12 +63,11 @@ static void testBasic3()
     printf("proc3b = %f\n", x);
 }
 
+// this test might be superfluous...
 void testBasic()
 {
     testBasic0();
     testBasic1();
     testBasic2();
     testBasic3();
-    printf("early exit from test basic\n");
-    exit(0);
 }

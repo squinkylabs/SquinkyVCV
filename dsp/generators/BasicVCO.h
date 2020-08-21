@@ -359,7 +359,10 @@ inline float_4 BasicVCO::processSin(float deltaTime)
     const float_4 deltaPhase = freq * deltaTime;
     phase += deltaPhase;
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
-    return 5 * sin2pi_pade_05_5_4(phase);
+  //  return 5 * sin2pi_pade_05_5_4(phase);
+
+    const static float twoPi = 2 * 3.141592653589793238;
+    return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
 }
 
 inline float_4 BasicVCO::processSinClean(float deltaTime)
