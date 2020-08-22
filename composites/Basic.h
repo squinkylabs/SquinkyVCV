@@ -28,11 +28,22 @@ public:
 
 
 /**
+ * flatten update pitch
+ *      1 sin   4.4
+ *      1 tri   3.8
+ *      1 sw    4.4
+ *      1 sq    4.8
+ * 
  * 8/21 : fix linker options, only update pitch when it changes:
- *      1 sin   4.7
- *      1 tri   4.0
- *      1 sw    4.8
- *      1 sq    5.3
+ * second column is n-16
+ * third is update pitch off
+ * fourth is update pwm off, pitch on
+ * so -pwm is not big
+ * fifth is normal, but don't call vco.setPitch
+ *      1 sin   4.7     4.1     4.5     4.7     4.5
+ *      1 tri   4.0     3.6     3.8     4.0     3.8
+ *      1 sw    4.8     4.3     4.4     4.9     4.4
+ *      1 sq    5.3     4.8     4.8     5.4     4.8
  * 
  * with n=4, and no pitch update, it's even faster than n = 16;
  * 8/20:  normal, then with n = 16, then normal with CV changes every sample. 
@@ -147,9 +158,11 @@ private:
     void stepn();
     void stepm();
 
+    void updatePwm();
+     __attribute__((flatten))
     void updatePitch();
     void updateBasePitch();
-    void updatePwm();
+    
     void updateBasePwm();
 };
 
@@ -228,14 +241,6 @@ inline void Basic<TBase>::updateBasePitch()
     auto rawTrim =  Basic<TBase>::params[FM_PARAM].value / 100;
     auto taperedTrim = LookupTable<float>::lookup(*bipolarAudioLookup, rawTrim);
     basePitchMod_m = taperedTrim; 
-  //  printf("basePitch = %f, mod = %f\n", basePitch_m, basePitchMod_m);
-
-        // they both seem to key off fm - no one watch voct?
-#if 0
-    printf("voct connected = %d, fm=%d\n", 
-        TBase::inputs[VOCT_INPUT].isConnected(),
-        TBase::inputs[FM_INPUT].isConnected());
-#endif
 }
 
 template <class TBase>
@@ -281,6 +286,7 @@ inline void Basic<TBase>::updatePitch()
         vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
     }
 }
+
 template <class TBase>
 inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
 {
