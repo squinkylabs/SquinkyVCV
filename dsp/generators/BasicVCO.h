@@ -30,15 +30,9 @@ public:
     void setPitch(float_4 f, float sampleTime, float sampleRate);
     void setPw(float_4);
 
-#ifdef _VCOJUMP
     using  processFunction = float_4 (BasicVCO::*)(float deltaTime);
     processFunction getProcPointer(Waveform);
-#else
-    void setWaveform(Waveform);
-    float_4 process(float deltaTime);
-private:
-    Waveform wf = Waveform::SIN;
-#endif
+
 private:
     using MinBlep = rack::dsp::MinBlepGenerator<16, 16, float_4>; 
     MinBlep minBlep;
@@ -50,7 +44,7 @@ private:
     float_4 currentPulseWidth = 0.5f;
     float_4 nextPulseWidth = .5f;
     float_4 triIntegrator = {};
-    float_4 lastPitch = {-100};
+  //  float_4 lastPitch = {-100};
 
     /**
     * Reference to shared lookup tables.
@@ -71,14 +65,6 @@ private:
 };
 
 
-#ifndef _VCOJUMP
-inline void BasicVCO::setWaveform(Waveform w)
-{
-    wf = w;
-}
-#endif
-
-
 inline void BasicVCO::setPw(float_4 pw) 
 {
     nextPulseWidth = pw;
@@ -87,31 +73,17 @@ inline void BasicVCO::setPw(float_4 pw)
 
 inline void BasicVCO::setPitch(float_4 pitch, float sampleTime, float sampleRate)
 {
-    const int pitchChangeMask =  rack::simd::movemask(pitch != lastPitch);
-    if (!pitchChangeMask) {
-        // if no change, don't re-compute
-        return;
-    }
-
-    lastPitch = pitch;
     float_4 fmax(sampleRate * .45);
     float_4 fmin(.1f);
     
-    // TODO: clamp / limit
-    //  float highPitchLimit = sampleRate * .47f;  
 	freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
     freq = rack::simd::clamp(freq, fmin, fmax);
-
-
-  //  printf("setPitch %s, %f\n", toStr(pitch).c_str(), sampleTime);
-  //  printf("freq = %s\n", toStr(freq).c_str());
 
     const float sawCorrect = -5.698;
     const float_4 normalizedFreq = float_4(sampleTime) * freq;
     sawOffsetDCComp = normalizedFreq * float_4(sawCorrect);
 }
 
-#ifdef _VCOJUMP
 inline  BasicVCO::processFunction BasicVCO::getProcPointer(Waveform wf)
 {
     auto ret = processSaw;
@@ -145,40 +117,6 @@ inline  BasicVCO::processFunction BasicVCO::getProcPointer(Waveform wf)
     } 
     return ret;
 }
-#else
-inline float_4 BasicVCO::process(float deltaTime)
-{
-    switch(wf) {
-        case Waveform::SIN:
-            return processSin(deltaTime);
-            break;
-        case Waveform::SAW:
-            return processSaw(deltaTime);
-            break;
-         case Waveform::SQUARE:
-            return processPulse(deltaTime);
-            break;
-        case Waveform::TRI:
-            return processTri(deltaTime);
-            break;
-        case Waveform::EVEN:
-            return processEven(deltaTime);
-            break;
-        case Waveform::SIN_CLEAN:
-            return processSinClean(deltaTime);
-            break;
-         case Waveform::TRI_CLEAN:
-            return processTriClean(deltaTime);
-            break;
-        case Waveform::END:
-        default:
-            return processEven(deltaTime);
-            assert(false);
-            break;  
-    } 
-    return processSaw(deltaTime);
-}
-#endif
 
 class MinMaxTester
 {

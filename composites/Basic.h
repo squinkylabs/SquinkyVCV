@@ -28,11 +28,19 @@ public:
 
 
 /**
- * flatten update pitch
+ * new mod dispatcher, moved pitch delta detect out of VCO
  *      1 sin   4.4
- *      1 tri   3.8
- *      1 sw    4.4
- *      1 sq    4.8
+ *      1 tri   3.1
+ *      1 sw    4.3
+ *      1 sq    5.2
+ * 
+ * new modulation dispatchers:
+ * second col is no actual vco pitch update
+ * third col is pitch change check moved into basic
+ *      1 sin   4.6     4.2     4.3
+ *      1 tri   3.4     3.0     3.1
+ *      1 sw    4.7     4.2     4.3
+ *      1 sq    5.5     4.9     5.0
  * 
  * 8/21 : fix linker options, only update pitch when it changes:
  * second column is n-16
@@ -142,6 +150,7 @@ public:
 
 private:
     BasicVCO vcos[4];
+    float_4 lastPitches[4] = {};
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 0;
     float basePitch_m = 0;
@@ -166,6 +175,7 @@ private:
     void _updatePwm();
      __attribute__((flatten))
     void _updatePitch();
+    void _updatePitchNoFM();
     void updateBasePitch();
     void updateBasePwm();
 };
@@ -209,14 +219,8 @@ inline void Basic<TBase>::stepm()
     numBanks_m = (numChannels_m / 4);
     numBanks_m +=((numChannels_m %4) == 0) ? 0 : 1;
 
-#ifdef _VCOJUMP
     auto wf = BasicVCO::Waveform((int)TBase::params[WAVEFORM_PARAM].value);
     pProcess = vcos[0].getProcPointer(wf);
-#else
-    for (int i=0; i<numBanks_m; ++i) {
-        vcos[i].setWaveform((BasicVCO::Waveform)(int)TBase::params[WAVEFORM_PARAM].value);
-    }
-#endif
     updateBasePitch();
     updateBasePwm();
 }
@@ -244,7 +248,13 @@ inline void Basic<TBase>::updateBasePwm()
 template <class TBase>
 inline void Basic<TBase>::updateBasePitch()
 {
-    updatePitchFunc = this->_updatePitch;
+    const bool connected = Basic<TBase>::inputs[FM_INPUT].isConnected();
+    if (connected) {
+        updatePitchFunc  =   this->_updatePitch;
+    } else {
+        updatePitchFunc  =   this->_updatePitchNoFM;
+    }
+
     basePitch_m = 
         Basic<TBase>::params[OCTAVE_PARAM].value +
         Basic<TBase>::params[SEMITONE_PARAM].value / 12.f +
@@ -265,18 +275,14 @@ inline void Basic<TBase>::stepn()
 template <class TBase>
 inline void Basic<TBase>::_updatePwm()
 {
+    // printf("udpate pwm\n"); fflush(stdout);
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[PWM_INPUT];
 
         const float_4 pwmSignal = p.getPolyVoltageSimd<float_4>(baseIndex) * .1;
         float_4 combinedPW = pwmSignal * basePwm_m + basePw_m;
-#if 0
-  if (bank == 0) {
-            printf("\ncombinedPW = %f basePWM_m = %f\n", combinedPW[0], basePwm_m);
-            printf("signal = %f basePw_m = %f\n", pwmSignal[0], basePw_m);
-        }
-#endif
+
         combinedPW = rack::simd::clamp(combinedPW, 0, 1);
         vcos[bank].setPw(combinedPW);
     }
@@ -285,6 +291,7 @@ inline void Basic<TBase>::_updatePwm()
 template <class TBase>
 inline void Basic<TBase>::_updatePitch()
 {
+  //   printf("udpate pitch\n"); fflush(stdout);
     const float sampleTime = TBase::engineGetSampleTime();
     const float sampleRate = TBase::engineGetSampleRate();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
@@ -295,7 +302,33 @@ inline void Basic<TBase>::_updatePitch()
         Port& pFM = TBase::inputs[FM_INPUT];
         const float_4 fmInput = pFM.getPolyVoltageSimd<float_4>(baseIndex) * basePitchMod_m;
         const float_4 totalCV = pitchCV + basePitch_m + fmInput;
-        vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
+
+        const int pitchChangeMask =  rack::simd::movemask(totalCV != lastPitches[bank]);
+        if (pitchChangeMask) {
+            vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
+            lastPitches[bank] = totalCV;
+        }
+    }
+}
+
+template <class TBase>
+inline void Basic<TBase>::_updatePitchNoFM()
+{
+    // printf("udpate pitch no FM\n"); fflush(stdout);
+    const float sampleTime = TBase::engineGetSampleTime();
+    const float sampleRate = TBase::engineGetSampleRate();
+    for (int bank = 0; bank < numBanks_m; ++ bank) {
+        const int baseIndex = bank * 4;
+        Port& pVoct = TBase::inputs[VOCT_INPUT];
+        const float_4 pitchCV = pVoct.getVoltageSimd<float_4>(baseIndex);
+
+        const float_4 totalCV = pitchCV + basePitch_m;
+        //
+        const int pitchChangeMask =  rack::simd::movemask(totalCV != lastPitches[bank]);
+        if (pitchChangeMask) {
+            vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
+            lastPitches[bank] = totalCV;
+        }
     }
 }
 
@@ -305,18 +338,11 @@ inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
     divn.step();
     divm.step();
 
-#ifdef _VCOJUMP
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         //  float_4 output = vcos[bank].process(args.sampleTime);
         float_4 output = ((&vcos[bank])->*pProcess)(args.sampleTime);
         Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
     }
-#else
-    for (int bank = 0; bank < numBanks_m; ++ bank) {
-        float_4 output = vcos[bank].process(args.sampleTime);
-        Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
-    }
-#endif
 }
 
 template <class TBase>
