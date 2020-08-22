@@ -157,12 +157,16 @@ private:
 
     void stepn();
     void stepm();
+    void nullFunc() {}
 
-    void updatePwm();
+    using  processFunction = void (Basic<TBase>::*)();
+    processFunction updatePwmFunc = nullFunc;
+    processFunction updatePitchFunc = nullFunc;
+
+    void _updatePwm();
      __attribute__((flatten))
-    void updatePitch();
+    void _updatePitch();
     void updateBasePitch();
-    
     void updateBasePwm();
 };
 
@@ -220,6 +224,13 @@ inline void Basic<TBase>::stepm()
 template <class TBase>
 inline void Basic<TBase>::updateBasePwm()
 {
+    auto wf = BasicVCO::Waveform((int)TBase::params[WAVEFORM_PARAM].value);
+    if (wf != BasicVCO::Waveform::SQUARE) {
+        updatePwmFunc= nullFunc;
+        return;
+    }
+    updatePwmFunc = _updatePwm;
+    
     // 0..1
     basePw_m = Basic<TBase>::params[PW_PARAM].value / 100.f;
 
@@ -233,6 +244,7 @@ inline void Basic<TBase>::updateBasePwm()
 template <class TBase>
 inline void Basic<TBase>::updateBasePitch()
 {
+    updatePitchFunc = this->_updatePitch;
     basePitch_m = 
         Basic<TBase>::params[OCTAVE_PARAM].value +
         Basic<TBase>::params[SEMITONE_PARAM].value / 12.f +
@@ -246,12 +258,12 @@ inline void Basic<TBase>::updateBasePitch()
 template <class TBase>
 inline void Basic<TBase>::stepn()
 {
-    updatePitch();
-    updatePwm();
+    (this->*updatePitchFunc)();
+    (this->*updatePwmFunc)();
 }
 
 template <class TBase>
-inline void Basic<TBase>::updatePwm()
+inline void Basic<TBase>::_updatePwm()
 {
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
@@ -271,7 +283,7 @@ inline void Basic<TBase>::updatePwm()
 }
 
 template <class TBase>
-inline void Basic<TBase>::updatePitch()
+inline void Basic<TBase>::_updatePitch()
 {
     const float sampleTime = TBase::engineGetSampleTime();
     const float sampleRate = TBase::engineGetSampleRate();
