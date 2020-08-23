@@ -150,7 +150,7 @@ public:
 
 private:
     BasicVCO vcos[4];
-    float_4 lastPitches[4] = {};
+    float_4 lastPitches[4] = {-100, -100, -100, -100};
     int numChannels_m = 1;      // 1..16
     int numBanks_m = 0;
     float basePitch_m = 0;
@@ -184,7 +184,6 @@ private:
 template <class TBase>
 inline std::string Basic<TBase>::getLabel(Waves wf)
 {
-   // printf("get label %d\n", wf);
     switch(wf) {
         case Waves::SIN: return "sin";
         case Waves::TRI: return "tri";
@@ -198,7 +197,6 @@ inline std::string Basic<TBase>::getLabel(Waves wf)
     }
 }
 
-
 template <class TBase>
 inline void Basic<TBase>::init()
 {
@@ -208,6 +206,9 @@ inline void Basic<TBase>::init()
     divm.setup(16, [this]() {
         this->stepm();
     });
+
+    simd_assertEQ(lastPitches[3], float_4(-100));
+    simd_assertEQ(lastPitches[0], float_4(-100));
 }
 
 template <class TBase>
@@ -244,7 +245,6 @@ inline void Basic<TBase>::updateBasePwm()
     basePwm_m = taperedTrim; 
 }
 
-
 template <class TBase>
 inline void Basic<TBase>::updateBasePitch()
 {
@@ -275,7 +275,6 @@ inline void Basic<TBase>::stepn()
 template <class TBase>
 inline void Basic<TBase>::_updatePwm()
 {
-    // printf("udpate pwm\n"); fflush(stdout);
     for (int bank = 0; bank < numBanks_m; ++ bank) {
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[PWM_INPUT];
@@ -291,7 +290,6 @@ inline void Basic<TBase>::_updatePwm()
 template <class TBase>
 inline void Basic<TBase>::_updatePitch()
 {
-  //   printf("udpate pitch\n"); fflush(stdout);
     const float sampleTime = TBase::engineGetSampleTime();
     const float sampleRate = TBase::engineGetSampleRate();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
@@ -314,7 +312,6 @@ inline void Basic<TBase>::_updatePitch()
 template <class TBase>
 inline void Basic<TBase>::_updatePitchNoFM()
 {
-    // printf("udpate pitch no FM\n"); fflush(stdout);
     const float sampleTime = TBase::engineGetSampleTime();
     const float sampleRate = TBase::engineGetSampleRate();
     for (int bank = 0; bank < numBanks_m; ++ bank) {
@@ -323,7 +320,6 @@ inline void Basic<TBase>::_updatePitchNoFM()
         const float_4 pitchCV = pVoct.getVoltageSimd<float_4>(baseIndex);
 
         const float_4 totalCV = pitchCV + basePitch_m;
-        //
         const int pitchChangeMask =  rack::simd::movemask(totalCV != lastPitches[bank]);
         if (pitchChangeMask) {
             vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
@@ -339,7 +335,6 @@ inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
     divm.step();
 
     for (int bank = 0; bank < numBanks_m; ++ bank) {
-        //  float_4 output = vcos[bank].process(args.sampleTime);
         float_4 output = ((&vcos[bank])->*pProcess)(args.sampleTime);
         Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
     }
