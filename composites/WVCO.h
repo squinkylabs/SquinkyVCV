@@ -172,6 +172,7 @@ public:
         ADSR_LFM_DEPTH_PARAM,
         SNAP_PARAM,
         SNAP2_PARAM,                // This is unused now
+        PATCH_VERSION_PARAM,        // just for backwards compatibility with patch loading
         NUM_PARAMS
     };
 
@@ -216,6 +217,9 @@ public:
     {
         return {"Sine", "Wave folder", "Triangle<>Saw"};
     }
+
+  //  bool doesPatchNeedUpdate() const;
+    float convertOldShapeGain(float old) const {return 0; }
 
 private:
     Divider divn;
@@ -580,8 +584,16 @@ inline void  __attribute__((flatten)) WVCO<TBase>::step()
     }
 }
 
+#if 0
 template <class TBase>
-int WVCODescription<TBase>::getNumParams()
+inline bool WVCO<TBase>::doesPatchNeedUpdate() const
+{
+    return WVCO<TBase>::params[PATCH_VERSION_PARAM].value < .5;
+}
+#endif
+
+template <class TBase>
+inline int WVCODescription<TBase>::getNumParams()
 {
     return WVCO<TBase>::NUM_PARAMS;
 }
@@ -647,6 +659,9 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             break;
         case WVCO<TBase>::SNAP2_PARAM:
             ret = {0, 1, 0, "ARSR Snap2"};
+            break;
+        case WVCO<TBase>::PATCH_VERSION_PARAM:
+            ret = {0, 10, 0, "patch version"};
             break;
         default:
             assert(false);

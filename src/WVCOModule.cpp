@@ -195,20 +195,17 @@ struct WVCOModule : Module
 public:
     WVCOModule();
     /**
-     *
      * Overrides of Module functions
      */
     void step() override;
     void onSampleRateChange() override;
+    void dataFromJson(json_t *root) override;
 
     std::shared_ptr<Comp> wvco;
+    void checkForFormatUpgrade();
 private:
 
 };
-
-void WVCOModule::onSampleRateChange()
-{
-}
 
 WVCOModule::WVCOModule()
 {
@@ -221,7 +218,45 @@ WVCOModule::WVCOModule()
     wvco->init();
 
     subsituteDiscreteParamQuantity(Comp::getWaveformNames(), *this, Comp::WAVE_SHAPE_PARAM);
+    checkForFormatUpgrade();
 }
+
+void WVCOModule::dataFromJson(json_t *root)
+{
+    // Call the base class, in case it does something necessary.
+    Module::dataFromJson(root);
+    checkForFormatUpgrade();
+}
+
+void WVCOModule::checkForFormatUpgrade()
+{
+    const bool needsUpdate = APP->engine->getParam(this, Comp::PATCH_VERSION_PARAM) < .5;
+    if (!needsUpdate) {
+        WARN("checkForFormatUpgrade not needed");
+        return;
+    }
+
+    const float waveformShapeF = APP->engine->getParam(this, Comp::WAVE_SHAPE_PARAM);
+    const WVCODsp::WaveForm wf = WVCODsp::WaveForm( int( std::round(waveformShapeF))); 
+    if (wf != WVCODsp::WaveForm::Fold) {
+        WARN("checkForFormatUpgrade not folder");
+        return;
+    }
+
+    const float shapeGain = APP->engine->getParam(this, Comp::WAVESHAPE_GAIN_PARAM);
+    const float newShapeGain = wvco->convertOldShapeGain(shapeGain);
+
+
+    
+    WARN("bgf need to finish kitchen sink updater");
+
+}
+
+void WVCOModule::onSampleRateChange()
+{
+}
+
+
 
 void WVCOModule::step()
 {
