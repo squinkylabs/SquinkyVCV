@@ -105,7 +105,7 @@ void BasicWidget::addJacks(BasicModule *module, std::shared_ptr<IComposite> icom
         Comp::VOCT_INPUT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, jackY + 3 * dy),
+        Vec(jackX, jackY + 3 * dy - .5),
         module,
         Comp::MAIN_OUTPUT));
 };
