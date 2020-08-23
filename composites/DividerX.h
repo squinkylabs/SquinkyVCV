@@ -21,6 +21,34 @@ public:
     int getNumParams() override;
 };
 
+
+
+class HalfBlep
+{
+public:
+    void insertDiscontinuity(float phase, float amp) {
+        minBlep.insertDiscontinuity(phase, amp);
+        recycle = false;
+    }
+    float process() {
+        float ret = 0;
+        if (recycle) {
+            ret = last;
+            last = 0;
+            recycle = false;
+        } else {
+            ret = minBlep.process();
+            last = ret;
+            recycle = true;
+        }
+        return ret;
+    }
+private:
+    dsp::MinBlepGenerator<16, 16, float> minBlep;
+    bool recycle;
+    float last;
+};
+
 template <class TBase>
 class DividerX : public TBase
 {
@@ -57,6 +85,7 @@ public:
     enum OutputIds
     {
         FIRST_OUTPUT,
+        DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -79,12 +108,20 @@ public:
 
 private:
     using T = float;
-  //  GateTrigger inputProcessing;
     T lastClockValue = 0;
     int counter = 0;
     bool state = false;
-
     dsp::MinBlepGenerator<16, 16, T> minBlep;
+  //  HalfBlep minBlep;
+
+    // debugging
+    float timeSinceLastCrossing=0;
+    float maxTime=-100;
+    float minTime=1000000;
+    int numCrossings=0;;
+    float totalTime=0;
+
+ 
 };
 
 
@@ -96,25 +133,56 @@ inline void DividerX<TBase>::init()
 template <class TBase>
 inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 {
-    T inputClock = TBase::inputs[MAIN_INPUT].getVoltage(0);
+    timeSinceLastCrossing += args.sampleTime;
+  
+
+    const T inputClock = TBase::inputs[MAIN_INPUT].getVoltage(0);
+
+    const T orig = lastClockValue;
 
     T deltaClock = inputClock - lastClockValue;
 	T clockCrossing = -lastClockValue / deltaClock;
+ //  clockCrossing *= .5;
     lastClockValue = inputClock;
 
     float waveForm =  state ? 1 : -1;
     bool newClock =  (0.f < clockCrossing) & (clockCrossing <= 1.f) & (inputClock >= 0.f);
     if (newClock) {
+       //   bool doBlep = false;
         float p = clockCrossing - 1.f;
+      //  p *= 2;
         float x = state ? 2 : -2;
     //    waveForm = x * .5;          // capture the value before we flip
-   // printf("p=%f x = %f\n", p, x);
-        minBlep.insertDiscontinuity(p, x);
+ //   printf("X: p=%f x = %f in=%f last=%f clockCrossing=%f\n", p, x, inputClock, orig, clockCrossing);
+        
+        
+        //minBlep.insertDiscontinuity(p, x);
         if (--counter < 0) {
             counter = 0;
+        //   counter = 3;
             state = !state;
             waveForm *= -1;
+          //  doBlep = true;
+            minBlep.insertDiscontinuity(p, x);
         }
+#if 0
+       
+     //    printf("time since last = %f x1000:%f\n", timeSinceLastCrossing, 1000 * timeSinceLastCrossing);
+        maxTime = std::max(maxTime, timeSinceLastCrossing);
+        minTime = std::min(maxTime, timeSinceLastCrossing);
+        ++numCrossings;
+        totalTime += timeSinceLastCrossing;
+        timeSinceLastCrossing = 0;
+
+       
+      //  if (true) {
+     //       printf("nc100=%d\n", )
+        if (((numCrossings %500) == 0) && (numCrossings != 0)) {
+            printf("%d crossings, max=%f min=%f, avg=%f\n", numCrossings, 1000*maxTime, 1000*minTime, 1000*totalTime / numCrossings);
+            printf("min/max diff in samples = %f\n", (maxTime - minTime) / args.sampleTime);
+            fflush(stdout);
+        }
+#endif
        
     }
 
@@ -122,10 +190,13 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 
   //  float v = state ?  1 : -1;
     float v = waveForm;
-    v -= minBlep.process();
-    v *= 5;
+    float blep = minBlep.process(); 
+    v -= blep;
+ 
 
     TBase::outputs[FIRST_OUTPUT].setVoltage(v, 0);
+
+    TBase::outputs[DEBUG_OUTPUT].setVoltage(blep, 0);
 
 #if 0
     if (inputPcValue / deltaSync;

@@ -152,7 +152,7 @@
 		{
 			"slug": "squinkylabs-ch10",
 			"name": "ch10",
-			"disabled": true,
+			"disabled": false,
 			"description": "ch10",
 			"tags": ["VCO"]
 		},
@@ -232,6 +232,7 @@
 			"slug": "squinkylabs-dividerx",
 			"name": "Divider",
 			"description": "x",
+			"disabled": true,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/basic/docs/dividerx.md",
 			"tags": ["Polyphonic"]
 		}

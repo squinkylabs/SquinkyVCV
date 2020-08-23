@@ -86,6 +86,10 @@ void DividerXWidget::addJacks(DividerXModule *module, std::shared_ptr<IComposite
         Vec(jackX, jackY + 1 * dy),
         module,
         Comp::FIRST_OUTPUT)); 
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX, jackY + 2 * dy),
+        module,
+        Comp::DEBUG_OUTPUT)); 
 }
 
 
