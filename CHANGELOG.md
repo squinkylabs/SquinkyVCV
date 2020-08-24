@@ -1,5 +1,14 @@
 # Change log for Squinky Labs modules
 
+## 1.0.12
+
+New module: Basic VCO
+
+Bug fixes:
+
+* Accidentally turned off some optimization for version 1.0.11 and 1.0.10. These are now on, making most modules use less CPU.
+* The wave-folder modulation index in Kitchen Sink has a bad taper, making it way too sensitive. Now audio taper fixes this and makes it sound better. Old patches with wavefolding will still load correctly.
+
 ## 1.0.11
 
 New module: Organ Three

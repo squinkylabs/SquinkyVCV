@@ -5,11 +5,11 @@ Basic VCO is yet another tinny VCO - in this case it's 3HP wide. Like most tinny
 * It has all the standard waveforms, plus the "Even" waveform.
 * It has almost no aliasing.
 * It has almost no DC on the output.
-* It uses less CPU than most other VCOS, sometimes dramatically less.
+* It uses less CPU than most other VCOs, sometimes dramatically less.
 * It has three pitch knobs to speed patching: octave, semitone, and fine.
 * It has full PWM implementation.
 * It has a dedicated exponential FM input for modulation.
-* Attenverters on FM and PWM inputs make modulation much easier.
+* Attenuverters on FM and PWM inputs make patching modulation much easier.
 
 We were actually surprised by how many features we were able to jam into this slim module.
 
