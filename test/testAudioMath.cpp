@@ -52,6 +52,18 @@ static void test3()
     assert(f(-1) < 1.5);
 }
 
+static void testInverseExp()
+{
+    const double d = .0001;
+    std::function<double(double)> f = AudioMath::makeFunc_InverseExp(0, 4, 2, 32);
+    assertClose(f(2), 0, d);
+    assertClose(f(32), 4, d);
+    assertClose(f(4), 1, d);
+    assertClose(f(8), 2, d);
+    assertClose(f(16), 3, d);
+    
+}
+
 static void testAudioTaper()
 {
     double db = -18;
@@ -61,6 +73,30 @@ static void testAudioTaper()
     assertClose(f(.251), .126, .001);
     assertClose(f(.249), 1.0 / 8.0, .001);
     assertClose(f(0), 0, .001);
+}
+
+
+
+static void testInverseAudioTaper(double db)
+{
+    std::function<double(double)> f = AudioMath::makeFunc_AudioTaper(db);
+    std::function<double(double)> fi = AudioMath::makeFunc_InverseAudioTaper(db);
+    std::function<void(double)> test = [f, fi](double d) {
+        double tap = f(d);
+        double inv = fi(tap);
+        assertClose(inv, d, .0001);
+
+    };
+
+ 
+    for (double d = 0; d <= 1; d += .01) {
+        test(d);
+    }
+}
+
+static void testInverseAudiTaper()
+{
+    testInverseAudioTaper(-18);
 }
 
 
@@ -325,7 +361,9 @@ void testAudioMath()
     test1();
     test2();
     test3();
+    testInverseExp();
     testAudioTaper();
+    testInverseAudiTaper();
     testScaler();
     testScaler2();
     testScaler3();

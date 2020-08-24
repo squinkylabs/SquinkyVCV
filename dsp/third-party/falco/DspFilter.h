@@ -1647,7 +1647,7 @@ namespace Dsp
 		{
 			CalcT &operator[](size_t index)
 			{
-				assert( index>=0 && index<n );
+				assert(index < n);
 				return m_a[index];
 			}
 		private:

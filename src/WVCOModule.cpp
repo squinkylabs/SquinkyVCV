@@ -187,7 +187,6 @@ private:
     }
 };
 
-
 /**
  */
 struct WVCOModule : Module
@@ -199,11 +198,12 @@ public:
      */
     void step() override;
     void onSampleRateChange() override;
-    void dataFromJson(json_t *root) override;
-
     std::shared_ptr<Comp> wvco;
-    void checkForFormatUpgrade();
+  
 private:
+    bool haveCheckedFormat = false;
+    void checkForFormatUpgrade();
+    void stampPatchAs2();
 
 };
 
@@ -218,56 +218,56 @@ WVCOModule::WVCOModule()
     wvco->init();
 
     subsituteDiscreteParamQuantity(Comp::getWaveformNames(), *this, Comp::WAVE_SHAPE_PARAM);
-    checkForFormatUpgrade();
 }
 
-void WVCOModule::dataFromJson(json_t *root)
+void WVCOModule::stampPatchAs2()
 {
-    // Call the base class, in case it does something necessary.
-    Module::dataFromJson(root);
-    checkForFormatUpgrade();
+    // WARN("marking patch as 2.0\n");
+    APP->engine->setParam(this, Comp::PATCH_VERSION_PARAM, 1); 
 }
 
 void WVCOModule::checkForFormatUpgrade()
 {
     const bool needsUpdate = APP->engine->getParam(this, Comp::PATCH_VERSION_PARAM) < .5;
     if (!needsUpdate) {
-        WARN("checkForFormatUpgrade not needed");
+        // WARN("checkForFormatUpgrade not needed");
         return;
     }
 
     const float waveformShapeF = APP->engine->getParam(this, Comp::WAVE_SHAPE_PARAM);
     const WVCODsp::WaveForm wf = WVCODsp::WaveForm( int( std::round(waveformShapeF))); 
     if (wf != WVCODsp::WaveForm::Fold) {
-        WARN("checkForFormatUpgrade not folder");
+        // WARN("checkForFormatUpgrade not folder wf=%d, folder=%d\n", wf, WVCODsp::WaveForm::Fold);
+        stampPatchAs2();
         return;
     }
 
     const float shapeGain = APP->engine->getParam(this, Comp::WAVESHAPE_GAIN_PARAM);
     const float newShapeGain = wvco->convertOldShapeGain(shapeGain);
+    // WARN("gain was %f, now %f", shapeGain, newShapeGain);
 
-
-    
-    WARN("bgf need to finish kitchen sink updater");
-
+    APP->engine->setParam(this, Comp::WAVESHAPE_GAIN_PARAM, newShapeGain);
+    stampPatchAs2();
+    // WARN("finished update");
 }
 
 void WVCOModule::onSampleRateChange()
 {
 }
 
-
-
 void WVCOModule::step()
 {
+    if (!haveCheckedFormat) {
+        // WARN("checking on first call to step\n");
+        checkForFormatUpgrade();
+        haveCheckedFormat = true;
+    }
     wvco->step();
 }
 
 ////////////////////
 // module widget
 ////////////////////
-
-
 
 struct WVCOWidget : ModuleWidget
 {

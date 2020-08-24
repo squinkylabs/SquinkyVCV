@@ -159,12 +159,12 @@ public:
         WAVESHAPE_GAIN_PARAM,
         WAVE_SHAPE_PARAM,
         FEEDBACK_PARAM,
-        OUTPUT_LEVEL_PARAM,
+        OUTPUT_LEVEL_PARAM,         // 8
 
         ATTACK_PARAM,
         DECAY_PARAM,
         SUSTAIN_PARAM,
-        RELEASE_PARAM,
+        RELEASE_PARAM,              // 12
 
         ADSR_SHAPE_PARAM,
         ADSR_FBCK_PARAM,
@@ -172,7 +172,7 @@ public:
         ADSR_LFM_DEPTH_PARAM,
         SNAP_PARAM,
         SNAP2_PARAM,                // This is unused now
-        PATCH_VERSION_PARAM,        // just for backwards compatibility with patch loading
+        PATCH_VERSION_PARAM,        // just for backwards compatibility with patch loading 19
         NUM_PARAMS
     };
 
@@ -218,8 +218,7 @@ public:
         return {"Sine", "Wave folder", "Triangle<>Saw"};
     }
 
-  //  bool doesPatchNeedUpdate() const;
-    float convertOldShapeGain(float old) const {return 0; }
+    float convertOldShapeGain(float old) const;
 
 private:
     Divider divn;
@@ -251,6 +250,8 @@ private:
     bool enableAdsrFeedback = false;
     bool enableAdsrFM = false;
     bool enableAdsrShape = false;
+
+    std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
 
     float_4 getOscFreq(int bank);
 
@@ -288,6 +289,22 @@ inline void WVCO<TBase>::init()
      divm.setup(16, [this]() {
         stepm();
     });
+}
+
+template <class TBase>
+inline float WVCO<TBase>::convertOldShapeGain(float old) const
+{
+    // float x = WVCO<TBase>::params[WAVE_SHAPE_PARAM].value;
+    std::function<double(double)> fi = AudioMath::makeFunc_InverseAudioTaper(-18);
+
+    // run the current value through the inverse function to get the new value.
+    // The new value, when turn through the audio taper, should yield the same value
+    // as would be generated in 1.0 version.
+
+    const float recoverdOldGain = old / 100;
+    const float newParamValue = fi(recoverdOldGain) * 100;
+
+    return newParamValue;
 }
 
 template <class TBase>
@@ -339,6 +356,13 @@ inline void WVCO<TBase>::stepm()
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
+#if 1
+    if (wf == WVCODsp::WaveForm::Fold) {
+     //   printf("lookup, shape gain was %f", baseShapeGain);
+        baseShapeGain = LookupTable<float>::lookup(*audioTaper, baseShapeGain, false);
+       // printf(" now %f\n", baseShapeGain); fflush(stdout);
+    }
+#endif
     const bool sync = TBase::inputs[SYNC_INPUT].isConnected();
 
 
