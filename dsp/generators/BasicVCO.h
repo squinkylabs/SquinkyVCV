@@ -89,6 +89,7 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime, float sampleRate
 inline  BasicVCO::processFunction BasicVCO::getProcPointer(Waveform wf)
 {
     BasicVCO::processFunction ret = &BasicVCO::processSaw;
+    ret = &BasicVCO::processSaw;
     switch(wf) {
         case Waveform::SIN:
             ret = &BasicVCO::processSin;
