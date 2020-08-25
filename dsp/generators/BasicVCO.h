@@ -1,6 +1,6 @@
 #pragma once
 
-#include "simd.h"
+
 #include "SimdBlocks.h"
 #include "engine/Port.hpp"
 #include "dsp/approx.hpp"
@@ -9,6 +9,7 @@
 #include "simd/functions.hpp"
 
 #include "ObjectCache.h"
+#include "simd.h"
 
 #define _VCOJUMP
 
@@ -52,7 +53,7 @@ private:
     */
     std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
 
-    float_4 processSaw(float deltaTime);
+    rack::simd::Vector<float, 4> processSaw(float deltaTime);
     float_4 processSin(float deltaTime);
     float_4 processPulse(float deltaTime);
     float_4 processTri(float deltaTime);
