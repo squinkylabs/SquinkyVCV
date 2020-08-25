@@ -55,12 +55,12 @@ private:
     std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
 
     rack::simd::Vector<float, 4> processSaw(float deltaTime);
-    float_4 processSin(float deltaTime);
-    float_4 processPulse(float deltaTime);
-    float_4 processTri(float deltaTime);
-    float_4 processEven(float deltaTime);
-    float_4 processSinClean(float deltaTime);
-    float_4 processTriClean(float deltaTime);
+    rack::simd::Vector<float, 4> processSin(float deltaTime);
+    rack::simd::Vector<float, 4> processPulse(float deltaTime);
+    rack::simd::Vector<float, 4> processTri(float deltaTime);
+    rack::simd::Vector<float, 4> processEven(float deltaTime);
+    rack::simd::Vector<float, 4> processSinClean(float deltaTime);
+    rack::simd::Vector<float, 4> processTriClean(float deltaTime);
 
     void doSquareLowToHighMinblep(float_4 samplePoint, float_4 crossingThreshold, float_4 deltaPhase);
     void doSquareHighToLowMinblep(float_4 samplePoint, float_4 crossingThreshold, float_4 deltaPhase);
