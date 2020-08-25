@@ -122,6 +122,8 @@ p->addModel(modelSubModule);
 #ifdef _SINES
 p->addModel(modelSinesModule);
 #endif
+p->addModel(modelBasicModule);
+p->addModel(modelDividerXModule);
 
 
 }

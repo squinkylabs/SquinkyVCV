@@ -7,6 +7,7 @@
 #include "Sines.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqTooltips.h"
 #include "ctrl/SqWidgets.h"
 
 using Comp = Sines<WidgetComposite>;
@@ -29,49 +30,14 @@ public:
 	}
 };
 
-class SQParamQuantity : public ParamQuantity {
+class PercSpeedParamQuantity : public SqTooltips::SQParamQuantity {
 public:
-    SQParamQuantity( const ParamQuantity& other) {
-        // I forget how this works. I think it copies the entire guts of the 
-        // old param quantity into us, so we don't need to. but we still keep
-        // our own vtable to override getDisplayValueString.
-        ParamQuantity* base = this;
-        *base = other;
-    }
-    std::string getDisplayValueString() override = 0;
-};
-
-class PercSpeedParamQuantity : public SQParamQuantity {
-public:
-    PercSpeedParamQuantity(const ParamQuantity& other) : SQParamQuantity(other) {}
+    PercSpeedParamQuantity(const ParamQuantity& other) : SqTooltips::SQParamQuantity(other) {}
     std::string getDisplayValueString() override {
         const bool fast = getValue() > .5f;
         return fast ? "fast" : "slow";
     }
 };
-
-
-class OnOffParamQuantity : public SQParamQuantity {
-public:
-    OnOffParamQuantity(const ParamQuantity& other) : SQParamQuantity(other) {}
-    std::string getDisplayValueString() override {
-        const bool b = getValue() > .5f;
-        return b ? "on" : "off";
-    }
-};
-
-/**
- * generic helper for substituting a custom ParamQuantity
- * for the default one.
- */
-template <typename T>
-static void changeParamQuantity(Module* module, int paramNumber) {
-    auto orig = module->paramQuantities[paramNumber];
-    auto p = new T(*orig);
-
-    delete orig;
-    module->paramQuantities[paramNumber] = p;
-}
 
 /**
  */
@@ -104,8 +70,8 @@ SinesModule::SinesModule()
 
     // put in custom tooltips.
     assert(this->paramQuantities.size() == Comp::NUM_PARAMS);
-    changeParamQuantity<PercSpeedParamQuantity>(this, Comp::DECAY_PARAM);
-    changeParamQuantity<OnOffParamQuantity>(this, Comp::KEYCLICK_PARAM);
+    SqTooltips::changeParamQuantity<PercSpeedParamQuantity>(this, Comp::DECAY_PARAM);
+    SqTooltips::changeParamQuantity<SqTooltips::OnOffParamQuantity>(this, Comp::KEYCLICK_PARAM);
 
     onSampleRateChange();
     printf("CALLING INIT\n"); fflush(stdout);

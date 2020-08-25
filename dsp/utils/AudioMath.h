@@ -64,6 +64,15 @@ public:
      */
     static std::function<double(double)> makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
 
+    /*
+     * Note that x, y are still defined in terms of the exponential, so
+     *  if inv = makeFunc_InverseExp(a, b, c, d);
+     *    fun =  makeFunc_InverseExp(a, b, c, d);
+     * then
+     *  inv(func(x)) == x;
+     */
+    static std::function<double(double)> makeFunc_InverseExp(double xMin, double xMax, double yMin, double yMax);
+
     /**
      * Returns a function for an "audio taper" attenuator gain.
      * function is pure exponential for x > .25, linear for x < .25
@@ -72,6 +81,7 @@ public:
      * At input 0, the output is zero.
      */
     static std::function<double(double)> makeFunc_AudioTaper(double dbAtten);
+    static std::function<double(double)> makeFunc_InverseAudioTaper(double dbAtten);
 
     /**
      * ScaleFun is a function the combines CV, knob, and trim into a voltage.

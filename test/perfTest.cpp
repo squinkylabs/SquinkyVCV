@@ -3,7 +3,9 @@
 #include <cmath>
 #include <limits>
 
+#include "TestComposite.h"
 #include "AudioMath.h"
+
 #include "BiquadParams.h"
 #include "BiquadFilter.h"
 #include "BiquadState.h"
@@ -31,6 +33,7 @@
 #include "WVCO.h"
 #include "Sub.h"
 #include "Sines.h"
+#include "Basic.h"
 #endif
 
 extern double overheadInOut;
@@ -120,10 +123,6 @@ static void test1()
         }, 1);
 }
 #endif
-
-
-
-
 
 template <typename T>
 static void testHilbert()
@@ -696,6 +695,94 @@ static void testWVCOPoly()
     }, 1);
 }
 
+static void testBasic(const std::string& name, Basic<TestComposite>::Waves waveform, bool dynamicCV)
+{
+    printf("starting %s\n", name.c_str()); fflush(stdout);
+    Basic<TestComposite> vco;
+
+    vco.init();
+    vco.inputs[Basic<TestComposite>::MAIN_OUTPUT].channels = 1;
+    vco.inputs[Basic<TestComposite>::VOCT_INPUT].channels = 1;
+    vco.params[Basic<TestComposite>::WAVEFORM_PARAM].value = float(waveform);
+
+
+    Basic<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+    bool toggle = true;
+
+    MeasureTime<float>::run(overheadOutOnly, name.c_str(), [&vco, args, &toggle, dynamicCV]() {
+        vco.process(args);
+        if (dynamicCV) {
+            toggle = !toggle;
+            float v = toggle ? 0 : 2.23;
+            vco.inputs[Basic<TestComposite>::VOCT_INPUT].setVoltage(v, 0);
+        }
+        return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+    printf("\n");  fflush(stdout);
+
+}
+
+static void testBasic1Tri()
+{
+   testBasic("basic tri 1", Basic<TestComposite>::Waves::TRI, false);
+}
+static void testBasic1TriDyn()
+{
+   testBasic("basic tri 1 dyn", Basic<TestComposite>::Waves::TRI, true);
+}
+static void testBasic1Sq()
+{
+   testBasic("basic sq 1", Basic<TestComposite>::Waves::SQUARE, false);
+}
+static void testBasic1SqDyn()
+{
+   testBasic("basic sq 1 dyn", Basic<TestComposite>::Waves::SQUARE, true);
+}
+
+static void testBasic1Sin()
+{
+    printf("starting basic sin 1\n"); fflush(stdout);
+    Basic<TestComposite> vco;
+
+    vco.init();
+    vco.inputs[Basic<TestComposite>::MAIN_OUTPUT].channels = 1;
+    vco.inputs[Basic<TestComposite>::VOCT_INPUT].channels = 1;
+    vco.params[Basic<TestComposite>::WAVEFORM_PARAM].value = float(Basic<TestComposite>::Waves::SIN);
+
+
+    Basic<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "basic 1 sin", [&vco, args]() {
+        vco.process(args);
+        return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
+static void testBasic1Saw()
+{
+    printf("starting basic saw 1\n"); fflush(stdout);
+    Basic<TestComposite> vco;
+
+    vco.init();
+    vco.inputs[Basic<TestComposite>::MAIN_OUTPUT].channels = 1;
+    vco.inputs[Basic<TestComposite>::VOCT_INPUT].channels = 1;
+    vco.params[Basic<TestComposite>::WAVEFORM_PARAM].value = float(Basic<TestComposite>::Waves::SAW);
+
+
+    Basic<TestComposite>::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadOutOnly, "basic 1 saw", [&vco, args]() {
+        vco.process(args);
+        return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           
+    }, 1);
+}
+
 static void testOrgan1()
 {
     printf("starting organ 1\n"); fflush(stdout);
@@ -1120,9 +1207,15 @@ void perfTest()
     testGMR();
 #endif
 #ifndef _MSC_VER
+    testBasic1Tri();
+    testBasic1TriDyn();
+    testBasic1Sin();
+    testBasic1Saw();
+    testBasic1Sq();
+    testBasic1SqDyn();
     testOrgan1();
     testOrgan4();
-     testOrgan4VCO();
+    testOrgan4VCO();
     testOrgan12();
     testSuper();
     testSuperPoly();

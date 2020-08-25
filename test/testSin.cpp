@@ -8,6 +8,8 @@
 
 #if 0
 const static int numSamples = 16 * 256 * 1024;
+
+
 //const static int numSamples = 256;
 const double sampleRate = 44100.0;
 const double sampleTime = 1.0 / sampleRate;
@@ -18,6 +20,7 @@ const double testFreq = 700;
 
 static void testOsc(const std::string& title, double freq, std::function<float(void)> osc)
 {
+    printf("starting: %s\n", title.c_str());
     FFTDataCpx spectrum(numSamples);
     Analyzer::getSpectrum(spectrum, false, osc);
 
@@ -63,7 +66,7 @@ static void testPhaseAcc2()
 {
     const double f = Analyzer::makeEvenPeriod(testFreq, sampleRate, numSamples);
 
-    std::string title = "phase acc std::sin";
+    std::string title = "phase acc2 std::sin";
 
     double acc = 0;
     testOsc(title, f, [f, &acc]() {
@@ -215,9 +218,9 @@ static void testOsc2Amp()
 
 void testSin()
 {
-   // testPhaseAcc<float>();
+    testPhaseAcc<float>();
   //  testPhaseAcc<double>();
-   testPhaseAcc2();
+  // testPhaseAcc2();
   // testOsc2();
    // testOsc3();
    // testOsc2Amp();

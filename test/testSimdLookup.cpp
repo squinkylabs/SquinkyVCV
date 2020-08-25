@@ -218,5 +218,5 @@ void testSimdLookup()
     compare();
     compare3();
   //  compare2();
-    compareSecond();
+ //   compareSecond();
 }

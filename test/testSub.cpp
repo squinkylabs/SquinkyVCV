@@ -290,13 +290,13 @@ static void testMixVco1Knob()
     assertEQ(sub.mixParams.params[1].vcoGain, 0);
     assertEQ(sub.mixParams.params[1].subAGain, 0);
     assertEQ(sub.mixParams.params[1].subBGain, 0);
-    assertEQ(sub.mixParams.params[0].vcoGain, 1);
+    assertEQ(sub.mixParams.params[0].vcoGain, 2);
 
     // knob should affect all the VCO1, all channels
-    assertEQ(sub.mixParams.params[2].vcoGain, 1);
+    assertEQ(sub.mixParams.params[2].vcoGain, 2);
     assertEQ(sub.mixParams.params[3].vcoGain, 0);
 
-    assertEQ(sub.mixParams.params[14].vcoGain, 1);
+    assertEQ(sub.mixParams.params[14].vcoGain, 2);
     assertEQ(sub.mixParams.params[15].vcoGain, 0);
 }
 
@@ -309,12 +309,12 @@ static void testMixVco2Knob()
     sub.inputs[Comp::VOCT_INPUT].channels = 8;  // this test requires poly
     stepn(sub);
     assertEQ(sub.mixParams.params[0].vcoGain, 0);
-    assertEQ(sub.mixParams.params[1].vcoGain, 1);
+    assertEQ(sub.mixParams.params[1].vcoGain, 2);
 
     // knob should affect all the VCO1, all channels
-    assertEQ(sub.mixParams.params[3].vcoGain, 1);
+    assertEQ(sub.mixParams.params[3].vcoGain, 2);
     assertEQ(sub.mixParams.params[4].vcoGain, 0);
-    assertEQ(sub.mixParams.params[15].vcoGain, 1);
+    assertEQ(sub.mixParams.params[15].vcoGain, 2);
     assertEQ(sub.mixParams.params[14].vcoGain, 0);
 }
 
@@ -326,14 +326,14 @@ static void testMixVcoSub1AKnob()
     sub.params[Comp::SUB1A_LEVEL_PARAM].value = 100;
     sub.inputs[Comp::VOCT_INPUT].channels = 8;  // this test requires poly
     stepn(sub);
-    assertEQ(sub.mixParams.params[0].subAGain, 1);
+    assertEQ(sub.mixParams.params[0].subAGain, 2);
     assertEQ(sub.mixParams.params[1].subAGain, 0);
 
     // knob should affect all the VCO1, all channels
     assertEQ(sub.mixParams.params[3].subAGain, 0);
-    assertEQ(sub.mixParams.params[4].subAGain, 1);
+    assertEQ(sub.mixParams.params[4].subAGain, 2);
     assertEQ(sub.mixParams.params[15].subAGain, 0);
-    assertEQ(sub.mixParams.params[14].subAGain, 1);
+    assertEQ(sub.mixParams.params[14].subAGain, 2);
 }
 
 static void testMixCVvco1()
@@ -348,7 +348,7 @@ static void testMixCVvco1()
     sub.inputs[Comp::MAIN1_LEVEL_INPUT].setChannels(8);
     assert(sub.inputs[Comp::MAIN1_LEVEL_INPUT].isConnected());
     stepn(sub);
-    assertEQ(sub.mixParams.params[0].vcoGain, 1);
+    assertEQ(sub.mixParams.params[0].vcoGain, 2);
     assertEQ(sub.mixParams.params[1].vcoGain, 0);
 
     // CV not all channels
@@ -371,7 +371,7 @@ static void testMixCVvco2()
     assert(sub.inputs[Comp::MAIN2_LEVEL_INPUT].isConnected());
     stepn(sub);
     assertEQ(sub.mixParams.params[0].vcoGain, 0);
-    assertEQ(sub.mixParams.params[1].vcoGain, 1);
+    assertEQ(sub.mixParams.params[1].vcoGain, 2);
 
     // CV not all channels
     assertEQ(sub.mixParams.params[2].vcoGain, 0);
@@ -405,39 +405,35 @@ static void testNormalize1()
     Comp::normalizeVolume(a, b, c, d, e, f);
     assertEQ(a, 0);
     assertEQ(b, 0);
-    assertEQ(c, 2.5);         // 5 is the nominal gain
+    assertEQ(c, 2); 
 
     a = .25;
     b = .25;
     c = 0;
     Comp::normalizeVolume(a, b, c, d, e, f);
-    assertEQ(a, 1.25);
-    assertEQ(b, 1.25);
-    assertEQ(c, 0);         // 5 is the nominal gain
+    assertEQ(a, 1.0);
+    assertEQ(b, 1.0);
+    assertEQ(c, 0);
 
     a = .1;
     b = 0;
     c = 0;
     Comp::normalizeVolume(a, b, c, d, e, f);
-    assertEQ(a, .5);
+    assertClose(a, .4, .001);
     assertEQ(b, 0);
-    assertEQ(c, 0);         // 5 is the nominal gain
+    assertEQ(c, 0);    
 
     a = 1;
     b = 1;
     c = 1;
     Comp::normalizeVolume(a, b, c, d, e, f);
-    assertEQ(a, 5.f / 3.f);
-    assertEQ(b, 5.f / 3.f);
-    assertEQ(c, 5.f / 3.f);         // 5 is the nominal gain
-
+    assertEQ(a, 4.f / 3.f);
+    assertEQ(b, 4.f / 3.f);
+    assertEQ(c, 4.f / 3.f);
 }
 
 void testSub()
 {
-    printf("\n\n ------ CV test ----\n"); fflush(stdout);
-  
-  //  experiment();
     testChannels();
     testSub1();
     testSub2();

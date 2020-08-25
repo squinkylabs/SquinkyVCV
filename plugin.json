@@ -152,7 +152,7 @@
 		{
 			"slug": "squinkylabs-ch10",
 			"name": "ch10",
-			"disabled": true,
+			"disabled": false,
 			"description": "ch10",
 			"tags": ["VCO"]
 		},
@@ -220,6 +220,21 @@
 			"description": "Hammond organ emulator",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/ck-1/docs/sines.md",
 			"tags": ["VCO", "Polyphonic", "Hardware", "Synth voice"]
+		},
+		{
+			"slug": "squinkylabs-basic",
+			"name": "Basic VCO",
+			"description": "Precision VCO",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/basic/docs/basic.md",
+			"tags": ["VCO", "Polyphonic"]
+		},
+		{
+			"slug": "squinkylabs-dividerx",
+			"name": "Divider",
+			"description": "x",
+			"disabled": true,
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/basic/docs/dividerx.md",
+			"tags": ["Polyphonic"]
 		}
 	]
 }

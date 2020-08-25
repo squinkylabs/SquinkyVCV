@@ -26,6 +26,7 @@
 #include "daveguide.h"
 #ifndef _MSC_VER
 #include "WVCO.h"
+#include "Basic.h"
 #endif
 #include "Sub.h"
 
@@ -90,6 +91,7 @@ void testIComposite()
 #ifndef _MSC_VER
     test<WVCO<TestComposite>>();
     test<Sub<TestComposite>>();
+    test<Basic<TestComposite>>();
 #endif
 
 }

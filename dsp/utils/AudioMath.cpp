@@ -21,19 +21,39 @@ std::function<double(double)> AudioMath::makeFunc_Sin()
     };
 }
 
+static std::pair<double, double> getExpFuncConstants(double xMin, double xMax, double yMin, double yMax) {
+    const double a = (std::log(yMax) - std::log(yMin)) / (xMax - xMin);
+    const double b = std::log(yMin) - a * xMin;
+    return std::make_pair(a, b);
+}
+
 std::function<double(double)> AudioMath::makeFunc_Exp(double xMin, double xMax, double yMin, double yMax)
 {
-    const double a = (std::log(yMax) - log(yMin)) / (xMax - xMin);
-    const double b = log(yMin) - a * xMin;
+    auto ab = getExpFuncConstants(xMin, xMax, yMin, yMax);
+    const double a = ab.first;
+    const double b = ab.second;
     return [a, b](double d) {
-        return std::exp(a * d + b);
+        const double result = std::exp(a * d + b);
+        return result;
     };
 }
+
+std::function<double(double)> AudioMath::makeFunc_InverseExp(double xMin, double xMax, double yMin, double yMax)
+{
+    printf("make inverse exp(%f, %f, %f, %f)\n", xMin, xMax, yMin, yMax);
+    auto ab = getExpFuncConstants(xMin, xMax, yMin, yMax);
+    const double a = ab.first;
+    const double b = ab.second;
+    return [a, b](double d) {
+        const double result = (std::log(d) - b) / a;
+        return result;
+    };
+}
+
 
 std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
 {
     assert(dbAtten < 0);
-
     const double gainAtQuarter = gainFromDb(dbAtten);
     std::function<double(double)> linearFunc;
     std::function<double(double)> expFunc;
@@ -62,6 +82,39 @@ std::function<double(double)> AudioMath::makeFunc_AudioTaper(double dbAtten)
 
     return [linearFunc, expFunc](double d) {
         return (d <= .25) ? linearFunc(d) : expFunc(d);
+    };
+}
+
+std::function<double(double)> AudioMath::makeFunc_InverseAudioTaper(double dbAtten)
+{
+     assert(dbAtten < 0);
+    const double gainAtQuarter = gainFromDb(dbAtten);
+
+    std::function<double(double)> linearInvFunc;
+    std::function<double(double)> expInvFunc;
+
+    {
+        const double x0 = 0;
+        const double x1 = gainAtQuarter;
+        const double y0 = 0;
+        const double y1 = .25;
+        const double a = (y1 - y0) / (x1 - x0);
+        const double b = y0 - a * x0;
+        linearInvFunc = [a, b](double d) {
+            return a * d + b;
+        };
+    }
+    
+    {
+        const double xMin = .25;
+        const double yMin = gainAtQuarter;
+        const double xMax = 1;
+        const double yMax = 1;
+        expInvFunc = makeFunc_InverseExp(xMin, xMax, yMin, yMax);
+    }
+
+    return [gainAtQuarter, linearInvFunc, expInvFunc](double y) {
+       return (y < gainAtQuarter) ? linearInvFunc(y) : expInvFunc(y);
     };
 }
 

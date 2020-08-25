@@ -29,6 +29,7 @@ perf.exe : PERFFLAG = -D _PERF
 perf.exe : FLAGS += $(ASSERTOFF)
 
 FLAGS += $(PERFFLAG)
+FLAGS += -flto
 
 test.exe : FLAGS += -D _TESTEX
 
@@ -37,6 +38,7 @@ ifeq ($(ARCH), win)
 	#  -lcomdlg32 -lole32 -ldsound -lwinmm
 test.exe perf.exe : LDFLAGS = -static \
 		-mwindows \
+		-flto \
 		-lpthread -lopengl32 -lgdi32 -lws2_32
 endif
 

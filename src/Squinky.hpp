@@ -20,7 +20,7 @@
 #define _SLEW
 #define _MIX8
 #define _FILT
-//#define _CH10
+#define _CH10
 //#define _LFNB
 #define _MIX_STEREO
 #define _USERKB
@@ -132,5 +132,7 @@ extern Model *modelSubModule;
 #ifdef _SINES
 extern Model *modelSinesModule;
 #endif
+extern Model *modelBasicModule;
+extern Model *modelDividerXModule;
 
 
