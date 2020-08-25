@@ -230,10 +230,10 @@ inline void Basic<TBase>::updateBasePwm()
 {
     auto wf = BasicVCO::Waveform((int)TBase::params[WAVEFORM_PARAM].value);
     if (wf != BasicVCO::Waveform::SQUARE) {
-        updatePwmFunc= nullFunc;
+        updatePwmFunc= &Basic<TBase>::nullFunc;
         return;
     }
-    updatePwmFunc = _updatePwm;
+    updatePwmFunc = &Basic<TBase>::_updatePwm;
     
     // 0..1
     basePw_m = Basic<TBase>::params[PW_PARAM].value / 100.f;
@@ -252,7 +252,7 @@ inline void Basic<TBase>::updateBasePitch()
       //  updatePitchFunc  =   this->_updatePitch;
       updatePitchFunc = &Basic<TBase>::_updatePitch;
     } else {
-        updatePitchFunc  =   this->_updatePitchNoFM;
+        updatePitchFunc  =   &Basic<TBase>::_updatePitchNoFM;
     }
 
     basePitch_m = 
