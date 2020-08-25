@@ -168,8 +168,8 @@ private:
     void nullFunc() {}
 
     using  processFunction = void (Basic<TBase>::*)();
-    processFunction updatePwmFunc = nullFunc;
-    processFunction updatePitchFunc = nullFunc;
+    processFunction updatePwmFunc = &Basic<TBase>::nullFunc;
+    processFunction updatePitchFunc = &Basic<TBase>::nullFunc;
 
     void _updatePwm();
      __attribute__((flatten))
