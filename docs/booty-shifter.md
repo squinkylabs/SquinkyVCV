@@ -10,6 +10,8 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Intro 1 image](./intro-1-110.png)
 
+[Basic VCO](./basic.md) is a tinny polyphonic VCO that is super clean and uses very little CPU.
+
 [Organ Three](./og.md) is a polyphonic "Organ" module based on the Hammond tone-wheel organs.
 
 [Kitchen Sink](./kitchen-sink.md) is a one operator FM module with the additions on a waves-shaper on the output, and a hard sync input.
