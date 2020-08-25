@@ -54,7 +54,7 @@ private:
     */
     std::shared_ptr<LookupTableParams<float>> sinLookup = {ObjectCache<float>::getSinLookup()};
 
-    rack::simd::Vector<float, 4> processSaw(float deltaTime);
+    float_4 processSaw(float deltaTime);
     rack::simd::Vector<float, 4> processSin(float deltaTime);
     rack::simd::Vector<float, 4> processPulse(float deltaTime);
     rack::simd::Vector<float, 4> processTri(float deltaTime);
