@@ -1,6 +1,6 @@
 #pragma once
 
-#include "simd.h"
+
 #include "SimdBlocks.h"
 #include "engine/Port.hpp"
 #include "dsp/approx.hpp"
@@ -9,6 +9,7 @@
 #include "simd/functions.hpp"
 
 #include "ObjectCache.h"
+#include "simd.h"
 
 #define _VCOJUMP
 
@@ -30,6 +31,7 @@ public:
     void setPitch(float_4 f, float sampleTime, float sampleRate);
     void setPw(float_4);
 
+  //  using  processFunction = float_4 (BasicVCO:: *)(float deltaTime);
     using  processFunction = float_4 (BasicVCO::*)(float deltaTime);
     processFunction getProcPointer(Waveform);
 
@@ -86,32 +88,32 @@ inline void BasicVCO::setPitch(float_4 pitch, float sampleTime, float sampleRate
 
 inline  BasicVCO::processFunction BasicVCO::getProcPointer(Waveform wf)
 {
-    auto ret = processSaw;
+    BasicVCO::processFunction ret = &BasicVCO::processSaw;
     switch(wf) {
         case Waveform::SIN:
-            ret = processSin;
+            ret = &BasicVCO::processSin;
             break;
         case Waveform::SAW:
-            ret = processSaw;
+            ret = &BasicVCO::processSaw;
             break;
          case Waveform::SQUARE:
-            ret = processPulse;
+            ret = &BasicVCO::processPulse;
             break;
         case Waveform::TRI:
-            ret = processTri;
+            ret = &BasicVCO::processTri;
             break;
         case Waveform::EVEN:
-            ret = processEven;
+            ret = &BasicVCO::processEven;
             break;
         case Waveform::SIN_CLEAN:
-            ret = processSinClean;
+            ret = &BasicVCO::processSinClean;
             break;
          case Waveform::TRI_CLEAN:
-            ret =  processTriClean;
+            ret =  &BasicVCO::processTriClean;
             break;
         case Waveform::END:
         default:
-            ret = processEven;
+            ret = &BasicVCO::processEven;
             assert(false);
             break;  
     } 

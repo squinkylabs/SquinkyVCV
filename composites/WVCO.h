@@ -251,8 +251,6 @@ private:
     bool enableAdsrFM = false;
     bool enableAdsrShape = false;
 
-    std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
-
     float_4 getOscFreq(int bank);
 
     /**
@@ -294,7 +292,6 @@ inline void WVCO<TBase>::init()
 template <class TBase>
 inline float WVCO<TBase>::convertOldShapeGain(float old) const
 {
-    // float x = WVCO<TBase>::params[WAVE_SHAPE_PARAM].value;
     std::function<double(double)> fi = AudioMath::makeFunc_InverseAudioTaper(-18);
 
     // run the current value through the inverse function to get the new value.
@@ -356,13 +353,13 @@ inline void WVCO<TBase>::stepm()
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
-#if 1
+
+    // we want an nice taper for the wave folding depth.
+    // regular linear taper is good for the tri<>saw morph.
     if (wf == WVCODsp::WaveForm::Fold) {
-     //   printf("lookup, shape gain was %f", baseShapeGain);
-        baseShapeGain = LookupTable<float>::lookup(*audioTaper, baseShapeGain, false);
-       // printf(" now %f\n", baseShapeGain); fflush(stdout);
+        baseShapeGain = LookupTable<float>::lookup(*audioTaperLookupParams, baseShapeGain, false);
     }
-#endif
+
     const bool sync = TBase::inputs[SYNC_INPUT].isConnected();
 
 
@@ -442,7 +439,7 @@ inline void WVCO<TBase>::updateFreq_n()
         for (int i=0; i<4; ++i) { 
              freq[i] = expLookup(pitch[i]);      
         }       
-     //   float _freq = expLookup(pitch);
+
         freq *= freqMultiplier_m;
         float_4 time = rack::simd::clamp(freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
         freq = time;
@@ -607,14 +604,6 @@ inline void  __attribute__((flatten)) WVCO<TBase>::step()
         }
     }
 }
-
-#if 0
-template <class TBase>
-inline bool WVCO<TBase>::doesPatchNeedUpdate() const
-{
-    return WVCO<TBase>::params[PATCH_VERSION_PARAM].value < .5;
-}
-#endif
 
 template <class TBase>
 inline int WVCODescription<TBase>::getNumParams()
