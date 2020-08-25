@@ -249,7 +249,8 @@ inline void Basic<TBase>::updateBasePitch()
 {
     const bool connected = Basic<TBase>::inputs[FM_INPUT].isConnected();
     if (connected) {
-        updatePitchFunc  =   this->_updatePitch;
+      //  updatePitchFunc  =   this->_updatePitch;
+      updatePitchFunc = &Basic<TBase>::_updatePitch;
     } else {
         updatePitchFunc  =   this->_updatePitchNoFM;
     }
