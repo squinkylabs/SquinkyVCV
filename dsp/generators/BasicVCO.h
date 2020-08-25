@@ -31,6 +31,7 @@ public:
     void setPitch(float_4 f, float sampleTime, float sampleRate);
     void setPw(float_4);
 
+  //  using  processFunction = float_4 (BasicVCO:: *)(float deltaTime);
     using  processFunction = float_4 (BasicVCO::*)(float deltaTime);
     processFunction getProcPointer(Waveform);
 
