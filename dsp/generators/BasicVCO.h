@@ -91,29 +91,29 @@ inline  BasicVCO::processFunction BasicVCO::getProcPointer(Waveform wf)
     BasicVCO::processFunction ret = &BasicVCO::processSaw;
     switch(wf) {
         case Waveform::SIN:
-            ret = processSin;
+            ret = &BasicVCO::processSin;
             break;
         case Waveform::SAW:
-            ret = processSaw;
+            ret = &BasicVCO::processSaw;
             break;
          case Waveform::SQUARE:
-            ret = processPulse;
+            ret = &BasicVCO::processPulse;
             break;
         case Waveform::TRI:
-            ret = processTri;
+            ret = &BasicVCO::processTri;
             break;
         case Waveform::EVEN:
-            ret = processEven;
+            ret = &BasicVCO::processEven;
             break;
         case Waveform::SIN_CLEAN:
-            ret = processSinClean;
+            ret = &BasicVCO::processSinClean;
             break;
          case Waveform::TRI_CLEAN:
-            ret =  processTriClean;
+            ret =  &BasicVCO::processTriClean;
             break;
         case Waveform::END:
         default:
-            ret = processEven;
+            ret = &BasicVCO::processEven;
             assert(false);
             break;  
     } 
