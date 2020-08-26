@@ -8,7 +8,7 @@
 	"sourceUrl": "https://github.com/squinkylabs/SquinkyVCV",
 	"manualUrl":  "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md",
 	"changelogUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/CHANGELOG.md",
-	"version": "1.0.11",
+	"version": "1.0.12",
 	"modules":
 	[
 		{
@@ -152,7 +152,7 @@
 		{
 			"slug": "squinkylabs-ch10",
 			"name": "ch10",
-			"disabled": false,
+			"disabled": true,
 			"description": "ch10",
 			"tags": ["VCO"]
 		},
