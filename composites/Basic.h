@@ -184,12 +184,12 @@ template <class TBase>
 inline std::string Basic<TBase>::getLabel(Waves wf)
 {
     switch(wf) {
-        case Waves::SIN: return "sin";
+        case Waves::SIN: return "sine";
         case Waves::TRI: return "tri";
         case Waves::SAW: return "saw";
         case Waves::SQUARE: return "square";
         case Waves::EVEN: return "even";
-        case Waves::SIN_CLEAN: return "sin clean";
+        case Waves::SIN_CLEAN: return "sine clean";
         case Waves::TRI_CLEAN: return "tri clean";
         case Waves::END:
         default:  assert(false); return "unk";
