@@ -219,7 +219,7 @@ inline void Basic<TBase>::stepm()
     numBanks_m = (numChannels_m / 4);
     numBanks_m +=((numChannels_m %4) == 0) ? 0 : 1;
 
-    auto wf = BasicVCO::Waveform((int)TBase::params[WAVEFORM_PARAM].value);
+    auto wf = BasicVCO::Waveform((int) std::round(TBase::params[WAVEFORM_PARAM].value));
     pProcess = vcos[0].getProcPointer(wf);
     updateBasePitch();
     updateBasePwm();
