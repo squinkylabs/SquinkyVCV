@@ -139,9 +139,15 @@ inline void StateVariableFilterParams<T>::setNormalizedBandwidth(T bw)
     qGain = bw;
 }
 
+
 template <typename T>
 inline void StateVariableFilterParams<T>::setFreq(T fc)
 {
+    // .3 is stable, .32 not
+    const float mx = .3;
+    if (fc > mx) {
+        fc = mx;
+    }
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
     fcGain = T(AudioMath::Pi) * T(2) * fc;

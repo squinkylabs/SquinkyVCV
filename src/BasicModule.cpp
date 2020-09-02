@@ -67,7 +67,7 @@ void BasicModule::process(const ProcessArgs& args)
 struct BasicWidget : ModuleWidget
 {
     BasicWidget(BasicModule *);
-    DECLARE_MANUAL("Basic VCO Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/basic/docs/basic.md");
+    DECLARE_MANUAL("Basic VCO Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/basic.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

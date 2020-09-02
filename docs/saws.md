@@ -73,7 +73,7 @@ The implementation of polyphony is fairly conventional. The number of channels c
 
 ## Additional information
 
-Szabo's thesis, which we used to make Saws, can be found [here](https://www.nada.kth.se/utbildning/grukth/exjobb/rapportlistor/2010/rapporter10/szabo_adam_10131.pdf).
+Szabo's thesis, which we used to make Saws, has been moving around in the Internet, but last time we looked we found it [here](https://pdfs.semanticscholar.org/1852/250068e864215dd7f12755cf00636868a251.pdf)
 
 The [WikiPedia article on the JP-8000](https://en.wikipedia.org/wiki/Roland_JP-8000) is informative.
 

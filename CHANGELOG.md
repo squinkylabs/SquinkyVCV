@@ -1,5 +1,13 @@
 # Change log for Squinky Labs modules
 
+## 1.0.13
+
+Bug fix: sometimes the tooltip for Basic VCO waveform disagrees with the actual waveform.
+
+Bug fixes: Both Formants and Growler can go into outer space if you set the Fc all the way up.
+
+Bug fix: the link to the 4X4 manual from the context menu is a dead link.
+
 ## 1.0.12
 
 New module: Basic VCO
