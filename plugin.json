@@ -229,6 +229,13 @@
 			"tags": ["VCO", "Polyphonic"]
 		},
 		{
+			"slug": "squinkylabs-f2",
+			"name": "F2",
+			"description": "F2",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md",
+			"tags": ["VCF", "Polyphonic"]
+		},
+		{
 			"slug": "squinkylabs-dividerx",
 			"name": "Divider",
 			"description": "x",

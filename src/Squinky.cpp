@@ -125,6 +125,10 @@ p->addModel(modelSinesModule);
 p->addModel(modelBasicModule);
 p->addModel(modelDividerXModule);
 
+#ifdef _F2
+p->addModel(modelF2Module);
+#endif
+
 
 }
 
