@@ -7,6 +7,7 @@
 #include "F2.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqWidgets.h"
 
 using Comp = F2<WidgetComposite>;
 
@@ -66,6 +67,48 @@ struct F2Widget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addJacks(F2Module *module, std::shared_ptr<IComposite> icomp);
+    void addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp);
+};
+
+void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
+{
+    const float knobX = 12;
+    const float knobY = 21;
+    const float dy = 39;
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(knobX, knobY + 3 * dy),
+        module,  Comp::TOPOLOGY_PARAM));
+}
+
+void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
+{
+    const float jackX = 14;
+    const float jackY = 249;
+    const float dy = 30;
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 0 * dy),
+        module,
+        Comp::AUDIO_INPUT));
+#if 0
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 1 * dy),
+        module,
+        Comp::FM_INPUT)); 
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 2 * dy),
+        module,
+        Comp::VOCT_INPUT));
+    #endif
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX, jackY + 3 * dy - .5),
+        module,
+        Comp::AUDIO_OUTPUT));
 };
 
 
@@ -79,6 +122,10 @@ F2Widget::F2Widget(F2Module *module)
 {
     setModule(module);
     SqHelper::setPanel(this, "res/f2-panel.svg");
+
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    addJacks(module, icomp);
+    addKnobs(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

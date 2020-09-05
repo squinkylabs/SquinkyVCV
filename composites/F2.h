@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
+#include "StateVariableFilter.h"
 
 namespace rack {
     namespace engine {
@@ -43,17 +44,19 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        TOPOLOGY_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds
     {
+        AUDIO_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -77,6 +80,13 @@ public:
 
 private:
 
+    using T = float;
+    StateVariableFilterParams<T> params1;
+    StateVariableFilterParams<T> params2;
+
+    StateVariableFilterState<T> state1;
+    StateVariableFilterState<T> state2;
+
 };
 
 
@@ -88,6 +98,59 @@ inline void F2<TBase>::init()
 template <class TBase>
 inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    float fc = 500 * args.sampleTime;
+
+    params1.setQ(4);
+    params2.setQ(4);
+
+    params1.setFreq(fc);
+    params2.setFreq(fc * 4);
+
+    params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
+    params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
+
+    const float input =  F2<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
+
+    const int topology = int( std::round(F2<TBase>::params[TOPOLOGY_PARAM].value));
+    float output = 0;
+    switch(topology) {
+        case 0:
+            {
+                // series
+                const float temp = StateVariableFilter<T>::run(input, state1, params1);
+                output = StateVariableFilter<T>::run(temp, state2, params2);
+            }
+            break;
+        case 1:
+            {
+                // parallel add
+                const float temp1 = StateVariableFilter<T>::run(input, state1, params1);
+                const float temp2 = StateVariableFilter<T>::run(input, state2, params2);
+                output = temp1 + temp2;
+            }
+            break;
+        case 2:
+            {
+                // parallel subtract
+                const float temp1 = StateVariableFilter<T>::run(input, state1, params1);
+                const float temp2 = StateVariableFilter<T>::run(input, state2, params2);
+                output = temp1 - temp2;
+            }
+            break;
+        case 3:
+            {
+                // just one
+                output = StateVariableFilter<T>::run(input, state1, params1);
+            }
+            break;
+        default: 
+            assert(false);
+
+    }
+  //  const float output = StateVariableFilter<T>::run(input, state1, params1);
+
+    F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
+
 }
 
 template <class TBase>
@@ -101,8 +164,8 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case F2<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case F2<TBase>::TOPOLOGY_PARAM:
+            ret = {0, 3, 0, "Topology"};
             break;
         default:
             assert(false);
