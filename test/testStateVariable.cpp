@@ -2,6 +2,7 @@
 
 #include "asserts.h"
 #include "StateVariableFilter.h"
+#include "StateVariable4P.h"
 #include "TestSignal.h"
 
 /**
@@ -117,9 +118,26 @@ static void test()
     testSetBandwidth<T>();
 }
 
+static void test4P()
+{
+    StateVariableFilterParams4P<float> params4p;
+    StateVariableFilterState4P<float> state4p;
+ 
+    float o = 0;
+    StateVariableFilter4P<float>::run(1, state4p, params4p);
+    for (int i = 0; i < 100; ++i) {
+        o = StateVariableFilter4P<float>::run(0, state4p, params4p);
+        assert(o < 20);
+        assert(o > -20);
+    }
+  
+
+}
+
 void testStateVariable()
 {
     test<float>();
     test<double>();
     testBandpass();
+    test4P();
 }

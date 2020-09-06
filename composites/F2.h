@@ -5,6 +5,7 @@
 #include <memory>
 #include "IComposite.h"
 #include "StateVariableFilter.h"
+#include "StateVariable4P.h"
 
 namespace rack {
     namespace engine {
@@ -83,9 +84,11 @@ private:
     using T = float;
     StateVariableFilterParams<T> params1;
     StateVariableFilterParams<T> params2;
+    StateVariableFilterParams4P<T> params4p;
 
     StateVariableFilterState<T> state1;
     StateVariableFilterState<T> state2;
+    StateVariableFilterState4P<T> state4p;
 
 };
 
@@ -102,6 +105,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 
     params1.setQ(4);
     params2.setQ(4);
+    
 
     params1.setFreq(fc);
     params2.setFreq(fc * 4);
@@ -143,10 +147,22 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output = StateVariableFilter<T>::run(input, state1, params1);
             }
             break;
+          case 4:
+            {
+                // for test:
+               // input = 1;
+
+               // output = StateVariableFilter4P<T>::run(input, state4p, params4p);
+                output = StateVariableFilter4P<T>::run(1, state4p, params4p);
+            }
+            
+            break;
         default: 
             assert(false);
 
     }
+    assert(output < 20);
+    assert(output > -20);
   //  const float output = StateVariableFilter<T>::run(input, state1, params1);
 
     F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
@@ -165,7 +181,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case F2<TBase>::TOPOLOGY_PARAM:
-            ret = {0, 3, 0, "Topology"};
+            ret = {0, 4, 4, "Topology"};
             break;
         default:
             assert(false);
