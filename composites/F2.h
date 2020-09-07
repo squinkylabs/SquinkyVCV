@@ -3,6 +3,7 @@
 
 #include <assert.h>
 #include <memory>
+#include "Divider.h"
 #include "IComposite.h"
 #include "StateVariableFilter.h"
 #include "StateVariable4P.h"
@@ -30,9 +31,12 @@ public:
 
     F2(Module * module) : TBase(module)
     {
+        init();
     }
+
     F2() : TBase()
     {
+        init();
     }
 
     /**
@@ -46,6 +50,9 @@ public:
     enum ParamIds
     {
         TOPOLOGY_PARAM,
+        FC_PARAM,
+        R_PARAM,
+        Q_PARAM,
         NUM_PARAMS
     };
 
@@ -90,19 +97,29 @@ private:
     StateVariableFilterState<T> state2;
     StateVariableFilterState4P<T> state4p;
 
+    Divider divn;
+
+
+    void stepn();
+
 };
 
 
 template <class TBase>
 inline void F2<TBase>::init()
 {
+    printf("called F2 init\n"); fflush(stdout);
+     divn.setup(4, [this]() {
+        this->stepn();
+    });
+
 }
 
 template <class TBase>
-inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
+inline void F2<TBase>::stepn()
 {
-    float fc = 500 * args.sampleTime;
-
+    const float sampleTime = TBase::engineGetSampleTime();
+    float fc = 500 * sampleTime;
     params1.setQ(4);
     params2.setQ(4);
     
@@ -112,6 +129,17 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 
     params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
     params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
+
+    params4p.fcg = F2<TBase>::params[FC_PARAM].value;
+    params4p.Rg = F2<TBase>::params[R_PARAM].value;
+    params4p.Qg = F2<TBase>::params[Q_PARAM].value;
+    //printf("just set fcg to %f\n", params4p.fcg); fflush(stdout);
+}
+
+template <class TBase>
+inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
+{
+    divn.step();
 
     const float input =  F2<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
 
@@ -151,9 +179,9 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
             {
                 // for test:
                // input = 1;
-
+ 
                // output = StateVariableFilter4P<T>::run(input, state4p, params4p);
-                output = StateVariableFilter4P<T>::run(1, state4p, params4p);
+                output = StateVariableFilter4P<T>::run(input, state4p, params4p);
             }
             
             break;
@@ -182,6 +210,15 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     switch (i) {
         case F2<TBase>::TOPOLOGY_PARAM:
             ret = {0, 4, 4, "Topology"};
+            break;
+        case F2<TBase>::FC_PARAM:
+            ret = {-.3, -.03, -.1, "Fc"};
+            break;
+        case F2<TBase>::R_PARAM:
+            ret = {2.4, 10, 3, "R"};
+            break;
+        case F2<TBase>::Q_PARAM:
+            ret = {1.3, 5, 1.9, "Q"};
             break;
         default:
             assert(false);

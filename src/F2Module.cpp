@@ -79,8 +79,20 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
     const float dy = 39;
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(knobX, knobY + 3 * dy),
+        Vec(knobX, knobY + 0 * dy),
         module,  Comp::TOPOLOGY_PARAM));
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 1* dy),
+        module,  Comp::FC_PARAM));
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 2* dy),
+        module,  Comp::Q_PARAM));
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 3* dy),
+        module,  Comp::R_PARAM));
 }
 
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
