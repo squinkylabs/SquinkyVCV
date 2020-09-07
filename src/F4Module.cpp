@@ -77,32 +77,30 @@ void F4Widget::addKnobs(F4Module *module, std::shared_ptr<IComposite> icomp)
     const float knobX = 12;
     const float knobY = 21;
     const float dy = 39;
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
-        icomp,
-        Vec(knobX, knobY + 0 * dy),
-        module,  Comp::TOPOLOGY_PARAM));
+
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobX, knobY + 1* dy),
+        Vec(knobX, knobY + 0* dy),
         module,  Comp::FC_PARAM));
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobX, knobY + 2* dy),
+        Vec(knobX, knobY + 1* dy),
         module,  Comp::Q_PARAM));
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobX, knobY + 3* dy),
+        Vec(knobX, knobY + 2* dy),
         module,  Comp::R_PARAM));
 }
 
 void F4Widget::addJacks(F4Module *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
-    const float jackY = 249;
+    const float jackY = 300;
     const float dy = 30;
+    const float dx = 30;
 
     addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 0 * dy),
+        Vec(jackX, jackY + dy),
         module,
         Comp::AUDIO_INPUT));
 #if 0
@@ -118,9 +116,18 @@ void F4Widget::addJacks(F4Module *module, std::shared_ptr<IComposite> icomp)
     #endif
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, jackY + 3 * dy - .5),
+        Vec(jackX + dx, jackY + dy ),
         module,
-        Comp::AUDIO_OUTPUT));
+        Comp::LP_OUTPUT));
+     addOutput(createOutput<PJ301MPort>(
+        Vec(jackX + dx, jackY ),
+        module,
+        Comp::HP_OUTPUT));
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX + 2* dx, jackY + dy ),
+        module,
+        Comp::BP_OUTPUT));
 };
 
 
@@ -133,7 +140,7 @@ void F4Widget::addJacks(F4Module *module, std::shared_ptr<IComposite> icomp)
 F4Widget::F4Widget(F4Module *module)
 {
     setModule(module);
-    SqHelper::setPanel(this, "res/f2-panel.svg");
+    SqHelper::setPanel(this, "res/f4-panel.svg");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);

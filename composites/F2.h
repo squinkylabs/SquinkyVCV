@@ -6,7 +6,6 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "StateVariableFilter.h"
-#include "StateVariable4P.h"
 
 namespace rack {
     namespace engine {
@@ -91,11 +90,10 @@ private:
     using T = float;
     StateVariableFilterParams<T> params1;
     StateVariableFilterParams<T> params2;
-    StateVariableFilterParams4P<T> params4p;
 
     StateVariableFilterState<T> state1;
     StateVariableFilterState<T> state2;
-    StateVariableFilterState4P<T> state4p;
+
 
     Divider divn;
 
@@ -108,7 +106,6 @@ private:
 template <class TBase>
 inline void F2<TBase>::init()
 {
-    printf("called F2 init\n"); fflush(stdout);
      divn.setup(4, [this]() {
         this->stepn();
     });
@@ -130,30 +127,7 @@ inline void F2<TBase>::stepn()
     params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
     params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
 
-  //  params4p.fcg = F2<TBase>::params[FC_PARAM].value;
-   
-    params4p.Rg = F2<TBase>::params[R_PARAM].value;
-    params4p.Qg = F2<TBase>::params[Q_PARAM].value;
 
-//printf("\n");
-    params4p.setFreqVolts(F2<TBase>::params[FC_PARAM].value, sampleTime);
-    #if 0
-    params4p.setFreqVolts(-4);
-    params4p.setFreqVolts(-3);
-    params4p.setFreqVolts(-2);
-    params4p.setFreqVolts(11);
-    params4p.setFreqVolts(0);
-    
-    params4p.setFreqVolts(1);
-    params4p.setFreqVolts(2);
-    params4p.setFreqVolts(4);
-    params4p.setFreqVolts(5);
-    params4p.setFreqVolts(7);
-    params4p.setFreqVolts(9);
-    params4p.setFreqVolts(10);
-    #endif
-
-    //printf("just set fcg to %f\n", params4p.fcg); fflush(stdout);
 }
 
 template <class TBase>
@@ -194,16 +168,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 // just one
                 output = StateVariableFilter<T>::run(input, state1, params1);
             }
-            break;
-          case 4:
-            {
-                // for test:
-               // input = 1;
- 
-               // output = StateVariableFilter4P<T>::run(input, state4p, params4p);
-                output = StateVariableFilter4P<T>::run(input, state4p, params4p);
-            }
-            
+
             break;
         default: 
             assert(false);
@@ -230,7 +195,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case F2<TBase>::TOPOLOGY_PARAM:
-            ret = {0, 4, 4, "Topology"};
+            ret = {0, 3, 0, "Topology"};
             break;
         case F2<TBase>::FC_PARAM:
             ret = {0, 10, 5, "Fc"};

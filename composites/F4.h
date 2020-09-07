@@ -5,7 +5,6 @@
 #include <memory>
 #include "Divider.h"
 #include "IComposite.h"
-#include "StateVariableFilter.h"
 #include "StateVariable4P.h"
 
 namespace rack {
@@ -49,10 +48,11 @@ public:
 
     enum ParamIds
     {
-        TOPOLOGY_PARAM,
+     //   TOPOLOGY_PARAM,
         FC_PARAM,
         R_PARAM,
         Q_PARAM,
+        NOTCH_PARAM,
         NUM_PARAMS
     };
 
@@ -64,7 +64,10 @@ public:
 
     enum OutputIds
     {
-        AUDIO_OUTPUT,
+        LP_OUTPUT,
+        HP_OUTPUT,
+        BP_OUTPUT,
+        PK_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -89,16 +92,9 @@ public:
 private:
 
     using T = float;
-    StateVariableFilterParams<T> params1;
-    StateVariableFilterParams<T> params2;
     StateVariableFilterParams4P<T> params4p;
-
-    StateVariableFilterState<T> state1;
-    StateVariableFilterState<T> state2;
     StateVariableFilterState4P<T> state4p;
-
     Divider divn;
-
 
     void stepn();
 
@@ -108,7 +104,6 @@ private:
 template <class TBase>
 inline void F4<TBase>::init()
 {
-    printf("called F2 init\n"); fflush(stdout);
      divn.setup(4, [this]() {
         this->stepn();
     });
@@ -119,19 +114,8 @@ template <class TBase>
 inline void F4<TBase>::stepn()
 {
     const float sampleTime = TBase::engineGetSampleTime();
-    float fc = 500 * sampleTime;
-    params1.setQ(4);
-    params2.setQ(4);
-    
 
-    params1.setFreq(fc);
-    params2.setFreq(fc * 4);
 
-    params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
-    params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
-
-  //  params4p.fcg = F2<TBase>::params[FC_PARAM].value;
-   
     params4p.Rg = F4<TBase>::params[R_PARAM].value;
     params4p.Qg = F4<TBase>::params[Q_PARAM].value;
 
@@ -163,59 +147,18 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
 
     const float input =  F4<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
 
-    const int topology = int( std::round(F4<TBase>::params[TOPOLOGY_PARAM].value));
-    float output = 0;
-    switch(topology) {
-        case 0:
-            {
-                // series
-                const float temp = StateVariableFilter<T>::run(input, state1, params1);
-                output = StateVariableFilter<T>::run(temp, state2, params2);
-            }
-            break;
-        case 1:
-            {
-                // parallel add
-                const float temp1 = StateVariableFilter<T>::run(input, state1, params1);
-                const float temp2 = StateVariableFilter<T>::run(input, state2, params2);
-                output = temp1 + temp2;
-            }
-            break;
-        case 2:
-            {
-                // parallel subtract
-                const float temp1 = StateVariableFilter<T>::run(input, state1, params1);
-                const float temp2 = StateVariableFilter<T>::run(input, state2, params2);
-                output = temp1 - temp2;
-            }
-            break;
-        case 3:
-            {
-                // just one
-                output = StateVariableFilter<T>::run(input, state1, params1);
-            }
-            break;
-          case 4:
-            {
-                // for test:
-               // input = 1;
- 
-               // output = StateVariableFilter4P<T>::run(input, state4p, params4p);
-                output = StateVariableFilter4P<T>::run(input, state4p, params4p);
-            }
-            
-            break;
-        default: 
-            assert(false);
 
-    }
+    float output = 0;
+    
+    output = StateVariableFilter4P<T>::run(input, state4p, params4p);
+
     // Let it go crazy while we are just experimenting
     //   assert(output < 20);
     //   assert(output > -20);
     output = std::min(20.f, output);
     output = std::max(-20.f, output);
 
-    F4<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
+    F4<TBase>::outputs[LP_OUTPUT].setVoltage(output, 0);
 }
 
 template <class TBase>
@@ -229,9 +172,6 @@ inline IComposite::Config F4Description<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case F4<TBase>::TOPOLOGY_PARAM:
-            ret = {0, 4, 4, "Topology"};
-            break;
         case F4<TBase>::FC_PARAM:
             ret = {0, 10, 5, "Fc"};
             break;
@@ -240,6 +180,9 @@ inline IComposite::Config F4Description<TBase>::getParam(int i)
             break;
         case F4<TBase>::Q_PARAM:
             ret = {1.3, 5, 1.9, "Q"};
+            break;
+        case F4<TBase>::NOTCH_PARAM:
+            ret = {0, 1, 0, "Notch"};
             break;
         default:
             assert(false);
