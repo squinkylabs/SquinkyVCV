@@ -128,7 +128,9 @@ p->addModel(modelDividerXModule);
 #ifdef _F2
 p->addModel(modelF2Module);
 #endif
-
+#ifdef _F4
+p->addModel(modelF4Module);
+#endif
 
 }
 

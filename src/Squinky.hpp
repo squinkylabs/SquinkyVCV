@@ -27,6 +27,7 @@
 //#define _CHAOS
 //#define _DG
 #define _F2
+#define _F4
 
 //#define _BLANKMODULE
 
@@ -51,6 +52,7 @@ extern Model *modelLFNBModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 extern Model *modelF2Module;
+extern Model *modelF4Module;
 
 #ifdef _FORMANTS
     extern Model *modelVocalFilterModule;

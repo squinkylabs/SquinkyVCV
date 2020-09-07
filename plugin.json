@@ -236,6 +236,13 @@
 			"tags": ["VCF", "Polyphonic"]
 		},
 		{
+			"slug": "squinkylabs-f4",
+			"name": "F4",
+			"description": "F4",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f4.md",
+			"tags": ["VCF", "Polyphonic"]
+		},
+		{
 			"slug": "squinkylabs-dividerx",
 			"name": "Divider",
 			"description": "x",
