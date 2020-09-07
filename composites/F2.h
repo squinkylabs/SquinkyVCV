@@ -130,9 +130,29 @@ inline void F2<TBase>::stepn()
     params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
     params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
 
-    params4p.fcg = F2<TBase>::params[FC_PARAM].value;
+  //  params4p.fcg = F2<TBase>::params[FC_PARAM].value;
+   
     params4p.Rg = F2<TBase>::params[R_PARAM].value;
     params4p.Qg = F2<TBase>::params[Q_PARAM].value;
+
+//printf("\n");
+    params4p.setFreqVolts(F2<TBase>::params[FC_PARAM].value, sampleTime);
+    #if 0
+    params4p.setFreqVolts(-4);
+    params4p.setFreqVolts(-3);
+    params4p.setFreqVolts(-2);
+    params4p.setFreqVolts(11);
+    params4p.setFreqVolts(0);
+    
+    params4p.setFreqVolts(1);
+    params4p.setFreqVolts(2);
+    params4p.setFreqVolts(4);
+    params4p.setFreqVolts(5);
+    params4p.setFreqVolts(7);
+    params4p.setFreqVolts(9);
+    params4p.setFreqVolts(10);
+    #endif
+
     //printf("just set fcg to %f\n", params4p.fcg); fflush(stdout);
 }
 
@@ -189,12 +209,13 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
             assert(false);
 
     }
-    assert(output < 20);
-    assert(output > -20);
-  //  const float output = StateVariableFilter<T>::run(input, state1, params1);
+    // Let it go crazy while we are just experimenting
+    //   assert(output < 20);
+    //   assert(output > -20);
+    output = std::min(20.f, output);
+    output = std::max(-20.f, output);
 
     F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
-
 }
 
 template <class TBase>
@@ -212,7 +233,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
             ret = {0, 4, 4, "Topology"};
             break;
         case F2<TBase>::FC_PARAM:
-            ret = {-.3, -.03, -.1, "Fc"};
+            ret = {0, 10, 5, "Fc"};
             break;
         case F2<TBase>::R_PARAM:
             ret = {2.4, 10, 3, "R"};

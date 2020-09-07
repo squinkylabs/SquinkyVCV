@@ -117,7 +117,7 @@ public:
     {
         mode = m;
     }
-// private:
+private:
     Mode mode = Mode::BandPass;
     T qGain = 1.;		// internal amp gains
     T fcGain = T(.001);

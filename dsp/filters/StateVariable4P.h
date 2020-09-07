@@ -4,13 +4,25 @@ template <typename T>
 class StateVariableFilterParams4P
 {
 public:
+    // for now let's pull out sample time
+    void setFreqVolts(float volts, float sampleTime);
+  
     T fcg = T(-.1);
     T Rg = 3;
     T Qg = T(1.9);
-
-  //    fcGain = T(AudioMath::Pi) * T(2) * fc;
 };
 
+template <typename T>
+inline void StateVariableFilterParams4P<T>::setFreqVolts(float volts, float sampleTime)
+{
+    // there is a a bug, this function doesn't work except simd
+    // float freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(volts + 30) / 1073741824;
+    float freq = rack::dsp::FREQ_C4 * std::exp2(volts + 30) / 1073741824;
+    
+    float g = -freq * sampleTime;
+    // printf("volts = %f freq = %f g = %f\n", volts, freq, g); fflush(stdout);
+    fcg = g;
+}
 
 
 template <typename T>

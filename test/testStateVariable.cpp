@@ -171,13 +171,10 @@ static void test2P()
     params.setFreq(.1f);
     params.setMode(StateVariableFilterParams<float>::Mode::LowPass);
 
-    printf("------- fcg = %f, qg = %f\n", params.fcGain, params.qGain);
-
     float o = 0;
     o =StateVariableFilter<float>::run(1, state, params);
     for (int i = 0; i < 20; ++i) {
         o = StateVariableFilter<float>::run(1, state, params);
-        printf("%2d: o=%.3f z=%.3f, %.3f\n", i, o, state.z1, state.z2);
         assert(o < 20);
         assert(o > -20);
     }
