@@ -6,6 +6,7 @@ class StateVariableFilterParams4P
 public:
     // for now let's pull out sample time
     void setFreqVolts(float volts, float sampleTime);
+    void setNotch(bool);
   
     T fcg = T(-.1);
     T Rg = 3;
@@ -33,6 +34,11 @@ public:
     T z2 = 0;
     T z3 = 0;
     T z4 = 0;
+    //
+    T lp = 0;
+    T hp = 0;
+    T bp = 0;
+    T peak = 0;
 };
 
 
@@ -41,7 +47,7 @@ class StateVariableFilter4P
 {
 public:
     StateVariableFilter4P() = delete;       // we are only static
-    static T run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params);
+    static void run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params);
 private:
  //   static T x(float input, float fcG, float& z);
     static void xx(float& delayMemory, float input, float fcG);
@@ -84,7 +90,7 @@ inline T StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& s
 #else
 
 template <typename T>
-inline T StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params)
+inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params)
 {
     const float v5 = state.z4;
     const float v4 = state.z3;
@@ -99,7 +105,7 @@ inline T StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& s
     state.z2 = v2 * params.fcg + v3;
     state.z1 = v1 * params.fcg + v2;
 
-    return v5;
+    state.lp = v5;
 }
 
 #endif

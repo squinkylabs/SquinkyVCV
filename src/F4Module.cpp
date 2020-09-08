@@ -78,6 +78,10 @@ void F4Widget::addKnobs(F4Module *module, std::shared_ptr<IComposite> icomp)
     const float knobY = 21;
     const float dy = 39;
 
+    addParam(SqHelper::createParam<CKSS>(
+        icomp,
+        Vec(100, 100),
+        module, Comp::NOTCH_PARAM));
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX, knobY + 0* dy),

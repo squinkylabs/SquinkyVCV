@@ -146,19 +146,32 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
     divn.step();
 
     const float input =  F4<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
-
-
-    float output = 0;
     
-    output = StateVariableFilter4P<T>::run(input, state4p, params4p);
+    StateVariableFilter4P<T>::run(input, state4p, params4p);
 
     // Let it go crazy while we are just experimenting
     //   assert(output < 20);
     //   assert(output > -20);
+
+    float output = state4p.lp;
     output = std::min(20.f, output);
     output = std::max(-20.f, output);
-
     F4<TBase>::outputs[LP_OUTPUT].setVoltage(output, 0);
+
+    output = state4p.hp;
+    output = std::min(20.f, output);
+    output = std::max(-20.f, output);
+    F4<TBase>::outputs[HP_OUTPUT].setVoltage(output, 0);
+
+    output = state4p.bp;
+    output = std::min(20.f, output);
+    output = std::max(-20.f, output);
+    F4<TBase>::outputs[BP_OUTPUT].setVoltage(output, 0);
+
+    output = state4p.peak;
+    output = std::min(20.f, output);
+    output = std::max(-20.f, output);
+    F4<TBase>::outputs[PK_OUTPUT].setVoltage(output, 0);
 }
 
 template <class TBase>
