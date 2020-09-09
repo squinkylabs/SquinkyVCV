@@ -5,7 +5,7 @@
 #include <memory>
 #include "Divider.h"
 #include "IComposite.h"
-#include "StateVariableFilter.h"
+#include "StateVariableFilter2.h"
 
 namespace rack {
     namespace engine {
@@ -88,11 +88,11 @@ public:
 private:
 
     using T = float;
-    StateVariableFilterParams<T> params1;
-    StateVariableFilterParams<T> params2;
+    StateVariableFilterParams2<T> params1;
+    StateVariableFilterParams2<T> params2;
 
-    StateVariableFilterState<T> state1;
-    StateVariableFilterState<T> state2;
+    StateVariableFilterState2<T> state1;
+    StateVariableFilterState2<T> state2;
 
 
     Divider divn;
@@ -122,8 +122,8 @@ inline void F2<TBase>::stepn()
     params1.setQ(q);
     params2.setQ(q);
     
-    params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
-    params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
+    params1.setMode(StateVariableFilterParams2<T>::Mode::LowPass);
+    params2.setMode(StateVariableFilterParams2<T>::Mode::LowPass);
 
     const float r = F2<TBase>::params[R_PARAM].value;
 
@@ -149,30 +149,30 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
         case 3:
             {
                 // series
-                const float temp = StateVariableFilter<T>::run(input, state1, params1);
-                output = StateVariableFilter<T>::run(temp, state2, params2);
+                const float temp = StateVariableFilter2<T>::run(input, state1, params1);
+                output = StateVariableFilter2<T>::run(temp, state2, params2);
             }
             break;
         case 1:
             {
                 // parallel add
-                const float temp1 = StateVariableFilter<T>::run(input, state1, params1);
-                const float temp2 = StateVariableFilter<T>::run(input, state2, params2);
+                const float temp1 = StateVariableFilter2<T>::run(input, state1, params1);
+                const float temp2 = StateVariableFilter2<T>::run(input, state2, params2);
                 output = temp1 + temp2;
             }
             break;
         case 2:
             {
                 // parallel subtract
-                const float temp1 = StateVariableFilter<T>::run(input, state1, params1);
-                const float temp2 = StateVariableFilter<T>::run(input, state2, params2);
+                const float temp1 = StateVariableFilter2<T>::run(input, state1, params1);
+                const float temp2 = StateVariableFilter2<T>::run(input, state2, params2);
                 output = temp1 - temp2;
             }
             break;
         case 0:
             {
                 // just one
-                output = StateVariableFilter<T>::run(input, state1, params1);
+                output = StateVariableFilter2<T>::run(input, state1, params1);
             }
 
             break;
