@@ -86,7 +86,6 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
-    //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
@@ -107,7 +106,6 @@ inline void F4<TBase>::init()
      divn.setup(4, [this]() {
         this->stepn();
     });
-
 }
 
 template <class TBase>
@@ -115,29 +113,15 @@ inline void F4<TBase>::stepn()
 {
     const float sampleTime = TBase::engineGetSampleTime();
 
-
     params4p.Rg = F4<TBase>::params[R_PARAM].value;
     params4p.Qg = F4<TBase>::params[Q_PARAM].value;
 
-//printf("\n");
-    params4p.setFreqVolts(F4<TBase>::params[FC_PARAM].value, sampleTime);
-    #if 0
-    params4p.setFreqVolts(-4);
-    params4p.setFreqVolts(-3);
-    params4p.setFreqVolts(-2);
-    params4p.setFreqVolts(11);
-    params4p.setFreqVolts(0);
-    
-    params4p.setFreqVolts(1);
-    params4p.setFreqVolts(2);
-    params4p.setFreqVolts(4);
-    params4p.setFreqVolts(5);
-    params4p.setFreqVolts(7);
-    params4p.setFreqVolts(9);
-    params4p.setFreqVolts(10);
-    #endif
+    float freqVolts = F4<TBase>::params[FC_PARAM].value;
+    float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
+    freq *= sampleTime;
+    params4p.setFreq(freq);
 
-    //printf("just set fcg to %f\n", params4p.fcg); fflush(stdout);
+    params4p.setNotch( bool( std::round(F4<TBase>::params[NOTCH_PARAM].value)));
 }
 
 template <class TBase>
@@ -148,10 +132,6 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
     const float input =  F4<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
     
     StateVariableFilter4P<T>::run(input, state4p, params4p);
-
-    // Let it go crazy while we are just experimenting
-    //   assert(output < 20);
-    //   assert(output > -20);
 
     float output = state4p.lp;
     output = std::min(20.f, output);

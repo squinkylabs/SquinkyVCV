@@ -1,18 +1,37 @@
 #pragma once
 
+#include <algorithm>
+
 template <typename T>
 class StateVariableFilterParams4P
 {
 public:
     // for now let's pull out sample time
-    void setFreqVolts(float volts, float sampleTime);
+ //   void setFreqVolts(float volts, float sampleTime);
+    void setFreq(float fcNormalized);
     void setNotch(bool);
   
     T fcg = T(-.1);
     T Rg = 3;
     T Qg = T(1.9);
+    bool n = false;
 };
 
+
+template <typename T>
+inline void StateVariableFilterParams4P<T>::setNotch(bool enable)
+{
+    n = enable;
+}
+
+template <typename T>
+inline void StateVariableFilterParams4P<T>::setFreq(float normFc)
+{
+    normFc = std::max(normFc, .3f);
+    fcg = -normFc;
+}
+
+#if 0
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setFreqVolts(float volts, float sampleTime)
 {
@@ -24,6 +43,7 @@ inline void StateVariableFilterParams4P<T>::setFreqVolts(float volts, float samp
     // printf("volts = %f freq = %f g = %f\n", volts, freq, g); fflush(stdout);
     fcg = g;
 }
+#endif
 
 
 template <typename T>
@@ -97,7 +117,8 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     const float v3 = state.z2;
     const float v2 = state.z1;
 
-    const float v0 = input + v5 + (params.Rg * v3) - (params.Qg * (v2 + v4));
+    state.bp =  (v2 + v4);
+    const float v0 = input + v5 + (params.Rg * v3) - (params.Qg * state.bp);
     const float v1 = -v0;
 
     state.z4 = v4 * params.fcg + v5;
@@ -106,6 +127,9 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     state.z1 = v1 * params.fcg + v2;
 
     state.lp = v5;
+    state.hp = v1;
+
+    state.peak = v1 + state.lp;
 }
 
 #endif

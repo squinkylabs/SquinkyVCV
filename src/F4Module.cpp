@@ -107,22 +107,12 @@ void F4Widget::addJacks(F4Module *module, std::shared_ptr<IComposite> icomp)
         Vec(jackX, jackY + dy),
         module,
         Comp::AUDIO_INPUT));
-#if 0
-    addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 1 * dy),
-        module,
-        Comp::FM_INPUT)); 
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 2 * dy),
-        module,
-        Comp::VOCT_INPUT));
-    #endif
 
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX + dx, jackY + dy ),
         module,
         Comp::LP_OUTPUT));
+     
      addOutput(createOutput<PJ301MPort>(
         Vec(jackX + dx, jackY ),
         module,
@@ -132,6 +122,11 @@ void F4Widget::addJacks(F4Module *module, std::shared_ptr<IComposite> icomp)
         Vec(jackX + 2* dx, jackY + dy ),
         module,
         Comp::BP_OUTPUT));
+
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX + 2* dx, jackY  ),
+        module,
+        Comp::PK_OUTPUT));
 };
 
 

@@ -116,17 +116,23 @@ template <class TBase>
 inline void F2<TBase>::stepn()
 {
     const float sampleTime = TBase::engineGetSampleTime();
-    float fc = 500 * sampleTime;
+  //  float fc = 500 * sampleTime;
     params1.setQ(4);
     params2.setQ(4);
     
 
-    params1.setFreq(fc);
-    params2.setFreq(fc * 4);
+  //  params1.setFreq(fc);
+ //   params2.setFreq(fc * 4);
 
     params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
     params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
 
+    float freqVolts = F2<TBase>::params[FC_PARAM].value;
+    float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
+    freq *= sampleTime;
+    params1.setFreq(freq);
+    params1.setFreq(freq);
+    printf("freq = %f\n", freq); fflush(stdout);
 
 }
 
@@ -140,7 +146,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
     const int topology = int( std::round(F2<TBase>::params[TOPOLOGY_PARAM].value));
     float output = 0;
     switch(topology) {
-        case 0:
+        case 3:
             {
                 // series
                 const float temp = StateVariableFilter<T>::run(input, state1, params1);
@@ -163,7 +169,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output = temp1 - temp2;
             }
             break;
-        case 3:
+        case 0:
             {
                 // just one
                 output = StateVariableFilter<T>::run(input, state1, params1);
