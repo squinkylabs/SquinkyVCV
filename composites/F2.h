@@ -117,22 +117,22 @@ inline void F2<TBase>::stepn()
 {
     const float sampleTime = TBase::engineGetSampleTime();
   //  float fc = 500 * sampleTime;
-    params1.setQ(4);
-    params2.setQ(4);
+
+    const float q = F2<TBase>::params[Q_PARAM].value;
+    params1.setQ(q);
+    params2.setQ(q);
     
-
-  //  params1.setFreq(fc);
- //   params2.setFreq(fc * 4);
-
     params1.setMode(StateVariableFilterParams<T>::Mode::LowPass);
     params2.setMode(StateVariableFilterParams<T>::Mode::LowPass);
+
+    const float r = F2<TBase>::params[R_PARAM].value;
 
     float freqVolts = F2<TBase>::params[FC_PARAM].value;
     float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
     freq *= sampleTime;
     params1.setFreq(freq);
-    params1.setFreq(freq);
-    printf("freq = %f\n", freq); fflush(stdout);
+    params2.setFreq(freq * r);
+  //  printf("freq = %f\n", freq); fflush(stdout);
 
 }
 
@@ -207,7 +207,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
             ret = {0, 10, 5, "Fc"};
             break;
         case F2<TBase>::R_PARAM:
-            ret = {2.4, 10, 3, "R"};
+            ret = {1, 10, 1, "R"};
             break;
         case F2<TBase>::Q_PARAM:
             ret = {1.3, 5, 1.9, "Q"};
