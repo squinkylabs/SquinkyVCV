@@ -156,7 +156,8 @@ static void test4P()
     float o = 0;
     StateVariableFilter4P<float>::run(1, state4p, params4p);
     for (int i = 0; i < numtimes; ++i) {
-        o = StateVariableFilter4P<float>::run(1, state4p, params4p);
+        StateVariableFilter4P<float>::run(1, state4p, params4p);
+        o = state4p.lp;
         printf("o=%.3f z=%.3f %.3f %.3f %.3f\n", o, state4p.z1, state4p.z2, state4p.z3, state4p.z4);
         assert(o < 20);
         assert(o > -20);

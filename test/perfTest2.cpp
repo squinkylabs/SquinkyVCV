@@ -1,6 +1,7 @@
 #include "TestComposite.h"
 
 #include "DrumTrigger.h"
+#include "F2.h"
 #include "Filt.h"
 #include "LookupTable.h"
 #include "Mix8.h"
@@ -263,10 +264,58 @@ static void testMixM()
         }, 1);
 }
 
+
+static void testF2_1X()
+{
+    using Comp = F2<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::TOPOLOGY_PARAM].value = 0;
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "testF2_1X", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testF2_4X()
+{
+    using Comp = F2<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::TOPOLOGY_PARAM].value = 1;
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "testF2_4X", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
 void perfTest2()
 {
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
+
+    testF2_1X();
+    testF2_4X();
+
 
     testDrumTrigger();
     testFilt();

@@ -7,6 +7,8 @@
 #include "IComposite.h"
 #include "StateVariableFilter2.h"
 
+#include "dsp/common.hpp"
+
 namespace rack {
     namespace engine {
         struct Module;
@@ -23,6 +25,15 @@ public:
     int getNumParams() override;
 };
 
+/**
+ * high freq limits with oversample
+ * OS / max bandwidth lowQ / max peak freq / max atten for 10k cutoff
+ *  1X      10k         12k     0db
+ *  3X      10k         20k     6db
+ *  5X      12k         20k     10db
+ *  10      14k         20k     12db
+ * 
+ */
 template <class TBase>
 class F2 : public TBase
 {
@@ -38,12 +49,6 @@ public:
         init();
     }
 
-    /**
-    * re-calc everything that changes with sample
-    * rate. Also everything that depends on baseFrequency.
-    *
-    * Only needs to be called once.
-    */
     void init();
 
     enum ParamIds
@@ -153,7 +158,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output = StateVariableFilter2<T>::run(temp, state2, params2);
             }
             break;
-        case 1:
+        case 2:
             {
                 // parallel add
                 const float temp1 = StateVariableFilter2<T>::run(input, state1, params1);
@@ -161,7 +166,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output = temp1 + temp2;
             }
             break;
-        case 2:
+        case 4:
             {
                 // parallel subtract
                 const float temp1 = StateVariableFilter2<T>::run(input, state1, params1);
@@ -171,7 +176,22 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
             break;
         case 0:
             {
+                //fprintf(stdout, "no oversample\n");
                 // just one
+                output = StateVariableFilter2<T>::run(input, state1, params1);
+            }
+            break;
+        case 1:
+            {
+                //printf("4X oversample\n");
+                // just one, oversampled
+                #if 1
+                for (int i=0; i<4; ++i) {
+                    StateVariableFilter2<T>::run(input, state1, params1);
+                }
+                #endif
+               // StateVariableFilter2<T>::run(input, state1, params1);
+               // StateVariableFilter2<T>::run(input, state1, params1);
                 output = StateVariableFilter2<T>::run(input, state1, params1);
             }
 
@@ -201,7 +221,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case F2<TBase>::TOPOLOGY_PARAM:
-            ret = {0, 3, 0, "Topology"};
+            ret = {0, 4, 0, "Topology"};
             break;
         case F2<TBase>::FC_PARAM:
             ret = {0, 10, 5, "Fc"};
@@ -210,7 +230,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
             ret = {1, 10, 1, "R"};
             break;
         case F2<TBase>::Q_PARAM:
-            ret = {1.3, 5, 1.9, "Q"};
+            ret = {.5, 5, 1.9, "Q"};
             break;
         default:
             assert(false);

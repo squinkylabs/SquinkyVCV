@@ -126,10 +126,9 @@ private:
 template <typename T>
 inline void StateVariableFilterParams2<T>::setQ(T q)
 {
-    if (q < .49) {
-        assert(false);
-        q = T(.6);
-    }
+    const float qLimit = .49;
+    q = std::max(q, qLimit);
+  
     qGain = 1 / q;
 }
 
@@ -143,11 +142,8 @@ inline void StateVariableFilterParams2<T>::setNormalizedBandwidth(T bw)
 template <typename T>
 inline void StateVariableFilterParams2<T>::setFreq(T fc)
 {
-    // .3 is stable, .32 not
-    const T mx = T(.3);
-    if (fc > mx) {
-        fc = mx;
-    }
+    const float fcLimit = .3;    // .3 is stable, .32 not
+    fc = std::min(fcLimit, fc);
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
     fcGain = T(AudioMath::Pi) * T(2) * fc;

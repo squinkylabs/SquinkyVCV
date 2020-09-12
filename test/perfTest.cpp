@@ -1197,9 +1197,10 @@ void perfTest()
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
 
+     testVocalFilter();
 #if 0
     testColors();
-    testVocalFilter();
+   
     testAnimator();
     testTremolo();
   

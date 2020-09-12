@@ -167,9 +167,9 @@ if (runShaperGen) {
 
     if (runPerf) {
         initPerf();
-
-        perfTest();
         perfTest2();
+        perfTest();
+       
         return 0;
     }
     
