@@ -151,51 +151,45 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
     const int topology = int( std::round(F2<TBase>::params[TOPOLOGY_PARAM].value));
     float output = 0;
     switch(topology) {
-        case 3:
+        case 1:
             {
-                // series
-                const float temp = StateVariableFilter2<T>::run(input, state1, params1);
+                // series 4X
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
+                float temp = StateVariableFilter2<T>::run(input, state1, params1);
+
+                StateVariableFilter2<T>::run(temp, state2, params2);
+                StateVariableFilter2<T>::run(temp, state2, params2);
+                StateVariableFilter2<T>::run(temp, state2, params2);
                 output = StateVariableFilter2<T>::run(temp, state2, params2);
             }
             break;
         case 2:
             {
                 // parallel add
-                const float temp1 = StateVariableFilter2<T>::run(input, state1, params1);
-                const float temp2 = StateVariableFilter2<T>::run(input, state2, params2);
-                output = temp1 + temp2;
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
+                output = StateVariableFilter2<T>::run(input, state1, params1);
+
+                StateVariableFilter2<T>::run(input, state2, params2);
+                StateVariableFilter2<T>::run(input, state2, params2);
+                StateVariableFilter2<T>::run(input, state2, params2);
+                output += StateVariableFilter2<T>::run(input, state2, params2);
             }
             break;
-        case 4:
-            {
-                // parallel subtract
-                const float temp1 = StateVariableFilter2<T>::run(input, state1, params1);
-                const float temp2 = StateVariableFilter2<T>::run(input, state2, params2);
-                output = temp1 - temp2;
-            }
-            break;
+     
         case 0:
             {
-                //fprintf(stdout, "no oversample\n");
-                // just one
+                // one filter 4X
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
                 output = StateVariableFilter2<T>::run(input, state1, params1);
             }
             break;
-        case 1:
-            {
-                //printf("4X oversample\n");
-                // just one, oversampled
-                #if 1
-                for (int i=0; i<4; ++i) {
-                    StateVariableFilter2<T>::run(input, state1, params1);
-                }
-                #endif
-               // StateVariableFilter2<T>::run(input, state1, params1);
-               // StateVariableFilter2<T>::run(input, state1, params1);
-                output = StateVariableFilter2<T>::run(input, state1, params1);
-            }
 
-            break;
         default: 
             assert(false);
 
@@ -221,7 +215,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case F2<TBase>::TOPOLOGY_PARAM:
-            ret = {0, 4, 0, "Topology"};
+            ret = {0, 2, 0, "Topology"};
             break;
         case F2<TBase>::FC_PARAM:
             ret = {0, 10, 5, "Fc"};
