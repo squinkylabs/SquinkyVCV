@@ -59,7 +59,7 @@ inline T StateVariableFilter2<T>::run(T input, StateVariableFilterState2<T>& sta
         case StateVariableFilterParams2<T>::Mode::LowPass:
             d = dLow;
             break;
-        case StateVariableFilterParams2<T>::Mode::HiPass:
+        case StateVariableFilterParams2<T>::Mode::HighPass:
             d = dHi;
             break;
         case StateVariableFilterParams2<T>::Mode::BandPass:
@@ -88,7 +88,7 @@ public:
     friend StateVariableFilter2<T>;
     enum class Mode
     {
-        BandPass, LowPass, HiPass, Notch
+        BandPass, LowPass, HighPass, Notch
     };
 
     /**

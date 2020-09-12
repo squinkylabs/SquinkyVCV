@@ -93,6 +93,10 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         icomp,
         Vec(knobX, knobY + 3* dy),
         module,  Comp::R_PARAM));
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(knobX, knobY + 4* dy),
+        module,  Comp::MODE_PARAM));
 }
 
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
@@ -105,20 +109,9 @@ void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
         Vec(jackX, jackY + 0 * dy),
         module,
         Comp::AUDIO_INPUT));
-#if 0
-    addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 1 * dy),
-        module,
-        Comp::FM_INPUT)); 
-
-    addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 2 * dy),
-        module,
-        Comp::VOCT_INPUT));
-    #endif
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, jackY + 3 * dy - .5),
+        Vec(jackX, jackY + 2 * dy - .5),
         module,
         Comp::AUDIO_OUTPUT));
 };

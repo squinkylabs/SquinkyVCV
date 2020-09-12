@@ -57,6 +57,7 @@ public:
         FC_PARAM,
         R_PARAM,
         Q_PARAM,
+        MODE_PARAM,
         NUM_PARAMS
     };
 
@@ -104,6 +105,8 @@ private:
 
 
     void stepn();
+    void setupFreq();
+    void setupModes();
 
 };
 
@@ -114,22 +117,12 @@ inline void F2<TBase>::init()
      divn.setup(4, [this]() {
         this->stepn();
     });
-
 }
 
 template <class TBase>
-inline void F2<TBase>::stepn()
+inline void F2<TBase>::setupFreq()
 {
     const float sampleTime = TBase::engineGetSampleTime();
-  //  float fc = 500 * sampleTime;
-
-    const float q = F2<TBase>::params[Q_PARAM].value;
-    params1.setQ(q);
-    params2.setQ(q);
-    
-    params1.setMode(StateVariableFilterParams2<T>::Mode::LowPass);
-    params2.setMode(StateVariableFilterParams2<T>::Mode::LowPass);
-
     const float r = F2<TBase>::params[R_PARAM].value;
 
     float freqVolts = F2<TBase>::params[FC_PARAM].value;
@@ -137,8 +130,46 @@ inline void F2<TBase>::stepn()
     freq *= sampleTime;
     params1.setFreq(freq);
     params2.setFreq(freq * r);
-  //  printf("freq = %f\n", freq); fflush(stdout);
+}
 
+template <class TBase>
+inline void F2<TBase>::setupModes()
+{
+    const int modeParam = int( std::round(F2<TBase>::params[MODE_PARAM].value));
+    StateVariableFilterParams2<T>::Mode mode;
+    switch(modeParam) {
+        case 0:
+            mode = StateVariableFilterParams2<T>::Mode::LowPass;
+            break;
+         case 1:
+            mode = StateVariableFilterParams2<T>::Mode::BandPass;
+            break;
+         case 2:
+            mode = StateVariableFilterParams2<T>::Mode::HighPass;
+            break;
+         case 3:
+            mode = StateVariableFilterParams2<T>::Mode::Notch;
+            break;
+        default: 
+            assert(false);
+    }
+    
+  
+  
+    // BandPass, LowPass, HiPass, Notch
+    params1.setMode(mode);
+    params2.setMode(mode);
+}
+
+template <class TBase>
+inline void F2<TBase>::stepn()
+{
+    const float q = F2<TBase>::params[Q_PARAM].value;
+    params1.setQ(q);
+    params2.setQ(q);
+    
+    setupModes();
+    setupFreq();
 }
 
 template <class TBase>
@@ -179,7 +210,6 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output += StateVariableFilter2<T>::run(input, state2, params2);
             }
             break;
-     
         case 0:
             {
                 // one filter 4X
@@ -192,7 +222,6 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 
         default: 
             assert(false);
-
     }
     // Let it go crazy while we are just experimenting
     //   assert(output < 20);
@@ -216,6 +245,9 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     switch (i) {
         case F2<TBase>::TOPOLOGY_PARAM:
             ret = {0, 2, 0, "Topology"};
+            break;
+        case F2<TBase>::MODE_PARAM:
+            ret = {0, 3, 0, "Mode"};
             break;
         case F2<TBase>::FC_PARAM:
             ret = {0, 10, 5, "Fc"};
