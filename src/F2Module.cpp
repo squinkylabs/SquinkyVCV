@@ -102,7 +102,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
-    const float jackY = 200;
+    const float jackY = 220;
     const float dy = 30;
 
     addInput(createInput<PJ301MPort>(

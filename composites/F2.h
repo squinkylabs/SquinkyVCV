@@ -81,6 +81,13 @@ public:
         NUM_LIGHTS
     };
 
+    enum class Topology
+    {
+        SINGLE,
+        SERIES,
+        PARALLEL
+    };
+
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription()
@@ -99,14 +106,10 @@ private:
     using T = float;
     StateVariableFilterParams2<T> params1;
     StateVariableFilterParams2<T> params2;
-
     StateVariableFilterState2<T> state1;
     StateVariableFilterState2<T> state2;
 
-
     Divider divn;
-
-
     void stepn();
     void setupFreq();
     void setupModes();
@@ -122,16 +125,36 @@ inline void F2<TBase>::init()
     });
 }
 
+
+
 template <class TBase>
 inline void F2<TBase>::setupFreq()
 {
     const float sampleTime = TBase::engineGetSampleTime();
-    const float r = F2<TBase>::params[R_PARAM].value;
+
+    const float qVolts = F2<TBase>::params[Q_PARAM].value;
+    // const float q =  std::exp2(qVolts/1.5f + 20 - 4) / 10000;
+
+    // probably will have to change when we use the SIMD approx.
+    // I doubt this function works with numbers this small.
+
+    const float q =  std::exp2(qVolts/1.5f) - .5;
+    params1.setQ(q);
+    params2.setQ(q);
+
+    const float rVolts = F2<TBase>::params[R_PARAM].value;
+    const float rx = std::exp2(rVolts/3.f);
+    const float r = rx; 
+ //   printf("rv=%f, r=%f\n", rVolts, r);
+
 
     float freqVolts = F2<TBase>::params[FC_PARAM].value;
+    freqVolts += F2<TBase>::inputs[FC_INPUT].getVoltage(0);
+    
     float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
     freq *= sampleTime;
-    params1.setFreq(freq);
+  //  printf("freq 1=%f 2=%f\n", freq / r, freq * r);
+    params1.setFreq(freq / r);
     params2.setFreq(freq * r);
 }
 
@@ -156,9 +179,6 @@ inline void F2<TBase>::setupModes()
         default: 
             assert(false);
     }
-    
-  
-  
     // BandPass, LowPass, HiPass, Notch
     params1.setMode(mode);
     params2.setMode(mode);
@@ -167,10 +187,6 @@ inline void F2<TBase>::setupModes()
 template <class TBase>
 inline void F2<TBase>::stepn()
 {
-    const float q = F2<TBase>::params[Q_PARAM].value;
-    params1.setQ(q);
-    params2.setQ(q);
-    
     setupModes();
     setupFreq();
 }
@@ -182,16 +198,17 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 
     const float input =  F2<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
 
-    const int topology = int( std::round(F2<TBase>::params[TOPOLOGY_PARAM].value));
+    const int topologyInt = int( std::round(F2<TBase>::params[TOPOLOGY_PARAM].value));
+    Topology topology = Topology(topologyInt);
     float output = 0;
     switch(topology) {
-        case 1:
+        case Topology::SERIES:
             {
                 // series 4X
                 StateVariableFilter2<T>::run(input, state1, params1);
                 StateVariableFilter2<T>::run(input, state1, params1);
                 StateVariableFilter2<T>::run(input, state1, params1);
-                float temp = StateVariableFilter2<T>::run(input, state1, params1);
+                const float temp = StateVariableFilter2<T>::run(input, state1, params1);
 
                 StateVariableFilter2<T>::run(temp, state2, params2);
                 StateVariableFilter2<T>::run(temp, state2, params2);
@@ -199,7 +216,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output = StateVariableFilter2<T>::run(temp, state2, params2);
             }
             break;
-        case 2:
+        case Topology::PARALLEL:
             {
                 // parallel add
                 StateVariableFilter2<T>::run(input, state1, params1);
@@ -213,7 +230,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output += StateVariableFilter2<T>::run(input, state2, params2);
             }
             break;
-        case 0:
+        case Topology::SINGLE:
             {
                 // one filter 4X
                 StateVariableFilter2<T>::run(input, state1, params1);
@@ -229,8 +246,8 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
     // Let it go crazy while we are just experimenting
     //   assert(output < 20);
     //   assert(output > -20);
-    output = std::min(20.f, output);
-    output = std::max(-20.f, output);
+    output = std::min(10.f, output);
+    output = std::max(-10.f, output);
 
     F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
 }
@@ -256,10 +273,10 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
             ret = {0, 10, 5, "Fc"};
             break;
         case F2<TBase>::R_PARAM:
-            ret = {1, 10, 1, "R"};
+            ret = {0, 10, 0, "R"};
             break;
         case F2<TBase>::Q_PARAM:
-            ret = {.5, 5, 1.9, "Q"};
+            ret = {0, 10, 2, "Q"};
             break;
         default:
             assert(false);
