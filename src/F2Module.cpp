@@ -102,20 +102,34 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
-    const float jackY = 249;
+    const float jackY = 200;
     const float dy = 30;
 
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 0 * dy),
         module,
+        Comp::FC_INPUT));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 1 * dy),
+        module,
+        Comp::Q_INPUT));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 2 * dy),
+        module,
+        Comp::R_INPUT));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 3 * dy),
+        module,
         Comp::AUDIO_INPUT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, jackY + 2 * dy - .5),
+        Vec(jackX, jackY + 4 * dy - .5),
         module,
         Comp::AUDIO_OUTPUT));
 };
-
 
 /**
  * Widget constructor will describe my implementation structure and

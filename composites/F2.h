@@ -64,6 +64,9 @@ public:
     enum InputIds
     {
         AUDIO_INPUT,
+        FC_INPUT,
+        Q_INPUT,
+        R_INPUT,
         NUM_INPUTS
     };
 
