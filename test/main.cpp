@@ -196,6 +196,7 @@ if (runShaperGen) {
     testSub();
     simd_testBiquad();
     testWVCO();
+    testMultiLag2();
    
 #endif
     testSimpleQuantizer();
@@ -248,7 +249,7 @@ if (runShaperGen) {
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
     testTestSignal();
-    testMultiLag2();
+
    
     testSaw();
     testClockMult();

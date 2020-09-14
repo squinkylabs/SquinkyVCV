@@ -5,6 +5,7 @@
 #include <memory>
 #include "Divider.h"
 #include "IComposite.h"
+#include "SqMath.h"
 #include "StateVariableFilter2.h"
 
 #include "dsp/common.hpp"

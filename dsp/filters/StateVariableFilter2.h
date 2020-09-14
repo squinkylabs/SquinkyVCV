@@ -31,7 +31,7 @@ template <typename T>
 class StateVariableFilter2
 {
 public:
-    StateVariableFilter() = delete;       // we are only static
+    StateVariableFilter2() = delete;       // we are only static
     static T run(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
 
 };
