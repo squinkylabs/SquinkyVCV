@@ -156,6 +156,7 @@ static void testLimiter0()
 static void testLimiterDC(float dc, float expectedDC)
 {
     Limiter l;
+    l.setTimes(1000, 10, 1.f / 44100.f);
     float_4 input(dc);
     float_4 output(0);
     for (int i=0; i<100; ++i) {
