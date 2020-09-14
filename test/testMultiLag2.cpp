@@ -1,11 +1,10 @@
 
-#include "Analyzer.h"
+#include "Limiter.h"
 #include "MultiLag2.h"
 #include "simd.h"
 
+#include "Analyzer.h"
 #include "asserts.h"
-
-
 
 template <class T>
 static void _testMultiLag0()
@@ -53,9 +52,6 @@ static void testMultiLag1()
     _testMultiLag1(l);
 }
 
-
-
-
 const float sampleRate = 44100;
 
 // return first = fc, second = slope
@@ -80,13 +76,9 @@ static std::pair<T, T> getLowpassStats(std::function<float(float)> filter, T FcE
         assertClose(peakMag / zeroMag, 1, .0001);
     }
 
-    //assertClose(cutoff, Fc, 3);    // 3db down at Fc
-
     T slope = Analyzer::getSlopeLowpass(response, (float) FcExpected * 2, sampleRate);
-   // assertClose(slope, expectedSlope, 1);          // to get accurate we nee
     return std::make_pair(cutoff, slope);
 }
-
 
 template<typename T>
 static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSlope)
@@ -97,7 +89,6 @@ static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSl
     //double slope = Analyzer::getSlope(response, (float) Fc * 2, sampleRate);
     assertClose(stats.second, expectedSlope, 1);          // to get accurate we need to go to higher freq, etc... this is fine
 }
-
 
 template <class T>
 static void _testMultiLag2(T& dut, float f)
@@ -151,6 +142,35 @@ static void testMultiLagDisable()
 
 }
 
+
+// Let's test limiter here, too
+static void testLimiter0()
+{
+    Limiter l;
+    for (int i=0; i<100; ++i) {
+        float_4 x = l.step(0);
+        simd_assertEQ(x, float_4(0));
+    }
+}
+
+static void testLimiterDC(float dc, float expectedDC)
+{
+    Limiter l;
+    float_4 input(dc);
+    float_4 output(0);
+    for (int i=0; i<100; ++i) {
+        output = l.step(input);
+    }
+    simd_assertClose(output, float_4(expectedDC), .001);
+}
+
+static void testLimiterDC()
+{
+    testLimiterDC(0, 0);
+    testLimiterDC(1, 1);
+    testLimiterDC(10, 5);
+}
+
 void testMultiLag2()
 {
  //   testLowpassLookup();
@@ -162,4 +182,7 @@ void testMultiLag2()
     testMultiLag1();
     testMultiLag2int();
     testMultiLagDisable();
+
+    testLimiter0();
+    testLimiterDC();
 }
