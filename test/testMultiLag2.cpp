@@ -31,6 +31,7 @@ static void _testMultiLag1(T& dut)
 {
 
     float_4 input;
+   //  printf("at start of test dut=%s\n", toStr(dut.get()).c_str()); 
 
     // test each float in the float_4
     for (int n = 0; n < 4; ++n) {
@@ -41,7 +42,8 @@ static void _testMultiLag1(T& dut)
         for (int i = 0; i < 10; ++i) {
             dut.step(input);
         }
-        for (int i = 0; i < 8; ++i) {
+      // printf("after stepping n=%d dut=%s\n", n, toStr(dut.get()).c_str()); 
+        for (int i = 0; i < 4; ++i) {
             const float expected = (i == n) ? 1.f : 0.f;
             assertClose(dut.get()[i], expected, .0001);
         }
@@ -50,10 +52,12 @@ static void _testMultiLag1(T& dut)
 
 static void testMultiLag1()
 {
+    printf("testing lpf\n");
     MultiLPF2 f;
     f.setCutoff(.4f);
     _testMultiLag1(f);
 
+    printf("testing lag\n");
     MultiLag2 l;
     l.setAttack(.4f);
     l.setRelease(.4f);

@@ -1,6 +1,10 @@
 #pragma once
 
 #include "simd.h"
+#include "SimdBlocks.h"
+
+#include "LookupTable.h"
+#include "LowpassFilter.h"
 
 /**
  * MultiLag2 is based on MultiLag, but uses VCV SIMD library
@@ -9,36 +13,103 @@
 
 class MultiLPF2 {
 public:
-    float_4 get() const;
-    void step(float_4 input) {}
+    float_4 get() const { return memory; }
+    void step(float_4 input);
     
     /**
      * set cutoff, normalized freq
      */
-    void setCutoff(float) {}
+    void setCutoff(float);
+private:
+    float_4 l = 0;
+    float_4 k = 0;
+    float_4 memory = 0;
+    std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterL_Lookup<float>();
 };
-  
 
-inline float_4 MultiLPF2::get() const
+/**
+ * z = _z * _l + _k * x;
+ */
+inline void MultiLPF2::step(float_4 input)
 {
-    return float_4(0);
+
+
+      //  __m128 input4 = _mm_loadu_ps(input + i);  // load 4 input samples
+     //   __m128 memory4 = _mm_loadu_ps(memory + i);
+
+        float_4 temp = input * k;
+        memory *= l;
+       // memory4 = _mm_add_ps(memory4, temp);
+        memory += temp;
+
+      //  _mm_storeu_ps(memory + i, memory4);
+
 }
 
+inline void MultiLPF2::setCutoff(float fs)
+{
+    assert(fs > 00 && fs < .5);
+
+    float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
+    float ks = LowpassFilter<float>::computeKfromL(ls);
+    k = float_4(ks);
+    l = float_4(ls);
+}
+
+
+///////////////////////////////////////////////////////////////////
 
 class MultiLag2 {
 public:
     float_4 get() const;
-    void step(float_4 input) {}
+    void step(float_4 input);
 
-      /**
+    /**
      * attack and release specified as normalized frequency (LPF equivalent)
      */
-    void setAttack(float) {}
-    void setRelease(float) {}
+    void setAttack(float);
+    void setRelease(float);
+private:
+    float_4 memory = 0;
+    float_4 lAttack = 0;
+    float_4 lRelease = 0;
+
+    std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterL_Lookup<float>();
+    bool enabled = true;
 };
 
+/**
+ * z = _z * _l + _k * x;
+ */
+inline void MultiLag2::step(float_4 input)
+{
+    if (!enabled) {
+        memory = input;
+        return;
+    }
+
+    float_4 l = SimdBlocks::ifelse(input >= memory, lAttack, lRelease);
+    float_4 k = float_4(1) - l;
+    float_4 temp = input * k;
+    memory *= l;
+    memory += temp;
+}
 
 inline float_4 MultiLag2::get() const
 {
-    return float_4(0);
+    return memory;
+}
+
+inline void MultiLag2::setAttack(float fs)
+{
+    assert(fs > 00 && fs < .5);
+    float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
+    lAttack = float_4(ls);
+}
+
+inline void MultiLag2::setRelease(float fs)
+{
+    assert(fs > 00 && fs < .5);
+    float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
+    lRelease = float_4(ls);
 }
