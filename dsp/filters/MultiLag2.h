@@ -9,8 +9,6 @@
 /**
  * MultiLag2 is based on MultiLag, but uses VCV SIMD library
  */
-
-
 class MultiLPF2 {
 public:
     float_4 get() const { return memory; }
@@ -32,18 +30,9 @@ private:
  */
 inline void MultiLPF2::step(float_4 input)
 {
-
-
-      //  __m128 input4 = _mm_loadu_ps(input + i);  // load 4 input samples
-     //   __m128 memory4 = _mm_loadu_ps(memory + i);
-
-        float_4 temp = input * k;
-        memory *= l;
-       // memory4 = _mm_add_ps(memory4, temp);
-        memory += temp;
-
-      //  _mm_storeu_ps(memory + i, memory4);
-
+    float_4 temp = input * k;
+    memory *= l;
+    memory += temp;
 }
 
 inline void MultiLPF2::setCutoff(float fs)
@@ -69,6 +58,8 @@ public:
      */
     void setAttack(float);
     void setRelease(float);
+
+    void setEnable(bool);
 private:
     float_4 memory = 0;
     float_4 lAttack = 0;
@@ -78,6 +69,9 @@ private:
     bool enabled = true;
 };
 
+inline void MultiLag2::setEnable(bool b) {
+    enabled = b;
+}
 /**
  * z = _z * _l + _k * x;
  */
