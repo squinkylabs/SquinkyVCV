@@ -56,6 +56,7 @@ extern void testFilteredIterator();
 extern void testMidiEvents();
 extern void testMidiControllers();
 extern void testMultiLag();
+extern void testMultiLag2();
 extern void testUtils();
 extern void testIComposite();
 extern void testMidiEditor();
@@ -247,27 +248,22 @@ if (runShaperGen) {
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
     testTestSignal();
+    testMultiLag2();
    
     testSaw();
     testClockMult();
     testDelay();
     testPoly();
-
     testSinOscillator();
     testHilbert();
-    testButterLookup();
-   
+    testButterLookup();  
     testVCO();
-   
    // testSin();
-
-   
-
     testFFT();
     testAnalyzer();
     testRateConversion();
     testUtils();
-    //testLowpassFilter();
+    testLowpassFilter();
     testLadder();
     testHighpassFilter();
     testSuper();

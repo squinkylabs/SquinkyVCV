@@ -109,6 +109,8 @@ private:
     StateVariableFilterState2<T> state1;
     StateVariableFilterState2<T> state2;
 
+    float outputGain_n = 0;
+
     Divider divn;
     void stepn();
     void setupFreq();
@@ -132,30 +134,38 @@ inline void F2<TBase>::setupFreq()
 {
     const float sampleTime = TBase::engineGetSampleTime();
 
-    const float qVolts = F2<TBase>::params[Q_PARAM].value;
-    // const float q =  std::exp2(qVolts/1.5f + 20 - 4) / 10000;
+    {
+        float qVolts = F2<TBase>::params[Q_PARAM].value;
+        qVolts += F2<TBase>::inputs[Q_INPUT].getVoltage(0);
+        // const float q =  std::exp2(qVolts/1.5f + 20 - 4) / 10000;
 
-    // probably will have to change when we use the SIMD approx.
-    // I doubt this function works with numbers this small.
+        // probably will have to change when we use the SIMD approx.
+        // I doubt this function works with numbers this small.
 
-    const float q =  std::exp2(qVolts/1.5f) - .5;
-    params1.setQ(q);
-    params2.setQ(q);
+        const float q =  std::exp2(qVolts/1.5f) - .5;
+        params1.setQ(q);
+        params2.setQ(q);
 
-    const float rVolts = F2<TBase>::params[R_PARAM].value;
-    const float rx = std::exp2(rVolts/3.f);
-    const float r = rx; 
- //   printf("rv=%f, r=%f\n", rVolts, r);
+        outputGain_n = 1 / q;
+    }
+
+    {
+        float rVolts = F2<TBase>::params[R_PARAM].value;
+        rVolts += F2<TBase>::inputs[R_INPUT].getVoltage(0);
+        const float rx = std::exp2(rVolts/3.f);
+        const float r = rx; 
+    //   printf("rv=%f, r=%f\n", rVolts, r);
 
 
-    float freqVolts = F2<TBase>::params[FC_PARAM].value;
-    freqVolts += F2<TBase>::inputs[FC_INPUT].getVoltage(0);
-    
-    float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
-    freq *= sampleTime;
-  //  printf("freq 1=%f 2=%f\n", freq / r, freq * r);
-    params1.setFreq(freq / r);
-    params2.setFreq(freq * r);
+        float freqVolts = F2<TBase>::params[FC_PARAM].value;
+        freqVolts += F2<TBase>::inputs[FC_INPUT].getVoltage(0);
+        
+        float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
+        freq *= sampleTime;
+    //  printf("freq 1=%f 2=%f\n", freq / r, freq * r);
+        params1.setFreq(freq / r);
+        params2.setFreq(freq * r);
+    }
 }
 
 template <class TBase>
@@ -246,6 +256,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
     // Let it go crazy while we are just experimenting
     //   assert(output < 20);
     //   assert(output > -20);
+    output *= outputGain_n;
     output = std::min(10.f, output);
     output = std::max(-10.f, output);
 
