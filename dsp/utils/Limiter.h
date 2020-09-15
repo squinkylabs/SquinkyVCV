@@ -1,6 +1,7 @@
 #pragma once
 
-//#include "simd.h"
+#include <stdint.h>
+#include "simd/functions.hpp"
 #include "MultiLag2.h"
 
 class Limiter {
@@ -15,7 +16,7 @@ private:
 
 inline float_4 Limiter::step(float_4 input)
 {
-    lag.step(input);
+    lag.step( rack::simd::abs(input));
 
     float_4 reductionGain = threshold / lag.get();
     float_4 gain = SimdBlocks::ifelse( lag.get() > threshold, reductionGain, 1);

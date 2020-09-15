@@ -172,6 +172,30 @@ static void testLimiterDC()
     testLimiterDC(10, 5);
 }
 
+static void testLimiterAC()
+{
+    Limiter l;
+    l.setTimes(1000, 10, 1.f / 44100.f);
+    float_4 output(0);
+    for (int i=0; i<100; ++i) {
+
+        bool b = i & 1;
+        float_4 input( b ? 10 : -10);
+        output = l.step(input);
+    }
+    simd_assertClose(output, float_4(5), .001);
+}
+
+
+static void testLimiterAttack()
+{
+    Limiter l;
+    l.setTimes(1000, 10, 1.f / 44100.f);
+    float_4 output = l.step(10.f);
+    simd_assertGT(output, float_4(7));
+}
+
+
 void testMultiLag2()
 {
  //   testLowpassLookup();
@@ -186,4 +210,6 @@ void testMultiLag2()
 
     testLimiter0();
     testLimiterDC();
+    testLimiterAC();
+    testLimiterAttack();
 }
