@@ -97,6 +97,11 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         icomp,
         Vec(knobX, knobY + 4* dy),
         module,  Comp::MODE_PARAM));
+
+    addParam(SqHelper::createParam<CKSS>(
+        icomp,
+        Vec(knobX + 45, knobY + 0 * dy),
+        module,  Comp::LIMITER_PARAM));
 }
 
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)

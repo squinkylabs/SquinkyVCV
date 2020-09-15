@@ -5,6 +5,7 @@
 #include <memory>
 #include "Divider.h"
 #include "IComposite.h"
+#include "Limiter.h"
 #include "SqMath.h"
 #include "StateVariableFilter2.h"
 
@@ -59,6 +60,7 @@ public:
         R_PARAM,
         Q_PARAM,
         MODE_PARAM,
+        LIMITER_PARAM,
         NUM_PARAMS
     };
 
@@ -110,7 +112,10 @@ private:
     StateVariableFilterState2<T> state1;
     StateVariableFilterState2<T> state2;
 
+    Limiter limiter;
+
     float outputGain_n = 0;
+    bool limiterEnabled_n = 0;
 
     Divider divn;
     void stepn();
@@ -126,6 +131,8 @@ inline void F2<TBase>::init()
      divn.setup(4, [this]() {
         this->stepn();
     });
+
+    limiter.setTimes(1000, 10, TBase::engineGetSampleTime());
 }
 
 
@@ -167,6 +174,8 @@ inline void F2<TBase>::setupFreq()
         params1.setFreq(freq / r);
         params2.setFreq(freq * r);
     }
+
+    
 }
 
 template <class TBase>
@@ -200,6 +209,7 @@ inline void F2<TBase>::stepn()
 {
     setupModes();
     setupFreq();
+    limiterEnabled_n =  bool( std::round(F2<TBase>::params[LIMITER_PARAM].value));
 }
 
 template <class TBase>
@@ -254,10 +264,12 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
         default: 
             assert(false);
     }
-    // Let it go crazy while we are just experimenting
-    //   assert(output < 20);
-    //   assert(output > -20);
-    output *= outputGain_n;
+
+    if (limiterEnabled_n) {
+        output = limiter.step(output)[0];
+    } else {
+        output *= outputGain_n;
+    }
     output = std::min(10.f, output);
     output = std::max(-10.f, output);
 
@@ -289,6 +301,9 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
             break;
         case F2<TBase>::Q_PARAM:
             ret = {0, 10, 2, "Q"};
+            break;
+        case F2<TBase>::LIMITER_PARAM:
+            ret = {0, 1, 1, "Limiter"};
             break;
         default:
             assert(false);
