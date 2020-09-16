@@ -144,7 +144,7 @@ inline void FrequencyShifter<TBase>::step()
     T x, y;
     SinOscillator<T, true>::runQuadrature(x, y, oscState, oscParams);
 
-    // Filter the input through th quadrature filter
+    // Filter the input through the quadrature filter
     const T input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
     const T hilbertSin = BiquadFilter<T>::run(input, hilbertFilterStateSin, hilbertFilterParamsSin);
     const T hilbertCos = BiquadFilter<T>::run(input, hilbertFilterStateCos, hilbertFilterParamsCos);
