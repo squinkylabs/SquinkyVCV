@@ -5,6 +5,7 @@
 
 #ifdef _F2
 #include "F2.h"
+#include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
@@ -77,7 +78,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
     const float knobX = 12;
     const float knobX2 = 45;
     const float knobY = 21;
-    const float dy = 39;
+    const float dy = 50;
 
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -98,6 +99,29 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         icomp,
         Vec(knobX2 + 10, knobY + 1 * dy),
         module,  Comp::LIMITER_PARAM));
+
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(knobX,  knobY + 2 * dy),
+        module,
+        Comp::MODE_PARAM);
+    p->box.size.x = 48;  // width
+    p->box.size.y = 22;   
+    p->text = "LP";
+    p->setLabels( {"LP", "HP", "BP", "N"});
+    addParam(p);
+
+    p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(knobX,  knobY + 3 * dy),
+        module,
+        Comp::TOPOLOGY_PARAM);
+    p->box.size.x = 48;  // width
+    p->box.size.y = 22;   
+    p->text = "12dB";
+    p->setLabels( {"12Db", "24dB", "Par"});
+    addParam(p);
+
 
 #if 0
     addParam(SqHelper::createParam<Blue30SnapKnob>(

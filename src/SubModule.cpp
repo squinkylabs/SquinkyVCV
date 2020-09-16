@@ -70,7 +70,6 @@ struct SubWidget : ModuleWidget
         semitoneDisplay2.step();
     }
 
-
     Label* addLabelx(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
         Label* label = new Label();
@@ -81,9 +80,6 @@ struct SubWidget : ModuleWidget
         addChild(label);
         return label;
     }
-
-
-
 
     void addKnobs(SubModule *module, std::shared_ptr<IComposite> icomp, int side);
     void addJacks(SubModule *module, std::shared_ptr<IComposite> icomp, int side);
@@ -101,8 +97,6 @@ void SubWidget::appendContextMenu(Menu *menu)
         "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/substitute.md");
     menu->addChild(manual);
     
-  //  MenuLabel *spacerLabel2 = new MenuLabel();
-  //  menu->addChild(spacerLabel2);
     SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(module, Comp::AGC_PARAM);
     item->text = "AGC";
     menu->addChild(item);
@@ -113,7 +107,6 @@ const float knobDeltaX = 46;
 const float knobX1 = 14;
 const float knobX2 =62;
 const float knobX3 = 110;
-//const float knobX4 = knobLeftEdge + 3 * knobDeltaX;
 
 const float knobX4 = 218;
 const float knobX5 = 266;
@@ -133,15 +126,11 @@ const float knobX3Trim = knobX1Trim + + 2 * knobDeltaX;;
 const float knob2XOffset = 144;
 const float trimXOffset = 5;
 
-//const float centerWidth = 30;
-
 const float widthHP = 24;
 const float totalWidth = widthHP * RACK_GRID_WIDTH;
 const float middle = totalWidth / 2;
 
-
 const float jacksX1 = 17;
-//const float jacksDeltaX = 38;
 const float jacksX2 = 65;
 const float jacksX3 = 113;
 const float jacksX4 = 221;
