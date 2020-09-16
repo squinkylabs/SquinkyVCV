@@ -75,53 +75,67 @@ struct F2Widget : ModuleWidget
 void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
 {
     const float knobX = 12;
+    const float knobX2 = 45;
     const float knobY = 21;
     const float dy = 39;
+
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 0 * dy),
+        module,  Comp::FC_PARAM));
+
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX2, knobY + 0 * dy),
+        module,  Comp::Q_PARAM));
+    
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 1 * dy),
+        module,  Comp::R_PARAM));
+
+    addParam(SqHelper::createParam<CKSS>(
+        icomp,
+        Vec(knobX2 + 10, knobY + 1 * dy),
+        module,  Comp::LIMITER_PARAM));
+
+#if 0
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX, knobY + 0 * dy),
         module,  Comp::TOPOLOGY_PARAM));
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX, knobY + 1* dy),
-        module,  Comp::FC_PARAM));
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX, knobY + 2* dy),
-        module,  Comp::Q_PARAM));
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX, knobY + 3* dy),
-        module,  Comp::R_PARAM));
+
+    
+
     addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(knobX, knobY + 4* dy),
         module,  Comp::MODE_PARAM));
+   #endif
 
-    addParam(SqHelper::createParam<CKSS>(
-        icomp,
-        Vec(knobX + 45, knobY + 0 * dy),
-        module,  Comp::LIMITER_PARAM));
+  
 }
 
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
-    const float jackY = 220;
-    const float dy = 30;
+    const float jackX2 = 48;
 
-    addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 0 * dy),
-        module,
-        Comp::FC_INPUT));
+    const float jackY = 220;
+    const float dy = 36;
 
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 1 * dy),
         module,
-        Comp::Q_INPUT));
+        Comp::FC_INPUT));
 
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 2 * dy),
+        module,
+        Comp::Q_INPUT));
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX2, jackY + 2 * dy),
         module,
         Comp::R_INPUT));
 
@@ -131,7 +145,7 @@ void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
         Comp::AUDIO_INPUT));
 
     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, jackY + 4 * dy - .5),
+        Vec(jackX2, jackY + 3 * dy - .5),
         module,
         Comp::AUDIO_OUTPUT));
 };
