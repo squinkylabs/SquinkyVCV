@@ -77,27 +77,40 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
 {
     const float knobX = 12;
     const float knobX2 = 45;
-    const float knobY = 21;
+    const float knobY = 40;
+    const float labelY = knobY - 20;
     const float dy = 50;
 
+    addLabel(
+        Vec(knobX, labelY + 0 * dy),
+        "Fc");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX, knobY + 0 * dy),
         module,  Comp::FC_PARAM));
 
+    addLabel(
+        Vec(knobX2, labelY + 0 * dy),
+        "Q");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX2, knobY + 0 * dy),
         module,  Comp::Q_PARAM));
     
+    addLabel(
+        Vec(knobX, labelY + 1 * dy),
+        "R");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX, knobY + 1 * dy),
         module,  Comp::R_PARAM));
 
+    addLabel(
+        Vec(knobX2 - 5, labelY + 1 * dy),
+        "Limit");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(knobX2 + 10, knobY + 1 * dy),
+        Vec(knobX2 + 10, 5 + knobY + 1 * dy),
         module,  Comp::LIMITER_PARAM));
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
@@ -105,7 +118,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         Vec(knobX,  knobY + 2 * dy),
         module,
         Comp::MODE_PARAM);
-    p->box.size.x = 48;  // width
+    p->box.size.x = 54;  // width
     p->box.size.y = 22;   
     p->text = "LP";
     p->setLabels( {"LP", "HP", "BP", "N"});
@@ -116,28 +129,11 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         Vec(knobX,  knobY + 3 * dy),
         module,
         Comp::TOPOLOGY_PARAM);
-    p->box.size.x = 48;  // width
+    p->box.size.x = 54;  // width
     p->box.size.y = 22;   
     p->text = "12dB";
     p->setLabels( {"12Db", "24dB", "Par"});
     addParam(p);
-
-
-#if 0
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
-        icomp,
-        Vec(knobX, knobY + 0 * dy),
-        module,  Comp::TOPOLOGY_PARAM));
-
-    
-
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
-        icomp,
-        Vec(knobX, knobY + 4* dy),
-        module,  Comp::MODE_PARAM));
-   #endif
-
-  
 }
 
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
