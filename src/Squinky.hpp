@@ -53,6 +53,7 @@ extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 extern Model *modelF2Module;
 extern Model *modelF4Module;
+extern Model *modelLimModule;
 
 #ifdef _FORMANTS
     extern Model *modelVocalFilterModule;

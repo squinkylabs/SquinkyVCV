@@ -243,6 +243,13 @@
 			"tags": ["VCF", "Polyphonic"]
 		},
 		{
+			"slug": "squinkylabs-lim",
+			"name": "lim",
+			"description": "lim",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/lim.md",
+			"tags": ["VCF", "Polyphonic"]
+		},
+		{
 			"slug": "squinkylabs-dividerx",
 			"name": "Divider",
 			"description": "x",
