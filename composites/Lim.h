@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "Limiter.h"
+
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
@@ -49,11 +51,13 @@ public:
 
     enum InputIds
     {
+        AUDIO_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -79,23 +83,38 @@ public:
 
 private:
 
+    Limiter limiter;
+    void setupLimiter();
+
 };
 
 
 template <class TBase>
 inline void Lim<TBase>::init()
 {
+    setupLimiter();
 }
 
 template <class TBase>
 inline void Lim<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    float_4 input;
+    input[0] = Lim<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
+    float_4 output = limiter.step(input);
+    Lim<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output[0], 0);
 }
+
+template <class TBase>
+inline void Lim<TBase>::setupLimiter()
+{
+    limiter.setTimes(1, 100, TBase::engineGetSampleTime());
+}
+
 
 template <class TBase>
 inline void Lim<TBase>::onSampleRateChange()
 {
-
+    setupLimiter();
 }
 
 template <class TBase>

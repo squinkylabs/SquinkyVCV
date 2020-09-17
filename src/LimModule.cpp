@@ -67,7 +67,25 @@ struct LimWidget : ModuleWidget
         addChild(label);
         return label;
     }
+
+    void addJacks(LimModule *module, std::shared_ptr<IComposite> icomp);
 };
+
+void LimWidget::addJacks(LimModule *module, std::shared_ptr<IComposite> icomp)
+{
+    const float jackX = 14;
+    const float jackY = 249;
+    const float dy = 30;
+
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 0 * dy),
+        module,
+        Comp::AUDIO_INPUT));
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX, jackY + 1 * dy),
+        module,
+        Comp::AUDIO_OUTPUT));
+}
 
 
 /**
@@ -81,11 +99,14 @@ LimWidget::LimWidget(LimModule *module)
     setModule(module);
     SqHelper::setPanel(this, "res/lim_panel.svg");
 
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    addJacks(module, icomp);
+
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+   // addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+   // addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelLimModule = createModel<LimModule, LimWidget>("squinkylabs-lim");
