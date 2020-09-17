@@ -145,11 +145,13 @@ inline void F2<TBase>::init()
      divn.setup(4, [this]() {
         this->stepn();
     });
+    setupLimiter();
 }
 
 template <class TBase>
 inline void F2<TBase>::setupLimiter()
 {
+    printf("in setup lim\n"); fflush(stdout);
     limiter.setTimes(1, 100, TBase::engineGetSampleTime());
 }
 

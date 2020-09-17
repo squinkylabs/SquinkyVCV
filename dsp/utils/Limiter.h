@@ -38,6 +38,11 @@ inline void Limiter::setTimes(float attackMs, float releaseMs, float sampleTime)
 
     float normAttack = attackHz * sampleTime;
     float normRelease = releaseHz * sampleTime;
+    printf("in set times, attackMS=%f rms=%f, st=%f\n ahz=%f rhz=%f\nna=%f nr=%f\n",
+        attackMs, releaseMs, sampleTime,
+        attackHz, releaseHz, 
+        normAttack, normRelease); fflush(stdout);
+
     lag.setAttack(normAttack);
     lag.setRelease(normRelease);
 }
