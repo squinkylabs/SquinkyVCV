@@ -120,7 +120,7 @@ public:
     void step() override;
 
     
-    void onSampleRateChange()
+    void onSampleRateChange() override
     {
         knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime(), 4);
     }

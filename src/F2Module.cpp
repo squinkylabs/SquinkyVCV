@@ -90,7 +90,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         module,  Comp::FC_PARAM));
 
     addLabel(
-        Vec(knobX2, labelY + 0 * dy),
+        Vec(knobX2+3, labelY + 0 * dy),
         "Q");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -98,7 +98,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         module,  Comp::Q_PARAM));
     
     addLabel(
-        Vec(knobX, labelY + 1 * dy),
+        Vec(knobX+3, labelY + 1 * dy),
         "R");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -121,7 +121,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
     p->box.size.x = 54;  // width
     p->box.size.y = 22;   
     p->text = "LP";
-    p->setLabels( {"LP", "HP", "BP", "N"});
+    p->setLabels( {"LP", "BP", "HP", "N"});
     addParam(p);
 
     p = SqHelper::createParam<PopupMenuParamWidget>(
@@ -132,7 +132,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
     p->box.size.x = 54;  // width
     p->box.size.y = 22;   
     p->text = "12dB";
-    p->setLabels( {"12Db", "24dB", "Par"});
+    p->setLabels( {"12dB", "24dB", "Par"});
     addParam(p);
 }
 
@@ -141,29 +141,45 @@ void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
     const float jackX = 14;
     const float jackX2 = 48;
 
-    const float jackY = 220;
-    const float dy = 36;
+    const float jackY = 200;
+    const float labelY = jackY - 18;
+    const float dy = 45;
 
+     addLabel(
+        Vec(jackX-3 , labelY + 1 * dy),
+        "Fc");
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 1 * dy),
         module,
         Comp::FC_INPUT));
 
+    addLabel(
+        Vec(jackX , labelY + 2 * dy),
+        "Q");
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 2 * dy),
         module,
         Comp::Q_INPUT));
 
+    addLabel(
+        Vec(jackX2 , labelY + 2 * dy),
+        "R");
     addInput(createInput<PJ301MPort>(
         Vec(jackX2, jackY + 2 * dy),
         module,
         Comp::R_INPUT));
 
+    addLabel(
+        Vec(jackX , labelY + 3 * dy),
+        "In");
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 3 * dy),
         module,
         Comp::AUDIO_INPUT));
 
+    addLabel(
+        Vec(jackX2 - 5 , labelY + 3 * dy),
+        "Out");
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX2, jackY + 3 * dy - .5),
         module,

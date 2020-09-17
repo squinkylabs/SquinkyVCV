@@ -7,7 +7,7 @@
 class Limiter {
 public:
     float_4 step(float_4);
-    void setTimes(float attack, float release, float sampleTime);
+   void setTimes(float attackMs, float releaseMs, float sampleTime);
 
 private:
     MultiLag2 lag;
@@ -30,11 +30,16 @@ inline float_4 Limiter::step(float_4 input)
     return gain * input;
 }
 
-inline void Limiter::setTimes(float attack, float release, float sampleTime)
+
+inline void Limiter::setTimes(float attackMs, float releaseMs, float sampleTime)
 {
-    float normAttack = attack * sampleTime;
-    float normRelease = release * sampleTime;
+    float attackHz = 1000.f / attackMs;
+    float releaseHz = 1000.f / releaseMs;
+
+    float normAttack = attackHz * sampleTime;
+    float normRelease = releaseHz * sampleTime;
     lag.setAttack(normAttack);
     lag.setRelease(normRelease);
 }
+
 

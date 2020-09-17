@@ -88,7 +88,7 @@ public:
     friend StateVariableFilter2<T>;
     enum class Mode
     {
-        BandPass, LowPass, HighPass, Notch
+        LowPass, BandPass, HighPass, Notch
     };
 
     /**

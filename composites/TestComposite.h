@@ -219,8 +219,8 @@ public:
         params(60),
         lights(20)
     {
-
     }
+
     virtual ~TestComposite()
     {
     }
@@ -250,7 +250,9 @@ public:
     }
 
 	virtual void process(const ProcessArgs& args)
-	{
-		
+	{	
 	}
+	virtual void onSampleRateChange()
+    {
+    }
 };

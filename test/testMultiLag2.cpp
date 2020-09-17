@@ -10,9 +10,6 @@ template <class T>
 static void _testMultiLag0()
 {
     T l;
-   // for (int i = 0; i < size; ++i) {
-   //     assertClose(l.get(i), 0, .0001);
-   // }
    simd_assertClose(l.get(), float_4(0), .0001);
 }
 
@@ -21,8 +18,6 @@ static void testMultiLag0()
     _testMultiLag0<MultiLPF2>();
     _testMultiLag0<MultiLag2>();
 }
-
-
 
 // test that output eventually matches input
 template <class T>
@@ -139,9 +134,7 @@ static void testMultiLagDisable()
     for (int i = 0; i < 8; ++i) {
         assertEQ(f.get()[0], 1);
     }
-
 }
-
 
 // Let's test limiter here, too
 static void testLimiter0()
@@ -156,7 +149,7 @@ static void testLimiter0()
 static void testLimiterDC(float dc, float expectedDC)
 {
     Limiter l;
-    l.setTimes(1000, 10, 1.f / 44100.f);
+    l.setTimes(1, 100, 1.f / 44100.f);
     float_4 input(dc);
     float_4 output(0);
     for (int i=0; i<100; ++i) {
@@ -175,7 +168,7 @@ static void testLimiterDC()
 static void testLimiterAC()
 {
     Limiter l;
-    l.setTimes(1000, 10, 1.f / 44100.f);
+    l.setTimes(1, 100, 1.f / 44100.f);
     float_4 output(0);
     for (int i=0; i<100; ++i) {
 
@@ -186,15 +179,13 @@ static void testLimiterAC()
     simd_assertClose(output, float_4(5), .001);
 }
 
-
 static void testLimiterAttack()
 {
     Limiter l;
-    l.setTimes(1000, 10, 1.f / 44100.f);
+    l.setTimes(1, 100, 1.f / 44100.f);
     float_4 output = l.step(10.f);
     simd_assertGT(output, float_4(7));
 }
-
 
 void testMultiLag2()
 {
