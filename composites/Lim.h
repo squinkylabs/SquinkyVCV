@@ -58,6 +58,7 @@ public:
     enum OutputIds
     {
         AUDIO_OUTPUT,
+        DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -102,6 +103,10 @@ inline void Lim<TBase>::process(const typename TBase::ProcessArgs& args)
     input[0] = Lim<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
     float_4 output = limiter.step(input);
     Lim<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output[0], 0);
+
+    float_4 debug = limiter._lag()._memory();
+    Lim<TBase>::outputs[DEBUG_OUTPUT].setVoltage(debug[0], 0);
+
 }
 
 template <class TBase>

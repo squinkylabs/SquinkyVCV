@@ -85,6 +85,11 @@ void LimWidget::addJacks(LimModule *module, std::shared_ptr<IComposite> icomp)
         Vec(jackX, jackY + 1 * dy),
         module,
         Comp::AUDIO_OUTPUT));
+
+     addOutput(createOutput<PJ301MPort>(
+        Vec(jackX, 40),
+        module,
+        Comp::DEBUG_OUTPUT));
 }
 
 

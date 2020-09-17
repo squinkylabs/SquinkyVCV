@@ -60,6 +60,8 @@ public:
     void setRelease(float);
 
     void setEnable(bool);
+
+    float_4 _memory() const;
 private:
     float_4 memory = 0;
     float_4 lAttack = 0;
@@ -71,6 +73,10 @@ private:
 
 inline void MultiLag2::setEnable(bool b) {
     enabled = b;
+}
+
+inline float_4 MultiLag2::_memory() const {
+    return memory;
 }
 /**
  * z = _z * _l + _k * x;

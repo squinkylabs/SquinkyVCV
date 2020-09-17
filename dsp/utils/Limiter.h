@@ -9,6 +9,8 @@ public:
     float_4 step(float_4);
    void setTimes(float attackMs, float releaseMs, float sampleTime);
 
+   const MultiLag2& _lag() const;
+
 private:
     MultiLag2 lag;
     float_4 threshold = 5;
@@ -30,6 +32,10 @@ inline float_4 Limiter::step(float_4 input)
     return gain * input;
 }
 
+inline const MultiLag2& Limiter::_lag() const
+{
+    return lag;
+}
 
 inline void Limiter::setTimes(float attackMs, float releaseMs, float sampleTime)
 {
