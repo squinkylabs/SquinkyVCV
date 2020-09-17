@@ -181,10 +181,41 @@ static void testLimiterAC()
 
 static void testLimiterAttack()
 {
+    // test the it can go over the threshold during attack phase
     Limiter l;
     l.setTimes(1, 100, 1.f / 44100.f);
     float_4 output = l.step(10.f);
     simd_assertGT(output, float_4(7));
+}
+
+static void testLimiterTC(float a, float r)
+{
+    float sampleRate = 44100.f;
+    Limiter l;
+    l.setTimes(a, r, 1.f / sampleRate);
+
+    const float aTarget = 10.f / AudioMath::E;
+
+    const float aSec = a / 1000.0;
+    const float aSamplesExpected = sampleRate * aSec;
+
+    int samples = 0;
+    for(bool done = false; !done; ++samples) {
+        l.step(10.f);
+        float_4 mem = l._lag()._memory();
+        if (mem[0] > aTarget) {
+            done = true;
+            printf("\n---- finished attack at %d samples\n", samples);
+            printf("expected was %f samples actual = %d\n", aSamplesExpected, samples);
+            fflush(stdout);
+        }
+    }
+}
+
+static void testLimiterTC()
+{
+    testLimiterTC(1, 100);
+    testLimiterTC(10, 1000);
 }
 
 void testMultiLag2()
@@ -203,4 +234,5 @@ void testMultiLag2()
     testLimiterDC();
     testLimiterAC();
     testLimiterAttack();
+    testLimiterTC();
 }

@@ -107,7 +107,6 @@ static void testADSRAttack()
 
 static void testADSRSnap()
 {
-    printf(" test snap -------------\n");
     ADSR16 adsr;
     setFast4(adsr, .5);
     float_4 gates[4]; 
@@ -273,7 +272,6 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     std::function<void(Comp&)> initFunc,
     std::function<void(Comp&)> runFunc)
 { 
-    printf("--- testOutputLevels %d\n", waveForm); fflush(stdout);
     assertGE(waveForm, 0); 
     assertLE(waveForm, 2); 
     WVCO<TestComposite> wvco; 
@@ -297,19 +295,15 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     for (int i=0; i < iterations; ++i) {  
         wvco.step();
         float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
-       // printf("output 0 = %f\n", x);
         sum += x;
         positive = std::max(positive, x); 
         negative = std::min(negative, x);  
     } 
  
-    // printf("apos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
     assertClose(positive, expectedLevel, 1);
     assertClose(negative, -expectedLevel, 1); 
     sum /= iterations;
-    // printf("pos = %f, neg=%f, sum = %f\n", positive, negative, sum); fflush(stdout);
     assertClose(sum, 0, .03); 
-    // printf("--- leave testOutputLevels %d\n", waveForm);
 }
 
 

@@ -44,8 +44,8 @@ static void testSubLevel(bool sub, int vcoNumber, int side)
 
 
     auto stats = getSignalStats(10000, lambda);
-    printf("test sub=%d, vco#=%d, side=%d\n", sub, vcoNumber, side);
-    printf("stats ret %f, %f, %f\n", std::get<0>(stats), std::get<1>(stats), std::get<2>(stats));
+   // printf("test sub=%d, vco#=%d, side=%d\n", sub, vcoNumber, side);
+   // printf("stats ret %f, %f, %f\n", std::get<0>(stats), std::get<1>(stats), std::get<2>(stats));
 
     if (sub) {
         assertClose(std::get<1>(stats), 1, .2);       // max
@@ -212,8 +212,6 @@ static void testChannels()
 
 static void testSub2()
 {
-    printf("enter test sub 2\n"); fflush(stdout);
-  //  Comp sub;
     std::vector<std::shared_ptr<Comp>> comps;
     for (int i=0; i<10; ++i) {
         std::shared_ptr<Comp> sub = std::make_shared<Comp>();
@@ -229,7 +227,6 @@ static void testSub2()
             sub->step();
         }
     }
-     printf("exit test sub 2\n"); fflush(stdout);
 }
 
 
@@ -451,15 +448,7 @@ void testSub()
 
     testSubLevel(false, 0, 0);
     testSubLevel(false, 1, 0);
-    printf("can't test sub level yet - problems\n");
-    printf("what about testing all waveforms\n");
-   // testSubLevel(true, 0, 0);
-  //  testSubLevel(true, 1, 0);
 
     testSubLevel(false, 0, 1);
     testSubLevel(false, 1, 1);
-  //  testSubLevel(true, 0, 1);
-  //  testSubLevel(true, 1, 1);
-
-
 }

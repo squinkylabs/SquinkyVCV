@@ -40,7 +40,7 @@ std::function<double(double)> AudioMath::makeFunc_Exp(double xMin, double xMax, 
 
 std::function<double(double)> AudioMath::makeFunc_InverseExp(double xMin, double xMax, double yMin, double yMax)
 {
-    printf("make inverse exp(%f, %f, %f, %f)\n", xMin, xMax, yMin, yMax);
+   // printf("make inverse exp(%f, %f, %f, %f)\n", xMin, xMax, yMin, yMax);
     auto ab = getExpFuncConstants(xMin, xMax, yMin, yMax);
     const double a = ab.first;
     const double b = ab.second;
