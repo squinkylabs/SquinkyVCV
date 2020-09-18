@@ -34,7 +34,7 @@ static void _testMultiLag1(T& dut)
         for (int i = 0; i < 10; ++i) {
             dut.step(input);
         }
-        simd_assertClose(dut.get(), input, .0001)
+        simd_assertClose(dut.get(), input, .0001);
     }
 }
 
@@ -152,13 +152,16 @@ static void testLimiter0()
 static void testLimiterDC(float dc, float expectedDC)
 {
     Limiter l;
-    l.setTimes(1, 100, 1.f / 44100.f);
+    const float a = .1f;
+ //   printf("~~~ testLimiterDC dc = %f a = %f\n", dc, a);
+    l.setTimes(a, 100, 1.f / 44100.f);
     float_4 input(dc);
     float_4 output(0);
     for (int i=0; i<100; ++i) {
         output = l.step(input);
     }
     simd_assertClose(output, float_4(expectedDC), .001);
+  //  printf("final VOLT = %f a=%f\n", output[0], a);
 }
 
 static void testLimiterDC()
@@ -171,7 +174,7 @@ static void testLimiterDC()
 static void testLimiterAC()
 {
     Limiter l;
-    l.setTimes(1, 100, 1.f / 44100.f);
+    l.setTimes(.1f, 100, 1.f / 44100.f);
     float_4 output(0);
     for (int i=0; i<100; ++i) {
 
@@ -231,19 +234,18 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
     comp.outputs[outputPort].channels = 1;          // this will set it as patched so comp can set it right
 
     TestComposite::ProcessArgs args =  {44100, 1/44100}; 
-    printf("about to call process\n");
+
     comp.process(args);
-    const int outputChannels = comp.outputs[outputPort].channels;
-    printf("output channels = %d\n", outputChannels); 
+    // const int outputChannels = comp.outputs[outputPort].channels;
+
     assertEQ(int(comp.outputs[outputPort].channels), numChannels);
     for (int i = 0; i < numChannels; ++i) {
-        printf("i = %d\n", i);
+       // printf("i = %d\n", i);
         // should start out at zero
         assertEQ(comp.outputs[outputPort].getVoltage(i), 0);
         comp.inputs[inputPort].setVoltage(10, i);
        // for (int j=0; j<100; ++j) {
             comp.process(args);
-     //   }  
         assertGT(comp.outputs[outputPort].getVoltage(i), 0);
     }
 }
@@ -251,8 +253,7 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
 static void testLimiterPoly()
 {
     using Comp = Lim<TestComposite>;
-    testPolyChannels<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT, 4);
-   // testPoly<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT);
+    testPolyChannels<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT, 16);
 }
 
 void testMultiLag2()
@@ -260,7 +261,7 @@ void testMultiLag2()
  //   testLowpassLookup();
  //   testLowpassLookup2();
  //   testDirectLookup();
-  //  testDirectLookup2();
+//  testDirectLookup2();
 
     testMultiLag0();
     testMultiLag1();

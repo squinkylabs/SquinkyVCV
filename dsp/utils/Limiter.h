@@ -39,8 +39,11 @@ inline const MultiLag2& Limiter::_lag() const
 
 inline void Limiter::setTimes(float attackMs, float releaseMs, float sampleTime)
 {
-    float attackHz = 1000.f / attackMs;
-    float releaseHz = 1000.f / releaseMs;
+   const float correction = 2 * M_PI;
+ //  const float correction = 1;
+//    printf("correct = %f\n", correction);
+    float attackHz = 1000.f / (attackMs * correction);
+    float releaseHz = 1000.f / (releaseMs * correction);
 
     float normAttack = attackHz * sampleTime;
     float normRelease = releaseHz * sampleTime;

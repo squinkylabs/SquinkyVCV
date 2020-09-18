@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "Divider.h"
 #include "Limiter.h"
 #include "SqPort.h"
 
@@ -85,8 +86,13 @@ public:
 
 private:
 
-    Limiter limiter;
+    Limiter limiters[4];
     void setupLimiter();
+    void stepm();
+
+    int numChannels_m = 0;
+    int numBanks_m = 0;
+    Divider divm;
 
 };
 
@@ -95,28 +101,50 @@ template <class TBase>
 inline void Lim<TBase>::init()
 {
     setupLimiter();
+    divm.setup(16, [this]() {
+        this->stepm();
+    });
+}
+
+template <class TBase>
+inline void Lim<TBase>::stepm()
+{
+    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
+    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    numChannels_m = inPort.channels;
+    outPort.setChannels(numChannels_m);
+    numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);   
+    // printf("\n****** after stepm banks = %d numch=%d\n", numBanks_m, numChannels_m);
 }
 
 template <class TBase>
 inline void Lim<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    divm.step();
+   
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    int numChannels_m = inPort.channels;
-    outPort.setChannels(numChannels_m);
+    
+    for (int bank = 0; bank < numBanks_m; ++bank) {
+        const int baseChannel = bank * 4;
+        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
+        const float_4 output = limiters[bank].step(input);
+        outPort.setVoltageSimd(output, baseChannel);
 
-    const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
-    const float_4 output = limiter.step(input);
-    outPort.setVoltageSimd(output, 0);
+     //   printf("bank=%d, ch=%d\n", bank, baseChannel);
+     //   printf("input = %s output=%s\n", toStr(input).c_str(), toStr(output).c_str());
 
-    float_4 debug = limiter._lag()._memory();
-    Lim<TBase>::outputs[DEBUG_OUTPUT].setVoltage(debug[0], 0);
+     //   float_4 debug = limiter._lag()._memory();
+      //  Lim<TBase>::outputs[DEBUG_OUTPUT].setVoltage(debug[0], 0);
+    }
 }
 
 template <class TBase>
 inline void Lim<TBase>::setupLimiter()
 {
-    limiter.setTimes(1, 100, TBase::engineGetSampleTime());
+    for (int i = 0; i<4; ++i) {
+        limiters[i].setTimes(1, 100, TBase::engineGetSampleTime());
+    }
 }
 
 
