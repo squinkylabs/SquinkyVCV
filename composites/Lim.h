@@ -99,6 +99,15 @@ inline void Lim<TBase>::init()
 template <class TBase>
 inline void Lim<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+
+   // numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    int numChannels_m = TBase::inputs[AUDIO_INPUT].channels;
+    TBase::outputs[AUDIO_OUTPUT].setChannels(numChannels_m);
+    printf("just wrote %d channels\n", numChannels_m);
+    printf("out chann to mee looks like %d\n", TBase::outputs[AUDIO_OUTPUT].channels);
+
+
+
     float_4 input;
     input[0] = Lim<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
     float_4 output = limiter.step(input);

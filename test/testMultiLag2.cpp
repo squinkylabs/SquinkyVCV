@@ -1,10 +1,13 @@
 
+#include "Lim.h"
 #include "Limiter.h"
 #include "MultiLag2.h"
 #include "simd.h"
+#include "TestComposite.h"
 
 #include "Analyzer.h"
 #include "asserts.h"
+#include "tutil.h"
 
 template <class T>
 static void _testMultiLag0()
@@ -218,6 +221,37 @@ static void testLimiterTC()
     testLimiterTC(10, 1000);
 }
 
+
+template <class T>
+void testPolyChannels(int  inputPort, int outputPort, int numChannels)
+{
+    T comp;
+    initComposite(comp);
+    comp.inputs[inputPort].channels = numChannels;
+    comp.outputs[outputPort].channels = 1;          // this will set it as patched so comp can set it right
+
+    TestComposite::ProcessArgs args =  {44100, 1/44100}; 
+    printf("about to call process\n");
+    comp.process(args);
+    const int outputChannels = comp.outputs[outputPort].channels;
+    printf("output channels = %d\n", outputChannels); 
+    assertEQ(int(comp.outputs[outputPort].channels), numChannels);
+    for (int i = 0; i < numChannels; ++i) {
+        // should start out at zero
+        assertEQ(0, comp.outputs[outputPort].getVoltage(i));
+    }
+
+
+    assert(false);// finish test
+}
+
+static void testLimiterPoly()
+{
+    using Comp = Lim<TestComposite>;
+    testPolyChannels<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT, 4);
+   // testPoly<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT);
+}
+
 void testMultiLag2()
 {
  //   testLowpassLookup();
@@ -235,4 +269,5 @@ void testMultiLag2()
     testLimiterAC();
     testLimiterAttack();
     testLimiterTC();
+    testLimiterPoly();
 }
