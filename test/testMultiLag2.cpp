@@ -8,6 +8,7 @@
 #include "Analyzer.h"
 #include "asserts.h"
 #include "tutil.h"
+#include <algorithm>
 
 template <class T>
 static void _testMultiLag0()
@@ -194,13 +195,14 @@ static void testLimiterAttack()
     simd_assertGT(output, float_4(7));
 }
 
-static void testLimiterTC(float a, float r)
+static void testLimiterAttackTC(float a)
 {
     float sampleRate = 44100.f;
     Limiter l;
-    l.setTimes(a, r, 1.f / sampleRate);
+    l.setTimes(a, 1000, 1.f / sampleRate);
 
-    const float aTarget = 10.f / AudioMath::E;
+   // const float aTarget = 10.f / AudioMath::E;
+    const float aTarget = 10.f * ( 1 - (1.f / AudioMath::E));
 
     const float aSec = a / 1000.0;
     const float aSamplesExpected = sampleRate * aSec;
@@ -211,17 +213,70 @@ static void testLimiterTC(float a, float r)
         float_4 mem = l._lag()._memory();
         if (mem[0] > aTarget) {
             done = true;
-            printf("\n---- finished attack at %d samples\n", samples);
-            printf("expected was %f samples actual = %d\n", aSamplesExpected, samples);
+            // let's shoot for within 1%
+            const float limits = std::max(2.f, float(aSamplesExpected * .01));
+            assertClose(samples, aSamplesExpected, limits);
             fflush(stdout);
         }
     }
 }
 
+static void testLimiterReleaseTC(float r)
+{
+    float sampleRate = 44100.f;
+    Limiter l;
+    l.setTimes(.1, r, 1.f / sampleRate);
+
+    // first get to 10
+    int x = 0;
+     for(bool done = false; !done; ++x) {
+        l.step(10.f);
+        float_4 mem = l._lag()._memory();
+        if (mem[0] > 9.9) {
+            done = true;
+        }
+        if (x > 100000) {
+            printf("after 100k, mem = %f\n", mem[0]); fflush(stdout);
+            assert(false);
+        }
+     }
+
+   // const float aTarget = 10.f / AudioMath::E;
+    const float rTarget = 10.f * (1.f / AudioMath::E);
+
+    const float rSec = r / 1000.0;
+    const float rSamplesExpected = sampleRate * rSec;
+
+    int samples = 0;
+    for(bool done = false; !done; ++samples) {
+        l.step(0.f);
+        float_4 mem = l._lag()._memory();
+        if (mem[0] < rTarget) {
+            done = true;
+            // let's shoot for within 1%
+            const float limits = rSamplesExpected * .01;
+            assertClose(samples, rSamplesExpected, limits);
+            fflush(stdout);
+        }
+         if (samples > 1000000) {
+            printf("after 3 100k, mem = %f\n", mem[0]); fflush(stdout);
+            assert(false);
+        }
+    }
+}
+
+static void testLimiterTC(float a, float r)
+{
+    testLimiterAttackTC(a);
+    testLimiterReleaseTC(r);
+}
+
 static void testLimiterTC()
 {
-    testLimiterTC(1, 100);
     testLimiterTC(10, 1000);
+    testLimiterTC(1, 100);
+    testLimiterTC(.1, 10000);
+   
 }
 
 

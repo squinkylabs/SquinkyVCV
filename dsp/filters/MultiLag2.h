@@ -103,13 +103,18 @@ inline float_4 MultiLag2::get() const
 inline void MultiLag2::setAttack(float fs)
 {
     assert(fs > 00 && fs < .5);
-    float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
+  //  float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
+    float ls = LowpassFilter<float>::computeLfromFs(fs);
+    {
+        printf("fs = %f, l(comP) = %f, look=%f\n", fs, ls, NonUniformLookupTable<float>::lookup(*lookup, fs));
+    }
     lAttack = float_4(ls);
 }
 
 inline void MultiLag2::setRelease(float fs)
 {
     assert(fs > 00 && fs < .5);
-    float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
+    //float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
+    float ls = LowpassFilter<float>::computeLfromFs(fs);
     lRelease = float_4(ls);
 }
