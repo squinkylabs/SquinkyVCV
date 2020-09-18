@@ -237,12 +237,15 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
     printf("output channels = %d\n", outputChannels); 
     assertEQ(int(comp.outputs[outputPort].channels), numChannels);
     for (int i = 0; i < numChannels; ++i) {
+        printf("i = %d\n", i);
         // should start out at zero
-        assertEQ(0, comp.outputs[outputPort].getVoltage(i));
+        assertEQ(comp.outputs[outputPort].getVoltage(i), 0);
+        comp.inputs[inputPort].setVoltage(10, i);
+       // for (int j=0; j<100; ++j) {
+            comp.process(args);
+     //   }  
+        assertGT(comp.outputs[outputPort].getVoltage(i), 0);
     }
-
-
-    assert(false);// finish test
 }
 
 static void testLimiterPoly()
