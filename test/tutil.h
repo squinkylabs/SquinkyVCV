@@ -64,3 +64,26 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
         assertGT(comp.outputs[outputPort].getVoltage(i), 0);
     }
 }
+
+
+/**
+ * This test routine will:
+ *      instantiate a T (usually a composite)
+ *      initialize it.
+ *      call @param setup
+ *      process long enough for it to take effect
+ *      call @param validate, which will usually assert on state
+ */
+template <class T>
+inline void testArbitrary( std::function<void(T&)> setup, std::function<void(T&)> validate)
+{
+    T comp;
+    initComposite(comp);
+
+    setup(comp);
+    TestComposite::ProcessArgs args =  {44100, 1/44100}; 
+    for (int i = 0; i < 40; ++i) {
+        comp.process(args);
+    }
+    validate(comp);
+}
