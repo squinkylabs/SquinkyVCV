@@ -124,6 +124,7 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     const float v0 = input + v5 + rOut - (params.Qg * state.bp);
     const float v1 = -v0;
 
+    // can we move these to the end?
     state.z4 = v4 * params.fcg + v5;
     state.z3 = v3 * params.fcg + v4;
     state.z2 = v2 * params.fcg + v3;

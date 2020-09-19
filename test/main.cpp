@@ -99,6 +99,7 @@ extern void testSimpleQuantizer();
 extern void testDC();
 extern void testSines();
 extern void testBasic();
+extern void testFilterComposites();
 
 #if 0
 #include <sstream>
@@ -197,7 +198,7 @@ if (runShaperGen) {
     simd_testBiquad();
     testWVCO();
     testMultiLag2();
-   
+    testFilterComposites();
 #endif
     testSimpleQuantizer();
 

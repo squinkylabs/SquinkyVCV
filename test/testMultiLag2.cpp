@@ -279,7 +279,7 @@ static void testLimiterTC()
    
 }
 
-
+#if 0
 template <class T>
 void testPolyChannels(int  inputPort, int outputPort, int numChannels)
 {
@@ -304,6 +304,7 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
         assertGT(comp.outputs[outputPort].getVoltage(i), 0);
     }
 }
+#endif
 
 static void testLimiterPoly()
 {

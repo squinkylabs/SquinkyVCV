@@ -118,40 +118,15 @@ static void test()
     testSetBandwidth<T>();
 }
 
+
+// This stability test is really old.
 static void test4P()
 {
     StateVariableFilterParams4P<float> params4p;
     StateVariableFilterState4P<float> state4p;
 
     printf("----- fcg = %f, qg = %f rg = %f\n", params4p.fcg, params4p.Qg, params4p.Rg);
-    /*
-    *  fcg = T(-.3);
-    * This filter just blows up. Tried with no Q or R feedback. tried with no feedback at all.
-    * will, the integrators are obviously going to grow without bound with no feeback.
-    * no feedback:blows up at 26;
-    * just global blows up at 27
-    * global with fcg = -.6 blows up at 15
-    * -.1 => 86
-    * +.5 17
-    * +.6 => 8
-    * 
-    * fc = -.6 qg =  1 => 14
-    * fc = -.6 qg =  1.5 => 15
-    * fc = -.6 qg =  1.9 => 19
-    * fc = -.6 qg = 2 =>19
-    * fc = -.6 qg = 4 =>19
-    * fc = -.6 qg = 6 =>10
-    * fc = -.6 qg = 10 =>7
-    * fc = -.6 q = 1.9 R = 4 => 51
-    * fc = -.6 q = 1.9 R = 8 => 14
-    * fc = -.6 q = 1.9 R = 3 => STABLE!
-    * 
-    * try v2
-    * fc = -.1 qg = 1.9 rg = 3
-    * 
-    * 
-    */
- 
+
     const int numtimes = 1000;
     float o = 0;
     StateVariableFilter4P<float>::run(1, state4p, params4p);
