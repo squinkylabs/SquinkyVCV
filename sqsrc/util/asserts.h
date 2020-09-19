@@ -58,6 +58,12 @@ extern int _mdb;        // MIDI reverence count
     actual << " expected=" << expected << std::endl << std::flush; \
     assert(false); }
 
+#define assertClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
+    if (!AudioMath::closeTo(actual, expected, diff)) { \
+    std::cout << "assertClosePct failed actual value =" << \
+    actual << " expected=" << expected << " computed diff = " << diff << std::endl << std::flush; \
+    assert(false); }}
+
 
 // assert less than
 #define assertLT(actual, expected) if ( actual >= expected) { \

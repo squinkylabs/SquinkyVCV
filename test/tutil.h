@@ -26,10 +26,7 @@ inline std::tuple<float, float, float> getSignalStats(int iterations, std::funct
     float positive = -100;
     float negative = 100; 
     float sum = 0; 
-  //  const int iterations = 10000;  
     for (int i=0; i < iterations; ++i) {  
-     //   wvco.step();
-      //  float x = wvco.outputs[WVCO<TestComposite>::MAIN_OUTPUT].getVoltage(0); 
         float x = lambda();
         sum += x;
         positive = std::max(positive, x); 

@@ -117,6 +117,8 @@ public:
     {
         mode = m;
     }
+
+    T _fcGain() const { return fcGain; }
 private:
     Mode mode = Mode::BandPass;
     T qGain = 1.;		// internal amp gains

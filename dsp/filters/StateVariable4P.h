@@ -7,7 +7,6 @@ class StateVariableFilterParams4P
 {
 public:
     // for now let's pull out sample time
- //   void setFreqVolts(float volts, float sampleTime);
     void setFreq(float fcNormalized);
     void setNotch(bool);
   
@@ -30,21 +29,6 @@ inline void StateVariableFilterParams4P<T>::setFreq(float normFc)
     normFc = std::max(normFc, .3f);
     fcg = -normFc;
 }
-
-#if 0
-template <typename T>
-inline void StateVariableFilterParams4P<T>::setFreqVolts(float volts, float sampleTime)
-{
-    // there is a a bug, this function doesn't work except simd
-    // float freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(volts + 30) / 1073741824;
-    float freq = rack::dsp::FREQ_C4 * std::exp2(volts + 30) / 1073741824;
-    
-    float g = -freq * sampleTime;
-    // printf("volts = %f freq = %f g = %f\n", volts, freq, g); fflush(stdout);
-    fcg = g;
-}
-#endif
-
 
 template <typename T>
 class StateVariableFilterState4P
@@ -69,7 +53,6 @@ public:
     StateVariableFilter4P() = delete;       // we are only static
     static void run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params);
 private:
- //   static T x(float input, float fcG, float& z);
     static void xx(float& delayMemory, float input, float fcG);
 };
 

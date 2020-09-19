@@ -53,6 +53,7 @@ template <class TBase>
 class F2 : public TBase
 {
 public:
+    using T = float;
 
     F2(Module * module) : TBase(module)
     {
@@ -119,9 +120,11 @@ public:
 
     void onSampleRateChange() override;
 
+    const StateVariableFilterParams2<T>& _params1() const;
+    const StateVariableFilterParams2<T>& _params2() const;
 private:
 
-    using T = float;
+  
     StateVariableFilterParams2<T> params1;
     StateVariableFilterParams2<T> params2;
     StateVariableFilterState2<T> state1;
@@ -153,7 +156,6 @@ inline void F2<TBase>::init()
 template <class TBase>
 inline void F2<TBase>::setupLimiter()
 {
-    printf("in setup lim\n"); fflush(stdout);
     limiter.setTimes(1, 100, TBase::engineGetSampleTime());
 }
 
@@ -162,6 +164,18 @@ template <class TBase>
 inline void F2<TBase>::onSampleRateChange()
 {
     setupLimiter();
+}
+
+template <class TBase>
+inline const StateVariableFilterParams2<float>&  F2<TBase>::_params1() const 
+{
+    return params1;
+}
+
+template <class TBase>
+inline const StateVariableFilterParams2<float>& F2<TBase>::_params2() const 
+{
+    return params2;
 }
 
 template <class TBase>
