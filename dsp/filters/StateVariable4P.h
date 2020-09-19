@@ -10,6 +10,9 @@ public:
     void setFreq(float fcNormalized);
     void setNotch(bool);
   
+    T _fcGain() const { return fcg; }
+    T _qGain() const { return Qg; }
+
     T fcg = T(-.1);
     T Rg = 3;
     T Qg = T(1.9);

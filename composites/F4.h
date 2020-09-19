@@ -59,6 +59,9 @@ public:
     enum InputIds
     {
         AUDIO_INPUT,
+        FC_INPUT,
+        Q_INPUT,
+        R_INPUT,
         NUM_INPUTS
     };
 
@@ -88,9 +91,14 @@ public:
      */
     void process(const typename TBase::ProcessArgs& args) override;
 
+
+    using T = float;    
+    const StateVariableFilterParams4P<T>& _params1() const;
+    // const StateVariableFilterParams4P<T>& _params2() const;
+
 private:
 
-    using T = float;
+
     StateVariableFilterParams4P<T> params4p;
     StateVariableFilterState4P<T> state4p;
     Divider divn;
@@ -106,6 +114,12 @@ inline void F4<TBase>::init()
      divn.setup(4, [this]() {
         this->stepn();
     });
+}
+
+template <class TBase>
+inline const StateVariableFilterParams4P<float>&  F4<TBase>::_params1() const 
+{
+    return params4p;
 }
 
 template <class TBase>
