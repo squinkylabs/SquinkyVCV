@@ -14,14 +14,14 @@ public:
     T fcg = T(-.1);
     T Rg = 3;
     T Qg = T(1.9);
-    bool n = false;
+    bool notch = false;
 };
 
 
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setNotch(bool enable)
 {
-    n = enable;
+    notch = enable;
 }
 
 template <typename T>
@@ -73,6 +73,8 @@ private:
     static void xx(float& delayMemory, float input, float fcG);
 };
 
+#if 0 // original way
+    // maybe we try this again later?
 template <typename T>
 inline void StateVariableFilter4P<T>::xx(float& delayMemory, float input, float fcG)
 {
@@ -83,7 +85,7 @@ inline void StateVariableFilter4P<T>::xx(float& delayMemory, float input, float 
     delayMemory = temp;
 }
 
-#if 0 // original way
+
 template <typename T>
 inline T StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params)
 {
@@ -118,7 +120,8 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     const float v2 = state.z1;
 
     state.bp =  (v2 + v4);
-    const float v0 = input + v5 + (params.Rg * v3) - (params.Qg * state.bp);
+    const float rOut = params.Rg * v3;
+    const float v0 = input + v5 + rOut - (params.Qg * state.bp);
     const float v1 = -v0;
 
     state.z4 = v4 * params.fcg + v5;
@@ -128,8 +131,7 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
 
     state.lp = v5;
     state.hp = v1;
-
-    state.peak = v1 + state.lp;
+    state.peak = v1 + state.lp + (params.notch ? rOut : 0);
 }
 
 #endif
