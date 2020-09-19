@@ -74,13 +74,22 @@ struct LimWidget : ModuleWidget
 void LimWidget::addJacks(LimModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
+    const float labelX = jackX - 6;
     const float jackY = 249;
-    const float dy = 30;
+    const float labelY = jackY - 17;
+    const float dy = 40;
 
+    addLabel(
+        Vec(labelX+6, labelY + 0 * dy),
+        "In");
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 0 * dy),
         module,
         Comp::AUDIO_INPUT));
+
+    addLabel(
+        Vec(labelX, labelY + 1 * dy),
+        "Out");
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX, jackY + 1 * dy),
         module,

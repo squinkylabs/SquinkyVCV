@@ -134,8 +134,8 @@ inline void Lim<TBase>::process(const typename TBase::ProcessArgs& args)
      //   printf("bank=%d, ch=%d\n", bank, baseChannel);
      //   printf("input = %s output=%s\n", toStr(input).c_str(), toStr(output).c_str());
 
-     //   float_4 debug = limiter._lag()._memory();
-      //  Lim<TBase>::outputs[DEBUG_OUTPUT].setVoltage(debug[0], 0);
+        float_4 debug = limiters[bank]._lag()._memory();
+        Lim<TBase>::outputs[DEBUG_OUTPUT].setVoltageSimd(debug, baseChannel);
     }
 }
 

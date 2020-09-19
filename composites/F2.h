@@ -137,6 +137,8 @@ private:
     void setupFreq();
     void setupModes();
     void setupLimiter();
+
+    const int oversample = 4;
 };
 
 template <class TBase>
@@ -212,8 +214,9 @@ inline void F2<TBase>::setupFreq()
 
         
         float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
+        freq /= oversample;
         freq *= sampleTime;
-    //  printf("freq 1=%f 2=%f\n", freq / r, freq * r);
+    //  printf("** freq 1=%f 2=%f freqXover = %f\n", freq / r, freq * r, freq * oversample); fflush(stdout);
         params1.setFreq(freq / r);
         params2.setFreq(freq * r);
     }
@@ -259,6 +262,7 @@ template <class TBase>
 inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     divn.step();
+    assert(oversample == 4);
 
     const float input =  F2<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
 

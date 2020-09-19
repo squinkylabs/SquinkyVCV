@@ -1,15 +1,21 @@
 #include "TestComposite.h"
 
 #include "DrumTrigger.h"
-#include "F2.h"
+
 #include "Filt.h"
-#include "Lim.h"
+
 #include "LookupTable.h"
 #include "Mix8.h"
 #include "Mix4.h"
 #include "MixM.h"
 #include "MixStereo.h"
+
+#ifndef _MSC_VER
 #include "MultiLag.h"
+#include "F2.h"
+#include "Lim.h"
+#endif
+
 #include "ObjectCache.h"
 #include "Slew4.h"
 #include "TestComposite.h"
@@ -266,7 +272,7 @@ static void testMixM()
 }
 
 
-
+#ifndef _MSC_VER
 static void testF2_4X()
 {
     using Comp = F2<TestComposite>;
@@ -333,16 +339,18 @@ static void testLim16()
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
         }, 1);
 }
+#endif
 
 
 void perfTest2()
 {
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
-
+#ifndef _MSC_VER
     testF2_4X();
     testLim1();
     testLim16();
+#endif
 
 
     testDrumTrigger();

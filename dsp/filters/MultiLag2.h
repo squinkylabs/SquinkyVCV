@@ -106,7 +106,7 @@ inline void MultiLag2::setAttack(float fs)
   //  float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
     float ls = LowpassFilter<float>::computeLfromFs(fs);
     {
-        printf("fs = %f, l(comP) = %f, look=%f\n", fs, ls, NonUniformLookupTable<float>::lookup(*lookup, fs));
+    //    printf("fs = %f, l(comP) = %f, look=%f\n", fs, ls, NonUniformLookupTable<float>::lookup(*lookup, fs));
     }
     lAttack = float_4(ls);
 }
