@@ -39,6 +39,8 @@ static void testClockRecoveryOnePeriod()
     b = c.step(5);
     assert(b);
 
+    assertClose(c._getEstimatedFrequency(), 1.f / 6.f, .001);
+
 
 }
 

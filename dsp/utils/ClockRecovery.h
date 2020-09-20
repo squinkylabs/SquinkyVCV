@@ -67,10 +67,11 @@ inline int ClockRecovery::_getResetCount() const
 
 inline float ClockRecovery::_getFrequency() const
 {
+   // return 1.f / float(estimatedPeriod);
     return 0;
 }
 
 inline float ClockRecovery::_getEstimatedFrequency() const
 {
-    return 0;
+    return estimatedPeriod ? (1.f / float(estimatedPeriod)) : 0;
 } 
