@@ -5,6 +5,7 @@
 #include <memory>
 #include "Divider.h"
 #include "IComposite.h"
+#include "Limiter.h"
 #include "StateVariable4P.h"
 
 namespace rack {
@@ -48,11 +49,11 @@ public:
 
     enum ParamIds
     {
-     //   TOPOLOGY_PARAM,
         FC_PARAM,
         R_PARAM,
         Q_PARAM,
         NOTCH_PARAM,
+        LIMITER_PARAM,
         NUM_PARAMS
     };
 
@@ -91,6 +92,8 @@ public:
      */
     void process(const typename TBase::ProcessArgs& args) override;
 
+    void onSampleRateChange() override;
+
 
     using T = float;    
     const StateVariableFilterParams4P<T>& _params1() const;
@@ -101,9 +104,16 @@ private:
 
     StateVariableFilterParams4P<T> params4p;
     StateVariableFilterState4P<T> state4p;
+    Limiter limiter;
+
+    float outputGain_n = 0;
+    bool limiterEnabled_n = 0;
     Divider divn;
 
     void stepn();
+    void setupFreq();
+
+    void setupLimiter();
 
 };
 
@@ -114,6 +124,21 @@ inline void F4<TBase>::init()
      divn.setup(4, [this]() {
         this->stepn();
     });
+
+    setupLimiter();
+}
+
+template <class TBase>
+inline void F4<TBase>::setupLimiter()
+{
+    limiter.setTimes(1, 100, TBase::engineGetSampleTime());
+}
+
+
+template <class TBase>
+inline void F4<TBase>::onSampleRateChange()
+{
+    setupLimiter();
 }
 
 template <class TBase>
@@ -190,6 +215,9 @@ inline IComposite::Config F4Description<TBase>::getParam(int i)
             break;
         case F4<TBase>::NOTCH_PARAM:
             ret = {0, 1, 0, "Notch"};
+            break;
+        case F4<TBase>::LIMITER_PARAM:
+            ret = {0, 1, 0, "Limiter"};
             break;
         default:
             assert(false);
