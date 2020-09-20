@@ -100,6 +100,7 @@ extern void testDC();
 extern void testSines();
 extern void testBasic();
 extern void testFilterComposites();
+extern void testClockRecovery();
 
 #if 0
 #include <sstream>
@@ -176,6 +177,8 @@ if (runShaperGen) {
     }
     
     testIComposite();
+    testClockRecovery();
+
 
 #ifndef _MSC_VER
     testBasic();

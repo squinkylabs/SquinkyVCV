@@ -561,6 +561,9 @@
     <ClCompile Include="..\..\dsp\utils\SimpleQuantizer.cpp">
       <Filter>Source Files\dsp\utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testClockRecovery.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
