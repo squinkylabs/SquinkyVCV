@@ -206,13 +206,12 @@ inline void F4<TBase>::setupFreq()
       //  const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
         const float expMult = 1/2.f; 
         const float q =  std::exp2(qVolts * expMult) - .5;
+        printf("qvolt = %f giving q = %f\n", qVolts, q);
         params4p.setQ(q);
-    //    params2.setQ(q);
+
 
         outputGain_n = 1 / q;
-     //   if (numStages == 2) {
-     //        outputGain_n *= 1 / q;
-     //   }
+
         outputGain_n = std::min(outputGain_n, 1.f);
        // printf("Q = %f outGain = %f\n", q, outputGain_n); fflush(stdout);
     }
@@ -235,7 +234,7 @@ inline void F4<TBase>::setupFreq()
         float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
         freq /= oversample;
         freq *= sampleTime;
-      printf("** freq =%f freqXover = %f\n", freq , freq * oversample); fflush(stdout);
+     // printf("** freq =%f freqXover = %f\n", freq , freq * oversample); fflush(stdout);
         params4p.setFreq(freq);
        // params2.setFreq(freq * r);
        params4p.setR(r);

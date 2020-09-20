@@ -10,7 +10,7 @@ public:
     void setFreq(float fcNormalized);
     void setNotch(bool);
     void setQ(float q) { Qg = q;}
-    void setR(float r) { Rg = r; }
+    void setR(float r) { Rg = r; printf("set Rg to %f\n", Rg); }
   
     T _fcGain() const { return fcg; }
     T _qGain() const { return Qg; }
@@ -32,10 +32,10 @@ template <typename T>
 inline void StateVariableFilterParams4P<T>::setFreq(float normFc)
 {
    // normFc = std::max(normFc, .3f);
-    printf("after max, norm = %f\n", normFc);
+ //   printf("after max, norm = %f\n", normFc);
     
     fcg = -normFc *T(AudioMath::Pi) * T(2) ;
-    printf("sv4p set fcg to %f\n", fcg);
+  //  printf("sv4p set fcg to %f\n", fcg);
 }
 
 template <typename T>
