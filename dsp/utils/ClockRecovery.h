@@ -41,6 +41,7 @@ inline bool ClockRecovery::step(float finput)
         // do nothing if no change
         return false;
     }
+    
     lastInput = bInput;
     if (!bInput) {
         // ignore high to low edge
