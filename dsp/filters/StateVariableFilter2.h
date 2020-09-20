@@ -150,6 +150,7 @@ inline void StateVariableFilterParams2<T>::setFreq(T fc)
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
     fcGain = T(AudioMath::Pi) * T(2) * fc;
+    printf("two pole fc = %f, fcG = %f\n", fcGain);
 }
 
 template <typename T>
