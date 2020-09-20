@@ -1,7 +1,42 @@
 #pragma once
 
+#include "LowpassFilter.h"
 #include "SchmidtTrigger.h"
 #include <assert.h>
+
+
+// super simple sine vco
+class Svco
+{
+public:
+    void setPitch(float pitch);
+    float process();
+private:
+};
+
+class PLL
+{
+public:
+ //   PLL();
+
+    //void inputPeriodEnded();
+    void onNewPeriod(int period);
+    void step(float input);
+private:
+    LowpassFilterState<float> stateLPF;
+    LowpassFilterParams<float> paramsLPF;
+
+    Svco vco;
+};
+
+inline void PLL::onNewPeriod(int period)
+{
+}
+
+inline void PLL::step(float input)
+{
+}
+
 
 /**
  *
@@ -48,6 +83,11 @@ private:
     bool lastInput = false;
     int samplesSinceLastClock = 0;
     States state = States::INIT;
+   // Svco vco;
+    PLL pll;
+  //  float pllFreqOffset = 0;
+
+  //  void pllEndOfPeriod();
 };
 
 inline ClockRecovery::ClockRecovery() : trigger(-1, 1)
@@ -58,6 +98,19 @@ inline ClockRecovery::States ClockRecovery::getState() const
 {
     return state;
 }
+
+#if 0
+inline void ClockRecovery::pllEndOfPeriod()
+{
+    if (estimatedPeriod == 0) {
+        return;
+    }
+
+    float estFreqNorm = 1.f / estimatedPeriod;
+    float error = 0;
+
+}
+#endif
 
 inline bool ClockRecovery::step(float finput)
 {
@@ -83,6 +136,20 @@ inline bool ClockRecovery::step(float finput)
 
     estimatedPeriod = samplesSinceLastClock;
     samplesSinceLastClock = 0;
+
+    switch (state) {
+        case States::INIT:
+            state = States::LOCKING;
+         //   pllFreqOffset = 0;
+            pll.onNewPeriod(estimatedPeriod);
+            break;
+        case States::LOCKING:
+         //   pllEndOfPeriod();
+            break;
+        default:
+            assert(false);
+    }
+    pll.step(finput);
 
     // later we won't always do this - depends on pll
     return true;
