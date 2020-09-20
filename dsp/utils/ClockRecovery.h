@@ -3,10 +3,30 @@
 #include "SchmidtTrigger.h"
 #include <assert.h>
 
+/**
+ *
+ *  --- states ---
+ * 
+ * 0: initial - we don't know anything
+ * 1: have a cycle of pitch estimation. pll is hunting
+ * 2: pll locked.
+ * 
+ * What actions cause state to move "backwards"?
+ * 
+ * PLL loses lockj (2 -> 1)
+ * new period estimate if far from freq
+ * 
+ * Freq is only valid in state2
+ */
+
 class ClockRecovery
 {
 public:
     ClockRecovery();
+    ClockRecovery(const ClockRecovery&) = delete;
+    ClockRecovery& operator= (const ClockRecovery&) = delete;
+
+    enum class States { INIT, LOCKING, LOCKED };
     /**
      * process one input sample.
      * return true if new period/
@@ -18,19 +38,25 @@ public:
      */
     int _getResetCount() const;  
     float _getFrequency()const; 
-    float _getEstimatedFrequency() const;    
+    float _getEstimatedFrequency() const; 
+
+    States getState() const;
 private:
 
     SchmidtTrigger trigger;
-  //  bool estimatorLocked = false;
     int estimatedPeriod = 0;
     bool lastInput = false;
     int samplesSinceLastClock = 0;
+    States state = States::INIT;
 };
 
 inline ClockRecovery::ClockRecovery() : trigger(-1, 1)
 {
+}
 
+inline ClockRecovery::States ClockRecovery::getState() const
+{
+    return state;
 }
 
 inline bool ClockRecovery::step(float finput)

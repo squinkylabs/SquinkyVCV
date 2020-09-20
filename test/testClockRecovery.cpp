@@ -6,6 +6,7 @@
 static void testClockRecoveryInit()
 {
     ClockRecovery c;
+    assert(c.getState() == ClockRecovery::States::INIT);
     assertEQ(c._getResetCount(), 0);
     assertEQ(c._getResetCount(), 0);        // not acquired yet
     assertEQ(c._getEstimatedFrequency(), 0);
@@ -13,6 +14,9 @@ static void testClockRecoveryInit()
     bool b = c.step(0);
     assert(!b);
     assertEQ(c._getResetCount(), 0);
+    assert(c.getState() == ClockRecovery::States::INIT);
+
+   
 }
 
 static void testClockRecoveryOnePeriod()
@@ -66,9 +70,22 @@ static void testClockRecoveryTwoPeriods()
     assertClose(c._getEstimatedFrequency(), .1f, .0001);
 }
 
+static void testClockRecoveryAlternatingPeriods()
+{
+    ClockRecovery c;
+    c.step(-5);
+    for (int i = 0; i < 20; ++i) {
+        generateNPeriods(c, 10, 1);
+        generateNPeriods(c, 11, 1);
+    }
+    assertClose(c._getFrequency(), 1.f / 10.5f, .001);
+
+}
+
 void testClockRecovery() 
 {
     testClockRecoveryInit();
     testClockRecoveryOnePeriod();
     testClockRecoveryTwoPeriods();
+  //  testClockRecoveryAlternatingPeriods();
 }
