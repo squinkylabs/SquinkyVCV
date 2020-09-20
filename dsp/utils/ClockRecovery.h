@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SchmidtTrigger.h"
+#include <assert.h>
 
 class ClockRecovery
 {
@@ -21,16 +22,42 @@ public:
 private:
 
     SchmidtTrigger trigger;
+  //  bool estimatorLocked = false;
+    int estimatedPeriod = 0;
+    bool lastInput = false;
+    int samplesSinceLastClock = 0;
 };
 
 inline ClockRecovery::ClockRecovery() : trigger(-1, 1)
 {
-    
+
 }
 
-inline bool ClockRecovery::step(float)
+inline bool ClockRecovery::step(float finput)
 {
-    return false;
+    samplesSinceLastClock++;
+    bool bInput = trigger.go(finput);
+    if (bInput == lastInput) {
+        // do nothing if no change
+        return false;
+    }
+    lastInput = bInput;
+    if (!bInput) {
+        // ignore high to low edge
+        return false;
+    }
+
+    if (samplesSinceLastClock < 3) {
+        // makes unit tests work (ignores first low to high.
+        // but this isn't a bad idea anyway - make it bigger, though.
+        samplesSinceLastClock = 0;
+        return false;
+    }
+
+    estimatedPeriod = samplesSinceLastClock;
+
+    // later we won't always do this - depends on pll
+    return true;
 }
 
 inline int ClockRecovery::_getResetCount() const 

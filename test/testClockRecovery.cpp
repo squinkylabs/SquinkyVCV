@@ -19,24 +19,24 @@ static void testClockRecoveryOnePeriod()
 {
     ClockRecovery c;
     bool b;
-    b = c.step(0);
+    b = c.step(-5);
     assert(!b);
 
-    b = c.step(10);
+    b = c.step(5);
     assert(!b);
-    b = c.step(10);
+    b = c.step(5);
     assert(!b);
-    b = c.step(10);
-    assert(!b);
-
-    b = c.step(0);
-    assert(!b);
-    b = c.step(0);
-    assert(!b);
-    b = c.step(0);
+    b = c.step(5);
     assert(!b);
 
-    b = c.step(10);
+    b = c.step(-5);
+    assert(!b);
+    b = c.step(-5);
+    assert(!b);
+    b = c.step(-5);
+    assert(!b);
+
+    b = c.step(5);
     assert(b);
 
 
