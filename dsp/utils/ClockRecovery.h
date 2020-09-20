@@ -56,6 +56,7 @@ inline bool ClockRecovery::step(float finput)
     }
 
     estimatedPeriod = samplesSinceLastClock;
+    samplesSinceLastClock = 0;
 
     // later we won't always do this - depends on pll
     return true;

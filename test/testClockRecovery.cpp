@@ -42,13 +42,16 @@ static void testClockRecoveryOnePeriod()
     assertClose(c._getEstimatedFrequency(), 1.f / 6.f, .001);
 }
 
-static void generateOnePeriod(ClockRecovery& c, int halfPeriod, int times)
+static void generateNPeriods(ClockRecovery& c, int period, int times)
 {
     assertGT(times, 0);
 
+    const int firstHalfPeriod = period / 2;
+    const int secondHalfPeriod = period - firstHalfPeriod;
+
     for (int i = 0; i < times; ++i) {
-        for (int t = 0; t < halfPeriod * 2; ++t) {
-            c.step(t < halfPeriod ? 5.f : -5.f);
+        for (int t = 0; t < period; ++t) {
+            c.step(t < firstHalfPeriod ? 5.f : -5.f);
         }
     }
 }
@@ -58,7 +61,7 @@ static void testClockRecoveryTwoPeriods()
     ClockRecovery c;
     c.step(-5);
 
-    generateOnePeriod(c, 5, 1);
+    generateNPeriods(c, 10, 2);
     c.step(5.f);
     assertClose(c._getEstimatedFrequency(), .1f, .0001);
 }
