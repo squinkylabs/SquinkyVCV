@@ -10,10 +10,14 @@ class NonUniformLookupTableParams
 {
 public:
     friend NonUniformLookupTable<T>;
+    NonUniformLookupTableParams() = default;
+    NonUniformLookupTableParams(const NonUniformLookupTableParams&) = delete;
+    NonUniformLookupTableParams& operator= (const NonUniformLookupTableParams&) = delete;
     int size() const
     {
         return (int) entries.size();
     }
+
 private:
 
     class Entry
@@ -55,7 +59,7 @@ inline void NonUniformLookupTable<T>::finalize(NonUniformLookupTableParams<T>& p
 
     using iterator = typename std::map<T, typename NonUniformLookupTableParams<T>::Entry>::iterator;
     iterator it;
-    //typename std::map<T, typename NonUniformLookupTableParams<T>::Entry>::iterator it;
+
     for (it = params.entries.begin(); it != params.entries.end(); ++it) {
         iterator it_next = it;
         ++it_next;

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "SchmidtTrigger.h"
+
 class ClockRecovery
 {
 public:
+    ClockRecovery();
     /**
      * process one input sample.
      * return true if new period/
@@ -16,7 +19,14 @@ public:
     float _getFrequency()const; 
     float _getEstimatedFrequency() const;    
 private:
+
+    SchmidtTrigger trigger;
 };
+
+inline ClockRecovery::ClockRecovery() : trigger(-1, 1)
+{
+    
+}
 
 inline bool ClockRecovery::step(float)
 {

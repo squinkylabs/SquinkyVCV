@@ -27,6 +27,10 @@ public:
     {
     }
     virtual ~WidgetComposite() {}
+    WidgetComposite(const WidgetComposite&) = delete;
+    WidgetComposite& operator=(const WidgetComposite&) = delete;
+
+
     virtual void step()
     {
     };

@@ -221,6 +221,10 @@ public:
     {
     }
 
+	// If we prevent copying here, will prevent for derived classes
+	TestComposite(const TestComposite&) = delete;
+	TestComposite& operator= (const TestComposite&) = delete;
+
     virtual ~TestComposite()
     {
     }

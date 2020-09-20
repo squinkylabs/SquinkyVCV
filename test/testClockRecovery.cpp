@@ -15,7 +15,35 @@ static void testClockRecoveryInit()
     assertEQ(c._getResetCount(), 0);
 }
 
+static void testClockRecoveryOnePeriod()
+{
+    ClockRecovery c;
+    bool b;
+    b = c.step(0);
+    assert(!b);
+
+    b = c.step(10);
+    assert(!b);
+    b = c.step(10);
+    assert(!b);
+    b = c.step(10);
+    assert(!b);
+
+    b = c.step(0);
+    assert(!b);
+    b = c.step(0);
+    assert(!b);
+    b = c.step(0);
+    assert(!b);
+
+    b = c.step(10);
+    assert(b);
+
+
+}
+
 void testClockRecovery() 
 {
     testClockRecoveryInit();
+    testClockRecoveryOnePeriod();
 }
