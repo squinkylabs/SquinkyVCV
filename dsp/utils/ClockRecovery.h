@@ -1,44 +1,92 @@
 #pragma once
 
-#include "LowpassFilter.h"
+//#include "LowpassFilter.h"
+#include "AudioMath.h"
 #include "SchmidtTrigger.h"
+
+#include <algorithm>
+#include <cmath>
 #include <assert.h>
 
+
+// can this move to SqMath?
+#ifndef _CLAMP
+#define _CLAMP
+namespace std {
+    inline float clamp(float v, float lo, float hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+}
+#endif
 
 // super simple sine vco
 class Svco
 {
 public:
-    void setPitch(float pitch);
-    float process();
+    void setPitch(float pitch) {
+        delta = std::clamp(pitch, 0.f, .5f);
+    }
+    float process() {
+        acc += delta;
+        if (acc > 1) {
+            acc -= 1;
+        }
+        return (float) std::sin( acc * AudioMath::Pi * 2);
+    }
 private:
+    float acc = 0;
+    float delta = 0;
 };
 
+/*****************************************************************
+ */
 class PLL
 {
 public:
- //   PLL();
 
-    //void inputPeriodEnded();
-    void onNewPeriod(int period);
+    void onNewPeriodEstimate(int period);
+    void onNewPeriodSameFreq();
     void step(float input);
 private:
-    LowpassFilterState<float> stateLPF;
-    LowpassFilterParams<float> paramsLPF;
+   // LowpassFilterState<float> stateLPF;
+   // LowpassFilterParams<float> paramsLPF;
 
     Svco vco;
+    float baseFreq = 0;
+    float errorAcc = 0;
 };
 
-inline void PLL::onNewPeriod(int period)
+inline void PLL::onNewPeriodEstimate(int period)
 {
+    // on new freq we just accept it and start up loop.
+    baseFreq = 1.f / float(period);
+    vco.setPitch(baseFreq);
+}
+
+inline void PLL::onNewPeriodSameFreq()
+{
+  //  float error = stateLPF.z;
+  //  printf("error = %f\n", error); fflush(stdout);
+    // TODO: close the loop
+    assert(false);
 }
 
 inline void PLL::step(float input)
 {
+    // run vco
+    const float vcoOutput = vco.process();
+    // update error
+   // const float error = input * vcoOutput;
+    errorAcc += input * vcoOutput;
+
+    // update error filter
+   // LowpassFilter<float>::run(error, stateLPF, paramsLPF);
 }
 
 
-/**
+/******************************************************************
  *
  *  --- states ---
  * 
@@ -140,11 +188,12 @@ inline bool ClockRecovery::step(float finput)
     switch (state) {
         case States::INIT:
             state = States::LOCKING;
-         //   pllFreqOffset = 0;
-            pll.onNewPeriod(estimatedPeriod);
+            // We just got a period. send to pll
+            pll.onNewPeriodEstimate(estimatedPeriod);
             break;
         case States::LOCKING:
          //   pllEndOfPeriod();
+            pll.onNewPeriodSameFreq();
             break;
         default:
             assert(false);

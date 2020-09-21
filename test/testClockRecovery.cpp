@@ -74,6 +74,7 @@ static void testClockRecoveryTwoPeriods()
 
 static void testClockRecoveryAlternatingPeriods()
 {
+    printf("start alt\n");
     ClockRecovery c;
     c.step(-5);
     for (int i = 0; i < 20; ++i) {
