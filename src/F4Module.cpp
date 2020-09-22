@@ -78,10 +78,19 @@ void F4Widget::addKnobs(F4Module *module, std::shared_ptr<IComposite> icomp)
     const float knobY = 21;
     const float dy = 39;
 
+
     addParam(SqHelper::createParam<CKSS>(
         icomp,
         Vec(100, 100),
         module, Comp::NOTCH_PARAM));
+    addLabel(Vec(100-4, 80), "N");
+
+    addParam(SqHelper::createParam<CKSS>(
+        icomp,
+        Vec(80, 100),
+        module, Comp::LIMITER_PARAM));
+    addLabel(Vec(80-11, 80), "Lim");
+
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX, knobY + 0* dy),
@@ -99,34 +108,40 @@ void F4Widget::addKnobs(F4Module *module, std::shared_ptr<IComposite> icomp)
 void F4Widget::addJacks(F4Module *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
-    const float jackY = 300;
-    const float dy = 30;
+    const float jackY = 280;
+    const float dy = 50;
     const float dx = 30;
+    const float labelOffset = -20;
 
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + dy),
         module,
         Comp::AUDIO_INPUT));
+    addLabel(Vec(jackX-5, jackY + dy + labelOffset), "In");
 
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX + dx, jackY + dy ),
         module,
         Comp::LP_OUTPUT));
+    addLabel(Vec(jackX+dx-2, jackY + dy + labelOffset), "LP");
      
-     addOutput(createOutput<PJ301MPort>(
+    addOutput(createOutput<PJ301MPort>(
         Vec(jackX + dx, jackY ),
         module,
         Comp::HP_OUTPUT));
+    addLabel(Vec(jackX+dx-2, jackY + labelOffset), "HP");
 
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX + 2* dx, jackY + dy ),
         module,
         Comp::BP_OUTPUT));
+    addLabel(Vec(jackX+ 2*dx - 2, jackY + dy + labelOffset), "BP");
 
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX + 2* dx, jackY  ),
         module,
         Comp::PK_OUTPUT));
+    addLabel(Vec(jackX+ 2*dx -2, jackY + labelOffset), "PK");
 };
 
 

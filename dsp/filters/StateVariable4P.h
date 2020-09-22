@@ -9,8 +9,8 @@ public:
     // for now let's pull out sample time
     void setFreq(float fcNormalized);
     void setNotch(bool);
-    void setQ(float q) { Qg = q;}
-    void setR(float r) { Rg = r; printf("set Rg to %f\n", Rg); }
+    void setQ(float q);
+    void setR(float r);
   
     T _fcGain() const { return fcg; }
     T _qGain() const { return Qg; }
@@ -21,6 +21,20 @@ public:
     bool notch = false;
 };
 
+
+template <typename T>
+inline void StateVariableFilterParams4P<T>::setR(float r)
+{
+    if (r < 2.1) printf("clipping low (%f) R\n", r);
+    Rg = std::max(r, 2.1f);
+}
+
+template <typename T>
+inline void StateVariableFilterParams4P<T>::setQ(float q)
+{
+    if (q < .1) printf("clipping low (%f) Q\n", q);
+    Qg = std::max(q, .1f);
+}
 
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setNotch(bool enable)

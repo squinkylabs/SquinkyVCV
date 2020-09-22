@@ -116,7 +116,10 @@ private:
 
     StateVariableFilterParams4P<T> params4p;
     StateVariableFilterState4P<T> state4p;
-    Limiter limiter;
+    Limiter limiter_lp;
+    Limiter limiter_hp;
+    Limiter limiter_bp;
+    Limiter limiter_pk;
 
     float outputGain_n = 0;
     bool limiterEnabled_n = 0;
@@ -144,7 +147,10 @@ inline void F4<TBase>::init()
 template <class TBase>
 inline void F4<TBase>::setupLimiter()
 {
-    limiter.setTimes(1, 100, TBase::engineGetSampleTime());
+    limiter_lp.setTimes(1, 100, TBase::engineGetSampleTime());
+    limiter_hp.setTimes(1, 100, TBase::engineGetSampleTime());
+    limiter_bp.setTimes(1, 100, TBase::engineGetSampleTime());
+    limiter_pk.setTimes(1, 100, TBase::engineGetSampleTime());
 }
 
 
@@ -163,18 +169,6 @@ inline const StateVariableFilterParams4P<float>&  F4<TBase>::_params1() const
 template <class TBase>
 inline void F4<TBase>::stepn()
 {
-    #if 0
-    const float sampleTime = TBase::engineGetSampleTime();
-
-    params4p.Rg = F4<TBase>::params[R_PARAM].value;
-    params4p.Qg = F4<TBase>::params[Q_PARAM].value;
-
-    float freqVolts = F4<TBase>::params[FC_PARAM].value;
-    float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
-    freq *= sampleTime;
-    params4p.setFreq(freq);
-    #endif
-
     params4p.setNotch( bool( std::round(F4<TBase>::params[NOTCH_PARAM].value)));
 
     setupFreq();
@@ -186,34 +180,27 @@ template <class TBase>
 inline void F4<TBase>::setupFreq()
 {
     const float sampleTime = TBase::engineGetSampleTime();
-  //  const int topologyInt = int( std::round(F4<TBase>::params[TOPOLOGY_PARAM].value));
-  //  const int numStages = (topologyInt == 0) ? 1 : 2; 
-
-  printf("f4::setup freq\n");
 
     {
         float qVolts = F4<TBase>::params[Q_PARAM].value;
         qVolts += F4<TBase>::inputs[Q_INPUT].getVoltage(0);
         qVolts = std::clamp(qVolts, 0, 10);
 
-        // const float q =  std::exp2(qVolts/1.5f + 20 - 4) / 10000;
-        // probably will have to change when we use the SIMD approx.
-        // I doubt this function works with numbers this small.
+        // exponentiate it to stretch out the high number.
+        // let's get if from more or less 0..4
+        // Invert it, too
 
-        // 
-        // 1/ 3 reduced q too much at 24
-   
-      //  const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
-        const float expMult = 1/2.f; 
-        const float q =  std::exp2(qVolts * expMult) - .5;
-        printf("qvolt = %f giving q = %f\n", qVolts, q);
+        const float expMult = .25f; 
+        const float q =  5.6 - std::exp2(qVolts * expMult);
+
+        // printf("qvolt = %f giving q = %f\n", qVolts, q);
         params4p.setQ(q);
 
 
         outputGain_n = 1 / q;
 
         outputGain_n = std::min(outputGain_n, 1.f);
-       // printf("Q = %f outGain = %f\n", q, outputGain_n); fflush(stdout);
+        // printf("Q = %f outGain = %f\n", q, outputGain_n); fflush(stdout);
     }
 
     {
@@ -234,10 +221,8 @@ inline void F4<TBase>::setupFreq()
         float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
         freq /= oversample;
         freq *= sampleTime;
-     // printf("** freq =%f freqXover = %f\n", freq , freq * oversample); fflush(stdout);
         params4p.setFreq(freq);
-       // params2.setFreq(freq * r);
-       params4p.setR(r);
+        params4p.setR(r);
     }
 
 }
@@ -257,23 +242,43 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
     StateVariableFilter4P<T>::run(input, state4p, params4p);
 
     float output = state4p.lp;
-    output = std::min(20.f, output);
-    output = std::max(-20.f, output);
+    if (limiterEnabled_n) {
+        output = limiter_lp.step(output)[0];
+    } else {
+        output *= outputGain_n;
+    }
+    output = std::min(10.f, output);
+    output = std::max(-10.f, output);
     F4<TBase>::outputs[LP_OUTPUT].setVoltage(output, 0);
 
     output = state4p.hp;
-    output = std::min(20.f, output);
-    output = std::max(-20.f, output);
+    if (limiterEnabled_n) {
+        output = limiter_hp.step(output)[0];
+    } else {
+        output *= outputGain_n;
+    }
+    output = std::min(10.f, output);
+    output = std::max(-10.f, output);
     F4<TBase>::outputs[HP_OUTPUT].setVoltage(output, 0);
 
     output = state4p.bp;
-    output = std::min(20.f, output);
-    output = std::max(-20.f, output);
+     if (limiterEnabled_n) {
+        output = limiter_bp.step(output)[0];
+    } else {
+        output *= outputGain_n;
+    }
+    output = std::min(10.f, output);
+    output = std::max(-10.f, output);
     F4<TBase>::outputs[BP_OUTPUT].setVoltage(output, 0);
 
     output = state4p.peak;
-    output = std::min(20.f, output);
-    output = std::max(-20.f, output);
+     if (limiterEnabled_n) {
+        output = limiter_pk.step(output)[0];
+    } else {
+        output *= outputGain_n;
+    }
+    output = std::min(10.f, output);
+    output = std::max(-10.f, output);
     F4<TBase>::outputs[PK_OUTPUT].setVoltage(output, 0);
 }
 
@@ -295,7 +300,7 @@ inline IComposite::Config F4Description<TBase>::getParam(int i)
             ret = {2.4, 10, 3, "R"};
             break;
         case F4<TBase>::Q_PARAM:
-            ret = {1.3, 10, 1.9, "Q"};
+            ret = {0, 10, 1.9, "Q"};
             break;
         case F4<TBase>::NOTCH_PARAM:
             ret = {0, 1, 0, "Notch"};
