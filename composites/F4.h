@@ -197,10 +197,31 @@ inline void F4<TBase>::setupFreq()
         params4p.setQ(q);
 
 
-        outputGain_n = 1 / q;
+        const float qBar = 4 - q;
+      //  outputGain_n = 1 / q;
+     //   outputGain_n = qBar < .15f ? 1 : (1 / (1 + 2 * (qBar - 1.5)));
+
+       // outputGain_n = qBar < .18f ? 1 : (1 / (1 + 2 * (qBar - 1.8)));
+
+        outputGain_n = 1;
+#if 1
+       const float qBarCutoff = 1.5;
+       if (qBar < qBarCutoff) {
+           outputGain_n = 1;
+       } else {
+           float gainReduction = 1 + (qBar - qBarCutoff);
+           //printf("cut=%f reduct=%f\n", qBarCutoff, gainReduction);
+           outputGain_n = 1 / gainReduction;
+       }
+#endif
+
+
 
         outputGain_n = std::min(outputGain_n, 1.f);
-        // printf("Q = %f outGain = %f\n", q, outputGain_n); fflush(stdout);
+
+        // printf("qBar = %f outGain = %f\n", qBar, outputGain_n); fflush(stdout);
+        // printf("qB-1.5=%f, x2 =%f p1=%f\n",
+            
     }
 
     {

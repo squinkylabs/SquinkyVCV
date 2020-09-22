@@ -25,14 +25,14 @@ public:
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setR(float r)
 {
-    if (r < 2.1) printf("clipping low (%f) R\n", r);
+  //  if (r < 2.1) printf("clipping low (%f) R\n", r);
     Rg = std::max(r, 2.1f);
 }
 
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setQ(float q)
 {
-    if (q < .1) printf("clipping low (%f) Q\n", q);
+   // if (q < .1) printf("clipping low (%f) Q\n", q);
     Qg = std::max(q, .1f);
 }
 
