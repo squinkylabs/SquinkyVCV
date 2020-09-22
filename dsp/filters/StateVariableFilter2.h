@@ -145,12 +145,12 @@ inline void StateVariableFilterParams2<T>::setNormalizedBandwidth(T bw)
 template <typename T>
 inline void StateVariableFilterParams2<T>::setFreq(T fc)
 {
-    const float fcLimit = .3;    // .3 is stable, .32 not
+    const float fcLimit = .2;  // this seems to keep things stable
     fc = std::min(fcLimit, fc);
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
     fcGain = T(AudioMath::Pi) * T(2) * fc;
-    printf("two pole fc = %f, fcG = %f\n", fcGain);
+   // printf("two pole fc = %f, fcG = %f\n", fc, fcGain);
 }
 
 template <typename T>
