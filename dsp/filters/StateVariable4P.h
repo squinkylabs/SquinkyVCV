@@ -135,9 +135,10 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     state.z2 = v2 * params.fcg + v3;
     state.z1 = v1 * params.fcg + v2;
 
-    state.lp = v5;
-    state.hp = v1;
-    state.peak = v1 + state.lp + (params.notch ? rOut : 0);
+    state.lp = v5 + (params.notch ? v3 : 0);        // might need to scale v3
+
+    state.hp = v1 + (params.notch ? v3 : 0); 
+    state.peak = v1 + v5 + (params.notch ? rOut : 0);
 }
 
 #endif

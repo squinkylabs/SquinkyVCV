@@ -245,6 +245,7 @@
 		{
 			"slug": "squinkylabs-lim",
 			"name": "lim",
+			"disabled": true,
 			"description": "lim",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/lim.md",
 			"tags": ["VCF", "Polyphonic"]
