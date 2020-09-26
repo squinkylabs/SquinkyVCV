@@ -181,6 +181,7 @@ inline void F4<TBase>::setupFreq()
 {
     const float sampleTime = TBase::engineGetSampleTime();
 
+    float qDbg, rDbg, fDbg;
     {
         float qVolts = F4<TBase>::params[Q_PARAM].value;
         qVolts += F4<TBase>::inputs[Q_INPUT].getVoltage(0);
@@ -192,6 +193,7 @@ inline void F4<TBase>::setupFreq()
 
         const float expMult = .25f; 
         const float q =  5.6 - std::exp2(qVolts * expMult);
+        qDbg = q;
 
         // printf("qvolt = %f giving q = %f\n", qVolts, q);
         params4p.setQ(q);
@@ -244,7 +246,10 @@ inline void F4<TBase>::setupFreq()
         freq *= sampleTime;
         params4p.setFreq(freq);
         params4p.setR(r);
+        fDbg = freq;
+        rDbg = r;
     }
+    printf("f=%f, q=%f r=%f\n", fDbg, qDbg, rDbg);
 
 }
 

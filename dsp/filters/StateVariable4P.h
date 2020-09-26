@@ -25,14 +25,14 @@ public:
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setR(float r)
 {
-  //  if (r < 2.1) printf("clipping low (%f) R\n", r);
+    if (r < 2.1) printf("clipping low (%f) R\n", r);
     Rg = std::max(r, 2.1f);
 }
 
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setQ(float q)
 {
-   // if (q < .1) printf("clipping low (%f) Q\n", q);
+    if (q < .1) printf("clipping low (%f) Q\n", q);
     Qg = std::max(q, .1f);
 }
 
@@ -119,6 +119,9 @@ inline T StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& s
 template <typename T>
 inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params)
 {
+    static float rOutMax = 0;
+    static float rOutMin = 0;
+
     const float v5 = state.z4;
     const float v4 = state.z3;
     const float v3 = state.z2;
@@ -128,6 +131,16 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     const float rOut = params.Rg * v3;
     const float v0 = input + v5 + rOut - (params.Qg * state.bp);
     const float v1 = -v0;
+
+    {
+        if (rOut > rOutMax) rOutMax = rOut;
+        if (rOut < rOutMin) rOutMin = rOut;
+       // printf("RR - %f - %f v3=%f\n", rOutMin, rOutMax, v3);
+        assert(rOut < 10000);
+        assert(rOut > - 10000);
+
+        printf("state [%f, %f, %f, %f] v3=%f rOut=%f\n", state.z1, state.z2, state.z3, state.z4, v3, rOut);
+    }
 
     // can we move these to the end?
     state.z4 = v4 * params.fcg + v5;
