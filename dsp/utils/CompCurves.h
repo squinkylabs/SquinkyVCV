@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
 class CompCurves
@@ -9,6 +10,7 @@ public:
     {
     public:
         xy(float a, float b) : x(a), y(b) {}
+        xy() = default;
         float x=0;
         float y=0;
     };
@@ -32,4 +34,6 @@ public:
      * removed interior points that are on a straight line
      */
     static std::vector<xy> makeCrudeCompGainTable(const Recipe&);
+
+    static std::function<float(float)> continuousGainFunction(const CompCurves::Recipe& r);
 };

@@ -1,7 +1,25 @@
 
 #include "CompCurves.h"
 #include "asserts.h"
-static void testCompCurves0()
+
+static void  testGainFuncNoKnee()
+{
+    CompCurves::Recipe r;
+    r.minX = -10;
+    r.maxX = 10;
+    r.ratio = 2;
+    r.threshold = 0;
+
+    auto func = CompCurves::continuousGainFunction(r);
+
+
+    assertEQ(func(-10), -10);
+    assertEQ(func(0), 0);
+    assertEQ(func(.01f), .005f);
+    assertEQ(func(10), 5);
+}
+
+static void testCompCurves1()
 {
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
@@ -14,7 +32,25 @@ static void testCompCurves0()
     assertEQ(result.size(), 2);
 }
 
+static void testCompCurves2()
+{
+    CompCurves::Recipe r;
+    r.minX = -10;
+    r.maxX = 10;
+    r.ratio = 2;
+    r.threshold = 0;
+
+    auto result = CompCurves::makeCrudeCompGainTable(r);
+
+    printf("results:\n");
+    for (auto x : result) {
+        printf("%f, %f\n", x.x, x.y);
+    }
+    assertEQ(result.size(), 3);
+}
 void testCompCurves()
 {
-    testCompCurves0();
+   // testGainFuncNoKnee();
+   // testCompCurves1();
+    testCompCurves2();
 }
