@@ -8,6 +8,7 @@ public:
     class xy
     {
     public:
+        xy(float a, float b) : x(a), y(b) {}
         float x=0;
         float y=0;
     };

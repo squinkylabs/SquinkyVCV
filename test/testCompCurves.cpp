@@ -17,5 +17,4 @@ static void testCompCurves0()
 void testCompCurves()
 {
     testCompCurves0();
-    assert(false);
 }
