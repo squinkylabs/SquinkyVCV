@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LowpassFilter.h"
 #include <algorithm>
 
 template <typename T>
@@ -11,28 +12,41 @@ public:
     void setNotch(bool);
     void setQ(float q);
     void setR(float r);
+
+    /**
+     * sampleTime is 1/sampleRate
+     */
+    void onSampleTimeChange(float st);
   
     T _fcGain() const { return fcg; }
     T _qGain() const { return Qg; }
 
+    LowpassFilterParams<T> dcBlockParams;
     T fcg = T(-.1);
     T Rg = 3;
     T Qg = T(1.9);
     bool notch = false;
 };
 
+template <typename T>
+inline void StateVariableFilterParams4P<T>::onSampleTimeChange(float st)
+{
+    float normFc = st * 2;      // 2 hz
+    LowpassFilter<T>::setCutoff(dcBlockParams, normFc);
+     printf("** onSampleTimeChange: hpParms l = %f k = %f\n", dcBlockParams.l, dcBlockParams.k);
+}
 
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setR(float r)
 {
-    if (r < 2.1) printf("clipping low (%f) R\n", r);
+    // if (r < 2.1) printf("clipping low (%f) R\n", r);
     Rg = std::max(r, 2.1f);
 }
 
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setQ(float q)
 {
-    if (q < .1) printf("clipping low (%f) Q\n", q);
+    // if (q < .1) printf("clipping low (%f) Q\n", q);
     Qg = std::max(q, .1f);
 }
 
@@ -65,6 +79,8 @@ public:
     T hp = 0;
     T bp = 0;
     T peak = 0;
+
+    LowpassFilterState<T> dcBlockState;
 };
 
 
@@ -77,6 +93,91 @@ public:
 private:
     static void xx(float& delayMemory, float input, float fcG);
 };
+
+// third attempt
+// so far, much better, but still very unstable.
+// When R is 5.8, it blows up when high peak hits 13k
+// when Ris 3 blows up when the single peak hits 1k.
+// maybe R has DC?
+
+#if 1
+template <typename T>
+inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params)
+{
+#if 1
+    static float rOutMax = 0;
+    static float rOutMin = 0;
+    static float total = 0;
+    static int samples=0;
+#endif
+
+    assert(params.fcg < 0);
+    // z1 is special - it's a delay to make the difference eqn realizable
+    const float v2 = state.z1;
+    const float v3 = state.z2 + params.fcg * v2;
+    const float v4 = state.z3 + params.fcg * v3;
+    const float v5 = state.z4 + params.fcg * v4;
+
+    const float rOutRaw = params.Rg * v3;
+    const float lpRout =  LowpassFilter<T>::run(rOutRaw, state.dcBlockState, params.dcBlockParams); 
+    const float rOut = rOutRaw - lpRout;
+  //  const float rOut = LowpassFilter<T>::run(rOutRaw, state.hpState, params.hpParams);
+
+
+   // printf("hpParms l = %f k = %f\n", params.hpParams.l, params.hpParams.k);
+  //  printf("rOutRaw = %f, rOut = %f\n", rOutRaw, rOut); fflush(stdout);
+
+      assert(rOut < 10000);
+      assert(rOut > - 10000);
+       assert(rOutRaw < 10000);
+      assert(rOutRaw > - 10000);
+
+    const float v0 = input + v5 + rOut - (params.Qg * state.bp);
+    const float v1 = -v0;
+
+    state.bp =  (v2 + v4);
+    state.lp = v5 + (params.notch ? v3 : 0);        // might need to scale v3
+    state.hp = v1 + (params.notch ? v3 : 0); 
+    state.peak = v1 + v5 + (params.notch ? rOut : 0);
+#if 0
+
+    {
+        samples ++;
+        total += rOut;
+        float dc = total / samples;
+
+        if (rOut > rOutMax) {
+            rOutMax = rOut;
+            printf("new RMAX = %.2f rmin-%.2f dc=%f, ct=%d\n", rOutMax, rOutMin, dc, samples);
+        }
+        if (rOut < rOutMin) {
+            rOutMin = rOut;
+            printf("new RMin = %.2f max is %.2f dc=%f ct=%d\n", rOutMin, rOutMax, dc, samples);
+        }
+        fflush(stdout);
+      //  assert(dc < 2);
+        // assert(dc > -2);
+      
+
+        //   if (rOut < rOutMin) rOutMin = rOut;
+        // printf("RR - %f - %f v3=%f\n", rOutMin, rOutMax, v3);
+        
+
+        //  assert(rOut < 10000);
+        //  assert(rOut > - 10000);
+
+       // printf("state [%f, %f, %f, %f] v3=%f rOut=%f\n", state.z1, state.z2, state.z3, state.z4, v3, rOut);
+    }
+    #endif
+
+
+    // can we move these to the end?
+    state.z4 = v5;
+    state.z3 = v4;
+    state.z2 = v3;
+    state.z1 = (v1 * params.fcg) + v2;
+}
+#endif
 
 #if 0 // original way
     // maybe we try this again later?
@@ -114,8 +215,9 @@ inline T StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& s
 
     return output;
 }
-#else
+#endif
 
+#if 0      // second way. works but unstable
 template <typename T>
 inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params)
 {
@@ -127,7 +229,9 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     const float v3 = state.z2;
     const float v2 = state.z1;
 
-    state.bp =  (v2 + v4);
+    
+    
+
     const float rOut = params.Rg * v3;
     const float v0 = input + v5 + rOut - (params.Qg * state.bp);
     const float v1 = -v0;
@@ -136,8 +240,9 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
         if (rOut > rOutMax) rOutMax = rOut;
         if (rOut < rOutMin) rOutMin = rOut;
        // printf("RR - %f - %f v3=%f\n", rOutMin, rOutMax, v3);
-        assert(rOut < 10000);
-        assert(rOut > - 10000);
+
+      //  assert(rOut < 10000);
+      //  assert(rOut > - 10000);
 
         printf("state [%f, %f, %f, %f] v3=%f rOut=%f\n", state.z1, state.z2, state.z3, state.z4, v3, rOut);
     }

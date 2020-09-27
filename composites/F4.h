@@ -141,7 +141,8 @@ inline void F4<TBase>::init()
         this->stepn();
     });
 
-    setupLimiter();
+    // setupLimiter();
+    onSampleRateChange();
 }
 
 template <class TBase>
@@ -158,6 +159,8 @@ template <class TBase>
 inline void F4<TBase>::onSampleRateChange()
 {
     setupLimiter();
+    params4p.onSampleTimeChange(TBase::engineGetSampleTime());
+
 }
 
 template <class TBase>
@@ -249,7 +252,7 @@ inline void F4<TBase>::setupFreq()
         fDbg = freq;
         rDbg = r;
     }
-    printf("f=%f, q=%f r=%f\n", fDbg, qDbg, rDbg);
+    // printf("f=%f, q=%f r=%f\n", fDbg, qDbg, rDbg);
 
 }
 
