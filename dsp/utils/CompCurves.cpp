@@ -54,8 +54,8 @@ std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
     auto func = continuousGainFunction(r);
     bool done = false;
     float x = r.minX;
-    //const float deltaX = r.yError;
-    const float deltaX = 1;     // just for test
+    const float deltaX = r.yError;
+    //const float deltaX = 1;     // just for test
     bool lastPointSkipped = false;
     CompCurves::xy lastPoint;
 

@@ -2,6 +2,27 @@
 #include "CompCurves.h"
 #include "asserts.h"
 
+//auto result = CompCurves::makeCrudeCompGainTable(r);
+
+static void verifyCurve(const std::vector<CompCurves::xy>& curve)
+{
+
+    bool first = true;
+    CompCurves::xy lastOne;
+    for (auto q : curve)
+    {
+        if (first) {
+            first = false;
+        }
+        else {
+            assertGT(q.x, lastOne.x);
+            assertGT(q.y, lastOne.y);
+        }
+        lastOne = q;
+
+    }
+}
+
 static void  testGainFuncNoKnee()
 {
     CompCurves::Recipe r;
@@ -30,6 +51,7 @@ static void testCompCurves1()
 
     auto result = CompCurves::makeCrudeCompGainTable(r);
     assertEQ(result.size(), 2);
+    verifyCurve(result);
 }
 
 static void testCompCurves2()
@@ -46,7 +68,8 @@ static void testCompCurves2()
     for (auto x : result) {
         printf("%f, %f\n", x.x, x.y);
     }
-    assertEQ(result.size(), 3);
+    assertEQ(result.size(), 4);
+    verifyCurve(result);
 }
 void testCompCurves()
 {
