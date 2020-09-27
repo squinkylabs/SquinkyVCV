@@ -37,6 +37,7 @@
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiMessage.cpp" />
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
+    <ClCompile Include="..\..\dsp\utils\CompCurves.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\dsp\utils\SimpleQuantizer.cpp" />
     <ClCompile Include="..\..\midi\controller\MakeEmptyTrackCommand4.cpp" />
@@ -87,6 +88,7 @@
     <ClCompile Include="..\..\test\testClockRecovery.cpp" />
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
+    <ClCompile Include="..\..\test\testCompCurves.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
     <ClCompile Include="..\..\test\testDrumTrigger.cpp" />
     <ClCompile Include="..\..\test\testEditCommands4.cpp" />
@@ -227,6 +229,7 @@
     <ClInclude Include="..\..\dsp\utils\AsymRampShaper.h" />
     <ClInclude Include="..\..\dsp\utils\AsymWaveShaper.h" />
     <ClInclude Include="..\..\dsp\utils\AudioMath.h" />
+    <ClInclude Include="..\..\dsp\utils\CompCurves.h" />
     <ClInclude Include="..\..\dsp\utils\Decimator.h" />
     <ClInclude Include="..\..\dsp\utils\fVec.h" />
     <ClInclude Include="..\..\dsp\utils\IIRDecimator.h" />

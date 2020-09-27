@@ -564,6 +564,12 @@
     <ClCompile Include="..\..\test\testClockRecovery.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testCompCurves.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\utils\CompCurves.cpp">
+      <Filter>Source Files\dsp\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -994,6 +1000,9 @@
     </ClInclude>
     <ClInclude Include="..\..\test\TestGenearators.h">
       <Filter>Source Files\test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\utils\CompCurves.h">
+      <Filter>Header Files\dsp\utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
