@@ -19,7 +19,6 @@ static void verifyCurve(const std::vector<CompCurves::xy>& curve)
             assertGT(q.y, lastOne.y);
         }
         lastOne = q;
-
     }
 }
 
