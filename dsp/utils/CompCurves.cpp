@@ -49,6 +49,12 @@ float maxX=50;
 float threshold=1;
 */
 
+std::vector<CompCurves::xy> CompCurves::makeMiddleGainTableSection(const Recipe& r)
+{
+    std::vector <CompCurves::xy> points;
+    return points;
+}
+
 std::vector<CompCurves::xy> CompCurves::makeLeftGainTableSection(const Recipe& r)
 {
     std::vector <CompCurves::xy> points;
@@ -72,20 +78,50 @@ std::vector<CompCurves::xy> CompCurves::makeRightGainTableSection(const Recipe& 
     return points;
 }
 
-std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
+std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTableNoKnee(const Recipe& r)
 {
     assert(r.kneeWidth == 0);
     auto leftLine =  makeLeftGainTableSection(r);
     auto rightLine = makeRightGainTableSection(r);
 
     auto rightBegin = rightLine.begin();
-    if (r.kneeWidth == 0) {
-        assertClose(leftLine.back().x, rightLine.front().x, .0001);
-        rightBegin++;
-    }
+
+    // we expect threshold to be duplicated/
+    assertClose(leftLine.back().x, rightLine.front().x, .0001);
+    rightBegin++;
+
 
     leftLine.insert(leftLine.end(), rightBegin, rightLine.end());
     return leftLine;
+}
+
+std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTableKnee(const Recipe& r)
+{
+    //std::vector <CompCurves::xy> points;
+    assert(r.kneeWidth > 0);
+    auto leftLine = makeLeftGainTableSection(r);
+    auto rightLine = makeRightGainTableSection(r);
+    auto middleCurve = makeMiddleGainTableSection(r);
+   
+    assert(!middleCurve.empty());
+    auto middleBegin = middleCurve.begin();
+    assertClose(leftLine.back().x, middleCurve.front().x, .0001);
+    middleBegin++;
+    leftLine.insert(leftLine.end(), middleBegin, middleCurve.end());
+
+    auto rightBegin = rightLine.begin();
+    assertClose(leftLine.back().x, rightLine.front().x, .0001);
+    rightBegin++;
+    leftLine.insert(leftLine.end(), rightBegin, rightLine.end());
+
+    return leftLine;
+}
+
+std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
+{
+    return (r.kneeWidth == 0) ?
+        makeCrudeCompGainTableNoKnee(r) :
+        makeCrudeCompGainTableKnee(r);
 }
 
 #if 0

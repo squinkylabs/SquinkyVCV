@@ -40,6 +40,7 @@
     <ClCompile Include="..\..\dsp\utils\CompCurves.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\dsp\utils\SimpleQuantizer.cpp" />
+    <ClCompile Include="..\..\dsp\utils\SplineRenderer.cpp" />
     <ClCompile Include="..\..\midi\controller\MakeEmptyTrackCommand4.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditor.cpp" />
     <ClCompile Include="..\..\midi\controller\MidiEditorTab.cpp" />

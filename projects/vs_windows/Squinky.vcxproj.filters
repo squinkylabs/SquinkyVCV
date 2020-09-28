@@ -570,6 +570,9 @@
     <ClCompile Include="..\..\dsp\utils\CompCurves.cpp">
       <Filter>Source Files\dsp\utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\utils\SplineRenderer.cpp">
+      <Filter>Source Files\dsp\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

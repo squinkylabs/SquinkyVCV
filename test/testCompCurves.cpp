@@ -1,8 +1,13 @@
 
 #include "CompCurves.h"
+#include "SplineRenderer.h"
 #include "asserts.h"
 
-//auto result = CompCurves::makeCrudeCompGainTable(r);
+static void testSpline()
+{
+    HermiteSpline s;
+    s.renderPoint(0);
+}
 
 static void verifyCurve(const std::vector<CompCurves::xy>& curve)
 {
@@ -51,8 +56,6 @@ static void testCompCurves1()
     auto result = CompCurves::makeCrudeCompGainTable(r);
     assertEQ(result.size(), 3);
 
-    //assertClose(result[1].x, result[2].x ,001);
-   // assertClose(result[1].y, result[2].y, 001);
     verifyCurve(result);
 }
 
@@ -66,16 +69,31 @@ static void testCompCurves2()
 
     auto result = CompCurves::makeCrudeCompGainTable(r);
 
-    printf("results:\n");
-    for (auto x : result) {
-        printf("%f, %f\n", x.x, x.y);
-    }
     assertEQ(result.size(), 3);
     verifyCurve(result);
 }
+
+static void testCompCurvesKnee2()
+{
+    CompCurves::Recipe r;
+    r.minX = -10;
+    r.maxX = 10;
+    r.ratio = 2;
+    r.threshold = 0;
+    r.kneeWidth = 1;
+
+    auto result = CompCurves::makeCrudeCompGainTable(r);
+
+    assertGT(result.size(), 4);
+    verifyCurve(result);
+    assert(false);          // more tests
+}
+
 void testCompCurves()
 {
+    testSpline();
     testGainFuncNoKnee();
     testCompCurves1();
     testCompCurves2();
+    testCompCurvesKnee2();
 }
