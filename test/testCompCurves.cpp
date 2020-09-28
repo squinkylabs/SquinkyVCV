@@ -5,8 +5,18 @@
 
 static void testSpline()
 {
-    HermiteSpline s;
-    s.renderPoint(0);
+    // try info compression
+    HermiteSpline s(
+        HermiteSpline::point(0, 0),     // p0
+        HermiteSpline::point(1, .5),     // p1
+        HermiteSpline::point(1, 1),     // m0 (p0 out)
+        HermiteSpline::point(0, .5)      // m1 (p1 in)
+    );
+    for (int i=0; i<11; ++i) {
+        double t = i / 10.0;
+        auto x = s.renderPoint(t);
+        printf("p[%d] = %f, %f (t=%f)\n", i, x.first, x.second, t);
+    }
 }
 
 static void verifyCurve(const std::vector<CompCurves::xy>& curve)
@@ -95,5 +105,5 @@ void testCompCurves()
     testGainFuncNoKnee();
     testCompCurves1();
     testCompCurves2();
-    testCompCurvesKnee2();
+    // testCompCurvesKnee2();
 }
