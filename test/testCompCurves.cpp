@@ -49,7 +49,10 @@ static void testCompCurves1()
     r.threshold = 0;
 
     auto result = CompCurves::makeCrudeCompGainTable(r);
-    assertEQ(result.size(), 2);
+    assertEQ(result.size(), 3);
+
+    //assertClose(result[1].x, result[2].x ,001);
+   // assertClose(result[1].y, result[2].y, 001);
     verifyCurve(result);
 }
 
@@ -67,12 +70,12 @@ static void testCompCurves2()
     for (auto x : result) {
         printf("%f, %f\n", x.x, x.y);
     }
-    assertEQ(result.size(), 4);
+    assertEQ(result.size(), 3);
     verifyCurve(result);
 }
 void testCompCurves()
 {
-   // testGainFuncNoKnee();
-   // testCompCurves1();
+    testGainFuncNoKnee();
+    testCompCurves1();
     testCompCurves2();
 }

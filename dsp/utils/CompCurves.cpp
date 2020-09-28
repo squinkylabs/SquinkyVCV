@@ -48,6 +48,47 @@ float minX=-50;
 float maxX=50;
 float threshold=1;
 */
+
+std::vector<CompCurves::xy> CompCurves::makeLeftGainTableSection(const Recipe& r)
+{
+    std::vector <CompCurves::xy> points;
+    points.push_back(CompCurves::xy(r.minX, r.minX));
+    points.push_back(CompCurves::xy(r.threshold, r.threshold));
+    return points;
+}
+
+std::vector<CompCurves::xy> CompCurves::makeRightGainTableSection(const Recipe& r)
+{
+    std::vector <CompCurves::xy> points;
+
+    const float slope2 = 1 / r.ratio;
+    const float uncompY2 = slope2 * r.threshold;
+    const float desiredY2 = r.threshold;
+
+    const float offset2 = desiredY2 - uncompY2;
+
+    points.push_back(CompCurves::xy(r.threshold, r.threshold));
+    points.push_back(CompCurves::xy(r.maxX, r.maxX * slope2 + offset2));
+    return points;
+}
+
+std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
+{
+    assert(r.kneeWidth == 0);
+    auto leftLine =  makeLeftGainTableSection(r);
+    auto rightLine = makeRightGainTableSection(r);
+
+    auto rightBegin = rightLine.begin();
+    if (r.kneeWidth == 0) {
+        assertClose(leftLine.back().x, rightLine.front().x, .0001);
+        rightBegin++;
+    }
+
+    leftLine.insert(leftLine.end(), rightBegin, rightLine.end());
+    return leftLine;
+}
+
+#if 0
 std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
 {
     std::vector<CompCurves::xy> points;
@@ -107,66 +148,5 @@ std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
     }
     return points;
 
-}
-
-#if 0
-std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
-{
-    std::vector<CompCurves::xy> points;
-    auto func = continuousGainFunction(r);
-    bool done = false;
-    float x = r.minX;
-    const float deltaX = r.yError;
-    bool lastPointSkipped = false;
-    CompCurves::xy lastPoint;
-
-
-    while (!done) {
-        float y = func(x);
-        if (points.size() < 2) {
-            points.push_back( CompCurves::xy(x, y));
-        }
-        else {
-            CompCurves::xy firstPoint = points.at(points.size() - 2);
-            CompCurves::xy secondPoint = points.back();
-            CompCurves::xy currentPoint(x, y);
-
-            // calculate a line between first point and current points
-            // f = ax + b
-            const float slope = (currentPoint.y - firstPoint.y) / (currentPoint.x - firstPoint.x);
-            const float offset = firstPoint.y;
-
-            {
-                // some match checking
-                float firstY = offset;
-                assert(firstY == firstPoint.y);
-
-                float currentY = slope * (currentPoint.x - firstPoint.x) + offset;
-                assertClose(currentY, currentPoint.y, (r.yError / 2));
-            }
-
-            float interpolatedSecondPointY = slope * (secondPoint.x - firstPoint.x) + offset;
-            float errorY = std::abs(interpolatedSecondPointY - secondPoint.y);
-            if (errorY < (r.yError / 2)) {
-                // the three points are on a straight line. remove second and replace with current
-              //  points.pop_back();
-              //  points.push_back(CompCurves::xy(x, y));
-                lastPointSkipped = true;
-            }
-            else {
-                assert(false);
-                lastPointSkipped = false;
-                points.push_back(CompCurves::xy(x, y));
-            }
-            lastPoint = currentPoint;
-        }
-        x += deltaX;
-        if (x > r.maxX) {
-            done = true;
-        }
-       
-    }
-    return points;
-   
 }
 #endif

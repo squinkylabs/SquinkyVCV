@@ -13,6 +13,7 @@ public:
         xy() = default;
         float x=0;
         float y=0;
+
     };
 
     class Recipe
@@ -36,4 +37,7 @@ public:
     static std::vector<xy> makeCrudeCompGainTable(const Recipe&);
 
     static std::function<float(float)> continuousGainFunction(const CompCurves::Recipe& r);
+private:
+    static std::vector<xy> makeLeftGainTableSection(const Recipe& r);
+    static std::vector<xy> makeRightGainTableSection(const Recipe& r);
 };
