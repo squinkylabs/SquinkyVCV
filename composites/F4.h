@@ -36,6 +36,22 @@ public:
     int getNumParams() override;
 };
 
+/**
+ * oversample   Q   R N
+ *  4           10  3     blows up with peak at 2k
+ *  8           10  3       "  " 4k
+ * 
+ * If we keep rG >= 2.2 it's ok at 8x
+ * 
+ *  4           8   10    blows up when second peak hits 20k
+ *  8           8   10      40k?
+ * 
+ *  4           5   6       blows up at fc 8
+ *  8           5   6       stable
+ * 
+ * 
+ * 
+ */
 template <class TBase>
 class F4 : public TBase
 {
@@ -264,11 +280,19 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
 
     const float input =  F4<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
     
-    assert(oversample == 4);
+    assert(oversample == 8 || oversample == 4);
     StateVariableFilter4P<T>::run(input, state4p, params4p);
     StateVariableFilter4P<T>::run(input, state4p, params4p);
     StateVariableFilter4P<T>::run(input, state4p, params4p);
     StateVariableFilter4P<T>::run(input, state4p, params4p);
+
+    if (oversample == 8) {
+        StateVariableFilter4P<T>::run(input, state4p, params4p);
+        StateVariableFilter4P<T>::run(input, state4p, params4p);
+        StateVariableFilter4P<T>::run(input, state4p, params4p);
+        StateVariableFilter4P<T>::run(input, state4p, params4p);
+    }
+
 
     float output = state4p.lp;
     if (limiterEnabled_n) {

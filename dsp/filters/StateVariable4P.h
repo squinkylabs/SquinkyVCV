@@ -3,6 +3,7 @@
 #include "LowpassFilter.h"
 #include <algorithm>
 
+#define _HPF
 template <typename T>
 class StateVariableFilterParams4P
 {
@@ -39,8 +40,9 @@ inline void StateVariableFilterParams4P<T>::onSampleTimeChange(float st)
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setR(float r)
 {
-    // if (r < 2.1) printf("clipping low (%f) R\n", r);
-    Rg = std::max(r, 2.1f);
+    // if (r < 2.2) printf("clipping low (%f) R\n", r);
+  //  printf("setting r = %f\n", r);
+    Rg = std::max(r, 2.2f);
 }
 
 template <typename T>
@@ -80,7 +82,9 @@ public:
     T bp = 0;
     T peak = 0;
 
+#ifdef _HPF
     LowpassFilterState<T> dcBlockState;
+#endif
 };
 
 
@@ -119,18 +123,25 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     const float v5 = state.z4 + params.fcg * v4;
 
     const float rOutRaw = params.Rg * v3;
+#ifdef _HPF
     const float lpRout =  LowpassFilter<T>::run(rOutRaw, state.dcBlockState, params.dcBlockParams); 
     const float rOut = rOutRaw - lpRout;
+#else
+    const float rOut = rOutRaw;
+#endif
+   
   //  const float rOut = LowpassFilter<T>::run(rOutRaw, state.hpState, params.hpParams);
 
 
    // printf("hpParms l = %f k = %f\n", params.hpParams.l, params.hpParams.k);
   //  printf("rOutRaw = %f, rOut = %f\n", rOutRaw, rOut); fflush(stdout);
 
+#if 0
       assert(rOut < 10000);
       assert(rOut > - 10000);
        assert(rOutRaw < 10000);
       assert(rOutRaw > - 10000);
+#endif
 
     const float v0 = input + v5 + rOut - (params.Qg * state.bp);
     const float v1 = -v0;
