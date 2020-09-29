@@ -32,7 +32,8 @@ public:
 template <typename T>
 inline void StateVariableFilterParams4P<T>::onSampleTimeChange(float st)
 {
-    float normFc = st * 2;      // 2 hz
+    // Used to be 2hz, but low freq noise made it unstable
+    float normFc = st * 2;      //  hz
     LowpassFilter<T>::setCutoff(dcBlockParams, normFc);
      printf("** onSampleTimeChange: hpParms l = %f k = %f\n", dcBlockParams.l, dcBlockParams.k);
 }
@@ -65,7 +66,8 @@ inline void StateVariableFilterParams4P<T>::setFreq(float normFc)
  //   printf("after max, norm = %f\n", normFc);
     
     fcg = -normFc *T(AudioMath::Pi) * T(2) ;
-  //  printf("sv4p set fcg to %f\n", fcg);
+    fcg = std::min(fcg, -.004f);
+    // printf("sv4p set fcg to %f\n", fcg);
 }
 
 template <typename T>
@@ -99,10 +101,7 @@ private:
 };
 
 // third attempt
-// so far, much better, but still very unstable.
-// When R is 5.8, it blows up when high peak hits 13k
-// when Ris 3 blows up when the single peak hits 1k.
-// maybe R has DC?
+
 
 #if 1
 template <typename T>
@@ -127,6 +126,7 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     const float lpRout =  LowpassFilter<T>::run(rOutRaw, state.dcBlockState, params.dcBlockParams); 
     const float rOut = rOutRaw - lpRout;
 #else
+    a   b
     const float rOut = rOutRaw;
 #endif
    
@@ -143,13 +143,21 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
       assert(rOutRaw > - 10000);
 #endif
 
-    const float v0 = input + v5 + rOut - (params.Qg * state.bp);
+
+    const float bp = v2 + v4;
+    const float v0 = input + v5 + rOut - (params.Qg * bp);
     const float v1 = -v0;
 
-    state.bp =  (v2 + v4);
+  
+    state.bp =  bp;
     state.lp = v5 + (params.notch ? v3 : 0);        // might need to scale v3
     state.hp = v1 + (params.notch ? v3 : 0); 
     state.peak = v1 + v5 + (params.notch ? rOut : 0);
+
+    state.z4 = v5;
+    state.z3 = v4;
+    state.z2 = v3;
+    state.z1 = (v1 * params.fcg) + v2;
 #if 0
 
     {
@@ -182,11 +190,7 @@ inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>
     #endif
 
 
-    // can we move these to the end?
-    state.z4 = v5;
-    state.z3 = v4;
-    state.z2 = v3;
-    state.z1 = (v1 * params.fcg) + v2;
+
 }
 #endif
 

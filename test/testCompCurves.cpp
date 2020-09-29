@@ -5,18 +5,27 @@
 
 static void testSpline()
 {
-    // try info compression
+    // try to generate a section of limiter
+    // the non-compress part is slope 1, and we try to carry that through
     HermiteSpline s(
-        HermiteSpline::point(0, 0),     // p0
-        HermiteSpline::point(1, .5),     // p1
-        HermiteSpline::point(1, 1),     // m0 (p0 out)
-        HermiteSpline::point(0, .5)      // m1 (p1 in)
+        HermiteSpline::point(0, 0),         // p0
+        HermiteSpline::point(1, .5),        // p1
+        HermiteSpline::point(1, 1),         // m0 (p0 out)
+        HermiteSpline::point(0, .5)         // m1 (p1 in)
     );
+
+    HermiteSpline::point last(0, 0);
     for (int i=0; i<11; ++i) {
         double t = i / 10.0;
         auto x = s.renderPoint(t);
-        printf("p[%d] = %f, %f (t=%f)\n", i, x.first, x.second, t);
+
+        double slope = (x.second - last.second) / (x.first - last.first);
+        printf("p[%d] = %f, %f (t=%f) slope = %f\n", i, x.first, x.second, t, slope);
+       // last.x = x.first;
+      //  last.y = x.second;
+        last = x;
     }
+    abort();
 }
 
 static void verifyCurve(const std::vector<CompCurves::xy>& curve)

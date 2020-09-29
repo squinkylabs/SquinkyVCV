@@ -37,6 +37,13 @@ public:
 };
 
 /**
+ * Tuesday:
+ * Q    R       FcDC
+ * 8.6  2.4     50    blows up at 1k
+ * 8.6  2.4     2     gain gets really high at 50 hz
+ * 
+ * 
+ * Monday:
  * oversample   Q   R N
  *  4           10  3     blows up with peak at 2k
  *  8           10  3       "  " 4k
@@ -293,7 +300,7 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
         StateVariableFilter4P<T>::run(input, state4p, params4p);
     }
 
-
+    {
     float output = state4p.lp;
     if (limiterEnabled_n) {
         output = limiter_lp.step(output)[0];
@@ -303,8 +310,9 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
     output = std::min(10.f, output);
     output = std::max(-10.f, output);
     F4<TBase>::outputs[LP_OUTPUT].setVoltage(output, 0);
+    }
 
-    output = state4p.hp;
+    float output = state4p.hp;
     if (limiterEnabled_n) {
         output = limiter_hp.step(output)[0];
     } else {
