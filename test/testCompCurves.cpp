@@ -3,6 +3,7 @@
 #include "SplineRenderer.h"
 #include "asserts.h"
 
+// At the moment, this doesn't test, just prints
 static void testSpline()
 {
     // try to generate a section of limiter
@@ -25,9 +26,43 @@ static void testSpline()
       //  last.y = x.second;
         last = x;
     }
-    abort();
+  //  abort();
 }
 
+static void testLookupBelowTheshNoKnee()
+{
+    // comp ratio of 1 is a straight line - two points
+    CompCurves::Recipe r;
+    r.minX = -10;
+    r.maxX = 10;
+    r.ratio = 1;
+    r.threshold = 1;
+
+    auto table = CompCurves::makeCompGainLookup(r);
+    
+    assertGT(table->size(), 0);
+
+    printf("table size = %d\n", table->size());
+
+    float y = CompCurves::lookup(table, 0);
+    assertEQ(y, 0);
+
+    y = CompCurves::lookup(table, r.threshold);
+    assertEQ(y, r.threshold);
+
+}
+
+void testOldStuff();
+void testCompCurves()
+{
+   // testSpline();
+    testOldStuff();
+    testLookupBelowTheshNoKnee();
+  
+    // testCompCurvesKnee2();
+}
+
+//***************** tests for deprecated func **********
 static void verifyCurve(const std::vector<CompCurves::xy>& curve)
 {
 
@@ -108,11 +143,10 @@ static void testCompCurvesKnee2()
     assert(false);          // more tests
 }
 
-void testCompCurves()
+static void testOldStuff()
 {
-    testSpline();
     testGainFuncNoKnee();
     testCompCurves1();
     testCompCurves2();
-    // testCompCurvesKnee2();
 }
+

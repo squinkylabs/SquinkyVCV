@@ -5,8 +5,27 @@
 #include "asserts.h"
 #include <functional>
 
+CompCurves::LookupPtr CompCurves::makeCompGainLookup(const CompCurves::Recipe& r)
+{
+    assert(r.threshold > 0);
+    CompCurves::LookupPtr ret = std::make_shared<NonUniformLookupTableParams<float>>();
+    if (r.kneeWidth == 0) {
+        addLeftSideCurve(ret, r);
+    } else {
+        assert(false);
+    }
+    NonUniformLookupTable<float>::finalize(*ret);
+    return ret;
+}
 
+void CompCurves::addLeftSideCurve(LookupPtr ptr, const Recipe& r)
+{
+    NonUniformLookupTable<float>::addPoint(*ptr, 0, 0);
+    NonUniformLookupTable<float>::addPoint(*ptr, r.threshold, r.threshold);
+    assert(r.kneeWidth == 0);   // if non-zero, then the above is wrong - it's no linear gain up to thresh
+}
 
+//////////////////////// DPRECATED STUFF
 std::function<float(float)> CompCurves::continuousGainFunction(const CompCurves::Recipe& r)
 {
     assert(r.kneeWidth == 0);
@@ -123,66 +142,3 @@ std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
         makeCrudeCompGainTableNoKnee(r) :
         makeCrudeCompGainTableKnee(r);
 }
-
-#if 0
-std::vector<CompCurves::xy> CompCurves::makeCrudeCompGainTable(const Recipe& r)
-{
-    std::vector<CompCurves::xy> points;
-    auto func = continuousGainFunction(r);
-    bool done = false;
-    float x = r.minX;
-    const float deltaX = r.yError;
-    //const float deltaX = 1;     // just for test
-    bool lastPointSkipped = false;
-    CompCurves::xy lastPoint;
-
-
-    while (!done) {
-        float y = func(x);
-        if (points.size() < 2) {
-            points.push_back(CompCurves::xy(x, y));
-        }
-        else {
-            CompCurves::xy firstPoint = points.at(points.size() - 2);
-            CompCurves::xy secondPoint = points.back();
-            CompCurves::xy currentPoint(x, y);
-
-            // calculate a line between first point and second point
-            // f = ax + b
-            const float slope = (secondPoint.y - firstPoint.y) / (secondPoint.x - firstPoint.x);
-            const float offset = firstPoint.y;
-
-            {
-                // some match checking
-                float firstY = offset;
-                assert(firstY == firstPoint.y);
-
-                float secondY = slope * (secondPoint.x - firstPoint.x) + offset;
-                assertClose(secondY, secondPoint.y, (r.yError / 2));
-            }
-
-            float interpolatedCurrentPointY = slope * (currentPoint.x - firstPoint.x) + offset;
-            float errorY = std::abs(interpolatedCurrentPointY - currentPoint.y);
-            if (errorY < (r.yError / 2)) {
-                // the three points are on a straight line. remove second and replace with current
-              //  points.pop_back();
-              //  points.push_back(CompCurves::xy(x, y));
-                lastPointSkipped = true;
-            }
-            else {
-                //assert(false);
-                lastPointSkipped = false;
-                points.push_back(CompCurves::xy(x, y));
-            }
-            lastPoint = currentPoint;
-        }
-        x += deltaX;
-        if (x > r.maxX) {
-            done = true;
-        }
-
-    }
-    return points;
-
-}
-#endif

@@ -37,6 +37,14 @@ public:
 };
 
 /**
+ * Friday
+ * pretty stable, except very high Q always makes it unstable, and very high Fc is unstable
+ * at 16X the high freq stablility is much better.
+ * 
+ * oversample   Q   R N
+ *  4           5   5       no hump, blows up > 10k    
+ *              7   7 X     blows up with 2nd hump > 20k
+ *              7   10 X     blows up with 2nd hump > 20k
  * Tuesday:
  * Q    R       FcDC
  * 8.6  2.4     50    blows up at 1k
@@ -287,18 +295,10 @@ inline void F4<TBase>::process(const typename TBase::ProcessArgs& args)
 
     const float input =  F4<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
     
-    assert(oversample == 8 || oversample == 4);
-    StateVariableFilter4P<T>::run(input, state4p, params4p);
-    StateVariableFilter4P<T>::run(input, state4p, params4p);
-    StateVariableFilter4P<T>::run(input, state4p, params4p);
-    StateVariableFilter4P<T>::run(input, state4p, params4p);
-
-    if (oversample == 8) {
-        StateVariableFilter4P<T>::run(input, state4p, params4p);
-        StateVariableFilter4P<T>::run(input, state4p, params4p);
-        StateVariableFilter4P<T>::run(input, state4p, params4p);
+    for (int i=0; i<oversample; ++i) {
         StateVariableFilter4P<T>::run(input, state4p, params4p);
     }
+
 
     {
     float output = state4p.lp;
