@@ -33,8 +33,8 @@ static void testLookupBelowTheshNoKnee()
 {
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
-    r.minX = -10;
-    r.maxX = 10;
+  //  r.minX = -10;
+  //  r.maxX = 10;
     r.ratio = 1;
     r.threshold = 1;
 
@@ -49,7 +49,37 @@ static void testLookupBelowTheshNoKnee()
 
     y = CompCurves::lookup(table, r.threshold);
     assertEQ(y, r.threshold);
+}
 
+void foo()
+{
+    float thresh = 1;
+    float dbTh = 2;     // arbitrary
+  //  float gTh = AudioMath::gainFromDb(dbTh);
+
+    float db10Th = 0;
+}
+
+static void testLookupAboveTheshNoKneeNoComp()
+{
+    // comp ratio of 1 is a straight line - two points
+    CompCurves::Recipe r;
+  //  r.minX = -10;
+ //   r.maxX = 10;
+    r.ratio = 1;
+    r.threshold = 1;
+
+    auto table = CompCurves::makeCompGainLookup(r);
+    
+    assertGT(table->size(), 0);
+    float y = CompCurves::lookup(table, r.threshold);
+    assertEQ(y, r.threshold);
+
+    const float dbThresh = 0;           // unity again a thresh if no knee
+    const double dbThresh10 = AudioMath::db(10);   // input 10 X thresh
+
+    y = CompCurves::lookup(table, 10);
+    assertEQ(y, 1);     // ratio of 1 is constant x1 gain
 }
 
 void testOldStuff();
@@ -58,6 +88,7 @@ void testCompCurves()
    // testSpline();
     testOldStuff();
     testLookupBelowTheshNoKnee();
+    testLookupAboveTheshNoKneeNoComp();
   
     // testCompCurvesKnee2();
 }

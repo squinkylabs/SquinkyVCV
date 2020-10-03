@@ -93,7 +93,8 @@ public:
 
 
 private:
-    static void addLeftSideCurve(LookupPtr, const Recipe& r);
+    static xy addLeftSideCurve(LookupPtr, const Recipe& r);
+    static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);
 
     /**
      * Deprecated
