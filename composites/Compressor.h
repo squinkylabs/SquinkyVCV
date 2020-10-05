@@ -94,10 +94,12 @@ private:
     Cmprsr compressors[4];
     void setupLimiter();
     void stepm();
+    void stepn();
 
     int numChannels_m = 0;
     int numBanks_m = 0;
     Divider divm;
+    Divider divn;
 
 };
 
@@ -109,6 +111,23 @@ inline void Compressor<TBase>::init()
     divm.setup(16, [this]() {
         this->stepm();
     });
+    divn.setup(4, [this]() {
+        this->stepn();
+    });
+}
+
+template <class TBase>
+inline void Compressor<TBase>::stepn()
+{
+    // TODO: taper
+    const float rawThresh = Compressor<TBase>::params[THRESHOLD_PARAM].value;
+    const float thresh = std::max(.01f, rawThresh);
+
+    for (int i = 0; i<4; ++i) {
+        //compressors[i].setTimes(1, 100, TBase::engineGetSampleTime());
+        compressors[i].setThreshold(thresh);
+    }
+
 }
 
 template <class TBase>
@@ -126,7 +145,8 @@ template <class TBase>
 inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     divm.step();
-   
+    divn.step();
+
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
     
@@ -139,8 +159,8 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
      //   printf("bank=%d, ch=%d\n", bank, baseChannel);
      //   printf("input = %s output=%s\n", toStr(input).c_str(), toStr(output).c_str());
 
-        float_4 debug = compressors[bank]._lag()._memory();
-        Compressor<TBase>::outputs[DEBUG_OUTPUT].setVoltageSimd(debug, baseChannel);
+      //  float_4 debug = compressors[bank]._lag()._memory();
+      //  Compressor<TBase>::outputs[DEBUG_OUTPUT].setVoltageSimd(debug, baseChannel);
     }
 }
 
@@ -177,7 +197,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {1.0f, 1000.0f, 10, "Release"};
             break;
          case Compressor<TBase>::THRESHOLD_PARAM:
-            ret = {1.0f, 1000.0f, 10, "Threshold"};
+            ret = {.1f, 5, 1, "Threshold"};
             break;
          case Compressor<TBase>::RATIO_PARAM:
             ret = {0, 4, 0, "Ratio"};

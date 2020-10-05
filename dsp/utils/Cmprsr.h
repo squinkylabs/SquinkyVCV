@@ -6,14 +6,20 @@
 
 class Cmprsr {
 public:
+    enum class Ratios {
+        HardLimit,
+        _4_1_hard
+    };
     float_4 step(float_4);
-   void setTimes(float attackMs, float releaseMs, float sampleTime);
+    void setTimes(float attackMs, float releaseMs, float sampleTime);
+    void setThreshold(float th);
 
-   const MultiLag2& _lag() const;
+    const MultiLag2& _lag() const;
 
 private:
     MultiLag2 lag;
     float_4 threshold = 5;
+    Ratios ratio = Ratios::HardLimit;
 };
 
 inline float_4 Cmprsr::step(float_4 input)
@@ -22,6 +28,8 @@ inline float_4 Cmprsr::step(float_4 input)
 
     float_4 reductionGain = threshold / lag.get();
     float_4 gain = SimdBlocks::ifelse( lag.get() > threshold, reductionGain, 1);
+
+   // printf("th=%f\n", threshold[0]);
 #if 0
     printf("input = %s, lag=%s\nred = %s gain=%s\n", 
         toStr(input).c_str(),
@@ -37,22 +45,20 @@ inline const MultiLag2& Cmprsr::_lag() const
     return lag;
 }
 
+inline void Cmprsr::setThreshold(float th)
+{
+  //  printf("set thh %f\n", th);
+    threshold = float_4(th);
+}
+
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime)
 {
    const float correction = 2 * M_PI;
- //  const float correction = 1;
-//    printf("correct = %f\n", correction);
     float attackHz = 1000.f / (attackMs * correction);
     float releaseHz = 1000.f / (releaseMs * correction);
 
     float normAttack = attackHz * sampleTime;
     float normRelease = releaseHz * sampleTime;
-#if 0
-    printf("in set times, attackMS=%f rms=%f, st=%f\n ahz=%f rhz=%f\nna=%f nr=%f\n",
-        attackMs, releaseMs, sampleTime,
-        attackHz, releaseHz, 
-        normAttack, normRelease); fflush(stdout);
-#endif
 
     lag.setAttack(normAttack);
     lag.setRelease(normRelease);
