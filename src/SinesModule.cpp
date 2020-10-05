@@ -15,7 +15,6 @@ using Comp = Sines<WidgetComposite>;
 class Drawbar : public app::SvgSlider {
 public:
     Drawbar(const std::string& handleName) {
-        WARN("loading drawbar svg");
         math::Vec margin = math::Vec(3.5, 3.5);
 
         maxHandlePos = math::Vec(-7, 10).plus(margin);

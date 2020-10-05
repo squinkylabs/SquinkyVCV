@@ -243,11 +243,11 @@
 			"tags": ["VCF", "Polyphonic"]
 		},
 		{
-			"slug": "squinkylabs-lim",
-			"name": "lim",
-			"disabled": true,
-			"description": "lim",
-			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/lim.md",
+			"slug": "squinkylabs-comp",
+			"name": "comp",
+			"disabled": false,
+			"description": "comp",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md",
 			"tags": ["VCF", "Polyphonic"]
 		},
 		{

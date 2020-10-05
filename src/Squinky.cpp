@@ -131,7 +131,7 @@ p->addModel(modelF2Module);
 #ifdef _F4
 p->addModel(modelF4Module);
 #endif
-p->addModel(modelLimModule);
+p->addModel(modelCompressorModule);
 
 }
 

@@ -18,7 +18,7 @@ using Module = ::rack::engine::Module;
 
 
 template <class TBase>
-class LimDescription : public IComposite
+class CompressorDescription : public IComposite
 {
 public:
     Config getParam(int i) override;
@@ -26,14 +26,14 @@ public:
 };
 
 template <class TBase>
-class Lim : public TBase
+class Compressor : public TBase
 {
 public:
 
-    Lim(Module * module) : TBase(module)
+    Compressor(Module * module) : TBase(module)
     {
     }
-    Lim() : TBase()
+    Compressor() : TBase()
     {
     }
 
@@ -73,7 +73,7 @@ public:
      */
     static std::shared_ptr<IComposite> getDescription()
     {
-        return std::make_shared<LimDescription<TBase>>();
+        return std::make_shared<CompressorDescription<TBase>>();
     }
 
     /**
@@ -98,7 +98,7 @@ private:
 
 
 template <class TBase>
-inline void Lim<TBase>::init()
+inline void Compressor<TBase>::init()
 {
     setupLimiter();
     divm.setup(16, [this]() {
@@ -107,7 +107,7 @@ inline void Lim<TBase>::init()
 }
 
 template <class TBase>
-inline void Lim<TBase>::stepm()
+inline void Compressor<TBase>::stepm()
 {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
@@ -118,7 +118,7 @@ inline void Lim<TBase>::stepm()
 }
 
 template <class TBase>
-inline void Lim<TBase>::process(const typename TBase::ProcessArgs& args)
+inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     divm.step();
    
@@ -135,12 +135,12 @@ inline void Lim<TBase>::process(const typename TBase::ProcessArgs& args)
      //   printf("input = %s output=%s\n", toStr(input).c_str(), toStr(output).c_str());
 
         float_4 debug = limiters[bank]._lag()._memory();
-        Lim<TBase>::outputs[DEBUG_OUTPUT].setVoltageSimd(debug, baseChannel);
+        Compressor<TBase>::outputs[DEBUG_OUTPUT].setVoltageSimd(debug, baseChannel);
     }
 }
 
 template <class TBase>
-inline void Lim<TBase>::setupLimiter()
+inline void Compressor<TBase>::setupLimiter()
 {
     for (int i = 0; i<4; ++i) {
         limiters[i].setTimes(1, 100, TBase::engineGetSampleTime());
@@ -149,23 +149,23 @@ inline void Lim<TBase>::setupLimiter()
 
 
 template <class TBase>
-inline void Lim<TBase>::onSampleRateChange()
+inline void Compressor<TBase>::onSampleRateChange()
 {
     setupLimiter();
 }
 
 template <class TBase>
-int LimDescription<TBase>::getNumParams()
+int CompressorDescription<TBase>::getNumParams()
 {
-    return Lim<TBase>::NUM_PARAMS;
+    return Compressor<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config LimDescription<TBase>::getParam(int i)
+inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Lim<TBase>::TEST_PARAM:
+        case Compressor<TBase>::TEST_PARAM:
             ret = {-1.0f, 1.0f, 0, "Test"};
             break;
         default:

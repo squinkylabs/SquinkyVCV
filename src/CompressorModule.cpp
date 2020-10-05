@@ -4,18 +4,18 @@
 #include "WidgetComposite.h"
 
 
-#include "Lim.h"
+#include "Compressor.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 
-using Comp = Lim<WidgetComposite>;
+using Comp = Compressor<WidgetComposite>;
 
 /**
  */
-struct LimModule : Module
+struct CompressorModule : Module
 {
 public:
-    LimModule();
+    CompressorModule();
     /**
      *
      * Overrides of Module functions
@@ -28,7 +28,7 @@ private:
 
 };
 
-LimModule::LimModule()
+CompressorModule::CompressorModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     lim = std::make_shared<Comp>(this);
@@ -39,12 +39,12 @@ LimModule::LimModule()
     lim->init();
 }
 
-void LimModule::process(const ProcessArgs& args)
+void CompressorModule::process(const ProcessArgs& args)
 {
     lim->process(args);
 }
 
-void LimModule::onSampleRateChange()
+void CompressorModule::onSampleRateChange()
 {
     lim->onSampleRateChange();
 }
@@ -53,10 +53,10 @@ void LimModule::onSampleRateChange()
 // module widget
 ////////////////////
 
-struct LimWidget : ModuleWidget
+struct CompressorWidget : ModuleWidget
 {
-    LimWidget(LimModule *);
-    DECLARE_MANUAL("Lim Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/lim.md");
+    CompressorWidget(CompressorModule *);
+    DECLARE_MANUAL("Lim Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -68,10 +68,10 @@ struct LimWidget : ModuleWidget
         return label;
     }
 
-    void addJacks(LimModule *module, std::shared_ptr<IComposite> icomp);
+    void addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp);
 };
 
-void LimWidget::addJacks(LimModule *module, std::shared_ptr<IComposite> icomp)
+void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
     const float labelX = jackX - 6;
@@ -108,10 +108,10 @@ void LimWidget::addJacks(LimModule *module, std::shared_ptr<IComposite> icomp)
  * This is not shared by all modules in the DLL, just one
  */
 
-LimWidget::LimWidget(LimModule *module)
+CompressorWidget::CompressorWidget(CompressorModule *module)
 {
     setModule(module);
-    SqHelper::setPanel(this, "res/lim_panel.svg");
+    SqHelper::setPanel(this, "res/compressor_panel.svg");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
@@ -123,6 +123,6 @@ LimWidget::LimWidget(LimModule *module)
    // addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-Model *modelLimModule = createModel<LimModule, LimWidget>("squinkylabs-lim");
+Model *modelCompressorModule = createModel<CompressorModule, CompressorWidget>("squinkylabs-comp");
 
 
