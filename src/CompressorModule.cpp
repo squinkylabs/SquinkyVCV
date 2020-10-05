@@ -5,8 +5,10 @@
 
 
 #include "Compressor.h"
+#include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqWidgets.h"
 
 using Comp = Compressor<WidgetComposite>;
 
@@ -69,7 +71,60 @@ struct CompressorWidget : ModuleWidget
     }
 
     void addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp);
+    void addControls(CompressorModule *module, std::shared_ptr<IComposite> icomp);
 };
+
+void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<IComposite> icomp)
+{
+    const float knobX = 12;
+    const float knobX2 = 45;
+    const float knobY = 46;
+    const float labelY = knobY - 20;
+    const float dy = 50;
+
+    addLabel(
+        Vec(knobX, labelY + 0 * dy),
+        "Atck");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 0 * dy),
+        module,  Comp::ATTACK_PARAM));
+
+    addLabel(
+        Vec(knobX2, labelY + 0 * dy),
+        "Rel");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX2, knobY + 0 * dy),
+        module,  Comp::RELEASE_PARAM));
+
+    addLabel(
+        Vec(knobX - 6, labelY + 1 * dy),
+        "Thresh");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 1 * dy),
+        module,  Comp::THRESHOLD_PARAM));
+
+    PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
+        icomp,
+        Vec(knobX,  knobY + 2 * dy),
+        module,
+        Comp::RATIO_PARAM);
+    p->box.size.x = 54;  // width
+    p->box.size.y = 22;   
+    p->text = "4:1";
+    p->setLabels( {"4:1", "BP", "HP", "N"});
+    addParam(p);
+
+    addLabel(
+        Vec(knobX, labelY + 3 * dy),
+        "Dist Reduce");
+    addParam(SqHelper::createParam<CKSS>(
+        icomp,
+        Vec(knobX + 10, 5 + knobY + 3 * dy),
+        module,  Comp::SECRET_PARAM));
+}
 
 void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp)
 {
@@ -94,11 +149,12 @@ void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<ICompo
         Vec(jackX, jackY + 1 * dy),
         module,
         Comp::AUDIO_OUTPUT));
-
+#if 0
      addOutput(createOutput<PJ301MPort>(
         Vec(jackX, 40),
         module,
         Comp::DEBUG_OUTPUT));
+ #endif
 }
 
 
@@ -114,7 +170,9 @@ CompressorWidget::CompressorWidget(CompressorModule *module)
     SqHelper::setPanel(this, "res/compressor_panel.svg");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    addControls(module, icomp);
     addJacks(module, icomp);
+    
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

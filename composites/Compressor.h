@@ -47,7 +47,12 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        ATTACK_PARAM,
+        RELEASE_PARAM,
+        THRESHOLD_PARAM,
+        RATIO_PARAM,
+        MAKEUPGAIN_PARAM,
+        SECRET_PARAM,
         NUM_PARAMS
     };
 
@@ -165,8 +170,23 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Compressor<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case Compressor<TBase>::ATTACK_PARAM:
+            ret = {1.0f, 1000.0f, 10, "Attack"};
+            break;
+         case Compressor<TBase>::RELEASE_PARAM:
+            ret = {1.0f, 1000.0f, 10, "Release"};
+            break;
+         case Compressor<TBase>::THRESHOLD_PARAM:
+            ret = {1.0f, 1000.0f, 10, "Threshold"};
+            break;
+         case Compressor<TBase>::RATIO_PARAM:
+            ret = {0, 4, 0, "Ratio"};
+            break;
+         case Compressor<TBase>::MAKEUPGAIN_PARAM:
+            ret = {1.0f, 1000.0f, 10, "Makeup gain"};
+            break;
+           case Compressor<TBase>::SECRET_PARAM:
+            ret = {0, 1, 0, "Makeup gain"};
             break;
         default:
             assert(false);
