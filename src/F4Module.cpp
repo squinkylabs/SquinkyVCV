@@ -40,6 +40,7 @@ F4Module::F4Module()
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
+    // I don't think all these are needed...
     onSampleRateChange();
     blank->init();
 }

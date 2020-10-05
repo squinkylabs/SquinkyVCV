@@ -33,17 +33,11 @@ static void testLookupBelowTheshNoKnee()
 {
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
-  //  r.minX = -10;
-  //  r.maxX = 10;
     r.ratio = 1;
     r.threshold = 1;
 
-    auto table = CompCurves::makeCompGainLookup(r);
-    
+    auto table = CompCurves::makeCompGainLookup(r);    
     assertGT(table->size(), 0);
-
-    printf("table size = %d\n", table->size());
-
     float y = CompCurves::lookup(table, 0);
     assertEQ(y, 0);
 
@@ -51,22 +45,15 @@ static void testLookupBelowTheshNoKnee()
     assertEQ(y, r.threshold);
 }
 
-void foo()
-{
-    float thresh = 1;
-    float dbTh = 2;     // arbitrary
-  //  float gTh = AudioMath::gainFromDb(dbTh);
 
-    float db10Th = 0;
-}
 
-static void testLookupAboveTheshNoKneeNoComp()
+#if 0 // worked got 1:1
+static void testLookupAboveTheshNoKnee(float ratioToTest)
 {
+    printf("enter test for ratio = %f\n", ratioToTest);
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
-  //  r.minX = -10;
- //   r.maxX = 10;
-    r.ratio = 1;
+    r.ratio = ratioToTest;
     r.threshold = 1;
 
     auto table = CompCurves::makeCompGainLookup(r);
@@ -75,12 +62,80 @@ static void testLookupAboveTheshNoKneeNoComp()
     float y = CompCurves::lookup(table, r.threshold);
     assertEQ(y, r.threshold);
 
-    const float dbThresh = 0;           // unity again a thresh if no knee
-    const double dbThresh10 = AudioMath::db(10);   // input 10 X thresh
+  // const float dbThresh = 0;           // unity again a thresh if no knee
+  //  const double dbThresh10 = AudioMath::db(10);   // input 10 X thresh
+
+    // if the thrshold is 1, then we exect unity gain at 1
+    // at 10 we are 20 louder
+    float expectedGain = (float) AudioMath::gainFromDb(20 / ratioToTest);
+    if (ratioToTest == 1) assertEQ(expectedGain, 1);
 
     y = CompCurves::lookup(table, 10);
-    assertEQ(y, 1);     // ratio of 1 is constant x1 gain
+    assertEQ(y, expectedGain);     // ratio of 1 is constant x1 gain
 }
+#endif
+
+static void testLookupAboveTheshNoKnee(float ratioToTest)
+{
+    printf("\n***** enter test for ratio = %f\n", ratioToTest);
+    // comp ratio of 1 is a straight line - two points
+    CompCurves::Recipe r;
+    r.ratio = ratioToTest;
+    r.threshold = 1;
+
+    auto table = CompCurves::makeCompGainLookup(r);
+    
+    assertGT(table->size(), 0);
+    float y = CompCurves::lookup(table, r.threshold);
+    assertEQ(y, r.threshold);
+
+    const float dbChangeInInput = 20;       // arbitrary, let's pick 20 db
+    const float voltChangeInInput = (float)AudioMath::gainFromDb(dbChangeInInput);
+
+    const float expectedDbOutputAtMax = 20 / ratioToTest;
+
+   // const float expectedDbReductionAtMax = dbChangeInInput - expectedDbOutputAtMax;
+    const float expectedDbReductionAtMax = expectedDbOutputAtMax - dbChangeInInput;;
+
+  // const float dbThresh = 0;           // unity again a thresh if no knee
+  //  const double dbThresh10 = AudioMath::db(10);   // input 10 X thresh
+
+    // if the thrshold is 1, then we exect unity gain at 1
+    // at 10 we are 20 louder
+    assert(r.kneeWidth == 0);
+    const float gain_y0 = CompCurves::lookup(table, r.threshold);
+    const float gain_y1 = CompCurves::lookup(table, r.threshold * 10);
+    assertEQ(gain_y0, r.threshold);
+
+
+    const double y1Db = AudioMath::db(gain_y1);
+    const float observedDbReduction = float(y1Db);
+
+    printf("ex=%f, obs = %f\n", expectedDbReductionAtMax, observedDbReduction);
+    assertEQ(observedDbReduction, expectedDbReductionAtMax)
+  //  assert(false);      // now what?
+    
+    // difference in gain at t * 10 relative to t.
+ //   float deltaYDb = float(y1Db - y0Db);
+ //   printf("with ratio %f seeing deltaYdb = %f\n", ratioToTest, deltaYDb);
+  //  printf("g0=%f, g1=%f, y0db=%f 1=%f\n", gain_y0, gain_y1, y0Db, y1Db);
+   // assertEQ(deltaYDb, 20 / ratioToTest);
+   
+  
+}
+
+static void testLookupAboveTheshNoKneeNoComp()
+{
+    testLookupAboveTheshNoKnee(1);
+}
+
+static void testLookupAboveTheshNoKnee()
+{
+    testLookupAboveTheshNoKnee(2);
+    testLookupAboveTheshNoKnee(4);
+}
+
+
 
 void testOldStuff();
 void testCompCurves()
@@ -89,6 +144,7 @@ void testCompCurves()
     testOldStuff();
     testLookupBelowTheshNoKnee();
     testLookupAboveTheshNoKneeNoComp();
+    testLookupAboveTheshNoKnee();
   
     // testCompCurvesKnee2();
 }

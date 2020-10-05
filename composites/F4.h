@@ -156,21 +156,53 @@ private:
     bool limiterEnabled_n = 0;
     Divider divn;
     const int oversample = 4;
+    NonUniformLookupTableParams<float> qCompParams;
 
     void stepn();
     void setupFreq();
 
     void setupLimiter();
+    void setupQComp();
 
 };
 
+template <class TBase>
+inline void F4<TBase>::setupQComp()
+{
+    if (qCompParams.size() == 0) {
+#if 0   // this was for r=4
+        NonUniformLookupTable<float>::addPoint(qCompParams, .005, 1);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .002, 2.3);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .001, 4.48);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0005, 6.4);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0002, 6.6);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0005, 6.6);
+
+        NonUniformLookupTable<float>::addPoint(qCompParams, .01, 1.05);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .02, 1.76);
+#endif
+        // There for R = 2.2
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0001, 7.97);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0002, 7.97);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0005, 8.37);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .001,  5.02);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .002,  3.2);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .01,  2.1);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .02, 3.1);
+        
+        NonUniformLookupTable<float>::finalize(qCompParams);
+    }
+}
 
 template <class TBase>
 inline void F4<TBase>::init()
 {
+     printf("called init\n"); fflush(stdout);
      divn.setup(4, [this]() {
         this->stepn();
     });
+
+    setupQComp();
 
     // setupLimiter();
     onSampleRateChange();
@@ -215,7 +247,9 @@ inline void F4<TBase>::setupFreq()
 {
     const float sampleTime = TBase::engineGetSampleTime();
 
-    float qDbg, rDbg, fDbg;
+  //  float qDbg, rDbg, fDbg;
+    float qForFilter = 1;
+    float freqForFilter = .1;
     {
         float qVolts = F4<TBase>::params[Q_PARAM].value;
         qVolts += F4<TBase>::inputs[Q_INPUT].getVoltage(0);
@@ -226,21 +260,16 @@ inline void F4<TBase>::setupFreq()
         // Invert it, too
 
         const float expMult = .25f; 
-        const float q =  5.6 - std::exp2(qVolts * expMult);
-        qDbg = q;
+      //  const float q =  5.6 - std::exp2(qVolts * expMult);
+        qForFilter =  5.6 - std::exp2(qVolts * expMult);
+    //    qDbg = q;
 
-        // printf("qvolt = %f giving q = %f\n", qVolts, q);
-        params4p.setQ(q);
+      //  printf("qvolt = %f giving q = %f\n", qVolts, q);
+     //   params4p.setQ(q);
 
 
-        const float qBar = 4 - q;
-      //  outputGain_n = 1 / q;
-     //   outputGain_n = qBar < .15f ? 1 : (1 / (1 + 2 * (qBar - 1.5)));
-
-       // outputGain_n = qBar < .18f ? 1 : (1 / (1 + 2 * (qBar - 1.8)));
-
+        const float qBar = 4 - qForFilter;
         outputGain_n = 1;
-#if 1
        const float qBarCutoff = 1.5;
        if (qBar < qBarCutoff) {
            outputGain_n = 1;
@@ -249,10 +278,6 @@ inline void F4<TBase>::setupFreq()
            //printf("cut=%f reduct=%f\n", qBarCutoff, gainReduction);
            outputGain_n = 1 / gainReduction;
        }
-#endif
-
-
-
         outputGain_n = std::min(outputGain_n, 1.f);
 
         // printf("qBar = %f outGain = %f\n", qBar, outputGain_n); fflush(stdout);
@@ -275,15 +300,27 @@ inline void F4<TBase>::setupFreq()
         freqVolts = std::clamp(freqVolts, 0, 10);
 
         
-        float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
-        freq /= oversample;
-        freq *= sampleTime;
-        params4p.setFreq(freq);
+        freqForFilter = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
+        freqForFilter /= oversample;
+        freqForFilter *= sampleTime;
+      //  params4p.setFreq(freq);
+
         params4p.setR(r);
-        fDbg = freq;
-        rDbg = r;
+      //  fDbg = freq;
+       // rDbg = r;
     }
-    // printf("f=%f, q=%f r=%f\n", fDbg, qDbg, rDbg);
+
+    qForFilter = std::max(qForFilter, .07f);     // don't let Q get too high
+    const float qComp = NonUniformLookupTable<float>::lookup(qCompParams, freqForFilter);
+    // const float qComp = 1;
+
+    params4p.setQ(qForFilter * qComp);
+    params4p.setFreq(freqForFilter);
+
+#if 0
+    const float LRQ = qForFilter / .07;
+    printf("f=%f, qbefore=%f comp=%f qafter=%f LRQ: %f\n", freqForFilter, qForFilter, qComp, qForFilter * qComp, LRQ);
+#endif
 
 }
 

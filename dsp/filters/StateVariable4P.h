@@ -49,8 +49,9 @@ inline void StateVariableFilterParams4P<T>::setR(float r)
 template <typename T>
 inline void StateVariableFilterParams4P<T>::setQ(float q)
 {
-    // if (q < .1) printf("clipping low (%f) Q\n", q);
-    Qg = std::max(q, .1f);
+    const float minQ = .01;
+    if (q < minQ) printf("clipping low (%f) Q to %f\n", q, minQ);
+    Qg = std::max(q, minQ);
 }
 
 template <typename T>

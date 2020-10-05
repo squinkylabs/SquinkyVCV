@@ -37,10 +37,12 @@ void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves:
     assert(r.threshold < 10);
    // double gainAt10 = 
     const double x1Db = AudioMath::db(10);      // line ends at x = gain of 10
-    const double dbSlope = r.ratio;
+
+    // this isn't quite right. when it was r.ratio it seemed to increase ok.
+    const double dbSlope = 1.0 / r.ratio;
 
     assert(x1Db > x0Db);
-    assert(dbSlope >= 1);
+   // assert(dbSlope = 1);
 
     // TODO: what range do we need in this table?
     const double finalX = (x1Db);
@@ -48,12 +50,12 @@ void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves:
     for (double xDb = x0Db; xDb <= finalX; xDb += 1) {
         double yDb = y0Db + dbSlope * (xDb - x0Db);
 
-        const float dbChange = yDb - xDb;
+        const float dbChange = float(yDb - xDb);
         const float x = float(AudioMath::gainFromDb(xDb));
        // const float yGain = float(AudioMath::gainFromDb(yDb));
         float gain = float(AudioMath::gainFromDb(dbChange));
 
-        printf("another point db=%f,%f g=%f,%f\n", xDb, yDb, x, gain);
+      //  printf("another point db=%f,%f g=%f,%f\n", xDb, yDb, x, gain);
         NonUniformLookupTable<float>::addPoint(*table, x, gain);
     }
 
