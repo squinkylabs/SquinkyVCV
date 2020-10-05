@@ -1,6 +1,7 @@
 
 #include <sstream>
 #include "Squinky.hpp"
+
 #include "WidgetComposite.h"
 
 #ifdef _F4

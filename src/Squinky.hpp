@@ -39,6 +39,7 @@
 #define _WVCO
 #define _SUB
 #define _SINES
+// #define _F4
 
 using namespace ::rack;
 
@@ -52,9 +53,12 @@ extern Model *modelLFNBModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 extern Model *modelF2Module;
-extern Model *modelF4Module;
+
 extern Model *modelCompressorModule;
 
+#ifdef _F4
+    extern Model *modelF4Module;
+#endif
 #ifdef _FORMANTS
     extern Model *modelVocalFilterModule;
 #endif
