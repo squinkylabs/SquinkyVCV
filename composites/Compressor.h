@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Divider.h"
-#include "Limiter.h"
+#include "Cmprsr.h"
 #include "SqPort.h"
 
 #include <assert.h>
@@ -91,7 +91,7 @@ public:
 
 private:
 
-    Limiter limiters[4];
+    Cmprsr compressors[4];
     void setupLimiter();
     void stepm();
 
@@ -133,13 +133,13 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
     for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseChannel = bank * 4;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 output = limiters[bank].step(input);
+        const float_4 output = compressors[bank].step(input);
         outPort.setVoltageSimd(output, baseChannel);
 
      //   printf("bank=%d, ch=%d\n", bank, baseChannel);
      //   printf("input = %s output=%s\n", toStr(input).c_str(), toStr(output).c_str());
 
-        float_4 debug = limiters[bank]._lag()._memory();
+        float_4 debug = compressors[bank]._lag()._memory();
         Compressor<TBase>::outputs[DEBUG_OUTPUT].setVoltageSimd(debug, baseChannel);
     }
 }
@@ -148,7 +148,7 @@ template <class TBase>
 inline void Compressor<TBase>::setupLimiter()
 {
     for (int i = 0; i<4; ++i) {
-        limiters[i].setTimes(1, 100, TBase::engineGetSampleTime());
+        compressors[i].setTimes(1, 100, TBase::engineGetSampleTime());
     }
 }
 
