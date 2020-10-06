@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <assert.h>
 #include "simd/functions.hpp"
 #include "MultiLag2.h"
 
@@ -8,7 +9,8 @@ class Cmprsr {
 public:
     enum class Ratios {
         HardLimit,
-        _4_1_hard
+        _4_1_hard,
+        NUM_RATIOS
     };
     float_4 step(float_4);
     void setTimes(float attackMs, float releaseMs, float sampleTime);
@@ -16,11 +18,20 @@ public:
 
     const MultiLag2& _lag() const;
 
+    static std::vector<std::string> ratios();
+
 private:
     MultiLag2 lag;
     float_4 threshold = 5;
     Ratios ratio = Ratios::HardLimit;
 };
+
+ inline std::vector<std::string> Cmprsr::ratios()
+ {
+     assert(int(Ratios::NUM_RATIOS) == 2);
+     return {"Limit", "4:1 hard" };
+ }
+
 
 inline float_4 Cmprsr::step(float_4 input)
 {

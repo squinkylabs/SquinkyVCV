@@ -25,7 +25,7 @@ public:
     void process(const ProcessArgs& args) override;
     void onSampleRateChange() override;
 
-    std::shared_ptr<Comp> lim;
+    std::shared_ptr<Comp> compressor;
 private:
 
 };
@@ -33,22 +33,22 @@ private:
 CompressorModule::CompressorModule()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    lim = std::make_shared<Comp>(this);
+    compressor = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
     onSampleRateChange();
-    lim->init();
+    compressor->init();
 }
 
 void CompressorModule::process(const ProcessArgs& args)
 {
-    lim->process(args);
+    compressor->process(args);
 }
 
 void CompressorModule::onSampleRateChange()
 {
-    lim->onSampleRateChange();
+    compressor->onSampleRateChange();
 }
 
 ////////////////////
@@ -83,7 +83,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     const float dy = 50;
 
     addLabel(
-        Vec(knobX, labelY + 0 * dy),
+        Vec(knobX - 8, labelY + 0 * dy),
         "Atck");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -99,30 +99,31 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         module,  Comp::RELEASE_PARAM));
 
     addLabel(
-        Vec(knobX - 6, labelY + 1 * dy),
+        Vec(knobX - 12, labelY + 1 * dy),
         "Thresh");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX, knobY + 1 * dy),
         module,  Comp::THRESHOLD_PARAM));
 
+    std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(knobX,  knobY + 2 * dy),
+        Vec(knobX - 8,  knobY + 2 * dy),
         module,
         Comp::RATIO_PARAM);
-    p->box.size.x = 54;  // width
+    p->box.size.x = 70;  // width
     p->box.size.y = 22;   
-    p->text = "4:1";
-    p->setLabels( {"4:1", "BP", "HP", "N"});
+    p->text = labels[0];
+    p->setLabels(labels);
     addParam(p);
 
     addLabel(
         Vec(knobX, labelY + 3 * dy),
-        "Dist Reduce");
+        "< IM");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(knobX + 10, 5 + knobY + 3 * dy),
+        Vec(knobX + 20, 5 + knobY + 3 * dy),
         module,  Comp::SECRET_PARAM));
 }
 

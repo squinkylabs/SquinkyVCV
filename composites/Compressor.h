@@ -89,6 +89,8 @@ public:
 
     void onSampleRateChange() override;
 
+    static std::vector<std::string> ratios();
+
 private:
 
     Cmprsr compressors[4];
@@ -103,6 +105,11 @@ private:
 
 };
 
+template <class TBase>
+inline std::vector<std::string> Compressor<TBase>::ratios()
+{
+    return Cmprsr::ratios();
+}
 
 template <class TBase>
 inline void Compressor<TBase>::init()
