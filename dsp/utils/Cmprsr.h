@@ -1,12 +1,16 @@
 #pragma once
 
-#include <stdint.h>
-#include <assert.h>
+
+#include "CompCurves.h"
 #include "simd/functions.hpp"
 #include "MultiLag2.h"
 
+#include <stdint.h>
+#include <assert.h>
+
 class Cmprsr {
 public:
+    Cmprsr();
     enum class Ratios {
         HardLimit,
         _4_1_hard,
@@ -24,7 +28,26 @@ private:
     MultiLag2 lag;
     float_4 threshold = 5;
     Ratios ratio = Ratios::HardLimit;
+
+    static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
+    static bool wasInit()  {
+        return !!ratioCurves[0];
+    }
 };
+
+inline Cmprsr::Cmprsr()
+{
+    if (!wasInit()) {
+        CompCurves::Recipe r;
+        r.ratio = 4;
+        r.threshold = 1;
+        ratioCurves[int(Ratios::_4_1_hard)] = CompCurves::makeCompGainLookup(r);
+
+
+        // LImiter is a special case. We don't use the table , but we just need some entry here.
+        ratioCurves[int(Ratios::HardLimit)] = ratioCurves[int(Ratios::_4_1_hard)];
+    }
+}
 
  inline std::vector<std::string> Cmprsr::ratios()
  {
@@ -35,6 +58,7 @@ private:
 
 inline float_4 Cmprsr::step(float_4 input)
 {
+    assert(wasInit());
     lag.step( rack::simd::abs(input));
 
     float_4 reductionGain = threshold / lag.get();

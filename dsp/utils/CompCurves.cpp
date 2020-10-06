@@ -1,6 +1,7 @@
 
 
 #include "CompCurves.h"
+#include "Cmprsr.h"
 
 #include "asserts.h"
 #include <functional>
@@ -61,6 +62,13 @@ void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves:
 
     
 }
+
+
+/**
+ * This static needs somewhere to live. 
+ * So I put him here.
+ */
+ CompCurves::LookupPtr Cmprsr::ratioCurves[int(Ratios::NUM_RATIOS)];
 
 
 //////////////////////// DPRECATED STUFF
