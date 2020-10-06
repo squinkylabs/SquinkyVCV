@@ -53,6 +53,7 @@ public:
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
         SECRET_PARAM,
+        WETDRY_PARAM,
         NUM_PARAMS
     };
 
@@ -212,8 +213,11 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {1.0f, 1000.0f, 10, "Makeup gain"};
             break;
-           case Compressor<TBase>::SECRET_PARAM:
+        case Compressor<TBase>::SECRET_PARAM:
             ret = {0, 1, 0, "Makeup gain"};
+            break;
+        case Compressor<TBase>::WETDRY_PARAM:
+            ret = {0, 1, 0, "wet/dry"};
             break;
         default:
             assert(false);

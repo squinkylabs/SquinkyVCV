@@ -76,8 +76,8 @@ struct CompressorWidget : ModuleWidget
 
 void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float knobX = 12;
-    const float knobX2 = 45;
+    const float knobX = 10;
+    const float knobX2 = 47;
     const float knobY = 46;
     const float labelY = knobY - 20;
     const float dy = 50;
@@ -100,11 +100,19 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
 
     addLabel(
         Vec(knobX - 12, labelY + 1 * dy),
-        "Thresh");
+        "Thrsh");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX, knobY + 1 * dy),
         module,  Comp::THRESHOLD_PARAM));
+    
+    addLabel(
+        Vec(knobX2 - 10, labelY + 1 * dy),
+        "wet/dry");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX2, knobY + 1 * dy),
+        module,  Comp::WETDRY_PARAM));
 
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
@@ -119,7 +127,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     addParam(p);
 
     addLabel(
-        Vec(knobX, labelY + 3 * dy),
+        Vec(knobX + 4, labelY + 3 * dy),
         "< IM");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
