@@ -103,7 +103,6 @@ private:
     int numBanks_m = 0;
     Divider divm;
     Divider divn;
-
 };
 
 template <class TBase>
@@ -130,12 +129,13 @@ inline void Compressor<TBase>::stepn()
     // TODO: taper
     const float rawThresh = Compressor<TBase>::params[THRESHOLD_PARAM].value;
     const float thresh = std::max(.01f, rawThresh);
-
+  
+    float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
+    Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
     for (int i = 0; i<4; ++i) {
-        //compressors[i].setTimes(1, 100, TBase::engineGetSampleTime());
         compressors[i].setThreshold(thresh);
+        compressors[i].setCurve(ratio);
     }
-
 }
 
 template <class TBase>
@@ -163,12 +163,6 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
         const float_4 output = compressors[bank].step(input);
         outPort.setVoltageSimd(output, baseChannel);
-
-     //   printf("bank=%d, ch=%d\n", bank, baseChannel);
-     //   printf("input = %s output=%s\n", toStr(input).c_str(), toStr(output).c_str());
-
-      //  float_4 debug = compressors[bank]._lag()._memory();
-      //  Compressor<TBase>::outputs[DEBUG_OUTPUT].setVoltageSimd(debug, baseChannel);
     }
 }
 
@@ -179,7 +173,6 @@ inline void Compressor<TBase>::setupLimiter()
         compressors[i].setTimes(1, 100, TBase::engineGetSampleTime());
     }
 }
-
 
 template <class TBase>
 inline void Compressor<TBase>::onSampleRateChange()

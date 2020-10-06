@@ -19,6 +19,7 @@ public:
     float_4 step(float_4);
     void setTimes(float attackMs, float releaseMs, float sampleTime);
     void setThreshold(float th);
+    void setCurve(Ratios);
 
     const MultiLag2& _lag() const;
 
@@ -34,6 +35,11 @@ private:
         return !!ratioCurves[0];
     }
 };
+
+inline void Cmprsr::setCurve(Ratios r)
+{
+    ratio = r;
+}
 
 inline Cmprsr::Cmprsr()
 {
