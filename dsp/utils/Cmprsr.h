@@ -67,18 +67,30 @@ inline float_4 Cmprsr::step(float_4 input)
     assert(wasInit());
     lag.step( rack::simd::abs(input));
 
-    float_4 reductionGain = threshold / lag.get();
-    float_4 gain = SimdBlocks::ifelse( lag.get() > threshold, reductionGain, 1);
+    if (ratio == Ratios::HardLimit) {
+        float_4 reductionGain = threshold / lag.get();
+        float_4 gain = SimdBlocks::ifelse( lag.get() > threshold, reductionGain, 1);
 
-   // printf("th=%f\n", threshold[0]);
+    // printf("th=%f\n", threshold[0]);
 #if 0
-    printf("input = %s, lag=%s\nred = %s gain=%s\n", 
-        toStr(input).c_str(),
-        toStr(lag.get()).c_str(),
-        toStr(reductionGain).c_str(),
-        toStr(gain).c_str());
+        printf("input = %s, lag=%s\nred = %s gain=%s\n", 
+            toStr(input).c_str(),
+            toStr(lag.get()).c_str(),
+            toStr(reductionGain).c_str(),
+            toStr(gain).c_str());
 #endif
-    return gain * input;
+        return gain * input;
+    } else {
+        // static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
+        const int ratioIndex = int(ratio);
+        CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
+        float_4 gain;
+        const float_4 level = lag.get();
+        for (int i=0; i<4; ++i) {
+            gain[i] = CompCurves::lookup(table, level[i]);
+        }
+        return gain * input;
+    }
 }
 
 inline const MultiLag2& Cmprsr::_lag() const
