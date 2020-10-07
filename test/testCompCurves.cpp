@@ -29,51 +29,49 @@ static void testSpline()
   //  abort();
 }
 
-static void testLookupBelowTheshNoKnee()
+static void testLookupBelowTheshNoKnee(float thresh, float ratio)
 {
-    // comp ratio of 1 is a straight line - two points
+    // Comp ratio 1 is unity gain everywhere.
     CompCurves::Recipe r;
-    r.ratio = 1;
-    r.threshold = 1;
+    r.ratio = ratio;
+    r.threshold = thresh;
 
     auto table = CompCurves::makeCompGainLookup(r);    
     assertGT(table->size(), 0);
     float y = CompCurves::lookup(table, 0);
-    assertEQ(y, 0);
+    assertEQ(y, 1);
 
     y = CompCurves::lookup(table, r.threshold);
-    assertEQ(y, r.threshold);
+    assertEQ(y, 1);
 }
 
-
-
-#if 0 // worked got 1:1
-static void testLookupAboveTheshNoKnee(float ratioToTest)
+static void testLookupBelowTheshNoKnee()
 {
-    printf("enter test for ratio = %f\n", ratioToTest);
-    // comp ratio of 1 is a straight line - two points
-    CompCurves::Recipe r;
-    r.ratio = ratioToTest;
-    r.threshold = 1;
-
-    auto table = CompCurves::makeCompGainLookup(r);
-    
-    assertGT(table->size(), 0);
-    float y = CompCurves::lookup(table, r.threshold);
-    assertEQ(y, r.threshold);
-
-  // const float dbThresh = 0;           // unity again a thresh if no knee
-  //  const double dbThresh10 = AudioMath::db(10);   // input 10 X thresh
-
-    // if the thrshold is 1, then we exect unity gain at 1
-    // at 10 we are 20 louder
-    float expectedGain = (float) AudioMath::gainFromDb(20 / ratioToTest);
-    if (ratioToTest == 1) assertEQ(expectedGain, 1);
-
-    y = CompCurves::lookup(table, 10);
-    assertEQ(y, expectedGain);     // ratio of 1 is constant x1 gain
+    testLookupBelowTheshNoKnee(1, 1);
+    testLookupBelowTheshNoKnee(.1f, 4);
 }
-#endif
+
+static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r)
+{
+
+    bool first=true;
+    float last=0;
+    for (float x = .01f; x < 10; x += .01f) {
+        const float y = CompCurves::lookup(table, x);
+        assert(y <= 1);
+
+        if (x < r.threshold) {
+            assert(r.kneeWidth == 0);   // don't know how to do this yet
+            assertEQ(y, 1);             // unity gain below thresh
+        }
+        if (first) {
+            first = false;
+        } else {
+            assert(y <= last);
+        }
+        last = y;
+    }
+}
 
 static void testLookupAboveTheshNoKnee(float ratioToTest)
 {
@@ -120,6 +118,8 @@ static void testLookupAboveTheshNoKnee(float ratioToTest)
  //   printf("with ratio %f seeing deltaYdb = %f\n", ratioToTest, deltaYDb);
   //  printf("g0=%f, g1=%f, y0db=%f 1=%f\n", gain_y0, gain_y1, y0Db, y1Db);
    // assertEQ(deltaYDb, 20 / ratioToTest);
+
+    validateCurve(table, r);
    
   
 }
@@ -135,105 +135,12 @@ static void testLookupAboveTheshNoKnee()
     testLookupAboveTheshNoKnee(4);
 }
 
-
-
-void testOldStuff();
 void testCompCurves()
 {
    // testSpline();
-    testOldStuff();
     testLookupBelowTheshNoKnee();
     testLookupAboveTheshNoKneeNoComp();
     testLookupAboveTheshNoKnee();
   
     // testCompCurvesKnee2();
 }
-
-//***************** tests for deprecated func **********
-static void verifyCurve(const std::vector<CompCurves::xy>& curve)
-{
-
-    bool first = true;
-    CompCurves::xy lastOne;
-    for (auto q : curve)
-    {
-        if (first) {
-            first = false;
-        }
-        else {
-            assertGT(q.x, lastOne.x);
-            assertGT(q.y, lastOne.y);
-        }
-        lastOne = q;
-    }
-}
-
-static void  testGainFuncNoKnee()
-{
-    CompCurves::Recipe r;
-    r.minX = -10;
-    r.maxX = 10;
-    r.ratio = 2;
-    r.threshold = 0;
-
-    auto func = CompCurves::continuousGainFunction(r);
-
-
-    assertEQ(func(-10), -10);
-    assertEQ(func(0), 0);
-    assertEQ(func(.01f), .005f);
-    assertEQ(func(10), 5);
-}
-
-static void testCompCurves1()
-{
-    // comp ratio of 1 is a straight line - two points
-    CompCurves::Recipe r;
-    r.minX = -10;
-    r.maxX = 10;
-    r.ratio = 1;
-    r.threshold = 0;
-
-    auto result = CompCurves::makeCrudeCompGainTable(r);
-    assertEQ(result.size(), 3);
-
-    verifyCurve(result);
-}
-
-static void testCompCurves2()
-{
-    CompCurves::Recipe r;
-    r.minX = -10;
-    r.maxX = 10;
-    r.ratio = 2;
-    r.threshold = 0;
-
-    auto result = CompCurves::makeCrudeCompGainTable(r);
-
-    assertEQ(result.size(), 3);
-    verifyCurve(result);
-}
-
-static void testCompCurvesKnee2()
-{
-    CompCurves::Recipe r;
-    r.minX = -10;
-    r.maxX = 10;
-    r.ratio = 2;
-    r.threshold = 0;
-    r.kneeWidth = 1;
-
-    auto result = CompCurves::makeCrudeCompGainTable(r);
-
-    assertGT(result.size(), 4);
-    verifyCurve(result);
-    assert(false);          // more tests
-}
-
-static void testOldStuff()
-{
-    testGainFuncNoKnee();
-    testCompCurves1();
-    testCompCurves2();
-}
-

@@ -75,7 +75,6 @@ public:
     /**
      * returns a series of points that define a gain curve.
      * removed interior points that are on a straight line.
-     * DEPRECATED
      */
 
     class xy
@@ -99,9 +98,11 @@ private:
     /**
      * Deprecated
      */
+#if 0
     static std::vector<xy> makeLeftGainTableSection(const Recipe& r);
     static std::vector<xy> makeMiddleGainTableSection(const Recipe& r);
     static std::vector<xy> makeRightGainTableSection(const Recipe& r);
     static std::vector<xy> makeCrudeCompGainTableNoKnee(const Recipe&);
     static std::vector<xy> makeCrudeCompGainTableKnee(const Recipe&);
+#endif
 };

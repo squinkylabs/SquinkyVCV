@@ -89,6 +89,7 @@ inline float_4 Cmprsr::step(float_4 input)
         for (int i=0; i<4; ++i) {
             gain[i] = CompCurves::lookup(table, level[i]);
         }
+        printf("table amp = %f gain = %f\n", level[0], gain[0]);
         return gain * input;
     }
 }
