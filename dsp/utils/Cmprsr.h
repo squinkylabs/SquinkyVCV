@@ -82,15 +82,20 @@ inline float_4 Cmprsr::step(float_4 input)
         return gain * input;
     } else {
         // static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
+
+        const float_4 invThresh = 1.f / threshold;
         const int ratioIndex = int(ratio);
         CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
+
+     //   input *= invThresh;
         float_4 gain;
-        const float_4 level = lag.get();
+        const float_4 level = lag.get() * invThresh;
         for (int i=0; i<4; ++i) {
             gain[i] = CompCurves::lookup(table, level[i]);
         }
-        printf("table amp = %f gain = %f\n", level[0], gain[0]);
-        return gain * input;
+       // printf("amp = %f gain = %f tableIndex=%f th= %f gainxth=%f\n", lag.get()[0],gain[0],  level[0], threshold[0], gain[0] * threshold[0]);
+         return gain * input;
+       // return gain * input * threshold;
     }
 }
 

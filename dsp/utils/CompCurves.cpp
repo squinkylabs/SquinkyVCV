@@ -21,18 +21,18 @@ CompCurves::LookupPtr CompCurves::makeCompGainLookup(const CompCurves::Recipe& r
 
 CompCurves::xy CompCurves::addLeftSideCurve(LookupPtr ptr, const Recipe& r)
 {
-    printf("add left side\n");
+  //  printf("add left side\n");
     NonUniformLookupTable<float>::addPoint(*ptr, 0, 1);
     NonUniformLookupTable<float>::addPoint(*ptr, r.threshold, 1);
     assert(r.kneeWidth == 0);   // if non-zero, then the above is wrong - it's no linear gain up to thresh
 
-    printf("added 0,1 and %f,1\n", r.threshold);
+   // printf("added 0,1 and %f,1\n", r.threshold);
     return xy(r.threshold, r.threshold);
 }
 
 void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves::xy init)
 {
-    printf("add right side\n");
+  //  printf("add right side\n");
     const double x0Db = AudioMath::db(init.x);
     const double y0Db = AudioMath::db(init.y);
 
@@ -59,7 +59,7 @@ void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves:
        // const float yGain = float(AudioMath::gainFromDb(yDb));
         float gain = float(AudioMath::gainFromDb(dbChange));
 
-        printf("another point db=%f,%f g=%f,%f\n", xDb, yDb, x, gain);
+      //  printf("another point db=%f,%f g=%f,%f\n", xDb, yDb, x, gain);
         NonUniformLookupTable<float>::addPoint(*table, x, gain);
     }
 }
