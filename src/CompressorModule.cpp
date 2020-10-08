@@ -13,31 +13,12 @@
 
 using Comp = Compressor<WidgetComposite>;
 
-// worked
-#if 0
-class WaveformParamQuantity : public SqTooltips::SQParamQuantity {
-public:
-    WaveformParamQuantity(const ParamQuantity& other) : SqTooltips::SQParamQuantity(other) {}
-    std::string getDisplayValueString() override {
-        const Comp::Waves wf = Comp::Waves (std::round(getValue()));
-        return Comp::getLabel(wf);
-    }
-};
-#endif
 
-#if 0
+
 class LambdaQuantity : public SqTooltips::SQParamQuantity {
 public:
-    LambdaQuantity( const ParamQuantity& other, std::function<float(float)> lambda) : SqTooltips::SQParamQuantity(other) {}
-    
-};
-#endif
-
-class AttackQuantity : public SqTooltips::SQParamQuantity {
-public:
-    AttackQuantity(const ParamQuantity& other) : 
-        SqTooltips::SQParamQuantity(other),
-        expFunction(Comp::getAttackFunction())
+    LambdaQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other) 
     {
     }
     
@@ -45,13 +26,36 @@ public:
         auto value = getValue();
         auto expValue = expFunction(value);
         std::stringstream str;
-        str << expValue;
+        str << expValue << " mS";
         return str.str();
     }
-private:
+protected:
     std::function<double(double)> expFunction;
 };
 
+class AttackQuantity : public LambdaQuantity {
+public:
+    AttackQuantity(const ParamQuantity& other) : LambdaQuantity(other)
+    {
+        expFunction = Comp::getAttackFunction();
+    }
+};
+
+class ReleaseQuantity : public LambdaQuantity {
+public:
+    ReleaseQuantity(const ParamQuantity& other) : LambdaQuantity(other)
+    {
+        expFunction = Comp::getReleaseFunction();
+    }
+};
+
+class ThresholdQuantity : public LambdaQuantity {
+public:
+    ThresholdQuantity(const ParamQuantity& other) : LambdaQuantity(other)
+    {
+        expFunction = Comp::getThresholdFunction();
+    }
+};
 
 /**
  */
@@ -78,10 +82,10 @@ CompressorModule::CompressorModule()
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
 
-  //  std::function<float(float)> foo = [](float) { return 0.f; };
- //   auto other = 
-   // auto pq = new LambdaQuantity()
+    // customize tooltips for some params.
     SqTooltips::changeParamQuantity<AttackQuantity>(this, Comp::ATTACK_PARAM);
+    SqTooltips::changeParamQuantity<ReleaseQuantity>(this, Comp::RELEASE_PARAM);
+    SqTooltips::changeParamQuantity<ThresholdQuantity>(this, Comp::THRESHOLD_PARAM);
 
     onSampleRateChange();
     compressor->init();

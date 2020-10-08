@@ -96,6 +96,13 @@ public:
         return AudioMath::makeFunc_Exp(0, 1, .1, 30);
     }
 
+    static std::function<double(double)> getReleaseFunction() {
+        return AudioMath::makeFunc_Exp(0, 1, 100, 1600);
+    }
+    static std::function<double(double)> getThresholdFunction() {
+        return AudioMath::makeFunc_Exp(0, 10, .1, 10);
+    }
+
 private:
 
     Cmprsr compressors[4];
@@ -109,12 +116,9 @@ private:
     Divider divm;
     Divider divn;
 
-    // static std::function<double(double)> makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
-
-    // attack 0..1 -> .1ms .. 30
-  //  std::function<double(double)> attackFunction = AudioMath::makeFunc_Exp(0, 1, .1, 30);
-  std::function<double(double)> attackFunction = getAttackFunction();
-    std::function<double(double)> releaseFunction = AudioMath::makeFunc_Exp(0, 1, 100, 1600);
+    std::function<double(double)> attackFunction = getAttackFunction();
+    std::function<double(double)> releaseFunction = getReleaseFunction();
+    std::function<double(double)> thresholdFunction = getThresholdFunction();
 };
 
 template <class TBase>
@@ -139,13 +143,14 @@ template <class TBase>
 inline void Compressor<TBase>::stepn()
 {
     // TODO: taper
-    const float rawThresh = Compressor<TBase>::params[THRESHOLD_PARAM].value;
-    const float thresh = std::max(.01f, rawThresh);
+  //  const float rawThresh = Compressor<TBase>::params[THRESHOLD_PARAM].value;
+  //  const float thresh = std::max(.01f, rawThresh);
+    float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
   
     float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
     Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
     for (int i = 0; i<4; ++i) {
-        compressors[i].setThreshold(thresh);
+        compressors[i].setThreshold(threshold);
         compressors[i].setCurve(ratio);
     }
 }
@@ -231,7 +236,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {0, 1, .1, "Release"};
             break;
          case Compressor<TBase>::THRESHOLD_PARAM:
-            ret = {.1f, 5, 1, "Threshold"};
+            ret = {0, 10, 1, "Threshold"};
             break;
          case Compressor<TBase>::RATIO_PARAM:
             ret = {0, 4, 0, "Ratio"};
