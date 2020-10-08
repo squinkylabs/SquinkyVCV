@@ -158,9 +158,12 @@ void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<ICompo
         Vec(jackX, jackY + 1 * dy),
         module,
         Comp::AUDIO_OUTPUT));
-#if 0
+#if 1
+    addLabel(
+        Vec(labelX, labelY + 2 * dy),
+        "dbg");
      addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, 40),
+        Vec(jackX, jackY + 2 * dy),
         module,
         Comp::DEBUG_OUTPUT));
  #endif

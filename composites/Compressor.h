@@ -98,11 +98,18 @@ private:
     void setupLimiter();
     void stepm();
     void stepn();
+    void pollAttackRelease();
 
     int numChannels_m = 0;
     int numBanks_m = 0;
     Divider divm;
     Divider divn;
+
+    // static std::function<double(double)> makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
+
+    // attack 0..1 -> .1ms .. 30
+    std::function<double(double)> attackFunction = AudioMath::makeFunc_Exp(0, 1, .1, 30);
+    std::function<double(double)> releaseFunction = AudioMath::makeFunc_Exp(0, 1, 100, 1600);
 };
 
 template <class TBase>
@@ -147,6 +154,23 @@ inline void Compressor<TBase>::stepm()
     outPort.setChannels(numChannels_m);
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);   
     // printf("\n****** after stepm banks = %d numch=%d\n", numBanks_m, numChannels_m);
+
+    pollAttackRelease();
+}
+
+template <class TBase>
+inline void Compressor<TBase>::pollAttackRelease()
+{
+    const float attackRaw = Compressor<TBase>::params[ATTACK_PARAM].value;
+    const float releaseRaw = Compressor<TBase>::params[RELEASE_PARAM].value;
+
+    const float attack = attackFunction(attackRaw);
+    const float release = releaseFunction(releaseRaw);
+    printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
+
+    for (int i = 0; i<4; ++i) {
+        compressors[i].setTimes(attack, release, TBase::engineGetSampleTime());
+    }
 }
 
 template <class TBase>
@@ -157,12 +181,16 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    SqOutput& debugPort = TBase::outputs[DEBUG_OUTPUT];
     
     for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseChannel = bank * 4;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
         const float_4 output = compressors[bank].step(input);
         outPort.setVoltageSimd(output, baseChannel);
+
+        const float_4 env = compressors[bank]._lag().get();
+        debugPort.setVoltageSimd(env, baseChannel);
     }
 }
 
@@ -192,10 +220,10 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Compressor<TBase>::ATTACK_PARAM:
-            ret = {1.0f, 1000.0f, 10, "Attack"};
+            ret = {0, 1, .1, "Attack"};
             break;
          case Compressor<TBase>::RELEASE_PARAM:
-            ret = {1.0f, 1000.0f, 10, "Release"};
+            ret = {0, 1, .1, "Release"};
             break;
          case Compressor<TBase>::THRESHOLD_PARAM:
             ret = {.1f, 5, 1, "Threshold"};
