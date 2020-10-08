@@ -112,7 +112,7 @@ inline void Cmprsr::setThreshold(float th)
 
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime)
 {
-    printf("set times a=%f r=%f\n", attackMs, releaseMs);
+    //printf("set times a=%f r=%f\n", attackMs, releaseMs);
     const float correction = 2 * M_PI;
     float attackHz = 1000.f / (attackMs * correction);
     float releaseHz = 1000.f / (releaseMs * correction);

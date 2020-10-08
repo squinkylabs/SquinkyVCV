@@ -92,6 +92,10 @@ public:
 
     static std::vector<std::string> ratios();
 
+    static std::function<double(double)> getAttackFunction() {
+        return AudioMath::makeFunc_Exp(0, 1, .1, 30);
+    }
+
 private:
 
     Cmprsr compressors[4];
@@ -108,7 +112,8 @@ private:
     // static std::function<double(double)> makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
 
     // attack 0..1 -> .1ms .. 30
-    std::function<double(double)> attackFunction = AudioMath::makeFunc_Exp(0, 1, .1, 30);
+  //  std::function<double(double)> attackFunction = AudioMath::makeFunc_Exp(0, 1, .1, 30);
+  std::function<double(double)> attackFunction = getAttackFunction();
     std::function<double(double)> releaseFunction = AudioMath::makeFunc_Exp(0, 1, 100, 1600);
 };
 
@@ -166,7 +171,7 @@ inline void Compressor<TBase>::pollAttackRelease()
 
     const float attack = attackFunction(attackRaw);
     const float release = releaseFunction(releaseRaw);
-    printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
+   // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
 
     for (int i = 0; i<4; ++i) {
         compressors[i].setTimes(attack, release, TBase::engineGetSampleTime());

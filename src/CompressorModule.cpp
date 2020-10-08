@@ -8,9 +8,50 @@
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqTooltips.h"
 #include "ctrl/SqWidgets.h"
 
 using Comp = Compressor<WidgetComposite>;
+
+// worked
+#if 0
+class WaveformParamQuantity : public SqTooltips::SQParamQuantity {
+public:
+    WaveformParamQuantity(const ParamQuantity& other) : SqTooltips::SQParamQuantity(other) {}
+    std::string getDisplayValueString() override {
+        const Comp::Waves wf = Comp::Waves (std::round(getValue()));
+        return Comp::getLabel(wf);
+    }
+};
+#endif
+
+#if 0
+class LambdaQuantity : public SqTooltips::SQParamQuantity {
+public:
+    LambdaQuantity( const ParamQuantity& other, std::function<float(float)> lambda) : SqTooltips::SQParamQuantity(other) {}
+    
+};
+#endif
+
+class AttackQuantity : public SqTooltips::SQParamQuantity {
+public:
+    AttackQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other),
+        expFunction(Comp::getAttackFunction())
+    {
+    }
+    
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        auto expValue = expFunction(value);
+        std::stringstream str;
+        str << expValue;
+        return str.str();
+    }
+private:
+    std::function<double(double)> expFunction;
+};
+
 
 /**
  */
@@ -36,6 +77,11 @@ CompressorModule::CompressorModule()
     compressor = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
+
+  //  std::function<float(float)> foo = [](float) { return 0.f; };
+ //   auto other = 
+   // auto pq = new LambdaQuantity()
+    SqTooltips::changeParamQuantity<AttackQuantity>(this, Comp::ATTACK_PARAM);
 
     onSampleRateChange();
     compressor->init();
