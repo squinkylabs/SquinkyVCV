@@ -26,11 +26,15 @@ public:
         auto value = getValue();
         auto expValue = expFunction(value);
         std::stringstream str;
-        str << expValue << " mS";
+        str << expValue;
+        if (!suffix.empty()) {
+            str << suffix;
+        }
         return str.str();
     }
 protected:
     std::function<double(double)> expFunction;
+    std::string suffix;
 };
 
 class AttackQuantity : public LambdaQuantity {
@@ -38,6 +42,7 @@ public:
     AttackQuantity(const ParamQuantity& other) : LambdaQuantity(other)
     {
         expFunction = Comp::getAttackFunction();
+        suffix = " mS";
     }
 };
 
@@ -46,6 +51,7 @@ public:
     ReleaseQuantity(const ParamQuantity& other) : LambdaQuantity(other)
     {
         expFunction = Comp::getReleaseFunction();
+        suffix = " mS";
     }
 };
 
@@ -54,6 +60,7 @@ public:
     ThresholdQuantity(const ParamQuantity& other) : LambdaQuantity(other)
     {
         expFunction = Comp::getThresholdFunction();
+        suffix = " V";
     }
 };
 
@@ -130,10 +137,10 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     const float knobX2 = 47;
     const float knobY = 46;
     const float labelY = knobY - 20;
-    const float dy = 50;
+    const float dy = 54;
 
     addLabel(
-        Vec(knobX - 8, labelY + 0 * dy),
+        Vec(knobX - 4, labelY + 0 * dy),
         "Atck");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -141,7 +148,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         module,  Comp::ATTACK_PARAM));
 
     addLabel(
-        Vec(knobX2, labelY + 0 * dy),
+        Vec(knobX2 - 2, labelY + 0 * dy),
         "Rel");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -157,17 +164,25 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         module,  Comp::THRESHOLD_PARAM));
     
     addLabel(
-        Vec(knobX2 - 10, labelY + 1 * dy),
-        "wet/dry");
+        Vec(knobX2 - 13, labelY + 1 * dy),
+        "Wet/dry");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX2, knobY + 1 * dy),
         module,  Comp::WETDRY_PARAM));
 
+     addLabel(
+        Vec(knobX - 10, labelY + 2 * dy),
+        "Makeup");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobX, knobY + 2 * dy),
+        module,  Comp::MAKEUPGAIN_PARAM));    
+
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(knobX - 8,  knobY + 2 * dy),
+        Vec(knobX,  knobY + 3 * dy),
         module,
         Comp::RATIO_PARAM);
     p->box.size.x = 70;  // width
@@ -177,19 +192,22 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     addParam(p);
 
     addLabel(
-        Vec(knobX + 4, labelY + 3 * dy),
+        Vec(knobX + 18, labelY + 4 * dy- 6),
         "< IM");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(knobX + 20, 5 + knobY + 3 * dy),
+        Vec(knobX + 28, 5 + knobY + 4 * dy - 6),
         module,  Comp::SECRET_PARAM));
 }
 
 void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp)
 {
-    const float jackX = 14;
+    const float jackX = 10;
+    const float jackX2 = 50;
     const float labelX = jackX - 6;
-    const float jackY = 249;
+    const float label2X = jackX2 - 6;
+
+    const float jackY = 300;
     const float labelY = jackY - 17;
     const float dy = 40;
 
@@ -197,18 +215,18 @@ void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<ICompo
         Vec(labelX+6, labelY + 0 * dy),
         "In");
     addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 0 * dy),
+        Vec(jackX, jackY),
         module,
         Comp::AUDIO_INPUT));
 
     addLabel(
-        Vec(labelX, labelY + 1 * dy),
+        Vec(label2X, labelY + 0 * dy),
         "Out");
     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, jackY + 1 * dy),
+        Vec(jackX2, jackY + 0 * dy),
         module,
         Comp::AUDIO_OUTPUT));
-#if 1
+#if 0
     addLabel(
         Vec(labelX, labelY + 2 * dy),
         "dbg");

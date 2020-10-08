@@ -142,9 +142,6 @@ inline void Compressor<TBase>::init()
 template <class TBase>
 inline void Compressor<TBase>::stepn()
 {
-    // TODO: taper
-  //  const float rawThresh = Compressor<TBase>::params[THRESHOLD_PARAM].value;
-  //  const float thresh = std::max(.01f, rawThresh);
     float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
   
     float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
@@ -230,25 +227,25 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Compressor<TBase>::ATTACK_PARAM:
-            ret = {0, 1, .1, "Attack"};
+            ret = {0, 1, .1, "Attack time"};
             break;
          case Compressor<TBase>::RELEASE_PARAM:
-            ret = {0, 1, .1, "Release"};
+            ret = {0, 1, .1, "Release time"};
             break;
          case Compressor<TBase>::THRESHOLD_PARAM:
             ret = {0, 10, 1, "Threshold"};
             break;
          case Compressor<TBase>::RATIO_PARAM:
-            ret = {0, 4, 0, "Ratio"};
+            ret = {0, 4, 0, "Compression ratio"};
             break;
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {1.0f, 1000.0f, 10, "Makeup gain"};
             break;
         case Compressor<TBase>::SECRET_PARAM:
-            ret = {0, 1, 0, "Makeup gain"};
+            ret = {0, 1, 0, "IM Distortion supression"};
             break;
         case Compressor<TBase>::WETDRY_PARAM:
-            ret = {0, 1, 0, "wet/dry"};
+            ret = {0, 1, 0, "wet/dry mix"};
             break;
         default:
             assert(false);
