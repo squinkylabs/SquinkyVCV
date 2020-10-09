@@ -135,6 +135,110 @@ static void testLookupAboveTheshNoKnee()
     testLookupAboveTheshNoKnee(4);
 }
 
+
+static std::vector<float> generateGainCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries)
+{
+    std::vector<float> v;
+    assertGT( x1, x0);
+
+    const float delta = (x1 - x0) / numEntries;
+    for (float x = x0; x < x1; x += delta) {
+        const float gain = CompCurves::lookup(table, x);
+       // const float gain = 1;
+        v.push_back(gain);
+        printf("in gain llop x=%f, gain=%f\n", x, gain);
+    }
+    if (v.size() > numEntries) {
+        v.pop_back();
+    }
+    assertEQ(v.size(), numEntries);
+    return v;
+}
+
+static std::vector<float> generateDbCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries)
+{
+    std::vector<float> db;
+
+    assertGT(x1, x0);
+
+    const float dbMin = float(AudioMath::db(x0));
+    const float dbMax = float(AudioMath::db(x1));
+    const float delta = (dbMax - dbMin) / numEntries;
+    assertGT(dbMax, dbMin);
+
+
+    for (float dbIn = dbMin; dbIn <= dbMax; dbIn += delta) {
+        float inputLevel = float(AudioMath::gainFromDb(dbIn));
+        const double gain = CompCurves::lookup(table, inputLevel);
+        //const float gain = 1;
+        const double vOut = inputLevel * gain;
+        const float outputDb = float(AudioMath::db(vOut));
+        printf("in db loop dbIn = %f, inputLevel = %f gain = %f output db = %f\n", dbIn, inputLevel, gain, outputDb);
+        db.push_back(outputDb);
+    }
+    assertEQ(db.size(), numEntries);
+    return db;
+}
+
+static void plotCurve(CompCurves::Recipe r, const std::string& fileName)
+{
+    auto table = CompCurves::makeCompGainLookup(r);
+
+    FILE* fp = nullptr;
+    fopen_s(&fp, fileName.c_str(), "w");
+
+    const int tableSize = 20;
+    auto vGain = generateGainCurve(table, .1f, 3.f, tableSize);
+    auto vDb = generateDbCurve(table, .1f, 6.f, tableSize);
+    printf("gain table has %zd\n", vGain.size());
+    printf("db table has %zd\n", vDb.size());
+    assertEQ(vGain.size(), vDb.size());
+
+
+    if (!fp) {
+        printf("oops\n");
+        return;
+    }
+    for (int i = 0; i< vGain.size(); ++i) {
+        const float gain = vGain[i];
+        const float dbOut = vDb[i];
+        fprintf(fp, "%f, %f\n", gain, dbOut);
+    }
+   
+    fclose(fp);
+}
+
+static void plot4_1_hard()
+{
+    CompCurves::Recipe r;
+    r.ratio = 4;
+    r.threshold = 1;
+    plotCurve(r, "curves-4-1-hard.csv");
+}
+
+#if 0
+static void plotBasicCurve(float ratioToTest)
+{
+    CompCurves::Recipe r;
+    r.ratio = ratioToTest;
+    r.threshold = 1;
+    auto table = CompCurves::makeCompGainLookup(r);
+
+
+    FILE* fp = nullptr;
+    fopen_s(&fp, "comp-curve.csv", "w");
+
+
+    for (float x = .1f; x < 3; x += .1f) {
+        const float y = CompCurves::lookup(table, x);
+        fprintf(fp, "%f\n", y);
+        
+    }
+    fclose(fp);
+}
+#endif
+    
+
 void testCompCurves()
 {
    // testSpline();
@@ -143,4 +247,5 @@ void testCompCurves()
     testLookupAboveTheshNoKnee();
   
     // testCompCurvesKnee2();
+    plot4_1_hard();
 }
