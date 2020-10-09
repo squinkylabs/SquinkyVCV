@@ -3,6 +3,7 @@
 
 #include "Divider.h"
 #include "Cmprsr.h"
+#include "ObjectCache.h"
 #include "SqPort.h"
 
 #include <assert.h>
@@ -113,12 +114,16 @@ private:
 
     int numChannels_m = 0;
     int numBanks_m = 0;
+    float_4 wetLevel = 0;
+    float_4 dryLevel = 0;
     Divider divm;
     Divider divn;
 
     std::function<double(double)> attackFunction = getAttackFunction();
     std::function<double(double)> releaseFunction = getReleaseFunction();
     std::function<double(double)> thresholdFunction = getThresholdFunction();
+    std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
+    std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 };
 
 template <class TBase>
@@ -163,6 +168,10 @@ inline void Compressor<TBase>::stepm()
     // printf("\n****** after stepm banks = %d numch=%d\n", numBanks_m, numChannels_m);
 
     pollAttackRelease();
+
+    const float rawWetDry = Compressor<TBase>::params[WETDRY_PARAM].value;
+    wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
+    dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
 }
 
 template <class TBase>
@@ -193,8 +202,10 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
     for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseChannel = bank * 4;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 output = compressors[bank].step(input);
-        outPort.setVoltageSimd(output, baseChannel);
+        const float_4 wetOutput = compressors[bank].step(input);
+
+        const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
+        outPort.setVoltageSimd(mixedOutput, baseChannel);
 
         const float_4 env = compressors[bank]._lag().get();
         debugPort.setVoltageSimd(env, baseChannel);
@@ -245,7 +256,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "IM Distortion supression"};
             break;
         case Compressor<TBase>::WETDRY_PARAM:
-            ret = {0, 1, 0, "wet/dry mix"};
+            ret = {-1, 1, 1, "dry/wet mix"};
             break;
         default:
             assert(false);

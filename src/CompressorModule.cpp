@@ -165,7 +165,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     
     addLabel(
         Vec(knobX2 - 13, labelY + 1 * dy),
-        "Wet/dry");
+        "Dry/wet");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX2, knobY + 1 * dy),
