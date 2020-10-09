@@ -1,5 +1,5 @@
 
-#include "Lim.h"
+#include "Compressor.h"
 #include "Limiter.h"
 #include "MultiLag2.h"
 #include "simd.h"
@@ -308,7 +308,7 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
 
 static void testLimiterPoly()
 {
-    using Comp = Lim<TestComposite>;
+    using Comp = Compressor<TestComposite>;
     testPolyChannels<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT, 16);
 }
 

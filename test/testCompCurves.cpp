@@ -110,7 +110,7 @@ static void testLookupAboveTheshNoKnee(float ratioToTest)
     const float observedDbReduction = float(y1Db);
 
     printf("ex=%f, obs = %f\n", expectedDbReductionAtMax, observedDbReduction);
-    assertEQ(observedDbReduction, expectedDbReductionAtMax)
+    assertEQ(observedDbReduction, expectedDbReductionAtMax);
   //  assert(false);      // now what?
     
     // difference in gain at t * 10 relative to t.

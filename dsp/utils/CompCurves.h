@@ -8,21 +8,16 @@
 
 
 /*
+knee plan, phase 2
 
-more general spline ideas.
-how does asym shaper work?
-    it knows how to draw one spline.
-    it renders the spline into a non uniform lookup.
-    then a uniform lookup is generated from it.
-
-Let's do a new one:
-    abstract spline  can generate x, y from t = {0..1}
-    let's use the standard non-uniform
-
-    class BaseSpline
-    call HermiteSpline
+Try plotting a hard knee in excel or something. what does it look like.
+Determine points and slopes for end of knee.
+Try implementing - does it pass unit tests?
+Beef up unit tests (decreasing slope)
+Plot soft knee in excel.
 
 */
+
 class CompCurves
 {
 public:
@@ -43,8 +38,6 @@ public:
         float kneeWidth=0;
         float yError=.1f;
 
-      
-
         /**
          * Threshold is in volts
          */
@@ -57,7 +50,6 @@ public:
          */
         float minX=-50;
         float maxX=50;
-
     };
 
      /**
@@ -89,20 +81,8 @@ public:
     static std::vector<xy> makeCrudeCompGainTable(const Recipe&);
     static std::function<float(float)> continuousGainFunction(const CompCurves::Recipe& r);
 
-
-
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);
     static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);
 
-    /**
-     * Deprecated
-     */
-#if 0
-    static std::vector<xy> makeLeftGainTableSection(const Recipe& r);
-    static std::vector<xy> makeMiddleGainTableSection(const Recipe& r);
-    static std::vector<xy> makeRightGainTableSection(const Recipe& r);
-    static std::vector<xy> makeCrudeCompGainTableNoKnee(const Recipe&);
-    static std::vector<xy> makeCrudeCompGainTableKnee(const Recipe&);
-#endif
 };

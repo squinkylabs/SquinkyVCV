@@ -13,7 +13,7 @@
 #ifndef _MSC_VER
 #include "MultiLag.h"
 #include "F2.h"
-#include "Lim.h"
+#include "Compressor.h"
 #endif
 
 #include "ObjectCache.h"
@@ -294,15 +294,16 @@ static void testF2_4X()
         }, 1);
 }
 
-static void testLim1()
+static void testCompLim1()
 {
-    using Comp = Lim<TestComposite>;
+    using Comp = Compressor<TestComposite>;
     Comp comp;
 
     comp.init();
 
     comp.inputs[Comp::AUDIO_INPUT].channels = 1;
     comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 0;      // limiter
 
 
     Comp::ProcessArgs args;
@@ -310,22 +311,45 @@ static void testLim1()
     args.sampleRate = 44199;
 
 
-    MeasureTime<float>::run(overheadInOut, "Lim 1 channel", [&comp, args]() {
+    MeasureTime<float>::run(overheadInOut, "Comp/Lim 1 channel", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
         }, 1);
 }
 
-static void testLim16()
+static void testCompLim16()
 {
-   using Comp = Lim<TestComposite>;
+   using Comp = Compressor<TestComposite>;
     Comp comp;
 
     comp.init();
 
     comp.inputs[Comp::AUDIO_INPUT].channels = 16;
     comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 0;      // limiter
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "Comp/Lim 16 channel", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompKnee()
+{
+    using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 1;      // 4:1 hard knee
 
 
     Comp::ProcessArgs args;
@@ -333,12 +357,13 @@ static void testLim16()
     args.sampleRate = 44199;
 
 
-    MeasureTime<float>::run(overheadInOut, "Lim 1 channel", [&comp, args]() {
+    MeasureTime<float>::run(overheadInOut, "Comp / Lim 1 channel 4:1 hard", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
         }, 1);
 }
+
 #endif
 
 
@@ -348,8 +373,9 @@ void perfTest2()
     assert(overheadOutOnly > 0);
 #ifndef _MSC_VER
     testF2_4X();
-    testLim1();
-    testLim16();
+    testCompLim1();
+    testCompLim16();
+    testCompKnee();
 #endif
 
 

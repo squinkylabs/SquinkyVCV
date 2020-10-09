@@ -23,6 +23,7 @@ extern int _mdb;        // MIDI reverence count
 #define assertGT(_Experssion1, _Expression2) ((void)0)
 #define assertGE(_Experssion1, _Expression2) ((void)0)
 #define assertClose(_Experssion1, _Expression2, _Expression3) ((void)0)
+#define assertClosePct(_Experssion1, _Expression2, _Expression3) ((void)0)
 #define assertEvCount(x)  ((void)0)
 #define assertNoMidi()  ((void)0)
 
