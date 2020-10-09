@@ -64,6 +64,17 @@ public:
     }
 };
 
+class MakeupGainQuantity : public LambdaQuantity {
+public:
+    MakeupGainQuantity(const ParamQuantity& other) : LambdaQuantity(other)
+    {
+        expFunction = [](double x) {
+            return x;
+        };
+        suffix = " dB";
+    }
+};
+
 /**
  */
 struct CompressorModule : Module
@@ -79,7 +90,6 @@ public:
 
     std::shared_ptr<Comp> compressor;
 private:
-
 };
 
 CompressorModule::CompressorModule()
@@ -93,6 +103,7 @@ CompressorModule::CompressorModule()
     SqTooltips::changeParamQuantity<AttackQuantity>(this, Comp::ATTACK_PARAM);
     SqTooltips::changeParamQuantity<ReleaseQuantity>(this, Comp::RELEASE_PARAM);
     SqTooltips::changeParamQuantity<ThresholdQuantity>(this, Comp::THRESHOLD_PARAM);
+    SqTooltips::changeParamQuantity<MakeupGainQuantity>(this, Comp::MAKEUPGAIN_PARAM);
 
     onSampleRateChange();
     compressor->init();

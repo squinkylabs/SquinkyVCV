@@ -116,6 +116,7 @@ private:
     int numBanks_m = 0;
     float_4 wetLevel = 0;
     float_4 dryLevel = 0;
+    float_4 makeupGain_m = 1;
     Divider divm;
     Divider divn;
 
@@ -172,6 +173,9 @@ inline void Compressor<TBase>::stepm()
     const float rawWetDry = Compressor<TBase>::params[WETDRY_PARAM].value;
     wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
     dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
+
+    const float rawMakeupGain = Compressor<TBase>::params[MAKEUPGAIN_PARAM].value;
+    makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
 }
 
 template <class TBase>
@@ -202,9 +206,9 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
     for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseChannel = bank * 4;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressors[bank].step(input);
-
+        const float_4 wetOutput = compressors[bank].step(input) * makeupGain_m;
         const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
+
         outPort.setVoltageSimd(mixedOutput, baseChannel);
 
         const float_4 env = compressors[bank]._lag().get();
@@ -250,7 +254,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {0, 4, 0, "Compression ratio"};
             break;
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
-            ret = {1.0f, 1000.0f, 10, "Makeup gain"};
+            ret = {0, 20, 0, "Makeup gain"};
             break;
         case Compressor<TBase>::SECRET_PARAM:
             ret = {0, 1, 0, "IM Distortion supression"};
