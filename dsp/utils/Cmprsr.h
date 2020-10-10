@@ -46,7 +46,7 @@ inline Cmprsr::Cmprsr()
     if (!wasInit()) {
         CompCurves::Recipe r;
         r.ratio = 4;
-        r.threshold = 1;
+      //  r.threshold = 1;
         ratioCurves[int(Ratios::_4_1_hard)] = CompCurves::makeCompGainLookup(r);
 
 

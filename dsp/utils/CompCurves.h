@@ -23,6 +23,7 @@ class CompCurves
 public:
     CompCurves() = delete;
 
+    #define normalizedThreshold 1.f
     /**
      * All the parameters to define a gain curve
      * Note that ratio below knee is always 1:1
@@ -35,13 +36,17 @@ public:
          * ratio is in decibels.
          */
         float ratio=1;
+
+        // what units are these?
+        // db?
         float kneeWidth=0;
         float yError=.1f;
 
         /**
          * Threshold is in volts
+         * 1 is the default, and in fact the only one we use
          */
-        float threshold=1;
+      //  float threshold=1;
 
         /**
          * Deprecated
@@ -78,8 +83,11 @@ public:
         float y = 0;
 
     };
-    static std::vector<xy> makeCrudeCompGainTable(const Recipe&);
-    static std::function<float(float)> continuousGainFunction(const CompCurves::Recipe& r);
+   // static std::vector<xy> makeCrudeCompGainTable(const Recipe&);
+   // static std::function<float(float)> continuousGainFunction(const CompCurves::Recipe& r);
+
+    static xy getGainAtRightInflection(const CompCurves::Recipe& r);
+    static xy getGainAtLeftInflection(const CompCurves::Recipe& r);
 
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);

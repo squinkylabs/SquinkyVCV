@@ -29,28 +29,40 @@ static void testSpline()
   //  abort();
 }
 
-static void testLookupBelowTheshNoKnee(float thresh, float ratio)
+
+static void testLookupBelowThesh(float ratio, float kneeWidth)
 {
+   
+    // Should be unity gain up to where it starts to bend
+   
+    float lowCornerDb = float(AudioMath::db(1)) - kneeWidth / 2;
+    float lowKneeCornerVolts = float(AudioMath::gainFromDb(lowCornerDb));
+
+   // float lowKneeCorner = normalizedThreshold - (kneeWidth / 2);
     // Comp ratio 1 is unity gain everywhere.
     CompCurves::Recipe r;
     r.ratio = ratio;
-    r.threshold = thresh;
 
     auto table = CompCurves::makeCompGainLookup(r);    
     assertGT(table->size(), 0);
     float y = CompCurves::lookup(table, 0);
     assertEQ(y, 1);
 
-    y = CompCurves::lookup(table, r.threshold);
+    y = CompCurves::lookup(table, lowKneeCornerVolts);
     assertEQ(y, 1);
 }
 
 static void testLookupBelowTheshNoKnee()
 {
-    testLookupBelowTheshNoKnee(1, 1);
-    testLookupBelowTheshNoKnee(.1f, 4);
+    testLookupBelowThesh(1, 0);
+    testLookupBelowThesh(4, 0);
 }
 
+static void testLookupBelowTheshSoftKnee()
+{
+    testLookupBelowThesh(1, 10);
+    testLookupBelowThesh(4, 10);
+}
 static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r)
 {
 
@@ -60,7 +72,7 @@ static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r)
         const float y = CompCurves::lookup(table, x);
         assert(y <= 1);
 
-        if (x < r.threshold) {
+        if (x < normalizedThreshold) {
             assert(r.kneeWidth == 0);   // don't know how to do this yet
             assertEQ(y, 1);             // unity gain below thresh
         }
@@ -79,31 +91,27 @@ static void testLookupAboveTheshNoKnee(float ratioToTest)
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
     r.ratio = ratioToTest;
-    r.threshold = 1;
 
     auto table = CompCurves::makeCompGainLookup(r);
     
     assertGT(table->size(), 0);
-    float y = CompCurves::lookup(table, r.threshold);
-    assertEQ(y, r.threshold);
+    float y = CompCurves::lookup(table, normalizedThreshold);
+    assertEQ(y, normalizedThreshold);
 
     const float dbChangeInInput = 20;       // arbitrary, let's pick 20 db
     const float voltChangeInInput = (float)AudioMath::gainFromDb(dbChangeInInput);
 
     const float expectedDbOutputAtMax = 20 / ratioToTest;
 
-   // const float expectedDbReductionAtMax = dbChangeInInput - expectedDbOutputAtMax;
     const float expectedDbReductionAtMax = expectedDbOutputAtMax - dbChangeInInput;;
 
-  // const float dbThresh = 0;           // unity again a thresh if no knee
-  //  const double dbThresh10 = AudioMath::db(10);   // input 10 X thresh
 
-    // if the thrshold is 1, then we exect unity gain at 1
+    // if the thrshold is 1, then we expect unity gain at 1
     // at 10 we are 20 louder
     assert(r.kneeWidth == 0);
-    const float gain_y0 = CompCurves::lookup(table, r.threshold);
-    const float gain_y1 = CompCurves::lookup(table, r.threshold * 10);
-    assertEQ(gain_y0, r.threshold);
+    const float gain_y0 = CompCurves::lookup(table, normalizedThreshold);
+    const float gain_y1 = CompCurves::lookup(table, normalizedThreshold * 10);
+    assertEQ(gain_y0, normalizedThreshold);
 
 
     const double y1Db = AudioMath::db(gain_y1);
@@ -111,17 +119,9 @@ static void testLookupAboveTheshNoKnee(float ratioToTest)
 
     printf("ex=%f, obs = %f\n", expectedDbReductionAtMax, observedDbReduction);
     assertEQ(observedDbReduction, expectedDbReductionAtMax);
-  //  assert(false);      // now what?
-    
-    // difference in gain at t * 10 relative to t.
- //   float deltaYDb = float(y1Db - y0Db);
- //   printf("with ratio %f seeing deltaYdb = %f\n", ratioToTest, deltaYDb);
-  //  printf("g0=%f, g1=%f, y0db=%f 1=%f\n", gain_y0, gain_y1, y0Db, y1Db);
-   // assertEQ(deltaYDb, 20 / ratioToTest);
 
     validateCurve(table, r);
    
-  
 }
 
 static void testLookupAboveTheshNoKneeNoComp()
@@ -135,8 +135,51 @@ static void testLookupAboveTheshNoKnee()
     testLookupAboveTheshNoKnee(4);
 }
 
+static void testLookupAboveTheshKnee()
+{
+    CompCurves::Recipe r;
+    r.ratio = 4;
+    r.kneeWidth = 6;            // make 6 db wide soft knee
 
-static std::vector<float> generateGainCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries)
+
+    auto table = CompCurves::makeCompGainLookup(r);
+
+    const float topOfKneeDb = r.kneeWidth / 2;
+    const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
+    
+    assertGT(table->size(), 0);
+    float y = CompCurves::lookup(table, normalizedThreshold);
+    assertEQ(y, normalizedThreshold);
+
+    const float dbChangeInInput = 20;       // arbitrary, let's pick 20 db
+    const float voltChangeInInput = (float)AudioMath::gainFromDb(dbChangeInInput);
+
+    const float expectedDbOutputAtMax = 20 / r.ratio;
+
+    const float expectedDbReductionAtMax = expectedDbOutputAtMax - dbChangeInInput;;
+
+
+    // if the thrshold is 1, then we expect unity gain at 1
+    // at 10 we are 20 louder
+    assert(r.kneeWidth == 0);
+    const float gain_y0 = CompCurves::lookup(table, normalizedThreshold);
+    const float gain_y1 = CompCurves::lookup(table, normalizedThreshold * 10);
+    assertEQ(gain_y0, normalizedThreshold);
+
+
+    const double y1Db = AudioMath::db(gain_y1);
+    const float observedDbReduction = float(y1Db);
+
+    printf("ex=%f, obs = %f\n", expectedDbReductionAtMax, observedDbReduction);
+    assertEQ(observedDbReduction, expectedDbReductionAtMax);
+
+    validateCurve(table, r);
+  
+    assert(false);
+}
+
+
+static std::vector<float> generateGainVsInpuVoltageCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries)
 {
     std::vector<float> v;
     assertGT( x1, x0);
@@ -144,15 +187,38 @@ static std::vector<float> generateGainCurve(CompCurves::LookupPtr table, float x
     const float delta = (x1 - x0) / numEntries;
     for (float x = x0; x < x1; x += delta) {
         const float gain = CompCurves::lookup(table, x);
-       // const float gain = 1;
         v.push_back(gain);
-        printf("in gain llop x=%f, gain=%f\n", x, gain);
     }
     if (v.size() > numEntries) {
         v.pop_back();
     }
     assertEQ(v.size(), numEntries);
     return v;
+}
+
+static std::vector<float> generateGainVsInpuDbCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries)
+{
+    std::vector<float> g;
+
+    assertGT(x1, x0);
+
+    const float dbMin = float(AudioMath::db(x0));
+    const float dbMax = float(AudioMath::db(x1));
+    const float delta = (dbMax - dbMin) / numEntries;
+    assertGT(dbMax, dbMin);
+
+    for (float dbIn = dbMin; dbIn <= dbMax; dbIn += delta) {
+        float inputLevel = float(AudioMath::gainFromDb(dbIn));
+        const double gain = CompCurves::lookup(table, inputLevel);
+        const double vOut = inputLevel * gain;
+        const float outputDb = float(AudioMath::db(vOut));
+        g.push_back(float(gain));
+    }
+    if (g.size() > numEntries) {
+        g.pop_back();
+    }
+    assertEQ(g.size(), numEntries);
+    return g;
 }
 
 static std::vector<float> generateDbCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries)
@@ -170,11 +236,13 @@ static std::vector<float> generateDbCurve(CompCurves::LookupPtr table, float x0,
     for (float dbIn = dbMin; dbIn <= dbMax; dbIn += delta) {
         float inputLevel = float(AudioMath::gainFromDb(dbIn));
         const double gain = CompCurves::lookup(table, inputLevel);
-        //const float gain = 1;
         const double vOut = inputLevel * gain;
         const float outputDb = float(AudioMath::db(vOut));
-        printf("in db loop dbIn = %f, inputLevel = %f gain = %f output db = %f\n", dbIn, inputLevel, gain, outputDb);
+        // printf("in db loop dbIn = %f, inputLevel = %f gain = %f output db = %f\n", dbIn, inputLevel, gain, outputDb);
         db.push_back(outputDb);
+    }
+    if (db.size() > numEntries) {
+        db.pop_back();
     }
     assertEQ(db.size(), numEntries);
     return db;
@@ -187,11 +255,9 @@ static void plotCurve(CompCurves::Recipe r, const std::string& fileName)
     FILE* fp = nullptr;
     fopen_s(&fp, fileName.c_str(), "w");
 
-    const int tableSize = 20;
-    auto vGain = generateGainCurve(table, .1f, 3.f, tableSize);
-    auto vDb = generateDbCurve(table, .1f, 6.f, tableSize);
-    printf("gain table has %zd\n", vGain.size());
-    printf("db table has %zd\n", vDb.size());
+    const int tableSize = 40;
+    auto vGain = generateGainVsInpuDbCurve(table, .1f, 10.f, tableSize);
+    auto vDb = generateDbCurve(table, .1f, 10.f, tableSize);
     assertEQ(vGain.size(), vDb.size());
 
 
@@ -212,40 +278,77 @@ static void plot4_1_hard()
 {
     CompCurves::Recipe r;
     r.ratio = 4;
-    r.threshold = 1;
     plotCurve(r, "curves-4-1-hard.csv");
 }
 
-#if 0
-static void plotBasicCurve(float ratioToTest)
+static void plot4_1_soft()
 {
     CompCurves::Recipe r;
-    r.ratio = ratioToTest;
-    r.threshold = 1;
-    auto table = CompCurves::makeCompGainLookup(r);
-
-
-    FILE* fp = nullptr;
-    fopen_s(&fp, "comp-curve.csv", "w");
-
-
-    for (float x = .1f; x < 3; x += .1f) {
-        const float y = CompCurves::lookup(table, x);
-        fprintf(fp, "%f\n", y);
-        
-    }
-    fclose(fp);
+    r.ratio = 4;
+    r.kneeWidth = 10;
+    plotCurve(r, "curves-4-1-soft.csv");
 }
-#endif
+
+
+
+static void testCompCurvesKnee2()
+{
+    CompCurves::Recipe r;
+    r.ratio = 4;
+    r.kneeWidth = 10;
+
+    auto table = CompCurves::makeCompGainLookup(r);
+    assert(false);
+
+}
     
+static void testInflection()
+{
+    CompCurves::Recipe r;
+    {
+        r.ratio = 1;
+        r.kneeWidth = 12;       // 12 db - 6 on each side
+
+        // check for gain of 1 at inflection
+        auto result = CompCurves::getGainAtLeftInflection(r);
+        assertClose(result.x, .5, .002);
+        assertClose(result.y, 1, .002);
+
+        result = CompCurves::getGainAtRightInflection(r);
+        assertClose(result.x, 2, .01);
+        assertClose(result.y, 2, .01);
+    }
+    {
+        r.ratio = 4;
+        r.kneeWidth = 12;       // 12 db - 6 on each side
+
+        // check for gain of 1 at inflection
+        auto result = CompCurves::getGainAtLeftInflection(r);
+        assertClose(result.x, .5, .002);
+        assertClose(result.y, 1, .002);
+
+        const float expectedGainAtRight = float(AudioMath::gainFromDb(6.0 / 4.0));
+        result = CompCurves::getGainAtRightInflection(r);
+        assertClose(result.x, 2, .01);
+        assertClose(result.y, expectedGainAtRight, .01);
+    }
+
+}
 
 void testCompCurves()
 {
+    testInflection();
+   
    // testSpline();
     testLookupBelowTheshNoKnee();
+    testLookupBelowTheshSoftKnee();
+
     testLookupAboveTheshNoKneeNoComp();
     testLookupAboveTheshNoKnee();
-  
-    // testCompCurvesKnee2();
-    plot4_1_hard();
+
+    // TODO: make these test work
+  //  testLookupAboveTheshKnee();
+  //  testCompCurvesKnee2();
+    // plot4_1_hard();
+    plot4_1_soft();
 }
