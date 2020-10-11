@@ -53,7 +53,7 @@ public:
         THRESHOLD_PARAM,
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
-        SECRET_PARAM,
+        REDUCEDISTORTION_PARAM,
         WETDRY_PARAM,
         NUM_PARAMS
     };
@@ -148,9 +148,9 @@ inline void Compressor<TBase>::init()
 template <class TBase>
 inline void Compressor<TBase>::stepn()
 {
-    float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
+    const float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
+    const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
   
-    float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
     Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
     for (int i = 0; i<4; ++i) {
         compressors[i].setThreshold(threshold);
@@ -188,8 +188,11 @@ inline void Compressor<TBase>::pollAttackRelease()
     const float release = releaseFunction(releaseRaw);
    // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
 
+     const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
+
+
     for (int i = 0; i<4; ++i) {
-        compressors[i].setTimes(attack, release, TBase::engineGetSampleTime());
+        compressors[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
     }
 }
 
@@ -220,7 +223,7 @@ template <class TBase>
 inline void Compressor<TBase>::setupLimiter()
 {
     for (int i = 0; i<4; ++i) {
-        compressors[i].setTimes(1, 100, TBase::engineGetSampleTime());
+        compressors[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
     }
 }
 
@@ -256,7 +259,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {0, 20, 0, "Makeup gain"};
             break;
-        case Compressor<TBase>::SECRET_PARAM:
+        case Compressor<TBase>::REDUCEDISTORTION_PARAM:
             ret = {0, 1, 0, "IM Distortion suppression"};
             break;
         case Compressor<TBase>::WETDRY_PARAM:

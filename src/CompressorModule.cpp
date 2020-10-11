@@ -208,7 +208,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     addParam(SqHelper::createParam<CKSS>(
         icomp,
         Vec(knobX + 28, 5 + knobY + 4 * dy - 6),
-        module,  Comp::SECRET_PARAM));
+        module,  Comp::REDUCEDISTORTION_PARAM));
 }
 
 void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp)
